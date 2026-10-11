@@ -161,14 +161,28 @@ theorem srcpDepth : ∀ x ∈ A.srcps, x.entry.proof.path.length ≤ NearSpecV3.
   acceptedSrcp_depth A.rel A.hp A.hk A.hw
 
 theorem qvOk_exists : ∃ v : Qv.MainValues,
-    QvNativeOk A.m.pre v (A.steps.map ImplicitStepV3.pre) A.pub :=
-  qvNativeOk_of_accept A.hk A.hw A.h A.hm A.hv A.hp 0
+    QvNativeOk A.m.pre v (A.steps.map ImplicitStepV3.pre) A.pub ∧ v.Reads A.m.pre A.m.pre A.m.pre :=
+  qvNativeOk_reads_of_accept A.hk A.hw A.h A.hm A.hv A.hp 0
 
 /-- The native main queue values. -/
 noncomputable def qvVals : Qv.MainValues := Classical.choose A.qvOk_exists
 
 theorem qvOk : QvNativeOk A.m.pre A.qvVals (A.steps.map ImplicitStepV3.pre) A.pub :=
-  Classical.choose_spec A.qvOk_exists
+  (Classical.choose_spec A.qvOk_exists).1
+
+/-- Every queue read request of the native queue inputs holds (main reads and the implicit
+steps' missing-chunk requests). -/
+theorem qvHolds : ∀ x ∈ queueInputs A.m.pre A.qvVals (A.steps.map ImplicitStepV3.pre),
+    ∀ r ∈ x.2, r.Holds x.1 := by
+  have hreads := (Classical.choose_spec A.qvOk_exists).2
+  have hvalid := A.qvOk.valid
+  intro x hx r hr
+  simp only [queueInputs, List.mem_cons, List.mem_map] at hx
+  rcases hx with rfl | ⟨pre, ⟨s, hs, rfl⟩, rfl⟩
+  · exact Qv.mainRequests_hold A.m.pre A.qvVals hvalid hreads r hr
+  · have he : r = Qv.missingRequest s.pre := by simpa using hr
+    subst r
+    exact A.hv.missing_requests s hs
 
 /-! ## The six receipt-side table renders -/
 

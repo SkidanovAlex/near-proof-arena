@@ -127,3 +127,175 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
    Σ_τ unfoldedBytesT pre_τ + unfoldedBytesT post_τ ≤ B0` for the honest choice — both depend
    on the ups instances of item 2.
 * Verification: `lake build ZkFormal.V3.Integration` passes (3024 jobs) with all new modules; the 10 new audits pass; `make pin-check` OK.
+
+## 2026-10-11 (cont.) — ups component, EDGE/BMAP
+
+Lead: continue with ups (native instances, view, ups buses) and the shared buses; SHA and
+BYTES/DIGEST parked; A7 after the link merge.
+
+* `Assembly/TrieUps.lean` — `upsRenderOk_of_family` (`UpsRenderOk` from `InstOk` +
+  `NativePartFamily` + the row cap), `upsRenderOk_ranked` (counter ranking changes only the
+  walk; `R` unchanged), `aligned_view_walk_messages` (**view lemma**: the aligned ups trace's
+  view carries on EDGE/BMAP exactly `upsWalkMessages Is`; the candidate `physical_view_messages`
+  needed the unpadded height), `edge_records`/`bmap_records` (record-level conservation, ported
+  from `shared_physical_edge_balance` — which is already about `UpsV3.table`, not the compact
+  table), `balancedAt_edge`/`balancedAt_bmap`.
+* `Assembly/TrieUpsNative.lean` — **`accepted_ups_walks`**: from one choice of native objects
+  (`accepted_window_coverage` + `accepted_same_lookup_physical`) the walk component, the native
+  ups instances (`InstOk`, `NativePartFamily`), EDGE and BMAP record conservation for
+  `TrieNative.nodes … (useReq ws insts W)` / `heads … q.edges` / ranked walks / ranked ups walks,
+  and `UpsRenderOk` of the ranked instances **given the row cap**.
+* **Ups row cap — open, and not implied by the proven bounds.** `R insts = Σ_τ (4 + |v_τ| +
+  outputByteCharge run_τ)`; the proven bounds are `Σ|v| ≤ 3,146,912`, `Σ charge ≤ 2,131,072`
+  (total ≤ 5,278,112 > 2^22).  The candidates' compact ups table has no value rows (`compactR`
+  fits); `UpsV3.table` does.  Under the 2026-10-11 A7 measure (whole rebuilt post trie) the new
+  values and the new path nodes are post-trie bytes, so `R ≤ 128 + Σ_τ unfoldedBytesT post_τ ≤
+  128 + B0` — provable with the A7 (b) accounting (same work package).
+* `Assembly/TrieUpsRoot.lean` — **MIDROOT and ROOT**.  Compact-table row lemmas ported to
+  `upsV3` (same interactions on these buses, same `W`/`V` cells, `Q` rows silent):
+  `aligned_view_midroot` (ups receives `[τ, rid] ++ mid` once per instance),
+  `aligned_view_root` (ups sends `[τ+1] ++ post` once per instance); `balancedAt_midroot`,
+  `balancedAt_root` (with the public endpoint counts and the chain as hypotheses);
+  `root_endpoints_accepted` (for the prepared statement of ANY hint: public ROOT messages
+  `[0]++prevStateRoot` / `[K+1]++H.prevStateRoot` and the native root chain).
+  `accepted_ups_walks` now also gives the head MIDROOT sends `= Js.map ([τ,rid]++mid)`, the
+  head ROOT receives `= nativeInputRoots`, the ups ROOT records `= nativeRootRecords`, and the
+  32-byte mid/post digests.  ⇒ MIDROOT and ROOT closed from acceptance up to the ups row cap.
+* `Assembly/TrieShared.lean` — shared buses, trie side.  **VSLOT**: `vslot_records`
+  (acct `[a.k]` sends ~ node written-value receives, from the account-digest permutation),
+  `vslot_accepted` (the permutation for `TrieNative.nodes` and `nativeAccountViews m.pre oldPost
+  (appliedReceipts k w) = some as`, given the replay's write keys and final upsert),
+  `balancedAt_vslot` (node 2 / acct 17 with `acctV3Traffic as`, main's acct render).  Trie
+  contributions stated exactly: `vals_vbytes` (VBYTES receives = every pre-forest value's bytes at
+  its id), `nodes_size`/`vals_size` (SIZE tags 0/1 totals); KEYNIB/FINAL = `walkTraffic3 (rankWalks
+  [] ws)`.  Open for VSLOT: one native choice giving `SizedAccountRun` **and** the write keys and
+  the final upsert of the same replay (the candidate chain `native_rebased_origin_instances` drops
+  `hkeys`/`hup`; `native_execution_rebased_payloads_keys` has them without the ups instances), and
+  the receipt lane's acct entries must be `nativeAccountViews m.pre oldPost …` for that `oldPost`.
+* `Assembly/TrieAll.lean` — **`trie_all_accepted`**: one native choice (m, steps, writes,
+  oldPost, ups instances, lookup walks) gives the node/head/val/walk/uniq components, the ups
+  component given the row cap, and the record balances PARENT, VPARENT, ENT, DIGS, DUP, EDGE,
+  BMAP, MIDROOT, ROOT (records; public side `root_endpoints_accepted`).
+
+### Open after this session (trie side)
+
+1. ups row cap `R insts + 1 ≤ 2^22` (A7 (b)-type accounting; the proven bounds do not suffice).
+2. UPB (node windows ↔ ups `Q`-row reads, counter chain on `uU`), MEMD (ups-internal memory
+   chain of the honest generator), S0F/SPOST/SPLEN (ups ↔ codec, scheduler lane's codec render):
+   no completeness-side lemma exists for `UpsV3.table` (the candidates' UPB is for the compact
+   table; MEMD only has the soundness-side `memdMsgs`).
+3. VSLOT: single native choice carrying the write keys / final upsert (see above).
+4. KEYNIB/FINAL/VBYTES full balances need the receipt/qv/codec sides on main
+   (rcpt only existential; the candidate key/final/vbytes balances are for candidate receipt and
+   value tables).
+5. SHA, BYTES/DIGEST (parked by the lead); A7 (a)/(b) (after the link merge).
+* Verification (end of session): `lake build ZkFormal.V3.Integration` passes (3199 jobs); all new audits pass; `make pin-check` OK.
+
+## 2026-10-11 (session 3) — merge of the A7 integration, port, A7 (a) node/val traffic
+
+* Merged `origin/integration/v3-20261012` (main + link + rcpt + sched + this lane), then
+  `origin/lane/v3-link` `44399c03` (fixes `LinkShaKinds.acct_slot_lt` for the empty-capable
+  acct view — the integration branch did not build without it) and `origin/lane/v3-render-sched`
+  `23c49506` (drops the pre-A7 table-7 instance from `BundleSched`; ups belongs to this lane).
+* **Port to the A7 tables.**  `RenderV3Trie` now imports `RenderV3A7`; the base node/val/ups
+  renders are gone (tables 2, 4, 7 are `nodeA7`/`valA7`/`upsA7`), the link lane's
+  `nodeRenderV3`/`valRenderV3`/`upsRenderV3` are the components.  New: `ExtOf tf base` (a
+  component's traffic agrees with `base` off `RPL`/`RPLV`/`SIZE`), `extOf_append`,
+  `nodeRenderV3_ext`, `valRenderV3_ext`, `upsRenderV3_ext`, `RenderBundleV3.tf_ext`/`tf_ext_sel`.
+  Every bus-balance theorem (`balancedAt_parent/vparent/ent/digs/dup/edge/bmap/midroot/root/vslot`,
+  `balancedAt_trie_core`, `ups_tf_walk`) now takes `ExtOf` hypotheses for node/val/ups (same
+  record-level content).  `accepted_bundle_parts`, `trie_accepted`, `trie_all_accepted` export
+  `NodeOk ns`/`ValOk es` (so the components are `nodeRenderV3 pub ns hn sel` for ANY `sel`) with
+  `∀ sel, ExtOf …`, and the ups part `UpsRenderOk Js` with `ExtOf (upsRenderV3 …).tf …`.
+* `Assembly/TrieA7Node.lean` (A7 (a), node side): `selN vs S` (row choice from a record
+  predicate `S`), **`node_rpl_recvs`**: `RPL` receives of `nodeA7Trace vs T_NODE (selN vs S)` =
+  `((range |vs|).filter S).map ([·])`; **`node_size_sends`**: the only `SIZE` send is
+  `[3, nodeA7Total vs S]`, `nodeA7Total = Σ_n (S n ? 1 : 2)·|ser n|`; `node_rpl_sends`,
+  `node_size_recvs` empty.  (`node_ra`: `ra` on the SUM row.)
+* `Assembly/TrieA7Val.lean` (value side): `selV es S`, **`val_rpl_recvs`** (record `t` has
+  `vid = t`, `ent_vid`), **`val_size_sends`** `[4, valA7Total es S]`,
+  `valA7Total = Σ_t (S t ? 1 : 2)·len_t`; `val_rpl_sends`, `val_size_recvs` empty.
+* Verification: `lake build ZkFormal.V3.Integration` passes (4120 jobs); audits
+  `AuditRenderV3Trie` (tf_ext_sel needs no `Classical.choice`), `AuditTrieA7Node`, `AuditTrieA7Val`
+  and the 12 older trie audits pass; `make pin-check` OK.
+* Host note: `heavy` builds at `taskset -c 8-15,24-31` were OOM-killed inside the 10G scope
+  (16 parallel lean workers); `taskset -c 8-13` works.
+* `Assembly/TrieA7Ups.lean` (ups side): **`ups_rpl_sends`**: `RPL` sends of `upsA7Trace Js T_UPS` =
+  `Js.flatMap upsRplMsgs` (per instance `[N_D % P]` (`nDOf`), then `[sN % P]` of every upper part
+  — kind RDB/RDE/PT, `upperB` — with a row); **`ups_rplv_sends`** = `Js.flatMap upsRplvMsgs`
+  (`[e₃ % P]` of the walk's step 3 when it is a value step, `presV`); **`ups_size_sends`**: exactly
+  `[5, upsA7Total Js]`, `upsA7Total = Σ_I (L_I + Σ_k |Q_k|)` (`ups_s_last`, `upsA7Total_le : ≤ R`);
+  `ups_recvs`: no receives on the appended interactions.
+* `Assembly/TrieA7Bal.lean`: `RenderBundleV3.cnt_ext` (count of an A7 component on an
+  appended-only bus = count of the appended interactions' trace traffic), kernel `Covers`/`pub_off`
+  for `RPL`/`RPLV`; **`balancedAt_rpl`** / **`balancedAt_rplv`**: a bundle whose node/val/ups
+  components are the honest A7 traces balances on `RPL` (`RPLV`) given the record-level
+  permutation `(Js.flatMap upsRplMsgs).Perm (((range |ns|).filter S).map ([·]))`
+  (resp. `upsRplvMsgs` vs. the value records `SV`).
+* Verification: Integration 4122 jobs; `AuditTrieA7Ups` (5 names) passes.
+
+### Open after session 3 (exact)
+
+1. **A7 (a), semantic part.**  For the honest native choice of `trie_all_accepted`
+   (`ns = TrieNative.nodes m steps oldPost writes q`, `es = TrieNative.vals m steps`,
+   `Js = upsRanked ws insts`): there exist `S SV : Nat → Bool` with
+   `(Js.flatMap upsRplMsgs).Perm (((List.range ns.length).filter S).map ([·]))` and
+   `(Js.flatMap upsRplvMsgs).Perm (((List.range es.length).filter SV).map ([·]))`.  Needs: the
+   ups instances' `N_D`, upper-part `sN` and old-value `e₃` are the node/value record **indices** of
+   `ns`/`es` (record `n` has `nid = n`, value `t` has `vid = t`), all `< P`, pairwise distinct (no
+   record replaced twice: different instances act on different τ, within an instance the path
+   records are distinct).  Not started; the EDGE proof (`TrieUpsNative.accepted_ups_walks`) is the
+   closest existing link between `I.N` and node ids.
+2. **A7 SIZE tags (rows 0–2 of `sizeA7`)**: the size table's appended receives are computed
+   (`Assembly/TrieA7Size.lean`, **`size_a7_recvs`**: exactly `[3, yN 0 % P], [4, yN 1 % P],
+   [5, yN 2 % P]`).  Open: the bundle-level `SIZE` balance with `yN 0 = nodeA7Total ns S`, `yN 1 = valA7Total es SV`,
+   `yN 2 = upsA7Total Js` (node/val/ups sends: `node_size_sends`, `val_size_sends`,
+   `ups_size_sends`, plus the base tag-0/1/2 traffic of node/val/srcp).
+3. **A7 (b)**: `nodeA7Total ns S + valA7Total es SV + upsA7Total Js = unfoldBytes cb w ≤ B0` —
+   the accounting identity (pre bytes counted twice minus replaced records, plus the new parts and
+   value) against `Σ_τ unfoldedBytesT pre_τ + unfoldedBytesT post_τ`.  Not started.  The **ups row
+   cap** `R insts + 1 ≤ 2^22` (open since session 2) is to be derived from (b)
+   (`R = Σ_I (4 + L_I + Σ|Q_k|)`, `upsA7Total ≤ R`).
+4. SHA two-instance packing (task 2), UPB/MEMD/S0F/SPOST/SPLEN, VSLOT native fact,
+   KEYNIB/FINAL/VBYTES: unchanged from session 2's list.
+* (session 3, end) `TrieA7Size.size_a7_recvs`; Integration 4123 jobs; audits `AuditTrieA7Size`,
+  `AuditTrieA7Ups`, `AuditTrieA7Node`, `AuditTrieA7Val`, `AuditRenderV3Trie` pass; `make pin-check` OK.
+
+## 2026-10-11 (session 3, cont.) — lead: items (1)–(5) in order
+
+Lead: HEAVY_MEM=12G allowed (`taskset -c 8-13`).  Order: (1) A7 (a) semantic Perm, (2) A7 (b)
++ ups row cap, (3) bundle SIZE balance, (4) SHA two-bin packing, (5) the remaining shared buses.
+
+* `Assembly/TrieA7Rank.lean`: `rpl_ranked`, `rplv_ranked`, `total_ranked` — the A7 ups messages and
+  total of `upsRanked ws insts` are those of `insts` (ranking/sync rewrite only walk counters).
+
+### Plan for (1), from a survey of the existing native-instance lemmas (not yet executed)
+
+* Source: `accepted_window_coverage` (`Rcpt/Candidates/AcceptedWindowCoverage.lean`) gives per
+  instance `AllocatedNativeInstance us tau u I` (`I.tau = tau`), `ExactNativeWalkProviders`, and
+  `∃ root, forestRootAt 0 0 (us.map pre) tau = some root ∧ NativeReaderOrigin root u.run u.value I`
+  — `accepted_ups_walks` currently discards the last component (`-`); keep it.
+* `NativeReaderOrigin`: `I = nativeInstance recordId B root.tree run value Qs` with
+  `N := sourceLevelIds recordId run` (descend sources top-down, then the terminal source),
+  `D := descentCount run.parts`, `(part I k).sN := recordId part.source`.
+* Node ids: `native_reader_depth` (`Rcpt/Candidates/NativeReaderDepth.lean`) — for kind ≠ 8,
+  `(forestStoreViews ts).nodes[(part I k).sN]? = some s ∧ pdep = s.depth` (internally
+  `s = seedNodeView tau …`, so `s.tau = tau`; copy it exporting `s.tau = I.tau`).
+  `PartOk` (`Render/Ups/PlanInput.lean`): `kindT/kindU` (kinds 0,1,11 only at `k ≥ nT`), `pdepU`
+  (`pdep + (k+1−nT) = dep[D]`), terminal part of kind ≠ 11: `sN = N[D]`, `pdep = dep[D]`;
+  `InstOk.q1` (every part has a row, so the nonempty-q filter is vacuous).
+  ⇒ every RPL message is a record id with `(tau, depth)` = `(I.tau, dep[D])` for `N_D` and
+  `(I.tau, dep[D] − (k+1−nT))` for upper parts — pairwise distinct (no new Nodup lemma needed).
+* Forest bridge: ids are in `forestNodes 0 0 0 (oldPost :: steps.pre)` (`us.map pre`), while
+  `TrieNative.nodes` is `assignList ∘ records ∘ ChainMetadata.assign ∘ initializeList` over
+  `m.pre :: steps.pre` — length-preserving; `hpreEq : us.map pre = rs.map post` and
+  `replay_forest_depths` (`NativeRebasedDepths.lean`) give equal record lists up to metadata, so
+  index `x` is the same record with the same `tau/depth`.
+* Values: `ExactNativeWalkProviders` gives `(step I I.ts).e ∈ edgesOf3 a.nid s`; with mode 0,
+  `WalkOkU` gives `ts = 3` and `e[5] = EK_VAL`; new small lemma `e ∈ edgesOf3 n s → e[5] = EK_VAL →
+  seedValueId s = some e[3]` (model: `edge_val`, `Extract/Ups/UpsTermT.lean`); `forestNodes_valueIds`
+  (`filterMap seedValueId = range' 0 |forestBytes|`) gives Nodup across instances (distinct `N_D`
+  records) and the bound `< es.length` (`write_vals_count`, `assignValues` length).
+* Bounds for `% P`: `ns.length ≤ R ns < 2^22` (`length_le_R`, `node_P`), `es.length ≤ ValGen.R
+  < 2^22` (`val_length_le`, `val_R_lt`).
+* Then `S n := decide ([n] ∈ Js.flatMap upsRplMsgs)` and `List.perm_ext_iff_of_nodup`.

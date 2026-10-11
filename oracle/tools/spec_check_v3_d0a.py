@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Independent Python checker for domain D0a of near/pv86/chunk-validation/v0
-(spec/near-chunk-validation-v0a.md): RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10 ∧ A11.
+(spec/near-chunk-validation-v0a.md): RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10 ∧ A12.
 
 Runs the D0 checker (spec_check_v3.py, unmodified: it is pinned with the live D0
 challenges) and, on an accepting case, the amendments:
@@ -13,11 +13,17 @@ challenges) and, on an accepting case, the amendments:
   A7  w.unfolded         unfold_bytes <= B (default B0 = 2,000,000): for every applied
                          transition, the bytes of the pre-trie revealed along the read keys,
                          counted per path copy (node encodings + revealed values), plus the
-                         same count on the rebuilt post-trie (measure of 2026-10-11; before,
-                         only the post copies differing from the pre-trie at the same
-                         position — still reported as "unfold_diff"). Independent implementation: the read
-                         keys are the keys the D0 checker actually reads (recorded on its
-                         PartialTrie instances), positions are walked on the raw node bytes.
+                         same count on the native post-trie: the pre-trie's revealed nodes with
+                         the nodes the transition's writes created in place of their paths,
+                         including the node an insertion splits off (measure of 2026-10-12).
+                         Legacy measures still reported: "unfold_rebuilt" (2026-10-11: the
+                         post-trie rebuilt from the post store along the read keys) and
+                         "unfold_diff" (before 2026-10-11: only the rebuilt post copies
+                         differing from the pre-trie at the same position). Independent
+                         implementation: the read keys are the keys the D0 checker actually
+                         reads (recorded on its PartialTrie instances), the created nodes are
+                         recorded by position on its inserts, positions are walked on the raw
+                         node bytes.
   A8  c.bw_requests      in every block of the claim's segment, every chunk slot's
                          BandwidthRequests has pairwise distinct to_shard values.
   A9  e.chacha_words     the bandwidth-scheduler runs of all applied transitions draw at
@@ -26,18 +32,17 @@ challenges) and, on an accepting case, the amendments:
                          creates is a counting instance; the words drawn are its next_u32 calls.
   A10 w.path_depth       every used source receipt proof's Merkle path has at most D
                          (default Dp0 = 32) items.
+  (A11 w.post_rebuild, 2026-10-11, is retired: user decision 2026-10-12.)
 
-  A11 w.post_rebuild    the A7 count is unchanged when every post trie is rebuilt from the
-                         blobs its pre trie reveals (the nodes and values unfold_pre reads)
-                         plus the blobs the transition wrote, instead of the whole witness
-                         store (pre-revealed blobs take precedence, as Lean's first match).
+  A12 c.layout_wf       the epoch shard layout has exactly one boundary account fewer than
+                         shard ids (len(boundary_accounts) + 1 == len(shard_ids)).
 
-Violations are reported joined by "," in the order A1, A2, C0f, A7, A8, A9, A10, A11 (the order
+Violations are reported joined by "," in the order A1, A2, C0f, A7, A8, A9, A10, A12 (the order
 of the Lean checkD0a checks; Lean reports only the first failing one).
 
 usage: spec_check_v3_d0a.py [--bound B] [--words-bound W] [--depth-bound D] CASE_DIR...
-       (one JSON line per case, as spec_check_v3.py, plus "unfold", "unfold_n",
-       "chacha_words", "max_path_depth")
+       (one JSON line per case, as spec_check_v3.py, plus "unfold", "unfold_rebuilt",
+       "unfold_diff", "chacha_words", "max_path_depth")
 """
 import json
 import os
@@ -45,7 +50,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import spec_check_v3 as d0  # noqa: E402
-from v3lib.prim import PartialTrie, nibbles, decode_node  # noqa: E402
+from v3lib.prim import PartialTrie, nibbles, decode_node, ZERO32  # noqa: E402
 
 MAX_GAS_LIMIT = 10 ** 15
 B0 = 2_000_000
@@ -62,11 +67,71 @@ class RecTrie(d0.PartialTrie):
         self.pre_store = dict(self.store)
         self.pre_root = root
         self.keys = set()
+        # native post trie (Lean's `out.trie` / `applyMissingChunk` result): the nodes the
+        # writes created, by absolute nibble position, and the written values by nibble key
+        self.created = {}
+        self.written = {}
         _TRIES.append(self)
 
     def get(self, key):
         self.keys.add(bytes(key))
         return super().get(key)
+
+    def _byproduct(self, full):
+        """Position of the node an insert of `full` splits off and creates (NearSpec
+        `splitLeaf`: the old leaf shortened below the new branch; `splitExt`: the old
+        extension's tail), or None. Computed on the trie before the insert."""
+        if self.root == ZERO32:
+            return None
+        h, pos = self.root, ()
+        while True:
+            n = self.node(h)
+            rest = full[len(pos):]
+            if n.kind == 'branch':
+                if not rest or rest[0] not in n.children:
+                    return None
+                h, pos = n.children[rest[0]], pos + (rest[0],)
+                continue
+            k = tuple(n.key)
+            if n.kind == 'ext' and rest[:len(k)] == k:
+                h, pos = n.child, pos + k
+                continue
+            if n.kind == 'leaf' and rest == k:
+                return None
+            cp = 0
+            while cp < min(len(k), len(rest)) and k[cp] == rest[cp]:
+                cp += 1
+            if n.kind == 'leaf':
+                return pos + k[:cp + 1] if len(k) > cp else None
+            return pos + k[:cp + 1] if len(k) - cp - 1 > 0 else None
+
+    def insert(self, key, value):
+        full = tuple(nibbles(key))
+        bp = self._byproduct(full)
+        super().insert(key, value)
+        self.written[full] = value
+        if bp is not None:
+            h, pos = self.root, ()
+            while len(pos) < len(bp):  # walk the new trie down to the split-off node
+                n = self.node(h)
+                if n.kind == 'ext':
+                    h, pos = n.child, pos + tuple(n.key)
+                else:
+                    h, pos = n.children[bp[len(pos)]], pos + (bp[len(pos)],)
+            assert pos == bp
+            self.created[pos] = h
+        # every node on the new path to `full` is created
+        h, pos = self.root, ()
+        while True:
+            self.created[pos] = h
+            n = self.node(h)
+            if n.kind == 'leaf' or (n.kind == 'branch' and len(pos) == len(full)):
+                break
+            if n.kind == 'ext':
+                h, pos = n.child, pos + tuple(n.key)
+            else:
+                c = full[len(pos)]
+                h, pos = n.children[c], pos + (c,)
 
 
 d0.PartialTrie = RecTrie
@@ -172,8 +237,56 @@ def unfold_diff(pre_store, hpre, post_store, hpost, keys):
     return tot
 
 
+def unfold_native(t, h, pos, keys):
+    """Lean `unfoldedBytesT` of the native post trie at position `pos`: a node is revealed iff
+    the execution created it there (its bytes are the written ones) or a read key passes
+    through it (an untouched pre node, revealed iff the pre trie revealed it); a value iff it
+    was written there or a read key ends there and the pre store holds it."""
+    if h is None:
+        return 0
+    forced = t.created.get(pos) == h
+    if not forced and not keys:
+        return 0
+    raw = t.store.get(h) if forced else t.pre_store.get(h)
+    if raw is None:
+        return 0
+    n = _parse(raw)
+    if n is None:
+        return 0
+
+    def val(vpos, vref, want):
+        if forced and vpos in t.written:
+            return len(t.written[vpos])
+        v = _value(t.pre_store, vref, want)
+        return len(v) if v is not None else 0
+
+    tot = len(raw)
+    if n.kind == 'leaf':
+        k = tuple(n.key)
+        return tot + val(pos + k, n.vref, any(x == n.key for x in keys))
+    if n.kind == 'ext':
+        sub = [x[len(n.key):] for x in keys if x[:len(n.key)] == n.key]
+        return tot + unfold_native(t, n.child, pos + tuple(n.key), sub)
+    if n.vref is not None:
+        tot += val(pos, n.vref, any(len(x) == 0 for x in keys))
+    for i, c in n.children.items():
+        tot += unfold_native(t, c, pos + (i,), [x[1:] for x in keys if x and x[0] == i])
+    return tot
+
+
 def unfold_bytes(tries):
-    """A7 (measure of 2026-10-11): unfolded pre trie + unfolded rebuilt post trie."""
+    """A7 (measure of 2026-10-12): unfolded pre trie + unfolded native post trie."""
+    tot = 0
+    for t in tries:
+        keys = [nibbles(k) for k in t.keys]
+        tot += unfold_pre(t.pre_store, t.pre_root, keys)
+        tot += unfold_native(t, None if t.root == ZERO32 else t.root, (), keys)
+    return tot
+
+
+def unfold_bytes_rebuilt(tries):
+    """The A7 measure of 2026-10-11 (post term = the post trie rebuilt from the post store
+    along the read keys), reported for comparison."""
     tot = 0
     for t in tries:
         keys = [nibbles(k) for k in t.keys]
@@ -190,42 +303,6 @@ def unfold_bytes_diff(tries):
         keys = [nibbles(k) for k in t.keys]
         tot += unfold_pre(t.pre_store, t.pre_root, keys)
         tot += unfold_diff(t.pre_store, t.pre_root, t.store, t.root, keys)
-    return tot
-
-
-def revealed(store, h, keys, out):
-    """Hashes of the blobs `unfold_pre` reads (Lean `revealedStore` of the pre trie)."""
-    if not keys or h is None or h not in store:
-        return
-    n = _parse(store[h])
-    if n is None:
-        return
-    out.add(h)
-    if n.kind == 'leaf':
-        if any(k == n.key for k in keys) and n.vref is not None and n.vref[1] in store:
-            out.add(n.vref[1])
-        return
-    if n.kind == 'ext':
-        revealed(store, n.child, [k[len(n.key):] for k in keys if k[:len(n.key)] == n.key], out)
-        return
-    if any(len(k) == 0 for k in keys) and n.vref is not None and n.vref[1] in store:
-        out.add(n.vref[1])
-    for i, c in n.children.items():
-        revealed(store, c, [k[1:] for k in keys if k and k[0] == i], out)
-
-
-def unfold_bytes_n(tries):
-    """A11: `unfold_bytes` with every post trie rebuilt from the pre-revealed blobs and the
-    written blobs only (Lean `unfoldBytesN`)."""
-    tot = 0
-    for t in tries:
-        keys = [nibbles(k) for k in t.keys]
-        seen = set()
-        revealed(t.pre_store, t.pre_root, keys, seen)
-        small = {h: v for h, v in t.store.items() if t.pre_store.get(h) != v}
-        small.update({h: t.pre_store[h] for h in seen})
-        tot += unfold_pre(t.pre_store, t.pre_root, keys)
-        tot += unfold_pre(small, t.root, keys)
     return tot
 
 
@@ -304,8 +381,15 @@ def a8_ok(claim_b):
     return True
 
 
+def a12_ok(claim_b):
+    """A12: the epoch layout has one boundary account fewer than shard ids."""
+    c = d0.decode_claim(claim_b)
+    L = d0.decode_layout(c['epochs'][0]['layout_raw'])
+    return len(L.boundary) + 1 == len(L.shard_ids)
+
+
 def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
-    """(verdict, reason, unfold_bytes, chacha_words, max_path_depth, unfold_bytes_n,
+    """(verdict, reason, unfold_bytes, chacha_words, max_path_depth, unfold_bytes_rebuilt,
     unfold_bytes_diff); the last five are None unless the D0 checker accepts."""
     _TRIES.clear()
     _RNGS.clear()
@@ -319,7 +403,7 @@ def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
         wb = open(os.path.join(d, "witness.bin"), "rb").read()
         v, depth = amendments(cb, wb)
         u = unfold_bytes(tries)
-        un = unfold_bytes_n(tries)
+        ur = unfold_bytes_rebuilt(tries)
         ud = unfold_bytes_diff(tries)
     except Exception as e:  # a bug in this checker
         print("spec_check_v3_d0a: INTERNAL ERROR on %s: %r" % (d, e), file=sys.stderr)
@@ -336,11 +420,15 @@ def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
         v.append("e.chacha_words")
     if depth > depth_bound:
         v.append("w.path_depth")
-    if un != u:
-        v.append("w.post_rebuild")
+    try:
+        if not a12_ok(cb):
+            v.append("c.layout_wf")
+    except Exception as e:  # a bug in this checker
+        print("spec_check_v3_d0a: INTERNAL ERROR on %s: %r" % (d, e), file=sys.stderr)
+        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None, None, None
     if v:
-        return "out_of_domain", ",".join(v), u, words, depth, un, ud
-    return "accept", "ok", u, words, depth, un, ud
+        return "out_of_domain", ",".join(v), u, words, depth, ur, ud
+    return "accept", "ok", u, words, depth, ur, ud
 
 
 def main():
@@ -349,9 +437,9 @@ def main():
     while args[:1] and args[0] in bounds:
         bounds[args[0]], args = int(args[1]), args[2:]
     for d in args:
-        v, reason, u, k, p, un, ud = check_case(d, bounds["--bound"], bounds["--words-bound"],
+        v, reason, u, k, p, ur, ud = check_case(d, bounds["--bound"], bounds["--words-bound"],
                                                 bounds["--depth-bound"])
-        print(json.dumps(dict(case=d, verdict=v, reason=reason, unfold=u, unfold_n=un,
+        print(json.dumps(dict(case=d, verdict=v, reason=reason, unfold=u, unfold_rebuilt=ur,
                               unfold_diff=ud, chacha_words=k, max_path_depth=p)))
         sys.stdout.flush()
 

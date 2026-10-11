@@ -7,74 +7,21 @@ import ZkFormal.NearV3.Assembly.QueueSeed
 
 `FactorComplete` (`Good.lean`): every witness the amended checker accepts has semantic views
 `GoodV3`. `NativeGoodGap.good_of_native` derives every field from native acceptance except
-three bounds read on the *reconstructed* witness `witnessOfV3 k x` (A7, A9, A11). They are
-closed here:
+two bounds read on the *reconstructed* witness `witnessOfV3 k x` (A7, A9). They are closed
+here:
 
 * the reconstructed witness re-runs natively with the same main execution and implicit
   steps (`nativeValid_reconstructed`, `ImplicitTraceValid.renorm`): its stores are
-  `normalStore pre = (revealedStore pre).eraseDups`, which rebuild the same pre tries;
-* hence `triesD0` of the reconstruction equals `triesD0N` of the original
-  (`triesD0_reconstructed`): the reconstruction's post tries are rebuilt from exactly the
-  revealed blobs, which is what A11 (`unfoldBytesN = unfoldBytes`) compares against;
-* A7: `unfoldBytes (rec.) = unfoldBytesN (orig.) = unfoldBytes (orig.) ≤ B` by A11;
-* A9: the scheduler inputs read only the pre tries, which are unchanged;
-* A11 on the reconstruction: `triesD0N` of the reconstruction is `triesD0N` of the original.
+  `normalStore pre`, which rebuild the same pre tries;
+* hence `triesD0` of the reconstruction equals `triesD0` of the original
+  (`tries_reconstructed`): the same pre tries, and the same native post tries (A7's post
+  term counts the trie execution returns, user decision 2026-10-12);
+* A7: `unfoldBytes (rec.) = unfoldBytes (orig.) ≤ B`;
+* A9: the scheduler inputs read only the pre tries, which are unchanged.
 -/
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec NearSpecV3 Sched
-
-/-- The reconstruction's store is the spec's `revealedStore`, deduplicated. -/
-theorem normalStore_revealed (t : PTrie) : normalStore t = (revealedStore t).eraseDups := by
-  have enc : NearSpecV3.nodeEnc = nodeEnc := rfl
-  unfold normalStore revealedStore
-  rw [native_valsOf_eq, enc, native_occs_eq]
-
-theorem storeLookupEq_normal (t : PTrie) : StoreLookupEq (normalStore t) (revealedStore t) :=
-  fun h => by rw [normalStore_revealed]; exact storeGet_eraseDups _ h
-
-/-! ## `triesD0N` of an accepted witness in closed form -/
-
-/-- `triesD0N`'s implicit loop body. -/
-def unfoldStepN (k : WalkD0) (pair : Blk × Transition)
-    (st : List (PTrie × PTrie) × Bytes) : Except String (ForInStep (List (PTrie × PTrie) × Bytes)) := do
-  let ctx := blockCtx k.L k.H.shardId k.slotB2.gasLimit pair.1 pair.1.hdr.nextGasPrice
-  let keys := [keyDelayedIdx,keyBwState]
-  let pre := partialTrie pair.2.values st.2 keys
-  let post ← applyMissingChunk prims ctx pre
-  pure (.yield (st.1 ++ [(pre,rebuildPost (revealedStore pre) post keys)],post.hashOf))
-
-def unfoldedPairsN (steps : List ImplicitStepV3) : List (PTrie × PTrie) :=
-  steps.map (fun s => (s.pre,rebuildPost (revealedStore s.pre) s.post [keyDelayedIdx,keyBwState]))
-
-theorem ImplicitTraceValid.unfoldN_result {k root pairs steps last}
-    (hv : ImplicitTraceValid k root pairs steps last) (acc : List (PTrie × PTrie)) :
-    forIn pairs (acc,root) (unfoldStepN k) = .ok (acc ++ unfoldedPairsN steps,last) := by
-  induction hv generalizing acc with
-  | nil => simp [unfoldedPairsN,pure,Except.pure]
-  | cons root b t rest steps post last run checked tail ih =>
-    simp only [List.forIn_cons,unfoldStepN,run,bind,Except.bind,pure,Except.pure]
-    rw [ih]
-    simp only [unfoldedPairsN,List.map_cons,List.append_assoc,List.singleton_append]
-
-theorem triesD0N_native_result {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
-    {m : MainExecutionV3} {steps : List ImplicitStepV3} {last : Bytes}
-    (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w) (hm : m.NativeValid k w)
-    (hv : ImplicitTraceValid k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) steps last) :
-    triesD0N cb wb = .ok ((m.pre,rebuildPost (revealedStore m.pre) m.result.trie
-      (mainKeys (appliedReceipts k w) m.bufferedShards)) :: unfoldedPairsN steps) := by
-  obtain ⟨v,hfind,hparse⟩ := hm.buffered
-  have run := hm.run
-  rw [hm.pre] at run
-  unfold MainExecutionV3.ctx at run
-  have hloop := hv.unfoldN_result
-  unfold ZkFormal.NearV3.Assembly.unfoldStepN at hloop
-  dsimp only at hloop
-  simp only [bind,Except.bind,pure,Except.pure] at hloop
-  unfold triesD0N
-  simp only [hk,hw,bind,Except.bind,hm.block,hm.previous,pure,Except.pure,hfind,hparse,run,hloop]
-  rw [hm.pre]
-  rfl
 
 /-! ## The reconstructed witness re-runs natively -/
 
@@ -180,7 +127,7 @@ theorem nativeValid_reconstructed (hd : decodeStateWitness bs = .ok w) (hm : m.N
 
 end
 
-/-! ## A7, A9, A11 on the reconstruction -/
+/-! ## A7, A9 on the reconstruction -/
 
 theorem decodeW_witnessOfV3 {k : WalkD0} {x : ExtV3} (hs : V3.D0Shape (stateWitnessOfV3 k x)) :
     decodeW (witnessOfV3 k x) = .ok (stateWitnessOfV3 k x) := by
@@ -192,8 +139,8 @@ section
 variable {cb wb bs : Bytes} {k : WalkD0} {w : StateWitness}
   {m : MainExecutionV3} {steps : List ImplicitStepV3} {last : Bytes}
 
-/-- `triesD0` of the reconstruction is `triesD0N` of the original, and so is `triesD0N` of
-the reconstruction. -/
+/-- `triesD0` of the reconstruction is `triesD0` of the original: the same pre tries and the
+same native post tries. -/
 theorem tries_reconstructed (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w)
     (hd : decodeStateWitness bs = .ok w) (hm : m.NativeValid k w)
     (hv : ImplicitTraceValid k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) steps last)
@@ -201,33 +148,13 @@ theorem tries_reconstructed (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w)
     (hf : ∀ t ∈ m.pre :: steps.map ImplicitStepV3.pre, t.wf = true)
     (hc : (forestBytes (m.pre :: steps.map ImplicitStepV3.pre)).length ≤ ZkFormal.Algebra.P)
     (hshape : V3.D0Shape (stateWitnessOfV3 k (nativeExecutionViews k w m steps))) :
-    triesD0 cb (witnessOfV3 k (nativeExecutionViews k w m steps)) = triesD0N cb wb ∧
-      triesD0N cb (witnessOfV3 k (nativeExecutionViews k w m steps)) = triesD0N cb wb := by
+    triesD0 cb (witnessOfV3 k (nativeExecutionViews k w m steps)) = triesD0 cb wb := by
   have hw' := decodeW_witnessOfV3 hshape
   have hm' := nativeValid_reconstructed hd hm hf hc
   have hv' := hv.renorm
   rw [← reconstructed_implicit hd hv hcount hf hc] at hv'
-  have hn := triesD0N_native_result hk hw hm hv
-  have happ : appliedReceipts k (stateWitnessOfV3 k (nativeExecutionViews k w m steps)) =
-      appliedReceipts k w := by
-    unfold appliedReceipts
-    rw [nativeExecutionViews_entries hd]
-  have hs : (stateWitnessOfV3 k (nativeExecutionViews k w m steps)).main.values = normalStore m.pre := by
-    change (traceStoreViews (runtimePairs m steps)).store 0 = _
-    rw [traceStoreViews_store,runtimePairs_pre]
-    exact forestStoreViews_store hf hc rfl
-  have hpairsN : unfoldedPairsN (steps.map renormStep) = unfoldedPairsN steps := by
-    simp only [unfoldedPairsN, List.map_map, Function.comp_def, renormStep]
-  refine ⟨?_, ?_⟩
-  · rw [triesD0_native_result hk hw' hm' hv', hn, hs, happ,
-      (storeLookupEq_normal m.pre).rebuildPost]
-    congr 2
-    simp only [unfoldedPairs, unfoldedPairsN, List.map_map, Function.comp_def, renormStep,
-      renormTransition]
-    apply List.map_congr_left
-    intro e _
-    rw [(storeLookupEq_normal e.pre).rebuildPost]
-  · rw [triesD0N_native_result hk hw' hm' hv', hn, happ, hpairsN]
+  rw [triesD0_native_result hk hw' hm' hv', triesD0_native_result hk hw hm hv]
+  simp only [unfoldedPairs, List.map_map, Function.comp_def, renormStep]
 
 theorem zip_map_congr3 {α β γ δ : Type} (F : α × β × γ → δ)
     (hF : ∀ c p q q', F (c,p,q) = F (c,p,q')) (cs : List α) (l l' : List (β × γ))
@@ -323,37 +250,25 @@ theorem factorComplete : FactorComplete := by
   have hsize := nativeExecutionViews_witness_size hd hm hv hcount hf hcap hepoch hinner hhash
   have hshape := nativeExecutionViews_shape hk hd hraw hm hv hcount hf hcap hepoch
     (Nat.le_trans hsize hraw)
-  obtain ⟨htr, htrN⟩ := tries_reconstructed hk hw hd hm hv hcount hf hcap hshape
+  have htr := tries_reconstructed hk hw hd hm hv hcount hf hcap hshape
   let x := nativeExecutionViews k w m steps
-  -- A7 via A11 on the original witness
-  have h11 : unfoldBytesN cb wb = unfoldBytes cb wb := by
-    simpa only [a11, beq_iff_eq] using ha.2.2.2.2.2.2.2.2
+  -- A7: the same tries
   have h7 : unfoldBytes cb wb ≤ B := by
     simpa only [a7, decide_eq_true_eq] using ha.2.2.2.2.1
-  have hu : unfoldBytes cb (witnessOfV3 k x) = unfoldBytesN cb wb := by
-    unfold unfoldBytes unfoldBytesN
+  have hu : unfoldBytes cb (witnessOfV3 k x) = unfoldBytes cb wb := by
+    unfold unfoldBytes
     rw [htr]
-  have huN : unfoldBytesN cb (witnessOfV3 k x) = unfoldBytesN cb wb := by
-    unfold unfoldBytesN
-    rw [htrN]
   -- A9: same pre tries
   have h9 : chachaWords cb wb ≤ W0 := by
     simpa only [a9, decide_eq_true_eq] using ha.2.2.2.2.2.2.1
   have hlenW : (stateWitnessOfV3 k x).implicit.length = w.implicit.length := by
     simp [stateWitnessOfV3, hcount]
   have hnat := triesD0_native_result hk hw hm hv
-  have hN := triesD0N_native_result hk hw hm hv
-  have hfst : ((m.pre,rebuildPost (revealedStore m.pre) m.result.trie
-      (mainKeys (appliedReceipts k w) m.bufferedShards)) :: unfoldedPairsN steps).map Prod.fst =
-      ((m.pre,rebuildPost w.main.values m.result.trie
-      (mainKeys (appliedReceipts k w) m.bufferedShards)) :: unfoldedPairs steps).map Prod.fst := by
-    simp [unfoldedPairsN, unfoldedPairs, List.map_map, Function.comp_def]
   have hw9 : chachaWords cb (witnessOfV3 k x) = chachaWords cb wb :=
     chachaWords_congr (schedInsD0_congr hk (decodeW_witnessOfV3 hshape) hw hlenW
-      (htr.trans hN) hnat hfst)
-  refine ⟨k, nativeHint k w m, p, x, hgood ?_ ?_ ?_⟩
-  · rw [hu, h11]; exact h7
+      (htr.trans hnat) hnat rfl)
+  refine ⟨k, nativeHint k w m, p, x, hgood ?_ ?_⟩
+  · rw [hu]; exact h7
   · rw [hw9]; exact h9
-  · rw [huN, hu]
 
 end ZkFormal.NearV3.Assembly

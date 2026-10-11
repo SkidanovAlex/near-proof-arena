@@ -171,17 +171,17 @@ variable {pub : List Fp} (R : RenderBundleV3 pub)
 /-- **`VPARENT` balance of a bundle** from the record-level `VParentBal` of its node and value
 components. -/
 theorem balancedAt_vparent (vs : List NodeS3) (es : List ValE)
-    (hn : (R ⟨T_NODE, by decide⟩).tf = nodeTraffic3 vs) (hv : (R ⟨T_VAL, by decide⟩).tf = valTraffic es)
+    (hn : ExtOf (R ⟨T_NODE, by decide⟩).tf (nodeTraffic3 vs)) (hv : ExtOf (R ⟨T_VAL, by decide⟩).tf (valTraffic es))
     (hbal : Link3.VParentBal vs es) : R.BalancedAt B_VPARENT := by
   intro m
   rw [R.sum_tables true _ m _ covers_vparent_send, R.sum_tables false _ m _ covers_vparent_recv,
     pub_vparent, pub_vparent]
-  have e2 : R.tf 2 = nodeTraffic3 vs := by rw [← hn]; rfl
-  have e4 : R.tf 4 = valTraffic es := by rw [← hv]; rfl
+  have e2 := R.tf_ext 2 (by decide) hn B_VPARENT (by decide) (by decide) (by decide)
+  have e4 := R.tf_ext 4 (by decide) hv B_VPARENT (by decide) (by decide) (by decide)
   have hf2 : (List.range 25).filter (fun t => t == 2) = [2] := by decide
   have hf4 : (List.range 25).filter (fun t => t == 4) = [4] := by decide
   rw [hf2, hf4]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e2, e4, sel,
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e2.1, e2.2, e4.1, e4.2, sel,
     ite_true, Bool.false_eq_true, ite_false, cnt, nodeTraffic3, valTraffic]
   have := hbal m
   simp only [Link3.cnt3] at this

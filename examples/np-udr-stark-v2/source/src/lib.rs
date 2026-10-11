@@ -17,4 +17,5 @@ pub mod prover_ref;
 pub mod sha;
 pub mod toy;
 pub mod transcript;
+pub mod v3;
 pub mod verifier;

@@ -19,6 +19,17 @@ import ZkFormal.NearV3.Assembly.TrieUniqOcc
 import ZkFormal.NearV3.Assembly.TrieUniqDup
 import ZkFormal.NearV3.Assembly.TrieUniqOk
 import ZkFormal.NearV3.Assembly.TrieComplete
+import ZkFormal.NearV3.Assembly.TrieUps
+import ZkFormal.NearV3.Assembly.TrieUpsNative
+import ZkFormal.NearV3.Assembly.TrieUpsRoot
+import ZkFormal.NearV3.Assembly.TrieShared
+import ZkFormal.NearV3.Assembly.TrieAll
+import ZkFormal.NearV3.Assembly.TrieA7Node
+import ZkFormal.NearV3.Assembly.TrieA7Val
+import ZkFormal.NearV3.Assembly.TrieA7Ups
+import ZkFormal.NearV3.Assembly.TrieA7Bal
+import ZkFormal.NearV3.Assembly.TrieA7Size
+import ZkFormal.NearV3.Assembly.TrieA7Rank
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec
@@ -36,6 +47,12 @@ import ZkFormal.NearV3.Assembly.LinkShaKinds
 import ZkFormal.NearV3.Assembly.RcptViewCounts
 import ZkFormal.NearV3.Assembly.LinkChain
 import ZkFormal.NearV3.Assembly.LinkTrie
+import ZkFormal.NearV3.Assembly.LinkStore
+import ZkFormal.NearV3.Assembly.LinkRids
+import ZkFormal.NearV3.Assembly.LinkRidBytes
+import ZkFormal.NearV3.Assembly.LinkKeynib
+import ZkFormal.NearV3.Assembly.LinkUps
+import ZkFormal.NearV3.Assembly.LinkVPost
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
@@ -319,6 +336,11 @@ import ZkFormal.NearV3.Render.AcceptedMem
 import ZkFormal.NearV3.Render.AcceptedSrcp
 import ZkFormal.NearV3.Rcpt.Candidates.AccountEmptyCap
 import ZkFormal.NearV3.Render.PaddedAcctE
+import ZkFormal.NearV3.Assembly.RenderV3RcptAccepted
+import ZkFormal.NearV3.Assembly.RenderV3RcptBalance
+import ZkFormal.NearV3.Assembly.RenderV3RcptLayout
+import ZkFormal.NearV3.Assembly.RenderV3RcptBnd
+import ZkFormal.NearV3.Assembly.RenderV3RcptSide
 /-!
 # Build gate for the integrated v3 proof work
 
