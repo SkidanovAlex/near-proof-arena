@@ -42,3 +42,24 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   **Caveat:** there is no `qvV3` soundness view statement yet (not among the eleven views), so
   `repairedTraffic` is the honest-side record format; the view lane must target it (or a
   bridge must be proved).
+* **rcpt (16): NOT done — completeness for the frozen `RcptV3.table` is believed FALSE on the
+  honest D0a domain.**  The rcpt render-candidate lane (`docs/zk-formal/RCPT-RENDER-CANDIDATE.md`,
+  `Assembly/Rcpt*`, 832/881 original constraints covered on one physical trace) has two
+  proved local obstructions in the active table:
+  - `Assembly/RcptDepositContradiction.lean:old_deposit_initial_512_impossible`: the
+    first-DEP-row constraint `r − tprev = bitsX 57 9` (`Rcpt/Tables/Rcpt/Arith.lean:310`) is a
+    9-bit age, so receipt index `r ≥ 512` cannot read an account at initial version
+    `tprev = 0`; A1 allows 4481 receipts.
+  - `Assembly/RcptGasContradiction.lean:old_gas_surplus_top_zero`: the surplus overflow gate
+    (gated by `ge`, not `gq`) rejects a decodable system receipt with gas price `u128Max`
+    against block price 0 (`RcptSystemGasDomain`).
+  Isolated repairs exist (`RcptDepositAgeCandidate`: 13-bit age in `xb53..65`;
+  `RcptSystemGasCandidate`: gate surplus by `gq`), but they change the frozen AIR — a lead/user
+  decision.  Open statement (unprovable as frozen without an honest-unsatisfiable premise):
+  `rcpt_aligned_complete (ls : RcptV3Vs) (ok : RcptOk pub ls) (t) :
+     TableLocal RcptV3.table (rcptTraceAligned pub ls) t pub ∧
+     TableTraffic RcptV3.interactions (rcptTraceAligned pub ls) t pub (rcptTraffic3 pub ls) ∧
+     (rcptTraceAligned pub ls).log t % 3 = 1`.
+* Full `lake build ZkFormal.V3.Integration` passes with all four new modules; audits
+  `AuditPaddedRcpt`, `AuditPaddedSrcp`, `AuditPaddedQv`, `AuditNearV3Admission` pass;
+  `make pin-check` passes.
