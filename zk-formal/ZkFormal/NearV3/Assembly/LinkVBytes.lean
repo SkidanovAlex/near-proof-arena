@@ -371,6 +371,33 @@ theorem codec_find {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.P
   · rw [if_neg (by omega), hfind]
     rfl
 
+theorem keyBwState_eq : NearSpecV3.keyBwState = UpsSpec.key := by decide
+
+/-- **The scheduler step of instance `τ`** on the record tree under the head of `τ`: the runtime
+`schedStep` reads `prevOf τ`, runs the core (`schedCore_v3`) and upserts its state, landing on the
+tree whose root is the next head's pre root (`τ < K`) or the header's post root (`τ = K`). -/
+theorem sched_step {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
+    {tr : Trace Fp} {r : V3Records} (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    {τ : Nat} (hτ : τ < p.sched.length) (hK : τ ≤ p.hdr.K) {ctx : NearSpecV3.ApplyCtx}
+    (hctx : NearSpecV3.schedPub ctx = some p.sched[τ]) :
+    ∃ Q o, NearSpecV3.Scheduler.runCore p.sched[τ] (prevOf tr T_CODEC τ) = some o ∧
+      NearSpecV3.schedStep NearSpecV3.prims ctx
+        (fullTree (Rpost r.nodes r.values) (Vpost r.nodes r.values (fun i => toB (LinkVPost.pnOf r.accts i)))
+          (headAt r.heads τ).rid) = .ok (Q, schedOut o) ∧
+      (τ < p.hdr.K → (headAt r.heads (τ + 1)).pre = Q.hashOf.map UInt8.toNat) ∧
+      (τ = p.hdr.K → p.hdr.postStateRoot.map UInt8.toNat = Q.hashOf.map UInt8.toNat) := by
+  obtain ⟨f, m, fc, -, -, -, -, -, -, -, -, -, H⟩ := LinkSchedCore.schedCore_v3 hp hsz hH T W hτ
+  obtain ⟨hrun, -⟩ := H
+  obtain ⟨sv, rfl, -, U⟩ := LinkSched.upsLink_holds hp hsz hH T W
+  obtain ⟨⟨Q, hQ, -, -, hnext, hlast⟩, -⟩ := U τ hK
+  refine ⟨Q, _, hrun, schedStep_sound ?_ hctx hrun hQ, hnext, hlast⟩
+  unfold NearSpecV3.readKey
+  rw [keyBwState_eq, codec_find hp hsz hH T W hτ hK]
+
 end
 
 end LinkVBytes

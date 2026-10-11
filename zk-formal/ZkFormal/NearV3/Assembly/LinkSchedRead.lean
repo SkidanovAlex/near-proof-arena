@@ -83,7 +83,7 @@ theorem codec_read {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.P
       (fullTree (Rpost r.nodes r.values) (Vpost r.nodes r.values (fun i => toB (LinkVPost.pnOf r.accts i)))
           (headAt r.heads (cv tr T_CODEC f Codec.tau)).rid).find UpsSpec.key = some none) := by
   obtain ⟨s', hs', et, ep, ev⟩ := s0f_codec hp hsz hH T W hf hF
-  obtain ⟨sv, -, H⟩ := LinkSched.upsLink_holds hp hsz hH T W
+  obtain ⟨sv, -, -, H⟩ := LinkSched.upsLink_holds hp hsz hH T W
   obtain ⟨-, s, hs, hτs, -, F⟩ := H _ hτ
   have hC := rootChain_of hp hsz hH T W
   have e : s = s' := ups_tauDistinct hC s hs s' hs' (by rw [hτs, et])

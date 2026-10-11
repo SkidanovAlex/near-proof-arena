@@ -17,7 +17,7 @@ variable {AP : AirP} {pub : List Fp} {tr : Trace Fp}
 theorem codec_schedVal_lt (hH : HoldsP AP pub tr) {tc : Nat} (O : CodecValOwn AP tc) (SO : SparOwn AP)
     (I : PubIdx AP pub Fp.ofNat) (Ps : List InstPub) (fwd : List (Nat × Nat))
     (hrec : I.recs B_SPAR true = (render Ps fwd).par) (hlen : Ps.length < 2013265921) :
-    ∃ sv : Nat → List Nat,
+    ∃ sv : Nat → List Nat, sv = svOf tr tc ∧
       (∀ τ, ∀ x ∈ sv τ, x < 256) ∧ (∀ τ, (sv τ).length < 2 ^ 24) ∧
       (∀ t r (i : Interaction), t < AP.tables.length → r < tr.height t → i ∈ AP.tables[t]!.interactions →
         i.bus = B_SPLEN → i.send = false → i.multNat tr t r pub ≠ 0 →
@@ -28,7 +28,7 @@ theorem codec_schedVal_lt (hH : HoldsP AP pub tr) {tc : Nat} (O : CodecValOwn AP
           i.msgVal tr t r pub = [τ, d, (sv τ).getD d 0].map Fp.ofNat) := by
   have hL := codec_local hH O
   have hH22 := codec_h22 hH O
-  refine ⟨svOf tr tc, ?_, ?_, ?_, ?_⟩
+  refine ⟨svOf tr tc, rfl, ?_, ?_, ?_, ?_⟩
   · intro τ x hx
     unfold svOf at hx
     split at hx
@@ -107,16 +107,16 @@ theorem schedVal_holds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpec
     (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
     (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
     (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r) :
-    ∃ sv : Nat → NearSpec.Bytes, UpsRows.SchedVal r.ups sv := by
+    ∃ sv : Nat → NearSpec.Bytes, sv = (fun τ => toB (Sched.svOf tr T_CODEC τ)) ∧ UpsRows.SchedVal r.ups sv := by
   have hlen : (ZkFormal.NearV3.Public.preparedBytes p oh).length < 256 ^ 4 := by unfold P at hsz; omega
   have hrec := (ZkFormal.NearV3.Public.prepared_scheduler_index nearAirV3 oh rfl hp (prepD0_roots hp)
     (prepD0_source_roots hp) hlen).2.1
   have hPs := ZkFormal.NearV3.Sched.prepD0_len hp
-  obtain ⟨sv, hby, hln, hsl, hsp⟩ := ZkFormal.NearV3.Sched.codec_schedVal_lt hH codecOwn sparOwn
+  obtain ⟨sv, rfl, hby, hln, hsl, hsp⟩ := ZkFormal.NearV3.Sched.codec_schedVal_lt hH codecOwn sparOwn
     (ZkFormal.NearV3.Public.prepared_pubIdx nearAirV3 p oh rfl (prepD0_roots hp) (prepD0_source_roots hp) hlen)
     (p.sched.map ZkFormal.NearV3.Sched.instOf) p.fwd hrec (by simp only [List.length_map]; omega)
   have hups : T_UPS < nearAirV3.tables.length := by decide
-  refine ⟨fun τ => toB (sv τ), ⟨?_, ?_, ?_⟩⟩
+  refine ⟨fun τ => toB (Sched.svOf tr T_CODEC τ), rfl, ⟨?_, ?_, ?_⟩⟩
   · intro m hm
     obtain ⟨q, hq, i, hi, hb, hs, hmu, he⟩ := ups_recv_row T (by decide +kernel) hm
     obtain ⟨τ, hτ, hmsg⟩ := hsl T_UPS q i hups hq hi hb hs hmu
@@ -153,7 +153,8 @@ theorem upsLink_holds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV
     (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
     (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
     (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r) :
-    ∃ sv : Nat → NearSpec.Bytes, SchedVal r.ups sv ∧ ∀ τ, τ ≤ p.hdr.K →
+    ∃ sv : Nat → NearSpec.Bytes, sv = (fun τ => toB (Sched.svOf tr T_CODEC τ)) ∧ SchedVal r.ups sv ∧
+      ∀ τ, τ ≤ p.hdr.K →
       (∃ Q, (fullTree (Rpost r.nodes r.values) (Vpost r.nodes r.values (fun i => toB (LinkVPost.pnOf r.accts i)))
           (headAt r.heads τ).rid).upsert UpsSpec.key (sv τ) = some Q ∧
         (upsAt (r.ups.map upsE) τ).post = Q.hashOf.map UInt8.toNat ∧
@@ -168,10 +169,10 @@ theorem upsLink_holds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV
          (s.row 0 UpsV3.pres = 0 ∧ s.row 0 UpsV3.vid = 0 ∧
             (fullTree (Rpost r.nodes r.values) (Vpost r.nodes r.values (fun i => toB (LinkVPost.pnOf r.accts i)))
               (headAt r.heads τ).rid).find UpsSpec.key = some none))) := by
-  obtain ⟨sv, hsv⟩ := schedVal_holds hp hsz hH T
+  obtain ⟨sv, hsvd, hsv⟩ := schedVal_holds hp hsz hH T
   have L := trieLink_of hp hsz hH T W
   have hK := ZkFormal.NearV3.Public.prep_root_index_lt hp
-  refine ⟨sv, hsv, ?_⟩
+  refine ⟨sv, hsvd, hsv, ?_⟩
   apply upsV3_linkB_22 W.nodes W.heads W.values W.ups W.walks W.walkSteps L.parent L.vparent L.upb
     L.edge L.bmap (LinkKeynib.keynibOk_of hp hsz hH T W) (LinkUps.hbytesU_of hp hsz hH T W)
     (LinkUps.hothU_of hp hsz hH T W) ?_ (memdBal_of hH T) (by unfold P; omega) (by omega) ?_ ?_
