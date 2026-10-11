@@ -51,3 +51,7 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
   `parentBal_native`, `accepted_forest_isNode` (every pre tree is a node: its scheduler upsert
   `traceUpsert` succeeds; main pre via `SizedAccountRun`), **`parentBal_accepted`**,
   `balancedAt_parent`.
+* `Assembly/TrieEnt.lean` — **`ENT` closed**: `chain_ent` (chain metadata sends ~ receives over
+  any occurrence list with distinct ids, via `class_sends`/`class_recvs` + `total_ent`),
+  `node_sends_shift` / `val_sends` (the honest node/value `ENT` traffic is the chain traffic of
+  their occurrences), `entBal_of`, **`entBal_accepted`**, `balancedAt_ent`.
