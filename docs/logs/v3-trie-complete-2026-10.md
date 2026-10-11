@@ -696,3 +696,23 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
 3. Cross-lane hypotheses (assigned by the lead to rcpt/sched lanes): `RcptKeys`, `RcptFinal`,
    BYTES `hcodec`/`hrest`, DIGEST `hcodec`/`hrest`, VBYTES partition.
 4. A7 (b) after the lead's signal.
+
+## 2026-10-11 (session 5, cont. 2) — MEMD CLOSED (trie side)
+
+* `Assembly/TrieUpsTermRV.lean`: **`traceUpsert_terminalRV`** / `traceKids_terminalRV` (mutual copy of
+  `traceUpsert_terminalMemOk` concluding `RV … = part.output.memD`; leaf cases `treeRlp/Rbv/Rbr/Nlf/Rbi_memory`,
+  `leafSplitRun_memory`, `extSplitRun_memory`; new `trace_value_RV`, `trace_insert_RV`), and
+  **`nativeInstance_RV`**: every part `k` of `nativeInstance … Qs` (memory encoding) has
+  `RV I (part I k) = run.parts[k].output.memD` (upper: `nativeInstance_upperRV`).
+* `Assembly/TrieUpsSplitLink.lean`: `TreeRun.SplitLinked`, `linked_push`, `leafSplitRun_linked`,
+  `extSplitRun_linked`, `kids_close_linked`, **`traceUpsert_splitLinked`** (WEX's `splitChildMemory` = the
+  previous part's output memory; SPB's in LSb/LSc/ESl0/ESn0 = part 0's).
+* `Assembly/TrieUpsMemdNative.lean`: **`nativeInstance_memdLink`**, `memdLink_of_origin` (via
+  `nativeSourceBase_asMemory`), **`memdPair_of_origin`** (`AllocatedNativeInstance` + `NativeReaderOrigin` ⇒
+  `MemdPair`).
+* `TrieUpsNative.NativeMemdSrc` + new last conjunct of `accepted_ups_walks` (`∀ J ∈ Js, NativeMemdSrc J`;
+  `TrieUpsNative` cannot import the MEMD modules — import cycle through `TrieUpsRoot`), and
+  `trie_all_of`/`trie_all_accepted` export **`∀ J ∈ Js, TrieUpsMemd.MemdPair J`** ⇒ with
+  `TrieUpsMemd.RenderBundleV3.balancedAt_memd` the bundle `MEMD` balance (given the row cap's
+  `UpsRenderOk`).  No existing Render/Ups or Rcpt/Candidates statement changed.
+* Integration 4189 jobs; audits pass.

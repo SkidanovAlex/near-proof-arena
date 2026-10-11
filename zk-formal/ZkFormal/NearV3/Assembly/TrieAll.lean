@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.TrieShared
+import ZkFormal.NearV3.Assembly.TrieUpsMemdNative
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieAll — the trie side of `CompleteV3Stmt` from one native choice
@@ -15,7 +16,8 @@ field-bounded `W`) and head keys `q.edges`:
 * the record-level balances of `PARENT`, `VPARENT`, `ENT`, `DIGS`, `DUP`, `EDGE`, `BMAP`,
   `MIDROOT`, and the ups/head `ROOT` records (with `root_endpoints_accepted` for the public side);
 * `UPB` (`UpbBal`) for the window requests `W = PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS`
-  (field-bounded: `TrieUpb.keys_length`), given the row cap.
+  (field-bounded: `TrieUpb.keys_length`), given the row cap;
+* `MEMD`: `MemdPair` of every ranked instance (with `TrieUpsMemd.RenderBundleV3.balancedAt_memd`).
 
 With `balancedAt_trie_core`, `balancedAt_edge`, `balancedAt_bmap`, `balancedAt_midroot`,
 `balancedAt_root` this gives `R.BalancedAt b` for these nine buses of any bundle carrying these
@@ -72,12 +74,13 @@ theorem trie_all_of {cb wb : Bytes} {k : WalkD0} {w : StateWitness} (hk : walkD0
         headRecvs hs B_ROOT = nativeInputRoots 0 (m.pre :: steps.map ImplicitStepV3.pre) ∧
         Js.map (fun I => [I.tau + 1] ++ I.post) = nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) ∧
         (W = Candidates.PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2 ^ 22 →
-          UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) := by
+          UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
+        (∀ J ∈ Js, TrieUpsMemd.MemdPair J) := by
   obtain ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads, hRw, hpos, ho, hfam, horigin, hsha, hedges, hbmaps, hrest⟩ :=
     accepted_ups_walks hk hw h hm hv resolve pub
   refine ⟨writes, oldPost, insts, ws, hr, hkf, ⟨v, hvvalid, hvreads, hws⟩, hRw, horigin, hsha, ?_⟩
   intro W hW
-  obtain ⟨he, hb, hups, hmid, hlens, hroot1, hroot2, hupb⟩ := hrest W hW
+  obtain ⟨he, hb, hups, hmid, hlens, hroot1, hroot2, hupb, hmemd⟩ := hrest W hW
   obtain ⟨hn, hval, hh⟩ := TrieNative.accepted_ok hk hw h hm hv hr (useReq ws insts W) hedges hbmaps hW
     (useReq ws insts W).edges hedges
   refine ⟨⟨hn, hval, headRenderTrie pub _ hh,
@@ -89,7 +92,9 @@ theorem trie_all_of {cb wb : Bytes} {k : WalkD0} {w : StateWitness} (hk : walkD0
     TrieEnt.entBal_accepted hk hw h hm hv oldPost writes _,
     TrieUniqDup.digsBal_accepted hk hw h hm hv oldPost writes _ _,
     TrieUniqDup.dupBal_accepted hk hw h hm hv oldPost writes _,
-    he, hb, hmid, hlens, hroot1, hroot2, hupb⟩
+    he, hb, hmid, hlens, hroot1, hroot2, hupb, fun J hJ => by
+      obtain ⟨_, _, _, _, a, origin, hr', hw', hv'⟩ := hmemd J hJ
+      exact TrieUpsMemdNative.memdPair_of_origin a origin hr' hw' hv'⟩
 
 theorem trie_all_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (resolve : Resolve) (pub : List Fp) :
     ∃ (k : WalkD0) (w : StateWitness) (m : MainExecutionV3) (steps : List ImplicitStepV3) (last : Bytes)
@@ -132,7 +137,8 @@ theorem trie_all_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (reso
         headRecvs hs B_ROOT = nativeInputRoots 0 (m.pre :: steps.map ImplicitStepV3.pre) ∧
         Js.map (fun I => [I.tau + 1] ++ I.post) = nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) ∧
         (W = Candidates.PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2 ^ 22 →
-          UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) := by
+          UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
+        (∀ J ∈ Js, TrieUpsMemd.MemdPair J) := by
   obtain ⟨k, w, m, steps, last, -, -, hk, hw, hm, hv, -⟩ := TrieNative.accepted_native h
   obtain ⟨writes, oldPost, insts, ws, rest⟩ := trie_all_of hk hw h hm hv resolve pub
   exact ⟨k, w, m, steps, last, writes, oldPost, insts, ws, hk, hw, hm, hv, rest⟩

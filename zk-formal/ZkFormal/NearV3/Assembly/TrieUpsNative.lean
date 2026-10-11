@@ -43,6 +43,12 @@ def useReq (ws : List WalkR) (insts : List UpsInst) (W : List ZkFormal.Near.Msg)
 def upsRanked (ws : List WalkR) (insts : List UpsInst) : List UpsInst :=
   physicalPrefixUps (ws.flatMap (·.steps)) insts
 
+/-- The native origin of an allocated ups instance (input of `TrieUpsMemdNative.memdPair_of_origin`). -/
+def NativeMemdSrc (J : UpsInst) : Prop :=
+  ∃ (us : List SchedulerUpsertWitness) (tau : Nat) (u : SchedulerUpsertWitness) (root : OccurrenceAddress),
+    AllocatedNativeInstance us tau u J ∧ NativeReaderOrigin root u.run u.value J ∧
+    traceUpsert root.tree [0,15] u.value = some u.run ∧ root.tree.wf = true ∧ u.value.length < 2^24
+
 theorem prefix_post_digests (p : List WStep3) (Is : List UpsInst) :
     (physicalPrefixUps p Is).map UpsInst.post = Is.map UpsInst.post := by
   induction Is generalizing p with
@@ -87,7 +93,8 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         Js.map (fun I => [I.tau + 1] ++ I.post) =
           nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) ∧
         (W = Candidates.PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2 ^ 22 →
-          UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) := by
+          UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
+        (∀ J ∈ Js, NativeMemdSrc J) := by
   obtain ⟨writes, oldPost, us, insts, hkf, hr, hpairs, hpos, hlen, hgood, hpre, hout, hval, hcount, hinst, hforest,
     hbytes, -⟩ := coverage_kf hk hw h hm hv (fun _ => default) (fun _ _ => default)
   obtain ⟨v, ws, hvvalid, hvreads, hws, hwlocal, hwtraffic, hranges⟩ :=
@@ -216,8 +223,28 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         have := Candidates.WindowProviderMetadata.member (TrieNative.chain m steps) ⟨[], [], []⟩ _ _ key hk'
         rwa [nodeWindowKeys_assigned] at this)
       (useReq ws insts W) hWk
+  have hmemd : ∀ J ∈ upsRanked ws insts, NativeMemdSrc J := by
+    have hmeta := physicalPrefixUps_origins (us := us) (Is := insts) (fun tau u I hu hI => by
+      obtain ⟨a, sha, -, -, -, root, hroot, origin⟩ := hinst tau u I hu hI
+      exact ⟨a, sha, root, hroot, origin⟩) (ws.flatMap (·.steps))
+    intro J hJ
+    obtain ⟨i, hi, hget⟩ := List.mem_iff_getElem.mp hJ
+    have hil : i < us.length := by
+      have := hmeta.1; unfold upsRanked at hi; omega
+    have hu : us[i]? = some us[i] := List.getElem?_eq_getElem hil
+    have hJ' : (physicalPrefixUps (ws.flatMap (·.steps)) insts)[i]? = some J := by
+      unfold upsRanked at hi hget
+      rw [List.getElem?_eq_getElem hi, hget]
+    obtain ⟨a, -, root, hroot, origin⟩ := hmeta.2 i us[i] J hu hJ'
+    have ht := forestRootAt_tree 0 0 (us.map SchedulerUpsertWitness.pre) i
+    rw [hroot, List.getElem?_map, hu] at ht
+    have heq : root.tree = (us[i]).pre := Option.some.inj ht
+    have hg := hgood _ (List.getElem_mem hil)
+    have hr' : traceUpsert root.tree [0,15] us[i].value = some us[i].run := by
+      simpa only [heq, keyBwState_nibbles] using hg.1.1
+    exact ⟨us, i, us[i], root, a, origin, hr', heq ▸ hg.2.1, by have := hg.2.2.2.2; omega⟩
   refine ⟨?_, ?_, fun hcap => TrieUps.upsRenderOk_ranked _ insts (by omega) ho hfam hcap, hmid, hlens, hroot1, hroot2,
-    hupb⟩
+    hupb, hmemd⟩
   · intro msg
     have hc : ∀ e ∈ walkEdgeKeys (ws ++ upsWalkInventory insts),
         e ∈ headEdgeKeys (forestWalkHeads 0 0 ((nativeReplayForest m steps oldPost writes).map (fun r => (r.pre, r.post)))) ++

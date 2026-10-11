@@ -45,6 +45,7 @@ import ZkFormal.NearV3.Assembly.TrieUpsMemd
 import ZkFormal.NearV3.Assembly.TrieUpsMemdPair
 import ZkFormal.NearV3.Assembly.TrieUpsTermRV
 import ZkFormal.NearV3.Assembly.TrieUpsSplitLink
+import ZkFormal.NearV3.Assembly.TrieUpsMemdNative
 import ZkFormal.NearV3.Assembly.TrieKeyFinal
 import ZkFormal.NearV3.Assembly.TrieShaBus
 import ZkFormal.NearV3.Assembly.NearAirCheck
