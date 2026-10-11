@@ -261,6 +261,9 @@ pub fn sample_json(table: &str, seed: u64, n: usize) -> Result<String, String> {
         "size" => serde_json::to_string(&size(r, n)),
         "srcp" => serde_json::to_string(&srcp(r, n)),
         "qv" => serde_json::to_string(&qv(r, n)),
+        "chacha" => serde_json::to_string(&chacha(r, n)),
+        "rng" => serde_json::to_string(&rng(r, n)),
+        "shuf" => serde_json::to_string(&shuf(r, n)),
         t => return Err(format!("unknown table {t}")),
     };
     j.map_err(|e| e.to_string())
@@ -580,6 +583,52 @@ pub fn node(r: &mut Rng, n: usize) -> Vec<NodeS3> {
                 rep_e: r.fe(),
                 ucid: r.bytes(len),
                 m_u: r.bytes(len),
+            }
+        })
+        .collect()
+}
+
+// ----------------------------------------------------------------- chacha
+
+use super::chacha::{ChachaReq, RngCall, ShuffleInst};
+
+/// A 256-bit key as eight `u32` words with simple values.
+fn cha_key(r: &mut Rng) -> Vec<u64> {
+    (0..8).map(|_| r.below(1 << 32)).collect()
+}
+
+/// `n ≥ 1` requests satisfying `ZkFormal.Chacha.Gen.ReqOk` (`ctr < 2^26`).
+pub fn chacha(r: &mut Rng, n: usize) -> Vec<ChachaReq> {
+    (0..n.max(1))
+        .map(|_| ChachaReq {
+            key: cha_key(r),
+            ctr: r.below(1 << 26),
+            used: (0..16).map(|_| r.coin()).collect(),
+        })
+        .collect()
+}
+
+/// `n ≥ 1` calls satisfying `ZkFormal.Chacha.Rng.Gen.CallOk` (`1 ≤ n < 2^14`).
+pub fn rng(r: &mut Rng, n: usize) -> Vec<RngCall> {
+    (0..n.max(1))
+        .map(|_| RngCall {
+            key: cha_key(r),
+            kstart: r.below(64),
+            n: 1 + r.below((1 << 14) - 1) as u64,
+        })
+        .collect()
+}
+
+/// `n ≥ 1` instances satisfying `ZkFormal.Chacha.Shuffle.Gen` (`1 ≤ L ≤ 2^14`).
+pub fn shuf(r: &mut Rng, n: usize) -> Vec<ShuffleInst> {
+    (0..n.max(1))
+        .map(|_| {
+            let l = 1 + r.below(24) as usize;
+            ShuffleInst {
+                lid: r.fe(),
+                key: cha_key(r),
+                kstart: r.below(32),
+                vals: (0..l).map(|_| r.below(1 << 32)).collect(),
             }
         })
         .collect()

@@ -500,6 +500,9 @@ pub const TABLES: &[(&str, usize)] = &[
     ("node", 2),
     ("srcp", 20),
     ("qv", 22),
+    ("chacha", 8),
+    ("rng", 9),
+    ("shuf", 10),
 ];
 
 /// Parse `json` as the entry list of `table` and render its aligned trace.
@@ -515,13 +518,15 @@ pub fn render(table: &str, json: &str) -> Result<Tab, String> {
         "uniq" => uniq_aligned(&p(json)?)?,
         "walk" => walk_aligned(&p(json)?),
         "node" => node::node_aligned(&p(json)?),
-        "ups" | "rcpt" | "srcp" | "qv" | "sched" | "chacha" | "acct" | "size" => match table {
+        "chacha" => chacha::render(json)?,
+        "rng" => chacha::render_rng(json)?,
+        "shuf" => chacha::render_shuf(json)?,
+        "ups" | "rcpt" | "srcp" | "qv" | "sched" | "acct" | "size" => match table {
             "ups" => ups::render(json),
             "rcpt" => rcpt::render(json),
             "srcp" => srcp::render(json),
             "qv" => qv::render(json),
             "sched" => sched::render(json),
-            "chacha" => chacha::render(json),
             "acct" => acct::render(json),
             _ => size::render(json),
         }?,
