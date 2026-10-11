@@ -108,7 +108,7 @@ theorem out_val {I : SInst} (hI : InstOk I) {q : Nat} (hq : q < I.L) :
 
 section
 variable (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) {L : Nat}
-  (hrows : (honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 20) (t r : Nat) (pub : List Fp)
+  (hrows : (honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 22) (t r : Nat) (pub : List Fp)
   (hr : r < (traceAt insts L).height t)
 
 open ZkFormal.Chacha.Table.E

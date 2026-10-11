@@ -21,7 +21,7 @@ statements, all stated about the concrete `nearAirV3`:
 
 `nearV3_admission` composes them through `Prover.Np.G.admission_v2H` at
 `auxGroup = 2` with the concrete v3 wire codecs (`prepD0 ∘ Prep.encode`, the
-`Hint` codec of `Assembly.HintCodec`), the size bound `6,315,201` (item 6), and
+`Hint` codec of `Assembly.HintCodec`), the size bound `6,336,513` (item 6), and
 the `NpOkPg`/`NVu` numerics (item 1).
 -/
 
@@ -44,10 +44,10 @@ theorem nearAirV3_npOkPg_2 : ZkFormal.V2.G.NpOkPg nearAirV3 (ZkFormal.V2.G.pg 2)
   nearAirV3_npOkPg 2 (by decide) (by decide)
 
 /-- The proved inner-proof size bound (item 6), used as `maxInner`. -/
-def v3MaxInner : Nat := 6393761
+def v3MaxInner : Nat := 6415073
 
 /-- The hint-budget of the completeness obligation: `4 + this + maxInner ≤ 8 MiB`. -/
-def v3MaxHintBytes : Nat := 1990000
+def v3MaxHintBytes : Nat := 1970000
 
 theorem v3MaxHintBytes_fits :
     4 + v3MaxHintBytes + v3MaxInner ≤ challengeParamsD0a.maxProofBytes := by decide

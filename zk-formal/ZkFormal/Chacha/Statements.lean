@@ -75,7 +75,7 @@ theorem genIndexContractStmt : GenIndexContractStmt :=
 
 def ShuffleContractStmt : Prop :=
   ∀ (tr : Trace Fp) t pub (B : Shuffle.Buses), B.ok → Shuffle.SLocal tr t pub → Shuffle.GenRecv tr t pub →
-    tr.height t ≤ 2 ^ 20 → Shuffle.MemBal B tr t pub → ∀ f, f < tr.height t →
+    tr.height t ≤ 2 ^ 22 → Shuffle.MemBal B tr t pub → ∀ f, f < tr.height t →
     cv tr t f Shuffle.Table.colFin = 1 →
     ∃ L, 1 ≤ L ∧ L ≤ f + 1 ∧ L < 2 ^ 14 + 1 ∧ cv tr t f Shuffle.Table.colL = L ∧
       (∀ x, x < L → cv tr t (f - x) Shuffle.Table.colA = 1 ∧ cv tr t (f - x) Shuffle.Table.colQ = x ∧
@@ -93,10 +93,10 @@ ChaCha is the only sender on `busChacha`, the stream table the only sender on `b
 memory bus is private to the shuffle table. -/
 theorem shuffle_sound {AP : V2.AirP} {pub : List Fp} {tr : Trace Fp} (hH : V2.HoldsP AP pub tr)
     {tc tg ts busChacha : Nat} {B : Shuffle.Buses} (hB : B.ok) (hcg : busChacha ≠ B.gen)
-    (htc : tc < AP.tables.length) (hTc : AP.tables[tc]! = Table.table busChacha)
-    (htg : tg < AP.tables.length) (hTg : AP.tables[tg]! = Rng.Table.table busChacha B.gen)
+    (htc : tc < AP.tables.length) (hTc : AP.tables[tc]! = Table.table22 busChacha)
+    (htg : tg < AP.tables.length) (hTg : AP.tables[tg]! = Rng.Table.table22 busChacha B.gen)
     (hts : ts < AP.tables.length)
-    (hTs : AP.tables[ts]! = Shuffle.Table.table B.bin B.bout B.mem B.gen B.shuf)
+    (hTs : AP.tables[ts]! = Shuffle.Table.table22 B.bin B.bout B.mem B.gen B.shuf)
     (honlyC : ∀ t, t < AP.tables.length → t ≠ tc → ∀ i ∈ AP.tables[t]!.interactions,
       i.bus = busChacha → i.send = false)
     (hpubC : ∀ seg ∈ AP.pubSegs, seg.bus = busChacha → seg.send = false)
@@ -104,7 +104,7 @@ theorem shuffle_sound {AP : V2.AirP} {pub : List Fp} {tr : Trace Fp} (hH : V2.Ho
       i.bus = B.gen → i.send = false)
     (hpubG : ∀ seg ∈ AP.pubSegs, seg.bus = B.gen → seg.send = false)
     (honlyM : ∀ u, u < AP.tables.length → u ≠ ts → ∀ i ∈ AP.tables[u]!.interactions, i.bus ≠ B.mem)
-    (hpubM : ∀ seg ∈ AP.pubSegs, seg.bus ≠ B.mem) (hlog : tr.log ts ≤ 20)
+    (hpubM : ∀ seg ∈ AP.pubSegs, seg.bus ≠ B.mem) (hlog : tr.log ts ≤ 22)
     {f : Nat} (hf : f < tr.height ts) (hfin : cv tr ts f Shuffle.Table.colFin = 1) :
     ∃ L, 1 ≤ L ∧ L ≤ f + 1 ∧ L < 2 ^ 14 + 1 ∧ cv tr ts f Shuffle.Table.colL = L ∧
       (∀ x, x < L → cv tr ts (f - x) Shuffle.Table.colA = 1 ∧ cv tr ts (f - x) Shuffle.Table.colQ = x ∧

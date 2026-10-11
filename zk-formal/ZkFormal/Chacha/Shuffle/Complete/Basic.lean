@@ -274,7 +274,7 @@ theorem ite_lt {p : Prop} [Decidable p] {a b B : Nat} (ha : p → a < B) (hb : �
 
 /-- Honest cells of a row of a supported instance are `< p`. -/
 theorem cell_lt {I : SInst} (hI : InstOk I) {s r q : Nat} (hq : q < I.L) (hs : s ≤ r)
-    (hr : r < 2 ^ 20) (col : Nat) : I.cell s r q col < 2013265921 := by
+    (hr : r < 2 ^ 22) (col : Nat) : I.cell s r q col < 2013265921 := by
   have hL := hI.L_le
   have bt1 : ∀ x b, bt x b < 2013265921 := fun x b => by have := bt_le1 x b; omega
   by_cases hhi : 77 ≤ col

@@ -18,12 +18,12 @@ open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Shuffle.Table
 
 /-- `honestLog ≤ 20` (the shuffle cap) when the rows fit. -/
 theorem honestLog_le20 (insts : List Gen.SInst)
-    (hrows : (Gen.honestRows insts).length ≤ 2 ^ Shuffle.Table.maxLog) : Gen.honestLog insts ≤ 20 :=
-  (log_bounds insts hrows 0).2
+    (hrows : (Gen.honestRows insts).length ≤ 2 ^ Shuffle.Table.maxLog) : Gen.honestLog insts ≤ 22 :=
+  Nat.le_trans (log_bounds insts hrows 0).2 (by decide)
 
-/-- **Completeness of the shuffle table at any height `2^L ≤ 2^20` holding the rows.** -/
+/-- **Completeness of the shuffle table at any height `2^L ≤ 2^22` holding the rows.** -/
 theorem shuffle_completeL (insts : List Gen.SInst) (hok : ∀ I ∈ insts, InstOk I) {L : Nat}
-    (hL : (Gen.honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 20) (B : Shuffle.Buses) (hB : B.ok) :
+    (hL : (Gen.honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 22) (B : Shuffle.Buses) (hB : B.ok) :
     (∀ t pub r, r < (Gen.traceAt insts L).height t → ∀ e ∈ Shuffle.Table.constraints,
        e.eval (Gen.traceAt insts L) t r pub = 0) ∧
     (∀ t pub r, r < (Gen.traceAt insts L).height t → ∀ i ∈ B.is, ∀ b ∈ i.mult,
@@ -51,10 +51,10 @@ theorem sLocal_honest (insts : List Gen.SInst) (hok : ∀ I ∈ insts, InstOk I)
     Shuffle.SLocal (Gen.honestTrace insts) t pub :=
   fun r hr => constraints_ok insts hok (len_le_height insts t) (honestLog_le20 insts hrows) t pub r hr
 
-/-- **Traffic on the external buses at any height `2^L ≤ 2^20` holding the rows** (all five
+/-- **Traffic on the external buses at any height `2^L ≤ 2^22` holding the rows** (all five
 buses pairwise distinct). -/
 theorem shuffle_trafficL (insts : List Gen.SInst) (hok : ∀ I ∈ insts, InstOk I) {L : Nat}
-    (hL : (Gen.honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 20) (B : Shuffle.Buses)
+    (hL : (Gen.honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 22) (B : Shuffle.Buses)
     (hd : [B.bin, B.bout, B.mem, B.gen, B.shuf].Nodup) (t : Nat) (pub : List Fp) (m : List Fp) :
     tableBusCount B.is (Gen.traceAt insts L) t pub B.bin false m = (expectedIn insts).count m ∧
     tableBusCount B.is (Gen.traceAt insts L) t pub B.bin true m = 0 ∧

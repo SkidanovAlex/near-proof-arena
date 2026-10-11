@@ -63,3 +63,44 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
 * Full `lake build ZkFormal.V3.Integration` passes with all four new modules; audits
   `AuditPaddedRcpt`, `AuditPaddedSrcp`, `AuditPaddedQv`, `AuditNearV3Admission` pass;
   `make pin-check` passes.
+
+## 2026-10-11 (round 2: lead decisions — rcpt repairs adopted, A10 in srcpV3)
+
+* Merged `origin/integration/v3-20261011b` (fast-forward).
+* **A10 in `srcpV3` (table 20) — done.**  `Rcpt/Tables/SrcpD.lean`: `SrcpV3.tableD` = the base
+  table + 6 slack-bit columns `db_0..5` (56..61, width 62) + root-row check
+  `DP0 − (qe − q − 1) = Σ 2^e db_e` (`q` already counts the list's segments, so
+  `qe − q − 1 = |path|` is the per-list counter); `local_base`/`local_of_base`.
+  View `Rcpt/Extract/Srcp/Depth.lean:srcpD_view`: `SrcpWf bs ∧ (∀ B ∈ bs, |B.path| ≤ Dp0) ∧
+  traffic` (`block_depth`, `BlockChain.depth`; `DP0_eq : SrcpV3.DP0 = NearSpecV3.Dp0`).
+  `LinkV3.V3RecordsWf` gains `srcpDepth : ∀ B ∈ r.srcp, B.path.length ≤ NearSpecV3.Dp0`
+  (link lane: relate blocks to `usedProofs` to get `GoodV3.pathDepth`).
+  Render `Render/PaddedSrcp.lean:srcp_aligned_complete (h : SrcpWf bs) (hd : ∀ B ∈ bs,
+  |B.path| ≤ Dp0)` for `tableD`; `srcp_proofs_aligned_complete` adds `hd` for the entries.
+  New generic `Render/ColAgree.lean` (local/traffic invariant under agreement on the read
+  columns).  **nearV3_size: 6,315,201 → 6,320,769 B** (margin 772,822 B after the hint).
+* **rcptV3 (table 16) repaired — AIR + view done.**  `Rcpt/Tables/RcptR.lean:RcptV3.tableR`
+  (gas surplus gated by `gq`; 13-bit deposit age `xb53..65`; same columns/interactions/
+  maxLog; light module, verbatim copies) with `Assembly/RcptReceiptRepaired.lean:tableR_eq :
+  tableR = receiptArithmeticCandidate` (`rfl`).  `nearAirV3` table 16 := `tableR`.
+  View `Assembly/RcptViewV3.lean:rcptV3_view_nearAir (hp) (hsize) (hH : HoldsP nearAirV3 …)`:
+  the **same** `RcptV3Wf` + exact `rcptTraffic3` as before (the candidate soundness
+  migration `ReceiptCandidateProof.ListChain.view_wf/view_traffic`), with the 13-bit-age
+  no-wrap premise `tprev ≤ 2^22` discharged from the global MEM balance (`mem_send_sources`:
+  only tables 16/17 touch MEM, no public MEM; account opens version 0, receipt writes
+  `r+1 ≤ 2^22`).  Signature change: it now takes `HoldsP` instead of the table-local
+  premise (LinkV3 updated; the old one is removed from `ExtractV3.lean`).
+  `nearV3_size` unchanged by this (6,320,769 B).  Integration builds (2,704 jobs — the
+  candidate soundness chain is now in the closure; elaboration-budget note).
+* **rcpt render (partial).**  `Render/PaddedRcptR.lean` (namespace `Assembly.RcptSkeleton`):
+  `RcptInput` (native data), `RcptOk pub x` (prepD0/walkD0/witness decoding; lists =
+  `appliedReceipts`, wf/named/native refund flags; `applyNewChunk` succeeds; gas limit ≤ D0;
+  gas-price/final/owner public bytes), `rcptTraceAligned pub x` (the candidate native trace
+  `booleanReceiptTrace … 22 …` pinned to index 0, `pinTrace` in `ColAgree.lean`), and
+  `rcpt_aligned_complete : ∃ ls, TableLocal RcptV3.tableR … t pub ∧ TableTraffic
+  RcptV3.interactions … (rcptTraffic3 pub ls) ∧ log t % 3 = 1`.
+  **Open:** `ls` is the trace's own extracted list view, not yet a native function of `x`.
+  Needed for render assembly (bus balance against acct/akey/bnd/srcp/sha/…):
+  `ls = nativeRcptViews pub x` (the located-view identity `canonical_native_views` exists
+  only for the routing-q-patched trace) and the digest streams `x.digests` instantiated with
+  the native hashes (currently a free input; local constraints hold for any choice).

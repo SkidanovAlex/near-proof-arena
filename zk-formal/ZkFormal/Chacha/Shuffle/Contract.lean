@@ -12,7 +12,7 @@ variable {tr : Trace Fp} {t : Nat} {pub : List Fp}
 
 section
 variable (B : Buses) (hB : B.ok) (hL : SLocal tr t pub) (hG : GenRecv tr t pub)
-  (hH : tr.height t ≤ 2 ^ 20) (hM : MemBal B tr t pub)
+  (hH : tr.height t ≤ 2 ^ 22) (hM : MemBal B tr t pub)
   {f d : Nat} (hf : f < tr.height t) (hfin : cv tr t f colFin = 1) (I : Inst tr t f d)
 include hB hM hL hG hH hf hfin I
 
@@ -94,7 +94,7 @@ theorem eval_outE {r : Nat} (hr : r < tr.height t) (heq : cv tr t r colEq = 0 �
 receives exactly as `NearSpecV3.shuffle` with the RNG state `rngAt key kstart`, and sends the
 shuffled list. -/
 theorem shuffle_contract (B : Buses) (hB : B.ok) (hL : SLocal tr t pub) (hG : GenRecv tr t pub)
-    (hH : tr.height t ≤ 2 ^ 20) (hM : MemBal B tr t pub) {f : Nat} (hf : f < tr.height t)
+    (hH : tr.height t ≤ 2 ^ 22) (hM : MemBal B tr t pub) {f : Nat} (hf : f < tr.height t)
     (hfin : cv tr t f colFin = 1) :
     ∃ L, 1 ≤ L ∧ L ≤ f + 1 ∧ L < 2 ^ 14 + 1 ∧ cv tr t f colL = L ∧
       (∀ x, x < L → cv tr t (f - x) colA = 1 ∧ cv tr t (f - x) colQ = x ∧

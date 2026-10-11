@@ -13,18 +13,11 @@ Entries are exactly those of the ChaCha completeness/soundness statements (`Gen.
 `Rng.Gen.Call`, `Shuffle.Gen.SInst`); the traffic is the exact honest traffic of
 `Chacha/*/Complete` as natural-number messages (`natMsgs`, exact on `Fp`).
 
-**Caps.** The aligned height is `≡ 1 (mod 3)`, so under the current caps of `nearAirV3`
-(`chacha` 21, `rng` 20, `shuf` 20) an aligned honest table fits iff its rows are `≤ 2^19`.
-At the A9 word bound `W0 = 770,000` the honest rows exceed `2^19` (`Sched.Complete.lane_W0`:
-`chachaRows < 2^22`, `genRows < 2^20`, `shufRows < 2^22`), so
-
-* `chacha_aligned_complete` / `rng_aligned_complete` / `shuf_aligned_complete` hold at the exact
-  `nearAirV3` tables under the explicit condition `rows ≤ 2^19`;
-* `chacha_aligned_complete22` / `rng_aligned_complete22` hold for every honest instance that
-  fits `2^22` (which A9 gives), at the table with `maxLog := 22` — the cap these two tables
-  need in `nearAirV3`;
-* the shuffle has no `22` variant: its completeness (and soundness, `Shuffle.Contract`) is
-  proved for heights `≤ 2^20` only (the row counter and timestamps are 20-bit).
+**Caps.** `nearAirV3` uses the cap-22 tables (`Chacha.Table.table22`, `Rng.Table.table22`,
+`Shuffle.Table.table22`; the A9 W0 lane has `< 2^22` rows, `Sched.Complete.lane_W0`).  The
+`*_v3_aligned_complete` / `shuf_aligned_complete22` theorems cover every honest instance fitting
+`2^22`; shuffle completeness and soundness (`Shuffle.Contract`, row counter) are proved for heights
+`≤ 2^22`.  The `rows ≤ 2^19` theorems at the old caps 21/20/20 are kept.
 -/
 namespace ZkFormal.NearV3.Render
 open ZkFormal.Near ZkFormal.Near.Render ZkFormal.Air ZkFormal.Algebra ZkFormal.Size
@@ -252,23 +245,22 @@ def shufTraffic (insts : List Chacha.Shuffle.Gen.SInst) : Traffic :=
 open ZkFormal.Chacha.Shuffle.Complete in
 /-- **`shufV3` aligned completeness at the `nearAirV3` cap (20)**, for honest instances with at
 most `2^19` rows. -/
-theorem shuf_aligned_complete (insts : List Chacha.Shuffle.Gen.SInst) (hok : ∀ I ∈ insts, InstOk I)
-    (hrows : shufRows insts ≤ 2 ^ 19) (t : Nat) (pub : List Fp) :
-    TableLocal (Chacha.Shuffle.Table.table B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF)
+theorem shuf_aligned_core (insts : List Chacha.Shuffle.Gen.SInst) (hok : ∀ I ∈ insts, InstOk I)
+    (h22 : shufRows insts ≤ 2 ^ 22) (cap : Nat) (hcap : padLog22 (logOf (shufRows insts)) ≤ cap)
+    (t : Nat) (pub : List Fp) :
+    TableLocal {Chacha.Shuffle.Table.table B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF with maxLog := cap}
       (shufTraceAligned insts) t pub ∧
     TableTraffic (Chacha.Shuffle.Table.table B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF).interactions
       (shufTraceAligned insts) t pub (shufTraffic insts) ∧
     (shufTraceAligned insts).log t % 3 = 1 := by
-  have h22 : shufRows insts ≤ 2 ^ 22 := Nat.le_trans hrows (by decide)
   have hh := padded_log_fits (shufRows insts) h22
-  have h19 := padded_log_le _ 19 (by decide) (by decide) hrows
-  generalize hL : padLog22 (logOf (shufRows insts)) = L at hh h19
+  generalize hL : padLog22 (logOf (shufRows insts)) = L at hh hcap
   have hlog : (shufTraceAligned insts).log t = L := by
     show padLog22 (logOf (shufRows insts)) = L; exact hL
   have hB : shufBuses.ok := by
     simp only [shufBuses, Chacha.Shuffle.Buses.ok, B_SSIN, B_SSOUT, B_SSMEM, B_SGEN, B_SSHUF]
     decide
-  have hc := shuffle_completeL insts hok hh.1 (by omega) shufBuses hB
+  have hc := shuffle_completeL insts hok hh.1 hh.2.2.1 shufBuses hB
   have hl : (Chacha.Shuffle.Gen.traceAt insts L).log t = (shufTraceAligned insts).log t := hlog.symm
   have hcell : ∀ r, r < (Chacha.Shuffle.Gen.traceAt insts L).height t → ∀ c,
       (Chacha.Shuffle.Gen.traceAt insts L).cell t r c = (shufTraceAligned insts).cell t r c := by
@@ -279,7 +271,7 @@ theorem shuf_aligned_complete (insts : List Chacha.Shuffle.Gen.SInst) (hok : ∀
     rw [rowsTrace_cells L _ _ (fun r c h => shuf_cell_ge insts r c h) t r hr' c]
     rfl
   refine ⟨tableLocal_congr_rows hl hcell
-      (tableLocal_mk (show 1 ≤ L by omega) (show L ≤ 20 by omega)
+      (tableLocal_mk (show 1 ≤ L by omega) (show L ≤ cap from hcap)
         (fun r hr e he => hc.1 t pub r hr e he) (fun r hr i hi b hb => hc.2.1 t pub r hr i hi b hb)),
     tableTraffic_congr_rows hl hcell ?_, by rw [hlog]; exact hh.2.2.2⟩
   intro b m
@@ -301,5 +293,49 @@ theorem shuf_aligned_complete (insts : List Chacha.Shuffle.Gen.SInst) (hok : ∀
   simp only [if_neg h1, if_neg h2, if_neg h3, if_neg h4, if_neg h5, Ne.symm h1, Ne.symm h2,
     Ne.symm h3, Ne.symm h4, Ne.symm h5, false_and, if_false, List.map_nil, List.count_nil]
   simp
+
+
+open ZkFormal.Chacha.Shuffle.Complete in
+/-- **`shufV3` aligned completeness at the old cap 20**, for at most `2^19` rows. -/
+theorem shuf_aligned_complete (insts : List Chacha.Shuffle.Gen.SInst) (hok : ∀ I ∈ insts, InstOk I)
+    (hrows : shufRows insts ≤ 2 ^ 19) (t : Nat) (pub : List Fp) :
+    TableLocal (Chacha.Shuffle.Table.table B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF)
+      (shufTraceAligned insts) t pub ∧
+    TableTraffic (Chacha.Shuffle.Table.table B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF).interactions
+      (shufTraceAligned insts) t pub (shufTraffic insts) ∧
+    (shufTraceAligned insts).log t % 3 = 1 :=
+  shuf_aligned_core insts hok (Nat.le_trans hrows (by decide)) 20
+    (Nat.le_trans (padded_log_le _ 19 (by decide) (by decide) hrows) (by decide)) t pub
+
+open ZkFormal.Chacha.Shuffle.Complete in
+/-- **`shufV3` aligned completeness at the `nearAirV3` cap 22** (`Shuffle.Table.table22`): every
+honest instance list with at most `2^22` rows (the A9 W0 lane). -/
+theorem shuf_aligned_complete22 (insts : List Chacha.Shuffle.Gen.SInst) (hok : ∀ I ∈ insts, InstOk I)
+    (hrows : shufRows insts ≤ 2 ^ 22) (t : Nat) (pub : List Fp) :
+    TableLocal (Chacha.Shuffle.Table.table22 B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF)
+      (shufTraceAligned insts) t pub ∧
+    TableTraffic (Chacha.Shuffle.Table.table22 B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF).interactions
+      (shufTraceAligned insts) t pub (shufTraffic insts) ∧
+    (shufTraceAligned insts).log t % 3 = 1 :=
+  shuf_aligned_core insts hok hrows 22 (padded_log_fits _ hrows).2.2.1 t pub
+
+/-- `chacha_aligned_complete22` at `nearAirV3`'s `Chacha.Table.table22`. -/
+theorem chacha_v3_aligned_complete (reqs : List Chacha.Gen.Req) (hok : ∀ R ∈ reqs, Chacha.Gen.ReqOk R)
+    (hrows : 86 * reqs.length ≤ 2 ^ 22) (t : Nat) (pub : List Fp) :
+    TableLocal (Chacha.Table.table22 B_SCHACHA) (chachaTraceAligned reqs) t pub ∧
+    TableTraffic (Chacha.Table.table22 B_SCHACHA).interactions (chachaTraceAligned reqs) t pub
+      (chachaTraffic reqs) ∧
+    (chachaTraceAligned reqs).log t % 3 = 1 :=
+  chacha_aligned_complete22 reqs hok hrows t pub
+
+/-- `rng_aligned_complete22` at `nearAirV3`'s `Rng.Table.table22`. -/
+theorem rng_v3_aligned_complete (calls : List Chacha.Rng.Gen.Call)
+    (hok : ∀ C ∈ calls, Chacha.Rng.Gen.CallOk C) (hrows : rngRows calls ≤ 2 ^ 22) (t : Nat)
+    (pub : List Fp) :
+    TableLocal (Chacha.Rng.Table.table22 B_SCHACHA B_SGEN) (rngTraceAligned calls) t pub ∧
+    TableTraffic (Chacha.Rng.Table.table22 B_SCHACHA B_SGEN).interactions (rngTraceAligned calls) t pub
+      (rngTraffic calls) ∧
+    (rngTraceAligned calls).log t % 3 = 1 :=
+  rng_aligned_complete22 calls hok hrows t pub
 
 end ZkFormal.NearV3.Render

@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Render.PaddedUps
+import ZkFormal.NearV3.Render.PaddedUpsNative
 
 /-! Guard the assumptions of the aligned `upsV3` generator (`nearAirV3` table 7). -/
 
@@ -18,3 +19,11 @@ import ZkFormal.NearV3.Render.PaddedUps
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.ups_render_traffic_at
 
+
+/-- info: 'ZkFormal.NearV3.Render.UpsGen.upsRenderOk_of_native' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.UpsGen.upsRenderOk_of_native
+
+/-- info: 'ZkFormal.NearV3.Render.UpsGen.ups_native_aligned_complete' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.UpsGen.ups_native_aligned_complete

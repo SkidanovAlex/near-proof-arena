@@ -43,7 +43,7 @@ theorem busCount_go_single (b : Nat) (s : Bool) (m : List Fp) (ts : Nat) :
 
 /-- **The private memory bus balances inside the shuffle table.** -/
 theorem memBal_of_holdsP (hH : HoldsP AP pub tr) {ts : Nat} {B : Buses} (hts : ts < AP.tables.length)
-    (hT : AP.tables[ts]! = Shuffle.Table.table B.bin B.bout B.mem B.gen B.shuf)
+    (hT : AP.tables[ts]! = Shuffle.Table.table22 B.bin B.bout B.mem B.gen B.shuf)
     (honly : ∀ u, u < AP.tables.length → u ≠ ts → ∀ i ∈ AP.tables[u]!.interactions, i.bus ≠ B.mem)
     (hpub : ∀ seg ∈ AP.pubSegs, seg.bus ≠ B.mem) : MemBal B tr ts pub := by
   intro m
@@ -59,9 +59,9 @@ theorem memBal_of_holdsP (hH : HoldsP AP pub tr) {ts : Nat} {B : Buses} (hts : t
 /-- **The `gen_index` receives of the shuffle table are `gen_index` results.** -/
 theorem genRecv_of_holdsP (hH : HoldsP AP pub tr) {tc tg ts busChacha : Nat} {B : Buses}
     (hcg : busChacha ≠ B.gen)
-    (htc : tc < AP.tables.length) (hTc : AP.tables[tc]! = Table.table busChacha)
-    (htg : tg < AP.tables.length) (hTg : AP.tables[tg]! = Rng.Table.table busChacha B.gen)
-    (hts : ts < AP.tables.length) (hTs : AP.tables[ts]! = Shuffle.Table.table B.bin B.bout B.mem B.gen B.shuf)
+    (htc : tc < AP.tables.length) (hTc : AP.tables[tc]! = Table.table22 busChacha)
+    (htg : tg < AP.tables.length) (hTg : AP.tables[tg]! = Rng.Table.table22 busChacha B.gen)
+    (hts : ts < AP.tables.length) (hTs : AP.tables[ts]! = Shuffle.Table.table22 B.bin B.bout B.mem B.gen B.shuf)
     (honlyC : ∀ t, t < AP.tables.length → t ≠ tc → ∀ i ∈ AP.tables[t]!.interactions,
       i.bus = busChacha → i.send = false)
     (hpubC : ∀ seg ∈ AP.pubSegs, seg.bus = busChacha → seg.send = false)
@@ -71,7 +71,7 @@ theorem genRecv_of_holdsP (hH : HoldsP AP pub tr) {tc tg ts busChacha : Nat} {B 
     GenRecv tr ts pub := by
   intro r hr ha hf
   have hi : (Shuffle.Table.interactions B.bin B.bout B.mem B.gen B.shuf)[6]! ∈ AP.tables[ts]!.interactions := by
-    rw [hTs]; simp [Shuffle.Table.table, Shuffle.Table.interactions]
+    rw [hTs]; simp [Shuffle.Table.table22, Shuffle.Table.table, Shuffle.Table.interactions]
   have hm : ((Shuffle.Table.interactions B.bin B.bout B.mem B.gen B.shuf)[6]!).multNat tr ts r pub ≠ 0 := by
     unfold Interaction.multNat
     simp only [Shuffle.Table.interactions, List.getElem!_cons_succ, List.getElem!_cons_zero,
@@ -84,7 +84,7 @@ theorem genRecv_of_holdsP (hH : HoldsP AP pub tr) {tc tg ts busChacha : Nat} {B 
   rw [hTg] at hi'
   -- the sender is the `busGen` interaction of `genV3`, active on an accepting row
   have hi1 : i' = (Rng.Table.interactions busChacha B.gen)[1]! := by
-    simp only [Rng.Table.table, Rng.Table.interactions, List.mem_cons, List.not_mem_nil, or_false] at hi'
+    simp only [Rng.Table.table22, Rng.Table.table, Rng.Table.interactions, List.mem_cons, List.not_mem_nil, or_false] at hi'
     rcases hi' with rfl | rfl
     · simp at hb'; exact absurd hb' hcg
     · rfl
