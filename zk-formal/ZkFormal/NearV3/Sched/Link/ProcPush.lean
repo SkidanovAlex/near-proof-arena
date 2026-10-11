@@ -197,7 +197,7 @@ theorem ofNat_cv_eq {a b : Nat} (ha : a < 2013265921) (hb : b < 2013265921) :
 theorem pm_kE (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp) (hp : cv tr tp w pm = 1) :
     cv tr tp w kE = 1 := by
   obtain ⟨q, c1⟩ := zd hL hw (e := sub (c pm) (mul3 (c kE) (c ok) (notE (c lastf))))
-    (by simp [constraints, cEnt])
+    (by simp [constraintsB, cEnt])
   pz c1 [hp]
   have K := kinds hL hw
   have hO := bool_of hL hw (x := ok) (by simp [boolCols])
@@ -212,7 +212,7 @@ variable {tp f m : Nat}
 
 /-- The instance's receives with `τ`, as messages. -/
 theorem recv_inst (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
-    (htab : AP.tables[tp]! = Proc.table)
+    (htab : AP.tables[tp]! = Proc.tableB)
     (hf : f < tr.height tp) (hk : cv tr tp f Proc.kK = 1) (hc : cv tr tp f Proc.kc = 0)
     (I : Proc.Inst tr tp f m) :
     ((tabTraffic AP.tables tr pub B_SPUSH false tp).filter (headIs (cv tr tp f Proc.tau))).Perm
@@ -258,7 +258,7 @@ theorem recv_inst (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
 
 /-- The instance's re-pushes, as messages. -/
 theorem send_inst (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
-    (htab : AP.tables[tp]! = Proc.table)
+    (htab : AP.tables[tp]! = Proc.tableB)
     (hf : f < tr.height tp) (hk : cv tr tp f Proc.kK = 1) (hc : cv tr tp f Proc.kc = 0)
     (I : Proc.Inst tr tp f m) :
     ((tabTraffic AP.tables tr pub B_SPUSH true tp).filter (headIs (cv tr tp f Proc.tau))).Perm
@@ -336,7 +336,7 @@ theorem pushRec_ok (hL : Proc.PLocal tr tp pub) (hH : tr.height tp ≤ 2 ^ 22) (
 
 /-- **`hperm`**: the recorded entries are the initial pushes and the recorded re-pushes. -/
 theorem rounds_perm (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
-    (htab : AP.tables[tp]! = Proc.table)
+    (htab : AP.tables[tp]! = Proc.tableB)
     (hrecv : ∀ t, t < AP.tables.length → t ≠ tp → ∀ i ∈ AP.tables[t]!.interactions,
       i.bus = B_SPUSH → i.send = true)
     (hpub : ∀ seg ∈ AP.pubSegs, seg.bus ≠ B_SPUSH)

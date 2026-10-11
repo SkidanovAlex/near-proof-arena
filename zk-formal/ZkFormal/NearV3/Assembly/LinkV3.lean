@@ -152,7 +152,7 @@ def rawTables : List (Nat × ZkFormal.Air.Table) :=
       ZkFormal.NearV3.Sched.B_SSHUF),
    (T_CODEC, ZkFormal.NearV3.Sched.Codec.table),
    (T_SSD, ZkFormal.NearV3.Sched.ScanDist.table),
-   (T_PROC, ZkFormal.NearV3.Sched.Proc.table),
+   (T_PROC, ZkFormal.NearV3.Sched.Proc.tableB),
    (T_MEM, ZkFormal.NearV3.Sched.Mem.table),
    (T_CMP, ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP),
    (T_QV, ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table),
@@ -291,7 +291,7 @@ theorem busCount_nearAirV3_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s
         ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.ScanDist.table.interactions tr T_SSD pub b s m +
-      (tableBusCount ZkFormal.NearV3.Sched.Proc.table.interactions tr T_PROC pub b s m +
+      (tableBusCount ZkFormal.NearV3.Sched.Proc.tableB.interactions tr T_PROC pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Mem.table.interactions tr T_MEM pub b s m +
       (tableBusCount (ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP).interactions
         tr T_CMP pub b s m +
@@ -319,7 +319,7 @@ theorem rawCount_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s : Bool) (
         ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.ScanDist.table.interactions tr T_SSD pub b s m +
-      (tableBusCount ZkFormal.NearV3.Sched.Proc.table.interactions tr T_PROC pub b s m +
+      (tableBusCount ZkFormal.NearV3.Sched.Proc.tableB.interactions tr T_PROC pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Mem.table.interactions tr T_MEM pub b s m +
       (tableBusCount (ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP).interactions
         tr T_CMP pub b s m +

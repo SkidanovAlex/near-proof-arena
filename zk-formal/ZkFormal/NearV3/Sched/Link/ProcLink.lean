@@ -35,7 +35,7 @@ open NearSpecV3 NearSpecV3.Scheduler NearSpec
 /-- Bus ownership used by the process link. -/
 structure SchedOwn (AP : AirP) (tp tm tcmp ts tch tg : Nat) : Prop where
   tp_lt : tp < AP.tables.length
-  tp_tab : AP.tables[tp]! = Proc.table
+  tp_tab : AP.tables[tp]! = Proc.tableB
   mem : MemOwn AP tm
   cmp : CmpOwn AP tcmp
   shuf : ShufOwn AP tp ts tch tg
