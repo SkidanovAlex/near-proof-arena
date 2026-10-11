@@ -16,7 +16,8 @@ restriction of `RelD0` (spec/near-chunk-validation-v0a.md, V3-D0-DESIGN §4, §1
 * **A2** (`w.proof_routing`): every receipt of every *used* source receipt proof (the entry the
   last-wins lookup selects for a new source chunk) routes, under the epoch's layout, to the
   validated shard. Holds on every honest single-epoch witness (§10.1).
-* **A7** (`w.unfolded`, round-2 lead decision): `unfoldBytes cb w ≤ B` (below).
+* **A7** (`w.unfolded`, round-2 lead decision; measure revised by the user 2026-10-11):
+  `unfoldBytes cb w ≤ B` (below): the unfolded pre tries plus the unfolded rebuilt post tries.
 * **A8** (`c.bw_requests`, lead decision): in every block of the claim's segment, every chunk
   slot's `BandwidthRequests` has at most one request per `to_shard`. nearcore builds the list
   with one `generate_bandwidth_request` per layout shard id
@@ -145,13 +146,15 @@ For each applied transition τ (main, then each implicit one, as `checkD0` runs 
   pre-trie plus Σ `|v|` over its revealed values (`occs`, `nodeEnc`, `valsOf`: identical to
   `ZkFormal.NearV3.Spec` on lane v3-trie, so `UnfoldBound e ws root keys ↔
   unfoldedBytesT (partialTrie ws root keys) ≤ e` by `rfl`);
-* `diffT pre_τ post_τ` = the post-write path copies: the bytes of every revealed node
-  occurrence of the post-trie whose encoding differs from the pre-trie's at the same
-  position, plus every changed revealed value. The post-trie is rebuilt from the store
-  (`ws` plus the post nodes and values) along the same keys (`rebuildPost`), i.e. the
-  post-state as a store would present it.
+* `unfoldedBytesT post_τ` = the same count on the post-trie, rebuilt from the store (`ws` plus
+  the post nodes and values) along the same keys (`rebuildPost`), i.e. the post-state as a
+  store would present it. (Until 2026-10-11 the post term was `diffT pre_τ post_τ`, only the
+  occurrences differing from the pre-trie at the same position; the user replaced it by the
+  whole revealed post-trie so that the AIR can enforce A7 without position matching.
+  `diffT ≤ unfoldedBytesT post` always, so the change only narrows the domain; honest
+  witnesses stay ≈ 20× below `B0`.)
 
-`unfoldBytes cb w = Σ_τ (unfoldedBytesT pre_τ + diffT pre_τ post_τ)` (0 if the run fails;
+`unfoldBytes cb w = Σ_τ (unfoldedBytesT pre_τ + unfoldedBytesT post_τ)` (0 if the run fails;
 then `RelD0` is false anyway). -/
 
 mutual
@@ -287,7 +290,7 @@ def triesD0 (cb wb : Bytes) : Except String (List (PTrie × PTrie)) := do
 
 def unfoldBytes (cb w : Bytes) : Nat :=
   match triesD0 cb w with
-  | .ok l => (l.map fun (pre, post) => unfoldedBytesT pre + diffT pre post).sum
+  | .ok l => (l.map fun (pre, post) => unfoldedBytesT pre + unfoldedBytesT post).sum
   | .error _ => 0
 
 /-- A7 (`w.unfolded`). -/
@@ -480,7 +483,7 @@ def Dp0 : Nat := 32
 
 /-! ## A11 `w.post_rebuild`: the A7 count reads only the pre-trie's revealed blobs
 
-A7's post term (`diffT pre (rebuildPost ws post keys)`) re-expands the post trie from the
+A7's post term (`unfoldedBytesT (rebuildPost ws post keys)`) re-expands the post trie from the
 witness store `ws` followed by the written blobs. A11 asks that the count is unchanged when
 `ws` is replaced by the pre trie's own revealed blobs (`revealedStore pre`: the node
 encodings along the read keys and the revealed values), i.e. no other witness blob — in
@@ -521,7 +524,7 @@ def triesD0N (cb wb : Bytes) : Except String (List (PTrie × PTrie)) := do
 /-- `unfoldBytes` over `triesD0N`. -/
 def unfoldBytesN (cb w : Bytes) : Nat :=
   match triesD0N cb w with
-  | .ok l => (l.map fun (pre, post) => unfoldedBytesT pre + diffT pre post).sum
+  | .ok l => (l.map fun (pre, post) => unfoldedBytesT pre + unfoldedBytesT post).sum
   | .error _ => 0
 
 /-- A11 (`w.post_rebuild`). -/
