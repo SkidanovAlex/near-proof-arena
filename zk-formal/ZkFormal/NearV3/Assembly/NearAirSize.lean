@@ -6,7 +6,7 @@ import ZkFormal.Size.HonestAdmission
 
 Decision (this lane): `auxGroup = g = 2`, two SHA-256 instances, `B0 = 2,000,000`.
 The aligned deduplicated bound of `nearAirV3` at `g = 2` is `6,415,073` bytes,
-leaving `678,514` bytes under the 8 MiB cap after the maximum hint body
+leaving `678,518` bytes under the 8 MiB cap after the maximum hint body
 `B ≤ 1,295,017` (`Size.V3.bodyMax_eq`).
 
 * `nearV3_sizeMaxAligned` / `nearV3_size` — every admissible honest (roll-aligned)

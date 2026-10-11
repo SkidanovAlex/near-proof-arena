@@ -253,6 +253,14 @@ import ZkFormal.NearV3.Render.PaddedTrie
 import ZkFormal.NearV3.Render.PaddedRcpt
 import ZkFormal.NearV3.Render.PaddedSrcp
 import ZkFormal.NearV3.Render.PaddedQv
+import ZkFormal.NearV3.Render.PaddedQvNative
+import ZkFormal.NearV3.Render.HonestBalanceRcpt
+import ZkFormal.NearV3.Render.HonestBalanceRcl
+import ZkFormal.NearV3.Render.HonestBalanceSrc
+import ZkFormal.NearV3.Render.HonestBalanceSrec
+import ZkFormal.NearV3.Render.HonestBalanceMem
+import ZkFormal.NearV3.Render.HonestBalanceAkc
+import ZkFormal.NearV3.Render.HonestBalanceBnd
 import ZkFormal.NearV3.Render.PaddedRcptR
 import ZkFormal.NearV3.Render.PaddedSha
 import ZkFormal.NearV3.Render.PaddedCongr
@@ -282,6 +290,13 @@ import ZkFormal.NearV3.Sched.Complete.WordBound
 import ZkFormal.Size.HonestAdmission
 import ZkFormal.V3.RefundCodec
 
+import ZkFormal.NearV3.Assembly.RenderV3RcptTables
+import ZkFormal.NearV3.Render.AcceptedQv
+import ZkFormal.NearV3.Render.AcceptedRcpt
+import ZkFormal.NearV3.Render.AcceptedMem
+import ZkFormal.NearV3.Render.AcceptedSrcp
+import ZkFormal.NearV3.Rcpt.Candidates.AccountEmptyCap
+import ZkFormal.NearV3.Render.PaddedAcctE
 /-!
 # Build gate for the integrated v3 proof work
 
