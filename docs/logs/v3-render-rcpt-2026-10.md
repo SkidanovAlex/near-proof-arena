@@ -449,3 +449,17 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   pin-check OK.
 * Open on the receipt side: nothing beyond the bundle assembly itself (the lead's
   `RenderWitnessV3`: hint codec bounds, header admissibility, SIZE bus with the trie side).
+
+## 2026-10-12 (round 10: non-table conjuncts of `RenderWitnessV3`)
+
+* `Assembly/RenderV3Header.lean` (audit `test/AuditRenderV3Header.lean`):
+  - **Hint codec bounds** `nativeHint_bounds` / `AcceptedV3.hint_bounds`: `n = |appliedReceipts| ≤ 4481
+    < 256^4` (`applyNewChunk_receipt_bound`), body `≤ 1,295,017 < 256^4` (`accepted_native_body_bound`
+    + `prepD0_body_eq`), `|Hint.encode h| = 8 + |body| ≤ 1,295,025 ≤ v3MaxHintBytes` (`hint_encode_length`).
+  - **Header admissibility** `bundle_headerOk (R : RenderBundleV3 pub) (hq : ∃ t < 25, 4 ≤ R.trace.log t)`:
+    `(VdP nearAirV3).headerOk (trHdr nearAirV3.toAir R.trace) = true` from each table's `TableLocal`
+    (`R.local_at`), `nearAirV3_maxLog_le` (all caps ≤ 22, kernel), `nearAirV3_air_wf`,
+    `nearAirV3_degree_le` (all degrees at g = 2 ≤ 16, kernel), and `minQueryLog = 8 ≤ log + 4`.
+    The premise `hq` is needed by the header check itself (all logs 1 ⇒ query log 5 < 8);
+    `bundle_headerOk_rcpt`: discharged by the honest receipt render (table 16, log 22).
+* `lake build ZkFormal.V3.Integration` (4,135 jobs) OK; pin-check OK.
