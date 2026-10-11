@@ -169,3 +169,6 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   native runs), `memRenderV3` (14), `cmpRenderV3` (15), `mrkRenderV3` (23, empty tree included),
   `sortRenderV3` (24, from `checkD0a B0` acceptance, RIDS = receipt lane's list). Each takes the
   render's explicit honest-input premises. Audit `test/AuditBundleSched.lean`.
+* **Proc from acceptance:** `procRender_accepted` — `checkD0a B0` acceptance (`prepD0`, `walkD0`,
+  `decodeW`) gives the native blocks of `accepted_prior_core`, whose runs discharge every premise of
+  `procRenderV3` (native `ActualRun.run`, `τ = index`, capacity `prior_run_capacities`).

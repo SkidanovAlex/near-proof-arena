@@ -6,6 +6,7 @@ import ZkFormal.NearV3.Render.PaddedProc
 import ZkFormal.NearV3.Render.PaddedMrk
 import ZkFormal.NearV3.Render.PaddedSort
 import ZkFormal.NearV3.Render.PaddedUpsNative
+import ZkFormal.NearV3.Assembly.SchedulerRunProcessLocal
 
 /-!
 # `TableRenderV3` instances of this lane's renders (tables 0, 1, 7, 8–10, 13–15, 23, 24)
@@ -135,5 +136,38 @@ def sortRenderV3 (pub : List Fp) {cb wb raw : NearSpec.Bytes} {k : NearSpecV3.Wa
   loc := (SortV3.sort_v3_accepted hk hw hr hc hm lists hls 24 pub).1
   traffic := (SortV3.sort_v3_accepted hk hw hr hc hm lists hls 24 pub).2.1
   aligned := (SortV3.sort_v3_accepted hk hw hr hc hm lists hls 24 pub).2.2
+
+end ZkFormal.NearV3.Render
+
+namespace ZkFormal.NearV3.Render
+open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra ZkFormal.NearV3.Assembly
+open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Gen NearSpec NearSpecV3
+open ZkFormal.NearV3.Assembly.CodecDigest
+
+/-- **Table 13 from acceptance.** For an accepted witness the native scheduler blocks of
+`accepted_prior_core` supply every premise of the process render (native runs, `τ = index`,
+capacity); the rendered runs are `bs.map NativeBlock.run`. -/
+theorem procRender_accepted {cb wb : Bytes} {hint : Hint} {p : Prep} (hp : prepD0 cb hint = .ok p)
+    {k : WalkD0} {w : StateWitness} (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w)
+    (h : checkD0a B0 cb wb = .ok ()) (pub : List Fp) :
+    ∃ bs : List NativeBlock, ∃ R : TableRenderV3 pub 13 (by decide),
+      R.tr = procTraceV3 (bs.map NativeBlock.run) ∧
+      R.tf = rowsTraffic Proc.tableB.interactions (procCell (bs.map NativeBlock.run)) 22 13 pub := by
+  obtain ⟨bs, hc⟩ := accepted_prior_core hp hk hw h (by decide)
+  refine ⟨bs, procRenderV3 pub (bs.map NativeBlock.run) ?_ ?_ ?_ (prior_run_capacities hp _ bs hc).2,
+    rfl, rfl⟩
+  · intro R hR
+    obtain ⟨sp, prev, hs, hr, _⟩ := prior_run_data hp _ bs hc R hR
+    exact ⟨ZkFormal.NearV3.Candidates.ProcPreparedSequence.input sp prev, hs.params, hr⟩
+  · intro R rest he
+    exact prior_run_index p _ bs hc 0 R (by rw [he]; rfl)
+  · intro pre R S post he
+    have hR : R.tau = pre.length := prior_run_index p _ bs hc pre.length R (by
+      rw [he, List.getElem?_append_right (by omega)]
+      simp)
+    have hS : S.tau = pre.length + 1 := prior_run_index p _ bs hc (pre.length + 1) S (by
+      rw [he, List.getElem?_append_right (by omega)]
+      simp)
+    omega
 
 end ZkFormal.NearV3.Render

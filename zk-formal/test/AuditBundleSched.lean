@@ -42,3 +42,6 @@ import ZkFormal.NearV3.Render.BundleSched
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.sortRenderV3
 
+/-- info: 'ZkFormal.NearV3.Render.procRender_accepted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.procRender_accepted
