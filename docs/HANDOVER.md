@@ -1,4 +1,4 @@
-# NEAR Proof Arena — handover (updated 2026-10-09)
+# NEAR Proof Arena — handover (updated 2026-10-10)
 
 This is for the next lead agent. Read it first. The raw working log for 2026-10-07 to 2026-10-09 (≈6,500 lines) now lives in `docs/logs/v3-progress-log-2026-10.md`. Use it only for evidence lookup.
 
@@ -180,15 +180,19 @@ is on no critical path and can proceed in parallel immediately.
 * any real judge run;
 * `Chacha.Table.maxLog` 21 → 22, which the A9 lane needs. It is held because four candidate families would exceed the 2^36 fingerprint budget; see STATUS-V3-AIR §5.
 
-The work so far is an extensive collection of conditional lemmas. The end-to-end theorem does not exist yet.
+The assembled AIR and the admission certificate now exist, together with the
+whole AIR↔semantics composition layer, so the remaining gap is the concrete
+honest trace (`renderV3`) and the link into `GoodV3`, not the protocol or size
+arguments.  `factorSound` (semantic soundness) is proved.
 
 **Hard feasibility risk: judge elaboration budget.** A clean, serial elaboration diagnostic hit the 1,800 s total cutoff after 927 of 1,110 modules (`/data/illia/nearproof-deps/validation/v3-clean-elaboration-20261007-attempt2`). The tree is now about 5,000 modules, so the final certificate must be a pruned closure.
 * Measure its clean elaboration early.
 * If it cannot fit, raising the budget is a decision for the user, made with numbers. Do not change it silently.
 
 **Quality notes for whoever continues:**
-* Prefer converging on the top-level theorem over adding more `Candidates/*` lemmas.
-* Each new module should sit on the path to `FactorSound` / `FactorComplete`.
+* Prefer converging on the top-level theorem (`RenderV3Stmt`, `LinkV3Stmt`
+  ⇒ `ExtractV3Stmt`) over adding more `Candidates/*` lemmas.
+* Each new module should sit on the path to `RenderV3Stmt` or `ExtractV3Stmt`.
 * Keep the guarded axiom audits.
 
 ## 6. Verification status of this merge
@@ -198,6 +202,12 @@ The Lean build of all ZkFormal modules on the integration branch is filled in be
 * **Lean build (2026-10-09):** `lake build` over all 5,102 ZkFormal targets on the integration branch. Every module builds except `NearV3/Candidates/ProcActualGrantOperands`.
   * That file is an uncommitted WIP file from the main checkout: it has typeclass errors, and nothing imports it.
   * It was left out of main. It is still untracked in `/data/illia/nearproof`, so finish it or delete it.
+* **Lean build (2026-10-10, `agent/v3-assembly`):** `lake build ZkFormal.V3.Integration`
+  passes all **2,028 jobs** with the assembly lane's modules
+  (`NearAir, NearAirCheck, NearAirSize, NearAirBus, HintCodec, NearAdmission,
+  ExtractV3, ViewsV3, LinkV3, ComposeV3, RenderV3, RenderV3Assemble, RenderV3Trace`).
+  All thirteen new modules are free of `sorry`/`axiom`/`native_decide` and depend
+  only on `{propext, Classical.choice, Quot.sound}`.
 * **Not re-run in this merge:**
   * the about 2,400 audit files in `zk-formal/test/`, which are run individually;
   * the D3 reference check-local;
