@@ -2,7 +2,7 @@ import ZkFormal.NearV3.Assembly.FactorComplete
 import ZkFormal.NearV3.Assembly.FactorSound
 
 /-! Guarded axiom audit: `FactorComplete` (accepted witnesses admit `GoodV3`), closed with
-A11 (`w.post_rebuild`, 2026-10-11), and the soundness factor with the new `postRebuild` field. -/
+A7 on the native post tries and A11 retired (user decision 2026-10-12), and the soundness factor. -/
 
 /-- info: 'ZkFormal.NearV3.Assembly.factorComplete' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in #print axioms ZkFormal.NearV3.Assembly.factorComplete

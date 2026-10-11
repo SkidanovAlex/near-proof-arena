@@ -1,0 +1,233 @@
+{
+ "date": "2026-10-12",
+ "lane": "lane/v3-a11 (spec)",
+ "decision": "A7 post term = unfoldedBytesT of the native post trie (applyNewChunk .trie / applyMissingChunk result), no rebuildPost; A11 w.post_rebuild retired (user decision 2026-10-12)",
+ "base": "origin/integration/v3-20261012b",
+ "measure_python_accepted": {
+  "public_d0a": {
+   "dirs": 421,
+   "measured_after_RelD0": 300,
+   "accepted": 139,
+   "transitions_accepted": 144,
+   "max_unfold_native": 7996,
+   "max_unfold_rebuilt": 7996,
+   "max_unfold_diff": 6500,
+   "argmax_case": "oracle/fixtures/v3/public-d0a/d0/01-h10025-s1",
+   "p50_native": 3630,
+   "p99_native": 7996,
+   "cases_native_ne_rebuilt": 0,
+   "examples_native_ne_rebuilt": [],
+   "cases_with_insert_split": 0
+  },
+  "d1run": {
+   "dirs": 53048,
+   "measured_after_RelD0": 3977,
+   "accepted": 3977,
+   "transitions_accepted": 4356,
+   "max_unfold_native": 12402,
+   "max_unfold_rebuilt": 12402,
+   "max_unfold_diff": 10796,
+   "argmax_case": "nearproof-deps/corpora/d1run/d1/01-h10115-s4",
+   "p50_native": 4856,
+   "p99_native": 8458,
+   "cases_native_ne_rebuilt": 0,
+   "examples_native_ne_rebuilt": [],
+   "cases_with_insert_split": 0
+  },
+  "d2corpus_v2": {
+   "dirs": 67384,
+   "measured_after_RelD0": 38,
+   "accepted": 38,
+   "transitions_accepted": 39,
+   "max_unfold_native": 9624,
+   "max_unfold_rebuilt": 9624,
+   "max_unfold_diff": 8122,
+   "argmax_case": "nearproof-deps/corpora/d2corpus.v2/d2/11-h10067-s5",
+   "p50_native": 6600,
+   "p99_native": 9624,
+   "cases_native_ne_rebuilt": 0,
+   "examples_native_ne_rebuilt": [],
+   "cases_with_insert_split": 0
+  }
+ },
+ "comparison_with_previous_measure": {
+  "previous": "2026-10-11 measure (post trie rebuilt from the store): max 7,996 public / 12,402 d1run / 9,624 d2corpus.v2",
+  "new_max": {
+   "public_d0a": 7996,
+   "d1run": 12402,
+   "d2corpus_v2": 9624
+  },
+  "cases_native_ne_rebuilt": {
+   "public_d0a": 0,
+   "d1run": 0,
+   "d2corpus_v2": 0
+  },
+  "insert_splits": {
+   "public_d0a": 0,
+   "d1run": 0,
+   "d2corpus_v2": 0
+  },
+  "note": "Without SHA-256 collisions the native and rebuilt post tries differ only by the node an insertion of 0x0f splits off (splitLeaf/splitExt) when no read key passes through it; that needs 0x0f absent from the pre-state, which no measured case has. Headroom vs B0 = 2,000,000: >= 161x."
+ },
+ "split_vectors": {
+  "tool": "docs/e2e-results/v3-a7-native/split_vectors.py (Python; emits a Lean file run with lake env lean)",
+  "columns": "pre, native post, rebuilt post (unfoldedBytesT)",
+  "lean_equals_python": true,
+  "results": {
+   "leaf_split_unread": [
+    53,
+    231,
+    179
+   ],
+   "leaf_split_read": [
+    63,
+    241,
+    241
+   ],
+   "ext_split_unread": [
+    48,
+    226,
+    179
+   ],
+   "ext_split_read": [
+    184,
+    362,
+    362
+   ],
+   "ext_moved_child": [
+    46,
+    133,
+    133
+   ],
+   "branch_newleaf": [
+    188,
+    321,
+    269
+   ],
+   "overwrite": [
+    182,
+    179,
+    179
+   ]
+  }
+ },
+ "difftest_public_d0a": {
+  "cases": {
+   "d0": 64,
+   "ood": 59,
+   "mutants": 298
+  },
+  "disagreements": 0,
+  "unfold_bytes": {
+   "compared_lean_python": 300,
+   "compared_oracle": 0,
+   "mismatch_count": 0,
+   "distribution_in_d0a": {
+    "max": 7996,
+    "min": 1248,
+    "n": 139,
+    "nonzero": 139,
+    "p50": 3630,
+    "p90": 5488,
+    "p99": 7996
+   }
+  },
+  "unfold_rebuilt": {
+   "compared_lean_python": 300,
+   "compared_oracle": 0,
+   "mismatch_count": 0,
+   "distribution_in_d0a": {
+    "max": 7996,
+    "min": 1248,
+    "n": 139,
+    "nonzero": 139,
+    "p50": 3630,
+    "p90": 5488,
+    "p99": 7996
+   }
+  },
+  "unfold_diff": {
+   "compared_lean_python": 300,
+   "compared_oracle": 64,
+   "mismatch_count": 0,
+   "distribution_in_d0a": {
+    "max": 6500,
+    "min": 1248,
+    "n": 139,
+    "nonzero": 139,
+    "p50": 3065,
+    "p90": 4392,
+    "p99": 6500
+   }
+  },
+  "chacha_words": {
+   "compared_lean_python": 300,
+   "compared_oracle": 300,
+   "mismatch_count": 0,
+   "distribution_in_d0a": {
+    "max": 0,
+    "min": 0,
+    "n": 139,
+    "nonzero": 0,
+    "p50": 0,
+    "p90": 0,
+    "p99": 0
+   }
+  },
+  "max_path_depth": {
+   "compared_lean_python": 300,
+   "compared_oracle": 300,
+   "mismatch_count": 0,
+   "distribution_in_d0a": {
+    "max": 32,
+    "min": 1,
+    "n": 139,
+    "nonzero": 139,
+    "p50": 3,
+    "p90": 32,
+    "p99": 32
+   }
+  },
+  "amendments_on_honest_witnesses": {
+   "c.bw_requests": 0,
+   "c.gas_limit": 0,
+   "c.layout_wf": 0,
+   "e.chacha_words": 0,
+   "e.sched_canonical": 0,
+   "honest_witnesses": 290,
+   "w.path_depth": 0,
+   "w.proof_routing": 0,
+   "w.unfolded": 0
+  }
+ },
+ "lean": {
+  "integration": "lake build ZkFormal.V3.Integration nearspec-v3-check-d0a: 4,188 jobs, OK",
+  "dependents": "all modules depending on NearSpecV3.ChunkValidationV0a (12 top-level modules + tools): 4,555 jobs, 0 errors",
+  "audits_passed": [
+   "AuditA12LayoutWf",
+   "AuditAssemblyFactor",
+   "AuditFactorComplete",
+   "AuditDedupAir",
+   "AuditNativeGoodGap",
+   "AuditNearV3Admission",
+   "AuditSourceCandidate",
+   "AuditSourcePartition",
+   "AuditUnfoldStoreEq",
+   "AuditPrepClaimComplete",
+   "AuditV3DomainBounds",
+   "AuditRetainedStore",
+   "AuditTransitionQueries",
+   "AuditSrcp",
+   "AuditLinkV3",
+   "AuditLinkFields",
+   "AuditPaddedMrkSort",
+   "AuditReadUnfoldBound",
+   "AuditUnfoldA7",
+   "AuditQueryWitness",
+   "AuditLinkShaKinds",
+   "AuditPostShadows"
+  ],
+  "factorComplete": "tries_reconstructed: triesD0 (reconstruction) = triesD0 (original); A7 and A9 follow; axioms propext, Classical.choice, Quot.sound"
+ },
+ "pin_check": "OK"
+}

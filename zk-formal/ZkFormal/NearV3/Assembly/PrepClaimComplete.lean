@@ -84,7 +84,7 @@ theorem checkD0a_prepClaim_exists {B : Nat} {cb wb : Bytes} {k : WalkD0} {w : St
   obtain ⟨m,last,hm,_⟩ := checkD0_native_steps hk hw hu
   obtain ⟨hg,ht,hc⟩ := checkD0_claim_guards hk hw hu
   have hlw : k.L.boundaries.length + 1 = k.L.shardIds.length := by
-    simpa only [a12, hk, beq_iff_eq] using hr.2.2.2.2.2.2.2.2.2
+    simpa only [a12, hk, beq_iff_eq] using hr.2.2.2.2.2.2.2.2
   exact prepClaim_exists hk hm hg ha1 ha8 ht hc (checkD0_prepared_sources hk hw hu) hlw
 
 end ZkFormal.NearV3.Assembly
