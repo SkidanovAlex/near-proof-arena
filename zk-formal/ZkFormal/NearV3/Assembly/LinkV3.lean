@@ -149,15 +149,25 @@ def rawCount (tr : Trace Fp) (pub : List Fp) (b : Nat) (s : Bool) (m : List Fp) 
   (rawTables.map fun (tT : Nat × ZkFormal.Air.Table) =>
     tableBusCount tT.2.interactions tr tT.1 pub b s m).sum
 
+/-- The bus count of the A7 accounting interactions appended to `nodeV3`, `valV3`, `upsV3` and
+`sizeV3` (`Tables/UnfoldA7.lean`); trace-level until their record views exist. -/
+def a7Count (tr : Trace Fp) (pub : List Fp) (b : Nat) (s : Bool) (m : List Fp) : Nat :=
+  tableBusCount ZkFormal.NearV3.UnfoldA7.Node.interactions tr T_NODE pub b s m +
+  (tableBusCount ZkFormal.NearV3.UnfoldA7.Val.interactions tr T_VAL pub b s m +
+  (tableBusCount ZkFormal.NearV3.UnfoldA7.Ups.interactions tr T_UPS pub b s m +
+  tableBusCount ZkFormal.NearV3.UnfoldA7.Size.interactions tr T_SIZE pub b s m))
+
 /-- **The bus balance of `nearAirV3` in record form**: the two SHA instances (by their
 counts), the thirteen viewed tables (by their records), the ten raw tables (by the trace)
 and the public messages of `nearAirV3.pubSegs`, sends = receives on every bus. -/
 def V3Balance (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Prop :=
   ∀ b m,
     shaCountAt tr pub T_SHA_T true b m + shaCountAt tr pub T_SHA_R true b m +
-        recCount pub r b true m + rawCount tr pub b true m + pubCount nearAirV3 pub b true m =
+        recCount pub r b true m + rawCount tr pub b true m + a7Count tr pub b true m +
+        pubCount nearAirV3 pub b true m =
       shaCountAt tr pub T_SHA_T false b m + shaCountAt tr pub T_SHA_R false b m +
-        recCount pub r b false m + rawCount tr pub b false m + pubCount nearAirV3 pub b false m
+        recCount pub r b false m + rawCount tr pub b false m + a7Count tr pub b false m +
+        pubCount nearAirV3 pub b false m
 
 /-! ## The linking statement -/
 
@@ -215,12 +225,12 @@ theorem busCount_nearAirV3_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s
     busCount nearAirV3.toAir tr pub b s m =
       tableBusCount shaTable.interactions tr T_SHA_T pub b s m +
       (tableBusCount shaTable.interactions tr T_SHA_R pub b s m +
-      (tableBusCount ZkFormal.NearV3.NodeV3.interactions tr T_NODE pub b s m +
+      (tableBusCount ZkFormal.NearV3.UnfoldA7.nodeA7.interactions tr T_NODE pub b s m +
       (tableBusCount ZkFormal.NearV3.HeadV3.interactions tr T_HEAD pub b s m +
-      (tableBusCount ZkFormal.NearV3.ValV3.interactions tr T_VAL pub b s m +
+      (tableBusCount ZkFormal.NearV3.UnfoldA7.valA7.interactions tr T_VAL pub b s m +
       (tableBusCount ZkFormal.NearV3.WalkV3.interactions tr T_WALK pub b s m +
       (tableBusCount ZkFormal.NearV3.Uniq.interactions tr T_UNIQ pub b s m +
-      (tableBusCount ZkFormal.NearV3.UpsV3.interactions tr T_UPS pub b s m +
+      (tableBusCount ZkFormal.NearV3.UnfoldA7.upsA7.interactions tr T_UPS pub b s m +
       (tableBusCount (ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA).interactions
         tr T_CHACHA pub b s m +
       (tableBusCount (ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA
@@ -239,7 +249,7 @@ theorem busCount_nearAirV3_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s
       (tableBusCount ZkFormal.NearV3.AkeyV3.interactions tr T_AKEY pub b s m +
       (tableBusCount ZkFormal.NearV3.BndV3.interactions tr T_BND pub b s m +
       (tableBusCount ZkFormal.NearV3.SrcpV3.interactions tr T_SRCP pub b s m +
-      (tableBusCount ZkFormal.NearV3.SizeV3.interactions tr T_SIZE pub b s m +
+      (tableBusCount ZkFormal.NearV3.UnfoldA7.sizeA7.interactions tr T_SIZE pub b s m +
       (tableBusCount ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table.interactions
         tr T_QV pub b s m +
       (tableBusCount ZkFormal.NearV3.Candidates.MerklePublic.table.interactions tr T_MRK pub b s m +
@@ -286,6 +296,15 @@ theorem v3Balance_of_holdsP {pub : List Fp} {tr : Trace Fp} {r : V3Records}
   intro b m
   have hb := hH.balance b m
   rw [busCount_nearAirV3_explicit, busCount_nearAirV3_explicit] at hb
+  simp only [show ZkFormal.NearV3.UnfoldA7.nodeA7.interactions =
+      ZkFormal.NearV3.NodeV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Node.interactions from rfl,
+    show ZkFormal.NearV3.UnfoldA7.valA7.interactions =
+      ZkFormal.NearV3.ValV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Val.interactions from rfl,
+    show ZkFormal.NearV3.UnfoldA7.upsA7.interactions =
+      ZkFormal.NearV3.UpsV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Ups.interactions from rfl,
+    show ZkFormal.NearV3.UnfoldA7.sizeA7.interactions =
+      ZkFormal.NearV3.SizeV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Size.interactions from rfl,
+    tableBusCount_append] at hb
   rw [tcnt_of_traffic T.nodes, tcnt_of_traffic T.nodes, tcnt_of_traffic T.heads, tcnt_of_traffic T.heads, tcnt_of_traffic T.values, tcnt_of_traffic T.values,
     tcnt_of_traffic T.walks, tcnt_of_traffic T.walks, tcnt_of_traffic T.uniq, tcnt_of_traffic T.uniq, tcnt_of_traffic T.ups, tcnt_of_traffic T.ups,
     tcnt_of_traffic T.lists, tcnt_of_traffic T.lists, tcnt_of_traffic T.accts, tcnt_of_traffic T.accts, tcnt_of_traffic T.akeys, tcnt_of_traffic T.akeys,
@@ -293,9 +312,70 @@ theorem v3Balance_of_holdsP {pub : List Fp} {tr : Trace Fp} {r : V3Records}
     tcnt_of_traffic T.mrk, tcnt_of_traffic T.mrk] at hb
   rw [rawCount_explicit, rawCount_explicit, shaCountAt_eq, shaCountAt_eq, shaCountAt_eq,
     shaCountAt_eq]
-  unfold recCount
+  unfold recCount a7Count
+  generalize (tableBusCount shaTable.interactions tr T_SHA_T pub b true m) = x0 at hb ⊢
+  generalize (tableBusCount shaTable.interactions tr T_SHA_R pub b true m) = x1 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.nodeTraffic3 r.nodes) true b m) = x2 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.headTraffic r.heads) true b m) = x3 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.valTraffic r.values) true b m) = x4 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.walkTraffic3 r.walks) true b m) = x5 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.uniqTraffic r.uniq) true b m) = x6 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.upsTraffic r.ups) true b m) = x7 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.rcptTraffic3 pub r.lists) true b m) = x8 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.acctV3Traffic r.accts) true b m) = x9 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.akeyTraffic r.akeys) true b m) = x10 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.bndTraffic r.bnds) true b m) = x11 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.srcpTraffic r.srcp) true b m) = x12 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.sizeTraffic r.size) true b m) = x13 at hb ⊢
+  generalize (tcnt (ZkFormal.Near.mrkTraffic (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) r.mrk) true b m) = x14 at hb ⊢
+  generalize (tableBusCount (ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA).interactions tr T_CHACHA pub b true m) = x15 at hb ⊢
+  generalize (tableBusCount (ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN).interactions tr T_RNG pub b true m) = x16 at hb ⊢
+  generalize (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b true m) = x17 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b true m) = x18 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Sched.ScanDist.table.interactions tr T_SSD pub b true m) = x19 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Sched.Proc.table.interactions tr T_PROC pub b true m) = x20 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Sched.Mem.table.interactions tr T_MEM pub b true m) = x21 at hb ⊢
+  generalize (tableBusCount (ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP).interactions tr T_CMP pub b true m) = x22 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table.interactions tr T_QV pub b true m) = x23 at hb ⊢
+  generalize (tableBusCount {ZkFormal.Near.Sort.table with maxLog := 18}.interactions tr T_SORT pub b true m) = x24 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.UnfoldA7.Node.interactions tr T_NODE pub b true m) = x25 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.UnfoldA7.Val.interactions tr T_VAL pub b true m) = x26 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.UnfoldA7.Ups.interactions tr T_UPS pub b true m) = x27 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.UnfoldA7.Size.interactions tr T_SIZE pub b true m) = x28 at hb ⊢
+  generalize (pubCount nearAirV3 pub b true m) = x29 at hb ⊢
+  generalize (tableBusCount shaTable.interactions tr T_SHA_T pub b false m) = x30 at hb ⊢
+  generalize (tableBusCount shaTable.interactions tr T_SHA_R pub b false m) = x31 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.nodeTraffic3 r.nodes) false b m) = x32 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.headTraffic r.heads) false b m) = x33 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.valTraffic r.values) false b m) = x34 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.walkTraffic3 r.walks) false b m) = x35 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.uniqTraffic r.uniq) false b m) = x36 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.upsTraffic r.ups) false b m) = x37 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.rcptTraffic3 pub r.lists) false b m) = x38 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.acctV3Traffic r.accts) false b m) = x39 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.akeyTraffic r.akeys) false b m) = x40 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.bndTraffic r.bnds) false b m) = x41 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.srcpTraffic r.srcp) false b m) = x42 at hb ⊢
+  generalize (tcnt (ZkFormal.NearV3.sizeTraffic r.size) false b m) = x43 at hb ⊢
+  generalize (tcnt (ZkFormal.Near.mrkTraffic (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) r.mrk) false b m) = x44 at hb ⊢
+  generalize (tableBusCount (ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA).interactions tr T_CHACHA pub b false m) = x45 at hb ⊢
+  generalize (tableBusCount (ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN).interactions tr T_RNG pub b false m) = x46 at hb ⊢
+  generalize (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b false m) = x47 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b false m) = x48 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Sched.ScanDist.table.interactions tr T_SSD pub b false m) = x49 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Sched.Proc.table.interactions tr T_PROC pub b false m) = x50 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Sched.Mem.table.interactions tr T_MEM pub b false m) = x51 at hb ⊢
+  generalize (tableBusCount (ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP).interactions tr T_CMP pub b false m) = x52 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table.interactions tr T_QV pub b false m) = x53 at hb ⊢
+  generalize (tableBusCount {ZkFormal.Near.Sort.table with maxLog := 18}.interactions tr T_SORT pub b false m) = x54 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.UnfoldA7.Node.interactions tr T_NODE pub b false m) = x55 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.UnfoldA7.Val.interactions tr T_VAL pub b false m) = x56 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.UnfoldA7.Ups.interactions tr T_UPS pub b false m) = x57 at hb ⊢
+  generalize (tableBusCount ZkFormal.NearV3.UnfoldA7.Size.interactions tr T_SIZE pub b false m) = x58 at hb ⊢
+  generalize (pubCount nearAirV3 pub b false m) = x59 at hb ⊢
+  clear T hH
   simp only [Nat.add_zero, Nat.add_assoc] at hb ⊢
-  simp only [Nat.add_left_comm (tcnt _ _ _ _) (tableBusCount _ _ _ _ _ _ _)] at hb ⊢
+  simp only [Nat.add_comm, Nat.add_left_comm] at hb ⊢
   exact hb
 
 /-- The SHA table's `TableLocal` is the SHA lane's `ShaLocal`. -/

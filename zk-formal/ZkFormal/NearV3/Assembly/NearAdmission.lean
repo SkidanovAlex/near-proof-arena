@@ -44,10 +44,10 @@ theorem nearAirV3_npOkPg_2 : ZkFormal.V2.G.NpOkPg nearAirV3 (ZkFormal.V2.G.pg 2)
   nearAirV3_npOkPg 2 (by decide) (by decide)
 
 /-- The proved inner-proof size bound (item 6), used as `maxInner`. -/
-def v3MaxInner : Nat := 6320769
+def v3MaxInner : Nat := 6399329
 
 /-- The hint-budget of the completeness obligation: `4 + this + maxInner ≤ 8 MiB`. -/
-def v3MaxHintBytes : Nat := 2000000
+def v3MaxHintBytes : Nat := 1989000
 
 theorem v3MaxHintBytes_fits :
     4 + v3MaxHintBytes + v3MaxInner ≤ challengeParamsD0a.maxProofBytes := by decide
@@ -108,11 +108,12 @@ fails at `B = 0`).  See `docs/logs/v3-link-2026-10.md` for whether `nearAirV3`
 enforces `unfoldBytes ≤ B0`. -/
 def ExtractV3Stmt : Prop := ExtractV3StmtAt NearSpecV3.B0
 
-/-- **Completeness obligation.** Every `RelD0a` claim admits a hint, a prepared
+/-- **Completeness obligation** at the challenge's A7 bound `B0` (the AIR enforces `B0`, so a
+trace for a larger bound need not exist). Every `RelD0a` claim admits a hint, a prepared
 statement and an honest trace satisfying `HoldsP` with an admissible header. -/
 def RenderV3Stmt : Prop :=
-  ∀ (B : Nat) (cb w : List UInt8),
-    NearSpecV3.checkD0a B cb w = .ok () →
+  ∀ (cb w : List UInt8),
+    NearSpecV3.checkD0a NearSpecV3.B0 cb w = .ok () →
     ∃ (h : NearSpecV3.Hint) (p : NearSpecV3.Prep) (oh : Nat) (tr : Trace Fp),
       NearSpecV3.prepD0 cb h = .ok p ∧
       HoldsP nearAirV3 (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr ∧
@@ -122,9 +123,9 @@ def RenderV3Stmt : Prop :=
 /-- **Honest roll-in alignment.** The honest traces of `RenderV3Stmt` are
 roll-in aligned, so the aligned size bound (`nearV3_size`) applies. -/
 def AlignedV3Stmt : Prop :=
-  ∀ (B : Nat) (cb w : List UInt8) (h : NearSpecV3.Hint) (p : NearSpecV3.Prep) (oh : Nat)
+  ∀ (cb w : List UInt8) (h : NearSpecV3.Hint) (p : NearSpecV3.Prep) (oh : Nat)
     (tr : Trace Fp),
-    NearSpecV3.checkD0a B cb w = .ok () → NearSpecV3.prepD0 cb h = .ok p →
+    NearSpecV3.checkD0a NearSpecV3.B0 cb w = .ok () → NearSpecV3.prepD0 cb h = .ok p →
     HoldsP nearAirV3 (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr →
     (ZkFormal.Prover.Np.G.VdP nearAirV3).headerOk (trHdr nearAirV3.toAir tr) = true →
     RollAligned nearAirV3.toAir ZkFormal.Prover.Np.G.dp (trHdr nearAirV3.toAir tr)
