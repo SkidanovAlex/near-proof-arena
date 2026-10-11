@@ -47,7 +47,7 @@ theorem scheduler_sha_of {insts : List UpsInst} (h : TrieUpsOrigin.UpsSha insts)
       (Sha.Gen.honestRows (schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us)).length ≤ 1663260 ∧
       ∀ tau u I, us[tau]? = some u → insts[tau]? = some I →
         NativeShaFamily u I ∧ I.v = u.value.map UInt8.toNat ∧ I.tau = tau := by
-  obtain ⟨us, hl, h32, hg, hout, hval, hI⟩ := h
+  obtain ⟨us, hl, h32, hg, hout, hval, -, hI⟩ := h
   exact ⟨us, hl, schedulerBatch_rows us h32 (fun u hu => (hg u hu).1) (fun u hu => (hg u hu).2.1) hout hval,
     fun tau u I hu hI' => ⟨(hI tau u I hu hI').1, (hI tau u I hu hI').2.1, (hI tau u I hu hI').2.2.1⟩⟩
 

@@ -798,3 +798,38 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
   node/head identity and the ups perm.  So `balancedAt_digest` with `N := nativeShaJobsE ns es`,
   `X := ns.flatMap postSlotDigests` has only `hcodec`/`hrest` (cross-lane) open.
 * Audit `test/AuditTrieDigest.lean`.  Integration 4268 jobs; pin-check ok.
+
+## 2026-10-12 (session 6) — A7 (b) ups part + ups ROW CAP DONE; node/val part OPEN
+
+* New `Assembly/TrieA7Post.lean`: `UK` (unfolded bytes of a child list), `enc_eq`
+  (`ZkFormal.NearV3.nodeEnc = NearSpecV3.nodeEnc`; outputByteCharge uses the former, unfoldedBytesT
+  the latter), `U_leaf/U_ext/U_branch/UK_some/UK_none/U_newLeaf`, `UK_kidsFrom0/1/2`, `UK_kids1/2`,
+  `PostOk run v := outputByteCharge run + |v| ≤ unfoldedBytesT run.output`, `wrapRun_ok`,
+  `leafSplit_ok`, `extSplit_ok` (ESl1 branch unreachable under `isPrefix k key = false`),
+  **`traceUpsert_unfolded` / `traceKids_unfolded`** (mutual; `t.wf`, nibble key): every output part
+  (incl. the node split off by a leaf/ext split, wrap extensions) is a distinct occurrence of the
+  post trie and `v` one of its values.  **`ups_post_bound`**: accepted chunk + scheduler witnesses
+  `us` with `hpairs` ⇒ `Σ_u (|u.value| + outputByteCharge u.run) ≤ Σ_τ unfoldedBytesT post_τ ≤
+  unfoldBytes ≤ B0 = 2,000,000` (spec `triesD0` native posts, `triesD0_native_result`).
+* `UpsSha` gains the conjunct `(us.map (|value| + outputByteCharge)).sum ≤ 2000000` (proved in
+  `accepted_ups_walks` from `hpairs`/`hgood`); destructuring sites adjusted.
+* New `Assembly/TrieA7Cap.lean`: `recsI_length`, **`R_eq`** (`R insts = 4|insts| + upsA7Total insts`),
+  `inst_total` (`L + Σ|Q_k| = |u.value| + outputByteCharge u.run` from `NativeShaFamily`),
+  **`upsA7Total_le_of_upsSha`** (`≤ 2,000,000`, `|insts| ≤ 32`), **`rowCap_of_upsSha`**:
+  `UpsSha insts → R insts + 1 ≤ 2^22` — discharges the `R insts + 1 ≤ 2^22 →` premises of
+  `trie_all_of` (ups render `UpsRenderOk`, `UpbBal`) for its exported `UpsSha insts`.
+* OPEN (A7 (b), node/val part): the full statement `nodeA7Total ns S + valA7Total es SV +
+  upsA7Total Js ≤ B0` (or `= unfoldBytes`) needs, per transition, `Σ_{records x}(S x?1:2)|enc x| +
+  Σ_{values t}(SV t?1:2)|v_t| ≤ unfoldedBytesT pre_τ + (unfoldedBytesT post_τ − |u.value| −
+  outputByteCharge u.run)`, i.e. the post trie also contains every NON-replaced pre record/value
+  (S = replaced path records = RPL ids, SV = overwritten value), plus `S`/`SV` matching the A7 (a)
+  perms; τ = 0 additionally via `SizedAccountRun.unfolded_bytes` (oldPost vs m.pre).  Not started.
+* Audit `test/AuditTrieA7Cap.lean`.  Integration 4270 jobs; trie audits pass; pin-check ok.
+
+### Open (final for session 6; successor starts here)
+1. A7 (b) node/val part (above).  The ups part and the ups row cap are done.
+2. Cross-lane hypotheses (other lanes): `RcptKeys`, `RcptFinal`, BYTES `hcodec`/`hrest`, DIGEST
+   `hcodec`/`hrest` (with `X := ns.flatMap postSlotDigests`), VBYTES.
+3. Lead: use `N := nativeShaJobsE ns es` (TrieShaEmpty) everywhere the native SHA family appears
+   (sha_bins_ofE, balancedAt_bytes/digest), and ONE `us` from `TrieDigestUps.ups_sha_scheduler`.
+   Prover lane: emit a zero-length `VPRE(vid)` SHA job per empty value record.

@@ -39,13 +39,15 @@ def UpsOrigin (F : List PTrie) (insts : List UpsInst) : Prop :=
 
 /-- The scheduler upsert witnesses behind the native ups instances, with the SHA-job facts
 (`NativeShaFamily`), the budgets of `schedulerBatch_rows`, and (for the ups `DIGEST` inventory,
-`TrieDigestUps`) the allocation and native reader origin of every instance. -/
+`TrieDigestUps`) the allocation and native reader origin of every instance, and (A7 (b), ups part,
+`TrieA7Post.ups_post_bound`) `Σ_u (|u.value| + outputByteCharge u.run) ≤ 2,000,000`. -/
 def UpsSha (insts : List UpsInst) : Prop :=
   ∃ us : List SchedulerUpsertWitness,
     insts.length = us.length ∧ us.length ≤ 32 ∧
     (∀ u ∈ us, u.Valid ∧ u.run.parts.length ≤ 403 ∧ u.pre.wf = true) ∧
     (us.map (fun u => outputByteCharge u.run)).sum ≤ 2131072 ∧
     (us.map (fun u => u.value.length)).sum ≤ 3146912 ∧
+    (us.map (fun u => u.value.length + outputByteCharge u.run)).sum ≤ 2000000 ∧
     ∀ tau u I, us[tau]? = some u → insts[tau]? = some I →
       NativeShaFamily u I ∧ I.v = u.value.map UInt8.toNat ∧ I.tau = tau ∧
       AllocatedNativeInstance us tau u I ∧

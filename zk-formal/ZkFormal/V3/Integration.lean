@@ -51,6 +51,8 @@ import ZkFormal.NearV3.Assembly.TrieShaBus
 import ZkFormal.NearV3.Assembly.TrieShaEmpty
 import ZkFormal.NearV3.Assembly.TrieDigestUps
 import ZkFormal.NearV3.Assembly.TrieDigestTrie
+import ZkFormal.NearV3.Assembly.TrieA7Post
+import ZkFormal.NearV3.Assembly.TrieA7Cap
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec

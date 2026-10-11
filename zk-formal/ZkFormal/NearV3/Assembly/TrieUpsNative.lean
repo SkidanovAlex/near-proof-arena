@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Assembly.TrieUps
 import ZkFormal.NearV3.Assembly.TrieUpb
 import ZkFormal.NearV3.Assembly.TrieUpsOrigin
 import ZkFormal.NearV3.Assembly.TrieUpsKeys
+import ZkFormal.NearV3.Assembly.TrieA7Post
 import ZkFormal.NearV3.Rcpt.Candidates.AcceptedReplaySharedBalance
 import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootRanks
 import ZkFormal.NearV3.Rcpt.Candidates.NativeMidrootRecords
@@ -129,6 +130,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       by change 22 % 3 = 1; decide⟩, rfl⟩,
     by omega, ho, hfam, horigin, ⟨us, hcount, hlen, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.2.1, (hgood u hu).2.1⟩,
       hout, hval,
+      TrieA7Post.ups_post_bound hk hw h hm hv us hpairs (fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.1⟩),
       fun tau u I hu hI => by
         obtain ⟨a, sha, -, -, -, root, hroot, horig⟩ := hinst tau u I hu hI
         exact ⟨sha, a.2.2.2.1, a.1, a, root, hroot, horig⟩⟩, hedges, hbmaps, ?_⟩

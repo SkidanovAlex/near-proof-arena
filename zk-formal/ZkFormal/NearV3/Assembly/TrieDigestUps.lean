@@ -122,7 +122,7 @@ theorem ups_sha_scheduler {insts : List Render.UpsInst} (h : TrieUpsOrigin.UpsSh
           (Sha.Gen.expectedBytes (schedulerShaJobs 0 us)).map Msg.toFp ∧
         ((CompactPhysicalDigests.compactGeneratedDigests (physicalPrefixUps p insts)).map Msg.toFp).Perm
           ((Sha.Gen.expectedDigests (schedulerShaJobs 0 us)).map Msg.toFp) := by
-  obtain ⟨us, hl, h32, hg, hout, hval, hI⟩ := h
+  obtain ⟨us, hl, h32, hg, hout, hval, -, hI⟩ := h
   refine ⟨us, schedulerBatch_rows us h32 (fun u hu => (hg u hu).1) (fun u hu => (hg u hu).2.1) hout hval, ?_⟩
   intro p
   refine ⟨?_, ?_⟩
