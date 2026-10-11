@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.ViewsV3
+import ZkFormal.NearV3.Assembly.RcptViewV3
 import ZkFormal.NearV3.Assembly.ComposeV3
 import ZkFormal.NearV3.Assembly.ShaUnionFacts
 import ZkFormal.NearV3.Assembly.NearAdmission
@@ -332,7 +333,7 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨ws, wW, wS, tW⟩ := walkView hH
   obtain ⟨us, wU, tU⟩ := uniqView hH
   obtain ⟨u, wP, tP⟩ := upsView hH
-  obtain ⟨ls, wR, tR⟩ := rcptV3_view_nearAir hp hsz tr T_RCPT (rcptLocal hH)
+  obtain ⟨ls, wR, tR⟩ := rcptV3_view_nearAir hp hsz hH
   obtain ⟨as, wA, tA⟩ := acctView hH
   obtain ⟨ks, wK, tK⟩ := akeyView hH
   obtain ⟨bs, wB, tB⟩ := bndView hH

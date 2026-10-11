@@ -79,3 +79,16 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   |B.path| ≤ Dp0)` for `tableD`; `srcp_proofs_aligned_complete` adds `hd` for the entries.
   New generic `Render/ColAgree.lean` (local/traffic invariant under agreement on the read
   columns).  **nearV3_size: 6,315,201 → 6,320,769 B** (margin 772,822 B after the hint).
+* **rcptV3 (table 16) repaired — AIR + view done.**  `Rcpt/Tables/RcptR.lean:RcptV3.tableR`
+  (gas surplus gated by `gq`; 13-bit deposit age `xb53..65`; same columns/interactions/
+  maxLog; light module, verbatim copies) with `Assembly/RcptReceiptRepaired.lean:tableR_eq :
+  tableR = receiptArithmeticCandidate` (`rfl`).  `nearAirV3` table 16 := `tableR`.
+  View `Assembly/RcptViewV3.lean:rcptV3_view_nearAir (hp) (hsize) (hH : HoldsP nearAirV3 …)`:
+  the **same** `RcptV3Wf` + exact `rcptTraffic3` as before (the candidate soundness
+  migration `ReceiptCandidateProof.ListChain.view_wf/view_traffic`), with the 13-bit-age
+  no-wrap premise `tprev ≤ 2^22` discharged from the global MEM balance (`mem_send_sources`:
+  only tables 16/17 touch MEM, no public MEM; account opens version 0, receipt writes
+  `r+1 ≤ 2^22`).  Signature change: it now takes `HoldsP` instead of the table-local
+  premise (LinkV3 updated; the old one is removed from `ExtractV3.lean`).
+  `nearV3_size` unchanged by this (6,320,769 B).  Integration builds (2,704 jobs — the
+  candidate soundness chain is now in the closure; elaboration-budget note).
