@@ -172,3 +172,30 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
 * **Proc from acceptance:** `procRender_accepted` — `checkD0a B0` acceptance (`prepD0`, `walkD0`,
   `decodeW`) gives the native blocks of `accepted_prior_core`, whose runs discharge every premise of
   `procRenderV3` (native `ActualRun.run`, `τ = index`, capacity `prior_run_capacities`).
+
+## 2026-10-11 (package 5, fresh session)
+
+* **ssd (table 12, frozen `ScanDist.table`) — DONE over all runs.** `TableLocal` + exact traffic +
+  `22 % 3 = 1` for the honest merged table of an accepted witness, and the `TableRenderV3` instance:
+  * `Render/SsdShardLocal.lean`: `SsdShard.physical` — the missing shard-row local lemma (kind frame,
+    `e1` index test, `kp`/side/grid transitions; `Next` = next-row facts), on top of the existing
+    `ProcDistShard{Average,Output,Grid,Range,Bools}` pieces.
+  * `Render/SsdDesc.lean`: row descriptors `Ssd.Desc` (param / request row / shard / header / cell),
+    `Desc.Valid` (the row lemma's premises), `Desc.Adj` (admissible successors), `FirstOk`, `Final`;
+    `local_at`: every constraint on a descriptor row with an admissible successor (dispatches to
+    `ProcScanParamPhysical`, `ProcScanRequestNativeLocal`, `SsdShard.physical`,
+    `ProcDistHeaderPhysical`, `ProcDistCellLocal`).
+  * `Render/SsdTable.lean`: `bits_of_constraints` (multiplicities are bits wherever the constraints
+    hold: one-hot kinds, `fQ`/`re` gated by `kS`); `table_local` (descriptor chain, `< 2^22` rows →
+    `TableLocal ScanDist.table (SchedHeight.trace … distPad)`).
+  * `Render/SsdChain.lean` (chain append/flatten/range), `Render/SsdScanGen.lean` (`scan_block`:
+    `Gen.Scan.rows R` = descriptors; `conv_indexed`: native converted requests are numbered
+    `cid = 0,1,…`), `Render/SsdDistGen.lean` (`dist_block`: `distRows I R` = descriptors via loop
+    invariants on the generator's sender/receiver endpoints; the allowed-cell check gives `0 < n1,n2`).
+  * `Render/PaddedSsd.lean`: `ssd_descs`, `ssd_v3_aligned_complete hp bs hc` (for `PriorCore p B bs`;
+    trace `ProcScanDistPhases.trace bs`, traffic `rowsTraffic ScanDist.table.interactions (ssdCell bs)
+    22 t pub`, interactions current-row-only by `decide +kernel`).
+  * `Render/BundleSched.lean`: `ssdRenderV3`, `ssdRender_accepted` (from `checkD0a B0` acceptance via
+    `accepted_prior_core`). Audit `test/AuditPaddedSsd.lean` (axioms ⊆ {propext, Classical.choice,
+    Quot.sound}). `ZkFormal.V3.Integration` builds; `make pin-check` OK. Commits bb7c21f3, 4bd67ffa,
+    11fe0d18.
