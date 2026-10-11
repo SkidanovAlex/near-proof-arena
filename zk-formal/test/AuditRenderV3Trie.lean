@@ -4,17 +4,17 @@ import ZkFormal.NearV3.Assembly.RenderV3Trie
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.shaRenderV3
 
-/-- info: 'ZkFormal.NearV3.Assembly.nodeRenderTrie' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'ZkFormal.NearV3.Assembly.nodeRenderV3_ext' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
-#print axioms ZkFormal.NearV3.Assembly.nodeRenderTrie
+#print axioms ZkFormal.NearV3.Assembly.nodeRenderV3_ext
 
 /-- info: 'ZkFormal.NearV3.Assembly.headRenderTrie' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.headRenderTrie
 
-/-- info: 'ZkFormal.NearV3.Assembly.valRenderTrie' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'ZkFormal.NearV3.Assembly.valRenderV3_ext' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
-#print axioms ZkFormal.NearV3.Assembly.valRenderTrie
+#print axioms ZkFormal.NearV3.Assembly.valRenderV3_ext
 
 /-- info: 'ZkFormal.NearV3.Assembly.walkRenderTrie' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
@@ -24,6 +24,10 @@ import ZkFormal.NearV3.Assembly.RenderV3Trie
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.uniqRenderTrie
 
-/-- info: 'ZkFormal.NearV3.Assembly.upsRenderTrie' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'ZkFormal.NearV3.Assembly.upsRenderV3_ext' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
-#print axioms ZkFormal.NearV3.Assembly.upsRenderTrie
+#print axioms ZkFormal.NearV3.Assembly.upsRenderV3_ext
+
+/-- info: 'ZkFormal.NearV3.Assembly.RenderBundleV3.tf_ext_sel' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.RenderBundleV3.tf_ext_sel

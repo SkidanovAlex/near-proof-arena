@@ -172,3 +172,91 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
 * **Proc from acceptance:** `procRender_accepted` — `checkD0a B0` acceptance (`prepD0`, `walkD0`,
   `decodeW`) gives the native blocks of `accepted_prior_core`, whose runs discharge every premise of
   `procRenderV3` (native `ActualRun.run`, `τ = index`, capacity `prior_run_capacities`).
+
+## 2026-10-11 (package 5, fresh session)
+
+* **ssd (table 12, frozen `ScanDist.table`) — DONE over all runs.** `TableLocal` + exact traffic +
+  `22 % 3 = 1` for the honest merged table of an accepted witness, and the `TableRenderV3` instance:
+  * `Render/SsdShardLocal.lean`: `SsdShard.physical` — the missing shard-row local lemma (kind frame,
+    `e1` index test, `kp`/side/grid transitions; `Next` = next-row facts), on top of the existing
+    `ProcDistShard{Average,Output,Grid,Range,Bools}` pieces.
+  * `Render/SsdDesc.lean`: row descriptors `Ssd.Desc` (param / request row / shard / header / cell),
+    `Desc.Valid` (the row lemma's premises), `Desc.Adj` (admissible successors), `FirstOk`, `Final`;
+    `local_at`: every constraint on a descriptor row with an admissible successor (dispatches to
+    `ProcScanParamPhysical`, `ProcScanRequestNativeLocal`, `SsdShard.physical`,
+    `ProcDistHeaderPhysical`, `ProcDistCellLocal`).
+  * `Render/SsdTable.lean`: `bits_of_constraints` (multiplicities are bits wherever the constraints
+    hold: one-hot kinds, `fQ`/`re` gated by `kS`); `table_local` (descriptor chain, `< 2^22` rows →
+    `TableLocal ScanDist.table (SchedHeight.trace … distPad)`).
+  * `Render/SsdChain.lean` (chain append/flatten/range), `Render/SsdScanGen.lean` (`scan_block`:
+    `Gen.Scan.rows R` = descriptors; `conv_indexed`: native converted requests are numbered
+    `cid = 0,1,…`), `Render/SsdDistGen.lean` (`dist_block`: `distRows I R` = descriptors via loop
+    invariants on the generator's sender/receiver endpoints; the allowed-cell check gives `0 < n1,n2`).
+  * `Render/PaddedSsd.lean`: `ssd_descs`, `ssd_v3_aligned_complete hp bs hc` (for `PriorCore p B bs`;
+    trace `ProcScanDistPhases.trace bs`, traffic `rowsTraffic ScanDist.table.interactions (ssdCell bs)
+    22 t pub`, interactions current-row-only by `decide +kernel`).
+  * `Render/BundleSched.lean`: `ssdRenderV3`, `ssdRender_accepted` (from `checkD0a B0` acceptance via
+    `accepted_prior_core`). Audit `test/AuditPaddedSsd.lean` (axioms ⊆ {propext, Classical.choice,
+    Quot.sound}). `ZkFormal.V3.Integration` builds; `make pin-check` OK. Commits bb7c21f3, 4bd67ffa,
+    11fe0d18.
+* **Tables 12–15 from acceptance on one block list** — `Render/SchedAccepted.lean`:
+  `sched_renders_accepted`: `checkD0a B0` acceptance gives one `bs` (`PriorCore p B0 bs` with the
+  codec-output comparator facts, from `accepted_run_codec_comparisons`) and renders R12 (ssd), R13 (proc,
+  all runs), R14 (`memAllRenderV3`: `Mem.table` over all runs, `prior_memory_table` + row traffic of
+  `MemConcatCells.trace`), R15 (`cmpRenderV3` over `ProcNativeOldComparisonCapacity.requests bs` = every
+  run's memory/process comparisons ++ codec-output comparisons ++ distribute comparisons, all `CmpOk`,
+  ≤ 2,936,832), with traces/traffics named for the balances. Audit `test/AuditSchedAccepted.lean`.
+  Commit 2a9b8a3b.
+* **Table 23 from acceptance** — `Render/MrkAccepted.lean`: `mrk_premises_accepted` (native outcomes
+  `m.result.outcomes`, hint `nativeHint k w m`: ≤ 4481 outcomes via A1, public count bytes = outcome
+  count via `p.hdr.n = |appliedReceipts|` and `applyNewChunk_outcomes`, public root bytes =
+  `outcomeRoot` via `prepD0_native_outcomeRoot`), `mrkRender_accepted`. Audit
+  `test/AuditMrkAccepted.lean`. Commit 35c3c530.
+* Verification: `ZkFormal.V3.Integration` builds (3761 jobs); lane audits AuditPaddedSsd,
+  AuditSchedAccepted, AuditMrkAccepted, AuditBundleSched, AuditPaddedSched, AuditSchedProcRepair pass;
+  `make pin-check` OK; no sorry/axiom/native_decide/implemented_by.
+
+* **`B_SCMP` reduced to the codec** — `Render/SchedScmp.lean`: `scmp_balance_core`: on the renders of
+  `sched_renders_accepted`, mem (14) + proc (13) + ssd (12) comparison sends + the codec outputs'
+  comparisons `(bs.flatMap (·.output.cmps)).map cmpMsg` = the comparator's (15) receives. Remaining for
+  SCMP: the codec table's sends equal that list. Audit `test/AuditSchedScmp.lean`. Commit 76a9c6c7.
+
+### Codec (table 11, frozen `Sched.Codec.table`) — open; analysis and plan
+
+* **No obstruction found** for honest D0a witnesses: canon0f fixes the prior links to the layout
+  (`layoutLinks k.L`, one layout for every run, so all instances share the ids the SDL chain carries);
+  `State.decode` rejects trailing bytes, so the pre bytes are exactly `State.encode prev`; the allowance
+  pass (`a1 = bigR ? MA : (cb ? MA : apR + fair)`, `a2 = a1 − al·base`) matches `newAllowance`
+  (`fair ≥ base` for every `n ≥ 1` under PV86, so the subtraction is exact); post allowances
+  `afin ≤ MA < 2^24` fit the three low bytes.
+* **Size of the job.** Nothing proves frozen-codec row legality. The repaired family's proofs
+  (`ProcPriorCodecActual`, ~276 modules) cover rows that agree with the frozen ones on header, hash and
+  `sha256(all_shards)` rows (`ProcPriorCodecAssignments.headerRow/hashRow/ashRow` are the frozen rows,
+  and the frozen-only constraints there are the retired pre-bit ones, which hold), but **record rows
+  differ** (repaired: prior allowance bytes 0, `prbit` = id-byte register, `srcC/hasC/useC` = sender /
+  receiver indices, `nzb/ig2/ib` start extras; frozen: real prior bytes, pre bits, source map).
+* **Plan for the successor** (mirrors the ssd work, which is the template):
+  1. `Render/CodecRows.lean`: frozen record row `recRow` (copy of `Gen.codecRows`' record row:
+     `inst ++ [kR, pos, bpost, bpre, vbg, kidx, klo, khi, fS/fR/fA, g, ig7, e7, ikl, ekl] ++ pb bpo ++
+     qb bpr ++ extra`) with explicit accumulators (`ap = a0 % 256^min(gg,3)`, `apost`, `big`, `cb`).
+  2. Row lemmas: header/hash/ash rows reuse `ProcPriorCodecHeaderFullKind`, `ProcPriorCodecHeaderFlow`,
+     `ProcPriorCodecSideRecord`, `ProcCodecGeneratedTrailer` plus the retired constraints; record rows:
+     24 kinds `(f, gg)`, most constraints integer-exact (`zev = 0`, big `simp` as in
+     `ProcScanParamLocal.constraints`); the **modular** ones need `Fp`: the six `isZ` inverse tests
+     (`ig7, ig2, ikl, ihp, isj, itz`), `nzb = bpre·ib`, and `wt` (`256^gg mod P` for `gg ≥ 4`).
+  3. Descriptors + `table_local` exactly as `Ssd.Desc`/`Ssd.table_local` (codec trace
+     `SchedHeight.trace … codecPad`, row 0 = instance-0 header with `kF`).
+  4. From acceptance: per `NativeBlock` (`b.prior.isSome`, `b.vid`, `b.grants`, `b.forwarded`,
+     `ProcPreparedSequence.input b.pub b.old`); the generator checks (`a2 == R.a2[kk]`,
+     `ft ≤ gfin + gb`) are the repaired generator's too (it succeeds: `NativeBlock.Valid`), modulo
+     `a0Canon[srcOf kk] = ProcActualInput.allowances[kk]` for canonical priors (to prove).
+  5. Note for the balances: R15 currently takes the repaired codec's comparisons (`b.output.cmps`); the
+     frozen codec sends `(apR + fair, MA, cb)` and `(gfin + gb, ft, 1)` — the same values once (4) holds.
+
+### Open (this lane), in order
+1. Codec (table 11): `TableLocal Sched.Codec.table` + traffic over all runs (plan above).
+2. Bus balances (scheduler 40–62, SCMP, ChaCha lane) on the named traffics of R12–R15 (+ codec, ChaCha).
+3. Premises from acceptance still explicit: sha (0, 1; message list shared with the trie lane), ups (7;
+   `UpsNativeOk` per scheduler upsert — needs the trie forest root at τ), ChaCha/rng/shuffle (8–10;
+   honest inputs `Lane.chachaReqs/genCalls/shufInsts` of the native runs: key/positions from the run,
+   draws from `replayShuffle` success (`ProcShuffleReplay`), row bounds need A9 ↔ `Σ R.kfin`).
