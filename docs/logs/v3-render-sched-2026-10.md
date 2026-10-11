@@ -216,6 +216,11 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   AuditSchedAccepted, AuditMrkAccepted, AuditBundleSched, AuditPaddedSched, AuditSchedProcRepair pass;
   `make pin-check` OK; no sorry/axiom/native_decide/implemented_by.
 
+* **`B_SCMP` reduced to the codec** — `Render/SchedScmp.lean`: `scmp_balance_core`: on the renders of
+  `sched_renders_accepted`, mem (14) + proc (13) + ssd (12) comparison sends + the codec outputs'
+  comparisons `(bs.flatMap (·.output.cmps)).map cmpMsg` = the comparator's (15) receives. Remaining for
+  SCMP: the codec table's sends equal that list. Audit `test/AuditSchedScmp.lean`. Commit 76a9c6c7.
+
 ### Codec (table 11, frozen `Sched.Codec.table`) — open; analysis and plan
 
 * **No obstruction found** for honest D0a witnesses: canon0f fixes the prior links to the layout
