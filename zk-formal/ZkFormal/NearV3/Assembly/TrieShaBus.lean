@@ -18,6 +18,10 @@ scheduler `= schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us`, native
   other lanes' identities, stated as counts: codec sends = the sanity jobs' bytes (scheduler lane),
   rcpt + acct + srcp + mrk sends = the receipt and source families' bytes plus the public `BYTES`
   receives (receipt lane).
+
+`balancedAt_bytes` / `balancedAt_digest` take the native family as a parameter `N` (the honest choice
+is `TrieShaEmpty.nativeShaJobsE ns es`, which includes the empty-value jobs that the node records'
+`VPRE` slot lookups need; `N = nativeShaJobs ns es` is the earlier instance).
 -/
 
 namespace ZkFormal.NearV3.Assembly.TrieShaBus
@@ -106,16 +110,16 @@ namespace RenderBundleV3
 variable {pub : List Fp} (R : RenderBundleV3 pub)
 
 /-- **`BYTES` balance of a bundle** from the four SHA families. -/
-theorem balancedAt_bytes (ns : List NodeS3) (es : List ValE) (Js : List UpsInst) (hok : UpsRenderOk Js)
+theorem balancedAt_bytes (ns : List NodeS3) (es : List ValE) (N : List Render.Msg) (Js : List UpsInst) (hok : UpsRenderOk Js)
     (us : List SchedulerUpsertWitness) (receipt source b0 b1 : List Sha.Gen.Msg)
     (h0 : (R ⟨0, by decide⟩).tf = shaBinTraffic b0) (h1 : (R ⟨1, by decide⟩).tf = shaBinTraffic b1)
     (hperm : (Sha.Gen.expectedBytes b0 ++ Sha.Gen.expectedBytes b1).Perm
       (Sha.Gen.expectedBytes ((schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us) ++
-        jobsToSha (nativeShaJobs ns es) ++ receipt ++ source)))
+        jobsToSha N ++ receipt ++ source)))
     (hn : ExtOf (R ⟨T_NODE, by decide⟩).tf (nodeTraffic3 ns))
     (hv : ExtOf (R ⟨T_VAL, by decide⟩).tf (valTraffic es))
     (hu : ExtOf (R ⟨T_UPS, by decide⟩).tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js))))
-    (hnat : jobBytes (nativeShaJobs ns es) = nodeSends3 ns B_BYTES ++ valSends es B_BYTES)
+    (hnat : jobBytes N = nodeSends3 ns B_BYTES ++ valSends es B_BYTES)
     (hups : (Js.flatMap upsBytes).map Msg.toFp = (Sha.Gen.expectedBytes (schedulerShaJobs 0 us)).map Msg.toFp)
     (hcodec : ∀ m, cnt ((R.tf 11).sends B_BYTES) m = cnt (Sha.Gen.expectedBytes (schedulerSanityJobs 0 us)) m)
     (hrest : ∀ m, cnt ((R.tf 16).sends B_BYTES) m + cnt ((R.tf 17).sends B_BYTES) m +
@@ -138,7 +142,7 @@ theorem balancedAt_bytes (ns : List NodeS3) (es : List ValE) (Js : List UpsInst)
     ite_false, e2.1, e4.1, e7.1, e0, e1, shaBinTraffic, upsTraffic, view_bytes_send Js hok]
   have hp' : cnt (Sha.Gen.expectedBytes b0) m + cnt (Sha.Gen.expectedBytes b1) m =
       cnt (Sha.Gen.expectedBytes ((schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us) ++
-        jobsToSha (nativeShaJobs ns es) ++ receipt ++ source)) m := by
+        jobsToSha N ++ receipt ++ source)) m := by
     rw [← cnt_append]; exact (hperm.map Msg.toFp).count_eq m
   simp only [TrieUpsBytes.expectedBytes_append, cnt_append, jobBytes_expected, hnat] at hp'
   have hu' : cnt (Js.flatMap upsBytes) m = cnt (Sha.Gen.expectedBytes (schedulerShaJobs 0 us)) m := by
@@ -159,15 +163,15 @@ the node records, `ns.flatMap postSlotDigests`, whose jobs are the account jobs
 * `hcodec` (scheduler lane): codec 11 receives the digests of the sanity jobs;
 * `hrest` (receipt lane): rcpt 16 + srcp 20 + mrk 23 receive, together with `X`, the digests of the
   receipt and source families.  No public `DIGEST` messages. -/
-theorem balancedAt_digest (ns : List NodeS3) (es : List ValE) (us : List SchedulerUpsertWitness)
+theorem balancedAt_digest (N : List Render.Msg) (us : List SchedulerUpsertWitness)
     (receipt source b0 b1 : List Sha.Gen.Msg) (X : List ZkFormal.Near.Msg)
     (h0 : (R ⟨0, by decide⟩).tf = shaBinTraffic b0) (h1 : (R ⟨1, by decide⟩).tf = shaBinTraffic b1)
     (hperm : (Sha.Gen.expectedDigests b0 ++ Sha.Gen.expectedDigests b1).Perm
       (Sha.Gen.expectedDigests ((schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us) ++
-        jobsToSha (nativeShaJobs ns es) ++ receipt ++ source)))
+        jobsToSha N ++ receipt ++ source)))
     (htrie : ∀ m, cnt ((R.tf 2).recvs B_DIGEST) m + cnt ((R.tf 3).recvs B_DIGEST) m +
         cnt ((R.tf 7).recvs B_DIGEST) m =
-      cnt (Sha.Gen.expectedDigests (schedulerShaJobs 0 us ++ jobsToSha (nativeShaJobs ns es))) m + cnt X m)
+      cnt (Sha.Gen.expectedDigests (schedulerShaJobs 0 us ++ jobsToSha N)) m + cnt X m)
     (hcodec : ∀ m, cnt ((R.tf 11).recvs B_DIGEST) m = cnt (Sha.Gen.expectedDigests (schedulerSanityJobs 0 us)) m)
     (hrest : ∀ m, cnt ((R.tf 16).recvs B_DIGEST) m + cnt ((R.tf 20).recvs B_DIGEST) m +
         cnt ((R.tf 23).recvs B_DIGEST) m + cnt X m = cnt (Sha.Gen.expectedDigests (receipt ++ source)) m) :
@@ -186,7 +190,7 @@ theorem balancedAt_digest (ns : List NodeS3) (es : List ValE) (us : List Schedul
     ite_false, e0, e1, shaBinTraffic]
   have hp' : cnt (Sha.Gen.expectedDigests b0) m + cnt (Sha.Gen.expectedDigests b1) m =
       cnt (Sha.Gen.expectedDigests ((schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us) ++
-        jobsToSha (nativeShaJobs ns es) ++ receipt ++ source)) m := by
+        jobsToSha N ++ receipt ++ source)) m := by
     rw [← cnt_append]; exact (hperm.map Msg.toFp).count_eq m
   have ht := htrie m
   have hr := hrest m

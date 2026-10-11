@@ -748,3 +748,29 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
 1. A7 (b) (lead: main has moved — do it next).
 2. DIGEST `htrie` (pieces above; first settle the empty-value question).
 3. Cross-lane (assigned elsewhere): `RcptKeys`, `RcptFinal`, BYTES/DIGEST `hcodec`/`hrest`, VBYTES.
+
+## 2026-10-12 (session 6) — empty-value question SETTLED: (b) proof-statement issue
+
+* Merged origin/main 717390e7.
+* **Verdict (b)** (not an AIR gap).  Facts: `NodeV3` gate `gD = gP + fs·sVH·tv` — every revealed
+  value window receives `DIGEST (VPRE(vid), vlen, reg)`, no `vlen ≠ 0` condition, so an empty
+  value (`vlen = 0`) requests `DIGEST (VPRE(vid), 0, sha256 [])`.  `valA7 = ValV3.table + A7`
+  sends no DIGEST (the `vz` row only gates `BYTES`/`VBYTES` off; the `EmptyValue.table` repair is
+  NOT in `nearAirV3`).  Only SHA tables 0/1 send DIGEST.  The SHA table hashes zero-length
+  messages (`Sha.MsgsOk` = bytes < 256, len < 2^25, rows; `sha_complete_closed` has no
+  non-emptiness premise), so the job `⟨VPRE(vid), []⟩` supplies exactly that digest with no
+  BYTES traffic.  Whether D0a admits an empty revealed value was NOT decided (the old
+  `EmptyValueDigestGap` shows the reader accepts one; no full witness) — it does not matter:
+  the honest family simply includes the empty jobs.  Cost: the established bound already
+  charges every value record (`nodeValueShaRows = nodePairShaRows + hashRows (all lengths)`),
+  and equals the E family's rows exactly.
+* New `Assembly/TrieShaEmpty.lean`: `nativeValueShaJobsE`/`nativeShaJobsE` (one VPRE job per
+  value record), `jobBytesE` (same bytes as `nativeShaJobs`), `valueJobsE_digests`
+  (`= EmptyValue.valueDigests es` exactly), `nativeShaJobsE_rows` (`= nodeValueShaRows`),
+  `accepted_nodeValueShaRows`, **`native_sha_ofE`**, **`sha_bins_ofE`**.
+* `TrieShaBus.balancedAt_bytes`/`balancedAt_digest` generalised to a native family parameter
+  `N : List Render.Msg` (old = `N := nativeShaJobs ns es`; `balancedAt_digest` no longer takes
+  `ns es`).  Honest choice: `N := nativeShaJobsE ns es`.
+* Rust prover note (prover lane): the SHA job list must include a zero-length `VPRE(vid)` job
+  per empty value record (no SHA job builder in `src/v3/` yet).
+* Audit `test/AuditTrieShaEmpty.lean` (axioms + behaviour guard).  Integration 4191 jobs.
