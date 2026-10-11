@@ -238,6 +238,8 @@ import ZkFormal.NearV3.Render.HeadRender
 import ZkFormal.NearV3.Render.Padded
 import ZkFormal.NearV3.Render.PaddedTrie
 import ZkFormal.NearV3.Render.PaddedSha
+import ZkFormal.NearV3.Render.PaddedCongr
+import ZkFormal.NearV3.Render.PaddedChacha
 import ZkFormal.NearV3.Render.NodeRender
 import ZkFormal.NearV3.Render.UniqRender
 import ZkFormal.NearV3.Render.UpsRender

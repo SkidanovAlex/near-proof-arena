@@ -182,11 +182,9 @@ theorem log_bounds (calls : List Call) (hrows : (honestRows calls).length ≤ 2 
   omega
 
 /-- **The transition structure**: every row and its cyclic successor form a `Step`. -/
-theorem step_at (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (t r : Nat)
-    (hr : r < (honestTrace calls).height t) :
-    Step (rowAt calls r) (rowAt calls ((r + 1) % (honestTrace calls).height t)) := by
-  have hlen := len_le_height calls t
-  generalize (honestTrace calls).height t = H at hr hlen
+theorem step_H (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (H r : Nat)
+    (hlen : (honestRows calls).length ≤ H) (hr : r < H) :
+    Step (rowAt calls r) (rowAt calls ((r + 1) % H)) := by
   obtain ⟨hL, -⟩ := links_full calls hok (H - (honestRows calls).length) (row0_start calls hok)
   have hlenF : (honestRows calls ++ List.replicate (H - (honestRows calls).length) Row.pad).length = H := by
     rw [List.length_append, List.length_replicate]; omega
@@ -199,5 +197,16 @@ theorem step_at (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (t r : Nat
   · rw [show r + 1 = H by omega, Nat.mod_self]
     rw [getD_app_right (by rw [hlenF]; omega), hlenF, show r + 1 - H = 0 by omega, getD_single] at this
     exact this
+
+theorem step_at (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (t r : Nat)
+    (hr : r < (honestTrace calls).height t) :
+    Step (rowAt calls r) (rowAt calls ((r + 1) % (honestTrace calls).height t)) :=
+  step_H calls hok _ r (len_le_height calls t) hr
+
+/-- `step_at` at an explicit height `2^L` holding the rows. -/
+theorem step_atL (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) {L : Nat}
+    (hL : (honestRows calls).length ≤ 2 ^ L) (t r : Nat) (hr : r < (traceAt calls L).height t) :
+    Step (rowAt calls r) (rowAt calls ((r + 1) % (traceAt calls L).height t)) :=
+  step_H calls hok _ r hL hr
 
 end ZkFormal.Chacha.Rng.Complete

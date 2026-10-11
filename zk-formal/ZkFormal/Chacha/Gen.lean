@@ -198,8 +198,12 @@ def honestLog (reqs : List Req) : Nat := max 1 (clog2 (86 * reqs.length))
 
 def honestCell (reqs : List Req) (r c : Nat) : Nat := rowCell ((honestRows reqs).getD r .pad) c
 
+/-- The honest rows at an explicit height `2^L` (padding rows below). -/
+def traceAt (reqs : List Req) (L : Nat) : ZkFormal.Air.Trace ZkFormal.Algebra.Fp :=
+  ⟨fun _ => L, fun _ r c => ZkFormal.Algebra.Fp.ofNat (honestCell reqs r c)⟩
+
 def honestTrace (reqs : List Req) : ZkFormal.Air.Trace ZkFormal.Algebra.Fp :=
-  ⟨fun _ => honestLog reqs, fun _ r c => ZkFormal.Algebra.Fp.ofNat (honestCell reqs r c)⟩
+  traceAt reqs (honestLog reqs)
 
 /-! ## Expected bus traffic -/
 
