@@ -399,3 +399,31 @@ identity on NATIVE posts, per transition `τ` with scheduler run `u_τ`:
   lane's acct component must be `acctV3Traffic as` for those native views.
 * Verification: Integration 4153 jobs; audits `AuditTrieVslotNative`, `AuditTrieAll`, `AuditTrieUps`,
   `AuditTrieA7Perm` pass.
+
+### Open after session 4 (exact; successor starts here)
+
+1. **A7 (b) / ups row cap / size component** — blocked on a spec decision (see "A7 (b): NOT
+   provable" above).  Provable now and needed under any fix: the per-transition structural identity
+   on native posts (plan in that section).  The `TrieA7Bal` module doc still calls the A7 (a) Perm
+   "open" — it is closed by `TrieA7Perm.a7_perm_native` (+ `UpsOrigin` from `trie_all_accepted`).
+2. **SHA / BYTES / DIGEST**: `TrieShaTwo.two_sha_renders` takes the four families as parameters.
+   Open: (i) one accepted-witness theorem giving scheduler/native/receipt families with the bounds
+   1,663,260 / 2,925,275 / 1,373,299 for the SAME native choice as `trie_all_accepted`
+   (`NativePackedAllocation.accepted` gives `native := jobsToSha (nativeShaJobs ns vals)` ≤ 2,925,275
+   but re-chooses `writes/oldPost`; port it onto `coverage_kf`'s choice); (ii) the identification
+   of those families with the v3 `BYTES` senders (node, val, ups, codec, rcpt, acct, srcp, mrk) and
+   `DIGEST` receivers, then the two bus balances.
+3. **UPB**: the balance exists only for the compact ups table
+   (`AcceptedRankedWindowBalance.accepted_ranked_window_balance`: windows
+   `PhysicalWindowRequests.keys`, counters `patchWindowCounters … physicalWindowRank`).  For `upsA7`
+   (UpsV3 interactions `recv/send B_UPB (c rd) (upbMsg u/u+1)`) one needs: `W := ` the UpsV3 read
+   keys in `useReq ws insts W`, a UPB counter ranking of the rendered ups rows (as `upsRanked`
+   does for EDGE/BMAP walk counters), and the coverage `physicalWindowKey ∈ nodeWindowKeys` (the
+   last component of `accepted_window_coverage` / `coverage_kf`, currently discarded by
+   `accepted_ups_walks`).
+4. **MEMD, S0F/SPOST/SPLEN, KEYNIB/FINAL/VBYTES**: unchanged from session 2 (no completeness-side
+   lemma for `UpsV3.table`'s MEMD; S0F/SPOST/SPLEN need the scheduler lane's codec render;
+   KEYNIB/FINAL/VBYTES need the receipt/qv/codec sides).
+5. **VSLOT**: closed on the trie side (`vslot_native`); needs the receipt lane's acct component
+   `= acctV3Traffic as` with `nativeAccountViews m.pre oldPost (appliedReceipts k w) = some as` for
+   the `oldPost` of `trie_all_accepted`.
