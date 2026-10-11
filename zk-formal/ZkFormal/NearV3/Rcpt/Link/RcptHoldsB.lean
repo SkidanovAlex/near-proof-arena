@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Rcpt.Link.RfEnc
 import ZkFormal.NearV3.Rcpt.Link.RcptHolds
 import ZkFormal.NearV3.Rcpt.Link.ValBytes
+import ZkFormal.NearV3.Rcpt.Link.FwdLinks
 
 /-!
 # ZkFormal.NearV3.Rcpt.Link.RcptHoldsB — `RecBytes` and the refund identity discharged
@@ -11,7 +12,9 @@ import ZkFormal.NearV3.Rcpt.Link.ValBytes
   `ms` of refund shape) force `rs = ms` (`pRefund` is prefix-free on refund-shaped receipts);
 * **`refunds_of`** — the run's refunds are `decodeBody h.body`'s (`hrf`);
 * **`mainRun_of_holdsP_sha`** — `mainRun_of_holdsP` with `RecBytes` (`preB_of` under the trie
-  link's `ShaHyp`, `burntBytes`, `ramtBytes`) and `hrf` discharged.
+  link's `ShaHyp`, `burntBytes`, `ramtBytes`) and `hrf` discharged;
+* **`mainRun_of_holdsP_fwd`** — moreover `hsz` from the AIR's link-indexed forwarding check on
+  `p.fwd` (`FwdLinks.hsz_of_links`, A12 from `prepClaim_layout_wf`), given `own ∈ shardIds`.
 -/
 
 namespace ZkFormal.NearV3.RcptLink
@@ -198,5 +201,41 @@ theorem mainRun_of_holdsP_sha {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr 
   refine ⟨pc, refunds, hc, hd, ?_⟩
   intro base Tf pre mid so v L hv hR hdem
   exact K base Tf pre mid so v L hv hR (refunds_of hp hsz hH T W H hc hb' hgp base Tf hd) hdem
+
+/-- **The receipt core with the per-shard demand check replaced by the AIR's link-indexed check
+on the public `p.fwd`** (`fwdDemand p.fwd (o·n + r) ≤ so.grant own ids[r]`, `o = idx(own)`).
+Remaining (lane v3-link): `MainTrieLink`, the queue reads, `ShaHyp`, `own ∈ shardIds` and the
+identification of the scheduler table's link grant with `so.grant own ids[r]`. -/
+theorem mainRun_of_holdsP_fwd {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : Trace Fp}
+    {r : V3Records} (hp : prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    (hn : h.n = (flatR r.lists).length)
+    {others : List Msg} {shaS shaR : Nat → List Fp → Nat}
+    (S : ZkFormal.NearV3.Link3.ShaHyp r.nodes r.heads r.values others shaS shaR) :
+    ∃ pc, prepClaim cb = .ok pc ∧
+      ∀ (base : Nat → Bytes) (Tf : (Nat → Bytes) → PTrie) (pre mid : PTrie) (so : SchedOut)
+        (v : Qv.MainValues) (o : Nat),
+        MainTrieLink r.lists r.accts base Tf pc.ctxB2 pre mid so →
+        v.Valid →
+        v.Reads pre mid (Tf ((recModel r.lists r.accts base Tf).valsAt (flatR r.lists).length)) →
+        Scheduler.indexOf pc.ctxB2.layout.shardIds pc.ctxB2.own = some o →
+        (∀ k, (hk : k < pc.ctxB2.layout.shardIds.length) →
+          ZkFormal.NearV3.Sched.fwdDemand p.fwd (o * pc.ctxB2.layout.shardIds.length + k) ≤
+            so.grant pc.ctxB2.own pc.ctxB2.layout.shardIds[k]) →
+        applyNewChunk prims pc.ctxB2 pre ((rv r.lists).map RcptV.toReceipt) =
+          .ok ((recModel r.lists r.accts base Tf).mainOut pc.ctxB2) := by
+  obtain ⟨pc, refunds, hc, hd, K⟩ := mainRun_of_holdsP_sha hp hsz hH T W hn S
+  obtain ⟨pc', refunds', hc', F⟩ := prepD0_fwd hp
+  rw [hc] at hc'
+  cases hc'
+  rw [F.body] at hd
+  cases hd
+  refine ⟨pc, hc, ?_⟩
+  intro base Tf pre mid so v o L hv hR ho hL
+  rw [F.fwd] at hL
+  exact K base Tf pre mid so v L hv hR (hsz_of_links (prepClaim_layout_wf hc) ho hL)
 
 end ZkFormal.NearV3.RcptLink

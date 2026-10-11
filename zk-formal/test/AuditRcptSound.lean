@@ -121,3 +121,15 @@ import ZkFormal.NearV3.Rcpt.Link.RcptHoldsB
 /-- info: 'ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_sha' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_sha
+
+/-- info: 'ZkFormal.NearV3.RcptLink.hsz_of_links' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.hsz_of_links
+
+/-- info: 'ZkFormal.NearV3.RcptLink.prepClaim_layout_wf' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.prepClaim_layout_wf
+
+/-- info: 'ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_fwd' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_fwd
