@@ -164,3 +164,8 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   `lists.flatten.map Input.receipt = appliedReceipts k w`, the sort render's honest input is exactly
   `lists.flatten.map Input.receipt` and it emits `sortTraffic (NativeSortIds.input (that list))` —
   no mismatch; well-formedness, distinct ids and `≤ 8192` come from acceptance.
+* **`TableRenderV3` packaging** — `Render/BundleSched.lean`: `shaRenderV3` (0, 1), `upsRenderV3` (7,
+  native data), `chachaRenderV3` (8), `rngRenderV3` (9), `shufRenderV3` (10), `procRenderV3` (13,
+  native runs), `memRenderV3` (14), `cmpRenderV3` (15), `mrkRenderV3` (23, empty tree included),
+  `sortRenderV3` (24, from `checkD0a B0` acceptance, RIDS = receipt lane's list). Each takes the
+  render's explicit honest-input premises. Audit `test/AuditBundleSched.lean`.
