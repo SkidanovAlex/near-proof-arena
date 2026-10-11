@@ -28,6 +28,21 @@ and `docs/HANDOVER.md` first.
   semantic **soundness** premise from `ExtractV3Stmt` through the proved
   `factorSound` (`Assembly/FactorSound.lean`, axioms `{propext, Classical.choice,
   Quot.sound}`).  All new theorems have exactly those axioms.
+* **The AIR-to-semantics interface** (`Assembly/ExtractV3.lean`, `ViewsV3.lean`):
+  fixed table indices, `TableLocal` of every table from `HoldsP`, and **all eleven
+  per-table views** instantiated at those indices from one `HoldsP` witness
+  (`nodeView … sizeView`, plus `rcptV3_view_nearAir`).
+* **The composition plumbing** (`Assembly/NearAirBus.lean`, `ComposeV3.lean`,
+  `RenderV3Assemble.lean`, `RenderV3Trace.lean`, `RenderV3.lean`):
+  `busCount_nearAirV3` (the `busCount` decomposition over the 25 tables),
+  `holdsP_of_parts`/`holdsP_of_table_traffic` (assemble `HoldsP` from per-table
+  `TableLocal`s + fit + balance), `count_sel`, and `traceSum` composition
+  (`tableLocal_traceSum`, `tableTraffic_traceSum`: every per-table obligation is
+  invariant under reindexing a full trace from per-table traces). The named
+  render/heights obligation types are in `RenderV3.lean` (`FitsV3Stmt`,
+  `LocalStmtV3`, `TrafficStmtV3`, `BusStmtV3`).
+* **The link interface** (`Assembly/LinkV3.lean`): `LinkV3Stmt`, `V3Records`,
+  `relD0a_of_good`.
 
 ## 2. Decisions taken (item 0)
 
@@ -40,6 +55,22 @@ The ChaCha word bound and Merkle-path budget were **already decided** on
   honest roll-in-aligned traces so `nearV3_size` applies with a ≥ 700 KB margin.
 * `ZkFormal.NearV3.Rcpt.SrcpDepth` and `ZkFormal.NearV3.Sched.Complete.WordBound`
   carry the A9/A10 height arithmetic.
+
+**Open design point for the render (important).**  The honest aligned generators
+(`Render/Padded.lean`, `Render/PaddedTrie.lean`) round each table's height to
+`padLog22 (logOf rows)` — a value `≡ 1 (mod 3)` — so the trace headers are
+`RollAligned` and `nearV3_size` applies.  For the small tables the rounded cap
+(`padLog22 maxLog`) can exceed the table's natural `maxLog` (head: 11 → 13; walk:
+21 → 22; acct: 17 → 19; size: 2 → 4; sort: 18 → 19).  Two consistent options:
+1. **rounded caps in `nearAirV3`** (chosen direction): set each reused table's
+   `maxLog := padLog22 naturalMaxLog` and instantiate the already-cap-parametric
+   views (`head_view_at cap`, `walk3_view_at cap`) at that cap.  The two views
+   that still hardcode a cap in a helper (`AcctProof.height_le : ≤ 2^17`, the
+   `size_view` `2 ∨ 4` height split) must be generalized to a `cap` parameter
+   (mechanical; the local/traffic proofs do not depend on the cap).
+2. natural caps + a stronger alignment criterion than `% 3 = 1`.
+Change any table cap must also update the size model (`Size/V3Eval.lean`,
+`Size/V3Synth.lean` transcribe the shapes) — the aligned number changes.
 
 ## 3. Remaining obligations (the whole end-to-end gap)
 
@@ -66,27 +97,36 @@ into `GoodV3`, using the `Link/` folder (`root_tau`, `build_tau`, `walks_tau`,
 `HeaderCompose`, `NativeGoodGap`).  This is v1's `Near/Extract/Statements.lean`
 `LinkStmt`; it is the `link` work package.
 
-### 3.2 `RenderV3Stmt` (completeness)
+### 3.2 `RenderV3Stmt` (completeness, item 4)
 ```
 ∀ B cb w, checkD0a B cb w = .ok () →
-  ∃ h p tr, prepD0 cb h = .ok p ∧ HoldsP nearAirV3 (Udr.pubOf Fp (Prep.encode p)) tr
+  ∃ h p oh tr, prepD0 cb h = .ok p ∧ HoldsP nearAirV3 (Udr.pubOf Fp (Public.preparedBytes p oh)) tr
     ∧ (Hint.encode h).length < 2^32 ∧ (VdP nearAirV3).headerOk (trHdr nearAirV3.toAir tr) = true
 ```
-Honest trace construction.  `Render/Padded*.lean` has aligned generators for
-head/value/boundary/access-key/node/uniq/walk; the remaining tables
-(`rcptV3`, `srcpV3`, `qvV3`, `upsV3` render M7d, `mrk`/`sort`, ChaCha/scheduler)
-and the whole-trace assembly are **missing**.
+Honest trace construction, v1's `Render/Trace.lean:render` + `Render/Compose.lean:render_stmt`
+scaled to `nearAirV3`.  **Infrastructure added:** `Assembly/ComposeV3.lean`
+(`holdsP_of_parts` assembles `HoldsP` from the per-table `TableLocal`s, the public
+fit and the balance; `balance_decomp`) and `Assembly/NearAirBus.lean`
+(`busCount_nearAirV3` decomposes `busCount` over the 25 tables).  The per-table
+local+traffic renders that exist (`Render/{HeadRender,NodeRender,ValRender,
+WalkRender,UniqRender,UpsRender}.lean`, `Render/Padded*.lean`,
+`Rcpt/Render/Srcp/**`, `Rcpt/Render/{AcctRender,AkeyRender,BndRender,SizeRender}`,
+`Qv/Candidates/**`) still need a single `renderV3 : Prep → ExtV3 → Trace Fp`
+assembling them in the fixed `nearAirV3` order, plus the renders for
+`rcptV3`/`srcpV3`/`qvV3`/`chacha`/`scheduler`, and the per-bus `BusStmt`-analogue
+over the 25 tables.  This is v1's ~23 k LOC `Near/Render/`.
 
-### 3.3 `AlignedV3Stmt` (roll-in alignment)
+### 3.3 `AlignedV3Stmt` (roll-in alignment, item 4)
 The honest trace's headers land on regular arity-8 commit layers
 (`Size/PadHeader.lean` has `rollAligned_of_trace_mod3`); needs the concrete
 `traceOf` from 3.2.
 
-### 3.4 Heights (item 5)
-`honestTrace_fits`/`FitsV3Stmt`: derive each `tr.log t ≤ nearAirV3.tables[t].maxLog`
+### 3.4 Heights (item 5)`honestTrace_fits`/`FitsV3Stmt`: derive each `tr.log t ≤ nearAirV3.tables[t].maxLog`
 from `InD0a` (A1/A7/A8/A9/A10).  The scheduler arithmetic exists
-(`Sched/Complete/Height.lean`, `heights_prep`); the trie/rcpt height bounds are
-carried in the view types (`NodeWf3.rows`, `WalkWf3`, …).  Downstream of 3.1/3.2.
+(`Sched/Complete/Height.lean`, `heights_prep`); the trie/rcpt row bounds are
+already carried in the view types (`NodeWf3.rows ≤ 2^22`, `WalkWf3`,
+`RcptV3Wf`, …), so once `renderV3` sets `log t = 22` the height obligation reduces
+to the view row bounds.  Downstream of 3.2.
 
 ### 3.5 Rust prover (item 8)
 `np-udr-stark-v2` does not exist in Rust: no `AirP`/`pubSegs`, no `nearAirV3`
@@ -101,7 +141,6 @@ remaining work is the per-table view/link/render volume (items 2–5), the Rust
 prover (item 8), and governance (item 9).
 
 ## 5. Parallelisation: work packages for other agents
-
 The assembly layer is **frozen**; every package below plugs into a fixed
 interface in `Assembly/NearAir.lean` (`nearAirV3`, its table indices in
 `Assembly/ExtractV3.lean`) and the three statements in `Assembly/NearAdmission.lean`
