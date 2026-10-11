@@ -331,6 +331,29 @@ theorem Tf_post (hp : NearSpecV3.prepD0 cb h = .ok p)
   cases hT
   rw [post_xHeads hxh (L.chain.ups_mem 0 hK), hQpost]
 
+/-- **A `VAL` walk of `walkV3` reaches its value record** from the root of its instance's head
+(`reach_walk` on all walks: `walkV3`'s and the ups segments'). -/
+theorem walk_reach (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    {wv : WalkR} (hwv : wv ∈ r.walks) (hfk : wv.fk = FK_VAL) :
+    fullReach (Rpost r.nodes r.values) (headAt r.heads wv.tau).rid wv.key3 = some (vpos (vid0 r.values) wv.k) ∧
+      vpos (vid0 r.values) wv.k < r.values.length := by
+  have L := trieLink_of hp hsz hH T W
+  have hK := LinkKeynib.keynibOk_of hp hsz hH T W
+  have hall : WalkWf3 (allWalks r.walks r.ups) := allWalks_wf_22 W.nodes W.walks W.walkSteps W.ups L.bmap
+  obtain ⟨hd, hhd, htau, -, hr⟩ := reach_walk W.nodes W.heads W.values hall L.parent L.vparent
+    (walkBal_all W.ups (Or.inl rfl) L.edge) (walkBal_all W.ups (Or.inr rfl) L.bmap) (recBytes_of W L)
+    (fun w hw => by
+      rcases List.mem_append.1 hw with h' | h'
+      · exact hsym_of W.walks hK w h'
+      · exact ups_sym r.ups w h')
+    (List.mem_append_left _ hwv)
+  have he : hd = headAt r.heads wv.tau := by rw [← htau]; exact (L.chain.head_all hd hhd).2
+  rw [← he]; exact hr hfk
+
 end Key
 
 end LinkTrieFam
