@@ -15,6 +15,7 @@ block (`kc = 0`, `τ + 1`), or the first header of the instance (`T = T0`, `kq =
 namespace ZkFormal.NearV3.Sched.Proc
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table.E
+open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Proc
 
 section
 variable {tr : Trace Fp} {tp : Nat} {pub : List Fp}
@@ -91,7 +92,7 @@ theorem proc_keys (hL : PLocal tr tp pub) (hH : tr.height tp ≤ 2 ^ 22) {f : Na
         [cv tr tp f tau, TAG_KEY, i, cv tr tp (f + i) sbIn, cv tr tp (f + i) sbOut, 0, 0].map
           Fp.ofNat) ∧
     cv tr tp (f + 15) kl = 1 ∧ f + 16 < tr.height tp ∧
-    (∀ i, i < 16 → cv tr tp (f + 16) (colL i) =
+    (cv tr tp (f+16) kK=0 → ∀ i, i < 16 → cv tr tp (f + 16) (colL i) =
       (cv tr tp (f + i) sbIn + 256 * cv tr tp (f + i) sbOut) % 2013265921) ∧
     (cv tr tp (f + 16) act = 0 ∨
       (cv tr tp (f + 16) kK = 1 ∧ cv tr tp (f + 16) kc = 0 ∧
@@ -105,26 +106,30 @@ theorem proc_keys (hL : PLocal tr tp pub) (hH : tr.height tp ≤ 2 ^ 22) {f : Na
   obtain ⟨h16, -, -⟩ := key_reg hL h15 k15
   rw [show f + 15 + 1 = f + 16 by omega] at h16
   -- the rotation
-  have rot : ∀ d, d ≤ 15 → ∀ i, i < 16 →
+  have rot (hn : cv tr tp (f+16) kK=0) : ∀ d, d ≤ 15 → ∀ i, i < 16 →
       cv tr tp (f + 16) (colL i) = cv tr tp (f + 15 - d) (colL ((i + 1 + d) % 16)) := by
     intro d
     induction d with
     | zero =>
       intro _ i hi
-      have := (key_reg hL h15 k15).2.2 i hi
+      have := (key_reg hL h15 k15).2.2 i hi (Or.inr (by simpa [Nat.add_assoc] using hn))
       rw [show f + 15 + 1 = f + 16 by omega] at this
       rw [this]; rfl
     | succ d ih =>
       intro hd i hi
-      obtain ⟨hw, kw, -, -⟩ := KR (14 - d) (by omega)
-      rw [show f + (14 - d) = f + 15 - (d + 1) by omega] at hw kw
-      have := (key_reg hL hw kw).2.2 ((i + 1 + d) % 16) (Nat.mod_lt _ (by omega))
+      obtain ⟨hw, kw, cw, -⟩ := KR (14 - d) (by omega)
+      rw [show f + (14 - d) = f + 15 - (d + 1) by omega] at hw kw cw
+      have hz : cv tr tp (f+15-(d+1)) kl=0 := by
+        have hb := (kinds hL hw).2.2.2.2.1
+        have he := (kl_iff hL hw).2 kw
+        omega
+      have := (key_reg hL hw kw).2.2 ((i + 1 + d) % 16) (Nat.mod_lt _ (by omega)) (Or.inl hz)
       rw [show f + 15 - (d + 1) + 1 = f + 15 - d by omega] at this
       rw [ih (by omega) i hi, this, show ((i + 1 + d) % 16 + 1) % 16 = (i + 1 + (d + 1)) % 16 by omega]
-  have limbs : ∀ i, i < 16 → cv tr tp (f + 16) (colL i) =
+  have limbs : cv tr tp (f+16) kK=0 → ∀ i, i < 16 → cv tr tp (f + 16) (colL i) =
       (cv tr tp (f + i) sbIn + 256 * cv tr tp (f + i) sbOut) % 2013265921 := by
-    intro i hi
-    rw [rot (15 - i) (by omega) i hi, show f + 15 - (15 - i) = f + i by omega,
+    intro hn i hi
+    rw [rot hn (15 - i) (by omega) i hi, show f + 15 - (15 - i) = f + i by omega,
       show (i + 1 + (15 - i)) % 16 = 0 by omega]
     obtain ⟨hw, kw, -, -⟩ := KR i hi
     exact (key_reg hL hw kw).2.1

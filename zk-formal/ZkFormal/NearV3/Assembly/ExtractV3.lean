@@ -83,7 +83,7 @@ theorem nearTablesFull_eq : nearAirV3.tables =
      ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
        ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN ZkFormal.NearV3.Sched.B_SSHUF,
      ZkFormal.NearV3.Sched.Codec.table, ZkFormal.NearV3.Sched.ScanDist.table,
-     ZkFormal.NearV3.Sched.Proc.table, ZkFormal.NearV3.Sched.Mem.table,
+     ZkFormal.NearV3.Sched.Proc.tableB, ZkFormal.NearV3.Sched.Mem.table,
      ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP,
      ZkFormal.NearV3.RcptV3.table, {ZkFormal.NearV3.AcctV3.table with maxLog := 19}, ZkFormal.NearV3.AkeyV3.table,
      ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.table, {ZkFormal.NearV3.SizeV3.table with maxLog := 4},

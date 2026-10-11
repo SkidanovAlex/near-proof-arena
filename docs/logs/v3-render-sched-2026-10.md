@@ -123,3 +123,23 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   new `hasC`, prior canonicalisation, `CodecValOwn`). Completeness exists for repaired codec
   (`ProcCodecNativeConcatLocal`, `ProcCodecConcatTraffic`), repaired proc (`prior_process_table`,
   B_SCMP traffic only), and ssd only B_SCMP traffic (no `TableLocal ScanDist.table`).
+
+## 2026-10-11 (package 3: Task 2 in full)
+
+* Merged `origin/lane/v3-a11` (A7 measure, f65d9ece) and integration b; **real rebuild** after
+  the lead's build-cache cleanup: `ZkFormal.V3.Integration` 2199 jobs OK; all audits re-run OK.
+* **Analysis (scheduler repairs).** Only the process table needs a change for completeness:
+  the frozen key rotation ties consecutive instances' seeds when a key block is followed by the
+  next instance's key block (an instance with no rounds; `ProcEmptyBoundaryRegression`). The
+  codec repair family (`ProcPriorCodecActual`, SDG cut, bus 69→40) targets non-canonical priors,
+  which `checkD0a` rejects (`canon0f`; frozen `SoundPre.codec_prevCanon`), so codec and ssd stay
+  frozen (completeness there is proof work, not a table change).
+* **Proc repair adopted with soundness re-proved.** `Sched/Tables/Proc.lean`: `rotationB`,
+  `cKeyB`, `constraintsB`, `tableB` (= `ProcBoundaryRepair.table`). The process view chain
+  (`Sched/View/Proc*.lean`, `Sched/Link/ProcRows.lean`) now states `PLocal` over `constraintsB`
+  (bodies from the kernel-checked `Candidates/ProcSound` copy; `key_reg`/`proc_keys` carry the
+  boundary hypothesis); the Link layer's `SchedOwn.tp_tab` and all `htab` premises name
+  `Proc.tableB`. `schedCore_sound`/`'`/`''` and `SoundFin` rebuild unchanged in conclusion.
+  `nearAirV3` table 13 = `Proc.tableB` (`Sched.Budget.schedTables` too); `nearAirV3_wf`/`npOkPg`
+  and `nearV3_size` (6,330,945 B, shapes identical) re-checked. All 22 reverse dependents of
+  `Sched/View`/`Sched/Link` (candidates included) build. Audit `test/AuditSchedProcRepair.lean`.
