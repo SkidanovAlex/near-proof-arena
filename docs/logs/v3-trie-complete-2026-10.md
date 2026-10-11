@@ -151,3 +151,13 @@ BYTES/DIGEST parked; A7 after the link merge.
   fits); `UpsV3.table` does.  Under the 2026-10-11 A7 measure (whole rebuilt post trie) the new
   values and the new path nodes are post-trie bytes, so `R ≤ 128 + Σ_τ unfoldedBytesT post_τ ≤
   128 + B0` — provable with the A7 (b) accounting (same work package).
+* `Assembly/TrieUpsRoot.lean` — **MIDROOT and ROOT**.  Compact-table row lemmas ported to
+  `upsV3` (same interactions on these buses, same `W`/`V` cells, `Q` rows silent):
+  `aligned_view_midroot` (ups receives `[τ, rid] ++ mid` once per instance),
+  `aligned_view_root` (ups sends `[τ+1] ++ post` once per instance); `balancedAt_midroot`,
+  `balancedAt_root` (with the public endpoint counts and the chain as hypotheses);
+  `root_endpoints_accepted` (for the prepared statement of ANY hint: public ROOT messages
+  `[0]++prevStateRoot` / `[K+1]++H.prevStateRoot` and the native root chain).
+  `accepted_ups_walks` now also gives the head MIDROOT sends `= Js.map ([τ,rid]++mid)`, the
+  head ROOT receives `= nativeInputRoots`, the ups ROOT records `= nativeRootRecords`, and the
+  32-byte mid/post digests.  ⇒ MIDROOT and ROOT closed from acceptance up to the ups row cap.

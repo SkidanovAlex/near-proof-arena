@@ -1,5 +1,11 @@
 import ZkFormal.NearV3.Assembly.TrieUps
 import ZkFormal.NearV3.Rcpt.Candidates.AcceptedReplaySharedBalance
+import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootRanks
+import ZkFormal.NearV3.Rcpt.Candidates.NativeMidrootRecords
+import ZkFormal.NearV3.Assembly.UpsertAncestorCost
+import ZkFormal.NearV3.Rcpt.Candidates.CompactRootRanks
+import ZkFormal.NearV3.Rcpt.Candidates.NativeHeadRootRecords
+import ZkFormal.NearV3.Rcpt.Candidates.NativeRootRecords
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieUpsNative — native ups instances, EDGE and BMAP from acceptance
@@ -33,6 +39,14 @@ def useReq (ws : List WalkR) (insts : List UpsInst) (W : List ZkFormal.Near.Msg)
 def upsRanked (ws : List WalkR) (insts : List UpsInst) : List UpsInst :=
   physicalPrefixUps (ws.flatMap (·.steps)) insts
 
+theorem prefix_post_digests (p : List WStep3) (Is : List UpsInst) :
+    (physicalPrefixUps p Is).map UpsInst.post = Is.map UpsInst.post := by
+  induction Is generalizing p with
+  | nil => rfl
+  | cons I Is ih =>
+    simpa only [physicalPrefixUps, rankUpsList, List.map_cons, syncUps, rankUps] using congrArg
+      (List.cons I.post) (ih (p ++ fourSteps I))
+
 theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w) (h : checkD0a B0 cb wb = .ok ())
     {m : MainExecutionV3} {steps : List ImplicitStepV3} {last : Bytes} (hm : m.NativeValid k w)
@@ -59,7 +73,12 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
             cnt (upsWalkMessages Js B_BMAP true) msg =
           cnt (nodeRecvs3 ns B_BMAP) msg + cnt (walkRecvs3 (rankWalks [] ws) B_BMAP) msg +
             cnt (upsWalkMessages Js B_BMAP false) msg) ∧
-        (R insts + 1 ≤ 2 ^ 22 → UpsRenderOk Js) := by
+        (R insts + 1 ≤ 2 ^ 22 → UpsRenderOk Js) ∧
+        headSends hs B_MIDROOT = Js.map (fun I => [I.tau, I.rid] ++ I.mid) ∧
+        (∀ I ∈ Js, I.mid.length = 32 ∧ I.post.length = 32) ∧
+        headRecvs hs B_ROOT = Rcpt.Candidates.NodePostUpdate.nativeInputRoots 0 (m.pre :: steps.map ImplicitStepV3.pre) ∧
+        Js.map (fun I => [I.tau + 1] ++ I.post) =
+          nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) := by
   obtain ⟨writes, oldPost, us, insts, hr, hpairs, hpos, hlen, hgood, hpre, hout, hval, hcount, hinst, hforest,
     hbytes, -⟩ := accepted_window_coverage hk hw h hm hv (fun _ => default) (fun _ _ => default)
   obtain ⟨v, ws, -, -, hws, hwlocal, hwtraffic, hranges⟩ :=
@@ -105,7 +124,48 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
   have hh : ((forestWalkHeads 0 0 ((nativeReplayForest m steps oldPost writes).map (fun r => (r.pre, r.post)))).map HeadE.tau).Nodup := by
     rw [forest_heads_tau]
     exact List.nodup_range'
-  refine ⟨?_, ?_, fun hcap => TrieUps.upsRenderOk_ranked _ insts (by omega) ho hfam hcap⟩
+  have hinstMem : ∀ I ∈ insts, I.mid.length = 32 ∧ I.post.length = 32 := by
+    intro I hI
+    obtain ⟨i, hi, hu, hI'⟩ := hinstl I hI
+    obtain ⟨a, -⟩ := hinst i us[i] I hu hI'
+    have hg := hgood us[i] (List.getElem_mem hi)
+    refine ⟨by rw [a.2.1, List.length_map]; exact ZkFormal.Near.Prune.hashOf_length _ hg.2.1,
+      by rw [a.2.2.1, List.length_map]; exact traceUpsert_output_hash_length hg.1.1⟩
+  have hmid : headSends (TrieNative.heads m steps oldPost writes (useReq ws insts W).edges) B_MIDROOT =
+      (upsRanked ws insts).map (fun I => [I.tau, I.rid] ++ I.mid) := by
+    have hpre' : us.map SchedulerUpsertWitness.pre = (nativeReplayForest m steps oldPost writes).map ReplayTree.post := by
+      have hh := congrArg (List.map Prod.fst) hpairs
+      simpa [nativeReplayForest, List.map_map, Function.comp_def] using hh
+    have hr := native_midroot_records (nativeReplayForest m steps oldPost writes) us insts hforest hpre' hcount
+      (fun tau u I hu hI => by
+        obtain ⟨a, -, -, -, -, root, hroot, horig⟩ := hinst tau u I hu hI
+        exact ⟨a, root, hroot, horig⟩)
+    unfold upsRanked
+    rw [prefix_midroot_records, ← hr]
+    simp [TrieNative.heads, headSends, assignHeadUses, B_MIDROOT]
+  have hlens : ∀ J ∈ upsRanked ws insts, J.mid.length = 32 ∧ J.post.length = 32 := by
+    intro J hJ
+    have hm : J.mid ∈ (upsRanked ws insts).map UpsInst.mid := List.mem_map.mpr ⟨J, hJ, rfl⟩
+    have hp : J.post ∈ (upsRanked ws insts).map UpsInst.post := List.mem_map.mpr ⟨J, hJ, rfl⟩
+    unfold upsRanked at hm hp
+    rw [prefix_mid_digests] at hm
+    rw [prefix_post_digests] at hp
+    obtain ⟨I, hI, he⟩ := List.mem_map.mp hm
+    obtain ⟨I', hI', he'⟩ := List.mem_map.mp hp
+    exact ⟨he ▸ (hinstMem I hI).1, he' ▸ (hinstMem I' hI').2⟩
+  have hroot1 : headRecvs (TrieNative.heads m steps oldPost writes (useReq ws insts W).edges) B_ROOT =
+      Rcpt.Candidates.NodePostUpdate.nativeInputRoots 0 (m.pre :: steps.map ImplicitStepV3.pre) := by
+    rw [← replay_head_root_records m steps oldPost writes]
+    simp [TrieNative.heads, headRecvs, assignHeadUses, B_ROOT, B_DIGEST]
+  have hroot2 : (upsRanked ws insts).map (fun I => [I.tau + 1] ++ I.post) =
+      nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) := by
+    have houtputs : us.map (fun u => u.run.output) = m.result.trie :: steps.map ImplicitStepV3.post := by
+      have hh := congrArg (List.map Prod.snd) hpairs
+      simpa only [List.map_map, List.map_cons, Function.comp_def] using hh
+    unfold upsRanked
+    rw [prefix_root_records, allocated_root_records us insts hcount (fun tau u I hu hI => (hinst tau u I hu hI).1),
+      houtputs]
+  refine ⟨?_, ?_, fun hcap => TrieUps.upsRenderOk_ranked _ insts (by omega) ho hfam hcap, hmid, hlens, hroot1, hroot2⟩
   · intro msg
     have hc : ∀ e ∈ walkEdgeKeys (ws ++ upsWalkInventory insts),
         e ∈ headEdgeKeys (forestWalkHeads 0 0 ((nativeReplayForest m steps oldPost writes).map (fun r => (r.pre, r.post)))) ++
