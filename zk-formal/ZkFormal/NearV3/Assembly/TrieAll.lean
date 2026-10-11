@@ -44,7 +44,7 @@ theorem trie_all_of {cb wb : Bytes} {k : WalkD0} {w : StateWitness} (hk : walkD0
           (allLookupQueries (appliedReceipts k w) m.pre v (steps.map ImplicitStepV3.pre) resolve) = some ws) ∧
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
-      TrieUpsOrigin.UpsSha insts ∧
+      TrieUpsOrigin.UpsSha insts ∧ TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       ∀ W : List ZkFormal.Near.Msg, W.length < Algebra.P →
         let q := useReq ws insts W
         let ns := TrieNative.nodes m steps oldPost writes q
@@ -76,9 +76,9 @@ theorem trie_all_of {cb wb : Bytes} {k : WalkD0} {w : StateWitness} (hk : walkD0
         (W = Candidates.PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2 ^ 22 →
           UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
         (∀ J ∈ Js, TrieUpsMemd.MemdPair J) := by
-  obtain ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads, hRw, hpos, ho, hfam, horigin, hsha, hedges, hbmaps, hrest⟩ :=
+  obtain ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads, hRw, hpos, ho, hfam, horigin, hsha, ha7, hedges, hbmaps, hrest⟩ :=
     accepted_ups_walks hk hw h hm hv resolve pub
-  refine ⟨writes, oldPost, insts, ws, hr, hkf, ⟨v, hvvalid, hvreads, hws⟩, hRw, horigin, hsha, ?_⟩
+  refine ⟨writes, oldPost, insts, ws, hr, hkf, ⟨v, hvvalid, hvreads, hws⟩, hRw, horigin, hsha, ha7, ?_⟩
   intro W hW
   obtain ⟨he, hb, hups, hmid, hlens, hroot1, hroot2, hupb, hmemd⟩ := hrest W hW
   obtain ⟨hn, hval, hh⟩ := TrieNative.accepted_ok hk hw h hm hv hr (useReq ws insts W) hedges hbmaps hW
@@ -107,7 +107,7 @@ theorem trie_all_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (reso
           (allLookupQueries (appliedReceipts k w) m.pre v (steps.map ImplicitStepV3.pre) resolve) = some ws) ∧
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
-      TrieUpsOrigin.UpsSha insts ∧
+      TrieUpsOrigin.UpsSha insts ∧ TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       ∀ W : List ZkFormal.Near.Msg, W.length < Algebra.P →
         let q := useReq ws insts W
         let ns := TrieNative.nodes m steps oldPost writes q

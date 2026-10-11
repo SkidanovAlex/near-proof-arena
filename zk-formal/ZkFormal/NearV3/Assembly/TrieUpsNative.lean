@@ -3,6 +3,7 @@ import ZkFormal.NearV3.Assembly.TrieUpb
 import ZkFormal.NearV3.Assembly.TrieUpsOrigin
 import ZkFormal.NearV3.Assembly.TrieUpsKeys
 import ZkFormal.NearV3.Assembly.TrieA7Post
+import ZkFormal.NearV3.Assembly.TrieA7Forest
 import ZkFormal.NearV3.Rcpt.Candidates.AcceptedReplaySharedBalance
 import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootRanks
 import ZkFormal.NearV3.Rcpt.Candidates.NativeMidrootRecords
@@ -71,7 +72,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       0 < insts.length ∧ (∀ I ∈ insts, InstOk I) ∧ (∀ I ∈ insts, NativePartFamily I) ∧
       TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
-      TrieUpsOrigin.UpsSha insts ∧
+      TrieUpsOrigin.UpsSha insts ∧ TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       (walkEdgeKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       (walkBmapKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       ∀ W : List ZkFormal.Near.Msg, W.length < Algebra.P →
@@ -133,7 +134,12 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       TrieA7Post.ups_post_bound hk hw h hm hv us hpairs (fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.1⟩),
       fun tau u I hu hI => by
         obtain ⟨a, sha, -, -, -, root, hroot, horig⟩ := hinst tau u I hu hI
-        exact ⟨sha, a.2.2.2.1, a.1, a, root, hroot, horig⟩⟩, hedges, hbmaps, ?_⟩
+        exact ⟨sha, a.2.2.2.1, a.1, a, root, hroot, horig⟩⟩,
+    (have hf := TrieA7Forest.ups_forest_facts hk hw h hm hv hr us hpairs
+     ⟨us, hcount, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.1⟩, hf.1, hf.2.1, hf.2.2.1, hf.2.2.2,
+      fun tau u I hu hI => by
+        obtain ⟨a, sha, -, -, -, root, hroot, horig⟩ := hinst tau u I hu hI
+        exact ⟨sha, a.2.2.2.1, a, root, hroot, horig⟩⟩), hedges, hbmaps, ?_⟩
   intro W hW
   -- providers
   obtain ⟨hn0, hvls⟩ := NativeExecutionUsage.inputs hk hw h (by decide) hm hv

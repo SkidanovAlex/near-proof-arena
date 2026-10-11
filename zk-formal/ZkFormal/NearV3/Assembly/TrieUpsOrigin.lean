@@ -54,6 +54,25 @@ def UpsSha (insts : List UpsInst) : Prop :=
       ∃ root, forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) tau = some root ∧
         NativeReaderOrigin root u.run u.value I
 
+/-- The scheduler upsert witnesses behind the native ups instances, with the forest facts used by the
+A7 (b) node/value accounting (`TrieA7Total.a7_bound`): the scheduler pre trees `us.map pre` (the rebased
+forest `oldPost :: steps.pre`) have, occurrence by occurrence, the node-encoding lengths and the value
+lengths of the native pre forest `F`; `F` is well formed; and `Σ_u (U(u.pre) + U(u.run.output)) ≤ B0`. -/
+def UpsA7 (F : List PTrie) (insts : List UpsInst) : Prop :=
+  ∃ us : List SchedulerUpsertWitness,
+    insts.length = us.length ∧
+    (∀ u ∈ us, u.Valid ∧ u.pre.wf = true) ∧
+    (∀ t ∈ F, t.wf = true) ∧
+    ((us.map SchedulerUpsertWitness.pre).flatMap ZkFormal.NearV3.occs).map
+        (fun o => (ZkFormal.NearV3.nodeEnc o).length) =
+      (F.flatMap ZkFormal.NearV3.occs).map (fun o => (ZkFormal.NearV3.nodeEnc o).length) ∧
+    (forestBytes (us.map SchedulerUpsertWitness.pre)).map List.length = (forestBytes F).map List.length ∧
+    (us.map (fun u => NearSpecV3.unfoldedBytesT u.pre + NearSpecV3.unfoldedBytesT u.run.output)).sum ≤ 2000000 ∧
+    ∀ tau u I, us[tau]? = some u → insts[tau]? = some I →
+      NativeShaFamily u I ∧ I.v = u.value.map UInt8.toNat ∧ AllocatedNativeInstance us tau u I ∧
+      ∃ root, forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) tau = some root ∧
+        NativeReaderOrigin root u.run u.value I
+
 private theorem root_depth' : ∀ n v ts tau root,
     forestRootAt n v ts tau = some root → root.depth = 0
   | _, _, [], _, _, h => by simp [forestRootAt] at h

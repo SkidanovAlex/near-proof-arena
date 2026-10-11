@@ -55,6 +55,8 @@ import ZkFormal.NearV3.Assembly.TrieA7Post
 import ZkFormal.NearV3.Assembly.TrieA7Cap
 import ZkFormal.NearV3.Assembly.TrieA7Repl
 import ZkFormal.NearV3.Assembly.TrieA7Match
+import ZkFormal.NearV3.Assembly.TrieA7Forest
+import ZkFormal.NearV3.Assembly.TrieA7Total
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec

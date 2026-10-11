@@ -898,3 +898,20 @@ The AIR check is really `B0`: `sizeA7` range-checks `B0 − (yN0 + yN1 + yN2)` (
     `oldValCharge u.run ≤ Σ_{b ∈ upsRplvMsgs I} LV Ts b` (LP/BR ⇒ `ci ∈ {0,1}` ⇒ `ts = 3` (`tsNib`), step 3 mode 0
     (`termCase`), its VAL edge is of record `nD` (`look`/`termD`) whose view value is `(vid, |old value|)`).
 * Audit `test/AuditTrieA7Match.lean` (Classical.choice appears, as in the other trie audits).
+
+## 2026-10-12 (session 7) — A7 (b) DONE: `a7_bound` (node + value + ups total ≤ B0)
+
+* `TrieUpsOrigin.UpsA7 F insts` (new def): ∃ `us` with `insts.length = us.length`, `u.Valid ∧ u.pre.wf`, `F` wf,
+  `(us.map pre)` has `F`'s per-occurrence node-encoding lengths and per-value lengths, `Σ_u (U pre + U out) ≤ 2,000,000`,
+  and per index `NativeShaFamily`, `I.v`, `AllocatedNativeInstance`, root + `NativeReaderOrigin`.
+* New `Assembly/TrieA7Forest.lean`: **`ups_forest_facts`** (from `SizedAccountRun m.pre writes oldPost`, `hpairs`:
+  `paired_occurrences … .node_lengths`, `value_lengths`, `unfolded_bytes`, `unfoldBytes ≤ B0`).
+* `accepted_ups_walks` and `trie_all_of`/`trie_all_accepted` now also export
+  `UpsA7 (m.pre :: steps.map pre) insts` (right after `UpsSha insts`; statements only strengthened).
+* New `Assembly/TrieA7Total.lean`: `sum_le_index`, `sum_split`, `perm_sum`, `perm_mem`, `getD_map_eq`,
+  `seedValuesFrom_len`, `unfolded_sum`, **`a7_bound`**: `UpsA7 F insts`, `NodeOk ns`, `ValOk es`, and ANY `S`/`SV`
+  with the A7 (a) permutations (`(upsRanked ws insts).flatMap upsRplMsgs ~ (range |ns|).filter S ↦ [n]`, same for
+  RPLV) ⇒ `nodeA7Total ns S + valA7Total es SV + upsA7Total (upsRanked ws insts) ≤ 2,000,000`
+  (`ns = TrieNative.nodes m steps oldPost writes q`, `es = TrieNative.vals m steps`).  Exact accounting:
+  per upsert `traceUpsert_replaced`, covers `rpl_cover`/`rplv_cover`, record lengths = `us.map pre` occurrence lengths.
+* Audit `test/AuditTrieA7Total.lean`.
