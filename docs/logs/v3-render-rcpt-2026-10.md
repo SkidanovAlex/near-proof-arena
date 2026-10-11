@@ -418,3 +418,34 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   aux layers' commute lemmas and `nativeRoutingConstants` for `q`); then
   `native_routing_selected` closes it.  Only per-receipt slices exist today
   (`applied_receipt_route_slice`, `routeColumns_key`).
+
+## 2026-10-12 (round 9: BND coverage, receipt side collected)
+
+* **BND coverage proved** (`Assembly/RenderV3RcptBnd.lean`).  Whole-trace identification on the
+  honest receipt trace `rcptTraceNative pub x`: `native_boundary_rows` — a row with `gBd = 1` is a
+  planned receipt row (padding: all cells 0, `booleanReceiptTrace_padding`; list headers: the
+  `routingHeaderAux` layer zeroes `gBd`, `native_gate_header`; inactive receipt coordinates:
+  `routing_inactive_cells`) at a routing-active coordinate; `native_boundary_key` — its key is
+  `routeKey (boundedIntervals k.L own) (nativeRoutingIndex k receipt) (routingPosition p row)`
+  (the routing layer commuted to the top of `completeReceiptAux` via the `routing_*_commute`
+  lemmas, `complete_aux_routing`; scratch cells by `routingAux_transport`; `q` from
+  `nativeRoutingConstants`, `native_q_cell`; `routeColumns_key`).  `planned_receipt_facts`:
+  planned receipt rows belong to applied receipts and `sV` indices are `< |receiver|`.
+  **`AcceptedV3.bnd_coverage`** (via `native_routing_selected`, receivers ≤ 64 bytes from
+  `Receipt.wf`) and **`RcptBal.bnd_balanced_accepted`** (premise-free).
+* **Receipt side collected** (`Assembly/RenderV3RcptSide.lean`): `RcptRendersV3 pub` /
+  `A.rcptRenders` (tables 16–20, 22; 21 = `sizeA7` is trie-side); `rcpt_side_balanced` (bundle
+  `R` with `R ⟨t,_⟩ = A.rcptRenders.*` for t ∈ {16..20, 22} and `R.tf 24` = the sort traffic of
+  the applied receipt ids ⇒ SREC, RCL, AKC, RIDS, MEM, QVC, QSH, SRC, BNDP, BND all
+  `BusBalanced`); **`rcpt_side_of_accept`**: `checkD0a B0 cb wb = .ok () → ∃ A, pubFit ∧
+  |preparedBytes A.p 0| < P ∧ (∀ R, … → the ten balances)`.  No premise left on the receipt side
+  except the table-24 sort traffic (render-sched's `sortRenderV3` with `lists := A.rcptInput.lists`).
+* Merged `origin/lane/v3-trie-complete` (6dd072ae); `LinkShaKinds.lean` conflict resolved with
+  theirs (`rcases W.accts`).  **Final build: `lake build ZkFormal.V3.Integration` + all 178+
+  top-level dependents of the spec/NearAir changes + `nearspec-v3-check-d0a`: 5,234 jobs, 0 errors.**
+  Audits `AuditRenderV3RcptSide` (new), `AuditA12LayoutWf`, `AuditRenderV3RcptAccepted`,
+  `AuditAccountEmptyCap`, `AuditAcceptedSrcpOk`, `AuditNearV3Admission`, `AuditFactorComplete`,
+  `AuditAssemblyFactor`, `AuditNativeGoodGap`, `AuditV3DomainBounds`, `AuditPaddedRcpt` pass;
+  pin-check OK.
+* Open on the receipt side: nothing beyond the bundle assembly itself (the lead's
+  `RenderWitnessV3`: hint codec bounds, header admissibility, SIZE bus with the trie side).
