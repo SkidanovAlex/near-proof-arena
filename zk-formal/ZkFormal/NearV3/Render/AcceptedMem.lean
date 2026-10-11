@@ -4,6 +4,9 @@ import ZkFormal.NearV3.Rcpt.Candidates.NativeOldTreeReconstruct
 import ZkFormal.NearV3.Rcpt.Candidates.NativeForestAllocation
 import ZkFormal.NearV3.Assembly.NativeUnfold
 import ZkFormal.NearV3.Assembly.QueueSeed
+import ZkFormal.NearV3.Candidates.NativeAccessKeyProviders
+import ZkFormal.NearV3.Candidates.NativeAccessKeyValidation
+import ZkFormal.NearV3.Assembly.Compute
 
 /-!
 # `MemOk` and the account views from acceptance
@@ -89,5 +92,23 @@ theorem acctV3Ok_of_views (as : List AcctV) (hne : as ≠ []) (hlen : as.length 
   · intro a ha
     have hl := hwf.len a ha
     exact ⟨hl.2.2.1, hl.2.2.2⟩
+
+/-- **`AkeyOk` for the native access-key providers** of an accepted witness (`FullAccess`
+tag from native validation, rows from `|rs| ≤ 4481`; the gas bound is
+`ReceiptSourceInputs.gas` of acceptance). -/
+theorem akeyOk_of_accept {k : NearSpecV3.WalkD0} {w : NearSpecV3.StateWitness}
+    {m : ZkFormal.NearV3.Assembly.MainExecutionV3} (hm : m.NativeValid k w)
+    (hgas : (m.ctx k).gasLimit ≤ NearSpecV3.maxGasLimitD0) :
+    AkeyOk (ZkFormal.NearV3.Candidates.NativeAccessKeyProviders.providers m.pre
+      (NearSpecV3.appliedReceipts k w)) := by
+  have hwell : m.pre.wf = true := by
+    rw [hm.pre]
+    exact (ZkFormal.NearV3.built_spec w.main.values NearSpecV3.trieFuel k.slotB2.prevStateRoot _
+      hm.root_length).2.1
+  have hvalid := ZkFormal.NearV3.Candidates.NativeAccessKeyValidation.newchunk_valid
+    (ZkFormal.NearV3.Assembly.TrieShape.of_wf _ hwell) hm.run
+  have hr := ZkFormal.NearV3.Assembly.applyNewChunk_receipt_bound hm.run hgas
+  exact ⟨fun e he => (ZkFormal.NearV3.Candidates.NativeAccessKeyProviders.provider_bytes hvalid e he).2.1,
+    ZkFormal.NearV3.Candidates.NativeAccessKeyProviders.provider_rows _ _ hr⟩
 
 end ZkFormal.NearV3.Render

@@ -57,3 +57,7 @@ import ZkFormal.NearV3.Render.AcceptedSrcp
 /-- info: 'ZkFormal.NearV3.Render.acceptedSrcp_ok' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.acceptedSrcp_ok
+
+/-- info: 'ZkFormal.NearV3.Render.akeyOk_of_accept' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.akeyOk_of_accept
