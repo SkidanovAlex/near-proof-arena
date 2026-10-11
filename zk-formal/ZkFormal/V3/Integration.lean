@@ -13,6 +13,7 @@ import ZkFormal.NearV3.Assembly.UniqNative
 import ZkFormal.NearV3.Assembly.TrieNative
 import ZkFormal.NearV3.Assembly.TrieBusBalance
 import ZkFormal.NearV3.Assembly.TrieVParent
+import ZkFormal.NearV3.Assembly.TrieParent
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec

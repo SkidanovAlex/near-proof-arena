@@ -44,3 +44,10 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
   of the seeded forest are, in DFS order, exactly `seedValuesFrom 0 (forestBytes ts)`'s
   `(vid, len)`), the metadata passes keep them, `vparentBal_native` (`Link3.VParentBal` of
   `TrieNative.nodes … q` / `vals`, every `q`), `balancedAt_vparent` (bundle level).
+* `Assembly/TrieParent.lean` — **`PARENT` closed**: `seedNodesT_parent`/`seedKidsT_parent`
+  (mutual: a seeded tree's receives ~ its root message ++ its kid-window sends),
+  `forestNodes_parent`, `forestWalkHeads_parent` (heads send exactly the forest's root
+  messages when every tree is revealed), metadata passes keep the messages,
+  `parentBal_native`, `accepted_forest_isNode` (every pre tree is a node: its scheduler upsert
+  `traceUpsert` succeeds; main pre via `SizedAccountRun`), **`parentBal_accepted`**,
+  `balancedAt_parent`.
