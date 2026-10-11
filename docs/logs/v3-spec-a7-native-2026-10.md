@@ -41,3 +41,18 @@ origin at start).
   (positional `.2…` back to 7). `FactorComplete` simplified: `tries_reconstructed : triesD0
   (rec.) = triesD0 (orig.)` — same pre tries, same execution, hence the same native posts; the
   `triesD0N`/`unfoldStepN`/`revealedStore` machinery is gone.
+* Merged `origin/integration/v3-20261012b` (appeared on origin during the session; A12
+  `c.layout_wf`): conflicts in the spec module, prose spec, checkers, `Good`, `FactorSound`,
+  `LinkClaim`, `NativeGoodGap`, `FactorComplete` resolved as A1, A2, Canon0f, A7–A10, A12 (A11
+  dropped); positional uses re-indexed (`a10` = `.2.2.2.2.2.2.2.1`, `a12` = `.2.2.2.2.2.2.2.2`
+  in `NativeGoodGap`, `SrcpDepth`, `RenderV3RcptLayout`, `PrepClaimComplete`).
+* Verification (after the merge): `lake build ZkFormal.V3.Integration nearspec-v3-check-d0a`
+  4,188 jobs OK; the full reverse import closure of `NearSpecV3.ChunkValidationV0a` (12
+  top-level modules + the 4 tools) 4,555 jobs, 0 errors; 22 related audits pass (incl.
+  FactorComplete, AssemblyFactor, NativeGoodGap, NearV3Admission, V3DomainBounds, A12LayoutWf,
+  UnfoldStoreEq, QueryWitness, TransitionQueries, RetainedStore, UnfoldA7); `make pin-check` OK.
+* Difftest public-d0a (421 dirs, 300 measured): 0 disagreements; `unfold`, `unfold_rebuilt`
+  Lean = Python on 300; `unfold_diff` = oracle on 64.
+* A7 maxima (Python, accepted): public 7,996 (139), d1run 12,402 (3,977), d2corpus.v2 9,624 (38)
+  — identical to the 2026-10-11 rebuilt measure; native = rebuilt on every case, 0 insert
+  splits. `docs/e2e-results/v3-a7-native/report.json`.
