@@ -716,3 +716,35 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
   `TrieUpsMemd.RenderBundleV3.balancedAt_memd` the bundle `MEMD` balance (given the row cap's
   `UpsRenderOk`).  No existing Render/Ups or Rcpt/Candidates statement changed.
 * Integration 4189 jobs; audits pass.
+
+## 2026-10-12 (session 5, cont. 3) — merge of main 22b37bb9 (A7 native post), DIGEST correction
+
+* Merged origin/main (A7 on the native post trie, A11 retired); Integration builds (4189 jobs).
+* **DIGEST: the earlier `htrie` target was mis-split** (finding): node records receive the
+  `VPOST` slot digests (`postSlotDigests`, written values) whose SHA jobs are the account jobs
+  (`accountShaJobs as`, receipt family; `TrieShared.vslot_accepted` gives
+  `(accountShaJobs as).map digestMsg ~ ns.flatMap postSlotDigests`).  `balancedAt_digest` now takes a
+  cross term `X` (strict generalisation, `X = []` is the old form): `htrie : trie recvs =
+  expectedDigests (sched ++ native) + X`, `hrest : rcpt + srcp + mrk recvs + X = expectedDigests
+  (receipt ++ source)`; intended `X := ns.flatMap postSlotDigests`.
+* `htrie` analysis (OPEN, exact pieces):
+  - node + head: `Rcpt.Candidates.NativeNodeDigestBalance.native_node_digest_balance` (trace level,
+    `TrieCountHeight.node ss`, any head trace with `headTraffic (assignHeadUses keys …)`):
+    head + node DIGEST recvs = `expectedDigests (jobsToSha (nativeNodeShaJobsFrom 0 ss)) +
+    ss.flatMap slotDigests`; `slot_digest_split`: slot = pre-slot ++ post-slot;
+    `native_preSlot_inventory`: pre-slot digests = `EmptyValue.valueDigests vals` — includes EMPTY
+    values, whose digests are not SHA jobs (`nativeValueShaJobs` skips `bytes = []`); in `nearAirV3`
+    only tables 0/1 send DIGEST, so it must be checked whether native pre-forest values can be
+    empty (vz) — if so the node receives an unmatched digest (potential AIR/statement issue).
+  - ups: DIGEST receives of the aligned view (`gD` rows, ids `upsIdV I 0 / k / jm`) vs
+    `expectedDigests (schedulerShaJobs 0 us)` — not examined.
+* **A7 (b)** — not started (context budget). Plan unchanged: per transition the structural identity
+  `unfoldedBytesT u.pre + unfoldedBytesT u.run.output = Σ (S ? 1 : 2)|enc| + Σ (SV ? 1 : 2)|v| +
+  |u.value| + outputByteCharge u.run` on the NATIVE post (now the spec's measure), incl. split-off
+  nodes created by the 0x0f insert (counted by ups parts `|Q_k.q|`), then `upsA7Total` =
+  `Σ |u.value| + outputByteCharge`, and the row cap from `≤ B0`.
+
+### Open (final for this session; successor starts here)
+1. A7 (b) (lead: main has moved — do it next).
+2. DIGEST `htrie` (pieces above; first settle the empty-value question).
+3. Cross-lane (assigned elsewhere): `RcptKeys`, `RcptFinal`, BYTES/DIGEST `hcodec`/`hrest`, VBYTES.
