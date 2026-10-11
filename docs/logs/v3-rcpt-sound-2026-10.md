@@ -2,7 +2,8 @@
 
 Worktree `/data/illia/nearproof-wt/v3-rcpt-sound`, branch `lane/v3-rcpt-sound`, from main `c87a7cae`.
 Modules: `zk-formal/ZkFormal/NearV3/Rcpt/Link/{RunSplit,ForwardSound,MemBal,Mem3,MemOf,RunModel,
-NewChunk,RecChain,RecModel,PrepFwd,RcptCore,AcctSlots,GasPub,RcptHolds}.lean` (namespace
+NewChunk,RecChain,RecModel,PrepFwd,RcptCore,AcctSlots,GasPub,RcptHolds,ValBytes,PeoBytes,RfBody,RfEnc,
+RcptHoldsB,FwdLinks,AkeyAkc,SrecLink}.lean` (namespace
 `ZkFormal.NearV3.RcptLink`).
 Audit `zk-formal/test/AuditRcptSound.lean` (all `[propext, Classical.choice, Quot.sound]` or less).
 No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
@@ -39,6 +40,13 @@ No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
 | `AcctSlots` | `acct_k_nodup`, `memHyp_of'` | account slots distinct (`VSLOT` balance + `Link3.val_unique`); `MemHyp` from `HoldsP` + views alone |
 | `GasPub` | `gasPrice_pub` | `pc.ctxB2.gasPrice = leN' (pubBytes pub PH_GP 16)` (closes `hgp`) |
 | `ValBytes` | `Link3.val_bytes8`, `acct_written'`, `acct_pre_byte`, **`preB_of`** | value records referenced by a node slot have byte-valued bytes (`sha_core`, first conclusion of `val_sha`); `VBYTES` (users val, codec, acct, akey, qv; only val receives): acct pre byte `j` = byte `j` of a value record with `vid = k`; hence `RecBytes.preB` from the trie link's `ShaHyp r.nodes r.heads r.values others shaS shaR` (lane v3-link's `shaHyp_holds`) |
+| `PeoBytes` | `located_flat`, `peo_isolate`, `othersRC_kind`, `peoBytes`, **`burntBytes`** | `PEO` stream isolation in `rcptSends3`; other `BYTES` senders never use kinds `K_PEO`/`K_RF`/`K_RID`; `sha_core` against the rcpt `DIGEST` receive `digMsg (msgId K_PEO q) |peo| peoh` (provided by the SHA union, `digest_provided`) ⇒ `peo` bytes ⇒ **`burntB`** |
+| `RfBody` | `rf_isolate`, `rfStream_at`, `body_len_pub`, **`rfStream_body`**, **`ramtBytes`** | the refund stream `rfStream ls = flatR.flatMap (if hr then encRefund)` **is** `(p.body.drop 8).map toNat` (every public `(K_RF, 8+k, B[8+k])` receive is a send; only rcpt `RF` streams have kind 2; total `bOffs n = |B|` from `RcptV3Wf.body` + header `u32 |B|`) ⇒ **`ramtB`** |
+| `RfEnc` | `rid_isolate`, `flat_index`, `flat_located`, **`rfid_sha`**, `height_pub`, `toBytes_encRefund3`, `toReceipt_wf3`, **`rfS_refundOf`** | `rfid = sha256(rid ‖ height ‖ 0^8)` (`sha_core`, K_RID); public height = `u64 pc.ctxB2.height`; per receipt, `toBytes (rfS x_q) = concatAll (refundOf q).map encode` and model refunds have `refundShape` (under `RecHyp`) |
+| `RcptHoldsB` | `rfStream_refunds`, `pMany_refunds`, `decodeBody_tail`, **`refunds_of`**, **`mainRun_of_holdsP_sha`**, **`mainRun_of_holdsP_fwd`** | **`hrf`** closed (`decodeBody h.body = .ok refunds` + `h.body.drop 8 = concat(model refunds)` ⇒ `refunds` = model refunds; `pRefund` prefix-free on refund-shaped receipts); `RecBytes` closed given the trie link's `ShaHyp`; `hsz` replaced by the AIR's link-indexed check |
+| `FwdLinks` | `shardOf_mem`, `fwdDemand_fwdLinks`, **`hsz_of_links`**, `prepClaim_layout_wf` | `hsz` from `∀ k < n, fwdDemand (fwdLinks ctx refunds) (o·n + k) ≤ grant own ids[k]` + A12 + `indexOf ids own = some o` (status shards outside the layout get no refund: `shardOf ∈ shardIds` under A12) |
+| `AkeyAkc` | `rcpt_akc_sends/recvs`, `akc_count`, **`akc_akey`**, `akey_byte`, **`akey_value`** | `AKC` counting argument (weights = 2nd component; `P·w = c`, `0 < c ≤ 2^22`): an `ee ∧ akf = 0` receipt's `akk` is an akey record's vid; `VBYTES`: that akey's 9 bytes (FullAccess, last byte 1) are the value record `vid = akk`'s bytes 0..8 |
+| `SrecLink` | `rSends_srec`, `rRecvs_srec`, **`srecBal_of`**, **`ee_of_self`** | `SrecBal q x` from the `SREC` balance (rcpt-only bus; canonical ids force same receipt / row / value); with `Srec.srec_neq`: a system receipt with `toBytes s = toBytes v` has `ee = true` |
 | `RcptHolds` | **`mainRun_of_holdsP`** | `mainRun_of_records` from the `LinkCoreV3Stmt` hypotheses: chain, `encB`, `bgpB`, `hgp`, `PrepFwd` discharged; remaining premises explicit (below) |
 
 ### The deliverable statement (`RcptCore.mainRun_of_records`)
@@ -138,3 +146,55 @@ half of `TrieOk.ak`; (6) `m.Valid.buffered` / qv reads (with the link lane); (7)
 (`Prep.fwd` vs scheduler grants, with the link lane).  Build: `HEAVY_MEM=12G taskset -c 8-15,24-31
 /data/illia/nearproof-deps/bin/heavy lake build ZkFormal.NearV3.Rcpt.Link.RcptHolds`; audit
 `lake env lean test/AuditRcptSound.lean`.
+
+## 2026-10-11 (session 2) — RecBytes, hrf, hsz reduction, akey half
+
+Commits (all pushed, branch `lane/v3-rcpt-sound`): `e9206997` PeoBytes, `37d372b1` RfBody,
+`8399f29a` RfEnc, `fbe2b9d4` RcptHoldsB, `0ed642b3` FwdLinks + `mainRun_of_holdsP_fwd`,
+`76d038a6` AkeyAkc, `962ee8b8` merge origin/main (rebuilt clean after merge), SrecLink (next commit) (A7 native post trie, A11 retired).  Audit
+`test/AuditRcptSound.lean` extended (all `[propext, Classical.choice, Quot.sound]`;
+`prepClaim_layout_wf` `[propext, Quot.sound]`).  `make pin-check` passes.  Nothing false found.
+
+### Current top statement (`RcptHoldsB.mainRun_of_holdsP_fwd`)
+
+```
+prepD0 cb h = .ok p → |preparedBytes p oh| < P → HoldsP nearAirV3 pub tr →
+V3RecordsTraffic pub tr r → V3RecordsWf pub r → h.n = |flatR r.lists| →
+ShaHyp r.nodes r.heads r.values others shaS shaR →             -- lane v3-link: shaHyp_holds
+∃ pc, prepClaim cb = .ok pc ∧
+  ∀ base Tf pre mid so v o,
+    MainTrieLink r.lists r.accts base Tf pc.ctxB2 pre mid so →  -- lane v3-link
+    v.Valid → v.Reads pre mid (Tf (valsAt n)) →                  -- qv reads
+    indexOf pc.ctxB2.layout.shardIds pc.ctxB2.own = some o →     -- own is a layout shard
+    (∀ k (hk : k < n_L), fwdDemand p.fwd (o·n_L + k) ≤ so.grant pc.ctxB2.own ids[k]) →  -- AIR fwd check
+    applyNewChunk prims pc.ctxB2 pre ((rv r.lists).map toReceipt) = .ok (mainOut pc.ctxB2)
+```
+(`mainRun_of_holdsP_sha`: same with the per-shard `hsz` instead of the last two premises.)
+`RecBytes` (preB / burntB / ramtB) and `hrf` are gone.
+
+### Remaining premises (exact) and where they come from
+
+1. `ShaHyp …` — `Assembly.LinkChain.shaHyp_holds` (lane v3-link, not yet on main).
+2. `MainTrieLink` (`sched`, `init`, `trie : TrieOk`) — lane v3-link; for `TrieOk.ak` the
+   receipt side is now **`akey_value`**: for `x ∈ flatR` with `ee ∧ akf = 0`, `∃ e ∈ r.akeys`,
+   `e.vid = akk`, `|e.bytes| = 9`, `e.bytes[8] = 1`, and `∃ t, values[t].vid = akk ∧ ∀ j < 9,
+   values[t].bytes[j] = e.bytes[j]`.  Still needed to finish `ak` (walk + link side):
+   (a) **done** (`SrecLink.ee_of_self`: system receipt with `toBytes s = toBytes v` ⇒ `ee`);
+   (b) the walk `W_AK + r` (`FINAL (akf, akk)`): `akf = 0 ⇒ find = some (some (valsAt r akk))`,
+   `akf = 1 ⇒ some none`; (c) `valsAt r akk = base akk` (akk not an acct slot) and
+   `toBytes (value record akk) = base akk` with `|value bytes| = 9` (`VBYTES` exactness —
+   `LinkVBytes` on lane v3-link; `akey_value` only fixes bytes 0..8).
+3. Queue reads `v.Reads …` and `v.Valid` (incl. `buffered`) — qv side, not started this session.
+4. `indexOf ids own = some o` — own shard in the layout (`L.index H.shardId` in `prepClaim` uses
+   `idToIndex`; consistency with `shardIds` is decoder-level, `decodeShardLayoutV2` checks it —
+   not yet linked); and the link grant identification `fwdDemand p.fwd l ≤ granted[l] + g[l]`
+   (`Sched.codec_fwd` / `LinkSchedCore` τ = 0, lane v3-link) with `so.grant own ids[k]` at
+   `l = o·n + k`.
+
+### Resume here
+
+(a) `ee` for self-refunds is done (`SrecLink`).  Next: (b) the qv
+reads / `m.Valid.buffered` (raw `qvV3` table; see lane v3-link `LinkVBytes`: `stream_isolate`,
+`physical_records_closed`, `byte_all_physical`); then wire `mainRun_of_holdsP_fwd` to
+`shaHyp_holds` and the scheduler grant once lane v3-link lands them on main.  Build:
+`lake build ZkFormal.NearV3.Rcpt.Link.RcptHoldsB ZkFormal.NearV3.Rcpt.Link.AkeyAkc`.

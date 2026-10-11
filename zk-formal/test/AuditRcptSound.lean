@@ -6,6 +6,7 @@ import ZkFormal.NearV3.Rcpt.Link.RcptHolds
 import ZkFormal.NearV3.Rcpt.Link.ValBytes
 import ZkFormal.NearV3.Rcpt.Link.RcptHoldsB
 import ZkFormal.NearV3.Rcpt.Link.AkeyAkc
+import ZkFormal.NearV3.Rcpt.Link.SrecLink
 
 /-- info: 'ZkFormal.NearV3.RcptLink.applyReceipts_of_ledger' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
@@ -146,3 +147,11 @@ import ZkFormal.NearV3.Rcpt.Link.AkeyAkc
 /-- info: 'ZkFormal.NearV3.RcptLink.akey_value' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.akey_value
+
+/-- info: 'ZkFormal.NearV3.RcptLink.srecBal_of' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.srecBal_of
+
+/-- info: 'ZkFormal.NearV3.RcptLink.ee_of_self' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.ee_of_self
