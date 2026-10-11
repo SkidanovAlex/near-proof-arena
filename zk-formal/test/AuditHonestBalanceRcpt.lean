@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Render.HonestBalanceRcpt
+import ZkFormal.NearV3.Render.HonestBalanceRcl
 
 /-! Guard the honest receipt-side bus balances. -/
 
@@ -17,3 +17,7 @@ import ZkFormal.NearV3.Render.HonestBalanceRcpt
 /-- info: 'ZkFormal.NearV3.Assembly.RcptSkeleton.honest_rids_balance' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.RcptSkeleton.honest_rids_balance
+
+/-- info: 'ZkFormal.NearV3.Render.honest_rcl_balance' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.honest_rcl_balance

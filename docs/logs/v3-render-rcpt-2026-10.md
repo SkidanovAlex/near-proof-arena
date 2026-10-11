@@ -140,3 +140,30 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   B_RIDS = (sortTraffic (NativeSortIds.input applied)).recvs B_RIDS`, via the unpatched
   `located_idsU` (`native_rid_slice`) and `NativeReceiptIdBytes.view_ids`.
 * Final: full Integration 2,933 jobs passes; audits pass; pin-check passes.
+
+## 2026-10-11 (round 4)
+
+* Merged `origin/lane/v3-link` (A7: node/val/ups/size → `nodeA7`/`valA7`/`upsA7`/`sizeA7`).
+  Conflicts resolved keeping `RcptV3.tableR` (16) and `SrcpV3.tableD` (20) with link's A7
+  tables.  **Combined `nearV3_size` = 6,399,329 B** (link 6,393,761 + srcp depth columns);
+  margin 694,262 B after the 1,295,017 B hint.  **`v3MaxHintBytes` 1,990,000 → 1,989,000**
+  (else `4 + hint + maxInner` exceeds 8 MiB by 725 B; the actual hint body is ≤ 1,295,017).
+  Full Integration builds (2,935 jobs).
+* **RCL balance** (`Render/HonestBalanceRcl.lean:honest_rcl_balance`): with the honest srcp
+  input `xs` holding the same applied lists in order
+  (`xs.map (·.entry.receipts) = x.lists.map (List.map Input.receipt)`),
+  `(rcptTraffic3 pub (nativeRcptLists pub x)).sends B_RCL = (srcpTraffic (blocksOfProofs xs)).recvs B_RCL`.
+  New: `grouped_encodingsU` / `nativeRcptLists_enc` (honest per-list encodings = native
+  `Receipt.encode`), `patch_enc`.
+* **SIZE after A7:** `honest_size_balance` covers the original tags 0–2 (unchanged senders
+  `nodeTraffic3`/`valTraffic`/`srcpTraffic`).  **Open (link lane (a)/(b))** — tags 3–5:
+  `sizeA7` receives `SIZE (t+3, y_t)` on its three active rows; `nodeA7` sends
+  `SIZE (3, ra)`, `valA7` `SIZE (4, rb)` (both on the `sumr` row) and `upsA7` `SIZE (5, s)`
+  (last row).  Needed: record-level A7 traffic `(sizeA7Traffic v y).recvs B_SIZE =
+  [[3,y₀],[4,y₁],[5,y₂]]` and the honest senders' A7 totals, then
+  `[[3, ra vs], [4, rb es], [5, s u]] = (sizeA7Traffic v ⟨ra vs, rb es, s u⟩).recvs B_SIZE`
+  for the honest node/val/ups renders.
+* **RIDS coordination:** the balance is stated against exactly
+  `sortTraffic (NativeSortIds.input (x.lists.flatten.map Input.receipt))` (receives
+  `[r, i, rid_r[i]]` for receipt `r` in applied order, `i < 32`); the sort render must emit
+  that traffic.
