@@ -297,3 +297,4 @@ separate targets. Unmerged WIP helpers are not imported. A successful build
 checks the existing partial results, not the still-missing FactorComplete, AIR-to-Good, honestTrace_fits,
 or final admission certificate. Candidate imports do not admit their protocol parameters.
 -/
+import ZkFormal.NearV3.Assembly.RenderV3RcptTables
