@@ -603,3 +603,37 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
   sends.  This is a reader-partition of the value ids across three lanes; not started.
 * Verification: Integration 4184 jobs; audits `AuditTrieKeyFinal`, `AuditTrieUpsMemd`,
   `AuditTrieUpb` pass; pin-check OK.
+
+## 2026-10-11 (session 5) — BYTES reduction; DIGEST not started
+
+* **`Assembly/TrieShaBus.lean`** (new): `jobBytes_expected` (`expectedBytes (jobsToSha J) = jobBytes J`),
+  `covers_bytes_send` (2, 4, 7, 11, 16, 17, 20, 23), `covers_bytes_recv` (0, 1), `pub_bytes_send`,
+  **`RenderBundleV3.balancedAt_bytes`**: `R.BalancedAt B_BYTES` from the SHA bins `b0 b1`
+  (`R 0`, `R 1` = `shaBinTraffic`, `expectedBytes b0 ++ b1 ~ expectedBytes (scheduler ++ native ++
+  receipt ++ source)` as from `TrieShaTwo.two_sha_renders`), the trie-side identities (proved
+  elsewhere: `native_sha_of` → `hnat`, `ups_bytes_scheduler` → `hups`) and the other lanes'
+  count identities:
+  - `hcodec` (sched lane): `cnt ((R.tf 11).sends B_BYTES) = cnt (expectedBytes (schedulerSanityJobs 0 us))`
+    for the SAME `us` as `ups_bytes_scheduler` (codec = the sanity jobs);
+  - `hrest` (rcpt lane): `cnt 16 + cnt 17 + cnt 20 + cnt 23 = cnt (expectedBytes (receipt ++ source))
+    + pubCount nearAirV3 pub B_BYTES false` (receipt/source families as passed to `two_sha_renders`).
+* Not done: the glue `∃ b0 b1` instantiating `two_sha_renders` with the trie families (needs the
+  byte bound `∀ M, ∀ x ∈ M.bytes, x < 256` for the scheduler and native families, and the receipt/
+  source families from the rcpt lane); **DIGEST** (sha sends `expectedDigests` of the `dmult` jobs;
+  receivers node 2, head 3, ups 7, codec 11, rcpt 16, srcp 20, mrk 23) — not started.
+
+### Open after session 5 (exact; successor starts here)
+
+1. **MEMD per-instance pairing** `∀ I ∈ upsRanked ws insts, TrieUpsMemd.MemdPair I` (plan and
+   ingredients in the MEMD section above); then `balancedAt_memd`.
+2. **Receipt-lane identities** for KEYNIB/FINAL: `TrieKeyFinal.RcptKeys`, `RcptFinal` for
+   `rcptTrafficB A.pub A.rcptInput` (then `keynib_final_accepted`).
+3. **VBYTES** reader partition (section above).
+4. **BYTES** glue + the codec/receipt identities `hcodec`/`hrest`; **DIGEST** entirely.
+5. **A7 (b)** — waiting for the lead (spec change on main).
+6. The bundle must take `W := PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS` in
+   `trie_all_of` (for `UpbBal`; `TrieUpb.keys_length` gives `W.length < P`) and
+   `resolve := NativeQueueIds.resolve A.m.pre A.qvVals (A.steps.map pre)` (for KEYNIB/FINAL).
+* Verification: Integration 4185 jobs; audits `AuditTrieUpb`, `AuditTrieUpsMemd`,
+  `AuditTrieKeyFinal`, `AuditTrieShaBus` (+ `AuditTrieAll`, `AuditTrieUps*`, `AuditTrieWalkAlign`,
+  `AuditTrieVslotNative`) pass; pin-check OK.
