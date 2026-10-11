@@ -833,9 +833,11 @@ pub fn node_aligned(vs: &[NodeS3]) -> Tab {
     let recs: Vec<(usize, usize)> = (0..vs.len())
         .flat_map(|n| (0..layout_of(&vs[n].v).len()).map(move |p| (n, p)))
         .collect();
+    // `nodeTraceAligned`: height from Σ (ser false).length (all records) + 1.
     let r = recs.len() as u64;
     let total = sz_before(vs, vs.len());
-    let log = pad_log22(log_of((r as usize) + 1));
+    let nbytes: usize = vs.iter().map(|s| s.v.ser(false).len()).sum();
+    let log = pad_log22(log_of(nbytes + 1));
     let mut t = Tab::zero(log, NODE_WIDTH);
     let h = t.height();
     let mut q = 0usize;
