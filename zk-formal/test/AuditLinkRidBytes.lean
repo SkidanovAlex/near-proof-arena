@@ -19,3 +19,7 @@ import ZkFormal.NearV3.Assembly.LinkRidBytes
 /-- info: 'ZkFormal.NearV3.Assembly.LinkRidBytes.receiptIds_of' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.LinkRidBytes.receiptIds_of
+
+/-- info: 'ZkFormal.NearV3.Assembly.LinkRidBytes.encBytes' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.LinkRidBytes.encBytes

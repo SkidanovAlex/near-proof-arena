@@ -155,15 +155,15 @@ theorem rcl_block {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP n
   rw [RcptLink.list_encoding_length] at hlen ⊢
   exact ⟨B, hB, ZkFormal.NearV3.Link3.ofNat_eq cB.1 hjl he.1, ZkFormal.NearV3.Link3.ofNat_eq cB.2.1 hlen he.2⟩
 
-/-! ## Receipt ids are bytes -/
+/-! ## Receipt encodings (hence ids) are bytes -/
 
-theorem ridBytes {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
+theorem encBytes {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
     {tr : Trace Fp} {r : V3Records} (hp : NearSpecV3.prepD0 cb h = .ok p)
     (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
     (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
     (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
     (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r) :
-    ∀ x ∈ flatR r.lists, Bytes8 x.rid := by
+    ∀ x ∈ flatR r.lists, Bytes8 x.enc := by
   intro x hx
   obtain ⟨L, hL, hxL⟩ := List.mem_flatMap.mp hx
   obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hL
@@ -188,7 +188,17 @@ theorem ridBytes {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Pre
   apply hb8
   simp only [RcptLink.listEncoding, List.mem_append, List.mem_flatMap]
   right
-  exact ⟨x, hxL, by simp [RcptV.enc, hy]⟩
+  exact ⟨x, hxL, hy⟩
+
+theorem ridBytes {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
+    {tr : Trace Fp} {r : V3Records} (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r) :
+    ∀ x ∈ flatR r.lists, Bytes8 x.rid := by
+  intro x hx y hy
+  exact encBytes hp hsz hH T W x hx y (by simp [RcptV.enc, hy])
 
 /-- **`GoodV3.receiptIds`** for the reconstruction whose receipts are the receipt view's lists. -/
 theorem receiptIds_of {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
