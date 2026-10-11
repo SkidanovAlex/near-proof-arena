@@ -119,3 +119,20 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   `nativeRcptLists_flat : flatR (nativeRcptLists pub x) = locatedViews (rcptTraceNative pub x) x.lists`,
   and `rcpt_aligned_complete : TableLocal RcptV3.tableR ∧ TableTraffic … (rcptTraffic3 pub
   (nativeRcptLists pub x)) ∧ log % 3 = 1`.
+* **qv over native inputs.**  `Render/PaddedQvNative.lean`: `qvNativeWalks`
+  (`plan … (NativeQueueIds.resolve …)`), `qvNativeRecords`
+  (`queueRecords (queueForestProviders 0 0 (queueInputs …))`), `qvNativeTraffic`,
+  `QvNativeOk` (valid main values, accepted provider modes, Σ bytes ≤ B0, rows ≤ 2^22,
+  public implicit count) and `qv_native_aligned_complete`.
+* **Honest receipt-side bus balance** (`Render/HonestBalanceRcpt.lean`, trace-free):
+  `qvNative_qvc_balance` (QVC, via `plan_qvc_balance` + `NativeQueueCounters.resolve_eq`),
+  `qvNative_qsh_balance` (QSH, `plan_qsh_balance`), `honest_size_balance` (SIZE: node/val/srcp
+  sends = size recvs of `honestSizeV`).  Bus users in `nearAirV3` (kernel #eval): QSH, QVC qv
+  only; SIZE 2,4,20→21; SREC rcpt only; RCL 16→20; AKC 16↔18; BND 16↔19; RIDS 16→24;
+  SRC public→20; MEM 16↔17.
+* **Open (balance):** SREC, RCL, AKC, BND, RIDS, MEM all need field identities of the honest
+  receipt views (`nativeRcptLists` reads the honest rows; its fields — `kslot`, `tprev`,
+  `aft`/`bef`, `rlk`, `q`, `akk`/`aku`, `rid`, `enc`, `gv`/`gs` — must be shown equal to the
+  native values the candidate balance lemmas speak about, e.g. `nativeLedgerMemWrites`,
+  `NativeAccessKeyProviders`, `boundaryEntry`).  SRC needs the prepared public segment
+  (`NativeSourceFour.balance`) bound to `srcpTraffic (blocksOfProofs xs)`.
