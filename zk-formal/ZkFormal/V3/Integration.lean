@@ -298,3 +298,4 @@ checks the existing partial results, not the still-missing FactorComplete, AIR-t
 or final admission certificate. Candidate imports do not admit their protocol parameters.
 -/
 import ZkFormal.NearV3.Assembly.RenderV3RcptTables
+import ZkFormal.NearV3.Render.AcceptedQv

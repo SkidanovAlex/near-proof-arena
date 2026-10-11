@@ -34,15 +34,13 @@ def qvNativeTrace (pre : NearSpec.PTrie) (v : MainValues) (pres : List NearSpec.
   qvTraceAligned pre v pres (ZkFormal.NearV3.Candidates.NativeQueueIds.resolve pre v pres)
     (qvNativeRecords pre v pres)
 
-/-- The honest hypothesis over native inputs: valid main values, accepted provider modes and
-`Σ bytes ≤ B0` (so every record is valid, `queueRecords_valid_bytes`), the row bound, and the
-public implicit count. -/
+/-- The honest hypothesis over native inputs: valid main values, valid provider records (from
+accepted modes and `Σ bytes ≤ B0`, `queueRecords_valid_bytes`), the row bound, and the public
+implicit count. -/
 structure QvNativeOk (pre : NearSpec.PTrie) (v : MainValues) (pres : List NearSpec.PTrie)
     (pub : List Fp) : Prop where
   valid : v.Valid
-  modes : ∀ p ∈ queueForestProviders 0 0 (queueInputs pre v pres), p.mode.Accepts (some p.bytes)
-  bytes : ((queueForestProviders 0 0 (queueInputs pre v pres)).map (fun p => p.bytes.length)).sum ≤
-    NearSpecV3.B0
+  records : ∀ r ∈ qvNativeRecords pre v pres, r.Valid
   rows : qvRows (qvNativeWalks pre v pres) (qvNativeRecords pre v pres) ≤ 2 ^ 22
   pubCount : ∀ r, CombinedTable.kPublic.eval (qvNativeTrace pre v pres) 0 r pub =
     @Nat.cast Fp Lean.Grind.Semiring.natCast pres.length
@@ -55,6 +53,6 @@ theorem qv_native_aligned_complete (pre : NearSpec.PTrie) (v : MainValues) (pres
       (qvNativeTraffic pre v pres) ∧
     (qvNativeTrace pre v pres).log t % 3 = 1 :=
   qv_aligned_complete pre v pres _ _ pub
-    ⟨ok.valid, (queueRecords_valid_bytes _ ok.modes ok.bytes).1, ok.rows, ok.pubCount⟩ t
+    ⟨ok.valid, ok.records, ok.rows, ok.pubCount⟩ t
 
 end ZkFormal.NearV3.Render
