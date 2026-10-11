@@ -105,3 +105,21 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   * `nearAirV3` tables 8–10 → `table22`; wf/npOkPg re-proved; size unchanged **6,330,945 B**
     (the aligned model already padded ChaCha to 2^22). Integration builds (2198 jobs);
     sched soundness modules (`Sound`, `GridLink`, `GrantSound`, `SoundFin`) rebuilt.
+* **Task 4 — ups from native execution.** `Render/PaddedUpsNative.lean`:
+  `UpsGen.upsRenderOk_of_native` / `ups_native_aligned_complete`: for native instance data
+  (`UpsNativeData`: forest root at τ, native `traceUpsert` run along `[0,15]`, native part
+  encoding) all per-part inputs come from `nativeInstance_partInputs` and `InstOk` from
+  `nativeInstance_semantic_ok`. Remaining explicit premises (`UpsNativeOk`): root lookup and
+  upsert success, `wf` tree, `1 ≤ |v| < 2^24`, path depth ≤ 400, encoding success, per-part
+  `qhk`/`phk < 2^22`, the authenticated walk `WalkOkU`; table: ≥ 1 instance, `R + 1 ≤ 2^22`.
+* **Task 2 — codec/proc/ssd: NOT adopted (would weaken soundness).** Survey: the most complete
+  repair, `Candidates/ProcPriorProcessRepairedFamily` (codec `ProcPriorCodecActual`, ssd with
+  4-field `B_SDG`, proc `ProcBoundaryRepair`, comparator routed to bus 40), has **no** soundness
+  theorem comparable to `schedCore_sound''`: only the shared comparator
+  (`ProcPriorProcessRepairedSound.sound`), `ProcessRepairInterface.repaired` (projected locals),
+  `ProcSound/Bridge.physical_instance` (Proc.Inst from the repaired proc table) and row-level
+  codec lemmas (`ProcPriorCodecSound*`). The progress log (v3-progress-log, l. 258) records that
+  legacy `schedCore_sound` cannot be reused for the repaired codec (retired prebit decomposition,
+  new `hasC`, prior canonicalisation, `CodecValOwn`). Completeness exists for repaired codec
+  (`ProcCodecNativeConcatLocal`, `ProcCodecConcatTraffic`), repaired proc (`prior_process_table`,
+  B_SCMP traffic only), and ssd only B_SCMP traffic (no `TableLocal ScanDist.table`).
