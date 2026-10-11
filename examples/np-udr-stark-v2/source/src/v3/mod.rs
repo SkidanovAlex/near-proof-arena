@@ -497,6 +497,7 @@ pub const TABLES: &[(&str, usize)] = &[
     ("akey", 18),
     ("bnd", 19),
     ("size", 21),
+    ("rcpt", 16),
     ("node", 2),
     ("srcp", 20),
     ("qv", 22),
