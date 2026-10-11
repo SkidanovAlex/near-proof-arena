@@ -157,15 +157,20 @@ namespace ZkFormal.NearV3.Assembly
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Near
 
-theorem upsKinds {v : List ZkFormal.NearV3.UpsSeg} (hw : ZkFormal.NearV3.UpsWf v)
+theorem upsKindIn {v : List ZkFormal.NearV3.UpsSeg} (hw : ZkFormal.NearV3.UpsWf v)
     (hB : ZkFormal.NearV3.UpsRows.UpsIdBound v) :
-    KindsOk ((ZkFormal.NearV3.upsTraffic v).sends B_BYTES) := by
+    ∀ x ∈ (ZkFormal.NearV3.upsTraffic v).sends B_BYTES, KindIn [K_VUPS] x := by
   intro x hx a ha
   obtain ⟨τ, jj, rfl, hτ, hj⟩ := ZkFormal.NearV3.UpsRows.ups_bytes_head hw hB hx ha
   refine ⟨ZkFormal.NearV3.UpsRows.upsIdN_lt _ _, ?_⟩
-  rw [ZkFormal.NearV3.UpsRows.upsIdN_val hτ hj]
-  simp only [K_NPRE, K_NPOST, K_VPRE]
+  rw [ZkFormal.NearV3.UpsRows.upsIdN_val hτ hj, List.mem_singleton]
+  unfold K_VUPS
   omega
+
+theorem upsKinds {v : List ZkFormal.NearV3.UpsSeg} (hw : ZkFormal.NearV3.UpsWf v)
+    (hB : ZkFormal.NearV3.UpsRows.UpsIdBound v) :
+    KindsOk ((ZkFormal.NearV3.upsTraffic v).sends B_BYTES) :=
+  kindsOk_of_kindIn (upsKindIn hw hB) (by decide)
 
 /-- **The ups registry from `HoldsP`**: the instance chain bounds every segment's `τ` by
 `K < 256`, and `ups_idBound` bounds the parts. -/
@@ -179,6 +184,20 @@ theorem upsKinds_of {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.
   have hC := rootChain_of hp hsz hH T W
   have hK := ZkFormal.NearV3.Public.prep_root_index_lt hp
   apply upsKinds W.ups
+  exact ZkFormal.NearV3.UpsRows.ups_idBound W.nodes W.heads (parentBal_of hH T) W.ups (upbBal_of hH T)
+    (fun s hs => by have := ZkFormal.NearV3.UpsRows.ups_tauBound hC s hs; omega)
+
+/-- The ups `BYTES` ids are of kind `K_VUPS` (from `HoldsP`). -/
+theorem upsKindIn_of {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
+    {tr : Trace Fp} {r : V3Records} (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r) :
+    ∀ x ∈ (ZkFormal.NearV3.upsTraffic r.ups).sends B_BYTES, KindIn [K_VUPS] x := by
+  have hC := rootChain_of hp hsz hH T W
+  have hK := ZkFormal.NearV3.Public.prep_root_index_lt hp
+  apply upsKindIn W.ups
   exact ZkFormal.NearV3.UpsRows.ups_idBound W.nodes W.heads (parentBal_of hH T) W.ups (upbBal_of hH T)
     (fun s hs => by have := ZkFormal.NearV3.UpsRows.ups_tauBound hC s hs; omega)
 

@@ -1,0 +1,43 @@
+{
+ "/data/illia/nearproof-deps/corpora/d1run": {
+  "cases": 53048,
+  "decoded": 53048,
+  "honest": 7039,
+  "honest_violations": 0,
+  "layouts": {
+   "3/4": 14731,
+   "4/5": 17347,
+   "5/6": 20970
+  },
+  "undecodable": 0,
+  "violation_cases": [],
+  "violations": 0
+ },
+ "/data/illia/nearproof-deps/corpora/d2corpus.v2": {
+  "cases": 67384,
+  "decoded": 67384,
+  "honest": 10927,
+  "honest_violations": 0,
+  "layouts": {
+   "3/4": 19311,
+   "4/5": 24292,
+   "5/6": 23781
+  },
+  "undecodable": 0,
+  "violation_cases": [],
+  "violations": 0
+ },
+ "oracle/fixtures/v3/public-d0a": {
+  "cases": 421,
+  "decoded": 421,
+  "honest": 123,
+  "honest_violations": 0,
+  "layouts": {
+   "3/4": 219,
+   "4/5": 202
+  },
+  "undecodable": 0,
+  "violation_cases": [],
+  "violations": 0
+ }
+}

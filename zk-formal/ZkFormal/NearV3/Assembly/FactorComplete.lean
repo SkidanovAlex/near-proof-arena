@@ -327,7 +327,7 @@ theorem factorComplete : FactorComplete := by
   let x := nativeExecutionViews k w m steps
   -- A7 via A11 on the original witness
   have h11 : unfoldBytesN cb wb = unfoldBytes cb wb := by
-    simpa only [a11, beq_iff_eq] using ha.2.2.2.2.2.2.2.2
+    simpa only [a11, beq_iff_eq] using ha.2.2.2.2.2.2.2.2.1
   have h7 : unfoldBytes cb wb ≤ B := by
     simpa only [a7, decide_eq_true_eq] using ha.2.2.2.2.1
   have hu : unfoldBytes cb (witnessOfV3 k x) = unfoldBytesN cb wb := by
