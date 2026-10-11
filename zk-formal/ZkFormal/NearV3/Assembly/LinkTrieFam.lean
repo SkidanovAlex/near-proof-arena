@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Assembly.LinkSched0
 import ZkFormal.NearV3.Assembly.LinkRefine
+import ZkFormal.NearV3.Assembly.PrepFacts
 
 /-!
 # ZkFormal.NearV3.Assembly.LinkTrieFam — the main trie family of the receipt core
@@ -283,6 +284,52 @@ theorem Tf_set (hp : NearSpecV3.prepD0 cb h = .ok p)
   rw [Tf_upsert hp hsz hH T W hτ hK st hv'] at h1
   cases h1
   exact h2
+
+/-- **`hpost`**: at an assignment agreeing with the post value records on instance `0`, the family
+(upserted by the scheduler's output state) has the ups post root of instance `0`, i.e. `x.post 0`. -/
+theorem Tf_post (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    {x : ExtV3} (hxh : x.heads = xHeads (r.ups.map upsE))
+    (h0 : 0 < p.sched.length) {o : NearSpecV3.Scheduler.Output}
+    (ho : NearSpecV3.Scheduler.runCore p.sched[0] (Sched.prevOf tr T_CODEC 0) = some o)
+    {v : Nat → NearSpec.Bytes} (hv : LenOk r v)
+    (hagree : ∀ e ∈ r.values, valTau r.nodes e.vid = 0 →
+      v e.vid = if wrote r.nodes e.vid then toB (LinkVPost.pnOf r.accts e.vid) else toB e.bytes) :
+    (Tf r 0 (schedOut o).state v).hashOf = x.post 0 := by
+  have L := trieLink_of hp hsz hH T W
+  have hK : 0 ≤ p.hdr.K := Nat.zero_le _
+  -- `Fv r 0 v` is the post record tree of instance `0`
+  have hd := dag_v W L hK hv
+  have hFv : Fv r 0 v = fullTree (Rpost r.nodes r.values)
+      (Vpost r.nodes r.values (fun i => toB (LinkVPost.pnOf r.accts i))) (headAt r.heads 0).rid := by
+    apply fullTree_vals hd ?_ hd.root_inst
+    intro n nr hnr ht i hi
+    obtain ⟨vr, hvr, hvt⟩ := hd.vals n nr hnr ht i hi
+    simp only [valsBy, List.getElem?_map] at hvr
+    cases he : r.values[i]? with
+    | none => rw [he] at hvr; cases hvr
+    | some e =>
+      rw [he] at hvr; cases hvr
+      have hi' : i < r.values.length := (List.getElem?_eq_some_iff.mp he).1
+      have he' : r.values[i] = e := (List.getElem?_eq_some_iff.mp he).2
+      rw [valOf_valsBy v hi', he', hagree e (List.mem_of_getElem? he) hvt]
+      simp [valOf, Vpost, valsPost, he]
+  -- the ups entry of instance `0`
+  obtain ⟨f, m, fc, -, -, -, -, -, -, -, -, -, H⟩ := LinkSchedCore.schedCore_v3 hp hsz hH T W h0
+  obtain ⟨hrun, -⟩ := H
+  have e := Option.some.inj (ho.symm.trans hrun)
+  obtain ⟨sv, rfl, -, U⟩ := LinkSched.upsLink_holds hp hsz hH T W
+  obtain ⟨⟨Q, hQ, -, hQpost, -, -⟩, -⟩ := U 0 hK
+  have hQ' : (fullTree (Rpost r.nodes r.values)
+      (Vpost r.nodes r.values (fun i => toB (LinkVPost.pnOf r.accts i))) (headAt r.heads 0).rid).upsert
+        NearSpecV3.keyBwState (schedOut o).state = some Q := by rw [e]; exact hQ
+  have hT := Tf_upsert hp hsz hH T W h0 hK (schedOut o).state hv
+  rw [hFv, hQ'] at hT
+  cases hT
+  rw [post_xHeads hxh (L.chain.ups_mem 0 hK), hQpost]
 
 end Key
 
