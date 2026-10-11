@@ -3,7 +3,7 @@
 Worktree `/data/illia/nearproof-wt/v3-rcpt-sound`, branch `lane/v3-rcpt-sound`, from main `c87a7cae`.
 Modules: `zk-formal/ZkFormal/NearV3/Rcpt/Link/{RunSplit,ForwardSound,MemBal,Mem3,MemOf,RunModel,
 NewChunk,RecChain,RecModel,PrepFwd,RcptCore,AcctSlots,GasPub,RcptHolds,ValBytes,PeoBytes,RfBody,RfEnc,
-RcptHoldsB,FwdLinks,AkeyAkc,SrecLink}.lean` (namespace
+RcptHoldsB,FwdLinks,AkeyAkc,SrecLink,QvPre}.lean` (namespace
 `ZkFormal.NearV3.RcptLink`).
 Audit `zk-formal/test/AuditRcptSound.lean` (all `[propext, Classical.choice, Quot.sound]` or less).
 No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
@@ -198,3 +198,57 @@ reads / `m.Valid.buffered` (raw `qvV3` table; see lane v3-link `LinkVBytes`: `st
 `physical_records_closed`, `byte_all_physical`); then wire `mainRun_of_holdsP_fwd` to
 `shaHyp_holds` and the scheduler grant once lane v3-link lands them on main.  Build:
 `lake build ZkFormal.NearV3.Rcpt.Link.RcptHoldsB ZkFormal.NearV3.Rcpt.Link.AkeyAkc`.
+
+## 2026-10-11 (session 2, cont.) — own ∈ shardIds, queue reads to pre-state form
+
+Commits: `c2271505` (`RcptHoldsB`: `recHyp_of`, `own_index_of_route`, **`mainRun_of_holdsP_route`**),
+`8ba61514` (`QvPre`: `ledgerAll_find_other`, **`reads_of_pre`**, **`mainRun_of_holdsP_pre`**).
+
+* **`own ∈ shardIds`.** `decodeLayout` does **not** check `idToIndex` against `shardIds`
+  (`decodeShardLayoutV2`'s consistency check is only used by the scheduler's own decoder, not by
+  `prepClaim`), so `L.index own = some idx` alone does not give `own ∈ shardIds`.  It is not needed:
+  with no refund `hsz` is trivial; a refund comes from a receipt, which routing puts in the own
+  shard (`shardOf recv = own`), and under A12 `shardOf ∈ shardIds` (`own_index_of_route`).  So the
+  premise `indexOf ids own = some o` is replaced by the routing fact
+  `∀ x ∈ flatR, ctx.layout.shardOf (toBytes x.v) = ctx.own` (available as
+  `RcptLink.bounded_prepared_native_routing`, given the BND balance premises `hb`/`hp`) and the
+  link-indexed check is only required for every `o` with `indexOf ids own = some o`.
+  (Side note for the lead: if `own ∉ shardIds` *and* a refund existed, `prepBody` would check no
+  forwarding demand while the run fails `e.forwarded`; routing rules this out — no receipt can be
+  applied then.)
+* **Queue reads.** The qv AIR authenticates the three main reads on one tree
+  (`Qv.Extract.assemble_native_queue_reads`: `v.Valid ∧ v.Reads t t t`, `t = queueTree … 0`).
+  `reads_of_pre`: with `pre.wf`, `v.Reads pre pre pre ⇒ v.Reads pre mid (T (valsAt n))` (scheduler
+  write touches only `keyBwState`; the ledger only account keys).
+
+### Current top statement (`QvPre.mainRun_of_holdsP_pre`)
+
+Hypotheses as `mainRun_of_holdsP_fwd` up to `ShaHyp`; then `∃ pc, prepClaim cb = .ok pc ∧ ∀ base Tf
+pre mid so v, MainTrieLink … → pre.wf = true → v.Valid → v.Reads pre pre pre →
+(∀ x ∈ flatR r.lists, shardOf (toBytes x.v) = own) → (∀ o, indexOf ids own = some o → ∀ k < n_L,
+fwdDemand p.fwd (o·n_L + k) ≤ so.grant own ids[k]) → applyNewChunk … = .ok (mainOut …)`.
+
+### qv from `HoldsP` — what is missing (found, not done)
+
+`assemble_native_queue_reads` (instantiate at `tt = T_QV`, `KeyTrafficRepair.table` local by
+`tableLocal_of_holdsP`; chains by `walk_chain_exists`, `parser_chain_exists` as in v3-link's
+`LinkVBytes`) needs:
+1. `C : RootChain`, `G : Walk3.WalkHyp …` — lane v3-link (`rootChain_of`, the trie link), and
+   `pre = queueTree r.nodes r.values r.heads 0`, `pre.wf` (trie link).
+2. `he`/`hb`/`ha` (empty / buffered values) — from `physical_empty_read` /
+   `physical_buffered_read`.  **Mismatch:** their `hbalance` is a 4-sender `VBYTES` balance
+   (qv + acct + akey = val), but in `nearAirV3` the codec also sends on `VBYTES`
+   (`bal_users … [T_VAL, T_CODEC, T_ACCT, T_AKEY, T_QV]`).  The hypothesis as stated is not
+   derivable; the lemmas need a codec-inclusive variant (codec streams are start-closed:
+   v3-link `LinkVBytes.Codec.vrow_msg`, `codec_value`).  Not an AIR change — a proof-statement gap
+   in `Qv/Extract/Physical*Read` (`physical_empty_native`, `physical_buffered_*`).
+3. `hkey` / `hfinal` (KEYNIB / FINAL permutations with rcpt and walk), `hrequests`/`hc` (shard list
+   `ss` from the parser chain), `hK` (`kPublic < 64`).
+
+### Resume here
+
+(1) codec-inclusive `physical_empty_read` / `physical_buffered_read` (new modules, reuse
+`stream_isolate`, `physical_records_closed`, `byte_all_physical`, and v3-link's codec
+start-closedness once on main); (2) the `hkey`/`hfinal`/`hrequests` balances from `HoldsP`;
+(3) compose with `assemble_native_queue_reads` and `mainRun_of_holdsP_pre` once v3-link's
+`RootChain`/`WalkHyp`/`shaHyp_holds` land on main.
