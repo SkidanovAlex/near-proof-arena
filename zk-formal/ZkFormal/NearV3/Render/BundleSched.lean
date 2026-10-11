@@ -6,7 +6,6 @@ import ZkFormal.NearV3.Render.PaddedProc
 import ZkFormal.NearV3.Render.PaddedSsd
 import ZkFormal.NearV3.Render.PaddedMrk
 import ZkFormal.NearV3.Render.PaddedSort
-import ZkFormal.NearV3.Render.PaddedUpsNative
 import ZkFormal.NearV3.Assembly.SchedulerRunProcessLocal
 
 /-!
@@ -34,16 +33,8 @@ def shaRenderV3 (pub : List Fp) (t : Nat) (ht : t < nearAirV3.tables.length) (h0
     rcases h01 with rfl | rfl <;> exact h
   aligned := (sha_aligned_complete msgs hok t pub).2.2
 
-/-- Table 7: `upsV3`, from native instance data. -/
-def upsRenderV3 (pub : List Fp) (ds : List UpsGen.UpsNativeData) (hok : ∀ d ∈ ds, UpsGen.UpsNativeOk d)
-    (hpos : 0 < ds.length) (hcap : UpsGen.R (ds.map UpsGen.UpsNativeData.inst) + 1 ≤ 2 ^ 22) :
-    TableRenderV3 pub 7 (by decide) where
-  tr := upsTraceAligned (ds.map UpsGen.UpsNativeData.inst)
-  tf := upsTraffic (UpsRows.viewOf (upsTraceAligned (ds.map UpsGen.UpsNativeData.inst)) 7
-    (UpsGen.segsOf (ds.map UpsGen.UpsNativeData.inst)))
-  loc := (UpsGen.ups_native_aligned_complete ds hok hpos hcap 7 pub).1
-  traffic := (UpsGen.ups_native_aligned_complete ds hok hpos hcap 7 pub).2.1
-  aligned := (UpsGen.ups_native_aligned_complete ds hok hpos hcap 7 pub).2.2
+/- Table 7 (`upsA7`, A7 table since integration/v3-20261012) is rendered by the trie lane
+(`Assembly/RenderV3A7.lean`). -/
 
 /-- Table 8: ChaCha20 blocks. -/
 def chachaRenderV3 (pub : List Fp) (reqs : List Chacha.Gen.Req) (hok : ∀ R ∈ reqs, Chacha.Gen.ReqOk R)

@@ -6,10 +6,6 @@ import ZkFormal.NearV3.Render.BundleSched
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.shaRenderV3
 
-/-- info: 'ZkFormal.NearV3.Render.upsRenderV3' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs(whitespace := lax) in
-#print axioms ZkFormal.NearV3.Render.upsRenderV3
-
 /-- info: 'ZkFormal.NearV3.Render.chachaRenderV3' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.chachaRenderV3
