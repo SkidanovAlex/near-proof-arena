@@ -189,3 +189,4 @@ BYTES/DIGEST parked; A7 after the link merge.
    (rcpt only existential; the candidate key/final/vbytes balances are for candidate receipt and
    value tables).
 5. SHA, BYTES/DIGEST (parked by the lead); A7 (a)/(b) (after the link merge).
+* Verification (end of session): `lake build ZkFormal.V3.Integration` passes (3199 jobs); all new audits pass; `make pin-check` OK.
