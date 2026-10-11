@@ -154,3 +154,13 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   (the repaired-codec proofs `ProcCodecNativeConcatLocal` are for `ProcPriorCodecActual`); once
   local legality exists, their traffic follows from `rowFn_traffic` if their interactions are
   current-row-only. Task 3 (bus balance) not started.
+
+## 2026-10-11 (package 4)
+
+* Merged integration b (rcpt `tableR`, srcp `tableD`); conflict in the `NearAir` header comment only.
+  Integration builds (2845 jobs).
+* **RIDS coordination:** `SortV3.sort_v3_accepted` (`PaddedSort.lean`): for an accepted witness
+  (`walkD0`, `decodeW`, `decodeStateWitness`, `checkD0a B0`, `NativeValid`) and receipt lists with
+  `lists.flatten.map Input.receipt = appliedReceipts k w`, the sort render's honest input is exactly
+  `lists.flatten.map Input.receipt` and it emits `sortTraffic (NativeSortIds.input (that list))` —
+  no mismatch; well-formedness, distinct ids and `≤ 8192` come from acceptance.
