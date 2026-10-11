@@ -242,6 +242,7 @@ import ZkFormal.NearV3.Render.PaddedTrie
 import ZkFormal.NearV3.Render.PaddedRcpt
 import ZkFormal.NearV3.Render.PaddedSrcp
 import ZkFormal.NearV3.Render.PaddedQv
+import ZkFormal.NearV3.Render.PaddedQvNative
 import ZkFormal.NearV3.Render.PaddedRcptR
 import ZkFormal.NearV3.Render.PaddedSha
 import ZkFormal.NearV3.Render.PaddedCongr
