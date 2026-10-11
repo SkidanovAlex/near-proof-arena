@@ -59,3 +59,12 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   `UpsRenderOk` = `UpsOk` + per-part `PartOk`/`FieldsOk`/`WindowOk`/`ByteInput`/`MemOk` (the
   explicit inputs of the group lemmas). **Open:** discharging those per-part inputs from native
   execution (`Ups/Native*`). Audit `test/AuditPaddedUps.lean`.
+* **Verification:** `lake build ZkFormal.V3.Integration` passes (2190 jobs) with the in-place
+  ChaCha generalisation and all new modules; `make pin-check` OK; audits
+  `test/AuditPadded{Sha,Chacha,MrkSort,Sched,Ups}.lean` pass (axioms ⊆ {propext, Classical.choice,
+  Quot.sound}). No sorry/axiom/native_decide.
+* **Believed problems with frozen tables (not changed):** `Sched.Proc.table`'s key-rotation
+  constraints (`Proc.cKey`) across an instance boundary (see `Candidates/ProcBoundaryRepair`,
+  `ProcBoundaryLocal.away_key`) — only one run with `tau = 0` is proved complete;
+  `Sched.Codec.table` — the only codec completeness is for the repaired
+  `ProcPriorCodecActual.table`, which retires some `cKind`/`cRec` constraints.
