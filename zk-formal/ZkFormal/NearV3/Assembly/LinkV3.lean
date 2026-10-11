@@ -4,6 +4,7 @@ import ZkFormal.NearV3.Assembly.ShaUnionFacts
 import ZkFormal.NearV3.Assembly.NearAdmission
 import ZkFormal.NearV3.Rcpt.Extract.Srcp.Proof
 import ZkFormal.NearV3.Candidates.MerklePhysical
+import ZkFormal.NearV3.Assembly.LinkClaim
 
 /-!
 # ZkFormal.NearV3.Assembly.LinkV3 — the linking step of `ExtractV3Stmt`
@@ -176,6 +177,32 @@ def LinkV3Stmt (B : Nat) : Prop :=
       (shaCountAt tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) T_SHA_R false) →
     V3Balance (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r →
     ∃ k x, GoodV3 B cb k h p x
+
+/-- **The open core of the link**: `LinkV3Stmt` with the walk and the claim-level fields
+already supplied (`walkD0_of_prepD0`), asking only for the view-level `GoodV3` fields
+(`ExtFieldsV3`). -/
+def LinkCoreV3Stmt (B : Nat) : Prop :=
+  ∀ (cb : Bytes) (h : Hint) (p : Prep) (oh : Nat) (tr : Trace Fp) (r : V3Records) (k : WalkD0),
+    prepD0 cb h = .ok p → walkD0 cb = .ok k → ClaimFieldsV3 k →
+    (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P →
+    HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr →
+    V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r →
+    V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r →
+    ZkFormal.Near.ShaFacts
+      (shaCountAt tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) T_SHA_T true)
+      (shaCountAt tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) T_SHA_T false) →
+    ZkFormal.Near.ShaFacts
+      (shaCountAt tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) T_SHA_R true)
+      (shaCountAt tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) T_SHA_R false) →
+    V3Balance (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r →
+    ∃ x, ExtFieldsV3 B cb k h p x
+
+/-- The link from its core: the walk and the claim-level fields come from `prepD0`. -/
+theorem linkV3_of_core {B : Nat} (hc : LinkCoreV3Stmt B) : LinkV3Stmt B := by
+  intro cb h p oh tr r hp hsz hH hw ht hs1 hs2 hb
+  exact goodV3_of_ext hp fun k hk =>
+    hc cb h p oh tr r k hp hk (walkD0_of_prepD0 hp |>.elim fun k' ⟨hk', C⟩ => by
+      rw [hk] at hk'; cases hk'; exact C) hsz hH hw ht hs1 hs2 hb
 
 /-! ## Mechanical composition: `LinkV3Stmt ⇒ ExtractV3Stmt` -/
 

@@ -19,3 +19,15 @@ import ZkFormal.NearV3.Assembly.LinkV3
 /-- info: 'ZkFormal.NearV3.Assembly.hsound_of_extract' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.hsound_of_extract
+
+/-- info: 'ZkFormal.NearV3.Assembly.walkD0_of_prepD0' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.walkD0_of_prepD0
+
+/-- info: 'ZkFormal.NearV3.Assembly.goodV3_of_ext' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.goodV3_of_ext
+
+/-- info: 'ZkFormal.NearV3.Assembly.linkV3_of_core' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.linkV3_of_core

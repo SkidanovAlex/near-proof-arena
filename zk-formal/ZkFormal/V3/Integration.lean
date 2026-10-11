@@ -13,6 +13,7 @@ import ZkFormal.NearV3.Assembly.HintCodec
 import ZkFormal.NearV3.Assembly.NearAdmission
 import ZkFormal.NearV3.Assembly.ExtractV3
 import ZkFormal.NearV3.Assembly.LinkV3
+import ZkFormal.NearV3.Assembly.LinkClaim
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
