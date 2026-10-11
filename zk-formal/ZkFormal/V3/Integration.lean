@@ -289,6 +289,8 @@ import ZkFormal.NearV3.Render.AcceptedQv
 import ZkFormal.NearV3.Render.AcceptedRcpt
 import ZkFormal.NearV3.Render.AcceptedMem
 import ZkFormal.NearV3.Render.AcceptedSrcp
+import ZkFormal.NearV3.Rcpt.Candidates.AccountEmptyCap
+import ZkFormal.NearV3.Render.PaddedAcctE
 /-!
 # Build gate for the integrated v3 proof work
 

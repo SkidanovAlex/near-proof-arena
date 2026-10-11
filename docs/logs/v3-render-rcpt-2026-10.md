@@ -283,3 +283,23 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
 * Still open: srcp root/sibling widths and RC-preimage length `< P` (decoding/witness size);
   BND coverage on well-formed layouts (from `native_routing_selected`); `SizeOk` for `sizeA7`
   (trie-complete lane).
+
+## 2026-10-11 (round 7: successor session)
+
+* **Table 17 = empty-capable account table (done).**  `NearAir.lean`: `acctTableV3 :=
+  {Rcpt.Candidates.AccountEmpty.table with maxLog := 19}` (row-0 constraint `isFirst·(act−af)`;
+  only entry 17 changed; `ExtractV3.nearTablesFull_eq`/`getElem?_acct`/`acctLocal` follow).
+  `Rcpt/Candidates/AccountEmptyCap.lean`: cap-generic `first_active_at`, `old_local_at`,
+  `empty_or_old_at`, `empty_local_at`, `empty_traffic_exact`; **`Assembly.acctV3_empty_or_old`**
+  (silent — every bus count 0 — or `TableLocal {AcctV3.table with maxLog := 19}`);
+  `AcctV3WfE cap as := as = [] ∨ AcctV3WfAt cap as` and `acctV3E_view_at`.
+  `ViewsV3.acctView` now returns `AcctV3WfE 19`; **`LinkV3.V3RecordsWf.accts : AcctV3WfE 19`**
+  (link lane: the account records may now be `[]` with empty traffic).  `rcptV3_view_nearAir`
+  unchanged (uses only the traffic of `acctView`).
+  Render: `Render/PaddedAcctE.lean` — `AcctV3OkE as := as = [] ∨ AcctV3Ok as`,
+  `acctTraceAlignedE` (empty: `AccountEmpty.emptyTrace`, log 1), `acct_aligned_completeE`;
+  `acctRenderV3` takes `AcctV3OkE`; `AcceptedMem.acctV3OkE_of_views` (no `as ≠ []`).
+  `nearAirV3_wf`/`nearAirV3_npOkPg` re-checked; **`nearV3_sizeMaxAligned` unchanged at
+  6,415,073 B** (same widths/degrees), so `v3MaxInner`/`v3MaxHintBytes` unchanged.
+  Integration 3,100 jobs OK; audits `AuditAccountEmptyCap` (new), `AuditPaddedRcpt`,
+  `AuditNearV3Admission` pass; pin-check OK.

@@ -3,6 +3,7 @@ import ZkFormal.NearV3.Render.HonestBalanceBnd
 import ZkFormal.NearV3.Render.PaddedQvNative
 import ZkFormal.NearV3.Render.PaddedSrcp
 import ZkFormal.NearV3.Render.PaddedRcpt
+import ZkFormal.NearV3.Render.PaddedAcctE
 
 /-!
 # `TableRenderV3` instances for the receipt-side tables 16–20 and 22
@@ -10,7 +11,7 @@ import ZkFormal.NearV3.Render.PaddedRcpt
 Each instance packages one honest aligned render (`Render/Padded*.lean`) at its fixed
 `nearAirV3` index: the trace, its exact traffic, local legality against
 `nearAirV3.tables[t]`, and the roll-aligned height.  The hypotheses are the per-table honest
-conditions (`RcptOk`, `AcctV3Ok`, `AkeyOk`, the bnd row bound, `SrcpWf` + A10, `QvNativeOk`).
+conditions (`RcptOk`, `AcctV3OkE`, `AkeyOk`, the bnd row bound, `SrcpWf` + A10, `QvNativeOk`).
 Table 21 is `UnfoldA7.sizeA7` (A7, lane `v3-trie-complete`).
 -/
 
@@ -27,14 +28,14 @@ def rcptRenderV3 (pub : List Fp) (x : RcptInput) (ok : RcptOk pub x) :
   traffic := (rcpt_aligned_completeB pub x ok 16).2.1
   aligned := (rcpt_aligned_completeB pub x ok 16).2.2
 
-/-- Table 17 (`acctV3`, cap 19). -/
-def acctRenderV3 (pub : List Fp) (as : List AcctV) (ok : AcctV3Ok as) :
+/-- Table 17 (`acctTableV3`: `acctV3` at cap 19 with the empty-chunk repair; `as = []` allowed). -/
+noncomputable def acctRenderV3 (pub : List Fp) (as : List AcctV) (ok : AcctV3OkE as) :
     TableRenderV3 pub 17 (by decide) where
-  tr := acctTraceAligned as
+  tr := acctTraceAlignedE as
   tf := acctV3Traffic as
-  loc := (acct_aligned_complete as ok 17 pub).1
-  traffic := (acct_aligned_complete as ok 17 pub).2.1
-  aligned := (acct_aligned_complete as ok 17 pub).2.2
+  loc := (acct_aligned_completeE as ok 17 pub).1
+  traffic := (acct_aligned_completeE as ok 17 pub).2.1
+  aligned := (acct_aligned_completeE as ok 17 pub).2.2
 
 /-- Table 18 (`akeyV3`). -/
 def akeyRenderV3 (pub : List Fp) (es : List AkeyE) (ok : AkeyOk es) :

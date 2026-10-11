@@ -7,6 +7,7 @@ import ZkFormal.NearV3.Assembly.QueueSeed
 import ZkFormal.NearV3.Candidates.NativeAccessKeyProviders
 import ZkFormal.NearV3.Candidates.NativeAccessKeyValidation
 import ZkFormal.NearV3.Assembly.Compute
+import ZkFormal.NearV3.Render.PaddedAcctE
 
 /-!
 # `MemOk` and the account views from acceptance
@@ -92,6 +93,15 @@ theorem acctV3Ok_of_views (as : List AcctV) (hne : as ≠ []) (hlen : as.length 
   · intro a ha
     have hl := hwf.len a ha
     exact ⟨hl.2.2.1, hl.2.2.2⟩
+
+/-- **`AcctV3OkE` for the native account views** (`as = []` allowed: the empty chunk renders
+the silent repaired table 17). -/
+theorem acctV3OkE_of_views (as : List AcctV) (hlen : as.length ≤ 4481)
+    (hwf : as = [] ∨ AcctWf as) (hbytes : ∀ a ∈ as, ∀ b ∈ a.pre ++ a.post, b < 256) :
+    AcctV3OkE as := by
+  by_cases he : as = []
+  · exact Or.inl he
+  · exact Or.inr (acctV3Ok_of_views as he hlen (hwf.resolve_left he) hbytes)
 
 /-- **`AkeyOk` for the native access-key providers** of an accepted witness (`FullAccess`
 tag from native validation, rows from `|rs| ≤ 4481`; the gas bound is
