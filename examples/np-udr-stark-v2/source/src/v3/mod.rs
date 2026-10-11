@@ -503,6 +503,11 @@ pub const TABLES: &[(&str, usize)] = &[
     ("chacha", 8),
     ("rng", 9),
     ("shuf", 10),
+    ("codec", 11),
+    ("scandist", 12),
+    ("proc", 13),
+    ("mem", 14),
+    ("cmp", 15),
 ];
 
 /// Parse `json` as the entry list of `table` and render its aligned trace.
@@ -530,6 +535,11 @@ pub fn render(table: &str, json: &str) -> Result<Tab, String> {
             "acct" => acct::render(json),
             _ => size::render(json),
         }?,
+        "codec" => sched::codec(json)?,
+        "scandist" => sched::scandist(json)?,
+        "proc" => sched::proc(json)?,
+        "mem" => sched::mem(json)?,
+        "cmp" => sched::cmp(json)?,
         t => return Err(format!("unknown table {t}")),
     })
 }
