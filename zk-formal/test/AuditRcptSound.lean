@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Link.RcptCore
 import ZkFormal.NearV3.Rcpt.Link.MemOf
+import ZkFormal.NearV3.Rcpt.Link.AcctSlots
 
 /-- info: 'ZkFormal.NearV3.RcptLink.applyReceipts_of_ledger' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
@@ -52,3 +53,11 @@ import ZkFormal.NearV3.Rcpt.Link.MemOf
 /-- info: 'ZkFormal.NearV3.RcptLink.applied_eq' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.applied_eq
+
+/-- info: 'ZkFormal.NearV3.RcptLink.acct_k_nodup' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.acct_k_nodup
+
+/-- info: 'ZkFormal.NearV3.RcptLink.memHyp_of'' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.memHyp_of'
