@@ -118,9 +118,9 @@ theorem srcpKinds {bs : List ZkFormal.NearV3.SrcpB} (h : ZkFormal.NearV3.SrcpWf 
 
 /-! ## rcpt (`K_RC`, `K_RF`, `K_PEO`, `K_LEAF`, `K_RID`) -/
 
-theorem rcptKinds {pub : List Fp} {ls : ZkFormal.NearV3.RcptV3Vs}
+theorem rcptKindIn {pub : List Fp} {ls : ZkFormal.NearV3.RcptV3Vs}
     (hl : ls.length ≤ 2 ^ 22) (hr : (ZkFormal.NearV3.flatR ls).length ≤ 2 ^ 22) :
-    KindsOk (ZkFormal.NearV3.rcptSends3 pub ls B_BYTES) := by
+    ∀ x ∈ ZkFormal.NearV3.rcptSends3 pub ls B_BYTES, KindIn [K_RC, K_RF, K_PEO, K_LEAF, K_RID] x := by
   intro x hx a ha
   have hc := ZkFormal.NearV3.RcptLink.receipt_bytes_ids hl hr hx ha
   refine ⟨hc, ?_⟩
@@ -145,9 +145,13 @@ theorem rcptKinds {pub : List Fp} {ls : ZkFormal.NearV3.RcptV3Vs}
       · split at hx
         · rw [e hx]; right; right; right; right; unfold msgId K_RID; omega
         · simp at hx
-  simp only [K_RC, K_RF, K_PEO, K_LEAF, K_RID] at hk
-  simp only [K_NPRE, K_NPOST, K_VPRE]
-  omega
+  simp only [List.mem_cons, List.not_mem_nil, or_false]
+  exact hk
+
+theorem rcptKinds {pub : List Fp} {ls : ZkFormal.NearV3.RcptV3Vs}
+    (hl : ls.length ≤ 2 ^ 22) (hr : (ZkFormal.NearV3.flatR ls).length ≤ 2 ^ 22) :
+    KindsOk (ZkFormal.NearV3.rcptSends3 pub ls B_BYTES) :=
+  kindsOk_of_kindIn (rcptKindIn hl hr) (by decide)
 
 /-- The receipt registry from the counted view (`V3RecordsWf.listsCount`). -/
 theorem rcptKinds_of {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r) :
