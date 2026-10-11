@@ -260,3 +260,42 @@ BYTES/DIGEST parked; A7 after the link merge.
    KEYNIB/FINAL/VBYTES: unchanged from session 2's list.
 * (session 3, end) `TrieA7Size.size_a7_recvs`; Integration 4123 jobs; audits `AuditTrieA7Size`,
   `AuditTrieA7Ups`, `AuditTrieA7Node`, `AuditTrieA7Val`, `AuditRenderV3Trie` pass; `make pin-check` OK.
+
+## 2026-10-11 (session 3, cont.) — lead: items (1)–(5) in order
+
+Lead: HEAVY_MEM=12G allowed (`taskset -c 8-13`).  Order: (1) A7 (a) semantic Perm, (2) A7 (b)
++ ups row cap, (3) bundle SIZE balance, (4) SHA two-bin packing, (5) the remaining shared buses.
+
+* `Assembly/TrieA7Rank.lean`: `rpl_ranked`, `rplv_ranked`, `total_ranked` — the A7 ups messages and
+  total of `upsRanked ws insts` are those of `insts` (ranking/sync rewrite only walk counters).
+
+### Plan for (1), from a survey of the existing native-instance lemmas (not yet executed)
+
+* Source: `accepted_window_coverage` (`Rcpt/Candidates/AcceptedWindowCoverage.lean`) gives per
+  instance `AllocatedNativeInstance us tau u I` (`I.tau = tau`), `ExactNativeWalkProviders`, and
+  `∃ root, forestRootAt 0 0 (us.map pre) tau = some root ∧ NativeReaderOrigin root u.run u.value I`
+  — `accepted_ups_walks` currently discards the last component (`-`); keep it.
+* `NativeReaderOrigin`: `I = nativeInstance recordId B root.tree run value Qs` with
+  `N := sourceLevelIds recordId run` (descend sources top-down, then the terminal source),
+  `D := descentCount run.parts`, `(part I k).sN := recordId part.source`.
+* Node ids: `native_reader_depth` (`Rcpt/Candidates/NativeReaderDepth.lean`) — for kind ≠ 8,
+  `(forestStoreViews ts).nodes[(part I k).sN]? = some s ∧ pdep = s.depth` (internally
+  `s = seedNodeView tau …`, so `s.tau = tau`; copy it exporting `s.tau = I.tau`).
+  `PartOk` (`Render/Ups/PlanInput.lean`): `kindT/kindU` (kinds 0,1,11 only at `k ≥ nT`), `pdepU`
+  (`pdep + (k+1−nT) = dep[D]`), terminal part of kind ≠ 11: `sN = N[D]`, `pdep = dep[D]`;
+  `InstOk.q1` (every part has a row, so the nonempty-q filter is vacuous).
+  ⇒ every RPL message is a record id with `(tau, depth)` = `(I.tau, dep[D])` for `N_D` and
+  `(I.tau, dep[D] − (k+1−nT))` for upper parts — pairwise distinct (no new Nodup lemma needed).
+* Forest bridge: ids are in `forestNodes 0 0 0 (oldPost :: steps.pre)` (`us.map pre`), while
+  `TrieNative.nodes` is `assignList ∘ records ∘ ChainMetadata.assign ∘ initializeList` over
+  `m.pre :: steps.pre` — length-preserving; `hpreEq : us.map pre = rs.map post` and
+  `replay_forest_depths` (`NativeRebasedDepths.lean`) give equal record lists up to metadata, so
+  index `x` is the same record with the same `tau/depth`.
+* Values: `ExactNativeWalkProviders` gives `(step I I.ts).e ∈ edgesOf3 a.nid s`; with mode 0,
+  `WalkOkU` gives `ts = 3` and `e[5] = EK_VAL`; new small lemma `e ∈ edgesOf3 n s → e[5] = EK_VAL →
+  seedValueId s = some e[3]` (model: `edge_val`, `Extract/Ups/UpsTermT.lean`); `forestNodes_valueIds`
+  (`filterMap seedValueId = range' 0 |forestBytes|`) gives Nodup across instances (distinct `N_D`
+  records) and the bound `< es.length` (`write_vals_count`, `assignValues` length).
+* Bounds for `% P`: `ns.length ≤ R ns < 2^22` (`length_le_R`, `node_P`), `es.length ≤ ValGen.R
+  < 2^22` (`val_length_le`, `val_R_lt`).
+* Then `S n := decide ([n] ∈ Js.flatMap upsRplMsgs)` and `List.perm_ext_iff_of_nodup`.
