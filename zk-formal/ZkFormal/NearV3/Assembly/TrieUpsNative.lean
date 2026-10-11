@@ -127,10 +127,11 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
   refine ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads,
     ⟨⟨nativeWalkTrace (rankWalks [] ws), walkTraffic3 (rankWalks [] ws), hwlocal, hwtraffic,
       by change 22 % 3 = 1; decide⟩, rfl⟩,
-    by omega, ho, hfam, horigin, ⟨us, hcount, hlen, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.2.1⟩, hout, hval,
+    by omega, ho, hfam, horigin, ⟨us, hcount, hlen, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.2.1, (hgood u hu).2.1⟩,
+      hout, hval,
       fun tau u I hu hI => by
-        obtain ⟨a, sha, -⟩ := hinst tau u I hu hI
-        exact ⟨sha, a.2.2.2.1, a.1⟩⟩, hedges, hbmaps, ?_⟩
+        obtain ⟨a, sha, -, -, -, root, hroot, horig⟩ := hinst tau u I hu hI
+        exact ⟨sha, a.2.2.2.1, a.1, a, root, hroot, horig⟩⟩, hedges, hbmaps, ?_⟩
   intro W hW
   -- providers
   obtain ⟨hn0, hvls⟩ := NativeExecutionUsage.inputs hk hw h (by decide) hm hv

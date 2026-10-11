@@ -774,3 +774,27 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
 * Rust prover note (prover lane): the SHA job list must include a zero-length `VPRE(vid)` job
   per empty value record (no SHA job builder in `src/v3/` yet).
 * Audit `test/AuditTrieShaEmpty.lean` (axioms + behaviour guard).  Integration 4191 jobs.
+
+## 2026-10-12 (session 6) — DIGEST `htrie` DONE (trie side)
+
+* `TrieUpsOrigin.UpsSha` strengthened (more conjuncts, same `us`): `∀ u ∈ us, … ∧ u.pre.wf`, and per
+  index `AllocatedNativeInstance us tau u I ∧ ∃ root, forestRootAt 0 0 (us.map pre) tau = some root ∧
+  NativeReaderOrigin root u.run u.value I` (from `coverage_kf`'s `hinst`, in `accepted_ups_walks`).
+  `scheduler_sha_of` adjusted (statement unchanged).
+* New `Assembly/TrieDigestUps.lean`: `uMsgs_digest`, `uMsgs_digest_form`, `digest_row`
+  (aligned generated row's DIGEST recvs = `CompactPhysicalDigests.digestRowMsgs`), `digest_value_row`
+  (`.v p` rows receive none), `digest_congr`, **`view_digest_recv`** (aligned ups view DIGEST recvs =
+  `compactGeneratedDigests Is`), **`ups_sha_scheduler`**: from `UpsSha insts`, ONE `us` with the
+  upsert+sanity row bound `≤ 1,663,260`, and for every `p` (in particular `upsRanked ws insts =
+  physicalPrefixUps (ws.flatMap (·.steps)) insts`): ranked ups BYTES `= expectedBytes (schedulerShaJobs 0 us)`
+  and `compactGeneratedDigests (ranked) ~ expectedDigests (schedulerShaJobs 0 us)` (via
+  `scheduler_compact_digest_conservation`; origin ⇒ `NativeEncodedInstance` using
+  `forestRootAt_tree`).  Use this `us` for `sha_bins_ofE` (hs), `balancedAt_bytes` (hups) and htrie.
+* New `Assembly/TrieDigestTrie.lean`: `node_head_core`, **`node_head_digests`** (accepted: `hm hv`,
+  `SizedAccountRun`, any `q keys`, `NodeOk ns`): `cnt nodeRecvs3 ns DIGEST + cnt headRecvs hs DIGEST =
+  cnt expectedDigests (jobsToSha (nativeShaJobsE ns es)) + cnt (ns.flatMap postSlotDigests)` for
+  `ns/hs/es = TrieNative.nodes/heads/vals`; **`RenderBundleV3.htrie_of`**: the `htrie` premise of
+  `balancedAt_digest` (tables 2,3,7) from node/head ExtOf/equality, ups ExtOf + `UpsRenderOk`, the
+  node/head identity and the ups perm.  So `balancedAt_digest` with `N := nativeShaJobsE ns es`,
+  `X := ns.flatMap postSlotDigests` has only `hcodec`/`hrest` (cross-lane) open.
+* Audit `test/AuditTrieDigest.lean`.  Integration 4268 jobs; pin-check ok.

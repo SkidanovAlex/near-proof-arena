@@ -38,15 +38,19 @@ def UpsOrigin (F : List PTrie) (insts : List UpsInst) : Prop :=
 
 
 /-- The scheduler upsert witnesses behind the native ups instances, with the SHA-job facts
-(`NativeShaFamily`) and the budgets of `schedulerBatch_rows`. -/
+(`NativeShaFamily`), the budgets of `schedulerBatch_rows`, and (for the ups `DIGEST` inventory,
+`TrieDigestUps`) the allocation and native reader origin of every instance. -/
 def UpsSha (insts : List UpsInst) : Prop :=
   ∃ us : List SchedulerUpsertWitness,
     insts.length = us.length ∧ us.length ≤ 32 ∧
-    (∀ u ∈ us, u.Valid ∧ u.run.parts.length ≤ 403) ∧
+    (∀ u ∈ us, u.Valid ∧ u.run.parts.length ≤ 403 ∧ u.pre.wf = true) ∧
     (us.map (fun u => outputByteCharge u.run)).sum ≤ 2131072 ∧
     (us.map (fun u => u.value.length)).sum ≤ 3146912 ∧
     ∀ tau u I, us[tau]? = some u → insts[tau]? = some I →
-      NativeShaFamily u I ∧ I.v = u.value.map UInt8.toNat ∧ I.tau = tau
+      NativeShaFamily u I ∧ I.v = u.value.map UInt8.toNat ∧ I.tau = tau ∧
+      AllocatedNativeInstance us tau u I ∧
+      ∃ root, forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) tau = some root ∧
+        NativeReaderOrigin root u.run u.value I
 
 private theorem root_depth' : ∀ n v ts tau root,
     forestRootAt n v ts tau = some root → root.depth = 0
