@@ -38,6 +38,7 @@ No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
 | `RcptCore` | **`mainRun_of_records`**, `applied_eq` | the receipt core of `m.Valid.run` (statement below) |
 | `AcctSlots` | `acct_k_nodup`, `memHyp_of'` | account slots distinct (`VSLOT` balance + `Link3.val_unique`); `MemHyp` from `HoldsP` + views alone |
 | `GasPub` | `gasPrice_pub` | `pc.ctxB2.gasPrice = leN' (pubBytes pub PH_GP 16)` (closes `hgp`) |
+| `ValBytes` | `Link3.val_bytes8`, `acct_written'`, `acct_pre_byte`, **`preB_of`** | value records referenced by a node slot have byte-valued bytes (`sha_core`, first conclusion of `val_sha`); `VBYTES` (users val, codec, acct, akey, qv; only val receives): acct pre byte `j` = byte `j` of a value record with `vid = k`; hence `RecBytes.preB` from the trie link's `ShaHyp r.nodes r.heads r.values others shaS shaR` (lane v3-link's `shaHyp_holds`) |
 | `RcptHolds` | **`mainRun_of_holdsP`** | `mainRun_of_records` from the `LinkCoreV3Stmt` hypotheses: chain, `encB`, `bgpB`, `hgp`, `PrepFwd` discharged; remaining premises explicit (below) |
 
 ### The deliverable statement (`RcptCore.mainRun_of_records`)
@@ -126,9 +127,13 @@ Nothing false found.  Note for the lead: the forwarding split's soundness direct
 
 ## Resume here
 
-Done: (1) `hknd`, (3) `hgp`.  Next, in order: (2) `RecBytes` — `preB` (needs a value-record
-byte lemma, the `Sha3.rec_bytes` argument for `valSends` + `VBYTES` balance acct→val), `burntB`
-(`K_PEO` digest bytes), `ramtB` (refund body); (4) `hrf` (refund encoding identity); (5) the akey
+Done: (1) `hknd`, (3) `hgp`, `preB` (`ValBytes.preB_of`, given `ShaHyp`; reused nothing from
+`LinkVBytes` — that module is about the codec's `VBYTES`; `acct_pre_byte` follows the pattern of
+v3-link's `LinkVPost.vbytes_len`, which is not on main).  Next, in order: (2) `RecBytes` — `burntB`
+(`K_PEO` digest bytes: needs a `K_PEO` analogue of `ListByteIsolation.list_bytes_isolate` /
+`ListSha.list_sha_digest` — the rcpt `BYTES` sends with id `msgId K_PEO r` are exactly
+`emitAt (msgId K_PEO r) 0 x.peo` — then `sha_core` with the rcpt `DIGEST` receive
+`digMsg (msgId K_PEO r) |peo| peoh`), `ramtB` (refund body, `Rcpt/Link/Body`); (4) `hrf` (refund encoding identity); (5) the akey
 half of `TrieOk.ak`; (6) `m.Valid.buffered` / qv reads (with the link lane); (7) `hsz`
 (`Prep.fwd` vs scheduler grants, with the link lane).  Build: `HEAVY_MEM=12G taskset -c 8-15,24-31
 /data/illia/nearproof-deps/bin/heavy lake build ZkFormal.NearV3.Rcpt.Link.RcptHolds`; audit
