@@ -1567,7 +1567,13 @@ fn codec_rows(inp: &SchedIn, gb_a: &[u64]) -> Vec<Vec<u64>> {
 /// `Gen.Codec.codecPad` is the zero row; the trace height is
 /// `padLog22 (logOf (5 + 24N + 64 + 1))`.
 pub fn codec_aligned(inp: &SchedIn) -> Tab {
-    let gb = grid_grants(inp);
+    // `gbA` is the distribute grid's grant per link (`SDG`); recompute it when
+    // not supplied, exactly as `Gen.Dist.distRows` does.
+    let gb = if inp.gb.len() == (inp.run.n * inp.run.n) as usize {
+        inp.gb.clone()
+    } else {
+        grid_grants(inp)
+    };
     let rows = codec_rows(inp, &gb);
     aligned(&rows, 1, CODEC_WIDTH)
 }
