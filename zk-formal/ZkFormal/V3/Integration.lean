@@ -24,6 +24,7 @@ import ZkFormal.NearV3.Assembly.LinkSha
 import ZkFormal.NearV3.Assembly.LinkShaKinds
 import ZkFormal.NearV3.Assembly.RcptViewCounts
 import ZkFormal.NearV3.Assembly.LinkChain
+import ZkFormal.NearV3.Assembly.LinkTrie
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
