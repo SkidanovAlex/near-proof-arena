@@ -27,3 +27,16 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
   `accepted_native` (the native objects incl. the `SizedAccountRun` replay exist for every
   accepted witness), `accepted_bundle_parts` (the node/head/val `TableRenderV3` components with
   `tf` = the native traffic), `uniqs_digsBal`.
+* `Assembly/TrieBusBalance.lean` — per-bus reduction of `R.Balanced`: `BalancedAt b`,
+  `balanced_iff`, `cnt_tf` (a component's count = its table's bus count), `cnt_tf_off`,
+  `sum_tables` (restrict the 25-table sum to a table filter `p` with the kernel check
+  `Covers b s p`), `pub_off`.  **`balancedAt_digs`**: `DIGS` balance of any bundle whose
+  node/head/uniq components carry record lists with `Link3.DigsBal` — with `uniqs_digsBal` this
+  closes `DIGS` for the honest bundle.  Bus/table survey (kernel `#eval` of `nearAirV3`):
+  trie-only buses PARENT(2) node/head; EDGE(4) node/head/walk/ups; BMAP(11) node/walk/ups;
+  DIGS(17) node,head→uniq; DUP(19) uniq→node,val; ENT(20) node/val; VPARENT(22) node→val;
+  MEMD(23) ups; MIDROOT(24) head→ups; UPB(25) node/ups; ROOT(10) ups→head + public both sides.
+  Shared: BYTES(0) senders node,val,ups,codec,rcpt,acct,srcp,mrk → sha (+ public recv);
+  DIGEST(1) sha → node,head,ups,codec,rcpt,srcp,mrk; VSLOT(3) acct→node; KEYNIB(5) rcpt,qv→walk;
+  FINAL(6) walk→rcpt,qv; VBYTES(21) codec,acct,akey,qv→val; SIZE(18) node,val,srcp→size;
+  S0F(59) ups→codec, SPOST(60)/SPLEN(61) codec→ups.
