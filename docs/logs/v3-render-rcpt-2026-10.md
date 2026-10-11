@@ -92,3 +92,15 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   premise (LinkV3 updated; the old one is removed from `ExtractV3.lean`).
   `nearV3_size` unchanged by this (6,320,769 B).  Integration builds (2,704 jobs — the
   candidate soundness chain is now in the closure; elaboration-budget note).
+* **rcpt render (partial).**  `Render/PaddedRcptR.lean` (namespace `Assembly.RcptSkeleton`):
+  `RcptInput` (native data), `RcptOk pub x` (prepD0/walkD0/witness decoding; lists =
+  `appliedReceipts`, wf/named/native refund flags; `applyNewChunk` succeeds; gas limit ≤ D0;
+  gas-price/final/owner public bytes), `rcptTraceAligned pub x` (the candidate native trace
+  `booleanReceiptTrace … 22 …` pinned to index 0, `pinTrace` in `ColAgree.lean`), and
+  `rcpt_aligned_complete : ∃ ls, TableLocal RcptV3.tableR … t pub ∧ TableTraffic
+  RcptV3.interactions … (rcptTraffic3 pub ls) ∧ log t % 3 = 1`.
+  **Open:** `ls` is the trace's own extracted list view, not yet a native function of `x`.
+  Needed for render assembly (bus balance against acct/akey/bnd/srcp/sha/…):
+  `ls = nativeRcptViews pub x` (the located-view identity `canonical_native_views` exists
+  only for the routing-q-patched trace) and the digest streams `x.digests` instantiated with
+  the native hashes (currently a free input; local constraints hold for any choice).

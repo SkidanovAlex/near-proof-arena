@@ -94,4 +94,47 @@ theorem tableTraffic_congr_cols (hh : tr1.log t = tr2.log t)
   rw [e true, e false]
   exact h b m
 
+/-! ## Pinning a trace to one table index -/
+
+/-- Table `s` of `tr`, read at every table index. -/
+def pinTrace (tr : Trace Fp) (s : Nat) : Trace Fp := ⟨fun _ => tr.log s, fun _ r c => tr.cell s r c⟩
+
+theorem eval_pin (tr : Trace Fp) (s t r : Nat) (pub : List Fp) (e : Expr) :
+    e.eval (pinTrace tr s) t r pub = e.eval tr s r pub := rfl
+
+theorem rowTraffic_pin (tr : Trace Fp) (s t r : Nat) (pub : List Fp) (is : List Interaction)
+    (b : Nat) (sd : Bool) : rowTraffic is (pinTrace tr s) t r pub b sd = rowTraffic is tr s r pub b sd := by
+  unfold rowTraffic
+  congr 1
+  funext i
+  have hm : i.multNat (pinTrace tr s) t r pub = i.multNat tr s r pub := by
+    unfold Interaction.multNat
+    have H : ∀ (l : List Expr) k, Interaction.multNat.go (pinTrace tr s) t r pub l k =
+        Interaction.multNat.go tr s r pub l k := by
+      intro l; induction l with
+      | nil => intro k; rfl
+      | cons e es ih => intro k; simp only [Interaction.multNat.go]; rw [eval_pin, ih (k+1)]
+    exact H i.mult 0
+  have hv : i.msgVal (pinTrace tr s) t r pub = i.msgVal tr s r pub := by
+    unfold Interaction.msgVal; apply List.map_congr_left; intro e _; exact eval_pin tr s t r pub e
+  rw [hm, hv]
+
+theorem tableLocal_pin {T : Table} {tr : Trace Fp} {s : Nat} {pub : List Fp} (t : Nat)
+    (h : TableLocal T tr s pub) : TableLocal T (pinTrace tr s) t pub :=
+  ⟨h.log_ge, h.log_le, fun r hr e he => by rw [eval_pin]; exact h.constr r hr e he,
+    fun r hr i hi b hb => by rw [eval_pin]; exact h.bits r hr i hi b hb⟩
+
+theorem tableTraffic_pin {is : List Interaction} {tr : Trace Fp} {s : Nat} {pub : List Fp}
+    {tf : Traffic} (t : Nat) (h : TableTraffic is tr s pub tf) : TableTraffic is (pinTrace tr s) t pub tf := by
+  intro b m
+  have e : ∀ sd, tableBusCount is (pinTrace tr s) t pub b sd m = tableBusCount is tr s pub b sd m := by
+    intro sd
+    rw [tableBusCount_eq, tableBusCount_eq]
+    show ((List.range (tr.height s)).flatMap _).count m = _
+    congr 2
+    funext r
+    exact rowTraffic_pin tr s t r pub is b sd
+  rw [e true, e false]
+  exact h b m
+
 end ZkFormal.NearV3.Render
