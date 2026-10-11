@@ -37,16 +37,22 @@ theorem row_ok {Z : ZEnv} {X Y : Row} (h : HEnv Z X Y) (hs : Step X Y)
     | _ => exact selP_zero h (fun _ _ => by kfl) _
   · exact complete_cFF h hs e he
 
-theorem constraints_ok (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) (t : Nat) (pub : List Fp) (r : Nat)
-    (hr : r < (honestTrace reqs).height t) :
-    ∀ e ∈ constraints, e.eval (honestTrace reqs) t r pub = 0 := by
+theorem constraints_okL (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) {L : Nat}
+    (hL : 86 * reqs.length ≤ 2 ^ L) (t : Nat) (pub : List Fp) (r : Nat)
+    (hr : r < (traceAt reqs L).height t) :
+    ∀ e ∈ constraints, e.eval (traceAt reqs L) t r pub = 0 := by
   intro e he
   apply eval_zero_of
-  refine row_ok (honest_env reqs t r pub) (step_at reqs hok t r hr) ?_ e he
+  refine row_ok (honest_env (L := L) reqs t r pub) (step_atL reqs hok hL t r hr) ?_ e he
   show (if r = 0 then 1 else 0 : Int) = 0 ∨ ((if r = 0 then 1 else 0 : Int) = 1 ∧ _)
   by_cases h0 : r = 0
   · right; subst h0; exact ⟨rfl, row0_ok reqs⟩
   · left; rw [if_neg h0]
+
+theorem constraints_ok (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) (t : Nat) (pub : List Fp) (r : Nat)
+    (hr : r < (honestTrace reqs).height t) :
+    ∀ e ∈ constraints, e.eval (honestTrace reqs) t r pub = 0 :=
+  constraints_okL reqs hok (len_le_height reqs t) t pub r hr
 
 /-- **Completeness of the ChaCha20 table.** -/
 theorem chacha_complete (reqs : List Gen.Req) (hok : ∀ R ∈ reqs, Gen.ReqOk R)
@@ -62,7 +68,8 @@ theorem chacha_complete (reqs : List Gen.Req) (hok : ∀ R ∈ reqs, Gen.ReqOk R
   ⟨log_bounds reqs hrows,
    fun t pub r hr => constraints_ok reqs hok t pub r hr,
    fun t pub r _ => multBits reqs busChacha t r pub,
-   fun t pub m => ⟨count_send reqs hok busChacha t pub m, count_recv reqs busChacha t pub m⟩⟩
+   fun t pub m => ⟨count_send reqs hok (len_le_height reqs t) busChacha t pub m,
+     count_recv reqs busChacha t pub m⟩⟩
 
 /-- The honest trace is a legal ChaCha table (the hypothesis of the soundness theorems). -/
 theorem chLocal_honest (reqs : List Gen.Req) (hok : ∀ R ∈ reqs, Gen.ReqOk R)
@@ -70,6 +77,21 @@ theorem chLocal_honest (reqs : List Gen.Req) (hok : ∀ R ∈ reqs, Gen.ReqOk R)
     Sound.ChLocal (Gen.honestTrace reqs) t pub :=
   ⟨(log_bounds reqs hrows t).1, (log_bounds reqs hrows t).2,
    fun r hr => constraints_ok reqs hok t pub r hr⟩
+
+/-- **Completeness of the ChaCha20 table at any height `2^L` holding the rows** (the honest
+rows padded with all-zero rows; `chacha_complete` is the case `L = honestLog`). -/
+theorem chacha_completeL (reqs : List Gen.Req) (hok : ∀ R ∈ reqs, Gen.ReqOk R) {L : Nat}
+    (hL : 86 * reqs.length ≤ 2 ^ L) (busChacha : Nat) :
+    (∀ t pub r, r < (Gen.traceAt reqs L).height t → ∀ e ∈ Table.constraints,
+       e.eval (Gen.traceAt reqs L) t r pub = 0) ∧
+    (∀ t pub r, r < (Gen.traceAt reqs L).height t → ∀ i ∈ Table.interactions busChacha, ∀ b ∈ i.mult,
+       b.eval (Gen.traceAt reqs L) t r pub = 0 ∨ b.eval (Gen.traceAt reqs L) t r pub = 1) ∧
+    (∀ t pub m, tableBusCount (Table.interactions busChacha) (Gen.traceAt reqs L) t pub busChacha true m =
+       (Gen.expected reqs).count m ∧
+     tableBusCount (Table.interactions busChacha) (Gen.traceAt reqs L) t pub busChacha false m = 0) :=
+  ⟨fun t pub r hr => constraints_okL reqs hok hL t pub r hr,
+   fun t pub r _ => multBits (L := L) reqs busChacha t r pub,
+   fun t pub m => ⟨count_send reqs hok hL busChacha t pub m, count_recv (L := L) reqs busChacha t pub m⟩⟩
 
 end ZkFormal.Chacha.Complete
 

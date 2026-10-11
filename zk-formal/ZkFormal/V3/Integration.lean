@@ -242,6 +242,13 @@ import ZkFormal.NearV3.Render.PaddedTrie
 import ZkFormal.NearV3.Render.PaddedRcpt
 import ZkFormal.NearV3.Render.PaddedSrcp
 import ZkFormal.NearV3.Render.PaddedQv
+import ZkFormal.NearV3.Render.PaddedSha
+import ZkFormal.NearV3.Render.PaddedCongr
+import ZkFormal.NearV3.Render.PaddedChacha
+import ZkFormal.NearV3.Render.PaddedMrk
+import ZkFormal.NearV3.Render.PaddedSort
+import ZkFormal.NearV3.Render.PaddedSched
+import ZkFormal.NearV3.Render.PaddedUps
 import ZkFormal.NearV3.Render.NodeRender
 import ZkFormal.NearV3.Render.UniqRender
 import ZkFormal.NearV3.Render.UpsRender

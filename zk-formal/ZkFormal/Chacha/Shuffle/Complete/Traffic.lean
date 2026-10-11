@@ -107,29 +107,29 @@ theorem out_val {I : SInst} (hI : InstOk I) {q : Nat} (hq : q < I.L) :
     rw [iteF hS, fyLoop_eq_fyBefore]
 
 section
-variable (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I)
-  (hrows : (honestRows insts).length ≤ 2 ^ maxLog) (t r : Nat) (pub : List Fp)
-  (hr : r < (honestTrace insts).height t)
+variable (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) {L : Nat}
+  (hrows : (honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 20) (t r : Nat) (pub : List Fp)
+  (hr : r < (traceAt insts L).height t)
 
 open ZkFormal.Chacha.Table.E
 
 theorem ceval (x : Nat) :
-    (c x).eval (honestTrace insts) t r pub = Fp.ofNat (rowCell (rowAt insts r) r x) := rfl
+    (c x).eval (traceAt insts L) t r pub = Fp.ofNat (rowCell (rowAt insts r) r x) := rfl
 
 /-- The multiplicity of a column interaction. -/
 theorem rep_col {x : Nat} (hx : x ∈ boolCols) (bus : Nat) (msg : List Expr) (send : Bool) :
-    Interaction.multNat ⟨bus, [c x], msg, send⟩ (honestTrace insts) t r pub = rowCell (rowAt insts r) r x :=
+    Interaction.multNat ⟨bus, [c x], msg, send⟩ (traceAt insts L) t r pub = rowCell (rowAt insts r) r x :=
   multNat_one rfl (ceval insts t r pub x) (rowCell_bool _ r hx)
 
-include hok hrows hr
+include hok hrows h20 hr
 
 theorem rep_gStep (bus : Nat) (msg : List Expr) (send : Bool) :
-    Interaction.multNat ⟨bus, [gStep], msg, send⟩ (honestTrace insts) t r pub =
+    Interaction.multNat ⟨bus, [gStep], msg, send⟩ (traceAt insts L) t r pub =
       match rowAt insts r with
       | .pos _ _ q => if 1 ≤ q then 1 else 0
       | .pad => 0 := by
-  have h := honest_env insts hok hrows t r pub hr
-  have hz : zev (tenv (honestTrace insts) t r pub) gStep =
+  have h := honest_env insts hok hrows h20 t r pub hr
+  have hz : zev (tenv (traceAt insts L) t r pub) gStep =
       (rowCell (rowAt insts r) r colA : Int) - rowCell (rowAt insts r) r colFin := by
     rw [gStep, zev_sub, zev_c, zev_c, h.cur, h.cur]
   generalize hX : rowAt insts r = X at hz
@@ -147,7 +147,7 @@ theorem rep_gStep (bus : Nat) (msg : List Expr) (send : Bool) :
 
 /-- **One row's traffic**, interaction by interaction. -/
 theorem rowTraffic_eq (B : Buses) (b : Nat) (s : Bool) :
-    rowTraffic B.is (honestTrace insts) t r pub b s =
+    rowTraffic B.is (traceAt insts L) t r pub b s =
       (if B.bin = b ∧ false = s then tIn (rowAt insts r) else []) ++
       (if B.mem = b ∧ true = s then tMinit (rowAt insts r) else []) ++
       (if B.mem = b ∧ false = s then tMR1 (rowAt insts r) else []) ++
@@ -156,7 +156,7 @@ theorem rowTraffic_eq (B : Buses) (b : Nat) (s : Bool) :
       (if B.bout = b ∧ true = s then tOut (rowAt insts r) else []) ++
       (if B.gen = b ∧ false = s then tGen (rowAt insts r) else []) ++
       (if B.shuf = b ∧ true = s then tShuf (rowAt insts r) else []) := by
-  have h := honest_env insts hok hrows t r pub hr
+  have h := honest_env insts hok hrows h20 t r pub hr
   have mA : colA ∈ boolCols := by decide
   have mS : colS2 ∈ boolCols := by decide
   have mF : colFin ∈ boolCols := by decide
@@ -164,9 +164,9 @@ theorem rowTraffic_eq (B : Buses) (b : Nat) (s : Bool) :
   simp only [Buses.is, interactions, List.flatMap_cons, List.flatMap_nil, List.append_nil]
   rw [rep_col insts t r pub mA, rep_col insts t r pub mA, rep_col insts t r pub mA,
     rep_col insts t r pub mS, rep_col insts t r pub mS, rep_col insts t r pub mA,
-    rep_gStep insts hok hrows t r pub hr, rep_col insts t r pub mF]
+    rep_gStep insts hok hrows h20 t r pub hr, rep_col insts t r pub mF]
   simp only [Interaction.msgVal, List.map_cons, List.map_nil, List.map_append]
-  have hcv : ∀ x, (c x).eval (honestTrace insts) t r pub = Fp.ofNat (rowCell (rowAt insts r) r x) :=
+  have hcv : ∀ x, (c x).eval (traceAt insts L) t r pub = Fp.ofNat (rowCell (rowAt insts r) r x) :=
     ceval insts t r pub
   generalize hX : rowAt insts r = X at h hcv
   cases X with
@@ -179,24 +179,24 @@ theorem rowTraffic_eq (B : Buses) (b : Nat) (s : Bool) :
     have hv := valid_rowAt insts hok r
     rw [hX] at hv
     obtain ⟨hI, hq, hrs⟩ := hv
-    have hc : ∀ x, (c x).eval (honestTrace insts) t r pub = Fp.ofNat (I.cell s r q x) := hcv
-    have hcur : ∀ x, (tenv (honestTrace insts) t r pub).cur x = I.cell s r q x := h.cur
-    have hkey : keyMsg.map (fun e => e.eval (honestTrace insts) t r pub) = keyN I.key := by
+    have hc : ∀ x, (c x).eval (traceAt insts L) t r pub = Fp.ofNat (I.cell s r q x) := hcv
+    have hcur : ∀ x, (tenv (traceAt insts L) t r pub).cur x = I.cell s r q x := h.cur
+    have hkey : keyMsg.map (fun e => e.eval (traceAt insts L) t r pub) = keyN I.key := by
       unfold keyMsg keyN
       rw [List.map_map]
       apply List.map_congr_left
       intro x hx
       have hx' := List.mem_range.mp hx
-      show (c (colK (x / 2) (x % 2))).eval (honestTrace insts) t r pub = _
+      show (c (colK (x / 2) (x % 2))).eval (traceAt insts L) t r pub = _
       rw [hc, c_K I s r q (by omega) (Nat.mod_lt _ (by decide))]
-    have hout : outE.eval (honestTrace insts) t r pub = Fp.ofNat (I.final.getD q 0) := by
+    have hout : outE.eval (traceAt insts L) t r pub = Fp.ofNat (I.final.getD q 0) := by
       apply eval_nat
       rw [← out_val hI hq]
       simp only [outE, zev_add, zev_mul, zev_sub, zev_c, zev_k, hcur, c_eq, c_c, c_o]
       by_cases hS : I.isS2 q = true
       · simp [hS]
       · simp [hS]
-    have hq1 : (Expr.add (c colQ) (k 1)).eval (honestTrace insts) t r pub = Fp.ofNat (q + 1) := by
+    have hq1 : (Expr.add (c colQ) (k 1)).eval (traceAt insts L) t r pub = Fp.ofNat (q + 1) := by
       apply eval_nat; simp only [zev_add, zev_c, zev_k, hcur, c_q]; push_cast; rfl
     simp only [hc, hkey, hout, hq1]
     simp only [rowCell_pos, c_a, c_s2, c_fin, c_lid, c_q, c_v0, c_inst, c_L, c_t1, c_c, c_j, c_t2, c_o, c_kq, c_kn,

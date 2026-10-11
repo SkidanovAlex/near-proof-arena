@@ -15,18 +15,20 @@ namespace ZkFormal.Chacha.Rng.Complete
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Rng.Table ZkFormal.Chacha.Rng.Gen
 open NearSpecV3
 
+variable {L : Nat}
+
 theorem cell_eq (calls : List Call) (t r c : Nat) :
-    (honestTrace calls).cell t r c = Fp.ofNat (rowCell (rowAt calls r) c) := rfl
+    (traceAt calls L).cell t r c = Fp.ofNat (rowCell (rowAt calls r) c) := rfl
 
 theorem toNat_cell (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (t r c : Nat) :
-    ((honestTrace calls).cell t r c).toNat = rowCell (rowAt calls r) c := by
+    ((traceAt calls L).cell t r c).toNat = rowCell (rowAt calls r) c := by
   rw [cell_eq, Fp.toNat_ofNat]
   exact Nat.mod_eq_of_lt (Nat.lt_trans (rowCell_lt (valid_rowAt calls hok r) c) (by decide))
 
 theorem honest_env (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (t r : Nat) (pub : List Fp) :
-    HEnv (tenv (honestTrace calls) t r pub) (rowAt calls r)
-      (rowAt calls ((r + 1) % (honestTrace calls).height t)) :=
-  ⟨fun c => toNat_cell calls hok t r c, fun c => toNat_cell calls hok t _ c⟩
+    HEnv (tenv (traceAt calls L) t r pub) (rowAt calls r)
+      (rowAt calls ((r + 1) % (traceAt calls L).height t)) :=
+  ⟨fun c => toNat_cell (L := L) calls hok t r c, fun c => toNat_cell (L := L) calls hok t _ c⟩
 
 /-! ## Multiplicity bits -/
 
@@ -37,13 +39,13 @@ theorem ofNat_bit {v : Nat} (h : v ≤ 1) : Fp.ofNat v = 0 ∨ Fp.ofNat v = 1 :=
 
 theorem multBits (calls : List Call) (busChacha busGen t r : Nat) (pub : List Fp) :
     ∀ i ∈ interactions busChacha busGen, ∀ b ∈ i.mult,
-      b.eval (honestTrace calls) t r pub = 0 ∨ b.eval (honestTrace calls) t r pub = 1 := by
+      b.eval (traceAt calls L) t r pub = 0 ∨ b.eval (traceAt calls L) t r pub = 1 := by
   intro i hi b hb
   simp only [interactions, List.mem_cons, List.not_mem_nil, or_false] at hi
   rcases hi with rfl | rfl <;> simp only [List.mem_cons, List.not_mem_nil, or_false] at hb <;> subst hb
-  · show (honestTrace calls).cell t r colA = 0 ∨ (honestTrace calls).cell t r colA = 1
+  · show (traceAt calls L).cell t r colA = 0 ∨ (traceAt calls L).cell t r colA = 1
     rw [cell_eq]; exact ofNat_bit (rowCell_bool _ (by decide))
-  · show (honestTrace calls).cell t r colAcc = 0 ∨ (honestTrace calls).cell t r colAcc = 1
+  · show (traceAt calls L).cell t r colAcc = 0 ∨ (traceAt calls L).cell t r colAcc = 1
     rw [cell_eq]; exact ofNat_bit (rowCell_bool _ (by decide))
 
 /-! ## Messages -/
@@ -54,14 +56,14 @@ theorem eval_nat {tr : Trace Fp} {t r : Nat} {pub : List Fp} {e : Expr} {v : Nat
 
 theorem keyMsg_eval (calls : List Call) (t r : Nat) (pub : List Fp) {C : Call} {d : Nat}
     (hX : rowAt calls r = .draw C d) :
-    keyMsg.map (fun e => e.eval (honestTrace calls) t r pub) =
+    keyMsg.map (fun e => e.eval (traceAt calls L) t r pub) =
       (List.range 16).map (fun q => Fp.ofNat ((C.key.getD (q / 2) 0 / 2 ^ (16 * (q % 2))) % 65536)) := by
   unfold keyMsg
   rw [List.map_map]
   apply List.map_congr_left
   intro q hq
   have hq' := List.mem_range.mp hq
-  show (honestTrace calls).cell t r (colK (q / 2) (q % 2)) = _
+  show (traceAt calls L).cell t r (colK (q / 2) (q % 2)) = _
   rw [cell_eq, hX]
   show Fp.ofNat (drawCell C d _) = _
   rw [g_K (g := drawCell C d) (fun _ => rfl) (by omega) (Nat.mod_lt _ (by decide))]
@@ -73,11 +75,11 @@ open ZkFormal.Chacha.Table.E
 /-- The `busChacha` message of a draw row. -/
 theorem msg_recv (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (t r : Nat) (pub : List Fp)
     {C : Call} {d : Nat} (hX : rowAt calls r = .draw C d) :
-    (keyMsg ++ [c colCtr, idxE, c colVlo, c colVhi]).map (fun e => e.eval (honestTrace calls) t r pub) =
+    (keyMsg ++ [c colCtr, idxE, c colVlo, c colVhi]).map (fun e => e.eval (traceAt calls L) t r pub) =
       wordMsg C d := by
-  have h := honest_env calls hok t r pub
+  have h := honest_env (L := L) calls hok t r pub
   rw [hX] at h
-  have hg : ∀ x, (tenv (honestTrace calls) t r pub).cur x = drawCell C d x := h.cur
+  have hg : ∀ x, (tenv (traceAt calls L) t r pub).cur x = drawCell C d x := h.cur
   unfold wordMsg Sound.chachaMsg
   rw [List.map_append, keyMsg_eval calls t r pub hX]
   congr 1
@@ -91,14 +93,14 @@ theorem msg_recv (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (t r : Na
 /-- The `busGen` message of the last draw row of a call. -/
 theorem msg_gen (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (t r : Nat) (pub : List Fp)
     {C : Call} {d : Nat} (hX : rowAt calls r = .draw C d) (hd : d + 1 = nd C) :
-    (keyMsg ++ [c colKs, nE, m2E, .add kE (k 1)]).map (fun e => e.eval (honestTrace calls) t r pub) =
+    (keyMsg ++ [c colKs, nE, m2E, .add kE (k 1)]).map (fun e => e.eval (traceAt calls L) t r pub) =
       genOut C := by
-  have h := honest_env calls hok t r pub
+  have h := honest_env (L := L) calls hok t r pub
   rw [hX] at h
   have hv := valid_rowAt calls hok r
   rw [hX] at hv
   have hC : CallOk C := hv.1
-  have hg : ∀ x, (tenv (honestTrace calls) t r pub).cur x = drawCell C d x := h.cur
+  have hg : ∀ x, (tenv (traceAt calls L) t r pub).cur x = drawCell C d x := h.cur
   have hm := m2_last hC
   rw [show nd C - 1 = d by omega] at hm
   unfold genOut genMsg
@@ -145,8 +147,8 @@ theorem count_single (a m : List Fp) : [a].count m = if a = m then 1 else 0 := b
 theorem row_sum (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (busChacha busGen t r : Nat)
     (pub : List Fp) (b : Nat) (send : Bool) (m : List Fp) :
     ((interactions busChacha busGen).map fun i =>
-      if i.bus = b ∧ i.send = send ∧ i.msgVal (honestTrace calls) t r pub = m then
-        i.multNat (honestTrace calls) t r pub else 0).sum =
+      if i.bus = b ∧ i.send = send ∧ i.msgVal (traceAt calls L) t r pub = m then
+        i.multNat (traceAt calls L) t r pub else 0).sum =
     (if busChacha = b ∧ false = send then (rowRecv (rowAt calls r)).count m else 0) +
     (if busGen = b ∧ true = send then (rowGen (rowAt calls r)).count m else 0) := by
   have hv := valid_rowAt calls hok r
@@ -158,10 +160,10 @@ theorem row_sum (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (busChacha
       multNat_c (v := 0) _ _ _ _ (by rw [cell_eq, hX]; rfl) (by omega)]
     simp [rowRecv, rowGen]
   | draw C d =>
-    have hA : (honestTrace calls).cell t r colA = Fp.ofNat 1 := by
+    have hA : (traceAt calls L).cell t r colA = Fp.ofNat 1 := by
       rw [cell_eq, hX]; show Fp.ofNat (drawCell C d colA) = _
       rw [g_a (g := drawCell C d) (fun _ => rfl)]
-    have hAcc : (honestTrace calls).cell t r colAcc = Fp.ofNat (accOf C d) := by
+    have hAcc : (traceAt calls L).cell t r colAcc = Fp.ofNat (accOf C d) := by
       rw [cell_eq, hX]; show Fp.ofNat (drawCell C d colAcc) = _
       rw [g_acc (g := drawCell C d) (fun _ => rfl)]
     rw [multNat_c (v := 1) _ _ _ _ hA (by omega),
@@ -253,14 +255,15 @@ theorem sum_rep0 : ∀ k : Nat, (List.replicate k 0).sum = 0
   | k + 1 => by rw [List.replicate_succ, List.sum_cons, sum_rep0 k]
 
 /-- `tableBusCount` as a sum of per-row contributions. -/
-theorem count_rows (calls : List Call) (hok : ∀ C ∈ calls, CallOk C) (busChacha busGen t : Nat)
+theorem count_rows (calls : List Call) (hok : ∀ C ∈ calls, CallOk C)
+    (hL : (honestRows calls).length ≤ 2 ^ L) (busChacha busGen t : Nat)
     (pub : List Fp) (b : Nat) (send : Bool) (m : List Fp) :
-    tableBusCount (interactions busChacha busGen) (honestTrace calls) t pub b send m =
+    tableBusCount (interactions busChacha busGen) (traceAt calls L) t pub b send m =
       (if busChacha = b ∧ false = send then (expectedWords calls).count m else 0) +
       (if busGen = b ∧ true = send then (expectedGen calls).count m else 0) := by
   unfold tableBusCount
-  have hl := len_le_height calls t
-  generalize (honestTrace calls).height t = H at hl ⊢
+  have hl : (honestRows calls).length ≤ (traceAt calls L).height t := hL
+  generalize (traceAt calls L).height t = H at hl ⊢
   simp only [foldr_add, Nat.add_zero]
   rw [List.map_congr_left (fun r _ => row_sum calls hok busChacha busGen t r pub b send m)]
   have e : ∀ (f : Row → List (List Fp)), (f .pad = []) →

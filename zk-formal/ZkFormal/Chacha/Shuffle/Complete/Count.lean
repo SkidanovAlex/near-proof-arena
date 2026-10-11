@@ -183,10 +183,10 @@ theorem memRecvs_count (insts : List SInst) (m : List Fp) :
 /-! ## Table counts -/
 
 /-- **Bus counts of the honest trace**, for every bus, side and message. -/
-theorem count_rows (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I)
-    (hrows : (honestRows insts).length ≤ 2 ^ maxLog) (B : Buses) (t : Nat) (pub : List Fp)
+theorem count_rows (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) {L : Nat}
+    (hrows : (honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 20) (B : Buses) (t : Nat) (pub : List Fp)
     (b : Nat) (s : Bool) (m : List Fp) :
-    tableBusCount B.is (honestTrace insts) t pub b s m =
+    tableBusCount B.is (traceAt insts L) t pub b s m =
       (if B.bin = b ∧ false = s then (expectedIn insts).count m else 0) +
       (if B.mem = b ∧ true = s then (memSends insts).count m else 0) +
       (if B.mem = b ∧ false = s then (memRecvs insts).count m else 0) +
@@ -194,10 +194,10 @@ theorem count_rows (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I)
       (if B.gen = b ∧ false = s then (expectedGen insts).count m else 0) +
       (if B.shuf = b ∧ true = s then (expectedShuf insts).count m else 0) := by
   rw [tableBusCount_eq, List.count_flatMap]
-  have hl := len_le_height insts t
-  have e : ((List.range ((honestTrace insts).height t)).map
-      (List.count m ∘ fun r => rowTraffic B.is (honestTrace insts) t r pub b s)) =
-      (List.range ((honestTrace insts).height t)).map fun r =>
+  have hl : (honestRows insts).length ≤ (traceAt insts L).height t := hrows
+  have e : ((List.range ((traceAt insts L).height t)).map
+      (List.count m ∘ fun r => rowTraffic B.is (traceAt insts L) t r pub b s)) =
+      (List.range ((traceAt insts L).height t)).map fun r =>
         (if B.bin = b ∧ false = s then (tIn (rowAt insts r)).count m else 0) +
         (if B.mem = b ∧ true = s then (tMinit (rowAt insts r)).count m else 0) +
         (if B.mem = b ∧ false = s then (tMR1 (rowAt insts r)).count m else 0) +
@@ -208,10 +208,10 @@ theorem count_rows (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I)
         (if B.shuf = b ∧ true = s then (tShuf (rowAt insts r)).count m else 0) := by
     apply List.map_congr_left
     intro r hr
-    simp only [Function.comp, rowTraffic_eq insts hok hrows t r pub (List.mem_range.mp hr) B b s,
+    simp only [Function.comp, rowTraffic_eq insts hok hrows h20 t r pub (List.mem_range.mp hr) B b s,
       List.count_append, count_ite]
   rw [e]
-  generalize (honestTrace insts).height t = H at hl
+  generalize (traceAt insts L).height t = H at hl
   simp only [sum_map_add, sum_map_ite]
   rw [sum_rows insts H hl tIn rfl, sum_rows insts H hl tMinit rfl, sum_rows insts H hl tMR1 rfl,
     sum_rows insts H hl tMR2 rfl, sum_rows insts H hl tMW2 rfl, sum_rows insts H hl tOut rfl,
@@ -231,12 +231,13 @@ theorem count_rows (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I)
     · simp only [iteF h1, iteF h2]
 
 /-- **The memory bus balances inside the honest table.** -/
-theorem memBal (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I)
-    (hrows : (honestRows insts).length ≤ 2 ^ maxLog) (B : Buses) (hB : B.ok) (t : Nat) (pub : List Fp) :
-    MemBal B (honestTrace insts) t pub := by
+theorem memBal (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) {L : Nat}
+    (hrows : (honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 20) (B : Buses) (hB : B.ok) (t : Nat)
+    (pub : List Fp) :
+    MemBal B (traceAt insts L) t pub := by
   intro m
   obtain ⟨h1, h2, h3, h4⟩ := hB
-  rw [count_rows insts hok hrows, count_rows insts hok hrows]
+  rw [count_rows insts hok hrows h20, count_rows insts hok hrows h20]
   have hp : List.Perm (memSends insts) (memRecvs insts) :=
     (rows_perm insts 0 hok).map (List.map Fp.ofNat)
   simp only [Ne.symm h1, Ne.symm h2, Ne.symm h3, Ne.symm h4, ite_false,
