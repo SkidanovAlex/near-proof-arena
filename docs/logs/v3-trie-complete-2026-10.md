@@ -637,3 +637,25 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
 * Verification: Integration 4185 jobs; audits `AuditTrieUpb`, `AuditTrieUpsMemd`,
   `AuditTrieKeyFinal`, `AuditTrieShaBus` (+ `AuditTrieAll`, `AuditTrieUps*`, `AuditTrieWalkAlign`,
   `AuditTrieVslotNative`) pass; pin-check OK.
+
+## 2026-10-11 (session 5, cont.) — lead: MEMD pairing, BYTES glue, DIGEST
+
+* **BYTES glue DONE** (`TrieShaBus.sha_bins_of`): for `ns = TrieNative.nodes m steps oldPost writes q`,
+  `es = TrieNative.vals m steps` (field-bounded `q`, `ValWf es` — from `ValOk.wf` of `trie_all_of`),
+  the scheduler family of `us` (rows ≤ 1,663,260) and the receipt/source families with their row
+  bounds, `≤ 35` rows per source message and bytes `< 256` (receipt-lane inputs), the two SHA renders
+  `b0 b1` exist with `shaBinTraffic`, the bytes and digests permutations against
+  `all = (schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us) ++ jobsToSha (nativeShaJobs ns es) ++
+  receipt ++ source`, and `jobBytes (nativeShaJobs ns es) = nodeSends3 ns BYTES ++ valSends es BYTES`.
+  Scheduler/native bytes `< 256`: `schedulerShaJobs_bytes`, `schedulerSanityJobs_bytes`,
+  `NativePostShaOk.accepted`.
+* **DIGEST reduction DONE** (`TrieShaBus.RenderBundleV3.balancedAt_digest`; `covers_digest_*`:
+  sends 0, 1; receives 2, 3, 7, 11, 16, 20, 23; no public): from the SHA bins' digest permutation and
+  - `htrie` (**trie side, OPEN — mine**): `cnt (R.tf 2).recvs DIGEST + cnt (R.tf 3).recvs DIGEST +
+    cnt (R.tf 7).recvs DIGEST = cnt (expectedDigests (schedulerShaJobs 0 us ++ jobsToSha
+    (nativeShaJobs ns es)))` (node: `NPRE/NPOST` of revealed children and `VPRE/VPOST` values; head:
+    roots; ups: `upsId` jobs via `dIV`).  Not yet checked against the definitions (in particular
+    that every native `NPOST`/`NPRE` job digest — all `dmult = true` in `jobsToSha` — is received
+    exactly once, by the parent record or the head, and dup records);
+  - `hcodec` (sched lane): codec receives `expectedDigests (schedulerSanityJobs 0 us)`;
+  - `hrest` (rcpt lane): rcpt + srcp + mrk receive `expectedDigests (receipt ++ source)`.
