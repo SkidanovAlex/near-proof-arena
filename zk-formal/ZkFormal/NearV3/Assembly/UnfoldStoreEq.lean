@@ -43,17 +43,13 @@ def unfoldStep (k : WalkD0) (pair : Blk × Transition)
   let keys := [keyDelayedIdx,keyBwState]
   let pre := partialTrie pair.2.values st.2 keys
   let post ← applyMissingChunk prims ctx pre
-  pure (.yield (st.1 ++ [(pre,rebuildPost pair.2.values post keys)],post.hashOf))
+  pure (.yield (st.1 ++ [(pre,post)],post.hashOf))
 
 theorem unfoldStep_storeEq (k : WalkD0) (b : Blk) (t u : Transition)
     (h : StoreLookupEq t.values u.values) (st : List (PTrie × PTrie) × Bytes) :
     unfoldStep k (b,t) st = unfoldStep k (b,u) st := by
   unfold unfoldStep
   simp only [h.partialTrie]
-  cases applyMissingChunk prims (blockCtx k.L k.H.shardId k.slotB2.gasLimit b b.hdr.nextGasPrice)
-      (partialTrie u.values st.2 [keyDelayedIdx,keyBwState]) with
-  | error err => rfl
-  | ok post => simp only [bind,Except.bind,pure,Except.pure,h.rebuildPost]
 
 theorem zip_storeEq (blocks : List Blk) {ts us : List Transition}
     (h : Aligned (fun t u => StoreLookupEq t.values u.values) ts us) :
@@ -90,7 +86,7 @@ theorem triesD0_storeEq {cb wa wb : Bytes} {a b : StateWitness}
     unfold ZkFormal.NearV3.Assembly.unfoldStep at hl
     dsimp only at hl
     simp only [bind,Except.bind,pure,Except.pure] at hl
-    simp only [ha,hb,bind,Except.bind,hr,hm.partialTrie,hm.rebuildPost,pure,Except.pure,throw]
+    simp only [ha,hb,bind,Except.bind,hr,hm.partialTrie,pure,Except.pure,throw]
     repeat' first | rfl | (rw [hl]) | (split; all_goals try rfl)
     all_goals grind only
 

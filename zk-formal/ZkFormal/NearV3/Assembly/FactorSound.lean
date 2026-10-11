@@ -74,8 +74,8 @@ theorem GoodV3.checkD0 {B cb k hint p x} (g : GoodV3 B cb k hint p x) :
 
 theorem GoodV3.checkD0a {B cb k hint p x} (g : GoodV3 B cb k hint p x) :
     NearSpecV3.checkD0a B cb (witnessOfV3 k x) = .ok () := by
-  obtain ⟨h1, h2, h0f, h7, h8, h9, h10, h11, h12⟩ := g.amendments
-  simp only [NearSpecV3.checkD0a, g.checkD0, h1, h2, h0f, h7, h8, h9, h10, h11, h12,
+  obtain ⟨h1, h2, h0f, h7, h8, h9, h10, h12⟩ := g.amendments
+  simp only [NearSpecV3.checkD0a, g.checkD0, h1, h2, h0f, h7, h8, h9, h10, h12,
     check, bind, Except.bind, pure, Except.pure, ↓reduceIte]
 
 /-- Semantic reconstructed views imply the unchanged amended native checker. -/
