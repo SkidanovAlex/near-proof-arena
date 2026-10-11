@@ -119,7 +119,12 @@ impl Slot {
                 v.extend_from_slice(h);
                 v
             }
-            Slot::Val { lenB, pre, post: po, .. } => {
+            Slot::Val {
+                lenB,
+                pre,
+                post: po,
+                ..
+            } => {
                 let mut v = lenB.clone();
                 v.extend_from_slice(if post { po } else { pre });
                 v
@@ -143,16 +148,32 @@ impl Slot {
 #[derive(Clone, Debug, Deserialize, serde::Serialize)]
 pub enum NodeV3 {
     #[serde(rename = "leaf")]
-    Leaf { key: Vec<u64>, v: Slot, memB: Vec<u64> },
+    Leaf {
+        key: Vec<u64>,
+        v: Slot,
+        memB: Vec<u64>,
+    },
     #[serde(rename = "ext")]
-    Ext { key: Vec<u64>, kid: Kid, memB: Vec<u64> },
+    Ext {
+        key: Vec<u64>,
+        kid: Kid,
+        memB: Vec<u64>,
+    },
     #[serde(rename = "branch")]
-    Branch { v: Option<Slot>, kids: Vec<Kid>, memB: Vec<u64> },
+    Branch {
+        v: Option<Slot>,
+        kids: Vec<Kid>,
+        memB: Vec<u64>,
+    },
 }
 
 impl Default for NodeV3 {
     fn default() -> NodeV3 {
-        NodeV3::Branch { v: None, kids: vec![], memB: vec![] }
+        NodeV3::Branch {
+            v: None,
+            kids: vec![],
+            memB: vec![],
+        }
     }
 }
 
@@ -187,31 +208,60 @@ impl NodeV3 {
     }
     fn mem(&self) -> &[u64] {
         match self {
-            NodeV3::Leaf { memB, .. } | NodeV3::Ext { memB, .. } | NodeV3::Branch { memB, .. } => memB,
+            NodeV3::Leaf { memB, .. } | NodeV3::Ext { memB, .. } | NodeV3::Branch { memB, .. } => {
+                memB
+            }
         }
     }
     fn value(&self) -> Option<(u64, u64, &[u64], &[u64], bool)> {
         let s = match self {
-            NodeV3::Leaf { v: Slot::Val { .. }, .. } => self.slot(),
-            NodeV3::Branch { v: Some(Slot::Val { .. }), .. } => self.slot(),
+            NodeV3::Leaf {
+                v: Slot::Val { .. },
+                ..
+            } => self.slot(),
+            NodeV3::Branch {
+                v: Some(Slot::Val { .. }),
+                ..
+            } => self.slot(),
             _ => None,
         };
         match s {
-            Some(Slot::Val { vid, vlen, pre, post, written, .. }) => {
-                Some((*vid, *vlen, pre, post, *written))
-            }
+            Some(Slot::Val {
+                vid,
+                vlen,
+                pre,
+                post,
+                written,
+                ..
+            }) => Some((*vid, *vlen, pre, post, *written)),
             _ => None,
         }
     }
     fn revealed(&self) -> Vec<(u64, u64, u64, &[u64], &[u64])> {
         match self {
-            NodeV3::Ext { kid: Kid::Node { cid, clen, cres, pre, post }, .. } => {
+            NodeV3::Ext {
+                kid:
+                    Kid::Node {
+                        cid,
+                        clen,
+                        cres,
+                        pre,
+                        post,
+                    },
+                ..
+            } => {
                 vec![(*cid, *clen, *cres, pre, post)]
             }
             NodeV3::Branch { kids, .. } => kids
                 .iter()
                 .filter_map(|k| match k {
-                    Kid::Node { cid, clen, cres, pre, post } => Some((*cid, *clen, *cres, pre.as_slice(), post.as_slice())),
+                    Kid::Node {
+                        cid,
+                        clen,
+                        cres,
+                        pre,
+                        post,
+                    } => Some((*cid, *clen, *cres, pre.as_slice(), post.as_slice())),
                     _ => None,
                 })
                 .collect(),
@@ -301,10 +351,17 @@ fn pack_nibbles(xs: &[u64], out: &mut Vec<u64>) {
     }
 }
 fn u32_bytes(n: u64) -> Vec<u64> {
-    vec![n % 256, (n / 256) % 256, (n / 65536) % 256, (n / 16777216) % 256]
+    vec![
+        n % 256,
+        (n / 256) % 256,
+        (n / 65536) % 256,
+        (n / 16777216) % 256,
+    ]
 }
 fn kid_bitmap(kids: &[Kid]) -> u64 {
-    kids.iter().enumerate().fold(0u64, |a, (j, k)| a | (if k.present() { 1 << j } else { 0 }))
+    kids.iter()
+        .enumerate()
+        .fold(0u64, |a, (j, k)| a | (if k.present() { 1 << j } else { 0 }))
 }
 
 // ---------------------------------------------------------------------------
@@ -397,10 +454,18 @@ impl Field {
 }
 
 fn hplen_of(v: &NodeV3) -> u64 {
-    if v.is_le() { 1 + v.key().len() as u64 / 2 } else { 0 }
+    if v.is_le() {
+        1 + v.key().len() as u64 / 2
+    } else {
+        0
+    }
 }
 fn odd_of(v: &NodeV3) -> u64 {
-    if v.is_le() { v.key().len() as u64 % 2 } else { 0 }
+    if v.is_le() {
+        v.key().len() as u64 % 2
+    } else {
+        0
+    }
 }
 fn nokey_of(v: &NodeV3) -> u64 {
     b(v.is_le() && hplen_of(v) == 1)
@@ -439,11 +504,20 @@ fn s_of(v: &NodeV3) -> u64 {
     v.key().len() as u64
 }
 fn xrv_of(v: &NodeV3) -> bool {
-    matches!(v, NodeV3::Ext { kid: Kid::Node { .. }, .. })
+    matches!(
+        v,
+        NodeV3::Ext {
+            kid: Kid::Node { .. },
+            ..
+        }
+    )
 }
 fn xres_of(v: &NodeV3) -> u64 {
     match v {
-        NodeV3::Ext { kid: Kid::Node { cres, .. }, .. } => *cres,
+        NodeV3::Ext {
+            kid: Kid::Node { cres, .. },
+            ..
+        } => *cres,
         _ => 0,
     }
 }
@@ -457,7 +531,13 @@ fn eext_of(v: &NodeV3) -> bool {
     v.is_ext() && nokey_of(v) == 1 && odd_of(v) == 0
 }
 fn xtgt_of(n: u64, v: &NodeV3) -> u64 {
-    if xrv_of(v) { xres_of(v) } else if xdead_of(v) { n } else { 0 }
+    if xrv_of(v) {
+        xres_of(v)
+    } else if xdead_of(v) {
+        n
+    } else {
+        0
+    }
 }
 fn xtgj_of(v: &NodeV3) -> u64 {
     if xdead_of(v) { s_of(v) } else { 0 }
@@ -465,7 +545,13 @@ fn xtgj_of(v: &NodeV3) -> u64 {
 
 fn kid_win(kid: &Kid, w: u64, lastw: bool, slot: Option<u64>) -> Win {
     match kid {
-        Kid::Node { cid, clen, cres, pre, post } => Win {
+        Kid::Node {
+            cid,
+            clen,
+            cres,
+            pre,
+            post,
+        } => Win {
             look: true,
             cid: *cid,
             clen: *clen,
@@ -530,8 +616,11 @@ fn branch_wins(kids: &[Kid]) -> Vec<Fld> {
     // Lean: `present := (kids.zip (range kids.length)).filter (k ≠ none)`, then
     // `((k, origIdx), w).map (fun ... => .ch (kidWin k w last (some origIdx)))`:
     // `slot` is the *original* kid index, `w` the present-order index.
-    let present: Vec<(usize, &Kid)> =
-        kids.iter().enumerate().filter(|(_, k)| k.present()).collect();
+    let present: Vec<(usize, &Kid)> = kids
+        .iter()
+        .enumerate()
+        .filter(|(_, k)| k.present())
+        .collect();
     let last = present.len();
     present
         .iter()
@@ -564,7 +653,9 @@ fn fields_of(v: &NodeV3) -> Vec<Fld> {
             o.push(Fld::Plain(Field::Mem));
             o
         }
-        NodeV3::Branch { v: Some(s), kids, .. } => {
+        NodeV3::Branch {
+            v: Some(s), kids, ..
+        } => {
             let mut o = vec![
                 Fld::Plain(Field::Tag),
                 Fld::Plain(Field::Vlen),
@@ -593,7 +684,15 @@ fn rec(vs: &[NodeS3], n: usize) -> &NodeS3 {
     &vs[n.min(vs.len().saturating_sub(1))]
 }
 fn sz_before(vs: &[NodeS3], n: usize) -> u64 {
-    (0..n).map(|m| if vs[m].dup { 0 } else { vs[m].v.ser(false).len() as u64 }).sum()
+    (0..n)
+        .map(|m| {
+            if vs[m].dup {
+                0
+            } else {
+                vs[m].v.ser(false).len() as u64
+            }
+        })
+        .sum()
 }
 fn rev_below(kids: &[Kid], j: usize) -> u64 {
     kids.iter().take(j).filter(|k| k.is_node()).count() as u64
@@ -633,8 +732,15 @@ fn edge_a(vs: &[NodeS3], n: u64, fld: &Fld, idx: u64, bbyte: u64) -> Option<(Vec
         },
         Field::Vh => {
             if idx == 0 && tv_of(v) {
-                let j = if v.is_leaf() { s_of(v) } else { v.revealed().len() as u64 };
-                Some((vec![n, type_of(v).0 * s_of(v), SYM_END, vid_of(v), 0, EK_VAL], j))
+                let j = if v.is_leaf() {
+                    s_of(v)
+                } else {
+                    v.revealed().len() as u64
+                };
+                Some((
+                    vec![n, type_of(v).0 * s_of(v), SYM_END, vid_of(v), 0, EK_VAL],
+                    j,
+                ))
             } else {
                 None
             }
@@ -650,14 +756,20 @@ fn edge_b(vs: &[NodeS3], n: u64, fld: &Fld, idx: u64, bbyte: u64) -> Option<(Vec
     match f {
         Field::Key => {
             if idx + 1 == Field::Key.len(hplen_of(v)) && v.is_ext() {
-                Some((vec![n, ki + 1, bbyte % 16, xtgt_of(n, v), xtgj_of(v), EK_KEY], ki + 1))
+                Some((
+                    vec![n, ki + 1, bbyte % 16, xtgt_of(n, v), xtgj_of(v), EK_KEY],
+                    ki + 1,
+                ))
             } else {
                 Some((vec![n, ki + 1, bbyte % 16, n, ki + 2, EK_KEY], ki + 1))
             }
         }
         Field::Mem => {
             if idx == 0 && v.is_leaf() {
-                Some((vec![n, s_of(v), SYM_END, n, s_of(v), EK_LEND], s_of(v) + b(tv_of(v))))
+                Some((
+                    vec![n, s_of(v), SYM_END, n, s_of(v), EK_LEND],
+                    s_of(v) + b(tv_of(v)),
+                ))
             } else {
                 None
             }
@@ -667,7 +779,15 @@ fn edge_b(vs: &[NodeS3], n: u64, fld: &Fld, idx: u64, bbyte: u64) -> Option<(Vec
 }
 
 /// `NodeGen3.rowCell(vs, ⟨n, p, f, idx, bbyte, pb⟩)`.
-fn row_cell(vs: &[NodeS3], n: u64, p: u64, fld_in: &Fld, idx: u64, bbyte: u64, pb: u64) -> Vec<u64> {
+fn row_cell(
+    vs: &[NodeS3],
+    n: u64,
+    p: u64,
+    fld_in: &Fld,
+    idx: u64,
+    bbyte: u64,
+    pb: u64,
+) -> Vec<u64> {
     let f = fld_in.field();
     let s = &vs[n as usize];
     let v = &s.v;
@@ -733,9 +853,13 @@ fn row_cell(vs: &[NodeS3], n: u64, p: u64, fld_in: &Fld, idx: u64, bbyte: u64, p
     c[138] = chw.as_ref().map(|w| w.clen).unwrap_or(0);
     c[139] = b(tv_of(v));
     let dig = match f {
-        Field::Ch => chw
-            .as_ref()
-            .and_then(|w| if idx == 0 && w.look { Some((msg_id(K_NPRE, w.cid), w.clen, true)) } else { None }),
+        Field::Ch => chw.as_ref().and_then(|w| {
+            if idx == 0 && w.look {
+                Some((msg_id(K_NPRE, w.cid), w.clen, true))
+            } else {
+                None
+            }
+        }),
         Field::Vh => {
             if idx == 0 && tv_of(v) {
                 Some((msg_id(K_VPRE, vid_of(v)), vlen_of(v), false))
@@ -819,7 +943,11 @@ fn row_cell(vs: &[NodeS3], n: u64, p: u64, fld_in: &Fld, idx: u64, bbyte: u64, p
         _ => 0,
     };
     c[183] = matches!(dig, Some((_, _, true))) as u64
-        + if matches!(dig, Some((_, _, false))) { b(tw_of(v)) } else { 0 };
+        + if matches!(dig, Some((_, _, false))) {
+            b(tw_of(v))
+        } else {
+            0
+        };
     c[184] = b(f == Field::Bm && idx == 0);
     c[185] = s.m_u.get(p as usize).copied().unwrap_or(0);
     for x in c.iter_mut() {
@@ -860,7 +988,13 @@ pub fn node_aligned(vs: &[NodeS3]) -> Tab {
     }
     if q < h {
         for cc in 0..NODE_WIDTH {
-            let x = if cc == 3 { 1 } else if cc == 152 { total } else { 0 };
+            let x = if cc == 3 {
+                1
+            } else if cc == 152 {
+                total
+            } else {
+                0
+            };
             t.set(q, cc, x);
         }
         q += 1;

@@ -3,7 +3,7 @@
 # the Rust prover in ../source.  See run.sh.
 name = "NpConformance"
 version = "0.1.0"
-defaultTargets = ["np-lean-verify", "np-lean-verify-v2", "np-lean-export-v3", "np-lean-export", "np-lean-eval", "np-lean-shatrace", "np-lean-render", "np-lean-render-v3"]
+defaultTargets = ["np-lean-verify", "np-lean-verify-v2", "np-lean-export-v3", "np-lean-export", "np-lean-eval", "np-lean-shatrace", "np-lean-render", "np-lean-render-v3", "np-lean-entries-v3"]
 
 [leanOptions]
 autoImplicit = false
@@ -47,3 +47,7 @@ root = "ExportV3"
 [[lean_exe]]
 name = "np-lean-render-v3"
 root = "NearRenderV3"
+
+[[lean_exe]]
+name = "np-lean-entries-v3"
+root = "WitnessEntriesV3"

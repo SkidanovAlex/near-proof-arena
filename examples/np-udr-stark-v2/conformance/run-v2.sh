@@ -36,7 +36,7 @@ bad()  { echo "FAIL  $*"; fail=1; }
 
 echo "== build"
 (cd "$src" && $HEAVY cargo build --release -q) || { echo "cargo build failed"; exit 2; }
-(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3) || { echo "lake build failed"; exit 2; }
+(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3 np-lean-entries-v3) || { echo "lake build failed"; exit 2; }
 npudr="$src/target/release/npudr"
 lv="$here/.lake/build/bin/np-lean-verify-v2"
 le="$here/.lake/build/bin/np-lean-export-v3"
@@ -135,6 +135,50 @@ if "$npudr" v3check "$out/nearAirV3.json" uniq "$f.json" >"$f.check"; then pass 
 else bad "uniq control fails"; fi
 broken walk "broken edge chain" "es[0]['steps'][1]['e'][0] += 1"
 broken walk "first row not START" "es[1]['steps'][0]['sym'] = 3; es[1]['steps'][0]['e'][2] = 3"
+
+echo "== nearAirV3 honest entries from a real witness (part 2c): np-lean-entries-v3 vs Rust"
+# `np-lean-entries-v3 <case>` runs the proved D0a extraction on a real fixture and
+# dumps the per-table entry lists.  Node entries are the highest-value table: the
+# Rust `v3render` must be byte-identical to `np-lean-render-v3` and `v3check` must
+# accept every nearAirV3 constraint.  The Lean renderer recomputes the record lists
+# per cell and is very slow for node (>2.5 min for 3 records, ~1 min/byte-ish), so
+# by default `node` is only rendered by Lean for the smallest cases (≤
+# `ENTRIES_NODE_MAX` records), while `v3check` always runs.  `val`/`head` render
+# in seconds.
+le3="$here/.lake/build/bin/np-lean-entries-v3"
+fx="$here/../../../oracle/fixtures/v3/public-d0a/d0"
+ed="$out/entries"; mkdir -p "$ed"
+ncase=0; nrendered=0
+for case in $(ls "$fx" | head -${ENTRIES_CASES:-5}); do
+  d="$fx/$case"
+  [ -f "$d/witness.bin" ] || continue
+  for t in ${ENTRIES_TABLES:-node val head}; do
+    j="$ed/$case.$t.json"
+    if ! $HEAVY "$le3" "$d" $t > "$j" 2>"$j.err"; then bad "$case $t: np-lean-entries-v3 failed"; cat "$j.err"; continue; fi
+    if ! "$npudr" v3check "$out/nearAirV3.json" $t "$j" >"$j.check" 2>&1; then
+      bad "$case $t: v3check rejects honest entries"; head -3 "$j.check"; continue
+    fi
+    ncase=$((ncase + 1))
+    ok="$(sed -n '1p' "$j.check" | cut -c5-)"
+    # Lean render + byte compare: always for val/head; node only for the small cases
+    do_render=1
+    if [ "$t" = node ]; then
+      nr=$(python3 -c "import json;print(len(json.load(open('$j'))))")
+      if [ "$nr" -gt "${ENTRIES_NODE_MAX:-3}" ] && [ "${ENTRIES_NODE_ALL:-0}" != 1 ]; then
+        do_render=0; pass "$case $t: $ok ($nr entries; Lean render skipped, over node-max)"
+      fi
+    fi
+    [ "$do_render" = 1 ] || continue
+    "$npudr" v3render $t "$j" "$j.rust.bin" || { bad "$case $t: npudr v3render failed"; continue; }
+    $HEAVY "$lr" $t "$j" "$j.lean.bin" 2>"$j.lrerr" || { bad "$case $t: np-lean-render-v3 failed"; cat "$j.lrerr"; continue; }
+    nrendered=$((nrendered + 1))
+    if cmp -s "$j.lean.bin" "$j.rust.bin"; then
+      pass "$case $t: $ok; Rust==Lean ($(stat -c %s "$j.rust.bin") B)"
+    else bad "$case $t: Rust and Lean traces differ"; fi
+  done
+done
+[ $ncase -gt 0 ] || bad "no fixture case produced honest entries"
+echo "   ($ncase honest entry lists checked, $nrendered byte-compared against Lean)"
 
 echo
 if [ $fail -eq 0 ]; then echo "ALL PASS"; else echo "SOME FAILED"; fi

@@ -264,10 +264,13 @@ pub fn sample_json(table: &str, seed: u64, n: usize) -> Result<String, String> {
 
 // ------------------------------------------------------------------- node
 
-use super::node::{Kid, NodeS3, NodeV3, Slot, NODE_WIDTH};
+use super::node::{Kid, NODE_WIDTH, NodeS3, NodeV3, Slot};
 
 fn slot_ref(r: &mut Rng) -> Slot {
-    Slot::Ref { lenB: vec![0, 0, 0, 0], h: r.bytes(32) }
+    Slot::Ref {
+        lenB: vec![0, 0, 0, 0],
+        h: r.bytes(32),
+    }
 }
 
 fn slot_val(r: &mut Rng) -> Slot {
@@ -291,7 +294,13 @@ fn kid(r: &mut Rng) -> Kid {
             if !r.coin() {
                 pre = post.clone();
             }
-            Kid::Node { cid: r.fe(), clen: r.fe(), cres: r.fe(), pre, post }
+            Kid::Node {
+                cid: r.fe(),
+                clen: r.fe(),
+                cres: r.fe(),
+                pre,
+                post,
+            }
         }
     }
 }
@@ -312,12 +321,18 @@ fn nodev(r: &mut Rng) -> NodeV3 {
             let klen = r.below(6) as usize;
             NodeV3::Ext {
                 key: r.bytes(klen).into_iter().map(|x| x % 16).collect(),
-                kid: if r.coin() { kid(r) } else { Kid::Hash { h: r.bytes(32) } },
+                kid: if r.coin() {
+                    kid(r)
+                } else {
+                    Kid::Hash { h: r.bytes(32) }
+                },
                 memB: r.bytes(8),
             }
         }
         _ => {
-            let kids: Vec<Kid> = (0..16).map(|_| if r.below(3) == 0 { kid(r) } else { Kid::None }).collect();
+            let kids: Vec<Kid> = (0..16)
+                .map(|_| if r.below(3) == 0 { kid(r) } else { Kid::None })
+                .collect();
             NodeV3::Branch {
                 v: if r.coin() { Some(slot_val(r)) } else { None },
                 kids,

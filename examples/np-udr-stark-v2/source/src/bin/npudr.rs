@@ -167,6 +167,18 @@ fn main() {
             let j = npudr::v3::sample::sample_json(&a[2], seed, n).unwrap_or_else(|e| die(&e));
             println!("{j}");
         }
+        Some("v3entries") => {
+            // parse a Lean `np-lean-entries-v3` dump (part 2c) and report its shape
+            if a.len() != 4 {
+                die("usage: npudr v3entries <table> <entries.json>");
+            }
+            let j =
+                std::fs::read_to_string(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+            println!(
+                "{}",
+                npudr::v3::entries::describe(&a[2], &j).unwrap_or_else(|e| die(&e))
+            );
+        }
         Some("v3render") => {
             // aligned trace of one table (`np-lean-render-v3` format)
             if a.len() != 5 {
