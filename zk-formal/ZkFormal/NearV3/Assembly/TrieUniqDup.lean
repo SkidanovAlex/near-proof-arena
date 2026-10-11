@@ -445,3 +445,41 @@ theorem digsBal_accepted {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
   exact ((hp.trans hu.symm).flatMap_right _).map _
 
 end ZkFormal.NearV3.Assembly.TrieUniqDup
+
+namespace ZkFormal.NearV3.Assembly
+
+open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Near ZkFormal.NearV3.Render
+
+theorem covers_dup_send : Covers B_DUP true (fun t => t == 6) = true := by decide +kernel
+theorem covers_dup_recv : Covers B_DUP false (fun t => t == 2 || t == 4) = true := by decide +kernel
+theorem pub_dup (s : Bool) (pub m : List Fp) : pubCount nearAirV3 pub B_DUP s m = 0 :=
+  pub_off _ _ (by cases s <;> decide +kernel) pub m
+
+namespace RenderBundleV3
+
+variable {pub : List Fp} (R : RenderBundleV3 pub)
+
+/-- **`DUP` balance of a bundle** from the record-level `DupBal` of its uniq, node and value
+components. -/
+theorem balancedAt_dup (vs : List NodeS3) (es : List ValE) (L : List UEnt)
+    (hn : (R ⟨T_NODE, by decide⟩).tf = nodeTraffic3 vs) (hv : (R ⟨T_VAL, by decide⟩).tf = valTraffic es)
+    (hu : (R ⟨T_UNIQ, by decide⟩).tf = uniqTraffic (uniqEntries L))
+    (hbal : Link3.DupBal (uniqEntries L) vs es) : R.BalancedAt B_DUP := by
+  intro m
+  rw [R.sum_tables true _ m _ covers_dup_send, R.sum_tables false _ m _ covers_dup_recv,
+    pub_dup, pub_dup]
+  have e2 : R.tf 2 = nodeTraffic3 vs := by rw [← hn]; rfl
+  have e4 : R.tf 4 = valTraffic es := by rw [← hv]; rfl
+  have e6 : R.tf 6 = uniqTraffic (uniqEntries L) := by rw [← hu]; rfl
+  have hf6 : (List.range 25).filter (fun t => t == 6) = [6] := by decide
+  have hf24 : (List.range 25).filter (fun t => t == 2 || t == 4) = [2, 4] := by decide
+  rw [hf6, hf24]
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e2, e4, e6, sel,
+    ite_true, Bool.false_eq_true, ite_false, cnt, nodeTraffic3, valTraffic, uniqTraffic]
+  have := hbal.count_eq m
+  simp only [List.map_append, List.count_append] at this
+  omega
+
+end RenderBundleV3
+
+end ZkFormal.NearV3.Assembly
