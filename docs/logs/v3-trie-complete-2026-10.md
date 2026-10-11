@@ -220,3 +220,41 @@ BYTES/DIGEST parked; A7 after the link merge.
   and the 12 older trie audits pass; `make pin-check` OK.
 * Host note: `heavy` builds at `taskset -c 8-15,24-31` were OOM-killed inside the 10G scope
   (16 parallel lean workers); `taskset -c 8-13` works.
+* `Assembly/TrieA7Ups.lean` (ups side): **`ups_rpl_sends`**: `RPL` sends of `upsA7Trace Js T_UPS` =
+  `Js.flatMap upsRplMsgs` (per instance `[N_D % P]` (`nDOf`), then `[sN % P]` of every upper part
+  — kind RDB/RDE/PT, `upperB` — with a row); **`ups_rplv_sends`** = `Js.flatMap upsRplvMsgs`
+  (`[e₃ % P]` of the walk's step 3 when it is a value step, `presV`); **`ups_size_sends`**: exactly
+  `[5, upsA7Total Js]`, `upsA7Total = Σ_I (L_I + Σ_k |Q_k|)` (`ups_s_last`, `upsA7Total_le : ≤ R`);
+  `ups_recvs`: no receives on the appended interactions.
+* `Assembly/TrieA7Bal.lean`: `RenderBundleV3.cnt_ext` (count of an A7 component on an
+  appended-only bus = count of the appended interactions' trace traffic), kernel `Covers`/`pub_off`
+  for `RPL`/`RPLV`; **`balancedAt_rpl`** / **`balancedAt_rplv`**: a bundle whose node/val/ups
+  components are the honest A7 traces balances on `RPL` (`RPLV`) given the record-level
+  permutation `(Js.flatMap upsRplMsgs).Perm (((range |ns|).filter S).map ([·]))`
+  (resp. `upsRplvMsgs` vs. the value records `SV`).
+* Verification: Integration 4122 jobs; `AuditTrieA7Ups` (5 names) passes.
+
+### Open after session 3 (exact)
+
+1. **A7 (a), semantic part.**  For the honest native choice of `trie_all_accepted`
+   (`ns = TrieNative.nodes m steps oldPost writes q`, `es = TrieNative.vals m steps`,
+   `Js = upsRanked ws insts`): there exist `S SV : Nat → Bool` with
+   `(Js.flatMap upsRplMsgs).Perm (((List.range ns.length).filter S).map ([·]))` and
+   `(Js.flatMap upsRplvMsgs).Perm (((List.range es.length).filter SV).map ([·]))`.  Needs: the
+   ups instances' `N_D`, upper-part `sN` and old-value `e₃` are the node/value record **indices** of
+   `ns`/`es` (record `n` has `nid = n`, value `t` has `vid = t`), all `< P`, pairwise distinct (no
+   record replaced twice: different instances act on different τ, within an instance the path
+   records are distinct).  Not started; the EDGE proof (`TrieUpsNative.accepted_ups_walks`) is the
+   closest existing link between `I.N` and node ids.
+2. **A7 SIZE tags (rows 0–2 of `sizeA7`)**: the size table's appended receives are
+   `[t+3, yN t]` on the active rows `t = 0,1,2` of `sizeA7Trace` (not yet computed), and the
+   `SIZE` balance with `yN 0 = nodeA7Total ns S`, `yN 1 = valA7Total es SV`,
+   `yN 2 = upsA7Total Js` (node/val/ups sends: `node_size_sends`, `val_size_sends`,
+   `ups_size_sends`, plus the base tag-0/1/2 traffic of node/val/srcp).
+3. **A7 (b)**: `nodeA7Total ns S + valA7Total es SV + upsA7Total Js = unfoldBytes cb w ≤ B0` —
+   the accounting identity (pre bytes counted twice minus replaced records, plus the new parts and
+   value) against `Σ_τ unfoldedBytesT pre_τ + unfoldedBytesT post_τ`.  Not started.  The **ups row
+   cap** `R insts + 1 ≤ 2^22` (open since session 2) is to be derived from (b)
+   (`R = Σ_I (4 + L_I + Σ|Q_k|)`, `upsA7Total ≤ R`).
+4. SHA two-instance packing (task 2), UPB/MEMD/S0F/SPOST/SPLEN, VSLOT native fact,
+   KEYNIB/FINAL/VBYTES: unchanged from session 2's list.
