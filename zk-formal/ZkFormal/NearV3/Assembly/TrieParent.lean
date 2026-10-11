@@ -374,17 +374,17 @@ variable {pub : List Fp} (R : RenderBundleV3 pub)
 /-- **`PARENT` balance of a bundle** from the record-level `ParentBal` of its node and head
 components. -/
 theorem balancedAt_parent (vs : List NodeS3) (hs : List HeadE)
-    (hn : (R ⟨T_NODE, by decide⟩).tf = nodeTraffic3 vs) (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
+    (hn : ExtOf (R ⟨T_NODE, by decide⟩).tf (nodeTraffic3 vs)) (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
     (hbal : Link3.ParentBal vs hs) : R.BalancedAt B_PARENT := by
   intro m
   rw [R.sum_tables true _ m _ covers_parent_send, R.sum_tables false _ m _ covers_parent_recv,
     pub_parent, pub_parent]
-  have e2 : R.tf 2 = nodeTraffic3 vs := by rw [← hn]; rfl
+  have e2 := R.tf_ext 2 (by decide) hn B_PARENT (by decide) (by decide) (by decide)
   have e3 : R.tf 3 = headTraffic hs := by rw [← hh]; rfl
   have hf2 : (List.range 25).filter (fun t => t == 2 || t == 3) = [2, 3] := by decide
   have hf1 : (List.range 25).filter (fun t => t == 2) = [2] := by decide
   rw [hf2, hf1]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e2, e3, sel,
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e2.1, e2.2, e3, sel,
     ite_true, Bool.false_eq_true, ite_false, cnt, nodeTraffic3, headTraffic]
   have := hbal m
   simp only [Link3.cnt3, List.map_append, List.count_append] at this

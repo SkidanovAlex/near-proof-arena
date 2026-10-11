@@ -38,12 +38,13 @@ theorem trie_all_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (reso
         let es := TrieNative.vals m steps
         let L := TrieUniqDup.uniqNative m steps
         let Js := upsRanked ws insts
-        (∃ (Rn : TableRenderV3 pub T_NODE (by decide)) (Rh : TableRenderV3 pub T_HEAD (by decide))
-          (Rv : TableRenderV3 pub T_VAL (by decide)) (Ru : TableRenderV3 pub T_UNIQ (by decide)),
-          Rn.tf = nodeTraffic3 ns ∧ Rh.tf = headTraffic hs ∧ Rv.tf = valTraffic es ∧
+        (∃ (hn : NodeOk ns) (hv : ValOk es) (Rh : TableRenderV3 pub T_HEAD (by decide))
+          (Ru : TableRenderV3 pub T_UNIQ (by decide)),
+          (∀ sel, ExtOf (nodeRenderV3 pub ns hn sel).tf (nodeTraffic3 ns)) ∧ Rh.tf = headTraffic hs ∧
+          (∀ sel, ExtOf (valRenderV3 pub es hv sel).tf (valTraffic es)) ∧
           Ru.tf = uniqTraffic (uniqEntries L)) ∧
-        (R insts + 1 ≤ 2 ^ 22 → ∃ hok : UpsRenderOk Js, (upsRenderTrie pub Js hok).tf =
-          upsTraffic (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
+        (R insts + 1 ≤ 2 ^ 22 → ∃ hok : UpsRenderOk Js, ExtOf (upsRenderV3 pub Js hok).tf
+          (upsTraffic (viewOf (upsTraceAligned Js) T_UPS (segsOf Js)))) ∧
         Link3.ParentBal ns hs ∧ Link3.VParentBal ns es ∧ Link3.EntBal ns es ∧
         Link3.DigsBal ns hs (uniqEntries L) ∧ Link3.DupBal (uniqEntries L) ns es ∧
         (∀ msg, cnt (nodeSends3 ns B_EDGE) msg + cnt (headSends hs B_EDGE) msg +
@@ -66,9 +67,10 @@ theorem trie_all_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (reso
   obtain ⟨he, hb, hups, hmid, hlens, hroot1, hroot2⟩ := hrest W hW
   obtain ⟨hn, hval, hh⟩ := TrieNative.accepted_ok hk hw h hm hv hr (useReq ws insts W) hedges hbmaps hW
     (useReq ws insts W).edges hedges
-  refine ⟨⟨nodeRenderTrie pub _ hn, headRenderTrie pub _ hh, valRenderTrie pub _ hval,
-      uniqRenderTrie pub _ (TrieUniqOk.uniqNative_ok hk hw h hm hv), rfl, rfl, rfl, rfl⟩,
-    fun hcap => ⟨hups hcap, rfl⟩,
+  refine ⟨⟨hn, hval, headRenderTrie pub _ hh,
+      uniqRenderTrie pub _ (TrieUniqOk.uniqNative_ok hk hw h hm hv), nodeRenderV3_ext pub _ hn, rfl,
+      valRenderV3_ext pub _ hval, rfl⟩,
+    fun hcap => ⟨hups hcap, upsRenderV3_ext pub _ _⟩,
     TrieParent.parentBal_accepted hk hw h hm hv oldPost writes _ _,
     TrieVParent.vparentBal_native m steps oldPost writes _,
     TrieEnt.entBal_accepted hk hw h hm hv oldPost writes _,

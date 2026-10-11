@@ -242,7 +242,7 @@ variable {pub : List Fp} (R : RenderBundleV3 pub)
 ups component receives. -/
 theorem balancedAt_midroot (hs : List HeadE) (Js : List UpsInst) (hok : UpsRenderOk Js)
     (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
-    (hu : (R ⟨T_UPS, by decide⟩).tf = upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js)))
+    (hu : ExtOf (R ⟨T_UPS, by decide⟩).tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js))))
     (hl : ∀ I ∈ Js, I.mid.length = 32)
     (hrec : headSends hs B_MIDROOT = Js.map (fun I => [I.tau, I.rid] ++ I.mid)) :
     R.BalancedAt B_MIDROOT := by
@@ -250,11 +250,11 @@ theorem balancedAt_midroot (hs : List HeadE) (Js : List UpsInst) (hok : UpsRende
   rw [R.sum_tables true _ m _ covers_midroot_send, R.sum_tables false _ m _ covers_midroot_recv,
     pub_midroot, pub_midroot]
   have e3 : R.tf 3 = headTraffic hs := by rw [← hh]; rfl
-  have e7 : R.tf 7 = upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js)) := by rw [← hu]; rfl
+  have e7 := R.tf_ext 7 (by decide) hu B_MIDROOT (by decide) (by decide) (by decide)
   have hf3 : (List.range 25).filter (fun t => t == 3) = [3] := by decide
   have hf7 : (List.range 25).filter (fun t => t == 7) = [7] := by decide
   rw [hf3, hf7]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e3, e7, sel, ite_true,
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e3, e7.1, e7.2, sel, ite_true,
     Bool.false_eq_true, ite_false, headTraffic, upsTraffic, cnt]
   rw [TrieUpsRoot.aligned_view_midroot Js hok T_UPS hl, reduceMessages_toFp, hrec]
 
@@ -262,7 +262,7 @@ theorem balancedAt_midroot (hs : List HeadE) (Js : List UpsInst) (hok : UpsRende
 the ups output roots and the root chain. -/
 theorem balancedAt_root (hs : List HeadE) (Js : List UpsInst) (hok : UpsRenderOk Js)
     (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
-    (hu : (R ⟨T_UPS, by decide⟩).tf = upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js)))
+    (hu : ExtOf (R ⟨T_UPS, by decide⟩).tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js))))
     (hl : ∀ I ∈ Js, I.post.length = 32) (r0 rK : ZkFormal.Near.Msg) (Lin Lout : List ZkFormal.Near.Msg)
     (hpubT : ∀ m, pubCount nearAirV3 pub B_ROOT true m = cnt [r0] m)
     (hpubF : ∀ m, pubCount nearAirV3 pub B_ROOT false m = cnt [rK] m)
@@ -272,11 +272,11 @@ theorem balancedAt_root (hs : List HeadE) (Js : List UpsInst) (hok : UpsRenderOk
   intro m
   rw [R.sum_tables true _ m _ covers_root_send, R.sum_tables false _ m _ covers_root_recv, hpubT, hpubF]
   have e3 : R.tf 3 = headTraffic hs := by rw [← hh]; rfl
-  have e7 : R.tf 7 = upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js)) := by rw [← hu]; rfl
+  have e7 := R.tf_ext 7 (by decide) hu B_ROOT (by decide) (by decide) (by decide)
   have hf3 : (List.range 25).filter (fun t => t == 3) = [3] := by decide
   have hf7 : (List.range 25).filter (fun t => t == 7) = [7] := by decide
   rw [hf3, hf7]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e3, e7, sel, ite_true,
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e3, e7.1, e7.2, sel, ite_true,
     Bool.false_eq_true, ite_false, headTraffic, upsTraffic, cnt]
   rw [TrieUpsRoot.aligned_view_root Js hok T_UPS hl, reduceMessages_toFp, hout, hin]
   have := congrArg (fun xs : List ZkFormal.Near.Msg => (xs.map Msg.toFp).count m) hchain

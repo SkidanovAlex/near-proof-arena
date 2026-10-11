@@ -240,11 +240,11 @@ namespace RenderBundleV3
 variable {pub : List Fp} (R : RenderBundleV3 pub)
 
 theorem ups_tf_walk (Is : List UpsInst) (hok : UpsRenderOk Is)
-    (hu : (R ⟨T_UPS, by decide⟩).tf = upsTraffic (UpsRows.viewOf (upsTraceAligned Is) T_UPS (UpsGen.segsOf Is)))
+    (hu : ExtOf (R ⟨T_UPS, by decide⟩).tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Is) T_UPS (UpsGen.segsOf Is))))
     (bus : Nat) (hb : bus = B_EDGE ∨ bus = B_BMAP) (s : Bool) :
     sel s (R.tf 7) bus = upsWalkMessages Is bus s := by
-  have e7 : R.tf 7 = upsTraffic (UpsRows.viewOf (upsTraceAligned Is) T_UPS (UpsGen.segsOf Is)) := by rw [← hu]; rfl
-  rw [e7]
+  rw [R.tf_ext_sel 7 (by decide) hu bus (by rcases hb with rfl | rfl <;> decide)
+    (by rcases hb with rfl | rfl <;> decide) (by rcases hb with rfl | rfl <;> decide) s]
   cases s
   · exact TrieUps.aligned_view_walk_messages Is hok T_UPS bus hb false
   · exact TrieUps.aligned_view_walk_messages Is hok T_UPS bus hb true
@@ -253,9 +253,9 @@ theorem ups_tf_walk (Is : List UpsInst) (hok : UpsRenderOk Is)
 and (aligned) ups components. -/
 theorem balancedAt_edge (vs : List NodeS3) (hs : List HeadE) (ws : List WalkR) (Is : List UpsInst)
     (hok : UpsRenderOk Is)
-    (hn : (R ⟨T_NODE, by decide⟩).tf = nodeTraffic3 vs) (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
+    (hn : ExtOf (R ⟨T_NODE, by decide⟩).tf (nodeTraffic3 vs)) (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
     (hw : (R ⟨T_WALK, by decide⟩).tf = walkTraffic3 ws)
-    (hu : (R ⟨T_UPS, by decide⟩).tf = upsTraffic (UpsRows.viewOf (upsTraceAligned Is) T_UPS (UpsGen.segsOf Is)))
+    (hu : ExtOf (R ⟨T_UPS, by decide⟩).tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Is) T_UPS (UpsGen.segsOf Is))))
     (hbal : ∀ m, cnt (nodeSends3 vs B_EDGE) m + cnt (headSends hs B_EDGE) m + cnt (walkSends3 ws B_EDGE) m +
         cnt (upsWalkMessages Is B_EDGE true) m =
       cnt (nodeRecvs3 vs B_EDGE) m + cnt (headRecvs hs B_EDGE) m + cnt (walkRecvs3 ws B_EDGE) m +
@@ -264,14 +264,14 @@ theorem balancedAt_edge (vs : List NodeS3) (hs : List HeadE) (ws : List WalkR) (
   intro m
   rw [R.sum_tables true _ m _ (covers_edge true), R.sum_tables false _ m _ (covers_edge false),
     pub_edge, pub_edge]
-  have e2 : R.tf 2 = nodeTraffic3 vs := by rw [← hn]; rfl
+  have e2 := R.tf_ext 2 (by decide) hn B_EDGE (by decide) (by decide) (by decide)
   have e3 : R.tf 3 = headTraffic hs := by rw [← hh]; rfl
   have e5 : R.tf 5 = walkTraffic3 ws := by rw [← hw]; rfl
   have hf : (List.range 25).filter (fun t => t == 2 || t == 3 || t == 5 || t == 7) = [2, 3, 5, 7] := by decide
   rw [hf]
   simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil,
     R.ups_tf_walk Is hok hu B_EDGE (Or.inl rfl)]
-  simp only [e2, e3, e5, sel, ite_true, Bool.false_eq_true, ite_false, nodeTraffic3, headTraffic, walkTraffic3]
+  simp only [e2.1, e2.2, e3, e5, sel, ite_true, Bool.false_eq_true, ite_false, nodeTraffic3, headTraffic, walkTraffic3]
   have := hbal m
   omega
 
@@ -279,21 +279,21 @@ theorem balancedAt_edge (vs : List NodeS3) (hs : List HeadE) (ws : List WalkR) (
 (aligned) ups components. -/
 theorem balancedAt_bmap (vs : List NodeS3) (ws : List WalkR) (Is : List UpsInst)
     (hok : UpsRenderOk Is)
-    (hn : (R ⟨T_NODE, by decide⟩).tf = nodeTraffic3 vs) (hw : (R ⟨T_WALK, by decide⟩).tf = walkTraffic3 ws)
-    (hu : (R ⟨T_UPS, by decide⟩).tf = upsTraffic (UpsRows.viewOf (upsTraceAligned Is) T_UPS (UpsGen.segsOf Is)))
+    (hn : ExtOf (R ⟨T_NODE, by decide⟩).tf (nodeTraffic3 vs)) (hw : (R ⟨T_WALK, by decide⟩).tf = walkTraffic3 ws)
+    (hu : ExtOf (R ⟨T_UPS, by decide⟩).tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Is) T_UPS (UpsGen.segsOf Is))))
     (hbal : ∀ m, cnt (nodeSends3 vs B_BMAP) m + cnt (walkSends3 ws B_BMAP) m + cnt (upsWalkMessages Is B_BMAP true) m =
       cnt (nodeRecvs3 vs B_BMAP) m + cnt (walkRecvs3 ws B_BMAP) m + cnt (upsWalkMessages Is B_BMAP false) m) :
     R.BalancedAt B_BMAP := by
   intro m
   rw [R.sum_tables true _ m _ (covers_bmap true), R.sum_tables false _ m _ (covers_bmap false),
     pub_bmap, pub_bmap]
-  have e2 : R.tf 2 = nodeTraffic3 vs := by rw [← hn]; rfl
+  have e2 := R.tf_ext 2 (by decide) hn B_BMAP (by decide) (by decide) (by decide)
   have e5 : R.tf 5 = walkTraffic3 ws := by rw [← hw]; rfl
   have hf : (List.range 25).filter (fun t => t == 2 || t == 5 || t == 7) = [2, 5, 7] := by decide
   rw [hf]
   simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil,
     R.ups_tf_walk Is hok hu B_BMAP (Or.inr rfl)]
-  simp only [e2, e5, sel, ite_true, Bool.false_eq_true, ite_false, nodeTraffic3, walkTraffic3]
+  simp only [e2.1, e2.2, e5, sel, ite_true, Bool.false_eq_true, ite_false, nodeTraffic3, walkTraffic3]
   have := hbal m
   omega
 

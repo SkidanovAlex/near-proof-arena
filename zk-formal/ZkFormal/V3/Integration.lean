@@ -24,6 +24,8 @@ import ZkFormal.NearV3.Assembly.TrieUpsNative
 import ZkFormal.NearV3.Assembly.TrieUpsRoot
 import ZkFormal.NearV3.Assembly.TrieShared
 import ZkFormal.NearV3.Assembly.TrieAll
+import ZkFormal.NearV3.Assembly.TrieA7Node
+import ZkFormal.NearV3.Assembly.TrieA7Val
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec

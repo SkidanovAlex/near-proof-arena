@@ -190,3 +190,33 @@ BYTES/DIGEST parked; A7 after the link merge.
    value tables).
 5. SHA, BYTES/DIGEST (parked by the lead); A7 (a)/(b) (after the link merge).
 * Verification (end of session): `lake build ZkFormal.V3.Integration` passes (3199 jobs); all new audits pass; `make pin-check` OK.
+
+## 2026-10-11 (session 3) — merge of the A7 integration, port, A7 (a) node/val traffic
+
+* Merged `origin/integration/v3-20261012` (main + link + rcpt + sched + this lane), then
+  `origin/lane/v3-link` `44399c03` (fixes `LinkShaKinds.acct_slot_lt` for the empty-capable
+  acct view — the integration branch did not build without it) and `origin/lane/v3-render-sched`
+  `23c49506` (drops the pre-A7 table-7 instance from `BundleSched`; ups belongs to this lane).
+* **Port to the A7 tables.**  `RenderV3Trie` now imports `RenderV3A7`; the base node/val/ups
+  renders are gone (tables 2, 4, 7 are `nodeA7`/`valA7`/`upsA7`), the link lane's
+  `nodeRenderV3`/`valRenderV3`/`upsRenderV3` are the components.  New: `ExtOf tf base` (a
+  component's traffic agrees with `base` off `RPL`/`RPLV`/`SIZE`), `extOf_append`,
+  `nodeRenderV3_ext`, `valRenderV3_ext`, `upsRenderV3_ext`, `RenderBundleV3.tf_ext`/`tf_ext_sel`.
+  Every bus-balance theorem (`balancedAt_parent/vparent/ent/digs/dup/edge/bmap/midroot/root/vslot`,
+  `balancedAt_trie_core`, `ups_tf_walk`) now takes `ExtOf` hypotheses for node/val/ups (same
+  record-level content).  `accepted_bundle_parts`, `trie_accepted`, `trie_all_accepted` export
+  `NodeOk ns`/`ValOk es` (so the components are `nodeRenderV3 pub ns hn sel` for ANY `sel`) with
+  `∀ sel, ExtOf …`, and the ups part `UpsRenderOk Js` with `ExtOf (upsRenderV3 …).tf …`.
+* `Assembly/TrieA7Node.lean` (A7 (a), node side): `selN vs S` (row choice from a record
+  predicate `S`), **`node_rpl_recvs`**: `RPL` receives of `nodeA7Trace vs T_NODE (selN vs S)` =
+  `((range |vs|).filter S).map ([·])`; **`node_size_sends`**: the only `SIZE` send is
+  `[3, nodeA7Total vs S]`, `nodeA7Total = Σ_n (S n ? 1 : 2)·|ser n|`; `node_rpl_sends`,
+  `node_size_recvs` empty.  (`node_ra`: `ra` on the SUM row.)
+* `Assembly/TrieA7Val.lean` (value side): `selV es S`, **`val_rpl_recvs`** (record `t` has
+  `vid = t`, `ent_vid`), **`val_size_sends`** `[4, valA7Total es S]`,
+  `valA7Total = Σ_t (S t ? 1 : 2)·len_t`; `val_rpl_sends`, `val_size_recvs` empty.
+* Verification: `lake build ZkFormal.V3.Integration` passes (4120 jobs); audits
+  `AuditRenderV3Trie` (tf_ext_sel needs no `Classical.choice`), `AuditTrieA7Node`, `AuditTrieA7Val`
+  and the 12 older trie audits pass; `make pin-check` OK.
+* Host note: `heavy` builds at `taskset -c 8-15,24-31` were OOM-killed inside the 10G scope
+  (16 parallel lean workers); `taskset -c 8-13` works.

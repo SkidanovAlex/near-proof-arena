@@ -76,18 +76,18 @@ variable {pub : List Fp} (R : RenderBundleV3 pub)
 
 /-- **`VSLOT` balance of a bundle** whose node and account components carry `ns` and `as`. -/
 theorem balancedAt_vslot (ns : List NodeS3) (as : List AcctV)
-    (hn : (R ⟨T_NODE, by decide⟩).tf = nodeTraffic3 ns) (ha : (R ⟨T_ACCT, by decide⟩).tf = acctV3Traffic as)
+    (hn : ExtOf (R ⟨T_NODE, by decide⟩).tf (nodeTraffic3 ns)) (ha : (R ⟨T_ACCT, by decide⟩).tf = acctV3Traffic as)
     (hbal : ∀ m, cnt (acctV3Sends as B_VSLOT) m = cnt (nodeRecvs3 ns B_VSLOT) m) :
     R.BalancedAt B_VSLOT := by
   intro m
   rw [R.sum_tables true _ m _ covers_vslot_send, R.sum_tables false _ m _ covers_vslot_recv,
     pub_vslot, pub_vslot]
-  have e2 : R.tf 2 = nodeTraffic3 ns := by rw [← hn]; rfl
+  have e2 := R.tf_ext 2 (by decide) hn B_VSLOT (by decide) (by decide) (by decide)
   have e17 : R.tf 17 = acctV3Traffic as := by rw [← ha]; rfl
   have hf17 : (List.range 25).filter (fun t => t == 17) = [17] := by decide
   have hf2 : (List.range 25).filter (fun t => t == 2) = [2] := by decide
   rw [hf17, hf2]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e2, e17, sel, ite_true,
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e2.1, e2.2, e17, sel, ite_true,
     Bool.false_eq_true, ite_false, nodeTraffic3, acctV3Traffic]
   have := hbal m
   omega
