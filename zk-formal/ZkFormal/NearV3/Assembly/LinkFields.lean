@@ -37,4 +37,25 @@ theorem receiptCount_of_records {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat}
   rw [← hn, ← hc]
   simp only [ExtV3.applied, hx, ZkFormal.NearV3.flatR, List.length_flatMap, List.length_map]
 
+/-- **`pathDepth`** from source selection: every used proof is a checked source entry of the
+dictionary (`SourceSemanticsV3.selected`), whose path is a source-proof block of `srcpV3`, and
+those blocks have `≤ Dp0` items (`V3RecordsWf.srcpDepth`, A10 in the AIR). -/
+theorem pathDepth_of_selected {k : WalkD0} {x : ExtV3}
+    (hsel : ∀ b ∈ k.sourceBlks, ∀ s ci, (s, ci) ∈ b.slots → s.heightIncluded == b.hdr.height →
+      ∃ e : SourceEntryV3, Sum.inl e ∈ x.dictionary ∧
+        lookupLast (chunkHash s.inner ci.encodedMerkleRoot)
+          (x.dictionary.map DictionaryEntryV3.entry) = some e.entry)
+    (hD : ∀ e : SourceEntryV3, Sum.inl e ∈ x.dictionary → e.path.path.length ≤ Dp0) :
+    ∀ e ∈ usedProofs k (stateWitnessOfV3 k x), e.proof.path.length ≤ Dp0 := by
+  intro e he
+  simp only [usedProofs, stateWitnessOfV3_entries, List.mem_flatMap, List.mem_filterMap] at he
+  obtain ⟨b, hb, ⟨s, ci⟩, hs, hl⟩ := he
+  split at hl
+  · rename_i hh
+    obtain ⟨e', he', hl'⟩ := hsel b hb s ci hs hh
+    rw [hl'] at hl
+    cases hl
+    simpa [SourceEntryV3.entry] using hD e' he'
+  · cases hl
+
 end ZkFormal.NearV3.Assembly
