@@ -39,7 +39,7 @@ def preBytes (trees : List PTrie) : Nat := (trees.map NearSpecV3.unfoldedBytesT)
 
 theorem preBytes_pairs_le (ps : List (PTrie × PTrie)) :
     preBytes (ps.map Prod.fst) ≤
-      (ps.map (fun p => NearSpecV3.unfoldedBytesT p.1 + NearSpecV3.diffT p.1 p.2)).sum := by
+      (ps.map (fun p => NearSpecV3.unfoldedBytesT p.1 + NearSpecV3.unfoldedBytesT p.2)).sum := by
   induction ps with
   | nil => exact Nat.le_refl _
   | cons p ps ih => simp only [preBytes,List.map_cons,List.sum_cons] at *; omega

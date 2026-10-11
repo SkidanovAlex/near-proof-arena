@@ -13,8 +13,9 @@ challenges) and, on an accepting case, the amendments:
   A7  w.unfolded         unfold_bytes <= B (default B0 = 2,000,000): for every applied
                          transition, the bytes of the pre-trie revealed along the read keys,
                          counted per path copy (node encodings + revealed values), plus the
-                         post-trie's node copies (and revealed values) that differ from the
-                         pre-trie at the same position. Independent implementation: the read
+                         same count on the rebuilt post-trie (measure of 2026-10-11; before,
+                         only the post copies differing from the pre-trie at the same
+                         position — still reported as "unfold_diff"). Independent implementation: the read
                          keys are the keys the D0 checker actually reads (recorded on its
                          PartialTrie instances), positions are walked on the raw node bytes.
   A8  c.bw_requests      in every block of the claim's segment, every chunk slot's
@@ -172,6 +173,18 @@ def unfold_diff(pre_store, hpre, post_store, hpost, keys):
 
 
 def unfold_bytes(tries):
+    """A7 (measure of 2026-10-11): unfolded pre trie + unfolded rebuilt post trie."""
+    tot = 0
+    for t in tries:
+        keys = [nibbles(k) for k in t.keys]
+        tot += unfold_pre(t.pre_store, t.pre_root, keys)
+        tot += unfold_pre(t.store, t.root, keys)
+    return tot
+
+
+def unfold_bytes_diff(tries):
+    """The A7 measure before 2026-10-11 (post term = changed occurrences only), still
+    reported so the difftest can compare it with the oracle's stored `unfold_bytes`."""
     tot = 0
     for t in tries:
         keys = [nibbles(k) for k in t.keys]
@@ -212,7 +225,7 @@ def unfold_bytes_n(tries):
         small = {h: v for h, v in t.store.items() if t.pre_store.get(h) != v}
         small.update({h: t.pre_store[h] for h in seen})
         tot += unfold_pre(t.pre_store, t.pre_root, keys)
-        tot += unfold_diff(t.pre_store, t.pre_root, small, t.root, keys)
+        tot += unfold_pre(small, t.root, keys)
     return tot
 
 
@@ -292,24 +305,25 @@ def a8_ok(claim_b):
 
 
 def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
-    """(verdict, reason, unfold_bytes, chacha_words, max_path_depth, unfold_bytes_n); the last
-    four are None unless the D0 checker accepts."""
+    """(verdict, reason, unfold_bytes, chacha_words, max_path_depth, unfold_bytes_n,
+    unfold_bytes_diff); the last five are None unless the D0 checker accepts."""
     _TRIES.clear()
     _RNGS.clear()
     verdict, reason = d0.check_case(d)
     tries = list(_TRIES)
     words = sum(r.words for r in _RNGS)
     if verdict != "accept":
-        return verdict, reason, None, None, None, None
+        return verdict, reason, None, None, None, None, None
     try:
         cb = open(os.path.join(d, "claim.bin"), "rb").read()
         wb = open(os.path.join(d, "witness.bin"), "rb").read()
         v, depth = amendments(cb, wb)
         u = unfold_bytes(tries)
         un = unfold_bytes_n(tries)
+        ud = unfold_bytes_diff(tries)
     except Exception as e:  # a bug in this checker
         print("spec_check_v3_d0a: INTERNAL ERROR on %s: %r" % (d, e), file=sys.stderr)
-        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None, None
+        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None, None, None
     if u > bound:
         v.append("w.unfolded")
     try:
@@ -317,7 +331,7 @@ def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
             v.append("c.bw_requests")
     except Exception as e:  # a bug in this checker
         print("spec_check_v3_d0a: INTERNAL ERROR on %s: %r" % (d, e), file=sys.stderr)
-        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None, None
+        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None, None, None
     if words > words_bound:
         v.append("e.chacha_words")
     if depth > depth_bound:
@@ -325,8 +339,8 @@ def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
     if un != u:
         v.append("w.post_rebuild")
     if v:
-        return "out_of_domain", ",".join(v), u, words, depth, un
-    return "accept", "ok", u, words, depth, un
+        return "out_of_domain", ",".join(v), u, words, depth, un, ud
+    return "accept", "ok", u, words, depth, un, ud
 
 
 def main():
@@ -335,10 +349,10 @@ def main():
     while args[:1] and args[0] in bounds:
         bounds[args[0]], args = int(args[1]), args[2:]
     for d in args:
-        v, reason, u, k, p, un = check_case(d, bounds["--bound"], bounds["--words-bound"],
-                                            bounds["--depth-bound"])
+        v, reason, u, k, p, un, ud = check_case(d, bounds["--bound"], bounds["--words-bound"],
+                                                bounds["--depth-bound"])
         print(json.dumps(dict(case=d, verdict=v, reason=reason, unfold=u, unfold_n=un,
-                              chacha_words=k, max_path_depth=p)))
+                              unfold_diff=ud, chacha_words=k, max_path_depth=p)))
         sys.stdout.flush()
 
 
