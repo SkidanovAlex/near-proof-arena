@@ -515,3 +515,29 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
   `AuditTrieWalkAlign`, `AuditTrieAll` pass; `make pin-check` OK.
 * Session ended here (context budget); next: UPB, MEMD, then KEYNIB/FINAL/VBYTES and BYTES/DIGEST
   bundle balances; A7 (b) after the spec change lands.
+
+## 2026-10-11 (session 5) — UPB DONE
+
+* **`Assembly/TrieUpb.lean`** (new):
+  - trace level, any `upsV3` trace: `aligned_window_row` (UPB row traffic: rd rows send/recv
+    `windowFieldKey ++ [u(+1)]`), `Ranked tr t` (read counters = `physicalWindowRank`),
+    `aligned_window_count`, `aligned_upb_balance` (via `window_counter_balance`), `upbBal_of_trace`
+    (record-level `UpbBal (assignList q 0 vs) v` from `TableTraffic` + `q.windows = keys tr t` +
+    coverage + `Ranked`);
+  - window keys: `nodeWindowKeys_get`, **`nodeWindowKeys_eq`** (same `(NPOST(n), p)` ⇒ equal key),
+    `phys_key_eq`;
+  - aligned render: `aligned_cell`, `aligned_height`, `rbit`/`spq` (read bit / position of a part
+    row; `rkey_q`), `PartCov Js vs` (part-level coverage: every read row's `readerSourceKey` ∈
+    `nodeWindowKeys vs`, `0 ≤ spos`), `aligned_read_row`, `aligned_u`, `aligned_key`, `read_info`,
+    `rd_of_rkey`, **`uU_rank`** (`uU Js r = physicalWindowRank (upsTraceAligned Js) t r` on read rows,
+    given `PartCov`, `NodeWf3`, bytes, cap), **`aligned_upbBal`** (`UpbBal (assignList q 0 vs)
+    (viewOf (upsTraceAligned Js) t (segsOf Js))` for `q.windows = keys (upsTraceAligned Js) t`;
+    coverage on `vs₀` with `nodeWindowKeys vs₀ ⊆ nodeWindowKeys vs`), **`partCov_native`**
+    (allocated native instances ⇒ `PartCov` for the initialized provider records), `keys_length`
+    (`keys` field-bounded, unconditional), **`RenderBundleV3.balancedAt_upb`** (bundle `UPB` from
+    `UpbBal` + node/ups `ExtOf`).
+* `TrieUpsNative.accepted_ups_walks`, `TrieAll.trie_all_of`, `trie_all_accepted`: new last conjunct
+  in the `∀ W` block: `W = PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2^22 →
+  UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))`.  So the bundle takes
+  `W := keys (upsTraceAligned Js) T_UPS` (with `keys_length`).
+* Audit `test/AuditTrieUpb.lean`; Integration 4180 jobs; pin-check OK.

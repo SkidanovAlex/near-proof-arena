@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.TrieUps
+import ZkFormal.NearV3.Assembly.TrieUpb
 import ZkFormal.NearV3.Assembly.TrieUpsOrigin
 import ZkFormal.NearV3.Assembly.TrieUpsKeys
 import ZkFormal.NearV3.Rcpt.Candidates.AcceptedReplaySharedBalance
@@ -84,7 +85,9 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         (∀ I ∈ Js, I.mid.length = 32 ∧ I.post.length = 32) ∧
         headRecvs hs B_ROOT = Rcpt.Candidates.NodePostUpdate.nativeInputRoots 0 (m.pre :: steps.map ImplicitStepV3.pre) ∧
         Js.map (fun I => [I.tau + 1] ++ I.post) =
-          nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) := by
+          nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) ∧
+        (W = Candidates.PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2 ^ 22 →
+          UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) := by
   obtain ⟨writes, oldPost, us, insts, hkf, hr, hpairs, hpos, hlen, hgood, hpre, hout, hval, hcount, hinst, hforest,
     hbytes, -⟩ := coverage_kf hk hw h hm hv (fun _ => default) (fun _ _ => default)
   obtain ⟨v, ws, hvvalid, hvreads, hws, hwlocal, hwtraffic, hranges⟩ :=
@@ -178,7 +181,43 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     unfold upsRanked
     rw [prefix_root_records, allocated_root_records us insts hcount (fun tau u I hu hI => (hinst tau u I hu hI).1),
       houtputs]
-  refine ⟨?_, ?_, fun hcap => TrieUps.upsRenderOk_ranked _ insts (by omega) ho hfam hcap, hmid, hlens, hroot1, hroot2⟩
+  have hupb : W = Candidates.PhysicalWindowRequests.keys (upsTraceAligned (upsRanked ws insts)) T_UPS →
+      R insts + 1 ≤ 2 ^ 22 →
+      UpsRows.UpbBal (TrieNative.nodes m steps oldPost writes (useReq ws insts W))
+        (viewOf (upsTraceAligned (upsRanked ws insts)) T_UPS (segsOf (upsRanked ws insts))) := by
+    intro hWk hcap
+    have hok := TrieUps.upsRenderOk_ranked (ws.flatMap (·.steps)) insts (by omega) ho hfam hcap
+    let rs := nativeReplayForest m steps oldPost writes
+    have hrs : rs.map ReplayTree.pre = m.pre :: steps.map ImplicitStepV3.pre := by
+      simp [rs, nativeReplayForest, List.map_map, Function.comp_def]
+    have hpreEq : us.map SchedulerUpsertWitness.pre = rs.map ReplayTree.post := by
+      have hh := congrArg (List.map Prod.fst) hpairs
+      simpa [rs, nativeReplayForest, List.map_map, Function.comp_def] using hh
+    have hwf : ∀ t ∈ m.pre :: steps.map ImplicitStepV3.pre, t.wf = true := by
+      intro t ht
+      rcases List.mem_cons.mp ht with rfl | ht
+      · rw [hm.pre]; exact (built_spec _ trieFuel _ _ hm.root_length).2.1
+      · obtain ⟨s, hs, rfl⟩ := List.mem_map.mp ht
+        exact (hv.input_facts s hs).2.2
+    have hwr : ∀ r ∈ rs, r.pre.wf = true := by
+      intro r hr
+      exact hwf _ (hrs ▸ List.mem_map.mpr ⟨r, hr, rfl⟩)
+    have hmeta := physicalPrefixUps_origins (us := us) (Is := insts) (fun tau u I hu hI => by
+      obtain ⟨a, sha, -, -, -, root, hroot, origin⟩ := hinst tau u I hu hI
+      exact ⟨a, sha, root, hroot, origin⟩) (ws.flatMap (·.steps))
+    have hcov := TrieUpb.partCov_native rs hforest hwr (hpreEq ▸ hpre) us (upsRanked ws insts) hpreEq
+      (fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.1⟩) (hmeta.1.trans hcount)
+      (fun tau u I hu hI => ⟨(hmeta.2 tau u I hu hI).1, (hmeta.2 tau u I hu hI).2.2⟩)
+    rw [hrs] at hcov
+    have hbase := native_window_provider_ok hk hw h hm hv (forestOldInputs rs)
+    exact TrieUpb.aligned_upbBal _ hok T_UPS hbase.wf
+      (fun s hs x hx => native_window_provider_bytes _ hwf (forestOldInputs rs) s hs true x hx) hcov
+      (fun key hk' => by
+        have := Candidates.WindowProviderMetadata.member (TrieNative.chain m steps) ⟨[], [], []⟩ _ _ key hk'
+        rwa [nodeWindowKeys_assigned] at this)
+      (useReq ws insts W) hWk
+  refine ⟨?_, ?_, fun hcap => TrieUps.upsRenderOk_ranked _ insts (by omega) ho hfam hcap, hmid, hlens, hroot1, hroot2,
+    hupb⟩
   · intro msg
     have hc : ∀ e ∈ walkEdgeKeys (ws ++ upsWalkInventory insts),
         e ∈ headEdgeKeys (forestWalkHeads 0 0 ((nativeReplayForest m steps oldPost writes).map (fun r => (r.pre, r.post)))) ++
