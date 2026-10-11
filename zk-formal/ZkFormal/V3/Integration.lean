@@ -255,6 +255,7 @@ import ZkFormal.NearV3.Render.RowTraffic
 import ZkFormal.NearV3.Render.PaddedProc
 import ZkFormal.NearV3.Render.PaddedSsd
 import ZkFormal.NearV3.Render.BundleSched
+import ZkFormal.NearV3.Render.SchedAccepted
 import ZkFormal.NearV3.Render.PaddedUps
 import ZkFormal.NearV3.Render.PaddedUpsNative
 import ZkFormal.NearV3.Render.NodeRender
