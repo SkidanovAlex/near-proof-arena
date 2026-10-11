@@ -75,7 +75,7 @@ theorem chacha_complete (reqs : List Gen.Req) (hok : ∀ R ∈ reqs, Gen.ReqOk R
 theorem chLocal_honest (reqs : List Gen.Req) (hok : ∀ R ∈ reqs, Gen.ReqOk R)
     (hrows : 86 * reqs.length ≤ 2 ^ Table.maxLog) (t : Nat) (pub : List Fp) :
     Sound.ChLocal (Gen.honestTrace reqs) t pub :=
-  ⟨(log_bounds reqs hrows t).1, (log_bounds reqs hrows t).2,
+  ⟨(log_bounds reqs hrows t).1, Nat.le_trans (log_bounds reqs hrows t).2 (by decide),
    fun r hr => constraints_ok reqs hok t pub r hr⟩
 
 /-- **Completeness of the ChaCha20 table at any height `2^L` holding the rows** (the honest

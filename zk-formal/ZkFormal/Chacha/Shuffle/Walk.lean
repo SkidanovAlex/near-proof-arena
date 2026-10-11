@@ -132,7 +132,7 @@ theorem step_next {r : Nat} (hr : r < tr.height t) (ha : cv tr t r colA = 1) (hf
     rw [e, Nat.mod_self] at hq1; omega
 
 /-- **Every active row belongs to an instance.** -/
-theorem walkStart (hH : tr.height t ≤ 2 ^ 20) : ∀ r, r < tr.height t → cv tr t r colA = 1 →
+theorem walkStart (hH : tr.height t ≤ 2 ^ 22) : ∀ r, r < tr.height t → cv tr t r colA = 1 →
     ∃ s, s ≤ r ∧ cv tr t s colSt = 1 ∧ ∀ x, s ≤ x → x ≤ r →
       cv tr t x colA = 1 ∧ (x < r → cv tr t x colFin = 0) ∧ (s < x → cv tr t x colSt = 0) ∧
       cv tr t x colQ + (x - s) = cv tr t s colQ ∧ cv tr t x colInst = s ∧

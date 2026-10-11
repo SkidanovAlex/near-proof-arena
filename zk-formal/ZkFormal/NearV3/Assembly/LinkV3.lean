@@ -55,6 +55,19 @@ structure V3Records where
   srcp : List ZkFormal.NearV3.SrcpB
   size : ZkFormal.NearV3.SizeV
   mrk : ZkFormal.Near.MrkV
+  /-- the outcome tree is empty (count 0): no Merkle rows/traffic -/
+  mrkE : Bool
+
+/-- The `mrk` view's well-formedness: empty tree (public count 0 and zero root bytes) or a
+well-formed v1 Merkle view (`MerkleEmpty.table`, nearAirV3's empty-tree repair). -/
+def MrkWfE (pub : List Fp) (e : Bool) (v : ZkFormal.Near.MrkV) : Prop :=
+  if e then (∀ (tr : Trace Fp) (t r : Nat), ZkFormal.NearV3.Candidates.MerkleEmpty.countE.eval tr t r pub = 0) ∧
+      (∀ i < 32, pub.getD (ZkFormal.NearV3.PH_OUT + i) 0 = 0)
+  else ZkFormal.Near.MrkWf (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) v
+
+/-- The `mrk` traffic: nothing for an empty tree, else the v1 view's traffic. -/
+def mrkTrafficE (pub : List Fp) (e : Bool) (v : ZkFormal.Near.MrkV) : ZkFormal.Near.Traffic :=
+  if e then ⟨fun _ => [], fun _ => []⟩ else ZkFormal.Near.mrkTraffic (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) v
 
 /-- The view post-conditions (well-formedness) of the records. -/
 structure V3RecordsWf (pub : List Fp) (r : V3Records) : Prop where
@@ -73,7 +86,7 @@ structure V3RecordsWf (pub : List Fp) (r : V3Records) : Prop where
   /-- A10 from the AIR (`SrcpV3.tableD`): every source block's path has `≤ Dp0` items. -/
   srcpDepth : ∀ B ∈ r.srcp, B.path.length ≤ NearSpecV3.Dp0
   size : ZkFormal.NearV3.SizeWf pub r.size
-  mrk : ZkFormal.Near.MrkWf (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) r.mrk
+  mrk : MrkWfE pub r.mrkE r.mrk
 
 /-- The exact traffic of each viewed table at its fixed `nearAirV3` index. -/
 structure V3RecordsTraffic (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Prop where
@@ -101,9 +114,8 @@ structure V3RecordsTraffic (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Pro
     (ZkFormal.NearV3.srcpTraffic r.srcp)
   size : ZkFormal.Near.TableTraffic ZkFormal.NearV3.SizeV3.interactions tr T_SIZE pub
     (ZkFormal.NearV3.sizeTraffic r.size)
-  mrk : ZkFormal.Near.TableTraffic ZkFormal.NearV3.Candidates.MerklePublic.table.interactions tr
-    T_MRK pub
-    (ZkFormal.Near.mrkTraffic (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) r.mrk)
+  mrk : ZkFormal.Near.TableTraffic ZkFormal.NearV3.Candidates.MerkleEmpty.table.interactions tr
+    T_MRK pub (mrkTrafficE pub r.mrkE r.mrk)
 
 /-! ## Record-form bus balance -/
 
@@ -125,15 +137,14 @@ def recCount (pub : List Fp) (r : V3Records) (b : Nat) (s : Bool) (m : List Fp) 
   tcnt (ZkFormal.NearV3.bndTraffic r.bnds) s b m +
   tcnt (ZkFormal.NearV3.srcpTraffic r.srcp) s b m +
   tcnt (ZkFormal.NearV3.sizeTraffic r.size) s b m +
-  tcnt (ZkFormal.Near.mrkTraffic (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) r.mrk)
-    s b m
+  tcnt (mrkTrafficE pub r.mrkE r.mrk) s b m
 
 /-- The tables of `nearAirV3` without a trace-free view (index, table). -/
 def rawTables : List (Nat × ZkFormal.Air.Table) :=
-  [(T_CHACHA, ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA),
-   (T_RNG, ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA
+  [(T_CHACHA, ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA),
+   (T_RNG, ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA
       ZkFormal.NearV3.Sched.B_SGEN),
-   (T_SHUF, ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN
+   (T_SHUF, ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN
       ZkFormal.NearV3.Sched.B_SSOUT ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN
       ZkFormal.NearV3.Sched.B_SSHUF),
    (T_CODEC, ZkFormal.NearV3.Sched.Codec.table),
@@ -142,7 +153,7 @@ def rawTables : List (Nat × ZkFormal.Air.Table) :=
    (T_MEM, ZkFormal.NearV3.Sched.Mem.table),
    (T_CMP, ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP),
    (T_QV, ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table),
-   (T_SORT, {ZkFormal.Near.Sort.table with maxLog := 18})]
+   (T_SORT, sortTableV3)]
 
 /-- The bus count of the raw (trace-level) tables. -/
 def rawCount (tr : Trace Fp) (pub : List Fp) (b : Nat) (s : Bool) (m : List Fp) : Nat :=
@@ -221,11 +232,11 @@ theorem busCount_nearAirV3_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s
       (tableBusCount ZkFormal.NearV3.WalkV3.interactions tr T_WALK pub b s m +
       (tableBusCount ZkFormal.NearV3.Uniq.interactions tr T_UNIQ pub b s m +
       (tableBusCount ZkFormal.NearV3.UpsV3.interactions tr T_UPS pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA).interactions
+      (tableBusCount (ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA).interactions
         tr T_CHACHA pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA
+      (tableBusCount (ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA
         ZkFormal.NearV3.Sched.B_SGEN).interactions tr T_RNG pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN
+      (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN
         ZkFormal.NearV3.Sched.B_SSOUT ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN
         ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b s m +
@@ -242,18 +253,18 @@ theorem busCount_nearAirV3_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s
       (tableBusCount ZkFormal.NearV3.SizeV3.interactions tr T_SIZE pub b s m +
       (tableBusCount ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table.interactions
         tr T_QV pub b s m +
-      (tableBusCount ZkFormal.NearV3.Candidates.MerklePublic.table.interactions tr T_MRK pub b s m +
-      (tableBusCount {ZkFormal.Near.Sort.table with maxLog := 18}.interactions tr T_SORT pub b s m +
+      (tableBusCount ZkFormal.NearV3.Candidates.MerkleEmpty.table.interactions tr T_MRK pub b s m +
+      (tableBusCount sortTableV3.interactions tr T_SORT pub b s m +
         0)))))))))))))))))))))))) := rfl
 
 /-- `rawCount` as an explicit sum. -/
 theorem rawCount_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s : Bool) (m : List Fp) :
     rawCount tr pub b s m =
-      tableBusCount (ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA).interactions
+      tableBusCount (ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA).interactions
         tr T_CHACHA pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA
+      (tableBusCount (ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA
         ZkFormal.NearV3.Sched.B_SGEN).interactions tr T_RNG pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN
+      (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN
         ZkFormal.NearV3.Sched.B_SSOUT ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN
         ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b s m +
@@ -264,7 +275,7 @@ theorem rawCount_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s : Bool) (
         tr T_CMP pub b s m +
       (tableBusCount ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table.interactions
         tr T_QV pub b s m +
-      (tableBusCount {ZkFormal.Near.Sort.table with maxLog := 18}.interactions tr T_SORT pub b s m +
+      (tableBusCount sortTableV3.interactions tr T_SORT pub b s m +
         0))))))))) := rfl
 
 /-- Exact traffic, as a count equation on both sides. -/
@@ -306,18 +317,25 @@ theorem shaLocal_of_tableLocal {tr : Trace Fp} {t : Nat} {pub : List Fp}
 theorem getElem?_sha_t : nearAirV3.tables[T_SHA_T]? = some shaTable := rfl
 theorem getElem?_sha_r : nearAirV3.tables[T_SHA_R]? = some shaTable := rfl
 
-/-- The `mrk` view at `T_MRK = 23`: the public-index-translated v1 Merkle view
-(`MerkleEmpty.remapped_view`), moved from v1's index by the proof-only `focus`. -/
+/-- The `mrk` view at `T_MRK = 23` (`MerkleEmpty.table`): an empty tree (count 0, zero
+public root, no traffic), or the public-index-translated v1 Merkle view
+(`MerkleEmpty.nonempty_view`), moved from v1's index by the proof-only `focus`. -/
 theorem mrkView {pub : List Fp} {tr : Trace Fp} (hH : HoldsP nearAirV3 pub tr) :
-    ∃ v, ZkFormal.Near.MrkWf (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) v ∧
-      ZkFormal.Near.TableTraffic ZkFormal.NearV3.Candidates.MerklePublic.table.interactions tr
-        T_MRK pub
-        (ZkFormal.Near.mrkTraffic (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) v) := by
+    ∃ e v, MrkWfE pub e v ∧
+      ZkFormal.Near.TableTraffic ZkFormal.NearV3.Candidates.MerkleEmpty.table.interactions tr T_MRK pub (mrkTrafficE pub e v) := by
   have hL := tableLocal_of_holdsP hH getElem?_mrk
-  obtain ⟨v, hw, ht⟩ := ZkFormal.NearV3.Candidates.MerkleEmpty.remapped_view
-    (ZkFormal.NearV3.Candidates.MerkleEmpty.focus_local hL ZkFormal.Near.T_MRK)
-  refine ⟨v, hw, fun b m => ?_⟩
-  simpa only [ZkFormal.NearV3.Candidates.MerkleEmpty.focus_count] using ht b m
+  have hF := ZkFormal.NearV3.Candidates.MerkleEmpty.focus_local hL ZkFormal.Near.T_MRK
+  by_cases hc : ZkFormal.NearV3.Candidates.MerkleEmpty.countE.eval (ZkFormal.NearV3.Candidates.MerkleEmpty.focus tr T_MRK) ZkFormal.Near.T_MRK 0 pub = 0
+  · obtain ⟨hr, hz⟩ := ZkFormal.NearV3.Candidates.MerkleEmpty.empty_view hF hc
+    refine ⟨true, default, ⟨fun _ _ _ => hc, hr⟩, fun b m => ?_⟩
+    have h1 := hz b true m
+    have h0 := hz b false m
+    rw [ZkFormal.NearV3.Candidates.MerkleEmpty.focus_count] at h1 h0
+    simp only [mrkTrafficE, ite_true, List.map_nil, List.count_nil]
+    exact ⟨h1, h0⟩
+  · obtain ⟨v, hw, ht⟩ := ZkFormal.NearV3.Candidates.MerkleEmpty.nonempty_view hF hc
+    refine ⟨false, v, hw, fun b m => ?_⟩
+    simpa only [ZkFormal.NearV3.Candidates.MerkleEmpty.focus_count, mrkTrafficE, Bool.false_eq_true, ite_false] using ht b m
 
 /-- **All views at once.** From `HoldsP` on a successful preparation (below the field size):
 records of the thirteen viewed tables, their well-formedness and exact traffic. -/
@@ -339,8 +357,8 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨bs, wB, tB⟩ := bndView hH
   obtain ⟨ss, wS', dS', tS'⟩ := ZkFormal.NearV3.srcpD_view (srcpLocal hH)
   obtain ⟨sz, wZ, tZ⟩ := sizeView hH
-  obtain ⟨mv, wM, tM⟩ := mrkView hH
-  exact ⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv⟩,
+  obtain ⟨me, mv, wM, tM⟩ := mrkView hH
+  exact ⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv, me⟩,
     ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', dS', wZ, wM⟩,
     ⟨tN, tH, tV, tW, tU, tP, tR, tA, tK, tB, tS', tZ, tM⟩⟩
 

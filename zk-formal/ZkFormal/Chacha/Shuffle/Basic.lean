@@ -97,8 +97,8 @@ theorem s2_eq {r : Nat} (hr : r < tr.height t) :
   (rw [e1, e2, e3] at hz ⊢; simp at hz ⊢; have := hz (by omega) (by omega); omega)
 
 /-- `eqj = 1 → j = q`; on an active row `eqj = 0 → j < q`. -/
-theorem eqj_facts {r : Nat} (hr : r < tr.height t) (ha : cv tr t r colA = 1) (hq : cv tr t r colQ < 2 ^ 20)
-    (hj : cv tr t r colJ < 2 ^ 20) :
+theorem eqj_facts {r : Nat} (hr : r < tr.height t) (ha : cv tr t r colA = 1) (hq : cv tr t r colQ < 2 ^ 22)
+    (hj : cv tr t r colJ < 2 ^ 22) :
     (cv tr t r colEq = 1 → cv tr t r colJ = cv tr t r colQ) ∧
     (cv tr t r colEq = 0 → cv tr t r colJ < cv tr t r colQ) := by
   have := bEq hL hr; have := cv_lt (tr := tr) (t := t) r colJ
@@ -120,7 +120,7 @@ theorem eqj_facts {r : Nat} (hr : r < tr.height t) (ha : cv tr t r colA = 1) (hq
     omega
 
 /-- Stamps of the reads are larger than `q`. -/
-theorem t1_gt {r : Nat} (hr : r < tr.height t) (ha : cv tr t r colA = 1) (hq : cv tr t r colQ < 2 ^ 20) :
+theorem t1_gt {r : Nat} (hr : r < tr.height t) (ha : cv tr t r colA = 1) (hq : cv tr t r colQ < 2 ^ 22) :
     cv tr t r colQ < cv tr t r colT1 := by
   have h := zc1 hL hr (x := colA) ha (e := ZkFormal.Chacha.Table.E.sub (ZkFormal.Chacha.Table.E.sub
     (ZkFormal.Chacha.Table.E.sub (ZkFormal.Chacha.Table.E.c colT1) (ZkFormal.Chacha.Table.E.c colQ))
@@ -130,7 +130,7 @@ theorem t1_gt {r : Nat} (hr : r < tr.height t) (ha : cv tr t r colA = 1) (hq : c
   have := cv_lt (tr := tr) (t := t) r colT1
   have := h (by omega) (by omega); omega
 
-theorem t2_gt {r : Nat} (hr : r < tr.height t) (hs : cv tr t r colS2 = 1) (hq : cv tr t r colQ < 2 ^ 20) :
+theorem t2_gt {r : Nat} (hr : r < tr.height t) (hs : cv tr t r colS2 = 1) (hq : cv tr t r colQ < 2 ^ 22) :
     cv tr t r colQ < cv tr t r colT2 := by
   have h := zc1 hL hr (x := colS2) hs (e := ZkFormal.Chacha.Table.E.sub (ZkFormal.Chacha.Table.E.sub
     (ZkFormal.Chacha.Table.E.sub (ZkFormal.Chacha.Table.E.c colT2) (ZkFormal.Chacha.Table.E.c colQ))
@@ -141,7 +141,7 @@ theorem t2_gt {r : Nat} (hr : r < tr.height t) (hs : cv tr t r colS2 = 1) (hq : 
   have := h (by omega) (by omega); omega
 
 /-- The row counter. -/
-theorem rc_eq (hH : tr.height t ≤ 2 ^ 20) : ∀ r, r < tr.height t → cv tr t r colRc = r := by
+theorem rc_eq (hH : tr.height t ≤ 2 ^ 22) : ∀ r, r < tr.height t → cv tr t r colRc = r := by
   intro r hr
   induction r with
   | zero =>
@@ -160,7 +160,7 @@ theorem rc_eq (hH : tr.height t ≤ 2 ^ 20) : ∀ r, r < tr.height t → cv tr t
     have := this (by omega) (by omega); omega
 
 /-- First row of an instance: `q + 1 = L`, `kq = ks`, `inst = rc`. -/
-theorem start_facts (hH : tr.height t ≤ 2 ^ 20) {r : Nat} (hr : r < tr.height t) (h : cv tr t r colSt = 1) :
+theorem start_facts (hH : tr.height t ≤ 2 ^ 22) {r : Nat} (hr : r < tr.height t) (h : cv tr t r colSt = 1) :
     (cv tr t r colQ + 1) % 2013265921 = cv tr t r colL ∧ cv tr t r colKq = cv tr t r colKs ∧
     cv tr t r colInst = r := by
   have h1 := zc1 hL hr h (e := ZkFormal.Chacha.Table.E.sub (.add (ZkFormal.Chacha.Table.E.c colQ)
