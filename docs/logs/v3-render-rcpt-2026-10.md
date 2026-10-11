@@ -63,3 +63,19 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
 * Full `lake build ZkFormal.V3.Integration` passes with all four new modules; audits
   `AuditPaddedRcpt`, `AuditPaddedSrcp`, `AuditPaddedQv`, `AuditNearV3Admission` pass;
   `make pin-check` passes.
+
+## 2026-10-11 (round 2: lead decisions — rcpt repairs adopted, A10 in srcpV3)
+
+* Merged `origin/integration/v3-20261011b` (fast-forward).
+* **A10 in `srcpV3` (table 20) — done.**  `Rcpt/Tables/SrcpD.lean`: `SrcpV3.tableD` = the base
+  table + 6 slack-bit columns `db_0..5` (56..61, width 62) + root-row check
+  `DP0 − (qe − q − 1) = Σ 2^e db_e` (`q` already counts the list's segments, so
+  `qe − q − 1 = |path|` is the per-list counter); `local_base`/`local_of_base`.
+  View `Rcpt/Extract/Srcp/Depth.lean:srcpD_view`: `SrcpWf bs ∧ (∀ B ∈ bs, |B.path| ≤ Dp0) ∧
+  traffic` (`block_depth`, `BlockChain.depth`; `DP0_eq : SrcpV3.DP0 = NearSpecV3.Dp0`).
+  `LinkV3.V3RecordsWf` gains `srcpDepth : ∀ B ∈ r.srcp, B.path.length ≤ NearSpecV3.Dp0`
+  (link lane: relate blocks to `usedProofs` to get `GoodV3.pathDepth`).
+  Render `Render/PaddedSrcp.lean:srcp_aligned_complete (h : SrcpWf bs) (hd : ∀ B ∈ bs,
+  |B.path| ≤ Dp0)` for `tableD`; `srcp_proofs_aligned_complete` adds `hd` for the entries.
+  New generic `Render/ColAgree.lean` (local/traffic invariant under agreement on the read
+  columns).  **nearV3_size: 6,315,201 → 6,320,769 B** (margin 772,822 B after the hint).
