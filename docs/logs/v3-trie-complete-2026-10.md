@@ -541,3 +541,29 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
   UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))`.  So the bundle takes
   `W := keys (upsTraceAligned Js) T_UPS` (with `keys_length`).
 * Audit `test/AuditTrieUpb.lean`; Integration 4180 jobs; pin-check OK.
+
+## 2026-10-11 (session 5) — MEMD: generic layer DONE, per-instance pairing OPEN
+
+* **`Assembly/TrieUpsMemd.lean`** (new): `uMsgs_memd` (send `gMs`: `[τ, j, idx, rx, rb, qlen]`, recv
+  `gMr`: `[τ, jm, idx, mBv, mCv, clen]`), `memdCols`, `memd_congr` (MEMD messages read only those 12
+  columns — not `u`, not the next row), `instRow I rk := generatedRow [I] 0 (0, rk)`,
+  `generated_memd`, `memdI I sd` (the instance's own rows' MEMD messages), **`view_memd`**
+  (aligned view MEMD traffic `= Is.flatMap (memdI · sd)`), `MemdPair I :=
+  (memdI I true).map toFp ~ (memdI I false).map toFp`, `covers_memd` (table 7 only), `pub_memd`,
+  **`RenderBundleV3.balancedAt_memd`** (`R.BalancedAt B_MEMD` from `∀ I ∈ Is, MemdPair I`).
+  Audit `test/AuditTrieUpsMemd.lean`.
+* **Open (exact): `∀ I ∈ upsRanked ws insts, MemdPair I`** for the native instances.  Analysis:
+  - sender rows: part `k`, `MEM` rows (`st = 8`, i.e. `p = |q| − 8 + ix`, `FieldsOk.mem_position`),
+    gate `k + 1 ≠ nQ ∧ kind ≠ NLF`: `[τ, k+1, ix, limb (RV I Q_k) ix, memRb Q_k ix, |Q_k.q|]`
+    (`rbV` at `st = 8` reads `sposV = |pb| − 8 + ix`);
+  - receiver rows: `kind ∈ {RDB, RDE, WEX, PT}` (`jm = k`, `PartOk.jmD`) or `SPB` with
+    `ci ∈ {5,6,7,9}` (`jm = 1`, `jmS`): `[τ, jm, ix, limb mB ix, memByte (part (jm−1)) ix, clen]`;
+  - plan check (by `termPlan`, all 11 cases): sender `k` ↦ receiver `k+1`, except LSc/ESn0
+    (`[MV*, NLF, SPB]`) where part 0 ↦ the SPB at 2; NLF parts and the root never send;
+    RBI/RLP/RBR/RBV/MV*/NLF and SPB with `ci ∈ {4,8,10}` never receive;
+  - value identities needed per pair (receiver `r`, sender `s = jm_r − 1`): `clen_r = |Q_s.q|`
+    (`NativePartFamily`, done), `8 ≤ |Q_s.pb|` (then `memByte_eq_memRb`), and **`(Q_r.mB : ℤ) =
+    RV I Q_s`** — native: `nativeInstance_newChildMemory` (`mB_{k+1}` = new child's `memD`, upper
+    kinds), `nativeInstance_upperRV` (upper `RV` = output `memD`), split/WEX analogues in
+    `Tree*Memory*`; missing: terminal-kind `RV` = output `memD` and "new child of part `k+1` =
+    output of part `k`" in the `AllocatedNativeInstance` form the accepted instances carry.
