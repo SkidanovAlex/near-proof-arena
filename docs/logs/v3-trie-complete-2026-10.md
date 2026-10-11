@@ -126,3 +126,4 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
    and `SIZE (3..5, ·)` ↔ `yN`); (b) needs `Σ(2−rpl)·len + Σ(2−rplv)·len + Σ_τ(L_τ+Σ|Q_j|) =
    Σ_τ unfoldedBytesT pre_τ + unfoldedBytesT post_τ ≤ B0` for the honest choice — both depend
    on the ups instances of item 2.
+* Verification: `lake build ZkFormal.V3.Integration` passes (3024 jobs) with all new modules; the 10 new audits pass; `make pin-check` OK.
