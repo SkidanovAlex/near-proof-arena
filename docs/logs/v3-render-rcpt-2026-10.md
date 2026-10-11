@@ -328,3 +328,45 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   nonempty from `prepD0_sources_nonempty`, roots from `prepD0_source_roots`, siblings from
   `relD0a_source_paths`, RC length `≤ |raw| ≤ 8 MiB < P`; the default `sourceEntry` has 12 bytes).
   Audit `test/AuditAcceptedSrcpOk.lean`.
+* **Precision on the BND item.**  Coverage of the honest routing keys against the *bounded*
+  boundary rows (`honest_bnd_balance`'s `hc`) is not affected by the layout mismatch (both sides
+  use `boundedIntervals`); it is still an explicit premise because no lemma identifies the
+  physical active rows of the whole honest trace with per-receipt `routeKey`s (only per-receipt
+  slices exist: `applied_receipt_route_slice`, `native_routing_selected`).  The mismatch bites in
+  **BNDP** (public `boundaryRecords p` over `ownIntervals` vs the bnd rows over the bounded
+  intervals) and in **`pubFit`/`|preparedBytes p 0| < P`** of `RenderWitnessV3` (the BNDP block
+  of `p` grows with `|boundaries|`, unbounded by any D0a check; `accepted_prepared_length` bounds
+  only `boundedPrep`).  So for the malformed own-shard-0 layouts `CompleteV3Stmt` itself can fail
+  — the decision (publish `boundedIntervals`, or a D0a check `|boundaries| + 1 = |shardIds|`)
+  is needed before `CompleteV3Stmt` is provable.
+* **Unconditional receipt-side renders from acceptance (done).**
+  `Assembly/RenderV3RcptAccepted.lean`: `AcceptedV3 cb wb` (k, w, raw, codes, m, steps, last,
+  p and their proofs; `acceptedV3_nonempty : checkD0a B0 cb wb = .ok () → Nonempty _`);
+  `A.pub = pubOf (preparedBytes A.p 0)`; choices `A.rcptInput` (native account slots, access
+  ids, key ranks), `A.accts` (native account views, `memOk_of_accept`), `A.akeys`, `A.bnds`
+  (bounded intervals × physical keys; rows ≤ 65·65), `A.srcps`, `A.qvVals` (with `Reads`, via the
+  new `AcceptedQv.qvNativeOk_reads_of_accept`); **`A.rcptAcc/acctAcc/akeyAcc/bndAcc/srcpAcc/qvAcc
+  : TableRenderV3 A.pub t`** for t = 16,17,18,19,20,22 — no premises; `*_tf` lemmas (`rfl`).
+* **Receipt-side balances in bundle form (done).**  `Assembly/RenderV3RcptBalance.lean`
+  (namespace `RcptBal`): `BusBalanced R b` (= `R.Balanced` at `b`, `balanced_of_buses`),
+  `bundle_sum` (sum over all tables = sum over the bus users, from exact traffic: tables
+  without an interaction on (b, side) count 0), `pubCount_free`, `pubCount_prepared`.
+  For any bundle `R` with `R.tf t` = the honest traffic of `A` (hyps `h16 … : R.tf t = …`):
+  `srec_balanced`, `rcl_balanced`, `akc_balanced`, `rids_balanced` (`h24` = the sort traffic of
+  `NativeSortIds.input (A.rcptInput.lists.flatten.map Input.receipt)`, i.e. render-sched's
+  `sortRenderV3` with `lists := A.rcptInput.lists`), `mem_balanced`, `qvc_balanced`,
+  `qsh_balanced`: **unconditional**; `src_balanced` given `|preparedBytes A.p 0| < 256^4`;
+  `bnd_balanced` under the coverage premise `hc`; `bndp_balanced` under the decidable layout
+  premise `A.bounds = A.p.bnds`.  Not covered here: SIZE (tables 2, 4, 20 → 21; needs the trie
+  lane's node/val traffic and `sizeA7`).
+  Audit `test/AuditRenderV3RcptAccepted.lean`.  Integration 3,102 jobs OK; pin-check OK.
+
+### Open statements (for the successor / lead)
+* Layout decision (BNDP, pubFit): see above.  With option (a) (`prepD0` publishes
+  `boundedIntervals`), `bndp_balanced`'s premise becomes `rfl` and `accepted_prepared_length`
+  gives the pubFit bound.
+* BND coverage: `∀ r ∈ physicalActiveRows (rcptTraceNative A.pub A.rcptInput) 0,
+  physicalBoundaryKey … r ∈ A.bnds.map BndE.rec4` — needs a whole-trace identification of the
+  active routing rows with `routeKey bounds (nativeRoutingIndex k rp) pos` (`pos ≤ |receiver|`),
+  then `native_routing_selected`.
+* SIZE: trie lane.
