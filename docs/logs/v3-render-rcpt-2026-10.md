@@ -244,3 +244,42 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   it is `∀ r ∈ active, key r ∈ Public.boundaryRecords (boundedPrep …)`, i.e. every native
   routing lookup reads a prepared boundary row; the routing lane keeps it explicit too
   (`normalized_physical_complete`).
+
+## 2026-10-11 (round 6: discharging hypotheses from acceptance)
+
+* Merged `origin/integration/v3-20261011b` (ChaCha `table22`, `MerkleEmpty`, `sortTableV3`,
+  `RenderBundleV3`) and `origin/lane/v3-link` (LinkV3 taken from link: balance over A7).
+  **Combined `nearV3_size` = 6,415,073 B** (margin 678,518 B after the 1,295,017 B hint);
+  **`v3MaxHintBytes` 1,989,000 → 1,973,000** so `4 + hint + maxInner ≤ 8 MiB`.
+* `Assembly/RenderV3RcptTables.lean`: `TableRenderV3` instances `rcptRenderV3` (16, via
+  `rcpt_aligned_completeB`), `acctRenderV3` (17), `akeyRenderV3` (18), `bndRenderV3` (19),
+  `srcpRenderV3` (20), `qvRenderV3` (22).  Table 21 is `sizeA7` (lane v3-trie-complete).
+* Discharged from `checkD0a B0 cb wb = .ok ()` (each its own commit):
+  - `QvNativeOk` — `Render/AcceptedQv.lean:qvNativeOk_of_accept` (QvNativeOk now carries
+    record validity directly);
+  - `RcptOk` — `Render/AcceptedRcpt.lean:rcptOk_of_accept` for `acceptedRcptInput`
+    (lists = `sourceInputLists ctx p.lists w.entries`; public bytes on `preparedBytes p _`);
+  - `MemOk` — `Render/AcceptedMem.lean:memOk_of_accept` (accountId := `nativeAccountId`,
+    replay = `newchunk_old_tree_reconstruct`'s old-record tree, `as` = native account views,
+    `|as| ≤ 4481`); `acctV3Ok_of_views` (needs `as ≠ []`);
+  - `AkcOk` — by construction (choose `accessId := NativeReceiptAccessIds.accessId pre`,
+    `fallback := rankAux pre rs fb`; `counter_balance` holds for every `pre`);
+  - `AkeyOk` for `providers m.pre applied` — `akeyOk_of_accept`;
+  - srcp: `acceptedSrcpInputs` (prepared roots/dup flags + `sourceEntry`), RCL/SRC alignment
+    (`accepted_rcl_balance`, `accepted_src_balance`), A10 depth (`acceptedSrcp_depth`), rows
+    (`acceptedSrcp_rows`), duplicate occurrences empty (`acceptedSrcp_duplicate`), and
+    `acceptedSrcp_ok` (ProofInputsOk with root/sibling widths and RC length < P explicit).
+* **Not implied by acceptance (with sketches):**
+  - `AcctV3Ok.len_pos` / `AcctWf.nonempty`: an accepted chunk whose applied source lists are all
+    empty reads no account, so `nativeAccountViews … = some []`; the frozen `acctV3` forces a
+    segment on row 0 (`isFirst·(1−af)`), and a dummy account would emit VBYTES/VPOST/VSLOT traffic
+    with no matching value/SHA records.  Fix: the `Rcpt/Candidates/AccountEmpty.table` repair
+    (first-row constraint `isFirst·(act−af)`, empty trace proved local) at table 17.
+  - BND coverage: the honest receipt routing uses `boundedIntervals k.L own` (boundaries
+    truncated to `shardIds.length`), but `prepD0` publishes `p.bnds = ownIntervals L own`.  For a
+    malformed-but-decodable layout with `boundaries.length ≥ shardIds.length` the honest lookup
+    keys are not `Public.boundaryRecords p` rows.  Fix: publish the bounded representation
+    (`boundedPrep`) or render routing over `p.bnds`; for well-formed layouts the two coincide.
+* Still open: srcp root/sibling widths and RC-preimage length `< P` (decoding/witness size);
+  BND coverage on well-formed layouts (from `native_routing_selected`); `SizeOk` for `sizeA7`
+  (trie-complete lane).
