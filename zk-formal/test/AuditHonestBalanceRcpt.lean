@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Render.HonestBalanceRcl
+import ZkFormal.NearV3.Render.HonestBalanceSrc
 
 /-! Guard the honest receipt-side bus balances. -/
 
@@ -21,3 +21,7 @@ import ZkFormal.NearV3.Render.HonestBalanceRcl
 /-- info: 'ZkFormal.NearV3.Render.honest_rcl_balance' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.honest_rcl_balance
+
+/-- info: 'ZkFormal.NearV3.Render.honest_src_balance' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.honest_src_balance

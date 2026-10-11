@@ -167,3 +167,8 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   `sortTraffic (NativeSortIds.input (x.lists.flatten.map Input.receipt))` (receives
   `[r, i, rid_r[i]]` for receipt `r` in applied order, `i < 32`); the sort render must emit
   that traffic.
+* **SRC balance** (`Render/HonestBalanceSrc.lean:honest_src_balance`): with
+  `xs.map (root, dup) = [(p.lists[j].root, sourceDup p.lists j)]_j`,
+  `(srcpTraffic (blocksOfProofs xs)).recvs B_SRC = Public.preparedOn p B_SRC true`
+  (the prepared public segment's sends, `prepared_source_records`).  Note:
+  `NativeSourceFour.balance` is a SIZE lemma on an older four-partition source layout, not SRC.

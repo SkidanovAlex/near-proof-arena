@@ -246,6 +246,7 @@ import ZkFormal.NearV3.Render.PaddedQv
 import ZkFormal.NearV3.Render.PaddedQvNative
 import ZkFormal.NearV3.Render.HonestBalanceRcpt
 import ZkFormal.NearV3.Render.HonestBalanceRcl
+import ZkFormal.NearV3.Render.HonestBalanceSrc
 import ZkFormal.NearV3.Render.PaddedRcptR
 import ZkFormal.NearV3.Render.PaddedSha
 import ZkFormal.NearV3.Render.PaddedCongr
