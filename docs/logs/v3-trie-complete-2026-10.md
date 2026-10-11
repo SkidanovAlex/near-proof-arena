@@ -867,3 +867,13 @@ The AIR check is really `B0`: `sizeA7` range-checks `B0 − (yN0 + yN1 + yN2)` (
    SIZE/BYTES/DIGEST/VSLOT/KEYNIB/FINAL, with `RcptKeys`, `RcptFinal`, BYTES/DIGEST `hcodec`/`hrest`
    (X := ns.flatMap postSlotDigests), VBYTES, and the receipt/source SHA families' bounds as explicit
    hypotheses.
+
+## 2026-10-12 (session 7) — A7 (b) step 1 DONE: per-upsert accounting identity
+
+* New `Assembly/TrieA7Repl.lean`: `replK` (RDB/RDE/PT/RLP/RBR/RBV/RBI/SPB), `oldK` (RLP/RBR/RBV),
+  `replacedCharge run = Σ_{parts, replK} |nodeEnc source|`, `oldValCharge run = Σ_{parts, oldK} |ownVals source|`,
+  `ReplOk`, `wrapRun_repl`, `leafSplit_repl`, `extSplit_repl`, **`traceUpsert_replaced` / `traceKids_replaced`**
+  (mutual; `t.wf`, nibble key): the EXACT identity
+  `unfoldedBytesT t + outputByteCharge run + |v| = unfoldedBytesT run.output + replacedCharge run + oldValCharge run`
+  (a split's source counted once via `SPB`; the BI `NLF` part, source = the branch, not counted; off-path
+  subtrees copied).  Audit `test/AuditTrieA7Repl.lean`.
