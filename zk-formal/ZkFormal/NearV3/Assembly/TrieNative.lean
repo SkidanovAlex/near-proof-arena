@@ -126,15 +126,15 @@ theorem accepted_bundle_parts {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (
       SizedAccountRun m.pre writes oldPost ∧
       ∀ (q : UseRequests), q.edges.length < Algebra.P → q.bmaps.length < Algebra.P →
         q.windows.length < Algebra.P → ∀ (keys : List ZkFormal.Near.Msg), keys.length < Algebra.P →
-        ∃ (Rn : TableRenderV3 pub T_NODE (by decide)) (Rh : TableRenderV3 pub T_HEAD (by decide))
-          (Rv : TableRenderV3 pub T_VAL (by decide)),
-          Rn.tf = nodeTraffic3 (nodes m steps oldPost writes q) ∧
+        ∃ (hn : NodeOk (nodes m steps oldPost writes q)) (hv : ValOk (vals m steps))
+          (Rh : TableRenderV3 pub T_HEAD (by decide)),
+          (∀ sel, ExtOf (nodeRenderV3 pub _ hn sel).tf (nodeTraffic3 (nodes m steps oldPost writes q))) ∧
           Rh.tf = headTraffic (heads m steps oldPost writes keys) ∧
-          Rv.tf = valTraffic (vals m steps) := by
+          (∀ sel, ExtOf (valRenderV3 pub _ hv sel).tf (valTraffic (vals m steps))) := by
   obtain ⟨k, w, m, steps, last, writes, oldPost, hk, hw, hm, hv, hr⟩ := accepted_native h
   refine ⟨k, w, m, steps, last, writes, oldPost, hk, hw, hm, hv, hr, ?_⟩
   intro q he hb hu keys hkeys
   obtain ⟨hn, hval, hh⟩ := accepted_ok hk hw h hm hv hr q he hb hu keys hkeys
-  exact ⟨nodeRenderTrie pub _ hn, headRenderTrie pub _ hh, valRenderTrie pub _ hval, rfl, rfl, rfl⟩
+  exact ⟨hn, hval, headRenderTrie pub _ hh, nodeRenderV3_ext pub _ hn, rfl, valRenderV3_ext pub _ hval⟩
 
 end ZkFormal.NearV3.Assembly.TrieNative

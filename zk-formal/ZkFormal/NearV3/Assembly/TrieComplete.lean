@@ -91,9 +91,10 @@ theorem trie_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (pub : Li
         let hs := TrieNative.heads m steps oldPost writes keys
         let es := TrieNative.vals m steps
         let L := TrieUniqDup.uniqNative m steps
-        (∃ (Rn : TableRenderV3 pub T_NODE (by decide)) (Rh : TableRenderV3 pub T_HEAD (by decide))
-          (Rv : TableRenderV3 pub T_VAL (by decide)) (Ru : TableRenderV3 pub T_UNIQ (by decide)),
-          Rn.tf = nodeTraffic3 ns ∧ Rh.tf = headTraffic hs ∧ Rv.tf = valTraffic es ∧
+        (∃ (hn : NodeOk ns) (hv : ValOk es) (Rh : TableRenderV3 pub T_HEAD (by decide))
+          (Ru : TableRenderV3 pub T_UNIQ (by decide)),
+          (∀ sel, ExtOf (nodeRenderV3 pub ns hn sel).tf (nodeTraffic3 ns)) ∧ Rh.tf = headTraffic hs ∧
+          (∀ sel, ExtOf (valRenderV3 pub es hv sel).tf (valTraffic es)) ∧
           Ru.tf = uniqTraffic (uniqEntries L)) ∧
         Link3.ParentBal ns hs ∧ Link3.VParentBal ns es ∧ Link3.EntBal ns es ∧
         Link3.DigsBal ns hs (uniqEntries L) ∧ Link3.DupBal (uniqEntries L) ns es) ∧
@@ -105,8 +106,9 @@ theorem trie_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (pub : Li
   refine ⟨k, w, m, steps, last, writes, oldPost, hk, hw, hm, hv, hr, ?_, ?_⟩
   · intro q he hb hu keys hkeys
     obtain ⟨hn, hval, hh⟩ := TrieNative.accepted_ok hk hw h hm hv hr q he hb hu keys hkeys
-    refine ⟨⟨nodeRenderTrie pub _ hn, headRenderTrie pub _ hh, valRenderTrie pub _ hval,
-      uniqRenderTrie pub _ (TrieUniqOk.uniqNative_ok hk hw h hm hv), rfl, rfl, rfl, rfl⟩,
+    refine ⟨⟨hn, hval, headRenderTrie pub _ hh,
+      uniqRenderTrie pub _ (TrieUniqOk.uniqNative_ok hk hw h hm hv), nodeRenderV3_ext pub _ hn, rfl,
+      valRenderV3_ext pub _ hval, rfl⟩,
       TrieParent.parentBal_accepted hk hw h hm hv oldPost writes q keys,
       TrieVParent.vparentBal_native m steps oldPost writes q,
       TrieEnt.entBal_accepted hk hw h hm hv oldPost writes q,
@@ -127,8 +129,8 @@ variable {pub : List Fp} (R : RenderBundleV3 pub)
 /-- **A bundle whose node, head, value and uniq components carry record lists with the five
 trie balances is balanced on `PARENT`, `VPARENT`, `ENT`, `DIGS`, `DUP`.** -/
 theorem balancedAt_trie_core (vs : List NodeS3) (hs : List HeadE) (es : List ValE) (L : List UEnt)
-    (hn : (R ⟨T_NODE, by decide⟩).tf = nodeTraffic3 vs) (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
-    (hv : (R ⟨T_VAL, by decide⟩).tf = valTraffic es) (hu : (R ⟨T_UNIQ, by decide⟩).tf = uniqTraffic (uniqEntries L))
+    (hn : ExtOf (R ⟨T_NODE, by decide⟩).tf (nodeTraffic3 vs)) (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
+    (hv : ExtOf (R ⟨T_VAL, by decide⟩).tf (valTraffic es)) (hu : (R ⟨T_UNIQ, by decide⟩).tf = uniqTraffic (uniqEntries L))
     (hP : Link3.ParentBal vs hs) (hVP : Link3.VParentBal vs es) (hE : Link3.EntBal vs es)
     (hD : Link3.DigsBal vs hs (uniqEntries L)) (hU : Link3.DupBal (uniqEntries L) vs es) :
     R.BalancedAt B_PARENT ∧ R.BalancedAt B_VPARENT ∧ R.BalancedAt B_ENT ∧
