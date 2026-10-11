@@ -172,3 +172,26 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   `(srcpTraffic (blocksOfProofs xs)).recvs B_SRC = Public.preparedOn p B_SRC true`
   (the prepared public segment's sends, `prepared_source_records`).  Note:
   `NativeSourceFour.balance` is a SIZE lemma on an older four-partition source layout, not SRC.
+* **SREC balance** (`Render/HonestBalanceSrec.lean:honest_srec_balance`):
+  `((rcptTraffic3 pub (nativeRcptLists pub x)).sends B_SREC).map toFp ~ (… .recvs B_SREC).map toFp`.
+  `rcptTraceNative` is definitionally an instance of
+  `booleanReceiptTrace_native_systemBalance`'s trace (system/character/digest layers outermost),
+  so the trace-level certificate lifts through the exact traffic.
+* **Open — AKC, BND, MEM (precise).**  `RcptInput.accountId`/`accessId` and the deposit
+  ledger are currently free/derived inputs of the honest trace; these buses need them pinned
+  to the native allocations and the corresponding view fields identified:
+  - AKC (16 ↔ 18): `(rcptTraffic3 pub (nativeRcptLists pub x)).sends/recvs B_AKC` =
+    `eventMessages pre rs true/false` of `NativeAccessKeyBalance` (fields `ee`, `akf`, `akk`,
+    `aku` of the honest views, from `keyAux accountId accessId`), with `akey` traffic
+    `akeyTraffic (NativeAccessKeyProviders.providers pre rs)`; then `counter_balance`.
+  - BND (16 ↔ 19): honest views' `q`, `rlk` (from `nativeRoutingConstants k`/`routingAux
+    (nativeRoutingInterval k)`) equal the requests `requestRanks keys …`; with
+    `bndTraffic (boundaryEntries …)`, `boundaryEntry_counter_balance` per entry.
+  - MEM (16 ↔ 17): honest views' `kslot` (= `accountId`), `tprev` (= `depositPlanPrevious`),
+    `bef`/`aft`/`lk`/`st` (= `depositPlanAccount steps`) give
+    `rcptSends3 … B_MEM = nativeLedgerMemWrites original rs steps` and
+    `rcptRecvs3 … B_MEM = nativeLedgerMemReads original rs steps`; with
+    `acctV3Traffic as` for `nativeAccountViews original replay rs = some as`,
+    `native_account_memory_balance`.
+  Each identification is a `located_idsU`-style slice lemma over `locatedViews` (cells of the
+  key/routing/deposit/account fields on the unpatched trace).
