@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Rcpt.Link.RcptCore
 import ZkFormal.NearV3.Rcpt.Link.MemOf
 import ZkFormal.NearV3.Rcpt.Link.AcctSlots
+import ZkFormal.NearV3.Rcpt.Link.GasPub
 
 /-- info: 'ZkFormal.NearV3.RcptLink.applyReceipts_of_ledger' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
@@ -61,3 +62,7 @@ import ZkFormal.NearV3.Rcpt.Link.AcctSlots
 /-- info: 'ZkFormal.NearV3.RcptLink.memHyp_of'' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.memHyp_of'
+
+/-- info: 'ZkFormal.NearV3.RcptLink.gasPrice_pub' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.gasPrice_pub
