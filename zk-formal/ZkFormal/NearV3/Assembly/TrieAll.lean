@@ -10,6 +10,8 @@ field-bounded `W`) and head keys `q.edges`:
 
 * the components of `node` (2), `head` (3), `val` (4), `walk` (5), `uniq` (6) exist with their
   native traffic, and of `ups` (7) **given the row cap** `R insts + 1 ≤ 2^22`;
+* `UpsOrigin` of the native instances (`TrieA7.a7_perm_native` turns it into the A7 `RPL`/`RPLV`
+  permutations);
 * the record-level balances of `PARENT`, `VPARENT`, `ENT`, `DIGS`, `DUP`, `EDGE`, `BMAP`,
   `MIDROOT`, and the ups/head `ROOT` records (with `root_endpoints_accepted` for the public side).
 
@@ -31,6 +33,7 @@ theorem trie_all_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (reso
       ImplicitTraceValid k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) steps last ∧
       SizedAccountRun m.pre writes oldPost ∧
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
+      TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       ∀ W : List ZkFormal.Near.Msg, W.length < Algebra.P →
         let q := useReq ws insts W
         let ns := TrieNative.nodes m steps oldPost writes q
@@ -60,9 +63,9 @@ theorem trie_all_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (reso
         headRecvs hs B_ROOT = nativeInputRoots 0 (m.pre :: steps.map ImplicitStepV3.pre) ∧
         Js.map (fun I => [I.tau + 1] ++ I.post) = nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) := by
   obtain ⟨k, w, m, steps, last, -, -, hk, hw, hm, hv, -⟩ := TrieNative.accepted_native h
-  obtain ⟨writes, oldPost, insts, v, ws, hr, hws, hRw, hpos, ho, hfam, hedges, hbmaps, hrest⟩ :=
+  obtain ⟨writes, oldPost, insts, v, ws, hr, hws, hRw, hpos, ho, hfam, horigin, hedges, hbmaps, hrest⟩ :=
     accepted_ups_walks hk hw h hm hv resolve pub
-  refine ⟨k, w, m, steps, last, writes, oldPost, insts, ws, hk, hw, hm, hv, hr, hRw, ?_⟩
+  refine ⟨k, w, m, steps, last, writes, oldPost, insts, ws, hk, hw, hm, hv, hr, hRw, horigin, ?_⟩
   intro W hW
   obtain ⟨he, hb, hups, hmid, hlens, hroot1, hroot2⟩ := hrest W hW
   obtain ⟨hn, hval, hh⟩ := TrieNative.accepted_ok hk hw h hm hv hr (useReq ws insts W) hedges hbmaps hW

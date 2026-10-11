@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.TrieUps
+import ZkFormal.NearV3.Assembly.TrieUpsOrigin
 import ZkFormal.NearV3.Rcpt.Candidates.AcceptedReplaySharedBalance
 import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootRanks
 import ZkFormal.NearV3.Rcpt.Candidates.NativeMidrootRecords
@@ -20,6 +21,7 @@ head keys `q.edges`:
 * `EDGE` record conservation of `TrieNative.nodes … q`, `TrieNative.heads … q.edges`,
   `rankWalks [] ws` and the ranked ups walks `physicalPrefixUps (ws.flatMap steps) insts`;
 * `BMAP` record conservation of the nodes, ranked walks and ranked ups walks;
+* `UpsOrigin` (`TrieUpsOrigin`): the node/value records the native instances read;
 * `UpsRenderOk` of the ranked instances **given the row cap** `R insts + 1 ≤ 2^22` (open, see
   the lane log: the proven per-family bounds do not imply it; it follows from the A7 measure
   once the ups rows are matched with the rebuilt post tries).
@@ -58,6 +60,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         (allLookupQueries (appliedReceipts k w) m.pre v (steps.map ImplicitStepV3.pre) resolve) = some ws ∧
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       0 < insts.length ∧ (∀ I ∈ insts, InstOk I) ∧ (∀ I ∈ insts, NativePartFamily I) ∧
+      TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       (walkEdgeKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       (walkBmapKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       ∀ W : List ZkFormal.Near.Msg, W.length < Algebra.P →
@@ -104,10 +107,14 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       obtain ⟨a, -, -, ci, dispatch, -⟩ := hinst tau u I hu hI
       exact ⟨a.2.2.2.2.1, dispatch, ci⟩) hforest _ ws hws
   obtain ⟨hedges, hbmaps⟩ := hranges insts (by omega)
+  have horigin := TrieUpsOrigin.upsOrigin_of_coverage m steps oldPost writes us insts hpairs
+    (fun u hu => (hgood u hu).1) hcount (fun tau u I hu hI => by
+      obtain ⟨a, -, ex, ci, -, root, hroot, horig⟩ := hinst tau u I hu hI
+      exact ⟨a, ex, ci, root, hroot, horig⟩) hforest
   refine ⟨writes, oldPost, insts, v, ws, hr, hws,
     ⟨⟨nativeWalkTrace (rankWalks [] ws), walkTraffic3 (rankWalks [] ws), hwlocal, hwtraffic,
       by change 22 % 3 = 1; decide⟩, rfl⟩,
-    by omega, ho, hfam, hedges, hbmaps, ?_⟩
+    by omega, ho, hfam, horigin, hedges, hbmaps, ?_⟩
   intro W hW
   -- providers
   obtain ⟨hn0, hvls⟩ := NativeExecutionUsage.inputs hk hw h (by decide) hm hv

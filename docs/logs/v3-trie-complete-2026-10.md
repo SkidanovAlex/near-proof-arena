@@ -299,3 +299,28 @@ Lead: HEAVY_MEM=12G allowed (`taskset -c 8-13`).  Order: (1) A7 (a) semantic Per
 * Bounds for `% P`: `ns.length ≤ R ns < 2^22` (`length_le_R`, `node_P`), `es.length ≤ ValGen.R
   < 2^22` (`val_length_le`, `val_R_lt`).
 * Then `S n := decide ([n] ∈ Js.flatMap upsRplMsgs)` and `List.perm_ext_iff_of_nodup`.
+
+## 2026-10-11 (session 4) — A7 (a) semantic Perm DONE
+
+* `Assembly/TrieUpsOrigin.lean`: **`UpsOrigin F insts`** — a forest `ts` (the rebased
+  `oldPost :: steps.pre`) with `|forestNodes ts| = |forestNodes F|`, `|forestBytes ts| = |forestBytes F|`,
+  and per instance at position `tau`: `I.tau = tau`, `InstOk`, `NativePartFamily`, every part of
+  kind ≠ NLF reads node record `sN` of `ts` with `s.tau = tau ∧ pdep = s.depth`
+  (`native_reader_depth_tau`), and a `W3` value step reads an edge of a node record of `ts`
+  (`ups_edge_inventory_coverage`; head `START` keys excluded by the symbol).
+  `upsOrigin_of_coverage` derives it from the `accepted_window_coverage` outputs (keeps the
+  `NativeReaderOrigin` component).  Lengths via `replay_forest_depths` / `forestBytes_replay_length`.
+  Note: the forest bridge reduced to LENGTHS (the Perm only talks about indices).
+* `accepted_ups_walks` and `trie_all_accepted` now export `UpsOrigin (m.pre :: steps.pre) insts`
+  (new outer conjunct, after the walk render).
+* `Assembly/TrieA7Perm.lean`: `InstOrigin`, `nD_node` (`N_D` is a reader of a terminal part of kind
+  ∉ {NLF, PT, RDB, RDE}; `term_has_reader`/`term_not_upper` by `decide`), `upper_node`, `rpl_mem`,
+  `rpl_inst` (Nodup by depth), `rplv_mem` (`ts = 3` from the walk, edge `e₀ = N_D`,
+  `edge_val_id`: the value id of the `N_D` record), `findIdx_valueId`, `nodup_flatMap_key`
+  (distinct `tau` across instances), `perm_of_singletons`; **`rpl_perm`**, **`rplv_perm`**,
+  `nodes_length`, `vals_length`, and **`a7_perm_native`**: for `ns = TrieNative.nodes …`,
+  `es = TrieNative.vals …`, `Js = upsRanked ws insts`, given `UpsOrigin`, `NodeOk ns`, `ValOk es`:
+  `∃ S SV`, the two Perm hypotheses of `balancedAt_rpl` / `balancedAt_rplv`.
+  `S n = decide ([n] ∈ insts.flatMap upsRplMsgs)` (so `S` = the replaced records).
+* Verification: Integration 4126 jobs; `AuditTrieA7Perm` (4 names), `AuditTrieAll`, `AuditTrieUps` pass;
+  `make pin-check` OK.
