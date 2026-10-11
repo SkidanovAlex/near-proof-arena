@@ -20,6 +20,7 @@ import ZkFormal.NearV3.Assembly.RenderV3A7
 import ZkFormal.NearV3.Link.UnfoldRefine
 import ZkFormal.NearV3.Assembly.LinkFields
 import ZkFormal.NearV3.Assembly.LinkBus
+import ZkFormal.NearV3.Assembly.LinkSha
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
