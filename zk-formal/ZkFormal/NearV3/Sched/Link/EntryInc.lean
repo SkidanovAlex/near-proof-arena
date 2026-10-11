@@ -145,7 +145,7 @@ theorem inc_sender (hH : HoldsP AP pub tr) (O : SchedOwn AP tp tm tcmp ts tch tg
   have h1 := tableBusCount_pos hw (mem_i 6 (by decide)) hm
   have h2 := busCount_go_ge tr pub (Proc.interactions[6]!).bus (Proc.interactions[6]!).send
     ((Proc.interactions[6]!).msgVal tr tp w pub) AP.tables 0 tp O.tp_lt
-  rw [O.tp_tab, Nat.zero_add, show Proc.table.interactions = Proc.interactions from rfl] at h2
+  rw [O.tp_tab, Nat.zero_add, show Proc.tableB.interactions = Proc.interactions from rfl] at h2
   have hb : (Proc.interactions[6]!).bus = B_SINC := by rw [Proc.i6_def]
   have hs : (Proc.interactions[6]!).send = false := by rw [Proc.i6_def]
   rw [hb, hs] at h1 h2

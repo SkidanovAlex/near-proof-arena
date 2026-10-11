@@ -18,6 +18,7 @@ Each round `i` (header `h_i`) is described by `round_shape` (entries `h_i + 1 �
 namespace ZkFormal.NearV3.Sched.Proc
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table.E
+open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Proc
 
 /-- Candidate header rows of the instance whose key block starts at `f`. -/
 def hdrAt (tr : Trace Fp) (tp f : Nat) : Nat → Nat
@@ -96,7 +97,8 @@ theorem proc_rounds (hL : PLocal tr tp pub) (hH : tr.height tp ≤ 2 ^ 22) {f : 
       · refine Or.inl fun i hi => ?_
         have hi0 : i = 0 := by omega
         rw [hi0, hdrAt_zero]
-        exact ⟨h16, kh, t1, limbs, by rw [T1]; omega⟩
+        have hb := kinds hL h16
+        exact ⟨h16, kh, t1, limbs (by omega), by rw [T1]; omega⟩
     | succ N ih =>
       rcases ih with hall | ⟨m, hm, hpre, hend⟩
       · have hs := hi_step hL hH hf hk (hall N (Nat.le_refl _))

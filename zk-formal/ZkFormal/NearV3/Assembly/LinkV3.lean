@@ -6,6 +6,7 @@ import ZkFormal.NearV3.Assembly.NearAdmission
 import ZkFormal.NearV3.Rcpt.Extract.Srcp.Depth
 import ZkFormal.NearV3.Candidates.MerklePhysical
 import ZkFormal.NearV3.Assembly.LinkClaim
+import ZkFormal.NearV3.Assembly.RcptViewCounts
 
 /-!
 # ZkFormal.NearV3.Assembly.LinkV3 — the linking step of `ExtractV3Stmt`
@@ -87,6 +88,8 @@ structure V3RecordsWf (pub : List Fp) (r : V3Records) : Prop where
   srcpDepth : ∀ B ∈ r.srcp, B.path.length ≤ NearSpecV3.Dp0
   size : ZkFormal.NearV3.SizeWf pub r.size
   mrk : MrkWfE pub r.mrkE r.mrk
+  /-- at most `2^22` receipt lists and receipts (physical rows, `rcptV3_view_counts`) -/
+  listsCount : r.lists.length ≤ 2 ^ 22 ∧ (ZkFormal.NearV3.flatR r.lists).length ≤ 2 ^ 22
 
 /-- The exact traffic of each viewed table at its fixed `nearAirV3` index. -/
 structure V3RecordsTraffic (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Prop where
@@ -149,7 +152,7 @@ def rawTables : List (Nat × ZkFormal.Air.Table) :=
       ZkFormal.NearV3.Sched.B_SSHUF),
    (T_CODEC, ZkFormal.NearV3.Sched.Codec.table),
    (T_SSD, ZkFormal.NearV3.Sched.ScanDist.table),
-   (T_PROC, ZkFormal.NearV3.Sched.Proc.table),
+   (T_PROC, ZkFormal.NearV3.Sched.Proc.tableB),
    (T_MEM, ZkFormal.NearV3.Sched.Mem.table),
    (T_CMP, ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP),
    (T_QV, ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table),
@@ -288,7 +291,7 @@ theorem busCount_nearAirV3_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s
         ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.ScanDist.table.interactions tr T_SSD pub b s m +
-      (tableBusCount ZkFormal.NearV3.Sched.Proc.table.interactions tr T_PROC pub b s m +
+      (tableBusCount ZkFormal.NearV3.Sched.Proc.tableB.interactions tr T_PROC pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Mem.table.interactions tr T_MEM pub b s m +
       (tableBusCount (ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP).interactions
         tr T_CMP pub b s m +
@@ -316,7 +319,7 @@ theorem rawCount_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s : Bool) (
         ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.ScanDist.table.interactions tr T_SSD pub b s m +
-      (tableBusCount ZkFormal.NearV3.Sched.Proc.table.interactions tr T_PROC pub b s m +
+      (tableBusCount ZkFormal.NearV3.Sched.Proc.tableB.interactions tr T_PROC pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Mem.table.interactions tr T_MEM pub b s m +
       (tableBusCount (ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP).interactions
         tr T_CMP pub b s m +
@@ -403,7 +406,7 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨ws, wW, wS, tW⟩ := walkView hH
   obtain ⟨us, wU, tU⟩ := uniqView hH
   obtain ⟨u, wP, tP⟩ := upsView hH
-  obtain ⟨ls, wR, tR⟩ := rcptV3_view_nearAir hp hsz hH
+  obtain ⟨ls, wR, tR, cR⟩ := rcptV3_view_counts hp hsz hH
   obtain ⟨as, wA, tA⟩ := acctView hH
   obtain ⟨ks, wK, tK⟩ := akeyView hH
   obtain ⟨bs, wB, tB⟩ := bndView hH
@@ -411,7 +414,7 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨sz, wZ, tZ⟩ := sizeView hH
   obtain ⟨me, mv, wM, tM⟩ := mrkView hH
   exact ⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv, me⟩,
-    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', dS', wZ, wM⟩,
+    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', dS', wZ, wM, cR⟩,
     ⟨tN, tH, tV, tW, tU, tP, tR, tA, tK, tB, tS', tZ, tM⟩⟩
 
 /-- **`LinkV3Stmt ⇒ ExtractV3StmtAt`** (v1's `extract_of_views`): `HoldsP` gives every

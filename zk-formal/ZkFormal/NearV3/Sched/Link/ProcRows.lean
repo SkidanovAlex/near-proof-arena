@@ -18,6 +18,7 @@ Global facts about the process table (from `PLocal`, height `≤ 2^22`):
 namespace ZkFormal.NearV3.Sched.Proc
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table.E
+open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Proc
 
 section
 variable {tr : Trace Fp} {tp : Nat} {pub : List Fp}

@@ -267,7 +267,7 @@ theorem lid_lt (htau : ∀ w, w < tr.height tp → cv tr tp w Proc.act = 1 → c
 
 /-- **The shuffle of round `i`.** -/
 theorem round_shuffle (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
-    (htab : AP.tables[tp]! = Proc.table) (SO : ShufOwn AP tp ts tc tg)
+    (htab : AP.tables[tp]! = Proc.tableB) (SO : ShufOwn AP tp ts tc tg)
     (htau : ∀ w, w < tr.height tp → cv tr tp w Proc.act = 1 → cv tr tp w Proc.tau < 256)
     (hf : f < tr.height tp) (hk : cv tr tp f Proc.kK = 1) (hc : cv tr tp f Proc.kc = 0)
     (I : Proc.Inst tr tp f m) {i : Nat} (hi : i < m) :
@@ -445,7 +445,7 @@ theorem round_shuffle (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
 
 /-- **`hsim`** for the instance: the recorded rounds replay to the spec's state. -/
 theorem proc_sim (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
-    (htab : AP.tables[tp]! = Proc.table) (SO : ShufOwn AP tp ts tc tg)
+    (htab : AP.tables[tp]! = Proc.tableB) (SO : ShufOwn AP tp ts tc tg)
     (htau : ∀ w, w < tr.height tp → cv tr tp w Proc.act = 1 → cv tr tp w Proc.tau < 256)
     (hf : f < tr.height tp) (hk : cv tr tp f Proc.kK = 1) (hc : cv tr tp f Proc.kc = 0)
     (I : Proc.Inst tr tp f m) (n : Nat) (allowed : Array Bool) (reqs : List Req)
