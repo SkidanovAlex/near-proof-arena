@@ -40,3 +40,7 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
   DIGEST(1) sha → node,head,ups,codec,rcpt,srcp,mrk; VSLOT(3) acct→node; KEYNIB(5) rcpt,qv→walk;
   FINAL(6) walk→rcpt,qv; VBYTES(21) codec,acct,akey,qv→val; SIZE(18) node,val,srcp→size;
   S0F(59) ups→codec, SPOST(60)/SPLEN(61) codec→ups.
+* `Assembly/TrieVParent.lean` — **`VPARENT` closed**: `forestNodes_vpar` (the node value windows
+  of the seeded forest are, in DFS order, exactly `seedValuesFrom 0 (forestBytes ts)`'s
+  `(vid, len)`), the metadata passes keep them, `vparentBal_native` (`Link3.VParentBal` of
+  `TrieNative.nodes … q` / `vals`, every `q`), `balancedAt_vparent` (bundle level).
