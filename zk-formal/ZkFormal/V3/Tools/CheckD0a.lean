@@ -13,7 +13,8 @@ def esc (s : String) : String := s.replace "\\" "\\\\" |>.replace "\"" "\\\""
 
 /-- Usage: `nearspec-v3-check-d0a [--bound B] [--words-bound W] [--depth-bound D] CASE_DIR...`
 (defaults `B0`, `W0`, `Dp0`). Each line also reports `unfold` = `unfoldBytes` (A7),
-`chacha_words` = `chachaWords` (A9) and `max_path_depth` = `maxPathDepth` (A10). -/
+`chacha_words` = `chachaWords` (A9), `max_path_depth` = `maxPathDepth` (A10) and
+`unfold_n` = `unfoldBytesN` (A11 compares it with `unfold`). -/
 def parseFlags (B W D : Nat) : List String → Nat × Nat × Nat × List String
   | "--bound" :: b :: rest => parseFlags b.toNat! W D rest
   | "--words-bound" :: b :: rest => parseFlags B b.toNat! D rest
@@ -28,8 +29,9 @@ def main (args : List String) : IO UInt32 := do
     let u := unfoldBytes cb.toList wb.toList
     let k := chachaWords cb.toList wb.toList
     let p := maxPathDepth cb.toList wb.toList
+    let un := unfoldBytesN cb.toList wb.toList
     let (v, reason) := match checkD0a B cb.toList wb.toList W D with
       | .ok () => ("accept", "")
       | .error e => (if e.startsWith "out of domain" then "out_of_domain" else "reject", e)
-    IO.println s!"\{\"case\": \"{esc dir}\", \"verdict\": \"{v}\", \"reason\": \"{esc reason}\", \"unfold\": {u}, \"chacha_words\": {k}, \"max_path_depth\": {p}}"
+    IO.println s!"\{\"case\": \"{esc dir}\", \"verdict\": \"{v}\", \"reason\": \"{esc reason}\", \"unfold\": {u}, \"unfold_n\": {un}, \"chacha_words\": {k}, \"max_path_depth\": {p}}"
   return 0

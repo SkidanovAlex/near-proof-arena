@@ -118,7 +118,7 @@ theorem a10_paths {Dp : Nat} {cb wb : Bytes} {k : WalkD0} {sw : StateWitness}
 theorem relD0a_paths {B : Nat} {cb wb : Bytes} {k : WalkD0} {sw : StateWitness}
     (h : RelD0a B cb wb) (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok sw) :
     ∀ e ∈ usedProofs k sw, e.proof.path.length ≤ Dp0 :=
-  a10_paths hk hw h.2.2.2.2.2.2.2
+  a10_paths hk hw h.2.2.2.2.2.2.2.1
 
 /-- Receipt-side SHA rows at the A1 worst case with depth `Dp0` fit one SHA table. -/
 theorem rcptSha_A10 : rcptShaRows 4481 maxLists Dp0 = 3501199 ∧
