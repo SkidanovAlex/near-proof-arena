@@ -3,6 +3,8 @@ import ZkFormal.NearV3.Render.HonestBalanceSrc
 import ZkFormal.NearV3.Rcpt.SrcpDepth
 import ZkFormal.NearV3.Rcpt.Link.RelSources
 import ZkFormal.NearV3.Assembly.PreparedSources
+import ZkFormal.NearV3.Rcpt.Candidates.PreparedRepeated
+import ZkFormal.NearV3.Rcpt.Candidates.SourceRepetition
 
 /-!
 # The honest `srcpV3` inputs of an accepted witness
@@ -103,5 +105,42 @@ theorem acceptedSrcp_rows {budget : Nat} {cb wb : Bytes} {hint : Hint} {p : Prep
     srcpRows (SrcpGen.blocksOfProofs (acceptedSrcpInputs p w)) ≤ 2 ^ SrcpV3.maxLog :=
   Rcpt.SrcpDepth.proofInputs_rows_A10 _ (by simpa [acceptedSrcpInputs] using hl)
     (acceptedSrcp_depth ha hp hk hw)
+
+/-- **Duplicate occurrences are empty** for the accepted srcp inputs (distinct applied receipt
+ids, `relD0a_repeated_empty`). -/
+theorem acceptedSrcp_duplicate {budget : Nat} {cb wb raw : Bytes} {codes : List Bytes}
+    {w : StateWitness} {hint : Hint} {p : Prep}
+    (h : RelD0a budget cb wb) (hp : prepD0 cb hint = .ok p)
+    (hf : decodeWitnessFile wb = .ok (raw, codes)) (hw : decodeStateWitness raw = .ok w) :
+    ∀ x ∈ acceptedSrcpInputs p w, x.dup = true →
+      (u64 x.entry.proof.toShard ++ encodeReceipts x.entry.receipts).length = 12 := by
+  intro x hx hd
+  simp only [acceptedSrcpInputs, List.mem_map, List.mem_range] at hx
+  obtain ⟨j, hj, rfl⟩ := hx
+  have hrep := sourceDup_repeated p.lists hj hd
+  have he := DedupCompile.relD0a_repeated_empty h hp hf hw hj hrep
+  have he' : (sourceEntry w.entries (p.lists.getD j ⟨[], 0, []⟩)).receipts = [] := he
+  simp only [he']
+  simp [encodeReceipts, concatAll, u64, u32, leN]
+
+/-- **`ProofInputsOk` for the accepted srcp inputs**, given the decoded widths of the prepared
+roots and proof siblings and the RC-preimage length bound (explicit). -/
+theorem acceptedSrcp_ok {budget : Nat} {cb wb raw : Bytes} {codes : List Bytes}
+    {k : WalkD0} {w : StateWitness} {hint : Hint} {p : Prep}
+    (h : RelD0a budget cb wb) (hp : prepD0 cb hint = .ok p) (hk : walkD0 cb = .ok k)
+    (hdw : decodeW wb = .ok w)
+    (hf : decodeWitnessFile wb = .ok (raw, codes)) (hw : decodeStateWitness raw = .ok w)
+    (hne : p.lists ≠ [])
+    (hroot : ∀ x ∈ acceptedSrcpInputs p w, x.root.length = 32)
+    (hsib : ∀ x ∈ acceptedSrcpInputs p w, ∀ s ∈ x.entry.proof.path, s.1.length = 32)
+    (hlen : ∀ x ∈ acceptedSrcpInputs p w,
+      (u64 x.entry.proof.toShard ++ encodeReceipts x.entry.receipts).length < Algebra.P) :
+    SrcpGen.ProofInputsOk (acceptedSrcpInputs p w) := by
+  obtain ⟨-, hl, -⟩ := DedupCompile.relD0a_inputs h hp hf hw
+  refine ⟨?_, hroot, hsib, hlen, acceptedSrcp_duplicate h hp hf hw, acceptedSrcp_rows h hp hk hdw hl⟩
+  intro he
+  have := congrArg List.length he
+  simp [acceptedSrcpInputs] at this
+  exact hne this
 
 end ZkFormal.NearV3.Render
