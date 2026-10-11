@@ -15,7 +15,8 @@
 #    byte-identically), rejects it under every other auxGroup, rejects proof
 #    mutations, and rejects mutated claims (payload byte, count, offset).
 # 3. nearAirV3 per-table honest traces (src/v3): for each table with a Lean
-#    aligned generator (Render/Padded.lean, Render/PaddedTrie.lean), seeded
+#    aligned generator (Render/Padded.lean, Render/PaddedTrie.lean, and the
+#    receipt-side Render/AcctRender.lean + Render/SizeRender.lean), seeded
 #    random honest entries (`npudr v3sample`) are rendered by `npudr v3render`
 #    and `np-lean-render-v3`; the dumps must be byte-identical and the trace
 #    must satisfy every constraint of its nearAirV3 table (`npudr v3check`).
@@ -99,7 +100,7 @@ done
 echo "== nearAirV3 honest per-table traces: Rust (npudr v3render) vs Lean (np-lean-render-v3)"
 lr="$here/.lake/build/bin/np-lean-render-v3"
 rd="$out/render"; mkdir -p "$rd"
-for t in ${RENDER_TABLES:-bnd akey head val uniq walk node}; do
+for t in ${RENDER_TABLES:-bnd akey head val uniq walk node acct size}; do
   for seed in 1 2 3; do
     for n in ${RENDER_SIZES:-0 1 5 37}; do
       f="$rd/$t-$seed-$n"
@@ -135,6 +136,24 @@ if "$npudr" v3check "$out/nearAirV3.json" uniq "$f.json" >"$f.check"; then pass 
 else bad "uniq control fails"; fi
 broken walk "broken edge chain" "es[0]['steps'][1]['e'][0] += 1"
 broken walk "first row not START" "es[1]['steps'][0]['sym'] = 3; es[1]['steps'][0]['e'][2] = 3"
+# `acct` pre amount all-255 makes `dsum` zero so the inverse constraint fails
+broken acct "pre amount is u128::MAX" "es[0]['pre'] = [255]*16 + es[0]['pre'][16:]"
+broken size "x_0 + x_1 over 3,000,000" "es[0]['x0'] = 2000000; es[0]['x1'] = 2000000"
+
+echo "== sizeV3 nonzero public overhead (PH_WOVH): Rust vs Lean, byte-identical"
+# `npudr v3sample size` fixes `ovh = 0` so `v3check` (zero public inputs) passes.
+# Here the public `u32` at `PH_WOVH = 198` is nonzero: the two renderers must
+# still agree on the trace (this is the size differential's `ovh` field).
+for ovh in 1 258 16909060; do
+  for xs in "100 200 300" "1000000 1000000 500000" "2999999 1 0"; do
+    set -- $xs; f="$rd/size-ovh-$ovh-$1-$2-$3"
+    printf '[{"x0":%s,"x1":%s,"x2":%s,"ovh":%s}]\n' "$1" "$2" "$3" "$ovh" > "$f.json"
+    if ! $HEAVY "$lr" size "$f.json" "$f.lean.bin" 2>"$f.err"; then bad "size ovh=$ovh x=$xs: np-lean-render-v3 failed"; cat "$f.err"; continue; fi
+    "$npudr" v3render size "$f.json" "$f.rust.bin" || { bad "size ovh=$ovh x=$xs: npudr v3render failed"; continue; }
+    if cmp -s "$f.lean.bin" "$f.rust.bin"; then pass "size ovh=$ovh x=($xs) trace identical ($(stat -c %s "$f.rust.bin") B)"
+    else bad "size ovh=$ovh x=($xs) trace differs"; fi
+  done
+done
 
 echo "== nearAirV3 honest entries from a real witness (part 2c): np-lean-entries-v3 vs Rust"
 # `np-lean-entries-v3 <case>` runs the proved D0a extraction on a real fixture and

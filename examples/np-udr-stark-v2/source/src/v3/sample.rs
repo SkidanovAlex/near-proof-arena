@@ -257,14 +257,56 @@ pub fn sample_json(table: &str, seed: u64, n: usize) -> Result<String, String> {
         "uniq" => serde_json::to_string(&uniq(r, n)),
         "walk" => serde_json::to_string(&walk(r, n)),
         "node" => serde_json::to_string(&node(r, n)),
+        "acct" => serde_json::to_string(&acct(r, n)),
+        "size" => serde_json::to_string(&size(r, n)),
         t => return Err(format!("unknown table {t}")),
     };
     j.map_err(|e| e.to_string())
 }
 
+/// `n ≥ 1` honest `AcctV` records: `k`, `tlast` canonical fields, 72 raw pre
+/// bytes (< 256) whose amount is not `u128::MAX`, and 16 raw post bytes.  The
+/// per-record `k` is distinct so the ascending-slot side condition of
+/// `AcctV3Wf` holds.
+pub fn acct(r: &mut Rng, n: usize) -> Vec<AcctV> {
+    (0..n.max(1))
+        .map(|s| {
+            let mut pre = r.bytes(72);
+            // AccountV1: not every amount byte is 255
+            pre[r.below(16) as usize] = r.below(255);
+            AcctV {
+                k: s as u64 + 1,
+                tlast: r.fe(),
+                pre,
+                post: r.bytes(16),
+            }
+        })
+        .collect()
+}
+
+/// A `SizeV` plus the public `ovh`, satisfying `SizeOk` (both 24-bit slacks are
+/// non-negative): `x_0 + x_1 ≤ 3,000,000` and `ovh + Σ x ≤ 8,388,608`.  The
+/// sampler fixes `ovh = 0` so the trace also passes `npudr v3check` (which
+/// supplies zero public inputs); a nonzero `ovh` is exercised separately by the
+/// conformance script.
+pub fn size(r: &mut Rng, _n: usize) -> Vec<SizeInput> {
+    let x0 = r.below(1_500_000);
+    let x1 = r.below(3_000_000 - x0);
+    let rem = 8_388_608 - x0 - x1;
+    let x2 = r.below(rem.min(1_000_000) + 1);
+    vec![SizeInput {
+        x0,
+        x1,
+        x2,
+        ovh: 0,
+    }]
+}
+
 // ------------------------------------------------------------------- node
 
+use super::acct::AcctV;
 use super::node::{Kid, NODE_WIDTH, NodeS3, NodeV3, Slot};
+use super::size::SizeInput;
 
 fn slot_ref(r: &mut Rng) -> Slot {
     Slot::Ref {

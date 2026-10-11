@@ -493,8 +493,10 @@ pub const TABLES: &[(&str, usize)] = &[
     ("val", 4),
     ("walk", 5),
     ("uniq", 6),
+    ("acct", 17),
     ("akey", 18),
     ("bnd", 19),
+    ("size", 21),
     ("node", 2),
 ];
 

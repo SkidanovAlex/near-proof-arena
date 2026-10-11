@@ -1,5 +1,8 @@
 import ZkFormal.NearV3.Render.PaddedTrie
+import ZkFormal.NearV3.Rcpt.Render.AcctRender
+import ZkFormal.NearV3.Rcpt.Render.SizeRender
 import ZkFormal.NearV3.Extract.NodeView
+import ZkFormal.Size.PadHeader
 import Lean.Data.Json
 
 /-!
@@ -17,7 +20,7 @@ are the Lean field names (`BndE`, `AkeyE`, `HeadE`, `ValE`, `UEnt`, `WalkR` with
 `WStep3` steps).  Compared byte for byte with `npudr v3render` (../source).
 -/
 
-open Lean ZkFormal.Air ZkFormal.Algebra ZkFormal.NearV3 ZkFormal.NearV3.Render
+open Lean ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.NearV3 ZkFormal.NearV3.Render
 
 deriving instance FromJson for BndE
 deriving instance FromJson for AkeyE
@@ -30,6 +33,17 @@ deriving instance FromJson for ZkFormal.Near.NKid
 deriving instance FromJson for ZkFormal.NearV3.NSlot3
 deriving instance FromJson for ZkFormal.NearV3.NodeV3
 deriving instance FromJson for ZkFormal.NearV3.NodeS3
+deriving instance FromJson for ZkFormal.Near.AcctV
+deriving instance FromJson for ZkFormal.NearV3.SizeV
+
+/-- A `SizeV` entry plus the public witness overhead `ovh = ovhNat pub` (taken as
+a JSON field for the differential). -/
+structure SizeIn where
+  x0 : Nat
+  x1 : Nat
+  x2 : Nat
+  ovh : Nat
+  deriving FromJson
 
 def u32 (b : ByteArray) (x : Nat) : ByteArray :=
   b.push (x % 256).toUInt8 |>.push (x / 256 % 256).toUInt8
@@ -56,6 +70,22 @@ def render (table s : String) : Except String ByteArray :=
   | "uniq" => return dump (uniqTraceAligned (← parse UEnt s)) Uniq.width
   | "walk" => return dump (walkTraceAligned (← parse WalkR s)) WalkV3.width
   | "node" => return dump (nodeTraceAligned (← parse NodeS3 s)) NodeV3.width
+  | "acct" => do
+    let as ← parse ZkFormal.Near.AcctV s
+    let log := ZkFormal.Size.padLog22 (ZkFormal.Near.Render.logOf (16 * as.length))
+    return dump (rowsTrace log (acctV3Rows as)) ZkFormal.NearV3.AcctV3.width
+  | "size" => do
+    let Is ← parse SizeIn s
+    let I ← match Is with
+      | [i] => pure i
+      | _ => throw "size: expected exactly one entry"
+    let v : ZkFormal.NearV3.SizeV := ⟨I.x0, I.x1, I.x2⟩
+    let pub := List.replicate ZkFormal.NearV3.SizeV3.PH_WOVH (0 : ZkFormal.Algebra.Fp) ++
+      [ZkFormal.Algebra.Fp.ofNat (I.ovh % 256),
+       ZkFormal.Algebra.Fp.ofNat (I.ovh / 256 % 256),
+       ZkFormal.Algebra.Fp.ofNat (I.ovh / 65536 % 256),
+       ZkFormal.Algebra.Fp.ofNat (I.ovh / 16777216 % 256)]
+    return dump (rowsTrace 2 (sizeRows pub v)) ZkFormal.NearV3.SizeV3.width
   | t => throw s!"unknown table {t}"
 
 def main (args : List String) : IO UInt32 := do
