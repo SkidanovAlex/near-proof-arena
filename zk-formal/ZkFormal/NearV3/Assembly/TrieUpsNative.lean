@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Assembly.TrieUps
 import ZkFormal.NearV3.Assembly.TrieUpsOrigin
+import ZkFormal.NearV3.Assembly.TrieUpsKeys
 import ZkFormal.NearV3.Rcpt.Candidates.AcceptedReplaySharedBalance
 import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootRanks
 import ZkFormal.NearV3.Rcpt.Candidates.NativeMidrootRecords
@@ -55,7 +56,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     (hv : ImplicitTraceValid k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) steps last)
     (resolve : Resolve) (pub : List Fp) :
     ∃ (writes : List (List Nat × Bytes)) (oldPost : PTrie) (insts : List UpsInst) (v : MainValues) (ws : List WalkR),
-      SizedAccountRun m.pre writes oldPost ∧
+      SizedAccountRun m.pre writes oldPost ∧ KeysFinal k w m writes oldPost ∧
       nativeQueryWalks ((m.pre, m.result.trie) :: steps.map (fun s => (s.pre, s.post)))
         (allLookupQueries (appliedReceipts k w) m.pre v (steps.map ImplicitStepV3.pre) resolve) = some ws ∧
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
@@ -82,8 +83,8 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         headRecvs hs B_ROOT = Rcpt.Candidates.NodePostUpdate.nativeInputRoots 0 (m.pre :: steps.map ImplicitStepV3.pre) ∧
         Js.map (fun I => [I.tau + 1] ++ I.post) =
           nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) := by
-  obtain ⟨writes, oldPost, us, insts, hr, hpairs, hpos, hlen, hgood, hpre, hout, hval, hcount, hinst, hforest,
-    hbytes, -⟩ := accepted_window_coverage hk hw h hm hv (fun _ => default) (fun _ _ => default)
+  obtain ⟨writes, oldPost, us, insts, hkf, hr, hpairs, hpos, hlen, hgood, hpre, hout, hval, hcount, hinst, hforest,
+    hbytes, -⟩ := coverage_kf hk hw h hm hv (fun _ => default) (fun _ _ => default)
   obtain ⟨v, ws, -, -, hws, hwlocal, hwtraffic, hranges⟩ :=
     accepted_same_lookup_physical hk hw h hm hv resolve T_WALK pub
   have hinstl : ∀ I ∈ insts, ∃ i, ∃ hi : i < us.length, us[i]? = some us[i] ∧ insts[i]? = some I := by
@@ -111,7 +112,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     (fun u hu => (hgood u hu).1) hcount (fun tau u I hu hI => by
       obtain ⟨a, -, ex, ci, -, root, hroot, horig⟩ := hinst tau u I hu hI
       exact ⟨a, ex, ci, root, hroot, horig⟩) hforest
-  refine ⟨writes, oldPost, insts, v, ws, hr, hws,
+  refine ⟨writes, oldPost, insts, v, ws, hr, hkf, hws,
     ⟨⟨nativeWalkTrace (rankWalks [] ws), walkTraffic3 (rankWalks [] ws), hwlocal, hwtraffic,
       by change 22 % 3 = 1; decide⟩, rfl⟩,
     by omega, ho, hfam, horigin, hedges, hbmaps, ?_⟩

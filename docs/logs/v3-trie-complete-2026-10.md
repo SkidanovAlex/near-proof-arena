@@ -383,3 +383,19 @@ identity on NATIVE posts, per transition `τ` with scheduler run `u_τ`:
   receivers the digests).  Not started.
 * Verification: Integration 4149 jobs (after merging nothing new; the job count rose with the new
   imports); audits `AuditTrieShaTwo` (3), `AuditTrieA7SizeBal`, `AuditTrieA7Perm` pass.
+
+## Task 5: VSLOT native fact DONE
+
+* `Assembly/TrieUpsKeys.lean` (namespace `…Rcpt.Candidates.NodePostUpdate`): `KeysFinal k w m writes
+  oldPost` (write keys = applied receipts' account keys ∧ `∃ state, oldPost.upsert keyBwState
+  state = some m.result.trie`); copies `upserts_kf`, `physical_kf`, **`coverage_kf`** of the chain
+  `native_rebased_upserts_keys` → `native_rebased_physical_bounds` → origin instances →
+  `accepted_window_coverage`, carrying `KeysFinal` for the same `writes`/`oldPost` (originals untouched).
+* `accepted_ups_walks` now uses `coverage_kf`; it and `trie_all_accepted` export
+  `KeysFinal k w m writes oldPost` (outer conjunct right after `SizedAccountRun`).
+* `Assembly/TrieVslotNative.lean`: **`TrieShared.vslot_native`** — given `KeysFinal` and the receipt
+  side's `nativeAccountViews m.pre oldPost (appliedReceipts k w) = some as` (for that `oldPost`), the
+  `hbal` premise of `balancedAt_vslot` for `TrieNative.nodes`.  Remaining for VSLOT: the receipt
+  lane's acct component must be `acctV3Traffic as` for those native views.
+* Verification: Integration 4153 jobs; audits `AuditTrieVslotNative`, `AuditTrieAll`, `AuditTrieUps`,
+  `AuditTrieA7Perm` pass.

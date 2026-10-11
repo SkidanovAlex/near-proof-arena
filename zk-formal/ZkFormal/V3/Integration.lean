@@ -34,6 +34,8 @@ import ZkFormal.NearV3.Assembly.TrieUpsOrigin
 import ZkFormal.NearV3.Assembly.TrieA7Perm
 import ZkFormal.NearV3.Assembly.TrieA7SizeBal
 import ZkFormal.NearV3.Assembly.TrieShaTwo
+import ZkFormal.NearV3.Assembly.TrieUpsKeys
+import ZkFormal.NearV3.Assembly.TrieVslotNative
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec
