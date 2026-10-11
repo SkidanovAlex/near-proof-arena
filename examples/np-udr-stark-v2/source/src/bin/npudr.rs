@@ -39,6 +39,7 @@ use npudr::air::Air;
 use npudr::prover::{ProveOptions, prove_bytes};
 use npudr::verifier::verify;
 use npudr::{check, near, sha, toy};
+use p3_field::PrimeCharacteristicRing;
 use p3_matrix::Matrix;
 
 fn die(m: &str) -> ! {
@@ -150,6 +151,73 @@ fn main() {
                     lay.recv_groups,
                     tab.max_log
                 );
+            }
+        }
+        Some("v3sample") => {
+            // seeded random honest entries of one nearAirV3 table (JSON on stdout)
+            let usage = "usage: npudr v3sample <table> <seed> <n>";
+            let seed: u64 = a
+                .get(3)
+                .and_then(|x| x.parse().ok())
+                .unwrap_or_else(|| die(usage));
+            let n: usize = a
+                .get(4)
+                .and_then(|x| x.parse().ok())
+                .unwrap_or_else(|| die(usage));
+            let j = npudr::v3::sample::sample_json(&a[2], seed, n).unwrap_or_else(|e| die(&e));
+            println!("{j}");
+        }
+        Some("v3render") => {
+            // aligned trace of one table (`np-lean-render-v3` format)
+            if a.len() != 5 {
+                die("usage: npudr v3render <table> <entries.json> <out.bin>");
+            }
+            let j =
+                std::fs::read_to_string(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+            let tab = npudr::v3::render(&a[2], &j).unwrap_or_else(|e| die(&e));
+            std::fs::write(&a[4], tab.dump()).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
+        }
+        Some("v3check") => {
+            // local constraints of the rendered table against its nearAirV3 table
+            if a.len() != 5 {
+                die("usage: npudr v3check <air.json> <table> <entries.json>");
+            }
+            let txt =
+                std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let air = Air::from_json(&txt).unwrap_or_else(|e| die(&e));
+            let idx = npudr::v3::TABLES
+                .iter()
+                .find(|(n, _)| *n == a[3])
+                .map(|p| p.1)
+                .unwrap_or_else(|| die("unknown table"));
+            let j =
+                std::fs::read_to_string(&a[4]).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
+            let tab = npudr::v3::render(&a[3], &j).unwrap_or_else(|e| die(&e));
+            let t = &air.tables[idx];
+            if t.width != tab.width {
+                die(&format!(
+                    "width {} != nearAirV3 table {idx} width {}",
+                    tab.width, t.width
+                ));
+            }
+            if tab.log < 1 || tab.log > t.max_log {
+                die(&format!(
+                    "log {} outside 1..={} (table {idx})",
+                    tab.log, t.max_log
+                ));
+            }
+            let pubs = vec![npudr::field::F::ZERO; air.num_pub];
+            let bad = npudr::check::failing_constraints(t, &tab.to_matrix(), &pubs, 20);
+            if bad.is_empty() {
+                println!(
+                    "ok  {} (table {idx}): log {} width {}, all constraints hold",
+                    a[3], tab.log, tab.width
+                );
+            } else {
+                for (c, r) in &bad {
+                    println!("FAIL constraint {c} row {r}");
+                }
+                std::process::exit(1);
             }
         }
         Some("verify") => {

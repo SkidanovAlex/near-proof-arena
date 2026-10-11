@@ -14,6 +14,12 @@
 #    verifier accepts the honest Rust proof (and its AIR re-exports
 #    byte-identically), rejects it under every other auxGroup, rejects proof
 #    mutations, and rejects mutated claims (payload byte, count, offset).
+# 3. nearAirV3 per-table honest traces (src/v3): for each table with a Lean
+#    aligned generator (Render/Padded.lean, Render/PaddedTrie.lean), seeded
+#    random honest entries (`npudr v3sample`) are rendered by `npudr v3render`
+#    and `np-lean-render-v3`; the dumps must be byte-identical and the trace
+#    must satisfy every constraint of its nearAirV3 table (`npudr v3check`).
+#    Entries that break the honest-input predicate must fail the check.
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 src="$here/../source"
@@ -30,7 +36,7 @@ bad()  { echo "FAIL  $*"; fail=1; }
 
 echo "== build"
 (cd "$src" && $HEAVY cargo build --release -q) || { echo "cargo build failed"; exit 2; }
-(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3) || { echo "lake build failed"; exit 2; }
+(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3) || { echo "lake build failed"; exit 2; }
 npudr="$src/target/release/npudr"
 lv="$here/.lake/build/bin/np-lean-verify-v2"
 le="$here/.lake/build/bin/np-lean-export-v3"
@@ -89,6 +95,43 @@ for g in 1 2 3; do
     mutate "$d/claim.bin" "$d/claim.mut" u32 4 $c;         expect reject "$x seg1 offset past claim" $g "$d" "$d/proof.bin" "$d/claim.mut"
   done
 done
+
+echo "== nearAirV3 honest per-table traces: Rust (npudr v3render) vs Lean (np-lean-render-v3)"
+lr="$here/.lake/build/bin/np-lean-render-v3"
+rd="$out/render"; mkdir -p "$rd"
+for t in ${RENDER_TABLES:-bnd akey head val uniq walk}; do
+  for seed in 1 2 3; do
+    for n in ${RENDER_SIZES:-0 1 5 37}; do
+      f="$rd/$t-$seed-$n"
+      "$npudr" v3sample $t $seed $n > "$f.json"
+      $HEAVY "$lr" $t "$f.json" "$f.lean.bin" 2>"$f.err" || { bad "$t seed=$seed n=$n: np-lean-render-v3 failed"; continue; }
+      "$npudr" v3render $t "$f.json" "$f.rust.bin" || { bad "$t seed=$seed n=$n: npudr v3render failed"; continue; }
+      if cmp -s "$f.lean.bin" "$f.rust.bin"; then pass "$t seed=$seed n=$n trace identical ($(stat -c %s "$f.rust.bin") B)"
+      else bad "$t seed=$seed n=$n trace differs"; fi
+      if "$npudr" v3check "$out/nearAirV3.json" $t "$f.json" >"$f.check"; then pass "$t seed=$seed n=$n $(cut -c5- "$f.check")"
+      else bad "$t seed=$seed n=$n constraints fail"; head -3 "$f.check"; fi
+    done
+  done
+done
+# entries outside the honest-input predicate: the rendered trace must violate a constraint
+broken() { # broken <table> <label> <python edit of list `es`>
+  local t=$1 x=$2 f="$rd/broken-$1"
+  "$npudr" v3sample $t 7 5 | python3 -c "import json,sys; es=json.load(sys.stdin); $3; print(json.dumps(es))" > "$f.json"
+  if "$npudr" v3check "$out/nearAirV3.json" $t "$f.json" >"$f.check"; then bad "$t $x: constraints still hold"
+  else pass "$t $x: constraint violated"; fi
+}
+broken val "non-consecutive ids" "es[2]['vid'] += 1"
+broken akey "permission byte != 1" "es[1]['bytes'][8] = 0"
+broken uniq "instance step of 2" "[e.__setitem__('tau', e['tau'] + 2) for e in es[3:]]"
+# control: one instance, keys 0 < 1 < … (honest); then the same with two keys swapped
+U1="T = es[0]['tau']; [e.update(tau=T, bytes=[i] + [0]*31) for i, e in enumerate(es)]"
+broken uniq "keys not sorted" "$U1; es[2]['bytes'], es[3]['bytes'] = es[3]['bytes'], es[2]['bytes']"
+f="$rd/control-uniq"
+"$npudr" v3sample uniq 7 5 | python3 -c "import json,sys; es=json.load(sys.stdin); $U1; print(json.dumps(es))" > "$f.json"
+if "$npudr" v3check "$out/nearAirV3.json" uniq "$f.json" >"$f.check"; then pass "uniq control (sorted single instance) holds"
+else bad "uniq control fails"; fi
+broken walk "broken edge chain" "es[0]['steps'][1]['e'][0] += 1"
+broken walk "first row not START" "es[1]['steps'][0]['sym'] = 3; es[1]['steps'][0]['e'][2] = 3"
 
 echo
 if [ $fail -eq 0 ]; then echo "ALL PASS"; else echo "SOME FAILED"; fi
