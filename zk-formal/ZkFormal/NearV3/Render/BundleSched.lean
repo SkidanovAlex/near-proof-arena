@@ -3,6 +3,7 @@ import ZkFormal.NearV3.Render.PaddedSha
 import ZkFormal.NearV3.Render.PaddedChacha
 import ZkFormal.NearV3.Render.PaddedSched
 import ZkFormal.NearV3.Render.PaddedProc
+import ZkFormal.NearV3.Render.PaddedSsd
 import ZkFormal.NearV3.Render.PaddedMrk
 import ZkFormal.NearV3.Render.PaddedSort
 import ZkFormal.NearV3.Render.PaddedUpsNative
@@ -169,5 +170,24 @@ theorem procRender_accepted {cb wb : Bytes} {hint : Hint} {p : Prep} (hp : prepD
       rw [he, List.getElem?_append_right (by omega)]
       simp)
     omega
+
+/-- Table 12: the scan/distribute table over all runs (native blocks of `PriorCore`). -/
+def ssdRenderV3 (pub : List Fp) {cb : Bytes} {hint : Hint} {p : Prep} (hp : prepD0 cb hint = .ok p)
+    {B : Nat} (bs : List NativeBlock) (hc : PriorCore p B bs) : TableRenderV3 pub 12 (by decide) where
+  tr := ZkFormal.NearV3.Candidates.ProcScanDistPhases.trace bs
+  tf := rowsTraffic ScanDist.table.interactions (Ssd.ssdCell bs) 22 12 pub
+  loc := (Ssd.ssd_v3_aligned_complete hp bs hc 12 pub).1
+  traffic := (Ssd.ssd_v3_aligned_complete hp bs hc 12 pub).2.1
+  aligned := (Ssd.ssd_v3_aligned_complete hp bs hc 12 pub).2.2
+
+/-- **Table 12 from acceptance.** -/
+theorem ssdRender_accepted {cb wb : Bytes} {hint : Hint} {p : Prep} (hp : prepD0 cb hint = .ok p)
+    {k : WalkD0} {w : StateWitness} (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w)
+    (h : checkD0a B0 cb wb = .ok ()) (pub : List Fp) :
+    ∃ bs : List NativeBlock, PriorCore p B0 bs ∧ ∃ R : TableRenderV3 pub 12 (by decide),
+      R.tr = ZkFormal.NearV3.Candidates.ProcScanDistPhases.trace bs ∧
+      R.tf = rowsTraffic ScanDist.table.interactions (Ssd.ssdCell bs) 22 12 pub := by
+  obtain ⟨bs, hc⟩ := accepted_prior_core hp hk hw h (by decide)
+  exact ⟨bs, hc, ssdRenderV3 pub hp bs hc, rfl, rfl⟩
 
 end ZkFormal.NearV3.Render
