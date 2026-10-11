@@ -70,3 +70,11 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
   `Stored` in its witness store (`built_spec`, `normalStore_hashFunctional`);
   **`dupBal_accepted`**, **`digsBal_accepted`** (DIGS for the class-ordered list, via
   `rawEnts_perm_occ` + `uniqBlocks_perm`).
+* `Assembly/TrieUniqOk.lean` — **`UOk (uniqNative m steps)` from acceptance**
+  (`uniqNative_ok`): `occ_count`/`kids_count` (every non-root occurrence costs a 32-byte hash in
+  its parent, every value a 36-byte reference: `32·(#occ + #vals) ≤ Σ|nodeEnc| + 32` per tree),
+  so with `preBytes ≤ B0` and `≤ 32` trees there are `≤ 62,532` store entries `≤ 2^17`;
+  adjacency (`Adj`, `adj_flatMap`) of the class blocks; instance coverage from the revealed
+  roots (`forestNodes_cover`).  The uniq table is now fully native: `uniqRenderTrie pub
+  (uniqNative m steps) (uniqNative_ok …)` with `DIGS` (`digsBal_accepted`) and `DUP`
+  (`dupBal_accepted`).
