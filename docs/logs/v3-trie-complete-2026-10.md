@@ -670,3 +670,29 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
   **Open (native):** `MemdLink I := ∀ k < nQ I, RecvK I (part I k) → ((part I k).mB : ℤ) =
   RV I (child I (part I k))` for the accepted instances (and threading it, with `8 ≤ |pb|` from
   `NativeReaderOrigin.room`, into `accepted_ups_walks`).
+* **`MemdLink` — native analysis (not started as code; exact plan for the successor).** For
+  `I = nativeInstance recordId baseI root run v Qs` (`Render/Ups/NativeEncodingFacts.lean`):
+  - receivers `k+1` of kinds RDB/RDE/PT: `nativeInstance_newChildMemory` gives
+    `mB_{k+1} = nextChild.memD` with `outputPathChild run.parts[k+1] = some nextChild`; needed:
+    `nextChild = run.parts[k].output` (tree-run chaining) and `RV I (part I k) = run.parts[k].output.memD`
+    (upper parts: `nativeInstance_upperRV`; terminal parts: only inside `traceUpsert_terminalMemOk`
+    / `Tree*Memory*` proofs, not exported);
+  - WEX receiver: `mB = splitChildMemory matched p = (ext child).memD` (`TreeSplitMemoryLink`), the
+    SPB part's output; SPB receivers (`ci ∈ {5,6,7,9}`): `mB = leafMem …`/`extOwnMem …`, the moved
+    node's (part 0, MVL/MVE) output memory;
+  - threading: the accepted instances are only known as `AllocatedNativeInstance` (no
+    `nativeInstance` form), so `MemdLink` must be added where the list is built
+    (`Render/Ups/AcceptedInstanceList.checkD0a_nativeInstanceList` → `accepted_rebased_origin_instances`
+    → `accepted_window_coverage` → `TrieUpsKeys.coverage_kf` → `accepted_ups_walks`), e.g. as a new
+    conjunct of `AllocatedNativeInstance`; `upsRanked` keeps parts (`physicalPrefixUps` only
+    re-ranks walk counters), and `8 ≤ |pb|` comes from `NativeReaderOrigin.room` (`phk + 9 ≤ |pb|`).
+* Verification (end of session 5): Integration 4186 jobs; audits pass; pin-check OK.
+
+### Open after session 5 (final; successor starts here)
+
+1. `MemdLink` for the accepted instances (plan above) ⇒ `memdPair_of` ⇒ `balancedAt_memd`.
+2. DIGEST trie-side identity `htrie` of `balancedAt_digest` (node 2 + head 3 + ups 7 receive
+   `expectedDigests (schedulerShaJobs 0 us ++ jobsToSha (nativeShaJobs ns es))`) — unverified target.
+3. Cross-lane hypotheses (assigned by the lead to rcpt/sched lanes): `RcptKeys`, `RcptFinal`,
+   BYTES `hcodec`/`hrest`, DIGEST `hcodec`/`hrest`, VBYTES partition.
+4. A7 (b) after the lead's signal.
