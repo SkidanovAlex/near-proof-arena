@@ -161,3 +161,14 @@ BYTES/DIGEST parked; A7 after the link merge.
   `accepted_ups_walks` now also gives the head MIDROOT sends `= Js.map ([τ,rid]++mid)`, the
   head ROOT receives `= nativeInputRoots`, the ups ROOT records `= nativeRootRecords`, and the
   32-byte mid/post digests.  ⇒ MIDROOT and ROOT closed from acceptance up to the ups row cap.
+* `Assembly/TrieShared.lean` — shared buses, trie side.  **VSLOT**: `vslot_records`
+  (acct `[a.k]` sends ~ node written-value receives, from the account-digest permutation),
+  `vslot_accepted` (the permutation for `TrieNative.nodes` and `nativeAccountViews m.pre oldPost
+  (appliedReceipts k w) = some as`, given the replay's write keys and final upsert),
+  `balancedAt_vslot` (node 2 / acct 17 with `acctV3Traffic as`, main's acct render).  Trie
+  contributions stated exactly: `vals_vbytes` (VBYTES receives = every pre-forest value's bytes at
+  its id), `nodes_size`/`vals_size` (SIZE tags 0/1 totals); KEYNIB/FINAL = `walkTraffic3 (rankWalks
+  [] ws)`.  Open for VSLOT: one native choice giving `SizedAccountRun` **and** the write keys and
+  the final upsert of the same replay (the candidate chain `native_rebased_origin_instances` drops
+  `hkeys`/`hup`; `native_execution_rebased_payloads_keys` has them without the ups instances), and
+  the receipt lane's acct entries must be `nativeAccountViews m.pre oldPost …` for that `oldPost`.
