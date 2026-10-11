@@ -41,3 +41,11 @@ import ZkFormal.NearV3.Render.AcceptedSrcp
 /-- info: 'ZkFormal.NearV3.Render.accepted_src_balance' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.accepted_src_balance
+
+/-- info: 'ZkFormal.NearV3.Render.acceptedSrcp_depth' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.acceptedSrcp_depth
+
+/-- info: 'ZkFormal.NearV3.Render.acceptedSrcp_rows' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.acceptedSrcp_rows
