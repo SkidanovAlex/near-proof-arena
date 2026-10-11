@@ -24,6 +24,8 @@ structure ClaimFieldsV3 (k : WalkD0) : Prop where
   gasLimit : k.slotB2.gasLimit ≤ maxGasLimitD0
   distinctRequests : ∀ b ∈ k.blks, ∀ s ci, (s, ci) ∈ b.slots →
     (ci.bwRequests.map (·.toShard)).Nodup
+  /-- A12 (`c.layout_wf`), checked by `prepClaim`. -/
+  layoutWf : k.L.boundaries.length + 1 = k.L.shardIds.length
 
 set_option maxHeartbeats 4000000 in
 /-- **The walk and the claim-level fields** whenever `prepClaim` succeeds. -/
@@ -44,6 +46,7 @@ theorem walkD0_of_prepClaim {cb : Bytes} {pc : PrepC} (hp : prepClaim cb = .ok p
     have h32 := check_ok hs_32
     have h34 := check_ok hs_34
     have h35 := check_ok hs_35
+    have h37 := check_ok hs
     unfold walkD0
     simp only [hs_1, hs_2, hs_6, hs_14, heq, bind, Except.bind, pure, Except.pure]
     split
@@ -53,13 +56,16 @@ theorem walkD0_of_prepClaim {cb : Bytes} {pc : PrepC} (hp : prepClaim cb = .ok p
       · rename_i j' hj'
         obtain rfl : j' = i_2 := Option.some.inj (hj'.symm.trans heq_3)
         simp only [heq_2, Option.bind_some, heq_5]
-        refine ⟨_, rfl, ?_, ?_, ?_, ?_⟩
+        refine ⟨_, rfl, ?_, ?_, ?_, ?_, ?_⟩
         · simpa only [beq_iff_eq] using h34
         · simpa only [Bool.and_eq_true, beq_iff_eq, and_assoc] using h35
         · simpa only [decide_eq_true_eq] using h32
         · intro b hb s ci hs
           have := List.all_eq_true.mp (List.all_eq_true.mp h20 b hb) (s, ci) hs
           simpa only [decide_eq_true_eq] using this
+        · have h := h37
+          simp only [beq_iff_eq, Layout.numShards] at h
+          exact h.symm
       · rename_i hj'
         exact absurd (hj'.symm.trans heq_3) (by simp)
     · rename_i hi'
@@ -113,6 +119,7 @@ theorem goodV3_of_parts {B : Nat} {cb : Bytes} {k : WalkD0} {h : Hint} {p : Prep
   chachaWords := E.chachaWords
   pathDepth := E.pathDepth
   postRebuild := E.postRebuild
+  layoutWf := C.layoutWf
 
 /-- `GoodV3` reduces to its view-level fields: `prepD0` supplies the walk and the
 claim-level fields. -/

@@ -370,3 +370,51 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   active routing rows with `routeKey bounds (nativeRoutingIndex k rp) pos` (`pos ≤ |receiver|`),
   then `native_routing_selected`.
 * SIZE: trie lane.
+
+## 2026-10-12 (round 8: A12 `c.layout_wf`, lead request after the user decision)
+
+* Merged `origin/integration/v3-20261012` (bbba829c).
+* **Spec (unsigned draft).** `NearSpecV3.ChunkValidationV0a`: `a12 cb := walkD0 cb = ok k →
+  |k.L.boundaries| + 1 == |k.L.shardIds|` (claim-only), last conjunct of `RelD0a`, `checkD0a`
+  (reason `out of domain (c.layout_wf): …`), `inD0a`/`InD0a`; `relD0a_iff`, `relD0a_mono_all`
+  re-proved.  **`prepClaim` checks it natively too** (like A8; last check before `pure`, written
+  `L.numShards == L.boundaries.length + 1` so the existing `check (_ + 1 == _)` pattern matches in
+  prepClaim proofs stay unambiguous); `V3/Fast/Prep.lean` mirror (`prepClaim_csimp` is `rfl`).
+  Needed for soundness: the verifier's `prepD0` is the only place a claim-only condition can be
+  enforced (the AIR never sees the layout).  `spec/near-chunk-validation-v0a.md` §1, table, §2.9
+  (nearcore source check: `ShardLayoutV2::new` v2.rs:207, `ShardLayoutV3::new` v3.rs:211
+  `assert_eq!(boundary_accounts.len() + 1, shard_ids.len())`); Python
+  `oracle/tools/spec_check_v3_d0a.py` (`a12_ok`, reported after A11), difftest `AMENDMENTS`,
+  challenge-draft builder notes.  The Lean tool (`nearspec-v3-check-d0a`) changes only through
+  `checkD0a`.
+* **Measured** (`oracle/tools/a12_measure_v3_d0a.py`, every decodable claim incl. mutants;
+  `docs/e2e-results/v3-a12/measure.json`): **0 violations** — public-d0a 421 claims (123 honest),
+  d1run 53,048 (7,039 honest), d2corpus.v2 67,384 (10,927 honest); layouts 3/4, 4/5, 5/6.
+  **Difftest public-d0a** (Lean exe rebuilt, Python): 421 cases, **0 disagreements**;
+  `c.layout_wf` on 290 honest witnesses: 0 (`docs/e2e-results/v3-a12/difftest-public-d0a.json`).
+* **Lean.** `GoodV3.layoutWf` (and `GoodV3.amendments` gains `a12`); `ClaimFieldsV3.layoutWf`
+  from `prepClaim` (`walkD0_of_prepClaim`); `factorSound` adapted; `good_of_native` (hence
+  `factorComplete`) from `RelD0a`'s last conjunct; `prepClaim_exists` takes the A12 premise,
+  `checkD0a_prepClaim_exists` supplies it; positional fix `FactorComplete` (A11 is now
+  `.2.2.2.2.2.2.2.2.1`); `LinkShaKinds.lean:184` one-line fix for `V3RecordsWf.accts : AcctV3WfE`
+  (round 7) — lane v3-link has its own fix (`rcases W.accts`); take theirs at merge.
+* **Dependents.** Reverse import closure of `NearSpecV3.PrepD0`, `NearSpecV3.ChunkValidationV0a`,
+  `ZkFormal.V3.Fast.Prep`: 3,397 zk-formal modules, 178 top-level; `lake build` of all of them +
+  `nearspec-v3-check-d0a` (5,214 jobs): the only errors are the integration branch's known
+  trie-lane failures (`Assembly/RenderV3Trie.lean`, `Render/BundleSched.lean` table 7 ups), which
+  also block `ZkFormal.V3.Integration`.  Audits `AuditA12LayoutWf` (new), `AuditFactorComplete`,
+  `AuditAssemblyFactor`, `AuditNativeGoodGap`, `AuditV3DomainBounds`,
+  `AuditRenderV3RcptAccepted`, `AuditAccountEmptyCap`, `AuditAcceptedSrcpOk` pass; pin-check OK.
+* **Uses of A12** (`Assembly/RenderV3RcptLayout.lean`): `layoutWf_of_rel`, `boundedLayout_wf`;
+  `AcceptedV3.bounds_eq : A.bounds = A.p.bnds`, `boundedPrep_eq`; **`prepared_le`
+  (`|preparedBytes A.p 0| ≤ 2^26`), `prepared_lt_P`, `pubFit`** (the size/fit conjuncts of
+  `RenderWitnessV3`); **`bndp_balanced_accepted`** and `src_balanced_accepted` (no premises).
+* **Still open: BND coverage** (`bnd_balanced`'s `hc`).  A12 does not touch it (both sides use
+  the bounded intervals, which A12 makes the published ones).  Missing: a whole-trace lemma —
+  every row `r` of `rcptTraceNative A.pub A.rcptInput` with `gBd = 1` is a routing-active
+  coordinate (`routingActive`: `sV` rows and the `sRID` index-0 row) of some planned receipt `rp`
+  of `A.lists`, and its key is `routeKey A.bounds (nativeRoutingIndex k rp.input.receipt)
+  (routingPosition rp row)` (cells from `routingAux (nativeRoutingInterval k)` through the outer
+  aux layers' commute lemmas and `nativeRoutingConstants` for `q`); then
+  `native_routing_selected` closes it.  Only per-receipt slices exist today
+  (`applied_receipt_route_slice`, `routeColumns_key`).
