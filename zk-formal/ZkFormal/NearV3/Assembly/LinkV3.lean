@@ -138,10 +138,10 @@ def recCount (pub : List Fp) (r : V3Records) (b : Nat) (s : Bool) (m : List Fp) 
 
 /-- The tables of `nearAirV3` without a trace-free view (index, table). -/
 def rawTables : List (Nat × ZkFormal.Air.Table) :=
-  [(T_CHACHA, ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA),
-   (T_RNG, ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA
+  [(T_CHACHA, ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA),
+   (T_RNG, ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA
       ZkFormal.NearV3.Sched.B_SGEN),
-   (T_SHUF, ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN
+   (T_SHUF, ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN
       ZkFormal.NearV3.Sched.B_SSOUT ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN
       ZkFormal.NearV3.Sched.B_SSHUF),
    (T_CODEC, ZkFormal.NearV3.Sched.Codec.table),
@@ -229,11 +229,11 @@ theorem busCount_nearAirV3_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s
       (tableBusCount ZkFormal.NearV3.WalkV3.interactions tr T_WALK pub b s m +
       (tableBusCount ZkFormal.NearV3.Uniq.interactions tr T_UNIQ pub b s m +
       (tableBusCount ZkFormal.NearV3.UpsV3.interactions tr T_UPS pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA).interactions
+      (tableBusCount (ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA).interactions
         tr T_CHACHA pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA
+      (tableBusCount (ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA
         ZkFormal.NearV3.Sched.B_SGEN).interactions tr T_RNG pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN
+      (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN
         ZkFormal.NearV3.Sched.B_SSOUT ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN
         ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b s m +
@@ -257,11 +257,11 @@ theorem busCount_nearAirV3_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s
 /-- `rawCount` as an explicit sum. -/
 theorem rawCount_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s : Bool) (m : List Fp) :
     rawCount tr pub b s m =
-      tableBusCount (ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA).interactions
+      tableBusCount (ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA).interactions
         tr T_CHACHA pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA
+      (tableBusCount (ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA
         ZkFormal.NearV3.Sched.B_SGEN).interactions tr T_RNG pub b s m +
-      (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN
+      (tableBusCount (ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN
         ZkFormal.NearV3.Sched.B_SSOUT ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN
         ZkFormal.NearV3.Sched.B_SSHUF).interactions tr T_SHUF pub b s m +
       (tableBusCount ZkFormal.NearV3.Sched.Codec.table.interactions tr T_CODEC pub b s m +

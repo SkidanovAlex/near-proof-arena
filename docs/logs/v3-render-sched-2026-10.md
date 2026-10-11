@@ -89,3 +89,19 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
     1,295,017 B hint: 762,646 B. `v3MaxInner` updated (4 + 2,000,000 + 6,330,945 ≤ 8 MiB holds).
   * `fpBoundP nearAirV3` = 29,781,666,075 ≤ 2^36 = 68,719,476,736.
   * `lake build ZkFormal.V3.Integration` passes (2198 jobs).
+* **Task 3 — ChaCha/rng/shuf at cap 22.** Budget first: `fpBoundP` of `nearAirV3` (`AirP.wf`,
+  `busBudget = 2^36 = 68,719,476,736`): frozen 29,593,577,335; after task 1 29,781,666,075;
+  with the three ChaCha caps at 22 **31,176,272,155** (with the candidate codec/proc repairs
+  also swapped in, measured 31,290,959,735) — well under budget (the STATUS-V3-AIR §5 overflow
+  concerned four *candidate families*, not `nearAirV3`). Done:
+  * `Chacha.Table.table22`, `Rng.Table.table22`, `Shuffle.Table.table22` (`maxLog := 22`; the
+    shared `maxLog` defs are unchanged so candidate families keep their budgets).
+  * Soundness generalised: `Sound.ChLocal.log_le : log ≤ 22`; `Chacha/Link`, `Shuffle/Link`,
+    `Statements.shuffle_sound` take the `table22` tables (`hlog : log ≤ 22`); shuffle soundness
+    (`Shuffle/{Basic,Walk,Sound,Contract}`: row counter, `walkStart`, `shuffle_contract`) now for
+    heights `≤ 2^22` (the bound only keeps the row counter below `p`); `ShufOwn` uses `table22`.
+  * Completeness: shuffle `shuffle_completeL`/`trafficL` for `L ≤ 22`;
+    `chacha_v3_aligned_complete`, `rng_v3_aligned_complete`, `shuf_aligned_complete22`.
+  * `nearAirV3` tables 8–10 → `table22`; wf/npOkPg re-proved; size unchanged **6,330,945 B**
+    (the aligned model already padded ChaCha to 2^22). Integration builds (2198 jobs);
+    sched soundness modules (`Sound`, `GridLink`, `GrantSound`, `SoundFin`) rebuilt.

@@ -27,7 +27,7 @@ Table order (fixed; table index = position):
 ```
 0,1   sha_t   sha_r        (two L5 instances)
 2..7  nodeV3 headV3 valV3 walkV3 uniqV3 upsV3   (trie)
-8..10 chachaV3 rngV3 shufV3
+8..10 chachaV3 rngV3 shufV3   (cap 22: the A9 W0 lane, `table22`)
 11..15 codecV3 ssdV3 sprV3 smmV3 scpV3          (scheduler)
 16..21 rcptV3 acctV3 akeyV3 bndV3 srcpV3 sizeV3 (receipt; acct at maxLog 19, size at maxLog 4:
       the roll-aligned honest heights, `Render/PaddedRcpt.lean`)
@@ -56,9 +56,9 @@ def v1Tables : List ZkFormal.Air.Table :=
 /-- The v3 tables, in the fixed order above, without the two SHA instances. -/
 def nearTablesV3 : List ZkFormal.Air.Table :=
   ZkFormal.NearV3.Budget.trieTablesU ++
-  [ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA,
-   ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
-   ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
+  [ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA,
+   ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
+   ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
      ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN ZkFormal.NearV3.Sched.B_SSHUF] ++
   ZkFormal.NearV3.Sched.Budget.schedTables ++
   ZkFormal.NearV3.Rcpt.Budget.rcptTables ++
@@ -73,9 +73,9 @@ def nearTablesFull : List ZkFormal.Air.Table :=
    ZkFormal.NearV3.NodeV3.tableU, {ZkFormal.NearV3.HeadV3.table with maxLog := 13},
    ZkFormal.NearV3.ValV3.table, {ZkFormal.NearV3.WalkV3.table with maxLog := 22},
    ZkFormal.NearV3.Uniq.table, ZkFormal.NearV3.UpsV3.table,
-   ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA,
-   ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
-   ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
+   ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA,
+   ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
+   ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
      ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN ZkFormal.NearV3.Sched.B_SSHUF,
    ZkFormal.NearV3.Sched.Codec.table, ZkFormal.NearV3.Sched.ScanDist.table,
    ZkFormal.NearV3.Sched.Proc.table, ZkFormal.NearV3.Sched.Mem.table,
