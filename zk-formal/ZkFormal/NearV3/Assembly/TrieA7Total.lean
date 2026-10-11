@@ -221,4 +221,43 @@ theorem a7_bound {m : MainExecutionV3} {steps : List ImplicitStepV3} {oldPost : 
   unfold TrieA7.nodeA7Total TrieA7.valA7Total
   omega
 
+theorem filter_sum_le {α : Type} (p : α → Bool) (f : α → Nat) (l : List α) :
+    ((l.filter p).map f).sum ≤ (l.map f).sum := by
+  induction l with
+  | nil => exact Nat.le_refl _
+  | cons a l ih =>
+    by_cases h : p a = true
+    · simp only [List.filter_cons, h, ite_true, List.map_cons, List.sum_cons]; omega
+    · simp only [List.filter_cons, h, Bool.false_eq_true, ite_false, List.map_cons, List.sum_cons]; omega
+
+/-- **The `SIZE` base totals of the honest records fit `B0`**: the non-duplicate node bytes plus the
+non-empty non-duplicate value bytes are at most `Σ_F U ≤ 2,000,000`. -/
+theorem size_base {m : MainExecutionV3} {steps : List ImplicitStepV3} {oldPost : PTrie}
+    {writes : List (List Nat × Bytes)} {q : Rcpt.Candidates.NodePostUpdate.UseRequests} {insts : List UpsInst}
+    (hA : TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts) :
+    (((TrieNative.nodes m steps oldPost writes q).filter fun s => !s.dup).map fun s => (s.v.ser false).length).sum +
+      (((TrieNative.vals m steps).filter fun e => !e.vz && !e.dup).map ValE.len).sum ≤ 2000000 := by
+  obtain ⟨us, -, hgood, hFwf, hNL, hVL, hU, -⟩ := hA
+  have hnsL := Candidates.NativePostShaBudget.node_lengths _ hFwf (TrieNative.chain m steps)
+    (Rcpt.Candidates.NodePostUpdate.forestOldInputs (Rcpt.Candidates.NodePostUpdate.nativeReplayForest m steps oldPost writes)) q
+  have hn : ((TrieNative.nodes m steps oldPost writes q).map fun s => (s.v.ser false).length).sum =
+      (((us.map SchedulerUpsertWitness.pre).flatMap ZkFormal.NearV3.occs).map
+        (fun o => (ZkFormal.NearV3.nodeEnc o).length)).sum := by
+    rw [hNL]; exact congrArg List.sum hnsL
+  have hesL : (TrieNative.vals m steps).map ValE.len =
+      (forestBytes (m.pre :: steps.map ImplicitStepV3.pre)).map List.length := by
+    simp only [TrieNative.vals, Candidates.ChainMetadata.assignValues, Candidates.ChainMetadata.patchValue,
+      List.map_map, Function.comp_def, TrieNative.seedVals, TrieNative.forest]
+    exact seedValuesFrom_len 0 _
+  have hv : ((TrieNative.vals m steps).map ValE.len).sum =
+      ((forestBytes (us.map SchedulerUpsertWitness.pre)).map List.length).sum := by rw [hesL, hVL]
+  have h1 := filter_sum_le (fun s : NodeS3 => !s.dup) (fun s => (s.v.ser false).length) (TrieNative.nodes m steps oldPost writes q)
+  have h2 := filter_sum_le (fun e : ValE => !e.vz && !e.dup) ValE.len (TrieNative.vals m steps)
+  have hpre := unfolded_sum (us.map SchedulerUpsertWitness.pre)
+  rw [List.map_map] at hpre
+  have hsplit := sum_map_add us (fun u => NearSpecV3.unfoldedBytesT u.pre) (fun u => NearSpecV3.unfoldedBytesT u.run.output)
+  have hc : (us.map (NearSpecV3.unfoldedBytesT ∘ SchedulerUpsertWitness.pre)).sum =
+      (us.map fun u => NearSpecV3.unfoldedBytesT u.pre).sum := rfl
+  omega
+
 end ZkFormal.NearV3.Assembly.TrieA7Total

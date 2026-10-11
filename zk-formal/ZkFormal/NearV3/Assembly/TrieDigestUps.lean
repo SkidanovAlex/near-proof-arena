@@ -115,7 +115,7 @@ and the ups `DIGEST` receives are `~ expectedDigests (schedulerShaJobs 0 us)` (v
 `scheduler_compact_digest_conservation`; the ranked instances keep their allocation, SHA family
 and native reader origin, `physicalPrefixUps_origins`, and the origin gives the native encoding). -/
 theorem ups_sha_scheduler {insts : List Render.UpsInst} (h : TrieUpsOrigin.UpsSha insts) :
-    ∃ us : List SchedulerUpsertWitness,
+    ∃ us : List SchedulerUpsertWitness, (∀ u ∈ us, u.Valid) ∧
       (Sha.Gen.honestRows (schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us)).length ≤ 1663260 ∧
       ∀ p : List WStep3,
         ((physicalPrefixUps p insts).flatMap upsBytes).map Msg.toFp =
@@ -123,7 +123,7 @@ theorem ups_sha_scheduler {insts : List Render.UpsInst} (h : TrieUpsOrigin.UpsSh
         ((CompactPhysicalDigests.compactGeneratedDigests (physicalPrefixUps p insts)).map Msg.toFp).Perm
           ((Sha.Gen.expectedDigests (schedulerShaJobs 0 us)).map Msg.toFp) := by
   obtain ⟨us, hl, h32, hg, hout, hval, -, hI⟩ := h
-  refine ⟨us, schedulerBatch_rows us h32 (fun u hu => (hg u hu).1) (fun u hu => (hg u hu).2.1) hout hval, ?_⟩
+  refine ⟨us, fun u hu => (hg u hu).1, schedulerBatch_rows us h32 (fun u hu => (hg u hu).1) (fun u hu => (hg u hu).2.1) hout hval, ?_⟩
   intro p
   refine ⟨?_, ?_⟩
   · have hr : (physicalPrefixUps p insts).map upsBytes = insts.map upsBytes :=

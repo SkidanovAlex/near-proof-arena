@@ -915,3 +915,26 @@ The AIR check is really `B0`: `sizeA7` range-checks `B0 − (yN0 + yN1 + yN2)` (
   (`ns = TrieNative.nodes m steps oldPost writes q`, `es = TrieNative.vals m steps`).  Exact accounting:
   per upsert `traceUpsert_replaced`, covers `rpl_cover`/`rplv_cover`, record lengths = `us.map pre` occurrence lengths.
 * Audit `test/AuditTrieA7Total.lean`.
+
+## 2026-10-12 (session 7) — step 4 DONE: trie-side assembly `TrieSide.trie_side`
+
+* `trie_all_of`/`trie_all_accepted` also export `(walkEdgeKeys (ws ++ upsWalkInventory insts)).length < P`,
+  `(walkBmapKeys …).length < P` (needed for `sha_bins_ofE`); `TrieDigestUps.ups_sha_scheduler` also exports
+  `∀ u ∈ us, u.Valid`.  (Statements only strengthened.)
+* `TrieA7Total.filter_sum_le`, **`size_base`** (`UpsA7` ⇒ non-dup node bytes + non-empty non-dup value bytes
+  `≤ 2,000,000`, the `SizeOk.base` part).
+* New `Assembly/TrieSide.lean`: `yA7` (size rows 0,1,2 = node/val/ups A7 totals), `sizeU_yA7`, **`trie_side`**:
+  for `A : AcceptedV3 cb wb`, receipt/source SHA families with the bounds of `sha_bins_ofE`
+  (`honestRows ≤ 1,373,299` / `≤ 2,257,792`, `msgRows ≤ 35` on source, bytes `< 256`), and
+  `ovhNat A.pub + 2,000,000 + srcpSize (blocksOfProofs A.srcps) ≤ 8,388,608`:
+  `∃ writes oldPost q us r0 r1 r2 r3 r4 r5 r6 r7 r21` (renders of tables 0–7, 21; `SizedAccountRun`,
+  `KeysFinal`, `∀ u ∈ us, u.Valid`) such that every bundle `R` with `R ⟨t⟩ = r_t` (t = 0..7, 21) has
+  - `BalancedAt` PARENT, VPARENT, ENT, DIGS, DUP, EDGE, BMAP, MIDROOT, ROOT, UPB, MEMD, RPL, RPLV (no further premise);
+  - SIZE given `R ⟨20⟩ = A.rcptRenders.srcp` (A7 running sum ≤ B0 via `a7_bound`);
+  - BYTES given `hcodec` (table 11 sends = `expectedBytes (schedulerSanityJobs 0 us)`) and `hrest`
+    (16+17+20+23 sends = `expectedBytes (receipt ++ source)` + pub);
+  - DIGEST given `hcodec` (11) and `hrest` (16+20+23 recvs + `ns.flatMap postSlotDigests` = `expectedDigests (receipt ++ source)`),
+    `ns = TrieNative.nodes A.m A.steps oldPost writes q`;
+  - VSLOT given `R ⟨17⟩ = A.rcptRenders.acct` and `nativeAccountViews A.m.pre oldPost (appliedReceipts A.k A.w) = some A.accts`;
+  - KEYNIB, FINAL given `R ⟨16⟩ = A.rcptRenders.rcpt`, `R ⟨22⟩ = A.rcptRenders.qv`, `RcptKeys`, `RcptFinal`.
+* Audit `test/AuditTrieSide.lean`.  Integration 4275 jobs, 0 errors; trie audits (Digest, All, Ups, A7Cap/Repl/Match/Total, Side, UpsSched, Upb, UpsMemd, VslotNative) pass; pin-check ok.
