@@ -41,3 +41,13 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   **Findings:** cap 18 must become 19 for the receipt bound; empty receipts are impossible
   for the old `Sort.constraints` in `nearAirV3` (`SortEmpty.old_empty_impossible`).
   Audit `test/AuditPaddedMrkSort.lean`.
+* **scheduler cmp/mem (tables 15, 14)** — `Render/PaddedSched.lean`: `schedTraceAligned rows pad`
+  (`rowsTrace 22` of the `natRow` arrays; the scheduler's shared physical clock `2^22`, cap 22
+  ≡ 1) agrees with `Candidates/SchedHeight.trace`; `cmp_aligned_complete` (`CmpOk`, ≤ 2^22,
+  traffic `Gen.Cmp.expected` on `B_SCMP`), `mem_aligned_complete` (`SegOk`, rows+1 ≤ 2^22,
+  traffic `sopList`/`finList`/`cmpList`). Audit `test/AuditPaddedSched.lean`.
+  **Open (codec 11, ssd 12, proc 13):** no completeness for the frozen tables:
+  codec — local legality is only proved for the *repaired* candidate
+  `ProcPriorCodecActual.table` (different constraints/interactions), not `Sched.Codec.table`;
+  proc — `ProcComplete.proc_local` covers one run with `tau = 0` and no traffic theorem;
+  ssd — `ProcScanDistPhases` has rows/counts but no `TableLocal ScanDist.table`.
