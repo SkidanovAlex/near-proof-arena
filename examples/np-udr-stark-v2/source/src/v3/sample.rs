@@ -259,6 +259,8 @@ pub fn sample_json(table: &str, seed: u64, n: usize) -> Result<String, String> {
         "node" => serde_json::to_string(&node(r, n)),
         "acct" => serde_json::to_string(&acct(r, n)),
         "size" => serde_json::to_string(&size(r, n)),
+        "srcp" => serde_json::to_string(&srcp(r, n)),
+        "qv" => serde_json::to_string(&qv(r, n)),
         t => return Err(format!("unknown table {t}")),
     };
     j.map_err(|e| e.to_string())
@@ -294,12 +296,7 @@ pub fn size(r: &mut Rng, _n: usize) -> Vec<SizeInput> {
     let x1 = r.below(3_000_000 - x0);
     let rem = 8_388_608 - x0 - x1;
     let x2 = r.below(rem.min(1_000_000) + 1);
-    vec![SizeInput {
-        x0,
-        x1,
-        x2,
-        ovh: 0,
-    }]
+    vec![SizeInput { x0, x1, x2, ovh: 0 }]
 }
 
 // ------------------------------------------------------------------- node
@@ -382,6 +379,188 @@ fn nodev(r: &mut Rng) -> NodeV3 {
             }
         }
     }
+}
+
+// ------------------------------------------------------------------- srcp
+
+use super::srcp::{SrcpB, SrcpItem};
+
+/// A random `SrcpB` satisfying `SrcpWf` (`Rcpt/Extract/Srcp/Defs.lean`): the
+/// lists are consecutive from `0`, message indices consecutive across the table,
+/// the path items carry `pl = 32` first then `64`, and `dup → L = 12`.
+fn srcp_block(r: &mut Rng, j: u64, ql: u64, d: usize) -> SrcpB {
+    let dup = r.below(5) == 0;
+    let l = if dup { 12 } else { 1 + r.below(20) };
+    let mut path: Vec<SrcpItem> = Vec::with_capacity(d);
+    for i in 0..d as u64 {
+        path.push(SrcpItem {
+            q: ql + 1 + i,
+            dir: r.coin(),
+            sib: r.bytes(32),
+            acc: r.bytes(32),
+            pq: ql + i,
+            pl: if i == 0 { 32 } else { 64 },
+        });
+    }
+    let dlen = d as u64;
+    SrcpB {
+        j,
+        l,
+        dup,
+        root: r.bytes(32),
+        qe: ql + dlen,
+        le: if dlen == 0 { 32 } else { 64 },
+        ql,
+        leaf: r.bytes(32),
+        path,
+    }
+}
+
+pub fn srcp(r: &mut Rng, n: usize) -> Vec<SrcpB> {
+    let n = n.max(1);
+    let mut out: Vec<SrcpB> = Vec::with_capacity(n);
+    let mut ql: u64 = 1;
+    for j in 0..n as u64 {
+        let d = r.below(4) as usize;
+        let b = srcp_block(r, j, ql, d);
+        ql = b.ql + b.path.len() as u64 + 1;
+        out.push(b);
+    }
+    out
+}
+
+// ------------------------------------------------------------------- qv
+
+use super::qv::{QvIn, QvItem, QvRecIn, QvWalkIn};
+
+/// A `qvV3` walk (`CombinedWalkGen.Walk`): `code` is the `Kind.code` (`0`
+/// delayed, `1` buffered, `2` yielded, `3` group).
+fn qv_walk(
+    code: u64,
+    tau: u64,
+    slot: u64,
+    count: u64,
+    value: Option<Vec<u64>>,
+    vid: u64,
+    last_main: bool,
+    fin: bool,
+    shard: u64,
+) -> QvWalkIn {
+    QvWalkIn {
+        code,
+        shard,
+        tau,
+        slot,
+        count,
+        value,
+        vid,
+        users: 0,
+        last_main,
+        fin,
+    }
+}
+
+/// A valid `ValueGen.Record` (one of the three `Payload` shapes).
+fn qv_record(r: &mut Rng) -> QvRecIn {
+    let vid = r.fe();
+    let tau = r.fe();
+    let users = r.fe();
+    match r.below(3) {
+        0 => QvRecIn {
+            rkind: 0,
+            vid,
+            tau,
+            users,
+            index: r.bytes(8),
+            ..QvRecIn::default()
+        },
+        1 => {
+            let n = r.below(4) as usize;
+            let entries: Vec<QvItem> = (0..n)
+                .map(|_| QvItem {
+                    shard: r.bytes(8),
+                    index: r.bytes(8),
+                })
+                .collect();
+            QvRecIn {
+                rkind: 1,
+                vid,
+                tau,
+                users,
+                entries,
+                ..QvRecIn::default()
+            }
+        }
+        _ => {
+            let n = r.below(9) as usize;
+            QvRecIn {
+                rkind: 2,
+                vid,
+                tau,
+                users,
+                bytes: r.bytes(n),
+                ..QvRecIn::default()
+            }
+        }
+    }
+}
+
+/// The honest `qvV3` row plan `CombinedWalkGen.plan pre v pres resolve` with
+/// `pres = []` and `K = 0`: the three main walks (delayed, buffered, yielded)
+/// and one group walk per shard, the last marked `lastMain` and `final`.  The
+/// buffered value is empty for no shards and otherwise the `g` buffered entries
+/// (`4 + 24·g` bytes); a group walk needs its value present (constraint
+/// `absent·count = 0` on the group window).  `n_rec` valid records follow.
+pub fn qv(r: &mut Rng, n_rec: usize) -> QvIn {
+    let g = r.below(4) as u64;
+    let count = g;
+    let last = |slot: u64| slot + 1 == 3 + g;
+    let buffered_value = |r: &mut Rng| -> Option<Vec<u64>> {
+        if g == 0 {
+            None
+        } else {
+            let mut v = vec![g % 256, (g / 256) % 256, 0, 0];
+            for _ in 0..g {
+                let shard = r.bytes(8);
+                let index = r.bytes(8);
+                v.extend_from_slice(&shard);
+                v.extend_from_slice(&index);
+                v.extend_from_slice(&index);
+            }
+            Some(v)
+        }
+    };
+    let mut walks = vec![
+        qv_walk(0, 0, 0, count, None, r.fe(), last(0), last(0), 0),
+        qv_walk(
+            1,
+            0,
+            1,
+            count,
+            buffered_value(r),
+            r.fe(),
+            last(1),
+            last(1),
+            0,
+        ),
+        qv_walk(2, 0, 2, count, None, r.fe(), last(2), last(2), 0),
+    ];
+    for i in 0..g {
+        let slot = 3 + i;
+        walks.push(qv_walk(
+            3,
+            0,
+            slot,
+            count,
+            Some(r.bytes(32)),
+            r.fe(),
+            last(slot),
+            last(slot),
+            i,
+        ));
+    }
+    let records = (0..n_rec).map(|_| qv_record(r)).collect();
+    QvIn { walks, records }
 }
 
 pub fn node(r: &mut Rng, n: usize) -> Vec<NodeS3> {

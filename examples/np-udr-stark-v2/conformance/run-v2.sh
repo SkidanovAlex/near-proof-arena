@@ -38,7 +38,7 @@ bad()  { echo "FAIL  $*"; fail=1; }
 echo "== build"
 (cd "$src" && $HEAVY cargo build --release -q) || { echo "cargo build failed"; exit 2; }
 (cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3 np-lean-entries-v3 np-lean-prep-v3) || { echo "lake build failed"; exit 2; }
-npudr="$src/target/release/npudr"
+npudr="${CARGO_TARGET_DIR:-$src/target}/release/npudr"
 lv="$here/.lake/build/bin/np-lean-verify-v2"
 le="$here/.lake/build/bin/np-lean-export-v3"
 rm -rf "$out"; mkdir -p "$out"
@@ -100,7 +100,7 @@ done
 echo "== nearAirV3 honest per-table traces: Rust (npudr v3render) vs Lean (np-lean-render-v3)"
 lr="$here/.lake/build/bin/np-lean-render-v3"
 rd="$out/render"; mkdir -p "$rd"
-for t in ${RENDER_TABLES:-bnd akey head val uniq walk node acct size}; do
+for t in ${RENDER_TABLES:-bnd akey head val uniq walk node acct size srcp qv}; do
   for seed in 1 2 3; do
     for n in ${RENDER_SIZES:-0 1 5 37}; do
       f="$rd/$t-$seed-$n"
@@ -139,6 +139,14 @@ broken walk "first row not START" "es[1]['steps'][0]['sym'] = 3; es[1]['steps'][
 # `acct` pre amount all-255 makes `dsum` zero so the inverse constraint fails
 broken acct "pre amount is u128::MAX" "es[0]['pre'] = [255]*16 + es[0]['pre'][16:]"
 broken size "x_0 + x_1 over 3,000,000" "es[0]['x0'] = 2000000; es[0]['x1'] = 2000000"
+# `srcp`: a path item's carry length must be `32` on the first segment, else `64`
+broken srcp "first path item pl != 32" "es[1]['path'][0]['pl'] = 64"
+# `srcp`: a duplicate source key must have the empty-list length `L = 12`
+broken srcp "dup with L != 12" "es[0]['dup'] = True"
+# `qv`: the last main walk must end the table (`final`/`wend`), followed by a parser row
+broken qv "last walk not final" "es['walks'][-1]['final'] = False"
+# `qv`: main walks carry `tau = 0`; an implicit walk in the main segment is rejected
+broken qv "main walk with tau != 0" "es['walks'][0]['tau'] = 1"
 
 echo "== sizeV3 nonzero public overhead (PH_WOVH): Rust vs Lean, byte-identical"
 # `npudr v3sample size` fixes `ovh = 0` so `v3check` (zero public inputs) passes.
