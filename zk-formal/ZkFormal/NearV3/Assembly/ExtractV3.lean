@@ -85,8 +85,8 @@ theorem nearTablesFull_eq : nearAirV3.tables =
      ZkFormal.NearV3.Sched.Codec.table, ZkFormal.NearV3.Sched.ScanDist.table,
      ZkFormal.NearV3.Sched.Proc.table, ZkFormal.NearV3.Sched.Mem.table,
      ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP,
-     ZkFormal.NearV3.RcptV3.table, ZkFormal.NearV3.AcctV3.table, ZkFormal.NearV3.AkeyV3.table,
-     ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.table, ZkFormal.NearV3.SizeV3.table,
+     ZkFormal.NearV3.RcptV3.table, {ZkFormal.NearV3.AcctV3.table with maxLog := 19}, ZkFormal.NearV3.AkeyV3.table,
+     ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.table, {ZkFormal.NearV3.SizeV3.table with maxLog := 4},
      ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
      ZkFormal.NearV3.Candidates.MerklePublic.table, {ZkFormal.Near.Sort.table with maxLog := 18}] := rfl
 
@@ -105,11 +105,13 @@ theorem getElem?_walk : nearAirV3.tables[T_WALK]? =
 theorem getElem?_uniq : nearAirV3.tables[T_UNIQ]? = some ZkFormal.NearV3.Uniq.table := rfl
 theorem getElem?_ups : nearAirV3.tables[T_UPS]? = some ZkFormal.NearV3.UpsV3.table := rfl
 theorem getElem?_rcpt : nearAirV3.tables[T_RCPT]? = some ZkFormal.NearV3.RcptV3.table := rfl
-theorem getElem?_acct : nearAirV3.tables[T_ACCT]? = some ZkFormal.NearV3.AcctV3.table := rfl
+theorem getElem?_acct : nearAirV3.tables[T_ACCT]? =
+    some {ZkFormal.NearV3.AcctV3.table with maxLog := 19} := rfl
 theorem getElem?_akey : nearAirV3.tables[T_AKEY]? = some ZkFormal.NearV3.AkeyV3.table := rfl
 theorem getElem?_bnd : nearAirV3.tables[T_BND]? = some ZkFormal.NearV3.BndV3.table := rfl
 theorem getElem?_srcp : nearAirV3.tables[T_SRCP]? = some ZkFormal.NearV3.SrcpV3.table := rfl
-theorem getElem?_size : nearAirV3.tables[T_SIZE]? = some ZkFormal.NearV3.SizeV3.table := rfl
+theorem getElem?_size : nearAirV3.tables[T_SIZE]? =
+    some {ZkFormal.NearV3.SizeV3.table with maxLog := 4} := rfl
 theorem getElem?_mrk : nearAirV3.tables[T_MRK]? =
     some ZkFormal.NearV3.Candidates.MerklePublic.table := rfl
 theorem getElem?_sort : nearAirV3.tables[T_SORT]? =
@@ -148,7 +150,7 @@ theorem rcptLocal (h : HoldsP nearAirV3 pub tr) :
   tableLocal_of_holdsP h getElem?_rcpt
 
 theorem acctLocal (h : HoldsP nearAirV3 pub tr) :
-    ZkFormal.Near.TableLocal ZkFormal.NearV3.AcctV3.table tr T_ACCT pub :=
+    ZkFormal.Near.TableLocal {ZkFormal.NearV3.AcctV3.table with maxLog := 19} tr T_ACCT pub :=
   tableLocal_of_holdsP h getElem?_acct
 
 theorem akeyLocal (h : HoldsP nearAirV3 pub tr) :
@@ -164,7 +166,7 @@ theorem srcpLocal (h : HoldsP nearAirV3 pub tr) :
   tableLocal_of_holdsP h getElem?_srcp
 
 theorem sizeLocal (h : HoldsP nearAirV3 pub tr) :
-    ZkFormal.Near.TableLocal ZkFormal.NearV3.SizeV3.table tr T_SIZE pub :=
+    ZkFormal.Near.TableLocal {ZkFormal.NearV3.SizeV3.table with maxLog := 4} tr T_SIZE pub :=
   tableLocal_of_holdsP h getElem?_size
 
 /-! ## The `rcptV3` view of the assembled AIR (item 2, `rcpt-view`) -/

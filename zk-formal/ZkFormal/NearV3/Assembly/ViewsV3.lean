@@ -71,10 +71,10 @@ theorem upsView (h : HoldsP nearAirV3 pub tr) :
 
 /-- Account records and their exact traffic, from `HoldsP` at `T_ACCT`. -/
 theorem acctView (h : HoldsP nearAirV3 pub tr) :
-    ∃ as, ZkFormal.NearV3.AcctV3Wf as ∧
+    ∃ as, ZkFormal.NearV3.AcctV3WfAt 19 as ∧
       ZkFormal.Near.TableTraffic ZkFormal.NearV3.AcctV3.interactions tr T_ACCT pub
         (ZkFormal.NearV3.acctV3Traffic as) :=
-  ZkFormal.NearV3.acctV3_view tr pub T_ACCT (acctLocal h)
+  ZkFormal.NearV3.acctV3_view_at 19 (by decide) tr pub T_ACCT (acctLocal h)
 
 /-- Access-key records and their exact traffic, from `HoldsP` at `T_AKEY`. -/
 theorem akeyView (h : HoldsP nearAirV3 pub tr) :
@@ -95,6 +95,6 @@ theorem sizeView (h : HoldsP nearAirV3 pub tr) :
     ∃ v, ZkFormal.NearV3.SizeWf pub v ∧
       ZkFormal.Near.TableTraffic ZkFormal.NearV3.SizeV3.interactions tr T_SIZE pub
         (ZkFormal.NearV3.sizeTraffic v) :=
-  ZkFormal.NearV3.size_view tr pub T_SIZE (sizeLocal h)
+  ZkFormal.NearV3.size_view_at 4 (by decide) tr pub T_SIZE (sizeLocal h)
 
 end ZkFormal.NearV3.Assembly

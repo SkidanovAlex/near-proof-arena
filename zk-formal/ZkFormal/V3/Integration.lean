@@ -239,6 +239,9 @@ import ZkFormal.NearV3.Rcpt.ShaRows
 import ZkFormal.NearV3.Render.HeadRender
 import ZkFormal.NearV3.Render.Padded
 import ZkFormal.NearV3.Render.PaddedTrie
+import ZkFormal.NearV3.Render.PaddedRcpt
+import ZkFormal.NearV3.Render.PaddedSrcp
+import ZkFormal.NearV3.Render.PaddedQv
 import ZkFormal.NearV3.Render.NodeRender
 import ZkFormal.NearV3.Render.UniqRender
 import ZkFormal.NearV3.Render.UpsRender
