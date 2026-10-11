@@ -172,3 +172,20 @@ BYTES/DIGEST parked; A7 after the link merge.
   the final upsert of the same replay (the candidate chain `native_rebased_origin_instances` drops
   `hkeys`/`hup`; `native_execution_rebased_payloads_keys` has them without the ups instances), and
   the receipt lane's acct entries must be `nativeAccountViews m.pre oldPost …` for that `oldPost`.
+* `Assembly/TrieAll.lean` — **`trie_all_accepted`**: one native choice (m, steps, writes,
+  oldPost, ups instances, lookup walks) gives the node/head/val/walk/uniq components, the ups
+  component given the row cap, and the record balances PARENT, VPARENT, ENT, DIGS, DUP, EDGE,
+  BMAP, MIDROOT, ROOT (records; public side `root_endpoints_accepted`).
+
+### Open after this session (trie side)
+
+1. ups row cap `R insts + 1 ≤ 2^22` (A7 (b)-type accounting; the proven bounds do not suffice).
+2. UPB (node windows ↔ ups `Q`-row reads, counter chain on `uU`), MEMD (ups-internal memory
+   chain of the honest generator), S0F/SPOST/SPLEN (ups ↔ codec, scheduler lane's codec render):
+   no completeness-side lemma exists for `UpsV3.table` (the candidates' UPB is for the compact
+   table; MEMD only has the soundness-side `memdMsgs`).
+3. VSLOT: single native choice carrying the write keys / final upsert (see above).
+4. KEYNIB/FINAL/VBYTES full balances need the receipt/qv/codec sides on main
+   (rcpt only existential; the candidate key/final/vbytes balances are for candidate receipt and
+   value tables).
+5. SHA, BYTES/DIGEST (parked by the lead); A7 (a)/(b) (after the link merge).
