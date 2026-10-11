@@ -293,6 +293,86 @@ theorem codec_value {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP
   have hb2 := Link3.ofNat_eq hb1 (ZkFormal.Chacha.cv_lt _ _) heq.2.2.1
   simpa [List.getD_eq_getElem?_getD, hi] using hb2
 
+/-! ## The `0x0f` read is the codec's previous value -/
+
+section
+open ZkFormal.NearV3.Link3 ZkFormal.NearV3.UpsRows
+
+/-- **A written value slot belongs to an acct** (`VSLOT`: written slots receive, accts send). -/
+theorem wrote_acct {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP nearAirV3 pub tr)
+    (T : V3RecordsTraffic pub tr r) (W : V3RecordsWf pub r) {i : Nat} (hiP : i < P)
+    (hw : wrote r.nodes i = true) : ∃ a ∈ r.accts, a.k = i := by
+  simp only [wrote, List.any_eq_true] at hw
+  obtain ⟨s, hs, hsw⟩ := hw
+  obtain ⟨n, hn, rfl⟩ := List.getElem_of_mem hs
+  have hz : (r.nodes[n], n) ∈ r.nodes.zip (List.range r.nodes.length) := by
+    have := List.getElem_mem (l := r.nodes.zip (List.range r.nodes.length)) (n := n) (by simp [hn])
+    simpa using this
+  have hm : [i] ∈ nodeRecvs3 r.nodes B_VSLOT := by
+    simp only [nodeRecvs3, show B_VSLOT ≠ B_DIGEST by decide, show B_VSLOT ≠ B_PARENT by decide,
+      show B_VSLOT ≠ B_EDGE by decide, show B_VSLOT ≠ B_BMAP by decide, show B_VSLOT ≠ B_DUP by decide,
+      show B_VSLOT ≠ B_ENT by decide, show B_VSLOT ≠ B_UPB by decide, ite_false, ite_true, List.mem_flatMap]
+    refine ⟨_, hz, ?_⟩
+    cases hv : r.nodes[n].v.value with
+    | none => rw [hv] at hsw; cases hsw
+    | some z =>
+      obtain ⟨j, l, pre, po, w⟩ := z
+      rw [hv] at hsw
+      simp only [Bool.and_eq_true, beq_iff_eq] at hsw
+      obtain ⟨rfl, rfl⟩ := hsw
+      simp [hv]
+  have hc := List.count_pos_iff.mpr (List.mem_map_of_mem (f := Msg.toFp) hm)
+  rw [← vslot_bal hH T] at hc
+  obtain ⟨x, hx, he⟩ := List.mem_map.mp (List.count_pos_iff.mp hc)
+  simp only [acctV3Sends, show B_VSLOT ≠ B_VBYTES by decide, show B_VSLOT ≠ B_BYTES by decide,
+      show B_VSLOT ≠ B_MEM by decide, ite_false, ite_true, List.mem_map] at hx
+  obtain ⟨a, ha, rfl⟩ := hx
+  simp only [Msg.toFp, List.map_cons, List.map_nil, List.cons.injEq, and_true] at he
+  exact ⟨a, ha, Link3.ofNat_eq (LinkVPost.acct_wf W ha).2.2.1 hiP he⟩
+
+/-- **The scheduler's read of `0x0f`**: for every instance `τ ≤ K` of the prepared schedule, the
+`0x0f` key of the record tree under the head of `τ` holds exactly `prevOf τ` (absent iff `none`). -/
+theorem codec_find {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
+    {tr : Trace Fp} {r : V3Records} (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    {τ : Nat} (hτ : τ < p.sched.length) (hK : τ ≤ p.hdr.K) :
+    (fullTree (Rpost r.nodes r.values) (Vpost r.nodes r.values (fun i => toB (LinkVPost.pnOf r.accts i)))
+        (headAt r.heads τ).rid).find UpsSpec.key = some (prevOf tr T_CODEC τ) := by
+  obtain ⟨-, -, fc, -, -, -, -, -, hfc, hF, hτc, -⟩ := LinkSchedCore.schedCore_v3 hp hsz hH T W hτ
+  have hlen : (ZkFormal.NearV3.Public.preparedBytes p oh).length < 256 ^ 4 := by unfold P at hsz; omega
+  have hrec := ZkFormal.NearV3.Public.prepared_scheduler_index nearAirV3 oh rfl hp (prepD0_roots hp)
+    (prepD0_source_roots hp) hlen
+  have hPs := ZkFormal.NearV3.Sched.prepD0_len hp
+  have hpre := (pre_block hH codecOwn sparOwn
+    (ZkFormal.NearV3.Public.prepared_pubIdx nearAirV3 p oh rfl (prepD0_roots hp) (prepD0_source_roots hp) hlen)
+    (p.sched.map ZkFormal.NearV3.Sched.instOf) p.fwd hrec.2.1 (by simp only [List.length_map]; omega) hfc hF).1
+  have hrd := LinkSchedCore.codec_read hp hsz hH T W hfc hF (by rw [hτc]; exact hK)
+  have hval := codec_value hH T W hfc hF
+  simp only [show @ZkFormal.Near.cv = @ZkFormal.Chacha.cv from rfl] at hτc hrd hval
+  rw [hτc] at hrd hpre
+  unfold prevOf
+  rw [hpre]
+  rcases hrd with ⟨hP1, hfind⟩ | ⟨hP0, -, hfind⟩
+  · rw [if_pos hP1, hfind]
+    obtain ⟨⟨e, he, hz, hid, hb⟩, hna⟩ := hval hP1
+    obtain ⟨t, ht, rfl⟩ := List.getElem_of_mem he
+    rw [← hid, vpos_at W.values (vlen_le W.values) ht]
+    have hw : wrote r.nodes r.values[t].vid = false := by
+      cases hwv : wrote r.nodes r.values[t].vid with
+      | false => rfl
+      | true =>
+        obtain ⟨a, ha, hk⟩ := wrote_acct hH T W (W.values.canon _ he).1 hwv
+        exact absurd (hk.trans hid) (hna a ha)
+    simp only [valOf, Vpost, valsPost, List.getElem?_map, List.getElem?_eq_getElem ht, Option.map_some,
+      Option.getD_some, hw, Bool.false_eq_true, ite_false, hb, toB]
+  · rw [if_neg (by omega), hfind]
+    rfl
+
+end
+
 end LinkVBytes
 
 end ZkFormal.NearV3.Assembly
