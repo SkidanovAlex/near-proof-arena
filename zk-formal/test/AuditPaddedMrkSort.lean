@@ -40,3 +40,7 @@ import ZkFormal.NearV3.Render.PaddedSort
 /-- info: 'ZkFormal.NearV3.Assembly.v3Records_of_holdsP' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.v3Records_of_holdsP
+
+/-- info: 'ZkFormal.NearV3.Render.SortV3.sort_v3_accepted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.SortV3.sort_v3_accepted

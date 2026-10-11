@@ -123,3 +123,52 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   new `hasC`, prior canonicalisation, `CodecValOwn`). Completeness exists for repaired codec
   (`ProcCodecNativeConcatLocal`, `ProcCodecConcatTraffic`), repaired proc (`prior_process_table`,
   B_SCMP traffic only), and ssd only B_SCMP traffic (no `TableLocal ScanDist.table`).
+
+## 2026-10-11 (package 3: Task 2 in full)
+
+* Merged `origin/lane/v3-a11` (A7 measure, f65d9ece) and integration b; **real rebuild** after
+  the lead's build-cache cleanup: `ZkFormal.V3.Integration` 2199 jobs OK; all audits re-run OK.
+* **Analysis (scheduler repairs).** Only the process table needs a change for completeness:
+  the frozen key rotation ties consecutive instances' seeds when a key block is followed by the
+  next instance's key block (an instance with no rounds; `ProcEmptyBoundaryRegression`). The
+  codec repair family (`ProcPriorCodecActual`, SDG cut, bus 69→40) targets non-canonical priors,
+  which `checkD0a` rejects (`canon0f`; frozen `SoundPre.codec_prevCanon`), so codec and ssd stay
+  frozen (completeness there is proof work, not a table change).
+* **Proc repair adopted with soundness re-proved.** `Sched/Tables/Proc.lean`: `rotationB`,
+  `cKeyB`, `constraintsB`, `tableB` (= `ProcBoundaryRepair.table`). The process view chain
+  (`Sched/View/Proc*.lean`, `Sched/Link/ProcRows.lean`) now states `PLocal` over `constraintsB`
+  (bodies from the kernel-checked `Candidates/ProcSound` copy; `key_reg`/`proc_keys` carry the
+  boundary hypothesis); the Link layer's `SchedOwn.tp_tab` and all `htab` premises name
+  `Proc.tableB`. `schedCore_sound`/`'`/`''` and `SoundFin` rebuild unchanged in conclusion.
+  `nearAirV3` table 13 = `Proc.tableB` (`Sched.Budget.schedTables` too); `nearAirV3_wf`/`npOkPg`
+  and `nearV3_size` (6,330,945 B, shapes identical) re-checked. All 22 reverse dependents of
+  `Sched/View`/`Sched/Link` (candidates included) build. Audit `test/AuditSchedProcRepair.lean`.
+* **Proc completeness over all runs** — `Render/RowTraffic.lean` (generic: for current-row-only
+  interactions the exact traffic of a row-function table is the trace-free `rowsTraffic is cell L t
+  pub`; `rowFn_traffic`) and `Render/PaddedProc.lean`: `proc_v3_aligned_complete` —
+  `TableLocal Proc.tableB` + `TableTraffic` (all buses) + `22 % 3 = 1` for the concatenated native
+  runs (`ActualRun.run I τ = .ok R`, τ consecutive from 0, capacity), via
+  `ProcActualNativeComplete.list_local` (`ProcBoundaryRepair.table = Proc.tableB` by `rfl`).
+* **Open:** codec (frozen `Codec.table`, 239 constraints, width 91) and ssd (`ScanDist.table`,
+  251 constraints, width 119) `TableLocal` over all runs — no existing proof for the frozen tables
+  (the repaired-codec proofs `ProcCodecNativeConcatLocal` are for `ProcPriorCodecActual`); once
+  local legality exists, their traffic follows from `rowFn_traffic` if their interactions are
+  current-row-only. Task 3 (bus balance) not started.
+
+## 2026-10-11 (package 4)
+
+* Merged integration b (rcpt `tableR`, srcp `tableD`); conflict in the `NearAir` header comment only.
+  Integration builds (2845 jobs).
+* **RIDS coordination:** `SortV3.sort_v3_accepted` (`PaddedSort.lean`): for an accepted witness
+  (`walkD0`, `decodeW`, `decodeStateWitness`, `checkD0a B0`, `NativeValid`) and receipt lists with
+  `lists.flatten.map Input.receipt = appliedReceipts k w`, the sort render's honest input is exactly
+  `lists.flatten.map Input.receipt` and it emits `sortTraffic (NativeSortIds.input (that list))` —
+  no mismatch; well-formedness, distinct ids and `≤ 8192` come from acceptance.
+* **`TableRenderV3` packaging** — `Render/BundleSched.lean`: `shaRenderV3` (0, 1), `upsRenderV3` (7,
+  native data), `chachaRenderV3` (8), `rngRenderV3` (9), `shufRenderV3` (10), `procRenderV3` (13,
+  native runs), `memRenderV3` (14), `cmpRenderV3` (15), `mrkRenderV3` (23, empty tree included),
+  `sortRenderV3` (24, from `checkD0a B0` acceptance, RIDS = receipt lane's list). Each takes the
+  render's explicit honest-input premises. Audit `test/AuditBundleSched.lean`.
+* **Proc from acceptance:** `procRender_accepted` — `checkD0a B0` acceptance (`prepD0`, `walkD0`,
+  `decodeW`) gives the native blocks of `accepted_prior_core`, whose runs discharge every premise of
+  `procRenderV3` (native `ActualRun.run`, `τ = index`, capacity `prior_run_capacities`).

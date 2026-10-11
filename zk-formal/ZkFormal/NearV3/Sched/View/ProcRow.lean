@@ -25,6 +25,7 @@ elements.
 namespace ZkFormal.NearV3.Sched.Proc
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table.E
+open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Proc
 
 /-- Simp set for evaluating a process-table constraint. -/
 macro "pz " h:ident " [" ts:term,* "]" : tactic => do
@@ -36,7 +37,7 @@ section
 variable {tr : Trace Fp} {tp : Nat} {pub : List Fp}
 
 theorem zd (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp) {e : Expr}
-    (he : e ∈ constraints) : ∃ q : Int, zev (tenv tr tp w pub) e = 2013265921 * q :=
+    (he : e ∈ constraintsB) : ∃ q : Int, zev (tenv tr tp w pub) e = 2013265921 * q :=
   Mem.zdvd hL hw he
 
 theorem lt (w col : Nat) : cv tr tp w col < 2013265921 := cv_lt w col
@@ -47,29 +48,31 @@ theorem nx {w : Nat} (hw : w + 1 < tr.height tp) (col : Nat) :
 /-! ## Membership -/
 
 theorem mem_rot {i : Nat} (hi : i < 16) :
-    Expr.mul (c kK) (sub (n (colL i)) (c (colL ((i + 1) % 16)))) ∈ constraints := by
-  unfold constraints cKey
+    rotationB i ∈ constraintsB := by
+  unfold constraintsB cKeyB
+  simp only [Proc.cKey,List.take,List.drop]
   apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_right
   apply List.mem_append_left; apply List.mem_append_right
   exact List.mem_map.2 ⟨i, List.mem_range.2 hi, rfl⟩
 
 theorem mem_lcarry {i : Nat} (hi : i < 16) :
-    mul3 (.add (c kH) (c kE)) (notE (n kK)) (sub (n (colL i)) (c (colL i))) ∈ constraints := by
-  unfold constraints cKey
+    mul3 (.add (c kH) (c kE)) (notE (n kK)) (sub (n (colL i)) (c (colL i))) ∈ constraintsB := by
+  unfold constraintsB cKeyB
+  simp only [Proc.cKey,List.take,List.drop]
   apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_right
   apply List.mem_append_right
   exact List.mem_map.2 ⟨i, List.mem_range.2 hi, rfl⟩
 
 theorem mem_round {col : Nat} (hc : col ∈ roundCols) :
-    Expr.mul gR (sub (n col) (c col)) ∈ constraints := by
-  unfold constraints cHdr
+    Expr.mul gR (sub (n col) (c col)) ∈ constraintsB := by
+  unfold constraintsB cHdr
   apply List.mem_append_left; apply List.mem_append_right
   apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_right
   exact List.mem_map.2 ⟨col, hc, rfl⟩
 
 theorem mem_inst {col : Nat} (hc : col ∈ instCols) :
-    mul3 (.add (c kE) (c kK)) (notE (n kK)) (sub (n col) (c col)) ∈ constraints := by
-  unfold constraints cHdr
+    mul3 (.add (c kE) (c kK)) (notE (n kK)) (sub (n col) (c col)) ∈ constraintsB := by
+  unfold constraintsB cHdr
   apply List.mem_append_left; apply List.mem_append_right
   apply List.mem_append_right
   exact List.mem_map.2 ⟨col, hc, rfl⟩
@@ -77,7 +80,7 @@ theorem mem_inst {col : Nat} (hc : col ∈ instCols) :
 /-! ## Kinds -/
 
 theorem le_gate (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp) {a b : Nat}
-    (he : Expr.mul (c a) (notE (c b)) ∈ constraints) (ha : cv tr tp w a ≤ 1)
+    (he : Expr.mul (c a) (notE (c b)) ∈ constraintsB) (ha : cv tr tp w a ≤ 1)
     (hb : cv tr tp w b ≤ 1) : cv tr tp w a ≤ cv tr tp w b := by
   obtain ⟨q, h⟩ := zd hL hw he
   pz h []
@@ -96,18 +99,18 @@ theorem kinds (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp) :
   have hl := b kl (by simp [boolCols]); have hz := b zk (by simp [boolCols])
   have hlf := b lastf (by simp [boolCols]); have hle := b le (by simp [boolCols])
   obtain ⟨q, c1⟩ := zd hL hw (e := sub (c act) (.add (c kK) (.add (c kH) (c kE))))
-    (by simp [constraints, cKind])
+    (by simp [constraintsB, cKind])
   pz c1 []
   exact ⟨hA, hK, hH, hE, hl, hz, hlf, hle, by omega,
-    le_gate hL hw (by simp [constraints, cKey]) hl hK,
-    le_gate hL hw (by simp [constraints, cEnt]) hle hE⟩
+    le_gate hL hw (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop]) hl hK,
+    le_gate hL hw (by simp [constraintsB, cEnt]) hle hE⟩
 
 /-- An active row is not the last row. -/
 theorem act_next (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
     (ha : cv tr tp w act = 1) : w + 1 < tr.height tp := by
   rcases Nat.lt_or_ge (w + 1) (tr.height tp) with h | h
   · exact h
-  · obtain ⟨q, c1⟩ := zd hL hw (e := .mul .isLast (c act)) (by simp [constraints, cKind])
+  · obtain ⟨q, c1⟩ := zd hL hw (e := .mul .isLast (c act)) (by simp [constraintsB, cKind])
     simp only [zev_mul, zev_c, cur_cv, ha] at c1
     simp only [zev, tenv, if_pos (show w + 1 = tr.height tp by omega)] at c1
     omega
@@ -122,7 +125,7 @@ theorem pad_next (hL : PLocal tr tp pub) {w : Nat} (hw : w + 1 < tr.height tp)
   have hw0 : w < tr.height tp := by omega
   have hA := (kinds hL hw).1
   obtain ⟨q, c1⟩ := zd hL hw0 (e := mul3 .isTransition (notE (c act)) (n act))
-    (by simp [constraints, cKind])
+    (by simp [constraintsB, cKind])
   pz c1 [nx hw, ha]
   simp only [zev, Mem.tenv_last_zero hw] at c1
   have := lt (tr := tr) (tp := tp) (w + 1) act
@@ -133,10 +136,10 @@ theorem row_first (hL : PLocal tr tp pub) (h0 : 0 < tr.height tp) :
     cv tr tp 0 kc = 0 ∧ cv tr tp 0 tau = 0 ∧ (cv tr tp 0 act = 1 → cv tr tp 0 kK = 1) := by
   have hf : (tenv tr tp 0 pub).first = 1 := by simp [tenv]
   have hK := (kinds hL h0).2.1
-  obtain ⟨q1, c1⟩ := zd hL h0 (e := .mul .isFirst (c kc)) (by simp [constraints, cKind])
-  obtain ⟨q2, c2⟩ := zd hL h0 (e := .mul .isFirst (c tau)) (by simp [constraints, cKind])
+  obtain ⟨q1, c1⟩ := zd hL h0 (e := .mul .isFirst (c kc)) (by simp [constraintsB, cKind])
+  obtain ⟨q2, c2⟩ := zd hL h0 (e := .mul .isFirst (c tau)) (by simp [constraintsB, cKind])
   obtain ⟨q3, c3⟩ := zd hL h0 (e := .mul .isFirst (.mul (c act) (notE (c kK))))
-    (by simp [constraints, cKind])
+    (by simp [constraintsB, cKind])
   pz c1 [zev_isFirst, hf]; pz c2 [zev_isFirst, hf]; pz c3 [zev_isFirst, hf]
   have := lt (tr := tr) (tp := tp) 0 kc; have := lt (tr := tr) (tp := tp) 0 tau
   refine ⟨by omega, by omega, fun ha => ?_⟩
@@ -151,8 +154,8 @@ theorem kl_iff (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp) :
       (cv tr tp w kK = 1 → (cv tr tp w kl = 1 ↔ cv tr tp w kc = 15)) := by
   obtain ⟨-, -, -, -, hl, -, -, -, -, hlK, -⟩ := kinds hL hw
   obtain ⟨q1, c1⟩ := zd hL hw (e := sub (c kl) (notE (.mul (sub (c kc) (k 15)) (c ikc))))
-    (by simp [constraints, cKey])
-  obtain ⟨q2, c2⟩ := zd hL hw (e := .mul (sub (c kc) (k 15)) (c kl)) (by simp [constraints, cKey])
+    (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
+  obtain ⟨q2, c2⟩ := zd hL hw (e := .mul (sub (c kc) (k 15)) (c kl)) (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
   pz c1 []; pz c2 []
   have := lt (tr := tr) (tp := tp) w kc
   refine ⟨fun h => by omega, fun _ => ⟨fun h1 => ?_, fun h1 => ?_⟩⟩
@@ -168,14 +171,14 @@ theorem hdr_valid (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
     cv tr tp w T = cv tr tp w Tq ∧
       (cv tr tp w zk = 0 → cv tr tp w z = 0 ∧ cv tr tp w K ≠ 0 ∧ cv tr tp w zq = 0) ∧
       (cv tr tp w zk = 1 → cv tr tp w K = 0 ∧ cv tr tp w z = (cv tr tp w zq + 1) % 2013265921) := by
-  obtain ⟨q0, c0⟩ := zd hL hw (e := .mul (c kH) (sub (c T) (c Tq))) (by simp [constraints, cHdr])
-  obtain ⟨q1, c1⟩ := zd hL hw (e := mul3 (c kH) (notE (c zk)) (c z)) (by simp [constraints, cHdr])
-  obtain ⟨q2, c2⟩ := zd hL hw (e := mul3 (c kH) (c zk) (c K)) (by simp [constraints, cHdr])
+  obtain ⟨q0, c0⟩ := zd hL hw (e := .mul (c kH) (sub (c T) (c Tq))) (by simp [constraintsB, cHdr])
+  obtain ⟨q1, c1⟩ := zd hL hw (e := mul3 (c kH) (notE (c zk)) (c z)) (by simp [constraintsB, cHdr])
+  obtain ⟨q2, c2⟩ := zd hL hw (e := mul3 (c kH) (c zk) (c K)) (by simp [constraintsB, cHdr])
   obtain ⟨q3, c3⟩ := zd hL hw (e := mul3 (c kH) (notE (c zk)) (sub (.mul (c K) (c iK)) (k 1)))
-    (by simp [constraints, cHdr])
+    (by simp [constraintsB, cHdr])
   obtain ⟨q4, c4⟩ := zd hL hw (e := mul3 (c kH) (c zk) (sub (c z) (.add (c zq) (k 1))))
-    (by simp [constraints, cHdr])
-  obtain ⟨q5, c5⟩ := zd hL hw (e := mul3 (c kH) (notE (c zk)) (c zq)) (by simp [constraints, cHdr])
+    (by simp [constraintsB, cHdr])
+  obtain ⟨q5, c5⟩ := zd hL hw (e := mul3 (c kH) (notE (c zk)) (c zq)) (by simp [constraintsB, cHdr])
   pz c0 [hh]; pz c1 [hh]; pz c2 [hh]; pz c3 [hh]; pz c4 [hh]; pz c5 [hh]
   have := lt (tr := tr) (tp := tp) w T; have := lt (tr := tr) (tp := tp) w Tq
   have := lt (tr := tr) (tp := tp) w z; have := lt (tr := tr) (tp := tp) w zq
@@ -195,10 +198,10 @@ theorem cmp_hdr (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
   obtain ⟨-, -, -, hE, -, hz, -, -, -, -, -⟩ := kinds hL hw
   have hE0 : cv tr tp w kE = 0 := by have := kinds hL hw; omega
   obtain ⟨q0, c0⟩ := zd hL hw (e := sub (c cg) (.add (.mul (c kH) (notE (c zk))) (c kE)))
-    (by simp [constraints, cEnt])
-  obtain ⟨q1, c1⟩ := zd hL hw (e := .mul (c kH) (sub (c cx) (c Kq))) (by simp [constraints, cEnt])
+    (by simp [constraintsB, cEnt])
+  obtain ⟨q1, c1⟩ := zd hL hw (e := .mul (c kH) (sub (c cx) (c Kq))) (by simp [constraintsB, cEnt])
   obtain ⟨q2, c2⟩ := zd hL hw (e := .mul (c kH) (sub (c cy) (.add (c K) (k 1))))
-    (by simp [constraints, cEnt])
+    (by simp [constraintsB, cEnt])
   pz c0 [hh, hE0]; pz c1 [hh]; pz c2 [hh]
   have := lt (tr := tr) (tp := tp) w cg; have := lt (tr := tr) (tp := tp) w cx
   have := lt (tr := tr) (tp := tp) w cy; have := lt (tr := tr) (tp := tp) w Kq
@@ -215,12 +218,12 @@ theorem cmp_ent (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
   have hH0 : cv tr tp w kH = 0 := by have := kinds hL hw; omega
   have hw1 := act_next hL hw (act_of hL hw (Or.inr (Or.inr he)))
   obtain ⟨q0, c0⟩ := zd hL hw (e := sub (c cg) (.add (.mul (c kH) (notE (c zk))) (c kE)))
-    (by simp [constraints, cEnt])
+    (by simp [constraintsB, cEnt])
   obtain ⟨q1, c1⟩ := zd hL hw (e := .mul (c kE) (sub (c cy) (.add (c ts) (k 1))))
-    (by simp [constraints, cEnt])
+    (by simp [constraintsB, cEnt])
   obtain ⟨q2, c2⟩ := zd hL hw
     (e := .mul (c kE) (sub (c cx) (.add (.mul (c le) (c T)) (.mul (notE (c le)) (n ts)))))
-    (by simp [constraints, cEnt])
+    (by simp [constraintsB, cEnt])
   pz c0 [hH0, he]; pz c1 [he]; pz c2 [he, nx hw1]
   have := lt (tr := tr) (tp := tp) w cg; have := lt (tr := tr) (tp := tp) w cx
   have := lt (tr := tr) (tp := tp) w cy; have := lt (tr := tr) (tp := tp) w ts
@@ -236,7 +239,7 @@ theorem zn_def (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
   obtain ⟨-, -, hza, -⟩ := entry_row hL hw he
   have hb := bool_of hL hw (x := za) (by simp [boolCols])
   obtain ⟨q, c1⟩ := zd hL hw (e := .mul (c kE) (sub (c zn) (.mul (c za) (.add (c z) (k 1)))))
-    (by simp [constraints, cEnt])
+    (by simp [constraintsB, cEnt])
   pz c1 [he]
   have := lt (tr := tr) (tp := tp) w zn; have := lt (tr := tr) (tp := tp) w z
   split
@@ -255,27 +258,32 @@ theorem key_reg (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
     (hk : cv tr tp w kK = 1) :
     w + 1 < tr.height tp ∧
       cv tr tp w (colL 0) = (cv tr tp w sbIn + 256 * cv tr tp w sbOut) % 2013265921 ∧
-      ∀ i, i < 16 → cv tr tp (w + 1) (colL i) = cv tr tp w (colL ((i + 1) % 16)) := by
+      ∀ i, i < 16 → (cv tr tp w kl=0 ∨ cv tr tp (w+1) kK=0) →
+        cv tr tp (w + 1) (colL i) = cv tr tp w (colL ((i + 1) % 16)) := by
   have hw1 := act_next hL hw (act_of hL hw (Or.inl hk))
   obtain ⟨q, c1⟩ := zd hL hw (e := .mul (c kK) (sub (c (colL 0)) (.add (c sbIn) (smul 256 (c sbOut)))))
-    (by simp [constraints, cKey])
+    (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
   pz c1 [hk]
   have := lt (tr := tr) (tp := tp) w (colL 0)
-  refine ⟨hw1, by omega, fun i hi => ?_⟩
+  refine ⟨hw1, by omega, fun i hi hb => ?_⟩
   obtain ⟨q', c2⟩ := zd hL hw (mem_rot hi)
+  unfold rotationB at c2
   pz c2 [hk, nx hw1]
-  have := lt (tr := tr) (tp := tp) (w + 1) (colL i)
-  have := lt (tr := tr) (tp := tp) w (colL ((i + 1) % 16))
-  omega
+  rcases hb with hb | hb <;> rw [hb] at c2
+  all_goals
+    have := lt (tr := tr) (tp := tp) (w + 1) (colL i)
+    have := lt (tr := tr) (tp := tp) w (colL ((i + 1) % 16))
+    try simp only [Int.zero_mul,Int.mul_zero,Int.sub_zero,Int.one_mul] at c2
+    omega
 
 /-- **Instance initial values** on key rows. -/
 theorem key_init (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
     (hk : cv tr tp w kK = 1) :
     cv tr tp w kq = 0 ∧ cv tr tp w Tq = T0 ∧ cv tr tp w Kq = KSENT ∧ cv tr tp w zq = 0 := by
-  obtain ⟨q1, c1⟩ := zd hL hw (e := .mul (c kK) (c kq)) (by simp [constraints, cKey])
-  obtain ⟨q2, c2⟩ := zd hL hw (e := .mul (c kK) (sub (c Tq) (k T0))) (by simp [constraints, cKey])
-  obtain ⟨q3, c3⟩ := zd hL hw (e := .mul (c kK) (sub (c Kq) (k KSENT))) (by simp [constraints, cKey])
-  obtain ⟨q4, c4⟩ := zd hL hw (e := .mul (c kK) (c zq)) (by simp [constraints, cKey])
+  obtain ⟨q1, c1⟩ := zd hL hw (e := .mul (c kK) (c kq)) (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
+  obtain ⟨q2, c2⟩ := zd hL hw (e := .mul (c kK) (sub (c Tq) (k T0))) (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
+  obtain ⟨q3, c3⟩ := zd hL hw (e := .mul (c kK) (sub (c Kq) (k KSENT))) (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
+  obtain ⟨q4, c4⟩ := zd hL hw (e := .mul (c kK) (c zq)) (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
   pz c1 [hk]; pz c2 [hk, T0]; pz c3 [hk, KSENT]; pz c4 [hk]
   have := lt (tr := tr) (tp := tp) w kq; have := lt (tr := tr) (tp := tp) w Tq
   have := lt (tr := tr) (tp := tp) w Kq; have := lt (tr := tr) (tp := tp) w zq
@@ -291,11 +299,11 @@ theorem key_next (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
       cv tr tp (w + 1) tau = cv tr tp w tau := by
   have hw1 := act_next hL hw (act_of hL hw (Or.inl hk))
   obtain ⟨q1, c1⟩ := zd hL hw (e := .mul (sub (c kK) (c kl)) (notE (n kK)))
-    (by simp [constraints, cKey])
+    (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
   obtain ⟨q2, c2⟩ := zd hL hw (e := .mul (sub (c kK) (c kl)) (sub (n kc) (.add (c kc) (k 1))))
-    (by simp [constraints, cKey])
+    (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
   obtain ⟨q3, c3⟩ := zd hL hw (e := .mul (sub (c kK) (c kl)) (sub (n tau) (c tau)))
-    (by simp [constraints, cKey])
+    (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
   pz c1 [hk, hl, nx hw1]; pz c2 [hk, hl, nx hw1]; pz c3 [hk, hl, nx hw1]
   have := lt (tr := tr) (tp := tp) (w + 1) kK; have := lt (tr := tr) (tp := tp) (w + 1) kc
   have := lt (tr := tr) (tp := tp) w kc; have := lt (tr := tr) (tp := tp) (w + 1) tau
@@ -310,9 +318,9 @@ theorem blk_next (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
   obtain ⟨-, -, -, -, hl, -, -, hle, hA, hlK, hleE⟩ := kinds hL hw
   have hA1 := (kinds hL hw).1
   have hs : cv tr tp w kl + cv tr tp w le = 1 := by omega
-  obtain ⟨q1, c1⟩ := zd hL hw (e := mul3 gB (n kK) (n kc)) (by simp [constraints, cKey])
+  obtain ⟨q1, c1⟩ := zd hL hw (e := mul3 gB (n kK) (n kc)) (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
   obtain ⟨q2, c2⟩ := zd hL hw (e := mul3 gB (n kK) (sub (n tau) (.add (c tau) (k 1))))
-    (by simp [constraints, cKey])
+    (by simp [constraintsB, cKeyB, Proc.cKey,List.take,List.drop])
   pz c1 [nx hw1, hk]; pz c2 [nx hw1, hk]
   have e : ((cv tr tp w kl : Int) + cv tr tp w le) = 1 := by omega
   rw [e] at c1 c2
@@ -361,7 +369,7 @@ theorem round_next (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
   have hs : cv tr tp w kH + cv tr tp w kE - cv tr tp w le = 1 := by omega
   have e : ((cv tr tp w kH : Int) + cv tr tp w kE - cv tr tp w le) = 1 := by omega
   refine ⟨hw1, ?_, fun col hc => ?_⟩
-  · obtain ⟨q, c1⟩ := zd hL hw (e := .mul gR (notE (n kE))) (by simp [constraints, cHdr])
+  · obtain ⟨q, c1⟩ := zd hL hw (e := .mul gR (notE (n kE))) (by simp [constraintsB, cHdr])
     pz c1 [nx hw1]
     rw [e] at c1
     have := lt (tr := tr) (tp := tp) (w + 1) kE
@@ -382,12 +390,12 @@ theorem hdr_next (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
       cv tr tp (w + 1) kq = cv tr tp w kend ∧ cv tr tp (w + 1) Kq = cv tr tp w K ∧
       cv tr tp (w + 1) zq = cv tr tp w z := by
   obtain ⟨hw1, hE, -⟩ := round_next hL hw (Or.inl hh)
-  obtain ⟨q1, c1⟩ := zd hL hw (e := .mul (c kH) (n x)) (by simp [constraints, cHdr])
+  obtain ⟨q1, c1⟩ := zd hL hw (e := .mul (c kH) (n x)) (by simp [constraintsB, cHdr])
   obtain ⟨q2, c2⟩ := zd hL hw (e := .mul (c kH) (sub (n Tq) (.add (c T) (c Lr))))
-    (by simp [constraints, cHdr])
-  obtain ⟨q3, c3⟩ := zd hL hw (e := .mul (c kH) (sub (n kq) (c kend))) (by simp [constraints, cHdr])
-  obtain ⟨q4, c4⟩ := zd hL hw (e := .mul (c kH) (sub (n Kq) (c K))) (by simp [constraints, cHdr])
-  obtain ⟨q5, c5⟩ := zd hL hw (e := .mul (c kH) (sub (n zq) (c z))) (by simp [constraints, cHdr])
+    (by simp [constraintsB, cHdr])
+  obtain ⟨q3, c3⟩ := zd hL hw (e := .mul (c kH) (sub (n kq) (c kend))) (by simp [constraintsB, cHdr])
+  obtain ⟨q4, c4⟩ := zd hL hw (e := .mul (c kH) (sub (n Kq) (c K))) (by simp [constraintsB, cHdr])
+  obtain ⟨q5, c5⟩ := zd hL hw (e := .mul (c kH) (sub (n zq) (c z))) (by simp [constraintsB, cHdr])
   pz c1 [hh, nx hw1]; pz c2 [hh, nx hw1]; pz c3 [hh, nx hw1]; pz c4 [hh, nx hw1]
   pz c5 [hh, nx hw1]
   have := lt (tr := tr) (tp := tp) (w + 1) x; have := lt (tr := tr) (tp := tp) (w + 1) Tq
@@ -402,7 +410,7 @@ theorem ent_next (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
     w + 1 < tr.height tp ∧ cv tr tp (w + 1) x = (cv tr tp w x + 1) % 2013265921 := by
   obtain ⟨hw1, -, -⟩ := round_next hL hw (Or.inr ⟨he, hl⟩)
   obtain ⟨q, c1⟩ := zd hL hw (e := mul3 (c kE) (notE (c le)) (sub (n x) (.add (c x) (k 1))))
-    (by simp [constraints, cEnt])
+    (by simp [constraintsB, cEnt])
   pz c1 [he, hl, nx hw1]
   have := lt (tr := tr) (tp := tp) (w + 1) x; have := lt (tr := tr) (tp := tp) w x
   exact ⟨hw1, by omega⟩
@@ -413,7 +421,7 @@ theorem le_entry (hL : PLocal tr tp pub) {w : Nat} (hw : w < tr.height tp)
     cv tr tp w kE = 1 ∧ (cv tr tp w x + 1) % 2013265921 = cv tr tp w Lr := by
   obtain ⟨-, -, -, hE, -, -, -, -, -, -, hleE⟩ := kinds hL hw
   obtain ⟨q, c1⟩ := zd hL hw (e := .mul (c le) (sub (.add (c x) (k 1)) (c Lr)))
-    (by simp [constraints, cEnt])
+    (by simp [constraintsB, cEnt])
   pz c1 [hl]
   have := lt (tr := tr) (tp := tp) w x; have := lt (tr := tr) (tp := tp) w Lr
   exact ⟨by omega, by omega⟩
@@ -424,7 +432,7 @@ theorem prev_hdr (hL : PLocal tr tp pub) {w : Nat} (hw1 : w + 1 < tr.height tp)
   have hw : w < tr.height tp := by omega
   obtain ⟨-, hK, -, hE, hl, -, -, hle, hA, hlK, hleE⟩ := kinds hL hw
   have := (kinds hL hw).1
-  obtain ⟨q, c1⟩ := zd hL hw (e := .mul (n kH) (notE gB)) (by simp [constraints, cHdr])
+  obtain ⟨q, c1⟩ := zd hL hw (e := .mul (n kH) (notE gB)) (by simp [constraintsB, cHdr])
   pz c1 [nx hw1, hh]
   omega
 
@@ -434,7 +442,7 @@ theorem prev_ent (hL : PLocal tr tp pub) {w : Nat} (hw1 : w + 1 < tr.height tp)
     cv tr tp w kH = 1 ∨ (cv tr tp w kE = 1 ∧ cv tr tp w le = 0) := by
   have hw : w < tr.height tp := by omega
   obtain ⟨hA, hK, hH, hE, -, -, -, hle, hs, -, hleE⟩ := kinds hL hw
-  obtain ⟨q, c1⟩ := zd hL hw (e := .mul (n kE) (notE gR)) (by simp [constraints, cHdr])
+  obtain ⟨q, c1⟩ := zd hL hw (e := .mul (n kE) (notE gR)) (by simp [constraintsB, cHdr])
   pz c1 [nx hw1, he]
   omega
 

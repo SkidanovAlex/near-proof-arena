@@ -50,11 +50,11 @@ theorem height_le (hH : HoldsP AP pub tr) {t : Nat} (ht : t < AP.tables.length) 
   exact Nat.pow_le_pow_right (by decide) this
 
 theorem pLocal_of (hH : HoldsP AP pub tr) {tp : Nat} (htp : tp < AP.tables.length)
-    (htab : AP.tables[tp]! = Proc.table) : Proc.PLocal tr tp pub := by
+    (htab : AP.tables[tp]! = Proc.tableB) : Proc.PLocal tr tp pub := by
   have := local_of_holdsP hH htp; rw [htab] at this; exact this
 
 theorem proc_height (hH : HoldsP AP pub tr) {tp : Nat} (htp : tp < AP.tables.length)
-    (htab : AP.tables[tp]! = Proc.table) : tr.height tp ≤ 2 ^ 22 :=
+    (htab : AP.tables[tp]! = Proc.tableB) : tr.height tp ≤ 2 ^ 22 :=
   height_le hH htp htab rfl
 
 theorem toNat_ofNat_lt {a : Nat} (h : a < 2 ^ 29) : (Fp.ofNat a).toNat = a := by
@@ -65,7 +65,7 @@ theorem i2_mem : Proc.interactions[2]! ∈ Proc.interactions := by
 
 /-- A process comparator send with multiplicity 1 and operands `(a, b)` gives `b ≤ a`. -/
 theorem proc_cmp (hH : HoldsP AP pub tr) {tc tp : Nat} (hC : CmpOwn AP tc)
-    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.table) {w : Nat}
+    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.tableB) {w : Nat}
     (hw : w < tr.height tp) (hm : (Proc.interactions[2]!).multNat tr tp w pub = 1) {a b : Nat}
     (hmsg : (Proc.interactions[2]!).msgVal tr tp w pub = [a, b, 1].map Fp.ofNat)
     (ha : a < 2 ^ 29) (hb : b ≤ 2 ^ 29) : b ≤ a := by
@@ -162,7 +162,7 @@ theorem rounds_ne (hL : Proc.PLocal tr tp pub) (hH : tr.height tp ≤ 2 ^ 22) (I
 
 /-- Consecutive rounds are ordered. -/
 theorem rounds_adj (hH : HoldsP AP pub tr) {tc : Nat} (hC : CmpOwn AP tc)
-    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.table) (I : Proc.Inst tr tp f m)
+    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.tableB) (I : Proc.Inst tr tp f m)
     (hK : ∀ i, i < m → cv tr tp (Proc.hdrAt tr tp f i) Proc.K < 2 ^ 29) {i : Nat} (hi : i + 1 < m) :
     before ((rOf tr tp f i).key, (rOf tr tp f i).z) ((rOf tr tp f (i + 1)).key, (rOf tr tp f (i + 1)).z) := by
   have hL := pLocal_of hH htp htab
@@ -185,7 +185,7 @@ theorem rounds_adj (hH : HoldsP AP pub tr) {tc : Nat} (hC : CmpOwn AP tc)
 
 /-- **`hord`.** -/
 theorem rounds_ord (hH : HoldsP AP pub tr) {tc : Nat} (hC : CmpOwn AP tc)
-    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.table) (I : Proc.Inst tr tp f m)
+    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.tableB) (I : Proc.Inst tr tp f m)
     (hK : ∀ i, i < m → cv tr tp (Proc.hdrAt tr tp f i) Proc.K < 2 ^ 29) :
     (roundsOf tr tp f m).Pairwise fun R R' => before (R.key, R.z) (R'.key, R'.z) := by
   unfold roundsOf
@@ -205,7 +205,7 @@ theorem rounds_ord (hH : HoldsP AP pub tr) {tc : Nat} (hC : CmpOwn AP tc)
 
 /-- Entry comparator: `ts_j + 1 ≤ ts_{j+1}` (or `≤ T` at the last entry). -/
 theorem ent_ts (hH : HoldsP AP pub tr) {tc : Nat} (hC : CmpOwn AP tc)
-    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.table) (I : Proc.Inst tr tp f m)
+    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.tableB) (I : Proc.Inst tr tp f m)
     {i : Nat} (hi : i < m)
     (hts : ∀ j, j < cv tr tp (Proc.hdrAt tr tp f i) Proc.Lr →
       cv tr tp (Proc.hdrAt tr tp f i + 1 + j) Proc.ts < 2 ^ 29)
@@ -228,7 +228,7 @@ theorem ent_ts (hH : HoldsP AP pub tr) {tc : Nat} (hC : CmpOwn AP tc)
 
 /-- **`hts`.** -/
 theorem rounds_ts (hH : HoldsP AP pub tr) {tc : Nat} (hC : CmpOwn AP tc)
-    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.table) (I : Proc.Inst tr tp f m)
+    (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.tableB) (I : Proc.Inst tr tp f m)
     (hts : ∀ i, i < m → ∀ j, j < cv tr tp (Proc.hdrAt tr tp f i) Proc.Lr →
       cv tr tp (Proc.hdrAt tr tp f i + 1 + j) Proc.ts < 2 ^ 29) :
     TsOk T0 (roundsOf tr tp f m) := by

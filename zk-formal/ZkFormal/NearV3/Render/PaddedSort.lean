@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Render.PaddedCongr
 import ZkFormal.NearV3.Candidates.NativeSortTraffic
 import ZkFormal.NearV3.Candidates.SortEmptyCap
+import ZkFormal.NearV3.Assembly.RcptSkeleton
 
 /-!
 # Aligned receipt-id sort generator (`nearAirV3` table 24, `{Sort.table with maxLog := 18}`)
@@ -204,6 +205,35 @@ theorem sort_v3_aligned_complete (rs : List NearSpec.Receipt)
   · obtain ⟨h1, h2, h3⟩ := sort_receipts_aligned_complete19 rs he hw hd hn t pub
     simp only [sortTraceV3, if_neg he]
     exact ⟨SortEmpty.v3_old_local _ t pub h1, h2, h3⟩
+
+end SortV3
+
+namespace SortV3
+open NearSpec NearSpecV3 ZkFormal.NearV3.Assembly
+
+/-- **`sortV3` render for an accepted witness**, emitting exactly the receipt lane's RIDS traffic
+`sortTraffic (NativeSortIds.input (lists.flatten.map Input.receipt))` whenever the receipt lists
+flatten to the applied receipts. -/
+theorem sort_v3_accepted {cb wb raw : Bytes} {k : WalkD0} {w : StateWitness} {m : MainExecutionV3}
+    (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w) (hr : decodeStateWitness raw = .ok w)
+    (hc : checkD0a B0 cb wb = .ok ()) (hm : m.NativeValid k w)
+    (lists : List (List RcptSkeleton.Input))
+    (hls : lists.flatten.map RcptSkeleton.Input.receipt = appliedReceipts k w) (t : Nat) (pub : List Fp) :
+    TableLocal sortTableV3 (sortTraceV3 (lists.flatten.map RcptSkeleton.Input.receipt)) t pub ∧
+    TableTraffic sortTableV3.interactions (sortTraceV3 (lists.flatten.map RcptSkeleton.Input.receipt)) t pub
+      (sortTraffic (NativeSortIds.input (lists.flatten.map RcptSkeleton.Input.receipt))) ∧
+    (sortTraceV3 (lists.flatten.map RcptSkeleton.Input.receipt)).log t % 3 = 1 := by
+  rw [hls]
+  have hrel : RelD0a B0 cb wb := (relD0a_iff B0 cb wb).mpr hc
+  have hg : (m.ctx k).gasLimit ≤ maxGasLimitD0 := by
+    change k.slotB2.gasLimit ≤ maxGasLimitD0
+    simpa only [a1, hk, decide_eq_true_eq] using hrel.2.1
+  have hn := applyNewChunk_receipt_bound hm.run hg
+  unfold checkD0a at hc
+  obtain ⟨u, hc0, _⟩ := ReexecV3D0.bind_ok' hc
+  cases u
+  exact sort_v3_aligned_complete _ (appliedReceipts_wf hr) (checkD0_applied_nodup hk hw hc0)
+    (by omega) t pub
 
 end SortV3
 end ZkFormal.NearV3.Render

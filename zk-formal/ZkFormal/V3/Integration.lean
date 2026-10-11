@@ -31,6 +31,16 @@ import ZkFormal.NearV3.Assembly.NearAdmission
 import ZkFormal.NearV3.Assembly.ExtractV3
 import ZkFormal.NearV3.Assembly.LinkV3
 import ZkFormal.NearV3.Assembly.LinkClaim
+import ZkFormal.NearV3.Render.UnfoldA7Ext
+import ZkFormal.NearV3.Assembly.RenderV3A7
+import ZkFormal.NearV3.Link.UnfoldRefine
+import ZkFormal.NearV3.Assembly.LinkFields
+import ZkFormal.NearV3.Assembly.LinkBus
+import ZkFormal.NearV3.Assembly.LinkSha
+import ZkFormal.NearV3.Assembly.LinkShaKinds
+import ZkFormal.NearV3.Assembly.RcptViewCounts
+import ZkFormal.NearV3.Assembly.LinkChain
+import ZkFormal.NearV3.Assembly.LinkTrie
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
@@ -259,6 +269,14 @@ import ZkFormal.NearV3.Render.PaddedTrie
 import ZkFormal.NearV3.Render.PaddedRcpt
 import ZkFormal.NearV3.Render.PaddedSrcp
 import ZkFormal.NearV3.Render.PaddedQv
+import ZkFormal.NearV3.Render.PaddedQvNative
+import ZkFormal.NearV3.Render.HonestBalanceRcpt
+import ZkFormal.NearV3.Render.HonestBalanceRcl
+import ZkFormal.NearV3.Render.HonestBalanceSrc
+import ZkFormal.NearV3.Render.HonestBalanceSrec
+import ZkFormal.NearV3.Render.HonestBalanceMem
+import ZkFormal.NearV3.Render.HonestBalanceAkc
+import ZkFormal.NearV3.Render.HonestBalanceBnd
 import ZkFormal.NearV3.Render.PaddedRcptR
 import ZkFormal.NearV3.Render.PaddedSha
 import ZkFormal.NearV3.Render.PaddedCongr
@@ -267,6 +285,9 @@ import ZkFormal.NearV3.Render.PaddedMrk
 import ZkFormal.NearV3.Render.PaddedSort
 import ZkFormal.NearV3.Candidates.SortEmptyCap
 import ZkFormal.NearV3.Render.PaddedSched
+import ZkFormal.NearV3.Render.RowTraffic
+import ZkFormal.NearV3.Render.PaddedProc
+import ZkFormal.NearV3.Render.BundleSched
 import ZkFormal.NearV3.Render.PaddedUps
 import ZkFormal.NearV3.Render.PaddedUpsNative
 import ZkFormal.NearV3.Render.NodeRender
@@ -288,6 +309,13 @@ import ZkFormal.NearV3.Sched.Complete.WordBound
 import ZkFormal.Size.HonestAdmission
 import ZkFormal.V3.RefundCodec
 
+import ZkFormal.NearV3.Assembly.RenderV3RcptTables
+import ZkFormal.NearV3.Render.AcceptedQv
+import ZkFormal.NearV3.Render.AcceptedRcpt
+import ZkFormal.NearV3.Render.AcceptedMem
+import ZkFormal.NearV3.Render.AcceptedSrcp
+import ZkFormal.NearV3.Rcpt.Candidates.AccountEmptyCap
+import ZkFormal.NearV3.Render.PaddedAcctE
 /-!
 # Build gate for the integrated v3 proof work
 
