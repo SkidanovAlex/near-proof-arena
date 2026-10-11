@@ -324,3 +324,40 @@ Lead: HEAVY_MEM=12G allowed (`taskset -c 8-13`).  Order: (1) A7 (a) semantic Per
   `S n = decide ([n] ∈ insts.flatMap upsRplMsgs)` (so `S` = the replaced records).
 * Verification: Integration 4126 jobs; `AuditTrieA7Perm` (4 names), `AuditTrieAll`, `AuditTrieUps` pass;
   `make pin-check` OK.
+
+### A7 (b): NOT provable from `checkD0a` as stated (finding, 2026-10-11 session 4)
+
+`unfoldBytes` measures each post trie as `rebuildPost ws post keys = partialTrie (ws ++ postBlobs)
+post.hashOf keys` (A11 lets us replace `ws` by `revealedStore pre`).  `storeGet` returns the FIRST
+blob with the looked-up SHA-256, and the pre blobs come first.  If a revealed pre blob `b'` has
+`sha256 b' = sha256 (nodeEnc o)` for a post node/value `o` with `b' ≠ nodeEnc o` (a SHA-256
+collision), the rebuild decodes `b'` instead and its unfolded count is unrelated to the native post
+`out.trie` — while the AIR's A7 sums (`nodeA7Total + valA7Total + upsA7Total`) count the native
+post.  Nothing in `RelD0a` excludes this (A11 only fixes the store, A3 is about the witness store),
+so neither `… = unfoldBytes` nor `… ≤ B0` nor the ups row cap (`Σ_τ |v_τ|` can reach
+32·98,341 = 3,146,912 B; only A7 bounds it, and only through the rebuild) is derivable without
+an extra premise.  Needs a user/lead decision, e.g. a decidable amendment
+`unfoldedBytesT (rebuildPost (revealedStore pre_τ) post_τ keys) = unfoldedBytesT post_τ` for every
+transition (never binding on honest witnesses, violations need a SHA-256 collision — like A3/A11),
+or measuring A7's post term on the native post `out.trie` directly.
+What remains provable and is still needed under either fix (open, not started): the structural
+identity on NATIVE posts, per transition `τ` with scheduler run `u_τ`:
+`unfoldedBytesT u.pre + unfoldedBytesT u.run.output = Σ_{records x of τ} (S x ? 1 : 2)|enc x|
+ + Σ_{values t of τ} (SV t ? 1 : 2)|v_t| + |u.value| + outputByteCharge u.run`, with
+`upsA7Total I = L + Σ_k |Q_k| = |u.value| + outputByteCharge u.run` (from `recsI` length,
+`AllocatedNativeInstance`), `S` = path records (the RPL ids), `SV` = overwritten value (LP/BV);
+τ = 0: `SizedAccountRun.unfolded_bytes` (oldPost ↔ m.pre).  Ingredients: an exact
+`traceUpsert` occurrence identity (the existing `traceUpsert_output_charge*` are inequalities),
+`hforest` (record `ser` = rebased `nodeEnc`).
+
+## Task 3 DONE — bundle `SIZE` balance
+
+* `Assembly/TrieA7SizeBal.lean`: `covers_size_send` (tables 2, 4, 7, 20), `covers_size_recv` (21),
+  `pub_size`, `RenderBundleV3.tf_eq`, **`RenderBundleV3.balancedAt_size`**: node/val/size components
+  with the `Traffic.append` traffic of `nodeRenderV3`/`valRenderV3`/`sizeRenderV3`, ups trace
+  `upsA7Trace Js`, srcp `SIZE` sends `= (srcpTraffic bs).sends B_SIZE`, size base view
+  `honestSizeV ns es bs`, `yN 0/1/2 = nodeA7Total ns S / valA7Total es SV / upsA7Total Js` ⇒
+  `R.BalancedAt B_SIZE` (tags 0–2 `honest_size_balance`, tags 3–5 the A7 sends vs `size_a7_recvs`).
+  The size COMPONENT itself (`sizeRenderV3`) still needs `SizeOk` and the `≤ B0` row premise —
+  i.e. A7 (b).
+* Audit `AuditTrieA7SizeBal` passes.
