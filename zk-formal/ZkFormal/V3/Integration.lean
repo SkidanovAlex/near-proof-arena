@@ -38,6 +38,7 @@ import ZkFormal.NearV3.Assembly.TrieUpsKeys
 import ZkFormal.NearV3.Assembly.TrieVslotNative
 import ZkFormal.NearV3.Assembly.TrieShaFamilies
 import ZkFormal.NearV3.Assembly.TrieUpsSched
+import ZkFormal.NearV3.Assembly.TrieWalkAlign
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec

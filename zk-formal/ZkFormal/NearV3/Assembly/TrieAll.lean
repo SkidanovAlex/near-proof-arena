@@ -35,6 +35,9 @@ theorem trie_all_of {cb wb : Bytes} {k : WalkD0} {w : StateWitness} (hk : walkD0
     (resolve : Resolve) (pub : List Fp) :
     ∃ (writes : List (List Nat × Bytes)) (oldPost : PTrie) (insts : List UpsInst) (ws : List WalkR),
       SizedAccountRun m.pre writes oldPost ∧ KeysFinal k w m writes oldPost ∧
+      (∃ v : MainValues, v.Valid ∧ v.Reads m.pre m.pre m.pre ∧
+        nativeQueryWalks ((m.pre, m.result.trie) :: steps.map (fun s => (s.pre, s.post)))
+          (allLookupQueries (appliedReceipts k w) m.pre v (steps.map ImplicitStepV3.pre) resolve) = some ws) ∧
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       TrieUpsOrigin.UpsSha insts ∧
@@ -66,9 +69,9 @@ theorem trie_all_of {cb wb : Bytes} {k : WalkD0} {w : StateWitness} (hk : walkD0
         (∀ I ∈ Js, I.mid.length = 32 ∧ I.post.length = 32) ∧
         headRecvs hs B_ROOT = nativeInputRoots 0 (m.pre :: steps.map ImplicitStepV3.pre) ∧
         Js.map (fun I => [I.tau + 1] ++ I.post) = nativeRootRecords 0 (m.result.trie :: steps.map ImplicitStepV3.post) := by
-  obtain ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hRw, hpos, ho, hfam, horigin, hsha, hedges, hbmaps, hrest⟩ :=
+  obtain ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads, hRw, hpos, ho, hfam, horigin, hsha, hedges, hbmaps, hrest⟩ :=
     accepted_ups_walks hk hw h hm hv resolve pub
-  refine ⟨writes, oldPost, insts, ws, hr, hkf, hRw, horigin, hsha, ?_⟩
+  refine ⟨writes, oldPost, insts, ws, hr, hkf, ⟨v, hvvalid, hvreads, hws⟩, hRw, horigin, hsha, ?_⟩
   intro W hW
   obtain ⟨he, hb, hups, hmid, hlens, hroot1, hroot2⟩ := hrest W hW
   obtain ⟨hn, hval, hh⟩ := TrieNative.accepted_ok hk hw h hm hv hr (useReq ws insts W) hedges hbmaps hW
@@ -90,6 +93,9 @@ theorem trie_all_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (reso
       walkD0 cb = .ok k ∧ decodeW wb = .ok w ∧ m.NativeValid k w ∧
       ImplicitTraceValid k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) steps last ∧
       SizedAccountRun m.pre writes oldPost ∧ KeysFinal k w m writes oldPost ∧
+      (∃ v : MainValues, v.Valid ∧ v.Reads m.pre m.pre m.pre ∧
+        nativeQueryWalks ((m.pre, m.result.trie) :: steps.map (fun s => (s.pre, s.post)))
+          (allLookupQueries (appliedReceipts k w) m.pre v (steps.map ImplicitStepV3.pre) resolve) = some ws) ∧
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       TrieUpsOrigin.UpsSha insts ∧
