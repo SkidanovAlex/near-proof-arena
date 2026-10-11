@@ -299,3 +299,4 @@ or final admission certificate. Candidate imports do not admit their protocol pa
 -/
 import ZkFormal.NearV3.Assembly.RenderV3RcptTables
 import ZkFormal.NearV3.Render.AcceptedQv
+import ZkFormal.NearV3.Render.AcceptedRcpt
