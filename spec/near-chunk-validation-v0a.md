@@ -34,7 +34,7 @@ and witness formats are unchanged (`spec/claim-v3.md`).
 |---|---|---|
 | `c.gas_limit` (A1) | the `gas_limit` of B2's own-shard slot (the block of the shard's last new chunk) is `≤ 10^15` (1000 Tgas) | bounds the applied receipts (`n ≤ 4481`) and the refund body (`≤ 0.91 MB`) for a succinct proof |
 | `w.proof_routing` (A2) | every receipt of every *used* source receipt proof (the entry the last-wins lookup selects for a new source chunk) routes, under `L(epoch_id)`, to the validated shard | no receipt is Merkle-hashed but filtered out (proof-size bound) |
-| `w.unfolded` (A7) | `unfoldBytes(cb, w) ≤ B0 = 3,000,000` (§2.4) | the AIR hashes every revealed node *occurrence* (tree-shaped records); a witness can share one subtree under many slots, so the unfolded size — not `|base_state|` — bounds the SHA and node tables |
+| `w.unfolded` (A7) | `unfoldBytes(cb, w) ≤ B0 = 2,000,000`: unfolded pre-tries + unfolded rebuilt post-tries (§2.4; post term revised 2026-10-11) | the AIR hashes every revealed node *occurrence* (tree-shaped records); a witness can share one subtree under many slots, so the unfolded size — not `|base_state|` — bounds the SHA and node tables |
 | `c.bw_requests` (A8) | in every block of the claim's segment, every chunk slot's `BandwidthRequests` has at most one request per `to_shard` (claim-only; `prepD0` checks it natively) | bounds the requests the in-AIR scheduler converts and processes (`≤ n²` per applied block), hence the scan / process table heights |
 | `e.chacha_words` (A9) | the bandwidth-scheduler runs of all applied transitions (main at B2, each implicit block) draw `≤ W0 = 770,000` ChaCha20 words in total (§2.6) | bounds the in-AIR ChaCha lane: `chachaV3 ≤ 86·⌈K/16⌉ ≤ 4,141,410 < 2²²` rows; the rejection-sampling fuel alone allows ≈ 9.9 M words |
 | `w.path_depth` (A10) | every *used* source receipt proof's Merkle path has `≤ Dp0 = 32` items (§2.7) | bounds the in-AIR source-proof table: `srcpV3 ≤ 1984·(33 + 64·32) = 4,128,704 ≤ 2²²` rows; `rootFromPath` alone accepts any length |
@@ -104,15 +104,20 @@ accepted by nearcore (`filter_incoming_receipts_for_shard` drops it) but is outs
 `UnfoldBound`): for each applied transition τ (main, then each implicit one) with pre-trie
 `pre_τ = partialTrie ws_τ root_τ keys_τ` (exactly the trie `checkD0` builds) and post-trie
 `post_τ` (the post-state as a store presents it, rebuilt along the same keys):
-`unfoldBytes = Σ_τ unfoldedBytesT pre_τ + diffT pre_τ post_τ`, where `unfoldedBytesT` sums
+`unfoldBytes = Σ_τ unfoldedBytesT pre_τ + unfoldedBytesT post_τ`, where `unfoldedBytesT` sums
 `|nodeEnc o|` over the revealed node occurrences (per path copy) and the revealed values
 (identical to lane v3-trie's `unfoldedBytes`, so `UnfoldBound e ws root keys` is
-`unfoldedBytesT (partialTrie ws root keys) ≤ e`), and `diffT` sums the post node occurrences
-whose encoding differs from the pre-trie's at the same position plus the changed revealed
-values (the post-write path copies the AIR hashes). Decidable; computed independently in the
-oracle (`oracle/v3-d0a/src/d0a.rs`: nearcore `RawTrieNodeWithSize`, witness values and the
-tracking node's State column, keys from `TrieKey::to_vec`) and the Python checker (the keys the
-D0 checker reads, raw node bytes); the difftest compares the three values exactly.
+`unfoldedBytesT (partialTrie ws root keys) ≤ e`), applied to the pre-trie and to the rebuilt
+post-trie. **Revised 2026-10-11 (user decision):** the post term was `diffT pre_τ post_τ` (only the
+post occurrences differing from the pre-trie at the same position, plus changed values); it is
+now the whole revealed post-trie, so that the AIR can enforce A7 with running sums instead of
+in-AIR position matching. The new count is never smaller, so only the domain narrows: the
+largest honest value is 7,996 (public D0a), 12,402 (D1 corpus), 9,624 (D2 corpus) against
+`B0 = 2,000,000`. Decidable; computed independently in the Python checker (the keys the D0
+checker reads, raw node bytes) and in Lean; the oracle's stored value (`oracle/v3-d0a/src/d0a.rs`:
+nearcore `RawTrieNodeWithSize`, witness values and the tracking node's State column, keys from
+`TrieKey::to_vec`) still implements the pre-2026-10-11 `diffT` measure and is compared with the
+checkers' `unfold_diff`; updating it and regenerating the fixtures is pending. the difftest compares the three values exactly.
 
 **`B0 = 2,000,000`** (lead decision, user-approved). The SHA table hashes every unfolded byte
 (pre occurrences once; changed post occurrences once) at ≤ 1.25 rows/byte (sha_t, lane
