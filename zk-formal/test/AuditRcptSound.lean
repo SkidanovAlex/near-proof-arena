@@ -8,6 +8,7 @@ import ZkFormal.NearV3.Rcpt.Link.RcptHoldsB
 import ZkFormal.NearV3.Rcpt.Link.AkeyAkc
 import ZkFormal.NearV3.Rcpt.Link.SrecLink
 import ZkFormal.NearV3.Rcpt.Link.QvPre
+import ZkFormal.NearV3.Rcpt.Link.QvBal
 
 /-- info: 'ZkFormal.NearV3.RcptLink.applyReceipts_of_ledger' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
@@ -176,3 +177,19 @@ import ZkFormal.NearV3.Rcpt.Link.QvPre
 /-- info: 'ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_pre' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_pre
+
+/-- info: 'ZkFormal.NearV3.RcptLink.qv_hkey' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.qv_hkey
+
+/-- info: 'ZkFormal.NearV3.RcptLink.qv_hfinal' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.qv_hfinal
+
+/-- info: 'ZkFormal.NearV3.RcptLink.qv_hK' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.qv_hK
+
+/-- info: 'ZkFormal.NearV3.RcptLink.RunModel.valsAt_lenPres' depends on axioms: [propext] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.RunModel.valsAt_lenPres

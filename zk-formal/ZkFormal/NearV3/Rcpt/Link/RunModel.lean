@@ -85,12 +85,17 @@ def accAt (r : Nat) : Acc :=
 
 def upd (v : Nat → Bytes) (k : Nat) (b : Bytes) : Nat → Bytes := fun j => if j = k then b else v j
 
+/-- `v` has the lengths of the initial values. -/
+def LenPres (v : Nat → Bytes) : Prop := ∀ k, (v k).length = (M.valsAt 0 k).length
+
 /-- The trie link's interface. -/
 structure TrieOk : Prop where
   get : ∀ r, r < M.rs.length → ∀ v, (M.T v).get (accountKeyPath (M.rc r).receiverId) = some (v (M.slot r))
   find : ∀ r, r < M.rs.length → ∀ v,
     (M.T v).find (accountKeyPath (M.rc r).receiverId) = some (some (v (M.slot r)))
-  set : ∀ r, r < M.rs.length → ∀ v b,
+  /-- only for value families with the initial lengths and a same-length new value (a trie
+  update may restructure the trie depending on value lengths) -/
+  set : ∀ r, r < M.rs.length → ∀ v, M.LenPres v → ∀ b, b.length = (v (M.slot r)).length →
     (M.T v).set (accountKeyPath (M.rc r).receiverId) b = some (M.T (upd v (M.slot r) b))
   ak : ∀ r, r < M.rs.length → M.isSys r = true → (M.rc r).signerId = (M.rc r).receiverId →
     ∃ o, (M.T (M.valsAt r)).find (keyAccessKey (M.rc r).receiverId (M.rc r).signerPk) = some o ∧
@@ -121,6 +126,11 @@ theorem valsAt_succ {r : Nat} (hr : r < M.rs.length) :
   · have h' : M.slot r ≠ j := fun x => h x.symm
     simp [valsAt, amtAt, upd, h, h']
 
+theorem valsAt_lenPres (r : Nat) : M.LenPres (M.valsAt r) := by
+  intro k
+  simp only [valsAt]
+  split <;> simp [Account.encode, u128, u64, leN_length]
+
 theorem dec_valsAt {r : Nat} (hr : r < M.rs.length) (hok : M.RcptOk3 ctx r) :
     Account.decode (M.valsAt r (M.slot r)) =
       some { M.acc0 (M.slot r) with amount := M.amtAt (M.slot r) r } := by
@@ -147,8 +157,9 @@ theorem step (hT : M.TrieOk) {r : Nat} (hr : r < M.rs.length) (hok : M.RcptOk3 c
       Params.storageAmountPerByte * (M.acc0 (M.slot r)).storageUsage) ||
       decide ((M.acc0 (M.slot r)).storageUsage ≤ Params.zeroBalanceStorageLimit)) = true := by
     rcases h3 with h3 | h3 <;> simp [h3]
-  have hset := hT.set r hr (M.valsAt r)
+  have hset := hT.set r hr (M.valsAt r) (M.valsAt_lenPres r)
     (Account.encode { M.acc0 (M.slot r) with amount := M.amtAt (M.slot r) r + (M.rc r).deposit })
+    (by simp [valsAt, M.written_slot hr, Account.encode, u128, u64, leN_length])
   rw [← valsAt_succ M hr] at hset
   rw [accAt_succ]
   unfold ledgerStep

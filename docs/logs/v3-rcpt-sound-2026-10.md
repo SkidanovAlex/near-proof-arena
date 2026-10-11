@@ -3,7 +3,7 @@
 Worktree `/data/illia/nearproof-wt/v3-rcpt-sound`, branch `lane/v3-rcpt-sound`, from main `c87a7cae`.
 Modules: `zk-formal/ZkFormal/NearV3/Rcpt/Link/{RunSplit,ForwardSound,MemBal,Mem3,MemOf,RunModel,
 NewChunk,RecChain,RecModel,PrepFwd,RcptCore,AcctSlots,GasPub,RcptHolds,ValBytes,PeoBytes,RfBody,RfEnc,
-RcptHoldsB,FwdLinks,AkeyAkc,SrecLink,QvPre}.lean` (namespace
+RcptHoldsB,FwdLinks,AkeyAkc,SrecLink,QvPre,QvBal}.lean` (namespace
 `ZkFormal.NearV3.RcptLink`).
 Audit `zk-formal/test/AuditRcptSound.lean` (all `[propext, Classical.choice, Quot.sound]` or less).
 No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
@@ -252,3 +252,33 @@ fwdDemand p.fwd (o·n_L + k) ≤ so.grant own ids[k]) → applyNewChunk … = .o
 start-closedness once on main); (2) the `hkey`/`hfinal`/`hrequests` balances from `HoldsP`;
 (3) compose with `assemble_native_queue_reads` and `mainRun_of_holdsP_pre` once v3-link's
 `RootChain`/`WalkHyp`/`shaHyp_holds` land on main.
+
+## 2026-10-11 (session 2, round 3) — qv balances, TrieOk.set restriction, routing q-bound
+
+* **`QvBal`** (new): `qv_hkey` / `qv_hfinal` — the `hkey` / `hfinal` permutations of
+  `Qv.Extract.assemble_native_queue_reads` from `HoldsP` (KEYNIB and FINAL are used by walk (5),
+  rcpt (16), qv (22) only; `qvRows tr pub b s` = the raw qv rows' traffic; `others` =
+  `(rcptRecvs3 r.lists B_FINAL).map toFp`).  `qv_hK` — `kPublic < 64`
+  (`Candidates.ProcessRepairQueuePublic.queue_count`).  The `hn : |flatR| ≤ W_AK = 8192` premise
+  follows from `h.n = |flatR|` and `p.hdr.n ≤ 8192` (same module, first theorem) — not yet
+  packaged.  `hrequests` / `hc` (QSH shard list) not done.
+* **`TrieOk.set` restricted (lead / lane v3-link request, session 9 of their log):** now
+  `∀ r < n, ∀ v, M.LenPres v → ∀ b, b.length = (v (M.slot r)).length → (T v).set key b = some (T (upd v slot b))`,
+  `LenPres v := ∀ k, (v k).length = (M.valsAt 0 k).length`.  `RunModel.valsAt_lenPres`: every
+  `valsAt r` is length-preserving (written slots are `Account.encode` of the same account up to
+  `amount`, a `u128`).  `step` adapted; nothing else used `set`.  `get`/`find` unchanged.
+* **Routing BND premises (item 3): blocked by an AIR decision.**  `bounded_prepared_native_routing`'s
+  `hp : ∀ r ∈ boundaryRequests ls, ∃ e ∈ es, e.rec4 = r.1` comes from `bnd_lookup_provider`, which
+  needs canonical requests (`boundaryRequests_canonical`, requiring `x.q < 128`).  The active
+  `nearAirV3` receipt table is `RcptV3.tableR` (arithmetic repairs only); the `q < 128` bound is
+  the **unadopted** `RoutingQCandidate` (`docs/zk-formal/ROUTING-Q-CANDIDATE.md`):
+  `Rcpt/Link/RoutingAlias.lean` shows `q = 1796452668` aliases boundary address 2 (`65·q ≡ 2`).
+  Without the candidate constraint, routing soundness (hence the routing fact replacing
+  `own ∈ shardIds`, and receipt routing itself) is not derivable.  Counterexample sketch: the
+  fixture `RoutingAlias.layout` (`[[122,122]]`, shards `[0,1]`, own `1`): receiver `[97,97]`
+  routes natively to shard 0 but its lookups at address `65·aliasQ + 0 ≡ 2` read boundary row 2
+  of the own interval — a receipt not owned by shard 1 passes the local routing constraints
+  (`route_constraints_pass`).  **Lead decision needed**: adopt `RoutingQCandidate`.
+* **Codec-inclusive physical reads (item 1): not started** (context).  Plan unchanged:
+  `physical_empty_native` / `physical_buffered_*` with the 5-sender VBYTES balance; codec streams
+  start-closed via v3-link's `LinkVBytes.Codec.vrow_msg` (merge `origin/lane/v3-link` when needed).
