@@ -78,3 +78,51 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
   roots (`forestNodes_cover`).  The uniq table is now fully native: `uniqRenderTrie pub
   (uniqNative m steps) (uniqNative_ok …)` with `DIGS` (`digsBal_accepted`) and `DUP`
   (`dupBal_accepted`).
+* `Assembly/TrieComplete.lean` — `walk_accepted` (Walk22 `WalkOk` of the ranked native lookup
+  walks for the SAME `m`, `steps`), **`trie_accepted`** (one choice of native objects; for all
+  `q`/`keys` of field-bounded length: node/head/val/uniq `TableRenderV3` components with native
+  `tf` and `ParentBal`/`VParentBal`/`EntBal`/`DigsBal`/`DupBal`; for every resolver: the walk
+  component), `RenderBundleV3.balancedAt_trie_core` (bundle balanced on PARENT, VPARENT, ENT,
+  DIGS, DUP).
+
+## Open (state at end of session)
+
+1. **SHA (tables 0, 1) — capacity not established; believed infeasible at the D0a bounds.**
+   The proven per-family SHA row bounds are scheduler ≤ 1,663,260, native trie ≤ 2,925,275,
+   receipt ≤ 1,373,299, source ≤ 8,932,712 (`relD0a_work_bounds`, `ShaFourPhysical`,
+   `SourceUpsertShaLog22`), total 14,894,546 rows, while `nearAirV3` has two `shaTable`s of cap
+   `2^22` = 8,388,608 rows in total (the source family alone exceeds it).  The candidates pack
+   into **four** log-22 bins (`FourPackedSha`, `fourShaJobBins`).  `TableRenderV3` for a bin is
+   done (`shaRenderV3`, needs `Sha.MsgsOk bin`), but no 2-bin split of the honest messages with
+   `MsgsOk` exists, and with these bounds none can be proved.  Needs an AIR decision (≥ 4 SHA
+   instances, or a tighter source bound); `Assembly/NearAir.lean` not touched here.
+2. **`upsV3` (table 7) and every bus it touches** — `EDGE`, `BMAP`, `UPB`, `MIDROOT`, `MEMD`,
+   `ROOT` (+ public), `BYTES`, `DIGEST`, `S0F`/`SPOST`/`SPLEN`.  The render
+   `upsRenderTrie` needs `UpsRenderOk insts`; `upsRenderOk_of_native` gives it from
+   `UpsNativeOk` per instance, but no theorem produces the `UpsNativeData` list (with
+   `encodeNativeParts … = some Qs`, `WalkOkU`, the `qhk/phk < 2^22` bounds) from acceptance, and
+   the ups traffic is the trace view `upsTraffic (viewOf (upsTraceAligned insts) …)`, so a
+   trace-free balance needs `viewOf (upsTraceAligned insts) = rows of insts` first.  The candidate
+   balances (`concrete_actual_ups_edge_balance`, `native_midroot_balance`,
+   `native_root_balance`, the UPB parts of the allocation theorems) are stated for
+   `UpsRelay.compactTable` (no `SPOST` receive) over `physicalPrefixUps … rawInsts` with
+   `patchWindowCounters`, not for `UpsV3.table` over `UpsNativeData.inst`.
+   Open statement (per bus `b` in that list): `∀ accepted, ∃ insts q keys …, the bundle
+   component equations ⇒ R.BalancedAt b` — with the use requests `q` (EDGE/BMAP from
+   `walkEdgeKeys (ws ++ upsWalkInventory insts)`, UPB windows from the ups rows) and head keys
+   chosen from the walks.
+3. **Shared buses, trie contribution** (other tables in parentheses must supply the rest):
+   `VSLOT` node receives `[i]` for written value windows (acct 17 sends);
+   `KEYNIB` walk receives (rcpt 16, qv 22 send); `FINAL` walk sends (rcpt, qv receive);
+   `VBYTES` val receives `[vid, p, byte]` (codec 11, acct, akey 18, qv send — the candidate
+   allocation proves it against `EmptyValue.table`/`AccountEmpty.table`, not `ValV3.table`);
+   `SIZE` node/val send record totals (srcp 20, size 21);
+   `BYTES`/`DIGEST` node/val/head/ups vs. the SHA bins (blocked by 1).
+4. **A7 (a), (b)** — not started here.  The A7 tables (`nodeA7`/`valA7`/`upsA7`/`sizeA7`,
+   `RenderV3A7`) are on `lane/v3-link` only, which does not merge cleanly with main
+   (`NearAir`/`ExtractV3`/`LinkV3`/`NearAdmission`/`NearAirSize` conflicts, size bound to be
+   recomputed).  (a) needs the record-level traffic of the appended interactions
+   (`RPL`/`RPLV` sends of `upsA7` per replaced record ↔ `rpl`/`rplv` receives chosen by `sel`,
+   and `SIZE (3..5, ·)` ↔ `yN`); (b) needs `Σ(2−rpl)·len + Σ(2−rplv)·len + Σ_τ(L_τ+Σ|Q_j|) =
+   Σ_τ unfoldedBytesT pre_τ + unfoldedBytesT post_τ ≤ B0` for the honest choice — both depend
+   on the ups instances of item 2.
