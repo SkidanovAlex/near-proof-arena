@@ -1,0 +1,24 @@
+# The candidate's formal package (verify_route = native-lean, candidate.toml
+# [formal] lean_project = "formal"). It mirrors examples/np-udr-stark/formal:
+# the judge computes its own build plan and never uses this lakefile, but the
+# offline build recipe (build-recipe/build.sh) and local development use it.
+#
+# `require ZkFormal` resolves the repository's zk-formal Lake package (which in
+# turn requires ArenaCore / NearSpec / NearSpecV3 by path). This is what the
+# conformance harness (../conformance/lakefile.toml) does too. In the PACKAGE
+# the zk-formal sources are vendored under formal/ZkFormal by
+# build-recipe/sync-lean.sh and pinned in dependency-locks/zk-formal.sha256;
+# the judge stages only formal/ and elaborates every .lean file there.
+name = "NpUdrStarkV2"
+version = "0.1.0"
+
+[leanOptions]
+autoImplicit = false
+relaxedAutoImplicit = false
+
+[[require]]
+name = "ZkFormal"
+path = "../../../zk-formal"
+
+[[lean_lib]]
+name = "NpUdrStarkV2"

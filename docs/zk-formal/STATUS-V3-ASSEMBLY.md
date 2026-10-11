@@ -129,8 +129,20 @@ already carried in the view types (`NodeWf3.rows ≤ 2^22`, `WalkWf3`,
 to the view row bounds.  Downstream of 3.2.
 
 ### 3.5 Rust prover (item 8)
-`np-udr-stark-v2` does not exist in Rust: no `AirP`/`pubSegs`, no `nearAirV3`
-trace generators, no candidate package.  The only v3 packages are re-execution.
+`examples/np-udr-stark-v2/` on `lane/v3-prover` now has: the generic
+`np-udr-stark-v2` prover/verifier (public segments + `auxGroup ∈ {1,2,3}`,
+differential to the deployed Lean `verifierP … (pg g)`); aligned per-table trace
+generators for **bnd, akey, head, val, uniq, walk, node**, each byte-identical to
+the Lean `Render/Padded*.lean` generator; a witness→entries dumper
+(`np-lean-entries-v3`) for node/val/head; the `Hint`/`Prep`/`SchedPub` byte codecs
+in `src/v3/prep.rs` (byte-identical to `Prep.encode` on all 64 D0a fixtures); and a
+candidate package (`candidate.toml`, `build-recipe/`, `formal/`) whose
+`NpUdrStarkV2.certificate` is a **conditional** admission certificate.
+
+Still missing for a *closed* certificate: the open `ExtractV3Stmt` (link),
+`RenderV3Stmt` + `AlignedV3Stmt` (render); the Rust `prepClaim`/`prepBody` (D0
+execution); the honest entry seeds for `walk`/`uniq`/`akey`/`bnd`; and the Rust v3
+`prove` over `nearAirV3` (`out/prove` is still the inherited v1 surface).
 
 ## 4. How it fits
 

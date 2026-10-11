@@ -28,8 +28,10 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
 | reference verifier | `pub_fit`, `pub_msgs`, `pub_prod` (`PubSeg.count/startOffset/record/fits`, `pubFit`, `pubMsgs`, `pubProd`); bus equation `∏sends·Π_pub(true) = ∏recvs·Π_pub(false)` (`globalChecksP`), `pubFit` checked before any record is enumerated (as Lean's `okLens && pubFit && …`). The provers self-check with the same equation. |
 | prover messages | unchanged from v1 (FORMATS §8.5): the v2 prover is v1's honest prover for `AP.toAir` at `pg g`. |
 | `nearAirV3` | read from `np-lean-export-v3` (1,639,407 B, sha256 `73bcf1dd…`), validated, per-table layout equal to Lean's at g = 1, 2, 3. |
-| trace generation for `nearAirV3` (witness → 25 tables) | **not started** (part 2; follows the Lean renders, `RenderV3Stmt`). |
-| `prepD0`/hint codec in Rust, candidate package, build recipe, `formal/` model | **not started**. |
+| trace generation for `nearAirV3` (witness → 25 tables) | **partial**: aligned generators for 7 tables (bnd, akey, head, val, uniq, walk, **node**) in `src/v3/`, byte-identical to the Lean `Render/Padded*.lean` generators (`conformance/run-v2.sh` §3). node is the largest/most complex table. |
+| witness → per-table entries (part 2c) | **partial**: `conformance/WitnessEntriesV3.lean` → `np-lean-entries-v3 <case> [<table>]` runs the proved D0a extraction (`checkD0a B0` + the reference `trace`) on a real fixture and dumps the honest entry lists for **node** (`initializeList 0 (forestNodes 0 0 0 ts)`), **val** (`seedValuesFrom 0 (forestBytes ts)`) and **head** (`traceHeads 0 0 pairs`); `src/v3/entries.rs` + `npudr v3entries` read them. `conformance/run-v2.sh` §4: `npudr v3check` accepts every constraint and `npudr v3render` is byte-identical to `np-lean-render-v3` on the real-fixture node/val/head entries. `walk`, `uniq`, `akey`, `bnd` need the query/receipt allocation layers (extension point, below). |
+| `prepD0`/`Hint` codec in Rust (part 3) | **partial**: `src/v3/prep.rs` mirrors `PrepD0.lean`'s byte codecs — `Hint` (`u32 n ‖ borshBytes body`), `PrepHdr`/`SrcList`/`SchedPub`/`Prep` `encode()`, the `encList`/`encOpt`/`concatAll`/`borshBytes` helpers, and the refund body codec (`decode_body`/`body_of`, `pRefund`). `conformance/PrepV3.lean` (`np-lean-prep-v3`) runs the proved `checkD0a B0` + `hintOf` + `prepD0` on a real fixture and dumps `hint`/`prep`/`refunds_enc`/`prep_json`; `npudr prep-encode` re-encodes `prep_json` byte-identically to the Lean `Prep.encode`, and the `Hint`/body codecs round-trip (`run-v2.sh` §5, all 64 D0a fixtures). `prepClaim`/`prepBody` (D0 execution) are not ported. |
+| package skeleton + conditional certificate (part 4) | **partial (NOT ADMITTED)**: `candidate.toml`, `build-recipe/` (`build.sh`/`sync-lean.sh`/`vendor.sh`), `formal/` (`NpUdrStarkV2.{Model,PublicBin,Assembly,Certificate}.lean`), `bench/`, `dependency-locks/` mirror `examples/np-udr-stark`. `NpUdrStarkV2.Model.verifier` is the deployed model `(npVerifierP challengeSpecD0a nearAirV3 split prepV3b).toVerifier` (`split`/`join`/`prepV3b` = `ZkFormal.NearV3.Assembly`), closed, no `sorry`. `NpUdrStarkV2.certificate` is `ZkFormal.NearV3.Assembly.nearV3_admission_with_extract_b` specialised to `challengeParamsD0a`: it is **conditional** on the open obligations `ExtractV3Stmt` (the `link` package), the render completeness closure and `AlignedV3Stmt` (`docs/zk-formal/STATUS-V3-ASSEMBLY.md` §3). Until those land the candidate is **not ADMITTED**. `build.sh` builds the Rust bins (`out/prepare`/`out/prove`) and the native-lean `out/verify`; the Rust bins are still the inherited **v1** surfaces — the v3 `prove` (nearAirV3 trace + STARK prove) is not written yet. |
 
 ## Verification
 
@@ -37,12 +39,27 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
   (JSON round trip, layouts at g = 1/2/3, prove/verify at every g, proofs
   rejected under every other g, tampered claims, hostile counts/offsets
   rejected by `pubFit`, prover refuses an unbalanced claim).
-* `conformance/run-v2.sh` (166 checks, all pass on 2026-10-10): the deployed
+* `conformance/run-v2.sh` §3 checks every aligned generator against `np-lean-render-v3` on the random samplers; §4 runs `np-lean-entries-v3` on real `public-d0a/d0` fixtures and checks that node/val/head entries from a real witness pass `npudr v3check` and render byte-identically to `np-lean-render-v3`.
+* `conformance/run-v2.sh` §5 (part 3): `np-lean-prep-v3` on the `public-d0a/d0`
+  fixtures (all 64 accept `checkD0a B0`) emits `hint`/`prep`/`refunds_enc`/
+  `prep_json`; `npudr prep-encode` reproduces `Prep.encode` byte for byte and the
+  `Hint`/refund-body codecs round-trip.
+* `conformance/run-v2.sh` (166 checks + part 3, all pass on 2026-10-11): the deployed
   Lean `ZkFormal.V2.verifierP Fp Fp8 AP (pg g)` (`np-lean-verify-v2`) accepts the
   Rust v2 toy proofs at g = 1, 2, 3 and logs 4/6/10, rejects them under every
   other `auxGroup`, rejects 9 proof mutations and 5 claim mutations each, and the
   AIR re-exports byte-identically; `nearAirV3` layouts equal at g = 1, 2, 3.
 * `conformance/run.sh` (inherited v1 suite; 205 checks, all pass on the fork).
+* `formal/`: `cd formal && lake build NpUdrStarkV2.Certificate` (requires the repo
+  `zk-formal` Lake package; build under `/data/illia/nearproof-deps/bin/heavy`).
+  Builds the conditional certificate; `#print axioms NpUdrStarkV2.certificate`
+  reports `[propext, Classical.choice, Quot.sound]` (no `sorry`/`axiom`).
+* `build-recipe/build.sh`: `SKIP_LEAN=1 bash build-recipe/build.sh` builds
+  `out/prepare`/`out/prove` (Rust); without `SKIP_LEAN=1` it also replicates the
+  judge's native-lean build into `out/verify` (needs `source/lean-vendor` and
+  `out/`+`formal/ZkFormal`+`formal/ReexecV3D0`, all produced by
+  `build-recipe/sync-lean.sh`). `build-recipe/vendor.sh` needs network and is a
+  packager step (not run here).
 * `cargo clippy --all-targets -- -D warnings`: 50 findings, the same count as
   fast2 (inherited; none from the v2 changes).
 
