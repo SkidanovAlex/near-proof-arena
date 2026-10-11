@@ -1,6 +1,8 @@
 import ZkFormal.NearV3.Assembly.LinkSha
 import ZkFormal.NearV3.Rcpt.Link.ListByteIds
 import ZkFormal.NearV3.Rcpt.Link.SourceIsolation
+import ZkFormal.NearV3.Candidates.MerkleAlias
+import ZkFormal.Near.Link.MrkFacts
 
 /-!
 # ZkFormal.NearV3.Assembly.LinkShaKinds — the `BYTES` kind registry (`OthersKinds`)
@@ -123,6 +125,11 @@ theorem rcptKinds {pub : List Fp} {ls : ZkFormal.NearV3.RcptV3Vs}
   simp only [K_NPRE, K_NPOST, K_VPRE]
   omega
 
+/-- The receipt registry from the counted view (`V3RecordsWf.listsCount`). -/
+theorem rcptKinds_of {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r) :
+    KindsOk (ZkFormal.NearV3.rcptSends3 pub r.lists B_BYTES) :=
+  rcptKinds W.listsCount.1 W.listsCount.2
+
 /-! ## acct (`K_VPOST = 10`): the slot `a.k` is a value id, via `VSLOT` and `VPARENT` -/
 
 /-- **`VSLOT`**: the `acctV3` slot messages are exactly the node records' written value slots. -/
@@ -187,5 +194,79 @@ theorem acctKinds {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP n
   obtain ⟨j, -, rfl⟩ := ZkFormal.NearV3.Link3.mem_emitAt3.mp hx
   have := acct_slot_lt hH T W ha
   exact kindOk_msgId (by decide) (by decide) (by decide) (by decide) (by unfold msgId K_VPOST P; omega)
+
+/-! ## mrk (`K_MRK = 6`): ids below the shape size `≤ 2n`, `n` the receipt count -/
+
+theorem mrkLevels_length2 : ∀ (f j sp : Nat), (mrkLevels f j sp).length ≤ 2 * sp
+  | 0, _, _ => by simp [mrkLevels]
+  | f + 1, j, sp => by
+    have ih := mrkLevels_length2 f (j + 1) ((sp + 1) / 2)
+    simp only [mrkLevels, List.length_append, List.length_map, List.length_range]
+    split
+    · rename_i h; simp only [List.length_nil]; omega
+    · rename_i h
+      omega
+
+theorem alias_pubNat (pub : List Fp) {i : Nat} (hi : i < 249) :
+    pubNat (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) i =
+      pubNat pub (ZkFormal.NearV3.Candidates.MerklePublic.publicIndex i) := by
+  unfold pubNat; rw [ZkFormal.NearV3.Candidates.MerklePublic.alias_get pub hi]
+
+theorem alias_n (pub : List Fp) (x : Nat) (hx : x < 4) :
+    pubNat (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) (PV_N + x) =
+      pubNat pub (ZkFormal.NearV3.PH_N + x) := by
+  rw [alias_pubNat pub (by unfold PV_N; omega)]
+  congr 1
+  unfold ZkFormal.NearV3.Candidates.MerklePublic.publicIndex
+  split
+  · omega
+  · rename_i h; exact absurd ⟨Nat.le_add_right _ _, by omega⟩ h
+
+/-- The mrk node count from the receipt count: `v.n` is the public `n`, which is the number of
+receipts (`RcptV3Wf.count`). -/
+theorem mrk_n_le {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r)
+    (hpb : ∀ i, pubNat pub i < 256) (he : r.mrkE = false) : r.mrk.n ≤ 2 ^ 22 := by
+  have hw : MrkWf (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) r.mrk := by
+    have := W.mrk; simpa [MrkWfE, he] using this
+  have hb : ∀ x, x < 4 → pubNat (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) (PV_N + x) < 256 :=
+    fun x hx => by rw [alias_n pub x hx]; exact hpb _
+  have hc := W.lists.count (fun i _ => hpb _)
+  have hpe : pubBytes (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) PV_N 4 =
+      pubBytes pub ZkFormal.NearV3.PH_N 4 := by
+    unfold pubBytes
+    apply List.map_congr_left
+    intro j hj
+    exact alias_n pub j (List.mem_range.mp hj)
+  have hn := ZkFormal.Near.Link.nPubNat_eq _ hb
+  rw [hpe, ← hc] at hn
+  have hlt := W.listsCount.2
+  rw [hw.nfix hb (by rw [hn]; unfold P; omega), hn]
+  exact hlt
+
+theorem mrkKinds {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r)
+    (hpb : ∀ i, pubNat pub i < 256) :
+    KindsOk ((mrkTrafficE pub r.mrkE r.mrk).sends B_BYTES) := by
+  cases he : r.mrkE
+  · have hn := mrk_n_le W hpb he
+    have hw : MrkWf (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) r.mrk := by
+      have := W.mrk; simpa [MrkWfE, he] using this
+    have hl : r.mrk.nodes.length ≤ 2 ^ 23 := by
+      rw [hw.shape.1]
+      have := mrkLevels_length2 (r.mrk.n + 1) 1 r.mrk.n
+      unfold mrkShape; omega
+    intro x hx
+    simp only [mrkTrafficE, Bool.false_eq_true, ite_false, mrkTraffic, mrkSends, ite_true,
+      List.mem_flatMap] at hx
+    obtain ⟨⟨nd, q⟩, hq, hx⟩ := hx
+    obtain ⟨hql, -⟩ := ZkFormal.NearV3.Link3.mem_zip_range hq
+    cases nd with
+    | promoted => simp at hx
+    | hashed lI lL l rI rL rr =>
+      obtain ⟨j, -, rfl⟩ := ZkFormal.NearV3.Link3.mem_emitAt3.mp hx
+      have := ZkFormal.Near.Link.hashedBefore_le r.mrk.nodes q
+      dsimp only
+      exact kindOk_msgId (by decide) (by decide) (by decide) (by decide) (by unfold msgId K_MRK P; omega)
+  · intro x hx
+    simp [mrkTrafficE] at hx
 
 end ZkFormal.NearV3.Assembly
