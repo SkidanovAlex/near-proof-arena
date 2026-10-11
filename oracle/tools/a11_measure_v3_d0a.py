@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Measure the candidate amendment A11 (post-rebuild store independence) on D0a cases.
 
-For every applied transition the D0 checker runs, the A7 post term (`unfold_diff`, Lean
-`diffT` of `rebuildPost`) reads the post trie from the witness store extended with the
+For every applied transition the D0 checker runs, the A7 post term (`unfold_pre` of the
+post trie, Lean `unfoldedBytesT (rebuildPost …)`) reads the post trie from the witness store extended with the
 nodes and values the transition wrote.  A11 asks that this term is unchanged when the
 witness part of that store is restricted to the blobs revealed by the pre trie along the
 read keys (the reconstruction's normalized store, Lean `normalStore`).  Two families of
@@ -50,10 +50,10 @@ def measure(t):
     revealed(t.pre_store, t.pre_root, keys, seen)
     written = {h: v for h, v in t.store.items() if t.pre_store.get(h) != v}
     shadows = sum(1 for h in written if h in t.pre_store)
-    small = {h: t.pre_store[h] for h in seen}
-    small.update(written)
-    full = a.unfold_diff(t.pre_store, t.pre_root, t.store, t.root, keys)
-    norm = a.unfold_diff(t.pre_store, t.pre_root, small, t.root, keys)
+    small = dict(written)
+    small.update({h: t.pre_store[h] for h in seen})
+    full = a.unfold_pre(t.store, t.root, keys)
+    norm = a.unfold_pre(small, t.root, keys)
     return full, norm, shadows
 
 
@@ -61,7 +61,7 @@ def main():
     for d in sys.argv[1:]:
         a._TRIES.clear()
         a._RNGS.clear()
-        verdict, reason, u, _, _, _ = a.check_case(d)
+        verdict, reason, u, _, _, _, _ = a.check_case(d)
         if verdict != "accept":
             continue
         rows = [measure(t) for t in a._TRIES]

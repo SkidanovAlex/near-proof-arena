@@ -20,11 +20,13 @@ A10 path-depth mutants `w.path_depth_over` (33 path items) pin `w.path_depth`.
 Measured quantities compared exactly across implementations (Lean / Python on every case both
 accept or classify out of domain after RelD0; the oracle's on the cases it measured):
 `unfold` (A7 unfoldBytes), `chacha_words` (A9 ChaCha20 words drawn by all scheduler runs),
-`max_path_depth` (A10 longest used source-proof Merkle path), and `unfold_n` (A11
-unfoldBytesN: every post trie rebuilt from the pre-revealed and written blobs only). The
-oracle reads post-trie nodes from nearcore's own State column, never from the witness store,
-so its `unfold_bytes` is compared with both `unfold` and `unfold_n`; A11 holds on a case iff
-Lean's (and Python's) two values agree.
+`max_path_depth` (A10 longest used source-proof Merkle path), `unfold_n` (A11 unfoldBytesN:
+every post trie rebuilt from the pre-revealed and written blobs only) and `unfold_diff` (the A7
+measure before 2026-10-11, post term = changed occurrences only). The oracle's stored
+`unfold_bytes` predates the 2026-10-11 A7 measure, so it is compared with `unfold_diff` (its
+post nodes come from nearcore's State column, independent of the witness store); `unfold` and
+`unfold_n` are compared Lean vs Python. A11 holds on a case iff Lean's (and Python's) `unfold`
+and `unfold_n` agree. Regenerating the oracle fixtures with the new measure is pending.
 
 usage: difftest_v3.py --cases DIR [--lean EXE] [--python FILE] [--report OUT.json]
          [--lean-jsonl F --python-jsonl F]   (reuse precomputed outputs)
@@ -34,8 +36,9 @@ import argparse, collections, json, os, subprocess, sys, time
 AMENDMENTS = ("c.gas_limit", "w.proof_routing", "e.sched_canonical", "w.unfolded", "c.bw_requests",
               "e.chacha_words", "w.path_depth", "w.post_rebuild")
 # measured quantity -> (Lean/Python JSON field, oracle meta.json field)
-MEASURES = {"unfold_bytes": ("unfold", "unfold_bytes"),
-            "unfold_bytes_n": ("unfold_n", "unfold_bytes"),
+MEASURES = {"unfold_bytes": ("unfold", None),
+            "unfold_bytes_n": ("unfold_n", None),
+            "unfold_diff": ("unfold_diff", "unfold_bytes"),
             "chacha_words": ("chacha_words", "chacha_words"),
             "max_path_depth": ("max_path_depth", "max_path_depth")}
 
@@ -156,6 +159,7 @@ def main():
         "disagreements": len(disagreements), "disagreement_list": disagreements[:200],
         "unfold_bytes": unfold,
         "unfold_bytes_n": measures["unfold_bytes_n"],
+        "unfold_diff": measures["unfold_diff"],
         "chacha_words": measures["chacha_words"],
         "max_path_depth": measures["max_path_depth"],
         "wall_seconds": times,
@@ -218,7 +222,7 @@ def main():
     s = json.dumps(report, indent=1, sort_keys=True)
     if a.report:
         open(a.report, "w").write(s + "\n")
-    print(json.dumps({k: report.get(k) for k in ("counts", "disagreements", "amendments_on_honest_witnesses", "a2_foreign_routed_mutants", "a8_dup_bw_request_mutants", "a8_reported_elsewhere", "a10_path_depth_mutants", "a10_reported_elsewhere", "a9_reported", "unfold_bytes", "unfold_bytes_n", "chacha_words", "max_path_depth")}, indent=1))
+    print(json.dumps({k: report.get(k) for k in ("counts", "disagreements", "amendments_on_honest_witnesses", "a2_foreign_routed_mutants", "a8_dup_bw_request_mutants", "a8_reported_elsewhere", "a10_path_depth_mutants", "a10_reported_elsewhere", "a9_reported", "unfold_bytes", "unfold_bytes_n", "unfold_diff", "chacha_words", "max_path_depth")}, indent=1))
     return 0 if not disagreements else 1
 
 if __name__ == "__main__":

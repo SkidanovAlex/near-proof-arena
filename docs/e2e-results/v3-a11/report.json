@@ -54,5 +54,51 @@
    "AuditNearV3Admission",
    "AuditV3DomainBounds"
   ]
+ },
+ "a7_measure_2026_10_11": {
+  "decision": "A7 post term: unfoldedBytesT of the rebuilt post trie (was diffT pre post); user decision 2026-10-11",
+  "a11_remeasured": {
+   "public_d0a": {
+    "accepted": 139,
+    "cases_differing": 0,
+    "shadow_blobs": 0,
+    "max_unfold": 7996
+   },
+   "d1run": {
+    "accepted": 3977,
+    "cases_differing": 0,
+    "shadow_blobs": 0,
+    "max_unfold": 12402
+   },
+   "d2corpus_v2": {
+    "accepted": 38,
+    "cases_differing": 0,
+    "shadow_blobs": 0,
+    "max_unfold": 9624
+   }
+  },
+  "difftest_public": {
+   "cases": 300,
+   "disagreements": 0,
+   "unfold_bytes": {
+    "lean_python": 300,
+    "oracle": 0,
+    "mismatches": 0,
+    "max_in_d0a": 7996
+   },
+   "unfold_bytes_n": {
+    "lean_python": 300,
+    "oracle": 0,
+    "mismatches": 0,
+    "max_in_d0a": 7996
+   },
+   "unfold_diff": {
+    "lean_python": 300,
+    "oracle": 64,
+    "mismatches": 0,
+    "max_in_d0a": 6500
+   }
+  },
+  "oracle": "stored oracle unfold_bytes is the pre-2026-10-11 diffT measure, compared with unfold_diff; regeneration pending"
  }
 }
