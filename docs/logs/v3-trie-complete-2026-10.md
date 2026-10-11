@@ -567,3 +567,39 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
     kinds), `nativeInstance_upperRV` (upper `RV` = output `memD`), split/WEX analogues in
     `Tree*Memory*`; missing: terminal-kind `RV` = output `memD` and "new child of part `k+1` =
     output of part `k`" in the `AllocatedNativeInstance` form the accepted instances carry.
+
+## 2026-10-11 (session 5) — KEYNIB / FINAL (trie + qv sides DONE; rcpt identities OPEN), VBYTES analysis
+
+* Participants (kernel `Covers`): `KEYNIB` send rcpt 16, qv 22 / recv walk 5; `FINAL` send walk 5 /
+  recv rcpt 16, qv 22; `VBYTES` send codec 11, acct 17, akey 18, qv 22 / recv val 4; no public
+  messages on these three.
+* **`Assembly/TrieKeyFinal.lean`** (new): `keyOf qs` (key messages of a query list), `walk_keynib`
+  (walk receives = `keyOf qs` for the SAME query list), `keyMsgs_snoc`, `repaired_key`,
+  **`qv_keynib`** (`(qvNativeTraffic pre v pres).sends B_KEYNIB = keyOf (queueLookupQueries pre v pres
+  (NativeQueueIds.resolve pre v pres))`), `keyOf_all`, `qv_keynib_recv`, `rcpt_keynib_recv`,
+  `walk_final`, `walk_final_recv`, **`qv_final`** (qv FINAL receives = `queueLookupQueries.map
+  (queryMessage pairs)`, from `NativeQueueFinalMessages.plan_messages`; needs `pairs.map fst =
+  pre :: pres` and `queueInputs` holds), `qv_final_send`, `rcpt_final_send`,
+  `RenderBundleV3.balancedAt_keynib`, `RenderBundleV3.balancedAt_final`, and
+  **`keynib_final_accepted`**: for `A : AcceptedV3`, any bundle with walk component
+  `walkTraffic3 (rankWalks [] ws)` (the `ws` of `trie_all_of` run on `A`'s `hk hw h hm hv` with
+  `resolve := NativeQueueIds.resolve A.m.pre A.qvVals (A.steps.map pre)`, its `v` with
+  `Valid ∧ Reads`), `R 16 = A.rcptRenders.rcpt`, `R 22 = A.rcptRenders.qv`, gives
+  `BalancedAt B_KEYNIB ∧ BalancedAt B_FINAL` **given the receipt lane's two identities**:
+  - `RcptKeys (rcptTrafficB A.pub A.rcptInput) (appliedReceipts A.k A.w)`: rcpt KEYNIB sends ~
+    `keyOf (accountLookupQueries rs ++ accessKeyLookupQueries rs)` (as field messages);
+  - `RcptFinal (rcptTrafficB A.pub A.rcptInput) pairs (appliedReceipts A.k A.w)`: rcpt FINAL
+    receives ~ `(accountLookupQueries rs ++ accessKeyLookupQueries rs).map (queryMessage pairs)`,
+    `pairs = (A.m.pre, A.m.result.trie) :: A.steps.map (pre, post)`.
+  (Old-candidate analogues exist: `NativeReceiptKeyTraffic.physical_keys`,
+  `NativeLookupFinalBalance` for `booleanReceiptTrace`; the current render is `rcptTraceNative`.)
+* **VBYTES — not done (exact open statement)**: val receives (`vals_vbytes`) =
+  `seedVals.flatMap (if vz then [] else [vid, p, byte_p])`; qv sends =
+  `canonicalTraffic (qvNativeRecords …)` `= records.flatMap (numberedBytes vid 0 bytes)`. Needed:
+  every non-empty pre-forest value (`TrieNative.seedVals m steps`, ids `vid` after
+  `ChainMetadata.assignValues`) is sent exactly once by exactly one of codec (BwState values, sched
+  lane), acct/akey (rcpt lane), qv (queue values: `qvNativeRecords` vids must be the `TrieNative.vals`
+  ids) — i.e. `valRecvs (TrieNative.vals m steps) B_VBYTES ~ codec ++ acct ++ akey ++ qv` VBYTES
+  sends.  This is a reader-partition of the value ids across three lanes; not started.
+* Verification: Integration 4184 jobs; audits `AuditTrieKeyFinal`, `AuditTrieUpsMemd`,
+  `AuditTrieUpb` pass; pin-check OK.
