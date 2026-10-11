@@ -143,3 +143,14 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   `nearAirV3` table 13 = `Proc.tableB` (`Sched.Budget.schedTables` too); `nearAirV3_wf`/`npOkPg`
   and `nearV3_size` (6,330,945 B, shapes identical) re-checked. All 22 reverse dependents of
   `Sched/View`/`Sched/Link` (candidates included) build. Audit `test/AuditSchedProcRepair.lean`.
+* **Proc completeness over all runs** — `Render/RowTraffic.lean` (generic: for current-row-only
+  interactions the exact traffic of a row-function table is the trace-free `rowsTraffic is cell L t
+  pub`; `rowFn_traffic`) and `Render/PaddedProc.lean`: `proc_v3_aligned_complete` —
+  `TableLocal Proc.tableB` + `TableTraffic` (all buses) + `22 % 3 = 1` for the concatenated native
+  runs (`ActualRun.run I τ = .ok R`, τ consecutive from 0, capacity), via
+  `ProcActualNativeComplete.list_local` (`ProcBoundaryRepair.table = Proc.tableB` by `rfl`).
+* **Open:** codec (frozen `Codec.table`, 239 constraints, width 91) and ssd (`ScanDist.table`,
+  251 constraints, width 119) `TableLocal` over all runs — no existing proof for the frozen tables
+  (the repaired-codec proofs `ProcCodecNativeConcatLocal` are for `ProcPriorCodecActual`); once
+  local legality exists, their traffic follows from `rowFn_traffic` if their interactions are
+  current-row-only. Task 3 (bus balance) not started.
