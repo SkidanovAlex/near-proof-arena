@@ -1,8 +1,9 @@
 import ZkFormal.NearV3.Assembly.ViewsV3
+import ZkFormal.NearV3.Assembly.RcptViewV3
 import ZkFormal.NearV3.Assembly.ComposeV3
 import ZkFormal.NearV3.Assembly.ShaUnionFacts
 import ZkFormal.NearV3.Assembly.NearAdmission
-import ZkFormal.NearV3.Rcpt.Extract.Srcp.Proof
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.Depth
 import ZkFormal.NearV3.Candidates.MerklePhysical
 import ZkFormal.NearV3.Assembly.LinkClaim
 
@@ -82,6 +83,8 @@ structure V3RecordsWf (pub : List Fp) (r : V3Records) : Prop where
   akeys : ZkFormal.NearV3.AkeyWf r.akeys
   bnds : ZkFormal.NearV3.BndWf r.bnds
   srcp : ZkFormal.NearV3.SrcpWf r.srcp
+  /-- A10 from the AIR (`SrcpV3.tableD`): every source block's path has `≤ Dp0` items. -/
+  srcpDepth : ∀ B ∈ r.srcp, B.path.length ≤ NearSpecV3.Dp0
   size : ZkFormal.NearV3.SizeWf pub r.size
   mrk : MrkWfE pub r.mrkE r.mrk
 
@@ -348,15 +351,15 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨ws, wW, wS, tW⟩ := walkView hH
   obtain ⟨us, wU, tU⟩ := uniqView hH
   obtain ⟨u, wP, tP⟩ := upsView hH
-  obtain ⟨ls, wR, tR⟩ := rcptV3_view_nearAir hp hsz tr T_RCPT (rcptLocal hH)
+  obtain ⟨ls, wR, tR⟩ := rcptV3_view_nearAir hp hsz hH
   obtain ⟨as, wA, tA⟩ := acctView hH
   obtain ⟨ks, wK, tK⟩ := akeyView hH
   obtain ⟨bs, wB, tB⟩ := bndView hH
-  obtain ⟨ss, wS', tS'⟩ := ZkFormal.NearV3.srcp_view (srcpLocal hH)
+  obtain ⟨ss, wS', dS', tS'⟩ := ZkFormal.NearV3.srcpD_view (srcpLocal hH)
   obtain ⟨sz, wZ, tZ⟩ := sizeView hH
   obtain ⟨me, mv, wM, tM⟩ := mrkView hH
   exact ⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv, me⟩,
-    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', wZ, wM⟩,
+    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', dS', wZ, wM⟩,
     ⟨tN, tH, tV, tW, tU, tP, tR, tA, tK, tB, tS', tZ, tM⟩⟩
 
 /-- **`LinkV3Stmt ⇒ ExtractV3StmtAt`** (v1's `extract_of_views`): `HoldsP` gives every
