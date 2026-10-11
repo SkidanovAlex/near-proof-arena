@@ -480,3 +480,38 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
   with its own `v`; they must be the walks of `A.rcptRenders.qv` / `rcpt` (same `v`).  Not started.
 * Verification: Integration 4177 jobs; audits `AuditTrieUpsSched` (6), `AuditTrieAll`, `AuditTrieUps`,
   `AuditTrieVslotNative`, `AuditTrieA7Perm` pass.
+
+## 2026-10-11 (session 4, cont. 2) — lead: UPB, MEMD, walk alignment, BYTES/DIGEST
+
+* **Walk alignment (KEYNIB/FINAL/VBYTES prerequisite)**: `accepted_ups_walks` / `trie_all_of` /
+  `trie_all_accepted` now export `∃ v : MainValues, v.Valid ∧ v.Reads m.pre m.pre m.pre ∧
+  nativeQueryWalks … (allLookupQueries (appliedReceipts k w) m.pre v (steps.pre) resolve) = some ws`.
+  `Assembly/TrieWalkAlign.lean`: `mainValues_unique` (Valid ∧ Reads determine `MainValues`; shards by
+  `bufferedShards_iff`), **`trie_v_eq_qvVals`**: run on `AcceptedV3 A`'s data, that `v = A.qvVals`
+  (the qv table 22's values).  Open: the KEYNIB/FINAL/VBYTES balances themselves — walk (5) KEYNIB
+  receives vs rcpt (16) + qv (22) sends, FINAL, and val (4) VBYTES receives vs qv sends
+  (`vals_vbytes` is the trie side), now for the same `v`; `resolve` must be the rcpt side's.
+* **BYTES, ups part** (`Assembly/TrieUpsSched.lean`, `Assembly/TrieUpsBytes.lean`): `uMsgs_bytes`,
+  `bytes_row`, `upsBytes` (value = job 0, part `k` = job `k + 1`), **`view_bytes_send`**
+  (aligned ups view BYTES sends `= Is.flatMap upsBytes`; receives `[]`), `ups_bytes_jobs`
+  (per instance, as field messages = `expectedBytes (upsertShaJobs τ u.value u.run)` via
+  `NativeShaFamily`; ids agree: `upsId = msgId K_VUPS (512τ+j) = upsertJobId τ j`), and
+  **`ups_bytes_scheduler`**: for `UpsSha insts` and any `ws`, `((upsRanked ws insts).flatMap upsBytes)
+  .map toFp = (expectedBytes (schedulerShaJobs 0 us)).map toFp` with the 1,663,260-row bound.
+  Open for BYTES/DIGEST: the sanity jobs `schedulerSanityJobs 0 us` must be the codec's BYTES sends
+  (sched lane); the receipt family vs rcpt/acct/srcp/mrk senders (not examined); the bundle-level
+  BYTES balance (sha tables 0/1 receive `expectedBytes` of `twoShaJobBins` of the four families,
+  `two_sha_renders`; senders node+val `native_sha_of`, ups this, codec, rcpt-side, plus the public
+  BYTES receive); DIGEST (sha sends `expectedDigests`, receivers node/head/ups/codec/rcpt/srcp/mrk
+  with `dmult` flags) — not started.
+* **UPB** — not started (plan unchanged: coverage for `upsTraceAligned`, rank-by-`rkey` =
+  `physicalWindowRank`, then `window_counter_field_balance`; the trace-level route needs the bundle
+  ups trace `upsA7Trace Js` = `upsTraceAligned Js` + A7 columns and that compactTable and UpsV3 have
+  the same two UPB interactions).
+* **MEMD** — not started (ups-internal; `aligned_view_bus` applies: row lemma for
+  `send MEMD (gMs) [τ, j, idx, rx, rb, qlen]` / `recv MEMD (gMr) [τ, jm, idx, mBv, mCv, clen]` on
+  `Q` rows, then a per-instance pairing using `MemOk` / `jm`).
+* Verification: Integration 4179 jobs; audits `AuditTrieUpsBytes`, `AuditTrieUpsSched`,
+  `AuditTrieWalkAlign`, `AuditTrieAll` pass; `make pin-check` OK.
+* Session ended here (context budget); next: UPB, MEMD, then KEYNIB/FINAL/VBYTES and BYTES/DIGEST
+  bundle balances; A7 (b) after the spec change lands.

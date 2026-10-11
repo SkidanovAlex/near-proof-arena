@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Assembly.TrieUpsRoot
+import ZkFormal.NearV3.Assembly.UpsertShaJobs
+import ZkFormal.NearV3.Render.Ups.SchedulerShaInstances
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieUpsSched — the ups side of `S0F`, `SPLEN`, `SPOST`
@@ -321,5 +323,164 @@ theorem view_splen_send (Is : List UpsInst) (t : Nat) :
 theorem view_spost_send (Is : List UpsInst) (t : Nat) :
     (viewOf (upsTraceAligned Is) t (segsOf Is)).flatMap (fun s => s.msgs B_SPOST true) = [] := by
   simp [viewOf, UpsSeg.msgs, uMsgs_spost_send]
+
+/-! ## `BYTES` (the ups jobs: value job `0`, part `k` = job `k + 1`) -/
+
+theorem uMsgs_bytes (C D : URow) :
+    uMsgs C D B_BYTES true =
+      if uev C D (.add (Dsl.c UpsV3.vb) (Dsl.c UpsV3.qb)) = 1 then
+        [[(uev C D (UpsV3.upsId (Dsl.c UpsV3.j))).toNat, C UpsV3.qpos % Algebra.P, C UpsV3.b % Algebra.P]]
+      else [] := by
+  simp [uMsgs, UpsV3.interactions, Dsl.send, Dsl.recv,
+    B_EDGE, B_BMAP, B_MIDROOT, B_ROOT, B_DIGEST, B_S0F, B_SPLEN, B_SPOST, B_BYTES, B_UPB, B_MEMD, uMult]
+  split <;> simp_all [uev, Expr.evalWith, uEnv, Dsl.c]
+
+theorem uMsgs_bytes_recv (C D : URow) : uMsgs C D B_BYTES false = [] := by
+  simp [uMsgs, UpsV3.interactions, Dsl.send, Dsl.recv,
+    B_EDGE, B_BMAP, B_MIDROOT, B_ROOT, B_DIGEST, B_S0F, B_SPLEN, B_SPOST, B_BYTES, B_UPB, B_MEMD]
+
+theorem id_val (a b : Nat) :
+    (Fp.ofNat 12 + Fp.ofNat 16 * (Fp.ofNat 512 * Fp.ofNat (a % Algebra.P) + Fp.ofNat (b % Algebra.P))).toNat =
+      ZkFormal.NearV3.Assembly.upsertJobId a b % Algebra.P := by
+  show (Fp.add (Fp.ofNat 12) (Fp.mul (Fp.ofNat 16) (Fp.add (Fp.mul (Fp.ofNat 512) (Fp.ofNat (a % Algebra.P)))
+    (Fp.ofNat (b % Algebra.P))))).toNat = _
+  simp only [Fp.toNat_add, Fp.toNat_mul, Fp.toNat_ofNat, ZkFormal.NearV3.Assembly.upsertJobId]
+  have hP : Algebra.P = 2013265921 := rfl
+  rw [hP]
+  omega
+
+theorem uev_upsId (C D : URow) :
+    (uev C D (UpsV3.upsId (Dsl.c UpsV3.j))).toNat =
+      ZkFormal.NearV3.Assembly.upsertJobId (C UpsV3.tau) (C UpsV3.j) % Algebra.P := by
+  show (Fp.add (Fp.ofNat 12) (Fp.mul (Fp.ofNat 16) (Fp.add (Fp.mul (Fp.ofNat 512) (Fp.ofNat (C UpsV3.tau)))
+    (Fp.ofNat (C UpsV3.j))))).toNat = _
+  simp only [Fp.toNat_add, Fp.toNat_mul, Fp.toNat_ofNat, ZkFormal.NearV3.Assembly.upsertJobId]
+  have hP : Algebra.P = 2013265921 := rfl
+  rw [hP]
+  omega
+
+theorem jobId_mod (a b : Nat) :
+    ZkFormal.NearV3.Assembly.upsertJobId (a % Algebra.P) (b % Algebra.P) % Algebra.P =
+      ZkFormal.NearV3.Assembly.upsertJobId a b % Algebra.P := by
+  simp only [ZkFormal.NearV3.Assembly.upsertJobId]
+  have hP : Algebra.P = 2013265921 := rfl
+  rw [hP]
+  omega
+
+theorem bytes_row (Is : List UpsInst) (q i : Nat) (rk : RK) (D : URow) :
+    uMsgs (generatedRow Is q (i, rk)) D B_BYTES true =
+      match rk with
+      | .w _ => []
+      | .v p => [reduceMessage [ZkFormal.NearV3.Assembly.upsertJobId (inst Is i).tau 0, p, (inst Is i).v.getD p 0]]
+      | .q k p => [reduceMessage [ZkFormal.NearV3.Assembly.upsertJobId (inst Is i).tau (k + 1), p,
+          (part (inst Is i) k).q.getD p 0]] := by
+  rw [uMsgs_bytes]
+  have ht : ∀ r, generatedRow Is q (i, r) UpsV3.tau = (inst Is i).tau % Algebra.P := by
+    intro r
+    simp [generatedRow, rowCell, UpsV3.tau, isSeg, segCell]; exact Fp.toNat_ofNat _
+  cases rk with
+  | w t =>
+    have h1 : generatedRow Is q (i, .w t) UpsV3.vb = 0 := rfl
+    have h2 : generatedRow Is q (i, .w t) UpsV3.qb = 0 := rfl
+    simp only [uev, Expr.evalWith, uEnv, Dsl.c, h1, h2, Bool.false_eq_true, ↓reduceIte]
+    rw [if_neg (by decide)]
+  | v p =>
+    have h1 : generatedRow Is q (i, .v p) UpsV3.vb = 1 := rfl
+    have h2 : generatedRow Is q (i, .v p) UpsV3.qb = 0 := rfl
+    have h3 : generatedRow Is q (i, .v p) UpsV3.j = 0 := rfl
+    have h4 : generatedRow Is q (i, .v p) UpsV3.qpos = p % Algebra.P := by
+      simp [generatedRow, rowCell, UpsV3.qpos, isSeg, vCell]; exact Fp.toNat_ofNat _
+    have h5 : generatedRow Is q (i, .v p) UpsV3.b = (inst Is i).v.getD p 0 % Algebra.P := by
+      simp [generatedRow, rowCell, UpsV3.b, isSeg, vCell]; exact Fp.toNat_ofNat _
+    rw [if_pos (by simp only [uev, Expr.evalWith, uEnv, Dsl.c, h1, h2, Bool.false_eq_true, ↓reduceIte]; decide),
+      uev_upsId, ht, h3, h4, h5]
+    simp only [reduceMessage, List.map_cons, List.map_nil, Fp.toNat_ofNat, Nat.mod_mod]
+    have := jobId_mod (inst Is i).tau 0
+    rw [Nat.zero_mod] at this
+    rw [this]
+  | q k p =>
+    have h1 : generatedRow Is q (i, .q k p) UpsV3.vb = 0 := rfl
+    have h2 : generatedRow Is q (i, .q k p) UpsV3.qb = 1 := rfl
+    have h3 : generatedRow Is q (i, .q k p) UpsV3.j = (k + 1) % Algebra.P := by
+      simp [generatedRow, rowCell, UpsV3.j, isSeg, qCell, isPC, pcCell]; exact Fp.toNat_ofNat _
+    have h4 : generatedRow Is q (i, .q k p) UpsV3.qpos = p % Algebra.P := by
+      simp [generatedRow, rowCell, UpsV3.qpos, isSeg, qCell, isPC, qRowCell, qRow]; exact Fp.toNat_ofNat _
+    have h5 : generatedRow Is q (i, .q k p) UpsV3.b = (part (inst Is i) k).q.getD p 0 % Algebra.P := by
+      simp [generatedRow, rowCell, UpsV3.b, isSeg, qCell, isPC, qRowCell, qRow]; exact Fp.toNat_ofNat _
+    rw [if_pos (by simp only [uev, Expr.evalWith, uEnv, Dsl.c, h1, h2, Bool.false_eq_true, ↓reduceIte]; decide),
+      uev_upsId, ht, h3, h4, h5, jobId_mod]
+    simp only [reduceMessage, List.map_cons, List.map_nil, Fp.toNat_ofNat, Nat.mod_mod]
+
+/-- The ups `BYTES` messages of one instance: the new value (job `0`), then part `k` (job `k + 1`). -/
+def upsBytes (I : UpsInst) : List ZkFormal.Near.Msg :=
+  (List.range (L I)).map (fun p => reduceMessage [ZkFormal.NearV3.Assembly.upsertJobId I.tau 0, p, I.v.getD p 0]) ++
+    (List.range (nQ I)).flatMap (fun k => (List.range (part I k).q.length).map (fun p =>
+      reduceMessage [ZkFormal.NearV3.Assembly.upsertJobId I.tau (k + 1), p, (part I k).q.getD p 0]))
+
+/-- **`BYTES` sends of the aligned ups view.** -/
+theorem view_bytes_send (Is : List UpsInst) (hok : UpsRenderOk Is) (t : Nat) :
+    (viewOf (upsTraceAligned Is) t (segsOf Is)).flatMap (fun s => s.msgs B_BYTES true) = Is.flatMap upsBytes := by
+  rw [aligned_view_bus Is hok t B_BYTES true
+    (fun i rk => match rk with
+      | .w _ => []
+      | .v p => [reduceMessage [ZkFormal.NearV3.Assembly.upsertJobId (inst Is i).tau 0, p, (inst Is i).v.getD p 0]]
+      | .q k p => [reduceMessage [ZkFormal.NearV3.Assembly.upsertJobId (inst Is i).tau (k + 1), p,
+          (part (inst Is i) k).q.getD p 0]])
+    (fun q i rk D _ => bytes_row Is q i rk D)
+    (fun C C' D D' h => by
+      rw [uMsgs_bytes, uMsgs_bytes, uev_upsId, uev_upsId]
+      simp only [uev, Expr.evalWith, uEnv, Dsl.c, Bool.false_eq_true, ↓reduceIte]
+      rw [h UpsV3.vb (by decide), h UpsV3.qb (by decide), h UpsV3.tau (by decide), h UpsV3.j (by decide),
+        h UpsV3.qpos (by decide), h UpsV3.b (by decide)])]
+  rw [← range_flat_map Is upsBytes]
+  apply flat_congr''
+  intro i _
+  simp only [recsI, upsBytes, List.flatMap_append, List.flatMap_map]
+  simp [List.map_eq_flatMap, List.flatMap_assoc]
+
+theorem view_bytes_recv (Is : List UpsInst) (t : Nat) :
+    (viewOf (upsTraceAligned Is) t (segsOf Is)).flatMap (fun s => s.msgs B_BYTES false) = [] := by
+  simp [viewOf, UpsSeg.msgs, uMsgs_bytes_recv]
+
+/-! ## The ups `BYTES` messages are the upsert SHA jobs' bytes -/
+
+theorem toFp_reduce (m : ZkFormal.Near.Msg) : Msg.toFp (reduceMessage m) = Msg.toFp m := by
+  simp only [Msg.toFp, reduceMessage, List.map_map, Function.comp_def, Fp.ofNat_toNat]
+
+/-- **Per instance**: the ups `BYTES` sends are (as field messages) the expected bytes of the
+upsert SHA jobs `upsertShaJobs I.tau u.value u.run` (`NativeShaFamily`). -/
+theorem ups_bytes_jobs (u : SchedulerUpsertWitness) (I : UpsInst) (hf : NativeShaFamily u I)
+    (hv : I.v = u.value.map UInt8.toNat) :
+    (upsBytes I).map Msg.toFp = (Sha.Gen.expectedBytes (upsertShaJobs I.tau u.value u.run)).map Msg.toFp := by
+  obtain ⟨hn, hk⟩ := hf
+  let rest := upsertShaFrom I.tau 1 (u.run.parts.map (fun p => nodeEnc p.output))
+  have hsplit : upsertShaJobs I.tau u.value u.run = upsertShaJob I.tau 0 u.value :: rest := rfl
+  have hlen : rest.length = nQ I := by simp [rest, hn]
+  have hget : ∀ k, k < nQ I → (rest.getD k ⟨0, [], false⟩).id = upsertJobId I.tau (k + 1) ∧
+      (rest.getD k ⟨0, [], false⟩).bytes = (part I k).q := by
+    intro k hkq
+    obtain ⟨M, hM, hid, hb⟩ := hk k hkq
+    rw [hsplit] at hM
+    simp only [List.getElem?_cons_succ] at hM
+    simp only [List.getD_eq_getElem?_getD, hM, Option.getD_some]
+    exact ⟨hid, hb⟩
+  have hrest : rest = (List.range (nQ I)).map (fun k => rest.getD k ⟨0, [], false⟩) := by
+    rw [← hlen]; exact (map_range_getD'' rest ⟨0, [], false⟩).symm
+  rw [hsplit, Sha.Gen.expectedBytes, List.flatMap_cons, ← Sha.Gen.expectedBytes, hrest]
+  simp only [upsBytes, List.map_append, List.map_map, Sha.Gen.expectedBytes, List.flatMap_map]
+  have hb0 : (upsertShaJob I.tau 0 u.value).bytes = I.v := by simp [upsertShaJob, hv]
+  have hid0 : (upsertShaJob I.tau 0 u.value).id = upsertJobId I.tau 0 := rfl
+  rw [hb0, hid0]
+  congr 1
+  · simp only [L]
+    apply List.map_congr_left
+    intro p _
+    simp [Function.comp_def, toFp_reduce]
+  · simp only [List.map_flatMap]
+    apply flat_congr''
+    intro k hkr
+    obtain ⟨hid, hb⟩ := hget k (List.mem_range.mp hkr)
+    rw [hid, hb]
+    simp [Function.comp_def, toFp_reduce]
 
 end ZkFormal.NearV3.Assembly.TrieUpsSched
