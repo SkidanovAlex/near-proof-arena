@@ -60,3 +60,13 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
   kid window or its head), `seedNodesT_valEnts` (value windows), `valTau_ents` /
   `valueOccurrences_ents` (the value occurrences' instance is the tree's), **`rawEnts_perm_occ`**:
   `rawEnts (nodes … q) (heads … keys) ~ (allOccurrences …).map occEnt` (revealed wf trees).
+* `Assembly/TrieUniqDup.lean` — **`DUP` closed** with the class-ordered uniq list
+  `uniqBlocks rs` (blocks = equal-content classes in occurrence order, classes sorted by
+  `(τ, le256 sha)`; `uniqNative m steps`).  `uniqEntries_eq` (recursive form), `dupAux_blocks`
+  (DUP sends of a block list = the blocks' chain links), `HF` (contents of one instance are
+  hash-functional) ⇒ `uniqSends_blocks`; `chain_dup`/`dupRecvs_eq` (receives = chain links);
+  `dupBal_of`.  Native: `hf_native` — **no SHA injectivity needed**: every key is in the
+  `normalStore` of its tree (`combined_keys`), which is `HashFunctional` because the tree is
+  `Stored` in its witness store (`built_spec`, `normalStore_hashFunctional`);
+  **`dupBal_accepted`**, **`digsBal_accepted`** (DIGS for the class-ordered list, via
+  `rawEnts_perm_occ` + `uniqBlocks_perm`).
