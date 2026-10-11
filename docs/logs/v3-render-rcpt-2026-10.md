@@ -29,3 +29,16 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   `srcp_proofs_aligned_complete` (from the used source proofs, `ProofInputsOk`),
   `SrcpGen.table_local_at`, `SrcpGen.cell_high`.  `Srcp/ProofComplete` now reaches
   Integration through it.  Audit `test/AuditPaddedSrcp.lean`.
+* **qv (22): aligned render done** — `NearV3/Render/PaddedQv.lean`:
+  `qv_aligned_complete` for `KeyTrafficRepair.table` (the actual `nearAirV3` table 22, cap 22)
+  on the existing honest mixed queue rows (`mixedTrace (plan pre v pres resolve) vs`), at
+  `padLog22 (logOf qvRows)`.  New: the repaired-`KEYNIB` row/word traffic
+  (`Walk.repairedKeyMessages`, `Walk.repairedKeyWordMessages`: zero-based nibbles, no START,
+  END at `2·len` — the shape of `Qv.Extract.repairedKeyTraffic`), `repairedTraffic`,
+  `mixedTrace_repaired_traffic`, `placed_words_traffic_is` (any interaction list), and
+  table-index reindexing (`tableLocal_reindex`, `tableTraffic_reindex`).
+  Hypothesis `QvOk`: `v.Valid`, records valid, `qvRows ≤ 2^22`, and the public implicit
+  count (`kPublic`, pub 26..29) = `pres.length`.
+  **Caveat:** there is no `qvV3` soundness view statement yet (not among the eleven views), so
+  `repairedTraffic` is the honest-side record format; the view lane must target it (or a
+  bridge must be proved).
