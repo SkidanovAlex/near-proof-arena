@@ -36,6 +36,18 @@ def UpsOrigin (F : List PTrie) (insts : List UpsInst) : Prop :=
         ∃ s, (forestNodes 0 0 0 ts)[(part I k).sN]? = some s ∧ s.tau = tau ∧ (part I k).pdep = s.depth) ∧
       ((step I 3).mode = 0 → ∃ n s, (forestNodes 0 0 0 ts)[n]? = some s ∧ (step I 3).e ∈ edgesOf3 n s)
 
+
+/-- The scheduler upsert witnesses behind the native ups instances, with the SHA-job facts
+(`NativeShaFamily`) and the budgets of `schedulerBatch_rows`. -/
+def UpsSha (insts : List UpsInst) : Prop :=
+  ∃ us : List SchedulerUpsertWitness,
+    insts.length = us.length ∧ us.length ≤ 32 ∧
+    (∀ u ∈ us, u.Valid ∧ u.run.parts.length ≤ 403) ∧
+    (us.map (fun u => outputByteCharge u.run)).sum ≤ 2131072 ∧
+    (us.map (fun u => u.value.length)).sum ≤ 3146912 ∧
+    ∀ tau u I, us[tau]? = some u → insts[tau]? = some I →
+      NativeShaFamily u I ∧ I.v = u.value.map UInt8.toNat ∧ I.tau = tau
+
 private theorem root_depth' : ∀ n v ts tau root,
     forestRootAt n v ts tau = some root → root.depth = 0
   | _, _, [], _, _, h => by simp [forestRootAt] at h

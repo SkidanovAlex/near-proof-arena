@@ -62,6 +62,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       0 < insts.length ∧ (∀ I ∈ insts, InstOk I) ∧ (∀ I ∈ insts, NativePartFamily I) ∧
       TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
+      TrieUpsOrigin.UpsSha insts ∧
       (walkEdgeKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       (walkBmapKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       ∀ W : List ZkFormal.Near.Msg, W.length < Algebra.P →
@@ -115,7 +116,10 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
   refine ⟨writes, oldPost, insts, v, ws, hr, hkf, hws,
     ⟨⟨nativeWalkTrace (rankWalks [] ws), walkTraffic3 (rankWalks [] ws), hwlocal, hwtraffic,
       by change 22 % 3 = 1; decide⟩, rfl⟩,
-    by omega, ho, hfam, horigin, hedges, hbmaps, ?_⟩
+    by omega, ho, hfam, horigin, ⟨us, hcount, hlen, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.2.1⟩, hout, hval,
+      fun tau u I hu hI => by
+        obtain ⟨a, sha, -⟩ := hinst tau u I hu hI
+        exact ⟨sha, a.2.2.2.1, a.1⟩⟩, hedges, hbmaps, ?_⟩
   intro W hW
   -- providers
   obtain ⟨hn0, hvls⟩ := NativeExecutionUsage.inputs hk hw h (by decide) hm hv

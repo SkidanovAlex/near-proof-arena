@@ -427,3 +427,56 @@ identity on NATIVE posts, per transition `τ` with scheduler run `u_τ`:
 5. **VSLOT**: closed on the trie side (`vslot_native`); needs the receipt lane's acct component
    `= acctV3Traffic as` with `nativeAccountViews m.pre oldPost (appliedReceipts k w) = some as` for
    the `oldPost` of `trie_all_accepted`.
+
+## 2026-10-11 (session 4, cont.) — after the lead's message (main c87a7cae merged)
+
+Lead: A7 (b) target becomes `nodeA7Total + valA7Total + upsA7Total = Σ_τ unfoldedBytesT pre_τ +
+unfoldedBytesT (native post_τ) ≤ B0` (A11 retired, spec change on lane/v3-a11) — start only once it
+lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/SPLEN, KEYNIB/FINAL/VBYTES.
+
+* Merged origin/main (`be28ed45`); Integration 4172 jobs.
+* `TrieAll.trie_all_of` (**new**): `trie_all_accepted` for GIVEN `hk hw h hm hv` (so the trie side can
+  be instantiated with `AcceptedV3`'s `k, w, m, steps` — the receipt side's choice);
+  `trie_all_accepted` is now a corollary.  Both also export `UpsSha insts` (below).
+* `TrieUpsOrigin.UpsSha insts`: the scheduler witnesses `us` of the same instances
+  (`NativeShaFamily u I`, `I.v = u.value`, `I.tau = τ`, ≤ 32 runs, parts ≤ 403, output bytes
+  ≤ 2,131,072, values ≤ 3,146,912).
+* `Assembly/TrieShaFamilies.lean`: **`native_sha_of`** (node+val family `jobsToSha (nativeShaJobs ns es)`
+  for `TrieNative.nodes/vals` of any `oldPost/writes/q`: ≤ 2,925,275 rows and
+  `jobBytes = nodeSends3 ns B_BYTES ++ valSends es B_BYTES`); **`scheduler_sha_of`**
+  (`UpsSha` ⇒ `schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us` ≤ 1,663,260 rows, NO A7 needed).
+  With `source_rows_A10` (2,257,792) and the receipt family (1,373,299) this feeds `two_sha_renders`.
+  Open for BYTES/DIGEST: (i) ups BYTES sends of `upsA7` (`send B_BYTES (vb+qb) [upsId j, qpos, b]`)
+  = `expectedBytes (schedulerShaJobs 0 us)` (via `NativeShaFamily`; ids `upsId` vs `upsertJobId`),
+  (ii) the sanity jobs are the codec's (sched lane), (iii) the receipt family vs rcpt/acct/srcp/mrk
+  senders (rcpt lane), (iv) DIGEST receivers (node, head, ups, codec, rcpt, srcp, mrk) vs
+  `expectedDigests` (multiplicity: `dmult` flags).
+* `Assembly/TrieUpsSched.lean` — ups side of S0F/SPLEN/SPOST, exact: `aligned_view_bus` (generic),
+  **`view_s0f_send`** = `Is.map (reduceMessage [τ, presN I, vidN I])`
+  (`presN = [W3 is a value step]`, `vidN = e₃` then, else 0), **`view_splen_recv`** =
+  `Is.map (reduceMessage [τ, L I])`, **`view_spost_recv`** =
+  `Is.flatMap (range (L I)).map (reduceMessage [τ, p, v_p])`; silent sides `view_s0f_recv`,
+  `view_splen_send`, `view_spost_send`.
+  **Needed from the sched lane's codec render** (codec interactions `recv S0F (kF) [τ, pres, vid]`,
+  `send SPLEN (kF) [τ, 37+24·NN]`, `send SPOST (encG) [τ, pos, bpost]`): for the SAME scheduler
+  runs as `UpsSha`'s `us` (τ = position, `u.value = so.state`):
+  (a) one S0F receive per τ equal to `[τ, presN I_τ, vidN I_τ]` — `pres` = the old BwState value is
+  present (the ups `W3` step is a value step), `vid` = its id in `TrieNative.vals` (=
+  `seedValueId` of record `N_D`, see `TrieA7Perm.rplv_mem`), `[τ,0,0]` otherwise;
+  (b) one SPLEN send `[τ, |u.value|]` (`|u.value| = 37+24·n²`, `SchedulerUpsertWitness.value_length`);
+  (c) SPOST sends `[τ, p, u.value[p]]` for `p < |u.value|`; no other table touches these buses
+  (to be checked with `Covers`).  Then the three balances follow from the view lemmas.
+* MEMD: ups-internal (`send MEMD (gMs) [τ, j, idx, rx, rb, qlen]`, `recv MEMD (gMr) [τ, jm, idx,
+  mBv, mCv, clen]`); needs a per-part traffic computation over `UpsGen` cells using `MemOk`
+  (in `NativePartFamily`).  Not started.
+* UPB on upsA7: the ups render's counter is `uU` (earlier reads of the same `rkey = (sN, spos)`), so
+  only the node side needs `W := ` the read keys and the coverage `physicalWindowKey ∈
+  nodeWindowKeys` for `upsTraceAligned` (the existing coverage is for `CompactHeight.trace`).
+  Plan: show rank-by-`rkey` = `physicalWindowRank` given coverage (keys with equal `(sN, spos)`
+  are equal by `nodeWindowKeys_distinct`), then reuse `window_counter_field_balance`.  Not started.
+* KEYNIB/FINAL/VBYTES: walk (5) receives KEYNIB from rcpt (16) and qv (22), sends FINAL; val (4)
+  receives VBYTES from qv.  Trie side: `walkTraffic3 (rankWalks [] ws)`, `vals_vbytes`.  Open: the
+  walks `ws` of `accepted_ups_walks` come from `allLookupQueries (appliedReceipts k w) m.pre v …`
+  with its own `v`; they must be the walks of `A.rcptRenders.qv` / `rcpt` (same `v`).  Not started.
+* Verification: Integration 4177 jobs; audits `AuditTrieUpsSched` (6), `AuditTrieAll`, `AuditTrieUps`,
+  `AuditTrieVslotNative`, `AuditTrieA7Perm` pass.
