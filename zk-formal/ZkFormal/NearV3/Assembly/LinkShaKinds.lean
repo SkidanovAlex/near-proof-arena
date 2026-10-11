@@ -181,7 +181,10 @@ theorem acct_slot_lt {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : Holds
     have hlen := ZkFormal.NearV3.Link3.vlen_le W.values
     obtain ⟨t, ht, -, hi, -, -⟩ := ZkFormal.NearV3.Link3.val_pos W.nodes W.values hvb hlen hn hv
     have hvt := ZkFormal.NearV3.Link3.vid_small W.values ht
-    have hk := (W.accts.v1.len a ha).2.2.1
+    have hk : a.k < P := by
+      rcases W.accts with he | hw'
+      · rw [he] at ha; simp at ha
+      · exact (hw'.v1.len a ha).2.2.1
     simp only [Msg.toFp, List.map_cons, List.map_nil, List.cons.injEq, and_true] at he
     have := ZkFormal.Near.Link.ofNat_inj (by unfold P; omega) hk he
     omega
