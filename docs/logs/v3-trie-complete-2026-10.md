@@ -938,3 +938,17 @@ The AIR check is really `B0`: `sizeA7` range-checks `B0 − (yN0 + yN1 + yN2)` (
   - VSLOT given `R ⟨17⟩ = A.rcptRenders.acct` and `nativeAccountViews A.m.pre oldPost (appliedReceipts A.k A.w) = some A.accts`;
   - KEYNIB, FINAL given `R ⟨16⟩ = A.rcptRenders.rcpt`, `R ⟨22⟩ = A.rcptRenders.qv`, `RcptKeys`, `RcptFinal`.
 * Audit `test/AuditTrieSide.lean`.  Integration 4275 jobs, 0 errors; trie audits (Digest, All, Ups, A7Cap/Repl/Match/Total, Side, UpsSched, Upb, UpsMemd, VslotNative) pass; pin-check ok.
+
+### Open (end of session 7; all in other lanes or the lead's join, none in this lane's tables)
+Premises of `TrieSide.trie_side` still to be discharged elsewhere:
+1. receipt/source SHA families `receipt source` with `honestRows ≤ 1,373,299` / `≤ 2,257,792`, source `msgRows ≤ 35`,
+   bytes `< 256` (receipt lane / lead);
+2. `ovhNat A.pub + 2,000,000 + srcpSize (blocksOfProofs A.srcps) ≤ 8,388,608` (size budget; receipt lane);
+3. BYTES `hcodec` (table 11 sends = `expectedBytes (schedulerSanityJobs 0 us)`) and DIGEST `hcodec` (11 recvs) — the
+   exported `us` (only `∀ u ∈ us, u.Valid` is exported about it; the codec lane needs it pinned, e.g. by a
+   scheduler-witness uniqueness lemma);
+4. BYTES/DIGEST `hrest` (tables 16, 17, 20, 23; `X = ns.flatMap postSlotDigests`);
+5. VSLOT: `nativeAccountViews A.m.pre oldPost (appliedReceipts A.k A.w) = some A.accts` for the exported `oldPost`
+   (the receipt side's `A.replay` vs this `oldPost`);
+6. `RcptKeys`, `RcptFinal` (receipt lane).
+Rust prover note unchanged: zero-length `VPRE(vid)` SHA job per empty value record.
