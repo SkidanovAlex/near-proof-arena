@@ -198,15 +198,15 @@ theorem upsV3_s0f (τ : Nat) (hτ : τ ≤ K) :
 
 end
 
-/-- **The `upsV3` link from the views, balances, `ShaHyp` and the interfaces alone** (`RootChain` from the
+/-- **The `upsV3` link from the views (walk rows `≤ 2^22`, the `nearAirV3` walk cap), balances, `ShaHyp` and the interfaces alone** (`RootChain` from the
 `ROOT`/`MIDROOT` balances, distinct instances and `τ < 2^17` from it with `K < 2^17`, the walk hypotheses of all
 walks from the `EDGE`/`BMAP` balances and `KEYNIB`): for every `τ ≤ K`, `upsV3_link` and `upsV3_s0f`. -/
-theorem upsV3_linkB {vs : List NodeS3} {hds : List HeadE} {es : List ValE} {others : List Msg}
+theorem upsV3_linkB_22 {vs : List NodeS3} {hds : List HeadE} {es : List ValE} {others : List Msg}
     {shaS shaR : Nat → List Fp → Nat} {pv : Nat → NearSpec.Bytes} {v : List UpsSeg} {sv : Nat → NearSpec.Bytes}
     {othersU : List Msg} {ws : List WalkR} {prov : List Msg} {K : Nat} {r0 rK : List Nat}
     -- views
     (hN : NodeWf3 vs) (hhw : HeadWf hds) (hvw : ValWf es) (hw : UpsWf v) (hW : WalkWf3 ws)
-    (hWr : (ws.flatMap (·.steps)).length ≤ 2 ^ 21)
+    (hWr : (ws.flatMap (·.steps)).length ≤ 2 ^ 22)
     -- balances
     (hb : Link3.ParentBal vs hds) (hvb : Link3.VParentBal vs es) (hupb : UpbBal vs v)
     (hE : WalkBal vs hds ws v B_EDGE) (hB : WalkBal vs hds ws v B_BMAP) (hKn : Link3.KeynibOk ws prov)
@@ -240,7 +240,44 @@ theorem upsV3_linkB {vs : List NodeS3} {hds : List HeadE} {es : List ValE} {othe
       vpostLen := hvpostLen, ups := hw, upb := hupb, sched := hsched, bytesU := hbytesU, othU := hothU,
       digU := hdigU, memd := hmemd, tauD := ups_tauDistinct hC,
       tauB := fun s hs => by have := ups_tauBound hC s hs; omega,
-      walk := ups_walkHyp hN hhw hvw hW hWr hw hb hvb hE hB hKn (Link3.rec_bytes hN hhw hvw hb hsha) _ }
+      walk := ups_walkHyp_22 hN hhw hvw hW hWr hw hb hvb hE hB hKn (Link3.rec_bytes hN hhw hvw hb hsha) _ }
   exact fun τ hτ => ⟨upsV3_link E hC τ hτ, upsV3_s0f E hC τ hτ⟩
+
+/-- `upsV3_linkB_22` at the old walk cap `2^21`. -/
+theorem upsV3_linkB {vs : List NodeS3} {hds : List HeadE} {es : List ValE} {others : List Msg}
+    {shaS shaR : Nat → List Fp → Nat} {pv : Nat → NearSpec.Bytes} {v : List UpsSeg} {sv : Nat → NearSpec.Bytes}
+    {othersU : List Msg} {ws : List WalkR} {prov : List Msg} {K : Nat} {r0 rK : List Nat}
+    -- views
+    (hN : NodeWf3 vs) (hhw : HeadWf hds) (hvw : ValWf es) (hw : UpsWf v) (hW : WalkWf3 ws)
+    (hWr : (ws.flatMap (·.steps)).length ≤ 2 ^ 21)
+    -- balances
+    (hb : Link3.ParentBal vs hds) (hvb : Link3.VParentBal vs es) (hupb : UpbBal vs v)
+    (hE : WalkBal vs hds ws v B_EDGE) (hB : WalkBal vs hds ws v B_BMAP) (hKn : Link3.KeynibOk ws prov)
+    (hbytesU : ∀ m, shaR B_BYTES m = cnt ((upsTraffic v).sends B_BYTES ++ othersU) m)
+    (hothU : ∀ m ∈ othersU, ∀ a, m.head? = some a → a < P ∧ a % 16 ≠ K_VUPS)
+    (hdigU : ∀ m ∈ (upsTraffic v).recvs B_DIGEST, 0 < shaS B_DIGEST m.toFp)
+    (hmemd : (((upsTraffic v).sends B_MEMD).map Msg.toFp).Perm (((upsTraffic v).recvs B_MEMD).map Msg.toFp))
+    (hK : K + 1 < P) (hK17 : K < 2 ^ 17) (hr0 : ∀ x ∈ r0, x < P) (hrK : ∀ x ∈ rK, x < P)
+    (hROOT : (([[0] ++ r0] ++ (upsTraffic v).sends B_ROOT).map Msg.toFp).Perm
+      ((headRecvs hds B_ROOT ++ [[K + 1] ++ rK]).map Msg.toFp))
+    (hMID : ((headSends hds B_MIDROOT).map Msg.toFp).Perm (((upsTraffic v).recvs B_MIDROOT).map Msg.toFp))
+    (hlen : hds.length < P)
+    -- SHA
+    (hsha : Link3.ShaHyp vs hds es others shaS shaR)
+    -- interfaces
+    (hvpost : Link3.VPostOk others pv)
+    (hvpostLen : ∀ p (hp : p < vs.length) i l pre po, vs[p].v.value = some (i, l, pre, po, true) → (pv i).length ≤ l)
+    (hsched : SchedVal v sv) :
+    ∀ τ, τ ≤ K →
+      (∃ Q, (fullTree (Rpost vs es) (Vpost vs es pv) (headAt hds τ).rid).upsert UpsSpec.key (sv τ) = some Q ∧
+        (upsAt (v.map upsE) τ).post = Q.hashOf.map UInt8.toNat ∧ Link3.toB (upsAt (v.map upsE) τ).post = Q.hashOf ∧
+        (τ < K → (headAt hds (τ + 1)).pre = Q.hashOf.map UInt8.toNat) ∧ (τ = K → rK = Q.hashOf.map UInt8.toNat)) ∧
+      (∃ s ∈ v, s.row 0 tau = τ ∧ s.msgs B_S0F true = [[τ, s.row 0 pres, s.row 0 vid]] ∧
+        ((s.row 0 pres = 1 ∧ (fullTree (Rpost vs es) (Vpost vs es pv) (headAt hds τ).rid).find UpsSpec.key =
+            some (some (valOf (Vpost vs es pv) (Link3.vpos (Link3.vid0 es) (s.row 0 vid))))) ∨
+         (s.row 0 pres = 0 ∧ s.row 0 vid = 0 ∧
+            (fullTree (Rpost vs es) (Vpost vs es pv) (headAt hds τ).rid).find UpsSpec.key = some none))) :=
+  upsV3_linkB_22 hN hhw hvw hw hW (Nat.le_trans hWr (by decide)) hb hvb hupb hE hB hKn hbytesU hothU hdigU hmemd
+    hK hK17 hr0 hrK hROOT hMID hlen hsha hvpost hvpostLen hsched
 
 end ZkFormal.NearV3.UpsRows
