@@ -19,6 +19,8 @@ import ZkFormal.NearV3.Assembly.TrieUniqOcc
 import ZkFormal.NearV3.Assembly.TrieUniqDup
 import ZkFormal.NearV3.Assembly.TrieUniqOk
 import ZkFormal.NearV3.Assembly.TrieComplete
+import ZkFormal.NearV3.Assembly.TrieUps
+import ZkFormal.NearV3.Assembly.TrieUpsNative
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec

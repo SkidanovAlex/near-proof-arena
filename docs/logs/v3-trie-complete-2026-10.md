@@ -127,3 +127,27 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
    Σ_τ unfoldedBytesT pre_τ + unfoldedBytesT post_τ ≤ B0` for the honest choice — both depend
    on the ups instances of item 2.
 * Verification: `lake build ZkFormal.V3.Integration` passes (3024 jobs) with all new modules; the 10 new audits pass; `make pin-check` OK.
+
+## 2026-10-11 (cont.) — ups component, EDGE/BMAP
+
+Lead: continue with ups (native instances, view, ups buses) and the shared buses; SHA and
+BYTES/DIGEST parked; A7 after the link merge.
+
+* `Assembly/TrieUps.lean` — `upsRenderOk_of_family` (`UpsRenderOk` from `InstOk` +
+  `NativePartFamily` + the row cap), `upsRenderOk_ranked` (counter ranking changes only the
+  walk; `R` unchanged), `aligned_view_walk_messages` (**view lemma**: the aligned ups trace's
+  view carries on EDGE/BMAP exactly `upsWalkMessages Is`; the candidate `physical_view_messages`
+  needed the unpadded height), `edge_records`/`bmap_records` (record-level conservation, ported
+  from `shared_physical_edge_balance` — which is already about `UpsV3.table`, not the compact
+  table), `balancedAt_edge`/`balancedAt_bmap`.
+* `Assembly/TrieUpsNative.lean` — **`accepted_ups_walks`**: from one choice of native objects
+  (`accepted_window_coverage` + `accepted_same_lookup_physical`) the walk component, the native
+  ups instances (`InstOk`, `NativePartFamily`), EDGE and BMAP record conservation for
+  `TrieNative.nodes … (useReq ws insts W)` / `heads … q.edges` / ranked walks / ranked ups walks,
+  and `UpsRenderOk` of the ranked instances **given the row cap**.
+* **Ups row cap — open, and not implied by the proven bounds.** `R insts = Σ_τ (4 + |v_τ| +
+  outputByteCharge run_τ)`; the proven bounds are `Σ|v| ≤ 3,146,912`, `Σ charge ≤ 2,131,072`
+  (total ≤ 5,278,112 > 2^22).  The candidates' compact ups table has no value rows (`compactR`
+  fits); `UpsV3.table` does.  Under the 2026-10-11 A7 measure (whole rebuilt post trie) the new
+  values and the new path nodes are post-trie bytes, so `R ≤ 128 + Σ_τ unfoldedBytesT post_τ ≤
+  128 + B0` — provable with the A7 (b) accounting (same work package).
