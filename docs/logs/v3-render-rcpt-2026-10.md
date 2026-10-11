@@ -195,3 +195,14 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
     `native_account_memory_balance`.
   Each identification is a `located_idsU`-style slice lemma over `locatedViews` (cells of the
   key/routing/deposit/account fields on the unpatched trace).
+  **Route found for MEM and AKC (next round):**
+  `Rcpt/Candidates/NativeReceiptMemAggregate.lean:native_receipt_mem_aggregate` gives
+  `locatedMemSends/Recvs = nativeLedgerMemWrites/Reads original rs steps` and
+  `Candidates/NativeAccessKeyPhysical.lean:physical_messages` gives the AKC rows
+  `= eventMessages pre rs sd` — both on the routing-q-patched trace with
+  `accountId := accountSlot original keys ·.receiptIndex`, `accessId :=
+  NativeReceiptAccessIds.accessId pre`, `fallback := rankAux pre rs ·`.  Remaining: (i) pin
+  these in `RcptOk`; (ii) patch-invariance of the MEM/AKC fields (as `patch_enc`);
+  (iii) global-order lemma `rcptSends3 ls B_MEM = locatedMemSends` (as `view_ids` for RIDS);
+  then `native_account_memory_balance` / `counter_balance`.  BND has no such native receipt
+  lemma yet.
