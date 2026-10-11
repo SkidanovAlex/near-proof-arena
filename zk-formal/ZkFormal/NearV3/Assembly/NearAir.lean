@@ -1,6 +1,8 @@
 import ZkFormal.NearV3.BudgetUps
 import ZkFormal.NearV3.Sched.Budget
 import ZkFormal.NearV3.Rcpt.Budget
+import ZkFormal.NearV3.Rcpt.Tables.SrcpD
+import ZkFormal.NearV3.Rcpt.Tables.RcptR
 import ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair
 import ZkFormal.NearV3.Candidates.MerklePublic
 import ZkFormal.NearV3.Public.Prepared
@@ -27,7 +29,9 @@ Table order (fixed; table index = position):
 2..7  nodeV3 headV3 valV3 walkV3 uniqV3 upsV3   (trie)
 8..10 chachaV3 rngV3 shufV3
 11..15 codecV3 ssdV3 sprV3 smmV3 scpV3          (scheduler)
-16..21 rcptV3 acctV3 akeyV3 bndV3 srcpV3 sizeV3 (receipt; acct at maxLog 19, size at maxLog 4:
+16..21 rcptV3 acctV3 akeyV3 bndV3 srcpV3 sizeV3 (receipt; rcpt = `RcptV3.tableR` with the gas and
+      deposit-age repairs; acct at maxLog 19, size at maxLog 4,
+      srcp = `SrcpV3.tableD` with the A10 depth check;
       the roll-aligned honest heights, `Render/PaddedRcpt.lean`)
 22    qvV3                (queue-value parser)
 23    mrkV3               (v1 Mrk at maxLog 19)
@@ -74,8 +78,8 @@ def nearTablesFull : List ZkFormal.Air.Table :=
    ZkFormal.NearV3.Sched.Codec.table, ZkFormal.NearV3.Sched.ScanDist.table,
    ZkFormal.NearV3.Sched.Proc.table, ZkFormal.NearV3.Sched.Mem.table,
    ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP,
-   ZkFormal.NearV3.RcptV3.table, {ZkFormal.NearV3.AcctV3.table with maxLog := 19}, ZkFormal.NearV3.AkeyV3.table,
-   ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.table, {ZkFormal.NearV3.SizeV3.table with maxLog := 4},
+   ZkFormal.NearV3.RcptV3.tableR, {ZkFormal.NearV3.AcctV3.table with maxLog := 19}, ZkFormal.NearV3.AkeyV3.table,
+   ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.tableD, {ZkFormal.NearV3.SizeV3.table with maxLog := 4},
    ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
    ZkFormal.NearV3.Candidates.MerklePublic.table, {ZkFormal.Near.Sort.table with maxLog := 18}]
 
