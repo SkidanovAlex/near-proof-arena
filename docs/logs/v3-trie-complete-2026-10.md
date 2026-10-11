@@ -55,3 +55,8 @@ balances, A7 (a)/(b).  Worktree `/data/illia/nearproof-wt/v3-trie-complete`, bra
   any occurrence list with distinct ids, via `class_sends`/`class_recvs` + `total_ent`),
   `node_sends_shift` / `val_sends` (the honest node/value `ENT` traffic is the chain traffic of
   their occurrences), `entBal_of`, **`entBal_accepted`**, `balancedAt_ent`.
+* `Assembly/TrieUniqOcc.lean` — the `DIGS` windows are the store occurrences:
+  `seedNodesT_ents`/`seedKidsT_ents` (a record's `(NPRE n, τ, hashOf)` is sent by its parent's
+  kid window or its head), `seedNodesT_valEnts` (value windows), `valTau_ents` /
+  `valueOccurrences_ents` (the value occurrences' instance is the tree's), **`rawEnts_perm_occ`**:
+  `rawEnts (nodes … q) (heads … keys) ~ (allOccurrences …).map occEnt` (revealed wf trees).
