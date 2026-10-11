@@ -51,3 +51,11 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   `ProcPriorCodecActual.table` (different constraints/interactions), not `Sched.Codec.table`;
   proc — `ProcComplete.proc_local` covers one run with `tau = 0` and no traffic theorem;
   ssd — `ProcScanDistPhases` has rows/counts but no `TableLocal ScanDist.table`.
+* **ups (table 7)** — `Render/PaddedUps.lean`: `upsTraceAligned insts` at
+  `padLog22 (logOf (R + 1))`; `ups_groupOk` assembles all ten constraint groups into
+  `GroupOk … UpsV3.constraints`; `ups_render_local_at` / `ups_render_traffic_at` generalise
+  M7d's natural-height lemmas to any height; `ups_aligned_complete : UpsRenderOk insts →
+  TableLocal UpsV3.table … ∧ TableTraffic … (upsTraffic (viewOf … (segsOf insts))) ∧ log % 3 = 1`.
+  `UpsRenderOk` = `UpsOk` + per-part `PartOk`/`FieldsOk`/`WindowOk`/`ByteInput`/`MemOk` (the
+  explicit inputs of the group lemmas). **Open:** discharging those per-part inputs from native
+  execution (`Ups/Native*`). Audit `test/AuditPaddedUps.lean`.
