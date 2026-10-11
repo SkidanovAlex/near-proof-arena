@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Independent Python checker for domain D0a of near/pv86/chunk-validation/v0
-(spec/near-chunk-validation-v0a.md): RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10.
+(spec/near-chunk-validation-v0a.md): RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10 ∧ A11.
 
 Runs the D0 checker (spec_check_v3.py, unmodified: it is pinned with the live D0
 challenges) and, on an accepting case, the amendments:
@@ -26,12 +26,17 @@ challenges) and, on an accepting case, the amendments:
   A10 w.path_depth       every used source receipt proof's Merkle path has at most D
                          (default Dp0 = 32) items.
 
-Violations are reported joined by "," in the order A1, A2, C0f, A7, A8, A9, A10 (the order
+  A11 w.post_rebuild    the A7 count is unchanged when every post trie is rebuilt from the
+                         blobs its pre trie reveals (the nodes and values unfold_pre reads)
+                         plus the blobs the transition wrote, instead of the whole witness
+                         store (pre-revealed blobs take precedence, as Lean's first match).
+
+Violations are reported joined by "," in the order A1, A2, C0f, A7, A8, A9, A10, A11 (the order
 of the Lean checkD0a checks; Lean reports only the first failing one).
 
 usage: spec_check_v3_d0a.py [--bound B] [--words-bound W] [--depth-bound D] CASE_DIR...
-       (one JSON line per case, as spec_check_v3.py, plus "unfold", "chacha_words",
-       "max_path_depth")
+       (one JSON line per case, as spec_check_v3.py, plus "unfold", "unfold_n",
+       "chacha_words", "max_path_depth")
 """
 import json
 import os
@@ -175,6 +180,42 @@ def unfold_bytes(tries):
     return tot
 
 
+def revealed(store, h, keys, out):
+    """Hashes of the blobs `unfold_pre` reads (Lean `revealedStore` of the pre trie)."""
+    if not keys or h is None or h not in store:
+        return
+    n = _parse(store[h])
+    if n is None:
+        return
+    out.add(h)
+    if n.kind == 'leaf':
+        if any(k == n.key for k in keys) and n.vref is not None and n.vref[1] in store:
+            out.add(n.vref[1])
+        return
+    if n.kind == 'ext':
+        revealed(store, n.child, [k[len(n.key):] for k in keys if k[:len(n.key)] == n.key], out)
+        return
+    if any(len(k) == 0 for k in keys) and n.vref is not None and n.vref[1] in store:
+        out.add(n.vref[1])
+    for i, c in n.children.items():
+        revealed(store, c, [k[1:] for k in keys if k and k[0] == i], out)
+
+
+def unfold_bytes_n(tries):
+    """A11: `unfold_bytes` with every post trie rebuilt from the pre-revealed blobs and the
+    written blobs only (Lean `unfoldBytesN`)."""
+    tot = 0
+    for t in tries:
+        keys = [nibbles(k) for k in t.keys]
+        seen = set()
+        revealed(t.pre_store, t.pre_root, keys, seen)
+        small = {h: v for h, v in t.store.items() if t.pre_store.get(h) != v}
+        small.update({h: t.pre_store[h] for h in seen})
+        tot += unfold_pre(t.pre_store, t.pre_root, keys)
+        tot += unfold_diff(t.pre_store, t.pre_root, small, t.root, keys)
+    return tot
+
+
 def canonical(L, v):
     if v is None:
         return True
@@ -251,23 +292,24 @@ def a8_ok(claim_b):
 
 
 def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
-    """(verdict, reason, unfold_bytes, chacha_words, max_path_depth); the last three are None
-    unless the D0 checker accepts."""
+    """(verdict, reason, unfold_bytes, chacha_words, max_path_depth, unfold_bytes_n); the last
+    four are None unless the D0 checker accepts."""
     _TRIES.clear()
     _RNGS.clear()
     verdict, reason = d0.check_case(d)
     tries = list(_TRIES)
     words = sum(r.words for r in _RNGS)
     if verdict != "accept":
-        return verdict, reason, None, None, None
+        return verdict, reason, None, None, None, None
     try:
         cb = open(os.path.join(d, "claim.bin"), "rb").read()
         wb = open(os.path.join(d, "witness.bin"), "rb").read()
         v, depth = amendments(cb, wb)
         u = unfold_bytes(tries)
+        un = unfold_bytes_n(tries)
     except Exception as e:  # a bug in this checker
         print("spec_check_v3_d0a: INTERNAL ERROR on %s: %r" % (d, e), file=sys.stderr)
-        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None
+        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None, None
     if u > bound:
         v.append("w.unfolded")
     try:
@@ -275,14 +317,16 @@ def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
             v.append("c.bw_requests")
     except Exception as e:  # a bug in this checker
         print("spec_check_v3_d0a: INTERNAL ERROR on %s: %r" % (d, e), file=sys.stderr)
-        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None
+        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None, None
     if words > words_bound:
         v.append("e.chacha_words")
     if depth > depth_bound:
         v.append("w.path_depth")
+    if un != u:
+        v.append("w.post_rebuild")
     if v:
-        return "out_of_domain", ",".join(v), u, words, depth
-    return "accept", "ok", u, words, depth
+        return "out_of_domain", ",".join(v), u, words, depth, un
+    return "accept", "ok", u, words, depth, un
 
 
 def main():
@@ -291,10 +335,10 @@ def main():
     while args[:1] and args[0] in bounds:
         bounds[args[0]], args = int(args[1]), args[2:]
     for d in args:
-        v, reason, u, k, p = check_case(d, bounds["--bound"], bounds["--words-bound"],
-                                        bounds["--depth-bound"])
-        print(json.dumps(dict(case=d, verdict=v, reason=reason, unfold=u, chacha_words=k,
-                              max_path_depth=p)))
+        v, reason, u, k, p, un = check_case(d, bounds["--bound"], bounds["--words-bound"],
+                                            bounds["--depth-bound"])
+        print(json.dumps(dict(case=d, verdict=v, reason=reason, unfold=u, unfold_n=un,
+                              chacha_words=k, max_path_depth=p)))
         sys.stdout.flush()
 
 
