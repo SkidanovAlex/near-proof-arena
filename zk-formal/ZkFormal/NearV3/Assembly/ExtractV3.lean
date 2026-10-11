@@ -79,9 +79,9 @@ theorem nearTablesFull_eq : nearAirV3.tables =
     [shaTable, shaTable, ZkFormal.NearV3.UnfoldA7.nodeA7, {ZkFormal.NearV3.HeadV3.table with maxLog := 13},
      ZkFormal.NearV3.UnfoldA7.valA7, {ZkFormal.NearV3.WalkV3.table with maxLog := 22}, ZkFormal.NearV3.Uniq.table,
      ZkFormal.NearV3.UnfoldA7.upsA7,
-     ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA,
-     ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
-     ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
+     ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA,
+     ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
+     ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
        ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN ZkFormal.NearV3.Sched.B_SSHUF,
      ZkFormal.NearV3.Sched.Codec.table, ZkFormal.NearV3.Sched.ScanDist.table,
      ZkFormal.NearV3.Sched.Proc.table, ZkFormal.NearV3.Sched.Mem.table,
@@ -89,7 +89,7 @@ theorem nearTablesFull_eq : nearAirV3.tables =
      ZkFormal.NearV3.RcptV3.tableR, {ZkFormal.NearV3.AcctV3.table with maxLog := 19}, ZkFormal.NearV3.AkeyV3.table,
      ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.tableD, ZkFormal.NearV3.UnfoldA7.sizeA7,
      ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
-     ZkFormal.NearV3.Candidates.MerklePublic.table, {ZkFormal.Near.Sort.table with maxLog := 18}] := rfl
+     ZkFormal.NearV3.Candidates.MerkleEmpty.table, sortTableV3] := rfl
 
 /-- The `nearAirV3` table list is definitionally `nearTablesFull`; the index lemmas are
 `rfl` on `NearAir.nearAirV3_tables`. -/
@@ -113,9 +113,9 @@ theorem getElem?_bnd : nearAirV3.tables[T_BND]? = some ZkFormal.NearV3.BndV3.tab
 theorem getElem?_srcp : nearAirV3.tables[T_SRCP]? = some ZkFormal.NearV3.SrcpV3.tableD := rfl
 theorem getElem?_size : nearAirV3.tables[T_SIZE]? = some ZkFormal.NearV3.UnfoldA7.sizeA7 := rfl
 theorem getElem?_mrk : nearAirV3.tables[T_MRK]? =
-    some ZkFormal.NearV3.Candidates.MerklePublic.table := rfl
+    some ZkFormal.NearV3.Candidates.MerkleEmpty.table := rfl
 theorem getElem?_sort : nearAirV3.tables[T_SORT]? =
-    some {ZkFormal.Near.Sort.table with maxLog := 18} := rfl
+    some sortTableV3 := rfl
 
 /-- An extension of a table (more constraints and interactions, no larger height cap) keeps
 the base table's local legality. -/

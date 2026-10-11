@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Render.PaddedCongr
 import ZkFormal.NearV3.Candidates.NativeSortTraffic
+import ZkFormal.NearV3.Candidates.SortEmptyCap
 
 /-!
 # Aligned receipt-id sort generator (`nearAirV3` table 24, `{Sort.table with maxLog := 18}`)
@@ -158,4 +159,51 @@ theorem sort_receipts_aligned_complete19 (rs : List NearSpec.Receipt) (hne : rs 
   obtain ⟨hs, hr⟩ := h2 b m
   exact ⟨hs, hr.trans (sortTraffic_sorted rs b m)⟩
 
+
+/-! ## The repaired `nearAirV3` sort table (`sortTableV3`, cap 19, empty input allowed) -/
+
+namespace SortV3
+open ZkFormal.NearV3.Assembly
+
+/-- The aligned `sortV3` trace of a receipt list: the silent one-row-pair table for no receipts,
+else the sorted ids. -/
+def sortTraceV3 (rs : List NearSpec.Receipt) : Trace Fp :=
+  if rs = [] then rowsTrace 1 (mkTab 2 Sort.width (fun _ _ => 0))
+  else sortTraceAligned (NativeSortIds.sorted rs)
+
+theorem tableLocal_recap {T : ZkFormal.Air.Table} {tr : Trace Fp} {t : Nat} {pub : List Fp}
+    (m : Nat) (h : TableLocal T tr t pub) (hm : tr.log t ≤ m) :
+    TableLocal { T with maxLog := m } tr t pub := ⟨h.log_ge, hm, h.constr, h.bits⟩
+
+/-- **`sortV3` aligned completeness for `nearAirV3`'s repaired table** (any number of
+well-formed receipts with distinct ids, at most `8192`, including none). -/
+theorem sort_v3_aligned_complete (rs : List NearSpec.Receipt)
+    (hw : ∀ r ∈ rs, r.wf = true) (hd : (rs.map NearSpec.Receipt.receiptId).Nodup)
+    (hn : rs.length ≤ 8192) (t : Nat) (pub : List Fp) :
+    TableLocal sortTableV3 (sortTraceV3 rs) t pub ∧
+    TableTraffic sortTableV3.interactions (sortTraceV3 rs) t pub
+      (sortTraffic (NativeSortIds.input rs)) ∧
+    (sortTraceV3 rs).log t % 3 = 1 := by
+  by_cases he : rs = []
+  · subst he
+    have hl : (SortEmpty.emptyTrace).log t = (sortTraceV3 []).log t := rfl
+    have hc : ∀ r, r < (SortEmpty.emptyTrace).height t → ∀ c,
+        (SortEmpty.emptyTrace).cell t r c = (sortTraceV3 []).cell t r c := by
+      intro r hr c
+      have hr' : r < 2 ^ 1 := hr
+      show (0 : Fp) = (rowsTrace 1 (mkTab 2 Sort.width (fun _ _ => 0))).cell t r c
+      rw [rowsTrace_cells 1 _ _ (fun _ _ _ => rfl) t r hr' c]; rfl
+    refine ⟨tableLocal_congr_rows hl hc
+        (tableLocal_recap 19 (SortEmpty.empty_local t pub) (show 1 ≤ 19 by decide)),
+      tableTraffic_congr_rows hl hc ?_, rfl⟩
+    intro b m
+    refine ⟨?_, ?_⟩ <;>
+      rw [show sortTableV3.interactions = SortEmpty.table.interactions from rfl,
+        SortEmpty.empty_count] <;>
+      simp [sortTraffic, NativeSortIds.input]
+  · obtain ⟨h1, h2, h3⟩ := sort_receipts_aligned_complete19 rs he hw hd hn t pub
+    simp only [sortTraceV3, if_neg he]
+    exact ⟨SortEmpty.v3_old_local _ t pub h1, h2, h3⟩
+
+end SortV3
 end ZkFormal.NearV3.Render

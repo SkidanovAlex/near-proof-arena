@@ -7,6 +7,7 @@ import ZkFormal.NearV3.Assembly.ComposeV3
 import ZkFormal.NearV3.Assembly.RenderV3
 import ZkFormal.NearV3.Assembly.RenderV3Assemble
 import ZkFormal.NearV3.Assembly.RenderV3Trace
+import ZkFormal.NearV3.Assembly.RenderV3Bundle
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec
@@ -257,8 +258,10 @@ import ZkFormal.NearV3.Render.PaddedCongr
 import ZkFormal.NearV3.Render.PaddedChacha
 import ZkFormal.NearV3.Render.PaddedMrk
 import ZkFormal.NearV3.Render.PaddedSort
+import ZkFormal.NearV3.Candidates.SortEmptyCap
 import ZkFormal.NearV3.Render.PaddedSched
 import ZkFormal.NearV3.Render.PaddedUps
+import ZkFormal.NearV3.Render.PaddedUpsNative
 import ZkFormal.NearV3.Render.NodeRender
 import ZkFormal.NearV3.Render.UniqRender
 import ZkFormal.NearV3.Render.UpsRender

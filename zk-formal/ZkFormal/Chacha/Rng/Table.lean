@@ -123,4 +123,7 @@ def table (busChacha busGen : Nat) : Table :=
   { width := width, constraints := constraints, interactions := interactions busChacha busGen,
     maxLog := maxLog }
 
+/-- The table at the A9 cap `22` (`nearAirV3`). -/
+def table22 (busChacha busGen : Nat) : Table := { table busChacha busGen with maxLog := 22 }
+
 end ZkFormal.Chacha.Rng.Table

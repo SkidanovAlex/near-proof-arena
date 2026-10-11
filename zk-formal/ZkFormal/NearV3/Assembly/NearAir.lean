@@ -5,6 +5,8 @@ import ZkFormal.NearV3.Rcpt.Tables.SrcpD
 import ZkFormal.NearV3.Rcpt.Tables.RcptR
 import ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair
 import ZkFormal.NearV3.Candidates.MerklePublic
+import ZkFormal.NearV3.Candidates.MerkleEmpty
+import ZkFormal.NearV3.Candidates.SortEmpty
 import ZkFormal.NearV3.Public.Prepared
 import ZkFormal.Chacha.Table
 import ZkFormal.Chacha.Rng.Table
@@ -28,15 +30,15 @@ Table order (fixed; table index = position):
 ```
 0,1   sha_t   sha_r        (two L5 instances)
 2..7  nodeV3 headV3 valV3 walkV3 uniqV3 upsV3   (trie)
-8..10 chachaV3 rngV3 shufV3
+8..10 chachaV3 rngV3 shufV3   (cap 22: the A9 W0 lane, `table22`)
 11..15 codecV3 ssdV3 sprV3 smmV3 scpV3          (scheduler)
 16..21 rcptV3 acctV3 akeyV3 bndV3 srcpV3 sizeV3 (receipt; rcpt = `RcptV3.tableR` with the gas and
       deposit-age repairs; acct at maxLog 19, size at maxLog 4,
       srcp = `SrcpV3.tableD` with the A10 depth check;
       the roll-aligned honest heights, `Render/PaddedRcpt.lean`)
 22    qvV3                (queue-value parser)
-23    mrkV3               (v1 Mrk at maxLog 19)
-24    sortV3             (v1 Sort at maxLog 18)
+23    mrkV3               (v1 Mrk at maxLog 19, empty-tree repair `MerkleEmpty.table`)
+24    sortV3             (v1 Sort at maxLog 19, empty-input repair `SortEmpty.table`)
 ```
 -/
 
@@ -47,17 +49,21 @@ open ZkFormal.Air ZkFormal.V2
 /-- A SHA-256 table instance (`L5`, unchanged; kind-registered per §12). -/
 abbrev shaTable : ZkFormal.Air.Table := ZkFormal.Sha.Table.table ZkFormal.Near.B_BYTES ZkFormal.Near.B_DIGEST
 
-/-- The v1 tables reused at v3 heights: `mrk` (`maxLog 19`, public-index translated to
-the v3 `PH_N`/`PH_OUT` offsets) and `sort` (`maxLog 18`). -/
+/-- The v1 tables reused at v3 heights, with their empty-input repairs (a chunk may have no
+receipts; D0a does not exclude it): `mrk` (`maxLog 19`, public-index translated to the v3
+`PH_N`/`PH_OUT` offsets, `MerkleEmpty`: count 0 ⇒ zero root and no traffic) and `sort`
+(`maxLog 19` = the aligned height of `≤ 8192` ids, `SortEmpty`: the first row may be inactive). -/
+def sortTableV3 : ZkFormal.Air.Table := { ZkFormal.NearV3.Candidates.SortEmpty.table with maxLog := 19 }
+
 def v1Tables : List ZkFormal.Air.Table :=
-  [ZkFormal.NearV3.Candidates.MerklePublic.table, { ZkFormal.Near.Sort.table with maxLog := 18 }]
+  [ZkFormal.NearV3.Candidates.MerkleEmpty.table, sortTableV3]
 
 /-- The v3 tables, in the fixed order above, without the two SHA instances. -/
 def nearTablesV3 : List ZkFormal.Air.Table :=
   ZkFormal.NearV3.Budget.trieTablesU ++
-  [ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA,
-   ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
-   ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
+  [ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA,
+   ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
+   ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
      ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN ZkFormal.NearV3.Sched.B_SSHUF] ++
   ZkFormal.NearV3.Sched.Budget.schedTables ++
   ZkFormal.NearV3.Rcpt.Budget.rcptTables ++
@@ -72,9 +78,9 @@ def nearTablesFull : List ZkFormal.Air.Table :=
    ZkFormal.NearV3.UnfoldA7.nodeA7, {ZkFormal.NearV3.HeadV3.table with maxLog := 13},
    ZkFormal.NearV3.UnfoldA7.valA7, {ZkFormal.NearV3.WalkV3.table with maxLog := 22},
    ZkFormal.NearV3.Uniq.table, ZkFormal.NearV3.UnfoldA7.upsA7,
-   ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA,
-   ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
-   ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
+   ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA,
+   ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
+   ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
      ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN ZkFormal.NearV3.Sched.B_SSHUF,
    ZkFormal.NearV3.Sched.Codec.table, ZkFormal.NearV3.Sched.ScanDist.table,
    ZkFormal.NearV3.Sched.Proc.table, ZkFormal.NearV3.Sched.Mem.table,
@@ -82,7 +88,7 @@ def nearTablesFull : List ZkFormal.Air.Table :=
    ZkFormal.NearV3.RcptV3.tableR, {ZkFormal.NearV3.AcctV3.table with maxLog := 19}, ZkFormal.NearV3.AkeyV3.table,
    ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.tableD, ZkFormal.NearV3.UnfoldA7.sizeA7,
    ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
-   ZkFormal.NearV3.Candidates.MerklePublic.table, {ZkFormal.Near.Sort.table with maxLog := 18}]
+   ZkFormal.NearV3.Candidates.MerkleEmpty.table, sortTableV3]
 
 /-- `numBuses` covers every bus any table uses (max in use is `B_QVC = 63`). -/
 def nearBuses : Nat := 77

@@ -253,7 +253,7 @@ theorem step_atL (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) {L : Nat
 
 /-! ## Honest cells are `< p` -/
 
-theorem rowCell_lt {X : Row} {r : Nat} (hX : Valid X r) (hr : r < 2 ^ 20) (c : Nat) :
+theorem rowCell_lt {X : Row} {r : Nat} (hX : Valid X r) (hr : r < 2 ^ 22) (c : Nat) :
     rowCell X r c < 2013265921 := by
   cases X with
   | pad =>

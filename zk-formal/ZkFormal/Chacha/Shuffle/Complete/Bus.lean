@@ -27,7 +27,7 @@ theorem eval01 {tr : Trace Fp} {t r : Nat} {pub : List Fp} {e : Expr}
 
 section
 variable (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) {L : Nat}
-  (hrows : (honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 20)
+  (hrows : (honestRows insts).length ≤ 2 ^ L) (h20 : L ≤ 22)
 
 theorem cell_eq (t r c : Nat) :
     (traceAt insts L).cell t r c = Fp.ofNat (rowCell (rowAt insts r) r c) := rfl
@@ -37,7 +37,7 @@ include hok hrows h20
 theorem toNat_cell (t r c : Nat) (hr : r < (traceAt insts L).height t) :
     ((traceAt insts L).cell t r c).toNat = rowCell (rowAt insts r) r c := by
   rw [cell_eq, Fp.toNat_ofNat]
-  have : (traceAt insts L).height t ≤ 2 ^ 20 := Nat.pow_le_pow_right (by decide) h20
+  have : (traceAt insts L).height t ≤ 2 ^ 22 := Nat.pow_le_pow_right (by decide) h20
   exact Nat.mod_eq_of_lt (rowCell_lt (valid_rowAt insts hok r) (by omega) c)
 
 theorem honest_env (t r : Nat) (pub : List Fp) (hr : r < (traceAt insts L).height t) :

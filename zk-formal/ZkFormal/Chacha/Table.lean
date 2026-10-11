@@ -219,4 +219,7 @@ def table (busChacha : Nat) : Table :=
   { width := width, constraints := constraints, interactions := interactions busChacha,
     maxLog := maxLog }
 
+/-- The table at the A9 cap `22` (`nearAirV3`; the honest W0 lane has `< 2^22` rows). -/
+def table22 (busChacha : Nat) : Table := { table busChacha with maxLog := 22 }
+
 end ZkFormal.Chacha.Table
