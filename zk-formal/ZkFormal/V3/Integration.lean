@@ -10,6 +10,7 @@ import ZkFormal.NearV3.Assembly.RenderV3Trace
 import ZkFormal.NearV3.Assembly.RenderV3Bundle
 import ZkFormal.NearV3.Assembly.RenderV3Trie
 import ZkFormal.NearV3.Assembly.UniqNative
+import ZkFormal.NearV3.Assembly.TrieNative
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec
