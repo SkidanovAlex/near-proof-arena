@@ -42,6 +42,7 @@ import ZkFormal.NearV3.Assembly.TrieWalkAlign
 import ZkFormal.NearV3.Assembly.TrieUpsBytes
 import ZkFormal.NearV3.Assembly.TrieUpb
 import ZkFormal.NearV3.Assembly.TrieUpsMemd
+import ZkFormal.NearV3.Assembly.TrieUpsMemdPair
 import ZkFormal.NearV3.Assembly.TrieKeyFinal
 import ZkFormal.NearV3.Assembly.TrieShaBus
 import ZkFormal.NearV3.Assembly.NearAirCheck

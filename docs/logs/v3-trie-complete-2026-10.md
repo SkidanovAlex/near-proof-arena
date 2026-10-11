@@ -659,3 +659,14 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
     exactly once, by the parent record or the head, and dup records);
   - `hcodec` (sched lane): codec receives `expectedDigests (schedulerSanityJobs 0 us)`;
   - `hrest` (rcpt lane): rcpt + srcp + mrk receive `expectedDigests (receipt ++ source)`.
+* **MEMD pairing reduced to the native link** (`Assembly/TrieUpsMemdPair.lean`, new):
+  `mem_field`/`not_mem_field` (MEM rows are `p = |q| − 8 + ix`), `row_mem`/`row_nomem`/`row_w`/`row_v`
+  (row messages: `mS I k ix` = `[τ, k+1, ix, limb RV ix, memRb Q ix, |q|]`, `mR I k ix` =
+  `[τ, jm, ix, limb mB ix, memByte child ix, clen]`, gates `SendK`/`RecvK`), `part_msgs`,
+  `memd_parts`; the plan: `plan_check1`/`plan_check0`/`plan_pos`/`plan_jm` (by `decide` over all
+  11 cases × 3 `ti`), `recv_term`, `jm_term`, `upper_recv`, **`index_perm`** (the receivers'
+  `jm − 1` are exactly the senders, up to order), `jm_pos`; **`memdPair_of`**: `InstOk I →
+  NativePartFamily I → (∀ k < nQ I, 8 ≤ |pb_k|) → MemdLink I → MemdPair I`.
+  **Open (native):** `MemdLink I := ∀ k < nQ I, RecvK I (part I k) → ((part I k).mB : ℤ) =
+  RV I (child I (part I k))` for the accepted instances (and threading it, with `8 ≤ |pb|` from
+  `NativeReaderOrigin.room`, into `accepted_ups_walks`).
