@@ -328,3 +328,93 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   nonempty from `prepD0_sources_nonempty`, roots from `prepD0_source_roots`, siblings from
   `relD0a_source_paths`, RC length `≤ |raw| ≤ 8 MiB < P`; the default `sourceEntry` has 12 bytes).
   Audit `test/AuditAcceptedSrcpOk.lean`.
+* **Precision on the BND item.**  Coverage of the honest routing keys against the *bounded*
+  boundary rows (`honest_bnd_balance`'s `hc`) is not affected by the layout mismatch (both sides
+  use `boundedIntervals`); it is still an explicit premise because no lemma identifies the
+  physical active rows of the whole honest trace with per-receipt `routeKey`s (only per-receipt
+  slices exist: `applied_receipt_route_slice`, `native_routing_selected`).  The mismatch bites in
+  **BNDP** (public `boundaryRecords p` over `ownIntervals` vs the bnd rows over the bounded
+  intervals) and in **`pubFit`/`|preparedBytes p 0| < P`** of `RenderWitnessV3` (the BNDP block
+  of `p` grows with `|boundaries|`, unbounded by any D0a check; `accepted_prepared_length` bounds
+  only `boundedPrep`).  So for the malformed own-shard-0 layouts `CompleteV3Stmt` itself can fail
+  — the decision (publish `boundedIntervals`, or a D0a check `|boundaries| + 1 = |shardIds|`)
+  is needed before `CompleteV3Stmt` is provable.
+* **Unconditional receipt-side renders from acceptance (done).**
+  `Assembly/RenderV3RcptAccepted.lean`: `AcceptedV3 cb wb` (k, w, raw, codes, m, steps, last,
+  p and their proofs; `acceptedV3_nonempty : checkD0a B0 cb wb = .ok () → Nonempty _`);
+  `A.pub = pubOf (preparedBytes A.p 0)`; choices `A.rcptInput` (native account slots, access
+  ids, key ranks), `A.accts` (native account views, `memOk_of_accept`), `A.akeys`, `A.bnds`
+  (bounded intervals × physical keys; rows ≤ 65·65), `A.srcps`, `A.qvVals` (with `Reads`, via the
+  new `AcceptedQv.qvNativeOk_reads_of_accept`); **`A.rcptAcc/acctAcc/akeyAcc/bndAcc/srcpAcc/qvAcc
+  : TableRenderV3 A.pub t`** for t = 16,17,18,19,20,22 — no premises; `*_tf` lemmas (`rfl`).
+* **Receipt-side balances in bundle form (done).**  `Assembly/RenderV3RcptBalance.lean`
+  (namespace `RcptBal`): `BusBalanced R b` (= `R.Balanced` at `b`, `balanced_of_buses`),
+  `bundle_sum` (sum over all tables = sum over the bus users, from exact traffic: tables
+  without an interaction on (b, side) count 0), `pubCount_free`, `pubCount_prepared`.
+  For any bundle `R` with `R.tf t` = the honest traffic of `A` (hyps `h16 … : R.tf t = …`):
+  `srec_balanced`, `rcl_balanced`, `akc_balanced`, `rids_balanced` (`h24` = the sort traffic of
+  `NativeSortIds.input (A.rcptInput.lists.flatten.map Input.receipt)`, i.e. render-sched's
+  `sortRenderV3` with `lists := A.rcptInput.lists`), `mem_balanced`, `qvc_balanced`,
+  `qsh_balanced`: **unconditional**; `src_balanced` given `|preparedBytes A.p 0| < 256^4`;
+  `bnd_balanced` under the coverage premise `hc`; `bndp_balanced` under the decidable layout
+  premise `A.bounds = A.p.bnds`.  Not covered here: SIZE (tables 2, 4, 20 → 21; needs the trie
+  lane's node/val traffic and `sizeA7`).
+  Audit `test/AuditRenderV3RcptAccepted.lean`.  Integration 3,102 jobs OK; pin-check OK.
+
+### Open statements (for the successor / lead)
+* Layout decision (BNDP, pubFit): see above.  With option (a) (`prepD0` publishes
+  `boundedIntervals`), `bndp_balanced`'s premise becomes `rfl` and `accepted_prepared_length`
+  gives the pubFit bound.
+* BND coverage: `∀ r ∈ physicalActiveRows (rcptTraceNative A.pub A.rcptInput) 0,
+  physicalBoundaryKey … r ∈ A.bnds.map BndE.rec4` — needs a whole-trace identification of the
+  active routing rows with `routeKey bounds (nativeRoutingIndex k rp) pos` (`pos ≤ |receiver|`),
+  then `native_routing_selected`.
+* SIZE: trie lane.
+
+## 2026-10-12 (round 8: A12 `c.layout_wf`, lead request after the user decision)
+
+* Merged `origin/integration/v3-20261012` (bbba829c).
+* **Spec (unsigned draft).** `NearSpecV3.ChunkValidationV0a`: `a12 cb := walkD0 cb = ok k →
+  |k.L.boundaries| + 1 == |k.L.shardIds|` (claim-only), last conjunct of `RelD0a`, `checkD0a`
+  (reason `out of domain (c.layout_wf): …`), `inD0a`/`InD0a`; `relD0a_iff`, `relD0a_mono_all`
+  re-proved.  **`prepClaim` checks it natively too** (like A8; last check before `pure`, written
+  `L.numShards == L.boundaries.length + 1` so the existing `check (_ + 1 == _)` pattern matches in
+  prepClaim proofs stay unambiguous); `V3/Fast/Prep.lean` mirror (`prepClaim_csimp` is `rfl`).
+  Needed for soundness: the verifier's `prepD0` is the only place a claim-only condition can be
+  enforced (the AIR never sees the layout).  `spec/near-chunk-validation-v0a.md` §1, table, §2.9
+  (nearcore source check: `ShardLayoutV2::new` v2.rs:207, `ShardLayoutV3::new` v3.rs:211
+  `assert_eq!(boundary_accounts.len() + 1, shard_ids.len())`); Python
+  `oracle/tools/spec_check_v3_d0a.py` (`a12_ok`, reported after A11), difftest `AMENDMENTS`,
+  challenge-draft builder notes.  The Lean tool (`nearspec-v3-check-d0a`) changes only through
+  `checkD0a`.
+* **Measured** (`oracle/tools/a12_measure_v3_d0a.py`, every decodable claim incl. mutants;
+  `docs/e2e-results/v3-a12/measure.json`): **0 violations** — public-d0a 421 claims (123 honest),
+  d1run 53,048 (7,039 honest), d2corpus.v2 67,384 (10,927 honest); layouts 3/4, 4/5, 5/6.
+  **Difftest public-d0a** (Lean exe rebuilt, Python): 421 cases, **0 disagreements**;
+  `c.layout_wf` on 290 honest witnesses: 0 (`docs/e2e-results/v3-a12/difftest-public-d0a.json`).
+* **Lean.** `GoodV3.layoutWf` (and `GoodV3.amendments` gains `a12`); `ClaimFieldsV3.layoutWf`
+  from `prepClaim` (`walkD0_of_prepClaim`); `factorSound` adapted; `good_of_native` (hence
+  `factorComplete`) from `RelD0a`'s last conjunct; `prepClaim_exists` takes the A12 premise,
+  `checkD0a_prepClaim_exists` supplies it; positional fix `FactorComplete` (A11 is now
+  `.2.2.2.2.2.2.2.2.1`); `LinkShaKinds.lean:184` one-line fix for `V3RecordsWf.accts : AcctV3WfE`
+  (round 7) — lane v3-link has its own fix (`rcases W.accts`); take theirs at merge.
+* **Dependents.** Reverse import closure of `NearSpecV3.PrepD0`, `NearSpecV3.ChunkValidationV0a`,
+  `ZkFormal.V3.Fast.Prep`: 3,397 zk-formal modules, 178 top-level; `lake build` of all of them +
+  `nearspec-v3-check-d0a` (5,214 jobs): the only errors are the integration branch's known
+  trie-lane failures (`Assembly/RenderV3Trie.lean`, `Render/BundleSched.lean` table 7 ups), which
+  also block `ZkFormal.V3.Integration`.  Audits `AuditA12LayoutWf` (new), `AuditFactorComplete`,
+  `AuditAssemblyFactor`, `AuditNativeGoodGap`, `AuditV3DomainBounds`,
+  `AuditRenderV3RcptAccepted`, `AuditAccountEmptyCap`, `AuditAcceptedSrcpOk` pass; pin-check OK.
+* **Uses of A12** (`Assembly/RenderV3RcptLayout.lean`): `layoutWf_of_rel`, `boundedLayout_wf`;
+  `AcceptedV3.bounds_eq : A.bounds = A.p.bnds`, `boundedPrep_eq`; **`prepared_le`
+  (`|preparedBytes A.p 0| ≤ 2^26`), `prepared_lt_P`, `pubFit`** (the size/fit conjuncts of
+  `RenderWitnessV3`); **`bndp_balanced_accepted`** and `src_balanced_accepted` (no premises).
+* **Still open: BND coverage** (`bnd_balanced`'s `hc`).  A12 does not touch it (both sides use
+  the bounded intervals, which A12 makes the published ones).  Missing: a whole-trace lemma —
+  every row `r` of `rcptTraceNative A.pub A.rcptInput` with `gBd = 1` is a routing-active
+  coordinate (`routingActive`: `sV` rows and the `sRID` index-0 row) of some planned receipt `rp`
+  of `A.lists`, and its key is `routeKey A.bounds (nativeRoutingIndex k rp.input.receipt)
+  (routingPosition rp row)` (cells from `routingAux (nativeRoutingInterval k)` through the outer
+  aux layers' commute lemmas and `nativeRoutingConstants` for `q`); then
+  `native_routing_selected` closes it.  Only per-receipt slices exist today
+  (`applied_receipt_route_slice`, `routeColumns_key`).

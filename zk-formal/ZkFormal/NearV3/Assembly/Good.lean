@@ -83,6 +83,8 @@ structure GoodV3 (B : Nat) (cb : Bytes) (k : WalkD0) (h : Hint) (p : Prep) (x : 
   /-- A11 (`w.post_rebuild`, 2026-10-11): A7's count on the reconstructed witness is unchanged
   when every post trie is rebuilt from its pre trie's revealed blobs. -/
   postRebuild : unfoldBytesN cb (witnessOfV3 k x) = unfoldBytes cb (witnessOfV3 k x)
+  /-- A12 (`c.layout_wf`, 2026-10-12): the epoch layout has one boundary fewer than shard ids. -/
+  layoutWf : k.L.boundaries.length + 1 = k.L.shardIds.length
 
 theorem GoodV3.decode {B cb k h p x} (g : GoodV3 B cb k h p x) :
     decodeW (witnessOfV3 k x) = .ok (stateWitnessOfV3 k x) := by
@@ -94,8 +96,8 @@ theorem GoodV3.amendments {B cb k h p x} (g : GoodV3 B cb k h p x) :
     a1 cb = true ∧ a2 cb (witnessOfV3 k x) = true ∧
       canon0f cb (witnessOfV3 k x) = true ∧ a7 B cb (witnessOfV3 k x) = true ∧
       a8 cb = true ∧ a9 W0 cb (witnessOfV3 k x) = true ∧ a10 Dp0 cb (witnessOfV3 k x) = true ∧
-      a11 cb (witnessOfV3 k x) = true := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      a11 cb (witnessOfV3 k x) = true ∧ a12 cb = true := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · simpa [a1, g.walk] using g.gasLimit
   · simp only [a2, g.walk, g.decode]
     apply List.all_eq_true.mpr
@@ -117,6 +119,7 @@ theorem GoodV3.amendments {B cb k h p x} (g : GoodV3 B cb k h p x) :
     intro e he
     exact decide_eq_true (g.pathDepth e he)
   · simp only [a11, g.postRebuild, beq_self_eq_true]
+  · simp only [a12, g.walk, g.layoutWf, Layout.numShards, beq_self_eq_true]
 
 /-- Soundness statement, proved by `Assembly.factorSound`: semantic reconstructed views imply the frozen
 amended checker accepts their concrete encoded witness. -/
