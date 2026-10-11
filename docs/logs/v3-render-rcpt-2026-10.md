@@ -227,3 +227,20 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   same premises as `RcptOk`), `physical_messages` gives its AKC rows = native events, the
   patch leaves the AKC columns (`gAK`, `kF`, `uak`) untouched (`patch_akc_rows`), and
   `counter_balance` closes the events against the providers.
+* **BND balance + ranked honest receipt trace** (`Render/HonestBalanceBnd.lean`).  The
+  honest rows must carry the physical boundary use ranks in `uB` (no constraint reads `uB`,
+  `arith_counter_free`): `rcptTraceB := counterPatch (rcptTraceNative pub x) 0 ranks`,
+  `rcptTrafficB pub x` (= `rcptTraffic3 pub (nativeRcptLists pub x)` on every bus but BND,
+  `rcptTrafficB_other`; BND = `physicalCounterMessages`), and
+  **`rcpt_aligned_completeB`** (TableLocal `tableR` ∧ TableTraffic `rcptTrafficB` ∧ log%3=1) —
+  this is the receipt render render-assembly should use; all the other receipt balances apply
+  to it unchanged via `rcptTrafficB_other`.
+  `honest_bnd_balance`: `(bndTraffic es).sends B_BND ++ (rcptTrafficB pub x).sends B_BND ~
+  (rcptTrafficB pub x).recvs B_BND ++ (bndTraffic es).recvs B_BND` for
+  `es = boundaryEntries bounds (physicalBoundaryKeys (rcptTraceNative pub x) 0)`, given
+  **coverage** `hc : ∀ r ∈ physicalActiveRows trU 0, physicalBoundaryKey trU 0 r ∈ es.map rec4`.
+  Open (precise): `hc` is the public boundary ownership obligation — via
+  `physical_provider_render` (`es.map rec4 = Public.boundaryRecords (boundedPrep p k.L k.H.shardId)`)
+  it is `∀ r ∈ active, key r ∈ Public.boundaryRecords (boundedPrep …)`, i.e. every native
+  routing lookup reads a prepared boundary row; the routing lane keeps it explicit too
+  (`normalized_physical_complete`).
