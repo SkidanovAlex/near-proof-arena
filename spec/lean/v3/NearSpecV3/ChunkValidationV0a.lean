@@ -1,14 +1,14 @@
 import NearSpecV3.ChunkValidationV0
 
 /-!
-# `NearSpecV3.ChunkValidationV0a` — `RelD0a`: D0 with amendments A1, A2, Canon0f, A7–A10
+# `NearSpecV3.ChunkValidationV0a` — `RelD0a`: D0 with amendments A1, A2, Canon0f, A7–A11
 
 Additive successor of `NearSpecV3.ChunkValidationV0` (which is pinned by the signed
 challenge `near-chunk-validation-d0-1` and is not modified). The amended relation is a pure
 restriction of `RelD0` (spec/near-chunk-validation-v0a.md, V3-D0-DESIGN §4, §10, §11):
 
   `RelD0a B cb w W Dp := RelD0 cb w ∧ A1 cb ∧ A2 cb w ∧ Canon0f cb w ∧ A7 B cb w ∧ A8 cb ∧
-    A9 W cb w ∧ A10 Dp cb w`   (`W`, `Dp` default to the challenge's `W0 = 770,000`, `Dp0 = 32`)
+    A9 W cb w ∧ A10 Dp cb w ∧ A11 cb w`   (`W`, `Dp` default to the challenge's `W0 = 770,000`, `Dp0 = 32`)
 
 * **A1** (`c.gas_limit`): the chunk `gas_limit` in the last-new-chunk block's (B2) slot of the
   validated shard is at most `10^15` (mainnet genesis, 1000 Tgas). nearcore never changes a
@@ -29,6 +29,10 @@ restriction of `RelD0` (spec/near-chunk-validation-v0a.md, V3-D0-DESIGN §4, §1
 * **A10** (`w.path_depth`, user decision 2026-10-09): every used source receipt proof's Merkle
   path has at most `Dp` items. nearcore produces `⌈log₂ #shards⌉ ≤ 6`; it bounds the in-AIR
   source-proof table.
+* **A11** (`w.post_rebuild`, user decision 2026-10-11): A7's count is unchanged when every
+  post trie is rebuilt from its pre trie's revealed blobs instead of the witness store
+  (`a11`, below). Never binding on honest witnesses; it removes the SHA-256-collision case in
+  which the encoded reconstruction of a witness would count differently (like A3).
 * **Canon0f** (`e.sched_canonical`): every `BandwidthSchedulerState` value the D0 run reads at
   `0x0f` — in the main pre-state and in each implicit transition's pre-state — is absent or
   decodes as `V1` whose links are exactly the layout's `n²` links `(sender, receiver)` in
@@ -474,12 +478,61 @@ def a10 (Dp : Nat) (cb w : Bytes) : Bool :=
 /-- A10 bound of the challenge instance. -/
 def Dp0 : Nat := 32
 
+/-! ## A11 `w.post_rebuild`: the A7 count reads only the pre-trie's revealed blobs
+
+A7's post term (`diffT pre (rebuildPost ws post keys)`) re-expands the post trie from the
+witness store `ws` followed by the written blobs. A11 asks that the count is unchanged when
+`ws` is replaced by the pre trie's own revealed blobs (`revealedStore pre`: the node
+encodings along the read keys and the revealed values), i.e. no other witness blob — in
+particular no blob sharing the SHA-256 of a written blob with different bytes — changes the
+post rebuild. Measured on every accepted honest case of the public, D1 and D2 corpora: never
+binding (user decision 2026-10-11, spec v0a §2.8). Like A3, its only violations need a
+SHA-256 collision or a witness blob outside the read paths that the post rebuild reaches. -/
+
+/-- The blobs a partial trie reveals: node encodings and revealed values. -/
+def revealedStore (t : PTrie) : List Bytes := (occs t).map nodeEnc ++ valsOf t
+
+/-- `triesD0` with every post trie rebuilt from `revealedStore` of its pre trie instead of
+the witness store (the pre tries and the execution are unchanged). -/
+def triesD0N (cb wb : Bytes) : Except String (List (PTrie × PTrie)) := do
+  let k ← walkD0 cb
+  let w ← decodeW wb
+  let B2 ← match k.blks[k.b2i]? with | some b => pure b | none => throw "walk"
+  let prevB2 ← match k.blks[k.b2i + 1]? with | some b => pure b | none => throw "walk"
+  let receipts := appliedReceipts k w
+  let ctxB2 := blockCtx k.L k.H.shardId k.slotB2.gasLimit B2 prevB2.hdr.nextGasPrice
+  let t0 := partialTrie w.main.values k.slotB2.prevStateRoot [keyBufferedIdx]
+  let bshards ← match t0.find keyBufferedIdx with
+    | some v => bufferedShards v | none => throw "missing"
+  let keys := mainKeys receipts bshards
+  let tMain := partialTrie w.main.values k.slotB2.prevStateRoot keys
+  let out ← applyNewChunk prims ctxB2 tMain receipts
+  let mut acc : List (PTrie × PTrie) := [(tMain, rebuildPost (revealedStore tMain) out.trie keys)]
+  let mut root := out.trie.hashOf
+  for (M, T) in k.implicitBlks.zip w.implicit do
+    let ctxM := blockCtx k.L k.H.shardId k.slotB2.gasLimit M M.hdr.nextGasPrice
+    let ks := [keyDelayedIdx, keyBwState]
+    let tM := partialTrie T.values root ks
+    let tM' ← applyMissingChunk prims ctxM tM
+    acc := acc ++ [(tM, rebuildPost (revealedStore tM) tM' ks)]
+    root := tM'.hashOf
+  pure acc
+
+/-- `unfoldBytes` over `triesD0N`. -/
+def unfoldBytesN (cb w : Bytes) : Nat :=
+  match triesD0N cb w with
+  | .ok l => (l.map fun (pre, post) => unfoldedBytesT pre + diffT pre post).sum
+  | .error _ => 0
+
+/-- A11 (`w.post_rebuild`). -/
+def a11 (cb w : Bytes) : Bool := unfoldBytesN cb w == unfoldBytes cb w
+
 /-- **The D0a relation**, with the unfolded-size bound `B` a parameter (the challenge
 instance is `B0`, `ChallengeD0a`), and the A9 word bound `W` and A10 depth bound `Dp`
 defaulting to the challenge's `W0`, `Dp0`. -/
 def RelD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Prop :=
   RelD0 cb w ∧ a1 cb = true ∧ a2 cb w = true ∧ canon0f cb w = true ∧ a7 B cb w = true ∧
-    a8 cb = true ∧ a9 W cb w = true ∧ a10 Dp cb w = true
+    a8 cb = true ∧ a9 W cb w = true ∧ a10 Dp cb w = true ∧ a11 cb w = true
 
 instance (B : Nat) (cb w : Bytes) (W Dp : Nat) : Decidable (RelD0a B cb w W Dp) := by
   unfold RelD0a; infer_instance
@@ -494,6 +547,7 @@ def checkD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Except
   check (a8 cb) "out of domain (c.bw_requests): a chunk's bandwidth requests repeat a to_shard"
   check (a9 W cb w) "out of domain (e.chacha_words): scheduler runs draw more ChaCha20 words than the bound"
   check (a10 Dp cb w) "out of domain (w.path_depth): a used receipt proof's Merkle path is longer than the bound"
+  check (a11 cb w) "out of domain (w.post_rebuild): a witness blob outside the read paths changes the post rebuild"
 
 theorem relD0a_iff (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) :
     RelD0a B cb w W Dp ↔ checkD0a B cb w W Dp = .ok () := by
@@ -502,7 +556,7 @@ theorem relD0a_iff (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) :
   | error e => simp [bind, Except.bind]
   | ok u =>
     cases a1 cb <;> cases a2 cb w <;> cases canon0f cb w <;> cases a7 B cb w <;> cases a8 cb <;>
-      cases a9 W cb w <;> cases a10 Dp cb w <;>
+      cases a9 W cb w <;> cases a10 Dp cb w <;> cases a11 cb w <;>
       simp [bind, Except.bind]
 
 /-- A7 bound of the challenge instance: unfolded trie bytes (pre + post-write copies, all
@@ -512,12 +566,12 @@ def B0 : Nat := 2000000
 
 /-- The D0a domain conditions at bound `B` (Bool form). -/
 def inD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Bool :=
-  a1 cb && a2 cb w && canon0f cb w && a7 B cb w && a8 cb && a9 W cb w && a10 Dp cb w
+  a1 cb && a2 cb w && canon0f cb w && a7 B cb w && a8 cb && a9 W cb w && a10 Dp cb w && a11 cb w
 
 /-- The D0a domain conditions at bound `B`. -/
 def InD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Prop :=
   a1 cb = true ∧ a2 cb w = true ∧ canon0f cb w = true ∧ a7 B cb w = true ∧ a8 cb = true ∧
-    a9 W cb w = true ∧ a10 Dp cb w = true
+    a9 W cb w = true ∧ a10 Dp cb w = true ∧ a11 cb w = true
 
 /-- The D0a domain at the challenge bounds `B0`, `W0`, `Dp0`. -/
 def InD0a0 (cb w : Bytes) : Prop := InD0a B0 cb w
@@ -547,8 +601,8 @@ theorem relD0a_relD0 {B : Nat} {cb w : Bytes} {W Dp : Nat} (h : RelD0a B cb w W 
 /-- The bounds are monotone (each of `B`, `W`, `Dp`). -/
 theorem relD0a_mono_all {B B' W W' Dp Dp' : Nat} (hB : B ≤ B') (hW : W ≤ W') (hD : Dp ≤ Dp')
     {cb w : Bytes} (h : RelD0a B cb w W Dp) : RelD0a B' cb w W' Dp' := by
-  obtain ⟨h0, h1, h2, h3, h4, h5, h6, h7⟩ := h
-  refine ⟨h0, h1, h2, h3, ?_, h5, ?_, ?_⟩
+  obtain ⟨h0, h1, h2, h3, h4, h5, h6, h7, h8⟩ := h
+  refine ⟨h0, h1, h2, h3, ?_, h5, ?_, ?_, h8⟩
   · unfold a7 at *
     simp only [decide_eq_true_eq] at *
     omega

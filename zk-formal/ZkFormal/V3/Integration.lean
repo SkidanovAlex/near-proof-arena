@@ -199,6 +199,7 @@ import ZkFormal.NearV3.Rcpt.Candidates.DedupCrossLocal
 import ZkFormal.NearV3.Rcpt.Candidates.DedupTerminalPadding
 import ZkFormal.NearV3.Assembly.TreeStore
 import ZkFormal.NearV3.Assembly.FactorSound
+import ZkFormal.NearV3.Assembly.FactorComplete
 import ZkFormal.NearV3.Qv.ReadPlan
 import ZkFormal.NearV3.Assembly.Good
 import ZkFormal.NearV3.Assembly.Compute

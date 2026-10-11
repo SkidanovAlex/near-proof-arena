@@ -1,4 +1,4 @@
-# `near/pv86/chunk-validation/v0`, domain **D0a** — D0 with amendments A1, A2, Canon0f, A7–A10
+# `near/pv86/chunk-validation/v0`, domain **D0a** — D0 with amendments A1, A2, Canon0f, A7–A11
 
 Status: **unsigned draft**, 2026-10-06 (lane `v3-spec`). Additive successor of domain D0
 (`spec/near-chunk-validation-v0.md` §6, `NearSpecV3.RelD0`), which is pinned by the signed
@@ -11,13 +11,16 @@ challenge `near-chunk-validation-d0-1` and is **not modified**. Draft challenge:
 ```
 RelD0a(B, W, Dp)(cb, w) := RelD0(cb, w) ∧ A1(cb) ∧ A2(cb, w) ∧ Canon0f(cb, w) ∧ unfoldBytes(cb, w) ≤ B
                            ∧ A8(cb) ∧ chachaWords(cb, w) ≤ W ∧ (∀ used source proof e, |e.path| ≤ Dp)
+                           ∧ unfoldBytesN(cb, w) = unfoldBytes(cb, w)
 ```
 
 The challenge instance is `B = B0 = 2,000,000` (§2.4), `W = W0 = 770,000` (§2.6) and
-`Dp = Dp0 = 32` (§2.7). `W0` and `Dp0` are user decisions of 2026-10-09.
+`Dp = Dp0 = 32` (§2.7). `W0` and `Dp0` are user decisions of 2026-10-09; A11 (§2.8) is a user
+decision of 2026-10-11.
 
 Lean: `NearSpecV3.ChunkValidationV0a` (`RelD0a B cb w (W := W0) (Dp := Dp0)`, `a1`, `a2`, `canon0f`,
-`a7`, `unfoldBytes`, `a8`, `a9`, `chachaWords`, `a10`, `maxPathDepth`; executable verdict
+`a7`, `unfoldBytes`, `a8`, `a9`, `chachaWords`, `a10`, `maxPathDepth`, `a11`, `unfoldBytesN`,
+`revealedStore`, `triesD0N`; executable verdict
 `checkD0a B cb w (W := W0) (Dp := Dp0)`; **proved**: `relD0a_iff : RelD0a B cb w W Dp ↔
 checkD0a B cb w W Dp = .ok ()`, `relD0a_relD0 : RelD0a B cb w W Dp → RelD0 cb w` (for all
 bounds), `relD0a_mono` (in `B`), `relD0a_mono_all` (in `B`, `W`, `Dp`),
@@ -35,6 +38,7 @@ and witness formats are unchanged (`spec/claim-v3.md`).
 | `c.bw_requests` (A8) | in every block of the claim's segment, every chunk slot's `BandwidthRequests` has at most one request per `to_shard` (claim-only; `prepD0` checks it natively) | bounds the requests the in-AIR scheduler converts and processes (`≤ n²` per applied block), hence the scan / process table heights |
 | `e.chacha_words` (A9) | the bandwidth-scheduler runs of all applied transitions (main at B2, each implicit block) draw `≤ W0 = 770,000` ChaCha20 words in total (§2.6) | bounds the in-AIR ChaCha lane: `chachaV3 ≤ 86·⌈K/16⌉ ≤ 4,141,410 < 2²²` rows; the rejection-sampling fuel alone allows ≈ 9.9 M words |
 | `w.path_depth` (A10) | every *used* source receipt proof's Merkle path has `≤ Dp0 = 32` items (§2.7) | bounds the in-AIR source-proof table: `srcpV3 ≤ 1984·(33 + 64·32) = 4,128,704 ≤ 2²²` rows; `rootFromPath` alone accepts any length |
+| `w.post_rebuild` (A11) | A7's count is unchanged when every post trie is rebuilt from the blobs its pre trie reveals instead of the whole witness store: `unfoldBytesN(cb, w) = unfoldBytes(cb, w)` (§2.8) | the reconstruction from AIR records re-encodes the witness store as exactly the revealed blobs; without A11 a stored blob with the SHA-256 of a written blob but different bytes (a collision) would change A7's post term, and the AIR cannot represent such a blob |
 | `e.sched_canonical` (Canon0f) | every `0x0f` (`BandwidthSchedulerState`) value the run reads — main pre-state and each implicit transition's pre-state — is absent or `V1` whose links are exactly the layout's `n²` links `(sender, receiver)` in sender-major order (any allowances, any sanity hash) | the in-AIR scheduler decodes the previous state as exactly `n²` ordered links |
 
 ### 2.1 A1 source check (nearcore 2.13.4, `44f7ae6c`)
@@ -212,6 +216,36 @@ emit one (the path is the outgoing-receipts Merkle tree over the layout's shards
 **Measured**: honest max depth 3 on every corpus (headroom 29 levels), 0 honest witnesses out
 of A10; the oracle's path-depth mutants (nearcore accepts both) are in D0a at 32 items and
 `w.path_depth` at 33 in Lean and Python (845/845 full, 59/59 public, 559/559 heavy-request).
+
+### 2.8 A11 `w.post_rebuild`: definition, liveness
+
+**Definition** (`NearSpecV3.a11`, `unfoldBytesN`, `triesD0N`, `revealedStore`): `triesD0N` is
+`triesD0` with each post trie rebuilt by `rebuildPost (revealedStore pre) post keys` instead of
+`rebuildPost ws post keys`, where `ws` is the transition's witness store and
+`revealedStore pre = (occs pre).map nodeEnc ++ valsOf pre` are the blobs the pre trie reveals
+along the read keys. The pre tries and the execution are unchanged. A11 asks
+`unfoldBytesN cb w = unfoldBytes cb w`.
+
+**Why** (user decision 2026-10-11). Completeness of the succinct proof reconstructs the
+witness from AIR records (`FactorComplete`), and the reconstruction's store is exactly the
+revealed blobs. A7 on the reconstruction is therefore `unfoldBytesN`, while the relation's A7
+reads `unfoldBytes`. The two can differ only if the post rebuild reads a witness blob outside
+the revealed part: a stored blob with the SHA-256 of a written blob but different bytes (a
+SHA-256 collision; first-match lookup prefers the witness blob), or a stored blob outside the
+read paths that the post rebuild reaches. The AIR cannot represent the first kind (an orphan
+value record cannot balance the value-parent bus). Collision resistance may not be used in the
+semantic theorems (V3-D0-DESIGN §2.4), so, as for A3, the case is removed by a decidable
+domain condition rather than by an assumption.
+
+**Liveness.** A11 never makes a false statement provable; a violating witness is out of D0a.
+**Measured** (`oracle/tools/a11_measure_v3_d0a.py`, Python reference): 0 violations, 0
+shadowing blobs and 0 changed post terms on every accepted case of the public D0a fixtures
+(139 cases, 144 transitions), the D1 corpus (3,977 cases, 4,356 transitions) and the D2 corpus
+(38 cases); the measurement is sensitive (dropping the written blobs changes all 759 sampled
+D1 cases). The oracle reads post-trie nodes from nearcore's State column, so its
+`unfold_bytes` is a third, witness-store-independent implementation of `unfoldBytesN`; the
+3-way difftest compares it with both Lean/Python values. No constructible mutant violates A11
+(it needs a SHA-256 collision or an unreachable stored blob read by the post rebuild).
 
 ## 3. Reference oracle and tests
 
