@@ -3,8 +3,9 @@ import ZkFormal.NearV3.Assembly.QueryAccepted
 namespace ZkFormal.NearV3.Assembly
 open NearSpec NearSpecV3
 
+/-- The `(pre, post)` pairs of the implicit steps: the native post tries (A7, 2026-10-12). -/
 def unfoldedPairs (steps : List ImplicitStepV3) : List (PTrie × PTrie) :=
-  steps.map (fun s => (s.pre,rebuildPost s.witness.values s.post [keyDelayedIdx,keyBwState]))
+  steps.map (fun s => (s.pre,s.post))
 
 theorem ImplicitTraceValid.unfold_result {k root pairs steps last}
     (hv : ImplicitTraceValid k root pairs steps last) (acc : List (PTrie × PTrie)) :
@@ -20,8 +21,7 @@ theorem triesD0_native_result {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     {m : MainExecutionV3} {steps : List ImplicitStepV3} {last : Bytes}
     (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w) (hm : m.NativeValid k w)
     (hv : ImplicitTraceValid k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) steps last) :
-    triesD0 cb wb = .ok ((m.pre,rebuildPost w.main.values m.result.trie
-      (mainKeys (appliedReceipts k w) m.bufferedShards)) :: unfoldedPairs steps) := by
+    triesD0 cb wb = .ok ((m.pre,m.result.trie) :: unfoldedPairs steps) := by
   obtain ⟨v,hfind,hparse⟩ := hm.buffered
   have run := hm.run
   rw [hm.pre] at run
@@ -54,8 +54,7 @@ theorem checkD0a_preBytes {B : Nat} {cb wb : Bytes} {k : WalkD0} {w : StateWitne
   have hh := (relD0a_iff B cb wb).mpr h
   have hb : unfoldBytes cb wb ≤ B := by simpa only [a7,decide_eq_true_eq] using hh.2.2.2.2.1
   simp only [unfoldBytes,hr] at hb
-  have hl := preBytes_pairs_le ((m.pre,rebuildPost w.main.values m.result.trie
-      (mainKeys (appliedReceipts k w) m.bufferedShards)) :: unfoldedPairs steps)
+  have hl := preBytes_pairs_le ((m.pre,m.result.trie) :: unfoldedPairs steps)
   simp only [List.map_cons,unfoldedPairs,List.map_map,Function.comp_def] at hl hb
   exact Nat.le_trans hl hb
 

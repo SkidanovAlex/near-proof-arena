@@ -88,8 +88,6 @@ structure ExtFieldsV3 (B : Nat) (cb : Bytes) (k : WalkD0) (h : Hint) (p : Prep) 
   unfoldedBytes : unfoldBytes cb (witnessOfV3 k x) ≤ B
   chachaWords : chachaWords cb (witnessOfV3 k x) ≤ W0
   pathDepth : ∀ e ∈ usedProofs k (stateWitnessOfV3 k x), e.proof.path.length ≤ Dp0
-  /-- A11 (`w.post_rebuild`, 2026-10-11) on the reconstructed witness. -/
-  postRebuild : unfoldBytesN cb (witnessOfV3 k x) = unfoldBytes cb (witnessOfV3 k x)
 
 /-- `GoodV3` from its claim-level part and its view-level part. -/
 theorem goodV3_of_parts {B : Nat} {cb : Bytes} {k : WalkD0} {h : Hint} {p : Prep} {x : ExtV3}
@@ -112,7 +110,6 @@ theorem goodV3_of_parts {B : Nat} {cb : Bytes} {k : WalkD0} {h : Hint} {p : Prep
   distinctRequests := C.distinctRequests
   chachaWords := E.chachaWords
   pathDepth := E.pathDepth
-  postRebuild := E.postRebuild
 
 /-- `GoodV3` reduces to its view-level fields: `prepD0` supplies the walk and the
 claim-level fields. -/

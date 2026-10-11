@@ -1,4 +1,4 @@
-# `near/pv86/chunk-validation/v0`, domain **D0a** — D0 with amendments A1, A2, Canon0f, A7–A11
+# `near/pv86/chunk-validation/v0`, domain **D0a** — D0 with amendments A1, A2, Canon0f, A7–A10
 
 Status: **unsigned draft**, 2026-10-06 (lane `v3-spec`). Additive successor of domain D0
 (`spec/near-chunk-validation-v0.md` §6, `NearSpecV3.RelD0`), which is pinned by the signed
@@ -11,16 +11,15 @@ challenge `near-chunk-validation-d0-1` and is **not modified**. Draft challenge:
 ```
 RelD0a(B, W, Dp)(cb, w) := RelD0(cb, w) ∧ A1(cb) ∧ A2(cb, w) ∧ Canon0f(cb, w) ∧ unfoldBytes(cb, w) ≤ B
                            ∧ A8(cb) ∧ chachaWords(cb, w) ≤ W ∧ (∀ used source proof e, |e.path| ≤ Dp)
-                           ∧ unfoldBytesN(cb, w) = unfoldBytes(cb, w)
 ```
 
 The challenge instance is `B = B0 = 2,000,000` (§2.4), `W = W0 = 770,000` (§2.6) and
-`Dp = Dp0 = 32` (§2.7). `W0` and `Dp0` are user decisions of 2026-10-09; A11 (§2.8) is a user
-decision of 2026-10-11.
+`Dp = Dp0 = 32` (§2.7). `W0` and `Dp0` are user decisions of 2026-10-09. A11 (`w.post_rebuild`,
+added 2026-10-11) is retired by the user decision of 2026-10-12 (§2.8), together with the
+switch of A7's post term to the native post trie (§2.4).
 
 Lean: `NearSpecV3.ChunkValidationV0a` (`RelD0a B cb w (W := W0) (Dp := Dp0)`, `a1`, `a2`, `canon0f`,
-`a7`, `unfoldBytes`, `a8`, `a9`, `chachaWords`, `a10`, `maxPathDepth`, `a11`, `unfoldBytesN`,
-`revealedStore`, `triesD0N`; executable verdict
+`a7`, `unfoldBytes`, `triesD0`, `a8`, `a9`, `chachaWords`, `a10`, `maxPathDepth`; executable verdict
 `checkD0a B cb w (W := W0) (Dp := Dp0)`; **proved**: `relD0a_iff : RelD0a B cb w W Dp ↔
 checkD0a B cb w W Dp = .ok ()`, `relD0a_relD0 : RelD0a B cb w W Dp → RelD0 cb w` (for all
 bounds), `relD0a_mono` (in `B`), `relD0a_mono_all` (in `B`, `W`, `Dp`),
@@ -34,11 +33,11 @@ and witness formats are unchanged (`spec/claim-v3.md`).
 |---|---|---|
 | `c.gas_limit` (A1) | the `gas_limit` of B2's own-shard slot (the block of the shard's last new chunk) is `≤ 10^15` (1000 Tgas) | bounds the applied receipts (`n ≤ 4481`) and the refund body (`≤ 0.91 MB`) for a succinct proof |
 | `w.proof_routing` (A2) | every receipt of every *used* source receipt proof (the entry the last-wins lookup selects for a new source chunk) routes, under `L(epoch_id)`, to the validated shard | no receipt is Merkle-hashed but filtered out (proof-size bound) |
-| `w.unfolded` (A7) | `unfoldBytes(cb, w) ≤ B0 = 2,000,000`: unfolded pre-tries + unfolded rebuilt post-tries (§2.4; post term revised 2026-10-11) | the AIR hashes every revealed node *occurrence* (tree-shaped records); a witness can share one subtree under many slots, so the unfolded size — not `|base_state|` — bounds the SHA and node tables |
+| `w.unfolded` (A7) | `unfoldBytes(cb, w) ≤ B0 = 2,000,000`: unfolded pre-tries + unfolded native post-tries (§2.4; post term revised 2026-10-11 and 2026-10-12) | the AIR hashes every revealed node *occurrence* (tree-shaped records); a witness can share one subtree under many slots, so the unfolded size — not `|base_state|` — bounds the SHA and node tables |
 | `c.bw_requests` (A8) | in every block of the claim's segment, every chunk slot's `BandwidthRequests` has at most one request per `to_shard` (claim-only; `prepD0` checks it natively) | bounds the requests the in-AIR scheduler converts and processes (`≤ n²` per applied block), hence the scan / process table heights |
 | `e.chacha_words` (A9) | the bandwidth-scheduler runs of all applied transitions (main at B2, each implicit block) draw `≤ W0 = 770,000` ChaCha20 words in total (§2.6) | bounds the in-AIR ChaCha lane: `chachaV3 ≤ 86·⌈K/16⌉ ≤ 4,141,410 < 2²²` rows; the rejection-sampling fuel alone allows ≈ 9.9 M words |
 | `w.path_depth` (A10) | every *used* source receipt proof's Merkle path has `≤ Dp0 = 32` items (§2.7) | bounds the in-AIR source-proof table: `srcpV3 ≤ 1984·(33 + 64·32) = 4,128,704 ≤ 2²²` rows; `rootFromPath` alone accepts any length |
-| `w.post_rebuild` (A11) | A7's count is unchanged when every post trie is rebuilt from the blobs its pre trie reveals instead of the whole witness store: `unfoldBytesN(cb, w) = unfoldBytes(cb, w)` (§2.8) | the reconstruction from AIR records re-encodes the witness store as exactly the revealed blobs; without A11 a stored blob with the SHA-256 of a written blob but different bytes (a collision) would change A7's post term, and the AIR cannot represent such a blob |
+| ~~`w.post_rebuild` (A11)~~ | **retired 2026-10-12** (user decision): A7 no longer rebuilds the post trie from the store, so the condition constrains nothing A7 reads (§2.8) | — |
 | `e.sched_canonical` (Canon0f) | every `0x0f` (`BandwidthSchedulerState`) value the run reads — main pre-state and each implicit transition's pre-state — is absent or `V1` whose links are exactly the layout's `n²` links `(sender, receiver)` in sender-major order (any allowances, any sanity hash) | the in-AIR scheduler decodes the previous state as exactly `n²` ordered links |
 
 ### 2.1 A1 source check (nearcore 2.13.4, `44f7ae6c`)
@@ -103,21 +102,44 @@ accepted by nearcore (`filter_incoming_receipts_for_shard` drops it) but is outs
 **Definition** (`NearSpecV3.unfoldBytes`, coordinated with STATUS-V3-TRIE §1.3–1.4,
 `UnfoldBound`): for each applied transition τ (main, then each implicit one) with pre-trie
 `pre_τ = partialTrie ws_τ root_τ keys_τ` (exactly the trie `checkD0` builds) and post-trie
-`post_τ` (the post-state as a store presents it, rebuilt along the same keys):
+`post_τ` = the **native** post-trie the execution returns (`triesD0`: `(applyNewChunk …).trie`
+for the main transition, the result of `applyMissingChunk …` for an implicit one — the pre-trie
+with its written paths replaced, no store lookup):
 `unfoldBytes = Σ_τ unfoldedBytesT pre_τ + unfoldedBytesT post_τ`, where `unfoldedBytesT` sums
 `|nodeEnc o|` over the revealed node occurrences (per path copy) and the revealed values
 (identical to lane v3-trie's `unfoldedBytes`, so `UnfoldBound e ws root keys` is
-`unfoldedBytesT (partialTrie ws root keys) ≤ e`), applied to the pre-trie and to the rebuilt
-post-trie. **Revised 2026-10-11 (user decision):** the post term was `diffT pre_τ post_τ` (only the
-post occurrences differing from the pre-trie at the same position, plus changed values); it is
-now the whole revealed post-trie, so that the AIR can enforce A7 with running sums instead of
-in-AIR position matching. The new count is never smaller, so only the domain narrows: the
-largest honest value is 7,996 (public D0a), 12,402 (D1 corpus), 9,624 (D2 corpus) against
-`B0 = 2,000,000`. Decidable; computed independently in the Python checker (the keys the D0
-checker reads, raw node bytes) and in Lean; the oracle's stored value (`oracle/v3-d0a/src/d0a.rs`:
-nearcore `RawTrieNodeWithSize`, witness values and the tracking node's State column, keys from
-`TrieKey::to_vec`) still implements the pre-2026-10-11 `diffT` measure and is compared with the
-checkers' `unfold_diff`; updating it and regenerating the fixtures is pending. the difftest compares the three values exactly.
+`unfoldedBytesT (partialTrie ws root keys) ≤ e`), applied to the pre-trie and to the native
+post-trie. Decidable; computed independently in the Python checker (the keys the D0 checker
+reads, raw node bytes, the nodes its inserts create recorded by position) and in Lean.
+
+**Revisions.**
+* *Until 2026-10-11* the post term was `diffT pre_τ post_τ` (only the post occurrences
+  differing from the pre-trie at the same position, plus changed values), on the post-trie
+  rebuilt from the store.
+* *2026-10-11 (user decision):* the whole post-trie rebuilt from the store (`rebuildPost`: the
+  witness blobs plus the written ones, along the same keys), so that the AIR can enforce A7
+  with running sums instead of in-AIR position matching; A11 guarded the rebuild (§2.8).
+* *2026-10-12 (user decision):* the native post-trie, and A11 retired. The AIR's A7 running
+  sums (`Tables/UnfoldA7`: the node and value records not replaced by an `upsV3` part, plus
+  the parts) count the native post-trie; the rebuilt trie can differ from it when a pre blob
+  and a written node share a SHA-256 (first-match lookup then reads the pre blob), which made
+  the honest A7 identity unprovable. Without collisions the two differ only by the node an
+  insertion of `0x0f` splits off (`splitLeaf`: the old leaf, shortened, under the new branch;
+  `splitExt`: the old extension's tail) when no read key passes through it: the native trie
+  reveals it, the rebuild along the read keys does not, so the native count is the larger.
+  Such a split needs `0x0f` absent from the pre-state; it occurs on no measured case (the
+  scheduler writes `0x0f` from the first applied chunk on), so honest values are unchanged:
+  the largest is 7,996 (public D0a), 12,402 (D1 corpus), 9,624 (D2 corpus) against
+  `B0 = 2,000,000` (`docs/e2e-results/v3-a7-native/report.json`). Lean and Python agree on
+  synthetic split vectors where the native and rebuilt counts differ (same report).
+
+The difftest reports the legacy measures too: `unfold_rebuilt` (2026-10-11) and `unfold_diff`
+(before 2026-10-11, `diffT` against the rebuilt post-trie); `diffT` and `rebuildPost` stay in
+`NearSpecV3.ChunkValidationV0a` for them and are not part of `RelD0a`. The oracle's stored
+value (`oracle/v3-d0a/src/d0a.rs`: nearcore `RawTrieNodeWithSize`, witness values and the
+tracking node's State column, keys from `TrieKey::to_vec`) still implements the pre-2026-10-11
+`diffT` measure and is compared with the checkers' `unfold_diff`; updating it and regenerating
+the fixtures is pending. The difftest compares the three values exactly.
 
 **`B0 = 2,000,000`** (lead decision, user-approved). The SHA table hashes every unfolded byte
 (pre occurrences once; changed post occurrences once) at ≤ 1.25 rows/byte (sha_t, lane
@@ -222,35 +244,21 @@ emit one (the path is the outgoing-receipts Merkle tree over the layout's shards
 of A10; the oracle's path-depth mutants (nearcore accepts both) are in D0a at 32 items and
 `w.path_depth` at 33 in Lean and Python (845/845 full, 59/59 public, 559/559 heavy-request).
 
-### 2.8 A11 `w.post_rebuild`: definition, liveness
+### 2.8 A11 `w.post_rebuild`: retired (user decision 2026-10-12)
 
-**Definition** (`NearSpecV3.a11`, `unfoldBytesN`, `triesD0N`, `revealedStore`): `triesD0N` is
-`triesD0` with each post trie rebuilt by `rebuildPost (revealedStore pre) post keys` instead of
-`rebuildPost ws post keys`, where `ws` is the transition's witness store and
-`revealedStore pre = (occs pre).map nodeEnc ++ valsOf pre` are the blobs the pre trie reveals
-along the read keys. The pre tries and the execution are unchanged. A11 asks
-`unfoldBytesN cb w = unfoldBytes cb w`.
-
-**Why** (user decision 2026-10-11). Completeness of the succinct proof reconstructs the
-witness from AIR records (`FactorComplete`), and the reconstruction's store is exactly the
-revealed blobs. A7 on the reconstruction is therefore `unfoldBytesN`, while the relation's A7
-reads `unfoldBytes`. The two can differ only if the post rebuild reads a witness blob outside
-the revealed part: a stored blob with the SHA-256 of a written blob but different bytes (a
-SHA-256 collision; first-match lookup prefers the witness blob), or a stored blob outside the
-read paths that the post rebuild reaches. The AIR cannot represent the first kind (an orphan
-value record cannot balance the value-parent bus). Collision resistance may not be used in the
-semantic theorems (V3-D0-DESIGN §2.4), so, as for A3, the case is removed by a decidable
-domain condition rather than by an assumption.
-
-**Liveness.** A11 never makes a false statement provable; a violating witness is out of D0a.
-**Measured** (`oracle/tools/a11_measure_v3_d0a.py`, Python reference): 0 violations, 0
-shadowing blobs and 0 changed post terms on every accepted case of the public D0a fixtures
-(139 cases, 144 transitions), the D1 corpus (3,977 cases, 4,356 transitions) and the D2 corpus
-(38 cases); the measurement is sensitive (dropping the written blobs changes all 759 sampled
-D1 cases). The oracle reads post-trie nodes from nearcore's State column, so its
-`unfold_bytes` is a third, witness-store-independent implementation of `unfoldBytesN`; the
-3-way difftest compares it with both Lean/Python values. No constructible mutant violates A11
-(it needs a SHA-256 collision or an unreachable stored blob read by the post rebuild).
+**Retired.** A11 (added 2026-10-11) required `unfoldBytesN cb w = unfoldBytes cb w`, where
+`unfoldBytesN` rebuilt every post trie from the pre trie's revealed blobs (`revealedStore pre`)
+instead of the witness store. Its only purpose was to control the store rebuild in A7's post
+term: completeness reconstructs the witness from AIR records with a store of exactly the
+revealed blobs, and a stored blob sharing the SHA-256 of a written node (a collision) would
+have changed the rebuilt count. Since 2026-10-12 A7 counts the native post trie (§2.4), which
+no store lookup touches, so A11 constrained nothing A7 reads; `revealedStore`, `triesD0N`,
+`unfoldBytesN` and `a11` were removed from `NearSpecV3.ChunkValidationV0a` and from `RelD0a`,
+`checkD0a` and `InD0a`, and `GoodV3` lost its `postRebuild` field (`FactorComplete` now uses
+that the reconstruction re-runs the same execution, hence has the same native post tries). The
+measurement tool `oracle/tools/a11_measure_v3_d0a.py` is removed (in git history; the
+2026-10-11 measurement, 0 violations on public D0a, D1 and D2, is in
+`docs/e2e-results/v3-a11/report.json`). Retiring a domain condition only widens D0a.
 
 ## 3. Reference oracle and tests
 
