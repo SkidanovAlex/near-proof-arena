@@ -15,6 +15,16 @@ import ZkFormal.NearV3.Assembly.NearAdmission
 import ZkFormal.NearV3.Assembly.ExtractV3
 import ZkFormal.NearV3.Assembly.LinkV3
 import ZkFormal.NearV3.Assembly.LinkClaim
+import ZkFormal.NearV3.Render.UnfoldA7Ext
+import ZkFormal.NearV3.Assembly.RenderV3A7
+import ZkFormal.NearV3.Link.UnfoldRefine
+import ZkFormal.NearV3.Assembly.LinkFields
+import ZkFormal.NearV3.Assembly.LinkBus
+import ZkFormal.NearV3.Assembly.LinkSha
+import ZkFormal.NearV3.Assembly.LinkShaKinds
+import ZkFormal.NearV3.Assembly.RcptViewCounts
+import ZkFormal.NearV3.Assembly.LinkChain
+import ZkFormal.NearV3.Assembly.LinkTrie
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
