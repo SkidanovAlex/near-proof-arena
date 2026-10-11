@@ -495,4 +495,30 @@ theorem mainStoreBytes_of {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearS
   have := (size_totals hH T W).2.2
   rw [foldl_add_eq_sum, Nat.zero_add]; omega
 
+
+theorem eraseDups_nodup' {α : Type} [BEq α] [LawfulBEq α] (xs : List α) : xs.eraseDups.Nodup := by
+  match xs with
+  | [] => simp
+  | a :: xs =>
+    rw [List.eraseDups_cons, List.nodup_cons]
+    refine ⟨?_, eraseDups_nodup' _⟩
+    simp
+termination_by xs.length
+decreasing_by exact Nat.lt_succ_of_le (List.length_filter_le ..)
+
+/-- **`GoodV3.mainStoreBytes`** for the reconstruction whose records are the views' records. -/
+theorem mainStoreBytes_ext {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
+    {tr : Trace Fp} {r : V3Records} (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    (x : ExtV3) (hn : x.nodes = r.nodes) (hv : x.values = r.values) :
+    ((x.store 0).map List.length).foldl (· + ·) 0 ≤ 3000000 := by
+  apply mainStoreBytes_of hp hsz hH T W _ (eraseDups_nodup' _)
+  intro d hd
+  have hd := List.mem_eraseDups.mp hd
+  simp only [ExtV3.rawStore, ExtV3.valuePosition, hn, hv] at hd
+  exact hd
+
 end ZkFormal.NearV3.Assembly

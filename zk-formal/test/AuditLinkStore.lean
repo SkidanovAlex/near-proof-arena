@@ -23,3 +23,7 @@ import ZkFormal.NearV3.Assembly.LinkStore
 /-- info: 'ZkFormal.NearV3.Assembly.mainStoreBytes_of' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.mainStoreBytes_of
+
+/-- info: 'ZkFormal.NearV3.Assembly.mainStoreBytes_ext' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.mainStoreBytes_ext
