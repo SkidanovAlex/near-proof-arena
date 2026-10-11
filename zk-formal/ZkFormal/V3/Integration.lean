@@ -8,6 +8,17 @@ import ZkFormal.NearV3.Assembly.RenderV3
 import ZkFormal.NearV3.Assembly.RenderV3Assemble
 import ZkFormal.NearV3.Assembly.RenderV3Trace
 import ZkFormal.NearV3.Assembly.RenderV3Bundle
+import ZkFormal.NearV3.Assembly.RenderV3Trie
+import ZkFormal.NearV3.Assembly.UniqNative
+import ZkFormal.NearV3.Assembly.TrieNative
+import ZkFormal.NearV3.Assembly.TrieBusBalance
+import ZkFormal.NearV3.Assembly.TrieVParent
+import ZkFormal.NearV3.Assembly.TrieParent
+import ZkFormal.NearV3.Assembly.TrieEnt
+import ZkFormal.NearV3.Assembly.TrieUniqOcc
+import ZkFormal.NearV3.Assembly.TrieUniqDup
+import ZkFormal.NearV3.Assembly.TrieUniqOk
+import ZkFormal.NearV3.Assembly.TrieComplete
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec
