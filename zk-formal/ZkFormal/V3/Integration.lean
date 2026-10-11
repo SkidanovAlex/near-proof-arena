@@ -249,6 +249,7 @@ import ZkFormal.NearV3.Render.HonestBalanceRcl
 import ZkFormal.NearV3.Render.HonestBalanceSrc
 import ZkFormal.NearV3.Render.HonestBalanceSrec
 import ZkFormal.NearV3.Render.HonestBalanceMem
+import ZkFormal.NearV3.Render.HonestBalanceAkc
 import ZkFormal.NearV3.Render.PaddedRcptR
 import ZkFormal.NearV3.Render.PaddedSha
 import ZkFormal.NearV3.Render.PaddedCongr

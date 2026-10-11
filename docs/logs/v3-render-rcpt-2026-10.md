@@ -219,3 +219,11 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   order (`rcpt_mem_traffic`, `zipIdx_map_index`), `native_receipt_mem_aggregate`,
   `newchunk_mem_context` (the `applyReceipts` context derived from `RcptOk.run`),
   `native_account_memory_balance`.
+* **AKC balance** (`Render/HonestBalanceAkc.lean:honest_akc_balance`), field messages:
+  `(akeyTraffic P).sends B_AKC ++ rcpt sends B_AKC ~ rcpt recvs B_AKC ++ (akeyTraffic P).recvs B_AKC`
+  with `P = NativeAccessKeyProviders.providers pre rs`, under `RcptOk` and `AkcOk x pre`
+  (`accessId = NativeReceiptAccessIds.accessId pre`, `fallback = rankAux pre rs fb`).
+  Route: the q-patched honest trace is `TableLocal` (`booleanReceiptTrace_native_repaired_tableLocal`,
+  same premises as `RcptOk`), `physical_messages` gives its AKC rows = native events, the
+  patch leaves the AKC columns (`gAK`, `kF`, `uak`) untouched (`patch_akc_rows`), and
+  `counter_balance` closes the events against the providers.
