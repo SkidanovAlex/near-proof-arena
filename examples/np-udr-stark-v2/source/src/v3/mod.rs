@@ -20,6 +20,7 @@ use serde::Deserialize;
 use crate::field::{F, P};
 
 pub mod sample;
+pub mod node;
 
 /// A generated table: `2^log` rows of `width` canonical cells, row-major.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -484,6 +485,7 @@ pub const TABLES: &[(&str, usize)] = &[
     ("uniq", 6),
     ("akey", 18),
     ("bnd", 19),
+    ("node", 2),
 ];
 
 /// Parse `json` as the entry list of `table` and render its aligned trace.
@@ -498,6 +500,7 @@ pub fn render(table: &str, json: &str) -> Result<Tab, String> {
         "val" => val_aligned(&p(json)?),
         "uniq" => uniq_aligned(&p(json)?)?,
         "walk" => walk_aligned(&p(json)?),
+        "node" => node::node_aligned(&p(json)?),
         t => return Err(format!("unknown table {t}")),
     })
 }

@@ -28,7 +28,7 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
 | reference verifier | `pub_fit`, `pub_msgs`, `pub_prod` (`PubSeg.count/startOffset/record/fits`, `pubFit`, `pubMsgs`, `pubProd`); bus equation `∏sends·Π_pub(true) = ∏recvs·Π_pub(false)` (`globalChecksP`), `pubFit` checked before any record is enumerated (as Lean's `okLens && pubFit && …`). The provers self-check with the same equation. |
 | prover messages | unchanged from v1 (FORMATS §8.5): the v2 prover is v1's honest prover for `AP.toAir` at `pg g`. |
 | `nearAirV3` | read from `np-lean-export-v3` (1,639,407 B, sha256 `73bcf1dd…`), validated, per-table layout equal to Lean's at g = 1, 2, 3. |
-| trace generation for `nearAirV3` (witness → 25 tables) | **not started** (part 2; follows the Lean renders, `RenderV3Stmt`). |
+| trace generation for `nearAirV3` (witness → 25 tables) | **partial**: aligned generators for 7 tables (bnd, akey, head, val, uniq, walk, **node**) in `src/v3/`, byte-identical to the Lean `Render/Padded*.lean` generators (`conformance/run-v2.sh` §3). node is the largest/most complex table. Remaining tables + the witness→entries extraction are part 2c. |
 | `prepD0`/hint codec in Rust, candidate package, build recipe, `formal/` model | **not started**. |
 
 ## Verification
@@ -37,6 +37,7 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
   (JSON round trip, layouts at g = 1/2/3, prove/verify at every g, proofs
   rejected under every other g, tampered claims, hostile counts/offsets
   rejected by `pubFit`, prover refuses an unbalanced claim).
+* `conformance/run-v2.sh` §3 also checks the `node` (`nodeV3`, width 186) aligned generator against `np-lean-render-v3`; the random node sampler exercises renderer identity (the honest `NodeOk` entries come from the witness, part 2c).
 * `conformance/run-v2.sh` (166 checks, all pass on 2026-10-10): the deployed
   Lean `ZkFormal.V2.verifierP Fp Fp8 AP (pg g)` (`np-lean-verify-v2`) accepts the
   Rust v2 toy proofs at g = 1, 2, 3 and logs 4/6/10, rejects them under every

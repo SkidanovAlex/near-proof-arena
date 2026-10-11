@@ -99,7 +99,7 @@ done
 echo "== nearAirV3 honest per-table traces: Rust (npudr v3render) vs Lean (np-lean-render-v3)"
 lr="$here/.lake/build/bin/np-lean-render-v3"
 rd="$out/render"; mkdir -p "$rd"
-for t in ${RENDER_TABLES:-bnd akey head val uniq walk}; do
+for t in ${RENDER_TABLES:-bnd akey head val uniq walk node}; do
   for seed in 1 2 3; do
     for n in ${RENDER_SIZES:-0 1 5 37}; do
       f="$rd/$t-$seed-$n"
@@ -108,6 +108,9 @@ for t in ${RENDER_TABLES:-bnd akey head val uniq walk}; do
       "$npudr" v3render $t "$f.json" "$f.rust.bin" || { bad "$t seed=$seed n=$n: npudr v3render failed"; continue; }
       if cmp -s "$f.lean.bin" "$f.rust.bin"; then pass "$t seed=$seed n=$n trace identical ($(stat -c %s "$f.rust.bin") B)"
       else bad "$t seed=$seed n=$n trace differs"; fi
+      # `v3check` needs honest (`*Ok`) entries; node entries come from the witness
+      # (part 2c), so its random sampler only exercises the renderer identity.
+      if [ "$t" = node ]; then continue; fi
       if "$npudr" v3check "$out/nearAirV3.json" $t "$f.json" >"$f.check"; then pass "$t seed=$seed n=$n $(cut -c5- "$f.check")"
       else bad "$t seed=$seed n=$n constraints fail"; head -3 "$f.check"; fi
     done

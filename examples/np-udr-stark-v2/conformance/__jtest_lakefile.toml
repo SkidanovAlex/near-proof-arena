@@ -1,0 +1,7 @@
+name = "JTest"
+[[require]]
+name = "ZkFormal"
+path = "../../../zk-formal"
+[[lean_exe]]
+name = "jtest"
+root = "__JTest"

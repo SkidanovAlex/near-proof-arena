@@ -256,7 +256,95 @@ pub fn sample_json(table: &str, seed: u64, n: usize) -> Result<String, String> {
         "val" => serde_json::to_string(&val(r, n)),
         "uniq" => serde_json::to_string(&uniq(r, n)),
         "walk" => serde_json::to_string(&walk(r, n)),
+        "node" => serde_json::to_string(&node(r, n)),
         t => return Err(format!("unknown table {t}")),
     };
     j.map_err(|e| e.to_string())
+}
+
+// ------------------------------------------------------------------- node
+
+use super::node::{Kid, NodeS3, NodeV3, Slot, NODE_WIDTH};
+
+fn slot_ref(r: &mut Rng) -> Slot {
+    Slot::Ref { lenB: vec![0, 0, 0, 0], h: r.bytes(32) }
+}
+
+fn slot_val(r: &mut Rng) -> Slot {
+    Slot::Val {
+        lenB: vec![1 + r.below(4) as u64, 0, 0, 0],
+        vid: r.fe(),
+        vlen: 1 + r.below(20),
+        pre: r.bytes(32),
+        post: r.bytes(32),
+        written: r.coin(),
+    }
+}
+
+fn kid(r: &mut Rng) -> Kid {
+    match r.below(3) {
+        0 => Kid::None,
+        1 => Kid::Hash { h: r.bytes(32) },
+        _ => {
+            let mut pre = r.bytes(32);
+            let post = if r.coin() { pre.clone() } else { r.bytes(32) };
+            if !r.coin() {
+                pre = post.clone();
+            }
+            Kid::Node { cid: r.fe(), clen: r.fe(), cres: r.fe(), pre, post }
+        }
+    }
+}
+
+/// A random `NodeV3` (not necessarily honest; byte-identity only needs a
+/// deterministic function of the entries).
+fn nodev(r: &mut Rng) -> NodeV3 {
+    match r.below(3) {
+        0 => {
+            let klen = r.below(6) as usize;
+            NodeV3::Leaf {
+                key: r.bytes(klen).into_iter().map(|x| x % 16).collect(),
+                v: if r.coin() { slot_val(r) } else { slot_ref(r) },
+                memB: r.bytes(8),
+            }
+        }
+        1 => {
+            let klen = r.below(6) as usize;
+            NodeV3::Ext {
+                key: r.bytes(klen).into_iter().map(|x| x % 16).collect(),
+                kid: if r.coin() { kid(r) } else { Kid::Hash { h: r.bytes(32) } },
+                memB: r.bytes(8),
+            }
+        }
+        _ => {
+            let kids: Vec<Kid> = (0..16).map(|_| if r.below(3) == 0 { kid(r) } else { Kid::None }).collect();
+            NodeV3::Branch {
+                v: if r.coin() { Some(slot_val(r)) } else { None },
+                kids,
+                memB: r.bytes(8),
+            }
+        }
+    }
+}
+
+pub fn node(r: &mut Rng, n: usize) -> Vec<NodeS3> {
+    (0..n.max(1))
+        .map(|i| {
+            let v = nodev(r);
+            let len = v.ser_len();
+            NodeS3 {
+                v,
+                tau: r.fe(),
+                depth: if i == 0 { 0 } else { r.below(6) },
+                res: r.fe(),
+                uses: r.bytes(4),
+                ubm: r.fe(),
+                dup: r.coin(),
+                hd: r.coin(),
+                rep_e: r.fe(),
+                ucid: r.bytes(len),
+                m_u: r.bytes(len),
+            }
+        })
+        .collect()
 }

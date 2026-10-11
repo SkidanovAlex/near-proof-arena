@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Render.PaddedTrie
+import ZkFormal.NearV3.Extract.NodeView
 import Lean.Data.Json
 
 /-!
@@ -18,7 +19,17 @@ are the Lean field names (`BndE`, `AkeyE`, `HeadE`, `ValE`, `UEnt`, `WalkR` with
 
 open Lean ZkFormal.Air ZkFormal.Algebra ZkFormal.NearV3 ZkFormal.NearV3.Render
 
-deriving instance FromJson for BndE, AkeyE, HeadE, ValE, UEnt, WStep3, WalkR
+deriving instance FromJson for BndE
+deriving instance FromJson for AkeyE
+deriving instance FromJson for HeadE
+deriving instance FromJson for ValE
+deriving instance FromJson for ZkFormal.NearV3.Render.UEnt
+deriving instance FromJson for ZkFormal.NearV3.WStep3
+deriving instance FromJson for ZkFormal.NearV3.WalkR
+deriving instance FromJson for ZkFormal.Near.NKid
+deriving instance FromJson for ZkFormal.NearV3.NSlot3
+deriving instance FromJson for ZkFormal.NearV3.NodeV3
+deriving instance FromJson for ZkFormal.NearV3.NodeS3
 
 def u32 (b : ByteArray) (x : Nat) : ByteArray :=
   b.push (x % 256).toUInt8 |>.push (x / 256 % 256).toUInt8
@@ -44,6 +55,7 @@ def render (table s : String) : Except String ByteArray :=
   | "val" => return dump (valTraceAligned (← parse ValE s)) ValV3.width
   | "uniq" => return dump (uniqTraceAligned (← parse UEnt s)) Uniq.width
   | "walk" => return dump (walkTraceAligned (← parse WalkR s)) WalkV3.width
+  | "node" => return dump (nodeTraceAligned (← parse NodeS3 s)) NodeV3.width
   | t => throw s!"unknown table {t}"
 
 def main (args : List String) : IO UInt32 := do
