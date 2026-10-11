@@ -2,7 +2,8 @@
 
 Worktree `/data/illia/nearproof-wt/v3-rcpt-sound`, branch `lane/v3-rcpt-sound`, from main `c87a7cae`.
 Modules: `zk-formal/ZkFormal/NearV3/Rcpt/Link/{RunSplit,ForwardSound,MemBal,Mem3,MemOf,RunModel,
-NewChunk,RecChain,RecModel,PrepFwd,RcptCore}.lean` (namespace `ZkFormal.NearV3.RcptLink`).
+NewChunk,RecChain,RecModel,PrepFwd,RcptCore,AcctSlots,GasPub,RcptHolds}.lean` (namespace
+`ZkFormal.NearV3.RcptLink`).
 Audit `zk-formal/test/AuditRcptSound.lean` (all `[propext, Classical.choice, Quot.sound]` or less).
 No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
 
@@ -35,6 +36,9 @@ No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
 | `RecModel` | `recModel`, `amt_inv`, `tok_inv`, `rcptOk_all` | the ledger model of the records (receipts `(rv ls).map toReceipt` = `x.applied`, slot = `kslot`, `acc0 k = accOf` of the acct record) and `RcptOk3` for every receipt |
 | `PrepFwd` | `prepD0_fwd` | `prepD0 = .ok p` ⇒ `decodeBody h.body = .ok refunds`, status / `fwdGasOk` / demand `< 2^24` / compute guard on `pc.ctxB2`, `p.fwd = fwdLinks ctx refunds`, `p.hdr.n = h.n` |
 | `RcptCore` | **`mainRun_of_records`**, `applied_eq` | the receipt core of `m.Valid.run` (statement below) |
+| `AcctSlots` | `acct_k_nodup`, `memHyp_of'` | account slots distinct (`VSLOT` balance + `Link3.val_unique`); `MemHyp` from `HoldsP` + views alone |
+| `GasPub` | `gasPrice_pub` | `pc.ctxB2.gasPrice = leN' (pubBytes pub PH_GP 16)` (closes `hgp`) |
+| `RcptHolds` | **`mainRun_of_holdsP`** | `mainRun_of_records` from the `LinkCoreV3Stmt` hypotheses: chain, `encB`, `bgpB`, `hgp`, `PrepFwd` discharged; remaining premises explicit (below) |
 
 ### The deliverable statement (`RcptCore.mainRun_of_records`)
 
@@ -77,7 +81,27 @@ functions of the records).
    that the receipt sets do not touch `[10]`), and `m.Valid.buffered` on
    `partialTrie (x.store 0) root [keyBufferedIdx]` (store side).
 
+### The trace-level form (`RcptHolds.mainRun_of_holdsP`)
+
+```
+prepD0 cb h = .ok p → |preparedBytes p oh| < P → HoldsP nearAirV3 pub tr →
+V3RecordsTraffic pub tr r → V3RecordsWf pub r → h.n = |flatR r.lists| →
+RecBytes r.lists r.accts →                                   -- preB, burntB, ramtB
+∃ pc refunds, prepClaim cb = .ok pc ∧ decodeBody h.body = .ok refunds ∧
+  ∀ base Tf pre mid so v,
+    MainTrieLink r.lists r.accts base Tf pc.ctxB2 pre mid so →     -- lane v3-link
+    v.Valid → v.Reads pre mid (Tf (valsAt n)) →                    -- qv reads
+    (accAt pc.ctxB2 n).refunds = refunds →                         -- refund identity
+    (∀ s ∈ statusShards pc.ctxB2, demand pc.ctxB2 refunds s ≤ so.grant own s) →  -- AIR fwd check
+    applyNewChunk prims pc.ctxB2 pre ((rv r.lists).map toReceipt) = .ok (mainOut pc.ctxB2)
+```
+(`pc.ctxB2 = m.ctx k` and `x.applied = (rv r.lists).map toReceipt` for `x.receipts = r.lists`
+by `applied_eq`.)
+
 ## Remaining hypotheses of `mainRun_of_records` (exact, with sources)
+
+**Closed since:** `hknd` (`AcctSlots.acct_k_nodup`), `hgp` (`GasPub.gasPrice_pub`), `encB`,
+`bgpB`, `F` (all inside `mainRun_of_holdsP`).
 
 * `RecHyp` fields: `mem` ← `memHyp_of` needs **`hknd`** (acct slots distinct; `VSLOT` balance
   `LinkShaKinds.vslot_bal` + node `VSLOT` receives nodup via `Vals3.val_unique`); `wf`, `acct`
@@ -102,8 +126,10 @@ Nothing false found.  Note for the lead: the forwarding split's soundness direct
 
 ## Resume here
 
-Next, in order: (1) `hknd` from `VSLOT`; (2) `preB`, `burntB`, `ramtB`; (3) `hgp`; (4) `hrf`
-(refund encoding identity); (5) the akey half of `TrieOk.ak`; (6) `m.Valid.buffered` / qv reads
-(with the link lane).  Build: `HEAVY_MEM=12G taskset -c 8-15,24-31
-/data/illia/nearproof-deps/bin/heavy lake build ZkFormal.NearV3.Rcpt.Link.RcptCore`; audit
+Done: (1) `hknd`, (3) `hgp`.  Next, in order: (2) `RecBytes` — `preB` (needs a value-record
+byte lemma, the `Sha3.rec_bytes` argument for `valSends` + `VBYTES` balance acct→val), `burntB`
+(`K_PEO` digest bytes), `ramtB` (refund body); (4) `hrf` (refund encoding identity); (5) the akey
+half of `TrieOk.ak`; (6) `m.Valid.buffered` / qv reads (with the link lane); (7) `hsz`
+(`Prep.fwd` vs scheduler grants, with the link lane).  Build: `HEAVY_MEM=12G taskset -c 8-15,24-31
+/data/illia/nearproof-deps/bin/heavy lake build ZkFormal.NearV3.Rcpt.Link.RcptHolds`; audit
 `lake env lean test/AuditRcptSound.lean`.
