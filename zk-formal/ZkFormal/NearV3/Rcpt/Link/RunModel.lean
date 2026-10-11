@@ -9,7 +9,8 @@ Record-free core of the receipt half of `m.Valid.run` (v1's `Spec/Good` + `Spec/
 generalized to D0's system receipts and an abstract trie).  A `RunModel` is
 
 * the receipts `rs` in applied order and the value slot `slot r` each one's account walk ends at;
-* the decoded pre-state account `acc0 k` of each slot;
+* the decoded pre-state account `acc0 k` of each slot, and the raw pre-state bytes `base k`
+  of the slots no receipt writes;
 * a **trie family** `T : (Nat → Bytes) → PTrie` — the main trie after the scheduler step with
   slot `k` holding `v k`.
 
@@ -36,6 +37,8 @@ structure RunModel where
   rs : List Receipt
   slot : Nat → Nat
   acc0 : Nat → Account
+  /-- pre-state value bytes of the slots no receipt writes (access keys, …) -/
+  base : Nat → Bytes
   T : (Nat → Bytes) → PTrie
 
 namespace RunModel
@@ -50,8 +53,12 @@ def amtAt (k : Nat) : Nat → Nat
   | 0 => (M.acc0 k).amount
   | r + 1 => amtAt k r + (if M.slot r = k then (M.rc r).deposit else 0)
 
+/-- Slot `k` is some receipt's account slot. -/
+def written (k : Nat) : Bool := (List.range M.rs.length).any (fun r => M.slot r == k)
+
 /-- Value bytes of slot `k` before receipt `r`. -/
-def valsAt (r k : Nat) : Bytes := Account.encode { M.acc0 k with amount := M.amtAt k r }
+def valsAt (r k : Nat) : Bytes :=
+  if M.written k then Account.encode { M.acc0 k with amount := M.amtAt k r } else M.base k
 
 def bctx : Ctx := ⟨ctx.height, ctx.gasPrice⟩
 
@@ -85,8 +92,8 @@ structure TrieOk : Prop where
     (M.T v).find (accountKeyPath (M.rc r).receiverId) = some (some (v (M.slot r)))
   set : ∀ r, r < M.rs.length → ∀ v b,
     (M.T v).set (accountKeyPath (M.rc r).receiverId) b = some (M.T (upd v (M.slot r) b))
-  ak : ∀ r, r < M.rs.length → M.isSys r = true → (M.rc r).signerId = (M.rc r).receiverId → ∀ v,
-    ∃ o, (M.T v).find (keyAccessKey (M.rc r).receiverId (M.rc r).signerPk) = some o ∧
+  ak : ∀ r, r < M.rs.length → M.isSys r = true → (M.rc r).signerId = (M.rc r).receiverId →
+    ∃ o, (M.T (M.valsAt r)).find (keyAccessKey (M.rc r).receiverId (M.rc r).signerPk) = some o ∧
       (o = none ∨ ∃ ak, o = some ak ∧ ak.length = 9 ∧ ak.getD 8 0 = 1)
 
 /-- Per-receipt arithmetic (receipt `r`, slot `slot r`). -/
@@ -101,18 +108,23 @@ structure RcptOk3 (r : Nat) : Prop where
   surplus_lt : M.isSys r = false → surplusOf ctx.gasPrice (M.rc r) < Params.two128
   tok_lt : M.isSys r = false → M.tokAt ctx r + burntOf ctx.gasPrice (M.rc r) < Params.two128
 
-theorem valsAt_succ (r : Nat) :
+theorem written_slot {r : Nat} (hr : r < M.rs.length) : M.written (M.slot r) = true := by
+  simp only [written, List.any_eq_true, List.mem_range, beq_iff_eq]
+  exact ⟨r, hr, rfl⟩
+
+theorem valsAt_succ {r : Nat} (hr : r < M.rs.length) :
     M.valsAt (r + 1) = upd (M.valsAt r) (M.slot r)
       (Account.encode { M.acc0 (M.slot r) with amount := M.amtAt (M.slot r) r + (M.rc r).deposit }) := by
   funext j
   by_cases h : j = M.slot r
-  · subst h; simp [valsAt, amtAt, upd]
+  · subst h; simp [valsAt, amtAt, upd, M.written_slot hr]
   · have h' : M.slot r ≠ j := fun x => h x.symm
     simp [valsAt, amtAt, upd, h, h']
 
-theorem dec_valsAt {r : Nat} (hok : M.RcptOk3 ctx r) :
+theorem dec_valsAt {r : Nat} (hr : r < M.rs.length) (hok : M.RcptOk3 ctx r) :
     Account.decode (M.valsAt r (M.slot r)) =
       some { M.acc0 (M.slot r) with amount := M.amtAt (M.slot r) r } := by
+  simp only [valsAt, M.written_slot hr, ↓reduceIte]
   obtain ⟨raw, hA⟩ := hok.dec
   obtain ⟨_, hl, hch, hsu, _⟩ := Sound.decode_wf hA
   exact Sound.decode_encode _ (by have := hok.amt_lt; simp only; omega) hl hch hsu
@@ -127,7 +139,7 @@ theorem accAt_succ (r : Nat) : M.accAt ctx (r + 1) =
 /-- **One receipt.** -/
 theorem step (hT : M.TrieOk) {r : Nat} (hr : r < M.rs.length) (hok : M.RcptOk3 ctx r) :
     ledgerStep ctx (M.accAt ctx r) (M.rc r) = some (M.accAt ctx (r + 1)) := by
-  have hdec := M.dec_valsAt ctx hok
+  have hdec := M.dec_valsAt ctx hr hok
   have h1 := hok.amt_lt
   have h2 := hok.tot_lt
   have h3 := hok.stake
@@ -137,7 +149,7 @@ theorem step (hT : M.TrieOk) {r : Nat} (hr : r < M.rs.length) (hok : M.RcptOk3 c
     rcases h3 with h3 | h3 <;> simp [h3]
   have hset := hT.set r hr (M.valsAt r)
     (Account.encode { M.acc0 (M.slot r) with amount := M.amtAt (M.slot r) r + (M.rc r).deposit })
-  rw [← valsAt_succ] at hset
+  rw [← valsAt_succ M hr] at hset
   rw [accAt_succ]
   unfold ledgerStep
   by_cases hsys : M.isSys r = true
@@ -152,7 +164,7 @@ theorem step (hT : M.TrieOk) {r : Nat} (hr : r < M.rs.length) (hok : M.RcptOk3 c
     have hfind := hT.find r hr (M.valsAt r)
     unfold applySystemReceipt
     by_cases he : (M.rc r).signerId = (M.rc r).receiverId
-    · obtain ⟨o, ho, hoo⟩ := hT.ak r hr hsys he (M.valsAt r)
+    · obtain ⟨o, ho, hoo⟩ := hT.ak r hr hsys he
       rcases hoo with rfl | ⟨ak, rfl, hl9, h81⟩
       · simp [accAt, hfind, hdec, Nat.not_le.mpr h1, Nat.not_le.mpr h2, hs, he, ho, hset, bind,
           Except.bind, pure, Except.pure]
