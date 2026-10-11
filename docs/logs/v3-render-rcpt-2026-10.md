@@ -24,3 +24,8 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   **Aligned size bound `nearV3_size`: 6,276,897 → 6,315,201 B** (+38,304) at auxGroup 2;
   margin under 8 MiB after the 1,295,017 B hint: 778,390 B.  `v3MaxInner` updated
   (`4 + 2,000,000 + 6,315,201 ≤ 8 MiB` still holds).  Full `ZkFormal.V3.Integration` builds.
+* **srcp (20): aligned render done** — `NearV3/Render/PaddedSrcp.lean`:
+  `srcp_aligned_complete` (hypothesis = the view's `SrcpWf bs`; cap 22 unchanged),
+  `srcp_proofs_aligned_complete` (from the used source proofs, `ProofInputsOk`),
+  `SrcpGen.table_local_at`, `SrcpGen.cell_high`.  `Srcp/ProofComplete` now reaches
+  Integration through it.  Audit `test/AuditPaddedSrcp.lean`.
