@@ -303,3 +303,28 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   6,415,073 B** (same widths/degrees), so `v3MaxInner`/`v3MaxHintBytes` unchanged.
   Integration 3,100 jobs OK; audits `AuditAccountEmptyCap` (new), `AuditPaddedRcpt`,
   `AuditNearV3Admission` pass; pin-check OK.
+* **BND coverage — NOT implied by acceptance; stopped (needs a lead/user decision).**
+  Nothing in `decodeLayout`/`prepD0`/`walkD0`/`checkD0a` relates `|boundaries|` to `|shardIds|`
+  (only `1 ≤ |shardIds| ≤ 64` and `L.index own = some _`; `decodeShardLayoutV2`, which does
+  check the id maps, is not on the D0a path).  `boundedIntervals L own = ownIntervals L own`
+  iff `|boundaries| ≤ |shardIds|` or `own ≠ 0` (for `k ≥ n := |shardIds|`, `shardIds.getD k 0 = 0`).
+  Counterexample sketch: V3 layout `boundaries = ["b","c"]`, `shardIds = [0]`, `idToIndex =
+  [(0,0)]`, own shard `0`, one applied receipt to `"d"` (`shardOf "d" = getD 2 0 = 0 = own`, so
+  it is applied).  Published `p.bnds = ownIntervals = [(none,"b"), ("b","c"), ("c",none)]`; the
+  honest routing reads `boundedIntervals = [(none,"b"), ("b",none)]`, index 1, whose `routeKey`
+  rows (`hi` = none, flag 1) are not in `Public.boundaryRecords p` (row 1 there has `hi = "c"`).
+  Re-routing over `p.bnds` instead does not fix it in general: with own = 0 and ≥ 127 extra
+  boundaries, the published BNDP segment has `65·|p.bnds| > 2^13 = 2^BndV3.maxLog` rows and the
+  receiver's interval index exceeds the 7-bit `q` — completeness of the current AIR is then
+  FALSE regardless of the routing representation.  Fix options: (a) publish
+  `boundedIntervals` in `prepD0` (spec change; count ≤ numShards+1 ≤ 65 rows·65 fits); or
+  (b) add a D0a domain check `|boundaries| + 1 = |shardIds|` (spec change).  Soundness side
+  (link lane) must check the same: it relates `p.bnds` (ownIntervals) to `shardOf`; on such
+  layouts with own = 0 the extra intervals are own-routed too, so it is likely consistent, but
+  `ownIntervals`↔`shardOf` is "tested, not proved" in the spec.
+* **srcp `ProofInputsOk` from acceptance alone (done).**  `Render/AcceptedSrcp.lean`:
+  `entry_rc_length_le` (decoded entry: `|u64 to ++ borsh(receipts)| ≤ |raw|`, via
+  `decodeStateWitness_encodeSW_size`), **`acceptedSrcp_ok_of_accept`** (no explicit premises:
+  nonempty from `prepD0_sources_nonempty`, roots from `prepD0_source_roots`, siblings from
+  `relD0a_source_paths`, RC length `≤ |raw| ≤ 8 MiB < P`; the default `sourceEntry` has 12 bytes).
+  Audit `test/AuditAcceptedSrcpOk.lean`.
