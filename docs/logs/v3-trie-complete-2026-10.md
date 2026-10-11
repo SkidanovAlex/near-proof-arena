@@ -877,3 +877,24 @@ The AIR check is really `B0`: `sizeA7` range-checks `B0 − (yN0 + yN1 + yN2)` (
   `unfoldedBytesT t + outputByteCharge run + |v| = unfoldedBytesT run.output + replacedCharge run + oldValCharge run`
   (a split's source counted once via `SPB`; the BI `NLF` part, source = the branch, not counted; off-path
   subtrees copied).  Audit `test/AuditTrieA7Repl.lean`.
+
+## 2026-10-12 (session 7) — A7 (b) step 2 DONE (per instance): RPL/RPLV ids cover replaced nodes / old value
+
+* New `Assembly/TrieA7Match.lean`:
+  - run level: `termK` (RLP/RBR/RBV/RBI/SPB), `upK` (RDB/RDE/PT), `replaced_split`
+    (`replacedCharge = termCharge + upCharge`), `oldBound` (terminal source's own values for LP/BR, else 0),
+    **`traceUpsert_term`/`traceKids_term`** (no wf): `termCharge run ≤ |nodeEnc terminalSource|` and
+    `oldValCharge run ≤ oldBound run`;
+  - forest records: `viewNode_ser_length` (no wf), `LT Ts n` (ser length of forest record n),
+    `source_record` (every part source `p` of a forest-rooted upsert: `rid p.source < |forestNodes|`, the record
+    there is `seedNodeView τ d (rid p.source) vid p.source`, `LT = |nodeEnc p.source|`), `native_parts`,
+    `native_nD` (`nDOf = rid terminalSource`), `terminal_part`;
+  - values: `vlens`, `idxLens`, `seedNodesT_vlens`/`forestNodes_vlens` (`filterMap vlens = idxLens vid forestBytes`),
+    `LV Ts t`, `forest_value_len`, `view_value_len`;
+  - **`rpl_cover`**: `NativeReaderOrigin root u.run u.value I`, `InstOk I`, forest root at τ, `|forestNodes Ts| < P`
+    ⇒ `replacedCharge u.run ≤ Σ_{b ∈ upsRplMsgs I} LT Ts b` (terminal replaced part ↦ `nD`; upper parts ↦ their `sN`,
+    `q ≠ []` from `InstOk.q1`);
+  - **`rplv_cover`**: + `NativeWalkProviders pairs u.run I`, `|forestBytes| < P` ⇒
+    `oldValCharge u.run ≤ Σ_{b ∈ upsRplvMsgs I} LV Ts b` (LP/BR ⇒ `ci ∈ {0,1}` ⇒ `ts = 3` (`tsNib`), step 3 mode 0
+    (`termCase`), its VAL edge is of record `nD` (`look`/`termD`) whose view value is `(vid, |old value|)`).
+* Audit `test/AuditTrieA7Match.lean` (Classical.choice appears, as in the other trie audits).
