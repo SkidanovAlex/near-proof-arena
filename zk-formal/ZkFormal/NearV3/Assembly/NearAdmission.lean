@@ -85,15 +85,28 @@ theorem nearV3_lo (hdr : List Nat)
   rw [ZkFormal.V2.headerOk_eqP] at h
   exact (verifier_headerOk h).2
 
-/-- **Soundness obligation.** Any trace accepted on a prepared statement that
-`prepD0` produces reconstructs concrete semantic views `GoodV3`.  The public vector
-is the protocol packing `Public.preparedBytes` (the concrete `nearAirV3.pubSegs`). -/
-def ExtractV3Stmt : Prop :=
-  ∀ (B : Nat) (cb : Bytes) (h : NearSpecV3.Hint) (p : NearSpecV3.Prep) (oh : Nat)
-    (tr : Trace Fp),
+/-- **Soundness obligation at an A7 bound `B`.**  Any trace accepted on a prepared
+statement that `prepD0` produces, whose packed public statement is below the field
+size, reconstructs concrete semantic views `GoodV3 B`.  The public vector is the
+protocol packing `Public.preparedBytes` (the concrete `nearAirV3.pubSegs`).
+
+The size premise `(preparedBytes p oh).length < P` is a decidable condition the
+verifier codec `prepV3` checks (it rejects larger statements), so it is no hidden
+assumption; it rules out the field-cast aliasing of the packed `u32` totals that
+the receipt view (`RcptV3Proof.extract_prepared_view`) needs excluded. -/
+def ExtractV3StmtAt (B : Nat) : Prop :=
+  ∀ (cb : Bytes) (h : NearSpecV3.Hint) (p : NearSpecV3.Prep) (oh : Nat) (tr : Trace Fp),
     NearSpecV3.prepD0 cb h = .ok p →
+    (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P →
     HoldsP nearAirV3 (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr →
     ∃ k x, GoodV3 B cb k h p x
+
+/-- **Soundness obligation** of the D0a certificate: `ExtractV3StmtAt` at the frozen
+A7 bound `B0 = 2,000,000` (its only use, `hsound_of_extract`, needs exactly `B0`).
+The earlier form quantified over every `B`, which is false (`GoodV3.unfoldedBytes`
+fails at `B = 0`).  See `docs/logs/v3-link-2026-10.md` for whether `nearAirV3`
+enforces `unfoldBytes ≤ B0`. -/
+def ExtractV3Stmt : Prop := ExtractV3StmtAt NearSpecV3.B0
 
 /-- **Completeness obligation.** Every `RelD0a` claim admits a hint, a prepared
 statement and an honest trace satisfying `HoldsP` with an admissible header. -/
@@ -168,10 +181,15 @@ theorem nearV3_admission
     8 Assembly.g2_8 hlo Assembly.g2_8_dom Assembly.udr2_K24_min8_ok nearAirV3_npOkPg_2 nearV3_NVu
 
 /-- The canonical prepared-statement codec: `prepD0` then the protocol packing
-`Public.preparedBytes` (the concrete `nearAirV3.pubSegs` public vector). -/
+`Public.preparedBytes` (the concrete `nearAirV3.pubSegs` public vector).  Packed
+statements of `P` or more bytes are rejected (decidable, checked natively): above
+that the packed `u32` totals alias in the field (see `ExtractV3StmtAt`). -/
 def prepV3 (cb : List UInt8) (h : NearSpecV3.Hint) : Option (List UInt8) :=
   match NearSpecV3.prepD0 cb h with
-  | .ok p => some (ZkFormal.NearV3.Public.preparedBytes p 0)
+  | .ok p =>
+    if (ZkFormal.NearV3.Public.preparedBytes p 0).length < ZkFormal.Algebra.P then
+      some (ZkFormal.NearV3.Public.preparedBytes p 0)
+    else none
   | .error _ => none
 
 /-- **Soundness premise from `ExtractV3Stmt`.** The AIR-to-semantics obligation, composed
@@ -185,11 +203,14 @@ theorem hsound_of_extract (hext : ExtractV3Stmt) :
   unfold prepV3 at hp
   split at hp
   · rename_i p hprep
-    injection hp with hcb'
-    subst hcb'
-    obtain ⟨k, x, hg⟩ := hext NearSpecV3.B0 (WfClaim.encode c) h p 0 tr hprep hH
-    exact ⟨witnessOfV3 k x, (NearSpecV3.relD0a_iff NearSpecV3.B0 (WfClaim.encode c) _).mpr
-      (ZkFormal.NearV3.Assembly.factorSound NearSpecV3.B0 (WfClaim.encode c) k h p x hg)⟩
+    split at hp
+    · rename_i hsz
+      injection hp with hcb'
+      subst hcb'
+      obtain ⟨k, x, hg⟩ := hext (WfClaim.encode c) h p 0 tr hprep hsz hH
+      exact ⟨witnessOfV3 k x, (NearSpecV3.relD0a_iff NearSpecV3.B0 (WfClaim.encode c) _).mpr
+        (ZkFormal.NearV3.Assembly.factorSound NearSpecV3.B0 (WfClaim.encode c) k h p x hg)⟩
+    · exact absurd hp (by simp)
   · exact absurd hp (by simp)
 
 /-- The canonical prepared-statement codec on raw witness bytes: decode the clear
