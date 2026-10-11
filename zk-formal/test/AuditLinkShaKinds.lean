@@ -44,3 +44,15 @@ import ZkFormal.NearV3.Assembly.RcptViewCounts
 /-- info: 'ZkFormal.NearV3.Assembly.rcptV3_view_counts' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.rcptV3_view_counts
+
+/-- info: 'ZkFormal.NearV3.Assembly.codecOwn' depends on axioms: [propext] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.codecOwn
+
+/-- info: 'ZkFormal.NearV3.Assembly.sparOwn' depends on axioms: [propext] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.sparOwn
+
+/-- info: 'ZkFormal.NearV3.Assembly.codecKinds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.codecKinds

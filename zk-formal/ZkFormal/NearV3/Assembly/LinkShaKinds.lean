@@ -3,6 +3,9 @@ import ZkFormal.NearV3.Rcpt.Link.ListByteIds
 import ZkFormal.NearV3.Rcpt.Link.SourceIsolation
 import ZkFormal.NearV3.Candidates.MerkleAlias
 import ZkFormal.Near.Link.MrkFacts
+import ZkFormal.NearV3.Sched.Link.SoundSha
+import ZkFormal.NearV3.Sched.Link.CodecSV
+import ZkFormal.NearV3.Public.SchedulerIndex
 
 /-!
 # ZkFormal.NearV3.Assembly.LinkShaKinds — the `BYTES` kind registry (`OthersKinds`)
@@ -268,5 +271,59 @@ theorem mrkKinds {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r)
       exact kindOk_msgId (by decide) (by decide) (by decide) (by decide) (by unfold msgId K_MRK P; omega)
   · intro x hx
     simp [mrkTrafficE] at hx
+
+/-! ## codec (raw, kind `K_SCH = 11`): `τ` is a public instance index (`first_par`) -/
+
+theorem codecOwn : ZkFormal.NearV3.Sched.CodecValOwn nearAirV3 T_CODEC where
+  lt := by decide
+  tab := rfl
+  lenOnly := by decide +kernel
+  lenPub := by decide +kernel
+  postOnly := by decide +kernel
+  postPub := by decide +kernel
+
+theorem sparOwn : ZkFormal.NearV3.Sched.SparOwn nearAirV3 where
+  none := by decide +kernel
+  pub := by decide +kernel
+
+/-- **The codec's `BYTES` ids** are `11 + 16·τ` with `τ < 34` (a scheduler instance of the
+prepared statement), so of kind `11`. -/
+theorem codecKinds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
+    {tr : Trace Fp} (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr) :
+    ∀ y ∈ codecBytes tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)), ∀ a,
+      y.head? = some a → a.toNat % 16 ≠ K_NPRE ∧ a.toNat % 16 ≠ K_NPOST ∧ a.toNat % 16 ≠ K_VPRE := by
+  have hlen : (ZkFormal.NearV3.Public.preparedBytes p oh).length < 256 ^ 4 := by unfold P at hsz; omega
+  have hrec := (ZkFormal.NearV3.Public.prepared_scheduler_index nearAirV3 oh rfl hp (prepD0_roots hp)
+    (prepD0_source_roots hp) hlen).2.1
+  have hPs := ZkFormal.NearV3.Sched.prepD0_len hp
+  have hL := ZkFormal.NearV3.Sched.codec_local hH codecOwn
+  have h22 := ZkFormal.NearV3.Sched.codec_h22 hH codecOwn
+  intro y hy a ha
+  unfold codecBytes at hy
+  obtain ⟨w, hw, hy⟩ := List.mem_flatMap.mp hy
+  unfold rowTraffic at hy
+  obtain ⟨i, hi, hy⟩ := List.mem_flatMap.mp hy
+  split at hy
+  · rename_i hbs
+    obtain ⟨hpos, rfl⟩ := List.mem_replicate.mp hy
+    have hi2 := ZkFormal.NearV3.Sched.Codec.bytes_send_i (show i ∈ ZkFormal.NearV3.Sched.Codec.interactions from hi)
+      hbs.1 hbs.2
+    subst hi2
+    obtain ⟨f, j, hf, hF, -, -, hmsg⟩ := ZkFormal.NearV3.Sched.Codec.bytes_row hL h22 (List.mem_range.mp hw) hpos
+    have hτ := (ZkFormal.NearV3.Sched.first_par hH codecOwn sparOwn
+      (ZkFormal.NearV3.Public.prepared_pubIdx nearAirV3 p oh rfl (prepD0_roots hp) (prepD0_source_roots hp) hlen)
+      (p.sched.map ZkFormal.NearV3.Sched.instOf) p.fwd hrec (by simp only [List.length_map]; omega) hf hF).1
+    simp only [List.length_map] at hτ
+    rw [hmsg] at ha
+    simp only [List.map_cons, List.head?_cons, Option.some.injEq] at ha
+    subst ha
+    have hlt : 11 + 16 * ZkFormal.Chacha.cv tr T_CODEC f ZkFormal.NearV3.Sched.Codec.tau < P := by
+      unfold P; omega
+    rw [Fp.toNat_ofNat, Nat.mod_eq_of_lt hlt]
+    simp only [K_NPRE, K_NPOST, K_VPRE]
+    omega
+  · simp at hy
 
 end ZkFormal.NearV3.Assembly
