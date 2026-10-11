@@ -28,6 +28,7 @@ import ZkFormal.NearV3.Assembly.TrieA7Node
 import ZkFormal.NearV3.Assembly.TrieA7Val
 import ZkFormal.NearV3.Assembly.TrieA7Ups
 import ZkFormal.NearV3.Assembly.TrieA7Bal
+import ZkFormal.NearV3.Assembly.TrieA7Size
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec

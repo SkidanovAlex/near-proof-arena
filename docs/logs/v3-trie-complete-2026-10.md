@@ -246,9 +246,9 @@ BYTES/DIGEST parked; A7 after the link merge.
    record replaced twice: different instances act on different τ, within an instance the path
    records are distinct).  Not started; the EDGE proof (`TrieUpsNative.accepted_ups_walks`) is the
    closest existing link between `I.N` and node ids.
-2. **A7 SIZE tags (rows 0–2 of `sizeA7`)**: the size table's appended receives are
-   `[t+3, yN t]` on the active rows `t = 0,1,2` of `sizeA7Trace` (not yet computed), and the
-   `SIZE` balance with `yN 0 = nodeA7Total ns S`, `yN 1 = valA7Total es SV`,
+2. **A7 SIZE tags (rows 0–2 of `sizeA7`)**: the size table's appended receives are computed
+   (`Assembly/TrieA7Size.lean`, **`size_a7_recvs`**: exactly `[3, yN 0 % P], [4, yN 1 % P],
+   [5, yN 2 % P]`).  Open: the bundle-level `SIZE` balance with `yN 0 = nodeA7Total ns S`, `yN 1 = valA7Total es SV`,
    `yN 2 = upsA7Total Js` (node/val/ups sends: `node_size_sends`, `val_size_sends`,
    `ups_size_sends`, plus the base tag-0/1/2 traffic of node/val/srcp).
 3. **A7 (b)**: `nodeA7Total ns S + valA7Total es SV + upsA7Total Js = unfoldBytes cb w ≤ B0` —
@@ -258,3 +258,5 @@ BYTES/DIGEST parked; A7 after the link merge.
    (`R = Σ_I (4 + L_I + Σ|Q_k|)`, `upsA7Total ≤ R`).
 4. SHA two-instance packing (task 2), UPB/MEMD/S0F/SPOST/SPLEN, VSLOT native fact,
    KEYNIB/FINAL/VBYTES: unchanged from session 2's list.
+* (session 3, end) `TrieA7Size.size_a7_recvs`; Integration 4123 jobs; audits `AuditTrieA7Size`,
+  `AuditTrieA7Ups`, `AuditTrieA7Node`, `AuditTrieA7Val`, `AuditRenderV3Trie` pass; `make pin-check` OK.
