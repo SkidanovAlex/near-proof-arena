@@ -76,4 +76,48 @@ theorem storeHF_of (W : V3RecordsWf pub r) (L : TrieLink pub tr r K r0 rK)
 
 end
 
+/-- **`MEMD`** (only `upsV3` touches it): the ups segments' `MEMD` sends are a permutation of their
+receives (the `hmemd` hypothesis of `upsV3_linkB`). -/
+theorem memdBal_of {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP nearAirV3 pub tr)
+    (T : V3RecordsTraffic pub tr r) :
+    (((ZkFormal.NearV3.upsTraffic r.ups).sends ZkFormal.NearV3.B_MEMD).map Msg.toFp).Perm
+      (((ZkFormal.NearV3.upsTraffic r.ups).recvs ZkFormal.NearV3.B_MEMD).map Msg.toFp) := by
+  apply List.perm_iff_count.mpr
+  intro m
+  have h := bal_users hH (b := ZkFormal.NearV3.B_MEMD) (U := [T_UPS]) (by decide) (by decide)
+    (by decide +kernel) (by decide +kernel) m
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Nat.add_zero] at h
+  rw [ups_count T _ _ _ (by decide +kernel), ups_count T _ _ _ (by decide +kernel)] at h
+  exact h
+
+/-- **Walk back to a representative** (step 3 of the `mainStoreBytes` plan): every `uniq` entry
+has an earlier-or-equal entry with `eq = 0`, the same instance and the same message bytes. -/
+theorem uniq_walkback {vs : List ZkFormal.NearV3.NodeS3} {es : List ZkFormal.NearV3.ValE}
+    {us : List ZkFormal.NearV3.UniqE} (hw : ZkFormal.NearV3.NodeWf3 vs) (hvw : ZkFormal.NearV3.ValWf es)
+    (huw : ZkFormal.NearV3.UniqWf us) (hDUP : ZkFormal.NearV3.Link3.DupBal us vs es)
+    (hENT : ZkFormal.NearV3.Link3.EntBal vs es) :
+    ∀ t (ht : t < us.length), ∃ t0, ∃ h0 : t0 < us.length, t0 ≤ t ∧ us[t0].eq = 0 ∧
+      ZkFormal.NearV3.Link3.bOf vs es us[t0].eid = ZkFormal.NearV3.Link3.bOf vs es us[t].eid ∧
+      us[t0].tau = us[t].tau := by
+  intro t
+  induction t with
+  | zero =>
+    intro ht
+    refine ⟨0, ht, Nat.le_refl 0, huw.first _ ?_, rfl, rfl⟩
+    cases us with
+    | nil => simp at ht
+    | cons a l => rfl
+  | succ t ih =>
+    intro ht
+    have hc := huw.canon _ (List.getElem_mem ht)
+    rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hc.2.2.2.2.1 with he | he
+    · exact ⟨t + 1, ht, Nat.le_refl _, he, rfl, rfl⟩
+    · obtain ⟨t0, h0, hle, heq, hb, hτ⟩ := ih (by omega)
+      have hd := ZkFormal.NearV3.Link3.dup_bytes hw hvw huw hDUP hENT t ht he
+      obtain ⟨-, hτ1, heq1, -⟩ := huw.link t ht
+      have hst := (heq1 he).1
+      have hct := (huw.canon _ (List.getElem_mem (show t < us.length by omega))).2.2.1
+      simp only [hst, Nat.add_zero, Nat.mod_eq_of_lt hct] at hτ1
+      exact ⟨t0, h0, by omega, heq, by rw [hb, hd], by rw [hτ, hτ1]⟩
+
 end ZkFormal.NearV3.Assembly
