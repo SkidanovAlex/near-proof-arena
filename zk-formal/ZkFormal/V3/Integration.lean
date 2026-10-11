@@ -42,6 +42,7 @@ import ZkFormal.NearV3.Assembly.LinkRidBytes
 import ZkFormal.NearV3.Assembly.LinkKeynib
 import ZkFormal.NearV3.Assembly.LinkUps
 import ZkFormal.NearV3.Assembly.LinkVPost
+import ZkFormal.NearV3.Assembly.LinkSched
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
