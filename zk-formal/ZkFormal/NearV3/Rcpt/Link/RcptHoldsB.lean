@@ -238,4 +238,95 @@ theorem mainRun_of_holdsP_fwd {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr 
   rw [F.fwd] at hL
   exact K base Tf pre mid so v L hv hR (hsz_of_links (prepClaim_layout_wf hc) ho hL)
 
+/-! ## `own ∈ shardIds` from routing -/
+
+/-- The `RecHyp` of the trace (given the trie link's `ShaHyp`). -/
+theorem recHyp_of {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : Trace Fp}
+    {r : V3Records} (hp : prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    {others : List Msg} {shaS shaR : Nat → List Fp → Nat}
+    (S : ZkFormal.NearV3.Link3.ShaHyp r.nodes r.heads r.values others shaS shaR) :
+    RecHyp (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r.lists r.accts :=
+  { mem := memHyp_of' hH T W
+    wf := W.lists
+    acct := W.accts
+    preB := preB_of hH T W S
+    encB := LinkRidBytes.encBytes hp hsz hH T W
+    burntB := burntBytes hp hsz hH T W
+    ramtB := ramtBytes hp hsz hH T W
+    bgpB := fun y hy => by
+      simp only [pubBytes, List.mem_map, List.mem_range] at hy
+      obtain ⟨i, -, rfl⟩ := hy
+      exact pubNat_pubOf_lt _ _ }
+
+/-- **`own ∈ shardIds`** whenever some receipt is routed to the own shard (A12: `shardOf` is a
+layout shard id). -/
+theorem own_index_of_route {ctx : ApplyCtx} {ls : RcptV3Vs}
+    (hwf : ctx.layout.shardIds.length = ctx.layout.boundaries.length + 1)
+    (hroute : ∀ x ∈ flatR ls, ctx.layout.shardOf (toBytes x.v) = ctx.own) {x : RcptE}
+    (hx : x ∈ flatR ls) : ∃ o, Scheduler.indexOf ctx.layout.shardIds ctx.own = some o := by
+  have hm := shardOf_mem hwf (toBytes x.v)
+  rw [hroute x hx] at hm
+  obtain ⟨o, ho, -⟩ := ZkFormal.NearV3.Sched.indexOf_some_lt hm
+  exact ⟨o, ho⟩
+
+/-- **The receipt core with `own ∈ shardIds` derived from routing**: the AIR's link-indexed
+forwarding check is needed only when `own` is a layout shard; with no refund, `hsz` is trivial,
+and a refund comes from a receipt, which routing places in the own shard. -/
+theorem mainRun_of_holdsP_route {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : Trace Fp}
+    {r : V3Records} (hp : prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    (hn : h.n = (flatR r.lists).length)
+    {others : List Msg} {shaS shaR : Nat → List Fp → Nat}
+    (S : ZkFormal.NearV3.Link3.ShaHyp r.nodes r.heads r.values others shaS shaR) :
+    ∃ pc, prepClaim cb = .ok pc ∧
+      ∀ (base : Nat → Bytes) (Tf : (Nat → Bytes) → PTrie) (pre mid : PTrie) (so : SchedOut)
+        (v : Qv.MainValues),
+        MainTrieLink r.lists r.accts base Tf pc.ctxB2 pre mid so →
+        v.Valid →
+        v.Reads pre mid (Tf ((recModel r.lists r.accts base Tf).valsAt (flatR r.lists).length)) →
+        (∀ x ∈ flatR r.lists, pc.ctxB2.layout.shardOf (toBytes x.v) = pc.ctxB2.own) →
+        (∀ o, Scheduler.indexOf pc.ctxB2.layout.shardIds pc.ctxB2.own = some o →
+          ∀ k, (hk : k < pc.ctxB2.layout.shardIds.length) →
+          ZkFormal.NearV3.Sched.fwdDemand p.fwd (o * pc.ctxB2.layout.shardIds.length + k) ≤
+            so.grant pc.ctxB2.own pc.ctxB2.layout.shardIds[k]) →
+        applyNewChunk prims pc.ctxB2 pre ((rv r.lists).map RcptV.toReceipt) =
+          .ok ((recModel r.lists r.accts base Tf).mainOut pc.ctxB2) := by
+  obtain ⟨pc, refunds, hc, hd, K⟩ := mainRun_of_holdsP_sha hp hsz hH T W hn S
+  obtain ⟨pc', refunds', hc', F⟩ := prepD0_fwd hp
+  rw [hc] at hc'
+  cases hc'
+  rw [F.body] at hd
+  cases hd
+  obtain ⟨pc'', hc'', hb, hgp⟩ := gasPrice_pub oh hp
+  rw [hc] at hc''
+  cases hc''
+  have H := recHyp_of hp hsz hH T W S
+  refine ⟨pc, hc, ?_⟩
+  intro base Tf pre mid so v L hv hR hroute hL
+  apply K base Tf pre mid so v L hv hR
+  have hrf := refunds_of hp hsz hH T W H hc hb hgp base Tf F.body
+  cases hne : refunds with
+  | nil => intro s _; simp [demand]
+  | cons m ms =>
+    -- a refund comes from a receipt
+    have hm : m ∈ ((recModel r.lists r.accts base Tf).accAt pc.ctxB2 (flatR r.lists).length).refunds := by
+      rw [hrf, hne]; simp
+    have hacc : ((recModel r.lists r.accts base Tf).accAt pc.ctxB2 (flatR r.lists).length).refunds =
+        (List.range (flatR r.lists).length).flatMap ((recModel r.lists r.accts base Tf).refundOf pc.ctxB2) := rfl
+    rw [hacc] at hm
+    obtain ⟨q, hq, -⟩ := List.mem_flatMap.mp hm
+    have hq := List.mem_range.mp hq
+    obtain ⟨o, ho⟩ := own_index_of_route (prepClaim_layout_wf hc) hroute (List.getElem_mem hq)
+    rw [← hne]
+    have hL' := hL o ho
+    rw [F.fwd] at hL'
+    exact hsz_of_links (prepClaim_layout_wf hc) ho hL'
+
 end ZkFormal.NearV3.RcptLink

@@ -155,3 +155,11 @@ import ZkFormal.NearV3.Rcpt.Link.SrecLink
 /-- info: 'ZkFormal.NearV3.RcptLink.ee_of_self' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.ee_of_self
+
+/-- info: 'ZkFormal.NearV3.RcptLink.own_index_of_route' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.own_index_of_route
+
+/-- info: 'ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_route' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_route
