@@ -833,3 +833,37 @@ lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/S
 3. Lead: use `N := nativeShaJobsE ns es` (TrieShaEmpty) everywhere the native SHA family appears
    (sha_bins_ofE, balancedAt_bytes/digest), and ONE `us` from `TrieDigestUps.ups_sha_scheduler`.
    Prover lane: emit a zero-length `VPRE(vid)` SHA job per empty value record.
+
+## 2026-10-12 (session 6, end) — lead: A7 (b) node/val half + trie-side assembly: NOT started (context); exact plan
+
+The AIR check is really `B0`: `sizeA7` range-checks `B0 − (yN0 + yN1 + yN2)` (24 bits), so a crude
+`2·preBytes` bound does not suffice; the exact accounting is needed.  Plan (successor):
+
+1. **Per-upsert occurrence identity** (new, `TrieA7Post`, same mutual skeleton as
+   `traceUpsert_unfolded`): `traceUpsert t key v = some run → t.wf → nibble key →
+   unfoldedBytesT t + outputByteCharge run + |v| ≤ unfoldedBytesT run.output + replacedCharge run + |oldVal run|`
+   where `replacedCharge` = Σ |nodeEnc p.source| over the parts whose source is a pre node on the
+   path (kinds RDB/RDE/PT/RLP/RBR/RBV/RBI and the split's source once — NOT once per split part; the
+   split parts LSa/LSb/LSc/ES* all have `source = src`), `oldVal` = the overwritten value (LP/BR).
+   Non-path subtrees are copied unchanged (`kids` untouched except the descended slot).
+   Equality likely holds; `≤` is what A7 needs.
+2. **Index matching** S/SV ↔ path sources: `a7_perm_native` defines `S n := [n] ∈ insts.flatMap upsRplMsgs`
+   (RPL ids = `N_D` + upper-part `sN`, readers in the REBASED forest `oldPost :: steps.pre`,
+   `TrieA7Perm.nD_node/upper_node/rpl_inst`).  Need per index n with `S n`: `|(rec ns n).v.ser false| =`
+   the matching path source's `|nodeEnc|` (rebased occurrence vs `m.pre` occurrence: for τ = 0 a
+   per-occurrence length lemma under `SizedAccountRun` — account `set` keeps value length, so encodings
+   keep their length; check `NativeReplayByteSize` for a per-occurrence version, else prove it), and
+   that distinct replaced sources are distinct records (Nodup — `rpl_inst`).  Same for `SV` (value
+   `e₃` = old value of the LP/BR terminal; `rplv_mem`, `edge_val_id`).
+3. **Sum**: `nodeA7Total ns S + valA7Total es SV = 2·preBytes(forest) − Σ_τ (replacedCharge_τ + |oldVal_τ|)`
+   (records `ser false` lengths = `nodeEnc` of `forest.flatMap occs` — `NativePostShaBudget.node_lengths`;
+   values = `forestBytes` — `value_lengths`); with 1. per τ, `unfoldedBytesT oldPost = unfoldedBytesT m.pre`
+   (`SizedAccountRun.unfolded_bytes`), `upsA7Total = Σ (|v| + outputByteCharge)` (`TrieA7Cap.inst_total`):
+   total ≤ Σ_τ (U pre_τ + U post_τ) = `unfoldBytes` ≤ B0 (as in `ups_post_bound`).
+4. **Trie-side assembly theorem** (after 3): from `AcceptedV3`, choose via `trie_all_of` (discharge the
+   row cap with `TrieA7Cap.rowCap_of_upsSha`), SHA bins via `sha_bins_ofE` with the `us` of
+   `TrieDigestUps.ups_sha_scheduler`, A7 S/SV via `a7_perm_native`; conclude `TableRenderV3` for tables
+   0–7, 21 and `BalancedAt` for PARENT/VPARENT/ENT/DIGS/DUP/EDGE/BMAP/MIDROOT/ROOT/UPB/MEMD/RPL/RPLV/
+   SIZE/BYTES/DIGEST/VSLOT/KEYNIB/FINAL, with `RcptKeys`, `RcptFinal`, BYTES/DIGEST `hcodec`/`hrest`
+   (X := ns.flatMap postSlotDigests), VBYTES, and the receipt/source SHA families' bounds as explicit
+   hypotheses.
