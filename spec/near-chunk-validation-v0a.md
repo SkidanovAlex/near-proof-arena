@@ -1,4 +1,4 @@
-# `near/pv86/chunk-validation/v0`, domain **D0a** — D0 with amendments A1, A2, Canon0f, A7–A10
+# `near/pv86/chunk-validation/v0`, domain **D0a** — D0 with amendments A1, A2, Canon0f, A7–A10, A12
 
 Status: **unsigned draft**, 2026-10-06 (lane `v3-spec`). Additive successor of domain D0
 (`spec/near-chunk-validation-v0.md` §6, `NearSpecV3.RelD0`), which is pinned by the signed
@@ -11,15 +11,17 @@ challenge `near-chunk-validation-d0-1` and is **not modified**. Draft challenge:
 ```
 RelD0a(B, W, Dp)(cb, w) := RelD0(cb, w) ∧ A1(cb) ∧ A2(cb, w) ∧ Canon0f(cb, w) ∧ unfoldBytes(cb, w) ≤ B
                            ∧ A8(cb) ∧ chachaWords(cb, w) ≤ W ∧ (∀ used source proof e, |e.path| ≤ Dp)
+                           ∧ A12(cb)
 ```
 
 The challenge instance is `B = B0 = 2,000,000` (§2.4), `W = W0 = 770,000` (§2.6) and
 `Dp = Dp0 = 32` (§2.7). `W0` and `Dp0` are user decisions of 2026-10-09. A11 (`w.post_rebuild`,
 added 2026-10-11) is retired by the user decision of 2026-10-12 (§2.8), together with the
-switch of A7's post term to the native post trie (§2.4).
+switch of A7's post term to the native post trie (§2.4). A12 (§2.9) is a user decision of
+2026-10-12.
 
 Lean: `NearSpecV3.ChunkValidationV0a` (`RelD0a B cb w (W := W0) (Dp := Dp0)`, `a1`, `a2`, `canon0f`,
-`a7`, `unfoldBytes`, `triesD0`, `a8`, `a9`, `chachaWords`, `a10`, `maxPathDepth`; executable verdict
+`a7`, `unfoldBytes`, `triesD0`, `a8`, `a9`, `chachaWords`, `a10`, `maxPathDepth`, `a12`; executable verdict
 `checkD0a B cb w (W := W0) (Dp := Dp0)`; **proved**: `relD0a_iff : RelD0a B cb w W Dp ↔
 checkD0a B cb w W Dp = .ok ()`, `relD0a_relD0 : RelD0a B cb w W Dp → RelD0 cb w` (for all
 bounds), `relD0a_mono` (in `B`), `relD0a_mono_all` (in `B`, `W`, `Dp`),
@@ -38,6 +40,7 @@ and witness formats are unchanged (`spec/claim-v3.md`).
 | `e.chacha_words` (A9) | the bandwidth-scheduler runs of all applied transitions (main at B2, each implicit block) draw `≤ W0 = 770,000` ChaCha20 words in total (§2.6) | bounds the in-AIR ChaCha lane: `chachaV3 ≤ 86·⌈K/16⌉ ≤ 4,141,410 < 2²²` rows; the rejection-sampling fuel alone allows ≈ 9.9 M words |
 | `w.path_depth` (A10) | every *used* source receipt proof's Merkle path has `≤ Dp0 = 32` items (§2.7) | bounds the in-AIR source-proof table: `srcpV3 ≤ 1984·(33 + 64·32) = 4,128,704 ≤ 2²²` rows; `rootFromPath` alone accepts any length |
 | ~~`w.post_rebuild` (A11)~~ | **retired 2026-10-12** (user decision): A7 no longer rebuilds the post trie from the store, so the condition constrains nothing A7 reads (§2.8) | — |
+| `c.layout_wf` (A12) | the epoch's shard layout has exactly one boundary account fewer than shard ids: `len(boundary_accounts) + 1 = len(shard_ids)` (claim-only, §2.9) | the published own-shard routing intervals (`ownIntervals`, `Prep.bnds`) are then at most `numShards ≤ 64`, so they fit the in-AIR boundary table (65 rows per interval, `≤ 2^13` rows), the 7-bit interval index and the public-segment bound; `decodeLayout` accepts any lengths |
 | `e.sched_canonical` (Canon0f) | every `0x0f` (`BandwidthSchedulerState`) value the run reads — main pre-state and each implicit transition's pre-state — is absent or `V1` whose links are exactly the layout's `n²` links `(sender, receiver)` in sender-major order (any allowances, any sanity hash) | the in-AIR scheduler decodes the previous state as exactly `n²` ordered links |
 
 ### 2.1 A1 source check (nearcore 2.13.4, `44f7ae6c`)
@@ -259,6 +262,36 @@ that the reconstruction re-runs the same execution, hence has the same native po
 measurement tool `oracle/tools/a11_measure_v3_d0a.py` is removed (in git history; the
 2026-10-11 measurement, 0 violations on public D0a, D1 and D2, is in
 `docs/e2e-results/v3-a11/report.json`). Retiring a domain condition only widens D0a.
+
+### 2.9 A12 `c.layout_wf`: definition, source check, liveness
+
+**Definition** (`NearSpecV3.a12`): with `L` the decoded epoch layout of the claim
+(`walkD0 cb`), `|L.boundaries| + 1 = |L.shardIds|`. Claim-only; `false` where the claim does
+not walk (irrelevant: `RelD0` is false there).
+
+**Source check** (nearcore 2.13.4, `44f7ae6c`). `ShardLayoutV2::new` and `ShardLayoutV3::new`
+(`core/primitives/src/shard_layout/v2.rs:207`, `v3.rs:211`) `assert_eq!(boundary_accounts.len()
++ 1, shard_ids.len())`, and the field documentation states it as the type's invariant
+(`v2.rs:63`, `v3.rs:100`); V1 derives the shard count as `boundary_accounts.len() + 1`. Every
+layout nearcore constructs therefore satisfies A12. The borsh decoder (and `decodeLayout`) does
+not re-check it.
+
+**Why** (user decision 2026-10-12). `ownIntervals L own` lists, for each partition point `k ≤
+|boundaries|` with `shardIds.getD k 0 = own`, the interval `[max(boundaries[0..k)),
+boundaries[k])`. With surplus boundaries and own shard id `0` (the `getD` default), every
+partition point beyond `|shardIds|` contributes an interval: `Prep.bnds` and its public BNDP
+segment grow with the claim, the in-AIR boundary table (`2^13` rows, 65 per interval) and the
+7-bit interval index cannot represent them, and the packed public statement can exceed the
+public-size cap. Routing itself (`shardOf`) is unaffected. Under A12, `ownIntervals` has at most
+`|shardIds| ≤ 64` entries and equals the bounded representation the AIR renders.
+
+**Liveness.** Claim-only and a nearcore type invariant; it never excludes an honest claim.
+**Measured** (`oracle/tools/a12_measure_v3_d0a.py`, every case directory whose claim decodes,
+mutants included): 0 violations on the public D0a fixtures (421 claims, 123 honest), the D1
+corpus `d1run` (53,048 claims, 7,039 honest) and the D2 corpus `d2corpus.v2` (67,384 claims,
+10,927 honest); layouts seen: 3/4, 4/5, 5/6 boundaries/shard ids
+(`docs/e2e-results/v3-a12/measure.json`). `prepD0` checks A12 natively as well (`prepClaim`,
+like A8), so the prepared statement exists only for A12 claims.
 
 ## 3. Reference oracle and tests
 

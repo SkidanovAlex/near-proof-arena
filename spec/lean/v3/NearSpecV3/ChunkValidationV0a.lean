@@ -1,14 +1,14 @@
 import NearSpecV3.ChunkValidationV0
 
 /-!
-# `NearSpecV3.ChunkValidationV0a` — `RelD0a`: D0 with amendments A1, A2, Canon0f, A7–A10
+# `NearSpecV3.ChunkValidationV0a` — `RelD0a`: D0 with amendments A1, A2, Canon0f, A7–A10, A12
 
 Additive successor of `NearSpecV3.ChunkValidationV0` (which is pinned by the signed
 challenge `near-chunk-validation-d0-1` and is not modified). The amended relation is a pure
 restriction of `RelD0` (spec/near-chunk-validation-v0a.md, V3-D0-DESIGN §4, §10, §11):
 
   `RelD0a B cb w W Dp := RelD0 cb w ∧ A1 cb ∧ A2 cb w ∧ Canon0f cb w ∧ A7 B cb w ∧ A8 cb ∧
-    A9 W cb w ∧ A10 Dp cb w`   (`W`, `Dp` default to the challenge's `W0 = 770,000`, `Dp0 = 32`)
+    A9 W cb w ∧ A10 Dp cb w ∧ A12 cb`   (`W`, `Dp` default to the challenge's `W0 = 770,000`, `Dp0 = 32`)
 
 * **A1** (`c.gas_limit`): the chunk `gas_limit` in the last-new-chunk block's (B2) slot of the
   validated shard is at most `10^15` (mainnet genesis, 1000 Tgas). nearcore never changes a
@@ -33,6 +33,11 @@ restriction of `RelD0` (spec/near-chunk-validation-v0a.md, V3-D0-DESIGN §4, §1
   source-proof table.
 * **A11** (`w.post_rebuild`, 2026-10-11) is **retired** (user decision 2026-10-12): it only
   controlled the store rebuild of A7's post term, which A7 no longer performs (spec v0a §2.8).
+* **A12** (`c.layout_wf`, user decision 2026-10-12): the epoch's shard layout has exactly one
+  boundary account fewer than shard ids (`|boundaries| + 1 = |shardIds|`, `a12`, below), as
+  every nearcore layout (`ShardLayout::v2` asserts it). Claim-only. Without it a decodable
+  layout with surplus boundaries makes the published own-shard routing intervals
+  (`ownIntervals`) unbounded and differ from the routing `shardOf` actually performs.
 * **Canon0f** (`e.sched_canonical`): every `BandwidthSchedulerState` value the D0 run reads at
   `0x0f` — in the main pre-state and in each implicit transition's pre-state — is absent or
   decodes as `V1` whose links are exactly the layout's `n²` links `(sender, receiver)` in
@@ -499,12 +504,27 @@ pre trie's revealed blobs instead of the witness store. A7 now counts the native
 which no store lookup can change, so A11 constrained nothing that A7 reads and was removed
 from `RelD0a` (spec v0a §2.8). -/
 
+/-! ## A12 `c.layout_wf`: the epoch layout is well-formed
+
+`ShardLayout::v2` (nearcore `core/primitives/src/shard_layout.rs`, `ShardLayoutV2::new`)
+asserts `boundary_accounts.len() + 1 == shard_ids.len()`; the decoder `decodeLayout` does not
+check it. With surplus boundaries (and own shard id `0`, the `getD` default of `shardOf`),
+`ownIntervals` lists one interval per extra boundary — unbounded in the claim — while routing
+is unchanged; the in-AIR boundary table and the 7-bit interval index cannot represent them.
+User decision 2026-10-12: a claim-only domain condition (spec v0a §2.9). -/
+
+/-- A12 (`c.layout_wf`). -/
+def a12 (cb : Bytes) : Bool :=
+  match walkD0 cb with
+  | .ok k => k.L.boundaries.length + 1 == k.L.shardIds.length
+  | .error _ => false
+
 /-- **The D0a relation**, with the unfolded-size bound `B` a parameter (the challenge
 instance is `B0`, `ChallengeD0a`), and the A9 word bound `W` and A10 depth bound `Dp`
 defaulting to the challenge's `W0`, `Dp0`. -/
 def RelD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Prop :=
   RelD0 cb w ∧ a1 cb = true ∧ a2 cb w = true ∧ canon0f cb w = true ∧ a7 B cb w = true ∧
-    a8 cb = true ∧ a9 W cb w = true ∧ a10 Dp cb w = true
+    a8 cb = true ∧ a9 W cb w = true ∧ a10 Dp cb w = true ∧ a12 cb = true
 
 instance (B : Nat) (cb w : Bytes) (W Dp : Nat) : Decidable (RelD0a B cb w W Dp) := by
   unfold RelD0a; infer_instance
@@ -519,6 +539,7 @@ def checkD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Except
   check (a8 cb) "out of domain (c.bw_requests): a chunk's bandwidth requests repeat a to_shard"
   check (a9 W cb w) "out of domain (e.chacha_words): scheduler runs draw more ChaCha20 words than the bound"
   check (a10 Dp cb w) "out of domain (w.path_depth): a used receipt proof's Merkle path is longer than the bound"
+  check (a12 cb) "out of domain (c.layout_wf): the shard layout does not have one boundary fewer than shard ids"
 
 theorem relD0a_iff (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) :
     RelD0a B cb w W Dp ↔ checkD0a B cb w W Dp = .ok () := by
@@ -527,7 +548,7 @@ theorem relD0a_iff (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) :
   | error e => simp [bind, Except.bind]
   | ok u =>
     cases a1 cb <;> cases a2 cb w <;> cases canon0f cb w <;> cases a7 B cb w <;> cases a8 cb <;>
-      cases a9 W cb w <;> cases a10 Dp cb w <;>
+      cases a9 W cb w <;> cases a10 Dp cb w <;> cases a12 cb <;>
       simp [bind, Except.bind]
 
 /-- A7 bound of the challenge instance: unfolded trie bytes (pre + post-write copies, all
@@ -537,12 +558,12 @@ def B0 : Nat := 2000000
 
 /-- The D0a domain conditions at bound `B` (Bool form). -/
 def inD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Bool :=
-  a1 cb && a2 cb w && canon0f cb w && a7 B cb w && a8 cb && a9 W cb w && a10 Dp cb w
+  a1 cb && a2 cb w && canon0f cb w && a7 B cb w && a8 cb && a9 W cb w && a10 Dp cb w && a12 cb
 
 /-- The D0a domain conditions at bound `B`. -/
 def InD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Prop :=
   a1 cb = true ∧ a2 cb w = true ∧ canon0f cb w = true ∧ a7 B cb w = true ∧ a8 cb = true ∧
-    a9 W cb w = true ∧ a10 Dp cb w = true
+    a9 W cb w = true ∧ a10 Dp cb w = true ∧ a12 cb = true
 
 /-- The D0a domain at the challenge bounds `B0`, `W0`, `Dp0`. -/
 def InD0a0 (cb w : Bytes) : Prop := InD0a B0 cb w
@@ -572,8 +593,8 @@ theorem relD0a_relD0 {B : Nat} {cb w : Bytes} {W Dp : Nat} (h : RelD0a B cb w W 
 /-- The bounds are monotone (each of `B`, `W`, `Dp`). -/
 theorem relD0a_mono_all {B B' W W' Dp Dp' : Nat} (hB : B ≤ B') (hW : W ≤ W') (hD : Dp ≤ Dp')
     {cb w : Bytes} (h : RelD0a B cb w W Dp) : RelD0a B' cb w W' Dp' := by
-  obtain ⟨h0, h1, h2, h3, h4, h5, h6, h7⟩ := h
-  refine ⟨h0, h1, h2, h3, ?_, h5, ?_, ?_⟩
+  obtain ⟨h0, h1, h2, h3, h4, h5, h6, h7, h8⟩ := h
+  refine ⟨h0, h1, h2, h3, ?_, h5, ?_, ?_, h8⟩
   · unfold a7 at *
     simp only [decide_eq_true_eq] at *
     omega

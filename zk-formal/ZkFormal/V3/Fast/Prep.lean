@@ -103,6 +103,9 @@ def prepClaimF (cb : Bytes) : Except String PrepC := do
   -- `allowed_shard` of the own congestion info (3.7); the header comparison itself runs in
   -- `prepBody`, after the execution-time conditions, in `checkD0`'s order
   let allowed := L.shardIds.getD ((B2.hdr.height + idx) % L.numShards) H.shardId
+  -- A12 (claim-only, `ChunkValidationV0a.a12`): one boundary account fewer than shard ids
+  check (L.numShards == L.boundaries.length + 1)
+    "out of domain (c.layout_wf): the shard layout does not have one boundary fewer than shard ids"
   pure {
     hdr := { K := implicitBlks.length, n := 0, own := H.shardId, ownIdx := idx,
              numShards := L.numShards, height := B2.hdr.height, gasPrice := prevB2.hdr.nextGasPrice,

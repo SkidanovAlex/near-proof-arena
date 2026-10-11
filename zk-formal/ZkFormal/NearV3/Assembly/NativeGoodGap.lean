@@ -64,7 +64,8 @@ theorem good_of_native {B : Nat} {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     unfoldedBytes := hunfold
     distinctRequests := ?_
     chachaWords := hwords
-    pathDepth := ?_ }
+    pathDepth := ?_
+    layoutWf := ?_ }
   · change (appliedReceipts k w).length = x.applied.length
     rw [hap]
   · change (x.applied.map Receipt.receiptId).Nodup
@@ -81,9 +82,11 @@ theorem good_of_native {B : Nat} {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     have hu : usedProofs k (stateWitnessOfV3 k x) = usedProofs k w := by
       simp only [usedProofs, hentries]
     rw [hu] at he
-    have ha10 := hr.2.2.2.2.2.2.2
+    have ha10 := hr.2.2.2.2.2.2.2.1
     simp only [a10, hk, hw, List.all_eq_true, decide_eq_true_eq] at ha10
     exact ha10 e he
+  · have ha12 := hr.2.2.2.2.2.2.2.2
+    simpa only [a12, hk, beq_iff_eq] using ha12
 
 theorem checkD0a_good_except_unfolded {B : Nat} {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w) (h : checkD0a B cb wb = .ok ()) :

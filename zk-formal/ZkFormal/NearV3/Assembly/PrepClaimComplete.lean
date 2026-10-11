@@ -13,7 +13,8 @@ theorem prepClaim_exists {cb : Bytes} {k : WalkD0} {m : MainExecutionV3} {w : St
     (ht : k.slotB2.txRoot = zeroHash32)
     (hc : (k.slotB2.congestion.delayedGas == 0 && k.slotB2.congestion.bufferedGas == 0 &&
       k.slotB2.congestion.receiptBytes == 0) = true)
-    (hs : ∃ lists, preparedSourceLists k.sourceBlks = .ok lists) :
+    (hs : ∃ lists, preparedSourceLists k.sourceBlks = .ok lists)
+    (hlw : k.L.boundaries.length + 1 = k.L.shardIds.length) :
     ∃ pc, prepClaim cb = .ok pc := by
   obtain ⟨lists,hs⟩ := hs
   have hb := hm.block
@@ -63,7 +64,8 @@ theorem prepClaim_exists {cb : Bytes} {k : WalkD0} {m : MainExecutionV3} {w : St
           subst out
           split
           · exfalso; grind only
-          · exact ⟨_,rfl⟩
+          · simp only [Layout.numShards, hlw, beq_self_eq_true, ↓reduceIte]
+            exact ⟨_,rfl⟩
       · exfalso; grind only
     · exfalso; grind only
 
@@ -81,6 +83,8 @@ theorem checkD0a_prepClaim_exists {B : Nat} {cb wb : Bytes} {k : WalkD0} {w : St
   cases u
   obtain ⟨m,last,hm,_⟩ := checkD0_native_steps hk hw hu
   obtain ⟨hg,ht,hc⟩ := checkD0_claim_guards hk hw hu
-  exact prepClaim_exists hk hm hg ha1 ha8 ht hc (checkD0_prepared_sources hk hw hu)
+  have hlw : k.L.boundaries.length + 1 = k.L.shardIds.length := by
+    simpa only [a12, hk, beq_iff_eq] using hr.2.2.2.2.2.2.2.2
+  exact prepClaim_exists hk hm hg ha1 ha8 ht hc (checkD0_prepared_sources hk hw hu) hlw
 
 end ZkFormal.NearV3.Assembly

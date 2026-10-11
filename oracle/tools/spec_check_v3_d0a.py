@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Independent Python checker for domain D0a of near/pv86/chunk-validation/v0
-(spec/near-chunk-validation-v0a.md): RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10.
+(spec/near-chunk-validation-v0a.md): RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10 ∧ A12.
 
 Runs the D0 checker (spec_check_v3.py, unmodified: it is pinned with the live D0
 challenges) and, on an accepting case, the amendments:
@@ -34,7 +34,10 @@ challenges) and, on an accepting case, the amendments:
                          (default Dp0 = 32) items.
   (A11 w.post_rebuild, 2026-10-11, is retired: user decision 2026-10-12.)
 
-Violations are reported joined by "," in the order A1, A2, C0f, A7, A8, A9, A10 (the order
+  A12 c.layout_wf       the epoch shard layout has exactly one boundary account fewer than
+                         shard ids (len(boundary_accounts) + 1 == len(shard_ids)).
+
+Violations are reported joined by "," in the order A1, A2, C0f, A7, A8, A9, A10, A12 (the order
 of the Lean checkD0a checks; Lean reports only the first failing one).
 
 usage: spec_check_v3_d0a.py [--bound B] [--words-bound W] [--depth-bound D] CASE_DIR...
@@ -378,6 +381,13 @@ def a8_ok(claim_b):
     return True
 
 
+def a12_ok(claim_b):
+    """A12: the epoch layout has one boundary account fewer than shard ids."""
+    c = d0.decode_claim(claim_b)
+    L = d0.decode_layout(c['epochs'][0]['layout_raw'])
+    return len(L.boundary) + 1 == len(L.shard_ids)
+
+
 def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
     """(verdict, reason, unfold_bytes, chacha_words, max_path_depth, unfold_bytes_rebuilt,
     unfold_bytes_diff); the last five are None unless the D0 checker accepts."""
@@ -410,6 +420,12 @@ def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
         v.append("e.chacha_words")
     if depth > depth_bound:
         v.append("w.path_depth")
+    try:
+        if not a12_ok(cb):
+            v.append("c.layout_wf")
+    except Exception as e:  # a bug in this checker
+        print("spec_check_v3_d0a: INTERNAL ERROR on %s: %r" % (d, e), file=sys.stderr)
+        return "reject", "INTERNAL ERROR %s: %s" % (type(e).__name__, e), None, None, None, None, None
     if v:
         return "out_of_domain", ",".join(v), u, words, depth, ur, ud
     return "accept", "ok", u, words, depth, ur, ud

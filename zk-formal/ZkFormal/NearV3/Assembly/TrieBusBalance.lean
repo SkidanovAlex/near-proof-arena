@@ -165,19 +165,19 @@ variable {pub : List Fp} (R : RenderBundleV3 pub)
 /-- **`DIGS` balance of a bundle** from the record-level `DigsBal` of its node, head and uniq
 components. -/
 theorem balancedAt_digs (vs : List NodeS3) (hs : List HeadE) (L : List UEnt)
-    (hn : (R ⟨T_NODE, by decide⟩).tf = nodeTraffic3 vs) (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
+    (hn : ExtOf (R ⟨T_NODE, by decide⟩).tf (nodeTraffic3 vs)) (hh : (R ⟨T_HEAD, by decide⟩).tf = headTraffic hs)
     (hu : (R ⟨T_UNIQ, by decide⟩).tf = uniqTraffic (uniqEntries L))
     (hbal : Link3.DigsBal vs hs (uniqEntries L)) : R.BalancedAt B_DIGS := by
   intro m
   rw [R.sum_tables true _ m _ covers_digs_send, R.sum_tables false _ m _ covers_digs_recv,
     pub_digs, pub_digs]
-  have e2 : R.tf 2 = nodeTraffic3 vs := by rw [← hn]; rfl
+  have e2 := R.tf_ext 2 (by decide) hn B_DIGS (by decide) (by decide) (by decide)
   have e3 : R.tf 3 = headTraffic hs := by rw [← hh]; rfl
   have e6 : R.tf 6 = uniqTraffic (uniqEntries L) := by rw [← hu]; rfl
   have hf2 : (List.range 25).filter (fun t => t == 2 || t == 3) = [2, 3] := by decide
   have hf6 : (List.range 25).filter (fun t => t == 6) = [6] := by decide
   rw [hf2, hf6]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e2, e3, e6, sel,
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, e2.1, e2.2, e3, e6, sel,
     ite_true, Bool.false_eq_true, ite_false]
   have hp := (hbal.count_eq m)
   simp only [List.map_append, List.count_append] at hp

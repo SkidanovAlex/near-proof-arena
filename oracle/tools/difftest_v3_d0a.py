@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """3-way differential test for near/pv86/chunk-validation/v0, domain D0a
-(RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10, spec/near-chunk-validation-v0a.md;
+(RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10 ∧ A12, spec/near-chunk-validation-v0a.md;
 A11 w.post_rebuild retired 2026-10-12).
 
 Implementations compared on every case directory (claim.bin, witness.bin, meta.json):
@@ -36,7 +36,7 @@ usage: difftest_v3.py --cases DIR [--lean EXE] [--python FILE] [--report OUT.jso
 import argparse, collections, json, os, subprocess, sys, time
 
 AMENDMENTS = ("c.gas_limit", "w.proof_routing", "e.sched_canonical", "w.unfolded", "c.bw_requests",
-              "e.chacha_words", "w.path_depth")
+              "e.chacha_words", "w.path_depth", "c.layout_wf")
 # measured quantity -> (Lean/Python JSON field, oracle meta.json field)
 MEASURES = {"unfold_bytes": ("unfold", None),
             "unfold_rebuilt": ("unfold_rebuilt", None),

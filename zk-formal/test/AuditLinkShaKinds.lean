@@ -9,11 +9,11 @@ import ZkFormal.NearV3.Assembly.RcptViewCounts
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.srcpKinds
 
-/-- info: 'ZkFormal.NearV3.Assembly.rcptKinds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'ZkFormal.NearV3.Assembly.rcptKinds' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.rcptKinds
 
-/-- info: 'ZkFormal.NearV3.Assembly.rcptKinds_of' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'ZkFormal.NearV3.Assembly.rcptKinds_of' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.rcptKinds_of
 
