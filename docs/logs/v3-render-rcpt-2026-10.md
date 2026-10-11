@@ -206,3 +206,16 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   (iii) global-order lemma `rcptSends3 ls B_MEM = locatedMemSends` (as `view_ids` for RIDS);
   then `native_account_memory_balance` / `counter_balance`.  BND has no such native receipt
   lemma yet.
+
+## 2026-10-11 (round 5)
+
+* **MEM balance** (`Render/HonestBalanceMem.lean:honest_mem_balance`):
+  `((rcptTraffic3 pub (nativeRcptLists pub x)).sends B_MEM ++ (acctV3Traffic as).sends B_MEM).Perm
+   (… .recvs B_MEM ++ (acctV3Traffic as).recvs B_MEM)` under `RcptOk pub x` and
+  `MemOk x replay as`: `accountId` pinned to `accountSlot x.t keys ·.receiptIndex`,
+  `TrieShape x.t`, `WriteTreePair x.t replay`, `replay` agrees with `x.out.trie` on accounts,
+  `nativeAccountViews x.t replay rs = some as`, `|valsOf x.t| < P`.  Pieces: patch invariance
+  of the memory fields (`patch_mem_fields`, the q-patch touches only `xb12..18`), global
+  order (`rcpt_mem_traffic`, `zipIdx_map_index`), `native_receipt_mem_aggregate`,
+  `newchunk_mem_context` (the `applyReceipts` context derived from `RcptOk.run`),
+  `native_account_memory_balance`.
