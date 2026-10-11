@@ -153,7 +153,7 @@ worktree + lane branch per agent; integrate to `agent/v3-assembly`.
 
 | pkg | item | deliverable / file | deps |
 |---|---|---|---|
-| **Rust prover** | 8 | `examples/np-udr-stark-v2/` on `lane/v3-prover`. **Part 1 DONE** (generic v2 prover, differential vs Lean). **Part 2 in progress:** per-table trace generators for `nearAirV3`, each diffed against its Lean render; then the Rust `prepD0`/hint codec and the candidate package. | renders, for part 2 |
+| **Rust prover** | 8 | `examples/np-udr-stark-v2/` on `lane/v3-prover`. **Part 1 DONE** (generic v2 prover, differential vs Lean). **Part 2a/b DONE:** aligned generators for 7 tables (bnd, akey, head, val, uniq, walk, node), byte-identical to Lean (`run-v2.sh` §3). **Part 2c:** witness→entries dumper (`np-lean-entries-v3`) for node/val/head, `npudr v3check` passes on real fixtures (§4); walk/uniq/akey/bnd are the extension point. **Part 3 DONE:** `src/v3/prep.rs` (Hint/Prep codecs, refund body codec), `np-lean-prep-v3` vs `npudr prep-encode` byte-identical on all 64 D0a fixtures (§5). **Part 4:** package skeleton + `formal/` model + **conditional** `NpUdrStarkV2.certificate` (gated on `ExtractV3Stmt`/`RenderV3Stmt`; not ADMITTED). Remaining: `prepClaim`/`prepBody` D0 execution, the Rust v3 `prove` over `nearAirV3`, and the remaining table entry seeds. | renders (for the extraction) |
 | **rcpt-view** | 2 | **DONE** — `RcptV3ViewStmt` for `nearAirV3`: `Assembly/ExtractV3.lean:rcptV3_view_nearAir`. | — |
 | **srcp-render** | 2 | `srcpV3` render (`Rcpt/Render/Srcp/**`) | none |
 | **qv-render** | 2 | `qvV3` render (`Qv/Candidates/**`) | none |
@@ -180,6 +180,10 @@ is on no critical path; its part 2 follows the Lean renders as they land.
 * the full AIR↔semantics composition layer (views, `busCount` decomposition, `HoldsP` assembly, `traceSum`);
 * the domain bounds (`lane/v3-domain-bounds`): `srcpV3` at `maxLog` 22 under A10, and the ChaCha lane row bound at W0.
 * Rust prover part 1 (2026-10-11, see §2): the generic v2 prover/verifier with public segments and `auxGroup`, differential against the deployed Lean v2 verifier.
+* Rust prover parts 2a/2b (2026-10-11): aligned per-table generators for **7** tables (bnd, akey, head, val, uniq, walk, node), each byte-identical to the Lean `Render/Padded*.lean` generator (`run-v2.sh` §3). `node` (186 columns) is the largest table; its generator found and fixed two real bugs via the differential (branch-window `slot`, aligned height).
+* Rust prover part 2c (2026-10-11): witness→entries dumper `np-lean-entries-v3` (`conformance/WitnessEntriesV3.lean`) for node/val/head, `npudr v3check` accepts every `nearAirV3` constraint and `npudr v3render` is byte-identical to `np-lean-render-v3` on real `public-d0a/d0` fixtures (`run-v2.sh` §4).
+* Rust prover part 3 (2026-10-11): `src/v3/prep.rs` (the `Hint`/`Prep`/`SchedPub` byte codecs and the refund body codec); `np-lean-prep-v3` vs `npudr prep-encode` byte-identical on all 64 D0a fixtures; `Hint`/body round-trips (`run-v2.sh` §5).
+* Rust prover part 4 (2026-10-11): the candidate package skeleton (`candidate.toml`, `build-recipe/`, `bench/`, `dependency-locks/`), the `formal/` Lean model `NpUdrStarkV2.Model.verifier = npVerifierP challengeSpecD0a nearAirV3 split prepV3b`, and `NpUdrStarkV2.certificate` — a **conditional** admission certificate (no `sorry`) gated on the open `ExtractV3Stmt`/`RenderV3Stmt`/`AlignedV3Stmt`. Not ADMITTED yet.
 
 **Not done:**
 * the concrete `renderV3` trace, `RenderV3Stmt`, `AlignedV3Stmt` (the padding construction), `FitsV3Stmt` (`honestTrace_fits`);
@@ -187,7 +191,7 @@ is on no critical path; its part 2 follows the Lean renders as they land.
 * `LinkV3Stmt` ⇒ `ExtractV3Stmt` (the join into `GoodV3`);
 * review note: `nearV3_admission_with_extract_b` requires an unconditional `split (join h π) = some (h, π)`, but `HintCodec.split_join` needs `h.length < 2^32`. Weaken the premise to the `Domain ∧ Rel` form that `nearV3_admission` uses, or bound the hint;
 * the remaining byte and receipt-render constraints;
-* Rust prover part 2: per-table trace generators for `nearAirV3` (witness → 25 tables), then the Rust `prepD0`/hint codec and the candidate package (build recipe, formal model of `npVerifierP challengeSpecD0a nearAirV3 split prepV3b`);
+* Rust prover remaining: `prepClaim`/`prepBody` (D0 execution) in Rust, the honest entry seeds for `walk`/`uniq`/`akey`/`bnd`, and the Rust v3 `prove` over `nearAirV3` (`out/prove` is still the inherited v1 surface);
 * any real judge run;
 * `Chacha.Table.maxLog` 21 → 22, which the A9 lane needs. It is held because four candidate families would exceed the 2^36 fingerprint budget; see STATUS-V3-AIR §5.
 
