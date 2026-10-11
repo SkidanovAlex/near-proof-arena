@@ -65,7 +65,7 @@ structure V3RecordsWf (pub : List Fp) (r : V3Records) : Prop where
   uniq : ZkFormal.NearV3.UniqWf r.uniq
   ups : ZkFormal.NearV3.UpsWf r.ups
   lists : ZkFormal.NearV3.RcptV3Wf pub r.lists
-  accts : ZkFormal.NearV3.AcctV3Wf r.accts
+  accts : ZkFormal.NearV3.AcctV3WfAt 19 r.accts
   akeys : ZkFormal.NearV3.AkeyWf r.akeys
   bnds : ZkFormal.NearV3.BndWf r.bnds
   srcp : ZkFormal.NearV3.SrcpWf r.srcp
