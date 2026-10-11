@@ -1,6 +1,6 @@
 import ZkFormal.NearV3.Assembly.LinkSched0
 
-/-- info: 'ZkFormal.NearV3.Assembly.LinkSched0.find_none_vals' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'ZkFormal.NearV3.Assembly.LinkSched0.find_none_vals' depends on axioms: [propext] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.LinkSched0.find_none_vals
 
