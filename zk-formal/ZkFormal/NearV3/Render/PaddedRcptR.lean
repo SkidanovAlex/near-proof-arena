@@ -3,6 +3,8 @@ import ZkFormal.NearV3.Assembly.RcptReceiptRepaired
 import ZkFormal.NearV3.Assembly.RcptCandidateTableTraffic
 import ZkFormal.NearV3.Assembly.RcptCandidateListChain
 import ZkFormal.NearV3.Render.ColAgree
+import ZkFormal.NearV3.Assembly.RcptUnpatchedViews
+import ZkFormal.NearV3.Assembly.RcptNativePeo
 
 /-!
 # Honest generator for the repaired receipt table (`nearAirV3` table 16)
@@ -72,7 +74,7 @@ def rcptTraceNative (pub : List Fp) (x : RcptInput) : Trace Fp :=
   booleanReceiptTrace x.own x.ctx x.lists 22
     (completeReceiptConstants x.ctx x.k x.accountId
       (depositConstants (depositPlanAccount x.steps) (depositAgeConstants (depositPlanPrevious x.lists) x.constants)))
-    pub x.digests
+    pub (nativeDigests x.ctx x.digests)
     (completeReceiptAux x.ctx x.k x.lists x.accountId x.accessId
       (depositFinalAux (depositPlanPrevious x.lists) (depositPlanAccount x.steps) x.fallback))
     (completeReceiptHeaders (depositHeaderAux x.headerFallback))
@@ -84,7 +86,7 @@ theorem rcptTraceNative_local (pub : List Fp) (x : RcptInput) (ok : RcptOk pub x
     TableLocal receiptArithmeticCandidate (rcptTraceNative pub x) 0 pub := by
   obtain ⟨mid, so, steps, hmid, hl, -, -, hL⟩ := booleanReceiptTrace_native_candidate_tableLocal
     ok.prep ok.walk ok.witness x.own x.ctx x.lists ok.source ok.applied ok.wf ok.nonempty ok.named
-    ok.flags ok.run ok.gas x.accountId x.accessId x.constants pub x.digests x.fallback
+    ok.flags ok.run ok.gas x.accountId x.accessId x.constants pub (nativeDigests x.ctx x.digests) x.fallback
     x.headerFallback ok.gasPub ok.price ok.finalPub ok.owner
   have hs : x.steps = steps := by
     unfold RcptInput.steps
@@ -94,17 +96,93 @@ theorem rcptTraceNative_local (pub : List Fp) (x : RcptInput) (ok : RcptOk pub x
   rw [hs]
   exact hL
 
-/-- **Repaired receipt table completeness** at its (aligned) height `2^22`: the honest rows
-satisfy every constraint of `RcptV3.tableR` and have exactly the traffic `rcptTraffic3 pub ls`
-of their list view `ls`. -/
-theorem rcpt_aligned_complete (pub : List Fp) (x : RcptInput) (ok : RcptOk pub x) (t : Nat) :
-    ∃ ls, TableLocal RcptV3.tableR (rcptTraceAligned pub x) t pub ∧
-      TableTraffic RcptV3.interactions (rcptTraceAligned pub x) t pub (rcptTraffic3 pub ls) ∧
-      (rcptTraceAligned pub x).log t % 3 = 1 := by
-  have hL : TableLocal receiptArithmeticCandidate (rcptTraceAligned pub x) t pub :=
-    tableLocal_pin t (rcptTraceNative_local pub x ok)
+/-! ## The native list view -/
+
+/-- The receipt shapes at the head of an entity list, and the rest. -/
+def collectReceipts : List DecodedEntity → List RcptV3Proof.RS × List DecodedEntity
+  | .receipt y :: ds => ((collectReceipts ds).1.cons y, (collectReceipts ds).2)
+  | ds => ([], ds)
+
+def blocksFuel : Nat → List DecodedEntity → List RcptV3Proof.ListBlock
+  | 0, _ => []
+  | n + 1, .header s :: ds => ⟨s, (collectReceipts ds).1⟩ :: blocksFuel n (collectReceipts ds).2
+  | _ + 1, _ => []
+
+/-- Group a header/receipt entity sequence into list blocks. -/
+def blocksOfEntities (ds : List DecodedEntity) : List RcptV3Proof.ListBlock := blocksFuel ds.length ds
+
+/-- **The native list blocks** of the planned receipt layout. -/
+def nativeBlocks (lists : List (List Input)) : List RcptV3Proof.ListBlock :=
+  blocksOfEntities (nativeEntities 0 (entityPlans lists))
+
+/-- **The honest receipt list view**: the native list blocks read on the honest rows. -/
+def nativeRcptLists (pub : List Fp) (x : RcptInput) : RcptV3Vs :=
+  (nativeBlocks x.lists).map (RcptV3Proof.ListBlock.view (rcptTraceNative pub x) 0)
+
+theorem collectReceipts_append (ys : List RcptV3Proof.RS) (rest : List DecodedEntity)
+    (hr : ∀ y ds, rest ≠ .receipt y :: ds) :
+    collectReceipts (ys.map DecodedEntity.receipt ++ rest) = (ys, rest) := by
+  induction ys with
+  | nil =>
+    cases rest with
+    | nil => rfl
+    | cons d ds =>
+      cases d with
+      | header s => rfl
+      | receipt y => exact absurd rfl (hr y ds)
+  | cons y ys ih => simp only [List.map_cons, List.cons_append, collectReceipts, ih]
+
+theorem blocksFuel_entities (bs : List RcptV3Proof.ListBlock) (n : Nat)
+    (hn : (bs.flatMap ListBlock.entities).length ≤ n) :
+    blocksFuel n (bs.flatMap ListBlock.entities) = bs := by
+  induction bs generalizing n with
+  | nil => cases n <;> rfl
+  | cons B bs ih =>
+    obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by simp [ListBlock.entities] at hn; omega⟩
+    have hr : ∀ y ds, bs.flatMap ListBlock.entities ≠ .receipt y :: ds := by
+      intro y ds h
+      cases bs with
+      | nil => simp at h
+      | cons C cs => simp [ListBlock.entities] at h
+    simp only [List.flatMap_cons, ListBlock.entities, List.cons_append, blocksFuel,
+      collectReceipts_append _ _ hr]
+    rw [ih m (by simp [ListBlock.entities] at hn ⊢; omega)]
+
+theorem blocksOfEntities_entities (bs : List RcptV3Proof.ListBlock) :
+    blocksOfEntities (bs.flatMap ListBlock.entities) = bs :=
+  blocksFuel_entities bs _ (Nat.le_refl _)
+
+/-- The extracted list chain of the honest rows is the native one. -/
+theorem native_chain (pub : List Fp) (x : RcptInput) (ok : RcptOk pub x)
+    {bs : List RcptV3Proof.ListBlock} {e : Nat} (hc : RcptV3Proof.ListChain (rcptTraceNative pub x) 0 0 bs e) :
+    bs = nativeBlocks x.lists := by
+  have hL := rcptTraceNative_local pub x ok
+  have he := decoded_native_sequenceU x.own x.ctx x.lists 22 _ pub _ _ _ ok.wf (by decide) hL
+    _ e (ListChain.decoded hc) (ReceiptCandidateProof.ListChain.end_padding hc).2
+  rw [nativeBlocks, ← he, blocksOfEntities_entities]
+
+/-- The flat native view is the honest rows read at the native receipt locations. -/
+theorem nativeRcptLists_flat (pub : List Fp) (x : RcptInput) (ok : RcptOk pub x) :
+    flatR (nativeRcptLists pub x) = locatedViews (rcptTraceNative pub x) x.lists := by
+  have hL := rcptTraceNative_local pub x ok
   obtain ⟨bs, e, hc⟩ := ReceiptCandidateProof.extract_lists hL
-  refine ⟨_, hL, ReceiptCandidateProof.ListChain.view_traffic hL hc, ?_⟩
+  have h := canonical_native_viewsU x.own x.ctx x.lists 22 _ pub _ _ _ ok.wf (by decide) hL bs e hc
+  rw [nativeRcptLists, ← native_chain pub x ok hc]
+  exact h
+
+/-- **Repaired receipt table completeness** at its (aligned) height `2^22`: the honest rows
+(native digest streams `nativeDigests`) satisfy every constraint of `RcptV3.tableR` and have
+exactly the traffic of the native list view `nativeRcptLists pub x`. -/
+theorem rcpt_aligned_complete (pub : List Fp) (x : RcptInput) (ok : RcptOk pub x) (t : Nat) :
+    TableLocal RcptV3.tableR (rcptTraceAligned pub x) t pub ∧
+      TableTraffic RcptV3.interactions (rcptTraceAligned pub x) t pub
+        (rcptTraffic3 pub (nativeRcptLists pub x)) ∧
+      (rcptTraceAligned pub x).log t % 3 = 1 := by
+  have hL0 := rcptTraceNative_local pub x ok
+  obtain ⟨bs, e, hc⟩ := ReceiptCandidateProof.extract_lists hL0
+  have hT := ReceiptCandidateProof.ListChain.view_traffic hL0 hc
+  rw [native_chain pub x ok hc] at hT
+  refine ⟨tableLocal_pin t hL0, tableTraffic_pin t hT, ?_⟩
   have h22 : (rcptTraceNative pub x).log 0 = 22 := rfl
   show (rcptTraceNative pub x).log 0 % 3 = 1
   rw [h22]

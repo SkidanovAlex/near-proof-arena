@@ -104,3 +104,18 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   `ls = nativeRcptViews pub x` (the located-view identity `canonical_native_views` exists
   only for the routing-q-patched trace) and the digest streams `x.digests` instantiated with
   the native hashes (currently a free input; local constraints hold for any choice).
+
+## 2026-10-11 (round 3)
+
+* Merged `origin/lane/v3-a11` (f65d9ece); integration 11b already contained.  After the
+  build-cache incident the full Integration build recompiled 642 modules: **passes** (2,705).
+* **rcpt render now native (no existential).**  `Assembly/RcptUnpatchedViews.lean`: the
+  located-view identity chain ported to the unpatched trace (`native_shape_cellsU`,
+  `native_entity_headU`, `decoded_head_identityU`, `decoded_native_sequenceU`,
+  `canonical_native_viewsU`).  `Render/PaddedRcptR.lean`: trace uses `nativeDigests ctx`
+  (native refund-id / PEO hashes, `x.digests` only as fallback for other states);
+  `nativeBlocks lists` (native header/receipt grouping, `blocksOfEntities`),
+  `nativeRcptLists pub x`, `native_chain` (extracted chain = native blocks),
+  `nativeRcptLists_flat : flatR (nativeRcptLists pub x) = locatedViews (rcptTraceNative pub x) x.lists`,
+  and `rcpt_aligned_complete : TableLocal RcptV3.tableR ∧ TableTraffic … (rcptTraffic3 pub
+  (nativeRcptLists pub x)) ∧ log % 3 = 1`.
