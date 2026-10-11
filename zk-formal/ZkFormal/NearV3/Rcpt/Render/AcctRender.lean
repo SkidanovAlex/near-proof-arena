@@ -258,17 +258,15 @@ end rows
 end AcctV3Local
 
 open AcctV3Local in
-/-- **The honest `acctV3` table is locally legal.** -/
-theorem acctV3_render_local (as : List AcctV) (ok : AcctV3Ok as) (tr : Trace Fp) (t : Nat) (pub : List Fp)
-    (hlog : tr.log t = logOf (16 * as.length))
+/-- **The honest `acctV3` table is locally legal** at any height `≥ 16·|as|` and any cap
+admitting it (the padding rows are all zero). -/
+theorem acctV3_render_local_at (as : List AcctV) (ok : AcctV3Ok as) (tr : Trace Fp) (t : Nat) (pub : List Fp)
+    (cap : Nat) (hlog : 1 ≤ tr.log t ∧ tr.log t ≤ cap) (hHS : 16 * as.length ≤ tr.height t)
     (hcell : ∀ r x, r < tr.height t → x < AcctV3.width → tr.cell t r x = Fp.ofNat (AcctV3Gen.cell as r x)) :
-    TableLocal AcctV3.table tr t pub := by
-  have hHS : 16 * as.length ≤ tr.height t := by simp only [Trace.height, hlog]; exact le_pow_logOf _
+    TableLocal { AcctV3.table with maxLog := cap } tr t pub := by
   have hcell' : ∀ q col, q < tr.height t → col < 16 → tr.cell t q col = Fp.ofNat (AcctV3Gen.cell as q col) :=
     fun q col hq hc => hcell q col hq hc
-  refine ⟨?_, ?_, ?_, ?_⟩
-  · rw [hlog]; exact one_le_logOf _
-  · rw [hlog]; exact logOf_le (by decide) ok.rows
+  refine ⟨hlog.1, hlog.2, ?_, ?_⟩
   · intro r hr e he
     exact constr ok rfl hHS hcell' hr he
   · intro r hr i hi b hb
@@ -282,6 +280,15 @@ theorem acctV3_render_local (as : List AcctV) (ok : AcctV3Ok as) (tr : Trace Fp)
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     simp only [List.mem_cons, List.not_mem_nil, or_false] at hb <;> subst hb <;>
     exact key _ (by simp only [List.mem_cons, List.not_mem_nil, true_or, or_true])
+
+/-- **The honest `acctV3` table is locally legal.** -/
+theorem acctV3_render_local (as : List AcctV) (ok : AcctV3Ok as) (tr : Trace Fp) (t : Nat) (pub : List Fp)
+    (hlog : tr.log t = logOf (16 * as.length))
+    (hcell : ∀ r x, r < tr.height t → x < AcctV3.width → tr.cell t r x = Fp.ofNat (AcctV3Gen.cell as r x)) :
+    TableLocal AcctV3.table tr t pub := by
+  have hHS : 16 * as.length ≤ tr.height t := by simp only [Trace.height, hlog]; exact le_pow_logOf _
+  exact acctV3_render_local_at as ok tr t pub AcctV3.maxLog
+    ⟨by rw [hlog]; exact one_le_logOf _, by rw [hlog]; exact logOf_le (by decide) ok.rows⟩ hHS hcell
 
 namespace AcctV3TrafficR
 open SortLocal (ofNat0 ofNat1)
@@ -402,13 +409,12 @@ end
 end AcctV3TrafficR
 
 open AcctV3TrafficR in
-/-- **The honest `acctV3` table has the traffic of `as`.** -/
-theorem acctV3_render_traffic (as : List AcctV) (ok : AcctV3Ok as) (tr : Trace Fp) (t : Nat) (pub : List Fp)
-    (hlog : tr.log t = logOf (16 * as.length))
+/-- **The honest `acctV3` table has the traffic of `as`** at any height `≥ 16·|as|`, `≤ 2^22`. -/
+theorem acctV3_render_traffic_at (as : List AcctV) (ok : AcctV3Ok as) (tr : Trace Fp) (t : Nat) (pub : List Fp)
+    (hlog : 1 ≤ tr.log t ∧ tr.log t ≤ 22) (hHS : 16 * as.length ≤ tr.height t)
     (hcell : ∀ r x, r < tr.height t → x < AcctV3.width → tr.cell t r x = Fp.ofNat (AcctV3Gen.cell as r x)) :
     TableTraffic AcctV3.interactions tr t pub (acctV3Traffic as) := by
-  have hHS : 16 * as.length ≤ tr.height t := by simp only [Trace.height, hlog]; exact le_pow_logOf _
-  have hL := acctV3_render_local as ok tr t pub hlog hcell
+  have hL := acctV3_render_local_at as ok tr t pub 22 hlog hHS hcell
   have hpad : ∀ b sd q, q < tr.height t → ¬ q < 16 * as.length →
       rowTraffic AcctV3.interactions tr t q pub b sd = [] := by
     intro b sd q hq hn
@@ -431,7 +437,7 @@ theorem acctV3_render_traffic (as : List AcctV) (ok : AcctV3Ok as) (tr : Trace F
           ((if sd then acctV3Sends [as.getD s default] b else acctRecvs [as.getD s default] b).map Msg.toFp) := by
       intro s hs
       have hs' := List.mem_range.1 hs
-      have := AcctV3Proof.segTraffic hL (isSeg ok hHS hcell hs') (by omega) b sd
+      have := AcctV3Proof.segTraffic hL (Nat.le_refl 22) (isSeg ok hHS hcell hs') (by omega) b sd
       rw [List.range'_eq_map_range, List.flatMap_map, ofSeg ok hHS hcell hs'] at this
       exact this
     refine (perm_flatMap_congr hseg).trans (List.Perm.of_eq ?_)
@@ -443,5 +449,15 @@ theorem acctV3_render_traffic (as : List AcctV) (ok : AcctV3Ok as) (tr : Trace F
     · simp only [↓reduceIte]
       rw [← flatMap_getD default as (fun a => acctV3Sends [a] b), ← AcctV3Proof.acctV3Sends_flat]
   exact traffic_of (fun b => hall true b) (fun b => hall false b)
+
+/-- **The honest `acctV3` table has the traffic of `as`.** -/
+theorem acctV3_render_traffic (as : List AcctV) (ok : AcctV3Ok as) (tr : Trace Fp) (t : Nat) (pub : List Fp)
+    (hlog : tr.log t = logOf (16 * as.length))
+    (hcell : ∀ r x, r < tr.height t → x < AcctV3.width → tr.cell t r x = Fp.ofNat (AcctV3Gen.cell as r x)) :
+    TableTraffic AcctV3.interactions tr t pub (acctV3Traffic as) := by
+  have hHS : 16 * as.length ≤ tr.height t := by simp only [Trace.height, hlog]; exact le_pow_logOf _
+  exact acctV3_render_traffic_at as ok tr t pub
+    ⟨by rw [hlog]; exact one_le_logOf _,
+      by rw [hlog]; exact Nat.le_trans (logOf_le (by decide) ok.rows) (by decide)⟩ hHS hcell
 
 end ZkFormal.NearV3.Render

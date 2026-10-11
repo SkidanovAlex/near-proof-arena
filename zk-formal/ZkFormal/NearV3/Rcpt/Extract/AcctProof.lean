@@ -19,6 +19,12 @@ structure AcctV3Wf (as : List AcctV) : Prop where
   v1 : AcctWf as
   rows : 16 * as.length ≤ 2 ^ AcctV3.maxLog
 
+/-- `AcctV3Wf` at an assembly cap: the records of an `acctV3` table of height `≤ 2^cap`
+(`nearAirV3` places `acctV3` at the roll-aligned cap `19`). -/
+structure AcctV3WfAt (cap : Nat) (as : List AcctV) : Prop where
+  v1 : AcctWf as
+  rows : 16 * as.length ≤ 2 ^ cap
+
 def acctV3Sends (as : List AcctV) (b : Nat) : List Msg :=
   if b = B_VBYTES then as.flatMap fun a => emitAt a.k 0 a.pre
   else if b = B_BYTES then as.flatMap fun a => emitAt (msgId K_VPOST a.k) 0 (a.post ++ a.pre.drop 16)
@@ -46,16 +52,16 @@ namespace ZkFormal.NearV3.AcctV3Proof
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Near.Acct
 
-variable {tr : Trace Fp} {pub : List Fp} {tt : Nat}
+variable {tr : Trace Fp} {pub : List Fp} {tt : Nat} {cap : Nat}
 
-theorem con (hL : TableLocal AcctV3.table tr tt pub) {r : Nat} (hr : r < tr.height tt)
+theorem con (hL : TableLocal { AcctV3.table with maxLog := cap } tr tt pub) {r : Nat} (hr : r < tr.height tt)
     {e : Expr} (he : e ∈ Acct.constraints) : e.eval tr tt r pub = 0 :=
   hL.constr r hr e he
 
 theorem nxt {r : Nat} (h : r + 1 < tr.height tt) : (r + 1) % tr.height tt = r + 1 :=
   Nat.mod_eq_of_lt h
 
-variable (hL : TableLocal AcctV3.table tr tt pub)
+variable (hL : TableLocal { AcctV3.table with maxLog := cap } tr tt pub)
 include hL
 
 theorem isBool {r : Nat} (hr : r < tr.height tt) {x : Nat} (hx : x ∈ [act, af, al, lo8, gS]) :
@@ -154,18 +160,18 @@ end ZkFormal.NearV3.AcctV3Proof
 namespace ZkFormal.NearV3.AcctV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Near.Acct
 
-variable {tr : Trace Fp} {pub : List Fp} {tt : Nat}
+variable {tr : Trace Fp} {pub : List Fp} {tt : Nat} {cap : Nat}
 
 def isOne (tr : Trace Fp) (tt : Nat) (x : Nat) (r : Nat) : Bool := decide (tr.cell tt r x = 1)
 
-theorem zero_of_not_one (hL : TableLocal AcctV3.table tr tt pub) {r : Nat}
+theorem zero_of_not_one (hL : TableLocal { AcctV3.table with maxLog := cap } tr tt pub) {r : Nat}
     (hr : r < tr.height tt) {x : Nat} (hx : x ∈ [act, af, al, lo8, gS]) (h : isOne tr tt x r = false) :
     tr.cell tt r x = 0 := by
   rcases isBool hL hr hx with h' | h'
   · exact h'
   · simp [isOne, h'] at h
 
-theorem segFacts (hL : TableLocal AcctV3.table tr tt pub) :
+theorem segFacts (hL : TableLocal { AcctV3.table with maxLog := cap } tr tt pub) :
     SegFacts (tr.height tt) (isOne tr tt act) (isOne tr tt af) (isOne tr tt al) where
   first_act r hr h := by simp only [isOne, decide_eq_true_eq] at h ⊢; exact ((rowFacts hL hr).1 h).1
   last_act r hr h := by simp only [isOne, decide_eq_true_eq] at h ⊢; exact ((rowFacts hL hr).2.1 h).1
@@ -183,7 +189,7 @@ theorem segFacts (hL : TableLocal AcctV3.table tr tt pub) :
   stop h0 ha := by
     simp only [isOne, decide_eq_true_eq] at ha ⊢; exact lastRow hL h0 ha
 
-theorem height_le (hL : TableLocal AcctV3.table tr tt pub) : tr.height tt ≤ 2 ^ 17 := by
+theorem height_le (hL : TableLocal { AcctV3.table with maxLog := cap } tr tt pub) : tr.height tt ≤ 2 ^ cap := by
   have := hL.log_le; unfold Trace.height; exact Nat.pow_le_pow_right (by omega) this
 
 theorem height_pos : 0 < tr.height tt := by unfold Trace.height; exact Nat.two_pow_pos _
@@ -193,7 +199,7 @@ def dsumF (tr : Trace Fp) (tt : Nat) (s : Nat) : Nat → Fp
   | 0 => 0
   | j + 1 => dsumF tr tt s j + (255 - tr.cell tt (s + j) amt)
 
-theorem segInfo (hL : TableLocal AcctV3.table tr tt pub) {s ℓ : Nat}
+theorem segInfo (hL : TableLocal { AcctV3.table with maxLog := cap } tr tt pub) (hcap : cap ≤ 22) {s ℓ : Nat}
     (hseg : IsSeg (isOne tr tt act) (isOne tr tt af) (isOne tr tt al) s ℓ) (hH : s + ℓ ≤ tr.height tt) :
     ℓ = 16 ∧
     (∀ j, j < 16 → tr.cell tt (s + j) act = 1 ∧ tr.cell tt (s + j) i = ((j : Nat) : Fp) ∧
@@ -201,7 +207,8 @@ theorem segInfo (hL : TableLocal AcctV3.table tr tt pub) {s ℓ : Nat}
       tr.cell tt (s + j) lo8 = (if j < 8 then 1 else 0) ∧
       tr.cell tt (s + j) dsum = dsumF tr tt s (j + 1)) ∧
     tr.cell tt (s + 15) dsum * tr.cell tt (s + 15) inv = 1 := by
-  have hP : tr.height tt < P := by have := height_le hL; unfold P; omega
+  have hP : tr.height tt < P := by
+    have := Nat.le_trans (height_le hL) (Nat.pow_le_pow_right (by decide) hcap); unfold P; omega
   obtain ⟨hpos, hfs, hle, hact, hfirst, hlast⟩ := hseg
   have haf : tr.cell tt s af = 1 := by simpa [isOne] using hfs
   have hal : tr.cell tt (s + ℓ - 1) al = 1 := by simpa [isOne] using hle
@@ -309,7 +316,7 @@ end ZkFormal.NearV3.AcctV3Proof
 namespace ZkFormal.NearV3.AcctV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Near.Acct
 
-variable {tr : Trace Fp} {pub : List Fp} {tt : Nat}
+variable {tr : Trace Fp} {pub : List Fp} {tt : Nat} {cap : Nat}
 
 abbrev cN (tr : Trace Fp) (tt : Nat) (q x : Nat) : Nat := (tr.cell tt q x).toNat
 
@@ -411,7 +418,7 @@ end ZkFormal.NearV3.AcctV3Proof
 namespace ZkFormal.NearV3.AcctV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Near.Acct
 
-variable {tr : Trace Fp} {pub : List Fp} {tt : Nat}
+variable {tr : Trace Fp} {pub : List Fp} {tt : Nat} {cap : Nat}
 
 theorem post_list (s : Nat) :
     (acctOfSeg tr tt s).post ++ (acctOfSeg tr tt s).pre.drop 16 = (List.range 72).map (valAt tr tt post s) := by
@@ -430,7 +437,7 @@ end ZkFormal.NearV3.AcctV3Proof
 namespace ZkFormal.NearV3.AcctV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Near.Acct
 
-variable {tr : Trace Fp} {pub : List Fp} {tt : Nat}
+variable {tr : Trace Fp} {pub : List Fp} {tt : Nat} {cap : Nat}
 
 theorem multNat1 (e : Expr) (q : Nat) :
     Interaction.multNat.go tr tt q pub [e] 0 = if e.eval tr tt q pub = 1 then 1 else 0 := by
@@ -513,15 +520,15 @@ end ZkFormal.NearV3.AcctV3Proof
 namespace ZkFormal.NearV3.AcctV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Near.Acct
 
-variable {tr : Trace Fp} {pub : List Fp} {tt : Nat}
+variable {tr : Trace Fp} {pub : List Fp} {tt : Nat} {cap : Nat}
 
 /-- One segment's traffic, up to permutation. -/
-theorem segTraffic (hL : TableLocal AcctV3.table tr tt pub) {s ℓ : Nat}
+theorem segTraffic (hL : TableLocal { AcctV3.table with maxLog := cap } tr tt pub) (hcap : cap ≤ 22) {s ℓ : Nat}
     (hseg : IsSeg (isOne tr tt act) (isOne tr tt af) (isOne tr tt al) s ℓ) (hH : s + ℓ ≤ tr.height tt)
     (b : Nat) (sd : Bool) :
     ((List.range' s ℓ).flatMap fun q => rowTraffic AcctV3.interactions tr tt q pub b sd).Perm
       ((if sd then acctV3Sends [acctOfSeg tr tt s] b else acctRecvs [acctOfSeg tr tt s] b).map Msg.toFp) := by
-  obtain ⟨h16, hrow, -⟩ := segInfo hL hseg hH
+  obtain ⟨h16, hrow, -⟩ := segInfo hL hcap hseg hH
   subst h16
   have hfs : tr.cell tt s af = 1 := by have := hseg.2.1; simpa [isOne] using this
   have hgS : ∀ j, j < 16 → tr.cell tt (s + j) gS = if j < 8 then 1 else 0 := fun j hj => by
@@ -654,7 +661,7 @@ end ZkFormal.NearV3.AcctV3Proof
 namespace ZkFormal.NearV3.AcctV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Near.Acct
 
-variable {tr : Trace Fp} {pub : List Fp} {tt : Nat}
+variable {tr : Trace Fp} {pub : List Fp} {tt : Nat} {cap : Nat}
 
 theorem dsumF_zero (s : Nat) (h : ∀ j, j < 16 → tr.cell tt (s + j) amt = 255) :
     ∀ j, j ≤ 16 → dsumF tr tt s j = 0 := by
@@ -663,12 +670,12 @@ theorem dsumF_zero (s : Nat) (h : ∀ j, j < 16 → tr.cell tt (s + j) amt = 255
   | zero => intro _; rfl
   | succ j ih => intro hj; simp only [dsumF]; rw [ih (by omega), h j (by omega)]; grind
 
-theorem notMax (hL : TableLocal AcctV3.table tr tt pub) {s ℓ : Nat}
+theorem notMax (hL : TableLocal { AcctV3.table with maxLog := cap } tr tt pub) (hcap : cap ≤ 22) {s ℓ : Nat}
     (hseg : IsSeg (isOne tr tt act) (isOne tr tt af) (isOne tr tt al) s ℓ) (hH : s + ℓ ≤ tr.height tt) :
     (∀ j, j < 16 → (acctOfSeg tr tt s).pre.getD j 0 < 256) →
       ∃ j, j < 16 ∧ (acctOfSeg tr tt s).pre.getD j 0 ≠ 255 := by
   intro _
-  obtain ⟨h16, hrow, hinv⟩ := segInfo hL hseg hH
+  obtain ⟨h16, hrow, hinv⟩ := segInfo hL hcap hseg hH
   refine Classical.byContradiction fun hne => ?_
   have hall : ∀ j, j < 16 → tr.cell tt (s + j) amt = 255 := by
     intro j hj
@@ -686,9 +693,10 @@ end ZkFormal.NearV3.AcctV3Proof
 namespace ZkFormal.NearV3
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Acct AcctV3Proof
 
-/-- **The `acctV3` view.** -/
-theorem acctV3_view : AcctV3ViewStmt := by
-  intro tr pub tt hL
+/-- **The `acctV3` view at a cap** (`cap ≤ 22`). -/
+theorem acctV3_view_at (cap : Nat) (hcap : cap ≤ 22) (tr : Trace Fp) (pub : List Fp) (tt : Nat)
+    (hL : TableLocal { AcctV3.table with maxLog := cap } tr tt pub) :
+    ∃ as, AcctV3WfAt cap as ∧ TableTraffic AcctV3.interactions tr tt pub (acctV3Traffic as) := by
   obtain ⟨segs, hc, hend, hall, hpad⟩ := segments_of (segFacts hL) height_pos
   have hH : ∀ p ∈ segs, p.1 + p.2 ≤ tr.height tt := fun p hp => by
     have := seg_le_end segs 0 hc p hp; omega
@@ -704,7 +712,7 @@ theorem acctV3_view : AcctV3ViewStmt := by
     simp only [rowTraffic, AcctV3.interactions, AcctV3.vpre, Acct.vbytes, List.flatMap_append, List.flatMap_cons,
       List.flatMap_nil, Dsl.send, Dsl.recv, Interaction.multNat, multNat1, eval_c, ha, hf, hg]
     simp
-  have h16 : ∀ p ∈ segs, p.2 = 16 := fun p hp => (segInfo hL (hall p hp) (hH p hp)).1
+  have h16 : ∀ p ∈ segs, p.2 = 16 := fun p hp => (segInfo hL hcap (hall p hp) (hH p hp)).1
   refine ⟨segs.map fun p => acctOfSeg tr tt p.1, ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩, fun b m => ⟨?_, ?_⟩⟩
   · intro h
     rw [List.map_eq_nil_iff] at h
@@ -719,7 +727,7 @@ theorem acctV3_view : AcctV3ViewStmt := by
   · intro a ha
     simp only [List.mem_map] at ha
     obtain ⟨p, hp, rfl⟩ := ha
-    exact notMax hL (hall p hp) (hH p hp)
+    exact notMax hL hcap (hall p hp) (hH p hp)
   · intro a ha x hx
     simp only [List.mem_map] at ha
     obtain ⟨p, -, rfl⟩ := ha
@@ -746,18 +754,24 @@ theorem acctV3_view : AcctV3ViewStmt := by
       | cons _ l ih => simp only [List.map_cons, List.sum_cons, ih, List.length_cons]; omega
     rw [e] at hsum
     have := height_le hL
-    simp only [AcctV3.maxLog]; omega
+    omega
   · simp only [acctV3Traffic, tableBusCount_eq]
     rw [flatMap_rows_segs _ segs _ hc hend (hpadT b true)]
     refine List.Perm.count_eq ?_ m
     rw [acctV3Sends_flat, List.map_flatMap, List.flatMap_map]
     exact perm_flatMap_congr _ _ _ (fun p hp => by
-      have := segTraffic hL (hall p hp) (hH p hp) b true; simpa using this)
+      have := segTraffic hL hcap (hall p hp) (hH p hp) b true; simpa using this)
   · simp only [acctV3Traffic, tableBusCount_eq]
     rw [flatMap_rows_segs _ segs _ hc hend (hpadT b false)]
     refine List.Perm.count_eq ?_ m
     rw [acctRecvs_flat, List.map_flatMap, List.flatMap_map]
     exact perm_flatMap_congr _ _ _ (fun p hp => by
-      have := segTraffic hL (hall p hp) (hH p hp) b false; simpa using this)
+      have := segTraffic hL hcap (hall p hp) (hH p hp) b false; simpa using this)
+
+/-- **The `acctV3` view** (at the table's own cap `17`). -/
+theorem acctV3_view : AcctV3ViewStmt := by
+  intro tr pub tt hL
+  obtain ⟨as, hw, ht⟩ := acctV3_view_at AcctV3.maxLog (by decide) tr pub tt hL
+  exact ⟨as, ⟨hw.v1, hw.rows⟩, ht⟩
 
 end ZkFormal.NearV3
