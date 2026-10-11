@@ -136,3 +136,7 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   native values the candidate balance lemmas speak about, e.g. `nativeLedgerMemWrites`,
   `NativeAccessKeyProviders`, `boundaryEntry`).  SRC needs the prepared public segment
   (`NativeSourceFour.balance`) bound to `srcpTraffic (blocksOfProofs xs)`.
+* **RIDS balance** (`honest_rids_balance`): `(rcptTraffic3 pub (nativeRcptLists pub x)).sends
+  B_RIDS = (sortTraffic (NativeSortIds.input applied)).recvs B_RIDS`, via the unpatched
+  `located_idsU` (`native_rid_slice`) and `NativeReceiptIdBytes.view_ids`.
+* Final: full Integration 2,933 jobs passes; audits pass; pin-check passes.

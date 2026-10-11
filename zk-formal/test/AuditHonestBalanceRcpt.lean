@@ -13,3 +13,7 @@ import ZkFormal.NearV3.Render.HonestBalanceRcpt
 /-- info: 'ZkFormal.NearV3.Render.honest_size_balance' depends on axioms: [propext] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.honest_size_balance
+
+/-- info: 'ZkFormal.NearV3.Assembly.RcptSkeleton.honest_rids_balance' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.RcptSkeleton.honest_rids_balance

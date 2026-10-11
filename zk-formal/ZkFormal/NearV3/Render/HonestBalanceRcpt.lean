@@ -5,6 +5,8 @@ import ZkFormal.NearV3.Assembly.QueueShardBalance
 import ZkFormal.NearV3.Render.PaddedRcpt
 import ZkFormal.NearV3.Render.PaddedSrcp
 import ZkFormal.NearV3.Render.PaddedTrie
+import ZkFormal.NearV3.Render.PaddedRcptR
+import ZkFormal.NearV3.Candidates.NativeReceiptIdBytes
 
 /-!
 # Honest bus balance on the receipt-side buses (trace-free, over the renders' native lists)
@@ -14,7 +16,9 @@ permutation of message lists, over the same native inputs the renders take.
 
 * `QVC` (queue-value provider counters; used only by `qvV3`): `qvNative_qvc_balance`;
 * `QSH` (shard bytes and counts; used only by `qvV3`): `qvNative_qsh_balance`;
-* `SIZE` (`nodeV3`, `valV3`, `srcpV3` → `sizeV3`): `honest_size_balance` with `honestSizeV`.
+* `SIZE` (`nodeV3`, `valV3`, `srcpV3` → `sizeV3`): `honest_size_balance` with `honestSizeV`;
+* `RIDS` (`rcptV3` → `sortV3`): `honest_rids_balance` — the honest receipt views carry the
+  native receipt ids (`located_idsU`), so their sends are the native sort input's receives.
 -/
 
 namespace ZkFormal.NearV3.Render
@@ -84,3 +88,44 @@ theorem honest_size_balance (vs : List NodeS3) (es : List ValE) (bs : List SrcpB
   simp +decide [nodeTraffic3, nodeSends3, valTraffic, valSends, srcpTraffic, sizeTraffic, honestSizeV]
 
 end ZkFormal.NearV3.Render
+
+namespace ZkFormal.NearV3.Assembly.RcptSkeleton
+open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near RcptV3 RcptV3Proof
+
+/-- The located views of the plain (unpatched) honest trace carry the native receipt ids. -/
+theorem located_idsU (own : Nat) (ctx : ApplyCtx) (lists : List (List Input))
+    (log : Nat) (constants : ReceiptPlan→Nat→Fp) (pub : List Fp)
+    (digests : ReceiptPlan→Nat→List Fp) (fallback : ReceiptPlan→Coord→Nat→Fp)
+    (headerFallback : ListPlan→Coord→Nat→Fp)
+    (hw : ∀ xs ∈ lists, ∀ x ∈ xs, x.receipt.wf = true) :
+    (locatedViews (booleanReceiptTrace own ctx lists log constants pub digests fallback headerFallback)
+      lists).map (fun r => r.rid) =
+      lists.flatten.map (fun x => x.receipt.receiptId.map UInt8.toNat) := by
+  have horder : (receiptLocations 0 (entityPlans lists)).map (fun x => x.2.input) = lists.flatten := by
+    rw [receiptLocations_inputs, entityPlans_inputs]
+  rw [← horder, List.map_map]
+  simp only [locatedViews, List.map_map]
+  apply List.map_congr_left
+  intro x hx
+  obtain ⟨before, after, hb, hoff⟩ := native_locations_block lists x.1 x.2 hx
+  have hi : x.2.input ∈ lists.flatten := by
+    rw [← horder]; exact List.mem_map.mpr ⟨x, hx, rfl⟩
+  obtain ⟨xs, hxs, hix⟩ := List.mem_flatten.mp hi
+  have hid : x.2.input.receipt.receiptId.length = 32 := by
+    have h := hw xs hxs x.2.input hix
+    simp only [Receipt.wf, Bool.and_eq_true, beq_iff_eq] at h
+    grind only
+  dsimp only [Function.comp_def]
+  rw [hoff]
+  exact native_rid_slice own ctx lists log constants pub digests fallback headerFallback x.2 before after hb hid
+
+/-- **RIDS balances**: the honest receipt table's id messages are exactly the honest sort
+table's receives for the applied receipts in order. -/
+theorem honest_rids_balance (pub : List Fp) (x : RcptInput) (ok : RcptOk pub x) :
+    (rcptTraffic3 pub (nativeRcptLists pub x)).sends B_RIDS =
+      (sortTraffic (Candidates.NativeSortIds.input (x.lists.flatten.map Input.receipt))).recvs B_RIDS := by
+  apply Candidates.NativeReceiptIdBytes.view_ids
+  rw [nativeRcptLists_flat pub x ok, List.map_map]
+  exact located_idsU x.own x.ctx x.lists 22 _ pub _ _ _ ok.wf
+
+end ZkFormal.NearV3.Assembly.RcptSkeleton
