@@ -28,3 +28,16 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   21/20/20 cannot hold them. chacha/rng are ready at 22; shuffle completeness *and* soundness
   (`Shuffle.Contract`, `hH : height ≤ 2^20`) are 20-bit and need generalising first.
   Audit `test/AuditPaddedChacha.lean`.
+* **mrk (table 23)** — `Render/PaddedMrk.lean`: `mrkTraceAligned os` (array-backed physical
+  Merkle renderer over the native outcome levels, height `2^19`, cap 19 ≡ 1);
+  `mrk_aligned_complete : 1 ≤ |os| ≤ 4481 → public count bytes → TableLocal MerklePublic.table …
+  T_MRK ∧ TableTraffic … (mrkTraffic (aliasPublic pub) (generatedView …)) ∧ 19 % 3 = 1`.
+  **Finding:** `os = []` is not covered — `nearAirV3` uses `MerklePublic.table` (nonempty
+  tree); `MerkleEmpty.table` (width 60) is the repaired variant but is not in `nearAirV3`.
+* **sort (table 24)** — `Render/PaddedSort.lean`: `sortTraceAligned S` at
+  `padLog22 (logOf (32·|S|))`; `sort_aligned_complete` (cap 18, ≤ 2048 ids, height ≤ 16),
+  `sort_aligned_complete19` (`maxLog := 19`, ≤ 8192 ids), receipt-level
+  `sort_receipts_aligned_complete19` with traffic `sortTraffic (input rs)`.
+  **Findings:** cap 18 must become 19 for the receipt bound; empty receipts are impossible
+  for the old `Sort.constraints` in `nearAirV3` (`SortEmpty.old_empty_impossible`).
+  Audit `test/AuditPaddedMrkSort.lean`.
