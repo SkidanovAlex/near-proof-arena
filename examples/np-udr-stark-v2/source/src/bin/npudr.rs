@@ -33,6 +33,11 @@
 //! * `npudr gen-max <out_dir> [--target-bytes N] [--n N] [--kids K] [--eps 0|1]`
 //!   — synthesize a maximum-size in-domain case (`npudr::near::genmax`):
 //!   `request.bin`, `witness.bin`, `expected_claim.bin`.
+//! * `npudr prep-encode <prep.json> <out.bin>` — parse a Lean `np-lean-prep-v3`
+//!   `prep_json` dump and write `v3::prep::Prep.encode` (part 3 differential).
+//! * `npudr prep-hint <hint.bin> <out.bin>` — decode+re-encode the clear `Hint`
+//!   (`v3::prep::Hint`); `npudr prep-body <refunds_enc.bin> <out.bin>` — the
+//!   `decodeBody`/`bodyOf` refund codec round trip.
 use std::time::Instant;
 
 use npudr::air::Air;
@@ -188,6 +193,53 @@ fn main() {
                 std::fs::read_to_string(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
             let tab = npudr::v3::render(&a[2], &j).unwrap_or_else(|e| die(&e));
             std::fs::write(&a[4], tab.dump()).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
+        }
+        Some("prep-encode") => {
+            // `npudr prep-encode <prep.json> <out.bin>`: parse the Lean-dumped
+            // `Prep` (`prep_json`, or a bare object) and write `Prep.encode`.
+            if a.len() != 4 {
+                die("usage: npudr prep-encode <prep.json> <out.bin>");
+            }
+            let txt =
+                std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let val: serde_json::Value =
+                serde_json::from_str(&txt).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let pj = val.get("prep_json").cloned().unwrap_or(val);
+            let p: npudr::v3::prep::Prep =
+                serde_json::from_value(pj).unwrap_or_else(|e| die(&format!("prep_json: {e}")));
+            std::fs::write(&a[3], p.encode()).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+        }
+        Some("prep-hint") => {
+            // `npudr prep-hint <hint.bin> <out.bin>`: decode then re-encode the
+            // clear `Hint` (`ZkFormal.NearV3.Assembly.Hint`).  The bytes must
+            // equal the input.
+            if a.len() != 4 {
+                die("usage: npudr prep-hint <hint.bin> <out.bin>");
+            }
+            let raw = std::fs::read(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let h = npudr::v3::prep::Hint::decode(&raw).unwrap_or_else(|e| die(&e));
+            std::fs::write(&a[3], h.encode()).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+        }
+        Some("prep-body") => {
+            // `npudr prep-body <refunds_enc.bin> <out.bin>`: decode `encodeReceipts rs`,
+            // rebuild `bodyOf rs = u32 0 ‖ encodeReceipts rs`, then check
+            // `decodeBody (bodyOf rs) = rs` and write `encodeReceipts rs` back.
+            if a.len() != 4 {
+                die("usage: npudr prep-body <refunds_enc.bin> <out.bin>");
+            }
+            use npudr::v3::prep::{body_of, decode_body, decode_receipts};
+            let raw = std::fs::read(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let (rs, used) = decode_receipts(&raw).unwrap_or_else(|e| die(&e));
+            if used != raw.len() {
+                die("prep-body: trailing bytes in refunds");
+            }
+            let body = body_of(&rs);
+            let back = decode_body(&body).unwrap_or_else(|e| die(&e));
+            if back != rs {
+                die("prep-body: decodeBody(bodyOf rs) != rs");
+            }
+            std::fs::write(&a[3], npudr::near::spec::encode_receipts(&rs))
+                .unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
         }
         Some("v3check") => {
             // local constraints of the rendered table against its nearAirV3 table

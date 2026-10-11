@@ -30,7 +30,7 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
 | `nearAirV3` | read from `np-lean-export-v3` (1,639,407 B, sha256 `73bcf1dd…`), validated, per-table layout equal to Lean's at g = 1, 2, 3. |
 | trace generation for `nearAirV3` (witness → 25 tables) | **partial**: aligned generators for 7 tables (bnd, akey, head, val, uniq, walk, **node**) in `src/v3/`, byte-identical to the Lean `Render/Padded*.lean` generators (`conformance/run-v2.sh` §3). node is the largest/most complex table. |
 | witness → per-table entries (part 2c) | **partial**: `conformance/WitnessEntriesV3.lean` → `np-lean-entries-v3 <case> [<table>]` runs the proved D0a extraction (`checkD0a B0` + the reference `trace`) on a real fixture and dumps the honest entry lists for **node** (`initializeList 0 (forestNodes 0 0 0 ts)`), **val** (`seedValuesFrom 0 (forestBytes ts)`) and **head** (`traceHeads 0 0 pairs`); `src/v3/entries.rs` + `npudr v3entries` read them. `conformance/run-v2.sh` §4: `npudr v3check` accepts every constraint and `npudr v3render` is byte-identical to `np-lean-render-v3` on the real-fixture node/val/head entries. `walk`, `uniq`, `akey`, `bnd` need the query/receipt allocation layers (extension point, below). |
-| `prepD0`/hint codec in Rust, candidate package, build recipe, `formal/` model | **not started**. |
+| `prepD0`/`Hint` codec in Rust (part 3) | **partial**: `src/v3/prep.rs` mirrors `PrepD0.lean`'s byte codecs — `Hint` (`u32 n ‖ borshBytes body`), `PrepHdr`/`SrcList`/`SchedPub`/`Prep` `encode()`, the `encList`/`encOpt`/`concatAll`/`borshBytes` helpers, and the refund body codec (`decode_body`/`body_of`, `pRefund`). `conformance/PrepV3.lean` (`np-lean-prep-v3`) runs the proved `checkD0a B0` + `hintOf` + `prepD0` on a real fixture and dumps `hint`/`prep`/`refunds_enc`/`prep_json`; `npudr prep-encode` re-encodes `prep_json` byte-identically to the Lean `Prep.encode`, and the `Hint`/body codecs round-trip (`run-v2.sh` §5, all 64 D0a fixtures). `prepClaim`/`prepBody` (D0 execution) are not ported. |
 
 ## Verification
 
@@ -39,7 +39,11 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
   rejected under every other g, tampered claims, hostile counts/offsets
   rejected by `pubFit`, prover refuses an unbalanced claim).
 * `conformance/run-v2.sh` §3 checks every aligned generator against `np-lean-render-v3` on the random samplers; §4 runs `np-lean-entries-v3` on real `public-d0a/d0` fixtures and checks that node/val/head entries from a real witness pass `npudr v3check` and render byte-identically to `np-lean-render-v3`.
-* `conformance/run-v2.sh` (166 checks, all pass on 2026-10-10): the deployed
+* `conformance/run-v2.sh` §5 (part 3): `np-lean-prep-v3` on the `public-d0a/d0`
+  fixtures (all 64 accept `checkD0a B0`) emits `hint`/`prep`/`refunds_enc`/
+  `prep_json`; `npudr prep-encode` reproduces `Prep.encode` byte for byte and the
+  `Hint`/refund-body codecs round-trip.
+* `conformance/run-v2.sh` (166 checks + part 3, all pass on 2026-10-11): the deployed
   Lean `ZkFormal.V2.verifierP Fp Fp8 AP (pg g)` (`np-lean-verify-v2`) accepts the
   Rust v2 toy proofs at g = 1, 2, 3 and logs 4/6/10, rejects them under every
   other `auxGroup`, rejects 9 proof mutations and 5 claim mutations each, and the

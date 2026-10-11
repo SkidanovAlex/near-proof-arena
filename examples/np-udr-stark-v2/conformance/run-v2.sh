@@ -36,7 +36,7 @@ bad()  { echo "FAIL  $*"; fail=1; }
 
 echo "== build"
 (cd "$src" && $HEAVY cargo build --release -q) || { echo "cargo build failed"; exit 2; }
-(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3 np-lean-entries-v3) || { echo "lake build failed"; exit 2; }
+(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3 np-lean-entries-v3 np-lean-prep-v3) || { echo "lake build failed"; exit 2; }
 npudr="$src/target/release/npudr"
 lv="$here/.lake/build/bin/np-lean-verify-v2"
 le="$here/.lake/build/bin/np-lean-export-v3"
@@ -179,6 +179,47 @@ for case in $(ls "$fx" | head -${ENTRIES_CASES:-5}); do
 done
 [ $ncase -gt 0 ] || bad "no fixture case produced honest entries"
 echo "   ($ncase honest entry lists checked, $nrendered byte-compared against Lean)"
+
+echo "== prepD0 / Hint codec (part 3): Rust re-encode vs Lean np-lean-prep-v3"
+# For each real D0a fixture: `np-lean-prep-v3` requires `checkD0a B0` and dumps
+# `hint`, `prep`, `refunds_enc` and `prep_json`; the Rust `Prep.encode` of
+# `prep_json` must reproduce `prep` byte for byte, the `Hint` codec must
+# round-trip the Lean hint bytes, and `decodeBody(bodyOf refunds) = refunds`.
+lp="$here/.lake/build/bin/np-lean-prep-v3"
+pd="$out/prep"; mkdir -p "$pd"
+nprep=0
+for case in $(ls "$fx" | head -${PREP_CASES:-64}); do
+  d="$fx/$case"
+  [ -f "$d/claim.bin" ] && [ -f "$d/witness.bin" ] || continue
+  j="$pd/$case.json"
+  if ! $HEAVY "$lp" "$d" > "$j" 2>"$j.err"; then bad "$case prep: np-lean-prep-v3 failed"; cat "$j.err"; continue; fi
+  nprep=$((nprep + 1))
+  # extract the Lean `prep`, `hint` and `refunds_enc` hex fields once
+  python3 - "$j" "$j.prep.bin" "$j.hint.bin" "$j.refunds.bin" <<'PY'
+import json, sys
+j = json.load(open(sys.argv[1]))
+for key, path in (("prep", sys.argv[2]), ("hint", sys.argv[3]), ("refunds_enc", sys.argv[4])):
+    open(path, "wb").write(bytes.fromhex(j[key]))
+PY
+  # Rust `Prep.encode` of the Lean `prep_json` vs the Lean `prep` bytes
+  if ! "$npudr" prep-encode "$j" "$j.rust.bin" 2>"$j.rust.err"; then
+    bad "$case prep: npudr prep-encode failed"; cat "$j.rust.err"; continue
+  fi
+  if cmp -s "$j.prep.bin" "$j.rust.bin"; then pass "$case prep: Prep.encode byte-identical ($(stat -c %s "$j.rust.bin") B)"
+  else bad "$case prep: Prep.encode differs"; fi
+  # Hint codec round-trips the Lean hint bytes
+  if "$npudr" prep-hint "$j.hint.bin" "$j.hint.rt.bin" 2>"$j.hint.err" && \
+     cmp -s "$j.hint.bin" "$j.hint.rt.bin"; then
+    pass "$case prep: Hint codec round-trips ($(stat -c %s "$j.hint.bin") B)"
+  else bad "$case prep: Hint codec round-trip failed"; cat "$j.hint.err"; fi
+  # refund body codec: decodeBody(bodyOf refunds) = refunds
+  if "$npudr" prep-body "$j.refunds.bin" "$j.refunds.rt.bin" 2>"$j.body.err" && \
+     cmp -s "$j.refunds.bin" "$j.refunds.rt.bin"; then
+    pass "$case prep: refund body codec round-trips"
+  else bad "$case prep: refund body codec failed"; cat "$j.body.err"; fi
+done
+[ $nprep -gt 0 ] || bad "no fixture case produced a prepared statement"
+echo "   ($nprep prepared statements re-encoded byte-for-byte)"
 
 echo
 if [ $fail -eq 0 ]; then echo "ALL PASS"; else echo "SOME FAILED"; fi

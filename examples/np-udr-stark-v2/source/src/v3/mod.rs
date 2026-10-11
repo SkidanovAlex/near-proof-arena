@@ -21,6 +21,7 @@ use crate::field::{F, P};
 
 pub mod entries;
 pub mod node;
+pub mod prep;
 pub mod sample;
 
 /// A generated table: `2^log` rows of `width` canonical cells, row-major.
