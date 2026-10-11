@@ -277,11 +277,16 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
     `simp` set on record rows also explodes — `codec_int` uses a curated `simp only` list with explicit
     `Nat.reduce*` simprocs and `reg_i` literal lemmas, then small closers; (3) keep `apRv/bigRv/cbv/a1v/MA`
     folded (their decidability instances do not rewrite), with `cbv_le`, `bigRv_le`, `a1v_def` facts.
-  * Proved (compiled): `CodecHeader.hdr_int` (header rows p < 4, ~6 min), `CodecMod` (`isZ_mod`,
-    `nzb_mod`, `wt_mod`, `wt_off`, `gate_zero`: the modular constraints over Fp).
-  * Written, building: `CodecRecInt.rec_in_int` (21 record kinds inside a field, ~70 s each),
-    `CodecEndInt` (`rec_fend_int`, `rec_end_int`, `rec_last_int`, `hdr_last_int`, `hash_int`,
-    `hash_last_int`, `ash_int`, `ash_last_int`).
+  * **Integer pass done for every row kind (compiled, audited `test/AuditCodecRows.lean`):**
+    `CodecHeader.hdr_int` (header p < 4), `CodecRecInt.rec_in_int` (21 record kinds inside a field,
+    ~21 min), `CodecEndInt` (`rec_fend_int` field end, `rec_end_int` record end → next record,
+    `rec_last_int` last record → hash 0, `hdr_last_int` header 4 → record 0, `hash_int`, `hash_last_int`,
+    `ash_int`, `ash_last_int` → next instance header, `ash_pad_int` → padding). The forwarding cells of
+    the record end are unconditional, multiplied by `zt0 I = [τ = 0]`.
+    Modular constraints over Fp: `CodecMod` (`isZ_mod`, `nzb_mod`, `wt_mod`, `wt_off`, `gate_zero`).
+    Each integer lemma states its explicit row premises (byte bounds, `bpr = pres·bpo` on id bytes,
+    accumulator recurrences, `apost = afin` and `al·base ≤ a1` at the record end, `ft < 2^24`,
+    `hasC = false → apR = bigR = 0`).
   * Next: per-kind modular instantiations; trace-level `local_at` per kind (cells `< P`); codec row
     descriptors + `table_local` (copy of `Ssd.table_local` with `codecPad`); generation from the native
     blocks (`NativeBlock`: τ, `prior.isSome`, `vid`, `grants`, `forwarded`; prior allowances via the
