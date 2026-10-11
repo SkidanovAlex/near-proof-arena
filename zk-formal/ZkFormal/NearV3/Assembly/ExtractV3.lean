@@ -88,7 +88,7 @@ theorem nearTablesFull_eq : nearAirV3.tables =
      ZkFormal.NearV3.RcptV3.table, {ZkFormal.NearV3.AcctV3.table with maxLog := 19}, ZkFormal.NearV3.AkeyV3.table,
      ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.table, {ZkFormal.NearV3.SizeV3.table with maxLog := 4},
      ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
-     ZkFormal.NearV3.Candidates.MerklePublic.table, {ZkFormal.Near.Sort.table with maxLog := 18}] := rfl
+     ZkFormal.NearV3.Candidates.MerkleEmpty.table, sortTableV3] := rfl
 
 /-- The `nearAirV3` table list is definitionally `nearTablesFull`; the index lemmas are
 `rfl` on `NearAir.nearAirV3_tables`. -/
@@ -113,9 +113,9 @@ theorem getElem?_srcp : nearAirV3.tables[T_SRCP]? = some ZkFormal.NearV3.SrcpV3.
 theorem getElem?_size : nearAirV3.tables[T_SIZE]? =
     some {ZkFormal.NearV3.SizeV3.table with maxLog := 4} := rfl
 theorem getElem?_mrk : nearAirV3.tables[T_MRK]? =
-    some ZkFormal.NearV3.Candidates.MerklePublic.table := rfl
+    some ZkFormal.NearV3.Candidates.MerkleEmpty.table := rfl
 theorem getElem?_sort : nearAirV3.tables[T_SORT]? =
-    some {ZkFormal.Near.Sort.table with maxLog := 18} := rfl
+    some sortTableV3 := rfl
 
 /-! ## `TableLocal` of each table from `HoldsP` (the inputs the views consume) -/
 

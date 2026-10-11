@@ -68,3 +68,24 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   `ProcBoundaryLocal.away_key`) — only one run with `tau = 0` is proved complete;
   `Sched.Codec.table` — the only codec completeness is for the repaired
   `ProcPriorCodecActual.table`, which retires some `cKind`/`cRec` constraints.
+
+## 2026-10-11 (package 2, from the lead: make 7–15, 23, 24 completable without weakening soundness)
+
+* Merged `origin/integration/v3-20261011b` (fast-forward to 9bb1a295).
+* **Task 1 — empty receipts.** D0a does not exclude zero receipts (`RelD0a` = RelD0 ∧ A1 A2
+  canon0f A7–A11, none bounds the receipt count below), so the repaired tables are adopted:
+  * `Assembly/NearAir.lean`: table 23 `MerkleEmpty.table` (width 60, maxLog 19), table 24
+    `sortTableV3 := {SortEmpty.table with maxLog := 19}` (≤ 8192 ids need the aligned height 19).
+  * Soundness: `LinkV3.mrkView` now gives `MrkWfE pub e v` (empty: public count 0 and zero root
+    bytes, no traffic; else v1 `MrkWf`) with traffic `mrkTrafficE` on `MerkleEmpty.table`
+    (`MerkleEmpty.empty_view` / `nonempty_view`); `V3Records` gains `mrkE : Bool`.
+    `Candidates/SortEmptyCap.lean`: `sortV3_empty_or_old` (silent, or v1 `Sort.table` at cap 19),
+    `v3_old_local`. `rawTables`/`busCount` sums updated.
+  * Renders: `mrk_v3_aligned_complete` (`PaddedMrk.lean`, any `|os| ≤ 4481`, incl. empty; via the
+    generic `arrTrace`/`arrTrace_transfer` in `PaddedCongr.lean`), `SortV3.sort_v3_aligned_complete`
+    (`PaddedSort.lean`, any well-formed distinct receipts ≤ 8192, incl. none).
+  * `nearAirV3_wf`, `nearAirV3_npOkPg` re-proved (kernel). **New size bound
+    `nearV3_sizeMaxAligned = 6,330,945` B** at g = 2 (was 6,315,201); margin under 8 MiB after the
+    1,295,017 B hint: 762,646 B. `v3MaxInner` updated (4 + 2,000,000 + 6,330,945 ≤ 8 MiB holds).
+  * `fpBoundP nearAirV3` = 29,781,666,075 ≤ 2^36 = 68,719,476,736.
+  * `lake build ZkFormal.V3.Integration` passes (2198 jobs).

@@ -247,6 +247,7 @@ import ZkFormal.NearV3.Render.PaddedCongr
 import ZkFormal.NearV3.Render.PaddedChacha
 import ZkFormal.NearV3.Render.PaddedMrk
 import ZkFormal.NearV3.Render.PaddedSort
+import ZkFormal.NearV3.Candidates.SortEmptyCap
 import ZkFormal.NearV3.Render.PaddedSched
 import ZkFormal.NearV3.Render.PaddedUps
 import ZkFormal.NearV3.Render.NodeRender

@@ -103,6 +103,38 @@ theorem rowsTrace_cells (log W : Nat) (f : Nat → Nat → Nat) (hf : ∀ r c, W
     dsimp only
     simp [mkTab, Array.getD_eq_getD_getElem?, hr, h2, hf r c (Nat.le_of_not_lt h2)]
 
+
+/-- The array-backed copy of table `t` of any trace (canonical naturals of its cells, width `W`). -/
+def arrTrace (tr : Trace Fp) (t W : Nat) : Trace Fp :=
+  rowsTrace (tr.log t) (mkTab (2 ^ tr.log t) W (fun r c => (tr.cell t r c).toNat))
+
+/-- `arrTrace` agrees with the source on the rows of its table when the source vanishes beyond
+column `W` there. -/
+theorem arrTrace_cells (tr : Trace Fp) (t W : Nat)
+    (hz : ∀ r, r < tr.height t → ∀ c, W ≤ c → tr.cell t r c = 0) :
+    ∀ r, r < tr.height t → ∀ c, tr.cell t r c = (arrTrace tr t W).cell t r c := by
+  intro r hr c
+  have hr' : r < 2 ^ tr.log t := hr
+  unfold arrTrace
+  by_cases hc : c < W
+  · rw [rowsTrace_mkTab _ _ _ t r c hr' hc, Fp.ofNat_toNat]
+  · unfold rowsTrace
+    dsimp only
+    rw [hz r hr c (Nat.le_of_not_lt hc)]
+    simp [mkTab, Array.getD_eq_getD_getElem?, hr', hc]
+    rfl
+
+theorem arrTrace_log (tr : Trace Fp) (t W t' : Nat) : (arrTrace tr t W).log t' = tr.log t := rfl
+
+/-- Local legality and traffic transfer from a trace to its array-backed copy. -/
+theorem arrTrace_transfer {tr : Trace Fp} {t W : Nat} {pub : List Fp}
+    (hz : ∀ r, r < tr.height t → ∀ c, W ≤ c → tr.cell t r c = 0) :
+    (∀ {T : ZkFormal.Air.Table}, TableLocal T tr t pub → TableLocal T (arrTrace tr t W) t pub) ∧
+    (∀ {is : List Interaction} {tf : Traffic}, TableTraffic is tr t pub tf →
+      TableTraffic is (arrTrace tr t W) t pub tf) :=
+  ⟨fun h => tableLocal_congr_rows (tr₁ := tr) (tr₂ := arrTrace tr t W) rfl (arrTrace_cells tr t W hz) h,
+   fun h => tableTraffic_congr_rows (tr₁ := tr) (tr₂ := arrTrace tr t W) rfl (arrTrace_cells tr t W hz) h⟩
+
 /-- Bus counts on a bus no interaction uses vanish. -/
 theorem tableBusCount_off_bus (is : List Interaction) (tr : Trace Fp) (t : Nat) (pub : List Fp)
     (b : Nat) (s : Bool) (m : List Fp) (h : ∀ i ∈ is, i.bus ≠ b) :
