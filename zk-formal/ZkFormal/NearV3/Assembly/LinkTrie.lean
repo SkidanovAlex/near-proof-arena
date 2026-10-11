@@ -120,4 +120,35 @@ theorem uniq_walkback {vs : List ZkFormal.NearV3.NodeS3} {es : List ZkFormal.Nea
       simp only [hst, Nat.add_zero, Nat.mod_eq_of_lt hct] at hτ1
       exact ⟨t0, h0, by omega, heq, by rw [hb, hd], by rw [hτ, hτ1]⟩
 
+/-- **Sum over a covered duplicate-free list** (step 1 of the `mainStoreBytes` plan): if every
+element of the duplicate-free `D` is an image `f a` of some `a ∈ L`, then `Σ_D g ≤ Σ_L g ∘ f`. -/
+theorem sum_le_of_cover {α β : Type} [DecidableEq β] (g : β → Nat) (f : α → β) :
+    ∀ (L : List α) (D : List β), D.Nodup → (∀ d ∈ D, ∃ a ∈ L, f a = d) →
+      (D.map g).sum ≤ (L.map (g ∘ f)).sum
+  | [], D, _, h => by
+    cases D with
+    | nil => simp
+    | cons d D => obtain ⟨a, ha, -⟩ := h d (by simp); simp at ha
+  | a :: L, D, hD, h => by
+    simp only [List.map_cons, List.sum_cons, Function.comp_apply]
+    by_cases hm : f a ∈ D
+    · have hp := List.perm_cons_erase hm
+      have hs : (D.map g).sum = g (f a) + ((D.erase (f a)).map g).sum := by
+        rw [(hp.map g).sum_nat, List.map_cons, List.sum_cons]
+      have ih := sum_le_of_cover g f L (D.erase (f a)) (hD.erase _) (by
+        intro d hd
+        rw [hD.mem_erase_iff] at hd
+        obtain ⟨a', ha', he⟩ := h d hd.2
+        rcases List.mem_cons.mp ha' with rfl | ha'
+        · exact absurd he.symm hd.1
+        · exact ⟨a', ha', he⟩)
+      rw [hs]; exact Nat.add_le_add_left ih _
+    · have ih := sum_le_of_cover g f L D hD (by
+        intro d hd
+        obtain ⟨a', ha', he⟩ := h d hd
+        rcases List.mem_cons.mp ha' with rfl | ha'
+        · exact absurd (he ▸ hd) hm
+        · exact ⟨a', ha', he⟩)
+      omega
+
 end ZkFormal.NearV3.Assembly
