@@ -361,3 +361,25 @@ identity on NATIVE posts, per transition `τ` with scheduler run `u_τ`:
   The size COMPONENT itself (`sizeRenderV3`) still needs `SizeOk` and the `≤ B0` row premise —
   i.e. A7 (b).
 * Audit `AuditTrieA7SizeBal` passes.
+
+## Task 4 (SHA two-bin packing): (a), (b), (c)-components DONE; senders' identification open
+
+* `Assembly/TrieShaTwo.lean`:
+  (a) `preparedSourceLists_paths` (A10 reaches every prepared occurrence), **`source_rows_A10`**:
+  accepted ⇒ `(honestRows (sourceShaMessages p.lists w.entries)).length ≤ 2,257,792`
+  (`computedLists ≤ 1984`, `computedPaths ≤ 1984·Dp0`, `sourceSha_A10`).
+  (b) `twoBudget_fit` (two residual capacities, jobs ≤ 35 rows, `S+Rc+N+Σ+35 ≤ 2·2^22`),
+  `twoShaJobBins` = `[native ++ src₀, scheduler ++ receipt ++ src₁]`, `twoShaJobBins_preserve`,
+  **`twoSha_physical_fit`** (bounds 1,663,260 / 2,925,275 / 1,373,299 / 2,257,792; total
+  8,219,626 + 35 ≤ 8,388,608).
+  (c) **`two_sha_renders`**: bins `[b0, b1]` with `Sha.MsgsOk`, the components
+  `shaRenderV3 pub 0/1` (tf = `shaBinTraffic`), and `BYTES` receives / `DIGEST` sends of the two
+  bins are permutations of `expectedBytes`/`expectedDigests` of all four families.
+* Open for task 4: an accepted-witness theorem producing the scheduler / native / receipt families
+  with their bounds for the v3 bundle (the existing ones live in the four-bin chain,
+  `NativeFinalAllocation`, `relD0a_work_bounds`, and are not tied to the v3 `BYTES` senders), and
+  the `BYTES`/`DIGEST` balance: the senders' (node, val, ups, codec, rcpt, acct, srcp, mrk)
+  `BYTES` messages must be exactly `expectedBytes` of those four families (and `DIGEST`
+  receivers the digests).  Not started.
+* Verification: Integration 4149 jobs (after merging nothing new; the job count rose with the new
+  imports); audits `AuditTrieShaTwo` (3), `AuditTrieA7SizeBal`, `AuditTrieA7Perm` pass.
