@@ -407,16 +407,21 @@ namespace A7Pre
 
 open NearSpec NearSpecV3 Render.UpsGen ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.NearV3
 
-/-- **(E), segment level** (open): for every `upsV3` segment `s` (instance `τ = (upsE s).tau`) and the
+/-- **(E), segment level**: for every `upsV3` segment `s` (instance `τ = (upsE s).tau`) and the
 run of `traceUpsert` on the post record tree `Tpost r τ` at `[0,15]` with the scheduler value
-`sv τ`: the segment's value/node-part rows pay for the new value and the output parts, and its
-`RPL` / `RPLV` names weigh at most the replaced sources / the overwritten value. -/
+`sv τ`: the segment's value/node-part rows pay for the new value and the output parts, its
+`RPL` names weigh at most the replaced sources, and its `RPLV` name (weighed by the value record's
+pre length) at most the overwritten (post) value plus the slack `U (Fpre r τ) − U (Tpost r τ)`.
+(Session 14 stated the last conjunct as `Σ wV ≤ oldValCharge run`, which is not derivable when the
+overwritten value record is written by the chunk: only `|post| ≤ len` is constrained.) -/
 def UpsSegMatch (tr : Trace Fp) (r : V3Records) : Prop :=
   ∀ s ∈ r.ups, ∀ run, traceUpsert (A7Native.Tpost r (UpsRows.upsE s).tau) UpsSpec.key
       (Link3.toB (Sched.svOf tr T_CODEC (UpsRows.upsE s).tau)) = some run →
     outputByteCharge run + (Link3.toB (Sched.svOf tr T_CODEC (UpsRows.upsE s).tau)).length ≤ s.a7S ∧
     (((s.a7Rpl).map ZkFormal.Near.Msg.toFp).map (A7Assemble.wN r)).sum ≤ TrieA7Repl.replacedCharge run ∧
-    (((s.a7Rplv).map ZkFormal.Near.Msg.toFp).map (A7Assemble.wV r)).sum ≤ TrieA7Repl.oldValCharge run
+    (((s.a7Rplv).map ZkFormal.Near.Msg.toFp).map (A7Assemble.wV r)).sum +
+        unfoldedBytesT (A7Native.Tpost r (UpsRows.upsE s).tau) ≤
+      TrieA7Repl.oldValCharge run + unfoldedBytesT (LinkImplicit.Fpre r (UpsRows.upsE s).tau)
 
 section
 variable {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
@@ -434,9 +439,12 @@ theorem recordBound_of_match (hp : NearSpecV3.prepD0 cb h = .ok p)
   intro s hs
   have hτ : (UpsRows.upsE s).tau ≤ p.hdr.K :=
     (L.chain.ups_all _ (List.mem_map_of_mem hs)).1
-  obtain ⟨run, hr, -, hle⟩ := A7Post.qrec_run hp hsz hH T W hτ
+  obtain ⟨run, hr, -, -⟩ := A7Post.qrec_run hp hsz hH T W hτ
+  have heq := A7Post.qrec_eq hp hsz hH T W hτ run hr
+  have hle := A7Post.le_U (A7Post.tpost_le hH T W (UpsRows.upsE s).tau)
   obtain ⟨e1, e2, e3⟩ := hE s hs run hr
-  exact ⟨run, hle, e1, e2, e3⟩
+  exact ⟨run, unfoldedBytesT (LinkImplicit.Fpre r (UpsRows.upsE s).tau) -
+    unfoldedBytesT (A7Native.Tpost r (UpsRows.upsE s).tau), by omega, e1, e2, by omega⟩
 
 
 /-- **`RestFieldsV3.unfoldedBytes` from (E)** (with the `shape` and `source.applied` fields). -/

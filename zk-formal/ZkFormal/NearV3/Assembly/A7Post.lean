@@ -259,6 +259,32 @@ theorem qrec_run (hp : NearSpecV3.prepD0 cb h = .ok p)
   have := le_U hle
   exact ⟨run, hr, ho, by omega⟩
 
+/-- **(C)+(D), exact**: every run of the scheduler upsert of instance `τ` on `Tpost r τ` has output `Qrec tr r τ` and
+`U (Tpost) + outputByteCharge + |sv τ| = U (Qrec) + replacedCharge + oldValCharge`. -/
+theorem qrec_eq (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
+    (hH : ZkFormal.V2.HoldsP nearAirV3 (ZkFormal.Udr.pubOf ZkFormal.Algebra.Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf ZkFormal.Algebra.Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf ZkFormal.Algebra.Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    {τ : Nat} (hτ : τ ≤ p.hdr.K) (run : TreeRun)
+    (hr : traceUpsert (A7Native.Tpost r τ) ZkFormal.NearV3.UpsSpec.key
+        (ZkFormal.NearV3.Link3.toB (Sched.svOf tr T_CODEC τ)) = some run) :
+    unfoldedBytesT (A7Native.Tpost r τ) + outputByteCharge run +
+        (ZkFormal.NearV3.Link3.toB (Sched.svOf tr T_CODEC τ)).length =
+      unfoldedBytesT (A7Native.Qrec tr r τ) + TrieA7Repl.replacedCharge run + TrieA7Repl.oldValCharge run := by
+  have L := trieLink_of hp hsz hH T W
+  have hQ := A7Native.qrec_upsert hp hsz hH T W hτ
+  have ho := traceUpsert_output (A7Native.Tpost r τ) ZkFormal.NearV3.UpsSpec.key
+    (ZkFormal.NearV3.Link3.toB (Sched.svOf tr T_CODEC τ))
+  rw [hr, hQ] at ho
+  simp only [Option.map_some, Option.some.injEq] at ho
+  have hle := tpost_le hH T W τ
+  have hwf := le_wf hle (LinkMain.Fpre_wf W L hτ)
+  have hrep := TrieA7Repl.traceUpsert_replaced _ _ _ run hr hwf (by decide)
+  unfold TrieA7Repl.ReplOk at hrep
+  rw [ho] at hrep
+  exact hrep
+
 end Inst
 
 end A7Post

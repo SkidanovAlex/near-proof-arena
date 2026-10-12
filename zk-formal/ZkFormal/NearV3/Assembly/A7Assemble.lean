@@ -9,11 +9,11 @@ follows from
 
 * **(B)** `Σ_{τ≤K} U (Fpre r τ) ≤ Σ_n |ser n| + Σ_t len_t` (`recNode r + recVal r`), and
 * **`SegOk tr r s`** for every `upsV3` segment `s` (instance `τ = (upsE s).tau`): a run `run` with
-  - (C)+(D) `U (Qrec tr r τ) + replacedCharge run + oldValCharge run ≤ U (Fpre r τ) + outputByteCharge run + |sv τ|`
+  - (C)+(D) `U (Qrec tr r τ) + replacedCharge run + oldValCharge run + g ≤ U (Fpre r τ) + outputByteCharge run + |sv τ|`
     (`traceUpsert_replaced` on `Tpost r τ`, `U (Tpost r τ) ≤ U (Fpre r τ)`; `A7Post`),
   - (E) `outputByteCharge run + |sv τ| ≤ a7S s`, the `RPL` names of `s` weigh at most
     `replacedCharge run` (`wN`: `|ser n|` of the named record) and its `RPLV` names at most
-    `oldValCharge run` (`wV`: `len` of the named value record),
+    `oldValCharge run + g` (`wV`: `len` of the named value record),
 
 with the `RPL` / `RPLV` balances (`A7Bound.a7_rpl_perm` / `a7_rplv_perm`) and the instance chain
 (`RootChain.ups_count`: one segment per `τ ≤ K`): **`recordBound_of`**.
@@ -38,16 +38,17 @@ def recNode (r : V3Records) : Nat :=
 def recVal (r : V3Records) : Nat :=
   ((List.range r.values.length).map fun t => (r.values.getD t default).len).sum
 
-/-- The per-segment facts (C)+(D)+(E). -/
+/-- The per-segment facts (C)+(D)+(E).  `g` is the slack of (C) (`U (Fpre) − U (Tpost)`), which pays for the
+overwritten value's pre length beyond its post length (`RPLV` weighs the pre length). -/
 def SegOk (tr : Trace Fp) (r : V3Records) (s : UpsSeg) : Prop :=
-  ∃ run : TreeRun,
+  ∃ run : TreeRun, ∃ g : Nat,
     unfoldedBytesT (A7Native.Qrec tr r (UpsRows.upsE s).tau) + TrieA7Repl.replacedCharge run +
-        TrieA7Repl.oldValCharge run ≤
+        TrieA7Repl.oldValCharge run + g ≤
       unfoldedBytesT (LinkImplicit.Fpre r (UpsRows.upsE s).tau) + outputByteCharge run +
         (Link3.toB (Sched.svOf tr T_CODEC (UpsRows.upsE s).tau)).length ∧
     outputByteCharge run + (Link3.toB (Sched.svOf tr T_CODEC (UpsRows.upsE s).tau)).length ≤ s.a7S ∧
     (((s.a7Rpl).map Msg.toFp).map (wN r)).sum ≤ TrieA7Repl.replacedCharge run ∧
-    (((s.a7Rplv).map Msg.toFp).map (wV r)).sum ≤ TrieA7Repl.oldValCharge run
+    (((s.a7Rplv).map Msg.toFp).map (wV r)).sum ≤ TrieA7Repl.oldValCharge run + g
 
 /-! ## Generic sums -/
 
@@ -152,7 +153,7 @@ theorem recordBound_of (hH : HoldsP nearAirV3 pub tr) (T : V3RecordsTraffic pub 
       (r.ups.map fun s => 2 * unfoldedBytesT (LinkImplicit.Fpre r (UpsRows.upsE s).tau) + s.a7S).sum := by
     apply sum_le_sum_list
     intro s hs
-    obtain ⟨run, h1, h2, h3, h4⟩ := hS s hs
+    obtain ⟨run, g, h1, h2, h3, h4⟩ := hS s hs
     omega
   have hsplit : ∀ (l : List UpsSeg) (a b c d : UpsSeg → Nat),
       (l.map fun s => a s + b s + c s + d s).sum =
