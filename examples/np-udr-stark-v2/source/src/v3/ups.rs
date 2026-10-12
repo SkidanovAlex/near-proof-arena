@@ -13,6 +13,8 @@
 
 use serde::Deserialize;
 
+use p3_field::{Field, PrimeCharacteristicRing, PrimeField32};
+
 use super::{Tab, b, get, log_of, pad_log22};
 
 /// `UpsV3.width` (`Tables/Ups.lean:...`).
@@ -290,6 +292,150 @@ pub fn r(insts: &[UpsInst]) -> usize {
 }
 
 // ---------------------------------------------------------------------------
+// Walk rows `W0 … W3` (`UpsGen.wCell`, `Gen.lean:167`)
+// ---------------------------------------------------------------------------
+
+/// `UpsGen.wsym` (`Gen.lean:109`): `[START, 0, 15, END].getD t 0`.
+fn wsym(t: usize) -> u64 {
+    [SYM_START, 0, 15, SYM_END].get(t).copied().unwrap_or(0)
+}
+
+/// `UpsGen.ent` (`Gen.lean:154`): a step enters a new record (lands on position `0`).
+fn ent(i: &UpsInst, t: usize) -> u64 {
+    ind((t == 1 || t == 2) && i.step(t).mode == 0 && get(&i.step(t).e, 4) == 0)
+}
+
+/// `UpsGen.lv` (`Gen.lean:158`): the level of walk row `t ≥ 1`.
+fn lv(i: &UpsInst, t: usize) -> u64 {
+    (if t >= 2 { ent(i, 1) } else { 0 }) + (if t >= 3 { ent(i, 2) } else { 0 })
+}
+
+/// `UpsGen.invV` (`Gen.lean:160`): `(wsym − nib)⁻¹` in `Fp`.
+fn inv_v(i: &UpsInst, t: usize) -> u64 {
+    let d = crate::field::F::from_u64(wsym(t)) - crate::field::F::from_u64(get(&i.step(t).e, 2));
+    d.try_inverse()
+        .unwrap_or(crate::field::F::ZERO)
+        .as_canonical_u32() as u64
+}
+
+/// `UpsGen.upsIdV` (`Gen.lean:115`): `12 + 16·(512·τ + x)`.
+fn ups_id_v(i: &UpsInst, x: u64) -> u64 {
+    12 + 16 * (512 * i.tau + x)
+}
+
+/// `UpsGen.wReg` (`Gen.lean:163`): the 32-byte `reg` of a walk row.
+fn w_reg(i: &UpsInst, t: usize, m: usize) -> u64 {
+    if t == 0 {
+        get(&i.mid, m)
+    } else if t == 3 {
+        get(&i.post, m)
+    } else if i.step(t).mode == 2 && m < 16 {
+        i.step(t).bm / 2u64.pow(m as u32) % 2
+    } else {
+        0
+    }
+}
+
+/// `UpsGen.wCell` (`Gen.lean:167`).
+fn w_cell(i: &UpsInst, t: usize, col: usize) -> i64 {
+    let s = i.step(t);
+    let x: u64 = match col {
+        0 | 1 => 1,
+        4 => ind(t == 0),
+        5 => ind(t == 1),
+        6 => ind(t == 2),
+        7 => ind(t == 3),
+        49 => get(&s.e, 0),
+        50 => get(&s.e, 1),
+        51 => get(&s.e, 2),
+        52 => get(&s.e, 3),
+        53 => get(&s.e, 4),
+        54 => get(&s.e, 5),
+        55 => {
+            if s.mode == 1 {
+                inv_v(i, t)
+            } else {
+                0
+            }
+        }
+        56 => {
+            if s.mode == 2 {
+                s.hv
+            } else {
+                0
+            }
+        }
+        57 => {
+            if s.mode == 2 {
+                s.bm
+            } else {
+                0
+            }
+        }
+        58 => ent(i, t),
+        59 => ind(t != 0 && lv(i, t) == 0),
+        60 => ind(t != 0 && lv(i, t) == 1),
+        61 => ind(t != 0 && lv(i, t) == 2),
+        62 => ind(t != 0 && t as u64 == i.ts),
+        105 => s.u,
+        124 => ind(t == 3),
+        125 => {
+            if t == 3 {
+                ups_id_v(i, i.n_q() as u64)
+            } else {
+                0
+            }
+        }
+        126 => {
+            if t == 3 {
+                i.rlen() as u64
+            } else {
+                0
+            }
+        }
+        173 => ind(s.mode == 0),
+        174 => ind(s.mode == 1),
+        175 => ind(s.mode == 2),
+        _ => {
+            if (129..161).contains(&col) {
+                w_reg(i, t, col - 129)
+            } else {
+                0
+            }
+        }
+    };
+    x as i64
+}
+
+// ---------------------------------------------------------------------------
+// Value rows (`UpsGen.vCell`, `Gen.lean:200`)
+// ---------------------------------------------------------------------------
+
+/// `UpsGen.vCell` (`Gen.lean:200`).
+fn v_cell(i: &UpsInst, p: usize, col: usize) -> i64 {
+    let x: u64 = match col {
+        0 | 2 => 1,
+        8 => ind(p == 0),
+        9 => ind(p + 1 == i.l()),
+        65 => ind(i.d == 0),
+        66 => ind(i.d == 1),
+        67 => ind(i.d == 2),
+        68 => get(&i.n, i.d as usize),
+        100 => p as u64,
+        101 => get(&i.v, p),
+        181 => i.d,
+        182 => get(&i.dep, i.d as usize),
+        _ => 0,
+    };
+    x as i64
+}
+
+/// A cell value reduced into `Fp` (`Tab::set` does the final `mod P`).
+fn set_i(t: &mut Tab, r: usize, c: usize, x: i64) {
+    t.set(r, c, x.rem_euclid(crate::field::P as i64) as u64);
+}
+
+// ---------------------------------------------------------------------------
 // Renderer
 // ---------------------------------------------------------------------------
 
@@ -305,14 +451,16 @@ pub fn ups_aligned(insts: &[UpsInst]) -> Tab {
         }
         let inst = &insts[i];
         for col in 0..UPS_WIDTH {
-            let x = if is_seg(col) {
-                seg_cell(inst, col)
+            if is_seg(col) {
+                t.set(q, col, seg_cell(inst, col));
             } else {
-                match rk {
-                    Rk::W(_) | Rk::V(_) | Rk::Q(_, _) => 0,
-                }
-            };
-            t.set(q, col, x);
+                let x = match rk {
+                    Rk::W(t) => w_cell(inst, t, col),
+                    Rk::V(p) => v_cell(inst, p, col),
+                    Rk::Q(_, _) => 0,
+                };
+                set_i(&mut t, q, col, x);
+            }
         }
     }
     t
@@ -385,5 +533,50 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn walk_rows_match_w_cell() {
+        let mut i = inst();
+        i.mid = vec![11; 32];
+        i.post = vec![22; 32];
+        let t = ups_aligned(std::slice::from_ref(&i));
+        for trow in 0..4 {
+            for col in 0..UPS_WIDTH {
+                if is_seg(col) {
+                    continue;
+                }
+                let want = (w_cell(&i, trow, col).rem_euclid(crate::field::P as i64)) as u32;
+                assert_eq!(t.cells[trow * UPS_WIDTH + col], want, "W{trow} col {col}");
+            }
+        }
+        // spot checks: W0 reg = mid, W3 reg = post, W3 digest id/length
+        assert_eq!(t.cells[129] as u64, 11);
+        assert_eq!(t.cells[3 * UPS_WIDTH + 129] as u64, 22);
+        assert_eq!(
+            t.cells[3 * UPS_WIDTH + 125] as u64,
+            ups_id_v(&i, i.n_q() as u64)
+        );
+        assert_eq!(t.cells[3 * UPS_WIDTH + 126] as u64, i.rlen() as u64);
+    }
+
+    #[test]
+    fn value_rows_match_v_cell() {
+        let i = inst();
+        let t = ups_aligned(std::slice::from_ref(&i));
+        for p in 0..i.l() {
+            let row = 4 + p;
+            for col in 0..UPS_WIDTH {
+                if is_seg(col) {
+                    continue;
+                }
+                let want = (v_cell(&i, p, col).rem_euclid(crate::field::P as i64)) as u32;
+                assert_eq!(t.cells[row * UPS_WIDTH + col], want, "V{p} col {col}");
+            }
+        }
+        // V0: `D` selector and `N[D]`, position/byte columns.
+        assert_eq!(t.cells[4 * UPS_WIDTH + 67] as u64, 1);
+        assert_eq!(t.cells[4 * UPS_WIDTH + 68] as u64, 3);
+        assert_eq!(t.cells[4 * UPS_WIDTH + 101] as u64, 7);
     }
 }
