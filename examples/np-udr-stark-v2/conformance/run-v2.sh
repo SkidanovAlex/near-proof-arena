@@ -37,7 +37,8 @@ bad()  { echo "FAIL  $*"; fail=1; }
 
 echo "== build"
 (cd "$src" && $HEAVY cargo build --release -q) || { echo "cargo build failed"; exit 2; }
-(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3 np-lean-entries-v3 np-lean-prep-v3) || { echo "lake build failed"; exit 2; }
+(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3 np-lean-entries-v3 np-lean-prep-v3 \
+   np-lean-render-v3-a7 np-lean-render-v3-rcs np-lean-render-v3-rcpt np-lean-render-v3-sched np-lean-shabins-v3) || { echo "lake build failed"; exit 2; }
 npudr="${CARGO_TARGET_DIR:-$src/target}/release/npudr"
 lv="$here/.lake/build/bin/np-lean-verify-v2"
 le="$here/.lake/build/bin/np-lean-export-v3"
@@ -100,7 +101,10 @@ done
 echo "== nearAirV3 honest per-table traces: Rust (npudr v3render) vs Lean (np-lean-render-v3)"
 lr="$here/.lake/build/bin/np-lean-render-v3"
 rd="$out/render"; mkdir -p "$rd"
-for t in ${RENDER_TABLES:-bnd akey head val uniq walk node acct size srcp qv}; do
+# Tables whose nearAirV3 entry and honest render did not change on 2026-10-12 stay here
+# (`NearRenderV3.lean`); node/val/ups/size (A7), srcp/acct/mrk/sort, rcpt and the
+# scheduler/ChaCha/SHA tables are in run-v2.d/{a7,rcs,rcpt,sched}.sh.
+for t in ${RENDER_TABLES:-bnd akey head uniq walk qv}; do
   for seed in 1 2 3; do
     for n in ${RENDER_SIZES:-0 1 5 37}; do
       f="$rd/$t-$seed-$n"
@@ -139,29 +143,12 @@ broken walk "first row not START" "es[1]['steps'][0]['sym'] = 3; es[1]['steps'][
 # `acct` pre amount all-255 makes `dsum` zero so the inverse constraint fails
 broken acct "pre amount is u128::MAX" "es[0]['pre'] = [255]*16 + es[0]['pre'][16:]"
 broken size "x_0 + x_1 over 3,000,000" "es[0]['x0'] = 2000000; es[0]['x1'] = 2000000"
-# `srcp`: a path item's carry length must be `32` on the first segment, else `64`
-broken srcp "first path item pl != 32" "es[1]['path'][0]['pl'] = 64"
-# `srcp`: a duplicate source key must have the empty-list length `L = 12`
-broken srcp "dup with L != 12" "es[0]['dup'] = True"
 # `qv`: the last main walk must end the table (`final`/`wend`), followed by a parser row
 broken qv "last walk not final" "es['walks'][-1]['final'] = False"
 # `qv`: main walks carry `tau = 0`; an implicit walk in the main segment is rejected
 broken qv "main walk with tau != 0" "es['walks'][0]['tau'] = 1"
 
-echo "== sizeV3 nonzero public overhead (PH_WOVH): Rust vs Lean, byte-identical"
-# `npudr v3sample size` fixes `ovh = 0` so `v3check` (zero public inputs) passes.
-# Here the public `u32` at `PH_WOVH = 198` is nonzero: the two renderers must
-# still agree on the trace (this is the size differential's `ovh` field).
-for ovh in 1 258 16909060; do
-  for xs in "100 200 300" "1000000 1000000 500000" "2999999 1 0"; do
-    set -- $xs; f="$rd/size-ovh-$ovh-$1-$2-$3"
-    printf '[{"x0":%s,"x1":%s,"x2":%s,"ovh":%s}]\n' "$1" "$2" "$3" "$ovh" > "$f.json"
-    if ! $HEAVY "$lr" size "$f.json" "$f.lean.bin" 2>"$f.err"; then bad "size ovh=$ovh x=$xs: np-lean-render-v3 failed"; cat "$f.err"; continue; fi
-    "$npudr" v3render size "$f.json" "$f.rust.bin" || { bad "size ovh=$ovh x=$xs: npudr v3render failed"; continue; }
-    if cmp -s "$f.lean.bin" "$f.rust.bin"; then pass "size ovh=$ovh x=($xs) trace identical ($(stat -c %s "$f.rust.bin") B)"
-    else bad "size ovh=$ovh x=($xs) trace differs"; fi
-  done
-done
+# The sizeV3 nonzero-overhead differential moved to run-v2.d/a7.sh (sizeA7).
 
 echo "== nearAirV3 honest entries from a real witness (part 2c): np-lean-entries-v3 vs Rust"
 # `np-lean-entries-v3 <case>` runs the proved D0a extraction on a real fixture and
@@ -189,7 +176,9 @@ for case in $(ls "$fx" | head -${ENTRIES_CASES:-5}); do
     ok="$(sed -n '1p' "$j.check" | cut -c5-)"
     # Lean render + byte compare: always for val/head; node only for the small cases
     do_render=1
-    if [ "$t" = node ]; then
+    # node/val are the A7 tables now: their Lean differential is in run-v2.d/a7.sh
+    if [ "$t" = node ] || [ "$t" = val ]; then do_render=0; pass "$case $t: $ok (Lean render in a7.sh)"; fi
+    if [ "$do_render" = 1 ] && [ "$t" = node ]; then
       nr=$(python3 -c "import json;print(len(json.load(open('$j'))))")
       if [ "$nr" -gt "${ENTRIES_NODE_MAX:-3}" ] && [ "${ENTRIES_NODE_ALL:-0}" != 1 ]; then
         do_render=0; pass "$case $t: $ok ($nr entries; Lean render skipped, over node-max)"
@@ -207,56 +196,7 @@ done
 [ $ncase -gt 0 ] || bad "no fixture case produced honest entries"
 echo "   ($ncase honest entry lists checked, $nrendered byte-compared against Lean)"
 
-echo "== nearAirV3 SHA message collector (tables 0/1): npudr v3sha vs np-lean-entries-v3 sha"
-# The SHA tables have no entries of their own: their input is the union of the
-# BYTES/DIGEST messages of the other tables.  `np-lean-entries-v3 <case> sha`
-# collects them in Lean; the Rust collector must produce byte-identical
-# `{sha_t, sha_r}` message lists (deduplicated by id, split by the §12 kinds).
-# The trace differential (`npudr v3render sha_t` vs `np-lean-render-v3 sha_t`) is
-# O(rows²) in the Lean renderer, so it is opt-in via `SHA_RENDER=1`.
-sd="$out/sha"; mkdir -p "$sd"
-nsha=0
-for case in $(ls "$fx" | head -${SHA_CASES:-5}); do
-  d="$fx/$case"
-  [ -f "$d/witness.bin" ] || continue
-  # the collector wants plain `<table>.json` names
-  cdir="$sd/$case.ent"; mkdir -p "$cdir"
-  for t in node val head; do
-    j="$ed/$case.$t.json"
-    [ -f "$j" ] || $HEAVY "$le3" "$d" $t > "$j" 2>"$j.err"
-    cp -f "$j" "$cdir/$t.json"
-  done
-  lj="$sd/$case.lean.json"
-  if ! $HEAVY "$le3" "$d" sha > "$lj" 2>"$lj.err"; then bad "$case sha: np-lean-entries-v3 sha failed"; cat "$lj.err"; continue; fi
-  if ! "$npudr" v3sha "$cdir" "$sd/$case.rust.t.json" "$sd/$case.rust.r.json" 2>"$sd/$case.err"; then
-    bad "$case sha: npudr v3sha failed"; cat "$sd/$case.err"; continue
-  fi
-  python3 - "$lj" "$sd/$case.lean.t.json" "$sd/$case.lean.r.json" <<'PY'
-import json, sys
-d = json.load(open(sys.argv[1]))
-json.dump(d["sha_t"], open(sys.argv[2], "w"))
-json.dump(d["sha_r"], open(sys.argv[3], "w"))
-PY
-  norm() { python3 -c "import json,sys;print(sorted((m['id'],bytes(m['bytes']),m['dmult']) for m in json.load(open(sys.argv[1]))))" "$1"; }
-  if [ "$(norm "$sd/$case.lean.t.json")" = "$(norm "$sd/$case.rust.t.json")" ] && \
-     [ "$(norm "$sd/$case.lean.r.json")" = "$(norm "$sd/$case.rust.r.json")" ]; then
-    nt=$(python3 -c "import json;print(len(json.load(open('$sd/$case.lean.t.json'))))")
-    nr=$(python3 -c "import json;print(len(json.load(open('$sd/$case.lean.r.json'))))")
-    pass "$case sha: sha_t($nt) sha_r($nr) messages identical"
-    nsha=$((nsha + 1))
-    if [ "${SHA_RENDER:-0}" = 1 ] && [ "$nt" -gt 0 ]; then
-      for t in sha_t sha_r; do
-        "$npudr" v3render $t "$sd/$case.lean.$t.json" "$sd/$case.$t.rust.bin" || { bad "$case $t: v3render failed"; continue; }
-        $HEAVY "$lr" $t "$sd/$case.lean.$t.json" "$sd/$case.$t.lean.bin" 2>"$sd/$case.$t.lrerr" || { bad "$case $t: np-lean-render-v3 failed"; continue; }
-        cmp -s "$sd/$case.$t.lean.bin" "$sd/$case.$t.rust.bin" \
-          && pass "$case $t: trace identical ($(stat -c %s "$sd/$case.$t.rust.bin") B)" \
-          || bad "$case $t: trace differs"
-      done
-    fi
-  else bad "$case sha: message lists differ"; fi
-done
-[ $nsha -gt 0 ] || bad "no fixture produced SHA messages"
-echo "   ($nsha fixtures: SHA message lists byte-identical; trace render $([ "${SHA_RENDER:-0}" = 1 ] && echo on || echo off))"
+# The SHA job collector (tables 0/1, Lean `twoShaJobBins`) is in run-v2.d/collect.sh.
 
 echo "== prepD0 / Hint codec (part 3): Rust re-encode vs Lean np-lean-prep-v3"
 # For each real D0a fixture: `np-lean-prep-v3` requires `checkD0a B0` and dumps
