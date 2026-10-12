@@ -514,6 +514,7 @@ import ZkFormal.NearV3.Assembly.LinkShape
 import ZkFormal.NearV3.Assembly.ExtractV3Proof
 import ZkFormal.NearV3.Render.SchedBusAll
 import ZkFormal.NearV3.Render.CompleteV3
+import ZkFormal.NearV3.Assembly.AdmissionV3
 /-!
 # Build gate for the integrated v3 proof work
 
