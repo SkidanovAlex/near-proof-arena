@@ -109,7 +109,10 @@ theorem rcpt_trie_codec {cb wb : Bytes} (A : AcceptedV3 cb wb)
         ExtOf r7.tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js))) ∧
         Js.map (fun I => (I.tau, I.v)) = us.mapIdx (fun i u => (i, u.value.map UInt8.toNat)) ∧
         Js.map Assembly.UpsS0F.s0fOf = (A.m.pre :: A.steps.map ImplicitStepV3.pre).mapIdx
-          (fun i t => Assembly.UpsS0F.s0fPair ((A.m.pre :: A.steps.map ImplicitStepV3.pre).take i) t)) ∧ PriorCore A.p NearSpecV3.B0 bs ∧ (∀ b ∈ bs, GrantWit b) ∧ (∀ b ∈ bs, NatRes b) ∧
+          (fun i t => Assembly.UpsS0F.s0fPair ((A.m.pre :: A.steps.map ImplicitStepV3.pre).take i) t)) ∧
+      -- lane v3-render-vbytes: the value render's base traffic (for `VBYTES`)
+      ExtOf r4.tf (valTraffic (TrieNative.vals A.m A.steps)) ∧
+      PriorCore A.p NearSpecV3.B0 bs ∧ (∀ b ∈ bs, GrantWit b) ∧ (∀ b ∈ bs, NatRes b) ∧
       bs.map (fun b => (b.witness.ctx, b.witness.pre)) =
         (A.m.ctx A.k, A.m.pre) :: A.steps.map (fun e => (implicitCtx A.k e, e.pre)) ∧
       (∀ b, bs[0]? = some b → b.forwarded = fwdLinks (A.m.ctx A.k) A.m.result.outgoing) ∧
@@ -136,11 +139,11 @@ theorem rcpt_trie_codec {cb wb : Bytes} (A : AcceptedV3 cb wb)
         -- shared buses
         R.BalancedAt B_SIZE ∧ R.BalancedAt B_VSLOT ∧ R.BalancedAt B_KEYNIB ∧ R.BalancedAt B_FINAL ∧
         R.BalancedAt B_BYTES ∧ R.BalancedAt B_DIGEST := by
-  obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, hpin, hups, hall⟩ :=
+  obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, hpin, hups, hval, hall⟩ :=
     rcpt_trie_side A hovh
   obtain ⟨bs, hc, hg, hres, hctx, hfw, r11, htr, htf, hb, hd⟩ := codec_premises A A.pub us hpin
-  refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hc, hg, hres,
-    hctx, hfw, htr, htf, ?_⟩
+  refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hval, hc, hg,
+    hres, hctx, hfw, htr, htf, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 e11 h24
   obtain ⟨hrc, htrie, hsz, hvs, hkn, hfin, hB, hD⟩ :=
     hall R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 h24
