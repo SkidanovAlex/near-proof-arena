@@ -304,8 +304,9 @@ ppd="$out/public"; mkdir -p "$ppd"
 _pubcases=($(ls -d "$here/../../../oracle/fixtures/v3/public-d0a/d0"/* 2>/dev/null | head -${PUBLIC_MAX:-64}))
 for d in "${_pubcases[@]}"; do
   [ -d "$d" ] || continue
-  j="$ppd/$(basename "$d").json"
-  if ! "$here/.lake/build/bin/np-lean-prep-v3" "$d" "$j" 2>"$ppd/$(basename "$d").err"; then continue; fi
+  # `np-lean-prep-v3 <case> <outdir>` writes `<outdir>/prep.json`
+  jd="$ppd/$(basename "$d")"; mkdir -p "$jd"; j="$jd/prep.json"
+  if ! $HEAVY "$here/.lake/build/bin/np-lean-prep-v3" "$d" "$jd" 2>"$jd.err"; then bad "public $(basename "$d"): np-lean-prep-v3 failed"; continue; fi
   python3 - "$j" "$ppd/lean.hex" "$ppd/prep.json" <<'PY'
 import json,sys
 d=json.load(open(sys.argv[1]))

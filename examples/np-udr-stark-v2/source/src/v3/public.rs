@@ -422,3 +422,37 @@ fn _unused() {
     let _ = u8b(0);
     let _ = u64b(0);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn l(key: u8, from_shard: u64, root: u8) -> SrcList {
+        SrcList {
+            key: vec![key; 8],
+            from_shard,
+            root: vec![root; 32],
+        }
+    }
+
+    /// `SRC34` rows: `[sourceDupByte, sourceRep] ++ root` (`Public/Source.lean`).
+    #[test]
+    fn source_rows_dup_rep() {
+        // keys: a, b, a (consistent), c, a (inconsistent root), b (inconsistent shard)
+        let ls = vec![
+            l(1, 0, 10),
+            l(2, 1, 20),
+            l(1, 0, 10),
+            l(3, 2, 30),
+            l(1, 0, 11),
+            l(2, 3, 20),
+        ];
+        let rows = source_payload(&ls);
+        let head: Vec<(u8, u8)> = rows.iter().map(|r| (r[0], r[1])).collect();
+        assert_eq!(head, vec![(0, 1), (0, 1), (1, 1), (0, 0), (2, 1), (2, 1)]);
+        for (r, s) in rows.iter().zip(&ls) {
+            assert_eq!(r.len(), 34);
+            assert_eq!(&r[2..], &s.root[..]);
+        }
+    }
+}
