@@ -87,7 +87,7 @@ theorem nearTablesFull_eq : nearAirV3.tables =
      ZkFormal.NearV3.Sched.Proc.tableB, ZkFormal.NearV3.Sched.Mem.table,
      ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP,
      ZkFormal.NearV3.RcptV3.tableQ, acctTableV3, ZkFormal.NearV3.AkeyV3.table,
-     ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.tableD, ZkFormal.NearV3.UnfoldA7.sizeA7,
+     ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpDD.table, ZkFormal.NearV3.UnfoldA7.sizeA7,
      ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
      ZkFormal.NearV3.Candidates.MerkleEmpty.table, sortTableV3] := rfl
 
@@ -109,7 +109,7 @@ theorem getElem?_rcpt : nearAirV3.tables[T_RCPT]? = some ZkFormal.NearV3.RcptV3.
 theorem getElem?_acct : nearAirV3.tables[T_ACCT]? = some acctTableV3 := rfl
 theorem getElem?_akey : nearAirV3.tables[T_AKEY]? = some ZkFormal.NearV3.AkeyV3.table := rfl
 theorem getElem?_bnd : nearAirV3.tables[T_BND]? = some ZkFormal.NearV3.BndV3.table := rfl
-theorem getElem?_srcp : nearAirV3.tables[T_SRCP]? = some ZkFormal.NearV3.SrcpV3.tableD := rfl
+theorem getElem?_srcp : nearAirV3.tables[T_SRCP]? = some ZkFormal.NearV3.SrcpDD.table := rfl
 theorem getElem?_size : nearAirV3.tables[T_SIZE]? = some ZkFormal.NearV3.UnfoldA7.sizeA7 := rfl
 theorem getElem?_mrk : nearAirV3.tables[T_MRK]? =
     some ZkFormal.NearV3.Candidates.MerkleEmpty.table := rfl
@@ -191,7 +191,7 @@ theorem bndLocal (h : HoldsP nearAirV3 pub tr) :
   tableLocal_of_holdsP h getElem?_bnd
 
 theorem srcpLocal (h : HoldsP nearAirV3 pub tr) :
-    ZkFormal.Near.TableLocal ZkFormal.NearV3.SrcpV3.tableD tr T_SRCP pub :=
+    ZkFormal.Near.TableLocal ZkFormal.NearV3.SrcpDD.table tr T_SRCP pub :=
   tableLocal_of_holdsP h getElem?_srcp
 
 theorem sizeLocal (h : HoldsP nearAirV3 pub tr) :

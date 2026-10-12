@@ -1,7 +1,7 @@
 import ZkFormal.NearV3.BudgetUps
 import ZkFormal.NearV3.Sched.Budget
 import ZkFormal.NearV3.Rcpt.Budget
-import ZkFormal.NearV3.Rcpt.Tables.SrcpD
+import ZkFormal.NearV3.Rcpt.Tables.SrcpDD
 import ZkFormal.NearV3.Rcpt.Tables.RcptR
 import ZkFormal.NearV3.Rcpt.Candidates.AccountEmpty
 import ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair
@@ -36,7 +36,7 @@ Table order (fixed; table index = position):
 16..21 rcptV3 acctV3 akeyV3 bndV3 srcpV3 sizeV3 (receipt; rcpt = `RcptV3.tableQ`: `tableR` (gas and
       deposit-age repairs) + the routing-index range check `q < 128`; acct = `acctTableV3` (empty-capable `AccountEmpty.table`, maxLog 19),
       size at maxLog 4,
-      srcp = `SrcpV3.tableD` with the A10 depth check;
+      srcp = `SrcpDD.table` (DedupTable + the A10 depth check, `rep` public bit);
       the roll-aligned honest heights, `Render/PaddedRcpt.lean`)
 22    qvV3                (queue-value parser)
 23    mrkV3               (v1 Mrk at maxLog 19, empty-tree repair `MerkleEmpty.table`)
@@ -96,7 +96,7 @@ def nearTablesFull : List ZkFormal.Air.Table :=
    ZkFormal.NearV3.Sched.Proc.tableB, ZkFormal.NearV3.Sched.Mem.table,
    ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP,
    ZkFormal.NearV3.RcptV3.tableQ, acctTableV3, ZkFormal.NearV3.AkeyV3.table,
-   ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.tableD, ZkFormal.NearV3.UnfoldA7.sizeA7,
+   ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpDD.table, ZkFormal.NearV3.UnfoldA7.sizeA7,
    ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
    ZkFormal.NearV3.Candidates.MerkleEmpty.table, sortTableV3]
 

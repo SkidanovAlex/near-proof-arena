@@ -10,14 +10,21 @@ open ZkFormal.V2 ZkFormal.Algebra NearSpecV3
 def sourceDup (sources : List SrcList) (j : Nat) : Bool :=
   (sources.take j).any (fun s => s.key == (sources.getD j ⟨[],0,[]⟩).key)
 
+/-- The all-occurrence repetition bit (table 20, `SrcpDD`): the key of source `j` occurs at
+least twice among the sources (every such occurrence has an empty receipt list). -/
+def sourceRep (sources : List SrcList) (j : Nat) : Bool :=
+  decide (2 ≤ (sources.map SrcList.key).count (sources.getD j ⟨[],0,[]⟩).key)
+
+/-- `SRC34`: `[dup, rep] ++ root`. -/
 def sourceRow (sources : List SrcList) (j : Nat) : ByteString :=
-  [if sourceDup sources j then 1 else 0] ++ (sources.getD j ⟨[],0,[]⟩).root
+  [if sourceDup sources j then 1 else 0, if sourceRep sources j then 1 else 0] ++
+    (sources.getD j ⟨[],0,[]⟩).root
 
 def sourcePayload (sources : List SrcList) : Payload :=
   (List.range sources.length).map (sourceRow sources)
 
 def sourcePlan : PubSeg :=
-  { bus := B_SRC, send := true, width := 33, countAt := 0, start := 0, indexBase := some 0 }
+  { bus := B_SRC, send := true, width := 34, countAt := 0, start := 0, indexBase := some 0 }
 
 theorem sourcePayload_length (sources : List SrcList) :
     (sourcePayload sources).length = sources.length := by simp [sourcePayload]
@@ -41,11 +48,12 @@ theorem sourcePayload_width (sources : List SrcList)
 
 theorem source_record (sources : List SrcList) {j : Nat} (hj : j < sources.length) :
     recordValues sourcePlan j ((sourcePayload sources).getD j []) =
-      [Fp.ofNat j, Fp.ofNat (if sourceDup sources j then 1 else 0)] ++
+      [Fp.ofNat j, Fp.ofNat (if sourceDup sources j then 1 else 0),
+        Fp.ofNat (if sourceRep sources j then 1 else 0)] ++
         (sources.getD j ⟨[],0,[]⟩).root.map byteF := by
   rw [sourcePayload_getD sources hj]
   unfold recordValues sourcePlan sourceRow
-  cases sourceDup sources j <;> simp only [Bool.false_eq_true,↓reduceIte,Nat.zero_add,List.map_append,List.map_cons,List.map_nil,List.nil_append,List.cons_append] <;> rfl
+  cases sourceDup sources j <;> cases sourceRep sources j <;> simp only [Bool.false_eq_true,↓reduceIte,Nat.zero_add,List.map_append,List.map_cons,List.map_nil,List.nil_append,List.cons_append] <;> rfl
 
 theorem descriptor_source_record (header : ByteString) (blocks : List Payload)
     (sources : List SrcList) {i j : Nat} (hi : i < blocks.length)
@@ -53,7 +61,8 @@ theorem descriptor_source_record (header : ByteString) (blocks : List Payload)
     (hr : ∀ s ∈ sources, s.root.length = 32)
     (ho : payloadOffset (dataStart header blocks) blocks i < 256^4) :
     (descriptor sourcePlan header.length i).record (ZkFormal.Udr.pubOf Fp (encode header blocks)) j =
-      [Fp.ofNat j, Fp.ofNat (if sourceDup sources j then 1 else 0)] ++
+      [Fp.ofNat j, Fp.ofNat (if sourceDup sources j then 1 else 0),
+        Fp.ofNat (if sourceRep sources j then 1 else 0)] ++
         (sources.getD j ⟨[],0,[]⟩).root.map byteF := by
   rw [descriptor_record sourcePlan header blocks hi
     (by rw [hb,sourcePayload_length]; exact hj)
