@@ -422,3 +422,42 @@ k.slotB2.gasLimit block previous.hdr.nextGasPrice` and `x.applied = (rv r.lists)
 (`applied_eq`); `gasUsed` from `mainOut`'s `n·G` and `hn`; `outgoing` from `refunds_of` (`hrf`,
 `RcptHoldsB`); `body` from `prepBody`'s body check and `decodeBody`; `tokensBurnt`,
 `outcomeRoot` need the AIR's public balance-burnt / outcome-root (MRK) links to `tokAt n` / outcomes.
+
+## 2026-10-12 (session 4) — `RunHdr` closed; `executions` from `HoldsP` alone
+
+Merged `origin/lane/v3-link` (`b3af4b85` LinkHdr, then `645a8784` `V3RecordsWf.listsQ`).  Commits
+`31fa280a` (RcptRoute `hq := W.listsQ`, RcptRunHdr), `72f3cf55` (OutLeaf3), `64b1c8d9` (OutCore3),
+`831b2ccc` (OutRoot3).  Audit `test/AuditRcptSound.lean` extended (all three usual axioms, except
+`decodeBody_shape`, `decodeChunkInner_burnt`, `leaf_isolate`, `mrk_n_eq`: `[propext, Quot.sound]`;
+`walkD0_H`: `[propext]`); `make pin-check` OK.  No AIR change; nothing false found.
+
+* **`RcptRoute`**: `mainRun_of_holdsP_r` no longer takes `hq` (`W.listsQ`); **`hroute_holds`** is
+  v3-link's `hroute` premise (`∀ pc, prepClaim cb = .ok pc → ∀ y ∈ flatR r.lists, …`).
+* **`RcptRunHdr`**: `mainOut_of_run` (every `out` of `applyNewChunk prims (blockCtx k.L …) (Fpre r 0)
+  x.applied` is `(recModel r.lists r.accts (preV r) (Tf r 0 (schedOut o).state)).mainOut pc.ctxB2`,
+  `pc.ctxB2 = blockCtx …`; via `mainRun_of_holdsP_r`, `LinkMainLink.mainTrieLink_holds`,
+  `LinkFwd.hfwd_holds`, `LinkPrepCtx`, determinism), `pMany_length`, `decodeBody_shape`
+  (`b = u32 0 ++ u32 |rs| ++ b.drop 8`), `body_tail` (`h.body.drop 8` = model refunds encoded),
+  `pChunkInner_burnt`/`decodeChunkInner_burnt`/`walkD0_H` (`k.H.prevBalanceBurnt < 2^128`),
+  `burnt_pub` (`k.H.prevBalanceBurnt = leN' (pubBytes pub PH_BURNT 16)`), `runHdr_of` (`RunHdr`
+  given the outcome-root premise): `gasUsed` (`n·G`, `hn`), `tokensBurnt` (`tok_inv` + `RcptV3Wf.toks`
+  final = public burnt), `outgoing` (`refunds_of`), `body` (`decodeBody_shape` + `body_tail`).
+* **`OutLeaf3`**: `leaf_isolate`, `othersRC_leaf`, `leaf_iso`, `peo_sha` (`peoh = sha256 peo`),
+  `refundIds_eq`, `burnt_eq`, `peo_encode3` (`toBytes peo = (outcomeOf q).partialEncode`, incl.
+  system receipts: `burnt = 0`, no refund id), **`leaf_hash3`**.
+* **`OutCore3`**: v1 `Link.out_ok` abstracted from `LinkHyp` (`OutCore S shaS shaR pub mv Rs n L`:
+  SHA facts with `BYTES` covered by `S`, mrk `DIGEST` receives provided, exact `MPOS` balance
+  `cnt Rs + cnt mrkSends = cnt mrkRecvs`, `MrkWf`, `mv.n = n ≤ 2^22`, leaf / `MRK(i)` isolation);
+  `core_sends_good`, **`root_of_core`** (received root digest = `merkleRoot L`).
+* **`OutRoot3`**: `rcpt_mpos_mem`, `mpos_bal` (`bal_users [T_RCPT, T_MRK]` on `B_MPOS`),
+  `othersRC_mrk`, `mrk_iso` (via `mrkMsgs_at`), `mrk_n_eq`, `outCore_holds` (`mrkE = false`),
+  **`outcomeRoot_holds`** (`k.H.prevOutcomeRoot = outcomeRoot (mainOut).outcomes`; `mrkE = true`:
+  `countE = 0` ⇒ `n = 0` via `MerkleRender.public_count`, public root bytes 0 ⇒ `zeroHash`),
+  **`runHdr_holds`** (= v3-link's `hrun`), **`executions_holdsP`** (`LinkHdr.executions_run` with
+  `hroute`, `hrun` discharged: `∃ m last, m.Valid k x ∧ ImplicitRunV3 … ∧ HeaderSemanticsV3 k h p m last`
+  from `hp hsz hH T W hw hn hxn hxv hxh hxr hmb hmp` only).
+
+### Remaining (this lane)
+
+None for `executions`.  (`hn : h.n = |flatR r.lists|`, `hxn/hxv/hxh/hxr` are the reconstruction's
+definitional identities, supplied by the caller as before.)
