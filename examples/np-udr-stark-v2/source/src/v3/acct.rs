@@ -1,14 +1,17 @@
-//! Honest `acctV3` trace generator (part 2 extension), the Rust twin of the Lean
-//! aligned generator `ZkFormal.NearV3.Render.AcctV3Gen.cell` + `acctV3Rows`
-//! (`ZkFormal/NearV3/Rcpt/Render/AcctRender.lean`, via the aligned wrapper
-//! `acctTraceAligned`).
+//! Honest table-17 trace generator for `nearAirV3` (`acctTableV3` =
+//! `{AccountEmpty.table with maxLog := 19}`, `Assembly/NearAir.lean`), the Rust
+//! twin of the Lean honest render `acctTraceAlignedE`
+//! (`Render/PaddedAcctE.lean`): no account (`as = []`) gives the all-zero trace
+//! of log 1 (`AccountEmpty.emptyTrace`); otherwise the aligned generator
+//! `acctTraceAligned` (`Render/PaddedRcpt.lean`: `AcctV3Gen.cell`,
+//! `Rcpt/Render/AcctRender.lean`, at `padLog22 (logOf (16 · |as|))`).  Both
+//! cases are the same formula here (`padLog22 (logOf 0) = 1`, no active row).
 //!
 //! Input: the `List AcctV` entries (a v1 view at `Near/Extract/SmallViews.lean`:
 //! `k`, `tlast`, the 72 canonical `pre` bytes and the 16 canonical `post` bytes),
-//! deserialized from JSON with the Lean field names.  Output: the trace at the
-//! aligned height `padLog22 (logOf (16 · |as|))`, every cell reduced mod `P`.
-//! `conformance/run-v2.sh` compares the dumps with `np-lean-render-v3` byte for
-//! byte.
+//! deserialized from JSON with the Lean field names.  Every cell is reduced mod
+//! `P`.  `conformance/run-v2.d/rcs.sh` compares the dumps with
+//! `np-lean-render-v3-rcs` byte for byte.
 
 use p3_field::{Field, PrimeCharacteristicRing, PrimeField32};
 use serde::Deserialize;
@@ -69,8 +72,8 @@ fn act_cell(a: &[AcctV], q: usize) -> [u64; ACCT_WIDTH] {
     c
 }
 
-/// `acctV3Rows` at the aligned height: 16 rows per record, zero padding to
-/// `2^padLog22(logOf (16·|as|))`.
+/// `acctTraceAlignedE as`: 16 rows per record, zero padding to
+/// `2^padLog22(logOf (16·|as|))` (log 1, all zero, for `as = []`).
 pub fn acct_aligned(a: &[AcctV]) -> Tab {
     let mut t = Tab::zero(pad_log22(log_of(16 * a.len())), ACCT_WIDTH);
     let h = t.height();
@@ -116,5 +119,12 @@ mod tests {
         assert_eq!(at(15, 13), 255 + 15 * 246); // 255 - 9 = 246 each lane
         assert_eq!(at(0, 12), 1); // lo8
         assert_eq!(at(8, 12), 0); // i = 8 >= 8
+    }
+
+    #[test]
+    fn empty_is_log1_zero() {
+        let t = acct_aligned(&[]);
+        assert_eq!(t.log, 1);
+        assert!(t.cells.iter().all(|&x| x == 0));
     }
 }

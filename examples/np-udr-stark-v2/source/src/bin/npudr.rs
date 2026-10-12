@@ -277,8 +277,8 @@ fn main() {
         }
         Some("v3check") => {
             // local constraints of the rendered table against its nearAirV3 table
-            if a.len() != 5 {
-                die("usage: npudr v3check <air.json> <table> <entries.json>");
+            if a.len() != 5 && a.len() != 6 {
+                die("usage: npudr v3check <air.json> <table> <entries.json> [<pubs.json>]");
             }
             let txt =
                 std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
@@ -310,7 +310,15 @@ fn main() {
                     tab.log, t.max_log
                 ));
             }
-            let pubs = rcpt_pubs.unwrap_or_else(|| vec![npudr::field::F::ZERO; air.num_pub]);
+            // optional public prefix (JSON list of field values; the rest is zero)
+            let mut pubs = rcpt_pubs.unwrap_or_else(|| vec![npudr::field::F::ZERO; air.num_pub]);
+            if let Some(pf) = a.get(5) {
+                let pt = std::fs::read_to_string(pf).unwrap_or_else(|e| die(&format!("{pf}: {e}")));
+                let pv: Vec<u64> = serde_json::from_str(&pt).unwrap_or_else(|e| die(&format!("{pf}: {e}")));
+                for (i, x) in pv.into_iter().enumerate().take(air.num_pub) {
+                    pubs[i] = npudr::field::F::from_u64(x);
+                }
+            }
             let bad = npudr::check::failing_constraints(t, &tab.to_matrix(), &pubs, 20);
             if bad.is_empty() {
                 println!(

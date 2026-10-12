@@ -1,19 +1,41 @@
-//! Honest `srcpV3` trace generator for `nearAirV3` (table index 20), the Rust
-//! twin of the Lean row generator `ZkFormal.NearV3.Render.SrcpGen`
-//! (`Rcpt/Render/Srcp/Gen.lean`): the root row, 32 leaf rows and 64 rows per
-//! path item of every source-proof block, then padding that carries the final
-//! `sz` accumulator.  The aligned height is `padLog22 (logOf (R bs))`, the
-//! wrapper used by `Render/PaddedSrcp.lean`'s `srcpTraceAligned`.
+//! Honest table-20 trace generator for `nearAirV3` (`SrcpDD.table`,
+//! `zk-formal/ZkFormal/NearV3/Rcpt/Tables/SrcpDD.lean`), the Rust twin of the
+//! Lean honest render `srcpDDTrace bs rep` (`Render/PaddedSrcpDD.lean`):
 //!
-//! Input: the `List SrcpB` entries, deserialized from JSON with the Lean field
-//! names (`SrcpItem` is a nested object list).  `conformance/run-v2.sh` compares
-//! the dump with `np-lean-render-v3` byte for byte.
+//! * columns `0 … 56` are `DedupRender.cell bs rep`
+//!   (`Rcpt/Candidates/DedupRender.lean`): a computed block (`dup = false`) is
+//!   the `srcpV3` block of `Rcpt/Render/Srcp/Gen.lean` (root row, 32 leaf rows,
+//!   64 rows per path item); a `dup` occurrence is a single reference root row
+//!   (`qe = ql − 1`, `le = cId = cLen = gD = 0`) whose `sz` step is `L` only;
+//!   column `56` carries the repetition bit `rep` of the block on root rows;
+//! * columns `57 … 62` are the A10 depth slack bits `db_e` = bit `e` of
+//!   `DP0 − |path|` on every root row (`SrcpDDGen.depthVal`);
+//! * padding carries the final `sz` accumulator `DedupRender.size bs`.
+//!
+//! The height is `padLog22 (logOf (DedupRender.R bs))`.
+//!
+//! Input: the `List SrcpB` entries with the Lean field names plus the per-block
+//! repetition bit `rep` (`Rcpt/Candidates/SourceRepetition.lean`
+//! `sourceRepeated p.lists j` = `Public.sourceRep`, the key of source `j` occurs
+//! at least twice; `AcceptedV3.ddRep`), which the completeness assembly passes as
+//! the function `rep : Nat → Bool` indexed by block position.
+//! `conformance/run-v2.d/rcs.sh` compares the dump with
+//! `np-lean-render-v3-rcs` byte for byte.
 
 use serde::Deserialize;
 
 use super::{Tab, b, get, log_of, pad_log22};
 
-pub const SRCP_WIDTH: usize = 56;
+/// `SrcpDD.width`: the 57 `DedupTable` columns plus 6 depth slack bits.
+pub const SRCP_WIDTH: usize = 63;
+/// `DedupRender.width` (the frame cells `0 … 55` and the repetition bit `56`).
+const DD_WIDTH: usize = 57;
+/// `DedupTable.repeated`.
+const REPEATED: usize = 56;
+/// `SrcpDD.db 0` (the six slack bits are `57 … 62`).
+const DB0: usize = 57;
+/// `SrcpV3.DP0` (`Rcpt/Tables/SrcpD.lean`), the A10 path-depth bound.
+pub const DP0: u64 = 32;
 
 /// `ZkFormal.Near.Ids`: SHA message kinds (`Id = kind + 16·idx`).
 const K_RC: u64 = 1;
@@ -53,6 +75,12 @@ pub struct SrcpB {
     pub ql: u64,
     pub leaf: Vec<u64>,
     pub path: Vec<SrcpItem>,
+    /// The all-occurrence repetition bit of this block's source key
+    /// (`sourceRepeated p.lists j`, column `56` of its root row).  Not a Lean
+    /// `SrcpB` field: the Lean render takes it as `rep : Nat → Bool` by block
+    /// position.  Defaults to `false` for older entry files.
+    #[serde(default)]
+    pub rep: bool,
 }
 
 // ---------------------------------------------------------------------------
@@ -89,7 +117,7 @@ struct Frame {
 }
 
 impl Frame {
-    /// `Frame.cell`: the 56 cells of the row.
+    /// `Frame.cell`: the 56 frame cells of the row (columns `56 …` are `0`).
     fn cells(&self) -> [u64; SRCP_WIDTH] {
         let mut c = [0u64; SRCP_WIDTH];
         c[0] = b(self.rt);
@@ -123,8 +151,27 @@ impl Frame {
     }
 }
 
-/// `rootFrame B before`.
+/// `DedupRender.frame B before .root`: `rootFrame B before`, and for a `dup`
+/// occurrence the reference header `{ qe := ql − 1, le := 0, cId := 0,
+/// cLen := 0, gD := false }`.
 fn root_frame(e: &SrcpB, before: u64, gz: bool) -> Frame {
+    let f = root_frame_computed(e, before, gz);
+    if e.dup {
+        Frame {
+            qe: e.ql.saturating_sub(1),
+            le: 0,
+            c_id: 0,
+            c_len: 0,
+            gd: false,
+            ..f
+        }
+    } else {
+        f
+    }
+}
+
+/// `SrcpGen.rootFrame B before`.
+fn root_frame_computed(e: &SrcpB, before: u64, gz: bool) -> Frame {
     Frame {
         rt: true,
         q: e.ql.saturating_sub(1),
@@ -204,9 +251,23 @@ fn path_frame(e: &SrcpB, before: u64, i: u64, o: u64, gz: bool) -> Frame {
     }
 }
 
-/// `SrcpGen.R bs = (recs bs).length = Σ (33 + 64·|path|)`.
-fn r_of(bs: &[SrcpB]) -> u64 {
-    bs.iter().map(|e| 33 + 64 * e.path.len() as u64).sum()
+/// `DedupRender.payloadRows B`: no rows after a `dup` header.
+fn payload_rows(e: &SrcpB) -> u64 {
+    if e.dup {
+        0
+    } else {
+        32 + 64 * e.path.len() as u64
+    }
+}
+
+/// `DedupRender.R bs = Σ (1 + payloadRows B)`.
+pub fn r_of(bs: &[SrcpB]) -> u64 {
+    bs.iter().map(|e| 1 + payload_rows(e)).sum()
+}
+
+/// `DedupRender.sizeStep B = L + (if dup then 0 else 33·|path|)`.
+fn size_step(e: &SrcpB) -> u64 {
+    e.l + if e.dup { 0 } else { 33 * e.path.len() as u64 }
 }
 
 /// `SrcpGen.cell bs pos x` at a row before `R bs` (the `Frame` of `recs[pos]`).
@@ -218,9 +279,9 @@ fn row_frame(e: &SrcpB, before: u64, kind: Kind, gz: bool) -> Frame {
     }
 }
 
-/// `srcpSize bs = Σ (L + 33·|path|)` (the padding `sz` accumulator).
+/// `DedupRender.size bs = Σ sizeStep` (the padding `sz` accumulator).
 fn srcp_size(bs: &[SrcpB]) -> u64 {
-    bs.iter().map(|e| e.l + 33 * e.path.len() as u64).sum()
+    bs.iter().map(size_step).sum()
 }
 
 /// `SrcpGen.Kind`.
@@ -231,8 +292,24 @@ enum Kind {
     Path(u64, u64),
 }
 
-/// Build the honest `srcpV3` trace at the aligned height.
+/// Write the cells of a root row: the frame, the repetition bit and the depth
+/// slack bits of `DP0 − |path|` (`SrcpDDGen.cell`).
+fn set_root(t: &mut Tab, pos: usize, e: &SrcpB, f: &Frame) {
+    let mut c = f.cells();
+    c[REPEATED] = b(e.rep);
+    let d = DP0.saturating_sub(e.path.len() as u64);
+    for k in 0..(SRCP_WIDTH - DB0) {
+        c[DB0 + k] = (d >> k) & 1;
+    }
+    for (x, v) in c.into_iter().enumerate() {
+        t.set(pos, x, v);
+    }
+}
+
+/// Build the honest table-20 trace `srcpDDTrace bs rep` at the aligned height
+/// `padLog22 (logOf (DedupRender.R bs))`.
 pub fn srcp_aligned(bs: &[SrcpB]) -> Tab {
+    debug_assert_eq!(DD_WIDTH, REPEATED + 1);
     let r = r_of(bs);
     let log = pad_log22(log_of(r as usize));
     let mut t = Tab::zero(log, SRCP_WIDTH);
@@ -241,43 +318,44 @@ pub fn srcp_aligned(bs: &[SrcpB]) -> Tab {
     let mut before: u64 = 0;
     'blocks: for e in bs {
         let gz = |p: u64| p + 1 == r;
-        // root row
+        if pos >= h {
+            break;
+        }
+        // root row (the whole block for a `dup` occurrence)
         let f = row_frame(e, before, Kind::Root, gz(pos));
-        if pos < h {
-            for (c, x) in f.cells().into_iter().enumerate() {
-                t.set(pos as usize, c, x);
-            }
-        }
+        set_root(&mut t, pos as usize, e, &f);
         pos += 1;
-        // 32 leaf rows
-        for p in 0..32u64 {
-            if pos >= h {
-                break 'blocks;
-            }
-            let f = row_frame(e, before, Kind::Leaf(p), gz(pos));
-            for (c, x) in f.cells().into_iter().enumerate() {
-                t.set(pos as usize, c, x);
-            }
-            pos += 1;
-        }
-        // 64 rows per path item
-        for i in 0..e.path.len() as u64 {
-            for o in 0..64u64 {
+        if !e.dup {
+            // 32 leaf rows
+            for p in 0..32u64 {
                 if pos >= h {
                     break 'blocks;
                 }
-                let f = row_frame(e, before, Kind::Path(i, o), gz(pos));
+                let f = row_frame(e, before, Kind::Leaf(p), gz(pos));
                 for (c, x) in f.cells().into_iter().enumerate() {
                     t.set(pos as usize, c, x);
                 }
                 pos += 1;
             }
+            // 64 rows per path item
+            for i in 0..e.path.len() as u64 {
+                for o in 0..64u64 {
+                    if pos >= h {
+                        break 'blocks;
+                    }
+                    let f = row_frame(e, before, Kind::Path(i, o), gz(pos));
+                    for (c, x) in f.cells().into_iter().enumerate() {
+                        t.set(pos as usize, c, x);
+                    }
+                    pos += 1;
+                }
+            }
         }
-        before += e.l + 33 * e.path.len() as u64;
+        before += size_step(e);
     }
-    // Padding: `cell bs pos x = if x = sz then srcpSize bs else 0`.
+    // Padding: `cell bs pos x = if x = sz then size bs else 0`.
     let total: u64 = srcp_size(bs);
-    for q in (pos as usize)..t.height() {
+    for q in (pos.min(h) as usize)..t.height() {
         t.set(q, SZ, total);
     }
     t
@@ -305,5 +383,46 @@ mod tests {
         assert_eq!(t.cells[9] as u64, bs[0].ql - 1);
         // the aligned height always fits the record count
         assert!(t.height() as u64 >= r_of(&bs));
+    }
+
+    #[test]
+    fn dup_reference_rows_and_depth_bits() {
+        let at = |t: &Tab, r: usize, c: usize| t.cells[r * SRCP_WIDTH + c] as u64;
+        for seed in 1..40u64 {
+            let mut r = Rng::new(seed);
+            let bs = crate::v3::sample::srcp(&mut r, 9);
+            let t = srcp_aligned(&bs);
+            assert_eq!(t.width, SRCP_WIDTH);
+            let mut pos = 0usize;
+            for e in &bs {
+                // root row: rt, dup, rep, depth slack bits
+                assert_eq!(at(&t, pos, 0), 1);
+                assert_eq!(at(&t, pos, 14), b(e.dup));
+                assert_eq!(at(&t, pos, REPEATED), b(e.rep));
+                let d: u64 = (0..6).map(|k| at(&t, pos, DB0 + k) << k).sum();
+                assert_eq!(d, DP0 - e.path.len() as u64);
+                if e.dup {
+                    assert!(e.rep && e.l == 12);
+                    assert_eq!(at(&t, pos, 12), e.ql - 1); // qe = ql − 1
+                    assert_eq!(at(&t, pos, 21), 0); // gD
+                }
+                pos += 1 + payload_rows(e) as usize;
+                // non-root rows carry no rep/depth bits
+                for q in (pos - payload_rows(e) as usize)..pos {
+                    for c in REPEATED..SRCP_WIDTH {
+                        assert_eq!(at(&t, q, c), 0);
+                    }
+                }
+            }
+            assert_eq!(pos as u64, r_of(&bs));
+            assert_eq!(at(&t, t.height() - 1, SZ), srcp_size(&bs));
+        }
+    }
+
+    #[test]
+    fn empty_is_log1_padding() {
+        let t = srcp_aligned(&[]);
+        assert_eq!(t.log, 1);
+        assert!(t.cells.iter().all(|&x| x == 0));
     }
 }

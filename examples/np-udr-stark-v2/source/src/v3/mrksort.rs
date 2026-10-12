@@ -1,26 +1,33 @@
-//! Honest v1 `mrk`/`sort` trace generators for `nearAirV3` tables 23/24.
+//! Honest `mrk`/`sort` trace generators for `nearAirV3` tables 23/24.
 //!
-//! `nearAirV3` reuses the v1 outcome-Merkle and receipt-id-sort tables at their
-//! v3 heights (`Assembly/NearAir.lean:44-47`): table 23 is
-//! `ZkFormal.NearV3.Candidates.MerklePublic.table` (v1 `Mrk.table` with the two
-//! public index ranges `PV_N → PH_N`, `PV_OUT → PH_OUT` translated,
-//! `Candidates/MerklePublic.lean:9-28`) and table 24 is v1 `Sort.table` with
-//! `maxLog := 18`.
-//!
-//! The cell functions are exactly v1's
-//! `ZkFormal.Near.Render.MrkGen.cell` (`Render/Mrk.lean:98`) and
-//! `SortGen.cell` (`Render/Sort.lean:68`); the public-index translation is a
-//! property of the *table's* constraints, not of the trace, so the rendered
-//! cells are the v1 ones.  Where v1's `mrkRowsAll`/`sortRowsAll` sized the trace
-//! at `2^logOf rows`, the v3 traces are fixed at the table height
-//! (`MerkleRender.trace` log 19, `SortGeneral.trace` log 18), which is the v1
-//! rows followed by zero padding.
+//! * Table 23 is `MerkleEmpty.table` (`Candidates/MerkleEmpty.lean`): the v1
+//!   outcome-Merkle table with the v3 public offsets (`MerklePublic.table`, 58
+//!   columns) plus the empty flag `e = 58` and the count inverse `inv = 59`
+//!   (width 60), every original constraint and interaction gated by `1 − e`.
+//!   The honest render is `mrkTraceV3 os pub = arrTrace (outcomeTrace os pub)`
+//!   (`Render/PaddedMrk.lean`, `Candidates/MerkleRender/{NativeTrace,Honest}.lean`):
+//!   - no outcomes (`n = 0`): `MerkleEmpty.emptyTrace`, log 1, `e = 1` on both
+//!     rows, every other cell `0`;
+//!   - `n ≥ 1`: `MerkleEmpty.liftTrace (MerkleRender.trace n lv)`: the v1 cells
+//!     `ZkFormal.Near.Render.MrkGen.cell` (`Near/Render/Mrk.lean`) at the fixed
+//!     height `2^19`, `e = 0`, and `inv = countE⁻¹` on **every** row, where the
+//!     count expression reads the public `PH_N` bytes (honestly `n`).
+//! * Table 24 is `sortTableV3 = {SortEmpty.table with maxLog := 19}`
+//!   (`Candidates/SortEmpty.lean`, `Assembly/NearAir.lean`); the honest render is
+//!   `SortV3.sortTraceV3 rs` (`Render/PaddedSort.lean`): no receipts → the
+//!   all-zero trace of log 1; otherwise `sortTraceAligned S` (the sorted ids `S`)
+//!   at the aligned height `padLog22 (logOf (32·|S|))` with `SortGen.cell S
+//!   (2^log)` (`Near/Render/Sort.lean`; the delay line wraps at that height).
 //!
 //! * `mrk` input: a `MrkV` (`Extract/SmallViews.lean:133`) — the leaf count `n`,
 //!   the root reference `(J, rootId, rootLen)` and the node list in row order
-//!   (`MrkNode.hashed`/`.promoted`, `Extract/SmallViews.lean:126`).
+//!   (`MrkNode.hashed`/`.promoted`, `Extract/SmallViews.lean:126`); optionally
+//!   `levels` (the `MrkGen` level table `lv`, `[[{id,len,dig}]]`), which the Lean
+//!   differential renders from (`conformance/RenderV3Rcs.lean`) and the Rust
+//!   render ignores.
 //! * `sort` input: the sorted id list `S : List (Nat × List Nat)` consumed by
-//!   `SortGeneral.trace` — receipt index and 32 id bytes, ascending.
+//!   `sortTraceAligned` — receipt index and 32 id bytes, ascending
+//!   (`NativeSortIds.sorted rs`).
 
 use serde::Deserialize;
 
@@ -28,10 +35,15 @@ use crate::near::ids::{K_LEAF, K_MRK};
 use crate::near::info::inv_p;
 use crate::near::small::{MRK_WIDTH, SORT_WIDTH, mrk_shape};
 
-use super::Tab;
+use super::{Tab, log_of, pad_log22};
 
 const MRK_LOG: usize = 19;
-const SORT_LOG: usize = 18;
+/// `MerkleEmpty.table.width`: the 58 `Mrk` columns plus `emptyCol`, `inverseCol`.
+pub const MRK_V3_WIDTH: usize = 60;
+/// `MerkleEmpty.emptyCol`.
+const MRK_EMPTY: usize = 58;
+/// `MerkleEmpty.inverseCol`.
+const MRK_INV: usize = 59;
 
 fn msg_id(kind: usize, idx: usize) -> u64 {
     (kind + 16 * idx) as u64
@@ -125,6 +137,10 @@ pub struct MrkV {
     pub root_len: u64,
     #[serde(default)]
     pub nodes: Vec<MrkNode>,
+    /// The `MrkGen` level table (level `0` the leaves), when known.  Only the
+    /// Lean differential reads it; [`mrk_aligned`] renders from `nodes`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub levels: Vec<Vec<MNode>>,
 }
 
 /// `size n j` (`Render/Mrk.lean:28`).
@@ -237,24 +253,31 @@ fn mrk_recs(n: u64) -> Vec<(u64, u64, bool, u64)> {
     out
 }
 
-/// `MrkGen.cell` over the whole `2^19` table (`MerkleRender.trace`).
+/// `mrkTraceV3`: for `n = 0` the empty trace (log 1, `emptyCol = 1`); else
+/// `MrkGen.cell` over the whole `2^19` table (`MerkleRender.trace`), lifted with
+/// `emptyCol = 0` and `inverseCol = n⁻¹` on every row (the honest public count
+/// is `n`).
 ///
 /// Row 0 is the root row; then the node rows in `MrkGen.recs` order (a hashed
-/// node spans 64 rows, a promoted node one), then zero padding.  `v.nodes` is
-/// in `mrkShape` order, so `shape[k]`'s node is `v.nodes[k]`.
+/// node spans 64 rows, a promoted node one), then padding.  `v.nodes` is in
+/// `mrkShape` order, so `shape[k]`'s node is `v.nodes[k]`.
 pub fn mrk_aligned(v: &MrkV) -> Tab {
     let n = v.n;
-    let mut t = Tab::zero(MRK_LOG, MRK_WIDTH);
-    let h = t.height();
-    if h == 0 {
+    if n == 0 {
+        let mut t = Tab::zero(1, MRK_V3_WIDTH);
+        for q in 0..t.height() {
+            t.set(q, MRK_EMPTY, 1);
+        }
         return t;
     }
+    let mut t = Tab::zero(MRK_LOG, MRK_V3_WIDTH);
+    let h = t.height();
     let root = root_cell(n, v);
     for (c, x) in root.into_iter().enumerate() {
         t.set(0, c, x);
     }
     let mut q = 1usize;
-    for (k, &(j, i, hashed)) in mrk_shape(n as usize).iter().enumerate() {
+    'shape: for (k, &(j, i, hashed)) in mrk_shape(n as usize).iter().enumerate() {
         let nd = match v.nodes.get(k) {
             Some(nd) => nd,
             None => break,
@@ -263,7 +286,7 @@ pub fn mrk_aligned(v: &MrkV) -> Tab {
         let rows = if hashed { 64u64 } else { 1 };
         for p in 0..rows {
             if q >= h {
-                break;
+                break 'shape;
             }
             let row = node_cell(n, nd, j, i, p);
             for (c, x) in row.into_iter().enumerate() {
@@ -271,6 +294,10 @@ pub fn mrk_aligned(v: &MrkV) -> Tab {
             }
             q += 1;
         }
+    }
+    let inv = inv_p(n);
+    for q in 0..h {
+        t.set(q, MRK_INV, inv);
     }
     t
 }
@@ -315,7 +342,7 @@ fn sub1(x: &[u64], y: &[u64]) -> Vec<u64> {
     if br != 0 { vec![0u64; n] } else { out }
 }
 
-/// `SortGen.cell S H q col` (`Render/Sort.lean:68`) with `H = 2^18`.
+/// `SortGen.cell S H q col` (`Render/Sort.lean:68`) at the table height `H`.
 fn sort_cell(
     s: &[(u64, Vec<u64>)],
     h: usize,
@@ -401,14 +428,19 @@ fn sort_diffs_carries(s: &[(u64, Vec<u64>)]) -> (Vec<Vec<u64>>, Vec<Vec<u64>>) {
     (diffs, carries)
 }
 
-/// Honest `sort` trace at `2^18` rows (`SortGeneral.trace`).
+/// `SortV3.sortTraceV3`: the all-zero log-1 trace for no ids, else
+/// `sortTraceAligned S` at `padLog22 (logOf (32·|S|))` rows.
 ///
 /// `s` is the sorted id list; entries must be ascending (little-endian) and
 /// each id exactly 32 bytes for the table's constraints to hold.
 pub fn sort_aligned(s: &[(u64, Vec<u64>)]) -> Tab {
-    let h = 1usize << SORT_LOG;
+    if s.is_empty() {
+        return Tab::zero(1, SORT_WIDTH);
+    }
+    let log = pad_log22(log_of(32 * s.len()));
+    let h = 1usize << log;
     let (diffs, carries) = sort_diffs_carries(s);
-    let mut t = Tab::zero(SORT_LOG, SORT_WIDTH);
+    let mut t = Tab::zero(log, SORT_WIDTH);
     for q in 0..h {
         for c in 0..SORT_WIDTH {
             let x = sort_cell(s, h, &diffs, &carries, q, c);
@@ -510,19 +542,25 @@ pub fn mrk_from_levels(n: u64, lv: &[Vec<MNode>]) -> MrkV {
         root_id: root.id,
         root_len: root.len,
         nodes,
+        levels: vec![],
     }
 }
 
-/// `n ≥ 1` honest `MrkV` entries (random 32-byte windows).
+/// An honest `MrkV` of `n` leaves (random 32-byte windows) with its level
+/// table; `n = 0` is the empty tree (no outcomes).
 pub fn mrk(r: &mut Rng, n: u64) -> MrkV {
-    let n = n.max(1);
+    if n == 0 {
+        return MrkV::default();
+    }
     let lv = sample_levels(r, n);
-    mrk_from_levels(n, &lv)
+    MrkV {
+        levels: lv.clone(),
+        ..mrk_from_levels(n, &lv)
+    }
 }
 
-/// `k ≥ 1` sorted 32-byte ids (`(receipt index, id)`), ascending.
+/// `k` sorted 32-byte ids (`(receipt index, id)`), ascending (none for `k = 0`).
 pub fn sort(r: &mut Rng, k: usize) -> Vec<(u64, Vec<u64>)> {
-    let k = k.max(1);
     let mut v: Vec<(u64, Vec<u64>)> = (0..k)
         .map(|i| {
             let mut b = r.bytes(30);
@@ -570,7 +608,7 @@ mod tests {
             let v = mrk(&mut r, n);
             let t = mrk_aligned(&v);
             assert_eq!(t.log, 19);
-            assert_eq!(t.width, MRK_WIDTH);
+            assert_eq!(t.width, MRK_V3_WIDTH);
             let recs = mrk_recs(n);
             // row 0 is the root row
             assert_eq!(t.cells[mc::RT], 1);
@@ -579,7 +617,7 @@ mod tests {
             // a hashed node's 64 rows carry the two windows
             for (q1, &(j, i, h, p)) in recs.iter().enumerate() {
                 let q = q1 + 1;
-                let base = q * MRK_WIDTH;
+                let base = q * MRK_V3_WIDTH;
                 assert_eq!(t.cells[base + mc::Q] as u64, qbase(n, j) + i, "n={n} q={q}");
                 if h {
                     assert_eq!(t.cells[base + mc::SG], 1);
@@ -589,10 +627,16 @@ mod tests {
                     assert_eq!(p, 0);
                 }
             }
-            // one all-zero padding row after the records
-            let pad = (recs.len() + 1) * MRK_WIDTH;
-            for c in 0..MRK_WIDTH {
-                assert_eq!(t.cells[pad + c], 0, "n={n} col={c}");
+            // one padding row after the records: all zero but `inv = n⁻¹`
+            let pad = (recs.len() + 1) * MRK_V3_WIDTH;
+            for c in 0..MRK_V3_WIDTH {
+                let want = if c == MRK_INV { inv_p(n) } else { 0 };
+                assert_eq!(t.cells[pad + c] as u64, want, "n={n} col={c}");
+            }
+            // the lift columns on every row
+            for q in [0usize, 1, t.height() - 1] {
+                assert_eq!(t.cells[q * MRK_V3_WIDTH + MRK_EMPTY], 0);
+                assert_eq!(t.cells[q * MRK_V3_WIDTH + MRK_INV] as u64, inv_p(n));
             }
         }
     }
@@ -602,7 +646,7 @@ mod tests {
         let air = air();
         let t = &air.tables[23];
         let mut r = Rng::new(3);
-        for n in [1u64, 2, 3, 5, 7, 8, 16] {
+        for n in [0u64, 1, 2, 3, 5, 7, 8, 16] {
             let v = mrk(&mut r, n);
             // exercise the JSON `render_mrk` entry point
             let j = serde_json::to_string(&v).unwrap();
@@ -614,12 +658,26 @@ mod tests {
     }
 
     #[test]
+    fn empty_tables() {
+        let t = mrk_aligned(&MrkV::default());
+        assert_eq!((t.log, t.width), (1, MRK_V3_WIDTH));
+        for q in 0..2 {
+            for c in 0..MRK_V3_WIDTH {
+                assert_eq!(t.cells[q * MRK_V3_WIDTH + c], (c == MRK_EMPTY) as u32);
+            }
+        }
+        let t = sort_aligned(&[]);
+        assert_eq!((t.log, t.width), (1, SORT_WIDTH));
+        assert!(t.cells.iter().all(|&x| x == 0));
+    }
+
+    #[test]
     fn sort_matches_v1_cells() {
         let mut r = Rng::new(5);
         for k in [1usize, 2, 5, 37] {
             let s = sort(&mut r, k);
             let t = sort_aligned(&s);
-            assert_eq!(t.log, 18);
+            assert_eq!(t.log, pad_log22(log_of(32 * k)));
             assert_eq!(t.width, SORT_WIDTH);
             // first segment: act, sf, ft, i, cin
             assert_eq!(t.cells[0], 1);
@@ -639,7 +697,7 @@ mod tests {
 
     /// Differential against the real v1 `sort` generator on a public fixture:
     /// `sort_aligned (sorted_ids i)` reproduces `small::sort_rows_all i` on the
-    /// active rows (the v3 trace is the v1 rows plus padding to `2^18`).
+    /// active rows (the v3 trace is the v1 rows padded to the aligned height).
     #[test]
     fn sort_matches_v1_generator_on_fixture() {
         use crate::near::{ext, info, spec};
@@ -661,12 +719,12 @@ mod tests {
             .map(|(r, b)| (r as u64, b.into_iter().map(|x| x as u64).collect()))
             .collect();
         let t = sort_aligned(&s);
-        assert_eq!(t.log, 18);
+        assert_eq!(t.log, pad_log22(log_of(32 * s.len())));
         let active = 32 * s.len();
         assert!(active <= t.height());
         // Columns 0..17 (the active-row cells) are functions of `S` alone; the
         // delay line 17..49 depends on the table height `H` (`bbAt ((q + 2H −
-        // 1 − j) mod H)`), which is v1's `sortH` there but the fixed `2^18` here.
+        // 1 − j) mod H)`), which is v1's `sortH` there but the aligned height here.
         for q in 0..active {
             for c in 0..17 {
                 assert_eq!(
@@ -703,14 +761,17 @@ mod tests {
         assert_eq!(t.log, 19);
         let active = v1.len();
         assert!(active <= t.height());
+        // the v1 columns `0 … 57`; the lift columns are `e = 0`, `inv = n⁻¹`
         for q in 0..active {
             for c in 0..MRK_WIDTH {
                 assert_eq!(
-                    t.cells[q * MRK_WIDTH + c] as u64,
+                    t.cells[q * MRK_V3_WIDTH + c] as u64,
                     v1[q][c] as u64,
                     "fixture v1 mrk mismatch q={q} c={c}"
                 );
             }
+            assert_eq!(t.cells[q * MRK_V3_WIDTH + MRK_EMPTY], 0);
+            assert_eq!(t.cells[q * MRK_V3_WIDTH + MRK_INV] as u64, inv_p(v.n));
         }
     }
 
@@ -763,7 +824,7 @@ mod tests {
         let air = air();
         let t = &air.tables[24];
         let mut r = Rng::new(9);
-        for k in [1usize, 2, 5, 37] {
+        for k in [0usize, 1, 2, 5, 37] {
             let s = sort(&mut r, k);
             // exercise the JSON `render_sort` entry point
             let j = serde_json::to_string(&s).unwrap();

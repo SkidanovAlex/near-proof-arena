@@ -276,12 +276,13 @@ pub fn sample_json(table: &str, seed: u64, n: usize) -> Result<String, String> {
     j.map_err(|e| e.to_string())
 }
 
-/// `n ≥ 1` honest `AcctV` records: `k`, `tlast` canonical fields, 72 raw pre
+/// `n` honest `AcctV` records (none for `n = 0`: the empty chunk,
+/// `AcctV3OkE`): `k`, `tlast` canonical fields, 72 raw pre
 /// bytes (< 256) whose amount is not `u128::MAX`, and 16 raw post bytes.  The
 /// per-record `k` is distinct so the ascending-slot side condition of
 /// `AcctV3Wf` holds.
 pub fn acct(r: &mut Rng, n: usize) -> Vec<AcctV> {
-    (0..n.max(1))
+    (0..n)
         .map(|s| {
             let mut pre = r.bytes(72);
             // AccountV1: not every amount byte is 255
@@ -395,45 +396,79 @@ fn nodev(r: &mut Rng) -> NodeV3 {
 
 use super::srcp::{SrcpB, SrcpItem};
 
-/// A random `SrcpB` satisfying `SrcpWf` (`Rcpt/Extract/Srcp/Defs.lean`): the
-/// lists are consecutive from `0`, message indices consecutive across the table,
-/// the path items carry `pl = 32` first then `64`, and `dup → L = 12`.
-fn srcp_block(r: &mut Rng, j: u64, ql: u64, d: usize) -> SrcpB {
-    let dup = r.below(5) == 0;
-    let l = if dup { 12 } else { 1 + r.below(20) };
-    let mut path: Vec<SrcpItem> = Vec::with_capacity(d);
-    for i in 0..d as u64 {
-        path.push(SrcpItem {
-            q: ql + 1 + i,
-            dir: r.coin(),
-            sib: r.bytes(32),
-            acc: r.bytes(32),
-            pq: ql + i,
+/// One source key's proof entry: root, leaf, path items `(dir, sib)`.
+struct SrcpKey {
+    root: Vec<u64>,
+    leaf: Vec<u64>,
+    path: Vec<(bool, Vec<u64>, Vec<u64>)>,
+    len: u64,
+}
+
+/// `blockOfProof root dup j ql entry`: the block of occurrence `j` with
+/// message counter `ql` (`Rcpt/Render/Srcp/FromProof.lean`).
+fn srcp_block(k: &SrcpKey, j: u64, ql: u64, dup: bool, rep: bool) -> SrcpB {
+    let path: Vec<SrcpItem> = k
+        .path
+        .iter()
+        .enumerate()
+        .map(|(i, (dir, sib, acc))| SrcpItem {
+            q: ql + 1 + i as u64,
+            dir: *dir,
+            sib: sib.clone(),
+            acc: acc.clone(),
+            pq: ql + i as u64,
             pl: if i == 0 { 32 } else { 64 },
-        });
-    }
-    let dlen = d as u64;
+        })
+        .collect();
+    let d = path.len() as u64;
     SrcpB {
         j,
-        l,
+        l: if rep { 12 } else { k.len },
         dup,
-        root: r.bytes(32),
-        qe: ql + dlen,
-        le: if dlen == 0 { 32 } else { 64 },
+        root: k.root.clone(),
+        qe: ql + d,
+        le: if d == 0 { 32 } else { 64 },
         ql,
-        leaf: r.bytes(32),
+        leaf: k.leaf.clone(),
         path,
+        rep,
     }
 }
 
+/// Honest table-20 input (`DedupRender.TableFacts bs rep`, A10 depth `≤ DP0`):
+/// `n` source occurrences (none for `n = 0`); an occurrence reuses an earlier
+/// key with probability `1/4` (`dup`, a reference block sharing the first
+/// occurrence's proof entry); every occurrence of a repeated key has `rep` and
+/// `L = 12`; the first occurrence is computed with `ql = 1`, and `ql` advances by
+/// `1 + |path|` after a computed block only.
 pub fn srcp(r: &mut Rng, n: usize) -> Vec<SrcpB> {
-    let n = n.max(1);
+    let mut keys: Vec<SrcpKey> = Vec::new();
+    let mut occ: Vec<usize> = Vec::with_capacity(n);
+    for j in 0..n {
+        if j > 0 && r.below(4) == 0 {
+            occ.push(r.below(keys.len() as u64) as usize);
+        } else {
+            let d = r.below(4) as usize;
+            keys.push(SrcpKey {
+                root: r.bytes(32),
+                leaf: r.bytes(32),
+                path: (0..d).map(|_| (r.coin(), r.bytes(32), r.bytes(32))).collect(),
+                len: 1 + r.below(20),
+            });
+            occ.push(keys.len() - 1);
+        }
+    }
     let mut out: Vec<SrcpB> = Vec::with_capacity(n);
+    let mut seen = vec![false; keys.len()];
     let mut ql: u64 = 1;
-    for j in 0..n as u64 {
-        let d = r.below(4) as usize;
-        let b = srcp_block(r, j, ql, d);
-        ql = b.ql + b.path.len() as u64 + 1;
+    for (j, &k) in occ.iter().enumerate() {
+        let dup = seen[k];
+        seen[k] = true;
+        let rep = occ.iter().filter(|&&x| x == k).count() >= 2;
+        let b = srcp_block(&keys[k], j as u64, ql, dup, rep);
+        if !dup {
+            ql = b.ql + b.path.len() as u64 + 1;
+        }
         out.push(b);
     }
     out
