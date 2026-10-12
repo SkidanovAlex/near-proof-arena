@@ -353,6 +353,197 @@ done
 [ $nd0 -gt 0 ] || bad "no fixture case produced a D0 prep"
 echo "   ($nd0 native prepD0 statements byte-compared against Lean)"
 
+echo "== prover preprocessing (hintOf + prepD0): Rust (npudr v3prepare) vs Lean (np-lean-prep-v3 --any)"
+# The total differential: `npudr v3prepare` computes the hint itself (`v3::hint` =
+# `NearSpecV3.hintOf`) and runs `v3::d0::prep` (= `prepD0`); `np-lean-prep-v3 --any`
+# reports `checkD0a B0`, `Hint.encode (hintOf cb wb)` and `prepD0 cb h` without
+# requiring acceptance.  On every fixture the hint bytes, the accept/reject verdict of
+# `prepD0` and the `Prep.encode` bytes must agree.  Then mutated cases
+# (`MUTATE_CASES` fixtures, default 4):
+# * claim mutations (pv, A12 extra boundary, tx flags, genesis extra, epoch start,
+#   chunk-inner gas_used / receipts root, RS params, truncation): Lean `checkD0a B0`
+#   must reject and Rust `v3prepare` must reject too (and agree with Lean `prepD0`);
+# * hint mutations (`--hint`: n+1, trailing body byte, empty hint): Rust and Lean
+#   `prepD0` must both reject;
+# * witness mutations (byte flips, truncation): the Rust hint must equal Lean's
+#   `hintOf` and the `prepD0` verdicts must agree.
+vd="$out/v3prepare"; mkdir -p "$vd"
+cat > "$vd/mutate.py" <<'PYEOF'
+import struct, sys
+def u32(b, p): return struct.unpack_from('<I', b, p)[0]
+def parse(b):
+    """Offsets of the `claim.bin` fields (`decodeClaimE` order)."""
+    o = {}; p = 0
+    def by():
+        nonlocal p
+        n = u32(b, p); s = p; p += 4 + n
+        return s, n
+    by(); by()                                   # format tag, statement id
+    o['pv'] = p; p += 4
+    by(); p += 32                                # chain_id, epoch_id
+    o['inner'] = by()[0] + 4                     # chunk_inner data
+    nb = u32(b, p); p += 4
+    for _ in range(nb):
+        p += 1 + 32; by(); by()
+        ns = u32(b, p); p += 4
+        for _ in range(ns):
+            by(); p += 8
+    o['rs'] = p; p += 4
+    ne = u32(b, p); p += 4
+    for i in range(ne):
+        p += 32 + 4 + 8
+        s, n = by()
+        if i == 0: o['layout'] = (s, n)
+        nv = u32(b, p); p += 4
+        for _ in range(nv):
+            by(); p += 16
+    o['esa'] = by()
+    nf = u32(b, p); p += 4
+    for _ in range(nf):
+        t = b[p]; p += 1
+        if t == 1:
+            for _ in range(2):
+                k = u32(b, p); p += 4
+                for _ in range(k):
+                    by(); p += 16
+            t2 = b[p]; p += 1
+            if t2 == 1: by()
+        p += 16
+        t = b[p]; p += 1
+        if t == 1:
+            p += 24
+            for _ in range(2):
+                k = u32(b, p); p += 4 + 8 * k
+    o['txv'] = by()
+    o['gce'] = p
+    assert b[p] == 0 and p + 1 == len(b), 'unexpected claim tail'
+    return o
+def mutate(b, kind):
+    o = parse(b); b = bytearray(b)
+    if kind == 'pv': struct.pack_into('<I', b, o['pv'], 87)
+    elif kind == 'a12':                          # one surplus boundary account
+        s, n = o['layout']; lay = bytes(b[s + 4:s + 4 + n])
+        nbd = u32(lay, 1); q = 5
+        for _ in range(nbd): q += 4 + u32(lay, q)
+        extra = b'zzzzzzzzzz'
+        lay2 = lay[:1] + struct.pack('<I', nbd + 1) + lay[5:q] + struct.pack('<I', len(extra)) + extra + lay[q:]
+        b = b[:s] + struct.pack('<I', len(lay2)) + lay2 + b[s + 4 + n:]
+    elif kind == 'txv':
+        s, n = o['txv']
+        b = b[:s] + struct.pack('<I', n + 1) + b[s + 4:s + 4 + n] + b'\x01' + b[s + 4 + n:]
+    elif kind == 'gce': b = b[:o['gce']] + b'\x01' + struct.pack('<I', 1) + b'\x00'
+    elif kind == 'esa':
+        s, n = o['esa']
+        if n == 0: raise SystemExit(3)
+        b[s + 4] = 1
+    elif kind == 'gasused': b[o['inner'] + 153] ^= 1     # ChunkInner.prev_gas_used
+    elif kind == 'rcptroot': b[o['inner'] + 185] ^= 1    # prev_outgoing_receipts_root
+    elif kind == 'rs': b[o['rs']] ^= 1                   # rs_data_parts
+    elif kind == 'trunc': b = b[:-1]
+    else: raise SystemExit('unknown mutation ' + kind)
+    return bytes(b)
+def wmutate(w, kind):
+    w = bytearray(w)
+    if kind == 'wtrunc': return bytes(w[:-1])
+    if kind == 'wmid': w[len(w) // 2] ^= 0x40
+    elif kind == 'wthird': w[len(w) // 3] ^= 0x01
+    else: raise SystemExit('unknown mutation ' + kind)
+    return bytes(w)
+src, dst, kind = sys.argv[1:4]
+d = open(src, 'rb').read()
+open(dst, 'wb').write(wmutate(d, kind) if kind.startswith('w') else mutate(d, kind))
+PYEOF
+cat > "$vd/cmp.py" <<'PYEOF'
+import json, os, sys
+lj, rd, rc = sys.argv[1], sys.argv[2], int(sys.argv[3])
+d = json.load(open(lj))
+# with `--hint`, Rust's `hint.bin` is the given hint; Lean's `hint` is always `hintOf`,
+# compared against the honest Rust hint (4th argument)
+h = open(sys.argv[4] if len(sys.argv) > 4 else os.path.join(rd, 'hint.bin'), 'rb').read()
+pp = os.path.join(rd, 'prep.bin')
+hint_ok = bytes.fromhex(d['hint']) == h
+if d['prep'] is None: prep_ok = rc == 1
+else: prep_ok = rc == 0 and os.path.exists(pp) and open(pp, 'rb').read() == bytes.fromhex(d['prep'])
+print('%s %s %s' % ('hint_eq' if hint_ok else 'hint_DIFF', 'prep_eq' if prep_ok else 'prep_DIFF',
+                    'check_ok' if d['check'] == 'ok' else 'check_rej'))
+PYEOF
+lp="$here/.lake/build/bin/np-lean-prep-v3"
+# vcase <label> <claim> <witness> [<hint.bin> <honest hint.bin>] -> prints the cmp.py verdict line
+vcase() {
+  local lbl="$1" cb="$2" wb="$3" hb="${4:-}" hh="${5:-}" rc
+  rm -rf "$vd/$lbl.rust"
+  if [ -n "$hb" ]; then
+    "$npudr" v3prepare "$cb" "$wb" "$vd/$lbl.rust" --hint "$hb" > "$vd/$lbl.out" 2>&1; rc=$?
+    $HEAVY "$lp" --any "$cb" "$wb" "$hb" > "$vd/$lbl.lean.json" 2>"$vd/$lbl.lean.err" || { echo "lean_failed"; return; }
+  else
+    "$npudr" v3prepare "$cb" "$wb" "$vd/$lbl.rust" > "$vd/$lbl.out" 2>&1; rc=$?
+    $HEAVY "$lp" --any "$cb" "$wb" > "$vd/$lbl.lean.json" 2>"$vd/$lbl.lean.err" || { echo "lean_failed"; return; }
+  fi
+  [ $rc -le 1 ] || { echo "rust_failed"; return; }
+  python3 "$vd/cmp.py" "$vd/$lbl.lean.json" "$vd/$lbl.rust" $rc $hh
+}
+nv=0
+for case in $(ls "$fx" | head -${PREPARE_MAX:-64}); do
+  d="$fx/$case"
+  [ -f "$d/claim.bin" ] && [ -f "$d/witness.bin" ] || continue
+  r=$(vcase "$case" "$d/claim.bin" "$d/witness.bin")
+  if [ "$r" = "hint_eq prep_eq check_ok" ]; then
+    pass "$case v3prepare: hintOf + prepD0 byte-identical ($(cat "$vd/$case.out"))"; nv=$((nv + 1))
+  else bad "$case v3prepare: $r"; fi
+done
+[ $nv -gt 0 ] || bad "no fixture case accepted by v3prepare"
+echo "   ($nv fixtures: Rust hintOf + prepD0 byte-identical to Lean)"
+nm=0
+for case in $(ls "$fx" | head -${MUTATE_CASES:-4}); do
+  d="$fx/$case"
+  [ -f "$d/claim.bin" ] && [ -f "$d/witness.bin" ] || continue
+  for kind in pv a12 txv gce esa gasused rcptroot rs trunc; do
+    lbl="$case.$kind"
+    python3 "$vd/mutate.py" "$d/claim.bin" "$vd/$lbl.claim" $kind 2>"$vd/$lbl.merr" || continue
+    r=$(vcase "$lbl" "$vd/$lbl.claim" "$d/witness.bin")
+    case "$r" in
+      "hint_eq prep_eq check_rej")
+        if grep -q '^reject:' "$vd/$lbl.out"; then
+          pass "$lbl: checkD0a rejects, v3prepare rejects ($(sed 's/^reject: //' "$vd/$lbl.out" | cut -c1-90))"; nm=$((nm + 1))
+        else bad "$lbl: checkD0a rejects but v3prepare accepts"; fi ;;
+      *) bad "$lbl: $r" ;;
+    esac
+  done
+  # hint mutations on the honest claim: `prepD0` must reject in both
+  hb="$vd/$case.rust/hint.bin"
+  [ -f "$hb" ] || "$npudr" v3prepare "$d/claim.bin" "$d/witness.bin" "$vd/$case.rust" > /dev/null
+  python3 - "$hb" "$vd/$case" <<'PYEOF'
+import struct, sys
+h = open(sys.argv[1], 'rb').read(); n = struct.unpack_from('<I', h)[0]
+body = h[8:]
+open(sys.argv[2] + '.hn.bin', 'wb').write(struct.pack('<I', n + 1) + h[4:])
+b2 = body + b'\x00'
+open(sys.argv[2] + '.hb.bin', 'wb').write(h[:4] + struct.pack('<I', len(b2)) + b2)
+open(sys.argv[2] + '.he.bin', 'wb').write(struct.pack('<I', 0) + struct.pack('<I', 8) + bytes(8))  # Hint.empty
+PYEOF
+  for hk in hn hb he; do
+    lbl="$case.$hk"
+    r=$(vcase "$lbl" "$d/claim.bin" "$d/witness.bin" "$vd/$case.$hk.bin" "$hb")
+    if [ "$r" = "hint_eq prep_eq check_ok" ] && grep -q '^reject:' "$vd/$lbl.out"; then
+      pass "$lbl: mutated hint rejected by Rust and Lean prepD0 ($(sed 's/^reject: //' "$vd/$lbl.out" | cut -c1-70))"; nm=$((nm + 1))
+    elif [ "$hk" = he ] && [ "$r" = "hint_eq prep_eq check_ok" ]; then
+      # the empty hint is the honest hint when there are no receipts and no refunds
+      pass "$lbl: empty hint, Rust and Lean prepD0 agree ($(head -c 60 "$vd/$lbl.out"))"; nm=$((nm + 1))
+    else bad "$lbl: $r ($(cat "$vd/$lbl.out"))"; fi
+  done
+  # witness mutations: hint bytes and prepD0 verdicts must agree
+  for kind in wthird wtrunc wmid; do
+    lbl="$case.$kind"
+    python3 "$vd/mutate.py" "$d/witness.bin" "$vd/$lbl.witness" $kind || continue
+    r=$(vcase "$lbl" "$d/claim.bin" "$vd/$lbl.witness")
+    case "$r" in
+      "hint_eq prep_eq "*) pass "$lbl: hintOf + prepD0 agree on the mutated witness (${r##* }; $(head -c 60 "$vd/$lbl.out"))"; nm=$((nm + 1)) ;;
+      *) bad "$lbl: $r" ;;
+    esac
+  done
+done
+echo "   ($nm mutated claim/hint/witness cases agree; every checkD0a-rejected claim is rejected)"
+
 echo
 if [ $fail -eq 0 ]; then echo "ALL PASS"; else echo "SOME FAILED"; fi
 exit $fail

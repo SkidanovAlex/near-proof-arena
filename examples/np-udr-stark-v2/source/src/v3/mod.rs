@@ -24,6 +24,7 @@ pub mod chacha;
 pub mod collect;
 pub mod d0;
 pub mod entries;
+pub mod hint;
 pub mod mrksort;
 pub mod node;
 pub mod prep;

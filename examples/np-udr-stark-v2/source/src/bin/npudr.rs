@@ -41,6 +41,10 @@
 //! * `npudr d0-prep <claim.bin> <hint.bin> <out.json>` — the native D0
 //!   preprocessing (`v3::d0::prep` = Lean `NearSpecV3.prepD0`) on a real
 //!   `claim.bin` + hint; writes the `prep_json` dump for the Lean differential.
+//! * `npudr v3prepare <claim.bin> <witness.bin> <out_dir> [--hint <hint.bin>]` —
+//!   the prover's native preprocessing: `hintOf` (`v3::hint`) then `prepD0`
+//!   (`v3::d0::prep`); writes `hint.bin` and, on acceptance, `prep.bin` +
+//!   `prep.json` (exit 0), else `reject.txt` (exit 1).
 use std::time::Instant;
 
 use npudr::air::Air;
@@ -312,11 +316,17 @@ fn main() {
             // Build the 25-table trace from per-table entries (files `<dir>/<table>.json`),
             // the prepared public tape from <prep.json>, and prove at aux_group=2.
             if a.len() != 8 {
-                die("usage: npudr v3prove <air.json> <prep.json> <entries-dir> <pub.bin> <cb.bin> <proof-out>");
+                die(
+                    "usage: npudr v3prove <air.json> <prep.json> <entries-dir> <pub.bin> <cb.bin> <proof-out>",
+                );
             }
-            let atxt = std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
-            let air = Air::from_json(&atxt).unwrap_or_else(|e| die(&e)).with_aux_group(2);
-            let pj = std::fs::read_to_string(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+            let atxt =
+                std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let air = Air::from_json(&atxt)
+                .unwrap_or_else(|e| die(&e))
+                .with_aux_group(2);
+            let pj =
+                std::fs::read_to_string(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
             let prep = npudr::v3::prep::Prep::from_json(&pj).unwrap_or_else(|e| die(&e));
             let dir = &a[4];
             let mut entries = std::collections::HashMap::new();
@@ -329,13 +339,20 @@ fn main() {
             // The two SHA instances need the union of all table messages; the
             // collector builds them from the other tables unless an explicit
             // `sha_t.json`/`sha_r.json` was supplied.
-            let entries = npudr::v3::prove::with_collected_sha(&entries).unwrap_or_else(|e| die(&e));
+            let entries =
+                npudr::v3::prove::with_collected_sha(&entries).unwrap_or_else(|e| die(&e));
             let work = move || -> Result<Vec<u8>, String> {
                 let traces = npudr::v3::prove::traces_from_entries(&air, &entries)?;
                 let pub_tape = npudr::v3::public::prepared_bytes(&prep, 0);
                 std::fs::write(&a[5], &pub_tape).map_err(|e| e.to_string())?;
                 let cb = std::fs::read(&a[6]).unwrap_or_default();
-                let proof = npudr::prover::prove_cols_bytes(&air, traces, &pub_tape, &cb, &ProveOptions { verbose: true })?;
+                let proof = npudr::prover::prove_cols_bytes(
+                    &air,
+                    traces,
+                    &pub_tape,
+                    &cb,
+                    &ProveOptions { verbose: true },
+                )?;
                 std::fs::write(&a[7], &proof).map_err(|e| e.to_string())?;
                 Ok(proof)
             };
@@ -346,8 +363,11 @@ fn main() {
         }
         Some("v3public") => {
             // `npudr v3public <prep.json> <out.bin>`: the prepared public tape.
-            if a.len() != 4 { die("usage: npudr v3public <prep.json> <out.bin>"); }
-            let pj = std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            if a.len() != 4 {
+                die("usage: npudr v3public <prep.json> <out.bin>");
+            }
+            let pj =
+                std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
             let prep = npudr::v3::prep::Prep::from_json(&pj).unwrap_or_else(|e| die(&e));
             let b = npudr::v3::public::prepared_bytes(&prep, 0);
             std::fs::write(&a[3], &b).unwrap_or_else(|e| die(&format!("{e}")));
@@ -371,6 +391,65 @@ fn main() {
             )
             .unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
             println!("prep {} B", p.encode().len());
+        }
+        Some("v3prepare") => {
+            // `npudr v3prepare <claim.bin> <witness.bin> <out_dir> [--hint <hint.bin>]`:
+            // the prover's native preprocessing.  `h := hintOf cb w` (`v3::hint`, or
+            // the given hint bytes), then `prepD0 cb h` (`v3::d0::prep`).  Always
+            // writes `hint.bin` (`Hint.encode h`); on acceptance also `prep.bin`
+            // (`Prep.encode`) and `prep.json`, exit 0; on rejection `reject.txt`,
+            // exit 1.
+            let (hint_path, a) = match a.iter().position(|x| x == "--hint") {
+                Some(i) => (
+                    Some(a.get(i + 1).cloned().unwrap_or_else(|| die("--hint"))),
+                    a[..i]
+                        .iter()
+                        .chain(&a[i + 2..])
+                        .cloned()
+                        .collect::<Vec<_>>(),
+                ),
+                None => (None, a.clone()),
+            };
+            if a.len() != 5 {
+                die(
+                    "usage: npudr v3prepare <claim.bin> <witness.bin> <out_dir> [--hint <hint.bin>]",
+                );
+            }
+            let rd = |p: &str| std::fs::read(p).unwrap_or_else(|e| die(&format!("{p}: {e}")));
+            let cb = rd(&a[2]);
+            let wb = rd(&a[3]);
+            let hint = match &hint_path {
+                Some(p) => npudr::v3::prep::Hint::decode(&rd(p)).unwrap_or_else(|e| die(&e)),
+                None => npudr::v3::hint::hint_of(&cb, &wb),
+            };
+            let od = std::path::Path::new(&a[4]);
+            std::fs::create_dir_all(od).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
+            let wr = |name: &str, b: &[u8]| {
+                std::fs::write(od.join(name), b).unwrap_or_else(|e| die(&format!("{name}: {e}")))
+            };
+            wr("hint.bin", &hint.encode());
+            match npudr::v3::d0::prep(&cb, &hint) {
+                Ok(p) => {
+                    let pb = p.encode();
+                    wr("prep.bin", &pb);
+                    let j = npudr::v3::d0::to_json(&p);
+                    wr(
+                        "prep.json",
+                        &serde_json::to_vec(&j).unwrap_or_else(|e| die(&e.to_string())),
+                    );
+                    println!(
+                        "accept: n {} hint {} B prep {} B",
+                        hint.n,
+                        hint.encode().len(),
+                        pb.len()
+                    );
+                }
+                Err(e) => {
+                    wr("reject.txt", e.as_bytes());
+                    println!("reject: {e}");
+                    std::process::exit(1);
+                }
+            }
         }
         Some("verify") => {
             // optional `--aux-group g` (a proof parameter, not part of the AIR JSON)
