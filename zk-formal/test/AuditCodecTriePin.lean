@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Render.CodecTriePin
 import ZkFormal.NearV3.Render.CodecSpost
+import ZkFormal.NearV3.Render.CodecScmpBus
 import ZkFormal.NearV3.Render.CodecScmp
 import ZkFormal.NearV3.Render.CodecCanon
 
@@ -48,3 +49,11 @@ import ZkFormal.NearV3.Render.CodecCanon
 /-- info: 'ZkFormal.NearV3.Render.CdcScmp.codec_scmp_native' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.CdcScmp.codec_scmp_native
+
+/-- info: 'ZkFormal.NearV3.Render.sched_renders_on' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.sched_renders_on
+
+/-- info: 'ZkFormal.NearV3.Assembly.RenderBundleV3.balancedAt_scmp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.RenderBundleV3.balancedAt_scmp
