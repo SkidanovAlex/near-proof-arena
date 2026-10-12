@@ -267,6 +267,41 @@ PY
   else bad "public $(basename "$d") differs"; fi
 done
 
+echo "== D0 native preprocessing (prepD0): Rust (npudr d0-prep) vs Lean np-lean-prep-v3"
+# `np-lean-prep-v3` requires `checkD0a B0` and dumps `hint`/`prep`/`prep_json`;
+# `npudr d0-prep` reads the real `claim.bin` + the Lean hint bytes and runs the
+# ported `prepClaim`/`prepBody`.  The Rust `Prep.encode` (of the Rust prep_json)
+# must equal the Lean `prep` byte for byte, so the two implementations agree on
+# the whole prepared statement.  `PREP_D0_MAX` defaults to 64.
+d0pd="$out/d0prep"; mkdir -p "$d0pd"
+nd0=0
+for case in $(ls "$fx" | head -${PREP_D0_MAX:-64}); do
+  d="$fx/$case"
+  [ -f "$d/claim.bin" ] && [ -f "$d/witness.bin" ] || continue
+  j="$d0pd/$case.json"
+  if ! $HEAVY "$lp" "$d" > "$j" 2>"$j.err"; then bad "$case d0-prep: np-lean-prep-v3 failed"; continue; fi
+  python3 - "$j" "$d0pd/$case.hint" "$d0pd/$case.lean.prep" <<'PY'
+import json,sys
+d=json.load(open(sys.argv[1]))
+open(sys.argv[2],'wb').write(bytes.fromhex(d['hint']))
+open(sys.argv[3],'wb').write(bytes.fromhex(d['prep']))
+PY
+  nd0=$((nd0 + 1))
+  if ! "$npudr" d0-prep "$d/claim.bin" "$d0pd/$case.hint" "$d0pd/$case.mine.json" >"$d0pd/$case.out" 2>"$d0pd/$case.mine.err"; then
+    bad "$case d0-prep: npudr d0-prep failed"; cat "$d0pd/$case.mine.err"; continue
+  fi
+  if ! "$npudr" prep-encode "$d0pd/$case.mine.json" "$d0pd/$case.mine.prep" 2>"$d0pd/$case.enc.err"; then
+    bad "$case d0-prep: npudr prep-encode failed"; cat "$d0pd/$case.enc.err"; continue
+  fi
+  if cmp -s "$d0pd/$case.lean.prep" "$d0pd/$case.mine.prep"; then
+    pass "$case d0-prep: Prep.encode byte-identical ($(stat -c %s "$d0pd/$case.mine.prep") B)"
+  else
+    bad "$case d0-prep: Prep.encode differs"
+  fi
+done
+[ $nd0 -gt 0 ] || bad "no fixture case produced a D0 prep"
+echo "   ($nd0 native prepD0 statements byte-compared against Lean)"
+
 echo
 if [ $fail -eq 0 ]; then echo "ALL PASS"; else echo "SOME FAILED"; fi
 exit $fail

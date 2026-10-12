@@ -38,6 +38,9 @@
 //! * `npudr prep-hint <hint.bin> <out.bin>` — decode+re-encode the clear `Hint`
 //!   (`v3::prep::Hint`); `npudr prep-body <refunds_enc.bin> <out.bin>` — the
 //!   `decodeBody`/`bodyOf` refund codec round trip.
+//! * `npudr d0-prep <claim.bin> <hint.bin> <out.json>` — the native D0
+//!   preprocessing (`v3::d0::prep` = Lean `NearSpecV3.prepD0`) on a real
+//!   `claim.bin` + hint; writes the `prep_json` dump for the Lean differential.
 use std::time::Instant;
 
 use npudr::air::Air;
@@ -328,6 +331,25 @@ fn main() {
             let b = npudr::v3::public::prepared_bytes(&prep, 0);
             std::fs::write(&a[3], &b).unwrap_or_else(|e| die(&format!("{e}")));
             println!("public {} B", b.len());
+        }
+        Some("d0-prep") => {
+            // `npudr d0-prep <claim.bin> <hint.bin> <out.json>`: run the native D0
+            // preprocessing (`v3::d0::prep`) and write the `prep_json` dump (with
+            // the Lean `np-lean-prep-v3` field names), for the differential below.
+            if a.len() != 5 {
+                die("usage: npudr d0-prep <claim.bin> <hint.bin> <out.json>");
+            }
+            let cb = std::fs::read(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let hb = std::fs::read(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+            let hint = npudr::v3::prep::Hint::decode(&hb).unwrap_or_else(|e| die(&e));
+            let p = npudr::v3::d0::prep(&cb, &hint).unwrap_or_else(|e| die(&e));
+            let j = npudr::v3::d0::to_json(&p);
+            std::fs::write(
+                &a[4],
+                serde_json::to_vec(&j).unwrap_or_else(|e| die(&e.to_string())),
+            )
+            .unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
+            println!("prep {} B", p.encode().len());
         }
         Some("verify") => {
             // optional `--aux-group g` (a proof parameter, not part of the AIR JSON)
