@@ -260,3 +260,38 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
    `UpsNativeOk` per scheduler upsert — needs the trie forest root at τ), ChaCha/rng/shuffle (8–10;
    honest inputs `Lane.chachaReqs/genCalls/shufInsts` of the native runs: key/positions from the run,
    draws from `replayShuffle` success (`ProcShuffleReplay`), row bounds need A9 ↔ `Σ R.kfin`).
+
+## 2026-10-11 (package 6, codec under way)
+
+* Merged `origin/integration/v3-20261012`; table 7 is now `upsA7` (trie lane), so the pre-A7
+  `upsRenderV3` was dropped from `Render/BundleSched.lean` (commit 23c49506).
+* **Codec (table 11, frozen `Sched.Codec.table`) — row layer in progress.** Approach = the ssd template,
+  but the honest rows are defined directly as assignment lists (no generator equality needed):
+  * `Render/CodecDefs.lean`: `Inst` (τ, n, N, pres, vid, base, fair), `Rec` (per link: srcS, hasC, useC,
+    al, a0s, gb, afin, gfin, ft, iklv), row assignments `hdrA`, `recA` (bytes `bpo/bpr` and the
+    allowance accumulators `apv/apostv/bigv` as parameters), `hashA`, `ashA`; `modE` (the 8 constraints
+    that hold only mod P); the `codec_int` macro (integer pass: every other constraint, `zev = 0`).
+  * **Performance lessons (important for whoever continues):** (1) never let `simp` see a field inverse
+    of a symbolic value — inverse cells are `inv` (`@[irreducible]` wrapper of `finv`), and the link
+    inverse is a `Rec` field (`iklv`), otherwise simp/whnf blows memory (OOM at 14 G); (2) the full
+    `simp` set on record rows also explodes — `codec_int` uses a curated `simp only` list with explicit
+    `Nat.reduce*` simprocs and `reg_i` literal lemmas, then small closers; (3) keep `apRv/bigRv/cbv/a1v/MA`
+    folded (their decidability instances do not rewrite), with `cbv_le`, `bigRv_le`, `a1v_def` facts.
+  * **Integer pass done for every row kind (compiled, audited `test/AuditCodecRows.lean`):**
+    `CodecHeader.hdr_int` (header p < 4), `CodecRecInt.rec_in_int` (21 record kinds inside a field,
+    ~21 min), `CodecEndInt` (`rec_fend_int` field end, `rec_end_int` record end → next record,
+    `rec_last_int` last record → hash 0, `hdr_last_int` header 4 → record 0, `hash_int`, `hash_last_int`,
+    `ash_int`, `ash_last_int` → next instance header, `ash_pad_int` → padding). The forwarding cells of
+    the record end are unconditional, multiplied by `zt0 I = [τ = 0]`.
+    Modular constraints over Fp: `CodecMod` (`isZ_mod`, `nzb_mod`, `wt_mod`, `wt_off`, `gate_zero`).
+    Each integer lemma states its explicit row premises (byte bounds, `bpr = pres·bpo` on id bytes,
+    accumulator recurrences, `apost = afin` and `al·base ≤ a1` at the record end, `ft < 2^24`,
+    `hasC = false → apR = bigR = 0`).
+  * Next: per-kind modular instantiations; trace-level `local_at` per kind (cells `< P`); codec row
+    descriptors + `table_local` (copy of `Ssd.table_local` with `codecPad`); generation from the native
+    blocks (`NativeBlock`: τ, `prior.isSome`, `vid`, `grants`, `forwarded`; prior allowances via the
+    canonical prior); the traffic facts the trie lane needs (lead, 2026-10-11): S0F receives exactly one
+    `[τ, pres, vid]` per τ (pres = old BwState value present; vid = its N_D value id, else 0); SPLEN
+    sends `[τ, 37 + 24·n²]` per τ; SPOST sends `[τ, p, u.value[p]]` for every p; sanity SHA jobs (BYTES)
+    are the codec's — the honest inputs must be the same native choice as the trie lane's `UpsSha`
+    (`TrieUpsSched.lean`, `trie_all_of`).

@@ -545,3 +545,65 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
    the trie lane should take that exact form (then: witness-size accounting, `NativeEncodedBudget`,
    plus a dup-path lemma or AIR change).
 3. Codec identities (table 11, `schedulerSanityJobs 0 us`) — scheduler lane (item 3).
+
+## 2026-10-12 (round 12: lead decisions — duplicate source blocks in the SHA family; exact size premise)
+
+* origin/main unchanged (717390e7).  Commit cd8c4ab9.
+* **Source family with duplicates** (`Assembly/RenderV3SrcpSha.lean`): `AcceptedV3.srcJobsAll`/`srcShaAll`
+  = every block of `blocksOfProofs A.srcps` (duplicates included), payloads `sourcePayloads`, `K_SRC` ids as
+  the table numbers them; `rcShaAll` = `sourceRcShaJobs` with `dmult := true`.
+  - **Row bound holds unchanged: `srcShaAll_rows : ≤ 2,257,792 = 1984·(18 + 35·Dp0)`, Dp0 = 32** (per block
+    `18 + 35·|path|`, `block_rows`; `|p.lists| ≤ 1984` counts every prepared occurrence, duplicates
+    included, `relD0a_inputs`; every path ≤ Dp0 by A10, `A.srcpDepth`).  `srcShaAll_msgRows` (≤ 35),
+    `srcShaAll_bytes`.
+  - **`srcp_bytes`** (`cnt` srcp `BYTES` sends = `expectedBytes srcShaAll`), **`srcp_digests`** (srcp `DIGEST`
+    recvs = `expectedDigests srcShaAll + expectedDigests rcShaAll`; `block_digest_perm` via
+    `blockOfProof_digest_chain`, every occurrence authenticated `srcps_auth` via
+    `preparedSourceLists_authenticated`; `rc_digests` with `toShard = own`).  The open `SrcpBytes`/`SrcpDigests`
+    of round 11 are gone (deleted).
+  - Receipt family changed to `ReceiptGatedShaJobs.jobs … (fun _ => false)` (every RC digest output enabled,
+    matching the source table's one RC receive per occurrence); `receipt_sha` DIGEST now has
+    `(sourceRcShaJobs …).map (dmult := true)`; rows/bytes unchanged (`rows_unchanged`, `bytes_unchanged`).
+  - Two-bin fit: `trie_side_exact` is instantiated with `srcShaAll` at the same per-family bounds, so
+    `twoSha_physical_fit`/`twoBudget_fit` re-check inside it (no change needed).
+* **Size premise restated** (TrieSide.lean, trie lane finished — lead permission): `TrieSide.SizeBudget A`
+  (∀ writes oldPost q, SizedAccountRun → KeysFinal → node+value ≤ 2,000,000 →
+  `ovhNat A.pub + Σ non-dup node ser bytes (TrieNative.nodes …) + Σ non-empty non-dup value bytes + srcpSize ≤ 8 MiB`),
+  `sizeBudget_of_coarse` (old premise ⇒ new), **`trie_side_exact`** (premise `SizeBudget A`); `trie_side` kept with
+  its original statement as a corollary (nothing weakened).
+* **`rcpt_trie_side A (hovh : TrieSide.SizeBudget A)`**: all receipt/trie buses, SIZE, VSLOT, KEYNIB, FINAL; BYTES and
+  DIGEST conditional only on the codec identities (table 11).  Integration 4,331 jobs OK; audits RcptTrieSide,
+  TrieSide, RcptRoutingQ pass; pin-check OK.
+
+### Open (exact) after round 12
+1. **`TrieSide.SizeBudget A`** — NOT proved.  `ovhNat A.pub = 0` (`Public.prepared_ovhNat`).  Remaining:
+   non-dup node bytes + value bytes + `srcpSize (blocksOfProofs A.srcps) ≤ 8,388,608`.  Doubt it holds near the
+   8 MiB witness cap: `srcpSize` charges every duplicate occurrence `12 + 33·|path|` (up to 1984·(12+33·32)
+   ≈ 2.1 MB) although the witness stores the entry once, and `TrieNative.nodes` covers the pre-tries of every
+   implicit step (nodes produced by execution are not witness bytes).  Needs a decision (gate the srcp SIZE
+   contribution by `!dup` in the AIR, or a D0a check on exactly this total) or a witness-accounting proof
+   (`NativeEncodedBudget`, `UniqueSourceBudget`) — not attempted.
+2. Codec identities (table 11) — scheduler lane.
+
+## 2026-10-12 (round 13: `SizeBudget A` proved — no AIR/spec change)
+
+* Commit b340ad8f, `Assembly/SizeBudgetAccepted.lean` (audit `test/AuditRcptTrieSide.lean`; Integration 4,332 jobs OK;
+  pin-check OK).
+* **What table 21 checks** (`SizeOk`/`SizeWf`): `x0 + x1 ≤ 3,000,000` and `OVH + x0 + x1 + x2 ≤ 8,388,608`, with
+  `x0` = non-dup node ser bytes, `x1` = non-empty non-dup value bytes, `x2 = srcpSize (blocksOfProofs A.srcps)`
+  (every occurrence, duplicates included, charged `L + 33·|path|`, `L = |u64 to_shard ‖ borsh(receipts)|`).
+  `OVH = 0` (`A.pub` packs overhead 0).  Soundness (`LinkBus.size_totals`) uses only the base bound.
+* **Why it holds without witness accounting**: `L = 12 + Σ_r |r.encode|`, and the occurrences' receipt lists
+  concatenate to `appliedReceipts` (`acceptedSrcp_rcl` + `lists_applied`; A2 makes the routing filter the
+  identity), so `x2 = Σ_occ (12 + 33·|path|) + Σ_{applied r} |r.encode|` (`srcpSize_eq`, `srcps_receipts`).
+  A duplicate occurrence's receipts are charged again only if they are applied again — and they are
+  counted in `appliedReceipts`, which is bounded by A1's compute check (`applyNewChunk_receipt_bound`,
+  ≤ 4481), each `≤ 347` bytes (`native_receipt_encoded_bound`).  (In fact `e.distinct_ids` forces duplicate
+  entries to be receipt-free, but the proof does not need it.)
+* `srcpSize_le : x2 ≤ 1984·(12 + 33·32) + 4481·347 = 2,118,912 + 1,554,907 = 3,673,819`;
+  `sizeBudget : TrieSide.SizeBudget A` via `sizeBudget_of_coarse` (`0 + 2,000,000 + 3,673,819 = 5,673,819
+  ≤ 8,388,608`, slack 2,714,789).  `rcpt_trie_side A A.sizeBudget` now has no size premise.
+* Candidate fixes (a) gate srcp SIZE by `!dup`, (b) D0a amendment: unnecessary.
+
+### Open (exact) after round 13
+1. Codec identities (table 11) — scheduler lane.

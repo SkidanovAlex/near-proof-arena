@@ -1,24 +1,24 @@
 import ZkFormal.NearV3.Assembly.TrieSide
 import ZkFormal.NearV3.Assembly.RenderV3RcptSha
+import ZkFormal.NearV3.Assembly.RenderV3SrcpSha
 import ZkFormal.NearV3.Assembly.TrieShaTwo
 import ZkFormal.NearV3.Candidates.AcceptedSourceShaContract
 
 /-!
 # Receipt side + trie side of the completeness obligation for an accepted witness
 
-`rcpt_trie_side` combines `rcpt_side_balanced` (tables 16–20, 22) with `TrieSide.trie_side`
-(tables 0–7, 21), discharging every receipt-side premise of `trie_side`:
+`rcpt_trie_side` combines `rcpt_side_balanced` (tables 16–20, 22) with `TrieSide.trie_side_exact`
+(tables 0–7, 21), discharging every receipt-side premise of the trie side:
 
-* receipt SHA family (`AcceptedV3.receipt_sha`: rows `≤ 1,373,299`, bytes `< 256`) and the source
-  family `sourceShaMessages A.p.lists A.w.entries` (`source_rows_A10`, `AcceptedSourceShaContract`);
+* receipt SHA family (`AcceptedV3.receipt_sha`: rows `≤ 1,373,299`, bytes `< 256`, every RC digest
+  output enabled) and the source family as the source table emits it, duplicates included
+  (`AcceptedV3.srcShaAll`: rows `≤ 2,257,792`, messages `≤ 35` rows, bytes `< 256`);
 * VSLOT (`AcceptedV3.vslot_views`), `RcptKeys`, `RcptFinal` (`AcceptedV3.rcpt_keys`/`rcpt_final`);
-* the receipt halves (tables 16, 17, 23 and the account/post-slot cross term) of `BYTES` and
-  `DIGEST`.
+* the receipt/source halves of `BYTES` and `DIGEST` (tables 16, 17, 20, 23 and the account/post-slot
+  cross term; `receipt_sha`, `srcp_bytes`, `srcp_digests`, `account_digests`).
 
-Premises left (explicit): the size budget `hovh` (`trie_side`'s, see the lane log: not implied by
-acceptance as stated), and inside the `BYTES` / `DIGEST` conclusions the codec identities
-(table 11, scheduler lane) and the source-table identities `SrcpBytes` / `SrcpDigests` (table 20
-vs the deduplicated source family; open — see the lane log).
+Premises left: the exact size budget `TrieSide.SizeBudget A`, and inside the `BYTES` / `DIGEST`
+conclusions the codec identities (table 11, scheduler lane).
 -/
 
 namespace ZkFormal.NearV3.Assembly.RcptTrieSide
@@ -26,21 +26,10 @@ namespace ZkFormal.NearV3.Assembly.RcptTrieSide
 open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.NearV3 ZkFormal.NearV3.Assembly
   Render Rcpt.Candidates Rcpt.Candidates.NodePostUpdate RcptSkeleton RcptBal ZkFormal.NearV3.UnfoldA7 TrieA7
 
-/-- Source-table `BYTES` sends = the prepared source SHA messages' bytes (open). -/
-def SrcpBytes {cb wb : Bytes} (A : AcceptedV3 cb wb) : Prop :=
-  ∀ m, cnt ((srcpTraffic (SrcpGen.blocksOfProofs A.srcps)).sends B_BYTES) m =
-    cnt (Sha.Gen.expectedBytes (sourceShaMessages A.p.lists A.w.entries)) m
-
-/-- Source-table `DIGEST` receives = the source path digests + the receipt-list RC digests (open). -/
-def SrcpDigests {cb wb : Bytes} (A : AcceptedV3 cb wb) : Prop :=
-  ∀ m, cnt ((srcpTraffic (SrcpGen.blocksOfProofs A.srcps)).recvs B_DIGEST) m =
-    cnt (Sha.Gen.expectedDigests (sourceShaMessages A.p.lists A.w.entries)) m +
-      cnt (Sha.Gen.expectedDigests (sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries)) m
-
 set_option maxHeartbeats 4000000 in
 /-- **Receipt side + trie side** of an accepted witness (see the module doc). -/
 theorem rcpt_trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
-    (hovh : ovhNat A.pub + 2000000 + srcpSize (SrcpGen.blocksOfProofs A.srcps) ≤ 8388608) :
+    (hovh : TrieSide.SizeBudget A) :
     ∃ (writes : List (List Nat × Bytes)) (oldPost : PTrie) (q : UseRequests) (us : List SchedulerUpsertWitness)
       (r0 : TableRenderV3 A.pub 0 (by decide)) (r1 : TableRenderV3 A.pub 1 (by decide))
       (r2 : TableRenderV3 A.pub 2 (by decide)) (r3 : TableRenderV3 A.pub 3 (by decide))
@@ -68,14 +57,13 @@ theorem rcpt_trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
         -- shared buses
         R.BalancedAt B_SIZE ∧ R.BalancedAt B_VSLOT ∧ R.BalancedAt B_KEYNIB ∧ R.BalancedAt B_FINAL ∧
         ((∀ m, cnt ((R.tf 11).sends B_BYTES) m = cnt (Sha.Gen.expectedBytes (schedulerSanityJobs 0 us)) m) →
-          SrcpBytes A → R.BalancedAt B_BYTES) ∧
+          R.BalancedAt B_BYTES) ∧
         ((∀ m, cnt ((R.tf 11).recvs B_DIGEST) m = cnt (Sha.Gen.expectedDigests (schedulerSanityJobs 0 us)) m) →
-          SrcpDigests A → R.BalancedAt B_DIGEST) := by
+          R.BalancedAt B_DIGEST) := by
   obtain ⟨receipt, hrr, hbr, hRB, hRD⟩ := A.receipt_sha
-  have hpr := TrieShaTwo.source_rows_A10 A.h A.hp A.hf A.hd
-  obtain ⟨-, hsm, hbs⟩ := Candidates.AcceptedSourceShaContract.accepted A.h A.hp A.hf A.hd
   obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, hall⟩ :=
-    TrieSide.trie_side A receipt (sourceShaMessages A.p.lists A.w.entries) hrr hpr hsm hbr hbs hovh
+    TrieSide.trie_side_exact A receipt A.srcShaAll hrr A.srcShaAll_rows A.srcShaAll_msgRows hbr
+      A.srcShaAll_bytes hovh
   refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 h24
   obtain ⟨hcore, hsize, hbytes, hdig, hvslot, hkey⟩ := hall R e0 e1 e2 e3 e4 e5 e6 e7 e21
@@ -86,21 +74,22 @@ theorem rcpt_trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
   refine ⟨rcpt_side_balanced A R h16 h17 h18 h19 h20 h22 h24, hcore, hsize h20,
     hvslot h17 (A.vslot_views hr hkf), (hkey h16 h22 A.rcpt_keys A.rcpt_final).1,
     (hkey h16 h22 A.rcpt_keys A.rcpt_final).2, ?_, ?_⟩
-  · intro hc hs
+  · intro hc
     apply hbytes hc
     intro m
     have h1 := hRB m
-    have h2 := hs m
+    have h2 := A.srcp_bytes m
     rw [t16, t17, t20, t23]
     simp only [ZkFormal.Near.cnt, ZkFormal.NearV3.Assembly.cnt, Sha.Gen.expectedBytes, List.flatMap_append,
       List.map_append, List.count_append] at h1 h2 ⊢
     omega
-  · intro hc hs
+  · intro hc
     apply hdig hc
     intro m
     have h1 := hRD m
-    have h2 := hs m
+    have h2 := A.srcp_digests m
     have h3 := A.account_digests q hr hkf m
+    rw [AcceptedV3.rcShaAll] at h2
     rw [t16, t20, t23]
     simp only [ZkFormal.Near.cnt, ZkFormal.NearV3.Assembly.cnt, Sha.Gen.expectedDigests, List.filter_append,
       List.map_append, List.count_append] at h1 h2 h3 ⊢

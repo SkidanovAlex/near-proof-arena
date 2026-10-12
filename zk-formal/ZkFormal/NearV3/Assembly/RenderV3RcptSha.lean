@@ -10,7 +10,7 @@ import ZkFormal.NearV3.Candidates.ReceiptDigestPartition
 # Receipt-side SHA family and the receipt halves of the `BYTES` / `DIGEST` identities
 
 For an accepted witness `A`, the receipt SHA job family
-`A.rcptJobs = ReceiptGatedShaJobs.jobs A.pub ls A.accts (sourceDup A.p.lists)` (the
+`ReceiptGatedShaJobs.jobs A.pub ls A.accts (fun _ => false)` (the
 duplicate-gated receipt/refund/PEO/RC/account/Merkle jobs of `ReceiptSourcePublicBody.native`,
 `ls` the honest receipt list view) has `≤ 1,373,299` SHA rows and bytes `< 256`, and
 
@@ -18,7 +18,8 @@ duplicate-gated receipt/refund/PEO/RC/account/Merkle jobs of `ReceiptSourcePubli
   Merkle render) send exactly its bytes plus the public refund fragments
   (`pubCount nearAirV3 A.pub B_BYTES false`);
 * `DIGEST`: its digests are received by tables 16 and 23, by the source table (the RC digests
-  `sourceRcShaJobs`) and by the node table's post-slot digests (the account jobs,
+  `sourceRcShaJobs`, every occurrence's output enabled: duplicate occurrences too, as the source
+  table receives one per occurrence) and by the node table's post-slot digests (the account jobs,
   `TrieShared.vslot_accepted`, for any `oldPost` the trie side exports).
 -/
 
@@ -78,7 +79,8 @@ theorem receipt_sha : ∃ receipt : List Sha.Gen.Msg,
       cnt (Sha.Gen.expectedBytes receipt) m + ZkFormal.V2.pubCount nearAirV3 A.pub B_BYTES false m) ∧
     (∀ m, cnt (Sha.Gen.expectedDigests receipt) m =
       cnt ((rcptTrafficB A.pub A.rcptInput).recvs B_DIGEST) m + cnt (A.mrkAcc.tf.recvs B_DIGEST) m +
-        cnt (Sha.Gen.expectedDigests (sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries)) m +
+        cnt (Sha.Gen.expectedDigests ((sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries).map
+          fun m => { m with dmult := true })) m +
         cnt (Sha.Gen.expectedDigests (jobsToSha (accountShaJobs A.accts))) m) := by
   have hbp := A.boundedPrep_eq
   have hA : ∀ msg, tableBusCount AccountEmpty.table.interactions A.acctAcc.tr 17
@@ -92,7 +94,7 @@ theorem receipt_sha : ∃ receipt : List Sha.Gen.Msg,
     (by have := A.accts_spec.2.1; omega) A.accountJobs_bytes A.acctAcc.tr 17 hA
   dsimp only at hN
   rw [hbp] at hN
-  obtain ⟨mid, so, steps, hsched, hledger, -, -, bs, e, -, -, -, -, -, -, -, -, hfull, -, hrows, hbytes,
+  obtain ⟨mid, so, steps, hsched, hledger, -, -, bs, e, -, -, -, -, -, -, -, -, hfull, hrc, hrows, hbytes,
     -, hphys⟩ := hN
   have hs : A.rcptInput.steps = steps := by
     show (match schedStep prims (A.m.ctx A.k) A.m.pre with
@@ -111,7 +113,7 @@ theorem receipt_sha : ∃ receipt : List Sha.Gen.Msg,
           (depositFinalAux (depositPlanPrevious (sourceInputLists (A.m.ctx A.k) A.p.lists A.w.entries)) (depositPlanAccount steps) A.rcptInput.fallback))
         (completeReceiptHeaders (depositHeaderAux A.rcptInput.headerFallback))) 0 := by
     unfold rcptTraceNative; rw [hs]; rfl
-  rw [← heq] at hfull hphys hrows hbytes
+  rw [← heq] at hfull hphys hrows hbytes hrc
   obtain ⟨mn, mp, mo⟩ := mrk_premises_accepted A.hp A.hk A.hw A.h A.hm 0
   have hM := outcome_traffic_v3 A.m.result.outcomes A.pub mn mp mo
   have hpub : ∀ msg, ZkFormal.V2.pubCount nearAirV3 A.pub B_BYTES false msg =
@@ -120,9 +122,25 @@ theorem receipt_sha : ∃ receipt : List Sha.Gen.Msg,
     have h := ReceiptPublicByteCount.accepted nearAirV3 A.hp A.hk A.hw A.h A.hm 0 rfl msg
     rw [hbp] at h
     exact h
-  refine ⟨_, hrows, hbytes, ?_, ?_⟩
+  have hrcAll : ReceiptGatedShaJobs.rcJobs (ZkFormal.Udr.pubOf Fp (Public.preparedBytes A.p 0)) (bs.map (ListBlock.view (RoutingQCandidate.patchTrace (rcptTraceNative A.pub A.rcptInput) 0) 0)) (fun _ => false) =
+      (sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries).map (fun m => { m with dmult := true }) := by
+    rw [← hrc]
+    simp [ReceiptGatedShaJobs.rcJobs, List.map_map, Function.comp_def]
+  refine ⟨ReceiptGatedShaJobs.jobs (ZkFormal.Udr.pubOf Fp (Public.preparedBytes A.p 0)) (bs.map (ListBlock.view (RoutingQCandidate.patchTrace (rcptTraceNative A.pub A.rcptInput) 0) 0)) A.accts (fun _ => false), ?_, ?_, ?_, ?_⟩
+  · rw [ReceiptGatedShaJobs.rows_unchanged]
+    rw [ReceiptGatedShaJobs.rows_unchanged] at hrows
+    exact hrows
+  · intro M hM b hb
+    simp only [ReceiptGatedShaJobs.jobs, List.mem_append] at hM hbytes
+    rcases hM with hM | hM
+    · simp only [ReceiptGatedShaJobs.rcJobs] at hM hbytes
+      obtain ⟨q, hq, rfl⟩ := List.mem_map.mp hM
+      exact hbytes _ (Or.inl (List.mem_map.mpr ⟨q, hq, rfl⟩)) b hb
+    · exact hbytes M (Or.inr hM) b hb
   · intro m
     have h1 := hphys m
+    rw [ReceiptGatedShaJobs.bytes_unchanged] at h1
+    rw [ReceiptGatedShaJobs.bytes_unchanged]
     have e16 : tableBusCount ReceiptCandidateRouting.candidateTable.interactions (RoutingQCandidate.patchTrace (rcptTraceNative A.pub A.rcptInput) 0) 0 (ZkFormal.Udr.pubOf Fp (Public.preparedBytes A.p 0)) B_BYTES true m =
         (((rcptTrafficB A.pub A.rcptInput).sends B_BYTES).map Msg.toFp).count m := (hpatch B_BYTES (by decide) m).1
     have e17 : tableBusCount AccountEmpty.table.interactions A.acctAcc.tr 17 (ZkFormal.Udr.pubOf Fp (Public.preparedBytes A.p 0)) B_BYTES true m =
@@ -142,6 +160,9 @@ theorem receipt_sha : ∃ receipt : List Sha.Gen.Msg,
     have e23 : tableBusCount MerkleEmpty.table.interactions (MerkleRender.outcomeTrace A.m.result.outcomes (ZkFormal.Udr.pubOf Fp (Public.preparedBytes A.p 0))) ZkFormal.Near.T_MRK (ZkFormal.Udr.pubOf Fp (Public.preparedBytes A.p 0)) B_DIGEST false m =
         ((A.mrkAcc.tf.recvs B_DIGEST).map Msg.toFp).count m := (hM B_DIGEST m).2
     rw [e16, e23] at h1
+    simp only [ReceiptGatedShaJobs.jobs] at h1 ⊢
+    rw [hrc] at h1
+    rw [hrcAll]
     simp only [ZkFormal.Near.cnt, ZkFormal.NearV3.Assembly.cnt, Sha.Gen.expectedDigests, List.map_append, List.filter_append,
       List.count_append] at h1 ⊢
     omega
