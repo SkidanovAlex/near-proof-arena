@@ -272,6 +272,172 @@ pub fn val_aligned(es: &[ValE]) -> Tab {
     t
 }
 
+// ------------------------------------------------- A7 accounting (val/node)
+//
+// `nearAirV3` tables 2/4/7/21 are the A7 extensions `nodeA7`, `valA7`,
+// `upsA7`, `sizeA7` (`ZkFormal/NearV3/Tables/UnfoldA7.lean`): the base table
+// with columns appended at its old width (`Trace.withCols`,
+// `Render/UnfoldA7Ext.lean`), the base cells unchanged.  The honest renders are
+// `nodeA7Trace vs t (selN vs S)`, `valA7Trace es t (selV es S)`,
+// `upsA7Trace insts t`, `sizeA7Trace pub v t (yA7 y0 y1 y2)`
+// (`Render/UnfoldA7Aligned.lean`, instantiated in `Assembly/TrieSide.lean`).
+//
+// Entry JSON (backwards readable): node/val entries are the old objects with an
+// optional `"rpl": bool` per record (default `false`) — the replaced-record
+// predicate `S` on record indices (`S n = es[n].rpl`); the size entry has an
+// optional `"yN": [y0, y1, y2]` (default zeros, entries past 3 ignored, as
+// `yA7`).  `v3check` only checks local constraints, so any `rpl` choice and any
+// `yN` with `y0 + y1 + y2 ≤ B0` gives a locally legal trace.
+
+/// `valA7` width: `valV3` (15) + `rplv` (15) + `rb` (16).
+pub const VAL_A7_WIDTH: usize = 17;
+
+/// `a + b` in `F` (canonical representatives).
+pub(crate) fn fp_add(a: u64, b: u64) -> u64 {
+    (a % P as u64 + b % P as u64) % P as u64
+}
+
+/// `a − b` in `F`.
+pub(crate) fn fp_sub(a: u64, b: u64) -> u64 {
+    (a % P as u64 + P as u64 - b % P as u64) % P as u64
+}
+
+/// `a · b` in `F`.
+pub(crate) fn fp_mul(a: u64, b: u64) -> u64 {
+    (a % P as u64) * (b % P as u64) % P as u64
+}
+
+/// `Trace.withCols` with zero new columns: `t` widened to `w` columns.
+pub(crate) fn widen(t: &Tab, w: usize) -> Tab {
+    let mut o = Tab::zero(t.log, w);
+    for r in 0..t.height() {
+        o.cells[r * w..r * w + t.width].copy_from_slice(&t.cells[r * t.width..(r + 1) * t.width]);
+    }
+    o
+}
+
+/// `nodeCols` / `valCols` (`Render/UnfoldA7Ext.lean`) written into columns
+/// `bw` (`rpl`) and `bw + 1` (running sum) of the widened table `t`:
+/// `rpl r = [sel r ∧ cell r first = 1]`, the sum is `prefixF inc` with
+/// `inc r = 2·cell r act − cell r first · rpl r · cell r len` (in `F`).
+pub(crate) fn a7_record_cols(
+    t: &mut Tab,
+    bw: usize,
+    (act, first, len): (usize, usize, usize),
+    sel: impl Fn(usize) -> bool,
+) {
+    let w = t.width;
+    let mut acc = 0u64;
+    for r in 0..t.height() {
+        let c = |x: usize| t.cells[r * w + x] as u64;
+        let rpl = (sel(r) && c(first) == 1) as u64;
+        let inc = fp_sub(fp_mul(2, c(act)), fp_mul(fp_mul(c(first), rpl), c(len)));
+        t.set(r, bw, rpl);
+        t.set(r, bw + 1, acc);
+        acc = fp_add(acc, inc);
+    }
+}
+
+/// Parse a JSON list of entry objects and their optional `"rpl"` flags
+/// (absent → `false`).
+pub(crate) fn parse_rpl<T: serde::de::DeserializeOwned>(
+    json: &str,
+) -> Result<(Vec<T>, Vec<bool>), String> {
+    let v: serde_json::Value = serde_json::from_str(json).map_err(|e| e.to_string())?;
+    let arr = v.as_array().ok_or("expected a JSON list of entries")?;
+    let mut es = Vec::with_capacity(arr.len());
+    let mut sel = Vec::with_capacity(arr.len());
+    for (i, x) in arr.iter().enumerate() {
+        sel.push(match x.get("rpl") {
+            None | Some(serde_json::Value::Null) => false,
+            Some(serde_json::Value::Bool(b)) => *b,
+            Some(o) => return Err(format!("entry {i}: \"rpl\" must be a boolean, got {o}")),
+        });
+        es.push(serde_json::from_value(x.clone()).map_err(|e| format!("entry {i}: {e}"))?);
+    }
+    Ok((es, sel))
+}
+
+/// `valA7Trace es t (selV es S)` with `S t = rpl[t]` (absent → `false`):
+/// [`val_aligned`] plus `rplv` / `rb` (`valCols`; `act = gb` (13), first-row
+/// flag `vf` (1), `len` (4)).  `selV es S q = q < R ∧ S (record of row q)`.
+pub fn val_a7(es: &[ValE], rpl: &[bool]) -> Tab {
+    let base = val_aligned(es);
+    let mut row_rec = Vec::new();
+    for (i, e) in es.iter().enumerate() {
+        row_rec.extend(std::iter::repeat(i).take(e.n_of() as usize));
+    }
+    let mut t = widen(&base, VAL_A7_WIDTH);
+    a7_record_cols(&mut t, VAL_WIDTH, (13, 1, 4), |q| {
+        row_rec
+            .get(q)
+            .is_some_and(|&i| rpl.get(i).copied().unwrap_or(false))
+    });
+    t
+}
+
+/// Test support for the A7 tables: the exported constraints that read a new
+/// column (index `≥ bw`, the base width: the appended constraints and the
+/// multiplicity bits of the appended interactions) checked on a rendered
+/// trace, so honest A7 columns and tampered ones can be told apart on any base
+/// trace.  Needs the `np-lean-export-v3` JSON at `$NEARAIRV3_JSON`; the tests
+/// that use it skip (with a note) when it is unset.
+#[cfg(test)]
+pub(crate) mod a7_test {
+    use super::Tab;
+    use crate::air::Expr;
+
+    pub fn air() -> Option<crate::air::Air> {
+        let Ok(p) = std::env::var("NEARAIRV3_JSON") else {
+            eprintln!("NEARAIRV3_JSON unset: skipping the A7 constraint test");
+            return None;
+        };
+        let txt = std::fs::read_to_string(&p).expect("NEARAIRV3_JSON");
+        Some(crate::air::Air::from_json(&txt).expect("nearAirV3 json"))
+    }
+
+    fn reads_from(e: &Expr, bw: usize) -> bool {
+        match e {
+            Expr::Col(c, _) => *c >= bw,
+            Expr::Add(a, b) | Expr::Mul(a, b) => reads_from(a, bw) || reads_from(b, bw),
+            Expr::Neg(a) => reads_from(a, bw),
+            _ => false,
+        }
+    }
+
+    /// `(constraint, row)` pairs failing among the constraints of table `idx`
+    /// that read a column `≥ bw`.
+    pub fn failing_new(
+        air: &crate::air::Air,
+        idx: usize,
+        bw: usize,
+        tab: &Tab,
+    ) -> Vec<(usize, usize)> {
+        let mut t = air.tables[idx].clone();
+        assert_eq!(t.width, tab.width, "table {idx} width");
+        t.constraints.retain(|e| reads_from(e, bw));
+        assert!(!t.constraints.is_empty());
+        let pubs = vec![<crate::field::F as p3_field::PrimeCharacteristicRing>::ZERO; air.num_pub];
+        crate::check::failing_constraints(&t, &tab.to_matrix(), &pubs, 20)
+    }
+
+    /// The honest `tab` satisfies the appended constraints; adding `1` to any
+    /// one of the `cells` `(row, col)` violates one of them.
+    pub fn honest_and_tampered(idx: usize, bw: usize, tab: &Tab, cells: &[(usize, usize)]) {
+        let Some(air) = air() else { return };
+        assert_eq!(failing_new(&air, idx, bw, tab), vec![], "honest table {idx}");
+        for &(r, c) in cells {
+            let mut t = tab.clone();
+            let x = t.cells[r * t.width + c] as u64;
+            t.set(r, c, x + 1);
+            assert!(
+                !failing_new(&air, idx, bw, &t).is_empty(),
+                "table {idx}: tampered cell ({r}, {c}) passes"
+            );
+        }
+    }
+}
+
 // ---------------------------------------------------------------- uniq (6)
 
 pub const UNIQ_WIDTH: usize = 53;
@@ -531,10 +697,13 @@ pub fn render(table: &str, json: &str) -> Result<Tab, String> {
         "bnd" => bnd_aligned(&p(json)?),
         "akey" => akey_aligned(&p(json)?),
         "head" => head_aligned(&p(json)?),
-        "val" => val_aligned(&p(json)?),
+        "val" => {
+            let (es, rpl) = parse_rpl::<ValE>(json)?;
+            val_a7(&es, &rpl)
+        }
         "uniq" => uniq_aligned(&p(json)?)?,
         "walk" => walk_aligned(&p(json)?),
-        "node" => node::node_aligned(&p(json)?),
+        "node" => node::render(json)?,
         "chacha" => chacha::render(json)?,
         "rng" => chacha::render_rng(json)?,
         "shuf" => chacha::render_shuf(json)?,
@@ -610,5 +779,35 @@ mod tests {
         assert_eq!(t.cells[rows * VAL_WIDTH + 12], 1);
         assert_eq!(t.cells[rows * VAL_WIDTH], 0);
         assert_eq!(t.cells[(t.height() - 1) * VAL_WIDTH + 11] as u64, total);
+    }
+
+    #[test]
+    fn val_a7_total() {
+        // `rb` on the `SUM` row is `valA7Total es S = Σ_t (2 − [S t]) · len_t`
+        let mut r = Rng::new(4);
+        let es = sample::val(&mut r, 11);
+        let rpl: Vec<bool> = (0..es.len()).map(|_| r.coin()).collect();
+        let t = val_a7(&es, &rpl);
+        assert_eq!(t.width, VAL_A7_WIDTH);
+        let rows: usize = es.iter().map(|e| e.n_of() as usize).sum();
+        let want: u64 = es
+            .iter()
+            .zip(&rpl)
+            .map(|(e, &s)| if s { e.len } else { 2 * e.len })
+            .sum();
+        assert_eq!(t.cells[rows * VAL_A7_WIDTH + 16] as u64, want);
+        assert_eq!(t.cells[16], 0);
+        // absent `rpl` reads as false
+        let j = serde_json::to_string(&es).unwrap();
+        let t0 = render("val", &j).unwrap();
+        assert_eq!(t0, val_a7(&es, &[]));
+        // appended constraints (`NEARAIRV3_JSON`): `rb` rows 0, 1, SUM, last;
+        // `rplv` on the first row of a record with `len > 0`
+        let f = (0..rows)
+            .find(|&q| t.cells[q * VAL_A7_WIDTH + 1] == 1 && t.cells[q * VAL_A7_WIDTH + 4] > 0)
+            .unwrap();
+        let h = t.height();
+        let cells = [(0, 16), (1, 16), (rows, 16), (h - 1, 16), (f, 15)];
+        a7_test::honest_and_tampered(4, VAL_WIDTH, &t, &cells);
     }
 }

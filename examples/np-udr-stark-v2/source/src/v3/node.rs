@@ -8,12 +8,18 @@
 //! aligned height `padLog22 (logOf (Σ bytes + 1))`, every cell reduced mod `P`.
 //! `conformance/run-v2.sh` compares the dumps with `np-lean-render-v3` byte for
 //! byte.
+//!
+//! `nearAirV3` table 2 is the A7 extension `nodeA7` (`Tables/UnfoldA7.lean`):
+//! [`node_a7`] / [`render`] append `rpl` (186) and `ra` (187)
+//! (`Render/UnfoldA7Ext.lean` `nodeCols`); the entry objects carry an optional
+//! `"rpl": bool` (the replaced-record predicate, see `super` A7 docs).
+//! `conformance/run-v2.d/a7.sh` compares with `np-lean-render-v3-a7`.
 
 use serde::Deserialize;
 
 use crate::field::P;
 
-use super::{Tab, b, get, log_of, pad_log22};
+use super::{b, get, log_of, pad_log22, Tab};
 
 pub const NODE_WIDTH: usize = 186;
 
@@ -471,7 +477,11 @@ fn nokey_of(v: &NodeV3) -> u64 {
     b(v.is_le() && hplen_of(v) == 1)
 }
 fn bmv_of(v: &NodeV3) -> u64 {
-    if v.is_le() { 0 } else { kid_bitmap(v.kids()) }
+    if v.is_le() {
+        0
+    } else {
+        kid_bitmap(v.kids())
+    }
 }
 fn pop_of(v: &NodeV3) -> u64 {
     let bm = bmv_of(v);
@@ -540,7 +550,11 @@ fn xtgt_of(n: u64, v: &NodeV3) -> u64 {
     }
 }
 fn xtgj_of(v: &NodeV3) -> u64 {
-    if xdead_of(v) { s_of(v) } else { 0 }
+    if xdead_of(v) {
+        s_of(v)
+    } else {
+        0
+    }
 }
 
 fn kid_win(kid: &Kid, w: u64, lastw: bool, slot: Option<u64>) -> Win {
@@ -1008,9 +1022,72 @@ pub fn node_aligned(vs: &[NodeS3]) -> Tab {
     t
 }
 
+/// `nodeA7` width (`Tables/UnfoldA7.lean`): `nodeV3` + `rpl` (186) + `ra` (187).
+pub const NODE_A7_WIDTH: usize = 188;
+
+/// The honest `nodeA7` trace `nodeA7Trace vs t (selN vs S)` with
+/// `S n = rpl[n]` (absent → `false`): [`node_aligned`] plus `rpl` / `ra`
+/// (`nodeCols`; `act` (0), first-row flag `nf` (1), `len` (6)).
+/// `selN vs S q = q < R vs ∧ S (record of row q)` (`Assembly/TrieA7Node.lean`).
+pub fn node_a7(vs: &[NodeS3], rpl: &[bool]) -> Tab {
+    let base = node_aligned(vs);
+    let row_rec: Vec<usize> = (0..vs.len())
+        .flat_map(|n| std::iter::repeat(n).take(layout_of(&vs[n].v).len()))
+        .collect();
+    let mut t = super::widen(&base, NODE_A7_WIDTH);
+    super::a7_record_cols(&mut t, NODE_WIDTH, (0, 1, 6), |q| {
+        row_rec
+            .get(q)
+            .is_some_and(|&n| rpl.get(n).copied().unwrap_or(false))
+    });
+    t
+}
+
+/// Parse a JSON list of `NodeS3` entries, each with an optional `"rpl"` flag,
+/// and render `nodeA7`.
+pub fn render(json: &str) -> Result<Tab, String> {
+    let (vs, rpl) = super::parse_rpl::<NodeS3>(json)?;
+    Ok(node_a7(&vs, &rpl))
+}
+
 // keep `get`, `rec` referenced (used by future extensions)
 #[allow(dead_code)]
 fn _unused(vs: &[NodeS3]) {
     let _ = rec(vs, 0);
     let _ = get(&[0u64], 0);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::sample::{self, Rng};
+    use super::*;
+
+    #[test]
+    fn a7_sum_row_total() {
+        // `ra` on the `SUM` row is `2 · R − Σ_{replaced} len` (`nodeA7Total vs S =
+        // Σ_n (2 − [S n]) · |ser n|` on honest entries; the sampler's are not)
+        let mut r = Rng::new(9);
+        let vs = sample::node(&mut r, 6);
+        let rpl: Vec<bool> = (0..vs.len()).map(|_| r.coin()).collect();
+        let t = node_a7(&vs, &rpl);
+        let base = node_aligned(&vs);
+        assert_eq!((t.log, t.width), (base.log, NODE_A7_WIDTH));
+        let rows: usize = vs.iter().map(|s| layout_of(&s.v).len()).sum();
+        let at = |q: usize, c: usize| t.cells[q * NODE_A7_WIDTH + c] as u64;
+        let want: u64 = 2 * rows as u64 - (0..rows).map(|q| at(q, 186) * at(q, 6)).sum::<u64>();
+        assert_eq!(at(rows, 3), 1, "SUM row");
+        assert_eq!(at(rows, 187), want);
+        assert_eq!(at(0, 187), 0);
+        let firsts = (0..rows).filter(|&q| at(q, 186) == 1).count();
+        assert_eq!(firsts, rpl.iter().filter(|&&x| x).count());
+        // absent `rpl` reads as false
+        let j = serde_json::to_string(&vs).unwrap();
+        assert_eq!(render(&j).unwrap(), node_a7(&vs, &[]));
+        // appended constraints (`NEARAIRV3_JSON`): `ra` rows 0, 1, SUM, last;
+        // `rpl` on row 0 (record 0's first row, `len > 0`)
+        assert!(at(0, 6) > 0);
+        let h = t.height();
+        let cells = [(0, 187), (1, 187), (rows, 187), (h - 1, 187), (0, 186)];
+        super::super::a7_test::honest_and_tampered(2, NODE_WIDTH, &t, &cells);
+    }
 }

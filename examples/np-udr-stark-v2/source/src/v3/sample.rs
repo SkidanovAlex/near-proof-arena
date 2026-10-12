@@ -253,10 +253,11 @@ pub fn sample_json(table: &str, seed: u64, n: usize) -> Result<String, String> {
         "bnd" => serde_json::to_string(&bnd(r, n)),
         "akey" => serde_json::to_string(&akey(r, n)),
         "head" => serde_json::to_string(&head(r, n)),
-        "val" => serde_json::to_string(&val(r, n)),
+        "val" => with_rpl(&val(r, n), r),
         "uniq" => serde_json::to_string(&uniq(r, n)),
         "walk" => serde_json::to_string(&walk(r, n)),
-        "node" => serde_json::to_string(&node(r, n)),
+        "node" => with_rpl(&node(r, n), r),
+        "ups" => serde_json::to_string(&ups(r, n)),
         "acct" => serde_json::to_string(&acct(r, n)),
         "size" => serde_json::to_string(&size(r, n)),
         "srcp" => serde_json::to_string(&srcp(r, n)),
@@ -301,13 +302,24 @@ pub fn acct(r: &mut Rng, n: usize) -> Vec<AcctV> {
 /// non-negative): `x_0 + x_1 ≤ 3,000,000` and `ovh + Σ x ≤ 8,388,608`.  The
 /// sampler fixes `ovh = 0` so the trace also passes `npudr v3check` (which
 /// supplies zero public inputs); a nonzero `ovh` is exercised separately by the
-/// conformance script.
+/// conformance script.  The A7 totals `yN` sum to at most `B0` (the honest
+/// `sizeA7` precondition), with the edge `Σ y = B0` one time in four.
 pub fn size(r: &mut Rng, _n: usize) -> Vec<SizeInput> {
     let x0 = r.below(1_500_000);
     let x1 = r.below(3_000_000 - x0);
     let rem = 8_388_608 - x0 - x1;
     let x2 = r.below(rem.min(1_000_000) + 1);
-    vec![SizeInput { x0, x1, x2, ovh: 0 }]
+    let b0 = super::size::B0;
+    let y0 = r.below(b0 / 2 + 1);
+    let y1 = r.below(b0 - y0 + 1);
+    let y2 = if r.below(4) == 0 { b0 - y0 - y1 } else { r.below(b0 - y0 - y1 + 1) };
+    vec![SizeInput {
+        x0,
+        x1,
+        x2,
+        ovh: 0,
+        y_n: vec![y0, y1, y2],
+    }]
 }
 
 // ------------------------------------------------------------------- node
@@ -844,6 +856,103 @@ pub fn shuf(r: &mut Rng, n: usize) -> Vec<ShuffleInst> {
                 key: cha_key(r),
                 kstart: r.below(32),
                 vals: (0..l).map(|_| r.below(1 << 32)).collect(),
+            }
+        })
+        .collect()
+}
+
+// -------------------------------------------------------------- A7 (val/node/ups)
+
+/// The entry list `es` as JSON with a random `"rpl"` flag on each entry (the
+/// replaced-record predicate of `nodeA7` / `valA7`; any choice is locally
+/// legal, so both values are drawn).
+fn with_rpl<T: serde::Serialize>(es: &[T], r: &mut Rng) -> serde_json::Result<String> {
+    let mut v = serde_json::to_value(es)?;
+    if let Some(arr) = v.as_array_mut() {
+        for x in arr {
+            if let Some(o) = x.as_object_mut() {
+                o.insert("rpl".into(), serde_json::Value::Bool(r.coin()));
+            }
+        }
+    }
+    serde_json::to_string(&v)
+}
+
+use super::ups::{UpsInst, UpsPartI};
+
+/// `n` **shape-valid, not honest** `upsV3` instances (no `UpsRenderOk`
+/// sampler exists: honest instances come from a native upsert run): four walk
+/// steps, three path records, a short value and 1–3 parts with byte strings
+/// and field shapes covering them.  For the Rust/Lean render differential of
+/// `upsA7` only (`v3check` does not hold on these).
+pub fn ups(r: &mut Rng, n: usize) -> Vec<UpsInst> {
+    (0..n as u64)
+        .map(|tau| {
+            let step = |r: &mut Rng| WStep3 {
+                mode: r.below(3),
+                sym: r.below(19),
+                e: (0..6).map(|_| r.below(8)).collect(),
+                u: r.below(3),
+                bm: r.below(1 << 16),
+                hv: r.below(2),
+                ub: r.below(2),
+            };
+            let walk = (0..4).map(|_| step(r)).collect();
+            let nq = 1 + r.below(3) as usize;
+            let parts = (0..nq)
+                .map(|_| {
+                    let ql = 1 + r.below(6) as usize;
+                    let mut shape = Vec::new();
+                    let mut left = ql as u64;
+                    while left > 0 {
+                        let l = 1 + r.below(left);
+                        shape.push((r.below(9), l));
+                        left -= l;
+                    }
+                    let pl = 1 + r.below(6) as usize;
+                    UpsPartI {
+                        kind: r.below(12),
+                        sd: r.below(3),
+                        s_n: r.below(8),
+                        pdep: r.below(4),
+                        rc: r.below(3),
+                        c_n: r.below(8),
+                        pb: r.bytes(pl),
+                        pcid: (0..pl).map(|_| r.below(4)).collect(),
+                        ty: r.below(4),
+                        qhk: r.below(3),
+                        qodd: r.below(2),
+                        phk: r.below(3),
+                        podd: r.below(2),
+                        nochild: r.below(2),
+                        shape,
+                        q: r.bytes(ql),
+                        jm: r.below(16),
+                        clen: r.below(40),
+                        m_b: r.below(1000),
+                        soff: r.below(pl as u64),
+                        neg: r.below(2),
+                    }
+                })
+                .collect();
+            UpsInst {
+                tau,
+                rid: r.below(8),
+                n: (0..3).map(|_| r.below(8)).collect(),
+                dep: (0..3).collect(),
+                walk,
+                ci: r.below(11),
+                d: r.below(3),
+                ts: 1 + r.below(3),
+                ti: r.below(3),
+                x: r.below(16),
+                v: {
+                    let l = 1 + r.below(5) as usize;
+                    r.bytes(l)
+                },
+                mid: r.bytes(32),
+                post: r.bytes(32),
+                parts,
             }
         })
         .collect()

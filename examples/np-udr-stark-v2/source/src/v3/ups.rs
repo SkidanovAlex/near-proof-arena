@@ -10,12 +10,17 @@
 //! Row order per instance `τ`: `W0 W1 W2 W3`, the value rows `0 … L−1`, then
 //! the parts' rows (`RecsI`).  `UPB` use counts `u` are global: the number of
 //! earlier reads of the same `(sN, spos)` in table order (`Gen.lean:549`).
+//!
+//! `nearAirV3` table 7 is the A7 extension `upsA7` (`Tables/UnfoldA7.lean`):
+//! [`ups_a7`] / [`render`] append `s` (200) and `nD` (201); no new inputs.
+//! `conformance/run-v2.d/a7.sh` compares with `np-lean-render-v3-a7 ups` on
+//! shape-valid (not honest) sampled instances.
 
 use serde::Deserialize;
 
 use p3_field::{Field, PrimeCharacteristicRing, PrimeField32};
 
-use super::{Tab, b, get, log_of, pad_log22};
+use super::{b, get, log_of, pad_log22, Tab};
 
 /// `UpsV3.width` (`Tables/Ups.lean:...`).
 pub const UPS_WIDTH: usize = 200;
@@ -760,8 +765,8 @@ fn spos_v(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize, px: usize) -
 
 /// `UpsGen.rbV` (`Gen.lean:373`): the source byte at `spos`.
 fn rb_v(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize, px: usize) -> u64 {
-    let s = spos_v(i, p, st, ix, wi, px);
-    if s < 0 { 0 } else { get(&p.pb, s as usize) }
+    // `(sposV …).toNat`: a negative position reads index 0 (as in Lean)
+    get(&p.pb, spos_v(i, p, st, ix, wi, px).max(0) as usize)
 }
 
 /// `Gen.lean:379`: the digest lookup's id.
@@ -826,8 +831,8 @@ struct Mem<'a> {
 
 impl Mem<'_> {
     fn mem_byte(&self, q: &UpsPartI, i: usize) -> i128 {
-        // `Gen.lean:396`: `pb.length - 8 + i` with Nat truncating subtraction.
-        let idx = q.pb.len().saturating_sub(8) + i;
+        // `Gen.lean:398` `memRb`: `((pb.length : Int) - 8 + i).toNat`.
+        let idx = (q.pb.len() as i64 - 8 + i as i64).max(0) as usize;
         get(&q.pb, idx) as i128
     }
     fn child(&self) -> &UpsPartI {
@@ -904,9 +909,17 @@ impl Mem<'_> {
                 .div_euclid(2i128.pow((m - 11) as u32))
                 .rem_euclid(2)
         } else if m == 14 {
-            if i == 0 { 0 } else { self.co(i - 1) }
+            if i == 0 {
+                0
+            } else {
+                self.co(i - 1)
+            }
         } else if m == 15 {
-            if i == 0 { 0 } else { self.co2(i - 1) }
+            if i == 0 {
+                0
+            } else {
+                self.co2(i - 1)
+            }
         } else if m == 16 {
             self.x1(i)
         } else if m == 17 {
@@ -1016,14 +1029,7 @@ fn q_row(
                 0
             }
         }
-        184 => {
-            let s = spos_v(i, p, st, ix, wi, px);
-            if s < 0 {
-                0
-            } else {
-                get(&p.pcid, s as usize) as i64
-            }
-        }
+        184 => get(&p.pcid, spos_v(i, p, st, ix, wi, px).max(0) as usize) as i64,
         185 => ind(rdc_b(i, p, st, ix, wi)) as i64,
         _ => {
             if (106..115).contains(&col) {
@@ -1175,10 +1181,36 @@ pub fn ups_aligned(insts: &[UpsInst]) -> Tab {
     t
 }
 
-/// Parse `json` as a `List UpsInst` and render its aligned trace.
+/// `upsA7` width (`Tables/UnfoldA7.lean`): `upsV3` + `s` (200) + `nD` (201).
+pub const UPS_A7_WIDTH: usize = 202;
+
+/// The honest `upsA7` trace `upsA7Trace insts t` (`Render/UnfoldA7Aligned.lean`):
+/// [`ups_aligned`] plus `upsCols` (`Render/UnfoldA7Ext.lean`) — `s` the prefix
+/// sum (in `F`) of `vb + qb` (columns 2, 3) over the rows before, `nD` =
+/// `dd0·N0 + dd1·N1 + dd2·N2` (columns 28·11 + 29·12 + 30·13) on every row.
+pub fn ups_a7(insts: &[UpsInst]) -> Tab {
+    use super::{fp_add, fp_mul};
+    let mut t = super::widen(&ups_aligned(insts), UPS_A7_WIDTH);
+    let w = t.width;
+    let mut s = 0u64;
+    for r in 0..t.height() {
+        let c = |x: usize| t.cells[r * w + x] as u64;
+        let nd = fp_add(
+            fp_add(fp_mul(c(28), c(11)), fp_mul(c(29), c(12))),
+            fp_mul(c(30), c(13)),
+        );
+        let inc = fp_add(c(2), c(3));
+        t.set(r, 200, s);
+        t.set(r, 201, nd);
+        s = fp_add(s, inc);
+    }
+    t
+}
+
+/// Parse `json` as a `List UpsInst` and render the `upsA7` trace.
 pub fn render(json: &str) -> Result<Tab, String> {
     let insts: Vec<UpsInst> = serde_json::from_str(json).map_err(|e| e.to_string())?;
-    Ok(ups_aligned(&insts))
+    Ok(ups_a7(&insts))
 }
 
 #[cfg(test)]
@@ -1323,7 +1355,44 @@ mod tests {
         let i = inst();
         let json = serde_json::to_string(std::slice::from_ref(&i)).unwrap();
         let t = render(&json).unwrap();
-        assert_eq!(t.width, UPS_WIDTH);
-        assert_eq!(t, ups_aligned(std::slice::from_ref(&i)));
+        assert_eq!(t.width, UPS_A7_WIDTH);
+        assert_eq!(t, ups_a7(std::slice::from_ref(&i)));
+    }
+
+    #[test]
+    fn a7_columns() {
+        let i = inst();
+        let base = ups_aligned(std::slice::from_ref(&i));
+        let t = ups_a7(std::slice::from_ref(&i));
+        assert_eq!((t.log, t.width), (base.log, UPS_A7_WIDTH));
+        let at = |r: usize, c: usize| t.cells[r * UPS_A7_WIDTH + c] as u64;
+        for r in 0..t.height() {
+            for c in 0..UPS_WIDTH {
+                assert_eq!(at(r, c) as u32, base.cells[r * UPS_WIDTH + c]);
+            }
+        }
+        // `s` on the last row is Σ vb + qb = L + Σ |q| (`upsA7Total`)
+        let total = i.l() + i.parts.iter().map(|p| p.q.len()).sum::<usize>();
+        assert_eq!(at(0, 200), 0);
+        assert_eq!(at(t.height() - 1, 200), total as u64);
+        // `nD` on the segment's first row is `N[D]`
+        assert_eq!(at(0, 201), i.n[i.d as usize]);
+    }
+
+    #[test]
+    fn a7_constraints() {
+        // the appended constraints (`NEARAIRV3_JSON`) on sampled (not honest)
+        // instances: `s` rows 0, 1, last; `nD` on a segment's first row
+        let mut r = crate::v3::sample::Rng::new(2);
+        for n in [0, 1, 3] {
+            let is = crate::v3::sample::ups(&mut r, n);
+            let t = ups_a7(&is);
+            let h = t.height();
+            let mut cells = vec![(0, 200), (1, 200), (h - 1, 200)];
+            if n > 0 {
+                cells.push((0, 201));
+            }
+            crate::v3::a7_test::honest_and_tampered(7, UPS_WIDTH, &t, &cells);
+        }
     }
 }
