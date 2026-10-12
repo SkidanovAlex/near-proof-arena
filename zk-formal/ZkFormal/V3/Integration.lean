@@ -393,6 +393,7 @@ import ZkFormal.NearV3.Assembly.A7SizeView
 import ZkFormal.NearV3.Assembly.A7NodeView
 import ZkFormal.NearV3.Assembly.A7ValView
 import ZkFormal.NearV3.Assembly.A7UpsView
+import ZkFormal.NearV3.Assembly.LinkCore
 /-!
 # Build gate for the integrated v3 proof work
 
