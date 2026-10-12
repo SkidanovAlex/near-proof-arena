@@ -403,6 +403,7 @@ import ZkFormal.NearV3.Assembly.A9Words
 import ZkFormal.NearV3.Assembly.A9Native
 import ZkFormal.NearV3.Assembly.A7Assemble
 import ZkFormal.NearV3.Assembly.A7Post
+import ZkFormal.NearV3.Assembly.A7Pre
 /-!
 # Build gate for the integrated v3 proof work
 
