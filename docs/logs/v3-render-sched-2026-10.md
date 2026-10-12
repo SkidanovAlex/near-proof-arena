@@ -360,3 +360,28 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
    (R15 today) uses `ProcActualInput.allowances[kk]`; equal for canonical priors with distinct shard ids (to prove;
    `ProcPreviousStateRegression.allowance_mismatch` is the non-canonical counterexample).
 3. Scheduler buses 40–62, ChaCha-lane buses, packaging theorem (tasks 3, 4): not started.
+
+### Lead's package 8 (received end of session 7) — findings before stopping (context low)
+
+* **(3) B_SCMP / distinct shard ids — distinctness is NOT needed.** The spec does not enforce distinct
+  `shardIds` (A12 is only `|boundaries| + 1 = |shardIds|`; no Nodup check found in `spec/lean/v3`). But
+  `Sched/Spec/CanonDup.allow0_src` already proves, for ANY id list (duplicates included), that the native fold
+  `links.foldl (allowStep-style indexOf update)` over the layout-canonical links
+  `(range n²).map (l ↦ ⟨ids[l/n], ids[l%n], a l⟩)` equals `srcArr ids a` (record `srcOf ids l`, last wins; 0 when
+  none). `ProcActualInput.allowStep` is that same update, so for a canon0f prior (`links.map (s,r) = layoutLinks L`,
+  hence `|links| = n²` and `a0Canon = links.map allowance`): `ProcActualInput.allowances ids prev = a0Src ids prev`,
+  i.e. `allowances[kk] = (match srcOf ids kk with | some k' => a0Canon[k'] | none => 0)` = the frozen codec's `a0s`.
+  Remaining proof: `layoutLinks L = (range n²).map (l ↦ (ids[l/n], ids[l%n]))` (flatMap/map index identity) and
+  the reshaping of `prev.links` into `allow0_src`'s form. (`ProcPreviousStateRegression.allowance_mismatch` is a
+  non-canonical prior, consistent with this.)
+* **(1) NatRes — where the witnesses live.** `ProcPriorCodecGrantCap.native` / `ProcPriorCodecForwardRange.native`
+  need, per block, `ProcActualPrefix.runPrefix (input sp prev) = .ok (cv,st,rs,ev)` and
+  `distributeEv n sp.allowed st.sb st.rb lp.cntS lp.cntR = .ok (gd, sord, rord)` with `gd = b.grants`. The existing
+  per-block existence lemmas (`ProcNativeCodecComparisonWitness.native_main` / `missing_chunk`) choose `gd`
+  existentially inside; `PriorCore`/`accepted_record_tables` (`Assembly/SchedulerCodecAcceptedRecords.lean`) do
+  not export the `gd`↔distribution link. Next step: add a `PriorCore` variant (new structure, existing statements
+  kept) with `∀ b ∈ bs, ∃ cv st rs ev sord rord, runPrefix … ∧ distributeEv … = .ok (b.grants, sord, rord)`, proved
+  where `accepted_record_tables` builds the blocks. For τ ≠ 0 the codec's `ft` is defined as 0 in `blkOf`, so only
+  instance 0 needs the forwarding range. `vid < P`: `priorValueId before tree = forestLookupVid before + i` —
+  bound by the forest value count (≤ B0) still to be shown.
+* (2) and (4): not started this session beyond `rows_traffic`/`hdr_s0f` (see above).
