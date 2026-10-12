@@ -6,6 +6,9 @@ import ZkFormal.NearV3.Rcpt.Link.RcptHolds
 import ZkFormal.NearV3.Rcpt.Link.QvCodec
 import ZkFormal.NearV3.Rcpt.Link.QvMain
 import ZkFormal.NearV3.Rcpt.Link.ValExact
+import ZkFormal.NearV3.Rcpt.Link.RcptRoute
+import ZkFormal.NearV3.Rcpt.Link.RcptRunHdr
+import ZkFormal.NearV3.Rcpt.Link.OutRoot3
 import ZkFormal.NearV3.Rcpt.Link.ValBytes
 import ZkFormal.NearV3.Rcpt.Link.RcptHoldsB
 import ZkFormal.NearV3.Rcpt.Link.AkeyAkc
@@ -284,3 +287,131 @@ import ZkFormal.NearV3.Rcpt.Link.QvBal
 /-- info: 'ZkFormal.NearV3.RcptLink.akk_value' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.akk_value
+
+/-- info: 'ZkFormal.NearV3.RcptLink.bnd_lookup_perm' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.bnd_lookup_perm
+
+/-- info: 'ZkFormal.NearV3.RcptLink.prepClaim_ctx_walk' depends on axioms: [propext] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.prepClaim_ctx_walk
+
+/-- info: 'ZkFormal.NearV3.RcptLink.bndp_count' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.bndp_count
+
+/-- info: 'ZkFormal.NearV3.RcptLink.boundedPrep_self' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.boundedPrep_self
+
+/-- info: 'ZkFormal.NearV3.RcptLink.route_holdsP' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.route_holdsP
+
+/-- info: 'ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_r' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_r
+
+/-- info: 'ZkFormal.NearV3.RcptLink.hroute_holds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.hroute_holds
+
+/-- info: 'ZkFormal.NearV3.RcptLink.decodeBody_shape' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.decodeBody_shape
+
+/-- info: 'ZkFormal.NearV3.RcptLink.body_tail' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.body_tail
+
+/-- info: 'ZkFormal.NearV3.RcptLink.decodeChunkInner_burnt' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.decodeChunkInner_burnt
+
+/-- info: 'ZkFormal.NearV3.RcptLink.walkD0_H' depends on axioms: [propext] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.walkD0_H
+
+/-- info: 'ZkFormal.NearV3.RcptLink.burnt_pub' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.burnt_pub
+
+/-- info: 'ZkFormal.NearV3.RcptLink.mainOut_of_run' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.mainOut_of_run
+
+/-- info: 'ZkFormal.NearV3.RcptLink.runHdr_of' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.runHdr_of
+
+/-- info: 'ZkFormal.NearV3.RcptLink.leaf_isolate' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.leaf_isolate
+
+/-- info: 'ZkFormal.NearV3.RcptLink.othersRC_leaf' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.othersRC_leaf
+
+/-- info: 'ZkFormal.NearV3.RcptLink.leaf_iso' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.leaf_iso
+
+/-- info: 'ZkFormal.NearV3.RcptLink.peo_sha' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.peo_sha
+
+/-- info: 'ZkFormal.NearV3.RcptLink.refundIds_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.refundIds_eq
+
+/-- info: 'ZkFormal.NearV3.RcptLink.burnt_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.burnt_eq
+
+/-- info: 'ZkFormal.NearV3.RcptLink.peo_encode3' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.peo_encode3
+
+/-- info: 'ZkFormal.NearV3.RcptLink.leaf_hash3' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.leaf_hash3
+
+/-- info: 'ZkFormal.NearV3.RcptLink.core_sends_good' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.core_sends_good
+
+/-- info: 'ZkFormal.NearV3.RcptLink.root_of_core' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.root_of_core
+
+/-- info: 'ZkFormal.NearV3.RcptLink.mpos_bal' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.mpos_bal
+
+/-- info: 'ZkFormal.NearV3.RcptLink.othersRC_mrk' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.othersRC_mrk
+
+/-- info: 'ZkFormal.NearV3.RcptLink.mrk_iso' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.mrk_iso
+
+/-- info: 'ZkFormal.NearV3.RcptLink.mrk_n_eq' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.mrk_n_eq
+
+/-- info: 'ZkFormal.NearV3.RcptLink.outCore_holds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.outCore_holds
+
+/-- info: 'ZkFormal.NearV3.RcptLink.outcomeRoot_holds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.outcomeRoot_holds
+
+/-- info: 'ZkFormal.NearV3.RcptLink.runHdr_holds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.runHdr_holds
+
+/-- info: 'ZkFormal.NearV3.RcptLink.executions_holdsP' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.executions_holdsP

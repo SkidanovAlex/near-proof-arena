@@ -3,7 +3,7 @@
 Worktree `/data/illia/nearproof-wt/v3-rcpt-sound`, branch `lane/v3-rcpt-sound`, from main `c87a7cae`.
 Modules: `zk-formal/ZkFormal/NearV3/Rcpt/Link/{RunSplit,ForwardSound,MemBal,Mem3,MemOf,RunModel,
 NewChunk,RecChain,RecModel,PrepFwd,RcptCore,AcctSlots,GasPub,RcptHolds,ValBytes,PeoBytes,RfBody,RfEnc,
-RcptHoldsB,FwdLinks,AkeyAkc,SrecLink,QvPre,QvBal,QvRc,QvCodec,QvPrem,QvAssemble,QvMain,ValExact}.lean` (namespace
+RcptHoldsB,FwdLinks,AkeyAkc,SrecLink,QvPre,QvBal,QvRc,QvCodec,QvPrem,QvAssemble,QvMain,ValExact,RcptRoute}.lean` (namespace
 `ZkFormal.NearV3.RcptLink`).
 Audit `zk-formal/test/AuditRcptSound.lean` (all `[propext, Classical.choice, Quot.sound]` or less).
 No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
@@ -382,3 +382,82 @@ Nothing false found.
    `hfix : ∀ key ∈ [keyDelayedIdx, keyBufferedIdx, keyYieldIdx], (Fpre r 0).find key ≠ none`,
    `hgrp : ∀ y ∈ bs, (Fpre r 0).find (keyGroupsData y) ≠ none`
    (from `queue_main_holdsP`'s `v.Reads (Fpre r 0) …` and `v.Valid`, `bs := v.shards`).
+
+## 2026-10-12 (session 3, cont. 2) — routing (`hroute`) after table 16's q check
+
+Merged `origin/lane/v3-render-rcpt` (`e82f30b6`, clean; `RcptV3.tableQ` in `nearAirV3`).  Commit
+`0fbd26a5` (`RcptRoute.lean`); audit extended (`prepClaim_ctx_walk`: `[propext]`,
+`boundedPrep_self`: `[propext, Quot.sound]`, rest the usual three); `make pin-check` OK.
+
+* `rcpt_bnd_sends` / `rcpt_bnd_recvs` / `req_sends` / `req_recvs`: the receipt view's `BND` traffic is
+  `boundaryRequests` (`(r.1 ++ [r.2+1])` sends, `(r.1 ++ [r.2])` receives).
+* `bnd_lookup_perm`: exact `BND` balance (`bal_users [T_RCPT, T_BND]`) in `bnd_lookup_provider` form.
+* `bndp_count`: `BNDP` balance (bnd receives, public sends `boundaryRecords p` via
+  `prepared_pubIdx` / `prepared_receipt_index`).
+* `prepClaim_ctx_walk`: `prepClaim cb = .ok pc → walkD0 cb = .ok k → pc.ctxB2.layout = k.L ∧
+  pc.ctxB2.own = k.H.shardId`; `boundedPrep_self`: `boundedPrep p k.L k.H.shardId = p` (A12
+  `ClaimFieldsV3.layoutWf` from `walkD0_of_prepClaim`, `boundedLayout_wf`, `prepD0_routing_intervals`).
+* **`route_holdsP`**: `hq : ∀ x ∈ flatR r.lists, x.q < 128` ⇒ `∀ x ∈ flatR r.lists,
+  pc.ctxB2.layout.shardOf (toBytes x.v) = pc.ctxB2.own` (`bounded_prepared_native_routing`,
+  `bnd_lookup_provider` + `boundaryRequests_canonical hq` + `boundaryRequests_bound W.listsCount.2`).
+* **`mainRun_of_holdsP_r`**: `mainRun_of_holdsP_q` with routing discharged; premises: `hp hsz hH T W hn`
+  and **`hq`**.
+
+**`hq` for the records `r` of `LinkV3Stmt`** (open, not an AIR gap): `V3RecordsWf` has no q field, and
+`r` is arbitrary given `Wf`/`Traffic` (the bound is not recoverable from traffic: `65·q + pos` is
+only known mod `P`).  Exact fix (assembly, `LinkV3.lean` / `RcptViewCounts.lean`, lead / lane v3-link):
+add `listsQ : ∀ x ∈ flatR r.lists, x.q < 128` to `V3RecordsWf`, return it from
+`rcptV3_view_counts` (same `ls`; `ReceiptCandidateProof.view_q (rcptLocalQ hH) hc` as in
+`rcptV3_view_nearAir`), and fill it in `v3Records_of_holdsP`.  Then `hq := W.listsQ`.
+
+### Remaining premises of `mainRun_of_holdsP_r` (exact)
+
+`MainTrieLink … (Fpre r 0) mid so` and the link-indexed forwarding check vs `so.grant` (lane
+v3-link); `hq` (above).
+
+### Next (lead, session 3): `RunHdr k h out` for lane v3-link's `LinkHdr.executions_run`
+
+Not started (context).  Plan: `out = mainOut` by determinism once `pc.ctxB2 = blockCtx k.L k.H.shardId
+k.slotB2.gasLimit block previous.hdr.nextGasPrice` and `x.applied = (rv r.lists).map toReceipt`
+(`applied_eq`); `gasUsed` from `mainOut`'s `n·G` and `hn`; `outgoing` from `refunds_of` (`hrf`,
+`RcptHoldsB`); `body` from `prepBody`'s body check and `decodeBody`; `tokensBurnt`,
+`outcomeRoot` need the AIR's public balance-burnt / outcome-root (MRK) links to `tokAt n` / outcomes.
+
+## 2026-10-12 (session 4) — `RunHdr` closed; `executions` from `HoldsP` alone
+
+Merged `origin/lane/v3-link` (`b3af4b85` LinkHdr, then `645a8784` `V3RecordsWf.listsQ`).  Commits
+`31fa280a` (RcptRoute `hq := W.listsQ`, RcptRunHdr), `72f3cf55` (OutLeaf3), `64b1c8d9` (OutCore3),
+`831b2ccc` (OutRoot3).  Audit `test/AuditRcptSound.lean` extended (all three usual axioms, except
+`decodeBody_shape`, `decodeChunkInner_burnt`, `leaf_isolate`, `mrk_n_eq`: `[propext, Quot.sound]`;
+`walkD0_H`: `[propext]`); `make pin-check` OK.  No AIR change; nothing false found.
+
+* **`RcptRoute`**: `mainRun_of_holdsP_r` no longer takes `hq` (`W.listsQ`); **`hroute_holds`** is
+  v3-link's `hroute` premise (`∀ pc, prepClaim cb = .ok pc → ∀ y ∈ flatR r.lists, …`).
+* **`RcptRunHdr`**: `mainOut_of_run` (every `out` of `applyNewChunk prims (blockCtx k.L …) (Fpre r 0)
+  x.applied` is `(recModel r.lists r.accts (preV r) (Tf r 0 (schedOut o).state)).mainOut pc.ctxB2`,
+  `pc.ctxB2 = blockCtx …`; via `mainRun_of_holdsP_r`, `LinkMainLink.mainTrieLink_holds`,
+  `LinkFwd.hfwd_holds`, `LinkPrepCtx`, determinism), `pMany_length`, `decodeBody_shape`
+  (`b = u32 0 ++ u32 |rs| ++ b.drop 8`), `body_tail` (`h.body.drop 8` = model refunds encoded),
+  `pChunkInner_burnt`/`decodeChunkInner_burnt`/`walkD0_H` (`k.H.prevBalanceBurnt < 2^128`),
+  `burnt_pub` (`k.H.prevBalanceBurnt = leN' (pubBytes pub PH_BURNT 16)`), `runHdr_of` (`RunHdr`
+  given the outcome-root premise): `gasUsed` (`n·G`, `hn`), `tokensBurnt` (`tok_inv` + `RcptV3Wf.toks`
+  final = public burnt), `outgoing` (`refunds_of`), `body` (`decodeBody_shape` + `body_tail`).
+* **`OutLeaf3`**: `leaf_isolate`, `othersRC_leaf`, `leaf_iso`, `peo_sha` (`peoh = sha256 peo`),
+  `refundIds_eq`, `burnt_eq`, `peo_encode3` (`toBytes peo = (outcomeOf q).partialEncode`, incl.
+  system receipts: `burnt = 0`, no refund id), **`leaf_hash3`**.
+* **`OutCore3`**: v1 `Link.out_ok` abstracted from `LinkHyp` (`OutCore S shaS shaR pub mv Rs n L`:
+  SHA facts with `BYTES` covered by `S`, mrk `DIGEST` receives provided, exact `MPOS` balance
+  `cnt Rs + cnt mrkSends = cnt mrkRecvs`, `MrkWf`, `mv.n = n ≤ 2^22`, leaf / `MRK(i)` isolation);
+  `core_sends_good`, **`root_of_core`** (received root digest = `merkleRoot L`).
+* **`OutRoot3`**: `rcpt_mpos_mem`, `mpos_bal` (`bal_users [T_RCPT, T_MRK]` on `B_MPOS`),
+  `othersRC_mrk`, `mrk_iso` (via `mrkMsgs_at`), `mrk_n_eq`, `outCore_holds` (`mrkE = false`),
+  **`outcomeRoot_holds`** (`k.H.prevOutcomeRoot = outcomeRoot (mainOut).outcomes`; `mrkE = true`:
+  `countE = 0` ⇒ `n = 0` via `MerkleRender.public_count`, public root bytes 0 ⇒ `zeroHash`),
+  **`runHdr_holds`** (= v3-link's `hrun`), **`executions_holdsP`** (`LinkHdr.executions_run` with
+  `hroute`, `hrun` discharged: `∃ m last, m.Valid k x ∧ ImplicitRunV3 … ∧ HeaderSemanticsV3 k h p m last`
+  from `hp hsz hH T W hw hn hxn hxv hxh hxr hmb hmp` only).
+
+### Remaining (this lane)
+
+None for `executions`.  (`hn : h.n = |flatR r.lists|`, `hxn/hxv/hxh/hxr` are the reconstruction's
+definitional identities, supplied by the caller as before.)
