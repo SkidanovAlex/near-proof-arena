@@ -14,6 +14,13 @@
 #    verifier accepts the honest Rust proof (and its AIR re-exports
 #    byte-identically), rejects it under every other auxGroup, rejects proof
 #    mutations, and rejects mutated claims (payload byte, count, offset).
+# 3. nearAirV3 per-table honest traces (src/v3): for each table with a Lean
+#    aligned generator (Render/Padded.lean, Render/PaddedTrie.lean, and the
+#    receipt-side Render/AcctRender.lean + Render/SizeRender.lean), seeded
+#    random honest entries (`npudr v3sample`) are rendered by `npudr v3render`
+#    and `np-lean-render-v3`; the dumps must be byte-identical and the trace
+#    must satisfy every constraint of its nearAirV3 table (`npudr v3check`).
+#    Entries that break the honest-input predicate must fail the check.
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 src="$here/../source"
@@ -30,7 +37,7 @@ bad()  { echo "FAIL  $*"; fail=1; }
 
 echo "== build"
 (cd "$src" && $HEAVY cargo build --release -q) || { echo "cargo build failed"; exit 2; }
-(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3) || { echo "lake build failed"; exit 2; }
+(cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3 np-lean-entries-v3 np-lean-prep-v3) || { echo "lake build failed"; exit 2; }
 npudr="$src/target/release/npudr"
 lv="$here/.lake/build/bin/np-lean-verify-v2"
 le="$here/.lake/build/bin/np-lean-export-v3"
@@ -89,6 +96,149 @@ for g in 1 2 3; do
     mutate "$d/claim.bin" "$d/claim.mut" u32 4 $c;         expect reject "$x seg1 offset past claim" $g "$d" "$d/proof.bin" "$d/claim.mut"
   done
 done
+
+echo "== nearAirV3 honest per-table traces: Rust (npudr v3render) vs Lean (np-lean-render-v3)"
+lr="$here/.lake/build/bin/np-lean-render-v3"
+rd="$out/render"; mkdir -p "$rd"
+for t in ${RENDER_TABLES:-bnd akey head val uniq walk node acct size}; do
+  for seed in 1 2 3; do
+    for n in ${RENDER_SIZES:-0 1 5 37}; do
+      f="$rd/$t-$seed-$n"
+      "$npudr" v3sample $t $seed $n > "$f.json"
+      $HEAVY "$lr" $t "$f.json" "$f.lean.bin" 2>"$f.err" || { bad "$t seed=$seed n=$n: np-lean-render-v3 failed"; continue; }
+      "$npudr" v3render $t "$f.json" "$f.rust.bin" || { bad "$t seed=$seed n=$n: npudr v3render failed"; continue; }
+      if cmp -s "$f.lean.bin" "$f.rust.bin"; then pass "$t seed=$seed n=$n trace identical ($(stat -c %s "$f.rust.bin") B)"
+      else bad "$t seed=$seed n=$n trace differs"; fi
+      # `v3check` needs honest (`*Ok`) entries; node entries come from the witness
+      # (part 2c), so its random sampler only exercises the renderer identity.
+      if [ "$t" = node ]; then continue; fi
+      if "$npudr" v3check "$out/nearAirV3.json" $t "$f.json" >"$f.check"; then pass "$t seed=$seed n=$n $(cut -c5- "$f.check")"
+      else bad "$t seed=$seed n=$n constraints fail"; head -3 "$f.check"; fi
+    done
+  done
+done
+# entries outside the honest-input predicate: the rendered trace must violate a constraint
+broken() { # broken <table> <label> <python edit of list `es`>
+  local t=$1 x=$2 f="$rd/broken-$1"
+  "$npudr" v3sample $t 7 5 | python3 -c "import json,sys; es=json.load(sys.stdin); $3; print(json.dumps(es))" > "$f.json"
+  if "$npudr" v3check "$out/nearAirV3.json" $t "$f.json" >"$f.check"; then bad "$t $x: constraints still hold"
+  else pass "$t $x: constraint violated"; fi
+}
+broken val "non-consecutive ids" "es[2]['vid'] += 1"
+broken akey "permission byte != 1" "es[1]['bytes'][8] = 0"
+broken uniq "instance step of 2" "[e.__setitem__('tau', e['tau'] + 2) for e in es[3:]]"
+# control: one instance, keys 0 < 1 < … (honest); then the same with two keys swapped
+U1="T = es[0]['tau']; [e.update(tau=T, bytes=[i] + [0]*31) for i, e in enumerate(es)]"
+broken uniq "keys not sorted" "$U1; es[2]['bytes'], es[3]['bytes'] = es[3]['bytes'], es[2]['bytes']"
+f="$rd/control-uniq"
+"$npudr" v3sample uniq 7 5 | python3 -c "import json,sys; es=json.load(sys.stdin); $U1; print(json.dumps(es))" > "$f.json"
+if "$npudr" v3check "$out/nearAirV3.json" uniq "$f.json" >"$f.check"; then pass "uniq control (sorted single instance) holds"
+else bad "uniq control fails"; fi
+broken walk "broken edge chain" "es[0]['steps'][1]['e'][0] += 1"
+broken walk "first row not START" "es[1]['steps'][0]['sym'] = 3; es[1]['steps'][0]['e'][2] = 3"
+# `acct` pre amount all-255 makes `dsum` zero so the inverse constraint fails
+broken acct "pre amount is u128::MAX" "es[0]['pre'] = [255]*16 + es[0]['pre'][16:]"
+broken size "x_0 + x_1 over 3,000,000" "es[0]['x0'] = 2000000; es[0]['x1'] = 2000000"
+
+echo "== sizeV3 nonzero public overhead (PH_WOVH): Rust vs Lean, byte-identical"
+# `npudr v3sample size` fixes `ovh = 0` so `v3check` (zero public inputs) passes.
+# Here the public `u32` at `PH_WOVH = 198` is nonzero: the two renderers must
+# still agree on the trace (this is the size differential's `ovh` field).
+for ovh in 1 258 16909060; do
+  for xs in "100 200 300" "1000000 1000000 500000" "2999999 1 0"; do
+    set -- $xs; f="$rd/size-ovh-$ovh-$1-$2-$3"
+    printf '[{"x0":%s,"x1":%s,"x2":%s,"ovh":%s}]\n' "$1" "$2" "$3" "$ovh" > "$f.json"
+    if ! $HEAVY "$lr" size "$f.json" "$f.lean.bin" 2>"$f.err"; then bad "size ovh=$ovh x=$xs: np-lean-render-v3 failed"; cat "$f.err"; continue; fi
+    "$npudr" v3render size "$f.json" "$f.rust.bin" || { bad "size ovh=$ovh x=$xs: npudr v3render failed"; continue; }
+    if cmp -s "$f.lean.bin" "$f.rust.bin"; then pass "size ovh=$ovh x=($xs) trace identical ($(stat -c %s "$f.rust.bin") B)"
+    else bad "size ovh=$ovh x=($xs) trace differs"; fi
+  done
+done
+
+echo "== nearAirV3 honest entries from a real witness (part 2c): np-lean-entries-v3 vs Rust"
+# `np-lean-entries-v3 <case>` runs the proved D0a extraction on a real fixture and
+# dumps the per-table entry lists.  Node entries are the highest-value table: the
+# Rust `v3render` must be byte-identical to `np-lean-render-v3` and `v3check` must
+# accept every nearAirV3 constraint.  The Lean renderer recomputes the record lists
+# per cell and is very slow for node (>2.5 min for 3 records, ~1 min/byte-ish), so
+# by default `node` is only rendered by Lean for the smallest cases (≤
+# `ENTRIES_NODE_MAX` records), while `v3check` always runs.  `val`/`head` render
+# in seconds.
+le3="$here/.lake/build/bin/np-lean-entries-v3"
+fx="$here/../../../oracle/fixtures/v3/public-d0a/d0"
+ed="$out/entries"; mkdir -p "$ed"
+ncase=0; nrendered=0
+for case in $(ls "$fx" | head -${ENTRIES_CASES:-5}); do
+  d="$fx/$case"
+  [ -f "$d/witness.bin" ] || continue
+  for t in ${ENTRIES_TABLES:-node val head}; do
+    j="$ed/$case.$t.json"
+    if ! $HEAVY "$le3" "$d" $t > "$j" 2>"$j.err"; then bad "$case $t: np-lean-entries-v3 failed"; cat "$j.err"; continue; fi
+    if ! "$npudr" v3check "$out/nearAirV3.json" $t "$j" >"$j.check" 2>&1; then
+      bad "$case $t: v3check rejects honest entries"; head -3 "$j.check"; continue
+    fi
+    ncase=$((ncase + 1))
+    ok="$(sed -n '1p' "$j.check" | cut -c5-)"
+    # Lean render + byte compare: always for val/head; node only for the small cases
+    do_render=1
+    if [ "$t" = node ]; then
+      nr=$(python3 -c "import json;print(len(json.load(open('$j'))))")
+      if [ "$nr" -gt "${ENTRIES_NODE_MAX:-3}" ] && [ "${ENTRIES_NODE_ALL:-0}" != 1 ]; then
+        do_render=0; pass "$case $t: $ok ($nr entries; Lean render skipped, over node-max)"
+      fi
+    fi
+    [ "$do_render" = 1 ] || continue
+    "$npudr" v3render $t "$j" "$j.rust.bin" || { bad "$case $t: npudr v3render failed"; continue; }
+    $HEAVY "$lr" $t "$j" "$j.lean.bin" 2>"$j.lrerr" || { bad "$case $t: np-lean-render-v3 failed"; cat "$j.lrerr"; continue; }
+    nrendered=$((nrendered + 1))
+    if cmp -s "$j.lean.bin" "$j.rust.bin"; then
+      pass "$case $t: $ok; Rust==Lean ($(stat -c %s "$j.rust.bin") B)"
+    else bad "$case $t: Rust and Lean traces differ"; fi
+  done
+done
+[ $ncase -gt 0 ] || bad "no fixture case produced honest entries"
+echo "   ($ncase honest entry lists checked, $nrendered byte-compared against Lean)"
+
+echo "== prepD0 / Hint codec (part 3): Rust re-encode vs Lean np-lean-prep-v3"
+# For each real D0a fixture: `np-lean-prep-v3` requires `checkD0a B0` and dumps
+# `hint`, `prep`, `refunds_enc` and `prep_json`; the Rust `Prep.encode` of
+# `prep_json` must reproduce `prep` byte for byte, the `Hint` codec must
+# round-trip the Lean hint bytes, and `decodeBody(bodyOf refunds) = refunds`.
+lp="$here/.lake/build/bin/np-lean-prep-v3"
+pd="$out/prep"; mkdir -p "$pd"
+nprep=0
+for case in $(ls "$fx" | head -${PREP_CASES:-64}); do
+  d="$fx/$case"
+  [ -f "$d/claim.bin" ] && [ -f "$d/witness.bin" ] || continue
+  j="$pd/$case.json"
+  if ! $HEAVY "$lp" "$d" > "$j" 2>"$j.err"; then bad "$case prep: np-lean-prep-v3 failed"; cat "$j.err"; continue; fi
+  nprep=$((nprep + 1))
+  # extract the Lean `prep`, `hint` and `refunds_enc` hex fields once
+  python3 - "$j" "$j.prep.bin" "$j.hint.bin" "$j.refunds.bin" <<'PY'
+import json, sys
+j = json.load(open(sys.argv[1]))
+for key, path in (("prep", sys.argv[2]), ("hint", sys.argv[3]), ("refunds_enc", sys.argv[4])):
+    open(path, "wb").write(bytes.fromhex(j[key]))
+PY
+  # Rust `Prep.encode` of the Lean `prep_json` vs the Lean `prep` bytes
+  if ! "$npudr" prep-encode "$j" "$j.rust.bin" 2>"$j.rust.err"; then
+    bad "$case prep: npudr prep-encode failed"; cat "$j.rust.err"; continue
+  fi
+  if cmp -s "$j.prep.bin" "$j.rust.bin"; then pass "$case prep: Prep.encode byte-identical ($(stat -c %s "$j.rust.bin") B)"
+  else bad "$case prep: Prep.encode differs"; fi
+  # Hint codec round-trips the Lean hint bytes
+  if "$npudr" prep-hint "$j.hint.bin" "$j.hint.rt.bin" 2>"$j.hint.err" && \
+     cmp -s "$j.hint.bin" "$j.hint.rt.bin"; then
+    pass "$case prep: Hint codec round-trips ($(stat -c %s "$j.hint.bin") B)"
+  else bad "$case prep: Hint codec round-trip failed"; cat "$j.hint.err"; fi
+  # refund body codec: decodeBody(bodyOf refunds) = refunds
+  if "$npudr" prep-body "$j.refunds.bin" "$j.refunds.rt.bin" 2>"$j.body.err" && \
+     cmp -s "$j.refunds.bin" "$j.refunds.rt.bin"; then
+    pass "$case prep: refund body codec round-trips"
+  else bad "$case prep: refund body codec failed"; cat "$j.body.err"; fi
+done
+[ $nprep -gt 0 ] || bad "no fixture case produced a prepared statement"
+echo "   ($nprep prepared statements re-encoded byte-for-byte)"
 
 echo
 if [ $fail -eq 0 ]; then echo "ALL PASS"; else echo "SOME FAILED"; fi

@@ -22,7 +22,7 @@ open RoutingBoundedLayout
 /-- A12 on the layout of a walked claim. -/
 theorem layoutWf_of_rel {B : Nat} {cb wb : Bytes} {k : WalkD0} (h : RelD0a B cb wb)
     (hk : walkD0 cb = .ok k) : k.L.boundaries.length + 1 = k.L.shardIds.length := by
-  have ha := h.2.2.2.2.2.2.2.2.2
+  have ha := h.2.2.2.2.2.2.2.2
   simpa only [a12, hk, beq_iff_eq] using ha
 
 /-- A well-formed layout is its own bounded layout. -/

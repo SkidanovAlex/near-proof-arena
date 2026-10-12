@@ -160,14 +160,15 @@ Proved (guarded axiom audits; only propext/Classical.choice/Quot.sound):
   whole rebuilt post trie), user decisions 2026-10-11, spec v0a §2.4/§2.8; Python checker,
   Lean tool and difftest updated (0 disagreements; honest max 12,402 B vs B0 = 2 M).
 
-**Open (active lanes, one worktree each under `/data/illia/nearproof-wt/`):**
-| lane | owner work | open statements |
+**Open (active lanes, one worktree each under `/data/illia/nearproof-wt/`; state 2026-10-13):**
+| lane | work | open |
 |---|---|---|
-| `lane/v3-link` | A7 in the AIR (running sums node/val, upsert marks, B0 check in sizeV3); then `LinkCoreV3Stmt B0` field by field | `LinkCoreV3Stmt NearSpecV3.B0` |
-| `lane/v3-render-rcpt` | rcpt render with the native list identity; qv over native inputs; receipt-side bus balances | `rcpt_aligned_complete` (native form); balances SRC/BND/SREC/RCL/AKC/BNDP/QSH/QVC/MEM/RIDS/SIZE |
-| `lane/v3-render-sched` | scheduler soundness for the repaired proc/codec tables (`schedCore_sound''`), swap them in; ssd/proc/codec completeness; scheduler/ChaCha bus balances | the repaired-family soundness; `TableLocal ScanDist.table`; repaired proc traffic |
-| unassigned | trie-side completeness: honest native entries for node/head/val/walk/uniq (no `UEnt` producer exists), sha messages, trie bus balances (EDGE, PARENT, DIGEST, BYTES, VSLOT, ROOT, MIDROOT, DIGS, DUP, ENT, VBYTES, VPARENT, UPB) | the trie part of `CompleteV3Stmt` |
-| `lane/v3-prover` | Rust part 2a done (6 tables byte-identical to Lean); node table and witness→entries next; uncommitted node.rs work of unknown origin sits in that worktree | — |
+| `lane/v3-link` (soundness) | `LinkCoreV3Stmt B0`: closed receiptCount, pathDepth, mainStoreBytes, receiptIds, claim-level incl. layoutWf; scheduler core/read/step against nearAirV3 (`LinkSchedCore`, `LinkSchedRead`, `LinkVBytes`, `LinkPartial`) | executions (trie side: pre-trie pruning, implicit runs, header root), shape, witnessBytes, source, canonicalScheduler, unfoldedBytes, chachaWords |
+| `lane/v3-rcpt-sound` | receipt core of `run`: `Rcpt/Link/*`, `mainRun_of_holdsP_pre` (applyNewChunk from the records; forwarding-split soundness) | qv reads from HoldsP (codec-inclusive VBYTES read lemmas), KEYNIB/FINAL/QSH, BND routing premises; joins with link's `MainTrieLink`/`ShaHyp` |
+| `lane/v3-trie-complete` | trie completeness: tables 0–7, 21 rendered; PARENT/VPARENT/ENT/DIGS/DUP/EDGE/BMAP/MIDROOT/ROOT/VSLOT/UPB/RPL/RPLV/SIZE balanced; SHA two-bin packing | MemdLink (MEMD), DIGEST trie identity, A7 (b) on the native post trie, cross-lane KEYNIB/FINAL/VBYTES/BYTES/DIGEST identities |
+| `lane/v3-render-sched` | scheduler completeness: ssd/proc/mem/cmp/mrk/sort from acceptance, SCMP core | frozen codec `TableLocal`, codec-side S0F/SPLEN/SPOST + sanity SHA, scheduler/ChaCha bus balances, ChaCha A9 row link |
+| `lane/v3-render-rcpt` | receipt-side completeness DONE (`rcpt_side_of_accept`, header + hint bounds `RenderV3Header`) | cross-lane: RcptKeys/RcptFinal, receipt part of BYTES/DIGEST (unassigned) |
+| `lane/v3-prover` (Rust) | parts 1, 2a/2b (7 tables byte-identical to Lean), 2c (witness→entries, real fixtures), 3 (prepD0/Hint codec), 4 (package skeleton + conditional certificate) | Rust `prepClaim`/`prepBody`, remaining entry seeds, the v3 `prove` over the revised nearAirV3 — and re-run `run-v2.sh` against the revised AIR (A7/A10/A12 tables changed after these generators were written) |
 
 Also pending: the oracle (`oracle/v3-d0a/src/d0a.rs`) still implements the pre-2026-10-11 A7
 measure (the difftest compares it with `unfold_diff`); regenerate the fixtures before freezing.

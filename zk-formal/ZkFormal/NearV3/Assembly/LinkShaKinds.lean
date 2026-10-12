@@ -60,6 +60,24 @@ theorem kindOk_msgId {K n : Nat} {xs : List Nat} (hK : K < 16) (h7 : K ≠ K_NPR
   have : msgId K n % 16 = K := by unfold msgId; omega
   rw [this]; exact ⟨h7, h8, h9⟩
 
+/-- A message's id is canonical with a kind in `ks`. -/
+def KindIn (ks : List Nat) (x : Msg) : Prop := ∀ a, x.head? = some a → a < P ∧ a % 16 ∈ ks
+
+theorem kindIn_msgId {K n : Nat} {xs : List Nat} (hK : K < 16) (hn : msgId K n < P) :
+    KindIn [K] (msgId K n :: xs) := by
+  intro a ha
+  simp only [List.head?_cons, Option.some.injEq] at ha
+  subst ha
+  refine ⟨hn, ?_⟩
+  have : msgId K n % 16 = K := by unfold msgId; omega
+  rw [this]; exact List.mem_singleton_self _
+
+theorem kindsOk_of_kindIn {ks : List Nat} {l : List Msg} (h : ∀ x ∈ l, KindIn ks x)
+    (hks : ∀ k ∈ ks, k ≠ K_NPRE ∧ k ≠ K_NPOST ∧ k ≠ K_VPRE) : KindsOk l := by
+  intro x hx a ha
+  obtain ⟨h1, h2⟩ := h x hx a ha
+  exact ⟨h1, hks _ h2⟩
+
 /-- **`OthersKinds` from the per-sender registries.** -/
 theorem othersKinds_of {tr : Trace Fp} {pub : List Fp} {r : V3Records}
     (hU : KindsOk ((ZkFormal.NearV3.upsTraffic r.ups).sends B_BYTES))
@@ -84,22 +102,25 @@ theorem othersKinds_of {tr : Trace Fp} {pub : List Fp} {r : V3Records}
 
 /-! ## srcp (`K_SRC = 13`) -/
 
-theorem srcpKinds {bs : List ZkFormal.NearV3.SrcpB} (h : ZkFormal.NearV3.SrcpWf bs) :
-    KindsOk ((ZkFormal.NearV3.srcpTraffic bs).sends B_BYTES) := by
+theorem srcpKindIn {bs : List ZkFormal.NearV3.SrcpB} (h : ZkFormal.NearV3.SrcpWf bs) :
+    ∀ x ∈ (ZkFormal.NearV3.srcpTraffic bs).sends B_BYTES, KindIn [K_SRC] x := by
   intro x hx
   simp only [ZkFormal.NearV3.srcpTraffic, show B_BYTES ≠ ZkFormal.NearV3.B_SIZE by decide, ite_false] at hx
   obtain ⟨C, hC, hx⟩ := List.mem_flatMap.mp hx
   rw [ZkFormal.NearV3.source_block_bytes] at hx
   obtain ⟨p, hp, hx⟩ := List.mem_flatMap.mp hx
   obtain ⟨j, -, rfl⟩ := ZkFormal.NearV3.Link3.mem_emitAt3.mp hx
-  exact kindOk_msgId (by decide) (by decide) (by decide) (by decide)
-    (ZkFormal.NearV3.source_payload_id_lt h hC hp)
+  exact kindIn_msgId (by decide) (ZkFormal.NearV3.source_payload_id_lt h hC hp)
+
+theorem srcpKinds {bs : List ZkFormal.NearV3.SrcpB} (h : ZkFormal.NearV3.SrcpWf bs) :
+    KindsOk ((ZkFormal.NearV3.srcpTraffic bs).sends B_BYTES) :=
+  kindsOk_of_kindIn (srcpKindIn h) (by decide)
 
 /-! ## rcpt (`K_RC`, `K_RF`, `K_PEO`, `K_LEAF`, `K_RID`) -/
 
-theorem rcptKinds {pub : List Fp} {ls : ZkFormal.NearV3.RcptV3Vs}
+theorem rcptKindIn {pub : List Fp} {ls : ZkFormal.NearV3.RcptV3Vs}
     (hl : ls.length ≤ 2 ^ 22) (hr : (ZkFormal.NearV3.flatR ls).length ≤ 2 ^ 22) :
-    KindsOk (ZkFormal.NearV3.rcptSends3 pub ls B_BYTES) := by
+    ∀ x ∈ ZkFormal.NearV3.rcptSends3 pub ls B_BYTES, KindIn [K_RC, K_RF, K_PEO, K_LEAF, K_RID] x := by
   intro x hx a ha
   have hc := ZkFormal.NearV3.RcptLink.receipt_bytes_ids hl hr hx ha
   refine ⟨hc, ?_⟩
@@ -124,9 +145,13 @@ theorem rcptKinds {pub : List Fp} {ls : ZkFormal.NearV3.RcptV3Vs}
       · split at hx
         · rw [e hx]; right; right; right; right; unfold msgId K_RID; omega
         · simp at hx
-  simp only [K_RC, K_RF, K_PEO, K_LEAF, K_RID] at hk
-  simp only [K_NPRE, K_NPOST, K_VPRE]
-  omega
+  simp only [List.mem_cons, List.not_mem_nil, or_false]
+  exact hk
+
+theorem rcptKinds {pub : List Fp} {ls : ZkFormal.NearV3.RcptV3Vs}
+    (hl : ls.length ≤ 2 ^ 22) (hr : (ZkFormal.NearV3.flatR ls).length ≤ 2 ^ 22) :
+    KindsOk (ZkFormal.NearV3.rcptSends3 pub ls B_BYTES) :=
+  kindsOk_of_kindIn (rcptKindIn hl hr) (by decide)
 
 /-- The receipt registry from the counted view (`V3RecordsWf.listsCount`). -/
 theorem rcptKinds_of {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r) :
@@ -190,16 +215,21 @@ theorem acct_slot_lt {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : Holds
     omega
   · simp at hx
 
-theorem acctKinds {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP nearAirV3 pub tr)
+theorem acctKindIn {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP nearAirV3 pub tr)
     (T : V3RecordsTraffic pub tr r) (W : V3RecordsWf pub r) :
-    KindsOk (ZkFormal.NearV3.acctV3Sends r.accts B_BYTES) := by
+    ∀ x ∈ ZkFormal.NearV3.acctV3Sends r.accts B_BYTES, KindIn [K_VPOST] x := by
   intro x hx
   simp only [ZkFormal.NearV3.acctV3Sends, show B_BYTES ≠ ZkFormal.NearV3.B_VBYTES by decide, ite_false,
     ite_true, List.mem_flatMap] at hx
   obtain ⟨a, ha, hx⟩ := hx
   obtain ⟨j, -, rfl⟩ := ZkFormal.NearV3.Link3.mem_emitAt3.mp hx
   have := acct_slot_lt hH T W ha
-  exact kindOk_msgId (by decide) (by decide) (by decide) (by decide) (by unfold msgId K_VPOST P; omega)
+  exact kindIn_msgId (by decide) (by unfold msgId K_VPOST P; omega)
+
+theorem acctKinds {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP nearAirV3 pub tr)
+    (T : V3RecordsTraffic pub tr r) (W : V3RecordsWf pub r) :
+    KindsOk (ZkFormal.NearV3.acctV3Sends r.accts B_BYTES) :=
+  kindsOk_of_kindIn (acctKindIn hH T W) (by decide)
 
 /-! ## mrk (`K_MRK = 6`): ids below the shape size `≤ 2n`, `n` the receipt count -/
 
@@ -249,9 +279,9 @@ theorem mrk_n_le {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r)
   rw [hw.nfix hb (by rw [hn]; unfold P; omega), hn]
   exact hlt
 
-theorem mrkKinds {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r)
+theorem mrkKindIn {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r)
     (hpb : ∀ i, pubNat pub i < 256) :
-    KindsOk ((mrkTrafficE pub r.mrkE r.mrk).sends B_BYTES) := by
+    ∀ x ∈ (mrkTrafficE pub r.mrkE r.mrk).sends B_BYTES, KindIn [K_MRK] x := by
   cases he : r.mrkE
   · have hn := mrk_n_le W hpb he
     have hw : MrkWf (ZkFormal.NearV3.Candidates.MerklePublic.aliasPublic pub) r.mrk := by
@@ -271,9 +301,14 @@ theorem mrkKinds {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r)
       obtain ⟨j, -, rfl⟩ := ZkFormal.NearV3.Link3.mem_emitAt3.mp hx
       have := ZkFormal.Near.Link.hashedBefore_le r.mrk.nodes q
       dsimp only
-      exact kindOk_msgId (by decide) (by decide) (by decide) (by decide) (by unfold msgId K_MRK P; omega)
+      exact kindIn_msgId (by decide) (by unfold msgId K_MRK P; omega)
   · intro x hx
     simp [mrkTrafficE] at hx
+
+theorem mrkKinds {pub : List Fp} {r : V3Records} (W : V3RecordsWf pub r)
+    (hpb : ∀ i, pubNat pub i < 256) :
+    KindsOk ((mrkTrafficE pub r.mrkE r.mrk).sends B_BYTES) :=
+  kindsOk_of_kindIn (mrkKindIn W hpb) (by decide)
 
 /-! ## codec (raw, kind `K_SCH = 11`): `τ` is a public instance index (`first_par`) -/
 
@@ -291,12 +326,12 @@ theorem sparOwn : ZkFormal.NearV3.Sched.SparOwn nearAirV3 where
 
 /-- **The codec's `BYTES` ids** are `11 + 16·τ` with `τ < 34` (a scheduler instance of the
 prepared statement), so of kind `11`. -/
-theorem codecKinds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
+theorem codecKindIn {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
     {tr : Trace Fp} (hp : NearSpecV3.prepD0 cb h = .ok p)
     (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
     (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr) :
     ∀ y ∈ codecBytes tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)), ∀ a,
-      y.head? = some a → a.toNat % 16 ≠ K_NPRE ∧ a.toNat % 16 ≠ K_NPOST ∧ a.toNat % 16 ≠ K_VPRE := by
+      y.head? = some a → a.toNat % 16 = 11 := by
   have hlen : (ZkFormal.NearV3.Public.preparedBytes p oh).length < 256 ^ 4 := by unfold P at hsz; omega
   have hrec := (ZkFormal.NearV3.Public.prepared_scheduler_index nearAirV3 oh rfl hp (prepD0_roots hp)
     (prepD0_source_roots hp) hlen).2.1
@@ -325,8 +360,18 @@ theorem codecKinds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.P
     have hlt : 11 + 16 * ZkFormal.Chacha.cv tr T_CODEC f ZkFormal.NearV3.Sched.Codec.tau < P := by
       unfold P; omega
     rw [Fp.toNat_ofNat, Nat.mod_eq_of_lt hlt]
-    simp only [K_NPRE, K_NPOST, K_VPRE]
     omega
   · simp at hy
+
+theorem codecKinds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
+    {tr : Trace Fp} (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr) :
+    ∀ y ∈ codecBytes tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)), ∀ a,
+      y.head? = some a → a.toNat % 16 ≠ K_NPRE ∧ a.toNat % 16 ≠ K_NPOST ∧ a.toNat % 16 ≠ K_VPRE := by
+  intro y hy a ha
+  have := codecKindIn hp hsz hH y hy a ha
+  simp only [K_NPRE, K_NPOST, K_VPRE]
+  omega
 
 end ZkFormal.NearV3.Assembly

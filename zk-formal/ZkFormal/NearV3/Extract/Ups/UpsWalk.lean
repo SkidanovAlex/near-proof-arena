@@ -121,8 +121,8 @@ theorem segs_len {v : List UpsSeg} (hw : UpsWf v) : 6 * v.length ≤ 2 ^ 22 := b
   exact Nat.le_trans (h v (fun _ h => h)) hw.count
 
 /-- The `W3` bitmap of an absent-at-branch terminal is a branch record's bitmap. -/
-theorem ups_bm {vs : List NodeS3} {hs : List HeadE} {ws : List WalkR} {v : List UpsSeg}
-    (hN : NodeWf3 vs) (hW : WalkWf3 ws) (hWr : (ws.flatMap (·.steps)).length ≤ 2 ^ 21) (hw : UpsWf v)
+theorem ups_bm_22 {vs : List NodeS3} {hs : List HeadE} {ws : List WalkR} {v : List UpsSeg}
+    (hN : NodeWf3 vs) (hW : WalkWf3 ws) (hWr : (ws.flatMap (·.steps)).length ≤ 2 ^ 22) (hw : UpsWf v)
     (hbal : WalkBal vs hs ws v B_BMAP) {s : UpsSeg} (hs' : s ∈ v) (hm : s.row 3 mB = 1) : s.row 3 wbm < 2 ^ 16 := by
   have hb := walkBal_all hw (Or.inr rfl) hbal
   have hP := P_big
@@ -213,17 +213,27 @@ theorem ups_bm {vs : List NodeS3} {hs : List HeadE} {ws : List WalkR} {v : List 
   | leaf => simp [NodeV3.bmap] at hbm
   | ext => simp [NodeV3.bmap] at hbm
 
-/-- **All walks are well formed.** -/
-theorem allWalks_wf {vs : List NodeS3} {hs : List HeadE} {ws : List WalkR} {v : List UpsSeg}
+theorem ups_bm {vs : List NodeS3} {hs : List HeadE} {ws : List WalkR} {v : List UpsSeg}
     (hN : NodeWf3 vs) (hW : WalkWf3 ws) (hWr : (ws.flatMap (·.steps)).length ≤ 2 ^ 21) (hw : UpsWf v)
+    (hbal : WalkBal vs hs ws v B_BMAP) {s : UpsSeg} (hs' : s ∈ v) (hm : s.row 3 mB = 1) : s.row 3 wbm < 2 ^ 16 :=
+  ups_bm_22 hN hW (Nat.le_trans hWr (by decide)) hw hbal hs' hm
+
+/-- **All walks are well formed.** -/
+theorem allWalks_wf_22 {vs : List NodeS3} {hs : List HeadE} {ws : List WalkR} {v : List UpsSeg}
+    (hN : NodeWf3 vs) (hW : WalkWf3 ws) (hWr : (ws.flatMap (·.steps)).length ≤ 2 ^ 22) (hw : UpsWf v)
     (hbal : WalkBal vs hs ws v B_BMAP) : WalkWf3 (allWalks ws v) := by
   refine walkWf_app hW (fun wv hwv => ?_) ?_
   · obtain ⟨s, hs', rfl⟩ := List.mem_map.1 hwv
     obtain ⟨L, ps, fls, wsl, hL⟩ := ups_layout hw s hs'
-    exact (ups_walk hw hs' hL (ups_bm hN hW hWr hw hbal hs')).1
+    exact (ups_walk hw hs' hL (ups_bm_22 hN hW hWr hw hbal hs')).1
   · rw [List.flatMap_append, List.length_append, upsWalks_len]
     have := segs_len hw
     omega
+
+theorem allWalks_wf {vs : List NodeS3} {hs : List HeadE} {ws : List WalkR} {v : List UpsSeg}
+    (hN : NodeWf3 vs) (hW : WalkWf3 ws) (hWr : (ws.flatMap (·.steps)).length ≤ 2 ^ 21) (hw : UpsWf v)
+    (hbal : WalkBal vs hs ws v B_BMAP) : WalkWf3 (allWalks ws v) :=
+  allWalks_wf_22 hN hW (Nat.le_trans hWr (by decide)) hw hbal
 
 /-- The `upsV3` walks never read `START` after `W0`. -/
 theorem ups_sym (v : List UpsSeg) : ∀ wv ∈ v.map upsWalk, ∀ i, 1 ≤ i → i < wv.steps.length →
@@ -236,6 +246,21 @@ theorem ups_sym (v : List UpsSeg) : ∀ wv ∈ v.map upsWalk, ∀ i, 1 ≤ i →
   rcases (show i = 1 ∨ i = 2 ∨ i = 3 by omega) with rfl | rfl | rfl <;> decide
 
 /-- **The walk hypotheses for all walks** (`walkV3`'s and the `upsV3` segments'). -/
+theorem ups_walkHyp_22 {vs : List NodeS3} {hs : List HeadE} {es : List ValE} {ws : List WalkR} {v : List UpsSeg}
+    {prov : List Msg}
+    (hN : NodeWf3 vs) (hhw : HeadWf hs) (hvw : ValWf es) (hW : WalkWf3 ws)
+    (hWr : (ws.flatMap (·.steps)).length ≤ 2 ^ 22) (hw : UpsWf v)
+    (hb : Link3.ParentBal vs hs) (hvb : Link3.VParentBal vs es)
+    (hE : WalkBal vs hs ws v B_EDGE) (hB : WalkBal vs hs ws v B_BMAP) (hK : Link3.KeynibOk ws prov)
+    (hbytes : ∀ s ∈ vs, ∀ x ∈ s.v.ser false, x < 256) (V' : List ValRec3) :
+    Walk3.WalkHyp (Link3.vpos (Link3.vid0 es)) vs V' hs (allWalks ws v) :=
+  Link3.walkHyp_any hN hhw hvw (allWalks_wf_22 hN hW hWr hw hB) hb hvb (walkBal_all hw (Or.inl rfl) hE)
+    (walkBal_all hw (Or.inr rfl) hB) hbytes
+    (fun wv hwv => by
+      rcases List.mem_append.1 hwv with h | h
+      · exact Link3.hsym_of hW hK wv h
+      · exact ups_sym v wv h) V'
+
 theorem ups_walkHyp {vs : List NodeS3} {hs : List HeadE} {es : List ValE} {ws : List WalkR} {v : List UpsSeg}
     {prov : List Msg}
     (hN : NodeWf3 vs) (hhw : HeadWf hs) (hvw : ValWf es) (hW : WalkWf3 ws)
@@ -244,12 +269,7 @@ theorem ups_walkHyp {vs : List NodeS3} {hs : List HeadE} {es : List ValE} {ws : 
     (hE : WalkBal vs hs ws v B_EDGE) (hB : WalkBal vs hs ws v B_BMAP) (hK : Link3.KeynibOk ws prov)
     (hbytes : ∀ s ∈ vs, ∀ x ∈ s.v.ser false, x < 256) (V' : List ValRec3) :
     Walk3.WalkHyp (Link3.vpos (Link3.vid0 es)) vs V' hs (allWalks ws v) :=
-  Link3.walkHyp_any hN hhw hvw (allWalks_wf hN hW hWr hw hB) hb hvb (walkBal_all hw (Or.inl rfl) hE)
-    (walkBal_all hw (Or.inr rfl) hB) hbytes
-    (fun wv hwv => by
-      rcases List.mem_append.1 hwv with h | h
-      · exact Link3.hsym_of hW hK wv h
-      · exact ups_sym v wv h) V'
+  ups_walkHyp_22 hN hhw hvw hW (Nat.le_trans hWr (by decide)) hw hb hvb hE hB hK hbytes V'
 
 /-! ## `tiLe` -/
 
