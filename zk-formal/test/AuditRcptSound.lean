@@ -7,6 +7,7 @@ import ZkFormal.NearV3.Rcpt.Link.QvCodec
 import ZkFormal.NearV3.Rcpt.Link.QvMain
 import ZkFormal.NearV3.Rcpt.Link.ValExact
 import ZkFormal.NearV3.Rcpt.Link.RcptRoute
+import ZkFormal.NearV3.Rcpt.Link.RcptRunHdr
 import ZkFormal.NearV3.Rcpt.Link.ValBytes
 import ZkFormal.NearV3.Rcpt.Link.RcptHoldsB
 import ZkFormal.NearV3.Rcpt.Link.AkeyAkc
@@ -309,3 +310,35 @@ import ZkFormal.NearV3.Rcpt.Link.QvBal
 /-- info: 'ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_r' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_r
+
+/-- info: 'ZkFormal.NearV3.RcptLink.hroute_holds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.hroute_holds
+
+/-- info: 'ZkFormal.NearV3.RcptLink.decodeBody_shape' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.decodeBody_shape
+
+/-- info: 'ZkFormal.NearV3.RcptLink.body_tail' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.body_tail
+
+/-- info: 'ZkFormal.NearV3.RcptLink.decodeChunkInner_burnt' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.decodeChunkInner_burnt
+
+/-- info: 'ZkFormal.NearV3.RcptLink.walkD0_H' depends on axioms: [propext] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.walkD0_H
+
+/-- info: 'ZkFormal.NearV3.RcptLink.burnt_pub' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.burnt_pub
+
+/-- info: 'ZkFormal.NearV3.RcptLink.mainOut_of_run' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.mainOut_of_run
+
+/-- info: 'ZkFormal.NearV3.RcptLink.runHdr_of' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.runHdr_of

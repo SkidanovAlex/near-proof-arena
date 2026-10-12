@@ -16,7 +16,7 @@ import ZkFormal.NearV3.Assembly.LinkClaim
 * `prepClaim_ctx_walk`: `pc.ctxB2.layout = k.L ∧ pc.ctxB2.own = k.H.shardId`;
   `boundedPrep_self`: `boundedPrep p k.L k.H.shardId = p` (A12 `layoutWf`, checked by `prepClaim`).
 * **`route_holdsP`**: given `hq : ∀ x ∈ flatR r.lists, x.q < 128`, every receipt routes to the own shard.
-* **`mainRun_of_holdsP_r`**: `mainRun_of_holdsP_q` without the routing premise.
+* **`mainRun_of_holdsP_r`**: `mainRun_of_holdsP_q` without the routing premise (`hq := W.listsQ`).
 -/
 
 namespace ZkFormal.NearV3.RcptLink
@@ -190,14 +190,14 @@ theorem route_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : Trace F
   rw [hL, hO]
   exact this
 
-/-- **The receipt core at `Fpre r 0` with routing discharged** (premise `hq`: table 16's q check). -/
+/-- **The receipt core at `Fpre r 0` with routing discharged** (`hq := W.listsQ`: table 16's q check). -/
 theorem mainRun_of_holdsP_r {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : Trace Fp}
     {r : V3Records} (hp : prepD0 cb h = .ok p)
     (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
     (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
     (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
     (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
-    (hn : h.n = (flatR r.lists).length) (hq : ∀ x ∈ flatR r.lists, x.q < 128) :
+    (hn : h.n = (flatR r.lists).length) :
     ∃ pc bs, prepClaim cb = .ok pc ∧
       (∃ v, (LinkImplicit.Fpre r 0).find keyBufferedIdx = some v ∧ bufferedShards v = .ok bs) ∧
       (∀ key ∈ [keyDelayedIdx, keyBufferedIdx, keyYieldIdx], (LinkImplicit.Fpre r 0).find key ≠ none) ∧
@@ -212,6 +212,17 @@ theorem mainRun_of_holdsP_r {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
           .ok ((recModel r.lists r.accts base Tf).mainOut pc.ctxB2) := by
   obtain ⟨pc, bs, hc, hbs, hfix, hgrp, K⟩ := mainRun_of_holdsP_q hp hsz hH T W hn
   exact ⟨pc, bs, hc, hbs, hfix, hgrp, fun base Tf mid so M =>
-    K base Tf mid so M (route_holdsP hp hsz hH T W hq hc)⟩
+    K base Tf mid so M (route_holdsP hp hsz hH T W W.listsQ hc)⟩
+
+/-- **`hroute`** of lane v3-link's `executions_run`, from `HoldsP` (`W.listsQ`). -/
+theorem hroute_holds {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : Trace Fp}
+    {r : V3Records} (hp : prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r) :
+    ∀ pc, prepClaim cb = .ok pc →
+      ∀ y ∈ flatR r.lists, pc.ctxB2.layout.shardOf (toBytes y.v) = pc.ctxB2.own :=
+  fun _ hc => route_holdsP hp hsz hH T W W.listsQ hc
 
 end ZkFormal.NearV3.RcptLink
