@@ -19,7 +19,7 @@ import ZkFormal.NearV3.Assembly.NearAirSize
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.srcpDD_aligned_complete
 
-/-- info: 'ZkFormal.NearV3.Render.honest_src_balance_dd' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'ZkFormal.NearV3.Render.honest_src_balance_dd' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.honest_src_balance_dd
 

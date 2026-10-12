@@ -12,19 +12,17 @@ import ZkFormal.NearV3.Rcpt.Link.WitnessSources
 import ZkFormal.NearV3.Rcpt.Extract.Srcp.DDView
 
 /-!
-# The source SHA family as the source table emits it (duplicate occurrences included)
+# The source SHA family as table 20 (`SrcpDD`) emits it
 
-Lead decision 2026-10-12: the source table (`srcpTraffic (blocksOfProofs A.srcps)`) hashes every
-prepared source occurrence, duplicates included (leaf + path payloads, ids numbered over all
-blocks), and receives an RC digest for every occurrence.  So the matching families are
+Table 20 hashes the leaf and path payloads of the **computed** blocks only (a `dup` occurrence is a
+one-row reference) and receives the RC digest of every computed block.  So the matching families are
 
-* `A.srcShaAll` — all blocks' payloads (`sourcePayloads`), `K_SRC` ids as numbered by
-  `blocksOfProofs`;
-* `A.rcShaAll` — `sourceRcShaJobs` with every digest output enabled (`dmult := true`).
+* `A.srcShaAll` — the computed blocks' payloads (`DedupProof.payloads`), `K_SRC` ids as numbered by
+  `DedupCompile.blocks`;
+* `A.rcShaAll` — `sourceRcShaJobs` (digest output only for first occurrences, `dmult = !dup`).
 
-`srcShaAll_rows`: `≤ 1984·(18 + 35·32) = 2,257,792` rows (the A10 bound; 1984 counts every prepared
-occurrence, duplicates included), every message `≤ 35` rows, bytes `< 256`.
-`srcp_bytes`/`srcp_digests`: the exact source-table `BYTES` sends / `DIGEST` receives.
+`srcShaAll_rows`: `≤ 1984·(18 + 35·32) = 2,257,792` rows (A10), every message `≤ 35` rows, bytes
+`< 256`.  `srcp_bytes`/`srcp_digests`: table 20's exact `BYTES` sends / `DIGEST` receives.
 -/
 
 namespace ZkFormal.NearV3.Assembly.AcceptedV3
