@@ -90,6 +90,8 @@ structure V3RecordsWf (pub : List Fp) (r : V3Records) : Prop where
   mrk : MrkWfE pub r.mrkE r.mrk
   /-- at most `2^22` receipt lists and receipts (physical rows, `rcptV3_view_counts`) -/
   listsCount : r.lists.length ≤ 2 ^ 22 ∧ (ZkFormal.NearV3.flatR r.lists).length ≤ 2 ^ 22
+  /-- every receipt's routing quotient is `< 128` (table 16, `RcptV3.tableQ`) -/
+  listsQ : ∀ x ∈ ZkFormal.NearV3.flatR r.lists, x.q < 128
 
 /-- The exact traffic of each viewed table at its fixed `nearAirV3` index. -/
 structure V3RecordsTraffic (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Prop where
@@ -406,7 +408,7 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨ws, wW, wS, tW⟩ := walkView hH
   obtain ⟨us, wU, tU⟩ := uniqView hH
   obtain ⟨u, wP, tP⟩ := upsView hH
-  obtain ⟨ls, wR, tR, cR⟩ := rcptV3_view_counts hp hsz hH
+  obtain ⟨ls, wR, tR, cR1, cR2, qR⟩ := rcptV3_view_counts hp hsz hH
   obtain ⟨as, wA, tA⟩ := acctView hH
   obtain ⟨ks, wK, tK⟩ := akeyView hH
   obtain ⟨bs, wB, tB⟩ := bndView hH
@@ -414,7 +416,7 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨sz, wZ, tZ⟩ := sizeView hH
   obtain ⟨me, mv, wM, tM⟩ := mrkView hH
   exact ⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv, me⟩,
-    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', dS', wZ, wM, cR⟩,
+    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', dS', wZ, wM, ⟨cR1, cR2⟩, qR⟩,
     ⟨tN, tH, tV, tW, tU, tP, tR, tA, tK, tB, tS', tZ, tM⟩⟩
 
 /-- **`LinkV3Stmt ⇒ ExtractV3StmtAt`** (v1's `extract_of_views`): `HoldsP` gives every
