@@ -404,6 +404,7 @@ import ZkFormal.NearV3.Assembly.A9Native
 import ZkFormal.NearV3.Assembly.A7Assemble
 import ZkFormal.NearV3.Assembly.A7Post
 import ZkFormal.NearV3.Assembly.A7Pre
+import ZkFormal.NearV3.Assembly.A7Match
 /-!
 # Build gate for the integrated v3 proof work
 
