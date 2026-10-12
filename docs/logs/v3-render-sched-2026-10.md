@@ -489,3 +489,55 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
    the same blocks ⇒ `B_SCMP` balanced; via `scmp_balance_core`). Integration 4585 jobs; pin-check OK.
 3. Task 4 (scheduler buses 40–62, ChaCha lane, packaging for tables 8–15, 23, 24): not started. Note table 11 also sends on
    `B_VBYTES` (21; receivers 4, 17, 18, 22) — not covered by any lane's balance yet as far as checked.
+
+## 2026-10-12 (package 11, fresh session: merge A9, S0F balanced, bus map)
+
+* Merged origin/lane/v3-link (a272bd7d, A9 word counter; Integration import conflict resolved by keeping
+  both sides) — 5101e0c0-ish merge commit, pushed. lane/v3-link-rest (DedupTable/A10) has not landed: not merged.
+* **Build note (performance):** after the A9 merge many heavy modules rebuild (CodecEndInt ~6.5G,
+  HorizontalAuxCheck ~5G, CodecHeader, CodecRecInt); a full `lake build` under `HEAVY_MEM=14G` with
+  8+ cores is OOM-killed (systemd `oom-kill`, shows as `Terminated`/rc 143).  Working recipe: build
+  the heavy modules one by one first (`taskset -c 12-15`), then the target.
+* **S0F: DONE** (85bb6710).
+  * `Assembly/UpsS0FAddr.lean` (new): `IsVal` (LP/BR terminal), `step3_mode` (any `InstOk` instance:
+    step 3 is a present lookup iff `ci ≤ 1`), `trace_val_present` (LP/BR ⇒ `find ≠ some none`),
+    **`trace_val_addr`** (present read ⇒ LP/BR terminal, its source has an occurrence address on the
+    key path and every such address has vid `w + valueIndex t key`; mutual over `traceUpsert`/
+    `traceKids`, `sourceAddresses_size` for uniqueness), `forestRootAt_vid`, `nativeInstance_step3`
+    (the step-3 target of `nativeInstance … (nativeWalkBase … (fun _ => vid) …)` on LP/BR is `vid`),
+    **`s0f_vid`** (= `priorValueId (ts.take τ) root.tree`), `S0FVid`, `s0fOf` (= `(presN, vidN)`),
+    `s0fPair`, **`s0fOf_native`**.
+  * `Assembly/UpsS0FRebase.lean` (new): `S0FAt F τ I`, **`s0f_rebase`** (`oldPost` vs `m.pre`:
+    `sized_find_other`, `write_value_index`, `write_vals_count`).
+  * Threaded by conjuncts only: `forest_terminal_exact`, `forest_native_walk_exact` (+ terminal
+    occurrence address), `scheduler_instance_origin_inputs`, `chosen_origin_instances`, `coverage_kf`
+    (+ `S0FVid`), `UpsShaPin` (+ `S0FAt (m.pre :: steps.pre) τ I`), `ups_sha_scheduler_pin`,
+    `trie_side_exact`, `rcpt_trie_side`, `rcpt_trie_codec` (+ `Js.map s0fOf = F.mapIdx (s0fPair (F.take i))`,
+    `F = A.m.pre :: A.steps.map pre`); callers' patterns adjusted.
+  * `Render/CodecS0F.lean` (new): `s0fPair_read`, **`RenderBundleV3.balancedAt_s0f`**;
+    **`rcpt_trie_sched`** now also gives `R.BalancedAt B_S0F`.
+  * Integration builds (4598 jobs); `make pin-check` OK; audit `test/AuditUpsS0F.lean` clean
+    (`s0f_rebase` needs only `propext, Quot.sound`).
+* **Bus map of `nearAirV3`** (bus, senders, receivers; `lake env lean` eval of `nearTablesFull`):
+  0 [2,4,7,11,16,17,20,23]→[0,1]; 1 [0,1]→[2,3,7,11,16,20,23]; 2 [2,3]→[2]; 3 [17]→[2]; 4 [2,3,5,7]↔;
+  5 [16,22]→[5]; 6 [5]→[16,22]; 7 [16,17]↔; 8 [16]→[24]; 9 [16,23]→[23]; 10 [7]→[3]; 11 [2,5,7]↔;
+  14 pub→[20]; 15 [16,19]↔; 16 [16]↔; 17 [2,3]→[6]; 18 [2,4,7,20]→[21]; 19 [6]→[2,4]; 20 [2,4]↔;
+  21 [11,17,18,22]→[4]; 22 [2]→[4]; 23 [7]↔; 24 [3]→[7]; 25 [2,7]↔; 26 [16]→[20]; 27 [16,18]↔;
+  28 pub→[19]; 29 [22]↔; 40 [11,12,13,14]→[15]; 41 [11,12,13]→[14]; 42 [14]→[11,12]; 43 [12]→[13];
+  44 [12,13]→[13]; 45 [13]→[10]; 46 [10]→[13]; 47 [10]↔; 48 [9]→[10]; 49 [10]→[13]; 50 [8]→[9];
+  51 pub→[11,13]; 52 pub→[11,12]; 56 [11]↔; 57 [12]↔; 58 [12]→[11]; 59 [7]→[11]; 60 [11]→[7];
+  61 [11]→[7]; 62 [11]↔; 63 [22]↔; 70 [7]→[2]; 71 [7]→[4].  (53–55 unused.)
+* **Uncovered buses (no bundle-level `BalancedAt` anywhere), exact:** 9 `MPOS` (rcpt 16 + mrk 23 → mrk 23),
+  21 `VBYTES`, 41 `SOP`, 42 `SFIN`, 43 `SINC`, 44 `SPUSH`, 45 `SSIN`, 46 `SSOUT`, 47 `SSMEM`, 48 `SGEN`,
+  49 `SSHUF`, 50 `SCHACHA`, 51 `SPUBB`, 52 `SPAR`, 56 `SDL`, 57 `SDLX`, 58 `SDG`, 62 `SA0`.  Everything
+  else is in `rcpt_trie_sched` (+ `balancedAt_scmp`).  Hence `CompleteV3Stmt` cannot be assembled yet.
+* **VBYTES analysis (not started as proof):** revealed pre-forest values are exactly the `.val` slots
+  that `buildFor` reveals for the EXACT keys in the per-trie key list (`mkSlot … (keys.any (· == k))`),
+  so the statement to prove is: for each forest tree, the key list's present non-empty values are read
+  once each by exactly one of codec (`keyBwState`), acct (receiver account keys, once per distinct
+  key), akey, qv (queue keys); duplicates in the key list / repeated receivers must be sent once.  If
+  any key in a tree's key list is read by none of the four (e.g. a key listed but not read on an
+  implicit step), the honest render has an unmatched val receive — check this first.
+* Open, in order: VBYTES (above); scheduler 41–44, 51, 52, 56–58, 62 (closed forms of tables 11–14
+  traffic exist only for SCMP/BYTES/DIGEST/S0F/SPLEN/SPOST); ChaCha 45–50 (+ the RNG `hW`); MPOS
+  (receipt/mrk lane?); then the packaging (`sched_renders_on` + `rcpt_trie_sched` + `RenderV3Header`).
