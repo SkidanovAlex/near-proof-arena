@@ -207,6 +207,17 @@ fn main() {
             std::fs::write(&a[3], t).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
             std::fs::write(&a[4], r).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
         }
+        Some("v3rcpt-prefix") => {
+            // first <n> rows of the aligned rcpt trace (`np-lean-render-v3-rcpt` prefix format)
+            if a.len() != 5 {
+                die("usage: npudr v3rcpt-prefix <rcpt.json> <n> <out.bin>");
+            }
+            let j =
+                std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let n: usize = a[3].parse().unwrap_or_else(|_| die("n"));
+            let b = npudr::v3::rcpt::render_prefix(&j, n).unwrap_or_else(|e| die(&e));
+            std::fs::write(&a[4], b).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
+        }
         Some("v3render") => {
             // aligned trace of one table (`np-lean-render-v3` format)
             if a.len() != 5 {
@@ -279,7 +290,13 @@ fn main() {
                 .unwrap_or_else(|| die("unknown table"));
             let j =
                 std::fs::read_to_string(&a[4]).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
-            let tab = npudr::v3::render(&a[3], &j).unwrap_or_else(|e| die(&e));
+            // rcpt: compact height + its honest public values (`v3::rcpt::check_render`)
+            let (tab, rcpt_pubs) = if a[3] == "rcpt" {
+                let (t, p) = npudr::v3::rcpt::check_render(&j, air.num_pub).unwrap_or_else(|e| die(&e));
+                (t, Some(p))
+            } else {
+                (npudr::v3::render(&a[3], &j).unwrap_or_else(|e| die(&e)), None)
+            };
             let t = &air.tables[idx];
             if t.width != tab.width {
                 die(&format!(
@@ -293,7 +310,7 @@ fn main() {
                     tab.log, t.max_log
                 ));
             }
-            let pubs = vec![npudr::field::F::ZERO; air.num_pub];
+            let pubs = rcpt_pubs.unwrap_or_else(|| vec![npudr::field::F::ZERO; air.num_pub]);
             let bad = npudr::check::failing_constraints(t, &tab.to_matrix(), &pubs, 20);
             if bad.is_empty() {
                 println!(

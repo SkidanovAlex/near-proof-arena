@@ -575,7 +575,7 @@ pub fn qv(r: &mut Rng, n_rec: usize) -> QvIn {
 
 // ------------------------------------------------------------------- rcpt
 
-use super::rcpt::{ListV3, RcptE, RcptIn, Rlk};
+use super::rcpt::{Iv, ListV3, RcptE, RcptIn, Rlk};
 
 /// `Params.G`.
 const GAS_G: u128 = 223182562500;
@@ -587,13 +587,54 @@ fn rcpt_bytes(r: &mut Rng, s: &[u8]) -> Vec<u64> {
     out
 }
 
-fn rcpt_one(r: &mut Rng, sys: bool, bgp: u128) -> RcptE {
+fn rcpt_num(x: u128) -> Vec<u64> {
+    (0..16).map(|i| ((x >> (8 * i)) & 255) as u64).collect()
+}
+
+/// A routing interval containing `v`: an optional lower bound (a prefix of `v`)
+/// and an optional upper bound (`v[..m] ‖ v[m] + 1`).
+fn rcpt_interval(r: &mut Rng, v: &[u64]) -> Iv {
+    let lo = if r.coin() {
+        Some(v[..r.below(v.len() as u64 + 1) as usize].to_vec())
+    } else {
+        None
+    };
+    let hi = if r.coin() {
+        let m = r.below(v.len() as u64) as usize;
+        let mut h = v[..m].to_vec();
+        h.push(v[m] + 1);
+        Some(h)
+    } else {
+        None
+    };
+    Iv { lo, hi }
+}
+
+/// The view's `rlk`: the receiver positions `0 ..= Lv` with `gBd = 1` (`rcptOf`),
+/// with zero use counters (the renderer ranks `uB` itself).
+fn rcpt_rlk(v: &[u64], iv: &Iv) -> Vec<Rlk> {
+    let g = |x: &[u64], i: usize| x.get(i).copied().unwrap_or(0);
+    let same = |x: &[u64], n: usize| (0..n).all(|i| g(v, i) == g(x, i));
+    let lo = iv.lo.clone().unwrap_or_default();
+    let hi = iv.hi.clone().unwrap_or_default();
+    (0..=v.len())
+        .filter(|&pos| same(&lo, pos) || (iv.hi.is_some() && same(&hi, pos)))
+        .map(|pos| Rlk {
+            pos: pos as u64,
+            lo: g(&lo, pos),
+            hi: g(&hi, pos),
+            hn: u64::from(iv.hi.is_none()),
+            u: 0,
+        })
+        .collect()
+}
+
+fn rcpt_one(r: &mut Rng, sys: bool, bgp: u128, v: Vec<u64>, tprev: u64) -> RcptE {
     let pred: Vec<u64> = if sys {
         b"system".iter().map(|&x| x as u64).collect()
     } else {
         rcpt_bytes(r, b"alice")
     };
-    let v = rcpt_bytes(r, b"bob");
     // `system` receipts either have `signer = receiver` (`ee`) or mismatch at
     // exactly one byte with equal lengths (`dd`).
     let s = if sys {
@@ -609,63 +650,47 @@ fn rcpt_one(r: &mut Rng, sys: bool, bgp: u128) -> RcptE {
         rcpt_bytes(r, b"carol")
     };
     let ee = sys && s == v;
-    let gpv = r.below(1000) as u128;
-    let ge = bgp <= gpv;
-    let hr = !sys && ge && gpv > bgp;
-    let brn: u128 = if sys { 0 } else { gpv.min(bgp) };
-    let sur: u128 = if sys {
-        0
-    } else {
-        gpv.saturating_sub(gpv.min(bgp))
+    let gpv: u128 = match r.below(5) {
+        0 if sys => u128::MAX,
+        1 => r.next_u64() as u128,
+        _ => r.below(1000) as u128,
     };
-    let depv = r.below(1 << 16);
-    let lkv = r.below(1 << 16);
-    let befv = r.below(1 << 16);
-    let aft = befv + depv;
-    // routing interval: receiver inside `[receiver, upper)` with an empty upper
-    // marker (`hn = 1`) so every comparison obligation is vacuous except the
-    // lower prefix, which equals the receiver.
-    let lv = v.len();
-    let rlk: Vec<Rlk> = (0..=lv)
-        .map(|i| Rlk {
-            pos: i as u64,
-            lo: if i < lv { v[i] } else { 0 },
-            hi: 0,
-            hn: 1,
-            u: i as u64,
-        })
-        .collect();
+    let ge = bgp <= gpv;
+    let hr = !sys && gpv > bgp;
+    let brn: u128 = if sys { 0 } else { gpv.min(bgp) };
+    let sur: u128 = if sys { 0 } else { gpv - gpv.min(bgp) };
+    let depv = r.below(1 << 16) as u128;
+    let lkv = r.below(1 << 16) as u128;
+    // either a staked account (`big`) or a small one with storage ≤ 770
+    let (befv, stv): (u128, u128) = if r.coin() {
+        let st = r.below(3000) as u128;
+        (r.next_u64() as u128 + 10_000_000_000_000_000_000 * st, st)
+    } else {
+        (r.below(1 << 16) as u128, r.below(771) as u128)
+    };
+    let iv = rcpt_interval(r, &v);
+    let rlk = rcpt_rlk(&v, &iv);
     let kt = r.below(2);
     RcptE {
         p: pred,
         v: v.clone(),
-        s: if ee { v.clone() } else { s },
+        s,
         rid: r.bytes(32),
         kt,
         pk: r.bytes(32 + 32 * kt as usize),
-        gp: (0..16)
-            .map(|i| ((gpv as u128 >> (8 * i)) & 255) as u64)
-            .collect(),
-        dep: (0..16)
-            .map(|i| ((depv as u128 >> (8 * i)) & 255) as u64)
-            .collect(),
+        gp: rcpt_num(gpv),
+        dep: rcpt_num(depv),
         hr,
         ge,
         kslot: r.fe(),
-        tprev: 0,
-        bef: (0..16)
-            .map(|i| ((befv as u128 >> (8 * i)) & 255) as u64)
-            .collect(),
-        lk: (0..16)
-            .map(|i| ((lkv as u128 >> (8 * i)) & 255) as u64)
-            .collect(),
-        st: vec![0; 16],
-        aft: (0..16)
-            .map(|i| ((aft as u128 >> (8 * i)) & 255) as u64)
-            .collect(),
+        tprev,
+        bef: rcpt_num(befv),
+        lk: rcpt_num(lkv),
+        st: rcpt_num(stv),
+        aft: rcpt_num(befv + depv),
         burnt: rcpt_num(GAS_G * brn),
         ramt: rcpt_num(GAS_G * sur),
-        rfid: r.bytes(32),
+        rfid: if hr { r.bytes(32) } else { vec![0; 32] },
         peoh: r.bytes(32),
         sys,
         ee,
@@ -674,28 +699,38 @@ fn rcpt_one(r: &mut Rng, sys: bool, bgp: u128) -> RcptE {
         sx: Vec::new(),
         akf: r.below(2),
         akk: r.fe(),
-        aku: r.fe(),
+        aku: 0,
         q: r.below(128),
         rlk,
+        iv: Some(iv),
     }
 }
 
-fn rcpt_num(x: u128) -> Vec<u64> {
-    (0..16).map(|i| ((x >> (8 * i)) & 255) as u64).collect()
-}
-
 /// `n` applied source lists of honest receipts (`RcptOk`-shaped): `system` and
-/// ordinary receivers, with `hr` only on a non-system surplus.
+/// ordinary receivers (receivers repeat, `tprev` = `latestReceiverVersion`), `hr`
+/// only on a non-system surplus, system receipts up to gas price `u128::MAX`.
 pub fn rcpt(r: &mut Rng, n: usize) -> RcptIn {
-    let nlists = n.max(1).min(4);
-    let bgp = r.below(1000);
+    let nlists = n.clamp(1, 4);
+    let bgp = r.below(1000) as u128;
     let mut lists = Vec::with_capacity(nlists);
+    let mut seen: Vec<Vec<u64>> = Vec::new();
     for _ in 0..nlists {
-        let m = r.below(3) as usize;
+        let m = r.below(4) as usize;
         let mut rs = Vec::with_capacity(m);
         for _ in 0..m {
             let sys = r.below(4) == 0;
-            rs.push(rcpt_one(r, sys, bgp as u128));
+            let v = if !seen.is_empty() && r.below(3) == 0 {
+                seen[r.below(seen.len() as u64) as usize].clone()
+            } else {
+                rcpt_bytes(r, b"bob")
+            };
+            let tprev = seen
+                .iter()
+                .rposition(|x| *x == v)
+                .map(|k| k as u64 + 1)
+                .unwrap_or(0);
+            rs.push(rcpt_one(r, sys, bgp, v.clone(), tprev));
+            seen.push(v);
         }
         lists.push(ListV3 {
             n0: (m % 256) as u64,
