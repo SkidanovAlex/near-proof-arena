@@ -1,5 +1,6 @@
 import ZkFormal.V3.Fast.Prep
 import ZkFormal.NearV3.Assembly.HintCodec
+import ZkFormal.NearV3.Public.Prepared
 import NearSpecV3.ChallengeD0a
 import Lean.Data.Json
 
@@ -109,6 +110,7 @@ def runCase (outDir : Option String) (dir : String) : IO UInt32 := do
       let j := Json.mkObj
         [ ("hint", toJson (toHex (Hint.encode h)))
         , ("prep", toJson (toHex (Prep.encode p)))
+        , ("public", toJson (toHex (ZkFormal.NearV3.Public.preparedBytes p 0)))
         , ("refunds_enc", toJson (toHex refundsEnc))
         , ("prep_json", jsonPrep p) ]
       let s := Json.compress j

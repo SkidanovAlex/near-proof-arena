@@ -248,6 +248,25 @@ done
 [ $nprep -gt 0 ] || bad "no fixture case produced a prepared statement"
 echo "   ($nprep prepared statements re-encoded byte-for-byte)"
 
+echo "== prepared public tape (Public.preparedBytes): Rust (npudr v3public) vs Lean"
+ppd="$out/public"; mkdir -p "$ppd"
+_pubcases=($(ls -d "$here/../../../oracle/fixtures/v3/public-d0a/d0"/* 2>/dev/null | head -${PUBLIC_MAX:-64}))
+for d in "${_pubcases[@]}"; do
+  [ -d "$d" ] || continue
+  j="$ppd/$(basename "$d").json"
+  if ! "$here/.lake/build/bin/np-lean-prep-v3" "$d" "$j" 2>"$ppd/$(basename "$d").err"; then continue; fi
+  python3 - "$j" "$ppd/lean.hex" "$ppd/prep.json" <<'PY'
+import json,sys
+d=json.load(open(sys.argv[1]))
+open(sys.argv[2],'w').write(d["public"])
+open(sys.argv[3],'w').write(json.dumps(d["prep_json"]))
+PY
+  "$npudr" v3public "$ppd/prep.json" "$ppd/rust.bin" >/dev/null 2>&1 || { bad "public $(basename "$d"): npudr v3public failed"; continue; }
+  if [ "$(python3 -c "print(open('$ppd/lean.hex').read().strip())")" = "$(python3 -c "print(open('$ppd/rust.bin','rb').read().hex())")" ]; then
+    pass "public $(basename "$d") byte-identical"
+  else bad "public $(basename "$d") differs"; fi
+done
+
 echo
 if [ $fail -eq 0 ]; then echo "ALL PASS"; else echo "SOME FAILED"; fi
 exit $fail

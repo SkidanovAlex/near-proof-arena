@@ -248,22 +248,27 @@ fn par_scan(tau: u64, sp: &SchedPub) -> Vec<u64> {
     v
 }
 
-/// `Sched.instOf sp .raw` = `rawOf sp.ids sp.raw` (resolved `(s, r, bm)`),
-/// then `render.rawRecs`: `[τ, PT_RAW] ++ bm[0..5] ++ b2 cid ++ [s, r]`.
-fn raw_recs(tau: u64, sp: &SchedPub) -> Vec<Vec<u64>> {
-    // `rawOf`: flatten each sender's requests, keeping those with both indices.
-    let mut raw: Vec<(u64, u64, &Vec<u8>)> = Vec::new();
+/// Resolve `rawOf sp.ids sp.raw` then filter to requests with a nonempty increase
+/// list (`Sched.instOf`).  This is the `PubRecs.raw`.
+fn resolved_raw(sp: &SchedPub) -> Vec<(u64, u64, Vec<u8>)> {
+    let mut out = Vec::new();
     for (sender, brs) in &sp.raw {
         let Some(s) = index_of(&sp.ids, *sender) else { continue };
         for br in brs {
             if let Some(r) = index_of(&sp.ids, br.to_shard) {
-                raw.push((s as u64, r as u64, &br.bitmap));
+                if !incs_of(sp, &br.bitmap).is_empty() {
+                    out.push((s as u64, r as u64, br.bitmap.clone()));
+                }
             }
         }
     }
+    out
+}
+
+/// `render.rawRecs`: `[τ, PT_RAW] ++ bm[0..5] ++ b2 cid ++ [s, r]`.
+fn raw_recs(tau: u64, raw: &[(u64, u64, Vec<u8>)]) -> Vec<Vec<u64>> {
     raw.iter()
         .enumerate()
-        .filter(|(_, (s, r, bm))| !incs_of(sp, bm).is_empty())
         .map(|(cid, (s, r, bm))| {
             let mut v = vec![tau, PT_RAW];
             for i in 0..5 {
@@ -364,10 +369,11 @@ fn scheduler_records(p: &Prep) -> (Vec<Vec<u64>>, Vec<Vec<u64>>, Vec<Vec<u64>>, 
         pubb.extend(key_recs(tau as u64, &sp.seed));
         pubb.extend(ash_recs(tau as u64, &sp.all_shards_hash));
         par.push(par_codec(tau as u64, sp));
-        if !sp.raw.is_empty() {
+        let resolved = resolved_raw(sp);
+        if !resolved.is_empty() {
             par.push(par_scan(tau as u64, sp));
         }
-        par.extend(raw_recs(tau as u64, sp));
+        par.extend(raw_recs(tau as u64, &resolved));
         par.extend(shard_recs(tau as u64, sp));
         par.extend(link_recs(tau as u64, sp));
     }
