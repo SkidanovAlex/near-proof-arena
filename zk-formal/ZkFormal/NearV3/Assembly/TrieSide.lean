@@ -55,14 +55,35 @@ theorem sizeU_yA7 (a b c : Nat) : ∀ r, sizeU (yA7 a b c) r ≤ a + b + c
       simp [yA7]
     omega
 
-/-- **The trie side of `CompleteV3Stmt`** (see the module doc). -/
-theorem trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
+/-- **The size premise in its exact form** (lead decision 2026-10-12): for every account replay the
+trie side may export, the overhead, the honest non-duplicate node and non-empty non-duplicate value
+bytes, and the source table's `srcpSize` fit `8 MiB` — given that node + value bytes fit `B0`
+(`TrieA7Total.size_base`).  Only `SizeOk.tot` uses it.  Implied by the earlier coarse premise
+(`sizeBudget_of_coarse`). -/
+def SizeBudget {cb wb : Bytes} (A : AcceptedV3 cb wb) : Prop :=
+  ∀ (writes : List (List Nat × Bytes)) (oldPost : PTrie) (q : UseRequests),
+    SizedAccountRun A.m.pre writes oldPost → KeysFinal A.k A.w A.m writes oldPost →
+    ((((TrieNative.nodes A.m A.steps oldPost writes q).filter fun s => !s.dup).map
+        fun s => (s.v.ser false).length).sum +
+      (((TrieNative.vals A.m A.steps).filter fun e => !e.vz && !e.dup).map ValE.len).sum ≤ 2000000) →
+    ovhNat A.pub + (((TrieNative.nodes A.m A.steps oldPost writes q).filter fun s => !s.dup).map
+        fun s => (s.v.ser false).length).sum +
+      (((TrieNative.vals A.m A.steps).filter fun e => !e.vz && !e.dup).map ValE.len).sum +
+      srcpSize (SrcpGen.blocksOfProofs A.srcps) ≤ 8388608
+
+theorem sizeBudget_of_coarse {cb wb : Bytes} (A : AcceptedV3 cb wb)
+    (h : ovhNat A.pub + 2000000 + srcpSize (SrcpGen.blocksOfProofs A.srcps) ≤ 8388608) : SizeBudget A := by
+  intro writes oldPost q _ _ hb
+  omega
+
+/-- **The trie side of `CompleteV3Stmt`**, size premise in its exact form (`SizeBudget`). -/
+theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
     (receipt source : List Sha.Gen.Msg)
     (hrr : (Sha.Gen.honestRows receipt).length ≤ 1373299)
     (hpr : (Sha.Gen.honestRows source).length ≤ 2257792)
     (hsm : ∀ M ∈ source, (Sha.Gen.msgRows M).length ≤ 35)
     (hbr : ∀ M ∈ receipt, ∀ x ∈ M.bytes, x < 256) (hbs : ∀ M ∈ source, ∀ x ∈ M.bytes, x < 256)
-    (hovh : ovhNat A.pub + 2000000 + srcpSize (SrcpGen.blocksOfProofs A.srcps) ≤ 8388608) :
+    (hovh : SizeBudget A) :
     ∃ (writes : List (List Nat × Bytes)) (oldPost : PTrie) (q : UseRequests) (us : List SchedulerUpsertWitness)
       (r0 : TableRenderV3 A.pub 0 (by decide)) (r1 : TableRenderV3 A.pub 1 (by decide))
       (r2 : TableRenderV3 A.pub 2 (by decide)) (r3 : TableRenderV3 A.pub 3 (by decide))
@@ -138,9 +159,7 @@ theorem trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
       exact Nat.le_trans hbase' (by decide)
     · show ovhNat A.pub + ((ns.filter fun s => !s.dup).map fun s => (s.v.ser false).length).sum +
           ((es.filter fun e => !e.vz && !e.dup).map ValE.len).sum + srcpSize bs ≤ 8388608
-      have h1 := hbase'
-      have h2 : ovhNat A.pub + 2000000 + srcpSize bs ≤ 8388608 := hovh
-      omega
+      exact hovh writes oldPost q hr hkf hbase'
   refine ⟨writes, oldPost, q, us, shaRenderV3 A.pub 0 (by decide) b0 h0, shaRenderV3 A.pub 1 (by decide) b1 h1,
     nodeRenderV3 A.pub ns hn (selN ns S), Rh, valRenderV3 A.pub es hval (selV es SV), Rw, Ru,
     upsRenderV3 A.pub Js hok, sizeRenderV3 A.pub _ hSizeOk yN hB, hr, hkf, husv, ?_⟩
@@ -216,5 +235,49 @@ theorem trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
     exact R.balancedAt_vslot ns A.accts fN fA (fun msg => TrieShared.vslot_native A.hm hr hkf hviews A.steps q msg)
   · intro e16 e22 hk hf
     exact TrieKeyFinal.keynib_final_accepted A R hvv hvr hws fW e16 e22 hk hf
+
+/-- **The trie side of `CompleteV3Stmt`** (coarse size premise; corollary of `trie_side_exact`). -/
+theorem trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
+    (receipt source : List Sha.Gen.Msg)
+    (hrr : (Sha.Gen.honestRows receipt).length ≤ 1373299)
+    (hpr : (Sha.Gen.honestRows source).length ≤ 2257792)
+    (hsm : ∀ M ∈ source, (Sha.Gen.msgRows M).length ≤ 35)
+    (hbr : ∀ M ∈ receipt, ∀ x ∈ M.bytes, x < 256) (hbs : ∀ M ∈ source, ∀ x ∈ M.bytes, x < 256)
+    (hovh : ovhNat A.pub + 2000000 + srcpSize (SrcpGen.blocksOfProofs A.srcps) ≤ 8388608) :
+    ∃ (writes : List (List Nat × Bytes)) (oldPost : PTrie) (q : UseRequests) (us : List SchedulerUpsertWitness)
+      (r0 : TableRenderV3 A.pub 0 (by decide)) (r1 : TableRenderV3 A.pub 1 (by decide))
+      (r2 : TableRenderV3 A.pub 2 (by decide)) (r3 : TableRenderV3 A.pub 3 (by decide))
+      (r4 : TableRenderV3 A.pub 4 (by decide)) (r5 : TableRenderV3 A.pub 5 (by decide))
+      (r6 : TableRenderV3 A.pub 6 (by decide)) (r7 : TableRenderV3 A.pub 7 (by decide))
+      (r21 : TableRenderV3 A.pub 21 (by decide)),
+      SizedAccountRun A.m.pre writes oldPost ∧ KeysFinal A.k A.w A.m writes oldPost ∧ (∀ u ∈ us, u.Valid) ∧
+      ∀ R : RenderBundleV3 A.pub,
+        R ⟨0, by decide⟩ = r0 → R ⟨1, by decide⟩ = r1 → R ⟨2, by decide⟩ = r2 → R ⟨3, by decide⟩ = r3 →
+        R ⟨4, by decide⟩ = r4 → R ⟨5, by decide⟩ = r5 → R ⟨6, by decide⟩ = r6 → R ⟨7, by decide⟩ = r7 →
+        R ⟨21, by decide⟩ = r21 →
+        (R.BalancedAt B_PARENT ∧ R.BalancedAt B_VPARENT ∧ R.BalancedAt B_ENT ∧ R.BalancedAt B_DIGS ∧
+          R.BalancedAt B_DUP ∧ R.BalancedAt B_EDGE ∧ R.BalancedAt B_BMAP ∧ R.BalancedAt B_MIDROOT ∧
+          R.BalancedAt B_ROOT ∧ R.BalancedAt B_UPB ∧ R.BalancedAt B_MEMD ∧ R.BalancedAt B_RPL ∧
+          R.BalancedAt B_RPLV) ∧
+        (R ⟨20, by decide⟩ = A.rcptRenders.srcp → R.BalancedAt B_SIZE) ∧
+        ((∀ m, cnt ((R.tf 11).sends B_BYTES) m = cnt (Sha.Gen.expectedBytes (schedulerSanityJobs 0 us)) m) →
+          (∀ m, cnt ((R.tf 16).sends B_BYTES) m + cnt ((R.tf 17).sends B_BYTES) m +
+              cnt ((R.tf 20).sends B_BYTES) m + cnt ((R.tf 23).sends B_BYTES) m =
+            cnt (Sha.Gen.expectedBytes (receipt ++ source)) m + ZkFormal.V2.pubCount nearAirV3 A.pub B_BYTES false m) →
+          R.BalancedAt B_BYTES) ∧
+        ((∀ m, cnt ((R.tf 11).recvs B_DIGEST) m = cnt (Sha.Gen.expectedDigests (schedulerSanityJobs 0 us)) m) →
+          (∀ m, cnt ((R.tf 16).recvs B_DIGEST) m + cnt ((R.tf 20).recvs B_DIGEST) m +
+              cnt ((R.tf 23).recvs B_DIGEST) m +
+              cnt ((TrieNative.nodes A.m A.steps oldPost writes q).flatMap postSlotDigests) m =
+            cnt (Sha.Gen.expectedDigests (receipt ++ source)) m) →
+          R.BalancedAt B_DIGEST) ∧
+        (R ⟨17, by decide⟩ = A.rcptRenders.acct →
+          nativeAccountViews A.m.pre oldPost (appliedReceipts A.k A.w) = some A.accts → R.BalancedAt B_VSLOT) ∧
+        (R ⟨16, by decide⟩ = A.rcptRenders.rcpt → R ⟨22, by decide⟩ = A.rcptRenders.qv →
+          TrieKeyFinal.RcptKeys (RcptSkeleton.rcptTrafficB A.pub A.rcptInput) (appliedReceipts A.k A.w) →
+          TrieKeyFinal.RcptFinal (RcptSkeleton.rcptTrafficB A.pub A.rcptInput)
+            ((A.m.pre, A.m.result.trie) :: A.steps.map (fun s => (s.pre, s.post))) (appliedReceipts A.k A.w) →
+          R.BalancedAt B_KEYNIB ∧ R.BalancedAt B_FINAL) :=
+  trie_side_exact A receipt source hrr hpr hsm hbr hbs (sizeBudget_of_coarse A hovh)
 
 end ZkFormal.NearV3.Assembly.TrieSide
