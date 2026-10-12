@@ -385,3 +385,57 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   instance 0 needs the forwarding range. `vid < P`: `priorValueId before tree = forestLookupVid before + i` —
   bound by the forest value count (≤ B0) still to be shown.
 * (2) and (4): not started this session beyond `rows_traffic`/`hdr_s0f` (see above).
+
+## 2026-10-12 (package 9, fresh session: NatRes, codec SHA/S0F/SPLEN traffic, allowances)
+
+* Merged origin/main (69b9839b). `ZkFormal.V3.Integration` builds (4577 jobs); `make pin-check` OK.
+  Audits: `test/AuditCodecNatRes.lean` (axioms ⊆ {propext, Classical.choice, Quot.sound}).
+* **Task 1 — NatRes from acceptance: DONE** (commit 8412c7cb).
+  * `Render/CodecGrantCore.lean`: `GrantWit b` (the block's grants are `distributeEv` of its own
+    `runPrefix`); re-run of the block construction with the witness exported (existing statements
+    untouched): `main_block`, `missing_block`, `implicit_blocks`, `ordered_blocks`, `allocated_blocks`,
+    **`accepted_prior_core_grants`**: `checkD0a B` ⇒ `∃ bs, PriorCore p B bs ∧ ∀ b ∈ bs, GrantWit b`.
+  * `Render/CodecNatRes.lean`: `vid_lt` (`priorValueId < P` from the forest budget via
+    `forest_lookup_offsets` + `valueIndex_bound`), **`natRes_block`** (gb/gfin from
+    `ProcPriorCodecGrantCap.native`; instance-0 `ft` from the block's own codec generator: its terminal
+    record step at `(kk,2,7)` (`ProcCodecCarryPosition.core`) passed the forward check
+    (`ProcPriorCodecForwardSuccess.bound`), so `demand ≤ wfin + gb ≤ 4.5M < 2^24`),
+    **`codec_accepted_full`**: table 11 from acceptance with no residual premise.
+* **Task 2 — codec traffic closed forms: BYTES, DIGEST, S0F, SPLEN DONE; SPOST not done** (85ca1d3d).
+  * `Render/CodecBus.lean`: generic per-bus row traffic (`bus_bytes/digest/s0f/splen/spost`, any
+    descriptor, via `cv d col`) and per-kind closed forms (`bytes_*`, `digest_*`, `s0f_*`, `splen_*`,
+    `spost_*` for hdr/record/hash/ash). Cheap (whole file < 10 s).
+  * `Render/CodecSanity.lean`: `codec_bus` (table traffic = `Bs.flatMap (descs.flatMap G)`), `blk_*`,
+    `blkOf_bytes/digest` (via `prepared_sanity_input/job`), and over the `PriorCore` list:
+    **`codec_bytes_native`** (`rowsTrafficFp … B_BYTES true = (expectedBytes (schedulerSanityJobs 0
+    (bs.map NativeBlock.witness))).map Msg.toFp`), **`codec_digest_native`** (same for `expectedDigests`),
+    **`codec_s0f_native`** (`bs.map [τ, b2n pres, vid]`), **`codec_splen_native`** (`bs.map [τ, 37+24n²]`),
+    `codec_sha_counts` (the `cnt` form of `rcpt_trie_side`'s codec premises for `us := bs.map witness`),
+    `jobs_congr`, **`codec_sha_counts_pinned`** (the premises for ANY `us` with
+    `us.map schedulerWitnessSanity = (bs.map witness).map schedulerWitnessSanity`).
+  * **FINDING (blocks the discharge of `rcpt_trie_side`'s codec premises):** `rcpt_trie_side`/
+    `trie_side_exact` export `us` with only `∀ u ∈ us, u.Valid`. Its origin (`TrieUpsKeys.upserts_kf`)
+    has `us.map (pre, output) = (oldPost, m.result.trie) :: steps…` — the main scheduler upsert is
+    REBASED onto `oldPost` (not `m.pre`, where the spec runs `schedStep`), and `u.ctx` is not exported.
+    `schedulerSanityJob τ u` depends on `schedPub u.ctx` and `readKey u.pre keyBwState`; with only
+    `u.Valid`, two valid witnesses with different contexts give different jobs, so the BYTES/DIGEST
+    premises are not provable from the exported statement. Needed from the trie lane (or lead), any of:
+    (a) `us.map schedulerWitnessSanity = (bs.map witness).map schedulerWitnessSanity` for the
+    `PriorCore` list (then `codec_sha_counts_pinned` closes both premises); or (b) per index
+    `u.ctx = ctx_i` (main: `m.ctx k`, implicit: `implicitContext k e`) and
+    `readKey u.pre keyBwState = readKey pre_i keyBwState` (main: `oldPost` vs `m.pre` — account writes
+    do not touch `keyBwState`), from which (a) follows. The same pin is needed for S0F/SPLEN/SPOST
+    (the ups side `view_*` is over the trie lane's `Js`, built from that `us`).
+  * SPOST closed form still open: codec side = `[τ, pos, bpost]` on hdr/record/hash rows
+    (`spost_*` per row done); remaining: block list = `(range (37+24N)).map [τ, p, (stateBytes ids afin
+    dig).getD p 0]` (needs `N < 65536`, `afin < 2^24` — both in `Blk.Ok`), and
+    `b.witness.value.map toNat = stateBytes …` (no existing lemma links the upsert value to the codec post
+    bytes).
+* **Task 3 — B_SCMP identity: algebraic part DONE** (59045937). `Render/CodecAllow.lean`: `pairs_eq`,
+  **`allowances_canon`** (`ProcActualInput.allowances ids prev = a0Src ids prev` whenever
+  `prev.links.map (s, r) = ids.flatMap (s ↦ ids.map (r ↦ (s, r)))`, duplicates allowed, via
+  `allow0_src`), **`a0s_canon`** (`(blkOf b).recs kk .a0s = (allowances b.pub.ids b.old)[kk]!` for a
+  present canonical prior). Open: canonicity of each block's prior from acceptance (`reads0f … all
+  (canonical0f k.L)` ↔ `b.prior`, `k.L.shardIds = b.pub.ids`), and the SCMP bus balance itself
+  (codec sends `(apR+fair, MA, cb)`, `(zt·(gfin+gb), zt·ft, zt)` vs the comparator table).
+* **Task 4 — not started** (scheduler buses 40–62, ChaCha lane, packaging).
