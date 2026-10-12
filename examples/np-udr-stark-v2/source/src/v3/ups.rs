@@ -101,6 +101,113 @@ impl UpsInst {
     fn step(&self, t: usize) -> &super::WStep3 {
         self.walk.get(t).unwrap_or(&DEFAULT_STEP)
     }
+    /// `UpsGen.rlen` (`Gen.lean:107`): `(part (nQ − 1)).q.length`.
+    fn rlen(&self) -> usize {
+        self.part(self.n_q().saturating_sub(1)).q.len()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Segment constants (`UpsGen.segCell`, `Gen.lean:131`)
+// ---------------------------------------------------------------------------
+
+/// `UpsGen.ind` (`Gen.lean:97`): the `0`/`1` indicator.
+fn ind(p: bool) -> u64 {
+    b(p)
+}
+
+/// `UpsGen.Lb` (`Gen.lean:112`): bytes of `L` (`L0 L1 L2`, then `0`).
+fn l_b(i: &UpsInst, j: usize) -> u64 {
+    let l = i.l() as u64;
+    match j {
+        0 => l % 256,
+        1 => l / 256 % 256,
+        2 => l / 65536,
+        _ => 0,
+    }
+}
+
+/// `UpsGen.cin` (`Gen.lean:116`): `Σ ind (ci = n)`.
+fn cin(i: &UpsInst, ns: &[u64]) -> u64 {
+    ns.iter().map(|&n| ind(i.ci == n)).sum()
+}
+
+/// `UpsGen.xbit` (`Gen.lean:117`).
+fn xbit(i: &UpsInst, k: u32) -> u64 {
+    i.x / 2u64.pow(k) % 2
+}
+
+/// `UpsGen.pxV` (`Gen.lean:118`): `2^(x mod 8)`.
+fn px_v(i: &UpsInst) -> u64 {
+    2u64.pow((i.x % 8) as u32)
+}
+
+/// `UpsGen.bmLV` (`Gen.lean:123`).
+fn bm_l_v(i: &UpsInst) -> u64 {
+    let sp_yc = cin(i, &[4, 6, 9, 10]);
+    (1 - cin(i, &[4])) * (1 - xbit(i, 3)) * px_v(i) + sp_yc * ind(i.ts == 1)
+}
+
+/// `UpsGen.bmHV` (`Gen.lean:124`).
+fn bm_h_v(i: &UpsInst) -> u64 {
+    let sp_yc = cin(i, &[4, 6, 9, 10]);
+    (1 - cin(i, &[4])) * xbit(i, 3) * px_v(i) + 128 * (sp_yc * (1 - ind(i.ts == 1)))
+}
+
+/// `UpsGen.presV` (`Gen.lean:125`).
+fn pres_v(i: &UpsInst) -> u64 {
+    ind(i.step(3).mode == 0)
+}
+
+/// `UpsGen.vidV` (`Gen.lean:126`).
+fn vid_v(i: &UpsInst) -> u64 {
+    ind(i.step(3).mode == 0) * get(&i.step(3).e, 3)
+}
+
+/// `UpsGen.isSeg` (`Gen.lean:129`).
+pub fn is_seg(col: usize) -> bool {
+    (10..49).contains(&col) || (176..179).contains(&col) || col == 186
+}
+
+/// `UpsGen.segCell` (`Gen.lean:131`): the segment-constant columns.
+pub fn seg_cell(i: &UpsInst, col: usize) -> u64 {
+    if col == 10 {
+        i.tau
+    } else if col < 14 {
+        get(&i.n, col - 11)
+    } else if col < 17 {
+        l_b(i, col - 14)
+    } else if col < 28 {
+        ind(i.ci == (col - 17) as u64)
+    } else if col < 31 {
+        ind(i.d == (col - 28) as u64)
+    } else if col < 34 {
+        ind(i.ts == (col - 30) as u64)
+    } else if col < 37 {
+        ind(i.ti == (col - 34) as u64)
+    } else if col == 37 {
+        i.x
+    } else if col < 42 {
+        xbit(i, (col - 38) as u32)
+    } else if col == 42 {
+        px_v(i)
+    } else if col == 43 {
+        bm_l_v(i)
+    } else if col == 44 {
+        bm_h_v(i)
+    } else if col == 45 {
+        pres_v(i)
+    } else if col == 46 {
+        vid_v(i)
+    } else if col == 47 {
+        i.n_q() as u64
+    } else if col == 48 {
+        i.rlen() as u64
+    } else if col < 179 {
+        get(&i.dep, col - 176)
+    } else {
+        i.rid
+    }
 }
 
 static DEFAULT_PART: UpsPartI = UpsPartI {
@@ -188,9 +295,26 @@ pub fn r(insts: &[UpsInst]) -> usize {
 
 /// Build the honest `upsV3` trace (`UpsGen.cell`, `Gen.lean:564`).
 pub fn ups_aligned(insts: &[UpsInst]) -> Tab {
-    let log = pad_log22(log_of(r(insts) + 1));
-    let t = Tab::zero(log, UPS_WIDTH);
-    let _ = (SYM_START, SYM_END, b, get, insts);
+    let recs = recs(insts);
+    let log = pad_log22(log_of(recs.len() + 1));
+    let mut t = Tab::zero(log, UPS_WIDTH);
+    let h = t.height();
+    for (q, &(i, rk)) in recs.iter().enumerate() {
+        if q >= h {
+            break;
+        }
+        let inst = &insts[i];
+        for col in 0..UPS_WIDTH {
+            let x = if is_seg(col) {
+                seg_cell(inst, col)
+            } else {
+                match rk {
+                    Rk::W(_) | Rk::V(_) | Rk::Q(_, _) => 0,
+                }
+            };
+            t.set(q, col, x);
+        }
+    }
     t
 }
 
@@ -246,5 +370,20 @@ mod tests {
         assert_eq!(r(std::slice::from_ref(&i)), rows);
         assert_eq!(t.log, pad_log22(log_of(rows + 1)));
         assert_eq!(t.height(), 1 << pad_log22(log_of(rows + 1)));
+    }
+
+    #[test]
+    fn seg_constants_match_seg_cell() {
+        let i = inst();
+        let t = ups_aligned(std::slice::from_ref(&i));
+        for col in 0..UPS_WIDTH {
+            if is_seg(col) {
+                assert_eq!(
+                    t.cells[col] as u64,
+                    seg_cell(&i, col) % crate::field::P as u64,
+                    "col {col}"
+                );
+            }
+        }
     }
 }
