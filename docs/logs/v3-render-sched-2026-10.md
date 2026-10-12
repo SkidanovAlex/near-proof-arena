@@ -493,7 +493,7 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
 ## 2026-10-12 (package 11, fresh session: merge A9, S0F balanced, bus map)
 
 * Merged origin/lane/v3-link (a272bd7d, A9 word counter; Integration import conflict resolved by keeping
-  both sides) — 5101e0c0-ish merge commit, pushed. lane/v3-link-rest (DedupTable/A10) has not landed: not merged.
+  both sides) — merge commit 1006fd6b, pushed. lane/v3-link-rest (DedupTable/A10) has not landed: not merged.
 * **Build note (performance):** after the A9 merge many heavy modules rebuild (CodecEndInt ~6.5G,
   HorizontalAuxCheck ~5G, CodecHeader, CodecRecInt); a full `lake build` under `HEAVY_MEM=14G` with
   8+ cores is OOM-killed (systemd `oom-kill`, shows as `Terminated`/rc 143).  Working recipe: build
