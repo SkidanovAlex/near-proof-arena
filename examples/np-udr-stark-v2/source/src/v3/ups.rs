@@ -804,10 +804,11 @@ fn dl_v(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize) -> u64 {
 // ---------------------------------------------------------------------------
 
 /// `UpsGen.limb` (`Gen.lean:404`): limb `i` of an exact value.  `i128` mirrors
-/// Lean's unbounded `Int` (the chain's intermediates exceed `i64`).
+/// Lean's unbounded `Int` (the chain's intermediates exceed `i64`); `emod` is
+/// the non-negative `rem_euclid`.
 fn limb(r: i128, i: usize) -> i128 {
     if i < 7 {
-        r.div_euclid(256i128.pow(i as u32)) % 256
+        r.div_euclid(256i128.pow(i as u32)).rem_euclid(256)
     } else {
         r.div_euclid(256i128.pow(7))
     }
@@ -877,7 +878,7 @@ impl Mem<'_> {
         self.sig() * pfx(&|l| self.x1(l), 8)
     }
     fn t(&self, i: usize) -> i128 {
-        self.tv().div_euclid(256i128.pow(i as u32)) % 256
+        self.tv().div_euclid(256i128.pow(i as u32)).rem_euclid(256)
     }
     fn rv(&self) -> i128 {
         pfx(&|l| self.ein(l), 8) + (1 - self.p.neg as i128) * self.tv()
@@ -898,11 +899,15 @@ impl Mem<'_> {
     /// `UpsGen.memReg` (`Gen.lean:430`).
     fn mem_reg(&self, i: usize, m: usize) -> i128 {
         if m < 8 {
-            self.t(i).div_euclid(2i128.pow(m as u32)) % 2
+            self.t(i).div_euclid(2i128.pow(m as u32)).rem_euclid(2)
         } else if m < 11 {
-            self.cb(i).div_euclid(2i128.pow((m - 8) as u32)) % 2
+            self.cb(i)
+                .div_euclid(2i128.pow((m - 8) as u32))
+                .rem_euclid(2)
         } else if m < 14 {
-            self.co2(i).div_euclid(2i128.pow((m - 11) as u32)) % 2
+            self.co2(i)
+                .div_euclid(2i128.pow((m - 11) as u32))
+                .rem_euclid(2)
         } else if m == 14 {
             if i == 0 { 0 } else { self.co(i - 1) }
         } else if m == 15 {
@@ -912,7 +917,9 @@ impl Mem<'_> {
         } else if m == 17 {
             self.ein(i)
         } else if m < 32 {
-            self.cb(i).div_euclid(2i128.pow((m - 15) as u32)) % 2
+            self.cb(i)
+                .div_euclid(2i128.pow((m - 15) as u32))
+                .rem_euclid(2)
         } else {
             0
         }
@@ -1087,7 +1094,7 @@ fn q_row(
                     (Mem { i, p }
                         .co2(ix)
                         .div_euclid(2i128.pow((col - 184) as u32))
-                        % 2) as i64
+                        .rem_euclid(2)) as i64
                 } else {
                     0
                 }
