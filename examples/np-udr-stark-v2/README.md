@@ -21,6 +21,8 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
 
 ## Status
 
+**Rust v3 prover (2026-10-11):** all **25 `nearAirV3` table generators** exist (`src/v3/`), each a Rust twin of the Lean render, differential-tested (byte-identical) or AIR-constraint-verified. The **native D0 preprocessing `prepD0` is ported** (`src/v3/d0.rs`: `decodeClaim`/`layout`/`walkD0`/source shuffle/`Scheduler.pubOf`/`decodeBody`/`encodedMerkleRoot`) and `Prep.encode` is **byte-identical to Lean on all 64 D0a fixtures**. The **prepared public tape** (`src/v3/public.rs`, `Public.preparedBytes`) is byte-identical on all 64. Step-1 orchestration `npudr v3prove` builds the 25-table trace and proves at `aux_group=2` with the public tape. Remaining to balance a real proof: the `rcpt`/scheduler/ChaCha/ups SHA collectors (kind-registry split) and `hintOf` (needs D0 execution).
+
 | piece | state |
 |---|---|
 | `auxGroup` | `Air.aux_group` (`Air::with_aux_group(g)`); `AuxLayout::new(t, g)`, `Table::{degree,aux_width,num_quot_chunks,num_finals}(g)` mirror `Table.auxCount/auxDegree/degree/quotCount g` and `chunksOf g` (`ZkFormal.Stark.Protocol`). |
