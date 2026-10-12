@@ -436,6 +436,713 @@ fn set_i(t: &mut Tab, r: usize, c: usize, x: i64) {
 }
 
 // ---------------------------------------------------------------------------
+// Part constants (`UpsGen.pcCell`, `Gen.lean:255`)
+// ---------------------------------------------------------------------------
+
+/// `UpsGen.kin` (`Gen.lean:223`): `Σ ind (kind = n)`.
+fn kin(p: &UpsPartI, ns: &[u64]) -> u64 {
+    ns.iter().map(|&n| ind(p.kind == n)).sum()
+}
+
+/// `UpsGen.XcpB` (`Gen.lean:224`): `kind == 10 && (ci == 8 || ci == 10)`.
+fn x_cp_b(i: &UpsInst, p: &UpsPartI) -> bool {
+    p.kind == 10 && (i.ci == 8 || i.ci == 10)
+}
+
+/// `UpsGen.xcpV` (`Gen.lean:225`).
+fn x_cp_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    ind(x_cp_b(i, p))
+}
+
+/// `UpsGen.useAV` (`Gen.lean:226`).
+fn use_a_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    kin(p, &[0, 1, 3, 4, 5, 7, 11]) + x_cp_v(i, p)
+}
+
+/// `UpsGen.spRecv` (`Gen.lean:122`).
+fn sp_recv(i: &UpsInst) -> u64 {
+    cin(i, &[5, 6, 7, 9])
+}
+
+/// `UpsGen.bNV` (`Gen.lean:227`).
+fn b_n_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    kin(p, &[0, 1, 9, 11]) + kin(p, &[10]) * sp_recv(i)
+}
+
+/// `UpsGen.bLV` (`Gen.lean:228`).
+fn b_l_v(p: &UpsPartI) -> u64 {
+    kin(p, &[3])
+}
+
+/// `UpsGen.cOV` (`Gen.lean:229`).
+fn c_o_v(p: &UpsPartI) -> u64 {
+    kin(p, &[0, 1, 11])
+}
+
+/// `UpsGen.cSV` (`Gen.lean:230`).
+fn c_s_v(p: &UpsPartI) -> u64 {
+    kin(p, &[3])
+}
+
+/// `UpsGen.CcV` (`Gen.lean:231`).
+fn cc_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    (kin(p, &[7]) + x_cp_v(i, p)) * (50 + 2 * p.phk)
+}
+
+/// `UpsGen.eLV` (`Gen.lean:232`).
+fn e_l_v(p: &UpsPartI) -> u64 {
+    kin(p, &[2, 4, 5, 8, 10])
+}
+
+/// `UpsGen.eSV` (`Gen.lean:233`).
+fn e_s_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    kin(p, &[6]) + kin(p, &[10]) * cin(i, &[4])
+}
+
+/// `UpsGen.KcV` (`Gen.lean:234`).
+fn kc_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    kin(p, &[2]) * (100 + 2 * p.qhk)
+        + 50 * kin(p, &[4])
+        + 102 * kin(p, &[5])
+        + kin(p, &[6]) * (100 + 2 * p.qhk)
+        + kin(p, &[7]) * (50 + 2 * p.qhk)
+        + 102 * kin(p, &[8])
+        + kin(p, &[9]) * (50 + 2 * p.qhk)
+        + kin(p, &[10])
+            * (202 * cin(i, &[4]) + 100 * cin(i, &[5, 7, 8]) + 152 * cin(i, &[6, 9, 10]))
+}
+
+/// `UpsGen.vcpV` (`Gen.lean:239`).
+fn vcp_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    kin(p, &[0, 5, 6]) + kin(p, &[10]) * cin(i, &[4])
+}
+
+/// `UpsGen.ba0V` (`Gen.lean:240`).
+fn ba0_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    ind(p.kind == 5 && i.ts == 1)
+}
+
+/// `UpsGen.ba1V` (`Gen.lean:241`).
+fn ba1_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    128 * ind(p.kind == 5 && i.ts != 1)
+}
+
+/// `UpsGen.Spy1B` (`Gen.lean:242`).
+fn spy1_b(i: &UpsInst, p: &UpsPartI) -> bool {
+    p.kind == 10 && (i.ci == 4 || (i.ts == 1 && (i.ci == 6 || i.ci == 9 || i.ci == 10)))
+}
+
+/// `UpsGen.Spy2B` (`Gen.lean:243`).
+fn spy2_b(i: &UpsInst, p: &UpsPartI) -> bool {
+    p.kind == 10 && i.ts != 1 && (i.ci == 6 || i.ci == 9 || i.ci == 10)
+}
+
+/// `UpsGen.spY1V` (`Gen.lean:244`).
+fn sp_y1_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    ind(spy1_b(i, p))
+}
+
+/// `UpsGen.spY2V` (`Gen.lean:245`).
+fn sp_y2_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    ind(spy2_b(i, p))
+}
+
+/// `UpsGen.S15B` (`Gen.lean:247`): target slot 15 (last window).
+fn s15_b(i: &UpsInst, p: &UpsPartI) -> bool {
+    (p.kind == 0 && p.sd == 1) || (p.kind == 5 && i.ts != 1)
+}
+
+/// `UpsGen.s15V` (`Gen.lean:248`).
+fn s15_v(i: &UpsInst, p: &UpsPartI) -> u64 {
+    ind(s15_b(i, p))
+}
+
+/// `UpsGen.upV` (`Gen.lean:249`).
+fn up_v(p: &UpsPartI) -> u64 {
+    kin(p, &[0, 1, 11])
+}
+
+/// `UpsGen.nokeyV` (`Gen.lean:250`).
+fn nokey_v(p: &UpsPartI) -> u64 {
+    ind(p.ty <= 1 && p.qhk == 1)
+}
+
+/// `UpsGen.isPC` (`Gen.lean:253`).
+pub fn is_pc(col: usize) -> bool {
+    (49..100).contains(&col) || (179..184).contains(&col)
+}
+
+/// `UpsGen.pcCell` (`Gen.lean:255`): the part-constant columns.
+pub fn pc_cell(i: &UpsInst, p: &UpsPartI, k: usize, col: usize) -> u64 {
+    if col == 49 {
+        (k + 1) as u64
+    } else if col < 61 {
+        ind(p.kind == (col - 50) as u64)
+    } else if col < 65 {
+        ind((k + 1) as u64 == (col - 60) as u64)
+    } else if col < 68 {
+        ind(p.sd == (col - 65) as u64)
+    } else {
+        match col {
+            68 => p.s_n,
+            69 => p.pb.len() as u64,
+            70 => ind(p.ty == 0),
+            71 => ind(p.ty == 1),
+            72 => ind(p.ty == 2),
+            73 => ind(p.ty == 3),
+            74 => p.qhk,
+            75 => p.qodd,
+            76 => nokey_v(p),
+            77 => p.nochild,
+            78 => p.q.len() as u64,
+            79 => ind((k + 1) as u64 == i.n_q() as u64),
+            80 => p.jm,
+            81 => p.clen,
+            82 => kc_v(i, p),
+            83 => e_l_v(p),
+            84 => e_s_v(i, p),
+            85 => use_a_v(i, p),
+            86 => b_n_v(i, p),
+            87 => b_l_v(p),
+            88 => c_o_v(p),
+            89 => c_s_v(p),
+            90 => cc_v(i, p),
+            91 => p.neg,
+            92 => p.phk,
+            93 => p.podd,
+            94 => vcp_v(i, p),
+            95 => x_cp_v(i, p),
+            96 => ba0_v(i, p),
+            97 => ba1_v(i, p),
+            98 => sp_y1_v(i, p),
+            99 => sp_y2_v(i, p),
+            179 => ind(p.kind == 11),
+            180 => up_v(p),
+            181 => p.rc,
+            182 => p.pdep,
+            183 => p.c_n,
+            _ => 0,
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Node-row predicates (`Gen.lean:302 …`)
+// ---------------------------------------------------------------------------
+
+/// `UpsGen.fieldAt` (`Gen.lean:305`): `(state, index, field length, windows before)`.
+fn field_at(shape: &[(u64, u64)], p: usize) -> (u64, usize, u64, usize) {
+    fn go(shape: &[(u64, u64)], p: usize, before: usize) -> (u64, usize, u64, usize) {
+        match shape.split_first() {
+            None => (9, 0, 0, before),
+            Some(((s, l), rest)) => {
+                if (p as u64) < *l {
+                    (*s, p, *l, before)
+                } else {
+                    let extra = if *s == 7 { 1 } else { 0 };
+                    go(rest, p - *l as usize, before + extra)
+                }
+            }
+        }
+    }
+    go(shape, p, 0)
+}
+
+/// `UpsGen.nWin` (`Gen.lean:313`).
+fn n_win(shape: &[(u64, u64)]) -> usize {
+    shape.iter().filter(|f| f.0 == 7).count()
+}
+
+/// Field `p` of part `P` as `(st, ix, fl, wi)`.
+fn fa(i: &UpsInst, k: usize, p: usize) -> (u64, usize, u64, usize) {
+    field_at(&i.part(k).shape, p)
+}
+
+/// `Gen.lean:318`: `st == 7 && wi == 0`.
+fn fw_b(st: u64, wi: usize) -> bool {
+    st == 7 && wi == 0
+}
+/// `Gen.lean:319`.
+fn lastw_b(p: &UpsPartI, st: u64, wi: usize) -> bool {
+    st == 7 && wi + 1 == n_win(&p.shape)
+}
+/// `Gen.lean:320`.
+fn tgt_b(i: &UpsInst, p: &UpsPartI, st: u64, wi: usize) -> bool {
+    st == 7 && ((fw_b(st, wi) && !s15_b(i, p)) || (lastw_b(p, st, wi) && s15_b(i, p)))
+}
+/// `Gen.lean:321`.
+fn wy_b(i: &UpsInst, p: &UpsPartI, st: u64, wi: usize) -> bool {
+    st == 7 && p.kind == 10 && ((fw_b(st, wi) && spy1_b(i, p)) || (!fw_b(st, wi) && spy2_b(i, p)))
+}
+/// `Gen.lean:322`.
+fn wfr_b(i: &UpsInst, p: &UpsPartI, st: u64, wi: usize) -> bool {
+    st == 7
+        && (((p.kind == 0 || p.kind == 5) && tgt_b(i, p, st, wi))
+            || (p.kind == 1 || p.kind == 9 || p.kind == 11)
+            || (p.kind == 10 && (wy_b(i, p, st, wi) || !x_cp_b(i, p))))
+}
+/// `Gen.lean:325`.
+fn wn_b(i: &UpsInst, p: &UpsPartI, st: u64, wi: usize) -> bool {
+    st == 7 && ((p.kind == 5 && tgt_b(i, p, st, wi)) || (p.kind == 10 && wy_b(i, p, st, wi)))
+}
+/// `Gen.lean:326`.
+fn vcp_b(i: &UpsInst, p: &UpsPartI) -> bool {
+    p.kind == 0 || p.kind == 5 || p.kind == 6 || (p.kind == 10 && i.ci == 4)
+}
+/// `Gen.lean:328`: the byte is copied from the source.
+fn cp_b(i: &UpsInst, p: &UpsPartI, st: u64, wi: usize) -> bool {
+    (st == 0 && matches!(p.kind, 0 | 1 | 2 | 3 | 5 | 11))
+        || ((st == 1 || st == 2) && (p.kind == 1 || p.kind == 2 || p.kind == 11))
+        || (st == 3 && (p.kind == 1 || p.kind == 2 || p.kind == 6 || p.kind == 7))
+        || ((st == 4 || st == 5) && vcp_b(i, p))
+        || (st == 6 && (p.kind == 0 || p.kind == 3 || p.kind == 4 || p.kind == 5))
+        || (st == 7 && !wfr_b(i, p, st, wi))
+}
+/// `Gen.lean:336`: the row reads its target window's child id.
+fn rdc_b(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize) -> bool {
+    st == 7 && ix == 0 && tgt_b(i, p, st, wi) && (p.kind == 0 || p.kind == 1 || p.kind == 11)
+}
+/// `Gen.lean:338`: header / old-value / old-memory reads.
+fn extra_b(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize) -> bool {
+    (st == 0 && (p.kind == 4 || p.kind == 6 || p.kind == 7 || x_cp_b(i, p)))
+        || (st == 1 && ix == 0 && (p.kind == 6 || p.kind == 7))
+        || (st == 2 && (p.kind == 6 || p.kind == 7))
+        || (st == 4 && p.kind == 3)
+        || (st == 6 && ix == 0 && x_cp_b(i, p))
+        || (st == 8 && p.kind != 8)
+        || rdc_b(i, p, st, ix, wi)
+}
+/// `Gen.lean:342`.
+fn aft_b(i: &UpsInst, p: &UpsPartI, st: u64, wi: usize) -> bool {
+    (p.kind == 4 && (st == 6 || st == 7 || st == 8))
+        || (p.kind == 5 && ((st == 7 && !fw_b(st, wi) && i.ts == 1) || st == 8))
+}
+/// `Gen.lean:344`.
+fn win_fr_b(i: &UpsInst, p: &UpsPartI, st: u64, wi: usize) -> bool {
+    (st == 5 && !cp_b(i, p, st, wi)) || (st == 7 && wfr_b(i, p, st, wi))
+}
+/// `Gen.lean:345`.
+fn gd_b(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize) -> bool {
+    ix == 0 && win_fr_b(i, p, st, wi)
+}
+
+/// `Gen.lean:360`: the read position.
+fn spos_v(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize, px: usize) -> i64 {
+    let aft = ind(aft_b(i, p, st, wi)) as i64;
+    let plen = p.pb.len() as i64;
+    if st == 8 {
+        plen - 8 + ix as i64
+    } else if [0, 1, 2, 3, 11].contains(&p.kind) {
+        px as i64
+    } else if p.kind == 4 {
+        px as i64 - 36 * aft
+    } else if p.kind == 5 {
+        px as i64 - 32 * aft
+    } else if p.kind == 6 || p.kind == 7 {
+        if st == 0 {
+            5
+        } else if st == 1 {
+            1
+        } else {
+            px as i64 + p.phk as i64 - p.qhk as i64
+        }
+    } else if p.kind == 10 {
+        if st == 0 {
+            5
+        } else if st == 6 {
+            1
+        } else if st == 4 || st == 5 {
+            plen - 45 + px as i64
+        } else if st == 7 {
+            plen - 40 + ix as i64
+        } else {
+            0
+        }
+    } else {
+        0
+    }
+}
+
+/// `UpsGen.rbV` (`Gen.lean:373`): the source byte at `spos`.
+fn rb_v(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize, px: usize) -> u64 {
+    let s = spos_v(i, p, st, ix, wi, px);
+    if s < 0 { 0 } else { get(&p.pb, s as usize) }
+}
+
+/// `Gen.lean:379`: the digest lookup's id.
+fn di_v(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize, k: usize) -> u64 {
+    if gd_b(i, p, st, ix, wi) {
+        if st == 5 {
+            ups_id_v(i, 0)
+        } else if wn_b(i, p, st, wi) {
+            ups_id_v(i, k as u64)
+        } else {
+            ups_id_v(i, p.jm)
+        }
+    } else {
+        0
+    }
+}
+
+/// `Gen.lean:383`: the digest lookup's length.
+fn dl_v(i: &UpsInst, p: &UpsPartI, st: u64, ix: usize, wi: usize) -> u64 {
+    if gd_b(i, p, st, ix, wi) {
+        if st == 5 {
+            i.l() as u64
+        } else if wn_b(i, p, st, wi) {
+            50
+        } else {
+            p.clen
+        }
+    } else {
+        0
+    }
+}
+
+// ---------------------------------------------------------------------------
+// `memory_usage` (`Gen.lean:390`)
+// ---------------------------------------------------------------------------
+
+/// `UpsGen.limb` (`Gen.lean:404`): limb `i` of an exact value.  `i128` mirrors
+/// Lean's unbounded `Int` (the chain's intermediates exceed `i64`).
+fn limb(r: i128, i: usize) -> i128 {
+    if i < 7 {
+        r.div_euclid(256i128.pow(i as u32)) % 256
+    } else {
+        r.div_euclid(256i128.pow(7))
+    }
+}
+
+/// `Σ_{l < n} f l · 256^l` (`Gen.lean:415`).
+fn pfx(f: &dyn Fn(usize) -> i128, n: usize) -> i128 {
+    let mut acc = 0i128;
+    for l in 0..n {
+        acc += f(l) * 256i128.pow(l as u32);
+    }
+    acc
+}
+
+/// The per-part `memory_usage` arithmetic (`Gen.lean:395 …`).
+struct Mem<'a> {
+    i: &'a UpsInst,
+    p: &'a UpsPartI,
+}
+
+impl Mem<'_> {
+    fn mem_byte(&self, q: &UpsPartI, i: usize) -> i128 {
+        // `Gen.lean:396`: `pb.length - 8 + i` with Nat truncating subtraction.
+        let idx = q.pb.len().saturating_sub(8) + i;
+        get(&q.pb, idx) as i128
+    }
+    fn child(&self) -> &UpsPartI {
+        self.i.part(self.p.jm.saturating_sub(1) as usize)
+    }
+    fn slb(&self, i: usize) -> i128 {
+        if i < 4 {
+            get(&self.p.pb, self.p.soff as usize + i) as i128
+        } else {
+            0
+        }
+    }
+    fn a(&self, i: usize) -> i128 {
+        use_a_v(self.i, self.p) as i128 * self.rb(i)
+    }
+    fn b(&self, i: usize) -> i128 {
+        b_n_v(self.i, self.p) as i128 * limb(self.p.m_b as i128, i)
+            + b_l_v(self.p) as i128 * l_b(self.i, i) as i128
+    }
+    fn c(&self, i: usize) -> i128 {
+        c_o_v(self.p) as i128 * self.mem_byte(self.child(), i)
+            + c_s_v(self.p) as i128 * self.slb(i)
+            + ind(i == 0) as i128 * cc_v(self.i, self.p) as i128
+    }
+    fn x1(&self, i: usize) -> i128 {
+        self.a(i) + self.b(i) - self.c(i)
+    }
+    fn ein(&self, i: usize) -> i128 {
+        ind(i == 0) as i128 * kc_v(self.i, self.p) as i128
+            + e_l_v(self.p) as i128 * l_b(self.i, i) as i128
+            + e_s_v(self.i, self.p) as i128 * self.slb(i)
+    }
+    fn rb(&self, i: usize) -> i128 {
+        get(
+            &self.p.pb,
+            ((self.p.pb.len() as i128 - 8 + i as i128).max(0)) as usize,
+        ) as i128
+    }
+    fn sig(&self) -> i128 {
+        1 - 2 * self.p.neg as i128
+    }
+    fn tv(&self) -> i128 {
+        self.sig() * pfx(&|l| self.x1(l), 8)
+    }
+    fn t(&self, i: usize) -> i128 {
+        self.tv().div_euclid(256i128.pow(i as u32)) % 256
+    }
+    fn rv(&self) -> i128 {
+        pfx(&|l| self.ein(l), 8) + (1 - self.p.neg as i128) * self.tv()
+    }
+    fn co(&self, i: usize) -> i128 {
+        (self.sig() * pfx(&|l| self.x1(l), i + 1)
+            - self.tv().rem_euclid(256i128.pow((i + 1) as u32)))
+        .div_euclid(256i128.pow((i + 1) as u32))
+    }
+    fn co2(&self, i: usize) -> i128 {
+        let f = |l: usize| self.ein(l) + (1 - self.p.neg as i128) * self.t(l);
+        (pfx(&f, i + 1) - self.rv().rem_euclid(256i128.pow((i + 1) as u32)))
+            .div_euclid(256i128.pow((i + 1) as u32))
+    }
+    fn cb(&self, i: usize) -> i128 {
+        self.co(i) + if i < 7 { 65536 } else { 0 }
+    }
+    /// `UpsGen.memReg` (`Gen.lean:430`).
+    fn mem_reg(&self, i: usize, m: usize) -> i128 {
+        if m < 8 {
+            self.t(i).div_euclid(2i128.pow(m as u32)) % 2
+        } else if m < 11 {
+            self.cb(i).div_euclid(2i128.pow((m - 8) as u32)) % 2
+        } else if m < 14 {
+            self.co2(i).div_euclid(2i128.pow((m - 11) as u32)) % 2
+        } else if m == 14 {
+            if i == 0 { 0 } else { self.co(i - 1) }
+        } else if m == 15 {
+            if i == 0 { 0 } else { self.co2(i - 1) }
+        } else if m == 16 {
+            self.x1(i)
+        } else if m == 17 {
+            self.ein(i)
+        } else if m < 32 {
+            self.cb(i).div_euclid(2i128.pow((m - 15) as u32)) % 2
+        } else {
+            0
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// `qRow` (`Gen.lean:450`)
+// ---------------------------------------------------------------------------
+
+/// `u32Bytes P.qhk` (`Spec/U32Bytes.lean:9`).
+fn u32_bytes(n: u64) -> [u64; 4] {
+    [
+        n % 256,
+        (n / 256) % 256,
+        (n / 65536) % 256,
+        (n / 16777216) % 256,
+    ]
+}
+
+/// `le256` of a digit list (`Near/Extract/Segments.lean:202`, wrapped to `u64`).
+fn le256(xs: &[u64]) -> u64 {
+    let mut a: u64 = 0;
+    for &x in xs.iter().rev() {
+        a = a.wrapping_mul(256).wrapping_add(x);
+    }
+    a
+}
+
+/// `UpsGen.qRow` (`Gen.lean:450`): the cells of row `px` of part `k` (source
+/// `P`) in field `st` at index `ix` of length `fl`, after `wi` windows, use
+/// count `u`.
+#[allow(clippy::too_many_arguments)]
+fn q_row(
+    i: &UpsInst,
+    p: &UpsPartI,
+    k: usize,
+    px: usize,
+    st: u64,
+    ix: usize,
+    fl: u64,
+    wi: usize,
+    u: u64,
+    col: usize,
+) -> i64 {
+    let rd = ind(cp_b(i, p, st, wi) || extra_b(i, p, st, ix, wi)) as i64;
+    match col {
+        0 | 3 => 1,
+        8 => ind(px == 0) as i64,
+        9 => ind(px + 1 == p.q.len()) as i64,
+        100 => px as i64,
+        101 => get(&p.q, px) as i64,
+        102 => rd,
+        103 => rb_v(i, p, st, ix, wi, px) as i64,
+        104 => spos_v(i, p, st, ix, wi, px),
+        105 => {
+            if cp_b(i, p, st, wi) || extra_b(i, p, st, ix, wi) {
+                u as i64
+            } else {
+                0
+            }
+        }
+        115 => ind(ix == 0) as i64,
+        116 => ind(ix as u64 + 1 == fl) as i64,
+        117 => ix as i64,
+        118 => ind(fw_b(st, wi)) as i64,
+        119 => ind(lastw_b(p, st, wi)) as i64,
+        120 => ind(wfr_b(i, p, st, wi)) as i64,
+        121 => ind(tgt_b(i, p, st, wi)) as i64,
+        122 => ind(wy_b(i, p, st, wi)) as i64,
+        123 => ind(wn_b(i, p, st, wi)) as i64,
+        124 => ind(gd_b(i, p, st, ix, wi)) as i64,
+        125 => di_v(i, p, st, ix, wi, k) as i64,
+        126 => dl_v(i, p, st, ix, wi) as i64,
+        127 => ind(cp_b(i, p, st, wi)) as i64,
+        128 => ind(aft_b(i, p, st, wi)) as i64,
+        168 => ind(st == 8 && (k + 1) as u64 != i.n_q() as u64 && p.kind != 8) as i64,
+        169 => ind(st == 8
+            && ([0, 1, 9, 11].contains(&p.kind) || (p.kind == 10 && [5, 6, 7, 9].contains(&i.ci))))
+            as i64,
+        170 => {
+            if st == 8 {
+                limb(Mem { i, p }.rv(), ix) as i64
+            } else {
+                0
+            }
+        }
+        171 => {
+            if st == 8 {
+                limb(p.m_b as i128, ix) as i64
+            } else {
+                0
+            }
+        }
+        172 => {
+            if st == 8 {
+                Mem { i, p }.mem_byte(Mem { i, p }.child(), ix) as i64
+            } else {
+                0
+            }
+        }
+        184 => {
+            let s = spos_v(i, p, st, ix, wi, px);
+            if s < 0 {
+                0
+            } else {
+                get(&p.pcid, s as usize) as i64
+            }
+        }
+        185 => ind(rdc_b(i, p, st, ix, wi)) as i64,
+        _ => {
+            if (106..115).contains(&col) {
+                ind(st == (col - 106) as u64) as i64
+            } else if (129..161).contains(&col) {
+                let win_fr = ind(win_fr_b(i, p, st, wi));
+                if win_fr == 1 {
+                    let j = col - 129;
+                    if j < 32usize.saturating_sub(ix) {
+                        get(&p.q, px + j) as i64
+                    } else {
+                        0
+                    }
+                } else if st == 1 {
+                    if col == 137 {
+                        let t = u32_bytes(p.qhk);
+                        le256(&t[..(ix + 1).min(4)]) as i64
+                    } else if col == 138 {
+                        256i64.pow(ix as u32)
+                    } else if col - 129 < 4 {
+                        (get(&p.q, px) as i64)
+                            .div_euclid(16)
+                            .div_euclid(2i64.pow((col - 129) as u32))
+                            % 2
+                    } else if col - 129 < 8 {
+                        (get(&p.q, px) as i64)
+                            .rem_euclid(16)
+                            .div_euclid(2i64.pow((col - 133) as u32))
+                            % 2
+                    } else {
+                        0
+                    }
+                } else if st == 0 || st == 2 {
+                    let rb = rb_v(i, p, st, ix, wi, px) as i64;
+                    if col - 129 < 4 {
+                        rb.div_euclid(16).div_euclid(2i64.pow((col - 129) as u32)) % 2
+                    } else if col - 129 < 8 {
+                        rb.rem_euclid(16).div_euclid(2i64.pow((col - 133) as u32)) % 2
+                    } else {
+                        0
+                    }
+                } else if st == 8 {
+                    Mem { i, p }.mem_reg(ix, col - 129) as i64
+                } else {
+                    0
+                }
+            } else if (161..164).contains(&col) {
+                if st == 4 || st == 8 {
+                    l_b(i, col - 161 + ix) as i64
+                } else {
+                    l_b(i, col - 161) as i64
+                }
+            } else if (164..168).contains(&col) {
+                if st == 4 {
+                    Mem { i, p }.slb((col - 164 + ix) % 4) as i64
+                } else if st == 8 {
+                    Mem { i, p }.slb(col - 164 + ix) as i64
+                } else {
+                    Mem { i, p }.slb(col - 164) as i64
+                }
+            } else if (187..200).contains(&col) {
+                if st == 8 {
+                    (Mem { i, p }
+                        .co2(ix)
+                        .div_euclid(2i128.pow((col - 184) as u32))
+                        % 2) as i64
+                } else {
+                    0
+                }
+            } else {
+                0
+            }
+        }
+    }
+}
+
+/// `UpsGen.qRowCell` (`Gen.lean:511`).
+#[allow(clippy::too_many_arguments)]
+fn q_row_cell(i: &UpsInst, k: usize, px: usize, u: u64, col: usize) -> i64 {
+    let p = i.part(k);
+    let (st, ix, fl, wi) = fa(i, k, px);
+    q_row(i, p, k, px, st, ix, fl, wi, u, col)
+}
+
+/// `UpsGen.qCell` (`Gen.lean:516`).
+fn q_cell(i: &UpsInst, k: usize, px: usize, u: u64, col: usize) -> i64 {
+    if is_pc(col) {
+        pc_cell(i, i.part(k), k, col) as i64
+    } else {
+        q_row_cell(i, k, px, u, col)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// `UPB` use counts (`UpsGen.rkey`, `uU`, `Gen.lean:539`)
+// ---------------------------------------------------------------------------
+
+/// `UpsGen.rkey` (`Gen.lean:540`): `(sN, spos)` for a read row, else `None`.
+fn rkey(insts: &[UpsInst], r: (usize, Rk)) -> Option<(u64, i64)> {
+    match r.1 {
+        Rk::Q(k, p) => {
+            let i = &insts[r.0];
+            let part = i.part(k);
+            let (st, ix, _fl, wi) = fa(i, k, p);
+            if cp_b(i, part, st, wi) || extra_b(i, part, st, ix, wi) {
+                Some((part.s_n, spos_v(i, part, st, ix, wi, p)))
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
+}
+
+/// `UpsGen.uU` (`Gen.lean:549`): earlier reads of the same `(sN, spos)`.
+fn uu(recs: &[(usize, Rk)], insts: &[UpsInst], q: usize) -> u64 {
+    let key = rkey(insts, recs[q]);
+    recs[..q].iter().filter(|&&r| rkey(insts, r) == key).count() as u64
+}
+
+// ---------------------------------------------------------------------------
 // Renderer
 // ---------------------------------------------------------------------------
 
@@ -457,7 +1164,7 @@ pub fn ups_aligned(insts: &[UpsInst]) -> Tab {
                 let x = match rk {
                     Rk::W(t) => w_cell(inst, t, col),
                     Rk::V(p) => v_cell(inst, p, col),
-                    Rk::Q(_, _) => 0,
+                    Rk::Q(k, p) => q_cell(inst, k, p, uu(&recs, insts, q), col),
                 };
                 set_i(&mut t, q, col, x);
             }
@@ -578,5 +1285,43 @@ mod tests {
         assert_eq!(t.cells[4 * UPS_WIDTH + 67] as u64, 1);
         assert_eq!(t.cells[4 * UPS_WIDTH + 68] as u64, 3);
         assert_eq!(t.cells[4 * UPS_WIDTH + 101] as u64, 7);
+    }
+
+    #[test]
+    fn part_constants_match_pc_cell() {
+        let i = inst();
+        let t = ups_aligned(std::slice::from_ref(&i));
+        // Q rows follow the 4 walk + L value rows.
+        let base = 4 + i.l();
+        let mut row = base;
+        for k in 0..i.n_q() {
+            for p in 0..i.part(k).q.len() {
+                for col in 0..UPS_WIDTH {
+                    if !is_pc(col) || is_seg(col) {
+                        continue;
+                    }
+                    let want = (pc_cell(&i, i.part(k), k, col) % crate::field::P as u64) as u32;
+                    assert_eq!(t.cells[row * UPS_WIDTH + col], want, "Q({k},{p}) col {col}");
+                }
+                row += 1;
+            }
+        }
+        // `j` column is `k + 1` on each part row; `qlen`; `rootP` on the last part.
+        assert_eq!(t.cells[base * UPS_WIDTH + 49] as u64, 1);
+        assert_eq!(t.cells[base * UPS_WIDTH + 78] as u64, 3);
+        assert_eq!(
+            t.cells[(row - 1) * UPS_WIDTH + 79] as u64,
+            1,
+            "rootP on last part row"
+        );
+    }
+
+    #[test]
+    fn render_json_round_trip() {
+        let i = inst();
+        let json = serde_json::to_string(std::slice::from_ref(&i)).unwrap();
+        let t = render(&json).unwrap();
+        assert_eq!(t.width, UPS_WIDTH);
+        assert_eq!(t, ups_aligned(std::slice::from_ref(&i)));
     }
 }
