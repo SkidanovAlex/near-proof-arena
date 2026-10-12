@@ -584,3 +584,26 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
    contribution by `!dup` in the AIR, or a D0a check on exactly this total) or a witness-accounting proof
    (`NativeEncodedBudget`, `UniqueSourceBudget`) — not attempted.
 2. Codec identities (table 11) — scheduler lane.
+
+## 2026-10-12 (round 13: `SizeBudget A` proved — no AIR/spec change)
+
+* Commit b340ad8f, `Assembly/SizeBudgetAccepted.lean` (audit `test/AuditRcptTrieSide.lean`; Integration 4,332 jobs OK;
+  pin-check OK).
+* **What table 21 checks** (`SizeOk`/`SizeWf`): `x0 + x1 ≤ 3,000,000` and `OVH + x0 + x1 + x2 ≤ 8,388,608`, with
+  `x0` = non-dup node ser bytes, `x1` = non-empty non-dup value bytes, `x2 = srcpSize (blocksOfProofs A.srcps)`
+  (every occurrence, duplicates included, charged `L + 33·|path|`, `L = |u64 to_shard ‖ borsh(receipts)|`).
+  `OVH = 0` (`A.pub` packs overhead 0).  Soundness (`LinkBus.size_totals`) uses only the base bound.
+* **Why it holds without witness accounting**: `L = 12 + Σ_r |r.encode|`, and the occurrences' receipt lists
+  concatenate to `appliedReceipts` (`acceptedSrcp_rcl` + `lists_applied`; A2 makes the routing filter the
+  identity), so `x2 = Σ_occ (12 + 33·|path|) + Σ_{applied r} |r.encode|` (`srcpSize_eq`, `srcps_receipts`).
+  A duplicate occurrence's receipts are charged again only if they are applied again — and they are
+  counted in `appliedReceipts`, which is bounded by A1's compute check (`applyNewChunk_receipt_bound`,
+  ≤ 4481), each `≤ 347` bytes (`native_receipt_encoded_bound`).  (In fact `e.distinct_ids` forces duplicate
+  entries to be receipt-free, but the proof does not need it.)
+* `srcpSize_le : x2 ≤ 1984·(12 + 33·32) + 4481·347 = 2,118,912 + 1,554,907 = 3,673,819`;
+  `sizeBudget : TrieSide.SizeBudget A` via `sizeBudget_of_coarse` (`0 + 2,000,000 + 3,673,819 = 5,673,819
+  ≤ 8,388,608`, slack 2,714,789).  `rcpt_trie_side A A.sizeBudget` now has no size premise.
+* Candidate fixes (a) gate srcp SIZE by `!dup`, (b) D0a amendment: unnecessary.
+
+### Open (exact) after round 13
+1. Codec identities (table 11) — scheduler lane.
