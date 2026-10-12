@@ -91,6 +91,15 @@ import ZkFormal.NearV3.Assembly.LinkRefine
 import ZkFormal.NearV3.Assembly.LinkMain
 import ZkFormal.NearV3.Assembly.LinkSched0
 import ZkFormal.NearV3.Assembly.LinkTrieFam
+import ZkFormal.NearV3.Assembly.LinkRcptWalk
+import ZkFormal.NearV3.Assembly.LinkTrieOk
+import ZkFormal.NearV3.Assembly.LinkPostRec
+import ZkFormal.NearV3.Assembly.LinkMainLink
+import ZkFormal.NearV3.Assembly.LinkDelayed
+import ZkFormal.NearV3.Assembly.LinkPrepCtx
+import ZkFormal.NearV3.Assembly.LinkExec
+import ZkFormal.NearV3.Assembly.LinkFwd
+import ZkFormal.NearV3.Assembly.LinkHdr
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
