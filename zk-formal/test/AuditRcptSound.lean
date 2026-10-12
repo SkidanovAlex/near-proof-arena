@@ -4,6 +4,7 @@ import ZkFormal.NearV3.Rcpt.Link.AcctSlots
 import ZkFormal.NearV3.Rcpt.Link.GasPub
 import ZkFormal.NearV3.Rcpt.Link.RcptHolds
 import ZkFormal.NearV3.Rcpt.Link.QvCodec
+import ZkFormal.NearV3.Rcpt.Link.QvMain
 import ZkFormal.NearV3.Rcpt.Link.ValBytes
 import ZkFormal.NearV3.Rcpt.Link.RcptHoldsB
 import ZkFormal.NearV3.Rcpt.Link.AkeyAkc
@@ -230,3 +231,35 @@ import ZkFormal.NearV3.Rcpt.Link.QvBal
 /-- info: 'ZkFormal.NearV3.RcptLink.bytes8_holdsP' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.bytes8_holdsP
+
+/-- info: 'ZkFormal.NearV3.Qv.Extract.QvRc.no_group' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Qv.Extract.QvRc.no_group
+
+/-- info: 'ZkFormal.NearV3.Qv.Extract.QvRc.queue_premises' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Qv.Extract.QvRc.queue_premises
+
+/-- info: 'ZkFormal.NearV3.Qv.Extract.QvRc.assemble_sub' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Qv.Extract.QvRc.assemble_sub
+
+/-- info: 'ZkFormal.NearV3.RcptLink.flatR_le_WAK' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.flatR_le_WAK
+
+/-- info: 'ZkFormal.NearV3.RcptLink.queue_reads_holdsP' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.queue_reads_holdsP
+
+/-- info: 'ZkFormal.NearV3.RcptLink.walkHyp_holdsP' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.walkHyp_holdsP
+
+/-- info: 'ZkFormal.NearV3.RcptLink.queue_main_holdsP' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.queue_main_holdsP
+
+/-- info: 'ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_q' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_q
