@@ -389,6 +389,9 @@ import ZkFormal.NearV3.Render.HonestRcptQ
 import ZkFormal.NearV3.Assembly.RenderV3RcptTrie
 import ZkFormal.NearV3.Assembly.RenderV3RcptSha
 import ZkFormal.NearV3.Assembly.RenderV3RcptTrieSide
+import ZkFormal.NearV3.Assembly.A7SizeView
+import ZkFormal.NearV3.Assembly.A7NodeView
+import ZkFormal.NearV3.Assembly.A7ValView
 /-!
 # Build gate for the integrated v3 proof work
 

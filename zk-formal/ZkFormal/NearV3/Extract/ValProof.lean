@@ -618,29 +618,36 @@ theorem valRecvs_flat (es : List ValE) (b : Nat) : valRecvs es b = es.flatMap fu
   repeat' split
   all_goals simp [map_eq_flatMap]
 
-/-- **The `valV3` view.** -/
-theorem val_view : ValViewStmt := by
-  intro tr pub tt hL
-  have hpos : 0 < tr.height tt := by unfold Trace.height; exact Nat.two_pow_pos _
-  have hP : tr.height tt < P := by have := height_le hL; unfold P; omega
-  -- segments (none if row 0 is inactive)
-  obtain ⟨segs, hc, hend, hall, hpad⟩ : ∃ segs : List (Nat × Nat), Consec 0 segs ∧
+/-- The record segments of a local `valV3` trace (none if row 0 is inactive). -/
+theorem val_segs_exist {tr : Trace Fp} {pub : List Fp} {tt : Nat} (hL : TableLocal ValV3.table tr tt pub) :
+    ∃ segs : List (Nat × Nat), Consec 0 segs ∧
       segEnd 0 segs ≤ tr.height tt ∧
       (∀ p ∈ segs, IsSeg (isOne tr tt ValV3.act) (isOne tr tt ValV3.vf) (isOne tr tt ValV3.vl) p.1 p.2) ∧
       (∀ r, segEnd 0 segs ≤ r → r < tr.height tt → isOne tr tt ValV3.act r = false) := by
-    by_cases h0 : tr.cell tt 0 ValV3.act = 1
-    · exact segments_of (segFacts hL h0) hpos
-    · refine ⟨[], trivial, by simp [segEnd], by simp, fun r _ hr => ?_⟩
-      have : ∀ r, r < tr.height tt → tr.cell tt r ValV3.act = 0 := by
-        intro r
-        induction r with
-        | zero =>
-          intro _
-          rcases isBool hL hpos (x := ValV3.act) (by simp [bools]) with h | h
-          · exact h
-          · exact absurd h h0
-        | succ r ih => intro hr; exact (padFacts hL hr (ih (by omega))).1
-      simp [isOne, this r hr]
+  have hpos : 0 < tr.height tt := by unfold Trace.height; exact Nat.two_pow_pos _
+  by_cases h0 : tr.cell tt 0 ValV3.act = 1
+  · exact segments_of (segFacts hL h0) hpos
+  · refine ⟨[], trivial, by simp [segEnd], by simp, fun r _ hr => ?_⟩
+    have : ∀ r, r < tr.height tt → tr.cell tt r ValV3.act = 0 := by
+      intro r
+      induction r with
+      | zero =>
+        intro _
+        rcases isBool hL hpos (x := ValV3.act) (by simp [bools]) with h | h
+        · exact h
+        · exact absurd h h0
+      | succ r ih => intro hr; exact (padFacts hL hr (ih (by omega))).1
+    simp [isOne, this r hr]
+
+/-- The `valV3` view on given record segments. -/
+theorem val_view_of_segs {tr : Trace Fp} {pub : List Fp} {tt : Nat} (hL : TableLocal ValV3.table tr tt pub)
+    (segs : List (Nat × Nat)) (hc : Consec 0 segs) (hend : segEnd 0 segs ≤ tr.height tt)
+    (hall : ∀ p ∈ segs, IsSeg (isOne tr tt ValV3.act) (isOne tr tt ValV3.vf) (isOne tr tt ValV3.vl) p.1 p.2)
+    (hpad : ∀ r, segEnd 0 segs ≤ r → r < tr.height tt → isOne tr tt ValV3.act r = false) :
+    ValWf (segs.map (valOf tr tt)) ∧
+      TableTraffic ValV3.interactions tr tt pub (valTraffic (segs.map (valOf tr tt))) := by
+  have hpos : 0 < tr.height tt := by unfold Trace.height; exact Nat.two_pow_pos _
+  have hP : tr.height tt < P := by have := height_le hL; unfold P; omega
   have hH : ∀ p ∈ segs, p.1 + p.2 ≤ tr.height tt := fun p hp => by
     have := seg_le_end segs 0 hc p hp; omega
   have hinact : ∀ r, segEnd 0 segs ≤ r → r < tr.height tt → tr.cell tt r ValV3.act = 0 := fun r h1 h2 =>
@@ -765,7 +772,7 @@ theorem val_view : ValViewStmt := by
   obtain ⟨hduA, hhdA, hvfA, -⟩ := hzA hA0
   have hgbA0 : tr.cell tt A ValV3.gb = 0 := by rw [hgbA, hA0]; grind
   have hgduA0 : tr.cell tt A ValV3.gdu = 0 := by rw [hgduA, hvfA]; grind
-  refine ⟨segs.map (valOf tr tt), ⟨?_, ?_, ?_, ?_, ?_⟩, fun bb m => ⟨?_, ?_⟩⟩
+  refine ⟨⟨?_, ?_, ?_, ?_, ?_⟩, fun bb m => ⟨?_, ?_⟩⟩
   · intro e he
     obtain ⟨p, hp, rfl⟩ := List.mem_map.1 he
     obtain ⟨-, hz⟩ := segInfo hL (hall p hp) (hH p hp)
@@ -850,5 +857,11 @@ theorem val_view : ValViewStmt := by
       rw [flatMap_nil_fun]; simp
     · rw [hrow0 bb false A (Nat.le_refl _) hAlt (Or.inl hS), valRecvs_flat]
       simp [hS, List.map_flatMap, List.flatMap_map]
+
+/-- **The `valV3` view.** -/
+theorem val_view : ValViewStmt := by
+  intro tr pub tt hL
+  obtain ⟨segs, hc, hend, hall, hpad⟩ := val_segs_exist hL
+  exact ⟨_, val_view_of_segs hL segs hc hend hall hpad⟩
 
 end ZkFormal.NearV3
