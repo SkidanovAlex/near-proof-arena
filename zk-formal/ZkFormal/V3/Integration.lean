@@ -71,6 +71,7 @@ import ZkFormal.NearV3.Assembly.LinkDelayed
 import ZkFormal.NearV3.Assembly.LinkPrepCtx
 import ZkFormal.NearV3.Assembly.LinkExec
 import ZkFormal.NearV3.Assembly.LinkFwd
+import ZkFormal.NearV3.Assembly.LinkHdr
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
