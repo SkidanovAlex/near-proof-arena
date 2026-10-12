@@ -6,14 +6,16 @@ import ZkFormal.NearV3.Render.SchedBusSPUBB
 `usedBuses`: every bus some `nearAirV3` table interaction or public segment uses (kernel-checked:
 `table_buses`, `pub_buses`).  On any other bus both sides of every bundle are empty
 (`balancedAt_unused`), so **`balanced_of_used`**: a bundle is balanced as soon as it balances the used
-buses.  Where each used bus comes from (state 2026-10-12):
+buses.  Where each used bus comes from (state 2026-10-12; numbers from `#eval`):
 
-* receipt side `rcpt_side_balanced` / `rcpt_trie_sched`: 14–20, 22, 26–29 (as `BusBalanced`);
-* trie side `rcpt_trie_sched`: 0, 1, 2, 4, 5?, 10, 11, 17, 19, 20, 22–25 (+ `SIZE`, `VSLOT`, `KEYNIB`,
-  `FINAL`, `RPL`, `RPLV`), codec ↔ ups 59, 60, 61;
-* scheduler: 40 (`balancedAt_scmp`), 41–44, 51, 52, 56–58, 62 (`sched_buses_balanced`);
-* sibling lanes: 9 `MPOS`, 21 `VBYTES` (lane v3-render-vbytes), 45–50 (lane v3-render-chacha);
-* 63, 70, 71: see the bus map in the lane log.
+* receipt side, `rcpt_trie_sched` (`BusBalanced`, the same proposition: `balancedAt_of_bus`):
+  SREC 16, RCL 26, AKC 27, RIDS 8, MEM 7, QVC 63, QSH 29, SRC 14, BNDP 28, BND 15;
+* trie side, `rcpt_trie_sched`: PARENT 2, VPARENT 22, ENT 20, DIGS 17, DUP 19, EDGE 4, BMAP 11, MIDROOT 24,
+  ROOT 10, UPB 25, MEMD 23, RPL 70, RPLV 71; shared SIZE 18, VSLOT 3, KEYNIB 5, FINAL 6, BYTES 0,
+  DIGEST 1; codec ↔ ups S0F 59, SPOST 60, SPLEN 61;
+* scheduler (`sched_side`): SCMP 40, SOP 41, SFIN 42, SINC 43, SPUSH 44, SPUBB 51, SPAR 52, SDL 56,
+  SDLX 57, SDG 58, SA0 62;
+* sibling lanes: MPOS 9, VBYTES 21 (lane v3-render-vbytes); 45–50 (lane v3-render-chacha).
 -/
 set_option autoImplicit false
 namespace ZkFormal.NearV3.Assembly
@@ -62,6 +64,9 @@ theorem balancedAt_unused {pub : List Fp} (R : RenderBundleV3 pub) (b : Nat) (hb
   have hf : (List.range 25).filter (fun _ => false) = [] := by decide
   rw [hf]
   simp
+
+theorem balancedAt_of_bus {pub : List Fp} (R : RenderBundleV3 pub) (b : Nat) (h : RcptBal.BusBalanced R b) :
+    R.BalancedAt b := h
 
 /-- **A bundle that balances every used bus is balanced.** -/
 theorem balanced_of_used {pub : List Fp} (R : RenderBundleV3 pub) (h : ∀ b ∈ usedBuses, R.BalancedAt b) :

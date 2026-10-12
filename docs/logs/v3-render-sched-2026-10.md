@@ -596,6 +596,7 @@ The existing audits AuditCodecTriePin, AuditUpsS0F and AuditCodecNatRes were re-
 * **Open (for packaging, after all three lanes land):**
   * Lane v3-render-vbytes: 9 MPOS and 21 VBYTES.
   * Lane v3-render-chacha: 45–50 and the RNG `hW`.
-  * Check the remaining used buses 63, 70 and 71 (qv internal and the ups → node/head relays) against the
-    trie lane's `rcpt_trie_sched`.
+  * All other 41 used buses are already covered: 63, 70 and 71 are QVC, RPL and RPLV (in
+    `rcpt_trie_sched`). The full map is in the `SchedBusPackaging` docstring. The receipt side's
+    `BusBalanced` is the same proposition as `BalancedAt` (`balancedAt_of_bus`).
   * Build the full 25-table bundle and the header check (`RenderWitnessV3`) using `balanced_of_used`.
