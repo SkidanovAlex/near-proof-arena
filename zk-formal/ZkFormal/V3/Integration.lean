@@ -400,6 +400,7 @@ import ZkFormal.NearV3.Render.RngW0
 import ZkFormal.NearV3.Assembly.A9Count
 import ZkFormal.NearV3.Assembly.A9Air
 import ZkFormal.NearV3.Assembly.A9Words
+import ZkFormal.NearV3.Assembly.A9Native
 /-!
 # Build gate for the integrated v3 proof work
 
