@@ -426,7 +426,7 @@ k.slotB2.gasLimit block previous.hdr.nextGasPrice` and `x.applied = (rv r.lists)
 ## 2026-10-12 (session 4) — `RunHdr` closed; `executions` from `HoldsP` alone
 
 Merged `origin/lane/v3-link` (`b3af4b85` LinkHdr, then `645a8784` `V3RecordsWf.listsQ`).  Commits
-`31fa280a` (RcptRoute `hq := W.listsQ`, RcptRunHdr), `72f3cf55` (OutLeaf3), `OutCore3` commit,
+`31fa280a` (RcptRoute `hq := W.listsQ`, RcptRunHdr), `72f3cf55` (OutLeaf3), `64b1c8d9` (OutCore3),
 `831b2ccc` (OutRoot3).  Audit `test/AuditRcptSound.lean` extended (all three usual axioms, except
 `decodeBody_shape`, `decodeChunkInner_burnt`, `leaf_isolate`, `mrk_n_eq`: `[propext, Quot.sound]`;
 `walkD0_H`: `[propext]`); `make pin-check` OK.  No AIR change; nothing false found.
