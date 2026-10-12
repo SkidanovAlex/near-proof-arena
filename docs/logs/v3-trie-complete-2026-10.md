@@ -299,3 +299,656 @@ Lead: HEAVY_MEM=12G allowed (`taskset -c 8-13`).  Order: (1) A7 (a) semantic Per
 * Bounds for `% P`: `ns.length ≤ R ns < 2^22` (`length_le_R`, `node_P`), `es.length ≤ ValGen.R
   < 2^22` (`val_length_le`, `val_R_lt`).
 * Then `S n := decide ([n] ∈ Js.flatMap upsRplMsgs)` and `List.perm_ext_iff_of_nodup`.
+
+## 2026-10-11 (session 4) — A7 (a) semantic Perm DONE
+
+* `Assembly/TrieUpsOrigin.lean`: **`UpsOrigin F insts`** — a forest `ts` (the rebased
+  `oldPost :: steps.pre`) with `|forestNodes ts| = |forestNodes F|`, `|forestBytes ts| = |forestBytes F|`,
+  and per instance at position `tau`: `I.tau = tau`, `InstOk`, `NativePartFamily`, every part of
+  kind ≠ NLF reads node record `sN` of `ts` with `s.tau = tau ∧ pdep = s.depth`
+  (`native_reader_depth_tau`), and a `W3` value step reads an edge of a node record of `ts`
+  (`ups_edge_inventory_coverage`; head `START` keys excluded by the symbol).
+  `upsOrigin_of_coverage` derives it from the `accepted_window_coverage` outputs (keeps the
+  `NativeReaderOrigin` component).  Lengths via `replay_forest_depths` / `forestBytes_replay_length`.
+  Note: the forest bridge reduced to LENGTHS (the Perm only talks about indices).
+* `accepted_ups_walks` and `trie_all_accepted` now export `UpsOrigin (m.pre :: steps.pre) insts`
+  (new outer conjunct, after the walk render).
+* `Assembly/TrieA7Perm.lean`: `InstOrigin`, `nD_node` (`N_D` is a reader of a terminal part of kind
+  ∉ {NLF, PT, RDB, RDE}; `term_has_reader`/`term_not_upper` by `decide`), `upper_node`, `rpl_mem`,
+  `rpl_inst` (Nodup by depth), `rplv_mem` (`ts = 3` from the walk, edge `e₀ = N_D`,
+  `edge_val_id`: the value id of the `N_D` record), `findIdx_valueId`, `nodup_flatMap_key`
+  (distinct `tau` across instances), `perm_of_singletons`; **`rpl_perm`**, **`rplv_perm`**,
+  `nodes_length`, `vals_length`, and **`a7_perm_native`**: for `ns = TrieNative.nodes …`,
+  `es = TrieNative.vals …`, `Js = upsRanked ws insts`, given `UpsOrigin`, `NodeOk ns`, `ValOk es`:
+  `∃ S SV`, the two Perm hypotheses of `balancedAt_rpl` / `balancedAt_rplv`.
+  `S n = decide ([n] ∈ insts.flatMap upsRplMsgs)` (so `S` = the replaced records).
+* Verification: Integration 4126 jobs; `AuditTrieA7Perm` (4 names), `AuditTrieAll`, `AuditTrieUps` pass;
+  `make pin-check` OK.
+
+### A7 (b): NOT provable from `checkD0a` as stated (finding, 2026-10-11 session 4)
+
+`unfoldBytes` measures each post trie as `rebuildPost ws post keys = partialTrie (ws ++ postBlobs)
+post.hashOf keys` (A11 lets us replace `ws` by `revealedStore pre`).  `storeGet` returns the FIRST
+blob with the looked-up SHA-256, and the pre blobs come first.  If a revealed pre blob `b'` has
+`sha256 b' = sha256 (nodeEnc o)` for a post node/value `o` with `b' ≠ nodeEnc o` (a SHA-256
+collision), the rebuild decodes `b'` instead and its unfolded count is unrelated to the native post
+`out.trie` — while the AIR's A7 sums (`nodeA7Total + valA7Total + upsA7Total`) count the native
+post.  Nothing in `RelD0a` excludes this (A11 only fixes the store, A3 is about the witness store),
+so neither `… = unfoldBytes` nor `… ≤ B0` nor the ups row cap (`Σ_τ |v_τ|` can reach
+32·98,341 = 3,146,912 B; only A7 bounds it, and only through the rebuild) is derivable without
+an extra premise.  Needs a user/lead decision, e.g. a decidable amendment
+`unfoldedBytesT (rebuildPost (revealedStore pre_τ) post_τ keys) = unfoldedBytesT post_τ` for every
+transition (never binding on honest witnesses, violations need a SHA-256 collision — like A3/A11),
+or measuring A7's post term on the native post `out.trie` directly.
+What remains provable and is still needed under either fix (open, not started): the structural
+identity on NATIVE posts, per transition `τ` with scheduler run `u_τ`:
+`unfoldedBytesT u.pre + unfoldedBytesT u.run.output = Σ_{records x of τ} (S x ? 1 : 2)|enc x|
+ + Σ_{values t of τ} (SV t ? 1 : 2)|v_t| + |u.value| + outputByteCharge u.run`, with
+`upsA7Total I = L + Σ_k |Q_k| = |u.value| + outputByteCharge u.run` (from `recsI` length,
+`AllocatedNativeInstance`), `S` = path records (the RPL ids), `SV` = overwritten value (LP/BV);
+τ = 0: `SizedAccountRun.unfolded_bytes` (oldPost ↔ m.pre).  Ingredients: an exact
+`traceUpsert` occurrence identity (the existing `traceUpsert_output_charge*` are inequalities),
+`hforest` (record `ser` = rebased `nodeEnc`).
+
+## Task 3 DONE — bundle `SIZE` balance
+
+* `Assembly/TrieA7SizeBal.lean`: `covers_size_send` (tables 2, 4, 7, 20), `covers_size_recv` (21),
+  `pub_size`, `RenderBundleV3.tf_eq`, **`RenderBundleV3.balancedAt_size`**: node/val/size components
+  with the `Traffic.append` traffic of `nodeRenderV3`/`valRenderV3`/`sizeRenderV3`, ups trace
+  `upsA7Trace Js`, srcp `SIZE` sends `= (srcpTraffic bs).sends B_SIZE`, size base view
+  `honestSizeV ns es bs`, `yN 0/1/2 = nodeA7Total ns S / valA7Total es SV / upsA7Total Js` ⇒
+  `R.BalancedAt B_SIZE` (tags 0–2 `honest_size_balance`, tags 3–5 the A7 sends vs `size_a7_recvs`).
+  The size COMPONENT itself (`sizeRenderV3`) still needs `SizeOk` and the `≤ B0` row premise —
+  i.e. A7 (b).
+* Audit `AuditTrieA7SizeBal` passes.
+
+## Task 4 (SHA two-bin packing): (a), (b), (c)-components DONE; senders' identification open
+
+* `Assembly/TrieShaTwo.lean`:
+  (a) `preparedSourceLists_paths` (A10 reaches every prepared occurrence), **`source_rows_A10`**:
+  accepted ⇒ `(honestRows (sourceShaMessages p.lists w.entries)).length ≤ 2,257,792`
+  (`computedLists ≤ 1984`, `computedPaths ≤ 1984·Dp0`, `sourceSha_A10`).
+  (b) `twoBudget_fit` (two residual capacities, jobs ≤ 35 rows, `S+Rc+N+Σ+35 ≤ 2·2^22`),
+  `twoShaJobBins` = `[native ++ src₀, scheduler ++ receipt ++ src₁]`, `twoShaJobBins_preserve`,
+  **`twoSha_physical_fit`** (bounds 1,663,260 / 2,925,275 / 1,373,299 / 2,257,792; total
+  8,219,626 + 35 ≤ 8,388,608).
+  (c) **`two_sha_renders`**: bins `[b0, b1]` with `Sha.MsgsOk`, the components
+  `shaRenderV3 pub 0/1` (tf = `shaBinTraffic`), and `BYTES` receives / `DIGEST` sends of the two
+  bins are permutations of `expectedBytes`/`expectedDigests` of all four families.
+* Open for task 4: an accepted-witness theorem producing the scheduler / native / receipt families
+  with their bounds for the v3 bundle (the existing ones live in the four-bin chain,
+  `NativeFinalAllocation`, `relD0a_work_bounds`, and are not tied to the v3 `BYTES` senders), and
+  the `BYTES`/`DIGEST` balance: the senders' (node, val, ups, codec, rcpt, acct, srcp, mrk)
+  `BYTES` messages must be exactly `expectedBytes` of those four families (and `DIGEST`
+  receivers the digests).  Not started.
+* Verification: Integration 4149 jobs (after merging nothing new; the job count rose with the new
+  imports); audits `AuditTrieShaTwo` (3), `AuditTrieA7SizeBal`, `AuditTrieA7Perm` pass.
+
+## Task 5: VSLOT native fact DONE
+
+* `Assembly/TrieUpsKeys.lean` (namespace `…Rcpt.Candidates.NodePostUpdate`): `KeysFinal k w m writes
+  oldPost` (write keys = applied receipts' account keys ∧ `∃ state, oldPost.upsert keyBwState
+  state = some m.result.trie`); copies `upserts_kf`, `physical_kf`, **`coverage_kf`** of the chain
+  `native_rebased_upserts_keys` → `native_rebased_physical_bounds` → origin instances →
+  `accepted_window_coverage`, carrying `KeysFinal` for the same `writes`/`oldPost` (originals untouched).
+* `accepted_ups_walks` now uses `coverage_kf`; it and `trie_all_accepted` export
+  `KeysFinal k w m writes oldPost` (outer conjunct right after `SizedAccountRun`).
+* `Assembly/TrieVslotNative.lean`: **`TrieShared.vslot_native`** — given `KeysFinal` and the receipt
+  side's `nativeAccountViews m.pre oldPost (appliedReceipts k w) = some as` (for that `oldPost`), the
+  `hbal` premise of `balancedAt_vslot` for `TrieNative.nodes`.  Remaining for VSLOT: the receipt
+  lane's acct component must be `acctV3Traffic as` for those native views.
+* Verification: Integration 4153 jobs; audits `AuditTrieVslotNative`, `AuditTrieAll`, `AuditTrieUps`,
+  `AuditTrieA7Perm` pass.
+
+### Open after session 4 (exact; successor starts here)
+
+1. **A7 (b) / ups row cap / size component** — blocked on a spec decision (see "A7 (b): NOT
+   provable" above).  Provable now and needed under any fix: the per-transition structural identity
+   on native posts (plan in that section).  The `TrieA7Bal` module doc still calls the A7 (a) Perm
+   "open" — it is closed by `TrieA7Perm.a7_perm_native` (+ `UpsOrigin` from `trie_all_accepted`).
+2. **SHA / BYTES / DIGEST**: `TrieShaTwo.two_sha_renders` takes the four families as parameters.
+   Open: (i) one accepted-witness theorem giving scheduler/native/receipt families with the bounds
+   1,663,260 / 2,925,275 / 1,373,299 for the SAME native choice as `trie_all_accepted`
+   (`NativePackedAllocation.accepted` gives `native := jobsToSha (nativeShaJobs ns vals)` ≤ 2,925,275
+   but re-chooses `writes/oldPost`; port it onto `coverage_kf`'s choice); (ii) the identification
+   of those families with the v3 `BYTES` senders (node, val, ups, codec, rcpt, acct, srcp, mrk) and
+   `DIGEST` receivers, then the two bus balances.
+3. **UPB**: the balance exists only for the compact ups table
+   (`AcceptedRankedWindowBalance.accepted_ranked_window_balance`: windows
+   `PhysicalWindowRequests.keys`, counters `patchWindowCounters … physicalWindowRank`).  For `upsA7`
+   (UpsV3 interactions `recv/send B_UPB (c rd) (upbMsg u/u+1)`) one needs: `W := ` the UpsV3 read
+   keys in `useReq ws insts W`, a UPB counter ranking of the rendered ups rows (as `upsRanked`
+   does for EDGE/BMAP walk counters), and the coverage `physicalWindowKey ∈ nodeWindowKeys` (the
+   last component of `accepted_window_coverage` / `coverage_kf`, currently discarded by
+   `accepted_ups_walks`).
+4. **MEMD, S0F/SPOST/SPLEN, KEYNIB/FINAL/VBYTES**: unchanged from session 2 (no completeness-side
+   lemma for `UpsV3.table`'s MEMD; S0F/SPOST/SPLEN need the scheduler lane's codec render;
+   KEYNIB/FINAL/VBYTES need the receipt/qv/codec sides).
+5. **VSLOT**: closed on the trie side (`vslot_native`); needs the receipt lane's acct component
+   `= acctV3Traffic as` with `nativeAccountViews m.pre oldPost (appliedReceipts k w) = some as` for
+   the `oldPost` of `trie_all_accepted`.
+
+## 2026-10-11 (session 4, cont.) — after the lead's message (main c87a7cae merged)
+
+Lead: A7 (b) target becomes `nodeA7Total + valA7Total + upsA7Total = Σ_τ unfoldedBytesT pre_τ +
+unfoldedBytesT (native post_τ) ≤ B0` (A11 retired, spec change on lane/v3-a11) — start only once it
+lands on main.  Continue with SHA families + BYTES/DIGEST, UPB, MEMD/S0F/SPOST/SPLEN, KEYNIB/FINAL/VBYTES.
+
+* Merged origin/main (`be28ed45`); Integration 4172 jobs.
+* `TrieAll.trie_all_of` (**new**): `trie_all_accepted` for GIVEN `hk hw h hm hv` (so the trie side can
+  be instantiated with `AcceptedV3`'s `k, w, m, steps` — the receipt side's choice);
+  `trie_all_accepted` is now a corollary.  Both also export `UpsSha insts` (below).
+* `TrieUpsOrigin.UpsSha insts`: the scheduler witnesses `us` of the same instances
+  (`NativeShaFamily u I`, `I.v = u.value`, `I.tau = τ`, ≤ 32 runs, parts ≤ 403, output bytes
+  ≤ 2,131,072, values ≤ 3,146,912).
+* `Assembly/TrieShaFamilies.lean`: **`native_sha_of`** (node+val family `jobsToSha (nativeShaJobs ns es)`
+  for `TrieNative.nodes/vals` of any `oldPost/writes/q`: ≤ 2,925,275 rows and
+  `jobBytes = nodeSends3 ns B_BYTES ++ valSends es B_BYTES`); **`scheduler_sha_of`**
+  (`UpsSha` ⇒ `schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us` ≤ 1,663,260 rows, NO A7 needed).
+  With `source_rows_A10` (2,257,792) and the receipt family (1,373,299) this feeds `two_sha_renders`.
+  Open for BYTES/DIGEST: (i) ups BYTES sends of `upsA7` (`send B_BYTES (vb+qb) [upsId j, qpos, b]`)
+  = `expectedBytes (schedulerShaJobs 0 us)` (via `NativeShaFamily`; ids `upsId` vs `upsertJobId`),
+  (ii) the sanity jobs are the codec's (sched lane), (iii) the receipt family vs rcpt/acct/srcp/mrk
+  senders (rcpt lane), (iv) DIGEST receivers (node, head, ups, codec, rcpt, srcp, mrk) vs
+  `expectedDigests` (multiplicity: `dmult` flags).
+* `Assembly/TrieUpsSched.lean` — ups side of S0F/SPLEN/SPOST, exact: `aligned_view_bus` (generic),
+  **`view_s0f_send`** = `Is.map (reduceMessage [τ, presN I, vidN I])`
+  (`presN = [W3 is a value step]`, `vidN = e₃` then, else 0), **`view_splen_recv`** =
+  `Is.map (reduceMessage [τ, L I])`, **`view_spost_recv`** =
+  `Is.flatMap (range (L I)).map (reduceMessage [τ, p, v_p])`; silent sides `view_s0f_recv`,
+  `view_splen_send`, `view_spost_send`.
+  **Needed from the sched lane's codec render** (codec interactions `recv S0F (kF) [τ, pres, vid]`,
+  `send SPLEN (kF) [τ, 37+24·NN]`, `send SPOST (encG) [τ, pos, bpost]`): for the SAME scheduler
+  runs as `UpsSha`'s `us` (τ = position, `u.value = so.state`):
+  (a) one S0F receive per τ equal to `[τ, presN I_τ, vidN I_τ]` — `pres` = the old BwState value is
+  present (the ups `W3` step is a value step), `vid` = its id in `TrieNative.vals` (=
+  `seedValueId` of record `N_D`, see `TrieA7Perm.rplv_mem`), `[τ,0,0]` otherwise;
+  (b) one SPLEN send `[τ, |u.value|]` (`|u.value| = 37+24·n²`, `SchedulerUpsertWitness.value_length`);
+  (c) SPOST sends `[τ, p, u.value[p]]` for `p < |u.value|`; no other table touches these buses
+  (to be checked with `Covers`).  Then the three balances follow from the view lemmas.
+* MEMD: ups-internal (`send MEMD (gMs) [τ, j, idx, rx, rb, qlen]`, `recv MEMD (gMr) [τ, jm, idx,
+  mBv, mCv, clen]`); needs a per-part traffic computation over `UpsGen` cells using `MemOk`
+  (in `NativePartFamily`).  Not started.
+* UPB on upsA7: the ups render's counter is `uU` (earlier reads of the same `rkey = (sN, spos)`), so
+  only the node side needs `W := ` the read keys and the coverage `physicalWindowKey ∈
+  nodeWindowKeys` for `upsTraceAligned` (the existing coverage is for `CompactHeight.trace`).
+  Plan: show rank-by-`rkey` = `physicalWindowRank` given coverage (keys with equal `(sN, spos)`
+  are equal by `nodeWindowKeys_distinct`), then reuse `window_counter_field_balance`.  Not started.
+* KEYNIB/FINAL/VBYTES: walk (5) receives KEYNIB from rcpt (16) and qv (22), sends FINAL; val (4)
+  receives VBYTES from qv.  Trie side: `walkTraffic3 (rankWalks [] ws)`, `vals_vbytes`.  Open: the
+  walks `ws` of `accepted_ups_walks` come from `allLookupQueries (appliedReceipts k w) m.pre v …`
+  with its own `v`; they must be the walks of `A.rcptRenders.qv` / `rcpt` (same `v`).  Not started.
+* Verification: Integration 4177 jobs; audits `AuditTrieUpsSched` (6), `AuditTrieAll`, `AuditTrieUps`,
+  `AuditTrieVslotNative`, `AuditTrieA7Perm` pass.
+
+## 2026-10-11 (session 4, cont. 2) — lead: UPB, MEMD, walk alignment, BYTES/DIGEST
+
+* **Walk alignment (KEYNIB/FINAL/VBYTES prerequisite)**: `accepted_ups_walks` / `trie_all_of` /
+  `trie_all_accepted` now export `∃ v : MainValues, v.Valid ∧ v.Reads m.pre m.pre m.pre ∧
+  nativeQueryWalks … (allLookupQueries (appliedReceipts k w) m.pre v (steps.pre) resolve) = some ws`.
+  `Assembly/TrieWalkAlign.lean`: `mainValues_unique` (Valid ∧ Reads determine `MainValues`; shards by
+  `bufferedShards_iff`), **`trie_v_eq_qvVals`**: run on `AcceptedV3 A`'s data, that `v = A.qvVals`
+  (the qv table 22's values).  Open: the KEYNIB/FINAL/VBYTES balances themselves — walk (5) KEYNIB
+  receives vs rcpt (16) + qv (22) sends, FINAL, and val (4) VBYTES receives vs qv sends
+  (`vals_vbytes` is the trie side), now for the same `v`; `resolve` must be the rcpt side's.
+* **BYTES, ups part** (`Assembly/TrieUpsSched.lean`, `Assembly/TrieUpsBytes.lean`): `uMsgs_bytes`,
+  `bytes_row`, `upsBytes` (value = job 0, part `k` = job `k + 1`), **`view_bytes_send`**
+  (aligned ups view BYTES sends `= Is.flatMap upsBytes`; receives `[]`), `ups_bytes_jobs`
+  (per instance, as field messages = `expectedBytes (upsertShaJobs τ u.value u.run)` via
+  `NativeShaFamily`; ids agree: `upsId = msgId K_VUPS (512τ+j) = upsertJobId τ j`), and
+  **`ups_bytes_scheduler`**: for `UpsSha insts` and any `ws`, `((upsRanked ws insts).flatMap upsBytes)
+  .map toFp = (expectedBytes (schedulerShaJobs 0 us)).map toFp` with the 1,663,260-row bound.
+  Open for BYTES/DIGEST: the sanity jobs `schedulerSanityJobs 0 us` must be the codec's BYTES sends
+  (sched lane); the receipt family vs rcpt/acct/srcp/mrk senders (not examined); the bundle-level
+  BYTES balance (sha tables 0/1 receive `expectedBytes` of `twoShaJobBins` of the four families,
+  `two_sha_renders`; senders node+val `native_sha_of`, ups this, codec, rcpt-side, plus the public
+  BYTES receive); DIGEST (sha sends `expectedDigests`, receivers node/head/ups/codec/rcpt/srcp/mrk
+  with `dmult` flags) — not started.
+* **UPB** — not started (plan unchanged: coverage for `upsTraceAligned`, rank-by-`rkey` =
+  `physicalWindowRank`, then `window_counter_field_balance`; the trace-level route needs the bundle
+  ups trace `upsA7Trace Js` = `upsTraceAligned Js` + A7 columns and that compactTable and UpsV3 have
+  the same two UPB interactions).
+* **MEMD** — not started (ups-internal; `aligned_view_bus` applies: row lemma for
+  `send MEMD (gMs) [τ, j, idx, rx, rb, qlen]` / `recv MEMD (gMr) [τ, jm, idx, mBv, mCv, clen]` on
+  `Q` rows, then a per-instance pairing using `MemOk` / `jm`).
+* Verification: Integration 4179 jobs; audits `AuditTrieUpsBytes`, `AuditTrieUpsSched`,
+  `AuditTrieWalkAlign`, `AuditTrieAll` pass; `make pin-check` OK.
+* Session ended here (context budget); next: UPB, MEMD, then KEYNIB/FINAL/VBYTES and BYTES/DIGEST
+  bundle balances; A7 (b) after the spec change lands.
+
+## 2026-10-11 (session 5) — UPB DONE
+
+* **`Assembly/TrieUpb.lean`** (new):
+  - trace level, any `upsV3` trace: `aligned_window_row` (UPB row traffic: rd rows send/recv
+    `windowFieldKey ++ [u(+1)]`), `Ranked tr t` (read counters = `physicalWindowRank`),
+    `aligned_window_count`, `aligned_upb_balance` (via `window_counter_balance`), `upbBal_of_trace`
+    (record-level `UpbBal (assignList q 0 vs) v` from `TableTraffic` + `q.windows = keys tr t` +
+    coverage + `Ranked`);
+  - window keys: `nodeWindowKeys_get`, **`nodeWindowKeys_eq`** (same `(NPOST(n), p)` ⇒ equal key),
+    `phys_key_eq`;
+  - aligned render: `aligned_cell`, `aligned_height`, `rbit`/`spq` (read bit / position of a part
+    row; `rkey_q`), `PartCov Js vs` (part-level coverage: every read row's `readerSourceKey` ∈
+    `nodeWindowKeys vs`, `0 ≤ spos`), `aligned_read_row`, `aligned_u`, `aligned_key`, `read_info`,
+    `rd_of_rkey`, **`uU_rank`** (`uU Js r = physicalWindowRank (upsTraceAligned Js) t r` on read rows,
+    given `PartCov`, `NodeWf3`, bytes, cap), **`aligned_upbBal`** (`UpbBal (assignList q 0 vs)
+    (viewOf (upsTraceAligned Js) t (segsOf Js))` for `q.windows = keys (upsTraceAligned Js) t`;
+    coverage on `vs₀` with `nodeWindowKeys vs₀ ⊆ nodeWindowKeys vs`), **`partCov_native`**
+    (allocated native instances ⇒ `PartCov` for the initialized provider records), `keys_length`
+    (`keys` field-bounded, unconditional), **`RenderBundleV3.balancedAt_upb`** (bundle `UPB` from
+    `UpbBal` + node/ups `ExtOf`).
+* `TrieUpsNative.accepted_ups_walks`, `TrieAll.trie_all_of`, `trie_all_accepted`: new last conjunct
+  in the `∀ W` block: `W = PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2^22 →
+  UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))`.  So the bundle takes
+  `W := keys (upsTraceAligned Js) T_UPS` (with `keys_length`).
+* Audit `test/AuditTrieUpb.lean`; Integration 4180 jobs; pin-check OK.
+
+## 2026-10-11 (session 5) — MEMD: generic layer DONE, per-instance pairing OPEN
+
+* **`Assembly/TrieUpsMemd.lean`** (new): `uMsgs_memd` (send `gMs`: `[τ, j, idx, rx, rb, qlen]`, recv
+  `gMr`: `[τ, jm, idx, mBv, mCv, clen]`), `memdCols`, `memd_congr` (MEMD messages read only those 12
+  columns — not `u`, not the next row), `instRow I rk := generatedRow [I] 0 (0, rk)`,
+  `generated_memd`, `memdI I sd` (the instance's own rows' MEMD messages), **`view_memd`**
+  (aligned view MEMD traffic `= Is.flatMap (memdI · sd)`), `MemdPair I :=
+  (memdI I true).map toFp ~ (memdI I false).map toFp`, `covers_memd` (table 7 only), `pub_memd`,
+  **`RenderBundleV3.balancedAt_memd`** (`R.BalancedAt B_MEMD` from `∀ I ∈ Is, MemdPair I`).
+  Audit `test/AuditTrieUpsMemd.lean`.
+* **Open (exact): `∀ I ∈ upsRanked ws insts, MemdPair I`** for the native instances.  Analysis:
+  - sender rows: part `k`, `MEM` rows (`st = 8`, i.e. `p = |q| − 8 + ix`, `FieldsOk.mem_position`),
+    gate `k + 1 ≠ nQ ∧ kind ≠ NLF`: `[τ, k+1, ix, limb (RV I Q_k) ix, memRb Q_k ix, |Q_k.q|]`
+    (`rbV` at `st = 8` reads `sposV = |pb| − 8 + ix`);
+  - receiver rows: `kind ∈ {RDB, RDE, WEX, PT}` (`jm = k`, `PartOk.jmD`) or `SPB` with
+    `ci ∈ {5,6,7,9}` (`jm = 1`, `jmS`): `[τ, jm, ix, limb mB ix, memByte (part (jm−1)) ix, clen]`;
+  - plan check (by `termPlan`, all 11 cases): sender `k` ↦ receiver `k+1`, except LSc/ESn0
+    (`[MV*, NLF, SPB]`) where part 0 ↦ the SPB at 2; NLF parts and the root never send;
+    RBI/RLP/RBR/RBV/MV*/NLF and SPB with `ci ∈ {4,8,10}` never receive;
+  - value identities needed per pair (receiver `r`, sender `s = jm_r − 1`): `clen_r = |Q_s.q|`
+    (`NativePartFamily`, done), `8 ≤ |Q_s.pb|` (then `memByte_eq_memRb`), and **`(Q_r.mB : ℤ) =
+    RV I Q_s`** — native: `nativeInstance_newChildMemory` (`mB_{k+1}` = new child's `memD`, upper
+    kinds), `nativeInstance_upperRV` (upper `RV` = output `memD`), split/WEX analogues in
+    `Tree*Memory*`; missing: terminal-kind `RV` = output `memD` and "new child of part `k+1` =
+    output of part `k`" in the `AllocatedNativeInstance` form the accepted instances carry.
+
+## 2026-10-11 (session 5) — KEYNIB / FINAL (trie + qv sides DONE; rcpt identities OPEN), VBYTES analysis
+
+* Participants (kernel `Covers`): `KEYNIB` send rcpt 16, qv 22 / recv walk 5; `FINAL` send walk 5 /
+  recv rcpt 16, qv 22; `VBYTES` send codec 11, acct 17, akey 18, qv 22 / recv val 4; no public
+  messages on these three.
+* **`Assembly/TrieKeyFinal.lean`** (new): `keyOf qs` (key messages of a query list), `walk_keynib`
+  (walk receives = `keyOf qs` for the SAME query list), `keyMsgs_snoc`, `repaired_key`,
+  **`qv_keynib`** (`(qvNativeTraffic pre v pres).sends B_KEYNIB = keyOf (queueLookupQueries pre v pres
+  (NativeQueueIds.resolve pre v pres))`), `keyOf_all`, `qv_keynib_recv`, `rcpt_keynib_recv`,
+  `walk_final`, `walk_final_recv`, **`qv_final`** (qv FINAL receives = `queueLookupQueries.map
+  (queryMessage pairs)`, from `NativeQueueFinalMessages.plan_messages`; needs `pairs.map fst =
+  pre :: pres` and `queueInputs` holds), `qv_final_send`, `rcpt_final_send`,
+  `RenderBundleV3.balancedAt_keynib`, `RenderBundleV3.balancedAt_final`, and
+  **`keynib_final_accepted`**: for `A : AcceptedV3`, any bundle with walk component
+  `walkTraffic3 (rankWalks [] ws)` (the `ws` of `trie_all_of` run on `A`'s `hk hw h hm hv` with
+  `resolve := NativeQueueIds.resolve A.m.pre A.qvVals (A.steps.map pre)`, its `v` with
+  `Valid ∧ Reads`), `R 16 = A.rcptRenders.rcpt`, `R 22 = A.rcptRenders.qv`, gives
+  `BalancedAt B_KEYNIB ∧ BalancedAt B_FINAL` **given the receipt lane's two identities**:
+  - `RcptKeys (rcptTrafficB A.pub A.rcptInput) (appliedReceipts A.k A.w)`: rcpt KEYNIB sends ~
+    `keyOf (accountLookupQueries rs ++ accessKeyLookupQueries rs)` (as field messages);
+  - `RcptFinal (rcptTrafficB A.pub A.rcptInput) pairs (appliedReceipts A.k A.w)`: rcpt FINAL
+    receives ~ `(accountLookupQueries rs ++ accessKeyLookupQueries rs).map (queryMessage pairs)`,
+    `pairs = (A.m.pre, A.m.result.trie) :: A.steps.map (pre, post)`.
+  (Old-candidate analogues exist: `NativeReceiptKeyTraffic.physical_keys`,
+  `NativeLookupFinalBalance` for `booleanReceiptTrace`; the current render is `rcptTraceNative`.)
+* **VBYTES — not done (exact open statement)**: val receives (`vals_vbytes`) =
+  `seedVals.flatMap (if vz then [] else [vid, p, byte_p])`; qv sends =
+  `canonicalTraffic (qvNativeRecords …)` `= records.flatMap (numberedBytes vid 0 bytes)`. Needed:
+  every non-empty pre-forest value (`TrieNative.seedVals m steps`, ids `vid` after
+  `ChainMetadata.assignValues`) is sent exactly once by exactly one of codec (BwState values, sched
+  lane), acct/akey (rcpt lane), qv (queue values: `qvNativeRecords` vids must be the `TrieNative.vals`
+  ids) — i.e. `valRecvs (TrieNative.vals m steps) B_VBYTES ~ codec ++ acct ++ akey ++ qv` VBYTES
+  sends.  This is a reader-partition of the value ids across three lanes; not started.
+* Verification: Integration 4184 jobs; audits `AuditTrieKeyFinal`, `AuditTrieUpsMemd`,
+  `AuditTrieUpb` pass; pin-check OK.
+
+## 2026-10-11 (session 5) — BYTES reduction; DIGEST not started
+
+* **`Assembly/TrieShaBus.lean`** (new): `jobBytes_expected` (`expectedBytes (jobsToSha J) = jobBytes J`),
+  `covers_bytes_send` (2, 4, 7, 11, 16, 17, 20, 23), `covers_bytes_recv` (0, 1), `pub_bytes_send`,
+  **`RenderBundleV3.balancedAt_bytes`**: `R.BalancedAt B_BYTES` from the SHA bins `b0 b1`
+  (`R 0`, `R 1` = `shaBinTraffic`, `expectedBytes b0 ++ b1 ~ expectedBytes (scheduler ++ native ++
+  receipt ++ source)` as from `TrieShaTwo.two_sha_renders`), the trie-side identities (proved
+  elsewhere: `native_sha_of` → `hnat`, `ups_bytes_scheduler` → `hups`) and the other lanes'
+  count identities:
+  - `hcodec` (sched lane): `cnt ((R.tf 11).sends B_BYTES) = cnt (expectedBytes (schedulerSanityJobs 0 us))`
+    for the SAME `us` as `ups_bytes_scheduler` (codec = the sanity jobs);
+  - `hrest` (rcpt lane): `cnt 16 + cnt 17 + cnt 20 + cnt 23 = cnt (expectedBytes (receipt ++ source))
+    + pubCount nearAirV3 pub B_BYTES false` (receipt/source families as passed to `two_sha_renders`).
+* Not done: the glue `∃ b0 b1` instantiating `two_sha_renders` with the trie families (needs the
+  byte bound `∀ M, ∀ x ∈ M.bytes, x < 256` for the scheduler and native families, and the receipt/
+  source families from the rcpt lane); **DIGEST** (sha sends `expectedDigests` of the `dmult` jobs;
+  receivers node 2, head 3, ups 7, codec 11, rcpt 16, srcp 20, mrk 23) — not started.
+
+### Open after session 5 (exact; successor starts here)
+
+1. **MEMD per-instance pairing** `∀ I ∈ upsRanked ws insts, TrieUpsMemd.MemdPair I` (plan and
+   ingredients in the MEMD section above); then `balancedAt_memd`.
+2. **Receipt-lane identities** for KEYNIB/FINAL: `TrieKeyFinal.RcptKeys`, `RcptFinal` for
+   `rcptTrafficB A.pub A.rcptInput` (then `keynib_final_accepted`).
+3. **VBYTES** reader partition (section above).
+4. **BYTES** glue + the codec/receipt identities `hcodec`/`hrest`; **DIGEST** entirely.
+5. **A7 (b)** — waiting for the lead (spec change on main).
+6. The bundle must take `W := PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS` in
+   `trie_all_of` (for `UpbBal`; `TrieUpb.keys_length` gives `W.length < P`) and
+   `resolve := NativeQueueIds.resolve A.m.pre A.qvVals (A.steps.map pre)` (for KEYNIB/FINAL).
+* Verification: Integration 4185 jobs; audits `AuditTrieUpb`, `AuditTrieUpsMemd`,
+  `AuditTrieKeyFinal`, `AuditTrieShaBus` (+ `AuditTrieAll`, `AuditTrieUps*`, `AuditTrieWalkAlign`,
+  `AuditTrieVslotNative`) pass; pin-check OK.
+
+## 2026-10-11 (session 5, cont.) — lead: MEMD pairing, BYTES glue, DIGEST
+
+* **BYTES glue DONE** (`TrieShaBus.sha_bins_of`): for `ns = TrieNative.nodes m steps oldPost writes q`,
+  `es = TrieNative.vals m steps` (field-bounded `q`, `ValWf es` — from `ValOk.wf` of `trie_all_of`),
+  the scheduler family of `us` (rows ≤ 1,663,260) and the receipt/source families with their row
+  bounds, `≤ 35` rows per source message and bytes `< 256` (receipt-lane inputs), the two SHA renders
+  `b0 b1` exist with `shaBinTraffic`, the bytes and digests permutations against
+  `all = (schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us) ++ jobsToSha (nativeShaJobs ns es) ++
+  receipt ++ source`, and `jobBytes (nativeShaJobs ns es) = nodeSends3 ns BYTES ++ valSends es BYTES`.
+  Scheduler/native bytes `< 256`: `schedulerShaJobs_bytes`, `schedulerSanityJobs_bytes`,
+  `NativePostShaOk.accepted`.
+* **DIGEST reduction DONE** (`TrieShaBus.RenderBundleV3.balancedAt_digest`; `covers_digest_*`:
+  sends 0, 1; receives 2, 3, 7, 11, 16, 20, 23; no public): from the SHA bins' digest permutation and
+  - `htrie` (**trie side, OPEN — mine**): `cnt (R.tf 2).recvs DIGEST + cnt (R.tf 3).recvs DIGEST +
+    cnt (R.tf 7).recvs DIGEST = cnt (expectedDigests (schedulerShaJobs 0 us ++ jobsToSha
+    (nativeShaJobs ns es)))` (node: `NPRE/NPOST` of revealed children and `VPRE/VPOST` values; head:
+    roots; ups: `upsId` jobs via `dIV`).  Not yet checked against the definitions (in particular
+    that every native `NPOST`/`NPRE` job digest — all `dmult = true` in `jobsToSha` — is received
+    exactly once, by the parent record or the head, and dup records);
+  - `hcodec` (sched lane): codec receives `expectedDigests (schedulerSanityJobs 0 us)`;
+  - `hrest` (rcpt lane): rcpt + srcp + mrk receive `expectedDigests (receipt ++ source)`.
+* **MEMD pairing reduced to the native link** (`Assembly/TrieUpsMemdPair.lean`, new):
+  `mem_field`/`not_mem_field` (MEM rows are `p = |q| − 8 + ix`), `row_mem`/`row_nomem`/`row_w`/`row_v`
+  (row messages: `mS I k ix` = `[τ, k+1, ix, limb RV ix, memRb Q ix, |q|]`, `mR I k ix` =
+  `[τ, jm, ix, limb mB ix, memByte child ix, clen]`, gates `SendK`/`RecvK`), `part_msgs`,
+  `memd_parts`; the plan: `plan_check1`/`plan_check0`/`plan_pos`/`plan_jm` (by `decide` over all
+  11 cases × 3 `ti`), `recv_term`, `jm_term`, `upper_recv`, **`index_perm`** (the receivers'
+  `jm − 1` are exactly the senders, up to order), `jm_pos`; **`memdPair_of`**: `InstOk I →
+  NativePartFamily I → (∀ k < nQ I, 8 ≤ |pb_k|) → MemdLink I → MemdPair I`.
+  **Open (native):** `MemdLink I := ∀ k < nQ I, RecvK I (part I k) → ((part I k).mB : ℤ) =
+  RV I (child I (part I k))` for the accepted instances (and threading it, with `8 ≤ |pb|` from
+  `NativeReaderOrigin.room`, into `accepted_ups_walks`).
+* **`MemdLink` — native analysis (not started as code; exact plan for the successor).** For
+  `I = nativeInstance recordId baseI root run v Qs` (`Render/Ups/NativeEncodingFacts.lean`):
+  - receivers `k+1` of kinds RDB/RDE/PT: `nativeInstance_newChildMemory` gives
+    `mB_{k+1} = nextChild.memD` with `outputPathChild run.parts[k+1] = some nextChild`; needed:
+    `nextChild = run.parts[k].output` (tree-run chaining) and `RV I (part I k) = run.parts[k].output.memD`
+    (upper parts: `nativeInstance_upperRV`; terminal parts: only inside `traceUpsert_terminalMemOk`
+    / `Tree*Memory*` proofs, not exported);
+  - WEX receiver: `mB = splitChildMemory matched p = (ext child).memD` (`TreeSplitMemoryLink`), the
+    SPB part's output; SPB receivers (`ci ∈ {5,6,7,9}`): `mB = leafMem …`/`extOwnMem …`, the moved
+    node's (part 0, MVL/MVE) output memory;
+  - threading: the accepted instances are only known as `AllocatedNativeInstance` (no
+    `nativeInstance` form), so `MemdLink` must be added where the list is built
+    (`Render/Ups/AcceptedInstanceList.checkD0a_nativeInstanceList` → `accepted_rebased_origin_instances`
+    → `accepted_window_coverage` → `TrieUpsKeys.coverage_kf` → `accepted_ups_walks`), e.g. as a new
+    conjunct of `AllocatedNativeInstance`; `upsRanked` keeps parts (`physicalPrefixUps` only
+    re-ranks walk counters), and `8 ≤ |pb|` comes from `NativeReaderOrigin.room` (`phk + 9 ≤ |pb|`).
+* Verification (end of session 5): Integration 4186 jobs; audits pass; pin-check OK.
+
+### Open after session 5 (final; successor starts here)
+
+1. `MemdLink` for the accepted instances (plan above) ⇒ `memdPair_of` ⇒ `balancedAt_memd`.
+2. DIGEST trie-side identity `htrie` of `balancedAt_digest` (node 2 + head 3 + ups 7 receive
+   `expectedDigests (schedulerShaJobs 0 us ++ jobsToSha (nativeShaJobs ns es))`) — unverified target.
+3. Cross-lane hypotheses (assigned by the lead to rcpt/sched lanes): `RcptKeys`, `RcptFinal`,
+   BYTES `hcodec`/`hrest`, DIGEST `hcodec`/`hrest`, VBYTES partition.
+4. A7 (b) after the lead's signal.
+
+## 2026-10-11 (session 5, cont. 2) — MEMD CLOSED (trie side)
+
+* `Assembly/TrieUpsTermRV.lean`: **`traceUpsert_terminalRV`** / `traceKids_terminalRV` (mutual copy of
+  `traceUpsert_terminalMemOk` concluding `RV … = part.output.memD`; leaf cases `treeRlp/Rbv/Rbr/Nlf/Rbi_memory`,
+  `leafSplitRun_memory`, `extSplitRun_memory`; new `trace_value_RV`, `trace_insert_RV`), and
+  **`nativeInstance_RV`**: every part `k` of `nativeInstance … Qs` (memory encoding) has
+  `RV I (part I k) = run.parts[k].output.memD` (upper: `nativeInstance_upperRV`).
+* `Assembly/TrieUpsSplitLink.lean`: `TreeRun.SplitLinked`, `linked_push`, `leafSplitRun_linked`,
+  `extSplitRun_linked`, `kids_close_linked`, **`traceUpsert_splitLinked`** (WEX's `splitChildMemory` = the
+  previous part's output memory; SPB's in LSb/LSc/ESl0/ESn0 = part 0's).
+* `Assembly/TrieUpsMemdNative.lean`: **`nativeInstance_memdLink`**, `memdLink_of_origin` (via
+  `nativeSourceBase_asMemory`), **`memdPair_of_origin`** (`AllocatedNativeInstance` + `NativeReaderOrigin` ⇒
+  `MemdPair`).
+* `TrieUpsNative.NativeMemdSrc` + new last conjunct of `accepted_ups_walks` (`∀ J ∈ Js, NativeMemdSrc J`;
+  `TrieUpsNative` cannot import the MEMD modules — import cycle through `TrieUpsRoot`), and
+  `trie_all_of`/`trie_all_accepted` export **`∀ J ∈ Js, TrieUpsMemd.MemdPair J`** ⇒ with
+  `TrieUpsMemd.RenderBundleV3.balancedAt_memd` the bundle `MEMD` balance (given the row cap's
+  `UpsRenderOk`).  No existing Render/Ups or Rcpt/Candidates statement changed.
+* Integration 4189 jobs; audits pass.
+
+## 2026-10-12 (session 5, cont. 3) — merge of main 22b37bb9 (A7 native post), DIGEST correction
+
+* Merged origin/main (A7 on the native post trie, A11 retired); Integration builds (4189 jobs).
+* **DIGEST: the earlier `htrie` target was mis-split** (finding): node records receive the
+  `VPOST` slot digests (`postSlotDigests`, written values) whose SHA jobs are the account jobs
+  (`accountShaJobs as`, receipt family; `TrieShared.vslot_accepted` gives
+  `(accountShaJobs as).map digestMsg ~ ns.flatMap postSlotDigests`).  `balancedAt_digest` now takes a
+  cross term `X` (strict generalisation, `X = []` is the old form): `htrie : trie recvs =
+  expectedDigests (sched ++ native) + X`, `hrest : rcpt + srcp + mrk recvs + X = expectedDigests
+  (receipt ++ source)`; intended `X := ns.flatMap postSlotDigests`.
+* `htrie` analysis (OPEN, exact pieces):
+  - node + head: `Rcpt.Candidates.NativeNodeDigestBalance.native_node_digest_balance` (trace level,
+    `TrieCountHeight.node ss`, any head trace with `headTraffic (assignHeadUses keys …)`):
+    head + node DIGEST recvs = `expectedDigests (jobsToSha (nativeNodeShaJobsFrom 0 ss)) +
+    ss.flatMap slotDigests`; `slot_digest_split`: slot = pre-slot ++ post-slot;
+    `native_preSlot_inventory`: pre-slot digests = `EmptyValue.valueDigests vals` — includes EMPTY
+    values, whose digests are not SHA jobs (`nativeValueShaJobs` skips `bytes = []`); in `nearAirV3`
+    only tables 0/1 send DIGEST, so it must be checked whether native pre-forest values can be
+    empty (vz) — if so the node receives an unmatched digest (potential AIR/statement issue).
+  - ups: DIGEST receives of the aligned view (`gD` rows, ids `upsIdV I 0 / k / jm`) vs
+    `expectedDigests (schedulerShaJobs 0 us)` — not examined.
+* **A7 (b)** — not started (context budget). Plan unchanged: per transition the structural identity
+  `unfoldedBytesT u.pre + unfoldedBytesT u.run.output = Σ (S ? 1 : 2)|enc| + Σ (SV ? 1 : 2)|v| +
+  |u.value| + outputByteCharge u.run` on the NATIVE post (now the spec's measure), incl. split-off
+  nodes created by the 0x0f insert (counted by ups parts `|Q_k.q|`), then `upsA7Total` =
+  `Σ |u.value| + outputByteCharge`, and the row cap from `≤ B0`.
+
+### Open (final for this session; successor starts here)
+1. A7 (b) (lead: main has moved — do it next).
+2. DIGEST `htrie` (pieces above; first settle the empty-value question).
+3. Cross-lane (assigned elsewhere): `RcptKeys`, `RcptFinal`, BYTES/DIGEST `hcodec`/`hrest`, VBYTES.
+
+## 2026-10-12 (session 6) — empty-value question SETTLED: (b) proof-statement issue
+
+* Merged origin/main 717390e7.
+* **Verdict (b)** (not an AIR gap).  Facts: `NodeV3` gate `gD = gP + fs·sVH·tv` — every revealed
+  value window receives `DIGEST (VPRE(vid), vlen, reg)`, no `vlen ≠ 0` condition, so an empty
+  value (`vlen = 0`) requests `DIGEST (VPRE(vid), 0, sha256 [])`.  `valA7 = ValV3.table + A7`
+  sends no DIGEST (the `vz` row only gates `BYTES`/`VBYTES` off; the `EmptyValue.table` repair is
+  NOT in `nearAirV3`).  Only SHA tables 0/1 send DIGEST.  The SHA table hashes zero-length
+  messages (`Sha.MsgsOk` = bytes < 256, len < 2^25, rows; `sha_complete_closed` has no
+  non-emptiness premise), so the job `⟨VPRE(vid), []⟩` supplies exactly that digest with no
+  BYTES traffic.  Whether D0a admits an empty revealed value was NOT decided (the old
+  `EmptyValueDigestGap` shows the reader accepts one; no full witness) — it does not matter:
+  the honest family simply includes the empty jobs.  Cost: the established bound already
+  charges every value record (`nodeValueShaRows = nodePairShaRows + hashRows (all lengths)`),
+  and equals the E family's rows exactly.
+* New `Assembly/TrieShaEmpty.lean`: `nativeValueShaJobsE`/`nativeShaJobsE` (one VPRE job per
+  value record), `jobBytesE` (same bytes as `nativeShaJobs`), `valueJobsE_digests`
+  (`= EmptyValue.valueDigests es` exactly), `nativeShaJobsE_rows` (`= nodeValueShaRows`),
+  `accepted_nodeValueShaRows`, **`native_sha_ofE`**, **`sha_bins_ofE`**.
+* `TrieShaBus.balancedAt_bytes`/`balancedAt_digest` generalised to a native family parameter
+  `N : List Render.Msg` (old = `N := nativeShaJobs ns es`; `balancedAt_digest` no longer takes
+  `ns es`).  Honest choice: `N := nativeShaJobsE ns es`.
+* Rust prover note (prover lane): the SHA job list must include a zero-length `VPRE(vid)` job
+  per empty value record (no SHA job builder in `src/v3/` yet).
+* Audit `test/AuditTrieShaEmpty.lean` (axioms + behaviour guard).  Integration 4191 jobs.
+
+## 2026-10-12 (session 6) — DIGEST `htrie` DONE (trie side)
+
+* `TrieUpsOrigin.UpsSha` strengthened (more conjuncts, same `us`): `∀ u ∈ us, … ∧ u.pre.wf`, and per
+  index `AllocatedNativeInstance us tau u I ∧ ∃ root, forestRootAt 0 0 (us.map pre) tau = some root ∧
+  NativeReaderOrigin root u.run u.value I` (from `coverage_kf`'s `hinst`, in `accepted_ups_walks`).
+  `scheduler_sha_of` adjusted (statement unchanged).
+* New `Assembly/TrieDigestUps.lean`: `uMsgs_digest`, `uMsgs_digest_form`, `digest_row`
+  (aligned generated row's DIGEST recvs = `CompactPhysicalDigests.digestRowMsgs`), `digest_value_row`
+  (`.v p` rows receive none), `digest_congr`, **`view_digest_recv`** (aligned ups view DIGEST recvs =
+  `compactGeneratedDigests Is`), **`ups_sha_scheduler`**: from `UpsSha insts`, ONE `us` with the
+  upsert+sanity row bound `≤ 1,663,260`, and for every `p` (in particular `upsRanked ws insts =
+  physicalPrefixUps (ws.flatMap (·.steps)) insts`): ranked ups BYTES `= expectedBytes (schedulerShaJobs 0 us)`
+  and `compactGeneratedDigests (ranked) ~ expectedDigests (schedulerShaJobs 0 us)` (via
+  `scheduler_compact_digest_conservation`; origin ⇒ `NativeEncodedInstance` using
+  `forestRootAt_tree`).  Use this `us` for `sha_bins_ofE` (hs), `balancedAt_bytes` (hups) and htrie.
+* New `Assembly/TrieDigestTrie.lean`: `node_head_core`, **`node_head_digests`** (accepted: `hm hv`,
+  `SizedAccountRun`, any `q keys`, `NodeOk ns`): `cnt nodeRecvs3 ns DIGEST + cnt headRecvs hs DIGEST =
+  cnt expectedDigests (jobsToSha (nativeShaJobsE ns es)) + cnt (ns.flatMap postSlotDigests)` for
+  `ns/hs/es = TrieNative.nodes/heads/vals`; **`RenderBundleV3.htrie_of`**: the `htrie` premise of
+  `balancedAt_digest` (tables 2,3,7) from node/head ExtOf/equality, ups ExtOf + `UpsRenderOk`, the
+  node/head identity and the ups perm.  So `balancedAt_digest` with `N := nativeShaJobsE ns es`,
+  `X := ns.flatMap postSlotDigests` has only `hcodec`/`hrest` (cross-lane) open.
+* Audit `test/AuditTrieDigest.lean`.  Integration 4268 jobs; pin-check ok.
+
+## 2026-10-12 (session 6) — A7 (b) ups part + ups ROW CAP DONE; node/val part OPEN
+
+* New `Assembly/TrieA7Post.lean`: `UK` (unfolded bytes of a child list), `enc_eq`
+  (`ZkFormal.NearV3.nodeEnc = NearSpecV3.nodeEnc`; outputByteCharge uses the former, unfoldedBytesT
+  the latter), `U_leaf/U_ext/U_branch/UK_some/UK_none/U_newLeaf`, `UK_kidsFrom0/1/2`, `UK_kids1/2`,
+  `PostOk run v := outputByteCharge run + |v| ≤ unfoldedBytesT run.output`, `wrapRun_ok`,
+  `leafSplit_ok`, `extSplit_ok` (ESl1 branch unreachable under `isPrefix k key = false`),
+  **`traceUpsert_unfolded` / `traceKids_unfolded`** (mutual; `t.wf`, nibble key): every output part
+  (incl. the node split off by a leaf/ext split, wrap extensions) is a distinct occurrence of the
+  post trie and `v` one of its values.  **`ups_post_bound`**: accepted chunk + scheduler witnesses
+  `us` with `hpairs` ⇒ `Σ_u (|u.value| + outputByteCharge u.run) ≤ Σ_τ unfoldedBytesT post_τ ≤
+  unfoldBytes ≤ B0 = 2,000,000` (spec `triesD0` native posts, `triesD0_native_result`).
+* `UpsSha` gains the conjunct `(us.map (|value| + outputByteCharge)).sum ≤ 2000000` (proved in
+  `accepted_ups_walks` from `hpairs`/`hgood`); destructuring sites adjusted.
+* New `Assembly/TrieA7Cap.lean`: `recsI_length`, **`R_eq`** (`R insts = 4|insts| + upsA7Total insts`),
+  `inst_total` (`L + Σ|Q_k| = |u.value| + outputByteCharge u.run` from `NativeShaFamily`),
+  **`upsA7Total_le_of_upsSha`** (`≤ 2,000,000`, `|insts| ≤ 32`), **`rowCap_of_upsSha`**:
+  `UpsSha insts → R insts + 1 ≤ 2^22` — discharges the `R insts + 1 ≤ 2^22 →` premises of
+  `trie_all_of` (ups render `UpsRenderOk`, `UpbBal`) for its exported `UpsSha insts`.
+* OPEN (A7 (b), node/val part): the full statement `nodeA7Total ns S + valA7Total es SV +
+  upsA7Total Js ≤ B0` (or `= unfoldBytes`) needs, per transition, `Σ_{records x}(S x?1:2)|enc x| +
+  Σ_{values t}(SV t?1:2)|v_t| ≤ unfoldedBytesT pre_τ + (unfoldedBytesT post_τ − |u.value| −
+  outputByteCharge u.run)`, i.e. the post trie also contains every NON-replaced pre record/value
+  (S = replaced path records = RPL ids, SV = overwritten value), plus `S`/`SV` matching the A7 (a)
+  perms; τ = 0 additionally via `SizedAccountRun.unfolded_bytes` (oldPost vs m.pre).  Not started.
+* Audit `test/AuditTrieA7Cap.lean`.  Integration 4270 jobs; trie audits pass; pin-check ok.
+
+### Open (final for session 6; successor starts here)
+1. A7 (b) node/val part (above).  The ups part and the ups row cap are done.
+2. Cross-lane hypotheses (other lanes): `RcptKeys`, `RcptFinal`, BYTES `hcodec`/`hrest`, DIGEST
+   `hcodec`/`hrest` (with `X := ns.flatMap postSlotDigests`), VBYTES.
+3. Lead: use `N := nativeShaJobsE ns es` (TrieShaEmpty) everywhere the native SHA family appears
+   (sha_bins_ofE, balancedAt_bytes/digest), and ONE `us` from `TrieDigestUps.ups_sha_scheduler`.
+   Prover lane: emit a zero-length `VPRE(vid)` SHA job per empty value record.
+
+## 2026-10-12 (session 6, end) — lead: A7 (b) node/val half + trie-side assembly: NOT started (context); exact plan
+
+The AIR check is really `B0`: `sizeA7` range-checks `B0 − (yN0 + yN1 + yN2)` (24 bits), so a crude
+`2·preBytes` bound does not suffice; the exact accounting is needed.  Plan (successor):
+
+1. **Per-upsert occurrence identity** (new, `TrieA7Post`, same mutual skeleton as
+   `traceUpsert_unfolded`): `traceUpsert t key v = some run → t.wf → nibble key →
+   unfoldedBytesT t + outputByteCharge run + |v| ≤ unfoldedBytesT run.output + replacedCharge run + |oldVal run|`
+   where `replacedCharge` = Σ |nodeEnc p.source| over the parts whose source is a pre node on the
+   path (kinds RDB/RDE/PT/RLP/RBR/RBV/RBI and the split's source once — NOT once per split part; the
+   split parts LSa/LSb/LSc/ES* all have `source = src`), `oldVal` = the overwritten value (LP/BR).
+   Non-path subtrees are copied unchanged (`kids` untouched except the descended slot).
+   Equality likely holds; `≤` is what A7 needs.
+2. **Index matching** S/SV ↔ path sources: `a7_perm_native` defines `S n := [n] ∈ insts.flatMap upsRplMsgs`
+   (RPL ids = `N_D` + upper-part `sN`, readers in the REBASED forest `oldPost :: steps.pre`,
+   `TrieA7Perm.nD_node/upper_node/rpl_inst`).  Need per index n with `S n`: `|(rec ns n).v.ser false| =`
+   the matching path source's `|nodeEnc|` (rebased occurrence vs `m.pre` occurrence: for τ = 0 a
+   per-occurrence length lemma under `SizedAccountRun` — account `set` keeps value length, so encodings
+   keep their length; check `NativeReplayByteSize` for a per-occurrence version, else prove it), and
+   that distinct replaced sources are distinct records (Nodup — `rpl_inst`).  Same for `SV` (value
+   `e₃` = old value of the LP/BR terminal; `rplv_mem`, `edge_val_id`).
+3. **Sum**: `nodeA7Total ns S + valA7Total es SV = 2·preBytes(forest) − Σ_τ (replacedCharge_τ + |oldVal_τ|)`
+   (records `ser false` lengths = `nodeEnc` of `forest.flatMap occs` — `NativePostShaBudget.node_lengths`;
+   values = `forestBytes` — `value_lengths`); with 1. per τ, `unfoldedBytesT oldPost = unfoldedBytesT m.pre`
+   (`SizedAccountRun.unfolded_bytes`), `upsA7Total = Σ (|v| + outputByteCharge)` (`TrieA7Cap.inst_total`):
+   total ≤ Σ_τ (U pre_τ + U post_τ) = `unfoldBytes` ≤ B0 (as in `ups_post_bound`).
+4. **Trie-side assembly theorem** (after 3): from `AcceptedV3`, choose via `trie_all_of` (discharge the
+   row cap with `TrieA7Cap.rowCap_of_upsSha`), SHA bins via `sha_bins_ofE` with the `us` of
+   `TrieDigestUps.ups_sha_scheduler`, A7 S/SV via `a7_perm_native`; conclude `TableRenderV3` for tables
+   0–7, 21 and `BalancedAt` for PARENT/VPARENT/ENT/DIGS/DUP/EDGE/BMAP/MIDROOT/ROOT/UPB/MEMD/RPL/RPLV/
+   SIZE/BYTES/DIGEST/VSLOT/KEYNIB/FINAL, with `RcptKeys`, `RcptFinal`, BYTES/DIGEST `hcodec`/`hrest`
+   (X := ns.flatMap postSlotDigests), VBYTES, and the receipt/source SHA families' bounds as explicit
+   hypotheses.
+
+## 2026-10-12 (session 7) — A7 (b) step 1 DONE: per-upsert accounting identity
+
+* New `Assembly/TrieA7Repl.lean`: `replK` (RDB/RDE/PT/RLP/RBR/RBV/RBI/SPB), `oldK` (RLP/RBR/RBV),
+  `replacedCharge run = Σ_{parts, replK} |nodeEnc source|`, `oldValCharge run = Σ_{parts, oldK} |ownVals source|`,
+  `ReplOk`, `wrapRun_repl`, `leafSplit_repl`, `extSplit_repl`, **`traceUpsert_replaced` / `traceKids_replaced`**
+  (mutual; `t.wf`, nibble key): the EXACT identity
+  `unfoldedBytesT t + outputByteCharge run + |v| = unfoldedBytesT run.output + replacedCharge run + oldValCharge run`
+  (a split's source counted once via `SPB`; the BI `NLF` part, source = the branch, not counted; off-path
+  subtrees copied).  Audit `test/AuditTrieA7Repl.lean`.
+
+## 2026-10-12 (session 7) — A7 (b) step 2 DONE (per instance): RPL/RPLV ids cover replaced nodes / old value
+
+* New `Assembly/TrieA7Match.lean`:
+  - run level: `termK` (RLP/RBR/RBV/RBI/SPB), `upK` (RDB/RDE/PT), `replaced_split`
+    (`replacedCharge = termCharge + upCharge`), `oldBound` (terminal source's own values for LP/BR, else 0),
+    **`traceUpsert_term`/`traceKids_term`** (no wf): `termCharge run ≤ |nodeEnc terminalSource|` and
+    `oldValCharge run ≤ oldBound run`;
+  - forest records: `viewNode_ser_length` (no wf), `LT Ts n` (ser length of forest record n),
+    `source_record` (every part source `p` of a forest-rooted upsert: `rid p.source < |forestNodes|`, the record
+    there is `seedNodeView τ d (rid p.source) vid p.source`, `LT = |nodeEnc p.source|`), `native_parts`,
+    `native_nD` (`nDOf = rid terminalSource`), `terminal_part`;
+  - values: `vlens`, `idxLens`, `seedNodesT_vlens`/`forestNodes_vlens` (`filterMap vlens = idxLens vid forestBytes`),
+    `LV Ts t`, `forest_value_len`, `view_value_len`;
+  - **`rpl_cover`**: `NativeReaderOrigin root u.run u.value I`, `InstOk I`, forest root at τ, `|forestNodes Ts| < P`
+    ⇒ `replacedCharge u.run ≤ Σ_{b ∈ upsRplMsgs I} LT Ts b` (terminal replaced part ↦ `nD`; upper parts ↦ their `sN`,
+    `q ≠ []` from `InstOk.q1`);
+  - **`rplv_cover`**: + `NativeWalkProviders pairs u.run I`, `|forestBytes| < P` ⇒
+    `oldValCharge u.run ≤ Σ_{b ∈ upsRplvMsgs I} LV Ts b` (LP/BR ⇒ `ci ∈ {0,1}` ⇒ `ts = 3` (`tsNib`), step 3 mode 0
+    (`termCase`), its VAL edge is of record `nD` (`look`/`termD`) whose view value is `(vid, |old value|)`).
+* Audit `test/AuditTrieA7Match.lean` (Classical.choice appears, as in the other trie audits).
+
+## 2026-10-12 (session 7) — A7 (b) DONE: `a7_bound` (node + value + ups total ≤ B0)
+
+* `TrieUpsOrigin.UpsA7 F insts` (new def): ∃ `us` with `insts.length = us.length`, `u.Valid ∧ u.pre.wf`, `F` wf,
+  `(us.map pre)` has `F`'s per-occurrence node-encoding lengths and per-value lengths, `Σ_u (U pre + U out) ≤ 2,000,000`,
+  and per index `NativeShaFamily`, `I.v`, `AllocatedNativeInstance`, root + `NativeReaderOrigin`.
+* New `Assembly/TrieA7Forest.lean`: **`ups_forest_facts`** (from `SizedAccountRun m.pre writes oldPost`, `hpairs`:
+  `paired_occurrences … .node_lengths`, `value_lengths`, `unfolded_bytes`, `unfoldBytes ≤ B0`).
+* `accepted_ups_walks` and `trie_all_of`/`trie_all_accepted` now also export
+  `UpsA7 (m.pre :: steps.map pre) insts` (right after `UpsSha insts`; statements only strengthened).
+* New `Assembly/TrieA7Total.lean`: `sum_le_index`, `sum_split`, `perm_sum`, `perm_mem`, `getD_map_eq`,
+  `seedValuesFrom_len`, `unfolded_sum`, **`a7_bound`**: `UpsA7 F insts`, `NodeOk ns`, `ValOk es`, and ANY `S`/`SV`
+  with the A7 (a) permutations (`(upsRanked ws insts).flatMap upsRplMsgs ~ (range |ns|).filter S ↦ [n]`, same for
+  RPLV) ⇒ `nodeA7Total ns S + valA7Total es SV + upsA7Total (upsRanked ws insts) ≤ 2,000,000`
+  (`ns = TrieNative.nodes m steps oldPost writes q`, `es = TrieNative.vals m steps`).  Exact accounting:
+  per upsert `traceUpsert_replaced`, covers `rpl_cover`/`rplv_cover`, record lengths = `us.map pre` occurrence lengths.
+* Audit `test/AuditTrieA7Total.lean`.
+
+## 2026-10-12 (session 7) — step 4 DONE: trie-side assembly `TrieSide.trie_side`
+
+* `trie_all_of`/`trie_all_accepted` also export `(walkEdgeKeys (ws ++ upsWalkInventory insts)).length < P`,
+  `(walkBmapKeys …).length < P` (needed for `sha_bins_ofE`); `TrieDigestUps.ups_sha_scheduler` also exports
+  `∀ u ∈ us, u.Valid`.  (Statements only strengthened.)
+* `TrieA7Total.filter_sum_le`, **`size_base`** (`UpsA7` ⇒ non-dup node bytes + non-empty non-dup value bytes
+  `≤ 2,000,000`, the `SizeOk.base` part).
+* New `Assembly/TrieSide.lean`: `yA7` (size rows 0,1,2 = node/val/ups A7 totals), `sizeU_yA7`, **`trie_side`**:
+  for `A : AcceptedV3 cb wb`, receipt/source SHA families with the bounds of `sha_bins_ofE`
+  (`honestRows ≤ 1,373,299` / `≤ 2,257,792`, `msgRows ≤ 35` on source, bytes `< 256`), and
+  `ovhNat A.pub + 2,000,000 + srcpSize (blocksOfProofs A.srcps) ≤ 8,388,608`:
+  `∃ writes oldPost q us r0 r1 r2 r3 r4 r5 r6 r7 r21` (renders of tables 0–7, 21; `SizedAccountRun`,
+  `KeysFinal`, `∀ u ∈ us, u.Valid`) such that every bundle `R` with `R ⟨t⟩ = r_t` (t = 0..7, 21) has
+  - `BalancedAt` PARENT, VPARENT, ENT, DIGS, DUP, EDGE, BMAP, MIDROOT, ROOT, UPB, MEMD, RPL, RPLV (no further premise);
+  - SIZE given `R ⟨20⟩ = A.rcptRenders.srcp` (A7 running sum ≤ B0 via `a7_bound`);
+  - BYTES given `hcodec` (table 11 sends = `expectedBytes (schedulerSanityJobs 0 us)`) and `hrest`
+    (16+17+20+23 sends = `expectedBytes (receipt ++ source)` + pub);
+  - DIGEST given `hcodec` (11) and `hrest` (16+20+23 recvs + `ns.flatMap postSlotDigests` = `expectedDigests (receipt ++ source)`),
+    `ns = TrieNative.nodes A.m A.steps oldPost writes q`;
+  - VSLOT given `R ⟨17⟩ = A.rcptRenders.acct` and `nativeAccountViews A.m.pre oldPost (appliedReceipts A.k A.w) = some A.accts`;
+  - KEYNIB, FINAL given `R ⟨16⟩ = A.rcptRenders.rcpt`, `R ⟨22⟩ = A.rcptRenders.qv`, `RcptKeys`, `RcptFinal`.
+* Audit `test/AuditTrieSide.lean`.  Integration 4275 jobs, 0 errors; trie audits (Digest, All, Ups, A7Cap/Repl/Match/Total, Side, UpsSched, Upb, UpsMemd, VslotNative) pass; pin-check ok.
+
+### Open (end of session 7; all in other lanes or the lead's join, none in this lane's tables)
+Premises of `TrieSide.trie_side` still to be discharged elsewhere:
+1. receipt/source SHA families `receipt source` with `honestRows ≤ 1,373,299` / `≤ 2,257,792`, source `msgRows ≤ 35`,
+   bytes `< 256` (receipt lane / lead);
+2. `ovhNat A.pub + 2,000,000 + srcpSize (blocksOfProofs A.srcps) ≤ 8,388,608` (size budget; receipt lane);
+3. BYTES `hcodec` (table 11 sends = `expectedBytes (schedulerSanityJobs 0 us)`) and DIGEST `hcodec` (11 recvs) — the
+   exported `us` (only `∀ u ∈ us, u.Valid` is exported about it; the codec lane needs it pinned, e.g. by a
+   scheduler-witness uniqueness lemma);
+4. BYTES/DIGEST `hrest` (tables 16, 17, 20, 23; `X = ns.flatMap postSlotDigests`);
+5. VSLOT: `nativeAccountViews A.m.pre oldPost (appliedReceipts A.k A.w) = some A.accts` for the exported `oldPost`
+   (the receipt side's `A.replay` vs this `oldPost`);
+6. `RcptKeys`, `RcptFinal` (receipt lane).
+Rust prover note unchanged: zero-length `VPRE(vid)` SHA job per empty value record.

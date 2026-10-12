@@ -449,3 +449,99 @@ Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace g
   pin-check OK.
 * Open on the receipt side: nothing beyond the bundle assembly itself (the lead's
   `RenderWitnessV3`: hint codec bounds, header admissibility, SIZE bus with the trie side).
+
+## 2026-10-12 (round 10: non-table conjuncts of `RenderWitnessV3`)
+
+* `Assembly/RenderV3Header.lean` (audit `test/AuditRenderV3Header.lean`):
+  - **Hint codec bounds** `nativeHint_bounds` / `AcceptedV3.hint_bounds`: `n = |appliedReceipts| ≤ 4481
+    < 256^4` (`applyNewChunk_receipt_bound`), body `≤ 1,295,017 < 256^4` (`accepted_native_body_bound`
+    + `prepD0_body_eq`), `|Hint.encode h| = 8 + |body| ≤ 1,295,025 ≤ v3MaxHintBytes` (`hint_encode_length`).
+  - **Header admissibility** `bundle_headerOk (R : RenderBundleV3 pub) (hq : ∃ t < 25, 4 ≤ R.trace.log t)`:
+    `(VdP nearAirV3).headerOk (trHdr nearAirV3.toAir R.trace) = true` from each table's `TableLocal`
+    (`R.local_at`), `nearAirV3_maxLog_le` (all caps ≤ 22, kernel), `nearAirV3_air_wf`,
+    `nearAirV3_degree_le` (all degrees at g = 2 ≤ 16, kernel), and `minQueryLog = 8 ≤ log + 4`.
+    The premise `hq` is needed by the header check itself (all logs 1 ⇒ query log 5 < 8);
+    `bundle_headerOk_rcpt`: discharged by the honest receipt render (table 16, log 22).
+* `lake build ZkFormal.V3.Integration` (4,135 jobs) OK; pin-check OK.
+
+## 2026-10-12 (round 11: routing-q range check adopted; receipt-side premises of `trie_side`)
+
+* Merged `origin/main` (717390e7) and `origin/lane/v3-trie-complete` (3834ac8e).
+* **(A) AIR change — table 16 := `RcptV3.tableQ`** (user decision 2026-10-12).
+  `Rcpt/Tables/RcptR.lean`: `qBoundR := mul3 (c sV) (c fs) (sub (c q) (bitsX 12 7))` (verbatim
+  `RoutingQCandidate.qBound`), `tableQ := {tableR with constraints := tableR.constraints ++ [qBoundR]}`
+  (882 constraints; same width/interactions/maxLog 22).  `RcptReceiptRepaired.tableQ_eq : tableQ =
+  ReceiptCandidateRouting.candidateTable` (`rfl`).  `NearAir.lean`/`ExtractV3.lean`: only entry 16
+  changed (literal, `getElem?_rcpt`); new `ExtractV3.rcptLocalQ` (HoldsP ⇒ local on `tableQ`);
+  `rcptLocal` (on `tableR`) now derived via `tableLocal_ext` (callers unchanged).
+  `nearAirV3_wf`, `nearAirV3_npOkPg` re-checked by kernel.  **`nearV3_sizeMaxAligned` unchanged:
+  6,415,073 B** (one extra degree-3 constraint, no columns) ⇒ `v3MaxInner`/`v3MaxHintBytes` unchanged.
+  - **View** (`RcptViewV3.lean`): `rcptV3_view_nearAir` now yields `RcptV3Wf ∧ exact traffic ∧
+    ∀ x ∈ flatR ls, x.q < 128` (nothing weakened).  New `ReceiptCandidateProof.extracted_q_ltQ`
+    (Layout ⇒ `(rcptOf tr tt y).q < 128` on `ReceiptCandidateRouting.candidateTable`) and
+    `ReceiptCandidateProof.view_q (h : TableLocal ReceiptCandidateRouting.candidateTable tr tt pub)
+    (hc : ListChain tr tt 0 bs e) : ∀ x ∈ flatR (bs.map (ListBlock.view tr tt)), x.q < 128`.
+  - **Honest render** (`Render/HonestRcptQ.lean`): `rcptTraceQ := RoutingQCandidate.patchTrace
+    (rcptTraceB pub x) 0` (fills `xb12..18` with the bits of `q` on first receiver rows),
+    `rcptTraceAlignedQ`, `rcptTraceB_q_bound` (honest `q < 128` via `booleanReceiptTrace_native_q_bound`),
+    **`rcpt_aligned_completeQ`** (TableLocal `tableQ` ∧ TableTraffic `rcptTrafficB` ∧ log%3=1; via
+    `ReceiptCandidateRouting.patch_local_of_q_bound`, `patch_traffic`).  `rcptRenderV3` uses it
+    (traffic unchanged ⇒ every receipt-side balance unchanged); `bundle_headerOk_rcpt` adapted.
+  - **For lane v3-rcpt-sound** (`bnd_lookup_provider`'s canonical-request premise): use
+    `ExtractV3.rcptLocalQ hH : TableLocal RcptV3.tableQ tr T_RCPT pub` (= `ReceiptCandidateRouting.candidateTable`,
+    `rfl`), `ReceiptCandidateProof.repaired_local_base` for the arithmetic table, and
+    `ReceiptCandidateProof.view_q (rcptLocalQ hH) hc` for `∀ x ∈ flatR (bs.map (ListBlock.view tr T_RCPT)), x.q < 128`
+    (replaces `RcptLink.candidate_view_q`, which was stated for the old `RoutingQCandidate.candidateTable`);
+    or the 4th conjunct of `rcptV3_view_nearAir`.
+  - **Rust prover note:** the v3 AIR export and the receipt generator must add `qBoundR` and fill
+    `xb12..18` = bits of `q` on rows with `sV = fs = 1` (no other cell changes).
+  - Commit 2e87cd70.  Audit `test/AuditRcptRoutingQ.lean`.
+* **(B) receipt-side premises of `trie_side`** (`Assembly/RenderV3RcptTrie.lean`, commit 52dd2a00):
+  - item 5 VSLOT: **`AcceptedV3.vslot_views (hr : SizedAccountRun A.m.pre writes oldPost) (hkf : KeysFinal …) :
+    nativeAccountViews A.m.pre oldPost (appliedReceipts A.k A.w) = some A.accts`** (any exported `oldPost`;
+    `native_agreement` + `find_upsert_ne` + `MemOk.post`).
+  - item 6: **`AcceptedV3.rcpt_keys`**, **`AcceptedV3.rcpt_final`** (no premises); generic
+    `honest_rcpt_keys`, `honest_rcpt_final` (`MemOk`, `AkcOk`), `rcptTraceNative_patched_local`,
+    `patched_counts` (off BND, counts of the q-patched plain trace = `rcptTrafficB`), via
+    `NativeReceiptQueryInventory.physical_keys`/`physical_finals`.
+* **Receipt SHA family + receipt halves of BYTES/DIGEST** (`Assembly/RenderV3RcptSha.lean`, commit c9c0ec2d):
+  `Render.outcome_traffic_v3` (outcome trace carries the table-23 traffic), `AcceptedV3.mrkAcc`
+  (= `mrkRender_accepted … 0`), **`AcceptedV3.receipt_sha`**: `∃ receipt, rows ≤ 1,373,299 ∧ bytes < 256 ∧
+  (16 + 17 + 23 BYTES sends = expectedBytes receipt + pubCount nearAirV3 A.pub B_BYTES false) ∧
+  (expectedDigests receipt = 16 + 23 DIGEST recvs + expectedDigests (sourceRcShaJobs …) +
+  expectedDigests (jobsToSha (accountShaJobs A.accts)))` (from `ReceiptSourcePublicBody.native`,
+  `ReceiptPublicByteCount.accepted`, `boundedPrep_eq`); **`AcceptedV3.account_digests`** (account jobs'
+  digests = `(TrieNative.nodes A.m A.steps oldPost writes q).flatMap postSlotDigests`, via
+  `TrieShared.vslot_accepted` + `vslot_views`).  Source family: `sourceShaMessages A.p.lists A.w.entries`
+  (`source_rows_A10` ≤ 2,257,792; `AcceptedSourceShaContract.accepted`: msgRows ≤ 35, bytes < 256).
+* **Combined** (`Assembly/RenderV3RcptTrieSide.lean`): **`RcptTrieSide.rcpt_trie_side A hovh`**:
+  ∃ writes oldPost q us r0…r7 r21, SizedAccountRun ∧ KeysFinal ∧ (∀ u ∈ us, u.Valid) ∧ ∀ bundle R pinned at
+  0–7, 16–22 (receipt renders), 23 (`A.mrkAcc`), with `R.tf 24` = the honest sort traffic ⇒ the ten receipt
+  buses ∧ the 13 trie buses ∧ SIZE ∧ VSLOT ∧ KEYNIB ∧ FINAL ∧ (codec BYTES → `SrcpBytes A` → BYTES) ∧
+  (codec DIGEST → `SrcpDigests A` → DIGEST).  Audit `test/AuditRcptTrieSide.lean`.
+  Integration 4,328 jobs OK; audits RcptRoutingQ, RcptTrieSide, RcptViewV3, HonestBalanceRcpt,
+  RenderV3Header, RenderV3RcptSide, RenderV3RcptAccepted, NearV3Admission, TrieSide, PaddedRcpt pass;
+  pin-check OK.
+
+### Open (exact) after round 11
+1. **`SrcpBytes A`** `:= ∀ m, cnt ((srcpTraffic (blocksOfProofs A.srcps)).sends B_BYTES) m =
+   cnt (expectedBytes (sourceShaMessages A.p.lists A.w.entries)) m` and **`SrcpDigests A`** `:= ∀ m,
+   cnt ((srcpTraffic …).recvs B_DIGEST) m = cnt (expectedDigests (sourceShaMessages …)) m +
+   cnt (expectedDigests (sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries)) m`.
+   **FALSE whenever an accepted witness has a duplicate source occurrence** (`Public.sourceDup p.lists j`):
+   `srcpTraffic` emits the leaf payload `(B.ql, B.leaf)` (and the path items, and an RC digest receive) for
+   EVERY block (`source_block_bytes`), and `blocksOfProofs` numbers ids counting duplicates, while
+   `sourceShaMessages` filters duplicate blocks (`DedupCompile.blocks`, weight 0) and `sourceRcShaJobs` has
+   `dmult := !sourceDup`.  Nothing rules duplicates out in D0a.  Fix options (lead): (a) source SHA family =
+   the non-dedup `(blocksOfProofs A.srcps).flatMap (fun B => (sourcePayloads B).map sourceShaPayload)` with
+   the receipt family taken at `duplicate := fun _ => false` — needs NEW row bounds (≤ 2,257,792 /
+   msgRows ≤ 35 were proved for the dedup family only); or (b) make the srcp render/AIR skip duplicate
+   blocks' SHA traffic (AIR change).  Without duplicates the identities are expected provable (not done).
+2. **Size budget** `ovhNat A.pub + 2,000,000 + srcpSize (blocksOfProofs A.srcps) ≤ 8,388,608` (premise of
+   `trie_side`): **not implied by acceptance as stated.**  `ovhNat A.pub = 0`
+   (`Public.prepared_ovhNat`, `prepD0_roots`), but `srcpSize` can approach the 8 MiB witness size (only
+   `|raw| ≤ 8 MiB` bounds the entries) and charges duplicate blocks' `12 + 33·|path|`.  `trie_side` only
+   needs it for `SizeOk` (`ovhNat + actual non-dup node bytes + value bytes + srcpSize ≤ 8 MiB`);
+   the trie lane should take that exact form (then: witness-size accounting, `NativeEncodedBudget`,
+   plus a dup-path lemma or AIR change).
+3. Codec identities (table 11, `schedulerSanityJobs 0 us`) — scheduler lane (item 3).

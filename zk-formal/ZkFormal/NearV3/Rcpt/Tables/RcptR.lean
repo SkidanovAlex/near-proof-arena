@@ -96,4 +96,15 @@ def tableR : Table :=
     cRegs ++ cEmit ++ cStates ++ cEnd ++ cChars ++ cSys ++ cRoute ++ cKey ++
       gasConstraintsWithR systemSurplusR ++ depositConstraintsWithR (bitsX 53 13) }
 
+/-- Routing-index range check (user decision 2026-10-12, `docs/zk-formal/ROUTING-Q-CANDIDATE.md`):
+on the first receiver row the boundary interval index `q` equals the seven existing boolean
+scratch bits `xb12..18`, so `q < 128` and the packed lookup address `65·q + pos` cannot wrap
+mod `P`.  Verbatim copy of `Assembly.RoutingQCandidate.qBound`. -/
+def qBoundR : Expr := mul3 (c sV) (c fs) (sub (c q) (bitsX 12 7))
+
+/-- **The installed receipt table** (`nearAirV3` table 16): `tableR` (both arithmetic repairs)
+plus the routing-index range check `qBoundR`.  Same columns, interactions and `maxLog`;
+882 constraints. -/
+def tableQ : Table := { tableR with constraints := tableR.constraints ++ [qBoundR] }
+
 end ZkFormal.NearV3.RcptV3
