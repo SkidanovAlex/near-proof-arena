@@ -85,8 +85,8 @@ theorem nativeQueryStore_unfolded (original : List Bytes) (root : Bytes) (keys :
     let pre := partialTrie original root keys
     let selected := nativeQueryStore original root keys post
     let pre' := partialTrie selected root keys
-    NearSpecV3.unfoldedBytesT pre' + NearSpecV3.diffT pre' (rebuildPost selected post keys) =
-      NearSpecV3.unfoldedBytesT pre + NearSpecV3.diffT pre (rebuildPost original post keys) := by
+    NearSpecV3.unfoldedBytesT pre' + NearSpecV3.unfoldedBytesT (rebuildPost selected post keys) =
+      NearSpecV3.unfoldedBytesT pre + NearSpecV3.unfoldedBytesT (rebuildPost original post keys) := by
   dsimp only
   rw [nativeQueryStore_pre _ _ _ _ hr,nativeQueryStore_post _ _ _ _ hr hp]
 

@@ -204,4 +204,23 @@ def maxLog : Nat := 22
 def table : Table :=
   { width := width, constraints := constraints, interactions := interactions, maxLog := maxLog }
 
+/-! ## Boundary-repaired key rotation (`nearAirV3`)
+
+At an instance boundary (last key row `kl = 1` followed by the next instance's first key row
+`kK = 1`, e.g. an instance with no rounds) the frozen rotation `kK·(L_i' − L_{i+1})` would tie the
+two independent seeds, so no honest multi-run table exists.  The repaired rotation is gated by
+`kK − kl·kK'` (`Candidates/ProcBoundaryRepair`); all other constraints and the interactions are
+unchanged. -/
+
+def rotationB (i : Nat) : Expr :=
+  .mul (sub (c kK) (.mul (c kl) (n kK))) (sub (n (colL i)) (c (colL ((i+1)%16))))
+
+def cKeyB : List Expr := cKey.take 13 ++ (List.range 16).map rotationB ++ cKey.drop 29
+
+def constraintsB : List Expr := cKind ++ cKeyB ++ cHdr ++ cEnt
+
+/-- The process table of `nearAirV3` (boundary-repaired key rotation). -/
+def tableB : Table :=
+  { width := width, constraints := constraintsB, interactions := interactions, maxLog := maxLog }
+
 end ZkFormal.NearV3.Sched.Proc

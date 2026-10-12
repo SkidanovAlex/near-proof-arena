@@ -139,11 +139,9 @@ theorem row0_cases (reqs : List Req) : rowAt reqs 0 = .pad ∨ ∃ R, rowAt reqs
 theorem row0_ok (reqs : List Req) : FirstOk (rowAt reqs 0) := row0_cases reqs
 
 /-- **The transition structure**: every row and its cyclic successor form a `Step`. -/
-theorem step_at (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) (t r : Nat)
-    (hr : r < (honestTrace reqs).height t) :
-    Step (rowAt reqs r) (rowAt reqs ((r + 1) % (honestTrace reqs).height t)) := by
-  have hlen := len_le_height reqs t
-  generalize (honestTrace reqs).height t = H at hr hlen
+theorem step_H (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) (H r : Nat)
+    (hlen : 86 * reqs.length ≤ H) (hr : r < H) :
+    Step (rowAt reqs r) (rowAt reqs ((r + 1) % H)) := by
   have hnext : 86 * reqs.length ≤ r + 1 →
       (rowAt reqs ((r + 1) % H) = .pad ∨ ∃ R', rowAt reqs ((r + 1) % H) = .i0 R') := by
     intro h
@@ -166,5 +164,16 @@ theorem step_at (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) (t r : Nat)
       · exact hnext (by omega)
   · rw [rowAt_pad reqs r (by omega)]
     exact Step.pd _ (hnext (by omega))
+
+theorem step_at (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) (t r : Nat)
+    (hr : r < (honestTrace reqs).height t) :
+    Step (rowAt reqs r) (rowAt reqs ((r + 1) % (honestTrace reqs).height t)) :=
+  step_H reqs hok _ r (len_le_height reqs t) hr
+
+/-- `step_at` at an explicit height `2^L` holding the rows. -/
+theorem step_atL (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) {L : Nat}
+    (hL : 86 * reqs.length ≤ 2 ^ L) (t r : Nat) (hr : r < (traceAt reqs L).height t) :
+    Step (rowAt reqs r) (rowAt reqs ((r + 1) % (traceAt reqs L).height t)) :=
+  step_H reqs hok _ r hL hr
 
 end ZkFormal.Chacha.Complete

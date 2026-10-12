@@ -1,0 +1,609 @@
+# v3-render-rcpt lane log (receipt-side completeness)
+
+Branch `lane/v3-render-rcpt` from main `fb3dec71`.  Goal: honest aligned trace generators
+(`*TraceAligned`, `*_aligned_complete`) for the receipt-side tables of `nearAirV3`
+(16 rcpt, 17 acct, 20 srcp, 21 size, 22 qv), pattern `Render/Padded.lean`.
+
+## 2026-10-11
+
+* **acct (17), size (21): aligned renders done** — `NearV3/Render/PaddedRcpt.lean`:
+  `acct_aligned_complete` (cap 19), `size_aligned_complete` (cap 4), `acctV3Ok_wf`.
+  Audit `test/AuditPaddedRcpt.lean`.
+* Both honest heights exceed the natural caps (acct: 16·4481 = 71,696 rows > 2^16, so
+  logOf = 17 → padLog22 = 19; size: 4 rows, 2 → 4).  Views generalized to a cap:
+  `AcctV3Proof.*` take `TableLocal {AcctV3.table with maxLog := cap}` (+ `hcap : cap ≤ 22`
+  where `height < P` is needed); `acctV3_view_at cap` with `AcctV3WfAt cap`;
+  `size_view_at cap` (rows ≥ 3 are padding at any height ≥ 4: `padF`, `runF`).
+  The old `acctV3_view`/`size_view` are the cap-17/cap-2 instances.
+* Renders: `acctV3_render_local_at`/`_traffic_at`, `size_render_local_at`/`_traffic_at`
+  (any height ≥ rows); old statements derived.
+* **CAP CHANGE (separate commit):** `nearAirV3` table 17 `acctV3` → `maxLog 19`, table 21
+  `sizeV3` → `maxLog 4` (`NearAir.lean`, `ExtractV3.lean` literal/lookups/locals,
+  `ViewsV3.acctView` now `AcctV3WfAt 19`, `sizeView` via `size_view_at 4`).
+  `nearAirV3_wf`, `nearAirV3_npOkPg` re-checked by kernel (NearAirCheck rebuilds).
+  **Aligned size bound `nearV3_size`: 6,276,897 → 6,315,201 B** (+38,304) at auxGroup 2;
+  margin under 8 MiB after the 1,295,017 B hint: 778,390 B.  `v3MaxInner` updated
+  (`4 + 2,000,000 + 6,315,201 ≤ 8 MiB` still holds).  Full `ZkFormal.V3.Integration` builds.
+* **srcp (20): aligned render done** — `NearV3/Render/PaddedSrcp.lean`:
+  `srcp_aligned_complete` (hypothesis = the view's `SrcpWf bs`; cap 22 unchanged),
+  `srcp_proofs_aligned_complete` (from the used source proofs, `ProofInputsOk`),
+  `SrcpGen.table_local_at`, `SrcpGen.cell_high`.  `Srcp/ProofComplete` now reaches
+  Integration through it.  Audit `test/AuditPaddedSrcp.lean`.
+* **qv (22): aligned render done** — `NearV3/Render/PaddedQv.lean`:
+  `qv_aligned_complete` for `KeyTrafficRepair.table` (the actual `nearAirV3` table 22, cap 22)
+  on the existing honest mixed queue rows (`mixedTrace (plan pre v pres resolve) vs`), at
+  `padLog22 (logOf qvRows)`.  New: the repaired-`KEYNIB` row/word traffic
+  (`Walk.repairedKeyMessages`, `Walk.repairedKeyWordMessages`: zero-based nibbles, no START,
+  END at `2·len` — the shape of `Qv.Extract.repairedKeyTraffic`), `repairedTraffic`,
+  `mixedTrace_repaired_traffic`, `placed_words_traffic_is` (any interaction list), and
+  table-index reindexing (`tableLocal_reindex`, `tableTraffic_reindex`).
+  Hypothesis `QvOk`: `v.Valid`, records valid, `qvRows ≤ 2^22`, and the public implicit
+  count (`kPublic`, pub 26..29) = `pres.length`.
+  **Caveat:** there is no `qvV3` soundness view statement yet (not among the eleven views), so
+  `repairedTraffic` is the honest-side record format; the view lane must target it (or a
+  bridge must be proved).
+* **rcpt (16): NOT done — completeness for the frozen `RcptV3.table` is believed FALSE on the
+  honest D0a domain.**  The rcpt render-candidate lane (`docs/zk-formal/RCPT-RENDER-CANDIDATE.md`,
+  `Assembly/Rcpt*`, 832/881 original constraints covered on one physical trace) has two
+  proved local obstructions in the active table:
+  - `Assembly/RcptDepositContradiction.lean:old_deposit_initial_512_impossible`: the
+    first-DEP-row constraint `r − tprev = bitsX 57 9` (`Rcpt/Tables/Rcpt/Arith.lean:310`) is a
+    9-bit age, so receipt index `r ≥ 512` cannot read an account at initial version
+    `tprev = 0`; A1 allows 4481 receipts.
+  - `Assembly/RcptGasContradiction.lean:old_gas_surplus_top_zero`: the surplus overflow gate
+    (gated by `ge`, not `gq`) rejects a decodable system receipt with gas price `u128Max`
+    against block price 0 (`RcptSystemGasDomain`).
+  Isolated repairs exist (`RcptDepositAgeCandidate`: 13-bit age in `xb53..65`;
+  `RcptSystemGasCandidate`: gate surplus by `gq`), but they change the frozen AIR — a lead/user
+  decision.  Open statement (unprovable as frozen without an honest-unsatisfiable premise):
+  `rcpt_aligned_complete (ls : RcptV3Vs) (ok : RcptOk pub ls) (t) :
+     TableLocal RcptV3.table (rcptTraceAligned pub ls) t pub ∧
+     TableTraffic RcptV3.interactions (rcptTraceAligned pub ls) t pub (rcptTraffic3 pub ls) ∧
+     (rcptTraceAligned pub ls).log t % 3 = 1`.
+* Full `lake build ZkFormal.V3.Integration` passes with all four new modules; audits
+  `AuditPaddedRcpt`, `AuditPaddedSrcp`, `AuditPaddedQv`, `AuditNearV3Admission` pass;
+  `make pin-check` passes.
+
+## 2026-10-11 (round 2: lead decisions — rcpt repairs adopted, A10 in srcpV3)
+
+* Merged `origin/integration/v3-20261011b` (fast-forward).
+* **A10 in `srcpV3` (table 20) — done.**  `Rcpt/Tables/SrcpD.lean`: `SrcpV3.tableD` = the base
+  table + 6 slack-bit columns `db_0..5` (56..61, width 62) + root-row check
+  `DP0 − (qe − q − 1) = Σ 2^e db_e` (`q` already counts the list's segments, so
+  `qe − q − 1 = |path|` is the per-list counter); `local_base`/`local_of_base`.
+  View `Rcpt/Extract/Srcp/Depth.lean:srcpD_view`: `SrcpWf bs ∧ (∀ B ∈ bs, |B.path| ≤ Dp0) ∧
+  traffic` (`block_depth`, `BlockChain.depth`; `DP0_eq : SrcpV3.DP0 = NearSpecV3.Dp0`).
+  `LinkV3.V3RecordsWf` gains `srcpDepth : ∀ B ∈ r.srcp, B.path.length ≤ NearSpecV3.Dp0`
+  (link lane: relate blocks to `usedProofs` to get `GoodV3.pathDepth`).
+  Render `Render/PaddedSrcp.lean:srcp_aligned_complete (h : SrcpWf bs) (hd : ∀ B ∈ bs,
+  |B.path| ≤ Dp0)` for `tableD`; `srcp_proofs_aligned_complete` adds `hd` for the entries.
+  New generic `Render/ColAgree.lean` (local/traffic invariant under agreement on the read
+  columns).  **nearV3_size: 6,315,201 → 6,320,769 B** (margin 772,822 B after the hint).
+* **rcptV3 (table 16) repaired — AIR + view done.**  `Rcpt/Tables/RcptR.lean:RcptV3.tableR`
+  (gas surplus gated by `gq`; 13-bit deposit age `xb53..65`; same columns/interactions/
+  maxLog; light module, verbatim copies) with `Assembly/RcptReceiptRepaired.lean:tableR_eq :
+  tableR = receiptArithmeticCandidate` (`rfl`).  `nearAirV3` table 16 := `tableR`.
+  View `Assembly/RcptViewV3.lean:rcptV3_view_nearAir (hp) (hsize) (hH : HoldsP nearAirV3 …)`:
+  the **same** `RcptV3Wf` + exact `rcptTraffic3` as before (the candidate soundness
+  migration `ReceiptCandidateProof.ListChain.view_wf/view_traffic`), with the 13-bit-age
+  no-wrap premise `tprev ≤ 2^22` discharged from the global MEM balance (`mem_send_sources`:
+  only tables 16/17 touch MEM, no public MEM; account opens version 0, receipt writes
+  `r+1 ≤ 2^22`).  Signature change: it now takes `HoldsP` instead of the table-local
+  premise (LinkV3 updated; the old one is removed from `ExtractV3.lean`).
+  `nearV3_size` unchanged by this (6,320,769 B).  Integration builds (2,704 jobs — the
+  candidate soundness chain is now in the closure; elaboration-budget note).
+* **rcpt render (partial).**  `Render/PaddedRcptR.lean` (namespace `Assembly.RcptSkeleton`):
+  `RcptInput` (native data), `RcptOk pub x` (prepD0/walkD0/witness decoding; lists =
+  `appliedReceipts`, wf/named/native refund flags; `applyNewChunk` succeeds; gas limit ≤ D0;
+  gas-price/final/owner public bytes), `rcptTraceAligned pub x` (the candidate native trace
+  `booleanReceiptTrace … 22 …` pinned to index 0, `pinTrace` in `ColAgree.lean`), and
+  `rcpt_aligned_complete : ∃ ls, TableLocal RcptV3.tableR … t pub ∧ TableTraffic
+  RcptV3.interactions … (rcptTraffic3 pub ls) ∧ log t % 3 = 1`.
+  **Open:** `ls` is the trace's own extracted list view, not yet a native function of `x`.
+  Needed for render assembly (bus balance against acct/akey/bnd/srcp/sha/…):
+  `ls = nativeRcptViews pub x` (the located-view identity `canonical_native_views` exists
+  only for the routing-q-patched trace) and the digest streams `x.digests` instantiated with
+  the native hashes (currently a free input; local constraints hold for any choice).
+
+## 2026-10-11 (round 3)
+
+* Merged `origin/lane/v3-a11` (f65d9ece); integration 11b already contained.  After the
+  build-cache incident the full Integration build recompiled 642 modules: **passes** (2,705).
+* **rcpt render now native (no existential).**  `Assembly/RcptUnpatchedViews.lean`: the
+  located-view identity chain ported to the unpatched trace (`native_shape_cellsU`,
+  `native_entity_headU`, `decoded_head_identityU`, `decoded_native_sequenceU`,
+  `canonical_native_viewsU`).  `Render/PaddedRcptR.lean`: trace uses `nativeDigests ctx`
+  (native refund-id / PEO hashes, `x.digests` only as fallback for other states);
+  `nativeBlocks lists` (native header/receipt grouping, `blocksOfEntities`),
+  `nativeRcptLists pub x`, `native_chain` (extracted chain = native blocks),
+  `nativeRcptLists_flat : flatR (nativeRcptLists pub x) = locatedViews (rcptTraceNative pub x) x.lists`,
+  and `rcpt_aligned_complete : TableLocal RcptV3.tableR ∧ TableTraffic … (rcptTraffic3 pub
+  (nativeRcptLists pub x)) ∧ log % 3 = 1`.
+* **qv over native inputs.**  `Render/PaddedQvNative.lean`: `qvNativeWalks`
+  (`plan … (NativeQueueIds.resolve …)`), `qvNativeRecords`
+  (`queueRecords (queueForestProviders 0 0 (queueInputs …))`), `qvNativeTraffic`,
+  `QvNativeOk` (valid main values, accepted provider modes, Σ bytes ≤ B0, rows ≤ 2^22,
+  public implicit count) and `qv_native_aligned_complete`.
+* **Honest receipt-side bus balance** (`Render/HonestBalanceRcpt.lean`, trace-free):
+  `qvNative_qvc_balance` (QVC, via `plan_qvc_balance` + `NativeQueueCounters.resolve_eq`),
+  `qvNative_qsh_balance` (QSH, `plan_qsh_balance`), `honest_size_balance` (SIZE: node/val/srcp
+  sends = size recvs of `honestSizeV`).  Bus users in `nearAirV3` (kernel #eval): QSH, QVC qv
+  only; SIZE 2,4,20→21; SREC rcpt only; RCL 16→20; AKC 16↔18; BND 16↔19; RIDS 16→24;
+  SRC public→20; MEM 16↔17.
+* **Open (balance):** SREC, RCL, AKC, BND, RIDS, MEM all need field identities of the honest
+  receipt views (`nativeRcptLists` reads the honest rows; its fields — `kslot`, `tprev`,
+  `aft`/`bef`, `rlk`, `q`, `akk`/`aku`, `rid`, `enc`, `gv`/`gs` — must be shown equal to the
+  native values the candidate balance lemmas speak about, e.g. `nativeLedgerMemWrites`,
+  `NativeAccessKeyProviders`, `boundaryEntry`).  SRC needs the prepared public segment
+  (`NativeSourceFour.balance`) bound to `srcpTraffic (blocksOfProofs xs)`.
+* **RIDS balance** (`honest_rids_balance`): `(rcptTraffic3 pub (nativeRcptLists pub x)).sends
+  B_RIDS = (sortTraffic (NativeSortIds.input applied)).recvs B_RIDS`, via the unpatched
+  `located_idsU` (`native_rid_slice`) and `NativeReceiptIdBytes.view_ids`.
+* Final: full Integration 2,933 jobs passes; audits pass; pin-check passes.
+
+## 2026-10-11 (round 4)
+
+* Merged `origin/lane/v3-link` (A7: node/val/ups/size → `nodeA7`/`valA7`/`upsA7`/`sizeA7`).
+  Conflicts resolved keeping `RcptV3.tableR` (16) and `SrcpV3.tableD` (20) with link's A7
+  tables.  **Combined `nearV3_size` = 6,399,329 B** (link 6,393,761 + srcp depth columns);
+  margin 694,262 B after the 1,295,017 B hint.  **`v3MaxHintBytes` 1,990,000 → 1,989,000**
+  (else `4 + hint + maxInner` exceeds 8 MiB by 725 B; the actual hint body is ≤ 1,295,017).
+  Full Integration builds (2,935 jobs).
+* **RCL balance** (`Render/HonestBalanceRcl.lean:honest_rcl_balance`): with the honest srcp
+  input `xs` holding the same applied lists in order
+  (`xs.map (·.entry.receipts) = x.lists.map (List.map Input.receipt)`),
+  `(rcptTraffic3 pub (nativeRcptLists pub x)).sends B_RCL = (srcpTraffic (blocksOfProofs xs)).recvs B_RCL`.
+  New: `grouped_encodingsU` / `nativeRcptLists_enc` (honest per-list encodings = native
+  `Receipt.encode`), `patch_enc`.
+* **SIZE after A7:** `honest_size_balance` covers the original tags 0–2 (unchanged senders
+  `nodeTraffic3`/`valTraffic`/`srcpTraffic`).  **Open (link lane (a)/(b))** — tags 3–5:
+  `sizeA7` receives `SIZE (t+3, y_t)` on its three active rows; `nodeA7` sends
+  `SIZE (3, ra)`, `valA7` `SIZE (4, rb)` (both on the `sumr` row) and `upsA7` `SIZE (5, s)`
+  (last row).  Needed: record-level A7 traffic `(sizeA7Traffic v y).recvs B_SIZE =
+  [[3,y₀],[4,y₁],[5,y₂]]` and the honest senders' A7 totals, then
+  `[[3, ra vs], [4, rb es], [5, s u]] = (sizeA7Traffic v ⟨ra vs, rb es, s u⟩).recvs B_SIZE`
+  for the honest node/val/ups renders.
+* **RIDS coordination:** the balance is stated against exactly
+  `sortTraffic (NativeSortIds.input (x.lists.flatten.map Input.receipt))` (receives
+  `[r, i, rid_r[i]]` for receipt `r` in applied order, `i < 32`); the sort render must emit
+  that traffic.
+* **SRC balance** (`Render/HonestBalanceSrc.lean:honest_src_balance`): with
+  `xs.map (root, dup) = [(p.lists[j].root, sourceDup p.lists j)]_j`,
+  `(srcpTraffic (blocksOfProofs xs)).recvs B_SRC = Public.preparedOn p B_SRC true`
+  (the prepared public segment's sends, `prepared_source_records`).  Note:
+  `NativeSourceFour.balance` is a SIZE lemma on an older four-partition source layout, not SRC.
+* **SREC balance** (`Render/HonestBalanceSrec.lean:honest_srec_balance`):
+  `((rcptTraffic3 pub (nativeRcptLists pub x)).sends B_SREC).map toFp ~ (… .recvs B_SREC).map toFp`.
+  `rcptTraceNative` is definitionally an instance of
+  `booleanReceiptTrace_native_systemBalance`'s trace (system/character/digest layers outermost),
+  so the trace-level certificate lifts through the exact traffic.
+* **Open — AKC, BND, MEM (precise).**  `RcptInput.accountId`/`accessId` and the deposit
+  ledger are currently free/derived inputs of the honest trace; these buses need them pinned
+  to the native allocations and the corresponding view fields identified:
+  - AKC (16 ↔ 18): `(rcptTraffic3 pub (nativeRcptLists pub x)).sends/recvs B_AKC` =
+    `eventMessages pre rs true/false` of `NativeAccessKeyBalance` (fields `ee`, `akf`, `akk`,
+    `aku` of the honest views, from `keyAux accountId accessId`), with `akey` traffic
+    `akeyTraffic (NativeAccessKeyProviders.providers pre rs)`; then `counter_balance`.
+  - BND (16 ↔ 19): honest views' `q`, `rlk` (from `nativeRoutingConstants k`/`routingAux
+    (nativeRoutingInterval k)`) equal the requests `requestRanks keys …`; with
+    `bndTraffic (boundaryEntries …)`, `boundaryEntry_counter_balance` per entry.
+  - MEM (16 ↔ 17): honest views' `kslot` (= `accountId`), `tprev` (= `depositPlanPrevious`),
+    `bef`/`aft`/`lk`/`st` (= `depositPlanAccount steps`) give
+    `rcptSends3 … B_MEM = nativeLedgerMemWrites original rs steps` and
+    `rcptRecvs3 … B_MEM = nativeLedgerMemReads original rs steps`; with
+    `acctV3Traffic as` for `nativeAccountViews original replay rs = some as`,
+    `native_account_memory_balance`.
+  Each identification is a `located_idsU`-style slice lemma over `locatedViews` (cells of the
+  key/routing/deposit/account fields on the unpatched trace).
+  **Route found for MEM and AKC (next round):**
+  `Rcpt/Candidates/NativeReceiptMemAggregate.lean:native_receipt_mem_aggregate` gives
+  `locatedMemSends/Recvs = nativeLedgerMemWrites/Reads original rs steps` and
+  `Candidates/NativeAccessKeyPhysical.lean:physical_messages` gives the AKC rows
+  `= eventMessages pre rs sd` — both on the routing-q-patched trace with
+  `accountId := accountSlot original keys ·.receiptIndex`, `accessId :=
+  NativeReceiptAccessIds.accessId pre`, `fallback := rankAux pre rs ·`.  Remaining: (i) pin
+  these in `RcptOk`; (ii) patch-invariance of the MEM/AKC fields (as `patch_enc`);
+  (iii) global-order lemma `rcptSends3 ls B_MEM = locatedMemSends` (as `view_ids` for RIDS);
+  then `native_account_memory_balance` / `counter_balance`.  BND has no such native receipt
+  lemma yet.
+
+## 2026-10-11 (round 5)
+
+* **MEM balance** (`Render/HonestBalanceMem.lean:honest_mem_balance`):
+  `((rcptTraffic3 pub (nativeRcptLists pub x)).sends B_MEM ++ (acctV3Traffic as).sends B_MEM).Perm
+   (… .recvs B_MEM ++ (acctV3Traffic as).recvs B_MEM)` under `RcptOk pub x` and
+  `MemOk x replay as`: `accountId` pinned to `accountSlot x.t keys ·.receiptIndex`,
+  `TrieShape x.t`, `WriteTreePair x.t replay`, `replay` agrees with `x.out.trie` on accounts,
+  `nativeAccountViews x.t replay rs = some as`, `|valsOf x.t| < P`.  Pieces: patch invariance
+  of the memory fields (`patch_mem_fields`, the q-patch touches only `xb12..18`), global
+  order (`rcpt_mem_traffic`, `zipIdx_map_index`), `native_receipt_mem_aggregate`,
+  `newchunk_mem_context` (the `applyReceipts` context derived from `RcptOk.run`),
+  `native_account_memory_balance`.
+* **AKC balance** (`Render/HonestBalanceAkc.lean:honest_akc_balance`), field messages:
+  `(akeyTraffic P).sends B_AKC ++ rcpt sends B_AKC ~ rcpt recvs B_AKC ++ (akeyTraffic P).recvs B_AKC`
+  with `P = NativeAccessKeyProviders.providers pre rs`, under `RcptOk` and `AkcOk x pre`
+  (`accessId = NativeReceiptAccessIds.accessId pre`, `fallback = rankAux pre rs fb`).
+  Route: the q-patched honest trace is `TableLocal` (`booleanReceiptTrace_native_repaired_tableLocal`,
+  same premises as `RcptOk`), `physical_messages` gives its AKC rows = native events, the
+  patch leaves the AKC columns (`gAK`, `kF`, `uak`) untouched (`patch_akc_rows`), and
+  `counter_balance` closes the events against the providers.
+* **BND balance + ranked honest receipt trace** (`Render/HonestBalanceBnd.lean`).  The
+  honest rows must carry the physical boundary use ranks in `uB` (no constraint reads `uB`,
+  `arith_counter_free`): `rcptTraceB := counterPatch (rcptTraceNative pub x) 0 ranks`,
+  `rcptTrafficB pub x` (= `rcptTraffic3 pub (nativeRcptLists pub x)` on every bus but BND,
+  `rcptTrafficB_other`; BND = `physicalCounterMessages`), and
+  **`rcpt_aligned_completeB`** (TableLocal `tableR` ∧ TableTraffic `rcptTrafficB` ∧ log%3=1) —
+  this is the receipt render render-assembly should use; all the other receipt balances apply
+  to it unchanged via `rcptTrafficB_other`.
+  `honest_bnd_balance`: `(bndTraffic es).sends B_BND ++ (rcptTrafficB pub x).sends B_BND ~
+  (rcptTrafficB pub x).recvs B_BND ++ (bndTraffic es).recvs B_BND` for
+  `es = boundaryEntries bounds (physicalBoundaryKeys (rcptTraceNative pub x) 0)`, given
+  **coverage** `hc : ∀ r ∈ physicalActiveRows trU 0, physicalBoundaryKey trU 0 r ∈ es.map rec4`.
+  Open (precise): `hc` is the public boundary ownership obligation — via
+  `physical_provider_render` (`es.map rec4 = Public.boundaryRecords (boundedPrep p k.L k.H.shardId)`)
+  it is `∀ r ∈ active, key r ∈ Public.boundaryRecords (boundedPrep …)`, i.e. every native
+  routing lookup reads a prepared boundary row; the routing lane keeps it explicit too
+  (`normalized_physical_complete`).
+
+## 2026-10-11 (round 6: discharging hypotheses from acceptance)
+
+* Merged `origin/integration/v3-20261011b` (ChaCha `table22`, `MerkleEmpty`, `sortTableV3`,
+  `RenderBundleV3`) and `origin/lane/v3-link` (LinkV3 taken from link: balance over A7).
+  **Combined `nearV3_size` = 6,415,073 B** (margin 678,518 B after the 1,295,017 B hint);
+  **`v3MaxHintBytes` 1,989,000 → 1,973,000** so `4 + hint + maxInner ≤ 8 MiB`.
+* `Assembly/RenderV3RcptTables.lean`: `TableRenderV3` instances `rcptRenderV3` (16, via
+  `rcpt_aligned_completeB`), `acctRenderV3` (17), `akeyRenderV3` (18), `bndRenderV3` (19),
+  `srcpRenderV3` (20), `qvRenderV3` (22).  Table 21 is `sizeA7` (lane v3-trie-complete).
+* Discharged from `checkD0a B0 cb wb = .ok ()` (each its own commit):
+  - `QvNativeOk` — `Render/AcceptedQv.lean:qvNativeOk_of_accept` (QvNativeOk now carries
+    record validity directly);
+  - `RcptOk` — `Render/AcceptedRcpt.lean:rcptOk_of_accept` for `acceptedRcptInput`
+    (lists = `sourceInputLists ctx p.lists w.entries`; public bytes on `preparedBytes p _`);
+  - `MemOk` — `Render/AcceptedMem.lean:memOk_of_accept` (accountId := `nativeAccountId`,
+    replay = `newchunk_old_tree_reconstruct`'s old-record tree, `as` = native account views,
+    `|as| ≤ 4481`); `acctV3Ok_of_views` (needs `as ≠ []`);
+  - `AkcOk` — by construction (choose `accessId := NativeReceiptAccessIds.accessId pre`,
+    `fallback := rankAux pre rs fb`; `counter_balance` holds for every `pre`);
+  - `AkeyOk` for `providers m.pre applied` — `akeyOk_of_accept`;
+  - srcp: `acceptedSrcpInputs` (prepared roots/dup flags + `sourceEntry`), RCL/SRC alignment
+    (`accepted_rcl_balance`, `accepted_src_balance`), A10 depth (`acceptedSrcp_depth`), rows
+    (`acceptedSrcp_rows`), duplicate occurrences empty (`acceptedSrcp_duplicate`), and
+    `acceptedSrcp_ok` (ProofInputsOk with root/sibling widths and RC length < P explicit).
+* **Not implied by acceptance (with sketches):**
+  - `AcctV3Ok.len_pos` / `AcctWf.nonempty`: an accepted chunk whose applied source lists are all
+    empty reads no account, so `nativeAccountViews … = some []`; the frozen `acctV3` forces a
+    segment on row 0 (`isFirst·(1−af)`), and a dummy account would emit VBYTES/VPOST/VSLOT traffic
+    with no matching value/SHA records.  Fix: the `Rcpt/Candidates/AccountEmpty.table` repair
+    (first-row constraint `isFirst·(act−af)`, empty trace proved local) at table 17.
+  - BND coverage: the honest receipt routing uses `boundedIntervals k.L own` (boundaries
+    truncated to `shardIds.length`), but `prepD0` publishes `p.bnds = ownIntervals L own`.  For a
+    malformed-but-decodable layout with `boundaries.length ≥ shardIds.length` the honest lookup
+    keys are not `Public.boundaryRecords p` rows.  Fix: publish the bounded representation
+    (`boundedPrep`) or render routing over `p.bnds`; for well-formed layouts the two coincide.
+* Still open: srcp root/sibling widths and RC-preimage length `< P` (decoding/witness size);
+  BND coverage on well-formed layouts (from `native_routing_selected`); `SizeOk` for `sizeA7`
+  (trie-complete lane).
+
+## 2026-10-11 (round 7: successor session)
+
+* **Table 17 = empty-capable account table (done).**  `NearAir.lean`: `acctTableV3 :=
+  {Rcpt.Candidates.AccountEmpty.table with maxLog := 19}` (row-0 constraint `isFirst·(act−af)`;
+  only entry 17 changed; `ExtractV3.nearTablesFull_eq`/`getElem?_acct`/`acctLocal` follow).
+  `Rcpt/Candidates/AccountEmptyCap.lean`: cap-generic `first_active_at`, `old_local_at`,
+  `empty_or_old_at`, `empty_local_at`, `empty_traffic_exact`; **`Assembly.acctV3_empty_or_old`**
+  (silent — every bus count 0 — or `TableLocal {AcctV3.table with maxLog := 19}`);
+  `AcctV3WfE cap as := as = [] ∨ AcctV3WfAt cap as` and `acctV3E_view_at`.
+  `ViewsV3.acctView` now returns `AcctV3WfE 19`; **`LinkV3.V3RecordsWf.accts : AcctV3WfE 19`**
+  (link lane: the account records may now be `[]` with empty traffic).  `rcptV3_view_nearAir`
+  unchanged (uses only the traffic of `acctView`).
+  Render: `Render/PaddedAcctE.lean` — `AcctV3OkE as := as = [] ∨ AcctV3Ok as`,
+  `acctTraceAlignedE` (empty: `AccountEmpty.emptyTrace`, log 1), `acct_aligned_completeE`;
+  `acctRenderV3` takes `AcctV3OkE`; `AcceptedMem.acctV3OkE_of_views` (no `as ≠ []`).
+  `nearAirV3_wf`/`nearAirV3_npOkPg` re-checked; **`nearV3_sizeMaxAligned` unchanged at
+  6,415,073 B** (same widths/degrees), so `v3MaxInner`/`v3MaxHintBytes` unchanged.
+  Integration 3,100 jobs OK; audits `AuditAccountEmptyCap` (new), `AuditPaddedRcpt`,
+  `AuditNearV3Admission` pass; pin-check OK.
+* **BND coverage — NOT implied by acceptance; stopped (needs a lead/user decision).**
+  Nothing in `decodeLayout`/`prepD0`/`walkD0`/`checkD0a` relates `|boundaries|` to `|shardIds|`
+  (only `1 ≤ |shardIds| ≤ 64` and `L.index own = some _`; `decodeShardLayoutV2`, which does
+  check the id maps, is not on the D0a path).  `boundedIntervals L own = ownIntervals L own`
+  iff `|boundaries| ≤ |shardIds|` or `own ≠ 0` (for `k ≥ n := |shardIds|`, `shardIds.getD k 0 = 0`).
+  Counterexample sketch: V3 layout `boundaries = ["b","c"]`, `shardIds = [0]`, `idToIndex =
+  [(0,0)]`, own shard `0`, one applied receipt to `"d"` (`shardOf "d" = getD 2 0 = 0 = own`, so
+  it is applied).  Published `p.bnds = ownIntervals = [(none,"b"), ("b","c"), ("c",none)]`; the
+  honest routing reads `boundedIntervals = [(none,"b"), ("b",none)]`, index 1, whose `routeKey`
+  rows (`hi` = none, flag 1) are not in `Public.boundaryRecords p` (row 1 there has `hi = "c"`).
+  Re-routing over `p.bnds` instead does not fix it in general: with own = 0 and ≥ 127 extra
+  boundaries, the published BNDP segment has `65·|p.bnds| > 2^13 = 2^BndV3.maxLog` rows and the
+  receiver's interval index exceeds the 7-bit `q` — completeness of the current AIR is then
+  FALSE regardless of the routing representation.  Fix options: (a) publish
+  `boundedIntervals` in `prepD0` (spec change; count ≤ numShards+1 ≤ 65 rows·65 fits); or
+  (b) add a D0a domain check `|boundaries| + 1 = |shardIds|` (spec change).  Soundness side
+  (link lane) must check the same: it relates `p.bnds` (ownIntervals) to `shardOf`; on such
+  layouts with own = 0 the extra intervals are own-routed too, so it is likely consistent, but
+  `ownIntervals`↔`shardOf` is "tested, not proved" in the spec.
+* **srcp `ProofInputsOk` from acceptance alone (done).**  `Render/AcceptedSrcp.lean`:
+  `entry_rc_length_le` (decoded entry: `|u64 to ++ borsh(receipts)| ≤ |raw|`, via
+  `decodeStateWitness_encodeSW_size`), **`acceptedSrcp_ok_of_accept`** (no explicit premises:
+  nonempty from `prepD0_sources_nonempty`, roots from `prepD0_source_roots`, siblings from
+  `relD0a_source_paths`, RC length `≤ |raw| ≤ 8 MiB < P`; the default `sourceEntry` has 12 bytes).
+  Audit `test/AuditAcceptedSrcpOk.lean`.
+* **Precision on the BND item.**  Coverage of the honest routing keys against the *bounded*
+  boundary rows (`honest_bnd_balance`'s `hc`) is not affected by the layout mismatch (both sides
+  use `boundedIntervals`); it is still an explicit premise because no lemma identifies the
+  physical active rows of the whole honest trace with per-receipt `routeKey`s (only per-receipt
+  slices exist: `applied_receipt_route_slice`, `native_routing_selected`).  The mismatch bites in
+  **BNDP** (public `boundaryRecords p` over `ownIntervals` vs the bnd rows over the bounded
+  intervals) and in **`pubFit`/`|preparedBytes p 0| < P`** of `RenderWitnessV3` (the BNDP block
+  of `p` grows with `|boundaries|`, unbounded by any D0a check; `accepted_prepared_length` bounds
+  only `boundedPrep`).  So for the malformed own-shard-0 layouts `CompleteV3Stmt` itself can fail
+  — the decision (publish `boundedIntervals`, or a D0a check `|boundaries| + 1 = |shardIds|`)
+  is needed before `CompleteV3Stmt` is provable.
+* **Unconditional receipt-side renders from acceptance (done).**
+  `Assembly/RenderV3RcptAccepted.lean`: `AcceptedV3 cb wb` (k, w, raw, codes, m, steps, last,
+  p and their proofs; `acceptedV3_nonempty : checkD0a B0 cb wb = .ok () → Nonempty _`);
+  `A.pub = pubOf (preparedBytes A.p 0)`; choices `A.rcptInput` (native account slots, access
+  ids, key ranks), `A.accts` (native account views, `memOk_of_accept`), `A.akeys`, `A.bnds`
+  (bounded intervals × physical keys; rows ≤ 65·65), `A.srcps`, `A.qvVals` (with `Reads`, via the
+  new `AcceptedQv.qvNativeOk_reads_of_accept`); **`A.rcptAcc/acctAcc/akeyAcc/bndAcc/srcpAcc/qvAcc
+  : TableRenderV3 A.pub t`** for t = 16,17,18,19,20,22 — no premises; `*_tf` lemmas (`rfl`).
+* **Receipt-side balances in bundle form (done).**  `Assembly/RenderV3RcptBalance.lean`
+  (namespace `RcptBal`): `BusBalanced R b` (= `R.Balanced` at `b`, `balanced_of_buses`),
+  `bundle_sum` (sum over all tables = sum over the bus users, from exact traffic: tables
+  without an interaction on (b, side) count 0), `pubCount_free`, `pubCount_prepared`.
+  For any bundle `R` with `R.tf t` = the honest traffic of `A` (hyps `h16 … : R.tf t = …`):
+  `srec_balanced`, `rcl_balanced`, `akc_balanced`, `rids_balanced` (`h24` = the sort traffic of
+  `NativeSortIds.input (A.rcptInput.lists.flatten.map Input.receipt)`, i.e. render-sched's
+  `sortRenderV3` with `lists := A.rcptInput.lists`), `mem_balanced`, `qvc_balanced`,
+  `qsh_balanced`: **unconditional**; `src_balanced` given `|preparedBytes A.p 0| < 256^4`;
+  `bnd_balanced` under the coverage premise `hc`; `bndp_balanced` under the decidable layout
+  premise `A.bounds = A.p.bnds`.  Not covered here: SIZE (tables 2, 4, 20 → 21; needs the trie
+  lane's node/val traffic and `sizeA7`).
+  Audit `test/AuditRenderV3RcptAccepted.lean`.  Integration 3,102 jobs OK; pin-check OK.
+
+### Open statements (for the successor / lead)
+* Layout decision (BNDP, pubFit): see above.  With option (a) (`prepD0` publishes
+  `boundedIntervals`), `bndp_balanced`'s premise becomes `rfl` and `accepted_prepared_length`
+  gives the pubFit bound.
+* BND coverage: `∀ r ∈ physicalActiveRows (rcptTraceNative A.pub A.rcptInput) 0,
+  physicalBoundaryKey … r ∈ A.bnds.map BndE.rec4` — needs a whole-trace identification of the
+  active routing rows with `routeKey bounds (nativeRoutingIndex k rp) pos` (`pos ≤ |receiver|`),
+  then `native_routing_selected`.
+* SIZE: trie lane.
+
+## 2026-10-12 (round 8: A12 `c.layout_wf`, lead request after the user decision)
+
+* Merged `origin/integration/v3-20261012` (bbba829c).
+* **Spec (unsigned draft).** `NearSpecV3.ChunkValidationV0a`: `a12 cb := walkD0 cb = ok k →
+  |k.L.boundaries| + 1 == |k.L.shardIds|` (claim-only), last conjunct of `RelD0a`, `checkD0a`
+  (reason `out of domain (c.layout_wf): …`), `inD0a`/`InD0a`; `relD0a_iff`, `relD0a_mono_all`
+  re-proved.  **`prepClaim` checks it natively too** (like A8; last check before `pure`, written
+  `L.numShards == L.boundaries.length + 1` so the existing `check (_ + 1 == _)` pattern matches in
+  prepClaim proofs stay unambiguous); `V3/Fast/Prep.lean` mirror (`prepClaim_csimp` is `rfl`).
+  Needed for soundness: the verifier's `prepD0` is the only place a claim-only condition can be
+  enforced (the AIR never sees the layout).  `spec/near-chunk-validation-v0a.md` §1, table, §2.9
+  (nearcore source check: `ShardLayoutV2::new` v2.rs:207, `ShardLayoutV3::new` v3.rs:211
+  `assert_eq!(boundary_accounts.len() + 1, shard_ids.len())`); Python
+  `oracle/tools/spec_check_v3_d0a.py` (`a12_ok`, reported after A11), difftest `AMENDMENTS`,
+  challenge-draft builder notes.  The Lean tool (`nearspec-v3-check-d0a`) changes only through
+  `checkD0a`.
+* **Measured** (`oracle/tools/a12_measure_v3_d0a.py`, every decodable claim incl. mutants;
+  `docs/e2e-results/v3-a12/measure.json`): **0 violations** — public-d0a 421 claims (123 honest),
+  d1run 53,048 (7,039 honest), d2corpus.v2 67,384 (10,927 honest); layouts 3/4, 4/5, 5/6.
+  **Difftest public-d0a** (Lean exe rebuilt, Python): 421 cases, **0 disagreements**;
+  `c.layout_wf` on 290 honest witnesses: 0 (`docs/e2e-results/v3-a12/difftest-public-d0a.json`).
+* **Lean.** `GoodV3.layoutWf` (and `GoodV3.amendments` gains `a12`); `ClaimFieldsV3.layoutWf`
+  from `prepClaim` (`walkD0_of_prepClaim`); `factorSound` adapted; `good_of_native` (hence
+  `factorComplete`) from `RelD0a`'s last conjunct; `prepClaim_exists` takes the A12 premise,
+  `checkD0a_prepClaim_exists` supplies it; positional fix `FactorComplete` (A11 is now
+  `.2.2.2.2.2.2.2.2.1`); `LinkShaKinds.lean:184` one-line fix for `V3RecordsWf.accts : AcctV3WfE`
+  (round 7) — lane v3-link has its own fix (`rcases W.accts`); take theirs at merge.
+* **Dependents.** Reverse import closure of `NearSpecV3.PrepD0`, `NearSpecV3.ChunkValidationV0a`,
+  `ZkFormal.V3.Fast.Prep`: 3,397 zk-formal modules, 178 top-level; `lake build` of all of them +
+  `nearspec-v3-check-d0a` (5,214 jobs): the only errors are the integration branch's known
+  trie-lane failures (`Assembly/RenderV3Trie.lean`, `Render/BundleSched.lean` table 7 ups), which
+  also block `ZkFormal.V3.Integration`.  Audits `AuditA12LayoutWf` (new), `AuditFactorComplete`,
+  `AuditAssemblyFactor`, `AuditNativeGoodGap`, `AuditV3DomainBounds`,
+  `AuditRenderV3RcptAccepted`, `AuditAccountEmptyCap`, `AuditAcceptedSrcpOk` pass; pin-check OK.
+* **Uses of A12** (`Assembly/RenderV3RcptLayout.lean`): `layoutWf_of_rel`, `boundedLayout_wf`;
+  `AcceptedV3.bounds_eq : A.bounds = A.p.bnds`, `boundedPrep_eq`; **`prepared_le`
+  (`|preparedBytes A.p 0| ≤ 2^26`), `prepared_lt_P`, `pubFit`** (the size/fit conjuncts of
+  `RenderWitnessV3`); **`bndp_balanced_accepted`** and `src_balanced_accepted` (no premises).
+* **Still open: BND coverage** (`bnd_balanced`'s `hc`).  A12 does not touch it (both sides use
+  the bounded intervals, which A12 makes the published ones).  Missing: a whole-trace lemma —
+  every row `r` of `rcptTraceNative A.pub A.rcptInput` with `gBd = 1` is a routing-active
+  coordinate (`routingActive`: `sV` rows and the `sRID` index-0 row) of some planned receipt `rp`
+  of `A.lists`, and its key is `routeKey A.bounds (nativeRoutingIndex k rp.input.receipt)
+  (routingPosition rp row)` (cells from `routingAux (nativeRoutingInterval k)` through the outer
+  aux layers' commute lemmas and `nativeRoutingConstants` for `q`); then
+  `native_routing_selected` closes it.  Only per-receipt slices exist today
+  (`applied_receipt_route_slice`, `routeColumns_key`).
+
+## 2026-10-12 (round 9: BND coverage, receipt side collected)
+
+* **BND coverage proved** (`Assembly/RenderV3RcptBnd.lean`).  Whole-trace identification on the
+  honest receipt trace `rcptTraceNative pub x`: `native_boundary_rows` — a row with `gBd = 1` is a
+  planned receipt row (padding: all cells 0, `booleanReceiptTrace_padding`; list headers: the
+  `routingHeaderAux` layer zeroes `gBd`, `native_gate_header`; inactive receipt coordinates:
+  `routing_inactive_cells`) at a routing-active coordinate; `native_boundary_key` — its key is
+  `routeKey (boundedIntervals k.L own) (nativeRoutingIndex k receipt) (routingPosition p row)`
+  (the routing layer commuted to the top of `completeReceiptAux` via the `routing_*_commute`
+  lemmas, `complete_aux_routing`; scratch cells by `routingAux_transport`; `q` from
+  `nativeRoutingConstants`, `native_q_cell`; `routeColumns_key`).  `planned_receipt_facts`:
+  planned receipt rows belong to applied receipts and `sV` indices are `< |receiver|`.
+  **`AcceptedV3.bnd_coverage`** (via `native_routing_selected`, receivers ≤ 64 bytes from
+  `Receipt.wf`) and **`RcptBal.bnd_balanced_accepted`** (premise-free).
+* **Receipt side collected** (`Assembly/RenderV3RcptSide.lean`): `RcptRendersV3 pub` /
+  `A.rcptRenders` (tables 16–20, 22; 21 = `sizeA7` is trie-side); `rcpt_side_balanced` (bundle
+  `R` with `R ⟨t,_⟩ = A.rcptRenders.*` for t ∈ {16..20, 22} and `R.tf 24` = the sort traffic of
+  the applied receipt ids ⇒ SREC, RCL, AKC, RIDS, MEM, QVC, QSH, SRC, BNDP, BND all
+  `BusBalanced`); **`rcpt_side_of_accept`**: `checkD0a B0 cb wb = .ok () → ∃ A, pubFit ∧
+  |preparedBytes A.p 0| < P ∧ (∀ R, … → the ten balances)`.  No premise left on the receipt side
+  except the table-24 sort traffic (render-sched's `sortRenderV3` with `lists := A.rcptInput.lists`).
+* Merged `origin/lane/v3-trie-complete` (6dd072ae); `LinkShaKinds.lean` conflict resolved with
+  theirs (`rcases W.accts`).  **Final build: `lake build ZkFormal.V3.Integration` + all 178+
+  top-level dependents of the spec/NearAir changes + `nearspec-v3-check-d0a`: 5,234 jobs, 0 errors.**
+  Audits `AuditRenderV3RcptSide` (new), `AuditA12LayoutWf`, `AuditRenderV3RcptAccepted`,
+  `AuditAccountEmptyCap`, `AuditAcceptedSrcpOk`, `AuditNearV3Admission`, `AuditFactorComplete`,
+  `AuditAssemblyFactor`, `AuditNativeGoodGap`, `AuditV3DomainBounds`, `AuditPaddedRcpt` pass;
+  pin-check OK.
+* Open on the receipt side: nothing beyond the bundle assembly itself (the lead's
+  `RenderWitnessV3`: hint codec bounds, header admissibility, SIZE bus with the trie side).
+
+## 2026-10-12 (round 10: non-table conjuncts of `RenderWitnessV3`)
+
+* `Assembly/RenderV3Header.lean` (audit `test/AuditRenderV3Header.lean`):
+  - **Hint codec bounds** `nativeHint_bounds` / `AcceptedV3.hint_bounds`: `n = |appliedReceipts| ≤ 4481
+    < 256^4` (`applyNewChunk_receipt_bound`), body `≤ 1,295,017 < 256^4` (`accepted_native_body_bound`
+    + `prepD0_body_eq`), `|Hint.encode h| = 8 + |body| ≤ 1,295,025 ≤ v3MaxHintBytes` (`hint_encode_length`).
+  - **Header admissibility** `bundle_headerOk (R : RenderBundleV3 pub) (hq : ∃ t < 25, 4 ≤ R.trace.log t)`:
+    `(VdP nearAirV3).headerOk (trHdr nearAirV3.toAir R.trace) = true` from each table's `TableLocal`
+    (`R.local_at`), `nearAirV3_maxLog_le` (all caps ≤ 22, kernel), `nearAirV3_air_wf`,
+    `nearAirV3_degree_le` (all degrees at g = 2 ≤ 16, kernel), and `minQueryLog = 8 ≤ log + 4`.
+    The premise `hq` is needed by the header check itself (all logs 1 ⇒ query log 5 < 8);
+    `bundle_headerOk_rcpt`: discharged by the honest receipt render (table 16, log 22).
+* `lake build ZkFormal.V3.Integration` (4,135 jobs) OK; pin-check OK.
+
+## 2026-10-12 (round 11: routing-q range check adopted; receipt-side premises of `trie_side`)
+
+* Merged `origin/main` (717390e7) and `origin/lane/v3-trie-complete` (3834ac8e).
+* **(A) AIR change — table 16 := `RcptV3.tableQ`** (user decision 2026-10-12).
+  `Rcpt/Tables/RcptR.lean`: `qBoundR := mul3 (c sV) (c fs) (sub (c q) (bitsX 12 7))` (verbatim
+  `RoutingQCandidate.qBound`), `tableQ := {tableR with constraints := tableR.constraints ++ [qBoundR]}`
+  (882 constraints; same width/interactions/maxLog 22).  `RcptReceiptRepaired.tableQ_eq : tableQ =
+  ReceiptCandidateRouting.candidateTable` (`rfl`).  `NearAir.lean`/`ExtractV3.lean`: only entry 16
+  changed (literal, `getElem?_rcpt`); new `ExtractV3.rcptLocalQ` (HoldsP ⇒ local on `tableQ`);
+  `rcptLocal` (on `tableR`) now derived via `tableLocal_ext` (callers unchanged).
+  `nearAirV3_wf`, `nearAirV3_npOkPg` re-checked by kernel.  **`nearV3_sizeMaxAligned` unchanged:
+  6,415,073 B** (one extra degree-3 constraint, no columns) ⇒ `v3MaxInner`/`v3MaxHintBytes` unchanged.
+  - **View** (`RcptViewV3.lean`): `rcptV3_view_nearAir` now yields `RcptV3Wf ∧ exact traffic ∧
+    ∀ x ∈ flatR ls, x.q < 128` (nothing weakened).  New `ReceiptCandidateProof.extracted_q_ltQ`
+    (Layout ⇒ `(rcptOf tr tt y).q < 128` on `ReceiptCandidateRouting.candidateTable`) and
+    `ReceiptCandidateProof.view_q (h : TableLocal ReceiptCandidateRouting.candidateTable tr tt pub)
+    (hc : ListChain tr tt 0 bs e) : ∀ x ∈ flatR (bs.map (ListBlock.view tr tt)), x.q < 128`.
+  - **Honest render** (`Render/HonestRcptQ.lean`): `rcptTraceQ := RoutingQCandidate.patchTrace
+    (rcptTraceB pub x) 0` (fills `xb12..18` with the bits of `q` on first receiver rows),
+    `rcptTraceAlignedQ`, `rcptTraceB_q_bound` (honest `q < 128` via `booleanReceiptTrace_native_q_bound`),
+    **`rcpt_aligned_completeQ`** (TableLocal `tableQ` ∧ TableTraffic `rcptTrafficB` ∧ log%3=1; via
+    `ReceiptCandidateRouting.patch_local_of_q_bound`, `patch_traffic`).  `rcptRenderV3` uses it
+    (traffic unchanged ⇒ every receipt-side balance unchanged); `bundle_headerOk_rcpt` adapted.
+  - **For lane v3-rcpt-sound** (`bnd_lookup_provider`'s canonical-request premise): use
+    `ExtractV3.rcptLocalQ hH : TableLocal RcptV3.tableQ tr T_RCPT pub` (= `ReceiptCandidateRouting.candidateTable`,
+    `rfl`), `ReceiptCandidateProof.repaired_local_base` for the arithmetic table, and
+    `ReceiptCandidateProof.view_q (rcptLocalQ hH) hc` for `∀ x ∈ flatR (bs.map (ListBlock.view tr T_RCPT)), x.q < 128`
+    (replaces `RcptLink.candidate_view_q`, which was stated for the old `RoutingQCandidate.candidateTable`);
+    or the 4th conjunct of `rcptV3_view_nearAir`.
+  - **Rust prover note:** the v3 AIR export and the receipt generator must add `qBoundR` and fill
+    `xb12..18` = bits of `q` on rows with `sV = fs = 1` (no other cell changes).
+  - Commit 2e87cd70.  Audit `test/AuditRcptRoutingQ.lean`.
+* **(B) receipt-side premises of `trie_side`** (`Assembly/RenderV3RcptTrie.lean`, commit 52dd2a00):
+  - item 5 VSLOT: **`AcceptedV3.vslot_views (hr : SizedAccountRun A.m.pre writes oldPost) (hkf : KeysFinal …) :
+    nativeAccountViews A.m.pre oldPost (appliedReceipts A.k A.w) = some A.accts`** (any exported `oldPost`;
+    `native_agreement` + `find_upsert_ne` + `MemOk.post`).
+  - item 6: **`AcceptedV3.rcpt_keys`**, **`AcceptedV3.rcpt_final`** (no premises); generic
+    `honest_rcpt_keys`, `honest_rcpt_final` (`MemOk`, `AkcOk`), `rcptTraceNative_patched_local`,
+    `patched_counts` (off BND, counts of the q-patched plain trace = `rcptTrafficB`), via
+    `NativeReceiptQueryInventory.physical_keys`/`physical_finals`.
+* **Receipt SHA family + receipt halves of BYTES/DIGEST** (`Assembly/RenderV3RcptSha.lean`, commit c9c0ec2d):
+  `Render.outcome_traffic_v3` (outcome trace carries the table-23 traffic), `AcceptedV3.mrkAcc`
+  (= `mrkRender_accepted … 0`), **`AcceptedV3.receipt_sha`**: `∃ receipt, rows ≤ 1,373,299 ∧ bytes < 256 ∧
+  (16 + 17 + 23 BYTES sends = expectedBytes receipt + pubCount nearAirV3 A.pub B_BYTES false) ∧
+  (expectedDigests receipt = 16 + 23 DIGEST recvs + expectedDigests (sourceRcShaJobs …) +
+  expectedDigests (jobsToSha (accountShaJobs A.accts)))` (from `ReceiptSourcePublicBody.native`,
+  `ReceiptPublicByteCount.accepted`, `boundedPrep_eq`); **`AcceptedV3.account_digests`** (account jobs'
+  digests = `(TrieNative.nodes A.m A.steps oldPost writes q).flatMap postSlotDigests`, via
+  `TrieShared.vslot_accepted` + `vslot_views`).  Source family: `sourceShaMessages A.p.lists A.w.entries`
+  (`source_rows_A10` ≤ 2,257,792; `AcceptedSourceShaContract.accepted`: msgRows ≤ 35, bytes < 256).
+* **Combined** (`Assembly/RenderV3RcptTrieSide.lean`): **`RcptTrieSide.rcpt_trie_side A hovh`**:
+  ∃ writes oldPost q us r0…r7 r21, SizedAccountRun ∧ KeysFinal ∧ (∀ u ∈ us, u.Valid) ∧ ∀ bundle R pinned at
+  0–7, 16–22 (receipt renders), 23 (`A.mrkAcc`), with `R.tf 24` = the honest sort traffic ⇒ the ten receipt
+  buses ∧ the 13 trie buses ∧ SIZE ∧ VSLOT ∧ KEYNIB ∧ FINAL ∧ (codec BYTES → `SrcpBytes A` → BYTES) ∧
+  (codec DIGEST → `SrcpDigests A` → DIGEST).  Audit `test/AuditRcptTrieSide.lean`.
+  Integration 4,328 jobs OK; audits RcptRoutingQ, RcptTrieSide, RcptViewV3, HonestBalanceRcpt,
+  RenderV3Header, RenderV3RcptSide, RenderV3RcptAccepted, NearV3Admission, TrieSide, PaddedRcpt pass;
+  pin-check OK.
+
+### Open (exact) after round 11
+1. **`SrcpBytes A`** `:= ∀ m, cnt ((srcpTraffic (blocksOfProofs A.srcps)).sends B_BYTES) m =
+   cnt (expectedBytes (sourceShaMessages A.p.lists A.w.entries)) m` and **`SrcpDigests A`** `:= ∀ m,
+   cnt ((srcpTraffic …).recvs B_DIGEST) m = cnt (expectedDigests (sourceShaMessages …)) m +
+   cnt (expectedDigests (sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries)) m`.
+   **FALSE whenever an accepted witness has a duplicate source occurrence** (`Public.sourceDup p.lists j`):
+   `srcpTraffic` emits the leaf payload `(B.ql, B.leaf)` (and the path items, and an RC digest receive) for
+   EVERY block (`source_block_bytes`), and `blocksOfProofs` numbers ids counting duplicates, while
+   `sourceShaMessages` filters duplicate blocks (`DedupCompile.blocks`, weight 0) and `sourceRcShaJobs` has
+   `dmult := !sourceDup`.  Nothing rules duplicates out in D0a.  Fix options (lead): (a) source SHA family =
+   the non-dedup `(blocksOfProofs A.srcps).flatMap (fun B => (sourcePayloads B).map sourceShaPayload)` with
+   the receipt family taken at `duplicate := fun _ => false` — needs NEW row bounds (≤ 2,257,792 /
+   msgRows ≤ 35 were proved for the dedup family only); or (b) make the srcp render/AIR skip duplicate
+   blocks' SHA traffic (AIR change).  Without duplicates the identities are expected provable (not done).
+2. **Size budget** `ovhNat A.pub + 2,000,000 + srcpSize (blocksOfProofs A.srcps) ≤ 8,388,608` (premise of
+   `trie_side`): **not implied by acceptance as stated.**  `ovhNat A.pub = 0`
+   (`Public.prepared_ovhNat`, `prepD0_roots`), but `srcpSize` can approach the 8 MiB witness size (only
+   `|raw| ≤ 8 MiB` bounds the entries) and charges duplicate blocks' `12 + 33·|path|`.  `trie_side` only
+   needs it for `SizeOk` (`ovhNat + actual non-dup node bytes + value bytes + srcpSize ≤ 8 MiB`);
+   the trie lane should take that exact form (then: witness-size accounting, `NativeEncodedBudget`,
+   plus a dup-path lemma or AIR change).
+3. Codec identities (table 11, `schedulerSanityJobs 0 us`) — scheduler lane (item 3).
+
+## 2026-10-12 (round 12: lead decisions — duplicate source blocks in the SHA family; exact size premise)
+
+* origin/main unchanged (717390e7).  Commit cd8c4ab9.
+* **Source family with duplicates** (`Assembly/RenderV3SrcpSha.lean`): `AcceptedV3.srcJobsAll`/`srcShaAll`
+  = every block of `blocksOfProofs A.srcps` (duplicates included), payloads `sourcePayloads`, `K_SRC` ids as
+  the table numbers them; `rcShaAll` = `sourceRcShaJobs` with `dmult := true`.
+  - **Row bound holds unchanged: `srcShaAll_rows : ≤ 2,257,792 = 1984·(18 + 35·Dp0)`, Dp0 = 32** (per block
+    `18 + 35·|path|`, `block_rows`; `|p.lists| ≤ 1984` counts every prepared occurrence, duplicates
+    included, `relD0a_inputs`; every path ≤ Dp0 by A10, `A.srcpDepth`).  `srcShaAll_msgRows` (≤ 35),
+    `srcShaAll_bytes`.
+  - **`srcp_bytes`** (`cnt` srcp `BYTES` sends = `expectedBytes srcShaAll`), **`srcp_digests`** (srcp `DIGEST`
+    recvs = `expectedDigests srcShaAll + expectedDigests rcShaAll`; `block_digest_perm` via
+    `blockOfProof_digest_chain`, every occurrence authenticated `srcps_auth` via
+    `preparedSourceLists_authenticated`; `rc_digests` with `toShard = own`).  The open `SrcpBytes`/`SrcpDigests`
+    of round 11 are gone (deleted).
+  - Receipt family changed to `ReceiptGatedShaJobs.jobs … (fun _ => false)` (every RC digest output enabled,
+    matching the source table's one RC receive per occurrence); `receipt_sha` DIGEST now has
+    `(sourceRcShaJobs …).map (dmult := true)`; rows/bytes unchanged (`rows_unchanged`, `bytes_unchanged`).
+  - Two-bin fit: `trie_side_exact` is instantiated with `srcShaAll` at the same per-family bounds, so
+    `twoSha_physical_fit`/`twoBudget_fit` re-check inside it (no change needed).
+* **Size premise restated** (TrieSide.lean, trie lane finished — lead permission): `TrieSide.SizeBudget A`
+  (∀ writes oldPost q, SizedAccountRun → KeysFinal → node+value ≤ 2,000,000 →
+  `ovhNat A.pub + Σ non-dup node ser bytes (TrieNative.nodes …) + Σ non-empty non-dup value bytes + srcpSize ≤ 8 MiB`),
+  `sizeBudget_of_coarse` (old premise ⇒ new), **`trie_side_exact`** (premise `SizeBudget A`); `trie_side` kept with
+  its original statement as a corollary (nothing weakened).
+* **`rcpt_trie_side A (hovh : TrieSide.SizeBudget A)`**: all receipt/trie buses, SIZE, VSLOT, KEYNIB, FINAL; BYTES and
+  DIGEST conditional only on the codec identities (table 11).  Integration 4,331 jobs OK; audits RcptTrieSide,
+  TrieSide, RcptRoutingQ pass; pin-check OK.
+
+### Open (exact) after round 12
+1. **`TrieSide.SizeBudget A`** — NOT proved.  `ovhNat A.pub = 0` (`Public.prepared_ovhNat`).  Remaining:
+   non-dup node bytes + value bytes + `srcpSize (blocksOfProofs A.srcps) ≤ 8,388,608`.  Doubt it holds near the
+   8 MiB witness cap: `srcpSize` charges every duplicate occurrence `12 + 33·|path|` (up to 1984·(12+33·32)
+   ≈ 2.1 MB) although the witness stores the entry once, and `TrieNative.nodes` covers the pre-tries of every
+   implicit step (nodes produced by execution are not witness bytes).  Needs a decision (gate the srcp SIZE
+   contribution by `!dup` in the AIR, or a D0a check on exactly this total) or a witness-accounting proof
+   (`NativeEncodedBudget`, `UniqueSourceBudget`) — not attempted.
+2. Codec identities (table 11) — scheduler lane.
+
+## 2026-10-12 (round 13: `SizeBudget A` proved — no AIR/spec change)
+
+* Commit b340ad8f, `Assembly/SizeBudgetAccepted.lean` (audit `test/AuditRcptTrieSide.lean`; Integration 4,332 jobs OK;
+  pin-check OK).
+* **What table 21 checks** (`SizeOk`/`SizeWf`): `x0 + x1 ≤ 3,000,000` and `OVH + x0 + x1 + x2 ≤ 8,388,608`, with
+  `x0` = non-dup node ser bytes, `x1` = non-empty non-dup value bytes, `x2 = srcpSize (blocksOfProofs A.srcps)`
+  (every occurrence, duplicates included, charged `L + 33·|path|`, `L = |u64 to_shard ‖ borsh(receipts)|`).
+  `OVH = 0` (`A.pub` packs overhead 0).  Soundness (`LinkBus.size_totals`) uses only the base bound.
+* **Why it holds without witness accounting**: `L = 12 + Σ_r |r.encode|`, and the occurrences' receipt lists
+  concatenate to `appliedReceipts` (`acceptedSrcp_rcl` + `lists_applied`; A2 makes the routing filter the
+  identity), so `x2 = Σ_occ (12 + 33·|path|) + Σ_{applied r} |r.encode|` (`srcpSize_eq`, `srcps_receipts`).
+  A duplicate occurrence's receipts are charged again only if they are applied again — and they are
+  counted in `appliedReceipts`, which is bounded by A1's compute check (`applyNewChunk_receipt_bound`,
+  ≤ 4481), each `≤ 347` bytes (`native_receipt_encoded_bound`).  (In fact `e.distinct_ids` forces duplicate
+  entries to be receipt-free, but the proof does not need it.)
+* `srcpSize_le : x2 ≤ 1984·(12 + 33·32) + 4481·347 = 2,118,912 + 1,554,907 = 3,673,819`;
+  `sizeBudget : TrieSide.SizeBudget A` via `sizeBudget_of_coarse` (`0 + 2,000,000 + 3,673,819 = 5,673,819
+  ≤ 8,388,608`, slack 2,714,789).  `rcpt_trie_side A A.sizeBudget` now has no size premise.
+* Candidate fixes (a) gate srcp SIZE by `!dup`, (b) D0a amendment: unnecessary.
+
+### Open (exact) after round 13
+1. Codec identities (table 11) — scheduler lane.

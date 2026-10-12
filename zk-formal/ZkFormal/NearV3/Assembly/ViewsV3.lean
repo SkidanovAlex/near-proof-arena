@@ -6,6 +6,7 @@ import ZkFormal.NearV3.Extract.ValProof
 import ZkFormal.NearV3.Extract.UniqProof
 import ZkFormal.NearV3.Extract.Ups.Proof
 import ZkFormal.NearV3.Rcpt.Extract.AcctProof
+import ZkFormal.NearV3.Rcpt.Candidates.AccountEmptyCap
 import ZkFormal.NearV3.Rcpt.Extract.AkeyProof
 import ZkFormal.NearV3.Rcpt.Extract.BndProof
 import ZkFormal.NearV3.Rcpt.Extract.SizeProof
@@ -69,12 +70,13 @@ theorem upsView (h : HoldsP nearAirV3 pub tr) :
         (ZkFormal.NearV3.upsTraffic u) :=
   ZkFormal.NearV3.ups_view tr pub T_UPS (upsLocal h)
 
-/-- Account records and their exact traffic, from `HoldsP` at `T_ACCT`. -/
+/-- Account records and their exact traffic, from `HoldsP` at `T_ACCT` (`acctTableV3`, the
+empty-capable repair): no account (`[]`, silent table) or the original cap-19 view. -/
 theorem acctView (h : HoldsP nearAirV3 pub tr) :
-    ∃ as, ZkFormal.NearV3.AcctV3Wf as ∧
+    ∃ as, ZkFormal.NearV3.AcctV3WfE 19 as ∧
       ZkFormal.Near.TableTraffic ZkFormal.NearV3.AcctV3.interactions tr T_ACCT pub
         (ZkFormal.NearV3.acctV3Traffic as) :=
-  ZkFormal.NearV3.acctV3_view tr pub T_ACCT (acctLocal h)
+  ZkFormal.NearV3.acctV3E_view_at 19 (by decide) tr pub T_ACCT (acctLocal h)
 
 /-- Access-key records and their exact traffic, from `HoldsP` at `T_AKEY`. -/
 theorem akeyView (h : HoldsP nearAirV3 pub tr) :
@@ -95,6 +97,6 @@ theorem sizeView (h : HoldsP nearAirV3 pub tr) :
     ∃ v, ZkFormal.NearV3.SizeWf pub v ∧
       ZkFormal.Near.TableTraffic ZkFormal.NearV3.SizeV3.interactions tr T_SIZE pub
         (ZkFormal.NearV3.sizeTraffic v) :=
-  ZkFormal.NearV3.size_view tr pub T_SIZE (sizeLocal h)
+  ZkFormal.NearV3.size_view_at 4 (by decide) tr pub T_SIZE (sizeLocal h)
 
 end ZkFormal.NearV3.Assembly

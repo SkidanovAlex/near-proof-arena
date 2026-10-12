@@ -1,4 +1,4 @@
-# NEAR Proof Arena — handover (updated 2026-10-11)
+# NEAR Proof Arena — handover (updated 2026-10-12)
 
 This is for the next lead agent. Read it first. The raw working log for 2026-10-07 to 2026-10-09 (≈6,500 lines) now lives in `docs/logs/v3-progress-log-2026-10.md`. Use it only for evidence lookup.
 
@@ -25,6 +25,11 @@ User directives (binding):
   * A8 is in RelD0a.
   * A9 and A10 are in RelD0a (2026-10-09): ChaCha words drawn by all scheduler runs ≤ W0 = 770,000, and every used source Merkle path ≤ Dp0 = 32 items.
   * D3 error kinds count as one failure; floats come in a later stage; block facts are derived from headers.
+  * 2026-10-11: **A11 `w.post_rebuild`** in RelD0a (no SHA-collision shadow changes the A7 post rebuild);
+    **A7's measure** is the unfolded pre trie plus the whole rebuilt post trie (was position-matched
+    `diffT`); A7 and A10 are **enforced in the AIR** (A10 by a depth counter in `srcpV3`, A7 by running
+    sums checked against B0 in `sizeV3`); the **rcpt repairs** (13-bit deposit age, gated gas surplus) are
+    adopted. `nearAirV3` may be revised to make soundness and completeness hold.
 * **Security and operations:**
   * Repo: GitHub `ilblackdragon/near-proof-arena`, private.
   * Remote access is through `tailscale serve` only, never funnel. Everything binds to loopback.
@@ -54,6 +59,11 @@ User directives (binding):
 
 ## 2. Repository state
 
+* **2026-10-11 (evening):** `integration/v3-20261011b` merged into main: `lane/v3-a11` (A11, A7 measure,
+  `factorComplete`), `lane/v3-link` (ExtractV3Stmt at B0, v1-style `LinkV3Stmt`, `extractV3_of_link`,
+  `LinkClaim`), `lane/v3-render-rcpt` (acct/size/srcp/qv renders, cap changes, A10 counter, rcpt repairs),
+  `lane/v3-render-sched` (sha/ChaCha/mrk/sort/mem/cmp/ups renders, ChaCha 22, empty-capable mrk/sort),
+  `lane/v3-render-asm` (`RenderBundleV3`, `CompleteV3Stmt`, `nearV3_admission_of`). See §5 and §6.
 * **2026-10-11:** `integration/v3-20261011` merged into main:
   * `lane/v3-prover` at `5347fed3`: Rust prover part 1, `examples/np-udr-stark-v2/` (forked from the live `np-udr-stark-fast2`). It adds `auxGroup` g ∈ {1,2,3}, the `np-air-v2` format with public segments and `maxPub`, `pubFit` checked before any record is enumerated, and public messages in the bus equation. `conformance/run-v2.sh`: the deployed Lean v2 verifier (`np-lean-verify-v2`) accepts the Rust proofs at g = 1/2/3 and rejects them under the other g, plus 9 proof and 5 claim mutations per case (166/166). Rust's per-table layout of `nearAirV3` equals Lean's (`np-lean-export-v3 --layout g`) for all 25 tables. The inherited v1 suite passes 205/205. See its `README.md`.
   * `agent/v3-assembly` at `5ef6767d`: the `RenderV3` obligation types, `HoldsP` assembly from per-table traffic, the `traceSum` composition, and head/walk `maxLog` raised to 13/22. The lane is still active; merge its next commits the same way.
@@ -122,113 +132,69 @@ User directives (binding):
 * About 5,000 modules. Integration target: `ZkFormal.V3.Integration`.
 * About 2,400 axiom-audit files in `zk-formal/test/`. Run each with `lake env lean test/<file>`.
 
-**Assembly lane (`agent/v3-assembly`, 2026-10-10):** the assembled AIR, the
-admission certificate, and the whole AIR↔semantics composition layer now exist.
-Read `docs/zk-formal/STATUS-V3-ASSEMBLY.md` first; the modules are
-`zk-formal/ZkFormal/NearV3/Assembly/{NearAir,NearAirCheck,NearAirSize,NearAirBus,
-HintCodec,NearAdmission,ExtractV3,ViewsV3,LinkV3,ComposeV3,RenderV3,
-RenderV3Assemble,RenderV3Trace}.lean`.
-* `nearAirV3` (25 tables, `pubSegs = Public.preparedSegments`), `nearAirV3_wf`,
-  `nearAirV3_npOkPg`.  Head `maxLog` 13 and walk `maxLog` 22 (honest aligned heights).
-* Aligned size bound at `auxGroup = 2`: `6,276,897` B (`nearV3_size`); margin for
-  the full hint `B ≤ 1,295,017` is `816,694` B.
-* `nearV3_admission` / `nearV3_admission_with_extract_b`: the `AdmissionStatement` of
-  `near-chunk-validation-d0-stark`, with the soundness premise discharged from
-  `ExtractV3Stmt` through the proved `factorSound`.
-* The A9/A10 domain decisions (`W0 = 770,000`, `Dp0 = 32`) are merged from `lane/v3-domain-bounds`.
-* **AIR→semantics interface done:** fixed table indices, `TableLocal` for every
-  table from `HoldsP`, all eleven per-table views instantiated at those indices
-  (`ViewsV3.lean`, `ExtractV3.lean:rcptV3_view_nearAir`), the `busCount` decomposition
-  (`busCount_nearAirV3`), `HoldsP` assembly from per-table obligations
-  (`holdsP_of_parts`, `holdsP_of_table_traffic`, `count_sel`), and the full-trace
-  composition `traceSum` + `tableLocal_traceSum`/`tableTraffic_traceSum`.
-* **Still open:** the concrete `renderV3` trace and the renders still missing
-  (rcpt/qv/srcp/chacha/scheduler, padded acct/size/sort), `RenderV3Stmt`/
-  `AlignedV3Stmt`/`FitsV3Stmt`, `LinkV3Stmt` ⇒ `ExtractV3Stmt`, the Rust trace generators and candidate package.
+**State (2026-10-12, main `abf81215`): the D0a certificate is unconditional.**
+`Assembly/AdmissionV3.lean:nearV3_admission_final` proves the `AdmissionStatement` of
+`near-chunk-validation-d0-stark` from only `hpub` (public digest binding) and `himpl` (the artifact's
+implementation connection). Soundness `extractV3 : ExtractV3Stmt` (`Assembly/ExtractV3Proof.lean`)
+and completeness `completeV3 : CompleteV3Stmt` (`Render/CompleteV3Chacha.lean`) are both proved.
+Guarded audit `test/AuditAdmissionV3.lean` (only propext/Classical.choice/Quot.sound). Details:
+`docs/logs/integration-v3-20261012d.md` and the lane logs `v3-link-2026-10.md`,
+`v3-render-sched-2026-10.md` (packages 11–13), `v3-render-vbytes-2026-10.md`,
+`v3-render-chacha-2026-10.md`.
 
-**Parallel work packages for other agents.**  The assembly layer is frozen
-(`nearAirV3`, its table indices, and the three statements).  Each package below is
-self-contained; full detail in `docs/zk-formal/STATUS-V3-ASSEMBLY.md` §5.  One
-worktree + lane branch per agent; integrate to `agent/v3-assembly`.
+* `nearAirV3`: table 20 = `SrcpDD` (DedupTable + A10 depth bits); table 9 carries the A9 word
+  counter; A7 tables nodeA7/valA7/upsA7/sizeA7 (RPL 70, RPLV 71); rcpt q<128 check.
+  Size bound **6,435,489 B** at g=2 (`v3MaxInner`), `v3MaxHintBytes` 1,953,115 (4+hint+inner =
+  8 MiB exactly); honest hints ≤ 1,295,025 B.
+* **Public format change (2026-10-12):** prepared source rows are 34 bytes `[dup, rep] ++ root`;
+  dup byte 0 first occurrence, 1 consistent repeat, 2 inconsistent repeat (AIR rejects 2).
+  `PreparedByteLength = 340 + 34·|lists| + …`. `prepD0` unchanged.
+* Spec (unsigned draft): A7 = unfolded pre trie + native post trie ≤ B0; A11 retired; A12
+  `|boundaries|+1 = |shardIds|`.
 
-| pkg | item | deliverable / file | deps |
-|---|---|---|---|
-| **Rust prover** | 8 | `examples/np-udr-stark-v2/` on `lane/v3-prover`. **Part 1 DONE** (generic v2 prover, differential vs Lean). **Part 2a/b DONE:** aligned generators for 7 tables (bnd, akey, head, val, uniq, walk, node), byte-identical to Lean (`run-v2.sh` §3). **Part 2c:** witness→entries dumper (`np-lean-entries-v3`) for node/val/head, `npudr v3check` passes on real fixtures (§4); walk/uniq/akey/bnd are the extension point. **Part 3 DONE:** `src/v3/prep.rs` (Hint/Prep codecs, refund body codec), `np-lean-prep-v3` vs `npudr prep-encode` byte-identical on all 64 D0a fixtures (§5). **Part 4:** package skeleton + `formal/` model + **conditional** `NpUdrStarkV2.certificate` (gated on `ExtractV3Stmt`/`RenderV3Stmt`; not ADMITTED). Remaining: `prepClaim`/`prepBody` D0 execution, the Rust v3 `prove` over `nearAirV3`, and the remaining table entry seeds. | renders (for the extraction) |
-| **rcpt-view** | 2 | **DONE** — `RcptV3ViewStmt` for `nearAirV3`: `Assembly/ExtractV3.lean:rcptV3_view_nearAir`. | — |
-| **srcp-render** | 2 | `srcpV3` render (`Rcpt/Render/Srcp/**`) | none |
-| **qv-render** | 2 | `qvV3` render (`Qv/Candidates/**`) | none |
-| **ups-render** | 2 | `upsV3` render M7d (`Render/Ups/**`) | none |
-| **acct/size/sort caps** | 2 | generalize `AcctProof.height_le` / `size_view` height split to a cap parameter (the honest aligned heights exceed the natural caps), then raise those caps in `nearAirV3` to `padLog22`. | none |
-| **link** | 3 | prove `LinkV3Stmt` (`Assembly/LinkV3.lean`) ⇒ `ExtractV3Stmt`. Views/wiring are done (`Assembly/ExtractV3.lean`, `ViewsV3.lean`); the open part is the join into `GoodV3` using `Link/*` and the `Assembly/` semantic modules. | views |
-| **heights** | 5 | `FitsV3Stmt`/`honestTrace_fits` for `nearAirV3` from `InD0a`; `Sched/Complete/Height.lean` exists; obligation type in `Assembly/RenderV3.lean`. | views |
-| **render-assembly** | 4 | `renderV3` + `RenderV3Stmt` + `AlignedV3Stmt`. Use `traceSum` + `holdsP_of_table_traffic` (done); supply each table's `TableLocal`/`TableTraffic` from the per-table generators (`Render/{Head,Node,Val,Walk,Uniq,Ups}Render.lean`, `Render/Padded*.lean`, …). | renders |
-| **governance** | 9 | D0a tier + weights, freeze, sign/register/deploy, judge run | Rust prover |
-
-Critical path: `link` → `render-assembly` → governance.  The **Rust prover** (item 8)
-is on no critical path; its part 2 follows the Lean renders as they land.
-
-**Done:**
-* soundness views and links for the trie, scheduler, ChaCha and receipts;
-* ChaCha completeness;
-* memory constraints (29/29);
-* field constraints (62/62);
-* R1 indexed public segments (protocol);
-* many native-execution extraction bridges (prepared IDs, SDL, codec, raw frames, queue traffic);
-* the assembled AIR `nearAirV3` and its `wf`/`NpOkPg` kernel checks;
-* the admission certificate `nearV3_admission_with_extract_b`;
-* the roll-in aligned size bound `nearV3_size`. On the concrete `nearAirV3` at `auxGroup = 2` it is **6,276,897 B**, leaving 816,694 B under 8 MiB after the maximum hint body (1,295,017 B). The earlier 6,176,224 B figure came from the padded two-SHA model. The bound holds only if padding that preserves `HoldsP` is constructed (`AlignedV3Stmt`).
-* the full AIR↔semantics composition layer (views, `busCount` decomposition, `HoldsP` assembly, `traceSum`);
-* the domain bounds (`lane/v3-domain-bounds`): `srcpV3` at `maxLog` 22 under A10, and the ChaCha lane row bound at W0.
-* Rust prover part 1 (2026-10-11, see §2): the generic v2 prover/verifier with public segments and `auxGroup`, differential against the deployed Lean v2 verifier.
-* Rust prover parts 2a/2b (2026-10-11): aligned per-table generators for **7** tables (bnd, akey, head, val, uniq, walk, node), each byte-identical to the Lean `Render/Padded*.lean` generator (`run-v2.sh` §3). `node` (186 columns) is the largest table; its generator found and fixed two real bugs via the differential (branch-window `slot`, aligned height).
-* Rust prover part 2c (2026-10-11): witness→entries dumper `np-lean-entries-v3` (`conformance/WitnessEntriesV3.lean`) for node/val/head, `npudr v3check` accepts every `nearAirV3` constraint and `npudr v3render` is byte-identical to `np-lean-render-v3` on real `public-d0a/d0` fixtures (`run-v2.sh` §4).
-* Rust prover part 3 (2026-10-11): `src/v3/prep.rs` (the `Hint`/`Prep`/`SchedPub` byte codecs and the refund body codec); `np-lean-prep-v3` vs `npudr prep-encode` byte-identical on all 64 D0a fixtures; `Hint`/body round-trips (`run-v2.sh` §5).
-* Rust prover part 4 (2026-10-11): the candidate package skeleton (`candidate.toml`, `build-recipe/`, `bench/`, `dependency-locks/`), the `formal/` Lean model `NpUdrStarkV2.Model.verifier = npVerifierP challengeSpecD0a nearAirV3 split prepV3b`, and `NpUdrStarkV2.certificate` — a **conditional** admission certificate (no `sorry`) gated on the open `ExtractV3Stmt`/`RenderV3Stmt`/`AlignedV3Stmt`. Not ADMITTED yet.
-
-**Not done:**
-* the concrete `renderV3` trace, `RenderV3Stmt`, `AlignedV3Stmt` (the padding construction), `FitsV3Stmt` (`honestTrace_fits`);
-* the renders still missing: `rcptV3`, `qvV3`, `srcpV3`, ChaCha, scheduler, and the padded acct/size/sort;
-* `LinkV3Stmt` ⇒ `ExtractV3Stmt` (the join into `GoodV3`);
-* review note: `nearV3_admission_with_extract_b` requires an unconditional `split (join h π) = some (h, π)`, but `HintCodec.split_join` needs `h.length < 2^32`. Weaken the premise to the `Domain ∧ Rel` form that `nearV3_admission` uses, or bound the hint;
-* the remaining byte and receipt-render constraints;
-* Rust prover remaining: `prepClaim`/`prepBody` (D0 execution) in Rust, the honest entry seeds for `walk`/`uniq`/`akey`/`bnd`, and the Rust v3 `prove` over `nearAirV3` (`out/prove` is still the inherited v1 surface);
-* any real judge run;
-* `Chacha.Table.maxLog` 21 → 22, which the A9 lane needs. It is held because four candidate families would exceed the 2^36 fingerprint budget; see STATUS-V3-AIR §5.
-
-The assembled AIR and the admission certificate now exist, together with the
-whole AIR↔semantics composition layer, so the remaining gap is the concrete
-honest trace (`renderV3`) and the link into `GoodV3`, not the protocol or size
-arguments.  `factorSound` (semantic soundness) is proved.
+**Open (all outside the Lean proofs):**
+* **Rust prover (`lane/v3-prover`):** emit the 34-byte source rows; table 20 SrcpDD columns, A9
+  counter (table 9), A7 columns/tables, rcpt q check; zero-length SHA jobs for empty values; Rust
+  `prepClaim`/`prepBody`; v3 `prove` over the current `nearAirV3`; re-run `run-v2.sh`.
+* **Oracle:** `oracle/v3-d0a/src/d0a.rs` still uses the pre-2026-10-11 A7 measure; regenerate
+  fixtures before freezing (never edit frozen `oracle/v3`).
+* **Elaboration budget** (below) — now the main feasibility question.
+* Cleanup: `ChachaWords.lean` duplicates `A9Words.coreMid`/`runMid_st` (`coreMidW`/`runMid_stW`).
 
 **Hard feasibility risk: judge elaboration budget.** A clean, serial elaboration diagnostic hit the 1,800 s total cutoff after 927 of 1,110 modules (`/data/illia/nearproof-deps/validation/v3-clean-elaboration-20261007-attempt2`). The tree is now about 5,000 modules, so the final certificate must be a pruned closure.
 * Measure its clean elaboration early.
 * If it cannot fit, raising the budget is a decision for the user, made with numbers. Do not change it silently.
 
 **Quality notes for whoever continues:**
-* Prefer converging on the top-level theorem (`RenderV3Stmt`, `LinkV3Stmt`
-  ⇒ `ExtractV3Stmt`) over adding more `Candidates/*` lemmas.
-* Each new module should sit on the path to `RenderV3Stmt` or `ExtractV3Stmt`.
+* Converge on `ExtractV3Stmt` / `CompleteV3Stmt`; every new module should sit on one of them.
+* `nearAirV3` is no longer frozen, but each lane edits only its own tables' entries in
+  `Assembly/NearAir.lean`; the lead recomputes the combined size bound at merge (`#eval
+  sizeMaxAligned nearAirV3.toAir (pg 2)`), since lanes' bounds don't merge textually.
 * Keep the guarded axiom audits.
 
 ## 6. Verification status of this merge
 
-* **Lean build (2026-10-09):** `lake build` over all 5,102 ZkFormal targets on the integration branch. Every module builds except `NearV3/Candidates/ProcActualGrantOperands`.
-  * That file is an uncommitted WIP file from the main checkout: it has typeclass errors, and nothing imports it.
-  * Fixed and committed on 2026-10-10 (see §2).
-* **Lean build (2026-10-10, `agent/v3-assembly`):** `lake build ZkFormal.V3.Integration`
-  passes all **2,028 jobs** with the assembly lane's modules
-  (`NearAir, NearAirCheck, NearAirSize, NearAirBus, HintCodec, NearAdmission,
-  ExtractV3, ViewsV3, LinkV3, ComposeV3, RenderV3, RenderV3Assemble, RenderV3Trace`).
-  All thirteen new modules are free of `sorry`/`axiom`/`native_decide` and depend
-  only on `{propext, Classical.choice, Quot.sound}`.
-* **Not re-run in this merge:**
-  * the about 2,400 audit files in `zk-formal/test/`, which are run individually;
-  * the D3 reference check-local;
-  * the difftests.
+* **2026-10-12 (`integration/v3-20261012d`, main `abf81215`):** `lake build
+  ZkFormal.V3.Integration` passes (4,692 jobs); 2,787 dependents of the 140 changed modules
+  rebuild (153 top-level modules, 5,357 jobs, 0 errors); 15 guarded audits incl.
+  `AuditAdmissionV3` pass; `make pin-check` OK; no sorry/axiom/native_decide/implemented_by.
+  Difftest not re-run.
+* **2026-10-11 (`integration/v3-20261011b`):** from clean caches (see §7), `lake build
+  ZkFormal.V3.Integration nearspec-v3-check-d0a` passes (2,753 jobs); all 3,333 modules
+  depending on the merged changes rebuild (`lake build` of their 185 top-level modules: 5,128
+  jobs, 0 errors); the 14 new or changed audits and `AuditNearV3Admission` pass; `make pin-check` OK;
+  D0a difftest on the public fixtures (300 cases): 0 disagreements.
+* Earlier builds reported by lanes before the cache repair may have run against stale
+  artifacts; the numbers above supersede them.
+* **Not re-run:** the ~2,400 older audit files, the D3 reference check-local, the full difftest
+  corpora (only public-d0a and the A11 measurement on d1run/d2corpus).
 
-  Their last results are in `docs/e2e-results/` and in the log.
+## 7. Process rules learned (2026-10-07 to 2026-10-11)
 
-## 7. Process rules learned (2026-10-07 to 2026-10-09)
+* **Never hard-link (`cp -al`) a `.lake` between worktrees.** Lake rewrites `.trace` files in
+  place, so a build in one worktree marks modules up to date in all others while their `.olean`
+  stays stale (false build results). On 2026-10-11 every mismatched trace was deleted and all
+  small cache files de-linked. Copy with `cp -a` (or rebuild) instead.
 
 * **Push every checkpoint to origin.** If the sandbox has no network, say so in the final report. Do not leave work only in bundles or as untracked files in the main checkout.
 * **One worktree per agent.** Never work in `/data/illia/nearproof` itself; integrate on an `integration/*` branch.

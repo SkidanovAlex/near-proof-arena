@@ -214,11 +214,9 @@ theorem height_le (insts : List SInst) (hrows : (honestRows insts).length ≤ 2 
   Nat.pow_le_pow_right (by decide) (log_bounds insts hrows t).2
 
 /-- **The transition structure**: every row and its cyclic successor form a `Step`. -/
-theorem step_at (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) (t r : Nat)
-    (hr : r < (honestTrace insts).height t) :
-    Step (rowAt insts r) (rowAt insts ((r + 1) % (honestTrace insts).height t)) := by
-  have hlen := len_le_height insts t
-  generalize (honestTrace insts).height t = H at hr hlen
+theorem step_H (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) (H r : Nat)
+    (hlen : (honestRows insts).length ≤ H) (hr : r < H) :
+    Step (rowAt insts r) (rowAt insts ((r + 1) % H)) := by
   have hY : StartOk (rowAt insts 0) := by
     have := (links_full insts hok 0 0 (Y := .pad) (Or.inl rfl)).2
     simp only [List.replicate_zero, List.append_nil] at this
@@ -242,9 +240,20 @@ theorem step_at (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) (t r : Na
     rw [getD_app_right (by rw [hlenF]; omega), hlenF, show r + 1 - H = 0 by omega, getD_single] at this
     exact this
 
+theorem step_at (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) (t r : Nat)
+    (hr : r < (honestTrace insts).height t) :
+    Step (rowAt insts r) (rowAt insts ((r + 1) % (honestTrace insts).height t)) :=
+  step_H insts hok _ r (len_le_height insts t) hr
+
+/-- `step_at` at an explicit height `2^L` holding the rows. -/
+theorem step_atL (insts : List SInst) (hok : ∀ I ∈ insts, InstOk I) {L : Nat}
+    (hL : (honestRows insts).length ≤ 2 ^ L) (t r : Nat) (hr : r < (traceAt insts L).height t) :
+    Step (rowAt insts r) (rowAt insts ((r + 1) % (traceAt insts L).height t)) :=
+  step_H insts hok _ r hL hr
+
 /-! ## Honest cells are `< p` -/
 
-theorem rowCell_lt {X : Row} {r : Nat} (hX : Valid X r) (hr : r < 2 ^ 20) (c : Nat) :
+theorem rowCell_lt {X : Row} {r : Nat} (hX : Valid X r) (hr : r < 2 ^ 22) (c : Nat) :
     rowCell X r c < 2013265921 := by
   cases X with
   | pad =>

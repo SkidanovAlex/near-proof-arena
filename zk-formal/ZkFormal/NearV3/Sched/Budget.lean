@@ -18,7 +18,7 @@ namespace ZkFormal.NearV3.Sched.Budget
 open ZkFormal.Air ZkFormal.Near.Budget
 
 def schedTables : List ZkFormal.Air.Table :=
-  [Codec.table, ScanDist.table, Proc.table, Mem.table, Cmp.table B_SCMP]
+  [Codec.table, ScanDist.table, Proc.tableB, Mem.table, Cmp.table B_SCMP]
 
 def report (g : Nat) : List (Nat × Nat × Nat × Nat × Nat × Nat) :=
   schedTables.map fun T =>

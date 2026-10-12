@@ -64,7 +64,7 @@ theorem lastW_some (js : Nat → Nat) (i q x q0 : Nat) (h1 : q < q0) (h2 : q0 �
 
 section
 variable (B : Buses) (hB : B.ok) (hL : SLocal tr t pub) (hG : GenRecv tr t pub)
-  (hH : tr.height t ≤ 2 ^ 20) (hM : MemBal B tr t pub)
+  (hH : tr.height t ≤ 2 ^ 22) (hM : MemBal B tr t pub)
 include hL hG hH
 
 /-- Rows of the instance ending at the final row `f`. -/
@@ -136,7 +136,7 @@ theorem cv_of_cell {r r' x y : Nat} (h : tr.cell t r x = tr.cell t r' y) : cv tr
 
 section
 variable (B : Buses) (hB : B.ok) (hL : SLocal tr t pub) (hG : GenRecv tr t pub)
-  (hH : tr.height t ≤ 2 ^ 20) (hM : MemBal B tr t pub)
+  (hH : tr.height t ≤ 2 ^ 22) (hM : MemBal B tr t pub)
   {f d : Nat} (hf : f < tr.height t) (hfin : cv tr t f colFin = 1) (I : Inst tr t f d)
 include hL hG hH hf hfin I
 

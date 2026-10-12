@@ -35,6 +35,6 @@ theorem native_origin_write_keys {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
   obtain ⟨writes,oldPost,us,hkeys,hr,hpairs,hpos,hlen,hgood,hpre,hout,hval,hforest,hbytes⟩:=
     native_rebased_physical_bounds_keys hk hw h hm hv hlen hwf
   obtain ⟨insts,hcount,hinst⟩:=chosen_origin_instances hgood hpre hout baseI base
-  exact ⟨writes,oldPost,us,insts,hkeys,hr,hpairs,hpos,hlen,hgood,hpre,hout,hval,hcount,hinst,hforest,hbytes⟩
+  exact ⟨writes,oldPost,us,insts,hkeys,hr,hpairs,hpos,hlen,hgood,hpre,hout,hval,hcount,(fun tau u I hu hI => by obtain ⟨a,b,c,d,e,root,hroot,o,-⟩ := hinst tau u I hu hI; exact ⟨a,b,c,d,e,root,hroot,o⟩),hforest,hbytes⟩
 
 end ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate

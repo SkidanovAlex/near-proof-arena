@@ -27,15 +27,16 @@ theorem local_of_holdsP (hH : HoldsP AP pub tr) {t : Nat} (ht : t < AP.tables.le
   exact hH.constr t ht r hr e he
 
 theorem chLocal_of_holdsP (hH : HoldsP AP pub tr) {tc busChacha : Nat} (ht : tc < AP.tables.length)
-    (hT : AP.tables[tc]! = Table.table busChacha) : Sound.ChLocal tr tc pub where
+    (hT : AP.tables[tc]! = Table.table22 busChacha) : Sound.ChLocal tr tc pub where
   log_ge := (hH.logBound tc ht).1
   log_le := by have := (hH.logBound tc ht).2; rw [← tables_get ht, hT] at this; exact this
   constr := fun r hr e he => by
     have := local_of_holdsP hH ht r hr e; rw [hT] at this; exact this he
 
 theorem gLocal_of_holdsP (hH : HoldsP AP pub tr) {tg busChacha busGen : Nat} (ht : tg < AP.tables.length)
-    (hT : AP.tables[tg]! = Rng.Table.table busChacha busGen) : Rng.GLocal tr tg pub := by
-  have := local_of_holdsP hH ht; rw [hT] at this; exact this
+    (hT : AP.tables[tg]! = Rng.Table.table22 busChacha busGen) : Rng.GLocal tr tg pub := by
+  intro r hr e he
+  have := local_of_holdsP hH ht r hr e; rw [hT] at this; exact this (List.mem_append_left _ he)
 
 theorem multNat_one_col {tr : Trace Fp} {t r : Nat} {pub : List Fp} {i : Interaction} {x : Nat}
     (hi : i.mult = [Table.E.c x]) (h : cv tr t r x = 1) : i.multNat tr t r pub ≠ 0 := by
@@ -49,8 +50,8 @@ theorem multNat_one_col {tr : Trace Fp} {t r : Nat} {pub : List Fp} {i : Interac
 
 /-- **The ChaCha receives of the stream table are ChaCha20 outputs.** -/
 theorem chachaRecv_of_holdsP (hH : HoldsP AP pub tr) {tc tg busChacha busGen : Nat}
-    (htc : tc < AP.tables.length) (hTc : AP.tables[tc]! = Table.table busChacha)
-    (htg : tg < AP.tables.length) (hTg : AP.tables[tg]! = Rng.Table.table busChacha busGen)
+    (htc : tc < AP.tables.length) (hTc : AP.tables[tc]! = Table.table22 busChacha)
+    (htg : tg < AP.tables.length) (hTg : AP.tables[tg]! = Rng.Table.table22 busChacha busGen)
     (honly : ∀ t, t < AP.tables.length → t ≠ tc → ∀ i ∈ AP.tables[t]!.interactions,
       i.bus = busChacha → i.send = false)
     (hpub : ∀ seg ∈ AP.pubSegs, seg.bus = busChacha → seg.send = false) :
@@ -68,8 +69,8 @@ theorem chachaRecv_of_holdsP (hH : HoldsP AP pub tr) {tc tg busChacha busGen : N
 
 /-- **`genIndex` soundness inside a v2 AIR.** -/
 theorem genIndex_sound (hH : HoldsP AP pub tr) {tc tg busChacha busGen : Nat}
-    (htc : tc < AP.tables.length) (hTc : AP.tables[tc]! = Table.table busChacha)
-    (htg : tg < AP.tables.length) (hTg : AP.tables[tg]! = Rng.Table.table busChacha busGen)
+    (htc : tc < AP.tables.length) (hTc : AP.tables[tc]! = Table.table22 busChacha)
+    (htg : tg < AP.tables.length) (hTg : AP.tables[tg]! = Rng.Table.table22 busChacha busGen)
     (honly : ∀ t, t < AP.tables.length → t ≠ tc → ∀ i ∈ AP.tables[t]!.interactions,
       i.bus = busChacha → i.send = false)
     (hpub : ∀ seg ∈ AP.pubSegs, seg.bus = busChacha → seg.send = false)

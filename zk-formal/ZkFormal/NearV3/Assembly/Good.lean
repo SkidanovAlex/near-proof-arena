@@ -80,6 +80,8 @@ structure GoodV3 (B : Nat) (cb : Bytes) (k : WalkD0) (h : Hint) (p : Prep) (x : 
   chachaWords : chachaWords cb (witnessOfV3 k x) ≤ W0
   /-- A10 (`w.path_depth`, 2026-10-09): every used source Merkle path has `≤ Dp0` items. -/
   pathDepth : ∀ e ∈ usedProofs k (stateWitnessOfV3 k x), e.proof.path.length ≤ Dp0
+  /-- A12 (`c.layout_wf`, 2026-10-12): the epoch layout has one boundary fewer than shard ids. -/
+  layoutWf : k.L.boundaries.length + 1 = k.L.shardIds.length
 
 theorem GoodV3.decode {B cb k h p x} (g : GoodV3 B cb k h p x) :
     decodeW (witnessOfV3 k x) = .ok (stateWitnessOfV3 k x) := by
@@ -90,8 +92,9 @@ theorem GoodV3.decode {B cb k h p x} (g : GoodV3 B cb k h p x) :
 theorem GoodV3.amendments {B cb k h p x} (g : GoodV3 B cb k h p x) :
     a1 cb = true ∧ a2 cb (witnessOfV3 k x) = true ∧
       canon0f cb (witnessOfV3 k x) = true ∧ a7 B cb (witnessOfV3 k x) = true ∧
-      a8 cb = true ∧ a9 W0 cb (witnessOfV3 k x) = true ∧ a10 Dp0 cb (witnessOfV3 k x) = true := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      a8 cb = true ∧ a9 W0 cb (witnessOfV3 k x) = true ∧ a10 Dp0 cb (witnessOfV3 k x) = true ∧
+      a12 cb = true := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · simpa [a1, g.walk] using g.gasLimit
   · simp only [a2, g.walk, g.decode]
     apply List.all_eq_true.mpr
@@ -112,6 +115,7 @@ theorem GoodV3.amendments {B cb k h p x} (g : GoodV3 B cb k h p x) :
     apply List.all_eq_true.mpr
     intro e he
     exact decide_eq_true (g.pathDepth e he)
+  · simp only [a12, g.walk, g.layoutWf, Layout.numShards, beq_self_eq_true]
 
 /-- Soundness statement, proved by `Assembly.factorSound`: semantic reconstructed views imply the frozen
 amended checker accepts their concrete encoded witness. -/

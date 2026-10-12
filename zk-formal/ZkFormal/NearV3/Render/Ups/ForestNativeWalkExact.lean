@@ -24,14 +24,15 @@ theorem forest_native_walk_exact {pairs : List (PTrie×PTrie)} {tau : Nat} {root
       ((run.terminal=.BV ∨ run.terminal=.BI) → s.v.bmap=some ((step I I.ts).bm,(step I I.ts).hv)) ∧
       (((run.terminal=.BV ∨ run.terminal=.BI) ∧
         s.v.bmap=some ((step I I.ts).bm,(step I I.ts).hv)) ∨
-        (step I I.ts).e∈edgesOf3 a.nid s) := by
+        (step I I.ts).e∈edgesOf3 a.nid s) ∧
+      (a∈sourceAddresses root.nid root.vid root.depth root.tree [0,15] ∧ a.tree=run.terminalSource) := by
   dsimp only
   let recordId := pathRecordId (extendedAddresses root.nid root.vid root.depth root.tree [0,15])
   let resolvedId := occurrenceResolvedId recordId
   obtain ⟨Qs,he,_⟩ := encodeNativeParts_total recordId hr base
-  obtain ⟨a,s,hs,hterminalId,hbitmap,hterminal⟩ := forest_terminal_exact hroot hr hf {baseI with tau:=tau} Qs
+  obtain ⟨a,s,hs,hterminalId,hbitmap,hterminal,haddr⟩ := forest_terminal_exact hroot hr hf {baseI with tau:=tau} Qs
   obtain ⟨h,hh,hstart⟩ := forest_start_provider hroot hr hf (fun _=>a.vid) resolvedId baseI Qs
-  refine ⟨Qs,a,s,h,he,hs,hh,?_,hstart,?_,hterminalId,hbitmap,hterminal⟩
+  refine ⟨Qs,a,s,h,he,hs,hh,?_,hstart,?_,hterminalId,hbitmap,hterminal,haddr⟩
   · exact nativeInstance_constructed_ok recordId (fun _=>a.vid) resolvedId {baseI with tau:=tau}
       hr hw hv hsmall base he
   · intro t hpos hbefore

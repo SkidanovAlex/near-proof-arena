@@ -142,7 +142,7 @@ structure PubbOwn (AP : AirP) : Prop where
 /-- **Key block of the process table.** Its τ is an instance `< |Ps|`, and its 16 limbs are that
 instance's seed bytes. -/
 theorem key_block {AP : AirP} {pub : List Fp} {tr : Trace Fp} (hH : HoldsP AP pub tr)
-    {tp : Nat} (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.table)
+    {tp : Nat} (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.tableB)
     (PO : PubbOwn AP) (I : PubIdx AP pub Fp.ofNat) (Ps : List InstPub) (fwd : List (Nat × Nat))
     (hrec : I.recs B_SPUBB true = (render Ps fwd).pubb) (hlen : Ps.length < 2013265921)
     {f : Nat} (hf : f < tr.height tp) (hk : cv tr tp f Proc.kK = 1) (hc : cv tr tp f Proc.kc = 0) :
@@ -166,7 +166,7 @@ theorem key_block {AP : AirP} {pub : List Fp} {tr : Trace Fp} (hH : HoldsP AP pu
 
 /-- **`htau`**: every active process row belongs to an instance `< |Ps|`. -/
 theorem proc_htau {AP : AirP} {pub : List Fp} {tr : Trace Fp} (hH : HoldsP AP pub tr)
-    {tp : Nat} (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.table)
+    {tp : Nat} (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.tableB)
     (PO : PubbOwn AP) (I : PubIdx AP pub Fp.ofNat) (Ps : List InstPub) (fwd : List (Nat × Nat))
     (hrec : I.recs B_SPUBB true = (render Ps fwd).pubb) (hlen : Ps.length < 2013265921) :
     ∀ w, w < tr.height tp → cv tr tp w Proc.act = 1 → cv tr tp w Proc.tau < Ps.length := by
@@ -197,7 +197,7 @@ theorem leWords_eq : ∀ (m : Nat) (s : List UInt8), s.length = 4 * m →
 
 /-- **`hseed`**: the process key of an instance block is `leWords` of the instance's seed. -/
 theorem proc_hseed {AP : AirP} {pub : List Fp} {tr : Trace Fp} (hH : HoldsP AP pub tr)
-    {tp : Nat} (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.table)
+    {tp : Nat} (htp : tp < AP.tables.length) (htab : AP.tables[tp]! = Proc.tableB)
     (PO : PubbOwn AP) (I : PubIdx AP pub Fp.ofNat) (Ps : List InstPub) (fwd : List (Nat × Nat))
     (hrec : I.recs B_SPUBB true = (render Ps fwd).pubb) (hlen : Ps.length < 2013265921)
     {f : Nat} (hf : f < tr.height tp) (hk : cv tr tp f Proc.kK = 1) (hc : cv tr tp f Proc.kc = 0)

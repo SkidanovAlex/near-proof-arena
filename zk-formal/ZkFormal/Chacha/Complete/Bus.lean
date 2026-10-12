@@ -16,18 +16,20 @@ namespace ZkFormal.Chacha.Complete
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table ZkFormal.Chacha.Gen
 open NearSpecV3
 
+variable {L : Nat}
+
 theorem cell_eq (reqs : List Req) (t r c : Nat) :
-    (honestTrace reqs).cell t r c = Fp.ofNat (rowCell (rowAt reqs r) c) := rfl
+    (traceAt reqs L).cell t r c = Fp.ofNat (rowCell (rowAt reqs r) c) := rfl
 
 theorem toNat_cell (reqs : List Req) (t r c : Nat) :
-    ((honestTrace reqs).cell t r c).toNat = rowCell (rowAt reqs r) c := by
+    ((traceAt reqs L).cell t r c).toNat = rowCell (rowAt reqs r) c := by
   rw [cell_eq, Fp.toNat_ofNat]
   exact Nat.mod_eq_of_lt (Nat.lt_trans (rowCell_lt _ _) (by decide))
 
 theorem honest_env (reqs : List Req) (t r : Nat) (pub : List Fp) :
-    HEnv (tenv (honestTrace reqs) t r pub) (rowAt reqs r)
-      (rowAt reqs ((r + 1) % (honestTrace reqs).height t)) :=
-  ⟨fun c => toNat_cell reqs t r c, fun c => toNat_cell reqs t _ c⟩
+    HEnv (tenv (traceAt reqs L) t r pub) (rowAt reqs r)
+      (rowAt reqs ((r + 1) % (traceAt reqs L).height t)) :=
+  ⟨fun c => toNat_cell (L := L) reqs t r c, fun c => toNat_cell (L := L) reqs t _ c⟩
 
 /-! ## Multiplicity bits -/
 
@@ -38,13 +40,13 @@ theorem ofNat_bit {n : Nat} (h : n ≤ 1) : Fp.ofNat n = 0 ∨ Fp.ofNat n = 1 :=
 
 theorem multBits (reqs : List Req) (busChacha t r : Nat) (pub : List Fp) :
     ∀ i ∈ interactions busChacha, ∀ b ∈ i.mult,
-      b.eval (honestTrace reqs) t r pub = 0 ∨ b.eval (honestTrace reqs) t r pub = 1 := by
+      b.eval (traceAt reqs L) t r pub = 0 ∨ b.eval (traceAt reqs L) t r pub = 1 := by
   intro i hi b hb
   obtain ⟨kk, hkk, rfl⟩ := List.mem_map.mp hi
   simp only [List.mem_cons, List.not_mem_nil, or_false] at hb
   subst hb
   have hk := List.mem_range.mp hkk
-  show (honestTrace reqs).cell t r (colM kk) = 0 ∨ (honestTrace reqs).cell t r (colM kk) = 1
+  show (traceAt reqs L).cell t r (colM kk) = 0 ∨ (traceAt reqs L).cell t r (colM kk) = 1
   rw [cell_eq, rowCell_M _ hk]
   exact ofNat_bit (mflag_le _ _)
 
@@ -62,9 +64,9 @@ theorem eval_of_zev' {tr : Trace Fp} {t r : Nat} {pub : List Fp} {e : Expr} {n :
 /-- The message of output `kk` of an honest `F j` row. -/
 theorem msg_F (reqs : List Req) (t r : Nat) (pub : List Fp) {R : Req} {j : Nat}
     (hX : rowAt reqs r = .f R j) (hR : ReqOk R) (hj : j < 4) {kk : Nat} (hk : kk < 4) :
-    (outMsg kk).map (fun e => e.eval (honestTrace reqs) t r pub) =
+    (outMsg kk).map (fun e => e.eval (traceAt reqs L) t r pub) =
       Sound.chachaMsg R.key R.ctr (4 * kk + j) ((chachaBlock R.key R.ctr)[4 * kk + j]!) := by
-  have h := honest_env reqs t r pub
+  have h := honest_env (L := L) reqs t r pub
   rw [hX] at h
   unfold outMsg Sound.chachaMsg
   rw [List.map_append, List.map_map]
@@ -72,7 +74,7 @@ theorem msg_F (reqs : List Req) (t r : Nat) (pub : List Fp) {R : Req} {j : Nat}
   · apply List.map_congr_left
     intro q hq
     have hq' := List.mem_range.mp hq
-    show (honestTrace reqs).cell t r (colK (q / 2) (q % 2)) = _
+    show (traceAt reqs L).cell t r (colK (q / 2) (q % 2)) = _
     rw [cell_eq, hX, rowCell_K _ (by omega) (Nat.mod_lt _ (by decide))]
     simp only [kWord, if_pos (show q / 2 < 8 by omega), limbN]
   · have hc := hR.2.2.1
@@ -119,9 +121,9 @@ theorem count_filter_map {α : Type} (u : Nat → Bool) (g : Nat → α) [BEq α
 
 theorem multNat_M (reqs : List Req) (busChacha t r kk : Nat) (pub : List Fp) (hk : kk < 4) :
     Interaction.multNat { bus := busChacha, mult := [E.c (colM kk)], msg := outMsg kk, send := true }
-      (honestTrace reqs) t r pub = mflag (rowAt reqs r) kk := by
+      (traceAt reqs L) t r pub = mflag (rowAt reqs r) kk := by
   simp only [Interaction.multNat, Interaction.multNat.go]
-  show (if (honestTrace reqs).cell t r (colM kk) = 1 then 2 ^ 0 else 0) + 0 = _
+  show (if (traceAt reqs L).cell t r (colM kk) = 1 then 2 ^ 0 else 0) + 0 = _
   rw [cell_eq, rowCell_M _ hk]
   rcases (show mflag (rowAt reqs r) kk = 0 ∨ mflag (rowAt reqs r) kk = 1 by
     have := mflag_le (rowAt reqs r) kk; omega) with e | e <;> rw [e] <;> decide
@@ -130,12 +132,12 @@ theorem multNat_M (reqs : List Req) (busChacha t r kk : Nat) (pub : List Fp) (hk
 theorem row_count (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) (busChacha t r : Nat) (pub : List Fp)
     (m : List Fp) :
     ((interactions busChacha).map fun i =>
-      if i.bus = busChacha ∧ i.send = true ∧ i.msgVal (honestTrace reqs) t r pub = m then
-        i.multNat (honestTrace reqs) t r pub else 0).sum = (rowMsgs (rowAt reqs r)).count m := by
+      if i.bus = busChacha ∧ i.send = true ∧ i.msgVal (traceAt reqs L) t r pub = m then
+        i.multNat (traceAt reqs L) t r pub else 0).sum = (rowMsgs (rowAt reqs r)).count m := by
   unfold interactions
   rw [List.map_map]
   rw [List.map_congr_left (g := fun kk =>
-      if (outMsg kk).map (fun e => e.eval (honestTrace reqs) t r pub) = m then
+      if (outMsg kk).map (fun e => e.eval (traceAt reqs L) t r pub) = m then
         mflag (rowAt reqs r) kk else 0) (fun kk hkk => by
     have hk := List.mem_range.mp hkk
     simp only [Function.comp, Interaction.msgVal, true_and]
@@ -221,13 +223,13 @@ theorem rows_msgs (reqs : List Req) : (honestRows reqs).flatMap rowMsgs = expect
   simp only [block_msgs]
 
 /-- **Sent traffic**: exactly the expected messages. -/
-theorem count_send (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) (busChacha t : Nat) (pub : List Fp)
-    (m : List Fp) :
-    tableBusCount (interactions busChacha) (honestTrace reqs) t pub busChacha true m =
+theorem count_send (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R)
+    (hL : 86 * reqs.length ≤ 2 ^ L) (busChacha t : Nat) (pub : List Fp) (m : List Fp) :
+    tableBusCount (interactions busChacha) (traceAt reqs L) t pub busChacha true m =
       (expected reqs).count m := by
   unfold tableBusCount
-  have hl := len_le_height reqs t
-  generalize (honestTrace reqs).height t = H at hl ⊢
+  have hl : 86 * reqs.length ≤ (traceAt reqs L).height t := hL
+  generalize (traceAt reqs L).height t = H at hl ⊢
   simp only [foldr_add, Nat.add_zero]
   rw [List.map_congr_left (fun r _ => row_count reqs hok busChacha t r pub m)]
   have e : (List.range H).map (fun r => (rowMsgs (rowAt reqs r)).count m) =
@@ -240,12 +242,12 @@ theorem count_send (reqs : List Req) (hok : ∀ R ∈ reqs, ReqOk R) (busChacha 
 
 /-- **Received traffic**: none. -/
 theorem count_recv (reqs : List Req) (busChacha t : Nat) (pub : List Fp) (m : List Fp) :
-    tableBusCount (interactions busChacha) (honestTrace reqs) t pub busChacha false m = 0 := by
+    tableBusCount (interactions busChacha) (traceAt reqs L) t pub busChacha false m = 0 := by
   unfold tableBusCount
   simp only [foldr_add, Nat.add_zero]
   have h0 : ∀ r, ((interactions busChacha).map fun i =>
-      if i.bus = busChacha ∧ i.send = false ∧ i.msgVal (honestTrace reqs) t r pub = m then
-        i.multNat (honestTrace reqs) t r pub else 0).sum = 0 := by
+      if i.bus = busChacha ∧ i.send = false ∧ i.msgVal (traceAt reqs L) t r pub = m then
+        i.multNat (traceAt reqs L) t r pub else 0).sum = 0 := by
     intro r
     rw [List.map_congr_left (g := fun _ => 0) (fun i hi => by
       obtain ⟨kk, -, rfl⟩ := List.mem_map.mp hi
