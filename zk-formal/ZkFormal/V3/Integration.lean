@@ -490,6 +490,10 @@ import ZkFormal.NearV3.Assembly.A7TraceRun
 import ZkFormal.NearV3.Assembly.A7Trace
 import ZkFormal.NearV3.Assembly.A7Rows
 import ZkFormal.NearV3.Assembly.A7SegMatch
+import ZkFormal.NearV3.Assembly.LinkCanon
+import ZkFormal.NearV3.Assembly.LinkWitness
+import ZkFormal.NearV3.Assembly.LinkShape
+import ZkFormal.NearV3.Assembly.ExtractV3Proof
 /-!
 # Build gate for the integrated v3 proof work
 
