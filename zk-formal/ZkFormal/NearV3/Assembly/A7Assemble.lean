@@ -9,8 +9,8 @@ follows from
 
 * **(B)** `Σ_{τ≤K} U (Fpre r τ) ≤ Σ_n |ser n| + Σ_t len_t` (`recNode r + recVal r`), and
 * **`SegOk tr r s`** for every `upsV3` segment `s` (instance `τ = (upsE s).tau`): a run `run` with
-  - (C)+(D) `U (Fpre r τ) + outputByteCharge run + |sv τ| = U (Qrec tr r τ) + replacedCharge run + oldValCharge run`
-    (`traceUpsert_replaced` on `Tpost r τ`, `U (Tpost r τ) = U (Fpre r τ)`),
+  - (C)+(D) `U (Qrec tr r τ) + replacedCharge run + oldValCharge run ≤ U (Fpre r τ) + outputByteCharge run + |sv τ|`
+    (`traceUpsert_replaced` on `Tpost r τ`, `U (Tpost r τ) ≤ U (Fpre r τ)`; `A7Post`),
   - (E) `outputByteCharge run + |sv τ| ≤ a7S s`, the `RPL` names of `s` weigh at most
     `replacedCharge run` (`wN`: `|ser n|` of the named record) and its `RPLV` names at most
     `oldValCharge run` (`wV`: `len` of the named value record),
@@ -41,10 +41,10 @@ def recVal (r : V3Records) : Nat :=
 /-- The per-segment facts (C)+(D)+(E). -/
 def SegOk (tr : Trace Fp) (r : V3Records) (s : UpsSeg) : Prop :=
   ∃ run : TreeRun,
-    unfoldedBytesT (LinkImplicit.Fpre r (UpsRows.upsE s).tau) + outputByteCharge run +
-        (Link3.toB (Sched.svOf tr T_CODEC (UpsRows.upsE s).tau)).length =
-      unfoldedBytesT (A7Native.Qrec tr r (UpsRows.upsE s).tau) + TrieA7Repl.replacedCharge run +
-        TrieA7Repl.oldValCharge run ∧
+    unfoldedBytesT (A7Native.Qrec tr r (UpsRows.upsE s).tau) + TrieA7Repl.replacedCharge run +
+        TrieA7Repl.oldValCharge run ≤
+      unfoldedBytesT (LinkImplicit.Fpre r (UpsRows.upsE s).tau) + outputByteCharge run +
+        (Link3.toB (Sched.svOf tr T_CODEC (UpsRows.upsE s).tau)).length ∧
     outputByteCharge run + (Link3.toB (Sched.svOf tr T_CODEC (UpsRows.upsE s).tau)).length ≤ s.a7S ∧
     (((s.a7Rpl).map Msg.toFp).map (wN r)).sum ≤ TrieA7Repl.replacedCharge run ∧
     (((s.a7Rplv).map Msg.toFp).map (wV r)).sum ≤ TrieA7Repl.oldValCharge run
