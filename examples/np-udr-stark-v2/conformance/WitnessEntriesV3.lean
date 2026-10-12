@@ -6,6 +6,10 @@ import ZkFormal.NearV3.Render.UniqGen
 import ZkFormal.NearV3.Render.WalkGen
 import ZkFormal.NearV3.Rcpt.Render.AkeyRender
 import ZkFormal.NearV3.Rcpt.Render.BndRender
+import ZkFormal.NearV3.Extract.NodeView
+import ZkFormal.NearV3.Extract.HeadProof
+import ZkFormal.NearV3.Extract.ValProof
+import ZkFormal.Sha.Gen
 import NearSpecV3.ChallengeD0a
 import Lean.Data.Json
 
@@ -52,6 +56,7 @@ deriving instance ToJson for ZkFormal.NearV3.WalkR
 deriving instance ToJson for ZkFormal.NearV3.Render.UEnt
 deriving instance ToJson for ZkFormal.NearV3.AkeyE
 deriving instance ToJson for ZkFormal.NearV3.BndE
+deriving instance ToJson for ZkFormal.Sha.Gen.Msg
 
 /-- The reference execution the extraction consumes: the main transition's
 pre-state and result (from `applyNewChunk`) and every implicit `(pre, post)`.
@@ -93,13 +98,52 @@ def runtimePairsOf (t : XTr) : List (PTrie × PTrie) :=
 /-- The pre-state trees of the runtime pairs (what `forestNodes` allocates over). -/
 def preTreesOf (t : XTr) : List PTrie := (runtimePairsOf t).map Prod.fst
 
+/-- The typed entry lists of an accepted execution. -/
+structure Entries where
+  node : List NodeS3
+  val : List ValE
+  head : List HeadE
+
 /-- Per-table entry lists from an accepted D0a execution. -/
-def entriesOf (t : XTr) : List (String × Json) :=
+def entriesTyped (t : XTr) : Entries :=
   let pairs := runtimePairsOf t
   let ts := preTreesOf t
-  [ ("node", toJson (initializeList 0 (forestNodes 0 0 0 ts)))
-  , ("val",  toJson (seedValuesFrom 0 (forestBytes ts)))
-  , ("head", toJson (traceHeads 0 0 pairs)) ]
+  { node := initializeList 0 (forestNodes 0 0 0 ts)
+    val := seedValuesFrom 0 (forestBytes ts)
+    head := traceHeads 0 0 pairs }
+
+def entriesOf (t : XTr) : List (String × Json) :=
+  let e := entriesTyped t
+  [ ("node", toJson e.node)
+  , ("val",  toJson e.val)
+  , ("head", toJson e.head) ]
+
+open ZkFormal.Near in
+/-- Collect the SHA messages of a traffic list: every `B_BYTES` send's preimage,
+`dmult` iff some `B_DIGEST` receive has the same id.  Mirrors `src/v3/collect.rs`. -/
+def collect (trafs : List Traffic) : List ZkFormal.Sha.Gen.Msg :=
+  let sends : List Msg := trafs.flatMap fun tf => tf.sends B_BYTES
+  let recvs : List Msg := trafs.flatMap fun tf => tf.recvs B_DIGEST
+  let ids : List Nat :=
+    (sends.map (fun m => m.getD 0 0) ++ recvs.map (fun m => m.getD 0 0)).eraseDups
+  let bytesOf (id : Nat) : List Nat :=
+    ((sends.filter (fun m => m.head? = some id)).mergeSort
+      (fun a b => a.getD 1 0 ≤ b.getD 1 0)).map (fun m => m.getD 2 0)
+  let dmultOf (id : Nat) : Bool := recvs.any (fun m => m.head? = some id)
+  (ids.mergeSort (· ≤ ·)).map fun id => ⟨id, bytesOf id, dmultOf id⟩
+
+open ZkFormal.Near in
+/-- The trie/native split (SHA instance `sha_t` = index 0): kinds
+`K_NPRE K_NPOST K_VPRE K_VPOST K_VUPS` (mod 16). -/
+def isTrieKind (id : Nat) : Bool :=
+  let k := id % 16
+  k = K_NPRE || k = K_NPOST || k = K_VPRE || k = K_VPOST || k = 12
+
+/-- The two SHA instances from typed node/val/head entry lists. -/
+def shaInstances (ns : List NodeS3) (vs : List ValE) (hs : List HeadE) :
+    List ZkFormal.Sha.Gen.Msg × List ZkFormal.Sha.Gen.Msg :=
+  let all := collect [nodeTraffic3 ns, valTraffic vs, headTraffic hs]
+  (all.filter (fun m => isTrieKind m.id), all.filter (fun m => !isTrieKind m.id))
 
 /-- Extract `case_dir` and print the requested table (or the whole object). -/
 def runCase (table : Option String) (dir : String) : IO UInt32 := do
@@ -114,6 +158,12 @@ def runCase (table : Option String) (dir : String) : IO UInt32 := do
       let es := entriesOf t
       match table with
       | none => IO.println (Json.compress (Json.mkObj es))
+      | some "sha" =>
+        let e := entriesTyped t
+        let (st, sr) := shaInstances e.node e.val e.head
+        IO.println (Json.compress (Json.mkObj
+          [ ("sha_t", toJson st), ("sha_r", toJson sr) ]))
+        return 0
       | some name =>
         match es.find? (·.1 == name) with
         | some (_, j) => IO.println (Json.compress j)

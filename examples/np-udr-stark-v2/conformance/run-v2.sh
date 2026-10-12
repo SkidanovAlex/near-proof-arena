@@ -207,6 +207,57 @@ done
 [ $ncase -gt 0 ] || bad "no fixture case produced honest entries"
 echo "   ($ncase honest entry lists checked, $nrendered byte-compared against Lean)"
 
+echo "== nearAirV3 SHA message collector (tables 0/1): npudr v3sha vs np-lean-entries-v3 sha"
+# The SHA tables have no entries of their own: their input is the union of the
+# BYTES/DIGEST messages of the other tables.  `np-lean-entries-v3 <case> sha`
+# collects them in Lean; the Rust collector must produce byte-identical
+# `{sha_t, sha_r}` message lists (deduplicated by id, split by the §12 kinds).
+# The trace differential (`npudr v3render sha_t` vs `np-lean-render-v3 sha_t`) is
+# O(rows²) in the Lean renderer, so it is opt-in via `SHA_RENDER=1`.
+sd="$out/sha"; mkdir -p "$sd"
+nsha=0
+for case in $(ls "$fx" | head -${SHA_CASES:-5}); do
+  d="$fx/$case"
+  [ -f "$d/witness.bin" ] || continue
+  # the collector wants plain `<table>.json` names
+  cdir="$sd/$case.ent"; mkdir -p "$cdir"
+  for t in node val head; do
+    j="$ed/$case.$t.json"
+    [ -f "$j" ] || $HEAVY "$le3" "$d" $t > "$j" 2>"$j.err"
+    cp -f "$j" "$cdir/$t.json"
+  done
+  lj="$sd/$case.lean.json"
+  if ! $HEAVY "$le3" "$d" sha > "$lj" 2>"$lj.err"; then bad "$case sha: np-lean-entries-v3 sha failed"; cat "$lj.err"; continue; fi
+  if ! "$npudr" v3sha "$cdir" "$sd/$case.rust.t.json" "$sd/$case.rust.r.json" 2>"$sd/$case.err"; then
+    bad "$case sha: npudr v3sha failed"; cat "$sd/$case.err"; continue
+  fi
+  python3 - "$lj" "$sd/$case.lean.t.json" "$sd/$case.lean.r.json" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+json.dump(d["sha_t"], open(sys.argv[2], "w"))
+json.dump(d["sha_r"], open(sys.argv[3], "w"))
+PY
+  norm() { python3 -c "import json,sys;print(sorted((m['id'],bytes(m['bytes']),m['dmult']) for m in json.load(open(sys.argv[1]))))" "$1"; }
+  if [ "$(norm "$sd/$case.lean.t.json")" = "$(norm "$sd/$case.rust.t.json")" ] && \
+     [ "$(norm "$sd/$case.lean.r.json")" = "$(norm "$sd/$case.rust.r.json")" ]; then
+    nt=$(python3 -c "import json;print(len(json.load(open('$sd/$case.lean.t.json'))))")
+    nr=$(python3 -c "import json;print(len(json.load(open('$sd/$case.lean.r.json'))))")
+    pass "$case sha: sha_t($nt) sha_r($nr) messages identical"
+    nsha=$((nsha + 1))
+    if [ "${SHA_RENDER:-0}" = 1 ] && [ "$nt" -gt 0 ]; then
+      for t in sha_t sha_r; do
+        "$npudr" v3render $t "$sd/$case.lean.$t.json" "$sd/$case.$t.rust.bin" || { bad "$case $t: v3render failed"; continue; }
+        $HEAVY "$lr" $t "$sd/$case.lean.$t.json" "$sd/$case.$t.lean.bin" 2>"$sd/$case.$t.lrerr" || { bad "$case $t: np-lean-render-v3 failed"; continue; }
+        cmp -s "$sd/$case.$t.lean.bin" "$sd/$case.$t.rust.bin" \
+          && pass "$case $t: trace identical ($(stat -c %s "$sd/$case.$t.rust.bin") B)" \
+          || bad "$case $t: trace differs"
+      done
+    fi
+  else bad "$case sha: message lists differ"; fi
+done
+[ $nsha -gt 0 ] || bad "no fixture produced SHA messages"
+echo "   ($nsha fixtures: SHA message lists byte-identical; trace render $([ "${SHA_RENDER:-0}" = 1 ] && echo on || echo off))"
+
 echo "== prepD0 / Hint codec (part 3): Rust re-encode vs Lean np-lean-prep-v3"
 # For each real D0a fixture: `np-lean-prep-v3` requires `checkD0a B0` and dumps
 # `hint`, `prep`, `refunds_enc` and `prep_json`; the Rust `Prep.encode` of

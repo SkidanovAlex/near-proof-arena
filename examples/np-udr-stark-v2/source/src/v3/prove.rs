@@ -15,6 +15,7 @@
 use crate::air::Air;
 use crate::cols::TraceCols;
 
+use super::collect;
 use super::render;
 use super::Tab;
 
@@ -25,6 +26,27 @@ pub fn render_table(name: &str, json: Option<&str>, w: usize, log: usize) -> Res
         Some(s) if !s.trim().is_empty() => render(name, s),
         _ => Ok(Tab::zero(log, w)),
     }
+}
+
+/// Add `sha_t`/`sha_r` to `entries` from the SHA collector when they are not
+/// supplied: the two instances must contain every BYTES/DIGEST message of the
+/// other tables so the buses balance (`ShaFacts`, design §12).
+pub fn with_collected_sha(
+    entries: &std::collections::HashMap<String, String>,
+) -> Result<std::collections::HashMap<String, String>, String> {
+    let mut out = entries.clone();
+    let need_t = !entries.contains_key("sha_t");
+    let need_r = !entries.contains_key("sha_r");
+    if need_t || need_r {
+        let (t, r) = collect::instances_from_entries(entries)?;
+        if need_t {
+            out.insert("sha_t".to_string(), t);
+        }
+        if need_r {
+            out.insert("sha_r".to_string(), r);
+        }
+    }
+    Ok(out)
 }
 
 /// Build the 25-table trace of `air` from a map `(table name → entries JSON)`.

@@ -187,6 +187,26 @@ fn main() {
                 npudr::v3::entries::describe(&a[2], &j).unwrap_or_else(|e| die(&e))
             );
         }
+        Some("v3sha") => {
+            // `npudr v3sha <entries-dir> <sha_t.json> <sha_r.json>`: collect the
+            // SHA messages of the per-table entry files in <dir> and split them
+            // into the two instances by the §12 kind registry.
+            if a.len() != 5 {
+                die("usage: npudr v3sha <entries-dir> <sha_t.json> <sha_r.json>");
+            }
+            let dir = &a[2];
+            let mut entries = std::collections::HashMap::new();
+            for (name, _) in npudr::v3::TABLES {
+                let f = format!("{dir}/{name}.json");
+                if let Ok(j) = std::fs::read_to_string(&f) {
+                    entries.insert((*name).to_string(), j);
+                }
+            }
+            let (t, r) =
+                npudr::v3::collect::instances_from_entries(&entries).unwrap_or_else(|e| die(&e));
+            std::fs::write(&a[3], t).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+            std::fs::write(&a[4], r).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
+        }
         Some("v3render") => {
             // aligned trace of one table (`np-lean-render-v3` format)
             if a.len() != 5 {
@@ -306,9 +326,10 @@ fn main() {
                     entries.insert((*name).to_string(), j);
                 }
             }
-            // The two SHA instances need the union of all table messages; a
-            // separate collector wires them (still being ported).  Accept an
-            // explicit `sha_t.json`/`sha_r.json` if supplied.
+            // The two SHA instances need the union of all table messages; the
+            // collector builds them from the other tables unless an explicit
+            // `sha_t.json`/`sha_r.json` was supplied.
+            let entries = npudr::v3::prove::with_collected_sha(&entries).unwrap_or_else(|e| die(&e));
             let work = move || -> Result<Vec<u8>, String> {
                 let traces = npudr::v3::prove::traces_from_entries(&air, &entries)?;
                 let pub_tape = npudr::v3::public::prepared_bytes(&prep, 0);

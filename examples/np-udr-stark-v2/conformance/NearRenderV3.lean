@@ -5,6 +5,7 @@ import ZkFormal.NearV3.Rcpt.Render.Srcp.Gen
 import ZkFormal.NearV3.Qv.Candidates.CombinedTrace
 import ZkFormal.NearV3.Qv.Candidates.CombinedWalkGen
 import ZkFormal.NearV3.Extract.NodeView
+import ZkFormal.Sha.Gen
 import ZkFormal.Size.PadHeader
 import Lean.Data.Json
 
@@ -42,6 +43,7 @@ deriving instance FromJson for ZkFormal.Near.AcctV
 deriving instance FromJson for ZkFormal.NearV3.SizeV
 deriving instance FromJson for ZkFormal.NearV3.SrcpItem
 deriving instance FromJson for ZkFormal.NearV3.SrcpB
+deriving instance FromJson for ZkFormal.Sha.Gen.Msg
 
 /-- The `qvV3` JSON input: the Lean `CombinedWalkGen.Walk` and `ValueGen.Record`
 projections, re-assembled into `Walk`/`Record` (the Rust `qv::render` mirrors
@@ -153,6 +155,13 @@ def render (table s : String) : Except String ByteArray :=
     let as ← parse ZkFormal.Near.AcctV s
     let log := ZkFormal.Size.padLog22 (ZkFormal.Near.Render.logOf (16 * as.length))
     return dump (rowsTrace log (acctV3Rows as)) ZkFormal.NearV3.AcctV3.width
+  | "sha_t" | "sha_r" => do
+    let ms ← parse ZkFormal.Sha.Gen.Msg s
+    let log := ZkFormal.Sha.Gen.honestLog ms
+    let w := ZkFormal.Sha.Layout.width
+    let tr : Trace Fp :=
+      ⟨fun _ => log, fun _ r c => Fp.ofNat (ZkFormal.Sha.Gen.honestCell ms r c)⟩
+    return dump tr w
   | "size" => do
     let Is ← parse SizeIn s
     let I ← match Is with

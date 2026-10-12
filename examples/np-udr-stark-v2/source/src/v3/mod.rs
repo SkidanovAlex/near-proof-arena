@@ -21,6 +21,7 @@ use crate::field::{F, P};
 
 pub mod acct;
 pub mod chacha;
+pub mod collect;
 pub mod d0;
 pub mod entries;
 pub mod mrksort;
