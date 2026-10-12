@@ -246,7 +246,9 @@ fn main() {
                 std::fs::write(f, v.to_string()).unwrap_or_else(|e| die(&format!("{f}: {e}")));
             }
             if !rep.ok() {
-                die("v3sha: a supplied table's BYTES send / DIGEST receive is not a job of the bins");
+                die(
+                    "v3sha: a supplied table's BYTES send / DIGEST receive is not a job of the bins",
+                );
             }
         }
         Some("v3rcpt-prefix") => {
@@ -334,10 +336,14 @@ fn main() {
                 std::fs::read_to_string(&a[4]).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
             // rcpt: compact height + its honest public values (`v3::rcpt::check_render`)
             let (tab, rcpt_pubs) = if a[3] == "rcpt" {
-                let (t, p) = npudr::v3::rcpt::check_render(&j, air.num_pub).unwrap_or_else(|e| die(&e));
+                let (t, p) =
+                    npudr::v3::rcpt::check_render(&j, air.num_pub).unwrap_or_else(|e| die(&e));
                 (t, Some(p))
             } else {
-                (npudr::v3::render(&a[3], &j).unwrap_or_else(|e| die(&e)), None)
+                (
+                    npudr::v3::render(&a[3], &j).unwrap_or_else(|e| die(&e)),
+                    None,
+                )
             };
             let t = &air.tables[idx];
             if t.width != tab.width {
@@ -356,7 +362,8 @@ fn main() {
             let mut pubs = rcpt_pubs.unwrap_or_else(|| vec![npudr::field::F::ZERO; air.num_pub]);
             if let Some(pf) = a.get(5) {
                 let pt = std::fs::read_to_string(pf).unwrap_or_else(|e| die(&format!("{pf}: {e}")));
-                let pv: Vec<u64> = serde_json::from_str(&pt).unwrap_or_else(|e| die(&format!("{pf}: {e}")));
+                let pv: Vec<u64> =
+                    serde_json::from_str(&pt).unwrap_or_else(|e| die(&format!("{pf}: {e}")));
                 for (i, x) in pv.into_iter().enumerate().take(air.num_pub) {
                     pubs[i] = npudr::field::F::from_u64(x);
                 }
@@ -379,11 +386,17 @@ fn main() {
             // Build the 25-table trace from per-table entries (files `<dir>/<table>.json`),
             // the prepared public tape from <prep.json>, and prove at aux_group=2.
             if a.len() != 8 {
-                die("usage: npudr v3prove <air.json> <prep.json> <entries-dir> <pub.bin> <cb.bin> <proof-out>");
+                die(
+                    "usage: npudr v3prove <air.json> <prep.json> <entries-dir> <pub.bin> <cb.bin> <proof-out>",
+                );
             }
-            let atxt = std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
-            let air = Air::from_json(&atxt).unwrap_or_else(|e| die(&e)).with_aux_group(2);
-            let pj = std::fs::read_to_string(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+            let atxt =
+                std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let air = Air::from_json(&atxt)
+                .unwrap_or_else(|e| die(&e))
+                .with_aux_group(2);
+            let pj =
+                std::fs::read_to_string(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
             let prep = npudr::v3::prep::Prep::from_json(&pj).unwrap_or_else(|e| die(&e));
             let dir = &a[4];
             let mut entries = std::collections::HashMap::new();
@@ -396,13 +409,20 @@ fn main() {
             // The two SHA instances need the union of all table messages; the
             // collector builds them from the other tables unless an explicit
             // `sha_t.json`/`sha_r.json` was supplied.
-            let entries = npudr::v3::prove::with_collected_sha(&entries).unwrap_or_else(|e| die(&e));
+            let entries =
+                npudr::v3::prove::with_collected_sha(&entries).unwrap_or_else(|e| die(&e));
             let work = move || -> Result<Vec<u8>, String> {
                 let traces = npudr::v3::prove::traces_from_entries(&air, &entries)?;
                 let pub_tape = npudr::v3::public::prepared_bytes(&prep, 0);
                 std::fs::write(&a[5], &pub_tape).map_err(|e| e.to_string())?;
                 let cb = std::fs::read(&a[6]).unwrap_or_default();
-                let proof = npudr::prover::prove_cols_bytes(&air, traces, &pub_tape, &cb, &ProveOptions { verbose: true })?;
+                let proof = npudr::prover::prove_cols_bytes(
+                    &air,
+                    traces,
+                    &pub_tape,
+                    &cb,
+                    &ProveOptions { verbose: true },
+                )?;
                 std::fs::write(&a[7], &proof).map_err(|e| e.to_string())?;
                 Ok(proof)
             };
@@ -413,8 +433,11 @@ fn main() {
         }
         Some("v3public") => {
             // `npudr v3public <prep.json> <out.bin>`: the prepared public tape.
-            if a.len() != 4 { die("usage: npudr v3public <prep.json> <out.bin>"); }
-            let pj = std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            if a.len() != 4 {
+                die("usage: npudr v3public <prep.json> <out.bin>");
+            }
+            let pj =
+                std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
             let prep = npudr::v3::prep::Prep::from_json(&pj).unwrap_or_else(|e| die(&e));
             let b = npudr::v3::public::prepared_bytes(&prep, 0);
             std::fs::write(&a[3], &b).unwrap_or_else(|e| die(&format!("{e}")));

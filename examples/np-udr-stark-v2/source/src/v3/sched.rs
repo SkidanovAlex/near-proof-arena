@@ -28,7 +28,7 @@ use p3_field::PrimeField32;
 
 use crate::field::{F, P};
 
-use super::{b, get, Tab};
+use super::{Tab, b, get};
 
 // ---------------------------------------------------------------------------
 // field helpers (`ZkFormal.NearV3.Sched.Gen.Common`)
@@ -752,7 +752,7 @@ const D_QB1: usize = 57; // + i, 23
 const D_QB2: usize = 80; // + i, 23
 const D_RB1: usize = 103; // + i, 6
 const D_RB2: usize = 109; // + i, 6
-                          // scan-only columns
+// scan-only columns
 const D_FQ: usize = 115;
 const D_RE: usize = 116;
 const D_US0: usize = 117;
@@ -971,11 +971,7 @@ fn budget0(p: &Params, side: u64, x: u64, n: u64, allowed: &[bool]) -> u64 {
 
 /// `Gen.avgOf links left`.
 fn avg_of(links: u64, left: u64) -> u64 {
-    if links == 0 {
-        0
-    } else {
-        left / links
-    }
+    if links == 0 { 0 } else { left / links }
 }
 
 /// `Gen.Dist.bitsOf col x`: the six bits of `x` at `col … col+5`.
@@ -1715,11 +1711,7 @@ fn sample_block(r: &mut super::sample::Rng, tau: u64) -> SchedIn {
     let a2: Vec<u64> = (0..nn)
         .map(|l| {
             let a1 = (a0l(l) + fair).min(p.max_allowance);
-            if al(l) {
-                a1 - p.base
-            } else {
-                a1
-            }
+            if al(l) { a1 - p.base } else { a1 }
         })
         .collect();
     let g2: Vec<u64> = (0..nn).map(|l| if al(l) { p.base } else { 0 }).collect();
@@ -1975,7 +1967,7 @@ mod tests {
         assert_eq!(t.cells[w + D_FQ], 1);
         assert_eq!(t.cells[w + S_Q], 32); // bm[0] >> 0
         assert_eq!(t.cells[w + S_B0], 0); // bit 0 of bm[0]
-                                          // bit 5 of bm[0] is `b1` of row rho = 2 (trace row 3): pos = 4.
+        // bit 5 of bm[0] is `b1` of row rho = 2 (trace row 3): pos = 4.
         let rho2 = 3 * w;
         assert_eq!(t.cells[rho2 + S_U0], 0);
         assert_eq!(t.cells[rho2 + S_U1], 1);
@@ -2036,7 +2028,7 @@ mod tests {
         assert_eq!(r0[CO_REG[2]], 0); // params[2] = N / 256
         assert_eq!(r0[CO_REG[5]], 10); // params[5] = base byte 0
         assert_eq!(r0[CO_REG[8]], 100); // params[8] = fair byte 0
-                                        // record 0 is the source of link 0 (`useC = 1`)
+        // record 0 is the source of link 0 (`useC = 1`)
         assert_eq!(rows[5][57], 1);
         // instance 0: the allowance comparison, then the forwarding comparison
         assert_eq!(cmps.len(), 2);

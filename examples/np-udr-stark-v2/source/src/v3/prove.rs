@@ -15,9 +15,9 @@
 use crate::air::Air;
 use crate::cols::TraceCols;
 
+use super::Tab;
 use super::collect;
 use super::render;
-use super::Tab;
 
 /// Render table `t` (a name from [`super::TABLES`]) from its entry JSON, or a
 /// zero table of width `w` and `log` rows when `json` is `None`/empty.

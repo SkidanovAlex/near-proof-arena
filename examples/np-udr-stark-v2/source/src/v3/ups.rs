@@ -20,7 +20,7 @@ use serde::Deserialize;
 
 use p3_field::{Field, PrimeCharacteristicRing, PrimeField32};
 
-use super::{b, get, log_of, pad_log22, Tab};
+use super::{Tab, b, get, log_of, pad_log22};
 
 /// `UpsV3.width` (`Tables/Ups.lean:...`).
 pub const UPS_WIDTH: usize = 200;
@@ -909,17 +909,9 @@ impl Mem<'_> {
                 .div_euclid(2i128.pow((m - 11) as u32))
                 .rem_euclid(2)
         } else if m == 14 {
-            if i == 0 {
-                0
-            } else {
-                self.co(i - 1)
-            }
+            if i == 0 { 0 } else { self.co(i - 1) }
         } else if m == 15 {
-            if i == 0 {
-                0
-            } else {
-                self.co2(i - 1)
-            }
+            if i == 0 { 0 } else { self.co2(i - 1) }
         } else if m == 16 {
             self.x1(i)
         } else if m == 17 {

@@ -180,7 +180,7 @@ mod tests {
         assert_eq!(at(2, 6), 1); // la
         assert_eq!(at(1, 3), 3000); // tot
         assert_eq!(at(2, 4), 3000); // base
-                                    // slack row 1 = 3_000_000 - 3000 = 2_997_000
+        // slack row 1 = 3_000_000 - 3000 = 2_997_000
         let s1: u64 = (0..24).map(|e| (at(1, 7 + e) as u64) << e).sum();
         assert_eq!(s1, 2_997_000);
         // slack row 2 = 8_388_608 - 500 - 6000 = 8_382_108

@@ -19,7 +19,7 @@ use serde::Deserialize;
 
 use crate::field::P;
 
-use super::{b, get, log_of, pad_log22, Tab};
+use super::{Tab, b, get, log_of, pad_log22};
 
 pub const NODE_WIDTH: usize = 186;
 
@@ -477,11 +477,7 @@ fn nokey_of(v: &NodeV3) -> u64 {
     b(v.is_le() && hplen_of(v) == 1)
 }
 fn bmv_of(v: &NodeV3) -> u64 {
-    if v.is_le() {
-        0
-    } else {
-        kid_bitmap(v.kids())
-    }
+    if v.is_le() { 0 } else { kid_bitmap(v.kids()) }
 }
 fn pop_of(v: &NodeV3) -> u64 {
     let bm = bmv_of(v);
@@ -550,11 +546,7 @@ fn xtgt_of(n: u64, v: &NodeV3) -> u64 {
     }
 }
 fn xtgj_of(v: &NodeV3) -> u64 {
-    if xdead_of(v) {
-        s_of(v)
-    } else {
-        0
-    }
+    if xdead_of(v) { s_of(v) } else { 0 }
 }
 
 fn kid_win(kid: &Kid, w: u64, lastw: bool, slot: Option<u64>) -> Win {

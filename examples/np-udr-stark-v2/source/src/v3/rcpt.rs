@@ -57,7 +57,7 @@ use serde::Deserialize;
 
 use crate::field::F;
 
-use super::{b, get, log_of, Tab};
+use super::{Tab, b, get, log_of};
 
 pub const RCPT_WIDTH: usize = 263;
 
@@ -251,11 +251,7 @@ fn msg_id(kind: u64, idx: u64) -> u64 {
 // ---------------------------------------------------------------------------
 
 fn bit_of(x: u128, j: usize) -> u64 {
-    if j >= 128 {
-        0
-    } else {
-        ((x >> j) & 1) as u64
-    }
+    if j >= 128 { 0 } else { ((x >> j) & 1) as u64 }
 }
 
 /// Field inverse `x⁻¹` (`0 ↦ 0`).
@@ -360,11 +356,7 @@ fn char_cell(ch: u64, c: usize) -> u64 {
     } else if c == Z {
         b(lo == 0)
     } else if c == LINV {
-        if lo == 0 {
-            0
-        } else {
-            inv_p(lo as u128)
-        }
+        if lo == 0 { 0 } else { inv_p(lo as u128) }
     } else if c == L210 {
         b(lo % 8 == 7)
     } else if c == HX6 {
@@ -639,11 +631,7 @@ impl Rd {
     }
     /// `gasBurnPrice`: `min(gp, bgp)`, `0` for system receipts.
     fn burn_price(&self, bgp: u128) -> u128 {
-        if self.sys {
-            0
-        } else {
-            self.gp_n().min(bgp)
-        }
+        if self.sys { 0 } else { self.gp_n().min(bgp) }
     }
     /// `gasSurplusPrice`: `gp − min(gp, bgp)`, `0` for system receipts.
     fn surplus_price(&self, bgp: u128) -> u128 {

@@ -26,7 +26,7 @@
 
 use serde::Deserialize;
 
-use super::{get, log_of, pad_log22, Tab};
+use super::{Tab, get, log_of, pad_log22};
 
 pub const CHACHA_WIDTH: usize = 272;
 /// `Rng.Table.widthW0`: the base 137 columns, the A9 word counter `w` (137)
@@ -185,11 +185,7 @@ impl Stream {
 
 /// `NearSpecV3.bitLen 64 n`.
 fn bit_len(n: u64) -> u32 {
-    if n == 0 {
-        0
-    } else {
-        64 - n.leading_zeros()
-    }
+    if n == 0 { 0 } else { 64 - n.leading_zeros() }
 }
 
 /// `NearSpecV3.lz32 n = 32 − bitLen 64 n`.
@@ -221,11 +217,7 @@ fn gen_at(stream: &mut Stream, n: u64, mut k: u64) -> Option<(u64, u64)> {
 
 /// `leadingBit n = n.log2` (floor; `Nat.log2 0 = 0`).
 fn top_bit(n: u64) -> u32 {
-    if n == 0 {
-        0
-    } else {
-        63 - n.leading_zeros()
-    }
+    if n == 0 { 0 } else { 63 - n.leading_zeros() }
 }
 
 // ============================================================ table 8 chacha
@@ -882,7 +874,7 @@ mod tests {
         assert_eq!(at(0, 2 * 12 + 0), 0); // S12 limb0 = ctr % 2^16 = 0
         assert_eq!(at(0, 2 * 12 + 1), 0); // S12 limb1 = ctr / 2^16 = 0
         assert_eq!(at(1, 251), 1); // I1 row
-                                   // F j row = 82 + j encodes X m = outW(4·m + j).
+        // F j row = 82 + j encodes X m = outW(4·m + j).
         let word =
             |r: usize, m: usize| -> u64 { (0..32).map(|b| at(r, 32 + 32 * m + b) << b).sum() };
         // Reference block for key 0..7, ctr 0 (independently verified against
@@ -934,10 +926,10 @@ mod tests {
         assert_eq!(at(0, 127), 0); // acc
         assert_eq!(at(0, 128), 1); // st
         assert_eq!(at(0, 129), 1); // a
-                                   // n = 2 -> N bits, top bit 1
+        // n = 2 -> N bits, top bit 1
         assert_eq!(at(0, 23 + 1), 1);
         assert_eq!(at(0, 37 + 1), 1); // H one-hot at i = 1
-                                      // row 1: accepted, acc = 1, m2 = 0
+        // row 1: accepted, acc = 1, m2 = 0
         assert_eq!(at(1, 127), 1);
         assert_eq!(at(1, 128), 0);
         let m2: u64 = (0..14).map(|b| at(1, 97 + b) << b).sum();
@@ -1000,7 +992,7 @@ mod tests {
         assert_eq!(at(0, 74), 0); // fin
         assert_eq!(at(0, 75), 0); // eqj (s2)
         assert_eq!(at(0, 76), 1); // s2
-                                  // final row
+        // final row
         assert_eq!(at(1, 4), 0);
         assert_eq!(at(1, 26), 20); // arr(0)[0] = 20 (after swap)
         assert_eq!(at(1, 73), 0);

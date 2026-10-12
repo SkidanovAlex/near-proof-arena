@@ -137,11 +137,7 @@ fn source_consistent(lists: &[SrcList], j: usize) -> bool {
 /// `Public.sourceDupByte`.
 fn source_dup_byte(lists: &[SrcList], j: usize) -> u8 {
     if source_dup(lists, j) {
-        if source_consistent(lists, j) {
-            1
-        } else {
-            2
-        }
+        if source_consistent(lists, j) { 1 } else { 2 }
     } else {
         0
     }
@@ -256,7 +252,17 @@ fn key_recs(tau: u64, seed: &[u8]) -> Vec<Vec<u64>> {
 
 fn ash_recs(tau: u64, ash: &[u8]) -> Vec<Vec<u64>> {
     (0..32u64)
-        .map(|j| vec![tau, TAG_ASH, j, *ash.get(j as usize).unwrap_or(&0) as u64, 0, 0, 0])
+        .map(|j| {
+            vec![
+                tau,
+                TAG_ASH,
+                j,
+                *ash.get(j as usize).unwrap_or(&0) as u64,
+                0,
+                0,
+                0,
+            ]
+        })
         .collect()
 }
 
@@ -273,7 +279,10 @@ fn par_scan(tau: u64, sp: &SchedPub) -> Vec<u64> {
     let n = sp.ids.len() as u64;
     let mut v = vec![tau, PT_SCAN];
     v.extend(b3(sp.params.base));
-    v.extend(b3(sp.params.max_single_grant.saturating_sub(sp.params.base)));
+    v.extend(b3(sp
+        .params
+        .max_single_grant
+        .saturating_sub(sp.params.base)));
     v.extend([n, 0, 0]);
     v
 }
@@ -283,7 +292,9 @@ fn par_scan(tau: u64, sp: &SchedPub) -> Vec<u64> {
 fn resolved_raw(sp: &SchedPub) -> Vec<(u64, u64, Vec<u8>)> {
     let mut out = Vec::new();
     for (sender, brs) in &sp.raw {
-        let Some(s) = index_of(&sp.ids, *sender) else { continue };
+        let Some(s) = index_of(&sp.ids, *sender) else {
+            continue;
+        };
         for br in brs {
             if let Some(r) = index_of(&sp.ids, br.to_shard) {
                 if !incs_of(sp, &br.bitmap).is_empty() {
@@ -333,7 +344,10 @@ fn shard_recs(tau: u64, sp: &SchedPub) -> Vec<Vec<u64>> {
             } else {
                 cnt_r(n, &sp.allowed, x)
             };
-            let budget = sp.params.max_shard_bandwidth.saturating_sub(sp.params.base * cnt);
+            let budget = sp
+                .params
+                .max_shard_bandwidth
+                .saturating_sub(sp.params.base * cnt);
             let mut v = vec![tau, PT_SHD, side, x as u64, cnt];
             v.extend(b3(budget));
             v.extend([n as u64, 0, 0]);
@@ -359,20 +373,26 @@ fn link_recs(tau: u64, sp: &SchedPub) -> Vec<Vec<u64>> {
 
 fn id_byte(ids: &[u64], k: u64, o: u64) -> u64 {
     let n = ids.len() as u64;
-    let id = if o < 8 { ids[(k / n) as usize] } else { ids[(k % n) as usize] };
+    let id = if o < 8 {
+        ids[(k / n) as usize]
+    } else {
+        ids[(k % n) as usize]
+    };
     id / 256u64.pow((o % 8) as u32) % 256
 }
 
 fn dl_recs(tau: u64, ids: &[u64]) -> Vec<Vec<u64>> {
     let count = (ids.len() * ids.len()) as u64;
     (0..count)
-        .flat_map(|k| (0..16u64).map(move |o| {
-            let mut v = vec![tau];
-            v.extend(b2(k));
-            v.push(o);
-            v.push(id_byte(ids, k, o));
-            v
-        }))
+        .flat_map(|k| {
+            (0..16u64).map(move |o| {
+                let mut v = vec![tau];
+                v.extend(b2(k));
+                v.push(o);
+                v.push(id_byte(ids, k, o));
+                v
+            })
+        })
         .collect()
 }
 
@@ -382,7 +402,11 @@ fn fwd_recs(sp: &SchedPub, fwd: &[(u64, u64)]) -> Vec<Vec<u64>> {
         .map(|l| {
             let mut v = vec![0, TAG_FWD];
             v.extend(b2(l as u64));
-            v.extend(b3(fwd.iter().find(|(x, _)| *x == l as u64).map(|(_, y)| *y).unwrap_or(0)));
+            v.extend(b3(fwd
+                .iter()
+                .find(|(x, _)| *x == l as u64)
+                .map(|(_, y)| *y)
+                .unwrap_or(0)));
             v
         })
         .collect()

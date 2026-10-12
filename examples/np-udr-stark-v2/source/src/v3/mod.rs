@@ -27,8 +27,8 @@ pub mod entries;
 pub mod mrksort;
 pub mod node;
 pub mod prep;
-pub mod public;
 pub mod prove;
+pub mod public;
 pub mod qv;
 pub mod rcpt;
 pub mod sample;
@@ -425,7 +425,11 @@ pub(crate) mod a7_test {
     /// one of the `cells` `(row, col)` violates one of them.
     pub fn honest_and_tampered(idx: usize, bw: usize, tab: &Tab, cells: &[(usize, usize)]) {
         let Some(air) = air() else { return };
-        assert_eq!(failing_new(&air, idx, bw, tab), vec![], "honest table {idx}");
+        assert_eq!(
+            failing_new(&air, idx, bw, tab),
+            vec![],
+            "honest table {idx}"
+        );
         for &(r, c) in cells {
             let mut t = tab.clone();
             let x = t.cells[r * t.width + c] as u64;

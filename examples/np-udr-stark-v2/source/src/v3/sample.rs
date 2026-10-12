@@ -312,7 +312,11 @@ pub fn size(r: &mut Rng, _n: usize) -> Vec<SizeInput> {
     let b0 = super::size::B0;
     let y0 = r.below(b0 / 2 + 1);
     let y1 = r.below(b0 - y0 + 1);
-    let y2 = if r.below(4) == 0 { b0 - y0 - y1 } else { r.below(b0 - y0 - y1 + 1) };
+    let y2 = if r.below(4) == 0 {
+        b0 - y0 - y1
+    } else {
+        r.below(b0 - y0 - y1 + 1)
+    };
     vec![SizeInput {
         x0,
         x1,
@@ -464,7 +468,9 @@ pub fn srcp(r: &mut Rng, n: usize) -> Vec<SrcpB> {
             keys.push(SrcpKey {
                 root: r.bytes(32),
                 leaf: r.bytes(32),
-                path: (0..d).map(|_| (r.coin(), r.bytes(32), r.bytes(32))).collect(),
+                path: (0..d)
+                    .map(|_| (r.coin(), r.bytes(32), r.bytes(32)))
+                    .collect(),
                 len: 1 + r.below(20),
             });
             occ.push(keys.len() - 1);
