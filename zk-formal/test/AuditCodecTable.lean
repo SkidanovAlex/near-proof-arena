@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Render.CodecNative
+import ZkFormal.NearV3.Render.CodecTraffic
 
 /-! Guard the frozen-codec table assembly (lane v3-render-sched). -/
 
@@ -33,3 +34,11 @@ import ZkFormal.NearV3.Render.CodecNative
 /-- info: 'ZkFormal.NearV3.Render.codec_accepted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.codec_accepted
+
+/-- info: 'ZkFormal.NearV3.Render.Cdc.rows_traffic' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.Cdc.rows_traffic
+
+/-- info: 'ZkFormal.NearV3.Render.Cdc.hdr_s0f' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.Cdc.hdr_s0f

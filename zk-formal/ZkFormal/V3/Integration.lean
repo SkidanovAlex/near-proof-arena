@@ -338,6 +338,7 @@ import ZkFormal.NearV3.Render.CodecRecInt
 import ZkFormal.NearV3.Render.CodecEndInt
 import ZkFormal.NearV3.Render.CodecRender
 import ZkFormal.NearV3.Render.CodecNative
+import ZkFormal.NearV3.Render.CodecTraffic
 import ZkFormal.NearV3.Render.PaddedUps
 import ZkFormal.NearV3.Render.PaddedUpsNative
 import ZkFormal.NearV3.Render.NodeRender

@@ -333,6 +333,7 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
     `blocks_length`, **`codec_accepted`**: `checkD0a B0` acceptance ⇒ `∃ bs, PriorCore p B0 bs ∧ ((∀ b ∈ bs,
     NatRes b) → ∃ R : TableRenderV3 pub 11, R.tr = codecTrace (allDescs (bs.map blkOf)) ∧ R.tf = rowsTraffic …)`.
   * Audit `test/AuditCodecTable.lean` (axioms ⊆ {propext, Classical.choice, Quot.sound}). Commits ac76f86c, 8dcf96b1.
+  * `ZkFormal.V3.Integration` builds (4292 jobs) with all codec modules; `make pin-check` OK.
 
 ### Open (this lane), exact
 1. `NatRes b` for every `b` of `PriorCore p B0 bs` (`Render/CodecNative.lean`): `b.vid < P`;
@@ -341,7 +342,12 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
    (`wfin + gd[k] ≤ 4.5M`) and `ProcPriorCodecForwardRange.native` need the block's distribution witness
    (`distributeEv … = .ok (b.grants, …)`) and its process prefix, which `PriorCore` does not export;
    `vid` bound from `priorValueId` (forest size).
-2. Codec traffic (task 2) not started: per-bus message lists of `rowsTraffic Codec.table.interactions
+2. Codec traffic (task 2) — started: `Render/CodecTraffic.lean`: `pad_rowTraffic` (padding rows carry no
+   messages), **`rows_traffic`** (`rowsTrafficFp Codec.table.interactions (codecCell Bs) 22 t pub b s` = the
+   descriptor rows' `rowTraffic` on `dRow (allDescs Bs)[r]! r`), and the first per-kind closed form
+   **`hdr_s0f`** (`S0F` recv on header row `p`: `[[τ, b2n pres, vid]]` iff `p = 0`) — the template for the
+   rest (bus constants: use `Sched.B_*`, which differ syntactically from `ZkFormal.NearV3.B_*`). Remaining:
+   per-bus message lists of `rowsTraffic Codec.table.interactions
    (codecCell (bs.map blkOf)) 22 11 pub` (S0F `[τ, pres, vid]` from `hdr _ 0`; SPLEN `[τ, 37 + 24·n²]`; SPOST
    `[τ, pos, bpost]` on header/record/hash rows = `stateBytes ids afin digest`; BYTES `[11+16τ, j, pres·hpre_j]`,
    `[11+16τ, 32+j, ash_j]`; DIGEST `[11+16τ, 64, digest]`). Plan: (a) padding rows have empty `rowTraffic`;
