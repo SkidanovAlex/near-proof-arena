@@ -491,6 +491,7 @@ import ZkFormal.NearV3.Assembly.A7Bound
 import ZkFormal.NearV3.Assembly.A7Native
 import ZkFormal.NearV3.Render.RngW0
 import ZkFormal.NearV3.Assembly.A9Count
+import ZkFormal.NearV3.Render.SchedBusAll
 /-!
 # Build gate for the integrated v3 proof work
 

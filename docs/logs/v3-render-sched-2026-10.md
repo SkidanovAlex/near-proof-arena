@@ -541,3 +541,61 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
 * Open, in order: VBYTES (above); scheduler 41–44, 51, 52, 56–58, 62 (closed forms of tables 11–14
   traffic exist only for SCMP/BYTES/DIGEST/S0F/SPLEN/SPOST); ChaCha 45–50 (+ the RNG `hW`); MPOS
   (receipt/mrk lane?); then the packaging (`sched_renders_on` + `rcpt_trie_sched` + `RenderV3Header`).
+
+## 2026-10-12 (package 12, fresh session: every remaining scheduler bus balanced)
+
+All ten uncovered scheduler buses are now balanced on the honest render: 41 SOP, 42 SFIN, 43 SINC, 44 SPUSH,
+51 SPUBB, 52 SPAR, 56 SDL, 57 SDLX, 58 SDG and 62 SA0. No AIR gap was found and no AIR change was needed.
+Each bus was proved from closed forms of the table traffic plus native run identities.
+Integration builds (4631 jobs), `make pin-check` is OK, and there is no sorry, axiom, native_decide or
+implemented_by. Audit: `test/AuditSchedBuses.lean`, axioms ⊆ {propext, Classical.choice, Quot.sound}.
+The existing audits AuditCodecTriePin, AuditUpsS0F and AuditCodecNatRes were re-run and are clean.
+
+* **Top lemmas** (`Render/SchedBusAll.lean`):
+  * **`RenderBundleV3.sched_buses_balanced`**. It takes `A`, `R`, `PriorCore A.p B0 bs`, `GrantWit`, `hctx`,
+    `hfw` (see below), `R.tf 11 =` the codec traffic, and the `.tr` of tables 12, 13 and 14 equal to the
+    renders of `sched_renders_on`. It concludes the ten `BalancedAt`.
+  * **`sched_side`**. From the `PriorCore`/`GrantWit`/`hctx`/`hfw` data and the `r11` of `rcpt_trie_sched`,
+    it gives `∃ r12 r13 r14 r15` such that every bundle carrying `r11 … r15` balances all eleven scheduler
+    buses 40–44, 51, 52, 56–58 and 62 (SCMP included).
+* **Per-bus lemmas** (`RenderBundleV3.balancedAt_*`):
+  * `SchedBusSA0`: `srcOf` is injective, so the sends and receives are permutations of each other, and a
+    u64 allowance has a byte ≥ 3 set iff it is ≥ 2^24.
+  * `SchedBusSDL`: the delay line telescopes, with the public endpoints at instances 0 and K+1, all
+    instances having the layout's ids.
+  * `SchedBusSPAR`: the codec header, scan param/raw rows, shard rows and link cells together give
+    exactly `render`'s `par` (shards and links up to a permutation).
+  * `SchedBusSPUSH`, `SchedBusSINC`, `SchedBusSFIN`, `SchedBusSOP`, `SchedBusSPUBB`.
+  * `SchedBusSDLX`, `SchedBusSDG`: from the distribute grid model.
+* **Infrastructure:**
+  * `SchedBusCodec`, `SchedBusCodecBlk`: codec per-row and per-block forms for SA0, SDL, SPUBB, SPAR, SOP,
+    SFIN and SDG.
+  * `SchedBusSsd*`: ssd per-row bus messages; `SchedBusSsdDist` is a functional model of the distribute
+    generator (`cells`, `grid`, `dist_rows`).
+  * `SchedBusConv`: converted requests are the public raw requests with a set bit.
+  * `SchedBusPub`: the public `SPUBB`, `SPAR` and `SDL` counts of `A.pub`; `bs.map pub = p.sched`.
+  * `SchedBusProc`, `SchedBusMem`: proc and mem closed forms.
+  * `SchedBusRun*`: run-level SOP, SFIN, SPUSH and SINC identities from a replay ghost invariant.
+    Processed entries are distinct; each processed increment occurs exactly once.
+  * `SchedBusGrid*`: the grid endpoints, grants and allowed-cell check. The model's grants are
+    `GrantWit`'s `b.grants`.
+  * `SchedBusPackaging`: `usedBuses` (51 buses, kernel-checked against all tables and public segments) and
+    `RenderBundleV3.balanced_of_used`, which says a bundle balancing every used bus is `Balanced`.
+* **Shared-statement change (conjunct only; needed for SPUBB):** instance 0's codec block forwards
+  `b.forwarded`, which nothing exported before. The conjunct
+  `(∀ b, bs[0]? = some b → b.forwarded = fwdLinks (A.m.ctx A.k) A.m.result.outgoing)` was added after the
+  `hctx` conjunct of:
+  * `CdcGrant.ordered_blocks` (as `main.forwarded = …`), `allocated_blocks` and `prior_core_on`
+    (`Render/CodecGrantCore.lean`);
+  * `codec_on`, `codec_premises` and `RcptTrieSide.rcpt_trie_codec` (`Render/CodecTriePin.lean`);
+  * **`RcptTrieSide.rcpt_trie_sched`** (`Render/CodecSpost.lean`).
+
+  No statement was weakened; the callers' patterns were adjusted. `prep_fwd` gives
+  `A.p.fwd = fwdLinks (A.m.ctx A.k) A.m.result.outgoing` (from `prepD0_fwd` and `body_decodes`).
+  **Merge note:** if a sibling lane also extends `rcpt_trie_sched`, keep both conjuncts.
+* **Open (for packaging, after all three lanes land):**
+  * Lane v3-render-vbytes: 9 MPOS and 21 VBYTES.
+  * Lane v3-render-chacha: 45–50 and the RNG `hW`.
+  * Check the remaining used buses 63, 70 and 71 (qv internal and the ups → node/head relays) against the
+    trie lane's `rcpt_trie_sched`.
+  * Build the full 25-table bundle and the header check (`RenderWitnessV3`) using `balanced_of_used`.
