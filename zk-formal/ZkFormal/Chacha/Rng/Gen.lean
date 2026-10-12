@@ -123,8 +123,12 @@ def honestLog (calls : List Call) : Nat := max 1 (ZkFormal.Chacha.Gen.clog2 (hon
 
 def honestCell (calls : List Call) (r c : Nat) : Nat := rowCell ((honestRows calls).getD r .pad) c
 
+/-- The honest rows at an explicit height `2^L` (padding rows below). -/
+def traceAt (calls : List Call) (L : Nat) : ZkFormal.Air.Trace ZkFormal.Algebra.Fp :=
+  ⟨fun _ => L, fun _ r c => ZkFormal.Algebra.Fp.ofNat (honestCell calls r c)⟩
+
 def honestTrace (calls : List Call) : ZkFormal.Air.Trace ZkFormal.Algebra.Fp :=
-  ⟨fun _ => honestLog calls, fun _ r c => ZkFormal.Algebra.Fp.ofNat (honestCell calls r c)⟩
+  traceAt calls (honestLog calls)
 
 /-! ## Expected bus traffic -/
 

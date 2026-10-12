@@ -21,6 +21,7 @@ Message values are `Fp.ofNat` of naturals (so reduced modulo `P`).
 namespace ZkFormal.NearV3.Sched.Proc
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table.E
+open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Proc
 
 section
 variable {tr : Trace Fp} {tp : Nat} {pub : List Fp}

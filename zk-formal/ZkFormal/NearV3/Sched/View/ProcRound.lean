@@ -18,6 +18,7 @@ For a header row `h` (`kH = 1`):
 namespace ZkFormal.NearV3.Sched.Proc
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table.E
+open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Proc
 
 /-- Entry `j` of the round with header `h` (row `h + 1 + j`). -/
 def EF (tr : Trace Fp) (tp h j : Nat) : Prop :=

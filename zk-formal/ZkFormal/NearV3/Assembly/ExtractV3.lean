@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Assembly.NearAir
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.Near.Extract.Common
+import ZkFormal.Near.Extract.BusCount
 import ZkFormal.NearV3.Extract.NodeView
 import ZkFormal.NearV3.Extract.WalkView
 import ZkFormal.NearV3.Extract.HeadProof
@@ -75,20 +76,20 @@ theorem tableLocal_of_holdsP {AP : AirP} {pub : List Fp} {tr : Trace Fp}
 
 /-- The `nearAirV3` table list in positional form. -/
 theorem nearTablesFull_eq : nearAirV3.tables =
-    [shaTable, shaTable, ZkFormal.NearV3.NodeV3.tableU, {ZkFormal.NearV3.HeadV3.table with maxLog := 13},
-     ZkFormal.NearV3.ValV3.table, {ZkFormal.NearV3.WalkV3.table with maxLog := 22}, ZkFormal.NearV3.Uniq.table,
-     ZkFormal.NearV3.UpsV3.table,
-     ZkFormal.Chacha.Table.table ZkFormal.NearV3.Sched.B_SCHACHA,
-     ZkFormal.Chacha.Rng.Table.table ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
-     ZkFormal.Chacha.Shuffle.Table.table ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
+    [shaTable, shaTable, ZkFormal.NearV3.UnfoldA7.nodeA7, {ZkFormal.NearV3.HeadV3.table with maxLog := 13},
+     ZkFormal.NearV3.UnfoldA7.valA7, {ZkFormal.NearV3.WalkV3.table with maxLog := 22}, ZkFormal.NearV3.Uniq.table,
+     ZkFormal.NearV3.UnfoldA7.upsA7,
+     ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA,
+     ZkFormal.Chacha.Rng.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA ZkFormal.NearV3.Sched.B_SGEN,
+     ZkFormal.Chacha.Shuffle.Table.table22 ZkFormal.NearV3.Sched.B_SSIN ZkFormal.NearV3.Sched.B_SSOUT
        ZkFormal.NearV3.Sched.B_SSMEM ZkFormal.NearV3.Sched.B_SGEN ZkFormal.NearV3.Sched.B_SSHUF,
      ZkFormal.NearV3.Sched.Codec.table, ZkFormal.NearV3.Sched.ScanDist.table,
-     ZkFormal.NearV3.Sched.Proc.table, ZkFormal.NearV3.Sched.Mem.table,
+     ZkFormal.NearV3.Sched.Proc.tableB, ZkFormal.NearV3.Sched.Mem.table,
      ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP,
-     ZkFormal.NearV3.RcptV3.table, ZkFormal.NearV3.AcctV3.table, ZkFormal.NearV3.AkeyV3.table,
-     ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.table, ZkFormal.NearV3.SizeV3.table,
+     ZkFormal.NearV3.RcptV3.tableQ, acctTableV3, ZkFormal.NearV3.AkeyV3.table,
+     ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpDD.table, ZkFormal.NearV3.UnfoldA7.sizeA7,
      ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
-     ZkFormal.NearV3.Candidates.MerklePublic.table, {ZkFormal.Near.Sort.table with maxLog := 18}] := rfl
+     ZkFormal.NearV3.Candidates.MerkleEmpty.table, sortTableV3] := rfl
 
 /-- The `nearAirV3` table list is definitionally `nearTablesFull`; the index lemmas are
 `rfl` on `NearAir.nearAirV3_tables`. -/
@@ -96,24 +97,44 @@ theorem tables_eq : nearAirV3.tables = nearAirV3Air.tables := rfl
 
 /-! ## Per-index lookups (the interface the per-table views plug into) -/
 
-theorem getElem?_node : nearAirV3.tables[T_NODE]? = some ZkFormal.NearV3.NodeV3.tableU := rfl
+theorem getElem?_node : nearAirV3.tables[T_NODE]? = some ZkFormal.NearV3.UnfoldA7.nodeA7 := rfl
 theorem getElem?_head : nearAirV3.tables[T_HEAD]? =
     some {ZkFormal.NearV3.HeadV3.table with maxLog := 13} := rfl
-theorem getElem?_val : nearAirV3.tables[T_VAL]? = some ZkFormal.NearV3.ValV3.table := rfl
+theorem getElem?_val : nearAirV3.tables[T_VAL]? = some ZkFormal.NearV3.UnfoldA7.valA7 := rfl
 theorem getElem?_walk : nearAirV3.tables[T_WALK]? =
     some {ZkFormal.NearV3.WalkV3.table with maxLog := 22} := rfl
 theorem getElem?_uniq : nearAirV3.tables[T_UNIQ]? = some ZkFormal.NearV3.Uniq.table := rfl
-theorem getElem?_ups : nearAirV3.tables[T_UPS]? = some ZkFormal.NearV3.UpsV3.table := rfl
-theorem getElem?_rcpt : nearAirV3.tables[T_RCPT]? = some ZkFormal.NearV3.RcptV3.table := rfl
-theorem getElem?_acct : nearAirV3.tables[T_ACCT]? = some ZkFormal.NearV3.AcctV3.table := rfl
+theorem getElem?_ups : nearAirV3.tables[T_UPS]? = some ZkFormal.NearV3.UnfoldA7.upsA7 := rfl
+theorem getElem?_rcpt : nearAirV3.tables[T_RCPT]? = some ZkFormal.NearV3.RcptV3.tableQ := rfl
+theorem getElem?_acct : nearAirV3.tables[T_ACCT]? = some acctTableV3 := rfl
 theorem getElem?_akey : nearAirV3.tables[T_AKEY]? = some ZkFormal.NearV3.AkeyV3.table := rfl
 theorem getElem?_bnd : nearAirV3.tables[T_BND]? = some ZkFormal.NearV3.BndV3.table := rfl
-theorem getElem?_srcp : nearAirV3.tables[T_SRCP]? = some ZkFormal.NearV3.SrcpV3.table := rfl
-theorem getElem?_size : nearAirV3.tables[T_SIZE]? = some ZkFormal.NearV3.SizeV3.table := rfl
+theorem getElem?_srcp : nearAirV3.tables[T_SRCP]? = some ZkFormal.NearV3.SrcpDD.table := rfl
+theorem getElem?_size : nearAirV3.tables[T_SIZE]? = some ZkFormal.NearV3.UnfoldA7.sizeA7 := rfl
 theorem getElem?_mrk : nearAirV3.tables[T_MRK]? =
-    some ZkFormal.NearV3.Candidates.MerklePublic.table := rfl
+    some ZkFormal.NearV3.Candidates.MerkleEmpty.table := rfl
 theorem getElem?_sort : nearAirV3.tables[T_SORT]? =
-    some {ZkFormal.Near.Sort.table with maxLog := 18} := rfl
+    some sortTableV3 := rfl
+
+/-- An extension of a table (more constraints and interactions, no larger height cap) keeps
+the base table's local legality. -/
+theorem tableLocal_ext {T T' : ZkFormal.Air.Table} {tr : Trace Fp} {t : Nat} {pub : List Fp}
+    (h : ZkFormal.Near.TableLocal T' tr t pub) (hc : ∀ e ∈ T.constraints, e ∈ T'.constraints)
+    (hi : ∀ i ∈ T.interactions, i ∈ T'.interactions) (hm : T'.maxLog ≤ T.maxLog) :
+    ZkFormal.Near.TableLocal T tr t pub :=
+  ⟨h.log_ge, Nat.le_trans h.log_le hm, fun r hr e he => h.constr r hr e (hc e he),
+    fun r hr i hi' b hb => h.bits r hr i (hi i hi') b hb⟩
+
+/-- The bus count of a concatenated interaction list is the sum of the counts. -/
+theorem tableBusCount_append (is js : List Interaction) (tr : Trace Fp) (t : Nat) (pub : List Fp)
+    (b : Nat) (s : Bool) (m : List Fp) :
+    tableBusCount (is ++ js) tr t pub b s m =
+      tableBusCount is tr t pub b s m + tableBusCount js tr t pub b s m := by
+  simp only [ZkFormal.Near.tableBusCount_eq, ZkFormal.Near.rowTraffic, List.flatMap_append]
+  generalize List.range (tr.height t) = rs
+  induction rs with
+  | nil => simp
+  | cons r rs ih => simp only [List.flatMap_cons, List.count_append, ih]; omega
 
 /-! ## `TableLocal` of each table from `HoldsP` (the inputs the views consume) -/
 
@@ -121,7 +142,8 @@ variable {pub : List Fp} {tr : Trace Fp}
 
 theorem nodeLocal (h : HoldsP nearAirV3 pub tr) :
     ZkFormal.Near.TableLocal ZkFormal.NearV3.NodeV3.tableU tr T_NODE pub :=
-  tableLocal_of_holdsP h getElem?_node
+  tableLocal_ext (tableLocal_of_holdsP h getElem?_node) (fun _ h => List.mem_append_left _ h)
+    (fun _ h => List.mem_append_left _ h) (Nat.le_refl _)
 
 theorem headLocal (h : HoldsP nearAirV3 pub tr) :
     ZkFormal.Near.TableLocal {ZkFormal.NearV3.HeadV3.table with maxLog := 13} tr T_HEAD pub :=
@@ -129,7 +151,8 @@ theorem headLocal (h : HoldsP nearAirV3 pub tr) :
 
 theorem valLocal (h : HoldsP nearAirV3 pub tr) :
     ZkFormal.Near.TableLocal ZkFormal.NearV3.ValV3.table tr T_VAL pub :=
-  tableLocal_of_holdsP h getElem?_val
+  tableLocal_ext (tableLocal_of_holdsP h getElem?_val) (fun _ h => List.mem_append_left _ h)
+    (fun _ h => List.mem_append_left _ h) (Nat.le_refl _)
 
 theorem walkLocal (h : HoldsP nearAirV3 pub tr) :
     ZkFormal.Near.TableLocal {ZkFormal.NearV3.WalkV3.table with maxLog := 22} tr T_WALK pub :=
@@ -141,14 +164,22 @@ theorem uniqLocal (h : HoldsP nearAirV3 pub tr) :
 
 theorem upsLocal (h : HoldsP nearAirV3 pub tr) :
     ZkFormal.Near.TableLocal ZkFormal.NearV3.UpsV3.table tr T_UPS pub :=
-  tableLocal_of_holdsP h getElem?_ups
+  tableLocal_ext (tableLocal_of_holdsP h getElem?_ups) (fun _ h => List.mem_append_left _ h)
+    (fun _ h => List.mem_append_left _ h) (Nat.le_refl _)
 
-theorem rcptLocal (h : HoldsP nearAirV3 pub tr) :
-    ZkFormal.Near.TableLocal ZkFormal.NearV3.RcptV3.table tr T_RCPT pub :=
+/-- Table 16 is `RcptV3.tableQ` (`tableR` + the routing-index range check). -/
+theorem rcptLocalQ (h : HoldsP nearAirV3 pub tr) :
+    ZkFormal.Near.TableLocal ZkFormal.NearV3.RcptV3.tableQ tr T_RCPT pub :=
   tableLocal_of_holdsP h getElem?_rcpt
 
+/-- The arithmetic-repaired constraints alone (a sub-list of `tableQ`'s). -/
+theorem rcptLocal (h : HoldsP nearAirV3 pub tr) :
+    ZkFormal.Near.TableLocal ZkFormal.NearV3.RcptV3.tableR tr T_RCPT pub :=
+  tableLocal_ext (rcptLocalQ h) (fun _ h => List.mem_append_left _ h)
+    (fun _ h => h) (Nat.le_refl _)
+
 theorem acctLocal (h : HoldsP nearAirV3 pub tr) :
-    ZkFormal.Near.TableLocal ZkFormal.NearV3.AcctV3.table tr T_ACCT pub :=
+    ZkFormal.Near.TableLocal acctTableV3 tr T_ACCT pub :=
   tableLocal_of_holdsP h getElem?_acct
 
 theorem akeyLocal (h : HoldsP nearAirV3 pub tr) :
@@ -160,30 +191,15 @@ theorem bndLocal (h : HoldsP nearAirV3 pub tr) :
   tableLocal_of_holdsP h getElem?_bnd
 
 theorem srcpLocal (h : HoldsP nearAirV3 pub tr) :
-    ZkFormal.Near.TableLocal ZkFormal.NearV3.SrcpV3.table tr T_SRCP pub :=
+    ZkFormal.Near.TableLocal ZkFormal.NearV3.SrcpDD.table tr T_SRCP pub :=
   tableLocal_of_holdsP h getElem?_srcp
 
 theorem sizeLocal (h : HoldsP nearAirV3 pub tr) :
-    ZkFormal.Near.TableLocal ZkFormal.NearV3.SizeV3.table tr T_SIZE pub :=
-  tableLocal_of_holdsP h getElem?_size
+    ZkFormal.Near.TableLocal {ZkFormal.NearV3.SizeV3.table with maxLog := 4} tr T_SIZE pub :=
+  tableLocal_ext (tableLocal_of_holdsP h getElem?_size) (fun _ h => List.mem_append_left _ h)
+    (fun _ h => List.mem_append_left _ h) (Nat.le_refl _)
 
-/-! ## The `rcptV3` view of the assembled AIR (item 2, `rcpt-view`) -/
-
-/-- **`RcptV3ViewStmt` for `nearAirV3`**, from successful native preparation and the
-packed public-size bound.  The receipts view is the exact traffic of the extracted
-list view; `prepared_receipt_ranges` discharges the public-range premise from
-`prepD0` (`Public.preparedBytes`, the concrete `nearAirV3.pubSegs`). -/
-theorem rcptV3_view_nearAir {cb : Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
-    (hp : NearSpecV3.prepD0 cb h = .ok p)
-    (hsize : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
-    (tr : Trace Fp) (t : Nat)
-    (hL : ZkFormal.Near.TableLocal ZkFormal.NearV3.RcptV3.table tr t
-      (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh))) :
-    ∃ ls, ZkFormal.NearV3.RcptV3Wf (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) ls ∧
-      ZkFormal.Near.TableTraffic ZkFormal.NearV3.RcptV3.interactions tr t
-        (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh))
-        (ZkFormal.NearV3.rcptTraffic3
-          (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) ls) :=
-  ZkFormal.NearV3.RcptV3Proof.extract_prepared_view hp oh hsize tr t hL
+/-! The `rcptV3` view of the assembled AIR is `Assembly/RcptViewV3.lean:rcptV3_view_nearAir`
+(the repaired table needs the global MEM balance for its 13-bit age no-wrap). -/
 
 end ZkFormal.NearV3.Assembly

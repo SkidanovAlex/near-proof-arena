@@ -156,11 +156,11 @@ output / header buses: the process table is the only sender of inputs and the on
 outputs, the shuffle table the only sender of headers). -/
 structure ShufOwn (AP : AirP) (tp ts tc tg : Nat) : Prop where
   ts_lt : ts < AP.tables.length
-  ts_tab : AP.tables[ts]! = Shuffle.Table.table B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF
+  ts_tab : AP.tables[ts]! = Shuffle.Table.table22 B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF
   tc_lt : tc < AP.tables.length
-  tc_tab : AP.tables[tc]! = Table.table B_SCHACHA
+  tc_tab : AP.tables[tc]! = Table.table22 B_SCHACHA
   tg_lt : tg < AP.tables.length
-  tg_tab : AP.tables[tg]! = Rng.Table.table B_SCHACHA B_SGEN
+  tg_tab : AP.tables[tg]! = Rng.Table.table22 B_SCHACHA B_SGEN
   onlyC : ∀ t, t < AP.tables.length → t ≠ tc → ∀ i ∈ AP.tables[t]!.interactions,
     i.bus = B_SCHACHA → i.send = false
   pubC : ∀ seg ∈ AP.pubSegs, seg.bus = B_SCHACHA → seg.send = false
@@ -267,7 +267,7 @@ theorem lid_lt (htau : ∀ w, w < tr.height tp → cv tr tp w Proc.act = 1 → c
 
 /-- **The shuffle of round `i`.** -/
 theorem round_shuffle (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
-    (htab : AP.tables[tp]! = Proc.table) (SO : ShufOwn AP tp ts tc tg)
+    (htab : AP.tables[tp]! = Proc.tableB) (SO : ShufOwn AP tp ts tc tg)
     (htau : ∀ w, w < tr.height tp → cv tr tp w Proc.act = 1 → cv tr tp w Proc.tau < 256)
     (hf : f < tr.height tp) (hk : cv tr tp f Proc.kK = 1) (hc : cv tr tp f Proc.kc = 0)
     (I : Proc.Inst tr tp f m) {i : Nat} (hi : i < m) :
@@ -340,9 +340,9 @@ theorem round_shuffle (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
     rfl
   -- the shuffle contract
   have hts := SO.ts_lt
-  have hlog : tr.log ts ≤ 20 := by
+  have hlog : tr.log ts ≤ 22 := by
     have := (hH.logBound ts SO.ts_lt).2
-    have e : AP.tables[ts] = Shuffle.Table.table B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF := by
+    have e : AP.tables[ts] = Shuffle.Table.table22 B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF := by
       rw [← SO.ts_tab, List.getElem!_eq_getElem?_getD, List.getElem?_eq_getElem SO.ts_lt]; rfl
     rw [e] at this; exact this
   obtain ⟨L, hL1, -, -, hLc, hrows, l', hsh, hout⟩ := shuffle_sound (B := shufB) hH shufB_ok (by decide)
@@ -357,7 +357,7 @@ theorem round_shuffle (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
     intro x hx
     obtain ⟨ha, hq, hlid⟩ := hrows x hx
     have hmem : (Shuffle.Table.interactions B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF)[0]! ∈
-        AP.tables[ts]!.interactions := by rw [SO.ts_tab]; simp [Shuffle.Table.table, Shuffle.Table.interactions]
+        AP.tables[ts]!.interactions := by rw [SO.ts_tab]; simp [Shuffle.Table.table22, Shuffle.Table.table, Shuffle.Table.interactions]
     obtain ⟨w, hw, i'', hi'', hb'', hs'', hmsg'', hm''⟩ := recv_matched hH htp SO.onlyIn SO.pubIn SO.ts_lt
       (show r' - x < tr.height ts by omega) hmem rfl rfl
       (by rw [Mem.multNat_c rfl]; simp [ha])
@@ -392,7 +392,7 @@ theorem round_shuffle (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
     intro x hx
     obtain ⟨ha, hq, hlid⟩ := hrows x hx
     have hmem : (Shuffle.Table.interactions B_SSIN B_SSOUT B_SSMEM B_SGEN B_SSHUF)[5]! ∈
-        AP.tables[ts]!.interactions := by rw [SO.ts_tab]; simp [Shuffle.Table.table, Shuffle.Table.interactions]
+        AP.tables[ts]!.interactions := by rw [SO.ts_tab]; simp [Shuffle.Table.table22, Shuffle.Table.table, Shuffle.Table.interactions]
     obtain ⟨w, hw, i'', hi'', hb'', hs'', hmsg'', hm''⟩ := send_matched hH htp SO.onlyOut SO.pubOut SO.ts_lt
       (show r' - x < tr.height ts by omega) hmem rfl rfl
       (by rw [Mem.multNat_c rfl]; simp [ha])
@@ -445,7 +445,7 @@ theorem round_shuffle (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
 
 /-- **`hsim`** for the instance: the recorded rounds replay to the spec's state. -/
 theorem proc_sim (hH : HoldsP AP pub tr) (htp : tp < AP.tables.length)
-    (htab : AP.tables[tp]! = Proc.table) (SO : ShufOwn AP tp ts tc tg)
+    (htab : AP.tables[tp]! = Proc.tableB) (SO : ShufOwn AP tp ts tc tg)
     (htau : ∀ w, w < tr.height tp → cv tr tp w Proc.act = 1 → cv tr tp w Proc.tau < 256)
     (hf : f < tr.height tp) (hk : cv tr tp f Proc.kK = 1) (hc : cv tr tp f Proc.kc = 0)
     (I : Proc.Inst tr tp f m) (n : Nat) (allowed : Array Bool) (reqs : List Req)

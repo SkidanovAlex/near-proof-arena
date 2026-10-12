@@ -73,7 +73,7 @@ theorem mem2 {e : Expr} (h : e ∈ ([ .mul .isFirst (Dsl.not (c act)), .mul .isF
   unfold SizeV3.constraints; exact List.mem_append_right _ h
 
 section
-variable (hL : TableLocal SizeV3.table tr tt pub)
+variable {cap : Nat} (hL : TableLocal { SizeV3.table with maxLog := cap } tr tt pub)
 include hL
 
 theorem con {r : Nat} (hr : r < tr.height tt) {e : Expr} (he : e ∈ SizeV3.constraints) :
@@ -158,6 +158,41 @@ theorem boundF {r : Nat} (hr : r < tr.height tt) :
   · rw [h] at h1; grind
   · rw [h] at h2; grind
 
+/-- An inactive row is followed by an inactive row. -/
+theorem padF {r : Nat} (hr : r + 1 < tr.height tt) (ha : tr.cell tt r act = 0) :
+    tr.cell tt (r + 1) act = 0 := by
+  have h1 := con hL (by omega : r < tr.height tt) (e := mul3 .isTransition (Dsl.not (c act)) (n act))
+    (mem2 (by simp))
+  simp only [eval_mul3, eval_c, eval_n, eval_not, eval_isTransition, Nat.mod_eq_of_lt hr,
+    if_neg (show ¬ r + 1 = tr.height tt by omega)] at h1
+  rw [ha] at h1; grind
+
+/-- Past row 2, an active row without the last flag keeps counting `t` and cannot set `la`
+(`la` forces `t = 2`), as long as the height stays below `P`. -/
+theorem runF (hP : tr.height tt < P) {r : Nat} (h2 : 3 ≤ r) :
+    ∀ j, r + j < tr.height tt → tr.cell tt r act = 1 → tr.cell tt r t = ((r : Nat) : Fp) →
+      tr.cell tt (r + j) act = 1 ∧ tr.cell tt (r + j) t = ((r + j : Nat) : Fp) ∧
+        tr.cell tt (r + j) la = 0 := by
+  have laz : ∀ q, 3 ≤ q → q < tr.height tt → tr.cell tt q t = ((q : Nat) : Fp) →
+      tr.cell tt q la = 0 := by
+    intro q hq hqH ht
+    rcases isB hL hqH (y := la) (by simp) with h | h
+    · exact h
+    · have := ((rowF hL hqH).2 h).1
+      rw [ht] at this
+      exact absurd (ofNat_inj (a := q) (b := 2) (by omega) (by decide) this) (by omega)
+  intro j
+  induction j with
+  | zero => intro hj ha ht; exact ⟨ha, ht, laz r h2 (by omega) ht⟩
+  | succ j ih =>
+    intro hj ha ht
+    obtain ⟨a', t', l'⟩ := ih (by omega) ha ht
+    obtain ⟨f1, -, f3, -⟩ := trF hL (r := r + j) (by omega)
+    have a2 := f1 a' l'
+    have t2 : tr.cell tt (r + (j + 1)) t = ((r + (j + 1) : Nat) : Fp) := by
+      rw [show r + (j + 1) = r + j + 1 by omega, f3 a', t', natCast_add (r + j) 1]; rfl
+    refine ⟨by rw [show r + (j + 1) = r + j + 1 by omega]; exact a2, t2, laz _ (by omega) (by omega) t2⟩
+
 theorem bits_lt {r : Nat} (hr : r < tr.height tt) : bitsVal (fun b => cv tr tt r (bt b)) 0 24 < 2 ^ 24 :=
   bitsVal_lt _ 0 24 (fun b hb => cv_bool (isB hL hr (by rw [Nat.zero_add]; exact List.mem_append_right _ (List.mem_map_of_mem (f := bt) (List.mem_range.2 hb)))))
 
@@ -200,16 +235,22 @@ namespace ZkFormal.NearV3
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl SizeProof
 
-/-- **The `sizeV3` view.** -/
-theorem size_view : SizeViewStmt := by
-  intro tr pub tt hL
-  have hH : tr.height tt = 2 ∨ tr.height tt = 4 := by
-    have h1 := hL.log_ge
+/-- **The `sizeV3` view at a cap** (`cap ≤ 22`): rows `0, 1, 2` are the three totals and every
+row from `3` on is inactive padding, whatever the height. -/
+theorem size_view_at (cap : Nat) (hcap : cap ≤ 22) (tr : Trace Fp) (pub : List Fp) (tt : Nat)
+    (hL : TableLocal { SizeV3.table with maxLog := cap } tr tt pub) :
+    ∃ v, SizeWf pub v ∧ TableTraffic SizeV3.interactions tr tt pub (sizeTraffic v) := by
+  have hP : tr.height tt < P := by
     have h2 := hL.log_le
-    simp only [SizeV3.table, SizeV3.maxLog] at h2
+    have : tr.height tt ≤ 2 ^ 22 := by
+      unfold Trace.height; exact Nat.pow_le_pow_right (by decide) (by simp at h2; omega)
+    unfold P; omega
+  have hH : tr.height tt = 2 ∨ 4 ≤ tr.height tt := by
+    have h1 := hL.log_ge
     unfold Trace.height
-    have : tr.log tt = 1 ∨ tr.log tt = 2 := by omega
-    rcases this with h | h <;> simp [h]
+    rcases Nat.lt_or_ge (tr.log tt) 2 with h | h
+    · left; rw [show tr.log tt = 1 by omega]
+    · right; exact Nat.le_trans (by decide) (Nat.pow_le_pow_right (by decide) h)
   have h2 : 1 < tr.height tt := by omega
   obtain ⟨a0, t0, tot0, base0, lb1⟩ := firstF hL h2
   have ne : ∀ a b : Nat, a < P → b < P → a ≠ b → ¬ ((a : Fp) = (b : Fp)) := fun a b ha hb h e =>
@@ -228,7 +269,7 @@ theorem size_view : SizeViewStmt := by
     · exact h
     · have := ((rowF hL (r := 1) (by omega)).2 h).1
       rw [t1] at this; exact absurd (show ((1 : Nat) : Fp) = ((2 : Nat) : Fp) from this) (ne 1 2 (by decide) (by decide) (by decide))
-  have h4 : tr.height tt = 4 := by
+  have h4 : 4 ≤ tr.height tt := by
     rcases hH with h | h
     · exfalso
       have := lastF hL (by omega) (by rw [h]; exact act1)
@@ -242,13 +283,21 @@ theorem size_view : SizeViewStmt := by
     rcases isB hL (r := 2) (by omega) (y := SizeV3.la) (by simp) with h | h
     · exfalso
       have act3 := c1 act2 h
-      have t3 : tr.cell tt 3 SizeV3.t = 3 := by rw [t3' act2, t2]; grind
-      have := lastF hL (by omega) (by rw [h4]; exact act3)
-      rw [h4] at this
-      have := ((rowF hL (r := 3) (by omega)).2 this).1
-      rw [t3] at this; exact absurd (show ((3 : Nat) : Fp) = ((2 : Nat) : Fp) from this) (ne 3 2 (by decide) (by decide) (by decide))
+      have t3 : tr.cell tt 3 SizeV3.t = ((3 : Nat) : Fp) := by rw [t3' act2, t2]; grind
+      obtain ⟨aL, -, lL⟩ := runF hL hP (r := 3) (Nat.le_refl 3) (tr.height tt - 4) (by omega) act3 t3
+      rw [show 3 + (tr.height tt - 4) = tr.height tt - 1 by omega] at aL lL
+      have := lastF hL (by omega) aL
+      rw [lL] at this; exact fp_zero_ne_one this
     · exact h
   have act3 : tr.cell tt 3 SizeV3.act = 0 := c2 la2
+  have actP : ∀ q, 3 ≤ q → q < tr.height tt → tr.cell tt q SizeV3.act = 0 := by
+    intro q h3 hq
+    induction q with
+    | zero => omega
+    | succ q ih =>
+      rcases Nat.lt_or_ge q 3 with h | h
+      · rw [show q + 1 = 3 by omega]; exact act3
+      · exact padF hL hq (ih h (by omega))
   obtain ⟨-, -, -, tb1⟩ := trF hL (r := 0) h2
   obtain ⟨tot1, base1⟩ := tb1 act1
   obtain ⟨tot2, -⟩ := tb2 act2
@@ -271,10 +320,19 @@ theorem size_view : SizeViewStmt := by
     fun h => le_of_slack hs0 bl1 (by dsimp only at h; omega), fun h => le_of_slack hs1 bl2 (by dsimp only at h; omega)⟩, fun bb m => ⟨?_, ?_⟩⟩
   · rw [← hs0]; dsimp only; congr 1; omega
   · rw [← hs1]; dsimp only; congr 1; omega
-  · rw [tableBusCount_eq, h4]
+  · rw [tableBusCount_eq]
     simp only [rowT, sizeTraffic, List.map_nil]
     simp [flatMap_nil_fun]
-  · rw [tableBusCount_eq, h4]
+  · have hsplit : List.range (tr.height tt) = List.range 4 ++ (List.range (tr.height tt - 4)).map (4 + ·) := by
+      rw [← List.range_add, Nat.add_sub_cancel' h4]
+    have hrest : ((List.range (tr.height tt - 4)).map (4 + ·)).flatMap
+        (fun r => rowTraffic SizeV3.interactions tr tt r pub bb false) = [] := by
+      refine List.flatMap_eq_nil_iff.2 fun q hq => ?_
+      obtain ⟨q', hq', rfl⟩ := List.mem_map.1 hq
+      have := List.mem_range.1 hq'
+      rw [rowT, actP (4 + q') (by omega) (by omega)]
+      simp
+    rw [tableBusCount_eq, hsplit, List.flatMap_append, hrest, List.append_nil]
     simp only [rowT, sizeTraffic, show List.range 4 = [0, 1, 2, 3] from rfl, List.flatMap_cons,
       List.flatMap_nil, a0, act1, act2, act3, t0, t1, t2]
     by_cases hb : bb = B_SIZE
@@ -283,5 +341,9 @@ theorem size_view : SizeViewStmt := by
       simp only [xN, Fp.ofNat_toNat]
       rfl
     · simp [hb]
+
+/-- **The `sizeV3` view** (at the table's own cap `2`). -/
+theorem size_view : SizeViewStmt := fun tr pub tt hL =>
+  size_view_at SizeV3.maxLog (by decide) tr pub tt hL
 
 end ZkFormal.NearV3

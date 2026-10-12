@@ -15,7 +15,7 @@ open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table
 /-- Table `t` of `tr` is a legal ChaCha table. -/
 structure ChLocal (tr : Trace Fp) (t : Nat) (pub : List Fp) : Prop where
   log_ge : 1 ≤ tr.log t
-  log_le : tr.log t ≤ Table.maxLog
+  log_le : tr.log t ≤ 22
   constr : ∀ r, r < tr.height t → ∀ e ∈ Table.constraints, e.eval tr t r pub = 0
 
 /-- Cell as a natural. -/

@@ -30,6 +30,12 @@ last (`acc = 1`), at most 64 draws (`att < 64`).
 | `127, 128, 129` | `acc, st, a` (accept, call start, active) |
 | `[130,136)` | `Att b` (attempt number bits) |
 | `136` | `ks` (`kstart`) |
+
+**A9 word counter (`table22` only, user decision 2026-10-12).**  `table22` (the `nearAirV3` table)
+appends `w` (col `137`, the running count of active rows: `w_0 = a_0`, `w' = w + a'`) and the 20
+bits `Wb e` (cols `138 + e`) with `Σ 2^e·Wb e = W0 − w` on the last row: the number of drawn words
+is `≤ W0 = 770,000` (`NearSpecV3.W0`).  The base columns, constraints and interactions are those
+of `table`, so every base view applies.
 -/
 
 namespace ZkFormal.Chacha.Rng.Table
@@ -122,5 +128,24 @@ def maxLog : Nat := 20
 def table (busChacha busGen : Nat) : Table :=
   { width := width, constraints := constraints, interactions := interactions busChacha busGen,
     maxLog := maxLog }
+
+/-! ## The A9 word counter -/
+
+/-- The A9 bound `W0 = 770,000` (`NearSpecV3.W0`). -/
+def W0 : Nat := 770000
+def colW : Nat := 137
+def colWb (e : Nat) : Nat := 138 + e
+def widthW0 : Nat := 158
+
+/-- The word counter and the last-row range check of `W0 − w`. -/
+def cW0 : List Expr :=
+  (List.range 20).map (fun e => ZkFormal.Chacha.Table.boolC (colWb e)) ++
+  [ .mul .isFirst (sub (c colW) (c colA)),
+    .mul .isTransition (sub (n colW) (.add (c colW) (n colA))),
+    .mul .isLast (sub (num colWb 20) (sub (k W0) (c colW))) ]
+
+/-- **The table at the A9 cap `22` (`nearAirV3`)**: `table` with the word counter. -/
+def table22 (busChacha busGen : Nat) : Table :=
+  { table busChacha busGen with maxLog := 22, width := widthW0, constraints := constraints ++ cW0 }
 
 end ZkFormal.Chacha.Rng.Table

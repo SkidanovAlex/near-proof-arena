@@ -3,18 +3,26 @@ import ZkFormal.NearV3.Assembly.CanonicalReplay
 
 /-! Precise remaining semantic completeness obligation. This module does not
 prove FactorComplete: it derives every GoodV3 field except the original bounds
-A7 (rebuilt post-state bytes) and A9 (ChaCha words of the scheduler runs) on the
+A7 (unfolded pre and native post trie bytes) and A9 (ChaCha words of the scheduler runs) on the
 reconstructed witness, which remain explicit premises. A10 (source path depth)
 is derived: the reconstructed witness keeps the decoded proof entries. -/
 namespace ZkFormal.NearV3.Assembly
 open NearSpec NearSpecV3 Sched
 
-theorem checkD0a_good_except_unfolded {B : Nat} {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
-    (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w) (h : checkD0a B cb wb = .ok ()) :
-    ∃ m steps p, let x := nativeExecutionViews k w m steps
+/-- Every `GoodV3` field from the actual native execution `m`, `steps` of an accepted
+witness, except the two bounds read on the reconstructed witness (A7, A9), which are
+premises here and are discharged in `FactorComplete.lean`. -/
+theorem good_of_native {B : Nat} {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
+    (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w) (h : checkD0a B cb wb = .ok ())
+    {m : MainExecutionV3} {steps : List ImplicitStepV3} {last : Bytes}
+    (hm : m.NativeValid k w)
+    (ht : traceImplicit k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) = .ok (steps,last))
+    (hv : ImplicitTraceValid k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) steps last)
+    (hcap : (forestBytes (m.pre :: steps.map ImplicitStepV3.pre)).length ≤ ZkFormal.Algebra.P)
+    (hf : ∀ t ∈ m.pre :: steps.map ImplicitStepV3.pre, t.wf = true) :
+    ∃ p, let x := nativeExecutionViews k w m steps
       unfoldBytes cb (witnessOfV3 k x) ≤ B → chachaWords cb (witnessOfV3 k x) ≤ W0 →
         GoodV3 B cb k (nativeHint k w m) p x := by
-  obtain ⟨m,steps,last,hm,ht,hv,hlen,_,hcap,hf⟩ := checkD0a_native_trace hk hw h
   have hc := h
   unfold checkD0a at hc
   obtain ⟨u,hc,_⟩ := ReexecV3D0.bind_ok' hc
@@ -34,7 +42,7 @@ theorem checkD0a_good_except_unfolded {B : Nat} {cb wb : Bytes} {k : WalkD0} {w 
   let x := nativeExecutionViews k w m steps
   have hap : x.applied = appliedReceipts k w := executionViews_applied hd
   obtain ⟨hguards,htx,hcong⟩ := checkD0_claim_guards hk hw hc
-  refine ⟨m,steps,p,?_⟩
+  refine ⟨p,?_⟩
   dsimp only
   intro hunfold hwords
   have hentries : (stateWitnessOfV3 k x).entries = w.entries :=
@@ -56,7 +64,8 @@ theorem checkD0a_good_except_unfolded {B : Nat} {cb wb : Bytes} {k : WalkD0} {w 
     unfoldedBytes := hunfold
     distinctRequests := ?_
     chachaWords := hwords
-    pathDepth := ?_ }
+    pathDepth := ?_
+    layoutWf := ?_ }
   · change (appliedReceipts k w).length = x.applied.length
     rw [hap]
   · change (x.applied.map Receipt.receiptId).Nodup
@@ -73,13 +82,23 @@ theorem checkD0a_good_except_unfolded {B : Nat} {cb wb : Bytes} {k : WalkD0} {w 
     have hu : usedProofs k (stateWitnessOfV3 k x) = usedProofs k w := by
       simp only [usedProofs, hentries]
     rw [hu] at he
-    have ha10 := hr.2.2.2.2.2.2.2
+    have ha10 := hr.2.2.2.2.2.2.2.1
     simp only [a10, hk, hw, List.all_eq_true, decide_eq_true_eq] at ha10
     exact ha10 e he
+  · have ha12 := hr.2.2.2.2.2.2.2.2
+    simpa only [a12, hk, beq_iff_eq] using ha12
+
+theorem checkD0a_good_except_unfolded {B : Nat} {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
+    (hk : walkD0 cb = .ok k) (hw : decodeW wb = .ok w) (h : checkD0a B cb wb = .ok ()) :
+    ∃ m steps p, let x := nativeExecutionViews k w m steps
+      unfoldBytes cb (witnessOfV3 k x) ≤ B → chachaWords cb (witnessOfV3 k x) ≤ W0 →
+        GoodV3 B cb k (nativeHint k w m) p x := by
+  obtain ⟨m,steps,last,hm,ht,hv,_,_,hcap,hf⟩ := checkD0a_native_trace hk hw h
+  obtain ⟨p,hp⟩ := good_of_native hk hw h hm ht hv hcap hf
+  exact ⟨m,steps,p,hp⟩
 
 /-- All semantic constructor obligations are derived from acceptance except the
-original A7 and A9 bounds on the reconstructed witness. This implication is deliberately
-not named FactorComplete and does not discharge those remaining bounds. -/
+A7 and A9 bounds on the reconstructed witness (discharged in `FactorComplete.lean`). -/
 theorem accepted_good_except_unfolded {B : Nat} {cb wb : Bytes}
     (h : checkD0a B cb wb = .ok ()) :
     ∃ k hint p x, unfoldBytes cb (witnessOfV3 k x) ≤ B → chachaWords cb (witnessOfV3 k x) ≤ W0 →

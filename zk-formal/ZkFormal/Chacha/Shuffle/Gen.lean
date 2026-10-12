@@ -119,7 +119,11 @@ def rowCell (X : Row) (r c : Nat) : Nat :=
 
 def honestCell (insts : List SInst) (r c : Nat) : Nat := rowCell ((honestRows insts).getD r .pad) r c
 
+/-- The honest rows at an explicit height `2^L` (padding rows below). -/
+def traceAt (insts : List SInst) (L : Nat) : ZkFormal.Air.Trace ZkFormal.Algebra.Fp :=
+  ⟨fun _ => L, fun _ r c => ZkFormal.Algebra.Fp.ofNat (honestCell insts r c)⟩
+
 def honestTrace (insts : List SInst) : ZkFormal.Air.Trace ZkFormal.Algebra.Fp :=
-  ⟨fun _ => honestLog insts, fun _ r c => ZkFormal.Algebra.Fp.ofNat (honestCell insts r c)⟩
+  traceAt insts (honestLog insts)
 
 end ZkFormal.Chacha.Shuffle.Gen

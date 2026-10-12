@@ -20,7 +20,8 @@ theorem forest_terminal_exact {ts : List PTrie} {tau : Nat} {root : OccurrenceAd
       ((run.terminal=.BV ∨ run.terminal=.BI) → s.v.bmap=some ((step I I.ts).bm,(step I I.ts).hv)) ∧
       (((run.terminal=.BV ∨ run.terminal=.BI) ∧
         s.v.bmap=some ((step I I.ts).bm,(step I I.ts).hv)) ∨
-        (step I I.ts).e∈edgesOf3 a.nid s) := by
+        (step I I.ts).e∈edgesOf3 a.nid s) ∧
+      (a∈sourceAddresses root.nid root.vid root.depth root.tree [0,15] ∧ a.tree=run.terminalSource) := by
   obtain ⟨a,ha,he,_,hget⟩ := forest_terminal_seed hroot hr hf
   let recordId := pathRecordId (extendedAddresses root.nid root.vid root.depth root.tree [0,15])
   have hid : recordId run.terminalSource=a.nid := he ▸ extendedRecordId_source ha
@@ -50,5 +51,5 @@ theorem forest_terminal_exact {ts : List PTrie} {tau : Nat} {root : OccurrenceAd
       have hb := seedInstance_branch_bitmap recordId (fun _=>a.vid) (occurrenceResolvedId recordId)
         baseI hr hbr Qs tau a.depth a.vid _ rfl
       simpa only [hid] using hb
-    · simpa only [hid] using hp
+    · exact ⟨by simpa only [hid] using hp, ha, he⟩
 end ZkFormal.NearV3.Render.UpsGen

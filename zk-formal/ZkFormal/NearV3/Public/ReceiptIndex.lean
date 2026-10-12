@@ -6,7 +6,7 @@ open ZkFormal.V2 ZkFormal.Algebra NearSpecV3
 
 def sourceRecords (p : Prep) : List (List Nat) :=
   (List.range p.lists.length).map fun j =>
-    [j, if sourceDup p.lists j then 1 else 0] ++
+    [j, sourceDupByte p.lists j, if sourceRep p.lists j then 1 else 0] ++
       (p.lists.getD j ⟨[],0,[]⟩).root.map UInt8.toNat
 
 def boundaryRecords (p : Prep) : List (List Nat) :=
@@ -28,7 +28,8 @@ theorem prepared_source_records (p : Prep) : preparedOn p B_SRC true = sourceRec
   rw [sourcePayload_getD p.lists hj]
   simp only [recordNats,descriptor,sourcePlan,List.nil_append,Nat.zero_add]
   unfold sourceRow
-  cases sourceDup p.lists j <;> rfl
+  unfold sourceDupByte
+  cases sourceDup p.lists j <;> cases sourceConsistent p.lists j <;> cases sourceRep p.lists j <;> rfl
 
 theorem prepared_boundary_records (p : Prep) :
     preparedOn p B_BNDP true = boundaryRecords p := by

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """3-way differential test for near/pv86/chunk-validation/v0, domain D0a
-(RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10, spec/near-chunk-validation-v0a.md).
+(RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10 ∧ A12, spec/near-chunk-validation-v0a.md;
+A11 w.post_rebuild retired 2026-10-12).
 
 Implementations compared on every case directory (claim.bin, witness.bin, meta.json):
   (1) nearcore oracle  — meta.json written by `near-arena-oracle-v3-d0a gen`: nearcore's own
@@ -19,8 +20,15 @@ A10 path-depth mutants `w.path_depth_over` (33 path items) pin `w.path_depth`.
 
 Measured quantities compared exactly across implementations (Lean / Python on every case both
 accept or classify out of domain after RelD0; the oracle's on the cases it measured):
-`unfold` (A7 unfoldBytes), `chacha_words` (A9 ChaCha20 words drawn by all scheduler runs),
-`max_path_depth` (A10 longest used source-proof Merkle path).
+`unfold` (A7 unfoldBytes: pre tries + native post tries, measure of 2026-10-12),
+`chacha_words` (A9 ChaCha20 words drawn by all scheduler runs), `max_path_depth` (A10 longest
+used source-proof Merkle path), and the legacy A7 measures `unfold_rebuilt` (2026-10-11: post
+tries rebuilt from the post store along the read keys) and `unfold_diff` (before 2026-10-11,
+post term = rebuilt occurrences changed from the pre trie only). The oracle's stored
+`unfold_bytes` predates both revisions, so it is compared with `unfold_diff` (its post nodes
+come from nearcore's State column, independent of the witness store); `unfold` and
+`unfold_rebuilt` are compared Lean vs Python. Regenerating the oracle fixtures with the new
+measure is pending.
 
 usage: difftest_v3.py --cases DIR [--lean EXE] [--python FILE] [--report OUT.json]
          [--lean-jsonl F --python-jsonl F]   (reuse precomputed outputs)
@@ -28,9 +36,11 @@ usage: difftest_v3.py --cases DIR [--lean EXE] [--python FILE] [--report OUT.jso
 import argparse, collections, json, os, subprocess, sys, time
 
 AMENDMENTS = ("c.gas_limit", "w.proof_routing", "e.sched_canonical", "w.unfolded", "c.bw_requests",
-              "e.chacha_words", "w.path_depth")
+              "e.chacha_words", "w.path_depth", "c.layout_wf")
 # measured quantity -> (Lean/Python JSON field, oracle meta.json field)
-MEASURES = {"unfold_bytes": ("unfold", "unfold_bytes"),
+MEASURES = {"unfold_bytes": ("unfold", None),
+            "unfold_rebuilt": ("unfold_rebuilt", None),
+            "unfold_diff": ("unfold_diff", "unfold_bytes"),
             "chacha_words": ("chacha_words", "chacha_words"),
             "max_path_depth": ("max_path_depth", "max_path_depth")}
 
@@ -150,6 +160,8 @@ def main():
         "mutation_families": {f"{k[0]}|expected_accept={k[1]}": v for k, v in sorted(families.items())},
         "disagreements": len(disagreements), "disagreement_list": disagreements[:200],
         "unfold_bytes": unfold,
+        "unfold_rebuilt": measures["unfold_rebuilt"],
+        "unfold_diff": measures["unfold_diff"],
         "chacha_words": measures["chacha_words"],
         "max_path_depth": measures["max_path_depth"],
         "wall_seconds": times,
@@ -212,7 +224,7 @@ def main():
     s = json.dumps(report, indent=1, sort_keys=True)
     if a.report:
         open(a.report, "w").write(s + "\n")
-    print(json.dumps({k: report.get(k) for k in ("counts", "disagreements", "amendments_on_honest_witnesses", "a2_foreign_routed_mutants", "a8_dup_bw_request_mutants", "a8_reported_elsewhere", "a10_path_depth_mutants", "a10_reported_elsewhere", "a9_reported", "unfold_bytes", "chacha_words", "max_path_depth")}, indent=1))
+    print(json.dumps({k: report.get(k) for k in ("counts", "disagreements", "amendments_on_honest_witnesses", "a2_foreign_routed_mutants", "a8_dup_bw_request_mutants", "a8_reported_elsewhere", "a10_path_depth_mutants", "a10_reported_elsewhere", "a9_reported", "unfold_bytes", "unfold_rebuilt", "unfold_diff", "chacha_words", "max_path_depth")}, indent=1))
     return 0 if not disagreements else 1
 
 if __name__ == "__main__":

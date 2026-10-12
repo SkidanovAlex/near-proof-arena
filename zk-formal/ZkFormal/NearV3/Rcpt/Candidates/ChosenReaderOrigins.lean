@@ -20,21 +20,21 @@ theorem chosen_origin_instances {us : List SchedulerUpsertWitness}
       I.ci=u.run.terminal.ix ∧
       DispatchNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) u.run I ∧
       ∃root,forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) tau=some root ∧
-        NativeReaderOrigin root u.run u.value I := by
+        NativeReaderOrigin root u.run u.value I ∧ Assembly.UpsS0F.S0FVid us tau u I := by
   classical
   have hex : ∀ i : Fin us.length,∃ I,AllocatedNativeInstance us i us[i] I ∧ NativeShaFamily us[i] I ∧
       ExactNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) (us[i]).run I ∧ I.ci=(us[i]).run.terminal.ix ∧
       DispatchNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) (us[i]).run I ∧
       ∃root,forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) i=some root ∧
-        NativeReaderOrigin root (us[i]).run (us[i]).value I := by
+        NativeReaderOrigin root (us[i]).run (us[i]).value I ∧ Assembly.UpsS0F.S0FVid us i us[i] I := by
     intro i
     have hu : us[i.val]?=some us[i] := List.getElem?_eq_getElem i.isLt
     have hget : (us.map SchedulerUpsertWitness.pre)[i.val]?=some (us[i]).pre := by
       simp only [List.getElem?_map,hu,Option.map_some]
     obtain ⟨root,hroot,_⟩ := forestRootAt_exists_of_get 0 0 _ i.val (us[i]).pre hget
-    obtain ⟨I,hci,a,b,c,d,e,f,g,h,j,payload,origin⟩ := scheduler_instance_origin_inputs hgood hpre hout hu hroot
+    obtain ⟨I,hci,a,b,c,d,e,f,g,h,j,payload,origin,s0f⟩ := scheduler_instance_origin_inputs hgood hpre hout hu hroot
       (nativeRootBase (baseI i) (us[i]).pre (us[i]).run) (base i)
-    exact ⟨I,⟨a,b,c,d,e,exactProviders_forget (dispatchProviders_forget f),g,h⟩,j,dispatchProviders_forget f,hci,f,root,hroot,origin⟩
+    exact ⟨I,⟨a,b,c,d,e,exactProviders_forget (dispatchProviders_forget f),g,h⟩,j,dispatchProviders_forget f,hci,f,root,hroot,origin,s0f⟩
   let insts := List.ofFn (fun i : Fin us.length => Classical.choose (hex i))
   refine ⟨insts,List.length_ofFn,?_⟩
   intro tau u I hu hI

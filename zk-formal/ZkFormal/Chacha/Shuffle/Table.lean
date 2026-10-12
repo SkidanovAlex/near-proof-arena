@@ -126,4 +126,8 @@ def table (busIn busOut busMem busGen busShuf : Nat) : Table :=
   { width := width, constraints := constraints,
     interactions := interactions busIn busOut busMem busGen busShuf, maxLog := maxLog }
 
+/-- The table at the A9 cap `22` (`nearAirV3`; soundness holds for heights `≤ 2^22`). -/
+def table22 (busIn busOut busMem busGen busShuf : Nat) : Table :=
+  { table busIn busOut busMem busGen busShuf with maxLog := 22 }
+
 end ZkFormal.Chacha.Shuffle.Table
