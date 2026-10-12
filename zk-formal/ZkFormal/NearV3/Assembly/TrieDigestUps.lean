@@ -146,4 +146,72 @@ theorem ups_sha_scheduler {insts : List Render.UpsInst} (h : TrieUpsOrigin.UpsSh
   obtain ⟨B, base, Qs, he, rfl⟩ := origin
   exact ⟨_, B, base, Qs, heq ▸ he, heq ▸ rfl⟩
 
+
+/-- `ups_sha_scheduler` keeping the witnesses' native sanity inputs (`CallPin`). -/
+theorem ups_sha_scheduler_pin {k : WalkD0} {m : MainExecutionV3} {steps : List ImplicitStepV3}
+    {insts : List Render.UpsInst} (h : TrieUpsOrigin.UpsShaPin k m steps insts) :
+    ∃ us : List SchedulerUpsertWitness, CallPin k m steps us ∧
+      (∀ p : List WStep3, (physicalPrefixUps p insts).map (fun I => (I.tau, I.v)) =
+        us.mapIdx (fun i u => (i, u.value.map UInt8.toNat))) ∧
+      (∀ p : List WStep3, (physicalPrefixUps p insts).map UpsS0F.s0fOf =
+        (m.pre :: steps.map ImplicitStepV3.pre).mapIdx
+          (fun i t => UpsS0F.s0fPair ((m.pre :: steps.map ImplicitStepV3.pre).take i) t)) ∧
+      (∀ u ∈ us, u.Valid) ∧
+      (Sha.Gen.honestRows (schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us)).length ≤ 1663260 ∧
+      ∀ p : List WStep3,
+        ((physicalPrefixUps p insts).flatMap upsBytes).map Msg.toFp =
+          (Sha.Gen.expectedBytes (schedulerShaJobs 0 us)).map Msg.toFp ∧
+        ((CompactPhysicalDigests.compactGeneratedDigests (physicalPrefixUps p insts)).map Msg.toFp).Perm
+          ((Sha.Gen.expectedDigests (schedulerShaJobs 0 us)).map Msg.toFp) := by
+  obtain ⟨us, hpin, hl, h32, hg, hout, hval, -, hI⟩ := h
+  have hs0 : ∀ p : List WStep3, (physicalPrefixUps p insts).map UpsS0F.s0fOf =
+      (m.pre :: steps.map ImplicitStepV3.pre).mapIdx
+        (fun i t => UpsS0F.s0fPair ((m.pre :: steps.map ImplicitStepV3.pre).take i) t) := by
+    intro p
+    rw [TrieA7.prefix_map_eq UpsS0F.s0fOf (fun _ _ => by simp [UpsS0F.s0fOf]) insts p]
+    have hlF : us.length = steps.length + 1 := by
+      have h' : us.map (fun u => (u.ctx, schedRead u.pre)) = callList k m steps := hpin
+      have := congrArg List.length h'
+      simpa [callList] using this
+    apply List.ext_getElem (by simp [hl, hlF])
+    intro i h1 h2
+    simp only [List.length_map] at h1
+    simp only [List.length_mapIdx] at h2
+    have hu : us[i]? = some us[i] := List.getElem?_eq_getElem (by omega)
+    obtain ⟨-, -, -, -, root, -, -, hs⟩ := hI i us[i] insts[i] hu (List.getElem?_eq_getElem h1)
+    simp only [List.getElem_map, List.getElem_mapIdx]
+    exact hs _ (List.getElem?_eq_getElem h2)
+  have htv : ∀ p : List WStep3, (physicalPrefixUps p insts).map (fun I => (I.tau, I.v)) =
+      us.mapIdx (fun i u => (i, u.value.map UInt8.toNat)) := by
+    intro p
+    rw [TrieA7.prefix_map_eq (fun I => (I.tau, I.v)) (fun _ _ => rfl) insts p]
+    apply List.ext_getElem (by simp [hl])
+    intro i h1 h2
+    simp only [List.length_map] at h1
+    have hu : us[i]? = some us[i] := List.getElem?_eq_getElem (by omega)
+    obtain ⟨-, hv, ht, -⟩ := hI i us[i] insts[i] hu (List.getElem?_eq_getElem h1)
+    simp [hv, ht]
+  refine ⟨us, hpin, htv, hs0, fun u hu => (hg u hu).1, schedulerBatch_rows us h32 (fun u hu => (hg u hu).1) (fun u hu => (hg u hu).2.1) hout hval, ?_⟩
+  intro p
+  refine ⟨?_, ?_⟩
+  · have hr : (physicalPrefixUps p insts).map upsBytes = insts.map upsBytes :=
+      TrieA7.prefix_map_eq upsBytes (fun _ _ => rfl) insts p
+    rw [List.flatMap_def, hr, ← List.flatMap_def]
+    exact TrieUpsBytes.bytes_from us insts 0 hl (fun i u I hu hI' => by
+      obtain ⟨a, b, c, -⟩ := hI i u I hu hI'
+      exact ⟨a, b, by omega⟩)
+  have hmeta := physicalPrefixUps_origins (us := us) (Is := insts) (fun tau u I hu hI' => by
+    obtain ⟨sha, -, -, a, root, hroot, origin, -⟩ := hI tau u I hu hI'
+    exact ⟨a, sha, root, hroot, origin⟩) p
+  apply scheduler_compact_digest_conservation us _ (hmeta.1.trans hl)
+    (fun u hu => ⟨(hg u hu).1, (hg u hu).2.2⟩)
+  intro i u J hu hJ
+  obtain ⟨a, sha, root, hroot, origin⟩ := hmeta.2 i u J hu hJ
+  have ht := forestRootAt_tree 0 0 (us.map SchedulerUpsertWitness.pre) i
+  rw [hroot, List.getElem?_map, hu] at ht
+  have heq : root.tree = u.pre := Option.some.inj ht
+  refine ⟨a, sha, ?_⟩
+  obtain ⟨B, base, Qs, he, rfl⟩ := origin
+  exact ⟨_, B, base, Qs, heq ▸ he, heq ▸ rfl⟩
+
 end ZkFormal.NearV3.Assembly.TrieDigestUps

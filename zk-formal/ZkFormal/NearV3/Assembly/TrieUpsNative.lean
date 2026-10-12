@@ -72,7 +72,8 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       0 < insts.length ∧ (∀ I ∈ insts, InstOk I) ∧ (∀ I ∈ insts, NativePartFamily I) ∧
       TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
-      TrieUpsOrigin.UpsSha insts ∧ TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
+      TrieUpsOrigin.UpsSha insts ∧ TrieUpsOrigin.UpsShaPin k m steps insts ∧
+      TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       (walkEdgeKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       (walkBmapKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       ∀ W : List ZkFormal.Near.Msg, W.length < Algebra.P →
@@ -97,7 +98,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         (W = Candidates.PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2 ^ 22 →
           UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
         (∀ J ∈ Js, NativeMemdSrc J) := by
-  obtain ⟨writes, oldPost, us, insts, hkf, hr, hpairs, hpos, hlen, hgood, hpre, hout, hval, hcount, hinst, hforest,
+  obtain ⟨writes, oldPost, us, insts, hkf, hr, hpairs, hpos, hlen, hgood, hpre, hout, hval, hcount, hinst, hsan, hforest,
     hbytes, -⟩ := coverage_kf hk hw h hm hv (fun _ => default) (fun _ _ => default)
   obtain ⟨v, ws, hvvalid, hvreads, hws, hwlocal, hwtraffic, hranges⟩ :=
     accepted_same_lookup_physical hk hw h hm hv resolve T_WALK pub
@@ -124,21 +125,39 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
   obtain ⟨hedges, hbmaps⟩ := hranges insts (by omega)
   have horigin := TrieUpsOrigin.upsOrigin_of_coverage m steps oldPost writes us insts hpairs
     (fun u hu => (hgood u hu).1) hcount (fun tau u I hu hI => by
-      obtain ⟨a, -, ex, ci, -, root, hroot, horig⟩ := hinst tau u I hu hI
+      obtain ⟨a, -, ex, ci, -, root, hroot, horig, -⟩ := hinst tau u I hu hI
       exact ⟨a, ex, ci, root, hroot, horig⟩) hforest
-  refine ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads,
-    ⟨⟨nativeWalkTrace (rankWalks [] ws), walkTraffic3 (rankWalks [] ws), hwlocal, hwtraffic,
-      by change 22 % 3 = 1; decide⟩, rfl⟩,
-    by omega, ho, hfam, horigin, ⟨us, hcount, hlen, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.2.1, (hgood u hu).2.1⟩,
+  have hshaP : TrieUpsOrigin.UpsShaPin k m steps insts :=
+    ⟨us, hsan, hcount, hlen, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.2.1, (hgood u hu).2.1⟩,
       hout, hval,
       TrieA7Post.ups_post_bound hk hw h hm hv us hpairs (fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.1⟩),
       fun tau u I hu hI => by
-        obtain ⟨a, sha, -, -, -, root, hroot, horig⟩ := hinst tau u I hu hI
-        exact ⟨sha, a.2.2.2.1, a.1, a, root, hroot, horig⟩⟩,
+        obtain ⟨a, sha, -, ci, -, root, hroot, horig, s0f⟩ := hinst tau u I hu hI
+        refine ⟨sha, a.2.2.2.1, a.1, a, root, hroot, horig, ?_⟩
+        intro t ht
+        rw [UpsS0F.s0fOf_native a.2.2.2.2.1 ci s0f (hgood u (List.mem_of_getElem? hu)).1]
+        have hpre : us.map SchedulerUpsertWitness.pre = oldPost :: steps.map ImplicitStepV3.pre := by
+          have hh := congrArg (List.map Prod.fst) hpairs
+          simpa [List.map_map, Function.comp_def] using hh
+        have hu' : (oldPost :: steps.map ImplicitStepV3.pre)[tau]? = some u.pre := by
+          rw [← hpre, List.getElem?_map, hu]; rfl
+        have hkw : ∀ kv ∈ writes, keyBwState ≠ kv.1 := by
+          intro kv hkv
+          have hm' : kv.1 ∈ (appliedReceipts k w).map (fun r => accountKeyPath r.receiverId) := by
+            rw [← hkf.1]; exact List.mem_map.mpr ⟨kv, hkv, rfl⟩
+          obtain ⟨r, -, hr'⟩ := List.mem_map.mp hm'
+          rw [← hr']
+          simp [keyBwState, accountKeyPath, nibbles]
+        rw [hpre]
+        exact UpsS0F.s0f_rebase hr hkw _ tau u.pre t hu' ht⟩
+  refine ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads,
+    ⟨⟨nativeWalkTrace (rankWalks [] ws), walkTraffic3 (rankWalks [] ws), hwlocal, hwtraffic,
+      by change 22 % 3 = 1; decide⟩, rfl⟩,
+    by omega, ho, hfam, horigin, hshaP.sha, hshaP,
     (have hf := TrieA7Forest.ups_forest_facts hk hw h hm hv hr us hpairs
      ⟨us, hcount, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.1⟩, hf.1, hf.2.1, hf.2.2.1, hf.2.2.2,
       fun tau u I hu hI => by
-        obtain ⟨a, sha, -, -, -, root, hroot, horig⟩ := hinst tau u I hu hI
+        obtain ⟨a, sha, -, -, -, root, hroot, horig, -⟩ := hinst tau u I hu hI
         exact ⟨sha, a.2.2.2.1, a, root, hroot, horig⟩⟩), hedges, hbmaps, ?_⟩
   intro W hW
   -- providers
@@ -170,7 +189,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       simpa [nativeReplayForest, List.map_map, Function.comp_def] using hh
     have hr := native_midroot_records (nativeReplayForest m steps oldPost writes) us insts hforest hpre' hcount
       (fun tau u I hu hI => by
-        obtain ⟨a, -, -, -, -, root, hroot, horig⟩ := hinst tau u I hu hI
+        obtain ⟨a, -, -, -, -, root, hroot, horig, -⟩ := hinst tau u I hu hI
         exact ⟨a, root, hroot, horig⟩)
     unfold upsRanked
     rw [prefix_midroot_records, ← hr]
@@ -219,7 +238,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       intro r hr
       exact hwf _ (hrs ▸ List.mem_map.mpr ⟨r, hr, rfl⟩)
     have hmeta := physicalPrefixUps_origins (us := us) (Is := insts) (fun tau u I hu hI => by
-      obtain ⟨a, sha, -, -, -, root, hroot, origin⟩ := hinst tau u I hu hI
+      obtain ⟨a, sha, -, -, -, root, hroot, origin, -⟩ := hinst tau u I hu hI
       exact ⟨a, sha, root, hroot, origin⟩) (ws.flatMap (·.steps))
     have hcov := TrieUpb.partCov_native rs hforest hwr (hpreEq ▸ hpre) us (upsRanked ws insts) hpreEq
       (fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.1⟩) (hmeta.1.trans hcount)
@@ -234,7 +253,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       (useReq ws insts W) hWk
   have hmemd : ∀ J ∈ upsRanked ws insts, NativeMemdSrc J := by
     have hmeta := physicalPrefixUps_origins (us := us) (Is := insts) (fun tau u I hu hI => by
-      obtain ⟨a, sha, -, -, -, root, hroot, origin⟩ := hinst tau u I hu hI
+      obtain ⟨a, sha, -, -, -, root, hroot, origin, -⟩ := hinst tau u I hu hI
       exact ⟨a, sha, root, hroot, origin⟩) (ws.flatMap (·.steps))
     intro J hJ
     obtain ⟨i, hi, hget⟩ := List.mem_iff_getElem.mp hJ

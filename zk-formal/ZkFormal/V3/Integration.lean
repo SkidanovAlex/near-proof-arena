@@ -355,6 +355,24 @@ import ZkFormal.NearV3.Render.CodecMod
 import ZkFormal.NearV3.Render.CodecHeader
 import ZkFormal.NearV3.Render.CodecRecInt
 import ZkFormal.NearV3.Render.CodecEndInt
+import ZkFormal.NearV3.Render.CodecRender
+import ZkFormal.NearV3.Render.CodecNative
+import ZkFormal.NearV3.Render.CodecTraffic
+import ZkFormal.NearV3.Render.CodecGrantCore
+import ZkFormal.NearV3.Render.CodecNatRes
+import ZkFormal.NearV3.Render.CodecBus
+import ZkFormal.NearV3.Render.CodecSanity
+import ZkFormal.NearV3.Render.CodecAllow
+import ZkFormal.NearV3.Render.CodecTriePin
+import ZkFormal.NearV3.Render.CodecUpsBus
+import ZkFormal.NearV3.Render.CodecSpost
+import ZkFormal.NearV3.Render.CodecS0F
+import ZkFormal.NearV3.Assembly.UpsS0FAddr
+import ZkFormal.NearV3.Assembly.UpsS0FRebase
+import ZkFormal.NearV3.Render.CodecCanon
+import ZkFormal.NearV3.Render.CodecScmp
+import ZkFormal.NearV3.Render.CodecScmpBus
+import ZkFormal.NearV3.Render.CodecVbytesBal
 import ZkFormal.NearV3.Render.PaddedUps
 import ZkFormal.NearV3.Render.PaddedUpsNative
 import ZkFormal.NearV3.Render.NodeRender
@@ -494,6 +512,8 @@ import ZkFormal.NearV3.Assembly.LinkCanon
 import ZkFormal.NearV3.Assembly.LinkWitness
 import ZkFormal.NearV3.Assembly.LinkShape
 import ZkFormal.NearV3.Assembly.ExtractV3Proof
+import ZkFormal.NearV3.Render.SchedBusAll
+import ZkFormal.NearV3.Render.CompleteV3
 /-!
 # Build gate for the integrated v3 proof work
 

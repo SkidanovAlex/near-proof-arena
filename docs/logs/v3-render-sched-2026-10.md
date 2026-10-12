@@ -295,3 +295,334 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
     sends `[τ, 37 + 24·n²]` per τ; SPOST sends `[τ, p, u.value[p]]` for every p; sanity SHA jobs (BYTES)
     are the codec's — the honest inputs must be the same native choice as the trie lane's `UpsSha`
     (`TrieUpsSched.lean`, `trie_all_of`).
+
+## 2026-10-12 (package 7, fresh session: codec table 11 assembled)
+
+* Merged `origin/lane/v3-trie-complete` (3834ac8e: `TrieSide.trie_side`). `ZkFormal.V3.Integration` builds
+  (4290 jobs, 14m38s); `make pin-check` OK.
+* **Performance finding (important):** `simp` with a `rfl`-proved `lookup_cons` (a dsimp lemma) makes the
+  *kernel* unfold symbolic field inverses (`inv (fsub p 4)`; `inv` being `@[irreducible]` does not help the
+  kernel) → OOM at 14 G even for `lookup [(44, inv (fsub p 4))] 44 0 = inv (fsub p 4)`. Fix: `lookup_cons` /
+  `lookup_nil` are proved propositionally (`simp only [lookup, List.foldl_cons]`), never by `rfl`
+  (`Render/CodecCells.lean`). With that, cell evaluation of all row kinds is fast. Also: building
+  CodecHeader/EndInt/RecInt in one `lake build` exceeds 14 G (parallel); build them one at a time
+  (6 min / 12.7 min / 26.5 min).
+* **Codec (table 11, frozen `Sched.Codec.table`) — TableLocal + exact traffic over honest blocks: DONE.**
+  * `Render/CodecCells.lean`: `lookup_ite/cons/nil/app`, `lookup_bound`, `gd_setAll`, `keys_{hdrA,recA,hashA,ashA}`.
+  * `Render/CodecRowMod.lean`: `cdc_cell` (cell evaluation), `modE_cases`, `tz_mod`, **`hdr_mod`, `rec_mod`,
+    `hash_mod`, `ash_mod`** (the eight `modE` constraints over `Fp` on each row kind, symbolic `f, gg`),
+    `row_local` (integer pass + modular pass ⇒ every constraint).
+  * `Render/CodecDesc.lean`: `Desc` (`hdr`/`record`/`hash`/`ash`), `InstOk`, `RecOk`, `Desc.Valid` (cells `< P` +
+    the row lemmas' premises), `Desc.Adj` (exactly the integer-pass successor premises), `Final`, `FirstOk`;
+    **`local_at`** (all 239 constraints on a descriptor row), **`mult_bits`** (multiplicities are bits).
+  * `Render/CodecTable.lean`: `codecTrace ds`, `cur_desc`, **`table_local`** (descriptor chain, `< 2^22` rows ⇒
+    `TableLocal Sched.Codec.table`; padding via `CodecPadding.physical_constraints/physical_mult_zero`).
+    `Render/CodecChain.lean`: chain append/flatten/range for codec descriptors, `table_local_chain`.
+  * `Render/CodecVals.lean`: `hdr_vals`, `rec_vals`, `hash_vals`, `ash_vals` (all cells `< P` from explicit bounds).
+  * `Render/CodecGen.lean`: `Blk` (instance constants, ids, prior allowances `a0`, per-link `recs`, digest,
+    previous hash, `sha256(all_shards)`), `Blk.descs` (5 + 24·N + 64 rows; bytes and allowance accumulators in
+    closed form = frozen `Gen.codecRows`), `Blk.Ok` (explicit premises), `descs_chain`, `descs_valid`,
+    `descs_length`, `allDescs`, **`allDescs_local`**.
+  * `Render/CodecRender.lean`: `codecCell`, `codec_currentOnly` (`decide +kernel`), **`codec_blocks_complete`**
+    (TableLocal + `TableTraffic … (rowsTraffic Codec.table.interactions (codecCell Bs) 22 t pub)` + `22 % 3 = 1`),
+    **`codecRenderV3 pub Bs hok hcap : TableRenderV3 pub 11`**.
+  * `Render/CodecNative.lean`: `blkOf b` (the frozen block of a `NativeBlock`, same native choice as
+    `PriorCore`/proc/ssd/mem/cmp: `a0 := a0Canon`, source map `srcOf`, grants `b.grants`, final link values
+    `R.segs`, instance-0 demand `demand b.forwarded`, sanity bytes), `base_le_fair` (PV86, `decide`),
+    **`blkOf_ok`** (`Blk.Ok (blkOf b)` from the run, `SchedPubOk`, `n ≤ 64`, τ < 32 and `NatRes b`),
+    `blocks_length`, **`codec_accepted`**: `checkD0a B0` acceptance ⇒ `∃ bs, PriorCore p B0 bs ∧ ((∀ b ∈ bs,
+    NatRes b) → ∃ R : TableRenderV3 pub 11, R.tr = codecTrace (allDescs (bs.map blkOf)) ∧ R.tf = rowsTraffic …)`.
+  * Audit `test/AuditCodecTable.lean` (axioms ⊆ {propext, Classical.choice, Quot.sound}). Commits ac76f86c, 8dcf96b1.
+  * `ZkFormal.V3.Integration` builds (4292 jobs) with all codec modules; `make pin-check` OK.
+
+### Open (this lane), exact
+1. `NatRes b` for every `b` of `PriorCore p B0 bs` (`Render/CodecNative.lean`): `b.vid < P`;
+   `∀ kk < n², b.grants[kk]! < 2^26`; `∀ kk < n², (b.run.segs.getD kk default).wfin < 2^26`;
+   `b.run.tau = 0 → ∀ kk < n², demand b.forwarded kk < 2^24`. Sources: `ProcPriorCodecGrantCap.native`
+   (`wfin + gd[k] ≤ 4.5M`) and `ProcPriorCodecForwardRange.native` need the block's distribution witness
+   (`distributeEv … = .ok (b.grants, …)`) and its process prefix, which `PriorCore` does not export;
+   `vid` bound from `priorValueId` (forest size).
+2. Codec traffic (task 2) — started: `Render/CodecTraffic.lean`: `pad_rowTraffic` (padding rows carry no
+   messages), **`rows_traffic`** (`rowsTrafficFp Codec.table.interactions (codecCell Bs) 22 t pub b s` = the
+   descriptor rows' `rowTraffic` on `dRow (allDescs Bs)[r]! r`), and the first per-kind closed form
+   **`hdr_s0f`** (`S0F` recv on header row `p`: `[[τ, b2n pres, vid]]` iff `p = 0`) — the template for the
+   rest (bus constants: use `Sched.B_*`, which differ syntactically from `ZkFormal.NearV3.B_*`). Remaining:
+   per-bus message lists of `rowsTraffic Codec.table.interactions
+   (codecCell (bs.map blkOf)) 22 11 pub` (S0F `[τ, pres, vid]` from `hdr _ 0`; SPLEN `[τ, 37 + 24·n²]`; SPOST
+   `[τ, pos, bpost]` on header/record/hash rows = `stateBytes ids afin digest`; BYTES `[11+16τ, j, pres·hpre_j]`,
+   `[11+16τ, 32+j, ash_j]`; DIGEST `[11+16τ, 64, digest]`). Plan: (a) padding rows have empty `rowTraffic`;
+   (b) `rowFn (codecCell Bs) 22 r = rowFn (lookup ds[r].asg) 22 r` (`natCell_desc`); (c) per-kind closed forms by
+   `cdc_cell`. Pinning `us`: the natural choice is `us := bs.map NativeBlock.witness` (`native_block_digests`
+   already shows the repaired rows' digests = `expectedDigests [schedulerSanityJob τ b.witness]`); equating it
+   with the trie lane's `us` needs that both are `schedulerUpsertWitness ctx pre` of the same `(ctx, pre)` list
+   (the extractor is a function, so uniqueness reduces to the same per-τ pre-tries/contexts).
+   B_SCMP: the frozen codec compares `(apR + fair, MA, cb)` with `apR` from `a0Canon[srcOf kk]`, the repaired
+   (R15 today) uses `ProcActualInput.allowances[kk]`; equal for canonical priors with distinct shard ids (to prove;
+   `ProcPreviousStateRegression.allowance_mismatch` is the non-canonical counterexample).
+3. Scheduler buses 40–62, ChaCha-lane buses, packaging theorem (tasks 3, 4): not started.
+
+### Lead's package 8 (received end of session 7) — findings before stopping (context low)
+
+* **(3) B_SCMP / distinct shard ids — distinctness is NOT needed.** The spec does not enforce distinct
+  `shardIds` (A12 is only `|boundaries| + 1 = |shardIds|`; no Nodup check found in `spec/lean/v3`). But
+  `Sched/Spec/CanonDup.allow0_src` already proves, for ANY id list (duplicates included), that the native fold
+  `links.foldl (allowStep-style indexOf update)` over the layout-canonical links
+  `(range n²).map (l ↦ ⟨ids[l/n], ids[l%n], a l⟩)` equals `srcArr ids a` (record `srcOf ids l`, last wins; 0 when
+  none). `ProcActualInput.allowStep` is that same update, so for a canon0f prior (`links.map (s,r) = layoutLinks L`,
+  hence `|links| = n²` and `a0Canon = links.map allowance`): `ProcActualInput.allowances ids prev = a0Src ids prev`,
+  i.e. `allowances[kk] = (match srcOf ids kk with | some k' => a0Canon[k'] | none => 0)` = the frozen codec's `a0s`.
+  Remaining proof: `layoutLinks L = (range n²).map (l ↦ (ids[l/n], ids[l%n]))` (flatMap/map index identity) and
+  the reshaping of `prev.links` into `allow0_src`'s form. (`ProcPreviousStateRegression.allowance_mismatch` is a
+  non-canonical prior, consistent with this.)
+* **(1) NatRes — where the witnesses live.** `ProcPriorCodecGrantCap.native` / `ProcPriorCodecForwardRange.native`
+  need, per block, `ProcActualPrefix.runPrefix (input sp prev) = .ok (cv,st,rs,ev)` and
+  `distributeEv n sp.allowed st.sb st.rb lp.cntS lp.cntR = .ok (gd, sord, rord)` with `gd = b.grants`. The existing
+  per-block existence lemmas (`ProcNativeCodecComparisonWitness.native_main` / `missing_chunk`) choose `gd`
+  existentially inside; `PriorCore`/`accepted_record_tables` (`Assembly/SchedulerCodecAcceptedRecords.lean`) do
+  not export the `gd`↔distribution link. Next step: add a `PriorCore` variant (new structure, existing statements
+  kept) with `∀ b ∈ bs, ∃ cv st rs ev sord rord, runPrefix … ∧ distributeEv … = .ok (b.grants, sord, rord)`, proved
+  where `accepted_record_tables` builds the blocks. For τ ≠ 0 the codec's `ft` is defined as 0 in `blkOf`, so only
+  instance 0 needs the forwarding range. `vid < P`: `priorValueId before tree = forestLookupVid before + i` —
+  bound by the forest value count (≤ B0) still to be shown.
+* (2) and (4): not started this session beyond `rows_traffic`/`hdr_s0f` (see above).
+
+## 2026-10-12 (package 9, fresh session: NatRes, codec SHA/S0F/SPLEN traffic, allowances)
+
+* Merged origin/main (69b9839b). `ZkFormal.V3.Integration` builds (4577 jobs); `make pin-check` OK.
+  Audits: `test/AuditCodecNatRes.lean` (axioms ⊆ {propext, Classical.choice, Quot.sound}).
+* **Task 1 — NatRes from acceptance: DONE** (commit 8412c7cb).
+  * `Render/CodecGrantCore.lean`: `GrantWit b` (the block's grants are `distributeEv` of its own
+    `runPrefix`); re-run of the block construction with the witness exported (existing statements
+    untouched): `main_block`, `missing_block`, `implicit_blocks`, `ordered_blocks`, `allocated_blocks`,
+    **`accepted_prior_core_grants`**: `checkD0a B` ⇒ `∃ bs, PriorCore p B bs ∧ ∀ b ∈ bs, GrantWit b`.
+  * `Render/CodecNatRes.lean`: `vid_lt` (`priorValueId < P` from the forest budget via
+    `forest_lookup_offsets` + `valueIndex_bound`), **`natRes_block`** (gb/gfin from
+    `ProcPriorCodecGrantCap.native`; instance-0 `ft` from the block's own codec generator: its terminal
+    record step at `(kk,2,7)` (`ProcCodecCarryPosition.core`) passed the forward check
+    (`ProcPriorCodecForwardSuccess.bound`), so `demand ≤ wfin + gb ≤ 4.5M < 2^24`),
+    **`codec_accepted_full`**: table 11 from acceptance with no residual premise.
+* **Task 2 — codec traffic closed forms: BYTES, DIGEST, S0F, SPLEN DONE; SPOST not done** (85ca1d3d).
+  * `Render/CodecBus.lean`: generic per-bus row traffic (`bus_bytes/digest/s0f/splen/spost`, any
+    descriptor, via `cv d col`) and per-kind closed forms (`bytes_*`, `digest_*`, `s0f_*`, `splen_*`,
+    `spost_*` for hdr/record/hash/ash). Cheap (whole file < 10 s).
+  * `Render/CodecSanity.lean`: `codec_bus` (table traffic = `Bs.flatMap (descs.flatMap G)`), `blk_*`,
+    `blkOf_bytes/digest` (via `prepared_sanity_input/job`), and over the `PriorCore` list:
+    **`codec_bytes_native`** (`rowsTrafficFp … B_BYTES true = (expectedBytes (schedulerSanityJobs 0
+    (bs.map NativeBlock.witness))).map Msg.toFp`), **`codec_digest_native`** (same for `expectedDigests`),
+    **`codec_s0f_native`** (`bs.map [τ, b2n pres, vid]`), **`codec_splen_native`** (`bs.map [τ, 37+24n²]`),
+    `codec_sha_counts` (the `cnt` form of `rcpt_trie_side`'s codec premises for `us := bs.map witness`),
+    `jobs_congr`, **`codec_sha_counts_pinned`** (the premises for ANY `us` with
+    `us.map schedulerWitnessSanity = (bs.map witness).map schedulerWitnessSanity`).
+  * **FINDING (blocks the discharge of `rcpt_trie_side`'s codec premises):** `rcpt_trie_side`/
+    `trie_side_exact` export `us` with only `∀ u ∈ us, u.Valid`. Its origin (`TrieUpsKeys.upserts_kf`)
+    has `us.map (pre, output) = (oldPost, m.result.trie) :: steps…` — the main scheduler upsert is
+    REBASED onto `oldPost` (not `m.pre`, where the spec runs `schedStep`), and `u.ctx` is not exported.
+    `schedulerSanityJob τ u` depends on `schedPub u.ctx` and `readKey u.pre keyBwState`; with only
+    `u.Valid`, two valid witnesses with different contexts give different jobs, so the BYTES/DIGEST
+    premises are not provable from the exported statement. Needed from the trie lane (or lead), any of:
+    (a) `us.map schedulerWitnessSanity = (bs.map witness).map schedulerWitnessSanity` for the
+    `PriorCore` list (then `codec_sha_counts_pinned` closes both premises); or (b) per index
+    `u.ctx = ctx_i` (main: `m.ctx k`, implicit: `implicitContext k e`) and
+    `readKey u.pre keyBwState = readKey pre_i keyBwState` (main: `oldPost` vs `m.pre` — account writes
+    do not touch `keyBwState`), from which (a) follows. The same pin is needed for S0F/SPLEN/SPOST
+    (the ups side `view_*` is over the trie lane's `Js`, built from that `us`).
+  * SPOST closed form still open: codec side = `[τ, pos, bpost]` on hdr/record/hash rows
+    (`spost_*` per row done); remaining: block list = `(range (37+24N)).map [τ, p, (stateBytes ids afin
+    dig).getD p 0]` (needs `N < 65536`, `afin < 2^24` — both in `Blk.Ok`), and
+    `b.witness.value.map toNat = stateBytes …` (no existing lemma links the upsert value to the codec post
+    bytes).
+* **Task 3 — B_SCMP identity: algebraic part DONE** (59045937). `Render/CodecAllow.lean`: `pairs_eq`,
+  **`allowances_canon`** (`ProcActualInput.allowances ids prev = a0Src ids prev` whenever
+  `prev.links.map (s, r) = ids.flatMap (s ↦ ids.map (r ↦ (s, r)))`, duplicates allowed, via
+  `allow0_src`), **`a0s_canon`** (`(blkOf b).recs kk .a0s = (allowances b.pub.ids b.old)[kk]!` for a
+  present canonical prior). Open: canonicity of each block's prior from acceptance (`reads0f … all
+  (canonical0f k.L)` ↔ `b.prior`, `k.L.shardIds = b.pub.ids`), and the SCMP bus balance itself
+  (codec sends `(apR+fair, MA, cb)`, `(zt·(gfin+gb), zt·ft, zt)` vs the comparator table).
+* **Task 4 — not started** (scheduler buses 40–62, ChaCha lane, packaging).
+
+## 2026-10-12 (package 10, same session: lead's pin request — `us` pinned, SHA/SPLEN/SPOST balanced, canonical priors)
+
+* **Pin (option (b), done; trie modules extended by conjuncts only, no statement weakened)** (4ba11819, 9baac291).
+  * `Assembly/SchedulerSanityPin.lean`: `schedRead pre` (= `readKey pre keyBwState`), `sanF`/`sanOf`, `valF` +
+    `value_valF` (a valid witness's value is a function of its call), `implicitCtx`, `callList k m steps`,
+    **`CallPin k m steps us`** (`us.map (ctx, schedRead pre) = callList`), `CallPin.sanity`, `CallPin.values`,
+    `sized_find_other` (account replay keeps every other key), `schedRead_rebased` (`oldPost` reads `m.pre`'s state).
+  * Threaded: `TrieUpsKeys.implicit_upserts_pin` (new), `upserts_kf`/`physical_kf`/`coverage_kf` (+`CallPin`),
+    `TrieUpsOrigin.UpsShaPin` (new def = `UpsSha` body + `CallPin`, `UpsShaPin.sha`), `accepted_ups_walks`/`trie_all_of`
+    (+`UpsShaPin` after `UpsSha`; `trie_all_accepted` unchanged, projects it out), `TrieDigestUps.ups_sha_scheduler_pin`
+    (new; + `(physicalPrefixUps p insts).map (τ, v) = us.mapIdx (i, value)`), `trie_side_exact` and `rcpt_trie_side`
+    (+`CallPin A.k A.m A.steps us` and `∃ Js hok, r7 = upsRenderV3 A.pub Js hok ∧ ExtOf r7.tf (ups view) ∧
+    Js.map (τ, v) = us.mapIdx …`; `trie_side` unchanged, projects them out). All trie/rcpt audits re-run: clean.
+* **Codec premises of `rcpt_trie_side` discharged** — `Render/CodecGrantCore.lean`: `prior_core_on` (PriorCore on a GIVEN
+  trace + `GrantWit` + the blocks' calls `bs.map (ctx, pre) = (m.ctx k, m.pre) :: steps.map (implicitCtx k e, e.pre)`);
+  `Render/CodecTriePin.lean`: `codec_on A`, `calls_of_pairs`, **`codec_premises`**, **`RcptTrieSide.rcpt_trie_codec`**
+  (rcpt_trie_side + table 11 render: `BYTES`, `DIGEST` balanced unconditionally).
+* **SPLEN, SPOST balanced** (9baac291, c123c6a4). `Render/CodecUpsBus.lean`: `value_len` (`|value| = 37 + 24n²`), covers/pub
+  lemmas, `link_at`, **`RenderBundleV3.balancedAt_splen`**, `vals_eq` (trie witnesses' values = blocks' values via
+  `CallPin.values`). `Render/CodecSpost.lean`: `spT`/`rt_spost`, `posMsgs` (+append/flatten lemmas), `hdr_part`,
+  `rec_part`, `hash_part`, **`blk_spost`** (block SPOST sends = `posMsgs τ 0 (stateBytes ids afin dig)`),
+  `encode_bytes`, **`value_stateBytes`** (the upsert value = the codec's post bytes: `scheduled_output_exists` +
+  `core_state` + `run_link_final` (vfin = st.al) + sanity hash of `b.old`), `codec_spost_native`,
+  **`balancedAt_spost`**, **`RcptTrieSide.rcpt_trie_sched`** (rcpt_trie_codec + `SPLEN` ∧ `SPOST`).
+* **B_SCMP prerequisite: canonical priors from acceptance (done)** (e38d849b). `Render/CodecCanon.lean`: `single_find`,
+  `implicit_reads`, `implicit_found`, `reads_trace` (`reads0f A.k A.w` = the trace's state reads), **`prior_canonical`**
+  (`canon0f` ⇒ every present prior has link pairs `ids × ids`), **`a0s_accepted`** (codec `a0s` = repaired process
+  allowance on every block of `A`'s trace).
+* Integration builds (4582 jobs); `make pin-check` OK; audits `test/AuditCodecTriePin.lean`, `test/AuditCodecNatRes.lean`.
+* Parallel lanes: origin/lane/v3-link (05fb2b18) and v3-link-rest (c9427ba1) checked; the announced AIR changes
+  (table 9 A9 counter, table 20 DedupTable) have not landed as code yet — not merged.
+
+### Open (this lane), exact
+1. **S0F** (codec recv `[τ, b2n pres, vid]` per block, `codec_s0f_native`; ups send `[I.tau, presN I, vidN I]` per
+   instance, `view_s0f_send`). Missing: for the trie side's `Js[i]` (= `nativeInstance … root.tree run value Qs` via
+   `NativeReaderOrigin`), `(step Js[i] 3).mode = 0 ↔ bs[i].prior.isSome` and then `(step Js[i] 3).e[3] = bs[i].vid`. The
+   instance ids come from the forest of `us.map pre = oldPost :: steps.pre` (rebased), the codec's `vid` from
+   `m.pre :: steps.pre`; needs (a) the step-3 semantics of `nativeInstance` (value-present lookup at `[0,15]`, its value id
+   `root.vid + valueIndex`) and (b) `valueIndex oldPost keyBwState = valueIndex m.pre keyBwState` + equal forest value
+   counts (`valsOf` lengths equal by `newchunk_old_tree_reconstruct`). Not started.
+2. **B_SCMP: DONE** (16bb51a5, a5ae4cfb). `Render/CodecScmp.lean`: `bus_scmp`, `scmp_rec` (only `(2,2)` always and
+   `(2,7)` at τ = 0 send), `CdcScmp.loop_append`, `field_reqs`, `block_reqs`, **`generated_reqs`** (repaired `out.cmps` =
+   `(range n²).flatMap (k ↦ (range 3).flatMap (f ↦ (range 8).flatMap (requests … k f)))`), `blk_scmp`,
+   **`codec_scmp_native`** (frozen codec SCMP sends = `(bs.flatMap (·.output.cmps)).map cmpMsg` on `A`'s trace, via
+   `a0s_accepted`). `Render/CodecScmpBus.lean`: `codec_cmps_ok`, **`sched_renders_on`** (tables 12–15 on a GIVEN
+   `PriorCore` list, same proof as `sched_renders_accepted`), **`RenderBundleV3.balancedAt_scmp`** (tables 11–15 of
+   the same blocks ⇒ `B_SCMP` balanced; via `scmp_balance_core`). Integration 4585 jobs; pin-check OK.
+3. Task 4 (scheduler buses 40–62, ChaCha lane, packaging for tables 8–15, 23, 24): not started. Note table 11 also sends on
+   `B_VBYTES` (21; receivers 4, 17, 18, 22) — not covered by any lane's balance yet as far as checked.
+
+## 2026-10-12 (package 11, fresh session: merge A9, S0F balanced, bus map)
+
+* Merged origin/lane/v3-link (a272bd7d, A9 word counter; Integration import conflict resolved by keeping
+  both sides) — merge commit 1006fd6b, pushed. lane/v3-link-rest (DedupTable/A10) has not landed: not merged.
+* **Build note (performance):** after the A9 merge many heavy modules rebuild (CodecEndInt ~6.5G,
+  HorizontalAuxCheck ~5G, CodecHeader, CodecRecInt); a full `lake build` under `HEAVY_MEM=14G` with
+  8+ cores is OOM-killed (systemd `oom-kill`, shows as `Terminated`/rc 143).  Working recipe: build
+  the heavy modules one by one first (`taskset -c 12-15`), then the target.
+* **S0F: DONE** (85bb6710).
+  * `Assembly/UpsS0FAddr.lean` (new): `IsVal` (LP/BR terminal), `step3_mode` (any `InstOk` instance:
+    step 3 is a present lookup iff `ci ≤ 1`), `trace_val_present` (LP/BR ⇒ `find ≠ some none`),
+    **`trace_val_addr`** (present read ⇒ LP/BR terminal, its source has an occurrence address on the
+    key path and every such address has vid `w + valueIndex t key`; mutual over `traceUpsert`/
+    `traceKids`, `sourceAddresses_size` for uniqueness), `forestRootAt_vid`, `nativeInstance_step3`
+    (the step-3 target of `nativeInstance … (nativeWalkBase … (fun _ => vid) …)` on LP/BR is `vid`),
+    **`s0f_vid`** (= `priorValueId (ts.take τ) root.tree`), `S0FVid`, `s0fOf` (= `(presN, vidN)`),
+    `s0fPair`, **`s0fOf_native`**.
+  * `Assembly/UpsS0FRebase.lean` (new): `S0FAt F τ I`, **`s0f_rebase`** (`oldPost` vs `m.pre`:
+    `sized_find_other`, `write_value_index`, `write_vals_count`).
+  * Threaded by conjuncts only: `forest_terminal_exact`, `forest_native_walk_exact` (+ terminal
+    occurrence address), `scheduler_instance_origin_inputs`, `chosen_origin_instances`, `coverage_kf`
+    (+ `S0FVid`), `UpsShaPin` (+ `S0FAt (m.pre :: steps.pre) τ I`), `ups_sha_scheduler_pin`,
+    `trie_side_exact`, `rcpt_trie_side`, `rcpt_trie_codec` (+ `Js.map s0fOf = F.mapIdx (s0fPair (F.take i))`,
+    `F = A.m.pre :: A.steps.map pre`); callers' patterns adjusted.
+  * `Render/CodecS0F.lean` (new): `s0fPair_read`, **`RenderBundleV3.balancedAt_s0f`**;
+    **`rcpt_trie_sched`** now also gives `R.BalancedAt B_S0F`.
+  * Integration builds (4598 jobs); `make pin-check` OK; audit `test/AuditUpsS0F.lean` clean
+    (`s0f_rebase` needs only `propext, Quot.sound`).
+* **Bus map of `nearAirV3`** (bus, senders, receivers; `lake env lean` eval of `nearTablesFull`):
+  0 [2,4,7,11,16,17,20,23]→[0,1]; 1 [0,1]→[2,3,7,11,16,20,23]; 2 [2,3]→[2]; 3 [17]→[2]; 4 [2,3,5,7]↔;
+  5 [16,22]→[5]; 6 [5]→[16,22]; 7 [16,17]↔; 8 [16]→[24]; 9 [16,23]→[23]; 10 [7]→[3]; 11 [2,5,7]↔;
+  14 pub→[20]; 15 [16,19]↔; 16 [16]↔; 17 [2,3]→[6]; 18 [2,4,7,20]→[21]; 19 [6]→[2,4]; 20 [2,4]↔;
+  21 [11,17,18,22]→[4]; 22 [2]→[4]; 23 [7]↔; 24 [3]→[7]; 25 [2,7]↔; 26 [16]→[20]; 27 [16,18]↔;
+  28 pub→[19]; 29 [22]↔; 40 [11,12,13,14]→[15]; 41 [11,12,13]→[14]; 42 [14]→[11,12]; 43 [12]→[13];
+  44 [12,13]→[13]; 45 [13]→[10]; 46 [10]→[13]; 47 [10]↔; 48 [9]→[10]; 49 [10]→[13]; 50 [8]→[9];
+  51 pub→[11,13]; 52 pub→[11,12]; 56 [11]↔; 57 [12]↔; 58 [12]→[11]; 59 [7]→[11]; 60 [11]→[7];
+  61 [11]→[7]; 62 [11]↔; 63 [22]↔; 70 [7]→[2]; 71 [7]→[4].  (53–55 unused.)
+* **Uncovered buses (no bundle-level `BalancedAt` anywhere), exact:** 9 `MPOS` (rcpt 16 + mrk 23 → mrk 23),
+  21 `VBYTES`, 41 `SOP`, 42 `SFIN`, 43 `SINC`, 44 `SPUSH`, 45 `SSIN`, 46 `SSOUT`, 47 `SSMEM`, 48 `SGEN`,
+  49 `SSHUF`, 50 `SCHACHA`, 51 `SPUBB`, 52 `SPAR`, 56 `SDL`, 57 `SDLX`, 58 `SDG`, 62 `SA0`.  Everything
+  else is in `rcpt_trie_sched` (+ `balancedAt_scmp`).  Hence `CompleteV3Stmt` cannot be assembled yet.
+* **VBYTES analysis (not started as proof):** revealed pre-forest values are exactly the `.val` slots
+  that `buildFor` reveals for the EXACT keys in the per-trie key list (`mkSlot … (keys.any (· == k))`),
+  so the statement to prove is: for each forest tree, the key list's present non-empty values are read
+  once each by exactly one of codec (`keyBwState`), acct (receiver account keys, once per distinct
+  key), akey, qv (queue keys); duplicates in the key list / repeated receivers must be sent once.  If
+  any key in a tree's key list is read by none of the four (e.g. a key listed but not read on an
+  implicit step), the honest render has an unmatched val receive — check this first.
+* Open, in order: VBYTES (above); scheduler 41–44, 51, 52, 56–58, 62 (closed forms of tables 11–14
+  traffic exist only for SCMP/BYTES/DIGEST/S0F/SPLEN/SPOST); ChaCha 45–50 (+ the RNG `hW`); MPOS
+  (receipt/mrk lane?); then the packaging (`sched_renders_on` + `rcpt_trie_sched` + `RenderV3Header`).
+
+## 2026-10-12 (package 12, fresh session: every remaining scheduler bus balanced)
+
+All ten uncovered scheduler buses are now balanced on the honest render: 41 SOP, 42 SFIN, 43 SINC, 44 SPUSH,
+51 SPUBB, 52 SPAR, 56 SDL, 57 SDLX, 58 SDG and 62 SA0. No AIR gap was found and no AIR change was needed.
+Each bus was proved from closed forms of the table traffic plus native run identities.
+Integration builds (4631 jobs), `make pin-check` is OK, and there is no sorry, axiom, native_decide or
+implemented_by. Audit: `test/AuditSchedBuses.lean`, axioms ⊆ {propext, Classical.choice, Quot.sound}.
+The existing audits AuditCodecTriePin, AuditUpsS0F and AuditCodecNatRes were re-run and are clean.
+
+* **Top lemmas** (`Render/SchedBusAll.lean`):
+  * **`RenderBundleV3.sched_buses_balanced`**. It takes `A`, `R`, `PriorCore A.p B0 bs`, `GrantWit`, `hctx`,
+    `hfw` (see below), `R.tf 11 =` the codec traffic, and the `.tr` of tables 12, 13 and 14 equal to the
+    renders of `sched_renders_on`. It concludes the ten `BalancedAt`.
+  * **`sched_side`**. From the `PriorCore`/`GrantWit`/`hctx`/`hfw` data and the `r11` of `rcpt_trie_sched`,
+    it gives `∃ r12 r13 r14 r15` such that every bundle carrying `r11 … r15` balances all eleven scheduler
+    buses 40–44, 51, 52, 56–58 and 62 (SCMP included).
+* **Per-bus lemmas** (`RenderBundleV3.balancedAt_*`):
+  * `SchedBusSA0`: `srcOf` is injective, so the sends and receives are permutations of each other, and a
+    u64 allowance has a byte ≥ 3 set iff it is ≥ 2^24.
+  * `SchedBusSDL`: the delay line telescopes, with the public endpoints at instances 0 and K+1, all
+    instances having the layout's ids.
+  * `SchedBusSPAR`: the codec header, scan param/raw rows, shard rows and link cells together give
+    exactly `render`'s `par` (shards and links up to a permutation).
+  * `SchedBusSPUSH`, `SchedBusSINC`, `SchedBusSFIN`, `SchedBusSOP`, `SchedBusSPUBB`.
+  * `SchedBusSDLX`, `SchedBusSDG`: from the distribute grid model.
+* **Infrastructure:**
+  * `SchedBusCodec`, `SchedBusCodecBlk`: codec per-row and per-block forms for SA0, SDL, SPUBB, SPAR, SOP,
+    SFIN and SDG.
+  * `SchedBusSsd*`: ssd per-row bus messages; `SchedBusSsdDist` is a functional model of the distribute
+    generator (`cells`, `grid`, `dist_rows`).
+  * `SchedBusConv`: converted requests are the public raw requests with a set bit.
+  * `SchedBusPub`: the public `SPUBB`, `SPAR` and `SDL` counts of `A.pub`; `bs.map pub = p.sched`.
+  * `SchedBusProc`, `SchedBusMem`: proc and mem closed forms.
+  * `SchedBusRun*`: run-level SOP, SFIN, SPUSH and SINC identities from a replay ghost invariant.
+    Processed entries are distinct; each processed increment occurs exactly once.
+  * `SchedBusGrid*`: the grid endpoints, grants and allowed-cell check. The model's grants are
+    `GrantWit`'s `b.grants`.
+  * `SchedBusPackaging`: `usedBuses` (51 buses, kernel-checked against all tables and public segments) and
+    `RenderBundleV3.balanced_of_used`, which says a bundle balancing every used bus is `Balanced`.
+* **Shared-statement change (conjunct only; needed for SPUBB):** instance 0's codec block forwards
+  `b.forwarded`, which nothing exported before. The conjunct
+  `(∀ b, bs[0]? = some b → b.forwarded = fwdLinks (A.m.ctx A.k) A.m.result.outgoing)` was added after the
+  `hctx` conjunct of:
+  * `CdcGrant.ordered_blocks` (as `main.forwarded = …`), `allocated_blocks` and `prior_core_on`
+    (`Render/CodecGrantCore.lean`);
+  * `codec_on`, `codec_premises` and `RcptTrieSide.rcpt_trie_codec` (`Render/CodecTriePin.lean`);
+  * **`RcptTrieSide.rcpt_trie_sched`** (`Render/CodecSpost.lean`).
+
+  No statement was weakened; the callers' patterns were adjusted. `prep_fwd` gives
+  `A.p.fwd = fwdLinks (A.m.ctx A.k) A.m.result.outgoing` (from `prepD0_fwd` and `body_decodes`).
+  **Merge note:** if a sibling lane also extends `rcpt_trie_sched`, keep both conjuncts.
+* **Open (for packaging, after all three lanes land):**
+  * Lane v3-render-vbytes: 9 MPOS and 21 VBYTES.
+  * Lane v3-render-chacha: 45–50 and the RNG `hW`.
+  * All other 41 used buses are already covered: 63, 70 and 71 are QVC, RPL and RPLV (in
+    `rcpt_trie_sched`). The full map is in the `SchedBusPackaging` docstring. The receipt side's
+    `BusBalanced` is the same proposition as `BalancedAt` (`balancedAt_of_bus`).
+  * Build the full 25-table bundle and the header check (`RenderWitnessV3`) using `balanced_of_used`.
+
+## 2026-10-12 (package 13: vbytes merge, completeness assembled modulo the ChaCha side)
+
+* **Merged origin/lane/v3-render-vbytes** (2c65b219) — merge commit 3876dd03, pushed. Both conjuncts kept in
+  `rcpt_trie_codec`/`rcpt_trie_sched` (vbytes' `ExtOf r4.tf (valTraffic …)` after the `∃ Js …` block, this lane's
+  `bs[0]?` forwarding pin after `hctx`); `RcptTrieSide.rcpt_trie_vbytes` gains the forwarding conjunct too (conjunct
+  only). Integration 4649 jobs; audits AuditSchedBuses, AuditCodecVbytes, AuditMposBal, AuditRcptTrieSide,
+  AuditUpsS0F, AuditCodecTriePin clean; pin-check OK.
+* **`Render/CompleteV3.lean` (new)**:
+  * **`ChachaSideV3 : Prop`** — the one open piece (lane v3-render-chacha): for an accepted `A` and blocks `bs` with
+    `PriorCore A.p B0 bs`, `GrantWit`, `NatRes`, `hctx`, `hfw`, renders `r8 r9 r10` (tables 8, 9, 10; r9 needs the
+    A9 bound `rngRows calls ≤ W0`) exist such that every bundle carrying them whose table 13 has
+    `tr = procTraceV3 (bs.map NativeBlock.run)` balances buses 45–50.
+  * `bundleOf` (the 25-table bundle from one render per index).
+  * **`accepted_render_balanced (hch : ChachaSideV3) A : ∃ R, R.Balanced ∧ R 16 = A.rcptRenders.rcpt`**:
+    `rcpt_trie_vbytes A A.sizeBudget` (tables 0–7, 11, 16–23 and 34 buses) + `sched_renders_on` (12–15) +
+    `balancedAt_scmp` + `sched_buses_balanced` + `sortRenderV3` (24) + `hch` (8–10, 45–50) → all 51 `usedBuses`
+    → `balanced_of_used`.
+  * **`completeV3_of_chacha : ChachaSideV3 → CompleteV3Stmt`** (hint `nativeHint`, `A.hint_bounds`,
+    `A.prepared_lt_P`, `A.pubFit`, `bundle_headerOk_rcpt`).
+  * **`nearV3_admission_of_chacha : ExtractV3Stmt → ChachaSideV3 → … → AdmissionStatement`**.
+* Audit `test/AuditCompleteV3.lean` (guarded; propext, Classical.choice, Quot.sound). Integration 4650 jobs;
+  pin-check OK. No AIR change needed.
+* origin/lane/v3-render-chacha (6a7b44f8) has no top lemma yet — not merged. **Remaining for completeness: exactly
+  `ChachaSideV3`.** When `chacha_buses_balanced` lands, prove `ChachaSideV3` from it (repackage its renders and
+  balances into the statement above) and `completeV3_of_chacha` closes `CompleteV3Stmt`.
