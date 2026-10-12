@@ -67,18 +67,18 @@ theorem calls_of_pairs (bs : List NativeBlock) {k : WalkD0} {m : MainExecutionV3
 /-- **The codec premises of `rcpt_trie_side`** for its pinned `us`. -/
 theorem codec_premises {cb wb : Bytes} (A : AcceptedV3 cb wb) (pub : List Fp)
     (us : List SchedulerUpsertWitness) (hpin : CallPin A.k A.m A.steps us) :
-    ∃ bs : List NativeBlock, PriorCore A.p B0 bs ∧ (∀ b ∈ bs, NatRes b) ∧
+    ∃ bs : List NativeBlock, PriorCore A.p B0 bs ∧ (∀ b ∈ bs, GrantWit b) ∧ (∀ b ∈ bs, NatRes b) ∧
       bs.map (fun b => (b.witness.ctx, b.witness.pre)) =
         (A.m.ctx A.k, A.m.pre) :: A.steps.map (fun e => (implicitCtx A.k e, e.pre)) ∧
       ∃ R : TableRenderV3 pub 11 (by decide), R.tr = codecTrace (allDescs (bs.map blkOf)) ∧
         R.tf = rowsTraffic Codec.table.interactions (codecCell (bs.map blkOf)) 22 11 pub ∧
         (∀ m, Assembly.cnt (R.tf.sends B_BYTES) m = Assembly.cnt (Sha.Gen.expectedBytes (schedulerSanityJobs 0 us)) m) ∧
         (∀ m, Assembly.cnt (R.tf.recvs B_DIGEST) m = Assembly.cnt (Sha.Gen.expectedDigests (schedulerSanityJobs 0 us)) m) := by
-  obtain ⟨bs, hc, -, hres, hctx, R, htr, htf⟩ := codec_on A pub
+  obtain ⟨bs, hc, hg, hres, hctx, R, htr, htf⟩ := codec_on A pub
   have hp : us.map schedulerWitnessSanity = (bs.map NativeBlock.witness).map schedulerWitnessSanity := by
     rw [hpin.sanity, (calls_of_pairs bs hctx).sanity]
   obtain ⟨h1, h2⟩ := codec_sha_counts_pinned hc pub us hp
-  refine ⟨bs, hc, hres, hctx, R, htr, htf, fun m => ?_, fun m => ?_⟩
+  refine ⟨bs, hc, hg, hres, hctx, R, htr, htf, fun m => ?_, fun m => ?_⟩
   · rw [htf]; simpa only [ZkFormal.Near.cnt, Assembly.cnt] using h1 m
   · rw [htf]; simpa only [ZkFormal.Near.cnt, Assembly.cnt] using h2 m
 
@@ -105,7 +105,7 @@ theorem rcpt_trie_codec {cb wb : Bytes} (A : AcceptedV3 cb wb)
       CallPin A.k A.m A.steps us ∧
       (∃ (Js : List UpsInst) (hok : UpsRenderOk Js), r7 = upsRenderV3 A.pub Js hok ∧
         ExtOf r7.tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js))) ∧
-        Js.map (fun I => (I.tau, I.v)) = us.mapIdx (fun i u => (i, u.value.map UInt8.toNat))) ∧ PriorCore A.p NearSpecV3.B0 bs ∧ (∀ b ∈ bs, NatRes b) ∧
+        Js.map (fun I => (I.tau, I.v)) = us.mapIdx (fun i u => (i, u.value.map UInt8.toNat))) ∧ PriorCore A.p NearSpecV3.B0 bs ∧ (∀ b ∈ bs, GrantWit b) ∧ (∀ b ∈ bs, NatRes b) ∧
       bs.map (fun b => (b.witness.ctx, b.witness.pre)) =
         (A.m.ctx A.k, A.m.pre) :: A.steps.map (fun e => (implicitCtx A.k e, e.pre)) ∧
       r11.tr = codecTrace (allDescs (bs.map blkOf)) ∧
@@ -133,8 +133,8 @@ theorem rcpt_trie_codec {cb wb : Bytes} (A : AcceptedV3 cb wb)
         R.BalancedAt B_BYTES ∧ R.BalancedAt B_DIGEST := by
   obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, hpin, hups, hall⟩ :=
     rcpt_trie_side A hovh
-  obtain ⟨bs, hc, hres, hctx, r11, htr, htf, hb, hd⟩ := codec_premises A A.pub us hpin
-  refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hc, hres,
+  obtain ⟨bs, hc, hg, hres, hctx, r11, htr, htf, hb, hd⟩ := codec_premises A A.pub us hpin
+  refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hc, hg, hres,
     hctx, htr, htf, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 e11 h24
   obtain ⟨hrc, htrie, hsz, hvs, hkn, hfin, hB, hD⟩ :=

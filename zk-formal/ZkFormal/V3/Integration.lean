@@ -365,6 +365,7 @@ import ZkFormal.NearV3.Render.CodecSanity
 import ZkFormal.NearV3.Render.CodecAllow
 import ZkFormal.NearV3.Render.CodecTriePin
 import ZkFormal.NearV3.Render.CodecUpsBus
+import ZkFormal.NearV3.Render.CodecSpost
 import ZkFormal.NearV3.Render.PaddedUps
 import ZkFormal.NearV3.Render.PaddedUpsNative
 import ZkFormal.NearV3.Render.NodeRender
