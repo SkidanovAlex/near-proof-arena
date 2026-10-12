@@ -1,4 +1,4 @@
-# NEAR Proof Arena — handover (updated 2026-10-11, evening)
+# NEAR Proof Arena — handover (updated 2026-10-12)
 
 This is for the next lead agent. Read it first. The raw working log for 2026-10-07 to 2026-10-09 (≈6,500 lines) now lives in `docs/logs/v3-progress-log-2026-10.md`. Use it only for evidence lookup.
 
@@ -132,47 +132,34 @@ User directives (binding):
 * About 5,000 modules. Integration target: `ZkFormal.V3.Integration`.
 * About 2,400 axiom-audit files in `zk-formal/test/`. Run each with `lake env lean test/<file>`.
 
-**State (2026-10-11).** The certificate is composed: `Assembly/RenderV3Bundle.lean:nearV3_admission_of`
-proves the `AdmissionStatement` of `near-chunk-validation-d0-stark` from **exactly two open
-obligations**, `ExtractV3Stmt` (soundness, at `B0`) and `CompleteV3Stmt` (completeness, at `B0`),
-plus the implementation connection `himpl`. Everything else is proved.
+**State (2026-10-12, main `abf81215`): the D0a certificate is unconditional.**
+`Assembly/AdmissionV3.lean:nearV3_admission_final` proves the `AdmissionStatement` of
+`near-chunk-validation-d0-stark` from only `hpub` (public digest binding) and `himpl` (the artifact's
+implementation connection). Soundness `extractV3 : ExtractV3Stmt` (`Assembly/ExtractV3Proof.lean`)
+and completeness `completeV3 : CompleteV3Stmt` (`Render/CompleteV3Chacha.lean`) are both proved.
+Guarded audit `test/AuditAdmissionV3.lean` (only propext/Classical.choice/Quot.sound). Details:
+`docs/logs/integration-v3-20261012d.md` and the lane logs `v3-link-2026-10.md`,
+`v3-render-sched-2026-10.md` (packages 11–13), `v3-render-vbytes-2026-10.md`,
+`v3-render-chacha-2026-10.md`.
 
-Proved (guarded axiom audits; only propext/Classical.choice/Quot.sound):
-* `factorSound` and **`factorComplete : FactorComplete`** (`Assembly/FactorComplete.lean`):
-  accepted witnesses ⇔ semantic views `GoodV3`.
-* `extractV3_of_link : LinkV3Stmt B → ExtractV3StmtAt B` (`Assembly/LinkV3.lean`); the
-  link takes the 13 trace-free views' records + well-formedness + exact traffic, the SHA
-  facts, the record-form balance `V3Balance` (with public messages) and `HoldsP` for the
-  10 raw tables (ChaCha×3, scheduler×5, qv, sort). `LinkClaim.lean` derives the claim-level
-  `GoodV3` fields.
-* `nearV3_admission_of` (`RenderV3Bundle.lean`): `RenderBundleV3` (one aligned table render per
-  index) ⇒ `HoldsP` + roll alignment; `CompleteV3Stmt` ⇒ `hcomp` + `halign`; the split premise
-  only for honest hints (closes the 2026-10-10 review note).
-* Aligned renders (TableLocal + exact traffic + `log ≡ 1 mod 3`) for 21 of 25 tables:
-  sha×2, node, head, val, walk, uniq, ups (from native execution), chacha/rng/shuf (cap 22),
-  mem, cmp, acct, akey, bnd, srcp, size, qv, mrk, sort; rcpt only in existential form.
-* `nearAirV3` revised (user decisions 2026-10-11): acct cap 19, size cap 4, srcp with the A10
-  depth counter (`SrcpV3.tableD`), rcpt repairs (13-bit deposit age, gas surplus gated:
-  `RcptV3.tableR`), ChaCha/rng/shuf at 22 (fingerprint budget 31.2 G of 68.7 G), mrk/sort on the
-  empty-capable `MerkleEmpty`/`SortEmpty` tables (sort cap 19). Size bound **6,336,513 B** at g=2
-  (757,078 B margin under 8 MiB after the 1,295,017 B hint).
-* Spec (unsigned draft): **A11 `w.post_rebuild`** and the **A7 measure revision** (pre trie +
-  whole rebuilt post trie), user decisions 2026-10-11, spec v0a §2.4/§2.8; Python checker,
-  Lean tool and difftest updated (0 disagreements; honest max 12,402 B vs B0 = 2 M).
+* `nearAirV3`: table 20 = `SrcpDD` (DedupTable + A10 depth bits); table 9 carries the A9 word
+  counter; A7 tables nodeA7/valA7/upsA7/sizeA7 (RPL 70, RPLV 71); rcpt q<128 check.
+  Size bound **6,435,489 B** at g=2 (`v3MaxInner`), `v3MaxHintBytes` 1,953,115 (4+hint+inner =
+  8 MiB exactly); honest hints ≤ 1,295,025 B.
+* **Public format change (2026-10-12):** prepared source rows are 34 bytes `[dup, rep] ++ root`;
+  dup byte 0 first occurrence, 1 consistent repeat, 2 inconsistent repeat (AIR rejects 2).
+  `PreparedByteLength = 340 + 34·|lists| + …`. `prepD0` unchanged.
+* Spec (unsigned draft): A7 = unfolded pre trie + native post trie ≤ B0; A11 retired; A12
+  `|boundaries|+1 = |shardIds|`.
 
-**Open (active lanes, one worktree each under `/data/illia/nearproof-wt/`; state 2026-10-13):**
-| lane | work | open |
-|---|---|---|
-| `lane/v3-link` (soundness) | `LinkCoreV3Stmt B0`: closed receiptCount, pathDepth, mainStoreBytes, receiptIds, claim-level incl. layoutWf; scheduler core/read/step against nearAirV3 (`LinkSchedCore`, `LinkSchedRead`, `LinkVBytes`, `LinkPartial`) | executions (trie side: pre-trie pruning, implicit runs, header root), shape, witnessBytes, source, canonicalScheduler, unfoldedBytes, chachaWords |
-| `lane/v3-rcpt-sound` | receipt core of `run`: `Rcpt/Link/*`, `mainRun_of_holdsP_pre` (applyNewChunk from the records; forwarding-split soundness) | qv reads from HoldsP (codec-inclusive VBYTES read lemmas), KEYNIB/FINAL/QSH, BND routing premises; joins with link's `MainTrieLink`/`ShaHyp` |
-| `lane/v3-trie-complete` | trie completeness: tables 0–7, 21 rendered; PARENT/VPARENT/ENT/DIGS/DUP/EDGE/BMAP/MIDROOT/ROOT/VSLOT/UPB/RPL/RPLV/SIZE balanced; SHA two-bin packing | MemdLink (MEMD), DIGEST trie identity, A7 (b) on the native post trie, cross-lane KEYNIB/FINAL/VBYTES/BYTES/DIGEST identities |
-| `lane/v3-render-sched` | scheduler completeness: ssd/proc/mem/cmp/mrk/sort from acceptance, SCMP core | frozen codec `TableLocal`, codec-side S0F/SPLEN/SPOST + sanity SHA, scheduler/ChaCha bus balances, ChaCha A9 row link |
-| `lane/v3-render-rcpt` | receipt-side completeness DONE (`rcpt_side_of_accept`, header + hint bounds `RenderV3Header`) | cross-lane: RcptKeys/RcptFinal, receipt part of BYTES/DIGEST (unassigned) |
-| `lane/v3-prover` (Rust) | parts 1, 2a/2b (7 tables byte-identical to Lean), 2c (witness→entries, real fixtures), 3 (prepD0/Hint codec), 4 (package skeleton + conditional certificate) | Rust `prepClaim`/`prepBody`, remaining entry seeds, the v3 `prove` over the revised nearAirV3 — and re-run `run-v2.sh` against the revised AIR (A7/A10/A12 tables changed after these generators were written) |
-
-Also pending: the oracle (`oracle/v3-d0a/src/d0a.rs`) still implements the pre-2026-10-11 A7
-measure (the difftest compares it with `unfold_diff`); regenerate the fixtures before freezing.
-`FitsV3Stmt` is subsumed by `CompleteV3Stmt` (TableLocal carries the heights).
+**Open (all outside the Lean proofs):**
+* **Rust prover (`lane/v3-prover`):** emit the 34-byte source rows; table 20 SrcpDD columns, A9
+  counter (table 9), A7 columns/tables, rcpt q check; zero-length SHA jobs for empty values; Rust
+  `prepClaim`/`prepBody`; v3 `prove` over the current `nearAirV3`; re-run `run-v2.sh`.
+* **Oracle:** `oracle/v3-d0a/src/d0a.rs` still uses the pre-2026-10-11 A7 measure; regenerate
+  fixtures before freezing (never edit frozen `oracle/v3`).
+* **Elaboration budget** (below) — now the main feasibility question.
+* Cleanup: `ChachaWords.lean` duplicates `A9Words.coreMid`/`runMid_st` (`coreMidW`/`runMid_stW`).
 
 **Hard feasibility risk: judge elaboration budget.** A clean, serial elaboration diagnostic hit the 1,800 s total cutoff after 927 of 1,110 modules (`/data/illia/nearproof-deps/validation/v3-clean-elaboration-20261007-attempt2`). The tree is now about 5,000 modules, so the final certificate must be a pruned closure.
 * Measure its clean elaboration early.
@@ -187,6 +174,11 @@ measure (the difftest compares it with `unfold_diff`); regenerate the fixtures b
 
 ## 6. Verification status of this merge
 
+* **2026-10-12 (`integration/v3-20261012d`, main `abf81215`):** `lake build
+  ZkFormal.V3.Integration` passes (4,692 jobs); 2,787 dependents of the 140 changed modules
+  rebuild (153 top-level modules, 5,357 jobs, 0 errors); 15 guarded audits incl.
+  `AuditAdmissionV3` pass; `make pin-check` OK; no sorry/axiom/native_decide/implemented_by.
+  Difftest not re-run.
 * **2026-10-11 (`integration/v3-20261011b`):** from clean caches (see §7), `lake build
   ZkFormal.V3.Integration nearspec-v3-check-d0a` passes (2,753 jobs); all 3,333 modules
   depending on the merged changes rebuild (`lake build` of their 185 top-level modules: 5,128
