@@ -480,8 +480,12 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
    `m.pre :: steps.pre`; needs (a) the step-3 semantics of `nativeInstance` (value-present lookup at `[0,15]`, its value id
    `root.vid + valueIndex`) and (b) `valueIndex oldPost keyBwState = valueIndex m.pre keyBwState` + equal forest value
    counts (`valsOf` lengths equal by `newchunk_old_tree_reconstruct`). Not started.
-2. **B_SCMP balance**: algebra done (`allowances_canon`, `a0s_accepted`); remaining: the bus itself (codec sends
-   `(apR + fair, MA, cb)` at `(f,gg) = (2,2)` and `(zt·(gfin+gb), zt·ft, zt)` at `(2,7)`; tables 12–15 also touch bus 40)
-   against the comparator table renders R12–R15 (currently fed `b.output.cmps`, the repaired codec's list).
+2. **B_SCMP: DONE** (16bb51a5, a5ae4cfb). `Render/CodecScmp.lean`: `bus_scmp`, `scmp_rec` (only `(2,2)` always and
+   `(2,7)` at τ = 0 send), `CdcScmp.loop_append`, `field_reqs`, `block_reqs`, **`generated_reqs`** (repaired `out.cmps` =
+   `(range n²).flatMap (k ↦ (range 3).flatMap (f ↦ (range 8).flatMap (requests … k f)))`), `blk_scmp`,
+   **`codec_scmp_native`** (frozen codec SCMP sends = `(bs.flatMap (·.output.cmps)).map cmpMsg` on `A`'s trace, via
+   `a0s_accepted`). `Render/CodecScmpBus.lean`: `codec_cmps_ok`, **`sched_renders_on`** (tables 12–15 on a GIVEN
+   `PriorCore` list, same proof as `sched_renders_accepted`), **`RenderBundleV3.balancedAt_scmp`** (tables 11–15 of
+   the same blocks ⇒ `B_SCMP` balanced; via `scmp_balance_core`). Integration 4585 jobs; pin-check OK.
 3. Task 4 (scheduler buses 40–62, ChaCha lane, packaging for tables 8–15, 23, 24): not started. Note table 11 also sends on
    `B_VBYTES` (21; receivers 4, 17, 18, 22) — not covered by any lane's balance yet as far as checked.
