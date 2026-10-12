@@ -6,18 +6,54 @@ import ZkFormal.NearV3.Assembly.RcptCandidateFamilyPublicMemory
 import ZkFormal.NearV3.Assembly.RcptCandidatePublicAdmission
 import ZkFormal.NearV3.Assembly.PrepFacts
 import ZkFormal.NearV3.Rcpt.Extract.V.PreparedRanges
+import ZkFormal.NearV3.Assembly.RcptCandidateBounds
+import ZkFormal.NearV3.Assembly.RcptCandidateRouteRows
 
 /-!
 # ZkFormal.NearV3.Assembly.RcptViewV3 — the view of the repaired receipt table
 
-`nearAirV3` table 16 is `RcptV3.tableR` (= `receiptArithmeticCandidate`: system-gas and
-13-bit deposit-age repairs).  The repaired view gives the **same** `RcptV3Wf` and exact
+`nearAirV3` table 16 is `RcptV3.tableQ` (= `ReceiptCandidateRouting.candidateTable`:
+`RcptV3.tableR` = `receiptArithmeticCandidate` (system-gas and 13-bit deposit-age repairs)
+plus the routing-index range check; every extracted receipt has `q < 128`).  The repaired view gives the **same** `RcptV3Wf` and exact
 traffic as the original (`ReceiptCandidateProof.ListChain.view_wf`/`view_traffic`).  Its
 13-bit age no-wrap needs every previous version `tprev ≤ 2^22`; that comes from the global
 `MEM` balance of `HoldsP nearAirV3`: only `rcptV3` (16) and `acctV3` (17) touch `MEM`, the
 prepared public segments carry none, account opens have version `0` and receipt writes have
 version `r + 1 ≤ 2^22`.
 -/
+
+namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
+open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3 RcptV3Proof RcptSkeleton
+
+set_option maxRecDepth 16384 in
+/-- On the installed table 16 every extracted receipt (a `Layout`) has interval index `< 128`
+(the first receiver row carries the range check). -/
+theorem extracted_q_ltQ {tr : Trace Fp} {tt : Nat} {pub : List Fp} {y : RS}
+    (h : TableLocal ReceiptCandidateRouting.candidateTable tr tt pub)
+    (lay : Layout tr tt y.s y.h y.Lp y.Lv y.Ls y.kt) : (rcptOf tr tt y).q < 128 := by
+  have hb := repaired_local_base h
+  have F := route_receiver hb lay
+  have hz : 0 < y.Lv := by have hh := lay.pos; omega
+  have hs : tr.cell tt (lkRow y 0) sV = 1 := by simpa using F.fld.st 0 hz
+  have hf : tr.cell tt (lkRow y 0) fs = 1 := by simpa using F.fld.fs 0 hz
+  have hq := repaired_first_receiver_q hb h (route_height hb lay 0 (by omega)) hs hf
+  have he := F.consts 0 hz RcptV3.q (by simp [rconsts])
+  simp only [Nat.add_zero] at he
+  change cv tr tt y.s RcptV3.q < 128
+  simpa only [cv, he] using hq
+
+/-- Every receipt of the complete physical list view has `q < 128` (installed table 16). -/
+theorem view_q {tr : Trace Fp} {tt : Nat} {pub : List Fp}
+    (h : TableLocal ReceiptCandidateRouting.candidateTable tr tt pub)
+    {bs : List ListBlock} {e : Nat} (hc : ListChain tr tt 0 bs e) :
+    ∀ x ∈ ZkFormal.NearV3.flatR (bs.map (ListBlock.view tr tt)), x.q < 128 := by
+  intro x hx
+  rw [flat_views] at hx
+  obtain ⟨y, hy, rfl⟩ := List.mem_map.mp hx
+  obtain ⟨B, hB, hy⟩ := List.mem_flatMap.mp hy
+  exact extracted_q_ltQ h ((hc.blocks B hB).layouts y hy)
+
+end ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 
 namespace ZkFormal.NearV3.Assembly
 
@@ -106,9 +142,10 @@ theorem mem_send_sources {pub : List Fp} {tr : Trace Fp}
         · exact tableBusCount_nobus (nearAir_mem_tables t ht h16 h17) true m)
   omega
 
-/-- **`RcptV3ViewStmt` for the repaired `nearAirV3` table 16**: the same `RcptV3Wf` and
+/-- **`RcptV3ViewStmt` for the installed `nearAirV3` table 16**: the same `RcptV3Wf` and
 exact traffic as the original view, from successful preparation, the packed public-size
-bound and `HoldsP` (for the `MEM` version bound). -/
+bound and `HoldsP` (for the `MEM` version bound); plus the routing-index bound `q < 128` of
+every receipt (from the table-16 range check). -/
 theorem rcptV3_view_nearAir {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Prep} {oh : Nat}
     (hp : NearSpecV3.prepD0 cb h = .ok p)
     (hsize : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
@@ -118,9 +155,11 @@ theorem rcptV3_view_nearAir {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : Nea
       ZkFormal.Near.TableTraffic ZkFormal.NearV3.RcptV3.interactions tr T_RCPT
         (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh))
         (ZkFormal.NearV3.rcptTraffic3
-          (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) ls) := by
+          (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) ls) ∧
+      ∀ x ∈ ZkFormal.NearV3.flatR ls, x.q < 128 := by
   generalize hpub : Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh) = pub at hH ⊢
   have hL : TableLocal receiptArithmeticCandidate tr T_RCPT pub := rcptLocal hH
+  have hQ : TableLocal ReceiptCandidateRouting.candidateTable tr T_RCPT pub := rcptLocalQ hH
   obtain ⟨bs, e, hc⟩ := ReceiptCandidateProof.extract_lists hL
   have ht := ReceiptCandidateProof.ListChain.view_traffic hL hc
   have hranges : ReceiptPublicRanges pub := by
@@ -161,6 +200,7 @@ theorem rcptV3_view_nearAir {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : Nea
     have hc' := ReceiptCandidateProof.extracted_previous_canonical hx
     simpa [mm, x, Msg.toFp, Fp.toNat_ofNat, Nat.mod_eq_of_lt hc'] using hb
   exact ⟨_, ReceiptCandidateProof.ListChain.view_wf hL hc
-    (ReceiptPublicAdmission.ranges_candidate hranges) hprov, ht⟩
+    (ReceiptPublicAdmission.ranges_candidate hranges) hprov, ht,
+    ReceiptCandidateProof.view_q hQ hc⟩
 
 end ZkFormal.NearV3.Assembly

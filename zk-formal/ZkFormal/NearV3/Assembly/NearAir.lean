@@ -33,8 +33,8 @@ Table order (fixed; table index = position):
 2..7  nodeV3 headV3 valV3 walkV3 uniqV3 upsV3   (trie)
 8..10 chachaV3 rngV3 shufV3   (cap 22: the A9 W0 lane, `table22`)
 11..15 codecV3 ssdV3 sprV3 smmV3 scpV3          (scheduler; sprV3 = boundary-repaired `Proc.tableB`)
-16..21 rcptV3 acctV3 akeyV3 bndV3 srcpV3 sizeV3 (receipt; rcpt = `RcptV3.tableR` with the gas and
-      deposit-age repairs; acct = `acctTableV3` (empty-capable `AccountEmpty.table`, maxLog 19),
+16..21 rcptV3 acctV3 akeyV3 bndV3 srcpV3 sizeV3 (receipt; rcpt = `RcptV3.tableQ`: `tableR` (gas and
+      deposit-age repairs) + the routing-index range check `q < 128`; acct = `acctTableV3` (empty-capable `AccountEmpty.table`, maxLog 19),
       size at maxLog 4,
       srcp = `SrcpV3.tableD` with the A10 depth check;
       the roll-aligned honest heights, `Render/PaddedRcpt.lean`)
@@ -95,7 +95,7 @@ def nearTablesFull : List ZkFormal.Air.Table :=
    ZkFormal.NearV3.Sched.Codec.table, ZkFormal.NearV3.Sched.ScanDist.table,
    ZkFormal.NearV3.Sched.Proc.tableB, ZkFormal.NearV3.Sched.Mem.table,
    ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP,
-   ZkFormal.NearV3.RcptV3.tableR, acctTableV3, ZkFormal.NearV3.AkeyV3.table,
+   ZkFormal.NearV3.RcptV3.tableQ, acctTableV3, ZkFormal.NearV3.AkeyV3.table,
    ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.tableD, ZkFormal.NearV3.UnfoldA7.sizeA7,
    ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
    ZkFormal.NearV3.Candidates.MerkleEmpty.table, sortTableV3]

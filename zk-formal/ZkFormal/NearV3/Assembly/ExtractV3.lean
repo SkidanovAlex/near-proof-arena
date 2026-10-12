@@ -86,7 +86,7 @@ theorem nearTablesFull_eq : nearAirV3.tables =
      ZkFormal.NearV3.Sched.Codec.table, ZkFormal.NearV3.Sched.ScanDist.table,
      ZkFormal.NearV3.Sched.Proc.tableB, ZkFormal.NearV3.Sched.Mem.table,
      ZkFormal.NearV3.Sched.Cmp.table ZkFormal.NearV3.Sched.B_SCMP,
-     ZkFormal.NearV3.RcptV3.tableR, acctTableV3, ZkFormal.NearV3.AkeyV3.table,
+     ZkFormal.NearV3.RcptV3.tableQ, acctTableV3, ZkFormal.NearV3.AkeyV3.table,
      ZkFormal.NearV3.BndV3.table, ZkFormal.NearV3.SrcpV3.tableD, ZkFormal.NearV3.UnfoldA7.sizeA7,
      ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table,
      ZkFormal.NearV3.Candidates.MerkleEmpty.table, sortTableV3] := rfl
@@ -105,7 +105,7 @@ theorem getElem?_walk : nearAirV3.tables[T_WALK]? =
     some {ZkFormal.NearV3.WalkV3.table with maxLog := 22} := rfl
 theorem getElem?_uniq : nearAirV3.tables[T_UNIQ]? = some ZkFormal.NearV3.Uniq.table := rfl
 theorem getElem?_ups : nearAirV3.tables[T_UPS]? = some ZkFormal.NearV3.UnfoldA7.upsA7 := rfl
-theorem getElem?_rcpt : nearAirV3.tables[T_RCPT]? = some ZkFormal.NearV3.RcptV3.tableR := rfl
+theorem getElem?_rcpt : nearAirV3.tables[T_RCPT]? = some ZkFormal.NearV3.RcptV3.tableQ := rfl
 theorem getElem?_acct : nearAirV3.tables[T_ACCT]? = some acctTableV3 := rfl
 theorem getElem?_akey : nearAirV3.tables[T_AKEY]? = some ZkFormal.NearV3.AkeyV3.table := rfl
 theorem getElem?_bnd : nearAirV3.tables[T_BND]? = some ZkFormal.NearV3.BndV3.table := rfl
@@ -167,9 +167,16 @@ theorem upsLocal (h : HoldsP nearAirV3 pub tr) :
   tableLocal_ext (tableLocal_of_holdsP h getElem?_ups) (fun _ h => List.mem_append_left _ h)
     (fun _ h => List.mem_append_left _ h) (Nat.le_refl _)
 
+/-- Table 16 is `RcptV3.tableQ` (`tableR` + the routing-index range check). -/
+theorem rcptLocalQ (h : HoldsP nearAirV3 pub tr) :
+    ZkFormal.Near.TableLocal ZkFormal.NearV3.RcptV3.tableQ tr T_RCPT pub :=
+  tableLocal_of_holdsP h getElem?_rcpt
+
+/-- The arithmetic-repaired constraints alone (a sub-list of `tableQ`'s). -/
 theorem rcptLocal (h : HoldsP nearAirV3 pub tr) :
     ZkFormal.Near.TableLocal ZkFormal.NearV3.RcptV3.tableR tr T_RCPT pub :=
-  tableLocal_of_holdsP h getElem?_rcpt
+  tableLocal_ext (rcptLocalQ h) (fun _ h => List.mem_append_left _ h)
+    (fun _ h => h) (Nat.le_refl _)
 
 theorem acctLocal (h : HoldsP nearAirV3 pub tr) :
     ZkFormal.Near.TableLocal acctTableV3 tr T_ACCT pub :=
