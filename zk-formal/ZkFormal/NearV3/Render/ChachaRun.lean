@@ -129,7 +129,7 @@ theorem round_step (I : Input) (conv : Array CReq) (key : List Nat) (rd : Round)
     · cases hsz
   obtain ⟨-, hsh, -⟩ := replay_inst 0 key kpos _ sh kend hrep
   have hlen : sh.length = rd.bucket.length := by
-    rw [hsh, final_length]; simp [instOf, ZkFormal.Chacha.Shuffle.Gen.SInst.L]
+    rw [hsh, final_length]; simp [sinstOf, ZkFormal.Chacha.Shuffle.Gen.SInst.L]
   obtain ⟨m1, m2⟩ := ents_map he trivial hlen
   refine ⟨?_, ?_⟩
   · simp only [Array.toList_push]

@@ -31,7 +31,7 @@ open ZkFormal.NearV3.Sched.Complete (procVs roundVs keyVs)
 /-! ## The lane instances of a list of runs -/
 
 def roundInst (R : Run) (rd : Gen.RoundD) : SInst :=
-  instOf (lidOf R.tau rd.T) R.key rd.kst (rd.entries.map (·.ein))
+  sinstOf (lidOf R.tau rd.T) R.key rd.kst (rd.entries.map (·.ein))
 def runInsts (R : Run) : List SInst := R.rounds.map (roundInst R)
 def laneInsts (rs : List Run) : List SInst := rs.flatMap runInsts
 
@@ -68,7 +68,7 @@ theorem rd_draws {R : Run} {rd : Gen.RoundD} (h : RdOk R rd) :
   replay_inst _ _ _ _ _ _ h.ok.replay
 
 theorem rd_L {R : Run} (rd : Gen.RoundD) : (roundInst R rd).L = rd.entries.length := by
-  simp [roundInst, instOf, SInst.L]
+  simp [roundInst, sinstOf, SInst.L]
 
 /-! ## `SSHUF`, `SSIN`, `SSOUT` -/
 
@@ -78,7 +78,7 @@ theorem shuf_round {R : Run} (hR : RunOk R) {rd : Gen.RoundD} (h : RdOk R rd) :
   rw [← (rd_draws h).2.2]
   have hl : (roundInst R rd).L = rd.Lr := by rw [rd_L, h.ok.len]
   rw [hl]
-  simp only [roundInst, instOf]
+  simp only [roundInst, sinstOf]
   rw [lid_fp, hR.key, keyN_leWords _ hR.key8]
 
 theorem shuf_run {R : Run} (hR : RunOk R) : expectedShuf (runInsts R) = runShuf R := by
@@ -95,7 +95,7 @@ theorem in_round {R : Run} {rd : Gen.RoundD} (h : RdOk R rd) :
   have hq := List.mem_range.mp hq
   unfold inMsg entIn
   rw [h.idx q hq, getElem!_pos rd.entries.toArray q (by simpa using hq)]
-  simp only [roundInst, instOf, lid_fp, List.getD_eq_getElem?_getD, List.getElem?_map,
+  simp only [roundInst, sinstOf, lid_fp, List.getD_eq_getElem?_getD, List.getElem?_map,
     List.getElem?_eq_getElem hq, Option.map_some, Option.getD_some, List.getElem_toArray]
 
 theorem out_round {R : Run} {rd : Gen.RoundD} (h : RdOk R rd) :
@@ -107,7 +107,7 @@ theorem out_round {R : Run} {rd : Gen.RoundD} (h : RdOk R rd) :
   have hq := List.mem_range.mp hq
   unfold outMsg entOut
   rw [h.idx q hq, getElem!_pos rd.entries.toArray q (by simpa using hq), ← (rd_draws h).2.1]
-  simp only [roundInst, instOf, lid_fp, List.getD_eq_getElem?_getD, List.getElem?_map,
+  simp only [roundInst, sinstOf, lid_fp, List.getD_eq_getElem?_getD, List.getElem?_map,
     List.getElem?_eq_getElem hq, Option.map_some, Option.getD_some, List.getElem_toArray]
 
 theorem in_run {R : Run} (hR : RunOk R) : expectedIn (runInsts R) = runIn R := by

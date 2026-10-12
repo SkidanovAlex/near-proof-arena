@@ -367,6 +367,12 @@ import ZkFormal.NearV3.Render.CodecTriePin
 import ZkFormal.NearV3.Render.CodecUpsBus
 import ZkFormal.NearV3.Render.CodecSpost
 import ZkFormal.NearV3.Render.CodecS0F
+import ZkFormal.NearV3.Render.ChachaReplay
+import ZkFormal.NearV3.Render.ChachaRun
+import ZkFormal.NearV3.Render.ChachaProcBus
+import ZkFormal.NearV3.Render.ChachaLane
+import ZkFormal.NearV3.Render.ChachaWords
+import ZkFormal.NearV3.Render.ChachaBusBalance
 import ZkFormal.NearV3.Assembly.UpsS0FAddr
 import ZkFormal.NearV3.Assembly.UpsS0FRebase
 import ZkFormal.NearV3.Render.CodecCanon

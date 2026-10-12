@@ -21,7 +21,7 @@ open NearSpecV3 ZkFormal.Chacha ZkFormal.Chacha.Shuffle.Gen ZkFormal.Chacha.Shuf
 open ZkFormal.NearV3.Candidates ZkFormal.NearV3.Sched.Gen
 
 /-- The `shufV3` instance of one replayed shuffle. -/
-def instOf (lid : Nat) (key : List Nat) (k : Nat) (vals : List Nat) : SInst := ⟨lid, key, k, vals⟩
+def sinstOf (lid : Nat) (key : List Nat) (k : Nat) (vals : List Nat) : SInst := ⟨lid, key, k, vals⟩
 
 /-- Every draw of `I` succeeds. -/
 def Draws (I : SInst) : Prop :=
@@ -65,9 +65,9 @@ theorem replay_loop (I : SInst) :
 draw succeeds. -/
 theorem replay_inst (lid : Nat) (key : List Nat) (k : Nat) (vals sh : List Nat) (kend : Nat)
     (h : replayShuffle key k vals = .ok (sh, kend)) :
-    Draws (instOf lid key k vals) ∧ sh = (instOf lid key k vals).final ∧
-      kend = (instOf lid key k vals).kBefore 0 := by
-  let I := instOf lid key k vals
+    Draws (sinstOf lid key k vals) ∧ sh = (sinstOf lid key k vals).final ∧
+      kend = (sinstOf lid key k vals).kBefore 0 := by
+  let I := sinstOf lid key k vals
   rw [ProcShuffleReplay.replay_eq] at h
   cases hout : forIn (List.range (vals.length - 1)) (vals, k)
       (ProcShuffleReplay.step (vals.length - 1) key) with
