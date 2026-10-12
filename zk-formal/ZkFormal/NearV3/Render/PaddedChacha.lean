@@ -328,14 +328,6 @@ theorem chacha_v3_aligned_complete (reqs : List Chacha.Gen.Req) (hok : ∀ R ∈
     (chachaTraceAligned reqs).log t % 3 = 1 :=
   chacha_aligned_complete22 reqs hok hrows t pub
 
-/-- `rng_aligned_complete22` at `nearAirV3`'s `Rng.Table.table22`. -/
-theorem rng_v3_aligned_complete (calls : List Chacha.Rng.Gen.Call)
-    (hok : ∀ C ∈ calls, Chacha.Rng.Gen.CallOk C) (hrows : rngRows calls ≤ 2 ^ 22) (t : Nat)
-    (pub : List Fp) :
-    TableLocal (Chacha.Rng.Table.table22 B_SCHACHA B_SGEN) (rngTraceAligned calls) t pub ∧
-    TableTraffic (Chacha.Rng.Table.table22 B_SCHACHA B_SGEN).interactions (rngTraceAligned calls) t pub
-      (rngTraffic calls) ∧
-    (rngTraceAligned calls).log t % 3 = 1 :=
-  rng_aligned_complete22 calls hok hrows t pub
+/- `rng_v3_aligned_complete` (table 9 with the A9 word counter) is in `Render/RngW0.lean`. -/
 
 end ZkFormal.NearV3.Render

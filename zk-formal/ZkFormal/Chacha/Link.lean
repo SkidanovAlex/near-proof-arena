@@ -35,7 +35,8 @@ theorem chLocal_of_holdsP (hH : HoldsP AP pub tr) {tc busChacha : Nat} (ht : tc 
 
 theorem gLocal_of_holdsP (hH : HoldsP AP pub tr) {tg busChacha busGen : Nat} (ht : tg < AP.tables.length)
     (hT : AP.tables[tg]! = Rng.Table.table22 busChacha busGen) : Rng.GLocal tr tg pub := by
-  have := local_of_holdsP hH ht; rw [hT] at this; exact this
+  intro r hr e he
+  have := local_of_holdsP hH ht r hr e; rw [hT] at this; exact this (List.mem_append_left _ he)
 
 theorem multNat_one_col {tr : Trace Fp} {t r : Nat} {pub : List Fp} {i : Interaction} {x : Nat}
     (hi : i.mult = [Table.E.c x]) (h : cv tr t r x = 1) : i.multNat tr t r pub ≠ 0 := by

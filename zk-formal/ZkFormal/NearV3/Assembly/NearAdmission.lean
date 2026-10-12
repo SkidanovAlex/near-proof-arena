@@ -44,10 +44,10 @@ theorem nearAirV3_npOkPg_2 : ZkFormal.V2.G.NpOkPg nearAirV3 (ZkFormal.V2.G.pg 2)
   nearAirV3_npOkPg 2 (by decide) (by decide)
 
 /-- The proved inner-proof size bound (item 6), used as `maxInner`. -/
-def v3MaxInner : Nat := 6415073
+def v3MaxInner : Nat := 6434561
 
 /-- The hint-budget of the completeness obligation: `4 + this + maxInner ≤ 8 MiB`. -/
-def v3MaxHintBytes : Nat := 1973000
+def v3MaxHintBytes : Nat := 1954000
 
 theorem v3MaxHintBytes_fits :
     4 + v3MaxHintBytes + v3MaxInner ≤ challengeParamsD0a.maxProofBytes := by decide
