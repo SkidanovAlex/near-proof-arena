@@ -366,6 +366,11 @@ pub struct Prep {
 }
 
 impl Prep {
+    /// Parse a Lean `np-lean-prep-v3` `prep_json` dump.
+    pub fn from_json(s: &str) -> Result<Prep, String> {
+        serde_json::from_str(s).map_err(|e| e.to_string())
+    }
+
     /// `Prep.encode`.
     pub fn encode(&self) -> Bytes {
         let mut v = borsh_bytes(PREP_TAG);

@@ -25,6 +25,8 @@ pub mod entries;
 pub mod mrksort;
 pub mod node;
 pub mod prep;
+pub mod public;
+pub mod prove;
 pub mod qv;
 pub mod rcpt;
 pub mod sample;
