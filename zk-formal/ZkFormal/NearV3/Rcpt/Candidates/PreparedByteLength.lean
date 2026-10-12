@@ -6,7 +6,7 @@ open NearSpec NearSpecV3 ZkFormal.Near Public
 /-- Exact statement byte cost: overhead value changes fixed-width bytes only. -/
 theorem prepared_byte_length (p : Prep) (overhead : Nat) (hr : RootsSized p)
     (hs : ∀s∈p.lists,s.root.length=32) :
-    (preparedBytes p overhead).length=340+33*p.lists.length+195*p.bnds.length+
+    (preparedBytes p overhead).length=340+34*p.lists.length+195*p.bnds.length+
       (p.body.length-8)+7*(schedulerRecords p).pubb.length+
       11*(schedulerRecords p).par.length+5*(schedulerRecords p).dlSend.length+
       5*(schedulerRecords p).dlRecv.length := by

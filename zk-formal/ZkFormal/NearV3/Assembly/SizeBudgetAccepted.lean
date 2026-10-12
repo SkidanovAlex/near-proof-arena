@@ -96,6 +96,7 @@ theorem pub_ovhNat : ovhNat A.pub = 0 :=
 theorem sizeBudget : TrieSide.SizeBudget A := by
   apply TrieSide.sizeBudget_of_coarse
   have h := A.srcpSize_le
+  have h' := A.sizeBlocks_le
   rw [A.pub_ovhNat]
   omega
 

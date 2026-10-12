@@ -133,7 +133,7 @@ def codecBytes (tr : Trace Fp) (pub : List Fp) : List (List Fp) :=
 /-- The record-form `BYTES` sends of the viewed tables other than node / val. -/
 def otherRecBytes (pub : List Fp) (r : V3Records) : List Msg :=
   (ZkFormal.NearV3.upsTraffic r.ups).sends B_BYTES ++ ZkFormal.NearV3.rcptSends3 pub r.lists B_BYTES ++
-    ZkFormal.NearV3.acctV3Sends r.accts B_BYTES ++ (ZkFormal.NearV3.srcpTraffic r.srcp).sends B_BYTES ++
+    ZkFormal.NearV3.acctV3Sends r.accts B_BYTES ++ (ZkFormal.NearV3.ddTraffic r.srcp r.srcpRep).sends B_BYTES ++
     (mrkTrafficE pub r.mrkE r.mrk).sends B_BYTES
 
 /-- All `BYTES` sends other than node / val, as field messages. -/
@@ -170,7 +170,7 @@ theorem bytes_balance {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : Hold
     ups_count T _ _ _ (by decide +kernel),
     show isAt T_RCPT = ZkFormal.NearV3.RcptV3.interactions from rfl, tcnt_of_traffic T.lists,
     show isAt T_ACCT = ZkFormal.NearV3.AcctV3.interactions from rfl, tcnt_of_traffic T.accts,
-    show isAt T_SRCP = ZkFormal.NearV3.SrcpV3.interactions from rfl, tcnt_of_traffic T.srcp,
+    show isAt T_SRCP = ZkFormal.NearV3.Rcpt.Candidates.DedupTable.interactions from rfl, tcnt_of_traffic T.srcp,
     show isAt T_MRK = ZkFormal.NearV3.Candidates.MerkleEmpty.table.interactions from rfl,
     tcnt_of_traffic T.mrk, tableBusCount_eq (isAt T_CODEC)] at h
   rw [shaU_eq]

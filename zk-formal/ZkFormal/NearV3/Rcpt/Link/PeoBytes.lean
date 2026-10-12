@@ -124,7 +124,7 @@ theorem othersRC_kind {K : Nat} (hK : K = K_PEO ∨ K = K_RF ∨ K = K_RID) {cb 
     exact nv hK hn
   · exact kin (upsKindIn_of hp hsz hH T W m hm) (by rcases hK with rfl | rfl | rfl <;> decide) a ha
   · exact kin (acctKindIn hH T W m hm) (by rcases hK with rfl | rfl | rfl <;> decide) a ha
-  · exact kin (srcpKindIn W.srcp m hm) (by rcases hK with rfl | rfl | rfl <;> decide) a ha
+  · exact kin (ddKindIn W.srcp m hm) (by rcases hK with rfl | rfl | rfl <;> decide) a ha
   · exact kin (mrkKindIn W (pubNat_pubOf_lt _) m hm) (by rcases hK with rfl | rfl | rfl <;> decide) a ha
   · obtain ⟨y, hy, rfl⟩ := List.mem_map.mp hm
     cases hyh : y.head? with

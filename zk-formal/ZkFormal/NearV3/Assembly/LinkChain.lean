@@ -209,7 +209,7 @@ theorem othersKinds_holds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearS
     (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
     (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r) :
     OthersKinds tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r :=
-  othersKinds_of (upsKinds_of hp hsz hH T W) (rcptKinds_of W) (acctKinds hH T W) (srcpKinds W.srcp)
+  othersKinds_of (upsKinds_of hp hsz hH T W) (rcptKinds_of W) (acctKinds hH T W) (ddKinds W.srcp)
     (mrkKinds W (pubNat_pubOf_lt _)) (codecKinds hp hsz hH)
 
 /-- **`ShaHyp` of the trie tables from `HoldsP`** (no remaining hypothesis): the SHA union, the

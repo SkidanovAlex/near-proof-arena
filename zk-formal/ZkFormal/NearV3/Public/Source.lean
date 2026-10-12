@@ -15,9 +15,21 @@ least twice among the sources (every such occurrence has an empty receipt list).
 def sourceRep (sources : List SrcList) (j : Nat) : Bool :=
   decide (2 ≤ (sources.map SrcList.key).count (sources.getD j ⟨[],0,[]⟩).key)
 
-/-- `SRC34`: `[dup, rep] ++ root`. -/
+/-- Source `j` agrees (from-shard and root) with every earlier source of the same key.  A
+later occurrence shares the earlier occurrence's witness entry, so natively the claim is
+unsatisfiable unless this holds; table 20 checks a `dup` reference only by its key. -/
+def sourceConsistent (sources : List SrcList) (j : Nat) : Bool :=
+  (sources.take j).all fun s => !(s.key == (sources.getD j ⟨[],0,[]⟩).key) ||
+    (s.fromShard == (sources.getD j ⟨[],0,[]⟩).fromShard && s.root == (sources.getD j ⟨[],0,[]⟩).root)
+
+/-- The public `dup` byte: `0` (first occurrence), `1` (consistent later occurrence) or `2`
+(inconsistent later occurrence: no boolean `dup` cell of table 20 matches it, so no trace). -/
+def sourceDupByte (sources : List SrcList) (j : Nat) : Nat :=
+  if sourceDup sources j then (if sourceConsistent sources j then 1 else 2) else 0
+
+/-- `SRC34`: `[dup byte, rep] ++ root`. -/
 def sourceRow (sources : List SrcList) (j : Nat) : ByteString :=
-  [if sourceDup sources j then 1 else 0, if sourceRep sources j then 1 else 0] ++
+  [UInt8.ofNat (sourceDupByte sources j), if sourceRep sources j then 1 else 0] ++
     (sources.getD j ⟨[],0,[]⟩).root
 
 def sourcePayload (sources : List SrcList) : Payload :=
@@ -48,12 +60,13 @@ theorem sourcePayload_width (sources : List SrcList)
 
 theorem source_record (sources : List SrcList) {j : Nat} (hj : j < sources.length) :
     recordValues sourcePlan j ((sourcePayload sources).getD j []) =
-      [Fp.ofNat j, Fp.ofNat (if sourceDup sources j then 1 else 0),
+      [Fp.ofNat j, Fp.ofNat (sourceDupByte sources j),
         Fp.ofNat (if sourceRep sources j then 1 else 0)] ++
         (sources.getD j ⟨[],0,[]⟩).root.map byteF := by
   rw [sourcePayload_getD sources hj]
   unfold recordValues sourcePlan sourceRow
-  cases sourceDup sources j <;> cases sourceRep sources j <;> simp only [Bool.false_eq_true,↓reduceIte,Nat.zero_add,List.map_append,List.map_cons,List.map_nil,List.nil_append,List.cons_append] <;> rfl
+  unfold sourceDupByte
+  cases sourceDup sources j <;> cases sourceConsistent sources j <;> cases sourceRep sources j <;> simp only [Bool.false_eq_true,↓reduceIte,Nat.zero_add,List.map_append,List.map_cons,List.map_nil,List.nil_append,List.cons_append] <;> rfl
 
 theorem descriptor_source_record (header : ByteString) (blocks : List Payload)
     (sources : List SrcList) {i j : Nat} (hi : i < blocks.length)
@@ -61,7 +74,7 @@ theorem descriptor_source_record (header : ByteString) (blocks : List Payload)
     (hr : ∀ s ∈ sources, s.root.length = 32)
     (ho : payloadOffset (dataStart header blocks) blocks i < 256^4) :
     (descriptor sourcePlan header.length i).record (ZkFormal.Udr.pubOf Fp (encode header blocks)) j =
-      [Fp.ofNat j, Fp.ofNat (if sourceDup sources j then 1 else 0),
+      [Fp.ofNat j, Fp.ofNat (sourceDupByte sources j),
         Fp.ofNat (if sourceRep sources j then 1 else 0)] ++
         (sources.getD j ⟨[],0,[]⟩).root.map byteF := by
   rw [descriptor_record sourcePlan header blocks hi

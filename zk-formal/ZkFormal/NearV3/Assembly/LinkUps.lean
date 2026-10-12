@@ -36,7 +36,7 @@ theorem body_head {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Pr
 
 /-- The `BYTES` sends of the viewed tables other than node / val / ups, plus the codec. -/
 def noUpsBytes (tr : Trace Fp) (pub : List Fp) (r : V3Records) : List (List Fp) :=
-  (rcptSends3 pub r.lists B_BYTES ++ acctV3Sends r.accts B_BYTES ++ (srcpTraffic r.srcp).sends B_BYTES ++
+  (rcptSends3 pub r.lists B_BYTES ++ acctV3Sends r.accts B_BYTES ++ (ddTraffic r.srcp r.srcpRep).sends B_BYTES ++
     (mrkTrafficE pub r.mrkE r.mrk).sends B_BYTES).map Msg.toFp ++ codecBytes tr pub
 
 /-- The `BYTES` senders other than ups, net of the public body. -/
@@ -72,7 +72,7 @@ theorem noUps_kinds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.
   · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy
     exact kin (acctKindIn hH T W x hx) (by decide) a ha
   · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy
-    exact kin (srcpKindIn W.srcp x hx) (by decide) a ha
+    exact kin (ddKindIn W.srcp x hx) (by decide) a ha
   · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy
     exact kin (mrkKindIn W (pubNat_pubOf_lt _) x hx) (by decide) a ha
   · rw [codecKindIn hp hsz hH y hy a ha]; decide

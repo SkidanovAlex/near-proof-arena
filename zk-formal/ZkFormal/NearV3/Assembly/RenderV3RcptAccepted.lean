@@ -160,6 +160,71 @@ theorem srcpOk : SrcpGen.ProofInputsOk A.srcps :=
 theorem srcpDepth : ∀ x ∈ A.srcps, x.entry.proof.path.length ≤ NearSpecV3.Dp0 :=
   acceptedSrcp_depth A.rel A.hp A.hk A.hw
 
+/-- Table 20 (`SrcpDD`): the dedup blocks of the prepared sources and their repetition bits. -/
+def ddBlocks : List SrcpB := Rcpt.Candidates.DedupCompile.blocks A.p.lists A.w.entries
+def ddRep : Nat → Bool := Rcpt.Candidates.sourceRepeated A.p.lists
+
+theorem ddFacts : Rcpt.Candidates.DedupRender.TableFacts A.ddBlocks A.ddRep :=
+  Rcpt.Candidates.DedupCompile.relD0a_table_facts A.rel A.hp A.hf A.hd
+
+theorem ddWidths : ∀ B ∈ A.ddBlocks, B.root.length = 32 ∧ B.leaf.length = 32 ∧
+    ∀ it ∈ B.path, it.sib.length = 32 ∧ it.acc.length = 32 :=
+  Rcpt.Candidates.DedupCompile.relD0a_block_widths A.rel A.hp A.hf A.hd
+
+theorem ddDepth : ∀ B ∈ A.ddBlocks, B.path.length ≤ NearSpecV3.Dp0 :=
+  acceptedDD_depth A.rel A.hp A.hk A.hw
+
+theorem ddRows : Rcpt.Candidates.DedupRender.R A.ddBlocks ≤ 2 ^ 22 :=
+  acceptedDD_rows A.rel A.hp A.hk A.hw
+
+/-- Table 20's traffic. -/
+def ddTraffic : ZkFormal.Near.Traffic := Rcpt.Candidates.DedupRender.traffic A.ddBlocks A.ddRep
+
+/-- The blocks whose `srcpSize` is table 20's size charge (a `dup` reference charges its `L` only). -/
+def sizeBlocks : List SrcpB := A.ddBlocks.map fun B => if B.dup then { B with path := [] } else B
+
+theorem srcpSize_sizeBlocks (bs : List SrcpB) :
+    srcpSize (bs.map fun B => if B.dup then { B with path := [] } else B) =
+      Rcpt.Candidates.DedupRender.size bs := by
+  induction bs with
+  | nil => rfl
+  | cons B bs ih =>
+    simp only [List.map_cons, srcpSize, List.sum_cons, Rcpt.Candidates.DedupRender.size,
+      Rcpt.Candidates.DedupRender.sizeStep] at ih ⊢
+    rw [ih]
+    cases B.dup <;> simp
+
+theorem dd_size_sends : A.ddTraffic.sends B_SIZE = (srcpTraffic A.sizeBlocks).sends B_SIZE := by
+  simp only [ddTraffic, Rcpt.Candidates.DedupRender.traffic, srcpTraffic, ite_true, sizeBlocks,
+    srcpSize_sizeBlocks]
+
+theorem srcpSize_map_le (bs : List SrcpB) (g : SrcpB → SrcpB)
+    (h : ∀ B ∈ bs, (g B).L + 33 * (g B).path.length ≤ B.L + 33 * B.path.length) :
+    srcpSize (bs.map g) ≤ srcpSize bs := by
+  induction bs with
+  | nil => exact Nat.le_refl _
+  | cons B bs ih =>
+    simp only [List.map_cons, srcpSize, List.sum_cons] at ih ⊢
+    have := h B (by simp)
+    have := ih (fun C hC => h C (by simp [hC]))
+    omega
+
+/-- Table 20's size charge is at most the all-occurrence charge of `srcps`. -/
+theorem sizeBlocks_le : srcpSize A.sizeBlocks ≤ srcpSize (SrcpGen.blocksOfProofs A.srcps) := by
+  have h1 : srcpSize A.sizeBlocks ≤ srcpSize A.ddBlocks :=
+    srcpSize_map_le _ _ (fun B _ => by cases B.dup <;> simp)
+  have h2 : srcpSize A.ddBlocks = srcpSize (SrcpGen.blocksOfProofs A.srcps) := by
+    unfold srcpSize
+    congr 1
+    apply List.ext_getElem
+    · simp [ddBlocks, Rcpt.Candidates.DedupCompile.blocks_length, SrcpGen.blocksOfProofs, srcps,
+        acceptedSrcpInputs]
+    · intro i h1 h2
+      simp [ddBlocks, Rcpt.Candidates.DedupCompile.blocks, Rcpt.Candidates.DedupCompile.block,
+        SrcpGen.blocksOfProofs, srcps, acceptedSrcpInputs, SrcpGen.blockOfProof,
+        Rcpt.Candidates.DedupCompile.entryAt, Rcpt.Candidates.sourceEntry]
+  omega
+
 theorem qvOk_exists : ∃ v : Qv.MainValues,
     QvNativeOk A.m.pre v (A.steps.map ImplicitStepV3.pre) A.pub ∧ v.Reads A.m.pre A.m.pre A.m.pre :=
   qvNativeOk_reads_of_accept A.hk A.hw A.h A.hm A.hv A.hp 0
@@ -201,11 +266,11 @@ def bndAcc : TableRenderV3 A.pub 19 (by decide) := bndRenderV3 A.pub A.bnds A.bn
 
 /-- Table 20 from acceptance. -/
 def srcpAcc : TableRenderV3 A.pub 20 (by decide) where
-  tr := srcpTraceAligned (SrcpGen.blocksOfProofs A.srcps)
-  tf := srcpTraffic (SrcpGen.blocksOfProofs A.srcps)
-  loc := (srcp_proofs_aligned_complete A.srcps A.srcpOk A.srcpDepth 20 A.pub).1
-  traffic := (srcp_proofs_aligned_complete A.srcps A.srcpOk A.srcpDepth 20 A.pub).2.1
-  aligned := (srcp_proofs_aligned_complete A.srcps A.srcpOk A.srcpDepth 20 A.pub).2.2
+  tr := srcpDDTrace A.ddBlocks A.ddRep
+  tf := A.ddTraffic
+  loc := (srcpDD_aligned_complete A.ddBlocks A.ddRep A.ddFacts A.ddRows A.ddDepth A.ddWidths 20 A.pub).1
+  traffic := (srcpDD_aligned_complete A.ddBlocks A.ddRep A.ddFacts A.ddRows A.ddDepth A.ddWidths 20 A.pub).2.1
+  aligned := (srcpDD_aligned_complete A.ddBlocks A.ddRep A.ddFacts A.ddRows A.ddDepth A.ddWidths 20 A.pub).2.2
 
 /-- Table 22 from acceptance. -/
 noncomputable def qvAcc : TableRenderV3 A.pub 22 (by decide) :=
@@ -215,7 +280,7 @@ theorem rcptAcc_tf : A.rcptAcc.tf = rcptTrafficB A.pub A.rcptInput := rfl
 theorem acctAcc_tf : A.acctAcc.tf = acctV3Traffic A.accts := rfl
 theorem akeyAcc_tf : A.akeyAcc.tf = akeyTraffic A.akeys := rfl
 theorem bndAcc_tf : A.bndAcc.tf = bndTraffic A.bnds := rfl
-theorem srcpAcc_tf : A.srcpAcc.tf = srcpTraffic (SrcpGen.blocksOfProofs A.srcps) := rfl
+theorem srcpAcc_tf : A.srcpAcc.tf = A.ddTraffic := rfl
 theorem qvAcc_tf : A.qvAcc.tf = qvNativeTraffic A.m.pre A.qvVals (A.steps.map ImplicitStepV3.pre) := rfl
 
 end AcceptedV3

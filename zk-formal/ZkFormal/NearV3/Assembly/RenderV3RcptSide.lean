@@ -58,7 +58,7 @@ theorem rcpt_side_balanced {cb wb : Bytes} (A : AcceptedV3 cb wb) (R : RenderBun
   have t17 : R.tf 17 = acctV3Traffic A.accts := bundle_tf_eq R 17 _ h17
   have t18 : R.tf 18 = akeyTraffic A.akeys := bundle_tf_eq R 18 _ h18
   have t19 : R.tf 19 = bndTraffic A.bnds := bundle_tf_eq R 19 _ h19
-  have t20 : R.tf 20 = srcpTraffic (SrcpGen.blocksOfProofs A.srcps) := bundle_tf_eq R 20 _ h20
+  have t20 : R.tf 20 = A.ddTraffic := bundle_tf_eq R 20 _ h20
   have t22 : R.tf 22 = qvNativeTraffic A.m.pre A.qvVals (A.steps.map ImplicitStepV3.pre) :=
     bundle_tf_eq R 22 _ h22
   exact ⟨srec_balanced A R t16, rcl_balanced A R t16 t20, akc_balanced A R t16 t18,

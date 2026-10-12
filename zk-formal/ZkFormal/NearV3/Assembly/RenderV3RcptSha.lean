@@ -79,8 +79,7 @@ theorem receipt_sha : ∃ receipt : List Sha.Gen.Msg,
       cnt (Sha.Gen.expectedBytes receipt) m + ZkFormal.V2.pubCount nearAirV3 A.pub B_BYTES false m) ∧
     (∀ m, cnt (Sha.Gen.expectedDigests receipt) m =
       cnt ((rcptTrafficB A.pub A.rcptInput).recvs B_DIGEST) m + cnt (A.mrkAcc.tf.recvs B_DIGEST) m +
-        cnt (Sha.Gen.expectedDigests ((sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries).map
-          fun m => { m with dmult := true })) m +
+        cnt (Sha.Gen.expectedDigests (sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries)) m +
         cnt (Sha.Gen.expectedDigests (jobsToSha (accountShaJobs A.accts))) m) := by
   have hbp := A.boundedPrep_eq
   have hA : ∀ msg, tableBusCount AccountEmpty.table.interactions A.acctAcc.tr 17
@@ -122,11 +121,7 @@ theorem receipt_sha : ∃ receipt : List Sha.Gen.Msg,
     have h := ReceiptPublicByteCount.accepted nearAirV3 A.hp A.hk A.hw A.h A.hm 0 rfl msg
     rw [hbp] at h
     exact h
-  have hrcAll : ReceiptGatedShaJobs.rcJobs (ZkFormal.Udr.pubOf Fp (Public.preparedBytes A.p 0)) (bs.map (ListBlock.view (RoutingQCandidate.patchTrace (rcptTraceNative A.pub A.rcptInput) 0) 0)) (fun _ => false) =
-      (sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries).map (fun m => { m with dmult := true }) := by
-    rw [← hrc]
-    simp [ReceiptGatedShaJobs.rcJobs, List.map_map, Function.comp_def]
-  refine ⟨ReceiptGatedShaJobs.jobs (ZkFormal.Udr.pubOf Fp (Public.preparedBytes A.p 0)) (bs.map (ListBlock.view (RoutingQCandidate.patchTrace (rcptTraceNative A.pub A.rcptInput) 0) 0)) A.accts (fun _ => false), ?_, ?_, ?_, ?_⟩
+  refine ⟨ReceiptGatedShaJobs.jobs (ZkFormal.Udr.pubOf Fp (Public.preparedBytes A.p 0)) (bs.map (ListBlock.view (RoutingQCandidate.patchTrace (rcptTraceNative A.pub A.rcptInput) 0) 0)) A.accts (Public.sourceDup A.p.lists), ?_, ?_, ?_, ?_⟩
   · rw [ReceiptGatedShaJobs.rows_unchanged]
     rw [ReceiptGatedShaJobs.rows_unchanged] at hrows
     exact hrows
@@ -162,7 +157,7 @@ theorem receipt_sha : ∃ receipt : List Sha.Gen.Msg,
     rw [e16, e23] at h1
     simp only [ReceiptGatedShaJobs.jobs] at h1 ⊢
     rw [hrc] at h1
-    rw [hrcAll]
+    rw [hrc]
     simp only [ZkFormal.Near.cnt, ZkFormal.NearV3.Assembly.cnt, Sha.Gen.expectedDigests, List.map_append, List.filter_append,
       List.count_append] at h1 ⊢
     omega

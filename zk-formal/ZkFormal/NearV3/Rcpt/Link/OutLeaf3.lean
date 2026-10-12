@@ -94,7 +94,7 @@ theorem othersRC_leaf {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV
     exact nv hK hn
   · exact kin (upsKindIn_of hp hsz hH T W m hm) (by decide) a ha
   · exact kin (acctKindIn hH T W m hm) (by decide) a ha
-  · exact kin (srcpKindIn W.srcp m hm) (by decide) a ha
+  · exact kin (ddKindIn W.srcp m hm) (by decide) a ha
   · exact kin (mrkKindIn W (pubNat_pubOf_lt _) m hm) (by decide) a ha
   · obtain ⟨y, hy, rfl⟩ := List.mem_map.mp hm
     cases hyh : y.head? with

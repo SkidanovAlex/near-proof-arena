@@ -83,7 +83,7 @@ theorem othersRC_mrk {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3
     exact ⟨(nv hK hn).1, .inl (nv hK hn).2⟩
   · have := kin (upsKindIn_of hp hsz hH T W m hm) (by decide) a ha; exact ⟨this.1, .inl this.2⟩
   · have := kin (acctKindIn hH T W m hm) (by decide) a ha; exact ⟨this.1, .inl this.2⟩
-  · have := kin (srcpKindIn W.srcp m hm) (by decide) a ha; exact ⟨this.1, .inl this.2⟩
+  · have := kin (ddKindIn W.srcp m hm) (by decide) a ha; exact ⟨this.1, .inl this.2⟩
   · exact ⟨(mrkKindIn W (pubNat_pubOf_lt _) m hm a ha).1, .inr hm⟩
   · obtain ⟨y, hy, rfl⟩ := List.mem_map.mp hm
     cases hyh : y.head? with

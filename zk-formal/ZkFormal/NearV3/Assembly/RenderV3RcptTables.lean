@@ -3,6 +3,7 @@ import ZkFormal.NearV3.Render.HonestBalanceBnd
 import ZkFormal.NearV3.Render.HonestRcptQ
 import ZkFormal.NearV3.Render.PaddedQvNative
 import ZkFormal.NearV3.Render.PaddedSrcp
+import ZkFormal.NearV3.Render.PaddedSrcpDD
 import ZkFormal.NearV3.Render.PaddedRcpt
 import ZkFormal.NearV3.Render.PaddedAcctE
 
@@ -57,14 +58,17 @@ def bndRenderV3 (pub : List Fp) (es : List BndE) (hn : es.length ≤ 2 ^ BndV3.m
   traffic := (bnd_aligned_complete es hn 19 pub).2.1
   aligned := (bnd_aligned_complete es hn 19 pub).2.2
 
-/-- Table 20 (`srcpV3` with the A10 depth check). -/
-def srcpRenderV3 (pub : List Fp) (bs : List SrcpB) (h : SrcpWf bs)
-    (hd : ∀ B ∈ bs, B.path.length ≤ NearSpecV3.Dp0) : TableRenderV3 pub 20 (by decide) where
-  tr := srcpTraceAligned bs
-  tf := srcpTraffic bs
-  loc := (srcp_aligned_complete bs h hd 20 pub).1
-  traffic := (srcp_aligned_complete bs h hd 20 pub).2.1
-  aligned := (srcp_aligned_complete bs h hd 20 pub).2.2
+/-- Table 20 (`SrcpDD`: the dedup source table with the A10 depth check). -/
+def srcpRenderV3 (pub : List Fp) (bs : List SrcpB) (rep : Nat → Bool)
+    (h : Rcpt.Candidates.DedupRender.TableFacts bs rep) (hR : Rcpt.Candidates.DedupRender.R bs ≤ 2 ^ 22)
+    (hd : ∀ B ∈ bs, B.path.length ≤ NearSpecV3.Dp0)
+    (hl : ∀ B ∈ bs, B.root.length = 32 ∧ B.leaf.length = 32 ∧
+      ∀ it ∈ B.path, it.sib.length = 32 ∧ it.acc.length = 32) : TableRenderV3 pub 20 (by decide) where
+  tr := srcpDDTrace bs rep
+  tf := Rcpt.Candidates.DedupRender.traffic bs rep
+  loc := (srcpDD_aligned_complete bs rep h hR hd hl 20 pub).1
+  traffic := (srcpDD_aligned_complete bs rep h hR hd hl 20 pub).2.1
+  aligned := (srcpDD_aligned_complete bs rep h hR hd hl 20 pub).2.2
 
 /-- Table 22 (`qvV3`, repaired key interface), over native queue inputs. -/
 def qvRenderV3 (pub : List Fp) (pre : NearSpec.PTrie) (v : Qv.MainValues) (pres : List NearSpec.PTrie)

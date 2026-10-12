@@ -400,6 +400,10 @@ import ZkFormal.NearV3.Assembly.A7ValView
 import ZkFormal.NearV3.Assembly.A7UpsView
 import ZkFormal.NearV3.Assembly.LinkCore
 import ZkFormal.NearV3.Assembly.LinkDict
+import ZkFormal.NearV3.Rcpt.Tables.SrcpDD
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.DDView
+import ZkFormal.NearV3.Assembly.LinkSource
+import ZkFormal.NearV3.Render.PaddedSrcpDD
 import ZkFormal.NearV3.Assembly.A7Bound
 import ZkFormal.NearV3.Assembly.SizeBudgetAccepted
 import ZkFormal.NearV3.Rcpt.Link.AcctSlots

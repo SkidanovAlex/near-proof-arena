@@ -35,7 +35,7 @@ theorem shaFacts_cover {shaS shaR : Nat → List Fp → Nat} (h : ShaFacts shaS 
 /-- The `BYTES` senders other than rcpt. -/
 def othersRC (tr : Trace Fp) (pub : List Fp) (r : V3Records) : List Msg :=
   nodeSends3 r.nodes B_BYTES ++ valSends r.values B_BYTES ++ (upsTraffic r.ups).sends B_BYTES ++
-    acctV3Sends r.accts B_BYTES ++ (srcpTraffic r.srcp).sends B_BYTES ++
+    acctV3Sends r.accts B_BYTES ++ (ddTraffic r.srcp r.srcpRep).sends B_BYTES ++
     (mrkTrafficE pub r.mrkE r.mrk).sends B_BYTES ++ (codecBytes tr pub).map fun x => x.map Fp.toNat
 
 theorem sha_le_rc {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP nearAirV3 pub tr)
@@ -81,7 +81,7 @@ theorem othersRC_kinds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpec
     exact nv hK hn
   · exact kin (upsKindIn_of hp hsz hH T W m hm) (by decide) a ha
   · exact kin (acctKindIn hH T W m hm) (by decide) a ha
-  · exact kin (srcpKindIn W.srcp m hm) (by decide) a ha
+  · exact kin (ddKindIn W.srcp m hm) (by decide) a ha
   · exact kin (mrkKindIn W (pubNat_pubOf_lt _) m hm) (by decide) a ha
   · obtain ⟨y, hy, rfl⟩ := List.mem_map.mp hm
     cases hyh : y.head? with
@@ -91,6 +91,13 @@ theorem othersRC_kinds {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpec
       subst ha
       have := codecKindIn hp hsz hH y hy e hyh
       exact ⟨Fp.toNat_lt e, by rw [this]; decide⟩
+
+theorem le_sum_of_mem' : ∀ {l : List Nat} {a : Nat}, a ∈ l → a ≤ l.sum
+  | [], _, h => absurd h List.not_mem_nil
+  | b :: l, a, h => by
+    rcases List.mem_cons.mp h with rfl | h
+    · simp
+    · have := le_sum_of_mem' h; simp only [List.sum_cons]; omega
 
 /-! ## `RCL`: every list has a source block -/
 
@@ -127,12 +134,11 @@ theorem rcl_block {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP n
     (Msg.toFp [j, lOffs r.lists[j].rs r.lists[j].rs.length])
   simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Nat.add_zero] at hb
   rw [show isAt T_RCPT = RcptV3.interactions from rfl, tcnt_of_traffic T.lists, tcnt_of_traffic T.lists,
-    show isAt T_SRCP = SrcpV3.interactions from rfl, tcnt_of_traffic T.srcp, tcnt_of_traffic T.srcp] at hb
+    show isAt T_SRCP = ZkFormal.NearV3.Rcpt.Candidates.DedupTable.interactions from rfl,
+    tcnt_of_traffic T.srcp, tcnt_of_traffic T.srcp] at hb
   have r0 : rcptRecvs3 r.lists B_RCL = [] := by
     simp [rcptRecvs3, rRecvs, B_DIGEST, B_FINAL, B_MEM, B_RCL, B_SREC, B_AKC, B_BND]
-  have s0 : (srcpTraffic r.srcp).sends B_RCL = [] := by
-    simp [srcpTraffic, srcpBlockMsgs, srcpRootMsgs, srcpLeafMsgs, srcpItemMsgs, B_SIZE, B_RCL, B_BYTES,
-      B_DIGEST, B_SRC]
+  have s0 : (ddTraffic r.srcp r.srcpRep).sends B_RCL = [] := DDView.rcl_sends _ _
   have hs : [j, lOffs r.lists[j].rs r.lists[j].rs.length] ∈ rcptSends3 pub r.lists B_RCL := by
     simp only [rcptSends3, List.mem_flatMap, List.mem_range]
     refine ⟨j, hj, ?_⟩
@@ -144,16 +150,14 @@ theorem rcl_block {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP n
     List.count_nil, Nat.add_zero, Nat.zero_add] at hb hpos
   rw [hb] at hpos
   obtain ⟨m, hm, he⟩ := List.mem_map.mp (List.count_pos_iff.mp hpos)
-  simp only [srcpTraffic, show B_RCL ≠ B_SIZE by decide, ite_false, List.mem_flatMap] at hm
-  obtain ⟨B, hB, hm⟩ := hm
-  simp [srcpBlockMsgs, srcpRootMsgs, srcpLeafMsgs, srcpItemMsgs, B_RCL, B_DIGEST, B_BYTES] at hm
-  subst hm
-  have cB := W.srcp.canon B hB
+  rw [DDView.rcl_recvs _ _ W.srcp.len] at hm
+  obtain ⟨B, hB, rfl⟩ := List.mem_map.mp hm
   simp only [Msg.toFp, List.map_cons, List.map_nil, List.cons.injEq, and_true] at he
   have hjl : j < P := by have := W.listsCount.1; unfold P; omega
   have hlen := listEncoding_lt W.lists W.listsCount.2 hj
   rw [RcptLink.list_encoding_length] at hlen ⊢
-  exact ⟨B, hB, ZkFormal.NearV3.Link3.ofNat_eq cB.1 hjl he.1, ZkFormal.NearV3.Link3.ofNat_eq cB.2.1 hlen he.2⟩
+  exact ⟨B, hB, ZkFormal.NearV3.Link3.ofNat_eq (W.srcp.j_lt hB) hjl he.1,
+    ZkFormal.NearV3.Link3.ofNat_eq (W.srcp.L_lt hB) hlen he.2⟩
 
 /-! ## Receipt encodings (hence ids) are bytes -/
 
@@ -168,22 +172,42 @@ theorem encBytes {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.Pre
   obtain ⟨L, hL, hxL⟩ := List.mem_flatMap.mp hx
   obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hL
   obtain ⟨B, hB, hBj, hBL⟩ := rcl_block hH T W hj
+  cases hBd : B.dup
+  case true =>
+    -- a `dup` reference has the empty list (`L = 12`), so the list has no receipt bytes
+    have hb := W.srcp.block B hB
+    simp only [hBd, ite_true] at hb
+    have h12 := hBL.symm.trans hb.1
+    have hxe : x.enc = [] := by
+      have hl : (RcptLink.listEncoding (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh))
+          r.lists[j]).length = 12 + (r.lists[j].rs.flatMap fun x => x.enc).length := by
+        simp [RcptLink.listEncoding, RcptLink.list_header_length]
+      have hsub : x.enc.length ≤ (r.lists[j].rs.flatMap fun x => x.enc).length := by
+        obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hxL
+        rw [List.length_flatMap]
+        exact le_sum_of_mem' (List.mem_map_of_mem (f := fun x : RcptE => x.enc.length) (List.getElem_mem hi))
+      exact List.eq_nil_of_length_eq_zero (by omega)
+    intro y hy; rw [hxe] at hy; simp at hy
   have hdig : 0 < shaU tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) true B_DIGEST (digMsg (msgId K_RC j)
       (RcptLink.listEncoding (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r.lists[j]).length B.leaf).toFp := by
     apply digest_provided hH (t := T_SRCP) (by decide)
-    rw [show isAt T_SRCP = SrcpV3.interactions from rfl, tcnt_of_traffic T.srcp]
-    simp only [tcnt, Bool.false_eq_true, ite_false, srcpTraffic, show B_DIGEST ≠ B_SIZE by decide]
+    rw [show isAt T_SRCP = ZkFormal.NearV3.Rcpt.Candidates.DedupTable.interactions from rfl,
+      tcnt_of_traffic T.srcp]
+    simp only [tcnt, Bool.false_eq_true, ite_false]
     apply List.count_pos_iff.mpr
     apply List.mem_map_of_mem
-    apply List.mem_flatMap.mpr
-    refine ⟨B, hB, ?_⟩
-    simp [srcpBlockMsgs, srcpLeafMsgs, B_DIGEST, B_BYTES, hBj, hBL]
+    have := DDView.leaf_recv W.srcp.len hB hBd
+    rw [hBj, hBL] at this
+    exact this
   have hsha := shaFacts_cover (shaU_facts hH) _ (sha_le_rc hH T)
-  have hcB := W.srcp.canon B hB
+  have hcB : (∀ v ∈ B.leaf, v < P) := by
+    have hb := W.srcp.block B hB
+    simp only [hBd, Bool.false_eq_true, ite_false] at hb
+    exact fun v hv => hb.canon.2.2.1 v (List.mem_append_right _ hv)
   obtain ⟨hb8, -⟩ := RcptLink.list_sha_digest W.lists W.listsCount.1 W.listsCount.2 hsha
     (othersRC tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r) (fun m => if_pos rfl) (othersRC_kinds hp hsz hH T W) hj
     (listEncoding_lt W.lists W.listsCount.2 hj)
-    (fun v hv => hcB.2.2.1 v (List.mem_append_right _ hv)) hdig
+    hcB hdig
   intro y hy
   apply hb8
   simp only [RcptLink.listEncoding, List.mem_append, List.mem_flatMap]

@@ -401,7 +401,7 @@ theorem size_sent {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP n
   have eV : isAt T_VAL = ZkFormal.NearV3.ValV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Val.interactions := rfl
   have eU : isAt T_UPS = ZkFormal.NearV3.UpsV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Ups.interactions := rfl
   have eS : isAt T_SIZE = ZkFormal.NearV3.SizeV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Size.interactions := rfl
-  have eR : isAt T_SRCP = ZkFormal.NearV3.SrcpV3.interactions := rfl
+  have eR : isAt T_SRCP = ZkFormal.NearV3.Rcpt.Candidates.DedupTable.interactions := rfl
   rw [eN, eV, eU, eS, eR] at h
   simp only [tableBusCount_append] at h
   rw [tcnt_of_traffic T.nodes, tcnt_of_traffic T.nodes, tcnt_of_traffic T.values,
@@ -414,8 +414,8 @@ theorem size_sent {pub : List Fp} {tr : Trace Fp} {r : V3Records} (hH : HoldsP n
     tableBusCount_nobus (b := ZkFormal.NearV3.B_SIZE) (is := ZkFormal.NearV3.UpsV3.interactions)
       (nobus_of_all (by decide +kernel))] at h
   have hs0 : tcnt (ZkFormal.NearV3.sizeTraffic r.size) true ZkFormal.NearV3.B_SIZE M = 0 := rfl
-  have hr0 : tcnt (ZkFormal.NearV3.srcpTraffic r.srcp) true ZkFormal.NearV3.B_SIZE M = 0 := by
-    simp only [tcnt, ZkFormal.NearV3.srcpTraffic, ite_true, List.map_cons, List.map_nil]
+  have hr0 : tcnt (ZkFormal.NearV3.ddTraffic r.srcp r.srcpRep) true ZkFormal.NearV3.B_SIZE M = 0 := by
+    simp only [tcnt, ZkFormal.NearV3.ddTraffic, ite_true, List.map_cons, List.map_nil]
     apply List.count_eq_zero.mpr
     simp only [List.mem_singleton]
     intro e

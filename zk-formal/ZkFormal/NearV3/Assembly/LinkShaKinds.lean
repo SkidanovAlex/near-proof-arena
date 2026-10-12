@@ -83,7 +83,7 @@ theorem othersKinds_of {tr : Trace Fp} {pub : List Fp} {r : V3Records}
     (hU : KindsOk ((ZkFormal.NearV3.upsTraffic r.ups).sends B_BYTES))
     (hR : KindsOk (ZkFormal.NearV3.rcptSends3 pub r.lists B_BYTES))
     (hA : KindsOk (ZkFormal.NearV3.acctV3Sends r.accts B_BYTES))
-    (hS : KindsOk ((ZkFormal.NearV3.srcpTraffic r.srcp).sends B_BYTES))
+    (hS : KindsOk ((ZkFormal.NearV3.ddTraffic r.srcp r.srcpRep).sends B_BYTES))
     (hM : KindsOk ((mrkTrafficE pub r.mrkE r.mrk).sends B_BYTES))
     (hC : ∀ y ∈ codecBytes tr pub, ∀ a, y.head? = some a →
       a.toNat % 16 ≠ K_NPRE ∧ a.toNat % 16 ≠ K_NPOST ∧ a.toNat % 16 ≠ K_VPRE) :
@@ -115,6 +115,19 @@ theorem srcpKindIn {bs : List ZkFormal.NearV3.SrcpB} (h : ZkFormal.NearV3.SrcpWf
 theorem srcpKinds {bs : List ZkFormal.NearV3.SrcpB} (h : ZkFormal.NearV3.SrcpWf bs) :
     KindsOk ((ZkFormal.NearV3.srcpTraffic bs).sends B_BYTES) :=
   kindsOk_of_kindIn (srcpKindIn h) (by decide)
+
+/-- Table 20 (`SrcpDD`): its `BYTES` sends are payloads of computed blocks (`K_SRC`). -/
+theorem ddKindIn {bs : List ZkFormal.NearV3.SrcpB} {reps : List Bool} (h : ZkFormal.NearV3.DDWf bs reps) :
+    ∀ x ∈ (ZkFormal.NearV3.ddTraffic bs reps).sends B_BYTES, KindIn [K_SRC] x := by
+  intro x hx
+  obtain ⟨B, hB, p, hp, hx⟩ := ZkFormal.NearV3.DDView.bytes_mem hx
+  obtain ⟨j, -, rfl⟩ := ZkFormal.NearV3.Link3.mem_emitAt3.mp hx
+  exact kindIn_msgId (by decide)
+    (ZkFormal.NearV3.Rcpt.Candidates.DedupProof.payload_id_lt h.payload hB hp)
+
+theorem ddKinds {bs : List ZkFormal.NearV3.SrcpB} {reps : List Bool} (h : ZkFormal.NearV3.DDWf bs reps) :
+    KindsOk ((ZkFormal.NearV3.ddTraffic bs reps).sends B_BYTES) :=
+  kindsOk_of_kindIn (ddKindIn h) (by decide)
 
 /-! ## rcpt (`K_RC`, `K_RF`, `K_PEO`, `K_LEAF`, `K_RID`) -/
 

@@ -630,9 +630,9 @@ theorem shaKind_v3 {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3.P
         tcnt_of_traffic T.accts] at hc
       exact kind_of_tcnt (fun x hx => acctKindIn hH T W x hx) (by decide) hc a ha
     · subst e
-      rw [show nearAirV3.tables[T_SRCP]!.interactions = ZkFormal.NearV3.SrcpV3.interactions from rfl,
+      rw [show nearAirV3.tables[T_SRCP]!.interactions = ZkFormal.NearV3.Rcpt.Candidates.DedupTable.interactions from rfl,
         tcnt_of_traffic T.srcp] at hc
-      exact kind_of_tcnt (srcpKindIn W.srcp) (by decide) hc a ha
+      exact kind_of_tcnt (ddKindIn W.srcp) (by decide) hc a ha
     · subst e
       rw [show nearAirV3.tables[T_MRK]!.interactions =
           ZkFormal.NearV3.Candidates.MerkleEmpty.table.interactions from rfl,

@@ -69,10 +69,10 @@ def SizeBudget {cb wb : Bytes} (A : AcceptedV3 cb wb) : Prop :=
     ovhNat A.pub + (((TrieNative.nodes A.m A.steps oldPost writes q).filter fun s => !s.dup).map
         fun s => (s.v.ser false).length).sum +
       (((TrieNative.vals A.m A.steps).filter fun e => !e.vz && !e.dup).map ValE.len).sum +
-      srcpSize (SrcpGen.blocksOfProofs A.srcps) ≤ 8388608
+      srcpSize A.sizeBlocks ≤ 8388608
 
 theorem sizeBudget_of_coarse {cb wb : Bytes} (A : AcceptedV3 cb wb)
-    (h : ovhNat A.pub + 2000000 + srcpSize (SrcpGen.blocksOfProofs A.srcps) ≤ 8388608) : SizeBudget A := by
+    (h : ovhNat A.pub + 2000000 + srcpSize A.sizeBlocks ≤ 8388608) : SizeBudget A := by
   intro writes oldPost q _ _ hb
   omega
 
@@ -142,7 +142,7 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
   -- the size render
   let ns := TrieNative.nodes A.m A.steps oldPost writes q
   let es := TrieNative.vals A.m A.steps
-  let bs := SrcpGen.blocksOfProofs A.srcps
+  let bs := A.sizeBlocks
   let yN := yA7 (nodeA7Total ns S) (valA7Total es SV) (upsA7Total Js)
   have hA7' : nodeA7Total ns S + valA7Total es SV + upsA7Total Js ≤ 2000000 := hA7
   have hbase' : ((ns.filter fun s => !s.dup).map fun s => (s.v.ser false).length).sum +
@@ -211,7 +211,7 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
     have hfp : (R.tf T_SRCP).sends B_SIZE = (srcpTraffic bs).sends B_SIZE := by
       have : R.tf T_SRCP = (R ⟨20, by decide⟩).tf := by
         simp only [RenderBundleV3.tf]; rfl
-      rw [this, e20]; rfl
+      rw [this, e20]; exact A.dd_size_sends
     exact R.balancedAt_size ns hn S es hval SV Js hok bs yN hfn hfv trU hfs hfp (by simp [yN, yA7])
       (by simp [yN, yA7]) (by simp [yN, yA7])
   · intro hc hrest
@@ -243,7 +243,7 @@ theorem trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
     (hpr : (Sha.Gen.honestRows source).length ≤ 2257792)
     (hsm : ∀ M ∈ source, (Sha.Gen.msgRows M).length ≤ 35)
     (hbr : ∀ M ∈ receipt, ∀ x ∈ M.bytes, x < 256) (hbs : ∀ M ∈ source, ∀ x ∈ M.bytes, x < 256)
-    (hovh : ovhNat A.pub + 2000000 + srcpSize (SrcpGen.blocksOfProofs A.srcps) ≤ 8388608) :
+    (hovh : ovhNat A.pub + 2000000 + srcpSize A.sizeBlocks ≤ 8388608) :
     ∃ (writes : List (List Nat × Bytes)) (oldPost : PTrie) (q : UseRequests) (us : List SchedulerUpsertWitness)
       (r0 : TableRenderV3 A.pub 0 (by decide)) (r1 : TableRenderV3 A.pub 1 (by decide))
       (r2 : TableRenderV3 A.pub 2 (by decide)) (r3 : TableRenderV3 A.pub 3 (by decide))

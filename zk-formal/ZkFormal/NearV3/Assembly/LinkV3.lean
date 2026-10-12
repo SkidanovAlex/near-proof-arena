@@ -3,7 +3,7 @@ import ZkFormal.NearV3.Assembly.RcptViewV3
 import ZkFormal.NearV3.Assembly.ComposeV3
 import ZkFormal.NearV3.Assembly.ShaUnionFacts
 import ZkFormal.NearV3.Assembly.NearAdmission
-import ZkFormal.NearV3.Rcpt.Extract.Srcp.Depth
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.DDView
 import ZkFormal.NearV3.Candidates.MerklePhysical
 import ZkFormal.NearV3.Assembly.LinkClaim
 import ZkFormal.NearV3.Assembly.RcptViewCounts
@@ -67,6 +67,8 @@ structure V3Records where
   rplV : Nat → Bool
   /-- A7: the three totals received by `sizeA7` -/
   a7 : ZkFormal.NearV3.A7Y
+  /-- table 20 (`SrcpDD`): the per-block all-occurrence repetition bits -/
+  srcpRep : List Bool
 
 /-- The `mrk` view's well-formedness: empty tree (public count 0 and zero root bytes) or a
 well-formed v1 Merkle view (`MerkleEmpty.table`, nearAirV3's empty-tree repair). -/
@@ -92,8 +94,8 @@ structure V3RecordsWf (pub : List Fp) (r : V3Records) : Prop where
   accts : ZkFormal.NearV3.AcctV3WfE 19 r.accts
   akeys : ZkFormal.NearV3.AkeyWf r.akeys
   bnds : ZkFormal.NearV3.BndWf r.bnds
-  srcp : ZkFormal.NearV3.SrcpWf r.srcp
-  /-- A10 from the AIR (`SrcpV3.tableD`): every source block's path has `≤ Dp0` items. -/
+  srcp : ZkFormal.NearV3.DDWf r.srcp r.srcpRep
+  /-- A10 from the AIR (`SrcpDD.table`): every source block's path has `≤ Dp0` items. -/
   srcpDepth : ∀ B ∈ r.srcp, B.path.length ≤ NearSpecV3.Dp0
   size : ZkFormal.NearV3.SizeWf pub r.size
   mrk : MrkWfE pub r.mrkE r.mrk
@@ -128,8 +130,8 @@ structure V3RecordsTraffic (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Pro
     (ZkFormal.NearV3.akeyTraffic r.akeys)
   bnds : ZkFormal.Near.TableTraffic ZkFormal.NearV3.BndV3.interactions tr T_BND pub
     (ZkFormal.NearV3.bndTraffic r.bnds)
-  srcp : ZkFormal.Near.TableTraffic ZkFormal.NearV3.SrcpV3.interactions tr T_SRCP pub
-    (ZkFormal.NearV3.srcpTraffic r.srcp)
+  srcp : ZkFormal.Near.TableTraffic ZkFormal.NearV3.Rcpt.Candidates.DedupTable.interactions tr T_SRCP pub
+    (ZkFormal.NearV3.ddTraffic r.srcp r.srcpRep)
   size : ZkFormal.Near.TableTraffic ZkFormal.NearV3.SizeV3.interactions tr T_SIZE pub
     (ZkFormal.NearV3.sizeTraffic r.size)
   mrk : ZkFormal.Near.TableTraffic ZkFormal.NearV3.Candidates.MerkleEmpty.table.interactions tr
@@ -143,6 +145,9 @@ structure V3RecordsTraffic (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Pro
     (ZkFormal.NearV3.a7UpsTraffic r.ups)
   a7size : ZkFormal.Near.TableTraffic ZkFormal.NearV3.UnfoldA7.Size.interactions tr T_SIZE pub
     (ZkFormal.NearV3.a7SizeTraffic r.a7)
+  /-- table 20's records are its dedup block chain, with the chain's repetition bits -/
+  srcpChain : ∃ e, ZkFormal.NearV3.Rcpt.Candidates.DedupProof.BlockChain tr T_SRCP 0 r.srcp e ∧
+    r.srcpRep = (ZkFormal.NearV3.Rcpt.Candidates.DedupProof.sourceViews tr T_SRCP 0 r.srcp).map Prod.snd
 
 /-! ## Record-form bus balance -/
 
@@ -162,7 +167,7 @@ def recCount (pub : List Fp) (r : V3Records) (b : Nat) (s : Bool) (m : List Fp) 
   tcnt (ZkFormal.NearV3.acctV3Traffic r.accts) s b m +
   tcnt (ZkFormal.NearV3.akeyTraffic r.akeys) s b m +
   tcnt (ZkFormal.NearV3.bndTraffic r.bnds) s b m +
-  tcnt (ZkFormal.NearV3.srcpTraffic r.srcp) s b m +
+  tcnt (ZkFormal.NearV3.ddTraffic r.srcp r.srcpRep) s b m +
   tcnt (ZkFormal.NearV3.sizeTraffic r.size) s b m +
   tcnt (mrkTrafficE pub r.mrkE r.mrk) s b m
 
@@ -228,7 +233,7 @@ def balSum (pub : List Fp) (tr : Trace Fp) (r : V3Records) (b : Nat) (s : Bool) 
   (tcnt (ZkFormal.NearV3.acctV3Traffic r.accts) s b m +
   (tcnt (ZkFormal.NearV3.akeyTraffic r.akeys) s b m +
   (tcnt (ZkFormal.NearV3.bndTraffic r.bnds) s b m +
-  (tcnt (ZkFormal.NearV3.srcpTraffic r.srcp) s b m +
+  (tcnt (ZkFormal.NearV3.ddTraffic r.srcp r.srcpRep) s b m +
   ((tcnt (ZkFormal.NearV3.sizeTraffic r.size) s b m +
       tableBusCount ZkFormal.NearV3.UnfoldA7.Size.interactions tr T_SIZE pub b s m) +
   (tableBusCount ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table.interactions
@@ -323,7 +328,7 @@ theorem busCount_nearAirV3_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) (s
       (tableBusCount ZkFormal.NearV3.AcctV3.interactions tr T_ACCT pub b s m +
       (tableBusCount ZkFormal.NearV3.AkeyV3.interactions tr T_AKEY pub b s m +
       (tableBusCount ZkFormal.NearV3.BndV3.interactions tr T_BND pub b s m +
-      (tableBusCount ZkFormal.NearV3.SrcpV3.interactions tr T_SRCP pub b s m +
+      (tableBusCount ZkFormal.NearV3.Rcpt.Candidates.DedupTable.interactions tr T_SRCP pub b s m +
       (tableBusCount ZkFormal.NearV3.UnfoldA7.sizeA7.interactions tr T_SIZE pub b s m +
       (tableBusCount ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair.table.interactions
         tr T_QV pub b s m +
@@ -435,12 +440,12 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨as, wA, tA⟩ := acctView hH
   obtain ⟨ks, wK, tK⟩ := akeyView hH
   obtain ⟨bs, wB, tB⟩ := bndView hH
-  obtain ⟨ss, wS', dS', tS'⟩ := ZkFormal.NearV3.srcpD_view (srcpLocal hH)
+  obtain ⟨ss, eS, cS, wS', tS'⟩ := ZkFormal.NearV3.srcpDD_view (srcpLocal hH)
   obtain ⟨sz, wZ, tZ⟩ := sizeView hH
   obtain ⟨me, mv, wM, tM⟩ := mrkView hH
-  exact ⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv, me, sN, sV, ay⟩,
-    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', dS', wZ, wM, ⟨cR1, cR2⟩, qR, aYw, aPw⟩,
-    ⟨tN, tH, tV, tW, tU, tP, tR, tA, tK, tB, tS', tZ, tM, aN, aV, aP, aY⟩⟩
+  exact ⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv, me, sN, sV, ay, _⟩,
+    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', wS'.depth, wZ, wM, ⟨cR1, cR2⟩, qR, aYw, aPw⟩,
+    ⟨tN, tH, tV, tW, tU, tP, tR, tA, tK, tB, tS', tZ, tM, aN, aV, aP, aY, ⟨eS, cS, rfl⟩⟩⟩
 
 /-- **`LinkV3Stmt ⇒ ExtractV3StmtAt`** (v1's `extract_of_views`): `HoldsP` gives every
 view, the SHA contracts of both instances and the record-form balance. -/

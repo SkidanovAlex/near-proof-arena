@@ -170,7 +170,7 @@ theorem srec_balanced (h16 : R.tf 16 = rcptTrafficB A.pub A.rcptInput) : BusBala
 
 /-- **RCL** (receipt sends, source-proof receives). -/
 theorem rcl_balanced (h16 : R.tf 16 = rcptTrafficB A.pub A.rcptInput)
-    (h20 : R.tf 20 = srcpTraffic (SrcpGen.blocksOfProofs A.srcps)) : BusBalanced R B_RCL := by
+    (h20 : R.tf 20 = A.ddTraffic) : BusBalanced R B_RCL := by
   intro m
   rw [bundle_sum R B_RCL true [16] (by decide +kernel), bundle_sum R B_RCL false [20] (by decide +kernel),
     pubCount_free A.pub B_RCL true m (by decide +kernel), pubCount_free A.pub B_RCL false m (by decide +kernel)]
@@ -180,6 +180,8 @@ theorem rcl_balanced (h16 : R.tf 16 = rcptTrafficB A.pub A.rcptInput)
     Bool.false_eq_true, ite_false, h16, h20]
   rw [rcptB_sends A (by decide),
     accepted_rcl_balance A.pub A.rcptInput A.rcptOk rfl]
+  unfold AcceptedV3.ddTraffic AcceptedV3.ddBlocks AcceptedV3.ddRep
+  rw [dd_rcl_recvs]
   rfl
 
 /-- **AKC** (receipt ↔ access-key providers). -/
@@ -230,7 +232,7 @@ theorem mem_balanced (h16 : R.tf 16 = rcptTrafficB A.pub A.rcptInput)
 
 /-- **SRC** (published source records into the source-proof table). -/
 theorem src_balanced (hlen : (ZkFormal.NearV3.Public.preparedBytes A.p 0).length < 256 ^ 4)
-    (h20 : R.tf 20 = srcpTraffic (SrcpGen.blocksOfProofs A.srcps)) : BusBalanced R B_SRC := by
+    (h20 : R.tf 20 = A.ddTraffic) : BusBalanced R B_SRC := by
   intro m
   rw [bundle_sum R B_SRC true [] (by decide +kernel), bundle_sum R B_SRC false [20] (by decide +kernel),
     pubCount_free A.pub B_SRC false m (by decide +kernel), pubCount_prepared A hlen B_SRC true m]
@@ -238,8 +240,8 @@ theorem src_balanced (hlen : (ZkFormal.NearV3.Public.preparedBytes A.p 0).length
   have hg : (List.range 25).filter (fun t => [20].contains t) = [20] := by decide
   simp only [hf, hg, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, sel,
     Bool.false_eq_true, ite_false, h20]
-  unfold AcceptedV3.srcps
-  rw [accepted_src_balance A.p A.w]
+  unfold AcceptedV3.ddTraffic AcceptedV3.ddBlocks AcceptedV3.ddRep
+  rw [accepted_src_balance_dd A.rel A.hp A.w]
   simp only [Nat.zero_add, Nat.add_zero]
   rfl
 

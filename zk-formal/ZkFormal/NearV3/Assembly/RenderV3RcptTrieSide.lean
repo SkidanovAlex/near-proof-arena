@@ -69,7 +69,7 @@ theorem rcpt_trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
   obtain ⟨hcore, hsize, hbytes, hdig, hvslot, hkey⟩ := hall R e0 e1 e2 e3 e4 e5 e6 e7 e21
   have t16 : R.tf 16 = rcptTrafficB A.pub A.rcptInput := bundle_tf_eq R 16 _ h16
   have t17 : R.tf 17 = acctV3Traffic A.accts := bundle_tf_eq R 17 _ h17
-  have t20 : R.tf 20 = srcpTraffic (SrcpGen.blocksOfProofs A.srcps) := bundle_tf_eq R 20 _ h20
+  have t20 : R.tf 20 = A.ddTraffic := bundle_tf_eq R 20 _ h20
   have t23 : R.tf 23 = A.mrkAcc.tf := bundle_tf_eq R 23 _ h23
   refine ⟨rcpt_side_balanced A R h16 h17 h18 h19 h20 h22 h24, hcore, hsize h20,
     hvslot h17 (A.vslot_views hr hkf), (hkey h16 h22 A.rcpt_keys A.rcpt_final).1,

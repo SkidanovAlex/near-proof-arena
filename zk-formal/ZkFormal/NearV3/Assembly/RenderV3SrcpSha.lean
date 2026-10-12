@@ -9,6 +9,7 @@ import ZkFormal.NearV3.Rcpt.Candidates.PreparedVerified
 import ZkFormal.NearV3.Rcpt.Link.RelSources
 import ZkFormal.NearV3.Rcpt.Link.SourcePayload
 import ZkFormal.NearV3.Rcpt.Link.WitnessSources
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.DDView
 
 /-!
 # The source SHA family as the source table emits it (duplicate occurrences included)
@@ -31,16 +32,16 @@ open NearSpec NearSpecV3 ZkFormal.Near ZkFormal.Algebra Render.SrcpGen Rcpt.Cand
 
 variable {cb wb : Bytes} (A : AcceptedV3 cb wb)
 
-/-- Source SHA jobs as the source table emits them (duplicates included). -/
+/-- Source SHA jobs as table 20 (`SrcpDD`) emits them: the payloads of the computed blocks
+(a `dup` reference hashes nothing). -/
 def srcJobsAll : List Render.Msg :=
-  (blocksOfProofs A.srcps).flatMap fun B =>
-    (sourcePayloads B).map fun p => (⟨msgId K_SRC p.1, p.2⟩ : Render.Msg)
+  A.ddBlocks.flatMap fun B =>
+    (DedupProof.payloads B).map fun p => (⟨msgId K_SRC p.1, p.2⟩ : Render.Msg)
 
 def srcShaAll : List Sha.Gen.Msg := jobsToSha A.srcJobsAll
 
-/-- Receipt-list RC jobs with every digest output enabled. -/
-def rcShaAll : List Sha.Gen.Msg :=
-  (sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries).map fun m => { m with dmult := true }
+/-- Receipt-list RC jobs, digest output only for first occurrences (`dmult = !dup`). -/
+def rcShaAll : List Sha.Gen.Msg := sourceRcShaJobs A.k.H.shardId A.p.lists A.w.entries
 
 theorem sum_flatMap' {α : Type} (l : List α) (f : α → List Nat) :
     (l.flatMap f).sum = (l.map fun a => (f a).sum).sum := by
@@ -82,18 +83,23 @@ theorem srcps_auth (i : Nat) (hi : i < A.srcps.length) :
   rw [hx]
   exact ⟨rfl, rfl, by rw [hse]; exact he, by rw [hse]; exact ht, by rw [hse]; exact hver⟩
 
-/-- Payload widths of every emitted block. -/
-theorem block_widths {B : SrcpB} (hB : B ∈ blocksOfProofs A.srcps) :
+theorem mem_ddBlocks {B : SrcpB} (h : B ∈ A.ddBlocks) :
+    ∃ i, ∃ hi : i < A.srcps.length, ∃ q,
+      B = blockOfProof A.srcps[i].root A.srcps[i].dup i q A.srcps[i].entry := by
+  simp only [AcceptedV3.ddBlocks, DedupCompile.blocks, List.mem_map, List.mem_range] at h
+  obtain ⟨i, hi, rfl⟩ := h
+  have hi' : i < A.srcps.length := by rw [A.srcps_length]; exact hi
+  refine ⟨i, hi', DedupCompile.nextQ A.p.lists A.w.entries i, ?_⟩
+  simp [DedupCompile.block, AcceptedV3.srcps, Render.acceptedSrcpInputs, DedupCompile.entryAt, sourceEntry]
+
+/-- Payload widths of every table-20 block. -/
+theorem block_widths {B : SrcpB} (hB : B ∈ A.ddBlocks) :
     B.leaf.length = 32 ∧ (∀ it ∈ B.path, it.bytes.length = 64) ∧ B.path.length ≤ Dp0 := by
-  obtain ⟨i, hi, q, rfl⟩ := mem_blocksOfProofs hB
-  obtain ⟨-, -, hl, -, -⟩ := A.srcps_auth i hi
-  have hs := lookupLast_path_shape A.hd hl
-  refine ⟨by simp [blockOfProof], ?_, ?_⟩
-  · intro it hit
-    have hh := proofItems_lengths A.srcps[i].entry.proof.path q 32 _ (ArenaCore.sha256_length _)
-      (fun step hm => (hs step hm).1) it hit
-    cases hd : it.dir <;> simp [SrcpItem.bytes, hd, hh.1, hh.2]
-  · simpa [blockOfProof] using A.srcpDepth _ (List.getElem_mem hi)
+  obtain ⟨hr, hl, hi⟩ := A.ddWidths B hB
+  refine ⟨hl, ?_, A.ddDepth B hB⟩
+  intro it hit
+  obtain ⟨h1, h2⟩ := hi it hit
+  cases hd : it.dir <;> simp [SrcpItem.bytes, hd, h1, h2]
 
 theorem block_rows (B : SrcpB) (hl : B.leaf.length = 32) (hp : ∀ it ∈ B.path, it.bytes.length = 64) :
     ((((sourcePayloads B).map fun p => (⟨msgId K_SRC p.1, p.2⟩ : Render.Msg))).map
@@ -109,22 +115,25 @@ theorem block_rows (B : SrcpB) (hl : B.leaf.length = 32) (hp : ∀ it ∈ B.path
   simp only [Render.rowsOf]
   omega
 
-/-- **The source family fits the A10 bound** (duplicates included). -/
+/-- **The source family fits the A10 bound.** -/
 theorem srcShaAll_rows : (Sha.Gen.honestRows A.srcShaAll).length ≤ 2257792 := by
   rw [srcShaAll, jobsToSha_rows, srcJobsAll, List.map_flatMap, sum_flatMap']
-  have hle : ∀ B ∈ blocksOfProofs A.srcps,
-      ((((sourcePayloads B).map fun p => (⟨msgId K_SRC p.1, p.2⟩ : Render.Msg))).map
+  have hle : ∀ B ∈ A.ddBlocks,
+      ((((DedupProof.payloads B).map fun p => (⟨msgId K_SRC p.1, p.2⟩ : Render.Msg))).map
         fun m => Render.rowsOf m.bytes.length).sum ≤ 18 + 35 * Dp0 := by
     intro B hB
     obtain ⟨hl, hp, hd⟩ := A.block_widths hB
-    rw [block_rows B hl hp]
-    omega
+    cases hdup : B.dup
+    · simp only [DedupProof.payloads, hdup, Bool.false_eq_true, ite_false]
+      rw [block_rows B hl hp]
+      omega
+    · simp [DedupProof.payloads, hdup]
   have h1 := TrieShaTwo.sum_map_le_mul _ (18 + 35 * Dp0) _ hle
-  have hn : (blocksOfProofs A.srcps).length ≤ 1984 := by
+  have hn : A.ddBlocks.length ≤ 1984 := by
     have h := (DedupCompile.relD0a_inputs A.rel A.hp A.hf A.hd).2.1
-    simp only [blocksOfProofs, List.length_ofFn, A.srcps_length]
+    simp only [AcceptedV3.ddBlocks, DedupCompile.blocks_length]
     simpa [sourceLists] using h
-  have h2 : (blocksOfProofs A.srcps).length * (18 + 35 * Dp0) ≤ 1984 * (18 + 35 * Dp0) :=
+  have h2 : A.ddBlocks.length * (18 + 35 * Dp0) ≤ 1984 * (18 + 35 * Dp0) :=
     Nat.mul_le_mul_right _ hn
   have h3 : 1984 * (18 + 35 * Dp0) = 2257792 := by decide
   omega
@@ -135,6 +144,7 @@ theorem srcShaAll_msgRows : ∀ M ∈ A.srcShaAll, (Sha.Gen.msgRows M).length �
   obtain ⟨B, hB, hm⟩ := List.mem_flatMap.mp hm
   obtain ⟨p, hp, rfl⟩ := List.mem_map.mp hm
   obtain ⟨hl, hw, -⟩ := A.block_widths hB
+  have hp := (DedupProof.payload_mem hp).2
   have hr := jobsToSha_weights [(⟨msgId K_SRC p.1, p.2⟩ : Render.Msg)]
   simp only [upsertShaWeights, jobsToSha, List.map_cons, List.map_nil, List.cons.injEq, and_true] at hr
   rw [hr]
@@ -148,7 +158,8 @@ theorem srcShaAll_bytes : ∀ M ∈ A.srcShaAll, ∀ b ∈ M.bytes, b < 256 := b
   obtain ⟨m, hm, rfl⟩ := List.mem_map.mp hM
   obtain ⟨B, hB, hm⟩ := List.mem_flatMap.mp hm
   obtain ⟨p, hp, rfl⟩ := List.mem_map.mp hm
-  obtain ⟨i, hi, q, rfl⟩ := mem_blocksOfProofs hB
+  have hp := (DedupProof.payload_mem hp).2
+  obtain ⟨i, hi, q, rfl⟩ := A.mem_ddBlocks hB
   simp only [sourcePayloads, List.mem_append, List.mem_singleton, List.mem_map] at hp
   rcases hp with rfl | ⟨it, hit, rfl⟩
   · simp only [blockOfProof] at hb
@@ -156,14 +167,23 @@ theorem srcShaAll_bytes : ∀ M ∈ A.srcShaAll, ∀ b ∈ M.bytes, b < 256 := b
     exact v.toNat_lt
   · exact proofItems_byte_bounds _ _ _ _ it hit b hb
 
-/-- **`BYTES`: the source table sends exactly the bytes of `srcShaAll`.** -/
+theorem range_getD_flatMap {α β : Type} [Inhabited α] (l : List α) (f : α → List β) :
+    (List.range l.length).flatMap (fun i => f (l.getD i default)) = l.flatMap f := by
+  induction l with
+  | nil => rfl
+  | cons a l ih =>
+    rw [List.length_cons, List.range_succ_eq_map, List.flatMap_cons, List.flatMap_map, List.flatMap_cons]
+    congr 1
+
+/-- **`BYTES`: table 20 sends exactly the bytes of `srcShaAll`.** -/
 theorem srcp_bytes (m : List Fp) :
-    cnt ((srcpTraffic (blocksOfProofs A.srcps)).sends B_BYTES) m = cnt (Sha.Gen.expectedBytes A.srcShaAll) m := by
+    cnt (A.ddTraffic.sends B_BYTES) m = cnt (Sha.Gen.expectedBytes A.srcShaAll) m := by
   rw [srcShaAll, TrieShaBus.jobBytes_expected]
-  have h : (srcpTraffic (blocksOfProofs A.srcps)).sends B_BYTES = jobBytes A.srcJobsAll := by
-    simp only [srcpTraffic, show B_BYTES ≠ B_SIZE by decide, ite_false, srcJobsAll, jobBytes,
-      source_block_bytes]
-    rw [List.flatMap_assoc]
+  have h : A.ddTraffic.sends B_BYTES = jobBytes A.srcJobsAll := by
+    simp only [AcceptedV3.ddTraffic, DedupRender.traffic, show B_BYTES ≠ B_SIZE by decide, ite_false,
+      DedupRender.sourceMsgs, DDView.block_bytes, srcJobsAll, jobBytes]
+    rw [range_getD_flatMap A.ddBlocks (fun B => (DedupProof.payloads B).flatMap fun p =>
+      emitAt (msgId K_SRC p.1) 0 p.2), List.flatMap_assoc]
     congr 1
     funext B
     rw [List.flatMap_map]
@@ -198,54 +218,88 @@ theorem count_flatMap_split (bs : List SrcpB) (f : SrcpB → List Msg) (g : Srcp
       List.count_nil, ih, List.map_nil]
     omega
 
-theorem rc_digests : Sha.Gen.expectedDigests A.rcShaAll =
-    (blocksOfProofs A.srcps).map fun B => digMsg (msgId K_RC B.j) B.L B.leaf := by
-  have hf : A.rcShaAll.filter (·.dmult) = A.rcShaAll := by
-    apply List.filter_eq_self.mpr
-    intro a ha
-    obtain ⟨m, -, rfl⟩ := List.mem_map.mp ha
-    rfl
-  unfold Sha.Gen.expectedDigests
-  rw [hf]
-  apply List.ext_getElem
-  · simp [rcShaAll, sourceRcShaJobs, blocksOfProofs, A.srcps_length]
-  · intro i h1 h2
-    have hi : i < A.srcps.length := by simpa [blocksOfProofs] using h2
-    obtain ⟨-, he, -, ht, -⟩ := A.srcps_auth i hi
-    simp only [List.getElem_map, blocksOfProofs, List.getElem_ofFn, rcShaAll, sourceRcShaJobs,
-      List.getElem_range, blockOfProof, digMsg, Fin.getElem_fin]
-    rw [ht, he, show DedupCompile.entryAt A.p.lists A.w.entries i =
-      sourceEntry A.w.entries (A.p.lists.getD i ⟨[], 0, []⟩) from rfl]
-    simp [List.map_map, Function.comp_def]
+theorem dd_digest_msgs (B : SrcpB) (rp : Bool) :
+    DedupRender.blockMsgs B rp B_DIGEST false = if B.dup then [] else srcpBlockMsgs B B_DIGEST false := by
+  cases hd : B.dup <;>
+    simp [DedupRender.blockMsgs, DedupRender.rootMsgs, srcpBlockMsgs, srcpRootMsgs, hd, B_DIGEST, B_RCL,
+      B_SRC, B_BYTES]
 
-/-- **`DIGEST`: the source table receives exactly the digests of `srcShaAll` and `rcShaAll`.** -/
+theorem count_flatMap_split_if (bs : List SrcpB) (c : SrcpB → Bool) (f : SrcpB → List Msg) (g : SrcpB → Msg)
+    (m : List Fp) :
+    ((bs.flatMap fun B => if c B then [] else f B ++ [g B]).map Msg.toFp).count m =
+      ((bs.flatMap fun B => if c B then [] else f B).map Msg.toFp).count m +
+        ((bs.flatMap fun B => if c B then [] else [g B]).map Msg.toFp).count m := by
+  induction bs with
+  | nil => rfl
+  | cons B bs ih =>
+    cases hc : c B <;>
+      simp only [List.flatMap_cons, hc, ite_true, Bool.false_eq_true, ite_false, List.map_append,
+        List.count_append, List.map_nil, List.count_nil, ih, List.nil_append] <;> omega
+
+theorem filter_map_flatMap (l : List Nat) (job : Nat → Sha.Gen.Msg) (blk : Nat → SrcpB)
+    (dig : Sha.Gen.Msg → List Nat) (d : SrcpB → List Nat)
+    (h1 : ∀ i, (job i).dmult = !(blk i).dup) (h2 : ∀ i ∈ l, (blk i).dup = false → dig (job i) = d (blk i)) :
+    ((l.map job).filter (·.dmult)).map dig = (l.map blk).flatMap fun B => if B.dup then [] else [d B] := by
+  induction l with
+  | nil => rfl
+  | cons i l ih =>
+    simp only [List.map_cons, List.filter_cons, List.flatMap_cons, h1]
+    have ih := ih (fun j hj => h2 j (List.mem_cons_of_mem _ hj))
+    cases hd : (blk i).dup
+    · simp [hd, h2 i List.mem_cons_self hd, ih]
+    · simp [hd, ih]
+
+theorem rc_digests : Sha.Gen.expectedDigests A.rcShaAll =
+    A.ddBlocks.flatMap fun B => if B.dup then [] else [digMsg (msgId K_RC B.j) B.L B.leaf] := by
+  unfold Sha.Gen.expectedDigests rcShaAll sourceRcShaJobs AcceptedV3.ddBlocks DedupCompile.blocks
+  apply filter_map_flatMap
+  · intro i
+    simp [DedupCompile.block, blockOfProof]
+  · intro i hi _
+    have hi' : i < A.srcps.length := by rw [A.srcps_length]; exact List.mem_range.mp hi
+    obtain ⟨-, he, -, ht, -⟩ := A.srcps_auth i hi'
+    rw [he] at ht
+    have ht' : (DedupCompile.entryAt A.p.lists A.w.entries i).proof.toShard = A.k.H.shardId := ht
+    simp [DedupCompile.block, blockOfProof, digMsg, List.map_map, Function.comp_def, ht']
+
+/-- **`DIGEST`: table 20 receives exactly the digests of `srcShaAll` and `rcShaAll`.** -/
 theorem srcp_digests (m : List Fp) :
-    cnt ((srcpTraffic (blocksOfProofs A.srcps)).recvs B_DIGEST) m =
+    cnt (A.ddTraffic.recvs B_DIGEST) m =
       cnt (Sha.Gen.expectedDigests A.srcShaAll) m + cnt (Sha.Gen.expectedDigests A.rcShaAll) m := by
-  have hr : (srcpTraffic (blocksOfProofs A.srcps)).recvs B_DIGEST =
-      (blocksOfProofs A.srcps).flatMap fun B => srcpBlockMsgs B B_DIGEST false := by
-    simp only [srcpTraffic, show B_DIGEST ≠ B_SIZE by decide, ite_false]
-  have hs : Sha.Gen.expectedDigests A.srcShaAll = (blocksOfProofs A.srcps).flatMap sourceBlockOutputs := by
+  have hr : A.ddTraffic.recvs B_DIGEST =
+      A.ddBlocks.flatMap fun B => if B.dup then [] else srcpBlockMsgs B B_DIGEST false := by
+    simp only [AcceptedV3.ddTraffic, DedupRender.traffic, show B_DIGEST ≠ B_SIZE by decide, ite_false,
+      DedupRender.sourceMsgs, dd_digest_msgs]
+    exact range_getD_flatMap A.ddBlocks (fun B => if B.dup then [] else srcpBlockMsgs B B_DIGEST false)
+  have hs : Sha.Gen.expectedDigests A.srcShaAll =
+      A.ddBlocks.flatMap fun B => if B.dup then [] else sourceBlockOutputs B := by
     rw [srcShaAll, ZkFormal.NearV3.Candidates.ReceiptDigestPartition.jobs_digests, srcJobsAll, List.map_flatMap]
-    unfold sourceBlockOutputs
-    simp only [List.map_map, Function.comp_def]
-  have hp : ((blocksOfProofs A.srcps).flatMap fun B => srcpBlockMsgs B B_DIGEST false).Perm
-      ((blocksOfProofs A.srcps).flatMap fun B => sourceBlockOutputs B ++ [digMsg (msgId K_RC B.j) B.L B.leaf]) := by
+    congr 1
+    funext B
+    cases hd : B.dup
+    · simp only [DedupProof.payloads, hd, Bool.false_eq_true, ite_false, sourceBlockOutputs, List.map_map,
+        Function.comp_def]
+    · simp only [DedupProof.payloads, hd, ite_true, List.map_nil]
+  have hp : (A.ddBlocks.flatMap fun B => if B.dup then [] else srcpBlockMsgs B B_DIGEST false).Perm
+      (A.ddBlocks.flatMap fun B =>
+        if B.dup then [] else sourceBlockOutputs B ++ [digMsg (msgId K_RC B.j) B.L B.leaf]) := by
     rw [List.perm_iff_count]
     intro a
     rw [List.count_flatMap, List.count_flatMap]
     congr 1
     apply List.map_congr_left
     intro B hB
-    show List.count a _ = List.count a _
-    apply List.Perm.count_eq
-    obtain ⟨i, hi, q, rfl⟩ := mem_blocksOfProofs hB
-    obtain ⟨-, -, hl, -, hv⟩ := A.srcps_auth i hi
-    have h := block_digest_perm A.srcps[i].root A.srcps[i].dup i q A.srcps[i].entry
-      (by rw [show A.srcps[i].root = (A.p.lists.getD i ⟨[], 0, []⟩).root from (A.srcps_auth i hi).1]; exact hv)
-      (fun step hm => (lookupLast_path_shape A.hd hl step hm).1)
-    simpa only [blockOfProof] using h
+    cases hd : B.dup
+    · simp only [Function.comp_apply, hd, Bool.false_eq_true, ite_false]
+      apply List.Perm.count_eq
+      obtain ⟨i, hi, q, rfl⟩ := A.mem_ddBlocks hB
+      obtain ⟨-, -, hl, -, hv⟩ := A.srcps_auth i hi
+      have h := block_digest_perm A.srcps[i].root A.srcps[i].dup i q A.srcps[i].entry
+        (by rw [show A.srcps[i].root = (A.p.lists.getD i ⟨[], 0, []⟩).root from (A.srcps_auth i hi).1]; exact hv)
+        (fun step hm => (lookupLast_path_shape A.hd hl step hm).1)
+      simpa only [blockOfProof] using h
+    · simp only [Function.comp_apply, hd, ite_true]
   rw [hr, cnt, cnt, cnt, (hp.map Msg.toFp).count_eq m, hs, A.rc_digests]
-  exact count_flatMap_split _ _ _ m
+  exact count_flatMap_split_if _ (fun B => B.dup) _ _ m
 
 end ZkFormal.NearV3.Assembly.AcceptedV3

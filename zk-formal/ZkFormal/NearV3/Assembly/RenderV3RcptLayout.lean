@@ -83,7 +83,7 @@ theorem bndp_balanced_accepted (h19 : R.tf 19 = bndTraffic A.bnds) : BusBalanced
 
 /-- **SRC** for an accepted witness (no size premise). -/
 theorem src_balanced_accepted
-    (h20 : R.tf 20 = srcpTraffic (ZkFormal.NearV3.Render.SrcpGen.blocksOfProofs A.srcps)) : BusBalanced R B_SRC :=
+    (h20 : R.tf 20 = A.ddTraffic) : BusBalanced R B_SRC :=
   src_balanced A R A.prepared_lt_u32 h20
 
 end RcptBal

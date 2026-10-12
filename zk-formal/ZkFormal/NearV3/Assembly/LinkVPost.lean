@@ -392,7 +392,7 @@ theorem vpost_source {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : NearSpecV3
       refine ⟨a', ha', hki, j, ?_, by rw [hki, Nat.zero_add]⟩
       simp only [List.length_append, List.length_drop] at hj; omega
     · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy'
-      exact (kinX (srcpKindIn W.srcp x hx) (by decide) rfl).elim
+      exact (kinX (ddKindIn W.srcp x hx) (by decide) rfl).elim
     · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy'
       exact (kinX (mrkKindIn W (pubNat_pubOf_lt _) x hx) (by decide) rfl).elim
     · have := codecKindIn hp hsz hH y hy' e hyh
