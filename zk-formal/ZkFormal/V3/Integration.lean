@@ -368,6 +368,8 @@ import ZkFormal.NearV3.Assembly.RenderV3RcptSide
 import ZkFormal.NearV3.Assembly.RenderV3Header
 import ZkFormal.NearV3.Render.HonestRcptQ
 import ZkFormal.NearV3.Assembly.RenderV3RcptTrie
+import ZkFormal.NearV3.Assembly.RenderV3RcptSha
+import ZkFormal.NearV3.Assembly.RenderV3RcptTrieSide
 /-!
 # Build gate for the integrated v3 proof work
 
