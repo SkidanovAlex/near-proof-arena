@@ -5,6 +5,7 @@ import ZkFormal.NearV3.Rcpt.Link.GasPub
 import ZkFormal.NearV3.Rcpt.Link.RcptHolds
 import ZkFormal.NearV3.Rcpt.Link.QvCodec
 import ZkFormal.NearV3.Rcpt.Link.QvMain
+import ZkFormal.NearV3.Rcpt.Link.ValExact
 import ZkFormal.NearV3.Rcpt.Link.ValBytes
 import ZkFormal.NearV3.Rcpt.Link.RcptHoldsB
 import ZkFormal.NearV3.Rcpt.Link.AkeyAkc
@@ -263,3 +264,23 @@ import ZkFormal.NearV3.Rcpt.Link.QvBal
 /-- info: 'ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_q' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.RcptLink.mainRun_of_holdsP_q
+
+/-- info: 'ZkFormal.NearV3.RcptLink.vbytes_perm' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.vbytes_perm
+
+/-- info: 'ZkFormal.NearV3.RcptLink.stream_record' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.stream_record
+
+/-- info: 'ZkFormal.NearV3.RcptLink.acct_value_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.acct_value_exact
+
+/-- info: 'ZkFormal.NearV3.RcptLink.akey_value_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.akey_value_exact
+
+/-- info: 'ZkFormal.NearV3.RcptLink.akk_value' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.RcptLink.akk_value

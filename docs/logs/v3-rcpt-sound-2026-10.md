@@ -3,7 +3,7 @@
 Worktree `/data/illia/nearproof-wt/v3-rcpt-sound`, branch `lane/v3-rcpt-sound`, from main `c87a7cae`.
 Modules: `zk-formal/ZkFormal/NearV3/Rcpt/Link/{RunSplit,ForwardSound,MemBal,Mem3,MemOf,RunModel,
 NewChunk,RecChain,RecModel,PrepFwd,RcptCore,AcctSlots,GasPub,RcptHolds,ValBytes,PeoBytes,RfBody,RfEnc,
-RcptHoldsB,FwdLinks,AkeyAkc,SrecLink,QvPre,QvBal,QvRc,QvCodec,QvPrem,QvAssemble,QvMain}.lean` (namespace
+RcptHoldsB,FwdLinks,AkeyAkc,SrecLink,QvPre,QvBal,QvRc,QvCodec,QvPrem,QvAssemble,QvMain,ValExact}.lean` (namespace
 `ZkFormal.NearV3.RcptLink`).
 Audit `zk-formal/test/AuditRcptSound.lean` (all `[propext, Classical.choice, Quot.sound]` or less).
 No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
@@ -359,3 +359,26 @@ Nothing false found.
 
 (4) after table 16 adopts the q check: the routing premise as above (BND balance `hb`/`hp'` from
 `HoldsP`, context identification), giving `mainRun_of_holdsP_q` without the routing hypothesis.
+
+## 2026-10-12 (session 3, cont.) — lead's requests for lane v3-link (`LinkTrieOk`, their log session 10)
+
+1. **`RunModel.TrieOk.get` / `.find` now take `M.LenPres v →`** (like `.set`); `step` uses them at
+   `valsAt r` with `valsAt_lenPres`.  (A premise of the receipt core becomes weaker, so the core
+   statements are stronger.)  Matches v3-link's `find_of` (`hv : (Mdl r st).LenPres v`).
+2. **`ValExact`** (new): `vbytes_perm` (the exact five-sender `VBYTES` permutation, factored out of
+   `recComplete_holdsP`), `stream_record` (a selected nonempty stream of an exact, otherwise
+   start-closed permutation is the whole value record and its id is used by no other sender),
+   * **`acct_value_exact`**: `a ∈ r.accts → ∃ e ∈ r.values, e.vz = false ∧ e.vid = a.k ∧ e.bytes = a.pre`
+     (so the value record of every receipt slot — an acct `k`, `RecChain.slot_acct` — has length 72
+     and is exactly the acct's pre bytes: closes the length gap of `hinit`);
+   * **`akey_value_exact`**: `e ∈ r.akeys → (∃ v ∈ r.values, v.vz = false ∧ v.vid = e.vid ∧ v.bytes =
+     e.bytes) ∧ ∀ a ∈ r.accts, a.k ≠ e.vid`;
+   * **`akk_value`**: `x ∈ flatR r.lists → x.ee = true → x.akf = 0 →
+     (∃ v ∈ r.values, v.vz = false ∧ v.vid = x.akk ∧ |v.bytes| = 9 ∧ v.bytes.getD 8 0 = 1) ∧
+     ∀ a ∈ r.accts, a.k ≠ x.akk` (`akk` is no receipt slot, without reach-injectivity).
+3. **`mainRun_of_holdsP_q`** now exports, for the same `bs`, exactly the premises of v3-link's
+   `LinkTrieOk.hcov_of` and `executions_of`:
+   `hbs : ∃ v, (Fpre r 0).find keyBufferedIdx = some v ∧ bufferedShards v = .ok bs`,
+   `hfix : ∀ key ∈ [keyDelayedIdx, keyBufferedIdx, keyYieldIdx], (Fpre r 0).find key ≠ none`,
+   `hgrp : ∀ y ∈ bs, (Fpre r 0).find (keyGroupsData y) ≠ none`
+   (from `queue_main_holdsP`'s `v.Reads (Fpre r 0) …` and `v.Valid`, `bs := v.shards`).

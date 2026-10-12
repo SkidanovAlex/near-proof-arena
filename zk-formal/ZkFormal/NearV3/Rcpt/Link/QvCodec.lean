@@ -51,11 +51,15 @@ theorem qv_base_count {pub : List Fp} {tr : Trace Fp} {b : Nat} (hb : b ≠ B_KE
   intro x _
   exact Qv.Candidates.KeyTrafficRepair.other_bus _ _ _ _ _ hb _
 
-/-- **Record completeness** of the qv parser records from `HoldsP` (five-sender `VBYTES`). -/
-theorem recComplete_holdsP {pub : List Fp} {tr : Trace Fp} {r : V3Records}
-    (hH : HoldsP nearAirV3 pub tr) (T : V3RecordsTraffic pub tr r) (W : V3RecordsWf pub r)
+/-- **The exact five-sender `VBYTES` permutation**: qv parser records, all codec rows, acct, akey
+sends are a permutation of the value records' receives. -/
+theorem vbytes_perm {pub : List Fp} {tr : Trace Fp} {r : V3Records}
+    (hH : HoldsP nearAirV3 pub tr) (T : V3RecordsTraffic pub tr r)
     (q : WalkChain tr T_QV) (pc : ParserChain tr T_QV (segEnd 0 q.segs)) :
-    QvRc.RecComplete tr T_QV pub pc.segs r.values := by
+    (pc.segs.flatMap (fun p => Qv.Extract.physicalRecordBytes tr T_QV p.1 p.2 pub) ++
+      (codecV tr pub (List.range (tr.height T_CODEC)) ++
+        (acctV3Sends r.accts B_VBYTES).map Msg.toFp ++ (akeySends r.akeys B_VBYTES).map Msg.toFp)).Perm
+      ((valRecvs r.values B_VBYTES).map Msg.toFp) := by
   have hQ : TableLocal Qv.Candidates.KeyTrafficRepair.table tr T_QV pub :=
     tableLocal_of_holdsP hH (t := T_QV) rfl
   have hl := Qv.Candidates.KeyTrafficRepair.local_to_base hQ
@@ -66,33 +70,38 @@ theorem recComplete_holdsP {pub : List Fp} {tr : Trace Fp} {r : V3Records}
     apply LinkVBytes.flatMap_congr'
     intro x _
     exact Qv.Candidates.KeyTrafficRepair.other_bus _ _ _ _ _ (by decide) _
-  let others : List (List Fp) :=
-    codecV tr pub (List.range (tr.height T_CODEC)) ++
-      (acctV3Sends r.accts B_VBYTES).map Msg.toFp ++ (akeySends r.akeys B_VBYTES).map Msg.toFp
   have v0 : valSends r.values B_VBYTES = [] := by simp [valSends, B_VBYTES, B_BYTES, B_ENT, B_SIZE]
   have a0 : acctRecvs r.accts B_VBYTES = [] := by simp [acctRecvs, B_VBYTES, B_MEM]
   have k0 : akeyRecvs r.akeys B_VBYTES = [] := by simp [akeyRecvs, B_AKC, B_VBYTES]
-  have hbal : (pc.segs.flatMap (fun p => Qv.Extract.physicalRecordBytes tr T_QV p.1 p.2 pub) ++
-      others).Perm ((valRecvs r.values B_VBYTES).map Msg.toFp) := by
-    apply List.perm_iff_count.mpr
-    intro M
-    have h := bal_users hH (b := B_VBYTES) (U := [T_VAL, T_CODEC, Assembly.T_ACCT, T_AKEY, T_QV]) (by decide)
-      (by decide) (by decide +kernel) (by decide +kernel) M
-    simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Nat.add_zero] at h
-    rw [val_count T _ _ _ (by decide +kernel), val_count T _ _ _ (by decide +kernel),
-      show isAt Assembly.T_ACCT = AcctV3.interactions from rfl, tcnt_of_traffic T.accts, tcnt_of_traffic T.accts,
-      show isAt T_AKEY = AkeyV3.interactions from rfl, tcnt_of_traffic T.akeys, tcnt_of_traffic T.akeys,
-      tableBusCount_noside (s := false) (is := isAt T_CODEC) (by decide +kernel),
-      tableBusCount_noside (s := false) (is := isAt T_QV) (by decide +kernel),
-      tableBusCount_eq (isAt T_CODEC), tableBusCount_eq (isAt T_QV), hqv] at h
-    simp only [tcnt, ite_true, Bool.false_eq_true, ite_false, valTraffic, acctV3Traffic, akeyTraffic,
-      v0, a0, k0, List.map_nil, List.count_nil, Nat.zero_add, Nat.add_zero] at h
-    simp only [others, codecV, List.count_append] at h ⊢
-    omega
-  have hclosed : StartClosed others :=
+  apply List.perm_iff_count.mpr
+  intro M
+  have h := bal_users hH (b := B_VBYTES) (U := [T_VAL, T_CODEC, Assembly.T_ACCT, T_AKEY, T_QV]) (by decide)
+    (by decide) (by decide +kernel) (by decide +kernel) M
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Nat.add_zero] at h
+  rw [val_count T _ _ _ (by decide +kernel), val_count T _ _ _ (by decide +kernel),
+    show isAt Assembly.T_ACCT = AcctV3.interactions from rfl, tcnt_of_traffic T.accts, tcnt_of_traffic T.accts,
+    show isAt T_AKEY = AkeyV3.interactions from rfl, tcnt_of_traffic T.akeys, tcnt_of_traffic T.akeys,
+    tableBusCount_noside (s := false) (is := isAt T_CODEC) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := isAt T_QV) (by decide +kernel),
+    tableBusCount_eq (isAt T_CODEC), tableBusCount_eq (isAt T_QV), hqv] at h
+  simp only [tcnt, ite_true, Bool.false_eq_true, ite_false, valTraffic, acctV3Traffic, akeyTraffic,
+    v0, a0, k0, List.map_nil, List.count_nil, Nat.zero_add, Nat.add_zero] at h
+  simp only [codecV, List.count_append] at h ⊢
+  omega
+
+/-- **Record completeness** of the qv parser records from `HoldsP` (five-sender `VBYTES`). -/
+theorem recComplete_holdsP {pub : List Fp} {tr : Trace Fp} {r : V3Records}
+    (hH : HoldsP nearAirV3 pub tr) (T : V3RecordsTraffic pub tr r) (W : V3RecordsWf pub r)
+    (q : WalkChain tr T_QV) (pc : ParserChain tr T_QV (segEnd 0 q.segs)) :
+    QvRc.RecComplete tr T_QV pub pc.segs r.values := by
+  have hQ : TableLocal Qv.Candidates.KeyTrafficRepair.table tr T_QV pub :=
+    tableLocal_of_holdsP hH (t := T_QV) rfl
+  have hl := Qv.Candidates.KeyTrafficRepair.local_to_base hQ
+  have hclosed : StartClosed (codecV tr pub (List.range (tr.height T_CODEC)) ++
+      (acctV3Sends r.accts B_VBYTES).map Msg.toFp ++ (akeySends r.akeys B_VBYTES).map Msg.toFp) :=
     startClosed_append (startClosed_append (codec_closed hH) (account_streams_closed r.accts))
       (access_key_streams_closed r.akeys)
-  exact QvRc.recComplete_of hl q pc r.values W.values others hclosed hbal
+  exact QvRc.recComplete_of hl q pc r.values W.values _ hclosed (vbytes_perm hH T q pc)
 
 /-- The qv-internal `QSH` balance (base-table form). -/
 theorem qsh_holdsP {pub : List Fp} {tr : Trace Fp} (hH : HoldsP nearAirV3 pub tr) (m : List Fp) :

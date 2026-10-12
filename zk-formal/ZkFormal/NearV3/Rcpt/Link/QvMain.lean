@@ -52,7 +52,8 @@ theorem queue_main_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : Tr
   exact ⟨_, hV, hR⟩
 
 /-- **The receipt core at `pre := Fpre r 0`**, queue reads, `v.Valid` and `pre.wf` discharged;
-with the buffered-shard list `bs` (`hbs`) and the queue-key coverage of `Fpre r 0`. -/
+with the buffered-shard list `bs` (`hbs`) and the queue-key coverage of `Fpre r 0` in the exact
+form of lane v3-link's `LinkTrieOk.hcov_of` premises (`hfix`, `hgrp`). -/
 theorem mainRun_of_holdsP_q {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : Trace Fp}
     {r : V3Records} (hp : prepD0 cb h = .ok p)
     (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
@@ -62,8 +63,8 @@ theorem mainRun_of_holdsP_q {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
     (hn : h.n = (flatR r.lists).length) :
     ∃ pc bs, prepClaim cb = .ok pc ∧
       (∃ v, (LinkImplicit.Fpre r 0).find keyBufferedIdx = some v ∧ bufferedShards v = .ok bs) ∧
-      (∀ key ∈ [keyDelayedIdx, keyBufferedIdx, keyYieldIdx] ++ bs.map keyGroupsData,
-        (LinkImplicit.Fpre r 0).find key ≠ none) ∧
+      (∀ key ∈ [keyDelayedIdx, keyBufferedIdx, keyYieldIdx], (LinkImplicit.Fpre r 0).find key ≠ none) ∧
+      (∀ y ∈ bs, (LinkImplicit.Fpre r 0).find (keyGroupsData y) ≠ none) ∧
       ∀ (base : Nat → Bytes) (Tf : (Nat → Bytes) → PTrie) (mid : PTrie) (so : SchedOut),
         MainTrieLink r.lists r.accts base Tf pc.ctxB2 (LinkImplicit.Fpre r 0) mid so →
         (∀ x ∈ flatR r.lists, pc.ctxB2.layout.shardOf (toBytes x.v) = pc.ctxB2.own) →
@@ -78,15 +79,16 @@ theorem mainRun_of_holdsP_q {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨v, hV, hR⟩ := queue_main_holdsP hp hsz hH T W hn
   have hwf := LinkMain.Fpre_wf W L (Nat.zero_le _)
   obtain ⟨hd, hb, hg, hy⟩ := hR
-  refine ⟨pc, v.shards, hc, ⟨v.buffered, hb, (Qv.bufferedShards_iff _ _).mpr hV.2.1⟩, ?_,
+  refine ⟨pc, v.shards, hc, ⟨v.buffered, hb, (Qv.bufferedShards_iff _ _).mpr hV.2.1⟩, ?_, ?_,
     fun base Tf mid so M => K base Tf _ mid so v M hwf hV ⟨hd, hb, hg, hy⟩⟩
-  intro key hk
-  simp only [List.cons_append, List.nil_append, List.mem_cons, List.mem_map] at hk
-  rcases hk with rfl | rfl | rfl | ⟨s, hs, rfl⟩
-  · rw [hd]; simp
-  · rw [hb]; simp
-  · rw [hy]; simp
-  · obtain ⟨w, hw⟩ := hg s hs
+  · intro key hk
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hk
+    rcases hk with rfl | rfl | rfl
+    · rw [hd]; simp
+    · rw [hb]; simp
+    · rw [hy]; simp
+  · intro y hy
+    obtain ⟨w, hw⟩ := hg y hy
     rw [hw]; simp
 
 end ZkFormal.NearV3.RcptLink
