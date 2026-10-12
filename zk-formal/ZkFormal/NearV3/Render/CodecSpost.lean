@@ -337,7 +337,10 @@ theorem rcpt_trie_sched {cb wb : Bytes} (A : AcceptedV3 cb wb)
         ExtOf r7.tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js))) ∧
         Js.map (fun I => (I.tau, I.v)) = us.mapIdx (fun i u => (i, u.value.map UInt8.toNat)) ∧
         Js.map Assembly.UpsS0F.s0fOf = (A.m.pre :: A.steps.map ImplicitStepV3.pre).mapIdx
-          (fun i t => Assembly.UpsS0F.s0fPair ((A.m.pre :: A.steps.map ImplicitStepV3.pre).take i) t)) ∧ PriorCore A.p NearSpecV3.B0 bs ∧ (∀ b ∈ bs, GrantWit b) ∧ (∀ b ∈ bs, NatRes b) ∧
+          (fun i t => Assembly.UpsS0F.s0fPair ((A.m.pre :: A.steps.map ImplicitStepV3.pre).take i) t)) ∧
+      -- lane v3-render-vbytes: the value render's base traffic (for `VBYTES`)
+      ExtOf r4.tf (valTraffic (TrieNative.vals A.m A.steps)) ∧
+      PriorCore A.p NearSpecV3.B0 bs ∧ (∀ b ∈ bs, GrantWit b) ∧ (∀ b ∈ bs, NatRes b) ∧
       bs.map (fun b => (b.witness.ctx, b.witness.pre)) =
         (A.m.ctx A.k, A.m.pre) :: A.steps.map (fun e => (implicitCtx A.k e, e.pre)) ∧
       r11.tr = codecTrace (allDescs (bs.map blkOf)) ∧
@@ -365,9 +368,9 @@ theorem rcpt_trie_sched {cb wb : Bytes} (A : AcceptedV3 cb wb)
         R.BalancedAt B_BYTES ∧ R.BalancedAt B_DIGEST) ∧
         R.BalancedAt ZkFormal.NearV3.B_SPLEN ∧ R.BalancedAt ZkFormal.NearV3.B_SPOST ∧
         R.BalancedAt ZkFormal.NearV3.B_S0F) := by
-  obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hc, hg, hres,
+  obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hval, hc, hg, hres,
     hctx, htr, htf, hall⟩ := rcpt_trie_codec A hovh
-  refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hc, hg, hres,
+  refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hval, hc, hg, hres,
     hctx, htr, htf, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 e11 h24
   refine ⟨hall R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 e11 h24, ?_⟩

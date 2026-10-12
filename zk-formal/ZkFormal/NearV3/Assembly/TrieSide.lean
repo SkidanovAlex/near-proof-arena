@@ -97,6 +97,8 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
         Js.map (fun I => (I.tau, I.v)) = us.mapIdx (fun i u => (i, u.value.map UInt8.toNat)) ∧
         Js.map Assembly.UpsS0F.s0fOf = (A.m.pre :: A.steps.map ImplicitStepV3.pre).mapIdx
           (fun i t => Assembly.UpsS0F.s0fPair ((A.m.pre :: A.steps.map ImplicitStepV3.pre).take i) t)) ∧
+      -- lane v3-render-vbytes: the value render's base traffic (for `VBYTES`)
+      ExtOf r4.tf (valTraffic (TrieNative.vals A.m A.steps)) ∧
       ∀ R : RenderBundleV3 A.pub,
         R ⟨0, by decide⟩ = r0 → R ⟨1, by decide⟩ = r1 → R ⟨2, by decide⟩ = r2 → R ⟨3, by decide⟩ = r3 →
         R ⟨4, by decide⟩ = r4 → R ⟨5, by decide⟩ = r5 → R ⟨6, by decide⟩ = r6 → R ⟨7, by decide⟩ = r7 →
@@ -169,7 +171,7 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
   refine ⟨writes, oldPost, q, us, shaRenderV3 A.pub 0 (by decide) b0 h0, shaRenderV3 A.pub 1 (by decide) b1 h1,
     nodeRenderV3 A.pub ns hn (selN ns S), Rh, valRenderV3 A.pub es hval (selV es SV), Rw, Ru,
     upsRenderV3 A.pub Js hok, sizeRenderV3 A.pub _ hSizeOk yN hB, hr, hkf, husv, hpin,
-    ⟨Js, hok, rfl, hextU, by rw [← hJs]; exact htv _, by rw [← hJs]; exact hs0 _⟩, ?_⟩
+    ⟨Js, hok, rfl, hextU, by rw [← hJs]; exact htv _, by rw [← hJs]; exact hs0 _⟩, hextV _, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 e21
   have e2' : R ⟨T_NODE, by decide⟩ = nodeRenderV3 A.pub ns hn (selN ns S) := e2
   have e3' : R ⟨T_HEAD, by decide⟩ = Rh := e3
@@ -285,7 +287,7 @@ theorem trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
           TrieKeyFinal.RcptFinal (RcptSkeleton.rcptTrafficB A.pub A.rcptInput)
             ((A.m.pre, A.m.result.trie) :: A.steps.map (fun s => (s.pre, s.post))) (appliedReceipts A.k A.w) →
           R.BalancedAt B_KEYNIB ∧ R.BalancedAt B_FINAL) := by
-  obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, -, -, hall⟩ :=
+  obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, -, -, -, hall⟩ :=
     trie_side_exact A receipt source hrr hpr hsm hbr hbs (sizeBudget_of_coarse A hovh)
   exact ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, hall⟩
 
