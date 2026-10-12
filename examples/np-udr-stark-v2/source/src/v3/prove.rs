@@ -29,8 +29,10 @@ pub fn render_table(name: &str, json: Option<&str>, w: usize, log: usize) -> Res
 }
 
 /// Add `sha_t`/`sha_r` to `entries` from the SHA collector when they are not
-/// supplied: the two instances must contain every BYTES/DIGEST message of the
-/// other tables so the buses balance (`ShaFacts`, design §12).
+/// supplied: the two bins `TrieShaTwo.twoShaJobBins = [b0, b1]` of the four SHA
+/// job families built from the other tables' entries ([`collect`]; the
+/// `sha_scheduler`/`sha_receipt` entries stand in for absent ups/codec/rcpt
+/// entries), so the `BYTES`/`DIGEST` buses balance as in `trie_side_exact`.
 pub fn with_collected_sha(
     entries: &std::collections::HashMap<String, String>,
 ) -> Result<std::collections::HashMap<String, String>, String> {

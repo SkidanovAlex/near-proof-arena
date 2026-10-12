@@ -188,24 +188,66 @@ fn main() {
             );
         }
         Some("v3sha") => {
-            // `npudr v3sha <entries-dir> <sha_t.json> <sha_r.json>`: collect the
-            // SHA messages of the per-table entry files in <dir> and split them
-            // into the two instances by the §12 kind registry.
-            if a.len() != 5 {
-                die("usage: npudr v3sha <entries-dir> <sha_t.json> <sha_r.json>");
+            // `npudr v3sha <entries-dir> <sha_t.json> <sha_r.json> [<full.json>]`:
+            // build the four SHA job families (scheduler, native, receipt, source)
+            // from the per-table entry files `<dir>/<table>.json` (plus the external
+            // family lists `sha_scheduler.json` / `sha_receipt.json` when the
+            // tables are absent) and write the two bins `twoShaJobBins = [b0, b1]`
+            // (`sha_t`, `sha_r`).  `<full.json>`: bins, families, notes and the
+            // bus check (`np-lean-shabins-v3` layout).
+            if a.len() != 5 && a.len() != 6 {
+                die("usage: npudr v3sha <entries-dir> <sha_t.json> <sha_r.json> [<full.json>]");
             }
             let dir = &a[2];
             let mut entries = std::collections::HashMap::new();
-            for (name, _) in npudr::v3::TABLES {
+            let names = npudr::v3::TABLES
+                .iter()
+                .map(|(n, _)| *n)
+                .chain(npudr::v3::collect::EXTRA_INPUTS.iter().copied());
+            for name in names {
                 let f = format!("{dir}/{name}.json");
                 if let Ok(j) = std::fs::read_to_string(&f) {
-                    entries.insert((*name).to_string(), j);
+                    entries.insert(name.to_string(), j);
                 }
             }
-            let (t, r) =
-                npudr::v3::collect::instances_from_entries(&entries).unwrap_or_else(|e| die(&e));
+            use npudr::v3::collect as cl;
+            let bundle = cl::bundle_from_entries(&entries).unwrap_or_else(|e| die(&e));
+            let c = cl::collect(&bundle);
+            for n in &c.notes {
+                eprintln!("v3sha: {n}");
+            }
+            let t = cl::jobs_json(&c.b0).unwrap_or_else(|e| die(&e));
+            let r = cl::jobs_json(&c.b1).unwrap_or_else(|e| die(&e));
             std::fs::write(&a[3], t).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
             std::fs::write(&a[4], r).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
+            let jobs: Vec<cl::Job> = c.b0.iter().chain(c.b1.iter()).cloned().collect();
+            let rep = cl::bus_check(&cl::bundle_raws(&bundle), &jobs);
+            eprintln!(
+                "v3sha: b0 {} jobs, b1 {} jobs (cap {}); bus check: {} sends ({} unmatched), {} receives ({} unmatched); {} expected bytes / {} digests not covered by the supplied tables",
+                c.b0.len(),
+                c.b1.len(),
+                c.cap,
+                rep.sends,
+                rep.bad_sends.len(),
+                rep.recvs,
+                rep.bad_recvs.len(),
+                rep.unsent,
+                rep.unreceived
+            );
+            if let Some(f) = a.get(5) {
+                let mut v: serde_json::Value =
+                    serde_json::from_str(&cl::collected_json(&c).unwrap_or_else(|e| die(&e)))
+                        .unwrap_or_else(|e| die(&e.to_string()));
+                v["bus"] = serde_json::json!({
+                    "sends": rep.sends, "bad_sends": rep.bad_sends.len(),
+                    "recvs": rep.recvs, "bad_recvs": rep.bad_recvs,
+                    "unsent": rep.unsent, "unreceived": rep.unreceived,
+                });
+                std::fs::write(f, v.to_string()).unwrap_or_else(|e| die(&format!("{f}: {e}")));
+            }
+            if !rep.ok() {
+                die("v3sha: a supplied table's BYTES send / DIGEST receive is not a job of the bins");
+            }
         }
         Some("v3rcpt-prefix") => {
             // first <n> rows of the aligned rcpt trace (`np-lean-render-v3-rcpt` prefix format)
