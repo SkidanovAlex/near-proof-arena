@@ -8,7 +8,8 @@ import ZkFormal.NearV3.Assembly.RcptCandidateRclDecode
 
 `rcptV3_view_counts` is `RcptViewV3.rcptV3_view_nearAir` (same proof) with two more
 conclusions: at most `2^22` lists and `2^22` receipts (each list takes ≥ 12 rows, each receipt
-≥ 1 row, the table has `≤ 2^22` rows).  The receipt `BYTES` ids are canonical under these
+≥ 1 row, the table has `≤ 2^22` rows), and every receipt has `q < 128` (table 16's routing
+check, `ReceiptCandidateProof.view_q`).  The receipt `BYTES` ids are canonical under these
 bounds (`RcptLink.receipt_bytes_ids`), which the `BYTES` kind registry uses.
 -/
 
@@ -27,9 +28,11 @@ theorem rcptV3_view_counts {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : Near
         (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh))
         (ZkFormal.NearV3.rcptTraffic3
           (Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) ls) ∧
-      ls.length ≤ 2 ^ 22 ∧ (ZkFormal.NearV3.flatR ls).length ≤ 2 ^ 22 := by
+      ls.length ≤ 2 ^ 22 ∧ (ZkFormal.NearV3.flatR ls).length ≤ 2 ^ 22 ∧
+      ∀ x ∈ ZkFormal.NearV3.flatR ls, x.q < 128 := by
   generalize hpub : Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh) = pub at hH ⊢
   have hL : TableLocal receiptArithmeticCandidate tr T_RCPT pub := rcptLocal hH
+  have hQ : TableLocal ReceiptCandidateRouting.candidateTable tr T_RCPT pub := rcptLocalQ hH
   obtain ⟨bs, e, hc⟩ := ReceiptCandidateProof.extract_lists hL
   have ht := ReceiptCandidateProof.ListChain.view_traffic hL hc
   have hranges : ReceiptPublicRanges pub := by
@@ -79,6 +82,7 @@ theorem rcptV3_view_counts {cb : NearSpec.Bytes} {h : NearSpecV3.Hint} {p : Near
     simp only [List.length_map, ReceiptCandidateProof.flat_views_length]
     omega
   exact ⟨_, ReceiptCandidateProof.ListChain.view_wf hL hc
-    (ReceiptPublicAdmission.ranges_candidate hranges) hprov, ht, hcnt⟩
+    (ReceiptPublicAdmission.ranges_candidate hranges) hprov, ht, hcnt.1, hcnt.2,
+    ReceiptCandidateProof.view_q hQ hc⟩
 
 end ZkFormal.NearV3.Assembly
