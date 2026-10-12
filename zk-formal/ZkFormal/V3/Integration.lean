@@ -479,6 +479,15 @@ import ZkFormal.NearV3.Rcpt.Link.SrecLink
 import ZkFormal.NearV3.Rcpt.Link.ValBytes
 import ZkFormal.NearV3.Rcpt.Link.ValExact
 import ZkFormal.NearV3.Rcpt.Link.WitnessSources
+import ZkFormal.NearV3.Assembly.A7SizeView
+import ZkFormal.NearV3.Assembly.A7NodeView
+import ZkFormal.NearV3.Assembly.A7ValView
+import ZkFormal.NearV3.Assembly.A7UpsView
+import ZkFormal.NearV3.Assembly.LinkCore
+import ZkFormal.NearV3.Assembly.A7Bound
+import ZkFormal.NearV3.Assembly.A7Native
+import ZkFormal.NearV3.Render.RngW0
+import ZkFormal.NearV3.Assembly.A9Count
 /-!
 # Build gate for the integrated v3 proof work
 

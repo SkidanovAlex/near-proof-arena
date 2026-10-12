@@ -7,6 +7,9 @@ import ZkFormal.NearV3.Rcpt.Extract.Srcp.Depth
 import ZkFormal.NearV3.Candidates.MerklePhysical
 import ZkFormal.NearV3.Assembly.LinkClaim
 import ZkFormal.NearV3.Assembly.RcptViewCounts
+import ZkFormal.NearV3.Assembly.A7SizeView
+import ZkFormal.NearV3.Assembly.A7ValView
+import ZkFormal.NearV3.Assembly.A7UpsView
 
 /-!
 # ZkFormal.NearV3.Assembly.LinkV3 — the linking step of `ExtractV3Stmt`
@@ -58,6 +61,12 @@ structure V3Records where
   mrk : ZkFormal.Near.MrkV
   /-- the outcome tree is empty (count 0): no Merkle rows/traffic -/
   mrkE : Bool
+  /-- A7: the replaced node records (`nodeA7`'s `rpl` flag, by record index) -/
+  rplN : Nat → Bool
+  /-- A7: the replaced value records (`valA7`'s `rplv` flag, by record index) -/
+  rplV : Nat → Bool
+  /-- A7: the three totals received by `sizeA7` -/
+  a7 : ZkFormal.NearV3.A7Y
 
 /-- The `mrk` view's well-formedness: empty tree (public count 0 and zero root bytes) or a
 well-formed v1 Merkle view (`MerkleEmpty.table`, nearAirV3's empty-tree repair). -/
@@ -92,6 +101,10 @@ structure V3RecordsWf (pub : List Fp) (r : V3Records) : Prop where
   listsCount : r.lists.length ≤ 2 ^ 22 ∧ (ZkFormal.NearV3.flatR r.lists).length ≤ 2 ^ 22
   /-- every receipt's routing quotient is `< 128` (table 16, `RcptV3.tableQ`) -/
   listsQ : ∀ x ∈ ZkFormal.NearV3.flatR r.lists, x.q < 128
+  /-- A7 (`sizeA7`): `B0 − Σ y_t` is a 24-bit value -/
+  a7size : ZkFormal.NearV3.A7SizeWf r.a7
+  /-- A7 (`upsA7`): `nD = Σ dd_i · N_i` on every segment's first row -/
+  a7ups : ZkFormal.NearV3.UpsA7Wf r.ups
 
 /-- The exact traffic of each viewed table at its fixed `nearAirV3` index. -/
 structure V3RecordsTraffic (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Prop where
@@ -121,6 +134,15 @@ structure V3RecordsTraffic (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Pro
     (ZkFormal.NearV3.sizeTraffic r.size)
   mrk : ZkFormal.Near.TableTraffic ZkFormal.NearV3.Candidates.MerkleEmpty.table.interactions tr
     T_MRK pub (mrkTrafficE pub r.mrkE r.mrk)
+  /-- the A7 interactions appended to `nodeV3`, `valV3`, `upsV3`, `sizeV3` (`Tables/UnfoldA7.lean`) -/
+  a7nodes : ZkFormal.Near.TableTraffic ZkFormal.NearV3.UnfoldA7.Node.interactions tr T_NODE pub
+    (ZkFormal.NearV3.a7NodeTraffic r.nodes r.rplN)
+  a7values : ZkFormal.Near.TableTraffic ZkFormal.NearV3.UnfoldA7.Val.interactions tr T_VAL pub
+    (ZkFormal.NearV3.a7ValTraffic r.values r.rplV)
+  a7ups : ZkFormal.Near.TableTraffic ZkFormal.NearV3.UnfoldA7.Ups.interactions tr T_UPS pub
+    (ZkFormal.NearV3.a7UpsTraffic r.ups)
+  a7size : ZkFormal.Near.TableTraffic ZkFormal.NearV3.UnfoldA7.Size.interactions tr T_SIZE pub
+    (ZkFormal.NearV3.a7SizeTraffic r.a7)
 
 /-! ## Record-form bus balance -/
 
@@ -402,12 +424,13 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
     (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr) :
     ∃ r, V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r ∧
       V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r := by
-  obtain ⟨vs, wN, tN⟩ := nodeView hH
+  obtain ⟨vs, sN, wN, tN, aN⟩ := ZkFormal.NearV3.nodeA7_view tr _ T_NODE (tableLocal_of_holdsP hH getElem?_node)
   obtain ⟨hs, wH, tH⟩ := headView hH
-  obtain ⟨es, wV, tV⟩ := valView hH
+  obtain ⟨es, sV, wV, tV, aV⟩ := ZkFormal.NearV3.valA7_view tr _ T_VAL (tableLocal_of_holdsP hH getElem?_val)
   obtain ⟨ws, wW, wS, tW⟩ := walkView hH
   obtain ⟨us, wU, tU⟩ := uniqView hH
-  obtain ⟨u, wP, tP⟩ := upsView hH
+  obtain ⟨u, wP, tP, aP, aPw⟩ := ZkFormal.NearV3.upsA7_view tr _ T_UPS (tableLocal_of_holdsP hH getElem?_ups)
+  obtain ⟨ay, aYw, aY⟩ := ZkFormal.NearV3.A7SizeProof.sizeA7_view (tableLocal_of_holdsP hH getElem?_size)
   obtain ⟨ls, wR, tR, cR1, cR2, qR⟩ := rcptV3_view_counts hp hsz hH
   obtain ⟨as, wA, tA⟩ := acctView hH
   obtain ⟨ks, wK, tK⟩ := akeyView hH
@@ -415,9 +438,9 @@ theorem v3Records_of_holdsP {cb : Bytes} {h : Hint} {p : Prep} {oh : Nat} {tr : 
   obtain ⟨ss, wS', dS', tS'⟩ := ZkFormal.NearV3.srcpD_view (srcpLocal hH)
   obtain ⟨sz, wZ, tZ⟩ := sizeView hH
   obtain ⟨me, mv, wM, tM⟩ := mrkView hH
-  exact ⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv, me⟩,
-    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', dS', wZ, wM, ⟨cR1, cR2⟩, qR⟩,
-    ⟨tN, tH, tV, tW, tU, tP, tR, tA, tK, tB, tS', tZ, tM⟩⟩
+  exact ⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv, me, sN, sV, ay⟩,
+    ⟨wN, wH, wV, wW, wS, wU, wP, wR, wA, wK, wB, wS', dS', wZ, wM, ⟨cR1, cR2⟩, qR, aYw, aPw⟩,
+    ⟨tN, tH, tV, tW, tU, tP, tR, tA, tK, tB, tS', tZ, tM, aN, aV, aP, aY⟩⟩
 
 /-- **`LinkV3Stmt ⇒ ExtractV3StmtAt`** (v1's `extract_of_views`): `HoldsP` gives every
 view, the SHA contracts of both instances and the record-form balance. -/

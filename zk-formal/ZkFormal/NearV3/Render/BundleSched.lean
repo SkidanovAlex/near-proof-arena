@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Assembly.RenderV3Bundle
 import ZkFormal.NearV3.Render.PaddedSha
 import ZkFormal.NearV3.Render.PaddedChacha
+import ZkFormal.NearV3.Render.RngW0
 import ZkFormal.NearV3.Render.PaddedSched
 import ZkFormal.NearV3.Render.PaddedProc
 import ZkFormal.NearV3.Render.PaddedSsd
@@ -45,15 +46,16 @@ def chachaRenderV3 (pub : List Fp) (reqs : List Chacha.Gen.Req) (hok : ∀ R ∈
   traffic := (chacha_v3_aligned_complete reqs hok hrows 8 pub).2.1
   aligned := (chacha_v3_aligned_complete reqs hok hrows 8 pub).2.2
 
-/-- Table 9: the RNG / `gen_index` table. -/
+/-- Table 9: the RNG / `gen_index` table with the A9 word counter (`hW`: at most `W0` draws). -/
 def rngRenderV3 (pub : List Fp) (calls : List Chacha.Rng.Gen.Call)
-    (hok : ∀ C ∈ calls, Chacha.Rng.Gen.CallOk C) (hrows : rngRows calls ≤ 2 ^ 22) :
+    (hok : ∀ C ∈ calls, Chacha.Rng.Gen.CallOk C) (hrows : rngRows calls ≤ 2 ^ 22)
+    (hW : rngRows calls ≤ Chacha.Rng.Table.W0) :
     TableRenderV3 pub 9 (by decide) where
-  tr := rngTraceAligned calls
+  tr := rngTraceW0 calls 9
   tf := rngTraffic calls
-  loc := (rng_v3_aligned_complete calls hok hrows 9 pub).1
-  traffic := (rng_v3_aligned_complete calls hok hrows 9 pub).2.1
-  aligned := (rng_v3_aligned_complete calls hok hrows 9 pub).2.2
+  loc := (rng_v3_aligned_complete calls hok hrows hW 9 pub).1
+  traffic := (rng_v3_aligned_complete calls hok hrows hW 9 pub).2.1
+  aligned := (rng_v3_aligned_complete calls hok hrows hW 9 pub).2.2
 
 /-- Table 10: the shuffle table. -/
 def shufRenderV3 (pub : List Fp) (insts : List Chacha.Shuffle.Gen.SInst)
