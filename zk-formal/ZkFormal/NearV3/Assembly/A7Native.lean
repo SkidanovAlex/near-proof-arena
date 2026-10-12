@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Assembly.NativeUnfold
 import ZkFormal.NearV3.Assembly.LinkCore
 import ZkFormal.NearV3.Link.UnfoldRefine
+import ZkFormal.NearV3.Assembly.A7Bound
 
 /-!
 # ZkFormal.NearV3.Assembly.A7Native — the native half of `unfoldedBytes` (RelD0a A7)
@@ -400,6 +401,26 @@ theorem unfold_le_records (hp : NearSpecV3.prepD0 cb h = .ok p) {k : NearSpecV3.
   simp only [List.map_cons, List.sum_cons]
   exact Nat.add_le_add (Nat.add_le_add (Link3.unfoldedBytesT_le_of_refinedBy h1)
     (Link3.unfoldedBytesT_le_of_refinedBy h2)) hI
+
+/-- **The record-level A7 statement left open** (lane A, session 13): the pre and post record trees of
+all instances are within the A7 total the AIR checks. -/
+def A7RecordBound (tr : Trace Fp) (r : V3Records) (K : Nat) : Prop :=
+  ((List.range (K + 1)).map fun τ => unfoldedBytesT (Fpre r τ) + unfoldedBytesT (Qrec tr r τ)).sum ≤
+    nodeA7Sum r.nodes r.rplN + valA7Sum r.values r.rplV + (r.ups.map UpsSeg.a7S).sum
+
+/-- **`RestFieldsV3.unfoldedBytes` from the record-level bound.** -/
+theorem unfoldedBytes_of_record (hp : NearSpecV3.prepD0 cb h = .ok p) {k : NearSpecV3.WalkD0}
+    (hw : NearSpecV3.walkD0 cb = .ok k)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < ZkFormal.Algebra.P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (d : List DictionaryEntryV3) (hs : V3.D0Shape (stateWitnessOfV3 k (xOf r d)))
+    (happ : appliedReceipts k (stateWitnessOfV3 k (xOf r d)) = (xOf r d).applied)
+    (hR : A7RecordBound tr r p.hdr.K) :
+    unfoldBytes cb (witnessOfV3 k (xOf r d)) ≤ UnfoldA7.B0 :=
+  Nat.le_trans (unfold_le_records hp hw hsz hH W T d hs happ)
+    (Nat.le_trans hR (A7Bound.a7_total_le hH T W))
 
 end Rec
 
