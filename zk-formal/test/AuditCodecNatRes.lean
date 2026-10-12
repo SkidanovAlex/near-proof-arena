@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Render.CodecNatRes
 import ZkFormal.NearV3.Render.CodecSanity
+import ZkFormal.NearV3.Render.CodecAllow
 
 /-! Guard NatRes from acceptance and the premise-free table 11 (lane v3-render-sched). -/
 
@@ -34,3 +35,11 @@ import ZkFormal.NearV3.Render.CodecSanity
 /-- info: 'ZkFormal.NearV3.Render.Cdc.codec_sha_counts_pinned' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.Cdc.codec_sha_counts_pinned
+
+/-- info: 'ZkFormal.NearV3.Render.CdcAllow.allowances_canon' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.CdcAllow.allowances_canon
+
+/-- info: 'ZkFormal.NearV3.Render.CdcAllow.a0s_canon' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.CdcAllow.a0s_canon
