@@ -7,8 +7,9 @@
 //! [`crate::sha::sha_cells`] through the [`super::render`] interface.
 //!
 //! Input: a JSON list of messages `{id, bytes, dmult}` (`bytes` is a list of
-//! naturals `< 256`).  Output: the SHA table at width [`crate::sha::WIDTH`]
-//! (544) and height `2^Gen.honestLog`, every cell reduced mod `P`.
+//! naturals `< 256`).  Output: `shaTraceAligned msgs` (`Render/PaddedSha.lean`):
+//! the SHA table at width [`crate::sha::WIDTH`] (544) and the aligned height
+//! `2^padLog22 (logOf rows)` (zero padding rows), every cell reduced mod `P`.
 
 use serde::Deserialize;
 
@@ -27,7 +28,8 @@ pub struct ShaMsg {
     pub dmult: bool,
 }
 
-/// `Gen`'s SHA table as a [`Tab`] at `honestLog`, cells reduced mod `P`.
+/// `shaTraceAligned msgs`: `Gen`'s SHA rows at `padLog22 (logOf rows)`, cells
+/// reduced mod `P`.
 pub fn sha_aligned(msgs: &[ShaMsg]) -> Tab {
     let ms: Vec<crate::sha::Msg> = msgs
         .iter()
@@ -37,11 +39,18 @@ pub fn sha_aligned(msgs: &[ShaMsg]) -> Tab {
             dmult: m.dmult,
         })
         .collect();
-    let (cells, _nrows, log) = crate::sha::sha_cells(&ms);
+    let (cells, nrows, _) = crate::sha::sha_cells(&ms);
+    let log = super::pad_log22(super::log_of(nrows));
+    let w = crate::sha::WIDTH;
+    let mut out = vec![0u32; w << log];
+    // rows `≥ nrows` are the zero padding rows (`rowCell .pad = 0`)
+    for (o, &x) in out.iter_mut().zip(cells.iter().take(nrows * w)) {
+        *o = (x % P as u64) as u32;
+    }
     Tab {
         log,
-        width: crate::sha::WIDTH,
-        cells: cells.iter().map(|&x| (x % P as u64) as u32).collect(),
+        width: w,
+        cells: out,
     }
 }
 
@@ -82,13 +91,18 @@ mod tests {
             })
             .collect();
         let t = sha_aligned(&mirror);
-        let (cells, nrows, log) = crate::sha::sha_cells(&msgs);
-        assert_eq!(t.log, log);
+        let (cells, nrows, _) = crate::sha::sha_cells(&msgs);
+        assert_eq!(t.log, crate::v3::pad_log22(crate::v3::log_of(nrows)));
+        assert_eq!(t.log % 3, 1);
         assert_eq!(t.width, crate::sha::WIDTH);
-        assert_eq!(t.height(), 1usize << log);
         assert!(nrows <= t.height());
-        let want: Vec<u32> = cells.iter().map(|&x| (x % P as u64) as u32).collect();
-        assert_eq!(t.cells, want);
+        let w = crate::sha::WIDTH;
+        let want: Vec<u32> = cells[..nrows * w]
+            .iter()
+            .map(|&x| (x % P as u64) as u32)
+            .collect();
+        assert_eq!(&t.cells[..nrows * w], &want[..]);
+        assert!(t.cells[nrows * w..].iter().all(|&x| x == 0));
     }
 
     #[test]
@@ -101,15 +115,13 @@ mod tests {
         let j = serde_json::to_string(&mirror).unwrap();
         let t = render(&j).unwrap();
         assert_eq!(t.width, crate::sha::WIDTH);
-        assert_eq!(
-            t.log,
-            crate::sha::sha_cells(&[crate::sha::Msg {
-                id: 3,
-                bytes: vec![1, 2, 3],
-                dmult: true,
-            }])
-            .2
-        );
+        let nrows = crate::sha::sha_cells(&[crate::sha::Msg {
+            id: 3,
+            bytes: vec![1, 2, 3],
+            dmult: true,
+        }])
+        .1;
+        assert_eq!(t.log, crate::v3::pad_log22(crate::v3::log_of(nrows)));
     }
 
     /// Every constraint of `nearAirV3` table 0 (and 1, identical) holds on the

@@ -1,26 +1,25 @@
 //! Honest scheduler trace generators for `nearAirV3` tables 11–15, the Rust
-//! twins of the Lean generators `ZkFormal.NearV3.Sched.Gen.*`:
+//! twins of the honest renders the D0a completeness proof uses
+//! (`ZkFormal/NearV3/Render/CompleteV3.lean`, `sched_renders_on`):
 //!
-//! | table | `nearAirV3` idx | width | Lean generator |
+//! | table | idx | width | Lean render (all at the shared clock `2^22`) |
 //! |---|---|---|---|
-//! | `codec` | 11 | 91 | `Gen.Codec.codecRows` (`Sched/Gen/Codec.lean:36`) |
-//! | `scandist` | 12 | 119 | `Gen.sdRows` (`Sched/Gen/Dist.lean:123`) = `Scan.rows ++ Dist.rows` |
-//! | `proc` | 13 | 64 | `Gen.Proc.rows` (`Sched/Gen/Proc.lean:65`) |
-//! | `mem` | 14 | 18 | `Gen.Mem.rows` (`Sched/Gen/Mem.lean:38`) |
-//! | `cmp` | 15 | 33 | `Gen.Cmp.rows` (`Sched/Gen/Cmp.lean:25`) |
+//! | `codec` | 11 | 91 | `codecCell (bs.map blkOf)` = `natCell ((allDescs Bs).map Desc.row) codecPad` (`Render/CodecRender.lean`, `CodecGen.lean`; rows = `Gen.codecRows` per block) |
+//! | `scandist` | 12 | 119 | `ProcScanDistPhases.trace bs`: every run's `Gen.Scan.rows`, then every block's `(distribution b).rows`, zero padding |
+//! | `proc` | 13 | 64 | `procTraceV3 rs` (`Render/PaddedProc.lean`): every run's `procVs`, the last run's `tailV` (or `padPV`), then `padPV` |
+//! | `mem` | 14 | 18 | `MemConcatCells.trace rs`: every run's `Gen.Mem.rows`, zero padding |
+//! | `cmp` | 15 | 33 | `cmpTraceAligned (requests bs)`: per block `run.cmps ++ codec cmps ++ dist cmps`, padding `b = 1` |
 //!
-//! The central entry is the Lean structure `Gen.Run` (`Sched/Gen/Run.lean:122`);
-//! every table's `rows (R : Run)` is a pure function of it (the codec and the
-//! scan/distribute table additionally read the public `InstPub` statement).
-//! The JSON mirrors the Lean field names: a bare `Run`, or a `SchedIn` object
-//! `{ run, ids, allowed, params, … }` for the tables that look at the public
-//! statement.
+//! The certificate renders tables 12–15 (and 11) over **all** scheduler
+//! instances (`bs`, one block per instance `τ = 0, 1, …`), at the fixed height
+//! `2^22` (`Candidates/SchedHeight`, `22 ≡ 1 mod 3`), independent of the row
+//! count.  The JSON input is a list of blocks (`SchedIn`: a `Run` plus the
+//! public/native data the codec and distribute rows read); a single `SchedIn`
+//! object or a bare `Run` (or a list of bare `Run`s) is read as that list.
 //!
-//! The aligned height is the generator's `padLog22 (logOf (rows + extra))`, where
-//! `extra` is the Lean `mkTrace` extra row (`0` for `cmp`, `1` for the others);
-//! this is the same rounding as `Render/Padded.lean` and keeps the arity-8
-//! residue (`log % 3 = 1`) the assembled AIR needs.
-
+//! Executable Lean twin: `conformance/RenderV3Sched.lean`
+//! (`np-lean-render-v3-sched`), which also samples honest blocks with the
+//! native scheduler (`ActualRun.run`).
 use serde::Deserialize;
 
 use p3_field::Field;
@@ -29,7 +28,7 @@ use p3_field::PrimeField32;
 
 use crate::field::{F, P};
 
-use super::{Tab, b, get, log_of, pad_log22};
+use super::{b, get, Tab};
 
 // ---------------------------------------------------------------------------
 // field helpers (`ZkFormal.NearV3.Sched.Gen.Common`)
@@ -272,27 +271,44 @@ pub struct SchedIn {
     pub prev_hash: Vec<u64>,
 }
 
-/// Parse `json` as a `SchedIn`, falling back to a bare `Run`.
-fn parse(json: &str) -> Result<SchedIn, String> {
-    if let Ok(s) = serde_json::from_str::<SchedIn>(json) {
-        return Ok(s);
+/// Parse `json` as the block list: a list of `SchedIn`, a list of bare `Run`s,
+/// one `SchedIn`, or one bare `Run`.
+pub fn parse_all(json: &str) -> Result<Vec<SchedIn>, String> {
+    let v: serde_json::Value = serde_json::from_str(json).map_err(|e| e.to_string())?;
+    let one = |v: serde_json::Value| -> Result<SchedIn, String> {
+        if v.get("run").is_some() {
+            serde_json::from_value::<SchedIn>(v).map_err(|e| e.to_string())
+        } else {
+            let run: Run = serde_json::from_value(v).map_err(|e| e.to_string())?;
+            Ok(SchedIn {
+                run,
+                ..Default::default()
+            })
+        }
+    };
+    match v {
+        serde_json::Value::Array(xs) => xs.into_iter().map(one).collect(),
+        v => Ok(vec![one(v)?]),
     }
-    let run: Run = serde_json::from_str(json).map_err(|e| e.to_string())?;
-    Ok(SchedIn {
-        run,
-        ..Default::default()
-    })
 }
 
-/// Build the aligned table: `2^padLog22(logOf (len + extra))` zero rows, filled
-/// with the generator's `rows` (only the first `height` rows).
-fn aligned(rows: &[Vec<u64>], extra: usize, width: usize) -> Tab {
-    let log = pad_log22(log_of(rows.len() + extra));
-    let mut t = Tab::zero(log, width);
+/// `log₂` of the scheduler tables' shared height (`SchedHeight.trace`).
+pub const SCHED_LOG: usize = 22;
+
+/// The table at the shared clock `2^22`: `rows`, then `pad(q)` (`None` = zero).
+fn sched_tab(rows: &[Vec<u64>], width: usize, pad: impl Fn(usize) -> Option<Vec<u64>>) -> Tab {
+    let mut t = Tab::zero(SCHED_LOG, width);
     let h = t.height();
     for (q, row) in rows.iter().enumerate().take(h) {
-        for (c, &x) in row.iter().enumerate() {
+        for (c, &x) in row.iter().enumerate().take(width) {
             t.set(q, c, x);
+        }
+    }
+    for q in rows.len().min(h)..h {
+        if let Some(row) = pad(q) {
+            for (c, &x) in row.iter().enumerate().take(width) {
+                t.set(q, c, x);
+            }
         }
     }
     t
@@ -328,20 +344,33 @@ fn cmp_row(x: u64, y: u64, b: u64) -> Vec<u64> {
     a
 }
 
-/// `Gen.Cmp.trace cmps`: one row per comparison, padding `b = 1`.
+/// `cmpTraceAligned cmps` (`Render/PaddedSched.lean`): one row per comparison
+/// (`Gen.Cmp.rows`), then `Gen.Cmp.padRow` (`b = 1`) up to `2^22`.
 pub fn cmp_aligned(cmps: &[(u64, u64, u64)]) -> Tab {
     let rows: Vec<Vec<u64>> = cmps.iter().map(|&(x, y, b)| cmp_row(x, y, b)).collect();
-    let mut t = aligned(&rows, 0, CMP_WIDTH);
-    let h = t.height();
-    for q in rows.len().min(h)..h {
-        t.set(q, C_COL_B, 1);
+    let mut pad = vec![0u64; CMP_WIDTH];
+    pad[C_COL_B] = 1;
+    sched_tab(&rows, CMP_WIDTH, |_| Some(pad.clone()))
+}
+
+/// `ProcNativeOldComparisonCapacity.requests bs`: per block, the run's memory
+/// and process comparisons, the codec comparisons, then the distribute
+/// comparisons.
+pub fn cmp_requests(bs: &[SchedIn]) -> Vec<(u64, u64, u64)> {
+    let mut out = Vec::new();
+    for inp in bs {
+        out.extend_from_slice(&inp.run.cmps);
+        out.extend(codec_block(inp).1);
+        if let Some(d) = dist_rows(inp) {
+            out.extend(d.cmps);
+        }
     }
-    t
+    out
 }
 
 /// `npudr v3render cmp`.
 pub fn cmp(json: &str) -> Result<Tab, String> {
-    Ok(cmp_aligned(&parse(json)?.run.cmps))
+    Ok(cmp_aligned(&cmp_requests(&parse_all(json)?)))
 }
 
 // ---------------------------------------------------------------------------
@@ -414,18 +443,25 @@ fn mem_seg_rows(g: &Seg) -> Vec<Vec<u64>> {
     out
 }
 
-/// `Gen.Mem.trace R`: the segments' rows, padded with zero rows.
-pub fn mem_aligned(r: &Run) -> Tab {
+/// `Gen.Mem.rows R`: every segment's rows.
+pub fn mem_rows(r: &Run) -> Vec<Vec<u64>> {
     let mut rows: Vec<Vec<u64>> = Vec::new();
     for g in &r.segs {
         rows.extend(mem_seg_rows(g));
     }
-    aligned(&rows, 1, MEM_WIDTH)
+    rows
+}
+
+/// `MemConcatCells.trace rs`: every run's `Gen.Mem.rows`, zero padding, `2^22` rows.
+pub fn mem_aligned(rs: &[&Run]) -> Tab {
+    let rows: Vec<Vec<u64>> = rs.iter().flat_map(|r| mem_rows(r)).collect();
+    sched_tab(&rows, MEM_WIDTH, |_| None)
 }
 
 /// `npudr v3render mem`.
 pub fn mem(json: &str) -> Result<Tab, String> {
-    Ok(mem_aligned(&parse(json)?.run))
+    let bs = parse_all(json)?;
+    Ok(mem_aligned(&bs.iter().map(|b| &b.run).collect::<Vec<_>>()))
 }
 
 // ---------------------------------------------------------------------------
@@ -617,9 +653,8 @@ fn proc_tail_row(r: &Run) -> Vec<u64> {
     a
 }
 
-/// `Gen.Proc.trace R`: the 16 key rows, then each round's rows, padded with the
-/// `tailRow` (first padding row) then `ikcPad` rows.
-pub fn proc_aligned(r: &Run) -> Tab {
+/// `procVs R` (= `Gen.Proc.rows R`): the 16 key rows, then each round's rows.
+pub fn proc_rows(r: &Run) -> Vec<Vec<u64>> {
     let mut rows: Vec<Vec<u64>> = Vec::new();
     for k in 0..16u64 {
         rows.push(proc_key_row(r, k));
@@ -627,30 +662,34 @@ pub fn proc_aligned(r: &Run) -> Tab {
     for rd in &r.rounds {
         rows.extend(proc_round_rows(r, rd));
     }
-    let log = pad_log22(log_of(rows.len() + 1));
-    let mut t = Tab::zero(log, PROC_WIDTH);
-    let h = t.height();
+    rows
+}
+
+/// `procTraceV3 rs` (`Render/PaddedProc.lean`, `ProcConcatGeometry.atRow`):
+/// every run's `procVs`, then `tail rs` (the last run's `tailV`, or `padPV`
+/// when there is no run), then `padPV` (`ikc = ikcPad`) up to `2^22`.
+pub fn proc_aligned(rs: &[&Run]) -> Tab {
+    let rows: Vec<Vec<u64>> = rs.iter().flat_map(|r| proc_rows(r)).collect();
     let n_rows = rows.len();
-    for (q, row) in rows.iter().enumerate() {
-        for (c, &x) in row.iter().enumerate() {
-            t.set(q, c, x);
-        }
-    }
-    for q in n_rows..h {
-        if q == n_rows {
-            for (c, &x) in proc_tail_row(r).iter().enumerate() {
-                t.set(q, c, x);
-            }
+    let mut pad = vec![0u64; PROC_WIDTH];
+    pad[P_IKC] = ikc_pad();
+    let tail = match rs.last() {
+        Some(r) => proc_tail_row(r),
+        None => pad.clone(),
+    };
+    sched_tab(&rows, PROC_WIDTH, |q| {
+        Some(if q == n_rows {
+            tail.clone()
         } else {
-            t.set(q, P_IKC, ikc_pad());
-        }
-    }
-    t
+            pad.clone()
+        })
+    })
 }
 
 /// `npudr v3render proc`.
 pub fn proc(json: &str) -> Result<Tab, String> {
-    Ok(proc_aligned(&parse(json)?.run))
+    let bs = parse_all(json)?;
+    Ok(proc_aligned(&bs.iter().map(|b| &b.run).collect::<Vec<_>>()))
 }
 
 // ---------------------------------------------------------------------------
@@ -713,7 +752,7 @@ const D_QB1: usize = 57; // + i, 23
 const D_QB2: usize = 80; // + i, 23
 const D_RB1: usize = 103; // + i, 6
 const D_RB2: usize = 109; // + i, 6
-// scan-only columns
+                          // scan-only columns
 const D_FQ: usize = 115;
 const D_RE: usize = 116;
 const D_US0: usize = 117;
@@ -859,27 +898,55 @@ fn index_of(ids: &[u64], s: u64) -> Option<usize> {
     ids.iter().position(|&x| x == s)
 }
 
-/// `tgt ids k`: the link index of record `k` (`Spec/CanonDup.lean`).
+/// `tgt ids k`: the link index of record `k` (`Spec/CanonDup.lean`; Lean's
+/// `x / 0 = x % 0`-style totality: `k / 0 = 0`, `k % 0 = k`).
 fn tgt(ids: &[u64], k: u64) -> u64 {
     let n = ids.len() as u64;
-    let a = index_of(ids, get(ids, (k / n) as usize)).unwrap_or(0) as u64;
-    let b_ = index_of(ids, get(ids, (k % n) as usize)).unwrap_or(0) as u64;
+    let (q, m) = if n == 0 { (0, k) } else { (k / n, k % n) };
+    let a = index_of(ids, get(ids, q as usize)).unwrap_or(0) as u64;
+    let b_ = index_of(ids, get(ids, m as usize)).unwrap_or(0) as u64;
     a * n + b_
 }
 
-/// `srcOf ids l`: the last record mapped to link `l`.
-fn src_of(ids: &[u64], l: u64) -> Option<u64> {
-    let nn = (ids.len() * ids.len()) as u64;
-    (0..nn).rev().find(|&k| tgt(ids, k) == l)
+/// The source map of a layout for links `l < upto`: `src[l] = srcOf ids l`
+/// (the last record `k < |ids|²` with `tgt ids k = l`) and `is_src[k]` = some
+/// link `l < upto` has `srcOf ids l = some k` (`srcFields`' `use`, the codec's
+/// `useC`).
+struct SrcMap {
+    src: Vec<Option<u64>>,
+    is_src: Vec<bool>,
 }
 
-/// `Gen.srcFields ids l = b2 src ++ [hasSrc, use]`.
-fn src_fields(ids: &[u64], l: u64) -> [u64; 4] {
-    let src = src_of(ids, l);
-    let nn = (ids.len() * ids.len()) as u64;
-    let use_v = (0..nn).any(|l2| src.is_some() && src_of(ids, l2) == src);
+impl SrcMap {
+    fn new(ids: &[u64], upto: u64) -> SrcMap {
+        let nn = (ids.len() * ids.len()) as u64;
+        let mut src = vec![None; upto as usize];
+        for k in 0..nn {
+            let l = tgt(ids, k);
+            if l < upto {
+                src[l as usize] = Some(k);
+            }
+        }
+        let mut is_src = vec![false; nn.max(upto) as usize];
+        for &k in src.iter().flatten() {
+            is_src[k as usize] = true;
+        }
+        SrcMap { src, is_src }
+    }
+    fn src(&self, l: u64) -> Option<u64> {
+        self.src.get(l as usize).copied().flatten()
+    }
+    fn used(&self, k: u64) -> bool {
+        self.is_src.get(k as usize).copied().unwrap_or(false)
+    }
+}
+
+/// `Gen.srcFields ids l = b2 src ++ [hasSrc, use]` (`use`: `l` is the source
+/// of some link).
+fn src_fields(m: &SrcMap, l: u64) -> [u64; 4] {
+    let src = m.src(l);
     let s = src.unwrap_or(0);
-    [s % 256, s / 256, n2(src.is_some()), n2(use_v)]
+    [s % 256, s / 256 % 256, n2(src.is_some()), n2(m.used(l))]
 }
 
 /// `Gen.cntS n allowed s` (allowed links of sender `s`).
@@ -892,7 +959,7 @@ fn cnt_r(n: u64, allowed: &[bool], r: u64) -> u64 {
     (0..n).filter(|&s| get_bool(allowed, s * n + r)).count() as u64
 }
 
-/// `Gen.budget0 P side x = maxShardBandwidth − base·cnt`.
+/// `Gen.budget0 P side x = maxShardBandwidth − base·cnt` (`n = |P.ids|`).
 fn budget0(p: &Params, side: u64, x: u64, n: u64, allowed: &[bool]) -> u64 {
     let c = if side == 0 {
         cnt_s(n, allowed, x)
@@ -904,7 +971,11 @@ fn budget0(p: &Params, side: u64, x: u64, n: u64, allowed: &[bool]) -> u64 {
 
 /// `Gen.avgOf links left`.
 fn avg_of(links: u64, left: u64) -> u64 {
-    if links == 0 { 0 } else { left / links }
+    if links == 0 {
+        0
+    } else {
+        left / links
+    }
 }
 
 /// `Gen.Dist.bitsOf col x`: the six bits of `x` at `col … col+5`.
@@ -921,13 +992,25 @@ fn set_bits_n(a: &mut [u64], col: usize, len: u64, x: u64) {
     }
 }
 
-/// `Gen.Dist.distRows I R`: the shard rows (senders then receivers, sorted),
-/// then the grid (a header and `n` cells per sender position).
-fn dist_rows(inp: &SchedIn) -> Vec<Vec<u64>> {
+/// `Gen.DistOut`: the distribute rows, the grid grant per link, the
+/// comparator messages.
+pub struct DistOut {
+    pub rows: Vec<Vec<u64>>,
+    pub gb: Vec<u64>,
+    pub cmps: Vec<(u64, u64, u64)>,
+}
+
+/// `Gen.distRows I R`: the shard rows (senders then receivers, sorted), then
+/// the grid (a header and `n` cells per sender position).  `None` where the
+/// Lean generator throws (`sort order`, `distribute break`);
+/// `ProcNativeOldComparisonCapacity.distribution` then uses the empty output.
+fn dist_rows(inp: &SchedIn) -> Option<DistOut> {
     let r = &inp.run;
     let n = r.n;
     let tv = r.tau;
     let allowed = &inp.allowed;
+    let n_ids = inp.ids.len() as u64;
+    let sm = SrcMap::new(&inp.ids, n_ids * n_ids);
     let sb = &r.fin.sb;
     let rb = &r.fin.rb;
     let count = |sd: u64, x: u64| {
@@ -944,11 +1027,13 @@ fn dist_rows(inp: &SchedIn) -> Vec<Vec<u64>> {
             get(rb, x as usize)
         }
     };
-    // stable sort by `avg·64 + x` (`sortByKey`)
+    let cmp_of = |x: u64, y: u64| (x, y, n2(y <= x));
+    // stable sort by `avg` (`sortByKey`)
     let sord: Vec<u64> = sort_by_key(|s| avg_of(count(0, s), leftv(0, s)), n);
     let rord: Vec<u64> = sort_by_key(|x| avg_of(count(1, x), leftv(1, x)), n);
 
     let mut rows: Vec<Vec<u64>> = Vec::new();
+    let mut cmps: Vec<(u64, u64, u64)> = Vec::new();
     // shard rows
     for sd in 0..2u64 {
         let ord = if sd == 0 { &sord } else { &rord };
@@ -957,10 +1042,14 @@ fn dist_rows(inp: &SchedIn) -> Vec<Vec<u64>> {
             let x = ord[i as usize];
             let c = count(sd, x);
             let left = leftv(sd, x);
-            let b0 = budget0(&inp.params, sd, x, n, allowed);
+            let b0 = budget0(&inp.params, sd, x, n_ids, allowed);
             let q = avg_of(c, left);
             let rem = if c == 0 { 0 } else { left % c };
             let key = q * 64 + x;
+            if kpv > key {
+                return None; // `check (kpv ≤ key) "sort order"`
+            }
+            cmps.push(cmp_of(key, kpv));
             let e1v = if i + 1 == n { 1 } else { 0 };
             let mut a = vec![0u64; SCANDIST_WIDTH];
             a[D_ACT] = 1;
@@ -994,7 +1083,7 @@ fn dist_rows(inp: &SchedIn) -> Vec<Vec<u64>> {
             a[D_LLO] = n;
             a[D_N1] = 4096 * (sd + 1) + x;
             a[D_L1] = b0;
-            a[D_IG1] = finv(fsub(i, n - 1));
+            a[D_IG1] = finv(fsub(i, n.saturating_sub(1)));
             if c != 0 {
                 set_bits_of(&mut a, D_BT2, c - 1 - rem);
             }
@@ -1005,6 +1094,7 @@ fn dist_rows(inp: &SchedIn) -> Vec<Vec<u64>> {
         }
     }
     // grid
+    let mut gb_arr = vec![0u64; (n * n) as usize];
     let mut ri: Vec<(u64, u64)> = (0..n).map(|x| (count(1, x), leftv(1, x))).collect();
     for i in 0..n {
         let sv = sord[i as usize];
@@ -1026,6 +1116,9 @@ fn dist_rows(inp: &SchedIn) -> Vec<Vec<u64>> {
             let l = sv * n + rr;
             let re = ri[rr as usize];
             let alv = get_bool(allowed, l);
+            if alv && (se.0 == 0 || re.0 == 0) {
+                return None; // `check (se.1 ≥ 1 && re.1 ≥ 1) "distribute break"`
+            }
             let (q1v, r1v, q2v, r2v, gbv) = if alv {
                 let q1v = se.1 / se.0;
                 let q2v = re.1 / re.0;
@@ -1033,12 +1126,15 @@ fn dist_rows(inp: &SchedIn) -> Vec<Vec<u64>> {
             } else {
                 (0, 0, 0, 0, 0)
             };
+            if alv {
+                cmps.push(cmp_of(q1v, q2v));
+            }
             let cbv = n2(alv && q2v <= q1v);
             let n2v = re.0 - n2(alv);
-            let l2v = re.1 - gbv;
+            let l2v = re.1.saturating_sub(gbv);
             let e1v = if j + 1 == n { 1 } else { 0 };
             let e2v = if i + 1 == n { 1 } else { 0 };
-            let sf = src_fields(&inp.ids, l);
+            let sf = src_fields(&sm, l);
             let mut a = vec![0u64; SCANDIST_WIDTH];
             a[D_ACT] = 1;
             a[D_KC] = 1;
@@ -1089,12 +1185,17 @@ fn dist_rows(inp: &SchedIn) -> Vec<Vec<u64>> {
             set_bits_n(&mut a, D_RB2, 6, r2v);
             rows.push(a);
             if alv {
+                gb_arr[l as usize] = gbv;
                 se = (se.0 - 1, se.1 - gbv);
             }
             ri[rr as usize] = (n2v, l2v);
         }
     }
-    rows
+    Some(DistOut {
+        rows,
+        gb: gb_arr,
+        cmps,
+    })
 }
 
 /// `sortByKey key (List.range n)`: stable insertion sort.
@@ -1114,17 +1215,27 @@ fn sort_by_key(key: impl Fn(u64) -> u64, n: u64) -> Vec<u64> {
     out
 }
 
-/// `Gen.sdRows R D` at the aligned height: scan rows, then distribute rows,
-/// zero padding (`extra = 1`).
-pub fn scandist_aligned(inp: &SchedIn) -> Tab {
-    let mut rows = scan_rows(&inp.run);
-    rows.extend(dist_rows(inp));
-    aligned(&rows, 1, SCANDIST_WIDTH)
+/// `ProcScanDistPhases.rows bs`: every run's scan rows, then every block's
+/// distribute rows (`distribution b`, empty when the generator throws).
+pub fn scandist_rows(bs: &[SchedIn]) -> Vec<Vec<u64>> {
+    let mut rows: Vec<Vec<u64>> = bs.iter().flat_map(|b| scan_rows(&b.run)).collect();
+    for b in bs {
+        if let Some(d) = dist_rows(b) {
+            rows.extend(d.rows);
+        }
+    }
+    rows
+}
+
+/// `ProcScanDistPhases.trace bs` (= `ssdCell bs`): the merged rows, zero
+/// padding (`distPad`), `2^22` rows.
+pub fn scandist_aligned(bs: &[SchedIn]) -> Tab {
+    sched_tab(&scandist_rows(bs), SCANDIST_WIDTH, |_| None)
 }
 
 /// `npudr v3render scandist`.
 pub fn scandist(json: &str) -> Result<Tab, String> {
-    Ok(scandist_aligned(&parse(json)?))
+    Ok(scandist_aligned(&parse_all(json)?))
 }
 
 // ---------------------------------------------------------------------------
@@ -1219,80 +1330,36 @@ fn bytes_le(x: u64, len: usize) -> Vec<u64> {
     (0..len).map(|i| byte_of(x, i as u32)).collect()
 }
 
-/// `Gen.Dist.gridGrants` recomputed for the codec's `gbA` (the `SDG` bus carries
-/// the distribute grid's grants to the codec).
-fn grid_grants(inp: &SchedIn) -> Vec<u64> {
-    let r = &inp.run;
-    let n = r.n as usize;
-    let allowed = &inp.allowed;
-    let sb = &r.fin.sb;
-    let rb = &r.fin.rb;
-    let c_s = |s: usize| {
-        (0..n)
-            .filter(|&x| get_bool(allowed, (s * n + x) as u64))
-            .count()
-    };
-    let c_r = |x: usize| {
-        (0..n)
-            .filter(|&s| get_bool(allowed, (s * n + x) as u64))
-            .count()
-    };
-    let sord = sort_by_key_index(n, |s| avg_of(c_s(s) as u64, get(sb, s)));
-    let rord = sort_by_key_index(n, |x| avg_of(c_r(x) as u64, get(rb, x)));
-    let mut ri: Vec<(u64, u64)> = (0..n).map(|x| (c_r(x) as u64, get(rb, x))).collect();
-    let mut g = vec![0u64; n * n];
-    for &s in &sord {
-        let mut se = (c_s(s) as u64, get(sb, s));
-        for &rr in &rord {
-            let l = s * n + rr;
-            if get_bool(allowed, l as u64) {
-                let re = ri[rr];
-                let gb = (se.1 / se.0).min(re.1 / re.0);
-                g[l] = gb;
-                se = (se.0 - 1, se.1 - gb);
-                ri[rr] = (re.0 - 1, re.1 - gb);
-            }
-        }
-    }
-    g
-}
-
-/// `sortByKey key (List.range n)` (stable) for indices.
-fn sort_by_key_index(n: usize, key: impl Fn(usize) -> u64) -> Vec<usize> {
-    fn insert(key: &impl Fn(usize) -> u64, x: usize, out: &mut Vec<usize>) {
-        let kx = key(x);
-        let at = out.iter().position(|&y| kx < key(y));
-        match at {
-            Some(i) => out.insert(i, x),
-            None => out.push(x),
-        }
-    }
-    let mut out: Vec<usize> = Vec::new();
-    for x in 0..n {
-        insert(&key, x, &mut out);
-    }
-    out
-}
-
-/// `Gen.idByte ids k o`.
+/// `Gen.idByte ids k o` (`k / 0 = 0`, `k % 0 = k`).
 fn id_byte(ids: &[u64], k: u64, o: u64) -> u64 {
     let n = ids.len() as u64;
+    let (q, m) = if n == 0 { (0, k) } else { (k / n, k % n) };
     let id = if o < 8 {
-        get(ids, (k / n) as usize)
+        get(ids, q as usize)
     } else {
-        get(ids, (k % n) as usize)
+        get(ids, m as usize)
     };
     id / 256u64.pow((o % 8) as u32) % 256
 }
 
-/// `Gen.Codec.codecRows I R present vidV gbA fwd`, the row list only.
-fn codec_rows(inp: &SchedIn, gb_a: &[u64]) -> Vec<Vec<u64>> {
+/// The codec rows of one block (`Blk.descs (blkOf b)`, `Render/CodecGen.lean`,
+/// = the rows of `Gen.codecRows I R present vidV gbA fwd`) and its comparator
+/// messages (the `SCMP` sends: `(apR + fair, MA, cb)` on each allowance
+/// field's `g = 2` row, `(gfin + gb, ft, 1)` on each record end of instance 0).
+fn codec_rows(inp: &SchedIn, gb_a: &[u64]) -> (Vec<Vec<u64>>, Vec<(u64, u64, u64)>) {
     let r = &inp.run;
     let n = r.n;
     let nn = n * n;
     let tv = r.tau;
     let present = inp.present;
-    let fair_v = inp.params.max_shard_bandwidth / n.max(1);
+    // `maxShardBandwidth / n` with Lean's `x / 0 = 0`
+    let fair_v = if n == 0 {
+        0
+    } else {
+        inp.params.max_shard_bandwidth / n
+    };
+    let sm = SrcMap::new(&inp.ids, nn);
+    let mut cmps: Vec<(u64, u64, u64)> = Vec::new();
     let base_v = inp.params.base;
     let a0 = &inp.a0;
     let hpre: Vec<u64> = if present {
@@ -1399,8 +1466,8 @@ fn codec_rows(inp: &SchedIn, gb_a: &[u64]) -> Vec<Vec<u64>> {
                 let wtv = 256u64.pow(gg as u32);
                 let nzbv = if bpr == 0 { 0 } else { 1 };
                 let is_end = f == 2 && gg == 7;
-                let src_o = src_of(&inp.ids, kk);
-                let use_v = (0..nn).any(|l2| src_o.is_some() && src_of(&inp.ids, l2) == src_o);
+                let src_o = sm.src(kk);
+                let use_v = sm.used(kk);
                 let a0s = match src_o {
                     Some(k2) => {
                         if present {
@@ -1462,6 +1529,7 @@ fn codec_rows(inp: &SchedIn, gb_a: &[u64]) -> Vec<Vec<u64>> {
                         a[55] = n2(src_o.is_some()); // `a0g`
                         let x = ap_rv + fair_v;
                         cbv = if MA <= x { 1 } else { 0 };
+                        cmps.push((x, MA, cbv));
                         a[CO_CX] = x;
                         a[CO_CY] = MA;
                         a[CO_CBIT] = cbv;
@@ -1478,7 +1546,7 @@ fn codec_rows(inp: &SchedIn, gb_a: &[u64]) -> Vec<Vec<u64>> {
                     } else {
                         ap_rv + fair_v
                     };
-                    let a2v = a1v - alv * base_v;
+                    let a2v = a1v.saturating_sub(alv * base_v);
                     let gf = gfin_f(kk);
                     a[CO_REND] = 1;
                     a[CO_BF] = b_fv;
@@ -1495,6 +1563,7 @@ fn codec_rows(inp: &SchedIn, gb_a: &[u64]) -> Vec<Vec<u64>> {
                             .find(|&&(l, _)| l == kk)
                             .map(|&(_, t)| t)
                             .unwrap_or(0);
+                        cmps.push((gf + gbv, ft, 1));
                         a[CO_FWG] = 1;
                         a[CO_CX] = gf + gbv;
                         a[CO_CY] = ft;
@@ -1561,26 +1630,189 @@ fn codec_rows(inp: &SchedIn, gb_a: &[u64]) -> Vec<Vec<u64>> {
         rows.push(a);
     }
 
-    rows
+    (rows, cmps)
 }
 
-/// `Gen.Codec.codecPad` is the zero row; the trace height is
-/// `padLog22 (logOf (5 + 24N + 64 + 1))`.
-pub fn codec_aligned(inp: &SchedIn) -> Tab {
-    // `gbA` is the distribute grid's grant per link (`SDG`); recompute it when
-    // not supplied, exactly as `Gen.Dist.distRows` does.
-    let gb = if inp.gb.len() == (inp.run.n * inp.run.n) as usize {
+/// One block's codec rows and comparisons; `gbA` is the block's grants
+/// (`b.grants`, field `gb`) when given (`n²` entries), else the distribute
+/// grid's grants (`(distribution b).gb`, zero when it throws).
+fn codec_block(inp: &SchedIn) -> (Vec<Vec<u64>>, Vec<(u64, u64, u64)>) {
+    let nn = (inp.run.n * inp.run.n) as usize;
+    let gb = if inp.gb.len() == nn {
         inp.gb.clone()
     } else {
-        grid_grants(inp)
+        dist_rows(inp).map(|d| d.gb).unwrap_or_else(|| vec![0; nn])
     };
-    let rows = codec_rows(inp, &gb);
-    aligned(&rows, 1, CODEC_WIDTH)
+    codec_rows(inp, &gb)
+}
+
+/// `codecCell (bs.map blkOf)` (`Render/CodecRender.lean`): every block's
+/// descriptor rows, zero padding (`codecPad`), `2^22` rows.
+pub fn codec_aligned(bs: &[SchedIn]) -> Tab {
+    let rows: Vec<Vec<u64>> = bs.iter().flat_map(|b| codec_block(b).0).collect();
+    sched_tab(&rows, CODEC_WIDTH, |_| None)
 }
 
 /// `npudr v3render codec`.
 pub fn codec(json: &str) -> Result<Tab, String> {
-    Ok(codec_aligned(&parse(json)?))
+    Ok(codec_aligned(&parse_all(json)?))
+}
+
+// ---------------------------------------------------------------------------
+// honest request-free blocks (`npudr v3sample codec|scandist|proc|mem|cmp`)
+// ---------------------------------------------------------------------------
+
+/// `Params.calculate Config.pv86 n` (`NearSpecV3.Scheduler`).
+pub fn pv86_params(n: u64) -> Params {
+    let base = (4_500_000u64 - 4_194_304) / n.saturating_sub(1).max(1);
+    Params {
+        base: base.min(100_000),
+        max_shard_bandwidth: 4_500_000,
+        max_single_grant: 4_194_304,
+        max_receipt_size: 4_194_304,
+        max_allowance: 4_500_000,
+    }
+}
+
+/// `addrOf τ kind idx` (`Sched/Ids.lean`).
+fn addr_of(tau: u64, kind: u64, idx: u64) -> u64 {
+    tau * 16384 + kind * 4096 + idx
+}
+
+/// `leWords seed`.
+fn le_words(seed: &[u64]) -> Vec<u64> {
+    seed.chunks_exact(4)
+        .map(|c| c[0] + 256 * c[1] + 65536 * c[2] + 16_777_216 * c[3])
+        .collect()
+}
+
+/// One honest block of instance `tau` without raw requests: `ActualRun.run` on
+/// an input whose requests are all empty is the closed-form link pass
+/// (`linkPass`), no rounds, INIT-only memory segments, no comparisons, and the
+/// final state is the link pass with `Rng.ofSeed seed`.  The prior state is
+/// absent or canonical (`a0[l] < max_allowance`); the grants are the
+/// distribute grid's; instance 0 carries random forwarding demands `≤ gfin + gb`.
+fn sample_block(r: &mut super::sample::Rng, tau: u64) -> SchedIn {
+    let n = 1 + r.below(4);
+    let nn = n * n;
+    let p = pv86_params(n);
+    let id_base = r.below(1_000_000);
+    let ids: Vec<u64> = (0..n).map(|i| id_base * 64 + 7 * i + 1).collect();
+    let allowed: Vec<bool> = (0..nn).map(|_| r.below(4) != 0).collect();
+    let present = r.coin();
+    let a0: Vec<u64> = if present {
+        (0..nn).map(|_| r.below(p.max_allowance)).collect()
+    } else {
+        Vec::new()
+    };
+    let prev_hash = if present { r.bytes(32) } else { Vec::new() };
+    let seed = r.bytes(32);
+    let ash = r.bytes(32);
+    // `linkPass n p allowed (allowances ids prev)`
+    let fair = p.max_shard_bandwidth / n;
+    let al = |l: u64| allowed[l as usize];
+    let a0l = |l: u64| if present { a0[l as usize] } else { 0 };
+    let a2: Vec<u64> = (0..nn)
+        .map(|l| {
+            let a1 = (a0l(l) + fair).min(p.max_allowance);
+            if al(l) {
+                a1 - p.base
+            } else {
+                a1
+            }
+        })
+        .collect();
+    let g2: Vec<u64> = (0..nn).map(|l| if al(l) { p.base } else { 0 }).collect();
+    let sb: Vec<u64> = (0..n)
+        .map(|s| p.max_shard_bandwidth - p.base * cnt_s(n, &allowed, s))
+        .collect();
+    let rb: Vec<u64> = (0..n)
+        .map(|x| p.max_shard_bandwidth - p.base * cnt_r(n, &allowed, x))
+        .collect();
+    let mut segs = Vec::new();
+    for l in 0..nn {
+        segs.push(Seg {
+            addr: addr_of(tau, 0, l),
+            is_l: true,
+            al: al(l),
+            vin0: n2(al(l)),
+            v0: a2[l as usize],
+            w0: g2[l as usize],
+            ops: Vec::new(),
+        });
+    }
+    for (kind, bud) in [(1u64, &sb), (2u64, &rb)] {
+        for x in 0..n {
+            segs.push(Seg {
+                addr: addr_of(tau, kind, x),
+                is_l: false,
+                al: false,
+                vin0: 0,
+                v0: bud[x as usize],
+                w0: 0,
+                ops: Vec::new(),
+            });
+        }
+    }
+    let key = le_words(&seed);
+    let run = Run {
+        tau,
+        n,
+        base: p.base,
+        d: p.max_single_grant - p.base,
+        seed,
+        key: key.clone(),
+        a2: a2.clone(),
+        conv: Vec::new(),
+        used: Vec::new(),
+        rounds: Vec::new(),
+        segs,
+        cmps: Vec::new(),
+        kfin: 0,
+        fin: PState {
+            sb,
+            rb,
+            al: a2,
+            g: g2.clone(),
+            rng: Rng {
+                key,
+                ctr: 0,
+                buf: Vec::new(),
+            },
+        },
+    };
+    let mut b = SchedIn {
+        run,
+        ids,
+        allowed,
+        params: p,
+        present,
+        vid: r.below(1 << 30),
+        gb: Vec::new(),
+        fwd: Vec::new(),
+        ash,
+        a0,
+        prev_hash,
+    };
+    b.gb = dist_rows(&b)
+        .map(|d| d.gb)
+        .unwrap_or_else(|| vec![0; nn as usize]);
+    if tau == 0 {
+        for l in 0..nn {
+            if r.coin() {
+                let cap = g2[l as usize] + b.gb[l as usize];
+                b.fwd.push((l, r.below(cap + 1)));
+            }
+        }
+    }
+    b
+}
+
+/// `n` honest request-free blocks `τ = 0 … n−1` (`n = 0`: no scheduler
+/// instance, every table is padding).  Blocks with requests and rounds come from
+/// the Lean sampler (`np-lean-render-v3-sched sample`, the native scheduler).
+pub fn sample(r: &mut super::sample::Rng, n: usize) -> Vec<SchedIn> {
+    (0..n as u64).map(|tau| sample_block(r, tau)).collect()
 }
 
 /// The legacy `sched` table name: the scheduler is five `nearAirV3` tables, so
@@ -1596,22 +1828,18 @@ mod tests {
     #[test]
     fn cmp_pad_and_bits() {
         // x = 5, y = 3 => b = 1, d = 2
-        let t = cmp_aligned(&[(5, 3, 1)]);
-        assert_eq!(t.log, 1);
-        assert_eq!(t.height(), 2);
-        assert_eq!(t.cells[0], 1); // act
-        assert_eq!(t.cells[1], 5);
-        assert_eq!(t.cells[2], 3);
-        assert_eq!(t.cells[3], 1);
-        assert_eq!(t.cells[4], 0); // d bit 0
-        assert_eq!(t.cells[5], 1); // d bit 1
+        let a = cmp_row(5, 3, 1);
+        assert_eq!(&a[..6], &[1, 5, 3, 1, 0, 1]);
         // y > x => b = 0, d = y - x - 1 = 1
-        let t = cmp_aligned(&[(3, 5, 0)]);
-        assert_eq!(t.cells[3], 0);
-        assert_eq!(t.cells[4], 1);
-        // padding row has b = 1
-        let p = cmp_aligned(&[(1, 1, 1)]);
-        assert_eq!(p.cells[p.width + 3], 1);
+        let a = cmp_row(3, 5, 0);
+        assert_eq!(a[3], 0);
+        assert_eq!(a[4], 1);
+        // the table: height 2^22, padding rows have b = 1
+        let t = cmp_aligned(&[(1, 1, 1)]);
+        assert_eq!(t.log, SCHED_LOG);
+        assert_eq!(t.cells[t.width + 3], 1);
+        assert_eq!(t.cells[(t.height() - 1) * t.width + 3], 1);
+        assert_eq!(t.cells[t.width], 0);
     }
 
     #[test]
@@ -1639,10 +1867,13 @@ mod tests {
             }],
             ..Default::default()
         };
-        let t = mem_aligned(&r);
+        let t = mem_aligned(&[&r, &r]);
         let at = |row: usize, c: usize| t.cells[row * MEM_WIDTH + c];
-        // 2 rows + 1 extra => logOf 3 = 2 => padLog22 2 = 4
-        assert_eq!(t.log, 4);
+        // the shared clock 2^22; the second run's rows follow the first's
+        assert_eq!(t.log, SCHED_LOG);
+        assert_eq!(at(2, M_FST), 1);
+        assert_eq!(at(3, M_W), 8);
+        assert_eq!(at(4, M_ACT), 0);
         assert_eq!(at(0, M_ACT), 1);
         assert_eq!(at(0, M_FST), 1);
         assert_eq!(at(0, M_LST), 0);
@@ -1660,21 +1891,30 @@ mod tests {
             seed: (0..32u64).collect(),
             ..Default::default()
         };
-        let t = proc_aligned(&r);
-        // 16 key rows + 1 tail padding row -> padLog22(logOf 17) = 7
-        assert_eq!(t.log, 7);
-        let at = |row: usize, c: usize| t.cells[row * PROC_WIDTH + c] as u64;
+        let r2 = Run {
+            tau: 3,
+            seed: (32..64u64).collect(),
+            ..Default::default()
+        };
+        let rows: Vec<Vec<u64>> = proc_rows(&r).into_iter().chain(proc_rows(&r2)).collect();
+        assert_eq!(rows.len(), 32);
+        let at = |row: usize, c: usize| rows[row][c];
         assert_eq!(at(0, P_ACT), 1);
         assert_eq!(at(0, P_KK), 1);
         assert_eq!(at(0, P_TAU), 2);
         assert_eq!(at(0, P_COL_L), 256); // limb 0 = seed[0] + 256·seed[1]
         assert_eq!(at(0, P_COL_L + 1), 2 + 256 * 3); // limb 1 = seed[2] + 256·seed[3]
         assert_eq!(at(15, P_KL), 1);
-        // tail row carries ikcPad and Kq = KSENT
-        assert_eq!(at(16, P_IKC), ikc_pad());
-        assert_eq!(at(16, P_KQQ), KSENT);
-        assert_eq!(at(17, P_IKC), ikc_pad());
-        assert_eq!(at(17, P_ACT), 0);
+        // the next instance's key block follows directly (boundary-repaired rotation)
+        assert_eq!(at(16, P_KK), 1);
+        assert_eq!(at(16, P_TAU), 3);
+        assert_eq!(at(16, P_COL_L), 32 + 256 * 33);
+        // tail row (the last run's) carries ikcPad and Kq = KSENT
+        let tail = proc_tail_row(&r2);
+        assert_eq!(tail[P_IKC], ikc_pad());
+        assert_eq!(tail[P_KQQ], KSENT);
+        assert_eq!(tail[P_TAU], 3);
+        assert_eq!(tail[P_ACT], 0);
     }
 
     #[test]
@@ -1716,8 +1956,14 @@ mod tests {
             },
             ..Default::default()
         };
-        let t = scandist_aligned(&inp);
+        let rows = scandist_rows(std::slice::from_ref(&inp));
         let w = SCANDIST_WIDTH;
+        let cells: Vec<u64> = rows.iter().flatten().copied().collect();
+        let t = Tab {
+            log: 0,
+            width: w,
+            cells: cells.iter().map(|&x| x as u32).collect(),
+        };
         // row 0 is the scan param row `kP`; row 1 the first request row `kS`.
         assert_eq!(t.cells[D_ACT], 1);
         assert_eq!(t.cells[D_KP], 1);
@@ -1729,7 +1975,7 @@ mod tests {
         assert_eq!(t.cells[w + D_FQ], 1);
         assert_eq!(t.cells[w + S_Q], 32); // bm[0] >> 0
         assert_eq!(t.cells[w + S_B0], 0); // bit 0 of bm[0]
-        // bit 5 of bm[0] is `b1` of row rho = 2 (trace row 3): pos = 4.
+                                          // bit 5 of bm[0] is `b1` of row rho = 2 (trace row 3): pos = 4.
         let rho2 = 3 * w;
         assert_eq!(t.cells[rho2 + S_U0], 0);
         assert_eq!(t.cells[rho2 + S_U1], 1);
@@ -1744,8 +1990,16 @@ mod tests {
         assert_eq!(t.cells[23 * w + D_B], 255);
         assert_eq!(t.cells[24 * w + D_KC], 1);
         assert_eq!(t.cells[24 * w + D_AL], 1);
-        // the cell's grid grant is min(85, 85) = 85.
+        // the cell's grid grant is min(85, 85) = 85; link 0 is its own source
+        // and is used (`use`), `hasSrc = 1`.
         assert_eq!(t.cells[24 * w + D_KP2], 85);
+        assert_eq!(t.cells[24 * w + D_LNK], 1);
+        assert_eq!(t.cells[24 * w + D_BY0], 1);
+        assert_eq!(rows.len(), 25);
+        // the comparator requests: the two shard keys, then the cell
+        let d = dist_rows(&inp).unwrap();
+        assert_eq!(d.cmps, vec![(85 * 64, 0, 1), (85 * 64, 0, 1), (85, 85, 1)]);
+        assert_eq!(d.gb, vec![85]);
     }
 
     #[test]
@@ -1764,31 +2018,48 @@ mod tests {
             },
             ..Default::default()
         };
-        let t = codec_aligned(&inp);
-        // 5 header + 24·1 records + 64 hash rows + 1 extra.
-        assert_eq!(t.log, pad_log22(log_of(5 + 24 + 64 + 1)));
-        assert_eq!(t.cells[CO_ACT], 1);
-        assert_eq!(t.cells[CO_KH], 1);
-        assert_eq!(t.cells[CO_KF], 1);
-        assert_eq!(t.cells[CO_NN], 1);
-        assert_eq!(t.cells[CO_BASE], 10);
+        let (rows, cmps) = codec_block(&inp);
+        // 5 header + 24·1 records + 64 hash rows.
+        assert_eq!(rows.len(), 5 + 24 + 64);
+        let r0 = &rows[0];
+        assert_eq!(r0[CO_ACT], 1);
+        assert_eq!(r0[CO_KH], 1);
+        assert_eq!(r0[CO_KF], 1);
+        assert_eq!(r0[CO_NN], 1);
+        assert_eq!(r0[CO_BASE], 10);
         // absent previous state: bpre = 0, pres = 0.
-        assert_eq!(t.cells[CO_PRES], 0);
-        assert_eq!(t.cells[CO_BPRE], 0);
+        assert_eq!(r0[CO_PRES], 0);
+        assert_eq!(r0[CO_BPRE], 0);
         // the header register holds `params`: `[0, 0, 1, 0, 0, …]` for N = 1,
         // followed by base bytes `[10, 0, 0]` and fair bytes `[100, 0, 0]`.
-        assert_eq!(t.cells[CO_REG[1]], 1); // params[1] = N byte 0
-        assert_eq!(t.cells[CO_REG[2]], 0); // params[2] = N / 256
-        assert_eq!(t.cells[CO_REG[5]], 10); // params[5] = base byte 0
-        assert_eq!(t.cells[CO_REG[8]], 100); // params[8] = fair byte 0
+        assert_eq!(r0[CO_REG[1]], 1); // params[1] = N byte 0
+        assert_eq!(r0[CO_REG[2]], 0); // params[2] = N / 256
+        assert_eq!(r0[CO_REG[5]], 10); // params[5] = base byte 0
+        assert_eq!(r0[CO_REG[8]], 100); // params[8] = fair byte 0
+                                        // record 0 is the source of link 0 (`useC = 1`)
+        assert_eq!(rows[5][57], 1);
+        // instance 0: the allowance comparison, then the forwarding comparison
+        assert_eq!(cmps.len(), 2);
+        assert_eq!(cmps[0], (100, MA, 0));
+        assert_eq!(cmps[1].2, 1);
     }
 
     #[test]
-    fn aligned_height_formula() {
-        for n in 0..40usize {
-            let rows: Vec<Vec<u64>> = (0..n).map(|_| vec![0u64]).collect();
-            let t = aligned(&rows, 1, 1);
-            assert_eq!(t.log, pad_log22(log_of(n + 1)), "n = {n}");
+    fn parse_forms() {
+        let r = serde_json::to_string(&Run {
+            tau: 4,
+            ..Default::default()
+        })
+        .unwrap();
+        for j in [
+            r.clone(),
+            format!("[{r}, {r}]"),
+            format!("{{\"run\": {r}}}"),
+            format!("[{{\"run\": {r}}}]"),
+        ] {
+            let bs = parse_all(&j).unwrap();
+            assert!(!bs.is_empty() && bs.iter().all(|b| b.run.tau == 4), "{j}");
         }
+        assert_eq!(parse_all("[]").unwrap().len(), 0);
     }
 }

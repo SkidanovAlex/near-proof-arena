@@ -2,7 +2,9 @@
 //! extension).  Rust twins of the three Lean generators:
 //!
 //! * table 8 `chachaV3` — `ZkFormal.Chacha.Gen` (`posRow`/`blockRows`/`rowCell`);
-//! * table 9 `rngV3`    — `ZkFormal.Chacha.Rng.Gen` (`callRows`/`drawCell`);
+//! * table 9 `rngV3`    — `ZkFormal.Chacha.Rng.Gen` (`callRows`/`drawCell`), plus
+//!   the A9 word counter of `Rng.Table.table22` (`Render/RngW0.lean`
+//!   `rngTraceW0`: `w` col 137, the 20 bits of `W0 − w` in cols 138..157);
 //! * table 10 `shufV3`  — `ZkFormal.Chacha.Shuffle.Gen` (`instRows`/`SInst.cell`).
 //!
 //! The trusted ChaCha20 core is `NearSpecV3.ChaCha20` (`add32`, `rotl32`, `qr`,
@@ -24,10 +26,21 @@
 
 use serde::Deserialize;
 
-use super::{Tab, get, log_of, pad_log22};
+use super::{get, log_of, pad_log22, Tab};
 
 pub const CHACHA_WIDTH: usize = 272;
-pub const RNG_WIDTH: usize = 137;
+/// `Rng.Table.widthW0`: the base 137 columns, the A9 word counter `w` (137)
+/// and the 20 bits `Wb e` (138 + e) of `W0 − w` (`nearAirV3` table 9 =
+/// `Rng.Table.table22`).
+pub const RNG_WIDTH: usize = 158;
+/// The base `Rng.Table.width`.
+pub const RNG_BASE_WIDTH: usize = 137;
+/// `Rng.Table.W0` (`NearSpecV3.W0`): the A9 bound on drawn words.
+pub const W0: u64 = 770_000;
+/// `Rng.Table.colA` (active row), `colW`, `colWb 0`.
+const RNG_COL_A: usize = 129;
+const RNG_COL_W: usize = 137;
+const RNG_COL_WB: usize = 138;
 pub const SHUF_WIDTH: usize = 77;
 
 /// `NearSpecV3.M32`.
@@ -172,7 +185,11 @@ impl Stream {
 
 /// `NearSpecV3.bitLen 64 n`.
 fn bit_len(n: u64) -> u32 {
-    if n == 0 { 0 } else { 64 - n.leading_zeros() }
+    if n == 0 {
+        0
+    } else {
+        64 - n.leading_zeros()
+    }
 }
 
 /// `NearSpecV3.lz32 n = 32 − bitLen 64 n`.
@@ -204,7 +221,11 @@ fn gen_at(stream: &mut Stream, n: u64, mut k: u64) -> Option<(u64, u64)> {
 
 /// `leadingBit n = n.log2` (floor; `Nat.log2 0 = 0`).
 fn top_bit(n: u64) -> u32 {
-    if n == 0 { 0 } else { 63 - n.leading_zeros() }
+    if n == 0 {
+        0
+    } else {
+        63 - n.leading_zeros()
+    }
 }
 
 // ============================================================ table 8 chacha
@@ -467,7 +488,8 @@ pub fn chacha_height(reqs: &[ChachaReq]) -> usize {
     86 * reqs.len()
 }
 
-/// Build the honest `chachaV3` trace at the aligned height.
+/// `chachaTraceAligned reqs` (`Render/PaddedChacha.lean`): the honest
+/// `chachaV3` rows at `padLog22 (logOf (86·|reqs|))`, zero padding.
 pub fn chacha_aligned(reqs: &[ChachaReq]) -> Tab {
     let rows = chacha_height(reqs);
     let mut t = Tab::zero(pad_log22(log_of(rows)), CHACHA_WIDTH);
@@ -565,8 +587,32 @@ fn rng_cell(c: &RngCall, stream: &mut Stream, d: u64, nd: u64, kstart: u64, col:
     }
 }
 
-/// Build the honest `rngV3` trace at the aligned height.
+/// `rngTraceW0 calls 9` (`Render/RngW0.lean`): the aligned base render
+/// (`rngTraceAligned`, columns `< 137`) with the A9 counter columns filled:
+/// `w_r` = active rows (`a = 1`) among rows `0..=r`, and the bits of
+/// `W0 − (active rows)` (truncating; constant) in columns `138 + e`, `e < 20`.
 pub fn rng_aligned(calls: &[RngCall]) -> Tab {
+    let mut t = rng_base_aligned(calls);
+    let h = t.height();
+    let mut w = 0u64;
+    for r in 0..h {
+        if t.cells[r * RNG_WIDTH + RNG_COL_A] == 1 {
+            w += 1;
+        }
+        t.set(r, RNG_COL_W, w);
+    }
+    let rest = W0.saturating_sub(w);
+    for r in 0..h {
+        for e in 0..20 {
+            t.set(r, RNG_COL_WB + e, bt(rest, e as u32));
+        }
+    }
+    t
+}
+
+/// `rngTraceAligned calls`: the base generator's cells (columns `< 137`) at the
+/// aligned height `padLog22 (logOf (Σ nd))`.
+fn rng_base_aligned(calls: &[RngCall]) -> Tab {
     let rows = rng_rows(calls);
     let mut t = Tab::zero(pad_log22(log_of(rows)), RNG_WIDTH);
     let h = t.height();
@@ -580,7 +626,7 @@ pub fn rng_aligned(calls: &[RngCall]) -> Tab {
             if r >= h {
                 break 'calls;
             }
-            for col in 0..RNG_WIDTH {
+            for col in 0..RNG_BASE_WIDTH {
                 t.set(r, col, rng_cell(c, &mut stream, d, nd, c.kstart, col));
             }
             r += 1;
@@ -630,7 +676,8 @@ pub fn shuf_rows(insts: &[ShuffleInst]) -> usize {
     insts.iter().map(shuf_l).sum()
 }
 
-/// Build the honest `shufV3` trace at the aligned height.
+/// `shufTraceAligned insts` (`Render/PaddedChacha.lean`): the honest `shufV3`
+/// rows at `padLog22 (logOf (Σ L))`, padding rows `rc = r`.
 pub fn shuf_aligned(insts: &[ShuffleInst]) -> Tab {
     let rows = shuf_rows(insts);
     let mut t = Tab::zero(pad_log22(log_of(rows)), SHUF_WIDTH);
@@ -720,22 +767,84 @@ fn arr_value(vals: &[u64], q: usize) -> u64 {
     vals.get(q).copied().unwrap_or(0)
 }
 
+// ------------------------------------------------- lane entries from runs
+
+/// The ChaCha-lane entries of a list of scheduler runs (`Render/ChachaLane.lean`):
+/// `laneReqs rs`, `laneCalls rs`, `laneInsts rs`.
+pub fn lane(rs: &[&super::sched::Run]) -> (Vec<ChachaReq>, Vec<RngCall>, Vec<ShuffleInst>) {
+    let mut insts = Vec::new();
+    let mut reqs = Vec::new();
+    for r in rs {
+        // `runInsts R`: `roundInst R rd = ⟨lidOf τ T, R.key, kst, entries.map ein⟩`
+        for rd in &r.rounds {
+            insts.push(ShuffleInst {
+                lid: r.tau * 4_194_304 + rd.t,
+                key: r.key.clone(),
+                kstart: rd.kst,
+                vals: rd.entries.iter().map(|e| e.ein).collect(),
+            });
+        }
+        // `Gen.Lane.chachaReqs R`: every block of the words `0 … kfin − 1`
+        for ctr in 0..r.kfin.div_ceil(16) {
+            reqs.push(ChachaReq {
+                key: r.key.clone(),
+                ctr,
+                used: (0..16).map(|w| 16 * ctr + w < r.kfin).collect(),
+            });
+        }
+    }
+    // `instCalls I = (range (L − 1)).map (e ↦ ⟨key, kAt e, L − e⟩)`
+    let mut calls = Vec::new();
+    for i in &insts {
+        let mut stream = Stream::new(&i.key);
+        let kat = shuf_kat(i, &mut stream);
+        let l = shuf_l(i);
+        for e in 0..l.saturating_sub(1) {
+            calls.push(RngCall {
+                key: i.key.clone(),
+                kstart: kat[e],
+                n: (l - e) as u64,
+            });
+        }
+    }
+    (reqs, calls, insts)
+}
+
+/// A list of scheduler blocks (`sched::SchedIn`, objects with a `run`) is read
+/// as its runs' lane entries.
+fn lane_of_json(json: &str) -> Option<(Vec<ChachaReq>, Vec<RngCall>, Vec<ShuffleInst>)> {
+    let v: serde_json::Value = serde_json::from_str(json).ok()?;
+    let first = v.as_array()?.first()?;
+    first.get("run")?;
+    let bs = super::sched::parse_all(json).ok()?;
+    Some(lane(&bs.iter().map(|b| &b.run).collect::<Vec<_>>()))
+}
+
 // -------------------------------------------------------------------- render
 
-/// Parse `json` as `List ChachaReq` and render the aligned `chachaV3` trace.
+/// Parse `json` as `List ChachaReq` (or a scheduler block list: `laneReqs`) and render the aligned `chachaV3` trace.
 pub fn render(json: &str) -> Result<Tab, String> {
+    if let Some((reqs, _, _)) = lane_of_json(json) {
+        return Ok(chacha_aligned(&reqs));
+    }
     let reqs: Vec<ChachaReq> = serde_json::from_str(json).map_err(|e| e.to_string())?;
     Ok(chacha_aligned(&reqs))
 }
 
-/// Parse `json` as `List RngCall` and render the aligned `rngV3` trace.
+/// Parse `json` as `List RngCall` (or a scheduler block list: `laneCalls`) and render the aligned `rngV3` trace.
 pub fn render_rng(json: &str) -> Result<Tab, String> {
+    if let Some((_, calls, _)) = lane_of_json(json) {
+        return Ok(rng_aligned(&calls));
+    }
     let calls: Vec<RngCall> = serde_json::from_str(json).map_err(|e| e.to_string())?;
     Ok(rng_aligned(&calls))
 }
 
-/// Parse `json` as `List ShuffleInst` and render the aligned `shufV3` trace.
+/// Parse `json` as `List ShuffleInst` (or a scheduler block list: `laneInsts`) and render the aligned `shufV3` trace.
 pub fn render_shuf(json: &str) -> Result<Tab, String> {
+    if let Some((_, _, insts)) = lane_of_json(json) {
+        return Ok(shuf_aligned(&insts));
+    }
     let insts: Vec<ShuffleInst> = serde_json::from_str(json).map_err(|e| e.to_string())?;
     Ok(shuf_aligned(&insts))
 }
@@ -773,7 +882,7 @@ mod tests {
         assert_eq!(at(0, 2 * 12 + 0), 0); // S12 limb0 = ctr % 2^16 = 0
         assert_eq!(at(0, 2 * 12 + 1), 0); // S12 limb1 = ctr / 2^16 = 0
         assert_eq!(at(1, 251), 1); // I1 row
-        // F j row = 82 + j encodes X m = outW(4·m + j).
+                                   // F j row = 82 + j encodes X m = outW(4·m + j).
         let word =
             |r: usize, m: usize| -> u64 { (0..32).map(|b| at(r, 32 + 32 * m + b) << b).sum() };
         // Reference block for key 0..7, ctr 0 (independently verified against
@@ -825,10 +934,10 @@ mod tests {
         assert_eq!(at(0, 127), 0); // acc
         assert_eq!(at(0, 128), 1); // st
         assert_eq!(at(0, 129), 1); // a
-        // n = 2 -> N bits, top bit 1
+                                   // n = 2 -> N bits, top bit 1
         assert_eq!(at(0, 23 + 1), 1);
         assert_eq!(at(0, 37 + 1), 1); // H one-hot at i = 1
-        // row 1: accepted, acc = 1, m2 = 0
+                                      // row 1: accepted, acc = 1, m2 = 0
         assert_eq!(at(1, 127), 1);
         assert_eq!(at(1, 128), 0);
         let m2: u64 = (0..14).map(|b| at(1, 97 + b) << b).sum();
@@ -838,6 +947,25 @@ mod tests {
         assert_eq!(v, 4062562330);
         assert_eq!(at(0, 21), v % 65536);
         assert_eq!(at(0, 22), v / 65536 % 65536);
+    }
+
+    /// The A9 counter: `w` counts the active rows, the bits hold `W0 − w_last`.
+    #[test]
+    fn rng_w0_counter() {
+        let call = RngCall {
+            key: vec![0, 1, 2, 3, 4, 5, 6, 7],
+            kstart: 0,
+            n: 2,
+        };
+        // 3 calls of 2 draws: 6 rows -> logOf 6 = 3 -> padLog22 3 = 4 -> 16 rows
+        let t = rng_aligned(&[call.clone(), call.clone(), call]);
+        assert_eq!(t.height(), 16);
+        let at = |r: usize, c: usize| t.cells[r * RNG_WIDTH + c] as u64;
+        for r in 0..16 {
+            assert_eq!(at(r, RNG_COL_W), (r as u64 + 1).min(6), "w at {r}");
+            let wb: u64 = (0..20).map(|e| at(r, RNG_COL_WB + e) << e).sum();
+            assert_eq!(wb, W0 - 6);
+        }
     }
 
     /// Fisher–Yates `L = 2`, `js(1) = 0`: row `q = 1` is a step, `q = 0` final.
@@ -872,7 +1000,7 @@ mod tests {
         assert_eq!(at(0, 74), 0); // fin
         assert_eq!(at(0, 75), 0); // eqj (s2)
         assert_eq!(at(0, 76), 1); // s2
-        // final row
+                                  // final row
         assert_eq!(at(1, 4), 0);
         assert_eq!(at(1, 26), 20); // arr(0)[0] = 20 (after swap)
         assert_eq!(at(1, 73), 0);
