@@ -63,6 +63,7 @@ import ZkFormal.NearV3.Assembly.LinkRefine
 import ZkFormal.NearV3.Assembly.LinkMain
 import ZkFormal.NearV3.Assembly.LinkSched0
 import ZkFormal.NearV3.Assembly.LinkTrieFam
+import ZkFormal.NearV3.Assembly.LinkRcptWalk
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.OccurrenceAddress
 import ZkFormal.NearV3.Assembly.OriginalBlobIds
