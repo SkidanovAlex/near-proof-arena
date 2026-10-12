@@ -552,11 +552,6 @@ fn s15_b(i: &UpsInst, p: &UpsPartI) -> bool {
     (p.kind == 0 && p.sd == 1) || (p.kind == 5 && i.ts != 1)
 }
 
-/// `UpsGen.s15V` (`Gen.lean:248`).
-fn s15_v(i: &UpsInst, p: &UpsPartI) -> u64 {
-    ind(s15_b(i, p))
-}
-
 /// `UpsGen.upV` (`Gen.lean:249`).
 fn up_v(p: &UpsPartI) -> u64 {
     kin(p, &[0, 1, 11])
