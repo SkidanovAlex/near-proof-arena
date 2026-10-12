@@ -146,4 +146,39 @@ theorem ups_sha_scheduler {insts : List Render.UpsInst} (h : TrieUpsOrigin.UpsSh
   obtain ⟨B, base, Qs, he, rfl⟩ := origin
   exact ⟨_, B, base, Qs, heq ▸ he, heq ▸ rfl⟩
 
+
+/-- `ups_sha_scheduler` keeping the witnesses' native sanity inputs (`SanPin`). -/
+theorem ups_sha_scheduler_pin {k : WalkD0} {m : MainExecutionV3} {steps : List ImplicitStepV3}
+    {insts : List Render.UpsInst} (h : TrieUpsOrigin.UpsShaPin k m steps insts) :
+    ∃ us : List SchedulerUpsertWitness, SanPin k m steps us ∧ (∀ u ∈ us, u.Valid) ∧
+      (Sha.Gen.honestRows (schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us)).length ≤ 1663260 ∧
+      ∀ p : List WStep3,
+        ((physicalPrefixUps p insts).flatMap upsBytes).map Msg.toFp =
+          (Sha.Gen.expectedBytes (schedulerShaJobs 0 us)).map Msg.toFp ∧
+        ((CompactPhysicalDigests.compactGeneratedDigests (physicalPrefixUps p insts)).map Msg.toFp).Perm
+          ((Sha.Gen.expectedDigests (schedulerShaJobs 0 us)).map Msg.toFp) := by
+  obtain ⟨us, hpin, hl, h32, hg, hout, hval, -, hI⟩ := h
+  refine ⟨us, hpin, fun u hu => (hg u hu).1, schedulerBatch_rows us h32 (fun u hu => (hg u hu).1) (fun u hu => (hg u hu).2.1) hout hval, ?_⟩
+  intro p
+  refine ⟨?_, ?_⟩
+  · have hr : (physicalPrefixUps p insts).map upsBytes = insts.map upsBytes :=
+      TrieA7.prefix_map_eq upsBytes (fun _ _ => rfl) insts p
+    rw [List.flatMap_def, hr, ← List.flatMap_def]
+    exact TrieUpsBytes.bytes_from us insts 0 hl (fun i u I hu hI' => by
+      obtain ⟨a, b, c, -⟩ := hI i u I hu hI'
+      exact ⟨a, b, by omega⟩)
+  have hmeta := physicalPrefixUps_origins (us := us) (Is := insts) (fun tau u I hu hI' => by
+    obtain ⟨sha, -, -, a, root, hroot, origin⟩ := hI tau u I hu hI'
+    exact ⟨a, sha, root, hroot, origin⟩) p
+  apply scheduler_compact_digest_conservation us _ (hmeta.1.trans hl)
+    (fun u hu => ⟨(hg u hu).1, (hg u hu).2.2⟩)
+  intro i u J hu hJ
+  obtain ⟨a, sha, root, hroot, origin⟩ := hmeta.2 i u J hu hJ
+  have ht := forestRootAt_tree 0 0 (us.map SchedulerUpsertWitness.pre) i
+  rw [hroot, List.getElem?_map, hu] at ht
+  have heq : root.tree = u.pre := Option.some.inj ht
+  refine ⟨a, sha, ?_⟩
+  obtain ⟨B, base, Qs, he, rfl⟩ := origin
+  exact ⟨_, B, base, Qs, heq ▸ he, heq ▸ rfl⟩
+
 end ZkFormal.NearV3.Assembly.TrieDigestUps

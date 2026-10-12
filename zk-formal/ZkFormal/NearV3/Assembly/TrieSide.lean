@@ -91,6 +91,7 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
       (r6 : TableRenderV3 A.pub 6 (by decide)) (r7 : TableRenderV3 A.pub 7 (by decide))
       (r21 : TableRenderV3 A.pub 21 (by decide)),
       SizedAccountRun A.m.pre writes oldPost ∧ KeysFinal A.k A.w A.m writes oldPost ∧ (∀ u ∈ us, u.Valid) ∧
+      SanPin A.k A.m A.steps us ∧
       ∀ R : RenderBundleV3 A.pub,
         R ⟨0, by decide⟩ = r0 → R ⟨1, by decide⟩ = r1 → R ⟨2, by decide⟩ = r2 → R ⟨3, by decide⟩ = r3 →
         R ⟨4, by decide⟩ = r4 → R ⟨5, by decide⟩ = r5 → R ⟨6, by decide⟩ = r6 → R ⟨7, by decide⟩ = r7 →
@@ -118,7 +119,7 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
           TrieKeyFinal.RcptFinal (RcptSkeleton.rcptTrafficB A.pub A.rcptInput)
             ((A.m.pre, A.m.result.trie) :: A.steps.map (fun s => (s.pre, s.post))) (appliedReceipts A.k A.w) →
           R.BalancedAt B_KEYNIB ∧ R.BalancedAt B_FINAL) := by
-  obtain ⟨writes, oldPost, insts, ws, hr, hkf, ⟨v, hvv, hvr, hws⟩, ⟨Rw, hRw⟩, horigin, hsha, ha7, hedges, hbmaps,
+  obtain ⟨writes, oldPost, insts, ws, hr, hkf, ⟨v, hvv, hvr, hws⟩, ⟨Rw, hRw⟩, horigin, hsha, hshaP, ha7, hedges, hbmaps,
     hall⟩ := TrieAll.trie_all_of A.hk A.hw A.h A.hm A.hv
       (Candidates.NativeQueueIds.resolve A.m.pre A.qvVals (A.steps.map ImplicitStepV3.pre)) A.pub
   have hW := TrieUpb.keys_length (TrieUpsNative.upsRanked ws insts) T_UPS
@@ -132,7 +133,7 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
   obtain ⟨S, SV, hS, hSV⟩ := TrieA7.a7_perm_native A.m A.steps oldPost writes insts ws q horigin hn hval
   have hA7 := TrieA7Total.a7_bound (ws := ws) ha7 hn hval hS hSV
   have hbase := TrieA7Total.size_base (oldPost := oldPost) (writes := writes) (q := q) ha7
-  obtain ⟨us, husv, hrows, hsched⟩ := TrieDigestUps.ups_sha_scheduler hsha
+  obtain ⟨us, hpin, husv, hrows, hsched⟩ := TrieDigestUps.ups_sha_scheduler_pin hshaP
   rw [hJs] at hS hSV hA7
   have hqe : q.edges.length < Algebra.P := by rw [← hq]; exact hedges
   have hqb : q.bmaps.length < Algebra.P := by rw [← hq]; exact hbmaps
@@ -162,7 +163,7 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
       exact hovh writes oldPost q hr hkf hbase'
   refine ⟨writes, oldPost, q, us, shaRenderV3 A.pub 0 (by decide) b0 h0, shaRenderV3 A.pub 1 (by decide) b1 h1,
     nodeRenderV3 A.pub ns hn (selN ns S), Rh, valRenderV3 A.pub es hval (selV es SV), Rw, Ru,
-    upsRenderV3 A.pub Js hok, sizeRenderV3 A.pub _ hSizeOk yN hB, hr, hkf, husv, ?_⟩
+    upsRenderV3 A.pub Js hok, sizeRenderV3 A.pub _ hSizeOk yN hB, hr, hkf, husv, hpin, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 e21
   have e2' : R ⟨T_NODE, by decide⟩ = nodeRenderV3 A.pub ns hn (selN ns S) := e2
   have e3' : R ⟨T_HEAD, by decide⟩ = Rh := e3
@@ -277,7 +278,9 @@ theorem trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
           TrieKeyFinal.RcptKeys (RcptSkeleton.rcptTrafficB A.pub A.rcptInput) (appliedReceipts A.k A.w) →
           TrieKeyFinal.RcptFinal (RcptSkeleton.rcptTrafficB A.pub A.rcptInput)
             ((A.m.pre, A.m.result.trie) :: A.steps.map (fun s => (s.pre, s.post))) (appliedReceipts A.k A.w) →
-          R.BalancedAt B_KEYNIB ∧ R.BalancedAt B_FINAL) :=
-  trie_side_exact A receipt source hrr hpr hsm hbr hbs (sizeBudget_of_coarse A hovh)
+          R.BalancedAt B_KEYNIB ∧ R.BalancedAt B_FINAL) := by
+  obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, -, hall⟩ :=
+    trie_side_exact A receipt source hrr hpr hsm hbr hbs (sizeBudget_of_coarse A hovh)
+  exact ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, hall⟩
 
 end ZkFormal.NearV3.Assembly.TrieSide

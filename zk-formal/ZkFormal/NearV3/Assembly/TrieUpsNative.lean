@@ -72,7 +72,8 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       0 < insts.length ∧ (∀ I ∈ insts, InstOk I) ∧ (∀ I ∈ insts, NativePartFamily I) ∧
       TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
-      TrieUpsOrigin.UpsSha insts ∧ TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
+      TrieUpsOrigin.UpsSha insts ∧ TrieUpsOrigin.UpsShaPin k m steps insts ∧
+      TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       (walkEdgeKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       (walkBmapKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       ∀ W : List ZkFormal.Near.Msg, W.length < Algebra.P →
@@ -97,7 +98,7 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         (W = Candidates.PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2 ^ 22 →
           UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
         (∀ J ∈ Js, NativeMemdSrc J) := by
-  obtain ⟨writes, oldPost, us, insts, hkf, hr, hpairs, hpos, hlen, hgood, hpre, hout, hval, hcount, hinst, hforest,
+  obtain ⟨writes, oldPost, us, insts, hkf, hr, hpairs, hpos, hlen, hgood, hpre, hout, hval, hcount, hinst, hsan, hforest,
     hbytes, -⟩ := coverage_kf hk hw h hm hv (fun _ => default) (fun _ _ => default)
   obtain ⟨v, ws, hvvalid, hvreads, hws, hwlocal, hwtraffic, hranges⟩ :=
     accepted_same_lookup_physical hk hw h hm hv resolve T_WALK pub
@@ -126,15 +127,17 @@ theorem accepted_ups_walks {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     (fun u hu => (hgood u hu).1) hcount (fun tau u I hu hI => by
       obtain ⟨a, -, ex, ci, -, root, hroot, horig⟩ := hinst tau u I hu hI
       exact ⟨a, ex, ci, root, hroot, horig⟩) hforest
-  refine ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads,
-    ⟨⟨nativeWalkTrace (rankWalks [] ws), walkTraffic3 (rankWalks [] ws), hwlocal, hwtraffic,
-      by change 22 % 3 = 1; decide⟩, rfl⟩,
-    by omega, ho, hfam, horigin, ⟨us, hcount, hlen, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.2.1, (hgood u hu).2.1⟩,
+  have hshaP : TrieUpsOrigin.UpsShaPin k m steps insts :=
+    ⟨us, hsan, hcount, hlen, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.2.1, (hgood u hu).2.1⟩,
       hout, hval,
       TrieA7Post.ups_post_bound hk hw h hm hv us hpairs (fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.1⟩),
       fun tau u I hu hI => by
         obtain ⟨a, sha, -, -, -, root, hroot, horig⟩ := hinst tau u I hu hI
-        exact ⟨sha, a.2.2.2.1, a.1, a, root, hroot, horig⟩⟩,
+        exact ⟨sha, a.2.2.2.1, a.1, a, root, hroot, horig⟩⟩
+  refine ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads,
+    ⟨⟨nativeWalkTrace (rankWalks [] ws), walkTraffic3 (rankWalks [] ws), hwlocal, hwtraffic,
+      by change 22 % 3 = 1; decide⟩, rfl⟩,
+    by omega, ho, hfam, horigin, hshaP.sha, hshaP,
     (have hf := TrieA7Forest.ups_forest_facts hk hw h hm hv hr us hpairs
      ⟨us, hcount, fun u hu => ⟨(hgood u hu).1, (hgood u hu).2.1⟩, hf.1, hf.2.1, hf.2.2.1, hf.2.2.2,
       fun tau u I hu hI => by

@@ -37,6 +37,7 @@ theorem rcpt_trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
       (r6 : TableRenderV3 A.pub 6 (by decide)) (r7 : TableRenderV3 A.pub 7 (by decide))
       (r21 : TableRenderV3 A.pub 21 (by decide)),
       SizedAccountRun A.m.pre writes oldPost ∧ KeysFinal A.k A.w A.m writes oldPost ∧ (∀ u ∈ us, u.Valid) ∧
+      SanPin A.k A.m A.steps us ∧
       ∀ R : RenderBundleV3 A.pub,
         R ⟨0, by decide⟩ = r0 → R ⟨1, by decide⟩ = r1 → R ⟨2, by decide⟩ = r2 → R ⟨3, by decide⟩ = r3 →
         R ⟨4, by decide⟩ = r4 → R ⟨5, by decide⟩ = r5 → R ⟨6, by decide⟩ = r6 → R ⟨7, by decide⟩ = r7 →
@@ -61,10 +62,10 @@ theorem rcpt_trie_side {cb wb : Bytes} (A : AcceptedV3 cb wb)
         ((∀ m, cnt ((R.tf 11).recvs B_DIGEST) m = cnt (Sha.Gen.expectedDigests (schedulerSanityJobs 0 us)) m) →
           R.BalancedAt B_DIGEST) := by
   obtain ⟨receipt, hrr, hbr, hRB, hRD⟩ := A.receipt_sha
-  obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, hall⟩ :=
+  obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, hpin, hall⟩ :=
     TrieSide.trie_side_exact A receipt A.srcShaAll hrr A.srcShaAll_rows A.srcShaAll_msgRows hbr
       A.srcShaAll_bytes hovh
-  refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, ?_⟩
+  refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, hr, hkf, hus, hpin, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 h24
   obtain ⟨hcore, hsize, hbytes, hdig, hvslot, hkey⟩ := hall R e0 e1 e2 e3 e4 e5 e6 e7 e21
   have t16 : R.tf 16 = rcptTrafficB A.pub A.rcptInput := bundle_tf_eq R 16 _ h16

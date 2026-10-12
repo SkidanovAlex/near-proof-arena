@@ -44,7 +44,8 @@ theorem trie_all_of {cb wb : Bytes} {k : WalkD0} {w : StateWitness} (hk : walkD0
           (allLookupQueries (appliedReceipts k w) m.pre v (steps.map ImplicitStepV3.pre) resolve) = some ws) ∧
       (∃ Rw : TableRenderV3 pub T_WALK (by decide), Rw.tf = walkTraffic3 (rankWalks [] ws)) ∧
       TrieUpsOrigin.UpsOrigin (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
-      TrieUpsOrigin.UpsSha insts ∧ TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
+      TrieUpsOrigin.UpsSha insts ∧ TrieUpsOrigin.UpsShaPin k m steps insts ∧
+      TrieUpsOrigin.UpsA7 (m.pre :: steps.map ImplicitStepV3.pre) insts ∧
       (walkEdgeKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       (walkBmapKeys (ws ++ upsWalkInventory insts)).length < Algebra.P ∧
       ∀ W : List ZkFormal.Near.Msg, W.length < Algebra.P →
@@ -78,9 +79,9 @@ theorem trie_all_of {cb wb : Bytes} {k : WalkD0} {w : StateWitness} (hk : walkD0
         (W = Candidates.PhysicalWindowRequests.keys (upsTraceAligned Js) T_UPS → R insts + 1 ≤ 2 ^ 22 →
           UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
         (∀ J ∈ Js, TrieUpsMemd.MemdPair J) := by
-  obtain ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads, hRw, hpos, ho, hfam, horigin, hsha, ha7, hedges, hbmaps, hrest⟩ :=
+  obtain ⟨writes, oldPost, insts, v, ws, hr, hkf, hws, hvvalid, hvreads, hRw, hpos, ho, hfam, horigin, hsha, hshaP, ha7, hedges, hbmaps, hrest⟩ :=
     accepted_ups_walks hk hw h hm hv resolve pub
-  refine ⟨writes, oldPost, insts, ws, hr, hkf, ⟨v, hvvalid, hvreads, hws⟩, hRw, horigin, hsha, ha7, hedges, hbmaps, ?_⟩
+  refine ⟨writes, oldPost, insts, ws, hr, hkf, ⟨v, hvvalid, hvreads, hws⟩, hRw, horigin, hsha, hshaP, ha7, hedges, hbmaps, ?_⟩
   intro W hW
   obtain ⟨he, hb, hups, hmid, hlens, hroot1, hroot2, hupb, hmemd⟩ := hrest W hW
   obtain ⟨hn, hval, hh⟩ := TrieNative.accepted_ok hk hw h hm hv hr (useReq ws insts W) hedges hbmaps hW
@@ -144,7 +145,7 @@ theorem trie_all_accepted {cb wb : Bytes} (h : checkD0a B0 cb wb = .ok ()) (reso
           UpsRows.UpbBal ns (viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
         (∀ J ∈ Js, TrieUpsMemd.MemdPair J) := by
   obtain ⟨k, w, m, steps, last, -, -, hk, hw, hm, hv, -⟩ := TrieNative.accepted_native h
-  obtain ⟨writes, oldPost, insts, ws, rest⟩ := trie_all_of hk hw h hm hv resolve pub
-  exact ⟨k, w, m, steps, last, writes, oldPost, insts, ws, hk, hw, hm, hv, rest⟩
+  obtain ⟨writes, oldPost, insts, ws, h1, h2, h3, h4, h5, h6, -, rest⟩ := trie_all_of hk hw h hm hv resolve pub
+  exact ⟨k, w, m, steps, last, writes, oldPost, insts, ws, hk, hw, hm, hv, h1, h2, h3, h4, h5, h6, rest⟩
 
 end ZkFormal.NearV3.Assembly.TrieAll

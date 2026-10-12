@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.AcceptedWindowCoverage
 import ZkFormal.NearV3.Rcpt.Candidates.NativeRebasedUpsertKeys
+import ZkFormal.NearV3.Assembly.SchedulerSanityPin
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieUpsKeys — the native coverage chain with the replay's write keys
@@ -22,6 +23,29 @@ def KeysFinal (k : WalkD0) (w : StateWitness) (m : MainExecutionV3) (writes : Li
   writes.map Prod.fst = (appliedReceipts k w).map (fun r => accountKeyPath r.receiverId) ∧
     ∃ state, oldPost.upsert keyBwState state = some m.result.trie
 
+/-- `implicit_exact_upserts` with the sanity inputs of the implicit calls. -/
+theorem implicit_upserts_pin {k : WalkD0} {root : Bytes} {pairs : List (Blk × Transition)}
+    {steps : List ImplicitStepV3} {last : Bytes}
+    (h : ImplicitTraceValid k root pairs steps last) (hl : k.L.numShards≤64) :
+    ∃us : List SchedulerUpsertWitness,
+      us.map (fun u=>(u.pre,u.run.output))=steps.map (fun s=>(s.pre,s.post)) ∧
+      (∀u∈us,u.Valid ∧ u.value.length≤98341) ∧
+      us.map schedulerWitnessSanity=steps.map (fun e=>sanOf (implicitCtx k e) e.pre) := by
+  induction h with
+  | nil=>exact ⟨[],rfl,by simp,rfl⟩
+  | cons root b t rest steps post last hr hp ht ih=>
+    obtain ⟨u,hctx,hpre,hpost,hvalid⟩:=missing_exact_upsert hr
+    obtain ⟨us,hus,hgood,hsan⟩:=ih
+    have hlen:=SchedulerUpsertWitness.value_bound hvalid (by rw [hctx];exact hl)
+    refine ⟨u::us,?_,?_,?_⟩
+    · simp [hpre,hpost,hus]
+    · intro x hx
+      rcases List.mem_cons.mp hx with rfl|hx
+      · exact ⟨hvalid,hlen⟩
+      · exact hgood x hx
+    · simp only [List.map_cons,hsan,sanity_sanOf,hctx,hpre]
+      rfl
+
 theorem upserts_kf {k : WalkD0} {w : StateWitness} {m : MainExecutionV3}
     {steps : List ImplicitStepV3} {last : Bytes} (hm : m.NativeValid k w)
     (hv : ImplicitTraceValid k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) steps last)
@@ -30,21 +54,29 @@ theorem upserts_kf {k : WalkD0} {w : StateWitness} {m : MainExecutionV3}
       KeysFinal k w m writes oldPost ∧
       SizedAccountRun m.pre writes oldPost ∧
       us.map (fun u=>(u.pre,u.run.output))=(oldPost,m.result.trie)::steps.map (fun s=>(s.pre,s.post)) ∧
-      (∀u∈us,u.Valid ∧ u.value.length≤98341) ∧
+      (∀u∈us,u.Valid ∧ u.value.length≤98341) ∧ SanPin k m steps us ∧
       let rs:=nativeReplayForest m steps oldPost writes
       (∀r∈rs,r.Valid) ∧
       (records (forestOldInputs rs) (forestNodes 0 0 0 (m.pre::steps.map ImplicitStepV3.pre))).map (fun s=>s.v.ser true)=
         ((rs.map ReplayTree.post).flatMap occs).map (fun t=>(nodeEnc t).map UInt8.toNat) := by
   obtain ⟨writes,oldPost,mid,so,u,hu,hctx,hpre,hvalue,houtput,hvalid,hs,hkeys,hr,hfinal,hforest,hbytes⟩:=
     native_execution_rebased_payloads_keys hm hv
-  obtain ⟨us,hpairs,hgood⟩:=implicit_exact_upserts hv hl
+  obtain ⟨us,hpairs,hgood,hsan⟩:=implicit_upserts_pin hv hl
   have hlen:=SchedulerUpsertWitness.value_bound hvalid (by rw [hctx];exact hl)
-  refine ⟨writes,oldPost,u::us,⟨hkeys,_,hfinal⟩,hr,?_,?_,hforest,hbytes⟩
+  refine ⟨writes,oldPost,u::us,⟨hkeys,_,hfinal⟩,hr,?_,?_,?_,hforest,hbytes⟩
   · simp only [List.map_cons,hpre,houtput,hpairs]
   · intro x hx
     rcases List.mem_cons.mp hx with rfl|hx
     · exact ⟨hvalid,hlen⟩
     · exact hgood x hx
+  · have hk : ∀kv∈writes,keyBwState≠kv.1 := by
+      intro kv hkv
+      have hm' : kv.1∈(appliedReceipts k w).map (fun r=>accountKeyPath r.receiverId) := by
+        rw [←hkeys]; exact List.mem_map.mpr ⟨kv,hkv,rfl⟩
+      obtain ⟨r,-,hr'⟩:=List.mem_map.mp hm'
+      rw [←hr']
+      simp [keyBwState,accountKeyPath,nibbles]
+    simp only [SanPin,sanList,List.map_cons,hsan,sanity_sanOf,hctx,hpre,sanOf_rebased hr hk]
 
 theorem physical_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     (hk : walkD0 cb=.ok k) (hw : decodeW wb=.ok w) (h : checkD0a B0 cb wb=.ok ())
@@ -59,7 +91,7 @@ theorem physical_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       (∀u∈us,u.Valid ∧ u.pre.wf=true ∧ u.run.parts.length≤403 ∧ fdepth u.pre keyBwState≤400 ∧ u.value.length≤98341) ∧
       preBytes (us.map SchedulerUpsertWitness.pre)≤2000000 ∧
       (us.map (fun u=>outputByteCharge u.run)).sum≤2131072 ∧
-      (us.map (fun u=>u.value.length)).sum≤3146912 ∧
+      (us.map (fun u=>u.value.length)).sum≤3146912 ∧ SanPin k m steps us ∧
       let rs:=nativeReplayForest m steps oldPost writes
       (∀r∈rs,r.Valid) ∧
       (records (forestOldInputs rs) (forestNodes 0 0 0 (m.pre::steps.map ImplicitStepV3.pre))).map (fun s=>s.v.ser true)=
@@ -69,7 +101,7 @@ theorem physical_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     obtain ⟨u,hu,_⟩:=ReexecV3D0.bind_ok' h
     cases u;exact hu
   have hL:=(checkD0_claim_guards hk hw hc).1.layout.2
-  obtain ⟨writes,oldPost,us,hkf,hr,hpairs,hvalid,hforest,hbytes⟩:=upserts_kf hm hv hL
+  obtain ⟨writes,oldPost,us,hkf,hr,hpairs,hvalid,hsan,hforest,hbytes⟩:=upserts_kf hm hv hL
   have he : us.map SchedulerUpsertWitness.pre=oldPost::steps.map ImplicitStepV3.pre := by
     have hh:=congrArg (List.map Prod.fst) hpairs
     simpa only [List.map_map,List.map_cons,Function.comp_def] using hh
@@ -100,7 +132,7 @@ theorem physical_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     simpa only [preBytes,List.map_cons,List.sum_cons,SizedAccountRun.unfolded_bytes hr,B0] using hb
   have hout:=schedulerUpserts_output_tight_charge us (fun u hu=>(hvalid u hu).1) hwell
   have hval:=scheduler_value_sum us (fun u hu=>(hvalid u hu).2)
-  refine ⟨writes,oldPost,us,hkf,hr,hpairs,by omega,by omega,?_,hb',by omega,by omega,hforest,hbytes⟩
+  refine ⟨writes,oldPost,us,hkf,hr,hpairs,by omega,by omega,?_,hb',by omega,by omega,hsan,hforest,hbytes⟩
   intro u hu
   have hp:=traceUpsert_count u.pre keyBwState u.value u.run (hvalid u hu).1.1
   exact ⟨(hvalid u hu).1,hwell u hu,by have hh:=hdepth u hu;omega,hdepth u hu,(hvalid u hu).2⟩
@@ -125,7 +157,7 @@ theorem coverage_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         ExactNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) u.run I ∧
         I.ci=u.run.terminal.ix ∧ DispatchNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) u.run I ∧
         ∃root,forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) tau=some root ∧
-          NativeReaderOrigin root u.run u.value I) ∧
+          NativeReaderOrigin root u.run u.value I) ∧ SanPin k m steps us ∧
       let rs:=nativeReplayForest m steps oldPost writes
       (∀r∈rs,r.Valid) ∧
       (records (forestOldInputs rs) (forestNodes 0 0 0 (m.pre::steps.map ImplicitStepV3.pre))).map (fun s=>s.v.ser true)=
@@ -148,7 +180,7 @@ theorem coverage_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     · rw [hm.pre]; exact (built_spec _ trieFuel _ _ hm.root_length).2.1
     · obtain ⟨s,hs,rfl⟩:=List.mem_map.mp ht
       exact (hv.input_facts s hs).2.2
-  obtain ⟨writes,oldPost,us,hkf,hr,hpairs,hpos,hlen,hgood,hpre,hout,hval,hforest,hbytes⟩:=
+  obtain ⟨writes,oldPost,us,hkf,hr,hpairs,hpos,hlen,hgood,hpre,hout,hval,hsan,hforest,hbytes⟩:=
     physical_kf hk hw h hm hv hlen hwf
   obtain ⟨insts,hcount,hinst⟩:=chosen_origin_instances hgood hpre hout baseI base
   let rs:=nativeReplayForest m steps oldPost writes
@@ -168,7 +200,7 @@ theorem coverage_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     exact hwf _ (hrs ▸ List.mem_map.mpr ⟨r,hr,rfl⟩)
   have hn:=native_window_provider_ok hk hw h hm hv (forestOldInputs rs)
   have hb:=native_window_provider_bytes (m.pre::steps.map ImplicitStepV3.pre) hwf (forestOldInputs rs)
-  refine ⟨writes,oldPost,us,insts,hkf,hr,hpairs,hpos,hlen,hgood,hpre,hout,hval,hcount,hinst,hforest,hbytes,?_⟩
+  refine ⟨writes,oldPost,us,insts,hkf,hr,hpairs,hpos,hlen,hgood,hpre,hout,hval,hcount,hinst,hsan,hforest,hbytes,?_⟩
   intro t
   apply native_physical_window_coverage rs hforest hwr (hpreEq ▸ hpre) us insts hpreEq
     (fun u hu=>⟨(hgood u hu).1,(hgood u hu).2.1⟩) hcount
