@@ -39,3 +39,7 @@ import ZkFormal.NearV3.Assembly.LinkTrieOk
 /-- info: 'ZkFormal.NearV3.Assembly.LinkTrieOk.post_of' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.LinkTrieOk.post_of
+
+/-- info: 'ZkFormal.NearV3.Assembly.LinkTrieOk.hcov_of' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.LinkTrieOk.hcov_of

@@ -184,6 +184,64 @@ theorem post_of (hp : NearSpecV3.prepD0 cb h = .ok p)
     · rename_i hwr; exact (hun e he he0 hwr hw').symm
     · rfl
 
+/-- **`hcov`, receipt part**: the receipts' account keys and the self-refunds' access keys are
+determined (`some _`) in the pre record tree of instance `0`; the fixed keys other than `0x0f`
+(`pre_find_key`) and the buffered groups remain (`hfix`, `hgrp`: qv reads). -/
+theorem hcov_of (hp : NearSpecV3.prepD0 cb h = .ok p)
+    (hsz : (ZkFormal.NearV3.Public.preparedBytes p oh).length < P)
+    (hH : HoldsP nearAirV3 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr)
+    (T : V3RecordsTraffic (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) tr r)
+    (W : V3RecordsWf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.Public.preparedBytes p oh)) r)
+    (h0 : 0 < p.sched.length) {x : ExtV3} (hxr : x.receipts = r.lists) {bs : List Nat}
+    (hfix : ∀ key ∈ [NearSpecV3.keyDelayedIdx, NearSpecV3.keyBufferedIdx, NearSpecV3.keyYieldIdx],
+      (Fpre r 0).find key ≠ none)
+    (hgrp : ∀ y ∈ bs, (Fpre r 0).find (NearSpecV3.keyGroupsData y) ≠ none) :
+    ∀ key ∈ NearSpecV3.mainKeys x.applied bs, (Fpre r 0).find key ≠ none := by
+  have happ : x.applied = (flatR r.lists).map (fun e => e.toRcptV.toReceipt) := by
+    simp only [ExtV3.applied, hxr, flatR, List.map_flatMap]
+  intro key hk
+  unfold NearSpecV3.mainKeys at hk
+  rcases List.mem_append.mp hk with hk | hk
+  · rcases List.mem_append.mp hk with hk | hk
+    · rcases List.mem_append.mp hk with hk | hk
+      · simp only [List.mem_cons, List.not_mem_nil, or_false] at hk
+        rcases hk with rfl | rfl | rfl | rfl
+        · exact hfix _ (by simp)
+        · have hf := pre_find_key hp hsz hH T W h0 (Nat.zero_le _)
+          rw [← LinkVBytes.keyBwState_eq] at hf
+          rw [hf]; simp
+        · exact hfix _ (by simp)
+        · exact hfix _ (by simp)
+      · obtain ⟨y, hy, rfl⟩ := List.mem_map.mp hk
+        exact hgrp y hy
+    · obtain ⟨rc, hrc, rfl⟩ := List.mem_map.mp hk
+      rw [happ] at hrc
+      obtain ⟨e, he, rfl⟩ := List.mem_map.mp hrc
+      obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem he
+      obtain ⟨hr, hlt, -⟩ := rcpt_reach hp hsz hH T W hi
+      have := Fv_find hr hlt (preV r)
+      rw [Fv_pre W] at this
+      simp only [RcptV.toReceipt]
+      rw [this]; simp
+  · obtain ⟨rc, hrc, rfl⟩ := List.mem_map.mp hk
+    obtain ⟨hrc, hsel⟩ := List.mem_filter.mp hrc
+    rw [happ] at hrc
+    obtain ⟨e, he, rfl⟩ := List.mem_map.mp hrc
+    obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem he
+    obtain ⟨toks, -, -, hwf, -⟩ := W.lists.toks
+    simp only [RcptV.toReceipt, Bool.and_eq_true, beq_iff_eq] at hsel
+    have hsys : (flatR r.lists)[i].sys = true := (hwf i hi).sysIff.mpr hsel.1
+    have hee := RcptLink.ee_of_self hH T W hi hsys hsel.2
+    obtain ⟨wv, hwv, ht, -, -, hkey⟩ := ak_walk hp hsz hH T W hi hee
+    simp only [RcptV.toReceipt]
+    rw [← hsel.2, ← hkey, ← Fv_pre W, ← ht]
+    by_cases hfk : wv.fk = FK_VAL
+    · obtain ⟨hr, hlt⟩ := walk_reach hp hsz hH T W hwv hfk
+      rw [Fv_find hr hlt (preV r)]; simp
+    · have hA : wv.fk = FK_ABS := by
+        unfold WalkR.fk at hfk ⊢; split at hfk <;> simp_all
+      rw [walk_abs hp hsz hH T W hwv hA (preV r)]; simp
+
 end
 
 end LinkTrieOk
