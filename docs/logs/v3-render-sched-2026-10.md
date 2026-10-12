@@ -295,3 +295,62 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
     sends `[τ, 37 + 24·n²]` per τ; SPOST sends `[τ, p, u.value[p]]` for every p; sanity SHA jobs (BYTES)
     are the codec's — the honest inputs must be the same native choice as the trie lane's `UpsSha`
     (`TrieUpsSched.lean`, `trie_all_of`).
+
+## 2026-10-12 (package 7, fresh session: codec table 11 assembled)
+
+* Merged `origin/lane/v3-trie-complete` (3834ac8e: `TrieSide.trie_side`). `ZkFormal.V3.Integration` builds
+  (4290 jobs, 14m38s); `make pin-check` OK.
+* **Performance finding (important):** `simp` with a `rfl`-proved `lookup_cons` (a dsimp lemma) makes the
+  *kernel* unfold symbolic field inverses (`inv (fsub p 4)`; `inv` being `@[irreducible]` does not help the
+  kernel) → OOM at 14 G even for `lookup [(44, inv (fsub p 4))] 44 0 = inv (fsub p 4)`. Fix: `lookup_cons` /
+  `lookup_nil` are proved propositionally (`simp only [lookup, List.foldl_cons]`), never by `rfl`
+  (`Render/CodecCells.lean`). With that, cell evaluation of all row kinds is fast. Also: building
+  CodecHeader/EndInt/RecInt in one `lake build` exceeds 14 G (parallel); build them one at a time
+  (6 min / 12.7 min / 26.5 min).
+* **Codec (table 11, frozen `Sched.Codec.table`) — TableLocal + exact traffic over honest blocks: DONE.**
+  * `Render/CodecCells.lean`: `lookup_ite/cons/nil/app`, `lookup_bound`, `gd_setAll`, `keys_{hdrA,recA,hashA,ashA}`.
+  * `Render/CodecRowMod.lean`: `cdc_cell` (cell evaluation), `modE_cases`, `tz_mod`, **`hdr_mod`, `rec_mod`,
+    `hash_mod`, `ash_mod`** (the eight `modE` constraints over `Fp` on each row kind, symbolic `f, gg`),
+    `row_local` (integer pass + modular pass ⇒ every constraint).
+  * `Render/CodecDesc.lean`: `Desc` (`hdr`/`record`/`hash`/`ash`), `InstOk`, `RecOk`, `Desc.Valid` (cells `< P` +
+    the row lemmas' premises), `Desc.Adj` (exactly the integer-pass successor premises), `Final`, `FirstOk`;
+    **`local_at`** (all 239 constraints on a descriptor row), **`mult_bits`** (multiplicities are bits).
+  * `Render/CodecTable.lean`: `codecTrace ds`, `cur_desc`, **`table_local`** (descriptor chain, `< 2^22` rows ⇒
+    `TableLocal Sched.Codec.table`; padding via `CodecPadding.physical_constraints/physical_mult_zero`).
+    `Render/CodecChain.lean`: chain append/flatten/range for codec descriptors, `table_local_chain`.
+  * `Render/CodecVals.lean`: `hdr_vals`, `rec_vals`, `hash_vals`, `ash_vals` (all cells `< P` from explicit bounds).
+  * `Render/CodecGen.lean`: `Blk` (instance constants, ids, prior allowances `a0`, per-link `recs`, digest,
+    previous hash, `sha256(all_shards)`), `Blk.descs` (5 + 24·N + 64 rows; bytes and allowance accumulators in
+    closed form = frozen `Gen.codecRows`), `Blk.Ok` (explicit premises), `descs_chain`, `descs_valid`,
+    `descs_length`, `allDescs`, **`allDescs_local`**.
+  * `Render/CodecRender.lean`: `codecCell`, `codec_currentOnly` (`decide +kernel`), **`codec_blocks_complete`**
+    (TableLocal + `TableTraffic … (rowsTraffic Codec.table.interactions (codecCell Bs) 22 t pub)` + `22 % 3 = 1`),
+    **`codecRenderV3 pub Bs hok hcap : TableRenderV3 pub 11`**.
+  * `Render/CodecNative.lean`: `blkOf b` (the frozen block of a `NativeBlock`, same native choice as
+    `PriorCore`/proc/ssd/mem/cmp: `a0 := a0Canon`, source map `srcOf`, grants `b.grants`, final link values
+    `R.segs`, instance-0 demand `demand b.forwarded`, sanity bytes), `base_le_fair` (PV86, `decide`),
+    **`blkOf_ok`** (`Blk.Ok (blkOf b)` from the run, `SchedPubOk`, `n ≤ 64`, τ < 32 and `NatRes b`),
+    `blocks_length`, **`codec_accepted`**: `checkD0a B0` acceptance ⇒ `∃ bs, PriorCore p B0 bs ∧ ((∀ b ∈ bs,
+    NatRes b) → ∃ R : TableRenderV3 pub 11, R.tr = codecTrace (allDescs (bs.map blkOf)) ∧ R.tf = rowsTraffic …)`.
+  * Audit `test/AuditCodecTable.lean` (axioms ⊆ {propext, Classical.choice, Quot.sound}). Commits ac76f86c, 8dcf96b1.
+
+### Open (this lane), exact
+1. `NatRes b` for every `b` of `PriorCore p B0 bs` (`Render/CodecNative.lean`): `b.vid < P`;
+   `∀ kk < n², b.grants[kk]! < 2^26`; `∀ kk < n², (b.run.segs.getD kk default).wfin < 2^26`;
+   `b.run.tau = 0 → ∀ kk < n², demand b.forwarded kk < 2^24`. Sources: `ProcPriorCodecGrantCap.native`
+   (`wfin + gd[k] ≤ 4.5M`) and `ProcPriorCodecForwardRange.native` need the block's distribution witness
+   (`distributeEv … = .ok (b.grants, …)`) and its process prefix, which `PriorCore` does not export;
+   `vid` bound from `priorValueId` (forest size).
+2. Codec traffic (task 2) not started: per-bus message lists of `rowsTraffic Codec.table.interactions
+   (codecCell (bs.map blkOf)) 22 11 pub` (S0F `[τ, pres, vid]` from `hdr _ 0`; SPLEN `[τ, 37 + 24·n²]`; SPOST
+   `[τ, pos, bpost]` on header/record/hash rows = `stateBytes ids afin digest`; BYTES `[11+16τ, j, pres·hpre_j]`,
+   `[11+16τ, 32+j, ash_j]`; DIGEST `[11+16τ, 64, digest]`). Plan: (a) padding rows have empty `rowTraffic`;
+   (b) `rowFn (codecCell Bs) 22 r = rowFn (lookup ds[r].asg) 22 r` (`natCell_desc`); (c) per-kind closed forms by
+   `cdc_cell`. Pinning `us`: the natural choice is `us := bs.map NativeBlock.witness` (`native_block_digests`
+   already shows the repaired rows' digests = `expectedDigests [schedulerSanityJob τ b.witness]`); equating it
+   with the trie lane's `us` needs that both are `schedulerUpsertWitness ctx pre` of the same `(ctx, pre)` list
+   (the extractor is a function, so uniqueness reduces to the same per-τ pre-tries/contexts).
+   B_SCMP: the frozen codec compares `(apR + fair, MA, cb)` with `apR` from `a0Canon[srcOf kk]`, the repaired
+   (R15 today) uses `ProcActualInput.allowances[kk]`; equal for canonical priors with distinct shard ids (to prove;
+   `ProcPreviousStateRegression.allowance_mismatch` is the non-canonical counterexample).
+3. Scheduler buses 40–62, ChaCha-lane buses, packaging theorem (tasks 3, 4): not started.
