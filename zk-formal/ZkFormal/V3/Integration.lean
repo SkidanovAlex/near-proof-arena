@@ -395,6 +395,7 @@ import ZkFormal.NearV3.Assembly.A7ValView
 import ZkFormal.NearV3.Assembly.A7UpsView
 import ZkFormal.NearV3.Assembly.LinkCore
 import ZkFormal.NearV3.Assembly.A7Bound
+import ZkFormal.NearV3.Assembly.A7Native
 /-!
 # Build gate for the integrated v3 proof work
 
