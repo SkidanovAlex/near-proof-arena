@@ -28,7 +28,8 @@ theorem run_decomp (I : Input) (tau : Nat) (R : Run) (h : ActualRun.run I tau = 
       ProcActualReplayFactor.replay I cv rs = .ok s ∧ ProcActualSegments.build I tau s = .ok gs ∧
       (sortPush (accPushes s).toList == sortPush (ProcActualPoppedLog.buckets s).toList) = true ∧
       R.segs = gs.toList ∧ R.rounds = (accRounds s).toList ∧ R.used = accUsed s ∧ R.conv = cv.toList ∧
-      R.tau = tau ∧ R.fin = st := by
+      R.tau = tau ∧ R.fin = st ∧
+      (s.1 == st.sb && s.2.1 == st.rb && s.2.2.1 == st.al && s.2.2.2.1 == st.g) = true := by
   rw [ProcActualRunFactor.run_eq_prefix] at h
   obtain ⟨⟨cv,st,rs,ev⟩,hpre,h⟩:=bind_ok h
   dsimp only at h
@@ -37,7 +38,7 @@ theorem run_decomp (I : Input) (tau : Nat) (R : Run) (h : ActualRun.run I tau = 
   rw [ProcActualMemoryFactor.finish_eq,ProcActualSegmentFactor.finish_eq] at h
   unfold ProcActualSegmentFactor.finishSegments at h
   obtain ⟨u1,h1,h⟩:=bind_ok h
-  obtain ⟨_,_,h⟩:=bind_ok h
+  obtain ⟨u2,h2,h⟩:=bind_ok h
   obtain ⟨_,_,h⟩:=bind_ok h
   obtain ⟨gs,hgs,h⟩:=bind_ok h
   obtain ⟨cs,_,h⟩:=bind_ok h
@@ -47,6 +48,6 @@ theorem run_decomp (I : Input) (tau : Nat) (R : Run) (h : ActualRun.run I tau = 
   obtain ⟨_,_,h⟩:=bind_ok h
   obtain ⟨_,_,h⟩:=bind_ok h
   cases h
-  exact ⟨cv, st, rs, ev, s, gs, hpre, hs, hgs, check_ok h1, rfl, rfl, rfl, rfl, rfl, rfl⟩
+  exact ⟨cv, st, rs, ev, s, gs, hpre, hs, hgs, check_ok h1, rfl, rfl, rfl, rfl, rfl, rfl, check_ok h2⟩
 
 end ZkFormal.NearV3.Render.SchedRun

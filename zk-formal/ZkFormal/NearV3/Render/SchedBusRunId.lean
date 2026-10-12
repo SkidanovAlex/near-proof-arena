@@ -89,7 +89,7 @@ theorem run_ri (I : Input) (tau : Nat) (R : Run) (h : ActualRun.run I tau = .ok 
       ProcActualSegments.build I tau s = .ok gs ∧
       (sortPush (accPushes s).toList == sortPush (ProcActualPoppedLog.buckets s).toList) = true ∧
       RI I tau (cv.toList.map (readMsg tau (lpOf I).a2)) (cv.toList.map initPush) s := by
-  obtain ⟨cv, st, rs, ev, s, gs, hpre, hrep, hb, hck, hsegs, hrd, hused, hconv, -, -⟩ := run_decomp I tau R h
+  obtain ⟨cv, st, rs, ev, s, gs, hpre, hrep, hb, hck, hsegs, hrd, hused, hconv, -, -, -⟩ := run_decomp I tau R h
   obtain ⟨hcv, -⟩ := ProcActualAfterMemoryReduction.prefix_facts I cv st rs ev hpre
   exact ⟨cv, s, gs, hconv, hsegs, hrd, hused, hcv, hb, hck, replay_ri I tau cv rs s hcv hrep⟩
 
