@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeReaderAllocation
 import ZkFormal.NearV3.Render.Ups.SchedulerExactInstances
+import ZkFormal.NearV3.Assembly.UpsS0FAddr
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec NearSpecV3 ZkFormal.Near Render Render.UpsGen UpsRows Assembly
 
@@ -22,7 +23,8 @@ theorem scheduler_instance_origin_inputs {us : List SchedulerUpsertWitness}
     (hroot : forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) tau=some root)
     (baseI : UpsInst) (base : Nat→UpsPartI) :
     ∃ I : UpsInst,I.ci=u.run.terminal.ix ∧ I.tau=tau ∧ I.mid=baseI.mid ∧ I.post=baseI.post ∧ I.v=u.value.map UInt8.toNat ∧
-      InstOk I ∧ DispatchNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) u.run I ∧ (recsI I).length=4+u.value.length+outputByteCharge u.run ∧ NativePartFamily I ∧ NativeShaFamily u I ∧ NativeReaderPayloads u.pre u.run I ∧ NativeReaderOrigin root u.run u.value I := by
+      InstOk I ∧ DispatchNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) u.run I ∧ (recsI I).length=4+u.value.length+outputByteCharge u.run ∧ NativePartFamily I ∧ NativeShaFamily u I ∧ NativeReaderPayloads u.pre u.run I ∧ NativeReaderOrigin root u.run u.value I ∧
+      Assembly.UpsS0F.S0FVid us tau u I := by
   have hum := List.mem_of_getElem? hu
   obtain ⟨hv,hw,hcount,hd,hvlen⟩ := hgood u hum
   have ht := forestRootAt_tree 0 0 (us.map SchedulerUpsertWitness.pre) tau
@@ -40,7 +42,7 @@ theorem scheduler_instance_origin_inputs {us : List SchedulerUpsertWitness}
   have hpairs : pairs.map Prod.fst=us.map SchedulerUpsertWitness.pre := by simp [pairs,List.map_map]
   have hroot' : forestRootAt 0 0 (pairs.map Prod.fst) tau=some root := hpairs ▸ hroot
   let recordId := pathRecordId (extendedAddresses root.nid root.vid root.depth root.tree [0,15])
-  obtain ⟨Qs,a,s,h,he,hs,hh,hi,hstart,hprefix,hterminalId,hbitmap,hterminal⟩ := forest_native_walk_exact hroot' hr hf
+  obtain ⟨Qs,a,s,h,he,hs,hh,hi,hstart,hprefix,hterminalId,hbitmap,hterminal,haddr⟩ := forest_native_walk_exact hroot' hr hf
     (htree ▸ hw) hvpos (by omega) baseI (nativeSourceBase recordId u.run base)
   let B := nativeWalkBase recordId (fun _=>a.vid) (occurrenceResolvedId recordId)
     {baseI with tau:=tau} root.tree u.run u.value
@@ -63,10 +65,15 @@ theorem scheduler_instance_origin_inputs {us : List SchedulerUpsertWitness}
       · intro k hk
         have hn : nQ I=Qs.length := nativeInstance_nQ _ _ _ _ _ _
         exact nativeInstance_part_shaJob_exact recordId B hr (htree ▸ hw) _ he k (hn ▸ hk)
-    · refine ⟨?_,⟨B,base,Qs,he,rfl⟩⟩
-      intro k hk
-      have hn : nQ I=Qs.length := nativeInstance_nQ _ _ _ _ _ _
-      obtain ⟨p,hp,hm,hb,hq⟩:=native_reader_payload recordId B hr (htree ▸ hw) _ he k (hn ▸ hk)
-      exact ⟨p,hp,htree ▸ hm,hb,hq⟩
+    · refine ⟨?_,⟨B,base,Qs,he,rfl⟩,?_⟩
+      · intro k hk
+        have hn : nQ I=Qs.length := nativeInstance_nQ _ _ _ _ _ _
+        obtain ⟨p,hp,hm,hb,hq⟩:=native_reader_payload recordId B hr (htree ▸ hw) _ he k (hn ▸ hk)
+        exact ⟨p,hp,htree ▸ hm,hb,hq⟩
+      · intro hval
+        have hs0 := Assembly.UpsS0F.s0f_vid hroot hr hf haddr.1 haddr.2 hval recordId
+          (occurrenceResolvedId recordId) {baseI with tau:=tau} Qs
+        rw [← htree]
+        exact hs0
 
 end ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate

@@ -4,6 +4,7 @@ import ZkFormal.NearV3.Rcpt.Candidates.UpsRequestInventory
 import ZkFormal.NearV3.Rcpt.Candidates.NativeRebasedDepths
 import ZkFormal.NearV3.Rcpt.Candidates.NativePayloadSegments
 import ZkFormal.NearV3.Assembly.SchedulerSanityPin
+import ZkFormal.NearV3.Assembly.UpsS0FRebase
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieUpsOrigin — the record ids read by the native ups instances
@@ -67,12 +68,14 @@ def UpsShaPin (k : WalkD0) (m : MainExecutionV3) (steps : List ImplicitStepV3) (
       NativeShaFamily u I ∧ I.v = u.value.map UInt8.toNat ∧ I.tau = tau ∧
       AllocatedNativeInstance us tau u I ∧
       ∃ root, forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) tau = some root ∧
-        NativeReaderOrigin root u.run u.value I
+        NativeReaderOrigin root u.run u.value I ∧ UpsS0F.S0FAt (m.pre :: steps.map ImplicitStepV3.pre) tau I
 
 theorem UpsShaPin.sha {k : WalkD0} {m : MainExecutionV3} {steps : List ImplicitStepV3} {insts : List UpsInst}
     (h : UpsShaPin k m steps insts) : UpsSha insts := by
-  obtain ⟨us, -, h⟩ := h
-  exact ⟨us, h⟩
+  obtain ⟨us, -, hl, h32, hg, hout, hval, hpb, hI⟩ := h
+  exact ⟨us, hl, h32, hg, hout, hval, hpb, fun tau u I hu hI' => by
+    obtain ⟨a, b, c, d, root, hroot, o, -⟩ := hI tau u I hu hI'
+    exact ⟨a, b, c, d, root, hroot, o⟩⟩
 
 /-- The scheduler upsert witnesses behind the native ups instances, with the forest facts used by the
 A7 (b) node/value accounting (`TrieA7Total.a7_bound`): the scheduler pre trees `us.map pre` (the rebased

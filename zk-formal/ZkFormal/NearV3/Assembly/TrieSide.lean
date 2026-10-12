@@ -94,7 +94,9 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
       CallPin A.k A.m A.steps us ∧
       (∃ (Js : List UpsInst) (hok : UpsRenderOk Js), r7 = upsRenderV3 A.pub Js hok ∧
         ExtOf r7.tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (segsOf Js))) ∧
-        Js.map (fun I => (I.tau, I.v)) = us.mapIdx (fun i u => (i, u.value.map UInt8.toNat))) ∧
+        Js.map (fun I => (I.tau, I.v)) = us.mapIdx (fun i u => (i, u.value.map UInt8.toNat)) ∧
+        Js.map Assembly.UpsS0F.s0fOf = (A.m.pre :: A.steps.map ImplicitStepV3.pre).mapIdx
+          (fun i t => Assembly.UpsS0F.s0fPair ((A.m.pre :: A.steps.map ImplicitStepV3.pre).take i) t)) ∧
       ∀ R : RenderBundleV3 A.pub,
         R ⟨0, by decide⟩ = r0 → R ⟨1, by decide⟩ = r1 → R ⟨2, by decide⟩ = r2 → R ⟨3, by decide⟩ = r3 →
         R ⟨4, by decide⟩ = r4 → R ⟨5, by decide⟩ = r5 → R ⟨6, by decide⟩ = r6 → R ⟨7, by decide⟩ = r7 →
@@ -136,7 +138,7 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
   obtain ⟨S, SV, hS, hSV⟩ := TrieA7.a7_perm_native A.m A.steps oldPost writes insts ws q horigin hn hval
   have hA7 := TrieA7Total.a7_bound (ws := ws) ha7 hn hval hS hSV
   have hbase := TrieA7Total.size_base (oldPost := oldPost) (writes := writes) (q := q) ha7
-  obtain ⟨us, hpin, htv, husv, hrows, hsched⟩ := TrieDigestUps.ups_sha_scheduler_pin hshaP
+  obtain ⟨us, hpin, htv, hs0, husv, hrows, hsched⟩ := TrieDigestUps.ups_sha_scheduler_pin hshaP
   rw [hJs] at hS hSV hA7
   have hqe : q.edges.length < Algebra.P := by rw [← hq]; exact hedges
   have hqb : q.bmaps.length < Algebra.P := by rw [← hq]; exact hbmaps
@@ -167,7 +169,7 @@ theorem trie_side_exact {cb wb : Bytes} (A : AcceptedV3 cb wb)
   refine ⟨writes, oldPost, q, us, shaRenderV3 A.pub 0 (by decide) b0 h0, shaRenderV3 A.pub 1 (by decide) b1 h1,
     nodeRenderV3 A.pub ns hn (selN ns S), Rh, valRenderV3 A.pub es hval (selV es SV), Rw, Ru,
     upsRenderV3 A.pub Js hok, sizeRenderV3 A.pub _ hSizeOk yN hB, hr, hkf, husv, hpin,
-    ⟨Js, hok, rfl, hextU, by rw [← hJs]; exact htv _⟩, ?_⟩
+    ⟨Js, hok, rfl, hextU, by rw [← hJs]; exact htv _, by rw [← hJs]; exact hs0 _⟩, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 e21
   have e2' : R ⟨T_NODE, by decide⟩ = nodeRenderV3 A.pub ns hn (selN ns S) := e2
   have e3' : R ⟨T_HEAD, by decide⟩ = Rh := e3

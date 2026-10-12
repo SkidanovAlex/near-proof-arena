@@ -35,7 +35,7 @@ theorem scheduler_instance_reader_inputs {us : List SchedulerUpsertWitness}
   have hpairs : pairs.map Prod.fst=us.map SchedulerUpsertWitness.pre := by simp [pairs,List.map_map]
   have hroot' : forestRootAt 0 0 (pairs.map Prod.fst) tau=some root := hpairs ▸ hroot
   let recordId := pathRecordId (extendedAddresses root.nid root.vid root.depth root.tree [0,15])
-  obtain ⟨Qs,a,s,h,he,hs,hh,hi,hstart,hprefix,hterminalId,hbitmap,hterminal⟩ := forest_native_walk_exact hroot' hr hf
+  obtain ⟨Qs,a,s,h,he,hs,hh,hi,hstart,hprefix,hterminalId,hbitmap,hterminal,-⟩ := forest_native_walk_exact hroot' hr hf
     (htree ▸ hw) hvpos (by omega) baseI (nativeSourceBase recordId u.run base)
   let B := nativeWalkBase recordId (fun _=>a.vid) (occurrenceResolvedId recordId)
     {baseI with tau:=tau} root.tree u.run u.value

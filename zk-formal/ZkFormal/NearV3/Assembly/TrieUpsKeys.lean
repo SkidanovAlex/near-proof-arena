@@ -157,7 +157,7 @@ theorem coverage_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         ExactNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) u.run I ∧
         I.ci=u.run.terminal.ix ∧ DispatchNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) u.run I ∧
         ∃root,forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) tau=some root ∧
-          NativeReaderOrigin root u.run u.value I) ∧ CallPin k m steps us ∧
+          NativeReaderOrigin root u.run u.value I ∧ Assembly.UpsS0F.S0FVid us tau u I) ∧ CallPin k m steps us ∧
       let rs:=nativeReplayForest m steps oldPost writes
       (∀r∈rs,r.Valid) ∧
       (records (forestOldInputs rs) (forestNodes 0 0 0 (m.pre::steps.map ImplicitStepV3.pre))).map (fun s=>s.v.ser true)=
@@ -205,7 +205,7 @@ theorem coverage_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
   apply native_physical_window_coverage rs hforest hwr (hpreEq ▸ hpre) us insts hpreEq
     (fun u hu=>⟨(hgood u hu).1,(hgood u hu).2.1⟩) hcount
   · intro tau u I hu hI
-    obtain ⟨a,sha,exactp,ci,dispatch,root,hroot,origin⟩:=hinst tau u I hu hI
+    obtain ⟨a,sha,exactp,ci,dispatch,root,hroot,origin,-⟩:=hinst tau u I hu hI
     exact ⟨a,root,hroot,origin⟩
   · simpa only [hrs] using hn.wf
   · intro s hs x hx

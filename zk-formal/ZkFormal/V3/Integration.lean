@@ -366,6 +366,9 @@ import ZkFormal.NearV3.Render.CodecAllow
 import ZkFormal.NearV3.Render.CodecTriePin
 import ZkFormal.NearV3.Render.CodecUpsBus
 import ZkFormal.NearV3.Render.CodecSpost
+import ZkFormal.NearV3.Render.CodecS0F
+import ZkFormal.NearV3.Assembly.UpsS0FAddr
+import ZkFormal.NearV3.Assembly.UpsS0FRebase
 import ZkFormal.NearV3.Render.CodecCanon
 import ZkFormal.NearV3.Render.CodecScmp
 import ZkFormal.NearV3.Render.CodecScmpBus

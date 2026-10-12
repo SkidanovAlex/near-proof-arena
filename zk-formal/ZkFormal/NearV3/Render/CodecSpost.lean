@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Render.CodecUpsBus
+import ZkFormal.NearV3.Render.CodecS0F
 import ZkFormal.NearV3.Candidates.ProcActualOutputAgreement
 import ZkFormal.NearV3.Candidates.ProcActualStateAgreement
 import ZkFormal.NearV3.Candidates.ProcActualMemoryFinal
@@ -320,7 +321,7 @@ open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Ne
   Render Rcpt.Candidates Rcpt.Candidates.NodePostUpdate RcptSkeleton RcptBal ZkFormal.NearV3.UnfoldA7 TrieA7
 open ZkFormal.NearV3.Assembly.CodecDigest ZkFormal.NearV3.Render.Cdc ZkFormal.NearV3.Render.CdcGrant
 
-/-- `rcpt_trie_codec` plus the codec ↔ ups buses `SPLEN`, `SPOST`. -/
+/-- `rcpt_trie_codec` plus the codec ↔ ups buses `SPLEN`, `SPOST`, `S0F`. -/
 theorem rcpt_trie_sched {cb wb : Bytes} (A : AcceptedV3 cb wb)
     (hovh : TrieSide.SizeBudget A) :
     ∃ (writes : List (List Nat × Bytes)) (oldPost : PTrie) (q : UseRequests) (us : List SchedulerUpsertWitness)
@@ -334,7 +335,9 @@ theorem rcpt_trie_sched {cb wb : Bytes} (A : AcceptedV3 cb wb)
       CallPin A.k A.m A.steps us ∧
       (∃ (Js : List UpsInst) (hok : UpsRenderOk Js), r7 = upsRenderV3 A.pub Js hok ∧
         ExtOf r7.tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js))) ∧
-        Js.map (fun I => (I.tau, I.v)) = us.mapIdx (fun i u => (i, u.value.map UInt8.toNat))) ∧ PriorCore A.p NearSpecV3.B0 bs ∧ (∀ b ∈ bs, GrantWit b) ∧ (∀ b ∈ bs, NatRes b) ∧
+        Js.map (fun I => (I.tau, I.v)) = us.mapIdx (fun i u => (i, u.value.map UInt8.toNat)) ∧
+        Js.map Assembly.UpsS0F.s0fOf = (A.m.pre :: A.steps.map ImplicitStepV3.pre).mapIdx
+          (fun i t => Assembly.UpsS0F.s0fPair ((A.m.pre :: A.steps.map ImplicitStepV3.pre).take i) t)) ∧ PriorCore A.p NearSpecV3.B0 bs ∧ (∀ b ∈ bs, GrantWit b) ∧ (∀ b ∈ bs, NatRes b) ∧
       bs.map (fun b => (b.witness.ctx, b.witness.pre)) =
         (A.m.ctx A.k, A.m.pre) :: A.steps.map (fun e => (implicitCtx A.k e, e.pre)) ∧
       r11.tr = codecTrace (allDescs (bs.map blkOf)) ∧
@@ -360,20 +363,25 @@ theorem rcpt_trie_sched {cb wb : Bytes} (A : AcceptedV3 cb wb)
         -- shared buses
         R.BalancedAt B_SIZE ∧ R.BalancedAt B_VSLOT ∧ R.BalancedAt B_KEYNIB ∧ R.BalancedAt B_FINAL ∧
         R.BalancedAt B_BYTES ∧ R.BalancedAt B_DIGEST) ∧
-        R.BalancedAt ZkFormal.NearV3.B_SPLEN ∧ R.BalancedAt ZkFormal.NearV3.B_SPOST) := by
+        R.BalancedAt ZkFormal.NearV3.B_SPLEN ∧ R.BalancedAt ZkFormal.NearV3.B_SPOST ∧
+        R.BalancedAt ZkFormal.NearV3.B_S0F) := by
   obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hc, hg, hres,
     hctx, htr, htf, hall⟩ := rcpt_trie_codec A hovh
   refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hc, hg, hres,
     hctx, htr, htf, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 e11 h24
   refine ⟨hall R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 e11 h24, ?_⟩
-  obtain ⟨Js, hok, hr7, hext, hlink⟩ := hups
+  obtain ⟨Js, hok, hr7, hext, hlink, hs0⟩ := hups
   have hu : ExtOf (R ⟨7, by decide⟩).tf (upsTraffic (UpsRows.viewOf (upsTraceAligned Js) T_UPS (UpsGen.segsOf Js))) := by
     rw [e7, hr7] at *; exact hext
   have h11 : R.tf 11 = rowsTraffic Sched.Codec.table.interactions (codecCell (bs.map blkOf)) 22 11 A.pub := by
     rw [bundle_tf_eq R 11 _ e11, htf]
   have hv := vals_eq hpin hus hc hctx
+  have hF : bs.map (·.witness.pre) = A.m.pre :: A.steps.map ImplicitStepV3.pre := by
+    have h := congrArg (List.map Prod.snd) hctx
+    simpa [List.map_map, Function.comp_def] using h
   exact ⟨R.balancedAt_splen bs hc h11 Js hok hu us hlink hv,
-    R.balancedAt_spost A.hp bs hc hg hres h11 Js hok hu us hlink hv⟩
+    R.balancedAt_spost A.hp bs hc hg hres h11 Js hok hu us hlink hv,
+    R.balancedAt_s0f bs hc h11 Js hok hu us hlink _ hF hs0⟩
 
 end ZkFormal.NearV3.Assembly.RcptTrieSide
