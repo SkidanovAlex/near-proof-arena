@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Assembly.RenderV3Bundle
 import ZkFormal.NearV3.Render.HonestBalanceBnd
+import ZkFormal.NearV3.Render.HonestRcptQ
 import ZkFormal.NearV3.Render.PaddedQvNative
 import ZkFormal.NearV3.Render.PaddedSrcp
 import ZkFormal.NearV3.Render.PaddedRcpt
@@ -19,14 +20,15 @@ namespace ZkFormal.NearV3.Assembly
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near
 open ZkFormal.NearV3.Render ZkFormal.NearV3.Assembly.RcptSkeleton
 
-/-- Table 16 (`rcptV3`, repaired, ranked boundary counters). -/
+/-- Table 16 (`rcptV3` = `RcptV3.tableQ`: arithmetic repairs + routing-index check; ranked
+boundary counters, routing-index scratch bits filled). -/
 def rcptRenderV3 (pub : List Fp) (x : RcptInput) (ok : RcptOk pub x) :
     TableRenderV3 pub 16 (by decide) where
-  tr := rcptTraceAlignedB pub x
+  tr := rcptTraceAlignedQ pub x
   tf := rcptTrafficB pub x
-  loc := (rcpt_aligned_completeB pub x ok 16).1
-  traffic := (rcpt_aligned_completeB pub x ok 16).2.1
-  aligned := (rcpt_aligned_completeB pub x ok 16).2.2
+  loc := (rcpt_aligned_completeQ pub x ok 16).1
+  traffic := (rcpt_aligned_completeQ pub x ok 16).2.1
+  aligned := (rcpt_aligned_completeQ pub x ok 16).2.2
 
 /-- Table 17 (`acctTableV3`: `acctV3` at cap 19 with the empty-chunk repair; `as = []` allowed). -/
 noncomputable def acctRenderV3 (pub : List Fp) (as : List AcctV) (ok : AcctV3OkE as) :

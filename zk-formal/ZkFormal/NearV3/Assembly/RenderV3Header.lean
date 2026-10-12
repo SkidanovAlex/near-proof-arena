@@ -134,9 +134,8 @@ theorem bundle_headerOk_rcpt {cb wb : Bytes} (A : AcceptedV3 cb wb) (R : RenderB
   apply bundle_headerOk R
   refine ⟨16, by decide, ?_⟩
   rw [(R.trace_at 16 (by decide)).1, h16]
-  show 4 ≤ (rcptTraceAlignedB A.pub A.rcptInput).log 16
-  have h22 : (rcptTraceNative A.pub A.rcptInput).log 0 = 22 := rfl
-  show 4 ≤ (rcptTraceNative A.pub A.rcptInput).log 0
+  show 4 ≤ (rcptTraceAlignedQ A.pub A.rcptInput).log 16
+  rw [rcptTraceAlignedQ_log]
   omega
 
 end ZkFormal.NearV3.Assembly
