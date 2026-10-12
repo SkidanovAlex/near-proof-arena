@@ -79,6 +79,7 @@ theorem round_effect (I : Input) (cv : Array CReq) (key : List Nat) (rd : Round)
       forIn rd.bucket bs (ProcActualBucketGuards.collectStep cv.size rd.key rd.z) = .ok col ∧
       forIn (List.range rd.bucket.length) (sb,rb,aa,gg,ol,os,orr,ps,used,gi,(#[] : Array Entry))
         (ProcActualReplayEntry.step I cv rd sh tm) = .ok eo ∧
+      replayShuffle key kp (rd.bucket.map (·.v)) = .ok (sh, kend) ∧
       out = (eo.1, eo.2.1, eo.2.2.1, eo.2.2.2.1, eo.2.2.2.2.1, eo.2.2.2.2.2.1, eo.2.2.2.2.2.2.1,
         eo.2.2.2.2.2.2.2.1, col, tm + rd.bucket.length, kend, rd.key, rd.z, eo.2.2.2.2.2.2.2.2.1,
         rs.push ⟨rd.key, rd.z, tm, rd.bucket.length, kp, kend, kq, zq, eo.2.2.2.2.2.2.2.2.2.2.toList⟩,
@@ -88,8 +89,9 @@ theorem round_effect (I : Input) (cv : Array CReq) (key : List Nat) (rd : Round)
   repeat first | cases h | split at h
   all_goals repeat first | cases h | split at h
   all_goals
-    refine ⟨?sh, _, _, (_, _, _, _, _, _, _, _, _, _, _), ?_, ?_, rfl⟩
+    refine ⟨?sh, _, _, (_, _, _, _, _, _, _, _, _, _, _), ?_, ?_, ?_, rfl⟩
     rotate_left
+    · assumption
     · assumption
     · assumption
 

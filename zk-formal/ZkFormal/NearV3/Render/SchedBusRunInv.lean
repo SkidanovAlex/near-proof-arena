@@ -155,7 +155,7 @@ theorem round_inv (I : Input) (τ : Nat) (cv : Array CReq) (key : List Nat) (rd 
     (s out : ProcActualReplayRound.Acc) (hs : RI I τ reads inits s)
     (h : ProcActualReplayRound.step I cv key rd s = .ok (.yield out)) : RI I τ reads inits out := by
   rcases s with ⟨sb,rb,aa,gg,ol,os,orr,ps,bs,tm,kp,kq,zq,used,rs,gi⟩
-  obtain ⟨sh, kend, col, eo, hcol, hent, rfl⟩ := round_effect I cv key rd sb rb aa gg ol os orr ps bs tm kp kq zq used rs gi out h
+  obtain ⟨sh, kend, col, eo, hcol, hent, -, rfl⟩ := round_effect I cv key rd sb rb aa gg ol os orr ps bs tm kp kq zq used rs gi out h
   obtain ⟨htag, hcol'⟩ := collect_ok _ _ _ rd.bucket bs col hcol
   have h0 : EI I τ tm cv rd sh (flatAll τ ol os orr) ps.toList (sb,rb,aa,gg,ol,os,orr,ps,used,gi,(#[] : Array Entry)) := by
     obtain ⟨h1, h2, h3, -, -, -⟩ := hs

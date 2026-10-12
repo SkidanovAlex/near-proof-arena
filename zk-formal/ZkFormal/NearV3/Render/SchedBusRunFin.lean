@@ -63,7 +63,7 @@ theorem wz_rounds (I : Input) (cv : Array CReq) (key : List Nat) :
       obtain ⟨next, rfl⟩ := ProcActualRoundTransition.step_yields I cv key rd s nx he
       simp only [he, bind, Except.bind] at h
       rcases s with ⟨sb,rb,aa,gg,ol,os,orr,ps,bs,tm,kp,kq,zq,used,rs',gi⟩
-      obtain ⟨sh, kend, col, eo, -, hent, rfl⟩ :=
+      obtain ⟨sh, kend, col, eo, -, hent, -, rfl⟩ :=
         round_effect I cv key rd sb rb aa gg ol os orr ps bs tm kp kq zq used rs' gi next he
       have := wz_entries I cv rd sh tm _ _ eo h1 h2 hent
       exact wz_rounds I cv key rs _ out this.1 this.2 h
