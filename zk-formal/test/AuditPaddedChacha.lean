@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Render.PaddedChacha
+import ZkFormal.NearV3.Render.RngW0
 import ZkFormal.Chacha.Statements
 
 /-! Guard the assumptions of the aligned ChaCha-lane generators (`nearAirV3` tables 8–10). -/

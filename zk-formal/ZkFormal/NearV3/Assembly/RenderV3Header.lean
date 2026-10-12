@@ -7,7 +7,7 @@ import ZkFormal.NearV3.Rcpt.Candidates.NativePreparedBody
 * **Hint codec bounds** (`nativeHint_bounds`, `AcceptedV3.hint_bounds`): for an accepted witness,
   the native hint `nativeHint k w m` has `n ≤ 4481 < 256^4`, body `≤ 1,295,017 < 256^4` bytes
   (`accepted_native_body_bound`, the proved `Size.V3.bodyMax`), hence
-  `|Hint.encode h| = 8 + |body| ≤ 1,295,025 ≤ v3MaxHintBytes = 1,972,603`.
+  `|Hint.encode h| = 8 + |body| ≤ 1,295,025 ≤ v3MaxHintBytes = 1,953,115`.
 * **Header admissibility** (`bundle_headerOk`): for any `R : RenderBundleV3 pub` in which some
   table has `log ≥ 4`, the verifier `(VdP nearAirV3).headerOk` accepts `trHdr nearAirV3.toAir
   R.trace`: lengths, `1 ≤ log ≤ maxLog` (each table's `TableLocal`), `log + 4 ≤ 26` (every
