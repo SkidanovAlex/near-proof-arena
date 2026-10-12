@@ -340,6 +340,7 @@ theorem rcpt_trie_sched {cb wb : Bytes} (A : AcceptedV3 cb wb)
           (fun i t => Assembly.UpsS0F.s0fPair ((A.m.pre :: A.steps.map ImplicitStepV3.pre).take i) t)) ∧ PriorCore A.p NearSpecV3.B0 bs ∧ (∀ b ∈ bs, GrantWit b) ∧ (∀ b ∈ bs, NatRes b) ∧
       bs.map (fun b => (b.witness.ctx, b.witness.pre)) =
         (A.m.ctx A.k, A.m.pre) :: A.steps.map (fun e => (implicitCtx A.k e, e.pre)) ∧
+      (∀ b, bs[0]? = some b → b.forwarded = fwdLinks (A.m.ctx A.k) A.m.result.outgoing) ∧
       r11.tr = codecTrace (allDescs (bs.map blkOf)) ∧
       r11.tf = rowsTraffic Sched.Codec.table.interactions (codecCell (bs.map blkOf)) 22 11 A.pub ∧
       ∀ R : RenderBundleV3 A.pub,
@@ -366,9 +367,9 @@ theorem rcpt_trie_sched {cb wb : Bytes} (A : AcceptedV3 cb wb)
         R.BalancedAt ZkFormal.NearV3.B_SPLEN ∧ R.BalancedAt ZkFormal.NearV3.B_SPOST ∧
         R.BalancedAt ZkFormal.NearV3.B_S0F) := by
   obtain ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hc, hg, hres,
-    hctx, htr, htf, hall⟩ := rcpt_trie_codec A hovh
+    hctx, hfw, htr, htf, hall⟩ := rcpt_trie_codec A hovh
   refine ⟨writes, oldPost, q, us, r0, r1, r2, r3, r4, r5, r6, r7, r21, r11, bs, hr, hkf, hus, hpin, hups, hc, hg, hres,
-    hctx, htr, htf, ?_⟩
+    hctx, hfw, htr, htf, ?_⟩
   intro R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 e11 h24
   refine ⟨hall R e0 e1 e2 e3 e4 e5 e6 e7 h16 h17 h18 h19 h20 e21 h22 h23 e11 h24, ?_⟩
   obtain ⟨Js, hok, hr7, hext, hlink, hs0⟩ := hups

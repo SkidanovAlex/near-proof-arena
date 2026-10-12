@@ -145,6 +145,7 @@ theorem ordered_blocks {cb : Bytes} {hint : Hint} {p : Prep}
       schedulerUpsertWitness (m.ctx k) m.pre=.ok main.witness ∧
       main.witness.pre=m.pre ∧
       (∀i e b,steps[i]?=some e→tail[i]?=some b→MissingBlockAt k vids (1+i) e b) ∧
+      main.forwarded=fwdLinks (m.ctx k) m.result.outgoing ∧
       ∀(i : Nat) (b : NativeBlock),(main::tail)[i]?=some b→PreparedRun p i b ∧ b.Valid ∧ b.run.n≤64 ∧
         b.run.tau=i ∧ b.vid=vids i ∧
         (∀time pub,TableLocal ProcPriorCodecActual.table (SchedHeight.trace b.output.rows codecPad) time pub) ∧
@@ -154,7 +155,7 @@ theorem ordered_blocks {cb : Bytes} {hint : Hint} {p : Prep}
     main_block hp (m.ctx k) sp (List.mem_iff_getElem?.mpr ⟨0,hsp⟩) hpub
       m.pre (appliedReceipts k w) m.result hm.run (vids 0)
   obtain ⟨bs,hbs,hAt⟩ := implicit_blocks hp hv 1 (by decide) vids (implicit_prepared_index hp hw hm hv hlen)
-  refine ⟨b,bs,hbs,hb,hpre,(fun i e x he hx=>(hAt i e x he hx).1),?_⟩
+  refine ⟨b,bs,hbs,hb,hpre,(fun i e x he hx=>(hAt i e x he hx).1),hf,?_⟩
   intro i x hx
   cases i with
   | zero =>
@@ -194,19 +195,20 @@ theorem allocated_blocks {cb : Bytes} {hint : Hint} {p : Prep}
     ∃bs : List NativeBlock,bs.length=steps.length+1 ∧
       bs.map (fun b=>b.witness.pre)=m.pre::steps.map ImplicitStepV3.pre ∧
       bs.map (fun b=>(b.witness.ctx,b.witness.pre))=(m.ctx k,m.pre)::steps.map (fun e=>(implicitCtx k e,e.pre)) ∧
+      (∀ b, bs[0]? = some b → b.forwarded=fwdLinks (m.ctx k) m.result.outgoing) ∧
       ∀(i : Nat)(b : NativeBlock),bs[i]?=some b→PreparedRun p i b ∧ b.Valid ∧ b.run.n≤64 ∧ b.run.tau=i ∧
         b.vid=priorValueId ((bs.map (fun b=>b.witness.pre)).take i) b.witness.pre ∧
         (∀time pub,TableLocal ProcPriorCodecActual.table (SchedHeight.trace b.output.rows codecPad) time pub) ∧
         GrantWit b := by
   let trees:=m.pre::steps.map ImplicitStepV3.pre
-  obtain ⟨main,tail,htail,hmw,hpre,hAt,hb⟩:=ordered_blocks hp hw hm hv hlen (nativePriorIds trees)
+  obtain ⟨main,tail,htail,hmw,hpre,hAt,hfw,hb⟩:=ordered_blocks hp hw hm hv hlen (nativePriorIds trees)
   have he:(main::tail).map (fun b=>b.witness.pre)=trees := by
     simp only [List.map_cons,hpre,implicit_pre_list k (nativePriorIds trees) steps tail htail hAt,trees]
   have hc:(main::tail).map (fun b=>(b.witness.ctx,b.witness.pre))=
       (m.ctx k,m.pre)::steps.map (fun e=>(implicitCtx k e,e.pre)) := by
     simp only [List.map_cons,hpre,schedulerUpsertWitness_ctx hmw,
       implicit_pair_list k (nativePriorIds trees) steps tail htail hAt]
-  refine ⟨main::tail,by simp [htail],he,hc,?_⟩
+  refine ⟨main::tail,by simp [htail],he,hc,fun b h0 => by simp at h0; rw [← h0]; exact hfw,?_⟩
   intro i b hi
   have hpair:=hb i b hi
   have hh:=hpair.2
@@ -224,7 +226,7 @@ theorem accepted_prior_core_grants {B : Nat} {cb wb : Bytes} {hint : Hint} {p : 
     (h:checkD0a B cb wb=.ok ()) (hB:B≤2000000) :
     ∃bs,PriorCore p B bs ∧ ∀ b ∈ bs, GrantWit b := by
   obtain ⟨m,steps,last,hm,_,hv,hlen,hcount,_,_⟩:=checkD0a_native_trace hk hw h
-  obtain ⟨bs,hs,hpre,-,hb⟩:=allocated_blocks hp hk hm hv hlen
+  obtain ⟨bs,hs,hpre,-,-,hb⟩:=allocated_blocks hp hk hm hv hlen
   have hlen':bs.length≤32 := by omega
   have hvalid:∀b∈bs,b.Valid ∧ b.run.n≤64 ∧
       TableLocal ProcPriorCodecActual.table (SchedHeight.trace b.output.rows codecPad) 0 [] := by
@@ -280,8 +282,9 @@ theorem prior_core_on {B : Nat} {cb wb : Bytes} {hint : Hint} {p : Prep}
     (hv : ImplicitTraceValid k m.result.trie.hashOf (k.implicitBlks.zip w.implicit) steps last)
     (hlen : steps.length=k.implicitBlks.length) (hcount : steps.length≤31) :
     ∃bs,PriorCore p B bs ∧ (∀ b ∈ bs, GrantWit b) ∧
-      bs.map (fun b=>(b.witness.ctx,b.witness.pre))=(m.ctx k,m.pre)::steps.map (fun e=>(implicitCtx k e,e.pre)) := by
-  obtain ⟨bs,hs,hpre,hctx,hb⟩:=allocated_blocks hp hk hm hv hlen
+      bs.map (fun b=>(b.witness.ctx,b.witness.pre))=(m.ctx k,m.pre)::steps.map (fun e=>(implicitCtx k e,e.pre)) ∧
+      (∀ b, bs[0]? = some b → b.forwarded=fwdLinks (m.ctx k) m.result.outgoing) := by
+  obtain ⟨bs,hs,hpre,hctx,hfw,hb⟩:=allocated_blocks hp hk hm hv hlen
   have hlen':bs.length≤32 := by omega
   have hvalid:∀b∈bs,b.Valid ∧ b.run.n≤64 ∧
       TableLocal ProcPriorCodecActual.table (SchedHeight.trace b.output.rows codecPad) 0 [] := by
@@ -322,7 +325,7 @@ theorem prior_core_on {B : Nat} {cb wb : Bytes} {hint : Hint} {p : Prep}
     memory_read:=ProcPriorNativeMemory.codec_balance hp bs hlen' hbr hcapraw,
     memory_write:=ProcPriorNativeMemory.record_balance bs hn hlen' hcapraw,
     id_data:=fun req=>ProcNativeIdBalance.balance req (fun b=>b.pub.ids) bs (by omega)
-      (Nat.le_of_lt (ProcNativeIdBalance.native_capacity _ bs hn hlen' hcapraw)) },?_,hctx⟩
+      (Nat.le_of_lt (ProcNativeIdBalance.native_capacity _ bs hn hlen' hcapraw)) },?_,hctx,hfw⟩
   intro b hm
   obtain ⟨i,hi⟩:=List.mem_iff_getElem?.mp hm
   exact (hb i b hi).2.2.2.2.2.2
