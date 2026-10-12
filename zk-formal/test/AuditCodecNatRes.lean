@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Render.CodecNatRes
+import ZkFormal.NearV3.Render.CodecSanity
 
 /-! Guard NatRes from acceptance and the premise-free table 11 (lane v3-render-sched). -/
 
@@ -13,3 +14,23 @@ import ZkFormal.NearV3.Render.CodecNatRes
 /-- info: 'ZkFormal.NearV3.Render.CdcGrant.codec_accepted_full' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.CdcGrant.codec_accepted_full
+
+/-- info: 'ZkFormal.NearV3.Render.Cdc.codec_bytes_native' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.Cdc.codec_bytes_native
+
+/-- info: 'ZkFormal.NearV3.Render.Cdc.codec_digest_native' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.Cdc.codec_digest_native
+
+/-- info: 'ZkFormal.NearV3.Render.Cdc.codec_s0f_native' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.Cdc.codec_s0f_native
+
+/-- info: 'ZkFormal.NearV3.Render.Cdc.codec_splen_native' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.Cdc.codec_splen_native
+
+/-- info: 'ZkFormal.NearV3.Render.Cdc.codec_sha_counts_pinned' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.Cdc.codec_sha_counts_pinned
