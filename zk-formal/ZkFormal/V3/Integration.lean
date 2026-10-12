@@ -30,6 +30,34 @@ import ZkFormal.NearV3.Assembly.TrieA7Ups
 import ZkFormal.NearV3.Assembly.TrieA7Bal
 import ZkFormal.NearV3.Assembly.TrieA7Size
 import ZkFormal.NearV3.Assembly.TrieA7Rank
+import ZkFormal.NearV3.Assembly.TrieUpsOrigin
+import ZkFormal.NearV3.Assembly.TrieA7Perm
+import ZkFormal.NearV3.Assembly.TrieA7SizeBal
+import ZkFormal.NearV3.Assembly.TrieShaTwo
+import ZkFormal.NearV3.Assembly.TrieUpsKeys
+import ZkFormal.NearV3.Assembly.TrieVslotNative
+import ZkFormal.NearV3.Assembly.TrieShaFamilies
+import ZkFormal.NearV3.Assembly.TrieUpsSched
+import ZkFormal.NearV3.Assembly.TrieWalkAlign
+import ZkFormal.NearV3.Assembly.TrieUpsBytes
+import ZkFormal.NearV3.Assembly.TrieUpb
+import ZkFormal.NearV3.Assembly.TrieUpsMemd
+import ZkFormal.NearV3.Assembly.TrieUpsMemdPair
+import ZkFormal.NearV3.Assembly.TrieUpsTermRV
+import ZkFormal.NearV3.Assembly.TrieUpsSplitLink
+import ZkFormal.NearV3.Assembly.TrieUpsMemdNative
+import ZkFormal.NearV3.Assembly.TrieKeyFinal
+import ZkFormal.NearV3.Assembly.TrieShaBus
+import ZkFormal.NearV3.Assembly.TrieShaEmpty
+import ZkFormal.NearV3.Assembly.TrieDigestUps
+import ZkFormal.NearV3.Assembly.TrieDigestTrie
+import ZkFormal.NearV3.Assembly.TrieA7Post
+import ZkFormal.NearV3.Assembly.TrieA7Cap
+import ZkFormal.NearV3.Assembly.TrieA7Repl
+import ZkFormal.NearV3.Assembly.TrieA7Match
+import ZkFormal.NearV3.Assembly.TrieA7Forest
+import ZkFormal.NearV3.Assembly.TrieA7Total
+import ZkFormal.NearV3.Assembly.TrieSide
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
 import ZkFormal.NearV3.Assembly.HintCodec
@@ -356,6 +384,11 @@ import ZkFormal.NearV3.Assembly.RenderV3RcptBalance
 import ZkFormal.NearV3.Assembly.RenderV3RcptLayout
 import ZkFormal.NearV3.Assembly.RenderV3RcptBnd
 import ZkFormal.NearV3.Assembly.RenderV3RcptSide
+import ZkFormal.NearV3.Assembly.RenderV3Header
+import ZkFormal.NearV3.Render.HonestRcptQ
+import ZkFormal.NearV3.Assembly.RenderV3RcptTrie
+import ZkFormal.NearV3.Assembly.RenderV3RcptSha
+import ZkFormal.NearV3.Assembly.RenderV3RcptTrieSide
 /-!
 # Build gate for the integrated v3 proof work
 

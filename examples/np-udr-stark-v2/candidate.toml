@@ -1,0 +1,44 @@
+# np-udr-stark-v2: the provable STARK backend for the v3 D0a challenge
+# (`docs/zk-formal/V3-D0-DESIGN.md`, `docs/zk-formal/FORMATS.md` §8).
+#
+# formal/NpUdrStarkV2/Model.lean is the deployed verifier model
+# (= ZkFormal.Prover.Np.G.npVerifierP NearSpecV3.challengeSpecD0a nearAirV3
+#    ZkFormal.NearV3.Assembly.split ZkFormal.NearV3.Assembly.prepV3b, i.e. the
+# guarded v2 hint verifier at auxGroup = 2, BCS-compiled to the v3 AIR).
+# NpUdrStarkV2.certificate_of (formal/NpUdrStarkV2/Assembly.lean) is
+# ZkFormal.NearV3.Assembly.nearV3_admission_with_extract_b specialised to the
+# D0a challenge; it is CONDITIONAL on the open obligations ExtractV3Stmt,
+# the render completeness closure and AlignedV3Stmt
+# (docs/zk-formal/STATUS-V3-ASSEMBLY.md §3). The candidate is therefore NOT yet
+# ADMITTED — the certificate is an honest reduction, with no `sorry`/`axiom`.
+# verify_route = native-lean: the judge compiles [formal] verifier_model itself;
+# build.sh replicates that build into out/verify.
+#
+# challenge: the UNSIGNED draft is challenges/drafts/near-chunk-validation-d0-stark.draft.json
+# (near-chunk-v3 / NearSpecV3.Tier.d0a, statement near/pv86/chunk-validation/v0#D0a,
+# security profile validity-classical-128, 8 MiB proof cap, verify fuel 2^30).
+# TODO(challenge-id): replace with the signed `chl_…` id once the D0a tier is
+# frozen and signed (the draft has none); do NOT invent one.
+schema = "arena-candidate-v1"
+name = "np-udr-stark-v2"
+agent = "v3-prover"
+challenge = "near-chunk-validation-d0-stark"  # TODO: signed `chl_…` id (draft, unsigned)
+backend_family = "np-udr-stark-v2"
+security_profile_request = "validity-classical-128"
+hardware = { gpu = false, min_ram_gb = 4 }
+
+[build]
+recipe = "build-recipe/build.sh"
+outputs = ["out/prepare", "out/prove", "out/verify"]
+
+[entry]
+prepare = "out/prepare"
+prove = "out/prove"
+verify = "out/verify"
+verify_route = "native-lean"
+
+[formal]
+lean_project = "formal"
+certificate = "NpUdrStarkV2.certificate"
+verifier_model = "NpUdrStarkV2.Model.verifier"
+verifier_model_module = "NpUdrStarkV2.Model"
