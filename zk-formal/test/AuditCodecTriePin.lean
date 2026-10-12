@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Render.CodecTriePin
 import ZkFormal.NearV3.Render.CodecSpost
+import ZkFormal.NearV3.Render.CodecCanon
 
 /-! Guard the scheduler-upsert pin and the codec premises of `rcpt_trie_side` (lane v3-render-sched). -/
 
@@ -30,3 +31,11 @@ import ZkFormal.NearV3.Render.CodecSpost
 /-- info: 'ZkFormal.NearV3.Assembly.RenderBundleV3.balancedAt_spost' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.RenderBundleV3.balancedAt_spost
+
+/-- info: 'ZkFormal.NearV3.Render.CdcGrant.prior_canonical' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.CdcGrant.prior_canonical
+
+/-- info: 'ZkFormal.NearV3.Render.CdcGrant.a0s_accepted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.CdcGrant.a0s_accepted
