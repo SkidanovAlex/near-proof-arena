@@ -28,7 +28,7 @@ namespace ZkFormal.NearV3.Assembly
 open NearSpec NearSpecV3
 
 /-- The deployed auxiliary-group parameter `g = 2` (as `NearAdmission` / `RenderV3Bundle`). -/
-local instance : ZkFormal.Prover.Np.G.AuxG := ⟨2, by decide⟩
+local instance auxG2_extractV3 : ZkFormal.Prover.Np.G.AuxG := ⟨2, by decide⟩
 
 /-- **The remaining link fields at `B0`.** -/
 theorem linkRest2_B0 : LinkRest2V3Stmt NearSpecV3.B0 := by
