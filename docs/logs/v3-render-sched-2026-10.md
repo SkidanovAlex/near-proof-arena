@@ -600,3 +600,29 @@ The existing audits AuditCodecTriePin, AuditUpsS0F and AuditCodecNatRes were re-
     `rcpt_trie_sched`). The full map is in the `SchedBusPackaging` docstring. The receipt side's
     `BusBalanced` is the same proposition as `BalancedAt` (`balancedAt_of_bus`).
   * Build the full 25-table bundle and the header check (`RenderWitnessV3`) using `balanced_of_used`.
+
+## 2026-10-12 (package 13: vbytes merge, completeness assembled modulo the ChaCha side)
+
+* **Merged origin/lane/v3-render-vbytes** (2c65b219) — merge commit 3876dd03, pushed. Both conjuncts kept in
+  `rcpt_trie_codec`/`rcpt_trie_sched` (vbytes' `ExtOf r4.tf (valTraffic …)` after the `∃ Js …` block, this lane's
+  `bs[0]?` forwarding pin after `hctx`); `RcptTrieSide.rcpt_trie_vbytes` gains the forwarding conjunct too (conjunct
+  only). Integration 4649 jobs; audits AuditSchedBuses, AuditCodecVbytes, AuditMposBal, AuditRcptTrieSide,
+  AuditUpsS0F, AuditCodecTriePin clean; pin-check OK.
+* **`Render/CompleteV3.lean` (new)**:
+  * **`ChachaSideV3 : Prop`** — the one open piece (lane v3-render-chacha): for an accepted `A` and blocks `bs` with
+    `PriorCore A.p B0 bs`, `GrantWit`, `NatRes`, `hctx`, `hfw`, renders `r8 r9 r10` (tables 8, 9, 10; r9 needs the
+    A9 bound `rngRows calls ≤ W0`) exist such that every bundle carrying them whose table 13 has
+    `tr = procTraceV3 (bs.map NativeBlock.run)` balances buses 45–50.
+  * `bundleOf` (the 25-table bundle from one render per index).
+  * **`accepted_render_balanced (hch : ChachaSideV3) A : ∃ R, R.Balanced ∧ R 16 = A.rcptRenders.rcpt`**:
+    `rcpt_trie_vbytes A A.sizeBudget` (tables 0–7, 11, 16–23 and 34 buses) + `sched_renders_on` (12–15) +
+    `balancedAt_scmp` + `sched_buses_balanced` + `sortRenderV3` (24) + `hch` (8–10, 45–50) → all 51 `usedBuses`
+    → `balanced_of_used`.
+  * **`completeV3_of_chacha : ChachaSideV3 → CompleteV3Stmt`** (hint `nativeHint`, `A.hint_bounds`,
+    `A.prepared_lt_P`, `A.pubFit`, `bundle_headerOk_rcpt`).
+  * **`nearV3_admission_of_chacha : ExtractV3Stmt → ChachaSideV3 → … → AdmissionStatement`**.
+* Audit `test/AuditCompleteV3.lean` (guarded; propext, Classical.choice, Quot.sound). Integration 4650 jobs;
+  pin-check OK. No AIR change needed.
+* origin/lane/v3-render-chacha (6a7b44f8) has no top lemma yet — not merged. **Remaining for completeness: exactly
+  `ChachaSideV3`.** When `chacha_buses_balanced` lands, prove `ChachaSideV3` from it (repackage its renders and
+  balances into the statement above) and `completeV3_of_chacha` closes `CompleteV3Stmt`.
