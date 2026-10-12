@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.RenderV3RcptTrieSide
+import ZkFormal.NearV3.Assembly.SizeBudgetAccepted
 import ZkFormal.NearV3.Assembly.RenderV3SrcpSha
 
 /-! Guard the receipt SHA family / BYTES-DIGEST receipt halves and the combined receipt+trie side. -/
@@ -54,3 +55,11 @@ import ZkFormal.NearV3.Assembly.RenderV3SrcpSha
 /-- info: 'ZkFormal.NearV3.Assembly.TrieSide.sizeBudget_of_coarse' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Assembly.TrieSide.sizeBudget_of_coarse
+
+/-- info: 'ZkFormal.NearV3.Assembly.AcceptedV3.srcpSize_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.AcceptedV3.srcpSize_le
+
+/-- info: 'ZkFormal.NearV3.Assembly.AcceptedV3.sizeBudget' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Assembly.AcceptedV3.sizeBudget
