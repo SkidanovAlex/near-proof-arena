@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Render.CodecRender
+import ZkFormal.NearV3.Render.CodecNative
 
 /-! Guard the frozen-codec table assembly (lane v3-render-sched). -/
 
@@ -25,3 +25,11 @@ import ZkFormal.NearV3.Render.CodecRender
 /-- info: 'ZkFormal.NearV3.Render.codecRenderV3' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in
 #print axioms ZkFormal.NearV3.Render.codecRenderV3
+
+/-- info: 'ZkFormal.NearV3.Render.Cdc.blkOf_ok' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.Cdc.blkOf_ok
+
+/-- info: 'ZkFormal.NearV3.Render.codec_accepted' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs(whitespace := lax) in
+#print axioms ZkFormal.NearV3.Render.codec_accepted
