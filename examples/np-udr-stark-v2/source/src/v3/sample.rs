@@ -265,6 +265,9 @@ pub fn sample_json(table: &str, seed: u64, n: usize) -> Result<String, String> {
         "chacha" => serde_json::to_string(&chacha(r, n)),
         "rng" => serde_json::to_string(&rng(r, n)),
         "shuf" => serde_json::to_string(&shuf(r, n)),
+        "sha_t" | "sha_r" => serde_json::to_string(&super::sha::sample(r, n)),
+        "mrk" => serde_json::to_string(&super::mrksort::mrk(r, n as u64)),
+        "sort" => serde_json::to_string(&super::mrksort::sort(r, n)),
         t => return Err(format!("unknown table {t}")),
     };
     j.map_err(|e| e.to_string())

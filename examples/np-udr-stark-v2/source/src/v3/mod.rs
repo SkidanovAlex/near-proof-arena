@@ -22,12 +22,14 @@ use crate::field::{F, P};
 pub mod acct;
 pub mod chacha;
 pub mod entries;
+pub mod mrksort;
 pub mod node;
 pub mod prep;
 pub mod qv;
 pub mod rcpt;
 pub mod sample;
 pub mod sched;
+pub mod sha;
 pub mod size;
 pub mod srcp;
 pub mod ups;
@@ -510,6 +512,10 @@ pub const TABLES: &[(&str, usize)] = &[
     ("proc", 13),
     ("mem", 14),
     ("cmp", 15),
+    ("sha_t", 0),
+    ("sha_r", 1),
+    ("mrk", 23),
+    ("sort", 24),
 ];
 
 /// Parse `json` as the entry list of `table` and render its aligned trace.
@@ -542,6 +548,9 @@ pub fn render(table: &str, json: &str) -> Result<Tab, String> {
         "proc" => sched::proc(json)?,
         "mem" => sched::mem(json)?,
         "cmp" => sched::cmp(json)?,
+        "sha_t" | "sha_r" => sha::render(json)?,
+        "mrk" => mrksort::render_mrk(json)?,
+        "sort" => mrksort::render_sort(json)?,
         t => return Err(format!("unknown table {t}")),
     })
 }
