@@ -147,10 +147,12 @@ theorem ups_sha_scheduler {insts : List Render.UpsInst} (h : TrieUpsOrigin.UpsSh
   exact ⟨_, B, base, Qs, heq ▸ he, heq ▸ rfl⟩
 
 
-/-- `ups_sha_scheduler` keeping the witnesses' native sanity inputs (`SanPin`). -/
+/-- `ups_sha_scheduler` keeping the witnesses' native sanity inputs (`CallPin`). -/
 theorem ups_sha_scheduler_pin {k : WalkD0} {m : MainExecutionV3} {steps : List ImplicitStepV3}
     {insts : List Render.UpsInst} (h : TrieUpsOrigin.UpsShaPin k m steps insts) :
-    ∃ us : List SchedulerUpsertWitness, SanPin k m steps us ∧ (∀ u ∈ us, u.Valid) ∧
+    ∃ us : List SchedulerUpsertWitness, CallPin k m steps us ∧
+      (∀ p : List WStep3, (physicalPrefixUps p insts).map (fun I => (I.tau, I.v)) =
+        us.mapIdx (fun i u => (i, u.value.map UInt8.toNat))) ∧ (∀ u ∈ us, u.Valid) ∧
       (Sha.Gen.honestRows (schedulerShaJobs 0 us ++ schedulerSanityJobs 0 us)).length ≤ 1663260 ∧
       ∀ p : List WStep3,
         ((physicalPrefixUps p insts).flatMap upsBytes).map Msg.toFp =
@@ -158,7 +160,17 @@ theorem ups_sha_scheduler_pin {k : WalkD0} {m : MainExecutionV3} {steps : List I
         ((CompactPhysicalDigests.compactGeneratedDigests (physicalPrefixUps p insts)).map Msg.toFp).Perm
           ((Sha.Gen.expectedDigests (schedulerShaJobs 0 us)).map Msg.toFp) := by
   obtain ⟨us, hpin, hl, h32, hg, hout, hval, -, hI⟩ := h
-  refine ⟨us, hpin, fun u hu => (hg u hu).1, schedulerBatch_rows us h32 (fun u hu => (hg u hu).1) (fun u hu => (hg u hu).2.1) hout hval, ?_⟩
+  have htv : ∀ p : List WStep3, (physicalPrefixUps p insts).map (fun I => (I.tau, I.v)) =
+      us.mapIdx (fun i u => (i, u.value.map UInt8.toNat)) := by
+    intro p
+    rw [TrieA7.prefix_map_eq (fun I => (I.tau, I.v)) (fun _ _ => rfl) insts p]
+    apply List.ext_getElem (by simp [hl])
+    intro i h1 h2
+    simp only [List.length_map] at h1
+    have hu : us[i]? = some us[i] := List.getElem?_eq_getElem (by omega)
+    obtain ⟨-, hv, ht, -⟩ := hI i us[i] insts[i] hu (List.getElem?_eq_getElem h1)
+    simp [hv, ht]
+  refine ⟨us, hpin, htv, fun u hu => (hg u hu).1, schedulerBatch_rows us h32 (fun u hu => (hg u hu).1) (fun u hu => (hg u hu).2.1) hout hval, ?_⟩
   intro p
   refine ⟨?_, ?_⟩
   · have hr : (physicalPrefixUps p insts).map upsBytes = insts.map upsBytes :=

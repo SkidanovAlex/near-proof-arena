@@ -30,7 +30,7 @@ theorem implicit_upserts_pin {k : WalkD0} {root : Bytes} {pairs : List (Blk × T
     ∃us : List SchedulerUpsertWitness,
       us.map (fun u=>(u.pre,u.run.output))=steps.map (fun s=>(s.pre,s.post)) ∧
       (∀u∈us,u.Valid ∧ u.value.length≤98341) ∧
-      us.map schedulerWitnessSanity=steps.map (fun e=>sanOf (implicitCtx k e) e.pre) := by
+      us.map (fun u=>(u.ctx,schedRead u.pre))=steps.map (fun e=>(implicitCtx k e,schedRead e.pre)) := by
   induction h with
   | nil=>exact ⟨[],rfl,by simp,rfl⟩
   | cons root b t rest steps post last hr hp ht ih=>
@@ -43,7 +43,7 @@ theorem implicit_upserts_pin {k : WalkD0} {root : Bytes} {pairs : List (Blk × T
       rcases List.mem_cons.mp hx with rfl|hx
       · exact ⟨hvalid,hlen⟩
       · exact hgood x hx
-    · simp only [List.map_cons,hsan,sanity_sanOf,hctx,hpre]
+    · simp only [List.map_cons,hsan,hctx,hpre]
       rfl
 
 theorem upserts_kf {k : WalkD0} {w : StateWitness} {m : MainExecutionV3}
@@ -54,7 +54,7 @@ theorem upserts_kf {k : WalkD0} {w : StateWitness} {m : MainExecutionV3}
       KeysFinal k w m writes oldPost ∧
       SizedAccountRun m.pre writes oldPost ∧
       us.map (fun u=>(u.pre,u.run.output))=(oldPost,m.result.trie)::steps.map (fun s=>(s.pre,s.post)) ∧
-      (∀u∈us,u.Valid ∧ u.value.length≤98341) ∧ SanPin k m steps us ∧
+      (∀u∈us,u.Valid ∧ u.value.length≤98341) ∧ CallPin k m steps us ∧
       let rs:=nativeReplayForest m steps oldPost writes
       (∀r∈rs,r.Valid) ∧
       (records (forestOldInputs rs) (forestNodes 0 0 0 (m.pre::steps.map ImplicitStepV3.pre))).map (fun s=>s.v.ser true)=
@@ -76,7 +76,7 @@ theorem upserts_kf {k : WalkD0} {w : StateWitness} {m : MainExecutionV3}
       obtain ⟨r,-,hr'⟩:=List.mem_map.mp hm'
       rw [←hr']
       simp [keyBwState,accountKeyPath,nibbles]
-    simp only [SanPin,sanList,List.map_cons,hsan,sanity_sanOf,hctx,hpre,sanOf_rebased hr hk]
+    simp only [CallPin,callList,List.map_cons,hsan,hctx,hpre,schedRead_rebased hr hk]
 
 theorem physical_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
     (hk : walkD0 cb=.ok k) (hw : decodeW wb=.ok w) (h : checkD0a B0 cb wb=.ok ())
@@ -91,7 +91,7 @@ theorem physical_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
       (∀u∈us,u.Valid ∧ u.pre.wf=true ∧ u.run.parts.length≤403 ∧ fdepth u.pre keyBwState≤400 ∧ u.value.length≤98341) ∧
       preBytes (us.map SchedulerUpsertWitness.pre)≤2000000 ∧
       (us.map (fun u=>outputByteCharge u.run)).sum≤2131072 ∧
-      (us.map (fun u=>u.value.length)).sum≤3146912 ∧ SanPin k m steps us ∧
+      (us.map (fun u=>u.value.length)).sum≤3146912 ∧ CallPin k m steps us ∧
       let rs:=nativeReplayForest m steps oldPost writes
       (∀r∈rs,r.Valid) ∧
       (records (forestOldInputs rs) (forestNodes 0 0 0 (m.pre::steps.map ImplicitStepV3.pre))).map (fun s=>s.v.ser true)=
@@ -157,7 +157,7 @@ theorem coverage_kf {cb wb : Bytes} {k : WalkD0} {w : StateWitness}
         ExactNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) u.run I ∧
         I.ci=u.run.terminal.ix ∧ DispatchNativeWalkProviders (us.map (fun u=>(u.pre,u.run.output))) u.run I ∧
         ∃root,forestRootAt 0 0 (us.map SchedulerUpsertWitness.pre) tau=some root ∧
-          NativeReaderOrigin root u.run u.value I) ∧ SanPin k m steps us ∧
+          NativeReaderOrigin root u.run u.value I) ∧ CallPin k m steps us ∧
       let rs:=nativeReplayForest m steps oldPost writes
       (∀r∈rs,r.Valid) ∧
       (records (forestOldInputs rs) (forestNodes 0 0 0 (m.pre::steps.map ImplicitStepV3.pre))).map (fun s=>s.v.ser true)=
