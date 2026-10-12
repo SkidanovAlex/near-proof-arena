@@ -12,7 +12,8 @@
 # `npudr v3check … rcpt` checks all 882 constraints (900 in the export) with the honest public values at the
 # compact height (see `src/v3/rcpt.rs`).
 #
-# Knobs: RCPT_SEEDS (1..8), RCPT_LISTS (1 3: lists per Lean case), RCPT_SAMPLE_SEEDS (1..6).
+# Knobs: RCPT_SEEDS (1..8), RCPT_LISTS (1 3: lists per Lean case), RCPT_EXTRA (9:4 10:4 11:4),
+# RCPT_SAMPLE_SEEDS (1..6).
 rc="$out/rcpt"; mkdir -p "$rc"
 lrc="$here/.lake/build/bin/np-lean-render-v3-rcpt"
 air="$out/nearAirV3.json"
@@ -41,8 +42,13 @@ rcreject() {
 }
 
 echo "== rcpt: Lean honest render (np-lean-render-v3-rcpt) vs Rust (npudr v3rcpt-prefix)"
-for nl in ${RCPT_LISTS:-1 3}; do
-  for seed in ${RCPT_SEEDS:-1 2 3 4 5 6 7 8}; do
+# (seed, lists) pairs: RCPT_SEEDS × RCPT_LISTS, plus RCPT_EXTRA (seeds 9–11 with 4 lists contain a
+# system receipt at gas price u128::MAX, the gas-repair case)
+pairs=""
+for nl in ${RCPT_LISTS:-1 3}; do for seed in ${RCPT_SEEDS:-1 2 3 4 5 6 7 8}; do pairs="$pairs $seed:$nl"; done; done
+for p in $pairs ${RCPT_EXTRA:-9:4 10:4 11:4}; do
+  seed=${p%:*}; nl=${p#*:}
+  {
     b="$rc/lean-$seed-$nl"
     if ! /usr/bin/time -v $HEAVY "$lrc" $seed $nl "$b.json" "$b.lean.bin" >"$b.log" 2>"$b.time"; then
       bad "rcpt seed=$seed lists=$nl: np-lean-render-v3-rcpt failed"; tail -3 "$b.time"; continue; fi
@@ -63,7 +69,7 @@ print(f"   {len(d)} cells differ; first (row, col, lean, rust): {d[:12]}")
 PY
     fi
     rccheck "$b.json" "Lean case seed=$seed lists=$nl"
-  done
+  }
 done
 
 echo "== rcpt: sampled entries (npudr v3sample rcpt) and edge inputs"
