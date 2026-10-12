@@ -90,8 +90,8 @@ def LenPres (v : Nat → Bytes) : Prop := ∀ k, (v k).length = (M.valsAt 0 k).l
 
 /-- The trie link's interface. -/
 structure TrieOk : Prop where
-  get : ∀ r, r < M.rs.length → ∀ v, (M.T v).get (accountKeyPath (M.rc r).receiverId) = some (v (M.slot r))
-  find : ∀ r, r < M.rs.length → ∀ v,
+  get : ∀ r, r < M.rs.length → ∀ v, M.LenPres v → (M.T v).get (accountKeyPath (M.rc r).receiverId) = some (v (M.slot r))
+  find : ∀ r, r < M.rs.length → ∀ v, M.LenPres v →
     (M.T v).find (accountKeyPath (M.rc r).receiverId) = some (some (v (M.slot r)))
   /-- only for value families with the initial lengths and a same-length new value (a trie
   update may restructure the trie depending on value lengths) -/
@@ -172,7 +172,7 @@ theorem step (hT : M.TrieOk) {r : Nat} (hr : r < M.rs.length) (hok : M.RcptOk3 c
       simp [outcomeOf, hrf, hb]
     rw [hout]
     dsimp only at hset hdec
-    have hfind := hT.find r hr (M.valsAt r)
+    have hfind := hT.find r hr (M.valsAt r) (M.valsAt_lenPres r)
     unfold applySystemReceipt
     by_cases he : (M.rc r).signerId = (M.rc r).receiverId
     · obtain ⟨o, ho, hoo⟩ := hT.ak r hr hsys he
@@ -194,7 +194,7 @@ theorem step (hT : M.TrieOk) {r : Nat} (hr : r < M.rs.length) (hok : M.RcptOk3 c
     have hb : M.burnt ctx r = burntOf ctx.gasPrice (M.rc r) := by simp [burnt, hns]
     simp only [hsys', Bool.false_eq_true, ↓reduceIte, hb]
     dsimp only at hset hdec
-    have hget := hT.get r hr (M.valsAt r)
+    have hget := hT.get r hr (M.valsAt r) (M.valsAt_lenPres r)
     simp only [burntOf, surplusOf, burnPrice] at h4 h5 h6
     simp only [applyReceipt, accAt, hget, hdec]
     simp only [Nat.not_le.mpr h1, Nat.not_le.mpr h2, ↓reduceIte]

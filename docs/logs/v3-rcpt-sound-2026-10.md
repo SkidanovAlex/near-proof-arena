@@ -3,7 +3,7 @@
 Worktree `/data/illia/nearproof-wt/v3-rcpt-sound`, branch `lane/v3-rcpt-sound`, from main `c87a7cae`.
 Modules: `zk-formal/ZkFormal/NearV3/Rcpt/Link/{RunSplit,ForwardSound,MemBal,Mem3,MemOf,RunModel,
 NewChunk,RecChain,RecModel,PrepFwd,RcptCore,AcctSlots,GasPub,RcptHolds,ValBytes,PeoBytes,RfBody,RfEnc,
-RcptHoldsB,FwdLinks,AkeyAkc,SrecLink,QvPre,QvBal}.lean` (namespace
+RcptHoldsB,FwdLinks,AkeyAkc,SrecLink,QvPre,QvBal,QvRc,QvCodec,QvPrem,QvAssemble,QvMain,ValExact}.lean` (namespace
 `ZkFormal.NearV3.RcptLink`).
 Audit `zk-formal/test/AuditRcptSound.lean` (all `[propext, Classical.choice, Quot.sound]` or less).
 No `sorry`/`axiom`; no edits outside these files; `make pin-check` passes.
@@ -282,3 +282,103 @@ start-closedness once on main); (2) the `hkey`/`hfinal`/`hrequests` balances fro
 * **Codec-inclusive physical reads (item 1): not started** (context).  Plan unchanged:
   `physical_empty_native` / `physical_buffered_*` with the 5-sender VBYTES balance; codec streams
   start-closed via v3-link's `LinkVBytes.Codec.vrow_msg` (merge `origin/lane/v3-link` when needed).
+
+## 2026-10-12 (session 3) — queue reads from `HoldsP` (five-sender VBYTES), `mainRun_of_holdsP_q`
+
+Merged `origin/lane/v3-link` (`485a6b3f`, clean, additive: `LinkVBytes`, `LinkMain`, `LinkTrieFam`, …).
+Commits `df9551db`, `845fb307`.  Audit extended (all `[propext, Classical.choice, Quot.sound]`);
+`make pin-check` OK.
+
+* **`QvRc`** (namespace `Qv.Extract.QvRc`, new file under `Rcpt/Link`): the physical reads over two
+  abstract premises instead of the 4-sender `VBYTES` balance + SHA byte premise:
+  `RecComplete tr tq pub segs vals` (every nonempty parser record's bytes are a permutation of its
+  value record's `VBYTES` receives) and `hb8 : ∀ e ∈ vals, Bytes8 e.bytes`.  `recComplete_of`
+  (`RecComplete` from any start-closed set of other senders + the exact permutation),
+  `buffered_native`, `empty_native`, `shard_all`, `shard_balance_bounded`, **`empty_read`**,
+  **`buffered_read`**, **`count_read`** (same proofs as `physical_*`).  The `Qv/Extract` originals are
+  untouched.
+* **`QvCodec`**: `codec_closed` (codec `VBYTES` sends start-closed, via v3-link's
+  `Codec.vrow_msg` / `codec_pre`), **`recComplete_holdsP`** (exact five-sender balance
+  `bal_users [T_VAL, T_CODEC, T_ACCT, T_AKEY, T_QV]`; others = codec + acct + akey), `qv_base_count`,
+  `qsh_holdsP`, `qvc_holdsP`, `bytes8_holdsP` (from `ShaHyp.bytes` against `shaU`).  This closes
+  resume item (1): the statement gap of `physical_empty_read` / `physical_buffered_read` is
+  bypassed, not patched.
+* **`QvPrem`**: `no_group` (main count `0` ⇒ no `groupByte` row), **`queue_premises`**: `∃ ss htau`,
+  `|ss| < P`, `hc` (`cv (q.segs[1]).count = |ss|`), `hrequests`, `he`, `hb`, `ha` of
+  `assemble_native_queue_reads`.  Present buffered read: `countRead = 1` at main read 1
+  (`present_iff`, `count_request_gate`) and `count_read`.  Absent: constraint
+  `wl·main·lo·(1-hi)·absent·count = 0` ⇒ `count = 0` (`main_count_constant`) ⇒ no group reads
+  (`main_read_prefix`, `main_kind`) and no count request (`indexed_count_request`) ⇒ empty `QSH`
+  request stream; `ss = []`.  Closes resume item (2) (`hrequests` / `hc`).
+* **`QvAssemble`**: `assemble_sub` (= `assemble_native_queue_reads` with `G` over a superset `ws` of
+  the balanced walks `ws0`; needed because the trie link's `WalkHyp` is over
+  `allWalks r.walks r.ups`), **`flatR_le_WAK`** (`|flatR| = h.n = p.hdr.n ≤ 5000 ≤ 8192`),
+  `queue_reads_holdsP` (given `ShaHyp`, `RootChain`, `WalkHyp ⊇ r.walks`).
+* **`QvMain`**: `walkHyp_holdsP` (`UpsRows.ups_walkHyp_22` with `trieLink_of`, `keynibOk_of`,
+  `recBytes_of`), `queue_main_holdsP` (`∃ v, v.Valid ∧ v.Reads (Fpre r 0) (Fpre r 0) (Fpre r 0)`;
+  `Fpre r 0` is definitionally `queueTree r.nodes r.values r.heads 0`), and the new top statement
+  **`mainRun_of_holdsP_q`** (resume item (3) closed):
+
+```
+prepD0 cb h = .ok p → |preparedBytes p oh| < P → HoldsP nearAirV3 pub tr →
+V3RecordsTraffic pub tr r → V3RecordsWf pub r → h.n = |flatR r.lists| →
+∃ pc bs, prepClaim cb = .ok pc ∧
+  (∃ v, (Fpre r 0).find keyBufferedIdx = some v ∧ bufferedShards v = .ok bs) ∧        -- hbs
+  (∀ key ∈ [keyDelayedIdx, keyBufferedIdx, keyYieldIdx] ++ bs.map keyGroupsData,
+     (Fpre r 0).find key ≠ none) ∧                                                     -- part of hcov
+  ∀ base Tf mid so,
+    MainTrieLink r.lists r.accts base Tf pc.ctxB2 (Fpre r 0) mid so →                 -- lane v3-link
+    (∀ x ∈ flatR r.lists, pc.ctxB2.layout.shardOf (toBytes x.v) = pc.ctxB2.own) →    -- routing (4)
+    (∀ o, indexOf ids own = some o → ∀ k < |ids|,
+       fwdDemand p.fwd (o·|ids| + k) ≤ so.grant own ids[k]) →                        -- AIR fwd check vs scheduler
+    applyNewChunk prims pc.ctxB2 (Fpre r 0) ((rv r.lists).map toReceipt) = .ok (mainOut pc.ctxB2)
+```
+  (`ShaHyp`, `RootChain`, `WalkHyp`, `pre.wf` (`LinkMain.Fpre_wf`), `v.Valid`, `v.Reads` all
+  discharged inside.)  For lane v3-link's `executions_of`: `hrun` at `pre := Fpre r 0`; `hbs` and
+  the queue-key part of `hcov` are exported (with the same `bs`).
+
+### Remaining premises of `mainRun_of_holdsP_q` (exact)
+
+1. `MainTrieLink r.lists r.accts base Tf pc.ctxB2 (Fpre r 0) mid so` — lane v3-link (`sched_pre`,
+   `Tf_pre`, `Tf_find`/`Tf_set` + receipt-walk identification).
+2. Routing `∀ x ∈ flatR r.lists, pc.ctxB2.layout.shardOf (toBytes x.v) = pc.ctxB2.own` — **blocked
+   on table 16's `q < 128` check** (not adopted: `nearAirV3` still uses `RcptR`/`tableR` on
+   `origin/integration/v3-20261013b` and `origin/lane/v3-render-rcpt`).  Route once adopted:
+   `bounded_prepared_native_routing hp hwalk W.lists r.bnds W.bnds hb hp'` with
+   `hp' = bnd_lookup_provider … (boundaryRequests_canonical W.lists hq)` (needs `hq : ∀ x ∈ flatR
+   r.lists, x.q < 128` — lane v3-render-rcpt — and the `BND` permutation from `HoldsP`), and
+   `hb : ∀ m, cnt (r.bnds.map rec4) m = cnt (boundaryRecords (boundedPrep p k.L k.H.shardId)) m`
+   (public boundary records = bounded representation; under A12 `layout_wf`), then the context
+   identification `k.L.shardOf receiverId = k.H.shardId` ↔ `pc.ctxB2.layout.shardOf (toBytes x.v) =
+   pc.ctxB2.own` (`prepClaim_native_context` pattern).
+3. The link-indexed forwarding check vs `so.grant` — scheduler tables, lane v3-link.
+
+Nothing false found.
+
+### Resume here
+
+(4) after table 16 adopts the q check: the routing premise as above (BND balance `hb`/`hp'` from
+`HoldsP`, context identification), giving `mainRun_of_holdsP_q` without the routing hypothesis.
+
+## 2026-10-12 (session 3, cont.) — lead's requests for lane v3-link (`LinkTrieOk`, their log session 10)
+
+1. **`RunModel.TrieOk.get` / `.find` now take `M.LenPres v →`** (like `.set`); `step` uses them at
+   `valsAt r` with `valsAt_lenPres`.  (A premise of the receipt core becomes weaker, so the core
+   statements are stronger.)  Matches v3-link's `find_of` (`hv : (Mdl r st).LenPres v`).
+2. **`ValExact`** (new): `vbytes_perm` (the exact five-sender `VBYTES` permutation, factored out of
+   `recComplete_holdsP`), `stream_record` (a selected nonempty stream of an exact, otherwise
+   start-closed permutation is the whole value record and its id is used by no other sender),
+   * **`acct_value_exact`**: `a ∈ r.accts → ∃ e ∈ r.values, e.vz = false ∧ e.vid = a.k ∧ e.bytes = a.pre`
+     (so the value record of every receipt slot — an acct `k`, `RecChain.slot_acct` — has length 72
+     and is exactly the acct's pre bytes: closes the length gap of `hinit`);
+   * **`akey_value_exact`**: `e ∈ r.akeys → (∃ v ∈ r.values, v.vz = false ∧ v.vid = e.vid ∧ v.bytes =
+     e.bytes) ∧ ∀ a ∈ r.accts, a.k ≠ e.vid`;
+   * **`akk_value`**: `x ∈ flatR r.lists → x.ee = true → x.akf = 0 →
+     (∃ v ∈ r.values, v.vz = false ∧ v.vid = x.akk ∧ |v.bytes| = 9 ∧ v.bytes.getD 8 0 = 1) ∧
+     ∀ a ∈ r.accts, a.k ≠ x.akk` (`akk` is no receipt slot, without reach-injectivity).
+3. **`mainRun_of_holdsP_q`** now exports, for the same `bs`, exactly the premises of v3-link's
+   `LinkTrieOk.hcov_of` and `executions_of`:
+   `hbs : ∃ v, (Fpre r 0).find keyBufferedIdx = some v ∧ bufferedShards v = .ok bs`,
+   `hfix : ∀ key ∈ [keyDelayedIdx, keyBufferedIdx, keyYieldIdx], (Fpre r 0).find key ≠ none`,
+   `hgrp : ∀ y ∈ bs, (Fpre r 0).find (keyGroupsData y) ≠ none`
+   (from `queue_main_holdsP`'s `v.Reads (Fpre r 0) …` and `v.Valid`, `bs := v.shards`).
