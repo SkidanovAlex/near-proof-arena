@@ -439,3 +439,49 @@ soundness-side traffic + `log % 3 = 1`) for tables 0,1 (sha), 7 (ups), 8–10
   (canonical0f k.L)` ↔ `b.prior`, `k.L.shardIds = b.pub.ids`), and the SCMP bus balance itself
   (codec sends `(apR+fair, MA, cb)`, `(zt·(gfin+gb), zt·ft, zt)` vs the comparator table).
 * **Task 4 — not started** (scheduler buses 40–62, ChaCha lane, packaging).
+
+## 2026-10-12 (package 10, same session: lead's pin request — `us` pinned, SHA/SPLEN/SPOST balanced, canonical priors)
+
+* **Pin (option (b), done; trie modules extended by conjuncts only, no statement weakened)** (4ba11819, 9baac291).
+  * `Assembly/SchedulerSanityPin.lean`: `schedRead pre` (= `readKey pre keyBwState`), `sanF`/`sanOf`, `valF` +
+    `value_valF` (a valid witness's value is a function of its call), `implicitCtx`, `callList k m steps`,
+    **`CallPin k m steps us`** (`us.map (ctx, schedRead pre) = callList`), `CallPin.sanity`, `CallPin.values`,
+    `sized_find_other` (account replay keeps every other key), `schedRead_rebased` (`oldPost` reads `m.pre`'s state).
+  * Threaded: `TrieUpsKeys.implicit_upserts_pin` (new), `upserts_kf`/`physical_kf`/`coverage_kf` (+`CallPin`),
+    `TrieUpsOrigin.UpsShaPin` (new def = `UpsSha` body + `CallPin`, `UpsShaPin.sha`), `accepted_ups_walks`/`trie_all_of`
+    (+`UpsShaPin` after `UpsSha`; `trie_all_accepted` unchanged, projects it out), `TrieDigestUps.ups_sha_scheduler_pin`
+    (new; + `(physicalPrefixUps p insts).map (τ, v) = us.mapIdx (i, value)`), `trie_side_exact` and `rcpt_trie_side`
+    (+`CallPin A.k A.m A.steps us` and `∃ Js hok, r7 = upsRenderV3 A.pub Js hok ∧ ExtOf r7.tf (ups view) ∧
+    Js.map (τ, v) = us.mapIdx …`; `trie_side` unchanged, projects them out). All trie/rcpt audits re-run: clean.
+* **Codec premises of `rcpt_trie_side` discharged** — `Render/CodecGrantCore.lean`: `prior_core_on` (PriorCore on a GIVEN
+  trace + `GrantWit` + the blocks' calls `bs.map (ctx, pre) = (m.ctx k, m.pre) :: steps.map (implicitCtx k e, e.pre)`);
+  `Render/CodecTriePin.lean`: `codec_on A`, `calls_of_pairs`, **`codec_premises`**, **`RcptTrieSide.rcpt_trie_codec`**
+  (rcpt_trie_side + table 11 render: `BYTES`, `DIGEST` balanced unconditionally).
+* **SPLEN, SPOST balanced** (9baac291, c123c6a4). `Render/CodecUpsBus.lean`: `value_len` (`|value| = 37 + 24n²`), covers/pub
+  lemmas, `link_at`, **`RenderBundleV3.balancedAt_splen`**, `vals_eq` (trie witnesses' values = blocks' values via
+  `CallPin.values`). `Render/CodecSpost.lean`: `spT`/`rt_spost`, `posMsgs` (+append/flatten lemmas), `hdr_part`,
+  `rec_part`, `hash_part`, **`blk_spost`** (block SPOST sends = `posMsgs τ 0 (stateBytes ids afin dig)`),
+  `encode_bytes`, **`value_stateBytes`** (the upsert value = the codec's post bytes: `scheduled_output_exists` +
+  `core_state` + `run_link_final` (vfin = st.al) + sanity hash of `b.old`), `codec_spost_native`,
+  **`balancedAt_spost`**, **`RcptTrieSide.rcpt_trie_sched`** (rcpt_trie_codec + `SPLEN` ∧ `SPOST`).
+* **B_SCMP prerequisite: canonical priors from acceptance (done)** (e38d849b). `Render/CodecCanon.lean`: `single_find`,
+  `implicit_reads`, `implicit_found`, `reads_trace` (`reads0f A.k A.w` = the trace's state reads), **`prior_canonical`**
+  (`canon0f` ⇒ every present prior has link pairs `ids × ids`), **`a0s_accepted`** (codec `a0s` = repaired process
+  allowance on every block of `A`'s trace).
+* Integration builds (4582 jobs); `make pin-check` OK; audits `test/AuditCodecTriePin.lean`, `test/AuditCodecNatRes.lean`.
+* Parallel lanes: origin/lane/v3-link (05fb2b18) and v3-link-rest (c9427ba1) checked; the announced AIR changes
+  (table 9 A9 counter, table 20 DedupTable) have not landed as code yet — not merged.
+
+### Open (this lane), exact
+1. **S0F** (codec recv `[τ, b2n pres, vid]` per block, `codec_s0f_native`; ups send `[I.tau, presN I, vidN I]` per
+   instance, `view_s0f_send`). Missing: for the trie side's `Js[i]` (= `nativeInstance … root.tree run value Qs` via
+   `NativeReaderOrigin`), `(step Js[i] 3).mode = 0 ↔ bs[i].prior.isSome` and then `(step Js[i] 3).e[3] = bs[i].vid`. The
+   instance ids come from the forest of `us.map pre = oldPost :: steps.pre` (rebased), the codec's `vid` from
+   `m.pre :: steps.pre`; needs (a) the step-3 semantics of `nativeInstance` (value-present lookup at `[0,15]`, its value id
+   `root.vid + valueIndex`) and (b) `valueIndex oldPost keyBwState = valueIndex m.pre keyBwState` + equal forest value
+   counts (`valsOf` lengths equal by `newchunk_old_tree_reconstruct`). Not started.
+2. **B_SCMP balance**: algebra done (`allowances_canon`, `a0s_accepted`); remaining: the bus itself (codec sends
+   `(apR + fair, MA, cb)` at `(f,gg) = (2,2)` and `(zt·(gfin+gb), zt·ft, zt)` at `(2,7)`; tables 12–15 also touch bus 40)
+   against the comparator table renders R12–R15 (currently fed `b.output.cmps`, the repaired codec's list).
+3. Task 4 (scheduler buses 40–62, ChaCha lane, packaging for tables 8–15, 23, 24): not started. Note table 11 also sends on
+   `B_VBYTES` (21; receivers 4, 17, 18, 22) — not covered by any lane's balance yet as far as checked.
