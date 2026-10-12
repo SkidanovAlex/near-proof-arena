@@ -353,6 +353,18 @@ done
 [ $nd0 -gt 0 ] || bad "no fixture case produced a D0 prep"
 echo "   ($nd0 native prepD0 statements byte-compared against Lean)"
 
+# Per-area sections (lane v3-prover, 2026-10-12): each `run-v2.d/*.sh` is sourced
+# here with `here src out npudr lr le le3 lp fx HEAVY pass bad` in scope.
+# `SECTIONS="a7 rcpt"` restricts to the named files (`run-v2.d/<name>.sh`).
+for s in "$here"/run-v2.d/*.sh; do
+  [ -f "$s" ] || continue
+  n="$(basename "$s" .sh)"
+  if [ -n "${SECTIONS:-}" ] && ! [[ " $SECTIONS " == *" $n "* ]]; then continue; fi
+  echo "== section $n"
+  # shellcheck disable=SC1090
+  source "$s"
+done
+
 echo
 if [ $fail -eq 0 ]; then echo "ALL PASS"; else echo "SOME FAILED"; fi
 exit $fail

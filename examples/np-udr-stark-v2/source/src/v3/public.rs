@@ -100,21 +100,51 @@ fn data_bytes(blocks: &[Vec<Vec<u8>>]) -> Vec<u8> {
 // Payloads
 // ---------------------------------------------------------------------------
 
-/// `Public.sourcePayload` (`Public/Source.lean`): `[dup] ‖ root[32]` per list.
+/// `Public.sourcePayload` (`Public/Source.lean`, `SRC34`): `[dup byte, rep] ‖ root[32]`
+/// per list, where the dup byte is `sourceDupByte` (`0` first occurrence, `1`
+/// consistent repeat, `2` inconsistent repeat) and `rep = sourceRep`.
 fn source_payload(lists: &[SrcList]) -> Vec<Vec<u8>> {
     (0..lists.len())
         .map(|j| {
-            let dup = source_dup(lists, j);
-            let mut row = vec![if dup { 1u8 } else { 0u8 }];
+            let mut row = vec![source_dup_byte(lists, j), source_rep(lists, j) as u8];
             row.extend_from_slice(&lists[j].root);
             row
         })
         .collect()
 }
 
+/// `Public.sourceDup`: an earlier list has the same key.
 fn source_dup(lists: &[SrcList], j: usize) -> bool {
     let key = &lists[j].key;
     lists[..j].iter().any(|s| &s.key == key)
+}
+
+/// `Public.sourceRep`: the key of list `j` occurs at least twice among all lists.
+fn source_rep(lists: &[SrcList], j: usize) -> bool {
+    let key = &lists[j].key;
+    lists.iter().filter(|s| &s.key == key).count() >= 2
+}
+
+/// `Public.sourceConsistent`: every earlier list with the same key has the same
+/// `fromShard` and `root`.
+fn source_consistent(lists: &[SrcList], j: usize) -> bool {
+    let l = &lists[j];
+    lists[..j]
+        .iter()
+        .all(|s| s.key != l.key || (s.from_shard == l.from_shard && s.root == l.root))
+}
+
+/// `Public.sourceDupByte`.
+fn source_dup_byte(lists: &[SrcList], j: usize) -> u8 {
+    if source_dup(lists, j) {
+        if source_consistent(lists, j) {
+            1
+        } else {
+            2
+        }
+    } else {
+        0
+    }
 }
 
 /// `Public.boundaryPayload`: `BND_STRIDE * |bounds|` rows of `[lo, hi, hn]`.
