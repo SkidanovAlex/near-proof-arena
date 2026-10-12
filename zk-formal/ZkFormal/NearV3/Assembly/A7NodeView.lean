@@ -377,12 +377,14 @@ namespace ZkFormal.NearV3
 
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near
 
-/-- **The `nodeA7` view**: one segmentation gives the base view and the A7 traffic. -/
-theorem nodeA7_view (tr : Trace Fp) (pub : List Fp) (hL : TableLocal UnfoldA7.nodeA7 tr T_NODE pub) :
-    ∃ vs S, NodeWf3 vs ∧ TableTraffic NodeV3.interactions tr T_NODE pub (nodeTraffic3 vs) ∧
-      TableTraffic UnfoldA7.Node.interactions tr T_NODE pub (a7NodeTraffic vs S) := by
-  have hB := A7NodeProof.baseL hL
+/-- **The `nodeA7` view** (any table index): one segmentation gives the base view and the A7
+traffic. -/
+theorem nodeA7_view (tr : Trace Fp) (pub : List Fp) (t : Nat) (hL : TableLocal UnfoldA7.nodeA7 tr t pub) :
+    ∃ vs S, NodeWf3 vs ∧ TableTraffic NodeV3.interactions tr t pub (nodeTraffic3 vs) ∧
+      TableTraffic UnfoldA7.Node.interactions tr t pub (a7NodeTraffic vs S) := by
+  have hL' : TableLocal UnfoldA7.nodeA7 (focusTr tr t) T_NODE pub := ⟨hL.log_ge, hL.log_le, hL.constr, hL.bits⟩
+  have hB := A7NodeProof.baseL hL'
   obtain ⟨segs, hS⟩ := NodeProof3.nodeSegs_exist hB
-  exact ⟨_, _, NodeProof3.nodeWfOf hB hS, NodeProof3.nodeTrafficOf hB hS, A7NodeProof.a7TrafficOf hL hS⟩
+  exact ⟨_, _, NodeProof3.nodeWfOf hB hS, NodeProof3.nodeTrafficOf hB hS, A7NodeProof.a7TrafficOf hL' hS⟩
 
 end ZkFormal.NearV3
