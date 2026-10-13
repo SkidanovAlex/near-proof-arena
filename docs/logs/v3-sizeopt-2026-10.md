@@ -46,30 +46,56 @@ growth (qvV3 ≈ +75–112 KB) re-opens the cap.
 * Axioms of every theorem ⊆ {propext, Classical.choice, Quot.sound}
   (`#print axioms` checked); no `sorry`/`axiom`/`native_decide`.
 
-Effect once wired into the admission: artifact bound
+Effect if wired in: artifact bound
 `4 + 811,077 + 6,435,489 = 7,246,570 ≤ 8,388,608` — **+1,142,038 B of slack**
 (was 0), which covers qvV3 (+75–112 KB) many times over.
 
-## Integration checklist (next commit of this lane; no assumption changes)
+## Blocked: the hint body is pinned by the Good semantics (found during integration)
 
-1. `spec/lean/v3/NearSpecV3/PrepD0.lean`: move `compactRefund`/`compactBodyOf`/
-   `pCRefund`/`decodeBodyC` next to `pRefund`/`decodeBody` (spec is where
-   `prepBody` lives); `hintOfE` emits `compactBodyOf` (native `bodyOf` stays
-   for reference); `prepBody` parses with `decodeBodyC`.
-2. `zk-formal/ZkFormal/NearV3/Rcpt/Candidates/NativePreparedBody.lean`:
-   `accepted_native_body_bound` → compact variant via
-   `HintCompact.compactHint_length_le` (canonical premise supplied by
-   `applyNewChunk_outgoing_canonical`, already imported there transitively).
-3. `zk-formal/ZkFormal/NearV3/Assembly/RenderV3Header.lean`:
-   `nativeHint_bounds` re-instantiated on the compact hint.
-4. `zk-formal/ZkFormal/NearV3/Assembly/NearAdmission.lean`:
-   `v3MaxHintBytes` → `811,077` (the `decide` re-checks); certificate
-   specialization unchanged otherwise.
-5. Rust: `examples/np-udr-stark-v2/src/v3/{hint.rs,prep.rs}` emit/parse the
-   compact body; `conformance/run-v2.sh` §5 byte-diffs against the Lean dump.
-6. Re-record the three real proofs (`PROVE_V3=1`, ~750 s each under the
-   wrapper) and re-run `np-lean-verify-v3` + negatives; `cargo fmt/clippy/test`;
-   `make pin-check`.
+Wiring the compact body into `hintOfE`/`prepBody` is **not a wire codec**: the
+hint body is protocol-committed data.
+
+* `Good.lean:54` (`HeaderSemanticsV3.body`): `h.body = u32 0 ++
+  encodeReceipts m.result.outgoing`, and `HeaderSemanticsV3.encoded`
+  (`Good.lean:56`) pins `encodedMerkleRoot … h.body = (H.encodedMerkleRoot,
+  H.encodedLength)` — the chunk header's receipts-bucket commitment, computed
+  by nearcore over the *native* borsh bytes.  A compact body would fail the
+  EMR check for every honest claim.
+* The rebuild route (hint carries compact refunds; `prepBody` rebuilds the
+  native bucket via `bodyOf ∘ decodeBodyC` — decode determinism is exactly
+  what `HintCompact` proves, and EMR-over-rebuilt is a strict refinement of
+  EMR-over-raw, so soundness is preserved) requires amending
+  `HeaderSemanticsV3` and re-proof through the whole Link chain
+  (`Link{Main,Fwd,Witness,Hdr,Claim,Implicit,Exec}`, `Rcpt/Link/*` — 13
+  soundness-critical files).
+* Measured hints on real fixtures are 16–155 B; the bound term matters only
+  for adversarial A1-max claims.  Amending the soundness chain days before
+  signing for a bound-side saving is the wrong risk trade.
+
+**Disposition.** `HintCompact.lean` stays as proved machinery — the canonical
+refund invariants, decode determinism and exact length accounting are the
+prerequisite for the future `GoodV3` amendment (compact hint + rebuilt-native
+EMR), which the assembly/link lane can take up with lead sign-off, ideally
+post-signing.  This lane does **not** change `GoodV3`, `prepBody` or
+`hintOfE`.
+
+## Integration checklist (the future GoodV3 amendment; for the assembly lane)
+
+1. Amend `HeaderSemanticsV3` (`Good.lean`): `body : h.body = compactBodyOf
+   m.result.outgoing`; keep `encoded` over the **rebuilt native** bytes
+   `bodyOf (decodeBodyC h.body) = …` (well-defined by decode determinism;
+   equals the native bucket by `compactRefund_encode`/`decodeBodyC_compactBodyOf`).
+2. Spec: move `compactRefund`/`compactBodyOf`/`pCRefund`/`decodeBodyC` next to
+   `pRefund`/`decodeBody` in `PrepD0.lean`; `hintOfE` emits compact;
+   `prepBody` parses compact and rebuilds native for the EMR/`Prep.body`.
+   Redefine `Hint.empty := ⟨0, compactBodyOf []⟩`.
+3. `ReceiptWellformed.lean`: `NativeValid.body_decodes` → compact variant via
+   `applyNewChunk_outgoing_canonical`.
+4. `PrepBodyComplete.nativeHint` → `⟨n, compactBodyOf outgoing⟩`.
+5. `NativePreparedBody.accepted_native_body_bound` → `≤ 8 + 181·4481 = 811,069`
+   via `compactReceipts_length_le` + the receipt bound.
+6. `RenderV3Header.nativeHint_bounds`, `NearAdmission.v3MaxHintBytes := 811,077`.
+7. Rust `hint.rs`/`prep.rs`; re-record proofs; full negative suite.
 
 Explicitly out of scope here (need protocol/numerics work or other lanes):
 digest width 64→32 B (MMCS/Bcs format change, ROM-binding stays perfect —
