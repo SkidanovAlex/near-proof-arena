@@ -534,7 +534,7 @@ pub fn get(t: &PTrie, key: &[u8]) -> Option<Bytes> {
 /// `PTrie.set t key nv`, in place: `true` iff Lean's `set` is `some t'`, and
 /// then `*t = t'`.  On `false` the trie is unchanged (the value slot is only
 /// written once the whole path has been matched).
-fn set_in_place(t: &mut PTrie, key: &[u8], nv: &[u8]) -> bool {
+pub(crate) fn set_in_place(t: &mut PTrie, key: &[u8], nv: &[u8]) -> bool {
     match t {
         PTrie::Hash(_) => false,
         PTrie::Leaf(k, v, _) => {
@@ -649,10 +649,10 @@ pub fn main_keys(receipts: &[Receipt], bshards: &[u64]) -> Vec<Vec<u8>> {
 }
 
 /// The part of `TransferV1.Acc` the refund list depends on.
-struct Acc {
-    trie: PTrie,
-    refunds: Vec<Receipt>,
-    tokens_burnt: u128,
+pub(crate) struct Acc {
+    pub(crate) trie: PTrie,
+    pub(crate) refunds: Vec<Receipt>,
+    pub(crate) tokens_burnt: u128,
 }
 
 /// `amount' = a.amount + deposit` with the `action_transfer` and
@@ -679,7 +679,7 @@ fn credited(a: &Account, deposit: u128) -> Option<u128> {
 }
 
 /// `TransferV1.applyReceipt ⟨height, gasPrice⟩ st r` (`false` = `none`).
-fn apply_receipt(height: u64, gas_price: u128, st: &mut Acc, r: &Receipt) -> bool {
+pub(crate) fn apply_receipt(height: u64, gas_price: u128, st: &mut Acc, r: &Receipt) -> bool {
     let key = account_key_path(&r.receiver_id);
     let Some(raw) = get(&st.trie, &key) else {
         return false;
@@ -713,7 +713,7 @@ fn apply_receipt(height: u64, gas_price: u128, st: &mut Acc, r: &Receipt) -> boo
 }
 
 /// `RuntimeD0.applySystemReceipt st r` (`false` = `.error _`).
-fn apply_system_receipt(st: &mut Acc, r: &Receipt) -> bool {
+pub(crate) fn apply_system_receipt(st: &mut Acc, r: &Receipt) -> bool {
     let key = account_key_path(&r.receiver_id);
     let raw = match find(&st.trie, &key) {
         Some(Some(v)) => v,

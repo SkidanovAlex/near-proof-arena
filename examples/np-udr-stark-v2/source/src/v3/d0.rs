@@ -545,13 +545,13 @@ fn le_words(b: &[u8]) -> Vec<u64> {
         .collect()
 }
 
-struct Stream {
+pub(crate) struct Stream {
     key: [u64; 8],
     ctr: u64,
     blk: [u64; 16],
 }
 impl Stream {
-    fn of_seed(seed: &[u8]) -> Stream {
+    pub(crate) fn of_seed(seed: &[u8]) -> Stream {
         let w = le_words(seed);
         let key = std::array::from_fn(|i| w.get(i).copied().unwrap_or(0));
         Stream {
@@ -580,7 +580,7 @@ fn lz32(n: u64) -> u32 {
 fn zone_of(n: u64) -> u64 {
     (((n << lz32(n)) % M32) + M32 - 1) % M32
 }
-fn gen_at(stream: &mut Stream, n: u64, mut k: u64) -> Option<(u64, u64)> {
+pub(crate) fn gen_at(stream: &mut Stream, n: u64, mut k: u64) -> Option<(u64, u64)> {
     for _ in 0..64 {
         let v = stream.word(k);
         if (v.wrapping_mul(n)) % M32 <= zone_of(n) {

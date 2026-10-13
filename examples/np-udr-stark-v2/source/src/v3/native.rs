@@ -7,10 +7,29 @@
 //! `{b,k,m}`, bytes as lowercase hex, `UKind`/`UCase` as their `.all` indices), so
 //! every stage can be differential-tested on its own: the native execution
 //! ([`native_of`]) against the dump, and the later stages from a parsed dump.
+//!
+//! | Rust | Lean |
+//! |---|---|
+//! | [`native_of`] | `TrieEntriesV3.nativeOf` (`conformance/TrieEntriesV3.lean`) |
+//! | `apply_new_chunk` / `apply_missing_chunk` / `sched_step` / `read_key` / `queue_empty` | `applyNewChunk` / `applyMissingChunk` / `schedStep` / `readKey` / `queueEmpty` (`NearSpecV3/RuntimeD0.lean`) |
+//! | `sched::run_core_state` | `Scheduler.runCore` (`NearSpecV3/PrepD0.lean`; `prims.sched`, `ChunkValidationV0.lean`) |
+//! | `trace::upsert` | `PTrie.upsert` (`NearSpec/TrieUpsert.lean`) |
+//! | `trace::trace_upsert` | `traceUpsert` / `traceKids` (`Render/Ups/TreeTrace.lean`) |
+//! | `scheduler_upsert_witness` | `schedulerUpsertWitness` (`Assembly/SchedulerUpsertCost.lean`) |
+//! | the implicit loop in [`native_of`] | `traceImplicit` (`Assembly/ImplicitTrace.lean`), ctx `implicitCtx` (`SchedulerSanityPin.lean`) |
 
 use serde_json::{Value, json};
 
-use crate::near::spec::{Bytes, PTrie, Receipt, Slot};
+use crate::near::spec::{self as ns, Bytes, PTrie, Receipt, Slot, account_key_path};
+use crate::v3::d0::{ApplyCtx, block_ctx, sched_pub, walk_d0};
+use crate::v3::hint::{
+    Acc, applied_receipts, apply_receipt, apply_system_receipt, buffered_shards, decode_w, find,
+    get as trie_get, key_buffered_idx, key_bw_state, key_delayed_idx, key_groups_data,
+    key_yield_idx, main_keys, partial_trie, set_in_place,
+};
+
+mod sched;
+mod trace;
 
 /// `UKind` (`Extract/Ups/PlanDefs.lean`), `UKind.all` order.
 pub const UK_RDB: u8 = 0;
@@ -115,7 +134,7 @@ pub fn hex(b: &[u8]) -> String {
 }
 
 pub fn unhex(s: &str) -> Result<Bytes, String> {
-    if s.len() % 2 != 0 {
+    if !s.len().is_multiple_of(2) {
         return Err(format!("odd hex length {}", s.len()));
     }
     (0..s.len() / 2)
@@ -336,12 +355,194 @@ impl Native {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Native execution (`TrieEntriesV3.nativeOf`)
+// ---------------------------------------------------------------------------
+
+/// `readKey t k what` (`RuntimeD0.lean`): `find`, undetermined = `MissingTrieValue`.
+fn read_key(t: &PTrie, k: &[u8], what: &str) -> Result<Option<Bytes>, String> {
+    find(t, k).ok_or_else(|| format!("invalid: MissingTrieValue ({what})"))
+}
+
+/// `queueEmpty v what` (`RuntimeD0.lean`).
+fn queue_empty(v: Option<Bytes>, what: &str) -> Result<(), String> {
+    match v {
+        None => Ok(()),
+        Some(b) if b.len() != 16 => Err(format!("invalid: StorageInconsistentState ({what})")),
+        Some(b) if ns::le_nat(&b[..8]) == ns::le_nat(&b[8..]) => Ok(()),
+        Some(_) => Err(format!("out of domain (e.queues_empty): {what} not empty")),
+    }
+}
+
+/// `schedStep prims ctx t` (`RuntimeD0.lean`), keeping `out.state` only:
+/// read `keyBwState`, `prims.sched` (= `(Scheduler.pubOf …).bind (runCore · prev)`,
+/// `ChunkValidationV0.prims`, `PrepD0.run_eq_core`), upsert the new state.
+fn sched_step(ctx: &ApplyCtx, t: &PTrie) -> Result<(PTrie, Bytes), String> {
+    let prev = read_key(t, &key_bw_state(), "bandwidth scheduler state")?;
+    let state = sched_pub(
+        &ctx.layout.shard_ids,
+        &ctx.statuses,
+        &ctx.requests,
+        &ctx.prev_block_hash,
+    )
+    .and_then(|p| sched::run_core_state(&p, prev.as_deref()))
+    .ok_or("invalid: bandwidth scheduler aborted (StorageInconsistentState)")?;
+    let t2 = trace::upsert(t, &key_bw_state(), &state)
+        .ok_or("invalid: MissingTrieValue (bandwidth scheduler state path)")?;
+    Ok((t2, state))
+}
+
+/// `applyNewChunk prims ctx t receipts` (`RuntimeD0.lean`), returning `out.trie`.
+///
+/// The receipts are applied with `hint::apply_receipt` / `hint::apply_system_receipt`
+/// (`TransferV1.applyReceipt` / `applySystemReceipt`, trie effects).  Not checked here:
+/// `tryForward` of the generated refunds (it needs the scheduler grants of
+/// `distribute`); it only decides `out of domain (e.forwarded)` and never changes the
+/// trie, and the inputs are accepted witnesses.
+fn apply_new_chunk(ctx: &ApplyCtx, t: &PTrie, receipts: &[Receipt]) -> Result<PTrie, String> {
+    queue_empty(
+        read_key(t, &key_delayed_idx(), "DelayedReceiptIndices")?,
+        "delayed receipt queue",
+    )?;
+    let (t, _) = sched_step(ctx, t)?;
+    let shards =
+        buffered_shards(read_key(&t, &key_buffered_idx(), "BufferedReceiptIndices")?.as_deref())?;
+    for s in shards {
+        read_key(&t, &key_groups_data(s), "BufferedReceiptGroupsQueueData")?;
+    }
+    let mut acc = Acc {
+        trie: t,
+        refunds: vec![],
+        tokens_burnt: 0,
+    };
+    for (i, r) in receipts.iter().enumerate() {
+        if i as u128 * ns::params::G >= ctx.gas_limit as u128 {
+            return Err("out of domain (e.compute): receipt delayed by the compute limit".into());
+        }
+        let ok = if r.predecessor_id == ns::SYSTEM {
+            apply_system_receipt(&mut acc, r)
+        } else {
+            apply_receipt(ctx.height, ctx.gas_price, &mut acc, r)
+        };
+        if !ok {
+            return Err(match find(&acc.trie, &account_key_path(&r.receiver_id)) {
+                None => "invalid: MissingTrieValue (account)".into(),
+                Some(_) => "out of domain (r.success): receipt fails".into(),
+            });
+        }
+    }
+    queue_empty(
+        read_key(&acc.trie, &key_yield_idx(), "PromiseYieldIndices")?,
+        "promise yield queue",
+    )?;
+    Ok(acc.trie)
+}
+
+/// `applyMissingChunk prims ctx t` (`RuntimeD0.lean`).
+fn apply_missing_chunk(ctx: &ApplyCtx, t: &PTrie) -> Result<PTrie, String> {
+    read_key(t, &key_delayed_idx(), "DelayedReceiptIndices")?;
+    Ok(sched_step(ctx, t)?.0)
+}
+
+/// `schedulerUpsertWitness ctx pre` (`Assembly/SchedulerUpsertCost.lean`).
+fn scheduler_upsert_witness(ctx: &ApplyCtx, pre: &PTrie) -> Result<UpsertW, String> {
+    let (_, value) = sched_step(ctx, pre)?;
+    let run =
+        trace::trace_upsert(pre, &key_bw_state(), &value).ok_or("scheduler upsert trace failed")?;
+    Ok(UpsertW {
+        pre: pre.clone(),
+        value,
+        run,
+    })
+}
+
 /// The native execution of an accepted witness (`TrieEntriesV3.nativeOf`): walk, decode,
 /// applied receipts, the partial main pre-trie, `applyNewChunk` (scheduler step then the
 /// receipts), the implicit steps (`traceImplicit`: `applyMissingChunk` per implicit
 /// block), the account-write replay and the scheduler upserts (`schedulerUpsertWitness`).
-pub fn native_of(_cb: &[u8], _wb: &[u8]) -> Result<Native, String> {
-    Err("v3::native::native_of: not yet ported".into())
+/// (`prepD0`, part of Lean's `TrieNat`, is not computed here.)
+pub fn native_of(cb: &[u8], wb: &[u8]) -> Result<Native, String> {
+    let k = walk_d0(cb)?;
+    let w = decode_w(wb)?;
+    let b2 = k.blks.get(k.b2i).ok_or("walk: B2")?;
+    let prev_b2 = k.blks.get(k.b2i + 1).ok_or("walk: prev B2")?;
+    let receipts = applied_receipts(&k, &w);
+    let root = &k.slot_b2.prev_state_root;
+    let t0 = partial_trie(&w.main.values, root, &[key_buffered_idx()]);
+    let bshards = match find(&t0, &key_buffered_idx()) {
+        Some(v) => buffered_shards(v.as_deref())?,
+        None => return Err("missing buffered index".into()),
+    };
+    let t_main = partial_trie(&w.main.values, root, &main_keys(&receipts, &bshards));
+    // `m.ctx k` = `blockCtx k.L k.H.shardId k.slotB2.gasLimit B2 prevB2.hdr.nextGasPrice`
+    let ctx = block_ctx(
+        &k.layout,
+        k.h_chunk.shard_id,
+        k.slot_b2.gas_limit,
+        b2,
+        prev_b2.hdr.next_gas_price,
+    );
+    let post = apply_new_chunk(&ctx, &t_main, &receipts)?;
+
+    // `traceImplicit k out.trie.hashOf (k.implicitBlks.zip w.implicit)`
+    let mut steps = Vec::new();
+    let mut ictxs = Vec::new();
+    let mut root = post.hash_of();
+    for (b, t) in k.implicit_blks.iter().zip(&w.implicit) {
+        let pre = partial_trie(&t.values, &root, &[key_delayed_idx(), key_bw_state()]);
+        // `implicitCtx k e`
+        let ictx = block_ctx(
+            &k.layout,
+            k.h_chunk.shard_id,
+            k.slot_b2.gas_limit,
+            b,
+            b.hdr.next_gas_price,
+        );
+        let ipost = apply_missing_chunk(&ictx, &pre)?;
+        root = ipost.hash_of();
+        if root != t.post_state_root {
+            return Err("invalid: implicit transition post state root".into());
+        }
+        steps.push(Step { pre, post: ipost });
+        ictxs.push(ictx);
+    }
+
+    // account-write replay
+    let writes: Vec<(Vec<u8>, Bytes)> = receipts
+        .iter()
+        .map(|r| {
+            let key = account_key_path(&r.receiver_id);
+            let v = trie_get(&post, &key).unwrap_or_default();
+            (key, v)
+        })
+        .collect();
+    let mut old_post = t_main.clone();
+    for (key, v) in &writes {
+        if !set_in_place(&mut old_post, key, v) {
+            return Err("account replay: set failed".into());
+        }
+    }
+    let (_, so_state) = sched_step(&ctx, &t_main)?;
+    match trace::upsert(&old_post, &key_bw_state(), &so_state) {
+        Some(t) if t.hash_of() == post.hash_of() => {}
+        Some(_) => return Err("account replay: post root mismatch".into()),
+        None => return Err("account replay: scheduler upsert failed".into()),
+    }
+
+    let mut us = vec![scheduler_upsert_witness(&ctx, &old_post)?];
+    for (e, ictx) in steps.iter().zip(&ictxs) {
+        us.push(scheduler_upsert_witness(ictx, &e.pre)?);
+    }
+    Ok(Native {
+        pre: t_main,
+        post,
+        buffered_shards: bshards,
+        old_post,
+        writes,
+        steps,
+        us,
+        receipts,
+    })
 }
 
 #[cfg(test)]

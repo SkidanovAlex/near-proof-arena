@@ -277,7 +277,7 @@ impl NodeV3 {
     pub fn ser_len(&self) -> usize {
         self.ser(false).len()
     }
-    fn ser(&self, post: bool) -> Vec<u64> {
+    pub(crate) fn ser(&self, post: bool) -> Vec<u64> {
         match self {
             NodeV3::Leaf { key, v, memB } => {
                 let h = hpn(key, true);
