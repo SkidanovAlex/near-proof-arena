@@ -120,7 +120,10 @@ for m, p in trusted_mods.items():
 # copy candidate modules
 for m, p in cand_mods.items():
     root = next(r for r in CANDIDATE if m == r or m.startswith(r + "."))
-    rel = os.path.join(CANDIDATE[root], *m.split(".")) + ".lean"
+    # formal/<module path>.lean: the judge names a staged module by its path under formal/
+    # (staging.rs) and build.sh copies formal/${m//.//}.lean (was formal/<root>/<module path>,
+    # i.e. ZkFormal/ZkFormal/..., which neither resolves).
+    rel = os.path.join(*m.split(".")) + ".lean"
     dst = os.path.join(pkg, "formal", rel)
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     shutil.copyfile(p, dst)
