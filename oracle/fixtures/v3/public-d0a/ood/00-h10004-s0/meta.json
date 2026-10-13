@@ -34,5 +34,7 @@
   "kind": "honest",
   "max_path_depth": 2,
   "nearcore": "ok",
-  "unfold_bytes": 1248
+  "unfold_bytes": 2225,
+  "unfold_diff": 1248,
+  "unfold_rebuilt": 1248
 }

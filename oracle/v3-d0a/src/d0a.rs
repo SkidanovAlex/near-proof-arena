@@ -1,6 +1,8 @@
 //! Independent Rust predicate for the D0a amendments (spec/near-chunk-validation-v0a.md):
 //! A1 `c.gas_limit`, A2 `w.proof_routing`, Canon0f `e.sched_canonical`, A8 `c.bw_requests`,
-//! A9 `e.chacha_words` (bound W), A10 `w.path_depth` (bound D_p). Used together with
+//! A7 `w.unfolded` (bound B0; unfolded pre tries + native post tries, measure of 2026-10-12),
+//! A9 `e.chacha_words` (bound W), A10 `w.path_depth` (bound D_p), A12 `c.layout_wf`
+//! (A11 `w.post_rebuild` retired 2026-10-12). Used together with
 //! the D0 classifier (../v3/src/d0.rs): a case is in D0a iff both return no violation.
 //! Uses nearcore's own objects and code (chunk headers, `Receipt::receiver_shard_id`, the
 //! tracking node's full state, `Trie::from_recorded_storage` on the witness), not the
@@ -45,8 +47,28 @@ pub const W_CHACHA: u64 = 770_000;
 /// A10 bound: Merkle path items of every used source receipt proof.
 pub const D_PATH: u64 = 32;
 
-/// `extra` with the measured A9 word total (`None`: not measured, check skipped).
-pub fn extra(client: &Client, built: &Built, w: &ChunkStateWitness, chacha_total: Option<u64>) -> Result<Vec<&'static str>, String> {
+/// A12 (`c.layout_wf`): the layout has exactly one boundary account fewer than shard ids
+/// (nearcore's `ShardLayoutV1/V2/V3` constructors assert it; the borsh decoder does not).
+pub fn layout_wf(layout: &near_primitives::shard_layout::ShardLayout) -> bool {
+    use near_primitives::shard_layout::ShardLayout;
+    let boundaries = match layout {
+        // V0 (hash-based routing) has no boundary accounts; never a PV86 layout
+        ShardLayout::V0(_) => return false,
+        _ => layout.boundary_accounts().len(),
+    };
+    boundaries + 1 == layout.shard_ids().count()
+}
+
+/// The amendments violated by an honest case, in the order of Lean `checkD0a` (A1, A2,
+/// Canon0f, A7, A8, A9, A10, A12), given the measured A7 unfolded bytes and A9 word total
+/// (`None`: not measured, that check skipped).
+pub fn extra(
+    client: &Client,
+    built: &Built,
+    w: &ChunkStateWitness,
+    unfold: Option<u64>,
+    chacha_total: Option<u64>,
+) -> Result<Vec<&'static str>, String> {
     let mut v = Vec::new();
     let b2 = &built.blocks[built.b2];
     if b2.header().is_genesis() {
@@ -87,6 +109,10 @@ pub fn extra(client: &Client, built: &Built, w: &ChunkStateWitness, chacha_total
     if !ok {
         v.push("e.sched_canonical");
     }
+    // A7: unfolded pre tries + native post tries (`unfold_bytes`)
+    if unfold.is_some_and(|u| u > B0) {
+        v.push("w.unfolded");
+    }
     // A8: every block of the segment, every chunk slot
     if !a8_ok(&built.blocks) {
         v.push("c.bw_requests");
@@ -98,6 +124,17 @@ pub fn extra(client: &Client, built: &Built, w: &ChunkStateWitness, chacha_total
     // A10: Merkle path length of every source proof (an honest witness holds exactly the used ones)
     if crate::pathmut::max_path_depth(w) > D_PATH {
         v.push("w.path_depth");
+    }
+    // A12: the claim's epochs (every block of the segment and the witness's epoch)
+    let mut eids: Vec<_> = built.blocks.iter().map(|b| *b.header().epoch_id()).collect();
+    eids.push(*w.epoch_id());
+    eids.sort();
+    eids.dedup();
+    for eid in &eids {
+        if !layout_wf(&em.get_shard_layout(eid).map_err(|e| e.to_string())?) {
+            v.push("c.layout_wf");
+            break;
+        }
     }
     Ok(v)
 }
@@ -185,10 +222,20 @@ pub fn chacha(client: &Client, nodes: &[&Client], built: &Built, w: &ChunkStateW
 /// A7 bound of the challenge instance (`NearSpecV3.B0`).
 pub const B0: u64 = 2_000_000;
 //
-// Independent computation of `unfoldBytes` (spec/near-chunk-validation-v0a.md §2.4) on
-// nearcore's own node type (`RawTrieNodeWithSize` borsh) and stores: the pre-trie nodes come
-// from the witness's recorded values (by hash), the post-trie nodes from the tracking node's
-// State column. Keys are the trie keys the D0 run reads (nearcore `TrieKey::to_vec`).
+// Independent computation of `unfoldBytes` (spec/near-chunk-validation-v0a.md §2.4, measure of
+// 2026-10-12) on nearcore's own node type (`RawTrieNodeWithSize` borsh) and stores: for every
+// applied transition, the unfolded pre trie (the witness's recorded values, by hash, along the
+// read keys) plus the unfolded *native* post trie (the pre trie with the transition's written
+// paths replaced). Post nodes come from the tracking node's State column; keys are the trie
+// keys the D0 run reads (nearcore `TrieKey::to_vec`). A post node is one the transition created
+// iff the pre trie does not hold the same node (hash) at the same absolute nibble position (a
+// position test, not a hash-set test: an unread sibling may equal a created node); a created
+// node is always revealed (all its children are visited), an untouched one only along read
+// keys. A value is counted iff it sits in a created node and differs from the pre trie's value
+// at the same key (written), or a read key ends at it and the witness holds it. The legacy
+// measures (`unfold_rebuilt`: 2026-10-11, the post trie rebuilt from the store along the read
+// keys; `unfold_diff`: before 2026-10-11, rebuilt post copies differing from the pre trie at
+// the same position) are computed too, for the difftest.
 
 use near_primitives::hash::{CryptoHash, hash as nhash};
 use near_primitives::trie_key::TrieKey;
@@ -342,8 +389,124 @@ fn branch_diff(pre_st: &dyn Store, pn: &Option<RawTrieNode>, post_st: &dyn Store
     tot
 }
 
+/// The node of the pre trie (rooted at `root`, nodes from `st`) that starts exactly at absolute
+/// nibble position `pos`: its hash, read from the parent's child reference (`None`: no node
+/// starts there, or the path to it is not in `st`).
+fn pre_at(st: &dyn Store, root: &CryptoHash, pos: &[u8]) -> Option<CryptoHash> {
+    let (mut h, mut d) = (*root, 0usize);
+    while d < pos.len() {
+        let (_, n) = node(st, &h)?;
+        match n {
+            RawTrieNode::Leaf(..) => return None,
+            RawTrieNode::Extension(k, c) => {
+                let k = hp(&k);
+                if k.is_empty() || !pos[d..].starts_with(&k) {
+                    return None;
+                }
+                d += k.len();
+                h = c;
+            }
+            RawTrieNode::BranchNoValue(cs) | RawTrieNode::BranchWithValue(_, cs) => {
+                h = cs.0[pos[d] as usize]?;
+                d += 1;
+            }
+        }
+    }
+    Some(h)
+}
+
+/// The value reference `(length, hash)` the pre trie holds at the full nibble key `key`.
+fn pre_value(st: &dyn Store, root: &CryptoHash, key: &[u8]) -> Option<(u32, CryptoHash)> {
+    let (mut h, mut d) = (*root, 0usize);
+    loop {
+        let (_, n) = node(st, &h)?;
+        match n {
+            RawTrieNode::Leaf(k, v) => return (hp(&k) == key[d..]).then_some((v.length, v.hash)),
+            RawTrieNode::Extension(k, c) => {
+                let k = hp(&k);
+                if k.is_empty() || !key[d..].starts_with(&k) {
+                    return None;
+                }
+                d += k.len();
+                h = c;
+            }
+            RawTrieNode::BranchNoValue(cs) => {
+                h = (*cs.0.get(*key.get(d)? as usize)?)?;
+                d += 1;
+            }
+            RawTrieNode::BranchWithValue(v, cs) => {
+                if d == key.len() {
+                    return Some((v.length, v.hash));
+                }
+                h = (*cs.0.get(key[d] as usize)?)?;
+                d += 1;
+            }
+        }
+    }
+}
+
+/// Lean `unfoldedBytesT` of the native post trie below the post node `h` at absolute nibble
+/// position `pos` (`keys`: the read keys' remainders below `pos`; `pre_root`: the transition's
+/// pre-state root, `pre_st` its witness values; `post_st`: the tracking node's State column).
+fn unfold_native(pre_st: &dyn Store, pre_root: &CryptoHash, post_st: &dyn Store, h: &CryptoHash, pos: &[u8],
+                 keys: &[Vec<u8>]) -> u64 {
+    let created = pre_at(pre_st, pre_root, pos) != Some(*h);
+    if !created && keys.is_empty() {
+        return 0;
+    }
+    let st: &dyn Store = if created { post_st } else { pre_st };
+    let Some((raw, n)) = node(st, h) else { return 0 };
+    // a value slot at full key `vpos`: written (created node, value differs from the pre
+    // trie's at that key) or revealed by a read key ending there (witness value)
+    let val = |vpos: &[u8], len: u32, vh: &CryptoHash, want: bool| -> u64 {
+        if created && pre_value(pre_st, pre_root, vpos) != Some((len, *vh)) {
+            value(post_st, len, vh, true)
+        } else {
+            value(pre_st, len, vh, want)
+        }
+    };
+    let below = |k: &[u8]| -> Vec<Vec<u8>> {
+        keys.iter().filter(|x| x.starts_with(k)).map(|x| x[k.len()..].to_vec()).collect()
+    };
+    let mut tot = raw.len() as u64;
+    match n {
+        RawTrieNode::Leaf(k, v) => {
+            let k = hp(&k);
+            let vpos = [pos, &k[..]].concat();
+            tot += val(&vpos, v.length, &v.hash, keys.iter().any(|x| *x == k));
+        }
+        RawTrieNode::Extension(k, c) => {
+            let k = hp(&k);
+            tot += unfold_native(pre_st, pre_root, post_st, &c, &[pos, &k[..]].concat(), &below(&k));
+        }
+        RawTrieNode::BranchNoValue(ref cs) | RawTrieNode::BranchWithValue(_, ref cs) => {
+            if let RawTrieNode::BranchWithValue(v, _) = &n {
+                tot += val(pos, v.length, &v.hash, keys.iter().any(|x| x.is_empty()));
+            }
+            for (i, c) in cs.0.iter().enumerate() {
+                if let Some(c) = c {
+                    let sub = below(&[i as u8]);
+                    tot += unfold_native(pre_st, pre_root, post_st, c, &[pos, &[i as u8][..]].concat(), &sub);
+                }
+            }
+        }
+    }
+    tot
+}
+
+/// The A7 measure and the two legacy measures of an honest case.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Unfold {
+    /// `unfoldBytes` (2026-10-12): unfolded pre tries + unfolded native post tries.
+    pub native: u64,
+    /// 2026-10-11: unfolded pre tries + post tries rebuilt from the store along the read keys.
+    pub rebuilt: u64,
+    /// before 2026-10-11: unfolded pre tries + rebuilt post copies changed from the pre trie.
+    pub diff: u64,
+}
+
 /// `unfoldBytes` of an honest case (None if B2 is genesis: not in D0).
-pub fn unfold_bytes(client: &Client, built: &Built, w: &ChunkStateWitness) -> Result<Option<u64>, String> {
+pub fn unfold_bytes(client: &Client, built: &Built, w: &ChunkStateWitness) -> Result<Option<Unfold>, String> {
     use near_chain::stateless_validation::chunk_validation::MainTransition;
     use near_primitives::receipt::{BufferedReceiptIndices, ReceiptEnum};
     use near_store::adapter::StoreAdapter;
@@ -393,16 +556,18 @@ pub fn unfold_bytes(client: &Client, built: &Built, w: &ChunkStateWitness) -> Re
         let PartialState::TrieValues(vals) = &t.base_state;
         MapStore(vals.iter().map(|v| (nhash(v), v.to_vec())).collect())
     };
-    let mut tot = 0u64;
-    let m = mapst(&x.main_state_transition);
-    tot += unfold_pre(&m, &slot.prev_state_root(), &main_keys);
-    tot += unfold_diff(&m, Some(slot.prev_state_root()), &db, &x.main_state_transition.post_state_root, &main_keys);
+    let mut u = Unfold::default();
+    let mut one = |s: &MapStore, pre_root: &CryptoHash, post_root: &CryptoHash, keys: &[Vec<u8>]| {
+        let pre = unfold_pre(s, pre_root, keys);
+        u.native += pre + unfold_native(s, pre_root, &db, post_root, &[], keys);
+        u.rebuilt += pre + unfold_pre(&db, post_root, keys);
+        u.diff += pre + unfold_diff(s, Some(*pre_root), &db, post_root, keys);
+    };
+    one(&mapst(&x.main_state_transition), &slot.prev_state_root(), &x.main_state_transition.post_state_root, &main_keys);
     let mut root = x.main_state_transition.post_state_root;
     for t in &x.implicit_transitions {
-        let s = mapst(t);
-        tot += unfold_pre(&s, &root, &imp_keys);
-        tot += unfold_diff(&s, Some(root), &db, &t.post_state_root, &imp_keys);
+        one(&mapst(t), &root, &t.post_state_root, &imp_keys);
         root = t.post_state_root;
     }
-    Ok(Some(tot))
+    Ok(Some(u))
 }

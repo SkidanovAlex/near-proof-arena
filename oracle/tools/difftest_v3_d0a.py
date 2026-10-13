@@ -24,11 +24,14 @@ accept or classify out of domain after RelD0; the oracle's on the cases it measu
 `chacha_words` (A9 ChaCha20 words drawn by all scheduler runs), `max_path_depth` (A10 longest
 used source-proof Merkle path), and the legacy A7 measures `unfold_rebuilt` (2026-10-11: post
 tries rebuilt from the post store along the read keys) and `unfold_diff` (before 2026-10-11,
-post term = rebuilt occurrences changed from the pre trie only). The oracle's stored
-`unfold_bytes` predates both revisions, so it is compared with `unfold_diff` (its post nodes
-come from nearcore's State column, independent of the witness store); `unfold` and
-`unfold_rebuilt` are compared Lean vs Python. Regenerating the oracle fixtures with the new
-measure is pending.
+post term = rebuilt occurrences changed from the pre trie only). The oracle (src/d0a.rs,
+regenerated 2026-10-13) stores all three A7 measures (`unfold_bytes` = native,
+`unfold_rebuilt`, `unfold_diff`), computed on nearcore's node type with the post nodes from the
+tracking node's State column (independent of the witness store).
+
+Corpora without nearcore D0a metadata (no `expected_rel_d0a` in meta.json, e.g. the D1/D2
+corpora): a case agrees iff Lean and Python return the same verdict (and both name the same
+D0a amendment family when out of domain for one); the measures are compared Lean vs Python.
 
 usage: difftest_v3.py --cases DIR [--lean EXE] [--python FILE] [--report OUT.json]
          [--lean-jsonl F --python-jsonl F]   (reuse precomputed outputs)
@@ -38,9 +41,9 @@ import argparse, collections, json, os, subprocess, sys, time
 AMENDMENTS = ("c.gas_limit", "w.proof_routing", "e.sched_canonical", "w.unfolded", "c.bw_requests",
               "e.chacha_words", "w.path_depth", "c.layout_wf")
 # measured quantity -> (Lean/Python JSON field, oracle meta.json field)
-MEASURES = {"unfold_bytes": ("unfold", None),
-            "unfold_rebuilt": ("unfold_rebuilt", None),
-            "unfold_diff": ("unfold_diff", "unfold_bytes"),
+MEASURES = {"unfold_bytes": ("unfold", "unfold_bytes"),
+            "unfold_rebuilt": ("unfold_rebuilt", "unfold_rebuilt"),
+            "unfold_diff": ("unfold_diff", "unfold_diff"),
             "chacha_words": ("chacha_words", "chacha_words"),
             "max_path_depth": ("max_path_depth", "max_path_depth")}
 
@@ -67,7 +70,7 @@ def main():
     ap.add_argument("--report")
     a = ap.parse_args()
     dirs = []
-    for sub in ("d0", "ood", "mutants"):
+    for sub in ("d0", "d1", "d2", "ood", "mutants"):
         p = os.path.join(a.cases, sub)
         if os.path.isdir(p):
             dirs += sorted(os.path.normpath(os.path.join(p, d)) for d in os.listdir(p))
@@ -90,13 +93,31 @@ def main():
     for d in dirs:
         meta = json.load(open(os.path.join(d, "meta.json")))
         kind = os.path.basename(os.path.dirname(d))
-        exp = meta["expected_rel_d0a"]
         stats[f"{kind}.cases"] += 1
+        if "expected_rel_d0a" not in meta:
+            # no nearcore D0a metadata (D1/D2 corpora): Lean and Python must agree
+            got = {name: res.get(d) for name, res in impls.items()}
+            for name, j in got.items():
+                if j is None:
+                    disagreements.append({"case": d, "impl": name, "problem": "missing"})
+                else:
+                    stats[f"{kind}.{name}.{j['verdict']}"] += 1
+            lj, pj = got.get("lean"), got.get("python")
+            if lj is not None and pj is not None:
+                # Lean names its first failing amendment; Python joins all, in Lean's order
+                fam = lambda r: sorted((r.find(a), a) for a in AMENDMENTS if a in r)
+                lf, pf = [a for _, a in fam(lj["reason"])], [a for _, a in fam(pj["reason"])]
+                if lj["verdict"] != pj["verdict"] or lf != pf[:len(lf)] or (pf and not lf):
+                    disagreements.append({"case": d, "impl": "lean-python",
+                                          "lean": [lj["verdict"], lj["reason"]],
+                                          "python": [pj["verdict"], pj["reason"]]})
+            continue
+        exp = meta["expected_rel_d0a"]
         stats[f"{kind}.expected_accept"] += exp
         for viol in meta.get("d0a_violations", []):
             if viol in AMENDMENTS:
                 stats[f"{kind}.amendment.{viol}"] += 1
-        if kind == "mutants":
+        if kind == "mutants" and "mutation" in meta:
             families[(meta["mutation"].split(".")[0] + "." + meta["mutation"].split(".")[1] if meta["mutation"].count(".") else meta["mutation"], exp)] += 1
         for name, res in impls.items():
             j = res.get(d)

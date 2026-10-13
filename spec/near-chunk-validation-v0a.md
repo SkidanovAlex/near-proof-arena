@@ -138,11 +138,15 @@ reads, raw node bytes, the nodes its inserts create recorded by position) and in
 
 The difftest reports the legacy measures too: `unfold_rebuilt` (2026-10-11) and `unfold_diff`
 (before 2026-10-11, `diffT` against the rebuilt post-trie); `diffT` and `rebuildPost` stay in
-`NearSpecV3.ChunkValidationV0a` for them and are not part of `RelD0a`. The oracle's stored
-value (`oracle/v3-d0a/src/d0a.rs`: nearcore `RawTrieNodeWithSize`, witness values and the
-tracking node's State column, keys from `TrieKey::to_vec`) still implements the pre-2026-10-11
-`diffT` measure and is compared with the checkers' `unfold_diff`; updating it and regenerating
-the fixtures is pending. The difftest compares the three values exactly.
+`NearSpecV3.ChunkValidationV0a` for them and are not part of `RelD0a`. The oracle
+(`oracle/v3-d0a/src/d0a.rs`: nearcore `RawTrieNodeWithSize`, witness values for the pre trie,
+the tracking node's State column for the post nodes, keys from `TrieKey::to_vec`) computes the
+native measure independently — a post node is created iff the pre trie holds no identical node
+at the same absolute nibble position; created nodes are revealed with all children, untouched
+ones along the read keys; a value counts iff it differs from the pre trie's value at its key
+(written) or a read key ends at it — and stores it as `unfold_bytes`, with the legacy
+`unfold_rebuilt` and `unfold_diff` beside it (fixtures regenerated 2026-10-13). The difftest
+compares all three measures exactly, oracle vs Lean vs Python.
 
 **`B0 = 2,000,000`** (lead decision, user-approved). The SHA table hashes every unfolded byte
 (pre occurrences once; changed post occurrences once) at ≤ 1.25 rows/byte (sha_t, lane
@@ -334,3 +338,9 @@ like A8), so the prepared statement exists only for A12 claims.
   bandwidth requests and the scheduler draws words. Boundary: `oracle/tools/d0a_boundary_v3.py`
   (each in-domain case at its own value `V` accepts, at `V − 1` is out of domain for that
   family). Results: `docs/e2e-results/v3-domain-bounds/report.json`, STATUS-V3-AIR §5.
+* **A7 native / A12 (2026-10-13).** `d0a.rs` computes A7 on the native post trie (§2.4; meta
+  `unfold_bytes`, legacy `unfold_rebuilt` / `unfold_diff`) and checks A12 on nearcore's
+  `ShardLayout` of every epoch of the claim (`boundary_accounts().len() + 1 =
+  shard_ids().count()`); violations are listed in `checkD0a` order. The public fixtures were
+  regenerated with it: claim/witness bytes unchanged, only the honest cases' `meta.json` gained
+  the new measures (`docs/logs/oracle-d0a-2026-10.md`).

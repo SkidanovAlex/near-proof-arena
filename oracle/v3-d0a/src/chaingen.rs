@@ -521,16 +521,6 @@ pub fn run_chain(chain_idx: usize, p: &ChainParams, out: &Path, o: &GenOpts, sta
             let chacha_total = chacha.as_ref().map(|c| c.total);
             let chacha_runs = chacha.as_ref().map(|c| c.runs.clone());
             let path_depth = max_path_depth(&sw);
-            // D0a = D0 ∧ amendments (A1, A2, Canon0f, A8, A9, A10)
-            let in_d0_orig = viol.is_empty();
-            let mut viol = viol;
-            match crate::d0a::extra(tracker, &built, &sw, chacha_total) {
-                Ok(x) => viol.extend(x),
-                Err(e) => {
-                    eprintln!("d0a classify failed: {e}");
-                    continue;
-                }
-            }
             // A7: unfolded trie bytes (only meaningful when nearcore accepted the witness)
             let unfold = if verdict.is_ok() {
                 match crate::d0a::unfold_bytes(tracker, &built, &sw) {
@@ -543,8 +533,15 @@ pub fn run_chain(chain_idx: usize, p: &ChainParams, out: &Path, o: &GenOpts, sta
             } else {
                 None
             };
-            if unfold.map_or(false, |u| u > crate::d0a::B0) {
-                viol.push("w.unfolded");
+            // D0a = D0 ∧ amendments (A1, A2, Canon0f, A7, A8, A9, A10, A12)
+            let in_d0_orig = viol.is_empty();
+            let mut viol = viol;
+            match crate::d0a::extra(tracker, &built, &sw, unfold.map(|u| u.native), chacha_total) {
+                Ok(x) => viol.extend(x),
+                Err(e) => {
+                    eprintln!("d0a classify failed: {e}");
+                    continue;
+                }
             }
             let in_d0 = viol.is_empty();
             let key = sw.chunk_production_key();
@@ -572,7 +569,9 @@ pub fn run_chain(chain_idx: usize, p: &ChainParams, out: &Path, o: &GenOpts, sta
                 "in_d0": in_d0_orig, "expected_rel_d0": verdict.is_ok() && in_d0_orig,
                 "in_d0a": in_d0, "d0a_violations": viol,
                 "expected_rel_d0a": verdict.is_ok() && in_d0,
-                "unfold_bytes": unfold,
+                "unfold_bytes": unfold.map(|u| u.native),
+                "unfold_rebuilt": unfold.map(|u| u.rebuilt),
+                "unfold_diff": unfold.map(|u| u.diff),
                 "chacha_words": chacha_total, "chacha_words_runs": chacha_runs,
                 "max_path_depth": path_depth,
                 "features": features,
