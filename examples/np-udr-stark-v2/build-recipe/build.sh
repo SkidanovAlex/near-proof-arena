@@ -5,16 +5,15 @@
 #
 #   out/prepare, out/prove  Rust (source/), every crate from source/vendor/
 #                           (build-recipe/vendor.sh: crates.io + Plonky3 @
-#                           3acc8b7), --locked --offline.
-#                           NOTE: source/ is inherited from the v1 prover
-#                           (examples/np-udr-stark-fast2 fork) and `prepare` /
-#                           `prove` are still the v1 binary surfaces. The v3
-#                           `npudr prepare-v3` / `npudr prove-v3` entry points
-#                           and the v3 STARK trace/prover over nearAirV3 do not
-#                           exist yet (README "Status": the Rust prover is
-#                           being built lane by lane). This recipe wires
-#                           out/prepare and out/prove to the existing bins and
-#                           records the gap in the README.
+#                           3acc8b7), --locked --offline. The v3 (D0a) entry
+#                           points: out/prepare = bin `prepare_v3` (checks the
+#                           approved params are NpUdrStarkV2.publicBin, writes
+#                           public.bin), out/prove = bin `prove_v3` (the
+#                           `npudr v3prove` pipeline: hint + prepD0 + 25
+#                           nearAirV3 tables + STARK at auxGroup 2, AIR
+#                           source/near-air-v3.json compiled in). The v1 bins
+#                           `prepare`/`prove` stay in source/ for the inherited
+#                           v1 conformance suite; they are not shipped.
 #   out/verify              the Lean verifier model [formal] verifier_model
 #                           compiled by the Lean compiler, laid out exactly like
 #                           the judge's native-lean build (runners/formal-checker
@@ -79,10 +78,10 @@ cargo_build() {
       CARGO_TARGET_DIR="${ROOT}/source/target" \
       cargo build --release --locked --offline "$@" )
 }
-cargo_build --bin prepare --bin prove --bin leanorder
+cargo_build --bin prepare_v3 --bin prove_v3 --bin leanorder
 mkdir -p out
 for bin in prepare prove; do
-  install -m 0755 "source/target/release/${bin}" "out/${bin}"
+  install -m 0755 "source/target/release/${bin}_v3" "out/${bin}"
 done
 [ "${SKIP_LEAN:-0}" = 1 ] && { sha256sum out/prepare out/prove; exit 0; }
 

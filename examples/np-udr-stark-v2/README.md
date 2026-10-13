@@ -17,7 +17,28 @@ Validity, not zero knowledge (as v1).
 was applied to the whole crate (fast2 was not rustfmt-clean). To review the
 v2 changes against fast2, format a copy of fast2 first and diff the trees.
 The v1 NEAR generators (`src/near/`, `bin/prove`, `bin/prepare`) are still the
-v1 ones; they are kept so the v1 conformance suite keeps running.
+v1 ones; they are kept so the v1 conformance suite keeps running, but they are
+**not shipped**: the package's entry points are the v3 bins below.
+
+## Entry points (v3 D0a package)
+
+`build-recipe/build.sh` (judge: `bash build-recipe/build.sh` from the package root, offline,
+fresh `$HOME`, `SOURCE_DATE_EPOCH=0`) installs (docs/CONTRACTS.md §4, argv as in
+`runners/worker/src/stages/common.rs`):
+
+| output | built from | contract |
+|---|---|---|
+| `out/prepare` | `src/bin/prepare_v3.rs` (std only) | `prepare --params P --out DIR`: `P` must be byte-equal to `NpUdrStarkV2.publicBin` (`formal/NpUdrStarkV2/PublicBin.lean`: `near-arena-params-v3`, `near/pv86/chunk-validation/v0`, pv 86, domain `D0a`, runtime config `b7dce203…062f`; 100 B, sha256 `ab13c199…957f`), else exit 2; writes `DIR/public.bin = P`. |
+| `out/prove` | `src/bin/prove_v3.rs` | `prove --public DIR --request R --witness W --claim-out C --proof-out Q`: `C = R` (`near-arena-claim-v3`: request = claim); `Q = borshBytes (Hint.encode h) ++ π` — the `npudr v3prove` pipeline (`v3::prove::case_inputs`: `hintOf`, `prepD0`, all 25 tables natively; STARK at `auxGroup = 2` over (`DIR/public.bin`, prepared bytes); the Rust verifier re-checks `π` before anything is written). The AIR is `source/near-air-v3.json` (the `np-lean-export-v3` export of `nearAirV3`, sha256 `fa599b3b…b452`), compiled in. Exit 2 and no output on a claim outside RelD0a (`hintOf`/`prepD0` reject) or any failure. No constraint/bus pre-check (that is `npudr v3prove`'s diagnostic; the post-proof verify covers it). Memory budget: the prover default (`NPUDR_MEM_GB` unset = 11). |
+| `out/verify` | `formal/` model closure + trusted `source/lean-vendor` | the judge's native-lean build of `NpUdrStarkV2.Model.verifier` replicated (`verify --public DIR --claim C --proof Q`; reads `DIR/public.bin`; exit 0 accept / 1 reject / 2 error). The judge uses its own build of the same model. |
+
+Packaging steps (packager, from the repository checkout): `build-recipe/sync-lean.sh` (vendors
+the certificate's import closure into `formal/ZkFormal`, `formal/ReexecV3D0` and the trusted
+`source/lean-vendor`, pinned in `dependency-locks/{zk-formal,lean-vendor}.sha256`) and
+`build-recipe/vendor.sh` (crates into `source/vendor`, digest in
+`dependency-locks/vendor-digest.txt`; works offline from a warm cargo cache with
+`CARGO_NET_OFFLINE=true`). The package is the git tree of this directory plus those generated
+trees. Dry run (2026-10-13, lane v3-package): `docs/logs/v3-package-2026-10.md`.
 
 ## Status
 
@@ -62,7 +83,7 @@ Older notes (per-part history) follow.
 | trace generation for `nearAirV3` (witness → 25 tables) | **partial**: aligned generators for 7 tables (bnd, akey, head, val, uniq, walk, **node**) in `src/v3/`, byte-identical to the Lean `Render/Padded*.lean` generators (`conformance/run-v2.sh` §3). node is the largest/most complex table. |
 | witness → per-table entries (part 2c) | **partial**: `conformance/WitnessEntriesV3.lean` → `np-lean-entries-v3 <case> [<table>]` runs the proved D0a extraction (`checkD0a B0` + the reference `trace`) on a real fixture and dumps the honest entry lists for **node** (`initializeList 0 (forestNodes 0 0 0 ts)`), **val** (`seedValuesFrom 0 (forestBytes ts)`) and **head** (`traceHeads 0 0 pairs`); `src/v3/entries.rs` + `npudr v3entries` read them. `conformance/run-v2.sh` §4: `npudr v3check` accepts every constraint and `npudr v3render` is byte-identical to `np-lean-render-v3` on the real-fixture node/val/head entries. `walk`, `uniq`, `akey`, `bnd` need the query/receipt allocation layers (extension point, below). |
 | `prepD0`/`Hint` codec in Rust (part 3) | **partial**: `src/v3/prep.rs` mirrors `PrepD0.lean`'s byte codecs — `Hint` (`u32 n ‖ borshBytes body`), `PrepHdr`/`SrcList`/`SchedPub`/`Prep` `encode()`, the `encList`/`encOpt`/`concatAll`/`borshBytes` helpers, and the refund body codec (`decode_body`/`body_of`, `pRefund`). `conformance/PrepV3.lean` (`np-lean-prep-v3`) runs the proved `checkD0a B0` + `hintOf` + `prepD0` on a real fixture and dumps `hint`/`prep`/`refunds_enc`/`prep_json`; `npudr prep-encode` re-encodes `prep_json` byte-identically to the Lean `Prep.encode`, and the `Hint`/body codecs round-trip (`run-v2.sh` §5, all 64 D0a fixtures). **Ported (2026-10-12):** `prepClaim`/`prepBody` (`src/v3/d0.rs`, incl. A8 and main's A12 `c.layout_wf`) and `hintOf` (`src/v3/hint.rs`: `decodeW`, `pReceipt`, `appliedReceipts`, `partialTrie`/`buildFor`, `PTrie.find/get/set`, `bufferedShards`/`mainKeys`, `applyReceipt`/`applySystemReceipt`, `refundsUpTo`; the `applyNewChunk` branch is argued equal to `refundsUpTo` via `find_upsert_other`, see the module docs). `npudr v3prepare <claim> <witness> <out>` = `hintOf` + `prepD0`; `run-v2.sh` §"prover preprocessing" checks it against `np-lean-prep-v3 --any`: hint + prep byte-identical on all 64 fixtures, and 120 mutated claim/hint/witness cases agree (every claim mutation `checkD0a B0` rejects is rejected). |
-| package skeleton + certificate (part 4) | **superseded 2026-10-13: the certificate is now unconditional (above)**; historical: `candidate.toml`, `build-recipe/` (`build.sh`/`sync-lean.sh`/`vendor.sh`), `formal/` (`NpUdrStarkV2.{Model,PublicBin,Assembly,Certificate}.lean`), `bench/`, `dependency-locks/` mirror `examples/np-udr-stark`. `NpUdrStarkV2.Model.verifier` is the deployed model `(npVerifierP challengeSpecD0a nearAirV3 split prepV3b).toVerifier` (`split`/`join`/`prepV3b` = `ZkFormal.NearV3.Assembly`), closed, no `sorry`. `NpUdrStarkV2.certificate` is `ZkFormal.NearV3.Assembly.nearV3_admission_with_extract_b` specialised to `challengeParamsD0a`: it is **conditional** on the open obligations `ExtractV3Stmt` (the `link` package), the render completeness closure and `AlignedV3Stmt` (`docs/zk-formal/STATUS-V3-ASSEMBLY.md` §3). Until those land the candidate is **not ADMITTED**. `build.sh` builds the Rust bins (`out/prepare`/`out/prove`) and the native-lean `out/verify`; the Rust bins are still the inherited **v1** surfaces — the v3 `prove` (nearAirV3 trace + STARK prove) is not written yet. |
+| package skeleton + certificate (part 4) | **superseded 2026-10-13: the certificate is now unconditional (above)**; historical: `candidate.toml`, `build-recipe/` (`build.sh`/`sync-lean.sh`/`vendor.sh`), `formal/` (`NpUdrStarkV2.{Model,PublicBin,Assembly,Certificate}.lean`), `bench/`, `dependency-locks/` mirror `examples/np-udr-stark`. `NpUdrStarkV2.Model.verifier` is the deployed model `(npVerifierP challengeSpecD0a nearAirV3 split prepV3b).toVerifier` (`split`/`join`/`prepV3b` = `ZkFormal.NearV3.Assembly`), closed, no `sorry`. `NpUdrStarkV2.certificate` is `ZkFormal.NearV3.Assembly.nearV3_admission_with_extract_b` specialised to `challengeParamsD0a`: it is **conditional** on the open obligations `ExtractV3Stmt` (the `link` package), the render completeness closure and `AlignedV3Stmt` (`docs/zk-formal/STATUS-V3-ASSEMBLY.md` §3). Until those land the candidate is **not ADMITTED**. `build.sh` builds the Rust bins (`out/prepare`/`out/prove`) and the native-lean `out/verify`; historical: the Rust bins were the inherited **v1** surfaces until 2026-10-13 (now the v3 `prepare_v3`/`prove_v3`, above). |
 
 ## Verification
 
@@ -86,7 +107,7 @@ Older notes (per-part history) follow.
   Builds the (unconditional, `nearV3_admission_final`) certificate; `#print axioms NpUdrStarkV2.certificate`
   reports `[propext, Classical.choice, Quot.sound]` (no `sorry`/`axiom`).
 * `build-recipe/build.sh`: `SKIP_LEAN=1 bash build-recipe/build.sh` builds
-  `out/prepare`/`out/prove` (Rust); without `SKIP_LEAN=1` it also replicates the
+  `out/prepare`/`out/prove` (Rust, the v3 bins `prepare_v3`/`prove_v3`); without `SKIP_LEAN=1` it also replicates the
   judge's native-lean build into `out/verify` (needs `source/lean-vendor` and
   `out/`+`formal/ZkFormal`+`formal/ReexecV3D0`, all produced by
   `build-recipe/sync-lean.sh`). `build-recipe/vendor.sh` needs network and is a
