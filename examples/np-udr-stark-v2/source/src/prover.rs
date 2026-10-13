@@ -127,7 +127,7 @@ impl Budget {
         let gb: f64 = std::env::var("NPUDR_MEM_GB")
             .ok()
             .and_then(|v| v.parse().ok())
-            .unwrap_or(11.0);
+            .unwrap_or(13.0);
         Budget {
             bytes: (gb * (1u64 << 30) as f64) as usize,
         }
@@ -143,6 +143,18 @@ impl Budget {
     /// (keeping room for chunk buffers and allocator slack)
     fn avail(&self, used: usize) -> usize {
         (self.bytes.saturating_sub(used) / 10 * 7).max(1 << 16)
+    }
+    /// Level-0 group for the block-wise path of `2^h`-row class-0 tables:
+    /// 64 bytes of leaf state per position plus the chunk's coefficient and
+    /// evaluation buffers (`2·T·cw` words), within 0.85 of the budget.
+    fn fast_group(&self, l0: usize, h: usize, used: usize, cw: usize) -> usize {
+        let t = 1usize << h;
+        let bufs = 2 * 4 * cw * t;
+        let mut s = 1usize << l0;
+        while s > t && used + bufs + 64 * s > self.bytes / 20 * 17 {
+            s /= 2;
+        }
+        s
     }
     /// level-0 positions hashed at once (128 bytes of state each), next to
     /// the chunk buffers
@@ -252,6 +264,33 @@ impl Coefs {
     fn eval_into(&self, dft: &Dft, lde: usize, sh: F, p0: usize, len: usize, dst: &mut [F]) {
         let _t = std::time::Instant::now();
         let width = self.width;
+        let t = self.parts.first().map(|p| p.1.height()).unwrap_or(0);
+        if len == t && t >= 1 << crate::lmcommit::FAST_MIN_LOG {
+            // a whole LDE block: one coset DFT per part, scattered into the rows
+            let n = log2_strict_usize(t);
+            let cd = crate::lde::coset_dft(n);
+            let c = sh * omega(lde).exp_u64(crate::mmcs::rev(p0 >> n, lde - n) as u64);
+            let maxw = self.parts.iter().map(|p| p.1.width()).max().unwrap_or(0);
+            let mut tmp = vec![F::ZERO; t * maxw];
+            for (c0, co) in &self.parts {
+                let cw = co.width();
+                let ev = &mut tmp[..t * cw];
+                let _e = std::time::Instant::now();
+                cd.eval(&co.values, cw, c, ev);
+                crate::lowmem::prof::add(&crate::lowmem::prof::EVAL, _e);
+                let (c0, ev) = (*c0, &*ev);
+                dst.par_chunks_mut(width * 1024)
+                    .enumerate()
+                    .for_each(|(k, rows)| {
+                        for (i, row) in rows.chunks_mut(width).enumerate() {
+                            let r = k * 1024 + i;
+                            row[c0..c0 + cw].copy_from_slice(&ev[r * cw..(r + 1) * cw]);
+                        }
+                    });
+            }
+            crate::lowmem::prof::add(&crate::lowmem::prof::FILL, _t);
+            return;
+        }
         for (c0, co) in &self.parts {
             let cw = co.width();
             let ev = eval_range(dft, co, lde, sh, p0, len, None);
@@ -528,9 +567,15 @@ fn quotient(
         let fast = FastBus::new(q, a_aux);
         let ihalves = if use_ivals { 1 } else { 2 };
         let avail = bud.avail(used + trace.bytes() + ac.bytes() + ic.bytes());
-        let len = pass_len((2 * aw + ihalves * iw) * 4 + 48, avail, t);
-        let mut ha = Halves::new(aw, len, 2);
-        let mut hi = Halves::new(iw, len, ihalves);
+        // whole blocks need one half (the next rows are in the same block)
+        let len = if ((aw + iw) * 4 + 48) * t <= avail {
+            t
+        } else {
+            pass_len((2 * aw + ihalves * iw) * 4 + 48, avail, t)
+        };
+        let nh = if len >= t { 1 } else { 2 };
+        let mut ha = Halves::new(aw, len, nh);
+        let mut hi = Halves::new(iw, len, if len >= t { 1 } else { ihalves });
         for (load_cur, st) in schedule(npts, t, h, len) {
             if let Some(p) = load_cur {
                 ha.load(&ac, dft, st.cur, p, lde, sh);
@@ -675,8 +720,12 @@ fn quotient(
         }
     }
     let avail = bud.avail(used + trace.bytes() + mc.bytes());
-    let len = pass_len(2 * w * 4 + 48, avail, t);
-    let mut hm = Halves::new(w, len, 2);
+    let len = if (w * 4 + 48) * t <= avail {
+        t
+    } else {
+        pass_len(2 * w * 4 + 48, avail, t)
+    };
+    let mut hm = Halves::new(w, len, if len >= t { 1 } else { 2 });
     for (load_cur, st) in schedule(npts, t, h, len) {
         if let Some(p) = load_cur {
             hm.load(&mc, dft, st.cur, p, lde, sh);
@@ -978,7 +1027,17 @@ pub fn prove_cols(
     let hmax0 = *heights.iter().max().unwrap();
     let chunk = bud.chunk_for(hmax0, resident);
     let group = bud.group(l0, resident, (12 * chunk) << hmax0);
+    // block-wise level 0 (see `lmcommit::hash_level0_blocks`) for large
+    // class-0 tables, with 64-column chunks
+    let fast = hmax0 >= lmcommit::FAST_MIN_LOG;
+    let ccw = if fast { 64 } else { chunk };
     if opts.verbose {
+        for t in 0..nt {
+            eprintln!(
+                "[prove] table {t:2} log {:2} class {} main {:3} aux(K) {:3} quot chunks {}",
+                heights[t], sch.class[t], sch.w_main[t], sch.w_aux[t], sch.n_quot[t]
+            );
+        }
         eprintln!(
             "[prove] resident {} MB, chunk {chunk}, group 2^{}",
             resident >> 20,
@@ -998,11 +1057,15 @@ pub fn prove_cols(
     let main_tree = {
         let main: Vec<Src> = traces.iter().map(Src::Main).collect();
         // only the compact traces are resident yet
-        let g = bud.group(l0, compact, (12 * chunk) << hmax0);
+        let g = if fast {
+            bud.fast_group(l0, hmax0, compact, ccw)
+        } else {
+            bud.group(l0, compact, (12 * chunk) << hmax0)
+        };
         if opts.verbose {
             eprintln!("[prove] main commit group 2^{}", log2_strict_usize(g));
         }
-        lmcommit::commit(&dft, &cmats(&sch, &main), l0, g, chunk, keep)
+        lmcommit::commit(&dft, &cmats(&sch, &main), l0, g, ccw, keep)
     };
     tm.lap("main commit");
     tr.absorb(&[main_tree.root()], &sch.header_bytes());
@@ -1049,7 +1112,11 @@ pub fn prove_cols(
             })
             .collect();
         let used = compact + tree_bytes + if use_cache { cache } else { 0 };
-        let g = bud.group(l0, used, (12 * chunk) << hmax0);
+        let g = if fast {
+            bud.fast_group(l0, hmax0, used, ccw)
+        } else {
+            bud.group(l0, used, (12 * chunk) << hmax0)
+        };
         if opts.verbose {
             eprintln!(
                 "[prove] aux coefficient cache {} MB ({use_cache}), group 2^{}",
@@ -1058,7 +1125,7 @@ pub fn prove_cols(
             );
         }
         (
-            lmcommit::commit(&dft, &cmats(&sch, &aux), l0, g, chunk, keep),
+            lmcommit::commit(&dft, &cmats(&sch, &aux), l0, g, ccw, keep),
             aux_finals,
         )
     };
@@ -1122,7 +1189,21 @@ pub fn prove_cols(
         .collect();
     let aux_m = cmats(&sch, &aux);
     let quot_m = cmats(&sch, &quot);
-    let quot_tree = lmcommit::commit(&dft, &quot_m, l0, group, chunk, keep);
+    let quot_tree = if fast {
+        let qres = compact
+            + 2 * tree_bytes
+            + quot_m
+                .iter()
+                .map(|m| m.src.width() * 4 << m.src.log_h())
+                .sum::<usize>();
+        let g = bud.fast_group(l0, hmax0, qres, ccw);
+        if opts.verbose {
+            eprintln!("[prove] quot commit group 2^{}", log2_strict_usize(g));
+        }
+        lmcommit::commit(&dft, &quot_m, l0, g, ccw, keep)
+    } else {
+        lmcommit::commit(&dft, &quot_m, l0, group, chunk, keep)
+    };
     tm.lap("quot commit");
     tr.absorb(&[quot_tree.root()], &[]);
     let z = tr.chal_ood();

@@ -6,6 +6,7 @@ pub mod cols;
 pub mod eval;
 pub mod field;
 pub mod hash;
+pub mod lde;
 pub mod lmcommit;
 pub mod lmsrc;
 pub mod lowmem;

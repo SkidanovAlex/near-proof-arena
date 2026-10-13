@@ -13,7 +13,7 @@
 
 use std::collections::HashMap;
 
-use p3_field::PrimeField32;
+use p3_field::{PrimeCharacteristicRing, PrimeField32};
 use p3_matrix::Matrix;
 use p3_matrix::dense::RowMajorMatrix;
 
@@ -107,6 +107,219 @@ pub fn hash_ranges(
     st.finish()
 }
 
+// ---------------------------------------------------------------------------
+// Level 0 of large class-0 matrices: whole LDE blocks, 64-byte aligned feeds
+// ---------------------------------------------------------------------------
+
+/// Smallest class-0 height (log) for which level 0 is hashed block-wise.
+pub const FAST_MIN_LOG: usize = 10;
+
+/// Leaf-hash states of `n` messages `WH(tag, body)`: the two SHA-256 states
+/// of each message in native-endian words, in the 64 bytes of its digest
+/// slot (finished in place into the big-endian digest).
+struct LeafStates;
+
+const H0: [u32; 8] = [
+    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+];
+
+impl LeafStates {
+    fn init(n: usize) -> Vec<Digest64> {
+        let mut d = [0u8; 64];
+        for (k, w) in H0.iter().chain(H0.iter()).enumerate() {
+            d[4 * k..4 * k + 4].copy_from_slice(&w.to_ne_bytes());
+        }
+        vec![d; n]
+    }
+    #[inline(always)]
+    fn load(d: &Digest64) -> [u32; 16] {
+        std::array::from_fn(|k| u32::from_ne_bytes(d[4 * k..4 * k + 4].try_into().unwrap()))
+    }
+    #[inline(always)]
+    fn store(d: &mut Digest64, s: &[u32; 16]) {
+        for (k, w) in s.iter().enumerate() {
+            d[4 * k..4 * k + 4].copy_from_slice(&w.to_ne_bytes());
+        }
+    }
+    #[inline(always)]
+    fn compress(s: &mut [u32; 16], block: &[u8; 64], first: bool) {
+        use sha2::digest::generic_array::GenericArray;
+        let (a, b) = s.split_at_mut(8);
+        let a: &mut [u32; 8] = a.try_into().unwrap();
+        let b: &mut [u32; 8] = b.try_into().unwrap();
+        if first {
+            let mut blk = *block;
+            blk[11] = 1;
+            sha2::compress256(a, &[*GenericArray::from_slice(&blk)]);
+            blk[11] = 2;
+            sha2::compress256(b, &[*GenericArray::from_slice(&blk)]);
+        } else {
+            let g = GenericArray::from_slice(block);
+            sha2::compress256(a, std::slice::from_ref(g));
+            sha2::compress256(b, std::slice::from_ref(g));
+        }
+    }
+    /// Absorb `data` into one message whose stream holds `done` bytes so far
+    /// (`done = 0`: nothing yet, the 12-byte prefix `RO_TAG ‖ tag ‖ variant`
+    /// comes first; otherwise `done` is a multiple of 64). With `last`, pad
+    /// and write the digest; otherwise `done + data` (+ prefix) must end on a
+    /// block boundary.
+    #[inline]
+    fn absorb(d: &mut Digest64, tag: u8, done: u64, data: &[u8], last: bool) {
+        let mut s = Self::load(d);
+        let mut buf = [0u8; 64];
+        let (mut c, mut first) = if done == 0 {
+            buf[..10].copy_from_slice(crate::hash::RO_TAG);
+            buf[10] = tag;
+            (12usize, true)
+        } else {
+            debug_assert_eq!(done % 64, 0);
+            (0, false)
+        };
+        let total = if done == 0 { 12 } else { done } + data.len() as u64;
+        let mut off = 0;
+        while off < data.len() {
+            let take = (64 - c).min(data.len() - off);
+            buf[c..c + take].copy_from_slice(&data[off..off + take]);
+            c += take;
+            off += take;
+            if c == 64 {
+                Self::compress(&mut s, &buf, first);
+                first = false;
+                c = 0;
+            }
+        }
+        if !last {
+            debug_assert_eq!(c, 0, "unaligned leaf feed");
+            Self::store(d, &s);
+            return;
+        }
+        buf[c] = 0x80;
+        c += 1;
+        if c > 56 {
+            buf[c..].fill(0);
+            Self::compress(&mut s, &buf, first);
+            first = false;
+            buf = [0u8; 64];
+            c = 0;
+        }
+        buf[c..56].fill(0);
+        buf[56..].copy_from_slice(&(total * 8).to_be_bytes());
+        Self::compress(&mut s, &buf, first);
+        for (k, w) in s.iter().enumerate() {
+            d[4 * k..4 * k + 4].copy_from_slice(&w.to_be_bytes());
+        }
+    }
+}
+
+/// Column chunks of the concatenated class-0 row (`widths` per matrix):
+/// segments `(matrix, c0, c1)`; every chunk but the last ends on a 64-byte
+/// boundary of the leaf message (12-byte prefix + 4 bytes per column).
+fn plan_chunks(widths: &[usize], cw: usize) -> Vec<Vec<(usize, usize, usize)>> {
+    let total: usize = widths.iter().sum();
+    let k = (cw / 16).max(1);
+    let mut sizes = vec![];
+    let mut done = 0;
+    while done < total {
+        let want = if done == 0 { 13 + 16 * (k - 1) } else { 16 * k };
+        let n = want.min(total - done);
+        sizes.push(n);
+        done += n;
+    }
+    let mut out = vec![];
+    let (mut mi, mut c) = (0usize, 0usize);
+    for n in sizes {
+        let mut segs = vec![];
+        let mut left = n;
+        while left > 0 {
+            while widths[mi] == c {
+                mi += 1;
+                c = 0;
+            }
+            let take = left.min(widths[mi] - c);
+            segs.push((mi, c, c + take));
+            c += take;
+            left -= take;
+        }
+        out.push(segs);
+    }
+    out
+}
+
+/// Whether level 0 of `mats` can be hashed block-wise for groups of `s`
+/// positions.
+fn fast_level0(mats: &[CMat], s: usize) -> bool {
+    let ms: Vec<&CMat> = mats.iter().filter(|m| m.class == 0).collect();
+    if ms.is_empty() || ms.iter().all(|m| m.src.width() == 0) {
+        return false;
+    }
+    let lh = ms[0].src.log_h();
+    lh >= FAST_MIN_LOG && ms.iter().all(|m| m.src.log_h() == lh) && s % (1usize << lh) == 0
+}
+
+/// Level-0 digests of positions `g0 .. g0 + s` (whole LDE blocks of the
+/// class-0 matrices): each column chunk's coefficients once, one coset DFT
+/// per block, rows streamed into the leaf states.
+fn hash_level0_blocks(dft: &Dft, mats: &[CMat], g0: usize, s: usize, cw: usize) -> Vec<Digest64> {
+    use rayon::prelude::*;
+    let ms: Vec<&CMat> = mats.iter().filter(|m| m.class == 0).collect();
+    let n = ms[0].src.log_h();
+    let t = 1usize << n;
+    let cd = crate::lde::coset_dft(n);
+    let widths: Vec<usize> = ms.iter().map(|m| m.src.width()).collect();
+    let plan = plan_chunks(&widths, cw);
+    let mut st = LeafStates::init(s);
+    let mut done = 0u64;
+    let mut evs: Vec<Vec<F>> = vec![];
+    for (ci, segs) in plan.iter().enumerate() {
+        let last = ci + 1 == plan.len();
+        let cos: Vec<RowMajorMatrix<F>> = segs
+            .iter()
+            .map(|&(mi, c0, c1)| ms[mi].src.coeffs(dft, c0, c1))
+            .collect();
+        let sw: Vec<usize> = segs.iter().map(|&(_, c0, c1)| c1 - c0).collect();
+        let nbytes: usize = 4 * sw.iter().sum::<usize>();
+        evs.resize_with(segs.len(), Vec::new);
+        for (e, &w) in evs.iter_mut().zip(&sw) {
+            e.resize(t * w, F::ZERO);
+        }
+        for b in g0 / t..(g0 + s) / t {
+            for ((e, co), &(mi, _, _)) in evs.iter_mut().zip(&cos).zip(segs) {
+                let m = ms[mi];
+                let c = m.shift
+                    * crate::field::omega(m.lde).exp_u64(crate::mmcs::rev(b, m.lde - n) as u64);
+                let _t = std::time::Instant::now();
+                cd.eval(&co.values, co.width(), c, e);
+                crate::lowmem::prof::add(&crate::lowmem::prof::EVAL, _t);
+            }
+            let _t = std::time::Instant::now();
+            let base = b * t - g0;
+            let evr = &evs;
+            st[base..base + t]
+                .par_chunks_mut(1024)
+                .enumerate()
+                .for_each_init(
+                    || Vec::with_capacity(nbytes),
+                    |buf, (k, leaves)| {
+                        for (i, d) in leaves.iter_mut().enumerate() {
+                            let u = k * 1024 + i;
+                            buf.clear();
+                            for (e, &w) in evr.iter().zip(&sw) {
+                                for x in &e[u * w..(u + 1) * w] {
+                                    buf.extend_from_slice(&x.as_canonical_u32().to_le_bytes());
+                                }
+                            }
+                            LeafStates::absorb(d, TAG_LEAF, done, buf, last);
+                        }
+                    },
+                );
+            crate::lowmem::prof::add(&crate::lowmem::prof::FEED, _t);
+        }
+        done = if done == 0 { 12 } else { done } + nbytes as u64;
+    }
+    st
+}
+
 /// Commit a round. `group` = level-0 positions hashed at once.
 pub fn commit(
     dft: &Dft,
@@ -129,8 +342,13 @@ pub fn commit(
             }
         })
         .collect();
+    let fast = fast_level0(mats, s);
     for g in 0..n0 / s {
-        let mut cur = hash_ranges(dft, mats, 0, &[(g * s, s)], None, chunk);
+        let mut cur = if fast {
+            hash_level0_blocks(dft, mats, g * s, s, chunk)
+        } else {
+            hash_ranges(dft, mats, 0, &[(g * s, s)], None, chunk)
+        };
         if keep == 0 {
             levels[0].as_mut().unwrap().extend_from_slice(&cur);
         }
@@ -324,8 +542,32 @@ mod tests {
 
     #[test]
     fn matches_mmcs() {
-        let dft = Dft::default();
         // tables: 2^9 rows w=5 (class 0), 2^7 rows w=3 (class 2), 2^9 rows w=0
+        check(
+            &[(9, 5), (7, 3), (9, 0)],
+            13,
+            &[(1 << 13, 64), (1 << 11, 2), (1 << 12, 8)],
+        );
+    }
+
+    /// Block-wise level 0 (class-0 tables of `2^FAST_MIN_LOG` rows and more):
+    /// several class-0 matrices whose widths cross the 64-byte chunk
+    /// boundaries, an empty one, and a smaller class.
+    #[test]
+    fn matches_mmcs_fast_level0() {
+        let l0 = 15;
+        let tabs = [(11, 5), (11, 20), (11, 0), (11, 9), (9, 3), (11, 33)];
+        check(
+            &tabs,
+            l0,
+            &[(1 << 15, 16), (1 << 14, 32), (1 << 13, 48), (1 << 11, 8)],
+        );
+        check(&[(11, 13)], l0, &[(1 << 15, 16)]);
+        check(&[(11, 12), (10, 2)], l0, &[(1 << 15, 64), (1 << 11, 16)]);
+    }
+
+    fn check(tabs: &[(usize, usize)], l0: usize, runs: &[(usize, usize)]) {
+        let dft = Dft::default();
         let mk = |lh: usize, w: usize, seed: u32| {
             TraceCols::from_rows(lh, w, |r, b| {
                 for c in 0..w {
@@ -334,8 +576,11 @@ mod tests {
                 }
             })
         };
-        let ts = [mk(9, 5, 1), mk(7, 3, 2), mk(9, 0, 0)];
-        let l0 = 13;
+        let ts: Vec<TraceCols> = tabs
+            .iter()
+            .enumerate()
+            .map(|(i, &(lh, w))| mk(lh, w, i as u32 + 1))
+            .collect();
         let srcs: Vec<Src> = ts.iter().map(Src::Main).collect();
         let mats: Vec<CMat> = srcs
             .iter()
@@ -371,10 +616,11 @@ mod tests {
             })
             .collect();
         let rt = mmcs::commit(&refm);
-        for (group, chunk) in [(1 << 13, 64), (1 << 11, 2), (1 << 12, 8)] {
+        for &(group, chunk) in runs {
             let t = commit(&dft, &mats, l0, group, chunk, KEEP);
-            assert_eq!(t.root(), rt.root());
-            let qs = vec![5, 8000, 4097, 5, 123];
+            assert_eq!(t.root(), rt.root(), "group {group} chunk {chunk}");
+            let n0 = 1usize << l0;
+            let qs = vec![5, n0 - 192, n0 / 2 + 1, 5, 123];
             let a = open(&dft, &mats, &t, &qs, chunk);
             let b = mmcs::open(&refm, &rt, &qs);
             assert_eq!(a, b);
