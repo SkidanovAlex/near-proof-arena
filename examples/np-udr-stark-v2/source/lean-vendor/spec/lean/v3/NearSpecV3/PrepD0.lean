@@ -55,6 +55,8 @@ keyed by the link index `own·n + idx(s)` (`fwdLinks`), each demand `< 2^24` (ch
 ## Routing intervals
 `ownIntervals` as before: for each position `k` with `shard_ids[k] = own`, the accounts with
 partition point `k` are `[max(boundaries[0..k)), boundaries[k])`. **Tested**, not proved.
+`prepClaim` checks A12 (`c.layout_wf`, `|boundaries| + 1 = |shardIds|`, user decision
+2026-10-12), so there are at most `|shardIds| ≤ 64` intervals.
 
 ## Open (recorded for the AIR lanes)
 * Two used source chunks with the same `chunk_hash` share one witness entry; the lists keep
@@ -419,6 +421,9 @@ def prepClaim (cb : Bytes) : Except String PrepC := do
   -- `allowed_shard` of the own congestion info (3.7); the header comparison itself runs in
   -- `prepBody`, after the execution-time conditions, in `checkD0`'s order
   let allowed := L.shardIds.getD ((B2.hdr.height + idx) % L.numShards) H.shardId
+  -- A12 (claim-only, `ChunkValidationV0a.a12`): one boundary account fewer than shard ids
+  check (L.numShards == L.boundaries.length + 1)
+    "out of domain (c.layout_wf): the shard layout does not have one boundary fewer than shard ids"
   pure {
     hdr := { K := implicitBlks.length, n := 0, own := H.shardId, ownIdx := idx,
              numShards := L.numShards, height := B2.hdr.height, gasPrice := prevB2.hdr.nextGasPrice,
