@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupMismatchShape
+import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupTree
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render.UpsGen

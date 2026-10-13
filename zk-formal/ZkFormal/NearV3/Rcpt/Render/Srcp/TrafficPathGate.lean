@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Render.Srcp.TrafficPathBytes
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.Path
 
 namespace ZkFormal.NearV3.Render.SrcpGen
 open ZkFormal.Near

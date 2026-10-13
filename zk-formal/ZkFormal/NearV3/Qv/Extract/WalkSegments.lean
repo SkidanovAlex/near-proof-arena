@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Qv.Extract.WalkOrder
+import ZkFormal.NearV3.Qv.Extract.WalkMetadata
 
 namespace ZkFormal.NearV3.Qv.Extract
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl

@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Rcpt.Candidates.DedupUnitDecomposition
+import ZkFormal.NearV3.Rcpt.Candidates.DedupExtractRoots
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.DedupProof
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra ZkFormal.Near.Dsl SrcpV3

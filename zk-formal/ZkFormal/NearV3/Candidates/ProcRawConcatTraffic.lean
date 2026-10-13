@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Candidates.ProcRawNativeLocal
-import ZkFormal.NearV3.Candidates.ProcNativeBlockPresence
 import ZkFormal.NearV3.Candidates.ProcInitialLinks
 namespace ZkFormal.NearV3.Candidates.ProcRawConcatTraffic
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.NearV3.Sched

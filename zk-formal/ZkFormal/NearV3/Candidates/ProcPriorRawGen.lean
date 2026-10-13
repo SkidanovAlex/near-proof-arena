@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Candidates.ProcPriorRawSlots
-import ZkFormal.NearV3.Candidates.ProcPriorRawRows
 import ZkFormal.NearV3.Candidates.ProcPriorCells
 namespace ZkFormal.NearV3.Candidates.ProcPriorRawGen
 open ZkFormal.Air ZkFormal.Algebra NearSpec.Bandwidth

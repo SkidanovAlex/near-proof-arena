@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Candidates.NativeAccessBytePartition
-import ZkFormal.NearV3.Candidates.NativeQueueBytes
 
 namespace ZkFormal.NearV3.Candidates.NativeQueueOwnership
 open NearSpec NearSpecV3 ZkFormal.Near Assembly Rcpt.Candidates Rcpt.Candidates.NodePostUpdate Qv

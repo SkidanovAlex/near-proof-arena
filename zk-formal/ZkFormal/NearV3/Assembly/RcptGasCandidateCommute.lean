@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptGasProductCommute
+import ZkFormal.NearV3.Assembly.RcptGasTokenCommute
+import ZkFormal.NearV3.Assembly.RcptGasFlagCommute
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3

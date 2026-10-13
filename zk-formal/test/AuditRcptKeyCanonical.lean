@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Extract.V.KeyCanonical
+import ZkFormal.NearV3.Rcpt.Extract.V.KeyMarkerLayout
+import ZkFormal.NearV3.Rcpt.Extract.V.KeyMarkerValues
 
 /-- info: 'ZkFormal.NearV3.RcptV3Proof.key_kind_byte' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in

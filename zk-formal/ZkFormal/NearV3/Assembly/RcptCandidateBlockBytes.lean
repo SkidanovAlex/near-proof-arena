@@ -2,8 +2,6 @@ import ZkFormal.NearV3.Assembly.RcptCandidateBytes
 import ZkFormal.NearV3.Assembly.RcptCandidateHeaderTraffic
 -- Source BlockBytes.lean SHA256: 0e459a499f3bd052fd8d9183146398107a1d14682ce3ced71eb62b33910fe0a7.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.PrefixOffsets
-import ZkFormal.NearV3.Rcpt.Extract.V.HeaderTraffic
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

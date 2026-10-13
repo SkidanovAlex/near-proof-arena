@@ -1,8 +1,10 @@
-import ZkFormal.NearV3.Candidates.ProcPriorRoutedHeadView
 import ZkFormal.NearV3.Assembly.RcptCandidateBounds
 import ZkFormal.NearV3.Assembly.RcptCandidateIndexedBytes
 import ZkFormal.NearV3.Assembly.RcptCandidateIndexedWellformed
 import ZkFormal.NearV3.Assembly.RcptCandidateChainBytes
+import ZkFormal.NearV3.Candidates.InteractionTriplesTransport
+import ZkFormal.NearV3.Candidates.ProcPriorComparatorRoutedFamily
+import ZkFormal.NearV3.Candidates.HorizontalTrace
 namespace ZkFormal.NearV3.Candidates.ProcPriorRoutedReceiptView
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Chacha
 open ZkFormal.NearV3.Sched

@@ -1,4 +1,4 @@
-import ZkFormal.Prover.NpStatements
+import ZkFormal.Prover.NpDefs
 
 /-!
 # ZkFormal.Prover.NpBasic — layout of the honest transcript as `List.range` maps

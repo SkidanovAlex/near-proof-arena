@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Assembly.RoutingLexComplete
 import ZkFormal.NearV3.Assembly.RoutingSelectedColumns
+import ZkFormal.NearV3.Rcpt.Link.Lex
 
 namespace ZkFormal.NearV3.Assembly.RoutingBoundedLayout
 open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near RcptV3

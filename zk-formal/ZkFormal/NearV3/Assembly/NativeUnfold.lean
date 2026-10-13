@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Assembly.QueryAccepted
+import ZkFormal.NearV3.Assembly.UnfoldStoreEq
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec NearSpecV3

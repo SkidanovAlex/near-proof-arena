@@ -1,5 +1,7 @@
-import ZkFormal.NearV3.Candidates.ProcPriorRoutedValueView
 import ZkFormal.NearV3.Extract.Node.Proof
+import ZkFormal.NearV3.Candidates.InteractionTriplesTransport
+import ZkFormal.NearV3.Candidates.ProcPriorComparatorRoutedFamily
+import ZkFormal.NearV3.Candidates.HorizontalTrace
 namespace ZkFormal.NearV3.Candidates.ProcPriorRoutedNodeView
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Chacha
 open ZkFormal.NearV3.Sched

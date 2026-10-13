@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Rcpt.Candidates.NativeRebasedUpsertWitness
+import ZkFormal.NearV3.Rcpt.Candidates.NativeRebasedScheduler
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec NearSpecV3 Assembly Render.UpsGen

@@ -1,5 +1,5 @@
-import ZkFormal.Near.Render.Proof.BusFinal
 import ZkFormal.Near.Render.Proof.WalkTraffic
+import ZkFormal.Near.Render.Proof.BusCommon
 
 /-!
 # ZkFormal.Near.Render.Proof.BusEdge — `EdgeBusStmt`

@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcIdTaggedTrace
 import ZkFormal.NearV3.Sched.Link.SoundPrep
+import ZkFormal.NearV3.Candidates.ProcPriorIdRanges
 namespace ZkFormal.NearV3.Candidates.ProcIdNativeLocal
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near
 open ZkFormal.NearV3.Assembly.CodecDigest

@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Link.ListByteIsolation
+import ZkFormal.NearV3.Rcpt.Extract.V.RclDecode
 
 namespace ZkFormal.NearV3.RcptLink
 open ZkFormal.Near ZkFormal.Algebra NearSpec Near.Link

@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcDistShardRow
+import ZkFormal.NearV3.Candidates.SchedSetAllRange
 namespace ZkFormal.NearV3.Candidates.ProcDistShardCells
 open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Gen SchedSetAll SchedSetAllRange
 open ProcDistShardRow

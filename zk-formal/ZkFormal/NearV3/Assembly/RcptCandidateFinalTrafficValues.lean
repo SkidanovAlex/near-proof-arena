@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateFinalTrafficRows
 -- Source FinalTrafficValues.lean SHA256: 50c08b3cb11ebb8a067cfbeded4f7de8d09a7f08c893967c7cb8696c967f9430.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.FinalTrafficRows
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

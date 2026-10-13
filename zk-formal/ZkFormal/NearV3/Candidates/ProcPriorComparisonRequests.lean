@@ -1,6 +1,6 @@
-import ZkFormal.NearV3.Candidates.ProcIdNativeLocal
 import ZkFormal.NearV3.Candidates.ProcPriorOverlayBudget
 import ZkFormal.NearV3.Candidates.CmpHeight
+import ZkFormal.NearV3.Candidates.ProcIdTaggedRows
 namespace ZkFormal.NearV3.Candidates.ProcPriorComparisonRequests
 open ZkFormal.NearV3.Assembly.CodecDigest
 abbrev Request := Nat×Nat×Nat

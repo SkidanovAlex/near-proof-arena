@@ -1,5 +1,5 @@
-import ZkFormal.Udr.Np.Main
 import ZkFormal.V2.Verifier
+import ZkFormal.Udr.Np.Statements
 
 /-!
 # ZkFormal.V2.Np.Defs — L3 for `np-udr-stark-v2`: the doomed predicate

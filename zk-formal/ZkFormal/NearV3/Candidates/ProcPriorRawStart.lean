@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcPriorRawPadding
+import ZkFormal.NearV3.Candidates.ProcPriorRawBoolean
 namespace ZkFormal.NearV3.Candidates.ProcPriorRawStart
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha.Table.E NearSpec.Bandwidth
 open ProcPriorCells ProcPriorRawFrame ProcPriorRawGen ProcPriorRawHeader

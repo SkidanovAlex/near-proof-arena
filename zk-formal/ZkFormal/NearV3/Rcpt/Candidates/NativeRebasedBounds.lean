@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeRebasedUpsertList
+import ZkFormal.NearV3.Rcpt.Candidates.NativeReplayByteSize
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec NearSpecV3 Render.UpsGen Assembly

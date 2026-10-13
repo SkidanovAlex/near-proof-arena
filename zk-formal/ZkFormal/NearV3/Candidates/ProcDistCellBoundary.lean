@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcDistCellEndFlag
+import ZkFormal.NearV3.Candidates.ProcDistCellPosition
 namespace ZkFormal.NearV3.Candidates.ProcDistCellBoundary
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Gen
 open ProcDistCellRow

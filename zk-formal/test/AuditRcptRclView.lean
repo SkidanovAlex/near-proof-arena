@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Extract.V.ViewFacts
+import ZkFormal.NearV3.Rcpt.Extract.V.RclViewProof
 
 /-- info: 'ZkFormal.NearV3.RcptV3Proof.view_rcl_receive_empty' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

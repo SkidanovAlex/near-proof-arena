@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Render.Srcp.TransitionFacts
+import ZkFormal.NearV3.Rcpt.Render.Srcp.Last
 
 namespace ZkFormal.NearV3.Render.SrcpGen
 

@@ -1,10 +1,11 @@
-import ZkFormal.NearV3.Rcpt.Candidates.AcceptedWindowCoverage
 import ZkFormal.NearV3.Rcpt.Candidates.NativeReaderDepth
 import ZkFormal.NearV3.Rcpt.Candidates.UpsRequestInventory
 import ZkFormal.NearV3.Rcpt.Candidates.NativeRebasedDepths
 import ZkFormal.NearV3.Rcpt.Candidates.NativePayloadSegments
 import ZkFormal.NearV3.Assembly.SchedulerSanityPin
 import ZkFormal.NearV3.Assembly.UpsS0FRebase
+import ZkFormal.NearV3.Rcpt.Candidates.NativeReaderOrigin
+import ZkFormal.NearV3.Rcpt.Candidates.NativeExecutionPayloads
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieUpsOrigin — the record ids read by the native ups instances

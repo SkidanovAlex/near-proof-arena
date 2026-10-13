@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.CompactPhysicalShaBytes
 import ZkFormal.NearV3.Assembly.UpsertShaCapacity
+import ZkFormal.NearV3.Render.Ups.RelayFreshSha
 
 namespace ZkFormal.NearV3.Candidates.SchedulerShaSplit
 open ZkFormal.NearV3.Assembly ZkFormal.NearV3.Render.UpsGen ZkFormal.NearV3.Render.UpsRelay

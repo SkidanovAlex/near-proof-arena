@@ -522,6 +522,14 @@ import ZkFormal.NearV3.Render.SchedBusAll
 import ZkFormal.NearV3.Render.CompleteV3
 import ZkFormal.NearV3.Render.CompleteV3Chacha
 import ZkFormal.NearV3.Assembly.AdmissionV3
+-- certificate pruning (lane v3-prune): modules no longer reached through the certificate's
+-- import closure stay in the build through this gate.
+import ReexecV3D0.NormalForm
+import ZkFormal.NearV3.Assembly.RcptReceiptRepaired
+import ZkFormal.NearV3.Assembly.RoutingCounterRanks
+import ZkFormal.NearV3.Candidates.CodecZeroTest
+import ZkFormal.NearV3.Rcpt.Candidates.NativeReplayConstructor
+import ZkFormal.NearV3.Render.Ups.MemRegisters
 /-!
 # Build gate for the integrated v3 proof work
 

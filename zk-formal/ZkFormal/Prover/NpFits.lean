@@ -1,4 +1,5 @@
 import ZkFormal.Prover.NpBasic
+import ZkFormal.Prover.NpStatements
 
 /-!
 # ZkFormal.Prover.NpFits — every honest message fits its slot (`MsgFitsStmt`)

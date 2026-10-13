@@ -1,6 +1,7 @@
 import ZkFormal.Near.Render.Proof.NodeBool
 import ZkFormal.Near.Render.Proof.NodeTrans2
 import ZkFormal.Near.Render.Proof.NodeLinks4
+import ZkFormal.Near.Render.Proof.NodeLocal0
 
 /-!
 # ZkFormal.Near.Render.Proof.NodeLocal — `NodeLocalStmt`

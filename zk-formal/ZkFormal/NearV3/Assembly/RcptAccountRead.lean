@@ -1,4 +1,5 @@
-import ZkFormal.NearV3.Assembly.RcptGasDelayNativeComplete
+import NearSpec.TrieUpsert
+import NearSpecV3.ChaCha20
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3

@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Candidates.ProcPriorCanonical
+import ZkFormal.Algebra.Fp
 namespace ZkFormal.NearV3.Candidates.ProcPriorIdLimbs
 open ZkFormal.Algebra
 

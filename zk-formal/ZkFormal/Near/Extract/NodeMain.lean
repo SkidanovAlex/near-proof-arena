@@ -1,4 +1,5 @@
 import ZkFormal.Near.Extract.NodeViewLists
+import ZkFormal.Near.Extract.NodeGlobal
 
 /-!
 # ZkFormal.Near.Extract.NodeMain — the node table's traffic is its view's traffic

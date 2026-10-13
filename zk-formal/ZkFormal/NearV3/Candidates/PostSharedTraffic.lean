@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Candidates.PostNodeLocal
 import ZkFormal.NearV3.Rcpt.Candidates.NodePostProviders
 import ZkFormal.NearV3.Rcpt.Candidates.SharedPhysicalBitmapBalance
+import ZkFormal.NearV3.Rcpt.Candidates.SharedPhysicalEdgeBalance
 
 namespace ZkFormal.NearV3.Candidates.PostSharedTraffic
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Render Render.UpsGen UpsRows Rcpt.Candidates Rcpt.Candidates.NodePostUpdate

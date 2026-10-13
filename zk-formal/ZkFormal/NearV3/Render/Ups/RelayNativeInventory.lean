@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Render.Ups.RelayFreshSha
+import ZkFormal.NearV3.Render.Ups.CompactNativeBytes
 namespace ZkFormal.NearV3.Render.UpsRelay
 open NearSpec Assembly ZkFormal.Near ZkFormal.Algebra UpsGen
 

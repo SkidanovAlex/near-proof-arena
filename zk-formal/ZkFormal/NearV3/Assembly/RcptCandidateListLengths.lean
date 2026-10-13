@@ -3,6 +3,7 @@ import ZkFormal.NearV3.Assembly.RcptCandidateListChain
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
 import ZkFormal.NearV3.Rcpt.Extract.V.ListChain
 import ZkFormal.NearV3.Rcpt.Extract.V.Of
+import ZkFormal.NearV3.Rcpt.Extract.V.ListLengths
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

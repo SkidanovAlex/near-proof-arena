@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeReplayHeadKeys
-import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupJointInventory
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render.UpsGen UpsRows Assembly

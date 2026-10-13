@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Assembly.RcptDepositFrameCommute
+import ZkFormal.NearV3.Assembly.RcptDepositCommute
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3

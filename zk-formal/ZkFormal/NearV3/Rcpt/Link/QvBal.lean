@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Rcpt.Link.QvPre
-import ZkFormal.NearV3.Qv.Extract.NativeQueueAssembly
 import ZkFormal.NearV3.Candidates.ProcessRepairQueuePublic
 
 /-!

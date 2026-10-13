@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeForestPayloads
+import ZkFormal.NearV3.Rcpt.Candidates.NativeSetWf
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render.UpsGen Assembly

@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcPriorIdSoundRows
+import ZkFormal.Near.Extract.Common
 namespace ZkFormal.NearV3.Candidates.ProcPriorIdSoundOrigin
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.NearV3.Sched ProcPriorIdTable ProcPriorIdSoundRows
 variable {tr : Trace Fp} {t : Nat} {pub : List Fp}

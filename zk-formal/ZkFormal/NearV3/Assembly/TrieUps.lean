@@ -1,7 +1,7 @@
 import ZkFormal.NearV3.Assembly.TrieComplete
-import ZkFormal.NearV3.Rcpt.Candidates.SharedPhysicalEdgeBalance
 import ZkFormal.NearV3.Rcpt.Candidates.NodeBitmapMessages
 import ZkFormal.NearV3.Rcpt.Candidates.NativeProviderCoverage
+import ZkFormal.NearV3.Rcpt.Candidates.UpsJointTraffic
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieUps — `upsV3` component: honest-input condition, view, EDGE/BMAP

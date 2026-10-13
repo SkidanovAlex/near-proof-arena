@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Render.Ups.NodeByteTraffic
+import ZkFormal.NearV3.Render.Ups.Traffic
 
 namespace ZkFormal.NearV3.Render.UpsGen
 open ZkFormal.Near ZkFormal.Algebra UpsRows

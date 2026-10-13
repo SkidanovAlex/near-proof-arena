@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPriorRawHeader
+import ZkFormal.NearV3.Candidates.ProcPriorCells
+import ZkFormal.NearV3.Candidates.ProcPriorRawFrame
 namespace ZkFormal.NearV3.Candidates.ProcPriorRawPadding
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha.Table.E
 open ProcPriorRawFrame ProcPriorCells

@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Qv.Extract.WalkBytes
+import ZkFormal.NearV3.Qv.Extract.WalkRows
 
 namespace ZkFormal.NearV3.Qv.Extract
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl

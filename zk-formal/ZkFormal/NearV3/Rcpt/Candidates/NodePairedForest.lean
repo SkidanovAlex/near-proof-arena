@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Rcpt.Candidates.NodePairedWf
+import ZkFormal.NearV3.Rcpt.Candidates.NodePairedViews
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render.UpsGen Assembly

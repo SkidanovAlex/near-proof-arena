@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.SizeCountNoWrap
-import ZkFormal.NearV3.Rcpt.Candidates.SizeCountAccumulator
+import ZkFormal.NearV3.Rcpt.Candidates.NativeWitnessCharge
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.SizeCount
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near NearSpec NearSpecV3

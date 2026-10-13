@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Candidates.ProcessRepairInterface
 import ZkFormal.NearV3.Candidates.ProcPriorRoutedNodeView
 import ZkFormal.NearV3.Candidates.ProcPriorComparatorRouting
 import ZkFormal.NearV3.Rcpt.Candidates.SizeCountPrefix
+import ZkFormal.NearV3.Candidates.ProcPriorRoutedRawBytes
 namespace ZkFormal.NearV3.Candidates.ProcessRepairTrieViews
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.V2
 set_option maxRecDepth 32768

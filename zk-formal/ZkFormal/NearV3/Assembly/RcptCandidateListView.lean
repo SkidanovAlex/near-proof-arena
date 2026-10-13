@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Assembly.RcptCandidatePrefixOffsets
 -- Source ListView.lean SHA256: 37611be64ec5eb46f321931d67ff0037e7786486dae6c9e1219698e3ee494d0d.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
 import ZkFormal.NearV3.Rcpt.Extract.V.ListCounts
+import ZkFormal.NearV3.Rcpt.Extract.V.ListView
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

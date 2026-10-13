@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.SchedulerDigestFrame
+import ZkFormal.NearV3.Assembly.SchedulerDigestPlanJobs
 
 namespace ZkFormal.NearV3.Assembly.CompactPhysicalDigests
 open NearSpec ZkFormal.Air ZkFormal.Algebra ZkFormal.Near Render.UpsRelay UpsRows UpsV3 Render.UpsGen

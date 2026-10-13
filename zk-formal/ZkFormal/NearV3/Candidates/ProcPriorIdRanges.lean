@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPriorIdLimbs
 import ZkFormal.NearV3.Candidates.ProcPriorIdRows
+import ZkFormal.NearV3.Candidates.ProcPriorDecode
 namespace ZkFormal.NearV3.Candidates.ProcPriorIdRanges
 open NearSpec NearSpec.Bandwidth ZkFormal.NearV3.Sched ProcPriorIds
 

@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Rcpt.Candidates.SizeCountSourcePartitions
-import ZkFormal.NearV3.Rcpt.Candidates.PhysicalSourceCount
+import ZkFormal.NearV3.Rcpt.Candidates.DedupExtractProof
+import ZkFormal.NearV3.Rcpt.Extract.V.RclProof
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.SizeCount
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

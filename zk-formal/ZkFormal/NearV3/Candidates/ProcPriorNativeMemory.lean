@@ -1,4 +1,3 @@
-import ZkFormal.NearV3.Candidates.ProcPriorTraceLocal
 import ZkFormal.NearV3.Candidates.ProcCodecPriorReadNative
 namespace ZkFormal.NearV3.Candidates.ProcPriorNativeMemory
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

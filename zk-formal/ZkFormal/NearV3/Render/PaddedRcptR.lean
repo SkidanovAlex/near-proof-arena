@@ -1,10 +1,10 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateNativeTable
-import ZkFormal.NearV3.Assembly.RcptReceiptRepaired
 import ZkFormal.NearV3.Assembly.RcptCandidateTableTraffic
 import ZkFormal.NearV3.Assembly.RcptCandidateListChain
 import ZkFormal.NearV3.Render.ColAgree
 import ZkFormal.NearV3.Assembly.RcptUnpatchedViews
 import ZkFormal.NearV3.Assembly.RcptNativePeo
+import ZkFormal.NearV3.Rcpt.Tables.RcptR
 
 /-!
 # Honest generator for the repaired receipt table (`nearAirV3` table 16)

@@ -1,4 +1,3 @@
-import ZkFormal.NearV3.Candidates.AcceptedSourceShaContract
 import ZkFormal.NearV3.Candidates.ShaFourPhysical
 import ZkFormal.NearV3.Rcpt.Candidates.ShaJobBridge
 import ZkFormal.NearV3.Rcpt.Candidates.PreparedRouting

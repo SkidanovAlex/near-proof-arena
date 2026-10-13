@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateIndexedTrafficPerm
 -- Source PlanTraffic.lean SHA256: fe211947eaa4da102d597592c8dae5bd0f0a43011d27d6ee799d3725576c1c5e.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.IndexedTrafficPerm
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

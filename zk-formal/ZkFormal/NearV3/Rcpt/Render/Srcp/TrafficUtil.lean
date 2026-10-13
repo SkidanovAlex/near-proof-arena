@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Render.Srcp.TrafficRow
+import ZkFormal.NearV3.Rcpt.Render.Srcp.RegisterFacts
 
 namespace ZkFormal.NearV3.Render.SrcpGen
 

@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Assembly.RcptCandidateListBlocks
 -- Source ListChain.lean SHA256: ebfc3372614303c3ac3b2e8b5d68b0c9ce81517673ba7eaa72e2856663567e7b.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
 import ZkFormal.NearV3.Rcpt.Extract.V.ListBlocks
+import ZkFormal.NearV3.Rcpt.Extract.V.ListChain
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

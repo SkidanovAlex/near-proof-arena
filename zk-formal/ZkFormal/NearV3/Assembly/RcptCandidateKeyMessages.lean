@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateDigestTraffic
 -- Source KeyMessages.lean SHA256: f166e8d91a4a2aab89afd2a57f71c67c288020778a34b9fb030209a6aa0db50c.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.DigestTraffic
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

@@ -1,5 +1,6 @@
-import ZkFormal.NearV3.Assembly.SchedulerFreshPhysicalDigest
 import ZkFormal.NearV3.Render.Ups.NativeEncodingFacts
+import ZkFormal.NearV3.Assembly.CompactDigestSlice
+import ZkFormal.NearV3.Assembly.SchedulerFreshFieldSlice
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec Render Render.UpsGen ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

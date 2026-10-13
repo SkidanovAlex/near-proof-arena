@@ -1,6 +1,5 @@
 import ZkFormal.Near.Render.Views
 import ZkFormal.Near.Render.Trace
-import ZkFormal.Near.Extract.Compose
 import ZkFormal.Near.Statements
 
 /-!

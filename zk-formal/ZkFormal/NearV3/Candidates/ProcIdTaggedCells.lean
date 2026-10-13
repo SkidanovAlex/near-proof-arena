@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Candidates.ProcNativeIdBalance
-import ZkFormal.NearV3.Candidates.ProcPriorIdLocal
 namespace ZkFormal.NearV3.Candidates.ProcIdTaggedCells
 open ZkFormal.Algebra ProcPriorIdRows
 

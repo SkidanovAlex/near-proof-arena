@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPriorRawPhysical
 import ZkFormal.NearV3.Candidates.ProcPriorDecode
+import ZkFormal.NearV3.Candidates.ProcPriorRawChecks
 namespace ZkFormal.NearV3.Candidates.ProcPriorRawLocal
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near NearSpec.Bandwidth
 open ProcPriorRawGen

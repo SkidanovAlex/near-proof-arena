@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.DedupTraffic
-import ZkFormal.NearV3.Rcpt.Render.Srcp.TrafficBlock
+import ZkFormal.NearV3.Rcpt.Render.Srcp.TrafficPath
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.DedupRender
 open ZkFormal.Near Render.SrcpGen

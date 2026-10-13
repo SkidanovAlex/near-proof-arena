@@ -1,6 +1,5 @@
 import ZkFormal.Near.Render.Proof.NodeViewFacts
 import ZkFormal.Near.Render.Proof.BusParent
-import ZkFormal.Near.Render.Proof.RcptBytes2
 
 /-!
 # ZkFormal.Near.Render.Proof.DigNode — the `node` table's `DIGEST` receives

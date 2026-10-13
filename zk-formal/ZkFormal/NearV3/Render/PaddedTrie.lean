@@ -1,7 +1,8 @@
 import ZkFormal.NearV3.Render.Padded
-import ZkFormal.NearV3.Render.NodeRender
 import ZkFormal.NearV3.Render.UniqRender
 import ZkFormal.NearV3.Render.WalkRender
+import ZkFormal.NearV3.Render.Node.Traffic
+import ZkFormal.NearV3.Render.Node.Local
 
 /-! Concrete aligned trie generators. The local and traffic proofs apply to
 array-backed traces, including padding and cyclic next-row reads. Assembly

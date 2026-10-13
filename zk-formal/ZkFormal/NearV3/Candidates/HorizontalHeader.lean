@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.HorizontalPack
 import ZkFormal.NearV3.Candidates.HorizontalCertified
+import ZkFormal.Near.Render.Proof.BusRids
 
 namespace ZkFormal.NearV3.Candidates.HorizontalHeader
 open ZkFormal.Air ZkFormal.Near ZkFormal.Algebra ZkFormal.Near.Render

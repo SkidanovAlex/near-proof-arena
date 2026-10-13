@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.DedupExtractBoundary
+import ZkFormal.NearV3.Rcpt.Candidates.DedupExtractUnitShape
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.DedupProof
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra SrcpV3

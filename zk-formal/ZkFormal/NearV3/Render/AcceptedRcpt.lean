@@ -2,7 +2,6 @@ import ZkFormal.NearV3.Render.HonestBalanceBnd
 import ZkFormal.NearV3.Candidates.ReceiptSourceInputs
 import ZkFormal.NearV3.Candidates.ReceiptPreparedFinalPublic
 import ZkFormal.NearV3.Assembly.RcptGasPrepared
-import ZkFormal.NearV3.Assembly.NativePrepared
 
 /-!
 # `RcptOk` from acceptance

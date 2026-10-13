@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateMemoryReads
 -- Source IndexedTraffic.lean SHA256: 4ff5696ec1ff8f89f5a653a48a912c55fbe7904da4ecb28064f1c3138b425115.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.MemoryReads
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

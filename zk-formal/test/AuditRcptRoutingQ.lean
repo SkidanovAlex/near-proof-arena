@@ -3,6 +3,7 @@ import ZkFormal.NearV3.Assembly.RenderV3RcptTables
 import ZkFormal.NearV3.Assembly.RcptViewV3
 import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Assembly.NearAirSize
+import ZkFormal.NearV3.Assembly.RcptReceiptRepaired
 
 /-! Guard the routing-index range check of table 16 (`RcptV3.tableQ`, user decision 2026-10-12)
 and the receipt-side premises of `trie_side` (VSLOT views, `RcptKeys`, `RcptFinal`). -/

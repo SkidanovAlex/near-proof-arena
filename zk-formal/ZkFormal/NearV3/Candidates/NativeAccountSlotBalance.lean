@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Candidates.NativeAccountTrace
 import ZkFormal.NearV3.Rcpt.Candidates.AcceptedNativeAccountDigest
+import ZkFormal.NearV3.Rcpt.Candidates.AccountEmpty
 
 namespace ZkFormal.NearV3.Candidates.NativeAccountSlotBalance
 open ZkFormal.Near Render ZkFormal.Air ZkFormal.Algebra Rcpt.Candidates Rcpt.Candidates.NodePostUpdate

@@ -1,4 +1,6 @@
 import ZkFormal.V2.Np.Late
+import ZkFormal.Udr.Np.DeepSem
+import ZkFormal.Udr.Np.Bridge7
 
 /-!
 # ZkFormal.V2.Np.Query — the query phase of v2

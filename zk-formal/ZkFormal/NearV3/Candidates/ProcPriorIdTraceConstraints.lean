@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPriorIdTrace
+import ZkFormal.NearV3.Candidates.ProcPriorIdRanges
+import ZkFormal.NearV3.Candidates.ProcPriorIdPadding
 namespace ZkFormal.NearV3.Candidates.ProcPriorIdTraceConstraints
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near NearSpec NearSpec.Bandwidth
 open ZkFormal.NearV3.Sched

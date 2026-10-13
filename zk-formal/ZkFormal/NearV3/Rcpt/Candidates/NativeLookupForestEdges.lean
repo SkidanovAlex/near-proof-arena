@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupEdgeCoverage
+import ZkFormal.NearV3.Rcpt.Candidates.NativeForestLookup
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render.UpsGen Assembly

@@ -1,6 +1,5 @@
 import ZkFormal.NearV3.Assembly.RenderV3RcptTables
 import ZkFormal.NearV3.Assembly.NativeTrace
-import ZkFormal.NearV3.Assembly.NativePrepared
 import ZkFormal.NearV3.Assembly.ClaimFacts
 import ZkFormal.NearV3.Assembly.RoutingBoundedLayout
 import ZkFormal.NearV3.Assembly.RoutingBoundedRender
@@ -10,6 +9,7 @@ import ZkFormal.NearV3.Render.AcceptedMem
 import ZkFormal.NearV3.Render.AcceptedSrcp
 import ZkFormal.NearV3.Render.AcceptedQv
 import ZkFormal.NearV3.Render.HonestBalanceAkc
+import ZkFormal.NearV3.Assembly.PrepClaimComplete
 
 /-!
 # Receipt-side renders of `nearAirV3` from acceptance alone (tables 16–20, 22)

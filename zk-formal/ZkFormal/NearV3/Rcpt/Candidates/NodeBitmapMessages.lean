@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Rcpt.Candidates.SharedPhysicalEdgeBalance
+import ZkFormal.NearV3.Rcpt.Candidates.NativeProviderCoverage
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open ZkFormal.Near

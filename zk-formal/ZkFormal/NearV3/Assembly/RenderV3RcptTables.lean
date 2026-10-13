@@ -2,7 +2,6 @@ import ZkFormal.NearV3.Assembly.RenderV3Bundle
 import ZkFormal.NearV3.Render.HonestBalanceBnd
 import ZkFormal.NearV3.Render.HonestRcptQ
 import ZkFormal.NearV3.Render.PaddedQvNative
-import ZkFormal.NearV3.Render.PaddedSrcp
 import ZkFormal.NearV3.Render.PaddedSrcpDD
 import ZkFormal.NearV3.Render.PaddedRcpt
 import ZkFormal.NearV3.Render.PaddedAcctE

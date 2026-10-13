@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Qv.Candidates.CombinedParserLift
-import ZkFormal.NearV3.Qv.Candidates.RecordLocal
+import ZkFormal.NearV3.Qv.Candidates.RecordConcat
 
 namespace ZkFormal.NearV3.Qv.Candidates.ValueGen
 open NearSpec ZkFormal.Air

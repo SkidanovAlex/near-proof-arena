@@ -1,5 +1,7 @@
 import ZkFormal.NearV3.Candidates.CodecPadding
 import ZkFormal.NearV3.Candidates.ScanPadding
+import ZkFormal.NearV3.Candidates.CodecZeroTest
+import ZkFormal.NearV3.Candidates.SchedField
 
 /-- info: 'ZkFormal.NearV3.Candidates.SchedField.fsub_cast' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

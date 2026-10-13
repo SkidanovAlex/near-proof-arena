@@ -1,4 +1,5 @@
 import ZkFormal.Prover.NpGlobal
+import ZkFormal.Prover.NpPrep
 
 /-!
 # ZkFormal.Prover.NpGlobal2 — `GlobalStmt` from the bus product equality

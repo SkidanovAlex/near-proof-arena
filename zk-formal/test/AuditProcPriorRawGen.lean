@@ -1,4 +1,7 @@
 import ZkFormal.NearV3.Candidates.ProcPriorRawHeader
+import ZkFormal.NearV3.Candidates.ProcPriorRawBoolean
+import ZkFormal.NearV3.Candidates.ProcPriorRawChecks
+import ZkFormal.NearV3.Candidates.ProcPriorRawGen
 
 /-- info: 'ZkFormal.NearV3.Candidates.ProcPriorRawGen.padding_cells' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

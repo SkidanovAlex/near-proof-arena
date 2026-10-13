@@ -1,5 +1,4 @@
-import ZkFormal.NearV3.Assembly.RoutingQPredecessor
-import ZkFormal.NearV3.Assembly.RoutingCounterRanks
+import ZkFormal.NearV3.Assembly.RoutingQCandidate
 
 namespace ZkFormal.NearV3.Assembly.RoutingQCandidate
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3

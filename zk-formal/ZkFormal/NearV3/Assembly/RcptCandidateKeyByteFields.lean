@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateKeyNibbleValues
 -- Source KeyByteFields.lean SHA256: 9d002aec978c710e18281f6c552648ce5353f81b31a9440314df84260bd4d26e.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.KeyNibbleValues
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

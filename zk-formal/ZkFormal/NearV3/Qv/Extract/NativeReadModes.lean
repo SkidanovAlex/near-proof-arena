@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Qv.Extract.NativeFixedKeys
-import ZkFormal.NearV3.Qv.Extract.PhysicalEmptyRead
 
 namespace ZkFormal.NearV3.Qv.Extract
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

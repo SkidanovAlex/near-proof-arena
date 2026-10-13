@@ -1,4 +1,3 @@
-import ZkFormal.NearV3.Qv.Candidates.BufferHeaderRender
 import ZkFormal.NearV3.Qv.Candidates.BufferEntryLocal
 import ZkFormal.NearV3.Qv.Candidates.BufferEntryEnd
 import ZkFormal.NearV3.Qv.Candidates.BufferPadding

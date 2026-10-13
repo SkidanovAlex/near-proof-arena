@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Candidates.GatedMemoryFusion
-import ZkFormal.NearV3.Candidates.HorizontalReceiptWf
 namespace ZkFormal.NearV3.Candidates.GatedMemoryAdmission
 open ZkFormal.Air ZkFormal.Size HorizontalProfile GatedMemoryFusion
 

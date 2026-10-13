@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Rcpt.Candidates.UpsPhysicalBalance
-import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupJointInventory
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Render Render.UpsGen UpsRows

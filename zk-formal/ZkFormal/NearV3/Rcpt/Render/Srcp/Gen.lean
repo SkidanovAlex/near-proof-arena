@@ -1,5 +1,8 @@
-import ZkFormal.NearV3.Rcpt.Extract.Srcp.Proof
+-- Imported first (as `Extract.Srcp.Proof` did before the certificate pruning): downstream
+-- `simp` proofs over the source-proof table depend on the order of the `eval_*` simp lemmas.
+import ZkFormal.Near.Extract.Eval
 import ZkFormal.Near.Render.Proof.Base
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.Defs
 
 /-!
 # Executable source-proof row generator

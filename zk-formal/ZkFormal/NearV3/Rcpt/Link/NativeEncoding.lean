@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Rcpt.Extract.V.ViewProof
 import ZkFormal.Near.Link.EncLemmas
+import ZkFormal.NearV3.Rcpt.Extract.RcptView
 
 namespace ZkFormal.NearV3.RcptLink
 open ZkFormal.Near ZkFormal.Algebra NearSpec Near.Link

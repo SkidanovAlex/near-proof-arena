@@ -1,4 +1,6 @@
 import ZkFormal.V2.Np.Compose
+import ZkFormal.Udr.Np.Frame
+import ZkFormal.Udr.Np.ShapeLate
 
 /-!
 # ZkFormal.V2.Np.Frame — frame lemmas for the v2 bus parts

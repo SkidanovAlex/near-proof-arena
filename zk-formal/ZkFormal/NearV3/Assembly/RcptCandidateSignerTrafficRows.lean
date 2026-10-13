@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateAccessTraffic
 -- Source SignerTrafficRows.lean SHA256: e974239c9d53d7e22fda84efdabc6c0073dde7cabf45de021f352473d6973297.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.AccessTraffic
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

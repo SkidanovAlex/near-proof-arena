@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupExtensionRegression
+import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupProviders
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near

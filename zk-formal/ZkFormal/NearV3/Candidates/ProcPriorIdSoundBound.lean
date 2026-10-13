@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcPriorIdSoundOrigin
+import ZkFormal.NearV3.Sched.Link.SoundIds
 namespace ZkFormal.NearV3.Candidates.ProcPriorIdSoundBound
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Chacha ZkFormal.Chacha.Table.E
 open ZkFormal.NearV3.Sched ProcPriorIdTable

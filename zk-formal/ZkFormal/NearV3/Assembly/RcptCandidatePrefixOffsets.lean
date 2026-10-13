@@ -1,7 +1,6 @@
-import ZkFormal.NearV3.Assembly.RcptCandidateGlobalBodyOffsets
+import ZkFormal.NearV3.Assembly.RcptCandidateBodyOffsets
 -- Source PrefixOffsets.lean SHA256: 7b6d1d38508c6754d6acdfab05771214de98275296419c7eca39c4dc2d379cf5.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.GlobalBodyOffsets
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

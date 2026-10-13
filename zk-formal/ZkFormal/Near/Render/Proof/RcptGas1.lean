@@ -1,4 +1,4 @@
-import ZkFormal.Near.Render.Proof.RcptRegs4
+import ZkFormal.Near.Render.Proof.RcptRegs2
 
 /-!
 # ZkFormal.Near.Render.Proof.RcptGas1 — cells of the `GP` rows; bit pools; public bytes

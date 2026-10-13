@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateKeyAccessRows
 -- Source KeyAccessMarkers.lean SHA256: 07c706584137a0dee3b0c4e5f338c391b58b9c68079151c7ed98d0c45f4a63fd.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.KeyAccessRows
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

@@ -1,4 +1,5 @@
-import ZkFormal.NearV3.Rcpt.Extract.V.DigestTraffic
+import ZkFormal.NearV3.Rcpt.Extract.RcptView
+import ZkFormal.Near.Extract.Segments
 
 namespace ZkFormal.NearV3.RcptV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

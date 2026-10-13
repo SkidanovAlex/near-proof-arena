@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Candidates.ProcPriorRawChecks
 import ZkFormal.NearV3.Candidates.NativeValueByteInventory
+import ZkFormal.NearV3.Candidates.ProcPriorRawGen
 
 namespace ZkFormal.NearV3.Candidates.ProcPriorRawByteTraffic
 open NearSpec NearSpec.Bandwidth ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

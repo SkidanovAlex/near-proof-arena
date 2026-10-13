@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.SchedulerInstanceMessages
+import ZkFormal.NearV3.Assembly.UpsertShaCapacity
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec Render Render.UpsGen ZkFormal.Air ZkFormal.Near

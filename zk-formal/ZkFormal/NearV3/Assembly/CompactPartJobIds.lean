@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Assembly.CompactSplitChildTargets
-import ZkFormal.NearV3.Assembly.SchedulerDigestPlanJobs
+import ZkFormal.NearV3.Assembly.SchedulerDigestPlan
 
 namespace ZkFormal.NearV3.Assembly.CompactPhysicalDigests
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near Render.UpsRelay UpsRows UpsV3 Render.UpsGen

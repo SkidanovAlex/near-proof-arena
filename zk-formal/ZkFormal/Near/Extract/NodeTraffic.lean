@@ -1,4 +1,4 @@
-import ZkFormal.Near.Extract.NodeGlobal
+import ZkFormal.Near.Extract.NodeRowT
 
 /-!
 # ZkFormal.Near.Extract.NodeTraffic — per-node messages (BYTES, DIGEST, PARENT, VSLOT)

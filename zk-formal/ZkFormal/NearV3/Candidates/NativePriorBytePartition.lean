@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.NativeCombinedBytePartition
 import ZkFormal.NearV3.Candidates.NativePriorOwnership
+import ZkFormal.NearV3.Candidates.NativePriorRawBytes
 
 namespace ZkFormal.NearV3.Candidates.NativePriorBytePartition
 open NearSpec NearSpecV3 ZkFormal.Near Assembly Render.UpsGen Rcpt.Candidates Rcpt.Candidates.NodePostUpdate

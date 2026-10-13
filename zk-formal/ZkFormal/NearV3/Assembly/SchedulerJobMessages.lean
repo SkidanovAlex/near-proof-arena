@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Assembly.SchedulerNativeDigests
+import ZkFormal.NearV3.Assembly.UpsertShaEncoding
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec Render.UpsGen ZkFormal.Near

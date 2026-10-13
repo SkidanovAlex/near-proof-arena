@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcPriorRoutedNodeView
-import ZkFormal.NearV3.Candidates.ProcPriorRoutedValueBytes
+import ZkFormal.NearV3.Candidates.ProcPriorRoutedRawBytes
 namespace ZkFormal.NearV3.Candidates.ProcPriorRoutedVParent
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Chacha
 open ZkFormal.NearV3.Sched

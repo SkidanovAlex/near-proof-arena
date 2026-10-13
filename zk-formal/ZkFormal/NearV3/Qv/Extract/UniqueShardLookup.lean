@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Qv.Extract.PhysicalBufferedUnique
 import ZkFormal.NearV3.Qv.Extract.NativeShardLookup
+import ZkFormal.NearV3.Qv.Extract.ShardCountCapacity
 
 namespace ZkFormal.NearV3.Qv.Extract
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

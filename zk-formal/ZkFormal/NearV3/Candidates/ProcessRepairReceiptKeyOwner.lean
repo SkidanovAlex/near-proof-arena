@@ -1,4 +1,6 @@
-import ZkFormal.NearV3.Candidates.ProcessRepairQueueKey
+import ZkFormal.NearV3.Candidates.ProcessRepairKeyBalance
+import ZkFormal.NearV3.Candidates.ProcessRepairKeyView
+import ZkFormal.NearV3.Qv.Extract.KeyProviderIds
 namespace ZkFormal.NearV3.Candidates.ProcessRepairReceiptKeyOwner
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.V2
 open Qv.Extract

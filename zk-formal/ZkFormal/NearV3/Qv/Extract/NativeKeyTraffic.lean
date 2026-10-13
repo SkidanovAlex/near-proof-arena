@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Qv.Extract.NativeKeySymbols
+import ZkFormal.NearV3.Qv.Extract.WalkNibbleBytes
 
 namespace ZkFormal.NearV3.Qv.Extract
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

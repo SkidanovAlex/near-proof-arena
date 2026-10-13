@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Candidates.MerkleRender.Isolation
 import ZkFormal.NearV3.Rcpt.Candidates.ReceiptJobOrder
+import ZkFormal.NearV3.Candidates.MerkleRender.Positions
 
 namespace ZkFormal.NearV3.Candidates.MerkleRender
 open ZkFormal.Near.Render ZkFormal.Near ZkFormal.Air ZkFormal.Algebra

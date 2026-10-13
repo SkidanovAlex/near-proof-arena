@@ -1,6 +1,6 @@
-import ZkFormal.NearV3.Rcpt.Candidates.NativeReplayConstructor
 import ZkFormal.NearV3.Rcpt.Candidates.NodePostChildren
 import ZkFormal.NearV3.Assembly.ValueIndex
+import ZkFormal.NearV3.Rcpt.Candidates.NativeAccountWriteRun
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render.UpsGen Assembly

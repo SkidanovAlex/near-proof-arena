@@ -1,8 +1,8 @@
 import ZkFormal.NearV3.Assembly.TrieDigestUps
 import ZkFormal.NearV3.Assembly.TrieShaEmpty
-import ZkFormal.NearV3.Rcpt.Candidates.NativeNodeDigestBalance
 import ZkFormal.NearV3.Rcpt.Candidates.NativeValueDigestPipeline
 import ZkFormal.NearV3.Rcpt.Candidates.NativeReplayDigestPartition
+import ZkFormal.NearV3.Rcpt.Candidates.NativeDigestBoundJobs
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieDigestTrie — the trie side `htrie` of the bundle `DIGEST` balance

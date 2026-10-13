@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.RcptViewV3
+import ZkFormal.NearV3.Assembly.RcptReceiptRepaired
 
 /-! Guard the repaired receipt-table view of `nearAirV3`. -/
 

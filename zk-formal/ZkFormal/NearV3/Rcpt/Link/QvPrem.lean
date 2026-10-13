@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Link.QvRc
-import ZkFormal.NearV3.Qv.Extract.NativeQueueAssembly
+import ZkFormal.NearV3.Qv.Extract.MainReadSequence
 
 /-!
 # ZkFormal.NearV3.Rcpt.Link.QvPrem — the read premises of `assemble_native_queue_reads`

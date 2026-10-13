@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateBlockBytes
 -- Source ListByteTraffic.lean SHA256: 3574a1460d7a0e18a01ca828cf03c4fe1e9b968b0cf410fa5795132a52dece8e.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.BlockBytes
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

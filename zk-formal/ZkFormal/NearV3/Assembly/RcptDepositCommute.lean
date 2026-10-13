@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Assembly.RcptDepositNativePhysical
 import ZkFormal.NearV3.Assembly.RcptGasCandidateCommute
+import ZkFormal.NearV3.Assembly.RcptDepositFrame
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3

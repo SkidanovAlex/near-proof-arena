@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPreparedBitmaps
 import ZkFormal.NearV3.Candidates.ProcConversionExact
+import ZkFormal.NearV3.Candidates.ProcPreparedSequence
 namespace ZkFormal.NearV3.Candidates.ProcPreparedConversion
 open NearSpec NearSpecV3 NearSpecV3.Scheduler ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Gen
 

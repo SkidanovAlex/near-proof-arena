@@ -1,4 +1,5 @@
 import ZkFormal.V2.Np.Frame
+import ZkFormal.Udr.Np.BusRounds
 
 /-!
 # ZkFormal.V2.Np.Bus — the fingerprint (`Chal1`) and grand-product (`Chal3`) rounds of v2

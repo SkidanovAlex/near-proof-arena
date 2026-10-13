@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Extract.Srcp.Path
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.Bytes
 
 /-! Reconstruct a semantic source-proof path item and all its non-SIZE traffic. -/
 

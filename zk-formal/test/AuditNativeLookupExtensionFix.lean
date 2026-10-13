@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupExtensionRegression
+import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupChainTools
+import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupPayloadLeaf
 
 /-- info: 'ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate.indexedNodeEdges_append' depends on axioms: [propext] -/
 #guard_msgs in

@@ -1,6 +1,7 @@
-import ZkFormal.NearV3.Candidates.ProcessRepairShaFacts
 import ZkFormal.NearV3.Candidates.ProcPriorReceiptByteTags
 import ZkFormal.NearV3.Candidates.ProcPriorMerkleByteTag
+import ZkFormal.NearV3.Candidates.ProcPriorComparatorRouting
+import ZkFormal.NearV3.Candidates.ProcessRepairInterface
 namespace ZkFormal.NearV3.Candidates.ProcessRepairForeignByteTags
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Near
 open RcptV3Proof Assembly.ReceiptCandidateProof

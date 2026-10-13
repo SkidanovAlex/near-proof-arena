@@ -1,5 +1,6 @@
-import ZkFormal.NearV3.Candidates.ProcessRepairReceiptKeys
-import ZkFormal.NearV3.Candidates.ProcessRepairKeySource
+import ZkFormal.NearV3.Candidates.ProcPriorRoutedKeyBalance
+import ZkFormal.NearV3.Candidates.ProcessRepairForeignByteTags
+import ZkFormal.NearV3.Candidates.ProcessRepairBalance
 namespace ZkFormal.NearV3.Candidates.ProcessRepairKeyBalance
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Near ZkFormal.Chacha
 open RcptV3Proof Assembly.ReceiptCandidateProof

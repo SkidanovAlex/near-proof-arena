@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Candidates.CodecZeroTest
 import ZkFormal.Chacha.ZEval
+import ZkFormal.NearV3.Sched.Tables.Codec
 namespace ZkFormal.NearV3.Candidates.CodecPadding
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.NearV3.Sched
 set_option maxRecDepth 8192

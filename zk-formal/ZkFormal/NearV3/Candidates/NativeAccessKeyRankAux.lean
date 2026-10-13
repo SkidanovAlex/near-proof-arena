@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.NativeAccessKeyRanks
 import ZkFormal.NearV3.Assembly.RcptDepositGlobalCommute
+import ZkFormal.NearV3.Assembly.RoutingQTrace
 namespace ZkFormal.NearV3.Candidates.NativeAccessKeyRanks
 open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near Assembly Assembly.RcptSkeleton RcptV3
 

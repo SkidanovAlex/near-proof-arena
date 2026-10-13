@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupQueryBounds
-import ZkFormal.NearV3.Rcpt.Candidates.SharedPhysicalBitmapBalance
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec NearSpecV3 Assembly ZkFormal.Near

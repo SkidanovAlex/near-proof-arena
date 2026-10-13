@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeRebasedQueryCoverage
-import ZkFormal.NearV3.Rcpt.Candidates.AcceptedRankedWindowBalance
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render Render.UpsGen UpsRows Assembly

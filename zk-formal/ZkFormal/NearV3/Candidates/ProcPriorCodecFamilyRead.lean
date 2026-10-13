@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPriorCodecFamilyProjection
 import ZkFormal.NearV3.Candidates.InteractionTriplesTransport
+import ZkFormal.NearV3.Candidates.ProcPriorVerticalReadSound
 namespace ZkFormal.NearV3.Candidates.ProcPriorCodecFamilyRead
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Chacha
 open ZkFormal.NearV3.Sched

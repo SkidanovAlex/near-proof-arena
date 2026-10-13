@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Candidates.StoreDuplicateChain
-import ZkFormal.NearV3.Candidates.StoreDuplicateComplete
+import ZkFormal.NearV3.Candidates.TrieCountComplete
 namespace ZkFormal.NearV3.Candidates.ChainMetadata
 open ZkFormal.Near ZkFormal.Algebra Render
 

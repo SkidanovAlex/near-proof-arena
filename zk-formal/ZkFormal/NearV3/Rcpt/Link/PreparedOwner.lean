@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Link.NativeListEncoding
+import ZkFormal.NearV3.Public.ImplicitCount
 
 namespace ZkFormal.NearV3.RcptLink
 open ZkFormal.Near ZkFormal.Algebra NearSpec NearSpecV3

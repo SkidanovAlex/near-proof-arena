@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Link.Post3Occ
+import ZkFormal.NearV3.Link.Post3
 
 /-!
 # ZkFormal.NearV3.Link.Post3OccWalk — a `VAL` walk reaches its value record (M6d, `reach_walk`)

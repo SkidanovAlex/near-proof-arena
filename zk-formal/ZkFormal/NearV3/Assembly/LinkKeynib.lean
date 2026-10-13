@@ -1,6 +1,6 @@
 import ZkFormal.NearV3.Assembly.LinkRidBytes
-import ZkFormal.NearV3.Qv.Extract.RepairedKeySymbols
 import ZkFormal.NearV3.Qv.Extract.WalkChain
+import ZkFormal.NearV3.Qv.Extract.RepairedKeyTraffic
 
 /-!
 # ZkFormal.NearV3.Assembly.LinkKeynib — `KeynibOk` of the walks from `HoldsP`

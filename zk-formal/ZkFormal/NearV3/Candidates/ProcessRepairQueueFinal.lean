@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcessRepairKeyBalance
 import ZkFormal.NearV3.Candidates.ProcPriorRoutedQueueFinal
+import ZkFormal.NearV3.Candidates.ProcessRepairKeyView
 namespace ZkFormal.NearV3.Candidates.ProcessRepairQueueFinal
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Near ZkFormal.Chacha Sched
 set_option maxRecDepth 32768

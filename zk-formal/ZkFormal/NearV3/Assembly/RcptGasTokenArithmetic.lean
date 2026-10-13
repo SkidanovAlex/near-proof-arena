@@ -1,4 +1,5 @@
-import ZkFormal.NearV3.Assembly.RcptGasFlagNativeComplete
+import ZkFormal.NearV3.Assembly.RcptGasBorrow
+import ZkFormal.NearV3.Assembly.RcptTokenWindows
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3 ZkFormal.Near ZkFormal.Algebra ZkFormal.Air RcptV3

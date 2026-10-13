@@ -1,4 +1,5 @@
 import ZkFormal.Near.Render.Proof.NodeWin3
+import ZkFormal.Near.Render.Proof.WalkOk
 
 /-!
 # ZkFormal.Near.Render.Proof.NodeLinks — `cLinks`: walk targets, gates, edge contents

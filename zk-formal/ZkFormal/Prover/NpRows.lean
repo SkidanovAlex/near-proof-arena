@@ -1,4 +1,4 @@
-import ZkFormal.Prover.NpPrep
+import ZkFormal.Prover.NpBasic
 
 /-!
 # ZkFormal.Prover.NpRows — the honest columns on the trace domain

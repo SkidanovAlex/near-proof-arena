@@ -1,4 +1,3 @@
-import ZkFormal.NearV3.Candidates.ProcPrepBudget
 import ZkFormal.NearV3.Assembly.HeaderWireShape
 namespace ZkFormal.NearV3.Candidates.ProcBitmapShape
 open NearSpec NearSpecV3 ZkFormal.NearV3.Sched ZkFormal.NearV3.Assembly

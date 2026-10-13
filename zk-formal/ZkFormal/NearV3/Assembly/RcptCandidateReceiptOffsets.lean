@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Assembly.RcptCandidateListLengths
 -- Source ReceiptOffsets.lean SHA256: ffe830dcc28970213ba0d18701d9fd1d5e462d23cad891a574dbe7a3c18bff30.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
 import ZkFormal.NearV3.Rcpt.Extract.V.ListLengths
+import ZkFormal.NearV3.Rcpt.Extract.V.ReceiptOffsets
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

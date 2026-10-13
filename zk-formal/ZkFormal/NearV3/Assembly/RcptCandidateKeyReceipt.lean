@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateKeyLayoutFields
 -- Source KeyReceipt.lean SHA256: dd3dffe5f8ce468261910ecd7ecb7c9af54d642ea8bd7d91e2b6d1a2811c7ed5.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.KeyLayoutFields
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

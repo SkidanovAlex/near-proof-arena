@@ -1,8 +1,9 @@
 import ZkFormal.V2.PG.V2Prover
 import ZkFormal.V2.G.RomFull
-import ZkFormal.V2.Admission
 import ZkFormal.V3.Hint
-import ZkFormal.Assembly.Admission
+import ZkFormal.Prover.BcsChunk
+import ZkFormal.Prover.BcsQuery
+import ZkFormal.Prover.Compose
 
 /-!
 # ZkFormal.V2.PG.Admission — `admission_v2` at `auxGroup = g ∈ {1,2,3}` (P2 copy of `V2.Admission`)

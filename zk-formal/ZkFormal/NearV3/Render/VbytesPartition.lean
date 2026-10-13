@@ -1,6 +1,7 @@
-import ZkFormal.NearV3.Candidates.NativePriorBytePartition
 import ZkFormal.NearV3.Render.PaddedQvNative
 import ZkFormal.NearV3.Render.VbytesKeys
+import ZkFormal.NearV3.Candidates.NativePriorOwnership
+import ZkFormal.NearV3.Candidates.NativeQueueForestPartition
 
 /-!
 # The honest `VBYTES` partition of the pre-forest values

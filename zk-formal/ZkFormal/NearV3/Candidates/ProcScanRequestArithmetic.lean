@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Candidates.ProcScanRequestFactor
-import ZkFormal.NearV3.Candidates.ProcPriorCodecGridField
 namespace ZkFormal.NearV3.Candidates.ProcScanRequestArithmetic
 open ZkFormal.Algebra ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Gen
 open ProcScanRequestFactor

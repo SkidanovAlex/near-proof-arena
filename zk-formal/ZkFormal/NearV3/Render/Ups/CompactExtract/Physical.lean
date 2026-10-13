@@ -1,6 +1,6 @@
 import ZkFormal.NearV3.Render.Ups.CompactExtract.KindSteps
-import ZkFormal.NearV3.Render.Ups.CompactExtract.NodeParts
 import ZkFormal.NearV3.Extract.Ups.Proof
+import ZkFormal.NearV3.Render.Ups.CompactExtract.Layout
 namespace ZkFormal.NearV3.Render.UpsRelay.Extract
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl UpsV3 UpsRows
 variable {tr : Trace Fp} {pub : List Fp} {t : Nat}

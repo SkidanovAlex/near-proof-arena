@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Qv.Extract.WalkChain
+import ZkFormal.NearV3.Qv.Extract.WalkBytes
 
 /-- info: 'ZkFormal.NearV3.Qv.Extract.isBool' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in

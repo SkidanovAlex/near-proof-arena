@@ -1,7 +1,7 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateKeyMarkerLayout
+import ZkFormal.NearV3.Rcpt.Extract.V.KeyCanonical
 -- Source KeyCanonical.lean SHA256: 12c2e686750b575e72148018fb35bfc9f3e104ae09d42fb917b6603db921b187.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.KeyMarkerLayout
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

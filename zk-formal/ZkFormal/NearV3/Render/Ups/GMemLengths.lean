@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Render.Ups.GMemCarry
-import ZkFormal.NearV3.Render.Ups.MemRegisters
 
 /-! New/old value-length register initialization, shifts and persistence. -/
 set_option maxHeartbeats 4000000

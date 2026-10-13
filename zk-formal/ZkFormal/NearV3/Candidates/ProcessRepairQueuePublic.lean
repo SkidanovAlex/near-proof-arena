@@ -1,7 +1,7 @@
-import ZkFormal.NearV3.Candidates.ProcessRepairQueueKey
 import ZkFormal.NearV3.Assembly.RcptCandidateNaturalTotals
 import ZkFormal.NearV3.Rcpt.Extract.V.PreparedRanges
 import ZkFormal.NearV3.Sched.Pub.Prep
+import ZkFormal.NearV3.Candidates.ProcessRepairForeignByteTags
 namespace ZkFormal.NearV3.Candidates.ProcessRepairQueuePublic
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.V2 NearSpecV3
 open RcptV3Proof Assembly.ReceiptCandidateProof

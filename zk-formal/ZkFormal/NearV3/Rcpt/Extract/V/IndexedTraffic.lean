@@ -1,4 +1,5 @@
-import ZkFormal.NearV3.Rcpt.Extract.V.MemoryReads
+import ZkFormal.NearV3.Rcpt.Extract.V.ReceiptSpans
+import ZkFormal.NearV3.Rcpt.Extract.V.ViewPositions
 
 namespace ZkFormal.NearV3.RcptV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

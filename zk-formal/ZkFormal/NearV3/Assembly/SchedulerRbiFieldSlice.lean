@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Assembly.SchedulerBranchFieldSlice
 import ZkFormal.NearV3.Assembly.SchedulerBranchOutputShape
 import ZkFormal.NearV3.Assembly.SchedulerRbiInfo
 import ZkFormal.NearV3.Assembly.SchedulerParentChain
+import ZkFormal.NearV3.Assembly.UpsertShaJobs
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec Render Render.UpsGen ZkFormal.Near ZkFormal.Near.Render

@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Rcpt.Link.OutLeaf3
 import ZkFormal.NearV3.Rcpt.Link.OutCore3
 import ZkFormal.NearV3.Candidates.MerkleRender.Public
+import ZkFormal.Near.Render.Proof.DigMrk
 
 /-!
 # ZkFormal.NearV3.Rcpt.Link.OutRoot3 — the claim's outcome root is the model's (`RunHdr.outcomeRoot`)

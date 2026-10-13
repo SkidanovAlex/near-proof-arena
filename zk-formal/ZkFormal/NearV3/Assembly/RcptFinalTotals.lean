@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Assembly.RcptNativeDigestCheckpoint
+import ZkFormal.NearV3.Assembly.RcptEntityBoundary
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3

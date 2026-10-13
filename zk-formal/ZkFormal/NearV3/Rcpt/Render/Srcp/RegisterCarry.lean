@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Render.Srcp.RegisterFacts
+import ZkFormal.NearV3.Rcpt.Render.Srcp.Adjacency
 
 namespace ZkFormal.NearV3.Render.SrcpGen
 

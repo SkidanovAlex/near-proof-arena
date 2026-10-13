@@ -1,6 +1,5 @@
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.NearAirBus
-import ZkFormal.NearV3.Assembly.RcptReceiptRepaired
 import ZkFormal.NearV3.Assembly.RcptCandidateMemoryProviders
 import ZkFormal.NearV3.Assembly.RcptCandidateFamilyPublicMemory
 import ZkFormal.NearV3.Assembly.RcptCandidatePublicAdmission

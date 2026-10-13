@@ -1,6 +1,10 @@
-import ZkFormal.NearV3.Budget
 import ZkFormal.NearV3.Tables.Ups
 import ZkFormal.NearV3.Tables.NodeUpb
+import ZkFormal.NearV3.Tables.Uniq
+import ZkFormal.NearV3.Tables.Walk
+import ZkFormal.NearV3.Tables.Head
+import ZkFormal.NearV3.Tables.Val
+import ZkFormal.Near.Budget
 
 /-!
 # ZkFormal.NearV3.BudgetUps — kernel-checked budget of `upsV3` and of the `nodeV3` `UPB` delta

@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Candidates.HorizontalCertified
-import ZkFormal.NearV3.Candidates.ReceiptRepairedProfile
+import ZkFormal.NearV3.Assembly.RcptCandidateRoutingTrace
 namespace ZkFormal.NearV3.Candidates.HorizontalReceipt
 open ZkFormal.Air ZkFormal.Size
 open HorizontalProfile

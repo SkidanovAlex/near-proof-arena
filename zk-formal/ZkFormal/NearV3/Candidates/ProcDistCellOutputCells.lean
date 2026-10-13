@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Candidates.ProcDistCellCounts
+import ZkFormal.NearV3.Candidates.ProcDistCellCells
 namespace ZkFormal.NearV3.Candidates.ProcDistCellOutputCells
 open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Gen SchedSetAll
 open ProcDistCellRow ProcDistCellCells

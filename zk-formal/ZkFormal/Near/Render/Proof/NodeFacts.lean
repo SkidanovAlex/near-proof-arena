@@ -1,4 +1,6 @@
 import ZkFormal.Near.Render.Proof.NodeRow0
+import ZkFormal.Near.Render.Proof.NodeTraffic4
+import ZkFormal.Near.Render.Proof.ShaFit2
 
 /-!
 # ZkFormal.Near.Render.Proof.NodeFacts — facts about one node row of the honest table
