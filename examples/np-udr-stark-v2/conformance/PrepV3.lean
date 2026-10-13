@@ -121,8 +121,40 @@ def runCase (outDir : Option String) (dir : String) : IO UInt32 := do
         IO.FS.writeFile (od ++ "/prep.json") s
       return 0
 
+/-! ## `--any`: the total differential (accepted and rejected cases)
+
+`np-lean-prep-v3 --any <claim.bin> <witness.bin> [<hint.bin>]` does **not** require
+`checkD0a`: it prints `{ "check": "ok" | <error>, "hint": <hex of Hint.encode (hintOf cb wb)>,
+"prep": <hex of Prep.encode p> | null, "prep_err": null | <error> }` where `p := prepD0 cb h`
+and `h` is `hintOf cb wb`, or the hint decoded from `<hint.bin>` (`Hint.decode`) when given.
+The Rust prover's `npudr v3prepare` must produce the same hint bytes and the same
+accept/reject verdict and prepared bytes; every claim `checkD0a B0` rejects must be rejected. -/
+
+def runAny (cbPath wbPath : String) (hintPath : Option String) : IO UInt32 := do
+  let cb := (← IO.FS.readBinFile cbPath).toList
+  let wb := (← IO.FS.readBinFile wbPath).toList
+  let check : Json := match checkD0a B0 cb wb with
+    | .ok () => toJson "ok"
+    | .error e => toJson e
+  let hOf := hintOf cb wb
+  let mut h := hOf
+  if let some hp := hintPath then
+    let hb := (← IO.FS.readBinFile hp).toList
+    match Hint.decode hb with
+    | some h' => h := h'
+    | none => IO.eprintln s!"np-lean-prep-v3: {hp}: Hint.decode failed"; return 2
+  let (prep, err) : Json × Json := match prepD0 cb h with
+    | .ok p => (toJson (toHex (Prep.encode p)), Json.null)
+    | .error e => (Json.null, toJson e)
+  IO.println (Json.compress (Json.mkObj
+    [ ("check", check), ("hint", toJson (toHex (Hint.encode hOf))), ("prep", prep)
+    , ("prep_err", err) ]))
+  return 0
+
 def main (args : List String) : IO UInt32 := do
   match args with
+  | ["--any", cb, wb] => runAny cb wb none
+  | ["--any", cb, wb, hb] => runAny cb wb (some hb)
   | [dir] => runCase none dir
   | [dir, outDir] => runCase (some outDir) dir
-  | _ => IO.eprintln "usage: np-lean-prep-v3 <case_dir> [<outdir>]"; return 2
+  | _ => IO.eprintln "usage: np-lean-prep-v3 <case_dir> [<outdir>] | --any <claim.bin> <witness.bin> [<hint.bin>]"; return 2

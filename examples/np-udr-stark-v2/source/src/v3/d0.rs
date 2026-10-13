@@ -31,7 +31,7 @@ use crate::v3::prep::{self, Hint, Prep, PrepHdr, SchedParams, SchedPub, SrcList}
 fn err<T>(m: impl Into<String>) -> Result<T, String> {
     Err(m.into())
 }
-fn mapw<T>(r: WResult<T>) -> Result<T, String> {
+pub(crate) fn mapw<T>(r: WResult<T>) -> Result<T, String> {
     r.map_err(|e| e.to_string())
 }
 
@@ -79,7 +79,7 @@ fn lex_max_opt(l: &[Vec<u8>]) -> Option<Vec<u8>> {
     acc
 }
 
-fn zero32() -> Bytes {
+pub(crate) fn zero32() -> Bytes {
     vec![0u8; 32]
 }
 
@@ -591,7 +591,7 @@ fn gen_at(stream: &mut Stream, n: u64, mut k: u64) -> Option<(u64, u64)> {
     None
 }
 /// `shuffleWithSeed l seed`: `rand 0.8.5 SliceRandom::shuffle` on a fresh RNG.
-fn shuffle_with_seed<T>(l: &mut [T], seed: &[u8]) -> bool {
+pub(crate) fn shuffle_with_seed<T>(l: &mut [T], seed: &[u8]) -> bool {
     let mut stream = Stream::of_seed(seed);
     let n = l.len();
     if n == 0 {
@@ -707,7 +707,7 @@ pub struct Claim {
 const CLAIM_TAG: &[u8] = b"near-arena-claim-v3";
 const STATEMENT_ID_V3: &[u8] = b"near/pv86/chunk-validation/v0";
 
-fn d_tag(r: &mut Reader, want: &[u8], what: &str) -> Result<(), String> {
+pub(crate) fn d_tag(r: &mut Reader, want: &[u8], what: &str) -> Result<(), String> {
     let got = mapw(r.bytes("tag"))?;
     if got == want {
         Ok(())
@@ -716,7 +716,7 @@ fn d_tag(r: &mut Reader, want: &[u8], what: &str) -> Result<(), String> {
     }
 }
 
-fn p_account_id(r: &mut Reader, what: &'static str) -> Result<Bytes, String> {
+pub(crate) fn p_account_id(r: &mut Reader, what: &'static str) -> Result<Bytes, String> {
     let a = mapw(r.bytes(what))?.to_vec();
     if account_id_valid(&a) || a == ns::SYSTEM {
         Ok(a)
@@ -725,7 +725,7 @@ fn p_account_id(r: &mut Reader, what: &'static str) -> Result<Bytes, String> {
     }
 }
 
-fn p_public_key(r: &mut Reader, what: &str) -> Result<PublicKey, String> {
+pub(crate) fn p_public_key(r: &mut Reader, what: &str) -> Result<PublicKey, String> {
     let tag = mapw(r.u8("key type"))?;
     let n = match tag {
         0 => 32usize,
@@ -787,7 +787,7 @@ fn p_trie_split(r: &mut Reader) -> Result<Bytes, String> {
 }
 
 /// `pChunkInner` (tagged, V4/V5).
-fn p_chunk_inner(r: &mut Reader) -> Result<ChunkInner, String> {
+pub(crate) fn p_chunk_inner(r: &mut Reader) -> Result<ChunkInner, String> {
     let tag = mapw(r.u8("ShardChunkHeaderInner tag"))? as u64;
     if tag != 3 && tag != 4 {
         return err("invalid: chunk header inner version not V4/V5");
@@ -855,7 +855,7 @@ pub fn chunk_hash(inner: &[u8], emr: &[u8]) -> Bytes {
     sha256(&v).to_vec()
 }
 
-fn p_signature(r: &mut Reader, what: &'static str) -> Result<(), String> {
+pub(crate) fn p_signature(r: &mut Reader, what: &'static str) -> Result<(), String> {
     let t = mapw(r.u8("signature type"))?;
     match t {
         0 => {
@@ -1559,7 +1559,13 @@ pub struct ApplyCtx {
 }
 
 /// `blockCtx l own gasLimit b gasPrice` (`ChunkValidationV0.blockCtx`).
-fn block_ctx(layout: &Layout, own: u64, gas_limit: u64, b: &Blk, gas_price: u128) -> ApplyCtx {
+pub(crate) fn block_ctx(
+    layout: &Layout,
+    own: u64,
+    gas_limit: u64,
+    b: &Blk,
+    gas_price: u128,
+) -> ApplyCtx {
     ApplyCtx {
         height: b.hdr.height,
         prev_block_hash: b.hdr.prev_hash.clone(),
@@ -1804,6 +1810,17 @@ pub fn prep_claim(cb: &[u8]) -> Result<PrepC, String> {
     if !k.blks.iter().all(|b| b.slots.len() == l.num_shards()) {
         return err("invalid: slot count");
     }
+    // A8 (claim-only, `ChunkValidationV0a.a8`): distinct `to_shard`s per chunk's requests
+    if !k.blks.iter().all(|b| {
+        b.slots.iter().all(|(_, ci)| {
+            let ts: Vec<u64> = ci.bw_requests.iter().map(|r| r.to_shard).collect();
+            ts.iter().enumerate().all(|(i, t)| !ts[..i].contains(t))
+        })
+    }) {
+        return err(
+            "out of domain (c.bw_requests): a chunk's bandwidth requests repeat a to_shard",
+        );
+    }
     if !k
         .blks
         .iter()
@@ -1887,9 +1904,15 @@ pub fn prep_claim(cb: &[u8]) -> Result<PrepC, String> {
     }
     let allowed = l
         .shard_ids
-        .get((b2.hdr.height as usize + k.idx) % l.num_shards())
+        .get(((b2.hdr.height as u128 + k.idx as u128) % l.num_shards() as u128) as usize)
         .copied()
         .unwrap_or(k.h_chunk.shard_id);
+    // A12 (claim-only, `ChunkValidationV0a.a12`): one boundary account fewer than shard ids
+    if l.num_shards() != l.boundaries.len() + 1 {
+        return err(
+            "out of domain (c.layout_wf): the shard layout does not have one boundary fewer than shard ids",
+        );
+    }
     let hdr = PrepHdr {
         k: k.implicit_blks.len() as u64,
         n: 0,
@@ -1936,7 +1959,8 @@ pub fn prep_body(pc: &PrepC, h: &Hint) -> Result<Prep, String> {
     if !fwd.iter().all(|(_, d)| *d < FWD_DEMAND_MAX) {
         return err("out of domain (e.forwarded): forwarding demand above 2^24");
     }
-    if !(h.n == 0 || (h.n - 1) * (GAS_PER_RECEIPT as u64) < ctx.gas_limit) {
+    // `Nat` arithmetic: `n < 2^32` and `G < 2^38`, so the products fit in `u128`.
+    if !(h.n == 0 || (h.n as u128 - 1) * GAS_PER_RECEIPT < ctx.gas_limit as u128) {
         return err("out of domain (e.compute): receipt delayed by the compute limit");
     }
     // 3.7 header comparison (claim/hint part)
@@ -1947,7 +1971,7 @@ pub fn prep_body(pc: &PrepC, h: &Hint) -> Result<Prep, String> {
     if hc.gas_limit != pc.hdr.gas_limit {
         return err("invalid: InvalidGasLimit");
     }
-    if hc.prev_gas_used != h.n * (GAS_PER_RECEIPT as u64) {
+    if hc.prev_gas_used as u128 != h.n as u128 * GAS_PER_RECEIPT {
         return err("invalid: InvalidGasUsed");
     }
     if hc.prev_outgoing_receipts_root != outgoing_receipts_root(&pc.l, &refunds) {
