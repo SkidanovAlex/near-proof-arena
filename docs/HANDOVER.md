@@ -192,14 +192,20 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
 `Limits::default` (`runners/formal-checker/src/pipeline.rs`, since `a0990606`): 1 h per module, 4 h
 total elaboration, 2 h per recheck run, 4 h per rechecker; the older 1,800 s figure is superseded
 (DESIGN.md F6). Measured (judge-style clean serial `lean -o`, warm trusted oleans): the unconditional
-`nearV3_admission_final` closure is 4,514 modules, projected ≈ 5,000–6,000 s (first 1,523 modules
+`nearV3_admission_final` closure was 4,514 modules before pruning, projected ≈ 5,000–6,000 s (first 1,523 modules
 took 1,800 s); slowest: `Candidates.HorizontalAuxCheck` 140 s, `Candidates.VerticalPriorFusion` 124 s,
 `Render.Ups.GWalk` 86 s, `Render.Node.Links` 80 s, `Assembly.NearAirCheck` 68 s; 49 modules ≥ 10 s ≈
 1,650 s. The conditional 748-module certificate (589 s) does NOT prove admission — never use it.
-* **Pruning (in progress):** shrink the certificate's import closure to the modules it actually
-  uses; keep all other code in the tree (it may be needed for later proofs).
-* **Not measured yet:** leanchecker / nanoda / lean4lean rechecks of the 4,514-module closure
-  (lean4lean recursion failed on D3α — see Stream A).
+* **Pruning (done, `ea459caa`):** closure 4,514 → **3,964 modules**; full single-core serial
+  `lean -o` (conservative; Lean's parallel elaboration is faster) 10,242 s → **8,734 s**. Import
+  redirection + `*Core` splits of 16 modules; no code deleted; constant-type fingerprints
+  unchanged (`zk-formal/scripts/TypeHashes.lean`); tools `ClosureDeps.lean`, `judge-time.py`;
+  log `docs/logs/v3-prune-2026-10.md`. Packaged closure re-vendored (3,960 modules; `sync-lean.sh`
+  layout bug fixed). Remaining hot spots: `CodecEndInt` 1,695 s, `CodecRecInt` 1,255 s,
+  `CodecHeader` 335 s (≈ 38% of the closure; `simp` inside `codec_int`), `GWalk` 192 s,
+  `Node.Links` 182 s. Proposed next levers (not applied): faster `codec_int`, per-case codec
+  modules, a g = 2-only `NearAirCheck` lemma.
+* **Not measured yet:** leanchecker / nanoda / lean4lean rechecks of the 3,964-module closure.
 * **Prover resource limits miss:** draft `max_prove_ms` 600,000 and 16 GiB RAM / 8 vCPU; real proofs
   take 710–749 s and 13.3 GB RSS (15.5 GB internal peak).
 
