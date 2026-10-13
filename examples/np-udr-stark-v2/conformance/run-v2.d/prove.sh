@@ -19,7 +19,7 @@
 #      middle, last), truncated / extended proof, empty proof, hint `n` byte flip, hint body byte flip (offset 12 = first body byte), outer hint length
 #      prefix +1, wrong public tape, claim byte flips (header, middle, last), another fixture's
 #      claim with this proof.
-# Knobs: PROVE_CASES (dirs), PROVE_NEG (1: run step 5), NPUDR_MEM_GB (prover budget, default 20).
+# Knobs: PROVE_CASES (dirs), PROVE_NEG (1: run step 5), PROVE_REUSE (1: keep an existing proof), NPUDR_MEM_GB (prover budget, default 20).
 if [ "${PROVE_V3:-0}" != 1 ]; then
   echo "== v3 end-to-end proof: skipped (set PROVE_V3=1; heavy, run alone under HEAVY_MEM=32G)"
 else
@@ -42,7 +42,7 @@ mut() {
 import sys
 src, dst, op = sys.argv[1], sys.argv[2], sys.argv[3]
 b = bytearray(open(src, 'rb').read())
-a = int(sys.argv[4]) if len(sys.argv) > 4 else 0
+a = int(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else 0
 if op == 'flip': b[a % len(b)] ^= 1
 elif op == 'trunc': b = b[:len(b) - max(a, 1)]
 elif op == 'ext': b += b'\0'
@@ -55,15 +55,19 @@ PY
 lver() { $HEAVY "$lv3" "$1" "$2" "$3" > "$4.out" 2> "$4.err"; }
 for d in ${PROVE_CASES:-$fx/00-h10004-s3}; do
   case=$(basename "$d"); x="$pd/$case.extra"; p="$pd/$case"
+  t0=$(date +%s)
+  if [ "${PROVE_REUSE:-0}" = 1 ] && [ -s "$p/proof.bin" ]; then
+    echo "  $case: PROVE_REUSE=1, reusing $p/proof.bin ($(grep '^proof' "$p.log" 2>/dev/null))"
+  else
   rm -rf "$x" "$p"; mkdir -p "$x" "$p"
   if ! $HEAVY "$lb" "$d" "$x" > "$x.log" 2>&1; then bad "$case: np-lean-bundle-v3 failed ($(tail -c 300 "$x.log"))"; continue; fi
   pass "$case: np-lean-bundle-v3 ($(cat "$x.log"))"
-  t0=$(date +%s)
   if ! NPUDR_MEM_GB=${NPUDR_MEM_GB:-20} /usr/bin/time -f "%e s, max RSS %M KB" $HEAVY "$npudr" v3prove "$d" "$p" \
       --air "$air" --pub "$pd/public.bin" --extra "$x" > "$p.log" 2>&1; then
     bad "$case: npudr v3prove failed ($(grep -E 'IMBALANCE|FAIL|error|v3prove:' "$p.log" | head -5))"; continue
   fi
   pass "$case: v3prove: 25 tables, constraints hold, $(grep -c 'balanced$' "$p.log") buses balanced; $(grep '^proof' "$p.log"); $(tail -1 "$p.log")"
+  fi
   sz=$(stat -c %s "$p/proof.bin")
   if [ "$sz" -le 8388608 ]; then pass "$case: proof $sz B <= maxProofBytes 8388608"; else bad "$case: proof $sz B > 8 MiB"; fi
   if lver "$pd/public.bin" "$p/claim.bin" "$p/proof.bin" "$p.lean" && grep -qx accept "$p.lean.out"; then

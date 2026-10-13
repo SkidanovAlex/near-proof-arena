@@ -193,6 +193,11 @@ pub fn case_inputs(
 /// Render table `name` straight into compact columns (the row-major [`Tab`] is dropped as
 /// soon as the columns are filled).
 pub fn render_cols(name: &str, json: &str) -> Result<TraceCols, String> {
+    if name == "sha_t" || name == "sha_r" {
+        let msgs: Vec<super::sha::ShaMsg> =
+            serde_json::from_str(json).map_err(|e| e.to_string())?;
+        return Ok(super::sha::sha_aligned_cols(&msgs));
+    }
     let t = render(name, json)?;
     let w = t.width;
     Ok(TraceCols::from_rows(t.log, w, |r, buf| {
