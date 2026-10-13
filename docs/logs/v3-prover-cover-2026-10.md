@@ -79,3 +79,18 @@ conformance Lean exes rebuilt from the tree first (8,081 jobs; `np-lean-sched-v3
 Wiring: the new cases live in `fixtures-extra/d0`, so extra / trie / schedqv / rcptfam run them
 by default; `collect.sh` now iterates `COLLECT_FX` (default `$fx fixtures-extra/d0`) and `a7.sh`
 adds `A7_EXTRA` (default x-ups-pt, x-ups-esn0, x-ups-lsa, x-bw-noprior).
+
+## 2026-10-13 — real proof of a ChaCha-request fixture
+
+`PROVE_V3=1 PROVE_CASES=fixtures-extra/d0/x-bw-implicit run-v2-section.sh prove` (CPUs 28–31,
+HEAVY_MEM=24G, alone): **ALL PASS**.  Lean `np-lean-bundle-v3` == Rust `v3sched` (2 scheduler
+blocks, 23 ChaCha requests, 211 rng calls, 63 shuffle instances); `v3prove`: 25 tables, 51 buses,
+proof 6,149,887 B (≤ 8 MiB), prove 1,092 s on 4 cores, max RSS 12.3 GB; Rust verify ok;
+`np-lean-verify-v3` (deployed `npVerifierP challengeSpecD0a nearAirV3 split prepV3b`) ACCEPTS
+(3.1 s); 14/14 mutations rejected (π first/mid/last byte, truncated, extended, empty, hint n /
+body / length, public tape, claim header/mid/last, other claim).  First real proof whose ChaCha
+lane is non-empty.
+
+a7 with the new defaults (3 public + A7_EXTRA): 112 PASS.  `make pin-check` ok.  No Rust change
+in this lane (no divergence found); changed code is Python (generator, trie_edit, the A7 fix in
+`spec_check_v3_d0a.py`) and shell sections.
