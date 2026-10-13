@@ -162,3 +162,52 @@ fvar-safe; the peeling path is not — the same divergence family as lean4lean a
 **Fix (proof only):** both cases use `simp only […]` with the `simp?` lemma list minus the
 literal-folding simprocs, then the original `omega`. The fixed block passes nanoda in full
 (`_f`s, both theorems, `partialTrie_memory_bound`).
+
+Skip run 2 was OOM-killed (16 G scope) inside the *old* `rec_in_int` (one 21-case proof term) —
+nanoda had the same memory problem as lean4lean there; the per-case split fixes both.
+
+### After the fixes (`c258eede`)
+
+Rebuild: `lake build ZkFormal.V3.Integration` (all dependents), package modules rebuilt; only **18**
+of the 3,964 candidate `.olean`s changed byte-wise (the 5 edited modules + 13 downstream), so the
+replay dir was refreshed and those 18 re-run (all others are byte-identical to the measured ones).
+TypeHashes over `ZkFormal.V3.Integration`: 0 missing, **0 changed**, 26 new (`receiptCell_dep_invB`,
+`rec_in_int_0_0 … rec_in_int_2_6`, 4 private macro declarations). `AuditAdmissionV3` and the audits
+of the touched theorems (`AuditSortGeneralTraffic`, `AuditRcptDepositFrame`, `AuditCodecRows`,
+`AuditMemGrowth`, `AuditUpsBytes`) pass; `make pin-check` ok; package re-vendored
+(`zk-formal.sha256`, 5 lines; `lean-vendor` unchanged).
+
+Replication totals (per-run wall summed = the judge's serial time; one core per run):
+
+| checker | verdict | runs | sum of runs | longest run | peak RSS | limits (2 h run / 4 h total) |
+|---|---|---|---|---|---|---|
+| leanchecker | PASS 3,964/3,964 | 3,964 | 5,425 s (1.5 h) | `CodecRecInt` 260 s | 6.9 GB (`Extract.Ups.PlanDefs`) | fits |
+| lean4lean | PASS 3,964/3,964 | 3,964 | 5,729 s (1.6 h) | `CodecRecInt` 705 s | 13.6 GB (`CodecHeader`) | fits |
+| lean4export | PASS | 1 | 141 s | — | 7.9 GB (NDJSON 2.87 GB) | fits (16 GiB cap) |
+| nanoda | PASS (instrumented copy: 86,938 decls, no errors) | 1 | 1,471 s | — | 12.8 GB | fits |
+
+Wall sums are upper bounds: part of the runs shared CPUs with another lane's builds, and some
+lean4lean runs (`NearAirSize` 534 s, `Node…Traffic4` 522 s) ran while the shared `zkbuild.slice`
+was memory-throttled (they got 13–23 % CPU). Next: the judge's own `formal-check` binary end to end.
+
+Official `nanoda_bin` (`25906eb2…`, judge config, 8 MiB stack) on the post-fix export: **PASS**,
+`Checked 86938 declarations with no typechecker errors` (plus the usual "Unable to print axioms"
+pretty-printer note from `unsafe_permit_all_axioms`), exit 0, 1,485 s wall / 1,442 s CPU, 12.8 GB.
+
+### Full judge pipeline (`target/release/formal-check`, dev bwrap sandbox, `Limits::default`)
+
+Inputs needed beyond the repo, all scratch (nothing committed), each a deployment gap to close:
+
+1. **Challenge pin:** the draft `near-chunk-validation-d0-stark` pins trusted tree `8f71611e…`, but
+   `formal-core` + `spec/lean` now hash to `325c34af…` (spec moved on: A12, `PrepD0`, …) and no frozen
+   store of `8f71611e` exists. The certificate is built against the current spec, so the run uses a
+   copy of the draft with `tree_digest = 325c34af…` (and without the non-schema `draft_notes` field,
+   which the strict parser rejects).
+2. **No formal config for the D0a challenge:** `runners/formal-checker/challenges/` has only the D0
+   config (`near-chunk-validation-d0.json`). With it, staging rejects 23 candidate modules
+   (MANIFEST_INVALID: imports of `NearSpecV3.ChallengeD0a`, `NearSpecV3.PrepD0`,
+   `NearSpecV3.ChunkValidationV0a`, `NearSpec.TrieUpsertProofs` are "not a candidate, trusted or
+   toolchain module"). The run uses a copy whose trusted includes add exactly the package's vendored
+   trusted closure (those 4 modules; 48 trusted modules in all), expected template
+   `ExpectedV3D0.native-lean`.
+3. **`formal/lakefile.toml` `require`** (see above): removed in the scratch candidate copy.
