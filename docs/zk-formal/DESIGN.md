@@ -42,7 +42,7 @@ Honest effort estimate: **70–105k lines of Mathlib-free Lean plus 8–12k line
 | F3 | `ProverComplete`: for all `H`, in-domain `c`, `w`, the honest proof is ≤ `maxProofBytes` and is accepted. `P` is the candidate's **Lean model**: it is never executed, but it must be total and correct for adversarial `H` (for example, constant `H`). | `Verifier.lean` |
 | F4 | `allowed_packages = [ArenaCore, NearSpec]`. **No Mathlib, ArkLib or VCVio.** Every reused proof has to be re-proved. | challenge JSON `toolchain_policy` |
 | F5 | Axioms ⊆ {propext, Classical.choice, Quot.sound}. No `native_decide`. `decide +kernel` is allowed and is used by reexec-npai. | `FORMAL_INTERFACE.md` §7 |
-| F6 | Checker budgets: 600 s per module, **1800 s total elaboration**, 1200 s per recheck, 64 GiB by default. For comparison, reexec-npai (25k LOC) took 409 s to elaborate and 237 s for lean4lean. | `runners/formal-checker/src/pipeline.rs` `Limits`; `docs/e2e-results/reexec-npai` |
+| F6 | Checker budgets (`runners/formal-checker/src/pipeline.rs` `Limits::default`, since 2026-10-03 `a0990606`; per-worker overrides `ARENA_FORMAL_*_SECS`, none deployed; confirmed by the user 2026-10-13): 1 h per module, **4 h total elaboration**, 2 h per recheck run, 4 h total per rechecker, 1 h audit. Before 2026-10-03: 600 s per module, 1800 s total, 1200 s per recheck, 64 GiB. For comparison, reexec-npai (25k LOC) took 409 s to elaborate and 237 s for lean4lean. | `runners/formal-checker/src/pipeline.rs` `Limits`; `docs/e2e-results/reexec-npai` |
 | F7 | Resource limits: proof ≤ 8 MiB, verify ≤ 10 s, prove ≤ 600 s, RAM 16 GiB, 8 vCPU. | challenge `resource_limits` |
 | F8 | The deployed protocol hash is `Interp.deployedRO = sha256("NPAI-RO-v1" ‖ m)`, using the `Nat`/`List` `ArenaCore.sha256`. Measured compiled throughput (Lean 4.34.1, this host): **41 µs per 64-byte block**. A plain-Lean `UInt32`/`ByteArray` SHA-256 runs at **0.8 µs per block** and agrees on test vectors. A downstream `@[csimp]` lemma does redirect compiled calls of `ArenaCore.sha256`; I checked this in the generated C. | scratch benchmarks (§10.3) |
 | F9 | `NearSpec.sha256` is an `abbrev` for `ArenaCore.sha256`, so there is one SHA-256 in the TCB. `NearRelation` is decidable and kernel-evaluable. | `spec/lean/NearSpec/SHA256.lean`; agent survey |
@@ -377,7 +377,7 @@ All of these were run on this host.
 
 ## 11. What could make full admission infeasible, and mitigations
 
-1. **Elaboration budget (1800 s total).** 70–105k LOC at reexec-npai's rate (about 12 s per kLOC) comes to ≈850–1300 s, which is tight. Mitigations:
+1. **Elaboration budget (1800 s total when written; 4 h since 2026-10-03, see F6).** 70–105k LOC at reexec-npai's rate (about 12 s per kLOC) comes to ≈850–1300 s, which is tight. Mitigations:
    * proof engineering: structured constraint families, avoid giant `simp` sets, cache by module;
    * ask governance for a larger `elaboration_budget` for this challenge class.
 
