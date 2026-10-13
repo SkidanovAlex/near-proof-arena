@@ -27,6 +27,9 @@
   "Reject: InvalidStateRoot"
  ],
  "python_verdict": "Reject: source_receipt_proofs contains too many proofs",
+ "python_d0a": "reject",
+ "chacha_words": null,
+ "chacha_words_runs": [],
  "note": "x-dup2-b2 without the extra entry: reject",
  "claim_sha256": "5af7174aca6a1184268d2f501ea9f347f69064c9902d0852bd23ae2b1ff51bc9",
  "witness_sha256": "0ffab342a50540c7a0fd3445e41550697a953cf2b1f6df99ee17fc3187d73083",

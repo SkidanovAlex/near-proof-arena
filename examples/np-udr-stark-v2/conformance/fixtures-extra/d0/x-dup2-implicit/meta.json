@@ -27,6 +27,12 @@
   "Reject: MissingTrieValue (node)"
  ],
  "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0,
+  0
+ ],
  "note": "2 copies in B2 with an implicit block after it (scheduler seed changes)",
  "claim_sha256": "28e44eaa20fe84d0610e765fda5d5e6233d85aaca5463599dde19ee2d4e30729",
  "witness_sha256": "3bbfc26d163a72b3101f71c2b9bbbff3bcda04fc35ce446552c0ee37bcfe3352"

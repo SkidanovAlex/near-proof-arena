@@ -1,8 +1,10 @@
-# Extra D0a fixtures (repeated source keys, empty values)
+# Extra D0a fixtures (repeated source keys, empty values, bandwidth requests, upsert paths)
 
 Accepted D0a statements (claim + witness) that exercise prover paths the 64 public D0a fixtures
-(`oracle/fixtures/v3/public-d0a/d0`) never reach: those never repeat a source key and never read
-an empty value.  Lane `v3-prover-fixtures`, 2026-10-13.
+(`oracle/fixtures/v3/public-d0a/d0`) never reach: those never repeat a source key, never read
+an empty value, never make the bandwidth scheduler draw a ChaCha20 word, and upsert the
+scheduler state only by an in-place leaf replace.  Lanes `v3-prover-fixtures` (sections a–d)
+and `v3-prover-cover` (e, f), 2026-10-13.
 
 ## Provenance
 
@@ -24,6 +26,16 @@ are not in its store); `meta.json` says so (`nearcore`), and records the base ca
 operations, the Python fix-ups and the sha256 of both files.
 
 Nothing in the frozen `oracle/v3`, the signed challenges or the public fixtures is modified.
+
+Operations of `gen_extra_d0a.py` (see `--help`): `--dup` (a), `--groups` / `--buffered` (b),
+`--bw BLK:SLOT=TO/BITMAP,...` (e: a chunk header's `BandwidthRequests`, edited where the chunk is
+new and in its copies in newer blocks; `BLK:*` = every slot new in block BLK, `TO=*` = every
+layout shard id), `--state OP` (f: main pre-state surgery by `trie_edit.py` — canonical
+`del:KEY`, `put:KEY=VAL|@SRCKEY`, `keep:PFX,...` (rebuild from the revealed keys with these
+byte prefixes; `keep:` = empty), and the non-canonical `ext0:NIBBLES` (an empty-key extension
+above a node); `memory_usage` is nearcore's, re-verified on every fully revealed node).  Since
+lane v3-prover-cover `meta.json` also records the Python D0a verdict and `chacha_words` per
+scheduler run (main, then implicit).
 
 ## Cases
 
@@ -48,6 +60,28 @@ Nothing in the frozen `oracle/v3`, the signed challenges or the public fixtures 
 | x-dup-empty-implicit | 00-h10025-s2 | dup in B2 + empty value + implicit block |
 | x-dup3-empty | 01-h10024-s1 | 3x across blocks + empty value |
 | x-dup-empty-new | 01-h10010-s1 | cross-block dup + three empty values (new indices) |
+| x-bw-pair | 00-h10004-s3 | 3 one-increment requests, one shuffle: 1 ChaCha word |
+| x-bw-16 | 00-h10004-s3 | 16 words: exactly one ChaCha20 block |
+| x-bw-64 | 00-h10004-s3 | 64 words: exactly four blocks |
+| x-bw-65 | 00-h10004-s3 | 65 words: one word into a fifth block |
+| x-bw-all | 00-h10004-s3 | every new slot requests every shard, 40 bits: 156 words |
+| x-bw-implicit | 00-h10024-s0 | B2 + implicit block, all requests, 5 receipts: 195 + 160 words |
+| x-bw-implicit-only | 00-h10024-s0 | requests only in the implicit block: 0 + 158 words |
+| x-bw-n5 | 01-h10009-s1 | n = 5, 25 + 20 requests (A8-maximal), implicit: 329 + 268 words |
+| x-bw-noprior | 00-h10024-s0 | no prior scheduler state (ups BI) + all requests: 195 + 190 words |
+| x-ups-bi | 00-h10024-s0 | 0x0f absent: `BI[NLF,RBI,RDB]`; implicit `LP` |
+| x-ups-bi-ext | 00-h10004-s3 | `BI[NLF,RBI,RDE]` below the root extension |
+| x-ups-br | 00-h10024-s0 | 0x0f value in a branch (key 0x0f01 too): `BR[RBR,RDB,RDB]`; implicit `BR` |
+| x-ups-bv | 00-h10024-s0 | valueless branch at [0,15]: `BV[RBV,RDB,RDB]`; implicit `BR` |
+| x-ups-lsa | 00-h10004-s3 | the empty key is the only key (root leaf): `LSa[NLF,SPB]` |
+| x-ups-lsb | 00-h10024-s0 | leaf 0x0f01 below slot 15: `LSb[MVL,SPB,RDB,RDB]`; implicit `BR` |
+| x-ups-lsc | 00-h10004-s3 | one key under nibble 0: `LSc[MVL,NLF,SPB,RDB]` |
+| x-ups-lsc-wex | 00-h10004-s3 | single-leaf trie: `LSc[MVL,NLF,SPB,WEX]` |
+| x-ups-esl0 | 00-h10024-s0 | extension [0,1,0] below slot 15: `ESl0[MVE,SPB,RDB,RDB]`; implicit `BR` |
+| x-ups-esl1 | 00-h10024-s0 | extension [0] below slot 15: `ESl1[SPB,RDB,RDB]`; implicit `BR` |
+| x-ups-esn0 | 00-h10024-s0 | accounts only (root ext [0,0,7,3,…]), 5 receipts: `ESn0[MVE,NLF,SPB,WEX]`; implicit `LP` |
+| x-ups-esn1 | 00-h10024-s0 | accounts only, root ext [0,0]: `ESn1[NLF,SPB,WEX]`; implicit `LP` |
+| x-ups-pt | 00-h10024-s0 | non-canonical empty-key extension above 0x0f: `LP[RLP,PT,RDB,RDB]` (both runs) |
 
 Every repeat copies the chunk inner, so key, `from_shard` and root agree: public dup byte 1
 (`Public.sourceDupByte`).  The replaced slot's old witness entry stays as the extra, unused entry
@@ -59,6 +93,42 @@ present and empty (account / access-key values must decode, queue indices must b
 absent, the scheduler state must decode).  So the zero-length value records (val `vz` rows,
 zero-length `VPRE` SHA jobs) come from the qv path; codec/acct/akey reads can never be empty in
 an accepted witness.
+
+Upsert notation: the scheduler's write of key `0x0f` (`traceUpsert`, `Render/Ups/TreeTrace.lean`;
+the `ups` table) as `terminal[part kinds bottom-up]`, main run then implicit run (`npudr
+v3native <case>`, field `us`).  Together with the public fixtures (`LP[RLP,…]`) sections (f)
+cover all 11 terminal cases `UCase.all` and all 12 part kinds `UKind.all`.
+
+Reachability in D0a (why some shapes need surgery, and what cannot occur):
+
+* D0 writes only `0x0f` (`PTrie.upsert`) and the receivers' accounts (same-length in-place
+  `PTrie.set`) (`spec/lean/v3/NearSpecV3/RuntimeD0.lean`, header "Writes"): **no deletions**,
+  no account creation; the ups table sees only the `0x0f` upsert.
+* Each implicit transition's pre-state is the previous post-state, where `0x0f` is present
+  (`PTrie.find_upsert_self`), so implicit runs end in `LP` or `BR` only.
+* LP/BR **with a value-length change** is unreachable in D0a: Canon0f
+  (`ChunkValidationV0a.canon0f`) makes every read `0x0f` value exactly the layout's n² links,
+  and the new state has n² links too (single epoch), so |old| = |new| = 37 + 24n².
+* `LSa` needs a leaf whose full key is a proper byte-prefix of `0x0f`, i.e. the empty key at
+  the root: the trie holds only the empty key.  `BR`, `BV`, `LSb`, `ESl0`, `ESl1` need keys
+  with byte prefix `0x0f` longer than one byte (no nearcore `TrieKey` has one); `PT` needs a
+  non-canonical empty-key extension.  RelD0a does not restrict the state's key set or node
+  canonicality (only the nodes on read paths are decoded, by hash), so these are accepted
+  witnesses the prover must handle; `ESn*`/`LSc` need states without other nibble-0 columns.
+* **Insert into an empty trie** (pre-state root `0^32`): `PTrie.upsert (.hash _) = none`
+  (`spec/lean/NearSpec/TrieUpsert.lean`), and Lean `checkD0` rejects such a witness earlier
+  (`invalid: MissingTrieValue (BufferedReceiptIndices)`: the zero root is an unrevealed
+  `.hash`), so it is not in RelD0.  The Python reference (and nearcore, whose empty trie root is
+  `Hash::default()`) accepts it: `gen_extra_d0a.py --base …/00-h10004-s3 --state keep:` is a
+  Lean/Python disagreement, recorded in `docs/logs/v3-prover-cover-2026-10.md`, not a fixture
+  (a spec decision).
+
+ChaCha word counts: A8 allows at most one request per `(slot, to_shard)`, so a run has at most
+n·(#new slots) ≤ n² requests; each shuffle of a bucket of k draws ≥ k−1 words.  The base
+fixtures have n ≤ 5 and at most one implicit block (≤ 2 scheduler runs), so ~600 words is the
+most they reach (x-bw-n5: 597); W0 = 770,000 is far out of reach of small fixtures (its AIR
+side, the rng table's counter, is covered by the sampler/negative tests).  The boundary
+fixtures sit on ChaCha20 block boundaries (16, 64, 65 words).
 
 `mutants/` (all rejected: `expected_rel_d0a = false`, `mutation = w.dup_noextra`): a dup case
 without the extra unused entries (`invalid: source_receipt_proofs contains extra proofs`).

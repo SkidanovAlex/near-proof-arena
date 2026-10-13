@@ -1,0 +1,52 @@
+{
+ "case": "x-bw-all",
+ "base": "oracle/fixtures/v3/public-d0a/d0/00-h10004-s3",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "bw",
+   "block": 0,
+   "slots": [
+    0,
+    2,
+    3
+   ],
+   "requests": [
+    [
+     3,
+     "ffffffffff"
+    ],
+    [
+     1,
+     "ffffffffff"
+    ],
+    [
+     0,
+     "ffffffffff"
+    ],
+    [
+     2,
+     "ffffffffff"
+    ]
+   ]
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 156,
+ "chacha_words_runs": [
+  156
+ ],
+ "note": "every new slot (3; slot 1 is missed) requests every shard, all 40 bits: 12 requests, 156 words",
+ "claim_sha256": "7c77e34db28cda42251059e85ba46539a0174b6c5a4f7e02e8024637c7f95aab",
+ "witness_sha256": "37f0e9c40041d85ee8fedc5e8100deb6c2635d17e3e12dafdeb33441b8a72519"
+}

@@ -40,6 +40,12 @@
   "Reject: InvalidStateRoot"
  ],
  "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0,
+  0
+ ],
  "note": "dup in B2 + empty value + implicit block",
  "claim_sha256": "9906a0fd57464b60428e1bf2254c41f81767d4ae4348830b6d1ad8473d27c1de",
  "witness_sha256": "8fc9b911e28e17aa08378df44b3a3c82bb5e6dbf493b584fb00606a0e058c008"

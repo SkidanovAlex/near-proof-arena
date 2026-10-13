@@ -24,6 +24,11 @@
  ],
  "python_fixups": [],
  "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0
+ ],
  "note": "2 copies, older source block (block 1); = dupkey_v3.py",
  "claim_sha256": "5002d6fa81d14591ee3ab269eca426dcac7cfc22a5cab6191df63274cd1c77f0",
  "witness_sha256": "f6bd4994e560ac8dd19bc423b759f8bb7735f83eb4b71943954dfaca67abffe0"

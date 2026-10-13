@@ -1,0 +1,90 @@
+{
+ "case": "x-bw-noprior",
+ "base": "oracle/fixtures/v3/public-d0a/d0/00-h10024-s0",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "bw",
+   "block": 1,
+   "slots": [
+    0,
+    1,
+    2
+   ],
+   "requests": [
+    [
+     3,
+     "ffffffffff"
+    ],
+    [
+     1,
+     "ffffffffff"
+    ],
+    [
+     0,
+     "ffffffffff"
+    ],
+    [
+     2,
+     "ffffffffff"
+    ]
+   ]
+  },
+  {
+   "op": "bw",
+   "block": 0,
+   "slots": [
+    0,
+    1,
+    3
+   ],
+   "requests": [
+    [
+     3,
+     "ffffffffff"
+    ],
+    [
+     1,
+     "ffffffffff"
+    ],
+    [
+     0,
+     "ffffffffff"
+    ],
+    [
+     2,
+     "ffffffffff"
+    ]
+   ]
+  },
+  {
+   "op": "state",
+   "ops": [
+    "del:0f"
+   ],
+   "log": [],
+   "pre_state_root": "79ea8aef52c2842b83323157a09f146de537dc0ae5e5101675ff01fc9ba12df9"
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: MissingTrieValue (node)",
+  "Reject: implicit transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 385,
+ "chacha_words_runs": [
+  195,
+  190
+ ],
+ "note": "no prior scheduler state (State.initial; ups BI) + all requests, main + implicit: 195 + 190 words",
+ "claim_sha256": "b688af7a950e2b59503cf9a3b723a73fd3631c30b7a5a38e5d51a357cb40b3f6",
+ "witness_sha256": "ca0632cda0115ea9f319701b18af2cd55af0dfa273aaf42b639df00c1d318cfd"
+}
