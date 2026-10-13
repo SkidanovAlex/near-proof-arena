@@ -466,6 +466,47 @@ fn main() {
                 Err(e) => die(&e),
             }
         }
+        Some("v3bus") => {
+            // `npudr v3bus <air.json> <pub.bin> <bus> <table>=<entries.json>...`: render the
+            // given tables and check that their interactions on `<bus>` balance against the
+            // public messages of the prepared tape on that bus (`pubMsgs`).  Exit 1 on an
+            // imbalance or a tape that does not fit (`pubFit`).
+            if a.len() < 6 {
+                die("usage: npudr v3bus <air.json> <pub.bin> <bus> <table>=<entries.json>...");
+            }
+            let txt =
+                std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            let air = Air::from_json(&txt).unwrap_or_else(|e| die(&e));
+            let tape = std::fs::read(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+            let bus: usize = a[4].parse().unwrap_or_else(|_| die("bus"));
+            let mut mats = vec![];
+            for spec in &a[5..] {
+                let (name, f) = spec
+                    .split_once('=')
+                    .unwrap_or_else(|| die("<table>=<entries.json>"));
+                let idx = npudr::v3::TABLES
+                    .iter()
+                    .find(|(n, _)| *n == name)
+                    .map(|p| p.1)
+                    .unwrap_or_else(|| die("unknown table"));
+                let j = std::fs::read_to_string(f).unwrap_or_else(|e| die(&format!("{f}: {e}")));
+                let tab = npudr::v3::render(name, &j).unwrap_or_else(|e| die(&e));
+                mats.push((idx, tab.to_matrix()));
+            }
+            let refs: Vec<(usize, &_)> = mats.iter().map(|(i, m)| (*i, m)).collect();
+            let pubs = vec![npudr::field::F::ZERO; air.num_pub];
+            match npudr::check::bus_imbalance_with_pub(&air, &refs, &pubs, &tape, bus) {
+                None => die("public tape does not fit (pubFit)"),
+                Some(bad) if bad.is_empty() => println!("ok  bus {bus} balanced"),
+                Some(bad) => {
+                    for (b, msg, s, r) in bad.iter().take(20) {
+                        println!("IMBALANCE bus {b} sent {s} received {r} msg {msg:?}");
+                    }
+                    println!("FAIL bus {bus}: {} unbalanced messages", bad.len());
+                    std::process::exit(1);
+                }
+            }
+        }
         Some("v3public") => {
             // `npudr v3public <prep.json> <out.bin>`: the prepared public tape.
             if a.len() != 4 {

@@ -23,7 +23,7 @@ le="$here/.lake/build/bin/np-lean-export-v3"
 lr="$here/.lake/build/bin/np-lean-render-v3"
 le3="$here/.lake/build/bin/np-lean-entries-v3"
 lp="$here/.lake/build/bin/np-lean-prep-v3"
-fx="$here/../../../oracle/fixtures/v3/public-d0a/d0"
+fx="${FX:-$here/../../../oracle/fixtures/v3/public-d0a/d0}"
 mkdir -p "$out"
 [ -s "$out/nearAirV3.json" ] || "$le" > "$out/nearAirV3.json"
 for n in "$@"; do
