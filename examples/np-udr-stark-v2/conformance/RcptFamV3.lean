@@ -41,7 +41,7 @@ evaluates **the definitions of the accepted receipt-side renders** on them:
 * `srcp.json` (20): `AcceptedV3.ddBlocks = DedupCompile.blocks p.lists w.entries`, each block with
   its repetition bit `rep = sourceRepeated p.lists j` (`AcceptedV3.ddRep`).
 * `mrk.json` (23): `{n, levels}` with `levels = mrkLevels m.result.outcomes`
-  (`mrkRender_accepted`).
+  (`mrkRender_accepted`), evaluated through `levelTableFast` (`levelTableFast_eq`).
 * `sort.json` (24): `NativeSortIds.sorted rs` (`sortRenderV3` over `A.rcptInput.lists`).
 * `sha_receipt.json`: the receipt SHA job family `ReceiptGatedShaJobs.jobs` through the native
   outcome identities (as `np-lean-shabins-v3`).
@@ -166,6 +166,49 @@ def receiptFamily (N : Native) : List ZkFormal.Sha.Gen.Msg :=
     jobsToSha (receiptOutcomeJobs N.pub os ++ accountShaJobs N.accts ++
       merkleShaJobs (ZkFormal.NearV3.Candidates.MerkleRender.outcomePreimages os))
 
+/-! ## The outcome level table in linear time
+
+`levelTable leaves = (List.range (n + 2)).map (levelsFromLeaves leaves)` recomputes every level from
+the leaves (quadratic in `n`); `lvRev` builds the same levels once each (`lvRev_eq`). -/
+
+def stepLv (n : Nat) (prev : List ZkFormal.Near.Render.MNode) (j : Nat) :
+    List ZkFormal.Near.Render.MNode :=
+  (List.range ((prev.length+1)/2)).map fun i =>
+    if 2*i+1<prev.length then
+      let L := prev.getD (2*i) default
+      let R := prev.getD (2*i+1) default
+      ⟨ZkFormal.Near.msgId ZkFormal.Near.K_MRK (ZkFormal.Near.Render.MrkGen.qBase n (j+1)+i),64,
+        ZkFormal.Near.Render.shaN (L.dig++R.dig)⟩
+    else prev.getD (2*i) default
+
+theorem levels_succ (leaves : List (List Nat)) (j : Nat) :
+    levelsFromLeaves leaves (j+1) = stepLv leaves.length (levelsFromLeaves leaves j) j := rfl
+
+/-- Levels `k, k−1, …, 0`. -/
+def lvRev (leaves : List (List Nat)) : Nat → List (List ZkFormal.Near.Render.MNode)
+  | 0 => [levelsFromLeaves leaves 0]
+  | k+1 => match lvRev leaves k with
+    | h :: t => stepLv leaves.length h k :: h :: t
+    | [] => []
+
+theorem lvRev_eq (leaves : List (List Nat)) :
+    ∀ k, lvRev leaves k = ((List.range (k+1)).map (levelsFromLeaves leaves)).reverse
+  | 0 => rfl
+  | k+1 => by
+    have ih := lvRev_eq leaves k
+    have hr : ((List.range (k+1)).map (levelsFromLeaves leaves)).reverse =
+        levelsFromLeaves leaves k :: ((List.range k).map (levelsFromLeaves leaves)).reverse := by
+      simp [List.range_succ]
+    simp only [lvRev, ih, hr]
+    rw [← levels_succ]
+    simp [List.range_succ]
+
+def levelTableFast (leaves : List (List Nat)) : List (List ZkFormal.Near.Render.MNode) :=
+  (lvRev leaves (leaves.length+1)).reverse
+
+theorem levelTableFast_eq (leaves : List (List Nat)) : levelTableFast leaves = levelTable leaves := by
+  simp [levelTableFast, lvRev_eq, levelTable]
+
 /-! ## Trace materialisation (as `np-lean-render-v3-rcpt`) -/
 
 def materialize (tr : Trace Fp) (n : Nat) : Array Fp := Id.run do
@@ -206,7 +249,7 @@ def runCase (dir out : String) (maxRows : Nat) : IO UInt32 := do
     srcpJson B (sourceRepeated N.p.lists j)).toArray)
   let os := N.m.result.outcomes
   writeJson (out ++ "/mrk.json") (Json.mkObj [("n", toJson os.length),
-    ("levels", toJson (ZkFormal.NearV3.Render.mrkLevels os))])
+    ("levels", toJson (levelTableFast (ZkFormal.NearV3.Candidates.MerkleRender.outcomePreimages os)))])
   writeJson (out ++ "/sort.json") (toJson (NativeSortIds.sorted rs))
   writeJson (out ++ "/sha_receipt.json") (toJson (receiptFamily N))
   -- table 16 (and 19, which counts the receipt table's physical boundary keys)
