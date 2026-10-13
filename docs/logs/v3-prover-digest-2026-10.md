@@ -56,4 +56,15 @@ real proof was needed.
 
 ## Results
 
-(see below)
+`run-v2-section.sh digest` on all 81 fixtures (64 public-d0a + 17 fixtures-extra), CPUs 24–27,
+88 min: **7 PASS, 0 FAIL, ALL PASS**.
+* `v3prove --check-only`: buses 0 and 1 balanced (and every other check ok) on 81/81; its
+  prepared tape == `v3prepare` + `v3public` on 81/81.
+* Per-table assembly (`v3trie`/`v3sched`/`v3rcptfam`/`v3sha`) + fixed `v3bus 0,1` over all 25
+  tables: balanced on 81/81.
+* 59/59 fixtures with outcomes (mrk n from 1 to 814): Lean mrk `(n, levels)` == Rust, Lean bins
+  == Rust bins, tape root == Lean top digest == digest of the Lean bin job, buses 0/1 balanced
+  with the Lean bins.
+* Negatives on 00-h10008-s3, 00-h10011-s1, 00-h10012-s3: all 4 mutations unbalance bus 1.
+
+Checks: `cargo fmt --check` OK; `make pin-check` OK; no Lean source touched; v3prove unchanged.

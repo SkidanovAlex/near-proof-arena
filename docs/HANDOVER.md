@@ -173,9 +173,9 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
   fixtures before freezing (never edit frozen `oracle/v3`).
 * **Fixture coverage:** no fixture has ChaCha requests (tables 8/9 only empty on real data); only the
   in-place leaf-replace upsert path occurs in fixtures (others unit-tested).
-* **To recheck:** the schedqv lane log reports bus 1 DIGEST unmatched (`mrk` receives `MRK(root)` with a
-  zero digest) on fixtures with outcomes when it assembled bins itself; `v3prove --check-only` reports
-  all buses balanced on all 81 — confirm which assembly is right.
+* **Rechecked (lane v3-prover-digest):** the schedqv bus-1 DIGEST imbalance was `npudr v3bus` evaluating
+  with zero publics (mrk root row reads the outcome root from `p146..177`); `v3prove` was right. `v3bus`
+  fixed; `run-v2.d/digest.sh` checks BYTES/DIGEST on all 81 (`docs/logs/v3-prover-digest-2026-10.md`).
 * **Argued, not proved (prover-side only):** receipts read the pre-scheduler trie (scheduler writes only
   key `[0,15]`); native execution skips grant distribution and the refund-forwarding limit check.
 * Cleanup: `ChachaWords.lean` duplicates `A9Words.coreMid`/`runMid_st`; 2 `clippy -D warnings` errors
