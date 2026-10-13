@@ -28,7 +28,7 @@ use crate::v3::hint::{
     key_yield_idx, main_keys, partial_trie, set_in_place,
 };
 
-mod sched;
+pub(crate) mod sched;
 mod trace;
 
 /// `UKind` (`Extract/Ups/PlanDefs.lean`), `UKind.all` order.

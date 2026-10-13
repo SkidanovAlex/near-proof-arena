@@ -37,6 +37,7 @@ pub mod rcpt;
 pub mod rcptfam;
 pub mod sample;
 pub mod sched;
+pub mod schedqv;
 pub mod sha;
 pub mod size;
 pub mod srcp;
