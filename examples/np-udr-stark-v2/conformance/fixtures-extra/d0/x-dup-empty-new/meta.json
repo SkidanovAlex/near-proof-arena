@@ -1,0 +1,48 @@
+{
+ "case": "x-dup-empty-new",
+ "base": "oracle/fixtures/v3/public-d0a/d0/01-h10010-s1",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "dup",
+   "dst": [
+    1,
+    0
+   ],
+   "src": [
+    0,
+    0
+   ],
+   "key": "37910b3413f3ad43184e94ad2d6a77c1d3a3bba9c3e6885f4d7992130d64be3d",
+   "replaced_key": "3980d4e4d6fd160769a9fded1224a08b66541acf2f5fcba58d018d89349bbcc6"
+  },
+  {
+   "op": "buffered",
+   "shards": [
+    0,
+    1,
+    2
+   ],
+   "groups": {
+    "0": "",
+    "1": "",
+    "2": ""
+   },
+   "empty_values": 3,
+   "pre_state_root": "3983e13d06d18bb29f803b30f3084b1d357bf3bd4a1dbaaaf01ed2474fc6b5f7"
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "note": "cross-block dup + three empty values (new indices)",
+ "claim_sha256": "32fdea83834e926e19e1158d3b15d07b64136c49b585307a2ec2a1c9520170da",
+ "witness_sha256": "1475a020274f46bcc9222e94449973655273e0a70c3f6693c7c0577bc1d1ca48"
+}
