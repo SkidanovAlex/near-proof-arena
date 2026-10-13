@@ -1,6 +1,8 @@
 import ZkFormal.NearV3.Candidates.ProcessRepairReceiptFinalFields
 import ZkFormal.NearV3.Candidates.ProcessRepairForestLookup
 import ZkFormal.NearV3.Qv.Extract.QueueRootRead
+import ZkFormal.NearV3.Candidates.ProcessRepairReceiptNativeKey
+import ZkFormal.NearV3.Candidates.ProcessRepairReceiptFinal
 namespace ZkFormal.NearV3.Candidates.ProcessRepairReceiptLookup
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Near
 open Sched Link3 RcptV3Proof

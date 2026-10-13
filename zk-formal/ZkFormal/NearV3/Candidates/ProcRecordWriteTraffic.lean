@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Candidates.ProcRecordAllTraffic
-import ZkFormal.NearV3.Candidates.ProcPriorRecordSemantics
 namespace ZkFormal.NearV3.Candidates.ProcRecordWriteTraffic
 open NearSpec NearSpec.Bandwidth NearSpecV3.Scheduler
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

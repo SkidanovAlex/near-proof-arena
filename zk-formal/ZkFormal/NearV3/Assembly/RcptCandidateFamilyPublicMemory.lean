@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateFamilyMemory
 import ZkFormal.NearV3.Public.Prepared
+import ZkFormal.NearV3.Assembly.RcptCandidateFamilyPublicMemoryCore
 
 namespace ZkFormal.NearV3.Assembly.ReceiptFamilyMemory
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.V2
@@ -36,26 +37,6 @@ theorem fused_receive_version_of_balance {tr : Trace Fp} {pub : List Fp}
   rw [heq,Nat.mod_eq_of_lt (by unfold P;omega)]
   exact hb
 
-
-/-- The actual prepared public plans never open or close account memory. -/
-theorem prepared_no_mem (s : PubSeg) (hs : s∈Public.preparedSegments) : s.bus≠B_MEM := by
-  have hall : Public.preparedSegments.all (fun s=>decide (s.bus≠B_MEM))=true := by decide +kernel
-  exact of_decide_eq_true (List.all_eq_true.mp hall s hs)
-
-theorem prepared_mem_count_zero (AP : AirP) (hs : AP.pubSegs=Public.preparedSegments)
-    (pub : List Fp) (sd : Bool) (msg : List Fp) : pubCount AP pub B_MEM sd msg=0 := by
-  unfold pubCount
-  suffices ((pubMsgs AP pub).filter (fun x=>decide (x=(B_MEM,sd,msg))))=[] by rw [this];rfl
-  apply List.filter_eq_nil_iff.mpr
-  intro x hx
-  have hn : x≠(B_MEM,sd,msg) := by
-    intro he
-    subst x
-    simp only [pubMsgs,List.mem_flatMap,List.mem_map] at hx
-    obtain ⟨s,hseg,m,hm,he⟩ := hx
-    have hb := congrArg (fun x : Nat×Bool×List Fp=>x.1) he
-    exact prepared_no_mem s (hs ▸ hseg) hb
-  simp [hn]
 
 /-- Public messages are excluded on MEM, so actual HoldsP supplies the exact
 balance needed for the concrete provider proof. -/

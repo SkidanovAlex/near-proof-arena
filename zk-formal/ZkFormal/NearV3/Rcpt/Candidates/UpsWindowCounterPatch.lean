@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Candidates.CompactHeight
+import ZkFormal.NearV3.Render.Ups.CompactTableCandidate
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near Render.UpsGen UpsRows

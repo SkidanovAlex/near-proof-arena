@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Candidates.ProcNativeGrantLookup
+import ZkFormal.NearV3.Candidates.ProcActualNativeResult
 namespace ZkFormal.NearV3.Candidates.ProcNativeGrantFirstLookup
 open NearSpec NearSpecV3 NearSpecV3.Scheduler ZkFormal.NearV3.Sched
 

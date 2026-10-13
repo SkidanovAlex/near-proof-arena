@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Render.Srcp.TrafficActive
+import ZkFormal.NearV3.Rcpt.Render.Srcp.SizeFacts
+import ZkFormal.NearV3.Rcpt.Render.Srcp.EndGate
 
 namespace ZkFormal.NearV3.Render.SrcpGen
 open ZkFormal.Near

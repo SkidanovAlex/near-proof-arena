@@ -1,4 +1,5 @@
 import ZkFormal.V2.Np.Frame
+import ZkFormal.Udr.Np.Chal7
 
 /-!
 # ZkFormal.V2.Np.Early — `Msg0`, `Msg2`, `Msg6`, `Chal5`, `Chal7` for v2

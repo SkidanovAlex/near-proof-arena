@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateGasTokenNativeComplete
+import ZkFormal.NearV3.Assembly.RcptGasProductNativeBounds
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3 Sched RoutingBoundedLayout

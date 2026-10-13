@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Candidates.NativeQueuePartition
+import ZkFormal.NearV3.Assembly.QueueValueBytes
+import ZkFormal.NearV3.Candidates.NativeQueueCounters
 
 namespace ZkFormal.NearV3.Candidates.NativeQueuePhysicalBytes
 open NearSpec NearSpecV3 ZkFormal.Near Assembly Render.UpsGen Rcpt.Candidates

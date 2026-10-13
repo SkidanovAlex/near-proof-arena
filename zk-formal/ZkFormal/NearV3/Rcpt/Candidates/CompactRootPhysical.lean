@@ -1,6 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.UpsPhysicalPrefix
 import ZkFormal.NearV3.Rcpt.Candidates.CompactRootInventory
-import ZkFormal.NearV3.Rcpt.Candidates.CompactWalkPhysical
+import ZkFormal.NearV3.Candidates.CompactPhysicalShaBytes
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 set_option maxRecDepth 16384

@@ -1,8 +1,8 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateRclDecode
 -- Source ChainBytes.lean SHA256: a7ca7463bbc582bdcfaa0f546fe45a6e48c4c32c095bb91494b0b8444552c7a9.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.ListByteTraffic
 import ZkFormal.NearV3.Rcpt.Extract.V.RclDecode
+import ZkFormal.NearV3.Assembly.RcptCandidateListBodyOffsets
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

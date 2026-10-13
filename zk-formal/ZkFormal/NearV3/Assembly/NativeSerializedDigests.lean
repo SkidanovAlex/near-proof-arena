@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Assembly.SchedulerChildDigests
+import ZkFormal.NearV3.Render.Ups.TreeChildLookup
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec Render.UpsGen

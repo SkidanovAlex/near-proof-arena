@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Render.Srcp.ProofInputWf
 import ZkFormal.NearV3.Rcpt.Render.Srcp.TrafficProof
+import ZkFormal.NearV3.Rcpt.Render.Srcp.LocalProof
 
 namespace ZkFormal.NearV3.Render.SrcpGen
 open ZkFormal.Near ZkFormal.Near.Render ZkFormal.Air ZkFormal.Algebra

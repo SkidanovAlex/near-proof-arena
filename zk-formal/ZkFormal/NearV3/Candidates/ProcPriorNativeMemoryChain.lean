@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcPriorNativeMemoryPair
+import ZkFormal.NearV3.Candidates.ProcPriorIndexed
 namespace ZkFormal.NearV3.Candidates.ProcPriorNativeMemory
 open ProcPriorRows ProcPriorEvents
 open ZkFormal.NearV3.Assembly.CodecDigest

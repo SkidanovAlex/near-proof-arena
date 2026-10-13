@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.DedupExtractSizeGate
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.SizeTraffic
 
 /-!
 # Exact source-proof SIZE traffic

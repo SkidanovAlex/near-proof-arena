@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Render.Ups.ValueTraffic
 import ZkFormal.NearV3.Render.Ups.Traffic
+import ZkFormal.NearV3.Render.Ups.NativeRowCost
 
 namespace ZkFormal.NearV3.Render.UpsGen
 open ZkFormal.Near ZkFormal.Algebra UpsRows

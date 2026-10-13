@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Render.Ups.WholeByteTraffic
+import ZkFormal.NearV3.Render.Ups.SchedulerShaInstances
+import ZkFormal.NearV3.Render.Ups.AcceptedInstanceList
 
 set_option linter.unusedSimpArgs false
 namespace ZkFormal.NearV3.Render.UpsGen

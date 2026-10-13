@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Candidates.CountLift
-import ZkFormal.NearV3.Candidates.HorizontalTraffic
+import ZkFormal.NearV3.Candidates.HorizontalTrafficCore
 namespace ZkFormal.NearV3.Candidates.CountLiftTraffic
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near Rcpt.Candidates.SizeCount CountLift HorizontalTraffic
 

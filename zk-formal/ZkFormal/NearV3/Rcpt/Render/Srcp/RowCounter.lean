@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Render.Srcp.CrossCounter
+import ZkFormal.NearV3.Rcpt.Render.Srcp.WindowBoundary
 
 namespace ZkFormal.NearV3.Render.SrcpGen
 open ZkFormal.Near ZkFormal.Near.Render.EvI ZkFormal.Air ZkFormal.Algebra

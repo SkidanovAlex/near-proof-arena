@@ -1,13 +1,12 @@
 import ZkFormal.NearV3.Assembly.ViewsV3
 import ZkFormal.NearV3.Assembly.NearAirBus
-import ZkFormal.NearV3.Assembly.RcptReceiptRepaired
 import ZkFormal.NearV3.Assembly.RcptCandidateMemoryProviders
-import ZkFormal.NearV3.Assembly.RcptCandidateFamilyPublicMemory
 import ZkFormal.NearV3.Assembly.RcptCandidatePublicAdmission
 import ZkFormal.NearV3.Assembly.PrepFacts
 import ZkFormal.NearV3.Rcpt.Extract.V.PreparedRanges
 import ZkFormal.NearV3.Assembly.RcptCandidateBounds
 import ZkFormal.NearV3.Assembly.RcptCandidateRouteRows
+import ZkFormal.NearV3.Assembly.RcptCandidateFamilyPublicMemoryCore
 
 /-!
 # ZkFormal.NearV3.Assembly.RcptViewV3 — the view of the repaired receipt table

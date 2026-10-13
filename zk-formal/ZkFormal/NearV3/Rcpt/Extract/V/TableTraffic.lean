@@ -1,4 +1,9 @@
 import ZkFormal.NearV3.Rcpt.Extract.V.KeyTraffic
+import ZkFormal.NearV3.Rcpt.Extract.V.DigestTraffic
+import ZkFormal.NearV3.Rcpt.Extract.V.SignerTraffic
+import ZkFormal.NearV3.Rcpt.Extract.V.AccessTraffic
+import ZkFormal.NearV3.Rcpt.Extract.V.MemoryWrites
+import ZkFormal.NearV3.Rcpt.Extract.V.RclViewProof
 
 namespace ZkFormal.NearV3.RcptV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3

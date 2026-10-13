@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Public.ReceiptIndex
-import ZkFormal.NearV3.Rcpt.Candidates.AcceptedPublicRootTraffic
+import ZkFormal.NearV3.Rcpt.Candidates.AcceptedPreparedLength
 
 namespace ZkFormal.NearV3.Candidates.ReceiptPublicByteCount
 open NearSpec NearSpecV3 ZkFormal.Near ZkFormal.Algebra ZkFormal.V2 Assembly Assembly.RoutingBoundedLayout

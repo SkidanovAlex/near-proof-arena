@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Render.Ups.SchedulerSizedInstances
-import ZkFormal.NearV3.Render.Ups.AcceptedInstances
+import ZkFormal.NearV3.Assembly.RootedUpsert
 
 namespace ZkFormal.NearV3.Render.UpsGen
 open NearSpec NearSpecV3 UpsRows Assembly ZkFormal.Near

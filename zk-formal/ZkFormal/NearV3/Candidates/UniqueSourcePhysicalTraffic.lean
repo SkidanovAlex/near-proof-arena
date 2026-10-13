@@ -1,8 +1,6 @@
 import ZkFormal.NearV3.Candidates.UniqueSourceTraffic
 import ZkFormal.NearV3.Candidates.UniqueSourcePartitions
 import ZkFormal.NearV3.Rcpt.Candidates.SourceLog22Endpoints
-import ZkFormal.NearV3.Rcpt.Candidates.SourceLog22Carry
-import ZkFormal.NearV3.Rcpt.Candidates.SizeCountSourceSender
 
 namespace ZkFormal.NearV3.Candidates.UniqueSourcePhysicalTraffic
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra ZkFormal.Near.Dsl

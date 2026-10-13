@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.LinkTrieOk
 import ZkFormal.NearV3.Rcpt.Link.RcptHoldsB
 import ZkFormal.NearV3.Rcpt.Link.ValBytes
-import ZkFormal.Near.Link.Post
 
 /-!
 # ZkFormal.NearV3.Assembly.LinkPostRec — record side of `hpost` (`hrw`) via the `MEM` chain

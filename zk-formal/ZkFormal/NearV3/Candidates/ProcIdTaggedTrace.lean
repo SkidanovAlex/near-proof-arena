@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcIdTaggedRows
+import ZkFormal.NearV3.Candidates.ProcPriorIdPadding
 namespace ZkFormal.NearV3.Candidates.ProcIdTaggedTrace
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near
 open ProcPriorCells ProcIdTaggedCells ProcIdTaggedLocal

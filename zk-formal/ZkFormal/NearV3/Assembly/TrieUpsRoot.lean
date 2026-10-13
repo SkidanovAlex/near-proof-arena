@@ -1,10 +1,9 @@
 import ZkFormal.NearV3.Assembly.TrieUpsNative
-import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootInventory
-import ZkFormal.NearV3.Rcpt.Candidates.CompactRootInventory
-import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootRanks
 import ZkFormal.NearV3.Rcpt.Candidates.NativeMidrootRecords
 import ZkFormal.NearV3.Rcpt.Candidates.PublicRootTraffic
 import ZkFormal.NearV3.Rcpt.Candidates.NativeRootHeader
+import ZkFormal.NearV3.Rcpt.Candidates.CompactRootCells
+import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootCells
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieUpsRoot — `MIDROOT` (and the ups side of `ROOT`)

@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeExecutionJointCoverage
+import ZkFormal.NearV3.Candidates.ChainMetadata
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render Render.UpsGen Assembly

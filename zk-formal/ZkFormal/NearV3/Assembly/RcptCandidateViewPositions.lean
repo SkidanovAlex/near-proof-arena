@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateChainBytes
 -- Source ViewPositions.lean SHA256: 9b3017e9a7a7ac6589875c53c37503677a6f5fcd9e5908cbb25f645365f09c81.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.ChainBytes
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

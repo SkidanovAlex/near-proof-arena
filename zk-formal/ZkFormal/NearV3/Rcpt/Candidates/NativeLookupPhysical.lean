@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupQueryBounds
+import ZkFormal.NearV3.Rcpt.Candidates.Walk22Render
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec NearSpecV3 ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Render.UpsGen Assembly Qv Qv.Candidates.CombinedWalkGen

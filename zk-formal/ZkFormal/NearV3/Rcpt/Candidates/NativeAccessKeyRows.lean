@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeAccessKeyQueries
-import ZkFormal.NearV3.Rcpt.Candidates.NativeCombinedLookupRows
+import ZkFormal.NearV3.Rcpt.Candidates.UpsRequestInventory
+import ZkFormal.NearV3.Rcpt.Candidates.NativeAccountQueryRows
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec NearSpecV3 Assembly ZkFormal.Near

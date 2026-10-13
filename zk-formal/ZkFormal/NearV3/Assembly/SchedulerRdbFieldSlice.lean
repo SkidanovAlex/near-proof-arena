@@ -2,6 +2,8 @@ import ZkFormal.NearV3.Assembly.SchedulerBranchFieldSlice
 import ZkFormal.NearV3.Render.Ups.NativeBranchGeometry
 import ZkFormal.NearV3.Render.Ups.BranchSideAllocation
 import ZkFormal.NearV3.Render.Ups.NativeEncodingFacts
+import ZkFormal.NearV3.Assembly.UpsertShaJobs
+import ZkFormal.NearV3.Render.Ups.TreeOutputChain
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec Render Render.UpsGen ZkFormal.Near ZkFormal.Near.Render

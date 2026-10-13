@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Extract.Srcp.SizeTraffic
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.Counters
 
 /-! Canonical list indices and natural counter transitions for block assembly. -/
 

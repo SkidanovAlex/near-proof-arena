@@ -1,5 +1,7 @@
 import ZkFormal.NearV3.Rcpt.Render.Srcp.RowCounter
 import ZkFormal.NearV3.Rcpt.Render.Srcp.RowSize
+import ZkFormal.NearV3.Rcpt.Render.Srcp.RowWindow
+import ZkFormal.NearV3.Rcpt.Render.Srcp.RowEnd
 
 namespace ZkFormal.NearV3.Render.SrcpGen
 open ZkFormal.Near ZkFormal.Near.Render ZkFormal.Air ZkFormal.Algebra

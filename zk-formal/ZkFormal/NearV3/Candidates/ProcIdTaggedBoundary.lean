@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcIdTaggedCells
+import ZkFormal.NearV3.Candidates.ProcPriorIdGateFields
 namespace ZkFormal.NearV3.Candidates.ProcIdTaggedBoundary
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha.Table.E
 open ProcPriorIdRows ProcPriorCells ProcPriorIdCells ProcPriorIdTable

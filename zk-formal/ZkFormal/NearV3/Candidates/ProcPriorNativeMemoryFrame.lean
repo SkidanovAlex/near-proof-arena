@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcPriorNativeMemoryChain
+import ZkFormal.NearV3.Candidates.ProcPriorTrace
 namespace ZkFormal.NearV3.Candidates.ProcPriorNativeMemory
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Chacha.Table.E
 open ProcPriorMemoryTable ProcPriorCells

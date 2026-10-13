@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Rcpt.Candidates.SizeCountWitnessFields
 import ZkFormal.NearV3.Link.Chain3
+import ZkFormal.NearV3.Rcpt.Candidates.SizeCountPreparedK
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.SizeCount
 open ZkFormal.Near NearSpec NearSpecV3 Assembly Sched

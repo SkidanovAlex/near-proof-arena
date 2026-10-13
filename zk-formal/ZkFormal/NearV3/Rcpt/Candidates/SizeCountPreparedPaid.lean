@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.SizeCountAcceptedOverhead
+import ZkFormal.NearV3.Rcpt.Candidates.SizeCountAccumulator
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.SizeCount
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near NearSpec NearSpecV3

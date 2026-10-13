@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcCodecPublicIdEnumeration
+import ZkFormal.NearV3.Candidates.ProcCodecPublicIdPhysical
 namespace ZkFormal.NearV3.Candidates.ProcCodecPublicIdInventory
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Gen Codec
 open ZkFormal.NearV3.Assembly.CodecDigest ProcCodecPublicIdEnumeration

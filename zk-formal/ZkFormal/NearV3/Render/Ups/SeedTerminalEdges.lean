@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Render.Ups.SeedWalkEdges
-import ZkFormal.NearV3.Render.Ups.NativeTerminalProvider
+import ZkFormal.NearV3.Render.Ups.NativeBranchProvider
 
 namespace ZkFormal.NearV3.Render.UpsGen
 open NearSpec UpsRows ZkFormal.Near

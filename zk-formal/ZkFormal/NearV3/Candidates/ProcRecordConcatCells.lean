@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Candidates.ProcRecordSelectedTraffic
 import ZkFormal.NearV3.Candidates.ProcPriorRecordTrace
+import ZkFormal.NearV3.Candidates.ProcRecordConcatTraffic
 namespace ZkFormal.NearV3.Candidates.ProcRecordConcatCells
 open NearSpec ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.NearV3.Sched
 open ZkFormal.NearV3.Assembly.CodecDigest ProcRecordConcatTraffic

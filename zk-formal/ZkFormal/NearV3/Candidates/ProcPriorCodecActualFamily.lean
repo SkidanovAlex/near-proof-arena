@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPriorCodecActual
-import ZkFormal.NearV3.Candidates.ProcPriorTripleFusion
+import ZkFormal.NearV3.Candidates.InteractionTriples
+import ZkFormal.NearV3.Candidates.ProcPriorFourStageLinearFusion
 namespace ZkFormal.NearV3.Candidates.ProcPriorCodecActualFamily
 open ZkFormal.Air
 

@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Rcpt.Candidates.EmptyValueTable
-import ZkFormal.Near.Render.Proof.BusDigest
 namespace ZkFormal.NearV3.Rcpt.Candidates.EmptyValue
 open ZkFormal.Near ZkFormal.Near.Render
 

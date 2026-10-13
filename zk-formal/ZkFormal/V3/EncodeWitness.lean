@@ -1,6 +1,6 @@
 import NearSpecV3.WitnessV3
 import NearSpecV3.ClaimV3Props
-import ReexecV3D0.NormalForm
+import ReexecV3D0.NormBytes
 
 /-!
 # Witness encoder for the D0 witness shape, and its kernel-checked round trip

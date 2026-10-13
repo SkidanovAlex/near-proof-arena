@@ -1,6 +1,6 @@
-import ZkFormal.NearV3.Assembly.SchedulerUpperDigestWindow
 import ZkFormal.NearV3.Assembly.SchedulerParentChain
 import ZkFormal.NearV3.Assembly.SchedulerFreshFieldSlice
+import ZkFormal.NearV3.Assembly.UpsertShaJobs
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec Render Render.UpsGen ZkFormal.Near

@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Rcpt.Candidates.SizeCountSound
 import ZkFormal.NearV3.Extract.ValProof
+import ZkFormal.NearV3.Rcpt.Candidates.SizeCountTables
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.SizeCount
 open ZkFormal.Air ZkFormal.Near ZkFormal.Algebra ZkFormal.Near.Dsl

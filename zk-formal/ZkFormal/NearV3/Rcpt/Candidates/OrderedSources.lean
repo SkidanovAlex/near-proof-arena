@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.RawWitnessBudget
 import ZkFormal.NearV3.Rcpt.Candidates.SourceCount
+import ZkFormal.NearV3.Rcpt.Candidates.OrderedSourcesCore
 
 namespace ZkFormal.NearV3.Rcpt.Candidates
 open NearSpec NearSpecV3
@@ -20,22 +21,6 @@ private theorem eraseDups_nodup {α : Type} [BEq α] [LawfulBEq α] (xs : List �
     · exact eraseDups_nodup (rest.filter fun b => !b == a)
 termination_by xs.length
 decreasing_by exact Nat.lt_succ_of_le (List.length_filter_le _ _)
-
-theorem lookupLast_key {key : Bytes} {entries : List ProofEntry} {e : ProofEntry}
-    (h : lookupLast key entries = some e) : e.key = key := by
-  induction entries with
-  | nil => cases h
-  | cons a rest ih =>
-    simp only [lookupLast] at h
-    split at h
-    · rename_i f hf
-      cases h
-      exact ih hf
-    · split at h
-      · rename_i he
-        cases h
-        simpa using he
-      · cases h
 
 private theorem selected_mem_lookup (keys : List Bytes) (entries : List ProofEntry)
     (e : ProofEntry) (he : e ∈ selectedSources keys entries) : lookupLast e.key entries = some e := by

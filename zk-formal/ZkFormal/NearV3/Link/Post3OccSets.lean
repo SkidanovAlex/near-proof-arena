@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Link.Post3OccWalk
+import ZkFormal.NearV3.Link.Post3Writes
 
 /-!
 # ZkFormal.NearV3.Link.Post3OccSets — the post root is the iterated `set` (M6d wrapper)

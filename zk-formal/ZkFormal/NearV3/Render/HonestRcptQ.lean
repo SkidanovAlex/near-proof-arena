@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Render.HonestBalanceBnd
-import ZkFormal.NearV3.Assembly.RcptReceiptRepaired
 import ZkFormal.NearV3.Assembly.RcptCandidateRoutingPredecessor
 import ZkFormal.NearV3.Assembly.RcptCandidateRoutingNative
 

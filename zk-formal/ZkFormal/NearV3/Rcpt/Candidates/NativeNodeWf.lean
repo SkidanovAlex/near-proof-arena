@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Rcpt.Candidates.NodePairedWf
+import ZkFormal.NearV3.Rcpt.Candidates.NativeOccurrenceSha
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render.UpsGen

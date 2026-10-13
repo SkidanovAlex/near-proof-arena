@@ -1,6 +1,6 @@
-import ZkFormal.NearV3.Rcpt.Extract.V.ReceiptBalance
 import ZkFormal.NearV3.Rcpt.Extract.V.GasTokens
 import ZkFormal.NearV3.Rcpt.Extract.V.ListInterior
+import ZkFormal.Near.Extract.RcptArith
 
 namespace ZkFormal.NearV3.RcptV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3

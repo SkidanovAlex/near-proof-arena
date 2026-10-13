@@ -1,6 +1,7 @@
-import ZkFormal.NearV3.Rcpt.Candidates.AcceptedWindowCoverage
-import ZkFormal.NearV3.Rcpt.Candidates.NativeRebasedUpsertKeys
 import ZkFormal.NearV3.Assembly.SchedulerSanityPin
+import ZkFormal.NearV3.Rcpt.Candidates.NativeExecutionRebasedKeys
+import ZkFormal.NearV3.Rcpt.Candidates.NativeWindowProviderInputs
+import ZkFormal.NearV3.Rcpt.Candidates.NativeWindowPhysicalCoverage
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieUpsKeys — the native coverage chain with the replay's write keys

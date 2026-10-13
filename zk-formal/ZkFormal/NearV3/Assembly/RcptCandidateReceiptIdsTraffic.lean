@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateMemoryWrites
 -- Source ReceiptIdsTraffic.lean SHA256: e0a4aef6fd03e45ccf2896516b4ac6437307cb8f167aaaa43a5743b9dfd52517.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.MemoryWrites
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

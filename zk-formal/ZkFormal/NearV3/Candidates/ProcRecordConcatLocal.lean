@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcRecordConcatActive
+import ZkFormal.Near.Extract.ShaFacts
 namespace ZkFormal.NearV3.Candidates.ProcRecordConcatLocal
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.NearV3.Sched
 open ZkFormal.NearV3.Assembly.CodecDigest

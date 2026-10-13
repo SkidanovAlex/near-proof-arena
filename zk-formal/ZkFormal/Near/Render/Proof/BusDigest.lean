@@ -1,5 +1,6 @@
 import ZkFormal.Near.Render.Proof.DigMrk2
 import ZkFormal.Near.Render.Proof.BusBytes
+import ZkFormal.Near.Render.Proof.RcptBytes2
 
 /-!
 # ZkFormal.Near.Render.Proof.BusDigest — `DigestBusStmt`

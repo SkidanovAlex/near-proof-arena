@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeHeadRootRecords
 import ZkFormal.NearV3.Rcpt.Candidates.NativeRootWidths
+import ZkFormal.NearV3.Rcpt.Candidates.CompactRootRanks
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec NearSpecV3 ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Render Render.UpsGen Render.UpsRelay UpsRows Assembly

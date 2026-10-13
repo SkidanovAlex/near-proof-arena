@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Rcpt.Extract.Srcp.Counters
+import ZkFormal.NearV3.Rcpt.Extract.Srcp.Rows
 
 /-! The source-proof table emits SIZE exactly on its last active row. -/
 

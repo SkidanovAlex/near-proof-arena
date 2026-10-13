@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateBoundaryTrafficIndex
 -- Source BoundaryTraffic.lean SHA256: 07394c46abc8fdf67259611fc7f142e562fedee5e588de63876b11734de38658.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.BoundaryTrafficIndex
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

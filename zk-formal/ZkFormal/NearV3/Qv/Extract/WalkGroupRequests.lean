@@ -1,5 +1,6 @@
-import ZkFormal.NearV3.Qv.Extract.PhysicalBufferedRead
 import ZkFormal.NearV3.Qv.Extract.WalkMain
+import ZkFormal.NearV3.Qv.Extract.NativeShardLookup
+import ZkFormal.NearV3.Qv.Extract.WalkShardRequests
 
 namespace ZkFormal.NearV3.Qv.Extract
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl

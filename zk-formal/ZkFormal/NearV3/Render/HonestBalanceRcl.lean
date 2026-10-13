@@ -1,7 +1,7 @@
 import ZkFormal.NearV3.Render.HonestBalanceRcpt
 import ZkFormal.NearV3.Assembly.RcptCanonicalGroupedEncoding
 import ZkFormal.NearV3.Assembly.RcptCanonicalNativeEncoding
-import ZkFormal.NearV3.Render.PaddedSrcp
+import ZkFormal.NearV3.Rcpt.Render.Srcp.ProofInputs
 
 /-!
 # Honest RCL balance (`rcptV3` → `srcpV3`)

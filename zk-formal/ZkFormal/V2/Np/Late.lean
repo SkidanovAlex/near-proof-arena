@@ -1,4 +1,5 @@
 import ZkFormal.V2.Np.Msg8
+import ZkFormal.Udr.Np.FrameMsg
 
 /-!
 # ZkFormal.V2.Np.Late — `MsgLate`, `ChalLate` for v2

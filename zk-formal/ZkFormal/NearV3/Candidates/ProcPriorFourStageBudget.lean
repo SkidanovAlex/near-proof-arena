@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Candidates.ProcPriorRecordSemantics
 import ZkFormal.NearV3.Candidates.ProcPriorIdLocal
 import ZkFormal.NearV3.Candidates.ProcPriorRawLocal
 import ZkFormal.NearV3.Candidates.ProcPriorDecodedLocal
+import ZkFormal.NearV3.Candidates.ProcPriorBudget
 namespace ZkFormal.NearV3.Candidates.ProcPriorFourStageBudget
 open NearSpec NearSpec.Bandwidth ProcPriorBudget
 

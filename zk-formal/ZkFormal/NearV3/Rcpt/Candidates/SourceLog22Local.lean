@@ -1,5 +1,7 @@
 import ZkFormal.NearV3.Rcpt.Candidates.SourceLog22Tables
-import ZkFormal.NearV3.Rcpt.Candidates.DedupPartitionLocal
+import ZkFormal.NearV3.Rcpt.Candidates.DedupPartitionBits
+import ZkFormal.NearV3.Rcpt.Candidates.DedupPartitionConstraintTransfer
+import ZkFormal.NearV3.Rcpt.Candidates.DedupRowLocal
 
 set_option maxRecDepth 32768
 namespace ZkFormal.NearV3.Rcpt.Candidates.SourceLog22

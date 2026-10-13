@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Candidates.ProcPriorMemoryTransport
+import ZkFormal.NearV3.Candidates.ProcPriorMemoryGated
 namespace ZkFormal.NearV3.Candidates.ProcPriorMemoryGated
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha.Table.E ZkFormal.Near
 

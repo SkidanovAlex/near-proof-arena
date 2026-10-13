@@ -1,4 +1,5 @@
-import ZkFormal.NearV3.Rcpt.Extract.V.KeyMarkerLayout
+import ZkFormal.NearV3.Rcpt.Extract.V.KeyMessages
+import ZkFormal.Near.Extract.RcptKey
 
 namespace ZkFormal.NearV3.RcptV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

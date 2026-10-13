@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Candidates.ProcPriorBudget
+import ZkFormal.NearV3.Candidates.ProcPriorLookup
 namespace ZkFormal.NearV3.Candidates.ProcPriorIds
 open NearSpec NearSpec.Bandwidth NearSpecV3.Scheduler ProcPriorLookup
 

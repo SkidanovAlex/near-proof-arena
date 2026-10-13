@@ -1,10 +1,11 @@
 import ZkFormal.NearV3.Render.Padded
-import ZkFormal.NearV3.Render.UpsRender
 import ZkFormal.NearV3.Render.Ups.Local
 import ZkFormal.NearV3.Render.Ups.GPlan
 import ZkFormal.NearV3.Render.Ups.GFieldsComplete
 import ZkFormal.NearV3.Render.Ups.GBytes
 import ZkFormal.NearV3.Render.Ups.GMem
+import ZkFormal.NearV3.Render.Ups.GSeg
+import ZkFormal.NearV3.Render.Ups.GRows
 
 /-!
 # Aligned `upsV3` generator (`nearAirV3` table 7, cap 22)

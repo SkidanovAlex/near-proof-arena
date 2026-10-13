@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Assembly.SchedulerCodecConsumer
-import ZkFormal.NearV3.Render.Ups.CodecRelaySanity
 
 namespace ZkFormal.NearV3.Assembly.CodecDigest
 open NearSpec ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Chacha

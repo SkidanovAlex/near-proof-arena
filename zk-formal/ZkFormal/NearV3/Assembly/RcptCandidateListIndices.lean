@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Assembly.RcptCandidateListConstants
 -- Source ListIndices.lean SHA256: 67d13b080449bdf8e91ea7723acdca7abe96bba12caaa9d4920fc7f92c83c9d3.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
 import ZkFormal.NearV3.Rcpt.Extract.V.ListConstants
+import ZkFormal.NearV3.Rcpt.Extract.V.ListIndices
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

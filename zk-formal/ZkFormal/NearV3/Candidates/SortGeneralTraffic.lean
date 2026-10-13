@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Candidates.NativeSortTrace
-import ZkFormal.Near.Render.Proof.SortTraffic
 namespace ZkFormal.NearV3.Candidates.SortGeneral
 open NearSpec ZkFormal.Near ZkFormal.Air ZkFormal.Algebra ZkFormal.Near.Dsl ZkFormal.Near.Render
 

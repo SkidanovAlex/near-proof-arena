@@ -1,3 +1,4 @@
+import Init.Grind.Attr
 /-!
 # ZkFormal.Algebra.Transport — building `Lean.Grind` ring/field instances
 

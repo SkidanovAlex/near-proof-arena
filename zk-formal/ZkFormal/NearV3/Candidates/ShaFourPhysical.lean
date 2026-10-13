@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Candidates.ShaHeight.Packed
 import ZkFormal.NearV3.Candidates.HorizontalPack
 import ZkFormal.NearV3.Rcpt.Candidates.ShaAllocationTraffic
+import ZkFormal.NearV3.Candidates.ShaFourPhysicalCore
 
 namespace ZkFormal.NearV3.Candidates.ShaFourPhysical
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Sha
@@ -9,17 +10,6 @@ open ZkFormal.NearV3.Rcpt.Candidates ZkFormal.NearV3.Assembly
 /-- Physical SHA components, with actual packed cells at the common fusion clock. -/
 def components (bins : List (List Gen.Msg)) : List HorizontalPack.Component :=
   bins.map (fun bin=>(ShaCarryKinds.table B_BYTES B_DIGEST,ShaHeight.packedTrace bin))
-
-/-- Byte and length validity survive allocation because whole jobs are retained. -/
-theorem bins_ok (bins : List (List Gen.Msg)) (ms : List Gen.Msg)
-    (hp : bins.flatten.Perm ms) (hr : ∀bin∈bins,(Gen.honestRows bin).length≤2^22)
-    (hb : ∀M∈ms,∀x∈M.bytes,x<256) :
-    ∀bin∈bins,MsgsOk bin := by
-  intro bin hbin
-  have hm : ∀M∈bin,M∈ms := by
-    intro M hM
-    exact hp.mem_iff.mp (List.mem_flatten.mpr ⟨bin,hbin,hM⟩)
-  exact ⟨fun M hM=>hb M (hm M hM),fun M hM=>sha_message_len_of_rows (hr bin hbin) hM,hr bin hbin⟩
 
 theorem components_local (bins : List (List Gen.Msg)) (pub : List Fp)
     (h : ∀bin∈bins,MsgsOk bin) :

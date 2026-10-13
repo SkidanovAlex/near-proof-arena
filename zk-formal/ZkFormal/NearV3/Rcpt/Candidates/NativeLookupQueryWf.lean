@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeAccessKeyRows
-import ZkFormal.NearV3.Rcpt.Candidates.Walk22Compat
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near ZkFormal.Algebra Render.UpsGen Assembly

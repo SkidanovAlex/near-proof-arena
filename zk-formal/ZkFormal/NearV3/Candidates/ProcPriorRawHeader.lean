@@ -1,4 +1,6 @@
-import ZkFormal.NearV3.Candidates.ProcPriorRawChecks
+import ZkFormal.Algebra.Fp
+import NearSpec.Bandwidth
+import ZkFormal.Air.Basic
 namespace ZkFormal.NearV3.Candidates.ProcPriorRawHeader
 open ZkFormal.Air ZkFormal.Algebra NearSpec NearSpec.Bandwidth
 

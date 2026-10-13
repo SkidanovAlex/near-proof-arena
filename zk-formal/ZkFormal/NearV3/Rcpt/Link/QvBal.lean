@@ -1,6 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Link.QvPre
-import ZkFormal.NearV3.Qv.Extract.NativeQueueAssembly
-import ZkFormal.NearV3.Candidates.ProcessRepairQueuePublic
+import ZkFormal.NearV3.Candidates.ProcessRepairQueuePublicCore
+import ZkFormal.NearV3.Render.Node.TDig2
 
 /-!
 # ZkFormal.NearV3.Rcpt.Link.QvBal — the `KEYNIB` / `FINAL` premises of the qv assembly from `HoldsP`

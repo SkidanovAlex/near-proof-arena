@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Assembly.RoutingNativeSelection
-import ZkFormal.NearV3.Assembly.RoutingPhysicalComplete
+import ZkFormal.NearV3.Assembly.RoutingPhysicalRanks
 
 namespace ZkFormal.NearV3.Assembly.RoutingBoundedLayout
 open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near RcptV3

@@ -1,6 +1,5 @@
-import ZkFormal.NearV3.Candidates.CompactHeight
 import ZkFormal.NearV3.Render.Ups.CompactExtract.TableTraffic
-import ZkFormal.NearV3.Render.Ups.RelayNativeInventory
+import ZkFormal.NearV3.Candidates.CompactHeightCore
 
 namespace ZkFormal.NearV3.Assembly.CompactPhysicalDigests
 set_option maxRecDepth 16384

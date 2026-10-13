@@ -1,8 +1,10 @@
-import ZkFormal.NearV3.Render.PaddedSrcp
 import ZkFormal.NearV3.Rcpt.Candidates.DedupTableLocal
 import ZkFormal.NearV3.Rcpt.Candidates.DedupTrafficProof
 import ZkFormal.NearV3.Rcpt.Candidates.DedupTableFacts
 import ZkFormal.NearV3.Rcpt.Tables.SrcpDD
+import ZkFormal.NearV3.Render.ColAgree
+import ZkFormal.NearV3.Rcpt.Render.SizeRender
+import ZkFormal.NearV3.Render.Padded
 
 /-!
 # ZkFormal.NearV3.Render.PaddedSrcpDD — honest aligned render of table 20 (`SrcpDD.table`)

@@ -1,4 +1,5 @@
-import ZkFormal.NearV3.Candidates.ProcPriorMemorySound
+import ZkFormal.NearV3.Candidates.ProcPriorMemoryTable
+import ZkFormal.NearV3.Sched.View.CodecRec
 namespace ZkFormal.NearV3.Candidates.ProcPriorMemorySoundRows
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table.E
 open ZkFormal.NearV3.Sched

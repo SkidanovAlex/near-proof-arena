@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.SchedulerDigestPlan
+import ZkFormal.NearV3.Assembly.UpsertShaJobs
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec ZkFormal.Near UpsRows Render.UpsGen

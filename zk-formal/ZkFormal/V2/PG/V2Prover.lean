@@ -1,7 +1,6 @@
 import ZkFormal.V2.PG.NpLocalMain
 import ZkFormal.V2.PG.NpBus4
 import ZkFormal.V2.RomFull
-import ZkFormal.V2.Prover
 
 /-!
 # ZkFormal.V2.PG.V2Prover — completeness of np-udr-stark-v2 at `dp = pg g` (P2 copy of `V2.Prover`)

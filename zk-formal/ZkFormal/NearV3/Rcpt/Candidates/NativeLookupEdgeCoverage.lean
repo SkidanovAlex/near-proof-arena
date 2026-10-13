@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupBranchCoverage
+import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupLeafProviders
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render.UpsGen

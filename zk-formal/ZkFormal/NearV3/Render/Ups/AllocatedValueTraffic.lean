@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Render.Ups.PhysicalValueTraffic
+import ZkFormal.NearV3.Render.Ups.AcceptedInstanceList
 
 namespace ZkFormal.NearV3.Render.UpsGen
 open NearSpec Assembly ZkFormal.Near ZkFormal.Algebra UpsRows

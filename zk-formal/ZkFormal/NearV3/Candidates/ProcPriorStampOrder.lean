@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcComparatorSound
 import ZkFormal.NearV3.Candidates.ProcPriorMemorySoundRows
+import ZkFormal.NearV3.Candidates.ProcPriorMemoryGated
 namespace ZkFormal.NearV3.Candidates.ProcPriorStampOrder
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.Chacha ZkFormal.Chacha.Table.E
 open ZkFormal.NearV3.Sched ProcPriorMemoryTable

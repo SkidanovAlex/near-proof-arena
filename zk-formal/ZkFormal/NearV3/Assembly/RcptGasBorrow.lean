@@ -1,5 +1,6 @@
-import ZkFormal.NearV3.Assembly.RcptSystemGasDomain
 import ZkFormal.Near.Render.Proof.RcptNat
+import NearSpecV3.RuntimeD0
+import ZkFormal.NearV3.Rcpt.Tables.Rcpt.Layout
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3 ZkFormal.Near ZkFormal.Algebra ZkFormal.Air RcptV3

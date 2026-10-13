@@ -1,6 +1,5 @@
 import ZkFormal.NearV3.Assembly.Good
 import ZkFormal.NearV3.Rcpt.Candidates.NativeSourceDictionary
-import ZkFormal.NearV3.Rcpt.Link.PreparedNativeRouting
 
 namespace ZkFormal.NearV3.Rcpt.Candidates
 open ZkFormal.Near NearSpec NearSpecV3 Assembly

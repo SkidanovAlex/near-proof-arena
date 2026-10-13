@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPriorVertical4Eval
 import ZkFormal.NearV3.Candidates.ProcPriorMemorySoundRows
+import ZkFormal.NearV3.Candidates.ProcPriorCodecSoundPublicId
 namespace ZkFormal.NearV3.Candidates.ProcPriorVerticalMemorySound
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Chacha ZkFormal.Chacha.Table.E
 open ZkFormal.NearV3.Sched ProcPriorVertical4Linear

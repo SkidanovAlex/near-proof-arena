@@ -1,10 +1,9 @@
-import ZkFormal.NearV3.Assembly.RcptCandidateReceiptBalance
 import ZkFormal.NearV3.Assembly.RcptCandidateGasTokens
 -- ReceiptArithmetic source SHA256: 245db57e4727e1b9f21427382855647de3b99e0697e76bf5ef95a0f18b149a3f.
 -- Candidate arithmetic semantics; masked surplus used only after proving non-system.
-import ZkFormal.NearV3.Rcpt.Extract.V.ReceiptBalance
 import ZkFormal.NearV3.Rcpt.Extract.V.GasTokens
 import ZkFormal.NearV3.Rcpt.Extract.V.ListInterior
+import ZkFormal.Near.Extract.RcptArith
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

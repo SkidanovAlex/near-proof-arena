@@ -1,7 +1,7 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateRclViewProof
+import ZkFormal.NearV3.Rcpt.Extract.V.ViewFacts
 -- Source ViewFacts.lean SHA256: 7ef9ecc3d564ae851d49375d196ca58e00a8eedae6786ffae4e93841a7fe52e7.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.RclViewProof
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeMidrootRecords
-import ZkFormal.NearV3.Rcpt.Candidates.CompactRootRanks
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render Render.UpsGen Assembly

@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Assembly.SchedulerNativeDigests
 import ZkFormal.NearV3.Sched.View.CodecState
+import ZkFormal.NearV3.Assembly.SchedulerSanityJobs
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Chacha

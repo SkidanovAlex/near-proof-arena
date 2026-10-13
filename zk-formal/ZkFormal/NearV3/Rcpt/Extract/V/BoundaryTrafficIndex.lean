@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Extract.V.BoundaryTrafficRows
+import ZkFormal.NearV3.Rcpt.Extract.V.RouteRows
 
 namespace ZkFormal.NearV3.RcptV3Proof
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3

@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Render.Ups.CompactExtract.TableTraffic
 import ZkFormal.NearV3.Render.Ups.RelayNativeInventory
 import ZkFormal.NearV3.Extract.Ups.UpsBus
+import ZkFormal.NearV3.Render.Ups.RelayFreshSha
 namespace ZkFormal.NearV3.Render.UpsRelay.Extract
 open NearSpec Assembly ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl UpsV3 UpsRows UpsGen
 

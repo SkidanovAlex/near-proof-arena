@@ -1,14 +1,14 @@
 import NearSpecV3.ChunkValidationV0
 
 /-!
-# `NearSpecV3.ChunkValidationV0a` — `RelD0a`: D0 with amendments A1, A2, Canon0f, A7–A10
+# `NearSpecV3.ChunkValidationV0a` — `RelD0a`: D0 with amendments A1, A2, Canon0f, A7–A10, A12
 
 Additive successor of `NearSpecV3.ChunkValidationV0` (which is pinned by the signed
 challenge `near-chunk-validation-d0-1` and is not modified). The amended relation is a pure
 restriction of `RelD0` (spec/near-chunk-validation-v0a.md, V3-D0-DESIGN §4, §10, §11):
 
   `RelD0a B cb w W Dp := RelD0 cb w ∧ A1 cb ∧ A2 cb w ∧ Canon0f cb w ∧ A7 B cb w ∧ A8 cb ∧
-    A9 W cb w ∧ A10 Dp cb w`   (`W`, `Dp` default to the challenge's `W0 = 770,000`, `Dp0 = 32`)
+    A9 W cb w ∧ A10 Dp cb w ∧ A12 cb`   (`W`, `Dp` default to the challenge's `W0 = 770,000`, `Dp0 = 32`)
 
 * **A1** (`c.gas_limit`): the chunk `gas_limit` in the last-new-chunk block's (B2) slot of the
   validated shard is at most `10^15` (mainnet genesis, 1000 Tgas). nearcore never changes a
@@ -16,7 +16,9 @@ restriction of `RelD0` (spec/near-chunk-validation-v0a.md, V3-D0-DESIGN §4, §1
 * **A2** (`w.proof_routing`): every receipt of every *used* source receipt proof (the entry the
   last-wins lookup selects for a new source chunk) routes, under the epoch's layout, to the
   validated shard. Holds on every honest single-epoch witness (§10.1).
-* **A7** (`w.unfolded`, round-2 lead decision): `unfoldBytes cb w ≤ B` (below).
+* **A7** (`w.unfolded`, round-2 lead decision; measure revised by the user 2026-10-11 and
+  2026-10-12): `unfoldBytes cb w ≤ B` (below): the unfolded pre tries plus the unfolded native
+  post tries (the tries execution returns).
 * **A8** (`c.bw_requests`, lead decision): in every block of the claim's segment, every chunk
   slot's `BandwidthRequests` has at most one request per `to_shard`. nearcore builds the list
   with one `generate_bandwidth_request` per layout shard id
@@ -29,6 +31,13 @@ restriction of `RelD0` (spec/near-chunk-validation-v0a.md, V3-D0-DESIGN §4, §1
 * **A10** (`w.path_depth`, user decision 2026-10-09): every used source receipt proof's Merkle
   path has at most `Dp` items. nearcore produces `⌈log₂ #shards⌉ ≤ 6`; it bounds the in-AIR
   source-proof table.
+* **A11** (`w.post_rebuild`, 2026-10-11) is **retired** (user decision 2026-10-12): it only
+  controlled the store rebuild of A7's post term, which A7 no longer performs (spec v0a §2.8).
+* **A12** (`c.layout_wf`, user decision 2026-10-12): the epoch's shard layout has exactly one
+  boundary account fewer than shard ids (`|boundaries| + 1 = |shardIds|`, `a12`, below), as
+  every nearcore layout (`ShardLayout::v2` asserts it). Claim-only. Without it a decodable
+  layout with surplus boundaries makes the published own-shard routing intervals
+  (`ownIntervals`) unbounded and differ from the routing `shardOf` actually performs.
 * **Canon0f** (`e.sched_canonical`): every `BandwidthSchedulerState` value the D0 run reads at
   `0x0f` — in the main pre-state and in each implicit transition's pre-state — is absent or
   decodes as `V1` whose links are exactly the layout's `n²` links `(sender, receiver)` in
@@ -141,13 +150,25 @@ For each applied transition τ (main, then each implicit one, as `checkD0` runs 
   pre-trie plus Σ `|v|` over its revealed values (`occs`, `nodeEnc`, `valsOf`: identical to
   `ZkFormal.NearV3.Spec` on lane v3-trie, so `UnfoldBound e ws root keys ↔
   unfoldedBytesT (partialTrie ws root keys) ≤ e` by `rfl`);
-* `diffT pre_τ post_τ` = the post-write path copies: the bytes of every revealed node
-  occurrence of the post-trie whose encoding differs from the pre-trie's at the same
-  position, plus every changed revealed value. The post-trie is rebuilt from the store
-  (`ws` plus the post nodes and values) along the same keys (`rebuildPost`), i.e. the
-  post-state as a store would present it.
+* `unfoldedBytesT post_τ` = the same count on the **native** post-trie `post_τ`: the partial
+  trie that τ's execution returns (`applyNewChunk … |>.trie`, `applyMissingChunk …`), i.e. the
+  pre-trie with its written paths replaced, no store lookup involved.
 
-`unfoldBytes cb w = Σ_τ (unfoldedBytesT pre_τ + diffT pre_τ post_τ)` (0 if the run fails;
+Revisions. Until 2026-10-11 the post term was `diffT pre_τ post_τ` (only the occurrences
+differing from the pre-trie at the same position); on 2026-10-11 the user replaced it by the
+whole post-trie *rebuilt from the store* (`rebuildPost`, the witness blobs plus the written
+ones, along the same keys), so that the AIR can enforce A7 without position matching, with
+A11 guarding the rebuild. On 2026-10-12 the user replaced the rebuilt post-trie by the native
+one and retired A11: the AIR's A7 running sums count the native post-trie, and the rebuilt
+trie can differ from it when a pre blob and a written node share a SHA-256 (the rebuild then
+reads the pre blob), which made the honest A7 identity unprovable. The two agree on every
+accepted case except that the native post-trie also reveals the node an insertion splits off
+(the shortened old leaf or extension, `splitLeaf`/`splitExt`) when no read key passes through
+it; so the native count is never smaller than the rebuilt one absent collisions. `diffT` and
+`rebuildPost` are kept below for the legacy measures the difftest reports (`unfold_diff`,
+`unfold_rebuilt`); they are not part of `RelD0a`.
+
+`unfoldBytes cb w = Σ_τ (unfoldedBytesT pre_τ + unfoldedBytesT post_τ)` (0 if the run fails;
 then `RelD0` is false anyway). -/
 
 mutual
@@ -240,7 +261,8 @@ def kDiff : Kids → Nat → Kids → Nat
   | pk, i, .some c r => diffT (kidAt pk i) c + kDiff pk (i + 1) r
 end
 
-/-- The post-trie as a store presents it: rebuilt from `ws` and the post nodes/values along `keys`. -/
+/-- Legacy (A7 measure of 2026-10-11, not part of `RelD0a`): the post-trie as a store presents
+it, rebuilt from `ws` and the post nodes/values along `keys`. -/
 def rebuildPost (ws : List Bytes) (post : PTrie) (keys : List (List Nat)) : PTrie :=
   partialTrie (ws ++ (occs post).map nodeEnc ++ valsOf post) post.hashOf keys
 
@@ -256,7 +278,8 @@ def appliedReceipts (k : WalkD0) (w : StateWitness) : List Receipt := Id.run do
       (shuffled.map fun e => e.receipts.filter fun r => k.L.shardOf r.receiverId == k.H.shardId).flatten
   return receipts
 
-/-- `(pre_τ, post_τ)` for every applied transition, as `checkD0` builds and runs them. -/
+/-- `(pre_τ, post_τ)` for every applied transition, as `checkD0` builds and runs them: `post_τ`
+is the native post-trie the execution returns. -/
 def triesD0 (cb wb : Bytes) : Except String (List (PTrie × PTrie)) := do
   let k ← walkD0 cb
   let w ← decodeW wb
@@ -270,20 +293,20 @@ def triesD0 (cb wb : Bytes) : Except String (List (PTrie × PTrie)) := do
   let keys := mainKeys receipts bshards
   let tMain := partialTrie w.main.values k.slotB2.prevStateRoot keys
   let out ← applyNewChunk prims ctxB2 tMain receipts
-  let mut acc : List (PTrie × PTrie) := [(tMain, rebuildPost w.main.values out.trie keys)]
+  let mut acc : List (PTrie × PTrie) := [(tMain, out.trie)]
   let mut root := out.trie.hashOf
   for (M, T) in k.implicitBlks.zip w.implicit do
     let ctxM := blockCtx k.L k.H.shardId k.slotB2.gasLimit M M.hdr.nextGasPrice
     let ks := [keyDelayedIdx, keyBwState]
     let tM := partialTrie T.values root ks
     let tM' ← applyMissingChunk prims ctxM tM
-    acc := acc ++ [(tM, rebuildPost T.values tM' ks)]
+    acc := acc ++ [(tM, tM')]
     root := tM'.hashOf
   pure acc
 
 def unfoldBytes (cb w : Bytes) : Nat :=
   match triesD0 cb w with
-  | .ok l => (l.map fun (pre, post) => unfoldedBytesT pre + diffT pre post).sum
+  | .ok l => (l.map fun (pre, post) => unfoldedBytesT pre + unfoldedBytesT post).sum
   | .error _ => 0
 
 /-- A7 (`w.unfolded`). -/
@@ -474,12 +497,34 @@ def a10 (Dp : Nat) (cb w : Bytes) : Bool :=
 /-- A10 bound of the challenge instance. -/
 def Dp0 : Nat := 32
 
+/-! ## A11 `w.post_rebuild`: retired (user decision 2026-10-12)
+
+A11 (2026-10-11) asked that A7's count be unchanged when every post trie is rebuilt from its
+pre trie's revealed blobs instead of the witness store. A7 now counts the native post trie,
+which no store lookup can change, so A11 constrained nothing that A7 reads and was removed
+from `RelD0a` (spec v0a §2.8). -/
+
+/-! ## A12 `c.layout_wf`: the epoch layout is well-formed
+
+`ShardLayout::v2` (nearcore `core/primitives/src/shard_layout.rs`, `ShardLayoutV2::new`)
+asserts `boundary_accounts.len() + 1 == shard_ids.len()`; the decoder `decodeLayout` does not
+check it. With surplus boundaries (and own shard id `0`, the `getD` default of `shardOf`),
+`ownIntervals` lists one interval per extra boundary — unbounded in the claim — while routing
+is unchanged; the in-AIR boundary table and the 7-bit interval index cannot represent them.
+User decision 2026-10-12: a claim-only domain condition (spec v0a §2.9). -/
+
+/-- A12 (`c.layout_wf`). -/
+def a12 (cb : Bytes) : Bool :=
+  match walkD0 cb with
+  | .ok k => k.L.boundaries.length + 1 == k.L.shardIds.length
+  | .error _ => false
+
 /-- **The D0a relation**, with the unfolded-size bound `B` a parameter (the challenge
 instance is `B0`, `ChallengeD0a`), and the A9 word bound `W` and A10 depth bound `Dp`
 defaulting to the challenge's `W0`, `Dp0`. -/
 def RelD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Prop :=
   RelD0 cb w ∧ a1 cb = true ∧ a2 cb w = true ∧ canon0f cb w = true ∧ a7 B cb w = true ∧
-    a8 cb = true ∧ a9 W cb w = true ∧ a10 Dp cb w = true
+    a8 cb = true ∧ a9 W cb w = true ∧ a10 Dp cb w = true ∧ a12 cb = true
 
 instance (B : Nat) (cb w : Bytes) (W Dp : Nat) : Decidable (RelD0a B cb w W Dp) := by
   unfold RelD0a; infer_instance
@@ -494,6 +539,7 @@ def checkD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Except
   check (a8 cb) "out of domain (c.bw_requests): a chunk's bandwidth requests repeat a to_shard"
   check (a9 W cb w) "out of domain (e.chacha_words): scheduler runs draw more ChaCha20 words than the bound"
   check (a10 Dp cb w) "out of domain (w.path_depth): a used receipt proof's Merkle path is longer than the bound"
+  check (a12 cb) "out of domain (c.layout_wf): the shard layout does not have one boundary fewer than shard ids"
 
 theorem relD0a_iff (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) :
     RelD0a B cb w W Dp ↔ checkD0a B cb w W Dp = .ok () := by
@@ -502,7 +548,7 @@ theorem relD0a_iff (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) :
   | error e => simp [bind, Except.bind]
   | ok u =>
     cases a1 cb <;> cases a2 cb w <;> cases canon0f cb w <;> cases a7 B cb w <;> cases a8 cb <;>
-      cases a9 W cb w <;> cases a10 Dp cb w <;>
+      cases a9 W cb w <;> cases a10 Dp cb w <;> cases a12 cb <;>
       simp [bind, Except.bind]
 
 /-- A7 bound of the challenge instance: unfolded trie bytes (pre + post-write copies, all
@@ -512,12 +558,12 @@ def B0 : Nat := 2000000
 
 /-- The D0a domain conditions at bound `B` (Bool form). -/
 def inD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Bool :=
-  a1 cb && a2 cb w && canon0f cb w && a7 B cb w && a8 cb && a9 W cb w && a10 Dp cb w
+  a1 cb && a2 cb w && canon0f cb w && a7 B cb w && a8 cb && a9 W cb w && a10 Dp cb w && a12 cb
 
 /-- The D0a domain conditions at bound `B`. -/
 def InD0a (B : Nat) (cb w : Bytes) (W : Nat := W0) (Dp : Nat := Dp0) : Prop :=
   a1 cb = true ∧ a2 cb w = true ∧ canon0f cb w = true ∧ a7 B cb w = true ∧ a8 cb = true ∧
-    a9 W cb w = true ∧ a10 Dp cb w = true
+    a9 W cb w = true ∧ a10 Dp cb w = true ∧ a12 cb = true
 
 /-- The D0a domain at the challenge bounds `B0`, `W0`, `Dp0`. -/
 def InD0a0 (cb w : Bytes) : Prop := InD0a B0 cb w
@@ -547,8 +593,8 @@ theorem relD0a_relD0 {B : Nat} {cb w : Bytes} {W Dp : Nat} (h : RelD0a B cb w W 
 /-- The bounds are monotone (each of `B`, `W`, `Dp`). -/
 theorem relD0a_mono_all {B B' W W' Dp Dp' : Nat} (hB : B ≤ B') (hW : W ≤ W') (hD : Dp ≤ Dp')
     {cb w : Bytes} (h : RelD0a B cb w W Dp) : RelD0a B' cb w W' Dp' := by
-  obtain ⟨h0, h1, h2, h3, h4, h5, h6, h7⟩ := h
-  refine ⟨h0, h1, h2, h3, ?_, h5, ?_, ?_⟩
+  obtain ⟨h0, h1, h2, h3, h4, h5, h6, h7, h8⟩ := h
+  refine ⟨h0, h1, h2, h3, ?_, h5, ?_, ?_, h8⟩
   · unfold a7 at *
     simp only [decide_eq_true_eq] at *
     omega

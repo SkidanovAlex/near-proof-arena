@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Render.Ups.TreeProperSources
+import ZkFormal.NearV3.Render.Ups.NativeBranchProvider
 
 namespace ZkFormal.NearV3.Render.UpsGen
 open NearSpec UpsRows ZkFormal.Near

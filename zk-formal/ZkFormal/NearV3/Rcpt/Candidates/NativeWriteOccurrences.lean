@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeOldPostInputs
+import ZkFormal.NearV3.Rcpt.Candidates.NativeWriteSkeleton
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec

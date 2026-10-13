@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Render.Ups.AllocatedNodeTraffic
-import ZkFormal.NearV3.Render.Ups.AllocatedValueTraffic
+import ZkFormal.NearV3.Render.Ups.NodeByteTraffic
+import ZkFormal.NearV3.Render.Ups.ValueTraffic
 
 set_option linter.unusedSimpArgs false
 namespace ZkFormal.NearV3.Render.UpsGen

@@ -2,7 +2,6 @@ import ZkFormal.NearV3.Assembly.TrieSide
 import ZkFormal.NearV3.Assembly.RenderV3RcptSha
 import ZkFormal.NearV3.Assembly.RenderV3SrcpSha
 import ZkFormal.NearV3.Assembly.TrieShaTwo
-import ZkFormal.NearV3.Candidates.AcceptedSourceShaContract
 
 /-!
 # Receipt side + trie side of the completeness obligation for an accepted witness

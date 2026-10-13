@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcPriorIdTraceConstraints
+import ZkFormal.NearV3.Candidates.ProcPriorIdBits
 namespace ZkFormal.NearV3.Candidates.ProcPriorIdLocal
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near NearSpec NearSpec.Bandwidth ZkFormal.NearV3.Sched
 open ProcPriorIdRows ProcPriorCells ProcPriorIdTrace

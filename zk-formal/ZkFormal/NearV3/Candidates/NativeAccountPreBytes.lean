@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeAccountJobPermutation
-import ZkFormal.NearV3.Candidates.NativeAccountTrace
+import ZkFormal.NearV3.Rcpt.Candidates.AccountEmpty
 
 namespace ZkFormal.NearV3.Candidates.NativeAccountPreBytes
 open NearSpec NearSpecV3 ZkFormal.Near Assembly Rcpt.Candidates Rcpt.Candidates.NodePostUpdate

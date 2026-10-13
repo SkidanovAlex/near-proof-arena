@@ -1,4 +1,6 @@
-import ZkFormal.NearV3.Assembly.RcptDepositContradiction
+import ZkFormal.NearV3.Rcpt.Tables.Rcpt.Arith
+import ZkFormal.Near.Extract.Eval
+import ZkFormal.NearV3.Rcpt.Extract.V.Facts
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3 RcptV3Proof

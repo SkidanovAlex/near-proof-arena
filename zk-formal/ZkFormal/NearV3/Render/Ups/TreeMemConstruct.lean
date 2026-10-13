@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Render.Ups.MemTotalBounds
-import ZkFormal.NearV3.Render.Ups.TreeSerialization
 import ZkFormal.NearV3.Render.Ups.MemNative
 
 namespace ZkFormal.NearV3.Render.UpsGen

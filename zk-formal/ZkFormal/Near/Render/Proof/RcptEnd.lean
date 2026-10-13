@@ -1,4 +1,5 @@
 import ZkFormal.Near.Render.Proof.RcptClaim2
+import ZkFormal.Near.Render.Proof.RcptRegs4
 
 /-!
 # ZkFormal.Near.Render.Proof.RcptEnd — `cEnd` on the honest rows; `endFam : FamOk cEnd`

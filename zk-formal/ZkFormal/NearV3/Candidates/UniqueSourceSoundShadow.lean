@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Candidates.UniqueSourcePartitionTransfer
+import ZkFormal.Near.Extract.ShaFacts
 namespace ZkFormal.NearV3.Candidates.UniqueSourceSoundShadow
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Rcpt.Candidates
 

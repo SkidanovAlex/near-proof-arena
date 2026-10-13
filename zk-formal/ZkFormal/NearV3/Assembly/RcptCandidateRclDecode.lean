@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Assembly.RcptCandidateRclProof
 -- Source RclDecode.lean SHA256: dbc10b4ac3dcb77c269cb4fc10c3ce6a898f49c4b58d552157d5f6beedf8cc54.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
 import ZkFormal.NearV3.Rcpt.Extract.V.RclProof
+import ZkFormal.NearV3.Rcpt.Extract.V.RclDecode
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

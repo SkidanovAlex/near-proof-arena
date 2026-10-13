@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Assembly.NativeSerializedDigests
+import ZkFormal.NearV3.Assembly.UpsertShaJobs
+import ZkFormal.NearV3.Render.Ups.TreeOutputChain
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec ZkFormal.Near Render.UpsGen

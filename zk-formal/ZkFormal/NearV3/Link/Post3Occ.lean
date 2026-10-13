@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Link.Post3Writes
 import ZkFormal.NearV3.Link.Compose3
+import ZkFormal.NearV3.Link.Post3Spec
 
 /-!
 # ZkFormal.NearV3.Link.Post3Occ — every value record occurs at most once (M6d, `occ_le_one`)

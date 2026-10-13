@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Assembly.TrieUniqOk
-import ZkFormal.NearV3.Rcpt.Candidates.AcceptedLookupPhysical
+import ZkFormal.NearV3.Rcpt.Candidates.NativeLookupWhole
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieComplete — the trie part of `CompleteV3Stmt` (state)

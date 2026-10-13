@@ -1,4 +1,5 @@
 import ZkFormal.Near.Render.Proof.RcptClaim1
+import ZkFormal.Near.Render.Proof.RcptRegs3
 
 /-!
 # ZkFormal.Near.Render.Proof.RcptClaim2 — `cClaim` on the honest rows; `claimFam : FamOk cClaim`

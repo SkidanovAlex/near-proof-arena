@@ -1,4 +1,5 @@
 import ZkFormal.Near.Render.Statements
+import ZkFormal.Near.Extract.Compose
 
 /-!
 # ZkFormal.Near.Render.Compose — `RenderStmt` from the render obligations

@@ -1,5 +1,5 @@
-import ZkFormal.Assembly.RomFull
 import ZkFormal.V2.Np.Main
+import ZkFormal.Assembly.RomBound
 
 /-!
 # ZkFormal.V2.RomFull — `stark_romSound_fullP`: the closed soundness chain of v2

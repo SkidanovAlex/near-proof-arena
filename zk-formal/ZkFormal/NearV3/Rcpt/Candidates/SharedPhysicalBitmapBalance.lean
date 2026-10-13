@@ -1,4 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NodeBitmapMessages
+import ZkFormal.NearV3.Candidates.NodeUseTraffic
+import ZkFormal.NearV3.Rcpt.Candidates.UpsJointTraffic
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Render Render.UpsGen UpsRows

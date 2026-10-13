@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Assembly.LinkVPost
 import ZkFormal.NearV3.Sched.Link.CodecSV
+import ZkFormal.NearV3.Extract.Ups.UpsLink
 
 /-!
 # ZkFormal.NearV3.Assembly.LinkSched — `SchedVal` of the ups records from `HoldsP`

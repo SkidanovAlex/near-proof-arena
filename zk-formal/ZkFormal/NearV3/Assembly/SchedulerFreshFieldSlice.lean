@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Assembly.SchedulerFreshDigestWindow
 import ZkFormal.NearV3.Render.Ups.NativePrefixMetadata
+import ZkFormal.NearV3.Assembly.SchedulerFreshSlots
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec Render Render.UpsGen

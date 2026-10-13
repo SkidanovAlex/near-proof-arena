@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Candidates.ProcPriorRecordCells
-import ZkFormal.NearV3.Candidates.ProcRawNativeBytesList
 namespace ZkFormal.NearV3.Candidates.ProcPriorRecordTraffic
 open NearSpec NearSpec.Bandwidth ZkFormal.Air ZkFormal.Algebra ZkFormal.Near
 open ProcPriorRecordRows

@@ -1,10 +1,10 @@
-import ZkFormal.NearV3.Candidates.AcceptedSourceShaContract
-import ZkFormal.NearV3.Candidates.ShaFourPhysical
 import ZkFormal.NearV3.Rcpt.Candidates.ShaJobBridge
 import ZkFormal.NearV3.Rcpt.Candidates.PreparedRouting
 import ZkFormal.NearV3.Rcpt.Link.RelSources
 import ZkFormal.NearV3.Rcpt.SrcpDepth
 import ZkFormal.NearV3.Assembly.RenderV3Trie
+import ZkFormal.NearV3.Candidates.ShaFourPhysicalCore
+import ZkFormal.NearV3.Rcpt.Candidates.ShaAllocationTraffic
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieShaTwo — the SHA jobs in the two `nearAirV3` SHA tables (0, 1)

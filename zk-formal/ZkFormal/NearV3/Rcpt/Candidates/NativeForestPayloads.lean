@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Rcpt.Candidates.NativeOldNodeBytes
+import ZkFormal.NearV3.Rcpt.Candidates.NativeAllNodePayloads
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open NearSpec ZkFormal.Near Render.UpsGen Assembly

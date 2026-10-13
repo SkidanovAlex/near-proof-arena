@@ -1,6 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcessRepairForeignByteTags
-import ZkFormal.NearV3.Candidates.ProcPriorRoutedKeySymbols
-import ZkFormal.NearV3.Candidates.ProcPriorRoutedWalkView
+import ZkFormal.NearV3.Candidates.ProcPriorRoutedKeyView
 namespace ZkFormal.NearV3.Candidates.ProcessRepairKeyView
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.V2
 set_option maxRecDepth 32768

@@ -2,6 +2,7 @@ import ZkFormal.NearV3.Assembly.RcptCandidateViewFacts
 -- Source ReceiptSpans.lean SHA256: 18386ea8ba5b1199f93c7a1e9dfadc297486a529777334f0d87f28d95e1dd7d3.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
 import ZkFormal.NearV3.Rcpt.Extract.V.TableWellformed
+import ZkFormal.NearV3.Rcpt.Extract.V.ReceiptSpans
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton

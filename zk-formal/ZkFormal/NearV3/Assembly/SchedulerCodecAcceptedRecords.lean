@@ -1,8 +1,8 @@
 import ZkFormal.NearV3.Candidates.ProcRecordConcatLocal
-import ZkFormal.NearV3.Candidates.ProcRecordSelectedTraffic
 import ZkFormal.NearV3.Assembly.SchedulerCodecRetainedAllocation
 import ZkFormal.NearV3.Candidates.ProcNativePresenceBalance
 import ZkFormal.NearV3.Candidates.ProcCodecPriorReadNative
+import ZkFormal.NearV3.Candidates.ProcRecordSelectedTrafficCore
 namespace ZkFormal.NearV3.Assembly.CodecDigest
 open NearSpec NearSpecV3 Candidates Sched Sched.Gen
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near

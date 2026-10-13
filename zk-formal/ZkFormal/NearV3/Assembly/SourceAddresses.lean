@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Assembly.PathView
 import ZkFormal.NearV3.Assembly.PathRecordId
+import ZkFormal.NearV3.Assembly.ViewSegment
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec NearSpecV3 Render.UpsGen

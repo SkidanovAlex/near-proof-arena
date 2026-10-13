@@ -1,6 +1,6 @@
 import ZkFormal.NearV3.Render.Ups.TreeOutputChain
-import ZkFormal.NearV3.Render.Ups.NativeChildMemory
 import ZkFormal.NearV3.Render.Ups.MemGrowthParts
+import ZkFormal.NearV3.Render.Ups.NativeEncodingFacts
 
 namespace ZkFormal.NearV3.Render.UpsGen
 open NearSpec UpsRows

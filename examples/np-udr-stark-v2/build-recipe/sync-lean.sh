@@ -19,6 +19,12 @@
 #                         inside formal/ and are part of the model closure.
 #                         -> dependency-locks/zk-formal.sha256
 #
+# The vendored candidate set is exactly the import closure of formal/NpUdrStarkV2/*.lean, so
+# it follows the certificate's (pruned) closure: zk-formal modules the certificate does not use
+# are not shipped and not elaborated by the judge (lane v3-prune, docs/logs/v3-prune-2026-10.md;
+# `zk-formal/scripts/ClosureDeps.lean` reports which modules define constants the certificate
+# needs, `zk-formal/scripts/judge-time.py` times the shipped closure judge-style).
+#
 # usage: build-recipe/sync-lean.sh   (from anywhere), PIN=<commit> (default HEAD)
 set -euo pipefail
 PIN="${PIN:-$(git -C "$(dirname "$0")" rev-parse HEAD)}"
@@ -114,7 +120,10 @@ for m, p in trusted_mods.items():
 # copy candidate modules
 for m, p in cand_mods.items():
     root = next(r for r in CANDIDATE if m == r or m.startswith(r + "."))
-    rel = os.path.join(CANDIDATE[root], *m.split(".")) + ".lean"
+    # formal/<module path>.lean: the judge names a staged module by its path under formal/
+    # (staging.rs) and build.sh copies formal/${m//.//}.lean (was formal/<root>/<module path>,
+    # i.e. ZkFormal/ZkFormal/..., which neither resolves).
+    rel = os.path.join(*m.split(".")) + ".lean"
     dst = os.path.join(pkg, "formal", rel)
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     shutil.copyfile(p, dst)

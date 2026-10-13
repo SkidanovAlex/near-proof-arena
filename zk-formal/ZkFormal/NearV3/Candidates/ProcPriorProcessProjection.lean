@@ -1,6 +1,6 @@
-import ZkFormal.NearV3.Candidates.ProcPriorProcessRepairedSound
 import ZkFormal.NearV3.Candidates.ProcPriorProcessTransport
 import ZkFormal.NearV3.Candidates.HorizontalProjection
+import ZkFormal.NearV3.Candidates.InteractionTriplesTransport
 namespace ZkFormal.NearV3.Candidates.ProcPriorProcessProjection
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near
 open ProcPriorProcessRepairedFamily

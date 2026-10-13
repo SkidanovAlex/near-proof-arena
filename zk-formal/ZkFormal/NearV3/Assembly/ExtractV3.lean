@@ -12,7 +12,6 @@ import ZkFormal.NearV3.Rcpt.Extract.AcctProof
 import ZkFormal.NearV3.Rcpt.Extract.AkeyProof
 import ZkFormal.NearV3.Rcpt.Extract.BndProof
 import ZkFormal.NearV3.Rcpt.Extract.SizeProof
-import ZkFormal.NearV3.Rcpt.Extract.V.ViewProof
 import ZkFormal.NearV3.Public.Prepared
 
 /-!

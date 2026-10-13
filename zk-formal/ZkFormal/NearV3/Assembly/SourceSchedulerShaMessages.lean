@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.SourceShaMessages
+import ZkFormal.NearV3.Assembly.SchedulerSanityJobs
 
 namespace ZkFormal.NearV3.Assembly
 open NearSpec NearSpecV3 ZkFormal.Sha.Gen

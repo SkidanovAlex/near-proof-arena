@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Candidates.ProcDistQuietRows
+import ZkFormal.NearV3.Candidates.ProcDistGeneratorFactor
 namespace ZkFormal.NearV3.Candidates.ProcDistShardRow
 open ZkFormal.NearV3.Sched ZkFormal.NearV3.Sched.Gen ProcDistGeneratorFactor
 open Dist

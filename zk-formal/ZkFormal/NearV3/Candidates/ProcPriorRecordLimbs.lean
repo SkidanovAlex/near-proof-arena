@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPriorRecordRows
 import ZkFormal.NearV3.Candidates.ProcPriorIdLimbs
+import ZkFormal.NearV3.Candidates.ProcPriorSummary
 namespace ZkFormal.NearV3.Candidates.ProcPriorRecordLimbs
 open NearSpec
 

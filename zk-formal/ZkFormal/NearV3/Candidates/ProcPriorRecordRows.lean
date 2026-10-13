@@ -1,6 +1,5 @@
 import ZkFormal.NearV3.Candidates.ProcPriorRecordTable
 import ZkFormal.NearV3.Candidates.ProcPriorIdRows
-import ZkFormal.NearV3.Candidates.ProcPriorRawRows
 namespace ZkFormal.NearV3.Candidates.ProcPriorRecordRows
 open NearSpec NearSpec.Bandwidth ProcPriorLookup
 

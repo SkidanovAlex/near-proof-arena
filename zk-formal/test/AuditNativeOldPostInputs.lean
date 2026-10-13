@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.NativeOldPostInputs
+import ZkFormal.NearV3.Rcpt.Candidates.NativeReplayConstructor
 
 /-- info: 'ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate.replayOldWrites_of_run' depends on axioms: [propext] -/
 #guard_msgs in

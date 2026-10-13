@@ -1,5 +1,6 @@
-import ZkFormal.NearV3.Candidates.ProcessRepairReceiptFinal
-import ZkFormal.NearV3.Candidates.ProcessRepairReceiptNativeKey
+import ZkFormal.NearV3.Link.Walk3
+import ZkFormal.NearV3.Rcpt.Extract.RcptView
+import ZkFormal.V2.Air
 namespace ZkFormal.NearV3.Candidates.ProcessRepairReceiptFinalFields
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.V2
 

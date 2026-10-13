@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Assembly.RcptSkeletonLoads
+import ZkFormal.NearV3.Assembly.RcptSkeletonLoadCells
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3 ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl RcptV3

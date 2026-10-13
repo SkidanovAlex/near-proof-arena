@@ -1,3 +1,6 @@
+-- Imported first, as before the certificate pruning (the `simp` proofs below depend on the
+-- order of the `ZkFormal.Near.eval_*` simp lemmas relative to later imports).
+import ZkFormal.Near.Extract.Eval
 import ZkFormal.NearV3.Assembly.RcptSystemGasCandidate
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton

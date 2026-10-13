@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.NativeAccountPreBytes
 import ZkFormal.NearV3.Rcpt.Candidates.NativeValueDigestPipeline
+import ZkFormal.NearV3.Rcpt.Candidates.EmptyValueTraffic
 
 namespace ZkFormal.NearV3.Candidates.NativeValueByteInventory
 open NearSpec ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Render.UpsGen Assembly Rcpt.Candidates

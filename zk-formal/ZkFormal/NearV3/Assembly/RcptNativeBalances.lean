@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.RcptAccountRead
+import NearSpecV3.RuntimeD0
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 open NearSpec NearSpecV3 NearSpec.TransferV1

@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcPriorOverlayGeometry
 import ZkFormal.NearV3.Candidates.ProcPriorOverlayWindowLocal
+import ZkFormal.NearV3.Candidates.MerkleAlias
 namespace ZkFormal.NearV3.Candidates.ProcPriorOverlayDataTransport
 open ZkFormal.Air ZkFormal.Algebra
 open ZkFormal.NearV3.Assembly.CodecDigest

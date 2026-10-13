@@ -1,6 +1,5 @@
-import ZkFormal.NearV3.Candidates.ProcPriorIdBits
-import ZkFormal.NearV3.Candidates.ProcPriorIdRanges
 import ZkFormal.NearV3.Candidates.ProcPriorIndexed
+import ZkFormal.NearV3.Candidates.ProcPriorIdCells
 namespace ZkFormal.NearV3.Candidates.ProcPriorIdTrace
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near
 open ProcPriorIdRows ProcPriorCells
