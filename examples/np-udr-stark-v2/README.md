@@ -40,6 +40,13 @@ the certificate's import closure into `formal/ZkFormal`, `formal/ReexecV3D0` and
 `CARGO_NET_OFFLINE=true`). The package is the git tree of this directory plus those generated
 trees. Dry run (2026-10-13, lane v3-package): `docs/logs/v3-package-2026-10.md`.
 
+**Known blocker (2026-10-13):** the Lean step of `build.sh` (and the judge's native-lean build)
+stops at the model-import rule: `ZkFormal.Near.Render.Common` (in the 657-module closure of
+`NpUdrStarkV2.Model`, via `NearAir → Candidates.SortEmpty → Render.Proof.*`) imports
+`Std.Data.HashMap`; model modules may import only trusted modules, model modules and `Init`.
+Needs a zk-formal fix (see the log). With that rule relaxed, the build, `prepare`, `prove` and
+`out/verify` work end to end (4 D0a proofs accepted).
+
 ## Status
 
 **End to end (2026-10-13, lane/v3-prover-prove): real v3 D0a proofs, accepted by the deployed Lean
