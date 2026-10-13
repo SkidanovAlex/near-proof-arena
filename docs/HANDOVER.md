@@ -169,10 +169,15 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
 * **Packaging:** `build-recipe/build.sh`'s `out/prove`/`out/prepare` are still the v1 binaries; wire
   them to `v3prepare`/`v3prove`; vendor; judge-style build. Check ~12 min prove time against the
   judge's prove budget.
-* **Oracle:** `oracle/v3-d0a/src/d0a.rs` still uses the pre-2026-10-11 A7 measure; regenerate
-  fixtures before freezing (never edit frozen `oracle/v3`).
-* **Fixture coverage:** no fixture has ChaCha requests (tables 8/9 only empty on real data); only the
-  in-place leaf-replace upsert path occurs in fixtures (others unit-tested).
+* ~~Oracle~~ (lane oracle-d0a, 2026-10-13): `oracle/v3-d0a` implements A7 native post trie, A12,
+  empty-key-extension fix, offline `unfold-case`; public-d0a regenerated (all `.bin` byte-identical,
+  only meta.json); difftests 0 disagreements on public-d0a, fixtures-extra, full/heavy scratch corpora,
+  d1run, d2corpus (`docs/logs/oracle-d0a-2026-10.md`). **Empty main pre-state is outside RelD0**
+  (user decision 2026-10-13): Lean/Python/oracle reject it; mutant `public-d0a/mutants/
+  00-h10004-s3-w.empty_pre_state` (re-add after any regeneration; command in its meta); spec v0a §1.
+* ~~Fixture coverage~~ (lane v3-prover-cover): `fixtures-extra/d0` has 39 accepted cases incl. 9 ChaCha
+  (1–597 words, block boundaries) and 13 upsert-path cases (all 11 terminal cases / 12 part kinds);
+  real proof of x-bw-implicit accepted by Lean (`docs/logs/v3-prover-cover-2026-10.md`).
 * **Rechecked (lane v3-prover-digest):** the schedqv bus-1 DIGEST imbalance was `npudr v3bus` evaluating
   with zero publics (mrk root row reads the outcome root from `p146..177`); `v3prove` was right. `v3bus`
   fixed; `run-v2.d/digest.sh` checks BYTES/DIGEST on all 81 (`docs/logs/v3-prover-digest-2026-10.md`).
@@ -180,8 +185,8 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
   key `[0,15]`); native execution skips grant distribution and the refund-forwarding limit check.
 * Cleanup: `ChachaWords.lean` duplicates `A9Words.coreMid`/`runMid_st`; 2 `clippy -D warnings` errors
   (`protocol.rs`, `chacha.rs`); Lean `rankWalks` and Rust `ups::uu` are quadratic.
-* The full `run-v2.sh` (with `PROVE_V3=1`) on `c6330302` was started before the checkpoint; result in
-  `docs/logs/` once recorded. Earlier: 1,423 PASS on bb37a433; 2,113 PASS + extra section on 75517040.
+* Conformance: full `run-v2.sh` on `c6330302` 2,126 PASS; its 92 FAILs were stale/missing Lean exes
+  (fixed in `run-v2.sh`, `7bc2086e`); reruns schedqv 143 PASS, prove 18 PASS (real proof accepted).
 
 **Judge budgets (user decision 2026-10-13: 4 h elaboration).** The formal checker enforces
 `Limits::default` (`runners/formal-checker/src/pipeline.rs`, since `a0990606`): 1 h per module, 4 h
