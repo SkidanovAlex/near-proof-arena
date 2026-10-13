@@ -1,0 +1,56 @@
+{
+ "case": "x-dup3x2-cross",
+ "base": "oracle/fixtures/v3/public-d0a/d0/01-h10010-s1",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "dup",
+   "dst": [
+    1,
+    1
+   ],
+   "src": [
+    0,
+    0
+   ],
+   "key": "37910b3413f3ad43184e94ad2d6a77c1d3a3bba9c3e6885f4d7992130d64be3d",
+   "replaced_key": "70751dba0adb22689722b2c22b3f882fe165b3cf474deae5b53a3fbcd5e33858"
+  },
+  {
+   "op": "dup",
+   "dst": [
+    1,
+    2
+   ],
+   "src": [
+    0,
+    0
+   ],
+   "key": "37910b3413f3ad43184e94ad2d6a77c1d3a3bba9c3e6885f4d7992130d64be3d",
+   "replaced_key": "c029f5722e4ff21a7bf5f135f48b27970d9e5b2689046685cb324137a8fed455"
+  },
+  {
+   "op": "dup",
+   "dst": [
+    0,
+    3
+   ],
+   "src": [
+    1,
+    3
+   ],
+   "key": "2409e078a24caa5b22987b6b6b968ec872a372e89817b62c8df61c15872466dc",
+   "replaced_key": "c620046cbbd5b521df99c165cd23ac8db20d0feb2b3bf2679f1245d4225a5c4e"
+  }
+ ],
+ "python_fixups": [],
+ "python_verdict": "ok",
+ "note": "two repeated keys: one 3 copies (B2 + 2 in block 1), one 2 copies (block 1 + B2)",
+ "claim_sha256": "e4cc15c9b81a0116450b5a5d89b0d1a426dbc9a5ff7b91b8b7886592ca39836f",
+ "witness_sha256": "d504ed930f064a5cc77fa3ecb2606dcfa6815afbe6c77be1384f57456ed3cd0c"
+}

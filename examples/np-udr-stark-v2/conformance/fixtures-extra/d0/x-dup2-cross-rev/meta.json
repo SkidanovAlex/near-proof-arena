@@ -1,0 +1,30 @@
+{
+ "case": "x-dup2-cross-rev",
+ "base": "oracle/fixtures/v3/public-d0a/d0/01-h10010-s1",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "dup",
+   "dst": [
+    0,
+    1
+   ],
+   "src": [
+    1,
+    1
+   ],
+   "key": "70751dba0adb22689722b2c22b3f882fe165b3cf474deae5b53a3fbcd5e33858",
+   "replaced_key": "0c72d37813033a901e566b702c9845b9298b614d0bd05cb9f45229b21450c290"
+  }
+ ],
+ "python_fixups": [],
+ "python_verdict": "ok",
+ "note": "2 copies across source blocks (block-1 slot copied into B2)",
+ "claim_sha256": "b4aa3f68647ca8d3057564df627c826561d04d7d57af8ff479e3dfb835a4af07",
+ "witness_sha256": "a7f122713e1c811f3ab7977b5f7737216d05bd5fee3f3b24e2588005c8fd8040"
+}

@@ -1,0 +1,59 @@
+{
+ "case": "x-dup4-b2",
+ "base": "oracle/fixtures/v3/public-d0a/d0/01-h10004-s0",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "dup",
+   "dst": [
+    0,
+    2
+   ],
+   "src": [
+    0,
+    1
+   ],
+   "key": "af44c96e65282c1db05a25121dd3b005a8f0b3daaf2db0bd38c0005483227830",
+   "replaced_key": "7e0767d590b241cbfe080e9d4a874b6b29b7570d1d3b50973c0634427370738c"
+  },
+  {
+   "op": "dup",
+   "dst": [
+    0,
+    3
+   ],
+   "src": [
+    0,
+    1
+   ],
+   "key": "af44c96e65282c1db05a25121dd3b005a8f0b3daaf2db0bd38c0005483227830",
+   "replaced_key": "1f6258459bb0dc9fb79e6210b585e946d6d400f0e3ff790662d6ee2c1aef7291"
+  },
+  {
+   "op": "dup",
+   "dst": [
+    0,
+    4
+   ],
+   "src": [
+    0,
+    1
+   ],
+   "key": "af44c96e65282c1db05a25121dd3b005a8f0b3daaf2db0bd38c0005483227830",
+   "replaced_key": "ca586e6aeca906d61d3e5f2a15f697cce13cb620f5c71efbc09c4fde62fc803a"
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "note": "4 copies in B2 (every non-own slot)",
+ "claim_sha256": "73841b593726ecb2e883541d2a8fe8e007811b6458f670c5a44f522775f69a5d",
+ "witness_sha256": "474f7c5cc78f784d593dd752bfef12126b0aafcd592b29986440c254dd7fa1ad"
+}

@@ -1,0 +1,33 @@
+{
+ "case": "x-dup2-b2",
+ "base": "oracle/fixtures/v3/public-d0a/d0/01-h10004-s0",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "dup",
+   "dst": [
+    0,
+    2
+   ],
+   "src": [
+    0,
+    1
+   ],
+   "key": "af44c96e65282c1db05a25121dd3b005a8f0b3daaf2db0bd38c0005483227830",
+   "replaced_key": "7e0767d590b241cbfe080e9d4a874b6b29b7570d1d3b50973c0634427370738c"
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "note": "2 copies in B2 (block 0)",
+ "claim_sha256": "5af7174aca6a1184268d2f501ea9f347f69064c9902d0852bd23ae2b1ff51bc9",
+ "witness_sha256": "26f5146f24d5e635f871d97c11e76d6c3087b1018252b8d2d0111a93c705a797"
+}

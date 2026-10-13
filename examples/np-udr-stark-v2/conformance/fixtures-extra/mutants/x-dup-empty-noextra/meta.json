@@ -1,0 +1,47 @@
+{
+ "case": "x-dup-empty-noextra",
+ "base": "oracle/fixtures/v3/public-d0a/d0/00-h10025-s2",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": false,
+ "expected_rel_d0a": false,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "dup",
+   "dst": [
+    1,
+    1
+   ],
+   "src": [
+    1,
+    0
+   ],
+   "key": "d7becb218938c43a484f296260c873cb155d508b3eadb50db5507e22b78c3780",
+   "replaced_key": "2ab98af213e996f523649aad39f3cc3352ec14432dcd9801c292d4c51c70bb72"
+  },
+  {
+   "op": "groups",
+   "shards": [
+    3
+   ],
+   "groups": {
+    "3": ""
+   },
+   "empty_values": 1,
+   "pre_state_root": "4117bac2ad310d21928b87d4a1fbf6b1c7ec5e1afe0569f2cb03a648d831f543"
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: MissingTrieValue (node)",
+  "Reject: implicit transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "Reject: source_receipt_proofs contains too many proofs",
+ "note": "x-dup-empty-implicit without the extra entry: reject",
+ "claim_sha256": "9906a0fd57464b60428e1bf2254c41f81767d4ae4348830b6d1ad8473d27c1de",
+ "witness_sha256": "5713cda066ad33a465775cc8e5f2a7e7839a4a6c28282696abf15512a081af75",
+ "mutation": "w.dup_noextra"
+}
