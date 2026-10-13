@@ -65,7 +65,10 @@ pub fn hash_ranges(
     let ms: Vec<&CMat> = mats.iter().filter(|m| m.class == k).collect();
     if ms.is_empty() {
         let p = prev.expect("level 0 needs a matrix");
+        use rayon::prelude::*;
         return (0..n)
+            .into_par_iter()
+            .with_min_len(1024)
             .map(|i| wh(TAG_NODE, &[&[k as u8], &p[2 * i], &p[2 * i + 1]]))
             .collect();
     }
@@ -125,11 +128,14 @@ const H0: [u32; 8] = [
 
 impl LeafStates {
     fn init(n: usize) -> Vec<Digest64> {
+        use rayon::prelude::*;
         let mut d = [0u8; 64];
         for (k, w) in H0.iter().chain(H0.iter()).enumerate() {
             d[4 * k..4 * k + 4].copy_from_slice(&w.to_ne_bytes());
         }
-        vec![d; n]
+        let mut v: Vec<Digest64> = Vec::with_capacity(n);
+        v.par_extend((0..n).into_par_iter().with_min_len(1 << 14).map(|_| d));
+        v
     }
     #[inline(always)]
     fn load(d: &Digest64) -> [u32; 16] {
@@ -141,72 +147,92 @@ impl LeafStates {
             d[4 * k..4 * k + 4].copy_from_slice(&w.to_ne_bytes());
         }
     }
-    #[inline(always)]
-    fn compress(s: &mut [u32; 16], block: &[u8; 64], first: bool) {
-        use sha2::digest::generic_array::GenericArray;
-        let (a, b) = s.split_at_mut(8);
-        let a: &mut [u32; 8] = a.try_into().unwrap();
-        let b: &mut [u32; 8] = b.try_into().unwrap();
-        if first {
-            let mut blk = *block;
-            blk[11] = 1;
-            sha2::compress256(a, &[*GenericArray::from_slice(&blk)]);
-            blk[11] = 2;
-            sha2::compress256(b, &[*GenericArray::from_slice(&blk)]);
-        } else {
-            let g = GenericArray::from_slice(block);
-            sha2::compress256(a, std::slice::from_ref(g));
-            sha2::compress256(b, std::slice::from_ref(g));
-        }
-    }
     /// Absorb `data` into one message whose stream holds `done` bytes so far
     /// (`done = 0`: nothing yet, the 12-byte prefix `RO_TAG ‖ tag ‖ variant`
     /// comes first; otherwise `done` is a multiple of 64). With `last`, pad
     /// and write the digest; otherwise `done + data` (+ prefix) must end on a
-    /// block boundary.
+    /// block boundary. Blocks after the first are compressed into both states
+    /// at once ([`crate::sha2x::compress_pair`]).
     #[inline]
     fn absorb(d: &mut Digest64, tag: u8, done: u64, data: &[u8], last: bool) {
-        let mut s = Self::load(d);
-        let mut buf = [0u8; 64];
-        let (mut c, mut first) = if done == 0 {
-            buf[..10].copy_from_slice(crate::hash::RO_TAG);
-            buf[10] = tag;
-            (12usize, true)
-        } else {
-            debug_assert_eq!(done % 64, 0);
-            (0, false)
-        };
+        let s = Self::load(d);
+        let mut sa: [u32; 8] = s[..8].try_into().unwrap();
+        let mut sb: [u32; 8] = s[8..].try_into().unwrap();
         let total = if done == 0 { 12 } else { done } + data.len() as u64;
         let mut off = 0;
-        while off < data.len() {
-            let take = (64 - c).min(data.len() - off);
-            buf[c..c + take].copy_from_slice(&data[off..off + take]);
-            c += take;
-            off += take;
-            if c == 64 {
-                Self::compress(&mut s, &buf, first);
-                first = false;
-                c = 0;
+        if done == 0 {
+            // block 0: prefix (with the variant byte) and the first 52 bytes
+            let mut b0 = [0u8; 64];
+            b0[..10].copy_from_slice(crate::hash::RO_TAG);
+            b0[10] = tag;
+            if data.len() >= 52 {
+                b0[12..].copy_from_slice(&data[..52]);
+                Self::compress_first(&mut sa, &mut sb, &b0);
+                off = 52;
+            } else {
+                // short message (with `last`): prefix ‖ data ‖ padding
+                debug_assert!(last, "unaligned leaf feed");
+                let mut m = b0[..12].to_vec();
+                m.extend_from_slice(data);
+                Self::finish_from(&mut sa, &mut sb, &m, total, true, d);
+                return;
             }
         }
+        let rest = &data[off..];
+        let nfull = rest.len() / 64;
+        // SAFETY: `[u8; 64]` has alignment 1; `nfull · 64 ≤ rest.len()`.
+        let blocks: &[[u8; 64]] =
+            unsafe { std::slice::from_raw_parts(rest.as_ptr() as *const [u8; 64], nfull) };
+        crate::sha2x::compress_pair(&mut sa, &mut sb, blocks);
+        let tail = &rest[nfull * 64..];
         if !last {
-            debug_assert_eq!(c, 0, "unaligned leaf feed");
+            debug_assert!(tail.is_empty(), "unaligned leaf feed");
+            let mut s = [0u32; 16];
+            s[..8].copy_from_slice(&sa);
+            s[8..].copy_from_slice(&sb);
             Self::store(d, &s);
             return;
         }
-        buf[c] = 0x80;
-        c += 1;
-        if c > 56 {
-            buf[c..].fill(0);
-            Self::compress(&mut s, &buf, first);
-            first = false;
-            buf = [0u8; 64];
-            c = 0;
+        Self::finish_from(&mut sa, &mut sb, tail, total, false, d);
+    }
+
+    /// Block 0 of both messages (variant byte 1 resp. 2 at offset 11).
+    #[inline(always)]
+    fn compress_first(sa: &mut [u32; 8], sb: &mut [u32; 8], b0: &[u8; 64]) {
+        use sha2::digest::generic_array::GenericArray;
+        let mut blk = *b0;
+        blk[11] = 1;
+        sha2::compress256(sa, &[*GenericArray::from_slice(&blk)]);
+        blk[11] = 2;
+        sha2::compress256(sb, &[*GenericArray::from_slice(&blk)]);
+    }
+
+    /// Pad the remaining bytes `tail` (< 64, or the whole short message
+    /// including block 0 when `first`) and write the digest into `d`.
+    fn finish_from(
+        sa: &mut [u32; 8],
+        sb: &mut [u32; 8],
+        tail: &[u8],
+        total: u64,
+        first: bool,
+        d: &mut Digest64,
+    ) {
+        let mut m = tail.to_vec();
+        m.push(0x80);
+        while m.len() % 64 != 56 {
+            m.push(0);
         }
-        buf[c..56].fill(0);
-        buf[56..].copy_from_slice(&(total * 8).to_be_bytes());
-        Self::compress(&mut s, &buf, first);
-        for (k, w) in s.iter().enumerate() {
+        m.extend_from_slice(&(total * 8).to_be_bytes());
+        // SAFETY: as above (`m.len()` is a multiple of 64).
+        let blocks: &[[u8; 64]] =
+            unsafe { std::slice::from_raw_parts(m.as_ptr() as *const [u8; 64], m.len() / 64) };
+        let mut rest = blocks;
+        if first {
+            Self::compress_first(sa, sb, &blocks[0]);
+            rest = &blocks[1..];
+        }
+        crate::sha2x::compress_pair(sa, sb, rest);
+        for (k, w) in sa.iter().chain(sb.iter()).enumerate() {
             d[4 * k..4 * k + 4].copy_from_slice(&w.to_be_bytes());
         }
     }
@@ -281,7 +307,10 @@ fn hash_level0_blocks(dft: &Dft, mats: &[CMat], g0: usize, s: usize, cw: usize) 
         let nbytes: usize = 4 * sw.iter().sum::<usize>();
         evs.resize_with(segs.len(), Vec::new);
         for (e, &w) in evs.iter_mut().zip(&sw) {
-            e.resize(t * w, F::ZERO);
+            if e.len() != t * w {
+                // fully overwritten by the coset DFT
+                *e = crate::bufpool::take(t * w);
+            }
         }
         for b in g0 / t..(g0 + s) / t {
             for ((e, co), &(mi, _, _)) in evs.iter_mut().zip(&cos).zip(segs) {
@@ -316,6 +345,12 @@ fn hash_level0_blocks(dft: &Dft, mats: &[CMat], g0: usize, s: usize, cw: usize) 
             crate::lowmem::prof::add(&crate::lowmem::prof::FEED, _t);
         }
         done = if done == 0 { 12 } else { done } + nbytes as u64;
+        for co in cos {
+            crate::bufpool::give(co.values);
+        }
+    }
+    for e in evs {
+        crate::bufpool::give(e);
     }
     st
 }

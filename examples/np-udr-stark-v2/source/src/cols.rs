@@ -133,7 +133,8 @@ impl TraceCols {
     pub fn chunk(&self, c0: usize, c1: usize) -> RowMajorMatrix<F> {
         let w = c1 - c0;
         let h = self.height();
-        let mut v = vec![F::ZERO; h * w];
+        // every element is written below
+        let mut v = crate::bufpool::take(h * w);
         v.par_chunks_mut(w.max(1) * 1024)
             .enumerate()
             .for_each(|(k, out)| {

@@ -46,6 +46,7 @@ impl Timer {
         Timer(crate::prover_ref::Timer::new(on))
     }
     fn lap(&mut self, what: &str) {
+        crate::bufpool::clear();
         let on = self.0.on;
         self.0.lap(what);
         if on {
@@ -251,7 +252,7 @@ impl Coefs {
             return;
         }
         let _t = std::time::Instant::now();
-        let c = dft.idft_batch(vals);
+        let c = crate::lde::idft(dft, vals);
         crate::lowmem::prof::add(&crate::lowmem::prof::COEFFS, _t);
         self.parts.push((self.width, c));
         self.width += w;
@@ -271,7 +272,7 @@ impl Coefs {
             let cd = crate::lde::coset_dft(n);
             let c = sh * omega(lde).exp_u64(crate::mmcs::rev(p0 >> n, lde - n) as u64);
             let maxw = self.parts.iter().map(|p| p.1.width()).max().unwrap_or(0);
-            let mut tmp = vec![F::ZERO; t * maxw];
+            let mut tmp = crate::bufpool::take(t * maxw);
             for (c0, co) in &self.parts {
                 let cw = co.width();
                 let ev = &mut tmp[..t * cw];
@@ -288,6 +289,7 @@ impl Coefs {
                         }
                     });
             }
+            crate::bufpool::give(tmp);
             crate::lowmem::prof::add(&crate::lowmem::prof::FILL, _t);
             return;
         }
@@ -469,22 +471,51 @@ fn vandermonde_inverse(z: &[F]) -> Vec<Vec<F>> {
     (0..n).map(|m| a[m][n..].to_vec()).collect()
 }
 
+/// `c·ω_{2^a}^{rev_a(u)}` for `u < 2^a` (a coset in bit-reversed order),
+/// computed in parallel.
+fn bitrev_coset(c: F, a: usize) -> Vec<F> {
+    let n = 1usize << a;
+    let g = omega(a);
+    let ch = 1usize << a.min(12);
+    let mut xs = vec![F::ZERO; n];
+    xs.par_chunks_mut(ch).enumerate().for_each(|(k, o)| {
+        let mut x = c * g.exp_u64((k * ch) as u64);
+        for v in o.iter_mut() {
+            *v = x;
+            x *= g;
+        }
+    });
+    reverse_slice_index_bits(&mut xs);
+    xs
+}
+
 /// Lagrange selectors `L_0`, `L_{T-1}` at LDE positions `p0..p0+len`.
 fn selectors(h: usize, lde: usize, sh: F, p0: usize, len: usize) -> (Vec<F>, Vec<F>) {
     let a = log2_strict_usize(len);
     let c = sh * omega(lde).exp_u64(crate::mmcs::rev(p0 >> a, lde - a) as u64);
-    let mut xs: Vec<F> = omega(a).shifted_powers(c).take(len).collect();
-    reverse_slice_index_bits(&mut xs);
+    let xs = bitrev_coset(c, a);
     let tf = F::from_u64(1u64 << h);
     let h_last = omega(h).inverse();
-    let zs: Vec<F> = xs.iter().map(|&x| x.exp_power_of_2(h) - F::ONE).collect();
-    let i1 =
-        batch_multiplicative_inverse(&xs.iter().map(|&x| tf * (x - F::ONE)).collect::<Vec<_>>());
-    let i2 =
-        batch_multiplicative_inverse(&xs.iter().map(|&x| tf * (x - h_last)).collect::<Vec<_>>());
+    let zs: Vec<F> = xs
+        .par_iter()
+        .map(|&x| x.exp_power_of_2(h) - F::ONE)
+        .collect();
+    let i1 = batch_multiplicative_inverse(
+        &xs.par_iter()
+            .map(|&x| tf * (x - F::ONE))
+            .collect::<Vec<_>>(),
+    );
+    let i2 = batch_multiplicative_inverse(
+        &xs.par_iter()
+            .map(|&x| tf * (x - h_last))
+            .collect::<Vec<_>>(),
+    );
     (
-        (0..len).map(|i| zs[i] * i1[i]).collect(),
-        (0..len).map(|i| h_last * zs[i] * i2[i]).collect(),
+        (0..len).into_par_iter().map(|i| zs[i] * i1[i]).collect(),
+        (0..len)
+            .into_par_iter()
+            .map(|i| h_last * zs[i] * i2[i])
+            .collect(),
     )
 }
 
@@ -533,7 +564,19 @@ fn quotient(
     let mut qv = vec![EF::ZERO; npts];
     const CH: usize = 1024;
 
+    let qprof = std::env::var_os("NPUDR_QPROF").is_some() && h >= 16;
+    let mut qt = std::time::Instant::now();
+    let mut lap = |what: &str| {
+        if qprof {
+            eprintln!(
+                "[quot]   2^{h} w {w}: {what} {:.2}s",
+                qt.elapsed().as_secs_f64()
+            );
+        }
+        qt = std::time::Instant::now();
+    };
     // ---- family 1: bus constraints ----
+    let mut bus_len = 0;
     if wa > 0 {
         let asrc = AuxSrc::new(trace, q.tab, q.lay, q.pubs, q.alpha_fp, q.gamma);
         let mut ac = Coefs::new();
@@ -564,6 +607,9 @@ fn quotient(
         for (j, &c) in asrc.cols.iter().enumerate() {
             map[c] = j as u32;
         }
+        lap(&format!(
+            "aux+ivals coeffs (aw {aw}, iw {iw}, ivals {use_ivals})"
+        ));
         let fast = FastBus::new(q, a_aux);
         let ihalves = if use_ivals { 1 } else { 2 };
         let avail = bud.avail(used + trace.bytes() + ac.bytes() + ic.bytes());
@@ -573,6 +619,7 @@ fn quotient(
         } else {
             pass_len((2 * aw + ihalves * iw) * 4 + 48, avail, t)
         };
+        bus_len = len;
         let nh = if len >= t { 1 } else { 2 };
         let mut ha = Halves::new(aw, len, nh);
         let mut hi = Halves::new(iw, len, if len >= t { 1 } else { ihalves });
@@ -697,17 +744,28 @@ fn quotient(
         }
     }
 
+    lap(&format!("bus family blocks (aux len {bus_len})"));
     // ---- family 2: main constraints, trace converted to coefficients ----
     // Under memory pressure (the coefficients do not fit next to the compact
     // trace) the trace's compact columns are released while the coefficients
     // are held and rebuilt afterwards; otherwise the trace stays as is.
     let mc_bytes = (w * 4) << h;
-    let release = used + trace.bytes() + mc_bytes > bud.bytes / 10 * 7;
+    // Streaming: when whole blocks do not fit next to the coefficients but
+    // do fit next to the compact trace, each block is computed from the
+    // trace (iDFT + coset DFT per column chunk) and no coefficients are held.
+    let whole = (w * 4 + 48) * t;
+    // (`NPUDR_QSTREAM=1` forces it, for tests)
+    let force = std::env::var("NPUDR_QSTREAM").is_ok_and(|v| v == "1");
+    let stream = t >= 1 << crate::lmcommit::FAST_MIN_LOG
+        && (force
+            || whole > bud.avail(used + trace.bytes() + mc_bytes)
+                && whole + 3 * ((chunk * 4) << h) <= bud.avail(used + trace.bytes()));
+    let release = !stream && used + trace.bytes() + mc_bytes > bud.bytes / 10 * 7;
     if release {
         malloc_trim();
     }
     let mut mc = Coefs::new();
-    for c0 in (0..w).step_by(chunk) {
+    for c0 in (0..w).step_by(chunk).filter(|_| !stream) {
         let c1 = (c0 + chunk).min(w);
         let v = if release {
             trace.take_chunk(c0, c1)
@@ -719,22 +777,41 @@ fn quotient(
             malloc_trim();
         }
     }
+    lap(&format!("main coeffs (release {release}, stream {stream})"));
     let avail = bud.avail(used + trace.bytes() + mc.bytes());
-    let len = if (w * 4 + 48) * t <= avail {
+    let len = if stream || (w * 4 + 48) * t <= avail {
         t
     } else {
         pass_len(2 * w * 4 + 48, avail, t)
     };
     let mut hm = Halves::new(w, len, if len >= t { 1 } else { 2 });
+    let trace_ro: &TraceCols = trace;
+    let load = |hm: &mut Halves, half: usize, p: usize| {
+        if stream {
+            stream_block(
+                dft,
+                trace_ro,
+                chunk,
+                lde,
+                sh,
+                p,
+                &mut hm.buf[half * len * w..(half + 1) * len * w],
+            );
+        } else {
+            hm.load(&mc, dft, half, p, lde, sh);
+        }
+    };
     for (load_cur, st) in schedule(npts, t, h, len) {
         if let Some(p) = load_cur {
-            hm.load(&mc, dft, st.cur, p, lde, sh);
+            load(&mut hm, st.cur, p);
         }
         if let Some(p) = st.load_next {
-            hm.load(&mc, dft, 1 - st.cur, p, lde, sh);
+            load(&mut hm, 1 - st.cur, p);
         }
+        let ts0 = std::time::Instant::now();
         let (sfirst, slast) = selectors(h, lde, sh, st.p0, len);
         let next32 = next_index(&st, len, t, h);
+        let tsel = ts0.elapsed().as_secs_f64();
         let tb0 = std::time::Instant::now();
         let row0 = st.cur * len;
         // `eval_rows` overwrites its output: evaluate aside, then add to
@@ -761,9 +838,17 @@ fn quotient(
                     *x += *y;
                 }
             });
+        if qprof {
+            eprintln!(
+                "[quot]     main block p0 {}: selectors {tsel:.2}s beval {:.2}s",
+                st.p0,
+                tb0.elapsed().as_secs_f64()
+            );
+        }
         crate::lowmem::prof::add(&crate::lowmem::prof::BEVAL, tb0);
     }
     drop(hm);
+    lap(&format!("main blocks (len 2^{})", log2_strict_usize(len)));
     // rebuild the compact trace from the coefficients
     let _tr = std::time::Instant::now();
     for (c0, co) in std::mem::take(&mut mc.parts) {
@@ -774,6 +859,7 @@ fn quotient(
     }
     crate::lowmem::prof::add(&crate::lowmem::prof::COEFFS, _tr);
 
+    lap("rebuild");
     // ---- interpolation: q = V⁻¹·y ----
     let zb: Vec<(F, F)> = (0..nq)
         .map(|b| {
@@ -788,8 +874,31 @@ fn quotient(
         let blk = &mut qv[b * t..(b + 1) * t];
         let zi = (z - F::ONE).inverse();
         blk.par_iter_mut().for_each(|x| *x *= zi);
-        reverse_slice_index_bits(blk);
-        let y = dft.coset_idft_batch(RowMajorMatrix::new(ef_to_base_row(blk), 8), c);
+        let y = if t >= 1 << crate::lmcommit::FAST_MIN_LOG {
+            // coset iDFT straight from the bit-reversed block: iDFT, then
+            // row `i` times `c^{-i}`
+            let mut base = vec![F::ZERO; t * 8];
+            base.par_chunks_mut(8)
+                .zip(blk.par_iter())
+                .for_each(|(o, x)| o.copy_from_slice(ef_coeffs(x)));
+            let mut y = vec![F::ZERO; t * 8];
+            crate::lde::coset_dft(h).idft_from(&base, 8, true, &mut y);
+            let ci = c.inverse();
+            const RC: usize = 4096;
+            y.par_chunks_mut(8 * RC).enumerate().for_each(|(k, rows)| {
+                let mut p = ci.exp_u64((k * RC) as u64);
+                for row in rows.chunks_mut(8) {
+                    for x in row.iter_mut() {
+                        *x *= p;
+                    }
+                    p *= ci;
+                }
+            });
+            RowMajorMatrix::new(y, 8)
+        } else {
+            reverse_slice_index_bits(blk);
+            dft.coset_idft_batch(RowMajorMatrix::new(ef_to_base_row(blk), 8), c)
+        };
         let wb: Vec<F> = (0..nq).map(|m| winv[m][b]).collect();
         out.values
             .par_chunks_mut(wq)
@@ -802,7 +911,68 @@ fn quotient(
                 }
             });
     }
+    lap("interpolation");
     Ok(out)
+}
+
+/// Values of all columns of `trace` on the LDE block at `p0` (whole block,
+/// bit-reversed order) into the row-major `dst`, from the compact trace:
+/// per column chunk an iDFT and a coset DFT.
+#[allow(clippy::too_many_arguments)]
+fn stream_block(
+    dft: &Dft,
+    trace: &TraceCols,
+    chunk: usize,
+    lde: usize,
+    sh: F,
+    p0: usize,
+    dst: &mut [F],
+) {
+    let _t = std::time::Instant::now();
+    let t = trace.height();
+    let w = trace.width();
+    let n = trace.log_h;
+    let cd = crate::lde::coset_dft(n);
+    let c = sh * omega(lde).exp_u64(crate::mmcs::rev(p0 >> n, lde - n) as u64);
+    let mut tmp = crate::bufpool::take(t * chunk.min(w));
+    let qprof = std::env::var_os("NPUDR_QPROF").is_some();
+    let mut tt = [0f64; 4];
+    for c0 in (0..w).step_by(chunk) {
+        let c1 = (c0 + chunk).min(w);
+        let cw = c1 - c0;
+        let _c = std::time::Instant::now();
+        let v = trace.chunk(c0, c1);
+        tt[0] += _c.elapsed().as_secs_f64();
+        let _d = std::time::Instant::now();
+        let co = crate::lde::idft(dft, v);
+        tt[1] += _d.elapsed().as_secs_f64();
+        crate::lowmem::prof::add(&crate::lowmem::prof::COEFFS, _c);
+        let ev = &mut tmp[..t * cw];
+        let _e = std::time::Instant::now();
+        cd.eval(&co.values, cw, c, ev);
+        tt[2] += _e.elapsed().as_secs_f64();
+        crate::lowmem::prof::add(&crate::lowmem::prof::EVAL, _e);
+        crate::bufpool::give(co.values);
+        let ev = &*ev;
+        let _s = std::time::Instant::now();
+        dst.par_chunks_mut(w * 1024)
+            .enumerate()
+            .for_each(|(k, rows)| {
+                for (i, row) in rows.chunks_mut(w).enumerate() {
+                    let r = k * 1024 + i;
+                    row[c0..c1].copy_from_slice(&ev[r * cw..(r + 1) * cw]);
+                }
+            });
+        tt[3] += _s.elapsed().as_secs_f64();
+    }
+    crate::bufpool::give(tmp);
+    if qprof {
+        eprintln!(
+            "[quot]     stream block: chunk {:.2}s idft {:.2}s eval {:.2}s scatter {:.2}s",
+            tt[0], tt[1], tt[2], tt[3]
+        );
+    }
+    crate::lowmem::prof::add(&crate::lowmem::prof::FILL, _t);
 }
 
 /// Bus constraints at one point for tables whose interactions have at most
@@ -1325,7 +1495,7 @@ pub fn prove_cols(
             i += sch.ood_len(t);
         }
         // coefficients of P_z (= iDFT(vz) + quotient part) and P_gz
-        let mut pz = dft.idft_batch(RowMajorMatrix::new(ef_to_base_row(&vz), 8));
+        let mut pz = crate::lde::idft(&dft, RowMajorMatrix::new(ef_to_base_row(&vz), 8));
         drop(vz);
         for (r, x) in cq_poly.iter().enumerate() {
             for (l, c) in ef_coeffs(x).iter().enumerate() {
@@ -1333,7 +1503,7 @@ pub fn prove_cols(
             }
         }
         drop(cq_poly);
-        let pg = dft.idft_batch(RowMajorMatrix::new(ef_to_base_row(&vg), 8));
+        let pg = crate::lde::idft(&dft, RowMajorMatrix::new(ef_to_base_row(&vg), 8));
         drop(vg);
         let mut both = vec![F::ZERO; t_rows * 16];
         both.par_chunks_mut(16).enumerate().for_each(|(r, o)| {
@@ -1347,14 +1517,18 @@ pub fn prove_cols(
         for b in 0..n / t_rows {
             let p0 = b * t_rows;
             let ev = eval_range(&dft, &both, lg, sh, p0, t_rows, None);
-            let xs: Vec<F> = (0..t_rows)
-                .map(|u| sh * omega(lg).exp_u64(crate::mmcs::rev(p0 + u, lg) as u64))
-                .collect();
+            // block `b` = the coset `c·⟨ω_T⟩` in bit-reversed order
+            let cb = sh * omega(lg).exp_u64(crate::mmcs::rev(b, lg - h) as u64);
+            let xs = bitrev_coset(cb, h);
             let iz = batch_multiplicative_inverse(
-                &xs.iter().map(|&x| ef_from_base(x) - z).collect::<Vec<_>>(),
+                &xs.par_iter()
+                    .map(|&x| ef_from_base(x) - z)
+                    .collect::<Vec<_>>(),
             );
             let igz = batch_multiplicative_inverse(
-                &xs.iter().map(|&x| ef_from_base(x) - gz).collect::<Vec<_>>(),
+                &xs.par_iter()
+                    .map(|&x| ef_from_base(x) - gz)
+                    .collect::<Vec<_>>(),
             );
             g[p0..p0 + t_rows]
                 .par_iter_mut()

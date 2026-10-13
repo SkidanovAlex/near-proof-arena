@@ -67,5 +67,10 @@ fn main() {
     time("p3 idft_batch (+clone)", &mut |_| {
         r = Some(dft.idft_batch(vals.clone()));
     });
+    let mut co2 = vec![F::ZERO; t * w];
+    time("lde::CosetDft::idft", &mut |_| {
+        cd.idft(&vals.values, w, &mut co2)
+    });
+    assert_eq!(co2, r.unwrap().values, "idft mismatch");
     println!("ok");
 }

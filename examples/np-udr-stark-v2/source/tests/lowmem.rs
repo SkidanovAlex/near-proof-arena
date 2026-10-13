@@ -20,6 +20,20 @@ fn same(
     npudr::verifier::verify(air, PUB, cb, &b).unwrap();
 }
 
+/// Whole-block quotient computed from the compact trace (streaming mode),
+/// on tables of `2^10` rows and more.
+#[test]
+fn lowmem_streaming_quotient_equals_reference() {
+    unsafe { std::env::set_var("NPUDR_QSTREAM", "1") };
+    let (tr, last) = toy::fib_trace(13, 1, 1);
+    let cb = toy::fib_claim(1, 1, last);
+    same(&toy::fib_air(), vec![tr], &cb, "10");
+    let bus = toy::bus_air();
+    let xs: Vec<u32> = (0..4096u32).map(|i| (i * 7) % 1024).collect();
+    same(&bus, toy::bus_traces(10, 12, &xs), &[], "10");
+    unsafe { std::env::remove_var("NPUDR_QSTREAM") };
+}
+
 #[test]
 fn lowmem_equals_reference() {
     for mem in ["10", "0.0005", "0.00002"] {

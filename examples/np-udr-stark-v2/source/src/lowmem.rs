@@ -233,7 +233,19 @@ pub fn eval_range(
         }
         return RowMajorMatrix::new(v, w);
     }
+    if len == t && t >= 1 << 10 {
+        // a whole block: cache-blocked coset DFT, no copy of the coefficients
+        let mut out = vec![F::ZERO; t * w];
+        crate::lde::coset_dft(a).eval(&coeffs.values, w, c, &mut out);
+        return RowMajorMatrix::new(out, w);
+    }
     let h = fold(coeffs, len, c.exp_u64(len as u64));
+    if len >= 1 << 10 {
+        // the folded polynomials' evaluations on `c·⟨ω_len⟩`
+        let mut out = vec![F::ZERO; len * w];
+        crate::lde::coset_dft(a).eval(&h.values, w, c, &mut out);
+        return RowMajorMatrix::new(out, w);
+    }
     dft.coset_dft_batch(h, c)
         .bit_reverse_rows()
         .to_row_major_matrix()
@@ -268,6 +280,17 @@ pub struct WhStream {
 fn compress(st: &mut [u32], block: &[u8; 64]) {
     let s: &mut [u32; 8] = st.try_into().unwrap();
     sha2::compress256(s, &[*GenericArray::from_slice(block)]);
+}
+
+/// Both states of a message (`st[..8]`, `st[8..]`) on the same block.
+#[inline]
+fn pair(st: &mut [u32; 16], block: &[u8; 64]) {
+    let (a, b) = st.split_at_mut(8);
+    crate::sha2x::compress_pair(
+        a.try_into().unwrap(),
+        b.try_into().unwrap(),
+        std::slice::from_ref(block),
+    );
 }
 
 impl WhStream {
@@ -309,8 +332,7 @@ impl WhStream {
             off += take;
             if carry == 64 {
                 if first {
-                    compress(&mut st[..8], buf);
-                    compress(&mut st[8..], buf);
+                    pair(st, buf);
                 } else {
                     buf[11] = 1;
                     compress(&mut st[..8], buf);
@@ -415,8 +437,7 @@ impl WhStream {
                 blocks.push(buf);
                 for mut b in blocks {
                     if first {
-                        compress(&mut st[..8], &b);
-                        compress(&mut st[8..], &b);
+                        pair(&mut st, &b);
                     } else {
                         b[11] = 1;
                         compress(&mut st[..8], &b);

@@ -90,7 +90,11 @@ impl Src<'_> {
             }
             _ => {
                 let v = self.values(dft, c0, c1);
-                if v.width() == 0 { v } else { dft.idft_batch(v) }
+                if v.width() == 0 {
+                    v
+                } else {
+                    crate::lde::idft(dft, v)
+                }
             }
         }
     }
@@ -112,7 +116,7 @@ impl Src<'_> {
                         }
                     });
                 let m = RowMajorMatrix::new(v, w);
-                if w == 0 { m } else { dft.idft_batch(m) }
+                if w == 0 { m } else { crate::lde::idft(dft, m) }
             }
             _ => panic!("coeffs_list: main traces only"),
         }
