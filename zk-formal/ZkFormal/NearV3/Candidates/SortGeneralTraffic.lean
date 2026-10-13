@@ -27,7 +27,12 @@ theorem traffic (S : List (Nat×List Nat)) (hn:S.length≤8192) (t : Nat) (pub :
       · obtain ⟨rfl, rfl⟩ := hb; simp; rfl
       · rw [if_neg hb, if_neg (by rintro ⟨h1, h2, _⟩; exact hb ⟨h1.symm, h2.symm⟩)]
     · simp only [SortGen.cell, Sort.act, Nat.reduceLeDiff, if_false, ha, and_false]
-      split <;> simp <;> exact fp_zero_ne_one
+      -- Not `simp`: it would also rewrite the dead row cells (`q + 524288 - 1 ⟹ q + 524287` by
+      -- `Nat.add_one_sub_one`), a defeq lean4lean's kernel cannot check (it unfolds `Nat.add q 524288`
+      -- one `succ` at a time, past its recursion limit; docs/logs/v3-recheck-2026-10.md).
+      split
+      · rw [if_neg (show ¬ (Fp.ofNat 0 = 1) from fp_zero_ne_one)]; rfl
+      · rfl
   apply traffic_of
   · intro b
     rw [hH, flatMap_nil' (fun q hq => by rw [row q (List.mem_range.1 hq)]; simp)]

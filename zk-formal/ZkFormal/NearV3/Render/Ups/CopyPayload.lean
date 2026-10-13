@@ -13,7 +13,11 @@ theorem FieldPayloadEdit.byte {patch : Bool} {x ts ix : Nat} {src dst : List Nat
   | preserve x bytes => simp [bitmapDelta]
   | insert x old hxb ho hc =>
     have hi' := hi rfl
+    -- `getD` of the literal lists first: `simp`'s `getElem?_pos` route makes lean4lean's kernel
+    -- reduce `(old + 32768) % 256` (free `old`) one `succ` at a time and run out of fuel
+    -- (docs/logs/v3-recheck-2026-10.md).
     rcases (show ix=0 ∨ ix=1 by omega) with rfl | rfl <;>
-      by_cases ht : ts=1 <;> simp [hx,ht,bitmapDelta,ind] at hc ⊢ <;> omega
+      by_cases ht : ts=1 <;> simp only [List.getD_cons_zero, List.getD_cons_succ] <;>
+      simp [hx,ht,bitmapDelta,ind] at hc ⊢ <;> omega
 
 end ZkFormal.NearV3.Render.UpsGen
