@@ -14,7 +14,7 @@ and is **equal** to the render it replaces (`*_eq`, no hypotheses), so a dump of
 dump of the definition used in `TrieSide.trie_side_exact`:
 
 * `nodeTraceFast vs = nodeTraceAligned vs`, `valTraceFast es = valTraceAligned es`,
-  `upsTraceFast insts = upsTraceAligned insts`;
+  `upsTraceFast insts = upsTraceAligned insts`, `walkTraceFast ws = walkTraceAligned ws`;
 * `nodeA7Fast vs t sel = nodeA7Trace vs t sel`, `valA7Fast es t sel = valA7Trace es t sel`,
   `upsA7Fast insts t = upsA7Trace insts t` (running sums from `prefixTab`, `prefixGet_tab`).
 -/
@@ -206,6 +206,24 @@ theorem upsTraceFast_eq (insts : List UpsInst) : upsTraceFast insts = upsTraceAl
   · simp only [h, ite_true, rowCell_eq, upsU_get insts r h, Array.getD_eq_getD_getElem?, List.getElem?_toArray,
       List.getD_eq_getElem?_getD]
   · simp only [h, ite_false]
+
+
+/-! ## `walkV3` -/
+
+/-- `walkTraceAligned` with the row records and their count hoisted. -/
+def walkTraceFast (ws : List WalkR) : Trace Fp :=
+  let rs := (WalkGen.recs ws).toArray
+  let n := ZkFormal.NearV3.Render.rows ws
+  let log := padLog22 (logOf n)
+  rowsTrace log (mkTab (2 ^ log) WalkV3.width (fun q col =>
+    if q < n then WalkGen.rowCell (rs.getD q default) col else 0))
+
+theorem walkTraceFast_eq (ws : List WalkR) : walkTraceFast ws = walkTraceAligned ws := by
+  unfold walkTraceFast walkTraceAligned
+  dsimp only
+  congr 1; congr 1
+  funext q col
+  simp only [WalkGen.cell, Array.getD_eq_getD_getElem?, List.getElem?_toArray, List.getD_eq_getElem?_getD]
 
 /-! ## A7 extensions -/
 
