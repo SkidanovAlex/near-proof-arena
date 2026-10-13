@@ -29,3 +29,31 @@
   RPLV) balance against the public tape (`npudr v3bus`).
 * `run-v2.d/trie.sh` (new section) and `run-v2.d/a7.sh` (`A7_NODE_MAX` default lifted from 3
   to 100000: Lean node renders on every fixture; 455 PASS with A7_CASES=64).
+
+## 2026-10-13 — Rust derivation from claim + witness (`npudr v3trie`)
+
+* Staged port, each stage differential-tested against `np-lean-trie-v3 <case> native` dumps
+  (81/81 each): `src/v3/native.rs` (+ `native/sched.rs`, `native/trace.rs`): `applyNewChunk` /
+  `applyMissingChunk` trie effects, `schedStep` with the bandwidth scheduler's `runCore` new
+  state (`State` codec, `processRequests`, ChaCha shuffle), account-write replay with the post
+  root check, `traceUpsert`/`traceKids` and `PTrie.upsert`; `walks.rs`: `mainValuesOf`,
+  `allLookupQueries` (account/access-key/queue), `nativeQueryWalks`, `rankWalks` (counters);
+  `upsnat.rs`: `honestInst` (forest root, `pathRecordId`, `encodeNativeParts`,
+  `nativeWalkBase`, `positionedInstance`, `signedInstance`), `physicalPrefixUps`, window keys,
+  `useReq`; `forest.rs`: `TrieNative.nodes` / `vals` / `heads`, `uniqNative` (seeded views,
+  duplicate chain, old-record replay, use counts); `trie.rs`: assembly, A7 selectors/totals,
+  size entry (`srcpSize` of `sizeBlocks`, `ovhNat`).
+* Deliberate simplifications in `native.rs` (no trie effect; acceptance is a precondition):
+  the scheduler's `distribute` / link grants are not computed (they do not change the new
+  state), and refund forwarding limits (`tryForward`, only an out-of-domain error) are not
+  re-checked. Upsert paths other than the in-place leaf replace are covered by unit tests
+  only (no fixture exercises them).
+* `walkTraceFast = walkTraceAligned` added (fixture walk renders >10 min → 1 s).
+* `run-v2.d/trie.sh` on all 81 fixtures: **116 PASS, 0 FAIL** — Rust v3trie == Lean on 81/81,
+  v3check 81/81 (7 tables), Rust == Lean renders 81/81 (sha256), 13 buses balanced 81/81,
+  33 negatives (rpl/rplv flags, ups mid/post root and memory, dropped walk, node use count, uniq
+  bytes, head root, val id, A7 over B0) rejected. `cargo test --release --lib` 102 passed (needs
+  `conformance/out-v2/nearAirV3.json`), `make pin-check` ok, FastTrie lemmas use only
+  propext/Quot.sound/Classical.choice.
+* Open: Lean `rankWalks` in `np-lean-trie-v3` is quadratic (≤77 s on the 3 largest
+  fixtures); Rust `ups::uu` recomputes a quadratic count per part-row column (fine on fixtures).
