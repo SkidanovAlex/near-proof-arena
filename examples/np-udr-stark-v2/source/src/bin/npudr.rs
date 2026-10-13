@@ -507,6 +507,97 @@ fn main() {
             .unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
             println!("prep {} B", p.encode().len());
         }
+        Some("v3native") => {
+            // `npudr v3native <case_dir>`: the native objects (`v3::native::native_of`) as the
+            // `np-lean-trie-v3 <case> native` JSON (native part); `npudr v3native --parse
+            // <native.json>` re-emits a Lean dump through the Rust parser (round trip).
+            let rd = |p: &str| std::fs::read(p).unwrap_or_else(|e| die(&format!("{p}: {e}")));
+            let n = match a.get(2).map(|s| s.as_str()) {
+                Some("--parse") if a.len() == 4 => {
+                    let v: serde_json::Value =
+                        serde_json::from_slice(&rd(&a[3])).unwrap_or_else(|e| die(&e.to_string()));
+                    npudr::v3::native::Native::from_json(&v).unwrap_or_else(|e| die(&e))
+                }
+                Some(d) if a.len() == 3 => npudr::v3::native::native_of(
+                    &rd(&format!("{d}/claim.bin")),
+                    &rd(&format!("{d}/witness.bin")),
+                )
+                .unwrap_or_else(|e| die(&e)),
+                _ => die("usage: npudr v3native <case_dir> | --parse <native.json>"),
+            };
+            println!("{}", n.to_json());
+        }
+        Some("v3forest") => {
+            // `npudr v3forest <native.json>`: node/val/head/uniq entries (`v3::forest`) from a
+            // `np-lean-trie-v3 native` dump and its use requests `q` (head keys `q.edges`).
+            if a.len() != 3 {
+                die("usage: npudr v3forest <native.json>");
+            }
+            let s = std::fs::read(&a[2]).unwrap_or_else(|e| die(&e.to_string()));
+            let v: serde_json::Value =
+                serde_json::from_slice(&s).unwrap_or_else(|e| die(&e.to_string()));
+            let n = npudr::v3::native::Native::from_json(&v).unwrap_or_else(|e| die(&e));
+            let q: npudr::v3::forest::UseRequests =
+                serde_json::from_value(v["q"].clone()).unwrap_or_else(|e| die(&e.to_string()));
+            use npudr::v3::forest;
+            let out = serde_json::json!({
+                "node": forest::nodes(&n, &q).unwrap_or_else(|e| die(&e)),
+                "val": forest::vals(&n).unwrap_or_else(|e| die(&e)),
+                "head": forest::heads(&n, &q.edges).unwrap_or_else(|e| die(&e)),
+                "uniq": forest::uniq(&n).unwrap_or_else(|e| die(&e)),
+            });
+            println!("{out}");
+        }
+        Some("v3walks") => {
+            // `npudr v3walks <case_dir> <native.json>`: main values, lookup queries, walks,
+            // honest ups instances (unranked/ranked), the use requests and the ranked walks
+            // (`v3::walks`, `v3::upsnat`), from a `np-lean-trie-v3 native` dump (receipts from
+            // the case's claim/witness).
+            if a.len() != 4 {
+                die("usage: npudr v3walks <case_dir> <native.json>");
+            }
+            let rd = |p: &str| std::fs::read(p).unwrap_or_else(|e| die(&format!("{p}: {e}")));
+            let v: serde_json::Value =
+                serde_json::from_slice(&rd(&a[3])).unwrap_or_else(|e| die(&e.to_string()));
+            let mut n = npudr::v3::native::Native::from_json(&v).unwrap_or_else(|e| die(&e));
+            let cb = rd(&format!("{}/claim.bin", a[2]));
+            let wb = rd(&format!("{}/witness.bin", a[2]));
+            let k = npudr::v3::d0::walk_d0(&cb).unwrap_or_else(|e| die(&e));
+            let w = npudr::v3::hint::decode_w(&wb).unwrap_or_else(|e| die(&e));
+            n.receipts = npudr::v3::hint::applied_receipts(&k, &w);
+            use npudr::v3::{upsnat, walks};
+            let mv = walks::main_values(&n).unwrap_or_else(|e| die(&e));
+            let qs = walks::queries(&n, &mv).unwrap_or_else(|e| die(&e));
+            let ws = walks::query_walks(&n, &qs).unwrap_or_else(|e| die(&e));
+            let insts = upsnat::honest_insts(&n.us).unwrap_or_else(|e| die(&e));
+            let js = upsnat::ups_ranked(&ws, &insts);
+            let wk = upsnat::window_keys(&js);
+            let q = upsnat::use_req(&ws, &insts, wk);
+            let out = serde_json::json!({
+                "mainValues": mv.to_json(),
+                "queries": qs.iter().map(|x| serde_json::json!({"wid": x.wid, "tau": x.tau, "key": x.key})).collect::<Vec<_>>(),
+                "ws": ws, "insts": insts, "ups": js, "q": q, "walk": walks::rank_walks(&ws),
+            });
+            println!("{out}");
+        }
+        Some("v3trie") => {
+            // `npudr v3trie <case_dir> [<table>]`: the honest trie-side entries (`v3::trie`), the
+            // Rust twin of `np-lean-trie-v3`.
+            if a.len() != 3 && a.len() != 4 {
+                die("usage: npudr v3trie <case_dir> [<table>]");
+            }
+            let rd = |p: &str| std::fs::read(p).unwrap_or_else(|e| die(&format!("{p}: {e}")));
+            let cb = rd(&format!("{}/claim.bin", a[2]));
+            let wb = rd(&format!("{}/witness.bin", a[2]));
+            let v = npudr::v3::trie::entries(&cb, &wb).unwrap_or_else(|e| die(&e));
+            match a.get(3) {
+                Some(t) => match v.get(t.as_str()) {
+                    Some(x) => println!("{x}"),
+                    None => die(&format!("no table {t}")),
+                },
+                None => println!("{v}"),
+            }
+        }
         Some("v3prepare") => {
             // `npudr v3prepare <claim.bin> <witness.bin> <out_dir> [--hint <hint.bin>]`:
             // the prover's native preprocessing.  `h := hintOf cb w` (`v3::hint`, or

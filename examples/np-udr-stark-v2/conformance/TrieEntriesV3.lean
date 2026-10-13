@@ -65,6 +65,13 @@ and the scheduler upserts `us`, built as in `ShaBinsV3.lean`'s `nativeOf`):
 * **size** `[{x0, x1, x2, ovh, yN}]`: `honestSizeV ns es A.sizeBlocks`, `ovhNat pub`, and
   `yN = [nodeA7Total ns S, valA7Total es SV, upsA7Total Js]`.
 
+`np-lean-trie-v3 <case> native` dumps the intermediates instead (for the staged Rust
+differential): the main pre/post tries, `oldPost`, `writes`, the implicit steps, the scheduler
+upserts `us` (pre trie, value, `traceUpsert` run with its parts), `MainValues`, the lookup
+queries, the unranked walks `ws` and instances `insts`, and the use requests `q` (tries as
+`{h}` / `{l,v,m}` / `{e,c,m}` / `{b,k,m}` objects, bytes as hex, kinds/cases as `UKind.all` /
+`UCase.all` indices).
+
 Output: one JSON object `{node, val, head, walk, uniq, ups, size, checks}`; `checks` reports
 the self-checks (rpl/rplv message lists are duplicate-free singletons below the table sizes —
 the `Perm` of `a7_perm_native`; the A7 total ≤ B0; instance count = scheduler calls).
@@ -259,6 +266,72 @@ def trieEntries (N : TrieNat) : IO TrieOut := do
     , ("uniq", toJson L), ("ups", toJson Js), ("size", size)
     , ("checks", Json.mkObj (checks.map fun (n, b) => (n, Json.bool b))) ], checks⟩
 
+
+/-! ## Intermediate (native) dump: `np-lean-trie-v3 <case> native` -/
+
+def hexB (b : Bytes) : Json :=
+  let d := "0123456789abcdef".toList
+  Json.str (String.mk (b.flatMap fun x => [d.getD (x.toNat / 16) '0', d.getD (x.toNat % 16) '0']))
+
+def natsJ (l : List Nat) : Json := Json.arr (l.map (fun x => toJson x)).toArray
+
+def slotJ : Slot → Json
+  | .val v => Json.mkObj [("val", hexB v)]
+  | .ref n h => Json.mkObj [("ref", Json.arr #[toJson n, hexB h])]
+
+mutual
+/-- `PTrie` as JSON: `{h}` / `{l, v, m}` / `{e, c, m}` / `{b, k, m}` (`k` = the `Kids` list,
+`null` for `none`; `b` the optional branch value). -/
+def ptJ : PTrie → Json
+  | .hash h => Json.mkObj [("h", hexB h)]
+  | .leaf k v m => Json.mkObj [("l", natsJ k), ("v", slotJ v), ("m", toJson m)]
+  | .ext k c m => Json.mkObj [("e", natsJ k), ("c", ptJ c), ("m", toJson m)]
+  | .branch v cs m => Json.mkObj [("b", match v with | some s => slotJ s | none => Json.null),
+      ("k", Json.arr (kidsJ cs).toArray), ("m", toJson m)]
+def kidsJ : Kids → List Json
+  | .nil => []
+  | .none r => Json.null :: kidsJ r
+  | .some c r => ptJ c :: kidsJ r
+end
+
+def ukindIdx (k : UpsRows.UKind) : Nat := (UpsRows.UKind.all.findIdx? (· == k)).getD 99
+def ucaseIdx (k : UpsRows.UCase) : Nat := (UpsRows.UCase.all.findIdx? (· == k)).getD 99
+
+def runJ (r : TreeRun) : Json := Json.mkObj
+  [ ("output", ptJ r.output)
+  , ("parts", Json.arr (r.parts.map fun p => Json.mkObj
+      [("kind", toJson (ukindIdx p.kind)), ("source", ptJ p.source), ("output", ptJ p.output),
+       ("slot", toJson p.slot)]).toArray)
+  , ("terminal", toJson (ucaseIdx r.terminal)), ("matched", toJson r.matched)
+  , ("terminalSource", ptJ r.terminalSource), ("terminalKey", natsJ r.terminalKey) ]
+
+def nativeJson (N : TrieNat) : Except String Json := do
+  let v ← mainValuesOf N.m
+  let pres := N.steps.map ImplicitStepV3.pre
+  let pairs := (N.m.pre, N.m.result.trie) :: N.steps.map (fun s => (s.pre, s.post))
+  let qs := allLookupQueries (appliedReceipts N.k N.w) N.m.pre v pres
+    (Candidates.NativeQueueIds.resolve N.m.pre v pres)
+  let ws ← match nativeQueryWalks pairs qs with
+    | some ws => pure ws | none => throw "nativeQueryWalks failed"
+  let insts ← honestInsts N.us
+  let Js := TrieUpsNative.upsRanked ws insts
+  let W := Candidates.PhysicalWindowRequests.keys (Conformance.FastTrie.upsTraceFast Js) Assembly.T_UPS
+  let q := TrieUpsNative.useReq ws insts W
+  let optJ (o : Option Bytes) : Json := match o with | some b => hexB b | none => Json.null
+  pure <| Json.mkObj
+    [ ("pre", ptJ N.m.pre), ("post", ptJ N.m.result.trie), ("bufferedShards", natsJ N.m.bufferedShards)
+    , ("oldPost", ptJ N.oldPost)
+    , ("writes", Json.arr (N.writes.map fun (k, b) => Json.arr #[natsJ k, hexB b]).toArray)
+    , ("steps", Json.arr (N.steps.map fun s => Json.mkObj [("pre", ptJ s.pre), ("post", ptJ s.post)]).toArray)
+    , ("us", Json.arr (N.us.map fun u => Json.mkObj
+        [("pre", ptJ u.pre), ("value", hexB u.value), ("run", runJ u.run)]).toArray)
+    , ("mainValues", Json.mkObj [("delayed", optJ v.delayed), ("buffered", optJ v.buffered),
+        ("shards", natsJ v.shards), ("yielded", optJ v.yielded)])
+    , ("queries", Json.arr (qs.map fun x => Json.mkObj [("wid", toJson x.wid), ("tau", toJson x.tau),
+        ("key", natsJ x.key)]).toArray)
+    , ("ws", toJson ws), ("insts", toJson insts)
+    , ("q", Json.mkObj [("edges", toJson q.edges), ("bmaps", toJson q.bmaps), ("windows", toJson q.windows)]) ]
+
 def runCase (dir : String) (table : Option String) : IO UInt32 := do
   let cb := (← IO.FS.readBinFile (dir ++ "/claim.bin")).toList
   let wb := (← IO.FS.readBinFile (dir ++ "/witness.bin")).toList
@@ -270,6 +343,10 @@ def runCase (dir : String) (table : Option String) : IO UInt32 := do
     | .error e => IO.eprintln s!"np-lean-trie-v3: {dir}: {e}"; return 2
     | .ok N =>
       let _ ← stage t0 "native execution"
+      if table == some "native" then
+        match nativeJson N with
+        | .ok j => IO.println j.compress; return 0
+        | .error e => IO.eprintln s!"np-lean-trie-v3: {dir}: {e}"; return 2
       let o ← trieEntries N
       for (n, b) in o.checks do
         unless b do IO.eprintln s!"np-lean-trie-v3: {dir}: self-check failed: {n}"

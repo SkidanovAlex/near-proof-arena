@@ -24,8 +24,10 @@ pub mod chacha;
 pub mod collect;
 pub mod d0;
 pub mod entries;
+pub mod forest;
 pub mod hint;
 pub mod mrksort;
+pub mod native;
 pub mod node;
 pub mod prep;
 pub mod prove;
@@ -37,7 +39,10 @@ pub mod sched;
 pub mod sha;
 pub mod size;
 pub mod srcp;
+pub mod trie;
 pub mod ups;
+pub mod upsnat;
+pub mod walks;
 
 /// A generated table: `2^log` rows of `width` canonical cells, row-major.
 #[derive(Clone, Debug, PartialEq, Eq)]
