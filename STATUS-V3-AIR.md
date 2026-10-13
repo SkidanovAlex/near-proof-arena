@@ -393,7 +393,7 @@ The target is `Holds_v2(prep cb h) ⇒ ∃ w, RelD0 cb w`. The assembly addition
 9. Rust prover v2: v2 bus, auxGroup parameter, every v3 table generator, hints, prep mirror. ≈ 10–15 k Rust.
 10. Real checker run and judge-verify timing.
 
-Elaboration budget risk: v1 alone is 647 s of the 1,800 s budget. The v3 additions are large (copied L3/prover ≈ 9 k lines, the trie ≈ 25 k+, the scheduler ≈ 15 k+), so measure early.
+Elaboration budget risk: v1 alone is 647 s of the 1,800 s budget (budget since 2026-10-03: 4 h total, see docs/zk-formal/DESIGN.md F6). The v3 additions are large (copied L3/prover ≈ 9 k lines, the trie ≈ 25 k+, the scheduler ≈ 15 k+), so measure early.
 
 ## 8. Final heads at hand-over
 

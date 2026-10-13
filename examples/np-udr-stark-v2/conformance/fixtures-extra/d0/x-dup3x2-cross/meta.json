@@ -50,6 +50,11 @@
  ],
  "python_fixups": [],
  "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0
+ ],
  "note": "two repeated keys: one 3 copies (B2 + 2 in block 1), one 2 copies (block 1 + B2)",
  "claim_sha256": "e4cc15c9b81a0116450b5a5d89b0d1a426dbc9a5ff7b91b8b7886592ca39836f",
  "witness_sha256": "d504ed930f064a5cc77fa3ecb2606dcfa6815afbe6c77be1384f57456ed3cd0c"

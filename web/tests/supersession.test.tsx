@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { benchmark, challengeRecord, makeDefinition, makeSub, type Dataset } from '../mock/fixtures';
 import type { ChallengeRecord } from '../src/api/types';
@@ -56,10 +57,63 @@ describe('challenge supersession', () => {
     const r = renderApp(`/challenges/${closed.id}`, ds);
     expect(await screen.findAllByText(/is not accepting new submissions/)).toHaveLength(2);
     r.unmount();
-    renderApp('/', ds);
+    renderApp('/?superseded=1', ds);
     await screen.findByText('DEMO FIXTURE paused');
     expect(screen.getAllByText('SUPERSEDED')).toHaveLength(1);
     expect(screen.getAllByText('CLOSED')).toHaveLength(1);
+  });
+
+  it('challenge list hides superseded challenges by default behind a "Show superseded (N)" toggle', async () => {
+    const { oldC, newC, ds } = upgradePair();
+    const user = userEvent.setup();
+    renderApp('/', ds);
+    const table = await screen.findByRole('table');
+    expect(within(table).getByRole('link', { name: 'DEMO FIXTURE transfer v1-1' })).toHaveAttribute('href', `/challenges/${newC.id}`);
+    expect(within(table).queryByText(oldC.id)).toBeNull();
+    expect(screen.queryByText('SUPERSEDED')).toBeNull();
+    const toggle = screen.getByRole('checkbox', { name: 'Show superseded (1)' });
+    expect(toggle).not.toBeChecked();
+    await user.click(toggle);
+    expect(await within(screen.getByRole('table')).findByText(oldC.id)).toBeInTheDocument();
+    expect(screen.getAllByText('SUPERSEDED')).toHaveLength(1);
+    await user.click(screen.getByRole('checkbox', { name: 'Show superseded (1)' }));
+    expect(within(screen.getByRole('table')).queryByText(oldC.id)).toBeNull();
+  });
+
+  it('submissions list and its challenge selector hide superseded challenges by default; explicit selection shows them', async () => {
+    const { oldC, newC, ds } = upgradePair();
+    ds.submissions.push(makeSub({ id: 'sub_new_one', challenge_id: newC.id, candidate_name: 'DEMO FIXTURE new entry' }));
+    const user = userEvent.setup();
+    const r = renderApp('/submissions', ds);
+    expect(await screen.findByText('DEMO FIXTURE new entry')).toBeInTheDocument();
+    expect(screen.queryByText('DEMO FIXTURE old winner')).toBeNull();
+    expect(await screen.findByRole('status')).toHaveTextContent('1 from superseded challenges hidden');
+    const select = screen.getByLabelText('Challenge') as HTMLSelectElement;
+    expect([...select.options].map((o) => o.value)).not.toContain(oldC.id);
+    await user.click(screen.getByRole('checkbox', { name: 'Show superseded (1)' }));
+    expect(await screen.findByText('DEMO FIXTURE old winner')).toBeInTheDocument();
+    expect([...(screen.getByLabelText('Challenge') as HTMLSelectElement).options].map((o) => o.value)).toContain(oldC.id);
+    r.unmount();
+    // The superseded challenge page links here with ?challenge=<id>: its submissions stay reachable.
+    renderApp(`/submissions?challenge=${oldC.id}`, ds);
+    expect(await screen.findByText('DEMO FIXTURE old winner')).toBeInTheDocument();
+    expect((screen.getByLabelText('Challenge') as HTMLSelectElement).value).toBe(oldC.id);
+  });
+
+  it('research view hides approach groups of superseded challenges by default', async () => {
+    const { oldC, newC, ds } = upgradePair();
+    ds.submissions = [
+      makeSub({ id: 'sub_r_old', challenge_id: oldC.id, backend_family: 'old family' }),
+      makeSub({ id: 'sub_r_new', challenge_id: newC.id, backend_family: 'new family' }),
+    ];
+    const user = userEvent.setup();
+    renderApp('/research', ds);
+    expect(await screen.findByRole('heading', { name: 'new family' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'old family' })).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent('1 more from superseded challenges hidden');
+    expect([...(screen.getByLabelText('Challenge') as HTMLSelectElement).options].map((o) => o.value)).not.toContain(oldC.id);
+    await user.click(screen.getByRole('checkbox', { name: 'Show superseded (1)' }));
+    expect(await screen.findByRole('heading', { name: 'old family' })).toBeInTheDocument();
   });
 
   it('never ranks an entry labelled with a different challenge id', async () => {

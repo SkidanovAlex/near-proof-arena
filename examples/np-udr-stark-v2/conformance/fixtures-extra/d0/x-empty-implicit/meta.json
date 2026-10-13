@@ -27,6 +27,12 @@
   "Reject: InvalidStateRoot"
  ],
  "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0,
+  0
+ ],
  "note": "empty groups data with an implicit block (implicit base_state re-recorded)",
  "claim_sha256": "8dce52431b1209fe31903696c08edf94684240bdfabcc25b17c8b04978be54bb",
  "witness_sha256": "0b2010ee8c1c32e675ecfee9b3a6762c2ec473a035f884fccb0e10c5f2713d06"

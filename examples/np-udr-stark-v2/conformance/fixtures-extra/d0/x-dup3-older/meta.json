@@ -37,6 +37,11 @@
  ],
  "python_fixups": [],
  "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0
+ ],
  "note": "3 copies in an older source block (block 1)",
  "claim_sha256": "d4c844329b65ff70642f47555444852934cf9d7ed543c61e08107560877c9c76",
  "witness_sha256": "b00d7b4ab4c5aa50e59f684a3e45b0320238bd639afea76d245ce78d0a85c94f"
