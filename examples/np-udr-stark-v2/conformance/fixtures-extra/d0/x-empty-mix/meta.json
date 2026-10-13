@@ -1,0 +1,35 @@
+{
+ "case": "x-empty-mix",
+ "base": "oracle/fixtures/v3/public-d0a/d0/01-h10008-s0",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "buffered",
+   "shards": [
+    0,
+    1,
+    4
+   ],
+   "groups": {
+    "0": "",
+    "1": "absent",
+    "4": "0102"
+   },
+   "empty_values": 1,
+   "pre_state_root": "dbb311dfd521d91073a4f6a23924ff61bd141c706f21e398c25849f4521f34fe"
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "note": "new indices: empty / proven-absent / 2-byte groups data; 7 receipts",
+ "claim_sha256": "357bd9c613ca69b501189cde369a6936d1d01b6070aa355a1bd89d68e0f8dc76",
+ "witness_sha256": "1c31e40ff1f7e174599419b82f3be54e648d2f7808cc1ddf3e1560180c4ad215"
+}

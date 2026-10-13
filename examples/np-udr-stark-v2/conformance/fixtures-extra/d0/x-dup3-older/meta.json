@@ -1,0 +1,43 @@
+{
+ "case": "x-dup3-older",
+ "base": "oracle/fixtures/v3/public-d0a/d0/01-h10010-s1",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "dup",
+   "dst": [
+    1,
+    1
+   ],
+   "src": [
+    1,
+    0
+   ],
+   "key": "3980d4e4d6fd160769a9fded1224a08b66541acf2f5fcba58d018d89349bbcc6",
+   "replaced_key": "70751dba0adb22689722b2c22b3f882fe165b3cf474deae5b53a3fbcd5e33858"
+  },
+  {
+   "op": "dup",
+   "dst": [
+    1,
+    2
+   ],
+   "src": [
+    1,
+    0
+   ],
+   "key": "3980d4e4d6fd160769a9fded1224a08b66541acf2f5fcba58d018d89349bbcc6",
+   "replaced_key": "c029f5722e4ff21a7bf5f135f48b27970d9e5b2689046685cb324137a8fed455"
+  }
+ ],
+ "python_fixups": [],
+ "python_verdict": "ok",
+ "note": "3 copies in an older source block (block 1)",
+ "claim_sha256": "d4c844329b65ff70642f47555444852934cf9d7ed543c61e08107560877c9c76",
+ "witness_sha256": "b00d7b4ab4c5aa50e59f684a3e45b0320238bd639afea76d245ce78d0a85c94f"
+}

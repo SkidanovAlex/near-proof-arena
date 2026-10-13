@@ -1,0 +1,33 @@
+{
+ "case": "x-dup2-implicit",
+ "base": "oracle/fixtures/v3/public-d0a/d0/00-h10025-s2",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "dup",
+   "dst": [
+    1,
+    1
+   ],
+   "src": [
+    1,
+    0
+   ],
+   "key": "d7becb218938c43a484f296260c873cb155d508b3eadb50db5507e22b78c3780",
+   "replaced_key": "2ab98af213e996f523649aad39f3cc3352ec14432dcd9801c292d4c51c70bb72"
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: MissingTrieValue (node)"
+ ],
+ "python_verdict": "ok",
+ "note": "2 copies in B2 with an implicit block after it (scheduler seed changes)",
+ "claim_sha256": "28e44eaa20fe84d0610e765fda5d5e6233d85aaca5463599dde19ee2d4e30729",
+ "witness_sha256": "3bbfc26d163a72b3101f71c2b9bbbff3bcda04fc35ce446552c0ee37bcfe3352"
+}
