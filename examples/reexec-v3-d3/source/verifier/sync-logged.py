@@ -2,9 +2,13 @@
 """Vendor candidate logging modules with reviewable runtime/proof separation.
 
 The transform replaces the namespace literally, extracts specified unchanged
-source ranges into runtime modules, and rewires imports. Declaration bodies and
-proofs are preserved. The manifest records upstream and output hashes, extraction
-ranges, and all import edits. --check regenerates everything without writing.
+source ranges into runtime modules, and rewires imports. Declaration bodies are
+preserved. Recorded proof-only patches (`logged-proof-patches/*.json`, exact
+old/new text, each old text occurring exactly once) are applied last; they may
+change proofs and proof-local tactics only, never a statement or definition. The
+manifest records upstream and output hashes, extraction ranges, all import edits
+and the hash of every applied patch. --check regenerates everything without
+writing.
 """
 import argparse
 import hashlib
@@ -85,6 +89,23 @@ def separate_runtime(original):
     return files, operations
 
 
+def apply_proof_patches(files, patch_dir):
+    operations = []
+    for path in sorted(patch_dir.glob("*.json")):
+        raw = path.read_bytes()
+        patch = json.loads(raw)
+        name = patch["file"]
+        text = files[name]
+        for item in patch["replacements"]:
+            if text.count(item["old"]) != 1:
+                raise ValueError(f"proof patch {path.name}: old text not found exactly once in {name}")
+            text = text.replace(item["old"], item["new"])
+        files[name] = text
+        operations.append({"source": name, "proof_patch": path.name,
+                           "sha256": hashlib.sha256(raw).hexdigest(), "reason": patch["reason"]})
+    return operations
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("commit")
@@ -109,6 +130,8 @@ def main():
     transformed, operations = separate_runtime({name: source.decode().replace(
         "NearSpecV3.Logged", "ReexecV3D3.Logged") for name, source in originals.items()})
     manifest["transform"]["runtime_separation"] = operations
+    manifest["transform"]["proof_patches"] = apply_proof_patches(
+        transformed, Path(__file__).resolve().parent / "logged-proof-patches")
     manifest["upstream_files"] = [{"path": prefix + name, "sha256": sha(source)}
                                   for name, source in sorted(originals.items())]
     for name, value in sorted(transformed.items()):

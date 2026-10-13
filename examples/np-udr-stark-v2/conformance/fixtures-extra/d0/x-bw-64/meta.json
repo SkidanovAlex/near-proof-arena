@@ -1,0 +1,76 @@
+{
+ "case": "x-bw-64",
+ "base": "oracle/fixtures/v3/public-d0a/d0/00-h10004-s3",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "bw",
+   "block": 0,
+   "slots": [
+    0
+   ],
+   "requests": [
+    [
+     0,
+     "5555555555"
+    ],
+    [
+     1,
+     "00000000ff"
+    ]
+   ]
+  },
+  {
+   "op": "bw",
+   "block": 0,
+   "slots": [
+    2
+   ],
+   "requests": [
+    [
+     1,
+     "5555555555"
+    ],
+    [
+     2,
+     "ffffffffff"
+    ],
+    [
+     3,
+     "ffffffffff"
+    ]
+   ]
+  },
+  {
+   "op": "bw",
+   "block": 0,
+   "slots": [
+    3
+   ],
+   "requests": [
+    [
+     3,
+     "8000000000"
+    ]
+   ]
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 64,
+ "chacha_words_runs": [
+  64
+ ],
+ "note": "64 words: exactly four ChaCha20 blocks",
+ "claim_sha256": "0a1e21ca57744dc7d4426871fb4dcd94ef4bb7883d9c0e8c806467b081a30af3",
+ "witness_sha256": "e4caa3d6ec239b5eee86ba08a109c2aa1c1662e6bfb625d087c9383c956ee4dd"
+}

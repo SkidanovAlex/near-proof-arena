@@ -1,0 +1,53 @@
+{
+ "case": "x-bw-implicit-only",
+ "base": "oracle/fixtures/v3/public-d0a/d0/00-h10024-s0",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "bw",
+   "block": 0,
+   "slots": [
+    0,
+    1,
+    3
+   ],
+   "requests": [
+    [
+     3,
+     "ffffffffff"
+    ],
+    [
+     1,
+     "ffffffffff"
+    ],
+    [
+     0,
+     "ffffffffff"
+    ],
+    [
+     2,
+     "ffffffffff"
+    ]
+   ]
+  }
+ ],
+ "python_fixups": [
+  "Reject: implicit transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 158,
+ "chacha_words_runs": [
+  0,
+  158
+ ],
+ "note": "requests only in the implicit block's new chunks: 0 + 158 words",
+ "claim_sha256": "cd118329c663a658d0ec31521458b90338e844c7ef4648bc04e2a4bc1f6d8ad2",
+ "witness_sha256": "a4cd49d54633f10198109b9ac26a621515c2050ea1ac33a0e6ca191d0f332105"
+}

@@ -58,9 +58,7 @@
     "source": "two clean check-local builds",
     "check_local_exit": 0
   },
-  "pending": [
-    "independent lean4lean recursion failure and full configured formal rerun"
-  ],
+  "pending": [],
   "evidence_directory": "/data/illia/nearproof-deps/validation/v3-read-reference-20261007",
   "public_strict": {
     "status": "pass",
@@ -300,7 +298,8 @@
         "propext",
         "Classical.choice",
         "Quot.sound"
-      ]
+      ],
+      "superseded_by": "configured_formal_lean4lean"
     },
     "heldout_strict": {
       "status": "pass",
@@ -381,5 +380,43 @@
       ],
       "scope": "proof-refactoring snapshot; runtime binary hashes identical to post-split public gates"
     }
+  },
+  "configured_formal_lean4lean": {
+    "status": "pass",
+    "date": "2026-10-13",
+    "lane": "lane/d3-lean4lean",
+    "change": "proof-only: W.E_exec (formal/ReexecV3D3/Logged/WasmStepE.lean) unfolds exec via exec.eq_def and abstracts memFill/memCopy (opaque_gen); recorded proof patch source/verifier/logged-proof-patches/WasmStepE.json; statements and runtime declarations unchanged",
+    "root_cause": "lean4lean reduceNat whnf's Nat.mul/Nat.add arguments without the C++ kernel's has_fvar short-cut; comparing differently-normalized matches on memFill/memCopy forced whnf of memBytes s = s.pages.size * 65536 (65,536 nested steps > recDepth 50,000)",
+    "command": "/data/illia/nearproof-deps/validation/d3-lean4lean-20261013/formal-check.sh (formal-check --challenge challenges/drafts/near-chunk-v3.draft.json --challenge-config runners/formal-checker/challenges/near-chunk-v3.json --repo-root <frozen tree 03fb64fd…> --native-model ReexecV3D3.Model.verifier@ReexecV3D3.Model --declared-tier D3a, default limits)",
+    "report_sha256": "279158aabd742fc7a6a33a97ead2567a77e54bdfe67a90b0877cfc8735447a67",
+    "gates": {
+      "FORMAL_SEMANTIC_SOUNDNESS": "PASS",
+      "FORMAL_SEMANTIC_COMPLETENESS": "PASS",
+      "FORMAL_CRYPTO_SOUNDNESS": "PASS",
+      "FORMAL_IMPL_CONNECTION": "PASS",
+      "AXIOM_AUDIT": "PASS",
+      "ARTIFACT_BINDING": "PASS"
+    },
+    "rechecks": {
+      "leanchecker": "accepted, 72 modules in 72 runs",
+      "nanoda": "accepted",
+      "lean4lean": "accepted, 72 modules in 72 runs",
+      "arena-audit": "accepted",
+      "ndjson-audit": "accepted, 12718 decls"
+    },
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "judge_built_verify_sha256": "f661d7b84e09ea341b255d0a351d1015bdf942011e8e3cc11640ecb18489f862",
+    "model_closure_digest": "sha256:063b6c1708fc0b8c91ece4d28bfe35fc156da1ef690c85575d8a00f7520c19d3",
+    "clean_build_recipe_sha256": {
+      "prepare": "8341e9deeb0579bc38bd8d8868727be816e9ca31e2bff23d78487cda7bc61236",
+      "prove": "8010f24e610b0abf067ebc787fe83d2bafd5e1caf76fea14c11f0735d8d5c5b7",
+      "verify": "f661d7b84e09ea341b255d0a351d1015bdf942011e8e3cc11640ecb18489f862"
+    },
+    "binaries_note": "byte-identical to runtime_split.native_binaries_sha256, so the post-split public/held-out strict and mutation results apply unchanged",
+    "evidence_directory": "/data/illia/nearproof-deps/validation/d3-lean4lean-20261013"
   }
 }

@@ -29,6 +29,11 @@
   "Reject: InvalidStateRoot"
  ],
  "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0
+ ],
  "note": "three empty groups-data values (equal value records)",
  "claim_sha256": "4f870f802adf1b273127298ac03a77b46219e3046b0daf6837234d436d8ee80e",
  "witness_sha256": "9323cb195d375558941e2ae7771879c9d9dfd738f47452fe7dd982e22015d9f1"

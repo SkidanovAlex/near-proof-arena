@@ -617,7 +617,8 @@ fn main() {
         Some("v3bus") => {
             // `npudr v3bus <air.json> <pub.bin> <bus> <table>=<entries.json>...`: render the
             // given tables and check that their interactions on `<bus>` balance against the
-            // public messages of the prepared tape on that bus (`pubMsgs`).  Exit 1 on an
+            // public messages of the prepared tape on that bus (`pubMsgs`); the tables' public
+            // inputs are the tape's bytes (`pubOf`).  Exit 1 on an
             // imbalance or a tape that does not fit (`pubFit`).
             if a.len() < 6 {
                 die(
@@ -649,7 +650,11 @@ fn main() {
                 mats.push((idx, tab.to_matrix()));
             }
             let refs: Vec<(usize, &_)> = mats.iter().map(|(i, m)| (*i, m)).collect();
-            let pubs = vec![npudr::field::F::ZERO; air.num_pub];
+            // The AIR's public inputs are the prepared tape's bytes (`Udr.pubOf`, the verifier's
+            // `public_inputs`), exactly as in `v3prove`: table 23's root row receives
+            // `DIGEST(rootId, rootLen, pub[146..178])` (the outcome root), so evaluating with zero
+            // publics would leave that message unmatched whenever the mrk table is non-empty.
+            let pubs = npudr::verifier::public_inputs(&air, &tape);
             let mut failed = false;
             for bus in buses {
                 match npudr::check::bus_imbalance_with_pub(&air, &refs, &pubs, &tape, bus) {

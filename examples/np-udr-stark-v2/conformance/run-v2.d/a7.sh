@@ -9,7 +9,8 @@
 # entry an optional `"yN": [y0, y1, y2]` (received A7 totals); absent → false / zeros.
 #
 # Knobs: A7_SEEDS (1 2 3), A7_NODE_SIZES (1 2; Lean node render is slow), A7_VAL_SIZES
-# (0 1 5 37), A7_UPS_SIZES (0 1 3), A7_CASES (3 real fixture cases), A7_NODE_MAX (100000: Lean
+# (0 1 5 37), A7_UPS_SIZES (0 1 3), A7_CASES (3 real fixture cases), A7_EXTRA (extra case dirs:
+# default the fixtures-extra trie-shape cases x-ups-pt/-esn0/-lsa and x-bw-noprior), A7_NODE_MAX (100000: Lean
 # render of fixture node entries only up to this many records).
 a7="$out/a7"; mkdir -p "$a7"
 la7="$here/.lake/build/bin/np-lean-render-v3-a7"
@@ -108,8 +109,9 @@ echo "== A7 on real witness entries (np-lean-entries-v3 node/val), rpl absent an
 # `np-lean-entries-v3` dumps the pre-A7 entry objects (no `rpl`): Rust reads them as all-false
 # (`v3check` is local).  Then a seeded random `rpl` choice (any choice is locally legal).
 na7=0
-for case in $(ls "$fx" | head -${A7_CASES:-3}); do
-  d="$fx/$case"
+xa="$here/fixtures-extra/d0"
+for d in $(ls -d "$fx"/*/ | head -${A7_CASES:-3}) ${A7_EXTRA-$xa/x-ups-pt $xa/x-ups-esn0 $xa/x-ups-lsa $xa/x-bw-noprior}; do
+  d="${d%/}"; case=$(basename "$d")
   [ -f "$d/witness.bin" ] || continue
   for t in node val; do
     j="$a7/$case.$t.json"

@@ -1,0 +1,39 @@
+{
+ "case": "x-ups-esn1",
+ "base": "oracle/fixtures/v3/public-d0a/d0/00-h10024-s0",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "state",
+   "ops": [
+    "keep:00",
+    "put:0061=@007332613030"
+   ],
+   "log": [
+    "keep 00: 4 keys"
+   ],
+   "pre_state_root": "cf443180c700495e12b5bc63a3a0132e90479188a2119ec5ab3f82544c8cdc91"
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: MissingTrieValue (node)",
+  "Reject: implicit transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0,
+  0
+ ],
+ "note": "ESn1[NLF,SPB,WEX] (accounts only, two first id nibbles: root extension [0,0]); implicit LP",
+ "claim_sha256": "ffce42d65bfd96baad1aa5aa9962d29ff2970bb42a333a986b4278293978835a",
+ "witness_sha256": "e58c5dd80be5371b4b0e83d84065841b25047d9e34daf79590d1c85c96e8c7a7"
+}

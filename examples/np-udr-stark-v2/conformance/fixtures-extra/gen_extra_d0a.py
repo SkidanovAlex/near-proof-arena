@@ -46,7 +46,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
 sys.path.insert(0, os.path.join(REPO, "oracle", "tools"))
 import spec_check_v3 as d0  # noqa: E402
+import spec_check_v3_d0a as d0a  # noqa: E402
+from v3lib import sched as v3sched  # noqa: E402
 from v3lib.prim import R, PartialTrie, decode_node, nibbles  # noqa: E402
+sys.path.insert(0, HERE)
+import trie_edit  # noqa: E402
 
 ZERO32 = bytes(32)
 
@@ -112,6 +116,28 @@ def chunk_hash(inner):
 
 def height(x):
     return d0.decode_inner_lite(x['lite'])['height']
+
+
+def bw_span(inner):
+    """Byte span of the tagged `BandwidthRequests` inside a chunk inner (V4/V5)."""
+    r = R(inner)
+    if r.u8() not in (3, 4):
+        raise SystemExit("--bw: unsupported chunk inner version")
+    for _ in range(4):
+        r.hash()
+    for _ in range(5):
+        r.u64()
+    r.u128(); r.hash(); r.hash()
+    r.vec(lambda: d0.read_validator_stake(r))
+    d0.read_congestion(r)
+    a = r.i
+    d0.read_bw_requests(r)
+    return a, r.i
+
+
+def set_bw(inner, reqs):
+    a, b = bw_span(inner)
+    return inner[:a] + b'\x00' + u32(len(reqs)) + b''.join(struct.pack('<H', t) + bm for t, bm in reqs) + inner[b:]
 
 
 def fix_headers_root(x):
@@ -300,6 +326,15 @@ def main():
     ap.add_argument("--dup", action="append", default=[], help="DSTBLK:DSTSLOT=SRCBLK:SRCSLOT")
     ap.add_argument("--buffered", default=None, help="S[=HEX|=absent],...  new indices (default groups value: empty)")
     ap.add_argument("--groups", default=None, help="S=empty|HEX,...  overwrite groups data of listed shards")
+    ap.add_argument("--bw", action="append", default=[],
+                    help="BLK:SLOT=TO/BITS[,TO/BITS...]  set a slot's BandwidthRequests (SLOT or TO may be "
+                         "'*' = every slot / every layout shard id; BITS = 10 hex digits (5-byte bitmap); "
+                         "empty right-hand side = no requests)")
+    ap.add_argument("--state", action="append", default=[],
+                    help="main pre-state trie surgery, in order: del:KEYHEX | put:KEYHEX=VALHEX | "
+                         "put:KEYHEX=@SRCKEYHEX | keep:PFXHEX[,PFXHEX...] (rebuild from the revealed keys "
+                         "with these byte prefixes) | ext0:NIBBLES (non-canonical empty-key extension above "
+                         "the node at that nibble path); see trie_edit.py")
     ap.add_argument("--note", default="")
     ap.add_argument("--drop-extra", action="store_true",
                     help="negative: after the fixed point, drop the replaced slots' (extra, unused) "
@@ -322,6 +357,24 @@ def main():
     nrec = {e['key']: e['n'] for e in w['entries']}
     changed = set()
     ops = []
+    rekey = {}          # (block, slot) -> original chunk hash, for slots whose inner is edited in place
+
+    def edit_slot(j, k, new_inner, copies=True):
+        """Replace a chunk header in place where it is new (slot height = block height) and in
+        every copy of it in newer blocks (a missed slot repeats the header), so the claim stays
+        consistent; older blocks (receipt-shuffle seeds, source hashes) are untouched.
+        `copies=False` (legacy --groups/--buffered, kept byte-stable): only this slot; the
+        relation never reads the stale copy's prev_state_root."""
+        if blocks[j]['slots'][k][1] != heights[j]:
+            raise SystemExit("slot %d:%d is a missed slot (an old header): edit it where it is new" % (j, k))
+        old = blocks[j]['slots'][k][0]
+        for jj, x in enumerate(blocks[:j + 1]):
+            for kk, (inner, hi) in enumerate(x['slots']):
+                if inner == old and (copies or (jj, kk) == (j, k)):
+                    if (jj, kk) not in rekey:
+                        rekey[(jj, kk)] = chunk_hash(old)
+                    x['slots'][kk] = [new_inner, hi]
+                    changed.add(jj)
 
     for spec in a.dup:
         dst, src = spec.split("=")
@@ -339,6 +392,39 @@ def main():
         changed.add(dj)
         ops.append(dict(op="dup", dst=[dj, dk], src=[sj, si], key=chunk_hash(s_inner).hex(),
                         replaced_key=chunk_hash(d_inner).hex()))
+
+    for spec in a.bw:
+        dst, _, rhs = spec.partition("=")
+        bj, bk = dst.split(":")
+        bj = int(bj)
+        # '*': every slot whose chunk is new in this block (missed slots repeat an older header)
+        slots = ([k for k, (_, hi) in enumerate(blocks[bj]['slots']) if hi == heights[bj]]
+                 if bk == "*" else [int(bk)])
+        reqs = []
+        for item in (rhs.split(",") if rhs else []):
+            to, _, bits = item.partition("/")
+            bm = bytes.fromhex(bits)
+            if len(bm) != 5:
+                raise SystemExit("--bw: bitmap must be 5 bytes")
+            for t in (L.shard_ids if to == "*" else [int(to)]):
+                reqs.append((t, bm))
+        for k in slots:
+            edit_slot(bj, k, set_bw(blocks[bj]['slots'][k][0], reqs))
+        ops.append(dict(op="bw", block=bj, slots=list(slots), requests=[[t, bm.hex()] for t, bm in reqs]))
+
+    if a.state:
+        own_inner = blocks[b2i]['slots'][idx][0]
+        pre_root = own_inner[33:65]
+        store = {sha(v): v for v in w['main']['values']}
+        try:
+            new_root, new_entries, slog = trie_edit.apply_ops(store, pre_root, a.state)
+        except trie_edit.EditError as e:
+            raise SystemExit("--state: %s" % e)
+        store.update(new_entries)
+        keep = reachable(store, new_root)
+        w['main']['values'] = restrict(w['main']['values'], store, keep)
+        edit_slot(b2i, idx, own_inner[:33] + new_root + own_inner[65:])
+        ops.append(dict(op="state", ops=a.state, log=slog, pre_state_root=new_root.hex()))
 
     if a.buffered or a.groups:
         own_inner = blocks[b2i]['slots'][idx][0]
@@ -371,14 +457,7 @@ def main():
             trie.insert(bytes([16]) + u64(s), gvals[s])
         keep = reachable(trie.store, trie.root)
         w['main']['values'] = restrict(w['main']['values'], trie.store, keep)
-        old_key = chunk_hash(own_inner)
-        new_inner = own_inner[:33] + trie.root + own_inner[65:]
-        blocks[b2i]['slots'][idx] = [new_inner, blocks[b2i]['slots'][idx][1]]
-        new_key = chunk_hash(new_inner)
-        for e in w['entries']:
-            if e['key'] == old_key:
-                e['key'] = new_key
-        changed.add(b2i)
+        edit_slot(b2i, idx, own_inner[:33] + trie.root + own_inner[65:], copies=False)
         ops.append(dict(op="buffered" if a.buffered else "groups", shards=shards,
                         groups={str(s): ("absent" if s not in gvals else gvals[s].hex()) for s in shards},
                         empty_values=sum(1 for s in gvals if gvals[s] == b''),
@@ -386,6 +465,11 @@ def main():
 
     if not ops:
         raise SystemExit("no operation")
+    # slots edited in place keep their witness entry (source receipt proof): re-key it
+    remap = {old: chunk_hash(blocks[j]['slots'][k][0]) for (j, k), old in rekey.items()}
+    for e in w['entries']:
+        if e['key'] in remap:
+            e['key'] = remap[e['key']]
     for j in sorted(changed):
         fix_headers_root(blocks[j])
     for m in range(max(changed) - 1, -1, -1):
@@ -416,12 +500,30 @@ def main():
     os.makedirs(a.out, exist_ok=True)
     open(os.path.join(a.out, "claim.bin"), "wb").write(cb)
     open(os.path.join(a.out, "witness.bin"), "wb").write(wb)
+    # D0a verdict of the independent Python reference (amendments incl. A9's word count)
+    runs = []
+    orig_run = v3sched.run
+
+    def counted(*args):
+        before = set(map(id, d0a._RNGS))
+        out = orig_run(*args)
+        runs.append(sum(r.words for r in d0a._RNGS if id(r) not in before))
+        return out
+    v3sched.run = counted
+    try:
+        dv = d0a.check_case(a.out)
+    finally:
+        v3sched.run = orig_run
+    if (dv[0] == "accept") != expected:
+        raise SystemExit("python D0a verdict %s (%s), expected %s" % (dv[0], dv[1], expected))
     name = os.path.basename(os.path.normpath(a.out))
     meta = dict(case=name, base=os.path.relpath(os.path.abspath(a.base), REPO), kind="extra-d0a",
                 generator="examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
                 domain="D0a", expected_rel_d0=expected, expected_rel_d0a=expected,
                 nearcore="not judged (constructed: the mutated blocks are not in nearcore's store)",
-                ops=ops, python_fixups=log, python_verdict=verdict, note=a.note,
+                ops=ops, python_fixups=log, python_verdict=verdict, python_d0a=dv[0],
+                chacha_words=dv[3], chacha_words_runs=runs[:1 + len(w['implicit'])],
+                note=a.note,
                 claim_sha256=sha(cb).hex(), witness_sha256=sha(wb).hex())
     if mutation:
         meta["mutation"] = mutation

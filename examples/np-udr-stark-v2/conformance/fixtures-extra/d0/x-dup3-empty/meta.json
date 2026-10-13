@@ -51,6 +51,11 @@
   "Reject: InvalidStateRoot"
  ],
  "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0
+ ],
  "note": "3 copies across blocks + empty value",
  "claim_sha256": "0cbaf6e314544e449c21f58d00bb7b4ff9a3e0f6aa493bbb23d71b564484eeb9",
  "witness_sha256": "1d3bd6ed150ed9bf17ccbfbd8f1009c899da2329a25834f5d36764a2d28128ad"
