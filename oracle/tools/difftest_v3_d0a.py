@@ -42,6 +42,7 @@ meta.json has no oracle measures; an offline `reject` (empty main pre-state) mus
 usage: difftest_v3.py --cases DIR [--lean EXE] [--python FILE] [--report OUT.json]
          [--lean-jsonl F --python-jsonl F]   (reuse precomputed outputs)
          [--oracle-jsonl F...]               (offline oracle A7 for constructed cases)
+         [--case-list FILE]                  (only these case dirs)
 """
 import argparse, collections, json, os, subprocess, sys, time
 
@@ -75,6 +76,7 @@ def main():
     ap.add_argument("--lean-jsonl", nargs="*")
     ap.add_argument("--python-jsonl", nargs="*")
     ap.add_argument("--oracle-jsonl", nargs="*")
+    ap.add_argument("--case-list", help="restrict to these case dirs (one per line)")
     ap.add_argument("--report")
     a = ap.parse_args()
     offline = {}
@@ -96,6 +98,9 @@ def main():
         p = os.path.join(a.cases, sub)
         if os.path.isdir(p):
             dirs += sorted(os.path.normpath(os.path.join(p, d)) for d in os.listdir(p))
+    if a.case_list:
+        keep = {os.path.normpath(x.strip()) for x in open(a.case_list) if x.strip()}
+        dirs = [d for d in dirs if d in keep]
     impls = {}
     times = {}
     if a.lean_jsonl:

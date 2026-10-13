@@ -1,0 +1,225 @@
+{
+ "a10_path_depth_mutants": {
+  "w.path_depth_at_bound": {
+   "cases": 0,
+   "lean.accept": 0,
+   "lean.out_of_domain_w.path_depth": 0,
+   "nearcore_accepts": 0,
+   "python.accept": 0,
+   "python.out_of_domain_w.path_depth": 0
+  },
+  "w.path_depth_over": {
+   "cases": 0,
+   "lean.accept": 0,
+   "lean.out_of_domain_w.path_depth": 0,
+   "nearcore_accepts": 0,
+   "python.accept": 0,
+   "python.out_of_domain_w.path_depth": 0
+  }
+ },
+ "a10_reported_elsewhere": {
+  "lean": 0,
+  "python": 0
+ },
+ "a2_foreign_routed_mutants": {
+  "cases": 0,
+  "lean.out_of_domain": 0,
+  "python.out_of_domain": 0
+ },
+ "a8_dup_bw_request_mutants": {
+  "cases": 0,
+  "lean.out_of_domain_c.bw_requests": 0,
+  "python.out_of_domain_c.bw_requests": 0
+ },
+ "a8_reported_elsewhere": {
+  "lean": 0,
+  "python": 0
+ },
+ "a9_reported": {
+  "lean": 0,
+  "python": 0
+ },
+ "amendments_on_honest_witnesses": {
+  "c.bw_requests": 0,
+  "c.gas_limit": 0,
+  "c.layout_wf": 0,
+  "e.chacha_words": 0,
+  "e.sched_canonical": 0,
+  "honest_witnesses": 12737,
+  "w.path_depth": 0,
+  "w.proof_routing": 0,
+  "w.unfolded": 0
+ },
+ "cases_dir": "nearproof-deps/corpora/d2corpus.v2",
+ "chacha_words": {
+  "compared_lean_python": 38,
+  "compared_oracle": 0,
+  "distribution": {
+   "max": 0,
+   "min": 0,
+   "n": 38,
+   "nonzero": 0,
+   "p50": 0,
+   "p90": 0,
+   "p99": 0
+  },
+  "distribution_in_d0a": {
+   "max": 0,
+   "min": 0,
+   "n": 38,
+   "nonzero": 0,
+   "p50": 0,
+   "p90": 0,
+   "p99": 0
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "counts": {
+  "d2.cases": 10537,
+  "d2.lean.accept": 22,
+  "d2.lean.out_of_domain": 10515,
+  "d2.python.accept": 22,
+  "d2.python.out_of_domain": 10515,
+  "mutants.cases": 16,
+  "mutants.lean.accept": 16,
+  "mutants.python.accept": 16,
+  "ood.cases": 390,
+  "ood.lean.out_of_domain": 390,
+  "ood.python.out_of_domain": 390
+ },
+ "disagreement_list": [],
+ "disagreements": 0,
+ "domain": "D0a",
+ "implementations": [
+  "nearcore-oracle",
+  "lean",
+  "python"
+ ],
+ "max_path_depth": {
+  "compared_lean_python": 38,
+  "compared_oracle": 0,
+  "distribution": {
+   "max": 3,
+   "min": 1,
+   "n": 38,
+   "nonzero": 38,
+   "p50": 2,
+   "p90": 3,
+   "p99": 3
+  },
+  "distribution_in_d0a": {
+   "max": 3,
+   "min": 1,
+   "n": 38,
+   "nonzero": 38,
+   "p50": 2,
+   "p90": 3,
+   "p99": 3
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "mutation_families": {},
+ "nearcore_commit": "44f7ae6cd7ef08bab604e20a473bf77e35d4c993",
+ "oracle_summary": {
+  "cases_on_disk": {
+   "d2": 10537,
+   "mutants": 56457,
+   "ood": 390
+  },
+  "crafted_transactions": 3000,
+  "d0_cases_among_d2": 22,
+  "d1_cases_among_d2": 37,
+  "d2_cases": 10537,
+  "d2_violation_counts": {
+   "c.not_genesis": 69,
+   "c.segment": 3,
+   "e.secp": 21,
+   "e.wasm": 2041,
+   "w.shape": 88
+  },
+  "domain": "D2",
+  "honest_accepted_by_nearcore": 12737,
+  "honest_witnesses": 12737,
+  "mutants": 56457,
+  "nearcore_commit": "44f7ae6cd7ef08bab604e20a473bf77e35d4c993",
+  "ood_cases_written": 390,
+  "protocol_version": 86,
+  "seed": 6262
+ },
+ "statement": "near/pv86/chunk-validation/v0",
+ "unfold_bytes": {
+  "compared_lean_python": 38,
+  "compared_oracle": 0,
+  "distribution": {
+   "max": 9624,
+   "min": 1376,
+   "n": 38,
+   "nonzero": 38,
+   "p50": 6600,
+   "p90": 8042,
+   "p99": 9624
+  },
+  "distribution_in_d0a": {
+   "max": 9624,
+   "min": 1376,
+   "n": 38,
+   "nonzero": 38,
+   "p50": 6600,
+   "p90": 8042,
+   "p99": 9624
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "unfold_diff": {
+  "compared_lean_python": 38,
+  "compared_oracle": 0,
+  "distribution": {
+   "max": 8122,
+   "min": 1376,
+   "n": 38,
+   "nonzero": 38,
+   "p50": 5046,
+   "p90": 6150,
+   "p99": 8122
+  },
+  "distribution_in_d0a": {
+   "max": 8122,
+   "min": 1376,
+   "n": 38,
+   "nonzero": 38,
+   "p50": 5046,
+   "p90": 6150,
+   "p99": 8122
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "unfold_rebuilt": {
+  "compared_lean_python": 38,
+  "compared_oracle": 0,
+  "distribution": {
+   "max": 9624,
+   "min": 1376,
+   "n": 38,
+   "nonzero": 38,
+   "p50": 6600,
+   "p90": 8042,
+   "p99": 9624
+  },
+  "distribution_in_d0a": {
+   "max": 9624,
+   "min": 1376,
+   "n": 38,
+   "nonzero": 38,
+   "p50": 6600,
+   "p90": 8042,
+   "p99": 9624
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "wall_seconds": {}
+}

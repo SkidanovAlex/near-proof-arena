@@ -1,0 +1,293 @@
+{
+ "a10_path_depth_mutants": {
+  "w.path_depth_at_bound": {
+   "cases": 625,
+   "lean.accept": 625,
+   "lean.out_of_domain_w.path_depth": 0,
+   "nearcore_accepts": 625,
+   "python.accept": 625,
+   "python.out_of_domain_w.path_depth": 0
+  },
+  "w.path_depth_over": {
+   "cases": 625,
+   "lean.accept": 0,
+   "lean.out_of_domain_w.path_depth": 625,
+   "nearcore_accepts": 625,
+   "python.accept": 0,
+   "python.out_of_domain_w.path_depth": 625
+  }
+ },
+ "a10_reported_elsewhere": {
+  "lean": 0,
+  "python": 0
+ },
+ "a2_foreign_routed_mutants": {
+  "cases": 286,
+  "lean.out_of_domain": 286,
+  "python.out_of_domain": 286
+ },
+ "a8_dup_bw_request_mutants": {
+  "cases": 625,
+  "lean.out_of_domain_c.bw_requests": 625,
+  "python.out_of_domain_c.bw_requests": 625
+ },
+ "a8_reported_elsewhere": {
+  "lean": 0,
+  "python": 0
+ },
+ "a9_reported": {
+  "lean": 0,
+  "python": 0
+ },
+ "amendments_on_honest_witnesses": {
+  "c.bw_requests": 0,
+  "c.gas_limit": 0,
+  "c.layout_wf": 0,
+  "e.chacha_words": 0,
+  "e.sched_canonical": 0,
+  "honest_witnesses": 2703,
+  "w.path_depth": 0,
+  "w.proof_routing": 0,
+  "w.unfolded": 0
+ },
+ "cases_dir": "generated:heavy-requests-seed4243",
+ "chacha_words": {
+  "compared_lean_python": 3829,
+  "compared_oracle": 3829,
+  "distribution": {
+   "max": 12,
+   "min": 0,
+   "n": 3829,
+   "nonzero": 118,
+   "p50": 0,
+   "p90": 0,
+   "p99": 3
+  },
+  "distribution_in_d0a": {
+   "max": 12,
+   "min": 0,
+   "n": 2293,
+   "nonzero": 75,
+   "p50": 0,
+   "p90": 0,
+   "p99": 3
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "counts": {
+  "d0.cases": 724,
+  "d0.expected_accept": 724,
+  "d0.lean.accept": 724,
+  "d0.python.accept": 724,
+  "mutants.amendment.c.bw_requests": 625,
+  "mutants.amendment.w.path_depth": 625,
+  "mutants.amendment.w.proof_routing": 286,
+  "mutants.cases": 8031,
+  "mutants.expected_accept": 1569,
+  "mutants.lean.accept": 1569,
+  "mutants.lean.out_of_domain": 1656,
+  "mutants.lean.reject": 4806,
+  "mutants.python.accept": 1569,
+  "mutants.python.out_of_domain": 1536,
+  "mutants.python.reject": 4926,
+  "ood.cases": 1242,
+  "ood.expected_accept": 0,
+  "ood.lean.out_of_domain": 1242,
+  "ood.python.out_of_domain": 1242
+ },
+ "disagreement_list": [],
+ "disagreements": 0,
+ "domain": "D0a",
+ "implementations": [
+  "nearcore-oracle",
+  "lean",
+  "python"
+ ],
+ "max_path_depth": {
+  "compared_lean_python": 3829,
+  "compared_oracle": 3829,
+  "distribution": {
+   "max": 33,
+   "min": 1,
+   "n": 3829,
+   "nonzero": 3829,
+   "p50": 3,
+   "p90": 33,
+   "p99": 33
+  },
+  "distribution_in_d0a": {
+   "max": 32,
+   "min": 1,
+   "n": 2293,
+   "nonzero": 2293,
+   "p50": 3,
+   "p90": 32,
+   "p99": 32
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "mutation_families": {
+  "c.drop_last_block|expected_accept=False": 118,
+  "c.dup_bw_request|expected_accept=False": 625,
+  "c.epoch_start_flip|expected_accept=False": 118,
+  "c.extra_block|expected_accept=False": 118,
+  "c.inner_rest_flip|expected_accept=False": 118,
+  "c.slot_height_flip|expected_accept=False": 118,
+  "c.slot_inner_flip|expected_accept=False": 118,
+  "hdr.bandwidth_requests|expected_accept=False": 118,
+  "hdr.congestion|expected_accept=False": 354,
+  "hdr.encoded_length|expected_accept=False": 118,
+  "hdr.encoded_merkle_root|expected_accept=False": 118,
+  "hdr.gas_limit|expected_accept=False": 118,
+  "hdr.height_created|expected_accept=True": 118,
+  "hdr.height_included(unchecked)|expected_accept=True": 118,
+  "hdr.prev_balance_burnt|expected_accept=False": 118,
+  "hdr.prev_gas_used|expected_accept=False": 118,
+  "hdr.prev_outcome_root|expected_accept=False": 118,
+  "hdr.prev_outgoing_receipts_root|expected_accept=False": 118,
+  "hdr.prev_state_root|expected_accept=False": 118,
+  "hdr.proposals|expected_accept=False": 118,
+  "hdr.proposed_split|expected_accept=False": 118,
+  "hdr.tx_root|expected_accept=False": 118,
+  "t.chain_id(unused_in_D0)|expected_accept=True": 118,
+  "t.minimum_stake(unused_in_D0)|expected_accept=True": 118,
+  "t.rs_params|expected_accept=False": 118,
+  "w.applied_receipts_hash|expected_accept=False": 118,
+  "w.base_state|expected_accept=False": 118,
+  "w.base_state|expected_accept=True": 118,
+  "w.corrupt_proof|expected_accept=False": 118,
+  "w.drop_node|expected_accept=False": 1220,
+  "w.drop_proof|expected_accept=False": 118,
+  "w.dup_key_last_bad|expected_accept=False": 118,
+  "w.dup_key_last_good|expected_accept=True": 118,
+  "w.epoch_id|expected_accept=False": 118,
+  "w.extra_proof|expected_accept=False": 118,
+  "w.foreign_routed_receipt|expected_accept=False": 286,
+  "w.implicit|expected_accept=False": 48,
+  "w.main_block_hash(unchecked)|expected_accept=True": 118,
+  "w.main_post_root|expected_accept=False": 118,
+  "w.path_depth_at_bound|expected_accept=True": 625,
+  "w.path_depth_over|expected_accept=False": 625,
+  "w.trailing_byte|expected_accept=False": 118,
+  "w.unsorted_keys|expected_accept=True": 118
+ },
+ "nearcore_commit": "44f7ae6cd7ef08bab604e20a473bf77e35d4c993",
+ "oracle_summary": {
+  "chacha_replay_errors": 0,
+  "chacha_replica_checked": 3580,
+  "chacha_replica_mismatches": 0,
+  "d0_cases": 724,
+  "d0_violation_counts": {
+   "c.no_split_gate": 120,
+   "c.no_tx_flags": 650,
+   "c.not_genesis": 30,
+   "c.own_congestion_zero": 1269,
+   "c.segment": 1,
+   "c.single_epoch": 262,
+   "e.compute": 394,
+   "e.forwarded": 954,
+   "e.queues_empty": 1269,
+   "r.shape": 59,
+   "r.success": 292,
+   "w.no_txs": 1148
+  },
+  "heavy_requests": true,
+  "honest_accepted_by_nearcore": 2703,
+  "honest_witnesses": 2703,
+  "mutants": 8031,
+  "nearcore_commit": "44f7ae6cd7ef08bab604e20a473bf77e35d4c993",
+  "ood_cases_written": 1242,
+  "path_depth_controls": {
+   "judged": 1250,
+   "rejected_by_nearcore": 1250
+  },
+  "path_depth_mutants": {
+   "w.path_depth_at_bound": {
+    "accepted_by_nearcore": 625,
+    "written": 625
+   },
+   "w.path_depth_over": {
+    "accepted_by_nearcore": 625,
+    "written": 625
+   }
+  },
+  "protocol_version": 86,
+  "seed": 4243
+ },
+ "statement": "near/pv86/chunk-validation/v0",
+ "unfold_bytes": {
+  "compared_lean_python": 3829,
+  "compared_oracle": 724,
+  "distribution": {
+   "max": 21436,
+   "min": 1248,
+   "n": 3829,
+   "nonzero": 3829,
+   "p50": 4174,
+   "p90": 9146,
+   "p99": 10530
+  },
+  "distribution_in_d0a": {
+   "max": 21436,
+   "min": 1248,
+   "n": 2293,
+   "nonzero": 2293,
+   "p50": 4174,
+   "p90": 9026,
+   "p99": 11376
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "unfold_diff": {
+  "compared_lean_python": 3829,
+  "compared_oracle": 724,
+  "distribution": {
+   "max": 19527,
+   "min": 1248,
+   "n": 3829,
+   "nonzero": 3829,
+   "p50": 3568,
+   "p90": 7075,
+   "p99": 9756
+  },
+  "distribution_in_d0a": {
+   "max": 19527,
+   "min": 1248,
+   "n": 2293,
+   "nonzero": 2293,
+   "p50": 3286,
+   "p90": 7075,
+   "p99": 9933
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "unfold_rebuilt": {
+  "compared_lean_python": 3829,
+  "compared_oracle": 724,
+  "distribution": {
+   "max": 21436,
+   "min": 1248,
+   "n": 3829,
+   "nonzero": 3829,
+   "p50": 4174,
+   "p90": 9146,
+   "p99": 10530
+  },
+  "distribution_in_d0a": {
+   "max": 21436,
+   "min": 1248,
+   "n": 2293,
+   "nonzero": 2293,
+   "p50": 4174,
+   "p90": 9026,
+   "p99": 11376
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "wall_seconds": {}
+}
