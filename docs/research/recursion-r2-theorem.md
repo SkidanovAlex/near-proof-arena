@@ -409,7 +409,7 @@ there.
 | **Total new (excluding R1's front end)** | | | **≈ 11–19k** |
 
 Calibration: L3 (`Udr` with `Udr/Np`) is 11.2k lines, `Bcs` 5.5k, `Prover` 7.9k and `Stark` 2.9k. R2 adds to the
-elaboration budget (candidate already at 647 s of 1,800 s per `V3-D0-DESIGN.md`): about 150–250 s at 12 s/kLOC.
+elaboration budget (candidate already at 647 s of the then 1,800 s budget per `V3-D0-DESIGN.md`; 4 h since 2026-10-03): about 150–250 s at 12 s/kLOC.
 
 ---
 

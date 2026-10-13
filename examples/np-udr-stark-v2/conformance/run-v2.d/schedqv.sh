@@ -233,7 +233,10 @@ if [ -n "$sd" ] && [ -n "$tape" ]; then
   lneg "a round entry's increase +1" sched.json "r=[r for b in x for r in b['run']['rounds']][0]; r['entries'][0]['inc'] += 1" 40,41,42,43,44
 fi
 # wrong witnesses: v3sched (and the Lean dumper) reject them
-c1=$(ls "$fx" | head -1); c2=$(ls "$fx" | sed -n 2p); wq="$so/wrongw"; mkdir -p "$wq"
+# (first and last fixture: unrelated statements.  Two fixtures derived from one base, e.g.
+# fixtures-extra x-bw-16 / x-bw-64, differ in the witness only by its copy of the endorsed
+# header; the claim stays true with the rest of the other witness, so that pair is no negative.)
+c1=$(ls "$fx" | head -1); c2=$(ls "$fx" | tail -1); wq="$so/wrongw"; mkdir -p "$wq"
 cp "$fx/$c1/claim.bin" "$wq/claim.bin"; cp "$fx/$c2/witness.bin" "$wq/witness.bin"
 if "$npudr" v3sched "$wq" "$wq/out" > "$wq.log" 2>&1; then bad "v3sched accepts $c1's claim with $c2's witness"
 else pass "v3sched rejects a foreign witness ($(tail -c 80 "$wq.log" | tr '\n' ' '))"; fi

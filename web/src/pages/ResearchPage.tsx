@@ -1,9 +1,11 @@
 import { useSearchParams } from 'react-router-dom';
-import { listSubmissions } from '../api/client';
+import { listChallenges, listSubmissions } from '../api/client';
 import { useAsync } from '../api/hooks';
 import { AsyncView } from '../components/AsyncView';
 import { DecisionBadge, RevokedBadge, TierBadge } from '../components/Badges';
+import { DraftResearchNote } from '../components/DraftChallenge';
 import { ChlLink, SubLink } from '../components/Links';
+import { SupersededToggle, supersededIds, useShowSuperseded } from '../components/SupersededToggle';
 import { T } from '../components/Text';
 import { fmtTime } from '../lib/format';
 import { researchGroups } from '../lib/research';
@@ -13,10 +15,15 @@ export function ResearchPage() {
   const [params, setParams] = useSearchParams();
   const query = (params.get('q') ?? '').slice(0, 160);
   const challenge = params.get('challenge') ?? '';
-  const [state, reload] = useAsync(async (signal) => ({
-    submissions: await listSubmissions({}, signal),
-    fetchedAt: new Date().toISOString(),
-  }), []);
+  const [showSuperseded, setShowSuperseded] = useShowSuperseded();
+  const [state, reload] = useAsync(async (signal) => {
+    const [submissions, challenges] = await Promise.all([
+      listSubmissions({}, signal),
+      // The superseded set only hides noise; if it cannot be loaded, nothing is hidden.
+      listChallenges(signal).catch(() => []),
+    ]);
+    return { submissions, superseded: supersededIds(challenges), fetchedAt: new Date().toISOString() };
+  }, []);
   const set = (key: string, value: string) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
@@ -29,18 +36,24 @@ export function ResearchPage() {
       <h1>Research approaches</h1>
       <p className="lede">
         Explore submitted backends, their contributors, and their recorded parent submissions.
-        Pending, rejected, experimental and superseded work remains visible alongside admitted work.
+        Pending, rejected and experimental work remains visible alongside admitted work. Work recorded
+        against superseded challenges is hidden by default; use “Show superseded” to include it.
       </p>
       <p className="small muted">
         Backend families are candidate-supplied labels. Each group belongs to one challenge;
         this view does not rank approaches or compare scores across scopes. A recorded parent
         does not establish that proofs compose. Open a submission for its gates, evidence and signed report.
       </p>
+      <DraftResearchNote />
       <button type="button" onClick={reload}>Refresh research view</button>
       <AsyncView state={state} what="research submissions">
-        {({ submissions, fetchedAt }) => {
-          const groups = researchGroups(submissions, query, challenge);
-          const challenges = [...new Set(submissions.map((s) => s.challenge_id))].sort();
+        {({ submissions, superseded, fetchedAt }) => {
+          // An explicitly selected challenge is always shown, superseded or not.
+          const visible = (id: string) => showSuperseded || id === challenge || !superseded.has(id);
+          const allGroups = researchGroups(submissions, query, challenge);
+          const groups = allGroups.filter((g) => visible(g.challengeId));
+          const hiddenGroups = allGroups.length - groups.length;
+          const challenges = [...new Set(submissions.map((s) => s.challenge_id))].filter(visible).sort();
           if (challenge && !challenges.includes(challenge)) challenges.push(challenge);
           return (
             <>
@@ -61,9 +74,15 @@ export function ResearchPage() {
                     {challenges.map((id) => <option key={id} value={id}>{displayInline(id, 80)}</option>)}
                   </select>
                 </label>
-                {(query || challenge) && <button type="button" onClick={() => setParams({}, { replace: true })}>Clear filters</button>}
+                <SupersededToggle
+                  count={showSuperseded ? allGroups.filter((g) => superseded.has(g.challengeId)).length : hiddenGroups}
+                  show={showSuperseded} onChange={setShowSuperseded} what="approach groups of superseded challenges" />
+                {(query || challenge) && <button type="button" onClick={() => setParams(showSuperseded ? { superseded: '1' } : {}, { replace: true })}>Clear filters</button>}
               </form>
-              <p role="status">{groups.length} approach group{groups.length === 1 ? '' : 's'} match these filters.</p>
+              <p role="status">
+                {groups.length} approach group{groups.length === 1 ? '' : 's'} match these filters.
+                {hiddenGroups > 0 && ` ${hiddenGroups} more from superseded challenges hidden.`}
+              </p>
               {groups.length === 0 && <p className="empty">No submitted approaches match these filters.</p>}
               {groups.map((group) => (
                 <section className="board-section" key={JSON.stringify([group.challengeId, group.family])}>

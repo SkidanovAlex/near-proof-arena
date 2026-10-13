@@ -68,8 +68,10 @@ class RecTrie(d0.PartialTrie):
         self.pre_root = root
         self.keys = set()
         # native post trie (Lean's `out.trie` / `applyMissingChunk` result): the nodes the
-        # writes created, by absolute nibble position, and the written values by nibble key
-        self.created = {}
+        # writes created, as (absolute nibble position, hash) pairs — a set, since a
+        # (non-canonical) extension with an empty key shares its position with its child —
+        # and the written values by nibble key
+        self.created = set()
         self.written = {}
         _TRIES.append(self)
 
@@ -119,11 +121,11 @@ class RecTrie(d0.PartialTrie):
                 else:
                     h, pos = n.children[bp[len(pos)]], pos + (bp[len(pos)],)
             assert pos == bp
-            self.created[pos] = h
+            self.created.add((pos, h))
         # every node on the new path to `full` is created
         h, pos = self.root, ()
         while True:
-            self.created[pos] = h
+            self.created.add((pos, h))
             n = self.node(h)
             if n.kind == 'leaf' or (n.kind == 'branch' and len(pos) == len(full)):
                 break
@@ -244,7 +246,7 @@ def unfold_native(t, h, pos, keys):
     was written there or a read key ends there and the pre store holds it."""
     if h is None:
         return 0
-    forced = t.created.get(pos) == h
+    forced = (pos, h) in t.created
     if not forced and not keys:
         return 0
     raw = t.store.get(h) if forced else t.pre_store.get(h)
