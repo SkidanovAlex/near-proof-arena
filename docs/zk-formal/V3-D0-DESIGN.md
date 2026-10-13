@@ -51,7 +51,7 @@ Effort (§7): **≈ 50–80 k Lean LOC plus 9–13 k Rust, ≈ 40–60 agent-day
 wall-clock on 6–8 lanes.**
 
 Top risks:
-1. **Elaboration budget.** v1's candidate already takes 647 s of the 1,800 s budget.
+1. **Elaboration budget.** v1's candidate already takes 647 s of the 1,800 s budget. *(Superseded: the budget is 4 h total elaboration (formal-checker `Limits::default` since 2026-10-03, `a0990606`; confirmed by the user 2026-10-13). Measured 2026-10-13: the unconditional certificate `nearV3_admission_final` has a 4,514-module closure, projected ≈ 5,000–6,000 s clean serial elaboration; slowest module 140 s.)*
 2. Volume of the node/rcpt view re-proofs.
 3. Approval of amendments A1/A2 (spec governance).
 
@@ -605,7 +605,7 @@ lanes (≤ 2 sub-agents per lane, as in the preamble).
 **Recommended first milestone (M-v3-1).** P-bus, plus `romSound_hint` composition on a toy AIR with a public segment and a hint. That gives a full toy admission with the new pipeline, before any NEAR table work, mirroring v1's M2.
 
 **Risks.**
-1. **Elaboration budget.** v1's candidate elaboration is 647 s, and v3 adds an estimated +60–80 %, so ≈ 1,050–1,200 s of 1,800 s.
+1. **Elaboration budget.** v1's candidate elaboration is 647 s, and v3 adds an estimated +60–80 %, so ≈ 1,050–1,200 s of 1,800 s. *(Superseded: the budget is 4 h total elaboration (formal-checker `Limits::default` since 2026-10-03, `a0990606`; confirmed by the user 2026-10-13). Measured 2026-10-13: the unconditional certificate `nearV3_admission_final` has a 4,514-module closure, projected ≈ 5,000–6,000 s clean serial elaboration; slowest module 140 s.)*
    * Mitigation: keep v1 modules out of the v3 closure where unused; avoid large `decide +kernel` (the RealCase-style 2.5 min kernel evaluations must stay out of the candidate); ask governance for a larger elaboration budget early.
 2. **v1 proof reuse is partial.** The node and rcpt layouts change, so roughly 30–40 % of the `Extract/Node*`/`Rcpt*` and `Link/*` modules are touched.
    * Mitigation: append columns, keep v1 column indices stable, and gate new constraints with new selectors.
@@ -649,7 +649,7 @@ behind binding a hint to the trace.
 2. Approve the public-message bus as a protocol change (L3/L4/L7/L8). v1 is unaffected (`pubSegs = []`).
 3. Confirm that the v3 challenge's `allowed_packages` include `NearSpecV3` for the model (native `prepD0`).
 4. A1 premise: confirm against nearcore 2.13.4 that a chunk's `gas_limit` is never adjusted from genesis (`ChunkExtra.gas_limit` propagation).
-5. Elaboration budget for v3 (an estimated ≈ 1,100 s of 1,800 s).
+5. Elaboration budget for v3 (an estimated ≈ 1,100 s of 1,800 s; superseded — budget 4 h, see §1 note).
 
 ---
 
