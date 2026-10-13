@@ -24,6 +24,11 @@
  ],
  "python_fixups": [],
  "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0
+ ],
  "note": "2 copies across source blocks (block-1 slot copied into B2)",
  "claim_sha256": "b4aa3f68647ca8d3057564df627c826561d04d7d57af8ff479e3dfb835a4af07",
  "witness_sha256": "a7f122713e1c811f3ab7977b5f7737216d05bd5fee3f3b24e2588005c8fd8040"

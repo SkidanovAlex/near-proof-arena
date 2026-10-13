@@ -1,0 +1,33 @@
+{
+ "case": "x-ups-bi-ext",
+ "base": "oracle/fixtures/v3/public-d0a/d0/00-h10004-s3",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "state",
+   "ops": [
+    "del:0f"
+   ],
+   "log": [],
+   "pre_state_root": "60d6231150cf4ece09a574e8b00927f9b4170481f916ce1726ec10eb4c2b6431"
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 0,
+ "chacha_words_runs": [
+  0
+ ],
+ "note": "BI[NLF,RBI,RDE] (root extension [0])",
+ "claim_sha256": "c13b8b4c2119ef455e6b0e251c02d5c868cafc8351d51a7f6d9712353282e9b2",
+ "witness_sha256": "e22e43c29eeb863a3c6df018fc8981c7179a2c2c37557e5287446df0bc6c8371"
+}

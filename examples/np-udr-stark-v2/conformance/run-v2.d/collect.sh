@@ -12,7 +12,7 @@
 # list views), which no real-witness dumper produces yet: it is supplied as `sha_receipt.json`
 # (the Lean family) for the bins, and its account part is checked separately from `acct`.
 #
-# Knobs: COLLECT_CASES (all fixtures), COLLECT_CHECK (2: v3check of sha_t/sha_r on the first
+# Knobs: COLLECT_FX (fixture dirs, default "$fx $here/fixtures-extra/d0"), COLLECT_CASES (per dir, all), COLLECT_CHECK (2: v3check of sha_t/sha_r on the first
 # cases), COLLECT_NEG (3: negative cases).
 cdir="$out/collect"; mkdir -p "$cdir"
 lsb="$here/.lake/build/bin/np-lean-shabins-v3"
@@ -20,8 +20,8 @@ air="$out/nearAirV3.json"
 echo "== SHA job bins (tables 0/1): npudr v3sha vs np-lean-shabins-v3 (real fixtures)"
 ncase=0; nfail=0; nchk=0; nneg=0
 declare -A famok=([scheduler]=0 [native]=0 [receipt]=0 [source]=0 [account]=0 [bins]=0)
-for case in $(ls "$fx" | head -${COLLECT_CASES:-1000}); do
-  d="$fx/$case"; [ -f "$d/witness.bin" ] || continue
+for d in $(for dir in ${COLLECT_FX:-$fx $here/fixtures-extra/d0}; do ls -d "$dir"/*/ | head -${COLLECT_CASES:-1000}; done); do
+  d="${d%/}"; case=$(basename "$d"); [ -f "$d/witness.bin" ] || continue
   lj="$cdir/$case.lean.json"; ed="$cdir/$case.ent"; mkdir -p "$ed"
   if ! $HEAVY "$lsb" "$d" > "$lj" 2>"$lj.err"; then bad "$case: np-lean-shabins-v3 failed"; head -3 "$lj.err"; nfail=$((nfail+1)); continue; fi
   python3 - "$lj" "$ed" <<'PY'

@@ -5,6 +5,7 @@ import { useAsync } from '../api/hooks';
 import { AsyncView } from '../components/AsyncView';
 import { DecisionBadge, RevokedBadge, TierBadge } from '../components/Badges';
 import { ChlLink, SubLink } from '../components/Links';
+import { SupersededToggle, supersededIds, useShowSuperseded } from '../components/SupersededToggle';
 import { T } from '../components/Text';
 import type { SubmissionView } from '../api/types';
 import { fmtScore, fmtTime } from '../lib/format';
@@ -23,7 +24,12 @@ export function SubmissionsPage() {
   const agent = (params.get('agent') ?? '').slice(0, MAX_AGENT);
   const [agentDraft, setAgentDraft] = useState(agent);
 
+  const [showSuperseded, setShowSuperseded] = useShowSuperseded();
   const [challenges] = useAsync((s) => listChallenges(s), []);
+  // If the challenge list is unavailable nothing is hidden.
+  const superseded = challenges.status === 'ok' ? supersededIds(challenges.data) : new Set<string>();
+  // An explicitly selected challenge is always shown, superseded or not.
+  const visibleChallenge = (id: string) => showSuperseded || id === challenge || !superseded.has(id);
   const [subs] = useAsync(
     (s) => listSubmissions({ challenge_id: isChallengeId(challenge) ? challenge : undefined, agent: agent || undefined }, s),
     [challenge, agent],
@@ -62,9 +68,9 @@ export function SubmissionsPage() {
           <select value={challenge} onChange={(e) => set('challenge', e.target.value)}>
             <option value="">All challenges</option>
             {challenges.status === 'ok' &&
-              challenges.data.map((c) => (
+              challenges.data.filter((c) => visibleChallenge(c.id)).map((c) => (
                 <option key={c.id} value={c.id}>
-                  {displayInline(c.definition.name, 80)} ({c.definition.tier})
+                  {displayInline(c.definition.name, 80)} ({c.definition.tier}){c.superseded_by ? ' — superseded' : ''}
                 </option>
               ))}
           </select>
@@ -103,13 +109,21 @@ export function SubmissionsPage() {
           />
         </label>
         <button type="submit">Apply</button>
+        {challenges.status === 'ok' && (
+          <SupersededToggle
+            count={superseded.size}
+            show={showSuperseded}
+            onChange={setShowSuperseded}
+            what="superseded challenges (and their submissions)"
+          />
+        )}
         {(challenge || decision || tier || agent) && (
           <button
             type="button"
             className="link-btn"
             onClick={() => {
               setAgentDraft('');
-              setParams(new URLSearchParams(), { replace: true });
+              setParams(new URLSearchParams(showSuperseded ? { superseded: '1' } : {}), { replace: true });
             }}
           >
             Clear filters
@@ -118,15 +132,19 @@ export function SubmissionsPage() {
       </form>
       <AsyncView state={subs} what="submissions">
         {(list) => {
-          const rows = filter(list);
+          const matching = filter(list);
+          const rows = matching.filter((s) => visibleChallenge(s.challenge_id));
+          const hidden = matching.length - rows.length;
+          const hiddenNote = hidden > 0 && ` · ${hidden} from superseded challenges hidden`;
           return rows.length === 0 ? (
             <p className="empty" role="status">
-              No submissions match these filters.
+              No submissions match these filters{hiddenNote}.
             </p>
           ) : (
             <div className="table-wrap">
               <p className="small muted" role="status">
                 {rows.length} submission{rows.length === 1 ? '' : 's'}
+                {hiddenNote}
               </p>
               <table className="data">
                 <thead>

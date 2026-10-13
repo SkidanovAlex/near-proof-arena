@@ -183,9 +183,20 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
 * The full `run-v2.sh` (with `PROVE_V3=1`) on `c6330302` was started before the checkpoint; result in
   `docs/logs/` once recorded. Earlier: 1,423 PASS on bb37a433; 2,113 PASS + extra section on 75517040.
 
-**Hard feasibility risk: judge elaboration budget.** A clean, serial elaboration diagnostic hit the 1,800 s total cutoff after 927 of 1,110 modules (`/data/illia/nearproof-deps/validation/v3-clean-elaboration-20261007-attempt2`). The tree is now about 5,000 modules, so the final certificate must be a pruned closure.
-* Measure its clean elaboration early.
-* If it cannot fit, raising the budget is a decision for the user, made with numbers. Do not change it silently.
+**Judge budgets (user decision 2026-10-13: 4 h elaboration).** The formal checker enforces
+`Limits::default` (`runners/formal-checker/src/pipeline.rs`, since `a0990606`): 1 h per module, 4 h
+total elaboration, 2 h per recheck run, 4 h per rechecker; the older 1,800 s figure is superseded
+(DESIGN.md F6). Measured (judge-style clean serial `lean -o`, warm trusted oleans): the unconditional
+`nearV3_admission_final` closure is 4,514 modules, projected ≈ 5,000–6,000 s (first 1,523 modules
+took 1,800 s); slowest: `Candidates.HorizontalAuxCheck` 140 s, `Candidates.VerticalPriorFusion` 124 s,
+`Render.Ups.GWalk` 86 s, `Render.Node.Links` 80 s, `Assembly.NearAirCheck` 68 s; 49 modules ≥ 10 s ≈
+1,650 s. The conditional 748-module certificate (589 s) does NOT prove admission — never use it.
+* **Pruning (in progress):** shrink the certificate's import closure to the modules it actually
+  uses; keep all other code in the tree (it may be needed for later proofs).
+* **Not measured yet:** leanchecker / nanoda / lean4lean rechecks of the 4,514-module closure
+  (lean4lean recursion failed on D3α — see Stream A).
+* **Prover resource limits miss:** draft `max_prove_ms` 600,000 and 16 GiB RAM / 8 vCPU; real proofs
+  take 710–749 s and 13.3 GB RSS (15.5 GB internal peak).
 
 **Quality notes for whoever continues:**
 * Converge on `ExtractV3Stmt` / `CompleteV3Stmt`; every new module should sit on one of them.

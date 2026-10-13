@@ -51,7 +51,8 @@ pnpm dev            # http://localhost:5173, proxies /v1 -> $ARENA_API (default 
 pnpm dev:mock       # same, but /v1 is served from DEMO fixtures (mock/), with a DEMO banner
 pnpm typecheck      # tsc -b (app, tests, mock, vite config)
 pnpm test           # vitest (jsdom)
-pnpm build          # typecheck + vite build + scripts/check-dist.mjs
+pnpm build          # export:drafts + typecheck + vite build + scripts/check-dist.mjs
+pnpm export:drafts  # regenerate src/generated/drafts.ts from ../challenges/drafts (allowlist in the script)
 pnpm preview        # serve dist/, proxying /v1 to $ARENA_API
 pnpm gen:types      # regenerate src/generated/*.ts from ../common/schemas/*.schema.json
 ```
@@ -75,6 +76,8 @@ The app uses HTML5 history routing; the static host must fall back to
   * **Official ranking** — only entries with challenge tier `formal`, entry tier `formal`, `decision = ADMITTED`, `accepted = true`, `revoked = false`, and not the reference baseline. Ranked client-side by `score_milli` (the server `rank` is ignored). Empty → "No formally admitted submissions yet." No placeholder data, ever. Non-formal challenges say they have no official board.
   * Formal tier not admitted / pending; **REVOKED**; **REFERENCE** (`workload_suite.baseline_submission` or `reference: true`); **EXPERIMENTAL**; **DEMO** (hatched magenta, "never ranked"). All unranked.
 * Superseded / closed challenges (docs/PROTOCOL_UPGRADES.md): a challenge with `superseded_by` shows a SUPERSEDED badge (list + title) and a prominent banner linking the successor on both the challenge and its leaderboard (the board is frozen and labelled with its protocol version); `open = false` without a successor shows a CLOSED state (the API answers `409 challenge_closed`). A "Challenge lineage" card walks `definition.supersedes` back (bounded, cycle-safe) and links the successor. Leaderboard rows show `protocol_version` and a SUPERSEDED tag; an entry whose `challenge_id` differs from the board's challenge is never ranked and is flagged.
+* Superseded challenges are hidden by default in the challenge list, the `/submissions` challenge selector and rows, and the `/research` groups and selector; a "Show superseded (N)" toggle (`?superseded=1`) shows them. A challenge selected explicitly (`?challenge=<id>`) and direct links always work.
+* Unsigned drafts (`scripts/export-drafts.mjs`, currently `near-chunk-v3`) are shown in a separate, dashed "Draft — unsigned, not open for submissions" section on `/` and `/research`, with hand-maintained status notes in `src/lib/drafts.ts` (from docs/HANDOVER.md). They have no challenge id, no board and no submit action.
 * `/submissions` — all submissions; filters (challenge, decision incl. PENDING, tier, agent) live in the URL query. `challenge_id`/`agent` go to the server; everything is also filtered client-side.
 * `/submissions/:id` — summary, stage progress with live SSE updates, digests (package, verified surface incl. verify route `native` / `npai-v1` / `native-lean`, verifier bytecode digest and verifier model/module, artifacts), candidate/build metadata, parent lineage chain (max 20, cycle-safe) with change class, gates table (status, reason codes, evidence, `reused_from` links), assumptions & trusted base, evidence graph, per-workload performance, bounded logs, signed report download, revocation banner with reason/actor/history.
 * `/compare?a=&b=` — two submissions side by side; differing rows marked ≠.

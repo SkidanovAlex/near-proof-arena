@@ -1,0 +1,80 @@
+{
+ "case": "x-bw-65",
+ "base": "oracle/fixtures/v3/public-d0a/d0/00-h10004-s3",
+ "kind": "extra-d0a",
+ "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+ "domain": "D0a",
+ "expected_rel_d0": true,
+ "expected_rel_d0a": true,
+ "nearcore": "not judged (constructed: the mutated blocks are not in nearcore's store)",
+ "ops": [
+  {
+   "op": "bw",
+   "block": 0,
+   "slots": [
+    0
+   ],
+   "requests": [
+    [
+     0,
+     "5555555555"
+    ],
+    [
+     1,
+     "ff00000000"
+    ],
+    [
+     3,
+     "ff00000000"
+    ]
+   ]
+  },
+  {
+   "op": "bw",
+   "block": 0,
+   "slots": [
+    2
+   ],
+   "requests": [
+    [
+     2,
+     "ffffffffff"
+    ]
+   ]
+  },
+  {
+   "op": "bw",
+   "block": 0,
+   "slots": [
+    3
+   ],
+   "requests": [
+    [
+     0,
+     "5555555555"
+    ],
+    [
+     2,
+     "5555555555"
+    ],
+    [
+     3,
+     "ff00000000"
+    ]
+   ]
+  }
+ ],
+ "python_fixups": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: InvalidStateRoot"
+ ],
+ "python_verdict": "ok",
+ "python_d0a": "accept",
+ "chacha_words": 65,
+ "chacha_words_runs": [
+  65
+ ],
+ "note": "65 words: one word into a fifth ChaCha20 block",
+ "claim_sha256": "705b07b19ea66653ecb366163f73a15057d86f55441ceb9d65b65ba5ec75da12",
+ "witness_sha256": "f8245bb61232c84c7a0b99f13f49c573eb3d95f4ca5946e5b06ce9e93b17a0b1"
+}

@@ -11,7 +11,7 @@ describe('challenges', () => {
     expect(screen.getAllByText('SUBSET of NEAR semantics').length).toBe(2);
     expect(screen.getByText('Full chunk transition')).toBeInTheDocument();
     expect(screen.getAllByText('DEMO · NOT RANKED')).toHaveLength(1);
-    expect(screen.getAllByText('data_availability').length).toBe(3);
+    expect(within(screen.getByRole('table')).getAllByText('data_availability').length).toBe(3);
   });
 
   it('detail shows id, digest, pin, scope excludes prominently and verifies the id', async () => {

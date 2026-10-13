@@ -3,11 +3,14 @@ import { useAsync } from '../api/hooks';
 import { AsyncView } from '../components/AsyncView';
 import { TierBadge } from '../components/Badges';
 import { ScopeKindLabel } from '../components/ChallengeInfo';
+import { DraftChallenges } from '../components/DraftChallenge';
 import { ChlLink } from '../components/Links';
+import { SupersededToggle, useShowSuperseded } from '../components/SupersededToggle';
 import { T } from '../components/Text';
 
 export function ChallengesPage() {
   const [state] = useAsync((s) => listChallenges(s), []);
+  const [showSuperseded, setShowSuperseded] = useShowSuperseded();
   return (
     <section>
       <h1>Challenges</h1>
@@ -15,89 +18,105 @@ export function ChallengesPage() {
         Each challenge is an immutable, governance-signed definition: the exact NEAR semantics to be
         proven, what is explicitly excluded, the security profile, the hardware and the workload
         suite. Only <strong>formal</strong>-tier challenges have an official ranked board.
+        Unsigned drafts in preparation are listed separately <a href="#drafts-h">below the table</a>.
       </p>
       <AsyncView state={state} what="challenges">
-        {(list) =>
-          list.length === 0 ? (
-            <p className="empty">No challenges are published.</p>
-          ) : (
-            <div className="table-wrap">
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th scope="col">Challenge</th>
-                    <th scope="col">Tier</th>
-                    <th scope="col">Scope</th>
-                    <th scope="col">Excludes</th>
-                    <th scope="col">nearcore / protocol</th>
-                    <th scope="col">Security profile</th>
-                    <th scope="col">Suite</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.map((c) => {
-                    const d = c.definition;
-                    return (
-                      <tr key={c.id} className={d.tier === 'demo' ? 'row-demo' : undefined}>
-                        <td>
-                          <ChlLink id={c.id}>
-                            <T v={d.name} max={80} />
-                          </ChlLink>
-                          <div className="mono small muted">{c.id}</div>
-                        </td>
-                        <td>
-                          <TierBadge tier={d.tier} />
-                          {c.superseded_by ? (
-                            <div>
-                              <span className="badge closed">SUPERSEDED</span>
-                              <div className="small">
-                                by <ChlLink id={c.superseded_by} />
-                              </div>
-                            </div>
-                          ) : (
-                            !c.open && <span className="badge closed">CLOSED</span>
-                          )}
-                        </td>
-                        <td>
-                          <ScopeKindLabel kind={d.semantic_scope.kind} />
-                          <div className="small muted">
-                            <T v={d.semantic_scope.name} max={60} />
-                            {d.semantic_scope.restrictions.length > 0 &&
-                              ` · ${d.semantic_scope.restrictions.length} restriction(s)`}
-                          </div>
-                        </td>
-                        <td className="small">
-                          {d.semantic_scope.excludes.length === 0
-                            ? 'none listed'
-                            : d.semantic_scope.excludes.slice(0, 4).map((x, i) => (
-                                <code key={i} className="sp excl">
-                                  <T v={x} max={40} />
-                                </code>
-                              ))}
-                          {d.semantic_scope.excludes.length > 4 && ` +${d.semantic_scope.excludes.length - 4} more`}
-                        </td>
-                        <td className="small">
-                          <T v={d.nearcore.tag} max={40} /> · v{d.protocol_version}
-                        </td>
-                        <td className="small">
-                          <code>
-                            <T v={d.security_profile.id} max={48} />
-                          </code>
-                        </td>
-                        <td className="small">
-                          <code>
-                            <T v={d.workload_suite.revision} max={32} />
-                          </code>
-                        </td>
+        {(all) => {
+          const nSuperseded = all.filter((c) => c.superseded_by).length;
+          const list = showSuperseded ? all : all.filter((c) => !c.superseded_by);
+          return (
+            <>
+              <div className="toolbar">
+                <SupersededToggle count={nSuperseded} show={showSuperseded} onChange={setShowSuperseded} what="superseded challenges" />
+                {!showSuperseded && nSuperseded > 0 && (
+                  <span className="small muted">
+                    {nSuperseded} superseded challenge{nSuperseded === 1 ? ' is' : 's are'} hidden; their pages and boards stay reachable by link.
+                  </span>
+                )}
+              </div>
+              {list.length === 0 ? (
+                <p className="empty">{all.length === 0 ? 'No challenges are published.' : 'Only superseded challenges are published.'}</p>
+              ) : (
+                <div className="table-wrap">
+                  <table className="data">
+                    <thead>
+                      <tr>
+                        <th scope="col">Challenge</th>
+                        <th scope="col">Tier</th>
+                        <th scope="col">Scope</th>
+                        <th scope="col">Excludes</th>
+                        <th scope="col">nearcore / protocol</th>
+                        <th scope="col">Security profile</th>
+                        <th scope="col">Suite</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )
-        }
+                    </thead>
+                    <tbody>
+                      {list.map((c) => {
+                        const d = c.definition;
+                        return (
+                          <tr key={c.id} className={d.tier === 'demo' ? 'row-demo' : undefined}>
+                            <td>
+                              <ChlLink id={c.id}>
+                                <T v={d.name} max={80} />
+                              </ChlLink>
+                              <div className="mono small muted">{c.id}</div>
+                            </td>
+                            <td>
+                              <TierBadge tier={d.tier} />
+                              {c.superseded_by ? (
+                                <div>
+                                  <span className="badge closed">SUPERSEDED</span>
+                                  <div className="small">
+                                    by <ChlLink id={c.superseded_by} />
+                                  </div>
+                                </div>
+                              ) : (
+                                !c.open && <span className="badge closed">CLOSED</span>
+                              )}
+                            </td>
+                            <td>
+                              <ScopeKindLabel kind={d.semantic_scope.kind} />
+                              <div className="small muted">
+                                <T v={d.semantic_scope.name} max={60} />
+                                {d.semantic_scope.restrictions.length > 0 &&
+                                  ` · ${d.semantic_scope.restrictions.length} restriction(s)`}
+                              </div>
+                            </td>
+                            <td className="small">
+                              {d.semantic_scope.excludes.length === 0
+                                ? 'none listed'
+                                : d.semantic_scope.excludes.slice(0, 4).map((x, i) => (
+                                    <code key={i} className="sp excl">
+                                      <T v={x} max={40} />
+                                    </code>
+                                  ))}
+                              {d.semantic_scope.excludes.length > 4 && ` +${d.semantic_scope.excludes.length - 4} more`}
+                            </td>
+                            <td className="small">
+                              <T v={d.nearcore.tag} max={40} /> · v{d.protocol_version}
+                            </td>
+                            <td className="small">
+                              <code>
+                                <T v={d.security_profile.id} max={48} />
+                              </code>
+                            </td>
+                            <td className="small">
+                              <code>
+                                <T v={d.workload_suite.revision} max={32} />
+                              </code>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          );
+        }}
       </AsyncView>
+      <DraftChallenges />
     </section>
   );
 }
