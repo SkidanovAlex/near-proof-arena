@@ -292,3 +292,18 @@ table.board td { min-width: 6rem; }
 /* cost board (BENCHMARK_SPEC §14): nested per-class breakdown */
 table.cost-breakdown { margin: 0; font-size: 0.85em; }
 table.cost-breakdown th, table.cost-breakdown td { padding: 0.15em 0.5em; }
+
+/* superseded toggle */
+.toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; margin: 0.5rem 0; }
+.toggle, .filters label.toggle { display: inline-flex; flex-direction: row; align-items: center; gap: 0.35rem; font-size: 0.85rem; color: var(--text); min-width: 0; cursor: pointer; }
+
+/* unsigned drafts */
+.badge.draft { background: var(--surface); color: var(--warn); border: 1px dashed var(--warn); }
+.draft-section { border-left: 4px dashed var(--warn); padding-left: 0.9rem; }
+.draft-card { border-style: dashed; }
+.draft-card h3 { margin-top: 0; }
+.draft-card h4 { margin: 0.9rem 0 0.3rem; font-size: 0.95rem; }
+.draft-notice { color: var(--warn); background: var(--warn-bg); border: 1px solid var(--warn); border-radius: 6px; padding: 0.45rem 0.75rem; }
+.draft-tiers { margin: 0; padding-left: 1.4rem; }
+.draft-tiers > li { margin: 0.25rem 0; }
+.draft-card code { overflow-wrap: anywhere; }
