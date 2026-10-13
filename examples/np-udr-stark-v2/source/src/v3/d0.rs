@@ -58,7 +58,7 @@ fn to_btree_map<T: Clone>(es: &[(u64, T)]) -> Vec<(u64, T)> {
 }
 
 /// `NearSpec.lexLe`: byte-lexicographic `a ≤ b`.
-fn lex_le(a: &[u8], b: &[u8]) -> bool {
+pub(crate) fn lex_le(a: &[u8], b: &[u8]) -> bool {
     match (a.split_first(), b.split_first()) {
         (None, _) => true,
         (Some(_), None) => false,
@@ -1718,7 +1718,7 @@ fn outgoing_receipts_root(l: &Layout, rs: &[Receipt]) -> Bytes {
 }
 
 /// `ownIntervals l own` (`PrepD0.ownIntervals`).
-fn own_intervals(l: &Layout, own: u64) -> Vec<(Option<Bytes>, Option<Bytes>)> {
+pub(crate) fn own_intervals(l: &Layout, own: u64) -> Vec<(Option<Bytes>, Option<Bytes>)> {
     (0..=(l.boundaries.len()))
         .filter_map(|k| {
             if l.shard_ids.get(k).copied().unwrap_or(0) == own {

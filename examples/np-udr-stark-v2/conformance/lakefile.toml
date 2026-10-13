@@ -75,3 +75,7 @@ root = "RenderV3Rcpt"
 [[lean_exe]]
 name = "np-lean-render-v3-sched"
 root = "RenderV3Sched"
+
+[[lean_exe]]
+name = "np-lean-rcptfam-v3"
+root = "RcptFamV3"

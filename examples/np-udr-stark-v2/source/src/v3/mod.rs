@@ -32,6 +32,7 @@ pub mod prove;
 pub mod public;
 pub mod qv;
 pub mod rcpt;
+pub mod rcptfam;
 pub mod sample;
 pub mod sched;
 pub mod sha;

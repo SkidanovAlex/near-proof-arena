@@ -255,7 +255,7 @@ pub fn decode_w(wb: &[u8]) -> Result<StateWitness, String> {
 }
 
 /// `lookupLast k es`: the last entry with key `k` (borsh `HashMap` last-wins).
-fn lookup_last<'a>(k: &[u8], es: &'a [ProofEntry]) -> Option<&'a ProofEntry> {
+pub(crate) fn lookup_last<'a>(k: &[u8], es: &'a [ProofEntry]) -> Option<&'a ProofEntry> {
     es.iter().rev().find(|e| e.key == k)
 }
 
@@ -649,10 +649,10 @@ pub fn main_keys(receipts: &[Receipt], bshards: &[u64]) -> Vec<Vec<u8>> {
 }
 
 /// The part of `TransferV1.Acc` the refund list depends on.
-struct Acc {
-    trie: PTrie,
-    refunds: Vec<Receipt>,
-    tokens_burnt: u128,
+pub(crate) struct Acc {
+    pub(crate) trie: PTrie,
+    pub(crate) refunds: Vec<Receipt>,
+    pub(crate) tokens_burnt: u128,
 }
 
 /// `amount' = a.amount + deposit` with the `action_transfer` and
@@ -679,7 +679,7 @@ fn credited(a: &Account, deposit: u128) -> Option<u128> {
 }
 
 /// `TransferV1.applyReceipt ⟨height, gasPrice⟩ st r` (`false` = `none`).
-fn apply_receipt(height: u64, gas_price: u128, st: &mut Acc, r: &Receipt) -> bool {
+pub(crate) fn apply_receipt(height: u64, gas_price: u128, st: &mut Acc, r: &Receipt) -> bool {
     let key = account_key_path(&r.receiver_id);
     let Some(raw) = get(&st.trie, &key) else {
         return false;
@@ -713,7 +713,7 @@ fn apply_receipt(height: u64, gas_price: u128, st: &mut Acc, r: &Receipt) -> boo
 }
 
 /// `RuntimeD0.applySystemReceipt st r` (`false` = `.error _`).
-fn apply_system_receipt(st: &mut Acc, r: &Receipt) -> bool {
+pub(crate) fn apply_system_receipt(st: &mut Acc, r: &Receipt) -> bool {
     let key = account_key_path(&r.receiver_id);
     let raw = match find(&st.trie, &key) {
         Some(Some(v)) => v,

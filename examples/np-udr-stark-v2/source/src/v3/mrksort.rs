@@ -148,7 +148,7 @@ fn msize(n: u64, j: u64) -> u64 {
     (0..j).fold(n, |s, _| s.div_ceil(2))
 }
 /// `qBase n j` (`Render/Mrk.lean:32`).
-fn qbase(n: u64, j: u64) -> u64 {
+pub(crate) fn qbase(n: u64, j: u64) -> u64 {
     if j < 2 {
         0
     } else {

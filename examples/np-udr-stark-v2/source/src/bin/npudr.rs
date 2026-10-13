@@ -199,8 +199,28 @@ fn main() {
             // tables are absent) and write the two bins `twoShaJobBins = [b0, b1]`
             // (`sha_t`, `sha_r`).  `<full.json>`: bins, families, notes and the
             // bus check (`np-lean-shabins-v3` layout).
+            // `--native <claim.bin> <witness.bin>`: the receipt-side entries (`rcpt`,
+            // `acct`, `srcp`, `mrk`) are computed from the claim + witness
+            // (`v3::rcptfam`) instead of read from the directory, and an external
+            // `sha_receipt.json` is ignored: the receipt family is then built in Rust.
+            let (native, a) = match a.iter().position(|x| x == "--native") {
+                Some(i) => (
+                    Some((
+                        a.get(i + 1).cloned().unwrap_or_else(|| die("--native")),
+                        a.get(i + 2).cloned().unwrap_or_else(|| die("--native")),
+                    )),
+                    a[..i]
+                        .iter()
+                        .chain(a.get(i + 3..).unwrap_or(&[]))
+                        .cloned()
+                        .collect::<Vec<_>>(),
+                ),
+                None => (None, a.clone()),
+            };
             if a.len() != 5 && a.len() != 6 {
-                die("usage: npudr v3sha <entries-dir> <sha_t.json> <sha_r.json> [<full.json>]");
+                die(
+                    "usage: npudr v3sha <entries-dir> <sha_t.json> <sha_r.json> [<full.json>] [--native <claim.bin> <witness.bin>]",
+                );
             }
             let dir = &a[2];
             let mut entries = std::collections::HashMap::new();
@@ -213,6 +233,17 @@ fn main() {
                 if let Ok(j) = std::fs::read_to_string(&f) {
                     entries.insert(name.to_string(), j);
                 }
+            }
+            if let Some((c, w)) = &native {
+                let rd = |p: &str| std::fs::read(p).unwrap_or_else(|e| die(&format!("{p}: {e}")));
+                let f = npudr::v3::rcptfam::rcpt_family(&rd(c), &rd(w)).unwrap_or_else(|e| die(&e));
+                let js = |v: serde_json::Result<String>| v.unwrap_or_else(|e| die(&e.to_string()));
+                entries.insert("rcpt".into(), js(serde_json::to_string(&f.rcpt)));
+                entries.insert("acct".into(), js(serde_json::to_string(&f.acct)));
+                entries.insert("srcp".into(), js(serde_json::to_string(&f.srcp)));
+                entries.insert("mrk".into(), js(serde_json::to_string(&f.mrk)));
+                entries.remove("sha_receipt");
+                eprintln!("v3sha: receipt side (rcpt, acct, srcp, mrk) from the claim + witness");
             }
             use npudr::v3::collect as cl;
             let bundle = cl::bundle_from_entries(&entries).unwrap_or_else(|e| die(&e));
@@ -465,6 +496,64 @@ fn main() {
             )
             .unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
             println!("prep {} B", p.encode().len());
+        }
+        Some("v3rcptfam") => {
+            // `npudr v3rcptfam <claim.bin> <witness.bin> <out_dir> [--no-prefix]`: the
+            // honest entries of the receipt-side tables from a real claim + witness
+            // (`v3::rcptfam`, the twin of the accepted renders): `rcpt.json` (16),
+            // `acct.json` (17), `akey.json` (18), `bnd.json` (19), `srcp.json` (20),
+            // `mrk.json` (23, `MrkV` with its level table), `sort.json` (24), the
+            // receipt SHA family `sha_receipt.json` (`collect::receipt_family`), and
+            // `rcpt.prefix.bin`, the first `planned + 8` rows of table 16
+            // (`rcpt::render_prefix`, the `np-lean-rcptfam-v3` layout).
+            let no_prefix = a.iter().any(|x| x == "--no-prefix");
+            let a: Vec<String> = a.iter().filter(|x| *x != "--no-prefix").cloned().collect();
+            if a.len() != 5 {
+                die("usage: npudr v3rcptfam <claim.bin> <witness.bin> <out_dir> [--no-prefix]");
+            }
+            let rd = |p: &str| std::fs::read(p).unwrap_or_else(|e| die(&format!("{p}: {e}")));
+            let (cb, wb) = (rd(&a[2]), rd(&a[3]));
+            let f = npudr::v3::rcptfam::rcpt_family(&cb, &wb).unwrap_or_else(|e| die(&e));
+            let od = std::path::Path::new(&a[4]);
+            std::fs::create_dir_all(od).unwrap_or_else(|e| die(&format!("{}: {e}", a[4])));
+            let wr = |name: &str, b: &[u8]| {
+                std::fs::write(od.join(name), b).unwrap_or_else(|e| die(&format!("{name}: {e}")))
+            };
+            let js = |v: serde_json::Result<String>| v.unwrap_or_else(|e| die(&e.to_string()));
+            let rcpt_json = js(serde_json::to_string(&f.rcpt));
+            wr("rcpt.json", rcpt_json.as_bytes());
+            wr("acct.json", js(serde_json::to_string(&f.acct)).as_bytes());
+            wr("akey.json", js(serde_json::to_string(&f.akey)).as_bytes());
+            wr("bnd.json", js(serde_json::to_string(&f.bnd)).as_bytes());
+            wr("srcp.json", js(serde_json::to_string(&f.srcp)).as_bytes());
+            wr("mrk.json", js(serde_json::to_string(&f.mrk)).as_bytes());
+            wr("sort.json", js(serde_json::to_string(&f.sort)).as_bytes());
+            use npudr::v3::collect as cl;
+            let dup = |j: usize| f.srcp.iter().any(|b| b.j == j as u64 && b.dup);
+            let fam = cl::receipt_family(&f.rcpt, &dup, &f.acct);
+            wr(
+                "sha_receipt.json",
+                cl::jobs_json(&fam).unwrap_or_else(|e| die(&e)).as_bytes(),
+            );
+            let rows = npudr::v3::rcpt::planned_rows(&f.rcpt);
+            if !no_prefix {
+                let b = npudr::v3::rcpt::render_prefix(&rcpt_json, rows + 8)
+                    .unwrap_or_else(|e| die(&e));
+                wr("rcpt.prefix.bin", &b);
+            }
+            println!(
+                "rcptfam: {} receipts in {} lists, {} planned rows; acct {} akey {} bnd {} srcp {} mrk n={} sort {}; receipt family {} jobs",
+                f.rcpt.lists.iter().map(|l| l.rs.len()).sum::<usize>(),
+                f.rcpt.lists.len(),
+                rows,
+                f.acct.len(),
+                f.akey.len(),
+                f.bnd.len(),
+                f.srcp.len(),
+                f.mrk.n,
+                f.sort.len(),
+                fam.len()
+            );
         }
         Some("v3prepare") => {
             // `npudr v3prepare <claim.bin> <witness.bin> <out_dir> [--hint <hint.bin>]`:
