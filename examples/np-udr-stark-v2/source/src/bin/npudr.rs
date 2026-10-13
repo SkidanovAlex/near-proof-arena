@@ -566,9 +566,25 @@ fn main() {
             let w = npudr::v3::hint::decode_w(&wb).unwrap_or_else(|e| die(&e));
             n.receipts = npudr::v3::hint::applied_receipts(&k, &w);
             use npudr::v3::{upsnat, walks};
-            let mv = walks::main_values(&n).unwrap_or_else(|e| die(&e));
-            let qs = walks::queries(&n, &mv).unwrap_or_else(|e| die(&e));
-            let ws = walks::query_walks(&n, &qs).unwrap_or_else(|e| die(&e));
+            let iso = std::env::var_os("NPUDR_WS_FROM_DUMP").is_some();
+            let mv = if iso {
+                npudr::v3::native::MainValues::from_json(&v["mainValues"])
+                    .unwrap_or_else(|e| die(&e))
+            } else {
+                walks::main_values(&n).unwrap_or_else(|e| die(&e))
+            };
+            let qs = if iso {
+                vec![]
+            } else {
+                walks::queries(&n, &mv).unwrap_or_else(|e| die(&e))
+            };
+            // `NPUDR_WS_FROM_DUMP=1`: take the unranked walks from the dump's `ws` (stage
+            // isolation for the ups differential)
+            let ws: Vec<npudr::v3::WalkR> = if std::env::var_os("NPUDR_WS_FROM_DUMP").is_some() {
+                serde_json::from_value(v["ws"].clone()).unwrap_or_else(|e| die(&e.to_string()))
+            } else {
+                walks::query_walks(&n, &qs).unwrap_or_else(|e| die(&e))
+            };
             let insts = upsnat::honest_insts(&n.us).unwrap_or_else(|e| die(&e));
             let js = upsnat::ups_ranked(&ws, &insts);
             let wk = upsnat::window_keys(&js);
@@ -576,7 +592,8 @@ fn main() {
             let out = serde_json::json!({
                 "mainValues": mv.to_json(),
                 "queries": qs.iter().map(|x| serde_json::json!({"wid": x.wid, "tau": x.tau, "key": x.key})).collect::<Vec<_>>(),
-                "ws": ws, "insts": insts, "ups": js, "q": q, "walk": walks::rank_walks(&ws),
+                "ws": ws, "insts": insts, "ups": js, "q": q,
+                "walk": if iso { serde_json::Value::Null } else { serde_json::json!(walks::rank_walks(&ws)) },
             });
             println!("{out}");
         }
