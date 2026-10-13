@@ -38,7 +38,7 @@ bad()  { echo "FAIL  $*"; fail=1; }
 echo "== build"
 (cd "$src" && $HEAVY cargo build --release -q) || { echo "cargo build failed"; exit 2; }
 (cd "$here" && $HEAVY lake build -q np-lean-verify-v2 np-lean-export-v3 np-lean-render-v3 np-lean-entries-v3 np-lean-prep-v3 \
-   np-lean-render-v3-a7 np-lean-render-v3-rcs np-lean-render-v3-rcpt np-lean-render-v3-sched np-lean-shabins-v3) || { echo "lake build failed"; exit 2; }
+   np-lean-render-v3-a7 np-lean-render-v3-rcs np-lean-render-v3-rcpt np-lean-render-v3-sched np-lean-shabins-v3 np-lean-rcptfam-v3) || { echo "lake build failed"; exit 2; }
 npudr="${CARGO_TARGET_DIR:-$src/target}/release/npudr"
 lv="$here/.lake/build/bin/np-lean-verify-v2"
 le="$here/.lake/build/bin/np-lean-export-v3"
