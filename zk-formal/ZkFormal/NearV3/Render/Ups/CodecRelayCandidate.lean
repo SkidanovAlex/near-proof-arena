@@ -1,6 +1,6 @@
 import ZkFormal.NearV3.Sched.View.CodecEnc
 import ZkFormal.Size.Model
-import ZkFormal.NearV3.Render.Ups.AllocatedRowCost
+import ZkFormal.NearV3.Assembly.UpsertShaJobs
 
 /-! Isolated capacity-repair candidate. Active tables and protocol admission are
 unchanged. This replaces the codec's fresh-state SPOST send by its SHA BYTES send;

@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.UpsWindowMessages
 import ZkFormal.NearV3.Rcpt.Candidates.NativeReaderWindowKey
+import ZkFormal.NearV3.Candidates.CompactHeightCore
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open Render

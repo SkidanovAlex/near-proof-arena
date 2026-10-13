@@ -1,5 +1,4 @@
 import ZkFormal.NearV3.Assembly.RcptDepositTotalLocal
-import ZkFormal.Near.Render.Proof.RcptDep2
 
 namespace ZkFormal.NearV3.Assembly.RcptSkeleton
 set_option maxRecDepth 4096

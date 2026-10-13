@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Render.Ups.AllocatedConstraints
 import ZkFormal.NearV3.Extract.Ups.MsgRows
+import ZkFormal.NearV3.Render.Ups.Ok
 
 set_option linter.unusedSimpArgs false
 namespace ZkFormal.NearV3.Render.UpsGen

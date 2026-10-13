@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.LinkUps
+import ZkFormal.NearV3.Extract.Ups.UpsLink
 
 /-- info: 'ZkFormal.NearV3.Assembly.LinkUps.body_head' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs(whitespace := lax) in

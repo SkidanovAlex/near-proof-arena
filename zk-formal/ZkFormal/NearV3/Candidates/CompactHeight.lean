@@ -1,6 +1,7 @@
 import ZkFormal.NearV3.Render.Ups.CompactAllocated
 import ZkFormal.NearV3.Render.Ups.CompactExtract.KindSteps
 import ZkFormal.NearV3.Render.Ups.Local
+import ZkFormal.NearV3.Candidates.CompactHeightCore
 namespace ZkFormal.NearV3.Candidates.CompactHeight
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Render
 open ZkFormal.NearV3 ZkFormal.NearV3.Render ZkFormal.NearV3.Render.UpsRelay
@@ -58,9 +59,6 @@ theorem gates01 {C D : URow} (ok : Extract.RowOk C D) (hC : ∀ x, C x < ZkForma
       have := Extract.rowBool ok hC (x := mS) (by simp [rowBools])
       have := Extract.rowBool ok hC (x := mK) (by simp [rowBools]); omega) with ⟨a, b⟩ | ⟨a, b⟩ | ⟨a, b⟩ <;>
       rw [a, b] <;> decide
-
-def trace (insts : List UpsInst) : Trace Fp :=
-  ⟨fun _=>22,fun _ r c=>(compactCell insts r c : Fp)⟩
 
 theorem constraints (insts : List UpsInst) (h : CompactGroupOk insts (2^22) compactConstraints)
     (t : Nat) (pub : List Fp) (r : Nat) (hr : r<(trace insts).height t) :

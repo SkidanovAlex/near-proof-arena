@@ -10,6 +10,7 @@ import ZkFormal.NearV3.Rcpt.Candidates.NativeRebasedPhysicalBounds
 import ZkFormal.NearV3.Assembly.ShaOwnedBatch
 import ZkFormal.NearV3.Candidates.SchedulerPhysicalShaSplit
 import ZkFormal.NearV3.Rcpt.Candidates.ChosenRebasedInstances
+import ZkFormal.NearV3.Rcpt.Candidates.CompactRootRanks
 
 namespace ZkFormal.NearV3.Candidates.RebasedRootAllocation
 open NearSpec NearSpecV3 ZkFormal.Near Assembly Render Render.UpsGen Rcpt.Candidates Rcpt.Candidates.NodePostUpdate

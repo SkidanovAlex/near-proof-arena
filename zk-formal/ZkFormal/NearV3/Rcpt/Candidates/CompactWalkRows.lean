@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Candidates.UpsGeneratedTraffic
-import ZkFormal.NearV3.Candidates.CompactPhysicalShaBytes
+import ZkFormal.NearV3.Render.Ups.CompactByteTraffic
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Render Render.UpsGen Render.UpsRelay UpsRows

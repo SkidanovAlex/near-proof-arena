@@ -1,5 +1,5 @@
-import ZkFormal.NearV3.Render.Ups.CompactAllocated
-import ZkFormal.NearV3.Render.Ups.NativeShaByteTraffic
+import ZkFormal.NearV3.Render.Ups.WholeByteTraffic
+import ZkFormal.NearV3.Render.Ups.CompactCells
 namespace ZkFormal.NearV3.Render.UpsRelay
 open ZkFormal.Near ZkFormal.Algebra ZkFormal.Air UpsRows UpsGen
 

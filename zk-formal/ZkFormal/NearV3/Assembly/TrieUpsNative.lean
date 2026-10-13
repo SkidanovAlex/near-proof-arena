@@ -4,16 +4,16 @@ import ZkFormal.NearV3.Assembly.TrieUpsOrigin
 import ZkFormal.NearV3.Assembly.TrieUpsKeys
 import ZkFormal.NearV3.Assembly.TrieA7Post
 import ZkFormal.NearV3.Assembly.TrieA7Forest
-import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootRanks
 import ZkFormal.NearV3.Rcpt.Candidates.NativeMidrootRecords
 import ZkFormal.NearV3.Assembly.UpsertAncestorCost
-import ZkFormal.NearV3.Rcpt.Candidates.CompactRootRanks
 import ZkFormal.NearV3.Rcpt.Candidates.NativeHeadRootRecords
 import ZkFormal.NearV3.Rcpt.Candidates.NativeRootRecords
 import ZkFormal.NearV3.Rcpt.Candidates.ExecutionProviderKeys
 import ZkFormal.NearV3.Rcpt.Candidates.WindowProviderKeys
 import ZkFormal.NearV3.Rcpt.Candidates.AcceptedSameLookup
 import ZkFormal.NearV3.Rcpt.Candidates.NativeReaderRankList
+import ZkFormal.NearV3.Rcpt.Candidates.CompactRootRanksCore
+import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootRanksCore
 
 /-!
 # ZkFormal.NearV3.Assembly.TrieUpsNative — native ups instances, EDGE and BMAP from acceptance

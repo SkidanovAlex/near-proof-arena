@@ -1,16 +1,9 @@
 import ZkFormal.NearV3.Rcpt.Candidates.CompactRootPhysical
 import ZkFormal.NearV3.Candidates.WindowPatchOtherTraffic
+import ZkFormal.NearV3.Rcpt.Candidates.CompactRootRanksCore
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Render Render.UpsGen Render.UpsRelay UpsRows
-
-theorem prefix_root_records (p : List WStep3) (Is : List UpsInst) :
-    (physicalPrefixUps p Is).map (fun I=>[I.tau+1]++I.post)=Is.map (fun I=>[I.tau+1]++I.post) := by
-  induction Is generalizing p with
-  | nil=>rfl
-  | cons I Is ih=>
-    simpa only [physicalPrefixUps,rankUpsList,List.map_cons,syncUps,rankUps] using congrArg
-      (List.cons ([I.tau+1]++I.post)) (ih (p++fourSteps I))
 
 theorem prefix_post_digests (p : List WStep3) (Is : List UpsInst) :
     (physicalPrefixUps p Is).map UpsInst.post=Is.map UpsInst.post := by

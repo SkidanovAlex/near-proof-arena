@@ -1,24 +1,9 @@
 import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootPhysical
 import ZkFormal.NearV3.Candidates.WindowPatchOtherTraffic
+import ZkFormal.NearV3.Rcpt.Candidates.CompactMidrootRanksCore
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.NodePostUpdate
 open ZkFormal.Near ZkFormal.Air ZkFormal.Algebra Render Render.UpsGen Render.UpsRelay UpsRows
-
-theorem prefix_midroot_records (p : List WStep3) (Is : List UpsInst) :
-    (physicalPrefixUps p Is).map (fun I=>[I.tau,I.rid]++I.mid)=Is.map (fun I=>[I.tau,I.rid]++I.mid) := by
-  induction Is generalizing p with
-  | nil=>rfl
-  | cons I Is ih=>
-    simpa only [physicalPrefixUps,rankUpsList,List.map_cons,syncUps,rankUps] using congrArg
-      (List.cons ([I.tau,I.rid]++I.mid)) (ih (p++fourSteps I))
-
-theorem prefix_mid_digests (p : List WStep3) (Is : List UpsInst) :
-    (physicalPrefixUps p Is).map UpsInst.mid=Is.map UpsInst.mid := by
-  induction Is generalizing p with
-  | nil=>rfl
-  | cons I Is ih=>
-    simpa only [physicalPrefixUps,rankUpsList,List.map_cons,syncUps,rankUps] using congrArg
-      (List.cons I.mid) (ih (p++fourSteps I))
 
 theorem compact_patched_midroot_recv (p : List WStep3) (Is : List UpsInst)
     (hl : ∀I∈Is,I.mid.length=32) (hR : compactR (physicalPrefixUps p Is)≤2^22)

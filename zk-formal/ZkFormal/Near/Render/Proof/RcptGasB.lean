@@ -1,5 +1,4 @@
 import ZkFormal.Near.Render.Proof.RcptGasF
-import ZkFormal.Near.Render.Proof.RcptFam
 
 /-!
 # ZkFormal.Near.Render.Proof.RcptGasB — the receipt data of a `Good` batch satisfies `GasOk`
