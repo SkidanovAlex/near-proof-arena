@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ShaHeight.Trace
-import ZkFormal.NearV3.Candidates.HorizontalTraffic
+import ZkFormal.NearV3.Candidates.HorizontalTrafficCore
+import ZkFormal.Near.Extract.ShaFacts
 namespace ZkFormal.NearV3.Candidates.ShaHeight
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Sha ZkFormal.Sha.Gen ZkFormal.Sha.Complete
 open HorizontalTraffic

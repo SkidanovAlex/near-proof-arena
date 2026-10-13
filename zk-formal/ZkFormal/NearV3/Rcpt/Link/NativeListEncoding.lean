@@ -1,6 +1,5 @@
 import ZkFormal.NearV3.Rcpt.Link.NativeEncoding
 import ZkFormal.NearV3.Rcpt.Extract.V.TableWellformed
-import ZkFormal.NearV3.Rcpt.Extract.V.HeaderRegisters
 
 namespace ZkFormal.NearV3.RcptLink
 open ZkFormal.Near ZkFormal.Algebra NearSpec Near.Link

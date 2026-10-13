@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ShaHeight.Packed
 import ZkFormal.NearV3.Candidates.NativeShaBinBalance
+import ZkFormal.NearV3.Candidates.HorizontalTraffic
 
 namespace ZkFormal.NearV3.Candidates.PackedShaBins
 set_option maxRecDepth 16384

@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Candidates.ProcessRepairReceiptReceiverShape
 import ZkFormal.NearV3.Candidates.ProcessRepairQueuePublic
+import ZkFormal.NearV3.Candidates.ProcessRepairReceiptKeyOwner
 namespace ZkFormal.NearV3.Candidates.ProcessRepairReceiptNativeKey
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.V2
 open RcptV3Proof

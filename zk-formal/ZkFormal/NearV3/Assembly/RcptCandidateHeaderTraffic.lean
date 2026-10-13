@@ -1,7 +1,6 @@
 import ZkFormal.NearV3.Assembly.RcptCandidateHeaderRegisters
 -- Source HeaderTraffic.lean SHA256: 98a16c60939887e8ddea198c19aaf55b175b717575640e0592c7e52db7d82cb8.
 -- Candidate-local proof migration; no original TableLocal conclusion assumed.
-import ZkFormal.NearV3.Rcpt.Extract.V.HeaderRegisters
 
 namespace ZkFormal.NearV3.Assembly.ReceiptCandidateProof
 open ZkFormal.NearV3.RcptV3Proof ZkFormal.NearV3.Assembly.RcptSkeleton
