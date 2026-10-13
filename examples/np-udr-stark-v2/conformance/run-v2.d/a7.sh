@@ -9,7 +9,7 @@
 # entry an optional `"yN": [y0, y1, y2]` (received A7 totals); absent → false / zeros.
 #
 # Knobs: A7_SEEDS (1 2 3), A7_NODE_SIZES (1 2; Lean node render is slow), A7_VAL_SIZES
-# (0 1 5 37), A7_UPS_SIZES (0 1 3), A7_CASES (3 real fixture cases), A7_NODE_MAX (3: Lean
+# (0 1 5 37), A7_UPS_SIZES (0 1 3), A7_CASES (3 real fixture cases), A7_NODE_MAX (100000: Lean
 # render of fixture node entries only up to this many records).
 a7="$out/a7"; mkdir -p "$a7"
 la7="$here/.lake/build/bin/np-lean-render-v3-a7"
@@ -120,7 +120,7 @@ for case in $(ls "$fx" | head -${A7_CASES:-3}); do
     python3 -c "import json,random; random.seed('$case$t'); es=json.load(open('$j')); [e.update(rpl=random.random()<0.5) for e in es]; json.dump(es, open('$jr','w'))"
     a7check $t "$jr" "$case ($nr entries, random rpl)"
     na7=$((na7 + 1))
-    if [ "$t" = node ] && [ "$nr" -gt "${A7_NODE_MAX:-3}" ]; then
+    if [ "$t" = node ] && [ "$nr" -gt "${A7_NODE_MAX:-100000}" ]; then
       pass "$case $t: Lean render skipped ($nr records > A7_NODE_MAX)"; continue
     fi
     a7cmp $t "$jr" "$case ($nr entries, random rpl)"

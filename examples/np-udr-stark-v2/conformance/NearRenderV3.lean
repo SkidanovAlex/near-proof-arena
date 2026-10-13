@@ -8,6 +8,7 @@ import ZkFormal.NearV3.Extract.NodeView
 import ZkFormal.Sha.Gen
 import ZkFormal.Size.PadHeader
 import Lean.Data.Json
+import Conformance.FastTrie
 
 /-!
 `np-lean-render-v3 <table> <entries.json> <out.bin>` — run the Lean aligned
@@ -135,7 +136,8 @@ def render (table s : String) : Except String ByteArray :=
   | "head" => return dump (headTraceAligned (← parse HeadE s)) HeadV3.width
   | "val" => return dump (valTraceAligned (← parse ValE s)) ValV3.width
   | "uniq" => return dump (uniqTraceAligned (← parse UEnt s)) Uniq.width
-  | "walk" => return dump (walkTraceAligned (← parse WalkR s)) WalkV3.width
+  -- `walkTraceFast = walkTraceAligned` (`Conformance.FastTrie.walkTraceFast_eq`)
+  | "walk" => return dump (Conformance.FastTrie.walkTraceFast (← parse WalkR s)) WalkV3.width
   | "node" => return dump (nodeTraceAligned (← parse NodeS3 s)) NodeV3.width
   | "srcp" => do
     let bs ← parse ZkFormal.NearV3.SrcpB s

@@ -534,7 +534,7 @@ pub fn get(t: &PTrie, key: &[u8]) -> Option<Bytes> {
 /// `PTrie.set t key nv`, in place: `true` iff Lean's `set` is `some t'`, and
 /// then `*t = t'`.  On `false` the trie is unchanged (the value slot is only
 /// written once the whole path has been matched).
-fn set_in_place(t: &mut PTrie, key: &[u8], nv: &[u8]) -> bool {
+pub(crate) fn set_in_place(t: &mut PTrie, key: &[u8], nv: &[u8]) -> bool {
     match t {
         PTrie::Hash(_) => false,
         PTrie::Leaf(k, v, _) => {

@@ -815,7 +815,7 @@ fn limb(r: i128, i: usize) -> i128 {
 }
 
 /// `Σ_{l < n} f l · 256^l` (`Gen.lean:415`).
-fn pfx(f: &dyn Fn(usize) -> i128, n: usize) -> i128 {
+pub(crate) fn pfx(f: &dyn Fn(usize) -> i128, n: usize) -> i128 {
     let mut acc = 0i128;
     for l in 0..n {
         acc += f(l) * 256i128.pow(l as u32);
@@ -824,9 +824,9 @@ fn pfx(f: &dyn Fn(usize) -> i128, n: usize) -> i128 {
 }
 
 /// The per-part `memory_usage` arithmetic (`Gen.lean:395 …`).
-struct Mem<'a> {
-    i: &'a UpsInst,
-    p: &'a UpsPartI,
+pub(crate) struct Mem<'a> {
+    pub(crate) i: &'a UpsInst,
+    pub(crate) p: &'a UpsPartI,
 }
 
 impl Mem<'_> {
@@ -857,7 +857,7 @@ impl Mem<'_> {
             + c_s_v(self.p) as i128 * self.slb(i)
             + ind(i == 0) as i128 * cc_v(self.i, self.p) as i128
     }
-    fn x1(&self, i: usize) -> i128 {
+    pub(crate) fn x1(&self, i: usize) -> i128 {
         self.a(i) + self.b(i) - self.c(i)
     }
     fn ein(&self, i: usize) -> i128 {
