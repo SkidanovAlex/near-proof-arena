@@ -107,6 +107,73 @@ pub fn bus_imbalance(
         .collect()
 }
 
+/// One unbalanced bus message: `(bus, msg, sent, received)`.
+pub type Imbalance = (usize, Vec<u32>, u64, u64);
+
+/// [`bus_imbalance`] restricted to one bus, over a subset of the tables plus the
+/// public messages of the prepared tape (`pubMsgs`, `globalChecksP`): every table
+/// interaction on `bus` of the supplied `(table index, trace)` pairs and every public
+/// message on `bus`.  Balanced iff every table touching `bus` is supplied (the caller's
+/// responsibility); `None` when the tape does not fit (`pubFit`).
+pub fn bus_imbalance_with_pub(
+    air: &Air,
+    trs: &[(usize, &RowMajorMatrix<F>)],
+    pubs: &[F],
+    tape: &[u8],
+    bus: usize,
+) -> Option<Vec<Imbalance>> {
+    if !crate::verifier::pub_fit(air, tape) {
+        return None;
+    }
+    let mut m: BTreeMap<(usize, Vec<u32>), (u64, u64)> = BTreeMap::new();
+    for &(ti, tr) in trs {
+        let t = &air.tables[ti];
+        let (n, w) = (tr.height(), tr.width());
+        for it in t.interactions.iter().filter(|it| it.bus == bus) {
+            let exprs: Vec<Expr> = it.mult.iter().chain(&it.msg).cloned().collect();
+            let tape = Tape::compile(&exprs);
+            let nb = it.mult.len();
+            let mut regs = vec![];
+            for r in 0..n {
+                tape.eval(
+                    &mut regs,
+                    |c, next| tr.values[(if next { (r + 1) % n } else { r }) * w + c],
+                    pubs,
+                    sel(r, n),
+                );
+                let out: Vec<F> = tape.outputs.iter().map(|&o| regs[o as usize]).collect();
+                let mult: u64 = (0..nb)
+                    .map(|k| if out[k] == F::ONE { 1u64 << k } else { 0 })
+                    .sum();
+                if mult == 0 {
+                    continue;
+                }
+                let msg: Vec<u32> = out[nb..].iter().map(|x| x.as_canonical_u32()).collect();
+                let ent = m.entry((it.bus, msg)).or_default();
+                if it.send {
+                    ent.0 += mult
+                } else {
+                    ent.1 += mult
+                }
+            }
+        }
+    }
+    for (b, send, rec) in crate::verifier::pub_msgs(air, tape) {
+        if b != bus {
+            continue;
+        }
+        let msg: Vec<u32> = rec.iter().map(|x| x.as_canonical_u32()).collect();
+        let ent = m.entry((b, msg)).or_default();
+        if send { ent.0 += 1 } else { ent.1 += 1 }
+    }
+    Some(
+        m.into_iter()
+            .filter(|(_, (s, r))| s != r)
+            .map(|((b, msg), (s, r))| (b, msg, s, r))
+            .collect(),
+    )
+}
+
 /// [`failing_constraints`] on compact column storage ([`crate::cols::TraceCols`],
 /// the `render_cols` path for cases whose row-major traces do not fit).
 pub fn failing_constraints_cols(

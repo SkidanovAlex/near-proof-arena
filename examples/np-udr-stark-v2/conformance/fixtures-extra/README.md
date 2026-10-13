@@ -70,4 +70,17 @@ construction.  The dup-byte-2 negative is therefore a prepared-statement mutatio
 
 ## Checks
 
-`run-v2.d/extra.sh` (run by default by `run-v2.sh`, or `./run-v2-section.sh extra`).
+`run-v2.d/extra.sh` (run by default by `run-v2.sh`, or `./run-v2-section.sh extra`; needs the
+zk-formal exe `nearspec-v3-check-d0a` built from the current tree): acceptance (Lean + Python +
+D0a difftest), public tape / `Prep.encode` / Hint / `d0-prep` / `v3prepare` against
+`np-lean-prep-v3`, the tape's `[dup, rep]` source bytes against an independent recomputation,
+node/val/head real-witness entries (`v3check`, val/head Rust == Lean render), SHA job families
+and bins against `np-lean-shabins-v3` (+ `v3check` of sha_t/sha_r), srcp/acct (`v3check`, Rust ==
+Lean render), bus 14 (B_SRC) balance of the srcp table against the public tape (`npudr v3bus`),
+and the negatives (dup byte 2 from a from-shard or root change, cleared `rep` bit: bus 14
+unbalanced).  2026-10-13: 292 PASS, 0 FAIL, ~2 min.
+
+Limits: the receipt SHA family (incl. the gated `RC` jobs) is still Lean-supplied
+(`sha_receipt.json`; no real-witness rcpt dumper yet, lane `v3-prover-rcptfam`), so the Rust RC
+gating on duplicates is compared only through the bins built from it; the Lean node render is
+skipped (slow; `EXTRA_NODE_MAX`), node is `v3check`ed.
