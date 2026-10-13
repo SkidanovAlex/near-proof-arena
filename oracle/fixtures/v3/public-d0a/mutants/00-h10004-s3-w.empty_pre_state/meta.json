@@ -1,0 +1,41 @@
+{
+ "case": "00-h10004-s3-w.empty_pre_state",
+ "kind": "mutant",
+ "mutation": "w.empty_pre_state",
+ "base": "00-h10004-s3",
+ "domain": "D0a",
+ "verdict_source": "construction (spec: Lean checkD0)",
+ "nearcore": "not judged (mutated blocks not in the store); nearcore's empty trie root is Hash::default(), so nearcore would treat the state as empty \u2014 RelD0 excludes it (user decision 2026-10-13, spec v0a \u00a71)",
+ "expected_rel": false,
+ "in_d0": false,
+ "expected_rel_d0": false,
+ "in_d0a": false,
+ "d0a_violations": [],
+ "expected_rel_d0a": false,
+ "expected_verdict": "reject",
+ "expected_reason": "MissingTrieValue (BufferedReceiptIndices)",
+ "provenance": {
+  "generator": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py",
+  "command": "python3 examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d0a.py --base oracle/fixtures/v3/public-d0a/d0/00-h10004-s3 --state keep: --out DIR",
+  "ops": [
+   {
+    "op": "state",
+    "ops": [
+     "keep:"
+    ],
+    "log": [
+     "keep : 0 keys"
+    ],
+    "pre_state_root": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  ],
+  "python_fixups": [
+   "Reject: main transition post_state_root mismatch",
+   "Reject: InvalidStateRoot"
+  ],
+  "python_d0_verdict": "ok",
+  "claim_sha256": "61cccc29ed7c812899de5ffd6125b1b99015b2be6907601e72d3fdaab0e35012",
+  "witness_sha256": "c4a552006a95895a58baac9dca71e0095a3ff03dd61474900ad7dc3e87c83d02"
+ },
+ "note": "main pre-state emptied (root 0^32), every other hash restored; the empty trie has no BufferedReceiptIndices to read: Lean checkD0 'invalid: MissingTrieValue (BufferedReceiptIndices)'"
+}

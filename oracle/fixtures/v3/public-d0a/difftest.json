@@ -83,14 +83,15 @@
   "mutants.amendment.c.bw_requests": 59,
   "mutants.amendment.w.path_depth": 59,
   "mutants.amendment.w.proof_routing": 43,
-  "mutants.cases": 298,
+  "mutants.cases": 299,
   "mutants.expected_accept": 75,
   "mutants.lean.accept": 75,
   "mutants.lean.out_of_domain": 163,
-  "mutants.lean.reject": 60,
+  "mutants.lean.reject": 61,
+  "mutants.oracle_offline.reject": 1,
   "mutants.python.accept": 75,
   "mutants.python.out_of_domain": 161,
-  "mutants.python.reject": 62,
+  "mutants.python.reject": 63,
   "ood.cases": 59,
   "ood.expected_accept": 0,
   "ood.lean.out_of_domain": 59,
@@ -161,6 +162,7 @@
   "w.drop_proof|expected_accept=False": 2,
   "w.dup_key_last_bad|expected_accept=False": 2,
   "w.dup_key_last_good|expected_accept=True": 2,
+  "w.empty_pre_state|expected_accept=False": 1,
   "w.epoch_id|expected_accept=False": 2,
   "w.extra_proof|expected_accept=False": 2,
   "w.foreign_routed_receipt|expected_accept=False": 43,
@@ -285,7 +287,7 @@
   "mismatches": []
  },
  "wall_seconds": {
-  "lean": 219.07535004615784,
-  "python": 1.619415283203125
+  "lean": 431.47114515304565,
+  "python": 3.185375928878784
  }
 }

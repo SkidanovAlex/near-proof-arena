@@ -3,7 +3,8 @@
 (spec/near-chunk-validation-v0a.md): RelD0a = RelD0 ∧ A1 ∧ A2 ∧ Canon0f ∧ A7 ∧ A8 ∧ A9 ∧ A10 ∧ A12.
 
 Runs the D0 checker (spec_check_v3.py, unmodified: it is pinned with the live D0
-challenges) and, on an accepting case, the amendments:
+challenges), rejects an empty main pre-state (root 0^32: not in RelD0, as Lean `checkD0`;
+user decision 2026-10-13) and, on an accepting case, the amendments:
   A1  c.gas_limit        chunk gas_limit of B2's own-shard slot <= 10^15
   A2  w.proof_routing    every receipt of every used source receipt proof routes
                          (final layout) to the validated shard
@@ -398,6 +399,15 @@ def check_case(d, bound=B0, words_bound=W0, depth_bound=DP0):
     verdict, reason = d0.check_case(d)
     tries = list(_TRIES)
     words = sum(r.words for r in _RNGS)
+    # Empty main pre-state (user decision 2026-10-13, spec v0a §1): not in RelD0. Lean `checkD0`
+    # reads BufferedReceiptIndices from `partialTrie ws prev_state_root …`; the all-zero root is
+    # an unrevealed `.hash` there (no empty-trie case), so the read fails as a missing trie
+    # value, after the claim-level checks. The unmodified D0 checker (pinned) treats the zero
+    # root as nearcore's empty trie; its main pre trie is the first one it builds (after its
+    # claim-level checks), so any verdict reached with that trie built becomes this reject.
+    if tries and tries[0].pre_root == ZERO32 and verdict != "reject":
+        return ("reject", "invalid: MissingTrieValue (BufferedReceiptIndices): empty main pre-state",
+                None, None, None, None, None)
     if verdict != "accept":
         return verdict, reason, None, None, None, None, None
     try:

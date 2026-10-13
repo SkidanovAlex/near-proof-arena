@@ -33,8 +33,15 @@ Corpora without nearcore D0a metadata (no `expected_rel_d0a` in meta.json, e.g. 
 corpora): a case agrees iff Lean and Python return the same verdict (and both name the same
 D0a amendment family when out of domain for one); the measures are compared Lean vs Python.
 
+Constructed corpora (nearcore cannot judge them, e.g. conformance/fixtures-extra and the
+empty-pre-state mutant): `--oracle-jsonl F` takes the oracle's offline A7
+(`near-arena-oracle-v3-d0a unfold-case`, inputs from dump_a7_store_v3_d0a.py) for the cases whose
+meta.json has no oracle measures; an offline `reject` (empty main pre-state) must match
+`expected_rel_d0a = false`, and the offline read keys must equal the Python checker's.
+
 usage: difftest_v3.py --cases DIR [--lean EXE] [--python FILE] [--report OUT.json]
          [--lean-jsonl F --python-jsonl F]   (reuse precomputed outputs)
+         [--oracle-jsonl F...]               (offline oracle A7 for constructed cases)
 """
 import argparse, collections, json, os, subprocess, sys, time
 
@@ -67,8 +74,23 @@ def main():
     ap.add_argument("--python")
     ap.add_argument("--lean-jsonl", nargs="*")
     ap.add_argument("--python-jsonl", nargs="*")
+    ap.add_argument("--oracle-jsonl", nargs="*")
     ap.add_argument("--report")
     a = ap.parse_args()
+    offline = {}
+    for f in a.oracle_jsonl or []:
+        offline.update(load_jsonl(f))
+    OFF = {"unfold_bytes": "unfold", "unfold_rebuilt": "unfold_rebuilt", "unfold_diff": "unfold_diff"}
+
+    def meta_of(d):
+        m = json.load(open(os.path.join(d, "meta.json")))
+        o = offline.get(d)
+        if o is not None:
+            m["_offline"] = o
+            for mk, ok in OFF.items():
+                if m.get(mk) is None and o.get(ok) is not None:
+                    m[mk] = o[ok]
+        return m
     dirs = []
     for sub in ("d0", "d1", "d2", "ood", "mutants"):
         p = os.path.join(a.cases, sub)
@@ -91,9 +113,14 @@ def main():
     disagreements = []
     families = collections.Counter()
     for d in dirs:
-        meta = json.load(open(os.path.join(d, "meta.json")))
+        meta = meta_of(d)
         kind = os.path.basename(os.path.dirname(d))
         stats[f"{kind}.cases"] += 1
+        o = meta.get("_offline")
+        if o is not None:
+            stats[f"{kind}.oracle_offline.{o['verdict']}"] += 1
+            if (o["verdict"] == "reject" and meta.get("expected_rel_d0a")) or o.get("keys_equal") is False:
+                disagreements.append({"case": d, "impl": "oracle-offline", "problem": o})
         if "expected_rel_d0a" not in meta:
             # no nearcore D0a metadata (D1/D2 corpora): Lean and Python must agree
             got = {name: res.get(d) for name, res in impls.items()}
@@ -145,7 +172,7 @@ def main():
         m = {"compared_lean_python": 0, "compared_oracle": 0, "mismatches": [], "values": [],
              "values_in_d0a": []}
         for d in dirs:
-            meta = json.load(open(os.path.join(d, "meta.json")))
+            meta = meta_of(d)
             lj = impls.get("lean", {}).get(d, {})
             pj = impls.get("python", {}).get(d, {})
             lu, pu, lv = lj.get(jf), pj.get(jf), lj.get("verdict")

@@ -1,0 +1,188 @@
+{
+ "a10_path_depth_mutants": {
+  "w.path_depth_at_bound": {
+   "cases": 0,
+   "lean.accept": 0,
+   "lean.out_of_domain_w.path_depth": 0,
+   "nearcore_accepts": 0,
+   "python.accept": 0,
+   "python.out_of_domain_w.path_depth": 0
+  },
+  "w.path_depth_over": {
+   "cases": 0,
+   "lean.accept": 0,
+   "lean.out_of_domain_w.path_depth": 0,
+   "nearcore_accepts": 0,
+   "python.accept": 0,
+   "python.out_of_domain_w.path_depth": 0
+  }
+ },
+ "a10_reported_elsewhere": {
+  "lean": 0,
+  "python": 0
+ },
+ "a2_foreign_routed_mutants": {
+  "cases": 0,
+  "lean.out_of_domain": 0,
+  "python.out_of_domain": 0
+ },
+ "a8_dup_bw_request_mutants": {
+  "cases": 0,
+  "lean.out_of_domain_c.bw_requests": 0,
+  "python.out_of_domain_c.bw_requests": 0
+ },
+ "a8_reported_elsewhere": {
+  "lean": 0,
+  "python": 0
+ },
+ "a9_reported": {
+  "lean": 0,
+  "python": 0
+ },
+ "cases_dir": "examples/np-udr-stark-v2/conformance/fixtures-extra",
+ "chacha_words": {
+  "compared_lean_python": 39,
+  "compared_oracle": 39,
+  "distribution": {
+   "max": 597,
+   "min": 0,
+   "n": 39,
+   "nonzero": 9,
+   "p50": 0,
+   "p90": 158,
+   "p99": 597
+  },
+  "distribution_in_d0a": {
+   "max": 597,
+   "min": 0,
+   "n": 39,
+   "nonzero": 9,
+   "p50": 0,
+   "p90": 158,
+   "p99": 597
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "counts": {
+  "d0.cases": 39,
+  "d0.expected_accept": 39,
+  "d0.lean.accept": 39,
+  "d0.oracle_offline.measured": 39,
+  "d0.python.accept": 39,
+  "mutants.cases": 3,
+  "mutants.expected_accept": 0,
+  "mutants.lean.reject": 3,
+  "mutants.python.reject": 3
+ },
+ "disagreement_list": [],
+ "disagreements": 0,
+ "domain": "D0a",
+ "implementations": [
+  "nearcore-oracle",
+  "lean",
+  "python"
+ ],
+ "max_path_depth": {
+  "compared_lean_python": 39,
+  "compared_oracle": 0,
+  "distribution": {
+   "max": 3,
+   "min": 1,
+   "n": 39,
+   "nonzero": 39,
+   "p50": 2,
+   "p90": 3,
+   "p99": 3
+  },
+  "distribution_in_d0a": {
+   "max": 3,
+   "min": 1,
+   "n": 39,
+   "nonzero": 39,
+   "p50": 2,
+   "p90": 3,
+   "p99": 3
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "mutation_families": {
+  "w.dup_noextra|expected_accept=False": 3
+ },
+ "nearcore_commit": "44f7ae6cd7ef08bab604e20a473bf77e35d4c993",
+ "statement": "near/pv86/chunk-validation/v0",
+ "unfold_bytes": {
+  "compared_lean_python": 39,
+  "compared_oracle": 39,
+  "distribution": {
+   "max": 7178,
+   "min": 600,
+   "n": 39,
+   "nonzero": 39,
+   "p50": 3131,
+   "p90": 6994,
+   "p99": 7178
+  },
+  "distribution_in_d0a": {
+   "max": 7178,
+   "min": 600,
+   "n": 39,
+   "nonzero": 39,
+   "p50": 3131,
+   "p90": 6994,
+   "p99": 7178
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "unfold_diff": {
+  "compared_lean_python": 39,
+  "compared_oracle": 39,
+  "distribution": {
+   "max": 5920,
+   "min": 600,
+   "n": 39,
+   "nonzero": 39,
+   "p50": 3131,
+   "p90": 5736,
+   "p99": 5920
+  },
+  "distribution_in_d0a": {
+   "max": 5920,
+   "min": 600,
+   "n": 39,
+   "nonzero": 39,
+   "p50": 3131,
+   "p90": 5736,
+   "p99": 5920
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "unfold_rebuilt": {
+  "compared_lean_python": 39,
+  "compared_oracle": 39,
+  "distribution": {
+   "max": 7178,
+   "min": 600,
+   "n": 39,
+   "nonzero": 39,
+   "p50": 3131,
+   "p90": 6994,
+   "p99": 7178
+  },
+  "distribution_in_d0a": {
+   "max": 7178,
+   "min": 600,
+   "n": 39,
+   "nonzero": 39,
+   "p50": 3131,
+   "p90": 6994,
+   "p99": 7178
+  },
+  "mismatch_count": 0,
+  "mismatches": []
+ },
+ "wall_seconds": {}
+}

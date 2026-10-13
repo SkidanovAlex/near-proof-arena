@@ -35,6 +35,11 @@
 //!   sched-words --vectors FILE --out FILE
 //!          A9 scheduler replica (src/sched.rs) on nearcore's scheduler vectors: state check +
 //!          ChaCha20 words drawn per case.
+//!   unfold-case --dump FILE
+//!          Offline A7 (src/d0a.rs `unfold_offline`) for constructed cases nearcore cannot judge:
+//!          FILE is JSON lines {case, pre_root, blobs, main_keys} (oracle/tools/
+//!          dump_a7_store_v3_d0a.py); prints {case, verdict, unfold, unfold_rebuilt, unfold_diff,
+//!          keys_equal} per case (verdict "reject" for an empty main pre-state).
 //!   params --out FILE
 //!          Runtime-config description for runtime_config_digest_v3.
 
@@ -309,12 +314,45 @@ fn cmd_sched_words(args: &[String]) -> i32 {
     if mismatches > 0 { 1 } else { 0 }
 }
 
+fn cmd_unfold_case(args: &[String]) -> i32 {
+    let dump = std::fs::read_to_string(arg(args, "--dump").expect("--dump")).unwrap();
+    let mut bad = 0;
+    for line in dump.lines().filter(|l| !l.trim().is_empty()) {
+        let j: serde_json::Value = serde_json::from_str(line).unwrap();
+        let case = j["case"].as_str().unwrap().to_string();
+        let hexb = |x: &serde_json::Value| hex::decode(x.as_str().unwrap()).unwrap();
+        let root = near_primitives::hash::CryptoHash(hexb(&j["pre_root"]).try_into().unwrap());
+        let blobs: Vec<Vec<u8>> = j["blobs"].as_array().unwrap().iter().map(hexb).collect();
+        let wf = std::fs::read(PathBuf::from(&case).join("witness.bin")).unwrap();
+        let out = match d0a::unfold_offline(&wf, &root, &blobs) {
+            Ok((u, keys)) => {
+                // the read keys as bytes (every D0 key has an even nibble count)
+                let mut ours: Vec<String> =
+                    keys.iter().map(|k| hex::encode(k.chunks(2).map(|p| p[0] << 4 | p[1]).collect::<Vec<u8>>())).collect();
+                ours.sort();
+                ours.dedup();
+                let mut theirs: Vec<String> =
+                    j["main_keys"].as_array().unwrap().iter().map(|x| x.as_str().unwrap().to_string()).collect();
+                theirs.sort();
+                theirs.dedup();
+                bad += (ours != theirs) as i32;
+                json!({"case": case, "verdict": "measured", "unfold": u.native, "unfold_rebuilt": u.rebuilt,
+                       "unfold_diff": u.diff, "keys_equal": ours == theirs, "keys": ours})
+            }
+            Err(e) => json!({"case": case, "verdict": "reject", "reason": e}),
+        };
+        println!("{out}");
+    }
+    if bad > 0 { 1 } else { 0 }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let code = match args.get(1).map(String::as_str) {
         Some("gen") => cmd_gen(&args),
         Some("params") => cmd_params(&args),
         Some("sched-words") => cmd_sched_words(&args),
+        Some("unfold-case") => cmd_unfold_case(&args),
         Some("vectors") => vectors::cmd_vectors(
             &PathBuf::from(arg(&args, "--out").expect("--out")),
             arg(&args, "--seed").and_then(|s| s.parse().ok()).unwrap_or(1),

@@ -543,6 +543,11 @@ pub fn run_chain(chain_idx: usize, p: &ChainParams, out: &Path, o: &GenOpts, sta
                     continue;
                 }
             }
+            // an empty main pre-state is not in RelD0 (2026-10-13): never Rel_D0/Rel_D0a
+            let empty_pre = crate::d0a::main_pre_empty(tracker, &built).unwrap_or(false);
+            if empty_pre {
+                eprintln!("empty main pre-state: expected_rel_d0 = false");
+            }
             let in_d0 = viol.is_empty();
             let key = sw.chunk_production_key();
             let name = format!("{chain_idx:02}-h{}-s{}", key.height_created, key.shard_id);
@@ -566,9 +571,9 @@ pub fn run_chain(chain_idx: usize, p: &ChainParams, out: &Path, o: &GenOpts, sta
                 "nearcore": verdict.as_ref().map(|_| "ok".to_string()).unwrap_or_else(|e| e.clone()),
                 "expected_rel": verdict.is_ok(),
                 "domain": "D0a",
-                "in_d0": in_d0_orig, "expected_rel_d0": verdict.is_ok() && in_d0_orig,
+                "in_d0": in_d0_orig, "expected_rel_d0": verdict.is_ok() && in_d0_orig && !empty_pre,
                 "in_d0a": in_d0, "d0a_violations": viol,
-                "expected_rel_d0a": verdict.is_ok() && in_d0,
+                "expected_rel_d0a": verdict.is_ok() && in_d0 && !empty_pre,
                 "unfold_bytes": unfold.map(|u| u.native),
                 "unfold_rebuilt": unfold.map(|u| u.rebuilt),
                 "unfold_diff": unfold.map(|u| u.diff),

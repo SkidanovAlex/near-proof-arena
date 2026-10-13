@@ -29,6 +29,17 @@ bounds), `relD0a_mono` (in `B`), `relD0a_mono_all` (in `B`, `W`, `Dp`),
 is a D0 proof of the same claim; no soundness statement mentions the bounds. The claim
 and witness formats are unchanged (`spec/claim-v3.md`).
 
+**Empty main pre-state (clarification, user decision 2026-10-13).** A claim whose B2 own-slot
+`prev_state_root` is the all-zero hash (nearcore's empty-trie root) is **not** in `RelD0`, hence
+not in `RelD0a`. This is the existing Lean semantics, not a change of the relation: `checkD0`
+builds `partialTrie w.main.values prev_state_root [BufferedReceiptIndices]`, where the zero root
+is an unrevealed `.hash` (the partial trie and `PTrie.upsert` have no empty-trie case), so the
+read fails with `invalid: MissingTrieValue (BufferedReceiptIndices)` (verdict reject, after the
+claim-level checks). nearcore would treat the state as empty; the Python reference
+(`spec_check_v3_d0a.py`) and the oracle (`oracle/v3-d0a`: `d0a::main_pre_empty`,
+`unfold_offline`) reject it as Lean does. Difftest case:
+`oracle/fixtures/v3/public-d0a/mutants/00-h10004-s3-w.empty_pre_state` (expected verdict reject).
+
 ## 2. Amendments (out-of-domain conditions added to D0's table)
 
 | id | condition | reason |

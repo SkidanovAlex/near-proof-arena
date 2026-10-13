@@ -42,6 +42,19 @@ pub fn a8_ok(blocks: &[std::sync::Arc<near_primitives::block::Block>]) -> bool {
     })
 }
 
+/// Empty main pre-state (B2's own slot `prev_state_root` = nearcore's empty-trie root, all
+/// zero): not in RelD0 (user decision 2026-10-13; Lean `checkD0` cannot read
+/// `BufferedReceiptIndices` from it: "invalid: MissingTrieValue"), whatever nearcore says.
+pub fn main_pre_empty(client: &Client, built: &Built) -> Result<bool, String> {
+    let b2 = &built.blocks[built.b2];
+    if b2.header().is_genesis() {
+        return Ok(false);
+    }
+    let layout = client.epoch_manager.get_shard_layout(b2.header().epoch_id()).map_err(|e| e.to_string())?;
+    let idx = layout.get_shard_index(built.shard_id).map_err(|e| e.to_string())?;
+    Ok(b2.chunks().get(idx).ok_or("slot")?.prev_state_root() == CryptoHash::default())
+}
+
 /// A9 bound: total ChaCha20 words drawn by the scheduler runs of the D0 transition chain.
 pub const W_CHACHA: u64 = 770_000;
 /// A10 bound: Merkle path items of every used source receipt proof.
@@ -389,30 +402,40 @@ fn branch_diff(pre_st: &dyn Store, pn: &Option<RawTrieNode>, post_st: &dyn Store
     tot
 }
 
-/// The node of the pre trie (rooted at `root`, nodes from `st`) that starts exactly at absolute
-/// nibble position `pos`: its hash, read from the parent's child reference (`None`: no node
-/// starts there, or the path to it is not in `st`).
-fn pre_at(st: &dyn Store, root: &CryptoHash, pos: &[u8]) -> Option<CryptoHash> {
+/// The nodes of the pre trie (rooted at `root`, nodes from `st`) that start exactly at absolute
+/// nibble position `pos`: the node reached there (its hash read from the parent's child
+/// reference) and, below a (non-canonical) extension with an empty key, its child too, which
+/// shares the position. Empty: no node starts there, or the path to it is not in `st`.
+fn pre_at(st: &dyn Store, root: &CryptoHash, pos: &[u8]) -> Vec<CryptoHash> {
     let (mut h, mut d) = (*root, 0usize);
     while d < pos.len() {
-        let (_, n) = node(st, &h)?;
+        let Some((_, n)) = node(st, &h) else { return vec![] };
         match n {
-            RawTrieNode::Leaf(..) => return None,
+            RawTrieNode::Leaf(..) => return vec![],
             RawTrieNode::Extension(k, c) => {
                 let k = hp(&k);
-                if k.is_empty() || !pos[d..].starts_with(&k) {
-                    return None;
+                if !pos[d..].starts_with(&k) {
+                    return vec![];
                 }
                 d += k.len();
                 h = c;
             }
             RawTrieNode::BranchNoValue(cs) | RawTrieNode::BranchWithValue(_, cs) => {
-                h = cs.0[pos[d] as usize]?;
+                let Some(c) = cs.0[pos[d] as usize] else { return vec![] };
+                h = c;
                 d += 1;
             }
         }
     }
-    Some(h)
+    let mut out = vec![h];
+    while let Some((_, RawTrieNode::Extension(k, c))) = node(st, &h) {
+        if !hp(&k).is_empty() || out.contains(&c) {
+            break;
+        }
+        out.push(c);
+        h = c;
+    }
+    out
 }
 
 /// The value reference `(length, hash)` the pre trie holds at the full nibble key `key`.
@@ -424,7 +447,7 @@ fn pre_value(st: &dyn Store, root: &CryptoHash, key: &[u8]) -> Option<(u32, Cryp
             RawTrieNode::Leaf(k, v) => return (hp(&k) == key[d..]).then_some((v.length, v.hash)),
             RawTrieNode::Extension(k, c) => {
                 let k = hp(&k);
-                if k.is_empty() || !key[d..].starts_with(&k) {
+                if !key[d..].starts_with(&k) {
                     return None;
                 }
                 d += k.len();
@@ -450,7 +473,7 @@ fn pre_value(st: &dyn Store, root: &CryptoHash, key: &[u8]) -> Option<(u32, Cryp
 /// pre-state root, `pre_st` its witness values; `post_st`: the tracking node's State column).
 fn unfold_native(pre_st: &dyn Store, pre_root: &CryptoHash, post_st: &dyn Store, h: &CryptoHash, pos: &[u8],
                  keys: &[Vec<u8>]) -> u64 {
-    let created = pre_at(pre_st, pre_root, pos) != Some(*h);
+    let created = !pre_at(pre_st, pre_root, pos).contains(h);
     if !created && keys.is_empty() {
         return 0;
     }
@@ -508,7 +531,7 @@ pub struct Unfold {
 /// `unfoldBytes` of an honest case (None if B2 is genesis: not in D0).
 pub fn unfold_bytes(client: &Client, built: &Built, w: &ChunkStateWitness) -> Result<Option<Unfold>, String> {
     use near_chain::stateless_validation::chunk_validation::MainTransition;
-    use near_primitives::receipt::{BufferedReceiptIndices, ReceiptEnum};
+    use near_primitives::receipt::BufferedReceiptIndices;
     use near_store::adapter::StoreAdapter;
     let b2 = &built.blocks[built.b2];
     if b2.header().is_genesis() {
@@ -529,6 +552,18 @@ pub fn unfold_bytes(client: &Client, built: &Built, w: &ChunkStateWitness) -> Re
         .map_err(|e| e.to_string())?;
     let bufs: Option<BufferedReceiptIndices> =
         near_store::get(&pre_trie, &TrieKey::BufferedReceiptIndices).map_err(|e| e.to_string())?;
+    let main_keys = read_keys(&receipts, bufs);
+    let uid = near_primitives::shard_layout::ShardUId::from_shard_id_and_layout(built.shard_id, &layout);
+    let db = DbStore(near_store::TrieDBStorage::new(client.chain.chain_store().store().trie_store(), uid));
+    Ok(Some(measure(w, &slot.prev_state_root(), &main_keys, &db)))
+}
+
+/// The nibble keys the D0 run reads in the main transition (`mainKeys`): the queue indices,
+/// `0x0f`, the groups data of every buffered shard, each receipt's receiver account and, for a
+/// gas refund (system predecessor, signer = receiver), the signer's access key.
+fn read_keys(receipts: &[near_primitives::receipt::Receipt],
+             bufs: Option<near_primitives::receipt::BufferedReceiptIndices>) -> Vec<Vec<u8>> {
+    use near_primitives::receipt::ReceiptEnum;
     let mut keys: Vec<TrieKey> = vec![
         TrieKey::DelayedReceiptIndices,
         TrieKey::BandwidthSchedulerState,
@@ -538,7 +573,7 @@ pub fn unfold_bytes(client: &Client, built: &Built, w: &ChunkStateWitness) -> Re
     for s in bufs.map(|b| b.shard_buffers.keys().cloned().collect::<Vec<_>>()).unwrap_or_default() {
         keys.push(TrieKey::BufferedReceiptGroupsQueueData { receiving_shard: s });
     }
-    for r in &receipts {
+    for r in receipts {
         keys.push(TrieKey::Account { account_id: r.receiver_id().clone() });
         if let ReceiptEnum::Action(ar) = r.receipt() {
             if r.predecessor_id().is_system() && &ar.signer_id == r.receiver_id() {
@@ -546,11 +581,14 @@ pub fn unfold_bytes(client: &Client, built: &Built, w: &ChunkStateWitness) -> Re
             }
         }
     }
-    let main_keys: Vec<Vec<u8>> = keys.iter().map(|k| nibs(&k.to_vec())).collect();
+    keys.iter().map(|k| nibs(&k.to_vec())).collect()
+}
+
+/// The three A7 measures over every applied transition of `w` (main from `pre_root`, then each
+/// implicit one from the previous post root), post nodes from `post`.
+fn measure(w: &ChunkStateWitness, pre_root: &CryptoHash, main_keys: &[Vec<u8>], post: &dyn Store) -> Unfold {
     let imp_keys: Vec<Vec<u8>> =
         [TrieKey::DelayedReceiptIndices, TrieKey::BandwidthSchedulerState].iter().map(|k| nibs(&k.to_vec())).collect();
-    let uid = near_primitives::shard_layout::ShardUId::from_shard_id_and_layout(built.shard_id, &layout);
-    let db = DbStore(near_store::TrieDBStorage::new(client.chain.chain_store().store().trie_store(), uid));
     let ChunkStateWitness::V2(x) = w;
     let mapst = |t: &near_primitives::stateless_validation::state_witness::ChunkStateTransition| {
         let PartialState::TrieValues(vals) = &t.base_state;
@@ -559,15 +597,52 @@ pub fn unfold_bytes(client: &Client, built: &Built, w: &ChunkStateWitness) -> Re
     let mut u = Unfold::default();
     let mut one = |s: &MapStore, pre_root: &CryptoHash, post_root: &CryptoHash, keys: &[Vec<u8>]| {
         let pre = unfold_pre(s, pre_root, keys);
-        u.native += pre + unfold_native(s, pre_root, &db, post_root, &[], keys);
-        u.rebuilt += pre + unfold_pre(&db, post_root, keys);
-        u.diff += pre + unfold_diff(s, Some(*pre_root), &db, post_root, keys);
+        u.native += pre + unfold_native(s, pre_root, post, post_root, &[], keys);
+        u.rebuilt += pre + unfold_pre(post, post_root, keys);
+        u.diff += pre + unfold_diff(s, Some(*pre_root), post, post_root, keys);
     };
-    one(&mapst(&x.main_state_transition), &slot.prev_state_root(), &x.main_state_transition.post_state_root, &main_keys);
+    one(&mapst(&x.main_state_transition), pre_root, &x.main_state_transition.post_state_root, main_keys);
     let mut root = x.main_state_transition.post_state_root;
     for t in &x.implicit_transitions {
         one(&mapst(t), &root, &t.post_state_root, &imp_keys);
         root = t.post_state_root;
     }
-    Ok(Some(u))
+    u
+}
+
+/// Offline A7 (no nearcore node: constructed cases such as conformance/fixtures-extra, whose
+/// blocks are in no store). Inputs: the witness file (nearcore borsh `ChunkStateWitness`), the
+/// main pre-state root (the claim's B2 own-slot `prev_state_root`) and preimages of the post
+/// nodes/values the transitions write (any source: each blob is stored under its own SHA-256,
+/// and the walk starts at the witness's post-state roots, so a wrong blob is never reached).
+/// Read keys from nearcore types: the receipts of all source proofs (an accepted D0a witness
+/// holds exactly the used ones, all routed to the shard: A2) and `BufferedReceiptIndices` read
+/// by nearcore's `Trie::from_recorded_storage` on the witness. An empty main pre-state
+/// (root 0^32) is not in RelD0 (user decision 2026-10-13): `Err`.
+pub fn unfold_offline(witness_file: &[u8], pre_root: &CryptoHash, blobs: &[Vec<u8>]) -> Result<(Unfold, Vec<Vec<u8>>), String> {
+    let mut r = witness_file;
+    let mut field = || -> Result<Vec<u8>, String> {
+        let n = u32::from_le_bytes(r.get(..4).ok_or("witness file")?.try_into().unwrap()) as usize;
+        let v = r.get(4..4 + n).ok_or("witness file")?.to_vec();
+        r = &r[4 + n..];
+        Ok(v)
+    };
+    let _tag = field()?;
+    let w: ChunkStateWitness = borsh::from_slice(&field()?).map_err(|e| e.to_string())?;
+    if *pre_root == CryptoHash::default() {
+        return Err("empty main pre-state: MissingTrieValue (BufferedReceiptIndices)".into());
+    }
+    let ChunkStateWitness::V2(x) = &w;
+    let trie = Trie::from_recorded_storage(PartialStorage { nodes: x.main_state_transition.base_state.clone() }, *pre_root, false);
+    let bufs: Option<near_primitives::receipt::BufferedReceiptIndices> =
+        near_store::get(&trie, &TrieKey::BufferedReceiptIndices).map_err(|e| e.to_string())?;
+    let receipts: Vec<_> = x.source_receipt_proofs.values().flat_map(|p| p.0.iter().cloned()).collect();
+    let main_keys = read_keys(&receipts, bufs);
+    let mut post = HashMap::new();
+    for t in std::iter::once(&x.main_state_transition).chain(&x.implicit_transitions) {
+        let PartialState::TrieValues(vals) = &t.base_state;
+        post.extend(vals.iter().map(|v| (nhash(v), v.to_vec())));
+    }
+    post.extend(blobs.iter().map(|b| (nhash(b), b.clone())));
+    Ok((measure(&w, pre_root, &main_keys, &MapStore(post)), main_keys))
 }
