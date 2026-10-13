@@ -211,3 +211,21 @@ Inputs needed beyond the repo, all scratch (nothing committed), each a deploymen
    trusted closure (those 4 modules; 48 trusted modules in all), expected template
    `ExpectedV3D0.native-lean`.
 3. **`formal/lakefile.toml` `require`** (see above): removed in the scratch candidate copy.
+
+With 1–3, the native-lean route then stops in 43 s at **ARTIFACT_BINDING_FAILED**: `verifier model
+module ZkFormal.Near.Render.Common imports Std.Data.HashMap: model modules may import only trusted
+modules, other model modules and Init` (`pipeline.rs` `native_build`). Pre-existing (main before
+pruning, `14ce4cde`, has the same single violation in a 745-module model closure; now 657). Chain:
+`NpUdrStarkV2.Model → Assembly.NearAdmission → NearAirSize → NearAir → Candidates.SortEmpty →
+Render.Proof.SortLocal → Proof.SortIds → Proof.Base → Render.Statements → Views → Tables →
+Render.Node → Render.Common` — the AIR definition imports a candidate table module that also
+carries render proofs, which pulls the honest-trace generator (`edgeUses : … → Std.HashMap …`)
+into the verifier model. Not proof-only (either a definition change of `edgeUses`, which theorems
+use, or a module split of `SortEmpty`/`NearAir` imports that changes the judge-built native binary
+and so its recorded digest / conformance evidence); reported, not fixed here.
+
+To still exercise the judge code end to end, the run below uses the **standard route** (no
+`--native-model`, dummy `--verifier-digest`): Stage A elaborates all 3,964 candidate modules
+serially exactly as on the native route (minus the judge's tiny `ArenaExpectedInst`), and Stage B
+runs the same leanchecker / lean4export / nanoda / lean4lean steps on the same `.olean`s; only the
+artifact-binding gates fail by construction.
