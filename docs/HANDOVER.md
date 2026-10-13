@@ -114,9 +114,9 @@ User directives (binding):
 * **Known limitation:** four transcriptions are trusted. The follow-up is to make `Rel_Dk := RelD3 ∧ InDk`.
 
 **Blockers, in order:**
-1. **lean4lean fails on the D3α reference.** It hits a recursion failure (`memFill`), while leanchecker and nanoda pass. This blocks formal admission.
-   * Options: proof-only refactoring of the offending terms (experiments are preserved under `/data/illia/nearproof-deps/validation/`), or an upstream fix to lean4lean.
-   * Do not weaken the three-checker policy.
+1. ~~lean4lean fails on the D3α reference~~: fixed proof-only on `lane/d3-lean4lean` (2026-10-13). The configured
+   formal check passes every gate; leanchecker, nanoda and lean4lean accept all 72 modules at default limits;
+   native binaries are byte-identical. Root cause and evidence: `docs/logs/d3-lean4lean-2026-10.md`.
 2. **The D0a tier needs real workload-class coverage in the draft.** An empty class list would silently allow abstention on every input.
 3. ~~Domain bounds A9/A10~~: merged to main (`b06167fa`), with difftests showing 0 disagreements.
 4. **Freeze, then measure, then release:**

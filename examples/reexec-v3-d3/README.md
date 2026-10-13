@@ -57,7 +57,7 @@ the deployed normalization path.
 declarations into `Logged/Runtime/` and rewires imports. Runtime declaration bodies are preserved. This keeps proof metaprogramming out of the
 model's native import closure. `dependency-locks/logged-candidate.json` records
 upstream hashes, exact extracted source ranges and their hashes, import edits,
-and every resulting file hash. Reproduce with `source/verifier/sync-logged.py
+recorded proof-only patches, and every resulting file hash. Reproduce with `source/verifier/sync-logged.py
 COMMIT`, or add `--check` for read-only verification.
 
 These are candidate proof/code modules, outside the judge's trusted module set.
@@ -75,12 +75,18 @@ Actual worker validation passed 407 public and 208 held-out positive cases,
 `values/inject-unread` and `codes/inject-unread` on both sets. The held-out SDK also passed its two reproducible builds and all six applicable
 local gates.
 
-Configured formal checking passed artifact binding, all 72 leanchecker modules,
-and nanoda, but lean4lean rejected `W.E_exec` for deep recursion. This correctly
-blocks formal admission. Bounded proof-only refactoring experiments did not resolve this; checker policy
-and runtime declarations are unchanged. Exact package and binary scopes, hashes,
-and the failed formal report are recorded in
-`docs/e2e-results/v3-d3-read-reference/report.json`.
+Configured formal checking now passes every gate (2026-10-13, lane `d3-lean4lean`): artifact
+binding, leanchecker (72 modules), nanoda and lean4lean (72 modules), with default checker limits and
+the unchanged three-checker policy. lean4lean had rejected `W.E_exec` for deep recursion: its
+`memFill`/`memCopy` cases (and the generated `exec.eq_36`/`exec.eq_37`) made the kernel reduce
+`memBytes s = s.pages.size * 65536` with a symbolic factor, which lean4lean's `Nat` literal
+extension unfolds 65,536 levels deep. The fix is proof-only: `E_exec` unfolds `exec` by
+`exec.eq_def` and abstracts `memFill`/`memCopy` before reducing (`opaque_gen`). It is recorded as a
+proof patch (`source/verifier/logged-proof-patches/WasmStepE.json`) applied by `sync-logged.py`.
+Statements, runtime declarations and all three native binaries are unchanged (byte-identical
+`prepare`/`prove`/`verify`), so the native and worker gate results below still apply. Evidence:
+`docs/e2e-results/v3-d3-read-reference/report.json` (`configured_formal_lean4lean`) and
+`docs/logs/d3-lean4lean-2026-10.md`.
 
 Historical reference results in `docs/e2e-results/v3-d3-reference/` concern the
 previous necessity normalizer. Fresh logged checker validation is documented in
