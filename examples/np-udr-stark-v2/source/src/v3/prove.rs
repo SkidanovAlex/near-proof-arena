@@ -116,12 +116,11 @@ pub struct CaseInputs {
     pub source: std::collections::BTreeMap<String, String>,
 }
 
-/// Build every table's honest entries for a real claim + witness: the native Rust
-/// derivations (`v3::trie` for 2–7, 21; `v3::rcptfam` for 16–20, 23, 24; the SHA collector for
-/// 0, 1) and, for the tables without a native port yet (8–15 scheduler/ChaCha, 22 qv), the entry
-/// files of `extra` (`sched.json` for 11–15, `chacha.json`, `rng.json`, `shuf.json`, `qv.json`:
-/// `np-lean-bundle-v3 <case> <extra>`).  A file `<extra>/<table>.json` also overrides any
-/// native table (for differentials).
+/// Build every table's honest entries for a real claim + witness, all natively in Rust:
+/// `v3::trie` (2–7, 21), `v3::schedqv` + `chacha::lane` (8–15, 22), `v3::rcptfam` (16–20, 23,
+/// 24) and the SHA collector (0, 1, from the other tables).  `extra` (optional) overrides
+/// tables with Lean-dumped entries: `sched.json` for 11–15 and `<table>.json` for any table
+/// (`np-lean-bundle-v3` / `np-lean-sched-v3 <case> <dir>`; for differentials).
 pub fn case_inputs(
     cb: &[u8],
     wb: &[u8],
@@ -152,6 +151,25 @@ pub fn case_inputs(
     ] {
         entries.insert(t.into(), s);
         source.insert(t.into(), "rust:v3rcptfam".into());
+    }
+    // tables 8–15, 22: the native scheduler / ChaCha / qv derivation (`v3::schedqv`, lane
+    // v3-prover-schedqv; ground truth `np-lean-sched-v3`)
+    let sq = super::schedqv::derive(cb, wb)?;
+    let blocks = js(serde_json::to_string(&sq.blocks))?;
+    for t in ["codec", "scandist", "proc", "mem", "cmp"] {
+        entries.insert(t.into(), blocks.clone());
+        source.insert(t.into(), "rust:v3sched".into());
+    }
+    let rs: Vec<&super::sched::Run> = sq.blocks.iter().map(|b| &b.run).collect();
+    let (reqs, calls, insts) = super::chacha::lane(&rs);
+    for (t, s) in [
+        ("chacha", js(serde_json::to_string(&reqs))?),
+        ("rng", js(serde_json::to_string(&calls))?),
+        ("shuf", js(serde_json::to_string(&insts))?),
+        ("qv", js(serde_json::to_string(&sq.qv))?),
+    ] {
+        entries.insert(t.into(), s);
+        source.insert(t.into(), "rust:v3sched".into());
     }
     if let Some(dir) = extra {
         let rd = |n: &str| std::fs::read_to_string(dir.join(n)).ok();

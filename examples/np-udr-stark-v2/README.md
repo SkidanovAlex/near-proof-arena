@@ -1,4 +1,4 @@
-# np-udr-stark-v2: Rust prover for the v3 succinct proof (work in progress)
+# np-udr-stark-v2: Rust prover for the v3 succinct proof
 
 The Rust prover for `np-udr-stark-v2` (`docs/zk-formal/FORMATS.md` §8):
 v1's STARK (DESIGN.md §4) with **public segments** (bus messages read by the
@@ -21,6 +21,31 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
 
 ## Status
 
+**End to end (2026-10-13, lane/v3-prover-prove): real v3 D0a proofs, accepted by the deployed Lean
+verifier; the certificate is unconditional.**
+
+* `npudr v3prove <case_dir> <out_dir> --air nearAirV3.json --pub public.bin` builds everything from
+  `claim.bin` + `witness.bin` in Rust (hint, prepared statement, all 25 tables: `v3trie`, `v3sched`
+  (lane v3-prover-schedqv), `v3rcptfam`, SHA collector), checks every table's constraints and the
+  exact balance of **every bus** (51 buses incl. the public messages: BYTES, DIGEST, SIZE, VSLOT,
+  KEYNIB, FINAL, VBYTES, MPOS, …), proves at `auxGroup = 2` and writes `proof.bin =
+  borshBytes (Hint.encode h) ++ π`. `--check-only`: all 81 fixtures (64 public + 17 extra) pass.
+* Proofs (8 CPUs, `taskset -c 8-15`, `NPUDR_MEM_GB=20`): `00-h10004-s3` 5,256,829 B / 749 s /
+  12.2 GB RSS; `00-h10035-s3` (largest witness) 5,674,156 B / 736 s / 13.3 GB; `01-h10009-s1` (2
+  scheduler blocks) 5,618,528 B / 710 s / 12.6 GB. All ≤ `maxProofBytes` 8 MiB (and the STARK part
+  ≤ `v3MaxInner` 6,435,489 B). Time is dominated by the six fixed `2^22`-row tables (codec,
+  scandist, proc, mem, cmp, rcpt: 588 columns at LDE `2^26`).
+* `np-lean-verify-v3` (`conformance/VerifyV3.lean`) runs the deployed model
+  `(npVerifierP challengeSpecD0a nearAirV3 split prepV3b).toVerifier.deployed` (`NpUdrStarkV2.Model.verifier`):
+  **accepts** all three proofs (≈3 s each) and rejects 14/14 mutations per proof (STARK byte flips,
+  truncation/extension/empty, hint `n`/body/length, public tape, claim bytes, another fixture's claim).
+  `conformance/run-v2.d/prove.sh` (`PROVE_V3=1`; heavy, run alone).
+* `formal/`: `NpUdrStarkV2.certificate` is main's unconditional `nearV3_admission_final`
+  (`#print axioms`: `propext`, `Classical.choice`, `Quot.sound`). Log:
+  `docs/logs/v3-prover-prove-2026-10.md`.
+
+Older notes (per-part history) follow.
+
 **Rust v3 prover (2026-10-12, synced to main c2bd648b, `nearV3_admission_final`):** all **25 generators** follow the honest renders of the current `nearAirV3` (`Render/CompleteV3.lean`): A7 tables `nodeA7`/`valA7`/`upsA7`/`sizeA7` (2/4/7/21), table 20 `SrcpDD` (dedup + A10 depth bits), table 17 `AccountEmpty`, table 23 `MerkleEmpty` (2^19), table 24 `SortEmpty` (cap 19), table 16 `RcptV3.tableQ` (2^22), table 9 with the A9 word counter, tables 8/10 at cap 22, scheduler tables 11–15 concatenated over all runs at 2^22 (`Proc.tableB`), SHA at `padLog22`. Every changed table has a Lean differential (`np-lean-render-v3-{a7,rcs,rcpt,sched}`, byte-identical; rcpt compares the planned prefix + 8 padding rows) and passes `npudr v3check`. The **public tape** uses 34-byte source rows `[dup, rep] ++ root` and is byte-identical to `Public.preparedBytes` on all 64 D0a fixtures. The **SHA job collector** (`collect.rs`) reproduces the Lean two-bin split `twoShaJobBins` (`[native ++ src₀, scheduler ++ receipt ++ src₁]`, gated RC digests, zero-length jobs) on all 64 fixtures (`np-lean-shabins-v3`). **Receipt side from claim + witness (2026-10-13, `src/v3/rcptfam.rs`):** `npudr v3rcptfam` builds the entries of tables 16 (rcpt view), 17, 18, 19, 20, 23, 24 and the receipt SHA family with no Lean dump; `npudr v3sha --native` builds the receipt family purely in Rust. `run-v2.d/rcptfam.sh` (`np-lean-rcptfam-v3`): identical on all 81 fixtures (64 public + 17 fixtures-extra; table-16 rows/view and bnd on the 78 with ≤ 4000 planned rows), collector bins identical, 283 PASS (see `docs/logs/v3-prover-rcptfam-2026-10.md`). Remaining before a real balanced proof: witness → entries dumpers for qv (22)/scheduler blocks/ups/A7 `sel`/`yN`, the sibling lane's `hintOf`/`prepClaim`/`prepBody`, and the memory cost of the fixed-2^22 tables.
 
 **Trie side from claim + witness (2026-10-13, lane/v3-prover-trie):** `npudr v3trie <case>` (`src/v3/trie.rs` over `native.rs` (native execution: `applyNewChunk`/`applyMissingChunk` trie effects, bandwidth-scheduler `runCore` state, account replay, `traceUpsert` runs), `walks.rs`, `upsnat.rs` (honest ups instances), `forest.rs` (`TrieNative.nodes/vals/heads`, `uniqNative`)) derives the honest entries of tables 2 node (+A7 `rpl`), 3 head, 4 val (+A7 `rpl`), 5 walk, 6 uniq, 7 ups, 21 size (+`yN`) with no Lean dump. Ground truth `np-lean-trie-v3` (`conformance/TrieEntriesV3.lean`, the entry lists of `TrieSide.trie_side_exact`); fast Lean renders through `Conformance/FastTrie.lean` (executable twins with equality lemmas). `run-v2.d/trie.sh`: on all 81 fixtures (64 public + 17 extra) Rust entries == Lean entries, all 7 tables pass `v3check`, Rust renders == Lean renders, the 13 trie-internal buses balance against the public tape; 33 negatives rejected (116 PASS).
@@ -35,7 +60,7 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
 | trace generation for `nearAirV3` (witness → 25 tables) | **partial**: aligned generators for 7 tables (bnd, akey, head, val, uniq, walk, **node**) in `src/v3/`, byte-identical to the Lean `Render/Padded*.lean` generators (`conformance/run-v2.sh` §3). node is the largest/most complex table. |
 | witness → per-table entries (part 2c) | **partial**: `conformance/WitnessEntriesV3.lean` → `np-lean-entries-v3 <case> [<table>]` runs the proved D0a extraction (`checkD0a B0` + the reference `trace`) on a real fixture and dumps the honest entry lists for **node** (`initializeList 0 (forestNodes 0 0 0 ts)`), **val** (`seedValuesFrom 0 (forestBytes ts)`) and **head** (`traceHeads 0 0 pairs`); `src/v3/entries.rs` + `npudr v3entries` read them. `conformance/run-v2.sh` §4: `npudr v3check` accepts every constraint and `npudr v3render` is byte-identical to `np-lean-render-v3` on the real-fixture node/val/head entries. `walk`, `uniq`, `akey`, `bnd` need the query/receipt allocation layers (extension point, below). |
 | `prepD0`/`Hint` codec in Rust (part 3) | **partial**: `src/v3/prep.rs` mirrors `PrepD0.lean`'s byte codecs — `Hint` (`u32 n ‖ borshBytes body`), `PrepHdr`/`SrcList`/`SchedPub`/`Prep` `encode()`, the `encList`/`encOpt`/`concatAll`/`borshBytes` helpers, and the refund body codec (`decode_body`/`body_of`, `pRefund`). `conformance/PrepV3.lean` (`np-lean-prep-v3`) runs the proved `checkD0a B0` + `hintOf` + `prepD0` on a real fixture and dumps `hint`/`prep`/`refunds_enc`/`prep_json`; `npudr prep-encode` re-encodes `prep_json` byte-identically to the Lean `Prep.encode`, and the `Hint`/body codecs round-trip (`run-v2.sh` §5, all 64 D0a fixtures). **Ported (2026-10-12):** `prepClaim`/`prepBody` (`src/v3/d0.rs`, incl. A8 and main's A12 `c.layout_wf`) and `hintOf` (`src/v3/hint.rs`: `decodeW`, `pReceipt`, `appliedReceipts`, `partialTrie`/`buildFor`, `PTrie.find/get/set`, `bufferedShards`/`mainKeys`, `applyReceipt`/`applySystemReceipt`, `refundsUpTo`; the `applyNewChunk` branch is argued equal to `refundsUpTo` via `find_upsert_other`, see the module docs). `npudr v3prepare <claim> <witness> <out>` = `hintOf` + `prepD0`; `run-v2.sh` §"prover preprocessing" checks it against `np-lean-prep-v3 --any`: hint + prep byte-identical on all 64 fixtures, and 120 mutated claim/hint/witness cases agree (every claim mutation `checkD0a B0` rejects is rejected). |
-| package skeleton + conditional certificate (part 4) | **partial (NOT ADMITTED)**: `candidate.toml`, `build-recipe/` (`build.sh`/`sync-lean.sh`/`vendor.sh`), `formal/` (`NpUdrStarkV2.{Model,PublicBin,Assembly,Certificate}.lean`), `bench/`, `dependency-locks/` mirror `examples/np-udr-stark`. `NpUdrStarkV2.Model.verifier` is the deployed model `(npVerifierP challengeSpecD0a nearAirV3 split prepV3b).toVerifier` (`split`/`join`/`prepV3b` = `ZkFormal.NearV3.Assembly`), closed, no `sorry`. `NpUdrStarkV2.certificate` is `ZkFormal.NearV3.Assembly.nearV3_admission_with_extract_b` specialised to `challengeParamsD0a`: it is **conditional** on the open obligations `ExtractV3Stmt` (the `link` package), the render completeness closure and `AlignedV3Stmt` (`docs/zk-formal/STATUS-V3-ASSEMBLY.md` §3). Until those land the candidate is **not ADMITTED**. `build.sh` builds the Rust bins (`out/prepare`/`out/prove`) and the native-lean `out/verify`; the Rust bins are still the inherited **v1** surfaces — the v3 `prove` (nearAirV3 trace + STARK prove) is not written yet. |
+| package skeleton + certificate (part 4) | **superseded 2026-10-13: the certificate is now unconditional (above)**; historical: `candidate.toml`, `build-recipe/` (`build.sh`/`sync-lean.sh`/`vendor.sh`), `formal/` (`NpUdrStarkV2.{Model,PublicBin,Assembly,Certificate}.lean`), `bench/`, `dependency-locks/` mirror `examples/np-udr-stark`. `NpUdrStarkV2.Model.verifier` is the deployed model `(npVerifierP challengeSpecD0a nearAirV3 split prepV3b).toVerifier` (`split`/`join`/`prepV3b` = `ZkFormal.NearV3.Assembly`), closed, no `sorry`. `NpUdrStarkV2.certificate` is `ZkFormal.NearV3.Assembly.nearV3_admission_with_extract_b` specialised to `challengeParamsD0a`: it is **conditional** on the open obligations `ExtractV3Stmt` (the `link` package), the render completeness closure and `AlignedV3Stmt` (`docs/zk-formal/STATUS-V3-ASSEMBLY.md` §3). Until those land the candidate is **not ADMITTED**. `build.sh` builds the Rust bins (`out/prepare`/`out/prove`) and the native-lean `out/verify`; the Rust bins are still the inherited **v1** surfaces — the v3 `prove` (nearAirV3 trace + STARK prove) is not written yet. |
 
 ## Verification
 
@@ -56,7 +81,7 @@ v1 ones; they are kept so the v1 conformance suite keeps running.
 * `conformance/run.sh` (inherited v1 suite; 205 checks, all pass on the fork).
 * `formal/`: `cd formal && lake build NpUdrStarkV2.Certificate` (requires the repo
   `zk-formal` Lake package; build under `/data/illia/nearproof-deps/bin/heavy`).
-  Builds the conditional certificate; `#print axioms NpUdrStarkV2.certificate`
+  Builds the (unconditional, `nearV3_admission_final`) certificate; `#print axioms NpUdrStarkV2.certificate`
   reports `[propext, Classical.choice, Quot.sound]` (no `sorry`/`axiom`).
 * `build-recipe/build.sh`: `SKIP_LEAN=1 bash build-recipe/build.sh` builds
   `out/prepare`/`out/prove` (Rust); without `SKIP_LEAN=1` it also replicates the
