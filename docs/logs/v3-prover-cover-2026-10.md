@@ -48,3 +48,34 @@ leaf replace.
 * `npudr v3prove --check-only` on all 22: 25 tables' constraints hold, 51/51 buses balanced
   (bus 50 SCHACHA carries one message per drawn word: x-bw-pair 1, x-bw-implicit 355, x-bw-n5
   597).  No Rust divergence.
+
+## 2026-10-13 — differentials on the 22 new fixtures (`run-v2-section.sh`, CPUs 28–31)
+
+`FX`/`EXTRA_FX`/`TRIE_FX`/`SCHEDQV_FX` = a directory of the 22 new cases, `A7_CASES=22`; the
+conformance Lean exes rebuilt from the tree first (8,081 jobs; `np-lean-sched-v3`,
+`-rcptfam-v3`, `-bundle-v3`, `-verify-v3` were missing in this worktree).
+**931 PASS, 1 FAIL** (the FAIL is a test artifact, fixed below):
+
+* extra 331: acceptance (22 accepted by Lean/Python, 0 disagreements), public tape / Prep.encode /
+  Hint / d0-prep / v3prepare byte-identical to Lean, node/val/head, SHA families + bins, srcp/acct.
+* trie 57: Rust `v3trie` == Lean `np-lean-trie-v3` on 22/22 (native objects incl. every ups
+  run: all 11 terminal cases, 12 part kinds), v3check 7 tables, renders identical, 13 trie
+  buses (incl. UPB, RPL, RPLV) balanced, negatives rejected.
+* a7 202: node/val A7 on real entries, Rust == Lean renders, 22 cases.
+* schedqv 83: Rust `v3sched` == Lean `np-lean-sched-v3` (9 files) on 22/22, v3check tables 8–15,
+  22, renders identical (18 with full 2^22 dumps), 25 scheduler/ChaCha buses balanced; sampler;
+  negatives.  First real-data runs with non-empty chacha/rng/shuf lanes (requests up to 25 per
+  run, absent prior state).
+* collect 35: SHA families + bins identical 22/22.  rcptfam 223: 61 fixtures (22 + the 39 of
+  fixtures-extra/d0), 0 failures.
+* FAIL `v3sched accepts x-bw-16's claim with x-bw-64's witness`: the schedqv wrong-witness
+  negative paired the first two fixtures of FX; these two share their base and their witnesses
+  differ only in the witness's copy of the endorsed header (`prev_block_hash`).  Lean rejects
+  the pair (`witness chunk header differs from the claim`), but the claim is true and the rest
+  of that witness is a valid witness for it, so proceeding is no soundness issue.  Test fixed:
+  first vs last fixture (x-bw-16 + x-ups-pt witness: rejected, `missing buffered index`).
+* No Rust divergence on any table.
+
+Wiring: the new cases live in `fixtures-extra/d0`, so extra / trie / schedqv / rcptfam run them
+by default; `collect.sh` now iterates `COLLECT_FX` (default `$fx fixtures-extra/d0`) and `a7.sh`
+adds `A7_EXTRA` (default x-ups-pt, x-ups-esn0, x-ups-lsa, x-bw-noprior).

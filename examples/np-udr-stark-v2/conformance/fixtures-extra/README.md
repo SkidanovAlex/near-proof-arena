@@ -150,6 +150,11 @@ Lean render), bus 14 (B_SRC) balance of the srcp table against the public tape (
 and the negatives (dup byte 2 from a from-shard or root change, cleared `rep` bit: bus 14
 unbalanced).  2026-10-13: 292 PASS, 0 FAIL, ~2 min.
 
+Lane v3-prover-cover (sections e, f), 2026-10-13: `npudr v3prove --check-only` 22/22 (25 tables, 51
+buses); sections extra / trie / a7 / schedqv / collect / rcptfam on the 22 new cases: 931 PASS
+(Rust == Lean for every native object, entry list and render); one real proof of x-bw-implicit
+(`PROVE_V3=1`), see `docs/logs/v3-prover-cover-2026-10.md`.
+
 Limits: the receipt SHA family (incl. the gated `RC` jobs) is still Lean-supplied
 (`sha_receipt.json`; no real-witness rcpt dumper yet, lane `v3-prover-rcptfam`), so the Rust RC
 gating on duplicates is compared only through the bins built from it; the Lean node render is
