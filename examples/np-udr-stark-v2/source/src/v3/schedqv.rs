@@ -850,6 +850,26 @@ fn block(
         &lp.cnt_r,
     )
     .map_err(|e| format!("block {tau}: {e}"))?;
+    // The `SchedIn` view keeps the prior state as `a0 = a0Canon n prev` + the sanity hash and
+    // rebuilds it canonically (record `l` = link `l`); tables 11–15 read the prior state
+    // through `a0Canon` and `allowances ids prev`, so the view is exact iff the rebuild has
+    // the same `allowances` (the `np-lean-sched-v3` summary check).  Refuse otherwise.
+    let a0 = a0_canon(run.n, &prev);
+    if prior.is_some() {
+        let nn = sp.ids.len();
+        let rebuilt = BwState {
+            links: (0..a0.len())
+                .map(|l| (sp.ids[l / nn], sp.ids[l % nn], a0[l]))
+                .collect(),
+            sanity_hash: prev.sanity_hash.clone(),
+        };
+        chk(
+            allowances(&sp.ids, &rebuilt) == allowances(&sp.ids, &prev),
+            &format!(
+                "block {tau}: prior state is not canonical (the SchedIn view cannot carry it)"
+            ),
+        )?;
+    }
     Ok(SchedIn {
         ids: sp.ids.clone(),
         allowed: sp.allowed.clone(),
@@ -859,7 +879,7 @@ fn block(
         gb: gd,
         fwd,
         ash: sp.all_shards_hash.iter().map(|&x| x as u64).collect(),
-        a0: a0_canon(run.n, &prev),
+        a0,
         prev_hash: prev.sanity_hash.iter().map(|&x| x as u64).collect(),
         run,
     })

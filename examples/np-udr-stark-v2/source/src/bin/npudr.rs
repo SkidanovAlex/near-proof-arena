@@ -45,6 +45,10 @@
 //!   the prover's native preprocessing: `hintOf` (`v3::hint`) then `prepD0`
 //!   (`v3::d0::prep`); writes `hint.bin` and, on acceptance, `prep.bin` +
 //!   `prep.json` (exit 0), else `reject.txt` (exit 1).
+//! * `npudr v3sched <case_dir> <out_dir>` — the honest entries of nearAirV3 tables
+//!   8–15 and 22 from the case's claim + witness (`v3::schedqv`), one
+//!   `<table>.json` per table (the `v3prove` entries-dir layout);
+//!   `npudr v3sched --rerun <sched.json>` re-derives each block's run and grants.
 use std::time::Instant;
 
 use npudr::air::Air;

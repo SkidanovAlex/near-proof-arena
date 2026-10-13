@@ -64,3 +64,35 @@ scheduler tables accept the block list, chacha/rng/shuf their lane lists, qv the
   rounds); on 00-h10024-s0 (2 blocks) all 25 buses touching tables 8–15/22 balance against the
   public tape with the trie (`v3trie` ups/val/walk) and receipt (`v3rcptfam` rcpt/acct/akey)
   entries: 40–52, 56–62, 21 VSLOT, 29, 63, 5, 6.
+
+## 2026-10-13 — `run-v2.d/schedqv.sh`: 144 PASS, 0 FAIL (81 fixtures, ~70 min on CPUs 24–31)
+
+* 81/81 (64 public-d0a + 17 fixtures-extra): Lean dump accepted (self-checks), Rust `v3sched` ==
+  Lean entries (9 files JSON-equal), `v3check` of tables 8–15, 22 (with the case's public
+  values), Rust render == Lean render of the native blocks through the proof's trace definitions
+  (full 2^22 sha256 on the 11 cases with an implicit step or a request, first 4096 rows
+  elsewhere; 8–10, 22 full), and buses SCMP 40 SOP 41 SFIN 42 SINC 43 SPUSH 44 SSIN 45 SSOUT 46
+  SSMEM 47 SGEN 48 SSHUF 49 SCHACHA 50 SPUBB 51 SPAR 52 SDL 56 SDLX 57 SDG 58 S0F 59 SPOST 60
+  SPLEN 61 SA0 62 + VSLOT 21, 29, 63, 5, 6 balanced against the public tape with the trie
+  (`v3trie` ups/val/walk) and receipt (`v3rcptfam` rcpt/acct/akey) entries.
+* Lean scheduler sampler (9 runs, up to 3 blocks / 80 requests / 144 rounds): `npudr v3sched
+  --rerun` == Lean `ActualRun.run` + grants; internal buses 40–50, 57, 58, 62 balanced.
+* Negatives (34): per 3 cases (implicit step + queue records) block vid / grid grant / ash /
+  forwarding demand / INIT allowance / allowed flag / τ / qv users / qv payload / qv walk vid /
+  dropped qv walk each unbalance a bus; sampler lane: dropped RNG call / ChaCha block, changed
+  shuffle value, round increase; foreign and truncated witnesses rejected (Rust and Lean).
+* `v3sched` refuses a non-canonical prior state (the `SchedIn` view rebuilds the prior state
+  canonically; tables 11–15 read `allowances ids prev`): all fixtures are canonical.
+* Bus 0 BYTES (all participants incl. codec, `v3sha` collector bins from the honest entries)
+  balances on the 3 fixtures tried; **bus 1 DIGEST has one unmatched message on fixtures with
+  outcomes: the `mrk` render receives `MRK(root)` with a zero digest** (00-h10016-s0 idx 0,
+  00-h10024-s0 idx 3; fine when mrk n = 0).  Not tables 8–15/22: for the receipt-side owner.
+
+## 2026-10-13 — merge origin/main 75517040: one `np-lean-sched-v3`
+
+lane/v3-prover-walk (f521f0a4, 14a40247) had added a second dumper named `np-lean-sched-v3`
+(top-level `SchedJson.lean`, its `SchedEntriesV3.lean`, `run-v2.d/schedentries.sh`; tables 11–15
+and 8–10 only, grants from `distRows`, failures defaulted to empty runs, no Rust twin).  Kept this
+lane's dumper (covers 8–15 and 22, follows the `PriorCore` construction, `npudr v3sched` matches
+it on all 81 fixtures); retired the walk lane's three files and its `SchedJson` lean_lib.  Its
+format (`sched.json` + lane files) is subsumed: `codec.json` … `cmp.json` hold the same block list.
