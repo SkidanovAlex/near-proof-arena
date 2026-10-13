@@ -20,7 +20,7 @@ use crate::field::F;
 /// Buffers smaller than this are not pooled.
 const MIN: usize = 1 << 18;
 /// Bytes held by the pool at most.
-pub const LIMIT: usize = 3 << 29;
+pub const LIMIT: usize = 1 << 30;
 
 static POOL: Mutex<Vec<Vec<F>>> = Mutex::new(Vec::new());
 

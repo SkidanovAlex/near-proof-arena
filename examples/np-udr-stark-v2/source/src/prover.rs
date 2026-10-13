@@ -16,7 +16,8 @@
 
 use p3_dft::TwoAdicSubgroupDft;
 use p3_field::{
-    BasedVectorSpace, Field, PrimeCharacteristicRing, PrimeField32, batch_multiplicative_inverse,
+    BasedVectorSpace, Field, PackedValue, PrimeCharacteristicRing, PrimeField32,
+    batch_multiplicative_inverse,
 };
 use p3_matrix::Matrix;
 use p3_matrix::dense::RowMajorMatrix;
@@ -147,12 +148,13 @@ impl Budget {
     }
     /// Level-0 group for the block-wise path of `2^h`-row class-0 tables:
     /// 64 bytes of leaf state per position plus the chunk's coefficient and
-    /// evaluation buffers (`2·T·cw` words), within 0.85 of the budget.
+    /// evaluation buffers (`2·T·cw` words), within 3/4 of the budget (the rest
+    /// for the buffer pool and allocator slack).
     fn fast_group(&self, l0: usize, h: usize, used: usize, cw: usize) -> usize {
         let t = 1usize << h;
         let bufs = 2 * 4 * cw * t;
         let mut s = 1usize << l0;
-        while s > t && used + bufs + 64 * s > self.bytes / 20 * 17 {
+        while s > t && used + bufs + 64 * s > self.bytes / 4 * 3 {
             s /= 2;
         }
         s
@@ -169,33 +171,69 @@ impl Budget {
     }
 }
 
-/// `Σ_r wts[r] · m[r][c]` for every column `c`.
+/// `Σ_r wts[r] · m[r][c]` for every column `c` (limb-wise, packed across
+/// columns: `EF × F` is the base product on each of the 8 limbs).
 fn dot_rows(m: &RowMajorMatrix<F>, wts: &[EF]) -> Vec<EF> {
+    type PF = <F as Field>::Packing;
     let t = m.height();
     let w = m.width();
+    if w == 0 {
+        return vec![];
+    }
+    let wp = w / PF::WIDTH;
     let ch = (t / (4 * rayon::current_num_threads().max(1))).max(256);
-    (0..t.div_ceil(ch))
+    let (accp, acct) = (0..t.div_ceil(ch))
         .into_par_iter()
         .map(|k| {
-            let mut acc = vec![EF::ZERO; w];
+            let mut ap = vec![PF::ZERO; 8 * wp];
+            let mut at = vec![F::ZERO; 8 * (w - wp * PF::WIDTH)];
+            let tw = w - wp * PF::WIDTH;
             for r in k * ch..((k + 1) * ch).min(t) {
                 let row = &m.values[r * w..(r + 1) * w];
-                let wr = wts[r];
-                for c in 0..w {
-                    acc[c] += wr * row[c];
+                let (rp, rt) = row.split_at(wp * PF::WIDTH);
+                let rp = PF::pack_slice(rp);
+                let wl = ef_coeffs(&wts[r]);
+                for l in 0..8 {
+                    let x = PF::from(wl[l]);
+                    for (a, v) in ap[l * wp..(l + 1) * wp].iter_mut().zip(rp) {
+                        *a += *v * x;
+                    }
+                    for (a, v) in at[l * tw..(l + 1) * tw].iter_mut().zip(rt) {
+                        *a += *v * wl[l];
+                    }
                 }
             }
-            acc
+            (ap, at)
         })
         .reduce(
-            || vec![EF::ZERO; w],
-            |mut a, b| {
-                for (x, y) in a.iter_mut().zip(b) {
+            || {
+                (
+                    vec![PF::ZERO; 8 * wp],
+                    vec![F::ZERO; 8 * (w - wp * PF::WIDTH)],
+                )
+            },
+            |(mut a, mut b), (c, d)| {
+                for (x, y) in a.iter_mut().zip(c) {
                     *x += y;
                 }
-                a
+                for (x, y) in b.iter_mut().zip(d) {
+                    *x += y;
+                }
+                (a, b)
             },
-        )
+        );
+    let tw = w - wp * PF::WIDTH;
+    (0..w)
+        .map(|c| {
+            EF::from_basis_coefficients_fn(|l| {
+                if c < wp * PF::WIDTH {
+                    accp[l * wp + c / PF::WIDTH].as_slice()[c % PF::WIDTH]
+                } else {
+                    acct[l * tw + c - wp * PF::WIDTH]
+                }
+            })
+        })
+        .collect()
 }
 
 /// Barycentric weights: `f(ζ) = Σ_r wts[r]·f(ω^r)` on `H = ⟨ω_T⟩`.
@@ -208,16 +246,42 @@ fn bary_weights(h: usize, zeta: EF) -> Vec<EF> {
     inv.iter().zip(&pts).map(|(i, &p)| *i * p * scale).collect()
 }
 
-/// `out[r] += Σ_k coef[k]·c[r][k]`.
+/// `out[r] += Σ_k coef[k]·c[r][k]` (limb-wise, packed across columns).
 fn combine_into(out: &mut [EF], c: &RowMajorMatrix<F>, coef: &[EF]) {
+    type PF = <F as Field>::Packing;
     let w = c.width();
-    out.par_iter_mut().enumerate().for_each(|(r, o)| {
-        let row = &c.values[r * w..(r + 1) * w];
-        let mut acc = EF::ZERO;
-        for k in 0..w {
-            acc += coef[k] * row[k];
+    if w == 0 {
+        return;
+    }
+    let wp = w / PF::WIDTH;
+    let tw = w - wp * PF::WIDTH;
+    // limb `l` of every coefficient, packed
+    let limbs: Vec<Vec<F>> = (0..8)
+        .map(|l| coef.iter().map(|x| ef_coeffs(x)[l]).collect())
+        .collect();
+    let lp: Vec<&[PF]> = limbs
+        .iter()
+        .map(|v| PF::pack_slice(&v[..wp * PF::WIDTH]))
+        .collect();
+    out.par_chunks_mut(1024).enumerate().for_each(|(k, os)| {
+        for (i, o) in os.iter_mut().enumerate() {
+            let r = k * 1024 + i;
+            let row = &c.values[r * w..(r + 1) * w];
+            let (rp, rt) = row.split_at(wp * PF::WIDTH);
+            let rp = PF::pack_slice(rp);
+            let v: [F; 8] = std::array::from_fn(|l| {
+                let mut a = PF::ZERO;
+                for (x, y) in rp.iter().zip(lp[l]) {
+                    a += *x * *y;
+                }
+                let mut s: F = a.as_slice().iter().copied().sum();
+                for (x, y) in rt.iter().zip(&limbs[l][wp * PF::WIDTH..]) {
+                    s += *x * *y;
+                }
+                s
+            });
+            *o += EF::from_basis_coefficients_fn(|l| v[l]);
         }
-        *o += acc;
     });
 }
 
@@ -645,6 +709,67 @@ fn quotient(
             let (ibuf, abuf) = (&hi.buf, &ha.buf);
             let row0 = st.cur * len;
             let irow0 = if use_ivals { 0 } else { row0 };
+            type PF = <F as Field>::Packing;
+            type EP = <EF as p3_field::ExtensionField<F>>::ExtensionPacking;
+            const WL: usize = <PF as PackedValue>::WIDTH;
+            if let Some(fb) = fast.as_ref().filter(|_| len % WL == 0) {
+                // 8 points at a time (packed base and extension fields)
+                qv[st.p0..st.p0 + len]
+                    .par_chunks_mut(1024)
+                    .enumerate()
+                    .for_each_init(
+                        || (Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new()),
+                        |(iregs, phis, ivb, av, anv), (ci, o)| {
+                            for (g8, o8) in o.chunks_mut(WL).enumerate() {
+                                let u0 = ci * 1024 + g8 * WL;
+                                let sel = [
+                                    PF::from_fn(|l| sfirst[u0 + l]),
+                                    PF::from_fn(|l| slast[u0 + l]),
+                                    PF::from_fn(|l| F::ONE - slast[u0 + l]),
+                                ];
+                                ivb.clear();
+                                if use_ivals {
+                                    ivb.extend(
+                                        (0..iw).map(|j| {
+                                            PF::from_fn(|l| ibuf[(irow0 + u0 + l) * iw + j])
+                                        }),
+                                    );
+                                } else {
+                                    let col = |c: usize, nn: bool| {
+                                        let j = map[c] as usize;
+                                        PF::from_fn(|l| {
+                                            let u = u0 + l;
+                                            let r = if nn { next32[u] as usize } else { row0 + u };
+                                            ibuf[r * iw + j]
+                                        })
+                                    };
+                                    q.lay.itape.eval::<PF>(iregs, col, q.pubs, sel);
+                                    ivb.extend(
+                                        q.lay.itape.outputs.iter().map(|&o| iregs[o as usize]),
+                                    );
+                                }
+                                let ext = |r: &dyn Fn(usize) -> usize, g: usize| {
+                                    EP::from_basis_coefficients_fn(|k| {
+                                        PF::from_fn(|l| abuf[r(u0 + l) * aw + 8 * g + k])
+                                    })
+                                };
+                                av.clear();
+                                av.extend((0..wa).map(|g| ext(&|u| row0 + u, g)));
+                                anv.clear();
+                                anv.extend((0..wa).map(|g| ext(&|u| next32[u] as usize, g)));
+                                let acc = fb.eval_packed(ivb, av, anv, sel, q.fins, phis);
+                                let limbs: &[PF] =
+                                    BasedVectorSpace::<PF>::as_basis_coefficients_slice(&acc);
+                                for (l, x) in o8.iter_mut().enumerate() {
+                                    *x +=
+                                        EF::from_basis_coefficients_fn(|k| limbs[k].as_slice()[l]);
+                                }
+                            }
+                        },
+                    );
+                crate::lowmem::prof::add(&crate::lowmem::prof::AUXC, ta0);
+                continue;
+            }
             qv[st.p0..st.p0 + len]
                 .par_iter_mut()
                 .enumerate()
@@ -1020,6 +1145,47 @@ impl FastBus {
             gamma: q.gamma,
         })
     }
+    /// [`Self::eval`] at `WIDTH` points at once (packed fields; the same
+    /// field operations, so the same values lane by lane).
+    #[inline]
+    fn eval_packed(
+        &self,
+        iv: &[<F as Field>::Packing],
+        av: &[<EF as p3_field::ExtensionField<F>>::ExtensionPacking],
+        anv: &[<EF as p3_field::ExtensionField<F>>::ExtensionPacking],
+        sel: [<F as Field>::Packing; 3],
+        fins: &[EF],
+        phis: &mut Vec<<EF as p3_field::ExtensionField<F>>::ExtensionPacking>,
+    ) -> <EF as p3_field::ExtensionField<F>>::ExtensionPacking {
+        type EP = <EF as p3_field::ExtensionField<F>>::ExtensionPacking;
+        phis.clear();
+        for (o, len, k, ap, last) in &self.inter {
+            if *k == 0 {
+                phis.push(EP::ONE);
+                continue;
+            }
+            let mut fp = EP::from(*last);
+            for j in 0..*len {
+                fp += EP::from(ap[j]) * iv[o + j];
+            }
+            phis.push(EP::ONE + (EP::from(self.gamma) - fp - EP::ONE) * iv[o + len]);
+        }
+        let mut acc = EP::ZERO;
+        for (g, grp) in self.groups.iter().enumerate() {
+            let mut phi = EP::ONE;
+            for &i in grp {
+                phi *= phis[i];
+            }
+            let a = av[g];
+            let ap = a * phi;
+            let w = &self.wts[g];
+            acc += ((a - EP::ONE) * sel[0]) * w[0]
+                + ((anv[g] - ap) * sel[2]) * w[1]
+                + ((ap - EP::from(fins[g])) * sel[1]) * w[2];
+        }
+        acc
+    }
+
     /// `iv`: itape outputs (base field); `phis`: scratch.
     #[inline]
     fn eval(
@@ -1282,8 +1448,10 @@ pub fn prove_cols(
             })
             .collect();
         let used = compact + tree_bytes + if use_cache { cache } else { 0 };
+        // narrower chunks next to the resident coefficient cache
+        let acw = if fast { 32 } else { ccw };
         let g = if fast {
-            bud.fast_group(l0, hmax0, used, ccw)
+            bud.fast_group(l0, hmax0, used, acw)
         } else {
             bud.group(l0, used, (12 * chunk) << hmax0)
         };
@@ -1295,7 +1463,7 @@ pub fn prove_cols(
             );
         }
         (
-            lmcommit::commit(&dft, &cmats(&sch, &aux), l0, g, ccw, keep),
+            lmcommit::commit(&dft, &cmats(&sch, &aux), l0, g, acw, keep),
             aux_finals,
         )
     };
@@ -1385,16 +1553,24 @@ pub fn prove_cols(
             .collect()
     };
     let mut ood = vec![];
+    let mut ot = [0f64; 5];
     for t in 0..nt {
         let h = heights[t];
         let gz = z * ef_from_base(omega(h));
+        let o0 = std::time::Instant::now();
         let (wz, wg) = (bary_weights(h, z), bary_weights(h, gz));
+        ot[0] += o0.elapsed().as_secs_f64();
         let ck = chunk;
         let (mut vz, mut vg) = (vec![], vec![]);
         for (c0, c1) in main[t].chunks(ck) {
+            let o1 = std::time::Instant::now();
             let v = main[t].values(&dft, c0, c1);
+            ot[1] += o1.elapsed().as_secs_f64();
+            let o2 = std::time::Instant::now();
             vz.extend(dot_rows(&v, &wz));
             vg.extend(dot_rows(&v, &wg));
+            ot[2] += o2.elapsed().as_secs_f64();
+            crate::bufpool::give(v.values);
         }
         ood.extend(vz);
         ood.extend(vg);
@@ -1410,9 +1586,18 @@ pub fn prove_cols(
             ood.extend(kvals(ag, wa));
         }
         if let Src::Coeffs(qc) = &quot[t] {
+            let o3 = std::time::Instant::now();
             let zp: Vec<EF> = z.powers().take(qc.height()).collect();
+            ot[3] += o3.elapsed().as_secs_f64();
             ood.extend(kvals(dot_rows(qc, &zp), sch.n_quot[t]));
+            ot[4] += o3.elapsed().as_secs_f64();
         }
+    }
+    if opts.verbose {
+        eprintln!(
+            "[prove] ood: bary {:.1}s values {:.1}s dots {:.1}s zpow {:.1}s quot {:.1}s",
+            ot[0], ot[1], ot[2], ot[3], ot[4]
+        );
     }
     tm.lap("ood");
     let pre = Challenges {
@@ -1437,6 +1622,7 @@ pub fn prove_cols(
     // ---- DEEP batches per class layer (bit-reversed order) ----
     let ood_off = ood_offsets(&sch);
     let mut deep: Vec<Vec<EF>> = vec![];
+    let mut dt = [0f64; 3];
     for (ci, &c) in sch.class_layers.iter().enumerate() {
         let lg = l0 - c;
         let n = 1usize << lg;
@@ -1473,11 +1659,14 @@ pub fn prove_cols(
                 cst_z += cq[m] * v[2 * w + 2 * wa + m];
             }
             let ck = chunk;
+            let d0 = std::time::Instant::now();
             for (c0, c1) in main[t].chunks(ck) {
                 let vals = main[t].values(&dft, c0, c1);
                 combine_into(&mut vz, &vals, &cz[c0..c1]);
                 combine_into(&mut vg, &vals, &cgz[c0..c1]);
+                crate::bufpool::give(vals.values);
             }
+            dt[0] += d0.elapsed().as_secs_f64();
             let lift = |c: &[EF]| -> Vec<EF> {
                 (0..8 * c.len()).map(|k| c[k / 8] * xpow(k % 8)).collect()
             };
@@ -1494,6 +1683,7 @@ pub fn prove_cols(
             }
             i += sch.ood_len(t);
         }
+        let d1 = std::time::Instant::now();
         // coefficients of P_z (= iDFT(vz) + quotient part) and P_gz
         let mut pz = crate::lde::idft(&dft, RowMajorMatrix::new(ef_to_base_row(&vz), 8));
         drop(vz);
@@ -1512,6 +1702,8 @@ pub fn prove_cols(
         });
         drop((pz, pg));
         let both = RowMajorMatrix::new(both, 16);
+        dt[1] += d1.elapsed().as_secs_f64();
+        let d2 = std::time::Instant::now();
         let sh = class_shift(c);
         let mut g = vec![EF::ZERO; n];
         for b in 0..n / t_rows {
@@ -1540,7 +1732,14 @@ pub fn prove_cols(
                     *o = a * iz[u] + bb * igz[u];
                 });
         }
+        dt[2] += d2.elapsed().as_secs_f64();
         deep.push(g);
+    }
+    if opts.verbose {
+        eprintln!(
+            "[prove] deep: main combine {:.1}s idft {:.1}s blocks {:.1}s",
+            dt[0], dt[1], dt[2]
+        );
     }
     tm.lap("deep");
 
@@ -1613,9 +1812,8 @@ pub fn prove_cols(
     let queries = tr.finish_queries(l0, NUM_CHUNKS, PER_CHUNK);
 
     // ---- openings ----
-    let open_main = lmcommit::open(&dft, &main_m, &main_tree, &queries, chunk);
-    let open_aux = lmcommit::open(&dft, &aux_m, &aux_tree, &queries, chunk);
-    let open_quot = lmcommit::open(&dft, &quot_m, &quot_tree, &queries, chunk);
+    // FRI layers first: their evaluation vectors (2 GB and more for 2^22
+    // tables) are released before the trace openings
     let open_fri = sch
         .committed
         .iter()
@@ -1625,6 +1823,19 @@ pub fn prove_cols(
             fri_open(fv, a, t, &q)
         })
         .collect();
+    drop(fri);
+    let to = std::time::Instant::now();
+    let open_main = lmcommit::open(&dft, &main_m, &main_tree, &queries, chunk);
+    let t_om = to.elapsed().as_secs_f64();
+    let open_aux = lmcommit::open(&dft, &aux_m, &aux_tree, &queries, chunk);
+    let t_oa = to.elapsed().as_secs_f64() - t_om;
+    let open_quot = lmcommit::open(&dft, &quot_m, &quot_tree, &queries, chunk);
+    if opts.verbose {
+        eprintln!(
+            "[prove] openings: main {t_om:.1}s aux {t_oa:.1}s quot {:.1}s",
+            to.elapsed().as_secs_f64() - t_om - t_oa
+        );
+    }
     tm.lap("openings");
     let proof = Proof {
         heights,

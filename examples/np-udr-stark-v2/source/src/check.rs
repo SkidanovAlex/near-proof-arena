@@ -183,31 +183,91 @@ pub fn failing_constraints_cols(
     limit: usize,
 ) -> Vec<(usize, usize)> {
     let tape = Tape::compile(&t.constraints);
+    if all_vanish_cols(&tape, tr, pubs) {
+        return vec![];
+    }
     let n = tr.height();
-    let mut bad: Vec<(usize, usize)> = (0..n)
+    // rows in chunks, one register file per task
+    const CH: usize = 4096;
+    let mut bad: Vec<(usize, usize)> = (0..n.div_ceil(CH))
         .into_par_iter()
-        .flat_map_iter(|r| {
-            let mut regs = Vec::with_capacity(tape.ops.len());
-            let nx = (r + 1) % n;
-            tape.eval(
-                &mut regs,
-                |c, next| tr.get(if next { nx } else { r }, c),
-                pubs,
-                sel(r, n),
-            );
-            let out: Vec<(usize, usize)> = tape
-                .outputs
-                .iter()
-                .enumerate()
-                .filter(|(_, o)| regs[**o as usize] != F::ZERO)
-                .map(|(i, _)| (i, r))
-                .collect();
-            out
-        })
+        .map_init(
+            || Vec::with_capacity(tape.ops.len()),
+            |regs, k| {
+                let mut out = vec![];
+                for r in k * CH..((k + 1) * CH).min(n) {
+                    let nx = (r + 1) % n;
+                    tape.eval(
+                        regs,
+                        |c, next| tr.get(if next { nx } else { r }, c),
+                        pubs,
+                        sel(r, n),
+                    );
+                    for (i, o) in tape.outputs.iter().enumerate() {
+                        if regs[*o as usize] != F::ZERO {
+                            out.push((i, r));
+                        }
+                    }
+                }
+                out
+            },
+        )
+        .flatten()
         .collect();
     bad.sort();
     bad.truncate(limit);
     bad
+}
+
+/// Fast pre-check of [`failing_constraints_cols`]: whether the fixed
+/// combination `Σ_k α^k·C_k` vanishes on every row (packed [`BlockEval`]).
+/// Every constraint vanishing implies it; a failing constraint makes it
+/// non-zero except with probability `≤ #constraints / |K|` (`α` is fixed and
+/// the traces are honest, so this only selects the fast path — a `true`
+/// with a failing constraint would also be caught by the verifier re-check).
+///
+/// [`BlockEval`]: crate::eval::BlockEval
+fn all_vanish_cols(tape: &Tape, tr: &crate::cols::TraceCols, pubs: &[F]) -> bool {
+    use crate::cols::Col;
+    use crate::field::EF;
+    use p3_field::BasedVectorSpace;
+    let n = tr.height();
+    let w = tr.width();
+    if tape.outputs.is_empty() || n < 2 {
+        return tape.outputs.is_empty();
+    }
+    let be = crate::eval::BlockEval::new(tape, pubs);
+    let alpha = EF::from_basis_coefficients_fn(|i| {
+        F::new(0x2d5b_3a17u32.wrapping_mul(i as u32 + 7) % 0x7800_0001)
+    });
+    let apow: Vec<EF> = alpha.powers().take(tape.outputs.len()).collect();
+    const CH: usize = 4096;
+    (0..n.div_ceil(CH)).into_par_iter().all(|k| {
+        let r0 = k * CH;
+        let len = CH.min(n - r0);
+        // rows r0 .. r0+len and the next row of the last one (wrapping)
+        let mut buf = vec![F::ZERO; (len + 1) * w];
+        for (c, col) in tr.cols.iter().enumerate() {
+            let rows = (r0..r0 + len).chain(std::iter::once((r0 + len) % n));
+            match col {
+                Col::U8(v) => rows
+                    .enumerate()
+                    .for_each(|(i, r)| buf[i * w + c] = F::new(v[r] as u32)),
+                Col::U16(v) => rows
+                    .enumerate()
+                    .for_each(|(i, r)| buf[i * w + c] = F::new(v[r] as u32)),
+                Col::U32(v) => rows
+                    .enumerate()
+                    .for_each(|(i, r)| buf[i * w + c] = F::new(v[r])),
+            }
+        }
+        let next: Vec<u32> = (1..=len as u32).collect();
+        let sf: Vec<F> = (0..len).map(|i| F::from_bool(r0 + i == 0)).collect();
+        let sl: Vec<F> = (0..len).map(|i| F::from_bool(r0 + i + 1 == n)).collect();
+        let mut out = vec![EF::ZERO; len];
+        be.eval_rows(&buf, w, 0, &next, &sf, &sl, &apow, &mut out);
+        out.iter().all(|x| *x == EF::ZERO)
+    })
 }
 
 /// Bus balance on compact column storage: per bus, the number of distinct

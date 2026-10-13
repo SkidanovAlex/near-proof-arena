@@ -272,6 +272,45 @@ fn plan_chunks(widths: &[usize], cw: usize) -> Vec<Vec<(usize, usize, usize)>> {
     out
 }
 
+/// Coefficients of a chunk segment: computed, or a column range of stored
+/// coefficients (read in place).
+enum SegCoeffs<'a> {
+    Owned(RowMajorMatrix<F>),
+    Cols(&'a RowMajorMatrix<F>, usize, usize),
+}
+
+impl SegCoeffs<'_> {
+    /// `(values, row width, first column, columns)`
+    fn view(&self) -> (&[F], usize, usize, usize) {
+        match self {
+            SegCoeffs::Owned(m) => (&m.values, m.width(), 0, m.width()),
+            SegCoeffs::Cols(m, c0, w) => (&m.values, m.width(), *c0, *w),
+        }
+    }
+}
+
+/// Coefficients of columns `c0..c1` of `src` (aux sources produce whole
+/// extension-field columns: the covering 8-aligned range is computed).
+fn seg_coeffs<'a>(dft: &Dft, src: &'a Src, c0: usize, c1: usize) -> SegCoeffs<'a> {
+    match src {
+        Src::Coeffs(m) => return SegCoeffs::Cols(m, c0, c1 - c0),
+        Src::Chunks(parts, _) => {
+            if let Some((s, m)) = parts.iter().find(|(s, m)| *s <= c0 && c1 <= s + m.width()) {
+                return SegCoeffs::Cols(m, c0 - s, c1 - c0);
+            }
+        }
+        Src::Aux(_) => {
+            let (a0, a1) = (c0 / 8 * 8, c1.div_ceil(8) * 8);
+            if (a0, a1) != (c0, c1) {
+                let co = src.coeffs(dft, a0, a1);
+                return SegCoeffs::Owned(crate::lmsrc::sub_cols(&co, c0 - a0, c1 - a0));
+            }
+        }
+        Src::Main(_) => {}
+    }
+    SegCoeffs::Owned(src.coeffs(dft, c0, c1))
+}
+
 /// Whether level 0 of `mats` can be hashed block-wise for groups of `s`
 /// positions.
 fn fast_level0(mats: &[CMat], s: usize) -> bool {
@@ -299,9 +338,9 @@ fn hash_level0_blocks(dft: &Dft, mats: &[CMat], g0: usize, s: usize, cw: usize) 
     let mut evs: Vec<Vec<F>> = vec![];
     for (ci, segs) in plan.iter().enumerate() {
         let last = ci + 1 == plan.len();
-        let cos: Vec<RowMajorMatrix<F>> = segs
+        let cos: Vec<SegCoeffs> = segs
             .iter()
-            .map(|&(mi, c0, c1)| ms[mi].src.coeffs(dft, c0, c1))
+            .map(|&(mi, c0, c1)| seg_coeffs(dft, ms[mi].src, c0, c1))
             .collect();
         let sw: Vec<usize> = segs.iter().map(|&(_, c0, c1)| c1 - c0).collect();
         let nbytes: usize = 4 * sw.iter().sum::<usize>();
@@ -318,7 +357,8 @@ fn hash_level0_blocks(dft: &Dft, mats: &[CMat], g0: usize, s: usize, cw: usize) 
                 let c = m.shift
                     * crate::field::omega(m.lde).exp_u64(crate::mmcs::rev(b, m.lde - n) as u64);
                 let _t = std::time::Instant::now();
-                cd.eval(&co.values, co.width(), c, e);
+                let (src, sw, c0, w) = co.view();
+                cd.eval_cols(src, sw, c0, w, c, e);
                 crate::lowmem::prof::add(&crate::lowmem::prof::EVAL, _t);
             }
             let _t = std::time::Instant::now();
@@ -346,7 +386,9 @@ fn hash_level0_blocks(dft: &Dft, mats: &[CMat], g0: usize, s: usize, cw: usize) 
         }
         done = if done == 0 { 12 } else { done } + nbytes as u64;
         for co in cos {
-            crate::bufpool::give(co.values);
+            if let SegCoeffs::Owned(m) = co {
+                crate::bufpool::give(m.values);
+            }
         }
     }
     for e in evs {
@@ -451,11 +493,13 @@ fn rows_on(dft: &Dft, m: &CMat, ranges: &[(usize, usize)], chunk: usize) -> Vec<
         for &l in lens.iter().filter(|_| !by_block) {
             let idx: Vec<usize> = (0..ranges.len()).filter(|&i| ranges[i].1 == l).collect();
             let p0s: Vec<usize> = idx.iter().map(|&i| ranges[i].0).collect();
+            let _t = std::time::Instant::now();
             for (i, e) in idx.iter().zip(crate::lowmem::eval_ranges(
                 dft, &co, m.lde, m.shift, &p0s, l,
             )) {
                 evs[*i] = Some(e);
             }
+            crate::lowmem::prof::add(&crate::lowmem::prof::BEVAL, _t);
         }
         let mut off = 0;
         for (e, &(_, len)) in evs.iter().zip(ranges) {

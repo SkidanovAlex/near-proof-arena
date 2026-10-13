@@ -171,9 +171,16 @@ impl CosetDft {
     /// Evaluations of the `w` polynomials with coefficients `src` (`T × w`)
     /// on `c·⟨ω_T⟩`, in bit-reversed order, into `dst` (`T × w`).
     pub fn eval(&self, src: &[F], w: usize, c: F, dst: &mut [F]) {
+        self.eval_cols(src, w, 0, w, c, dst)
+    }
+
+    /// As [`Self::eval`] for the columns `c0 .. c0 + w` of `src` (rows of
+    /// width `sw`), read in place.
+    pub fn eval_cols(&self, src: &[F], sw: usize, c0: usize, w: usize, c: F, dst: &mut [F]) {
         let n = self.n;
         let t = 1usize << n;
-        assert_eq!(src.len(), t * w);
+        assert_eq!(src.len(), t * sw);
+        assert!(c0 + w <= sw);
         assert_eq!(dst.len(), t * w);
         if w == 0 {
             return;
@@ -195,12 +202,12 @@ impl CosetDft {
                     let s0 = bi * bs;
                     // gather × c^i
                     for rr in 0..r {
-                        let row0 = (rr * s + s0) * w;
                         for b in 0..bs {
                             let k = cpow_r[rr] * cpow_s[s0 + b];
+                            let row = (rr * s + s0 + b) * sw + c0;
                             scale_into(
                                 &mut scr[rr * bw + b * w..rr * bw + (b + 1) * w],
-                                &src[row0 + b * w..row0 + (b + 1) * w],
+                                &src[row..row + w],
                                 k,
                             );
                         }
@@ -459,6 +466,55 @@ mod tests {
                 full.values[p0 * w..(p0 + len) * w],
                 "p0 {p0} len {len}"
             );
+        }
+    }
+
+    /// `eval_ranges` (8-chunk delayed-reduction fold) against `eval_range`.
+    #[test]
+    fn eval_ranges_matches_eval_range() {
+        let dft = Dft::default();
+        for (h, w, len) in [
+            (12usize, 9usize, 64usize),
+            (10, 8, 64),
+            (11, 3, 16),
+            (9, 5, 32),
+        ] {
+            let t = 1usize << h;
+            let vals: Vec<F> = (0..(t * w) as u64)
+                .map(|i| F::from_u64(i.wrapping_mul(0x2545_f491_4f6c_dd1d) >> 35))
+                .collect();
+            let co = dft.idft_batch(RowMajorMatrix::new(vals, w));
+            let l = h + 4;
+            let sh = shift().exp_power_of_2(3);
+            let p0s: Vec<usize> = [0usize, 5, 77, 200, 1000, 15 * t / len]
+                .iter()
+                .map(|&g| (g % (16 * t / len)) * len)
+                .collect();
+            let got = crate::lowmem::eval_ranges(&dft, &co, l, sh, &p0s, len);
+            for (p0, e) in p0s.iter().zip(&got) {
+                let want = eval_range(&dft, &co, l, sh, *p0, len, None);
+                assert_eq!(e.values, want.values, "h {h} w {w} len {len} p0 {p0}");
+            }
+        }
+    }
+
+    #[test]
+    fn eval_cols_matches_eval() {
+        let (n, sw) = (11usize, 40usize);
+        let t = 1usize << n;
+        let src: Vec<F> = (0..(t * sw) as u64)
+            .map(|i| F::from_u64(i.wrapping_mul(0x9e37_79b9_7f4a_7c15) >> 33))
+            .collect();
+        let cd = CosetDft::new(n);
+        let c = shift() * omega(n + 4).exp_u64(5);
+        for (c0, w) in [(0usize, 40usize), (3, 13), (24, 16), (39, 1)] {
+            let sub: Vec<F> = (0..t)
+                .flat_map(|r| src[r * sw + c0..r * sw + c0 + w].to_vec())
+                .collect();
+            let (mut a, mut b) = (vec![F::ZERO; t * w], vec![F::ZERO; t * w]);
+            cd.eval(&sub, w, c, &mut a);
+            cd.eval_cols(&src, sw, c0, w, c, &mut b);
+            assert_eq!(a, b, "c0 {c0} w {w}");
         }
     }
 

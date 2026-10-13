@@ -150,7 +150,40 @@ pub fn eval_ranges(
                 return acc;
             }
             let mut pw: Vec<F> = ys.iter().map(|y| y.exp_u64(j0 as u64)).collect();
-            for j in j0..j1 {
+            // eight chunks at a time: one delayed-reduction dot product per
+            // accumulator vector (`Σ_k y^(j+k)·C_(j+k)`)
+            type P = <F as Field>::Packing;
+            let n = len * w;
+            let np = n / P::WIDTH;
+            let y8: Vec<[F; 9]> = ys
+                .iter()
+                .map(|y| std::array::from_fn(|i| y.exp_u64(i as u64)))
+                .collect();
+            let mut j = j0;
+            while j + 8 <= j1 {
+                let sp: [&[P]; 8] = std::array::from_fn(|k| {
+                    P::pack_slice(&coeffs.values[(j + k) * n..(j + k) * n + np * P::WIDTH])
+                });
+                for (q, p) in pw.iter_mut().enumerate() {
+                    let f: [F; 8] = std::array::from_fn(|k| *p * y8[q][k]);
+                    let a = &mut acc[q * n..(q + 1) * n];
+                    let (ap, at) = a.split_at_mut(np * P::WIDTH);
+                    for (i, x) in P::pack_slice_mut(ap).iter_mut().enumerate() {
+                        *x += <P as p3_field::Algebra<F>>::mixed_dot_product::<8>(
+                            &std::array::from_fn(|k| sp[k][i]),
+                            &f,
+                        );
+                    }
+                    for (i, x) in at.iter_mut().enumerate() {
+                        for (k, fk) in f.iter().enumerate() {
+                            *x += *fk * coeffs.values[(j + k) * n + np * P::WIDTH + i];
+                        }
+                    }
+                    *p *= y8[q][8];
+                }
+                j += 8;
+            }
+            for j in j..j1 {
                 let src = &coeffs.values[j * len * w..(j + 1) * len * w];
                 for (q, p) in pw.iter_mut().enumerate() {
                     axpy(&mut acc[q * len * w..(q + 1) * len * w], *p, src);
