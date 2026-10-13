@@ -472,13 +472,20 @@ fn main() {
             // public messages of the prepared tape on that bus (`pubMsgs`).  Exit 1 on an
             // imbalance or a tape that does not fit (`pubFit`).
             if a.len() < 6 {
-                die("usage: npudr v3bus <air.json> <pub.bin> <bus> <table>=<entries.json>...");
+                die(
+                    "usage: npudr v3bus <air.json> <pub.bin> <bus>[,<bus>…] <table>=<entries.json>...",
+                );
             }
             let txt =
                 std::fs::read_to_string(&a[2]).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
             let air = Air::from_json(&txt).unwrap_or_else(|e| die(&e));
             let tape = std::fs::read(&a[3]).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
-            let bus: usize = a[4].parse().unwrap_or_else(|_| die("bus"));
+            // `<bus>` may be a comma-separated list: the tables are rendered once and every
+            // listed bus is checked (exit 1 if any is unbalanced).
+            let buses: Vec<usize> = a[4]
+                .split(',')
+                .map(|x| x.parse().unwrap_or_else(|_| die("bus")))
+                .collect();
             let mut mats = vec![];
             for spec in &a[5..] {
                 let (name, f) = spec
@@ -495,16 +502,22 @@ fn main() {
             }
             let refs: Vec<(usize, &_)> = mats.iter().map(|(i, m)| (*i, m)).collect();
             let pubs = vec![npudr::field::F::ZERO; air.num_pub];
-            match npudr::check::bus_imbalance_with_pub(&air, &refs, &pubs, &tape, bus) {
-                None => die("public tape does not fit (pubFit)"),
-                Some(bad) if bad.is_empty() => println!("ok  bus {bus} balanced"),
-                Some(bad) => {
-                    for (b, msg, s, r) in bad.iter().take(20) {
-                        println!("IMBALANCE bus {b} sent {s} received {r} msg {msg:?}");
+            let mut failed = false;
+            for bus in buses {
+                match npudr::check::bus_imbalance_with_pub(&air, &refs, &pubs, &tape, bus) {
+                    None => die("public tape does not fit (pubFit)"),
+                    Some(bad) if bad.is_empty() => println!("ok  bus {bus} balanced"),
+                    Some(bad) => {
+                        for (b, msg, s, r) in bad.iter().take(20) {
+                            println!("IMBALANCE bus {b} sent {s} received {r} msg {msg:?}");
+                        }
+                        println!("FAIL bus {bus}: {} unbalanced messages", bad.len());
+                        failed = true;
                     }
-                    println!("FAIL bus {bus}: {} unbalanced messages", bad.len());
-                    std::process::exit(1);
                 }
+            }
+            if failed {
+                std::process::exit(1);
             }
         }
         Some("v3public") => {
@@ -703,6 +716,57 @@ fn main() {
                 },
                 None => println!("{v}"),
             }
+        }
+        Some("v3sched") => {
+            // `npudr v3sched <case_dir> <out_dir>`: the honest entries of tables 8–15 and 22
+            // (`v3::schedqv`, the Rust twin of `np-lean-sched-v3`): `codec/scandist/proc/mem/
+            // cmp.json` (the scheduler block list), `chacha/rng/shuf.json` (the runs' lane
+            // entries, `chacha::lane`), `qv.json` (`qv::QvIn`).
+            if a.len() == 4 && a[2] == "--rerun" {
+                // `npudr v3sched --rerun <sched.json>`: re-derive every block's run and
+                // grants from its inputs (`schedqv::rerun`) and print the block list.
+                let j = std::fs::read_to_string(&a[3]).unwrap_or_else(|e| die(&e.to_string()));
+                let bs = npudr::v3::sched::parse_all(&j).unwrap_or_else(|e| die(&e));
+                let out: Vec<_> = bs
+                    .iter()
+                    .map(|b| npudr::v3::schedqv::rerun(b).unwrap_or_else(|e| die(&e)))
+                    .collect();
+                println!(
+                    "{}",
+                    serde_json::to_string(&out).unwrap_or_else(|e| die(&e.to_string()))
+                );
+                return;
+            }
+            if a.len() != 4 {
+                die("usage: npudr v3sched <case_dir> <out_dir> | --rerun <sched.json>");
+            }
+            let rd = |p: &str| std::fs::read(p).unwrap_or_else(|e| die(&format!("{p}: {e}")));
+            let cb = rd(&format!("{}/claim.bin", a[2]));
+            let wb = rd(&format!("{}/witness.bin", a[2]));
+            let e = npudr::v3::schedqv::derive(&cb, &wb).unwrap_or_else(|e| die(&e));
+            let od = std::path::Path::new(&a[3]);
+            std::fs::create_dir_all(od).unwrap_or_else(|e| die(&format!("{}: {e}", a[3])));
+            let wr = |name: &str, s: String| {
+                std::fs::write(od.join(name), s).unwrap_or_else(|e| die(&format!("{name}: {e}")))
+            };
+            let js = |v: serde_json::Result<String>| v.unwrap_or_else(|e| die(&e.to_string()));
+            let blocks = js(serde_json::to_string(&e.blocks));
+            for t in ["codec", "scandist", "proc", "mem", "cmp"] {
+                wr(&format!("{t}.json"), blocks.clone());
+            }
+            let rs: Vec<&npudr::v3::sched::Run> = e.blocks.iter().map(|b| &b.run).collect();
+            let (reqs, calls, insts) = npudr::v3::chacha::lane(&rs);
+            wr("chacha.json", js(serde_json::to_string(&reqs)));
+            wr("rng.json", js(serde_json::to_string(&calls)));
+            wr("shuf.json", js(serde_json::to_string(&insts)));
+            wr("qv.json", js(serde_json::to_string(&e.qv)));
+            println!(
+                "{} blocks, {} requests, qv {} walks / {} records",
+                e.blocks.len(),
+                rs.iter().map(|r| r.conv.len()).sum::<usize>(),
+                e.qv.walks.len(),
+                e.qv.records.len()
+            );
         }
         Some("v3prepare") => {
             // `npudr v3prepare <claim.bin> <witness.bin> <out_dir> [--hint <hint.bin>]`:

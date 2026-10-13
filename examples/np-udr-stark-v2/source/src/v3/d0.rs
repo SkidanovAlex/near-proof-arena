@@ -512,7 +512,7 @@ fn chacha_qr(s: &mut [u64; 16], a: usize, b: usize, c: usize, d: usize) {
     s[c] = chacha_add32(s[c], s[d]);
     s[b] = chacha_rotl32(s[b] ^ s[c], 7);
 }
-fn chacha_block(key: &[u64], ctr: u64) -> [u64; 16] {
+pub(crate) fn chacha_block(key: &[u64], ctr: u64) -> [u64; 16] {
     let mut init = [0u64; 16];
     init[..4].copy_from_slice(&CHACHA_CONSTS);
     for i in 0..8 {

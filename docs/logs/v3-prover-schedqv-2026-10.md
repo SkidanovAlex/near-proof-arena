@@ -45,3 +45,22 @@ scheduler tables accept the block list, chacha/rng/shuf their lane lists, qv the
 * Fixture coverage: 70 fixtures 1 block / 0 requests, 8 with 2 blocks (implicit steps), 3 with
   one bandwidth request (no round shuffles beyond 1 element); n = 4 or 5 shards; prior state
   always present.  qv: 3–7 walks, 0–4 records.
+
+## 2026-10-13 — Rust derivation `npudr v3sched` (`src/v3/schedqv.rs`)
+
+* `npudr v3sched <case_dir> <out_dir>` writes the files of the format table above from
+  `claim.bin` + `witness.bin` only (native execution `native::native_of`, `hint_of_e` +
+  `d0::prep` for `p.sched` / `p.fwd`).  Ports: `Gen.ActualRun.run` (conversion, `processEv`
+  rounds with the run-wide ChaCha shuffle, the replay with its checks, memory segments,
+  comparator messages, final `Rng` state `rngAt key kfin`; the redundant `coreEv` cross-check is
+  omitted), `linkPass`, `ProcActualInput.allowances`, `a0Canon`, `distributeEv`,
+  `priorValueId`; qv: `mainRequests`/`missingRequest`, `NativeQueueIds.resolve`, `plan`,
+  `queueForestProviders`/`queueRecords`/`queuePayload`.
+* `npudr v3sched --rerun <sched.json>`: re-derives each block's run + grants from its inputs
+  (sampler differential against the Lean `ActualRun.run`).
+* `npudr v3bus` takes a comma-separated bus list (tables rendered once).
+* First results: Rust entries == `np-lean-sched-v3` entries (JSON-equal, all 9 files) on all 81
+  fixtures; `--rerun` == Lean sampler runs (15 samples, 1–3 blocks, up to 80 requests / 144
+  rounds); on 00-h10024-s0 (2 blocks) all 25 buses touching tables 8–15/22 balance against the
+  public tape with the trie (`v3trie` ups/val/walk) and receipt (`v3rcptfam` rcpt/acct/akey)
+  entries: 40–52, 56–62, 21 VSLOT, 29, 63, 5, 6.

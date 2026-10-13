@@ -1195,7 +1195,7 @@ fn dist_rows(inp: &SchedIn) -> Option<DistOut> {
 }
 
 /// `sortByKey key (List.range n)`: stable insertion sort.
-fn sort_by_key(key: impl Fn(u64) -> u64, n: u64) -> Vec<u64> {
+pub(crate) fn sort_by_key(key: impl Fn(u64) -> u64, n: u64) -> Vec<u64> {
     fn insert(key: &impl Fn(u64) -> u64, x: u64, out: &mut Vec<u64>) {
         let kx = key(x);
         let at = out.iter().position(|&y| kx < key(y));
