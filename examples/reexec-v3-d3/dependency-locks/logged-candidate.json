@@ -201,6 +201,14 @@
         "source": "D3LSpec.lean",
         "added_proof_import": "WasmRun"
       }
+    ],
+    "proof_patches": [
+      {
+        "source": "WasmStepE.lean",
+        "proof_patch": "WasmStepE.json",
+        "sha256": "14d197a2cc070af877cdc727d34792fd21d78a1c731ec9a37ced7053da72872e",
+        "reason": "lean4lean rejects W.E_exec (deep recursion): its memFill/memCopy cases, and the generated exec.eq_36/exec.eq_37 used by `simp only [exec]`, make the kernel evaluate memBytes s = s.pages.size * 65536 with a symbolic factor (65536 nested Nat.mul steps). Proof-only: same statement; exec is unfolded via exec.eq_def and memFill/memCopy are abstracted (opaque_gen) before any reduction."
+      }
     ]
   },
   "files": [
@@ -354,7 +362,7 @@
     },
     {
       "candidate_path": "formal/ReexecV3D3/Logged/WasmStepE.lean",
-      "candidate_sha256": "1159f88a97e6dc3c8407d3e145da36d147bf3cc2aa47060f606f09a1c4a79ba0"
+      "candidate_sha256": "ebad6436f6817c77fbec1fc2fcc89966c60f0786364dfcae8cc0dc13883ff90a"
     },
     {
       "candidate_path": "formal/ReexecV3D3/Logged/WasmStore.lean",

@@ -12,6 +12,14 @@ Run from source/verifier after checking the candidate modules, with
 The guarded messages make any change to the transitive axiom sets fail this audit.
 -/
 
+/-- info: 'ReexecV3D3.Logged.W.E_exec' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms ReexecV3D3.Logged.W.E_exec
+
+/-- info: 'ReexecV3D3.Logged.W.E_step' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms ReexecV3D3.Logged.W.E_step
+
 /-- info: 'ReexecV3D3.Logged.W.runUntil_spec' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms ReexecV3D3.Logged.W.runUntil_spec

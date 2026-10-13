@@ -114,9 +114,9 @@ User directives (binding):
 * **Known limitation:** four transcriptions are trusted. The follow-up is to make `Rel_Dk := RelD3 ∧ InDk`.
 
 **Blockers, in order:**
-1. **lean4lean fails on the D3α reference.** It hits a recursion failure (`memFill`), while leanchecker and nanoda pass. This blocks formal admission.
-   * Options: proof-only refactoring of the offending terms (experiments are preserved under `/data/illia/nearproof-deps/validation/`), or an upstream fix to lean4lean.
-   * Do not weaken the three-checker policy.
+1. ~~lean4lean fails on the D3α reference~~: fixed proof-only on `lane/d3-lean4lean` (2026-10-13). The configured
+   formal check passes every gate; leanchecker, nanoda and lean4lean accept all 72 modules at default limits;
+   native binaries are byte-identical. Root cause and evidence: `docs/logs/d3-lean4lean-2026-10.md`.
 2. **The D0a tier needs real workload-class coverage in the draft.** An empty class list would silently allow abstention on every input.
 3. ~~Domain bounds A9/A10~~: merged to main (`b06167fa`), with difftests showing 0 disagreements.
 4. **Freeze, then measure, then release:**
@@ -173,9 +173,9 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
   fixtures before freezing (never edit frozen `oracle/v3`).
 * **Fixture coverage:** no fixture has ChaCha requests (tables 8/9 only empty on real data); only the
   in-place leaf-replace upsert path occurs in fixtures (others unit-tested).
-* **To recheck:** the schedqv lane log reports bus 1 DIGEST unmatched (`mrk` receives `MRK(root)` with a
-  zero digest) on fixtures with outcomes when it assembled bins itself; `v3prove --check-only` reports
-  all buses balanced on all 81 — confirm which assembly is right.
+* **Rechecked (lane v3-prover-digest):** the schedqv bus-1 DIGEST imbalance was `npudr v3bus` evaluating
+  with zero publics (mrk root row reads the outcome root from `p146..177`); `v3prove` was right. `v3bus`
+  fixed; `run-v2.d/digest.sh` checks BYTES/DIGEST on all 81 (`docs/logs/v3-prover-digest-2026-10.md`).
 * **Argued, not proved (prover-side only):** receipts read the pre-scheduler trie (scheduler writes only
   key `[0,15]`); native execution skips grant distribution and the refund-forwarding limit check.
 * Cleanup: `ChachaWords.lean` duplicates `A9Words.coreMid`/`runMid_st`; 2 `clippy -D warnings` errors

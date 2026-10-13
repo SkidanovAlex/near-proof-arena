@@ -206,16 +206,40 @@ theorem E_callFunc (cfg : NearCfg) (p : Prepared) (fi : Nat) (h : callPre p s fi
 macro_rules | `(tactic| se_step) => `(tactic| simp only [E_execNum])
 macro_rules | `(tactic| se_step) => `(tactic| first | rw [E_popN] | rw [E_popRef] | rw [E_popV])
 
+open Lean Elab Tactic Meta in
+/-- `opaque_gen c h` proves the goal `G` from `key : ∀ x, T[x] → G[x]`, applied to `c` and `h : T[c]`,
+where `x` abstracts every occurrence of the constant `c`. `key` is bound by a non-dependent `let`, so
+the kernel checks its proof with `x` a free variable and never unfolds `c` there. Used for `memFill`
+and `memCopy`, whose bounds checks evaluate `memBytes s = s.pages.size * 65536`: reducing that product
+with a symbolic factor takes 65536 nested steps in an independent kernel (lean4lean). -/
+elab "opaque_gen " c:ident h:ident : tactic => do
+  let g ← getMainGoal
+  g.withContext do
+    let cE ← elabTerm c none
+    let hE ← elabTerm h none
+    let ty ← inferType cE
+    let G ← instantiateMVars (← g.getType)
+    let T ← instantiateMVars (← inferType hE)
+    let Ga ← kabstract G cE
+    let Ta ← kabstract T cE
+    let K := Expr.forallE `x ty (.forallE `h Ta (Ga.liftLooseBVars 0 1) .default) .default
+    let kg ← mkFreshExprSyntheticOpaqueMVar K
+    g.assign (.letE `key K kg (mkApp2 (.bvar 0) cE hE) true)
+    let (_, kg') ← kg.mvarId!.introN 2
+    replaceMainGoal [kg']
+
 set_option maxHeartbeats 10000000 in
 theorem E_exec (cfg : NearCfg) (p : Prepared) (f : Frame) (pf : PFunc) (i : Instr)
     (h : execPre p s f i = none) :
     exec cfg p (E σ s) f pf i = mapRes (E σ) (exec cfg p s f pf i) := by
+  -- Unfold `exec` by `exec.eq_def` only: the generated `exec.eq_36`/`exec.eq_37` (used by
+  -- `simp only [exec]`) are rejected by lean4lean for the reason given at `opaque_gen`.
   cases i with
   | call fi =>
-    simp only [exec]; rw [E_setFrame]
+    unfold exec; dsimp only; rw [E_setFrame]
     exact E_callFunc cfg p fi h
   | callIndirect ty x =>
-    simp only [exec, execPre] at h ⊢
+    unfold exec; simp only [execPre] at h ⊢
     rw [E_popN]; simp only [E_table]
     split
     · rfl
@@ -231,7 +255,31 @@ theorem E_exec (cfg : NearCfg) (p : Prepared) (f : Frame) (pf : PFunc) (i : Inst
           simp only [hne] at h
           rw [E_setFrame]; exact E_callFunc cfg p fi h
       · rfl
-  | _ => simp only [exec]; se
+  | memFill =>
+    rw [exec.eq_def, exec.eq_def]
+    have hE : ∀ t d v n, memFill (E σ t) d v n = mapRes (E σ) (memFill t d v n) :=
+      fun t d v n => E_memFill (s := t) d v n
+    opaque_gen memFill hE
+    rename_i mf hE'
+    clear hE
+    dsimp only
+    rw [E_popN]; dsimp only; rw [E_popN]; dsimp only; rw [E_popN]; dsimp only
+    rw [hE']
+    generalize mf _ _ _ _ = r
+    cases r <;> simp only [mapRes, E_setFrame]
+  | memCopy =>
+    rw [exec.eq_def, exec.eq_def]
+    have hE : ∀ t d v n, memCopy (E σ t) d v n = mapRes (E σ) (memCopy t d v n) :=
+      fun t d v n => E_memCopy (s := t) d v n
+    opaque_gen memCopy hE
+    rename_i mf hE'
+    clear hE
+    dsimp only
+    rw [E_popN]; dsimp only; rw [E_popN]; dsimp only; rw [E_popN]; dsimp only
+    rw [hE']
+    generalize mf _ _ _ _ = r
+    cases r <;> simp only [mapRes, E_setFrame]
+  | _ => unfold exec; dsimp only; se
 
 theorem E_topCount : topCount (E σ s) = topCount s := rfl
 
