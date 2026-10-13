@@ -54,6 +54,29 @@ pub fn sha_aligned(msgs: &[ShaMsg]) -> Tab {
     }
 }
 
+/// [`sha_aligned`] straight into compact columns (no padded row-major copy: the
+/// `2^22 × 544` table would take 9 GB as `u32`); the cells are the same.
+pub fn sha_aligned_cols(msgs: &[ShaMsg]) -> crate::cols::TraceCols {
+    let ms: Vec<crate::sha::Msg> = msgs
+        .iter()
+        .map(|m| crate::sha::Msg {
+            id: m.id,
+            bytes: m.bytes.clone(),
+            dmult: m.dmult,
+        })
+        .collect();
+    let (cells, nrows, _) = crate::sha::sha_cells(&ms);
+    let log = super::pad_log22(super::log_of(nrows));
+    let w = crate::sha::WIDTH;
+    crate::cols::TraceCols::from_rows(log, w, |r, buf| {
+        if r < nrows {
+            for (o, &x) in buf.iter_mut().zip(&cells[r * w..(r + 1) * w]) {
+                *o = (x % P as u64) as u32;
+            }
+        }
+    })
+}
+
 /// Parse `json` as a list of [`ShaMsg`] and render the SHA table.
 pub fn render(json: &str) -> Result<Tab, String> {
     let msgs: Vec<ShaMsg> = serde_json::from_str(json).map_err(|e| e.to_string())?;

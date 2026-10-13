@@ -93,3 +93,243 @@ pub fn traces_from_entries(
     }
     Ok(out)
 }
+
+// ---------------------------------------------------------------------------
+// Case-level assembly (`npudr v3prove <case_dir> <out_dir>`)
+// ---------------------------------------------------------------------------
+
+/// `NearAir.nearTablesFull` order ↔ the names this crate registers.
+pub const ORDER: &[&str] = &[
+    "sha_t", "sha_r", "node", "head", "val", "walk", "uniq", "ups", "chacha", "rng", "shuf",
+    "codec", "scandist", "proc", "mem", "cmp", "rcpt", "acct", "akey", "bnd", "srcp", "size", "qv",
+    "mrk", "sort",
+];
+
+/// The prover's inputs for one case: the hint, the prepared statement, its public tape
+/// (`Public.preparedBytes p 0`, the STARK's claim bytes `cb'`) and the 25 entry JSONs.
+pub struct CaseInputs {
+    pub hint: super::prep::Hint,
+    pub prep: super::prep::Prep,
+    pub tape: Vec<u8>,
+    pub entries: std::collections::HashMap<String, String>,
+    /// `table name → where its entries came from` (`rust` / `lean-dump:<file>`).
+    pub source: std::collections::BTreeMap<String, String>,
+}
+
+/// Build every table's honest entries for a real claim + witness, all natively in Rust:
+/// `v3::trie` (2–7, 21), `v3::schedqv` + `chacha::lane` (8–15, 22), `v3::rcptfam` (16–20, 23,
+/// 24) and the SHA collector (0, 1, from the other tables).  `extra` (optional) overrides
+/// tables with Lean-dumped entries: `sched.json` for 11–15 and `<table>.json` for any table
+/// (`np-lean-bundle-v3` / `np-lean-sched-v3 <case> <dir>`; for differentials).
+pub fn case_inputs(
+    cb: &[u8],
+    wb: &[u8],
+    extra: Option<&std::path::Path>,
+) -> Result<CaseInputs, String> {
+    use std::collections::{BTreeMap, HashMap};
+    let hint = super::hint::hint_of_e(cb, wb)?;
+    let prep = super::d0::prep(cb, &hint)?;
+    let tape = super::public::prepared_bytes(&prep, 0);
+    let mut entries: HashMap<String, String> = HashMap::new();
+    let mut source: BTreeMap<String, String> = BTreeMap::new();
+    let tv = super::trie::entries(cb, wb)?;
+    for t in ["node", "val", "head", "walk", "uniq", "ups", "size"] {
+        let v = tv.get(t).ok_or(format!("v3trie: no table {t}"))?;
+        entries.insert(t.into(), v.to_string());
+        source.insert(t.into(), "rust:v3trie".into());
+    }
+    let f = super::rcptfam::rcpt_family(cb, wb)?;
+    let js = |v: serde_json::Result<String>| v.map_err(|e| e.to_string());
+    for (t, s) in [
+        ("rcpt", js(serde_json::to_string(&f.rcpt))?),
+        ("acct", js(serde_json::to_string(&f.acct))?),
+        ("akey", js(serde_json::to_string(&f.akey))?),
+        ("bnd", js(serde_json::to_string(&f.bnd))?),
+        ("srcp", js(serde_json::to_string(&f.srcp))?),
+        ("mrk", js(serde_json::to_string(&f.mrk))?),
+        ("sort", js(serde_json::to_string(&f.sort))?),
+    ] {
+        entries.insert(t.into(), s);
+        source.insert(t.into(), "rust:v3rcptfam".into());
+    }
+    // tables 8–15, 22: the native scheduler / ChaCha / qv derivation (`v3::schedqv`, lane
+    // v3-prover-schedqv; ground truth `np-lean-sched-v3`)
+    let sq = super::schedqv::derive(cb, wb)?;
+    let blocks = js(serde_json::to_string(&sq.blocks))?;
+    for t in ["codec", "scandist", "proc", "mem", "cmp"] {
+        entries.insert(t.into(), blocks.clone());
+        source.insert(t.into(), "rust:v3sched".into());
+    }
+    let rs: Vec<&super::sched::Run> = sq.blocks.iter().map(|b| &b.run).collect();
+    let (reqs, calls, insts) = super::chacha::lane(&rs);
+    for (t, s) in [
+        ("chacha", js(serde_json::to_string(&reqs))?),
+        ("rng", js(serde_json::to_string(&calls))?),
+        ("shuf", js(serde_json::to_string(&insts))?),
+        ("qv", js(serde_json::to_string(&sq.qv))?),
+    ] {
+        entries.insert(t.into(), s);
+        source.insert(t.into(), "rust:v3sched".into());
+    }
+    if let Some(dir) = extra {
+        let rd = |n: &str| std::fs::read_to_string(dir.join(n)).ok();
+        if let Some(s) = rd("sched.json") {
+            for t in ["codec", "scandist", "proc", "mem", "cmp"] {
+                entries.insert(t.into(), s.clone());
+                source.insert(t.into(), "lean-dump:sched.json".into());
+            }
+        }
+        for (t, _) in super::TABLES {
+            if let Some(s) = rd(&format!("{t}.json")) {
+                entries.insert((*t).into(), s);
+                source.insert((*t).into(), format!("lean-dump:{t}.json"));
+            }
+        }
+    }
+    let entries = with_collected_sha(&entries)?;
+    for t in ["sha_t", "sha_r"] {
+        source
+            .entry(t.into())
+            .or_insert_with(|| "rust:collect".into());
+    }
+    for t in ORDER {
+        if !entries.contains_key(*t) {
+            return Err(format!(
+                "table {t}: no entries (native port missing; supply <extra>/{t}.json)"
+            ));
+        }
+    }
+    Ok(CaseInputs {
+        hint,
+        prep,
+        tape,
+        entries,
+        source,
+    })
+}
+
+/// Render table `name` straight into compact columns (the row-major [`Tab`] is dropped as
+/// soon as the columns are filled).
+pub fn render_cols(name: &str, json: &str) -> Result<TraceCols, String> {
+    if name == "sha_t" || name == "sha_r" {
+        let msgs: Vec<super::sha::ShaMsg> =
+            serde_json::from_str(json).map_err(|e| e.to_string())?;
+        return Ok(super::sha::sha_aligned_cols(&msgs));
+    }
+    let t = render(name, json)?;
+    let w = t.width;
+    Ok(TraceCols::from_rows(t.log, w, |r, buf| {
+        buf.copy_from_slice(&t.cells[r * w..(r + 1) * w])
+    }))
+}
+
+/// One bus's balance: `(bus, #distinct messages, #units sent, #units received, imbalances)`.
+pub struct BusBalance {
+    pub bus: usize,
+    pub msgs: usize,
+    pub sent: u64,
+    pub recv: u64,
+    pub bad: Vec<crate::check::Imbalance>,
+}
+
+/// Exact balance of every bus of `air` over the 25 tables (compact columns) and the public
+/// messages of the tape (`globalChecksP`: `∏sends·Π_pub(true) = ∏recvs·Π_pub(false)`, here as
+/// multisets of `(bus, msg)`).  One bus at a time (bounded memory); `None` when the tape does
+/// not fit (`pubFit`).
+pub fn bus_balances(
+    air: &Air,
+    trs: &[TraceCols],
+    pubs: &[crate::field::F],
+    tape: &[u8],
+) -> Option<Vec<BusBalance>> {
+    use crate::air::{Expr, Tape};
+    use crate::field::F;
+    use p3_field::{PrimeCharacteristicRing, PrimeField32};
+    use rayon::prelude::*;
+    use std::collections::{BTreeSet, HashMap};
+    if !crate::verifier::pub_fit(air, tape) {
+        return None;
+    }
+    let pm = crate::verifier::pub_msgs(air, tape);
+    let mut buses: BTreeSet<usize> = air
+        .tables
+        .iter()
+        .flat_map(|t| t.interactions.iter().map(|i| i.bus))
+        .collect();
+    buses.extend(pm.iter().map(|x| x.0));
+    let mut out = vec![];
+    for bus in buses {
+        let mut m: HashMap<Vec<u32>, (u64, u64)> = HashMap::new();
+        for (t, tr) in air.tables.iter().zip(trs) {
+            let n = tr.height();
+            for it in t.interactions.iter().filter(|it| it.bus == bus) {
+                let exprs: Vec<Expr> = it.mult.iter().chain(&it.msg).cloned().collect();
+                let tape = Tape::compile(&exprs);
+                let nb = it.mult.len();
+                const CH: usize = 1 << 16;
+                for c0 in (0..n).step_by(CH) {
+                    let part: Vec<(Vec<u32>, u64)> = (c0..(c0 + CH).min(n))
+                        .into_par_iter()
+                        .filter_map(|r| {
+                            let mut regs = vec![];
+                            let last = r + 1 == n;
+                            tape.eval(
+                                &mut regs,
+                                |c, next| tr.get(if next { (r + 1) % n } else { r }, c),
+                                pubs,
+                                [
+                                    F::from_bool(r == 0),
+                                    F::from_bool(last),
+                                    F::from_bool(!last),
+                                ],
+                            );
+                            let o: Vec<F> =
+                                tape.outputs.iter().map(|&k| regs[k as usize]).collect();
+                            let mult: u64 = (0..nb)
+                                .map(|k| if o[k] == F::ONE { 1u64 << k } else { 0 })
+                                .sum();
+                            (mult != 0).then(|| {
+                                (o[nb..].iter().map(|x| x.as_canonical_u32()).collect(), mult)
+                            })
+                        })
+                        .collect();
+                    for (msg, k) in part {
+                        let e = m.entry(msg).or_default();
+                        if it.send { e.0 += k } else { e.1 += k }
+                    }
+                }
+            }
+        }
+        for (b, send, rec) in &pm {
+            if *b != bus {
+                continue;
+            }
+            let e = m
+                .entry(rec.iter().map(|x| x.as_canonical_u32()).collect())
+                .or_default();
+            if *send { e.0 += 1 } else { e.1 += 1 }
+        }
+        let (sent, recv) = m.values().fold((0, 0), |a, v| (a.0 + v.0, a.1 + v.1));
+        let mut bad: Vec<crate::check::Imbalance> = m
+            .iter()
+            .filter(|(_, (s, r))| s != r)
+            .map(|(msg, (s, r))| (bus, msg.clone(), *s, *r))
+            .collect();
+        bad.sort();
+        out.push(BusBalance {
+            bus,
+            msgs: m.len(),
+            sent,
+            recv,
+            bad,
+        });
+    }
+    Some(out)
+}
+
+/// `ZkFormal.NearV3.Assembly.join h π = borshBytes h ++ π` (`HintCodec.lean`), `h = Hint.encode`.
+pub fn join(hint: &[u8], pi: &[u8]) -> Vec<u8> {
+    let mut v = crate::near::spec::borsh_bytes(hint);
+    v.extend_from_slice(pi);
+    v
+}
