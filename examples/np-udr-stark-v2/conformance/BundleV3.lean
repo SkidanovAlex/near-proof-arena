@@ -282,13 +282,15 @@ def walkJ (w : Qv.Candidates.CombinedWalkGen.Walk) : Json :=
     ("final", toJson w.final)]
 
 def recJ (v : Qv.Candidates.ValueGen.Record) : Json :=
-  let base := [("vid", toJson v.vid), ("tau", toJson v.tau), ("users", toJson v.users)]
-  match v.payload with
-  | .empty ix => Json.mkObj (("rkind", toJson (0 : Nat)) :: ("index", bytesJ ix) :: base)
-  | .buffer es => Json.mkObj (("rkind", toJson (1 : Nat)) ::
-      ("entries", Json.arr (es.map fun e => Json.mkObj [("shard", bytesJ e.shard),
-        ("index", bytesJ e.index)]).toArray) :: base)
-  | .raw bs => Json.mkObj (("rkind", toJson (2 : Nat)) :: ("bytes", bytesJ bs) :: base)
+  let (k, ix, es, bs) : Nat × Bytes × List Qv.ByteBuffer × Bytes := match v.payload with
+    | .empty ix => (0, ix, [], [])
+    | .buffer es => (1, [], es, [])
+    | .raw bs => (2, [], [], bs)
+  Json.mkObj [("rkind", toJson k), ("vid", toJson v.vid), ("tau", toJson v.tau),
+    ("users", toJson v.users), ("index", bytesJ ix),
+    ("entries", Json.arr (es.map fun e => Json.mkObj [("shard", bytesJ e.shard),
+      ("index", bytesJ e.index)]).toArray),
+    ("bytes", bytesJ bs)]
 
 def mainValuesOf (m : MainExecutionV3) : Except String Qv.MainValues := do
   let rd (key : List Nat) (what : String) : Except String (Option Bytes) :=
