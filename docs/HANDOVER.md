@@ -1,4 +1,4 @@
-# NEAR Proof Arena — handover (updated 2026-10-12)
+# NEAR Proof Arena — handover (updated 2026-10-13)
 
 This is for the next lead agent. Read it first. The raw working log for 2026-10-07 to 2026-10-09 (≈6,500 lines) now lives in `docs/logs/v3-progress-log-2026-10.md`. Use it only for evidence lookup.
 
@@ -152,14 +152,36 @@ Guarded audit `test/AuditAdmissionV3.lean` (only propext/Classical.choice/Quot.s
 * Spec (unsigned draft): A7 = unfolded pre trie + native post trie ≤ B0; A11 retired; A12
   `|boundaries|+1 = |shardIds|`.
 
-**Open (all outside the Lean proofs):**
-* **Rust prover (`lane/v3-prover`):** emit the 34-byte source rows; table 20 SrcpDD columns, A9
-  counter (table 9), A7 columns/tables, rcpt q check; zero-length SHA jobs for empty values; Rust
-  `prepClaim`/`prepBody`; v3 `prove` over the current `nearAirV3`; re-run `run-v2.sh`.
+**Rust prover (2026-10-13, main `c6330302`): first real proofs, accepted by Lean.**
+`examples/np-udr-stark-v2`: `npudr v3prove <case> <out>` builds all 25 `nearAirV3` tables natively
+from claim + witness (`v3prepare` hint/prep/public tape, `v3trie` 2–7/21/A7, `v3rcptfam` 16–20/23/24,
+`v3sched` 8–15/22, SHA collector 0/1), checks constraints + all 51 buses + public messages, and
+proves at g=2. `np-lean-verify-v3` (deployed `npVerifierP challengeSpecD0a nearAirV3 split prepV3b`)
+accepts proofs of 00-h10004-s3, 00-h10035-s3, 01-h10009-s1 (5.26–5.67 MB, ~12 min on 8 cores,
+≤13.3 GB RSS) and rejects 14/14 mutations each. `--check-only`: all buses balance on all 81 fixtures
+(64 public-d0a + 17 `conformance/fixtures-extra`, repeated source keys / empty values).
+`formal/NpUdrStarkV2.certificate` = `nearV3_admission_final` (unconditional; maxRecDepth 20000).
+Every Rust generator/preprocessor is differential-tested against Lean (`conformance/run-v2.sh`,
+sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-prover-*.md`.
+
+**Open:**
+* **Elaboration budget** (below) — the main feasibility question; not measured yet.
+* **Packaging:** `build-recipe/build.sh`'s `out/prove`/`out/prepare` are still the v1 binaries; wire
+  them to `v3prepare`/`v3prove`; vendor; judge-style build. Check ~12 min prove time against the
+  judge's prove budget.
 * **Oracle:** `oracle/v3-d0a/src/d0a.rs` still uses the pre-2026-10-11 A7 measure; regenerate
   fixtures before freezing (never edit frozen `oracle/v3`).
-* **Elaboration budget** (below) — now the main feasibility question.
-* Cleanup: `ChachaWords.lean` duplicates `A9Words.coreMid`/`runMid_st` (`coreMidW`/`runMid_stW`).
+* **Fixture coverage:** no fixture has ChaCha requests (tables 8/9 only empty on real data); only the
+  in-place leaf-replace upsert path occurs in fixtures (others unit-tested).
+* **To recheck:** the schedqv lane log reports bus 1 DIGEST unmatched (`mrk` receives `MRK(root)` with a
+  zero digest) on fixtures with outcomes when it assembled bins itself; `v3prove --check-only` reports
+  all buses balanced on all 81 — confirm which assembly is right.
+* **Argued, not proved (prover-side only):** receipts read the pre-scheduler trie (scheduler writes only
+  key `[0,15]`); native execution skips grant distribution and the refund-forwarding limit check.
+* Cleanup: `ChachaWords.lean` duplicates `A9Words.coreMid`/`runMid_st`; 2 `clippy -D warnings` errors
+  (`protocol.rs`, `chacha.rs`); Lean `rankWalks` and Rust `ups::uu` are quadratic.
+* The full `run-v2.sh` (with `PROVE_V3=1`) on `c6330302` was started before the checkpoint; result in
+  `docs/logs/` once recorded. Earlier: 1,423 PASS on bb37a433; 2,113 PASS + extra section on 75517040.
 
 **Hard feasibility risk: judge elaboration budget.** A clean, serial elaboration diagnostic hit the 1,800 s total cutoff after 927 of 1,110 modules (`/data/illia/nearproof-deps/validation/v3-clean-elaboration-20261007-attempt2`). The tree is now about 5,000 modules, so the final certificate must be a pruned closure.
 * Measure its clean elaboration early.
