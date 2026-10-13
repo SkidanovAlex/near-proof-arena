@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Render.UnfoldA7Aligned
 import Lean.Data.Json
+import Conformance.FastTrie
 
 /-!
 `np-lean-render-v3-a7 <table> <entries.json> <out.bin>` — run the Lean honest render of one
@@ -7,7 +8,10 @@ of the four A7 tables of `nearAirV3` (`Tables/UnfoldA7.lean`; indices 2, 4, 7, 2
 entry list and dump the trace (format `np-render-v3-table`, all integers u32 LE:
 `log, width`, then `2^log · width` cells row-major, `(tr.cell 0 r c).toNat`).
 
-The renders are the definitions of `Render/UnfoldA7Aligned.lean`, called directly:
+The renders are the definitions of `Render/UnfoldA7Aligned.lean`, evaluated through their
+executable twins `Conformance.FastTrie.{nodeA7Fast, valA7Fast, upsA7Fast}` (equal to
+`nodeA7Trace` / `valA7Trace` / `upsA7Trace` by `nodeA7Fast_eq` / `valA7Fast_eq` / `upsA7Fast_eq`;
+the twins hoist the record lists, use counts and running sums out of the cell functions):
 
 * `node`: `nodeA7Trace vs 0 (selN vs S)` (width 188);
 * `val`:  `valA7Trace es 0 (selV es S)` (width 17);
@@ -111,16 +115,16 @@ def render (table s : String) : Except String ByteArray :=
     let (vs, fl) ← parseRpl NodeS3 s
     let S : Nat → Bool := fun n => fl.getD n false
     let tab := selNTab vs S
-    return dump (nodeA7Trace vs 0 (fun q => tab.getD q false)) UnfoldA7.Node.width
+    return dump (Conformance.FastTrie.nodeA7Fast vs 0 (fun q => tab.getD q false)) UnfoldA7.Node.width
   | "val" => do
     let (es, fl) ← parseRpl ValE s
     let S : Nat → Bool := fun n => fl.getD n false
     let tab := selVTab es S
-    return dump (valA7Trace es 0 (fun q => tab.getD q false)) UnfoldA7.Val.width
+    return dump (Conformance.FastTrie.valA7Fast es 0 (fun q => tab.getD q false)) UnfoldA7.Val.width
   | "ups" => do
     let j ← Json.parse s
     let insts : List UpsInst ← fromJson? j
-    return dump (upsA7Trace insts 0) UnfoldA7.Ups.width
+    return dump (Conformance.FastTrie.upsA7Fast insts 0) UnfoldA7.Ups.width
   | "size" => do
     let j ← Json.parse s
     let arr ← j.getArr?
