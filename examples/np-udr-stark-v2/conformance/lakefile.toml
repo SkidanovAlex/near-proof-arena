@@ -83,3 +83,11 @@ root = "RcptFamV3"
 [[lean_exe]]
 name = "np-lean-trie-v3"
 root = "TrieEntriesV3"
+
+[[lean_exe]]
+name = "np-lean-bundle-v3"
+root = "BundleV3"
+
+[[lean_exe]]
+name = "np-lean-verify-v3"
+root = "VerifyV3"
