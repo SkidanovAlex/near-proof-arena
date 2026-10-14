@@ -29,15 +29,18 @@ cf593017653839d848ff3dfcabca8958c242595fcfc95b2b6f4619ef949839c6  ./spec/lean/Ne
 2c2aa648e35098459ab55ec51af52f1609a8a2c384c7e0dd26615f7c88068c5f  ./spec/lean/NearSpec/TransferV1.lean
 073fd619cd377042c46beeb2a8b7a34d194dfcb77cddcd79957ca291dc703448  ./spec/lean/NearSpec/Trie.lean
 41335c9cefa34e61aeefdc5d79a3d39e07a0c90f2a272c0aeaa261451cc7d13a  ./spec/lean/NearSpec/TrieUpsert.lean
+eae1d423a69555fb819815b74510de1b5402bf39e0fc15f37cf8a9c5129442c4  ./spec/lean/NearSpec/TrieUpsertProofs.lean
 9cbbc13523697d144d6d36543230a83fa0c8d64a7cf319eed9b0a4f59f33952c  ./spec/lean/lakefile.toml
 d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b  ./spec/lean/lean-toolchain
 d93297fd28b447f9d092e6190f89c0ae6c89c6dc7656a3e4a98e026b82c1cab7  ./spec/lean/v3/NearSpecV3/BandwidthScheduler.lean
 4649ba920d4400c519494021a88c9ee3e4d5874d3ab3326f25b67a046efd21d0  ./spec/lean/v3/NearSpecV3/ChaCha20.lean
-f2541591d654fa55d951028499e4c801bc49417f0b8e16648321af01f814a2ee  ./spec/lean/v3/NearSpecV3/ChallengeChunkV3.lean
+d150b3cf99a0f2f5e55a5499d109d41d2af8b1387c8705259239ba8dd5bff402  ./spec/lean/v3/NearSpecV3/ChallengeChunkV3.lean
+a8ae092b5d4093682383785157e03fad5afd4999cde8938bbc324d5f97b4c8bd  ./spec/lean/v3/NearSpecV3/ChallengeD0a.lean
 cb6f21096d0f44ea54aa7554b8bd8a5562d56772a68061c2eec437c00dc71284  ./spec/lean/v3/NearSpecV3/ChallengeV3.lean
 772af672219bbb289e2768d82130cc8d80abbf511c7ce84704ce66f9586d6b05  ./spec/lean/v3/NearSpecV3/ChunkValidationD1.lean
 c58af4b97f334b49fdcf6fdc002dbdae66fab1ba3856fb26454b599c67844f9e  ./spec/lean/v3/NearSpecV3/ChunkValidationD2.lean
 14e583273dc7726c40f0b2862cf90742f1a78dcce9e8f9267e33b993d66a2b15  ./spec/lean/v3/NearSpecV3/ChunkValidationV0.lean
+4b5e6e27b36b5236459f5ed57df441af6e16cd10b6d4a8d761adb3b7764dac97  ./spec/lean/v3/NearSpecV3/ChunkValidationV0a.lean
 3333b9614153f3409260a7d6f303191a44c32ee20dfdfcc86234a43f31480e08  ./spec/lean/v3/NearSpecV3/ClaimV3.lean
 75f6c0c435464e4ae2872b3a9489d153cb3dad0eea2d1818fa95a8697bf092d0  ./spec/lean/v3/NearSpecV3/ClaimV3Props.lean
 64368cfb662b18af2cc41b4558cbeebbf6bc0fcb8b34b9d9d672b04770aa2561  ./spec/lean/v3/NearSpecV3/Congestion.lean
@@ -56,6 +59,7 @@ bc432dd9390e604e66d23135dab6f2640e2efd205b25fc094af3183d7d5feacb  ./spec/lean/v3
 715c8b041e61ff12462bccc82dbd27245c528b405264ccd56adf7f893fc9018e  ./spec/lean/v3/NearSpecV3/F64.lean
 a65694422b4683727cce9dcd97fa52b63f6a126e536fa861b8373d60f89d63d3  ./spec/lean/v3/NearSpecV3/GF256.lean
 0931ff561a8bc00b32cab315c99e090185be188e705dae407785c1d8889c0fda  ./spec/lean/v3/NearSpecV3/Layout.lean
+251380c705dd50ab63fd2289085ab45e45a086c5f7f2994f70c6848b0c160216  ./spec/lean/v3/NearSpecV3/PrepD0.lean
 be7c47e6b9ccdb5057c963e82498d11f4e7ce0fc18ea7df235560823d610e91f  ./spec/lean/v3/NearSpecV3/ReedSolomon.lean
 22e0e99e99bfc10b064c67120fb00435755f7cdd22d83dc89d82ab8129bc51f5  ./spec/lean/v3/NearSpecV3/RuntimeD0.lean
 625efdfdc6e0d5d63b8574ca96c128121efe724b08f533185125614032331cc4  ./spec/lean/v3/NearSpecV3/RuntimeD1.lean
