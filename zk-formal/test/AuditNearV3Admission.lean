@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Assembly.NearAdmission
+import ZkFormal.NearV3.Assembly.NearAirCheck
 import ZkFormal.NearV3.Candidates.ProcActualGrantOperands
 
 /-- info: 'ZkFormal.NearV3.Assembly.nearAirV3_wf' depends on axioms: [propext] -/

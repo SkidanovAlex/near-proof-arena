@@ -28,6 +28,17 @@ macro "rclose" : tactic => `(tactic| first
   | (apply cast0; (try simp only [ind, Lb, ite_true, ite_false, Int.mul_zero, Int.zero_mul, Int.add_zero, Int.mul_one]); (try ((repeat' split) <;> omega)); done))
 
 set_option hygiene false in
+/-- All of `cRows` at once: the evaluation and the cells are rewritten in one `simp` each over the
+conjunction of the constraints, then the conjunction is split. -/
+macro "rows_all" "[" hs:(Lean.Parser.Tactic.simpLemma),* "]" : tactic => `(tactic| (
+  simp only [UpsV3.cRows, List.forall_mem_cons, List.forall_mem_nil, and_true]
+  ups_ev [$hs,*]
+  cellsimp
+  repeat' apply And.intro
+  all_goals try exact True.intro
+  all_goals try (intro _ hx; exact absurd hx List.not_mem_nil)))
+
+set_option hygiene false in
 /-- Split a membership `hex : ex ∈ UpsV3.cRows` into the constraints. -/
 macro "rows_mem" : tactic => `(tactic| (simp only [UpsV3.cRows, List.mem_cons, List.not_mem_nil, or_false] at hex <;>
   rcases hex with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
@@ -39,31 +50,31 @@ variable {I : UpsInst} {C D P : Nat → Int} {fst : Int}
 
 theorem rows_w0 (hC : ∀ x, x < 200 → C x = WC I 0 x) (hD : ∀ x, x < 200 → D x = WC I 1 x) :
     ∀ ex ∈ UpsV3.cRows, ((ev C D fst 0 1 P ex : Int) : Fp) = 0 := by
-  intro ex hex; rows_mem <;> ups_ev [hC, hD] <;> cellsimp <;> rclose
+  rows_all [hC, hD]; all_goals rclose
 
 theorem rows_w1 (hf : fst = 0) (hC : ∀ x, x < 200 → C x = WC I 1 x) (hD : ∀ x, x < 200 → D x = WC I 2 x) :
     ∀ ex ∈ UpsV3.cRows, ((ev C D fst 0 1 P ex : Int) : Fp) = 0 := by
-  intro ex hex; subst hf; rows_mem <;> ups_ev [hC, hD] <;> cellsimp <;> rclose
+  subst hf; rows_all [hC, hD]; all_goals rclose
 
 theorem rows_w2 (hf : fst = 0) (hC : ∀ x, x < 200 → C x = WC I 2 x) (hD : ∀ x, x < 200 → D x = WC I 3 x) :
     ∀ ex ∈ UpsV3.cRows, ((ev C D fst 0 1 P ex : Int) : Fp) = 0 := by
-  intro ex hex; subst hf; rows_mem <;> ups_ev [hC, hD] <;> cellsimp <;> rclose
+  subst hf; rows_all [hC, hD]; all_goals rclose
 
 theorem rows_w3 (hf : fst = 0) (hC : ∀ x, x < 200 → C x = WC I 3 x) (hD : ∀ x, x < 200 → D x = VC I 0 x) :
     ∀ ex ∈ UpsV3.cRows, ((ev C D fst 0 1 P ex : Int) : Fp) = 0 := by
-  intro ex hex; subst hf; rows_mem <;> ups_ev [hC, hD] <;> cellsimp <;> rclose
+  subst hf; rows_all [hC, hD]; all_goals rclose
 
 theorem rows_vmid {p : Nat} (hp : p + 1 < L I) (hf : fst = 0) (hC : ∀ x, x < 200 → C x = VC I p x)
     (hD : ∀ x, x < 200 → D x = VC I (p + 1) x) :
     ∀ ex ∈ UpsV3.cRows, ((ev C D fst 0 1 P ex : Int) : Fp) = 0 := by
-  intro ex hex; subst hf; rows_mem <;> ups_ev [hC, hD] <;> cellsimp <;> rclose
+  subst hf; rows_all [hC, hD]; all_goals rclose
 
 theorem rows_vlast {p : Nat} (hp : p + 1 = L I) (hLs : L I < 2 ^ 24) (hf : fst = 0)
     {st ix fl wi u : Nat} (hC : ∀ x, x < 200 → C x = VC I p x)
     (hD : ∀ x, x < 200 → D x = QC I (part I 0) 0 0 st ix fl wi u x) :
     ∀ ex ∈ UpsV3.cRows, ((ev C D fst 0 1 P ex : Int) : Fp) = 0 := by
-  intro ex hex; subst hf; have := Lb_sum I hLs
-  rows_mem <;> ups_ev [hC, hD] <;> cellsimp <;> rclose
+  subst hf; have := Lb_sum I hLs
+  rows_all [hC, hD]; all_goals rclose
 
 theorem rows_qmid {k p st ix fl wi u st' ix' fl' wi' u' : Nat} (hp : p + 1 < (part I k).q.length)
     (hfa : p + 1 = (part I k).q.length ↔ st = 8 ∧ ix + 1 = fl) (hf : fst = 0)
@@ -71,7 +82,7 @@ theorem rows_qmid {k p st ix fl wi u st' ix' fl' wi' u' : Nat} (hp : p + 1 < (pa
     (hC : ∀ x, x < 200 → C x = QC I (part I k) k p st ix fl wi u x)
     (hD : ∀ x, x < 200 → D x = QC I (part I k) k (p + 1) st' ix' fl' wi' u' x) :
     ∀ ex ∈ UpsV3.cRows, ((ev C D fst 0 1 P ex : Int) : Fp) = 0 := by
-  intro ex hex; subst hf; rows_mem <;> ups_ev [hC, hD] <;> cellsimp <;> rclose
+  subst hf; rows_all [hC, hD]; all_goals rclose
 
 theorem rows_qpart {k p st ix fl wi u st' ix' fl' wi' u' : Nat} (hp : p + 1 = (part I k).q.length)
     (hk : k + 1 < nQ I) (hfa : p + 1 = (part I k).q.length ↔ st = 8 ∧ ix + 1 = fl) (hf : fst = 0)
@@ -80,9 +91,9 @@ theorem rows_qpart {k p st ix fl wi u st' ix' fl' wi' u' : Nat} (hp : p + 1 = (p
     (hC : ∀ x, x < 200 → C x = QC I (part I k) k p st ix fl wi u x)
     (hD : ∀ x, x < 200 → D x = QC I (part I (k + 1)) (k + 1) 0 st' ix' fl' wi' u' x) :
     ∀ ex ∈ UpsV3.cRows, ((ev C D fst 0 1 P ex : Int) : Fp) = 0 := by
-  intro ex hex; subst hf
-  rows_mem <;> ups_ev [hC, hD] <;> cellsimp <;>
-    (by_cases h0 : (part I k).kind = 0 <;> by_cases h1 : (part I k).kind = 1 <;>
+  subst hf
+  rows_all [hC, hD]
+  all_goals (by_cases h0 : (part I k).kind = 0 <;> by_cases h1 : (part I k).kind = 1 <;>
       simp only [h0, h1, ind, ite_true, ite_false, true_or, or_true, or_false, false_or] at hrc ⊢) <;> rclose
 
 theorem rows_qlast {k p st ix fl wi u : Nat} (hp : p + 1 = (part I k).q.length)
@@ -91,9 +102,9 @@ theorem rows_qlast {k p st ix fl wi u : Nat} (hp : p + 1 = (part I k).q.length)
     (hdep : (part I k).pdep = 0) (hsN : (part I k).sN = I.rid) (hrl : (part I k).q.length = rlen I)
     (hC : ∀ x, x < 200 → C x = QC I (part I k) k p st ix fl wi u x) (hDa : D 0 = D 4) :
     ∀ ex ∈ UpsV3.cRows, ((ev C D fst 0 1 P ex : Int) : Fp) = 0 := by
-  intro ex hex; subst hf
-  rows_mem <;> ups_ev [hC, hDa] <;> cellsimp <;>
-    (by_cases h0 : (part I k).kind = 0 <;> by_cases h1 : (part I k).kind = 1 <;>
+  subst hf
+  rows_all [hC, hDa]
+  all_goals (by_cases h0 : (part I k).kind = 0 <;> by_cases h1 : (part I k).kind = 1 <;>
       simp only [h0, h1, ind, ite_true, ite_false, true_or, or_true, or_false, false_or] at hrc ⊢) <;> rclose
 
 end

@@ -76,6 +76,19 @@ macro "wred" : tactic => `(tactic| try simp only [Nat.reduceEqDiff, Nat.reduceLe
   Int.natCast_zero, EK_KEY, EK_LEND, EK_VAL, EK_DOWN] at fs ⊢)
 
 set_option hygiene false in
+/-- All of `cWalk` at once: the evaluation, the cells and the literal reductions are rewritten in one
+`simp` each over the conjunction of the constraints (instead of once per constraint), then the
+conjunction is split. -/
+macro "walk_all" "[" hs:(Lean.Parser.Tactic.simpLemma),* "]" : tactic => `(tactic| (
+  simp only [UpsV3.cWalk, List.forall_mem_cons, List.forall_mem_nil, and_true]
+  ups_ev [$hs,*]
+  cellsimp
+  wred
+  repeat' apply And.intro
+  all_goals try exact True.intro
+  all_goals try (intro _ hx; exact absurd hx List.not_mem_nil)))
+
+set_option hygiene false in
 /-- Split on the mode of walk row `t` (hypothesis `h`). -/
 macro "wmode" t:term "," h:ident : tactic => `(tactic| (rcases (show (step I $t).mode = 0 ∨ (step I $t).mode = 1 ∨
   (step I $t).mode = 2 ∨ (step I $t).mode = 3 by omega) with $h:ident|$h:ident|$h:ident|$h:ident <;>
@@ -132,7 +145,6 @@ include iok
 set_option maxHeartbeats 4000000 in
 theorem walk_w0 (hC : ∀ x, x < 200 → C x = WC I 0 x) (hD : ∀ x, x < 200 → D x = WC I 1 x) :
     ∀ ex ∈ UpsV3.cWalk, ((ev C D fst lst trn P ex : Int) : Fp) = 0 := by
-  intro ex hex
   have W := iok.walk
   have hts := iok.ts; have hci := iok.ci; have hD3 := iok.D; have hti := iok.ti
   have m0 := W.mode 0 (by decide)
@@ -140,16 +152,12 @@ theorem walk_w0 (hC : ∀ x, x < 200 → C x = WC I 0 x) (hD : ∀ x, x < 200 �
   have fs := And.intro (ent_cases I 1 (by decide)) <| And.intro (ent_cases I 2 (by decide)) <| And.intro W.w0 <| And.intro (W.chain 0 (by decide)) <| And.intro W.tsStep <|
     And.intro W.termI <| And.intro W.termD <| And.intro W.termX <| And.intro W.termCase W.termEk
   wred
-  simp only [UpsV3.cWalk, List.mem_cons, List.not_mem_nil, or_false] at hex
-  rcases hex with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> ups_ev [hC, hD] <;> cellsimp <;> wred
+  walk_all [hC, hD]
   wclose 0, 1
 
 set_option maxHeartbeats 4000000 in
 theorem walk_w1 (hC : ∀ x, x < 200 → C x = WC I 1 x) (hD : ∀ x, x < 200 → D x = WC I 2 x) :
     ∀ ex ∈ UpsV3.cWalk, ((ev C D fst lst trn P ex : Int) : Fp) = 0 := by
-  intro ex hex
   have W := iok.walk
   have hts := iok.ts; have hci := iok.ci; have hD3 := iok.D; have hti := iok.ti
   have m1 := W.mode 1 (by decide)
@@ -160,16 +168,12 @@ theorem walk_w1 (hC : ∀ x, x < 200 → C x = WC I 1 x) (hD : ∀ x, x < 200 �
     And.intro (W.look 1 (by decide) (by decide)) <| And.intro W.tsStep <| And.intro W.termI <|
     And.intro W.termD <| And.intro W.termX <| And.intro W.termCase W.termEk
   wred
-  simp only [UpsV3.cWalk, List.mem_cons, List.not_mem_nil, or_false] at hex
-  rcases hex with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> ups_ev [hC, hD] <;> cellsimp <;> wred
+  walk_all [hC, hD]
   wclose 1, 2
 
 set_option maxHeartbeats 4000000 in
 theorem walk_w2 (hC : ∀ x, x < 200 → C x = WC I 2 x) (hD : ∀ x, x < 200 → D x = WC I 3 x) :
     ∀ ex ∈ UpsV3.cWalk, ((ev C D fst lst trn P ex : Int) : Fp) = 0 := by
-  intro ex hex
   have W := iok.walk
   have hts := iok.ts; have hci := iok.ci; have hD3 := iok.D; have hti := iok.ti
   have m2 := W.mode 2 (by decide)
@@ -180,16 +184,12 @@ theorem walk_w2 (hC : ∀ x, x < 200 → C x = WC I 2 x) (hD : ∀ x, x < 200 �
     And.intro (W.look 2 (by decide) (by decide)) <| And.intro W.tsStep <| And.intro W.termI <|
     And.intro W.termD <| And.intro W.termX <| And.intro W.termCase W.termEk
   wred
-  simp only [UpsV3.cWalk, List.mem_cons, List.not_mem_nil, or_false] at hex
-  rcases hex with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> ups_ev [hC, hD] <;> cellsimp <;> wred
+  walk_all [hC, hD]
   wclose 2, 3
 
 set_option maxHeartbeats 4000000 in
 theorem walk_w3 (hC : ∀ x, x < 200 → C x = WC I 3 x) :
     ∀ ex ∈ UpsV3.cWalk, ((ev C D fst lst trn P ex : Int) : Fp) = 0 := by
-  intro ex hex
   have W := iok.walk
   have hts := iok.ts; have hci := iok.ci; have hD3 := iok.D; have hti := iok.ti
   have m3 := W.mode 3 (by decide)
@@ -199,10 +199,7 @@ theorem walk_w3 (hC : ∀ x, x < 200 → C x = WC I 3 x) :
     And.intro W.tsStep <| And.intro W.termI <|
     And.intro W.termD <| And.intro W.termX <| And.intro W.termCase W.termEk
   wred
-  simp only [UpsV3.cWalk, List.mem_cons, List.not_mem_nil, or_false] at hex
-  rcases hex with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> ups_ev [hC] <;> cellsimp <;> wred
+  walk_all [hC]
   wclose 3, 2
 
 end
