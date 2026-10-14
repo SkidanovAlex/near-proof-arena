@@ -1,0 +1,176 @@
+# lane/v3-size-opt — proof-size optimization without new assumptions (2026-10-13)
+
+Goal: shrink the v3 artifact as far as possible with **no new assumptions** (ROM
+framework unchanged, no protocol-parameter change), ahead of the signed
+`near-chunk-v3` challenge.
+
+## Where the size stands (measured, main @ d6725367/c6330302)
+
+Real honest proofs accepted by the deployed Lean verifier
+(`docs/logs/v3-prover-prove-2026-10.md`):
+
+| case | proof B (hint B) |
+|---|---|
+| 00-h10004-s3 | 5,256,829 (16) |
+| 00-h10035-s3 | 5,674,156 (155) |
+| 01-h10009-s1 | 5,618,528 (155) |
+
+Honest-admission constants (`NearV3/Assembly/NearAdmission.lean`):
+`v3MaxInner = 6,435,489` (= `nearV3_sizeMaxAligned`, roll-in alignment landed),
+`v3MaxHintBytes = 1,953,115`, and `4 + v3MaxHintBytes + v3MaxInner = 8,388,608`
+**exactly** — the artifact is at zero slack against the 8 MiB cap, so any inner
+growth (qvV3 ≈ +75–112 KB) re-opens the cap.
+
+## What landed in this lane
+
+`zk-formal/ZkFormal/V3/HintCompact.lean` — the compact hint-body codec
+(STATUS-V3-SIZE §4 lever 2), proved end to end:
+
+* **Invariant.** Every refund the D0 runtime emits is canonical:
+  `refundCanonical = refundShape ∧ signerId = receiverId ∧ gasPrice = 0`
+  (`applyReceipt_refunds_canonical`, `applyNewChunk_outgoing_canonical`;
+  `TransferV1.applyReceipt` emits exactly `[gasRefundReceipt …]`).  This is
+  what lets the wire drop predecessor `system`, the receipt tag, the three
+  zero vector counts, the transfer action tag, `signerId` (= receiver) and
+  `gasPrice` (= 0) — the decoder reconstructs all of them, producing the
+  **same `Receipt` values**, so `prepBody`, the runtime refund application and
+  the receipt SHA family are untouched.
+* **Wire.** `compactHintOf rs = u32 n ‖ borshBytes (compactBodyOf rs)`,
+  `compactBodyOf rs = u32 1 ‖ u32 n ‖ refunds`, per refund
+  `borshBytes receiverId ‖ receiptId ‖ signerPk.encode ‖ u128 deposit`.
+* **Bounds (kernel-checked).** ≤ 181 B/refund against the native 289;
+  `compactHint_max_eq : 16 + 181·4481 = 811,077` (A1 max) against the proved
+  native `≤ 1,295,025`; `compact_freed_eq : freed = 483,948` bytes.
+* **Round trip.** `compactRefund_encode`, `decodeBodyC_compactBodyOf`
+  (`decodeBodyC (compactBodyOf rs) = .ok rs` for canonical `rs`).
+* Axioms of every theorem ⊆ {propext, Classical.choice, Quot.sound}
+  (`#print axioms` checked); no `sorry`/`axiom`/`native_decide`.
+
+Effect if wired in: artifact bound
+`4 + 811,077 + 6,435,489 = 7,246,570 ≤ 8,388,608` — **+1,142,038 B of slack**
+(was 0), which covers qvV3 (+75–112 KB) many times over.
+
+## Blocked: the hint body is pinned by the Good semantics (found during integration)
+
+Wiring the compact body into `hintOfE`/`prepBody` is **not a wire codec**: the
+hint body is protocol-committed data.
+
+* `Good.lean:54` (`HeaderSemanticsV3.body`): `h.body = u32 0 ++
+  encodeReceipts m.result.outgoing`, and `HeaderSemanticsV3.encoded`
+  (`Good.lean:56`) pins `encodedMerkleRoot … h.body = (H.encodedMerkleRoot,
+  H.encodedLength)` — the chunk header's receipts-bucket commitment, computed
+  by nearcore over the *native* borsh bytes.  A compact body would fail the
+  EMR check for every honest claim.
+* The rebuild route (hint carries compact refunds; `prepBody` rebuilds the
+  native bucket via `bodyOf ∘ decodeBodyC` — decode determinism is exactly
+  what `HintCompact` proves, and EMR-over-rebuilt is a strict refinement of
+  EMR-over-raw, so soundness is preserved) requires amending
+  `HeaderSemanticsV3` and re-proof through the whole Link chain
+  (`Link{Main,Fwd,Witness,Hdr,Claim,Implicit,Exec}`, `Rcpt/Link/*` — 13
+  soundness-critical files).
+* Measured hints on real fixtures are 16–155 B; the bound term matters only
+  for adversarial A1-max claims.  Amending the soundness chain days before
+  signing for a bound-side saving is the wrong risk trade.
+
+**Disposition.** `HintCompact.lean` stays as proved machinery — the canonical
+refund invariants, decode determinism and exact length accounting are the
+prerequisite for the future `GoodV3` amendment (compact hint + rebuilt-native
+EMR), which the assembly/link lane can take up with lead sign-off, ideally
+post-signing.  This lane does **not** change `GoodV3`, `prepBody` or
+`hintOfE`.
+
+## auxGroup sweep: already decided by kernel-checked numbers
+
+The admission's `g` is a free verifier choice, so re-evaluating the aligned
+bound of the actual `nearAirV3` at `g ∈ {1,3}` was the last cheap in-framework
+candidate.  It is already answered by the kernel-checked scheduled-bound sweep
+on the actual AIR shapes (`STATUS-V3-P2.md` §table:
+`near_sizeMaxSched_g1 = 5,473,967`, `g2 = 5,347,055`, `g3 = 5,353,423`):
+**`g = 2` is optimal** (`g = 3` is +6,368 B worse; `g = 1` +126,912 B), and
+`nearAirV3_npOkPg` holds for all three.  No change; the from-scratch
+re-evaluation was abandoned after the shared heavy-scope killed the build
+(~3.7 h; concurrent lanes + judge worker on the same host).
+
+## Result
+
+The honest artifact on main stands at **measured 5.26–5.67 MB** (aligned,
+`auxGroup = 2`) against the 8 MiB cap, with the admission at exact fit.  Every
+remaining byte-level lever either (i) needs a `GoodV3`/header-semantics
+amendment (compact hint — machinery proved here), (ii) is a protocol-format
+change with ROM-neutral soundness (digest width), or (iii) lives in the AIR
+lanes (width cuts, table merges) or the query-regime research lane (P6).
+Nothing further is provable *in this lane* without one of those decisions.
+
+## Integration checklist (the future GoodV3 amendment; for the assembly lane)
+
+1. Amend `HeaderSemanticsV3` (`Good.lean`): `body : h.body = compactBodyOf
+   m.result.outgoing`; keep `encoded` over the **rebuilt native** bytes
+   `bodyOf (decodeBodyC h.body) = …` (well-defined by decode determinism;
+   equals the native bucket by `compactRefund_encode`/`decodeBodyC_compactBodyOf`).
+2. Spec: move `compactRefund`/`compactBodyOf`/`pCRefund`/`decodeBodyC` next to
+   `pRefund`/`decodeBody` in `PrepD0.lean`; `hintOfE` emits compact;
+   `prepBody` parses compact and rebuilds native for the EMR/`Prep.body`.
+   Redefine `Hint.empty := ⟨0, compactBodyOf []⟩`.
+3. `ReceiptWellformed.lean`: `NativeValid.body_decodes` → compact variant via
+   `applyNewChunk_outgoing_canonical`.
+4. `PrepBodyComplete.nativeHint` → `⟨n, compactBodyOf outgoing⟩`.
+5. `NativePreparedBody.accepted_native_body_bound` → `≤ 8 + 181·4481 = 811,069`
+   via `compactReceipts_length_le` + the receipt bound.
+6. `RenderV3Header.nativeHint_bounds`, `NearAdmission.v3MaxHintBytes := 811,077`.
+7. Rust `hint.rs`/`prep.rs`; re-record proofs; full negative suite.
+
+Explicitly out of scope here (need protocol/numerics work or other lanes):
+digest width 64→32 B (MMCS/Bcs format change, ROM-binding stays perfect —
+candidate post-signing), P6 Johnson-regime queries (blocked on
+correlated-agreement formalization), width cuts / table merges (AIR lanes,
+quantified in STATUS-V3-SIZE §4 lever 4/5), arity 16 after alignment
+(parameter change + L7 numerics).
+
+## Commit B execution status (2026-10-14, this lane)
+
+Landed (commit `16dfadba`): the codec is **spec-first** —
+`NearSpecV3.HintCompact` (parser-inversion ports `pTake_ok`/`pAccountId_ok`/
+`pPublicKey_ok`/`pkWf3`, wire defs, round trip under `refundCanonicalWf`,
+exact lengths, kernel budgets) and `ZkFormal.V3.HintCompact` re-homed on top
+(canonicality invariants, `canonical_flat` bridge incl. the wf reassembly,
+`decodeBodyC_outgoing`, full-hint wire budgets).  Axioms ⊆ std3; both
+modules build green.
+
+Commit B (behavior swap) remains — atomic, then one full rebuild:
+
+1. Layer fix: strip `import NearSpecV3.PrepD0` from spec `HintCompact.lean`
+   (it needs nothing from PrepD0), and add `import NearSpecV3.HintCompact` to
+   `PrepD0.lean` (acyclic).
+2. `PrepD0.lean` additions: spec-local `refundShape` + `pRefund_encode` +
+   `decodeBody_bodyOfS` (ports of the compiled `RefundCodec` proofs); small
+   parser inverses `pAccountId_inv`/`pHash_len`/`pPublicKey_wf`/`pU128_lt`
+   (each ~6 LOC from the parser unfold); `pCRefund_shape` +
+   `decodeBodyC_wfshape` (via `pVec_property`); and
+   `prepBody_split : prepBody pc h = .ok p → ∃ refunds, decodeBodyC h.body =
+   .ok refunds ∧ p.body = bodyOf refunds ∧ decodeBody p.body = .ok refunds`
+   — the single transport every Link-site needs (bind-walk pattern of the
+   compiled `prepD0_body_eq`; final `subst`-then-`rfl`).
+3. Behavior: `Hint.empty := ⟨0, compactBodyOf []⟩`; `hintOfE` emits
+   `compactBodyOf refunds`; `prepBody` parses `decodeBodyC` and rebuilds
+   `body := bodyOf refunds` (EMR over rebuilt — header semantics unchanged).
+4. `Good.lean` amendment: `HeaderSemanticsV3.body : h.body = compactBodyOf
+   m.result.outgoing`; `preparedBody : p.body = u32 0 ++
+   encodeReceipts m.result.outgoing`; `encoded` over `p.body`.
+   `HeaderCompose.NativeHeaderV3.prepared` re-instantiated.
+5. Re-route hint-byte consumers to `p.body` via `prepBody_split`:
+   `LinkHdr` (×4), `PrepFwd` (×2), `RcptHolds`/`RcptHoldsB` (×5),
+   `RcptRunHdr.body_tail` (hint-byte stream → `p.body.drop 8`).
+   `RfBody` already uses `p.body` (unchanged). `ReceiptWellformed`:
+   `NativeValid.body_decodes` → compact variant (+ its `SchedBusSPUBB` use).
+   `PrepBodyComplete.nativeHint := ⟨n, compactBodyOf outgoing⟩`;
+   `NativePreparedBody.accepted_native_body_bound → ≤ 811,069`;
+   `RenderV3Header.nativeHint_bounds`; `NearAdmission.v3MaxHintBytes := 811,077`.
+6. Rust `hint.rs`/`prep.rs` compact encode/decode; re-record the three real
+   proofs (`PROVE_V3=1`); full negative suite; `cargo fmt/clippy/test`;
+   `make pin-check`.
+7. Rebuild note: the Assembly+Link chain from scratch took ~4 h and was killed
+   once by shared-host memory contention — run under the heavy wrapper with an
+   auto-resume loop (lake is incremental; a killed build resumes cheaply).
+
+After Commit B: digest-width lane (64→32 B, Bcs/WH re-instantiation) per the
+approved plan; width-cut/table-merge items stay filed to the AIR lanes.
