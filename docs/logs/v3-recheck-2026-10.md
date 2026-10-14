@@ -229,3 +229,64 @@ To still exercise the judge code end to end, the run below uses the **standard r
 serially exactly as on the native route (minus the judge's tiny `ArenaExpectedInst`), and Stage B
 runs the same leanchecker / lean4export / nanoda / lean4lean steps on the same `.olean`s; only the
 artifact-binding gates fail by construction.
+
+**Standard-route run (judge code end to end, CPUs 12-14 + 28-30, `c258eede` sources): 14,476 s wall.**
+Per-step walls from the report's `timings` (sandboxed runs, one after another as in the judge):
+
+| stage | result | total | longest single run | peak RSS (sampler) | limit | fits |
+|---|---|---|---|---|---|---|
+| candidate elaboration (3,964 `lean -o`, serial) | all built | 7,007 s | `CodecEndInt` 909 s (`CodecRecInt` 579, `CodecHeader` 385) | 13.0 GB | 1 h / module, 4 h total | yes |
+| leanchecker (3,964 runs) | **accepted** | 2,267 s | `CodecRecInt` 232 s | 6.9 GB | 2 h / run, 4 h total | yes |
+| arena-audit | ran | 32 s | — | 4.6 GB | 1 h | yes |
+| lean4export | ok | 107 s | — | 7.9 GB | 2 h, 16 GiB | yes |
+| nanoda | **accepted** | 1,148 s | — | 12.8 GB | 2 h | yes |
+| lean4lean (3,964 runs) | **accepted** | 3,223 s | `CodecRecInt` 589 s (`CodecEndInt` 293, `CodecHeader` 151) | 13.6 GB | 2 h / run, 4 h total | yes |
+| NDJSON audit | 86,938 decls | 33 s | — | — | 1 h | yes |
+
+Gates fail as expected for the standard route (`THEOREM_TYPE_MISMATCH`: the dummy route's expected
+type is not the native-lean `∀ bd tid` form), plus one real finding:
+**`SHADOWED_DEFINITION`: candidate environment redefines `NearSpecV3.pMany.eq_def`.** Cause: two
+candidate modules unfold the trusted `pMany` (`simp only [pMany]`) without the trusted module that
+realizes its equation lemmas (`NearSpecV3.ClaimV3Props`) in their import closure —
+`ZkFormal.NearV3.Sched.Link.SoundPrep` and `ReexecV3D0.Size` (vendored from `reexec-v3-d0`) — so each
+re-realizes `pMany.eq_def` with its own private `match_5.splitter`, and the candidate export carries a
+copy whose hash differs from the judge's reference (`844d3e84…`; candidate `41fafe06…`, then
+`9654386c…` after fixing only SoundPrep). Pre-existing (neither file nor its closure changed by
+pruning). **Fix (import only, `cb2a5b8f`, `52fd0c14`):** both import `NearSpecV3.ClaimV3Props`.
+Verified offline with the judge's own reference export and `decl-hash` (the audit's hash): all 8,258
+reference declarations, 5,126 present in the candidate export, **0 mismatches**. TypeHashes 0 changed;
+the 32 changed `.oleans` pass leanchecker and lean4lean; official nanoda on the final export passes
+(86,938 decls, 1,178 s, 12.8 GB); `AuditAdmissionV3`, `AuditProcPriorIdSound` pass; pin-check ok.
+`ReexecV3D0.Size` is outside `ReexecV3D0.Model`'s closure (D0 reference binary unaffected) but inside
+`NpUdrStarkV2.Model`'s (its `out/verify` bytes change; rebuild with `build.sh`).
+
+Elaboration note: the judge's serial elaboration on 6 logical CPUs took 7,007 s (prune lane: 8,734 s
+single-core); the `CodecRecInt` split lets its 21 cases elaborate in parallel (579 s here vs 1,255 s
+single-core before).
+
+### Remaining blockers for admission (not recheck issues; not fixed here)
+
+1. `formal/lakefile.toml` `require ZkFormal` → MANIFEST_INVALID (packaging; drop the block).
+2. No formal-checker config for `near-chunk-validation-d0-stark`; the D0 config lacks the D0a trusted
+   modules (`ChallengeD0a`, `PrepD0`, `ChunkValidationV0a`, `NearSpec.TrieUpsertProofs`); the draft's
+   tree pin `8f71611e…` is stale (current `325c34af…`).
+3. Native-lean binding: `ZkFormal.Near.Render.Common` (`import Std.Data.HashMap`, `edgeUses`) is in
+   the verifier model closure via `NearAir → Candidates.SortEmpty → Render.Proof.SortLocal → …`.
+   Options: split `SortEmpty` (definitions the AIR needs vs render proofs) so the model closure stops
+   at the AIR definitions (also shrinks the 657-module model closure / judge C build); or replace the
+   `Std.HashMap` in `edgeUses` (definition change; its users `NodeTraffic4`, `BusBytes` need re-proof);
+   or a policy change allowing `Std` in model closures. Each changes the judge-built binary.
+
+### Risks / notes
+
+* lean4lean and nanoda both diverge on `Nat` terms with free variables against large literals (one
+  `succ` per level). Any new `simp` that folds big literals (`2^k`, `+ 2^18`, `% 256` with 32768) into
+  goals with free variables, or a `have h := rfl` later used at a concrete instance, can reintroduce
+  this; leanchecker will not catch it. Recheck changed modules with lean4lean + nanoda (export of the
+  module's constants) before merging.
+* Memory: the largest single recheck is lean4lean `CodecHeader` (13.6 GB; one 4-case theorem); the
+  same per-case split as `CodecRecInt` would cut it to ~5 GB if a worker has < 16 GB.
+* The shared `zkbuild.slice` (memory.high 40 GiB for all lanes) throttles everything when one job is
+  large; lean4lean on the *old* `CodecRecInt` grew past 31 GB and stalled the slice (killed).
+* Timings were taken while other lanes' builds intermittently used CPUs 8-15/24-31; the pipeline
+  numbers are therefore upper bounds for a dedicated 6-thread worker.
