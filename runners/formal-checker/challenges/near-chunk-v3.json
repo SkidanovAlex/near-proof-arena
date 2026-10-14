@@ -43,6 +43,7 @@
         "NearSpecV3.GF256",
         "NearSpecV3.ReedSolomon",
         "NearSpecV3.ChunkValidationV0",
+        "NearSpecV3.ChunkValidationV0a",
         "NearSpecV3.ClaimV3Props",
         "NearSpecV3.ChallengeV3",
         "NearSpecV3.SHA512",

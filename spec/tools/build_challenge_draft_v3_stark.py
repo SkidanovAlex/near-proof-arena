@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build challenges/drafts/near-chunk-validation-d0.draft.json (unsigned) and the
-workload generator specs spec/workloads/near-chunk-validation-d0/<class>.json.
+"""Build challenges/drafts/near-chunk-validation-d0-stark.draft.json (unsigned): domain D0a
+(`NearSpecV3.RelD0a`, spec/near-chunk-validation-v0a.md), the challenge of the formally admitted
+STARK backend (examples/np-udr-stark-v2).
 
-  build_challenge_draft_v3.py [--freeze-commit SHA] [--heldout-commitment sha256:…]
+  build_challenge_draft_v3_stark.py [--freeze-commit SHA] [--heldout-commitment sha256:…]
                               [--baseline-summary benchmarks/results/<s>/summary.json]
                               [--created-at RFC3339] [--out PATH] [--measure]
 
@@ -10,12 +11,24 @@ All digests are computed from the repository at HEAD (tracked files only):
   runtime_config_digest = sha256(JCS(spec/challenge-inputs/runtime-config-pv86-v3.json))
   formal_spec.tree_digest = TreeDigest(spec/lean formal-core)   (spec/tools/tree_digest.py)
   spec_doc_digest / claim spec_digest = sha256 of the spec documents
-  public_fixtures = TreeDigest(oracle/fixtures/v3/arena-public)  (arena layout + params.bin)
-  workload_suite.classes[].generator = sha256(JCS(generator spec))
-  generator spec oracle_source_tree_digest = TreeDigest(oracle/v3/src oracle/v3/Cargo.toml oracle/v3/Cargo.lock)
+  public_fixtures = TreeDigest(oracle/fixtures/v3/arena-public-d0a)  (arena layout + params.bin, domain
+                    D0a; spec/tools/build_public_d0a_arena.sh)
+  workload_suite.classes[].generator = sha256(JCS(spec/workloads/near-chunk-validation-d0/<class>.json)):
+                    the D0 generators unchanged (oracle/v3, pinned by the signed D0 challenges). Their
+                    positives are honest chunks of chains with 10 / 1000 Tgas gas limits, which satisfy
+                    the D0a amendments (A1 by the gas limit; A2, Canon0f, A8, A10, A12 are nearcore
+                    invariants on honest chains; A7 and A9 measured with large headroom), checked with
+                    nearspec-v3-check-d0a on judge-style samples (docs/logs/v3-d0a-challenge-2026-10.md).
+                    Judge-sampled rejections (D0 recipe) are false for RelD0, hence for RelD0a.
 --freeze-commit pins toolchain_policy.allowed_packages (ArenaCore, NearSpec, NearSpecV3) at the
-commit whose formal-core + spec/lean the challenge freezes (and the reference candidate vendors).
+commit whose formal-core + spec/lean the challenge freezes (and the candidate vendors); it refuses
+unless the working tree's formal-core + spec/lean equal that commit's (as build_challenge_draft_v3_chunk.py).
 --measure writes the baseline-measurement draft (no baseline) instead.
+
+Judge-side files of this challenge: the formal-checker config
+runners/formal-checker/challenges/near-chunk-validation-d0-stark.json (trusted closure of
+NearSpecV3.ChallengeD0a / PrepD0, Expected templates spec/lean/judge/ExpectedV3D0a*.lean.template,
+params = NearSpecV3.challengeSpecD0a with the spliced profile and formal_params literals).
 """
 import argparse, hashlib, json, os, subprocess, sys
 
@@ -53,10 +66,11 @@ restrictions = [
     R("e.queues_empty", "delayed-receipt queue, outgoing buffers and promise-yield queue are empty in the pre-state"),
     R("e.forwarded", "every generated receipt is forwarded (never buffered)"),
     R("e.sched_canonical", "every BandwidthSchedulerState value read (main and implicit pre-states) is absent or V1 listing exactly the layout's n^2 links in sender-major order (what update_scheduler_state writes) [Canon0f]"),
-    R("w.unfolded", "unfoldBytes <= B0 = 2,000,000: the bytes of every partial trie the relation builds, unfolded per read-path copy, plus the post-write path copies, summed over all transitions (NearSpecV3.unfoldBytes) [A7]"),
+    R("w.unfolded", "unfoldBytes <= B0 = 2,000,000: for every applied transition, the bytes of the pre partial trie the relation builds, unfolded per read-path copy, plus the same count on the native post trie the execution returns, summed over all transitions (NearSpecV3.unfoldBytes, measure of 2026-10-12) [A7]"),
     R("c.bw_requests", "in every block of the claim's segment, every chunk slot's BandwidthRequests has at most one request per to_shard (what nearcore's producer builds and its header validation enforces) [A8]"),
     R("e.chacha_words", "the bandwidth-scheduler runs of all applied transitions draw at most W0 = 770,000 ChaCha20 words in total (NearSpecV3.chachaWords; user decision 2026-10-09) [A9]"),
     R("w.path_depth", "every used source receipt proof's Merkle path has at most Dp0 = 32 items (NearSpecV3.a10; nearcore emits ceil(log2 #shards) <= 6; user decision 2026-10-09) [A10]"),
+    R("c.layout_wf", "the epoch's shard layout has exactly one boundary account fewer than shard ids, len(boundary_accounts) + 1 = len(shard_ids) (a nearcore ShardLayout invariant; NearSpecV3.a12; user decision 2026-10-12) [A12]"),
     R("e.distinct_ids", "applied receipt ids are pairwise distinct"),
 ]
 
@@ -77,6 +91,20 @@ CLASSES = [
      "D0 chunks after >= 1 missing chunk of the shard (implicit transitions: missing-chunk applies "
      "with the bandwidth scheduler), with or without incoming receipts; chains with 25% chunk skips"),
 ]
+
+D0_SPECS = "spec/workloads/near-chunk-validation-d0"
+
+
+def tree_at(commit, *paths):
+    """TreeDigest of `paths` as frozen at `commit` (refuses unless the working tree equals it)."""
+    d = subprocess.run(["git", "diff", "--quiet", commit, "--", *paths], cwd=ROOT)
+    n = subprocess.run(["git", "diff", "--quiet", "--cached", commit, "--", *paths], cwd=ROOT)
+    u = subprocess.run(["git", "ls-files", "--others", "--exclude-standard", "--", *paths],
+                       capture_output=True, text=True, cwd=ROOT).stdout.strip()
+    if d.returncode or n.returncode or u:
+        raise SystemExit(f"{' '.join(paths)} differ from the freeze commit {commit}: freeze again")
+    return tree(*paths)
+
 
 def generator_spec(cid, cls, extra, oracle_digest):
     return {
@@ -106,12 +134,14 @@ def main():
     ap.add_argument("--supersedes", default=None, help="challenge id this one supersedes")
     a = ap.parse_args()
     # Same workload generators as near-chunk-validation-d0 (their honest positives come from
-    # chains with 10 / 1000 Tgas gas limits and satisfy A1, A2, Canon0f): the digests are
-    # recomputed here, the generator spec files under spec/workloads/near-chunk-validation-d0
-    # are not rewritten.
+    # chains with 10 / 1000 Tgas gas limits and satisfy the D0a amendments): the committed spec
+    # files under spec/workloads/near-chunk-validation-d0 (pinned by the signed D0 challenges) are
+    # hashed as they are, and must equal what generator_spec() rebuilds from oracle/v3 (`make pin-check`).
     classes = []
     for cid, cls, w, extra, desc in CLASSES:
-        spec = generator_spec(cid, cls, extra, None)
+        spec = json.load(open(os.path.join(ROOT, D0_SPECS, cid + ".json")))
+        if spec != generator_spec(cid, cls, extra, None):
+            raise SystemExit(f"{D0_SPECS}/{cid}.json differs from the D0 generator spec (oracle/v3 drift?)")
         classes.append({"id": cid, "description": desc, "weight_ppm": w, "batch_size": 8,
                         "generator": dig(spec)})
     baseline_sub, baseline_ns = None, []
@@ -119,6 +149,10 @@ def main():
         bs = json.load(open(a.baseline_summary))
         baseline_sub = bs["reference_candidate"]["package_digest"]
         baseline_ns = bs["baseline_ns"]
+    tree_digest = tree_at(a.freeze_commit, "spec/lean", "formal-core") if a.freeze_commit else tree("spec/lean", "formal-core")
+    if a.freeze_commit:
+        a.freeze_commit = subprocess.run(["git", "rev-parse", a.freeze_commit + "^{commit}"], capture_output=True,
+                                         text=True, check=True, cwd=ROOT).stdout.strip()
     allowed = [] if not a.freeze_commit else [[p, a.freeze_commit] for p in ("ArenaCore", "NearSpec", "NearSpecV3")]
     rc = json.load(open(os.path.join(ROOT, "spec/challenge-inputs/runtime-config-pv86-v3.json")))
     draft = {
@@ -150,7 +184,7 @@ def main():
             "formal_spec": {
                 "relation_module": "NearSpecV3.ChunkValidationV0a",
                 "relation_decl": "NearSpecV3.RelD0a",
-                "tree_digest": tree("spec/lean", "formal-core"),
+                "tree_digest": tree_digest,
                 "lean_toolchain": "leanprover/lean4:v4.34.1"},
             "spec_doc_digest": fdig("spec/near-chunk-validation-v0a.md"),
         },
@@ -175,7 +209,7 @@ def main():
         "workload_suite": {
             "revision": "near-chunk-validation-d0-stark-r0",
             "classes": classes,
-            "public_fixtures": tree("--relative-to", "oracle/fixtures/v3/arena-public", "oracle/fixtures/v3/arena-public"),
+            "public_fixtures": tree("--relative-to", "oracle/fixtures/v3/arena-public-d0a", "oracle/fixtures/v3/arena-public-d0a"),
             "heldout_commitment": a.heldout_commitment or "sha256:" + "0" * 64,
             "baseline_submission": None if a.measure else baseline_sub,
             "baseline_ns": [] if a.measure else baseline_ns},
@@ -187,7 +221,6 @@ def main():
                             "max_public_artifact_bytes": 67108864, "max_prepare_ms": 600000,
                             "max_build_ms": 3600000},
         "supersedes": a.supersedes,
-        "draft_notes": "UNSIGNED DRAFT (lane v3-spec). Successor of near-chunk-validation-d0-1 for the formally admitted STARK backend: RelD0a B0 = RelD0 ∧ A1 (c.gas_limit) ∧ A2 (w.proof_routing) ∧ Canon0f (e.sched_canonical) ∧ A7 (w.unfolded, B0 = 2,000,000: unfolded pre tries + native post tries, 2026-10-12) ∧ A8 (c.bw_requests) ∧ A9 (e.chacha_words, W0 = 770,000) ∧ A10 (w.path_depth, Dp0 = 32) ∧ A12 (c.layout_wf) (A11 w.post_rebuild retired 2026-10-12), spec/near-chunk-validation-v0a.md, NearSpecV3.ChunkValidationV0a / ChallengeD0a (challengeSpecD0a, challengeParamsD0a); proof cap 8 MiB formal and operational (docs/zk-formal/V3-D0-DESIGN.md §10, §11). Workload generators and public fixtures as near-chunk-validation-d0 (all positives satisfy the amendments; checked with nearspec-v3-check-d0a); D0a difftest fixtures: oracle/fixtures/v3/public-d0a.",
         "created_at": a.created_at,
         "formal_params": {"verify_fuel": 1073741824, "max_proof_bytes": 8388608,
                           "max_reduction_fuel": 1073741824},

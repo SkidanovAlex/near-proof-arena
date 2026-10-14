@@ -106,7 +106,23 @@
       },
       {
         "id": "w.unfolded",
-        "text": "unfoldBytes <= B0 = 3,000,000: the bytes of every partial trie the relation builds, unfolded per read-path copy, plus the post-write path copies, summed over all transitions (NearSpecV3.unfoldBytes) [A7]"
+        "text": "unfoldBytes <= B0 = 2,000,000: for every applied transition, the bytes of the pre partial trie the relation builds, unfolded per read-path copy, plus the same count on the native post trie the execution returns, summed over all transitions (NearSpecV3.unfoldBytes, measure of 2026-10-12) [A7]"
+      },
+      {
+        "id": "c.bw_requests",
+        "text": "in every block of the claim's segment, every chunk slot's BandwidthRequests has at most one request per to_shard (what nearcore's producer builds and its header validation enforces) [A8]"
+      },
+      {
+        "id": "e.chacha_words",
+        "text": "the bandwidth-scheduler runs of all applied transitions draw at most W0 = 770,000 ChaCha20 words in total (NearSpecV3.chachaWords; user decision 2026-10-09) [A9]"
+      },
+      {
+        "id": "w.path_depth",
+        "text": "every used source receipt proof's Merkle path has at most Dp0 = 32 items (NearSpecV3.a10; nearcore emits ceil(log2 #shards) <= 6; user decision 2026-10-09) [A10]"
+      },
+      {
+        "id": "c.layout_wf",
+        "text": "the epoch's shard layout has exactly one boundary account fewer than shard ids, len(boundary_accounts) + 1 = len(shard_ids) (a nearcore ShardLayout invariant; NearSpecV3.a12; user decision 2026-10-12) [A12]"
       },
       {
         "id": "e.distinct_ids",
@@ -133,10 +149,10 @@
     "formal_spec": {
       "relation_module": "NearSpecV3.ChunkValidationV0a",
       "relation_decl": "NearSpecV3.RelD0a",
-      "tree_digest": "sha256:8f71611e8da164720f63f69535c7d6b654bfd1faa3858bc7128b191c6627ca4b",
+      "tree_digest": "sha256:b890e8354ed1e977cfa67d20343d0946f296f36d7dada0cee1d8392b922a398b",
       "lean_toolchain": "leanprover/lean4:v4.34.1"
     },
-    "spec_doc_digest": "sha256:e7c9e63bd4de9a36bb7d2b4dc3aafc04e61429e70472d10dd6a5f477967a2cc3"
+    "spec_doc_digest": "sha256:ee05d39f3efb3b023f3737f404676a10a5a302722bcae96d33724c6be8c6e9c2"
   },
   "claim_encoding": {
     "format": "near-arena-claim-v3",
@@ -226,7 +242,7 @@
         "generator": "sha256:77ac4648b4a1223725d109d7a7710b7ceeecfe069581e77d70cfaf0fbd74574c"
       }
     ],
-    "public_fixtures": "sha256:45eb0203dc2567506753c5066a2e4a2693f21ce661b90db3802592c2ff314a67",
+    "public_fixtures": "sha256:865949a6aff8a67a9b9ae8ee56de39b10efed475276006691f933bab42956a83",
     "heldout_commitment": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
     "baseline_submission": null,
     "baseline_ns": []
@@ -252,7 +268,6 @@
     "max_build_ms": 3600000
   },
   "supersedes": null,
-  "draft_notes": "UNSIGNED DRAFT (lane v3-spec). Successor of near-chunk-validation-d0-1 for the formally admitted STARK backend: RelD0a B0 = RelD0 \u2227 A1 (c.gas_limit) \u2227 A2 (w.proof_routing) \u2227 Canon0f (e.sched_canonical) \u2227 A7 (w.unfolded, B0 = 3,000,000), spec/near-chunk-validation-v0a.md, NearSpecV3.ChunkValidationV0a / ChallengeD0a (challengeSpecD0a, challengeParamsD0a); proof cap 8 MiB formal and operational (docs/zk-formal/V3-D0-DESIGN.md \u00a710, \u00a711). Workload generators and public fixtures as near-chunk-validation-d0 (all positives satisfy the amendments; checked with nearspec-v3-check-d0a); D0a difftest fixtures: oracle/fixtures/v3/public-d0a.",
   "created_at": "2026-10-05T12:00:00Z",
   "formal_params": {
     "verify_fuel": 1073741824,
