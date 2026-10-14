@@ -5,9 +5,10 @@ spec/workloads/near-chunk-v3/<class>.json for the D1 / D2 / D3α classes.
 `near-chunk-v3` ("NEAR chunk state-transition succinct proof") is ONE coverage-tiered challenge
 (docs/CONTRACTS.md §11, docs/BENCHMARK_SPEC.md §17): statement `near/pv86/chunk-validation/v0` over the
 largest formalized domain, `NearSpecV3.RelChunkV3 = RelD0 ∨ RelD1 ∨ RelD2 ∨ D3.RelD3`
-(`spec/lean/v3/NearSpecV3/ChallengeChunkV3.lean`); candidates declare a tier D0 / D1 / D2 / D3a and are
+(`spec/lean/v3/NearSpecV3/ChallengeChunkV3.lean`); candidates declare a tier D0a / D0 / D1 / D2 / D3a and are
 admitted under `NearSpecV3.challengeParamsChunk <tier>` (soundness for `Rel_t`, completeness on
-`Domain_t`); soundness lifts to the statement by `NearSpecV3.sound_lift`.
+`Domain_t`); soundness lifts to the statement by `NearSpecV3.sound_lift`. Tier D0a (rank 0,
+`RelD0a B0` ⊆ RelD0 by `relD0a_relD0`) lists the three D0 classes (see TIERS).
 
   build_challenge_draft_v3_chunk.py [--freeze-commit SHA] [--heldout-commitment sha256:…]
                                     [--baseline-summary benchmarks/results/<s>/summary.json]
@@ -143,14 +144,22 @@ WEIGHT_SOURCE = (
     "max-G_alpha 15%, non-WASM chunks around contract state 5%); non-WASM receipts/queues/epochs (D2) 17%; "
     "plain transfer transactions (D1) 10%; quiet / transfer-receipt / missing-chunk D0 chunks 8%. To be replaced "
     "by a measured mix from mainnet replay (docs/HISTORICAL_REPLAY.md) in a versioned successor.")
-# Match Tier.rank in ChallengeChunkV3. Rank 0 is reserved for the formal D0a
-# tier. Do not expose D0a here with an empty class list: that would let it
-# abstain on every benchmark input without COVERAGE_GAP_IN_TIER. Its workload
-# classes must first be checked against the final D0a domain (including A9
-# e.chacha_words W0 = 770,000 and A10 w.path_depth Dp0 = 32, decided 2026-10-09),
-# then assigned explicitly.
-TIERS = [("D0", 1, ".d0"), ("D1", 2, ".d1"), ("D2", 3, ".d2"), ("D3a", 4, ".d3a")]
+# Match Tier.rank in ChallengeChunkV3. D0a (rank 0, `RelTier .d0a = RelD0a B0`, the bounded D0
+# relation of spec/near-chunk-validation-v0a.md) is complete for the three D0 classes: they are
+# sampled by the D0 generators (honest chunks of 10 / 1000 Tgas chains), whose positives satisfy
+# every D0a amendment (A1 by the gas limit; A2, Canon0f, A8, A10, A12 are nearcore invariants on
+# honest chains; A7 / A9 have large measured headroom), checked on judge-style samples and on the
+# public d0-* positives with nearspec-v3-check-d0a (docs/logs/v3-d0a-challenge-2026-10.md). A D0a
+# candidate abstains (exit 3) on every other class; a D0 positive outside D0a in a d0-* class would
+# be COVERAGE_GAP_IN_TIER, so the held-out d0-* positives are re-checked with the D0a relation
+# before a freeze (D0A_CHECK below).
+TIERS = [("D0a", 0, ".d0a"), ("D0", 1, ".d0"), ("D1", 2, ".d1"), ("D2", 3, ".d2"), ("D3a", 4, ".d3a")]
 TIER_RANK = {t: r for t, r, _ in TIERS}
+# The workload classes of each tier: every class of a tier of rank <= its own, except that the
+# D0a tier lists the D0 classes explicitly (above).
+D0A_CLASSES = ["d0-quiet", "d0-transfers", "d0-missing"]
+D0A_CHECK = ("before freezing: nearspec-v3-check-d0a accepts every positive of the d0-* classes of the "
+             "public fixtures and of the committed held-out set")
 
 ORACLE_TREES = {
     "d1": ["oracle/v3-d1/src", "oracle/v3-d1/Cargo.toml", "oracle/v3-d1/Cargo.lock", "oracle/v3/src"],
@@ -245,8 +254,10 @@ def main():
     assert sum(c["weight_ppm"] for c in classes) == 1000000
     tiers = []
     for tid, rank, lean in TIERS:
+        cls = D0A_CLASSES if tid == "D0a" else [c[0] for c in CLASSES if TIER_RANK[c[1]] <= rank]
+        assert cls and all(any(c[0] == x for c in CLASSES) for x in cls)
         tiers.append({"id": tid, "rank": rank, "params": f"NearSpecV3.challengeParamsChunk {lean}",
-                      "classes": [c[0] for c in CLASSES if TIER_RANK[c[1]] <= rank]})
+                      "classes": cls})
     baseline_sub, baseline_ns = None, []
     if a.baseline_summary and not a.measure:
         bs = json.load(open(a.baseline_summary))
