@@ -1,4 +1,8 @@
 import ZkFormal.NearV3.Sched.Pub.Prep
+-- The trusted module that realizes `NearSpecV3.pMany`'s equation lemmas: without it, `simp only
+-- [pMany]` below re-realizes `pMany.eq_def` (with a private splitter of this module) and the judge
+-- flags the trusted name as redefined (SHADOWED_DEFINITION; docs/logs/v3-recheck-2026-10.md).
+import NearSpecV3.ClaimV3Props
 
 /-!
 # ZkFormal.NearV3.Sched.Link.SoundPrep — one layout for every scheduler instance (`prepD0`)
