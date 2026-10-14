@@ -1,0 +1,1 @@
+seg S=1 log_h=4 widths=[1] k=1 tables=2 cells=48 ood=20 finals=4 tracegen=0.00s prove=0.044s proof=73942 B verify_rust=0.001s Ok("accept") threads=8

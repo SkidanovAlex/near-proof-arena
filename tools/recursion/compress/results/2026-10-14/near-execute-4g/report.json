@@ -1,0 +1,60 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "8-15,24-31",
+    "/data/illia/nearproof-deps/bin/heavy",
+    "/usr/bin/time",
+    "-v",
+    "timeout",
+    "--kill-after=10s",
+    "180",
+    "/data/illia/nearproof/target/recursion-compress/release/compression-host",
+    "execute",
+    "target/recursion-compression-inputs/near/air.json",
+    "target/recursion-compression-inputs/near/pub.bin",
+    "target/recursion-compression-inputs/near/claim.bin",
+    "target/recursion-compression-inputs/near/proof.bin",
+    "tools/recursion/compress/results/2026-10-14/near-execute-4g/receipt.bin"
+  ],
+  "inputs": {
+    "air.json": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/near/air.json",
+      "bytes": 561787,
+      "sha256": "52ed422ebd663004c518d96fcbe9e85dfe029003772299498007eb9df489d14a"
+    },
+    "pub.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/near/pub.bin",
+      "bytes": 110,
+      "sha256": "38c230e8524006c9a2991fc41b003bb06be22ef427de1131be8e735f571601ad"
+    },
+    "claim.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/near/claim.bin",
+      "bytes": 309,
+      "sha256": "da925d2549735b2e05083d1dcded7591d2bea94763acea43a277e27f6bd140e3"
+    },
+    "proof.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/near/proof.bin",
+      "bytes": 3468847,
+      "sha256": "1d4b615fa6fdca8f90f3f2b1f5a84582c29cc33a68c6367a5d3438c4434c0f00"
+    }
+  },
+  "exit_code": 0,
+  "binary_sha256": "e53bc4d783bac430d16ab66d6f117f50766612044e0a772f51e8ff403989f538",
+  "status": "PASS",
+  "cycle_limit": 4294967296,
+  "result": {
+    "action": "execute",
+    "cycle_limit": 4294967296,
+    "execute_seconds": 33.130621824,
+    "image_id": "bad2a498b4a10506f8b49151b08860d9e5d65eb6e725446aa41a6ec64869aa95",
+    "inner_proof_bytes": 3468847,
+    "inner_proof_sha256": "1d4b615fa6fdca8f90f3f2b1f5a84582c29cc33a68c6367a5d3438c4434c0f00",
+    "journal_hex": "6e65617270726f6f662d636f6d7072657373696f6e2d76310052ed422ebd663004c518d96fcbe9e85dfe029003772299498007eb9df489d14a38c230e8524006c9a2991fc41b003bb06be22ef427de1131be8e735f571601adda925d2549735b2e05083d1dcded7591d2bea94763acea43a277e27f6bd140e3",
+    "native_verify_seconds": 0.127798835,
+    "padded_cycles": 1572339712,
+    "segments": 1500,
+    "user_cycles": 1450726224
+  },
+  "peak_rss_kib": 91412
+}

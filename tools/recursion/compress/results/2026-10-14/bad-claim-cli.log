@@ -1,0 +1,8 @@
+
+thread 'main' (1) panicked at src/main.rs:14:43:
+inner proof rejected: "parse (openings)"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'main' (3543842) panicked at risc0/r0vm/src/lib.rs:233:24:
+called `Result::unwrap()` on an `Err` value: Guest panicked: inner proof rejected: "parse (openings)"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
