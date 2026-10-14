@@ -428,9 +428,7 @@ fn akm_rows(e: &AkmE) -> Option<Vec<[u64; AKM_WIDTH]>> {
             if class == 42 {
                 rw[45] = inv(((bv >> 1) & 15) as i128);
             }
-            for x in 0..4 {
-                rw[54 + x] = pf[x];
-            }
+            rw[54..58].copy_from_slice(&pf);
             rw[58] = fe(uc as i128);
             let ucn = match class {
                 41 => uc - 1,
