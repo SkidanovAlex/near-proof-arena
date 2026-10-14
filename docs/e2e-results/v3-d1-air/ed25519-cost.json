@@ -1,0 +1,22 @@
+{
+  "vectors": 7265,
+  "sha512_vectors_ok": 503,
+  "faithful_spec": {
+    "agree_with_nearcore": 7265, "disagree": 0, "accepted": 3543,
+    "mean_mul": 6122.4, "max_mul": 7469,
+    "mean_cmul": 1293.0, "mean_lin": 5171.8, "mean_cmp": 4.6,
+    "mean_point_add": 645.8, "mean_point_dbl": 0.0, "mean_sha512_blocks": 1.83,
+    "max_mul_plus_cmul": 9081,
+    "reference_rust_us_per_verify": 111.3
+  },
+  "optimized": {
+    "agree_with_nearcore": 7265, "disagree": 0, "accepted": 3543,
+    "mean_mul": 2655.4, "max_mul": 3095,
+    "mean_cmul": 15.6, "mean_lin": 2564.8, "mean_cmp": 4.6,
+    "mean_point_add": 121.0, "mean_point_dbl": 217.0, "mean_sha512_blocks": 1.83,
+    "max_mul_plus_cmul": 3113,
+    "reference_rust_us_per_verify": 55.7
+  },
+  "gadget": { "products_checked_on_vectors": 1355312, "max_t_vectors": 74174506, "max_carry_vectors": 290915,
+    "random_max_limb_products": 100001, "max_t_worst": 307861659, "max_t_worst_log2": 28.20, "max_carry_worst": 1207470, "max_carry_worst_log2": 20.20, "babybear_half": 1006632960 }
+}
