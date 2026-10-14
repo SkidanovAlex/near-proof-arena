@@ -112,6 +112,16 @@ theorem deposit_after_eval (accounts : ReceiptPlan→Account)
     (fun j hj=>by simpa only [Nat.zero_add,receiptPair,ite_true] using deposit_after_bit accounts constants pub digests tokens fallback p i len j hj)]
   exact congrArg Fp.ofNat (Nat.mod_eq_of_lt (leBytes_getD_lt 16 _ i))
 
+/-- The `invB` cell of a deposit row is the aux cell, for every `aux`. A top-level lemma rather than
+a local `have … := rfl`: the nanoda rechecker substitutes a `have`'s value into its body, which
+re-checks this `rfl` at the concrete `aux := depositAux …`, a reduction that does not terminate
+(docs/logs/v3-recheck-2026-10.md). -/
+theorem receiptCell_dep_invB (constants : ReceiptPlan→Nat→Fp) (pub : List Fp)
+    (digests : ReceiptPlan→Nat→List Fp) (tokens : ReceiptPlan→TokenInput) (p : ReceiptPlan)
+    (i len : Nat) (aux : ReceiptPlan→Coord→Nat→Fp) :
+    receiptCell (booleanConstants constants) (tokenReceiptAux pub digests tokens (booleanReceiptAux aux))
+      p ⟨sDEP,i,len⟩ invB=aux p ⟨sDEP,i,len⟩ invB := rfl
+
 theorem deposit_inverse_cell (accounts : ReceiptPlan→Account)
     (constants : ReceiptPlan→Nat→Fp) (pub : List Fp) (digests : ReceiptPlan→Nat→List Fp)
     (tokens : ReceiptPlan→TokenInput) (fallback : ReceiptPlan→Coord→Nat→Fp)
@@ -119,10 +129,7 @@ theorem deposit_inverse_cell (accounts : ReceiptPlan→Account)
     receiptCell (booleanConstants constants)
       (tokenReceiptAux pub digests tokens (booleanReceiptAux (depositAux accounts fallback))) p ⟨sDEP,i,len⟩ invB=
       depositInverse (nativeDepositData (accounts p) p.input.receipt) := by
-  have haux (aux : ReceiptPlan→Coord→Nat→Fp) :
-      receiptCell (booleanConstants constants) (tokenReceiptAux pub digests tokens (booleanReceiptAux aux))
-        p ⟨sDEP,i,len⟩ invB=aux p ⟨sDEP,i,len⟩ invB := rfl
-  rw [haux]
+  refine (receiptCell_dep_invB constants pub digests tokens p i len _).trans ?_
   simp only [depositAux,invB,r1,st,sDEP,bef,lk,c1,c2,c3,c4,dsum,
     Nat.reduceEqDiff,ite_true,ite_false]
 

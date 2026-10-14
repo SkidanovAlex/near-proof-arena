@@ -18,7 +18,10 @@ theorem upsert_memory_growth : ∀ (t : PTrie) (key : List Nat) (v : Bytes) (out
     by_cases he : k=key
     · simp only [PTrie.upsert,he,ite_true,Option.some.injEq] at h
       subst out
-      simp [newLeaf,PTrie.memD,PTrie.mem?,leafMem,Render.NodeInfo.hexPrefix_len,fdepth]
+      -- `simp only` without `Nat.reducePow/Add/Mul`: folding `2^65 * (1 + 1)` into a literal makes the
+      -- nanoda rechecker compare it with a `Nat.succ`-term one unit at a time (docs/logs/v3-recheck-2026-10.md).
+      simp only [PTrie.memD, PTrie.mem?, newLeaf, leafMem, Render.NodeInfo.hexPrefix_len, Option.getD_some,
+        fdepth, ge_iff_le]
       omega
     · simp only [PTrie.upsert,he,ite_false,Option.some.injEq] at h
       subst out
@@ -51,7 +54,8 @@ theorem upsert_memory_growth : ∀ (t : PTrie) (key : List Nat) (v : Bytes) (out
     simp only [PTrie.upsert,Option.some.injEq] at h
     subst out
     simp only [PTrie.wf,Bool.and_eq_true,decide_eq_true_eq] at hw
-    simp [PTrie.memD,PTrie.mem?,fdepth,valueMem]
+    -- `simp only` without literal folding (see the `.leaf` case).
+    simp only [PTrie.memD, PTrie.mem?, valueMem, Option.getD_some, fdepth, Nat.sub_le_iff_le_add]
     omega
   | .branch bv cs m, n::key, v, out, hw, hk, hv, h => by
     simp only [PTrie.wf,Bool.and_eq_true,decide_eq_true_eq] at hw

@@ -1,4 +1,9 @@
 import NearSpecV3.ChunkValidationV0
+-- The trusted module that realizes `NearSpecV3.pMany`'s equation lemmas: without it, `simp only
+-- [pMany]` below re-realizes `pMany.eq_def` (with a private splitter of this module), and a judge
+-- whose trusted reference contains `pMany.eq_def` flags the trusted name as redefined
+-- (SHADOWED_DEFINITION; found for the np-udr-stark-v2 closure, docs/logs/v3-recheck-2026-10.md).
+import NearSpecV3.ClaimV3Props
 
 /-!
 # Honest proofs are bounded: `RelD0 cb w → w.length ≤ 8 388 641`
