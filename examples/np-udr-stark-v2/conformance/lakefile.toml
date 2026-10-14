@@ -55,6 +55,10 @@ name = "np-lean-export-v3"
 root = "ExportV3"
 
 [[lean_exe]]
+name = "np-lean-export-v3d1"
+root = "ExportV3D1"
+
+[[lean_exe]]
 name = "np-lean-render-v3"
 root = "NearRenderV3"
 
