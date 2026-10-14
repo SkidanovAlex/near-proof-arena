@@ -1,8 +1,9 @@
 # Lane `lane/v3-model-split` — verifier-model import closure, log
 
 Worktree `/data/illia/nearproof-wt/v3-integ-d`, branch `lane/v3-model-split`, from `lane/v3-package`
-`cd3e3e1d` (main `c6247f3d` + the v3 packaging commits), origin/main `484a2e0d` merged in
-(D0a challenge config + `ExpectedV3D0a*` templates; no zk-formal change). CPUs 15,31 only.
+`cd3e3e1d` (main `c6247f3d` + the v3 packaging commits), origin/main merged twice (`484a2e0d`: D0a
+challenge config + `ExpectedV3D0a*` templates; `69ae7bc2`: the recheck lane's proof-only zk-formal
+fixes). CPUs 15,31, later 12-15,28-31.
 
 ## Problem (packaging lane, `docs/logs/v3-package-2026-10.md`)
 
@@ -71,7 +72,11 @@ moved), 40 new `*Defs`/`*Core` files.
 | `out/verify` on `00-h10004-s3` | accept 2.6 s | accept 2.63 s, flipped byte rejected |
 | certificate/package closure (`NpUdrStarkV2/*.lean`) | 3,964 | 4,004 (+40 `*Defs`) |
 
-TODO judge run.
+| judge-built native verifier digest (`formal-check`) | — | `e3695215…` = `build.sh` `out/verify` (two package dirs, identical) |
+
+Whole `build.sh` from a clean package dir (`env -i`, fresh `HOME`, `SOURCE_DATE_EPOCH=0`,
+offline, CPUs 12-15,28-31): 2 min 45 s (Rust ≈1 min of it). `conformance` `np-lean-verify-v3`
+also rebuilt and accepts `00-h10004-s3` (3.4 s).
 
 ## Verification
 
@@ -91,7 +96,33 @@ TODO judge run.
     `Sched.rawOf.match_1.splitter` (realized in the original module by its proofs, for a matcher
     that now lives in the `*Defs` module): body re-numbers a `_sparseCasesOn` helper
     (2 new `…splitter._sparseCasesOn_*`).
-* TODO tests, audit, judge run.
+* After merging main `69ae7bc2` (recheck lane's proof-only fixes): everything rebuilds; TypeHashes
+  vs the pre-merge split tree differs only in the modules main changed (`CodecRecInt` per-case
+  lemmas, `RcptDepositFrame`, `MemGrowth`, `SoundPrep`, `ReexecV3D0.Size`, `ProcPriorDecodeTotal`:
+  new helper lemmas and their aux), no change elsewhere. Trusted-namespace constants realized in
+  candidate modules (the SHADOWED_DEFINITION risk): the same 794 names in the same modules before
+  and after the split (no `*Defs` module realizes a trusted lemma).
+* `zk-formal/test`: 2,546 / 2,549 pass (before and after the merge); the 3 failures are the
+  pre-existing `AuditHonestBalanceRcpt`, `AuditRenderV3RcptTables`, `AuditPackedPublic`.
+  `AuditAdmissionV3` passes (axioms `propext`, `Classical.choice`, `Quot.sound`).
+* `make pin-check` ok.
+
+### Judge run (`target/release/formal-check`, dev bwrap, `Limits::default`)
+
+`--formal <clean package>/formal` (sync-lean closure, no lakefile) `--certificate
+NpUdrStarkV2.certificate --challenge challenges/drafts/near-chunk-validation-d0-stark.draft.json
+--challenge-config runners/formal-checker/challenges/near-chunk-validation-d0-stark.json
+--repo-root <git archive of formal-core + spec/lean> --public-digest ab13c199…
+--native-model NpUdrStarkV2.Model.verifier@NpUdrStarkV2.Model`, merged tree `48883e62`:
+
+**exit 0, no findings; every gate PASS** (FORMAL_SEMANTIC_SOUNDNESS/COMPLETENESS,
+FORMAL_CRYPTO_SOUNDNESS, FORMAL_IMPL_CONNECTION: "certificate type equals the judge-constructed
+statement; kernel rechecks accepted"; AXIOM_AUDIT; ARTIFACT_BINDING: judge-built verifier
+`e3695215…`). Rechecks: leanchecker (4,005 modules) 1,988 s, nanoda 1,116 s, lean4lean 2,982 s,
+arena-audit 30 s, ndjson-audit (86,945 decls) 31 s, all accepted. Certificate closure 86,393
+constants, axioms `Classical.choice, Quot.sound, propext`. Timings: model elaboration 40 s +
+native C/link 60 s; candidate elaboration 6,532 s (serial); total 3 h 45 min, 13.6 GB peak, on
+CPUs 12-15,28-31 shared with a lake rebuild and the test run.
 
 ## Package fixes (requested by the coordinator)
 
