@@ -36,18 +36,39 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIB = os.path.join(ROOT, '.lake/build/lib/lean')
-EXCLUDE = {'ZkFormal.NearV3.Assembly.RcptViewV3', 'ZkFormal.NearV3.Assembly.ExtractV3'}
-TABLES = {'ZkFormal.NearV3.Assembly.RcptSkeleton.receiptArithmeticCandidate',
-          'ZkFormal.NearV3.Assembly.ReceiptCandidateRouting.candidateTable'}
-LOCAL_K = 'ZkFormal.NearV3.D1.RcptD1.LocalD1'
-SUFFIX = '_d1'
-# copies whose deltas use `Delta/Body` (its imports are in their closures)
-BODY_MODS = {'RcptCandidateBytesViewProof', 'RcptCandidateTableWellformed', 'RcptCandidateTableTraffic'}
+# Profiles: `rcpt` (V4, the receipt table) and `mrk` (V5, `mrkV3` at height cap 20).
+PROFILES = {
+    'rcpt': dict(
+        exclude={'ZkFormal.NearV3.Assembly.RcptViewV3', 'ZkFormal.NearV3.Assembly.ExtractV3'},
+        # table -> (replacement, replace the `TableLocal` token too)
+        tables={'ZkFormal.NearV3.Assembly.RcptSkeleton.receiptArithmeticCandidate':
+                ('ZkFormal.NearV3.D1.RcptD1.LocalD1', True),
+                'ZkFormal.NearV3.Assembly.ReceiptCandidateRouting.candidateTable':
+                ('ZkFormal.NearV3.D1.RcptD1.LocalD1', True)},
+        suffix='_d1', dir='R', base=['ZkFormal.NearV3.D1.R.Delta.Constraints'],
+        # copies whose deltas use `Delta/Body` (its imports are in their closures)
+        extra={'RcptCandidateBytesViewProof': ['ZkFormal.NearV3.D1.R.Delta.Body'],
+               'RcptCandidateTableWellformed': ['ZkFormal.NearV3.D1.R.Delta.Body'],
+               'RcptCandidateTableTraffic': ['ZkFormal.NearV3.D1.R.Delta.Body']},
+        overrides='scripts/rcpt_d1_overrides.lean', taint='scripts/rcpt_d1_taint.tsv',
+        what='the receipt table, re-proved for `rcptV3D1`',
+        hyp='`TableLocal receiptArithmeticCandidate` becomes `ZkFormal.NearV3.D1.RcptD1.LocalD1`'),
+    'mrk': dict(
+        exclude={'ZkFormal.NearV3.Assembly.LinkV3'},
+        tables={'ZkFormal.NearV3.Candidates.MerkleEmpty.table': ('ZkFormal.NearV3.D1.MrkD1.tableE', False),
+                'ZkFormal.NearV3.Candidates.MerklePublic.table': ('ZkFormal.NearV3.D1.MrkD1.tableP', False),
+                'ZkFormal.NearV3.Candidates.MerklePublic.baseTable': ('ZkFormal.NearV3.D1.MrkD1.tableB', False)},
+        suffix='_m20', dir='M', base=['ZkFormal.NearV3.D1.M.Base'], extra={},
+        overrides='scripts/mrk_d1_overrides.lean', taint='scripts/mrk_d1_taint.tsv',
+        what='the `mrkV3` tables, re-proved at height cap `2^20`',
+        hyp='`TableLocal` of the `maxLog 19` tables becomes `ZkFormal.NearV3.D1.MrkD1.tableE/P/B`'),
+}
+P = PROFILES['rcpt']
 
 
 def copy_mod(m):
     assert m.startswith('ZkFormal.NearV3.')
-    return 'ZkFormal.NearV3.D1.R.' + m[len('ZkFormal.NearV3.'):]
+    return f"ZkFormal.NearV3.D1.{P['dir']}." + m[len('ZkFormal.NearV3.'):]
 
 
 def mod_path(m, ext):
@@ -96,12 +117,12 @@ def comps(n):
 
 def renamed(n):
     c = comps(n)
-    c[-1] = c[-1] + SUFFIX
+    c[-1] = c[-1] + P['suffix']
     return '.'.join(c)
 
 
 def parse_patches():
-    p = os.path.join(ROOT, 'scripts/rcpt_d1_overrides.lean')
+    p = os.path.join(ROOT, P['overrides'])
     out = {}
     if not os.path.exists(p):
         return out
@@ -112,7 +133,7 @@ def parse_patches():
 
 
 def parse_overrides():
-    p = os.path.join(ROOT, 'scripts/rcpt_d1_overrides.lean')
+    p = os.path.join(ROOT, P['overrides'])
     out = {}
     if not os.path.exists(p):
         return out
@@ -155,9 +176,15 @@ PREFIX_RE = re.compile(r'^\s*((set_option\s+\S+\s+\S+|open\s+[^\n]*|omit\s+[^\n]
 
 
 def main():
-    args = [a for a in sys.argv[1:] if a != '--check']
+    global P
+    argv = sys.argv[1:]
+    if '--profile' in argv:
+        i = argv.index('--profile')
+        P = PROFILES[argv[i + 1]]
+        argv = argv[:i] + argv[i + 2:]
+    args = [a for a in argv if a != '--check']
     check = '--check' in sys.argv[1:]
-    src_tsv = args[0] if args else os.path.join(ROOT, 'scripts/rcpt_d1_taint.tsv')
+    src_tsv = args[0] if args else os.path.join(ROOT, P['taint'])
     taint = [l.rstrip('\n').split('\t') for l in open(src_tsv) if l.strip()]
     mismatches = []
     tainted = {r[0] for r in taint if r[2] == '1'}
@@ -167,7 +194,7 @@ def main():
     overrides = parse_overrides()
     patches = parse_patches()
     applied = set()
-    mods = sorted({r[1] for r in taint if r[2] == '1'} - EXCLUDE)
+    mods = sorted({r[1] for r in taint if r[2] == '1'} - P['exclude'])
     gen = set(mods)
     report = []
     for m in mods:
@@ -223,14 +250,17 @@ def main():
                 text = src[l][c0:c1]
                 t = text.lstrip('@')
                 at = text[:len(text) - len(t)]
-                if not t or t.startswith('.') or (c0 > 0 and src[l][c0 - 1] == '.') or t.startswith('_root_'):
+                # (a reference after `.` is generalized field notation `x.f`: the copy `f_d1`
+                # lives in the same namespace, so `x.f_d1` resolves to it)
+                if not t or t.startswith('.') or t.startswith('_root_'):
                     continue
                 tc = t.split('.')
                 nc = comps(n)
-                if n in TABLES:
+                if n in P['tables']:
+                    new, whole = P['tables'][n]
                     mm = re.search(r'((?:ZkFormal\.Near\.)?TableLocal)\s+$', src[l][:c0])
                     if mm:
-                        edits.append((l, mm.start(1), c1, LOCAL_K))
+                        edits.append((l, mm.start(1) if whole else c0, c1, new))
                     continue
                 if tc != nc[-len(tc):]:
                     if n in tainted:
@@ -300,11 +330,13 @@ def main():
         deps = sorted(g for g in gen if g in cl)
         # transitive reduction among the copies
         red = [g for g in deps if not any(g in closure(h) for h in deps if h != g)]
-        imports = [f'import {m}', 'import ZkFormal.NearV3.D1.R.Delta.Constraints'] + (['import ZkFormal.NearV3.D1.R.Delta.Body'] if m.split('.')[-1] in BODY_MODS else []) + [f'import {copy_mod(g)}' for g in red]
+        imports = ([f'import {m}'] + [f'import {x}' for x in P['base']] +
+                   [f'import {x}' for x in P['extra'].get(m.split('.')[-1], [])] +
+                   [f'import {copy_mod(g)}' for g in red])
         note = (f'/-! Generated by `scripts/rcpt_d1_copy.py` (lane v3-d1-phase2, V4): the declarations of\n'
-                f'`{m}` that depend on the receipt table, re-proved for `rcptV3D1`\n'
-                f'(`TableLocal ZkFormal.NearV3.D1.RcptD1.rcptK`), renamed `…{SUFFIX}`.  Do not edit by hand:\n'
-                f'edit `scripts/rcpt_d1_overrides.lean` and regenerate. -/\n')
+                f'`{m}` that depend on {P["what"]}\n'
+                f'({P["hyp"]}), renamed `…{P["suffix"]}`.  Do not edit by hand:\n'
+                f'edit `{P["overrides"]}` and regenerate. -/\n')
         body = '\n'.join(olines[body_start:])
         for n, pats in patches.items():
             if n in {plain(x) for x in keep}:
@@ -323,7 +355,7 @@ def main():
         open(p, 'w').write(text)
     # an aggregate root
     agg = '\n'.join(f'import {copy_mod(m)}' for m in mods) + '\n'
-    pa = mod_path('ZkFormal.NearV3.D1.R.All', '.lean')
+    pa = mod_path(f"ZkFormal.NearV3.D1.{P['dir']}.All", '.lean')
     if check:
         if open(pa).read() != agg:
             mismatches.append(pa)

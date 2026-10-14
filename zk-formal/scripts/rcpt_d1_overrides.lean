@@ -269,8 +269,6 @@ theorem ListChain.natural_body_d1 {e : Nat} {bs : List ListBlock} (h : ListChain
   have ho := hL.ext.2.2.2
   exact (ofNat_inj hp (by unfold P; omega) hf).symm
 
--- @override ZkFormal.NearV3.Assembly.ReceiptCandidateProof.ListChain.natural_totals
-
 -- @override ZkFormal.NearV3.Assembly.ReceiptCandidateProof.ListChain.view_wf
 /-- **The D1 table-level facts** (`RcptV3WfD1`). -/
 theorem ListChain.view_wf_d1 {e : Nat} {bs : List ListBlock} (h : ListChain tr tt 0 bs e)
@@ -285,8 +283,6 @@ theorem ListChain.view_wf_d1 {e : Nat} {bs : List ListBlock} (h : ListChain tr t
   · intro hb
     rw [ZkFormal.NearV3.D1.RcptD1.flat_views_bodyG]
     exact ListChain.natural_body_d1 hL h hp.body hb
-
--- @override ZkFormal.NearV3.Assembly.ReceiptCandidateProof.extract_wellformed
 
 -- @patch ZkFormal.NearV3.Assembly.ReceiptCandidateProof.ListChain.bytes_full
 <<<
@@ -327,8 +323,6 @@ theorem ListChain.bytes_view_traffic_d1 {e : Nat} {bs : List ListBlock} (h : Lis
   · rw [tableBusCount_eq,bytes_receive_empty,view_bytes_receive_empty]
     rfl
 
--- @override ZkFormal.NearV3.Assembly.ReceiptCandidateProof.extract_bytes_view
-
 -- @patch ZkFormal.NearV3.Assembly.ReceiptCandidateProof.ListChain.view_traffic
 <<<
 theorem ListChain.view_traffic_d1 {e : Nat} {bs : List ListBlock} (h : ListChain tr tt 0 bs e) :
@@ -351,4 +345,3 @@ theorem ListChain.view_traffic_d1 {e : Nat} {bs : List ListBlock} (h : ListChain
   simp only [ZkFormal.NearV3.D1.RcptD1.sends3G_eq _ _ _ h0]
 >>>
 
--- @override ZkFormal.NearV3.Assembly.ReceiptCandidateProof.extract_traffic

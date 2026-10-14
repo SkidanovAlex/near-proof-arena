@@ -6,8 +6,12 @@ import Lean
 Usage (from `zk-formal/`):
 
 ```
-lake env lean --run scripts/RcptTaint.lean <out.tsv> <Root.Module>... -- <root.constant>...
+lake env lean --run scripts/RcptTaint.lean <out.tsv> <Root.Module>... -- <root.constant>... [-- <seed table>...]
 ```
+
+Without the last section the seeds are the receipt tables below (V4).  With it, the given
+tables are the seeds (V5: the `mrkV3` tables).  The tables `T` of every `TableLocal T` in the
+closure are printed to stderr (to choose seeds).
 
 Lane `v3-d1-phase2`, item V4 (plan `docs/zk-formal/V3-D1-PHASE2.md` §7).  Imports the root
 modules (built `.olean`s), walks the kernel dependency graph from the root constants (as
@@ -32,7 +36,7 @@ def seedTables : List Name :=
    `ZkFormal.NearV3.Assembly.ReceiptCandidateRouting.candidateTable]
 
 /-- Does `e` contain `TableLocal T …` with `T` a seed table? -/
-def hasSeed (e : Expr) : Bool :=
+def hasSeedIn (seedTables : List Name) (e : Expr) : Bool :=
   (e.find? fun x =>
     x.isAppOf `ZkFormal.Near.TableLocal &&
       (match x.getAppArgs[0]? with
@@ -50,6 +54,10 @@ partial def main (args : List String) : IO UInt32 := do
   | out :: rest =>
     let (mods, consts) := rest.span (· != "--")
     let consts := consts.drop 1
+    let (consts, seeds) := consts.span (· != "--")
+    let seeds := seeds.drop 1
+    let seedTables := if seeds.isEmpty then seedTables else seeds.map (·.toName)
+    let hasSeed := hasSeedIn seedTables
     initSearchPath (← findSysroot)
     let env ← importModules (mods.toArray.map fun m => { module := m.toName }) {} (trustLevel := 1024)
     let names := env.header.moduleNames
@@ -77,6 +85,15 @@ partial def main (args : List String) : IO UInt32 := do
         for p in s.fieldNames do todo := todo.push (c ++ p)
     -- 2. taint fixed point
     let all := seen.toArray
+    let mut tables : NameSet := {}
+    for c in all do
+      let some ci := env.find? c | continue
+      for e in [ci.type] ++ ci.value?.toList do
+        let ts := (e.find? fun x => x.isAppOf `ZkFormal.Near.TableLocal).toList
+        for x in ts do
+          if let some t := x.getAppArgs[0]? then
+            if let some n := t.getAppFn.constName? then tables := tables.insert n
+    IO.eprintln s!"TableLocal tables in the closure: {tables.toList}"
     let mut tainted : NameSet := {}
     for c in all do
       let some ci := env.find? c | continue
