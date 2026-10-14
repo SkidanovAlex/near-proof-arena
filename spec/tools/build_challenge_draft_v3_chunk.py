@@ -5,7 +5,7 @@ spec/workloads/near-chunk-v3/<class>.json for the D1 / D2 / D3α classes.
 `near-chunk-v3` ("NEAR chunk state-transition succinct proof") is ONE coverage-tiered challenge
 (docs/CONTRACTS.md §11, docs/BENCHMARK_SPEC.md §17): statement `near/pv86/chunk-validation/v0` over the
 largest formalized domain, `NearSpecV3.RelChunkV3 = RelD0 ∨ RelD1 ∨ RelD2 ∨ D3.RelD3`
-(`spec/lean/v3/NearSpecV3/ChallengeChunkV3.lean`); candidates declare a tier D0a / D0 / D1 / D2 / D3a and are
+(`spec/lean/v3/NearSpecV3/ChallengeChunkV3.lean`); candidates declare a tier D0a / D0 / D1a / D1 / D2 / D3a and are
 admitted under `NearSpecV3.challengeParamsChunk <tier>` (soundness for `Rel_t`, completeness on
 `Domain_t`); soundness lifts to the statement by `NearSpecV3.sound_lift`. Tier D0a (rank 0,
 `RelD0a B0` ⊆ RelD0 by `relD0a_relD0`) lists the three D0 classes (see TIERS).
@@ -153,11 +153,21 @@ WEIGHT_SOURCE = (
 # candidate abstains (exit 3) on every other class; a D0 positive outside D0a in a d0-* class would
 # be COVERAGE_GAP_IN_TIER, so the held-out d0-* positives are re-checked with the D0a relation
 # before a freeze (D0A_CHECK below).
-TIERS = [("D0a", 0, ".d0a"), ("D0", 1, ".d0"), ("D1", 2, ".d1"), ("D2", 3, ".d2"), ("D3a", 4, ".d3a")]
+# D1a (rank 2, `RelTier .d1a = RelD1a B0` ⊆ RelD1 by `relD1a_relD1`, spec/near-chunk-validation-d1a.md;
+# user decision P-D1-1, 2026-10-14) lists the D0 and D1 classes: its positives are the D1 generators'
+# honest chunks, measured inside every D1a amendment (docs/logs/v3-d1a-spec-2026-10.md); a D1
+# positive outside D1a in a d0-*/d1-* class would be COVERAGE_GAP_IN_TIER, so the held-out positives
+# of those classes are re-checked with nearspec-v3-check-d1a before a freeze (D1A_CHECK).
+TIERS = [("D0a", 0, ".d0a"), ("D0", 1, ".d0"), ("D1a", 2, ".d1a"), ("D1", 3, ".d1"), ("D2", 4, ".d2"),
+         ("D3a", 5, ".d3a")]
 TIER_RANK = {t: r for t, r, _ in TIERS}
+# the tier a class is introduced at (D1a sits below D1 but lists the D1 classes)
+CLASS_TIER_RANK = {"D0": 1, "D1": 2, "D2": 4, "D3a": 5}
 # The workload classes of each tier: every class of a tier of rank <= its own, except that the
 # D0a tier lists the D0 classes explicitly (above).
 D0A_CLASSES = ["d0-quiet", "d0-transfers", "d0-missing"]
+D1A_CHECK = ("before freezing: nearspec-v3-check-d1a accepts every positive of the d0-* and d1-* classes "
+             "of the public fixtures and of the committed held-out set")
 D0A_CHECK = ("before freezing: nearspec-v3-check-d0a accepts every positive of the d0-* classes of the "
              "public fixtures and of the committed held-out set")
 
@@ -254,7 +264,7 @@ def main():
     assert sum(c["weight_ppm"] for c in classes) == 1000000
     tiers = []
     for tid, rank, lean in TIERS:
-        cls = D0A_CLASSES if tid == "D0a" else [c[0] for c in CLASSES if TIER_RANK[c[1]] <= rank]
+        cls = D0A_CLASSES if tid == "D0a" else [c[0] for c in CLASSES if CLASS_TIER_RANK[c[1]] <= rank]
         assert cls and all(any(c[0] == x for c in CLASSES) for x in cls)
         tiers.append({"id": tid, "rank": rank, "params": f"NearSpecV3.challengeParamsChunk {lean}",
                       "classes": cls})

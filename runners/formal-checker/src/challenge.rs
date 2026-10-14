@@ -425,6 +425,7 @@ mod tests {
         for (id, ctor) in [
             ("D0a", "d0a"),
             ("D0", "d0"),
+            ("D1a", "d1a"),
             ("D1", "d1"),
             ("D2", "d2"),
             ("D3a", "d3a"),
