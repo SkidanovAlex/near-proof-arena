@@ -75,6 +75,9 @@ HELDOUT_DIRS="${ARENA_LIVE_HELDOUT_DIRS:-/data/illia/nearproof-deps/heldout/near
 HELDOUT_V3_DIR="${ARENA_LIVE_HELDOUT_V3_DIR:-/data/illia/nearproof-deps/heldout/near-chunk-validation-d0}"
 # near-chunk-v3 held-out set (spec/challenge-inputs/heldout-commitment-chunk-v3.json, sha256:eeeb27a4…)
 HELDOUT_CHUNK_V3_DIR="${ARENA_LIVE_HELDOUT_CHUNK_V3_DIR:-/data/illia/nearproof-deps/heldout/near-chunk-v3}"
+# near-chunk-validation-d0-stark (D0a) held-out set (TreeDigest = its heldout_commitment, sha256:56e6f599…;
+# generated from an off-repo seed by oracle/scripts/gen-heldout-v3.sh DOMAIN=D0a)
+HELDOUT_D0A_DIR="${ARENA_LIVE_HELDOUT_D0A_DIR:-/data/illia/nearproof-deps/heldout/near-chunk-validation-d0-stark}"
 SEASON="${ARENA_LIVE_SEASON:-2026-10}"
 PG_HOSTPORT="${ARENA_LIVE_PG_HOSTPORT:-127.0.0.1:55471}"
 DB="${ARENA_LIVE_DB:-arena_live}"
@@ -185,7 +188,7 @@ cmd_install() {
   # public fixtures only: the trusted Lean tree is NEVER taken from HEAD; FORMAL_CHECK
   # builds from trusted-trees/<pin> (arena-live freeze-trusted), see docs/TCB.md
   git -C "$REPO" archive --format=tar HEAD -- oracle/fixtures/public oracle/fixtures/v3/arena-public \
-    oracle/fixtures/v3/public-chunk-v3 | tar -xf - -C "$stage/clean"
+    oracle/fixtures/v3/public-chunk-v3 oracle/fixtures/v3/arena-public-d0a | tar -xf - -C "$stage/clean"
   echo "$rev" >"$stage/REVISION"
   # locally-registered challenges (register-challenge) survive reinstalls
   if [ -d "$LIVE/release/challenges" ]; then
@@ -243,6 +246,10 @@ upgrade_config() {
   ensure_list "$c/worker.env" ARENA_WORKLOAD_GENERATORS "$LIVE/release/spec/workloads/near-chunk-v3"
   ensure_list "$c/worker.env" ARENA_FIXTURES_DIRS "$LIVE/release/clean/oracle/fixtures/v3/public-chunk-v3"
   [ -d "$HELDOUT_CHUNK_V3_DIR" ] && ensure_list "$c/worker.env" ARENA_HELDOUT_DIRS "$HELDOUT_CHUNK_V3_DIR"
+  # near-chunk-validation-d0-stark (D0a): D0 generator specs (above), its own public fixtures
+  # (params.bin domain D0a; the D0 set's params are refused by the request pin) and held-out set
+  ensure_list "$c/worker.env" ARENA_FIXTURES_DIRS "$LIVE/release/clean/oracle/fixtures/v3/arena-public-d0a"
+  [ -d "$HELDOUT_D0A_DIR" ] && ensure_list "$c/worker.env" ARENA_HELDOUT_DIRS "$HELDOUT_D0A_DIR"
   ensure_season_secret
   grep -q '^ARENA_TRUSTED_TREES=' "$c/server.env" || {
     printf '# frozen trusted trees: non-demo challenges register only against their pinned tree\nARENA_TRUSTED_TREES=%s\n' "$LIVE/trusted-trees" >>"$c/server.env"
