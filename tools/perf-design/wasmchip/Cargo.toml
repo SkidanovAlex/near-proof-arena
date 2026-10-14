@@ -1,0 +1,26 @@
+# Spike #1 of docs/zk-formal/V3-PERF-DESIGN.md: register-form WASM opcode-class chips on the
+# existing np-udr-stark-v2 prover (read-only path dependency). Measures cells and bus
+# interactions per WASM instruction, proves/verifies end to end, tamper self-check, and
+# micro-benchmarks (SHA-384 Merkle, rate-1/2 LDE). Standalone workspace; not part of the
+# repository root workspace; not on any admitted/pinned path.
+[package]
+name = "wasmchip"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+npudr = { package = "np-udr-stark", path = "../../../examples/np-udr-stark-v2/source" }
+p3-field = { git = "https://github.com/Plonky3/Plonky3", rev = "3acc8b70e68d6c2afc03930700c26540bd47458d" }
+p3-matrix = { git = "https://github.com/Plonky3/Plonky3", rev = "3acc8b70e68d6c2afc03930700c26540bd47458d" }
+rayon = "1"
+sha2 = { version = "0.10", features = ["compress"] }
+
+[profile.release]
+opt-level = 3
+lto = false
+codegen-units = 16
+debug = false
+panic = "unwind"
+
+[workspace]
