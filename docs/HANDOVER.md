@@ -123,7 +123,7 @@ User directives (binding):
    * freeze once;
    * run the joint w1 paired-baseline window with the cost tooling;
    * sign, register and deploy;
-   * submit the reference (expect ADMITTED) and `near-v3-d3-lenient-codes` (expect REJECTED);
+   * submit the reference (expect ADMITTED); hostile `near-v3-d3-lenient-codes` was retired 2026-10-14 (`adversarial/retired/`);
    * record the results.
 
 ## 5. Stream B: succinct D0a STARK (np-udr-stark-v2), the critical path
