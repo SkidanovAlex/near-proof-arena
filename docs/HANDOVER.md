@@ -206,8 +206,12 @@ took 1,800 s); slowest: `Candidates.HorizontalAuxCheck` 140 s, `Candidates.Verti
   `Node.Links` 182 s. Proposed next levers (not applied): faster `codec_int`, per-case codec
   modules, a g = 2-only `NearAirCheck` lemma.
 * **Not measured yet:** leanchecker / nanoda / lean4lean rechecks of the 3,964-module closure.
-* **Prover resource limits miss:** draft `max_prove_ms` 600,000 and 16 GiB RAM / 8 vCPU; real proofs
-  take 710–749 s and 13.3 GB RSS (15.5 GB internal peak).
+* **Prover resource limits (resolved, `7cd8a982`):** draft `max_prove_ms` 600,000 and 16 GiB / 8 vCPU.
+  `v3prove` now takes 263–312 s wall with cgroup `memory.peak` ≤ 12.6 GiB on 8 vCPU (4 Zen 5 cores ×
+  2 threads, `HEAVY_MEM=16G`); proofs byte-identical to before; Lean accepts; 14/14 negatives.
+  Earlier 710–749 s figures were scalar builds (host `~/.cargo/config.toml` rustflags override the
+  crate's AVX2 flags; `build.sh` with a fresh HOME does get AVX2) and the old RSS figures were
+  last-phase only. Cloud 8-vCPU risk: heaviest fixture ≈ 400–500 s. Log `docs/logs/v3-prover-perf-2026-10.md`.
 
 **Quality notes for whoever continues:**
 * Converge on `ExtractV3Stmt` / `CompleteV3Stmt`; every new module should sit on one of them.
