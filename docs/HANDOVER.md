@@ -187,6 +187,11 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
   or deployed (user: stop after signing). Hostile `near-v3-d3-lenient-codes` retired. near-chunk-v3
   stays unsigned until the D1a re-freeze (user decision).
   D1a spec is on `lane/v3-d1a-spec` — do NOT merge it before the D0a draft is signed (any new
+  **Elaboration budget (2026-10-14, `d2f27096`):** proof-only `codec_fast` tactic, NearAirCheck g=2
+  split, GWalk/GRows joint simp: serial elaboration 9,100 s → 5,953 s (−35%), lean4lean peak 13.6 →
+  6.9 GB, nanoda 604 s; no module > 200 s. Re-run the judge formal-check before submitting (the
+  certificate sources changed; the 90-module verifier model did not). Log: `docs/logs/v3-elab-budget-2026-10.md`.
+  D3a / 1 Pgas study and user decisions: `docs/zk-formal/V3-D3A-STUDY.md` (sections D, 10).
   `spec/lean` file breaks regeneration at freeze commit `3c2a4563`).
 * ~~Oracle~~ (lane oracle-d0a, 2026-10-13): `oracle/v3-d0a` implements A7 native post trie, A12,
   empty-key-extension fix, offline `unfold-case`; public-d0a regenerated (all `.bin` byte-identical,
