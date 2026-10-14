@@ -23,7 +23,8 @@
         "NearSpec.ClaimCodec",
         "NearSpec.Challenge",
         "NearSpec.TrieUpsert",
-        "NearSpec.Bandwidth"
+        "NearSpec.Bandwidth",
+        "NearSpec.TrieUpsertProofs"
       ]
     },
     {
@@ -43,6 +44,9 @@
         "NearSpecV3.GF256",
         "NearSpecV3.ReedSolomon",
         "NearSpecV3.ChunkValidationV0",
+        "NearSpecV3.ChunkValidationV0a",
+        "NearSpecV3.PrepD0",
+        "NearSpecV3.ChallengeD0a",
         "NearSpecV3.ClaimV3Props",
         "NearSpecV3.ChallengeV3",
         "NearSpecV3.SHA512",

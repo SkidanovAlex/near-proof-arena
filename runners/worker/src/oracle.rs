@@ -2016,6 +2016,59 @@ mod tests {
         }
     }
 
+    /// `near-chunk-validation-d0-stark` (domain D0a): its pinned public
+    /// fixtures (`oracle/fixtures/v3/arena-public-d0a`) carry a `D0a`
+    /// params.bin that passes the challenge's request pin (the D0 set's
+    /// `D0` params.bin does not), every case passes the pin, and its D0
+    /// generator specs resolve to the D0 oracle tool.
+    #[test]
+    fn near_v3_d0a_draft_fixtures_and_params_pin() {
+        let gens = [repo().join("spec/workloads/near-chunk-validation-d0")];
+        let mut o = Oracles::builtin()
+            .with_near_v3(PathBuf::from("/nonexistent/near-arena-oracle-v3"), &gens)
+            .unwrap();
+        let chal = load("challenges/drafts/near-chunk-validation-d0-stark.draft.json");
+        let pin = crate::jobs::RequestPin::from_challenge(&chal).unwrap();
+        assert_eq!(pin.domain.as_deref(), Some("D0a"));
+        let d0_params =
+            std::fs::read(repo().join("oracle/fixtures/v3/arena-public/params.bin")).unwrap();
+        assert!(pin
+            .check_params(&d0_params, &chal.runtime_config_digest)
+            .is_err());
+        let d = o
+            .add_fixtures_dir(&repo().join("oracle/fixtures/v3/arena-public-d0a"))
+            .unwrap();
+        assert_eq!(d, chal.workload_suite.public_fixtures);
+        let fx = o.fixtures_for(&chal).unwrap().unwrap();
+        let cases = o.get(&chal).unwrap().fixture_cases(&chal, &fx).unwrap();
+        assert_eq!(cases.len(), 80);
+        for c in &cases {
+            assert_eq!(c.request, c.expected_claim);
+            pin.check_case(&c.request, Some(&c.expected_claim)).unwrap();
+        }
+        let p = o
+            .get(&chal)
+            .unwrap()
+            .approved_params(&chal, Some(&fx))
+            .unwrap();
+        assert_eq!(p.len(), 100);
+        let r = o.rejection_suite(&chal, &seeds(), 0).unwrap();
+        assert_eq!((r.public, r.sampled, r.heldout), (128, 0, 0));
+        for c in &r.cases {
+            pin.check_case(&c.request, None).unwrap();
+        }
+        for c in &chal.workload_suite.classes {
+            let e = o
+                .get(&chal)
+                .unwrap()
+                .sample(&chal, &c.id, &seeds(), 1)
+                .unwrap_err()
+                .to_string();
+            // resolved to the D0 tool; fails only because the binary is absent
+            assert!(!e.contains("fail-closed: generator spec"), "{}: {e}", c.id);
+        }
+    }
+
     /// v3 is its own registration: fixtures (positives with request = claim,
     /// rejection cases), params pin, generator specs checked for tool and
     /// class; v1/v2 oracles never serve it.

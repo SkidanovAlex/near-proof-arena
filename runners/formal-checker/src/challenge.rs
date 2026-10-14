@@ -293,6 +293,112 @@ mod tests {
         );
     }
 
+    /// The trusted packages of every config are import-closed: each module
+    /// the config includes imports only included modules or toolchain
+    /// modules. The judge compiles exactly the included modules
+    /// (`collect_trusted`), so a missing include breaks the trusted build of
+    /// every candidate of that challenge (staging reports the candidate's
+    /// imports of it as MANIFEST_INVALID).
+    #[test]
+    fn every_config_trusted_closure_is_import_closed() {
+        let root = repo_root();
+        let dir = root.join("runners/formal-checker/challenges");
+        let mut n = 0;
+        for e in std::fs::read_dir(&dir).unwrap().flatten() {
+            let p = e.path();
+            if p.extension().is_none_or(|x| x != "json") {
+                continue;
+            }
+            n += 1;
+            let cfg = ChallengeFormalConfig::load(&p).unwrap();
+            let mut mods: BTreeMap<String, Vec<String>> = BTreeMap::new();
+            for t in cfg.trusted_packages(&root) {
+                for f in crate::digest::list_tree(&t.src_root).unwrap() {
+                    let Some(stem) = f.path.strip_suffix(".lean") else {
+                        continue;
+                    };
+                    if stem == "lakefile" || f.path.starts_with(".lake/") {
+                        continue;
+                    }
+                    let name = stem.replace('/', ".");
+                    if let Some(inc) = &t.include {
+                        if !inc.iter().any(|x| crate::staging::has_prefix(&name, x)) {
+                            continue;
+                        }
+                    }
+                    let src = std::fs::read_to_string(t.src_root.join(&f.path)).unwrap();
+                    mods.insert(name, crate::staging::parse_header(&src).unwrap().0);
+                }
+            }
+            for (m, imports) in &mods {
+                for i in imports {
+                    let tc = ["Init", "Std", "Lean"]
+                        .iter()
+                        .any(|r| crate::staging::has_prefix(i, r));
+                    assert!(
+                        tc || mods.contains_key(i),
+                        "{}: trusted module {m} imports {i}, which the config does not include",
+                        p.display()
+                    );
+                }
+            }
+        }
+        assert!(n >= 5, "{n} configs");
+    }
+
+    /// `near-chunk-validation-d0-stark` (domain D0a): the trusted closure of
+    /// `NearSpecV3.ChallengeD0a` / `PrepD0` (what `np-udr-stark-v2` vendors)
+    /// and `params` = `NearSpecV3.challengeSpecD0a` with the spliced literals.
+    #[test]
+    fn near_chunk_d0a_config_renders() {
+        let root = repo_root();
+        let cfg = ChallengeFormalConfig::load(
+            &root.join("runners/formal-checker/challenges/near-chunk-validation-d0-stark.json"),
+        )
+        .unwrap();
+        assert_eq!(cfg.challenge, "near-chunk-validation-d0-stark");
+        let inc: Vec<&String> = cfg
+            .trusted
+            .iter()
+            .flat_map(|t| t.include.iter().flatten())
+            .collect();
+        for m in [
+            "NearSpecV3.ChallengeD0a",
+            "NearSpecV3.ChunkValidationV0a",
+            "NearSpecV3.PrepD0",
+            "NearSpec.TrieUpsertProofs",
+        ] {
+            assert!(inc.iter().any(|i| *i == m), "{m}");
+        }
+        let profile: SecurityProfile = serde_json::from_slice(
+            &std::fs::read(root.join("security/profiles/validity-classical-128.json")).unwrap(),
+        )
+        .unwrap();
+        let inp = ExpectedInputs {
+            profile: &profile,
+            verify_fuel: 1 << 30,
+            max_proof_bytes: 8 << 20,
+            max_reduction_fuel: 1 << 30,
+            public_digest_hex: "00".repeat(32),
+            verifier_digest_hex: "11".repeat(32),
+            declared_tier: None,
+        };
+        let src = cfg.expected(&root, &inp).unwrap().render().unwrap();
+        assert!(src.contains("import NearSpecV3.ChallengeD0a"));
+        assert!(src.contains("spec := NearSpecV3.challengeSpecD0a"));
+        assert!(src.contains("maxProofBytes := (8388608 : Nat)"), "{src}");
+        assert!(!src.contains("{{"));
+        let native = cfg.expected_native_lean(&root, &inp).unwrap();
+        let extra = BTreeMap::from([
+            ("bin_digest".to_string(), LeanValue::Bytes("22".repeat(32))),
+            ("toolchain_id".to_string(), LeanValue::Str("tc".into())),
+        ]);
+        let nsrc = native.render_with(&extra).unwrap();
+        assert!(nsrc.contains("spec := NearSpecV3.challengeSpecD0a"));
+        assert!(nsrc.contains(".nativeTrusted binaryDigest toolchainId model"));
+        assert!(!nsrc.contains("{{"));
+    }
+
     /// v1.7: `near-chunk-v3` splices the declared tier as a `NearSpecV3.Tier`
     /// constructor; a tiered template without a declared tier fails closed.
     #[test]
