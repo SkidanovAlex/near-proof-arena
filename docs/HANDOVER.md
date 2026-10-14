@@ -185,7 +185,10 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
   commitment `sha256:56e6f599…`, seed off-repo in `nearproof-deps/keys`, set in
   `nearproof-deps/heldout/near-chunk-validation-d0-stark`); candidate re-pinned. NOT yet registered
   or deployed (user: stop after signing). Hostile `near-v3-d3-lenient-codes` retired. near-chunk-v3
-  stays unsigned until the D1a re-freeze (user decision).
+  re-frozen with the D1a tier and **SIGNED 2026-10-14: `chl_497bbbf1a6a5abc5b3448e0bc1a56997`** (tree
+  `66bba27e` at `85adc6c0` in the live store; not registered/deployed). D0a was registered and deployed
+  2026-10-14 (release `9da1032a`); its first live FORMAL_CHECK hits the Firecracker per-module copy
+  overhead (lane judge-fc-batch is fixing the runner; see `docs/logs/v3-deploy-d0a-2026-10.md`).
   D1a spec is on `lane/v3-d1a-spec` — do NOT merge it before the D0a draft is signed (any new
   **Elaboration budget (2026-10-14, `d2f27096`):** proof-only `codec_fast` tactic, NearAirCheck g=2
   split, GWalk/GRows joint simp: serial elaboration 9,100 s → 5,953 s (−35%), lean4lean peak 13.6 →
