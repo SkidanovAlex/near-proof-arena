@@ -34,7 +34,27 @@ Inputs read:
 
 ---
 
-## 0. Answers in one page
+## D. User decisions (2026-10-14, binding) and what they change
+
+| id | decision | consequence for this study |
+|---|---|---|
+| **U-1** | **Recursion ALLOWED, SHA-256 only.** The concrete SHA-256 evaluated inside circuits is treated as the random oracle. No Poseidon2 and no algebraic hash anywhere. | Option R-a is adopted as an assumption, to be named e.g. `sha256-random-oracle-in-circuit`. The challenge profile text still has to be drafted (PROPOSAL wording in §10.6). R-a' (Poseidon2) is **rejected**. Recursion nodes pay the full in-AIR SHA cost: 17 rows × W_eq 704 ≈ 12 k W-eq cells per compression (L5-SHA.md). R5 is superseded for D3-scale work. |
+| **U-2** | **Proven soundness bounds only**, even if the proof ends up > 300 KB. No conjectured FRI regime. | 300 KB is now a *goal*, reachable only under a proven bound that can also be proved in Lean. The best proven size and its dependencies are in §10.4. |
+| **U-3** | **Judge: parallel elaboration.** Measure judge wall time with parallel module elaboration on N cores under a 4 h wall limit. | PROPOSAL in §10.6: N = 16, plus the recheck implications. The S7 spike measures it. |
+| **U-4** | **Near-real-time is required**, not minutes-async. NEAR blocks are ≈ 1 s. Hardware budget: "up to a few H200 machines" (2–4 × 8 H200). | §3.3's minutes-scale plan is **superseded by §10**. Verdict: worst-case 1 Pgas in ≈ 1–2 s is **not feasible** on 16–32 H200. §10.3 gives the achievable envelope and the hardware the worst case would need. |
+
+Where §§0–8 conflict with this section or §10, **D and §10 govern**:
+* §0 items 2, 4 and 6;
+* §3.3 latency;
+* §4.1's 1 Pgas column;
+* §7 phases and spikes;
+* §8 decisions 1–4 and 8.
+
+The workload measurement (§1), the zkVM verdict (§4.2), reuse (§5) and exclusions (§6) are unchanged.
+
+---
+
+## 0. Answers in one page (original study; see D and §10 for updates)
 
 1. **Workload (measured, §1).** On all 19,179 accepted D3 cases (172 public `near-chunk-v3` D3 fixtures plus the
    19,007 honest cases of corpora d3c7–d3c10):
@@ -276,7 +296,7 @@ proof of the same kind as L5 (SHA table ⇒ SHA spec) and L6 (tables ⇒ trie sp
   this gives outer soundness. The assumption is the standard random-oracle-instantiation heuristic that every
   deployed recursive STARK relies on. It is **stronger than** today's `random-oracle-fiat-shamir-sha256`, because
   that one is used only black-box.
-* **(R-a') Poseidon2 inside the recursion layers.** In-circuit SHA-256 costs ≈ 17 rows × 544 columns per block,
+* **(R-a') Poseidon2 inside the recursion layers (REJECTED by U-1).** In-circuit SHA-256 costs ≈ 17 rows × 544 columns per block,
   and verifying a D0a-sized proof costs ≈ 236 k blocks ≈ 2 G cells per recursion node. Poseidon2 over BabyBear
   would be ≈ 20–50× cheaper per node, but it needs a further allowed assumption (Poseidon2 as a random oracle /
   collision resistance). PROPOSAL; optional.
@@ -653,3 +673,222 @@ M3 host functions; M4 `ExtractD3aStmt`; M5 admitted locally.
 * Throughput anchors: `docs/logs/v3-prover-perf-2026-10.md` (D0a), `docs/research/recursion-r1-cost.md` (R1
   presets and S-curves), `docs/research/checker-recommendations.md` §5 (SP1/RISC Zero/wasmi),
   `docs/e2e-results/sp1-pipeline.md` (SP1 judge run).
+
+---
+
+## 10. Re-plan under U-1…U-4: near-real-time, SHA-256-only recursion, proven bounds
+
+### 10.1 Target assumed
+
+| class | gas | latency target (end of chunk execution → proof available) |
+|---|---|---|
+| typical mainnet chunk | ≤ ≈ 50–300 Tgas (**ASSUMPTION** until S1; the mainnet chunk gas limit is 1 Pgas, but typical use is well below it) | **≤ 1–2 s** |
+| worst case | 1 Pgas, adversarial pure WASM (1.22·10⁹ operators) | ideally ≤ 2 s; the question is whether that is feasible |
+
+There is one floor that no hardware removes. NEAR prices 1 Pgas at ≈ 1 s of *native* execution on validator
+hardware (gas ≈ ps: 1 Tgas ≈ 1 ms). The prover must at least execute the chunk, so worst-case latency is
+≥ ≈ 1 s plus proving. Proof work can overlap that execution only if segments start proving while later segments
+are still executing (§10.5, lever L1).
+
+### 10.2 Cost model under U-1 and U-2 (estimated)
+
+* **Base (segment) work.** 494–995 W-eq cells per WASM operator (ASSUMPTION, S2). D0a-type plumbing, trie and
+  SHA for the witness: ≈ 1.25 SHA rows per witness byte × 704 ≈ 0.9 k cells/B. A 5 MB witness is ≈ 4.4 G cells.
+* **Segment proof (inner) parameters under U-2.**
+  * Proven UDR at rate 1/2–1/4 with 32-bit grinding. The inner proof is never transmitted; it only feeds
+    recursion.
+  * A low blowup keeps the LDE cheap, but UDR gives < 1 bit per query at rate 1/2. That needs ≈ 300+ queries,
+    which makes the recursion verifier expensive.
+  * The best trade-off is ≈ blowup 4 (UDR ≈ 0.68 bits/query → ≈ 235 queries at z = 32) or blowup 16
+    (176 queries). S3 settles it.
+* **Recursion node under U-1 (SHA-256 in-AIR).**
+  * Verifying one inner proof of W_eq ≈ 500 at 176–235 queries costs ≈ 300 SHA compressions per query (leaf
+    rows ≈ 32 blocks, 3 Merkle paths ≈ 66, FRI ≈ 200). That is ≈ 53–70 k compressions × 12 k ≈ **0.65–0.85 G
+    cells**, plus Fp8 arithmetic and the inner-AIR DAG evaluation (≈ +30 %): ≈ **0.85–1.1 G cells per child
+    proof**.
+  * D0a's real proof needs ≈ 236 k compressions ≈ 2.8 G cells (V3-D0-DESIGN §5.5).
+  * So **a 2²²-operator segment (2–4 G base cells) carries ≈ 25–50 % recursion overhead per tree level it
+    feeds**, at arity 4.
+  * Summing over a tree of depth d ≈ log₄(S) with similar-sized node proofs gives **total recursion work
+    ≈ 0.4–0.7 × base**. Total ≈ **1.4–1.7 × base**.
+* **Correction to §2.3.** R-a' (Poseidon2) is no longer available. The ≈ 20–50× cheaper hash nodes are gone, and
+  the figures above already use SHA-256.
+* **Final layer.** Johnson regime (if S4 succeeds) at blowup 2⁶–2⁸, with a shrinking trace 2¹⁶–2¹⁸. Its prove
+  time is dominated by the LDE of a 2¹⁸ × ≈ 300 trace at blowup 2⁸ (≈ 2·10¹⁰ cell evaluations plus SHA Merkle):
+  **≈ 0.2–0.5 s on one H200** (estimated).
+* **GPU throughput (ASSUMPTION; S5/S8 measure it).** Our STARK on one H200 is planned at 0.5–2·10⁹ W-eq cells/s.
+  For SHA-256 alone (Merkle commitments):
+  * cited: hashcat mode 1400 (SHA2-256) is reported at ≈ 22 GH/s on an RTX 4090 (Chick3nman benchmark gist);
+  * I found no published H200 figure;
+  * **estimate for an H200: ≈ 10–20 G compressions/s** (integer-ALU bound, similar to or below a 4090).
+  * Committing the LDE of 10¹² cells at blowup 2 hashes ≈ 8 TB ≈ 1.25·10¹¹ compressions ⇒ **≈ 0.2–0.4 s on 32
+    H200s**. Native SHA is therefore *not* the binding cost at 1 Pgas. In-AIR SHA in recursion nodes is (above).
+
+### 10.3 Feasibility verdict and real-time envelope (estimated)
+
+**Plain answer: near-real-time (≈ 1–2 s) worst-case 1 Pgas is NOT feasible on 2–4 × 8 H200.**
+
+**Worst case 1 Pgas:**
+* total work ≈ (0.6–1.2 T base cells) × 1.4–1.7 ≈ **0.85–2.0 T cells**;
+* on 16–32 H200s at 0.5–2 G cells/s each (8–64 G cells/s): **≈ 13–250 s**, central estimate ≈ 30–60 s on 32 GPUs;
+* plus the ≥ 1 s execution floor and ≈ 5–8 tree levels × 0.1–0.3 s critical path.
+
+**What IS achievable in ≈ 1–2 s on 32 H200** (≈ 1 s of proving after a pipelined ≈ 0.5 s of tree and final
+layer):
+* the budget is ≈ **10–40 G cells** of base work;
+* pure-WASM adversarial gas: 10–40 G ÷ (494–995 × 1.5) ≈ **7–54 M operators ≈ 6–45 Tgas worst-case**. At the
+  central estimate (1 G cells/s/GPU, d3-lean) that is **≈ 25 Tgas worst case, ≈ 7 × today's `G_α`**;
+* **typical mix** (measured synthetic: 37–52 k WASM instructions per Tgas; a mainnet mix with heavier memory use
+  is ASSUMED ≤ 2× that):
+  * a 300 Tgas chunk is ≈ 11–31 M instructions ≈ 8–46 G cells, plus witness plumbing ≈ 4–10 G;
+  * **≈ 100–300 Tgas typical-mix chunks fit in ≈ 1–2 s on 32 H200** at the central-to-optimistic throughput;
+  * on 16 H200 the envelope halves.
+* So **real time is decided by the worst case, not the typical case**. A real-time tier needs a *worst-case*
+  admission bound: an `InD3` cells/gas budget that bounds pure-WASM gas, e.g. a per-chunk WASM-operator cap
+  ≈ 25–50 Tgas-equivalent, while host-heavy gas up to 1 Pgas stays allowed. This is a PROPOSAL (P-RT-1, below):
+  it replaces `G_α`'s "total FC gas" with a **weighted gas budget** (each gas category weighted by its proving
+  cells).
+
+**Hardware for worst-case 1 Pgas in ≈ 2 s:**
+* ≈ 1 s of proving for 0.85–2.0 T cells needs 0.85–2.0 T cells/s, i.e. **≈ 450–4,000 H200s (≈ 60–500 8-GPU
+  nodes)** at 0.5–2 G cells/s each;
+* central estimate ≈ **1,000 H200s**;
+* plus a cluster interconnect able to move ≈ 10–30 TB of trace/LDE within the second (trace generation must be
+  local to the GPUs: each node re-executes its segments from snapshots).
+
+That is two orders of magnitude above the stated budget. Even then latency ≥ execution (≈ 1 s) + one segment +
+tree depth, so ≈ 2–3 s is the realistic floor.
+
+**State of the art (cited, not reproduced):**
+* the Ethereum Foundation defines real-time proving as ≥ 99 % of L1 blocks within 10 s;
+* SP1 Hypercube: 99.7 % of 954 mainnet blocks in < 12 s on 16 RTX 5090s (earlier: 93 % of 10,000 blocks,
+  average 10.3 s, on ≈ 200 RTX 4090s);
+* ZisK: 7.4 s on 24 GPUs;
+* ZKsync Airbender: strong single-GPU throughput, scaling linearly across GPUs.
+
+Ethereum blocks are ≈ 30–60 Mgas EVM. These systems target ≈ 100-bit, partly conjectured security with
+Poseidon2/BLAKE-style hashes over KoalaBear/BabyBear or multilinear PCS. **Our constraints are strictly costlier:**
+* 128-bit *proven* bounds with 2⁶⁴ hash queries (≈ 192 query bits; UDR inner proofs need ≈ 2–4 × their query
+  counts);
+* SHA-256 everywhere (in-AIR SHA ≈ 10–50 × an algebraic hash per compression);
+* a **10 × tighter latency target** (1 s vs 10 s).
+
+As a rough calibration (estimate): what SP1 does in 10 s on 16 GPUs we would do in ≈ 30–100 s on 16 GPUs. That is
+consistent with §10.3's figures.
+
+### 10.4 Best proven proof size (U-2)
+
+| layer regime (Lean status) | final proof (estimated, §2.2 model) | depends on |
+|---|---|---|
+| UDR + 32-bit grinding (UDR proved in Lean; grinding needs an L2/L3 lemma) | **≈ 0.70–0.90 MB** | recursion (U-1) + grinding lemma; hints in-AIR |
+| Johnson regime FRI, blowup 2⁶–2⁸, z = 32 (proven in literature; **Lean proof is S4, research**) | **≈ 230–350 KB** (≈ 230–270 KB at blowup 2⁸, trace 2¹⁶–2¹⁸) | S4 succeeding Mathlib-free; BabyBear 2-adicity 27 forces final trace ≤ 2¹⁸ ⇒ an extra shrink layer |
+| Johnson-regime STIR/WHIR-style low-degree test (proven; Lean: S4 plus a new LDT proof) | ≈ 120–200 KB (±50 %) | S4 plus a new protocol layer, ≈ 20–40 k lines |
+
+So **≤ 300 KB under a proven bound is reachable only if the Johnson-regime proximity gap is proved in Lean** (G1).
+Otherwise the best proven size is **≈ 0.7–0.9 MB**. Larger digests or a different field do not change this:
+SHA-256 digests are fixed at 32 B, and an extension field ≥ 2²⁴⁸ already makes the field error terms negligible.
+
+**Latency vs size.** The Johnson-regime final layer adds ≈ 0.2–0.5 s (high blowup). The UDR final layer is cheaper
+to prove but ≈ 3 × larger. At a 1 s budget this trade matters, and the size/latency switch is a tier parameter.
+
+### 10.5 Design levers, ranked by impact on real-time capacity
+
+| # | lever | effect (estimated) | cost |
+|---|---|---|---|
+| L1 | **Prove while executing.** The native executor emits segment snapshots; GPUs start segment k while k+1 executes | hides most of the ≈ 1 s execution floor; latency ≈ max(exec, prove) + tail | prover engineering; no Lean |
+| L2 | **Wide, shallow aggregation** (arity 8–16, segments of 2²⁰–2²² operators) | depth 3–4 instead of 5–8, so ≈ 0.3–1 s off the critical path; per-node SHA cost grows with arity but runs in parallel | recursion AIR parametric in arity |
+| L3 | **Per-receipt / per-call parallel segments.** Receipts execute sequentially in nearcore, but each call's WASM run is a separate segment family; the state overlay is bound on trie buses | more parallelism for many-call chunks; no help for one giant call | the relation's segment fold (`Segment.lean`) generalised to receipts |
+| L4 | **Fewer cells per operator**: lookup-heavy ALU (byte tables), fusing locals into EXEC rows (locals plus const are 49 % of instructions; register-like local caching), fused superinstructions (`local.get; i32.const; i32.add`) | cells/op 494 → ≈ 250–350 (target); the real-time envelope scales inversely | S2; larger tables must stay cheap in elaboration |
+| L5 | **Inner-proof parameters**: blowup 4–16 vs query count; grinding z = 32–40 bits | ≈ 1.5–2 × on recursion cost | L3 parameter proofs |
+| L6 | **GPU SHA-256 throughput** (Merkle, and the in-AIR SHA trace generation) | ≈ 0.2–0.4 s at 1 Pgas on 32 GPUs; must be overlapped | S8 measures it |
+| L7 | **Pipelining across blocks** | raises *throughput* (one proof per block sustained) but **not latency** | — |
+| L8 | Hardware | linear in GPUs up to the tree/execution floor | budget |
+
+### 10.6 PROPOSALS added by this re-plan
+
+* **P-RT-1 (domain).** A real-time tier bounds *proving-weighted* gas: `Σ_cat w_cat · gas_cat ≤ Γ`, with weights
+  from measured cells per gas (WASM operators ≫ host fees ≫ hashing per gas), instead of `G_α` on total FC gas.
+  Sized so that the worst case fits ≈ 1–2 s on the stated hardware (≈ 25 Tgas pure-WASM-equivalent on 32 H200,
+  central estimate). Host-heavy chunks up to 1 Pgas remain inside. Requires S1/S2/S5.
+* **P-RT-2 (security profile, implements U-1).** Add the allowed assumption
+  `sha256-random-oracle-in-circuit`: "the Lean-proved ROM soundness bound of the pinned inner verifier holds with
+  the oracle instantiated by SHA-256 as arithmetised by the pinned L5 table". Set `max_aggregation_depth` per tier
+  (≤ 8). The admission theorem's ROM branch gains a recursion clause. The arithmetisation-matches-`npVerifierP`
+  part stays **proved**.
+* **P-RT-3 (judge, implements U-3).**
+  * Elaboration runs as `lake build -j N` with **N = 16** cores under a **4 h wall** limit. The per-module 1 h
+    limit stays. Total CPU-seconds is reported and capped at N × 4 h.
+  * Determinism: oleans must be byte-identical between `-j 1` and `-j N` (spot-checked at registration).
+  * **Recheckers:**
+    * leanchecker and nanoda check environments module-by-module or in parallel. Allow N-core parallel runs,
+      keeping 2 h wall per run and 4 h wall per rechecker.
+    * lean4lean (3,223 s serial for D0a) would be ≈ 3–5 × that for an A+R certificate (≈ 3–4.5 h serial). It
+      needs parallel replay over independent module subsets, or its 4 h limit becomes binding.
+    * S7 measures the critical path of the module DAG: wall ≥ critical path regardless of N.
+  * Estimate: D0a is 7,000 s CPU, so at N = 16 the wall is ≈ max(critical path, 440 s). An A+R certificate is
+    17–34 ks CPU, so at N = 16 the wall is ≈ max(critical path, 1.1–2.1 ks). That fits 4 h unless a single chain
+    of modules exceeds it, which needs the small-module discipline of §5.
+* **P-RT-4 (hardware/challenge).** Real-time tier hardware profile `2–4 × 8 H200`, `max_vram_bytes` ≈ 1.1 TB per
+  node, `max_prove_ms` ≈ 2,000 (typical-class) with a worst-case class at the P-RT-1 bound, and a GPU judge worker.
+  *Separate* "capacity" classes up to 1 Pgas with `max_prove_ms` 60,000–300,000 measure throughput and cost
+  without claiming real time.
+
+### 10.7 Updated recommendation and plan
+
+**Recommendation (unchanged core, re-targeted).**
+* Build **A+R with SHA-256 recursion** (U-1).
+* Table soundness stays protocol-independent.
+* The first admitted artifact is the **D3a single-proof tier on CPU** (Phase 1), as before.
+* The north star becomes a **real-time tier under P-RT-1** (weighted gas bound, ≈ 1–2 s on 32 H200), plus
+  non-real-time 1 Pgas capacity classes.
+* **Worst-case real-time 1 Pgas is not a goal on this budget.** It would need ≈ 500–4,000 H200s; I recommend not
+  pursuing it.
+* Option E (single-shot multilinear IOP) is deprioritised. It avoids the SHA-in-circuit cost, but its monolithic
+  distributed commitment is latency-hostile and it is research-grade. Keep only S4, which both A+R and E need.
+
+**Spikes (Phase 0, ≈ 3–5 weeks, ≤ 4 lanes; S5/S8/S9 need one H200).**
+
+| spike | question | go/no-go |
+|---|---|---|
+| S1 mainnet replay | real typical gas, mix, contracts and witness per chunk | sets the typical-class target (G4) |
+| S2 EXEC/RAM prototype + L4 levers | measured cells/operator; target ≤ 350 | G2: ≤ 700 keeps the D3a CPU tier viable; ≤ 350 doubles the real-time envelope |
+| S3 size calculator | exact proven sizes: UDR+grinding vs Johnson; inner-proof parameter sweep (L5) | input to G1 |
+| **S4 Johnson regime in Lean** (Mathlib-free) | the only route to ≤ 300 KB under U-2 | **G1**: fail ⇒ accept ≈ 0.7–0.9 MB proven |
+| S5 GPU STARK kernel | our LDE + quotient + Merkle on one H200: cells/s | **G5**: < 0.5 G cells/s ⇒ real-time envelope < 10 Tgas worst case; rethink |
+| S6 recursion-node cost | rows to verify a segment proof with in-AIR SHA (U-1), arity 4–16 | confirms the 1.4–1.7 × total |
+| S7 judge parallel elaboration | `-j 16` wall time, critical path, recheck times for D0a (and a projected A+R closure) | supports P-RT-3 |
+| **S8 GPU SHA-256 throughput** (new) | compressions/s on an H200 for Merkle-tree layouts (leaf rows of 1–12 KB, arity-2 inner nodes), and in-AIR SHA trace generation rate | input to L6 |
+| **S9 latency-budget prototype** (new) | an end-to-end critical-path model with real timings: native execution with snapshots (nearcore or the clean-room VM), segment trace generation, simulated segment and node proofs on GPU, tree depth vs arity, final layer | **G6**: does a 25 Tgas pure-WASM chunk fit in 2 s on the available GPUs? Sets P-RT-1's Γ |
+
+**Phases.**
+* **Phase 1 (4–8 months):** D3a CPU tier, as in §7. D1-N proceeds with P-D1-2 **interim**; the D1/D2 shaping advice
+  of §5 is unchanged and now essential: no witness-derived hints, honest heights, action-dispatch bus, CODE bus,
+  `gasV3` chip.
+* **Phase 2 (6–10 months, parallel):**
+  * the GPU prover (S5 → production);
+  * segmenting with prove-while-execute (L1);
+  * the SHA-256 recursion AIR proved against `npVerifierP`;
+  * grinding lemma; Johnson-regime L3 (if G1 passes);
+  * hints in-AIR (RS, scheduler, D1-S Ed25519);
+  * the P-RT-3 judge;
+  * GPU judge worker.
+* **Phase 3:** real-time tier under P-RT-1 (Γ from S9), then lifts (§6). Raise Γ as cells/operator (L4) and
+  hardware improve.
+
+### 10.8 Decisions still open (all PROPOSALS)
+
+1. **P-RT-1**: replace `G_α` with a proving-weighted gas bound for the real-time tier. This accepts that
+   worst-case 1 Pgas is *not* real time on 2–4 × 8 H200. Alternatively, fund ≈ 500–4,000 H200s, or relax the
+   latency target for worst-case chunks.
+2. **P-RT-2**: the exact wording of the SHA-256-in-circuit assumption and the recursion clause in `CryptoSound`.
+3. **P-RT-3**: N = 16 parallel elaboration / 4 h wall, and parallel rechecking (especially lean4lean).
+4. **P-RT-4**: the real-time and capacity hardware profiles and the GPU judge worker.
+5. **If G1 fails**: accept ≈ 0.7–0.9 MB proven proofs, as U-2 already implies, or keep 300 KB as a stretch only.
+6. Access to mainnet data (S1) and an H200 (S5/S8/S9).
+
+Sources cited in §10 (published, not reproduced here):
+* SP1 Hypercube real-time claims: <https://www.theblock.co/post/355013/succinct-introduces-zkvm-sp1-hypercube-claims-real-time-ethereum-proving>
+* the 16 × RTX 5090 / 99.7 % figure, ZisK 24 GPUs / 7.4 s, Airbender, and the EF definition of real-time proving:
+  <https://blockeden.xyz/blog/2026/01/30/zksync-airbender-fastest-risc-v-zkvm-ethereum-proving/>
+* hashcat SHA2-256 GPU benchmarks: <https://gist.github.com/Chick3nman/e4fcee00cb6d82874dace72106d73fef>,
+  <https://hashcat.net/forum/printthread.php?tid=11787>
