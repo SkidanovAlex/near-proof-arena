@@ -89,6 +89,7 @@ pub fn queries(n: &Native, v: &MainValues) -> Result<Vec<Query>, String> {
     let mut qs = account_lookup_queries(&n.receipts);
     qs.extend(access_key_lookup_queries(&n.receipts));
     qs.extend(queue_lookup_queries(v, n.steps.len()));
+    qs.extend(n.extra_queries.iter().cloned());
     Ok(qs)
 }
 

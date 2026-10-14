@@ -485,6 +485,18 @@ pub struct RcptIn {
     /// `u128` prepared block gas price (`PH_GP`, `ctx.gasPrice`).
     #[serde(default)]
     pub bgp: u128,
+    /// D1 offsets (`rcptV3D1`, lane v3-d1-tables): `None` for `tableQ` (D0a).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub d1: Option<D1Off>,
+}
+
+/// The public offsets `rcptV3D1` reads (`ZkFormal.NearV3.D1.RcptD1`): MEM time offset `T0`,
+/// first refund body position `O0`, tokens burnt before the incoming receipts `TOK0`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+pub struct D1Off {
+    pub t0: u64,
+    pub o0: u64,
+    pub tok0: u128,
 }
 
 // ---------------------------------------------------------------------------
@@ -531,6 +543,8 @@ struct Rd {
     last_r: bool,
     /// `prefixBurn` before this receipt
     before: u128,
+    /// D1: MEM time offset `T0` (14-bit age at `xb52`) — `None` for D0a
+    d1t0: Option<u64>,
 }
 
 impl Rd {
@@ -1432,7 +1446,15 @@ fn dep_row(rw: &mut Row, d: &Rd, big: bool, i: usize) {
     }
     // deposit age (13 bits, `depositAgeAux`)
     if i == 0 {
-        set_bits(rw, 53, 13, (d.r as u128).saturating_sub(d.tprev as u128));
+        match d.d1t0 {
+            None => set_bits(rw, 53, 13, (d.r as u128).saturating_sub(d.tprev as u128)),
+            Some(t0) => set_bits(
+                rw,
+                52,
+                14,
+                (d.r as u128 + t0 as u128).saturating_sub(d.tprev as u128),
+            ),
+        }
     }
 }
 
@@ -1510,8 +1532,8 @@ fn build(input: &RcptIn) -> Rows {
     let mut rows: Vec<Row> = Vec::new();
     // `planLists 0 0 8`: global `r`, global body offset from 8, burn prefix.
     let mut global_r: u64 = 0;
-    let mut body_off: u64 = 8;
-    let mut burnt: u128 = 0;
+    let mut body_off: u64 = input.d1.map_or(8, |o| o.o0);
+    let mut burnt: u128 = input.d1.map_or(0, |o| o.tok0);
     for (j, list) in input.lists.iter().enumerate() {
         rows.extend(header_rows(
             input.own,
@@ -1560,6 +1582,7 @@ fn build(input: &RcptIn) -> Rows {
                 le: cj + 1 == list.rs.len(),
                 last_r: cj + 1 == list.rs.len() && j == last_list_idx,
                 before: burnt,
+                d1t0: input.d1.map(|o| o.t0),
             };
             rows.extend(seg_rows(&d, input.height, bgp, &bgp_b));
             o += d.rc_len();
@@ -1782,6 +1805,7 @@ mod tests {
             own: 0,
             height: 0,
             bgp: 0,
+            d1: None,
         }
     }
 
@@ -1795,6 +1819,7 @@ mod tests {
             own: 5,
             height: 77,
             bgp,
+            d1: None,
         }
     }
 

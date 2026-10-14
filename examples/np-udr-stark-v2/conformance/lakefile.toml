@@ -55,6 +55,14 @@ name = "np-lean-export-v3"
 root = "ExportV3"
 
 [[lean_exe]]
+name = "np-lean-verify-v3d1"
+root = "VerifyV3D1"
+
+[[lean_exe]]
+name = "np-lean-d1-v3"
+root = "D1V3"
+
+[[lean_exe]]
 name = "np-lean-export-v3d1"
 root = "ExportV3D1"
 

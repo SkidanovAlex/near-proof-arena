@@ -246,10 +246,10 @@ def cChains : List Expr :=
   [ inOpE (sub (n (dl 0)) (c st)) ] ++
   (List.range 6).map (fun x => inOpE (sub (n (dl (x + 1))) (c (dl x)))) ++
   -- D: dQ = tT − q − cin + 256·boQ, cin₀ = 0
-  chain (sub dQ (sub (sub tT q) (smul 256 (c boQ))))
+  chain (sub dQ (.add (sub tT q) (smul 256 (c boQ))))
         (sub (byteN dQb) (sub (sub (byteN tTb) (byteN qb)) (sub (c boQ) (smul 256 (n boQ))))) ++
   -- S: dS = 770_lane − st − cin + 256·boS (770 = [2, 3]), cin₀ = 0
-  chain (sub dS (sub (sub (k 2) (c st)) (smul 256 (c boS))))
+  chain (sub dS (.add (sub (k 2) (c st)) (smul 256 (c boS))))
         (sub (byteN dSb) (sub (sub (smul 3 (n l1)) (n st)) (sub (c boS) (smul 256 (n boS))))) ++
   -- credit: Σ (255 − aft) running
   chain (sub (c msum) (sub (k 255) rC)) (sub (n msum) (.add (c msum) (sub (k 255) (byteN rCb))))
