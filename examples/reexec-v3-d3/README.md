@@ -100,6 +100,17 @@ are linked. With the new binaries: SDK check-local passes (package `73782d64…`
 gate passes (407/407 positives, byte-identical proofs, 244/244 rejections) and so do all
 3,062 worker mutations; held-out 208/208 positives (identical proofs) and 1,433 mutations pass. Evidence: `docs/logs/v3-d3-recheck-2026-10.md`.
 
+Re-check at the near-chunk-v3 re-freeze with tier D1a (2026-10-14, lane `v3-refreeze-v3`): the
+draft was re-frozen at `85adc6c0` (trusted tree `66bba27e…`, adds `Tier.d1a`; ranks D0a 0, D0 1,
+D1a 2, D1 3, D2 4, D3a 5; draft id `chl_497bbbf1…`). The vendor was re-synced (`sync-vendor.sh
+85adc6c0`: `ChallengeChunkV3` changed, `NearSpecV3.ChunkValidationD1a` added) and `build.sh` links
+the config's 64 trusted modules. No candidate Lean source changed. The configured formal check
+passes every gate (leanchecker 72/72, nanoda, lean4lean 72/72; default limits). `prepare` is
+unchanged (`8341e9de…`); `prove` (`8859b7d2…`) and `verify` (`cda17614…`, equal to the judge's
+build) changed only because one more trusted module is linked. The strict public gate passes
+(407/407 positives with byte-identical proofs, 244/244 rejections). Evidence:
+`docs/logs/v3-refreeze-v3-2026-10.md`.
+
 Historical reference results in `docs/e2e-results/v3-d3-reference/` concern the
 previous necessity normalizer. Fresh logged checker validation is documented in
 `docs/e2e-results/v3-wasm-logged/` and the D1/D2 logged-checker reports; TTN replay

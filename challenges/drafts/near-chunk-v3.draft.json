@@ -96,10 +96,10 @@
     "formal_spec": {
       "relation_module": "NearSpecV3.ChallengeChunkV3",
       "relation_decl": "NearSpecV3.RelChunkV3",
-      "tree_digest": "sha256:b890e8354ed1e977cfa67d20343d0946f296f36d7dada0cee1d8392b922a398b",
+      "tree_digest": "sha256:66bba27ef4c8772d8e4fba0258fc504bcc9d59b5bdfd66f073ff9c50751ec150",
       "lean_toolchain": "leanprover/lean4:v4.34.1"
     },
-    "spec_doc_digest": "sha256:cbc793c3b2dca9d61887cd7babff2f8f9429bbc7f6cf0a0e8cba7f62c71f0c31"
+    "spec_doc_digest": "sha256:b68420e35a81c52a1dacf03b865e599dcf0a76ecc836235f8b3d2db765e33e94"
   },
   "claim_encoding": {
     "format": "near-arena-claim-v3",
@@ -135,15 +135,15 @@
     "allowed_packages": [
       [
         "ArenaCore",
-        "3c2a45633f6c8cbc37967d8fc56e7ed7a2424008"
+        "85adc6c005aa6833c2f71efecd51d27444aa549c"
       ],
       [
         "NearSpec",
-        "3c2a45633f6c8cbc37967d8fc56e7ed7a2424008"
+        "85adc6c005aa6833c2f71efecd51d27444aa549c"
       ],
       [
         "NearSpecV3",
-        "3c2a45633f6c8cbc37967d8fc56e7ed7a2424008"
+        "85adc6c005aa6833c2f71efecd51d27444aa549c"
       ]
     ],
     "recheckers": [
@@ -345,8 +345,21 @@
         ]
       },
       {
-        "id": "D1",
+        "id": "D1a",
         "rank": 2,
+        "params": "NearSpecV3.challengeParamsChunk .d1a",
+        "classes": [
+          "d0-quiet",
+          "d0-transfers",
+          "d0-missing",
+          "d1-transfers",
+          "d1-mixed",
+          "d1-receipts"
+        ]
+      },
+      {
+        "id": "D1",
+        "rank": 3,
         "params": "NearSpecV3.challengeParamsChunk .d1",
         "classes": [
           "d0-quiet",
@@ -359,7 +372,7 @@
       },
       {
         "id": "D2",
-        "rank": 3,
+        "rank": 4,
         "params": "NearSpecV3.challengeParamsChunk .d2",
         "classes": [
           "d0-quiet",
@@ -375,7 +388,7 @@
       },
       {
         "id": "D3a",
-        "rank": 4,
+        "rank": 5,
         "params": "NearSpecV3.challengeParamsChunk .d3a",
         "classes": [
           "d0-quiet",
