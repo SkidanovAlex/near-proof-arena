@@ -185,7 +185,20 @@
       "Classical.choice",
       "Quot.sound"
     ],
-    "allowed_packages": [],
+    "allowed_packages": [
+      [
+        "ArenaCore",
+        "3c2a45633f6c8cbc37967d8fc56e7ed7a2424008"
+      ],
+      [
+        "NearSpec",
+        "3c2a45633f6c8cbc37967d8fc56e7ed7a2424008"
+      ],
+      [
+        "NearSpecV3",
+        "3c2a45633f6c8cbc37967d8fc56e7ed7a2424008"
+      ]
+    ],
     "recheckers": [
       "leanchecker",
       "nanoda",
