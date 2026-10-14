@@ -95,24 +95,27 @@ macro "went" t:term : tactic => `(tactic| (rcases (show ent I $t = 0 ∨ ent I $
 macro "wfin" : tactic => `(tactic| (apply cast0; (try simp only [ind]); (try ((repeat' split) <;> omega)); done))
 
 set_option hygiene false in
-/-- Close the walk constraints of row `t` (next row `t + 1`). -/
+/-- Close the walk constraints of row `t` (next row `t + 1`).  The alternatives are ordered by cost on
+the honest walk rows (docs/logs/v3-elab-budget-2026-10.md): a syntactic `rfl` first, the full `rfl` and
+the split on the next row's mode (which closes none of the `cWalk` goals) last. -/
 macro "wclose" t:term "," t':term : tactic => `(tactic| (
   all_goals try (apply cast0; rfl)
   all_goals wmode $t, hm
   all_goals first
-    | (apply cast0; rfl)
+    | (apply cast0; with_reducible rfl)
     | (apply cast0; omega)
     | exact cast0 (nl_bool (by omega))
     | exact cast0 (nl_13 (by omega))
     | wfin
     | exact inv_w1 (by omega) (by omega)
     | exact inv_s (by decide) (by omega) (by omega)
-    | (wmode $t', hm2 <;> wfin)
     | (wts <;> wfin)
     | (went 1 <;> wfin)
     | (went 2 <;> wfin)
     | (went 1 <;> went 2 <;> wfin)
-    | (wts <;> went 1 <;> went 2 <;> wfin)))
+    | (wts <;> went 1 <;> went 2 <;> wfin)
+    | (apply cast0; rfl)
+    | (wmode $t', hm2 <;> wfin)))
 
 /-- The entry flag of a step row. -/
 theorem ent_cases (I : UpsInst) (t : Nat) (ht : t = 1 ∨ t = 2) :

@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Render.CodecDefs
+import ZkFormal.NearV3.Render.CodecFast
 
 /-! Integer pass of the codec header rows. -/
 namespace ZkFormal.NearV3.Render.Cdc
@@ -17,8 +17,8 @@ theorem hdr_int (I : Inst) (p : Nat) (hp : p < 4) (Z : ZEnv)
   have hzt := zt0_le I
   have htz := tv_zt0 I
   rcases (show p = 0 ∨ p = 1 ∨ p = 2 ∨ p = 3 by omega) with rfl | rfl | rfl | rfl
-  · codec_int
+  · codec_fast
   all_goals (have hf : Z.first = 0 := by simpa using hf
-             codec_int)
+             codec_fast)
 
 end ZkFormal.NearV3.Render.Cdc

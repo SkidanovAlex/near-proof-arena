@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Render.CodecDefs
+import ZkFormal.NearV3.Render.CodecFast
 
 /-! Integer pass of the codec rows at the block boundaries: field ends, record ends, header → record,
 hash and `sha256(all_shards)` rows. -/
@@ -25,10 +25,10 @@ theorem rec_fend_int (I : Inst) (R : Rec) (f bpo bpr apv apostv bigv bpo' bpr' a
   have hcbv := cbv_le I R
   have hbrv := bigRv_le R
   rcases (show f = 0 ∨ f = 1 by omega) with rfl | rfl
-  · codec_int
+  · codec_fast
   · obtain ⟨h1, h2, h3⟩ := h0 rfl
     subst h1; subst h2; subst h3
-    codec_int
+    codec_fast
 
 /-- The record end (`f = 2, gg = 7`) followed by the next record's first row. -/
 theorem rec_end_int (I : Inst) (R R' : Rec) (bpo bpr apv apostv bigv bpo' bpr' apv' apostv' bigv' : Nat)
@@ -49,7 +49,7 @@ theorem rec_end_int (I : Inst) (R R' : Rec) (bpo bpr apv apostv bigv bpo' bpr' a
   rcases (show zt0 I = 0 ∨ zt0 I = 1 by omega) with hz | hz <;>
   rcases (show bigRv R = 0 ∨ bigRv R = 1 by omega) with hb | hb <;>
   rcases (show cbv I R = 0 ∨ cbv I R = 1 by omega) with hc | hc <;>
-  codec_int
+  codec_fast
 
 /-- The last record's end followed by the first sanity-hash row. -/
 theorem rec_last_int (I : Inst) (R : Rec) (dig hpre : List Nat) (bpo bpr apv apostv bigv : Nat)
@@ -70,7 +70,7 @@ theorem rec_last_int (I : Inst) (R : Rec) (dig hpre : List Nat) (bpo bpr apv apo
   rcases (show zt0 I = 0 ∨ zt0 I = 1 by omega) with hz | hz <;>
   rcases (show bigRv R = 0 ∨ bigRv R = 1 by omega) with hb | hb <;>
   rcases (show cbv I R = 0 ∨ cbv I R = 1 by omega) with hc | hc <;>
-  codec_int
+  codec_fast
 
 /-- The last header row followed by the first record row (link `0`). -/
 theorem hdr_last_int (I : Inst) (R : Rec) (bpo bpr apv apostv bigv : Nat) (Z : ZEnv)
@@ -81,7 +81,7 @@ theorem hdr_last_int (I : Inst) (R : Rec) (bpo bpr apv apostv bigv : Nat) (Z : Z
     ∀ e ∈ constraints, e ∉ modE → zev Z e = 0 := by
   have hzt := zt0_le I
   have htz := tv_zt0 I
-  codec_int
+  codec_fast
 
 /-- Sanity-hash row `j < 31` followed by row `j + 1`. -/
 theorem hash_int (I : Inst) (dig hpre : List Nat) (j : Nat) (hj : j < 31) (Z : ZEnv)
@@ -93,7 +93,7 @@ theorem hash_int (I : Inst) (dig hpre : List Nat) (j : Nat) (hj : j < 31) (Z : Z
   have htz := tv_zt0 I
   have hj' : j ≠ 31 := by omega
   have hj'' : j + 1 ≠ 0 := by omega
-  codec_int
+  codec_fast
 
 /-- The last sanity-hash row followed by the first `sha256(all_shards)` row. -/
 theorem hash_last_int (I : Inst) (dig hpre ash : List Nat) (Z : ZEnv)
@@ -103,7 +103,7 @@ theorem hash_last_int (I : Inst) (dig hpre ash : List Nat) (Z : ZEnv)
     ∀ e ∈ constraints, e ∉ modE → zev Z e = 0 := by
   have hzt := zt0_le I
   have htz := tv_zt0 I
-  codec_int
+  codec_fast
 
 /-- `sha256(all_shards)` row `j < 31` followed by row `j + 1`. -/
 theorem ash_int (I : Inst) (ash : List Nat) (j : Nat) (hj : j < 31) (Z : ZEnv)
@@ -114,7 +114,7 @@ theorem ash_int (I : Inst) (ash : List Nat) (j : Nat) (hj : j < 31) (Z : ZEnv)
   have hzt := zt0_le I
   have htz := tv_zt0 I
   have hj' : j ≠ 31 := by omega
-  codec_int
+  codec_fast
 
 /-- The last `sha256(all_shards)` row followed by the next instance's first header row. -/
 theorem ash_last_int (I I' : Inst) (ash : List Nat) (Z : ZEnv)
@@ -123,7 +123,7 @@ theorem ash_last_int (I I' : Inst) (ash : List Nat) (Z : ZEnv)
     ∀ e ∈ constraints, e ∉ modE → zev Z e = 0 := by
   have hzt := zt0_le I
   have htz := tv_zt0 I
-  codec_int
+  codec_fast
 
 /-- The last `sha256(all_shards)` row of the last instance, followed by zero padding. -/
 theorem ash_pad_int (I : Inst) (ash : List Nat) (Z : ZEnv)
@@ -132,6 +132,6 @@ theorem ash_pad_int (I : Inst) (ash : List Nat) (Z : ZEnv)
     ∀ e ∈ constraints, e ∉ modE → zev Z e = 0 := by
   have hzt := zt0_le I
   have htz := tv_zt0 I
-  codec_int
+  codec_fast
 
 end ZkFormal.NearV3.Render.Cdc

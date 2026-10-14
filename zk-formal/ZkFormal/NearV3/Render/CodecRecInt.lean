@@ -1,4 +1,4 @@
-import ZkFormal.NearV3.Render.CodecDefs
+import ZkFormal.NearV3.Render.CodecFast
 
 /-! Integer pass of the codec record rows inside a field (`gg < 7`). -/
 namespace ZkFormal.NearV3.Render.Cdc
@@ -12,7 +12,8 @@ set_option maxHeartbeats 0
 term, which the independent kernel lean4lean (a judge rechecker) could not check in the memory
 available (> 31 GB; its caches live per declaration). Each `rec_in_int_F_G` has the hypotheses of
 `rec_in_int` plus `f = F`, `gg = G`, and runs the original tactic script on exactly the context the
-original case split produced (docs/logs/v3-recheck-2026-10.md). -/
+original case split produced (docs/logs/v3-recheck-2026-10.md); the integer pass is `codec_fast`
+(`CodecFast`, docs/logs/v3-elab-budget-2026-10.md). -/
 
 set_option hygiene false in
 /-- `rec_in_case n F G`: the theorem `n`, case `f = F`, `gg = G` of `rec_in_int`. -/
@@ -37,7 +38,7 @@ theorem $n:ident (I : Inst) (R : Rec) (f gg bpo bpr apv apostv bigv bpo' bpr' ap
   (try simp only [Nat.reduceLT, Nat.reduceLeDiff, forall_const, OfNat.ofNat_ne_zero, Nat.succ_ne_self,
     reduceCtorEq, false_implies, true_implies, ite_true, ite_false, Nat.reducePow, Nat.reduceMul,
     Nat.add_zero, Nat.zero_add, Nat.one_mul] at hid hpz hap hapost hbig)
-  codec_int)
+  codec_fast)
 
 rec_in_case rec_in_int_0_0 0 0
 rec_in_case rec_in_int_0_1 0 1

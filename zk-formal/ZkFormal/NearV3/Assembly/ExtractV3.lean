@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Assembly.NearAir
-import ZkFormal.NearV3.Assembly.NearAirCheck
+import ZkFormal.NearV3.Assembly.NearAirCheckG2
 import ZkFormal.Near.Extract.Common
 import ZkFormal.Near.Extract.BusCount
 import ZkFormal.NearV3.Extract.NodeView

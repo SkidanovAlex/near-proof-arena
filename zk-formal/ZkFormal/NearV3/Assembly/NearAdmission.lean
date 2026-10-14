@@ -1,5 +1,5 @@
 import ZkFormal.NearV3.Assembly.NearAirSize
-import ZkFormal.NearV3.Assembly.NearAirCheck
+import ZkFormal.NearV3.Assembly.NearAirCheckG2
 import ZkFormal.NearV3.Assembly.Good
 import ZkFormal.NearV3.Assembly.FactorSound
 import ZkFormal.NearV3.Assembly.HintCodec
@@ -41,7 +41,7 @@ theorem dp_eq_pg2 : ZkFormal.Prover.Np.G.dp = ZkFormal.V2.G.pg 2 := rfl
 
 /-- The `NpOkPg` instance at `g = 2`, named for the certificate. -/
 theorem nearAirV3_npOkPg_2 : ZkFormal.V2.G.NpOkPg nearAirV3 (ZkFormal.V2.G.pg 2) :=
-  nearAirV3_npOkPg 2 (by decide) (by decide)
+  nearAirV3_npOkPg_g2
 
 /-- The proved inner-proof size bound (item 6), used as `maxInner`. -/
 def v3MaxInner : Nat := 6435489
