@@ -494,5 +494,90 @@
       },
       "rejection_cases": "not re-run (64 held-out rejection inputs not kept)"
     }
+  },
+  "presign_check_refreeze_v3": {
+    "status": "pass",
+    "date": "2026-10-14",
+    "lane": "lane/v3-d3-presign",
+    "base_commit": "7e133b7d795243f8bec67b8044da95e6fb55268f",
+    "freeze": {
+      "commit": "85adc6c005aa6833c2f71efecd51d27444aa549c",
+      "tree_digest": "sha256:66bba27ef4c8772d8e4fba0258fc504bcc9d59b5bdfd66f073ff9c50751ec150",
+      "draft_id": "chl_497bbbf1a6a5abc5b3448e0bc1a56997"
+    },
+    "build": {
+      "command": "clean build-recipe/build.sh on git archive of examples/reexec-v3-d3 at 7e133b7d, fresh HOME",
+      "wall_seconds": 120.0,
+      "peak_rss_kib": 3398032,
+      "native_binaries_sha256": {
+        "prepare": "8341e9deeb0579bc38bd8d8868727be816e9ca31e2bff23d78487cda7bc61236",
+        "prove": "8859b7d2a9983a44c97eceeb4dcf0579b2e69ce278236f89cb99b137bfd76f44",
+        "verify": "cda17614a149340c06bffd7d3baa2b61341363cec8f2c2d5a46121395392766b"
+      },
+      "equals_refreeze_v3_and_judge_built_verify": true,
+      "public_bin_sha256": "b10e9585e14c4d7af2ce1098f406c5ac4905ba42323cb22c9289292edb96e23f"
+    },
+    "public_strict": {
+      "status": "pass",
+      "positive_cases": 407,
+      "rejection_cases": 244,
+      "rejection_prove_refused": 244,
+      "proof_bytes_max": 181810,
+      "proofs_identical_to_previous": true,
+      "seconds": 94.0,
+      "rejection_reasons": {
+        "prove=2,raw_verify=1": 244,
+        "same_as_20261007_split_run": 244
+      },
+      "mutations": {
+        "status": "pass",
+        "mutants": 3062,
+        "values_inject_unread": 458,
+        "codes_inject_unread": 79,
+        "all_exit_1": true,
+        "mutant_set_identical_to_previous": true,
+        "seconds": 381.4,
+        "verifier_sha256": "cda17614a149340c06bffd7d3baa2b61341363cec8f2c2d5a46121395392766b",
+        "mutators_source_sha256": "cbea667ae2ab9b7bd7530c654830d5b2c0044e71a142e10a16b23b105f55539e",
+        "harness_source_sha256": "d267244644fa6653eaa823fa989c85af832dfee6c4c219ff32ba3da515237d8c"
+      }
+    },
+    "heldout_strict": {
+      "status": "pass",
+      "positive_cases": 208,
+      "rejection_cases": 64,
+      "proof_bytes_max": 122776,
+      "split_fixtures_run": {
+        "positive_ok": 208,
+        "proofs_identical_to_previous": true,
+        "seconds": 30.4,
+        "mutations": {
+          "status": "pass",
+          "mutants": 1433,
+          "values_inject_unread": 201,
+          "codes_inject_unread": 3,
+          "all_exit_1": true,
+          "mutant_set_identical_to_previous": true,
+          "seconds": 120.5
+        }
+      },
+      "offrepo_full_run": {
+        "driver": "oracle/tools/validate_read_reference.py (sha256 d0ef5984...)",
+        "positive_ok": 208,
+        "positives_byte_identical_to_20261007": 208,
+        "rejections_refused": 64,
+        "rejection_reasons": {
+          "prove=2,raw_verify=1": 64,
+          "same_as_20261007": 64
+        },
+        "mutations": {
+          "status": "pass",
+          "mutants": 1433,
+          "mutant_set_identical_to_20261007": true
+        },
+        "seconds": 155.3
+      }
+    },
+    "evidence_directory": "/data/illia/nearproof-deps/validation/v3-d3-presign-20261014"
   }
 }
