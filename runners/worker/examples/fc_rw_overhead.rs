@@ -76,11 +76,12 @@ fn main() {
     for i in 0..n_single {
         let t = Instant::now();
         let o = sb.run(&base).unwrap();
-        assert!(o.output_error.is_none(), "{:?}", o.output_error);
         println!(
-            "single run {i}: {:.2} s (exit {:?})",
+            "single run {i}: {:.2} s (exit {:?}, output error {:?}, violations {:?})",
             t.elapsed().as_secs_f64(),
-            o.exit
+            o.exit,
+            o.output_error,
+            o.diagnostics.output_violations
         );
     }
     let mut b = base.clone();
