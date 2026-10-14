@@ -59,6 +59,14 @@ User directives (binding):
 
 ## 2. Repository state
 
+* **2026-10-14:** `lane/v3-size-opt` merged to main (`584d55ff`): compact hint codec spec-first
+  (`NearSpecV3.HintCompact` + `ZkFormal.V3.HintCompact`, axioms ⊆ std3, builds on the merged base),
+  STATUS-V3-SIZE corrected (lever 1 landed: measured 5.26–5.67 MB proofs, aligned bound 6,435,489,
+  admission at exact 8 MiB fit; lever 2 = GoodV3 amendment, runbook in `docs/logs/v3-sizeopt-2026-10.md`;
+  auxGroup g = 2 optimal).  No behavior change — the Commit-B hint-format swap is NOT in main; its
+  7-step runbook (incl. Link re-route map and the ~4 h rebuild warning) is in the lane log.  AuxGroup
+  sweep closed by kernel numbers (g = 2 optimal).  peta-gas/300 KiB question: scoped to a future
+  WHIR-class research lane; current caps unchanged.
 * **2026-10-11 (evening):** `integration/v3-20261011b` merged into main: `lane/v3-a11` (A11, A7 measure,
   `factorComplete`), `lane/v3-link` (ExtractV3Stmt at B0, v1-style `LinkV3Stmt`, `extractV3_of_link`,
   `LinkClaim`), `lane/v3-render-rcpt` (acct/size/srcp/qv renders, cap changes, A10 counter, rcpt repairs),
@@ -123,7 +131,7 @@ User directives (binding):
    * freeze once;
    * run the joint w1 paired-baseline window with the cost tooling;
    * sign, register and deploy;
-   * submit the reference (expect ADMITTED) and `near-v3-d3-lenient-codes` (expect REJECTED);
+   * submit the reference (expect ADMITTED); hostile `near-v3-d3-lenient-codes` was retired 2026-10-14 (`adversarial/retired/`);
    * record the results.
 
 ## 5. Stream B: succinct D0a STARK (np-udr-stark-v2), the critical path
@@ -172,8 +180,12 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
   matches `ArenaExpectedInst.expectedType`; native verifier model 90 modules (was 657; no `Std`),
   built in ≈ 90 s; `out/verify` byte-identical to the judge's build. `out/prepare` = `prepare_v3`,
   `out/prove` = `prove_v3` (v3 contract, reproducible). Logs: `docs/logs/v3-{package,recheck,
-  model-split,d0a-challenge}-2026-10.md`. Remaining before signing: user's held-out seed/commitment,
-  hostile `near-v3-d3-lenient-codes` decision (stale; fails to build), freeze + sign (user).
+  model-split,d0a-challenge}-2026-10.md`. **SIGNED 2026-10-14: `chl_5607727929ca2c634a92c3f0bd4bdeb6`**
+  (`near-chunk-validation-d0-stark`, trusted tree `b890e835` frozen into the live store, held-out
+  commitment `sha256:56e6f599…`, seed off-repo in `nearproof-deps/keys`, set in
+  `nearproof-deps/heldout/near-chunk-validation-d0-stark`); candidate re-pinned. NOT yet registered
+  or deployed (user: stop after signing). Hostile `near-v3-d3-lenient-codes` retired. near-chunk-v3
+  stays unsigned until the D1a re-freeze (user decision).
   D1a spec is on `lane/v3-d1a-spec` — do NOT merge it before the D0a draft is signed (any new
   `spec/lean` file breaks regeneration at freeze commit `3c2a4563`).
 * ~~Oracle~~ (lane oracle-d0a, 2026-10-13): `oracle/v3-d0a` implements A7 native post trie, A12,

@@ -1,0 +1,59 @@
+cases 19007 accepted 19007 verdicts Counter({'accept': 19007})
+ins    mean=2.532e+04 p50=354 p90=2.326e+04 p99=8.074e+05 max=2.043e+06
+ch     mean=3875 p50=102 p90=3948 p99=1.155e+05 max=2.922e+05
+host   mean=11.54 p50=8 p90=29 p99=49 max=94
+calls  mean=1.431 p50=1 p90=3 p99=6 max=12
+pages  mean=708.9 p50=1024 p90=1024 p99=1279 max=1280
+code   mean=3269 p50=5603 p90=5603 p99=5603 max=5603
+burnt  mean=6.761e+11 p50=2.272e+11 p90=2.132e+12 p99=3.251e+12 max=3.451e+12
+opgas  mean=2.266e+10 p50=3.801e+08 p90=2.091e+10 p99=7.118e+11 max=1.801e+12
+memio  mean=398.5 p50=60 p90=725 p99=5356 max=1.445e+04
+aggregate: wasm-op (charge) gas share of FC burnt gas = 0.034
+max-instr case {'case': '/data/illia/nearproof-deps/corpora/d3c10/d3/03-h10139-s2', 'ins': 2042747, 'ch': 292198, 'host': 27, 'calls': 4, 'pages': 1024, 'code': 5603, 'burnt': 3149000322465, 'opgas': 1801109969208, 'memio': 432}
+ins per Tgas burnt (aggregate) = 3.745e+04
+cases burnt>0.1 G_alpha: 8539 ins/Tgas there = 3.845e+04 opgas share 0.034
+opcode families (share of executed flat-IR incl. charge pseudo-ops):
+  local get/set/tee               170136430  30.66%
+  const                            99641665  17.96%
+  gas-charge(pseudo)               73646755  13.27%
+  control(br/if/ret)               68673161  12.38%
+  add/sub                          66677997  12.02%
+  compare/eqz                      35008513   6.31%
+  mul                              30698833   5.53%
+  convert/extend                    4506744   0.81%
+  store                             2278459   0.41%
+  global                            1895283   0.34%
+  call/call_indirect                1277333   0.23%
+  load                               277709   0.05%
+  shift/rot                           60552   0.01%
+  bitwise                             56951   0.01%
+  div/rem                             45403   0.01%
+  drop/select                         38054   0.01%
+  bulk-mem/table/msize/grow             390   0.00%
+host calls total 219427 distinct 56
+  register_len                                50862  gas    13.467 Tgas
+  read_register                               33582  gas   190.954 Tgas
+  storage_write                               28244  gas  2866.584 Tgas
+  input                                       25457  gas    79.688 Tgas
+  promise_create                               8898  gas  2887.466 Tgas
+  log_utf8                                     7368  gas    79.697 Tgas
+  promise_batch_create                         6067  gas   676.634 Tgas
+  promise_result                               5575  gas    14.861 Tgas
+  promise_batch_action_transfer                5160  gas   580.171 Tgas
+  storage_read                                 4750  gas   287.012 Tgas
+  promise_results_count                        4516  gas     1.196 Tgas
+  value_return                                 4344  gas    12.879 Tgas
+  promise_then                                 3303  gas  1385.590 Tgas
+  promise_batch_action_add_key_with_full_access     2495  gas   261.389 Tgas
+  promise_batch_action_create_account          2434  gas  1215.186 Tgas
+  storage_remove                               2231  gas   185.015 Tgas
+  storage_has_key                              2176  gas   124.039 Tgas
+  promise_and                                  1176  gas     5.278 Tgas
+  log_utf16                                     907  gas     9.774 Tgas
+  block_timestamp                               835  gas     0.221 Tgas
+  epoch_height                                  815  gas     0.216 Tgas
+  storage_usage                                 803  gas     0.213 Tgas
+  attached_deposit                              803  gas     2.499 Tgas
+  signer_account_id                             799  gas     2.517 Tgas
+  account_balance                               798  gas     2.483 Tgas
+host gas total 12299.690 Tgas of burnt 12850.675

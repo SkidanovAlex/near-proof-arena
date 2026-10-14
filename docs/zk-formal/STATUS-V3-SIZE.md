@@ -2,6 +2,39 @@
 
 Design: `V3-D0-DESIGN.md` §5.3, §13, §13.1, §15. Branch `lane/v3-size` (off `lane/v3-air`).
 
+## Update 2026-10-13: lane `lane/v3-size-opt` (levers 1–2 status, no new assumptions)
+
+* **Lever 1 (roll-in alignment) is landed on main**: `Size/Aligned.lean`,
+  `Size/PadHeader.lean`, `Size/HonestAdmission.lean`, `AlignedModel`; the honest
+  header condition `RollAligned` feeds `nearV3_sizeMaxAligned = 6,435,489`
+  (`NearAirSize.lean`) and the unconditional certificate
+  `nearV3_admission_final`.  Measured honest proofs: **5,256,829–5,674,156 B**
+  total, hints 16–155 B (`docs/logs/v3-prover-prove-2026-10.md`).  The admission
+  is at **exact fit**: `4 + 1,953,115 + 6,435,489 = 8,388,608`.
+* **Lever 2 (compact refund codec): proved as machinery, integration blocked by
+  the Good semantics.**  `zk-formal/ZkFormal/V3/HintCompact.lean` (lane
+  `lane/v3-size-opt`, off main) proves every runtime refund is canonical
+  (`signerId = receiverId`, `gasPrice = 0`, `system` predecessor — mirroring
+  §3's invariant chain), so a wire format of
+  `receiverId ‖ receiptId ‖ signerPk ‖ deposit` (≤ **181 B/refund**, was 289;
+  hint budget `16 + 181·4481 = 811,077`, **−483,948 B**, kernel-checked)
+  reconstructs the same `Receipt` values.  **However**, wiring it in is not a
+  codec change: `HeaderSemanticsV3.body` (`Good.lean:54`) pins the hint body to
+  the native receipts bucket and `HeaderSemanticsV3.encoded` commits the chunk
+  header's EMR to those exact bytes — a compact hint requires amending
+  `GoodV3`/`HeaderSemanticsV3` (compact wire + rebuilt-native EMR; decode
+  determinism — the hard part — is already proved) and re-proof across the
+  13-file Link chain.  With measured hints at 16–155 B this is deferred to the
+  assembly/link lane with lead sign-off (checklist:
+  `docs/logs/v3-sizeopt-2026-10.md`).  No `GoodV3`, `prepBody` or `hintOfE`
+  change landed in this lane.
+* Not pursued here (documented in the lane log): digest 64→32 B (format change,
+  ROM binding unaffected — post-signing candidate), P6 Johnson queries
+  (correlated-agreement formalization), arity 16 (parameter + numerics).
+
+Everything below is the state before this update.
+
+
 Everything new is in `zk-formal/ZkFormal/Size/`. No v1 or existing v2 definition or proof is modified.
 
 Rules: no `sorry`, `axiom` or `native_decide` (checked by grep). Every theorem below was checked

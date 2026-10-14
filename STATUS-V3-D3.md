@@ -235,8 +235,8 @@ domain bounds and workload-class coverage; the unsigned draft was not regenerate
   - Held-out set `/data/illia/nearproof-deps/heldout/near-chunk-v3` (commitment `sha256:eeeb27a4…`;
     secret seed file 0600 in that directory).
   - Caps: as D0, except verify is 60 s per batch.
-* **Packages.** Reference `examples/reexec-v3-d3` (declared tier D3a) and hostile
-  `adversarial/hostile-submissions/near-v3-d3-lenient-codes` (expected REJECTED). Both are pinned to
+* **Packages.** Reference `examples/reexec-v3-d3` (declared tier D3a); the hostile
+  `near-v3-d3-lenient-codes` was retired 2026-10-14 (`adversarial/retired/`, stale). The reference is pinned to
   the draft id; the re-pin checklist is in the builder docstring, and
   `cargo test -p proof-mutators --test packages` checks the pins.
 * **Remaining before signing (lead's order).**

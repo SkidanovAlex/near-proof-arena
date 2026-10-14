@@ -137,8 +137,7 @@ fn near_chunk_v3_packages_pin_the_challenge() {
             draft.id().unwrap()
         );
     }
-    assert!(
-        tiered >= 1,
-        "near-v3-d3-lenient-codes is a near-chunk-v3 case"
-    );
+    // The only tiered hostile case (near-v3-d3-lenient-codes) was retired 2026-10-14
+    // (adversarial/retired/); any tiered case added later is pin-checked above.
+    let _ = tiered;
 }

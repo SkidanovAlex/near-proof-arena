@@ -256,7 +256,7 @@
       }
     ],
     "public_fixtures": "sha256:865949a6aff8a67a9b9ae8ee56de39b10efed475276006691f933bab42956a83",
-    "heldout_commitment": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "heldout_commitment": "sha256:56e6f59950454ed561a807e2793dffef7b9d1f352c5355c65f4eea65028fbf91",
     "baseline_submission": null,
     "baseline_ns": []
   },
