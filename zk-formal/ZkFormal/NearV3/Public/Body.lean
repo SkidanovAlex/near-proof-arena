@@ -1,15 +1,10 @@
 import ZkFormal.NearV3.Public.Records
 import ZkFormal.NearV3.Rcpt.Ids
+import ZkFormal.NearV3.Public.BodyDefs
 
 /-! Public refund-body records: the first eight bytes are handled by the body codec. -/
 namespace ZkFormal.NearV3.Public
 open ZkFormal.V2 ZkFormal.Algebra
-
-def bodyPayload (body : ByteString) : Payload := (body.drop 8).map (fun b => [b])
-
-def bodyPlan : PubSeg :=
-  { bus := 0, send := false, width := 1, countAt := 0, start := 0,
-    msgPrefix := [2], indexBase := some 8 }
 
 theorem bodyPayload_length (body : ByteString) :
     (bodyPayload body).length = body.length - 8 := by simp [bodyPayload]

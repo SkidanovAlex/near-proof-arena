@@ -1,4 +1,5 @@
 import ZkFormal.V2.Np.Main
+import ZkFormal.V2.G.DefsCore
 
 /-!
 # ZkFormal.V2.G.Defs — P2: `auxGroup ∈ {1,2,3}` for `np-udr-stark-v2`
@@ -24,9 +25,6 @@ namespace ZkFormal.V2.G
 
 open ArenaCore ArenaCore.Security Lean.Grind ZkFormal.Stark ZkFormal.Air ZkFormal.Algebra
 open ZkFormal.Udr ZkFormal.Udr.Np ZkFormal.V2 ZkFormal.V2.Np
-
-/-- v1's deployed parameters with `auxGroup := g`. -/
-def pg (g : Nat) : Params := { Params.default with auxGroup := g }
 
 @[simp] theorem pg_auxGroup (g : Nat) : (pg g).auxGroup = g := rfl
 theorem pg_one : pg 1 = Params.default := rfl

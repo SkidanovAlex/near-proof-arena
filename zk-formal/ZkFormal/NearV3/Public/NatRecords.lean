@@ -1,11 +1,10 @@
 import ZkFormal.NearV3.Public.Records
+import ZkFormal.NearV3.Public.NatRecordsDefs
 
 /-! Byte serialization preserves natural-valued scheduler messages when every
 component is a byte. Non-byte generated indices use indexed segments instead. -/
 namespace ZkFormal.NearV3.Public
 open ZkFormal.V2 ZkFormal.Algebra
-
-def natPayload (records : List (List Nat)) : Payload := records.map (·.map UInt8.ofNat)
 
 theorem byteF_ofNat (n : Nat) (hn : n < 256) : byteF (UInt8.ofNat n) = Fp.ofNat n := by
   unfold byteF

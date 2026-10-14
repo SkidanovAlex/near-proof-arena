@@ -1,5 +1,6 @@
 import ZkFormal.Potential
 import ZkFormal.BadQuery
+import ZkFormal.GameDefs
 
 /-!
 # ZkFormal.Game — from ArenaCore's `RomSound` to a potential argument
@@ -37,11 +38,6 @@ open ArenaCore ArenaCore.Security
 
 /-! ## Trees run against an arbitrary hash oracle -/
 
-/-- Run a hash-query tree against any (stateful) hash oracle. -/
-def runH {σ α : Type} (H : Interp.HashOracle σ) : OracleComp hashSpec α → σ → α × σ
-  | .pure a, s => (a, s)
-  | .query x k, s => runH H (k (H s x).1) (H s x).2
-
 theorem runH_lazy {α : Type} (A : OracleComp hashSpec α) (s : LazyRO) :
     runH LazyRO.query A s = OracleComp.simulate hashImpl A s := by
   induction A generalizing s with
@@ -52,15 +48,8 @@ theorem runH_lazy {α : Type} (A : OracleComp hashSpec α) (s : LazyRO) :
 structure TreeProver (S : ChallengeSpec) where
   tree : Bytes → S.Claim → S.Witness → OracleComp hashSpec Bytes
 
-/-- A verifier given as a hash-query tree. -/
-structure TreeVerifier where
-  tree : Bytes → Bytes → Bytes → OracleComp hashSpec Bool
-
 def TreeProver.toProver {S : ChallengeSpec} (P : TreeProver S) : OracleProver S :=
   ⟨fun H s pub c w => runH H (P.tree pub c w) s⟩
-
-def TreeVerifier.toVerifier (V : TreeVerifier) : OracleVerifier :=
-  ⟨fun H s pub cb pb => runH H (V.tree pub cb pb) s⟩
 
 /-! ## Inlining the `prove` oracle -/
 

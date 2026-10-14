@@ -1,6 +1,7 @@
 import ZkFormal.Prover.NpPoly
 import ZkFormal.Prover.Statements
 import ZkFormal.V2.G.Defs
+import ZkFormal.V2.PG.NpDefsCore
 
 /-!
 # ZkFormal.V2.PG.NpDefs (P2 copy of `Prover.NpDefs` at `dp = pg g`) — the honest np-udr-stark IOP prover (lane L7)
@@ -41,15 +42,7 @@ open ZkFormal.Udr ZkFormal.Udr.Np
 
 attribute [local instance] Semiring.natCast
 
-/-- P2: the running-product group size `g` (`1 ≤ g`), as an instance. -/
-class AuxG where
-  g : Nat
-  one_le : 1 ≤ g
-
 variable [AuxG]
-
-/-- The parameters `pg g = {Params.default with auxGroup := g}`. -/
-abbrev dp [AuxG] : Params := V2.G.pg AuxG.g
 
 theorem dp_aux : dp.auxGroup = AuxG.g := rfl
 

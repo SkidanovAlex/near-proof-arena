@@ -1,22 +1,10 @@
 import ZkFormal.NearV3.Public.Records
 import ZkFormal.NearV3.Rcpt.Ids
+import ZkFormal.NearV3.Public.BoundaryDefs
 
 /-! Routing boundary records at positions 0 through 64, including end sentinels. -/
 namespace ZkFormal.NearV3.Public
 open ZkFormal.V2 ZkFormal.Algebra
-
-abbrev Interval := Option ByteString × Option ByteString
-
-def boundaryRow (bounds : List Interval) (x : Nat) : ByteString :=
-  let b := bounds.getD (x / BND_STRIDE) (none,none)
-  let k := x % BND_STRIDE
-  [(b.1.getD []).getD k 0, (b.2.getD []).getD k 0, if b.2.isNone then 1 else 0]
-
-def boundaryPayload (bounds : List Interval) : Payload :=
-  (List.range (BND_STRIDE*bounds.length)).map (boundaryRow bounds)
-
-def boundaryPlan : PubSeg :=
-  { bus := B_BNDP, send := true, width := 3, countAt := 0, start := 0, indexBase := some 0 }
 
 theorem boundaryPayload_length (bounds : List Interval) :
     (boundaryPayload bounds).length = BND_STRIDE*bounds.length := by simp [boundaryPayload]

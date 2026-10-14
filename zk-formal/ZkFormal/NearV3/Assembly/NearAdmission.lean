@@ -6,6 +6,7 @@ import ZkFormal.NearV3.Assembly.HintCodec
 import ZkFormal.NearV3.Public.Prepared
 import ZkFormal.V2.PG.Admission
 import NearSpecV3.ChallengeD0a
+import ZkFormal.NearV3.Assembly.NearAdmissionDefs
 
 /-!
 # The admission certificate of the assembled v3 AIR
@@ -181,18 +182,6 @@ theorem nearV3_admission
     v3MaxInner hsize v3MaxInner_le hjoin d0a_model d0a_assm d0a_tb d0a_qh d0a_qp
     8 Assembly.g2_8 hlo Assembly.g2_8_dom Assembly.udr2_K24_min8_ok nearAirV3_npOkPg_2 nearV3_NVu
 
-/-- The canonical prepared-statement codec: `prepD0` then the protocol packing
-`Public.preparedBytes` (the concrete `nearAirV3.pubSegs` public vector).  Packed
-statements of `P` or more bytes are rejected (decidable, checked natively): above
-that the packed `u32` totals alias in the field (see `ExtractV3StmtAt`). -/
-def prepV3 (cb : List UInt8) (h : NearSpecV3.Hint) : Option (List UInt8) :=
-  match NearSpecV3.prepD0 cb h with
-  | .ok p =>
-    if (ZkFormal.NearV3.Public.preparedBytes p 0).length < ZkFormal.Algebra.P then
-      some (ZkFormal.NearV3.Public.preparedBytes p 0)
-    else none
-  | .error _ => none
-
 /-- **Soundness premise from `ExtractV3Stmt`.** The AIR-to-semantics obligation, composed
 with the proved `factorSound`, gives the semantic-soundness premise of the admission
 theorem for the canonical `prepV3` codec. -/
@@ -213,11 +202,6 @@ theorem hsound_of_extract (hext : ExtractV3Stmt) :
         (ZkFormal.NearV3.Assembly.factorSound NearSpecV3.B0 (WfClaim.encode c) k h p x hg)⟩
     · exact absurd hp (by simp)
   · exact absurd hp (by simp)
-
-/-- The canonical prepared-statement codec on raw witness bytes: decode the clear
-hint, then `prepD0 ∘ Prep.encode`. -/
-def prepV3b (cb : List UInt8) (hb : List UInt8) : Option (List UInt8) :=
-  (ZkFormal.NearV3.Assembly.Hint.decode hb).bind (prepV3 cb)
 
 /-- **Soundness premise from `ExtractV3Stmt`, on raw witness bytes.** The clear hint
 bytes decode to the `Hint` of `ExtractV3Stmt`; the prepared statement is `prepV3`. -/

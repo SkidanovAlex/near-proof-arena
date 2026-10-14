@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Sched.Model
+import ZkFormal.NearV3.Sched.Spec.ConvDefs
 
 /-!
 # ZkFormal.NearV3.Sched.Spec.Conv — request conversion = raw requests + `incsOf`
@@ -141,13 +142,6 @@ theorem incsOf_pos {n : Nat} {p : Params} (hn : 1 ≤ n)
   exact increases_pos _ _ _ _ _
 
 /-! ## `convertRequests` = `convRaw ∘ rawOf` -/
-
-/-- Raw requests with resolved shard indices, in the spec's order (unknown shards dropped). -/
-def rawOf (ids : List Nat) (rs : List (Nat × List BandwidthRequest)) : List RawReq :=
-  rs.flatMap fun (sender, brs) => brs.filterMap fun br =>
-    match indexOf ids sender, indexOf ids br.toShard with
-    | some s, some r => some ⟨s, r, br.bitmap⟩
-    | _, _ => none
 
 theorem convertRequests_eq_convRaw {ids : List Nat} {p : Params} (hn : 1 ≤ ids.length)
     (hp : Params.calculate Config.pv86 ids.length = some p)

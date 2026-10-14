@@ -1,12 +1,9 @@
 import ZkFormal.NearV3.Public.Payload
+import ZkFormal.NearV3.Public.LayoutDefs
 
 /-! Bind segment count, start and payload bytes to the packed statement encoder. -/
 namespace ZkFormal.NearV3.Public
 open ZkFormal.V2 ZkFormal.Algebra
-
-/-- A static segment descriptor reads its count and offset from its metadata slot. -/
-def descriptor (plan : PubSeg) (headerLength i : Nat) : PubSeg :=
-  { plan with countAt := headerLength+8*i, start := 0, startAt := some (headerLength+8*i+4) }
 
 def dataStart (header : ByteString) (blocks : List Payload) : Nat := header.length+8*blocks.length
 

@@ -1,18 +1,10 @@
 import ZkFormal.NearV3.Rcpt.Extract.AcctProof
+import ZkFormal.NearV3.Rcpt.Candidates.AccountEmptyDefs
 
 set_option linter.unusedSimpArgs false
 
 namespace ZkFormal.NearV3.Rcpt.Candidates.AccountEmpty
 open ZkFormal.Air ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Algebra
-
-def oldFirst : Expr := .mul .isFirst (Dsl.not (c Acct.af))
-def newFirst : Expr := .mul .isFirst (sub (c Acct.act) (c Acct.af))
-def replaceFirst (e : Expr) : Expr := if e=oldFirst then newFirst else e
-
-/-- Permit an all-inactive account table. All segment and padding rules and all
-bus interactions remain unchanged; an active first row still starts a segment. -/
-def table : Air.Table :=
-  {AcctV3.table with constraints:=Acct.constraints.map replaceFirst}
 
 set_option maxRecDepth 32768 in
 set_option maxHeartbeats 4000000 in

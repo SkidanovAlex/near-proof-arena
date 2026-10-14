@@ -7,10 +7,11 @@ import Lean
 lake env lean --run scripts/TypeHashes.lean <out.tsv> <Module>...
 ```
 
-Imports the given modules and writes `name  module  typeHash  kind` for every constant defined in a
+Imports the given modules and writes `name  module  typeHash  kind  valueHash` for every constant defined in a
 `ZkFormal` / `ReexecV3D0` module (the hash is `Expr.hash` of the elaborated type, which is
 structural: equal types hash equal, so a statement changed by an import restructuring shows up as
-a differing line).  Used by the certificate-pruning lane to check that moving imports changed no
+a differing line; `valueHash` is the `Expr.hash` of a `def`/`opaque` value, `-` otherwise, so a
+definition moved to another module must also keep its body).  Used by the certificate-pruning lane to check that moving imports changed no
 statement.  Reads `.olean`s only.
 -/
 
@@ -32,7 +33,10 @@ def main (args : List String) : IO UInt32 := do
           | .thmInfo _ => "thm" | .defnInfo _ => "def" | .axiomInfo _ => "axiom"
           | .opaqueInfo _ => "opaque" | .inductInfo _ => "induct" | .ctorInfo _ => "ctor"
           | .recInfo _ => "rec" | .quotInfo _ => "quot"
-        lines := lines.push s!"{ci.name}\t{m}\t{ci.type.hash}\t{kind}"
+        -- definitions also fingerprint their value (a moved definition must be verbatim)
+        let vh := match ci with
+          | .defnInfo d => toString d.value.hash | .opaqueInfo d => toString d.value.hash | _ => "-"
+        lines := lines.push s!"{ci.name}\t{m}\t{ci.type.hash}\t{kind}\t{vh}"
     IO.FS.writeFile out (String.intercalate "\n" (lines.qsort (· < ·)).toList ++ "\n")
     IO.println s!"{lines.size} constants"
     return 0

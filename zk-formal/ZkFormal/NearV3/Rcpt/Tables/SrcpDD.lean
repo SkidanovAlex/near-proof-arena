@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Candidates.DedupTable
 import ZkFormal.NearV3.Rcpt.Tables.SrcpD
+import ZkFormal.NearV3.Rcpt.Tables.SrcpDDDefs
 
 /-!
 # ZkFormal.NearV3.Rcpt.Tables.SrcpDD — table 20: the dedup source table with the A10 depth check
@@ -21,22 +22,6 @@ namespace ZkFormal.NearV3.SrcpDD
 
 open ZkFormal.Air ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.NearV3.SrcpV3
 open ZkFormal.NearV3.Rcpt.Candidates
-
-/-- Depth-slack bit `e` (`e < 6`). -/
-def db (e : Nat) : Nat := 57 + e
-def width : Nat := 63
-
-def depthBits : Expr := bits (fun e => c (db e)) 0 6
-
-/-- The A10 constraints: six boolean slack bits and, on a computed root row,
-`DP0 − (qe − q − 1) = slack`. -/
-def depthConstraints : List Expr :=
-  (List.range 6).map (fun e => bool (c (db e))) ++
-  [ .mul DedupTable.computedRoot (sub depthBits (sub (k DP0) (sub (sub (c qe) (c q)) (k 1)))) ]
-
-def table : Table :=
-  { width := width, constraints := DedupTable.constraints ++ depthConstraints,
-    interactions := DedupTable.interactions, maxLog := SrcpV3.maxLog }
 
 theorem local_dedup {tr : Trace ZkFormal.Algebra.Fp} {t : Nat} {pub : List ZkFormal.Algebra.Fp}
     (h : TableLocal table tr t pub) : TableLocal (DedupTable.table 24) tr t pub :=

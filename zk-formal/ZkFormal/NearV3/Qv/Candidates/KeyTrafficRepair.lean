@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Qv.Extract.NativeKeyTraffic
 import ZkFormal.Size.Model
+import ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepairDefs
 
 /-! Isolated KEYNIB interface repair. WalkV3's first START row consumes no
 KEYNIB message; subsequent rows consume nibbles at zero-based positions, then
@@ -8,16 +9,6 @@ No frozen table or admission artifact is changed here. -/
 namespace ZkFormal.NearV3.Qv.Candidates.KeyTrafficRepair
 open ZkFormal.Air ZkFormal.Algebra ZkFormal.Near ZkFormal.Near.Dsl
 open CombinedTable
-
-/-- Replace only the four original KEYNIB interactions by three compatible ones. -/
-def interactions : List Interaction :=
-  CombinedTable.interactions.take 5 ++
-  [ send B_KEYNIB (c walk) [wid,smul 2 (c wp),nibble 4,k 0],
-    send B_KEYNIB (c walk) [wid,.add (smul 2 (c wp)) (k 1),nibble 0,k 0],
-    send B_KEYNIB (c wl) [wid,.add (smul 2 (c wp)) (k 2),k SYM_END,k 1] ] ++
-  CombinedTable.interactions.drop 9
-
-def table : Air.Table := { CombinedTable.table with interactions }
 
 theorem constraints_eq : table.constraints=CombinedTable.table.constraints := rfl
 

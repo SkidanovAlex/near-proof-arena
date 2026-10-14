@@ -1,4 +1,5 @@
 import ZkFormal.Game
+import ZkFormal.Assembly.GuardDefs
 
 /-!
 # ZkFormal.Assembly.Guard — the claim-canonicality guard of the deployed verifier
@@ -20,16 +21,6 @@ to the guarded one with any language `L'` that contains every canonical claim of
 namespace ZkFormal.Assembly
 
 open ArenaCore ArenaCore.Security ZkFormal
-
-/-- Reject claims failing `ok` before running `V`. -/
-def guardTree (ok : Bytes → Bool) (V : TreeVerifier) : TreeVerifier :=
-  ⟨fun pub cb pb => if ok cb then V.tree pub cb pb else .pure false⟩
-
-/-- Canonical claim bytes of a challenge: they decode, and re-encode to themselves. -/
-def claimOk (S : ChallengeSpec) (cb : Bytes) : Bool :=
-  match S.decodeClaim cb with
-  | some c => S.encodeClaim c == cb
-  | none => false
 
 theorem claimOk_encode (S : ChallengeSpec) (c : S.Claim) : claimOk S (S.encodeClaim c) = true := by
   simp [claimOk, S.decode_encode c]

@@ -1,4 +1,5 @@
 import ZkFormal.Assembly.Guard
+import ZkFormal.V3.HintDefs
 
 /-!
 # ZkFormal.V3.Hint — proof-carried hints and native public preprocessing (v3 D0 design PoC)
@@ -39,29 +40,6 @@ namespace ZkFormal.V3
 open ArenaCore ArenaCore.Security ZkFormal
 
 /-! ## PoC 1: hints + native preprocessing in front of a tree verifier -/
-
-/-- The composed verifier: split the proof, preprocess natively, run `V` on the
-prepared statement. Rejects (without oracle queries) when either step fails. -/
-def hintTree (split : Bytes → Option (Bytes × Bytes)) (prep : Bytes → Bytes → Option Bytes)
-    (V : TreeVerifier) : TreeVerifier :=
-  ⟨fun pub cb pb =>
-    match split pb with
-    | some (h, π) =>
-      match prep cb h with
-      | some cb' => V.tree pub cb' π
-      | none => .pure false
-    | none => .pure false⟩
-
-/-- What the inner verifier sees for the composed verifier's input `(cb, pb)`.
-On failure, any pair will do (the composed verifier rejects without queries). -/
-def inner (split : Bytes → Option (Bytes × Bytes)) (prep : Bytes → Bytes → Option Bytes)
-    (cb pb : Bytes) : Bytes × Bytes :=
-  match split pb with
-  | some (h, π) =>
-    match prep cb h with
-    | some cb' => (cb', π)
-    | none => (cb, pb)
-  | none => (cb, pb)
 
 /-- Post-composition with a pure map keeps every weighted query budget. -/
 theorem queryBound_bind_pure {spec : OracleSpec} {α β : Type} (w : spec.Query → Nat) (f : α → β) :
