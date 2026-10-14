@@ -28,6 +28,15 @@
 //! candidate's view. `ARENA-STEP-START/EXIT <nonce> <i>` markers let the host
 //! time every step.
 //!
+//! Steps mode with read-write dirs (formal-checker compile batches): each rw
+//! dir is an overlay whose lower layer is the job's read-only seed drive
+//! (owned by the candidate uid, as the copied seed of a single run is) and
+//! whose upper layer lives on the scratch device under the root-only
+//! `judge/` dir, so it persists across steps while everything else is reset.
+//! After the last step only the upper layer is collected (files created or
+//! modified during the job; deletions are not returned, as in a single run).
+//! `steps_deadline_ms` caps the cumulative step time.
+//!
 //! Init runs as root inside the guest and is part of the arena TCB; the
 //! candidate never runs as root. Nothing here trusts the scratch contents.
 
@@ -38,7 +47,7 @@ use std::ffi::CString;
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom, Write};
 use std::os::unix::ffi::OsStrExt;
-use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
+use std::os::unix::fs::{FileTypeExt, MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::os::unix::process::{CommandExt, ExitStatusExt};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -280,8 +289,8 @@ fn setup_root(job: &GuestJob) -> Result<(), String> {
         if job.steps.len() > proto::MAX_STEPS {
             return Err("too many steps".into());
         }
-        if !job.rw_dirs.is_empty() || !job.collect.is_empty() || !job.argv.is_empty() {
-            return Err("steps mode excludes argv/collect/rw_dirs".into());
+        if !job.collect.is_empty() || !job.argv.is_empty() {
+            return Err("steps mode excludes argv/collect".into());
         }
         let mut bind_paths: Vec<&str> = Vec::new();
         for st in &job.steps {
@@ -442,6 +451,9 @@ fn setup_root(job: &GuestJob) -> Result<(), String> {
         "bind tmp",
     )?;
     // read-write dirs: seeded from a read-only drive, live on scratch
+    if !job.steps.is_empty() {
+        return setup_rw_overlays(job).and_then(|_| mount_bundles(job));
+    }
     for (i, r) in job.rw_dirs.iter().enumerate() {
         let rel = format!("{}/{i}", proto::RW_SCRATCH_DIR);
         mkdirs_owned(&scratch, &rel)?;
@@ -481,6 +493,69 @@ fn setup_root(job: &GuestJob) -> Result<(), String> {
             "bind rw dir",
         )?;
     }
+    mount_bundles(job)
+}
+
+/// Steps mode: every rw dir is `judge/.rw/<i>` on the scratch device (the
+/// upper layer of an overlay over its seed drive, if any), mounted at its
+/// guest path. `judge/` is root-only and outside the per-step wiped `work/`.
+fn setup_rw_overlays(job: &GuestJob) -> Result<(), String> {
+    if job.rw_dirs.is_empty() {
+        return Ok(());
+    }
+    let ro = libc::MS_NOSUID | libc::MS_NODEV | libc::MS_RDONLY;
+    let uppers = format!("{SCRATCHDEV}/judge/{}", proto::RW_SCRATCH_DIR);
+    mkdirs(&uppers)?;
+    for (i, r) in job.rw_dirs.iter().enumerate() {
+        let upper = format!("{uppers}/{i}");
+        ctx(fs::create_dir(&upper), "mkdir rw upper")?;
+        chown(&upper, proto::CANDIDATE_UID, proto::CANDIDATE_GID)?;
+        ctx(
+            fs::set_permissions(&upper, fs::Permissions::from_mode(0o755)),
+            "chmod rw upper",
+        )?;
+        let target = format!("{ROOT}{}", r.guest_path);
+        match r.dev_index {
+            None => ctx(mount(&upper, &target, "", libc::MS_BIND, ""), "bind rw dir")?,
+            Some(dev) => {
+                if !(proto::FIRST_MOUNT_DEV_INDEX..26).contains(&dev) {
+                    return Err("bad rw seed device".into());
+                }
+                let lower = format!("{HIDDEN}/rw{i}");
+                mkdirs(&lower)?;
+                ctx(
+                    mount(&proto::dev_path(dev), &lower, "ext4", ro, "noload"),
+                    "rw seed mount",
+                )?;
+                let work = format!("{SCRATCHDEV}/rwwork{i}");
+                ctx(fs::create_dir(&work), "mkdir rw overlay work")?;
+                ctx(
+                    fs::set_permissions(&work, fs::Permissions::from_mode(0o700)),
+                    "chmod rw overlay work",
+                )?;
+                // No redirects / metacopy / index: every modified file is a
+                // full regular file at its own path in the upper layer.
+                ctx(
+                    mount(
+                        "overlay",
+                        &target,
+                        "overlay",
+                        libc::MS_NOSUID | libc::MS_NODEV,
+                        &format!(
+                            "lowerdir={lower},upperdir={upper},workdir={work},redirect_dir=off,metacopy=off,index=off"
+                        ),
+                    ),
+                    "rw overlay",
+                )?;
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Read-only bundle drives at their guest paths.
+fn mount_bundles(job: &GuestJob) -> Result<(), String> {
+    let ro = libc::MS_NOSUID | libc::MS_NODEV | libc::MS_RDONLY;
     // read-only bundles
     for (i, m) in job.mounts.iter().enumerate() {
         if m.dev_index < proto::FIRST_MOUNT_DEV_INDEX
@@ -1054,6 +1129,13 @@ fn collect_outputs(job: &GuestJob, w: &mut OutWriter<impl Write>) -> CollectSumm
         } else if ft.is_symlink() && relp.starts_with(&format!("{}/", proto::RW_SCRATCH_DIR)) {
             // symlinks in read-write dirs are never returned (the host keeps
             // its own seed links and never follows guest-made ones)
+        } else if !job.steps.is_empty()
+            && ft.is_char_device()
+            && md.rdev() == 0
+            && relp.starts_with(&format!("{}/", proto::RW_SCRATCH_DIR))
+        {
+            // overlay whiteout (a deleted file) in a steps-mode rw upper
+            // layer: deletions are not returned, as in a single run
         } else {
             sum.violations
                 .push(format!("{relp}: not a regular file or directory"));
@@ -1164,6 +1246,13 @@ fn run_steps(job: &GuestJob) -> Result<(Vec<proto::StepReport>, RunResult), Stri
     console(&format!("{} {}", proto::MARKER_START, job.nonce));
     let t0 = Instant::now();
     for (i, st) in job.steps.iter().enumerate() {
+        if i > 0
+            && job
+                .steps_start_deadline_ms
+                .is_some_and(|d| t0.elapsed().as_millis() as u64 > d)
+        {
+            break;
+        }
         if i > 0 {
             create_job_cgroup(job)?;
         }
@@ -1193,7 +1282,16 @@ fn run_steps(job: &GuestJob) -> Result<(Vec<proto::StepReport>, RunResult), Stri
                 "step bind ro",
             )?;
         }
-        let res = run_candidate(job, &st.argv, st.timeout_ms, Some(i))?;
+        // cumulative deadline: never 0 (a step with no time left is spawned
+        // and killed at once, reported TimedOut with its markers)
+        let timeout_ms = match job.steps_deadline_ms {
+            Some(d) => st
+                .timeout_ms
+                .min(d.saturating_sub(t0.elapsed().as_millis() as u64))
+                .max(1),
+            None => st.timeout_ms,
+        };
+        let res = run_candidate(job, &st.argv, timeout_ms, Some(i))?;
         let cpu = read_kv(&format!("{JOB_CG}/cpu.stat"), "usage_usec") * 1000;
         let peak = read_u64(&format!("{JOB_CG}/memory.peak"));
         let ooms = read_kv(&format!("{JOB_CG}/memory.events"), "oom_kill");

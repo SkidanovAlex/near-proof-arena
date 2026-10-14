@@ -153,6 +153,80 @@ pub struct FirecrackerSandbox {
     host_uid: u32,
     host_gid: u32,
     ncpus: u32,
+    /// Read-only directory mounts already imaged by this process:
+    /// (host dir, symlinks allowed) -> (metadata fingerprint of the dir when
+    /// it was staged, cache key). See [`dir_fingerprint`].
+    mount_memo: std::sync::Mutex<std::collections::HashMap<(PathBuf, bool), (Digest, String)>>,
+}
+
+/// Fingerprint of a directory tree's metadata, without reading file content:
+/// every entry's relative path, type, size, mode, mtime, ctime, inode and
+/// device, in order. Any change to any file (content, mode, rename, replace,
+/// even with a restored mtime) changes the kernel-maintained ctime or the
+/// inode, hence the fingerprint. `None` if the tree is not walkable or has
+/// more than `max_entries` entries (the caller then stages it as usual).
+fn dir_fingerprint(root: &Path, max_entries: u64) -> Option<Digest> {
+    use std::os::unix::fs::MetadataExt;
+    let mut h = Sha256::new();
+    let mut n = 0u64;
+    let mut stack = vec![(root.to_path_buf(), String::new())];
+    while let Some((dir, rel)) = stack.pop() {
+        let md = fs::symlink_metadata(&dir).ok()?;
+        let mut names: Vec<std::ffi::OsString> = fs::read_dir(&dir)
+            .ok()?
+            .map(|e| e.map(|e| e.file_name()))
+            .collect::<Result<_, _>>()
+            .ok()?;
+        names.sort();
+        h.update(format!(
+            "D\0{rel}\0{}\0{}\0{}\0{}\0{}\0{}\n",
+            md.mode(),
+            md.mtime(),
+            md.mtime_nsec(),
+            md.ctime(),
+            md.ctime_nsec(),
+            md.ino()
+        ));
+        for name in names.into_iter().rev() {
+            n += 1;
+            if n > max_entries {
+                return None;
+            }
+            let name = name.into_string().ok()?;
+            let p = dir.join(&name);
+            let r = if rel.is_empty() {
+                name
+            } else {
+                format!("{rel}/{name}")
+            };
+            let m = fs::symlink_metadata(&p).ok()?;
+            if m.is_dir() {
+                stack.push((p, r));
+                continue;
+            }
+            let kind = if m.is_file() {
+                "F"
+            } else if m.file_type().is_symlink() {
+                "L"
+            } else {
+                "X"
+            };
+            h.update(format!(
+                "{kind}\0{r}\0{}\0{}\0{}\0{}\0{}\0{}\0{}\0{}\0{}\n",
+                m.len(),
+                m.mode(),
+                m.mtime(),
+                m.mtime_nsec(),
+                m.ctime(),
+                m.ctime_nsec(),
+                m.ino(),
+                m.dev(),
+                m.nlink()
+            ));
+        }
+    }
+    h.update(format!("dev {}", fs::symlink_metadata(root).ok()?.dev()));
+    Digest::try_from(format!("sha256:{}", hex::encode(h.finalize()))).ok()
 }
 
 fn random_hex(nbytes: usize) -> io::Result<String> {
@@ -220,6 +294,7 @@ impl FirecrackerSandbox {
             host_uid,
             host_gid,
             ncpus,
+            mount_memo: Default::default(),
         })
     }
 
@@ -356,12 +431,14 @@ impl FirecrackerSandbox {
             if spec.steps.len() > proto::MAX_STEPS {
                 return bad("too many steps".into());
             }
-            if !spec.collect.is_empty() || !spec.rw_dirs.is_empty() {
-                return bad("steps mode excludes collect and rw_dirs".into());
+            if !spec.collect.is_empty() {
+                return bad("steps mode excludes collect".into());
             }
-            let total: Duration = spec.steps.iter().map(|s| s.wall_timeout).sum();
-            if total != spec.wall_timeout {
-                return bad("steps mode: wall_timeout must be the sum of the step timeouts".into());
+            if spec.wall_timeout != spec.steps_wall() {
+                return bad(
+                    "steps mode: wall_timeout must be the sum of the step timeouts (bounded by the deadlines)"
+                        .into(),
+                );
             }
             let mut all: Vec<&str> = Vec::new();
             for st in &spec.steps {
@@ -469,6 +546,27 @@ impl FirecrackerSandbox {
     ) -> Result<(PathBuf, MountKind), InfraError> {
         let md = fs::symlink_metadata(&m.host_path)
             .map_err(|e| InfraError::InvalidSpec(format!("{}: {e}", m.host_path.display())))?;
+        // A directory already imaged by this process and unchanged since
+        // (same metadata fingerprint, taken before its staging copy) reuses
+        // its cached image instead of being copied and hashed again: large
+        // judge-built mounts (the formal checker's replay `.olean` set) are
+        // mounted by thousands of runs.
+        let memo_key = (m.host_path.clone(), allow_symlinks);
+        let fp = if md.is_dir() {
+            dir_fingerprint(&m.host_path, self.cfg.tree_limits.max_entries)
+        } else {
+            None
+        };
+        if let Some(fp) = &fp {
+            let hit = self.mount_memo.lock().unwrap().get(&memo_key).cloned();
+            if let Some((seen, key)) = hit {
+                let cached = self.cfg.work_root.join("cache").join(format!("{key}.ext4"));
+                if &seen == fp && cached.exists() {
+                    images::touch(&cached);
+                    return Ok((cached, MountKind::Dir));
+                }
+            }
+        }
         let (src_dir, kind, tmp_src);
         if md.is_dir() {
             src_dir = m.host_path.clone();
@@ -547,6 +645,13 @@ impl FirecrackerSandbox {
             images::evict_cache(&self.cfg.work_root.join("cache"), self.cfg.cache_max_bytes);
         }
         let _ = fs::remove_dir_all(&st_dir);
+        // Memoize only if the tree did not change while it was staged.
+        if let (Some(fp), MountKind::Dir) = (fp, &kind) {
+            if dir_fingerprint(&m.host_path, self.cfg.tree_limits.max_entries).as_ref() == Some(&fp)
+            {
+                self.mount_memo.lock().unwrap().insert(memo_key, (fp, key));
+            }
+        }
         Ok((cached, kind))
     }
 
@@ -893,7 +998,18 @@ impl FirecrackerSandbox {
                 };
                 let st = images::stage_tree(&r.host_dir, &st_dir, &lim)?;
                 let file = format!("rwseed{i}.ext4");
-                images::build_ro_image(&st, &input.join(&file))?;
+                if spec.steps.is_empty() {
+                    images::build_ro_image(&st, &input.join(&file))?;
+                } else {
+                    // steps mode: the overlay's lower layer, the candidate's
+                    // property like the copy of a single run's seed
+                    images::build_ro_image_owned(
+                        &st,
+                        &input.join(&file),
+                        proto::CANDIDATE_UID,
+                        proto::CANDIDATE_GID,
+                    )?;
+                }
                 drives.push(ShimDrive {
                     drive_id: format!("rwseed{i}"),
                     file,
@@ -991,17 +1107,25 @@ impl FirecrackerSandbox {
             copy_in: spec.copy_in.clone(),
             scratch_dirs: spec.scratch_dirs.clone(),
             cwd: spec.cwd.clone(),
-            collect: spec
-                .collect
-                .iter()
-                .cloned()
-                .chain((0..spec.rw_dirs.len()).map(|i| format!("{}/{i}", proto::RW_SCRATCH_DIR)))
-                .collect(),
+            // steps mode collects its rw dirs' upper layers by itself
+            collect: if spec.steps.is_empty() {
+                spec.collect
+                    .iter()
+                    .cloned()
+                    .chain(
+                        (0..spec.rw_dirs.len()).map(|i| format!("{}/{i}", proto::RW_SCRATCH_DIR)),
+                    )
+                    .collect()
+            } else {
+                vec![]
+            },
             rw_dirs,
             syscall_policy: spec.syscall_policy,
             timeout_ms: spec.wall_timeout.as_millis() as u64,
             steps: guest_steps,
             steps_dev_index,
+            steps_deadline_ms: spec.steps_deadline.map(|d| d.as_millis() as u64),
+            steps_start_deadline_ms: spec.steps_start_deadline.map(|d| d.as_millis() as u64),
         };
         let ctl = proto::encode_control(&guest);
         if ctl.len() > proto::MAX_CONTROL_LEN {
@@ -1382,6 +1506,8 @@ impl FirecrackerSandbox {
             out_dir,
             max_output_bytes: spec.max_output_bytes,
             steps: vec![],
+            steps_deadline: None,
+            steps_start_deadline: None,
             syscall_policy: spec.syscall_policy,
         })
     }
@@ -1438,8 +1564,15 @@ impl FirecrackerSandbox {
             o.limits = LimitEnforcement::CgroupV2;
             o.stdout_bytes = rep.stdout_total_bytes;
             o.stderr_bytes = rep.stderr_total_bytes;
-            o.stdout_trunc = rep.stdout.clone().into_bytes();
-            o.stderr_trunc = rep.stderr.clone().into_bytes();
+            if base.steps.full_capture_last && i + 1 == extra.reports.len() {
+                // the guest's run report carries the last started step's
+                // full (STREAM_CAP) capture
+                o.stdout_trunc = overall.stdout_trunc.clone();
+                o.stderr_trunc = overall.stderr_trunc.clone();
+            } else {
+                o.stdout_trunc = rep.stdout.clone().into_bytes();
+                o.stderr_trunc = rep.stderr.clone().into_bytes();
+            }
             o.stdout_trunc.truncate(base.output_trunc_bytes);
             o.stderr_trunc.truncate(base.output_trunc_bytes);
             o.violations = rep
@@ -1576,7 +1709,9 @@ impl arena_sandbox::Sandbox for FirecrackerSandbox {
                 wall_timeout: st.wall_timeout,
             })
             .collect();
-        req.wall_timeout = steps.iter().map(|s| s.wall_timeout).sum();
+        req.steps_deadline = base.steps.deadline;
+        req.steps_start_deadline = base.steps.start_deadline;
+        req.wall_timeout = req.steps_wall();
         let res = self.run_inner_ex(&req);
         let (overall, extra) = match res {
             Ok(x) => x,

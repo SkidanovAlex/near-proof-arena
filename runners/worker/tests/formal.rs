@@ -151,6 +151,7 @@ fn formal_env(tmp: &Path, images: Option<PathBuf>) -> FormalEnv {
         trusted_trees: Some(store),
         configs_dir: repo().join("runners/formal-checker/challenges"),
         images_dir: images,
+        sandbox: None,
     }
 }
 
