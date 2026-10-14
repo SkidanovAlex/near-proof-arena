@@ -88,6 +88,18 @@ Statements, runtime declarations and all three native binaries are unchanged (by
 `docs/e2e-results/v3-d3-read-reference/report.json` (`configured_formal_lean4lean`) and
 `docs/logs/d3-lean4lean-2026-10.md`.
 
+Re-check at the near-chunk-v3 re-freeze (2026-10-14, lane `v3-d3-recheck`): the draft was
+re-frozen at `3c2a4563` (trusted tree `b890e835…`, adds `Tier.d0a`; draft id
+`chl_3e63bc79…`). The vendor was re-synced (`sync-vendor.sh 3c2a4563`: `ChallengeChunkV3` changed,
+`NearSpec.TrieUpsertProofs`, `NearSpecV3.ChunkValidationV0a`, `PrepD0`, `ChallengeD0a` added) and
+`build.sh` links the config's full trusted module list, as the judge does. No candidate Lean source
+changed. The configured formal check passes every gate again (leanchecker 72/72, nanoda,
+lean4lean 72/72; default limits). `prepare` is unchanged (`8341e9de…`); `prove` (`14dd38be…`) and
+`verify` (`bdbc3eef…`, equal to the judge's build) changed only because more trusted modules
+are linked. With the new binaries: SDK check-local passes (package `73782d64…`), the strict public
+gate passes (407/407 positives, byte-identical proofs, 244/244 rejections) and so do all
+3,062 worker mutations; held-out 208/208 positives (identical proofs) and 1,433 mutations pass. Evidence: `docs/logs/v3-d3-recheck-2026-10.md`.
+
 Historical reference results in `docs/e2e-results/v3-d3-reference/` concern the
 previous necessity normalizer. Fresh logged checker validation is documented in
 `docs/e2e-results/v3-wasm-logged/` and the D1/D2 logged-checker reports; TTN replay
