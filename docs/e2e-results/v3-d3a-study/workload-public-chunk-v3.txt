@@ -1,0 +1,59 @@
+cases 172 accepted 172 verdicts Counter({'accept': 172})
+ins    mean=4.545e+04 p50=1081 p90=7.563e+04 p99=1.321e+06 max=1.377e+06
+ch     mean=6932 p50=295 p90=1.261e+04 p99=1.931e+05 max=1.969e+05
+host   mean=16.14 p50=14 p90=39 p99=58 max=60
+calls  mean=1.942 p50=2 p90=4 p99=6 max=6
+pages  mean=760.5 p50=1024 p90=1024 p99=1279 max=1279
+code   mean=3711 p50=5603 p90=5603 p99=5603 max=5603
+burnt  mean=8.823e+11 p50=3.925e+11 p90=2.698e+12 p99=3.386e+12 max=3.439e+12
+opgas  mean=4.069e+10 p50=1.142e+09 p90=6.77e+10 p99=1.164e+12 max=1.214e+12
+memio  mean=609.5 p50=141 p90=1029 p99=6411 max=6458
+aggregate: wasm-op (charge) gas share of FC burnt gas = 0.046
+max-instr case {'case': 'pub/d3-00-h10005-s1', 'ins': 1377258, 'ch': 196910, 'host': 20, 'calls': 3, 'pages': 1024, 'code': 5603, 'burnt': 1670582879640, 'opgas': 1214249632992, 'memio': 142}
+ins per Tgas burnt (aggregate) = 5.151e+04
+cases burnt>0.1 G_alpha: 91 ins/Tgas there = 5.236e+04 opgas share 0.047
+opcode families (share of executed flat-IR incl. charge pseudo-ops):
+  local get/set/tee                 2770096  30.75%
+  const                             1618436  17.96%
+  gas-charge(pseudo)                1192269  13.23%
+  control(br/if/ret)                1112320  12.35%
+  add/sub                           1087000  12.06%
+  compare/eqz                        567261   6.30%
+  mul                                498331   5.53%
+  convert/extend                      76989   0.85%
+  store                               38729   0.43%
+  global                              22794   0.25%
+  call/call_indirect                  19910   0.22%
+  load                                 3282   0.04%
+  shift/rot                             741   0.01%
+  bitwise                               626   0.01%
+  div/rem                               464   0.01%
+  drop/select                           431   0.00%
+  bulk-mem/table/msize/grow               4   0.00%
+host calls total 2776 distinct 52
+  register_len                                  632  gas     0.167 Tgas
+  read_register                                 420  gas     2.388 Tgas
+  storage_write                                 355  gas    35.545 Tgas
+  input                                         312  gas     0.977 Tgas
+  log_utf8                                      114  gas     1.227 Tgas
+  promise_result                                111  gas     0.293 Tgas
+  promise_create                                107  gas    34.731 Tgas
+  promise_results_count                          87  gas     0.023 Tgas
+  promise_batch_create                           69  gas     7.597 Tgas
+  promise_batch_action_transfer                  62  gas     7.089 Tgas
+  value_return                                   58  gas     0.169 Tgas
+  storage_read                                   36  gas     2.155 Tgas
+  promise_then                                   35  gas    15.057 Tgas
+  promise_batch_action_create_account            34  gas    17.009 Tgas
+  promise_batch_action_add_key_with_full_access       34  gas     3.562 Tgas
+  storage_has_key                                19  gas     1.083 Tgas
+  current_account_id                             17  gas     0.054 Tgas
+  promise_and                                    17  gas     0.076 Tgas
+  used_gas                                       15  gas     0.004 Tgas
+  attached_deposit                               14  gas     0.044 Tgas
+  block_timestamp                                14  gas     0.004 Tgas
+  storage_remove                                 14  gas     1.162 Tgas
+  block_index                                    14  gas     0.004 Tgas
+  random_seed                                    11  gas     0.036 Tgas
+  storage_usage                                  11  gas     0.003 Tgas
+host gas total 143.289 Tgas of burnt 151.751
