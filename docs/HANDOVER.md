@@ -59,6 +59,14 @@ User directives (binding):
 
 ## 2. Repository state
 
+* **2026-10-14:** `lane/v3-size-opt` merged to main (`584d55ff`): compact hint codec spec-first
+  (`NearSpecV3.HintCompact` + `ZkFormal.V3.HintCompact`, axioms ⊆ std3, builds on the merged base),
+  STATUS-V3-SIZE corrected (lever 1 landed: measured 5.26–5.67 MB proofs, aligned bound 6,435,489,
+  admission at exact 8 MiB fit; lever 2 = GoodV3 amendment, runbook in `docs/logs/v3-sizeopt-2026-10.md`;
+  auxGroup g = 2 optimal).  No behavior change — the Commit-B hint-format swap is NOT in main; its
+  7-step runbook (incl. Link re-route map and the ~4 h rebuild warning) is in the lane log.  AuxGroup
+  sweep closed by kernel numbers (g = 2 optimal).  peta-gas/300 KiB question: scoped to a future
+  WHIR-class research lane; current caps unchanged.
 * **2026-10-11 (evening):** `integration/v3-20261011b` merged into main: `lane/v3-a11` (A11, A7 measure,
   `factorComplete`), `lane/v3-link` (ExtractV3Stmt at B0, v1-style `LinkV3Stmt`, `extractV3_of_link`,
   `LinkClaim`), `lane/v3-render-rcpt` (acct/size/srcp/qv renders, cap changes, A10 counter, rcpt repairs),
