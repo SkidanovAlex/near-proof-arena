@@ -1,6 +1,6 @@
 # A formally admitted STARK for v3 D1 (Transfer transactions): design
 
-Status: **design phase, for review**, 2026-10-14. Branch `lane/v3-d1-air` (from main `216d9f04`).
+Status: **design phase**, 2026-10-14; decisions P-D1-1 … P-D1-7 taken by the user 2026-10-14 (§0). Branch `lane/v3-d1-air` (from main `216d9f04`).
 Statement: `spec/near-chunk-validation-d1.md`, `NearSpecV3.RelD1`
 (`spec/lean/v3/NearSpecV3/ChunkValidationD1.lean`, `RuntimeD1.lean`, `TxD1.lean`, `Ed25519.lean`,
 `SHA512.lean`); tier `challengeParamsChunk .d1` of `near-chunk-v3`
@@ -65,7 +65,20 @@ if the user rules out native signature verification, or once cross-shard verify 
 necessary. GKR/sumcheck sub-arguments are allowed by the security profile but would be a new
 protocol version; they are not recommended for D1 (§4.4).
 
-**Decisions requested (all PROPOSALS):**
+**User decisions (2026-10-14, binding; implemented by lane `v3-d1a-spec`, spec
+`spec/near-chunk-validation-d1a.md`, `NearSpecV3.ChunkValidationD1a`):**
+
+| id | decision |
+|---|---|
+| **P-D1-1** | **DECIDED YES**: bounded tier `RelD1a = RelD1 ∧` the D0a amendments restated for the D1 witness/run `∧ T1`, in new files, plus `Tier.d1a` in `ChallengeChunkV3`. `RelD1`, `RelD0`, `RelD0a` and every existing tier's relation unchanged. |
+| **P-D1-2** | **DECIDED**: signatures are verified **natively** in the verifier (D1-N). The relation implies no in-AIR obligation. |
+| **P-D1-3** | **DECIDED**: at most `NT0 = 4,096` transactions per chunk (T1). |
+| **P-D1-4** | **DECIDED**: A7 bound `B1 = B0 = 2,000,000` (same as D0a). |
+| **P-D1-5** | **DECIDED**: proof cap = near-chunk-v3's 64 MiB, no extra bound (so no T2). |
+| **P-D1-6** | **DECIDED**: native prep (`prepD1`) lives candidate-side (zk-formal), not in the pinned spec. |
+| **P-D1-7** | **DECIDED NO** (T4 not adopted): not full-access-only; function-call and gas-key failure cases stay in scope. |
+
+**Decisions requested (all PROPOSALS; decided 2026-10-14 as above):**
 
 | id | question | proposal |
 |---|---|---|

@@ -1,0 +1,19 @@
+{
+ "case": "00-h10005-s0-w.empty_pre_state",
+ "kind": "mutant_d1a",
+ "family": "w.empty_pre_state",
+ "base": "oracle/fixtures/v3/public-d1/d1/00-h10005-s0",
+ "expected_verdict_d1a": "reject",
+ "expected_reason_d1a": null,
+ "expected_rel_d1": false,
+ "construction": "oracle/tools/d1a_mutants_v3.py (hashes restored; see its docstring)",
+ "claim_sha256": "0c7fe827bbf857227a84a657ec6270bd22a4e42295a93f44af1a446bd29bf0e6",
+ "witness_sha256": "b230fbf231d089c3ef5be36ed4d6336b69c5f899674792a97bb90fa4c129ab7e",
+ "python_d1a": {
+  "verdict": "reject",
+  "reason": "invalid: MissingTrieValue (BufferedReceiptIndices): empty main pre-state",
+  "unfold": null,
+  "tx_count": 0,
+  "max_path_depth": null
+ }
+}

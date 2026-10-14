@@ -1,0 +1,19 @@
+{
+ "case": "00-h10004-s2-w.empty_pre_state",
+ "kind": "mutant_d1a",
+ "family": "w.empty_pre_state",
+ "base": "oracle/fixtures/v3/public-d1/d1/00-h10004-s2",
+ "expected_verdict_d1a": "reject",
+ "expected_reason_d1a": null,
+ "expected_rel_d1": false,
+ "construction": "oracle/tools/d1a_mutants_v3.py (hashes restored; see its docstring)",
+ "claim_sha256": "afdcd5da989024ebb777d82837319adb1b04d6ffc789cbc167c39446ac4abf87",
+ "witness_sha256": "40353fc1162a07558198cb12088dff1f649ba85f944406764eb1abb0cd5f867b",
+ "python_d1a": {
+  "verdict": "reject",
+  "reason": "Reject: main transition post_state_root mismatch",
+  "unfold": null,
+  "tx_count": 0,
+  "max_path_depth": null
+ }
+}

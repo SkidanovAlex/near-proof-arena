@@ -1,0 +1,19 @@
+{
+ "case": "00-h10005-s3-w.tx_count_over",
+ "kind": "mutant_d1a",
+ "family": "w.tx_count_over",
+ "base": "oracle/fixtures/v3/public-d1/d1/00-h10005-s3",
+ "expected_verdict_d1a": "out_of_domain",
+ "expected_reason_d1a": "w.tx_count",
+ "expected_rel_d1": true,
+ "construction": "oracle/tools/d1a_mutants_v3.py (hashes restored; see its docstring)",
+ "claim_sha256": "da125a020ed3990f187646f7629e1d5564c4b176a29b547abb0e4f7600775be0",
+ "witness_sha256": "a82e5330a732222a9ddbc2aadbed943bbee5b457e7d592926df1b1f3e6c3d039",
+ "python_d1a": {
+  "verdict": "out_of_domain",
+  "reason": "w.tx_count",
+  "unfold": 4058,
+  "tx_count": 4097,
+  "max_path_depth": 2
+ }
+}

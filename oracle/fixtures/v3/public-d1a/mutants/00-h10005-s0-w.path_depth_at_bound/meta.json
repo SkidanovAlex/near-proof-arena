@@ -1,0 +1,19 @@
+{
+ "case": "00-h10005-s0-w.path_depth_at_bound",
+ "kind": "mutant_d1a",
+ "family": "w.path_depth_at_bound",
+ "base": "oracle/fixtures/v3/public-d1/d1/00-h10005-s0",
+ "expected_verdict_d1a": "accept",
+ "expected_reason_d1a": null,
+ "expected_rel_d1": true,
+ "construction": "oracle/tools/d1a_mutants_v3.py (hashes restored; see its docstring)",
+ "claim_sha256": "b3e33055f62e99facdbb0025b6c93a00084ac609c855336cf2da46fd94def8ec",
+ "witness_sha256": "64c08aeab218cb075bf9e951797a473b46cf39080fec6dda11f213b1b2a02886",
+ "python_d1a": {
+  "verdict": "accept",
+  "reason": "ok",
+  "unfold": 3446,
+  "tx_count": 0,
+  "max_path_depth": 32
+ }
+}
