@@ -172,8 +172,12 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
   matches `ArenaExpectedInst.expectedType`; native verifier model 90 modules (was 657; no `Std`),
   built in ≈ 90 s; `out/verify` byte-identical to the judge's build. `out/prepare` = `prepare_v3`,
   `out/prove` = `prove_v3` (v3 contract, reproducible). Logs: `docs/logs/v3-{package,recheck,
-  model-split,d0a-challenge}-2026-10.md`. Remaining before signing: user's held-out seed/commitment,
-  hostile `near-v3-d3-lenient-codes` decision (stale; fails to build), freeze + sign (user).
+  model-split,d0a-challenge}-2026-10.md`. **SIGNED 2026-10-14: `chl_5607727929ca2c634a92c3f0bd4bdeb6`**
+  (`near-chunk-validation-d0-stark`, trusted tree `b890e835` frozen into the live store, held-out
+  commitment `sha256:56e6f599…`, seed off-repo in `nearproof-deps/keys`, set in
+  `nearproof-deps/heldout/near-chunk-validation-d0-stark`); candidate re-pinned. NOT yet registered
+  or deployed (user: stop after signing). Hostile `near-v3-d3-lenient-codes` retired. near-chunk-v3
+  stays unsigned until the D1a re-freeze (user decision).
   D1a spec is on `lane/v3-d1a-spec` — do NOT merge it before the D0a draft is signed (any new
   `spec/lean` file breaks regeneration at freeze commit `3c2a4563`).
 * ~~Oracle~~ (lane oracle-d0a, 2026-10-13): `oracle/v3-d0a` implements A7 native post trie, A12,

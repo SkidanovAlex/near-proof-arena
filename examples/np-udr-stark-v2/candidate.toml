@@ -21,15 +21,14 @@
 # unconditional ZkFormal.NearV3.Assembly.nearV3_admission_final specialised to
 # the D0a challenge (#print axioms: propext, Classical.choice, Quot.sound).
 #
-# challenge: the UNSIGNED draft is challenges/drafts/near-chunk-validation-d0-stark.draft.json
-# (near-chunk-v3 / NearSpecV3.Tier.d0a, statement near/pv86/chunk-validation/v0#D0a,
-# security profile validity-classical-128, 8 MiB proof cap, verify fuel 2^30).
-# TODO(challenge-id): replace with the signed `chl_…` id once the D0a tier is
-# frozen and signed (the draft has none); do NOT invent one.
+# challenge: signed chl_5607727929ca2c634a92c3f0bd4bdeb6 = near-chunk-validation-d0-stark
+# (statement near/pv86/chunk-validation/v0#D0a, frozen trusted tree b890e835 at 3c2a4563,
+# security profile validity-classical-128, 8 MiB proof cap, verify fuel 2^30; signed 2026-10-14
+# with the local operator key; draft challenges/drafts/near-chunk-validation-d0-stark.draft.json).
 schema = "arena-candidate-v1"
 name = "np-udr-stark-v2"
 agent = "v3-prover"
-challenge = "near-chunk-validation-d0-stark"  # TODO: signed `chl_…` id (draft, unsigned)
+challenge = "chl_5607727929ca2c634a92c3f0bd4bdeb6"
 backend_family = "np-udr-stark-v2"
 security_profile_request = "validity-classical-128"
 hardware = { gpu = false, min_ram_gb = 4 }
