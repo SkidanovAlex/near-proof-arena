@@ -194,4 +194,39 @@ end, is the documented behaviour. The reason code (INFRA_ERROR vs TIMEOUT) is th
 batched path reports TIMEOUT there (a step started with no budget left gets 1 ms and times out).
 The bwrap per-module path still has the 0 s edge; not changed here (verdict status is the same).
 
-RESULTS_DEPLOY
+## Deploy (2026-10-14 23:13–23:15 UTC)
+
+Coordination: merged origin/main `c5ccb768` (near-chunk-v3 registered and deployed by
+`lane/v3-deploy-v3` at release `a8c55352`; its oracles `near-arena-oracle-v3-d{1,3}` and the
+`ARENA_NEAR_ORACLE_V3_D{1,3}` keys kept by install) before building; live `release/REVISION` was
+`a8c55352` right before install; no concurrent deploy.
+
+* Build: lane-specific target `ARENA_LIVE_TARGET=~/.cache/nearproof-live-target-judge-fc-batch`
+  (never the shared one), `ARENA_LIVE_BUILD_CPUS=10-13,26-29 arena-live build` → stamp **`13d2e653`**
+  (branch head, pushed). Web `pnpm run build` (no diff). Rootfs for `ARENA_FORMAL_FC_DEPS`:
+  `deploy/images/rootfs/build.sh --check` (two bit-identical builds) →
+  `/data/illia/nearproof-deps/firecracker-fcbatch/images/rootfs-1c2a5f0fd65b.ext4`
+  (`sha256:1c2a5f0f…`, arena-init `976b1606…`; init source unchanged since `6bf7f3bf`); kernel and
+  fc-runner are `firecracker-rc`'s.
+* Attempt 1 (`run` of `sub_423f1e22…`): FORMAL_CHECK had reported at 22:44 (all formal gates
+  UNKNOWN, "sandbox refused: zero wall timeout"), CONFORMANCE was leased on w2 (≈ 7 h, then ≈ 40 h
+  benchmark, on a run already bound to INCONCLUSIVE), ADVERSARIAL done. Chosen: **cancel** through
+  the documented agent path (`arena cancel sub_423f1e22…` with the submitting agent's credentials,
+  never printed) at 23:12 → CONFORMANCE `cancelled` (w2 logged "cancelled by the control plane",
+  its microVM ended on its own), decision CANCELLED; queue empty.
+* Backups: `backups/pre-judge-fc-batch-1792019693/` (bin/, release/ at `a8c55352`, web-dist,
+  config/, systemd user units), `config/*.env.bak-1792019693`, `arena-live backup` →
+  `backups/20261014T231457Z`.
+* `arena-live install` → `release/REVISION` **`13d2e653`**; `upgrade_config` added
+  `ARENA_FORMAL_FC_DEPS=/data/illia/nearproof-deps/firecracker-fcbatch` to `worker.env`
+  (`ARENA_FC_DEPS` stays `firecracker-rc`); `check-trusted` OK for all 16 challenges. No migration
+  (no server change since `a8c55352`). Restarted **w1, w2, w3 only** (server/web untouched; this
+  also performs the w2 restart `lane/v3-deploy-v3` left pending). Each worker logs
+  "FORMAL_CHECK sandbox from ARENA_FORMAL_FC_DEPS=… (rootfs sha256:1c2a5f0f…)". Health OK.
+
+## Rerun
+
+`arena-live rerun-submission sub_423f1e22279f42a3a44ad5fd016237b2 "…"` →
+**`run_335e1cda2a154779981267d37bbd55a0`** (23:15 UTC). VALIDATE done 23:15, BUILD PASS 23:20 (w2), FORMAL_CHECK leased by w2 at 23:20.
+
+RERUN_PLACEHOLDER
