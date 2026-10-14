@@ -88,7 +88,7 @@ lines).
 |---|---|---|---|---|
 | **V0** | `Extract/AirD1`: table indices of `nearAirV3D1`; `getElem?_d1_same` (indices `< 25` other than 16 and 23 are `nearAirV3`'s); `TableLocal` from `HoldsP` | — | 90 | ✔ |
 | **V1** | relay views `kib_view`, `plf_view`, `rid_view` (`TableLocal → ∃ es, Wf ∧ TableTraffic`, as `BndProof`) | — | 400 | ✔ |
-| V2 | `txV3` view. One entry per 16-row op: the op constants, the flag algebra (`stage = s1 + s2`, `cand`, `wr`, gates), the written values (`mo`, `nk`), the memory times (`tp + d = op`, `d < 2^14`). Under byte hypotheses on the inputs, the seven chains give integer facts: `N > kn`, `N = kn + 1`, `N < Bd`, `amt ≥ C` / `aft = amt + dep`, the overflow and stake tests, and `okP = okC`. Reuses `RcptChain.chain`/`sumL`/`convS` | V0 | 2.5–4 k | **next** |
+| **V2** | `tx_view : TxViewStmt` (`Extract/TxView`, `TxProof`, `Tx/*`, 15 modules). One entry per 16-row op: the op constants, the flag algebra (`stage = s1 + s2`, `cand`, `wr`, gates), the written values (`mo`, `nk`), the memory times (`tp + d = op`, `d < 2^14`). Under byte hypotheses on the inputs, the seven chains give integer facts: `N > kn`, `N = kn + 1`, `N < Bd`, `amt ≥ C` / `aft = amt + dep`, the overflow and stake tests, and `okP = okC`. Reuses `RcptChain.chain`/`sumL`/`convS` | V0 | 2,190 | ✔ |
 | V3 | `akmV3` view: segments (`Segments.segments_of`), the borsh FSM ⇒ `decodeAccessKey b = some k` with `fa ↔ k.perm = fullAccess` and the nonce bytes; UTF-8 classes ⇒ `utf8Ok`; the AKMEM/VSLOT/VPOST/AKC traffic | V0 | 4–7 k | |
 | V4 | `rcptV3D1` view: the six changes against D0a's receipt view, which goes through `TableLocal RcptV3.table`, 153 files. (a) Copy-and-modify the affected chain: first-row `tok`, `o2`, the last-row count, MEM time `r + 1 + T0`, the 14-bit age (needs the global MEM balance, as `RcptViewV3`) and MPOS `r + M0`. (b) Investigate a trace transport. Every changed expression is affine in public offsets, but `tok` is a ranged running sum, so (b) is likely blocked. | V0, P0 | 5–12 k | |
 | V5 | `mrkV3` at `maxLog 20`: the D0a view with the height cap generalised (only `rows` uses it) | V0 | 0.3–1 k | |
@@ -156,3 +156,4 @@ elaboration).
 | date | milestone | theorems | modules (elab, s) |
 |---|---|---|---|
 | 2026-10-14 | V0, V1, P1 | `tableLocalD1`, `getElem?_d1_same`, `kib_view`, `plf_view`, `rid_view`, `txVerdict`, `prepLocalNative` (+ `localApply_of_applyReceipt`), `prepTxNative` (+ `prepTx_step`, `prepTxs_sim`) | 7 modules, each ≤ 1.2 s |
+| 2026-10-14 | V2 | `tx_view : TxViewStmt` (+ `chainN/B/C/T/Q/D/S`, `zN_iff`, `msum_val`, `debit_arith`, `credit_arith`, `verdict_debit/credit`, `opWf`, `rowLane`) | 15 modules, Σ ≈ 25 s (max `Tx.OpWf` 5.1 s) |

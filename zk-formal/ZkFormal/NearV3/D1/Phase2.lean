@@ -6,6 +6,7 @@ import ZkFormal.NearV3.D1.Prep.TxVerdict
 import ZkFormal.NearV3.D1.Prep.LocalNative
 import ZkFormal.NearV3.D1.Prep.TxNative
 import ZkFormal.NearV3.D1.StmtsT
+import ZkFormal.NearV3.D1.Extract.TxProof
 
 /-!
 # `ZkFormal.NearV3.D1.Phase2` — the D1a phase-2 proof modules (build root)
