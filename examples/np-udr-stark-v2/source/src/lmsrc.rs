@@ -335,7 +335,13 @@ impl<'a> AuxSrc<'a> {
         let mut chains = vec![EF::ZERO; (r1 - r0) * nc];
         let mut phis = vec![EF::ONE; (r1 - r0) * ng];
         let (mut regs, mut cur, mut nxt) = (vec![], vec![], vec![]);
-        for r in r0..r1 {
+        // no chain columns: the group factors of WIDTH rows at a time
+        let rp = if nc == 0 {
+            self.phis_packed(r0, r1, need, &mut phis)
+        } else {
+            r0
+        };
+        for r in rp..r1 {
             let i = r - r0;
             self.row(
                 r,
@@ -348,6 +354,65 @@ impl<'a> AuxSrc<'a> {
             );
         }
         (chains, phis)
+    }
+
+    /// [`Self::row`]'s group factors for the rows `r0 ..` in steps of
+    /// `WIDTH` (packed base and extension fields; the same field operations
+    /// lane by lane), for tables without chain columns. Writes
+    /// `phis[(r - r0)·ng + g]` and returns the first row not done.
+    fn phis_packed(&self, r0: usize, r1: usize, need: &[bool], phis: &mut [EF]) -> usize {
+        type PF = <F as p3_field::Field>::Packing;
+        type EP = <EF as p3_field::ExtensionField<F>>::ExtensionPacking;
+        use p3_field::PackedValue;
+        const W: usize = <PF as PackedValue>::WIDTH;
+        let t = self.main.height();
+        let ng = self.lay.groups.len();
+        let outs = &self.lay.itape.outputs;
+        let ni = self.tab.interactions.len();
+        let gamma = EP::from(self.gamma);
+        let mut regs: Vec<PF> = vec![];
+        let mut ph: Vec<EP> = vec![EP::ONE; ni];
+        let mut r = r0;
+        while r + W <= r1 {
+            let col = |c: usize, nn: bool| {
+                PF::from_fn(|l| {
+                    let rr = r + l;
+                    self.main.get(if nn { (rr + 1) % t } else { rr }, c)
+                })
+            };
+            let sel = [
+                PF::from_fn(|l| F::from_bool(r + l == 0)),
+                PF::from_fn(|l| F::from_bool(r + l + 1 == t)),
+                PF::from_fn(|l| F::from_bool(r + l + 1 != t)),
+            ];
+            self.lay.itape.eval::<PF>(&mut regs, col, self.pubs, sel);
+            for (ii, it) in self.tab.interactions.iter().enumerate() {
+                if !need[ii] {
+                    continue;
+                }
+                let o = self.lay.expr_off[ii];
+                if it.mult.is_empty() {
+                    ph[ii] = EP::ONE;
+                    continue;
+                }
+                let (ap, last) = &self.apow[ii];
+                let mut fp = EP::from(*last);
+                for j in 0..it.msg.len() {
+                    fp += EP::from(ap[j]) * regs[outs[o + j] as usize];
+                }
+                ph[ii] = EP::ONE + (gamma - fp - EP::ONE) * regs[outs[o + it.msg.len()] as usize];
+            }
+            for (g, grp) in self.lay.groups.iter().enumerate() {
+                let p = grp.iter().fold(EP::ONE, |a, &i| a * ph[i]);
+                let limbs: &[PF] = BasedVectorSpace::<PF>::as_basis_coefficients_slice(&p);
+                for l in 0..W {
+                    phis[(r - r0 + l) * ng + g] =
+                        EF::from_basis_coefficients_fn(|k| limbs[k].as_slice()[l]);
+                }
+            }
+            r += W;
+        }
+        r
     }
 
     /// Values on `H` of the interaction expressions `o0..o1` (itape outputs),

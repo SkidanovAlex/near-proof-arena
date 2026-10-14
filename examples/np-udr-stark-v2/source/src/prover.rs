@@ -52,9 +52,9 @@ impl Timer {
         self.0.lap(what);
         if on {
             eprintln!(
-                "[prove]   {} | peak RSS {} MB",
+                "[prove]   {} | peak RSS so far {} MB",
                 crate::lowmem::prof::report(),
-                peak_rss_mb_reset()
+                peak_rss_mb()
             );
         }
     }
@@ -90,8 +90,10 @@ fn malloc_trim() {
     }
 }
 
-/// Peak resident set size since the last call (Linux; 0 elsewhere).
-fn peak_rss_mb_reset() -> u64 {
+/// Peak resident set size of the process so far (`VmHWM`; Linux, 0
+/// elsewhere). Not reset between phases: resetting it (`clear_refs`) also
+/// resets the peak that `getrusage` / `time -v` report at exit.
+fn peak_rss_mb() -> u64 {
     let kb = std::fs::read_to_string("/proc/self/status")
         .ok()
         .and_then(|s| {
@@ -100,7 +102,6 @@ fn peak_rss_mb_reset() -> u64 {
                 .and_then(|l| l.split_whitespace().nth(1)?.parse::<u64>().ok())
         })
         .unwrap_or(0);
-    let _ = std::fs::write("/proc/self/clear_refs", "5");
     kb >> 10
 }
 

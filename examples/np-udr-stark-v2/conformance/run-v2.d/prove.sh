@@ -2,7 +2,8 @@
 # run-v2.d/prove.sh — the END-TO-END v3 proof of a real D0a fixture, checked by the deployed Lean
 # verifier (sourced by run-v2.sh / run-v2-section.sh prove; in scope: here src out npudr fx HEAVY
 # pass bad).  GATED: runs only with PROVE_V3=1 (each proof commits 25 tables, six of them at the
-# fixed 2^22 rows: minutes of CPU and ~20 GB; run it under HEAVY_MEM=32G, alone).
+# fixed 2^22 rows: ~5 min on 8 vCPU and a ~12.5 GiB peak at the prover's default budget; run it
+# alone, under HEAVY_MEM=16G).
 #
 # Per case (PROVE_CASES, default the smallest public D0a fixture 00-h10004-s3):
 #   1. differential of the scheduler/ChaCha/qv entries: `np-lean-bundle-v3 <case> <x>`
@@ -22,7 +23,7 @@
 #      middle, last), truncated / extended proof, empty proof, hint `n` byte flip, hint body byte flip (offset 12 = first body byte), outer hint length
 #      prefix +1, wrong public tape, claim byte flips (header, middle, last), another fixture's
 #      claim with this proof.
-# Knobs: PROVE_CASES (dirs), PROVE_NEG (1: run step 5), PROVE_REUSE (1: keep an existing proof), NPUDR_MEM_GB (prover budget, default 20).
+# Knobs: PROVE_CASES (dirs), PROVE_NEG (1: run step 5), PROVE_REUSE (1: keep an existing proof), NPUDR_MEM_GB (prover budget; default: the prover's own, 13).
 if [ "${PROVE_V3:-0}" != 1 ]; then
   echo "== v3 end-to-end proof: skipped (set PROVE_V3=1; heavy, run alone under HEAVY_MEM=32G)"
 else
@@ -76,7 +77,7 @@ print(" ".join(bad)); sys.exit(1 if bad else 0)
 PY
   then pass "$case: tables 8-15, 22 entries: Lean (np-lean-bundle-v3) == Rust (npudr v3sched) ($(cat "$x.log"))"
   else bad "$case: Lean vs Rust scheduler/qv entries differ"; fi
-  if ! NPUDR_MEM_GB=${NPUDR_MEM_GB:-20} /usr/bin/time -f "%e s, max RSS %M KB" $HEAVY "$npudr" v3prove "$d" "$p" \
+  if ! env ${NPUDR_MEM_GB:+NPUDR_MEM_GB=$NPUDR_MEM_GB} /usr/bin/time -f "%e s, max RSS %M KB" $HEAVY "$npudr" v3prove "$d" "$p" \
       --air "$air" --pub "$pd/public.bin" > "$p.log" 2>&1; then
     bad "$case: npudr v3prove failed ($(grep -E 'IMBALANCE|FAIL|error|v3prove:' "$p.log" | head -5))"; continue
   fi

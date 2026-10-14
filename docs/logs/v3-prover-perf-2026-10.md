@@ -68,7 +68,55 @@ coefficients) because the 11 GB default budget did not allow whole blocks.
    for whole blocks, whole blocks chosen whenever they fit.
 4. Default `NPUDR_MEM_GB` 11 → 13 (judge cap 16 GiB; peak RSS measured below).
 
-| step | wall | prove | RSS | main commit | aux | quotient | quot commit | openings |
-|---|---|---|---|---|---|---|---|---|
-| 1+2 | 489 s | 471 s | 11.9 GB | 84 | 81 | 158 | 65 | 49 |
-| 1–4 | 411 s | 393 s | 11.8 GB | 86 | 62 | 116 | 47 | 49 |
+| step | wall | prove | main commit | aux | quotient | quot commit | openings |
+|---|---|---|---|---|---|---|---|
+| 1+2 | 489 s | 471 s | 84 | 81 | 158 | 65 | 49 |
+| 1–4 | 411 s | 393 s | 86 | 62 | 116 | 47 | 49 |
+
+(Checkpoint 1, `a9a56455`.)
+
+5. **Parallel serial sections**: Merkle node levels without matrices (`hash_ranges` mapped 2^25
+   nodes serially), leaf-state init, DEEP's per-point `exp_u64` (2^26 exponentiations) and
+   batch-inverse inputs, quotient selectors (`bitrev_coset`).
+6. **`eval_range`** uses `CosetDft` for whole blocks and after the fold for sub-block ranges
+   (≥ 2^10 points).
+7. **Streaming whole-block quotient**: a table whose coefficients do not fit next to a whole LDE
+   block (rcpt: 4.4 GB + 4.4 GB) is evaluated block by block from the compact trace (per column
+   chunk: iDFT + coset DFT), instead of sub-block ranges (each a fold of all coefficients).
+   `NPUDR_QSTREAM=1` forces it (test `lowmem_streaming_quotient_equals_reference`).
+8. **`CosetDft::idft`** — the cache-blocked inverse (DIT mirror; bit-reversed input variant for
+   the quotient interpolation, which skips a serial `reverse_slice_index_bits`): 0.133 s vs
+   0.297 s (Plonky3) per 2^22 × 32.
+9. **`bufpool`**: large buffers reused (fresh 512 MB mmaps were page-faulted and zeroed per call:
+   193 M → 68 M minor faults), cleared at phase ends, capped at 1 GiB.
+10. **`sha2x::compress_pair`**: SHA-NI compression of the same blocks into WH's two states with a
+   shared message schedule and interleaved `sha256rnds2` chains (leaf and `WhStream` hashing).
+   −20% leaf-hash time (hyperthreading already hid much of the latency).
+11. Packed `dot_rows` / `combine_into` (OOD / DEEP), packed constraint pre-check (`BlockEval` on a
+   fixed random combination; the exact per-constraint scan only if it is non-zero: rcpt 6.6 →
+   1.2 s), packed `FastBus` (8 points at a time with `ExtensionPacking`).
+12. **Opening fold** (`eval_ranges`): 8 coefficient chunks per step through
+   `Algebra::mixed_dot_product::<8>` (delayed reduction): openings 46 → 29 s.
+13. **In-place column ranges** (`CosetDft::eval_cols`): stored coefficients (quotient, cached aux)
+   are not copied per segment.
+14. **Memory**: FRI layers opened (and their 2+ GB of vectors dropped) before the trace openings;
+   32-column chunks for the aux commit; block-wise group sized within 3/4 of the budget.
+15. Bug fixed on the way (in checkpoint 1's block-wise commit): an uncached aux source split at a
+   non-multiple of 8 columns (`AuxSrc::values` asserts 8-alignment; `lowmem_near` caught it; the
+   real runs use the aux cache and never took that path).
+
+| step | wall | prove | cgroup peak | main commit | aux | quotient | quot commit | ood | deep | openings |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 5–9 | 324 s | 307 s | 13.7 GiB¹ | 68 | 46 | 86 | 34 | 11 | 14 | 46 |
+| 5–10 | 323 s | 306 s | 13.4 GiB | 64 | 49 | 87 | 32 | 11 | 14 | 46 |
+| 5–14 | 293 s | 285 s | 12.3 GiB | 65 | 48 | 87 | 33 | 9 | 13 | 29 |
+
+¹ from the per-phase `VmHWM`. **`/usr/bin/time` under-reports the peak RSS of this prover**: it
+wrote `5` to `/proc/self/clear_refs` after each phase to report per-phase peaks, which also resets
+the high-water mark that `getrusage` (and so `time -v` and `prove.sh`'s `%M`) report at exit, so
+those showed only the last phase's peak (11.9 GB for the baseline, whose true peak was ≈ 13.0 GB
+by its per-phase reports — the "internal 15.5 GB" of the earlier log was at `NPUDR_MEM_GB=20`).
+The judge reads cgroup `memory.peak` (`runners/sandbox`), and so do these runs now (scope of the
+`heavy` wrapper, polled every 0.5 s). The reset is removed (`peak_rss_mb`, cumulative).
+
+(Checkpoints 2 `a585ba93`, 3 `93da5cd7`.)

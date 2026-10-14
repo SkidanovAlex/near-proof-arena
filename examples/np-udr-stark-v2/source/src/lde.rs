@@ -43,77 +43,104 @@ pub struct CosetDft {
     itws: Vec<Vec<F>>,
 }
 
-/// `a, b ← a + b·tw, a − b·tw` on two rows (decimation in time).
-#[inline(always)]
-fn bfly_dit(a: &mut [F], b: &mut [F], tw: F) {
-    let (ap, at) = PF::pack_slice_with_suffix_mut(a);
-    let (bp, bt) = PF::pack_slice_with_suffix_mut(b);
-    let t = PF::from(tw);
-    for (x, y) in ap.iter_mut().zip(bp.iter_mut()) {
-        let m = *y * t;
-        let s = *x + m;
-        *y = *x - m;
-        *x = s;
-    }
-    for (x, y) in at.iter_mut().zip(bt.iter_mut()) {
-        let m = *y * tw;
-        let s = *x + m;
-        *y = *x - m;
-        *x = s;
-    }
+/// Row operations of the transforms (whole rows of equal length).
+trait Rows {
+    /// `a, b ← a + b, (a − b)·tw`
+    fn bfly(a: &mut [F], b: &mut [F], tw: F);
+    /// `a, b ← a + b, a − b`
+    fn bfly1(a: &mut [F], b: &mut [F]);
+    /// `a, b ← a + b·tw, a − b·tw` (decimation in time)
+    fn bfly_dit(a: &mut [F], b: &mut [F], tw: F);
+    /// `dst = src · k`
+    fn scale_into(dst: &mut [F], src: &[F], k: F);
+    /// `x ← x · k`
+    fn scale(x: &mut [F], k: F);
 }
 
-/// `a, b ← a + b, (a − b)·tw` on two rows.
-#[inline(always)]
-fn bfly(a: &mut [F], b: &mut [F], tw: F) {
-    let (ap, at) = PF::pack_slice_with_suffix_mut(a);
-    let (bp, bt) = PF::pack_slice_with_suffix_mut(b);
-    let t = PF::from(tw);
-    for (x, y) in ap.iter_mut().zip(bp.iter_mut()) {
-        let s = *x + *y;
-        let d = (*x - *y) * t;
-        *x = s;
-        *y = d;
-    }
-    for (x, y) in at.iter_mut().zip(bt.iter_mut()) {
-        let s = *x + *y;
-        let d = (*x - *y) * tw;
-        *x = s;
-        *y = d;
-    }
-}
+/// Plonky3's packed field (AVX2 with the crate's target flags).
+struct Packed;
 
-/// `a, b ← a + b, a − b` on two rows.
-#[inline(always)]
-fn bfly1(a: &mut [F], b: &mut [F]) {
-    let (ap, at) = PF::pack_slice_with_suffix_mut(a);
-    let (bp, bt) = PF::pack_slice_with_suffix_mut(b);
-    for (x, y) in ap.iter_mut().zip(bp.iter_mut()) {
-        let s = *x + *y;
-        let d = *x - *y;
-        *x = s;
-        *y = d;
+impl Rows for Packed {
+    #[inline(always)]
+    fn bfly_dit(a: &mut [F], b: &mut [F], tw: F) {
+        let (ap, at) = PF::pack_slice_with_suffix_mut(a);
+        let (bp, bt) = PF::pack_slice_with_suffix_mut(b);
+        let t = PF::from(tw);
+        for (x, y) in ap.iter_mut().zip(bp.iter_mut()) {
+            let m = *y * t;
+            let s = *x + m;
+            *y = *x - m;
+            *x = s;
+        }
+        for (x, y) in at.iter_mut().zip(bt.iter_mut()) {
+            let m = *y * tw;
+            let s = *x + m;
+            *y = *x - m;
+            *x = s;
+        }
     }
-    for (x, y) in at.iter_mut().zip(bt.iter_mut()) {
-        let s = *x + *y;
-        let d = *x - *y;
-        *x = s;
-        *y = d;
-    }
-}
 
-/// `dst = src · k` (rows of equal length).
-#[inline(always)]
-fn scale_into(dst: &mut [F], src: &[F], k: F) {
-    let (dp, dt) = PF::pack_slice_with_suffix_mut(dst);
-    let n = dp.len() * PF::WIDTH;
-    let (sp, st) = src.split_at(n);
-    let kp = PF::from(k);
-    for (d, s) in dp.iter_mut().zip(PF::pack_slice(sp)) {
-        *d = *s * kp;
+    #[inline(always)]
+    fn bfly(a: &mut [F], b: &mut [F], tw: F) {
+        let (ap, at) = PF::pack_slice_with_suffix_mut(a);
+        let (bp, bt) = PF::pack_slice_with_suffix_mut(b);
+        let t = PF::from(tw);
+        for (x, y) in ap.iter_mut().zip(bp.iter_mut()) {
+            let s = *x + *y;
+            let d = (*x - *y) * t;
+            *x = s;
+            *y = d;
+        }
+        for (x, y) in at.iter_mut().zip(bt.iter_mut()) {
+            let s = *x + *y;
+            let d = (*x - *y) * tw;
+            *x = s;
+            *y = d;
+        }
     }
-    for (d, s) in dt.iter_mut().zip(st) {
-        *d = *s * k;
+
+    #[inline(always)]
+    fn bfly1(a: &mut [F], b: &mut [F]) {
+        let (ap, at) = PF::pack_slice_with_suffix_mut(a);
+        let (bp, bt) = PF::pack_slice_with_suffix_mut(b);
+        for (x, y) in ap.iter_mut().zip(bp.iter_mut()) {
+            let s = *x + *y;
+            let d = *x - *y;
+            *x = s;
+            *y = d;
+        }
+        for (x, y) in at.iter_mut().zip(bt.iter_mut()) {
+            let s = *x + *y;
+            let d = *x - *y;
+            *x = s;
+            *y = d;
+        }
+    }
+
+    #[inline(always)]
+    fn scale_into(dst: &mut [F], src: &[F], k: F) {
+        let (dp, dt) = PF::pack_slice_with_suffix_mut(dst);
+        let n = dp.len() * PF::WIDTH;
+        let (sp, st) = src.split_at(n);
+        let kp = PF::from(k);
+        for (d, s) in dp.iter_mut().zip(PF::pack_slice(sp)) {
+            *d = *s * kp;
+        }
+        for (d, s) in dt.iter_mut().zip(st) {
+            *d = *s * k;
+        }
+    }
+
+    #[inline(always)]
+    fn scale(x: &mut [F], k: F) {
+        let (xp, xt) = PF::pack_slice_with_suffix_mut(x);
+        let kp = PF::from(k);
+        for v in xp.iter_mut() {
+            *v *= kp;
+        }
+        for v in xt.iter_mut() {
+            *v *= k;
+        }
     }
 }
 
@@ -194,77 +221,144 @@ impl CosetDft {
         let cpow_r: Vec<F> = cs.powers().take(r).collect();
         let cpow_s: Vec<F> = c.powers().take(s).collect();
         let bw = bs * w;
+        let wide = avx512();
         {
             let dptr = SendPtr(dst.as_mut_ptr());
+            let k = P1 {
+                cd: self,
+                src,
+                sw,
+                c0,
+                w,
+                bs,
+                cpow_r: &cpow_r,
+                cpow_s: &cpow_s,
+                dptr,
+            };
             (0..s / bs).into_par_iter().for_each_init(
-                || vec![F::ZERO; r * bw],
-                |scr, bi| {
-                    let s0 = bi * bs;
-                    // gather × c^i
-                    for rr in 0..r {
-                        for b in 0..bs {
-                            let k = cpow_r[rr] * cpow_s[s0 + b];
-                            let row = (rr * s + s0 + b) * sw + c0;
-                            scale_into(
-                                &mut scr[rr * bw + b * w..rr * bw + (b + 1) * w],
-                                &src[row..row + w],
-                                k,
-                            );
-                        }
+                || (vec![F::ZERO; r * bw], vec![F::ZERO; bs]),
+                |(scr, tw), bi| {
+                    #[cfg(target_arch = "x86_64")]
+                    if wide {
+                        // SAFETY: AVX-512F is available (checked).
+                        unsafe { k.run_avx512(scr, tw, bi * bs) };
+                        return;
                     }
-                    let mut tw = vec![F::ZERO; bs];
-                    for k in 0..n1 {
-                        let hr = r >> (k + 1);
-                        let t1 = &self.tw1[k];
-                        let ts = &self.tws[k][s0..s0 + bs];
-                        for blk in (0..r).step_by(2 * hr) {
-                            for rp in 0..hr {
-                                let (a, bb) = two_rows(scr, bw, blk + rp, hr);
-                                for (x, &y) in tw.iter_mut().zip(ts) {
-                                    *x = t1[rp] * y;
-                                }
-                                for b in 0..bs {
-                                    bfly(
-                                        &mut a[b * w..(b + 1) * w],
-                                        &mut bb[b * w..(b + 1) * w],
-                                        tw[b],
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    // scatter
-                    for rr in 0..r {
-                        let row0 = (rr * s + s0) * w;
-                        // SAFETY: batches write disjoint rows `r·S + s0 .. + bs`.
-                        unsafe {
-                            std::ptr::copy_nonoverlapping(
-                                scr[rr * bw..(rr + 1) * bw].as_ptr(),
-                                dptr.get().add(row0),
-                                bw,
-                            );
-                        }
-                    }
+                    k.run::<Packed>(scr, tw, bi * bs);
                 },
             );
         }
         // ---- phase 2: layers n1..n on contiguous blocks of S rows ----
         dst.par_chunks_mut(s * w).for_each(|blk| {
-            for (k2, t2) in self.tw2.iter().enumerate() {
-                let h = 1usize << (n - n1 - 1 - k2);
-                for b0 in (0..s).step_by(2 * h) {
-                    {
-                        let (a, bb) = two_rows(blk, w, b0, h);
-                        bfly1(a, bb);
+            #[cfg(target_arch = "x86_64")]
+            if wide {
+                // SAFETY: as above.
+                unsafe { p2_block_avx512(self, blk, w) };
+                return;
+            }
+            p2_block::<Packed>(self, blk, w);
+        });
+    }
+}
+
+/// Phase 1 of [`CosetDft::eval_cols`] on one residue batch.
+struct P1<'a> {
+    cd: &'a CosetDft,
+    src: &'a [F],
+    sw: usize,
+    c0: usize,
+    w: usize,
+    bs: usize,
+    cpow_r: &'a [F],
+    cpow_s: &'a [F],
+    dptr: SendPtr,
+}
+
+impl P1<'_> {
+    #[inline(always)]
+    fn run<R: Rows>(&self, scr: &mut [F], tw: &mut [F], s0: usize) {
+        let (cd, w, bs, sw, c0) = (self.cd, self.w, self.bs, self.sw, self.c0);
+        let n1 = cd.n1;
+        let (r, s) = (1usize << n1, 1usize << (cd.n - n1));
+        let bw = bs * w;
+        // gather × c^i
+        for rr in 0..r {
+            for b in 0..bs {
+                let k = self.cpow_r[rr] * self.cpow_s[s0 + b];
+                let row = (rr * s + s0 + b) * sw + c0;
+                R::scale_into(
+                    &mut scr[rr * bw + b * w..rr * bw + (b + 1) * w],
+                    &self.src[row..row + w],
+                    k,
+                );
+            }
+        }
+        for k in 0..n1 {
+            let hr = r >> (k + 1);
+            let t1 = &cd.tw1[k];
+            let ts = &cd.tws[k][s0..s0 + bs];
+            for blk in (0..r).step_by(2 * hr) {
+                for rp in 0..hr {
+                    let (a, bb) = two_rows(scr, bw, blk + rp, hr);
+                    for (x, &y) in tw.iter_mut().zip(ts) {
+                        *x = t1[rp] * y;
                     }
-                    for j in 1..h {
-                        let (a, bb) = two_rows(blk, w, b0 + j, h);
-                        bfly(a, bb, t2[j]);
+                    for b in 0..bs {
+                        R::bfly(
+                            &mut a[b * w..(b + 1) * w],
+                            &mut bb[b * w..(b + 1) * w],
+                            tw[b],
+                        );
                     }
                 }
             }
-        });
+        }
+        // scatter
+        for rr in 0..r {
+            let row0 = (rr * s + s0) * w;
+            // SAFETY: batches write disjoint rows `r·S + s0 .. + bs`.
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    scr[rr * bw..(rr + 1) * bw].as_ptr(),
+                    self.dptr.get().add(row0),
+                    bw,
+                );
+            }
+        }
     }
+
+    #[cfg(target_arch = "x86_64")]
+    #[target_feature(enable = "avx512f")]
+    unsafe fn run_avx512(&self, scr: &mut [F], tw: &mut [F], s0: usize) {
+        self.run::<avx512::Wide>(scr, tw, s0)
+    }
+}
+
+/// Phase 2 of [`CosetDft::eval_cols`] on one block of `S` rows.
+#[inline(always)]
+fn p2_block<R: Rows>(cd: &CosetDft, blk: &mut [F], w: usize) {
+    let n = cd.n;
+    let n1 = cd.n1;
+    let s = 1usize << (n - n1);
+    for (k2, t2) in cd.tw2.iter().enumerate() {
+        let h = 1usize << (n - n1 - 1 - k2);
+        for b0 in (0..s).step_by(2 * h) {
+            {
+                let (a, bb) = two_rows(blk, w, b0, h);
+                R::bfly1(a, bb);
+            }
+            for j in 1..h {
+                let (a, bb) = two_rows(blk, w, b0 + j, h);
+                R::bfly(a, bb, t2[j]);
+            }
+        }
+    }
+}
+
+#[cfg(target_arch = "x86_64")]
+#[target_feature(enable = "avx512f")]
+unsafe fn p2_block_avx512(cd: &CosetDft, blk: &mut [F], w: usize) {
+    p2_block::<avx512::Wide>(cd, blk, w)
 }
 
 /// Inverse DFT of a `2^n × w` value matrix (natural order) into
@@ -325,6 +419,7 @@ impl CosetDft {
         let n1 = self.n1;
         let n2 = n - n1;
         let (r, s) = (1usize << n1, 1usize << n2);
+        let wide = avx512();
         // ---- phase A ----
         dst.par_chunks_mut(s * w).enumerate().for_each(|(j, blk)| {
             if bitrev {
@@ -336,79 +431,342 @@ impl CosetDft {
                     blk[q * w..(q + 1) * w].copy_from_slice(&src[row * w..(row + 1) * w]);
                 }
             }
-            for (a, tw) in self.itwa.iter().enumerate() {
-                let h = 1usize << a;
-                for b0 in (0..s).step_by(2 * h) {
-                    {
-                        let (x, y) = two_rows(blk, w, b0, h);
-                        bfly1(x, y);
-                    }
-                    for jj in 1..h {
-                        let (x, y) = two_rows(blk, w, b0 + jj, h);
-                        bfly_dit(x, y, tw[jj]);
-                    }
-                }
+            #[cfg(target_arch = "x86_64")]
+            if wide {
+                // SAFETY: AVX-512F is available (checked).
+                unsafe { ia_block_avx512(self, blk, w) };
+                return;
             }
+            ia_block::<Packed>(self, blk, w);
         });
         // ---- phase B ----
         let tinv = F::from_u64(t as u64).inverse();
         let bs = (256 / (w * 4)).clamp(1, s).next_power_of_two().min(s);
         let bw = bs * w;
-        let dptr = SendPtr(dst.as_mut_ptr());
+        let k = IB {
+            cd: self,
+            w,
+            bs,
+            tinv,
+            dptr: SendPtr(dst.as_mut_ptr()),
+        };
         (0..s / bs).into_par_iter().for_each_init(
-            || vec![F::ZERO; r * bw],
-            |scr, bi| {
-                let s0 = bi * bs;
-                for rr in 0..r {
-                    let row0 = (rr * s + s0) * w;
-                    // SAFETY: batches read and write disjoint rows `r·S + s0 .. + bs`.
-                    unsafe {
-                        std::ptr::copy_nonoverlapping(
-                            dptr.get().add(row0),
-                            scr[rr * bw..(rr + 1) * bw].as_mut_ptr(),
-                            bw,
+            || (vec![F::ZERO; r * bw], vec![F::ZERO; bs]),
+            |(scr, tw), bi| {
+                #[cfg(target_arch = "x86_64")]
+                if wide {
+                    // SAFETY: as above.
+                    unsafe { k.run_avx512(scr, tw, bi * bs) };
+                    return;
+                }
+                k.run::<Packed>(scr, tw, bi * bs);
+            },
+        );
+    }
+}
+
+/// Phase A of [`CosetDft::idft_from`] on one gathered block of `S` rows.
+#[inline(always)]
+fn ia_block<R: Rows>(cd: &CosetDft, blk: &mut [F], w: usize) {
+    let s = 1usize << (cd.n - cd.n1);
+    for (a, tw) in cd.itwa.iter().enumerate() {
+        let h = 1usize << a;
+        for b0 in (0..s).step_by(2 * h) {
+            {
+                let (x, y) = two_rows(blk, w, b0, h);
+                R::bfly1(x, y);
+            }
+            for jj in 1..h {
+                let (x, y) = two_rows(blk, w, b0 + jj, h);
+                R::bfly_dit(x, y, tw[jj]);
+            }
+        }
+    }
+}
+
+#[cfg(target_arch = "x86_64")]
+#[target_feature(enable = "avx512f")]
+unsafe fn ia_block_avx512(cd: &CosetDft, blk: &mut [F], w: usize) {
+    ia_block::<avx512::Wide>(cd, blk, w)
+}
+
+/// Phase B of [`CosetDft::idft_from`] on one residue batch.
+struct IB<'a> {
+    cd: &'a CosetDft,
+    w: usize,
+    bs: usize,
+    tinv: F,
+    dptr: SendPtr,
+}
+
+impl IB<'_> {
+    #[inline(always)]
+    fn run<R: Rows>(&self, scr: &mut [F], tw: &mut [F], s0: usize) {
+        let (cd, w, bs) = (self.cd, self.w, self.bs);
+        let n1 = cd.n1;
+        let (r, s) = (1usize << n1, 1usize << (cd.n - n1));
+        let bw = bs * w;
+        for rr in 0..r {
+            let row0 = (rr * s + s0) * w;
+            // SAFETY: batches read and write disjoint rows `r·S + s0 .. + bs`.
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    self.dptr.get().add(row0),
+                    scr[rr * bw..(rr + 1) * bw].as_mut_ptr(),
+                    bw,
+                );
+            }
+        }
+        for k in 0..n1 {
+            let hr = 1usize << k;
+            let t1 = &cd.itw1[k];
+            let ts = &cd.itws[k][s0..s0 + bs];
+            for blk in (0..r).step_by(2 * hr) {
+                for rp in 0..hr {
+                    let (x, y) = two_rows(scr, bw, blk + rp, hr);
+                    for (z, &v) in tw.iter_mut().zip(ts) {
+                        *z = t1[rp] * v;
+                    }
+                    for b in 0..bs {
+                        R::bfly_dit(
+                            &mut x[b * w..(b + 1) * w],
+                            &mut y[b * w..(b + 1) * w],
+                            tw[b],
                         );
                     }
                 }
-                let mut tw = vec![F::ZERO; bs];
-                for k in 0..n1 {
-                    let hr = 1usize << k;
-                    let t1 = &self.itw1[k];
-                    let ts = &self.itws[k][s0..s0 + bs];
-                    for blk in (0..r).step_by(2 * hr) {
-                        for rp in 0..hr {
-                            let (x, y) = two_rows(scr, bw, blk + rp, hr);
-                            for (z, &v) in tw.iter_mut().zip(ts) {
-                                *z = t1[rp] * v;
-                            }
-                            for b in 0..bs {
-                                bfly_dit(
-                                    &mut x[b * w..(b + 1) * w],
-                                    &mut y[b * w..(b + 1) * w],
-                                    tw[b],
-                                );
-                            }
-                        }
-                    }
+            }
+        }
+        for rr in 0..r {
+            let row0 = (rr * s + s0) * w;
+            let blk = &mut scr[rr * bw..(rr + 1) * bw];
+            R::scale(blk, self.tinv);
+            // SAFETY: as above.
+            unsafe {
+                std::ptr::copy_nonoverlapping(blk.as_ptr(), self.dptr.get().add(row0), bw);
+            }
+        }
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    #[target_feature(enable = "avx512f")]
+    unsafe fn run_avx512(&self, scr: &mut [F], tw: &mut [F], s0: usize) {
+        self.run::<avx512::Wide>(scr, tw, s0)
+    }
+}
+
+/// Whether the AVX-512 row backend is used (`NPUDR_NO_AVX512=1` disables it).
+fn avx512() -> bool {
+    use std::sync::OnceLock;
+    static A: OnceLock<bool> = OnceLock::new();
+    *A.get_or_init(|| {
+        #[cfg(target_arch = "x86_64")]
+        {
+            std::arch::is_x86_feature_detected!("avx512f")
+                && std::env::var("NPUDR_NO_AVX512").map_or(true, |v| v != "1")
+        }
+        #[cfg(not(target_arch = "x86_64"))]
+        {
+            false
+        }
+    })
+}
+
+/// AVX-512 row backend (runtime-detected): 16 Montgomery-form BabyBear
+/// elements per vector; canonical add / sub / Montgomery multiply exactly as
+/// Plonky3's packed fields (same canonical results; tested against `F`).
+#[cfg(target_arch = "x86_64")]
+mod avx512 {
+    use core::arch::x86_64::*;
+
+    use super::{F, Packed, Rows};
+
+    const P: u32 = 0x7800_0001;
+    /// `P^{-1} mod 2^32`
+    const MU: u32 = 0x8800_0001;
+    const L: usize = 16;
+
+    pub(super) struct Wide;
+
+    #[inline]
+    #[target_feature(enable = "avx512f")]
+    unsafe fn ld(x: &[F]) -> __m512i {
+        unsafe { _mm512_loadu_si512(x.as_ptr() as *const __m512i) }
+    }
+    #[inline]
+    #[target_feature(enable = "avx512f")]
+    unsafe fn st(x: &mut [F], v: __m512i) {
+        unsafe { _mm512_storeu_si512(x.as_mut_ptr() as *mut __m512i, v) }
+    }
+    #[inline]
+    #[target_feature(enable = "avx512f")]
+    unsafe fn splat(x: F) -> __m512i {
+        // F is the Montgomery-form u32 (`repr(transparent)`)
+        let v: u32 = unsafe { core::mem::transmute::<F, u32>(x) };
+        _mm512_set1_epi32(v as i32)
+    }
+    #[inline]
+    #[target_feature(enable = "avx512f")]
+    pub(super) unsafe fn add(a: __m512i, b: __m512i) -> __m512i {
+        let t = _mm512_add_epi32(a, b);
+        let u = _mm512_sub_epi32(t, _mm512_set1_epi32(P as i32));
+        _mm512_min_epu32(t, u)
+    }
+    #[inline]
+    #[target_feature(enable = "avx512f")]
+    pub(super) unsafe fn sub(a: __m512i, b: __m512i) -> __m512i {
+        let t = _mm512_sub_epi32(a, b);
+        let u = _mm512_add_epi32(t, _mm512_set1_epi32(P as i32));
+        _mm512_min_epu32(t, u)
+    }
+    #[inline]
+    #[target_feature(enable = "avx512f")]
+    unsafe fn hdup(a: __m512i) -> __m512i {
+        _mm512_castps_si512(_mm512_movehdup_ps(_mm512_castsi512_ps(a)))
+    }
+    /// Montgomery product `a·b·2^{-32} mod P` of canonical inputs.
+    #[inline]
+    #[target_feature(enable = "avx512f")]
+    pub(super) unsafe fn mul(a: __m512i, b: __m512i) -> __m512i {
+        let p = _mm512_set1_epi32(P as i32);
+        let mu = _mm512_set1_epi32(MU as i32);
+        let prod_evn = _mm512_mul_epu32(a, b);
+        let prod_odd = _mm512_mul_epu32(unsafe { hdup(a) }, unsafe { hdup(b) });
+        let qp_evn = _mm512_mul_epu32(_mm512_mul_epu32(prod_evn, mu), p);
+        let qp_odd = _mm512_mul_epu32(_mm512_mul_epu32(prod_odd, mu), p);
+        // high doublewords: odd lanes from the odd products, even lanes from
+        // the even products (their odd doublewords)
+        const EVENS: __mmask16 = 0x5555;
+        let prod_hi = _mm512_castps_si512(_mm512_mask_movehdup_ps(
+            _mm512_castsi512_ps(prod_odd),
+            EVENS,
+            _mm512_castsi512_ps(prod_evn),
+        ));
+        let qp_hi = _mm512_castps_si512(_mm512_mask_movehdup_ps(
+            _mm512_castsi512_ps(qp_odd),
+            EVENS,
+            _mm512_castsi512_ps(qp_evn),
+        ));
+        // prod − q·P ≡ 0 mod 2^32, so the difference is that of the highs
+        let under = _mm512_cmplt_epu32_mask(prod_hi, qp_hi);
+        let r = _mm512_sub_epi32(prod_hi, qp_hi);
+        _mm512_mask_add_epi32(r, under, r, p)
+    }
+
+    /// Whole vectors of a row and the tail (left to [`Packed`]).
+    #[inline(always)]
+    fn split(n: usize) -> usize {
+        n / L * L
+    }
+
+    impl Rows for Wide {
+        #[inline(always)]
+        fn bfly(a: &mut [F], b: &mut [F], tw: F) {
+            let n = split(a.len());
+            // SAFETY: only reached from `#[target_feature(enable = "avx512f")]`
+            // callers (runtime-checked); in-bounds 16-element loads/stores.
+            unsafe {
+                let t = splat(tw);
+                for i in (0..n).step_by(L) {
+                    let (x, y) = (ld(&a[i..]), ld(&b[i..]));
+                    st(&mut a[i..], add(x, y));
+                    st(&mut b[i..], mul(sub(x, y), t));
                 }
-                for rr in 0..r {
-                    let row0 = (rr * s + s0) * w;
-                    let blk = &mut scr[rr * bw..(rr + 1) * bw];
-                    let (bp, bt) = PF::pack_slice_with_suffix_mut(blk);
-                    let ti = PF::from(tinv);
-                    for x in bp.iter_mut() {
-                        *x *= ti;
-                    }
-                    for x in bt.iter_mut() {
-                        *x *= tinv;
-                    }
-                    // SAFETY: as above.
-                    unsafe {
-                        std::ptr::copy_nonoverlapping(blk.as_ptr(), dptr.get().add(row0), bw);
-                    }
+            }
+            Packed::bfly(&mut a[n..], &mut b[n..], tw);
+        }
+        #[inline(always)]
+        fn bfly1(a: &mut [F], b: &mut [F]) {
+            let n = split(a.len());
+            // SAFETY: as above.
+            unsafe {
+                for i in (0..n).step_by(L) {
+                    let (x, y) = (ld(&a[i..]), ld(&b[i..]));
+                    st(&mut a[i..], add(x, y));
+                    st(&mut b[i..], sub(x, y));
                 }
-            },
-        );
+            }
+            Packed::bfly1(&mut a[n..], &mut b[n..]);
+        }
+        #[inline(always)]
+        fn bfly_dit(a: &mut [F], b: &mut [F], tw: F) {
+            let n = split(a.len());
+            // SAFETY: as above.
+            unsafe {
+                let t = splat(tw);
+                for i in (0..n).step_by(L) {
+                    let (x, y) = (ld(&a[i..]), ld(&b[i..]));
+                    let m = mul(y, t);
+                    st(&mut a[i..], add(x, m));
+                    st(&mut b[i..], sub(x, m));
+                }
+            }
+            Packed::bfly_dit(&mut a[n..], &mut b[n..], tw);
+        }
+        #[inline(always)]
+        fn scale_into(dst: &mut [F], src: &[F], k: F) {
+            let n = split(dst.len());
+            // SAFETY: as above.
+            unsafe {
+                let kv = splat(k);
+                for i in (0..n).step_by(L) {
+                    st(&mut dst[i..], mul(ld(&src[i..]), kv));
+                }
+            }
+            Packed::scale_into(&mut dst[n..], &src[n..], k);
+        }
+        #[inline(always)]
+        fn scale(x: &mut [F], k: F) {
+            let n = split(x.len());
+            // SAFETY: as above.
+            unsafe {
+                let kv = splat(k);
+                for i in (0..n).step_by(L) {
+                    let v = ld(&x[i..]);
+                    st(&mut x[i..], mul(v, kv));
+                }
+            }
+            Packed::scale(&mut x[n..], k);
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use p3_field::{PrimeCharacteristicRing, PrimeField32};
+
+        #[test]
+        fn ops_match_field() {
+            if !std::arch::is_x86_feature_detected!("avx512f") {
+                return;
+            }
+            let vals: Vec<F> = (0..4096u64)
+                .map(|i| match i % 7 {
+                    0 => F::ZERO,
+                    1 => F::NEG_ONE,
+                    2 => F::from_u64(i),
+                    _ => F::from_u64(i.wrapping_mul(0x9e37_79b9_7f4a_7c15) >> 33),
+                })
+                .collect();
+            for ch in vals.chunks(32) {
+                let (x, y) = (&ch[..16], &ch[16..]);
+                // SAFETY: AVX-512F checked above.
+                let (s, d, m) = unsafe {
+                    let (a, b) = (ld(x), ld(y));
+                    let mut o = [[F::ZERO; 16]; 3];
+                    st(&mut o[0], add(a, b));
+                    st(&mut o[1], sub(a, b));
+                    st(&mut o[2], mul(a, b));
+                    (o[0], o[1], o[2])
+                };
+                for i in 0..16 {
+                    assert_eq!(s[i], x[i] + y[i]);
+                    assert_eq!(d[i], x[i] - y[i]);
+                    assert_eq!(m[i], x[i] * y[i]);
+                    assert!(m[i].as_canonical_u32() < P);
+                }
+            }
+        }
     }
 }
 
@@ -495,6 +853,55 @@ mod tests {
                 let want = eval_range(&dft, &co, l, sh, *p0, len, None);
                 assert_eq!(e.values, want.values, "h {h} w {w} len {len} p0 {p0}");
             }
+        }
+    }
+
+    /// The AVX-512 backend gives the same transforms as the packed one.
+    #[test]
+    #[cfg(target_arch = "x86_64")]
+    fn wide_backend_matches_packed() {
+        if !std::arch::is_x86_feature_detected!("avx512f") {
+            return;
+        }
+        for (n, w) in [(10usize, 32usize), (11, 13), (12, 64), (10, 40), (9, 7)] {
+            let t = 1usize << n;
+            let src: Vec<F> = (0..(t * w) as u64)
+                .map(|i| F::from_u64(i.wrapping_mul(0x2545_f491_4f6c_dd1d) >> 35))
+                .collect();
+            let cd = CosetDft::new(n);
+            let c = shift() * omega(n + 4).exp_u64(3);
+            let (mut a, mut b) = (src.clone(), src.clone());
+            let (mut ta, mut tb) = (vec![F::ZERO; 1], vec![F::ZERO; 1]);
+            let _ = (&mut ta, &mut tb);
+            // phase-2 / phase-A kernels on whole blocks
+            let s = 1usize << (n - n / 2);
+            for blk in a.chunks_mut(s * w) {
+                p2_block::<Packed>(&cd, blk, w);
+            }
+            for blk in b.chunks_mut(s * w) {
+                unsafe { p2_block_avx512(&cd, blk, w) };
+            }
+            assert_eq!(a, b, "p2 n {n} w {w}");
+            let (mut a, mut b) = (src.clone(), src.clone());
+            for blk in a.chunks_mut(s * w) {
+                ia_block::<Packed>(&cd, blk, w);
+            }
+            for blk in b.chunks_mut(s * w) {
+                unsafe { ia_block_avx512(&cd, blk, w) };
+            }
+            assert_eq!(a, b, "ia n {n} w {w}");
+            // full transforms (dispatching to AVX-512 here) vs Plonky3
+            let dft = Dft::default();
+            let want = dft
+                .coset_dft_batch(RowMajorMatrix::new(src.clone(), w), c)
+                .bit_reverse_rows()
+                .to_row_major_matrix();
+            let mut got = vec![F::ZERO; t * w];
+            cd.eval(&src, w, c, &mut got);
+            assert_eq!(got, want.values, "eval n {n} w {w}");
+            let want = dft.idft_batch(RowMajorMatrix::new(src.clone(), w));
+            cd.idft(&src, w, &mut got);
+            assert_eq!(got, want.values, "idft n {n} w {w}");
         }
     }
 
