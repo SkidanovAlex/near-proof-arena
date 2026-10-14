@@ -1,0 +1,45 @@
+{
+ "label": "D0a \u2282 D1a: public-d0a/d0 (64 nearcore-accepted D0a positives)",
+ "cases": 64,
+ "disagreements": 0,
+ "d1_class_splits": 0,
+ "verdicts": {
+  "accept": 64
+ },
+ "lean_first_family": {},
+ "expected_rel_d1_cases_in_d1a": {
+  "in_d1a": 0,
+  "expected_rel_d1": 0
+ },
+ "mutant_expectations": {},
+ "oracle_measures": {},
+ "accepted_maxima": {
+  "unfold": {
+   "max": 7996,
+   "case": "oracle/fixtures/v3/public-d0a/d0/01-h10025-s1",
+   "bound": 2000000,
+   "margin": 1992004
+  },
+  "chacha_words": {
+   "max": 0,
+   "case": "oracle/fixtures/v3/public-d0a/d0/00-h10004-s3",
+   "bound": 770000,
+   "margin": 770000
+  },
+  "max_path_depth": {
+   "max": 3,
+   "case": "oracle/fixtures/v3/public-d0a/d0/01-h10004-s0",
+   "bound": 32,
+   "margin": 29
+  },
+  "tx_count": {
+   "max": 0,
+   "case": "oracle/fixtures/v3/public-d0a/d0/00-h10004-s3",
+   "bound": 4096,
+   "margin": 4096
+  }
+ },
+ "seconds": 9.2,
+ "bad": [],
+ "d1_class_split_cases": []
+}

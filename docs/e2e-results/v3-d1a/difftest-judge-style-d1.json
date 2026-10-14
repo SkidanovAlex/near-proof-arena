@@ -1,0 +1,49 @@
+{
+ "label": "judge-style near-chunk-v3 D1 samples: seeds 9101-9112 x d1-transfers/d1-mixed/d1-receipts, --d0-target 24",
+ "cases": 864,
+ "disagreements": 0,
+ "d1_class_splits": 0,
+ "verdicts": {
+  "accept": 864
+ },
+ "lean_first_family": {},
+ "expected_rel_d1_cases_in_d1a": {
+  "in_d1a": 864,
+  "expected_rel_d1": 864
+ },
+ "mutant_expectations": {},
+ "oracle_measures": {
+  "unfold equal": 864,
+  "max_path_depth equal": 864,
+  "tx_count equal": 864
+ },
+ "accepted_maxima": {
+  "unfold": {
+   "max": 13608,
+   "case": "/tmp/claude-1002/-data-illia-nearproof/445c16e2-f1c6-4d48-a26f-dc9f25573235/scratchpad/js/d1-mixed-9107/cases/02-h10026-s1",
+   "bound": 2000000,
+   "margin": 1986392
+  },
+  "chacha_words": {
+   "max": 2,
+   "case": "/tmp/claude-1002/-data-illia-nearproof/445c16e2-f1c6-4d48-a26f-dc9f25573235/scratchpad/js/d1-mixed-9109/cases/04-h10017-s4",
+   "bound": 770000,
+   "margin": 769998
+  },
+  "max_path_depth": {
+   "max": 3,
+   "case": "/tmp/claude-1002/-data-illia-nearproof/445c16e2-f1c6-4d48-a26f-dc9f25573235/scratchpad/js/d1-mixed-9101/cases/00-h10004-s2",
+   "bound": 32,
+   "margin": 29
+  },
+  "tx_count": {
+   "max": 15,
+   "case": "/tmp/claude-1002/-data-illia-nearproof/445c16e2-f1c6-4d48-a26f-dc9f25573235/scratchpad/js/d1-mixed-9112/cases/02-h10010-s1",
+   "bound": 4096,
+   "margin": 4081
+  }
+ },
+ "seconds": 218.5,
+ "bad": [],
+ "d1_class_split_cases": []
+}

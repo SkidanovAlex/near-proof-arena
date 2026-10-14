@@ -1,0 +1,152 @@
+{
+ "label": "d1run (nearproof-deps/corpora): all 3,394 d1 + 800 mutants + 400 ood (random.Random(1414))",
+ "cases": 4594,
+ "disagreements": 0,
+ "d1_class_splits": 20,
+ "verdicts": {
+  "accept": 3527,
+  "reject": 647,
+  "out_of_domain": 420
+ },
+ "lean_first_family": {},
+ "expected_rel_d1_cases_in_d1a": {
+  "in_d1a": 3527,
+  "expected_rel_d1": 3527
+ },
+ "mutant_expectations": {},
+ "oracle_measures": {
+  "unfold equal": 3527,
+  "max_path_depth equal": 3527,
+  "tx_count equal": 3527
+ },
+ "accepted_maxima": {
+  "unfold": {
+   "max": 16414,
+   "case": "/data/illia/nearproof-deps/corpora/d1run/d1/05-h10106-s3",
+   "bound": 2000000,
+   "margin": 1983586
+  },
+  "chacha_words": {
+   "max": 5,
+   "case": "/data/illia/nearproof-deps/corpora/d1run/d1/01-h10034-s1",
+   "bound": 770000,
+   "margin": 769995
+  },
+  "max_path_depth": {
+   "max": 3,
+   "case": "/data/illia/nearproof-deps/corpora/d1run/d1/01-h10009-s3",
+   "bound": 32,
+   "margin": 29
+  },
+  "tx_count": {
+   "max": 14,
+   "case": "/data/illia/nearproof-deps/corpora/d1run/d1/01-h10125-s3",
+   "bound": 4096,
+   "margin": 4082
+  }
+ },
+ "seconds": 631.9,
+ "bad": [],
+ "d1_class_split_cases": [
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/06-h10014-s2-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/06-h10070-s3-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/05-h10005-s2-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/09-h10097-s2-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/08-h10123-s0-c.extra_block",
+   "lean": "out of domain (c.single_epoch)",
+   "python": "Reject: claim: epoch table does not hold exactly the referenced epochs"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/10-h10147-s0-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/00-h10141-s1-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/01-h10079-s0-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/09-h10114-s0-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/08-h10139-s4-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/02-h10073-s1-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/00-h10103-s1-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/10-h10037-s2-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/00-h10042-s0-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/00-h10080-s3-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/10-h10082-s3-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/07-h10017-s4-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/09-h10067-s1-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/11-h10017-s2-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "/data/illia/nearproof-deps/corpora/d1run/mutants/09-h10006-s3-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  }
+ ]
+}

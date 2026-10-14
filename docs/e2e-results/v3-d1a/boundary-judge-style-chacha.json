@@ -1,0 +1,24 @@
+{
+ "cases": 2,
+ "runs": 32,
+ "failures": 0,
+ "tally": {
+  "e.chacha_words accept lean True": 2,
+  "e.chacha_words accept python True": 2,
+  "e.chacha_words out_of_domain lean True": 2,
+  "e.chacha_words out_of_domain python True": 2,
+  "w.path_depth accept lean True": 2,
+  "w.path_depth accept python True": 2,
+  "w.path_depth out_of_domain lean True": 2,
+  "w.path_depth out_of_domain python True": 2,
+  "w.tx_count accept lean True": 2,
+  "w.tx_count accept python True": 2,
+  "w.tx_count out_of_domain lean True": 2,
+  "w.tx_count out_of_domain python True": 2,
+  "w.unfolded accept lean True": 2,
+  "w.unfolded accept python True": 2,
+  "w.unfolded out_of_domain lean True": 2,
+  "w.unfolded out_of_domain python True": 2
+ },
+ "bad": []
+}

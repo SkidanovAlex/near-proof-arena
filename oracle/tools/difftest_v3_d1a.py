@@ -9,9 +9,12 @@ Implementations compared on every case directory (claim.bin, witness.bin, option
                 (nearcore borsh decoding and nearcore trie nodes: tx_count, A7 unfold on the D1
                 run's tries, max path depth, A12), for the cases it measured.
 
-A case agrees iff Lean and Python return the same verdict (accept / reject / out_of_domain),
-and, when both say out_of_domain because of a D1a amendment, Lean's (first) family is the
-first of Python's list. Expectations from meta.json (all must hold for both checkers):
+A case agrees iff Lean and Python agree on acceptance, and, when Lean says out_of_domain because
+of a D1a amendment, Python says out_of_domain with that family first. A reject-vs-out_of_domain
+split on a case neither accepts and where Lean's reason is not a D1a amendment comes from the
+unmodified D1 checkers (`checkD1` / spec_check_v3_d1.py, e.g. `c.epoch_start_flip`: Lean
+`c.single_epoch`, Python a claim rejection); it is listed as `d1_class_splits`, not as a D1a
+disagreement. Expectations from meta.json (all must hold for both checkers):
   * `expected_verdict_d1a` / `expected_reason_d1a` (the D1a mutants, e.g. `w.tx_count_at_bound`
     / `w.tx_count_over`): that verdict, and the reason names that family;
   * `expected_rel_d1 = false` (nearcore / D1 oracle): never accepted (D1a ⊆ D1).
@@ -88,6 +91,7 @@ def main():
     ap.add_argument("--oracle-jsonl", nargs="*", default=[])
     ap.add_argument("--report")
     ap.add_argument("--label", default="")
+    ap.add_argument("--save", help="write the Lean / Python outputs to SAVE.lean.jsonl / SAVE.python.jsonl")
     a = ap.parse_args()
     dirs = find_cases(a.cases)
     if a.case_list:
@@ -95,10 +99,16 @@ def main():
     t0 = time.time()
     L = load_jsonl(a.lean_jsonl) if a.lean_jsonl else run_checker([a.lean], dirs, a.jobs, a.chunk)
     P = load_jsonl(a.python_jsonl) if a.python_jsonl else run_checker([sys.executable, a.python], dirs, a.jobs, a.chunk)
+    if a.save:
+        for suf, X in ((".lean.jsonl", L), (".python.jsonl", P)):
+            with open(a.save + suf, "w") as f:
+                for x in X.values():
+                    f.write(json.dumps(x) + "\n")
     O = {}
     for f in a.oracle_jsonl:
         O.update(load_jsonl(f))
     bad = []
+    splits = []
     verdicts = collections.Counter()
     fams = collections.Counter()
     in_d1a_of_d1 = [0, 0]
@@ -115,9 +125,13 @@ def main():
         if os.path.exists(mp):
             meta = json.load(open(mp))
         why = []
-        if l["verdict"] != p["verdict"]:
-            why.append("verdict")
         lf = family(l["reason"]) if l["verdict"] == "out_of_domain" else None
+        if l["verdict"] != p["verdict"]:
+            pf_d1a = p["verdict"] == "out_of_domain" and p["reason"].split(",")[0] in AMENDMENTS
+            if "accept" in (l["verdict"], p["verdict"]) or lf is not None or pf_d1a:
+                why.append("verdict")
+            else:
+                splits.append({"case": d, "lean": l["reason"], "python": p["reason"]})
         if lf is not None:
             pf = p["reason"].split(",")[0] if p["verdict"] == "out_of_domain" else None
             if pf != lf:
@@ -163,17 +177,18 @@ def main():
             bad.append({"case": d, "why": why, "lean": l, "python": p})
     margins = {m: {"max": v, "case": c, "bound": BOUNDS[m],
                    "margin": None if v is None else BOUNDS[m] - v} for m, (v, c) in maxima.items()}
-    rep = {"label": a.label, "cases": len(dirs), "disagreements": len(bad), "verdicts": dict(verdicts),
+    rep = {"label": a.label, "cases": len(dirs), "disagreements": len(bad), "d1_class_splits": len(splits), "verdicts": dict(verdicts),
            "lean_first_family": dict(fams),
            "expected_rel_d1_cases_in_d1a": {"in_d1a": in_d1a_of_d1[0], "expected_rel_d1": in_d1a_of_d1[1]},
            "mutant_expectations": dict(exp),
            "oracle_measures": {"%s %s" % (m, "equal" if ok else "DIFFER"): n for (m, ok), n in oracle_cmp.items()},
-           "accepted_maxima": margins, "seconds": round(time.time() - t0, 1), "bad": bad[:50]}
+           "accepted_maxima": margins, "seconds": round(time.time() - t0, 1), "bad": bad[:50],
+           "d1_class_split_cases": splits[:50]}
     s = json.dumps(rep, indent=1)
     if a.report:
         os.makedirs(os.path.dirname(os.path.abspath(a.report)), exist_ok=True)
         open(a.report, "w").write(s + "\n")
-    print(json.dumps({k: rep[k] for k in rep if k != "bad"}, indent=1))
+    print(json.dumps({k: rep[k] for k in rep if k not in ("bad", "d1_class_split_cases")}, indent=1))
     for b in bad[:10]:
         print("DISAGREE", json.dumps(b)[:600], file=sys.stderr)
     return 1 if bad else 0

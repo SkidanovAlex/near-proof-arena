@@ -1,0 +1,20 @@
+{
+ "cases": 40,
+ "runs": 372,
+ "failures": 0,
+ "tally": {
+  "w.path_depth accept lean True": 40,
+  "w.path_depth accept python True": 40,
+  "w.path_depth out_of_domain lean True": 40,
+  "w.path_depth out_of_domain python True": 40,
+  "w.tx_count accept lean True": 13,
+  "w.tx_count accept python True": 13,
+  "w.tx_count out_of_domain lean True": 13,
+  "w.tx_count out_of_domain python True": 13,
+  "w.unfolded accept lean True": 40,
+  "w.unfolded accept python True": 40,
+  "w.unfolded out_of_domain lean True": 40,
+  "w.unfolded out_of_domain python True": 40
+ },
+ "bad": []
+}
