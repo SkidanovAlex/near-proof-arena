@@ -120,3 +120,80 @@ The judge reads cgroup `memory.peak` (`runners/sandbox`), and so do these runs n
 `heavy` wrapper, polled every 0.5 s). The reset is removed (`peak_rss_mb`, cumulative).
 
 (Checkpoints 2 `a585ba93`, 3 `93da5cd7`.)
+
+16. **AVX-512 row backend** for `CosetDft` / iDFT (runtime-detected, `NPUDR_NO_AVX512=1` disables;
+   Montgomery multiply ported from Plonky3's AVX-512 packing; ops tested against `F`, transforms
+   against the AVX2 backend and Plonky3): 0.106 → 0.084 s per 2^22 × 32 block (forward), 0.123 →
+   0.103 s (inverse). End to end only −5 s on 00-h10035-s3 (312 vs 317 s): the build stays
+   x86-64-v3 and the AVX2 path alone meets the target.
+17. Packed aux group factors (`AuxSrc::rows`, 8 rows at a time; all 25 `nearAirV3` tables have
+   single-bit multiplicities, so no chain columns): aux values 3.8 → 2.6 s per recomputation (×5).
+18. Cumulative peak-RSS report (no `clear_refs` reset), clippy fix in `Schedule::new` (loop
+   condition never mutated), `prove.sh` no longer forces `NPUDR_MEM_GB=20` (the prover's default
+   13 GB budget is sized for the 16 GiB cap; 20 would oversize the block-wise groups).
+
+(Checkpoint 4 `6f4ac21e`.)
+
+## Results (final build, CPUs 8-11,24-27, `HEAVY_MEM=16G`, foreign load ≤ 0.62 CPU in every run)
+
+Wall = `/usr/bin/time` elapsed of `npudr v3prove` (everything the judge's `prove` times); peak =
+cgroup `memory.peak` of the run's scope (what the judge reads); all proofs byte-identical to the
+baseline's.
+
+| fixture | baseline AVX2 wall / prove / peak | after wall / prove / peak | speed-up |
+|---|---|---|---|
+| x-bw-implicit (fixtures-extra) | 717 s¹ / 578 s / ≈13.0 GB² | **274 s** / 266 s / 12,569 MiB | 2.6× (2.2× vs 600 s) |
+| 00-h10004-s3 | 518 s / 502 s / 12,187 MiB | **263 s** / 255 s / 11,939 MiB | 2.0× |
+| 00-h10035-s3 (heaviest: sha_r 2^19) | 592 s / 572 s / 13,362 MiB | **312 s** / 302 s / 12,917 MiB | 1.9× |
+| 01-h10009-s1 | 525 s / 508 s / 12,721 MiB | **278 s** / 270 s / 12,273 MiB | 1.9× |
+| 00-h10035-s3, AVX-512 off | | 317 s / 308 s / 12,918 MiB | |
+| x-bw-implicit, scalar host build (main) | 1,014 s / 997 s / — | | |
+
+¹ includes ≈120 s of unexplained idle at the start (see above). ² from the per-phase `VmHWM`
+reports (cgroup peak not yet tracked in that run).
+
+Phases (x-bw-implicit, after): entries/render/check/bus 8 s, main commit 62, aux 44, quotient 80,
+quot commit 32, ood 8, deep 12, fri 1, openings 27 (s).
+
+Fixture survey (`--check-only`, all 81): the class-0 (2^22) width is 588 in every fixture; the
+heaviest shapes add `sha_r`/`walk`/`mrk` at 2^19 (00-h10035-s3, 00-h10036-s3: 673 × 2^22 cells
+vs 588–607 elsewhere).
+
+Final build (`cargo fmt` / clippy cleanup on top of checkpoint 4): x-bw-implicit 277 s wall,
+269 s prove, 12,568 MiB cgroup peak, byte-identical.
+
+## Verification
+
+* `run-v2-section.sh prove` with `PROVE_V3=1`, `PROVE_CASES` = 00-h10004-s3, 00-h10035-s3,
+  01-h10009-s1, x-bw-implicit (CPUs 8-11,24-27, `HEAVY_MEM=16G`, prover default budget): **ALL PASS**
+  (72 checks): Lean `np-lean-bundle-v3` == Rust `npudr v3sched` entries, 25 tables / 51 buses,
+  proofs ≤ 8 MiB, the deployed Lean `np-lean-verify-v3` ACCEPTS all four (2.6–3.0 s), 14/14
+  negatives rejected per case. (Lean exes from the `v3-integ-d` worktree, same base commit
+  `c6247f3d`, symlinked into the ignored `conformance/.lake`.)
+* `cargo test --release` (all targets): all pass, incl. new tests — `lde` (coset DFT, iDFT,
+  bit-reversed iDFT, column ranges, `eval_range` / `eval_ranges` vs full LDE, AVX-512 ops and
+  transforms vs packed / Plonky3), `lmcommit::matches_mmcs_fast_level0` (block-wise level 0 vs
+  `mmcs::commit`, roots and openings), `sha2x::pair_matches_sha2`,
+  `lowmem_streaming_quotient_equals_reference`; `lowmem_equals_reference(_near)` compare the whole
+  proof with `prover_ref` byte for byte. Also with `NPUDR_NO_AVX512=1`.
+* `cargo fmt --check` OK; clippy: no errors (the two HANDOVER errors fixed: `protocol.rs` loop,
+  `chacha.rs` test `2 * 0`); no new warnings in the new code; `make pin-check` OK; nothing under
+  `challenges/`, `oracle/`, `spec/`, `zk-formal/`, `build-recipe/` or Lean touched; npudr CLI
+  unchanged.
+
+## Risks / headroom
+
+* Timings are on 4 Zen 5 cores (9950X3D, ~5 GHz) with SMT; a cloud 8-vCPU box (4 cores, lower
+  clocks, less memory bandwidth) will be slower — plausibly 1.3–1.6× (≈ 360–500 s for the heaviest
+  fixture). The AVX2-only path costs +5 s.
+* Memory: ≤ 12.6 GiB cgroup peak on all fixtures at the 13 GB default budget (judge cap 16 GiB).
+  Peaks: main commit (4 GB of leaf states + traces) and FRI. If the judge falls back to
+  `RLIMIT_AS`, virtual size counts: VmPeak was 13.3–13.7 GB.
+* Shapes: every fixture has the same class-0 width (588); heavier witnesses (SHA tables beyond
+  2^19, or more 2^22 tables) would scale time roughly with the committed cells (00-h10035-s3 has
+  +12% cells over x-bw-implicit and +14% time).
+* **Build flags**: the judge must build with `target-cpu=x86-64-v3` actually applied (see the
+  finding above); a scalar build is ~1.6× slower (this branch's code paths are mostly packed).
+* Remaining hot spots: coset DFTs ≈ 75 s total (main 32, aux 23, quot 16), leaf hashing ≈ 38 s
+  (SHA-NI bound), quotient ≈ 80 s (rcpt streamed: iDFT per block; bus constraints 12 s), aux
+  values recomputed 5× (2.6 s each), openings 27 s.

@@ -276,6 +276,7 @@ struct P1<'a> {
 
 impl P1<'_> {
     #[inline(always)]
+    #[allow(clippy::needless_range_loop)]
     fn run<R: Rows>(&self, scr: &mut [F], tw: &mut [F], s0: usize) {
         let (cd, w, bs, sw, c0) = (self.cd, self.w, self.bs, self.sw, self.c0);
         let n1 = cd.n1;
@@ -336,6 +337,7 @@ impl P1<'_> {
 
 /// Phase 2 of [`CosetDft::eval_cols`] on one block of `S` rows.
 #[inline(always)]
+#[allow(clippy::needless_range_loop)]
 fn p2_block<R: Rows>(cd: &CosetDft, blk: &mut [F], w: usize) {
     let n = cd.n;
     let n1 = cd.n1;
@@ -467,6 +469,7 @@ impl CosetDft {
 
 /// Phase A of [`CosetDft::idft_from`] on one gathered block of `S` rows.
 #[inline(always)]
+#[allow(clippy::needless_range_loop)]
 fn ia_block<R: Rows>(cd: &CosetDft, blk: &mut [F], w: usize) {
     let s = 1usize << (cd.n - cd.n1);
     for (a, tw) in cd.itwa.iter().enumerate() {
@@ -501,6 +504,7 @@ struct IB<'a> {
 
 impl IB<'_> {
     #[inline(always)]
+    #[allow(clippy::needless_range_loop)]
     fn run<R: Rows>(&self, scr: &mut [F], tw: &mut [F], s0: usize) {
         let (cd, w, bs) = (self.cd, self.w, self.bs);
         let n1 = cd.n1;

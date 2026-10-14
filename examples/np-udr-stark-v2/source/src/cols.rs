@@ -8,7 +8,6 @@
 //! A table is built in two passes over a row generator (`from_rows`): the
 //! first pass finds the per-column maxima, the second fills the columns.
 
-use p3_field::PrimeCharacteristicRing;
 use p3_matrix::Matrix;
 use p3_matrix::dense::RowMajorMatrix;
 use rayon::prelude::*;

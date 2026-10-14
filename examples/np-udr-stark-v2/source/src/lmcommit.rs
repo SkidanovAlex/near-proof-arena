@@ -319,7 +319,7 @@ fn fast_level0(mats: &[CMat], s: usize) -> bool {
         return false;
     }
     let lh = ms[0].src.log_h();
-    lh >= FAST_MIN_LOG && ms.iter().all(|m| m.src.log_h() == lh) && s % (1usize << lh) == 0
+    lh >= FAST_MIN_LOG && ms.iter().all(|m| m.src.log_h() == lh) && s.is_multiple_of(1usize << lh)
 }
 
 /// Level-0 digests of positions `g0 .. g0 + s` (whole LDE blocks of the

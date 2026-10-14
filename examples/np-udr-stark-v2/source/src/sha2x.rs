@@ -40,6 +40,10 @@ fn shani() -> bool {
 
 #[cfg(target_arch = "x86_64")]
 mod x86 {
+    // Every function here is `unsafe` with one precondition — SHA-NI, SSE2,
+    // SSSE3 and SSE4.1 are available (checked by `shani()`) — and only does
+    // in-bounds unaligned loads/stores of the given arrays.
+    #![allow(unsafe_op_in_unsafe_fn)]
     use core::arch::x86_64::*;
 
     const K32: [u32; 64] = [

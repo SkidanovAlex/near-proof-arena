@@ -172,6 +172,7 @@ impl Budget {
     }
 }
 
+#[allow(clippy::needless_range_loop)]
 /// `Σ_r wts[r] · m[r][c]` for every column `c` (limb-wise, packed across
 /// columns: `EF × F` is the base product on each of the 8 limbs).
 fn dot_rows(m: &RowMajorMatrix<F>, wts: &[EF]) -> Vec<EF> {
@@ -182,13 +183,13 @@ fn dot_rows(m: &RowMajorMatrix<F>, wts: &[EF]) -> Vec<EF> {
         return vec![];
     }
     let wp = w / PF::WIDTH;
+    let tw = w - wp * PF::WIDTH;
     let ch = (t / (4 * rayon::current_num_threads().max(1))).max(256);
     let (accp, acct) = (0..t.div_ceil(ch))
         .into_par_iter()
         .map(|k| {
             let mut ap = vec![PF::ZERO; 8 * wp];
-            let mut at = vec![F::ZERO; 8 * (w - wp * PF::WIDTH)];
-            let tw = w - wp * PF::WIDTH;
+            let mut at = vec![F::ZERO; 8 * tw];
             for r in k * ch..((k + 1) * ch).min(t) {
                 let row = &m.values[r * w..(r + 1) * w];
                 let (rp, rt) = row.split_at(wp * PF::WIDTH);
@@ -207,12 +208,7 @@ fn dot_rows(m: &RowMajorMatrix<F>, wts: &[EF]) -> Vec<EF> {
             (ap, at)
         })
         .reduce(
-            || {
-                (
-                    vec![PF::ZERO; 8 * wp],
-                    vec![F::ZERO; 8 * (w - wp * PF::WIDTH)],
-                )
-            },
+            || (vec![PF::ZERO; 8 * wp], vec![F::ZERO; 8 * tw]),
             |(mut a, mut b), (c, d)| {
                 for (x, y) in a.iter_mut().zip(c) {
                     *x += y;
@@ -223,7 +219,6 @@ fn dot_rows(m: &RowMajorMatrix<F>, wts: &[EF]) -> Vec<EF> {
                 (a, b)
             },
         );
-    let tw = w - wp * PF::WIDTH;
     (0..w)
         .map(|c| {
             EF::from_basis_coefficients_fn(|l| {
@@ -255,7 +250,6 @@ fn combine_into(out: &mut [EF], c: &RowMajorMatrix<F>, coef: &[EF]) {
         return;
     }
     let wp = w / PF::WIDTH;
-    let tw = w - wp * PF::WIDTH;
     // limb `l` of every coefficient, packed
     let limbs: Vec<Vec<F>> = (0..8)
         .map(|l| coef.iter().map(|x| ef_coeffs(x)[l]).collect())
@@ -1533,7 +1527,7 @@ pub fn prove_cols(
             + 2 * tree_bytes
             + quot_m
                 .iter()
-                .map(|m| m.src.width() * 4 << m.src.log_h())
+                .map(|m| (m.src.width() * 4) << m.src.log_h())
                 .sum::<usize>();
         let g = bud.fast_group(l0, hmax0, qres, ccw);
         if opts.verbose {
