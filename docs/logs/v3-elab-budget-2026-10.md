@@ -145,7 +145,7 @@ are `codec_int`'s minus the row/`zev` unfoldings); lean4lean and nanoda accept e
   (auxiliary `_proof_`/`_simp_`/`match_`/`eq_`/`_f` excluded), **0 missing, 0 changed**, 44 new
   (helpers: `zq_*`, `lastFind`, `lookup_*`, `AllE`, `AllI`, `IdxP`, `cIntT`, `int_of_cInt`,
   `cdcPref`, `cdcModE`, `mem_modE`, `nearAirV3_npOkPg_g2`, the macro declarations).
-* `zk-formal/test`: 2,551/2,554 pass; the 3 failures fail on main too (`AuditHonestBalanceRcpt`,
+* `zk-formal/test`: 2,546/2,549 pass; the 3 failures fail on main too (`AuditHonestBalanceRcpt`,
   `AuditRenderV3RcptTables`, `AuditPackedPublic`, see v3-prune).  `AuditNearV3Admission` now imports
   `Assembly.NearAirCheck` (no longer reached through `NearAdmission`); its `#print axioms` outputs are
   unchanged.  `AuditAdmissionV3`, `AuditCodecRows`, `AuditUnfoldA7`, `AuditRcptRoutingQ` pass.
