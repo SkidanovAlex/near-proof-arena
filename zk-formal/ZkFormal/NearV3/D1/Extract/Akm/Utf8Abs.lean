@@ -31,10 +31,10 @@ structure U8Rows (R : Nat) (x k : Nat → Nat) (u : Nat → Fp) (e0 ed f0 f4 : N
   stop : 0 < R → ucnF (k (R - 1)) (u (R - 1)) = 0
   start : 0 < R → u 0 = 0
   /-- second-byte flags (set on the byte after the lead) -/
-  fE0 : ∀ j, j + 1 < R → k j = 3 → x j = 0xE0 → 0xA0 ≤ x (j + 1)
-  fED : ∀ j, j + 1 < R → k j = 3 → x j = 0xED → x (j + 1) ≤ 0x9F
-  fF0 : ∀ j, j + 1 < R → k j = 4 → x j = 0xF0 → 0x90 ≤ x (j + 1)
-  fF4 : ∀ j, j + 1 < R → k j = 4 → x j = 0xF4 → x (j + 1) ≤ 0x8F
+  fE0 : ∀ j, j + 1 < R → k j = 3 → x j = 0xE0 → k (j + 1) = 1 → 0xA0 ≤ x (j + 1)
+  fED : ∀ j, j + 1 < R → k j = 3 → x j = 0xED → k (j + 1) = 1 → x (j + 1) ≤ 0x9F
+  fF0 : ∀ j, j + 1 < R → k j = 4 → x j = 0xF0 → k (j + 1) = 1 → 0x90 ≤ x (j + 1)
+  fF4 : ∀ j, j + 1 < R → k j = 4 → x j = 0xF4 → k (j + 1) = 1 → x (j + 1) ≤ 0x8F
 
 theorem fp_one_ne_zero' : (1 : Fp) ≠ 0 := by decide
 
@@ -191,11 +191,11 @@ theorem utf8_rows (hR : R < P) : ∀ m j, j + m = R → (m = 0 ∨ u j = 0) →
     have hc2' : 128 ≤ x (j + 1 + 1) ∧ x (j + 1 + 1) ≤ 191 := hc2
     have lo : (if x j = 224 then 160 else 128) ≤ x (j + 1) := by
       split
-      · exact H.fE0 j hj1 hk (by omega)
+      · exact H.fE0 j hj1 hk (by omega) hk1
       · omega
     have hi : x (j + 1) ≤ (if x j = 237 then 159 else 191) := by
       split
-      · exact H.fED j hj1 hk (by omega)
+      · exact H.fED j hj1 hk (by omega) hk1
       · omega
     rw [show m - 1 = ((m - 3) + 1) + 1 by omega, List.range'_succ, List.range'_succ, List.map_cons,
       List.map_cons,
@@ -236,11 +236,11 @@ theorem utf8_rows (hR : R < P) : ∀ m j, j + m = R → (m = 0 ∨ u j = 0) →
     have hc3' : 128 ≤ x (j + 1 + 1 + 1) ∧ x (j + 1 + 1 + 1) ≤ 191 := hc3
     have lo : (if x j = 240 then 144 else 128) ≤ x (j + 1) := by
       split
-      · exact H.fF0 j hj1 hk (by omega)
+      · exact H.fF0 j hj1 hk (by omega) hk1
       · omega
     have hi : x (j + 1) ≤ (if x j = 244 then 143 else 191) := by
       split
-      · exact H.fF4 j hj1 hk (by omega)
+      · exact H.fF4 j hj1 hk (by omega) hk1
       · omega
     rw [show m - 1 = (((m - 4) + 1) + 1) + 1 by omega, List.range'_succ, List.range'_succ,
       List.range'_succ, List.map_cons, List.map_cons, List.map_cons,
