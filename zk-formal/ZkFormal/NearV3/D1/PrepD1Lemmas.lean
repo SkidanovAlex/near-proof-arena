@@ -12,11 +12,11 @@ Lane `v3-d1-tables` (phase 1).  Statements only, as `Prop`-valued definitions (n
 D0a obligations (`Assembly/NearAdmission.lean`: `ExtractV3StmtAt`, `RenderV3Stmt`).  Phase 2
 (V3-D1-DESIGN §7: lanes D `v3-d1-factor`, E `v3-d1-views`, G `v3-d1-render`) proves them.
 
-* `ExtractD1Stmt` — soundness: an accepted D1 prepared statement and a satisfying trace give a
-  D1a witness (`RelD1a B0`).  Splits as in D0a into per-table views (`TxV3`/`AkmV3`/relays/
+* `ExtractD1StmtT` (`D1/StmtsT.lean`) — soundness: an accepted D1 prepared statement and a
+  satisfying trace give a D1a witness (`RelD1a B0`).  Splits as in D0a into per-table views (`TxV3`/`AkmV3`/relays/
   `rcptV3D1`, the 23 unchanged tables' views reused), a link `GoodD1`, and a factor theorem
   `FactorSoundD1 : prepD1 cb h = .ok p → GoodD1 … → ∃ w, RelD1a B0 cb w`.
-* `CompleteD1Stmt` — completeness: every `RelD1a B0` pair has a hint (`hintOfD1`), an accepted
+* `CompleteD1StmtT` (`D1/StmtsT.lean`) — completeness: every `RelD1a B0` pair has a hint (`hintOfD1`), an accepted
   prepared statement and an honest trace with an admissible header.
 * `PrepTxNativeStmt` — the native/AIR split of `processTxs` is exact: with the honest verdict
   bits, `prepTxs` reproduces `processTxs`'s outcome leaves, local / forwarded receipts, gas and
@@ -37,21 +37,11 @@ namespace ZkFormal.NearV3.D1
 
 open NearSpec NearSpec.TransferV1 NearSpecV3 ZkFormal.Air ZkFormal.V2 ZkFormal.Algebra
 
-/-- Soundness obligation (at the challenge's A7 bound `B0`). -/
-def ExtractD1Stmt : Prop :=
-  ∀ (cb : Bytes) (h : HintD1) (p : Public.PrepD1) (tr : Trace Fp),
-    prepD1 cb h = .ok p →
-    (Public.preparedBytesD1 p 0).length < ZkFormal.Algebra.P →
-    HoldsP nearAirV3D1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 p 0)) tr →
-    ∃ w, RelD1a B0 cb w
-
-/-- Completeness obligation. -/
-def CompleteD1Stmt : Prop :=
-  ∀ (cb w : Bytes), checkD1a B0 cb w = .ok () →
-    ∃ (h : HintD1) (p : Public.PrepD1) (tr : Trace Fp),
-      prepD1 cb h = .ok p ∧
-      HoldsP nearAirV3D1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 p 0)) tr ∧
-      h.encode.length < 256 ^ 4
+/-! The soundness / completeness obligations are stated in `D1/StmtsT.lean`
+(`ExtractD1StmtT`, `CompleteD1StmtT`), on the verifier's public tape
+`preparedBytesD1 p (txOverhead h)`.  (The phase-1 drafts here used the tape
+`preparedBytesD1 p 0`, which does not count the hint's transaction vectors in `w.size`; they were
+retired on 2026-10-14, coordinator decision, docs/zk-formal/V3-D1-PHASE2.md §4.) -/
 
 /-- The verdict `txV3` recomputes is `verifyAndCharge`'s success. -/
 def TxVerdictStmt : Prop :=

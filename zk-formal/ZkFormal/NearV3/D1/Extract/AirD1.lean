@@ -6,7 +6,7 @@ import ZkFormal.V2.VerifierDefs
 # `ZkFormal.NearV3.D1.Extract.AirD1` — table indices of `nearAirV3D1` and `TableLocal` from `HoldsP`
 
 Lane `v3-d1-phase2` (docs/zk-formal/V3-D1-PHASE2.md, milestone V0).  The first, mechanical step of
-`ExtractD1Stmt`, as `Assembly/ExtractV3.lean` for `nearAirV3`:
+`ExtractD1StmtT`, as `Assembly/ExtractV3.lean` for `nearAirV3`:
 
 * `getElem?_d1_same`: every index `t < 25` other than `16` (`rcptV3D1`) and `23` (`mrkV3` at
   `maxLog 20`) holds the same table as in `nearAirV3`, so each D0a per-table view (stated for

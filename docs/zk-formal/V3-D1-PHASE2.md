@@ -117,12 +117,11 @@ elaboration).
   AIR's `w.size` check (`8 MiB − OVH − Σ x ≥ 0`) does not count the hint's transaction vectors.
   The extracted witness carries them, so the phase-1 `ExtractD1Stmt` is (very likely) false: an
   accepted overhead-0 trace can extract a witness above 8 MiB, which `RelD1` rejects.
-* Corrected siblings `ExtractD1StmtT` / `CompleteD1StmtT` are added. They use the verifier's
-  tape `preparedBytesD1 p (txOverhead h)`. `CompleteD1StmtT` also carries the `headerOk`
-  conjunct of D0a's `RenderV3Stmt`, which the admission theorem needs.
-* The originals are kept and documented as superseded. The phase-1 docstring of `prepD1b`
-  ("`preparedBytesD1 · 0`") disagrees with its code (`preparedTapeD1`, which uses
-  `txOverhead`). The code is the verifier. Only the docstring is wrong.
+* **Decision (coordinator, 2026-10-14): accepted.** `ExtractD1StmtT` / `CompleteD1StmtT`
+  (`D1/StmtsT.lean`, on the verifier's tape `preparedBytesD1 p (txOverhead h)`, completeness
+  with `headerOk`) are the canonical targets. The overhead-0 drafts were removed from
+  `PrepD1Lemmas.lean`; no module or tool referenced them. The `prepD1b` docstring now states
+  `txOverhead`.
 
 ## 5. Risks and open questions (no spec change proposed so far)
 
