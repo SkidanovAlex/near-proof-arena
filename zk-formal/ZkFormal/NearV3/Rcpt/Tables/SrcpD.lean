@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Rcpt.Tables.Srcp
 import ZkFormal.Near.Extract.Common
+import ZkFormal.NearV3.Rcpt.Tables.SrcpDDefs
 
 /-!
 # ZkFormal.NearV3.Rcpt.Tables.SrcpD — `srcpV3` with the A10 depth check
@@ -18,9 +19,6 @@ interaction of `SrcpV3.table` is kept verbatim (`local_base`).
 namespace ZkFormal.NearV3.SrcpV3
 
 open ZkFormal.Air ZkFormal.Near ZkFormal.Near.Dsl
-
-/-- The path-depth budget (`NearSpecV3.Dp0`). -/
-def DP0 : Nat := 32
 
 /-- Depth-slack bit `e` (`e < 6`). -/
 def db (e : Nat) : Nat := 56 + e

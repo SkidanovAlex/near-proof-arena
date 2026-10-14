@@ -1,5 +1,6 @@
 import NearSpecV3.PrepD0
 import ZkFormal.NearV3.Sched.Spec.CanonDup
+import ZkFormal.NearV3.Sched.ModelDefs
 
 /-!
 # ZkFormal.NearV3.Sched.Model — the scheduler core as the AIR computes it (executable)
@@ -57,23 +58,6 @@ theorem runCore_eq (pub : SchedPub) (prev : Option Bytes) :
       (convertRaw pub.values pub.params.base pub.ids pub.raw) pub.seed pub.allShardsHash prev := rfl
 
 /-! ## Requests: raw form and set bits -/
-
-/-- A request with resolved shard indices `(s, r)` and its 5-byte bitmap. -/
-structure RawReq where
-  s : Nat
-  r : Nat
-  bm : List UInt8
-  deriving DecidableEq, Repr
-
-/-- Positions `< 40` of the set bits, ascending. -/
-def setBits (bm : List UInt8) : List Nat := (List.range 40).filter (getBit bm)
-
-/-- Increases from the value table over the set bits (`prev` = value of the last set bit). -/
-def incsFrom (vals : List Nat) : Nat → List Nat → List Nat
-  | _, [] => []
-  | prev, c :: cs => (vals.getD c 0 - prev) :: incsFrom vals (vals.getD c 0) cs
-
-def incsOf (p : Params) (bm : List UInt8) : List Nat := incsFrom (requestValues p) p.base (setBits bm)
 
 /-- The converted list as the AIR builds it (requests with no set bit are dropped). -/
 def convRaw (p : Params) (n : Nat) (raw : List RawReq) : List Req :=
@@ -255,7 +239,6 @@ def a0Canon (n : Nat) (prev : NearSpec.Bandwidth.State) : Array Nat :=
 last record wins; `Spec/CanonDup.allow0_src`): record `srcOf ids l` for link `l`. -/
 def a0Src (ids : List Nat) (prev : NearSpec.Bandwidth.State) : Array Nat :=
   srcArr ids fun k => (a0Canon ids.length prev)[k]!
-
 
 def coreEv (ids : List Nat) (p : Params) (allowed : Array Bool) (raw : List RawReq)
     (seed ash : Bytes) (prev : NearSpec.Bandwidth.State) : Except String Ev := do

@@ -1,31 +1,9 @@
 import ZkFormal.NearV3.Candidates.MerkleTraffic
 import NearSpec.Outcome
+import ZkFormal.NearV3.Candidates.MerkleEmptyDefs
 
 namespace ZkFormal.NearV3.Candidates.MerkleEmpty
 open ZkFormal.Air ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Algebra
-
-def emptyCol : Nat := 58
-def inverseCol : Nat := 59
-def countE : Expr := MerklePublic.expression Mrk.nPubE
-def active : Expr := Dsl.not (c emptyCol)
-def gate (e : Expr) : Expr := .mul active e
-
-def interaction (i : Interaction) : Interaction :=
-  {i with mult:=i.mult.map gate}
-
-/-- Empty trees use no Merkle/SHA traffic. The inverse distinguishes nonzero
-counts; the public byte range and count bound are supplied by the whole AIR. -/
-def controls : List Expr :=
-  [Dsl.bool (c emptyCol), sub (n emptyCol) (c emptyCol),
-   .mul (c emptyCol) countE,
-   .mul active (sub (.mul countE (c inverseCol)) (k 1))] ++
-  (List.range 32).map (fun i => .mul (c emptyCol) (.pub (PH_OUT+i)))
-
-def table : Air.Table :=
-  { MerklePublic.table with
-    width:=60
-    constraints:=controls ++ MerklePublic.table.constraints.map gate
-    interactions:=MerklePublic.table.interactions.map interaction }
 
 set_option maxRecDepth 32768 in
 set_option maxHeartbeats 4000000 in

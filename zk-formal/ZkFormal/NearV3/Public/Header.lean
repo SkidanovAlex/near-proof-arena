@@ -1,5 +1,6 @@
 import ZkFormal.NearV3.Public.Source
 import ZkFormal.NearV3.Rcpt.Tables.Size
+import ZkFormal.NearV3.Public.HeaderDefs
 
 /-! Candidate packed-statement header. The witness encoding overhead must be
 supplied by the verified native preparation step; it is not a prover-chosen field. -/
@@ -20,10 +21,6 @@ termination_by bs.size-i
 private theorem byteArray_toList_length (bs : ByteArray) : bs.toList.length = bs.size := by
   simpa only [ByteArray.toList,Nat.sub_zero,List.length_nil,Nat.add_zero] using
     byteArray_loop_length bs 0 []
-
-/-- Preserve the existing static AIR offsets, and add body length and witness overhead. -/
-def headerBytes (p : Prep) (witnessOverhead : Nat) : ByteString :=
-  borshBytes prepTag ++ p.hdr.encode ++ u32 p.body.length ++ u32 witnessOverhead
 
 def RootsSized (p : Prep) : Prop :=
   p.hdr.prevStateRoot.length = 32 ∧ p.hdr.postStateRoot.length = 32 ∧

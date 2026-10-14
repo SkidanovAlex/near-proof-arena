@@ -4,6 +4,7 @@ import ZkFormal.V3.Hint
 import ZkFormal.Prover.BcsChunk
 import ZkFormal.Prover.BcsQuery
 import ZkFormal.Prover.Compose
+import ZkFormal.V2.PG.AdmissionDefs
 
 /-!
 # ZkFormal.V2.PG.Admission — `admission_v2` at `auxGroup = g ∈ {1,2,3}` (P2 copy of `V2.Admission`)
@@ -42,12 +43,6 @@ variable [AuxG]
 
 open ArenaCore ArenaCore.Security Lean.Grind ZkFormal ZkFormal.Stark ZkFormal.Air ZkFormal.Algebra
   ZkFormal.Prover ZkFormal.Assembly ZkFormal.V2
-
-/-- **The deployed v2 verifier with hints**: claim guard, hint split, native
-preprocessing, then the compiled v2 STARK verifier on the prepared statement. -/
-def npVerifierP (S : ChallengeSpec) (AP : AirP) (split : Bytes → Option (Bytes × Bytes))
-    (prep : Bytes → Bytes → Option Bytes) : TreeVerifier :=
-  guardTree (claimOk S) (V3.hintTree split prep (verifierP Fp Fp8 AP dp))
 
 /-- Good honest v2 IOP provers for a trace. -/
 def NpGoodP (AP : AirP) (cb : Bytes) (tr : Trace Fp) (pr : IopProver Fp Fp8) : Prop :=

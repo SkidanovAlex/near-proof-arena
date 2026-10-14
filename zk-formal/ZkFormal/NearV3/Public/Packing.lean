@@ -1,26 +1,11 @@
 import ZkFormal.NearV3.Public.Bytes
+import ZkFormal.NearV3.Public.PackingDefs
 
 /-! Compact prepared-statement segment metadata. All positions are byte offsets. -/
 namespace ZkFormal.NearV3.Public
 
-abbrev ByteString := List UInt8
-abbrev Payload := List ByteString
-
-def payloadBytes (rs : Payload) : ByteString := rs.flatten
-
-def dataBytes (blocks : List Payload) : ByteString := blocks.flatMap payloadBytes
-
-/-- Eight bytes per segment: u32 row count and u32 absolute payload offset. -/
-def metadata : Nat → List Payload → ByteString
-  | _, [] => []
-  | start, rs :: rest => NearSpec.u32 rs.length ++ NearSpec.u32 start ++
-      metadata (start + (payloadBytes rs).length) rest
-
 def payloadOffset (start : Nat) (blocks : List Payload) (i : Nat) : Nat :=
   start + (dataBytes (blocks.take i)).length
-
-def encode (header : ByteString) (blocks : List Payload) : ByteString :=
-  header ++ metadata (header.length + 8 * blocks.length) blocks ++ dataBytes blocks
 
 theorem metadata_length (start : Nat) (blocks : List Payload) :
     (metadata start blocks).length = 8 * blocks.length := by

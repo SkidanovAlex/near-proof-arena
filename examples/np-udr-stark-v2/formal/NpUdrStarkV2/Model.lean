@@ -1,4 +1,6 @@
-import ZkFormal.NearV3.Assembly.NearAdmission
+import ZkFormal.NearV3.Assembly.NearAdmissionDefs
+import ZkFormal.NearV3.Assembly.NearAirDefs
+import ZkFormal.V2.PG.AdmissionDefs
 import NearSpecV3.ChallengeD0a
 
 /-!
@@ -27,7 +29,10 @@ definition IS the deployed model: the judge's native-lean route compiles it
 `np-lean-verify-v2` conformance harness runs the same `npVerifierP` through
 `V3.hintTree`. It is closed (no `sorry`); its import closure holds only trusted
 ArenaCore/NearSpec/NearSpecV3 modules and the candidate-vendored `ZkFormal`
-modules.
+modules. It imports the definition-only `*Defs`/`*Core` modules that hold these
+definitions (moved verbatim out of `NearAdmission`, `NearAir`, `V2.PG.Admission`, …),
+so the closure the judge compiles natively contains no proof modules and only
+`Init` outside the trusted and candidate trees (pipeline.rs `native_build`).
 
 `auxGroup = 2` is the concrete `ZkFormal.Prover.Np.G.AuxG` instance used by
 `zk-formal/ZkFormal/NearV3/Assembly/NearAdmission.lean`.

@@ -1,14 +1,8 @@
 import ZkFormal.Near.Render.Proof.SortLocal
+import ZkFormal.NearV3.Candidates.SortEmptyDefs
 namespace ZkFormal.NearV3.Candidates.SortEmpty
 open ZkFormal.Air ZkFormal.Near ZkFormal.Near.Dsl ZkFormal.Algebra
 
-def firstSegment : Expr:=.mul .isFirst (Dsl.not (c Sort.sf))
-def firstFlag : Expr:=.mul .isFirst (Dsl.not (c Sort.ft))
-def replaceFirst (e : Expr) : Expr:=
-  if e=firstSegment then .mul .isFirst (sub (c Sort.act) (c Sort.sf)) else
-  if e=firstFlag then .mul .isFirst (sub (c Sort.act) (c Sort.ft)) else e
-
-def table : Table:={Sort.table with maxLog:=18,constraints:=Sort.constraints.map replaceFirst}
 def emptyTrace : Trace Fp:={log:=fun _=>1,cell:=fun _ _ _=>0}
 
 theorem old_empty_impossible (t : Nat) (pub : List Fp) :
@@ -19,7 +13,6 @@ theorem old_empty_impossible (t : Nat) (pub : List Fp) :
   have hn:(1:Fp)≠0:=by decide
   simp only [firstSegment,Dsl.not,sub,k,c,Expr.eval,Expr.evalWith,rowEnv,emptyTrace] at hh
   grind
-
 
 theorem old_first_active (tr : Trace Fp) (t : Nat) (pub : List Fp)
     (h:TableLocal {Sort.table with maxLog:=18} tr t pub) : tr.cell t 0 Sort.act=1 := by

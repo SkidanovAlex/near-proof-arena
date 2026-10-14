@@ -1,4 +1,5 @@
 import ZkFormal.NearV3.Sched.Link.EntryLink
+import ZkFormal.NearV3.Sched.Pub.RawDefs
 
 /-!
 # Public data: the instance record of a `SchedPub`, and `RawOk`
@@ -16,12 +17,6 @@ distinct, so there are at most `n² ≤ 2^16` of them. `Pub/Prep.lean` derives t
 namespace ZkFormal.NearV3.Sched
 
 open NearSpecV3 NearSpecV3.Scheduler NearSpec
-
-/-- The AIR's public instance record of the scheduler public data `sp`. -/
-def instOf (sp : SchedPub) : InstPub :=
-  ⟨sp.ids, sp.params, sp.allowed,
-    (rawOf sp.ids sp.raw).filter (fun q => !(incsOf sp.params q.bm).isEmpty),
-    sp.seed, sp.allShardsHash⟩
 
 theorem convRaw_filter (p : Params) (n : Nat) (raw : List RawReq) :
     convRaw p n (raw.filter (fun q => !(incsOf p q.bm).isEmpty)) = convRaw p n raw := by

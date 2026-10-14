@@ -1,18 +1,25 @@
 # np-udr-stark-v2: the provable STARK backend for the v3 D0a challenge
 # (`docs/zk-formal/V3-D0-DESIGN.md`, `docs/zk-formal/FORMATS.md` §8).
 #
+# Entry points (docs/CONTRACTS.md §4; runners/worker/src/stages/common.rs):
+#   prepare --params P --out DIR    bin `prepare_v3`: P must be exactly
+#       NpUdrStarkV2.publicBin (near-arena-params-v3, near/pv86/chunk-validation/v0,
+#       pv 86, domain D0a, runtime config b7dce203…062f); writes DIR/public.bin = P.
+#   prove --public DIR --request R --witness W --claim-out C --proof-out Q
+#       bin `prove_v3`: C = R (near-arena-claim-v3: request = claim); Q =
+#       borshBytes (Hint.encode h) ++ π, π the np-udr-stark-v2 STARK at auxGroup 2
+#       over nearAirV3 (25 tables) with transcript (public.bin, prepared bytes).
+#       Exit 2 (nothing written) on a claim outside RelD0a or any failure.
+#   verify  native-lean: the judge compiles [formal] verifier_model itself;
+#       build.sh replicates that build into out/verify.
+#
 # formal/NpUdrStarkV2/Model.lean is the deployed verifier model
 # (= ZkFormal.Prover.Np.G.npVerifierP NearSpecV3.challengeSpecD0a nearAirV3
 #    ZkFormal.NearV3.Assembly.split ZkFormal.NearV3.Assembly.prepV3b, i.e. the
 # guarded v2 hint verifier at auxGroup = 2, BCS-compiled to the v3 AIR).
-# NpUdrStarkV2.certificate_of (formal/NpUdrStarkV2/Assembly.lean) is
-# ZkFormal.NearV3.Assembly.nearV3_admission_with_extract_b specialised to the
-# D0a challenge; it is CONDITIONAL on the open obligations ExtractV3Stmt,
-# the render completeness closure and AlignedV3Stmt
-# (docs/zk-formal/STATUS-V3-ASSEMBLY.md §3). The candidate is therefore NOT yet
-# ADMITTED — the certificate is an honest reduction, with no `sorry`/`axiom`.
-# verify_route = native-lean: the judge compiles [formal] verifier_model itself;
-# build.sh replicates that build into out/verify.
+# NpUdrStarkV2.certificate (formal/NpUdrStarkV2/Certificate.lean) is main's
+# unconditional ZkFormal.NearV3.Assembly.nearV3_admission_final specialised to
+# the D0a challenge (#print axioms: propext, Classical.choice, Quot.sound).
 #
 # challenge: the UNSIGNED draft is challenges/drafts/near-chunk-validation-d0-stark.draft.json
 # (near-chunk-v3 / NearSpecV3.Tier.d0a, statement near/pv86/chunk-validation/v0#D0a,
