@@ -95,3 +95,36 @@ All within `Limits::default` (1 h/module, 4 h elaboration, 2 h/recheck run, 4 h/
 agent `reference`): **`sub_423f1e22279f42a3a44ad5fd016237b2`**, upload 7,682,701 B
 (`sha256:2ccb946a…`), package TreeDigest `69be71c7…` (6,712 files, 60.5 MB). The package is the git
 tree of `examples/np-udr-stark-v2` at `0b4c499d` plus `sync-lean.sh` / `vendor.sh` output.
+
+### Live run (`sub_423f1e22…`, attempt 1)
+
+| stage | worker | time (UTC) | result |
+|---|---|---|---|
+| VALIDATE | w2 | 18:33 | PKG_WELLFORMED PASS (6,712 files, 60.5 MB) |
+| BUILD | w2 | 18:33–18:37 (4 min 44 s) | BUILD_REPRODUCIBLE PASS (two identical builds, tree `aab2159d…`; prepare 8 ms, public dir 100 B `0a4102d4…`) |
+| FORMAL_CHECK | w2 | from 18:37 | running — **will not fit the 4 h elaboration budget** (below) |
+
+**Blocker (needs a decision; nothing changed on live): the Firecracker formal check is quadratic in
+the candidate's `.olean` tree.** The checker elaborates each candidate module in its own sandbox
+(`runners/formal-checker/src/pipeline.rs`, one `lean -o` run per module) and on Firecracker every
+run re-stages the whole writable `.olean` tree into a fresh ext4 seed image and copies it back out
+(`runners/firecracker/src/sandbox.rs`, "rw dirs: seed images (uncached; contents change every
+run)"). For np-udr-stark-v2 the tree grows to **3.1 GB** (4,007 modules; local `cand-out`), so the
+per-module cost grows with progress: measured on w2 at 19:00–19:08 UTC ≈ 8.5 modules/min (~7 s per
+module, tree 198 → 260 MB, CCD1 CPUs ≥ 64 % idle — I/O/VM-bound, not CPU-bound), vs 36 modules/min
+for the same elaboration under bwrap (6,698 s total). Projected candidate elaboration on Firecracker
+≫ 7 h, while `Limits::default` caps elaboration at 4 h wall (`start.elapsed()` includes the VM
+overhead) — expected outcome: `TIMEOUT` finding ("elaboration of … timed out") on the formal gates
+around 22:40 UTC; the tree would also approach the 4 GiB Firecracker output clamp. The local
+bwrap pre-flight (same binary, same limits) passes, so this is judge infrastructure, not the
+candidate. Options (user/lead decision): (a) judge fix — elaborate a batch of modules per VM (or
+keep the rw tree on a persistent per-job drive instead of re-imaging it per run), then
+`arena-live rerun-submission sub_423f1e22… "<reason>"`; (b) raise `ARENA_FORMAL_ELAB_SECS` on the
+workers (a judge-budget change; still quadratic I/O, likely > 10 h); (c) run FORMAL_CHECK on a
+bwrap formal worker (not allowed at formal tier on live).
+
+Forward risks for the later stages (not yet reached): CONFORMANCE proves every public positive
+(80) + 3 judge-sampled + 3 held-out at ~5 min each on 8 vCPU (~7 h) on w2/w3, whose CPUs 9-15 /
+25-31 other lanes also use (the 600 s `max_prove_ms` has ~2× headroom only on idle cores);
+BENCHMARK at batch 8 × (3 warm-up + 15 measured + 1 cold) runs × 3 classes is ≈ 500 proves ≈ 40 h
+on w1.
