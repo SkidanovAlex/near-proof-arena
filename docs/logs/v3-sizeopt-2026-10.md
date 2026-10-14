@@ -79,6 +79,28 @@ EMR), which the assembly/link lane can take up with lead sign-off, ideally
 post-signing.  This lane does **not** change `GoodV3`, `prepBody` or
 `hintOfE`.
 
+## auxGroup sweep: already decided by kernel-checked numbers
+
+The admission's `g` is a free verifier choice, so re-evaluating the aligned
+bound of the actual `nearAirV3` at `g ∈ {1,3}` was the last cheap in-framework
+candidate.  It is already answered by the kernel-checked scheduled-bound sweep
+on the actual AIR shapes (`STATUS-V3-P2.md` §table:
+`near_sizeMaxSched_g1 = 5,473,967`, `g2 = 5,347,055`, `g3 = 5,353,423`):
+**`g = 2` is optimal** (`g = 3` is +6,368 B worse; `g = 1` +126,912 B), and
+`nearAirV3_npOkPg` holds for all three.  No change; the from-scratch
+re-evaluation was abandoned after the shared heavy-scope killed the build
+(~3.7 h; concurrent lanes + judge worker on the same host).
+
+## Result
+
+The honest artifact on main stands at **measured 5.26–5.67 MB** (aligned,
+`auxGroup = 2`) against the 8 MiB cap, with the admission at exact fit.  Every
+remaining byte-level lever either (i) needs a `GoodV3`/header-semantics
+amendment (compact hint — machinery proved here), (ii) is a protocol-format
+change with ROM-neutral soundness (digest width), or (iii) lives in the AIR
+lanes (width cuts, table merges) or the query-regime research lane (P6).
+Nothing further is provable *in this lane* without one of those decisions.
+
 ## Integration checklist (the future GoodV3 amendment; for the assembly lane)
 
 1. Amend `HeaderSemanticsV3` (`Good.lean`): `body : h.body = compactBodyOf
