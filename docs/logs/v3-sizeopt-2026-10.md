@@ -125,3 +125,52 @@ candidate post-signing), P6 Johnson-regime queries (blocked on
 correlated-agreement formalization), width cuts / table merges (AIR lanes,
 quantified in STATUS-V3-SIZE §4 lever 4/5), arity 16 after alignment
 (parameter change + L7 numerics).
+
+## Commit B execution status (2026-10-14, this lane)
+
+Landed (commit `16dfadba`): the codec is **spec-first** —
+`NearSpecV3.HintCompact` (parser-inversion ports `pTake_ok`/`pAccountId_ok`/
+`pPublicKey_ok`/`pkWf3`, wire defs, round trip under `refundCanonicalWf`,
+exact lengths, kernel budgets) and `ZkFormal.V3.HintCompact` re-homed on top
+(canonicality invariants, `canonical_flat` bridge incl. the wf reassembly,
+`decodeBodyC_outgoing`, full-hint wire budgets).  Axioms ⊆ std3; both
+modules build green.
+
+Commit B (behavior swap) remains — atomic, then one full rebuild:
+
+1. Layer fix: strip `import NearSpecV3.PrepD0` from spec `HintCompact.lean`
+   (it needs nothing from PrepD0), and add `import NearSpecV3.HintCompact` to
+   `PrepD0.lean` (acyclic).
+2. `PrepD0.lean` additions: spec-local `refundShape` + `pRefund_encode` +
+   `decodeBody_bodyOfS` (ports of the compiled `RefundCodec` proofs); small
+   parser inverses `pAccountId_inv`/`pHash_len`/`pPublicKey_wf`/`pU128_lt`
+   (each ~6 LOC from the parser unfold); `pCRefund_shape` +
+   `decodeBodyC_wfshape` (via `pVec_property`); and
+   `prepBody_split : prepBody pc h = .ok p → ∃ refunds, decodeBodyC h.body =
+   .ok refunds ∧ p.body = bodyOf refunds ∧ decodeBody p.body = .ok refunds`
+   — the single transport every Link-site needs (bind-walk pattern of the
+   compiled `prepD0_body_eq`; final `subst`-then-`rfl`).
+3. Behavior: `Hint.empty := ⟨0, compactBodyOf []⟩`; `hintOfE` emits
+   `compactBodyOf refunds`; `prepBody` parses `decodeBodyC` and rebuilds
+   `body := bodyOf refunds` (EMR over rebuilt — header semantics unchanged).
+4. `Good.lean` amendment: `HeaderSemanticsV3.body : h.body = compactBodyOf
+   m.result.outgoing`; `preparedBody : p.body = u32 0 ++
+   encodeReceipts m.result.outgoing`; `encoded` over `p.body`.
+   `HeaderCompose.NativeHeaderV3.prepared` re-instantiated.
+5. Re-route hint-byte consumers to `p.body` via `prepBody_split`:
+   `LinkHdr` (×4), `PrepFwd` (×2), `RcptHolds`/`RcptHoldsB` (×5),
+   `RcptRunHdr.body_tail` (hint-byte stream → `p.body.drop 8`).
+   `RfBody` already uses `p.body` (unchanged). `ReceiptWellformed`:
+   `NativeValid.body_decodes` → compact variant (+ its `SchedBusSPUBB` use).
+   `PrepBodyComplete.nativeHint := ⟨n, compactBodyOf outgoing⟩`;
+   `NativePreparedBody.accepted_native_body_bound → ≤ 811,069`;
+   `RenderV3Header.nativeHint_bounds`; `NearAdmission.v3MaxHintBytes := 811,077`.
+6. Rust `hint.rs`/`prep.rs` compact encode/decode; re-record the three real
+   proofs (`PROVE_V3=1`); full negative suite; `cargo fmt/clippy/test`;
+   `make pin-check`.
+7. Rebuild note: the Assembly+Link chain from scratch took ~4 h and was killed
+   once by shared-host memory contention — run under the heavy wrapper with an
+   auto-resume loop (lake is incremental; a killed build resumes cheaply).
+
+After Commit B: digest-width lane (64→32 B, Bcs/WH re-instantiation) per the
+approved plan; width-cut/table-merge items stay filed to the AIR lanes.
