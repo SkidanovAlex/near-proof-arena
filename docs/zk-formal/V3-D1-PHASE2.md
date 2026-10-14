@@ -90,7 +90,7 @@ lines).
 | **V1** | relay views `kib_view`, `plf_view`, `rid_view` (`TableLocal → ∃ es, Wf ∧ TableTraffic`, as `BndProof`) | — | 400 | ✔ |
 | **V2** | `tx_view : TxViewStmt` (`Extract/TxView`, `TxProof`, `Tx/*`, 15 modules). One entry per 16-row op: the op constants, the flag algebra (`stage = s1 + s2`, `cand`, `wr`, gates), the written values (`mo`, `nk`), the memory times (`tp + d = op`, `d < 2^14`). Under byte hypotheses on the inputs, the seven chains give integer facts: `N > kn`, `N = kn + 1`, `N < Bd`, `amt ≥ C` / `aft = amt + dep`, the overflow and stake tests, and `okP = okC`. Reuses `RcptChain.chain`/`sumL`/`convS` | V0 | 2,190 | ✔ |
 | **V3** | `akm_view : AkmViewStmt` (`Extract/AkmView`, `AkmProof`, `Akm/*`, 15 modules). Each value segment decodes (`akm_decode`: `decodeAccessKey b = some k`, nonce = the first 8 bytes, `k.perm = FullAccess ⇔ t₁`, a FullAccess value is `nonce ‖ 1`, the nonce rows are exactly offsets 0…7). Built from the borsh walk (`field`, `u32field`, `body`, `str`, `methods`, `vecMethods`, `fcPerm`, `gki`, against `Wire.pU*`/`pString`/`pVec`/`pOption`), `body_utf8` (`utf8_rows`: the class / pending-count / E0-ED-F0-F4 automaton accepts only `utf8Ok`), and exact traffic on VBYTES/AKMEM/VSLOT/BYTES/AKC | V0 | 2,656 | ✔ |
-| V4 | **blocked on decision R-4.** `rcptV3D1` view: the six changes against D0a's receipt view, which goes through `TableLocal RcptV3.table`, 153 files. (a) Copy-and-modify the affected chain: first-row `tok`, `o2`, the last-row count, MEM time `r + 1 + T0`, the 14-bit age (needs the global MEM balance, as `RcptViewV3`) and MPOS `r + M0`. (b) Investigate a trace transport. Every changed expression is affine in public offsets, but `tok` is a ranged running sum, so (b) is likely blocked. | V0, P0 | 5–12 k | |
+| V4 | **Decision (a), 2026-10-14: copy-and-modify** (see §7). `rcptV3D1` view: the six changes against D0a's receipt view, which goes through `TableLocal RcptV3.table`, 153 files. (a) Copy-and-modify the affected chain: first-row `tok`, `o2`, the last-row count, MEM time `r + 1 + T0`, the 14-bit age (needs the global MEM balance, as `RcptViewV3`) and MPOS `r + M0`. (b) Investigate a trace transport. Every changed expression is affine in public offsets, but `tok` is a ranged running sum, so (b) is likely blocked. | V0, P0 | 5–12 k | |
 | V5 | `mrkV3` at `maxLog 20`. The D0a chain `MerkleEmpty.focus_local` → `MerklePublic.baseTable` (`maxLog 19`) → `Candidates/MerkleLog19` (1,472 lines, "height bound generalised from 15 to 19, every no-wrap rechecked") is tied to `maxLog 19`. It needs a `MerkleLog20` port: a copy with `2^19 → 2^20`; the largest no-wrap is `4·H + 4 < P`, which holds at `H = 2^20`. Mechanical | V0 | 1.5–2 k (copy) | |
 | **V6** | `Extract/ViewsD1`: the ten `Assembly.ViewsV3` views (node, walk, head, val, uniq, ups, acct, akey, bnd, size) from `HoldsP nearAirV3D1` through `getElem?_d1_same`. The SHA, ChaCha, scheduler, srcp, qv and sort views enter D0a's link through `HoldsP nearAirV3`-level lemmas (L1), not through `ViewsV3` | V0 | 150 | ✔ (see log) |
 | P0 | D1 public bindings: `pubOf (preparedBytesD1 p ov)` decoded. The D0a header and the nine segments keep their offsets. The extension `M0, T0, O0, TOK0` at `E0 = 322`. The six new segments: body-prefix send (cancels positions `8 … O0−1` of the D0a body receive), `TXP`, `SIG`, `PKEY`, `PLEAF`, `PRID`. `txOverhead` in `PH_WOVH`. `pubFit`. Reuses `Public/Prepared*` | — | 3–6 k | |
@@ -194,3 +194,60 @@ elaboration).
 | 2026-10-14 | V3 | `akm_view` (+ `akm_decode`, `body_utf8`, `utf8_rows`, `str`, `vecMethods`, `fcPerm`, `gki`) | 15 modules, Σ ≈ 22 s (max `Akm.Decode` 3.4 s) |
 | 2026-10-14 | V6, A3, V3 part 1 | `nodeViewD1` … `sizeViewD1` (10), `verifierD1_tier`, `paramsD1a_tier`, `AkmProof.segInfo` | 3 modules, each ≤ 0.6 s |
 | 2026-10-14 | V2 | `tx_view : TxViewStmt` (+ `chainN/B/C/T/Q/D/S`, `zN_iff`, `msum_val`, `debit_arith`, `credit_arith`, `verdict_debit/credit`, `opWf`, `rowLane`) | 15 modules, Σ ≈ 25 s (max `Tx.OpWf` 5.1 s) |
+
+## 7. V4: copy-and-modify plan (coordinator decision (a), 2026-10-14)
+
+**What must be copied (measured).** Inside the closure of `Assembly.RcptViewV3` (1,325 modules),
+93 modules mention the receipt table directly (`TableLocal RcptV3.table`, `tableQ`, `tableR`,
+`ReceiptCandidateRouting.candidateTable`). Their forward import taint is **564 modules, 45,294
+lines**: 93 under `Rcpt/` and 471 under `Assembly/`.
+
+The mapping D0a module → D1 copy (`ZkFormal.NearV3.D1.R.<suffix>`) is in
+`docs/zk-formal/v3-d1-v4-map.tsv`. That list is an upper bound. Many `Assembly` modules import
+a tainted module only for unrelated declarations, so the generator must taint at
+**declaration** level: copy a declaration only when its type or value refers, transitively, to
+a tainted constant. The expected result is well below the module-level bound. The 22,454 lines
+of the 228 directly-mentioning modules are the practical lower bound.
+
+**Generator (to build; `zk-formal/scripts/`).**
+1. A Lean metaprogram (as `scripts/TypeHashes.lean`) walks the `RcptViewV3` closure. It marks
+   as tainted every constant whose type or value mentions `RcptV3.table`, `tableQ`, `tableR`,
+   `candidateTable` or the view statement `RcptV3ViewStmt`, and propagates the mark.
+2. Source copy, per tainted declaration, using the declaration ranges (the model-split lane's
+   `DeclInfo` technique):
+   * each copy goes into `D1/R/<module>.lean` under the namespace `ZkFormal.NearV3.D1.R.<orig ns>`;
+   * every reference to a tainted constant is rewritten to its copy;
+   * untainted references stay fully qualified to the D0a original, so originals and copies
+     never clash;
+   * `TableLocal RcptV3.table` becomes `TableLocal RcptD1.tableQD1` (the constraints
+     themselves: through a membership-transport lemma; see below).
+3. Constraint membership: one lemma
+   `memD1 : e ∈ RcptV3.table.constraints → e ∉ changed → e ∈ RcptD1.tableQD1.constraints`
+   (`replC` is the identity off `substC`, a decidable fact). Copied proofs that use an
+   unchanged constraint go through it. Only the proofs that touch one of the six changed
+   expressions fail. Those are rewritten **by hand into small dedicated delta lemmas**:
+   * `D1/R/Delta/Tok`: the first-row `tok = TOK0` and the token totals;
+   * `Delta/Body`: `o2 = O0` and the body offsets;
+   * `Delta/Count`: `r + rowE + M0 = PH_N`;
+   * `Delta/Mem`: the MEM write time `r + 1 + T0`;
+   * `Delta/Age14`: the 14-bit deposit age, `xb52…65`;
+   * `Delta/Mpos`: the leaf position `r + M0`.
+
+   A later refactor could then re-unify the two chains by parameterising over the offsets.
+4. The view statement `RcptV3D1ViewStmt` is `RcptV3ViewStmt` with `rcptTraffic3` using the D1
+   times and positions, and `RcptV3Wf` with `toks.head = TOK0`, `count + M0 = PH_N`, body
+   offsets from `O0`.
+
+**Elaboration estimate.** D0a's mean is 2.2 s per module, so the module-level upper bound of
+564 copies is ≈ 1,240 s serial. The declaration-level copy is expected at ≈ 400–900 s. Judge
+estimate for the D1a certificate closure:
+
+| part | estimate (s, serial) |
+|---|---|
+| D0a closure (shared; elab-budget figure) | 5,953 |
+| D1 phase-2 modules so far (V0–V3, P1, A3), ≈ 50 modules | ≈ 70 |
+| V4 copies | ≈ 400–1,240 |
+| V5 + P0 + P2 + L1 + F1 + R1 + R2 + A1/A2 (≈ 600–1,000 modules at 1–3 s) | ≈ 1,000–2,500 |
+| **total** | ≈ 7,400–9,800 of the 14,400 budget (51–68 %) |
+
+This assumes the D0a assembly roots that D1 does not use are dropped from the D1 closure.
