@@ -297,7 +297,10 @@ pub fn case_inputs_d1(cb: &[u8], wb: &[u8]) -> Result<CaseD1, String> {
     let run = run::d1_run(cb, wb)?;
     let p = prep::prep_of_run(cb, &run)?;
     // `txOverhead`: the transaction vectors the AIR does not see (`sizeV3`'s `OVH`)
-    let ovh: usize = [&run.w.txs, &run.w.new_txs].iter().map(|v| 4 + v.iter().map(|t| t.raw.len()).sum::<usize>()).sum();
+    let ovh: usize = [&run.w.txs, &run.w.new_txs]
+        .iter()
+        .map(|v| 4 + v.iter().map(|t| t.raw.len()).sum::<usize>())
+        .sum();
     let tape = prep::prepared_bytes_d1(&p, ovh as u32);
     let native = run.native()?;
     let js = |v: serde_json::Result<String>| v.map_err(|e| e.to_string());
@@ -367,6 +370,7 @@ pub fn case_inputs_d1(cb: &[u8], wb: &[u8]) -> Result<CaseD1, String> {
         run,
         prep: p,
         tape,
+        ovh: ovh as u32,
         hint,
         entries,
         tx,
