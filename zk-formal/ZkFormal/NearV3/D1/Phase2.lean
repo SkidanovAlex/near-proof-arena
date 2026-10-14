@@ -7,6 +7,9 @@ import ZkFormal.NearV3.D1.Prep.LocalNative
 import ZkFormal.NearV3.D1.Prep.TxNative
 import ZkFormal.NearV3.D1.StmtsT
 import ZkFormal.NearV3.D1.Extract.TxProof
+import ZkFormal.NearV3.D1.Extract.ViewsD1
+import ZkFormal.NearV3.D1.ModelTier
+import ZkFormal.NearV3.D1.Extract.Akm.Rows
 
 /-!
 # `ZkFormal.NearV3.D1.Phase2` — the D1a phase-2 proof modules (build root)
