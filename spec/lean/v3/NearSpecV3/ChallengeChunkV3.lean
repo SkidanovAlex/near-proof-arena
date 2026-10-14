@@ -1,5 +1,6 @@
 import NearSpecV3.ChallengeV3
 import NearSpecV3.ChunkValidationV0a
+import NearSpecV3.ChunkValidationD1a
 import NearSpecV3.ChunkValidationD1
 import NearSpecV3.ChunkValidationD2
 import NearSpecV3.D3.FunctionCall
@@ -18,7 +19,7 @@ nested. That nesting is **tested, not proved**: D0 ⊂ D1 ⊂ D2 on the public f
 and D2 ⊂ D3 on the D3 corpora. The disjunction makes the statement independent of that test
 evidence. Every rung's acceptance is a nearcore-endorsed witness, so their union is one too.
 
-**Tiers and the admission obligations.** A candidate declares a tier `t ∈ {D0a, D0, D1, D2, D3α}` and is
+**Tiers and the admission obligations.** A candidate declares a tier `t ∈ {D0a, D0, D1a, D1, D2, D3α}` and is
 admitted under the standard `AdmissionStatement` of `challengeParamsChunk t`. That gives soundness
 w.r.t. `RelTier t` and completeness on `DomainTier t`.
 
@@ -30,6 +31,11 @@ Outside its tier a candidate may answer `UNSUPPORTED`; that is never a soundness
 D0a is the bounded D0 relation `RelD0a B0`. Its inclusion into D0 is proved by
 `relD0a_relD0`, so adding this tier does not add another disjunct to the statement.
 
+D1a is the bounded D1 relation `RelD1a B0` (spec/near-chunk-validation-d1a.md: the D0a amendments
+restated over the D1 witness and run, plus `|transactions| ≤ NT0 = 4,096`). Its inclusion into D1
+is proved by `relD1a_relD1`, so it adds no disjunct either. Its rank lies between D0 and D1
+(D0a ⊂ D1a ⊂ D1; D0a ⊂ D1a is tested, not proved; D0 and D1a are incomparable).
+
 A future rung (D4, D∞) is added as a new disjunct in a versioned successor. `rel_mono` keeps
 holding for the existing tiers.
 -/
@@ -40,11 +46,11 @@ open ArenaCore
 
 /-- The declared coverage tiers, in increasing domain order. -/
 inductive Tier where
-  | d0a | d0 | d1 | d2 | d3a
+  | d0a | d0 | d1 | d2 | d3a | d1a
   deriving DecidableEq, Repr
 
 def Tier.rank : Tier → Nat
-  | .d0a => 0 | .d0 => 1 | .d1 => 2 | .d2 => 3 | .d3a => 4
+  | .d0a => 0 | .d0 => 1 | .d1a => 2 | .d1 => 3 | .d2 => 4 | .d3a => 5
 
 /-- The rung relation of a tier, on claim and witness bytes. -/
 def RelTier : Tier → Bytes → Bytes → Prop
@@ -53,6 +59,7 @@ def RelTier : Tier → Bytes → Bytes → Prop
   | .d1 => RelD1
   | .d2 => RelD2
   | .d3a => D3.RelD3
+  | .d1a => RelD1a B0
 
 /-- The challenge relation: any formalized rung endorses the witness. -/
 def RelChunkV3 (c w : Bytes) : Prop := RelD0 c w ∨ RelD1 c w ∨ RelD2 c w ∨ D3.RelD3 c w
@@ -65,6 +72,7 @@ theorem rel_mono (t : Tier) (c w : Bytes) (h : RelTier t c w) : RelChunkV3 c w :
   | d1 => exact Or.inr (Or.inl h)
   | d2 => exact Or.inr (Or.inr (Or.inl h))
   | d3a => exact Or.inr (Or.inr (Or.inr h))
+  | d1a => exact Or.inr (Or.inl (relD1a_relD1 h))
 
 /-! ## `ChallengeSpec` instances -/
 

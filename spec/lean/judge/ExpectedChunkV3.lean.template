@@ -11,7 +11,7 @@ Route: approved NPAI interpreter (`verify_route = "npai-v1"`).
 The admission spec is `NearSpecV3.challengeSpecChunk {{declared_tier}}` (soundness for the tier's
 `RelTier`, completeness on `DomainTier`); `NearSpecV3.sound_lift` lifts soundness to the statement
 `NearSpecV3.challengeSpecChunkTop` (`RelChunkV3`). `{{declared_tier}}` is spliced as one of
-`NearSpecV3.Tier.d0`, `.d1`, `.d2`, `.d3a` from the candidate's `declared_tier`.
+`NearSpecV3.Tier.d0a`, `.d0`, `.d1a`, `.d1`, `.d2`, `.d3a` from the candidate's `declared_tier`.
 -/
 
 namespace ArenaExpected

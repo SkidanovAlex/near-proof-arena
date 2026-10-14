@@ -1,0 +1,52 @@
+{
+ "label": "public-d1a-mutants",
+ "cases": 10,
+ "disagreements": 0,
+ "verdicts": {
+  "reject": 2,
+  "accept": 4,
+  "out_of_domain": 4
+ },
+ "lean_first_family": {
+  "w.path_depth": 2,
+  "w.tx_count": 2
+ },
+ "expected_rel_d1_cases_in_d1a": {
+  "in_d1a": 0,
+  "expected_rel_d1": 0
+ },
+ "mutant_expectations": {
+  "reject": 2,
+  "accept": 4,
+  "out_of_domain": 4
+ },
+ "oracle_measures": {},
+ "accepted_maxima": {
+  "unfold": {
+   "max": 5630,
+   "case": "oracle/fixtures/v3/public-d1a/mutants/00-h10007-s3-w.tx_count_at_bound",
+   "bound": 2000000,
+   "margin": 1994370
+  },
+  "chacha_words": {
+   "max": 0,
+   "case": "oracle/fixtures/v3/public-d1a/mutants/00-h10004-s2-w.path_depth_at_bound",
+   "bound": 770000,
+   "margin": 770000
+  },
+  "max_path_depth": {
+   "max": 32,
+   "case": "oracle/fixtures/v3/public-d1a/mutants/00-h10004-s2-w.path_depth_at_bound",
+   "bound": 32,
+   "margin": 0
+  },
+  "tx_count": {
+   "max": 4096,
+   "case": "oracle/fixtures/v3/public-d1a/mutants/00-h10005-s3-w.tx_count_at_bound",
+   "bound": 4096,
+   "margin": 0
+  }
+ },
+ "seconds": 195.4,
+ "bad": []
+}

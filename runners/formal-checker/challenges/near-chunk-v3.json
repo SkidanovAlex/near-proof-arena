@@ -54,6 +54,7 @@
         "NearSpecV3.TxD1",
         "NearSpecV3.RuntimeD1",
         "NearSpecV3.ChunkValidationD1",
+        "NearSpecV3.ChunkValidationD1a",
         "NearSpecV3.D2.Trie",
         "NearSpecV3.D2.Types",
         "NearSpecV3.D2.Fees",

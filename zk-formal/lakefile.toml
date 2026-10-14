@@ -45,6 +45,12 @@ srcDir = "../examples/reexec-v3-d0/formal"
 name = "nearspec-v3-check-d0a"
 root = "ZkFormal.V3.Tools.CheckD0a"
 
+# lane v3-d1a-spec: the bounded D1 relation (RelD1a, spec/near-chunk-validation-d1a.md),
+# plain spec code (not part of the ZkFormal library build).
+[[lean_exe]]
+name = "nearspec-v3-check-d1a"
+root = "ZkFormal.V3.Tools.CheckD1a"
+
 [[lean_exe]]
 name = "nearspec-v3-test-prep"
 root = "ZkFormal.V3.Tools.TestPrep"

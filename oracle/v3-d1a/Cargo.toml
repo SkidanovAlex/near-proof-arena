@@ -1,0 +1,26 @@
+[package]
+name = "near-arena-oracle-v3-d1a"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Domain-D1a measures (spec/near-chunk-validation-d1a.md) on nearcore types: T1 w.tx_count, A7 w.unfolded over the D1 run's tries, A10 w.path_depth, offline for any case directory."
+
+# Offline only (no TestEnv): nearcore's witness codec and trie node types. Path deps point at
+# the pinned checkout via ../vendor (scripts/link-nearcore.sh); Cargo.lock is nearcore's own
+# lock file (copied from ../v3-d1), so every third-party crate resolves exactly as nearcore's.
+# Generation stays with ../v3-d1 (pinned by the near-chunk-v3 draft's D1 generator specs; not
+# modified).
+[workspace]
+exclude = ["vendor"]
+
+[[bin]]
+name = "near-arena-oracle-v3-d1a"
+path = "src/main.rs"
+
+[dependencies]
+near-primitives = { path = "vendor/nearcore/core/primitives" }
+near-store = { path = "vendor/nearcore/core/store" }
+borsh = { version = "1.0.0", features = ["derive", "rc"] }
+hex = "0.4.2"
+serde_json = "1.0.68"
+

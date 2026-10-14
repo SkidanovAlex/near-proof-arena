@@ -71,9 +71,12 @@ pub enum LeanValue {
 /// bounds`, D0a ⊂ D0) is prepared for a successor whose trusted tree defines
 /// `NearSpecV3.Tier.d0a`; against a tree without it the Expected type does
 /// not elaborate (fail closed).
+/// `D1a` (bounded D1 tier, `RelD1a B0 ⊆ RelD1`, spec/near-chunk-validation-d1a.md) likewise needs
+/// a trusted tree defining `NearSpecV3.Tier.d1a`.
 pub const COVERAGE_TIERS: &[(&str, &str)] = &[
     ("D0a", "NearSpecV3.Tier.d0a"),
     ("D0", "NearSpecV3.Tier.d0"),
+    ("D1a", "NearSpecV3.Tier.d1a"),
     ("D1", "NearSpecV3.Tier.d1"),
     ("D2", "NearSpecV3.Tier.d2"),
     ("D3a", "NearSpecV3.Tier.d3a"),

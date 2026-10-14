@@ -1,0 +1,89 @@
+{
+ "label": "public-d1 (188 d1, 47 ood, 294 mutants) + public-d1a mutants (10)",
+ "cases": 539,
+ "disagreements": 0,
+ "d1_class_splits": 6,
+ "verdicts": {
+  "accept": 248,
+  "reject": 234,
+  "out_of_domain": 57
+ },
+ "lean_first_family": {
+  "w.path_depth": 2,
+  "w.tx_count": 2
+ },
+ "expected_rel_d1_cases_in_d1a": {
+  "in_d1a": 244,
+  "expected_rel_d1": 244
+ },
+ "mutant_expectations": {
+  "reject": 2,
+  "accept": 4,
+  "out_of_domain": 4
+ },
+ "oracle_measures": {
+  "unfold equal": 196,
+  "max_path_depth equal": 196,
+  "tx_count equal": 196
+ },
+ "accepted_maxima": {
+  "unfold": {
+   "max": 9684,
+   "case": "oracle/fixtures/v3/public-d1/d1/01-h10040-s3",
+   "bound": 2000000,
+   "margin": 1990316
+  },
+  "chacha_words": {
+   "max": 0,
+   "case": "oracle/fixtures/v3/public-d1/d1/00-h10004-s2",
+   "bound": 770000,
+   "margin": 770000
+  },
+  "max_path_depth": {
+   "max": 32,
+   "case": "oracle/fixtures/v3/public-d1a/mutants/00-h10004-s2-w.path_depth_at_bound",
+   "bound": 32,
+   "margin": 0
+  },
+  "tx_count": {
+   "max": 4096,
+   "case": "oracle/fixtures/v3/public-d1a/mutants/00-h10005-s3-w.tx_count_at_bound",
+   "bound": 4096,
+   "margin": 0
+  }
+ },
+ "seconds": 327.8,
+ "bad": [],
+ "d1_class_split_cases": [
+  {
+   "case": "oracle/fixtures/v3/public-d1/mutants/00-h10013-s1-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "oracle/fixtures/v3/public-d1/mutants/00-h10022-s3-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "oracle/fixtures/v3/public-d1/mutants/00-h10034-s0-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "oracle/fixtures/v3/public-d1/mutants/01-h10018-s1-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "oracle/fixtures/v3/public-d1/mutants/01-h10025-s0-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  },
+  {
+   "case": "oracle/fixtures/v3/public-d1/mutants/01-h10037-s3-c.epoch_start_flip",
+   "lean": "out of domain (c.single_epoch): epoch start",
+   "python": "Reject: claim: epoch_start_after[0] inconsistent with header epoch ids"
+  }
+ ]
+}
