@@ -487,7 +487,7 @@ Per-query bits:
   the sensitivity table.
 * At rate 1/2, **UDR (proved in Lean today) and Johnson give the same query count**. The Johnson-regime Lean
   proof is not needed for the base layer, only for the final, size-setting layer.
-* **Compression layers: rate 1/4. Final layer: rate 1/64, Johnson**, 87 queries ⇒ **≈ 0.74 MB** (SHA-384,
+* **Compression layers: rate 1/4. Final layer: rate 1/64, Johnson**, 85 queries (z = 32 there) ⇒ **≈ 0.74 MB** (SHA-384,
   arity-16 FRI, `model.py size_final`, which reuses `pqsize.py`'s formula). That is within U-9's 0.5–1 MB.
 * STIR/WHIR (C: eprint 2024/390, 2024/1586) reduce the final layer to ≈ 0.3–0.5 MB (study §11.4). They matter only
   for the size-setting layer. They are a size lever, not a throughput lever.
@@ -584,12 +584,13 @@ The chunk's whole trace is **one STARK**. GPU g owns a slice of execution and ho
 | layer | proves | on | rate | queries | in-circuit cost (32 GPU, adversarial) |
 |---|---|---|---|---|---|
 | base | the chunk | N GPUs | 1/2 | 608 | — |
-| L1 | verifier of base (each GPU verifies its own openings and FRI; global paths shared) | N GPUs, distributed the same way | 1/4 | 280 | q₀ × (3 paths × (25 − 9) + leaves Σcols/32 + N digest blocks + FRI) ≈ 0.6 M compressions ≈ 12 G cells: ≈ 0.1 s |
-| L2 | verifier of L1 | one node (8 GPUs, NVLink, one logical prover) | 1/4 | 280 | ≈ 2–4 G cells: ≈ 0.15 s |
-| L3 | verifier of L2 (fixed point ≈ 2²¹ rows × 400) | one node | 1/4 | 280 | ≈ 0.9 G: ≈ 0.05 s |
-| final | verifier of L3 at rate 1/64, Johnson | one node | 1/64 | 87 | ≈ 0.9 G × 32/2: ≈ 0.2 s; **proof ≈ 0.74 MB** |
+| L1 | verifier of base (each GPU verifies its own openings and FRI; global paths shared) | N GPUs, distributed the same way | 1/4 | 280 | q₀ × (3 paths × (25 − 9) + leaves Σcols/32 + N digest blocks + FRI) ≈ 0.38 M compressions ≈ 7.9 G cells: 0.09 s |
+| L2 | verifier of L1 | one node (8 GPUs, NVLink, one logical prover) | 1/4 | 280 | ≈ 1.6 G cells: 0.08 s |
+| L3 | verifier of L2 (fixed point ≈ 2²¹ rows × 400) | one node | 1/4 | 280 | ≈ 0.9 G: 0.05 s |
+| final | verifier of L3 at rate 1/64, Johnson | one node | 1/64 | 85 | ≈ 0.9 G at blowup 64: 0.30 s; **proof ≈ 0.74 MB** |
 
-* Model totals: recursion ≈ 10 % of worst-case work; tail ≈ 0.5 s (`t_L1 + t_L2 + t_L3 + t_final`).
+* Model totals: recursion 4.6 of 46.5 GPU-s (10 %) in the worst case; tail 0.52 s (`t_L1 + t_L2 + t_L3 + t_final`).
+* The final layer dominates the tail. A STIR/WHIR final layer, or spreading it over more GPUs, is the lever.
 * Per in-circuit SHA-384 compression: 20 k cells (A: an optimised SHA-512-family AIR with 2 rounds per row and bit
   columns; the L5-style estimate is 25–40 k). Sensitivity: 15 k → 40 k moves latency 1.80 → 2.39 s.
 
