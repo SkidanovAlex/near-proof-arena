@@ -135,7 +135,7 @@ fn p_receipt(r: &mut Reader) -> Result<Receipt, String> {
 }
 
 /// `pVec w p`: `u32` count, then `count` items (fails on truncation).
-fn p_vec<T>(
+pub(crate) fn p_vec<T>(
     r: &mut Reader,
     what: &'static str,
     mut p: impl FnMut(&mut Reader) -> Result<T, String>,
@@ -149,7 +149,7 @@ fn p_vec<T>(
 }
 
 /// `pTransition`.
-fn p_transition(r: &mut Reader) -> Result<Transition, String> {
+pub(crate) fn p_transition(r: &mut Reader) -> Result<Transition, String> {
     let block_hash = mapw(r.hash("transition block_hash"))?.to_vec();
     if mapw(r.u8("PartialState tag"))? != 0 {
         return err("decode: PartialState tag");
@@ -176,7 +176,7 @@ fn p_path_item(r: &mut Reader) -> Result<(Bytes, u8), String> {
 }
 
 /// `pEntry`.
-fn p_entry(r: &mut Reader) -> Result<ProofEntry, String> {
+pub(crate) fn p_entry(r: &mut Reader) -> Result<ProofEntry, String> {
     let key = mapw(r.hash("ChunkHash"))?.to_vec();
     let receipts = p_vec(r, "proof receipts length", p_receipt)?;
     let from_shard = mapw(r.u64("from_shard_id"))?;

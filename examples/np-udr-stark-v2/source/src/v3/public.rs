@@ -52,7 +52,7 @@ fn header_bytes(p: &Prep, overhead: u32) -> Vec<u8> {
 }
 
 /// `Public.preparedBlocks p`: the nine payloads, in order.
-fn prepared_blocks(p: &Prep) -> Vec<Vec<Vec<u8>>> {
+pub(crate) fn prepared_blocks(p: &Prep) -> Vec<Vec<Vec<u8>>> {
     let (pubb, par, dl_send, dl_recv) = scheduler_records(p);
     vec![
         source_payload(&p.lists),
@@ -77,7 +77,7 @@ fn encode(header: &[u8], blocks: &[Vec<Vec<u8>>]) -> Vec<u8> {
 }
 
 /// Eight bytes per segment: `u32 row count ‖ u32 absolute payload offset`.
-fn metadata(start: usize, blocks: &[Vec<Vec<u8>>]) -> Vec<u8> {
+pub(crate) fn metadata(start: usize, blocks: &[Vec<Vec<u8>>]) -> Vec<u8> {
     let mut v = Vec::new();
     let mut s = start;
     for rs in blocks {
@@ -92,7 +92,7 @@ fn payload_bytes(rs: &[Vec<u8>]) -> Vec<u8> {
     rs.iter().flatten().copied().collect()
 }
 
-fn data_bytes(blocks: &[Vec<Vec<u8>>]) -> Vec<u8> {
+pub(crate) fn data_bytes(blocks: &[Vec<Vec<u8>>]) -> Vec<u8> {
     blocks.iter().flat_map(|b| payload_bytes(b)).collect()
 }
 

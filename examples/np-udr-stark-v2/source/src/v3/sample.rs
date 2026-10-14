@@ -796,6 +796,7 @@ pub fn rcpt(r: &mut Rng, n: usize) -> RcptIn {
         own: r.fe(),
         height: r.fe(),
         bgp,
+        d1: None,
     }
 }
 
