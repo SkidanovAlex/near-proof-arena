@@ -1,0 +1,43 @@
+{
+ "challenge": "near-chunk-validation-d0-stark",
+ "domain": "D0a",
+ "layout": "cases/<n>/{request,witness,expected_claim}.bin + meta.json; rejections/<n>/{request,witness}.bin + meta.json; params.bin (domain D0a)",
+ "positives": 80,
+ "rejections": 128,
+ "sources": {
+  "arena-public": "oracle/fixtures/v3/arena-public (verbatim)",
+  "public-d0a": {
+   "added": {
+    "c.dup_bw_request": [
+     "00-h10004-s3-c.dup_bw_request",
+     "00-h10007-s3-c.dup_bw_request"
+    ],
+    "w.empty_pre_state": [
+     "00-h10004-s3-w.empty_pre_state"
+    ],
+    "w.foreign_routed_receipt": [
+     "00-h10007-s3-w.foreign_routed_receipt",
+     "00-h10008-s3-w.foreign_routed_receipt"
+    ],
+    "w.path_depth_at_bound": [
+     "00-h10004-s3-w.path_depth_at_bound",
+     "00-h10007-s3-w.path_depth_at_bound"
+    ],
+    "w.path_depth_over": [
+     "00-h10004-s3-w.path_depth_over",
+     "00-h10007-s3-w.path_depth_over"
+    ]
+   },
+   "dir": "oracle/fixtures/v3/public-d0a/mutants",
+   "positives": [
+    "w.path_depth_at_bound"
+   ],
+   "rejections": [
+    "w.path_depth_over",
+    "w.foreign_routed_receipt",
+    "c.dup_bw_request",
+    "w.empty_pre_state"
+   ]
+  }
+ }
+}

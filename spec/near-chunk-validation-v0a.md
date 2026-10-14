@@ -355,3 +355,32 @@ like A8), so the prepared statement exists only for A12 claims.
   shard_ids().count()`); violations are listed in `checkD0a` order. The public fixtures were
   regenerated with it: claim/witness bytes unchanged, only the honest cases' `meta.json` gained
   the new measures (`docs/logs/oracle-d0a-2026-10.md`).
+
+## 4. Challenge wiring (`near-chunk-validation-d0-stark`)
+
+* **`params.bin`** (`spec/claim-v3.md` §4 format; its domain list predates D0a and is pinned by
+  the signed challenges, so it is not edited): domain id `"D0a"` (the `#D0a` suffix of the scope
+  name, which the judge's request pin compares) and the D0 runtime-config digest
+  (`spec/challenge-inputs/runtime-config-pv86-v3.json`, `b7dce203…062f`): 100 bytes, sha256
+  `ab13c199…957f`, `spec/tools/params_bin_v3.py OUT D0a`. It equals `NpUdrStarkV2.publicBin`
+  byte for byte. Copies: `oracle/fixtures/v3/arena-public-d0a/params.bin` (the judge's) and
+  `oracle/fixtures/v3/public-d0a/params.bin` (difftest set).
+* **Public fixtures** `oracle/fixtures/v3/arena-public-d0a` (`spec/tools/build_public_d0a_arena.sh`):
+  the D0 public set verbatim (78 positives, all in D0a by Lean and Python; 121 rejections) plus,
+  from `public-d0a/mutants`, two A10-at-bound positives and seven D0a-only rejections (A10 over
+  the bound, A2, A8, empty main pre-state): 80 positives, 128 rejections.
+* **Workload generators**: the D0 generators (`spec/workloads/near-chunk-validation-d0`, oracle
+  `oracle/v3`), unchanged. Their positives are honest chunks of chains with 10 / 1000 Tgas gas
+  limits: A1 holds by the gas limit, A2 / Canon0f / A8 / A10 / A12 are nearcore invariants on
+  honest chains (§2), A7 / A9 have large measured headroom. Judge-style samples are checked with
+  `nearspec-v3-check-d0a` (`docs/logs/v3-d0a-challenge-2026-10.md`). Held-out set:
+  `DOMAIN=D0a oracle/scripts/gen-heldout-v3.sh SEED DIR nearspec-v3-check-d0a` (fails unless all
+  positives are in RelD0a and no rejection is).
+* **Formal check**: `runners/formal-checker/challenges/near-chunk-validation-d0-stark.json`
+  (trusted closure of `NearSpecV3.ChallengeD0a` and `NearSpecV3.PrepD0`, 48 modules) with
+  `spec/lean/judge/ExpectedV3D0a{,.native-lean}.lean.template`: `params` is
+  `{ spec := NearSpecV3.challengeSpecD0a, … }` with the spliced profile and `formal_params`
+  literals, definitionally equal to `NearSpecV3.challengeParamsD0a` at the frozen values.
+* **`near-chunk-v3`**: the same relation is the tier `D0a` (`NearSpecV3.Tier.d0a`,
+  `RelTier .d0a = RelD0a B0`, rank 0); see `docs/logs/v3-d0a-challenge-2026-10.md` for what a D0a
+  candidate needs there (params domain `D3a`, 64 MiB `maxProofBytes`, `DomainTier`).

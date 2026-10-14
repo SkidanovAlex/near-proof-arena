@@ -1,11 +1,13 @@
 //! `np-udr-stark-v1` prover (DESIGN.md §4), lane L8.
 pub mod air;
 pub mod aux;
+pub mod bufpool;
 pub mod check;
 pub mod cols;
 pub mod eval;
 pub mod field;
 pub mod hash;
+pub mod lde;
 pub mod lmcommit;
 pub mod lmsrc;
 pub mod lowmem;
@@ -15,6 +17,7 @@ pub mod protocol;
 pub mod prover;
 pub mod prover_ref;
 pub mod sha;
+pub mod sha2x;
 pub mod toy;
 pub mod transcript;
 pub mod v3;

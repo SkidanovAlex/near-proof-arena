@@ -869,7 +869,7 @@ mod tests {
         assert_eq!(at(0, 1), 0x6170); // S0 limb1
         assert_eq!(at(0, 2 * 4 + 0), 0); // S4 = key[0] = 0
         assert_eq!(at(0, 2 * 4 + 1), 0);
-        assert_eq!(at(0, 232 + 2 * 0), 0); // K0 limb0 = key[0]
+        assert_eq!(at(0, 232), 0); // K0 limb0 = key[0] (column 232 + 2·0)
         assert_eq!(at(0, 232 + 2 * 4 + 1), 0); // K4 limb1 = key[4] >> 16
         assert_eq!(at(0, 2 * 12 + 0), 0); // S12 limb0 = ctr % 2^16 = 0
         assert_eq!(at(0, 2 * 12 + 1), 0); // S12 limb1 = ctr / 2^16 = 0

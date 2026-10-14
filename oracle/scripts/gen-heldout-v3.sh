@@ -4,6 +4,13 @@
 # TreeDigest of the output is committed (spec/challenge-inputs/heldout-commitment-v3-d0.json);
 # the seed and the cases stay off-repo until the season ends.
 #   gen-heldout-v3.sh <seed-file> <out-dir> [nearspec-v3-check]
+#   DOMAIN=D0a gen-heldout-v3.sh <seed-file> <out-dir> <nearspec-v3-check-d0a>
+# DOMAIN (default D0) is the params.bin domain id. DOMAIN=D0a writes the held-out set of
+# near-chunk-validation-d0-stark (same D0 generators and rejection recipe; params.bin domain D0a
+# = NpUdrStarkV2.publicBin) and REQUIRES the compiled D0a relation (zk-formal
+# nearspec-v3-check-d0a) as the checker: every positive must be in RelD0a and no rejection may
+# be (rejections are false for RelD0, hence for RelD0a), else the script fails and the set must
+# not be committed.
 # The seed file holds one decimal u64; create it with
 #   python3 -c 'import secrets;print(secrets.randbits(62))' > SEED && chmod 600 SEED
 # Layout (runners/worker NearV3Oracle):
@@ -16,6 +23,12 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")/.." && pwd)"
 repo="$(cd "$here/.." && pwd)"
 seed="$(tr -d '[:space:]' < "$1")"; out="$2"; lean_check="${3:-}"
+domain="${DOMAIN:-D0}"
+case "$domain" in
+  D0) ;;
+  D0a) [ -n "$lean_check" ] || { echo "DOMAIN=D0a needs the nearspec-v3-check-d0a checker" >&2; exit 2; } ;;
+  *) echo "DOMAIN must be D0 or D0a" >&2; exit 2 ;;
+esac
 bin="$here/v3/target/debug/near-arena-oracle-v3"
 rm -rf "$out"; mkdir -p "$out"
 k=0
@@ -24,7 +37,7 @@ for cls in d0-quiet d0-transfers d0-missing; do
     "$repo/spec/workloads/near-chunk-validation-d0/$cls.json")
   "$bin" gen --seed $((seed + k)) --out "$out/$cls" "${args[@]}" --d0-target 24 2>/dev/null
   rm -f "$out/$cls/summary.json"
-  python3 "$repo/spec/tools/params_bin_v3.py" "$out/$cls/params.bin" D0 >/dev/null
+  python3 "$repo/spec/tools/params_bin_v3.py" "$out/$cls/params.bin" "$domain" >/dev/null
   k=$((k + 1))
 done
 tmp="$out/.rej"
@@ -54,6 +67,9 @@ if [ -n "$lean_check" ]; then
   pos=$("$lean_check" "$chk"/*-cases-* | grep -c '"verdict": "accept"')
   neg=$("$lean_check" "$chk"/*-rejections-* | grep -c '"verdict": "accept"' || true)
   rm -rf "$chk"
-  echo "Lean relation: $pos/72 positives accepted, $neg rejections accepted (must be 0)"
+  echo "Lean relation ($domain): $pos/72 positives accepted, $neg rejections accepted (must be 0)"
+  if [ "$domain" = D0a ] && { [ "$pos" != 72 ] || [ "$neg" != 0 ]; }; then
+    echo "D0a held-out set rejected: every positive must be in RelD0a and no rejection" >&2; exit 1
+  fi
 fi
 echo "held-out set written to $out"

@@ -16,7 +16,8 @@
 
 use p3_dft::TwoAdicSubgroupDft;
 use p3_field::{
-    BasedVectorSpace, Field, PrimeCharacteristicRing, PrimeField32, batch_multiplicative_inverse,
+    BasedVectorSpace, Field, PackedValue, PrimeCharacteristicRing, PrimeField32,
+    batch_multiplicative_inverse,
 };
 use p3_matrix::Matrix;
 use p3_matrix::dense::RowMajorMatrix;
@@ -46,13 +47,14 @@ impl Timer {
         Timer(crate::prover_ref::Timer::new(on))
     }
     fn lap(&mut self, what: &str) {
+        crate::bufpool::clear();
         let on = self.0.on;
         self.0.lap(what);
         if on {
             eprintln!(
-                "[prove]   {} | peak RSS {} MB",
+                "[prove]   {} | peak RSS so far {} MB",
                 crate::lowmem::prof::report(),
-                peak_rss_mb_reset()
+                peak_rss_mb()
             );
         }
     }
@@ -88,8 +90,10 @@ fn malloc_trim() {
     }
 }
 
-/// Peak resident set size since the last call (Linux; 0 elsewhere).
-fn peak_rss_mb_reset() -> u64 {
+/// Peak resident set size of the process so far (`VmHWM`; Linux, 0
+/// elsewhere). Not reset between phases: resetting it (`clear_refs`) also
+/// resets the peak that `getrusage` / `time -v` report at exit.
+fn peak_rss_mb() -> u64 {
     let kb = std::fs::read_to_string("/proc/self/status")
         .ok()
         .and_then(|s| {
@@ -98,7 +102,6 @@ fn peak_rss_mb_reset() -> u64 {
                 .and_then(|l| l.split_whitespace().nth(1)?.parse::<u64>().ok())
         })
         .unwrap_or(0);
-    let _ = std::fs::write("/proc/self/clear_refs", "5");
     kb >> 10
 }
 
@@ -127,7 +130,7 @@ impl Budget {
         let gb: f64 = std::env::var("NPUDR_MEM_GB")
             .ok()
             .and_then(|v| v.parse().ok())
-            .unwrap_or(11.0);
+            .unwrap_or(13.0);
         Budget {
             bytes: (gb * (1u64 << 30) as f64) as usize,
         }
@@ -144,6 +147,19 @@ impl Budget {
     fn avail(&self, used: usize) -> usize {
         (self.bytes.saturating_sub(used) / 10 * 7).max(1 << 16)
     }
+    /// Level-0 group for the block-wise path of `2^h`-row class-0 tables:
+    /// 64 bytes of leaf state per position plus the chunk's coefficient and
+    /// evaluation buffers (`2·T·cw` words), within 3/4 of the budget (the rest
+    /// for the buffer pool and allocator slack).
+    fn fast_group(&self, l0: usize, h: usize, used: usize, cw: usize) -> usize {
+        let t = 1usize << h;
+        let bufs = 2 * 4 * cw * t;
+        let mut s = 1usize << l0;
+        while s > t && used + bufs + 64 * s > self.bytes / 4 * 3 {
+            s /= 2;
+        }
+        s
+    }
     /// level-0 positions hashed at once (128 bytes of state each), next to
     /// the chunk buffers
     fn group(&self, l0: usize, used: usize, chunk_bytes: usize) -> usize {
@@ -156,33 +172,64 @@ impl Budget {
     }
 }
 
-/// `Σ_r wts[r] · m[r][c]` for every column `c`.
+#[allow(clippy::needless_range_loop)]
+/// `Σ_r wts[r] · m[r][c]` for every column `c` (limb-wise, packed across
+/// columns: `EF × F` is the base product on each of the 8 limbs).
 fn dot_rows(m: &RowMajorMatrix<F>, wts: &[EF]) -> Vec<EF> {
+    type PF = <F as Field>::Packing;
     let t = m.height();
     let w = m.width();
+    if w == 0 {
+        return vec![];
+    }
+    let wp = w / PF::WIDTH;
+    let tw = w - wp * PF::WIDTH;
     let ch = (t / (4 * rayon::current_num_threads().max(1))).max(256);
-    (0..t.div_ceil(ch))
+    let (accp, acct) = (0..t.div_ceil(ch))
         .into_par_iter()
         .map(|k| {
-            let mut acc = vec![EF::ZERO; w];
+            let mut ap = vec![PF::ZERO; 8 * wp];
+            let mut at = vec![F::ZERO; 8 * tw];
             for r in k * ch..((k + 1) * ch).min(t) {
                 let row = &m.values[r * w..(r + 1) * w];
-                let wr = wts[r];
-                for c in 0..w {
-                    acc[c] += wr * row[c];
+                let (rp, rt) = row.split_at(wp * PF::WIDTH);
+                let rp = PF::pack_slice(rp);
+                let wl = ef_coeffs(&wts[r]);
+                for l in 0..8 {
+                    let x = PF::from(wl[l]);
+                    for (a, v) in ap[l * wp..(l + 1) * wp].iter_mut().zip(rp) {
+                        *a += *v * x;
+                    }
+                    for (a, v) in at[l * tw..(l + 1) * tw].iter_mut().zip(rt) {
+                        *a += *v * wl[l];
+                    }
                 }
             }
-            acc
+            (ap, at)
         })
         .reduce(
-            || vec![EF::ZERO; w],
-            |mut a, b| {
-                for (x, y) in a.iter_mut().zip(b) {
+            || (vec![PF::ZERO; 8 * wp], vec![F::ZERO; 8 * tw]),
+            |(mut a, mut b), (c, d)| {
+                for (x, y) in a.iter_mut().zip(c) {
                     *x += y;
                 }
-                a
+                for (x, y) in b.iter_mut().zip(d) {
+                    *x += y;
+                }
+                (a, b)
             },
-        )
+        );
+    (0..w)
+        .map(|c| {
+            EF::from_basis_coefficients_fn(|l| {
+                if c < wp * PF::WIDTH {
+                    accp[l * wp + c / PF::WIDTH].as_slice()[c % PF::WIDTH]
+                } else {
+                    acct[l * tw + c - wp * PF::WIDTH]
+                }
+            })
+        })
+        .collect()
 }
 
 /// Barycentric weights: `f(ζ) = Σ_r wts[r]·f(ω^r)` on `H = ⟨ω_T⟩`.
@@ -195,16 +242,41 @@ fn bary_weights(h: usize, zeta: EF) -> Vec<EF> {
     inv.iter().zip(&pts).map(|(i, &p)| *i * p * scale).collect()
 }
 
-/// `out[r] += Σ_k coef[k]·c[r][k]`.
+/// `out[r] += Σ_k coef[k]·c[r][k]` (limb-wise, packed across columns).
 fn combine_into(out: &mut [EF], c: &RowMajorMatrix<F>, coef: &[EF]) {
+    type PF = <F as Field>::Packing;
     let w = c.width();
-    out.par_iter_mut().enumerate().for_each(|(r, o)| {
-        let row = &c.values[r * w..(r + 1) * w];
-        let mut acc = EF::ZERO;
-        for k in 0..w {
-            acc += coef[k] * row[k];
+    if w == 0 {
+        return;
+    }
+    let wp = w / PF::WIDTH;
+    // limb `l` of every coefficient, packed
+    let limbs: Vec<Vec<F>> = (0..8)
+        .map(|l| coef.iter().map(|x| ef_coeffs(x)[l]).collect())
+        .collect();
+    let lp: Vec<&[PF]> = limbs
+        .iter()
+        .map(|v| PF::pack_slice(&v[..wp * PF::WIDTH]))
+        .collect();
+    out.par_chunks_mut(1024).enumerate().for_each(|(k, os)| {
+        for (i, o) in os.iter_mut().enumerate() {
+            let r = k * 1024 + i;
+            let row = &c.values[r * w..(r + 1) * w];
+            let (rp, rt) = row.split_at(wp * PF::WIDTH);
+            let rp = PF::pack_slice(rp);
+            let v: [F; 8] = std::array::from_fn(|l| {
+                let mut a = PF::ZERO;
+                for (x, y) in rp.iter().zip(lp[l]) {
+                    a += *x * *y;
+                }
+                let mut s: F = a.as_slice().iter().copied().sum();
+                for (x, y) in rt.iter().zip(&limbs[l][wp * PF::WIDTH..]) {
+                    s += *x * *y;
+                }
+                s
+            });
+            *o += EF::from_basis_coefficients_fn(|l| v[l]);
         }
-        *o += acc;
     });
 }
 
@@ -239,7 +311,7 @@ impl Coefs {
             return;
         }
         let _t = std::time::Instant::now();
-        let c = dft.idft_batch(vals);
+        let c = crate::lde::idft(dft, vals);
         crate::lowmem::prof::add(&crate::lowmem::prof::COEFFS, _t);
         self.parts.push((self.width, c));
         self.width += w;
@@ -252,6 +324,34 @@ impl Coefs {
     fn eval_into(&self, dft: &Dft, lde: usize, sh: F, p0: usize, len: usize, dst: &mut [F]) {
         let _t = std::time::Instant::now();
         let width = self.width;
+        let t = self.parts.first().map(|p| p.1.height()).unwrap_or(0);
+        if len == t && t >= 1 << crate::lmcommit::FAST_MIN_LOG {
+            // a whole LDE block: one coset DFT per part, scattered into the rows
+            let n = log2_strict_usize(t);
+            let cd = crate::lde::coset_dft(n);
+            let c = sh * omega(lde).exp_u64(crate::mmcs::rev(p0 >> n, lde - n) as u64);
+            let maxw = self.parts.iter().map(|p| p.1.width()).max().unwrap_or(0);
+            let mut tmp = crate::bufpool::take(t * maxw);
+            for (c0, co) in &self.parts {
+                let cw = co.width();
+                let ev = &mut tmp[..t * cw];
+                let _e = std::time::Instant::now();
+                cd.eval(&co.values, cw, c, ev);
+                crate::lowmem::prof::add(&crate::lowmem::prof::EVAL, _e);
+                let (c0, ev) = (*c0, &*ev);
+                dst.par_chunks_mut(width * 1024)
+                    .enumerate()
+                    .for_each(|(k, rows)| {
+                        for (i, row) in rows.chunks_mut(width).enumerate() {
+                            let r = k * 1024 + i;
+                            row[c0..c0 + cw].copy_from_slice(&ev[r * cw..(r + 1) * cw]);
+                        }
+                    });
+            }
+            crate::bufpool::give(tmp);
+            crate::lowmem::prof::add(&crate::lowmem::prof::FILL, _t);
+            return;
+        }
         for (c0, co) in &self.parts {
             let cw = co.width();
             let ev = eval_range(dft, co, lde, sh, p0, len, None);
@@ -430,22 +530,51 @@ fn vandermonde_inverse(z: &[F]) -> Vec<Vec<F>> {
     (0..n).map(|m| a[m][n..].to_vec()).collect()
 }
 
+/// `c·ω_{2^a}^{rev_a(u)}` for `u < 2^a` (a coset in bit-reversed order),
+/// computed in parallel.
+fn bitrev_coset(c: F, a: usize) -> Vec<F> {
+    let n = 1usize << a;
+    let g = omega(a);
+    let ch = 1usize << a.min(12);
+    let mut xs = vec![F::ZERO; n];
+    xs.par_chunks_mut(ch).enumerate().for_each(|(k, o)| {
+        let mut x = c * g.exp_u64((k * ch) as u64);
+        for v in o.iter_mut() {
+            *v = x;
+            x *= g;
+        }
+    });
+    reverse_slice_index_bits(&mut xs);
+    xs
+}
+
 /// Lagrange selectors `L_0`, `L_{T-1}` at LDE positions `p0..p0+len`.
 fn selectors(h: usize, lde: usize, sh: F, p0: usize, len: usize) -> (Vec<F>, Vec<F>) {
     let a = log2_strict_usize(len);
     let c = sh * omega(lde).exp_u64(crate::mmcs::rev(p0 >> a, lde - a) as u64);
-    let mut xs: Vec<F> = omega(a).shifted_powers(c).take(len).collect();
-    reverse_slice_index_bits(&mut xs);
+    let xs = bitrev_coset(c, a);
     let tf = F::from_u64(1u64 << h);
     let h_last = omega(h).inverse();
-    let zs: Vec<F> = xs.iter().map(|&x| x.exp_power_of_2(h) - F::ONE).collect();
-    let i1 =
-        batch_multiplicative_inverse(&xs.iter().map(|&x| tf * (x - F::ONE)).collect::<Vec<_>>());
-    let i2 =
-        batch_multiplicative_inverse(&xs.iter().map(|&x| tf * (x - h_last)).collect::<Vec<_>>());
+    let zs: Vec<F> = xs
+        .par_iter()
+        .map(|&x| x.exp_power_of_2(h) - F::ONE)
+        .collect();
+    let i1 = batch_multiplicative_inverse(
+        &xs.par_iter()
+            .map(|&x| tf * (x - F::ONE))
+            .collect::<Vec<_>>(),
+    );
+    let i2 = batch_multiplicative_inverse(
+        &xs.par_iter()
+            .map(|&x| tf * (x - h_last))
+            .collect::<Vec<_>>(),
+    );
     (
-        (0..len).map(|i| zs[i] * i1[i]).collect(),
-        (0..len).map(|i| h_last * zs[i] * i2[i]).collect(),
+        (0..len).into_par_iter().map(|i| zs[i] * i1[i]).collect(),
+        (0..len)
+            .into_par_iter()
+            .map(|i| h_last * zs[i] * i2[i])
+            .collect(),
     )
 }
 
@@ -494,7 +623,19 @@ fn quotient(
     let mut qv = vec![EF::ZERO; npts];
     const CH: usize = 1024;
 
+    let qprof = std::env::var_os("NPUDR_QPROF").is_some() && h >= 16;
+    let mut qt = std::time::Instant::now();
+    let mut lap = |what: &str| {
+        if qprof {
+            eprintln!(
+                "[quot]   2^{h} w {w}: {what} {:.2}s",
+                qt.elapsed().as_secs_f64()
+            );
+        }
+        qt = std::time::Instant::now();
+    };
     // ---- family 1: bus constraints ----
+    let mut bus_len = 0;
     if wa > 0 {
         let asrc = AuxSrc::new(trace, q.tab, q.lay, q.pubs, q.alpha_fp, q.gamma);
         let mut ac = Coefs::new();
@@ -525,12 +666,22 @@ fn quotient(
         for (j, &c) in asrc.cols.iter().enumerate() {
             map[c] = j as u32;
         }
+        lap(&format!(
+            "aux+ivals coeffs (aw {aw}, iw {iw}, ivals {use_ivals})"
+        ));
         let fast = FastBus::new(q, a_aux);
         let ihalves = if use_ivals { 1 } else { 2 };
         let avail = bud.avail(used + trace.bytes() + ac.bytes() + ic.bytes());
-        let len = pass_len((2 * aw + ihalves * iw) * 4 + 48, avail, t);
-        let mut ha = Halves::new(aw, len, 2);
-        let mut hi = Halves::new(iw, len, ihalves);
+        // whole blocks need one half (the next rows are in the same block)
+        let len = if ((aw + iw) * 4 + 48) * t <= avail {
+            t
+        } else {
+            pass_len((2 * aw + ihalves * iw) * 4 + 48, avail, t)
+        };
+        bus_len = len;
+        let nh = if len >= t { 1 } else { 2 };
+        let mut ha = Halves::new(aw, len, nh);
+        let mut hi = Halves::new(iw, len, if len >= t { 1 } else { ihalves });
         for (load_cur, st) in schedule(npts, t, h, len) {
             if let Some(p) = load_cur {
                 ha.load(&ac, dft, st.cur, p, lde, sh);
@@ -553,6 +704,67 @@ fn quotient(
             let (ibuf, abuf) = (&hi.buf, &ha.buf);
             let row0 = st.cur * len;
             let irow0 = if use_ivals { 0 } else { row0 };
+            type PF = <F as Field>::Packing;
+            type EP = <EF as p3_field::ExtensionField<F>>::ExtensionPacking;
+            const WL: usize = <PF as PackedValue>::WIDTH;
+            if let Some(fb) = fast.as_ref().filter(|_| len % WL == 0) {
+                // 8 points at a time (packed base and extension fields)
+                qv[st.p0..st.p0 + len]
+                    .par_chunks_mut(1024)
+                    .enumerate()
+                    .for_each_init(
+                        || (Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new()),
+                        |(iregs, phis, ivb, av, anv), (ci, o)| {
+                            for (g8, o8) in o.chunks_mut(WL).enumerate() {
+                                let u0 = ci * 1024 + g8 * WL;
+                                let sel = [
+                                    PF::from_fn(|l| sfirst[u0 + l]),
+                                    PF::from_fn(|l| slast[u0 + l]),
+                                    PF::from_fn(|l| F::ONE - slast[u0 + l]),
+                                ];
+                                ivb.clear();
+                                if use_ivals {
+                                    ivb.extend(
+                                        (0..iw).map(|j| {
+                                            PF::from_fn(|l| ibuf[(irow0 + u0 + l) * iw + j])
+                                        }),
+                                    );
+                                } else {
+                                    let col = |c: usize, nn: bool| {
+                                        let j = map[c] as usize;
+                                        PF::from_fn(|l| {
+                                            let u = u0 + l;
+                                            let r = if nn { next32[u] as usize } else { row0 + u };
+                                            ibuf[r * iw + j]
+                                        })
+                                    };
+                                    q.lay.itape.eval::<PF>(iregs, col, q.pubs, sel);
+                                    ivb.extend(
+                                        q.lay.itape.outputs.iter().map(|&o| iregs[o as usize]),
+                                    );
+                                }
+                                let ext = |r: &dyn Fn(usize) -> usize, g: usize| {
+                                    EP::from_basis_coefficients_fn(|k| {
+                                        PF::from_fn(|l| abuf[r(u0 + l) * aw + 8 * g + k])
+                                    })
+                                };
+                                av.clear();
+                                av.extend((0..wa).map(|g| ext(&|u| row0 + u, g)));
+                                anv.clear();
+                                anv.extend((0..wa).map(|g| ext(&|u| next32[u] as usize, g)));
+                                let acc = fb.eval_packed(ivb, av, anv, sel, q.fins, phis);
+                                let limbs: &[PF] =
+                                    BasedVectorSpace::<PF>::as_basis_coefficients_slice(&acc);
+                                for (l, x) in o8.iter_mut().enumerate() {
+                                    *x +=
+                                        EF::from_basis_coefficients_fn(|k| limbs[k].as_slice()[l]);
+                                }
+                            }
+                        },
+                    );
+                crate::lowmem::prof::add(&crate::lowmem::prof::AUXC, ta0);
+                continue;
+            }
             qv[st.p0..st.p0 + len]
                 .par_iter_mut()
                 .enumerate()
@@ -652,17 +864,28 @@ fn quotient(
         }
     }
 
+    lap(&format!("bus family blocks (aux len {bus_len})"));
     // ---- family 2: main constraints, trace converted to coefficients ----
     // Under memory pressure (the coefficients do not fit next to the compact
     // trace) the trace's compact columns are released while the coefficients
     // are held and rebuilt afterwards; otherwise the trace stays as is.
     let mc_bytes = (w * 4) << h;
-    let release = used + trace.bytes() + mc_bytes > bud.bytes / 10 * 7;
+    // Streaming: when whole blocks do not fit next to the coefficients but
+    // do fit next to the compact trace, each block is computed from the
+    // trace (iDFT + coset DFT per column chunk) and no coefficients are held.
+    let whole = (w * 4 + 48) * t;
+    // (`NPUDR_QSTREAM=1` forces it, for tests)
+    let force = std::env::var("NPUDR_QSTREAM").is_ok_and(|v| v == "1");
+    let stream = t >= 1 << crate::lmcommit::FAST_MIN_LOG
+        && (force
+            || whole > bud.avail(used + trace.bytes() + mc_bytes)
+                && whole + 3 * ((chunk * 4) << h) <= bud.avail(used + trace.bytes()));
+    let release = !stream && used + trace.bytes() + mc_bytes > bud.bytes / 10 * 7;
     if release {
         malloc_trim();
     }
     let mut mc = Coefs::new();
-    for c0 in (0..w).step_by(chunk) {
+    for c0 in (0..w).step_by(chunk).filter(|_| !stream) {
         let c1 = (c0 + chunk).min(w);
         let v = if release {
             trace.take_chunk(c0, c1)
@@ -674,18 +897,41 @@ fn quotient(
             malloc_trim();
         }
     }
+    lap(&format!("main coeffs (release {release}, stream {stream})"));
     let avail = bud.avail(used + trace.bytes() + mc.bytes());
-    let len = pass_len(2 * w * 4 + 48, avail, t);
-    let mut hm = Halves::new(w, len, 2);
+    let len = if stream || (w * 4 + 48) * t <= avail {
+        t
+    } else {
+        pass_len(2 * w * 4 + 48, avail, t)
+    };
+    let mut hm = Halves::new(w, len, if len >= t { 1 } else { 2 });
+    let trace_ro: &TraceCols = trace;
+    let load = |hm: &mut Halves, half: usize, p: usize| {
+        if stream {
+            stream_block(
+                dft,
+                trace_ro,
+                chunk,
+                lde,
+                sh,
+                p,
+                &mut hm.buf[half * len * w..(half + 1) * len * w],
+            );
+        } else {
+            hm.load(&mc, dft, half, p, lde, sh);
+        }
+    };
     for (load_cur, st) in schedule(npts, t, h, len) {
         if let Some(p) = load_cur {
-            hm.load(&mc, dft, st.cur, p, lde, sh);
+            load(&mut hm, st.cur, p);
         }
         if let Some(p) = st.load_next {
-            hm.load(&mc, dft, 1 - st.cur, p, lde, sh);
+            load(&mut hm, 1 - st.cur, p);
         }
+        let ts0 = std::time::Instant::now();
         let (sfirst, slast) = selectors(h, lde, sh, st.p0, len);
         let next32 = next_index(&st, len, t, h);
+        let tsel = ts0.elapsed().as_secs_f64();
         let tb0 = std::time::Instant::now();
         let row0 = st.cur * len;
         // `eval_rows` overwrites its output: evaluate aside, then add to
@@ -712,9 +958,17 @@ fn quotient(
                     *x += *y;
                 }
             });
+        if qprof {
+            eprintln!(
+                "[quot]     main block p0 {}: selectors {tsel:.2}s beval {:.2}s",
+                st.p0,
+                tb0.elapsed().as_secs_f64()
+            );
+        }
         crate::lowmem::prof::add(&crate::lowmem::prof::BEVAL, tb0);
     }
     drop(hm);
+    lap(&format!("main blocks (len 2^{})", log2_strict_usize(len)));
     // rebuild the compact trace from the coefficients
     let _tr = std::time::Instant::now();
     for (c0, co) in std::mem::take(&mut mc.parts) {
@@ -725,6 +979,7 @@ fn quotient(
     }
     crate::lowmem::prof::add(&crate::lowmem::prof::COEFFS, _tr);
 
+    lap("rebuild");
     // ---- interpolation: q = V⁻¹·y ----
     let zb: Vec<(F, F)> = (0..nq)
         .map(|b| {
@@ -739,8 +994,31 @@ fn quotient(
         let blk = &mut qv[b * t..(b + 1) * t];
         let zi = (z - F::ONE).inverse();
         blk.par_iter_mut().for_each(|x| *x *= zi);
-        reverse_slice_index_bits(blk);
-        let y = dft.coset_idft_batch(RowMajorMatrix::new(ef_to_base_row(blk), 8), c);
+        let y = if t >= 1 << crate::lmcommit::FAST_MIN_LOG {
+            // coset iDFT straight from the bit-reversed block: iDFT, then
+            // row `i` times `c^{-i}`
+            let mut base = vec![F::ZERO; t * 8];
+            base.par_chunks_mut(8)
+                .zip(blk.par_iter())
+                .for_each(|(o, x)| o.copy_from_slice(ef_coeffs(x)));
+            let mut y = vec![F::ZERO; t * 8];
+            crate::lde::coset_dft(h).idft_from(&base, 8, true, &mut y);
+            let ci = c.inverse();
+            const RC: usize = 4096;
+            y.par_chunks_mut(8 * RC).enumerate().for_each(|(k, rows)| {
+                let mut p = ci.exp_u64((k * RC) as u64);
+                for row in rows.chunks_mut(8) {
+                    for x in row.iter_mut() {
+                        *x *= p;
+                    }
+                    p *= ci;
+                }
+            });
+            RowMajorMatrix::new(y, 8)
+        } else {
+            reverse_slice_index_bits(blk);
+            dft.coset_idft_batch(RowMajorMatrix::new(ef_to_base_row(blk), 8), c)
+        };
         let wb: Vec<F> = (0..nq).map(|m| winv[m][b]).collect();
         out.values
             .par_chunks_mut(wq)
@@ -753,7 +1031,68 @@ fn quotient(
                 }
             });
     }
+    lap("interpolation");
     Ok(out)
+}
+
+/// Values of all columns of `trace` on the LDE block at `p0` (whole block,
+/// bit-reversed order) into the row-major `dst`, from the compact trace:
+/// per column chunk an iDFT and a coset DFT.
+#[allow(clippy::too_many_arguments)]
+fn stream_block(
+    dft: &Dft,
+    trace: &TraceCols,
+    chunk: usize,
+    lde: usize,
+    sh: F,
+    p0: usize,
+    dst: &mut [F],
+) {
+    let _t = std::time::Instant::now();
+    let t = trace.height();
+    let w = trace.width();
+    let n = trace.log_h;
+    let cd = crate::lde::coset_dft(n);
+    let c = sh * omega(lde).exp_u64(crate::mmcs::rev(p0 >> n, lde - n) as u64);
+    let mut tmp = crate::bufpool::take(t * chunk.min(w));
+    let qprof = std::env::var_os("NPUDR_QPROF").is_some();
+    let mut tt = [0f64; 4];
+    for c0 in (0..w).step_by(chunk) {
+        let c1 = (c0 + chunk).min(w);
+        let cw = c1 - c0;
+        let _c = std::time::Instant::now();
+        let v = trace.chunk(c0, c1);
+        tt[0] += _c.elapsed().as_secs_f64();
+        let _d = std::time::Instant::now();
+        let co = crate::lde::idft(dft, v);
+        tt[1] += _d.elapsed().as_secs_f64();
+        crate::lowmem::prof::add(&crate::lowmem::prof::COEFFS, _c);
+        let ev = &mut tmp[..t * cw];
+        let _e = std::time::Instant::now();
+        cd.eval(&co.values, cw, c, ev);
+        tt[2] += _e.elapsed().as_secs_f64();
+        crate::lowmem::prof::add(&crate::lowmem::prof::EVAL, _e);
+        crate::bufpool::give(co.values);
+        let ev = &*ev;
+        let _s = std::time::Instant::now();
+        dst.par_chunks_mut(w * 1024)
+            .enumerate()
+            .for_each(|(k, rows)| {
+                for (i, row) in rows.chunks_mut(w).enumerate() {
+                    let r = k * 1024 + i;
+                    row[c0..c1].copy_from_slice(&ev[r * cw..(r + 1) * cw]);
+                }
+            });
+        tt[3] += _s.elapsed().as_secs_f64();
+    }
+    crate::bufpool::give(tmp);
+    if qprof {
+        eprintln!(
+            "[quot]     stream block: chunk {:.2}s idft {:.2}s eval {:.2}s scatter {:.2}s",
+            tt[0], tt[1], tt[2], tt[3]
+        );
+    }
+    crate::lowmem::prof::add(&crate::lowmem::prof::FILL, _t);
 }
 
 /// Bus constraints at one point for tables whose interactions have at most
@@ -801,6 +1140,47 @@ impl FastBus {
             gamma: q.gamma,
         })
     }
+    /// [`Self::eval`] at `WIDTH` points at once (packed fields; the same
+    /// field operations, so the same values lane by lane).
+    #[inline]
+    fn eval_packed(
+        &self,
+        iv: &[<F as Field>::Packing],
+        av: &[<EF as p3_field::ExtensionField<F>>::ExtensionPacking],
+        anv: &[<EF as p3_field::ExtensionField<F>>::ExtensionPacking],
+        sel: [<F as Field>::Packing; 3],
+        fins: &[EF],
+        phis: &mut Vec<<EF as p3_field::ExtensionField<F>>::ExtensionPacking>,
+    ) -> <EF as p3_field::ExtensionField<F>>::ExtensionPacking {
+        type EP = <EF as p3_field::ExtensionField<F>>::ExtensionPacking;
+        phis.clear();
+        for (o, len, k, ap, last) in &self.inter {
+            if *k == 0 {
+                phis.push(EP::ONE);
+                continue;
+            }
+            let mut fp = EP::from(*last);
+            for j in 0..*len {
+                fp += EP::from(ap[j]) * iv[o + j];
+            }
+            phis.push(EP::ONE + (EP::from(self.gamma) - fp - EP::ONE) * iv[o + len]);
+        }
+        let mut acc = EP::ZERO;
+        for (g, grp) in self.groups.iter().enumerate() {
+            let mut phi = EP::ONE;
+            for &i in grp {
+                phi *= phis[i];
+            }
+            let a = av[g];
+            let ap = a * phi;
+            let w = &self.wts[g];
+            acc += ((a - EP::ONE) * sel[0]) * w[0]
+                + ((anv[g] - ap) * sel[2]) * w[1]
+                + ((ap - EP::from(fins[g])) * sel[1]) * w[2];
+        }
+        acc
+    }
+
     /// `iv`: itape outputs (base field); `phis`: scratch.
     #[inline]
     fn eval(
@@ -978,7 +1358,17 @@ pub fn prove_cols(
     let hmax0 = *heights.iter().max().unwrap();
     let chunk = bud.chunk_for(hmax0, resident);
     let group = bud.group(l0, resident, (12 * chunk) << hmax0);
+    // block-wise level 0 (see `lmcommit::hash_level0_blocks`) for large
+    // class-0 tables, with 64-column chunks
+    let fast = hmax0 >= lmcommit::FAST_MIN_LOG;
+    let ccw = if fast { 64 } else { chunk };
     if opts.verbose {
+        for t in 0..nt {
+            eprintln!(
+                "[prove] table {t:2} log {:2} class {} main {:3} aux(K) {:3} quot chunks {}",
+                heights[t], sch.class[t], sch.w_main[t], sch.w_aux[t], sch.n_quot[t]
+            );
+        }
         eprintln!(
             "[prove] resident {} MB, chunk {chunk}, group 2^{}",
             resident >> 20,
@@ -998,11 +1388,15 @@ pub fn prove_cols(
     let main_tree = {
         let main: Vec<Src> = traces.iter().map(Src::Main).collect();
         // only the compact traces are resident yet
-        let g = bud.group(l0, compact, (12 * chunk) << hmax0);
+        let g = if fast {
+            bud.fast_group(l0, hmax0, compact, ccw)
+        } else {
+            bud.group(l0, compact, (12 * chunk) << hmax0)
+        };
         if opts.verbose {
             eprintln!("[prove] main commit group 2^{}", log2_strict_usize(g));
         }
-        lmcommit::commit(&dft, &cmats(&sch, &main), l0, g, chunk, keep)
+        lmcommit::commit(&dft, &cmats(&sch, &main), l0, g, ccw, keep)
     };
     tm.lap("main commit");
     tr.absorb(&[main_tree.root()], &sch.header_bytes());
@@ -1049,7 +1443,13 @@ pub fn prove_cols(
             })
             .collect();
         let used = compact + tree_bytes + if use_cache { cache } else { 0 };
-        let g = bud.group(l0, used, (12 * chunk) << hmax0);
+        // narrower chunks next to the resident coefficient cache
+        let acw = if fast { 32 } else { ccw };
+        let g = if fast {
+            bud.fast_group(l0, hmax0, used, acw)
+        } else {
+            bud.group(l0, used, (12 * chunk) << hmax0)
+        };
         if opts.verbose {
             eprintln!(
                 "[prove] aux coefficient cache {} MB ({use_cache}), group 2^{}",
@@ -1058,7 +1458,7 @@ pub fn prove_cols(
             );
         }
         (
-            lmcommit::commit(&dft, &cmats(&sch, &aux), l0, g, chunk, keep),
+            lmcommit::commit(&dft, &cmats(&sch, &aux), l0, g, acw, keep),
             aux_finals,
         )
     };
@@ -1122,7 +1522,21 @@ pub fn prove_cols(
         .collect();
     let aux_m = cmats(&sch, &aux);
     let quot_m = cmats(&sch, &quot);
-    let quot_tree = lmcommit::commit(&dft, &quot_m, l0, group, chunk, keep);
+    let quot_tree = if fast {
+        let qres = compact
+            + 2 * tree_bytes
+            + quot_m
+                .iter()
+                .map(|m| (m.src.width() * 4) << m.src.log_h())
+                .sum::<usize>();
+        let g = bud.fast_group(l0, hmax0, qres, ccw);
+        if opts.verbose {
+            eprintln!("[prove] quot commit group 2^{}", log2_strict_usize(g));
+        }
+        lmcommit::commit(&dft, &quot_m, l0, g, ccw, keep)
+    } else {
+        lmcommit::commit(&dft, &quot_m, l0, group, chunk, keep)
+    };
     tm.lap("quot commit");
     tr.absorb(&[quot_tree.root()], &[]);
     let z = tr.chal_ood();
@@ -1134,16 +1548,24 @@ pub fn prove_cols(
             .collect()
     };
     let mut ood = vec![];
+    let mut ot = [0f64; 5];
     for t in 0..nt {
         let h = heights[t];
         let gz = z * ef_from_base(omega(h));
+        let o0 = std::time::Instant::now();
         let (wz, wg) = (bary_weights(h, z), bary_weights(h, gz));
+        ot[0] += o0.elapsed().as_secs_f64();
         let ck = chunk;
         let (mut vz, mut vg) = (vec![], vec![]);
         for (c0, c1) in main[t].chunks(ck) {
+            let o1 = std::time::Instant::now();
             let v = main[t].values(&dft, c0, c1);
+            ot[1] += o1.elapsed().as_secs_f64();
+            let o2 = std::time::Instant::now();
             vz.extend(dot_rows(&v, &wz));
             vg.extend(dot_rows(&v, &wg));
+            ot[2] += o2.elapsed().as_secs_f64();
+            crate::bufpool::give(v.values);
         }
         ood.extend(vz);
         ood.extend(vg);
@@ -1159,9 +1581,18 @@ pub fn prove_cols(
             ood.extend(kvals(ag, wa));
         }
         if let Src::Coeffs(qc) = &quot[t] {
+            let o3 = std::time::Instant::now();
             let zp: Vec<EF> = z.powers().take(qc.height()).collect();
+            ot[3] += o3.elapsed().as_secs_f64();
             ood.extend(kvals(dot_rows(qc, &zp), sch.n_quot[t]));
+            ot[4] += o3.elapsed().as_secs_f64();
         }
+    }
+    if opts.verbose {
+        eprintln!(
+            "[prove] ood: bary {:.1}s values {:.1}s dots {:.1}s zpow {:.1}s quot {:.1}s",
+            ot[0], ot[1], ot[2], ot[3], ot[4]
+        );
     }
     tm.lap("ood");
     let pre = Challenges {
@@ -1186,6 +1617,7 @@ pub fn prove_cols(
     // ---- DEEP batches per class layer (bit-reversed order) ----
     let ood_off = ood_offsets(&sch);
     let mut deep: Vec<Vec<EF>> = vec![];
+    let mut dt = [0f64; 3];
     for (ci, &c) in sch.class_layers.iter().enumerate() {
         let lg = l0 - c;
         let n = 1usize << lg;
@@ -1222,11 +1654,14 @@ pub fn prove_cols(
                 cst_z += cq[m] * v[2 * w + 2 * wa + m];
             }
             let ck = chunk;
+            let d0 = std::time::Instant::now();
             for (c0, c1) in main[t].chunks(ck) {
                 let vals = main[t].values(&dft, c0, c1);
                 combine_into(&mut vz, &vals, &cz[c0..c1]);
                 combine_into(&mut vg, &vals, &cgz[c0..c1]);
+                crate::bufpool::give(vals.values);
             }
+            dt[0] += d0.elapsed().as_secs_f64();
             let lift = |c: &[EF]| -> Vec<EF> {
                 (0..8 * c.len()).map(|k| c[k / 8] * xpow(k % 8)).collect()
             };
@@ -1243,8 +1678,9 @@ pub fn prove_cols(
             }
             i += sch.ood_len(t);
         }
+        let d1 = std::time::Instant::now();
         // coefficients of P_z (= iDFT(vz) + quotient part) and P_gz
-        let mut pz = dft.idft_batch(RowMajorMatrix::new(ef_to_base_row(&vz), 8));
+        let mut pz = crate::lde::idft(&dft, RowMajorMatrix::new(ef_to_base_row(&vz), 8));
         drop(vz);
         for (r, x) in cq_poly.iter().enumerate() {
             for (l, c) in ef_coeffs(x).iter().enumerate() {
@@ -1252,7 +1688,7 @@ pub fn prove_cols(
             }
         }
         drop(cq_poly);
-        let pg = dft.idft_batch(RowMajorMatrix::new(ef_to_base_row(&vg), 8));
+        let pg = crate::lde::idft(&dft, RowMajorMatrix::new(ef_to_base_row(&vg), 8));
         drop(vg);
         let mut both = vec![F::ZERO; t_rows * 16];
         both.par_chunks_mut(16).enumerate().for_each(|(r, o)| {
@@ -1261,19 +1697,25 @@ pub fn prove_cols(
         });
         drop((pz, pg));
         let both = RowMajorMatrix::new(both, 16);
+        dt[1] += d1.elapsed().as_secs_f64();
+        let d2 = std::time::Instant::now();
         let sh = class_shift(c);
         let mut g = vec![EF::ZERO; n];
         for b in 0..n / t_rows {
             let p0 = b * t_rows;
             let ev = eval_range(&dft, &both, lg, sh, p0, t_rows, None);
-            let xs: Vec<F> = (0..t_rows)
-                .map(|u| sh * omega(lg).exp_u64(crate::mmcs::rev(p0 + u, lg) as u64))
-                .collect();
+            // block `b` = the coset `c·⟨ω_T⟩` in bit-reversed order
+            let cb = sh * omega(lg).exp_u64(crate::mmcs::rev(b, lg - h) as u64);
+            let xs = bitrev_coset(cb, h);
             let iz = batch_multiplicative_inverse(
-                &xs.iter().map(|&x| ef_from_base(x) - z).collect::<Vec<_>>(),
+                &xs.par_iter()
+                    .map(|&x| ef_from_base(x) - z)
+                    .collect::<Vec<_>>(),
             );
             let igz = batch_multiplicative_inverse(
-                &xs.iter().map(|&x| ef_from_base(x) - gz).collect::<Vec<_>>(),
+                &xs.par_iter()
+                    .map(|&x| ef_from_base(x) - gz)
+                    .collect::<Vec<_>>(),
             );
             g[p0..p0 + t_rows]
                 .par_iter_mut()
@@ -1285,7 +1727,14 @@ pub fn prove_cols(
                     *o = a * iz[u] + bb * igz[u];
                 });
         }
+        dt[2] += d2.elapsed().as_secs_f64();
         deep.push(g);
+    }
+    if opts.verbose {
+        eprintln!(
+            "[prove] deep: main combine {:.1}s idft {:.1}s blocks {:.1}s",
+            dt[0], dt[1], dt[2]
+        );
     }
     tm.lap("deep");
 
@@ -1358,9 +1807,8 @@ pub fn prove_cols(
     let queries = tr.finish_queries(l0, NUM_CHUNKS, PER_CHUNK);
 
     // ---- openings ----
-    let open_main = lmcommit::open(&dft, &main_m, &main_tree, &queries, chunk);
-    let open_aux = lmcommit::open(&dft, &aux_m, &aux_tree, &queries, chunk);
-    let open_quot = lmcommit::open(&dft, &quot_m, &quot_tree, &queries, chunk);
+    // FRI layers first: their evaluation vectors (2 GB and more for 2^22
+    // tables) are released before the trace openings
     let open_fri = sch
         .committed
         .iter()
@@ -1370,6 +1818,19 @@ pub fn prove_cols(
             fri_open(fv, a, t, &q)
         })
         .collect();
+    drop(fri);
+    let to = std::time::Instant::now();
+    let open_main = lmcommit::open(&dft, &main_m, &main_tree, &queries, chunk);
+    let t_om = to.elapsed().as_secs_f64();
+    let open_aux = lmcommit::open(&dft, &aux_m, &aux_tree, &queries, chunk);
+    let t_oa = to.elapsed().as_secs_f64() - t_om;
+    let open_quot = lmcommit::open(&dft, &quot_m, &quot_tree, &queries, chunk);
+    if opts.verbose {
+        eprintln!(
+            "[prove] openings: main {t_om:.1}s aux {t_oa:.1}s quot {:.1}s",
+            to.elapsed().as_secs_f64() - t_om - t_oa
+        );
+    }
     tm.lap("openings");
     let proof = Proof {
         heights,

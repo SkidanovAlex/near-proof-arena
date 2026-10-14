@@ -7,7 +7,9 @@ params.bin = bytes "near-arena-params-v3" ‖ bytes "near/pv86/chunk-validation/
            ‖ bytes domain_id ‖ hash runtime_config_digest_v3
 runtime_config_digest_v3 = sha256(JCS(runtime-config description)), the challenge's
 `runtime_config_digest` (spec/tools/build_challenge_draft_v3*.py compute it the same way). The
-description is per domain (CONFIGS): D0 `runtime-config-pv86-v3.json`; D1 `-v3-d1.json` (+ the
+description is per domain (CONFIGS): D0 and D0a (`near-chunk-validation-d0-stark`: the same D0 runtime
+configuration, domain id "D0a"; the 100-byte result is `NpUdrStarkV2.publicBin`, sha256 ab13c199…957f)
+`runtime-config-pv86-v3.json`; D1 `-v3-d1.json` (+ the
 transaction fees D1 reads); D2, D3 and D3a (`near-chunk-v3`) `-v3-d2.json` (+ every fee, limit and parameter the D2
 relation reads, and `runtime_config_view_sha256` = sha256 of nearcore's whole `RuntimeConfigView`
 at PV 86, which covers the WASM config D3 reads; `near-arena-oracle-v3-d1 params --d1 --d2`).
@@ -21,6 +23,7 @@ def jcs(v): return json.dumps(v, separators=(",", ":"), sort_keys=True, ensure_a
 def b(s): s = s.encode(); return struct.pack("<I", len(s)) + s
 
 CONFIGS = {"D0": "spec/challenge-inputs/runtime-config-pv86-v3.json",
+           "D0a": "spec/challenge-inputs/runtime-config-pv86-v3.json",
            "D1": "spec/challenge-inputs/runtime-config-pv86-v3-d1.json",
            "D2": "spec/challenge-inputs/runtime-config-pv86-v3-d2.json",
            "D3": "spec/challenge-inputs/runtime-config-pv86-v3-d2.json",

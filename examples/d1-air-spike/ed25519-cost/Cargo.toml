@@ -1,0 +1,15 @@
+[package]
+name = "d1-ed25519-cost"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "D1-AIR design spike: operation counts and limb-gadget bounds of an in-AIR Ed25519 verification (nearcore/dalek cofactorless semantics), checked against nearcore's verdicts"
+
+# Standalone: not a member of the repository workspace, no dependencies.
+[workspace]
+
+[dependencies]
+
+[profile.release]
+opt-level = 3
+debug = false

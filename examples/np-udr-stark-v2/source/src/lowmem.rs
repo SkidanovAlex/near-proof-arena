@@ -150,7 +150,40 @@ pub fn eval_ranges(
                 return acc;
             }
             let mut pw: Vec<F> = ys.iter().map(|y| y.exp_u64(j0 as u64)).collect();
-            for j in j0..j1 {
+            // eight chunks at a time: one delayed-reduction dot product per
+            // accumulator vector (`Σ_k y^(j+k)·C_(j+k)`)
+            type P = <F as Field>::Packing;
+            let n = len * w;
+            let np = n / P::WIDTH;
+            let y8: Vec<[F; 9]> = ys
+                .iter()
+                .map(|y| std::array::from_fn(|i| y.exp_u64(i as u64)))
+                .collect();
+            let mut j = j0;
+            while j + 8 <= j1 {
+                let sp: [&[P]; 8] = std::array::from_fn(|k| {
+                    P::pack_slice(&coeffs.values[(j + k) * n..(j + k) * n + np * P::WIDTH])
+                });
+                for (q, p) in pw.iter_mut().enumerate() {
+                    let f: [F; 8] = std::array::from_fn(|k| *p * y8[q][k]);
+                    let a = &mut acc[q * n..(q + 1) * n];
+                    let (ap, at) = a.split_at_mut(np * P::WIDTH);
+                    for (i, x) in P::pack_slice_mut(ap).iter_mut().enumerate() {
+                        *x += <P as p3_field::Algebra<F>>::mixed_dot_product::<8>(
+                            &std::array::from_fn(|k| sp[k][i]),
+                            &f,
+                        );
+                    }
+                    for (i, x) in at.iter_mut().enumerate() {
+                        for (k, fk) in f.iter().enumerate() {
+                            *x += *fk * coeffs.values[(j + k) * n + np * P::WIDTH + i];
+                        }
+                    }
+                    *p *= y8[q][8];
+                }
+                j += 8;
+            }
+            for j in j..j1 {
                 let src = &coeffs.values[j * len * w..(j + 1) * len * w];
                 for (q, p) in pw.iter_mut().enumerate() {
                     axpy(&mut acc[q * len * w..(q + 1) * len * w], *p, src);
@@ -233,7 +266,19 @@ pub fn eval_range(
         }
         return RowMajorMatrix::new(v, w);
     }
+    if len == t && t >= 1 << 10 {
+        // a whole block: cache-blocked coset DFT, no copy of the coefficients
+        let mut out = vec![F::ZERO; t * w];
+        crate::lde::coset_dft(a).eval(&coeffs.values, w, c, &mut out);
+        return RowMajorMatrix::new(out, w);
+    }
     let h = fold(coeffs, len, c.exp_u64(len as u64));
+    if len >= 1 << 10 {
+        // the folded polynomials' evaluations on `c·⟨ω_len⟩`
+        let mut out = vec![F::ZERO; len * w];
+        crate::lde::coset_dft(a).eval(&h.values, w, c, &mut out);
+        return RowMajorMatrix::new(out, w);
+    }
     dft.coset_dft_batch(h, c)
         .bit_reverse_rows()
         .to_row_major_matrix()
@@ -268,6 +313,17 @@ pub struct WhStream {
 fn compress(st: &mut [u32], block: &[u8; 64]) {
     let s: &mut [u32; 8] = st.try_into().unwrap();
     sha2::compress256(s, &[*GenericArray::from_slice(block)]);
+}
+
+/// Both states of a message (`st[..8]`, `st[8..]`) on the same block.
+#[inline]
+fn pair(st: &mut [u32; 16], block: &[u8; 64]) {
+    let (a, b) = st.split_at_mut(8);
+    crate::sha2x::compress_pair(
+        a.try_into().unwrap(),
+        b.try_into().unwrap(),
+        std::slice::from_ref(block),
+    );
 }
 
 impl WhStream {
@@ -309,8 +365,7 @@ impl WhStream {
             off += take;
             if carry == 64 {
                 if first {
-                    compress(&mut st[..8], buf);
-                    compress(&mut st[8..], buf);
+                    pair(st, buf);
                 } else {
                     buf[11] = 1;
                     compress(&mut st[..8], buf);
@@ -415,8 +470,7 @@ impl WhStream {
                 blocks.push(buf);
                 for mut b in blocks {
                     if first {
-                        compress(&mut st[..8], &b);
-                        compress(&mut st[8..], &b);
+                        pair(&mut st, &b);
                     } else {
                         b[11] = 1;
                         compress(&mut st[..8], &b);

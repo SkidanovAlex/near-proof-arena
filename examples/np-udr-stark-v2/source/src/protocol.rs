@@ -114,8 +114,10 @@ impl Schedule {
         class_layers.sort_unstable();
         class_layers.dedup();
         let mut committed = vec![];
+        // committed layers until the final layer `fri_l` (each step advances:
+        // `next > k` while `k < fri_l`)
         let mut k = 0;
-        while fri_l > 0 {
+        while k < fri_l {
             let next_class = class_layers
                 .iter()
                 .copied()
@@ -123,9 +125,6 @@ impl Schedule {
                 .unwrap_or(usize::MAX);
             let next = (k + MAX_ARITY_LOG).min(next_class).min(fri_l);
             committed.push((k, next - k));
-            if next == fri_l {
-                break;
-            }
             k = next;
         }
         let w_main: Vec<usize> = air.tables.iter().map(|t| t.width).collect();
