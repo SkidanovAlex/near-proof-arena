@@ -388,7 +388,9 @@ fn prove1(b: &v1::Built, traces: Vec<p3_matrix::dense::RowMajorMatrix<F>>, label
     let dt = t0.elapsed().as_secs_f64();
     match r {
         Ok(Ok(v)) => {
-            println!("  [{label}] prover emitted a proof ({} KB) in {dt:.1} s", v.len() / 1024);
+            let weq: f64 = b.air.tables.iter().zip(&b.traces).map(|(t, tr)| (t.width + 8 * AuxLayout::new(t, 1).width() + 8 * (table_degree(t, 1) - 1)) as f64 * tr.height() as f64).sum();
+            let main: f64 = b.traces.iter().map(|t| (t.width() * t.height()) as f64).sum();
+            println!("  [{label}] prover emitted a proof ({} KB) in {dt:.1} s | committed W_eq {:.1} M (Fp8, blowup 16, grand products) = {:.2} M W_eq/s; main {:.1} M cells", v.len() / 1024, weq / 1e6, weq / dt / 1e6, main / 1e6);
             Some(v)
         }
         Ok(Err(e)) => {

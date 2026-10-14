@@ -1,0 +1,218 @@
+=== run1 loadchain 8192 --prove
+program: unaligned i32.load chain (16/iter) | iterations 8192
+  WASM ops 212995 (gas units 212995) | rows 147458 | ops/row 1.44 | static rows 19 | locals, memory, gas == reference: OK | channel discipline: OK
+  reference interpreter 0.001 s, register machine 0.040 s (3.7 M rows/s, 5.3 M ops/s)
+  trace build 0.105 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (public segments included)
+
+  table                  kind   active   padded   w   I | per active row: committed U-logUp(E=10)  GKR  ML
+  brz[_L__]              chip      8193    16384  21   6 |                           81   41  21
+  ld_gen[TL__]           chip      8192     8192  32  20 |                          162   52  32
+  ld_gen[TT__]           chip    114688   131072  32  19 |                          162   52  32
+  ld_gen[LT__]           chip      8192     8192  37  21 |                          177   57  37
+  alu_ri[LLI_]           chip      8192     8192  33  13 |                          133   53  33
+  ret[____]              chip         1        4  14   6 |                           74   34  14
+  mbound                 mem       2051     4096  16   5 |                           76   36  16
+  minit                  fixed     1364     2048  14   2 |                           54   34  14
+  code                   fixed       19       32  47   2 |                           87   67  47
+  io                     fixed        2        4  29   3 |                           79   49  29
+  pair8                  fixed    65536    65536  23   1 |                           63   43  23
+  range16                fixed    65536    65536  19   1 |                           59   39  19
+  rangeT                 fixed  2097152  2097152  19   1 |                           59   39  19
+
+  per WASM op (chips + memory boundary; fixed tables excluded): main 22.1 | fractions 12.6 | committed U-logUp 109.2, U-GKR 36.2, ML 22.1 | per gas unit: main 22.12, fractions 12.59
+  fixed tables (code/io/minit/range16/rangeT/pair8): 42.63 M main cells
+  [honest] prover emitted a proof (3910 KB) in 136.4 s
+  [honest] verify: Ok("ACCEPT")
+  B (claim: code byte flipped, honest proof): rejected (parse (openings))
+  B (claim: initial memory word flipped, honest proof): rejected (parse (openings))
+  B (claim: final gas flipped, honest proof): rejected (parse (openings))
+  [time] wall 137.27 s, maxrss 7321888 KB
+=== run1 divchain 16384 --prove
+program: i64.div_u chain (8/iter) | iterations 16384
+  WASM ops 720899 (gas units 720899) | rows 180226 | ops/row 4.00 | static rows 12 | locals, memory, gas == reference: OK | channel discipline: OK
+  reference interpreter 0.002 s, register machine 0.027 s (6.6 M rows/s, 26.4 M ops/s)
+  trace build 0.120 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (public segments included)
+
+  table                  kind   active   padded   w   I | per active row: committed U-logUp(E=10)  GKR  ML
+  brz[_L__]              chip     16385    32768  21   6 |                           81   41  21
+  divu[LLL_]             chip    131072   131072  65  40 |                          295   85  65
+  alu_rr[LLL_]           chip     16384    16384  34  16 |                          144   54  34
+  alu_ri[LLI_]           chip     16384    16384  33  13 |                          133   53  33
+  ret[____]              chip         1        4  14   6 |                           74   34  14
+  mbound                 mem          5        8  16   5 |                           76   36  16
+  minit                  fixed        5        8  14   2 |                           54   34  14
+  code                   fixed       12       16  48   2 |                           88   68  48
+  io                     fixed        2        4  29   3 |                           79   49  29
+  pair8                  fixed    65536    65536  24   1 |                           64   44  24
+  range16                fixed    65536    65536  21   1 |                           61   41  21
+  rangeT                 fixed  2097152  2097152  19   1 |                           59   39  19
+
+  per WASM op (chips + memory boundary; fixed tables excluded): main 13.8 | fractions 8.1 | committed U-logUp 61.8, U-GKR 18.8, ML 13.8 | per gas unit: main 13.82, fractions 8.07
+  fixed tables (code/io/minit/range16/rangeT/pair8): 42.80 M main cells
+  [honest] prover emitted a proof (3757 KB) in 141.0 s
+  [honest] verify: Ok("ACCEPT")
+  B (claim: code byte flipped, honest proof): rejected (parse (openings))
+  B (claim: initial memory word flipped, honest proof): rejected (parse (openings))
+  B (claim: final gas flipped, honest proof): rejected (parse (openings))
+  [time] wall 142.12 s, maxrss 7337044 KB
+=== run1 callchain 8192 --prove
+program: call chain (8 empty calls + 1 call(x)->x+3 per iter) | iterations 8192
+  WASM ops 196611 (gas units 204803) | rows 204802 | ops/row 0.96 | static rows 19 | locals, memory, gas == reference: OK | channel discipline: OK
+  reference interpreter 0.001 s, register machine 0.023 s (8.9 M rows/s, 8.5 M ops/s)
+  trace build 0.109 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (public segments included)
+
+  table                  kind   active   padded   w   I | per active row: committed U-logUp(E=10)  GKR  ML
+  brz[_L__]              chip      8193    16384  21   6 |                           81   41  21
+  call[____]             chip     73728   131072  16   6 |                           76   36  16
+  ret[____]              chip     73729   131072  14   6 |                           74   34  14
+  alu_ri[LLI_]           chip     24576    32768  33  13 |                          133   53  33
+  alu_ri[L_I_]           chip      8192     8192  32  10 |                          112   52  32
+  alu_ri[TLI_]           chip      8192     8192  28  11 |                          118   48  28
+  alu_ri[LTI_]           chip      8192     8192  33  12 |                          123   53  33
+  mbound                 mem          6        8  16   5 |                           76   36  16
+  minit                  fixed        3        4  14   2 |                           54   34  14
+  code                   fixed       19       32  50   2 |                           90   70  50
+  io                     fixed        2        4  29   3 |                           79   49  29
+  range16                fixed    65536    65536  19   1 |                           59   39  19
+  rangeT                 fixed  2097152  2097152  19   1 |                           59   39  19
+
+  per WASM op (chips + memory boundary; fixed tables excluded): main 20.1 | fractions 7.8 | committed U-logUp 91.0, U-GKR 41.0, ML 20.1 | per gas unit: main 19.32, fractions 7.44
+  fixed tables (code/io/minit/range16/rangeT/pair8): 41.09 M main cells
+  [honest] prover emitted a proof (3540 KB) in 133.3 s
+  [honest] verify: Ok("ACCEPT")
+  B (claim: code byte flipped, honest proof): rejected (parse (openings))
+  B (claim: initial memory word flipped, honest proof): rejected (parse (openings))
+  B (claim: final gas flipped, honest proof): rejected (parse (openings))
+  [time] wall 133.99 s, maxrss 7321592 KB
+=== run1 memmix 32768 --prove
+program: unaligned store/load mix | iterations 32768
+  WASM ops 688131 (gas units 688131) | rows 196610 | ops/row 3.50 | static rows 7 | locals, memory, gas == reference: OK | channel discipline: OK
+  reference interpreter 0.001 s, register machine 0.058 s (3.4 M rows/s, 11.9 M ops/s)
+  trace build 0.162 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (public segments included)
+
+  table                  kind   active   padded   w   I | per active row: committed U-logUp(E=10)  GKR  ML
+  brz[_L__]              chip     32769    65536  21   6 |                           81   41  21
+  st_gen[_LL_]           chip     32768    32768  37  24 |                          187   57  37
+  st_gen[_LI_]           chip     32768    32768  38  21 |                          178   58  38
+  ld_gen[LL__]           chip     32768    32768  37  22 |                          177   57  37
+  alu_ri[LLI_]           chip     65536    65536  33  13 |                          133   53  33
+  ret[____]              chip         1        4  14   6 |                           74   34  14
+  mbound                 mem      65541   131072  16   5 |                           76   36  16
+  minit                  fixed    65540   131072  14   2 |                           54   34  14
+  code                   fixed        7        8  49   2 |                           89   69  49
+  io                     fixed        2        4  29   3 |                           79   49  29
+  pair8                  fixed    65536    65536  20   1 |                           60   40  20
+  range16                fixed    65536    65536  20   1 |                           60   40  20
+  rangeT                 fixed  2097152  2097152  19   1 |                           59   39  19
+
+  per WASM op (chips + memory boundary; fixed tables excluded): main 11.0 | fractions 5.2 | committed U-logUp 49.6, U-GKR 18.6, ML 11.0 | per gas unit: main 11.00, fractions 5.19
+  fixed tables (code/io/minit/range16/rangeT/pair8): 44.30 M main cells
+  [honest] prover emitted a proof (3725 KB) in 130.1 s
+  [honest] verify: Ok("ACCEPT")
+  B (claim: code byte flipped, honest proof): rejected (parse (openings))
+  B (claim: initial memory word flipped, honest proof): rejected (parse (openings))
+  B (claim: final gas flipped, honest proof): rejected (parse (openings))
+  [time] wall 131.20 s, maxrss 7383244 KB
+=== run1 bulk 8192 --prove
+program: memory.copy 256 B per iteration | iterations 8192
+  WASM ops 98307 (gas units 2449411) | rows 172034 | ops/row 0.57 | static rows 7 | locals, memory, gas == reference: OK | channel discipline: OK
+  reference interpreter 0.000 s, register machine 0.071 s (2.4 M rows/s, 1.4 M ops/s)
+  trace build 0.123 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (public segments included)
+
+  table                  kind   active   padded   w   I | per active row: committed U-logUp(E=10)  GKR  ML
+  brz[_L__]              chip      8193    16384  21   6 |                           81   41  21
+  alu_ri[T_I_]           chip     16384    16384  27   8 |                           97   47  27
+  bulk_start[_TLT]       chip      8192     8192  24  14 |                          124   44  24
+  bulk16[____]           chip    131072   131072  39  27 |                          209   59  39
+  alu_ri[LLI_]           chip      8192     8192  33  13 |                          133   53  33
+  ret[____]              chip         1        4  14   6 |                           74   34  14
+  mbound                 mem        131      256  16   5 |                           76   36  16
+  minit                  fixed       67      128  14   2 |                           54   34  14
+  code                   fixed        7        8  51   2 |                           91   71  51
+  io                     fixed        2        4  29   3 |                           79   49  29
+  range16                fixed    65536    65536  18   1 |                           58   38  18
+  rangeT                 fixed  2097152  2097152  22   1 |                           62   42  22
+
+  per WASM op (chips + memory boundary; fixed tables excluded): main 63.0 | fractions 40.1 | committed U-logUp 323.1, U-GKR 98.0, ML 63.0 | per gas unit: main 2.53, fractions 1.61
+  fixed tables (code/io/minit/range16/rangeT/pair8): 47.32 M main cells
+  [honest] prover emitted a proof (3422 KB) in 144.5 s
+  [honest] verify: Ok("ACCEPT")
+  B (claim: code byte flipped, honest proof): rejected (parse (openings))
+  B (claim: initial memory word flipped, honest proof): rejected (parse (openings))
+  B (claim: final gas flipped, honest proof): rejected (parse (openings))
+  [time] wall 145.65 s, maxrss 8432308 KB
+=== run1 measured 32768 --prove --forge
+program: measured-mix loop | iterations 32768
+  WASM ops 458755 (gas units 458755) | rows 131074 | ops/row 3.50 | static rows 5 | locals, memory, gas == reference: OK | channel discipline: OK
+  reference interpreter 0.001 s, register machine 0.015 s (8.8 M rows/s, 30.6 M ops/s)
+  trace build 0.097 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (public segments included)
+
+  table                  kind   active   padded   w   I | per active row: committed U-logUp(E=10)  GKR  ML
+  brz[_L__]              chip     32769    65536  21   6 |                           81   41  21
+  mul[TLL_]              chip     32768    32768  44  30 |                          224   64  44
+  alu_ri[LTI_]           chip     32768    32768  33  12 |                          123   53  33
+  alu_ri[LLI_]           chip     32768    32768  33  13 |                          133   53  33
+  ret[____]              chip         1        4  14   6 |                           74   34  14
+  mbound                 mem          4        4  16   5 |                           76   36  16
+  minit                  fixed        4        4  14   2 |                           54   34  14
+  code                   fixed        5        8  49   2 |                           89   69  49
+  io                     fixed        2        4  29   3 |                           79   49  29
+  pair8                  fixed    65536    65536  20   1 |                           60   40  20
+  range16                fixed    65536    65536  18   1 |                           58   38  18
+  rangeT                 fixed  2097152  2097152  18   1 |                           58   38  18
+
+  per WASM op (chips + memory boundary; fixed tables excluded): main 9.4 | fractions 4.4 | committed U-logUp 40.1, U-GKR 15.1, ML 9.4 | per gas unit: main 9.36, fractions 4.36
+  fixed tables (code/io/minit/range16/rangeT/pair8): 40.24 M main cells
+  [honest] prover emitted a proof (3212 KB) in 120.6 s
+  [honest] verify: Ok("ACCEPT")
+  B (claim: code byte flipped, honest proof): rejected (parse (openings))
+  B (claim: initial memory word flipped, honest proof): rejected (parse (openings))
+  B (claim: final gas flipped, honest proof): rejected (parse (openings))
+[forge] receive final 81 rewritten to balance the bus products
+[forge] OOD quotient values rewritten for 1 table(s)
+  [F5 claim mismatch (final gas)] prover emitted a proof (3168 KB) in 120.0 s
+  F5 claim mismatch (honest trace, final gas flipped in the claim), forger -> verifier REJECTS (final polynomial mismatch)
+  [F1 constraint violation, naive forger] prover emitted a proof (3217 KB) in 120.2 s
+  F1 constraint violation, naive forger: trace has 1 failing constraint(s), 4 unbalanced message(s) -> verifier REJECTS (ALI identity fails for table 2)
+[forge] OOD quotient values rewritten for 1 table(s)
+  [F2 constraint violation, OOD-consistent forger] prover emitted a proof (3226 KB) in 120.1 s
+  F2 constraint violation, OOD-consistent forger: trace has 1 failing constraint(s), 4 unbalanced message(s) -> verifier REJECTS (bus products differ)
+  [F3 bus violation, naive forger] prover emitted a proof (3217 KB) in 120.3 s
+  F3 bus violation, naive forger: trace has 0 failing constraint(s), 6 unbalanced message(s) -> verifier REJECTS (bus products differ)
+[forge] receive final 81 rewritten to balance the bus products
+[forge] OOD quotient values rewritten for 1 table(s)
+  [F4 bus violation, finals balanced + OOD-consistent forger] prover emitted a proof (3238 KB) in 120.2 s
+  F4 bus violation, finals balanced + OOD-consistent forger: trace has 0 failing constraint(s), 6 unbalanced message(s) -> verifier REJECTS (final polynomial mismatch)
+  [time] wall 723.21 s, maxrss 7796884 KB
+=== sha 256 256 --prove
+SHA-256 compression AIR: 256 compressions, reference == sha2 crate: OK | build 0.01 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages
+  sha_rounds  w  233 (preprocessed  8) | interactions  3 | degree 4 | rows/compression  33 | main cells/compression    7689
+  sha_sched   w   52 (preprocessed  6) | interactions  8 | degree 6 | rows/compression  64 | main cells/compression    3328
+  sha_final   w   50 (preprocessed  0) | interactions  1 | degree 4 | rows/compression   1 | main cells/compression      50
+  sha_input   w    5 (preprocessed  0) | interactions  1 | degree 4 | rows/compression  16 | main cells/compression      80
+  per compression (64 B; rounds + sched + final; input and preprocessed columns excluded): main 10419 cells, 612 fraction slots | committed U-logUp (E=10, degree-3 target) 16589 | work cell-eq 20445 | per byte: main 163, work 319
+  [honest] prove 1.3 s, proof 1277 KB, verify Ok("ACCEPT")
+[forge] OOD quotient values rewritten for 1 table(s)
+  [forged: one state bit flipped (3 failing constraint(s)), OOD-consistent forger] verifier REJECTS (final polynomial mismatch)
+  [time] wall 2.86 s, maxrss 116780 KB
+=== sha 384 256 --prove
+SHA-512 family (SHA-384 IV) compression AIR: 256 compressions, reference == sha2 crate: OK | build 0.01 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages
+  sha_rounds  w  461 (preprocessed 12) | interactions  3 | degree 4 | rows/compression  41 | main cells/compression   18901
+  sha_sched   w   96 (preprocessed  6) | interactions  8 | degree 6 | rows/compression  80 | main cells/compression    7680
+  sha_final   w   98 (preprocessed  0) | interactions  1 | degree 4 | rows/compression   1 | main cells/compression      98
+  sha_input   w    7 (preprocessed  0) | interactions  1 | degree 4 | rows/compression  16 | main cells/compression     112
+  per compression (128 B; rounds + sched + final; input and preprocessed columns excluded): main 25707 cells, 764 fraction slots | committed U-logUp (E=10, degree-3 target) 33397 | work cell-eq 38210 | per byte: main 201, work 299
+
+thread 'main' (2324846) panicked at src/main.rs:629:87:
+honest proof: "ALI identity fails for table 1: the trace does not satisfy the AIR"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Command exited with non-zero status 101
+  [time] wall 2.50 s, maxrss 182908 KB

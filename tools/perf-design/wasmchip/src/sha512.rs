@@ -126,6 +126,10 @@ pub struct Built {
 }
 
 pub fn build(sp: Spec, nblk: usize, seed: u64) -> Built {
+    let mut sp = sp;
+    if let Ok(r) = std::env::var("SHA_ROUNDS") {
+        sp.rounds = r.parse().unwrap();
+    }
     let nb = sp.bits;
     let nl = nb / 16;
     let rr = sp.rounds / 2 + 1; // round rows per block
@@ -265,6 +269,9 @@ pub fn build(sp: Spec, nblk: usize, seed: u64) -> Built {
     let rs0 = lcols(&mut ts, "rs0_");
     let rw16 = lcols(&mut ts, "rw16_");
     let sc: Vec<[usize; 2]> = (0..nl).map(|i| ts.cs(&format!("sc{i}_"))).collect();
+    // σ0/σ1 of W_t as committed limbs (linear bus messages, table degree 4 instead of 6)
+    let s0c = lcols(&mut ts, "s0c_");
+    let s1c = lcols(&mut ts, "s1c_");
     let n_pre_s = 6;
     for c in wb.iter().chain(sc.iter().flatten()) {
         ts.con(x(*c) * (x(*c) - k(1)));
@@ -279,11 +286,17 @@ pub fn build(sp: Spec, nblk: usize, seed: u64) -> Built {
     let mut m = vec![x(sblk), x(st), k(0)];
     m.extend(wl.clone());
     ts.int(WB, true, vec![x(m0), x(m1)], m);
+    for l in 0..nl {
+        let e0 = limb_of(&|i| xor3(bitx(&wb, rot(i, sp.ss0[0]), false), bitx(&wb, rot(i, sp.ss0[1]), false), bitx(&wb, i + sp.ss0[2], false)), l);
+        let e1 = limb_of(&|i| xor3(bitx(&wb, rot(i, sp.ss1[0]), false), bitx(&wb, rot(i, sp.ss1[1]), false), bitx(&wb, i + sp.ss1[2], false)), l);
+        ts.con(x(s0c[l]) - e0);
+        ts.con(x(s1c[l]) - e1);
+    }
     let mut m = vec![x(sblk), x(st), k(1)];
-    m.extend((0..nl).map(|l| limb_of(&|i| xor3(bitx(&wb, rot(i, sp.ss0[0]), false), bitx(&wb, rot(i, sp.ss0[1]), false), bitx(&wb, i + sp.ss0[2], false)), l)));
+    m.extend(s0c.iter().map(|c| x(*c)));
     ts.int(WB, true, vec![x(us0)], m);
     let mut m = vec![x(sblk), x(st), k(2)];
-    m.extend((0..nl).map(|l| limb_of(&|i| xor3(bitx(&wb, rot(i, sp.ss1[0]), false), bitx(&wb, rot(i, sp.ss1[1]), false), bitx(&wb, i + sp.ss1[2], false)), l)));
+    m.extend(s1c.iter().map(|c| x(*c)));
     ts.int(WB, true, vec![x(us1)], m);
     for (cols, dt, kind) in [(&rs1, 2u64, 2u64), (&rw7, 7, 0), (&rs0, 15, 1), (&rw16, 16, 0)] {
         let mut m = vec![x(sblk), x(st) - k(dt), k(kind)];
@@ -353,7 +366,8 @@ pub fn build(sp: Spec, nblk: usize, seed: u64) -> Built {
     for b in 0..nblk {
         let msg: [u64; 16] = std::array::from_fn(|_| next());
         let (a, e, w, out) = sp.reference(&msg);
-        if nb == 64 {
+        if sp.rounds != 64 && sp.rounds != 80 {
+        } else if nb == 64 {
             let mut hst: [u64; 8] = sp.iv;
             let mut block = [0u8; 128];
             for (i, wd) in msg.iter().enumerate() {
@@ -424,6 +438,8 @@ pub fn build(sp: Spec, nblk: usize, seed: u64) -> Built {
             row[m0] = F::from_u64(mult & 1);
             row[m1] = F::from_u64(mult >> 1);
             setb(row, &wb, w[t]);
+            setl(row, &s0c, sp.s0(w[t]));
+            setl(row, &s1c, sp.s1(w[t]));
             if t >= 16 {
                 let terms = [sp.s1(w[t - 2]), w[t - 7], sp.s0(w[t - 15]), w[t - 16]];
                 setl(row, &rs1, terms[0]);

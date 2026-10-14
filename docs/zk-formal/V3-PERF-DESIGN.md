@@ -40,124 +40,66 @@ Artifacts:
 
 ---
 
-## 0. Answers in one page
+## 0. Answers in one page (updated after the decisions, spikes 3–4 and the clean CPU runs)
 
-**Verdict.** The study's "thousands of H200s" for a worst-case 1 Pgas chunk was driven by three pessimistic
-factors:
-* 494–995 committed cells per WASM op;
-* 2.0–3.8× recursion overhead from an arity-4 tree of segment proofs, each verified in-circuit with SHA-384;
-* 0.5–2 G cells/s/GPU.
+**Verdict for the decided target.** The target is a worst-case 1 Pgas chunk, ≤ 2 s after execution ends, on 4 × 8
+H200. Assuming the GPU kernels sustain ≈ 35 % of peak INT32 (**A**, `model.py`):
 
-A design that removes those factors gives (**D/A**, `model.py`):
-
-| 1 Pgas chunk (PQ, SHA-384, E = 10, proven-bound query counts) | 16 H200 | 32 H200 |
+| 1 Pgas chunk (PQ, SHA-384, E = 10, proven-bound query counts, no code cap) | 32 H200: after execution / from start | 16 H200 (informational) |
 |---|---|---|
-| typical (measured synthetic mix: 3.4 % WASM gas) | ≈ 2.0 s from execution start, ≈ 0.8 s after it ends | ≈ 1.9 s / 0.7 s |
-| mainnet-like (**A**: 30 % WASM gas, memory-heavy mix) | ≈ 2.3 s / 1.1 s | ≈ 2.0 s / 0.8 s |
-| **adversarial** (every gas unit spent on the costliest-to-prove op) | ≈ 4.4 s / 3.2 s | **≈ 3.1 s / 1.9 s** |
-| final proof | ≈ 0.74 MB (FRI, Johnson regime at 2⁶, SHA-384) | same |
+| typical (measured synthetic mix: 3.4 % WASM gas) | 0.59 s / 1.79 s | 0.77 s |
+| mainnet-like (**A**: 30 % WASM gas, memory-heavy mix) | 0.76 s / 1.96 s | 1.10 s |
+| **adversarial WASM** (unaligned `i32.load` chain, worst *measured* operator, 281 work cell-eq per gas unit) | **1.75 s** / 2.95 s | 3.2 s |
+| adversarial **contract loading** (≈ 0.88 GB of distinct code; SHA-256 **M** + PREP D; early PREP sub-proof) | 1.28 s / 2.48 s | 3.4 s |
+| final proof | ≈ 0.84 MB (FRI, Johnson; final layer at rate 1/32) or 0.74 MB at 1/64 (+0.14 s) | |
 
-These hold at a sustained **35 % of peak H200 INT32 throughput (A)**. Measured from the end of execution, the
-adversarial chunk needs:
-* ≥ 33 % of peak on 32 H200 (≈ 7.8 G work-equivalent cells/s/GPU) to land ≤ 2 s after execution;
-* ≥ 75 % (17.7 G/s/GPU) to land ≤ 1 s after execution;
-* on 16 H200, 59 % (≤ 2 s) and 133 % (≤ 1 s, i.e. impossible).
+The 32-GPU worst case meets ≤ 2 s after execution only if the GPUs sustain **≥ 30 % of peak INT32**
+(≈ 7.1 G work-equivalent cells/s per GPU ≈ 25 M worst-case WASM operators/s per GPU). That is **plausible, not yet
+measured** (spike H1). ≤ 1 s after execution would need ≈ 68 % of peak, which is not plausible on 32 GPUs.
 
-**Plain answer.**
-* Worst-case 1 Pgas in ≈ 2 s *after execution* (≈ 3 s from the start) on 32 H200 is **plausible but not
-  certain**. It needs GPU kernels at roughly a third of peak.
-* ≈ 1 s after execution needs ≈ 64 H200, or ≈ 75 % efficiency on 32. That is not plausible.
-* ≈ 2 s *including* the ≈ 1.2 s native execution is not achievable on any GPU count. The execution floor plus the
-  post-execution phases need ≈ 0.6 s even with infinite GPUs.
-* Typical chunks are execution-bound: ≈ 0.7–1.1 s after execution ends.
+**Three things dominate (sensitivity, `model.py`):**
+1. GPU efficiency: 20–60 % of peak moves the worst case 3.03 → 1.10 s.
+2. Contract-preparation (PREP) cost per code byte, which became a worst-case path under the no-code-cap decision.
+   × 1–3 the estimate gives 1.75 → 2.89 s. PREP must stay ≤ ≈ 420 work cell-eq per code byte. It is **not yet
+   prototyped** (spike P1).
+3. Extension degree E: 8 → 12 gives 1.36 → 2.19 s.
 
-The biggest uncertainty is GPU efficiency (sensitivity swing 2.0 s). Then come the extension degree E (0.9 s) and
-the in-circuit SHA-384 cost (0.6 s). The chip widths themselves matter less.
+**What changed since the first draft** (all in this lane):
+* **Spike 4 measured the remaining hot chips.** These are v1 layouts on the existing prover, end to end, with honest
+  proofs verified and code, initial memory and io bound to public inputs. Unaligned load/store, call/return, i64
+  div, bulk copy, stack-temporary channels and single-lookup timestamps are all measured.
+  * Measured mix: **9.4 main cells and 4.4 fractions per WASM op** (40 committed cells at E = 10).
+  * Worst operator: 32/19 per op (281 work cell-eq per gas unit). §2.4 and §9.2b have the details.
+* **Forged proofs are rejected by the deployed verifier.** A forging prover was built: an env-gated copy of the
+  prover with the verifier byte-identical. Constraint, bus and public-claim forgeries, including OOD-consistent
+  forgers and bus-balancing ones, were all rejected (§9.2b).
+* **The in-circuit SHA-384 compression measures ≈ 38.9 k work cell-eq.** The draft assumed 20 k. The SHA-256 code
+  hash measures 323 per byte.
+  * The extra recursion cost was absorbed by raising L3's rate to 1/16, distributing L2/L3 over all GPUs, and
+    running the final layer at rate 1/32 (§5.3).
+* **No code cap (decision D).** Distinct-contract loading is the costliest operation per gas: 1.45× the worst
+  operator. Every executed contract is known at chunk start, so PREP and the code hash become **early sub-proofs**
+  overlapping execution (P-PERF-8, §3.4).
+* **Register copies were re-costed.** `read_register` into memory pays `write_memory_byte` as well. Register bytes
+  used as host inputs are consumed by reference, and the remaining no-fee path (`value_return`) is bounded by the
+  witness (§3.2).
+* **Clean CPU calibration** on 7 dedicated Zen 5 cores:
+  * rate-1/2 LDE + SHA-384 Merkle: **22.9 ns per trace cell on one thread, 4.4 ns on 14 threads (227 M cells/s)**;
+  * SHA-512 compression: 9.9 M/s per core;
+  * whole prover at today's parameters: 18.7 M W_eq/s.
 
-**Architecture** (§1–§6):
-1. **Execution.** A native run records checkpoints: per-segment register/stack/memory-page snapshots, host results
-   and storage reads. Parallel re-execution of segments then emits chip rows. Main-trace commitment streams
-   while execution continues.
-2. **Register-form WASM machine.** A static per-contract translation (PREP) turns the stack code into 3-address
-   rows:
-   * `local.get`, `*.const` and `br` disappear;
-   * `local.set/tee` retarget the producing row;
-   * `i64.eqz; br_if` fuse into one row.
+**Architecture (unchanged in shape; §1–§6).**
+* Native execution with checkpoints, then parallel tracing; phase A streams during execution.
+* Register-form WASM chips on shared buses (STATE, FETCH, MEM with timestamps and channels, RANGE/RANGE-T/PAIR).
+* BabyBear with a degree-10 extension, committed logUp, rate 1/2 at the base with constraint degree ≤ 3.
+* One shared-transcript proof across all GPUs, then L1/L2/L3 distributed and the final layer on one node.
 
-   The measured mix needs **0.29 rows per WASM op** (spike #1: 3.5 ops/row).
-3. **Opcode-class chips** on shared buses, all costed in §2.4:
-   * execution state `(pc, ts, fp, u)`;
-   * instruction fetch from a per-contract code table;
-   * offline memory checking with timestamps (single-lookup range check per access);
-   * stack temporaries as write-once channels;
-   * gas folded into fetched fees with one lazy check per call.
-
-   Results: main cells ≈ 10 per op (measured mix), 20–40 (mainnet-like), ≤ 75 per row.
-4. **Proof system.**
-   * BabyBear with a **degree-10 extension** (PQ);
-   * univariate STARK at **rate 1/2** with constraint degree ≤ 3, so the quotient domain equals the commitment
-     domain;
-   * **logUp** buses with 2 fractions per aux column, replacing per-interaction grand products;
-   * one quotient per height;
-   * SHA-384 Merkle trees whose leaves are row digests;
-   * FRI.
-
-   A multilinear backend (zerocheck + LogUp-GKR + WHIR/Basefold) cuts committed cells 4× but, at E = 10, **not
-   prover work**. GKR fractions cost ≈ 3× committed-logUp fractions. It is not worth its Lean cost for the
-   prover. Its value is proof size; §4.6 has the evaluation.
-5. **Distribution instead of a recursion tree.**
-   * The whole chunk is **one STARK** proved by all GPUs under a shared transcript: per-GPU tables, global buses,
-     global Merkle trees over row digests.
-   * There is no aggregation tree. A compression chain follows: L1 distributed, then L2/L3 and final on one node.
-   * Recursion is ≈ 5–10 % of the work in the worst case (≈ 30–40 % for small typical chunks), against 100–280 %
-     in the study.
-6. **Work, not cells, is the metric.**
-   * At E = 10 one bus fraction costs ≈ 7.9 k INT32 ops (committed logUp), ≈ 11 committed cells' worth.
-   * Bus fractions are **55–75 % of all prover work**.
-   * Hence the design minimises fractions per op (6–32 per row).
-   * The real per-op figures are 73 (measured), 153 (mainnet-like) and 308 (adversarial) work-equivalent cells.
-   * Committed cells per op are 43 / 91 / 168 (U-logUp) and 10 / 21 / 38 (multilinear).
-
-**Host functions (§3).**
-* NEAR's gas schedule tracks proving cost to within ≈ 3× for every host family examined. Storage, trie nodes,
-  hashes and signatures are cheaper per gas than the worst WASM op.
-* `read_register` copies (98,562 gas/B) and distinct-contract loading (1,089,295 gas/B) are on par with the worst
-  WASM op, *given* a 16-byte bulk-copy chip and a bounded PREP.
-* **P-RT-1** (a proving-weighted gas cap) **is no longer required** for a ≈ 3 s worst case on 32 H200. It is
-  needed only to promise ≤ 1–2 s *after execution* on 16 H200. §3.3 gives a narrower PROPOSAL.
-
-**Formal impact (§8).**
-* What stays: field (L1), FS (L2), AIR DSL (L4), SHA-2 tables (L5), trie/receipt tables, the WASM semantics.
-* What changes: L3 for logUp, the degree-10 extension, rate-1/2 quotient domains, row-digest leaves and
-  multi-instance FRI.
-* What is new: the register-form PREP simulation proof and per-chip views.
-* Estimate ≈ 120–230 k Lean lines on top of D0a/D1. The judge budget needs P-RT-3 (parallel elaboration).
-
-**Spike #1 (§9.2, measured on CPU).**
-* Six chips (ALU reg-imm / reg-reg, MUL, BRZ, aligned LD/ST) plus memory boundary, code, range and byte-pair
-  tables, run on the **existing** np-udr-stark-v2 prover.
-* The register machine matches the reference interpreter on every program, and block-level gas units equal the
-  executed op count.
-* Per WASM op: measured-mix loop **10.6 main cells, 5.1 fractions** (3.50 ops/row); `i32.load` chain 21.3 / 11.9;
-  store/load loop 9.3 / 4.3.
-* The model reproduces these from the per-chip layouts to within the memory-boundary rows.
-* Honest proofs verify: 83–104 M committed W_eq per proof, 16.5–17.8 s at today's parameters, ≈ 5–6 M W_eq/s on 2
-  contended threads.
-* Constraint and bus tampers are caught by the AIR checks, and 16 of 16 proof bit-flips are rejected by the
-  verifier.
-* CPU rate-1/2 LDE + SHA-384 Merkle: **27.5 ns per trace cell on one thread, 62 % of it hashing**.
-* Extension cost E = 8 / 10 / 12: ×1 / ×1.4 / ×3.3 per multiplication.
-
-**Decisions needed (§10).**
-* P-PERF-1: register-form PREP.
-* P-PERF-2: logUp instead of grand products.
-* P-PERF-3: rate-1/2 inner layers with constraint degree 3.
-* P-PERF-4: shared-transcript distributed proof (row-digest leaves, multi-instance FRI).
-* P-PERF-5: stack-temp channel memory argument.
-* P-PERF-6: the latency contract (after execution vs from start).
-* P-PERF-7: hardware sizing (32 H200).
-* P-RT-1': distinct-code cap.
-* Core count for clean CPU measurements.
+**Decisions needed (§10):**
+* P-PERF-8 (early PREP sub-proofs);
+* the Johnson regime for L1–L3 (it is now on the latency path);
+* the final-layer rate (size vs latency);
+* the minimum E from research M3;
+* an H200 for spike H1.
 
 ---
 
@@ -337,50 +279,61 @@ Lean proves `run_register (translate c) ≈ run_wasm c` as a simulation lemma pe
 * Each row pays 1 fraction. The table pays one multiplicity column.
 * With P-PERF-1, PREP proves the table once per contract version, at deploy time (§3.3).
 
-### 2.4 Per-class costs (v1 design; `model.py CHIPS_V1`; spike-built layouts in §9.2)
+### 2.4 Per-class costs (v1 layouts; **M** = measured in spike 4, `wasmchip run1`)
 
-Committed cells use E = 10. "work cell-eq" includes the fraction work.
+m = main cells per row, f = bus-fraction slots per row. Committed and work figures are at E = 10 with committed
+logUp (`model.py row_cost`). Operand forms: d/a/b ∈ L(ocal) / T(emp channel) / I(mm).
 
-| class | WASM ops covered | m | f | committed U-logUp | U-GKR | ML | work cell-eq (U-logUp) |
-|---|---|---:|---:|---:|---:|---:|---:|
-| `alu_ri` (i64 add/sub, reg + imm) | add/sub + folded get/const/set | 32 | 13 | 132 | 52 | 32 | 213 |
-| `alu_rr` | | 36 | 16 | 146 | 56 | 36 | 246 |
-| `mul` (byte limbs) | i32/i64.mul | 49 | 32 | 239 | 69 | 49 | 439 |
-| `divrem` | div/rem s/u | 75 | 45 | 335 | 95 | 75 | 617 |
-| `bitwise` (byte-op table) | and/or/xor | 36 | 16 | 146 | 56 | 36 | 246 |
-| `shift`/`rot` | | 40 | 18 | 160 | 60 | 40 | 273 |
-| `clz`/`ctz`/`popcnt` | | 30 | 12 | 120 | 50 | 30 | 195 |
-| `cmp` | lt/gt/le/ge/eq/ne | 28 | 12 | 118 | 48 | 28 | 193 |
-| `brz` | eqz + br_if, br_if, if | 19 | 6 | 79 | 39 | 19 | 117 |
-| `brcmp` | cmp + br_if fused | 30 | 12 | 120 | 50 | 30 | 195 |
-| `conv` | wrap/extend | 18 | 8 | 88 | 38 | 18 | 138 |
-| `global` | global.get/set | 16 | 7 | 86 | 36 | 16 | 130 |
-| `select` | | 26 | 10 | 106 | 46 | 26 | 169 |
-| `mov` | unfusable set/tee | 20 | 7 | 90 | 40 | 20 | 134 |
-| `ld_al` (aligned i32) | | 20 | 12 | 110 | 40 | 20 | 185 |
-| `ld_gen` (unaligned / sub-word / i64; two words + byte select) | | 37 | 19 | 167 | 57 | 37 | 286 |
-| `st_gen` | | 40 | 22 | 180 | 60 | 40 | 318 |
-| `callret` (call row + return row) | call / call_indirect + return | 35 | 20 | 165 | 55 | 35 | 290 |
-| `memcpy16` (16 B per row) | memory.copy/fill, register↔memory | 60 | 24 | 210 | 80 | 60 | 360 |
-| `prep_b` (contract preparation per code byte, excluding SHA) | | 30 | 2 | 70 | 50 | 30 | 83 |
+| chip (form) | m | f | committed U-logUp | U-GKR | ML | work cell-eq (U-logUp) | label |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `alu_ri[LLI]` (i64 add/sub, local ← local op imm) | 33 | 13 | 133 | 53 | 33 | 214 | M |
+| `alu_ri[LTI]` / `[TLI]` / `[L_I]` (li) | 33 | 12 | 123 | 53 | 33 | 198 | M: 33/12, 28/11, 32/10 |
+| `alu_rr[LLL]` | 34 | 16 | 144 | 54 | 34 | 244 | M |
+| `mul[TLL]` (byte limbs) | 44 | 30 | 224 | 64 | 44 | 412 | M |
+| `divu[LLL]` (q·b + r = a, r < b) | 65 | 40 | 295 | 85 | 65 | 545 | M |
+| `divu[TTL]` (adversarial chain form) | 60 | 37 | 280 | 80 | 60 | 512 | D from M |
+| `brz[_L]` (eqz + br_if fused, local operand) | 21 | 6 | 81 | 41 | 21 | 119 | M |
+| `ld_gen[TT]` (unaligned i32.load: two words + byte select) | 32 | 19 | 162 | 52 | 32 | 281 | M (`[TL]` 32/20, `[LT]` 37/21, `[LL]` 37/22) |
+| `st_gen[_LL]` (unaligned i32.store: two RW words) | 37 | 24 | 187 | 57 | 37 | 337 | M (`[_LI]` 38/21) |
+| `call` + `ret` (frame record in memory space 3) | 30 | 12 | 120 | 50 | 30 | 195 | M: 16/6 + 14/6 |
+| `bulk16` (memory.copy / register↔memory, 16 B per row) | 39 | 27 | 209 | 59 | 39 | 378 | M (`bulk_start[_TLT]` 24/14 per copy) |
+| `mbound` (per touched address; sorted, with `has_init`) | 16 | 5 | 76 | 36 | 16 | 107 | M |
+| `bitwise` / `shift` / `clz` / `cmp` / `conv` / `global` / `select` | | | | | | | D (unchanged from the first draft: 36/16, 40/18, 30/12, 28/12, 18/8, 16/7, 26/10) |
 
-All rows are **D** (layout counts). The spike builds the v0 versions of `alu_ri`, `alu_rr`, `mul`, `brz` and
-`ld_al`, without channels and with 2-limb timestamp checks, and measures their exact widths and interactions
-(§9.2).
+Compared with the first draft's D estimates:
+* `alu_ri` came in at 33/13 against 32/13;
+* `mul` at 44/30 against 49/32;
+* `ld_gen` at 32/19 against 37/19;
+* `callret` at 30/12 against 35/20;
+* `bulk16` at 39/27 against 60/24;
+* `divu` at 60–65/37–40 against 75/45.
+
+The v1 savings over spike #1's v0 layouts are measured on the same measured-mix program: 10.6 → 9.4 main cells and
+5.1 → 4.4 fractions per WASM op. They come from channels, single-lookup timestamps, `brz` reading locals directly,
+and register-form `li`.
 
 ### 2.5 Mix-weighted averages (per WASM op; `model.py`)
 
-| mix | rows/op | main m | fractions f | committed: U-logUp / U-GKR / ML | work cell-eq (U-logUp / GKR / ML) |
-|---|---:|---:|---:|---:|---:|
-| measured synthetic (§1 of the study) | 0.30 | 10.8 | 5.2 | 43 / 16 / 10 | **73** / 103 / 98 |
-| mainnet-like (**A**) | 0.63 | 21 | 10.4 | 91 / 33 / 21 | **153** / 217 / 207 |
-| adversarial (max over candidates; §3.2) | 0.5–1.0 | 37.5 | 22.5 | 168 / 48 / 38 | **308** / 463 / 455 |
+| mix | rows/op | main m | fractions f | committed: U-logUp / U-GKR / ML | work cell-eq (U-logUp / GKR / ML) | measured end to end |
+|---|---:|---:|---:|---:|---:|---|
+| measured synthetic | 0.31 | 9.7 | 4.6 | 42 / 16 / 10 | **71** / 101 / 96 | loop with the corpus mix: **9.4 main, 4.4 fractions, 40 committed** per op (M) |
+| mainnet-like (**A**) | 0.63 | 20.0 | 10.0 | 90 / 33 / 20 | **153** / 217 / 207 | unaligned store/load mix: 11.0 main, 5.2 fractions, 50 committed per op (M) |
+| adversarial WASM (unaligned load chain, 1 op/row) | 1.00 | 32 | 19 | 162 / 52 / 32 | **281** / 403 / 387 | 16-load chain program: 22.1 main, 12.6 fractions, 109 committed per op (M; loop overhead and boundary included) |
 
-* Adversarial candidates per gas unit (work cell-eq, U-logUp): `local.get; i64.div_u` 308; `call` of an empty
-  function 290; unaligned `i32.load` chain 286; `read_register` copies 188; distinct-contract loading 220;
-  `i64.mul` 220; `popcnt` chain 195.
-* They sit within ±15 % of each other. Gas prices WASM ops roughly in proportion to this design's costs, so no
-  single op is a cliff.
+Adversarial candidates per gas unit (work cell-eq, U-logUp; `model.py`):
+
+| candidate | cell-eq per gas unit |
+|---|---:|
+| unaligned `i32.load` chain | 281 |
+| `local.get b; i64.div_u` chain | 256 |
+| `i64.mul` chain | 203 |
+| call of an empty function | 195 |
+| `popcnt` (D) | 195 |
+| memory.copy | 24 |
+| `read_register` → memory | 7 |
+| **distinct-contract loading** (SHA-256 **M** + PREP D) | **406**, proved during execution (§3.4) |
+
+Gas prices WASM operators within ±20 % of this design's costs, so no single operator is a cliff.
 
 ### 2.6 Comparison with published zkVM per-cycle costs
 
@@ -413,47 +366,99 @@ it is **A** until an H200 measures it (§9.3).
 | promise/receipt creation (`promise_*`, actions) | action-dispatch bus → `rcptV3D3` | D2/D3 action bus (study §5) |
 | context getters (`block_timestamp`, `account_balance`, …) | public-input lookups | — |
 
-### 3.2 Gas vs proving cost (D; costs from `spec/lean/v3/NearSpecV3/Wasm/Machine.lean`)
+### 3.2 Gas vs proving cost (gas costs from `spec/lean/v3/NearSpecV3/Wasm/Machine.lean`)
 
-Cells are committed cells in the design. Work cell-eq ≈ 1.5–2× that for hash-heavy chips (few fractions). The
-reference row is the worst WASM op: 168 committed / 308 cell-eq per 822,756 gas = **2.0·10⁻⁴ committed /
-3.7·10⁻⁴ cell-eq per gas**.
+Proof cost is in work cell-eq. SHA-256 is **M** at 319 work cell-eq per byte (spike 3); the other rows are **D**.
+The reference row is the worst *measured* WASM operator: the unaligned `i32.load` chain at 281 work cell-eq per
+822,756 gas = **3.4·10⁻⁴ cell-eq per gas**.
 
-| op | gas | proof cost (D) | committed cells/gas | vs worst WASM |
+| op | gas | proof cost | cell-eq/gas (approx.) | vs worst WASM |
 |---|---|---|---:|---|
-| storage_write base (trie update, ≈ 8 node hashes) | 64.2 G | ≈ 100 SHA-256 blocks × 12 k = 1.2 M | 1.9e-5 | 10× cheaper |
-| touching a trie node | 2.28 G | ≈ 8 blocks × 12 k = 96 k | 4.2e-5 | 5× |
-| storage_read value byte | 5.61 M | ≈ 190 cells/B (SHA of the value) | 3.4e-5 | 6× (bounded by the witness size) |
-| sha256 byte | 24.1 M | 190 | 7.9e-6 | 25× |
+| storage_write base (trie update, ≈ 8 node hashes) | 64.2 G | ≈ 100 SHA-256 blocks × 20 k = 2.0 M | 3.2e-5 | 10× cheaper |
+| touching a trie node | 2.28 G | ≈ 8 blocks × 20 k = 160 k | 7.0e-5 | 5× |
+| storage_read value byte | 5.61 M | ≈ 319/B (SHA of the value) | 5.7e-5 | 6× (bounded by the witness size) |
+| sha256 byte | 24.1 M | 319 (**M**) | 1.3e-5 | 25× |
 | keccak256 byte | 21.5 M | ≈ 735 (bit-level Keccak-f, 136 B per block; **A**) | 3.4e-5 | 6× |
 | ed25519_verify | 210 G | ≈ 3.6 M (study §2.4) | 1.7e-5 | 12× |
-| read_memory / write_memory byte | 3.8 / 2.7 M | ≈ 13 cells/B (`memcpy16`) | 3.5e-6 | 60× |
-| **read_register byte** | **98,562** | ≈ 13 committed / 22 cell-eq per byte | 1.3e-4 | **≈ on par** |
-| **contract loading byte** (`contract_loading_bytes`) | **1,089,295** | PREP ≥ 1 row/B (30 cells) + SHA-256 of the code (190/B) | 2.0e-4 | **on par** |
-| memory.copy/fill byte (linear unit = regular) | 822,756 | 3.75 cells/B | 4.6e-6 | 40× |
+| read_memory / write_memory byte | 3.8 / 2.7 M | `bulk16` ≈ 23 per byte | 7e-6 | 50× |
+| read_register into memory, per byte | 98,562 + 2,723,772 (`write_memory_byte`) = 2.82 M | `bulk16` (**M**) ≈ 23 per byte | 8e-6 | ≈ 45× cheaper (**corrected**: an earlier draft counted only `read_register_byte` and called it on par) |
+| **contract loading byte** (`contract_loading_bytes`) | **1,089,295** | SHA-256 (319, **M**) + PREP (≈ 218, D) = 537 | 4.9e-4 | **1.45× the worst op**, proved during execution (§3.4) |
+| memory.copy/fill byte (linear unit = regular) | 822,756 | `bulk16` (**M**) ≈ 23 per gas unit | 2.8e-5 | 12× |
 | `memory.grow` per page | 822,756 | 0 until touched (lazy zero-init) | — | — |
 
-**Cheap-gas / expensive-proof operations.** None found beyond the worst WASM op, *provided* three things hold:
-1. **`read_register` copies use a wide bulk chip.** With byte-granular rows they would be ≈ 16× worse than the
-   worst op. 1 Pgas of `read_register` into memory copies ≈ 10 GB.
-2. **Contract preparation is bounded.** 1 Pgas of loads of distinct 4 MiB contracts is ≈ 0.92 GB of code
-   (≈ 2·10¹¹ PREP cells): on par per gas but large in absolute terms. Cross-chunk deploy-time PREP removes it from
-   the per-chunk proof (§3.3).
-3. **Storage-read value bytes are bounded by the state-witness limit**, as D0a's A7 already is.
+**Registers used as host-function inputs** (`memOrReg`: `ptr = register id`, `len = u64::MAX`). These pay only
+`read_register_byte` = 98,562 gas/B plus the host function's own fee.
+* Rule: host chips consume register bytes **by reference**, i.e. register space is a memory space read through the
+  memory argument, and there is no copy.
+* Per-byte proving work then happens only where the host function's own per-byte fee pays for it (hashing, storage,
+  logs, action arguments).
+* The one exception is `value_return` with no receivers, which has no per-byte fee. Its value is hashed once per
+  call into the execution outcome. The bytes it can return come from:
+  * `input` (paid by `function_call` action bytes, 2.2 Mgas/B);
+  * `promise_result` (paid by `new_data_receipt_byte` when the data receipt was created);
+  * storage reads (bounded by the witness);
+  * sha256 outputs or other 32-byte results.
+* All of these are in the incoming witness or the chunk's own receipts, so their total is bounded by the witness
+  size, not by gas.
+* `input` and `promise_result` write registers without a per-byte charge (`chargeBytes := false`). That is the same
+  argument: the bytes are already in the witness.
+
+**Cheap-gas / expensive-proof operations.** None found above the worst WASM operator, given four conditions:
+1. Register copies go through the `bulk16` chip.
+2. Registers are consumed by reference.
+3. Storage-read value bytes stay bounded by the state-witness limit (as D0a's A7).
+4. Contract preparation stays within the budget of §3.4.
 
 ### 3.3 Is a proving-weighted gas bound (P-RT-1) still needed?
 
-* **For a ≈ 3 s (from start) / ≈ 2 s (after execution) worst case on 32 H200: no.**
-  * The worst case per gas is uniform within ≈ ±15 % across WASM ops, register copies and code loading.
-  * So the latency bound follows from total gas, not from a weighted budget.
-* **For ≤ 1 s after execution, or for 16 H200: yes.** Either a weighted budget (P-RT-1 as in the study) or a
-  smaller worst-case gas class.
-* **Narrow replacement, P-RT-1' (PROPOSAL, domain).**
-  * Cap distinct contract-code bytes prepared per chunk (e.g. ≤ 16 MiB), or prove PREP at deploy time and bind
-    each contract's code table as a *preprocessed commitment* in a cross-chunk registry (a relation change:
-    the claim references the registry root).
-  * Keep the witness-size bound (A7) for storage reads.
-  * Everything else needs no cap.
+**No, for the decided target** (≤ 2 s after execution on 32 H200; decisions P-PERF-6/7):
+* the worst WASM operators measure 195–281 work cell-eq per gas unit;
+* contract loading is 406, but it is proved during execution (§3.4).
+
+So the bound follows from total gas. A weighted budget is needed only for 16 GPUs or for ≤ 1 s after execution.
+P-RT-1' (a code-byte cap) was **declined** (decision D).
+
+### 3.4 Many distinct contracts at 1 Pgas (no code cap)
+
+**Volume.**
+* Loading charges 1,089,295 gas per code byte.
+* Each call also costs at least the function-call receipt fees (≈ 0.22 Tgas: `new_action_receipt` 108 Ggas send +
+  exec, plus `function_call` base).
+* With 4 MiB contracts (the protocol maximum) a 1 Pgas chunk loads ≈ **0.88 GB of code from ≈ 210 distinct
+  contracts** (D).
+* Repeated calls of the same code pay loading every time but are prepared once (deduplicated by code hash).
+* Code does not travel in nearcore's state witness, so the prover's witness carries it.
+
+**What the proof must do per code byte (no registry, decision D):**
+
+| part | cost per byte | label |
+|---|---:|---|
+| SHA-256 code hash (binds the code to the account's `code_hash`) | 163 main cells, ≈ 319 work cell-eq | **M** (spike 3, SHA-256 layout) |
+| decoder: byte stream → instruction records (LEB128, opcode classes); one row per byte | 16 main / 3 fractions | D |
+| validator + finite-wasm gas/stack analysis + register-form translator; ≈ 0.5 instructions per byte | 50 / 14 per instruction | D |
+| code-table rows emitted (≈ 0.2 per byte) | 20 / 2 | D |
+| **total** | **≈ 537 work cell-eq per byte ≈ 406 per gas unit** | M + D |
+
+The total is ≈ 1.45× the worst WASM operator per gas.
+
+**Design: an early PREP sub-proof (PROPOSAL P-PERF-8).**
+* Every contract a chunk executes is known at chunk start: receivers of incoming, delayed and local receipts and of
+  the chunk's transactions, plus code deployed by `DeployContract` actions in those receipts.
+* PREP plus the code hash therefore run as **separate proofs with their own transcripts, started at t = 0**. They
+  overlap the ≈ 1.2 s native execution.
+* Each PREP proof outputs the Merkle root of the code table it built. The main proof commits the same code table as
+  a preprocessed table with that root. L1 verifies both proofs and checks that the roots are equal.
+* Soundness: both statements are about the same committed table. The main proof's bus challenge α is drawn after
+  that root is in its transcript.
+* Split PREP into batches of contracts, each its own sub-proof. That keeps memory per GPU below HBM: one proof over
+  the whole 0.88 GB would need ≈ 142 GB per GPU at 32 GPUs.
+
+Model (32 H200, 35 % efficiency):
+* the code-loading chunk lands **1.26 s after execution**;
+* without early PREP it would be 1.98 s (sensitivity);
+* PREP must stay ≤ ≈ 420 work cell-eq per code byte (≈ 1.9× the D estimate) to keep this case ≤ 2 s.
+
+PREP's in-AIR cost is therefore **the second-largest open risk** (spike P1, §9.1).
 
 ---
 
@@ -496,12 +501,19 @@ Per-query bits:
 * **Base layer: rate 1/2.** Queries only cost recursion work. With a distributed base proof and global trees
   (§5) the L1 verifier is ≈ 5–10 % of the worst-case base work, so prover LDE cost wins: rate 1/4 is +0.4 s in
   the sensitivity table.
-* At rate 1/2, **UDR (proved in Lean today) and Johnson give the same query count**. The Johnson-regime Lean
-  proof is not needed for the base layer, only for the final, size-setting layer.
-* **Compression layers: rate 1/4. Final layer: rate 1/64, Johnson**, 85 queries (z = 32 there) ⇒ **≈ 0.74 MB** (SHA-384,
-  arity-16 FRI, `model.py size_final`, which reuses `pqsize.py`'s formula). That is within U-9's 0.5–1 MB.
-* STIR/WHIR (C: eprint 2024/390, 2024/1586) reduce the final layer to ≈ 0.3–0.5 MB (study §11.4). They matter only
-  for the size-setting layer. They are a size lever, not a throughput lever.
+* At rate 1/2, **UDR (proved in Lean today) and Johnson give the same query count**. The base layer needs no
+  Johnson proof.
+* **L1/L2: rate 1/4** (280 queries, Johnson). **L3: rate 1/16** (133 queries, Johnson); this makes the final
+  verifier cheaper. **Final layer: rate 1/32, Johnson** (102 queries at z = 32) ⇒ **≈ 0.84 MB** (SHA-384,
+  arity-16 FRI, `model.py size_final`, which reuses `pqsize.py`'s formula).
+  * A final layer at rate 1/64 gives 0.74 MB but costs +0.14 s.
+  * Both are within U-9's 0.5–1 MB.
+* **The Johnson regime is therefore needed for L1–L3 and the final layer.**
+  * With UDR only (rate 1/4: 372 queries; 1/16: 277), the tail grows by ≈ 0.3 s and the proof to ≈ 2 MB (study
+    §11.4).
+  * The research-branch M2 proof (study S4) is on the latency path as well as the size path.
+* STIR/WHIR (C: eprint 2024/390, 2024/1586) reduce the final layer to ≈ 0.3–0.5 MB (study §11.4). They are a size
+  lever and also shrink the final verifier.
 
 ### 4.3 Merkle commitments with SHA-384
 
@@ -592,18 +604,21 @@ The chunk's whole trace is **one STARK**. GPU g owns a slice of execution and ho
 
 ### 5.3 Compression chain (PQ, SHA-384 in-circuit; U-7)
 
-| layer | proves | on | rate | queries | in-circuit cost (32 GPU, adversarial) |
-|---|---|---|---|---|---|
-| base | the chunk | N GPUs | 1/2 | 608 | — |
-| L1 | verifier of base (each GPU verifies its own openings and FRI; global paths shared) | N GPUs, distributed the same way | 1/4 | 280 | q₀ × (3 paths × (25 − 9) + leaves Σcols/32 + N digest blocks + FRI) ≈ 0.38 M compressions ≈ 7.9 G cells: 0.09 s |
-| L2 | verifier of L1 | one node (8 GPUs, NVLink, one logical prover) | 1/4 | 280 | ≈ 1.6 G cells: 0.08 s |
-| L3 | verifier of L2 (fixed point ≈ 2²¹ rows × 400) | one node | 1/4 | 280 | ≈ 0.9 G: 0.05 s |
-| final | verifier of L3 at rate 1/64, Johnson | one node | 1/64 | 85 | ≈ 0.9 G at blowup 64: 0.30 s; **proof ≈ 0.74 MB** |
+The worst case below is the measured unaligned `i32.load` chain at 1 Pgas on 32 H200 (`model.py`).
 
-* Model totals: recursion 4.6 of 46.5 GPU-s (10 %) in the worst case; tail 0.52 s (`t_L1 + t_L2 + t_L3 + t_final`).
-* The final layer dominates the tail. A STIR/WHIR final layer, or spreading it over more GPUs, is the lever.
-* Per in-circuit SHA-384 compression: 20 k cells (A: an optimised SHA-512-family AIR with 2 rounds per row and bit
-  columns; the L5-style estimate is 25–40 k). Sensitivity: 15 k → 40 k moves latency 1.80 → 2.39 s.
+| layer | proves | on | rate | queries | time |
+|---|---|---|---|---|---|
+| base | the chunk | 32 GPUs | 1/2 | 608 | phase B 1.20 s after the last root |
+| L1 | verifier of base: each GPU verifies its own openings and FRI; global paths shared | 32 GPUs, distributed the same way | 1/4 | 280 | 0.14 s |
+| L2 | verifier of L1 | 32 GPUs (P-PERF-4; not transmitted) | 1/4 | 280 | 0.08 s |
+| L3 | verifier of L2 (fixed point ≈ 2²¹ rows × 400) | 32 GPUs | **1/16** | 133 | 0.07 s |
+| final | verifier of L3 | **one node** (one FRI instance: the transmitted proof) | **1/32** | 102 | 0.17 s; **proof ≈ 0.84 MB** |
+
+* Totals: recursion is 7.6 of 42.5 GPU-s (18 %); the tail is 0.46 s.
+* Per in-circuit SHA-384 compression: **≈ 38 k work cell-eq (M**, spike 3: 25.7 k main cells, 764 fraction slots;
+  E = 10 logUp projection). The first draft assumed 20 k.
+* Raising L3's rate to 1/16 and distributing L2/L3 recovered the cost: the tail went from 1.04 s to 0.46 s.
+* Sensitivity of the in-circuit SHA-384 cost: 20 k → 50 k moves the worst case 1.57 → 1.86 s.
 
 ### 5.4 Hash-based accumulation (Arc, WARP)
 
@@ -627,11 +642,20 @@ t=0 ─ native execution with checkpoints (≈1.2 s/Pgas) ───────�
       └─ digest all-to-all per class (overlapped)                     │
                                                        last root ─────┴─► α, γ
 phase B (all GPUs): fractions + aux commit → quotient + commit → DEEP → per-GPU FRI → openings
-L1 (all GPUs) → L2 (node) → L3 (node) → final (node) → proof
+L1 (all GPUs) → L2 (all GPUs) → L3 (all GPUs) → final (one node) → proof
+PREP + code-hash sub-proofs: start at t=0 (code known at chunk start), verified in L1
 ```
 
-Worst case, 32 H200, 35 % efficiency (`model.py`): exec 1.20 s, phase A done during exec (0.15 s of work), phase B
-1.31 s, tail 0.52 s ⇒ **3.10 s from start, 1.90 s after execution**.
+Worst case (unaligned load chain), 32 H200, 35 % efficiency (`model.py`):
+* exec 1.20 s;
+* phase A done during execution (0.13 s of work);
+* phase B 1.20 s;
+* tail 0.46 s;
+* ⇒ **2.94 s from start, 1.74 s after execution**.
+
+In the code-loading worst case, the PREP sub-proofs run from t = 0 and finish ≈ 1.9 s after the start. The main
+proof is small, and the tail (L1 now also verifies the PREP proofs) is 0.52 s, giving **1.26 s after
+execution**.
 
 ---
 
@@ -687,48 +711,61 @@ Worst case, 32 H200, 35 % efficiency (`model.py`): exec 1.20 s, phase A done dur
 
 ## 7. End-to-end model (`tools/perf-design/model.py`)
 
-Parameters and labels are printed by the script.
+Parameters and labels are printed by the script. Chip and SHA costs are **M** (spikes 3–4), PREP is D, and GPU
+efficiency (35 % of peak INT32) is **A**. The adversarial row is the maximum-latency candidate.
 
 | scenario (1 Pgas) | backend | GPUs | WASM ops | committed cells/op | cell-eq/op | GPU-s | recursion share | latency from start / after exec | proof | GB/GPU |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| typical-measured | U-logUp | 16 | 4.1e7 | 43 | 73 | 8.6 | 40 % | 1.96 / 0.76 s | 740 KB | 53 |
-| typical-measured | U-logUp | 32 | 4.1e7 | 43 | 73 | 8.6 | 43 % | 1.86 / 0.66 s | 740 KB | 26 |
-| mainnet-like | U-logUp | 16 | 3.6e8 | 91 | 153 | 13.1 | 27 % | 2.29 / 1.09 s | 740 KB | 64 |
-| mainnet-like | U-logUp | 32 | 3.6e8 | 91 | 153 | 13.1 | 29 % | 2.02 / 0.82 s | 740 KB | 32 |
-| **adversarial** | U-logUp | 16 | 1.22e9 | 168 | 308 | 46.5 | 9 % | **4.44 / 3.24 s** | 740 KB | 161 |
-| **adversarial** | U-logUp | 32 | 1.22e9 | 168 | 308 | 46.5 | 10 % | **3.10 / 1.90 s** | 740 KB | 80 |
-| adversarial | U-GKR | 32 | 1.22e9 | 48 | 463 | 69.2 | 5 % | 3.77 / 2.57 s | 740 KB | 94 |
-| adversarial | ML | 32 | 1.22e9 | 38 | 455 | 68.0 | 5 % | 3.73 / 2.53 s | 740 KB | 90 |
+| typical-measured | U-logUp | 16 | 4.1e7 | 42 | 71 | 8.6 | 58 % | 1.97 / 0.77 s | 844 KB | 53 |
+| typical-measured | U-logUp | 32 | 4.1e7 | 42 | 71 | 8.6 | 71 % | 1.79 / 0.59 s | 844 KB | 26 |
+| mainnet-like | U-logUp | 16 | 3.6e8 | 90 | 153 | 13.1 | 40 % | 2.30 / 1.10 s | 844 KB | 64 |
+| mainnet-like | U-logUp | 32 | 3.6e8 | 90 | 153 | 13.1 | 49 % | 1.96 / 0.76 s | 844 KB | 32 |
+| **adversarial (load chain)** | U-logUp | 32 | 1.22e9 | 162 | 281 | 42.5 | 18 % | **2.95 / 1.75 s** | 844 KB | 78 |
+| adversarial (code loading) | U-logUp | 32 | — | 314 | 409 | 61.2 | — | 2.48 / 1.28 s | 844 KB | (PREP split into batches, §3.4) |
+| adversarial (code loading) | U-logUp | 16 | — | 314 | 409 | 61.2 | 14 % | 4.59 / 3.39 s | 844 KB | 295 |
+| adversarial | U-GKR | 32 | 1.22e9 | 52 | 403 | 60.4 | 10 % | 3.45 / 2.25 s | 844 KB | 85 |
+| adversarial | ML | 32 | 1.22e9 | 32 | 387 | 58.0 | 10 % | 3.37 / 2.17 s | 844 KB | 76 |
 
-The typical and mainnet-like chunks spend most work on host functions (storage, promises) and the witness, not on
-WASM (`host_celleq_per_gas` 6·10⁻⁵, **D/A**).
+Per-candidate latency at 32 GPUs (after execution):
+
+| candidate | after execution |
+|---|---:|
+| load chain | 1.75 s |
+| div chain | 1.63 s |
+| mul chain | 1.40 s |
+| empty calls | 1.34 s |
+| code loading | 1.28 s |
+| memory.copy | 0.60 s |
+| `read_register` copies | 0.52 s |
 
 **What 1 Pgas worst case needs** (adversarial, U-logUp; `model.py required`):
 
 | target | 16 H200 | 32 H200 |
 |---|---|---|
-| proof ≤ 2 s after execution (≈ 3.2 s from start) | 59 % of peak INT32 ≈ 14.0 G cell-eq/s/GPU | **33 % ≈ 7.8 G cell-eq/s/GPU** |
-| proof ≤ 1 s after execution (≈ 2.2 s from start) | 133 %: impossible | 75 % ≈ 17.7 G cell-eq/s/GPU: not plausible |
+| proof ≤ 2 s after execution | 56 % of peak INT32 ≈ 13.3 G cell-eq/s/GPU | **30 % ≈ 7.1 G cell-eq/s/GPU ≈ 25 M worst-case ops/s/GPU** |
+| proof ≤ 1 s after execution | 126 %: impossible | 68 % ≈ 16.1 G cell-eq/s/GPU: not plausible |
 
-At 308 cell-eq per op, 7.8 G cell-eq/s/GPU is ≈ 25 M worst-case WASM ops/s per GPU.
-
-**Sensitivity** (adversarial, U-logUp, 32 H200, latency after execution; base 1.90 s):
+**Sensitivity** (adversarial, U-logUp, 32 H200, latency after execution; base 1.75 s):
 
 | parameter | low → latency | high → latency | swing |
 |---|---|---|---:|
-| **GPU efficiency** (0.2 / 0.6) | 3.18 s | 1.19 s | **1.99 s** |
-| **extension degree E** (8 / 12) | 1.50 s | 2.38 s | **0.87 s** |
-| **in-circuit SHA-384 cells** (15 k / 40 k) | 1.80 s | 2.39 s | **0.58 s** |
-| base rate (1/2 / 1/4) | 1.90 s | 2.33 s | 0.42 s |
-| native SHA-512 cost (2,000 / 5,500 ops) | 1.83 s | 2.19 s | 0.36 s |
-| NTT ops per cell (200 / 450) | 1.76 s | 2.10 s | 0.34 s |
-| rbr bits (200 / 290) | 1.81 s | 1.97 s | 0.16 s |
-| grinding, witness size, exec slowdown | | | ≤ 0.04 s |
+| **GPU efficiency** (0.2 / 0.6) | 3.03 s | 1.10 s | **1.92 s** |
+| **PREP cost scale** (1× / 3× the D estimate) | 1.75 s | 2.89 s | **1.14 s** |
+| **extension degree E** (8 / 12) | 1.36 s | 2.19 s | **0.83 s** |
+| base rate (1/2 / 1/4) | 1.75 s | 2.22 s | 0.47 s |
+| native SHA-512 cost on GPU (2,000 / 5,500 ops) | 1.68 s | 2.00 s | 0.32 s |
+| NTT ops per cell (200 / 450) | 1.62 s | 1.93 s | 0.31 s |
+| in-circuit SHA-384 (20 k / 50 k; measured 38.8 k) | 1.57 s | 1.86 s | 0.29 s |
+| L2/L3 distributed (off / on) | 2.03 s | 1.75 s | 0.28 s |
+| early PREP sub-proof (off / on) | 1.99 s | 1.75 s | 0.25 s |
+| rbr bits, table height, witness, grinding, exec slowdown | | | ≤ 0.13 s |
 
-The three dominant parameters are GPU efficiency, E and the in-circuit SHA-384 AIR. Chip widths enter through
-cell-eq per op, which is linear: −20 % cell-eq ≈ −0.26 s.
-
----
+**CPU calibration (clean, M).**
+* 7 Zen 5 cores: 227 M trace cells/s for rate-1/2 LDE + SHA-384 Merkle.
+* The model counts 486 INT32 ops per cell for that phase, so ≈ 1.1·10¹¹ model-ops/s against ≈ 1.2·10¹² peak
+  32-bit AVX-512 lane-ops/s. That is ≈ 9 % "efficiency" on CPU.
+* The 35 % GPU assumption is ≈ 4× the CPU figure, consistent with GPU NTT/hash kernels being far closer to peak than
+  this prover's CPU path. Spike H1 must confirm it.
 
 ## 8. Formal-admission impact
 
@@ -746,7 +783,23 @@ cell-eq per op, which is linear: −20 % cell-eq ≈ −0.26 s.
 | recursion AIR vs `npVerifierP` (SHA-384, Fp10, logUp) | study §2.3 table, re-parameterised | L5 SHA-512 table, L4 `Expr` | 80–165 k (study) |
 | PQ: Johnson for the final layer only; rbr + QROM FS | research branch M2–M4 | — | research |
 
-**Total new (excluding research and recursion): ≈ 120–230 k lines.** Recursion adds 80–165 k, as in the study.
+**Total new (excluding research and recursion): ≈ 120–230 k lines.**
+
+### 8.1 Soundness lemmas the adopted baseline needs (tracking)
+
+| decision | lemma (statement sketch) | depends on | status | spike evidence |
+|---|---|---|---|---|
+| P-PERF-1 register form | `run_reg (translate c) s ≈ Wasm.Exec.run c s` per basic block (operand stack ↔ pending operands, fees = finite-wasm `gasTable`, traps preserved), lifted to whole calls | `NearSpecV3.Wasm.{Exec,FiniteWasm,Validate}` | open | translator differential-tested on 6 programs (locals, memory, gas equal to the reference) |
+| P-PERF-1 PREP | PREP AIR ⇒ code table = `translate(decode(code))` ∧ SHA-256(code) = `code_hash`; P-PERF-8: PREP proof root = main proof's code-table root | L5 (SHA-256), decoder spec | open | SHA-256 layout measured; PREP not built |
+| P-PERF-2 logUp | Σ over all tables of `m/(γ − fp(msg))` = 0 at random γ ⇒ multiset equality, with error ≤ (total fractions + max multiplicity)·deg/\|K\| per challenge; helper-column constraints of degree ≤ 3 | L3/L4 FS skeleton | open (the prover today uses grand products) | spike runs on grand products; logUp is projected in the cost model |
+| P-PERF-3 rate 1/2, degree ≤ 3, one quotient per height | rate-generic UDR bound (L3); "tables of equal height = one wide table" composition lemma | L3 | open | — |
+| P-PERF-4 shared distributed proof | two-level leaf hash (row digest per GPU, then global) is a vector commitment; N FRI instances with shared challenges ⇒ union bound (+log₂N bits); global bus = Σ per-GPU finals | L2/L3 MMCS | open | — |
+| P-PERF-5 stack-temporary channels | if every channel slot's produce/consume events alternate (WASM validation + induction over a correct prefix), then multiset equality with `t_p < t_c` forces each consumer onto its own producer | memory-argument lemma | open | channel discipline asserted in all 6 runs; tamper of a consumed value caught on the bus |
+| memory argument (timestamps `8·ts + k`, single lookup) | read-latest: multiset (recv prev, send new) + boundary table + `t − t_prev − 1 ∈ [0, 2^R)` ⇒ each read sees the last write; slice-local time with cross-slice flag | D1 `MEM` pattern | open | all runs balanced; T2-style tamper caught |
+| public binding | code / initial memory / io records are public-segment messages consumed exactly once (code act flags, `mbound` strict order, `has_init`) | L4 `HoldsP` with `pubSegs` (exists) | spike done | honest proofs verify; claim edits rejected |
+| P-PERF-8 early PREP sub-proof | two proofs bound to one committed table root; the main transcript absorbs the root before α | L2 | open | — |
+
+ Recursion adds 80–165 k, as in the study.
 
 **Judge budget.**
 * D0a is 8,734 s single-core for 3,964 modules (V3-D1-DESIGN §6.3). This adds ≈ 1,500–3,000 modules.
@@ -769,21 +822,25 @@ except the final one.
 
 ## 9. Spikes
 
-### 9.1 Plan (CPU now; H200 later)
+### 9.1 Plan and status (CPU now; H200 later)
+
+Next spikes, in priority order:
 
 | # | spike | measures | replaces assumption | status |
 |---|---|---|---|---|
-| **1** | hottest chips on the existing prover (`tools/perf-design/wasmchip`) | rows/op, m and f per class, honest/tamper self-check, CPU prove time, CPU commit throughput (SHA-384, rate 1/2) | chip widths (§2.4), constraints/cell, int ops per cell | **run, §9.2** |
-| 2 | Fp10 arithmetic + logUp vs GKR fraction cost on CPU | ns per fraction at E = 10, both variants | `frac_ops` (4.4 k / 13 k) | next |
-| 3 | optimised SHA-512-family AIR | cells per compression (target ≤ 20 k) | `sha384_cells` (third-largest sensitivity) | next (shared with D1-S) |
-| 4 | v1 chips: stack-temp channels, single-lookup timestamps, `ld_gen`/`st_gen`, `callret`, `divrem` | m and f of the remaining classes | §2.4 D rows | after 1 |
-| 5 | tracing interpreter speed vs native (wasmtime) on the corpora | ops/s/core for pass 2; checkpoint cost | 20 M ops/s/core | CPU |
-| 6 | mainnet replay (study S1) | real mix, WASM gas share, distinct code bytes per chunk | `MIX_MAINNET`, `wasm_share_mainnet` | needs data access |
-| 7 | judge parallel elaboration (study S7) | critical path at `-j 16` | P-RT-3 | CPU |
-| H1 | H200: NTT, SHA-384 leaf hashing, Fp10, logUp kernels | sustained fraction of peak INT32 | `eff` (largest sensitivity) | needs an H200 |
+| 1 | hottest chips, v0 layouts | rows/op, m and f, prove/verify, CPU commit throughput | first-draft chip widths | **done** (§9.2) |
+| 2 | extension-degree cost | ext multiplications and logUp fraction compute at E = 8/10/12 | `frac_ops` | **done**: clean 78 ns per E = 10 ext mul (generic); a fraction ≈ 8.6 cell-eq on CPU vs 11.3 in the model |
+| 3 | SHA-512-family (SHA-384) and SHA-256 chips | cells and fractions per compression; prove/verify; forged proof | `sha384_cells`, code hash | **done**: 38.9 k / 20.7 k work cell-eq (§9.2b) |
+| 4 | v1 chips: channels, single-lookup timestamps, unaligned ld/st, call/ret, div_u, bulk copy; public binding; forged proofs | m, f per form; claim binding; verifier rejection | §2.4 D rows | **done** (§9.2b) |
+| **P1** | **PREP prototype**: decoder (LEB128, opcode classes) + validator/finite-wasm analysis + register-form translator in AIR, on real contracts | work cell-eq per code byte (budget ≤ ≈ 420) | `PREP_ROWS_PER_BYTE` (D); second-largest sensitivity | **next** |
+| 5 | tracing interpreter vs native (wasmtime) on corpora and mainnet contracts | ops/s/core, checkpoint cost | 20 M ops/s/core (the spike machine does 8–30 M ops/s/thread) | next |
+| 6 | logUp in the prover (committed helper columns) and a degree-3 refactor of the chips | real E = 10 aux cost | logUp projection | after P1 |
+| 7 | mainnet replay (study S1) | real mix, WASM gas share, distinct code bytes per chunk | `MIX_MAINNET`, `wasm_share_mainnet` | needs data access |
+| 8 | judge parallel elaboration (study S7) | critical path at `-j 16` | P-RT-3 | CPU |
+| H1 | H200: fused coset DFT → SHA-384 leaf kernel; Fp10 fraction kernel; end-to-end `eff` on a 2²⁴ × 150 slice | sustained fraction of peak INT32 | `eff` (largest sensitivity; ≥ 30 % needed) | needs an H200 |
 | H2 | 2 nodes: digest all-to-all, phase B end to end | sync overheads, interconnect | `sync_s`, §6 | needs 2 nodes |
 
-### 9.2 Spike #1 results (CPU; contended, indicative only)
+### 9.2 Spike #1 results (CPU; contended, indicative only; clean re-runs in §7 and `clean.log` supersede the throughput rows)
 
 Setup:
 * Binary `tools/perf-design/wasmchip`, release build, `RUSTFLAGS` x86-64-v3 + SHA-NI.
@@ -879,6 +936,84 @@ Implications:
 | spike 4 and multi-threaded scaling | 8 dedicated physical cores (16 threads), e.g. 10–15,26–31 after the D1 lane |
 | prover runs at 2²⁰–2²² rows | ≥ 4 cores, ≥ 32 GB RAM |
 
+### 9.2b Spikes 3 and 4: v1 chips, public binding, forged proofs, SHA chips
+
+Raw output: `docs/e2e-results/v3-perf-design/spike4.log` (single SMT core 9,25) and `clean.log` (CPUs 9–15,25–31).
+
+**What was built** (`tools/perf-design/wasmchip/src/v1.rs`):
+* A multi-function WASM subset: locals, consts, i64 add/sub/mul/div_u/eqz, br/br_if, unaligned i32.load/store,
+  call/end with params and results, memory.copy.
+* Its reference interpreter, the register-form translator with typed operands, and the register machine.
+* Chips on the **unchanged** np-udr-stark-v2 protocol: every chip form plus `mbound`, `minit`, `code`, `io`,
+  `range16`, `rangeT` (2²¹) and `pair8`.
+* Timestamps `8·ts + k` with one `rangeT` lookup per access; stack temporaries as channels.
+* **Code, initial memory (non-zero words) and the initial/final state are public-segment records** received by the
+  tables.
+
+**Correctness (M, every program).**
+* Entry locals, the full linear memory and the gas units equal the reference interpreter's.
+* Channel discipline (every temporary produced once and consumed once) holds.
+* 0 failing constraints, and 0 unbalanced bus messages including the public segments.
+* The honest proof verifies (Rust verifier).
+
+**Measured per WASM op (chips + `mbound`; fixed tables excluded):**
+
+| program | ops | rows | ops/row | main/op | fractions/op | committed U-logUp/op | prove (2 threads) | proof |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| measured-mix loop | 458,755 | 131,074 | 3.50 | 9.4 | 4.4 | 40 | 120–130 s | 3.2 MB |
+| unaligned i32.load chain (16/iter) | 212,995 | 147,458 | 1.44 | 22.1 | 12.6 | 109 | 136 s | 3.9 MB |
+| i64.div_u chain (8/iter) | 720,899 | 180,226 | 4.00 | 13.8 | 8.1 | 62 | 141 s | 3.7 MB |
+| call chain (8 empty calls + 1 call with a result per iter) | 196,611 | 204,802 | 0.96 | 20.1 | 7.8 | 91 | — | — |
+| unaligned store/load mix | 688,131 | 196,610 | 3.50 | 11.0 | 5.2 | 50 | 130 s | 3.7 MB |
+| memory.copy 256 B/iter | 98,307 (2.45 M gas units) | 172,034 | — | 2.5 per gas unit | 1.6 per gas unit | — | 145 s | 3.4 MB |
+
+**Forged proofs (M).**
+* Setup: a dishonest prover, `tools/perf-design/forge`, is a generated copy of the deployed prover with
+  environment-gated hooks. It skips the prover's own checks and optionally rewrites the OOD quotient values and the
+  bus finals. The **verifier is the deployed one, byte-identical**: `gen.sh` checks it with `cmp`.
+* Results on the measured-mix program:
+
+| test | dishonest content | verifier |
+|---|---|---|
+| F1 | +1 on a result limb (constraint violation); naive forger | **rejects** (ALI identity fails) |
+| F2 | same; forger patches the OOD quotient so the ALI identity holds | **rejects** (bus products differ) |
+| F3 | operand value lie with consistent arithmetic (bus-only violation); naive | **rejects** (bus products differ) |
+| F4 | same; forger rewrites a final so the bus products balance **and** patches OOD | **rejects** (final polynomial mismatch: the FRI/DEEP layer) |
+| F5 | honest trace proved against a claim with a different final gas (public-binding forgery); finals balanced, OOD patched | **rejects** (final polynomial mismatch) |
+| SHA chips | one working-state bit flipped; OOD patched | **rejects** (final polynomial mismatch), for SHA-256 and SHA-384 |
+| B | honest proof checked against an edited claim (code byte, initial memory word, final gas) | rejects (Fiat–Shamir binding: openings no longer parse) |
+
+* These are spot checks of the deployed verifier against specific forgery strategies. They are not a soundness
+  proof, which is the Lean side's job.
+
+**SHA chips (spike 3, M):** `wasmchip sha {256,384}`.
+* Layout: two rounds per row; bit-words for a/e with a 3-word sliding window; message schedule rows with σ0/σ1 as
+  committed limbs, exchanged over the bus.
+* Every compression is checked against `sha2::compress256/512`.
+
+| chip | per compression | main cells | fraction slots | committed (E = 10 logUp) | work cell-eq | per byte |
+|---|---|---:|---:|---:|---:|---:|
+| SHA-512 family (SHA-384 Merkle node: 1 compression) | 128 B | 26,347 | 764 | 34,037 | **38,850** | 304 |
+| SHA-256 (contract code hash) | 64 B | 10,675 | 612 | 16,845 | **20,701** | 323 |
+
+* The first draft assumed 20 k for SHA-384; the measurement is 1.9× that.
+* The design absorbs it with the L3 rate change and distributed L2/L3 (§5.3).
+* Further cuts are possible: a schedule window inside the round rows would remove ≈ 500 fraction slots, ≈ −15 %.
+
+**Observation (prover completeness, not soundness).**
+* A first SHA-384 layout sent σ0/σ1 as degree-3, 4-limb bus messages (table degree 6). Its honest proof failed the
+  ALI identity even though the constraint and bus checks passed.
+* The 2-limb (SHA-256) variant of the same layout proved fine.
+* Committing σ as limbs (degree 4) fixed it.
+* `nearAirV3` has no such messages. For the prover lane: **a possible completeness bug in np-udr-stark-v2 for
+  high-degree, wide interaction messages**. Not investigated further.
+
+**Measured vs model.**
+* `model.py` reproduces the measured per-op main cells and fractions from the per-chip layouts. The differences
+  are the loop-overhead rows and `mbound` rows of the test programs.
+* The adversarial candidates in the model use the measured per-row (m, f) of the adversarial form, with 1 row per
+  gas unit (or 0.5 for `local.get; op` pairs).
+
 ### 9.3 What to measure on an H200 first
 
 1. The phase-A fused kernel (coset DFT → SHA-384 leaf digest) in cells/s.
@@ -891,31 +1026,20 @@ These three numbers decide whether 32 H200 meet ≤ 2 s after execution.
 
 ## 10. Decisions needed (all PROPOSALS)
 
-1. **P-PERF-1 (relation-neutral, PREP design).** The register-form translation as the WASM AIR's execution model,
-   proved by a simulation lemma against `NearSpecV3.Wasm`.
-2. **P-PERF-2 (protocol).** logUp buses with base-field multiplicities replace per-interaction grand products for
-   new (D3/PQ) AIRs. D0a/D1a stay on today's protocol.
-3. **P-PERF-3 (protocol parameters).** Rate-1/2 inner layers, constraint degree ≤ 3, one quotient per height.
-   Final layer at rate 1/64 in the Johnson regime.
-4. **P-PERF-4 (protocol/format).** A shared-transcript distributed base proof with two-level (row-digest) leaves
-   and per-GPU FRI instances, followed by a 3-layer compression chain.
-5. **P-PERF-5 (AIR).** A stack-temporary channel memory argument (needs its Lean lemma before use; spike 4 tests
-   it adversarially).
-6. **P-PERF-6 (latency contract).** State real-time targets *after execution ends*: the native run of a 1 Pgas
-   chunk is ≈ 1–1.2 s and is a floor. Proposed:
-   * worst case ≤ 2 s after execution on 32 H200;
-   * typical ≤ 1 s after execution on 16 H200.
-7. **P-PERF-7 (hardware).** 4 × 8 H200 for the worst-case class; 2 × 8 for typical-only. GPU judge worker as in the
-   study's P-RT-4.
-8. **P-RT-1' (domain).** Drop the general weighted gas bound. Instead cap distinct prepared code bytes per chunk,
-   or adopt deploy-time PREP with a code-table registry. Keep the witness-size bound.
-9. **Extension degree.** Ask research M3 for the minimum E with explicit constants; every unit of E is worth
-   ≈ 0.2 s of worst-case latency.
-10. **CPU allocation.** For clean CPU measurements (spikes 1, 2, 4, 5) this lane wants **8 dedicated physical
-    cores (16 threads)**, e.g. 10–15,26–31 after the D1 lane, plus ≥ 32 GB RAM. At least 4 cores for prover
-    end-to-end runs at 2²⁰ rows.
+Decided on 2026-10-14 (section D): P-PERF-1…7 and P-RT-1' (declined). Still open:
 
----
+1. **P-PERF-8 (protocol, new).** Contract preparation and code hashing as separate early sub-proofs, started at
+   chunk start. They are bound to the main proof by the code-table root and verified in L1. They take the code
+   cost (1.45× the worst WASM op per gas) off the post-execution path.
+2. **Johnson regime for L1–L3 as well as the final layer.** This puts research-branch M2 on the latency path: UDR
+   only costs ≈ +0.3 s and ≈ 2 MB.
+3. **Final-layer rate**: 1/32 (≈ 0.84 MB, 1.74 s) or 1/64 (≈ 0.74 MB, +0.14 s). STIR/WHIR for ≤ 0.5 MB.
+4. **Extension degree.** Ask research M3 for the minimum E with explicit constants; E = 8 → 12 moves the worst case
+   1.35 → 2.19 s.
+5. **CPU allocation.** For clean measurements this lane wants **8 dedicated physical cores (16 threads)**, e.g.
+   10–15,26–31 after the D1 lane, plus ≥ 32 GB RAM. All numbers so far are on one Zen 5 core with SMT.
+6. **An H200** for spike H1 (sustained efficiency). This is the largest sensitivity; ≥ 30 % of peak meets the
+   target.
 
 ## Sources (cited, not reproduced)
 

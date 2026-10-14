@@ -53,12 +53,14 @@ CHIPS_M = {
     "ld_gen":   (32, 19, "M ld_gen[TT] (unaligned)"),
     "callret":  (30, 12, "M call 16/6 + ret 14/6"),
     "alu_rr":   (34, 16, "M alu_rr[LLL]"),
+    "st_gen":   (37, 24, "M st_gen[_LL] (unaligned; _LI 38/21)"),
+    "memcpy16": (39, 27, "M bulk16 (16 B/row; bulk_start 24/14 per copy)"),
     "divrem":   (60, 37, "D from M divu[LLL] 65/40: T forms for a and d (-5 cells, -3 fractions)"),
 }
 CHIPS_V1.update(CHIPS_M)
 # SHA chips measured (wasmchip sha): per compression rows of (main excl. preprocessed, fraction slots, rows)
-SHA384_ROWS = [(449, 3, 41), (90, 8, 80), (98, 1, 1)]   # M: 128-B block
-SHA256_ROWS = [(225, 3, 33), (46, 8, 64), (50, 1, 1)]   # M: 64-B block
+SHA384_ROWS = [(449, 3, 41), (98, 8, 80), (98, 1, 1)]   # M: 128-B block (σ as committed limbs, degree 4)
+SHA256_ROWS = [(225, 3, 33), (50, 8, 64), (50, 1, 1)]   # M: 64-B block (σ as committed limbs, degree 4)
 # contract preparation per code byte (D): decoder 1 row/B; validator+translator 0.5 instr/B; code rows 0.2/B
 PREP_ROWS_PER_BYTE = [(16, 3, 1.0), (50, 14, 0.5), (20, 2, 0.2)]
 CHIPS_V0 = deepcopy(CHIPS_V1)
@@ -77,11 +79,12 @@ SPIKE1 = {
     "store/load loop (3.60 ops/row)": {"main": 9.3, "frac": 4.3, "prover_weq": 61.1,
         "mix_v0": {"alu_ri": 2 / 18, "brz": 1 / 18, "ld_al": 1 / 18, "st_al": 1 / 18}},
 }
-# CPU micro-benchmarks (spike #1/#2, 1 thread of a Zen 5 core, contended): rate-1/2 LDE + SHA-384
-# Merkle of 2^20 x 64: 27.5 ns per trace cell (hashing 62 %); SHA-512 compression 9.0 M/s;
-# SHA-256 (SHA-NI) 38 M/s; ext mul (generic schoolbook) E=8 61 ns, E=10 87 ns, E=12 200 ns;
-# Plonky3 Fp8 mul 8.6 ns; logUp fraction compute (generic) E=8 532 ns, E=10 633 ns, E=12 1391 ns.
-CPU = {"commit_ns_per_cell": 27.5, "frac_ns_generic_E10": 633, "p3_speedup_ext": 61.1 / 8.6}
+# CPU micro-benchmarks, CLEAN (CPUs 9-15,25-31 = 7 Zen 5 cores, 2026-10-14; docs/e2e-results/v3-perf-design/clean.log):
+# rate-1/2 LDE + SHA-384 Merkle of 2^22 x 64: 22.9 ns/cell on 1 thread (hashing 68 %), 4.6 ns on 7 threads,
+# 4.4 ns on 14; rate 1/4: 42.8 / 8.1 / 7.6 ns; SHA-512 compression 9.9 M/s per core (71.6 M/s on 14 threads);
+# SHA-256 (SHA-NI) 42 M/s; ext mul (generic) E=8/10/12 55/78/183 ns, Plonky3 Fp8 7.9 ns; logUp fraction
+# compute (generic) E=8/10/12 479/580/1294 ns; whole prover (np-udr-stark-v2 params) 18.7 M W_eq/s on 14 threads.
+CPU = {"commit_ns_per_cell": 22.9, "frac_ns_generic_E10": 580, "p3_speedup_ext": 55.3 / 7.9}
 
 # ------------------------------------------------------------------------------------------
 # 2. Workload mixes: register-form rows per WASM op, per class
@@ -137,6 +140,7 @@ P = {
     "log_blowup2": (4, "design: L3 (the layer the final layer verifies) rate; higher blowup = fewer queries for the final verifier"),
     "log_blowup_f": (5, "design: final layer rate 1/32 (size vs latency; 1/64 = 740 KB but +0.14 s)"),
     "sha384_cells": (0, "M: 0 = from the measured SHA-512-family layout (SHA384_ROWS; ~38k cell-eq at E=10); >0 overrides"),
+    "prep_scale": (1.0, "A: multiplier on the PREP (decode/validate/translate) row estimate"),
     "prep_early": (1, "design lever P-PERF-8: contract preparation + code hash proved in a separate sub-proof from chunk start (code known before execution)"),
     "tail_all_gpus": (1, "design: 1 = L2/L3 distributed over all GPUs (P-PERF-4; never transmitted); the final layer stays one FRI on one node"),
     "rec_field_cells_per_value": (30, "A: in-AIR DEEP/FRI field work per opened value"),
@@ -203,7 +207,7 @@ def per_op(p, backend, mix, chips):
     cells = ops = rows = fr = main = 0.0
     for cls, r in mix.items():
         if cls == "_load_bytes":   # r code bytes: SHA-256 code hash (measured layout) + PREP (D)
-            for (m, f, n) in [(m, f, n / 64) for (m, f, n) in SHA256_ROWS] + PREP_ROWS_PER_BYTE:
+            for (m, f, n) in [(m, f, n / 64) for (m, f, n) in SHA256_ROWS] + [(m, f, n * v("prep_scale", p)) for (m, f, n) in PREP_ROWS_PER_BYTE]:
                 c, o = row_cost(p, backend, m, f)
                 cells += r * n * c
                 ops += r * n * o
@@ -385,7 +389,7 @@ def fmt(x, n=2):
     return f"{x:.{n - 1}e}"
 
 SENS = [  # (param, low, high)
-    ("eff", 0.2, 0.6), ("E", 8, 12), ("sha512_int_ops", 2000, 5500), ("sha384_cells", 20000, 50000), ("table_log_h", 23, 25), ("tail_all_gpus", 0, 1), ("prep_early", 0, 1),
+    ("eff", 0.2, 0.6), ("E", 8, 12), ("sha512_int_ops", 2000, 5500), ("sha384_cells", 20000, 50000), ("table_log_h", 23, 25), ("tail_all_gpus", 0, 1), ("prep_early", 0, 1), ("prep_scale", 1.0, 3.0),
     ("exec_slowdown", 1.0, 2.0), ("rbr_bits", 200, 290), ("z_inner", 0, 32),
     ("ntt_int_ops_per_cell", 200, 450), ("log_blowup0", 1, 2), ("witness_bytes", 4e6, 16e6),
 ]
@@ -425,7 +429,7 @@ def main():
               f"{r['cells_per_op']:8.0f} {r['celleq_per_op']:9.0f} {r['gpu_s']:7.1f} {100*r['rec_share']:5.1f} "
               f"{r['t_exec']:5.2f} {r['t_A']:5.2f} {r['t_B']:5.2f} {tail:5.2f} {r['latency']:7.2f} "
               f"{r['after_exec']:5.2f} {r['q0']:4d} {r['proof_bytes']/1e3:6.0f}K {r['mem_gb_per_gpu']:6.0f}")
-    worst = [r for r in out if r["scenario"] == "adversarial"][0]
+    worst = [r for r in out if r["scenario"] == "adversarial" and r["gpus"] == 32 and r["backend"] == "U-logUp"][0]
     print(f"\n  adversarial worst kind: {worst['worst_kind']}")
     print("\nAdversarial candidates at 1 Pgas, U-logUp, 32 H200 (latency after execution, s):")
     for c in ADVERSARIAL:
@@ -442,6 +446,7 @@ def main():
     for name, d in SPIKE1.items():
         r = per_op(P, "U-logUp", d["mix_v0"], CHIPS_V0)
         print(f"  {name:48s} measured main {d['main']:5.1f} frac {d['frac']:5.1f} | model main {r['main']:5.1f} frac {r['frac']:5.1f}")
+    print(f"  SHA-384 in-circuit compression (measured layout): {sha384_celleq(P):.0f} work cell-eq")
     fr_opt = CPU["frac_ns_generic_E10"] / CPU["p3_speedup_ext"]
     print(f"  CPU fraction/cell work ratio (E=10, Plonky3-grade ext arithmetic, D): {fr_opt / CPU['commit_ns_per_cell']:.1f} "
           f"+ 5 committed aux cells = {fr_opt / CPU['commit_ns_per_cell'] + 5:.1f} cell-eq per fraction "

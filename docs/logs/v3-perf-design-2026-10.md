@@ -41,3 +41,24 @@ call 0.27 %, i32.eq 0.25 %, rest < 0.15 % each.
 lane: per-cell cost now scales with blowup; the in-circuit verifier of the distributed proof uses global
 row-digest trees (one path per tree per query) — with per-GPU trees the compression tail was 1.1–1.5 s
 and recursion exceeded base work for typical chunks.
+
+## Round 2 (after user decisions P-PERF-6/7, P-RT-1' declined, P-PERF-1..5 adopted)
+* Merged main 440655fa, later 86fab5fd (D1 phase 1).
+* Spike 4 (`wasmchip run1`, `src/v1.rs`): v1 typed-operand chips, stack-temporary channels, timestamps `8·ts+k`
+  with one RANGE-T (2^21) lookup per access, unaligned ld/st, call/ret (frame records in memory space 3), i64.div_u,
+  memory.copy (bulk16), public binding of code / non-zero initial words / io. Six programs, all differential-equal
+  to the reference interpreter (locals, full memory, gas), channel discipline asserted, honest proofs verify.
+  Raw: docs/e2e-results/v3-perf-design/spike4.log (CPUs 9,25, contended).
+* Forging prover `tools/perf-design/forge`: gen.sh copies the deployed prover source, patches env-gated hooks
+  into prover.rs (skip global check and the final-FRI degree check; rewrite OOD quotient; balance finals) and
+  checks verifier.rs byte-identical. F1–F5 and the SHA forgeries are all rejected by the verifier. The first
+  forge pass hit the prover's final-FRI self-check (F2/F4 "refused"); the patch was extended and re-run.
+* A first full run was stopped (by PID) to rebuild with the extended forge patch; spike4-run0 discarded.
+* Spike 3 (`wasmchip sha 256|384`): two-round-per-row SHA-2 compression chips. First SHA-384 layout (σ as
+  degree-3 bus messages, table degree 6) failed the honest ALI identity although the row and bus checks passed
+  (SHA-256 passed); σ as committed limbs (degree 4) fixed it. Flag for the prover lane: possible completeness bug
+  for wide high-degree interaction messages.
+* Clean runs (CPUs 9-15,25-31, given by the coordinator after the D1 lane): docs/e2e-results/v3-perf-design/clean.log.
+* Model: measured chip forms; SHA from measured layouts; adversarial = max-latency candidate (incl. contract
+  loading, register copies, memory.copy); early PREP sub-proof; distributed L2/L3; L3 at rate 1/16; final at 1/32.
+  Worst case 32 H200: 1.75 s after execution at 35 % of peak; ≥ 30 % needed for ≤ 2 s.
