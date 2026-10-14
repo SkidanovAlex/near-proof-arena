@@ -40,12 +40,11 @@ the certificate's import closure into `formal/ZkFormal`, `formal/ReexecV3D0` and
 `CARGO_NET_OFFLINE=true`). The package is the git tree of this directory plus those generated
 trees. Dry run (2026-10-13, lane v3-package): `docs/logs/v3-package-2026-10.md`.
 
-**Known blocker (2026-10-13):** the Lean step of `build.sh` (and the judge's native-lean build)
-stops at the model-import rule: `ZkFormal.Near.Render.Common` (in the 657-module closure of
-`NpUdrStarkV2.Model`, via `NearAir → Candidates.SortEmpty → Render.Proof.*`) imports
-`Std.Data.HashMap`; model modules may import only trusted modules, model modules and `Init`.
-Needs a zk-formal fix (see the log). With that rule relaxed, the build, `prepare`, `prove` and
-`out/verify` work end to end (4 D0a proofs accepted).
+**Model closure (2026-10-14, lane v3-model-split):** the former blocker (`Std.Data.HashMap` in
+the 657-module closure of `NpUdrStarkV2.Model`, via `NearAir → Candidates.SortEmpty →
+Render.Proof.*`) is fixed: the model imports definition-only `*Defs` modules (definitions moved
+verbatim out of zk-formal modules), 90 modules, no `Std`, no proof modules; the Lean step of
+`build.sh` takes ≈90 s on 2 CPUs (was ~67 min). `docs/logs/v3-model-split-2026-10.md`.
 
 ## Status
 
@@ -109,8 +108,15 @@ Older notes (per-part history) follow.
   other `auxGroup`, rejects 9 proof mutations and 5 claim mutations each, and the
   AIR re-exports byte-identically; `nearAirV3` layouts equal at g = 1, 2, 3.
 * `conformance/run.sh` (inherited v1 suite; 205 checks, all pass on the fork).
-* `formal/`: `cd formal && lake build NpUdrStarkV2.Certificate` (requires the repo
-  `zk-formal` Lake package; build under `/data/illia/nearproof-deps/bin/heavy`).
+* `formal/`: `cd conformance && lake build NpUdrStarkV2.Certificate` (lean_lib
+  `NpUdrStarkV2`, srcDir `../formal`, against the repo `zk-formal` Lake package; build under
+  `/data/illia/nearproof-deps/bin/heavy`). `formal/` has no lakefile (the judge rejects a
+  `require` outside its allowlist; the zk-formal sources are vendored into `formal/`).
+  `Certificate.lean` imports the judge-generated `ArenaExpectedInst` (type
+  `ArenaExpected.expectedTypeFor NpUdrStarkV2.Model.verifier`, template
+  `spec/lean/judge/ExpectedV3D0a.native-lean.lean.template`); check it with the judge's
+  `formal-check` (`docs/logs/v3-model-split-2026-10.md`). The verifier model's closure is 90
+  definition modules (`*Defs`), no proof modules, no `Std`.
   Builds the (unconditional, `nearV3_admission_final`) certificate; `#print axioms NpUdrStarkV2.certificate`
   reports `[propext, Classical.choice, Quot.sound]` (no `sorry`/`axiom`).
 * `build-recipe/build.sh`: `SKIP_LEAN=1 bash build-recipe/build.sh` builds

@@ -1,3 +1,4 @@
+import ArenaExpectedInst
 import NpUdrStarkV2.Model
 import NpUdrStarkV2.PublicBin
 import ZkFormal.NearV3.Assembly.AdmissionV3
@@ -8,7 +9,7 @@ import ZkFormal.NearV3.Assembly.AdmissionV3
 On the judge's **native-lean** route the certificate's type
 `ArenaExpectedInst.expectedType` is generated *inside the judge* from its own
 copy of the challenge and its own build outputs
-(`spec/lean/judge/ExpectedV3D0.native-lean.lean.template`, spliced in a
+(`spec/lean/judge/ExpectedV3D0a.native-lean.lean.template`, spliced in a
 generated `ArenaExpectedInst` module; see `NpUdrStarkV2/Assembly.lean`). It is
 therefore not an importable module for the candidate.
 
@@ -17,10 +18,11 @@ This file
 * fixes the public digest to `sha256 publicBin` (`publicDigest`, with the
   concrete D0a `params.bin` bytes pinned by a kernel check so any drift in
   `PublicBin.lean` is caught), and
-* proves `certificate`: the admission statement of the D0a challenge
-  (`NearSpecV3.challengeParamsD0a`) for the artifact
-  `{ publicDigest := sha256 publicBin, impl := .nativeTrusted bd tid Model.verifier }`,
-  **unconditionally**.  It is main's `ZkFormal.NearV3.Assembly.nearV3_admission_final`
+* proves `certificate : ArenaExpectedInst.expectedType` (the judge-generated module, the only
+  import outside the candidate tree): the admission statement of the D0a challenge for the
+  artifact `{ publicDigest := <judge's sha256 public.bin>, impl := .nativeTrusted <bin digest>
+  <toolchain id> Model.verifier }`, **unconditionally** (`certificate_forall` states the same for
+  `challengeParamsD0a` and every `bd`/`tid`).  It is main's `ZkFormal.NearV3.Assembly.nearV3_admission_final`
   (soundness `extractV3 : ExtractV3Stmt` and completeness `completeV3 : CompleteV3Stmt` both
   proved) with its two premises discharged: `hpub` by `rfl` (the digest is defined as
   `sha256 publicBin`) and `himpl` by `rfl` (`VerifierImpl.Connection _ _ v` is `v = m` on the
@@ -54,15 +56,25 @@ theorem publicDigest_eq :
 -- expected artifact (a resource limit of the elaborator, not a logical option).
 set_option maxRecDepth 20000
 
-/-- **The D0a admission certificate of `np-udr-stark-v2`** (unconditional): the shape of the
-judge's `ArenaExpectedInst.expectedType` with the D0a spec, for every build digest `bd` and
-target id `tid`. -/
-theorem certificate (bd : Digest) (tid : String) :
+/-- The D0a admission statement for every build digest `bd` and target id `tid` (the
+quantified form of `certificate`, kept for reference). -/
+theorem certificate_forall (bd : Digest) (tid : String) :
     AdmissionStatement challengeParamsD0a
       { publicDigest := publicDigest, impl := .nativeTrusted bd tid Model.verifier } :=
   ZkFormal.NearV3.Assembly.nearV3_admission_final
     { publicDigest := publicDigest, impl := .nativeTrusted bd tid Model.verifier }
     publicBin rfl rfl
+
+/-- **The D0a admission certificate of `np-udr-stark-v2`** (unconditional). Its type is the
+judge-generated `ArenaExpectedInst.expectedType` = `ArenaExpected.expectedTypeFor
+NpUdrStarkV2.Model.verifier` (`spec/lean/judge/ExpectedV3D0a.native-lean.lean.template`), which the
+judge's audit compares syntactically with the certificate's type: `AdmissionStatement params
+{ publicDigest, impl := .nativeTrusted binaryDigest toolchainId Model.verifier }` with the judge's
+literals. `nearV3_admission_final` proves it for any `ArtifactDescription` whose public digest is
+`sha256 publicBin` (checked by the kernel against the judge's literal) and whose implementation
+is the model (`rfl`). -/
+theorem certificate : ArenaExpectedInst.expectedType :=
+  ZkFormal.NearV3.Assembly.nearV3_admission_final _ NpUdrStarkV2.publicBin (by decide +kernel) rfl
 
 end NpUdrStarkV2
 

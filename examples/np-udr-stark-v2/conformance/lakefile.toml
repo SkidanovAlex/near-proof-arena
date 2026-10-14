@@ -16,6 +16,16 @@ path = "../../../zk-formal"
 [[lean_lib]]
 name = "Conformance"
 
+# The package's own formal modules (formal/NpUdrStarkV2/*.lean: Model, Certificate, Assembly,
+# PublicBin), for local elaboration against the repo's zk-formal (`lake build
+# NpUdrStarkV2.Certificate` from conformance/). formal/ itself carries no lakefile: the judge
+# stages formal/ and rejects any `require` outside its allowlist (staging.rs
+# `check_lakefile_toml`); the zk-formal sources ship vendored inside formal/ (sync-lean.sh),
+# as in examples/reexec-v3-d*.
+[[lean_lib]]
+name = "NpUdrStarkV2"
+srcDir = "../formal"
+
 [[lean_exe]]
 name = "np-lean-verify"
 root = "Verify"
