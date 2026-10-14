@@ -1,37 +1,30 @@
+import NearSpecV3.HintCompact
 import ZkFormal.V3.RefundCodec
 
 /-!
-# Compact hint-body codec for refund receipts (STATUS-V3-SIZE lever 2)
+# Canonical refunds and the compact hint body (STATUS-V3-SIZE lever 2)
 
-The native hint body `B = u32 0 ‖ encodeReceipts refunds` spends 289 B on the
-largest refund (SECP256K1 gas refund to a 64-character implicit account;
-`Size.V3.bodyMax_eq`: `bodyMax = 8 + 4481 · 289 = 1,295,017` under A1).  Every
-refund the D0 runtime ever generates is `gasRefundReceipt`-shaped —
-`TransferV1.applyReceipt` emits exactly `[gasRefundReceipt r height surplus]`
-when the price surplus is nonzero — so every hint refund satisfies:
-predecessor `system`, `signerId = receiverId`, `gasPrice = 0`, and a
-well-formed signer key (ED25519/SECP256K1, never ML-DSA).
+The compact wire codec (`compactRefund`, `compactBodyOf`, `pCRefund`,
+`decodeBodyC`) and its wire/length lemmas live in `NearSpecV3.PrepD0` (spec,
+next to `pRefund`/`decodeBody`).  This module adds what only the candidate
+side needs:
 
-The compact wire format drops exactly the fields the decoder reconstructs:
+* **The canonicality invariant**: every refund the D0 runtime emits satisfies
+  `refundCanonical` — refund-shaped (predecessor `system`, well-formed), with
+  `signerId = receiverId` and `gasPrice = 0`.  `TransferV1.applyReceipt` emits
+  exactly `[gasRefundReceipt r height surplus]`, and `gasRefundReceipt` is
+  canonical by construction.  Mirrors `RefundCodec`'s shape invariants.
+* **The bridge to the wire**: `decodeBodyC_outgoing` — the compact round trip
+  on a chunk's actual outgoing refunds — and the full-hint wire length
+  (framing of `Assembly.HintCodec`, restated locally).
+* Kernel-checked budgets: hint ≤ `16 + 181·4481 = 811,077` against the proved
+  native `≤ 1,295,025` (`accepted_native_body_bound`), freeing **483,948 B**
+  of the 8 MiB artifact.
 
-* predecessor `system`, the receipt tag `0`, the three zero vector counts and
-  the transfer action tag — constants of the refund shape;
-* `signerId` — always the receiver;
-* `gasPrice` — always 0.
-
-Wire: `compactHintOf rs = u32 n ‖ borshBytes (compactBodyOf rs)` with
-`compactBodyOf rs = u32 1 ‖ u32 n ‖ refunds` and, per refund,
-`borshBytes receiverId ‖ receiptId ‖ signerPk.encode ‖ u128 deposit`
-(≤ 181 B against the native 289 B).  The hint budget drops from the proved
-native `|Hint.encode| ≤ 1,295,025` (`accepted_native_body_bound`) to
-`≤ 16 + 181 · 4481 = 811,077`, freeing 483,948 B of the 8 MiB artifact —
-headroom for qvV3 and later tables at unchanged protocol parameters.
-
-Everything mirrors `ZkFormal.V3.RefundCodec`: the compact decoder reconstructs
-the *same* `Receipt` values, so every downstream consumer (`prepBody`, the
-runtime refund application, the receipt SHA family) is unchanged.  No verifier
-change, no protocol-parameter change, no new assumption: this is a wire codec
-for the prover-carried hint bytes inside the existing ROM admission framework.
+Everything is proved inside the existing ROM admission framework: no verifier
+or parameter change, no new assumption.  The Good-semantics amendment that
+puts the compact body on the wire (`HeaderSemanticsV3.body`, rebuilt-native
+EMR) is tracked in `docs/logs/v3-sizeopt-2026-10.md`.
 -/
 
 namespace ZkFormal.V3
@@ -143,7 +136,33 @@ theorem applyNewChunk_outgoing_canonical (prims : Prims) (ctx : ApplyCtx) (t : P
   rw [e]
   exact (applyReceipts_refunds_canonical ctx rs 0 _ ls out' ha hw (by simp)).1
 
-/-! ## Byte lengths -/
+/-! ## The bridge to the compact wire -/
+
+/-- The zk-side canonical invariant implies the spec-side flattened premise
+(`NearSpecV3.refundCanonicalWf`). -/
+theorem canonical_flat {r : Receipt} (h : refundCanonical r = true) :
+    NearSpecV3.refundCanonicalWf r := by
+  obtain ⟨pred, recv, rid, signer, pk, gp, dep⟩ := r
+  simp only [refundCanonical, refundShape, Receipt.wf, Bool.and_eq_true, beq_iff_eq,
+    decide_eq_true_eq] at h
+  obtain ⟨⟨⟨⟨⟨⟨⟨⟨⟨h1, h2⟩, h3⟩, h4⟩, h5⟩, h6⟩, h7⟩, h8⟩, h9⟩, h10⟩ := h
+  have hk : pk.tag ≠ 2 := by
+    simp only [PublicKey.wf, Bool.or_eq_true, Bool.and_eq_true, beq_iff_eq] at h4; omega
+  refine ⟨h8, h9, h10, ?_, hk⟩
+  simp only [Receipt.wf, h1, h2, h3, h4, h5, h6, h7, Bool.and_eq_true, beq_iff_eq,
+    decide_eq_true_eq]
+  trivial
+
+/-- Compact round trip on a chunk's actual outgoing refunds. -/
+theorem decodeBodyC_outgoing (prims : Prims) (ctx : ApplyCtx) (t : PTrie)
+    (rs : List Receipt) (out : MainOut) (h : applyNewChunk prims ctx t rs = .ok out)
+    (hw : ∀ r ∈ rs, r.wf = true) (hn : out.outgoing.length < 4294967296) :
+    NearSpecV3.decodeBodyC (NearSpecV3.compactBodyOf out.outgoing) = .ok out.outgoing := by
+  refine NearSpecV3.decodeBodyC_compactBodyOf _ ?_ hn
+  intro x hx
+  exact canonical_flat (applyNewChunk_outgoing_canonical prims ctx t rs out h hw x hx)
+
+/-! ## Full-hint wire length and the freed budget -/
 
 theorem leN_length : ∀ (w x : Nat), (NearSpec.leN w x).length = w
   | 0, _ => rfl
@@ -154,148 +173,25 @@ theorem leN_length : ∀ (w x : Nat), (NearSpec.leN w x).length = w
 theorem borshBytes_length (b : Bytes) : (borshBytes b).length = 4 + b.length := by
   simp only [borshBytes, NearSpec.u32, List.length_append, leN_length]
 
-theorem u128_length (x : Nat) : (u128 x).length = 16 := leN_length 16 x
-
-theorem pkEncode_length_le (k : PublicKey) (h : k.wf = true) : k.encode.length ≤ 65 := by
-  obtain ⟨t, d⟩ := k
-  simp only [PublicKey.encode, List.length_append, u8, leN_length]
-  simp only [PublicKey.wf, Bool.or_eq_true, Bool.and_eq_true, beq_iff_eq,
-    decide_eq_true_eq] at h
-  rcases h with ⟨rfl, hd⟩ | ⟨rfl, hd⟩ <;> omega
-
-theorem acctBorsh_length_le (a : Bytes) (h : AccountId.valid a = true) :
-    (borshBytes a).length ≤ 68 := by
-  simp only [AccountId.valid, Bool.and_eq_true, decide_eq_true_eq] at h
-  simp only [borshBytes_length]
-  omega
-
-/-! ## The compact codec -/
-
-/-- Compact wire encoding of one refund: receiver, receipt id, signer key,
-deposit.  At most 181 bytes for a canonical, well-formed refund, against the
-native 289. -/
-def compactRefund (r : Receipt) : Bytes :=
-  borshBytes r.receiverId ++ r.receiptId ++ r.signerPk.encode ++ u128 r.deposit
-
-def compactReceipts (rs : List Receipt) : Bytes :=
-  u32 rs.length ++ concatAll (rs.map compactRefund)
-
-/-- Compact hint body: version tag 1 (the native body's first u32 is the
-always-zero transaction count), then the refunds. -/
-def compactBodyOf (rs : List Receipt) : Bytes := u32 1 ++ compactReceipts rs
-
 /-- The compact hint on the wire: `u32 n ‖ borshBytes body` — the framing of
 `ZkFormal.NearV3.Assembly.Hint.encode`, restated locally to keep this module
 off the Assembly dependency chain. -/
 def compactHintOf (rs : List Receipt) : Bytes :=
-  NearSpec.u32 rs.length ++ borshBytes (compactBodyOf rs)
+  NearSpec.u32 rs.length ++ borshBytes (NearSpecV3.compactBodyOf rs)
 
 theorem compactHintOf_length (rs : List Receipt) :
     (compactHintOf rs).length = 8 + (compactBodyOf rs).length := by
-  show (NearSpec.u32 rs.length ++ borshBytes (compactBodyOf rs)).length = _
+  show (NearSpec.u32 rs.length ++ borshBytes (NearSpecV3.compactBodyOf rs)).length = _
   rw [List.length_append, borshBytes_length]
   simp only [NearSpec.u32, leN_length]
   omega
 
-/-- Decode one compact refund, reconstructing the dropped fields (`system`
-predecessor, signer = receiver, gas price 0). -/
-def pCRefund : P Receipt := fun bs => do
-  let (recv, bs) ← pAccountId "receiver_id" bs
-  let (rid, bs) ← pHash "receipt_id" bs
-  let (pk, bs) ← pPublicKey "signer_public_key" bs
-  if pk.tag == 2 then throw "invalid hint: refund ML-DSA signer key"
-  let (dep, bs) ← pU128 "deposit" bs
-  pure ({ predecessorId := AccountId.system, receiverId := recv, receiptId := rid,
-          signerId := recv, signerPk := pk, gasPrice := 0, deposit := dep }, bs)
-
-/-- Parse the compact body (no trailing bytes). -/
-def decodeBodyC (b : Bytes) : Except String (List Receipt) := do
-  let (v, b) ← pU32 "version" b
-  if v != 1 then throw "invalid hint: body version"
-  let (rs, b) ← pVec "refunds" pCRefund b
-  if !b.isEmpty then throw "invalid hint: trailing bytes in body"
-  pure rs
-
-theorem compactRefund_encode (r : Receipt) (h : refundCanonical r = true) (rest : Bytes) :
-    pCRefund (compactRefund r ++ rest) = .ok (r, rest) := by
-  obtain ⟨pred, recv, rid, signer, pk, gp, dep⟩ := r
-  simp only [refundCanonical, refundShape, Receipt.wf, Bool.and_eq_true, beq_iff_eq,
-    decide_eq_true_eq] at h
-  obtain ⟨⟨⟨⟨⟨⟨⟨⟨⟨h1, h2⟩, h3⟩, h4⟩, h5⟩, h6⟩, h7⟩, h8⟩, h9⟩, h10⟩ := h
-  subst h8
-  subst h9
-  subst h10
-  have hk : pk.tag ≠ 2 := by
-    simp only [PublicKey.wf, Bool.or_eq_true, Bool.and_eq_true, beq_iff_eq] at h4; omega
-  simp only [compactRefund, List.append_assoc]
-  simp only [pCRefund, pAccountId_ok _ _ _ h2, pHash_ok _ _ _ h5,
-    pPublicKey_ok _ _ _ (pkWf3_of_wf _ h4), pU128_ok _ _ _ h7, bind, Except.bind,
-    ↓reduceIte, beq_iff_eq, hk, pure, Except.pure]
-
-theorem decodeBodyC_compactBodyOf (rs : List Receipt) (h : ∀ r ∈ rs, refundCanonical r = true)
-    (hn : rs.length < 4294967296) : decodeBodyC (compactBodyOf rs) = .ok rs := by
-  have hv := pVec_ok "refunds" pCRefund compactRefund rs [] hn
-    (fun r hr rest => compactRefund_encode r (h r hr) rest)
-  have hv2 : pVec "refunds" pCRefund (compactReceipts rs) = .ok (rs, []) := by
-    simpa only [compactReceipts, encList, concatAll, List.append_nil] using hv
-  simp only [compactBodyOf, decodeBodyC,
-    pU32_ok _ _ _ (by decide : (1:Nat) < 4294967296), bind, Except.bind,
-    bne_self_eq_false, Bool.false_eq_true, ↓reduceIte, hv2, List.isEmpty_nil, Bool.not_true,
-    pure, Except.pure]
-
-/-! ## Length bounds and the freed budget -/
-
-theorem compactRefund_length_le (r : Receipt) (h : refundCanonical r = true) :
-    (compactRefund r).length ≤ 181 := by
-  obtain ⟨pred, recv, rid, signer, pk, gp, dep⟩ := r
-  simp only [refundCanonical, refundShape, Receipt.wf, Bool.and_eq_true, beq_iff_eq,
-    decide_eq_true_eq] at h
-  obtain ⟨⟨⟨⟨⟨⟨⟨⟨⟨h1, h2⟩, h3⟩, h4⟩, h5⟩, h6⟩, h7⟩, _h8⟩, h9⟩, _h10⟩ := h
-  have e1 := acctBorsh_length_le recv h2
-  have e2 : rid.length = 32 := h5
-  have e3 := pkEncode_length_le pk h4
-  have e4 := u128_length dep
-  calc (compactRefund ⟨pred, recv, rid, signer, pk, gp, dep⟩).length
-      = (borshBytes recv).length + rid.length + pk.encode.length + 16 := by
-        simp only [compactRefund, List.append_assoc, List.length_append, borshBytes_length,
-          u128_length]
-        omega
-    _ ≤ 68 + 32 + 65 + 16 := by omega
-    _ = 181 := rfl
-
-theorem compactReceipts_length_le (rs : List Receipt)
-    (h : ∀ r ∈ rs, refundCanonical r = true) :
-    (compactReceipts rs).length ≤ 4 + 181 * rs.length := by
-  induction rs with
-  | nil =>
-    simp only [compactReceipts, concatAll, List.map_nil, NearSpec.u32, List.length_append,
-      List.length_nil, leN_length]
-    omega
-  | cons r rs ih =>
-    have hr : refundCanonical r = true := h r List.mem_cons_self
-    have hrs : ∀ r' ∈ rs, refundCanonical r' = true :=
-      fun r' hr' => h r' (List.mem_cons_of_mem _ hr')
-    have e1 := compactRefund_length_le r hr
-    have e2 := ih hrs
-    simp only [compactReceipts, concatAll, List.map_cons, List.map_nil, List.length_append,
-      List.length_cons, NearSpec.u32, leN_length] at e1 e2 ⊢
-    omega
-
-theorem compactBodyOf_length_le (rs : List Receipt)
-    (h : ∀ r ∈ rs, refundCanonical r = true) :
-    (compactBodyOf rs).length ≤ 8 + 181 * rs.length := by
-  have e1 := compactReceipts_length_le rs h
-  simp only [compactBodyOf, compactReceipts, NearSpec.u32, List.length_append,
-    List.length_cons, leN_length] at e1 ⊢
-  omega
-
-/-- Wire length of the compact hint: the hint's `u32 n` and borsh framing (8)
-plus the body's version tag and count (8) plus at most 181 bytes per refund.
-`hn` is A1's receipt bound (`max_receipts`). -/
+/-- Wire length of the compact hint.  `hn` is A1's receipt bound
+(`max_receipts`). -/
 theorem compactHint_length_le (rs : List Receipt) (hn : rs.length ≤ 4481)
-    (h : ∀ r ∈ rs, refundCanonical r = true) :
+    (hw : ∀ r ∈ rs, r.wf = true) :
     (compactHintOf rs).length ≤ 16 + 181 * 4481 := by
-  have e1 := compactBodyOf_length_le rs h
+  have e1 := NearSpecV3.compactBodyOf_length_le rs hw
   rw [compactHintOf_length]
   omega
 
