@@ -42,6 +42,25 @@ CHIPS_V1 = {  # (m, f, label)
     "memcpy16": (60, 24, "D"),  # bulk copy/fill/register copy, 16 B per row
     "prep_b":   (30, 2, "D"),   # contract preparation, per code byte (excl. SHA)
 }
+# Spike #4 (wasmchip run1, v1 layouts: typed operand forms, stack-temporary channels, single-lookup
+# timestamps) measured per-row (main cells, bus fractions). Forms: d/a/b operand kinds L(ocal)/T(emp)/I(mm).
+CHIPS_M = {
+    "alu_ri":   (33, 13, "M alu_ri[LLI]"),   # LTI 33/12, TLI 28/11, L_I 32/10
+    "mov":      (28, 11, "M alu_ri[TLI]"),
+    "mul":      (44, 30, "M mul[TLL]"),
+    "mul_TTL":  (44, 29, "D from M mul[TLL]: T read instead of L read"),
+    "brz":      (21, 6, "M brz[_L]"),
+    "ld_gen":   (32, 19, "M ld_gen[TT] (unaligned)"),
+    "callret":  (30, 12, "M call 16/6 + ret 14/6"),
+    "alu_rr":   (34, 16, "M alu_rr[LLL]"),
+    "divrem":   (60, 37, "D from M divu[LLL] 65/40: T forms for a and d (-5 cells, -3 fractions)"),
+}
+CHIPS_V1.update(CHIPS_M)
+# SHA chips measured (wasmchip sha): per compression rows of (main excl. preprocessed, fraction slots, rows)
+SHA384_ROWS = [(449, 3, 41), (90, 8, 80), (98, 1, 1)]   # M: 128-B block
+SHA256_ROWS = [(225, 3, 33), (46, 8, 64), (50, 1, 1)]   # M: 64-B block
+# contract preparation per code byte (D): decoder 1 row/B; validator+translator 0.5 instr/B; code rows 0.2/B
+PREP_ROWS_PER_BYTE = [(16, 3, 1.0), (50, 14, 0.5), (20, 2, 0.2)]
 CHIPS_V0 = deepcopy(CHIPS_V1)
 CHIPS_V0.update({  # spike-#1 layouts (columns and interactions as built; wasmchip report)
     "alu_ri": (36, 15, "M"), "alu_rr": (40, 19, "D"), "mul": (55, 35, "M"),
@@ -82,14 +101,17 @@ MIX_MAINNET = {"alu_ri": 0.08, "alu_rr": 0.06, "bitwise": 0.03, "shift": 0.015, 
 # adversarial candidates: rows per *gas unit* (regular_op_cost = 822,756 gas). All non-bulk WASM
 # operators cost one unit; a function's closing `end` is free; read_register costs 98,562 gas/B;
 # contract loading 1,089,295 gas/B (spec/lean/v3/NearSpecV3/Wasm/Machine.lean).
+RD_GAS_PER_BYTE = 98562 + 2723772      # spec: read_register_byte + write_memory_byte (read_register -> memory)
+LOAD_GAS_PER_BYTE = 1089295             # spec: contract_loading_bytes
 ADVERSARIAL = {
-    "i32.load chain, unaligned (1 op/row)": {"ld_gen": 1.0},
-    "call f; (f empty) per op":              {"callret": 1.0},
-    "local.get b; i64.div_u (2 ops/row)":    {"divrem": 0.5},
-    "local.get b; i64.mul (2 ops/row)":      {"mul": 0.5},
-    "i64.popcnt chain (1 op/row)":           {"clz": 1.0},
-    "read_register into memory":             {"memcpy16": 822756 / 98562 / 16},
-    "distinct-contract loading (PREP)":      {"prep_b": 822756 / 1089295, "_sha_bytes": 822756 / 1089295},
+    "unaligned i32.load chain (1 op/row) [M]":        {"ld_gen": 1.0},
+    "call of an empty function [M]":                  {"callret": 1.0},
+    "local.get b; i64.div_u chain (2 ops/row) [M]":   {"divrem": 0.5},
+    "local.get b; i64.mul chain (2 ops/row) [M]":     {"mul_TTL": 0.5},
+    "i64.popcnt chain (1 op/row) [D]":                {"clz": 1.0},
+    "memory.copy (1 gas unit/B) [M]":                 {"memcpy16": 1 / 16},
+    "read_register -> memory (2.82 Mgas/B) [M]":      {"memcpy16": 822756 / RD_GAS_PER_BYTE / 16},
+    "distinct-contract loading [M SHA-256 + D PREP]": {"_load_bytes": 822756 / LOAD_GAS_PER_BYTE},
 }
 
 # ------------------------------------------------------------------------------------------
@@ -112,8 +134,11 @@ P = {
     "z_inner": (16, "A: grinding bits on inner layers (Grover: z/2 PQ bits)"),
     "log_blowup0": (1, "design: base layer rate 1/2"),
     "log_blowup1": (2, "design: compression layer rate 1/4"),
-    "log_blowup_f": (6, "design: final layer rate 1/64 (size)"),
-    "sha384_cells": (20000, "A/D: optimised SHA-512-family compression AIR (L5-style est. 25-40k)"),
+    "log_blowup2": (4, "design: L3 (the layer the final layer verifies) rate; higher blowup = fewer queries for the final verifier"),
+    "log_blowup_f": (5, "design: final layer rate 1/32 (size vs latency; 1/64 = 740 KB but +0.14 s)"),
+    "sha384_cells": (0, "M: 0 = from the measured SHA-512-family layout (SHA384_ROWS; ~38k cell-eq at E=10); >0 overrides"),
+    "prep_early": (1, "design lever P-PERF-8: contract preparation + code hash proved in a separate sub-proof from chunk start (code known before execution)"),
+    "tail_all_gpus": (1, "design: 1 = L2/L3 distributed over all GPUs (P-PERF-4; never transmitted); the final layer stays one FRI on one node"),
     "rec_field_cells_per_value": (30, "A: in-AIR DEEP/FRI field work per opened value"),
     "table_log_h": (24, "design: per-GPU table height (segments concatenated per chip)"),
     # GPU (H200 = GH100: 132 SMs x 64 INT32 lanes x 1.98 GHz)
@@ -177,10 +202,14 @@ def row_cost(p, backend, m, f):
 def per_op(p, backend, mix, chips):
     cells = ops = rows = fr = main = 0.0
     for cls, r in mix.items():
-        if cls == "_sha_bytes":
-            c = r * v("sha256_cells_per_byte", p)
-            cells += c
-            ops += c * int_ops_per_cell(p)[0] * 1.1
+        if cls == "_load_bytes":   # r code bytes: SHA-256 code hash (measured layout) + PREP (D)
+            for (m, f, n) in [(m, f, n / 64) for (m, f, n) in SHA256_ROWS] + PREP_ROWS_PER_BYTE:
+                c, o = row_cost(p, backend, m, f)
+                cells += r * n * c
+                ops += r * n * o
+                main += r * n * m
+                fr += r * n * f
+                rows += r * n
             continue
         m, f, _ = chips[cls]
         c, o = row_cost(p, backend, m, f)
@@ -202,6 +231,13 @@ def queries(p, log_blowup, regime="best"):
     b = {"udr": udr, "johnson": joh, "best": max(udr, joh)}[regime]
     return math.ceil((v("rbr_bits", p) - v("z_inner", p) / 2) / b)
 
+def sha384_celleq(p):
+    """work cell-eq of one in-circuit SHA-384 compression (measured layout, E and rate of p)."""
+    if v("sha384_cells", p) > 0:
+        return v("sha384_cells", p)
+    cell = int_ops_per_cell(p)[0]
+    return sum(n * row_cost(p, "U-logUp", m, f)[1] for (m, f, n) in SHA384_ROWS) / cell
+
 def verifier_cells(p, q, n_trees, log_lde, c_tot, E, n_parts=1):
     """in-AIR cells to verify one proof whose `n_trees` commitments are global trees over
     `n_parts` GPUs: leaf_i = H(d_1,i || ... || d_N,i) with d_g,i = H(row of GPU g at i)
@@ -212,7 +248,7 @@ def verifier_cells(p, q, n_trees, log_lde, c_tot, E, n_parts=1):
     fri_layers = max(1, math.ceil((log_lde - 6) / 4))     # arity 16 down to 2^6
     fri = sum(16 * E * 4 / 128 + max(0, log_lde - 4 * (i + 1) - cap) for i in range(fri_layers))
     compr = q * (n_trees * path + leaf + fri)
-    return compr * v("sha384_cells", p) + q * c_tot * v("rec_field_cells_per_value", p), compr
+    return compr * sha384_celleq(p) + q * c_tot * v("rec_field_cells_per_value", p), compr
 
 def size_final(p, logn, logb, weq=400, trees=3, D=48, E=40, ar=4, flog=6):
     """final-layer bytes (tools/d3a-study/pqsize.py formula, SHA-384, arity 16)."""
@@ -235,7 +271,10 @@ def size_final(p, logn, logb, weq=400, trees=3, D=48, E=40, ar=4, flog=6):
 # ------------------------------------------------------------------------------------------
 # 6. Scenario evaluation
 # ------------------------------------------------------------------------------------------
-def scenario(p, name, backend, n_gpu, chips=CHIPS_V1):
+def scenario(p, name, backend, n_gpu, chips=CHIPS_V1, cand=None):
+    if name == "adversarial" and cand is None:
+        rs = [scenario(p, name, backend, n_gpu, chips, c) for c in ADVERSARIAL]
+        return max(rs, key=lambda r: r["after_exec"])
     gas = v("gas", p)
     units = gas / v("regular_op", p)
     if name == "typical-measured":
@@ -247,11 +286,7 @@ def scenario(p, name, backend, n_gpu, chips=CHIPS_V1):
         mix = MIX_MAINNET
         host_gas = gas * (1 - v("wasm_share_mainnet", p))
     else:
-        worst = None
-        for adv, mx in ADVERSARIAL.items():
-            r = per_op(p, backend, mx, chips)
-            if worst is None or r["ops"] > worst[1]["ops"]:
-                worst = (adv, r, mx)
+        worst = (cand, None, ADVERSARIAL[cand])
         ops_wasm = units
         mix = worst[2]
         host_gas = 0.0
@@ -275,26 +310,37 @@ def scenario(p, name, backend, n_gpu, chips=CHIPS_V1):
     trees0 = {"U-logUp": 3, "U-GKR": 2, "ML": 2}[backend]
     q0 = queries(p, v("log_blowup0", p))
     c_tot0 = cells_total / 2 ** h
-    rc1, cmp1 = verifier_cells(p, q0, trees0, h + v("log_blowup0", p), c_tot0, E, n_gpu)
+    # each layer proves the verifier of the previous layer's proof
+    rc1, cmp1 = verifier_cells(p, q0, trees0, h + v("log_blowup0", p), c_tot0, E, n_gpu)   # L1 circuit
     c1 = int_ops_per_cell(p, v("log_blowup1", p))[0]
+    c2 = int_ops_per_cell(p, v("log_blowup2", p))[0]
     cf = int_ops_per_cell(p, v("log_blowup_f", p))[0]
+    node = min(n_gpu, v("gpus_per_node", p))       # the final layer: one FRI instance, one node
+    mid = n_gpu if v("tail_all_gpus", p) else node  # L2/L3 (not transmitted) may be distributed
     t_l1 = rc1 * 1.2 * c1 / (n_gpu * R) + v("sync_s", p)
     q1 = queries(p, v("log_blowup1", p))
-    h1 = 22
-    rc2, cmp2 = verifier_cells(p, q1, 3, h1 + v("log_blowup1", p), rc1 / 2 ** h1, E, n_gpu)
-    node = min(n_gpu, v("gpus_per_node", p))
-    t_l2 = rc2 * 1.2 * c1 / (node * R) + v("sync_s", p)
+    rc2, cmp2 = verifier_cells(p, q1, 3, math.log2(rc1 / (400 * n_gpu)) + v("log_blowup1", p), 400 * n_gpu, E, n_gpu)  # L2 circuit
+    t_l2 = rc2 * 1.2 * c1 / (mid * R) + v("sync_s", p)
     q2 = queries(p, v("log_blowup1", p))
-    h2 = max(18, math.ceil(math.log2(rc2 / 400)))
-    rc3, _ = verifier_cells(p, q2, 3, h2 + v("log_blowup1", p), 400, E)
-    hf = max(18, math.ceil(math.log2(rc3 / 400)))
-    t_l3 = rc3 * 1.2 * c1 / (node * R) + v("sync_s", p)
-    t_fin = rc3 * 1.2 * cf / (node * R) + v("sync_s", p)
+    rc3, _ = verifier_cells(p, q2, 3, math.log2(rc2 / 400) + v("log_blowup1", p), 400, E)   # L3 circuit
+    t_l3 = rc3 * 1.2 * c2 / (mid * R) + v("sync_s", p)
+    q3 = queries(p, v("log_blowup2", p))
+    rcf, _ = verifier_cells(p, q3, 3, math.log2(rc3 / 400) + v("log_blowup2", p), 400, E)   # final circuit
+    hf = max(18, math.ceil(math.log2(rcf / 400)))
+    t_fin = rcf * 1.2 * cf / (node * R) + v("sync_s", p)
     qf, size = size_final(p, hf, v("log_blowup_f", p))
-    rec_ops = rc1 * 1.2 * c1 + (rc2 + rc3) * 1.2 * c1 + rc3 * 1.2 * cf
+    rec_ops = rc1 * 1.2 * c1 + rc2 * 1.2 * c1 + rc3 * 1.2 * c2 + rcf * 1.2 * cf
     tail = t_l1 + t_l2 + t_l3 + t_fin
     t_commit_done = max(t_exec + v("seg_tail_s", p), t_a + v("sync_s", p))
     latency = t_commit_done + t_b + v("sync_s", p) + tail
+    if name == "adversarial" and worst[0].startswith("distinct-contract") and v("prep_early", p):
+        # PREP + code hash: own transcript, starts at t = 0 (all executed code is known at chunk
+        # start); the main proof then holds only the witness/plumbing work
+        main_ops = ops_host + ops_wit
+        t_main_b = main_ops / (n_gpu * R) * (1 - a_ops / cell_ops)
+        t_all = (ops_base + main_ops) / (n_gpu * R) + v("sync_s", p)
+        latency = max(t_exec + v("seg_tail_s", p) + t_main_b + v("sync_s", p), t_all) + tail
+        t_a, t_b = (ops_base + main_ops) / (n_gpu * R), t_main_b
     # memory per GPU: trace (4 B) + LDE (8 B) per committed cell, GKR layers (E*4 B per fraction)
     frac_total = ops_wasm * po["frac"]
     mem = cells_total / n_gpu * 12 + (frac_total / n_gpu * E * 4 * 2 if backend != "U-logUp" else 0)
@@ -339,7 +385,7 @@ def fmt(x, n=2):
     return f"{x:.{n - 1}e}"
 
 SENS = [  # (param, low, high)
-    ("eff", 0.2, 0.6), ("E", 8, 12), ("sha512_int_ops", 2000, 5500), ("sha384_cells", 15000, 40000),
+    ("eff", 0.2, 0.6), ("E", 8, 12), ("sha512_int_ops", 2000, 5500), ("sha384_cells", 20000, 50000), ("table_log_h", 23, 25), ("tail_all_gpus", 0, 1), ("prep_early", 0, 1),
     ("exec_slowdown", 1.0, 2.0), ("rbr_bits", 200, 290), ("z_inner", 0, 32),
     ("ntt_int_ops_per_cell", 200, 450), ("log_blowup0", 1, 2), ("witness_bytes", 4e6, 16e6),
 ]
@@ -381,6 +427,10 @@ def main():
               f"{r['after_exec']:5.2f} {r['q0']:4d} {r['proof_bytes']/1e3:6.0f}K {r['mem_gb_per_gpu']:6.0f}")
     worst = [r for r in out if r["scenario"] == "adversarial"][0]
     print(f"\n  adversarial worst kind: {worst['worst_kind']}")
+    print("\nAdversarial candidates at 1 Pgas, U-logUp, 32 H200 (latency after execution, s):")
+    for c in ADVERSARIAL:
+        r = scenario(P, "adversarial", "U-logUp", 32, cand=c)
+        print(f"  {c:50s} cell-eq/unit {r['celleq_per_op']:5.0f}  GPU-s {r['gpu_s']:5.1f}  post-exec {r['after_exec']:5.2f}  (B {r['t_B']:.2f}; L1 {r['t_L1']:.2f} L2 {r['t_L2']:.2f} L3 {r['t_L3']:.2f} final {r['t_final']:.2f})")
     print("\nRequired sustained GPU efficiency for the adversarial 1 Pgas chunk (U-logUp backend)")
     for n in (16, 32):
         for budget in (1.0, 2.0):

@@ -29,6 +29,17 @@ Artifacts:
 
 ---
 
+## D. User decisions (2026-10-14, binding for this design)
+
+| id | decision | consequence |
+|---|---|---|
+| **P-PERF-6** | Latency targets are measured **after execution ends** | The native run of the chunk (≈ 1–1.2 s per Pgas) is outside the target. The worst-case target is ≤ 2 s after execution on the P-PERF-7 hardware. |
+| **P-PERF-7** | The worst-case 1 Pgas class targets **4 × 8 H200 (32 GPUs)** | All worst-case figures are given at 32 GPUs; 16-GPU figures are informational. |
+| **P-RT-1'** | **No cap on distinct contract code bytes.** Keep the full domain; size the design and hardware for register copies and many distinct contracts | The worst case now includes ≈ 0.88 GB of distinct contract code per 1 Pgas chunk (§3.4) and register-heavy chunks (§3.2). There is no deploy-time PREP registry. |
+| P-PERF-1…5 | Adopted as the **design baseline**: register-form translation, logUp buses, rate-1/2 inner layers with constraint degree ≤ 3, the shared distributed proof, stack-temporary channels | Each needs its soundness lemma. They are tracked in §8.1. |
+
+---
+
 ## 0. Answers in one page
 
 **Verdict.** The study's "thousands of H200s" for a worst-case 1 Pgas chunk was driven by three pessimistic
