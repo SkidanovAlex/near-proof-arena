@@ -1110,6 +1110,35 @@ pub fn instances_from_entries(
     Ok((jobs_json(&c.b0)?, jobs_json(&c.b1)?))
 }
 
+/// D1 (`nearAirV3D1`, lane v3-d1-tables): the two SHA instances from the entry map with the
+/// outcome-Merkle jobs over **all** leaves (`all_leaves` = every outcome leaf preimage:
+/// transactions, local receipts, incoming receipts; the first `M0` leaves are public digests,
+/// only the inner nodes are hashed) in place of the receipts-only ones, and the access-key
+/// post values `VPOST(vid) = nonce ‖ [1]` of the FullAccess keys transactions read
+/// (`akm_posts`) appended to the receipt family.
+pub fn instances_d1(
+    entries: &HashMap<String, String>,
+    all_leaves: &[Vec<u8>],
+    akm_posts: &[(u64, Vec<u8>)],
+) -> Result<(String, String), String> {
+    let mut c = collect(&bundle_from_entries(entries)?);
+    let mrk_kind = |id: u64| id % 16 == K_MRK;
+    c.families.receipt.retain(|j| !mrk_kind(j.id));
+    for (vid, b) in akm_posts {
+        c.families.receipt.push(Job::new(
+            msg_id(K_VPOST, *vid),
+            b.iter().map(|&x| x as u64).collect(),
+        ));
+    }
+    let leaves: Vec<Vec<u64>> = all_leaves
+        .iter()
+        .map(|b| b.iter().map(|&x| x as u64).collect())
+        .collect();
+    c.families.receipt.extend(merkle_jobs(&leaves));
+    let (b0, b1, _) = two_bins(&c.families);
+    Ok((jobs_json(&b0)?, jobs_json(&b1)?))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1248,6 +1277,7 @@ mod tests {
             own: 3,
             height: 0x0102,
             bgp: 0,
+            d1: None,
         };
         let dup = |j: usize| j == 1;
         let acct = AcctV {

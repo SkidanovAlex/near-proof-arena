@@ -614,6 +614,233 @@ fn main() {
                 std::process::exit(1);
             }
         }
+        Some("v3d1prove") => {
+            // `npudr v3d1prove <case_dir> <out_dir> --air <nearAirV3D1.json> [--pub <public.bin>]
+            //   [--check-only] [--dump]` (lane v3-d1-tables): the D1 (nearAirV3D1, 30 tables)
+            // pipeline on a real D1a case: the native D1 run, the D1 prepared tape, every
+            // table's constraints, the balance of every bus (tables + public messages), then
+            // (without --check-only) the STARK at auxGroup 2 and `join hint π`.  `--dump` also
+            // writes the D1 tables' entries (`tx.json`, `akm.json`) and `prepared.bin`.
+            let mut flags: std::collections::HashMap<&str, String> = Default::default();
+            let mut pos: Vec<String> = vec![];
+            let mut i = 2;
+            while i < a.len() {
+                match a[i].as_str() {
+                    f @ ("--air" | "--pub") => {
+                        flags.insert(
+                            if f == "--air" { "air" } else { "pub" },
+                            a.get(i + 1).cloned().unwrap_or_else(|| die(f)),
+                        );
+                        i += 2;
+                    }
+                    "--check-only" => {
+                        flags.insert("check", String::new());
+                        i += 1;
+                    }
+                    "--dump" => {
+                        flags.insert("dump", String::new());
+                        i += 1;
+                    }
+                    "--mutate-op" => {
+                        flags.insert(
+                            "mutate",
+                            a.get(i + 1).cloned().unwrap_or_else(|| die("--mutate-op")),
+                        );
+                        i += 2;
+                    }
+                    x => {
+                        pos.push(x.to_string());
+                        i += 1;
+                    }
+                }
+            }
+            if pos.len() != 2 || !flags.contains_key("air") {
+                die(
+                    "usage: npudr v3d1prove <case_dir> <out_dir> --air <nearAirV3D1.json> [--pub <public.bin>] [--check-only] [--dump]",
+                );
+            }
+            let (case, od) = (&pos[0], std::path::PathBuf::from(&pos[1]));
+            std::fs::create_dir_all(&od).unwrap_or_else(|e| die(&format!("{}: {e}", pos[1])));
+            let rd = |p: &str| std::fs::read(p).unwrap_or_else(|e| die(&format!("{p}: {e}")));
+            let wr = |name: &str, b: &[u8]| {
+                std::fs::write(od.join(name), b).unwrap_or_else(|e| die(&format!("{name}: {e}")))
+            };
+            let t_all = Instant::now();
+            let atxt = std::fs::read_to_string(&flags["air"])
+                .unwrap_or_else(|e| die(&format!("{}: {e}", flags["air"])));
+            let air = Air::from_json(&atxt)
+                .unwrap_or_else(|e| die(&e))
+                .with_aux_group(2);
+            if air.tables.len() != 30 {
+                die("v3d1prove: the AIR is not nearAirV3D1 (30 tables)");
+            }
+            let cb = rd(&format!("{case}/claim.bin"));
+            let wb = rd(&format!("{case}/witness.bin"));
+            let pubb = flags.get("pub").map(|p| rd(p)).unwrap_or_default();
+            use npudr::v3::d1;
+            use npudr::v3::prove as vp;
+            let t0 = Instant::now();
+            let mut ci = d1::case_inputs_d1(&cb, &wb).unwrap_or_else(|e| die(&e));
+            if let Some(m) = flags.get("mutate") {
+                // `--mutate-op <i>:<ok|stage>`: a dishonest verdict (negative test)
+                let (i, f) = m
+                    .split_once(':')
+                    .unwrap_or_else(|| die("--mutate-op i:field"));
+                let i: usize = i.parse().unwrap_or_else(|_| die("--mutate-op index"));
+                // the hint's verdict bits, claimed consistently in the public op and in the
+                // `txV3` trace (a dishonest prover); the walks / memory stay honest
+                let o = ci
+                    .prep
+                    .ops
+                    .get_mut(i)
+                    .unwrap_or_else(|| die("--mutate-op: no such op"));
+                let e = &mut ci.tx[i];
+                match f {
+                    "ok" => {
+                        o.ok ^= 1;
+                        e.ok ^= 1;
+                    }
+                    "stage" => {
+                        o.stage = (o.stage + 1) % 3;
+                        e.stage = o.stage as u64;
+                    }
+                    _ => die("--mutate-op field (ok|stage)"),
+                }
+                ci.tape = d1::prep::prepared_bytes_d1(&ci.prep, ci.ovh);
+            }
+            let t_entries = t0.elapsed().as_secs_f64();
+            wr("prepared.bin", &ci.tape);
+            wr("hint.bin", &ci.hint);
+            if flags.contains_key("dump") {
+                wr("tx.json", serde_json::to_string(&ci.tx).unwrap().as_bytes());
+                wr(
+                    "akm.json",
+                    serde_json::to_string(&ci.akm).unwrap().as_bytes(),
+                );
+            }
+            let pubs = npudr::verifier::public_inputs(&air, &ci.tape);
+            let new_tabs = d1::d1_tables(&ci).unwrap_or_else(|e| die(&e));
+            let mut traces = Vec::with_capacity(30);
+            let mut tabs = vec![];
+            let mut fail = false;
+            for (t, name) in d1::ORDER_D1.iter().enumerate() {
+                let t1 = Instant::now();
+                let tc = if t < 25 {
+                    vp::render_cols(name, &ci.entries[*name]).unwrap_or_else(|e| die(&e))
+                } else {
+                    let tb = &new_tabs[t - 25];
+                    let w = tb.width;
+                    npudr::cols::TraceCols::from_rows(tb.log, w, |r, buf| {
+                        buf.copy_from_slice(&tb.cells[r * w..(r + 1) * w])
+                    })
+                };
+                let tab = &air.tables[t];
+                if tc.width() != tab.width || tc.log_h < 1 || tc.log_h > tab.max_log {
+                    die(&format!(
+                        "table {t} {name}: shape log {} width {} vs width {} maxLog {}",
+                        tc.log_h,
+                        tc.width(),
+                        tab.width,
+                        tab.max_log
+                    ));
+                }
+                let bad = npudr::check::failing_constraints_cols(tab, &tc, &pubs, 10);
+                eprintln!(
+                    "[v3d1] table {t:2} {name:9} log {:2} width {:3}  {:.2} s  {}",
+                    tc.log_h,
+                    tc.width(),
+                    t1.elapsed().as_secs_f64(),
+                    if bad.is_empty() {
+                        "ok"
+                    } else {
+                        "CONSTRAINT FAIL"
+                    }
+                );
+                for (c, r) in &bad {
+                    eprintln!("[v3d1]   FAIL table {t} {name} constraint {c} row {r}");
+                }
+                fail |= !bad.is_empty();
+                tabs.push(serde_json::json!({"t": t, "name": name, "log": tc.log_h, "width": tc.width(), "failing": bad}));
+                traces.push(tc);
+            }
+            let bal = vp::bus_balances(&air, &traces, &pubs, &ci.tape)
+                .unwrap_or_else(|| die("public tape does not fit (pubFit)"));
+            let mut bj = vec![];
+            for b in &bal {
+                let ok = b.bad.is_empty();
+                fail |= !ok;
+                if !ok {
+                    eprintln!(
+                        "[v3d1] bus {:2}: {} msgs, sent {} recv {}  IMBALANCE ({} msgs)",
+                        b.bus,
+                        b.msgs,
+                        b.sent,
+                        b.recv,
+                        b.bad.len()
+                    );
+                    for (_, msg, s, r) in b.bad.iter().take(6) {
+                        eprintln!("[v3d1]   bus {} sent {s} recv {r} msg {msg:?}", b.bus);
+                    }
+                }
+                bj.push(serde_json::json!({"bus": b.bus, "msgs": b.msgs, "sent": b.sent, "recv": b.recv, "nbad": b.bad.len()}));
+            }
+            let r = &ci.run;
+            let mut rep = serde_json::json!({
+                "case": case, "hint_bytes": ci.hint.len(), "prepared_bytes": ci.tape.len(),
+                "txs": r.w.txs.len(), "new_txs": r.w.new_txs.len(), "ops": r.ops.len(),
+                "candidates": r.ops.iter().filter(|o| o.kind == 0 && o.valid && o.cok).count(),
+                "ok": r.ops.iter().filter(|o| o.ok).count(), "locals": r.locals.len(),
+                "receipts": r.receipts.len(), "m0": r.m0, "walks": r.walks.len(), "akm": r.akm.len(),
+                "tables": tabs, "buses": bj, "t_entries": t_entries, "balanced": !fail,
+            });
+            let wrep = |rep: &serde_json::Value| wr("report.json", rep.to_string().as_bytes());
+            if fail {
+                wrep(&rep);
+                die("v3d1prove: constraint failure or bus imbalance (see report.json)");
+            }
+            if flags.contains_key("check") {
+                wrep(&rep);
+                println!(
+                    "check ok: 30 tables, {} buses balanced ({} ops, {} walks)",
+                    bal.len(),
+                    r.ops.len(),
+                    r.walks.len()
+                );
+                return;
+            }
+            let t3 = Instant::now();
+            let pi = npudr::prover::prove_cols_bytes(
+                &air,
+                traces,
+                &pubb,
+                &ci.tape,
+                &ProveOptions { verbose: true },
+            )
+            .unwrap_or_else(|e| die(&e));
+            let t_prove = t3.elapsed().as_secs_f64();
+            let proof = vp::join(&ci.hint, &pi);
+            wr("proof.bin", &proof);
+            let vr = verify(&air, &pubb, &ci.tape, &pi);
+            rep["stark_bytes"] = serde_json::json!(pi.len());
+            rep["proof_bytes"] = serde_json::json!(proof.len());
+            rep["t_prove"] = serde_json::json!(t_prove);
+            rep["rust_verify"] = serde_json::json!(vr.is_ok());
+            rep["t_total"] = serde_json::json!(t_all.elapsed().as_secs_f64());
+            wrep(&rep);
+            println!(
+                "proof {} B (stark {} B); prove {t_prove:.1} s; rust verify {}",
+                proof.len(),
+                pi.len(),
+                if vr.is_ok() {
+                    "ok".to_string()
+                } else {
+                    format!("{vr:?}")
+                }
+            );
+            if vr.is_err() {
+                std::process::exit(1);
+            }
+        }
         Some("v3bus") => {
             // `npudr v3bus <air.json> <pub.bin> <bus> <table>=<entries.json>...`: render the
             // given tables and check that their interactions on `<bus>` balance against the

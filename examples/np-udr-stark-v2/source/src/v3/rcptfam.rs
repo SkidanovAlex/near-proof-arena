@@ -471,6 +471,7 @@ pub fn rcpt_view(n: &Native) -> RcptIn {
         own: n.own,
         height: n.height,
         bgp: n.bgp,
+        d1: None,
     }
 }
 
@@ -741,7 +742,7 @@ pub fn sort_ids(n: &Native) -> Vec<(u64, Vec<u64>)> {
 
 /// Stable sort of `(index, id)` pairs by the id as a little-endian natural
 /// (`leVal`; `foldr insertSorted` keeps equal ids in input order).
-fn sort_le(v: &mut [(u64, Vec<u64>)]) {
+pub(crate) fn sort_le(v: &mut [(u64, Vec<u64>)]) {
     let sig = |x: &[u64]| x.iter().rposition(|&b| b != 0).map_or(0, |i| i + 1);
     v.sort_by(|a, b| {
         let (la, lb) = (sig(&a.1), sig(&b.1));

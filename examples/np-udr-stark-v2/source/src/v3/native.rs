@@ -29,7 +29,7 @@ use crate::v3::hint::{
 };
 
 pub(crate) mod sched;
-mod trace;
+pub(crate) mod trace;
 
 /// `UKind` (`Extract/Ups/PlanDefs.lean`), `UKind.all` order.
 pub const UK_RDB: u8 = 0;
@@ -117,6 +117,9 @@ pub struct Native {
     pub steps: Vec<Step>,
     pub us: Vec<UpsertW>,
     pub receipts: Vec<Receipt>,
+    /// Lookup queries beyond the receipts' and the queues' (D1: the transaction walks,
+    /// lane v3-d1-tables); empty for D0a.
+    pub extra_queries: Vec<crate::v3::walks::Query>,
 }
 
 impl Default for PTrie {
@@ -351,6 +354,7 @@ impl Native {
                 })
                 .collect::<Result<_, String>>()?,
             receipts: vec![],
+            extra_queries: vec![],
         })
     }
 }
@@ -360,12 +364,12 @@ impl Native {
 // ---------------------------------------------------------------------------
 
 /// `readKey t k what` (`RuntimeD0.lean`): `find`, undetermined = `MissingTrieValue`.
-fn read_key(t: &PTrie, k: &[u8], what: &str) -> Result<Option<Bytes>, String> {
+pub(crate) fn read_key(t: &PTrie, k: &[u8], what: &str) -> Result<Option<Bytes>, String> {
     find(t, k).ok_or_else(|| format!("invalid: MissingTrieValue ({what})"))
 }
 
 /// `queueEmpty v what` (`RuntimeD0.lean`).
-fn queue_empty(v: Option<Bytes>, what: &str) -> Result<(), String> {
+pub(crate) fn queue_empty(v: Option<Bytes>, what: &str) -> Result<(), String> {
     match v {
         None => Ok(()),
         Some(b) if b.len() != 16 => Err(format!("invalid: StorageInconsistentState ({what})")),
@@ -377,7 +381,7 @@ fn queue_empty(v: Option<Bytes>, what: &str) -> Result<(), String> {
 /// `schedStep prims ctx t` (`RuntimeD0.lean`), keeping `out.state` only:
 /// read `keyBwState`, `prims.sched` (= `(Scheduler.pubOf …).bind (runCore · prev)`,
 /// `ChunkValidationV0.prims`, `PrepD0.run_eq_core`), upsert the new state.
-fn sched_step(ctx: &ApplyCtx, t: &PTrie) -> Result<(PTrie, Bytes), String> {
+pub(crate) fn sched_step(ctx: &ApplyCtx, t: &PTrie) -> Result<(PTrie, Bytes), String> {
     let prev = read_key(t, &key_bw_state(), "bandwidth scheduler state")?;
     let state = sched_pub(
         &ctx.layout.shard_ids,
@@ -439,13 +443,13 @@ fn apply_new_chunk(ctx: &ApplyCtx, t: &PTrie, receipts: &[Receipt]) -> Result<PT
 }
 
 /// `applyMissingChunk prims ctx t` (`RuntimeD0.lean`).
-fn apply_missing_chunk(ctx: &ApplyCtx, t: &PTrie) -> Result<PTrie, String> {
+pub(crate) fn apply_missing_chunk(ctx: &ApplyCtx, t: &PTrie) -> Result<PTrie, String> {
     read_key(t, &key_delayed_idx(), "DelayedReceiptIndices")?;
     Ok(sched_step(ctx, t)?.0)
 }
 
 /// `schedulerUpsertWitness ctx pre` (`Assembly/SchedulerUpsertCost.lean`).
-fn scheduler_upsert_witness(ctx: &ApplyCtx, pre: &PTrie) -> Result<UpsertW, String> {
+pub(crate) fn scheduler_upsert_witness(ctx: &ApplyCtx, pre: &PTrie) -> Result<UpsertW, String> {
     let (_, value) = sched_step(ctx, pre)?;
     let run =
         trace::trace_upsert(pre, &key_bw_state(), &value).ok_or("scheduler upsert trace failed")?;
@@ -542,6 +546,7 @@ pub fn native_of(cb: &[u8], wb: &[u8]) -> Result<Native, String> {
         steps,
         us,
         receipts,
+        extra_queries: vec![],
     })
 }
 

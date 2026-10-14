@@ -995,7 +995,7 @@ pub struct Blk {
 }
 
 /// `merklizeBorsh` over byte items: `merkleRoot (map sha256 items)`.
-fn merklize_borsh(items: &[Bytes]) -> Bytes {
+pub(crate) fn merklize_borsh(items: &[Bytes]) -> Bytes {
     let leaves: Vec<Bytes> = items.iter().map(|it| sha256(it).to_vec()).collect();
     ns::merkle_root(&leaves)
 }
@@ -1593,15 +1593,15 @@ fn all_hex(b: &[u8]) -> bool {
     b.iter().all(|&c| is_hex(c))
 }
 /// `AccountId.isNearImplicit`.
-fn is_near_implicit(s: &[u8]) -> bool {
+pub(crate) fn is_near_implicit(s: &[u8]) -> bool {
     s.len() == 64 && all_hex(s)
 }
 /// `AccountId.isEthImplicit`.
-fn is_eth_implicit(s: &[u8]) -> bool {
+pub(crate) fn is_eth_implicit(s: &[u8]) -> bool {
     s.len() == 42 && &s[..2] == b"0x" && all_hex(&s[2..])
 }
 /// `AccountId.isNearDeterministic`.
-fn is_near_deterministic(s: &[u8]) -> bool {
+pub(crate) fn is_near_deterministic(s: &[u8]) -> bool {
     s.len() == 42 && &s[..2] == b"0s" && all_hex(&s[2..])
 }
 
@@ -1618,7 +1618,7 @@ fn refund_congestion_gas(receiver: &[u8]) -> u128 {
 }
 
 /// `statusShards ctx`: status shard ids in first-occurrence order.
-fn status_shards(ctx: &ApplyCtx) -> Vec<u64> {
+pub(crate) fn status_shards(ctx: &ApplyCtx) -> Vec<u64> {
     let mut acc: Vec<u64> = Vec::new();
     for (s, _, _) in &ctx.statuses {
         if !acc.contains(s) {
@@ -1629,7 +1629,7 @@ fn status_shards(ctx: &ApplyCtx) -> Vec<u64> {
 }
 
 /// `fwdGasOk ctx refunds`.
-fn fwd_gas_ok(ctx: &ApplyCtx, refunds: &[Receipt]) -> bool {
+pub(crate) fn fwd_gas_ok(ctx: &ApplyCtx, refunds: &[Receipt]) -> bool {
     let gas0: Vec<(u64, u128)> = ctx
         .statuses
         .iter()
@@ -1686,7 +1686,7 @@ fn fwd_sizes(ctx: &ApplyCtx, refunds: &[Receipt]) -> Vec<(u64, u64)> {
 }
 
 /// `fwdLinks ctx refunds`: `(own·n + idx(s), Σ size)` by scheduler link index.
-fn fwd_links(ctx: &ApplyCtx, refunds: &[Receipt]) -> Vec<(u64, u64)> {
+pub(crate) fn fwd_links(ctx: &ApplyCtx, refunds: &[Receipt]) -> Vec<(u64, u64)> {
     let ids = &ctx.layout.shard_ids;
     let Some(o) = index_of(ids, ctx.own) else {
         return Vec::new();
@@ -1698,7 +1698,7 @@ fn fwd_links(ctx: &ApplyCtx, refunds: &[Receipt]) -> Vec<(u64, u64)> {
 }
 
 /// `outgoingReceiptsRoot l rs`.
-fn outgoing_receipts_root(l: &Layout, rs: &[Receipt]) -> Bytes {
+pub(crate) fn outgoing_receipts_root(l: &Layout, rs: &[Receipt]) -> Bytes {
     let items: Vec<Bytes> = l
         .shard_ids
         .iter()
@@ -1754,6 +1754,13 @@ pub struct PrepC {
 
 /// `prepClaim cb`.
 pub fn prep_claim(cb: &[u8]) -> Result<PrepC, String> {
+    prep_claim_with(cb, false)
+}
+
+/// `prepClaim cb` (`d1 = false`), or its D1 variant (`d1 = true`, lane v3-d1-tables,
+/// `ZkFormal.NearV3.D1.PrepD1.prepClaimD1`): the same checks without `c.no_tx_flags` and the
+/// zero transaction root of the last chunk (D1 allows transactions).
+pub fn prep_claim_with(cb: &[u8], d1: bool) -> Result<PrepC, String> {
     let k = walk_d0(cb)?;
     let c = &k.c;
     if c.protocol_version != 86 {
@@ -1776,7 +1783,7 @@ pub fn prep_claim(cb: &[u8]) -> Result<PrepC, String> {
     if c.blocks.len() > 32 {
         return err("out of domain (c.segment)");
     }
-    if !c.tx_valid.is_empty() {
+    if !d1 && !c.tx_valid.is_empty() {
         return err("out of domain (c.no_tx_flags)");
     }
     if c.epoch_start_after.len() != c.blocks.len() {
@@ -1865,7 +1872,7 @@ pub fn prep_claim(cb: &[u8]) -> Result<PrepC, String> {
         }
         lists.extend(srcs);
     }
-    if slot_b2.tx_root != zero32() {
+    if !d1 && slot_b2.tx_root != zero32() {
         return err("invalid: transaction root of the last chunk");
     }
     let own = slot_b2.congestion.clone();
