@@ -165,10 +165,17 @@ Every Rust generator/preprocessor is differential-tested against Lean (`conforma
 sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-prover-*.md`.
 
 **Open:**
-* **Elaboration budget** (below) — the main feasibility question; not measured yet.
-* **Packaging:** `build-recipe/build.sh`'s `out/prove`/`out/prepare` are still the v1 binaries; wire
-  them to `v3prepare`/`v3prove`; vendor; judge-style build. Check ~12 min prove time against the
-  judge's prove budget.
+* ~~Elaboration budget / packaging~~ (2026-10-14, main `50f26055`): **the real `formal-check` with the
+  D0a config (`runners/formal-checker/challenges/near-chunk-validation-d0-stark.json`) passes every
+  gate with no findings** on the packaged candidate: elaboration 7,007 s serial; leanchecker 2,267 s,
+  nanoda 1,148 s, lean4lean 3,223 s (all within 1 h/module, 4 h total, 2 h/run); certificate type
+  matches `ArenaExpectedInst.expectedType`; native verifier model 90 modules (was 657; no `Std`),
+  built in ≈ 90 s; `out/verify` byte-identical to the judge's build. `out/prepare` = `prepare_v3`,
+  `out/prove` = `prove_v3` (v3 contract, reproducible). Logs: `docs/logs/v3-{package,recheck,
+  model-split,d0a-challenge}-2026-10.md`. Remaining before signing: user's held-out seed/commitment,
+  hostile `near-v3-d3-lenient-codes` decision (stale; fails to build), freeze + sign (user).
+  D1a spec is on `lane/v3-d1a-spec` — do NOT merge it before the D0a draft is signed (any new
+  `spec/lean` file breaks regeneration at freeze commit `3c2a4563`).
 * ~~Oracle~~ (lane oracle-d0a, 2026-10-13): `oracle/v3-d0a` implements A7 native post trie, A12,
   empty-key-extension fix, offline `unfold-case`; public-d0a regenerated (all `.bin` byte-identical,
   only meta.json); difftests 0 disagreements on public-d0a, fixtures-extra, full/heavy scratch corpora,
@@ -205,7 +212,7 @@ took 1,800 s); slowest: `Candidates.HorizontalAuxCheck` 140 s, `Candidates.Verti
   `CodecHeader` 335 s (≈ 38% of the closure; `simp` inside `codec_int`), `GWalk` 192 s,
   `Node.Links` 182 s. Proposed next levers (not applied): faster `codec_int`, per-case codec
   modules, a g = 2-only `NearAirCheck` lemma.
-* **Not measured yet:** leanchecker / nanoda / lean4lean rechecks of the 3,964-module closure.
+* ~~Rechecks~~: all pass and fit (see above; `docs/logs/v3-recheck-2026-10.md`).
 * **Prover resource limits (resolved, `7cd8a982`):** draft `max_prove_ms` 600,000 and 16 GiB / 8 vCPU.
   `v3prove` now takes 263–312 s wall with cgroup `memory.peak` ≤ 12.6 GiB on 8 vCPU (4 Zen 5 cores ×
   2 threads, `HEAVY_MEM=16G`); proofs byte-identical to before; Lean accepts; 14/14 negatives.
