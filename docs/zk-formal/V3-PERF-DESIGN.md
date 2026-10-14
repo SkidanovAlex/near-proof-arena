@@ -125,7 +125,17 @@ the in-circuit SHA-384 cost (0.6 s). The chip widths themselves matter less.
 **Spike #1 (§9.2, measured on CPU).**
 * Six chips (ALU reg-imm / reg-reg, MUL, BRZ, aligned LD/ST) plus memory boundary, code, range and byte-pair
   tables, run on the **existing** np-udr-stark-v2 prover.
-* Results are filled in at §9.2.
+* The register machine matches the reference interpreter on every program, and block-level gas units equal the
+  executed op count.
+* Per WASM op: measured-mix loop **10.6 main cells, 5.1 fractions** (3.50 ops/row); `i32.load` chain 21.3 / 11.9;
+  store/load loop 9.3 / 4.3.
+* The model reproduces these from the per-chip layouts to within the memory-boundary rows.
+* Honest proofs verify: 83–104 M committed W_eq per proof, 16.5–17.8 s at today's parameters, ≈ 5–6 M W_eq/s on 2
+  contended threads.
+* Constraint and bus tampers are caught by the AIR checks, and 16 of 16 proof bit-flips are rejected by the
+  verifier.
+* CPU rate-1/2 LDE + SHA-384 Merkle: **27.5 ns per trace cell on one thread, 62 % of it hashing**.
+* Extension cost E = 8 / 10 / 12: ×1 / ×1.4 / ×3.3 per multiplication.
 
 **Decisions needed (§10).**
 * P-PERF-1: register-form PREP.
@@ -149,6 +159,7 @@ the in-circuit SHA-384 cost (0.6 s). The chip widths themselves matter less.
 * Receipts in a chunk apply sequentially in nearcore, and a function call's WASM run is sequential. The native run
   is therefore a hard serial floor of ≈ 1 s per Pgas.
 * The model adds 20 % for checkpoint recording (`exec_slowdown` 1.2, **A**).
+* Sensitivity to it is nil *after* execution, but it adds one-for-one *from start*.
 * No GPU count removes this floor. Every latency below is reported both *from execution start* and *after
   execution ends*.
 
@@ -762,7 +773,99 @@ except the final one.
 
 ### 9.2 Spike #1 results (CPU; contended, indicative only)
 
-*(filled in below from `docs/logs/v3-perf-design-2026-10.md`)*
+Setup:
+* Binary `tools/perf-design/wasmchip`, release build, `RUSTFLAGS` x86-64-v3 + SHA-NI.
+* `nice -n 19 taskset -c 9,25`, `RAYON_NUM_THREADS=2`, `NPUDR_MEM_GB=8`. CPUs 9,25 are one Zen 5 core with SMT,
+  shared with the refreeze lane.
+* Raw output: `docs/e2e-results/v3-perf-design/spike1.log`.
+
+**What was built.**
+* A WASM subset: local.get/set/tee, i32/i64.const, i64.add/sub/mul/eqz, br, br_if, aligned i32.load/store.
+* Its reference stack interpreter.
+* The register-form translator of §2.2 (block-level gas fees, local/const folding, set-retargeting, eqz+br_if
+  fusion, br folding).
+* The register machine that records memory accesses.
+* Chips as `npudr` tables on the **unchanged** np-udr-stark-v2 prover: `alu_ri`, `alu_rr`, `mul`, `brz`, `ld`,
+  `st`, plus `mbound` (sorted, strictly increasing touched addresses), `code`, `io`, `range16` and `pair`.
+* Buses: STATE, FETCH, MEM, RANGE, PAIR.
+* These are the **v0** layouts: every slot is RW memory, timestamp differences use 2 × 16-bit lookups, and
+  multiplicities are bit-encoded grand products, because that is what the existing prover supports.
+
+**Correctness and soundness self-check (M).**
+* For every program and size:
+  * final locals and memory of the register machine equal the reference interpreter's;
+  * Σ block fees = executed WASM ops;
+  * 0 failing constraints and 0 unbalanced bus messages on the honest trace;
+  * the deployed-parameter proof verifies (Rust verifier).
+* T1: +1 on a result limb is caught by the constraint check (1 failing constraint). The prover refuses: "ALI
+  identity fails".
+* T2: the operand read is changed with the arithmetic kept consistent. There are 0 failing constraints but 8
+  unbalanced memory-bus messages. The prover refuses: "bus products differ".
+* T3: 1-bit flips at 16 spread offsets of an honest proof: **16/16 rejected by the verifier**.
+* Limitation: the prover is read-only here and refuses dishonest traces, so T1/T2 show that the AIR detects the
+  tamper, not that a forged proof is rejected. T3 covers the verifier side.
+* The spike AIR leaves initial memory and io state unbound to public inputs. This is spike-only.
+
+**Cells and fractions (M; per WASM op; chips + memory boundary; fixed tables excluded).**
+
+| program | ops | rows | ops/row | main cells/op | fractions/op | committed/op U-logUp / U-GKR / ML (E = 10) | prover-actual W_eq/op (Fp8, GP, degree 4, padded) |
+|---|---:|---:|---:|---:|---:|---|---:|
+| measured-mix loop (`acc = acc·x + K; i -= 1` while i ≠ 0) | 917,507 | 262,145 | 3.50 | **10.6** | **5.1** | 46 / 16 / 11 | 65.8 |
+| adversarial `i32.load` chain (16 per iteration, plus loop) | 425,987 | 294,913 | 1.44 | 21.3 | 11.9 | 102 / 35 / 21 | 137.5 |
+| store/load loop (`mem[p] = v; v = mem[p+4]; p += 4`) | 1,179,651 | 327,681 | 3.60 | 9.3 | 4.3 | 42 / 16 / 9 | 61.1 |
+
+Per chip row as built (v0):
+
+| chip | m | f | v1 target (§2.4) m / f |
+|---|---:|---:|---|
+| `alu_ri` | 36 | 15 | 32 / 13 |
+| `alu_rr` | 40 | 19 | 36 / 16 |
+| `mul` | 55 | 35 | 49 / 32 |
+| `brz` | 21 | 7 | 19 / 6 |
+| `ld` | 31 | 18 | 20 / 12 |
+| `st` | 29 | 18 | — |
+| `mbound` (per touched address) | 15 | 4 | — |
+
+The v1 savings (channels, single-lookup timestamps) are **D**, not yet measured (spike 4).
+
+`model.py` reproduces the measured per-op cells and fractions from these layouts exactly for the two loops. The
+store/load loop is within 0.8 cells/op: the model omits its 65 k memory-boundary rows.
+
+**Today's prover on these AIRs (M, contended, 2 threads).** Blowup 16, 216 queries, SHA-256 WH, Fp8.
+* 104 / 83 / 97 M committed W_eq per proof, proved in 17.8 / 16.5 / 16.6 s: **5.0–5.9 M W_eq/s**.
+* Proofs are 2.2–2.3 MB. The fixed range16/pair tables (65,536 rows each) are ≈ 40 % of W_eq at these small sizes.
+* Peak RSS ≈ 1 GB.
+
+**CPU micro-benchmarks (M, 1 thread unless noted).**
+
+| measurement | result |
+|---|---|
+| SHA-512/384 compression | 9.0 M/s per thread (1.15 GB/s); 9.7 M/s on 2 SMT threads |
+| SHA-256 compression (SHA-NI) | 38 M/s (2.4 GB/s) |
+| rate-1/2 LDE (cache-blocked `CosetDft`) + SHA-384 Merkle, 2²⁰ × 64 | **27.5 ns per trace cell** (iDFT 0.29 s, coset DFTs 0.40 s, leaves 0.86 s, nodes 0.29 s): hashing 62 % |
+| same, 2 threads, at rate 1/2 / 1/4 / 1/16 | 21.7 / 40.0 / 151.6 ns per cell (hashing 68 / 74 / 78 %) |
+| ext multiplication, generic schoolbook, E = 8 / 10 / 12 | 61 / 87 / 200 ns |
+| Plonky3 Fp8 multiplication | 8.6 ns (7.1× the generic) |
+| logUp fraction compute (generic) E = 8 / 10 / 12 | 532 / 633 / 1,391 ns |
+
+Implications:
+1. **On CPU, SHA-384 dominates commitment (62–78 %).** x86 has no SHA-512 instructions here, and 4-column leaf
+   padding wastes up to 33 %. On GPU the model's derived split is NTT 43 %, hashing 26 % (A, hashcat-derived).
+   H1 must measure it.
+2. **A fraction costs ≈ 8 cell-eq on CPU** (Plonky3-grade extension arithmetic, D): 633 ns / 7.1 = 89 ns
+   ≈ 3.2 cells + 5 committed aux cells. The model's GPU estimate of 11.3 is therefore conservative by ≈ 25 %.
+3. **E = 12 costs 2.2× E = 10** in the generic code. E = 10 should be the target unless M3 forces more.
+4. Rate 1/4 costs 1.84× rate 1/2 per cell on CPU, and rate 1/16 7×. This confirms rate 1/2 for the base layer.
+5. Our register machine with access recording runs at 7–8 M rows/s ≈ 12–27 M WASM ops/s on one thread
+   (0.036–0.043 s for 0.26–0.33 M rows; HashMap-based, unoptimised). Trace build adds 0.02–0.08 s. That is
+   consistent with the 20 M ops/s/core pass-2 assumption, which spike 5 settles against native.
+
+**Core count for clean measurements.** These numbers are on one contended SMT core.
+
+| purpose | request |
+|---|---|
+| spike 4 and multi-threaded scaling | 8 dedicated physical cores (16 threads), e.g. 10–15,26–31 after the D1 lane |
+| prover runs at 2²⁰–2²² rows | ≥ 4 cores, ≥ 32 GB RAM |
 
 ### 9.3 What to measure on an H200 first
 

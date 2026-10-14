@@ -21,3 +21,23 @@ local.set 13.32 %, br 6.85 %, br_if 6.84 %, i64.add 6.82 %, i64.sub 6.37 %, i64.
 i64.eqz 6.37 %, i32.const 1.05 %, i32.add 0.56 %, i64.extend_i32_u 0.48 %, i32.store8 0.47 %,
 i32.wrap_i64 0.45 %, i64.ne 0.45 %, block 0.43 % (excluded from counts elsewhere), global.get 0.30 %,
 call 0.27 %, i32.eq 0.25 %, rest < 0.15 % each.
+
+## Spike #1 / #2 runs (raw: docs/e2e-results/v3-perf-design/spike1.log)
+* `wasmchip run measured 65536 --prove --tamper`: 917,507 ops, 3.50 ops/row, 10.6 main cells + 5.1
+  fractions per op; prove 17.8 s (104 M W_eq, Fp8/blowup 16/SHA-256 WH), verify ACCEPT; T1/T2 refused
+  by the prover's AIR/bus checks; T3 16/16 bit flips rejected by the verifier. wall 66 s, RSS 1.0 GB.
+* `run loadchain 16384`: 425,987 ops, 1.44 ops/row, 21.3 / 11.9 per op; prove 16.5 s; same checks.
+* `run mem 65536`: 1,179,651 ops, 3.60 ops/row, 9.3 / 4.3 per op; prove 16.6 s; same checks.
+* `bench-hash 256`: SHA-512 compression 9.0 M/s/thread; SHA-256 (SHA-NI) 38 M/s.
+* `bench-commit 20 64 {1,2,4}` (2 threads): 21.7 / 40.0 / 151.6 ns per trace cell, hashing 68–78 %;
+  1 thread at rate 1/2: 27.5 ns, hashing 62 %.
+* `bench-ext` (1 thread): ext mul generic E=8/10/12 61/87/200 ns, Plonky3 Fp8 8.6 ns; fraction compute
+  532/633/1391 ns.
+* An earlier bench-ext run compared against Plonky3 with a base-embedded multiplier (unfair); fixed and
+  re-run (second line in the raw log is authoritative).
+
+## Model
+`python3 tools/perf-design/model.py` — results quoted in the design §0/§7. Two corrections during the
+lane: per-cell cost now scales with blowup; the in-circuit verifier of the distributed proof uses global
+row-digest trees (one path per tree per query) — with per-GPU trees the compression tail was 1.1–1.5 s
+and recursion exceeded base work for typical chunks.

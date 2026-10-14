@@ -43,10 +43,26 @@ CHIPS_V1 = {  # (m, f, label)
     "prep_b":   (30, 2, "D"),   # contract preparation, per code byte (excl. SHA)
 }
 CHIPS_V0 = deepcopy(CHIPS_V1)
-CHIPS_V0.update({  # spike-#1 layouts (columns and interactions as built; see report)
-    "alu_ri": (36, 15, "M"), "alu_rr": (40, 19, "M"), "mul": (55, 35, "M"),
-    "brz": (21, 7, "M"), "ld_al": (31, 18, "M"), "st_gen": (29 + 12, 18 + 6, "D"),
+CHIPS_V0.update({  # spike-#1 layouts (columns and interactions as built; wasmchip report)
+    "alu_ri": (36, 15, "M"), "alu_rr": (40, 19, "D"), "mul": (55, 35, "M"),
+    "brz": (21, 7, "M"), "ld_al": (31, 18, "M"), "st_al": (29, 18, "M"),
 })
+
+# Spike #1 measurements (wasmchip, CPUs 9,25 under nice 19, contended): per WASM op over
+# chips + memory boundary (fixed lookup/code/io tables excluded).
+SPIKE1 = {
+    "measured-mix loop (14 ops/iter, 3.50 ops/row)": {"main": 10.6, "frac": 5.1, "prover_weq": 65.8,
+        "mix_v0": {"alu_ri": 2 / 14, "mul": 1 / 14, "brz": 1 / 14}},
+    "i32.load chain (16/iter, 1.44 ops/row)": {"main": 21.3, "frac": 11.9, "prover_weq": 137.5,
+        "mix_v0": {"ld_al": 16 / 26, "alu_ri": 1 / 26, "brz": 1 / 26}},
+    "store/load loop (3.60 ops/row)": {"main": 9.3, "frac": 4.3, "prover_weq": 61.1,
+        "mix_v0": {"alu_ri": 2 / 18, "brz": 1 / 18, "ld_al": 1 / 18, "st_al": 1 / 18}},
+}
+# CPU micro-benchmarks (spike #1/#2, 1 thread of a Zen 5 core, contended): rate-1/2 LDE + SHA-384
+# Merkle of 2^20 x 64: 27.5 ns per trace cell (hashing 62 %); SHA-512 compression 9.0 M/s;
+# SHA-256 (SHA-NI) 38 M/s; ext mul (generic schoolbook) E=8 61 ns, E=10 87 ns, E=12 200 ns;
+# Plonky3 Fp8 mul 8.6 ns; logUp fraction compute (generic) E=8 532 ns, E=10 633 ns, E=12 1391 ns.
+CPU = {"commit_ns_per_cell": 27.5, "frac_ns_generic_E10": 633, "p3_speedup_ext": 61.1 / 8.6}
 
 # ------------------------------------------------------------------------------------------
 # 2. Workload mixes: register-form rows per WASM op, per class
@@ -370,8 +386,16 @@ def main():
         for budget in (1.0, 2.0):
             e, cps, r = required(P, "U-logUp", n, budget)
             print(f"  {n} H200, proof <= {budget:.0f} s after execution ends: eff >= {e:.2f} of peak INT32 "
-                  f"= {cps/1e9:.1f} G cell-eq/s/GPU ({cps*worst['celleq_per_op']/worst['celleq_per_op']/1e9:.1f}); "
+                  f"= {cps/1e9:.1f} G cell-eq/s/GPU = {cps/worst['celleq_per_op']/1e6:.0f} M worst-case ops/s/GPU; "
                   f"total latency {r['latency']:.2f} s")
+    print("\nSpike #1 cross-check (v0 layouts as built; model per-op vs measured):")
+    for name, d in SPIKE1.items():
+        r = per_op(P, "U-logUp", d["mix_v0"], CHIPS_V0)
+        print(f"  {name:48s} measured main {d['main']:5.1f} frac {d['frac']:5.1f} | model main {r['main']:5.1f} frac {r['frac']:5.1f}")
+    fr_opt = CPU["frac_ns_generic_E10"] / CPU["p3_speedup_ext"]
+    print(f"  CPU fraction/cell work ratio (E=10, Plonky3-grade ext arithmetic, D): {fr_opt / CPU['commit_ns_per_cell']:.1f} "
+          f"+ 5 committed aux cells = {fr_opt / CPU['commit_ns_per_cell'] + 5:.1f} cell-eq per fraction "
+          f"(model GPU: {frac_ops(P, 'U-logUp') / int_ops_per_cell(P)[0] + 5:.1f})")
     print("\nSensitivity: adversarial, U-logUp, 32 H200, latency after execution (s)")
     base = scenario(P, "adversarial", "U-logUp", 32)["after_exec"]
     rows = []

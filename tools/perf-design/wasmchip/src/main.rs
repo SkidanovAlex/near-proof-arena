@@ -8,6 +8,7 @@
 //! All timings are on whatever CPUs the process is pinned to (run under
 //! `nice -n 19 taskset -c 9,25`, RAYON_NUM_THREADS=2): contended, indicative only.
 mod chips;
+mod ext;
 mod wasm;
 
 use std::time::Instant;
@@ -22,6 +23,7 @@ fn main() {
     let a: Vec<String> = std::env::args().collect();
     match a.get(1).map(|s| s.as_str()) {
         Some("run") => run(&a[2], a[3].parse().unwrap(), a.iter().any(|s| s == "--prove"), a.iter().any(|s| s == "--tamper")),
+        Some("bench-ext") => ext::bench_ext(),
         Some("bench-hash") => bench_hash(a.get(2).map(|s| s.parse().unwrap()).unwrap_or(256)),
         Some("bench-commit") => bench_commit(a[2].parse().unwrap(), a[3].parse().unwrap(), a[4].parse().unwrap()),
         _ => eprintln!("usage: see src/main.rs"),
