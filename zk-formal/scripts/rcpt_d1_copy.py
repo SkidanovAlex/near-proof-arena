@@ -78,7 +78,7 @@ PROFILES = {
               'ZkFormal.NearV3.D1.Link.BusUsers', 'ZkFormal.NearV3.D1.Link.ShaExtra', 'ZkFormal.NearV3.D1.Prep.Claim',
               'ZkFormal.NearV3.D1.R.All',
               'ZkFormal.NearV3.D1.M.All'],
-        extra={'LinkShaKinds': ['ZkFormal.NearV3.D1.Link.Kinds'], 'LinkChain': ['ZkFormal.NearV3.D1.Link.Kinds'],
+        extra={'LinkBus': ['ZkFormal.NearV3.D1.Link.WalkU'], 'LinkShaKinds': ['ZkFormal.NearV3.D1.Link.Kinds'], 'LinkChain': ['ZkFormal.NearV3.D1.Link.Kinds'],
                'LinkRids': ['ZkFormal.NearV3.D1.Link.Rids'], 'LinkRidBytes': ['ZkFormal.NearV3.D1.Link.RidBytes'],
                'LinkKeynib': ['ZkFormal.NearV3.D1.Link.Keynib'], 'RfBody': ['ZkFormal.NearV3.D1.Link.RfBody'],
                'MemBal': ['ZkFormal.NearV3.D1.Link.MemD1']},
@@ -133,6 +133,8 @@ PROFILES = {
               'ZkFormal.NearV3.Assembly.sizeLocal': 'ZkFormal.NearV3.D1.sizeLocalD1',
               'ZkFormal.NearV3.Assembly.getElem?_rcpt': 'ZkFormal.NearV3.D1.getElem?_d1_rcpt',
               'ZkFormal.NearV3.Assembly.getElem?_mrk': 'ZkFormal.NearV3.D1.getElem?_d1_mrk',
+              # `EDGE` / `BMAP` have `walkU` as a fifth user (lane v3-d1-a7b): `D1/Link/WalkU`
+              'ZkFormal.NearV3.UpsRows.WalkBal': 'ZkFormal.NearV3.D1.Link.WalkBalD',
               },
         # `p : Prep` stays (it is `q.base`); the D1 prepared statement `q` is a new implicit
         # binder after `p`, the preparation hypothesis carries `q.base = p`, the tape is `q`'s

@@ -279,14 +279,94 @@ theorem receiptCount_of_records_d1 {cb : Bytes} {h : ZkFormal.NearV3.D1.HintD1} 
 <<<
 (hUn : ∀ t ∈ U, t < 25)
 ===
-(hUn : ∀ t ∈ U, t < 30)
+(hUn : ∀ t ∈ U, t < 33)
 >>>
 
 -- @patch ZkFormal.NearV3.Assembly.bal_users
 <<<
 (hUn : ∀ t ∈ U, t < 25)
 ===
-(hUn : ∀ t ∈ U, t < 30)
+(hUn : ∀ t ∈ U, t < 33)
+>>>
+
+-- @override ZkFormal.NearV3.Assembly.node_count
+-- (D1, lane v3-d1-a7b: table 2 is `nodeD1 = nodeA7 ++ NodeStub`; the side condition covers both
+-- extension interaction lists)
+theorem node_count_d1 (hb : (ZkFormal.NearV3.UnfoldA7.Node.interactions ++ ZkFormal.NearV3.D1.NodeStub.interactions).all
+    (fun i => i.bus != b) = true) :
+    tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 T_NODE) tr T_NODE pub b s m = tcnt (ZkFormal.NearV3.nodeTraffic3 r.nodes) s b m := by
+  rw [show ZkFormal.NearV3.D1.Link.isAtD1 T_NODE = ZkFormal.NearV3.NodeV3.interactions ++
+      (ZkFormal.NearV3.UnfoldA7.Node.interactions ++ ZkFormal.NearV3.D1.NodeStub.interactions)
+    from rfl, tableBusCount_append, tableBusCount_nobus (nobus_of_all hb), tcnt_of_traffic T.nodes, Nat.add_zero]
+
+-- @override ZkFormal.NearV3.Assembly.uniq_count
+-- (D1, lane v3-d1-a7b: table 6 is `uniqD1 = uniqV3 ++ UniqGap`; `UniqGap` uses `GB` only)
+theorem uniq_count_d1 (hb : b ≠ ZkFormal.NearV3.D1.B_GB) :
+    tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 T_UNIQ) tr T_UNIQ pub b s m = tcnt (ZkFormal.NearV3.uniqTraffic r.uniq) s b m := by
+  rw [show ZkFormal.NearV3.D1.Link.isAtD1 T_UNIQ = ZkFormal.NearV3.D1.uniqD1.interactions from rfl,
+    ZkFormal.NearV3.D1.uniqD1_count_base hb]
+  exact tcnt_of_traffic T.uniq s b m
+
+-- @patch ZkFormal.NearV3.Assembly.dupBal_of
+<<<
+    uniq_count_d1 T, uniq_count_d1 T] at h
+===
+    uniq_count_d1 T _ _ _ (by decide), uniq_count_d1 T _ _ _ (by decide)] at h
+>>>
+
+-- @patch ZkFormal.NearV3.Assembly.digsBal_of
+<<<
+    head_count_d1 T, head_count_d1 T, uniq_count_d1 T, uniq_count_d1 T] at h
+===
+    head_count_d1 T, head_count_d1 T, uniq_count_d1 T _ _ _ (by decide), uniq_count_d1 T _ _ _ (by decide)] at h
+>>>
+
+-- @override ZkFormal.NearV3.Assembly.walkBal_of
+-- (D1, lane v3-d1-a7b: `EDGE` / `BMAP` gain `walkU` (table 30), whose traffic there is D0a's walk
+-- traffic of its records: D0a's `WalkBal` holds over the candidate walks followed by `walkU`'s)
+/-- **`EDGE` / `BMAP`** (D1): the balance of node, head, walk, ups **and `walkU`** traffic. -/
+theorem walkBal_of_d1 (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 pub tr) (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 pub tr r) {b : Nat}
+    (hb : b = B_EDGE ∨ b = ZkFormal.NearV3.B_BMAP) :
+    ZkFormal.NearV3.D1.Link.WalkBalD r.nodes r.heads r.walks r.ups b := by
+  obtain ⟨wu, hwu, tW⟩ := ZkFormal.NearV3.D1.walkUViewD1 hH
+  refine ⟨wu, hwu, ?_⟩
+  apply List.perm_iff_count.mpr
+  intro m
+  have hU : ZkFormal.NearV3.D1.Link.UsersOkD1 b [T_NODE, T_HEAD, T_WALK, T_UPS, ZkFormal.NearV3.D1.T_WALKU] = true := by
+    rcases hb with rfl | rfl
+    · exact ZkFormal.NearV3.D1.Link.walkU_users_ok.1
+    · exact ZkFormal.NearV3.D1.Link.walkU_users_ok.2
+  have hpb : ZkFormal.NearV3.D1.Public.preparedSegmentsD1.all (fun s => s.bus != b) = true := by
+    rcases hb with rfl | rfl <;> decide +kernel
+  have hA (is : List Interaction) (hi : is = ZkFormal.NearV3.UnfoldA7.Node.interactions ++ ZkFormal.NearV3.D1.NodeStub.interactions ∨
+      is = ZkFormal.NearV3.UnfoldA7.Ups.interactions) : is.all (fun i => i.bus != b) = true := by
+    rcases hb with rfl | rfl <;> rcases hi with rfl | rfl <;> decide +kernel
+  have h := bal_users_d1 hH (b := b) (U := [T_NODE, T_HEAD, T_WALK, T_UPS, ZkFormal.NearV3.D1.T_WALKU]) (by decide)
+    (by decide) hU hpb m
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Nat.add_zero] at h
+  rw [node_count_d1 T _ _ _ (hA _ (.inl rfl)), node_count_d1 T _ _ _ (hA _ (.inl rfl)),
+    head_count_d1 T, head_count_d1 T, walk_count_d1 T, walk_count_d1 T,
+    ups_count_d1 T _ _ _ (hA _ (.inr rfl)), ups_count_d1 T _ _ _ (hA _ (.inr rfl)),
+    ZkFormal.NearV3.D1.Link.walkU_count tW hb, ZkFormal.NearV3.D1.Link.walkU_count tW hb] at h
+  simp only [tcnt_unfold] at h
+  rw [ZkFormal.NearV3.UpsRows.walkSends3_append, ZkFormal.NearV3.UpsRows.walkRecvs3_append]
+  simp only [List.map_append, List.count_append]
+  omega
+
+-- @patch ZkFormal.NearV3.Assembly.size_sent
+<<<
+  have eN : ZkFormal.NearV3.D1.Link.isAtD1 T_NODE = ZkFormal.NearV3.NodeV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Node.interactions := rfl
+===
+  have eN : ZkFormal.NearV3.D1.Link.isAtD1 T_NODE = ZkFormal.NearV3.NodeV3.interactions ++
+      (ZkFormal.NearV3.UnfoldA7.Node.interactions ++ ZkFormal.NearV3.D1.NodeStub.interactions) := rfl
+>>>
+
+-- @patch ZkFormal.NearV3.Assembly.size_sent
+<<<
+    tableBusCount_head_const size_a7_node (hne 3 (by omega) (by unfold P; omega)),
+===
+    tableBusCount_head_const size_a7_node (hne 3 (by omega) (by unfold P; omega)),
+    ZkFormal.NearV3.D1.nodeStub_count_off (b := ZkFormal.NearV3.B_SIZE) (by decide) (by decide),
 >>>
 
 -- @override ZkFormal.NearV3.Assembly.digest_users_eq
@@ -754,7 +834,7 @@ theorem othersRC_kinds_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} 
 
 -- @override ZkFormal.NearV3.Assembly.LinkRidBytes.receiptIds_of
 /-- **`MainExecutionD1.distinctIds`** for the reconstruction whose receipts are the receipt view's
-lists (D1: local ids `q.rids` first; the `ridV3` range interface `RidLRange`). -/
+lists (D1: local ids `q.rids` first; `ridV3`'s slot range from its view, `ridLRange_of`). -/
 theorem receiptIds_of_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {p : NearSpecV3.Prep}
     {q : ZkFormal.NearV3.D1.Public.PrepD1} {oh : Nat}
     {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records} {es : List ZkFormal.NearV3.D1.RidE}
@@ -766,12 +846,12 @@ theorem receiptIds_of_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {
     (hW : ZkFormal.NearV3.D1.RidWf es)
     (hT : TableTraffic ZkFormal.NearV3.D1.RidV3.interactions tr ZkFormal.NearV3.D1.T_RID
       (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) (ZkFormal.NearV3.D1.ridTraffic es))
-    (hl : ZkFormal.NearV3.D1.Link.RidLRange es)
     (x : ExtV3) (hx : x.receipts = r.lists) :
     (q.rids ++ x.applied.map NearSpec.Receipt.receiptId).Nodup := by
   have hn := ZkFormal.NearV3.D1.Link.rcpt_count_d1 hp.1 W.lists
   have h5 := ZkFormal.NearV3.D1.Link.prepD1_hn_le hp.1
-  exact LinkRids.receiptIds_ext_d1 hp.1 hsz hH T W hW hT hl (ridBytes_d1 hp hsz hH T W)
+  exact LinkRids.receiptIds_ext_d1 hp.1 hsz hH T W hW hT (ZkFormal.NearV3.D1.Link.ridLRange_of hW)
+    (ridBytes_d1 hp hsz hH T W)
     (by unfold ZkFormal.NearV3.D1.W_LOC; omega) x hx
 
 -- @override ZkFormal.NearV3.Assembly.LinkKeynib.keynib_bal

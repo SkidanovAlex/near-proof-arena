@@ -1,20 +1,25 @@
 import ZkFormal.NearV3.D1.Link.RidBytes
 import ZkFormal.NearV3.D1.Extract.KibProof
+import ZkFormal.NearV3.D1.Extract.KibD1Proof
+import ZkFormal.NearV3.D1.Prep.Spec
 
 /-!
 # `ZkFormal.NearV3.D1.Link.Keynib` — `kibV3` on the `KEYNIB` bus (L1)
 
 Lane `v3-d1-phase2`, item L1 (next step 4 of checkpoint 10, `KEYNIB`).  In `nearAirV3D1` the
-`KEYNIB` bus has a third sender, `kibV3` (27), relaying the public `PKEY` records of the
-transaction / credit walks `p.walks`:
+`KEYNIB` bus has a third sender, `kibD1` (27), relaying the public `PKEY` records of the
+transaction / credit walks `p.walks` (and, on `UKEYNIB`, those of the unread-key walks
+`p.uwalks`, lane v3-d1-a7b: `kibD1` routes a record by bit 7 of the id's byte 2):
 
 * `prepD1_walk_ids`: the walks of a successful `prepD1` have ids `W_TX ≤ w < W_TX + 2·T0`;
-* `pub_pkey_mem`: a public `PKEY` message is a row of `keyPayload p.walks`;
+  `prepD1_uwalk_ids`: the unread-key walks have ids `W_UNR ≤ w < W_UNR + 2·NT0`;
+* `pub_pkey_mem`: a public `PKEY` message is a row of `keyPayload (p.walks ++ p.uwalks)`;
 * `keyPayload_row`: such a row is `(w₀, w₁, w₂, t, sym, last)` of a walk `k ∈ p.walks`
   (`wᵢ = byteAt k.w i`) with `sym` a nibble or `SYM_END`;
-* **`kib_entry`**: every `kibV3` record carries a walk id `k.w` of some `k ∈ p.walks` and a
-  nibble or `SYM_END`;
-* `kibKeys` (the raw `KEYNIB` sends of table 27) and **`kibKeys_mem`**: each is such a record.
+* **`kib_entry`**: every `kibD1` record carries a walk id `k.w` (and its byte 2) of some
+  `k ∈ p.walks ++ p.uwalks` and a nibble or `SYM_END`;
+* `kibKeys` (the raw `KEYNIB` sends of table 27) and **`kibKeys_entry`**: each is such a record
+  with `k ∈ p.walks` (a `KEYNIB` send has byte 2 below `128`; an unread walk's is `128`).
 -/
 
 namespace ZkFormal.NearV3.D1.Link
@@ -107,6 +112,38 @@ theorem prepD1_walk_ids {cb : Bytes} {h : HintD1} {p : PrepD1} (hp : prepD1 cb h
   change w.loc.ops.length ≤ _ at ht
   omega
 
+theorem unreadWalks_ids (txs : List Tx) :
+    ∀ k ∈ unreadWalks txs, W_UNR ≤ k.w ∧ k.w < W_UNR + 2 * txs.length := by
+  intro k hk
+  simp only [unreadWalks, List.mem_flatMap, List.mem_cons, List.not_mem_nil, or_false] at hk
+  obtain ⟨⟨t, j⟩, hj, hk⟩ := hk
+  obtain ⟨-, hj, -⟩ := List.mem_zipIdx hj
+  rcases hk with rfl | rfl <;> simp only <;> omega
+
+/-- **The unread-key walk ids of `prepD1`**: `W_UNR ≤ w < W_UNR + 2·NT0`. -/
+theorem prepD1_uwalk_ids {cb : Bytes} {h : HintD1} {p : PrepD1} (hp : prepD1 cb h = .ok p) :
+    ∀ k ∈ p.uwalks, W_UNR ≤ k.w ∧ k.w < W_UNR + 2 * NT0 := by
+  obtain ⟨w, hw, rfl⟩ := prepD1_spec hp
+  intro k hk
+  have := unreadWalks_ids w.txs k hk
+  have := hw.nt0
+  omega
+
+/-- Byte 2 of an id: `< 128` for the candidates' walks, `128` for the unread-key walks. -/
+theorem prepD1_walk_byte2 {cb : Bytes} {h : HintD1} {p : PrepD1} (hp : prepD1 cb h = .ok p) :
+    (∀ k ∈ p.walks, byteAt k.w 2 < 128) ∧ (∀ k ∈ p.uwalks, byteAt k.w 2 = 128) := by
+  refine ⟨fun k hk => ?_, fun k hk => ?_⟩
+  · have := prepD1_walk_ids hp k hk
+    unfold W_TX NT0 at this
+    unfold byteAt
+    simp only [show (256 : Nat) ^ 2 = 65536 by rfl]
+    omega
+  · have := prepD1_uwalk_ids hp k hk
+    unfold W_UNR NT0 at this
+    unfold byteAt
+    simp only [show (256 : Nat) ^ 2 = 65536 by rfl]
+    omega
+
 end
 
 /-- `rcptV3D1`'s `KEYNIB` sends are D0a's. -/
@@ -131,7 +168,7 @@ theorem pub_pkey_mem (p : PrepD1) (ov : Nat) (hr : ZkFormal.NearV3.Public.RootsS
     (hs : ∀ s ∈ p.base.lists, s.root.length = 32) (hleaves : ∀ l ∈ p.leaves, l.length = 32)
     (hlen : (preparedBytesD1 p ov).length < 256 ^ 4) {sd : Bool} {m : List Fp}
     (hpos : 0 < pubCount nearAirV3D1 (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov)) B_PKEY sd m) :
-    sd = true ∧ ∃ row ∈ keyPayload p.walks, m = row.map ZkFormal.NearV3.Public.byteF := by
+    sd = true ∧ ∃ row ∈ keyPayload (p.walks ++ p.uwalks), m = row.map ZkFormal.NearV3.Public.byteF := by
   rw [pubCountD1_split p ov hr hs hlen, pubCount_nobus segs_no_pkey sd, Nat.zero_add] at hpos
   obtain ⟨x, hx⟩ := List.exists_mem_of_length_pos hpos
   rw [List.mem_filter, decide_eq_true_eq] at hx
@@ -185,16 +222,17 @@ theorem toNat_byteF_ofNat {v : Nat} (hv : v < 256) : (ZkFormal.NearV3.Public.byt
   unfold ZkFormal.NearV3.Public.byteF
   rw [Fp.toNat_ofNat, ZkFormal.Near.Link.toNat_ofNat_byte hv, Nat.mod_eq_of_lt (by unfold P; omega)]
 
-/-- **Every `kibV3` record** carries the id of a walk `k ∈ p.walks` and a nibble or `SYM_END`. -/
+/-- **Every `kibD1` record** carries the id (and its byte 2) of a walk `k ∈ p.walks ++ p.uwalks`
+and a nibble or `SYM_END`. -/
 theorem kib_entry {cb : NearSpec.Bytes} {h : HintD1} {p : PrepD1} {ov : Nat} {tr : Trace Fp} {es : List KibE}
     (hp : prepD1 cb h = .ok p) (hlen : (preparedBytesD1 p ov).length < P)
-    (hH : HoldsP nearAirV3D1 (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov)) tr) (hW : KibWf es)
-    (hT : TableTraffic KibV3.interactions tr T_KIB (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov)) (kibTraffic es))
+    (hH : HoldsP nearAirV3D1 (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov)) tr) (hW : KibD1Wf es)
+    (hT : TableTraffic KibD1.interactions tr T_KIB (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov)) (kibD1Traffic es))
     {e : KibE} (he : e ∈ es) :
-    ∃ k ∈ p.walks, e.wid = k.w ∧ (e.sym < 16 ∨ e.sym = SYM_END) := by
+    ∃ k ∈ p.walks ++ p.uwalks, e.wid = k.w ∧ e.w2 = byteAt k.w 2 ∧ (e.sym < 16 ∨ e.sym = SYM_END) := by
   have hP : P < 256 ^ 4 := by unfold P; omega
-  have hr : [e.w0, e.w1, e.w2, e.t, e.sym, e.last] ∈ (kibTraffic es).recvs B_PKEY := by
-    simp only [kibTraffic, kibRecvs, ite_true]
+  have hr : [e.w0, e.w1, e.w2, e.t, e.sym, e.last] ∈ (kibD1Traffic es).recvs B_PKEY := by
+    simp only [kibD1Traffic, kibRecvs, ite_true]
     exact List.mem_map.mpr ⟨e, he, rfl⟩
   have hpos := count_pos_of_mem hT hr
   rcases sender_of_recv hH getElem?_d1_kib hpos with hpub | ⟨t', T', ht', hpos'⟩
@@ -219,36 +257,47 @@ theorem kib_entry {cb : NearSpec.Bytes} {h : HintD1} {p : PrepD1} {ov : Nat} {tr
       · omega
       · rw [hs]; decide
     have e4 := cv hc.2.2.2.2.1 hs' h4
-    have hkw := prepD1_walk_ids hp k hk
-    refine ⟨k, hk, ?_, e4 ▸ hs⟩
+    have hkw : k.w < 2 ^ 24 := by
+      rcases List.mem_append.mp hk with hk | hk
+      · have := prepD1_walk_ids hp k hk
+        unfold W_TX NearSpecV3.NT0 at this; omega
+      · have := prepD1_uwalk_ids hp k hk
+        unfold W_UNR NearSpecV3.NT0 at this; omega
+    refine ⟨k, hk, ?_, e2, e4 ▸ hs⟩
     unfold KibE.wid
-    rw [e0, e1, e2, bytes3, Nat.mod_eq_of_lt (by unfold W_TX NearSpecV3.NT0 at hkw; omega)]
+    rw [e0, e1, e2, bytes3, Nat.mod_eq_of_lt hkw]
   · by_cases h27 : t' = T_KIB
     · subst h27
       rw [getElem?_d1_kib] at ht'
       cases ht'
       obtain ⟨v, hv, -⟩ := mem_of_count_pos hT hpos'
-      simp [kibTraffic, kibSends, show B_PKEY ≠ B_KEYNIB by decide] at hv
+      simp [kibD1Traffic, kibD1Sends, show B_PKEY ≠ B_KEYNIB by decide, show B_PKEY ≠ B_UKEYNIB by decide] at hv
     · rw [tableBusCount_nobus' (only_of d1_pkey_tables ht' (by simpa using h27)) true] at hpos'
       omega
 
-/-- **The raw `KEYNIB` sends of `kibV3`** are `(k.w, t, sym, last)` of walks `k ∈ p.walks`, `sym` a
-nibble or `SYM_END`. -/
+/-- **The raw `KEYNIB` sends of `kibD1`** are `(k.w, t, sym, last)` of walks `k ∈ p.walks`, `sym` a
+nibble or `SYM_END` (the unread-key walks' records go to `UKEYNIB`). -/
 theorem kibKeys_entry {cb : NearSpec.Bytes} {h : HintD1} {p : PrepD1} {ov : Nat} {tr : Trace Fp}
     (hp : prepD1 cb h = .ok p) (hlen : (preparedBytesD1 p ov).length < P)
     (hH : HoldsP nearAirV3D1 (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov)) tr) :
     ∀ y ∈ kibKeys tr (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov)), ∃ k ∈ p.walks, ∃ t sym last : Nat,
       y = Msg.toFp [k.w, t, sym, last] ∧ (sym < 16 ∨ sym = SYM_END) := by
-  obtain ⟨es, hW, hT⟩ := kib_view tr _ T_KIB (kibLocal hH)
+  obtain ⟨es, hW, hT⟩ := kibD1_view tr _ T_KIB (kibLocal hH)
   intro y hy
-  have hc : 0 < tableBusCount KibV3.interactions tr T_KIB (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov))
+  have hc : 0 < tableBusCount KibD1.interactions tr T_KIB (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov))
       B_KEYNIB true y := by
     rw [tableBusCount_eq]
     exact List.count_pos_iff.mpr hy
   obtain ⟨v, hv, rfl⟩ := mem_of_count_pos hT hc
-  simp only [ite_true, kibTraffic, kibSends] at hv
+  simp only [ite_true, kibD1Traffic, kibD1Sends] at hv
   obtain ⟨e, he, rfl⟩ := List.mem_map.mp hv
-  obtain ⟨k, hk, hw, hs⟩ := kib_entry hp hlen hH hW hT he
-  exact ⟨k, hk, e.t, e.sym, e.last, by rw [hw], hs⟩
+  obtain ⟨he, hlt⟩ := List.mem_filter.mp he
+  obtain ⟨k, hk, hw, h2, hs⟩ := kib_entry hp hlen hH hW hT he
+  refine ⟨k, ?_, e.t, e.sym, e.last, by rw [kibMsg, hw], hs⟩
+  rcases List.mem_append.mp hk with hk | hk
+  · exact hk
+  · have h128 := (prepD1_walk_byte2 hp).2 k hk
+    have := of_decide_eq_true hlt
+    omega
 
 end ZkFormal.NearV3.D1.Link

@@ -238,7 +238,7 @@ theorem ridBytes_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {p : N
   exact encBytes_d1 hp hsz hH T W x hx y (by simp [RcptV.enc, hy])
 
 /-- **`MainExecutionD1.distinctIds`** for the reconstruction whose receipts are the receipt view's
-lists (D1: local ids `q.rids` first; the `ridV3` range interface `RidLRange`). -/
+lists (D1: local ids `q.rids` first; `ridV3`'s slot range from its view, `ridLRange_of`). -/
 theorem receiptIds_of_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {p : NearSpecV3.Prep}
     {q : ZkFormal.NearV3.D1.Public.PrepD1} {oh : Nat}
     {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records} {es : List ZkFormal.NearV3.D1.RidE}
@@ -250,12 +250,12 @@ theorem receiptIds_of_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {
     (hW : ZkFormal.NearV3.D1.RidWf es)
     (hT : TableTraffic ZkFormal.NearV3.D1.RidV3.interactions tr ZkFormal.NearV3.D1.T_RID
       (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) (ZkFormal.NearV3.D1.ridTraffic es))
-    (hl : ZkFormal.NearV3.D1.Link.RidLRange es)
     (x : ExtV3) (hx : x.receipts = r.lists) :
     (q.rids ++ x.applied.map NearSpec.Receipt.receiptId).Nodup := by
   have hn := ZkFormal.NearV3.D1.Link.rcpt_count_d1 hp.1 W.lists
   have h5 := ZkFormal.NearV3.D1.Link.prepD1_hn_le hp.1
-  exact LinkRids.receiptIds_ext_d1 hp.1 hsz hH T W hW hT hl (ridBytes_d1 hp hsz hH T W)
+  exact LinkRids.receiptIds_ext_d1 hp.1 hsz hH T W hW hT (ZkFormal.NearV3.D1.Link.ridLRange_of hW)
+    (ridBytes_d1 hp hsz hH T W)
     (by unfold ZkFormal.NearV3.D1.W_LOC; omega) x hx
 
 end LinkRidBytes

@@ -13,6 +13,8 @@ the sort table (receives) and `ridV3` (`(W_LOC + l, i, b)` for the public `PRID`
 * `RidLRange`: the interface for the AIR range check on `ridV3`'s free column `l` (lane
   `v3-d1-a7b`, soundness fix): `l < 2^20`.  Any range check `l < 2^k`, `k ≤ 20`, implies it.
   With it, `j = 32·l + i` holds over the naturals, so `l = j / 32`, `i = j % 32`;
+  **discharged** by the AIR's range check (`RidWf.lrange`: `l < 2^12`, lane `v3-d1-a7b` `cb9f87f9`):
+  `ridLRange_of`;
 * `pub_prid_mem` / `pub_prid_pos`: the public `PRID` messages are exactly
   `(j, ridPayload[j])` (the bytes of `p.rids`, in order);
 * `rid_entry`: every `ridV3` record carries the public byte `rids[l][i]`;
@@ -31,6 +33,10 @@ open ZkFormal.NearV3.D1.Public
 
 /-- **The range-check interface on `ridV3`'s column `l`** (lane `v3-d1-a7b`). -/
 def RidLRange (es : List RidE) : Prop := ∀ e ∈ es, e.l < 2 ^ 20
+
+/-- **`RidLRange` holds for every `ridV3` view**: the AIR range-checks `l` to 12 bits. -/
+theorem ridLRange_of {es : List RidE} (hW : RidWf es) : RidLRange es :=
+  fun e he => Nat.lt_of_lt_of_le (hW.lrange e he) (by decide)
 
 /-- `rcptV3D1`'s `RIDS` sends are D0a's. -/
 theorem rcptSends3G_rids (o0 t0 m0 : Nat) (pub : List Fp) (ls : RcptV3Vs) :
