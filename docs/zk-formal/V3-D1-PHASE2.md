@@ -1,6 +1,6 @@
 # D1a phase 2: from `nearAirV3D1` to the D1a admission statement — plan and status
 
-Status: **in progress; stopped on the R-5 PROPOSAL (2026-10-15), decision requested** (lane `v3-d1-phase2`, branch `lane/v3-d1-phase2`, from main `0a78f36d`),
+Status: **in progress; R-5 decided (B, AIR walks every `txKeys` entry), design note in §5** (lane `v3-d1-phase2`, branch `lane/v3-d1-phase2`, from main `0a78f36d`),
 started 2026-10-14 on the user's go-ahead. Log: `docs/logs/v3-d1-phase2-2026-10.md`.
 Inputs: phase 1 (`docs/logs/v3-d1-tables-2026-10.md`, main `86fab5fd`), design
 `V3-D1-DESIGN.md` §6–7, the D0a certificate (`Assembly/AdmissionV3.lean`:
@@ -233,6 +233,73 @@ elaboration).
       new view and ≈ 1–2 k proof lines, and up to 8,192 more walks.
   * Until a decision, the lane works only on the parts that are the same under both options
     (L1 plumbing, the R1 renders). `GoodD1.unfoldedBytes` and F1's A7 part are on hold.
+* **R-5 → (B) (user decision 2026-10-15): design note.** The signed spec is unchanged.
+  `nearAirV3D1` must count exactly what `checkD1`'s main pre trie
+  `partialTrie store root (mainKeys ++ txKeys)` and its post trie reveal.
+
+  The relation reveals a node occurrence iff its key path passes through it **and** its hash is
+  in the store. It reveals a leaf value iff a wanted key matches the leaf exactly **and** the
+  value's hash is in the store. The store is every node and value record (hash-addressed;
+  `x.store`). The AIR must therefore decide store membership by hash, in both directions.
+
+  1. **Walk every `txKeys` entry.** For every transaction of the witness, including duplicates,
+     flag-0, invalid and cost-overflow transactions, walk the signer key and the access key.
+     * `prepD1` emits `PKEY` records for all `2·|txs|` keys. The walk ids of the unread ones
+       get their own range `W_UNR + j`.
+     * The candidates' walks are unchanged. Walks of an equal key share occurrences, as D0a's
+       repeated receiver walks do.
+  2. **A new walk terminal "stub".** Every unread walk ends at one of:
+     * an absent key (leaf/ext mismatch or empty branch slot): as today;
+     * a present leaf whose key matches exactly;
+     * a child hash `h` that is **not in the store**. The relation then stops there with
+       `.hash h`.
+
+     The candidates' walks never take the stub: their reads need the full path.
+  3. **Non-membership from `uniqV3`.** `uniqV3` already sorts every store entry (node records
+     and value records) by `(τ, digest)`, non-strictly. A D1 extension `uniqD1` (replacing table
+     6, as `rcptV3D1` replaces 16) answers `NMEM (τ, h)`. Two consecutive segments with
+     `digest_{t−1} < h < digest_t` consume the query, as do the first and last segments of the
+     instance for the boundary cases. The strict comparison reuses the segment's byte-serial
+     subtractor. The stub terminal and the absent-value case (step 4) send `NMEM`.
+  4. **A value sink `uvalV3` (new table).** For every distinct present-leaf occurrence reached
+     only by unread keys, exactly one of:
+     * the value is in the store: a `VAL` occurrence record `vid` (one row per byte, counted by
+       `valA7`'s running sum like every value occurrence) whose digest is the leaf's value
+       hash, consumed through `FINAL (w, τ, 0, vid)`;
+     * the value is not in the store: `NMEM (τ, value hash)`.
+
+     Occurrence-level dedup: the sink receives `LEAFOCC (nid)` once per leaf node record (the
+     node record is the occurrence), so several unread keys reaching one leaf reveal its value
+     once. The candidates' reads already make their leaves' values revealed, and the sink skips
+     those leaves (flag `rd` on the node record).
+  5. **A7.** Node occurrences on unread paths are ordinary node records, already in `nodeA7`'s
+     running sum. Revealed unread values are ordinary value records, already in `valA7`'s
+     running sum. The post trie keeps them, because unread keys are never written. So
+     `sizeA7`'s `u` equals `unfoldBytesD1` exactly, with no new accounting row.
+  6. **Duplicates and identical values** are handled by construction:
+     * "revealed iff hash in store" is decided per occurrence (steps 3–4), never per key;
+     * equal-hash entries are byte-equal (`uniqV3`'s `DUP` copy), so the revealed bytes are the
+       store's.
+
+     This covers the R-5 counterexample: `B`'s leaf (reached by `t₃`'s absence walk, and now
+     also by `B`'s own unread walk) takes the sink's first case, with a value record equal to
+     `A`'s value.
+
+  Costs:
+  * ≤ 8,192 extra walks at NT0 = 4,096, i.e. ≤ 8,192 · (key nibbles + 1) walk rows (about 1.2 M
+    rows for 64-byte account ids);
+  * `uniqD1` +1 bus;
+  * `uvalV3` ≤ 8,192 segments, plus the value rows it reveals.
+
+  Lean: tables `uniqD1`, `uvalV3`, the walk terminal, the `PKEY` range, `prepD1` (all keys),
+  the views, and **`A7D1Step`** (exact count). Rust: `v3d1prove` walks, `NMEM` witnesses, the
+  sink. Conformance: bus balance, Lean = Rust, the bound mutants, the R-5 fixture.
+
+  Open questions:
+  * whether the walk table can end at a stub child with no node record (it needs a `NMEM`
+    send on the parent's child slot);
+  * the honest witness (nearcore) may hold an unread key's value, so the sink's first case must
+    be available to the honest prover from `w` alone (it is: the value is in `w.main.values`).
 * **R-3 (budget).** The D0a closure is 5,953 s single-core (after the elab-budget lane) of the
   judge's 14,400 s. The D1 closure adds the D1 modules. The modules so far take < 1.3 s each.
   The V2–V4 and R1 module families are kept < 60 s per module.
