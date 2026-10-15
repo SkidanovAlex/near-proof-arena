@@ -78,6 +78,11 @@ HELDOUT_CHUNK_V3_DIR="${ARENA_LIVE_HELDOUT_CHUNK_V3_DIR:-/data/illia/nearproof-d
 # near-chunk-validation-d0-stark (D0a) held-out set (TreeDigest = its heldout_commitment, sha256:56e6f599…;
 # generated from an off-repo seed by oracle/scripts/gen-heldout-v3.sh DOMAIN=D0a)
 HELDOUT_D0A_DIR="${ARENA_LIVE_HELDOUT_D0A_DIR:-/data/illia/nearproof-deps/heldout/near-chunk-validation-d0-stark}"
+# FORMAL_CHECK-only Firecracker set (ARENA_FORMAL_FC_DEPS): same kernel and fc-runner as
+# ARENA_FC_DEPS, rootfs built from this checkout (deploy/images/rootfs/build.sh) whose guest init
+# runs read-write dirs in steps mode, so the formal checker batches its per-module runs (one
+# microVM per <=64 modules instead of one per module with a copy of the whole .olean tree).
+FORMAL_FC_DEPS="${ARENA_LIVE_FORMAL_FC_DEPS:-/data/illia/nearproof-deps/firecracker-fcbatch}"
 SEASON="${ARENA_LIVE_SEASON:-2026-10}"
 PG_HOSTPORT="${ARENA_LIVE_PG_HOSTPORT:-127.0.0.1:55471}"
 DB="${ARENA_LIVE_DB:-arena_live}"
@@ -250,6 +255,9 @@ upgrade_config() {
   # (params.bin domain D0a; the D0 set's params are refused by the request pin) and held-out set
   ensure_list "$c/worker.env" ARENA_FIXTURES_DIRS "$LIVE/release/clean/oracle/fixtures/v3/arena-public-d0a"
   [ -d "$HELDOUT_D0A_DIR" ] && ensure_list "$c/worker.env" ARENA_HELDOUT_DIRS "$HELDOUT_D0A_DIR"
+  # batched formal checking on Firecracker (docs/logs/judge-fc-batch-2026-10.md)
+  [ -f "$FORMAL_FC_DEPS/images/rootfs.ext4" ] && ! grep -q '^ARENA_FORMAL_FC_DEPS=' "$c/worker.env" && {
+    echo "ARENA_FORMAL_FC_DEPS=$FORMAL_FC_DEPS" >>"$c/worker.env"; say "worker.env: + ARENA_FORMAL_FC_DEPS"; }
   ensure_season_secret
   grep -q '^ARENA_TRUSTED_TREES=' "$c/server.env" || {
     printf '# frozen trusted trees: non-demo challenges register only against their pinned tree\nARENA_TRUSTED_TREES=%s\n' "$LIVE/trusted-trees" >>"$c/server.env"

@@ -147,9 +147,30 @@ pub struct SandboxSpec {
     /// `Tooling` for build recipes and judge tooling (Lean, compilers);
     /// `Off` disables detection.
     pub syscall_policy: SyscallPolicy,
+    /// [`Sandbox::run_steps`] options (ignored by [`Sandbox::run`]).
+    pub steps: StepsOptions,
 }
 
 pub use arena_seccomp::Policy as SyscallPolicy;
+
+/// Options of [`Sandbox::run_steps`]. The default (all off) is the plain
+/// steps semantics: per-step timeouts only, per-step capture as the backend
+/// reports it.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct StepsOptions {
+    /// Kill deadline, from the start of the first step: each step's timeout
+    /// is `min(step.wall_timeout, deadline - elapsed)` (a step with no time
+    /// left times out at once).
+    pub deadline: Option<Duration>,
+    /// Start deadline, from the start of the first step: no step is started
+    /// once this much time has elapsed; the call then returns the outcomes
+    /// of the steps that ran (fewer than `steps`, the last one successful).
+    pub start_deadline: Option<Duration>,
+    /// The last started step's stdout/stderr are captured like a single
+    /// [`Sandbox::run`] (`output_trunc_bytes`), not with the backend's
+    /// shorter per-step cap.
+    pub full_capture_last: bool,
+}
 
 impl SandboxSpec {
     /// A spec with conservative defaults: host-dev rootfs, 64 MiB scratch,
@@ -176,6 +197,7 @@ impl SandboxSpec {
             max_output_bytes: 256 << 20,
             output_trunc_bytes: DEFAULT_OUTPUT_TRUNC,
             syscall_policy: SyscallPolicy::Strict,
+            steps: StepsOptions::default(),
         }
     }
 
@@ -440,9 +462,12 @@ pub trait Sandbox: Send + Sync {
     /// Run `steps` in order, each as a fresh process tree with a freshly
     /// wiped scratch (`base.copy_in`/`scratch_dirs` re-applied), seeing only
     /// `base.ro_mounts` plus its own `ro_files`, with no state carried from
-    /// one step to the next. Stops after the first step that does not exit 0
-    /// or whose outputs are unusable; returns one outcome per started step.
-    /// `base.argv`/`collect`/`out_dir` are ignored.
+    /// one step to the next except the content of `base.rw_binds` (which
+    /// persists across steps and is written back to the host as by a single
+    /// run). Stops after the first step that does not exit 0 or whose
+    /// outputs are unusable; returns one outcome per started step.
+    /// `base.argv`/`collect`/`out_dir` are ignored; `base.steps` sets the
+    /// deadlines and capture ([`StepsOptions`]).
     ///
     /// The default runs every step as its own [`Sandbox::run`]. Backends
     /// with expensive sandbox setup (a microVM boot) override it to run all
@@ -453,13 +478,23 @@ pub trait Sandbox: Send + Sync {
         steps: &[StepSpec],
     ) -> Result<Vec<SandboxOutcome>, InfraError> {
         let mut out = Vec::with_capacity(steps.len());
+        let t0 = std::time::Instant::now();
         for st in steps {
+            if base.steps.start_deadline.is_some_and(|d| t0.elapsed() > d) {
+                break;
+            }
             let mut spec = base.clone();
             spec.argv = st.argv.clone();
             spec.ro_mounts.extend(st.ro_files.iter().cloned());
             spec.collect = st.collect.clone();
             spec.out_dir = st.out_dir.clone();
-            spec.wall_timeout = st.wall_timeout;
+            spec.wall_timeout = match base.steps.deadline {
+                Some(d) => st
+                    .wall_timeout
+                    .min(d.saturating_sub(t0.elapsed()))
+                    .max(Duration::from_millis(1)),
+                None => st.wall_timeout,
+            };
             let o = self.run(&spec)?;
             let ok = o.exit == ExitStatus::Exited(0) && o.output_error.is_none();
             out.push(o);
@@ -488,4 +523,82 @@ pub struct StepSpec {
     /// Host directory (must not exist) receiving this step's outputs.
     pub out_dir: Option<PathBuf>,
     pub wall_timeout: Duration,
+}
+
+#[cfg(test)]
+mod steps_tests {
+    use super::*;
+    use std::sync::Mutex;
+    use std::time::Instant;
+
+    /// Records each run's timeout; every run takes `each` and exits 0.
+    struct Fake {
+        each: Duration,
+        seen: Mutex<Vec<Duration>>,
+    }
+    impl Sandbox for Fake {
+        fn name(&self) -> &str {
+            "fake"
+        }
+        fn tier_cap(&self) -> Option<arena_types::challenge::Tier> {
+            None
+        }
+        fn layout(&self) -> GuestLayout {
+            BWRAP_LAYOUT
+        }
+        fn run(&self, spec: &SandboxSpec) -> Result<SandboxOutcome, InfraError> {
+            self.seen.lock().unwrap().push(spec.wall_timeout);
+            std::thread::sleep(self.each.min(spec.wall_timeout));
+            Ok(SandboxOutcome::empty(ExitStatus::Exited(0), "fake", None))
+        }
+    }
+
+    fn steps(n: usize, t: Duration) -> Vec<StepSpec> {
+        (0..n)
+            .map(|_| StepSpec {
+                argv: vec!["x".into()],
+                ro_files: vec![],
+                collect: vec![],
+                out_dir: None,
+                wall_timeout: t,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn default_run_steps_honours_deadlines() {
+        let ms = Duration::from_millis;
+        // no options: per-step timeouts only
+        let f = Fake {
+            each: ms(1),
+            seen: Mutex::new(vec![]),
+        };
+        let base = SandboxSpec::new(vec!["x".into()]);
+        assert_eq!(f.run_steps(&base, &steps(3, ms(500))).unwrap().len(), 3);
+        assert_eq!(*f.seen.lock().unwrap(), vec![ms(500); 3]);
+        // kill deadline: later steps get only what is left
+        let f = Fake {
+            each: ms(60),
+            seen: Mutex::new(vec![]),
+        };
+        let mut b = base.clone();
+        b.steps.deadline = Some(ms(100));
+        let t0 = Instant::now();
+        let outs = f.run_steps(&b, &steps(4, ms(500))).unwrap();
+        assert_eq!(outs.len(), 4);
+        let seen = f.seen.lock().unwrap().clone();
+        assert!(seen[0] <= ms(100) && seen[1] <= ms(40), "{seen:?}");
+        assert_eq!(seen[3], ms(1), "{seen:?}");
+        assert!(t0.elapsed() < ms(300));
+        // start deadline: no step starts once it has passed
+        let f = Fake {
+            each: ms(60),
+            seen: Mutex::new(vec![]),
+        };
+        let mut b = base.clone();
+        b.steps.start_deadline = Some(ms(100));
+        let outs = f.run_steps(&b, &steps(5, ms(500))).unwrap();
+        assert_eq!(outs.len(), 2);
+        assert_eq!(*f.seen.lock().unwrap(), vec![ms(500); 2]);
+    }
 }
