@@ -229,4 +229,23 @@ Coordination: merged origin/main `c5ccb768` (near-chunk-v3 registered and deploy
 `arena-live rerun-submission sub_423f1e22279f42a3a44ad5fd016237b2 "…"` →
 **`run_335e1cda2a154779981267d37bbd55a0`** (23:15 UTC). VALIDATE done 23:15, BUILD PASS 23:20 (w2), FORMAL_CHECK leased by w2 at 23:20.
 
-RERUN_PLACEHOLDER
+**FORMAL_CHECK (w2, 23:20:03 → 02:15:47 UTC, 2 h 56 min): all six gates PASS**
+(FORMAL_SEMANTIC_SOUNDNESS/COMPLETENESS, FORMAL_CRYPTO_SOUNDNESS, FORMAL_IMPL_CONNECTION: "certificate
+type equals the judge-constructed statement; kernel rechecks accepted"; AXIOM_AUDIT;
+ARTIFACT_BINDING: judge-built verifier `e3695215…`), runner `firecracker`, no findings; report
+object `sha256:4a93b8b8…`. Step walls (trusted/reference from the worker's formal-ref-cache):
+
+| step | runs | wall |
+|---|---|---|
+| model closure / native cc+link | 90 / 140 | 73 s / 40 s |
+| candidate elaboration | 3,916 (62 microVMs) | 5,024 s step time (≈ 1 h 30 min wall of the 4 h budget) |
+| leanchecker | 4,007 (63 microVMs) | 1,736 s |
+| lean4export + nanoda | 1 + 1 | 102 + 612 s |
+| lean4lean | 4,007 (63 microVMs) | 2,190 s |
+| arena-audit / ndjson-audit | 1 / 1 | 34 / 32 s |
+
+Attempt 1 on the same worker had reached ≈ 1,500 of 3,916 modules when its 4 h budget ran out.
+
+Next stages (02:16 UTC): CONFORMANCE leased by w3 (80 public positives + 3 judge-sampled + 3
+held-out at ≈ 5 min/prove on 8 vCPU: ETA ≈ 09:15 UTC), ADVERSARIAL leased by w2; then BENCHMARK on
+w1 (≈ 500 proves, ≈ 40 h). Not waited for.
