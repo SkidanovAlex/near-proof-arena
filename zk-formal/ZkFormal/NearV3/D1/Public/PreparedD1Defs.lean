@@ -14,7 +14,8 @@ at the same descriptor offsets `202 + 8·i`) with
   local refunds ++ refunds)`;
 * six more segments (descriptors `9 … 14`): the body prefix `8 … O0 − 1` **sent** back on
   `BYTES` (it cancels the D0a body segment's receive there: only the incoming receipts'
-  refunds, from `O0` on, are `rcptV3D1`'s), `TXP`, `SIG`, `PKEY`, `PLEAF`, `PRID`;
+  refunds, from `O0` on, are `rcptV3D1`'s), `TXP`, `SIG`, `PKEY`, `PLEAF`, `PRID`; `PKEY`
+  carries the candidates' walks, then the unread-key walks (`uwalks`, lane v3-d1-a7b);
 * the 28-byte extension `u32 M0 ‖ u32 T0 ‖ u32 O0 ‖ u128 TOK0` at `E0 = 322`, after the 15
   descriptors and before the payloads.
 -/
@@ -57,11 +58,15 @@ structure PrepD1 where
   o0 : Nat
   tok0 : Nat
   ops : List TxOp
+  /-- the candidates' and credits' walks (`walkV3`, `KEYNIB`) -/
   walks : List KeyWalk
   /-- outcome leaf digests `0 … M0 − 1` -/
   leaves : List Bytes
   /-- local receipt ids -/
   rids : List Bytes
+  /-- the unread-key walks (`walkU`, `UKEYNIB`; ids `≥ W_UNR`): every `txKeys` entry, plan §5
+  R-5 → (B) -/
+  uwalks : List KeyWalk := []
 
 /-! ## Payloads -/
 
@@ -122,8 +127,8 @@ def extBytes (p : PrepD1) : ByteString := u32 p.m0 ++ u32 p.t0 ++ u32 p.o0 ++ u1
 
 def preparedBlocksD1 (p : PrepD1) : List Payload :=
   preparedBlocks p.base ++
-  [prefixPayload p.base.body p.o0, txpPayload p.ops, sigPayload p.ops, keyPayload p.walks,
-   leafPayload p.leaves, ridPayload p.rids]
+  [prefixPayload p.base.body p.o0, txpPayload p.ops, sigPayload p.ops,
+   keyPayload (p.walks ++ p.uwalks), leafPayload p.leaves, ridPayload p.rids]
 
 /-- `header ‖ metadata ‖ extension ‖ payloads` (`Packing.encode` with the extension between
 the metadata and the payloads; the payload offsets in the metadata account for it). -/

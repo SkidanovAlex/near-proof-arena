@@ -8,7 +8,7 @@ import ZkFormal.NearV3.D1.Extract.AkmProof
 
 Lane `v3-d1-phase2`, item L1.  The D1 analogue of `Assembly.LinkV3`'s mechanical part:
 
-* `busCount_nearAirV3D1_explicit`: `busCount nearAirV3D1` as the explicit sum over its 30
+* `busCount_nearAirV3D1_explicit`: `busCount nearAirV3D1` as the explicit sum over its 33
   tables (`rfl`);
 * `d1Balance_of_holdsP`: `HoldsP.balance` and the exact traffic give `D1Balance`;
 * `rcptD1_view_counts`: `rcptD1_view_prep` with D0a's count bounds (`≤ 2^22` lists and
@@ -28,11 +28,11 @@ theorem busCount_nearAirV3D1_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) 
     busCount nearAirV3D1.toAir tr pub b s m =
       tableBusCount shaTable.interactions tr T_SHA_T pub b s m +
       (tableBusCount shaTable.interactions tr T_SHA_R pub b s m +
-      (tableBusCount ZkFormal.NearV3.UnfoldA7.nodeA7.interactions tr T_NODE pub b s m +
+      (tableBusCount nodeD1.interactions tr T_NODE pub b s m +
       (tableBusCount ZkFormal.NearV3.HeadV3.interactions tr T_HEAD pub b s m +
       (tableBusCount ZkFormal.NearV3.UnfoldA7.valA7.interactions tr T_VAL pub b s m +
       (tableBusCount ZkFormal.NearV3.WalkV3.interactions tr T_WALK pub b s m +
-      (tableBusCount ZkFormal.NearV3.Uniq.interactions tr T_UNIQ pub b s m +
+      (tableBusCount uniqD1.interactions tr T_UNIQ pub b s m +
       (tableBusCount ZkFormal.NearV3.UnfoldA7.upsA7.interactions tr T_UPS pub b s m +
       (tableBusCount (ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA).interactions
         tr T_CHACHA pub b s m +
@@ -59,18 +59,23 @@ theorem busCount_nearAirV3D1_explicit (tr : Trace Fp) (pub : List Fp) (b : Nat) 
       (tableBusCount sortTableV3.interactions tr T_SORT pub b s m +
       (tableBusCount TxV3.interactions tr T_TX pub b s m +
       (tableBusCount AkmV3.interactions tr T_AKM pub b s m +
-      (tableBusCount KibV3.interactions tr T_KIB pub b s m +
+      (tableBusCount KibD1.interactions tr T_KIB pub b s m +
       (tableBusCount PlfV3.interactions tr T_PLF pub b s m +
       (tableBusCount RidV3.interactions tr T_RID pub b s m +
-        0))))))))))))))))))))))))))))) := rfl
+      (tableBusCount WalkU.interactions tr T_WALKU pub b s m +
+      (tableBusCount NmemV3.interactions tr T_NMEM pub b s m +
+      (tableBusCount UvalV3.interactions tr T_UVAL pub b s m +
+        0)))))))))))))))))))))))))))))))) := rfl
 
 theorem d1Balance_of_holdsP {pub : List Fp} {tr : Trace Fp} {r : D1Records}
     (hH : HoldsP nearAirV3D1 pub tr) (T : D1RecordsTraffic pub tr r) : D1Balance pub tr r := by
   intro b m
   have hb := hH.balance b m
   rw [busCount_nearAirV3D1_explicit, busCount_nearAirV3D1_explicit] at hb
-  simp only [show ZkFormal.NearV3.UnfoldA7.nodeA7.interactions =
-      ZkFormal.NearV3.NodeV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Node.interactions from rfl,
+  simp only [show nodeD1.interactions =
+      (ZkFormal.NearV3.NodeV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Node.interactions) ++
+        NodeStub.interactions from rfl,
+    show uniqD1.interactions = ZkFormal.NearV3.Uniq.interactions ++ UniqGap.interactions from rfl,
     show ZkFormal.NearV3.UnfoldA7.valA7.interactions =
       ZkFormal.NearV3.ValV3.interactions ++ ZkFormal.NearV3.UnfoldA7.Val.interactions from rfl,
     show ZkFormal.NearV3.UnfoldA7.upsA7.interactions =
@@ -149,7 +154,7 @@ theorem d1Records_of_holdsP {cb : Bytes} {h : HintD1} {p : Public.PrepD1} {ov : 
     (hH : HoldsP nearAirV3D1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 p ov)) tr) :
     ∃ r, D1RecordsWf (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 p ov)) r ∧
       D1RecordsTraffic (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 p ov)) tr r := by
-  obtain ⟨vs, sN, wN, tN, aN⟩ := ZkFormal.NearV3.nodeA7_view tr _ T_NODE (tableLocalD1 hH (T := ZkFormal.NearV3.UnfoldA7.nodeA7) rfl)
+  obtain ⟨vs, sN, wN, tN, aN⟩ := ZkFormal.NearV3.nodeA7_view tr _ T_NODE (nodeA7LocalD1 hH)
   obtain ⟨hs, wH, tH⟩ := headViewD1 hH
   obtain ⟨es, sV, wV, tV, aV⟩ := ZkFormal.NearV3.valA7_view tr _ T_VAL (tableLocalD1 hH (T := ZkFormal.NearV3.UnfoldA7.valA7) rfl)
   obtain ⟨ws, wW, wS, tW⟩ := walkViewD1 hH
@@ -165,7 +170,7 @@ theorem d1Records_of_holdsP {cb : Bytes} {h : HintD1} {p : Public.PrepD1} {ov : 
   obtain ⟨me, mv, wM, tM⟩ := ZkFormal.NearV3.D1.MrkD1.mrkViewD1 hH
   obtain ⟨xs, wX, tX⟩ := tx_view tr _ T_TX (txLocal hH)
   obtain ⟨ms, wMs, tMs⟩ := akm_view tr _ T_AKM (akmLocal hH)
-  obtain ⟨kb, wKb, tKb⟩ := kib_view tr _ T_KIB (kibLocal hH)
+  obtain ⟨kb, wKb, tKb⟩ := kibD1_view tr _ T_KIB (kibLocal hH)
   obtain ⟨pl, wPl, tPl⟩ := plf_view tr _ T_PLF (plfLocal hH)
   obtain ⟨rd, wRd, tRd⟩ := rid_view tr _ T_RID (ridLocal hH)
   exact ⟨⟨⟨vs, hs, es, ws, us, u, ls, as, ks, bs, ss, sz, mv, me, sN, sV, ay, _⟩, xs, ms, kb, pl, rd⟩,

@@ -24,6 +24,10 @@ import ZkFormal.NearV3.D1.Link.Statements
 import ZkFormal.NearV3.D1.Link.Index
 import ZkFormal.NearV3.D1.Link.PubIndex
 import ZkFormal.NearV3.D1.Prep.Claim
+import ZkFormal.NearV3.D1.Extract.KibD1Proof
+import ZkFormal.NearV3.D1.NearAirD1Check
+import ZkFormal.NearV3.D1.Extract.ViewsUnread
+import ZkFormal.NearV3.D1.A7B
 import ZkFormal.NearV3.D1.Link.Count
 import ZkFormal.NearV3.D1.Link.ClaimFields
 import ZkFormal.NearV3.D1.Link.BusUsers

@@ -29,6 +29,8 @@ use super::tx::{self, Perm, Tx};
 pub const W_TX: u64 = 1 << 20;
 /// `W_LOC`.
 pub const W_LOC: u64 = 1 << 20;
+/// `W_UNR` (`ZkFormal.NearV3.D1.UnreadIds`): base of the unread-key walk ids (lane v3-d1-a7b).
+pub const W_UNR: u64 = 1 << 23;
 /// `K_PLF`.
 pub const K_PLF: u64 = 15;
 
@@ -181,8 +183,14 @@ pub struct D1Run {
     pub refunds: Vec<Receipt>,
     pub gas_used: u128,
     pub tokens: u128,
-    /// the AIR pre trie (main keys and the read transaction keys)
+    /// the AIR pre trie = `checkD1`'s main pre trie (main keys and **every** `txKeys` entry,
+    /// plan §5 R-5 → (B))
     pub pre: PTrie,
+    /// the unread-key walks `unreadWalks txs` (`(w, trie key as bytes)`, ids `W_UNR + 2j (+1)`)
+    pub uwalks: Vec<(u64, Bytes)>,
+    /// the `txKeys` entries whose value the pre trie reveals but no reader reads (nibble keys,
+    /// each once): their bytes go on `VBYTES` from `uvalV3`
+    pub uval_keys: Vec<Vec<u8>>,
     /// the trie after all receipts (no scheduler write)
     pub post_main: PTrie,
     /// receiver account read by each incoming receipt and its previous access time
@@ -511,10 +519,31 @@ pub fn d1_run(cb: &[u8], wb: &[u8]) -> Result<D1Run, String> {
     if k.h_chunk.prev_balance_burnt != tokens_total {
         return err("D1 native: balance burnt differs from the header");
     }
-    // the AIR pre trie: main keys and the read transaction keys
+    // the AIR pre trie: `checkD1`'s main pre trie over the main keys and every `txKeys` entry
+    // (plan §5 R-5 → (B): the AIR walks every transaction key, read or not)
     let mut air_keys = main_keys(&receipts, &bshards);
     air_keys.extend(read_keys.iter().cloned());
-    let pre = partial_trie(&w.base.main.values, &root, &air_keys);
+    let pre = t_rel.clone();
+    let mut uwalks: Vec<(u64, Bytes)> = vec![];
+    let mut uval_keys: Vec<Vec<u8>> = vec![];
+    for (j, t) in w.txs.iter().enumerate() {
+        let j = j as u64;
+        for (i, key) in [
+            account_key_path(&t.signer_id),
+            key_access_key(&t.signer_id, &t.pk_key()),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            uwalks.push((W_UNR + 2 * j + i as u64, unnib(&key)));
+            if !air_keys.contains(&key)
+                && !uval_keys.contains(&key)
+                && matches!(find(&pre, &key), Some(Some(_)))
+            {
+                uval_keys.push(key);
+            }
+        }
+    }
     for op in ops.iter_mut() {
         if op.stage >= 1 {
             op.vid_a = vid_of(&pre, &account_key_path(&op.signer))?;
@@ -573,6 +602,8 @@ pub fn d1_run(cb: &[u8], wb: &[u8]) -> Result<D1Run, String> {
         gas_used,
         tokens: tokens_total,
         pre,
+        uwalks,
+        uval_keys,
         post_main,
         incoming_accounts,
         incoming_tprev,

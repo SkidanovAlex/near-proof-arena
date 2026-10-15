@@ -80,7 +80,7 @@ theorem newSeg_msgs (plan : PubSeg) {i : Nat} (hi : 9 ≤ i) (hi' : i < 15) (hp 
 theorem newMsgs_eq :
     newMsgs (ZkFormal.Udr.pubOf Fp (preparedBytesD1 p ov)) =
       tagged bodyPrefixPlan (prefixPayload p.base.body p.o0) ++ tagged txpPlan (txpPayload p.ops) ++
-      tagged sigPlan (sigPayload p.ops) ++ tagged keyPlan (keyPayload p.walks) ++
+      tagged sigPlan (sigPayload p.ops) ++ tagged keyPlan (keyPayload (p.walks ++ p.uwalks)) ++
       tagged leafPlan (leafPayload p.leaves) ++ tagged ridPlan (ridPayload p.rids) := by
   unfold newMsgs
   rw [newSegs_eq]

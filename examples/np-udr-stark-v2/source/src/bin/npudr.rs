@@ -648,6 +648,21 @@ fn main() {
                         );
                         i += 2;
                     }
+                    "--mutate-rid" => {
+                        // a dishonest `ridV3` row 0: `i' = i + 1 mod 32`, `l' = (j − i')/32` in the
+                        // field (satisfies `j = 32·l + i` but not the range check of `l`)
+                        flags.insert("mutrid", String::new());
+                        i += 1;
+                    }
+                    "--a7-bound" => {
+                        // the AIR's A7 bound constant mutated to B (a JSON mutant of
+                        // nearAirV3D1): render `sizeA7`'s slack against B
+                        flags.insert(
+                            "a7bound",
+                            a.get(i + 1).cloned().unwrap_or_else(|| die("--a7-bound")),
+                        );
+                        i += 2;
+                    }
                     x => {
                         pos.push(x.to_string());
                         i += 1;
@@ -671,8 +686,8 @@ fn main() {
             let air = Air::from_json(&atxt)
                 .unwrap_or_else(|e| die(&e))
                 .with_aux_group(2);
-            if air.tables.len() != 30 {
-                die("v3d1prove: the AIR is not nearAirV3D1 (30 tables)");
+            if air.tables.len() != 33 {
+                die("v3d1prove: the AIR is not nearAirV3D1 (33 tables)");
             }
             let cb = rd(&format!("{case}/claim.bin"));
             let wb = rd(&format!("{case}/witness.bin"));
@@ -717,15 +732,33 @@ fn main() {
                     "akm.json",
                     serde_json::to_string(&ci.akm).unwrap().as_bytes(),
                 );
+                wr("unread.json", d1::unread_json(&ci).to_string().as_bytes());
             }
             let pubs = npudr::verifier::public_inputs(&air, &ci.tape);
             let new_tabs = d1::d1_tables(&ci).unwrap_or_else(|e| die(&e));
-            let mut traces = Vec::with_capacity(30);
+            let mut traces = Vec::with_capacity(33);
             let mut tabs = vec![];
             let mut fail = false;
             for (t, name) in d1::ORDER_D1.iter().enumerate() {
                 let t1 = Instant::now();
-                let tc = if t < 25 {
+                let mut ext = d1::render_ext_d1(&ci, name).unwrap_or_else(|e| die(&e));
+                if flags.contains_key("mutrid") && *name == "rid" {
+                    let mut tb = new_tabs[t - 25].clone();
+                    d1::mutate_rid(&mut tb);
+                    ext = Some(tb);
+                }
+                if let (Some(bs), "size") = (flags.get("a7bound"), *name) {
+                    let bd: u64 = bs.parse().unwrap_or_else(|_| die("--a7-bound B"));
+                    ext = Some(
+                        d1::size_with_bound(&ci.entries["size"], bd).unwrap_or_else(|e| die(&e)),
+                    );
+                }
+                let tc = if let Some(tb) = ext {
+                    let w = tb.width;
+                    npudr::cols::TraceCols::from_rows(tb.log, w, |r, buf| {
+                        buf.copy_from_slice(&tb.cells[r * w..(r + 1) * w])
+                    })
+                } else if t < 25 {
                     vp::render_cols(name, &ci.entries[*name]).unwrap_or_else(|e| die(&e))
                 } else {
                     let tb = &new_tabs[t - 25];
@@ -791,6 +824,13 @@ fn main() {
                 "candidates": r.ops.iter().filter(|o| o.kind == 0 && o.valid && o.cok).count(),
                 "ok": r.ops.iter().filter(|o| o.ok).count(), "locals": r.locals.len(),
                 "receipts": r.receipts.len(), "m0": r.m0, "walks": r.walks.len(), "akm": r.akm.len(),
+                "uwalks": ci.uwalks.len(),
+                "walku_rows": ci.uwalks.iter().map(|w| w.steps.len()).sum::<usize>(),
+                "stubs": ci.stubs.len(), "nmem": ci.nmem.len(),
+                "uval_bytes": ci.uvals.iter().map(|(_, v)| v.len()).sum::<usize>(),
+                "a7_air": serde_json::from_str::<serde_json::Value>(&ci.entries["size"])
+                    .ok()
+                    .and_then(|v| v[0]["yN"].as_array().map(|y| y.iter().filter_map(|x| x.as_u64()).sum::<u64>())),
                 "tables": tabs, "buses": bj, "t_entries": t_entries, "balanced": !fail,
             });
             let wrep = |rep: &serde_json::Value| wr("report.json", rep.to_string().as_bytes());
@@ -801,10 +841,11 @@ fn main() {
             if flags.contains_key("check") {
                 wrep(&rep);
                 println!(
-                    "check ok: 30 tables, {} buses balanced ({} ops, {} walks)",
+                    "check ok: 33 tables, {} buses balanced ({} ops, {} walks, {} unread walks)",
                     bal.len(),
                     r.ops.len(),
-                    r.walks.len()
+                    r.walks.len(),
+                    ci.uwalks.len()
                 );
                 return;
             }

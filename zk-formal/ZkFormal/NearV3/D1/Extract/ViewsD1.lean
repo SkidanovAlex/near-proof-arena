@@ -8,7 +8,9 @@ Lane `v3-d1-phase2` (milestone V6).  Every per-table view of `nearAirV3` is stat
 and table index (`TableLocal T tr t pub → …`), and the tables at the indices below are the same
 in `nearAirV3D1` (`getElem?_d1_same`), so the D0a theorems apply verbatim: this module only
 re-instantiates `Assembly.ViewsV3` from `HoldsP nearAirV3D1`.  (`rcptV3D1` at 16 and `mrkV3` at
-maxLog 20 at 23 are the changed tables, V4 / V5; the D1 tables are V1–V3.)
+maxLog 20 at 23 are the changed tables, V4 / V5; the D1 tables are V1–V3.  `nodeD1` at 2 and
+`uniqD1` at 6 extend `nodeA7` / `uniqV3` (lane v3-d1-a7b): the base views apply through
+`tableLocal_ext`.)
 -/
 
 namespace ZkFormal.NearV3.D1
@@ -17,9 +19,15 @@ open ZkFormal.Air ZkFormal.Algebra ZkFormal.V2 ZkFormal.NearV3.Assembly
 
 variable {pub : List Fp} {tr : Trace Fp}
 
+/-- `nodeA7` from `nodeD1` (an extension, lane v3-d1-a7b). -/
+theorem nodeA7LocalD1 (h : HoldsP nearAirV3D1 pub tr) :
+    ZkFormal.Near.TableLocal ZkFormal.NearV3.UnfoldA7.nodeA7 tr T_NODE pub :=
+  tableLocal_ext (nodeD1Local h)
+    (fun _ h => List.mem_append_left _ h) (fun _ h => List.mem_append_left _ h) (Nat.le_refl _)
+
 theorem nodeLocalD1 (h : HoldsP nearAirV3D1 pub tr) :
     ZkFormal.Near.TableLocal ZkFormal.NearV3.NodeV3.tableU tr T_NODE pub :=
-  tableLocal_ext (tableLocalD1_same h (by decide) (by decide) (by decide) getElem?_node)
+  tableLocal_ext (nodeA7LocalD1 h)
     (fun _ h => List.mem_append_left _ h) (fun _ h => List.mem_append_left _ h) (Nat.le_refl _)
 
 theorem headLocalD1 (h : HoldsP nearAirV3D1 pub tr) :
@@ -37,7 +45,8 @@ theorem walkLocalD1 (h : HoldsP nearAirV3D1 pub tr) :
 
 theorem uniqLocalD1 (h : HoldsP nearAirV3D1 pub tr) :
     ZkFormal.Near.TableLocal ZkFormal.NearV3.Uniq.table tr T_UNIQ pub :=
-  tableLocalD1_same h (by decide) (by decide) (by decide) getElem?_uniq
+  tableLocal_ext (uniqD1Local h)
+    (fun _ h => List.mem_append_left _ h) (fun _ h => List.mem_append_left _ h) (Nat.le_refl _)
 
 theorem upsLocalD1 (h : HoldsP nearAirV3D1 pub tr) :
     ZkFormal.Near.TableLocal ZkFormal.NearV3.UpsV3.table tr T_UPS pub :=

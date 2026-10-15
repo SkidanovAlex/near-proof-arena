@@ -12,7 +12,7 @@ Lane `v3-d1-phase2`, item L1.
   sent by some table or by the public segments (`HoldsP.balance`); `recv_of_send` dually.
 * `nearAirV3D1`'s bus users: `MEM` is touched only by tables `16` (`rcptV3D1`), `17` (`acctV3`)
   and `25` (`txV3`); `SIG` only by `25` (`d1_mem_tables`, `d1_sig_tables`, kernel `decide` over
-  the bus numbers of the 30 interaction lists, as D0a's `nearAir_mem_tables`).  No public
+  the bus numbers of the 33 interaction lists, as D0a's `nearAir_mem_tables`).  No public
   segment is on `MEM`; the only public segment on `SIG` is the D1 `SIG` segment.
 * `pub_sig_mem`: a public `SIG` message of the verifier's tape is `[o, valid_o]` for an op
   index `o < |ops|`.
@@ -105,13 +105,13 @@ theorem tableBusCount_nobus' {is : List Interaction} {t : Nat}
 /-- A table of `nearAirV3D1` whose index is not in `S` has no interaction on bus `bus`, given
 the closed check `onlyOn`. -/
 def onlyOn (bus : Nat) (S : List Nat) : Bool :=
-  (List.range 30).all fun t => S.contains t ||
+  (List.range 33).all fun t => S.contains t ||
     (nearTablesD1.getD t default).interactions.all fun i => i.bus != bus
 
 theorem only_of {bus : Nat} {S : List Nat} (h : onlyOn bus S = true) {t : Nat} {T : ZkFormal.Air.Table}
     (ht : nearAirV3D1.tables[t]? = some T) (hS : t ∉ S) : ∀ i ∈ T.interactions, i.bus ≠ bus := by
-  have hlt : t < 30 := by
-    rcases Nat.lt_or_ge t 30 with hl | hl
+  have hlt : t < 33 := by
+    rcases Nat.lt_or_ge t 33 with hl | hl
     · exact hl
     · rw [List.getElem?_eq_none (by rw [tables_d1_length]; exact hl)] at ht; cases ht
   have h1 := List.all_eq_true.mp h t (List.mem_range.2 hlt)

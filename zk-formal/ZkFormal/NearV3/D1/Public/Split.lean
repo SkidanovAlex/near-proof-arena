@@ -61,7 +61,7 @@ theorem prepared_base_length_le : (preparedBytes p.base ov).length ≤ (prepared
   have e0 : preparedBytes p.base ov = encode (headerBytes p.base ov) (preparedBlocks p.base) := rfl
   have e1 : preparedBytesD1 p ov = encodeD1 (headerBytesD1 p ov) (extBytes p) (preparedBlocksD1 p) := rfl
   have hd : dataBytes (preparedBlocksD1 p) = dataBytes (preparedBlocks p.base) ++
-      dataBytes [prefixPayload p.base.body p.o0, txpPayload p.ops, sigPayload p.ops, keyPayload p.walks,
+      dataBytes [prefixPayload p.base.body p.o0, txpPayload p.ops, sigPayload p.ops, keyPayload (p.walks ++ p.uwalks),
         leafPayload p.leaves, ridPayload p.rids] := by
     simp only [preparedBlocksD1, dataBytes, List.flatMap_append]
   rw [e0, e1, h0, h1, prepared_dataStart p.base ov hr, hd, List.length_append]
