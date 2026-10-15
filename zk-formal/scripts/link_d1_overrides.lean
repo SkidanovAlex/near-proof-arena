@@ -288,3 +288,172 @@ theorem receiptCount_of_records_d1 {cb : Bytes} {h : ZkFormal.NearV3.D1.HintD1} 
 ===
 (hUn : ∀ t ∈ U, t < 30)
 >>>
+
+-- @override ZkFormal.NearV3.Assembly.digest_users_eq
+/-- **D1: the SHA union and `plfV3` provide every `DIGEST` message received elsewhere** (`plfV3`
+sends the public outcome leaves, `D1/Link/PlfIds`). -/
+theorem digest_users_eq_d1 {pub : List Fp} {tr : Trace Fp} (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 pub tr)
+    (m : List Fp) :
+    shaU tr pub true B_DIGEST m +
+      tableBusCount ZkFormal.NearV3.D1.PlfV3.interactions tr ZkFormal.NearV3.D1.T_PLF pub B_DIGEST true m =
+      (digestRecvTables.map fun t => tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 t) tr t pub B_DIGEST false m).sum := by
+  have h := hH.balance B_DIGEST m
+  rw [pubCount_nobus_d1 (by decide +kernel), pubCount_nobus_d1 (by decide +kernel),
+    busCount_users_d1 (U := [T_SHA_T, T_SHA_R, T_NODE, T_HEAD, T_UPS, T_CODEC, T_RCPT, T_SRCP, T_MRK, 28])
+      (by decide) (by decide) (by decide +kernel),
+    busCount_users_d1 (U := [T_SHA_T, T_SHA_R, T_NODE, T_HEAD, T_UPS, T_CODEC, T_RCPT, T_SRCP, T_MRK, 28])
+      (by decide) (by decide) (by decide +kernel)] at h
+  have r0 : tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 T_SHA_T) tr T_SHA_T pub B_DIGEST false m = 0 :=
+    (shaFactsAt tr pub T_SHA_T (shaLocal_of_tableLocal (tableLocal_of_holdsP hH getElem?_sha_t_d1))).recvs_only_bytes
+      B_DIGEST m (by decide)
+  have r1 : tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 T_SHA_R) tr T_SHA_R pub B_DIGEST false m = 0 :=
+    (shaFactsAt tr pub T_SHA_R (shaLocal_of_tableLocal (tableLocal_of_holdsP hH getElem?_sha_r_d1))).recvs_only_bytes
+      B_DIGEST m (by decide)
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Nat.add_zero] at h
+  rw [r0, r1,
+    tableBusCount_noside (is := ZkFormal.NearV3.D1.Link.isAtD1 T_NODE) (by decide +kernel),
+    tableBusCount_noside (is := ZkFormal.NearV3.D1.Link.isAtD1 T_HEAD) (by decide +kernel),
+    tableBusCount_noside (is := ZkFormal.NearV3.D1.Link.isAtD1 T_UPS) (by decide +kernel),
+    tableBusCount_noside (is := ZkFormal.NearV3.D1.Link.isAtD1 T_CODEC) (by decide +kernel),
+    tableBusCount_noside (is := ZkFormal.NearV3.D1.Link.isAtD1 T_RCPT) (by decide +kernel),
+    tableBusCount_noside (is := ZkFormal.NearV3.D1.Link.isAtD1 T_SRCP) (by decide +kernel),
+    tableBusCount_noside (is := ZkFormal.NearV3.D1.Link.isAtD1 T_MRK) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 28) (by decide +kernel)] at h
+  rw [shaU_eq, show ZkFormal.NearV3.Assembly.isAt T_SHA_T = ZkFormal.NearV3.D1.Link.isAtD1 T_SHA_T from rfl,
+    show ZkFormal.NearV3.Assembly.isAt T_SHA_R = ZkFormal.NearV3.D1.Link.isAtD1 T_SHA_R from rfl,
+    show ZkFormal.NearV3.D1.PlfV3.interactions = ZkFormal.NearV3.D1.Link.isAtD1 28 from rfl,
+    show ZkFormal.NearV3.D1.T_PLF = 28 from rfl]
+  simp only [digestRecvTables, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Nat.add_zero]
+  omega
+
+-- @override ZkFormal.NearV3.Assembly.digest_provided
+/-- D1: a received `DIGEST` message whose id is not a leaf id (`K_PLF + 16·j`) is a SHA output. -/
+theorem digest_provided_d1 {pub : List Fp} {tr : Trace Fp} (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 pub tr)
+    (hS : ZkFormal.NearV3.D1.Link.PlfSmall pub tr)
+    {t : Nat} (ht : t ∈ digestRecvTables) {m : List Fp}
+    (hk : ∀ j < 8192, m.head? ≠ some (Fp.ofNat (ZkFormal.NearV3.D1.K_PLF + 16 * j)))
+    (hm : 0 < tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 t) tr t pub B_DIGEST false m) :
+    0 < shaU tr pub true B_DIGEST m := by
+  have h := digest_users_eq_d1 hH m
+  have h0 : tableBusCount ZkFormal.NearV3.D1.PlfV3.interactions tr ZkFormal.NearV3.D1.T_PLF pub B_DIGEST true m = 0 := by
+    rcases Nat.eq_zero_or_pos (tableBusCount ZkFormal.NearV3.D1.PlfV3.interactions tr ZkFormal.NearV3.D1.T_PLF pub
+      B_DIGEST true m) with h0 | h0
+    · exact h0
+    · obtain ⟨j, hj, he⟩ := hS m h0
+      exact absurd he (hk j hj)
+  have := Nat.lt_of_lt_of_le hm (nat_le_sum_of_mem (List.mem_map.mpr ⟨t, ht, rfl⟩) :
+    tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 t) tr t pub B_DIGEST false m ≤
+      (digestRecvTables.map fun t => tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 t) tr t pub B_DIGEST false m).sum)
+  omega
+
+-- @override ZkFormal.NearV3.Assembly.otherBytes
+/-- All `BYTES` sends other than node / val, as field messages (D1: with `akmV3` and the public
+body-prefix sends, `D1/Link/ShaExtra`). -/
+def otherBytes_d1 (tr : Trace Fp) (pub : List Fp) (r : ZkFormal.NearV3.Assembly.V3Records) : List (List Fp) :=
+  (otherRecBytes_d1 pub r).map Msg.toFp ++ codecBytes tr pub ++ ZkFormal.NearV3.D1.Link.extraBytes tr pub
+
+-- @override ZkFormal.NearV3.Assembly.bytes_balance
+/-- **The `BYTES` balance** (D1): SHA receives + public body receives = all `BYTES` sends. -/
+theorem bytes_balance_d1 {pub : List Fp} {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records}
+    (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 pub tr)
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 pub tr r) (m : List Fp) :
+    shaU tr pub false B_BYTES m + pubCount ZkFormal.NearV3.D1.nearAirV3D1 pub B_BYTES false m =
+      cnt (ZkFormal.NearV3.nodeSends3 r.nodes B_BYTES ++ ZkFormal.NearV3.valSends r.values B_BYTES) m +
+        (otherBytes_d1 tr pub r).count m := by
+  have h := hH.balance B_BYTES m
+  have U : [T_SHA_T, T_SHA_R, T_NODE, T_VAL, T_UPS, T_CODEC, T_RCPT, T_ACCT, T_SRCP, T_MRK, 26].Nodup := by decide
+  rw [busCount_users_d1 U (by decide) (by decide +kernel), busCount_users_d1 U (by decide) (by decide +kernel)] at h
+  have s0 : tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 T_SHA_T) tr T_SHA_T pub B_BYTES true m = 0 :=
+    (shaFactsAt tr pub T_SHA_T (shaLocal_of_tableLocal (tableLocal_of_holdsP hH getElem?_sha_t_d1))).sends_only_digest
+      B_BYTES m (by decide)
+  have s1 : tableBusCount (ZkFormal.NearV3.D1.Link.isAtD1 T_SHA_R) tr T_SHA_R pub B_BYTES true m = 0 :=
+    (shaFactsAt tr pub T_SHA_R (shaLocal_of_tableLocal (tableLocal_of_holdsP hH getElem?_sha_r_d1))).sends_only_digest
+      B_BYTES m (by decide)
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Nat.add_zero] at h
+  rw [s0, s1,
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_NODE) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_VAL) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_UPS) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_CODEC) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_RCPT) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_ACCT) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_SRCP) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_MRK) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 26) (by decide +kernel),
+    node_count_d1 T _ _ _ (by decide +kernel), val_count_d1 T _ _ _ (by decide +kernel),
+    ups_count_d1 T _ _ _ (by decide +kernel),
+    show ZkFormal.NearV3.D1.Link.isAtD1 T_RCPT = ZkFormal.NearV3.D1.RcptD1.tableQD1.interactions from rfl,
+    show T_RCPT = 16 from rfl, tcnt_of_traffic T.lists,
+    show ZkFormal.NearV3.D1.Link.isAtD1 T_ACCT = ZkFormal.NearV3.AcctV3.interactions from rfl, tcnt_of_traffic T.accts,
+    show ZkFormal.NearV3.D1.Link.isAtD1 T_SRCP = ZkFormal.NearV3.Rcpt.Candidates.DedupTable.interactions from rfl,
+    tcnt_of_traffic T.srcp,
+    show ZkFormal.NearV3.D1.Link.isAtD1 T_MRK = ZkFormal.NearV3.Candidates.MerkleEmpty.table.interactions from rfl,
+    tcnt_of_traffic T.mrk, tableBusCount_eq (ZkFormal.NearV3.D1.Link.isAtD1 T_CODEC),
+    show ZkFormal.NearV3.D1.Link.isAtD1 26 = ZkFormal.NearV3.D1.AkmV3.interactions from rfl] at h
+  rw [shaU_eq, show ZkFormal.NearV3.Assembly.isAt T_SHA_T = ZkFormal.NearV3.D1.Link.isAtD1 T_SHA_T from rfl,
+    show ZkFormal.NearV3.Assembly.isAt T_SHA_R = ZkFormal.NearV3.D1.Link.isAtD1 T_SHA_R from rfl]
+  simp only [otherBytes_d1, otherRecBytes_d1, codecBytes, cnt, List.map_append, List.count_append,
+    ZkFormal.NearV3.D1.Link.extraBytes_count, ZkFormal.NearV3.D1.RcptD1.rcptTraffic3D1,
+    show ZkFormal.NearV3.D1.T_AKM = 26 from rfl]
+  rw [show ZkFormal.NearV3.Assembly.isAt T_CODEC = ZkFormal.NearV3.D1.Link.isAtD1 T_CODEC from rfl]
+  simp only [tcnt, ZkFormal.NearV3.nodeTraffic3, ZkFormal.NearV3.valTraffic, ZkFormal.NearV3.D1.RcptD1.rcptTraffic3D1,
+    ZkFormal.NearV3.acctV3Traffic, ite_true] at h
+  omega
+
+-- @override ZkFormal.NearV3.Assembly.shaHyp_of
+/-- **`ShaHyp` of the trie tables** (D1): as D0a's, given that `plfV3`'s leaf ids are small
+(`PlfSmall`) and that no node / head digest receive has a leaf id (`hN`). -/
+theorem shaHyp_of_d1 {pub : List Fp} {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records}
+    (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 pub tr)
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 pub tr r) (hK : OthersKinds_d1 tr pub r) (hB : BodyOk_d1 pub r)
+    (hS : ZkFormal.NearV3.D1.Link.PlfSmall pub tr)
+    (hN : ∀ m, 0 < cnt (ZkFormal.NearV3.nodeRecvs3 r.nodes B_DIGEST ++ ZkFormal.NearV3.headRecvs r.heads B_DIGEST) m →
+      ∀ j < 8192, m.head? ≠ some (Fp.ofNat (ZkFormal.NearV3.D1.K_PLF + 16 * j))) :
+    ZkFormal.NearV3.Link3.ShaHyp r.nodes r.heads r.values (othersBytes_d1 tr pub r)
+      (shaU tr pub true) (shaU tr pub false) := by
+  refine ⟨shaU_facts_d1 hH, ?_, ?_, ?_⟩
+  · intro m
+    have h := bytes_balance_d1 hH T m
+    have hc : cnt (othersBytes_d1 tr pub r) m = (otherBytes_d1 tr pub r).count m - pubCount ZkFormal.NearV3.D1.nearAirV3D1 pub B_BYTES false m := by
+      unfold cnt othersBytes_d1
+      rw [List.map_map, show (Msg.toFp ∘ fun x : List Fp => x.map Fp.toNat) = id from
+        funext toFp_map_toNat, List.map_id, count_eraseAll, count_pubList_d1]
+    rw [show ZkFormal.NearV3.nodeSends3 r.nodes B_BYTES ++ ZkFormal.NearV3.valSends r.values B_BYTES ++
+        othersBytes_d1 tr pub r = (ZkFormal.NearV3.nodeSends3 r.nodes B_BYTES ++
+          ZkFormal.NearV3.valSends r.values B_BYTES) ++ othersBytes_d1 tr pub r from rfl]
+    have hca : cnt ((ZkFormal.NearV3.nodeSends3 r.nodes B_BYTES ++ ZkFormal.NearV3.valSends r.values B_BYTES) ++
+        othersBytes_d1 tr pub r) m = cnt (ZkFormal.NearV3.nodeSends3 r.nodes B_BYTES ++
+          ZkFormal.NearV3.valSends r.values B_BYTES) m + cnt (othersBytes_d1 tr pub r) m := by
+      unfold cnt; rw [List.map_append, List.count_append]
+    rw [hca, hc]
+    rcases Nat.eq_zero_or_pos (pubCount ZkFormal.NearV3.D1.nearAirV3D1 pub B_BYTES false m) with h0 | h0
+    · omega
+    · have := hB m h0; omega
+  · intro y hy a ha
+    obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy
+    have hx' := (eraseAll_sublist _ _).subset hx
+    cases hxh : x.head? with
+    | none => simp [List.head?_map, hxh] at ha
+    | some e =>
+      simp only [List.head?_map, hxh, Option.map_some, Option.some.injEq] at ha
+      subst ha
+      exact ⟨Fp.toNat_lt e, hK x hx' e hxh⟩
+  · intro m hm
+    have hk := hN m hm
+    unfold cnt at hm
+    rw [List.map_append, List.count_append] at hm
+    rcases Nat.eq_zero_or_pos (((ZkFormal.NearV3.nodeRecvs3 r.nodes B_DIGEST).map Msg.toFp).count m) with h0 | h0
+    · rw [h0, Nat.zero_add] at hm
+      apply digest_provided_d1 hH hS (t := T_HEAD) (by decide) hk
+      rw [head_count_d1 T]; exact hm
+    · apply digest_provided_d1 hH hS (t := T_NODE) (by decide) hk
+      rw [node_count_d1 T _ _ _ (by decide +kernel)]; exact h0
+
+-- @override ZkFormal.NearV3.Assembly.otherRecBytes
+/-- The record-form `BYTES` sends of the viewed tables other than node / val (D1: the receipt
+view's sends are `rcptV3D1`'s, with the body offset `O0`). -/
+def otherRecBytes_d1 (pub : List Fp) (r : ZkFormal.NearV3.Assembly.V3Records) : List Msg :=
+  (ZkFormal.NearV3.upsTraffic r.ups).sends B_BYTES ++
+    (ZkFormal.NearV3.D1.RcptD1.rcptTraffic3D1 pub r.lists).sends B_BYTES ++
+    ZkFormal.NearV3.acctV3Sends r.accts B_BYTES ++ (ZkFormal.NearV3.ddTraffic r.srcp r.srcpRep).sends B_BYTES ++
+    (mrkTrafficE pub r.mrkE r.mrk).sends B_BYTES

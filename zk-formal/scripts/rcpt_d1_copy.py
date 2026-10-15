@@ -75,7 +75,7 @@ PROFILES = {
         tables={}, suffix='_d1', dir='L',
         base=['ZkFormal.NearV3.D1.Link.Statements', 'ZkFormal.NearV3.D1.Link.Index',
               'ZkFormal.NearV3.D1.Link.PubIndex', 'ZkFormal.NearV3.D1.Link.Count', 'ZkFormal.NearV3.D1.Link.ClaimFields',
-              'ZkFormal.NearV3.D1.Link.BusUsers', 'ZkFormal.NearV3.D1.Prep.Claim',
+              'ZkFormal.NearV3.D1.Link.BusUsers', 'ZkFormal.NearV3.D1.Link.ShaExtra', 'ZkFormal.NearV3.D1.Prep.Claim',
               'ZkFormal.NearV3.D1.R.All',
               'ZkFormal.NearV3.D1.M.All'],
         extra={}, overrides='scripts/link_d1_overrides.lean', taint='scripts/l1_d1_taint.tsv',

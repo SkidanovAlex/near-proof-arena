@@ -5,6 +5,7 @@ import ZkFormal.NearV3.D1.Link.PubIndex
 import ZkFormal.NearV3.D1.Link.Count
 import ZkFormal.NearV3.D1.Link.ClaimFields
 import ZkFormal.NearV3.D1.Link.BusUsers
+import ZkFormal.NearV3.D1.Link.ShaExtra
 import ZkFormal.NearV3.D1.Prep.Claim
 import ZkFormal.NearV3.D1.R.All
 import ZkFormal.NearV3.D1.M.All

@@ -5,6 +5,7 @@ ZkFormal.NearV3.Assembly.LinkBus
 ZkFormal.NearV3.Assembly.LinkClaim
 ZkFormal.NearV3.Assembly.LinkFields
 ZkFormal.NearV3.Assembly.LinkPrepCtx
+ZkFormal.NearV3.Assembly.LinkSha
 ZkFormal.NearV3.Assembly.LinkV3
 ZkFormal.NearV3.Assembly.PrepFacts
 ZkFormal.NearV3.Assembly.PreparedSources
