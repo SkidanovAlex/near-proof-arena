@@ -6,6 +6,8 @@ ZkFormal.NearV3.Assembly.LinkChain
 ZkFormal.NearV3.Assembly.LinkClaim
 ZkFormal.NearV3.Assembly.LinkFields
 ZkFormal.NearV3.Assembly.LinkPrepCtx
+ZkFormal.NearV3.Assembly.LinkRidBytes
+ZkFormal.NearV3.Assembly.LinkRids
 ZkFormal.NearV3.Assembly.LinkSha
 ZkFormal.NearV3.Assembly.LinkShaKinds
 ZkFormal.NearV3.Assembly.LinkStore

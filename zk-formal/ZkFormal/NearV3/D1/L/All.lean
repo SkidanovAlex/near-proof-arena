@@ -4,6 +4,8 @@ import ZkFormal.NearV3.D1.L.Assembly.LinkChain
 import ZkFormal.NearV3.D1.L.Assembly.LinkClaim
 import ZkFormal.NearV3.D1.L.Assembly.LinkFields
 import ZkFormal.NearV3.D1.L.Assembly.LinkPrepCtx
+import ZkFormal.NearV3.D1.L.Assembly.LinkRidBytes
+import ZkFormal.NearV3.D1.L.Assembly.LinkRids
 import ZkFormal.NearV3.D1.L.Assembly.LinkSha
 import ZkFormal.NearV3.D1.L.Assembly.LinkShaKinds
 import ZkFormal.NearV3.D1.L.Assembly.LinkStore
