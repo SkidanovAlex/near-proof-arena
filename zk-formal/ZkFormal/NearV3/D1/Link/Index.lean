@@ -13,8 +13,9 @@ namespace ZkFormal.NearV3.D1.Link
 
 open ZkFormal.NearV3.Assembly ZkFormal.NearV3.D1
 
-theorem getElem?_node_d1 : nearAirV3D1.tables[T_NODE]? =
-    some ZkFormal.NearV3.UnfoldA7.nodeA7 := rfl
+/-- Table 2 is `nodeD1` (`nodeA7` extended with the stub windows, lane v3-d1-a7b);
+`ViewsD1.nodeA7LocalD1` gives `nodeA7`'s local legality. -/
+theorem getElem?_node_d1 : nearAirV3D1.tables[T_NODE]? = some nodeD1 := rfl
 
 theorem getElem?_head_d1 : nearAirV3D1.tables[T_HEAD]? =
     some {ZkFormal.NearV3.HeadV3.table with maxLog := 13} := rfl
@@ -25,8 +26,9 @@ theorem getElem?_val_d1 : nearAirV3D1.tables[T_VAL]? =
 theorem getElem?_walk_d1 : nearAirV3D1.tables[T_WALK]? =
     some {ZkFormal.NearV3.WalkV3.table with maxLog := 22} := rfl
 
-theorem getElem?_uniq_d1 : nearAirV3D1.tables[T_UNIQ]? =
-    some ZkFormal.NearV3.Uniq.table := rfl
+/-- Table 6 is `uniqD1` (`uniqV3` extended with the gap lookups, lane v3-d1-a7b);
+`ViewsD1.uniqLocalD1` gives `uniqV3`'s local legality. -/
+theorem getElem?_uniq_d1 : nearAirV3D1.tables[T_UNIQ]? = some uniqD1 := rfl
 
 theorem getElem?_ups_d1 : nearAirV3D1.tables[T_UPS]? =
     some ZkFormal.NearV3.UnfoldA7.upsA7 := rfl

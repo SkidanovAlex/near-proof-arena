@@ -6,6 +6,7 @@ import ZkFormal.NearV3.D1.Extract.PlfProof
 import ZkFormal.NearV3.D1.Extract.RidProof
 import ZkFormal.NearV3.D1.StmtsT
 import ZkFormal.NearV3.D1.Extract.AirD1
+import ZkFormal.NearV3.D1.Extract.KibD1Proof
 
 /-!
 # `ZkFormal.NearV3.D1.Link.RecordsDefs` — the records and the record-form balance of `nearAirV3D1` (L1)
@@ -18,7 +19,7 @@ Lane `v3-d1-phase2`, item L1.  Definitions only.  The D1 analogue of `Assembly.L
   `kibV3`, `plfV3`, `ridV3`);
 * `BaseWfD1` / `BaseTrafficD1`: D0a's fields with the receipt facts `RcptV3WfD1` and
   `rcptV3D1`'s traffic (`tableQD1.interactions`, `rcptTraffic3D1`) at table 16;
-* `balSumD1`: the bus count of the 30 tables in record form (D0a's sum for tables `0 … 24`,
+* `balSumD1`: the bus count of the 33 tables in record form (D0a's sum for tables `0 … 24`,
   then the five D1 tables); `D1Balance` adds `pubCount nearAirV3D1`;
 * `LinkInputsD1`: everything the link receives (preparation, tape bound, `HoldsP`, records,
   SHA contracts, balance), so that the link statements (`Link/Statements`) stay short.
@@ -110,7 +111,7 @@ structure D1RecordsWf (pub : List Fp) (r : D1Records) : Prop where
   base : BaseWfD1 pub r.base
   txs : TxWf r.txs
   akms : AkmWf r.akms
-  kibs : KibWf r.kibs
+  kibs : KibD1Wf r.kibs
   plfs : PlfWf r.plfs
   rids : RidWf r.rids
 
@@ -119,7 +120,7 @@ structure D1RecordsTraffic (pub : List Fp) (tr : Trace Fp) (r : D1Records) : Pro
   base : BaseTrafficD1 pub tr r.base
   txs : ZkFormal.Near.TableTraffic TxV3.interactions tr T_TX pub (txTraffic r.txs)
   akms : ZkFormal.Near.TableTraffic AkmV3.interactions tr T_AKM pub (akmTraffic r.akms)
-  kibs : ZkFormal.Near.TableTraffic KibV3.interactions tr T_KIB pub (kibTraffic r.kibs)
+  kibs : ZkFormal.Near.TableTraffic KibD1.interactions tr T_KIB pub (kibD1Traffic r.kibs)
   plfs : ZkFormal.Near.TableTraffic PlfV3.interactions tr T_PLF pub (plfTraffic r.plfs)
   rids : ZkFormal.Near.TableTraffic RidV3.interactions tr T_RID pub (ridTraffic r.rids)
 
@@ -129,12 +130,14 @@ def balSumBaseD1 (pub : List Fp) (tr : Trace Fp) (r : V3Records) (b : Nat) (s : 
   tableBusCount shaTable.interactions tr ZkFormal.NearV3.Assembly.T_SHA_T pub b s m +
   (tableBusCount shaTable.interactions tr ZkFormal.NearV3.Assembly.T_SHA_R pub b s m +
   ((ZkFormal.NearV3.Assembly.tcnt (ZkFormal.NearV3.nodeTraffic3 r.nodes) s b m +
-      tableBusCount ZkFormal.NearV3.UnfoldA7.Node.interactions tr ZkFormal.NearV3.Assembly.T_NODE pub b s m) +
+      tableBusCount ZkFormal.NearV3.UnfoldA7.Node.interactions tr ZkFormal.NearV3.Assembly.T_NODE pub b s m +
+      tableBusCount NodeStub.interactions tr ZkFormal.NearV3.Assembly.T_NODE pub b s m) +
   (ZkFormal.NearV3.Assembly.tcnt (ZkFormal.NearV3.headTraffic r.heads) s b m +
   ((ZkFormal.NearV3.Assembly.tcnt (ZkFormal.NearV3.valTraffic r.values) s b m +
       tableBusCount ZkFormal.NearV3.UnfoldA7.Val.interactions tr ZkFormal.NearV3.Assembly.T_VAL pub b s m) +
   (ZkFormal.NearV3.Assembly.tcnt (ZkFormal.NearV3.walkTraffic3 r.walks) s b m +
-  (ZkFormal.NearV3.Assembly.tcnt (ZkFormal.NearV3.uniqTraffic r.uniq) s b m +
+  ((ZkFormal.NearV3.Assembly.tcnt (ZkFormal.NearV3.uniqTraffic r.uniq) s b m +
+      tableBusCount UniqGap.interactions tr ZkFormal.NearV3.Assembly.T_UNIQ pub b s m) +
   ((ZkFormal.NearV3.Assembly.tcnt (ZkFormal.NearV3.upsTraffic r.ups) s b m +
       tableBusCount ZkFormal.NearV3.UnfoldA7.Ups.interactions tr ZkFormal.NearV3.Assembly.T_UPS pub b s m) +
   (tableBusCount (ZkFormal.Chacha.Table.table22 ZkFormal.NearV3.Sched.B_SCHACHA).interactions
@@ -163,14 +166,19 @@ def balSumBaseD1 (pub : List Fp) (tr : Trace Fp) (r : V3Records) (b : Nat) (s : 
   (tableBusCount sortTableV3.interactions tr ZkFormal.NearV3.Assembly.T_SORT pub b s m +
     0))))))))))))))))))))))))
 
-/-- The bus count of the 30 tables of `nearAirV3D1` in record form. -/
+/-- The bus count of the 33 tables of `nearAirV3D1` in record form.  (The stub / gap
+extensions of tables 2 and 6 and the unread-key tables `30 … 32` of lane v3-d1-a7b enter as
+raw table counts; their views are used by the A7 step only.) -/
 def balSumD1 (pub : List Fp) (tr : Trace Fp) (r : D1Records) (b : Nat) (s : Bool) (m : List Fp) : Nat :=
   balSumBaseD1 pub tr r.base b s m +
   (ZkFormal.NearV3.Assembly.tcnt (txTraffic r.txs) s b m +
   (ZkFormal.NearV3.Assembly.tcnt (akmTraffic r.akms) s b m +
-  (ZkFormal.NearV3.Assembly.tcnt (kibTraffic r.kibs) s b m +
+  (ZkFormal.NearV3.Assembly.tcnt (kibD1Traffic r.kibs) s b m +
   (ZkFormal.NearV3.Assembly.tcnt (plfTraffic r.plfs) s b m +
-  ZkFormal.NearV3.Assembly.tcnt (ridTraffic r.rids) s b m))))
+  (ZkFormal.NearV3.Assembly.tcnt (ridTraffic r.rids) s b m +
+  (tableBusCount WalkU.interactions tr T_WALKU pub b s m +
+  (tableBusCount NmemV3.interactions tr T_NMEM pub b s m +
+  tableBusCount UvalV3.interactions tr T_UVAL pub b s m)))))))
 
 /-- **The bus balance of `nearAirV3D1` in record form.** -/
 def D1Balance (pub : List Fp) (tr : Trace Fp) (r : D1Records) : Prop :=

@@ -49,7 +49,7 @@ def prep (h : HintD1) : PrepD1 :=
               fwd := fwdLinks w.pc.ctxB2 w.outgoing },
     m0 := w.loc.leaves.length, t0 := w.loc.ops.length, o0 := w.o0, tok0 := w.loc.tokens,
     ops := w.loc.ops, walks := w.loc.walks, leaves := w.loc.leaves,
-    rids := w.st.locals.map Receipt.receiptId }
+    rids := w.st.locals.map Receipt.receiptId, uwalks := unreadWalks w.txs }
 
 /-- Every check of `prepD1` on these values. -/
 structure Ok (cb : Bytes) (h : HintD1) : Prop where

@@ -1,6 +1,7 @@
 import NearSpecV3.ChunkValidationD1a
 import NearSpecV3.PrepD0
 import ZkFormal.NearV3.D1.Public.PreparedD1Defs
+import ZkFormal.NearV3.D1.UnreadIds
 
 /-!
 # `ZkFormal.NearV3.D1.PrepD1` — the native preparation of a D1a verifier (`prepD1`)
@@ -268,6 +269,15 @@ def prepLocals (ctx : ApplyCtx) : LocAcc → List Receipt → Except String LocA
                      leaves := st.leaves ++ [leaf], refunds := st.refunds ++ rf,
                      tokens := st.tokens + burnt } rs
 
+/-! ## Unread-key walks (plan §5, R-5 → (B), lane v3-d1-a7b) -/
+
+/-- The walks of **every** `txKeys` entry, in order (`txKeys txs`: the signer account, then the
+access key, of every transaction of the witness, duplicates included): walk ids `W_UNR + 2·j`
+and `W_UNR + 2·j + 1` for transaction `j`. -/
+def unreadWalks (txs : List Tx) : List KeyWalk :=
+  txs.zipIdx.flatMap fun (t, j) =>
+    [⟨W_UNR + 2 * j, acctKeyBytes t.signerId⟩, ⟨W_UNR + 2 * j + 1, akKeyBytes t.signerId t.pkKey⟩]
+
 /-! ## `prepD1` -/
 
 def prepD1 (cb : Bytes) (h : HintD1) : Except String PrepD1 := do
@@ -315,7 +325,7 @@ def prepD1 (cb : Bytes) (h : HintD1) : Except String PrepD1 := do
   let base : Prep := { hdr := { pc.hdr with n := m0 + h.n }, lists := pc.lists, bnds := pc.bnds,
                        sched := pc.sched, body, fwd := fwdLinks ctx outgoing }
   pure { base, m0, t0 := loc.ops.length, o0, tok0 := loc.tokens, ops := loc.ops, walks := loc.walks,
-         leaves := loc.leaves, rids := st.locals.map Receipt.receiptId }
+         leaves := loc.leaves, rids := st.locals.map Receipt.receiptId, uwalks := unreadWalks txs }
 
 /-- The witness bytes the AIR does not see (`sizeV3`'s `OVH`, `PH_WOVH`): the two transaction
 vectors, which the extracted witness takes from the hint (`|borsh txs| + |borsh newTxs|`).
