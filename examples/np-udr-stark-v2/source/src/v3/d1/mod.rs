@@ -4,6 +4,8 @@
 //!   trie-side `Native` (AIR pre trie over the read keys);
 //! * [`prep`]: the D1 prepared statement and public tape (`PreparedD1Defs`);
 //! * [`tables`]: `txV3`, `akmV3`, `kibV3`, `plfV3`, `ridV3`;
+//! * [`unread`]: the unread-key tables of plan §5 R-5 → (B) (lane v3-d1-a7b): `walkU`, the
+//!   `nodeD1` stub windows, the `uniqD1` gaps, `nmemV3`, `uvalV3`, `kibD1`;
 //! * [`case_inputs_d1`]: every table's entries — the 25 `nearAirV3` generators fed with the
 //!   D1 run (`rcptV3D1` offsets, signer accounts in `acctV3`, `akeyV3` without the keys
 //!   `akmV3` owns, all leaves in `mrkV3`, local ids in `sortV3`, the D1 SHA jobs) — plus the
@@ -16,6 +18,7 @@ pub mod prep;
 pub mod run;
 pub mod tables;
 pub mod tx;
+pub mod unread;
 
 use std::collections::HashMap;
 
@@ -32,11 +35,11 @@ use self::prep::PrepD1;
 use self::run::{D1Run, K_PLF, W_LOC};
 use self::tables::{AkmE, TxE};
 
-/// `nearTablesD1` order.
+/// `nearTablesD1` order (33 tables).
 pub const ORDER_D1: &[&str] = &[
     "sha_t", "sha_r", "node", "head", "val", "walk", "uniq", "ups", "chacha", "rng", "shuf",
     "codec", "scandist", "proc", "mem", "cmp", "rcpt", "acct", "akey", "bnd", "srcp", "size", "qv",
-    "mrk", "sort", "tx", "akm", "kib", "plf", "rid",
+    "mrk", "sort", "tx", "akm", "kib", "plf", "rid", "walku", "nmem", "uval",
 ];
 
 fn nats(b: &[u8]) -> Vec<u64> {
@@ -291,6 +294,17 @@ pub struct CaseD1 {
     pub entries: HashMap<String, String>,
     pub tx: Vec<TxE>,
     pub akm: Vec<AkmE>,
+    /// the unread-key walks (`walkU`), ranked
+    pub uwalks: Vec<crate::v3::WalkR>,
+    /// the stub windows of `nodeD1` (`SEDGE` keys with use counts, `NMQ (τ, h)`)
+    pub stubs: Vec<unread::StubW>,
+    /// the node records (for the stub windows' rows)
+    pub nodes: Vec<crate::v3::node::NodeS3>,
+    /// `uniqV3`'s sorted entries and the `nmemV3` queries
+    pub uniq: Vec<crate::v3::UEnt>,
+    pub nmem: Vec<unread::NmemQ>,
+    /// `(vid, bytes)` of the values revealed only for unread keys (`uvalV3`)
+    pub uvals: Vec<(u64, Vec<u8>)>,
 }
 
 pub fn case_inputs_d1(cb: &[u8], wb: &[u8]) -> Result<CaseD1, String> {
@@ -305,7 +319,29 @@ pub fn case_inputs_d1(cb: &[u8], wb: &[u8]) -> Result<CaseD1, String> {
     let native = run.native()?;
     let js = |v: serde_json::Result<String>| v.map_err(|e| e.to_string());
     let mut entries: HashMap<String, String> = HashMap::new();
-    let mut tv = crate::v3::trie::entries_of(&native, &p.base, &run.w.base.entries)?;
+    // the unread-key walks (every `txKeys` entry, `walkU`), counted in the node / head uses
+    let us: Vec<crate::v3::WalkR> = run
+        .uwalks
+        .iter()
+        .map(|(w, k)| crate::v3::walks::unread_walk(&native, *w, &ns::nibbles(k)))
+        .collect::<Result<_, _>>()?;
+    let (mut tv, uwalks) =
+        crate::v3::trie::entries_of_u(&native, &p.base, &run.w.base.entries, &us)?;
+    let nodes: Vec<crate::v3::node::NodeS3> =
+        serde_json::from_value(tv["node"].clone()).map_err(|e| e.to_string())?;
+    let uniq: Vec<crate::v3::UEnt> =
+        serde_json::from_value(tv["uniq"].clone()).map_err(|e| e.to_string())?;
+    let stubs = unread::stub_windows(&nodes, &crate::v3::walks::stub_uses(&uwalks))?;
+    let nmem = unread::nmem_queries(&uniq, &stubs)?;
+    let uvals: Vec<(u64, Vec<u8>)> = run
+        .uval_keys
+        .iter()
+        .map(|k| {
+            let vid = crate::v3::rcptfam::value_index(&run.pre, k).ok_or("uvalV3: value index")?;
+            let v = get(&run.pre, k).ok_or("uvalV3: value bytes")?;
+            Ok::<_, String>((vid as u64, v))
+        })
+        .collect::<Result<_, _>>()?;
     // `sizeV3` reads `OVH` from the D1 tape
     tv["size"][0]["ovh"] = serde_json::json!(ovh);
     for t in ["node", "val", "head", "walk", "uniq", "ups", "size"] {
@@ -375,22 +411,90 @@ pub fn case_inputs_d1(cb: &[u8], wb: &[u8]) -> Result<CaseD1, String> {
         entries,
         tx,
         akm,
+        uwalks,
+        stubs,
+        nodes,
+        uniq,
+        nmem,
+        uvals,
     })
 }
 
-/// The five D1 tables.
+/// Tables 2 and 6 of `nearAirV3D1`: `nodeD1` (`nodeA7` + stub windows) and `uniqD1`
+/// (`uniqV3` + gaps); `None` for every other table.
+pub fn render_ext_d1(c: &CaseD1, name: &str) -> Result<Option<crate::v3::Tab>, String> {
+    match name {
+        "node" => {
+            let base = crate::v3::render("node", &c.entries["node"])?;
+            Ok(Some(unread::node_d1(&base, &c.nodes, &c.stubs)?))
+        }
+        "uniq" => {
+            let base = crate::v3::render("uniq", &c.entries["uniq"])?;
+            Ok(Some(unread::uniq_d1(&base, &c.uniq, &c.nmem)?))
+        }
+        _ => Ok(None),
+    }
+}
+
+/// `sizeA7` with the A7 bound `b` in place of `B0` (`--a7-bound`, a conformance mutant of the
+/// AIR's bound constant): the slack bits `b − u` (natural subtraction) on every row.
+pub fn size_with_bound(json: &str, b: u64) -> Result<Tab, String> {
+    let mut t = crate::v3::render("size", json)?;
+    for q in 0..t.height() {
+        let u = t.cells[q * t.width + 32] as u64;
+        let slack = b.saturating_sub(u);
+        for e in 0..24 {
+            t.set(q, 33 + e, (slack >> e) & 1);
+        }
+    }
+    Ok(t)
+}
+
+/// The unread-key entries (for the Lean differential, `np-lean-d1-v3 entries`'s `unread`): per
+/// unread walk its terminal (`["val", vid]`, `["absent"]`, `["stub", n, I, z]`); the stub
+/// windows `[n, I, z, uses, h]`; the `nmemV3` queries `[h, mode]`; the `uvalV3` values
+/// `[vid, bytes]`.
+pub fn unread_json(c: &CaseD1) -> serde_json::Value {
+    use crate::v3::walks::MODE_STUB;
+    let terms: Vec<serde_json::Value> = c
+        .uwalks
+        .iter()
+        .map(|w| {
+            let t = w.steps.iter().rev().find(|s| s.mode != 3).cloned().unwrap_or_default();
+            let e = |i: usize| t.e.get(i).copied().unwrap_or(0);
+            match t.mode {
+                0 => serde_json::json!(["val", e(3)]),
+                MODE_STUB => serde_json::json!(["stub", e(0), e(1), e(2)]),
+                _ => serde_json::json!(["absent"]),
+            }
+        })
+        .collect();
+    serde_json::json!({
+        "terms": terms,
+        "stubs": c.stubs.iter().map(|s| serde_json::json!([s.nid, s.i, s.z, s.uses, s.h])).collect::<Vec<_>>(),
+        "nmem": c.nmem.iter().map(|q| serde_json::json!([q.h, q.mode])).collect::<Vec<_>>(),
+        "uval": c.uvals.iter().map(|(v, b)| serde_json::json!([v, b])).collect::<Vec<_>>(),
+    })
+}
+
+/// The eight D1 tables `25 … 32`.
 pub fn d1_tables(c: &CaseD1) -> Result<Vec<Tab>, String> {
     let keys: Vec<Vec<u8>> = c
         .prep
         .walks
         .iter()
+        .chain(&c.prep.uwalks)
         .flat_map(|(w, k)| prep::walk_recs(*w, k))
         .collect();
+    let uniq_h = 1usize << crate::v3::pad_log22(crate::v3::log_of(32 * c.uniq.len()));
     Ok(vec![
         tables::tx_trace(&c.tx),
         tables::akm_trace(&c.akm)?,
-        tables::kib_trace(&keys),
+        unread::kib_d1_trace(&keys),
         tables::plf_trace(&c.prep.leaves),
         tables::rid_trace(&c.prep.rids),
+        unread::walku_trace(&c.uwalks),
+        unread::nmem_trace(&c.uniq, uniq_h, &c.nmem),
+        unread::uval_trace(&c.uvals),
     ])
 }

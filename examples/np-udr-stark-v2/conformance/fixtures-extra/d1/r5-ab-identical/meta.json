@@ -1,0 +1,56 @@
+{
+ "case": "r5-ab-identical",
+ "kind": "extra_d1a",
+ "family": "r5.unread_key_reveals_value",
+ "base": "oracle/fixtures/v3/public-d1/d1/01-h10025-s1",
+ "expected_verdict_d1a": "accept",
+ "expected_rel_d1": true,
+ "construction": "examples/np-udr-stark-v2/conformance/fixtures-extra/gen_extra_d1a.py r5 (see its docstring; hashes restored, Python fixed point)",
+ "accounts": {
+  "X": "s4a03",
+  "A": "s4a03a1",
+  "B": "s4a03b1",
+  "C": "s4a03b2"
+ },
+ "public_keys": {
+  "A": "f7f89f35de635c3f81223ddd924907b1c1cb4467ed27f96367851025326237fd",
+  "B": "628de7a5f9c26e973e24a8bcf04e6b06a4370fec2706d44e8ab03f7d867df5e4",
+  "C": "5126893a56ff471a82703048195b654418254de0da07dda999afa2993c773c01"
+ },
+ "transactions": [
+  {
+   "i": 0,
+   "signer": "A",
+   "tx_valid": 1,
+   "role": "candidate, reads A's account, no access key (stage 1), fails"
+  },
+  {
+   "i": 1,
+   "signer": "B",
+   "tx_valid": 0,
+   "role": "not a candidate: B's keys only in txKeys (unread)"
+  },
+  {
+   "i": 2,
+   "signer": "C",
+   "tx_valid": 1,
+   "role": "candidate, C absent: absence walk ends at B's leaf"
+  }
+ ],
+ "python_fixpoint_log": [
+  "Reject: main transition post_state_root mismatch",
+  "Reject: InvalidStateRoot",
+  "Reject: InvalidOutcomesProof"
+ ],
+ "claim_sha256": "e3233cb9ea10351cfe178b3042339ed102065d3a4bae255f8a29e436d9b2e55f",
+ "witness_sha256": "6f8e7fa71ae46f1b1df38081a9fb99e1a36b95e073555ac860d67a12bb9f75d8",
+ "python_d1a": {
+  "verdict": "accept",
+  "reason": "ok",
+  "unfold": 5572
+ },
+ "unfold_read_keys_only": 5428,
+ "unfold_delta": 144,
+ "b_value_len": 72,
+ "nearcore": "not judged (the mutated blocks are not in its store)"
+}

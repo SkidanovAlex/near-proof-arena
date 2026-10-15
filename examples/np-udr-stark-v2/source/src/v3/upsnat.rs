@@ -784,7 +784,7 @@ pub fn honest_insts(us: &[UpsertW]) -> Result<Vec<UpsInst>, String> {
 // ---------------------------------------------------------------------------
 
 /// `UpsGen.step I i = I.walk.getD i default`, `i < 4` (`fourSteps`).
-fn four_steps(i: &UpsInst) -> impl Iterator<Item = WStep3> + '_ {
+pub(crate) fn four_steps(i: &UpsInst) -> impl Iterator<Item = WStep3> + '_ {
     (0..4).map(|t| i.walk.get(t).cloned().unwrap_or_default())
 }
 
