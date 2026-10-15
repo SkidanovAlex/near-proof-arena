@@ -24,6 +24,10 @@ import ZkFormal.NearV3.D1.Link.Statements
 import ZkFormal.NearV3.D1.Link.Index
 import ZkFormal.NearV3.D1.Link.PubIndex
 import ZkFormal.NearV3.D1.Prep.Claim
+import ZkFormal.NearV3.D1.Link.Count
+import ZkFormal.NearV3.D1.Link.ClaimFields
+import ZkFormal.NearV3.D1.Link.BusUsers
+import ZkFormal.NearV3.D1.L.All
 
 /-!
 # `ZkFormal.NearV3.D1.Phase2` — the D1a phase-2 proof modules (build root)
