@@ -16,8 +16,9 @@ public record must be consumed.
   (the transaction walks' key nibbles, `walkV3` unchanged).
 * `plfV3`: `PLEAF (pos, d[32])` ↦ `MPOS (0, pos, PLF(pos), 68)` and `DIGEST (PLF(pos), 68, d)`
   (outcome leaves `0 … M0 − 1` of `mrkV3`, unchanged; `PLF(pos) = 15 + 16·pos`).
-* `ridV3`: `PRID (j, b)` with `j = 32·l + i`, `i < 32` ↦ `RIDS (W_LOC + l, i, b)` (local
-  receipt ids for `sortV3`'s distinctness, unchanged).
+* `ridV3`: `PRID (j, b)` with `j = 32·l + i`, `i < 32`, `l < 2^12` (range-checked by bits,
+  lane v3-d1-a7b) ↦ `RIDS (W_LOC + l, i, b)` (local receipt ids for `sortV3`'s distinctness,
+  unchanged).
 
 Definitions only (verifier-model import rule).
 -/
@@ -84,13 +85,19 @@ def j : Nat := 1
 def l : Nat := 2
 def ib (x : Nat) : Nat := 3 + x
 def b : Nat := 8
-def width : Nat := 9
+/-- the bits of the slot `l < 2^12` (lane v3-d1-a7b soundness fix: without them `l` is any field
+element with `32·l + i = j`, so a row could pick `i ≢ j (mod 32)`) -/
+def lb (x : Nat) : Nat := 9 + x
+def width : Nat := 21
 
 def iE : Expr := bits (fun x => c (ib x)) 0 5
+def lE : Expr := bits (fun x => c (lb x)) 0 12
 
 def constraints : List Expr :=
   [bool (c act)] ++ (List.range 5).map (fun x => bool (c (ib x))) ++
-  [ .mul (c act) (sub (c j) (.add (smul 32 (c l)) iE)) ]
+  [ Expr.mul (c act) (sub (c j) (.add (smul 32 (c l)) iE)) ] ++
+  (List.range 12).map (fun x => bool (c (lb x))) ++
+  [ Expr.mul (c act) (sub (c l) lE) ]
 
 def interactions : List Interaction :=
   [ recv B_PRID (c act) [c j, c b],

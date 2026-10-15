@@ -29,10 +29,10 @@ theorem nearAirV3D1_npOkPg_g2 : ZkFormal.V2.G.NpOkPg nearAirV3D1 (ZkFormal.V2.G.
 /-- The aligned deduplicated proof-size bound of `nearAirV3D1` at `auxGroup = 2`
 (`nearAirV3`: 6,435,489; the five phase-1 D1 tables and `mrkV3` at `maxLog 20` added 491,717
 bytes (6,927,206); the unread-key tables of plan §5 R-5 → (B) (`nodeD1`, `uniqD1`, `kibD1`,
-`walkU`, `nmemV3`, `uvalV3`, lane v3-d1-a7b) add 336,003 more), far below the challenge's
-`maxProofBytesV3 = 64 MiB`. -/
+`walkU`, `nmemV3`, `uvalV3`, lane v3-d1-a7b) add 336,003 more, the range check of `ridV3`'s
+slot `l` 11,136), far below the challenge's `maxProofBytesV3 = 64 MiB`. -/
 theorem nearAirV3D1_sizeMaxAligned :
-    sizeMaxAligned nearAirV3D1.toAir (ZkFormal.V2.G.pg 2) = 7263209 := by
+    sizeMaxAligned nearAirV3D1.toAir (ZkFormal.V2.G.pg 2) = 7274345 := by
   decide +kernel
 
 end ZkFormal.NearV3.D1

@@ -648,6 +648,12 @@ fn main() {
                         );
                         i += 2;
                     }
+                    "--mutate-rid" => {
+                        // a dishonest `ridV3` row 0: `i' = i + 1 mod 32`, `l' = (j − i')/32` in the
+                        // field (satisfies `j = 32·l + i` but not the range check of `l`)
+                        flags.insert("mutrid", String::new());
+                        i += 1;
+                    }
                     "--a7-bound" => {
                         // the AIR's A7 bound constant mutated to B (a JSON mutant of
                         // nearAirV3D1): render `sizeA7`'s slack against B
@@ -736,6 +742,11 @@ fn main() {
             for (t, name) in d1::ORDER_D1.iter().enumerate() {
                 let t1 = Instant::now();
                 let mut ext = d1::render_ext_d1(&ci, name).unwrap_or_else(|e| die(&e));
+                if flags.contains_key("mutrid") && *name == "rid" {
+                    let mut tb = new_tabs[t - 25].clone();
+                    d1::mutate_rid(&mut tb);
+                    ext = Some(tb);
+                }
                 if let (Some(bs), "size") = (flags.get("a7bound"), *name) {
                     let bd: u64 = bs.parse().unwrap_or_else(|_| die("--a7-bound B"));
                     ext = Some(

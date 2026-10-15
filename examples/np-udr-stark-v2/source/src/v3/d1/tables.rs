@@ -604,10 +604,10 @@ pub fn plf_trace(leaves: &[Vec<u8>]) -> Tab {
     t
 }
 
-/// `ridV3` rows: `(j, l, i bits, b)` for the local id bytes.
+/// `ridV3` rows: `(j, l, i bits, b, l bits)` for the local id bytes.
 pub fn rid_trace(ids: &[Vec<u8>]) -> Tab {
     let n: usize = ids.iter().map(|d| d.len()).sum();
-    let mut t = tab(n, 9);
+    let mut t = tab(n, 21);
     let mut r = 0;
     for (l, d) in ids.iter().enumerate() {
         for (i, &b) in d.iter().enumerate() {
@@ -616,6 +616,8 @@ pub fn rid_trace(ids: &[Vec<u8>]) -> Tab {
             t.set(r, 2, l as u64);
             set_bits(&mut t, r, 3, 5, i as u128);
             t.set(r, 8, b as u64);
+            // the slot's 12 bits (range check of `l`, lane v3-d1-a7b)
+            set_bits(&mut t, r, 9, 12, l as u128);
             r += 1;
         }
     }

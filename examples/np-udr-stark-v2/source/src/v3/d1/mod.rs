@@ -436,6 +436,27 @@ pub fn render_ext_d1(c: &CaseD1, name: &str) -> Result<Option<crate::v3::Tab>, S
     }
 }
 
+/// The `--mutate-rid` mutant: row 0 of `ridV3` gets `i' = i + 1 mod 32` and the field slot
+/// `l' = (j − i')·32⁻¹` (the bits of `i'`, and the low 12 bits of `l'`): `j = 32·l + i` holds, the
+/// range check of `l` fails.
+pub fn mutate_rid(t: &mut Tab) {
+    use p3_field::{Field, PrimeCharacteristicRing, PrimeField32};
+    let w = t.width;
+    let j = t.cells[1] as u64;
+    let i = t.cells[3..8].iter().enumerate().map(|(k, &x)| (x as u64) << k).sum::<u64>();
+    let i2 = (i + 1) % 32;
+    let l2 = ((crate::field::F::from_u64(j) - crate::field::F::from_u64(i2))
+        * crate::field::F::from_u64(32).inverse())
+    .as_canonical_u32() as u64;
+    t.set(0, 2, l2);
+    for k in 0..5 {
+        t.set(0, 3 + k, (i2 >> k) & 1);
+    }
+    for k in 0..12.min(w.saturating_sub(9)) {
+        t.set(0, 9 + k, (l2 >> k) & 1);
+    }
+}
+
 /// `sizeA7` with the A7 bound `b` in place of `B0` (`--a7-bound`, a conformance mutant of the
 /// AIR's bound constant): the slack bits `b − u` (natural subtraction) on every row.
 pub fn size_with_bound(json: &str, b: u64) -> Result<Tab, String> {

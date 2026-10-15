@@ -23,6 +23,9 @@ structure RidWf (es : List RidE) : Prop where
   idx : ∀ e ∈ es, e.i < 32 ∧ Fp.ofNat e.j = Fp.ofNat (32 * e.l + e.i)
   canon : ∀ e ∈ es, e.j < P ∧ e.l < P ∧ e.b < P
   rows : es.length ≤ 2 ^ RidV3.maxLog
+  /-- the slot is range-checked (lane v3-d1-a7b): `l < 2^12`, so `j = 32·l + i` as naturals -/
+  lrange : ∀ e ∈ es, e.l < 2 ^ 12
+  jnat : ∀ e ∈ es, e.j = 32 * e.l + e.i
 
 def ridSends (es : List RidE) (b : Nat) : List Msg :=
   if b = B_RIDS then es.map fun e => [W_LOC + e.l, e.i, e.b] else []
@@ -59,8 +62,8 @@ theorem ibBool {q : Nat} (hq : q < tr.height tt) (x : Nat) (hx : x < 5) :
     tr.cell tt q (ib x) = 0 ∨ tr.cell tt q (ib x) = 1 := by
   have := hL.constr q hq (bool (c (ib x))) (by
     unfold RidV3.table RidV3.constraints
-    simp only [List.mem_append, List.mem_map, List.mem_range]
-    exact Or.inl (Or.inr ⟨x, hx, rfl⟩))
+    exact List.mem_append_left _ (List.mem_append_left _ (List.mem_append_left _
+      (List.mem_append_right _ (List.mem_map.2 ⟨x, List.mem_range.2 hx, rfl⟩)))))
   simp only [eval_bool, eval_c] at this
   exact bool_cases this
 
@@ -72,6 +75,29 @@ theorem iE_eval {q : Nat} (hq : q < tr.height tt) :
 
 theorem i_lt {q : Nat} (hq : q < tr.height tt) : (rowOf tr tt q).i < 32 :=
   bitsVal_lt _ 0 5 (fun x hx => cv_bool (by simpa using ibBool hL hq x hx))
+
+theorem lbBool {q : Nat} (hq : q < tr.height tt) (x : Nat) (hx : x < 12) :
+    tr.cell tt q (lb x) = 0 ∨ tr.cell tt q (lb x) = 1 := by
+  have := hL.constr q hq (bool (c (lb x))) (by
+    unfold RidV3.table RidV3.constraints
+    exact List.mem_append_left _ (List.mem_append_right _ (List.mem_map.2 ⟨x, List.mem_range.2 hx, rfl⟩)))
+  simp only [eval_bool, eval_c] at this
+  exact bool_cases this
+
+theorem l_lt {q : Nat} (hq : q < tr.height tt) (ha : tr.cell tt q act = 1) : (rowOf tr tt q).l < 2 ^ 12 := by
+  have h := hL.constr q hq (.mul (c act) (sub (c l) RidV3.lE)) (by
+    unfold RidV3.table RidV3.constraints; simp)
+  unfold RidV3.lE at h
+  rw [eval_mul, eval_c, eval_sub, eval_c,
+    eval_bits tr tt q pub lb 0 12 (fun x hx => by simpa using lbBool hL hq x hx), ha] at h
+  have hlt := bitsVal_lt (fun x => cv tr tt q (lb x)) 0 12
+    (fun x hx => cv_bool (by simpa using lbBool hL hq x hx))
+  have h2 : tr.cell tt q l = ((bitsVal (fun x => cv tr tt q (lb x)) 0 12 : Nat) : Fp) := by grind
+  have : (rowOf tr tt q).l = bitsVal (fun x => cv tr tt q (lb x)) 0 12 := by
+    simp only [rowOf, cv] at h2 ⊢
+    rw [h2, toNat_natCast]
+    exact Nat.mod_eq_of_lt (Nat.lt_of_lt_of_le hlt (by decide))
+  rw [this]; exact hlt
 
 theorem j_eq {q : Nat} (hq : q < tr.height tt) (ha : tr.cell tt q act = 1) :
     Fp.ofNat (rowOf tr tt q).j = Fp.ofNat (32 * (rowOf tr tt q).l + (rowOf tr tt q).i) := by
@@ -137,7 +163,7 @@ theorem rid_view : RidViewStmt := by
       rw [ridRecvs_flat, List.map_flatMap, List.flatMap_map]
     · simp only [ite_true]
       rw [ridSends_flat, List.map_flatMap, List.flatMap_map]
-  refine ⟨rows.map (rowOf tr tt), ⟨?_, ?_, ?_⟩, fun b m => ⟨?_, ?_⟩⟩
+  refine ⟨rows.map (rowOf tr tt), ⟨?_, ?_, ?_, ?_, ?_⟩, fun b m => ⟨?_, ?_⟩⟩
   · intro e he
     obtain ⟨q, hq, rfl⟩ := List.mem_map.1 he
     obtain ⟨hq, ha⟩ := List.mem_filter.1 hq
@@ -151,6 +177,19 @@ theorem rid_view : RidViewStmt := by
     rw [List.length_range]
     unfold Trace.height
     exact Nat.pow_le_pow_right (by omega) hL.log_le
+  · intro e he
+    obtain ⟨q, hq, rfl⟩ := List.mem_map.1 he
+    obtain ⟨hq, ha⟩ := List.mem_filter.1 hq
+    exact l_lt hL (List.mem_range.1 hq) (by simpa [isA] using ha)
+  · intro e he
+    obtain ⟨q, hq, rfl⟩ := List.mem_map.1 he
+    obtain ⟨hq, ha⟩ := List.mem_filter.1 hq
+    have hq := List.mem_range.1 hq
+    have ha' : tr.cell tt q RidV3.act = 1 := by simpa [isA] using ha
+    have hl := l_lt hL hq ha'
+    have hi := i_lt hL hq
+    have hj := j_eq hL hq ha'
+    exact eq_of_cast (cv_lt _ _ _ _) (by unfold P; omega) hj
   · simp only [ridTraffic]; rw [tableBusCount_eq, hall]; rfl
   · simp only [ridTraffic]; rw [tableBusCount_eq, hall]; rfl
 
