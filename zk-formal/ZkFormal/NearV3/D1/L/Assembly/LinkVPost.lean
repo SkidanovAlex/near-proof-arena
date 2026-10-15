@@ -306,21 +306,12 @@ theorem vpost_source_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {p
     · obtain ⟨x, hx, hfa, hxi, j, hj, hyx⟩ := ZkFormal.NearV3.D1.Link.extra_vpost hp.1 hsz hH T W M hi hy' hyh he
       exact Or.inr ⟨x, hx, hfa, hxi, j, hj, hyx⟩
 
+/-- The post stream of an acct record's slot (D1: `pnOfD1`, `D1/Link/VPost.pnOfD1_acct`). -/
 theorem pnOf_eq_d1 {pub : List Fp} {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records} (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 pub tr)
-    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 pub tr r) (W : ZkFormal.NearV3.D1.Link.BaseWfD1 pub r) {a : AcctV} (ha : a ∈ r.accts) :
-    pnOf r.accts a.k = a.post ++ a.pre.drop 16 := by
-  unfold pnOf
-  cases hf : r.accts.find? (fun x => x.k == a.k) with
-  | none => exact absurd hf (by simp only [List.find?_eq_none]; intro h; exact h a ha (by simp))
-  | some a0 =>
-    have h0 := List.mem_of_find?_eq_some hf
-    have hk : a0.k = a.k := by simpa using List.find?_some hf
-    simp only [Option.map_some, Option.getD_some]
-    by_cases e : a0 = a
-    · rw [e]
-    · have := LinkStore.two_le_countP (fun x : AcctV => x.k == a.k) e (by simp [hk]) (by simp) h0 ha
-      have := acct_unique_d1 hH T W a.k
-      omega
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 pub tr r) (W : ZkFormal.NearV3.D1.Link.BaseWfD1 pub r)
+    {ms : List ZkFormal.NearV3.D1.AkmE} (M : ZkFormal.NearV3.D1.Link.AkmOf pub tr ms) {a : AcctV} (ha : a ∈ r.accts) :
+    ZkFormal.NearV3.D1.Link.pnOfD1 r.accts ms a.k = a.post ++ a.pre.drop 16 :=
+  ZkFormal.NearV3.D1.Link.pnOfD1_acct hH T W M ha
 
 /-- **`VPostOk` of the trie `others`** (D1) with the acct and FullAccess akm post streams
 (`pnOfD1`, `D1/Link/VPost`). -/

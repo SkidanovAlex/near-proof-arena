@@ -157,7 +157,10 @@ PROFILES = {
                # `unfold prepD0 at h; obtain ⟨pc, hc, hb⟩ := bind_ok h`: the claim and body parts
                (r'(?m)^(\s*)unfold ZkFormal\.NearV3\.D1\.prepD1 at (\w+)\s*\n\s*obtain ⟨(\w+), (\w+), (\w+)⟩ := (?:Sched\.)?bind_ok \2\s*$',
                 r'\1obtain ⟨\3, \4, \5⟩ := ZkFormal.NearV3.D1.prepD1_split \2')],
-        only='scripts/link_d1_only.txt', qbase=True),
+        only='scripts/link_d1_only.txt', qbase=True,
+        # D1 post streams (`D1/Link/VPost.pnOfD1`): the declarations that mention D0a's `pnOf` (taint
+        # `+LinkVPost.pnOf`) take the `akmV3` records `ms` and their view `M : AkmOf pub tr ms`
+        ms='scripts/pn_d1_taint.tsv'),
     # The walk stack with `walkU` on `EDGE` / `BMAP` (lane v3-d1-a7b, R-5 → (B)): D0a's `BusBal` /
     # `WalkBal` (the node / head / walk / ups traffic balances exactly) become `BusBalD` /
     # `WalkBalD` (the same with the unread-key walks after the walks); the declarations that depend
@@ -381,6 +384,49 @@ def add_qbase(body):
     return ''.join(out)
 
 
+MS_B = '{ms : List ZkFormal.NearV3.D1.AkmE}'
+
+
+def ms_plumb(body, names):
+    """D1 post streams: `LinkVPost.pnOf X` becomes `pnOfD1 X ms`; the declarations `names`
+    (copy short name -> kind) get the binders `{ms} (M : AkmOf pub tr ms)` after their `W` (or `T`)
+    binder (defs: `(ms)` after `(r : V3Records)`), and their call sites pass `M` after `W` (defs: `ms`
+    after `r`)."""
+    body = re.sub(r'(?:ZkFormal\.NearV3\.Assembly\.)?LinkVPost\.pnOf (\S+)', r'ZkFormal.NearV3.D1.Link.pnOfD1 \1 ms', body)
+    out = []
+    for ch in decl_chunks(body):
+        mm = DECL_START_RE.match(ch)
+        if mm:
+            nm = mm.group(0).split()[-1].split('.')[-1]
+            if nm in names and 'D1.Link.AkmOf' not in ch[:sig_end(ch, mm.end())] and \
+                    '(ms : List ZkFormal.NearV3.D1.AkmE)' not in ch[:sig_end(ch, mm.end())]:
+                e = sig_end(ch, mm.end())
+                sig, rest = ch[:e], ch[e:]
+                if names[nm] == 'def':
+                    sig = sig.replace('(r : ZkFormal.NearV3.Assembly.V3Records)',
+                                      '(r : ZkFormal.NearV3.Assembly.V3Records) (ms : List ZkFormal.NearV3.D1.AkmE)', 1)
+                else:
+                    w = re.search(r'\(W : ZkFormal\.NearV3\.D1\.Link\.BaseWfD1 (.+?) r\)', sig)
+                    t = re.search(r'\(T : ZkFormal\.NearV3\.D1\.Link\.BaseTrafficD1 (.+?) tr r\)', sig)
+                    hit = w or t
+                    if hit:
+                        pub = hit.group(1)
+                        sig = sig[:hit.end()] + f'\n    {MS_B} (M : ZkFormal.NearV3.D1.Link.AkmOf {pub} tr ms)' + sig[hit.end():]
+                    else:
+                        r0 = re.search(r'\{r : ZkFormal\.NearV3\.Assembly\.V3Records\}', sig)
+                        if r0:
+                            sig = sig[:r0.end()] + ' ' + MS_B + sig[r0.end():]
+                ch = sig + rest
+        out.append(ch)
+    body = ''.join(out)
+    for nm, kind in names.items():
+        if kind == 'def':
+            body = re.sub(r'(\b' + re.escape(nm) + r') r\b(?! \(ms)', r'\1 r ms', body)
+        else:
+            body = re.sub(r'(\b' + re.escape(nm) + r'\b(?![\w\']) [^\n]*?(?<![\w\'.])W)(?![\w\'])(?! M\b)', r'\1 M', body)
+    return body
+
+
 def main():
     global P
     argv = sys.argv[1:]
@@ -412,6 +458,13 @@ def main():
             if l.strip():
                 PRIOR[l.split('\t')[0]] = suf
                 renamable.add(l.split('\t')[0])
+    MSN = {}
+    if P.get('ms'):
+        for l in open(os.path.join(ROOT, P['ms'])):
+            if l.strip():
+                c = l.split('\t')
+                if c[0] in renamable:
+                    MSN[renamed(c[0]).split('.')[-1]] = 'def' if c[3] == 'def' else 'thm'
     needed_mod = {}
     for r in taint:
         needed_mod.setdefault(r[1], set()).add(r[0])
@@ -600,6 +653,8 @@ def main():
         if P.get('qbase'):
             body = fix_prep_bind(drop_unused_q(body))
             body = add_qbase(body)
+        if P.get('ms'):
+            body = ms_plumb(body, MSN)
         text = '\n'.join(imports) + '\n\n' + note + '\n' + '\n'.join(kept_comments) + '\n' + body
         p = mod_path(copy_mod(m), '.lean')
         if check:

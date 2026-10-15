@@ -1618,3 +1618,11 @@ theorem vpostOk_holds_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {
       have hl := hvpostLen_of_d1 hH T W M q' hq i l pre po hv
       simp only [toB, List.length_map] at hl
       exact ⟨q', hq, l, pre, po, hv, hl⟩
+
+-- @override ZkFormal.NearV3.Assembly.LinkVPost.pnOf_eq
+/-- The post stream of an acct record's slot (D1: `pnOfD1`, `D1/Link/VPost.pnOfD1_acct`). -/
+theorem pnOf_eq_d1 {pub : List Fp} {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records} (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 pub tr)
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 pub tr r) (W : ZkFormal.NearV3.D1.Link.BaseWfD1 pub r)
+    {ms : List ZkFormal.NearV3.D1.AkmE} (M : ZkFormal.NearV3.D1.Link.AkmOf pub tr ms) {a : AcctV} (ha : a ∈ r.accts) :
+    ZkFormal.NearV3.D1.Link.pnOfD1 r.accts ms a.k = a.post ++ a.pre.drop 16 :=
+  ZkFormal.NearV3.D1.Link.pnOfD1_acct hH T W M ha
