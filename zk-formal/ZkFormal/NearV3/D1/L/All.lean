@@ -3,6 +3,7 @@ import ZkFormal.NearV3.D1.L.Assembly.LinkBus
 import ZkFormal.NearV3.D1.L.Assembly.LinkChain
 import ZkFormal.NearV3.D1.L.Assembly.LinkClaim
 import ZkFormal.NearV3.D1.L.Assembly.LinkFields
+import ZkFormal.NearV3.D1.L.Assembly.LinkKeynib
 import ZkFormal.NearV3.D1.L.Assembly.LinkPrepCtx
 import ZkFormal.NearV3.D1.L.Assembly.LinkRidBytes
 import ZkFormal.NearV3.D1.L.Assembly.LinkRids
@@ -10,6 +11,7 @@ import ZkFormal.NearV3.D1.L.Assembly.LinkSha
 import ZkFormal.NearV3.D1.L.Assembly.LinkShaKinds
 import ZkFormal.NearV3.D1.L.Assembly.LinkStore
 import ZkFormal.NearV3.D1.L.Assembly.LinkTrie
+import ZkFormal.NearV3.D1.L.Assembly.LinkUps
 import ZkFormal.NearV3.D1.L.Assembly.LinkV3
 import ZkFormal.NearV3.D1.L.Assembly.PrepFacts
 import ZkFormal.NearV3.D1.L.Assembly.PreparedSources
@@ -48,6 +50,7 @@ import ZkFormal.NearV3.D1.L.Rcpt.Link.ListEncodingBounds
 import ZkFormal.NearV3.D1.L.Rcpt.Link.ListSha
 import ZkFormal.NearV3.D1.L.Rcpt.Link.NativeEncoding
 import ZkFormal.NearV3.D1.L.Rcpt.Link.NativeListEncoding
+import ZkFormal.NearV3.D1.L.Rcpt.Link.PeoBytes
 import ZkFormal.NearV3.D1.L.Rcpt.Link.PrepFwd
 import ZkFormal.NearV3.D1.L.Rcpt.Link.PreparedOwner
 import ZkFormal.NearV3.D1.L.Sched.Link.Sound

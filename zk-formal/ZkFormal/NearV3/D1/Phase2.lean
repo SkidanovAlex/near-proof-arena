@@ -32,6 +32,7 @@ import ZkFormal.NearV3.D1.Link.ShaExtra
 import ZkFormal.NearV3.D1.Link.Kinds
 import ZkFormal.NearV3.D1.Link.Rids
 import ZkFormal.NearV3.D1.Link.RidBytes
+import ZkFormal.NearV3.D1.Link.Keynib
 import ZkFormal.NearV3.D1.L.All
 
 /-!

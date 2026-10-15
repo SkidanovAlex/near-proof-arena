@@ -5,6 +5,7 @@ ZkFormal.NearV3.Assembly.LinkBus
 ZkFormal.NearV3.Assembly.LinkChain
 ZkFormal.NearV3.Assembly.LinkClaim
 ZkFormal.NearV3.Assembly.LinkFields
+ZkFormal.NearV3.Assembly.LinkKeynib
 ZkFormal.NearV3.Assembly.LinkPrepCtx
 ZkFormal.NearV3.Assembly.LinkRidBytes
 ZkFormal.NearV3.Assembly.LinkRids
@@ -12,6 +13,7 @@ ZkFormal.NearV3.Assembly.LinkSha
 ZkFormal.NearV3.Assembly.LinkShaKinds
 ZkFormal.NearV3.Assembly.LinkStore
 ZkFormal.NearV3.Assembly.LinkTrie
+ZkFormal.NearV3.Assembly.LinkUps
 ZkFormal.NearV3.Assembly.LinkV3
 ZkFormal.NearV3.Assembly.PrepFacts
 ZkFormal.NearV3.Assembly.PreparedSources
@@ -50,6 +52,7 @@ ZkFormal.NearV3.Rcpt.Link.ListEncodingBounds
 ZkFormal.NearV3.Rcpt.Link.ListSha
 ZkFormal.NearV3.Rcpt.Link.NativeEncoding
 ZkFormal.NearV3.Rcpt.Link.NativeListEncoding
+ZkFormal.NearV3.Rcpt.Link.PeoBytes
 ZkFormal.NearV3.Rcpt.Link.PrepFwd
 ZkFormal.NearV3.Rcpt.Link.PreparedOwner
 ZkFormal.NearV3.Sched.Link.Sound

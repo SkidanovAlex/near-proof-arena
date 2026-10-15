@@ -53,6 +53,19 @@ theorem rcptG_bytes_mem {o0 t0 m0 : Nat} {pub : List Fp} {ls : RcptV3Vs} {x : Ms
     · exact .inl (hin' x (by simp only [rSends, ite_true, List.mem_append]; exact .inl (.inr hx)))
     · exact .inl (hin' x (by simp only [rSends, ite_true, List.mem_append]; exact .inr hx))
 
+/-- **`rcptV3D1`'s `BYTES` kinds** are D0a's receipt kinds (`K_RC`, `K_RF`, `K_PEO`, `K_LEAF`,
+`K_RID`). -/
+theorem rcptKindInG {o0 t0 m0 : Nat} {pub : List Fp} {ls : RcptV3Vs}
+    (hl : ls.length ≤ 2 ^ 22) (hr : (flatR ls).length ≤ 2 ^ 22) :
+    ∀ x ∈ RcptD1.rcptSends3G o0 t0 m0 pub ls B_BYTES, KindIn [K_RC, K_RF, K_PEO, K_LEAF, K_RID] x := by
+  intro x hx
+  rcases rcptG_bytes_mem hx with hx | hx
+  · exact rcptKindIn hl hr x hx
+  · intro a ha
+    rw [hx, Option.some.injEq] at ha
+    subst ha
+    exact ⟨by unfold K_RF P; omega, by simp [K_RF, K_RC, K_PEO, K_LEAF, K_RID]⟩
+
 /-- `rcptV3D1`'s `RCL` sends are D0a's. -/
 theorem rcptSends3G_rcl (o0 t0 m0 : Nat) (pub : List Fp) (ls : RcptV3Vs) :
     RcptD1.rcptSends3G o0 t0 m0 pub ls B_RCL = rcptSends3 pub ls B_RCL := by
@@ -88,14 +101,15 @@ theorem list_sha_digest_G {o0 t0 m0 : Nat} {pub : List Fp} {ls : RcptV3Vs} (h : 
     have hk : msgId K_RC i % 16 = K_RC := by simp [msgId, K_RC, Nat.add_mod]
     exact False.elim (hh.2 (heq ▸ hk))
 
-/-- **The extra `BYTES` senders' ids are not of kind `K_RC`.** -/
-theorem extraKinds_rc {cb : NearSpec.Bytes} {h : HintD1} {q : Public.PrepD1} {ov : Nat} {tr : Trace Fp}
+/-- **The extra `BYTES` senders' ids**: `K_RF` (the public body prefix) or `VPOST(vid)` (`akmV3`),
+canonical. -/
+theorem extraHeads {cb : NearSpec.Bytes} {h : HintD1} {q : Public.PrepD1} {ov : Nat} {tr : Trace Fp}
     {r : V3Records} (hp : prepD1 cb h = .ok q) (hlen : (Public.preparedBytesD1 q ov).length < P)
     (hH : HoldsP nearAirV3D1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)) tr)
     (T : BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)) tr r)
     (W : BaseWfD1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)) r) :
     ∀ y ∈ extraBytes tr (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)), ∀ a, y.head? = some a →
-      a.toNat % 16 ≠ K_RC := by
+      a.toNat = K_RF ∨ a.toNat % 16 = K_VPOST := by
   intro y hy a ha
   have hP : P < 256 ^ 4 := by unfold P; omega
   have hc : 0 < (extraBytes tr (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov))).count y :=
@@ -109,13 +123,37 @@ theorem extraKinds_rc {cb : NearSpec.Bytes} {h : HintD1} {q : Public.PrepD1} {ov
       (by omega) hpub
     rw [this, Option.some.injEq] at ha
     subst ha
-    simp [Fp.toNat_ofNat, K_RF, K_RC, P]
+    left; simp [Fp.toNat_ofNat, K_RF, P]
   · obtain ⟨vid, hv, he⟩ := akm_bytes_head hH T W h0
     rw [he, Option.some.injEq] at ha
     subst ha
     have : msgId K_VPOST vid < P := by unfold msgId K_VPOST P; omega
     rw [Fp.toNat_ofNat, Nat.mod_eq_of_lt this]
-    unfold msgId K_VPOST K_RC
-    omega
+    right; unfold msgId K_VPOST; omega
+
+/-- **The extra `BYTES` senders' ids are not of kind `K_RC`.** -/
+theorem extraKinds_rc {cb : NearSpec.Bytes} {h : HintD1} {q : Public.PrepD1} {ov : Nat} {tr : Trace Fp}
+    {r : V3Records} (hp : prepD1 cb h = .ok q) (hlen : (Public.preparedBytesD1 q ov).length < P)
+    (hH : HoldsP nearAirV3D1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)) tr)
+    (T : BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)) tr r)
+    (W : BaseWfD1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)) r) :
+    ∀ y ∈ extraBytes tr (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)), ∀ a, y.head? = some a →
+      a.toNat % 16 ≠ K_RC := by
+  intro y hy a ha
+  rcases extraHeads hp hlen hH T W y hy a ha with h1 | h1 <;> rw [h1] <;> decide
+
+/-- **The extra `BYTES` senders' ids are not of the kinds `K_PEO`, `K_RID`** (they are of kind
+`K_RF` for the public body prefix: the refund stream's kind is shared, see `Rcpt/Link/RfBody`). -/
+theorem extraKinds_peo_rid {cb : NearSpec.Bytes} {h : HintD1} {q : Public.PrepD1} {ov : Nat} {tr : Trace Fp}
+    {r : V3Records} (hp : prepD1 cb h = .ok q) (hlen : (Public.preparedBytesD1 q ov).length < P)
+    (hH : HoldsP nearAirV3D1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)) tr)
+    (T : BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)) tr r)
+    (W : BaseWfD1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)) r) {K : Nat}
+    (hK : K = K_PEO ∨ K = K_RID) :
+    ∀ y ∈ extraBytes tr (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 q ov)), ∀ a, y.head? = some a →
+      a.toNat % 16 ≠ K := by
+  intro y hy a ha
+  rcases extraHeads hp hlen hH T W y hy a ha with h1 | h1 <;> rw [h1] <;>
+    rcases hK with rfl | rfl <;> decide
 
 end ZkFormal.NearV3.D1.Link
