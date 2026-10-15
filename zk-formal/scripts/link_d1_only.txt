@@ -50,6 +50,7 @@ ZkFormal.NearV3.Rcpt.Link.FwdLinks
 ZkFormal.NearV3.Rcpt.Link.GasPub
 ZkFormal.NearV3.Rcpt.Link.ListEncodingBounds
 ZkFormal.NearV3.Rcpt.Link.ListSha
+ZkFormal.NearV3.Rcpt.Link.MemBal
 ZkFormal.NearV3.Rcpt.Link.NativeEncoding
 ZkFormal.NearV3.Rcpt.Link.NativeListEncoding
 ZkFormal.NearV3.Rcpt.Link.PeoBytes

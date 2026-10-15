@@ -1267,3 +1267,20 @@ theorem rfStream_body_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {
           simp only [Msg.toFp, M, List.map_cons, List.head?_cons, Option.some.injEq] at he
           have := Near.Link.ofNat_inj hP2 (by unfold msgId K_VPOST ZkFormal.Algebra.P; omega) he
           unfold msgId K_RF K_VPOST at this; omega
+
+-- @override ZkFormal.NearV3.RcptLink.mem_bal
+/-- **The `MEM` balance** (D1: three users, `rcptV3D1`, `acctV3` and `txV3`; one timeline of events,
+the ops at `o + 1`, the incoming receipts at `T0 + r + 1`; `D1/Link/MemD1`). -/
+theorem mem_bal_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {q : _root_.ZkFormal.NearV3.D1.Public.PrepD1}
+    {ov : Nat} {tr : Trace Fp} {r : V3Records} {es : List ZkFormal.NearV3.D1.TxE}
+    (hp : ZkFormal.NearV3.D1.prepD1 cb h = .ok q) (hlen : (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov).length < P)
+    (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) tr)
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) tr r)
+    (hW : ZkFormal.NearV3.D1.TxWf es)
+    (hT : TableTraffic ZkFormal.NearV3.D1.TxV3.interactions tr ZkFormal.NearV3.D1.T_TX
+      (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) (ZkFormal.NearV3.D1.txTraffic es)) :
+    ((ZkFormal.NearV3.D1.Link.wrsA (ZkFormal.NearV3.D1.Link.actD1 es q.ops.length)
+        (ZkFormal.NearV3.D1.Link.evsD1 es q.ops.length r.lists) ++ aws r.accts).map Msg.toFp).Perm
+      ((ZkFormal.NearV3.D1.Link.rdsA (ZkFormal.NearV3.D1.Link.actD1 es q.ops.length)
+        (ZkFormal.NearV3.D1.Link.evsD1 es q.ops.length r.lists) ++ ars r.accts).map Msg.toFp) :=
+  ZkFormal.NearV3.D1.Link.mem_bal_d1 hp hlen hH hW hT T

@@ -80,7 +80,8 @@ PROFILES = {
               'ZkFormal.NearV3.D1.M.All'],
         extra={'LinkShaKinds': ['ZkFormal.NearV3.D1.Link.Kinds'], 'LinkChain': ['ZkFormal.NearV3.D1.Link.Kinds'],
                'LinkRids': ['ZkFormal.NearV3.D1.Link.Rids'], 'LinkRidBytes': ['ZkFormal.NearV3.D1.Link.RidBytes'],
-               'LinkKeynib': ['ZkFormal.NearV3.D1.Link.Keynib'], 'RfBody': ['ZkFormal.NearV3.D1.Link.RfBody']},
+               'LinkKeynib': ['ZkFormal.NearV3.D1.Link.Keynib'], 'RfBody': ['ZkFormal.NearV3.D1.Link.RfBody'],
+               'MemBal': ['ZkFormal.NearV3.D1.Link.MemD1']},
         overrides='scripts/link_d1_overrides.lean', taint='scripts/l1_d1_taint.tsv',
         what='the `nearAirV3` statement (`prepD0`, `preparedBytes`, `nearAirV3`, the records and the balance)',
         hyp='`prepD0 cb h = .ok p` becomes `prepD1 cb h = .ok q ∧ q.base = p` (`h : HintD1`), the tape `preparedBytes p` '

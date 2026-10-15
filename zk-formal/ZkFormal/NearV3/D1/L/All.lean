@@ -48,6 +48,7 @@ import ZkFormal.NearV3.D1.L.Rcpt.Link.FwdLinks
 import ZkFormal.NearV3.D1.L.Rcpt.Link.GasPub
 import ZkFormal.NearV3.D1.L.Rcpt.Link.ListEncodingBounds
 import ZkFormal.NearV3.D1.L.Rcpt.Link.ListSha
+import ZkFormal.NearV3.D1.L.Rcpt.Link.MemBal
 import ZkFormal.NearV3.D1.L.Rcpt.Link.NativeEncoding
 import ZkFormal.NearV3.D1.L.Rcpt.Link.NativeListEncoding
 import ZkFormal.NearV3.D1.L.Rcpt.Link.PeoBytes
