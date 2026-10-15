@@ -1626,3 +1626,106 @@ theorem pnOf_eq_d1 {pub : List Fp} {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly
     {ms : List ZkFormal.NearV3.D1.AkmE} (M : ZkFormal.NearV3.D1.Link.AkmOf pub tr ms) {a : AcctV} (ha : a ∈ r.accts) :
     ZkFormal.NearV3.D1.Link.pnOfD1 r.accts ms a.k = a.post ++ a.pre.drop 16 :=
   ZkFormal.NearV3.D1.Link.pnOfD1_acct hH T W M ha
+
+-- @override ZkFormal.NearV3.RcptLink.RecHyp
+/-- The hypotheses of the receipt-side chain (D1: the `MEM` timeline is the `T0` transaction ops,
+then the receipts, `D1/Link/MemD1`; `knd`: distinct acct slots; the ops' writes are bytes). -/
+structure RecHyp_d1 (pub : List Fp) (ls : RcptV3Vs) (as : List AcctV) : Prop where
+  mem : ∃ es : List ZkFormal.NearV3.D1.TxE,
+    ZkFormal.NearV3.D1.Link.MemHypA (ZkFormal.NearV3.D1.Link.actD1 es (ZkFormal.NearV3.D1.RcptD1.t0V pub))
+      (ZkFormal.NearV3.D1.Link.evsD1 es (ZkFormal.NearV3.D1.RcptD1.t0V pub) ls) as ∧
+    ∀ o, o < ZkFormal.NearV3.D1.RcptD1.t0V pub →
+      Bytes8 (ZkFormal.NearV3.D1.Link.txRv (ZkFormal.NearV3.D1.Link.txOpOf es o)).aft
+  knd : (as.map (·.k)).Nodup
+  wf : ZkFormal.NearV3.D1.RcptD1.RcptV3WfD1 pub ls
+  acct : AcctV3WfE 19 as
+  /-- the account records' pre bytes are bytes (`VBYTES`: the value records' bytes) -/
+  preB : ∀ a ∈ as, Bytes8 a.pre
+  /-- receipt encodings are bytes (`LinkRidBytes.encBytes`) -/
+  encB : ∀ x ∈ flatR ls, Bytes8 x.enc
+  /-- the burnt amounts are bytes (they are in the hashed `PEO` outcome bytes) -/
+  burntB : ∀ x ∈ flatR ls, Bytes8 x.burnt
+  /-- the refund amounts are bytes (they are in the public refund body) -/
+  ramtB : ∀ x ∈ flatR ls, x.hr = true → Bytes8 x.ramt
+  /-- the public block gas price is bytes (`LinkFields.pubNat_pubOf_lt`) -/
+  bgpB : Bytes8 (pubBytes pub PH_GP 16)
+
+-- @override ZkFormal.NearV3.RcptLink.toks_at
+/-- The receipts' token chain (D1: it starts at the transactions' `TOK0`; receipt `r` is event
+`T0 + r`). -/
+theorem toks_at_d1 : ∃ toks : List Nat, toks.head? = some (ZkFormal.NearV3.D1.RcptD1.tok0V pub) ∧
+    ∀ r, r < (flatR ls).length →
+      ((flatR ls).getD r default).Wf (r + ZkFormal.NearV3.D1.RcptD1.t0V pub) (pubBytes pub PH_GP 16)
+        (toks.getD r 0) (toks.getD (r + 1) 0) := by
+  obtain ⟨toks, -, h0, hw, -⟩ := h.wf.toks
+  refine ⟨toks, h0, fun r hr => ?_⟩
+  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hr]
+  exact hw r hr
+
+-- @override ZkFormal.NearV3.RcptLink.wf_at
+theorem wf_at_d1 {r : Nat} (hr : r < (flatR ls).length) :
+    ∃ a b c, ((flatR ls).getD r default).Wf (r + ZkFormal.NearV3.D1.RcptD1.t0V pub) a b c := by
+  obtain ⟨toks, -, hw⟩ := toks_at_d1 h
+  exact ⟨_, _, _, hw r hr⟩
+
+-- @override ZkFormal.NearV3.RcptLink.slot_acct
+/-- Every receipt's slot is an acct record's slot (D1: `MemChain.slot_acctA` at event `T0 + r`). -/
+theorem slot_acct_d1 : ∀ r, r < (flatR ls).length → ∃ a ∈ as, a.k = (R (rv ls) r).kslot := by
+  intro r hr
+  obtain ⟨es, hm, -⟩ := h.mem
+  have hr' : ZkFormal.NearV3.D1.RcptD1.t0V pub + r < (ZkFormal.NearV3.D1.Link.evsD1 es (ZkFormal.NearV3.D1.RcptD1.t0V pub) ls).length := by
+    rw [ZkFormal.NearV3.D1.Link.evsD1_length]; omega
+  obtain ⟨a, ha, hk⟩ := ZkFormal.NearV3.D1.Link.slot_acctA hm _ hr' (ZkFormal.NearV3.D1.Link.actD1_rc r)
+  exact ⟨a, ha, by rw [hk, ZkFormal.NearV3.D1.Link.R_evs_rc]⟩
+
+-- @override ZkFormal.NearV3.RcptLink.lanes
+/-- Lanes of a receipt's read (D1: `MemChain.lanesA`; the earlier writers are ops or receipts). -/
+theorem lanes_d1 : ∀ r, r < (flatR ls).length → ∀ a ∈ as, a.k = (R (rv ls) r).kslot → ∀ i, i < 16 →
+    (R (rv ls) r).lk.getD i 0 = a.pre.getD (16 + i) 0 ∧
+    (R (rv ls) r).st.getD i 0 = (if i < 8 then a.pre.getD (64 + i) 0 else 0) ∧
+    (R (rv ls) r).bef.getD i 0 < 256 := by
+  intro r hr a ha hk i hi
+  obtain ⟨es, hm, hop⟩ := h.mem
+  have haft : ∀ e, e < (ZkFormal.NearV3.D1.Link.evsD1 es (ZkFormal.NearV3.D1.RcptD1.t0V pub) ls).length →
+      ZkFormal.NearV3.D1.Link.actD1 es (ZkFormal.NearV3.D1.RcptD1.t0V pub) e = true →
+      Bytes8 (R (ZkFormal.NearV3.D1.Link.evsD1 es (ZkFormal.NearV3.D1.RcptD1.t0V pub) ls) e).aft := by
+    intro e he _
+    rcases Nat.lt_or_ge e (ZkFormal.NearV3.D1.RcptD1.t0V pub) with h1 | h1
+    · rw [ZkFormal.NearV3.D1.Link.R_evs_tx h1]; exact hop e h1
+    · obtain ⟨r', rfl⟩ : ∃ r', e = ZkFormal.NearV3.D1.RcptD1.t0V pub + r' :=
+        ⟨e - ZkFormal.NearV3.D1.RcptD1.t0V pub, by omega⟩
+      rw [ZkFormal.NearV3.D1.Link.evsD1_length] at he
+      rw [ZkFormal.NearV3.D1.Link.R_evs_rc]
+      obtain ⟨_, _, _, w0⟩ := wf_at_d1 h (r := r') (by omega)
+      rw [R_rv]; exact w0.aft8
+  have hr' : ZkFormal.NearV3.D1.RcptD1.t0V pub + r < (ZkFormal.NearV3.D1.Link.evsD1 es (ZkFormal.NearV3.D1.RcptD1.t0V pub) ls).length := by
+    rw [ZkFormal.NearV3.D1.Link.evsD1_length]; omega
+  have := ZkFormal.NearV3.D1.Link.lanesA hm h.preB haft _ hr' (ZkFormal.NearV3.D1.Link.actD1_rc r) a ha
+    (by rw [ZkFormal.NearV3.D1.Link.R_evs_rc]; exact hk) i hi
+  rw [ZkFormal.NearV3.D1.Link.R_evs_rc] at this
+  exact this
+
+-- @patch ZkFormal.NearV3.RcptLink.arith_at
+<<<
+    (w : ((flatR ls).getD r default).Wf r (pubBytes pub PH_GP 16) tok tok') :
+===
+    (w : ((flatR ls).getD r default).Wf (r + ZkFormal.NearV3.D1.RcptD1.t0V pub) (pubBytes pub PH_GP 16) tok tok') :
+>>>
+
+-- @override ZkFormal.NearV3.RcptLink.bef_val
+/-- A receipt reads the value of the slot's last write (D1: a receipt whose slot an earlier
+receipt `r0` wrote last reads `r0`'s `aft`, `D1/Link/RcptChain.rcpt_prev`; the first receipt of a
+slot reads the slot's value at time `T0`, the transactions' result). -/
+theorem bef_val_d1 {r : Nat} (hr : r < (flatR ls).length) {r0 : Nat}
+    (he : lastW (ksl (rv ls)) (R (rv ls) r).kslot r = r0 + 1) :
+    leN' (R (rv ls) r).bef = leN' (R (rv ls) r0).aft := by
+  obtain ⟨es, hm, -⟩ := h.mem
+  obtain ⟨_, _, _, w⟩ := wf_at_d1 h hr
+  obtain ⟨-, -, -, -, -, l6, -⟩ := w.lens
+  have hlt := (ZkFormal.NearV3.D1.Link.rcpt_prev hm hr he (i := 0) (by decide)).1
+  obtain ⟨_, _, _, w0⟩ := wf_at_d1 h (r := r0) (by omega)
+  obtain ⟨-, -, -, -, -, -, -, -, l9, -⟩ := w0.lens
+  congr 1
+  apply ext16 (by rw [R_rv]; exact l6) (by rw [R_rv]; exact l9)
+  intro i hi
+  exact (ZkFormal.NearV3.D1.Link.rcpt_prev hm hr he hi).2.2

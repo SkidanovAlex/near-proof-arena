@@ -59,6 +59,7 @@ ZkFormal.NearV3.Rcpt.Link.NativeListEncoding
 ZkFormal.NearV3.Rcpt.Link.PeoBytes
 ZkFormal.NearV3.Rcpt.Link.PrepFwd
 ZkFormal.NearV3.Rcpt.Link.PreparedOwner
+ZkFormal.NearV3.Rcpt.Link.RecChain
 ZkFormal.NearV3.Rcpt.Link.RfBody
 ZkFormal.NearV3.Rcpt.Link.ValBytes
 ZkFormal.NearV3.Sched.Link.Sound
