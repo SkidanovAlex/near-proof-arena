@@ -62,6 +62,62 @@ PROFILES = {
         overrides='scripts/mrk_d1_overrides.lean', taint='scripts/mrk_d1_taint.tsv',
         what='the `mrkV3` tables, re-proved at height cap `2^20`',
         hyp='`TableLocal` of the `maxLog 19` tables becomes `ZkFormal.NearV3.D1.MrkD1.tableE/P/B`'),
+    # L1 (sizing / first generation; plan V3-D1-PHASE2 §3 L1, log milestone 11): the D0a link chain
+    # with the D1 statement substituted.  Untainted seed references are replaced by their D1
+    # counterparts (`refs`), prior copies (V4 `_d1`, V5 `_m20`) are referenced by their copy
+    # names (`prior`), and `regex` rewrites the field accesses whose structure changed.
+    'link': dict(
+        exclude={'ZkFormal.NearV3.Assembly.ExtractV3', 'ZkFormal.NearV3.Assembly.ExtractV3Proof',
+                 'ZkFormal.NearV3.Assembly.NearAdmission', 'ZkFormal.NearV3.Assembly.RcptViewV3',
+                 'ZkFormal.NearV3.Assembly.RcptViewCounts', 'ZkFormal.NearV3.Assembly.NearAirBus'},
+        tables={}, suffix='_d1', dir='L',
+        base=['ZkFormal.NearV3.D1.Link.Statements', 'ZkFormal.NearV3.D1.Link.Index', 'ZkFormal.NearV3.D1.R.All',
+              'ZkFormal.NearV3.D1.M.All'],
+        extra={}, overrides='scripts/link_d1_overrides.lean', taint='scripts/l1_d1_taint.tsv',
+        what='the `nearAirV3` statement (`prepD0`, `preparedBytes`, `nearAirV3`, the records and the balance)',
+        hyp='`prepD0 cb h = .ok p` becomes `prepD1 cb h = .ok q ∧ q.base = p` (`h : HintD1`), the tape `preparedBytes p` '
+            'becomes `preparedBytesD1 q`, '
+            '`nearAirV3` becomes `nearAirV3D1`, `V3RecordsWf`/`V3RecordsTraffic` become `BaseWfD1`/`BaseTrafficD1`',
+        prior={'scripts/rcpt_d1_taint.tsv': '_d1', 'scripts/mrk_d1_taint.tsv': '_m20'},
+        refs={'NearSpecV3.prepD0': 'ZkFormal.NearV3.D1.prepD1',
+              'NearSpecV3.Hint': 'ZkFormal.NearV3.D1.HintD1',
+              'ZkFormal.NearV3.Public.preparedBytes': 'ZkFormal.NearV3.D1.Public.preparedBytesD1',
+              'ZkFormal.NearV3.Assembly.nearAirV3': 'ZkFormal.NearV3.D1.nearAirV3D1',
+              'ZkFormal.NearV3.Assembly.V3RecordsWf': 'ZkFormal.NearV3.D1.Link.BaseWfD1',
+              'ZkFormal.NearV3.Assembly.V3RecordsTraffic': 'ZkFormal.NearV3.D1.Link.BaseTrafficD1',
+              'ZkFormal.NearV3.RcptV3Wf': 'ZkFormal.NearV3.D1.RcptD1.RcptV3WfD1',
+              'ZkFormal.NearV3.rcptTraffic3': 'ZkFormal.NearV3.D1.RcptD1.rcptTraffic3D1',
+              'ZkFormal.NearV3.Assembly.V3Balance': 'ZkFormal.NearV3.D1.Link.V3BalanceD1',
+              'ZkFormal.NearV3.Assembly.getElem?_node': 'ZkFormal.NearV3.D1.Link.getElem?_node_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_head': 'ZkFormal.NearV3.D1.Link.getElem?_head_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_val': 'ZkFormal.NearV3.D1.Link.getElem?_val_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_walk': 'ZkFormal.NearV3.D1.Link.getElem?_walk_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_uniq': 'ZkFormal.NearV3.D1.Link.getElem?_uniq_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_ups': 'ZkFormal.NearV3.D1.Link.getElem?_ups_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_acct': 'ZkFormal.NearV3.D1.Link.getElem?_acct_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_akey': 'ZkFormal.NearV3.D1.Link.getElem?_akey_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_bnd': 'ZkFormal.NearV3.D1.Link.getElem?_bnd_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_srcp': 'ZkFormal.NearV3.D1.Link.getElem?_srcp_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_size': 'ZkFormal.NearV3.D1.Link.getElem?_size_d1',
+              'ZkFormal.NearV3.Assembly.getElem?_sort': 'ZkFormal.NearV3.D1.Link.getElem?_sort_d1',
+              'ZkFormal.NearV3.Assembly.headLocal': 'ZkFormal.NearV3.D1.headLocalD1',
+              'ZkFormal.NearV3.Assembly.walkLocal': 'ZkFormal.NearV3.D1.walkLocalD1',
+              'ZkFormal.NearV3.Assembly.uniqLocal': 'ZkFormal.NearV3.D1.uniqLocalD1',
+              'ZkFormal.NearV3.Assembly.acctLocal': 'ZkFormal.NearV3.D1.acctLocalD1',
+              'ZkFormal.NearV3.Assembly.akeyLocal': 'ZkFormal.NearV3.D1.akeyLocalD1',
+              'ZkFormal.NearV3.Assembly.bndLocal': 'ZkFormal.NearV3.D1.bndLocalD1',
+              'ZkFormal.NearV3.Assembly.srcpLocal': 'ZkFormal.NearV3.D1.srcpLocalD1',
+              'ZkFormal.NearV3.Assembly.sizeLocal': 'ZkFormal.NearV3.D1.sizeLocalD1',
+              'ZkFormal.NearV3.Assembly.getElem?_rcpt': 'ZkFormal.NearV3.D1.getElem?_d1_rcpt',
+              'ZkFormal.NearV3.Assembly.getElem?_mrk': 'ZkFormal.NearV3.D1.getElem?_d1_mrk',
+              },
+        # `p : Prep` stays (it is `q.base`); the D1 prepared statement `q` is a new implicit
+        # binder after `p`, the preparation hypothesis carries `q.base = p`, the tape is `q`'s
+        regex=[(r'([({]p : (?:NearSpecV3\.)?Prep[)}])', r'\1 {q : ZkFormal.NearV3.D1.Public.PrepD1}'),
+               (r'ZkFormal\.NearV3\.D1\.prepD1 (\w+) (\w+) = \.ok p\b',
+                r'(ZkFormal.NearV3.D1.prepD1 \1 \2 = .ok q ∧ q.base = p)'),
+               (r'ZkFormal\.NearV3\.D1\.Public\.preparedBytesD1 p\b', r'ZkFormal.NearV3.D1.Public.preparedBytesD1 q')],
+        only=None),
 }
 P = PROFILES['rcpt']
 
@@ -115,9 +171,12 @@ def comps(n):
     return plain(n).split('.')
 
 
+PRIOR = {}
+
+
 def renamed(n):
     c = comps(n)
-    c[-1] = c[-1] + P['suffix']
+    c[-1] = c[-1] + PRIOR.get(n, P['suffix'])
     return '.'.join(c)
 
 
@@ -187,7 +246,23 @@ def main():
     src_tsv = args[0] if args else os.path.join(ROOT, P['taint'])
     taint = [l.rstrip('\n').split('\t') for l in open(src_tsv) if l.strip()]
     mismatches = []
-    tainted = {r[0] for r in taint if r[2] == '1'}
+    subst = P.get('refs', {})
+
+    def ref_of(n):
+        # a seed constant, or a field / constructor / recursor of a seed structure
+        if n in subst:
+            return subst[n]
+        for k, v in subst.items():
+            if n.startswith(k + '.'):
+                return v + n[len(k):]
+        return None
+    tainted = {r[0] for r in taint if r[2] == '1' and ref_of(r[0]) is None}
+    renamable = set(tainted)
+    for f, suf in P.get('prior', {}).items():
+        for l in open(os.path.join(ROOT, f)):
+            if l.strip():
+                PRIOR[l.split('\t')[0]] = suf
+                renamable.add(l.split('\t')[0])
     needed_mod = {}
     for r in taint:
         needed_mod.setdefault(r[1], set()).add(r[0])
@@ -262,15 +337,23 @@ def main():
                     if mm:
                         edits.append((l, mm.start(1) if whole else c0, c1, new))
                     continue
+                if ref_of(n) is not None:
+                    if t.split('.') == comps(n)[-len(t.split('.')):] and len(t.split('.')) > 1 and \
+                            n not in subst:
+                        # `S.f` written qualified: replace the whole reference
+                        edits.append((l, c0, c1, at + ref_of(n)))
+                    elif n in subst:
+                        edits.append((l, c0, c1, at + ref_of(n)))
+                    continue
                 if tc != nc[-len(tc):]:
-                    if n in tainted:
+                    if n in renamable:
                         report.append(f'{m}:{l+1}:{c0}: cannot rename reference {text!r} to {n}')
                     continue
                 if n.startswith('_private.'):
                     continue
                 # fully qualified: the copy imports more modules than the original, so a short
                 # name could resolve to a later declaration of the same namespace
-                if n in tainted:
+                if n in renamable:
                     edits.append((l, c0, c1, at + '.'.join(renamed(n).split('.')[-len(tc):])))
         # declaration names
         for n in keep:
@@ -345,6 +428,8 @@ def main():
                         report.append(f'{m}: patch for {n} does not apply: {old[:60]!r}')
                     body = body.replace(old, new, 1)
                     applied.add((n, old))
+        for pat, rep in P.get('regex', []):
+            body = re.sub(pat, rep, body)
         text = '\n'.join(imports) + '\n\n' + note + '\n' + '\n'.join(kept_comments) + '\n' + body
         p = mod_path(copy_mod(m), '.lean')
         if check:

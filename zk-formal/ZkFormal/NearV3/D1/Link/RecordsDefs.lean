@@ -177,6 +177,11 @@ def D1Balance (pub : List Fp) (tr : Trace Fp) (r : D1Records) : Prop :=
   ∀ b m, balSumD1 pub tr r b true m + pubCount nearAirV3D1 pub b true m =
     balSumD1 pub tr r b false m + pubCount nearAirV3D1 pub b false m
 
+/-- The balance seen from D0a's records (the generated link copies take it in place of
+`V3Balance`): the D1 records extending `r` balance. -/
+def V3BalanceD1 (pub : List Fp) (tr : Trace Fp) (r : V3Records) : Prop :=
+  ∃ R : D1Records, R.base = r ∧ D1Balance pub tr R
+
 /-- The verifier's public input. -/
 def pubD1 (p : Public.PrepD1) (h : HintD1) : List Fp :=
   ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 p (txOverhead h))

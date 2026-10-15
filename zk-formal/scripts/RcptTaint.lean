@@ -13,7 +13,9 @@ Without the last section the seeds are the receipt tables below (V4).  With it, 
 tables are the seeds (V5: the `mrkV3` tables).  A seed written `+N` is a *reference* seed: a
 constant whose type or value mentions `N` anywhere (not only under `TableLocal`) is tainted
 (L1 sizing: `+…RcptV3Wf`, `+…V3Balance`, `+…nearAirV3`, …).  The fifth column of the output is
-the declaration's source line count (from the declaration ranges; 0 if unknown).  The tables `T` of every `TableLocal T` in the
+the declaration's source line count (from the declaration ranges; 0 if unknown); the sixth says
+whether the constant mentions a seed itself (`type`: in its statement, `value`: in its proof)
+or only through other tainted constants (`-`).  The tables `T` of every `TableLocal T` in the
 closure are printed to stderr (to choose seeds).
 
 Lane `v3-d1-phase2`, item V4 (plan `docs/zk-formal/V3-D1-PHASE2.md` §7).  Imports the root
@@ -103,6 +105,7 @@ partial def main (args : List String) : IO UInt32 := do
     for c in all do
       let some ci := env.find? c | continue
       if hasSeed ci.type || (ci.value?.map hasSeed).getD false then tainted := tainted.insert c
+    let direct := tainted
     let mut changed := true
     while changed do
       changed := false
@@ -131,7 +134,10 @@ partial def main (args : List String) : IO UInt32 := do
       let nl := match declRangeExt.find? (level := .server) env c with
         | some r => r.range.endPos.line + 1 - r.range.pos.line
         | none => 0
-      lines := lines.push s!"{c}\t{modOf c}\t{if tainted.contains c then 1 else 0}\t{kind}\t{nl}"
+      let dt := match env.find? c with
+        | some ci => if hasSeed ci.type then "type" else if direct.contains c then "value" else "-"
+        | none => "-"
+      lines := lines.push s!"{c}\t{modOf c}\t{if tainted.contains c then 1 else 0}\t{kind}\t{nl}\t{dt}"
     IO.FS.writeFile out (String.intercalate "\n" (lines.qsort (· < ·)).toList ++ "\n")
     IO.println s!"{all.size} needed constants, {tainted.size} tainted"
     return 0
