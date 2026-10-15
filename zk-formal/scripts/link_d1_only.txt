@@ -43,6 +43,7 @@ ZkFormal.NearV3.Rcpt.Candidates.PreparedSourceCount
 ZkFormal.NearV3.Rcpt.Extract.RcptView
 ZkFormal.NearV3.Rcpt.Extract.V.PrepCount
 ZkFormal.NearV3.Rcpt.Extract.V.PreparedRanges
+ZkFormal.NearV3.Rcpt.Link.AcctSlots
 ZkFormal.NearV3.Rcpt.Link.BndAuthenticated
 ZkFormal.NearV3.Rcpt.Link.BndRequests
 ZkFormal.NearV3.Rcpt.Link.BoundedNativeRouting
@@ -51,6 +52,7 @@ ZkFormal.NearV3.Rcpt.Link.GasPub
 ZkFormal.NearV3.Rcpt.Link.ListEncodingBounds
 ZkFormal.NearV3.Rcpt.Link.ListSha
 ZkFormal.NearV3.Rcpt.Link.MemBal
+ZkFormal.NearV3.Rcpt.Link.MemOf
 ZkFormal.NearV3.Rcpt.Link.NativeEncoding
 ZkFormal.NearV3.Rcpt.Link.NativeListEncoding
 ZkFormal.NearV3.Rcpt.Link.PeoBytes

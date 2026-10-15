@@ -1284,3 +1284,45 @@ theorem mem_bal_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {q : _r
       ((ZkFormal.NearV3.D1.Link.rdsA (ZkFormal.NearV3.D1.Link.actD1 es q.ops.length)
         (ZkFormal.NearV3.D1.Link.evsD1 es q.ops.length r.lists) ++ ars r.accts).map Msg.toFp) :=
   ZkFormal.NearV3.D1.Link.mem_bal_d1 hp hlen hH hW hT T
+
+-- @override ZkFormal.NearV3.RcptLink.memHyp_of
+/-- **`MemHypA` of the D1 events** (D1: the `MEM` timeline has the `txV3` ops before the incoming
+receipts; `D1/Link/MemD1`). -/
+theorem memHyp_of_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {q : _root_.ZkFormal.NearV3.D1.Public.PrepD1}
+    {ov : Nat} {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records} {es : List ZkFormal.NearV3.D1.TxE}
+    (hp : ZkFormal.NearV3.D1.prepD1 cb h = .ok q) (hlen : (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov).length < P)
+    (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) tr)
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) tr r)
+    (W : ZkFormal.NearV3.D1.Link.BaseWfD1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) r)
+    (hW : ZkFormal.NearV3.D1.TxWf es)
+    (hT : TableTraffic ZkFormal.NearV3.D1.TxV3.interactions tr ZkFormal.NearV3.D1.T_TX
+      (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) (ZkFormal.NearV3.D1.txTraffic es))
+    (hknd : (r.accts.map (·.k)).Nodup) :
+    ZkFormal.NearV3.D1.Link.MemHypA (ZkFormal.NearV3.D1.Link.actD1 es q.ops.length)
+      (ZkFormal.NearV3.D1.Link.evsD1 es q.ops.length r.lists) r.accts :=
+  ZkFormal.NearV3.D1.Link.memHypA_of hp hlen hH hW hT T W hknd
+
+-- @patch ZkFormal.NearV3.RcptLink.acct_k_nodup
+<<<
+    rw [vslot_bal_d1 hH T]
+    exact count_le_of_nodup hn m
+===
+    have hv := vslot_bal_d1 hH T m
+    have := count_le_of_nodup hn m
+    omega
+>>>
+
+-- @override ZkFormal.NearV3.RcptLink.memHyp_of'
+/-- **`MemHypA` from the trace and the views alone** (D1). -/
+theorem memHyp_of'_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {q : _root_.ZkFormal.NearV3.D1.Public.PrepD1}
+    {ov : Nat} {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records} {es : List ZkFormal.NearV3.D1.TxE}
+    (hp : ZkFormal.NearV3.D1.prepD1 cb h = .ok q) (hlen : (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov).length < P)
+    (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) tr)
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) tr r)
+    (W : ZkFormal.NearV3.D1.Link.BaseWfD1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) r)
+    (hW : ZkFormal.NearV3.D1.TxWf es)
+    (hT : TableTraffic ZkFormal.NearV3.D1.TxV3.interactions tr ZkFormal.NearV3.D1.T_TX
+      (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q ov)) (ZkFormal.NearV3.D1.txTraffic es)) :
+    ZkFormal.NearV3.D1.Link.MemHypA (ZkFormal.NearV3.D1.Link.actD1 es q.ops.length)
+      (ZkFormal.NearV3.D1.Link.evsD1 es q.ops.length r.lists) r.accts :=
+  memHyp_of_d1 hp hlen hH T W hW hT (acct_k_nodup_d1 hH T W)

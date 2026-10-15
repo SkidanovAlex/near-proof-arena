@@ -241,6 +241,164 @@ theorem mem_bal_d1 (T : BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (Public.preparedByt
   simp only [aws, ars, List.map_append, List.count_append] at hb ⊢
   omega
 
+
+/-! ## `MemHypA` from the trace -/
+
+open ZkFormal.NearV3.RcptLink (getD_lt' getElem_flatR_mem mem_raw_of mem_raw3_of) in
+/-- **`MemHypA` of the D1 events** from `HoldsP`, the views and the distinct account slots. -/
+theorem memHypA_of (T : BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 p ov)) tr r)
+    (W : BaseWfD1 (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 p ov)) r)
+    (hknd : (r.accts.map (·.k)).Nodup) :
+    MemHypA (actD1 es p.ops.length) (evsD1 es p.ops.length r.lists) r.accts := by
+  have ht0 : RcptD1.t0V (ZkFormal.Udr.pubOf Fp (Public.preparedBytesD1 p ov)) = p.ops.length := by
+    have hm := (prepD1_m0_t0 hp).2
+    unfold NearSpecV3.NT0 at hm
+    rw [Public.t0V_prepared p ov (prepD1_roots hp) (by omega)]
+    obtain ⟨w, -, rfl⟩ := prepD1_spec hp
+    rfl
+  have hT0 : p.ops.length ≤ 8192 := by
+    have := (prepD1_m0_t0 hp).2
+    obtain ⟨w, -, rfl⟩ := prepD1_spec hp
+    unfold NearSpecV3.NT0 at this
+    exact this
+  obtain ⟨toks, -, -, hwf, -⟩ := W.lists.toks
+  have hn : (flatR r.lists).length ≤ 2 ^ 22 := W.listsCount.2
+  have hwfR : ∀ q, q < (flatR r.lists).length → ∃ a b c,
+      ((flatR r.lists).getD q default).Wf (q + p.ops.length) a b c := by
+    intro q hq
+    have := hwf q hq
+    rw [ht0] at this
+    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hq]
+    exact ⟨_, _, _, this⟩
+  have hraw : ∀ q, q < (flatR r.lists).length → ∀ y ∈ ((flatR r.lists).getD q default).raw, y < P :=
+    fun q hq y hy => W.lists.canon.2 _ (getElem_flatR_mem hq) y (mem_raw3_of hy)
+  have hacc : ∀ a ∈ r.accts, (a.k < P ∧ a.tlast < P) ∧ ∀ y ∈ a.pre ++ a.post, y < P := by
+    intro a ha
+    rcases W.accts with he | hw
+    · rw [he] at ha; cases ha
+    · exact ⟨⟨(hw.v1.len a ha).2.2.1, (hw.v1.len a ha).2.2.2⟩, hw.v1.canon a ha⟩
+  have hlane : ∀ a ∈ r.accts, ∀ (l : List Nat), (∀ y ∈ l, y < P) → ∀ i, ∀ y ∈ acctLane a l i, y < P := by
+    intro a ha l hl i y hy
+    simp only [acctLane, List.mem_cons, List.not_mem_nil, or_false] at hy
+    have hpre : ∀ y ∈ a.pre, y < P := fun y hy => (hacc a ha).2 y (by simp [hy])
+    rcases hy with rfl | rfl | rfl
+    · exact getD_lt' hl i
+    · exact getD_lt' hpre _
+    · split
+      · exact getD_lt' hpre _
+      · unfold P; omega
+  have hlenE := evsD1_length es p.ops.length r.lists
+  -- the op events' fields are canonical
+  have htx : ∀ o, o < p.ops.length → (txOpOf es o).s1 = 1 → ∀ i, i < 16 →
+      (txOpOf es o).vidA < P ∧ (txOpOf es o).tpA < P ∧ ((txOpOf es o).lane i).amt < P ∧
+        ((txOpOf es o).lane i).mo < P ∧ ((txOpOf es o).lane i).lk < P ∧ ((txOpOf es o).lane i).st < P := by
+    intro o ho _ i hi
+    have hc := ((hW.ops _ (txOpOf_op hp hlen hH hW hT ho).1).canon)
+    have hl := hc.2.2.2.2.2 i hi
+    exact ⟨hc.2.1, hc.2.2.2.1, hl.2.2.2.2.1, hl.2.2.2.2.2.2.2.1, hl.2.2.2.2.2.1, hl.2.2.2.2.2.2.1⟩
+  have hP : 2 ^ 23 + 8192 < P := by unfold P; omega
+  refine ⟨?_, hknd, ?_⟩
+  · have hpm := mem_bal_d1 hp hlen hH hW hT T
+    apply perm_nat _ _ hpm
+    · intro m hm
+      rcases mem_WA.mp hm with ⟨q, hq, hact, i, hi, rfl⟩ | ⟨a, ha, i, hi, rfl⟩
+      · rw [hlenE] at hq
+        by_cases hqT : q < p.ops.length
+        · rw [R_evs_tx hqT, txRv_wr _ _ _ hi]
+          have hs1 : (txOpOf es q).s1 = 1 := by simpa [actD1, hqT] using hact
+          obtain ⟨c1, -, c3, c4, c5, c6⟩ := htx q hqT hs1 i hi
+          intro y hy
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at hy
+          rcases hy with rfl | rfl | rfl | rfl | rfl | rfl
+          · exact c1
+          · omega
+          · omega
+          · exact c4
+          · exact c5
+          · exact c6
+        · obtain ⟨q', rfl⟩ : ∃ q', q = p.ops.length + q' := ⟨q - p.ops.length, by omega⟩
+          have hq' : q' < (flatR r.lists).length := by omega
+          rw [R_evs_rc, R_rv]
+          obtain ⟨_, _, _, w⟩ := hwfR q' hq'
+          intro y hy
+          simp only [wrMsg, List.mem_cons, List.not_mem_nil, or_false] at hy
+          rcases hy with rfl | rfl | rfl | rfl | rfl | rfl
+          · exact w.small.1
+          · omega
+          · unfold P; omega
+          · exact getD_lt' (fun y hy => by have := w.aft8 y hy; unfold P; omega) i
+          · exact getD_lt' (fun y hy => hraw q' hq' y (mem_raw_of (.inr (.inl hy)))) i
+          · exact getD_lt' (fun y hy => hraw q' hq' y (mem_raw_of (.inr (.inr hy)))) i
+      · intro y hy
+        simp only [awMsg, List.cons_append, List.mem_cons] at hy
+        rcases hy with rfl | rfl | rfl | hy
+        · exact (hacc a ha).1.1
+        · unfold P; omega
+        · unfold P; omega
+        · exact hlane a ha _ (fun y hy => (hacc a ha).2 y (by simp [hy])) i y hy
+    · intro m hm
+      simp only [rdsA, ars, List.mem_append, List.mem_flatMap, List.mem_map, List.mem_range] at hm
+      rcases hm with ⟨q, hq, hm⟩ | ⟨a, ha, i, hi, rfl⟩
+      · rw [hlenE] at hq
+        split at hm
+        · rename_i hact
+          obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hm
+          have hi' := List.mem_range.mp hi
+          by_cases hqT : q < p.ops.length
+          · rw [R_evs_tx hqT, txRv_rd _ _ hi']
+            have hs1 : (txOpOf es q).s1 = 1 := by simpa [actD1, hqT] using hact
+            obtain ⟨c1, c2, c3, -, c5, c6⟩ := htx q hqT hs1 i hi'
+            intro y hy
+            simp only [List.mem_cons, List.not_mem_nil, or_false] at hy
+            rcases hy with rfl | rfl | rfl | rfl | rfl | rfl
+            · exact c1
+            · exact c2
+            · omega
+            · exact c3
+            · exact c5
+            · exact c6
+          · obtain ⟨q', rfl⟩ : ∃ q', q = p.ops.length + q' := ⟨q - p.ops.length, by omega⟩
+            have hq' : q' < (flatR r.lists).length := by omega
+            rw [R_evs_rc, R_rv]
+            obtain ⟨_, _, _, w⟩ := hwfR q' hq'
+            intro y hy
+            simp only [rdMsg, List.mem_cons, List.not_mem_nil, or_false] at hy
+            rcases hy with rfl | rfl | rfl | rfl | rfl | rfl
+            · exact w.small.1
+            · exact w.small.2.1
+            · omega
+            · exact getD_lt' (fun y hy => hraw q' hq' y (mem_raw_of (.inl hy))) i
+            · exact getD_lt' (fun y hy => hraw q' hq' y (mem_raw_of (.inr (.inl hy)))) i
+            · exact getD_lt' (fun y hy => hraw q' hq' y (mem_raw_of (.inr (.inr hy)))) i
+        · simp at hm
+      · intro y hy
+        simp only [arMsg, List.cons_append, List.mem_cons] at hy
+        rcases hy with rfl | rfl | rfl | hy
+        · exact (hacc a ha).1.1
+        · exact (hacc a ha).1.2
+        · unfold P; omega
+        · exact hlane a ha _ (fun y hy => (hacc a ha).2 y (by simp [hy])) i y hy
+  · intro q hq hact ht
+    rw [hlenE] at hq ht
+    by_cases hqT : q < p.ops.length
+    · rw [R_evs_tx hqT] at ht ⊢
+      have hs1 : (txOpOf es q).s1 = 1 := by simpa [actD1, hqT] using hact
+      obtain ⟨hmem, hop⟩ := txOpOf_op hp hlen hH hW hT hqT
+      obtain ⟨d, hd, he⟩ := (hW.ops _ hmem).tA hs1
+      change (txOpOf es q).tpA ≤ _ at ht
+      change (txOpOf es q).tpA ≤ q
+      rw [hop] at he
+      have := congrArg Fp.toNat he
+      rw [Fp.toNat_ofNat, Fp.toNat_ofNat, Nat.mod_eq_of_lt (by unfold P; omega),
+        Nat.mod_eq_of_lt (by unfold P; omega)] at this
+      omega
+    · obtain ⟨q', rfl⟩ : ∃ q', q = p.ops.length + q' := ⟨q - p.ops.length, by omega⟩
+      have hq' : q' < (flatR r.lists).length := by omega
+      rw [R_evs_rc, R_rv] at ht ⊢
+      obtain ⟨_, _, _, w⟩ := hwfR q' hq'
+      have := w.tprev_le (by unfold P; omega)
+      omega
+
 end
 
 end ZkFormal.NearV3.D1.Link

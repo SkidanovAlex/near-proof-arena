@@ -101,10 +101,11 @@ lines).
   * `RecordsDefs` / `Records` (`linkInputsD1_of_holdsP`);
   * `GoodD1Defs` (`GoodD1Core`);
   * `Statements` (**`extractD1_of_parts`**, with A7 isolated in `A7D1Step`);
-  * the generator's `link` profile: 981 constants / 11.2 k lines; **53 of 113 copies build and are
+  * the generator's `link` profile: 981 constants / 11.2 k lines; **62 of 113 copies build and are
     committed** (only list), with the hand deltas `Link/Count`, `ClaimFields`, `BusUsers`,
-    `PlfIds`, `ShaExtra`, `Kinds` (LinkSha / LinkShaKinds for plf, akm and the body prefix);
-    frontier (`LinkRids`, then the run) and next steps in log milestone 12 / checkpoint 10.
+    `PlfIds`, `ShaExtra`, `Kinds`, `Rids` (local receipt ids, `RidLRange` interface for the `ridV3.l`
+    range check), `RidBytes`, `Keynib`, `RfBody`, `TxOps`, `MemEv`, `MemD1` (`mem_bal_d1`, `memHypA_of`);
+    frontier (`RecChain`, `ValBytes`/`LinkVPost`, `A7Bound`) and next steps in log milestone 13 / checkpoint 11.
 
   A7 waits on R-5 |
 | F1 | `FactorSoundD1`: `prepD1 cb h = ok p ∧ GoodD1 … ⇒ checkD1a B0 cb (witnessOfV3D1 k x h) = ok ()`. Needs the D1 witness codec (`decodeStateWitnessD1 ∘ encode`, `pTxD1` round trip on the hint's raw transactions) and `applyNewChunkD1` = the tx prefix (P1) + `applyReceiptsC` over local then incoming receipts. The A7ᴰ¹ measure: the relation's main pre trie covers **all** `txKeys` (keys whose values are never read are absent, not revealed), whereas the AIR walks only the read keys, so `unfoldBytesD1 ≤` the AIR's running sums needs a monotonicity lemma for the unread keys' paths (see §5, R-2) | L1, P1, P2 | 15–30 k | |
