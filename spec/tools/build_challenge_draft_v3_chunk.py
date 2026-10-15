@@ -22,8 +22,9 @@ Digests, computed from the repository (tracked files; commit spec/, oracle/ and 
   formal_spec.tree_digest = TreeDigest(spec/lean formal-core) at --freeze-commit (default: the working
                             tree's tracked files); it includes every D0–D3α module, ChallengeChunkV3 and
                             the judge templates
-  spec_doc_digest         = sha256 of the concatenation of spec/near-chunk-validation-v0.md and the
-                            d1 / d2 / d3 domain documents (listed in `spec_docs`)
+  spec_doc_digest         = sha256 of the concatenation of spec/near-chunk-validation-v0.md, v0a.md
+                            (tier D0a), d1.md, d1a.md (tier D1a), d2.md and d3.md, in that order
+                            (SPEC_DOCS, also listed as `spec_docs` in the weights record)
   public_fixtures         = TreeDigest(oracle/fixtures/v3/public-chunk-v3) (spec/tools/
                             build_public_chunk_v3.sh: the union of the D0 arena-public set and the arena
                             layouts of public-d1, public-d2 and public-d3, one params.bin)
@@ -50,9 +51,10 @@ Judge workers (runners/worker NearV3Oracle): each generator spec's `tool` select
 Checklist when the draft id changes (any edit here) and again after signing (the signed id is the id of
 the final definition: created_at, held-out commitment, baseline and scoring filled in):
   [ ] examples/reexec-v3-d3/candidate.toml                               challenge = "<id>"
-  [ ] adversarial/hostile-submissions/near-v3-d3-lenient-codes/candidate.toml   challenge = "<id>"
-  (cargo test -p proof-mutators --test packages checks both against this draft or a signed
-  challenges/chl_<id>.json of near-chunk-v3)
+  [ ] any hostile-submissions case with a declared_tier                 challenge = "<id>"
+  (cargo test -p proof-mutators --test packages checks these against this draft or a signed
+  challenges/chl_<id>.json of near-chunk-v3; adversarial/retired/near-v3-d3-lenient-codes is retired
+  and keeps its old pin)
 """
 import argparse, hashlib, json, os, subprocess, sys
 
@@ -178,7 +180,10 @@ ORACLE_TREES = {
            "oracle/v3-d1/src", "oracle/v3/src"],
 }
 TOOLS = {"d1": "near-arena-oracle-v3-d1 gen", "d2": "near-arena-oracle-v3-d1 gen", "d3": "near-arena-oracle-v3-d3 gen"}
-SPEC_DOCS = ["spec/near-chunk-validation-v0.md", "spec/near-chunk-validation-d1.md",
+# The domain documents, each tier's amendment right after its base domain (v0a after v0: tier D0a;
+# d1a after d1: tier D1a; user decision 2026-10-14, the re-freeze with tier D1a adds both).
+SPEC_DOCS = ["spec/near-chunk-validation-v0.md", "spec/near-chunk-validation-v0a.md",
+             "spec/near-chunk-validation-d1.md", "spec/near-chunk-validation-d1a.md",
              "spec/near-chunk-validation-d2.md", "spec/near-chunk-validation-d3.md"]
 
 

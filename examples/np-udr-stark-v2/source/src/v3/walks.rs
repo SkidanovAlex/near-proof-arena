@@ -89,6 +89,7 @@ pub fn queries(n: &Native, v: &MainValues) -> Result<Vec<Query>, String> {
     let mut qs = account_lookup_queries(&n.receipts);
     qs.extend(access_key_lookup_queries(&n.receipts));
     qs.extend(queue_lookup_queries(v, n.steps.len()));
+    qs.extend(n.extra_queries.iter().cloned());
     Ok(qs)
 }
 
@@ -488,6 +489,206 @@ pub fn query_walks(n: &Native, qs: &[Query]) -> Result<Vec<WalkR>, String> {
             })
         })
         .collect()
+}
+
+// ------------------------------------------------------- unread-key walks (walkU)
+
+/// `SYM_WILD` (`ZkFormal.NearV3.D1.UnreadIds`): the stub symbol of an extension's child.
+pub const SYM_WILD: u64 = 19;
+/// The `walkU` stub mode (`mT`).
+pub const MODE_STUB: u64 = 4;
+
+/// A stub step `(N, I, z)`: `SEDGE` at lookup position `(N, I)` with symbol slot `z`, consuming
+/// the key symbol `sym`.
+fn stub_step(n: u64, i: u64, z: u64, sym: u64) -> WStep3 {
+    lookup_edge(MODE_STUB, sym, vec![n, i, z, 0, 0, 0])
+}
+
+/// The stub step on symbol `rest[0]` (or `END`), then the drain of what follows.
+fn stub_then_drain(n: u64, i: u64, z: u64, rest: &[u8]) -> Vec<WStep3> {
+    match rest.split_first() {
+        None => vec![stub_step(n, i, z, SYM_END)],
+        Some((&x, xs)) => {
+            let mut v = vec![stub_step(n, i, z, x as u64)];
+            v.extend(lookup_drain(xs));
+            v
+        }
+    }
+}
+
+/// `leafLookupSteps` with the value stub: an exact match at an unrevealed value ends with the
+/// stub `(nid, s, END)` (the value's hash is not in the store).
+fn leaf_lookup_steps_u(
+    nid: u64,
+    vid: u64,
+    slot: &Slot,
+    pos: u64,
+    stored: &[u8],
+    key: &[u8],
+) -> Vec<WStep3> {
+    match (stored.split_first(), key.split_first()) {
+        (None, None) => match slot {
+            Slot::Val(_) => vec![lookup_edge(
+                0,
+                SYM_END,
+                vec![nid, pos, SYM_END, vid, 0, EK_VAL],
+            )],
+            Slot::Ref(..) => vec![stub_step(nid, pos, SYM_END, SYM_END)],
+        },
+        (Some((&a, r#as)), Some((&x, xs))) if a == x => {
+            let mut v = vec![lookup_edge(
+                0,
+                x as u64,
+                vec![nid, pos, a as u64, nid, pos + 1, EK_KEY],
+            )];
+            v.extend(leaf_lookup_steps_u(nid, vid, slot, pos + 1, r#as, xs));
+            v
+        }
+        // every mismatch is an absence, exactly as for the candidates' walks
+        _ => leaf_lookup_steps(nid, vid, slot, pos, stored, key).unwrap_or_default(),
+    }
+}
+
+/// `nativeLookupSteps` of an unread key (`walkU`): as [`native_lookup_steps`], but a child or a
+/// value that is not revealed (its hash is not in the honest store, `buildFor`'s `.hash`/`.ref`)
+/// ends the walk with a stub step.
+pub fn native_lookup_steps_u(nid: u64, vid: u64, t: &PTrie, key: &[u8]) -> Option<Vec<WStep3>> {
+    match t {
+        PTrie::Hash(_) => None,
+        PTrie::Leaf(stored, slot, _) => Some(leaf_lookup_steps_u(nid, vid, slot, 0, stored, key)),
+        PTrie::Ext(stored, child, _) => {
+            if is_prefix(stored, key) {
+                let rest = &key[stored.len()..];
+                let len = stored.len() as u64;
+                if is_node(child) {
+                    native_lookup_steps_u(nid + 1, vid, child, rest).map(|ss| {
+                        let mut v =
+                            lookup_extension_edges(nid, view_target(nid + 1, child), stored);
+                        v.extend(ss);
+                        v
+                    })
+                } else {
+                    // dead extension: its last nibble leads to `(nid, s)`, the stub's position
+                    let mut v: Vec<WStep3> = lookup_extension_edges(nid, nid, stored);
+                    if let Some(last) = v.last_mut() {
+                        last.e[4] = len;
+                    }
+                    v.extend(stub_then_drain(nid, len, SYM_WILD, rest));
+                    Some(v)
+                }
+            } else {
+                leaf_lookup_steps(nid, vid, &Slot::Ref(0, vec![]), 0, stored, key)
+                    .map(|ss| extension_mismatch_fix(nid, child, stored.len() as u64, ss))
+            }
+        }
+        PTrie::Branch(value, kids, _) => {
+            let bm = kids_bitmap(kids) as u64;
+            match key.split_first() {
+                None => match value {
+                    None => Some(vec![WStep3 {
+                        mode: 2,
+                        sym: SYM_END,
+                        e: vec![nid, 0, 0, 0, 0, 0],
+                        u: 0,
+                        bm,
+                        hv: 0,
+                        ub: 0,
+                    }]),
+                    Some(Slot::Ref(..)) => Some(vec![stub_step(nid, 0, SYM_END, SYM_END)]),
+                    Some(Slot::Val(_)) => Some(vec![lookup_edge(
+                        0,
+                        SYM_END,
+                        vec![nid, 0, SYM_END, vid, 0, EK_VAL],
+                    )]),
+                },
+                Some((&x, xs)) => {
+                    let j = x as usize;
+                    let (mut cn, mut cv) = (nid + 1, vid + opt_slot_val_len(value));
+                    if j >= kids.len() || kids[j].is_none() {
+                        return Some(lookup_branch_absent(
+                            nid,
+                            bm,
+                            value.is_some() as u64,
+                            x as u64,
+                            xs,
+                        ));
+                    }
+                    for c in kids[..j].iter().flatten() {
+                        cn += tsize(c);
+                        cv += vals_len(c);
+                    }
+                    let child = kids[j].as_ref().unwrap();
+                    if !is_node(child) {
+                        let mut v = vec![stub_step(nid, 0, x as u64, x as u64)];
+                        v.extend(lookup_drain(xs));
+                        return Some(v);
+                    }
+                    native_lookup_steps_u(cn, cv, child, xs).map(|ss| {
+                        let mut v = vec![lookup_edge(
+                            0,
+                            x as u64,
+                            vec![nid, 0, x as u64, view_target(cn, child), 0, EK_DOWN],
+                        )];
+                        v.extend(ss);
+                        v
+                    })
+                }
+            }
+        }
+    }
+}
+
+/// The `walkU` walk of an unread key on the main pre trie (`τ = 0`): `START`, then
+/// [`native_lookup_steps_u`].
+pub fn unread_walk(n: &Native, wid: u64, key: &[u8]) -> Result<WalkR, String> {
+    let steps = native_lookup_steps_u(0, 0, &n.pre, key)
+        .ok_or_else(|| format!("walkU: walk {wid}: the pre-state root is not revealed"))?;
+    Ok(native_lookup_walk(wid, 0, 0, &n.pre, steps))
+}
+
+/// `rankWalks` over the candidates' walks `ws` then the unread walks `us` (one chain per
+/// `EDGE` / `BMAP` key across both tables), with the stub steps of `us` ranked on their own
+/// chain (`SEDGE (N, I, z)`).  Returns the ranked `us`.
+pub fn rank_unread(ws: &[WalkR], us: &[WalkR]) -> Vec<WalkR> {
+    let mut all: Vec<WalkR> = ws.to_vec();
+    all.extend(us.iter().cloned());
+    let ranked = rank_walks(&all);
+    let mut stubs: HashMap<[u64; 3], u64> = HashMap::new();
+    ranked[ws.len()..]
+        .iter()
+        .map(|w| WalkR {
+            w: w.w,
+            tau: w.tau,
+            steps: w
+                .steps
+                .iter()
+                .map(|st| {
+                    if st.mode == MODE_STUB {
+                        let k = [at(&st.e, 0), at(&st.e, 1), at(&st.e, 2)];
+                        let c = stubs.entry(k).or_default();
+                        let r = WStep3 { u: *c, ..st.clone() };
+                        *c += 1;
+                        r
+                    } else {
+                        st.clone()
+                    }
+                })
+                .collect(),
+        })
+        .collect()
+}
+
+/// The `SEDGE` use counts `(N, I, z) ↦ #stub steps` of the unread walks.
+pub fn stub_uses(us: &[WalkR]) -> HashMap<[u64; 3], u64> {
+    let mut m: HashMap<[u64; 3], u64> = HashMap::new();
+    for w in us {
+        for st in &w.steps {
+            if st.mode == MODE_STUB {
+                *m.entry([at(&st.e, 0), at(&st.e, 1), at(&st.e, 2)]).or_default() += 1;
+            }
+        }
+    }
+    m
 }
 
 // ------------------------------------------------------------------------ ranks

@@ -1,0 +1,106 @@
+### clean: CPUs 9-15,25-31 (7 Zen 5 cores x 2 SMT), nothing else scheduled there
+Model name:                              AMD Ryzen 9 9950X3D 16-Core Processor
+CPU(s) scaling MHz:                      94%
+CPU max MHz:                             5752.0000
+=== bench-hash 1 thread
+bench-hash (256 MiB; 1 rayon threads): SHA-512/384 compression 1 thread 9.87 M/s (1264 MB/s), 1 threads 9.87 M/s | SHA-256 compression (SHA-NI if available) 1 thread 42.10 M/s (2694 MB/s) [289]
+=== bench-hash 14 threads
+bench-hash (256 MiB; 14 rayon threads): SHA-512/384 compression 1 thread 9.65 M/s (1236 MB/s), 14 threads 71.55 M/s | SHA-256 compression (SHA-NI if available) 1 thread 42.03 M/s (2690 MB/s) [289]
+=== bench-ext 1 thread
+bench-ext (1 thread, scalar): ext mul E=8 55.3 ns (Plonky3 Fp8 7.9 ns), E=10 77.8 ns, E=12 182.6 ns | logUp fraction compute E=8 479 ns, E=10 580 ns, E=12 1294 ns
+=== bench-commit 2^22 x 64 rate 2^-1, 1 thread
+bench-commit 2^22 x 64, blowup 2^1 (1 threads): iDFT 0.882 s, coset DFTs 1.107 s, SHA-384 leaves 3.156 s, nodes 1.013 s | total 6.159 s = 22.9 ns/trace cell (43.59 M trace cells/s); hashing share 68 % [d2]
+=== 7 threads (1/core)
+bench-commit 2^22 x 64, blowup 2^1 (7 threads): iDFT 0.329 s, coset DFTs 0.277 s, SHA-384 leaves 0.471 s, nodes 0.166 s | total 1.244 s = 4.6 ns/trace cell (215.81 M trace cells/s); hashing share 51 % [d2]
+=== 14 threads
+bench-commit 2^22 x 64, blowup 2^1 (14 threads): iDFT 0.335 s, coset DFTs 0.271 s, SHA-384 leaves 0.427 s, nodes 0.151 s | total 1.184 s = 4.4 ns/trace cell (226.63 M trace cells/s); hashing share 49 % [d2]
+=== bench-commit 2^22 x 64 rate 2^-2, 1 thread
+bench-commit 2^22 x 64, blowup 2^2 (1 threads): iDFT 0.857 s, coset DFTs 2.332 s, SHA-384 leaves 6.244 s, nodes 2.048 s | total 11.482 s = 42.8 ns/trace cell (23.38 M trace cells/s); hashing share 72 % [47]
+=== 7 threads (1/core)
+bench-commit 2^22 x 64, blowup 2^2 (7 threads): iDFT 0.330 s, coset DFTs 0.555 s, SHA-384 leaves 0.950 s, nodes 0.339 s | total 2.174 s = 8.1 ns/trace cell (123.47 M trace cells/s); hashing share 59 % [47]
+=== 14 threads
+bench-commit 2^22 x 64, blowup 2^2 (14 threads): iDFT 0.335 s, coset DFTs 0.539 s, SHA-384 leaves 0.863 s, nodes 0.298 s | total 2.035 s = 7.6 ns/trace cell (131.92 M trace cells/s); hashing share 57 % [47]
+=== run1 measured 32768 --prove (14 threads)
+program: measured-mix loop | iterations 32768
+  WASM ops 458755 (gas units 458755) | rows 131074 | ops/row 3.50 | static rows 5 | locals, memory, gas == reference: OK | channel discipline: OK
+  reference interpreter 0.001 s, register machine 0.016 s (8.4 M rows/s, 29.5 M ops/s)
+  trace build 0.094 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (public segments included)
+
+  table                  kind   active   padded   w   I | per active row: committed U-logUp(E=10)  GKR  ML
+  brz[_L__]              chip     32769    65536  21   6 |                           81   41  21
+  mul[TLL_]              chip     32768    32768  44  30 |                          224   64  44
+  alu_ri[LTI_]           chip     32768    32768  33  12 |                          123   53  33
+  alu_ri[LLI_]           chip     32768    32768  33  13 |                          133   53  33
+  ret[____]              chip         1        4  14   6 |                           74   34  14
+  mbound                 mem          4        4  16   5 |                           76   36  16
+  minit                  fixed        4        4  14   2 |                           54   34  14
+  code                   fixed        5        8  49   2 |                           89   69  49
+  io                     fixed        2        4  29   3 |                           79   49  29
+  pair8                  fixed    65536    65536  20   1 |                           60   40  20
+  range16                fixed    65536    65536  18   1 |                           58   38  18
+  rangeT                 fixed  2097152  2097152  18   1 |                           58   38  18
+
+  per WASM op (chips + memory boundary; fixed tables excluded): main 9.4 | fractions 4.4 | committed U-logUp 40.1, U-GKR 15.1, ML 9.4 | per gas unit: main 9.36, fractions 4.36
+  fixed tables (code/io/minit/range16/rangeT/pair8): 40.24 M main cells
+  [honest] prover emitted a proof (3212 KB) in 38.3 s
+  [honest] verify: Ok("ACCEPT")
+  B (claim: code byte flipped, honest proof): rejected (parse (openings))
+  B (claim: initial memory word flipped, honest proof): rejected (parse (openings))
+  B (claim: final gas flipped, honest proof): rejected (parse (openings))
+  [time] wall 38.81 s, maxrss 7910808 KB
+=== run1 loadchain 8192 --prove (14 threads)
+program: unaligned i32.load chain (16/iter) | iterations 8192
+  WASM ops 212995 (gas units 212995) | rows 147458 | ops/row 1.44 | static rows 19 | locals, memory, gas == reference: OK | channel discipline: OK
+  reference interpreter 0.001 s, register machine 0.036 s (4.1 M rows/s, 5.9 M ops/s)
+  trace build 0.093 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (public segments included)
+
+  table                  kind   active   padded   w   I | per active row: committed U-logUp(E=10)  GKR  ML
+  brz[_L__]              chip      8193    16384  21   6 |                           81   41  21
+  ld_gen[TL__]           chip      8192     8192  32  20 |                          162   52  32
+  ld_gen[TT__]           chip    114688   131072  32  19 |                          162   52  32
+  ld_gen[LT__]           chip      8192     8192  37  21 |                          177   57  37
+  alu_ri[LLI_]           chip      8192     8192  33  13 |                          133   53  33
+  ret[____]              chip         1        4  14   6 |                           74   34  14
+  mbound                 mem       2051     4096  16   5 |                           76   36  16
+  minit                  fixed     1364     2048  14   2 |                           54   34  14
+  code                   fixed       19       32  47   2 |                           87   67  47
+  io                     fixed        2        4  29   3 |                           79   49  29
+  pair8                  fixed    65536    65536  23   1 |                           63   43  23
+  range16                fixed    65536    65536  19   1 |                           59   39  19
+  rangeT                 fixed  2097152  2097152  19   1 |                           59   39  19
+
+  per WASM op (chips + memory boundary; fixed tables excluded): main 22.1 | fractions 12.6 | committed U-logUp 109.2, U-GKR 36.2, ML 22.1 | per gas unit: main 22.12, fractions 12.59
+  fixed tables (code/io/minit/range16/rangeT/pair8): 42.63 M main cells
+  [honest] prover emitted a proof (3910 KB) in 52.2 s
+  [honest] verify: Ok("ACCEPT")
+  B (claim: code byte flipped, honest proof): rejected (parse (openings))
+  B (claim: initial memory word flipped, honest proof): rejected (parse (openings))
+  B (claim: final gas flipped, honest proof): rejected (parse (openings))
+  [time] wall 52.83 s, maxrss 8357076 KB
+=== sha 384 512 --prove (14 threads)
+SHA-512 family (SHA-384 IV) compression AIR: 512 compressions, reference == sha2 crate: OK | build 0.03 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages
+  sha_rounds  w  461 (preprocessed 12) | interactions  3 | degree 4 | rows/compression  41 | main cells/compression   18901
+  sha_sched   w  104 (preprocessed  6) | interactions  8 | degree 4 | rows/compression  80 | main cells/compression    8320
+  sha_final   w   98 (preprocessed  0) | interactions  1 | degree 4 | rows/compression   1 | main cells/compression      98
+  sha_input   w    7 (preprocessed  0) | interactions  1 | degree 4 | rows/compression  16 | main cells/compression     112
+  per compression (128 B; rounds + sched + final; input and preprocessed columns excluded): main 26347 cells, 764 fraction slots | committed U-logUp (E=10, degree-3 target) 34037 | work cell-eq 38850 | per byte: main 206, work 304
+  [honest] prove 1.6 s, proof 1820 KB, verify Ok("ACCEPT")
+[forge] OOD quotient values rewritten for 1 table(s)
+  [forged: one state bit flipped (3 failing constraint(s)), OOD-consistent forger] verifier REJECTS (final polynomial mismatch)
+  [time] wall 3.71 s, maxrss 477168 KB
+=== sha 256 512 --prove (14 threads)
+SHA-256 compression AIR: 512 compressions, reference == sha2 crate: OK | build 0.01 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages
+  sha_rounds  w  233 (preprocessed  8) | interactions  3 | degree 4 | rows/compression  33 | main cells/compression    7689
+  sha_sched   w   56 (preprocessed  6) | interactions  8 | degree 4 | rows/compression  64 | main cells/compression    3584
+  sha_final   w   50 (preprocessed  0) | interactions  1 | degree 4 | rows/compression   1 | main cells/compression      50
+  sha_input   w    5 (preprocessed  0) | interactions  1 | degree 4 | rows/compression  16 | main cells/compression      80
+  per compression (64 B; rounds + sched + final; input and preprocessed columns excluded): main 10675 cells, 612 fraction slots | committed U-logUp (E=10, degree-3 target) 16845 | work cell-eq 20701 | per byte: main 167, work 323
+  [honest] prove 0.7 s, proof 1354 KB, verify Ok("ACCEPT")
+[forge] OOD quotient values rewritten for 1 table(s)
+  [forged: one state bit flipped (3 failing constraint(s)), OOD-consistent forger] verifier REJECTS (final polynomial mismatch)
+  [honest] prover emitted a proof (3212 KB) in 37.9 s | committed W_eq 707.4 M (Fp8, blowup 16, grand products) = 18.68 M W_eq/s; main 45.2 M cells
+  [honest] verify: Ok("ACCEPT")

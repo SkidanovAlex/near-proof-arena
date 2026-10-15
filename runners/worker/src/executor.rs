@@ -90,7 +90,7 @@ pub struct BuildEnv {
     pub toolchain_image: Option<Digest>,
 }
 
-pub use crate::stages::formal::FormalEnv;
+pub use crate::stages::formal::{FormalEnv, FormalSandbox};
 
 pub struct WorkerContext {
     pub worker_id: String,

@@ -6,7 +6,7 @@ export const DRAFTS: DraftChallenge[] = [
   {
     "name": "near-chunk-v3",
     "source_path": "challenges/drafts/near-chunk-v3.draft.json",
-    "source_sha256": "9b389f0d3dab4bf1bf74dd440d8672aef3e97c4c5d28481d660928b332058b20",
+    "source_sha256": "293032570e952f78c7559c8338cb67585ecde87ad3a6a1ff1834140a7c4d13e4",
     "season": "2026-s1",
     "tier": "formal",
     "created_at": "2026-10-06T18:00:00Z",
@@ -102,7 +102,7 @@ export const DRAFTS: DraftChallenge[] = [
       "statement_spec": "NearSpecV3.challengeSpecChunkTop",
       "tiers": [
         {
-          "id": "D0",
+          "id": "D0a",
           "rank": 0,
           "classes": [
             "d0-quiet",
@@ -111,8 +111,29 @@ export const DRAFTS: DraftChallenge[] = [
           ]
         },
         {
-          "id": "D1",
+          "id": "D0",
           "rank": 1,
+          "classes": [
+            "d0-quiet",
+            "d0-transfers",
+            "d0-missing"
+          ]
+        },
+        {
+          "id": "D1a",
+          "rank": 2,
+          "classes": [
+            "d0-quiet",
+            "d0-transfers",
+            "d0-missing",
+            "d1-transfers",
+            "d1-mixed",
+            "d1-receipts"
+          ]
+        },
+        {
+          "id": "D1",
+          "rank": 3,
           "classes": [
             "d0-quiet",
             "d0-transfers",
@@ -124,7 +145,7 @@ export const DRAFTS: DraftChallenge[] = [
         },
         {
           "id": "D2",
-          "rank": 2,
+          "rank": 4,
           "classes": [
             "d0-quiet",
             "d0-transfers",
@@ -139,7 +160,7 @@ export const DRAFTS: DraftChallenge[] = [
         },
         {
           "id": "D3a",
-          "rank": 3,
+          "rank": 5,
           "classes": [
             "d0-quiet",
             "d0-transfers",

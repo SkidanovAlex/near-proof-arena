@@ -71,7 +71,9 @@
  ],
  "spec_docs": [
   "spec/near-chunk-validation-v0.md",
+  "spec/near-chunk-validation-v0a.md",
   "spec/near-chunk-validation-d1.md",
+  "spec/near-chunk-validation-d1a.md",
   "spec/near-chunk-validation-d2.md",
   "spec/near-chunk-validation-d3.md"
  ]

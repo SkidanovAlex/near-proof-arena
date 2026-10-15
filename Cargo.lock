@@ -375,6 +375,7 @@ dependencies = [
 name = "arena-worker"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "arena-archive",
  "arena-firecracker",
  "arena-formal-checker",

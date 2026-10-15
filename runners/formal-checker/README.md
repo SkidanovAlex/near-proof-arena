@@ -71,7 +71,10 @@ directories (`GuestLayout::rw_binds`; it is refused until then). The
    Expected module, `ArenaAudit`, policy prefixes such as `ArenaCore`,
    toolchain `Init/Std/Lean/Lake`) → `SHADOWED_DEFINITION`. Imports must
    resolve to candidate/trusted/toolchain modules; `prelude` refused. Then
-   each module is elaborated offline with `lean -o` in its own sandbox run:
+   each module is elaborated offline with `lean -o` in its own sandbox run
+   (on Firecracker, up to 64 consecutive runs are the steps of one microVM,
+   each with a single run's isolation; only the output tree is carried, as
+   between single runs: `UntrustedRunner::run_batch`, docs/ISOLATION.md §4):
    sources RO, the judge's trusted `.olean`s exposed read-only (symlinks into
    an RO mount so trusted and candidate modules can share a namespace root),
    one RW output dir. Tactics, macros, `#eval`, `initialize` all run here and

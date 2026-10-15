@@ -41,6 +41,11 @@ Inputs read:
 | **U-1** | **Recursion ALLOWED, SHA-256 only.** The concrete SHA-256 evaluated inside circuits is treated as the random oracle. No Poseidon2 and no algebraic hash anywhere. | Option R-a is adopted as an assumption, to be named e.g. `sha256-random-oracle-in-circuit`. The challenge profile text still has to be drafted (PROPOSAL wording in §10.6). R-a' (Poseidon2) is **rejected**. Recursion nodes pay the full in-AIR SHA cost: 17 rows × W_eq 704 ≈ 12 k W-eq cells per compression (L5-SHA.md). R5 is superseded for D3-scale work. |
 | **U-2** | **Proven soundness bounds only**, even if the proof ends up > 300 KB. No conjectured FRI regime. | 300 KB is now a *goal*, reachable only under a proven bound that can also be proved in Lean. The best proven size and its dependencies are in §10.4. |
 | **U-3** | **Judge: parallel elaboration.** Measure judge wall time with parallel module elaboration on N cores under a 4 h wall limit. | PROPOSAL in §10.6: N = 16, plus the recheck implications. The S7 spike measures it. |
+| **U-5** | **The long-term compressed-proof track (≤ 300 KB, 1 Pgas) targets 128-bit POST-QUANTUM security.** Today's classical challenges stay unchanged: D0a (signed), and `near-chunk-v3` with its D0a/D1a tiers under `validity-classical-128`. Phase 1 (the single-proof D3a tier on the classical stack) also stays. | §11 redoes the proof size, recursion and security analysis under PQ-128, and updates the latency envelope. **§11 supersedes §2.2, §10.2–§10.4 and U-1's SHA-256 choice for the PQ track** (U-1 re-check: §11.3). |
+| **U-6** | **PQ security contract: failure ≤ 2⁻¹²⁸ against an adversary making ≤ 2⁶⁴ quantum hash queries** (not "128-bit quantum attack cost" with 2¹²⁸ queries). | The §11 size model's assumption stands. |
+| **U-7** | **PQ track hash: SHA-384 throughout** (Merkle commitments, Fiat–Shamir, recursion circuits). Classical challenges keep SHA-256. | Amends U-1 for the PQ track (§11.3). D1's SHA-512 table should be a general SHA-384/512-family table. |
+| **U-8** | **The real-time proof itself is post-quantum end to end** (no classical real-time layer with a later PQ wrap). | Real-time envelope = the PQ one (§11): about 12 Tgas worst-case pure WASM, 50–150 Tgas typical mix on 32 H200; every PQ proof obligation in §11 is on the real-time critical path. New prover/protocol code must be parameterised by hash, digest width and extension degree from the start. |
+| **U-9** | **PQ proof-size target 0.5–1 MB under proven bounds; 300 KB is a stretch goal** (pursued via WHIR/STIR after the joint pinned-parameter milestone). | Joint milestone with `research/hash-recursion` decides whether to invest in WHIR/STIR proofs. |
 | **U-4** | **Near-real-time is required**, not minutes-async. NEAR blocks are ≈ 1 s. Hardware budget: "up to a few H200 machines" (2–4 × 8 H200). | §3.3's minutes-scale plan is **superseded by §10**. Verdict: worst-case 1 Pgas in ≈ 1–2 s is **not feasible** on 16–32 H200. §10.3 gives the achievable envelope and the hardware the worst case would need. |
 
 Where §§0–8 conflict with this section or §10, **D and §10 govern**:
@@ -892,3 +897,225 @@ Sources cited in §10 (published, not reproduced here):
   <https://blockeden.xyz/blog/2026/01/30/zksync-airbender-fastest-risc-v-zkvm-ethereum-proving/>
 * hashcat SHA2-256 GPU benchmarks: <https://gist.github.com/Chick3nman/e4fcee00cb6d82874dace72106d73fef>,
   <https://hashcat.net/forum/printthread.php?tid=11787>
+
+---
+
+## 11. Post-quantum 128 (U-5): size, recursion, security and latency
+
+Inputs:
+* research branch `research/hash-recursion` @ `26e538be`, read-only: `research/hash-recursion/README.md`, the
+  `Wire`/`Budget` modules, `docs/research/recursive-compression.md`;
+* the size model `tools/d3a-study/pqsize.py`, new in this lane;
+* the literature cited below.
+
+**Which theorems hold with which constants is my reading of the papers. Pinning them is the research branch's
+milestone M3, and nothing here is proved.**
+
+### 11.1 The security contract this section assumes (needs a user decision)
+
+The research README distinguishes two contracts: "128-bit quantum attack cost" and "failure ≤ 2⁻¹²⁸ for a bounded
+adversary". I use the **second**, carried over from today's profile:
+* failure ≤ 2⁻¹²⁸;
+* against an adversary making **t ≤ 2⁶⁴ quantum hash queries** (`max_hash_queries_log2 = 64`);
+* with 2⁴⁰ prover queries.
+
+A different t moves every number below. That is decision PQ-D1.
+
+### 11.2 What PQ changes, term by term
+
+| term | classical today | PQ-128 (t = 2⁶⁴) | source / reasoning |
+|---|---|---|---|
+| **Fiat–Shamir transform** | ROM; L2's potential argument charges each query, with no multi-round blow-up | Generic multi-round measure-and-reprogram loses `(2t+1)^{2r}` for r rounds (Don–Fehr–Majenz, eprint 2020/282). With r ≈ 10–25 FRI/STARK rounds that is **useless**. The usable route is **round-by-round soundness ⇒ QROM soundness of BCS** with a loss ≈ `O(t²)·ε_rbr + O(t³/2^λ)` (Chiesa–Manohar–Spooner, TCC 2019, eprint 2019/834; rbr notions and QROM transfers in Block–Garreta–Tiwari–Zając, eprint 2023/1256). | the per-round error needed is ε_rbr ≲ 2⁻¹²⁸⁻¹²⁸⁻ᶜ, so **≈ 260 bits per round** (c ≈ 4 for the hidden constants; to be pinned in M3) instead of ≈ 192 |
+| **query phase** | 192 − z bits from queries | ≈ 260 − z/2 bits | Grover gives a quadratic speed-up on grinding, so z classical bits of work buy only z/2 PQ bits |
+| **algebraic challenges** (bus α/γ, ALI, DEEP, FRI folding) | Fp8 of BabyBear (2²⁴⁸) suffices for 2⁻¹³² | each round needs ≲ 2⁻²⁶⁰ with degree/size factors up to 2²⁷, so **\|K\| ≳ 2²⁹⁰ ⇒ a degree-10 or degree-12 extension** (2³¹⁰ / 2³⁷²) | **Fp8 is insufficient for PQ**: +25–50 % on every extension (aux, quotient, OOD) column |
+| **Merkle binding / digest width** | SHA-256, 2¹²⁸ birthday bound | quantum collision search on an n-bit random function: success ≈ `O(t³/2ⁿ)` (BHT; tight per Zhandry, arXiv 1312.1027). With n = 256 and t = 2⁶⁴ that is **2⁻⁶⁴: SHA-256 is insufficient**. n = 384 gives 2⁻¹⁹²; n = 512 gives 2⁻³²⁰ | the research branch's `Budget` checks the same template arithmetic |
+| **hash choice** | SHA-256 | **SHA-384** (SHA-512 compression, 384-bit output) or **SHA-512**. Not 2 × SHA-256 concatenation: concatenating iterated hashes is not stronger than its parts (Joux multicollisions), and the README already warns that wider or concatenated digests are not ideal wide QROs. SHA-384/512 as a QRO is itself an *assumption*, the same kind as today's SHA-256 ROM assumption | PROPOSAL PQ-D2 |
+| **recursion composition** | concrete SHA-256 as the RO in-circuit (U-1) plus soundness | needs **quantum knowledge extraction** (research branch M4). The rbr route gives knowledge soundness only under rbr *knowledge* soundness. Extraction against quantum adversaries is the deepest open item (compressed-oracle recording, Zhandry eprint 2018/276) | — |
+
+### 11.3 Re-checking U-1 (SHA-256-only recursion) under PQ
+
+**U-1 cannot hold for the PQ track.** SHA-256 Merkle commitments give only ≈ 2⁻⁶⁴ binding against 2⁶⁴ quantum
+queries. **PROPOSAL PQ-D2:** for the PQ track, change U-1 to "SHA-2 only, SHA-384 (or SHA-512) everywhere in the
+proof system, inside and outside circuits". SHA-256 stays for the classical tiers.
+
+In-circuit cost:
+* L5 SHA-256: 17 rows × W_eq 704 ≈ **12 k cells per compression**. A Merkle node (64 B + padding) needs 2
+  compressions, so ≈ 24 k cells per node.
+* A SHA-512-family table: 64-bit words as 2 × 32-bit limbs, 80 rounds. V3-D1-DESIGN §4.2 estimates W_eq ≈ 1,100
+  and ≈ 25–40 k cells per 128-B block.
+* **SHA-384 node** (2 × 48 B = 96 B + padding ≤ 128 B) = **1 compression ≈ 25–40 k cells**, i.e. ≈ 1.0–1.7 × a
+  SHA-256 node.
+* SHA-512 node (128 B + padding) = 2 compressions ≈ 50–80 k cells (2–3.3 ×).
+
+**SHA-384 is the sweet spot** if t = 2⁶⁴. SHA-512 is needed only under a stronger contract (t = 2¹²⁸).
+
+Native GPU cost:
+* SHA-512 uses 64-bit additions, which GPUs emulate. My **recollection** of hashcat is ≈ 7 GH/s for SHA-512 against
+  ≈ 22 GH/s for SHA-256 on an RTX 4090. That is **not verified here**; S8 measures it.
+* Per byte, SHA-512 is then ≈ 1.5 × slower.
+* At 1 Pgas, commitment hashing goes from ≈ 0.2–0.4 s to **≈ 0.3–0.6 s** on 32 H200s.
+
+### 11.4 PQ proof size: best justifiable proven figure
+
+**Correction to §2.2/§10.4.** The earlier model assumed a final trace of 2¹⁴–2¹⁶ rows. In a recursive chain, the
+last layer's trace must contain the verifier of the previous layer, so its height is a *fixed point*. For the PQ
+Johnson case at blowup 2⁶:
+* the previous layer is opened at ≈ 85 queries;
+* each query needs ≈ 220 SHA-384 compressions (3 Merkle paths of ≈ 20 levels, leaves of ≈ 10 blocks per tree,
+  ≈ 7 FRI layers);
+* that is ≈ 19 k compressions × 30 k cells ≈ 0.56 G cells, so **≈ 2²¹ rows at W_eq 300**.
+
+The same argument puts the classical final layer at ≈ 2¹⁹–2²⁰ rows. Its realistic size is therefore **≈ 320–400 KB**,
+not 230–270 KB.
+
+With BabyBear (2-adicity 27), a 2²¹ trace allows blowup ≤ 2⁶.
+
+Final-layer size (`pqsize.py`: 260 − z/2 query bits, z = 32; 48/64-B digests; 40-B extension elements; top
+log₂(q) Merkle levels shared; W_eq 200–600):
+
+| final-layer regime (Lean status) | queries | SHA-384 | SHA-512 |
+|---|---:|---:|---:|
+| UDR, blowup 2⁶, trace 2²¹ (UDR algebra proved in Lean; PQ FS not) | 250 | **1.9–2.3 MB** | 2.3–2.8 MB |
+| FRI Johnson, blowup 2⁶, trace 2²¹ | 85 | **0.71–0.88 MB** | 0.87–1.04 MB |
+| FRI Johnson, blowup 2⁸, trace 2¹⁹ (needs W_eq ≈ 1,000 to fit the verifier) | 63 | ≈ 0.6–0.75 MB | ≈ 0.7–0.85 MB |
+| STIR/WHIR-class LDT, Johnson regime (rate decays per round; fewer, cheaper later queries) | — | **≈ 0.3–0.5 MB** (est., ±50 %) | ≈ 0.35–0.6 MB |
+
+Levers not in the model:
+* **Merkle multiproof dedup** (siblings shared between query paths beyond the top log₂(q) levels, and between
+  FRI-layer cosets): ≈ −10–20 %.
+* **Caps** (publishing the top c levels once): already captured by the log₂(q) sharing; at most a few KB more.
+* **A field with larger 2-adicity** (Goldilocks: 2³², with a degree-5/6 extension for 2²⁹⁰+) would allow blowup 2⁸
+  at trace 2²¹, about −15–25 %. That is a protocol-wide change.
+
+**Verdict.** Under PQ-128 with *proven* bounds (U-2), the best I can justify is:
+* **≈ 0.6–0.9 MB with FRI in the Johnson regime;**
+* **≈ 0.3–0.5 MB with a STIR/WHIR-class test** (uncertain);
+* ≈ 2 MB with what Lean can prove today (UDR).
+
+**< 300 KB is not reachable with FRI.** It is *conceivable* only with:
+* a WHIR-class test in the Johnson regime;
+* multiproof dedup;
+* favourable pinned QROM constants;
+* possibly a larger-2-adicity field.
+
+It is marginal even then. My recommendation is to plan for **≈ 0.5–1 MB** and treat 300 KB as a stretch goal.
+
+**New Lean proofs required** (none exist; all Mathlib-free on 4.34.1):
+1. **Johnson-regime proximity gaps / correlated agreement** (BCIKS20-type) — S4, formerly classical-only.
+2. **rbr (knowledge) soundness** of the chosen IOP: FRI or STIR/WHIR, plus the AIR/bus/DEEP rounds, at ≈ 260 bits
+   per round. L3 today proves the potential-style ROM bound, not rbr knowledge.
+3. **A QROM model** (research M1): complex amplitudes, unitary adversaries, a uniformly random function, Born-rule
+   probabilities.
+4. **QROM BCS / Fiat–Shamir** with explicit constants (M3), including Merkle binding (`O(t³/2ⁿ)`).
+5. **Quantum extraction / composition for recursion** (M4).
+6. **A parameter set plus serializer bridge to the Wire model** (M5). This study's `pqsize.py` is a draft input.
+7. The classical-side **arithmetisation proofs**, now against a PQ-parameterised verifier model: SHA-384 table,
+   degree-10/12 extension, new query counts.
+8. A **SHA-512-family compression table** with an L5-style proof. It is shared with D1-S Ed25519 (SHA-512), see
+   §11.6.
+
+### 11.5 Updated real-time envelope and hardware (estimated)
+
+Cost factors, PQ against the §10 classical figures:
+* inner-proof queries ×(244/160) ≈ 1.5;
+* recursion-node hashing per compression 1.0–1.7 × (SHA-384);
+* extension columns ×1.25–1.5.
+
+Results:
+* recursion overhead 0.4–0.7 × base becomes **≈ 0.8–2.2 × base**;
+* base cells +10–20 %;
+* total ≈ **2.0–3.8 × base**, against 1.4–1.7 classically.
+
+| quantity (32 × H200, ≈ 1–2 s) | classical (§10.3) | **PQ-128** |
+|---|---|---|
+| worst-case pure-WASM gas per chunk | 6–45 Tgas (central ≈ 25) | **≈ 3–25 Tgas (central ≈ 12)** |
+| typical-mix chunks | ≈ 100–300 Tgas | **≈ 50–150 Tgas** |
+| H200s for worst-case 1 Pgas in ≈ 2 s | 450–4,000 (central ≈ 1,000) | **≈ 600–9,000 (central ≈ 2,000)** |
+| final layer (Johnson, 1 GPU) | 0.2–0.5 s | 0.3–0.8 s |
+| native commitment hashing at 1 Pgas | 0.2–0.4 s | 0.3–0.6 s |
+
+**Plain answer: near-real-time worst-case 1 Pgas is further out of reach under PQ.** The real-time tier's weighted
+gas bound (P-RT-1) would be about half the classical one.
+
+The PQ final layer could run as an **asynchronous "PQ wrap"** over a classical real-time proof. That is not a
+real-time PQ guarantee, since its soundness is only as good as the classical layers inside it. It makes sense only
+if the user accepts PQ-at-rest (archival and light-client use) rather than PQ-at-validation. That is decision PQ-D3.
+
+### 11.6 Does PQ change Phase 1, D1 or D2 now?
+
+The classical relations, tiers and the signed D0a are unchanged. Five cheap alignments are worth doing now:
+1. **Build one SHA-2 compression family, not just SHA-256.** D1-S (Ed25519) already needs `sha512V3`. Design it
+   as a generic SHA-512-family table with a parametric IV and truncated output (SHA-384, SHA-512), proved in L5
+   style. It then serves Ed25519, D3's host `sha512`-free paths, and **the PQ commitment and recursion hash**.
+   This adds no work to D1-N (interim P-D1-2 stands).
+2. **Parameterise new protocol code.** Any new prover, verifier-model or format code (GPU prover, recursion AIR,
+   `pqsize`/S3 calculators) takes **digest width, hash and extension degree as parameters**, not 32 B / SHA-256 /
+   Fp8 constants. The deployed `np-udr-stark-v2` is untouched.
+3. **Keep table soundness generic in the extension field.** New D1/D2/D3 table proofs should not specialise
+   lemmas to Fp8. Then a degree-10/12 extension needs only re-instantiation (check during S2).
+4. **No new witness-derived hints** (§5). This matters even more under PQ, because every PQ byte is costlier.
+5. **Unchanged:** the NEAR relation's own SHA-256 (trie, receipts, block hashes) and Ed25519. They are the
+   *statement*, not proof-system assumptions. The D0a design never relies on SHA-256 collision resistance for
+   `Holds ⇒ Rel`. Making NEAR itself PQ is out of scope, as the research README also notes.
+
+### 11.7 Merging this lane with `research/hash-recursion`
+
+Proposed split. The research branch is the **formal home of the PQ track**; this lane covers AIR, cost and latency.
+
+| research M# (README) | owner | this lane's input / what to avoid duplicating |
+|---|---|---|
+| M1 finite quantum experiment | research | — |
+| M2 interactive protocol + soundness | **shared**. This lane's **S4** (Johnson-regime proximity gaps) becomes the FRI/STIR/WHIR part of M2, in their Std-only package; no separate S4 lane | S3 sweeps choose FRI vs STIR vs WHIR |
+| M3 quantum FS with constants | research | §11.2's ≈ 260-bit-per-round target is the requirement M3 must confirm or correct |
+| M4 extraction / composition | research | the recursion AIR's arithmetisation (classical-side, §2.3 table) stays here |
+| M5 parameters + serializer → Wire | **joint**. `tools/d3a-study/pqsize.py` (this lane) plus the fixed-point recursion-height model feed their `Wire` module; one calculator, kept in `tools/recursion/` | S3 and S6 deliver here |
+| RISC Zero harness | frozen as a baseline (non-PQ, 96–97 bits conjectured; tiny-proof prove > 600 s) | none |
+
+First joint milestone (≈ 3–4 weeks, light CPU): **a pinned PQ parameter set and exact wire size.**
+* Hash: SHA-384.
+* Extension degree.
+* LDT: FRI vs WHIR.
+* Queries per round from the M3 target.
+* The fixed-point recursion height.
+
+It goes/no-goes 300 KB before any large Lean investment (G1 now includes PQ).
+
+### 11.8 Updated spikes and plan deltas
+
+* **S3** becomes a joint calculator with the research branch, PQ and classical. It adds the fixed-point
+  final-layer height and multiproof dedup.
+* **S4** moves into research M2. It now targets PQ rbr knowledge soundness, not only the proximity gap.
+* **S6** (recursion-node cost) runs for SHA-256, SHA-384 and SHA-512, using a prototype SHA-512-family table
+  (D1-S shared).
+* **S8** (GPU SHA throughput) measures SHA-256 **and** SHA-512/384 on an H200.
+* **S9** (latency budget) gets a PQ variant.
+* Phase 1 is unchanged. Phase 2 is re-targeted:
+  * the classical real-time track (P-RT-1…4);
+  * the PQ compression track, with the formal work led by the research branch and parameters from S3.
+  * The two share the segment AIR, the GPU prover and the SHA-2 family tables.
+
+### 11.9 Decisions for the user (PROPOSALS)
+
+* **PQ-D1, security contract.** Failure ≤ 2⁻¹²⁸ against t = 2⁶⁴ quantum queries (assumed here), or "128-bit quantum
+  attack cost" with t up to 2¹²⁸ (forces SHA-512 and ≈ 2× the query bits).
+* **PQ-D2, hash.** Amend U-1 for the PQ track to **SHA-384** (or SHA-512) throughout the proof system, with
+  "SHA-384 in circuits as a QRO" as the assumption. No 2 × SHA-256.
+* **PQ-D3, PQ scope.** PQ for the real-time validation proof (latency ≈ 2× worse, envelope ≈ half), or a PQ wrap
+  as an asynchronous archival layer over classical real-time proofs.
+* **PQ-D4, size target.** Accept ≈ 0.5–1 MB as the PQ-proven target, with 300 KB as a stretch goal that depends
+  on WHIR-class work.
+* **PQ-D5, field.** Stay on BabyBear with a degree-10/12 extension, or evaluate a larger-2-adicity field
+  (Goldilocks) for the PQ track. That is a protocol-wide change.
+* Earlier open items stand: P-RT-1…4, P-D1-2 interim, and access to mainnet data and an H200.
+
+Sources for §11:
+* Measure-and-Reprogram 2.0, Don–Fehr–Majenz: <https://eprint.iacr.org/2020/282>
+* On Soundness Notions for IOPs: <https://eprint.iacr.org/2023/1256>
+* Chiesa–Manohar–Spooner, *Succinct arguments in the QROM*: <https://eprint.iacr.org/2019/834>
+* Zhandry, quantum collision bounds: <https://arxiv.org/abs/1312.1027>
+* How to Record Quantum Queries: <https://eprint.iacr.org/2018/276>
+* Concrete Security of Non-interactive FRI: <https://eprint.iacr.org/2024/1161>
+* WHIR: <https://eprint.iacr.org/2024/1586>
+* hashcat benchmark gist: <https://gist.github.com/Chick3nman/e4fcee00cb6d82874dace72106d73fef>
+
+The constants of the cited theorems were not re-derived here.

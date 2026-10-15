@@ -20,7 +20,8 @@ use crate::native::{self, NativeLeanRoute, NativeVerifierBuild, VerifierRoute};
 use crate::ndjson::Export;
 use crate::report::{self, FormalCheckReport, GateSpec, RecheckerRun, Timing};
 use crate::sandbox::{
-    RunExit, RunOutcome, RunSpec, UntrustedRunner, CAPTURE_LIMIT, REPORT_CAPTURE_LIMIT,
+    BatchBudget, BatchStep, RunExit, RunOutcome, RunSpec, UntrustedRunner, CAPTURE_LIMIT,
+    REPORT_CAPTURE_LIMIT,
 };
 use crate::staging::{self, CandidateModule, StagingPolicy};
 use crate::toolchain::{lean_toolchain, ToolPaths};
@@ -234,6 +235,15 @@ impl<'a> Ctx<'a> {
 
     fn run(&mut self, step: &str, spec: &RunSpec, cap: usize) -> Result<RunOutcome, Finding> {
         let r = self.fc.runner.run(spec, cap);
+        self.record(step, r)
+    }
+
+    /// Timing + error mapping of one run's result (single or batched).
+    fn record(
+        &mut self,
+        step: &str,
+        r: Result<RunOutcome, crate::sandbox::InfraError>,
+    ) -> Result<RunOutcome, Finding> {
         match r {
             Ok(o) => {
                 self.timings.push(Timing {
@@ -251,6 +261,33 @@ impl<'a> Ctx<'a> {
                 ReasonCode::InfraError,
                 format!("{step}: {e}"),
             )),
+        }
+    }
+
+    /// Runs `steps` (label, argv, timeout) of `base` as one batch
+    /// ([`UntrustedRunner::run_batch`]); returns each started run's result as
+    /// [`Ctx::run`] would have (timings recorded in order). A batch-level
+    /// infrastructure error is attributed to the first run.
+    fn run_batch(
+        &mut self,
+        base: &RunSpec,
+        steps: &[(String, Vec<String>, Duration)],
+        budget: &BatchBudget,
+    ) -> Vec<Result<RunOutcome, Finding>> {
+        let bs: Vec<BatchStep> = steps
+            .iter()
+            .map(|(_, argv, t)| BatchStep {
+                argv: argv.clone(),
+                wall_timeout: *t,
+            })
+            .collect();
+        match self.fc.runner.run_batch(base, &bs, budget, CAPTURE_LIMIT) {
+            Err(e) => vec![self.record(&steps[0].0, Err(e))],
+            Ok(outs) => outs
+                .into_iter()
+                .zip(steps)
+                .map(|(r, (label, _, _))| self.record(label, r))
+                .collect(),
         }
     }
 }
@@ -381,6 +418,11 @@ fn compile(
             .map_err(|e| Finding::unknown(ReasonCode::InfraError, format!("link trusted: {e}")))?;
     }
     let lean_path = G_OUT.to_string();
+    if ctx.fc.runner.batch_max() > 0 {
+        return compile_batched(
+            ctx, label, mods, src, out, trusted_ro, limits, emit_c, start,
+        );
+    }
     for m in mods {
         let stem = m.rel_path.trim_end_matches(".lean");
         if let Some(parent) = out.join(stem).parent() {
@@ -434,6 +476,121 @@ fn compile(
                     ),
                 ));
             }
+        }
+    }
+    Ok(())
+}
+
+/// `lean` argv of [`compile`] for one module.
+fn compile_argv(m: &CandidateModule, emit_c: bool) -> Vec<String> {
+    let stem = m.rel_path.trim_end_matches(".lean");
+    let mut argv = vec![
+        format!("{G_TC}/bin/lean"),
+        "-R".into(),
+        G_SRC.into(),
+        "-o".into(),
+        format!("{G_OUT}/{stem}.olean"),
+        "-i".into(),
+        format!("{G_OUT}/{stem}.ilean"),
+    ];
+    if emit_c {
+        argv.push("-c".into());
+        argv.push(format!("{G_OUT}/{stem}.c"));
+    }
+    argv.push(format!("{G_SRC}/{}", m.rel_path));
+    argv
+}
+
+/// [`compile`] on a batching runner (Firecracker): consecutive modules (in
+/// the same dependency order) run as one batch of up to
+/// `runner.batch_max()` runs in one sandbox instance, each run exactly the
+/// per-module `lean` invocation of [`compile`] with the same mounts, the
+/// same writable output tree (the only state carried between runs, as
+/// between single runs) and the same timeout `min(module_timeout, remaining
+/// elaboration budget)`, enforced by the sandbox as a per-run timeout plus a
+/// cumulative kill deadline at the remaining budget. Outcomes are judged
+/// module by module exactly as in [`compile`]. This removes the per-module
+/// sandbox boot and the per-module copy of the whole output tree into and
+/// out of the sandbox (O(tree) per module on Firecracker).
+#[allow(clippy::too_many_arguments)]
+fn compile_batched(
+    ctx: &mut Ctx,
+    label: &str,
+    mods: &[CandidateModule],
+    src: &Path,
+    out: &Path,
+    trusted_ro: Option<&Path>,
+    limits: &Limits,
+    emit_c: bool,
+    start: Instant,
+) -> Result<(), Finding> {
+    let lean_path = G_OUT.to_string();
+    for chunk in mods.chunks(ctx.fc.runner.batch_max()) {
+        for m in chunk {
+            let stem = m.rel_path.trim_end_matches(".lean");
+            if let Some(parent) = out.join(stem).parent() {
+                std::fs::create_dir_all(parent)
+                    .map_err(|e| Finding::unknown(ReasonCode::InfraError, e.to_string()))?;
+            }
+        }
+        let remaining = limits.elaboration_budget.saturating_sub(start.elapsed());
+        let timeout = remaining
+            .min(limits.module_timeout)
+            .max(Duration::from_millis(1));
+        let steps: Vec<(String, Vec<String>, Duration)> = chunk
+            .iter()
+            .map(|m| {
+                (
+                    format!("{label}:elaborate:{}", m.name),
+                    compile_argv(m, emit_c),
+                    timeout,
+                )
+            })
+            .collect();
+        let mut spec = ctx.base_spec(steps[0].1.clone(), &lean_path, timeout, limits.mem_bytes);
+        spec.ro.push((src.to_path_buf(), G_SRC.into()));
+        if let Some(t) = trusted_ro {
+            spec.ro.push((t.to_path_buf(), G_TRUSTED.into()));
+        }
+        spec.rw.push((out.to_path_buf(), G_OUT.into()));
+        let budget = BatchBudget {
+            deadline: Some(remaining.max(Duration::from_millis(1))),
+            start_deadline: None,
+        };
+        let results = ctx.run_batch(&spec, &steps, &budget);
+        let ran = results.len();
+        for (m, r) in chunk.iter().zip(results) {
+            let o = r?;
+            match o.exit {
+                RunExit::Exited(0) => {}
+                RunExit::TimedOut => {
+                    return Err(Finding::unknown(
+                        ReasonCode::Timeout,
+                        format!("{label}: elaboration of {} timed out", m.name),
+                    ))
+                }
+                _ => {
+                    let mut msg = lossy_tail(&o.stdout, 1500);
+                    msg.push_str(&lossy_tail(&o.stderr, 500));
+                    return Err(Finding::new(
+                        ReasonCode::BuildFailed,
+                        Scope::All,
+                        format!(
+                            "{label}: module {} failed to elaborate ({:?}):\n{msg}",
+                            m.name, o.exit
+                        ),
+                    ));
+                }
+            }
+        }
+        if ran < chunk.len() {
+            return Err(Finding::unknown(
+                ReasonCode::InfraError,
+                format!(
+                    "{label}: batch ran {ran} of {} modules without a failure",
+                    chunk.len()
+                ),
+            ));
         }
     }
     Ok(())
@@ -1976,6 +2133,11 @@ fn module_rechecker(
         mods.chunks(batch).collect()
     };
     let n = chunks.len();
+    if ctx.fc.runner.batch_max() > 0 {
+        return module_rechecker_batched(
+            ctx, id, tool, &chunks, lean_path, limits, mount, findings, started,
+        );
+    }
     for (i, chunk) in chunks.into_iter().enumerate() {
         if started.elapsed() > limits.recheck_total {
             findings.push(Finding::unknown(
@@ -2035,6 +2197,129 @@ fn module_rechecker(
         wall_ms,
         detail: if n > 1 {
             format!("{} modules in {n} runs", mods.len())
+        } else {
+            String::new()
+        },
+    }
+}
+
+/// [`module_rechecker`] on a batching runner (Firecracker): consecutive
+/// rechecker runs (same argv, mounts and `recheck_timeout` each) run as one
+/// batch of up to `runner.batch_max()` runs in one sandbox instance; a run
+/// is started only while the total budget is not exceeded (a start deadline
+/// at the remaining `recheck_total`), as the sequential loop checks it
+/// before each run. Results are judged run by run exactly as there.
+#[allow(clippy::too_many_arguments)]
+fn module_rechecker_batched(
+    ctx: &mut Ctx<'_>,
+    id: &str,
+    tool: &str,
+    chunks: &[&[String]],
+    lean_path: &str,
+    limits: &Limits,
+    mount: &dyn Fn(&mut RunSpec),
+    findings: &mut Vec<Finding>,
+    started: Instant,
+) -> RecheckerRun {
+    let n = chunks.len();
+    let mut wall_ms = 0u64;
+    let mut i = 0usize;
+    while i < n {
+        if started.elapsed() > limits.recheck_total {
+            findings.push(Finding::unknown(
+                ReasonCode::Timeout,
+                format!("{id} exceeded its total budget after {i} of {n} batches"),
+            ));
+            return RecheckerRun {
+                id: id.into(),
+                ran: true,
+                verdict: "timeout".into(),
+                wall_ms,
+                detail: format!("{i}/{n} batches"),
+            };
+        }
+        let group = &chunks[i..(i + ctx.fc.runner.batch_max()).min(n)];
+        let steps: Vec<(String, Vec<String>, Duration)> = group
+            .iter()
+            .map(|chunk| {
+                let mut argv = vec![tool.to_string()];
+                argv.extend(chunk.iter().cloned());
+                let step = if n == 1 {
+                    format!("recheck:{id}")
+                } else {
+                    format!("recheck:{id}:{}", chunk.join(","))
+                };
+                (step, argv, limits.recheck_timeout)
+            })
+            .collect();
+        let mut spec = ctx.base_spec(
+            steps[0].1.clone(),
+            lean_path,
+            limits.recheck_timeout,
+            limits.mem_bytes,
+        );
+        mount(&mut spec);
+        let budget = BatchBudget {
+            deadline: None,
+            start_deadline: Some(limits.recheck_total.saturating_sub(started.elapsed())),
+        };
+        let results = ctx.run_batch(&spec, &steps, &budget);
+        if results.is_empty() {
+            findings.push(Finding::unknown(
+                ReasonCode::InfraError,
+                format!("{id}: batch returned no outcome"),
+            ));
+            return RecheckerRun {
+                id: id.into(),
+                ran: false,
+                verdict: "error".into(),
+                wall_ms,
+                detail: "infra".into(),
+            };
+        }
+        for (k, r) in results.into_iter().enumerate() {
+            let chunk = group[k];
+            match r {
+                Err(f) => {
+                    findings.push(f);
+                    return RecheckerRun {
+                        id: id.into(),
+                        ran: false,
+                        verdict: "error".into(),
+                        wall_ms,
+                        detail: "infra".into(),
+                    };
+                }
+                Ok(o) => {
+                    wall_ms += o.wall.as_millis() as u64;
+                    if !o.success() {
+                        let mut r = verdict(id, &o, findings);
+                        r.wall_ms = wall_ms;
+                        if n > 1 {
+                            r.detail = format!(
+                                "batch {} of {n} ({}): {}",
+                                i + 1,
+                                chunk.join(", "),
+                                r.detail
+                            );
+                        }
+                        return r;
+                    }
+                }
+            }
+            i += 1;
+        }
+    }
+    RecheckerRun {
+        id: id.into(),
+        ran: true,
+        verdict: "accepted".into(),
+        wall_ms,
+        detail: if n > 1 {
+            format!(
+                "{} modules in {n} runs",
+                chunks.iter().map(|c| c.len()).sum::<usize>()
+            )
         } else {
             String::new()
         },

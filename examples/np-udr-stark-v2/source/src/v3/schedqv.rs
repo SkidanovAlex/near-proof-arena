@@ -1106,6 +1106,18 @@ pub fn derive(cb: &[u8], wb: &[u8]) -> Result<SchedQv, String> {
     let w = decode_w(wb)?;
     let hint = hint_of_e(cb, wb)?;
     let p = d0::prep(cb, &hint)?;
+    derive_from(&n, &k, w.implicit.len(), &p)
+}
+
+/// [`derive`] from the native objects, the walk, the number of implicit transitions and
+/// the prepared statement (`p.sched`, `p.fwd`); the D1 path passes its own native run and
+/// prepared base (lane v3-d1-tables).
+pub fn derive_from(
+    n: &native::Native,
+    k: &d0::Walk,
+    implicit_len: usize,
+    p: &crate::v3::prep::Prep,
+) -> Result<SchedQv, String> {
     let b2 = k.blks.get(k.b2i).ok_or("walk: B2")?;
     let prev_b2 = k.blks.get(k.b2i + 1).ok_or("walk: prev B2")?;
     let own = k.h_chunk.shard_id;
@@ -1117,7 +1129,7 @@ pub fn derive(cb: &[u8], wb: &[u8]) -> Result<SchedQv, String> {
         b2,
         prev_b2.hdr.next_gas_price,
     )];
-    for b in k.implicit_blks.iter().take(w.implicit.len()) {
+    for b in k.implicit_blks.iter().take(implicit_len) {
         ctxs.push(block_ctx(&k.layout, own, gl, b, b.hdr.next_gas_price));
     }
     let mut trees: Vec<&PTrie> = vec![&n.pre];
@@ -1134,7 +1146,7 @@ pub fn derive(cb: &[u8], wb: &[u8]) -> Result<SchedQv, String> {
         let fwd = if tau == 0 { p.fwd.clone() } else { vec![] };
         blocks.push(block(p.sched.get(tau), sp_ctx, pre, &trees, tau, fwd)?);
     }
-    let v = crate::v3::walks::main_values(&n)?;
+    let v = crate::v3::walks::main_values(n)?;
     let qv = qv_entries(&n.pre, &v, &trees[1..]);
     Ok(SchedQv { blocks, qv })
 }

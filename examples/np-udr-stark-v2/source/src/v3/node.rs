@@ -1035,6 +1035,50 @@ pub fn node_a7(vs: &[NodeS3], rpl: &[bool]) -> Tab {
     t
 }
 
+/// `SYM_WILD` (`ZkFormal.NearV3.D1.UnreadIds`).
+const SYM_WILD: u64 = 19;
+
+/// The stub key `(nid, I, z)` of a window (`NodeStubDefs.sIE`, `sZE`): a branch child
+/// `(n, 0, slot)`, an extension child `(n, s, SYM_WILD)`, a value `(n, tl·s, END)`; `None` for
+/// a revealed window.
+fn stub_key(n: u64, v: &NodeV3, fld: &Fld) -> Option<[u64; 3]> {
+    match fld {
+        Fld::Ch(w) if !w.look => Some(if v.is_ext() {
+            [n, s_of(v), SYM_WILD]
+        } else {
+            [n, 0, w.slot.unwrap_or(0)]
+        }),
+        Fld::Vh(w) if !w.look => Some([n, if v.is_leaf() { s_of(v) } else { 0 }, SYM_END]),
+        _ => None,
+    }
+}
+
+/// The unrevealed child and value windows of record `n`: `(stub key, window bytes)` (lane
+/// v3-d1-a7b, `nodeD1`).
+pub fn unrevealed_windows(n: u64, v: &NodeV3) -> Vec<([u64; 3], Vec<u64>)> {
+    fields_of(v)
+        .iter()
+        .filter_map(|f| stub_key(n, v, f).map(|k| (k, f.win().map(|w| w.pre.clone()).unwrap_or_default())))
+        .collect()
+}
+
+/// The `nodeV3` row of the first byte of every unrevealed window, by stub key.
+pub fn window_rows(vs: &[NodeS3]) -> std::collections::HashMap<[u64; 3], usize> {
+    let mut m = std::collections::HashMap::new();
+    let mut q = 0usize;
+    for (n, s) in vs.iter().enumerate() {
+        for (fld, idx) in layout_of(&s.v) {
+            if idx == 0 {
+                if let Some(k) = stub_key(n as u64, &s.v, &fld) {
+                    m.insert(k, q);
+                }
+            }
+            q += 1;
+        }
+    }
+    m
+}
+
 /// Parse a JSON list of `NodeS3` entries, each with an optional `"rpl"` flag,
 /// and render `nodeA7`.
 pub fn render(json: &str) -> Result<Tab, String> {

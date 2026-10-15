@@ -1,0 +1,103 @@
+=== run measured 65536
+program: measured-mix loop | iterations 65536
+  WASM ops executed 917507 | register-form rows 262145 | ops/row 3.50 | static rows 4 | gas units 917507 (= ops: OK) | locals+memory match reference: OK
+  reference interpreter 0.001 s, register machine (recording accesses) 0.038 s
+  trace build 0.080 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (1.14 s)
+
+  table        kind   active   padded   w   I  aux(GP) deg | W_eq(prover, padded) | per active row: GP/E=10  logUp-k2/E=10  GKR/E=10  multilin
+  alu_ri       chip    131072   131072  36  15   15   4 |             23592960 |      216           146        56       36
+  mul          chip     65536    65536  55  35   35   4 |             23527424 |      435           265        75       55
+  brz          chip     65537   131072  21   7    7   4 |             13238272 |      121            91        41       21
+  mbound       mem          4        4  15   4    4   4 |                  284 |       85            65        35       15
+  code         fixed        4        4  30   1   33   4 |                 1272 |      390            70        50       30
+  io           fixed        2        4   6   2    2   4 |                  184 |       56            46        26        6
+  pair         fixed    65536    65536  21   1   33   4 |             20250624 |      381            61        41       21
+  range16      fixed    65536    65536  21   1   39   4 |             23396352 |      441            61        41       21
+
+  per WASM op (chips + memory boundary, active rows; fixed lookup/code/io tables excluded):
+    main cells 10.6 | bus fractions 5.1 | committed cells: GP(E=10) 70.6, logUp-k2(E=10) 46.3, GKR-logUp(E=10) 16.3, multilinear 10.6 | prover-actual W_eq (E=8, GP, padded) 65.8
+  fixed tables (range16/pair/code/io; amortised over a segment): main 2.75 M cells, prover W_eq 43.65 M
+  [honest] np-udr-stark-v2 params (BabyBear, Fp8, blowup 16, 216 queries, SHA-256 WH): prove 17.8 s | proof 2320 KB | committed W_eq 104.0 M (5.85 M W_eq/s), main 13.8 M | Rust verify: ACCEPT (0.01 s)
+
+  T3 (proof bytes, 1 bit flipped at 16 spread offsets): rejected 16/16
+
+  tamper tests on table alu_ri:
+    T1 (+1 on column 15 of row 0): failing constraints [(4, 0)], unbalanced messages 2
+  [T1 tampered] prover returned error after 13.1 s: ALI identity fails for table 0: the trace does not satisfy the AIR
+    T1 => rejected (expected)
+    T2 (operand read != memory, arithmetic kept consistent): failing constraints [], unbalanced messages 8
+  [T2 tampered] prover returned error after 14.0 s: bus products differ: the trace does not satisfy the AIR
+    T2 => rejected (expected)
+  [time] wall 66.43 s, maxrss 1016160 KB
+=== run loadchain 16384
+program: adversarial i32.load chain (16/iter) | iterations 16384
+  WASM ops executed 425987 | register-form rows 294913 | ops/row 1.44 | static rows 18 | gas units 425987 (= ops: OK) | locals+memory match reference: OK
+  reference interpreter 0.003 s, register machine (recording accesses) 0.036 s
+  trace build 0.022 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (0.80 s)
+
+  table        kind   active   padded   w   I  aux(GP) deg | W_eq(prover, padded) | per active row: GP/E=10  logUp-k2/E=10  GKR/E=10  multilin
+  alu_ri       chip     16384    16384  36  15   15   4 |              2949120 |      216           146        56       36
+  brz          chip     16385    32768  21   7    7   4 |              3309568 |      121            91        41       21
+  ld           chip    262144   262144  31  18   18   4 |             52166656 |      241           151        51       31
+  mbound       mem       1027     2048  15   4    4   4 |               145408 |       85            65        35       15
+  code         fixed       18       32  28   1   29   4 |                 9088 |      348            68        48       28
+  io           fixed        2        4   6   2    2   4 |                  184 |       56            46        26        6
+  range16      fixed    65536    65536  22   1   41   4 |             24510464 |      462            62        42       22
+
+  per WASM op (chips + memory boundary, active rows; fixed lookup/code/io tables excluded):
+    main cells 21.3 | bus fractions 11.9 | committed cells: GP(E=10) 161.5, logUp-k2(E=10) 102.2, GKR-logUp(E=10) 35.2, multilinear 21.3 | prover-actual W_eq (E=8, GP, padded) 137.5
+  fixed tables (range16/pair/code/io; amortised over a segment): main 1.44 M cells, prover W_eq 24.52 M
+  [honest] np-udr-stark-v2 params (BabyBear, Fp8, blowup 16, 216 queries, SHA-256 WH): prove 16.5 s | proof 2313 KB | committed W_eq 83.1 M (5.02 M W_eq/s), main 10.9 M | Rust verify: ACCEPT (0.01 s)
+
+  T3 (proof bytes, 1 bit flipped at 16 spread offsets): rejected 16/16
+
+  tamper tests on table alu_ri:
+    T1 (+1 on column 15 of row 0): failing constraints [(4, 0)], unbalanced messages 2
+  [T1 tampered] prover returned error after 13.9 s: ALI identity fails for table 0: the trace does not satisfy the AIR
+    T1 => rejected (expected)
+    T2 (operand read != memory, arithmetic kept consistent): failing constraints [], unbalanced messages 8
+  [T2 tampered] prover returned error after 13.0 s: bus products differ: the trace does not satisfy the AIR
+    T2 => rejected (expected)
+  [time] wall 63.08 s, maxrss 1035676 KB
+=== run mem 65536
+program: store/load loop | iterations 65536
+  WASM ops executed 1179651 | register-form rows 327681 | ops/row 3.60 | static rows 5 | gas units 1179651 (= ops: OK) | locals+memory match reference: OK
+  reference interpreter 0.003 s, register machine (recording accesses) 0.043 s
+  trace build 0.050 s
+  honest trace: 0 failing constraints, 0 unbalanced bus messages (0.86 s)
+
+  table        kind   active   padded   w   I  aux(GP) deg | W_eq(prover, padded) | per active row: GP/E=10  logUp-k2/E=10  GKR/E=10  multilin
+  alu_ri       chip    131072   131072  36  15   15   4 |             23592960 |      216           146        56       36
+  brz          chip     65537   131072  21   7    7   4 |             13238272 |      121            91        41       21
+  ld           chip     65536    65536  31  18   18   4 |             13041664 |      241           151        51       31
+  st           chip     65536    65536  29  18   18   4 |             12910592 |      239           149        49       29
+  mbound       mem      65540   131072  15   4    4   4 |              9306112 |       85            65        35       15
+  code         fixed        5        8  30   1   33   4 |                 2544 |      390            70        50       30
+  io           fixed        2        4   6   2    2   4 |                  184 |       56            46        26        6
+  range16      fixed    65536    65536  22   1   41   4 |             24510464 |      462            62        42       22
+
+  per WASM op (chips + memory boundary, active rows; fixed lookup/code/io tables excluded):
+    main cells 9.3 | bus fractions 4.3 | committed cells: GP(E=10) 62.1, logUp-k2(E=10) 41.6, GKR-logUp(E=10) 16.0, multilinear 9.3 | prover-actual W_eq (E=8, GP, padded) 61.1
+  fixed tables (range16/pair/code/io; amortised over a segment): main 1.44 M cells, prover W_eq 24.51 M
+  [honest] np-udr-stark-v2 params (BabyBear, Fp8, blowup 16, 216 queries, SHA-256 WH): prove 16.6 s | proof 2213 KB | committed W_eq 96.6 M (5.81 M W_eq/s), main 14.8 M | Rust verify: ACCEPT (0.01 s)
+
+  T3 (proof bytes, 1 bit flipped at 16 spread offsets): rejected 16/16
+
+  tamper tests on table alu_ri:
+    T1 (+1 on column 15 of row 0): failing constraints [(4, 0)], unbalanced messages 2
+  [T1 tampered] prover returned error after 13.5 s: ALI identity fails for table 0: the trace does not satisfy the AIR
+    T1 => rejected (expected)
+    T2 (operand read != memory, arithmetic kept consistent): failing constraints [], unbalanced messages 8
+  [T2 tampered] prover returned error after 13.3 s: bus products differ: the trace does not satisfy the AIR
+    T2 => rejected (expected)
+  [time] wall 62.98 s, maxrss 991536 KB
+=== bench
+bench-hash (256 MiB; 2 rayon threads): SHA-512/384 compression 1 thread 8.99 M/s (1150 MB/s), 2 threads 9.67 M/s | SHA-256 compression (SHA-NI if available) 1 thread 38.03 M/s (2434 MB/s) [289]
+bench-commit 2^20 x 64, blowup 2^1 (2 threads): iDFT 0.192 s, coset DFTs 0.268 s, SHA-384 leaves 0.761 s, nodes 0.236 s | total 1.457 s = 21.7 ns/trace cell (46.05 M trace cells/s); hashing share 68 % [72]
+bench-commit 2^20 x 64, blowup 2^2 (2 threads): iDFT 0.183 s, coset DFTs 0.521 s, SHA-384 leaves 1.511 s, nodes 0.472 s | total 2.688 s = 40.0 ns/trace cell (24.97 M trace cells/s); hashing share 74 % [ad]
+bench-commit 2^20 x 64, blowup 2^4 (2 threads): iDFT 0.209 s, coset DFTs 2.069 s, SHA-384 leaves 6.009 s, nodes 1.890 s | total 10.176 s = 151.6 ns/trace cell (6.59 M trace cells/s); hashing share 78 % [3e]
+bench-ext (1 thread, scalar): ext mul E=8 56.6 ns (Plonky3 Fp8 8.1 ns), E=10 78.2 ns, E=12 189.2 ns | logUp fraction compute E=8 519 ns, E=10 657 ns, E=12 1425 ns
+bench-ext (1 thread, scalar): ext mul E=8 61.1 ns (Plonky3 Fp8 8.6 ns), E=10 86.6 ns, E=12 199.7 ns | logUp fraction compute E=8 532 ns, E=10 633 ns, E=12 1391 ns
+bench-commit 2^20 x 64, blowup 2^1 (1 threads): iDFT 0.290 s, coset DFTs 0.404 s, SHA-384 leaves 0.858 s, nodes 0.291 s | total 1.843 s = 27.5 ns/trace cell (36.42 M trace cells/s); hashing share 62 % [72]

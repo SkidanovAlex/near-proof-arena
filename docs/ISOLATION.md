@@ -326,7 +326,32 @@ path, and written back: new/changed regular files only, host symlinks never
 followed or replaced, guest-made symlinks never returned); stdout redirected
 to a file in a read-write dir for reports over 64 KiB;
 `allow_mount_symlinks` for the judge's `.olean` link farms (symlinks are part
-of the image cache key). The reference adapter is
+of the image cache key).
+
+**Batched formal runs (steps mode with read-write dirs).** On a backend whose
+steps share one instance, the checker runs consecutive per-module `lean` /
+`leanchecker` / `lean4lean` invocations as the steps of one microVM (≤ 64 per
+VM, `formal-checker/src/pipeline.rs::compile_batched`,
+`module_rechecker_batched`). Each step keeps the isolation of a single run:
+fresh process tree killed (whole cgroup) at its end, fresh cgroup counters,
+wiped scratch / `/tmp` / `/dev/shm`, fresh IPC namespace, no keyrings, no
+network, the same read-only mounts. The only state carried between steps is
+the read-write output tree, exactly what consecutive single runs carried. In
+the guest it is an overlay: lower = the seed drive (inodes owned by the
+candidate uid, as the copied seed of a single run is), upper = a dir on the
+scratch device under the root-only `judge/` (outside the per-step wiped
+`work/`); only the upper layer (files created or modified during the VM) is
+collected, whiteouts and symlinks are never returned (deletions were never
+propagated). Budgets: `steps_deadline_ms` (kill deadline: per-step timeout =
+min(own, deadline − elapsed)) for elaboration, `steps_start_deadline_ms` (no
+step starts after it) for the recheck total; the last step's stdout/stderr are
+captured like a single run's. A guest-kernel compromise in one step could
+forge the reports of the later steps of its VM; it could already forge its own
+run's report and rewrite the shared tree, and every `.olean` is re-checked by
+the kernels (leanchecker, lean4lean, nanoda on the export) in Stage B, so the
+guest kernel stays the same single boundary. Read-only dir mounts already
+imaged by the process are reused while their metadata fingerprint (path, type,
+size, mode, mtime, ctime, inode, device of every entry) is unchanged. The reference adapter is
 `runners/firecracker/tests/lean_checker.rs::FirecrackerLeanRunner`; when
 `arena_sandbox::SandboxSpec` gains `rw_binds` (runners-core), `translate`
 maps them to `rw_dirs`.
@@ -404,8 +429,8 @@ native verifier inside a VM: 1.6 s.
 9. The Rust **toolchain image** has no Lean (Lean lives in the separate
    lean-checker image), and both images duplicate `/usr/lib` by
    dereferencing the merged-usr symlinks. Read-write dirs do not propagate
-   deletions, and each formal-checker step re-stages its (small) read-only
-   inputs.
+   deletions. Formal-checker read-only dirs are re-staged only when their
+   metadata fingerprint changes (see §4, batched formal runs).
 10. The jailer is run without `--new-pid-ns` (the container already provides
    a pid namespace, and `--new-pid-ns` daemonizes, which breaks waiting).
 
