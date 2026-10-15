@@ -74,9 +74,12 @@ PROFILES = {
                  'ZkFormal.NearV3.Assembly.Good'},
         tables={}, suffix='_d1', dir='L',
         base=['ZkFormal.NearV3.D1.Link.Statements', 'ZkFormal.NearV3.D1.Link.Index',
-              'ZkFormal.NearV3.D1.Link.PubIndex', 'ZkFormal.NearV3.D1.Prep.Claim', 'ZkFormal.NearV3.D1.R.All',
+              'ZkFormal.NearV3.D1.Link.PubIndex', 'ZkFormal.NearV3.D1.Link.Count', 'ZkFormal.NearV3.D1.Link.ClaimFields',
+              'ZkFormal.NearV3.D1.Link.BusUsers', 'ZkFormal.NearV3.D1.Link.ShaExtra', 'ZkFormal.NearV3.D1.Prep.Claim',
+              'ZkFormal.NearV3.D1.R.All',
               'ZkFormal.NearV3.D1.M.All'],
-        extra={}, overrides='scripts/link_d1_overrides.lean', taint='scripts/l1_d1_taint.tsv',
+        extra={'LinkShaKinds': ['ZkFormal.NearV3.D1.Link.Kinds'], 'LinkChain': ['ZkFormal.NearV3.D1.Link.Kinds']},
+        overrides='scripts/link_d1_overrides.lean', taint='scripts/l1_d1_taint.tsv',
         what='the `nearAirV3` statement (`prepD0`, `preparedBytes`, `nearAirV3`, the records and the balance)',
         hyp='`prepD0 cb h = .ok p` becomes `prepD1 cb h = .ok q ∧ q.base = p` (`h : HintD1`), the tape `preparedBytes p` '
             'becomes `preparedBytesD1 q`, '
@@ -86,6 +89,12 @@ PROFILES = {
               'NearSpecV3.Hint': 'ZkFormal.NearV3.D1.HintD1',
               'ZkFormal.NearV3.Public.preparedBytes': 'ZkFormal.NearV3.D1.Public.preparedBytesD1',
               'ZkFormal.NearV3.Assembly.nearAirV3': 'ZkFormal.NearV3.D1.nearAirV3D1',
+              # `D1Records.base` is D0a's record structure itself
+              'ZkFormal.NearV3.Assembly.V3Records': 'ZkFormal.NearV3.Assembly.V3Records',
+              'ZkFormal.NearV3.Assembly.ClaimFieldsV3': 'ZkFormal.NearV3.D1.Link.ClaimFieldsD1',
+              'ZkFormal.NearV3.Assembly.busCount_nearAirV3': 'ZkFormal.NearV3.D1.Link.busCount_nearAirV3D1',
+              'ZkFormal.NearV3.Assembly.UsersOk': 'ZkFormal.NearV3.D1.Link.UsersOkD1',
+              'ZkFormal.NearV3.Assembly.isAt': 'ZkFormal.NearV3.D1.Link.isAtD1',
               'ZkFormal.NearV3.Assembly.V3RecordsWf': 'ZkFormal.NearV3.D1.Link.BaseWfD1',
               'ZkFormal.NearV3.Assembly.V3RecordsTraffic': 'ZkFormal.NearV3.D1.Link.BaseTrafficD1',
               'ZkFormal.NearV3.RcptV3Wf': 'ZkFormal.NearV3.D1.RcptD1.RcptV3WfD1',
@@ -124,11 +133,14 @@ PROFILES = {
               },
         # `p : Prep` stays (it is `q.base`); the D1 prepared statement `q` is a new implicit
         # binder after `p`, the preparation hypothesis carries `q.base = p`, the tape is `q`'s
-        regex=[(r'([({]p : (?:NearSpecV3\.)?Prep[)}])(?!\s*\{q :)', r'\1 {q : ZkFormal.NearV3.D1.Public.PrepD1}'),
-               (r'ZkFormal\.NearV3\.D1\.prepD1 (\w+) (\w+) = \.ok p\b',
+        regex=[(r'([({]p ?: ?(?:NearSpecV3\.)?Prep[)}])(?!\s*\{q :)', r'\1 {q : ZkFormal.NearV3.D1.Public.PrepD1}'),
+               # `prepBody pc h = .ok p` (the body part of `prepD0`) is `BodyD1 pc h p` (`D1/Prep/Claim`)
+               (r'\bprepBody (\w+) (\w+)\s*=\s*\.ok p\b', r'ZkFormal.NearV3.D1.BodyD1 \1 \2 p'),
+               (r'ZkFormal\.NearV3\.D1\.prepD1 (\w+) (\w+)\s*=\s*\.ok p\b',
                 r'(ZkFormal.NearV3.D1.prepD1 \1 \2 = .ok q ∧ q.base = p)'),
                (r'ZkFormal\.NearV3\.D1\.Public\.preparedBytesD1 p\b', r'ZkFormal.NearV3.D1.Public.preparedBytesD1 q'),
                (r'\.pubSegs ?= ?(?:Public\.)?preparedSegments\b', r'.pubSegs = ZkFormal.NearV3.D1.Public.preparedSegmentsD1'),
+               (r'\bZkFormal\.NearV3\.Public\.preparedSegments\.all\b', r'ZkFormal.NearV3.D1.Public.preparedSegmentsD1.all'),
                # `prepClaim cb = .ok pc` became `prepClaimC cb = .ok pc`: unfold through `prepClaimD1`
                (r'(?m)^(\s*)unfold ZkFormal\.NearV3\.D1\.prepClaimC at (\w+)\s*$',
                 r'\1replace \2 := ZkFormal.NearV3.D1.prepClaimC_ok \2\n\1obtain ⟨_r, \2, rfl⟩ := \2\n'
@@ -136,7 +148,7 @@ PROFILES = {
                # `unfold prepD0 at h; obtain ⟨pc, hc, hb⟩ := bind_ok h`: the claim and body parts
                (r'(?m)^(\s*)unfold ZkFormal\.NearV3\.D1\.prepD1 at (\w+)\s*\n\s*obtain ⟨(\w+), (\w+), (\w+)⟩ := (?:Sched\.)?bind_ok \2\s*$',
                 r'\1obtain ⟨\3, \4, \5⟩ := ZkFormal.NearV3.D1.prepD1_split \2')],
-        only=None, qbase=True),
+        only='scripts/link_d1_only.txt', qbase=True),
 }
 P = PROFILES['rcpt']
 
@@ -193,9 +205,18 @@ def comps(n):
 PRIOR = {}
 
 
+INDUCT = set()
+
+
 def renamed(n):
     c = comps(n)
-    c[-1] = c[-1] + PRIOR.get(n, P['suffix'])
+    parent = n.rsplit('.', 1)[0]
+    if parent in INDUCT and n not in PRIOR:
+        # a field / constructor of a copied structure keeps its name (it lives in the copy's
+        # namespace `S_d1`)
+        c[-2] = c[-2] + P['suffix']
+    else:
+        c[-1] = c[-1] + PRIOR.get(n, P['suffix'])
     return '.'.join(c)
 
 
@@ -256,6 +277,58 @@ PREFIX_RE = re.compile(r'^\s*((set_option\s+\S+\s+\S+|open\s+[^\n]*|omit\s+[^\n]
 QB = '{q : ZkFormal.NearV3.D1.Public.PrepD1}'
 
 
+PREP_HYP_RE = re.compile(r'\((\w+) : \(ZkFormal\.NearV3\.D1\.prepD1 \w+ \w+ = \.ok q ∧ q\.base = p\)\)')
+
+
+def decl_chunks(body):
+    """Split a module body at the starts of declarations (theorem / lemma / def lines)."""
+    starts = [m.start() for m in re.finditer(r'^(?:private |protected )?(?:theorem|lemma|def) \S+', body, re.M)]
+    cuts = [0] + starts + [len(body)]
+    return [body[a:b] for a, b in zip(cuts, cuts[1:])]
+
+
+def fix_prep_bind(body):
+    """`obtain ⟨pc, hc, hb⟩ := bind_ok hp` on the preparation hypothesis (D0a's `prepD0 = prepClaim
+    ≫ prepBody`, used without `unfold`) becomes `prepD1_split hp`."""
+    out = []
+    for ch in decl_chunks(body):
+        for name in PREP_HYP_RE.findall(ch):
+            ch = re.sub(r'(?:ZkFormal\.NearV3\.)?(?:Sched\.)?bind_ok ' + name + r'\b', 'ZkFormal.NearV3.D1.prepD1_split ' + name, ch)
+        out.append(ch)
+    return ''.join(out)
+
+
+DECL_START_RE = re.compile(r'(?:private |protected )?(?:theorem|lemma|def) \S+')
+
+
+def sig_end(body, i):
+    """End of a declaration's signature (the top-level `:` before its type), from position `i`."""
+    depth = 0
+    while i < len(body):
+        ch = body[i]
+        if ch in '([{⟨':
+            depth += 1
+        elif ch in ')]}⟩':
+            depth -= 1
+        elif ch == ':' and depth == 0 and body[i:i + 2] != ':=':
+            return i
+        i += 1
+    return i
+
+
+def drop_unused_q(body):
+    """Remove the inserted `{q : PrepD1}` binder from a declaration that does not mention `q`."""
+    out = []
+    for ch in decl_chunks(body):
+        mm = DECL_START_RE.match(ch)
+        if mm and QB in ch[:sig_end(ch, mm.end())]:
+            rest = ch.replace(' ' + QB, '', 1)
+            if not re.search(r'(?<![.\w])q\b', rest):
+                ch = rest
+        out.append(ch)
+    return ''.join(out)
+
+
 def add_qbase(body):
     """A declaration with the `q` binder but no preparation hypothesis linking `q.base = p` gets
     the auto-params `(hq_base : q.base = p := by d1_base)` and `hq_leaves` (32-byte outcome leaves,
@@ -292,7 +365,7 @@ def main():
         i = argv.index('--profile')
         P = PROFILES[argv[i + 1]]
         argv = argv[:i] + argv[i + 2:]
-    args = [a for a in argv if a != '--check']
+    args = [a for a in argv if a not in ('--check', '--all')]
     check = '--check' in sys.argv[1:]
     src_tsv = args[0] if args else os.path.join(ROOT, P['taint'])
     taint = [l.rstrip('\n').split('\t') for l in open(src_tsv) if l.strip()]
@@ -308,6 +381,8 @@ def main():
                 return v + n[len(k):]
         return None
     tainted = {r[0] for r in taint if r[2] == '1' and ref_of(r[0]) is None}
+    if P.get('qbase'):
+        INDUCT.update(r[0] for r in taint if r[2] == '1' and len(r) > 3 and r[3] == 'induct')
     renamable = set(tainted)
     for f, suf in P.get('prior', {}).items():
         for l in open(os.path.join(ROOT, f)):
@@ -321,6 +396,10 @@ def main():
     patches = parse_patches()
     applied = set()
     mods = sorted({r[1] for r in taint if r[2] == '1'} - P['exclude'])
+    if P.get('only') and '--all' not in sys.argv[1:]:
+        # the finished copies (downward closed under imports); `--all` generates every module
+        only = {l.strip() for l in open(os.path.join(ROOT, P['only'])) if l.strip() and not l.startswith('#')}
+        mods = [m for m in mods if m in only]
     gen = set(mods)
     report = []
     for m in mods:
@@ -482,6 +561,7 @@ def main():
         for pat, rep in P.get('regex', []):
             body = re.sub(pat, rep, body)
         if P.get('qbase'):
+            body = fix_prep_bind(drop_unused_q(body))
             body = add_qbase(body)
         text = '\n'.join(imports) + '\n\n' + note + '\n' + '\n'.join(kept_comments) + '\n' + body
         p = mod_path(copy_mod(m), '.lean')
@@ -490,7 +570,8 @@ def main():
                 mismatches.append(p)
             continue
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        open(p, 'w').write(text)
+        if not os.path.exists(p) or open(p).read() != text:
+            open(p, 'w').write(text)
     # an aggregate root
     agg = '\n'.join(f'import {copy_mod(m)}' for m in mods) + '\n'
     pa = mod_path(f"ZkFormal.NearV3.D1.{P['dir']}.All", '.lean')

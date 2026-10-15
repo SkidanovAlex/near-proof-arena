@@ -27,6 +27,14 @@ import ZkFormal.NearV3.D1.Prep.Claim
 import ZkFormal.NearV3.D1.Extract.KibD1Proof
 import ZkFormal.NearV3.D1.NearAirD1Check
 import ZkFormal.NearV3.D1.Extract.ViewsUnread
+import ZkFormal.NearV3.D1.A7B
+import ZkFormal.NearV3.D1.Link.Count
+import ZkFormal.NearV3.D1.Link.ClaimFields
+import ZkFormal.NearV3.D1.Link.BusUsers
+import ZkFormal.NearV3.D1.Link.PlfIds
+import ZkFormal.NearV3.D1.Link.ShaExtra
+import ZkFormal.NearV3.D1.Link.Kinds
+import ZkFormal.NearV3.D1.L.All
 
 /-!
 # `ZkFormal.NearV3.D1.Phase2` — the D1a phase-2 proof modules (build root)
