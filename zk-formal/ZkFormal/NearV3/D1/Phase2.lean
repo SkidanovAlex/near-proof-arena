@@ -22,6 +22,8 @@ import ZkFormal.NearV3.D1.Link.Bus
 import ZkFormal.NearV3.D1.Link.MemBound
 import ZkFormal.NearV3.D1.Link.Statements
 import ZkFormal.NearV3.D1.Link.Index
+import ZkFormal.NearV3.D1.Link.PubIndex
+import ZkFormal.NearV3.D1.Prep.Claim
 
 /-!
 # `ZkFormal.NearV3.D1.Phase2` — the D1a phase-2 proof modules (build root)

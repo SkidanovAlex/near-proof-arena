@@ -69,9 +69,12 @@ PROFILES = {
     'link': dict(
         exclude={'ZkFormal.NearV3.Assembly.ExtractV3', 'ZkFormal.NearV3.Assembly.ExtractV3Proof',
                  'ZkFormal.NearV3.Assembly.NearAdmission', 'ZkFormal.NearV3.Assembly.RcptViewV3',
-                 'ZkFormal.NearV3.Assembly.RcptViewCounts', 'ZkFormal.NearV3.Assembly.NearAirBus'},
+                 'ZkFormal.NearV3.Assembly.RcptViewCounts', 'ZkFormal.NearV3.Assembly.NearAirBus',
+                 # the top of the chain (`GoodV3`) is redirected to `GoodD1Core` by hand
+                 'ZkFormal.NearV3.Assembly.Good'},
         tables={}, suffix='_d1', dir='L',
-        base=['ZkFormal.NearV3.D1.Link.Statements', 'ZkFormal.NearV3.D1.Link.Index', 'ZkFormal.NearV3.D1.R.All',
+        base=['ZkFormal.NearV3.D1.Link.Statements', 'ZkFormal.NearV3.D1.Link.Index',
+              'ZkFormal.NearV3.D1.Link.PubIndex', 'ZkFormal.NearV3.D1.Prep.Claim', 'ZkFormal.NearV3.D1.R.All',
               'ZkFormal.NearV3.D1.M.All'],
         extra={}, overrides='scripts/link_d1_overrides.lean', taint='scripts/l1_d1_taint.tsv',
         what='the `nearAirV3` statement (`prepD0`, `preparedBytes`, `nearAirV3`, the records and the balance)',
@@ -113,11 +116,12 @@ PROFILES = {
               },
         # `p : Prep` stays (it is `q.base`); the D1 prepared statement `q` is a new implicit
         # binder after `p`, the preparation hypothesis carries `q.base = p`, the tape is `q`'s
-        regex=[(r'([({]p : (?:NearSpecV3\.)?Prep[)}])', r'\1 {q : ZkFormal.NearV3.D1.Public.PrepD1}'),
+        regex=[(r'([({]p : (?:NearSpecV3\.)?Prep[)}])(?!\s*\{q :)', r'\1 {q : ZkFormal.NearV3.D1.Public.PrepD1}'),
                (r'ZkFormal\.NearV3\.D1\.prepD1 (\w+) (\w+) = \.ok p\b',
                 r'(ZkFormal.NearV3.D1.prepD1 \1 \2 = .ok q ∧ q.base = p)'),
-               (r'ZkFormal\.NearV3\.D1\.Public\.preparedBytesD1 p\b', r'ZkFormal.NearV3.D1.Public.preparedBytesD1 q')],
-        only=None),
+               (r'ZkFormal\.NearV3\.D1\.Public\.preparedBytesD1 p\b', r'ZkFormal.NearV3.D1.Public.preparedBytesD1 q'),
+               (r'\.pubSegs ?= ?(?:Public\.)?preparedSegments\b', r'.pubSegs = ZkFormal.NearV3.D1.Public.preparedSegmentsD1')],
+        only=None, qbase=True),
 }
 P = PROFILES['rcpt']
 
@@ -232,6 +236,38 @@ def strip_mods(t):
 
 
 PREFIX_RE = re.compile(r'^\s*((set_option\s+\S+\s+\S+|open\s+[^\n]*|omit\s+[^\n]*|include\s+[^\n]*)\s+in)\s*$')
+
+
+QB = '{q : ZkFormal.NearV3.D1.Public.PrepD1}'
+
+
+def add_qbase(body):
+    """A declaration with the `q` binder but no preparation hypothesis linking `q.base = p` gets
+    the auto-params `(hq_base : q.base = p := by d1_base)` and `hq_leaves` (32-byte outcome leaves,
+    `d1_leaves`) as its last binders."""
+    out = []
+    pos = 0
+    for mm in re.finditer(r'^(?:private |protected )?(?:theorem|lemma|def) \S+', body, re.M):
+        if mm.start() < pos:
+            continue
+        i = mm.end()
+        depth = 0
+        while i < len(body):
+            ch = body[i]
+            if ch in '([{⟨':
+                depth += 1
+            elif ch in ')]}⟩':
+                depth -= 1
+            elif ch == ':' and depth == 0 and body[i:i + 2] != ':=':
+                break
+            i += 1
+        sig = body[mm.end():i]
+        if QB in sig and 'q.base = p' not in sig:
+            out.append(body[pos:i].rstrip() + ' (hq_base : q.base = p := by d1_base)\n'
+                       '    (hq_leaves : ∀ l ∈ q.leaves, l.length = 32 := by d1_leaves) ')
+            pos = i
+    out.append(body[pos:])
+    return ''.join(out)
 
 
 def main():
@@ -430,6 +466,8 @@ def main():
                     applied.add((n, old))
         for pat, rep in P.get('regex', []):
             body = re.sub(pat, rep, body)
+        if P.get('qbase'):
+            body = add_qbase(body)
         text = '\n'.join(imports) + '\n\n' + note + '\n' + '\n'.join(kept_comments) + '\n' + body
         p = mod_path(copy_mod(m), '.lean')
         if check:
