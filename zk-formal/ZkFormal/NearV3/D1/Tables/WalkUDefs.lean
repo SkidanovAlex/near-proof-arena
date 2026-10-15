@@ -46,8 +46,8 @@ def boolColsU : List Nat := boolCols ++ [mT, mW]
 /-- the stub's symbol slot -/
 def zE : Expr := .add (c sym) (.mul (c mW) (sub (k SYM_WILD) (c sym)))
 
-def constraints : List Expr :=
-  boolColsU.map (fun x => bool (c x)) ++
+/-- The constraints after the booleanity ones. -/
+def tailC : List Expr :=
   [ sub (c gK) (sub (c act) (c ws)),
     sub (sum (modesU.map c)) (c act),
     .mul (c ws) (not (c act)), .mul (c we) (not (c act)),
@@ -91,6 +91,8 @@ def constraints : List Expr :=
     -- after a walk: another walk or padding
     mul3 (c we) (n act) (not (n ws)),
     mul3 .isTransition (not (c act)) (n act) ]
+
+def constraints : List Expr := boolColsU.map (fun x => bool (c x)) ++ tailC
 
 def sedge (uu : Expr) : List Expr := [c nN, c nI, zE, uu]
 
