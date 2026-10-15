@@ -13,6 +13,7 @@ import ZkFormal.NearV3.D1.L.Assembly.LinkStore
 import ZkFormal.NearV3.D1.L.Assembly.LinkTrie
 import ZkFormal.NearV3.D1.L.Assembly.LinkUps
 import ZkFormal.NearV3.D1.L.Assembly.LinkV3
+import ZkFormal.NearV3.D1.L.Assembly.LinkVPost
 import ZkFormal.NearV3.D1.L.Assembly.PrepFacts
 import ZkFormal.NearV3.D1.L.Assembly.PreparedSources
 import ZkFormal.NearV3.D1.L.Assembly.RcptGasPrepared

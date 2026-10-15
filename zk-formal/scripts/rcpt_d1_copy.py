@@ -78,7 +78,7 @@ PROFILES = {
               'ZkFormal.NearV3.D1.Link.BusUsers', 'ZkFormal.NearV3.D1.Link.ShaExtra', 'ZkFormal.NearV3.D1.Prep.Claim',
               'ZkFormal.NearV3.D1.R.All',
               'ZkFormal.NearV3.D1.M.All'],
-        extra={'LinkBus': ['ZkFormal.NearV3.D1.Link.WalkU'], 'LinkShaKinds': ['ZkFormal.NearV3.D1.Link.Kinds'], 'LinkChain': ['ZkFormal.NearV3.D1.Link.Kinds'],
+        extra={'LinkBus': ['ZkFormal.NearV3.D1.Link.WalkU'], 'LinkVPost': ['ZkFormal.NearV3.D1.Link.VPost'], 'LinkShaKinds': ['ZkFormal.NearV3.D1.Link.Kinds'], 'LinkChain': ['ZkFormal.NearV3.D1.Link.Kinds'],
                'LinkRids': ['ZkFormal.NearV3.D1.Link.Rids'], 'LinkRidBytes': ['ZkFormal.NearV3.D1.Link.RidBytes'],
                'LinkKeynib': ['ZkFormal.NearV3.D1.Link.Keynib'], 'RfBody': ['ZkFormal.NearV3.D1.Link.RfBody'],
                'MemBal': ['ZkFormal.NearV3.D1.Link.MemD1']},

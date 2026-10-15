@@ -1431,3 +1431,190 @@ theorem memHyp_of'_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {q :
     tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 ZkFormal.NearV3.D1.T_AKM) (by decide +kernel),
     tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 ZkFormal.NearV3.D1.T_UVAL) (by decide +kernel)] at hb
 >>>
+
+-- @patch ZkFormal.NearV3.Assembly.LinkVPost.vbytes_len
+<<<
+  have hb := bal_users_d1 hH (b := B_VBYTES) (U := [T_VAL, T_CODEC, T_ACCT, T_AKEY, T_QV]) (by decide)
+===
+  have hb := bal_users_d1 hH (b := B_VBYTES)
+    (U := [T_VAL, T_CODEC, T_ACCT, T_AKEY, T_QV, ZkFormal.NearV3.D1.T_AKM, ZkFormal.NearV3.D1.T_UVAL]) (by decide)
+>>>
+
+-- @patch ZkFormal.NearV3.Assembly.LinkVPost.vbytes_len
+<<<
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_QV) (by decide +kernel)] at hb
+===
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_QV) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 ZkFormal.NearV3.D1.T_AKM) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 ZkFormal.NearV3.D1.T_UVAL) (by decide +kernel)] at hb
+>>>
+
+-- @patch ZkFormal.NearV3.Assembly.LinkVPost.acct_written
+<<<
+  rw [vslot_bal_d1 hH T] at hc
+===
+  replace hc : 0 < ((ZkFormal.NearV3.nodeRecvs3 r.nodes B_VSLOT).map Msg.toFp).count (Msg.toFp [a.k]) := by
+    have := vslot_bal_d1 hH T (Msg.toFp [a.k]); omega
+>>>
+
+-- @patch ZkFormal.NearV3.Assembly.LinkVPost.acct_unique
+<<<
+  rw [vslot_bal_d1 hH T] at hs
+===
+  replace hs : 2 ≤ ((ZkFormal.NearV3.nodeRecvs3 r.nodes B_VSLOT).map Msg.toFp).count (Msg.toFp [i]) := by
+    have := vslot_bal_d1 hH T (Msg.toFp [i]); omega
+>>>
+
+-- @override ZkFormal.NearV3.Assembly.LinkVPost.hvpostLen_of
+/-- **`hvpostLen`** (D1) for `pv = toB ∘ pnOfD1 r.accts ms` (acct or FullAccess akm streams). -/
+theorem hvpostLen_of_d1 {pub : List Fp} {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records}
+    {ms : List ZkFormal.NearV3.D1.AkmE} (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 pub tr)
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 pub tr r) (W : ZkFormal.NearV3.D1.Link.BaseWfD1 pub r)
+    (M : ZkFormal.NearV3.D1.Link.AkmOf pub tr ms) :
+    ∀ p (hp : p < r.nodes.length) i l pre po, r.nodes[p].v.value = some (i, l, pre, po, true) →
+      (toB (ZkFormal.NearV3.D1.Link.pnOfD1 r.accts ms i)).length ≤ l := by
+  intro p hp i l pre po hv
+  simp only [toB, List.length_map, ZkFormal.NearV3.D1.Link.pnOfD1]
+  obtain ⟨t', ht', hvt', hl'⟩ := val_link W.nodes W.values (vparentBal_of_d1 hH T) hp hv
+  cases hf : r.accts.find? (fun a => a.k == i) with
+  | some a =>
+    have ha := List.mem_of_find?_eq_some hf
+    have hk : a.k = i := by simpa using List.find?_some hf
+    obtain ⟨hpre, hpost, -, -⟩ := acct_wf_d1 W ha
+    obtain ⟨t, ht, hvt, hl⟩ := vbytes_len_d1 hH T W ha
+    have := vid_inj W.values (vlen_le W.values) ht ht' (by rw [hvt, hvt', hk])
+    subst this
+    simp only [List.length_append, List.length_drop]
+    omega
+  | none =>
+    cases hg : ms.find? (fun e => e.vid == i && e.fa == 1) with
+    | none => simp
+    | some e =>
+      have he := List.mem_of_find?_eq_some hg
+      have hp0 := List.find?_some hg
+      simp only [Bool.and_eq_true, beq_iff_eq] at hp0
+      obtain ⟨t, ht, hvt, hl⟩ := ZkFormal.NearV3.D1.Link.akm_vbytes_len hH T W M he
+      have := vid_inj W.values (vlen_le W.values) ht ht' (by rw [hvt, hvt', hp0.1])
+      subst this
+      simp only [Option.map_some, Option.getD_some]
+      rw [ZkFormal.NearV3.D1.Link.akmPost_length (M.wf.segs e he)]
+      omega
+
+-- @override ZkFormal.NearV3.Assembly.LinkVPost.vpost_source
+/-- **The `K_VPOST` messages of `othersBytes`** (D1) are acct post streams or FullAccess akm
+post streams (`D1/Link/VPost`). -/
+theorem vpost_source_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {p : NearSpecV3.Prep} {q : ZkFormal.NearV3.D1.Public.PrepD1} {oh : Nat}
+    {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records} {ms : List ZkFormal.NearV3.D1.AkmE} (hp : (ZkFormal.NearV3.D1.prepD1 cb h = .ok q ∧ q.base = p))
+    (hsz : (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh).length < P)
+    (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) tr)
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) tr r)
+    (W : ZkFormal.NearV3.D1.Link.BaseWfD1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) r)
+    (M : ZkFormal.NearV3.D1.Link.AkmOf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) tr ms) {i : Nat} (hi : i < 2 ^ 22) :
+    ∀ m ∈ othersBytes_d1 tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) r, ∀ a, m.head? = some a →
+      Fp.ofNat a = Fp.ofNat (msgId K_VPOST i) →
+      (∃ a' ∈ r.accts, a'.k = i ∧ ∃ j, j < 72 ∧
+        m = [msgId K_VPOST i, j, (a'.post ++ a'.pre.drop 16).getD j 0]) ∨
+      (∃ e ∈ ms, e.fa = 1 ∧ e.vid = i ∧ ∃ j, j < 9 ∧
+        m = [msgId K_VPOST i, j, (ZkFormal.NearV3.D1.Link.akmPost e).getD j 0]) := by
+  intro m hm a ha he
+  obtain ⟨y, hy, rfl⟩ := List.mem_map.mp hm
+  have hy' := (eraseAll_sublist _ _).subset hy
+  cases hyh : y.head? with
+  | none => simp [List.head?_map, hyh] at ha
+  | some e =>
+    simp only [List.head?_map, hyh, Option.map_some, Option.some.injEq] at ha
+    subst ha
+    have heP := Fp.toNat_lt e
+    simp only [otherBytes_d1, otherRecBytes_d1, List.mem_append, List.map_append] at hy'
+    have kinX : ∀ {ks : List Nat} {x : Msg}, KindIn ks x → K_VPOST ∉ ks → y = Msg.toFp x → False := by
+      intro ks x hk hks hyx
+      subst hyx
+      cases x with
+      | nil => simp [Msg.toFp] at hyh
+      | cons b xs =>
+        simp only [Msg.toFp, List.map_cons, List.head?_cons, Option.some.injEq] at hyh
+        subst hyh
+        obtain ⟨h1, h2⟩ := hk b rfl
+        rw [Fp.toNat_ofNat, Nat.mod_eq_of_lt h1] at he
+        exact not_vpost h1 rfl (fun e => hks (e ▸ h2)) hi he
+    rcases hy' with (((((hy' | hy') | hy') | hy') | hy') | hy') | hy'
+    · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy'
+      exact (kinX (upsKindIn_of_d1 hp hsz hH T W x hx) (by decide) rfl).elim
+    · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy'
+      simp only [ZkFormal.NearV3.D1.RcptD1.rcptTraffic3D1, ZkFormal.NearV3.D1.RcptD1.rcptTraffic3G] at hx
+      exact (kinX (ZkFormal.NearV3.D1.Link.rcptKindInG W.listsCount.1 W.listsCount.2 x hx) (by decide) rfl).elim
+    · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy'
+      simp only [acctV3Sends, show B_BYTES ≠ B_VBYTES by decide, ite_false, ite_true,
+        List.mem_flatMap] at hx
+      obtain ⟨a', ha', hx⟩ := hx
+      obtain ⟨j, hj, rfl⟩ := mem_emitAt3.mp hx
+      have hk := acct_slot_lt_d1 hH T W ha'
+      obtain ⟨hpre, hpost, -, -⟩ := acct_wf_d1 W ha'
+      have hc := acct_canon_d1 W ha'
+      have hcan : ∀ z ∈ [msgId K_VPOST a'.k, 0 + j, (a'.post ++ a'.pre.drop 16).getD j 0], z < P := by
+        intro z hz
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at hz
+        rcases hz with rfl | rfl | rfl
+        · unfold msgId K_VPOST P; omega
+        · simp only [List.length_append, List.length_drop] at hj; unfold P; omega
+        · rw [List.getD_eq_getElem?_getD]
+          cases hg : (a'.post ++ a'.pre.drop 16)[j]? with
+          | none => simp; unfold P; omega
+          | some z =>
+            simp only [Option.getD_some]
+            have hz := List.mem_of_getElem? hg
+            simp only [List.mem_append] at hz
+            rcases hz with hz | hz
+            · exact hc z (List.mem_append_right _ hz)
+            · exact hc z (List.mem_append_left _ (List.mem_of_mem_drop hz))
+      rw [toNat_toFp hcan]
+      simp only [Msg.toFp, List.map_cons, List.head?_cons, Option.some.injEq] at hyh
+      subst hyh
+      rw [Fp.ofNat_toNat] at he
+      have hid : msgId K_VPOST a'.k = msgId K_VPOST i :=
+        ofNat_eq (by unfold msgId K_VPOST P; omega) (by unfold msgId K_VPOST P; omega) he
+      have hki : a'.k = i := by unfold msgId at hid; omega
+      refine Or.inl ⟨a', ha', hki, j, ?_, by rw [hki, Nat.zero_add]⟩
+      simp only [List.length_append, List.length_drop] at hj; omega
+    · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy'
+      exact (kinX (ddKindIn W.srcp x hx) (by decide) rfl).elim
+    · obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hy'
+      exact (kinX (mrkKindIn_d1 W (pubNat_pubOf_lt _) (ZkFormal.NearV3.D1.Link.m0V_le hp.1) x hx) (by decide) rfl).elim
+    · have := codecKindIn_d1 hp hsz hH y hy' e hyh
+      exact (not_vpost heP this (by decide) hi he).elim
+    · obtain ⟨x, hx, hfa, hxi, j, hj, hyx⟩ := ZkFormal.NearV3.D1.Link.extra_vpost hp.1 hsz hH T W M hi hy' hyh he
+      exact Or.inr ⟨x, hx, hfa, hxi, j, hj, hyx⟩
+
+-- @override ZkFormal.NearV3.Assembly.LinkVPost.vpostOk_holds
+/-- **`VPostOk` of the trie `others`** (D1) with the acct and FullAccess akm post streams
+(`pnOfD1`, `D1/Link/VPost`). -/
+theorem vpostOk_holds_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {p : NearSpecV3.Prep} {q : ZkFormal.NearV3.D1.Public.PrepD1} {oh : Nat}
+    {tr : Trace Fp} {r : ZkFormal.NearV3.Assembly.V3Records} {ms : List ZkFormal.NearV3.D1.AkmE} (hp : (ZkFormal.NearV3.D1.prepD1 cb h = .ok q ∧ q.base = p))
+    (hsz : (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh).length < P)
+    (hH : HoldsP ZkFormal.NearV3.D1.nearAirV3D1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) tr)
+    (T : ZkFormal.NearV3.D1.Link.BaseTrafficD1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) tr r)
+    (W : ZkFormal.NearV3.D1.Link.BaseWfD1 (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) r)
+    (M : ZkFormal.NearV3.D1.Link.AkmOf (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) tr ms) :
+    VPostOk (othersBytes_d1 tr (ZkFormal.Udr.pubOf Fp (ZkFormal.NearV3.D1.Public.preparedBytesD1 q oh)) r) (fun i => toB (ZkFormal.NearV3.D1.Link.pnOfD1 r.accts ms i)) := by
+  have L := trieLink_of_d1 hp hsz hH T W
+  apply vpostOk_of_N W.nodes W.values L.sha
+  · refine ⟨fun i hi m hm a ha he => ?_, fun i x hx => ZkFormal.NearV3.D1.Link.pnOfD1_canon W M i x hx⟩
+    rcases vpost_source_d1 hp hsz hH T W M hi m hm a ha he with
+      ⟨a', ha', hk, j, hj, rfl⟩ | ⟨e, he', hfa, hk, j, hj, rfl⟩
+    · obtain ⟨hpre, hpost, -, -⟩ := acct_wf_d1 W ha'
+      rw [← hk, ZkFormal.NearV3.D1.Link.pnOfD1_acct hH T W M ha']
+      exact ⟨j, by simp only [List.length_append, List.length_drop]; omega, rfl⟩
+    · rw [← hk, ZkFormal.NearV3.D1.Link.pnOfD1_akm hH T W M he' hfa]
+      exact ⟨j, by rw [ZkFormal.NearV3.D1.Link.akmPost_length (M.wf.segs e he')]; exact hj, rfl⟩
+  · intro i hi m hm a ha he
+    rcases vpost_source_d1 hp hsz hH T W M hi m hm a ha he with ⟨a', ha', hk, -⟩ | ⟨e, he', hfa, hk, -⟩
+    · obtain ⟨q', hq, l, pre, po, hv⟩ := acct_written_d1 hH T W ha'
+      rw [hk] at hv
+      have hl := hvpostLen_of_d1 hH T W M q' hq i l pre po hv
+      simp only [toB, List.length_map] at hl
+      exact ⟨q', hq, l, pre, po, hv, hl⟩
+    · obtain ⟨q', hq, l, pre, po, hv⟩ := ZkFormal.NearV3.D1.Link.akm_written hH T W M he' hfa
+      rw [hk] at hv
+      have hl := hvpostLen_of_d1 hH T W M q' hq i l pre po hv
+      simp only [toB, List.length_map] at hl
+      exact ⟨q', hq, l, pre, po, hv, hl⟩

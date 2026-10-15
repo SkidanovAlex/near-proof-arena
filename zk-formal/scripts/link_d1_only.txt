@@ -15,6 +15,7 @@ ZkFormal.NearV3.Assembly.LinkStore
 ZkFormal.NearV3.Assembly.LinkTrie
 ZkFormal.NearV3.Assembly.LinkUps
 ZkFormal.NearV3.Assembly.LinkV3
+ZkFormal.NearV3.Assembly.LinkVPost
 ZkFormal.NearV3.Assembly.PrepFacts
 ZkFormal.NearV3.Assembly.PreparedSources
 ZkFormal.NearV3.Assembly.RcptGasPrepared
