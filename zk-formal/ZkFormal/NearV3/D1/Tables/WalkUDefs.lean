@@ -57,7 +57,8 @@ def tailC : List Expr :=
     .mul (c ws) (c tau),
     .mul (c ws) (sub (c nI) (c tau)), .mul (c ws) (sub (c sym) (k SYM_START)),
     .mul (c ws) (c t),
-    .mul .isFirst (not (c ws)),
+    -- the first row starts a walk, or the table is empty (no transaction: no unread walk)
+    .mul .isFirst (sub (c act) (c ws)),
     .mul .isLast (.mul (c act) (not (c we))),
     -- inside a walk
     mul3 (c act) (not (c we)) (not (n act)),

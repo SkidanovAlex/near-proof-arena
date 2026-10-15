@@ -156,9 +156,9 @@ theorem pad {r : Nat} (hr : r + 1 < tr.height tt) (ha : tr.cell tt r act = 0) :
     if_neg (show ¬ r + 1 = tr.height tt by omega)] at h1
   rw [ha] at h1; grind
 
-theorem row0 (h0 : 0 < tr.height tt) : tr.cell tt 0 ws = 1 := by
-  have h1 := con hL h0 (e := .mul .isFirst (Dsl.not (c ws))) (mem_tail (by simp [tailC]))
-  simp only [eval_mul, eval_c, eval_not, eval_isFirst, if_pos rfl] at h1
+theorem row0 (h0 : 0 < tr.height tt) (ha : tr.cell tt 0 act = 1) : tr.cell tt 0 ws = 1 := by
+  have h1 := con hL h0 (e := .mul .isFirst (sub (c act) (c ws))) (mem_tail (by simp [tailC]))
+  simp only [eval_mul, eval_c, eval_sub, eval_isFirst, if_pos rfl, ha] at h1
   grind
 
 theorem lastRow (h0 : 0 < tr.height tt) (ha : tr.cell tt (tr.height tt - 1) act = 1) :
@@ -180,7 +180,7 @@ theorem zero_of_not_one (hL : TableLocal WalkU.table tr tt pub) {r : Nat}
   · exact h'
   · simp [isOne, h'] at h
 
-theorem segFacts (hL : TableLocal WalkU.table tr tt pub) :
+theorem segFacts (hL : TableLocal WalkU.table tr tt pub) (ha0 : tr.cell tt 0 act = 1) :
     SegFacts (tr.height tt) (isOne tr tt act) (isOne tr tt ws) (isOne tr tt we) where
   first_act r hr h := by
     simp only [isOne, decide_eq_true_eq] at h ⊢; exact ((rowFacts hL hr).2.2.1 h).1
@@ -196,7 +196,7 @@ theorem segFacts (hL : TableLocal WalkU.table tr tt pub) :
   pad r hr ha := by
     have := pad hL hr (zero_of_not_one hL (by omega) bc_act ha)
     simp [isOne, this]
-  start h0 := by simp [isOne, row0 hL h0]
+  start h0 := by simp [isOne, row0 hL h0 ha0]
   stop h0 ha := by
     simp only [isOne, decide_eq_true_eq] at ha ⊢; exact lastRow hL h0 ha
 

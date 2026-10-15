@@ -482,32 +482,51 @@ theorem walkURecvs_flat (ws : List WalkR) (b : Nat) :
       · rw [walkRecvs3_flat']; try simp
       · simp
 
+theorem inactive_nil {tr : Trace Fp} {tt : Nat} {pub : List Fp} (hL : TableLocal WalkU.table tr tt pub) {q : Nat} (h2 : q < tr.height tt)
+    (h0 : tr.cell tt q WalkV3.act = 0) (b : Nat) (sd : Bool) :
+    rowTraffic WalkU.interactions tr tt q pub b sd = [] := by
+  have hm := (rowFacts hL h2).2.1
+  rw [h0] at hm
+  have b1 := isBool hL h2 bc_mS; have b2 := isBool hL h2 bc_mK
+  have b3 := isBool hL h2 bc_mB; have b4 := isBool hL h2 bc_mD; have b5 := isBool hL h2 bc_mT
+  have hz : tr.cell tt q WalkV3.mS = 0 ∧ tr.cell tt q WalkV3.mK = 0 ∧ tr.cell tt q WalkV3.mB = 0 ∧
+      tr.cell tt q WalkU.mT = 0 := by
+    rcases b1 with h1 | h1 <;> rcases b2 with h2 | h2 <;> rcases b3 with h3 | h3 <;>
+      rcases b4 with h4 | h4 <;> rcases b5 with h5 | h5 <;> rw [h1, h2, h3, h4, h5] at hm <;>
+      first | (exfalso; revert hm; decide) | exact ⟨h1, h2, h3, h5⟩
+  have hg : tr.cell tt q WalkV3.gK = 0 := by
+    rw [(rowFacts hL h2).1, h0]
+    rcases isBool hL h2 bc_ws with h | h
+    · rw [h]; grind
+    · have := ((rowFacts hL h2).2.2.1 h).1; rw [h0] at this; exact absurd this (by decide)
+  rw [rowT]
+  simp [hz.1, hz.2.1, hz.2.2.1, hz.2.2.2, hg, show (0 : Fp) + 0 = 0 by grind]
+
 /-- **The `walkU` view.** -/
 theorem walkU_view : WalkUViewStmt := by
   intro tr pub tt hL
-  obtain ⟨segs, hc, hend, hall, hpad⟩ := segments_of (segFacts hL) height_pos
+  by_cases ha0' : tr.cell tt 0 WalkV3.act ≠ 1
+  · have ha0 := ha0'
+    -- an empty table (no transaction): every row is inactive, no walk
+    have hz : ∀ q, q < tr.height tt → tr.cell tt q WalkV3.act = 0 := by
+      intro q hq
+      induction q with
+      | zero => exact (isBool hL hq bc_act).resolve_right ha0
+      | succ q ih => exact WalkUProof.pad hL hq (ih (by omega))
+    refine ⟨[], ⟨by simp, by simp, by simp, by simp, by simp, by simp⟩, fun b m => ⟨?_, ?_⟩⟩
+    all_goals
+      simp only [walkUTraffic, walkUSends, walkURecvs, walkSends3, walkRecvs3, List.flatMap_nil,
+        List.map_nil]
+      rw [tableBusCount_eq, List.flatMap_eq_nil_iff.2 (fun q hq =>
+        inactive_nil hL (List.mem_range.1 hq) (hz q (List.mem_range.1 hq)) b _)]
+      repeat (first | split | rfl)
+  have ha0 : tr.cell tt 0 WalkV3.act = 1 := Decidable.of_not_not ha0'
+  obtain ⟨segs, hc, hend, hall, hpad⟩ := segments_of (segFacts hL ha0) height_pos
   have hH : ∀ p ∈ segs, p.1 + p.2 ≤ tr.height tt := fun p hp => by
     have := seg_le_end segs 0 hc p hp; omega
   have hpadT : ∀ b sd, ∀ q, segEnd 0 segs ≤ q → q < tr.height tt →
-      rowTraffic WalkU.interactions tr tt q pub b sd = [] := by
-    intro b sd q h1 h2
-    have h0 := zero_of_not_one hL h2 bc_act (hpad q h1 h2)
-    have hm := (rowFacts hL h2).2.1
-    rw [h0] at hm
-    have b1 := isBool hL h2 bc_mS; have b2 := isBool hL h2 bc_mK
-    have b3 := isBool hL h2 bc_mB; have b4 := isBool hL h2 bc_mD; have b5 := isBool hL h2 bc_mT
-    have hz : tr.cell tt q WalkV3.mS = 0 ∧ tr.cell tt q WalkV3.mK = 0 ∧ tr.cell tt q WalkV3.mB = 0 ∧
-        tr.cell tt q WalkU.mT = 0 := by
-      rcases b1 with h1 | h1 <;> rcases b2 with h2 | h2 <;> rcases b3 with h3 | h3 <;>
-        rcases b4 with h4 | h4 <;> rcases b5 with h5 | h5 <;> rw [h1, h2, h3, h4, h5] at hm <;>
-        first | (exfalso; revert hm; decide) | exact ⟨h1, h2, h3, h5⟩
-    have hg : tr.cell tt q WalkV3.gK = 0 := by
-      rw [(rowFacts hL h2).1, h0]
-      rcases isBool hL h2 bc_ws with h | h
-      · rw [h]; grind
-      · have := ((rowFacts hL h2).2.2.1 h).1; rw [h0] at this; exact absurd this (by decide)
-    rw [rowT]
-    simp [hz.1, hz.2.1, hz.2.2.1, hz.2.2.2, hg, show (0 : Fp) + 0 = 0 by grind]
+      rowTraffic WalkU.interactions tr tt q pub b sd = [] := fun b sd q h1 h2 =>
+    inactive_nil hL h2 (zero_of_not_one hL h2 bc_act (hpad q h1 h2)) b sd
   have hrows : ((segs.map (walkOfSeg tr tt)).flatMap (·.steps)).length ≤ 2 ^ 22 := by
     have hl := congrArg List.length (range'_segs segs 0 hc)
     simp only [List.length_range', Nat.sub_zero, List.length_flatMap] at hl

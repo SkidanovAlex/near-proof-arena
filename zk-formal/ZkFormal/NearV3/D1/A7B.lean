@@ -3,6 +3,7 @@ import ZkFormal.NearV3.D1.Extract.ViewsUnread
 import ZkFormal.NearV3.D1.Extract.RidProof
 import ZkFormal.NearV3.D1.Link.Records
 import ZkFormal.NearV3.D1.Link.Statements
+import ZkFormal.NearV3.D1.A7.StoreStub
 import ZkFormal.NearV3.D1.Prep.Spec
 import ZkFormal.NearV3.D1.Public.Split
 
