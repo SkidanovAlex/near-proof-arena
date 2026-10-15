@@ -1,6 +1,6 @@
 # D1a phase 2: from `nearAirV3D1` to the D1a admission statement — plan and status
 
-Status: **in progress** (lane `v3-d1-phase2`, branch `lane/v3-d1-phase2`, from main `0a78f36d`),
+Status: **in progress; stopped on the R-5 PROPOSAL (2026-10-15), decision requested** (lane `v3-d1-phase2`, branch `lane/v3-d1-phase2`, from main `0a78f36d`),
 started 2026-10-14 on the user's go-ahead. Log: `docs/logs/v3-d1-phase2-2026-10.md`.
 Inputs: phase 1 (`docs/logs/v3-d1-tables-2026-10.md`, main `86fab5fd`), design
 `V3-D1-DESIGN.md` §6–7, the D0a certificate (`Assembly/AdmissionV3.lean`:
@@ -93,10 +93,10 @@ lines).
 | **V4** | `RcptD1.rcptD1_view : RcptD1ViewStmt` (`D1/R/View`). The D0a receipt-view chain is copied by `scripts/rcpt_d1_copy.py` from a declaration-level taint (`scripts/RcptTaint.lean`: 428 theorems / 126 modules); 21 hand-written deltas (`scripts/rcpt_d1_overrides.lean`, `D1/R/Delta/*`). `RcptV3WfD1` / `rcptTraffic3D1` (`D1/R/ViewDefs`) carry `TOK0`, `M0`, `O0`, `T0`. Hypotheses for L1: `ExtOk pub` (extension bytes, `M0, T0 < 2^24`, `O0 < 2^30`), `ReceiptPublicRanges`, `MEM` versions ≤ 2^25 | V0 | 11.0 k generated + 1.3 k hand | ✔ (≈ 125 s serial, 131 modules) |
 | **V5** | `MrkD1.mrkViewD1` (`D1/M/View`): D0a's `mrkView` for `mrkTableD1` (`maxLog 20`). Generated copies `D1/M/*` (`--profile mrk`, 47 theorems / 5 modules); the only delta is `height_le_m20` | V0 | 1.5 k | ✔ (≈ 27 s) |
 | **V6** | `Extract/ViewsD1`: the ten `Assembly.ViewsV3` views (node, walk, head, val, uniq, ups, acct, akey, bnd, size) from `HoldsP nearAirV3D1` through `getElem?_d1_same`. The SHA, ChaCha, scheduler, srcp, qv and sort views enter D0a's link through `HoldsP nearAirV3`-level lemmas (L1), not through `ViewsV3` | V0 | 150 | ✔ (see log) |
-| P0 | D1 public bindings: `pubOf (preparedBytesD1 p ov)` decoded. The D0a header and the nine segments keep their offsets. The extension `M0, T0, O0, TOK0` at `E0 = 322`. The six new segments: body-prefix send (cancels positions `8 … O0−1` of the D0a body receive), `TXP`, `SIG`, `PKEY`, `PLEAF`, `PRID`. `txOverhead` in `PH_WOVH`. `pubFit`. Reuses `Public/Prepared*` | — | 3–6 k | parts 1–4 ✔ (`D1/Public/Ext`, `Layout`, `Split`, `NewSegs`, `ExtPrep`: header, extension, `extOk_of_prepD1`, `pubCountD1_split`, `newMsgs_eq`, `preparedD1_pubFit`); `PreparedBindingsD1` and `ReceiptPublicRanges` remain |
+| P0 | D1 public bindings: `pubOf (preparedBytesD1 p ov)` decoded. The D0a header and the nine segments keep their offsets. The extension `M0, T0, O0, TOK0` at `E0 = 322`. The six new segments: body-prefix send (cancels positions `8 … O0−1` of the D0a body receive), `TXP`, `SIG`, `PKEY`, `PLEAF`, `PRID`. `txOverhead` in `PH_WOVH`. `pubFit`. Reuses `Public/Prepared*` | — | 3–6 k | ✔ parts 1–5 (`D1/Public/Ext`, `Layout`, `Split`, `NewSegs`, `ExtPrep`, `Ranges`: `extOk_of_prepD1`, `pubCountD1_split`, `newMsgs_eq`, `preparedD1_pubFit`, `prepD1_receipt_ranges`). `PreparedBindingsD1` dropped: D0a's bundle has no consumer |
 | **P1** | `txVerdict : TxVerdictStmt`, `prepLocalNative : PrepLocalNativeStmt` (+ `localApply_of_applyReceipt` with the outcome), `prepTxNative : PrepTxNativeStmt` (step simulation `prepTx_step`, `prepTxs_sim`) | — | 420 | ✔ |
-| P2 | `prepD1` decomposition: `prepD1 cb h = ok p` ⇒ the D0a-shaped `prepClaimD1` facts (`walkD0`, contexts, sched), the decoded tx vectors, the T1 bound, both tx roots, `newTxs` sizes, the forwarded / compute checks, the header equalities, the RS body and `p`'s fields as functions of these | P1 | 2–4 k | parts 1–2 ✔ (`D1/Prep/Facts`, `Bounds`: `prepD1_roots`, `prepD1_source_roots`, `prepD1_m0_t0`, `prepD1_leaves`, `prepD1_txs`, `prepD1_o0_le`) |
-| L1 | `GoodD1 B cb k h p x` (the D1 analogue of `GoodV3`: D1 witness shape, transaction run, local receipts, the `MEM`/`AKMEM` timelines, the read keys ⊆ `txKeys`, A7ᴰ¹ against the AIR's sums) and `LinkD1`: views + bus balance ⇒ `GoodD1`. The D0a link modules apply unchanged wherever `rcptV3D1` reduces to D0a's traffic at `T0 = M0 = TOK0 = 0, O0 = 8`. The new parts are the tx/credit ops ↔ `processTxs` (with P1), the access-key memory and the leaf/rid/key relays | V*, P0, P2 | 10–20 k | |
+| P2 | `prepD1` decomposition: `prepD1 cb h = ok p` ⇒ the D0a-shaped `prepClaimD1` facts (`walkD0`, contexts, sched), the decoded tx vectors, the T1 bound, both tx roots, `newTxs` sizes, the forwarded / compute checks, the header equalities, the RS body and `p`'s fields as functions of these | P1 | 2–4 k | parts 1–3 ✔ (`D1/Prep/Facts`, `Bounds`, `SpecDefs`/`Spec`: `prepD1_roots`, `prepD1_m0_t0`, `prepD1_leaves`, **`prepD1_spec`**: every check of `prepD1` and `p = w.prep h`) |
+| L1 | `GoodD1 B cb k h p x` (the D1 analogue of `GoodV3`: D1 witness shape, transaction run, local receipts, the `MEM`/`AKMEM` timelines, the read keys ⊆ `txKeys`, A7ᴰ¹ against the AIR's sums) and `LinkD1`: views + bus balance ⇒ `GoodD1`. The D0a link modules apply unchanged wherever `rcptV3D1` reduces to D0a's traffic at `T0 = M0 = TOK0 = 0, O0 = 8`. The new parts are the tx/credit ops ↔ `processTxs` (with P1), the access-key memory and the leaf/rid/key relays | V*, P0, P2 | 10–20 k | started: `D1/Link/Bus` (`sender_of_recv`, bus users), `D1/Link/MemBound` (`tx_op_lt`, `rcptD1_mem_bound`, **`rcptD1_view_prep`**). Copy footprint measured: 954 constants / 10.6 k lines (log, milestone 9). **Blocked on R-5** for `GoodD1.unfoldedBytes` |
 | F1 | `FactorSoundD1`: `prepD1 cb h = ok p ∧ GoodD1 … ⇒ checkD1a B0 cb (witnessOfV3D1 k x h) = ok ()`. Needs the D1 witness codec (`decodeStateWitnessD1 ∘ encode`, `pTxD1` round trip on the hint's raw transactions) and `applyNewChunkD1` = the tx prefix (P1) + `applyReceiptsC` over local then incoming receipts. The A7ᴰ¹ measure: the relation's main pre trie covers **all** `txKeys` (keys whose values are never read are absent, not revealed), whereas the AIR walks only the read keys, so `unfoldBytesD1 ≤` the AIR's running sums needs a monotonicity lemma for the unread keys' paths (see §5, R-2) | L1, P1, P2 | 15–30 k | |
 | R1 | renders: `txV3`, `akmV3`, the relays, `rcptV3D1` (D0a's `HonestRcptQ` with the offsets), `mrkV3@20`; honest bus balance of the six D1 buses and of the changed MEM / MPOS / BYTES traffic | V* | 8–15 k | |
 | R2 | `FactorCompleteD1`: `checkD1a B0 cb w = ok () ⇒ ∃ k h p x, GoodD1 …`, `hintOfD1`, heights at the D1a bounds (`FitsD1`: `txV3` ≤ 2^19 at NT0 + n_loc ≤ 8,192 ops, `akmV3` ≤ 2^22 by A7, `mrkV3` ≤ 2^20), `headerOk`, roll alignment | R1, P2 | 6–12 k | |
@@ -133,7 +133,7 @@ elaboration).
   pre-incremented values on new buses. That is a phase-1 design revision (new
   `nearAirV3D1`, Rust prover change), so it needs the user's go-ahead, but it is not a
   spec or challenge change.
-* **R-2 (A7ᴰ¹ over unread transaction keys); likely benign, to be confirmed in F1.**
+* **R-2 (A7ᴰ¹ over unread transaction keys). Superseded by R-5: the argument below is wrong (the store is hash-addressed).**
   `RelD1a`'s `unfoldBytesD1` measures the main pre trie built over **all** `txKeys` (every
   transaction's signer account and access key, read or not). The AIR walks only the keys it
   reads (phase-1 decision 7). `partialTrie` = `buildFor (mkStore values)` never fails: it
@@ -182,6 +182,49 @@ elaboration).
     (a): it is mechanical and low-risk, and (b)'s uniqueness argument is new soundness
     surface. Until you decide, the lane works only on items that are the same under both
     choices.
+* **R-5 (A7ᴰ¹ over unread transaction keys is not implied by the AIR; PROPOSAL, 2026-10-15).**
+  R-2's argument is wrong. It assumed that a value slot of the extracted store is revealed only
+  for a key the AIR read. But `mkStore` is **hash-addressed**: `mkSlot` reveals a leaf's value
+  whenever a wanted key matches the leaf exactly *and* some store entry has the value's hash,
+  that is, the same bytes.
+  * *Counterexample (sketch).* The main pre-state holds accounts `A` and `B` with identical
+    `AccountV1` records `v` (72 bytes; plausible for equal balance, code hash and storage). The
+    path of `[0]‖C` (`C` absent) ends at `B`'s leaf. The last chunk carries:
+    * `t₁` from `A` (a candidate, so it reads `v`);
+    * `t₂` from `B` with `tx_valid = 0`, or an invalid signature (not a candidate, never read,
+      not walked: phase-1 decision 7);
+    * `t₃` from `C` (a candidate; the absence walk reveals `B`'s leaf node, without a value).
+
+    `checkD1`'s `tMain = partialTrie store root (mainKeys ++ txKeys)` wants `[0]‖B`. At `B`'s
+    leaf, `storeGet (sha256 v)` finds `A`'s value, so `B`'s slot becomes `.val v`. `B` is
+    never written, so the post trie keeps it too. Hence `unfoldBytesD1 = AIR's Σ + 2·72`.
+
+    Every witness `checkD1` accepts must reveal `B`'s leaf (for `t₃`'s read) and hold `v` (for
+    `t₁`'s read). So pad the state until the AIR's `Σ ∈ (B0 − 144, B0]`: the AIR accepts, and
+    `RelD1a B0 cb w` fails for every `w`. **`ExtractD1StmtT` is false.**
+  * *The same effect without equal values:* identical subtrees (same leaf suffix and value at
+    two positions) let an unread key re-reveal store nodes off the read paths. The excess is
+    not bounded by a useful constant (per key, up to a path's nodes plus a value; × ≤ 8,192
+    keys), so tightening the AIR's bound (`Σ ≤ B0 − slack`) does not work.
+  * **Options** (both outside this lane's authority):
+    * **(A) spec, recommended.** Restate A7ᴰ¹ (`triesD1`, D1a amendment only; `RelD1` is
+      unchanged): the main pre trie of the measure is built over
+      `mainKeys … ++ readTxKeys`. `readTxKeys` is the signer key of every candidate (first
+      occurrence, flag set, `Tx.valid`, `txCost ≠ none`), plus its access key when the signer
+      account is present in the pre-state. Presence is static in D1: no transaction creates
+      or deletes an account or key.
+
+      These are exactly the AIR's walks (`prepTx`'s `walks`), so D0a's "every revealed
+      occurrence lies on a walked path" argument applies. The run over the smaller trie is the
+      same, because unread keys are never read (an F1 lemma). Completeness gets easier: the
+      honest measure equals the AIR's count. Cost: re-sign the D1a tier of `near-chunk-v3`.
+    * **(B) AIR, no spec change.** Walk **every** `txKeys` entry, including duplicates and
+      flag-0 or invalid transactions, and consume present values through `VAL` in a small
+      sink table, so that the AIR counts what the relation reveals. Cost: a new table (FINAL
+      / VBYTES sink), a `PKEY` segment over all keys, Rust prover and conformance changes, a
+      new view and ≈ 1–2 k proof lines, and up to 8,192 more walks.
+  * Until a decision, the lane works only on the parts that are the same under both options
+    (L1 plumbing, the R1 renders). `GoodD1.unfoldedBytes` and F1's A7 part are on hold.
 * **R-3 (budget).** The D0a closure is 5,953 s single-core (after the elab-budget lane) of the
   judge's 14,400 s. The D1 closure adds the D1 modules. The modules so far take < 1.3 s each.
   The V2–V4 and R1 module families are kept < 60 s per module.
@@ -196,6 +239,7 @@ elaboration).
 | 2026-10-14 | P0 (4), P2 (1–2) | `newMsgs_eq`, `preparedD1_pubFit`, `prepD1_roots`, `prepD1_m0_t0`, `prepD1_leaves`, `extOk_of_prepD1` | 4 modules (max `Prep.Bounds` ≈ 48 s) |
 | 2026-10-14 | V5, P0 (1–3) | `mrkViewD1`; `extOk_prepared`, `m0V/t0V/o0V/tok0V_prepared`, `descriptorD1_msgs`, `pubMsgsD1_split`, `pubCountD1_split` | 7 + 3 modules |
 | 2026-10-14 | V4 | `rcptD1_view`, `rcptV3D1_view_nearAir` (+ `traffic_shift`, `chainByteMsgs_eq_viewG`, `tok_first`, `o2_first`, `count_last`, `age_row`, `local_K`, `memD1`) | 131 modules, ≈ 125 s serial (max `CharClass` 27 s) |
+| 2026-10-15 | P0 (5), P2 (3), L1 (start) | `prepD1_receipt_ranges`, `prepD1_spec`, `sender_of_recv`, `tx_op_lt`, `rcptD1_mem_bound`, `rcptD1_view_prep`; **R-5 PROPOSAL** (A7ᴰ¹ not implied) | 5 modules, each ≤ 6 s |
 | 2026-10-14 | V2 | `tx_view : TxViewStmt` (+ `chainN/B/C/T/Q/D/S`, `zN_iff`, `msum_val`, `debit_arith`, `credit_arith`, `verdict_debit/credit`, `opWf`, `rowLane`) | 15 modules, Σ ≈ 25 s (max `Tx.OpWf` 5.1 s) |
 
 ## 7. V4: copy-and-modify plan (coordinator decision (a), 2026-10-14) — done
