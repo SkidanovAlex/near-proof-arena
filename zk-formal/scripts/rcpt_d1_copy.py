@@ -91,6 +91,14 @@ PROFILES = {
               'ZkFormal.NearV3.RcptV3Wf': 'ZkFormal.NearV3.D1.RcptD1.RcptV3WfD1',
               'ZkFormal.NearV3.rcptTraffic3': 'ZkFormal.NearV3.D1.RcptD1.rcptTraffic3D1',
               'ZkFormal.NearV3.Assembly.V3Balance': 'ZkFormal.NearV3.D1.Link.V3BalanceD1',
+              'NearSpecV3.prepClaim': 'ZkFormal.NearV3.D1.prepClaimC',
+              'ZkFormal.NearV3.Sched.prepBody_sched': 'ZkFormal.NearV3.D1.bodyD1_sched',
+              'ZkFormal.NearV3.Assembly.prepBody_shape': 'ZkFormal.NearV3.D1.bodyD1_shape',
+              'ZkFormal.NearV3.Assembly.RcptSkeleton.prepBody_gasPrice': 'ZkFormal.NearV3.D1.bodyD1_gasPrice',
+              'ZkFormal.NearV3.Assembly.RcptSkeleton.prepBody_height': 'ZkFormal.NearV3.D1.bodyD1_height',
+              'ZkFormal.NearV3.Assembly.RcptSkeleton.prepBody_outcomeRoot': 'ZkFormal.NearV3.D1.bodyD1_outcomeRoot',
+              'ZkFormal.NearV3.Assembly.prepBody_routing_intervals': 'ZkFormal.NearV3.D1.bodyD1_routing_intervals',
+              'ZkFormal.NearV3.Assembly.prepBody_source_owner': 'ZkFormal.NearV3.D1.bodyD1_source_owner',
               'ZkFormal.NearV3.Assembly.getElem?_node': 'ZkFormal.NearV3.D1.Link.getElem?_node_d1',
               'ZkFormal.NearV3.Assembly.getElem?_head': 'ZkFormal.NearV3.D1.Link.getElem?_head_d1',
               'ZkFormal.NearV3.Assembly.getElem?_val': 'ZkFormal.NearV3.D1.Link.getElem?_val_d1',
@@ -120,7 +128,14 @@ PROFILES = {
                (r'ZkFormal\.NearV3\.D1\.prepD1 (\w+) (\w+) = \.ok p\b',
                 r'(ZkFormal.NearV3.D1.prepD1 \1 \2 = .ok q ∧ q.base = p)'),
                (r'ZkFormal\.NearV3\.D1\.Public\.preparedBytesD1 p\b', r'ZkFormal.NearV3.D1.Public.preparedBytesD1 q'),
-               (r'\.pubSegs ?= ?(?:Public\.)?preparedSegments\b', r'.pubSegs = ZkFormal.NearV3.D1.Public.preparedSegmentsD1')],
+               (r'\.pubSegs ?= ?(?:Public\.)?preparedSegments\b', r'.pubSegs = ZkFormal.NearV3.D1.Public.preparedSegmentsD1'),
+               # `prepClaim cb = .ok pc` became `prepClaimC cb = .ok pc`: unfold through `prepClaimD1`
+               (r'(?m)^(\s*)unfold ZkFormal\.NearV3\.D1\.prepClaimC at (\w+)\s*$',
+                r'\1replace \2 := ZkFormal.NearV3.D1.prepClaimC_ok \2\n\1obtain ⟨_r, \2, rfl⟩ := \2\n'
+                r'\1unfold ZkFormal.NearV3.D1.prepClaimD1 at \2'),
+               # `unfold prepD0 at h; obtain ⟨pc, hc, hb⟩ := bind_ok h`: the claim and body parts
+               (r'(?m)^(\s*)unfold ZkFormal\.NearV3\.D1\.prepD1 at (\w+)\s*\n\s*obtain ⟨(\w+), (\w+), (\w+)⟩ := (?:Sched\.)?bind_ok \2\s*$',
+                r'\1obtain ⟨\3, \4, \5⟩ := ZkFormal.NearV3.D1.prepD1_split \2')],
         only=None, qbase=True),
 }
 P = PROFILES['rcpt']
