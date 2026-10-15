@@ -16,6 +16,10 @@ import ZkFormal.NearV3.D1.M.View
 import ZkFormal.NearV3.D1.Public.NewSegs
 import ZkFormal.NearV3.D1.Prep.Facts
 import ZkFormal.NearV3.D1.Public.ExtPrep
+import ZkFormal.NearV3.D1.Prep.Spec
+import ZkFormal.NearV3.D1.Public.Ranges
+import ZkFormal.NearV3.D1.Link.Bus
+import ZkFormal.NearV3.D1.Link.MemBound
 
 /-!
 # `ZkFormal.NearV3.D1.Phase2` — the D1a phase-2 proof modules (build root)
