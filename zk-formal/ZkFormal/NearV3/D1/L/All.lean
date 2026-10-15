@@ -1,9 +1,13 @@
 import ZkFormal.NearV3.D1.L.Assembly.A9Count
 import ZkFormal.NearV3.D1.L.Assembly.LinkBus
+import ZkFormal.NearV3.D1.L.Assembly.LinkChain
 import ZkFormal.NearV3.D1.L.Assembly.LinkClaim
 import ZkFormal.NearV3.D1.L.Assembly.LinkFields
 import ZkFormal.NearV3.D1.L.Assembly.LinkPrepCtx
 import ZkFormal.NearV3.D1.L.Assembly.LinkSha
+import ZkFormal.NearV3.D1.L.Assembly.LinkShaKinds
+import ZkFormal.NearV3.D1.L.Assembly.LinkStore
+import ZkFormal.NearV3.D1.L.Assembly.LinkTrie
 import ZkFormal.NearV3.D1.L.Assembly.LinkV3
 import ZkFormal.NearV3.D1.L.Assembly.PrepFacts
 import ZkFormal.NearV3.D1.L.Assembly.PreparedSources

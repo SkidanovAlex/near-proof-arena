@@ -78,7 +78,8 @@ PROFILES = {
               'ZkFormal.NearV3.D1.Link.BusUsers', 'ZkFormal.NearV3.D1.Link.ShaExtra', 'ZkFormal.NearV3.D1.Prep.Claim',
               'ZkFormal.NearV3.D1.R.All',
               'ZkFormal.NearV3.D1.M.All'],
-        extra={}, overrides='scripts/link_d1_overrides.lean', taint='scripts/l1_d1_taint.tsv',
+        extra={'LinkShaKinds': ['ZkFormal.NearV3.D1.Link.Kinds'], 'LinkChain': ['ZkFormal.NearV3.D1.Link.Kinds']},
+        overrides='scripts/link_d1_overrides.lean', taint='scripts/l1_d1_taint.tsv',
         what='the `nearAirV3` statement (`prepD0`, `preparedBytes`, `nearAirV3`, the records and the balance)',
         hyp='`prepD0 cb h = .ok p` becomes `prepD1 cb h = .ok q ∧ q.base = p` (`h : HintD1`), the tape `preparedBytes p` '
             'becomes `preparedBytesD1 q`, '
@@ -204,9 +205,18 @@ def comps(n):
 PRIOR = {}
 
 
+INDUCT = set()
+
+
 def renamed(n):
     c = comps(n)
-    c[-1] = c[-1] + PRIOR.get(n, P['suffix'])
+    parent = n.rsplit('.', 1)[0]
+    if parent in INDUCT and n not in PRIOR:
+        # a field / constructor of a copied structure keeps its name (it lives in the copy's
+        # namespace `S_d1`)
+        c[-2] = c[-2] + P['suffix']
+    else:
+        c[-1] = c[-1] + PRIOR.get(n, P['suffix'])
     return '.'.join(c)
 
 
@@ -371,6 +381,8 @@ def main():
                 return v + n[len(k):]
         return None
     tainted = {r[0] for r in taint if r[2] == '1' and ref_of(r[0]) is None}
+    if P.get('qbase'):
+        INDUCT.update(r[0] for r in taint if r[2] == '1' and len(r) > 3 and r[3] == 'induct')
     renamable = set(tainted)
     for f, suf in P.get('prior', {}).items():
         for l in open(os.path.join(ROOT, f)):

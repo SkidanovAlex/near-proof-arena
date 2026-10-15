@@ -29,6 +29,7 @@ import ZkFormal.NearV3.D1.Link.ClaimFields
 import ZkFormal.NearV3.D1.Link.BusUsers
 import ZkFormal.NearV3.D1.Link.PlfIds
 import ZkFormal.NearV3.D1.Link.ShaExtra
+import ZkFormal.NearV3.D1.Link.Kinds
 import ZkFormal.NearV3.D1.L.All
 
 /-!

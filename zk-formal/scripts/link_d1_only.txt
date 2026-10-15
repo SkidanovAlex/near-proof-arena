@@ -2,10 +2,14 @@
 # D0a module names; the list is downward closed under imports.
 ZkFormal.NearV3.Assembly.A9Count
 ZkFormal.NearV3.Assembly.LinkBus
+ZkFormal.NearV3.Assembly.LinkChain
 ZkFormal.NearV3.Assembly.LinkClaim
 ZkFormal.NearV3.Assembly.LinkFields
 ZkFormal.NearV3.Assembly.LinkPrepCtx
 ZkFormal.NearV3.Assembly.LinkSha
+ZkFormal.NearV3.Assembly.LinkShaKinds
+ZkFormal.NearV3.Assembly.LinkStore
+ZkFormal.NearV3.Assembly.LinkTrie
 ZkFormal.NearV3.Assembly.LinkV3
 ZkFormal.NearV3.Assembly.PrepFacts
 ZkFormal.NearV3.Assembly.PreparedSources
