@@ -87,7 +87,10 @@ PROFILES = {
         hyp='`prepD0 cb h = .ok p` becomes `prepD1 cb h = .ok q ∧ q.base = p` (`h : HintD1`), the tape `preparedBytes p` '
             'becomes `preparedBytesD1 q`, '
             '`nearAirV3` becomes `nearAirV3D1`, `V3RecordsWf`/`V3RecordsTraffic` become `BaseWfD1`/`BaseTrafficD1`',
-        prior={'scripts/rcpt_d1_taint.tsv': '_d1', 'scripts/mrk_d1_taint.tsv': '_m20'},
+        prior={'scripts/rcpt_d1_taint.tsv': '_d1', 'scripts/mrk_d1_taint.tsv': '_m20',
+               'scripts/walk_d1_taint.tsv': '_wu'},
+        # copies of a prior profile imported per module (those in the original's import closure)
+        prior_dirs={'scripts/walk_d1_taint.tsv': 'W'},
         refs={'NearSpecV3.prepD0': 'ZkFormal.NearV3.D1.prepD1',
               'NearSpecV3.Hint': 'ZkFormal.NearV3.D1.HintD1',
               'ZkFormal.NearV3.Public.preparedBytes': 'ZkFormal.NearV3.D1.Public.preparedBytesD1',
@@ -135,6 +138,7 @@ PROFILES = {
               'ZkFormal.NearV3.Assembly.getElem?_mrk': 'ZkFormal.NearV3.D1.getElem?_d1_mrk',
               # `EDGE` / `BMAP` have `walkU` as a fifth user (lane v3-d1-a7b): `D1/Link/WalkU`
               'ZkFormal.NearV3.UpsRows.WalkBal': 'ZkFormal.NearV3.D1.Link.WalkBalD',
+              'ZkFormal.NearV3.Walk3.BusBal': 'ZkFormal.NearV3.D1.Link.BusBalD',
               },
         # `p : Prep` stays (it is `q.base`); the D1 prepared statement `q` is a new implicit
         # binder after `p`, the preparation hypothesis carries `q.base = p`, the tape is `q`'s
@@ -154,6 +158,20 @@ PROFILES = {
                (r'(?m)^(\s*)unfold ZkFormal\.NearV3\.D1\.prepD1 at (\w+)\s*\n\s*obtain ⟨(\w+), (\w+), (\w+)⟩ := (?:Sched\.)?bind_ok \2\s*$',
                 r'\1obtain ⟨\3, \4, \5⟩ := ZkFormal.NearV3.D1.prepD1_split \2')],
         only='scripts/link_d1_only.txt', qbase=True),
+    # The walk stack with `walkU` on `EDGE` / `BMAP` (lane v3-d1-a7b, R-5 → (B)): D0a's `BusBal` /
+    # `WalkBal` (the node / head / walk / ups traffic balances exactly) become `BusBalD` /
+    # `WalkBalD` (the same with the unread-key walks after the walks); the declarations that depend
+    # on them and are not in the link taint (`Link/Walk3`, `Extract/Ups/*`, …) are copied here.
+    # Taint: `RcptTaint.lean` on `Assembly.extractV3` with the reference seeds
+    # `+UpsRows.WalkBal +Walk3.BusBal`, minus `l1_d1_taint.tsv`.
+    'walk': dict(
+        exclude=set(), tables={}, suffix='_wu', dir='W', base=['ZkFormal.NearV3.D1.Link.WalkProv'],
+        extra={}, overrides='scripts/walk_d1_overrides.lean', taint='scripts/walk_d1_taint.tsv',
+        what='the walk balances `BusBal` / `WalkBal` (`walkU` on `EDGE` / `BMAP`)',
+        hyp='`BusBal` / `WalkBal` become `BusBalD` / `WalkBalD` (`D1/Link/WalkProv`, `D1/Link/WalkU`)',
+        refs={'ZkFormal.NearV3.Walk3.BusBal': 'ZkFormal.NearV3.D1.Link.BusBalD',
+              'ZkFormal.NearV3.UpsRows.WalkBal': 'ZkFormal.NearV3.D1.Link.WalkBalD'},
+        induct=True),
 }
 P = PROFILES['rcpt']
 
@@ -386,7 +404,7 @@ def main():
                 return v + n[len(k):]
         return None
     tainted = {r[0] for r in taint if r[2] == '1' and ref_of(r[0]) is None}
-    if P.get('qbase'):
+    if P.get('qbase') or P.get('induct'):
         INDUCT.update(r[0] for r in taint if r[2] == '1' and len(r) > 3 and r[3] == 'induct')
     renamable = set(tainted)
     for f, suf in P.get('prior', {}).items():
@@ -439,6 +457,15 @@ def main():
             while sl > 0 and PREFIX_RE.match(src[sl - 1]):
                 sl -= 1
             delete.append((sl, sc, el, ec))
+        # lines of `variable` commands (with their indented continuation lines)
+        invar = [False] * len(src)
+        cur = False
+        for li, line in enumerate(src):
+            if line.lstrip().startswith('variable'):
+                cur = True
+            elif not (line.startswith(' ') or line.startswith('\t')) or not line.strip():
+                cur = False
+            invar[li] = cur
         edits = []
         for key, v in refs.items():
             k = json.loads(key)
@@ -455,7 +482,7 @@ def main():
                 owner = u[4] if len(u) > 4 else None
                 if owner is not None and owner not in keep:
                     continue
-                if owner is None and not src[l].lstrip().startswith('variable'):
+                if owner is None and not invar[l]:
                     continue
                 text = src[l][c0:c1]
                 t = text.lstrip('@')
@@ -548,7 +575,12 @@ def main():
         deps = sorted(g for g in gen if g in cl)
         # transitive reduction among the copies
         red = [g for g in deps if not any(g in closure(h) for h in deps if h != g)]
-        imports = ([f'import {m}'] + [f'import {x}' for x in P['base']] +
+        pdeps = []
+        for f, d in P.get('prior_dirs', {}).items():
+            pm = sorted({l.split('\t')[1] for l in open(os.path.join(ROOT, f)) if l.strip()} & (cl | {m}))
+            pm = [g for g in pm if not any(g in closure(h) for h in pm if h != g)]
+            pdeps += [f"ZkFormal.NearV3.D1.{d}." + g[len('ZkFormal.NearV3.'):] for g in pm]
+        imports = ([f'import {m}'] + [f'import {x}' for x in P['base']] + [f'import {x}' for x in pdeps] +
                    [f'import {x}' for x in P['extra'].get(m.split('.')[-1], [])] +
                    [f'import {copy_mod(g)}' for g in red])
         note = (f'/-! Generated by `scripts/rcpt_d1_copy.py` (lane v3-d1-phase2, V4): the declarations of\n'

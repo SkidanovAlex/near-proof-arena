@@ -44,6 +44,8 @@ import ZkFormal.NearV3.D1.Link.MemD1
 import ZkFormal.NearV3.D1.Link.WalkU
 import ZkFormal.NearV3.D1.Link.RunC
 import ZkFormal.NearV3.D1.Link.VPost
+import ZkFormal.NearV3.D1.Link.WalkProv
+import ZkFormal.NearV3.D1.W.All
 import ZkFormal.NearV3.D1.L.All
 
 /-!

@@ -9,6 +9,7 @@ import ZkFormal.NearV3.D1.Link.ShaExtra
 import ZkFormal.NearV3.D1.Prep.Claim
 import ZkFormal.NearV3.D1.R.All
 import ZkFormal.NearV3.D1.M.All
+import ZkFormal.NearV3.D1.W.Link.Walk3
 import ZkFormal.NearV3.D1.L.Assembly.LinkClaim
 import ZkFormal.NearV3.D1.L.Assembly.ViewsV3
 import ZkFormal.NearV3.D1.L.Public.ReceiptIndex
