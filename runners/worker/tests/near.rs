@@ -112,6 +112,7 @@ pub fn near_env(f: &mut Fixture) -> Option<()> {
         trusted_trees: Some(store),
         configs_dir: repo().join("runners/formal-checker/challenges"),
         images_dir: None,
+        sandbox: None,
     });
     f.exec.ctx.bench_batch_cap = Some(1);
     f.exec.ctx.conformance_samples = 3;

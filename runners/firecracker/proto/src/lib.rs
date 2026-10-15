@@ -144,13 +144,29 @@ pub struct GuestJob {
     /// work dir, `/dev/shm` and re-applies `copy_in`/`scratch_dirs`; every
     /// step runs as a fresh process tree in a fresh cgroup and IPC namespace,
     /// sees only its own `binds`, and is killed (whole cgroup) when it ends.
-    /// Nothing written by one step is visible to the next.
+    /// Nothing written by one step is visible to the next, except in the
+    /// job's `rw_dirs`: in steps mode they persist across steps (read-write
+    /// overlay over the seed drive, upper dir on the scratch device outside
+    /// the candidate's scratch) and only files created or modified during
+    /// the job are returned (under `<RW_SCRATCH_DIR>/<i>/`), after the last
+    /// step.
     #[serde(default)]
     pub steps: Vec<GuestStep>,
     /// Drive with the per-step input files (mounted root-only, outside the
     /// candidate root; `GuestStep::binds` sources are relative to it).
     #[serde(default)]
     pub steps_dev_index: Option<u32>,
+    /// Steps mode only: a cumulative deadline (ms since the first step
+    /// started). Each step's timeout is then `min(step.timeout_ms, deadline
+    /// - elapsed)`; a step started with no time left is reported `TimedOut`.
+    /// `None` = only the per-step timeouts apply.
+    #[serde(default)]
+    pub steps_deadline_ms: Option<u64>,
+    /// Steps mode only: no step after the first is started once this many
+    /// ms have elapsed since the first step started; the job then ends after
+    /// the last completed step (fewer step reports than steps).
+    #[serde(default)]
+    pub steps_start_deadline_ms: Option<u64>,
 }
 
 /// One step of a steps-mode job.
@@ -786,6 +802,8 @@ mod tests {
                 timeout_ms: 10,
             }],
             steps_dev_index: Some(7),
+            steps_deadline_ms: Some(5),
+            steps_start_deadline_ms: Some(4),
             syscall_policy: arena_seccomp::Policy::Strict,
         };
         let enc = encode_control(&job);

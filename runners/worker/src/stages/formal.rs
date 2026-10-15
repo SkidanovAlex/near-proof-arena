@@ -52,6 +52,21 @@ pub struct FormalEnv {
     /// Installed lean-checker images (`<hex>/` + `<hex>.json`), required on
     /// production (non-demo) sandboxes.
     pub images_dir: Option<PathBuf>,
+    /// Sandbox for FORMAL_CHECK when it differs from the worker's
+    /// (`ARENA_FORMAL_FC_DEPS`: a Firecracker set whose guest init supports
+    /// read-write dirs in steps mode, so the checker can batch its per-module
+    /// runs); `None` = the worker's sandbox.
+    pub sandbox: Option<FormalSandbox>,
+}
+
+/// A FORMAL_CHECK-only sandbox ([`FormalEnv::sandbox`]).
+#[derive(Clone)]
+pub struct FormalSandbox(pub std::sync::Arc<dyn arena_sandbox::Sandbox>);
+
+impl std::fmt::Debug for FormalSandbox {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "FormalSandbox({})", self.0.name())
+    }
 }
 
 /// Map challenge rechecker ids onto the checker's ids.
@@ -87,7 +102,7 @@ fn tools_for(
     r: &JobRun<'_>,
     env: &FormalEnv,
 ) -> Result<(ToolPaths, arena_sandbox::Rootfs, String), String> {
-    if r.ctx.sandbox.tier_cap().is_some() {
+    if formal_sandbox(r, env).tier_cap().is_some() {
         let t = ToolPaths::discover().map_err(|e| format!("formal toolchain: {e}"))?;
         return Ok((
             t,
@@ -134,6 +149,16 @@ fn tools_for(
         },
         format!("lean-checker image {digest}"),
     ))
+}
+
+/// The sandbox FORMAL_CHECK runs in: [`FormalEnv::sandbox`], else the
+/// worker's. Both are production-or-demo the same way (the dedicated one is
+/// only configured on Firecracker workers).
+fn formal_sandbox(r: &JobRun<'_>, env: &FormalEnv) -> std::sync::Arc<dyn arena_sandbox::Sandbox> {
+    match &env.sandbox {
+        Some(s) => s.0.clone(),
+        None => r.ctx.sandbox.clone(),
+    }
 }
 
 pub fn run(r: &mut JobRun<'_>, j: &FormalCheckJob) -> Result<StageOut, ExecError> {
@@ -346,7 +371,7 @@ pub fn run(r: &mut JobRun<'_>, j: &FormalCheckJob) -> Result<StageOut, ExecError
         ))
     })?;
 
-    let runner = match SandboxRunner::new(r.ctx.sandbox.clone(), r.fresh("fc-sandbox")) {
+    let runner = match SandboxRunner::new(formal_sandbox(r, &env), r.fresh("fc-sandbox")) {
         Ok(x) => x.with_rootfs(rootfs),
         Err(e) => {
             all_gates(

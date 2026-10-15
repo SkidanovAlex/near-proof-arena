@@ -119,6 +119,8 @@ fn formal(
     trusted_trees: Option<PathBuf>,
     configs: Option<PathBuf>,
     images: Option<PathBuf>,
+    backend: &str,
+    work_dir: &Path,
 ) -> Option<FormalEnv> {
     if legacy_repo.is_some() {
         die("ARENA_FORMAL_REPO is no longer read: the trusted reference is built from the challenge's \
@@ -129,10 +131,33 @@ fn formal(
     if trusted_trees.is_none() {
         eprintln!("arena-worker: WARNING ARENA_TRUSTED_TREES unset: every FORMAL_CHECK of a configured challenge fails as INFRA_ERROR");
     }
+    // FORMAL_CHECK-only Firecracker set (guest init with steps-mode
+    // read-write dirs: batched per-module runs); the other stages keep
+    // `ARENA_FC_DEPS`.
+    let sandbox = match (backend, std::env::var_os("ARENA_FORMAL_FC_DEPS")) {
+        ("firecracker", Some(deps)) => {
+            let cfg = arena_firecracker::FirecrackerConfig::from_deps_dir(
+                Path::new(&deps),
+                &work_dir.join("firecracker-formal"),
+            )
+            .unwrap_or_else(|e| die(format!("ARENA_FORMAL_FC_DEPS: {e}")));
+            let sb = arena_firecracker::FirecrackerSandbox::new(cfg)
+                .unwrap_or_else(|e| die(format!("ARENA_FORMAL_FC_DEPS: {e}")));
+            eprintln!(
+                "arena-worker: FORMAL_CHECK sandbox from ARENA_FORMAL_FC_DEPS={} (rootfs {})",
+                Path::new(&deps).display(),
+                sb.rootfs_digest()
+            );
+            Some(arena_worker::executor::FormalSandbox(Arc::new(sb)))
+        }
+        (_, Some(_)) => die("ARENA_FORMAL_FC_DEPS requires ARENA_SANDBOX_BACKEND=firecracker"),
+        _ => None,
+    };
     Some(FormalEnv {
         trusted_trees,
         configs_dir,
         images_dir: images,
+        sandbox,
     })
 }
 
@@ -185,6 +210,8 @@ fn main() {
                     cfg.trusted_trees.clone(),
                     cfg.formal_configs_dir.clone(),
                     cfg.lean_checker_images.clone(),
+                    &cfg.backend,
+                    &cfg.work_dir,
                 ),
                 npai_verify: cfg.npai_verify.clone(),
                 interp_ref: cfg.interp_ref.clone(),
@@ -299,6 +326,8 @@ fn run_job_local(args: &[String]) {
             std::env::var_os("ARENA_TRUSTED_TREES").map(PathBuf::from),
             std::env::var_os("ARENA_FORMAL_CONFIGS_DIR").map(PathBuf::from),
             std::env::var_os("ARENA_LEAN_CHECKER_IMAGES").map(PathBuf::from),
+            "bwrap-dev",
+            &work,
         ),
         npai_verify: std::env::var_os("ARENA_NPAI_VERIFY").map(PathBuf::from),
         interp_ref: std::env::var_os("ARENA_INTERP_REF").map(PathBuf::from),

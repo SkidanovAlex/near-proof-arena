@@ -221,6 +221,18 @@ fn create_sparse(path: &Path, bytes: u64) -> Result<File, InfraError> {
 
 /// Build a read-only ext4 image (no journal) from a staged tree.
 pub fn build_ro_image(st: &StagedTree, image: &Path) -> Result<(), InfraError> {
+    build_ro_image_owned(st, image, 0, 0)
+}
+
+/// [`build_ro_image`] with every inode except the root owned by
+/// `uid:gid` (steps-mode read-write seeds: the overlay's lower layer must be
+/// the candidate's property, as the copied seed of a single run is).
+pub fn build_ro_image_owned(
+    st: &StagedTree,
+    image: &Path,
+    uid: u32,
+    gid: u32,
+) -> Result<(), InfraError> {
     let inodes = st.files + st.dirs + 64;
     // data blocks + per-inode/dir overhead + fixed metadata, with headroom
     let mut size = (st.blocks + st.dirs + inodes / 16 + 2048) * 4096;
@@ -275,7 +287,7 @@ pub fn build_ro_image(st: &StagedTree, image: &Path) -> Result<(), InfraError> {
                         err.trim()
                     )));
                 }
-                normalize_owner(st, image)?;
+                normalize_owner(st, image, uid, gid)?;
                 fs::set_permissions(image, fs::Permissions::from_mode(0o444))?;
                 return Ok(());
             }
@@ -289,11 +301,12 @@ pub fn build_ro_image(st: &StagedTree, image: &Path) -> Result<(), InfraError> {
 }
 
 /// mke2fs -d copies the staging files' owner (the host user); make every
-/// inode root:root so the image is a function of the staged content only.
-fn normalize_owner(st: &StagedTree, image: &Path) -> Result<(), InfraError> {
+/// inode `uid:gid` (root:root for bundles) so the image is a function of the
+/// staged content only.
+fn normalize_owner(st: &StagedTree, image: &Path, uid: u32, gid: u32) -> Result<(), InfraError> {
     let mut cmds = String::new();
     for p in &st.paths {
-        cmds.push_str(&format!("sif \"/{p}\" uid 0\nsif \"/{p}\" gid 0\n"));
+        cmds.push_str(&format!("sif \"/{p}\" uid {uid}\nsif \"/{p}\" gid {gid}\n"));
     }
     if cmds.is_empty() {
         return Ok(());
