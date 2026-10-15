@@ -42,10 +42,16 @@ User directives (binding):
   `chl_56077279…` `near-chunk-validation-d0-stark` (D0a) and `chl_497bbbf1…` `near-chunk-v3`
   (tiers D0a 0 / D0 1 / D1a 2 / D1 3 / D2 4 / D3a 5). Live release `13d2e653` (Firecracker FORMAL_CHECK
   batched 64 runs/VM; `docs/logs/judge-fc-batch-2026-10.md`).
-* **D0a live run** `run_335e1cda…` (`np-udr-stark-v2`): build, FORMAL 6/6, ADVERSARIAL PASS. Per user,
-  after CONFORMANCE is recorded the 40 h BENCHMARK is cancelled (no baseline ⇒ null score; prover being
-  improved by another agent). Evidence: `/data/illia/nearproof-deps/validation/d0a-live-run-20261015/`.
-  Resubmit the improved prover later as the baseline run for a scoring successor challenge.
+* **D0a live run** `run_335e1cda…` (`np-udr-stark-v2`): **REJECTED 2026-10-15 08:19** on
+  CONFORMANCE_DIFFERENTIAL only (all formal gates, ADVERSARIAL, PROVER_RELIABILITY 86/86 and
+  RESOURCE_LIMITS PASS; max proof 5.69 MB, verify 4.0 s, 13.4 GiB). Counterexample: rejection case
+  `00-h10024-s3-w.applied_receipts_hash` — the request is byte-identical to the honest `00-h10024-s3`
+  (only the witness's applied-receipts hash is mutated), so the claim is TRUE and the certificate is not
+  contradicted; but the judge requires `prove` to refuse a supplied witness the reference rejects, and
+  `prove_v3` doesn't check that field. **Fix (candidate side):** `prove_v3` must validate the supplied
+  witness completely (all checks of `checkD0a`, incl. applied_receipts_hash) and exit 2 otherwise; run the
+  full arena-public-d0a rejection set locally (all 128) before resubmitting. Evidence:
+  `/data/illia/nearproof-deps/validation/d0a-live-run-20261015/`. Resubmit with the improved prover.
 * **Prover:** D0a 263–312 s / ≤ 12.6 GiB on 8 vCPU (`docs/logs/v3-prover-perf-2026-10.md`).
 * **D1a** (native Ed25519, interim): phase 1 done (first D1a proof Lean-accepted). R-5 option (B) (user):
   `nearAirV3D1` = 33 tables (walk every tx key: `walkU`, `nmemV3`, `uvalV3`, `nodeD1`, `uniqD1`; `ridV3`
