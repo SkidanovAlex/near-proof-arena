@@ -1406,3 +1406,28 @@ theorem memHyp_of'_d1 {cb : NearSpec.Bytes} {h : ZkFormal.NearV3.D1.HintD1} {q :
     ZkFormal.NearV3.D1.Link.MemHypA (ZkFormal.NearV3.D1.Link.actD1 es q.ops.length)
       (ZkFormal.NearV3.D1.Link.evsD1 es q.ops.length r.lists) r.accts :=
   memHyp_of_d1 hp hlen hH T W hW hT (acct_k_nodup_d1 hH T W)
+
+-- @patch ZkFormal.NearV3.RcptLink.acct_written'
+<<<
+  rw [vslot_bal_d1 hH T] at hc
+===
+  replace hc : 0 < ((ZkFormal.NearV3.nodeRecvs3 r.nodes B_VSLOT).map Msg.toFp).count (Msg.toFp [a.k]) := by
+    have := vslot_bal_d1 hH T (Msg.toFp [a.k]); omega
+>>>
+
+-- @patch ZkFormal.NearV3.RcptLink.acct_pre_byte
+<<<
+  have hb := bal_users_d1 hH (b := B_VBYTES) (U := [T_VAL, T_CODEC, Assembly.T_ACCT, T_AKEY, T_QV]) (by decide)
+===
+  have hb := bal_users_d1 hH (b := B_VBYTES)
+    (U := [T_VAL, T_CODEC, Assembly.T_ACCT, T_AKEY, T_QV, ZkFormal.NearV3.D1.T_AKM, ZkFormal.NearV3.D1.T_UVAL]) (by decide)
+>>>
+
+-- @patch ZkFormal.NearV3.RcptLink.acct_pre_byte
+<<<
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_QV) (by decide +kernel)] at hb
+===
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 T_QV) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 ZkFormal.NearV3.D1.T_AKM) (by decide +kernel),
+    tableBusCount_noside (s := false) (is := ZkFormal.NearV3.D1.Link.isAtD1 ZkFormal.NearV3.D1.T_UVAL) (by decide +kernel)] at hb
+>>>

@@ -57,6 +57,7 @@ import ZkFormal.NearV3.D1.L.Rcpt.Link.PeoBytes
 import ZkFormal.NearV3.D1.L.Rcpt.Link.PrepFwd
 import ZkFormal.NearV3.D1.L.Rcpt.Link.PreparedOwner
 import ZkFormal.NearV3.D1.L.Rcpt.Link.RfBody
+import ZkFormal.NearV3.D1.L.Rcpt.Link.ValBytes
 import ZkFormal.NearV3.D1.L.Sched.Link.Sound
 import ZkFormal.NearV3.D1.L.Sched.Link.SoundPrep
 import ZkFormal.NearV3.D1.L.Sched.Pub.Prep
