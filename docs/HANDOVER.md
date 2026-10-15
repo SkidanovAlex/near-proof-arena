@@ -1,4 +1,4 @@
-# NEAR Proof Arena — handover (updated 2026-10-13)
+# NEAR Proof Arena — handover (updated 2026-10-15)
 
 This is for the next lead agent. Read it first. The raw working log for 2026-10-07 to 2026-10-09 (≈6,500 lines) now lives in `docs/logs/v3-progress-log-2026-10.md`. Use it only for evidence lookup.
 
@@ -18,7 +18,7 @@ User directives (binding):
 * **Proof size and verify time are first-class.** Proofs must be succinct.
 * **One challenge.** `near-chunk-v3` covers the whole chunk transition with coverage tiers D0a < D0 < D1 < D2 < D3α. Do not create one challenge per domain.
 * **The strategic value of ZK** is one proof across *all* shards, which standard validator hardware cannot re-execute. Single-proof capacity (`G_α`) is the key metric.
-* **Recursion: R5.** No proof composition and no bounded R1. Single-proof capacity is raised through the prover, table and verifier levers listed in `docs/requirements/D3_WASM_REQUIREMENTS.md` §2.4.
+* **Recursion: R5 for today's challenges; reopened for the long-term track** (user 2026-10-14, `docs/zk-formal/V3-D3A-STUDY.md` §D U-1…U-9: recursion allowed; PQ track SHA-384, proven bounds only, real-time PQ end to end, 0.5–1 MB target). Today's signed challenges: no proof composition and no bounded R1. Single-proof capacity is raised through the prover, table and verifier levers listed in `docs/requirements/D3_WASM_REQUIREMENTS.md` §2.4.
 * **Decisions already taken by the user:**
   * Price model: N_v = 50 validators **per shard**.
   * B0 = 2.0 MB for D0a.
@@ -35,6 +35,33 @@ User directives (binding):
   * Remote access is through `tailscale serve` only, never funnel. Everything binds to loopback.
   * Keys and secrets live outside the repo. Never print keys, env files or env vars.
   * Never modify signed challenges (`challenges/chl_*.json`), the frozen `oracle/v3`, or any pinned file. `make pin-check` must pass.
+
+## 0a. State at stop (2026-10-15, main after this commit)
+
+* **Signed + live (local operator key; registered on the live arena):**
+  `chl_56077279…` `near-chunk-validation-d0-stark` (D0a) and `chl_497bbbf1…` `near-chunk-v3`
+  (tiers D0a 0 / D0 1 / D1a 2 / D1 3 / D2 4 / D3a 5). Live release `13d2e653` (Firecracker FORMAL_CHECK
+  batched 64 runs/VM; `docs/logs/judge-fc-batch-2026-10.md`).
+* **D0a live run** `run_335e1cda…` (`np-udr-stark-v2`): build, FORMAL 6/6, ADVERSARIAL PASS. Per user,
+  after CONFORMANCE is recorded the 40 h BENCHMARK is cancelled (no baseline ⇒ null score; prover being
+  improved by another agent). Evidence: `/data/illia/nearproof-deps/validation/d0a-live-run-20261015/`.
+  Resubmit the improved prover later as the baseline run for a scoring successor challenge.
+* **Prover:** D0a 263–312 s / ≤ 12.6 GiB on 8 vCPU (`docs/logs/v3-prover-perf-2026-10.md`).
+* **D1a** (native Ed25519, interim): phase 1 done (first D1a proof Lean-accepted). R-5 option (B) (user):
+  `nearAirV3D1` = 33 tables (walk every tx key: `walkU`, `nmemV3`, `uvalV3`, `nodeD1`, `uniqD1`; `ridV3`
+  `l` range check); conformance 257 fixtures, AIR A7 = `unfoldBytesD1` incl. the R-5 counterexample.
+  Phase 2: views, receipt/Merkle copies (generator `zk-formal/scripts/rcpt_d1_copy.py`), links 65/113
+  copies + walk copies; NOT yet: `A7D1Step`, `LinkD1CoreStmt`, F1/R1/R2/A1. Next steps:
+  `docs/logs/v3-d1-a7b-2026-10.md`, `docs/logs/v3-d1-phase2-2026-10.md`, plan `docs/zk-formal/V3-D1-PHASE2.md`.
+  Untested: no fixture exercises a stub / `nmemV3` query yet; real D1a proof on the 33-table AIR not re-run.
+* **D3a / 1 Pgas / PQ:** study `docs/zk-formal/V3-D3A-STUDY.md`; performance design + CPU spikes
+  `docs/zk-formal/V3-PERF-DESIGN.md` (worst-case 1 Pgas ≈ 1.75–1.9 s after execution on 32 H200 if GPU
+  ≥ ~30 % of peak; decisions P-PERF-1…7, no code cap). PQ research: `research/hash-recursion/`,
+  `docs/research/recursive-compression.md` (also untracked copies in the main checkout by another agent —
+  a `git pull` there will refuse until they're removed).
+* **Open user decisions:** live guest-image upgrade for build/conformance/benchmark (SANDBOX_VIOLATION
+  detection missing there); H200 access; P-PERF-8 (early code-prep sub-proofs), final-layer rate,
+  research milestones M2/M3 next; when to resubmit D0a with the improved prover.
 
 ## 1. Host rules (the host OOM-crashed twice; follow these strictly)
 
