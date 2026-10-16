@@ -16,7 +16,7 @@ from pq384_primitives import Transcript,hash_parts,require
 from reference import public_messages
 
 
-def opening_parameters(reduction,spec,roots):
+def reduction_prefix(reduction,spec,roots):
     require(type(reduction)is dict and set(reduction)=={'spec','source_roots','aux_roots','finals','local','gkr'},'reduction fields')
     require(reduction['spec']==spec and reduction['source_roots']==roots,'external statement binding')
     count=len(spec['air']['tables'])
@@ -43,7 +43,17 @@ def opening_parameters(reduction,spec,roots):
     t.commit(b'ext8-all-auxiliary-data',binding)
     terminals=[local.verify(spec,t,ti,proof) for ti,proof in enumerate(reduction['local'])]
     rho=local.draw(t)[0];circuit=compile_ext8_terminal(spec,alpha,gamma,finals,terminals,rho)
-    layout=gkr.layer_circuit(circuit);gp=reduction['gkr'];ob=gkr.verify(layout,t.seed,gp,f.ZERO)
+    layout=gkr.layer_circuit(circuit)
+    return st,t,terminals,circuit,layout
+
+
+def opening_parameters(reduction,spec,roots):
+    return _opening_parameters(reduction,spec,roots,reduction_prefix(reduction,spec,roots))
+
+
+def _opening_parameters(reduction,spec,roots,checked_prefix):
+    st,t,terminals,circuit,layout=checked_prefix
+    gp=reduction['gkr'];ob=gkr.verify(layout,t.seed,gp,f.ZERO)
     descriptors=opening_branches(spec,terminals,circuit,ob['private_weights'])
     branches=[]
     for b in descriptors:

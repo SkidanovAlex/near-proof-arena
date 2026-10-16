@@ -1,0 +1,7 @@
+{
+  "ext8_execution_codec.py": "78bab8f08eefd5d04262342b46db7bbe1369f2b4aa90d3af8ddf564ab80395b6",
+  "test_ext8_execution_codec.py": "3c4ad94950fe15d1c3a3cdaeaf6a5944ad76eb081e7ced7d9ab7034199391062",
+  "verify_ext8_execution.py": "98522ab3c852319878b26dc984a945927701fd041ea7271f28713f444e829898",
+  "test_ext8_execution_reduction.py": "394bb72fd45195a20fd8eb9afeffc89eb682b4677d1f3449a43a7a654a233675",
+  "verify_sha384_call_ext8_bundle.py": "f97696c156a8aa8ff8e6aec4c5a13af50741542f48b7aa7ce812febd1330fda8"
+}

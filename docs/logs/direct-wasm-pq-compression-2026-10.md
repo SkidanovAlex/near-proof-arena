@@ -6370,3 +6370,42 @@ refinement or QROM/security claim. Opening remains620632bytes; prior671960-byte
 subtotal still exceeds300000 before envelope. Full NEAR/PQ128 feasibility gate
 remains NOT_PASSED. Next: use this verifier with fresh Ext8 auxiliary/local/GKR
 compression proofs, rather than carrying forward the Q8/Ext4 compression part.
+
+### Complete Ext8 binary envelope and first all-Ext8 compression run
+
+ext8_execution_codec.py encodes source/auxiliary roots, bus finals, local
+sumchecks, terminal GKR and the weighted PCS opening. Counts are derived from
+the trusted spec and reconstructed terminal circuit. Decoder checks canonical
+Ext8 scalars and source roots, then performs complete reduction/PCS verification.
+A checked-prefix helper avoids compiling the terminal circuit twice at decode.
+verify_sha384_call_ext8_bundle.py now accepts explicit --compression-format
+ext8 (default remains ext4), checks the canonical compression receipt, then
+verifies the Ext8 envelope and same-root call proof at the trusted query count.
+The Ext8 conjunction path has not yet been exercised on a compression proof.
+
+Prepared193 envelope measurement:672320bytes, including620632-byte opening and
+51688bytes of commitments, finals, local/GKR scalars and framing. Static AIR/spec
+and external receipts remain excluded. Canonical roundtrip, fresh CLI verifier
+and9negative cases pass. This is the actual full binary envelope replacing the
+previous671960-byte subtotal estimate; it still exceeds300000bytes. Artifacts
+and source hashes are in results/ext8-complete-verifier/envelope*; test log
+/tmp/ext8-execution-envelope.log. No Lean changes or new security certificate.
+
+Generalized test_ext8_execution_reduction.py to accept --statement,
+--source-directory and optional --compression-receipt, preserving the default
+prepared fixture. External source hashes are recorded; authoritative binding
+is equality of reconstructed packed source commitments to the external roots.
+Started the actual24-node SHA384 workload (2048x5234,32x1666,32x191,32x179) with
+Ext8 local/GKR/PCS and309queries under an8GiB cgroup cap. All four roots match,
+Ext8 auxiliaries and four local tables finish, and GKR proving finishes. Full
+PCS/verification/size result is still pending at this checkpoint.
+
+Live run: exec session24454, Python PID1725108, log
+/tmp/ext8-compression-q309.log, intended capture /tmp/ext8-compression-q309,
+report /tmp/ext8-compression-q309-report.json. External inputs are
+/tmp/nearproof-ext8-node-native-v2/statement.json and
+/tmp/nearproof-ext8-node-batch (source files and expected-use.json).
+An initial invocation from repo root exited2 before starting Python; the active
+run uses research/near-compression as cwd. Do not restart the active run without
+checking its handle/process and terminal result. This checkpoint does NOT claim
+an all-Ext8 compression proof, PQ128 or a passed full-NEAR feasibility gate.
