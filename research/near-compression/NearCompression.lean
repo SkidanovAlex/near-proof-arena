@@ -1746,3 +1746,5 @@ import NearCompression.BezoutPolynomialDenominator
 import NearCompression.DerivativeBezoutDenominator
 
 import NearCompression.SharedDenominatorSpecialization
+
+import NearCompression.PolynomialParameterFamily

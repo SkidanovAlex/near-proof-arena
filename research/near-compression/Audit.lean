@@ -6462,3 +6462,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.irreducible_shared_denominator_root_smooth
 #print axioms NearCompression.irreducible_shared_denominator_hensel_lift
 #print axioms NearCompression.irreducible_shared_denominator_singular_count
+
+#print axioms NearCompression.polynomial_parameter_family_coefficient
+#print axioms NearCompression.polynomial_parameter_family_specializes
+#print axioms NearCompression.polynomial_parameter_family_singular_count
+#print axioms NearCompression.trivariate_initial_parameter_specialization
+#print axioms NearCompression.trivariate_parameter_denominator_hensel_lift

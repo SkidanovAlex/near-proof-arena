@@ -9060,3 +9060,30 @@ Next: connect the source family/extension-field branch interfaces to this
 bounded exceptional set, then establish useful-branch forcing and coverage.
 Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
 unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Explicit polynomial parameter families and dense source lifting
+
+Added PolynomialParameterFamily.lean with five audited public theorems.
+A list of polynomial parameter coefficients embeds into the rational-function
+field with exact coefficient extraction, including out-of-range indices and
+trailing zeros. Its direct evaluation automatically satisfies the partial
+specialization interface at every point. The singular-point bound (2d-1)*D
+therefore applies to explicit bivariate source data without a separate
+coefficient-specialization oracle.
+
+For dense Q(X,Y,Z), the X=0 polynomial obtained after specializing Z equals
+specialization of the explicit initial coefficient rows. This discharges the
+source-specialization premise of the finite Hensel theorem. The resulting
+lifting theorem assumes that the initial polynomial is irreducible; it does
+not infer this from irreducibility of Q. General initial-factor selection,
+other-factor collisions and useful-branch coverage remain open.
+
+Validation:200 dense source families,10833 coefficient-specialization checks,
+3750 finite Hensel lifts,100 singular specialization points and212 empty
+source rows. Full audit4575 PASS, allowed axioms only. Evidence:
+results/polynomial-parameter-family/.
+
+Next: extend the branch interface to selected initial irreducible factors
+and account for other-factor collisions before useful-branch forcing.
+Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
+unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

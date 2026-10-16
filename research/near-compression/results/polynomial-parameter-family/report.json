@@ -1,0 +1,8 @@
+{
+  "dense_source_families": 200,
+  "source_coefficient_checks": 10833,
+  "finite_hensel_lifts": 3750,
+  "singular_specialization_points": 100,
+  "empty_source_rows": 212,
+  "scope": "Explicit source specialization and dense trivariate lifting with irreducible initial polynomial. General initial-factor selection, useful-branch coverage and protocol soundness remain open."
+}
