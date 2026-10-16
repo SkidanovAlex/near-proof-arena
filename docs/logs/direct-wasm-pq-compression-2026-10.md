@@ -6338,3 +6338,35 @@ root comparison pass. Reports/source hashes retained in
 results/ext8-weighted-shared.json and results/ext8-shared-codec-sources.json.
 Logs /tmp/call-ext8-shared.log and /tmp/ext8-weighted-shared.log. No Lean changes;
 last full audit remains4203. Codec implementation refinement remains open.
+
+### Complete Ext8 execution verifier from external spec and source roots
+
+verify_ext8_execution.py connects the existing Ext8 bus/local/GKR/weighted PCS
+components in one verifier. It requires external spec/roots, checks reduction
+shape and global bus products, binds auxiliary commitments/finals before local
+challenges, replays local proofs, constructs the terminal circuit, verifies
+zero-root GKR, derives source/auxiliary opening branches and the private claim,
+and invokes full binary PCS verification. It never consumes the prover's
+opening.json as authority. Optional --compression-receipt checks the existing
+canonical SHA384 node-chunk contract, enabling reuse for the upcoming all-Ext8
+compression pipeline. That compression pipeline has NOT yet been measured.
+
+The previous retained capture verified PCS against externally supplied opening
+parameters. The new test derives those parameters through the full reduction
+and independently compares them with the capture. It passes on the retained
+prepared193 execution at309queries, including fresh-process replay without
+source rows and11negative cases: bus final, auxiliary root, local round, GKR
+input, table/final counts, extra prover claim, external root/spec, opening
+authentication and query budget. Captured reduction, opening parameters, binary,
+report and test log are retained under results/ext8-complete-verifier.
+The prepared execution runner now invokes this complete verifier after capture
+and writes complete-verifier.log, in addition to the earlier PCS-only check.
+That runner modification is not a new full proving run; the verifier itself
+was exercised on the retained actual full capture.
+
+Validation: test_ext8_execution_verifier.py PASS, log
+/tmp/ext8-execution-verifier.log. No Lean changes; no new formal implementation
+refinement or QROM/security claim. Opening remains620632bytes; prior671960-byte
+subtotal still exceeds300000 before envelope. Full NEAR/PQ128 feasibility gate
+remains NOT_PASSED. Next: use this verifier with fresh Ext8 auxiliary/local/GKR
+compression proofs, rather than carrying forward the Q8/Ext4 compression part.

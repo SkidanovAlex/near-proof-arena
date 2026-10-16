@@ -103,6 +103,14 @@ def main():
                 (args.capture_dir/'reduction.json').write_text(json.dumps(reduction,separators=(',',':')))
                 fresh=subprocess.run([sys.executable,str(Path(pcs.__file__)),str(args.capture_dir)],check=True,capture_output=True,text=True)
                 assert fresh.stdout.strip()=='PASS weighted Ext8 opening'
+                import pq384_ext8_weighted_codec as codec
+                binary=codec.encode(op,st,parent,opening_branches_bound,verified['private_claim'],queries=args.pcs_queries,shared_sources=True)
+                (args.capture_dir/'proof.bin').write_bytes(binary)
+                # Verify from the external statement, deriving all opening parameters.
+                fresh=subprocess.run([sys.executable,str(Path(__file__).with_name('verify_ext8_execution.py')),
+                    '--reduction',str(args.capture_dir/'reduction.json'),'--opening',str(args.capture_dir/'proof.bin'),
+                    '--statement',str(fixture/'statement.json'),'--queries',str(args.pcs_queries)],check=True,capture_output=True,text=True)
+                (args.capture_dir/'complete-verifier.log').write_text(fresh.stdout+fresh.stderr)
             pcs_result=dict(queries=args.pcs_queries,verified=True,json_bytes=len(json.dumps(op,separators=(',',':')).encode()),prove_seconds=prove_time,verify_seconds=verify_time,
                 source_roots_match_retained=True,commitment_binding='packed source roots before bus challenges; packed auxiliary roots/finals before local challenges')
         bad=copy.deepcopy(proofs[0]);bad[0][0]=f.add(bad[0][0],f.ONE)
