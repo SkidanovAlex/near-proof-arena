@@ -1,0 +1,3538 @@
+{
+  "status": "CALIBRATED_COUNTERFACTUAL_GEOMETRY",
+  "baseline": {
+    "compression": {
+      "bytes": 1636192,
+      "groups": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "header_bytes": 4360,
+      "source_leaf_bytes": 501496,
+      "source_auth_bytes": 237648,
+      "fold_leaf_bytes": 212096,
+      "fold_auth_bytes": 680592
+    },
+    "calls": {
+      "bytes": 83536,
+      "groups": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "header_bytes": 1720,
+      "source_leaf_bytes": 62280,
+      "source_auth_bytes": 3552,
+      "fold_leaf_bytes": 15552,
+      "fold_auth_bytes": 432
+    },
+    "combined_bytes": 1863197
+  },
+  "fixed_bytes": 143469,
+  "records": [
+    {
+      "query_union_target_bits": 128,
+      "blowup": 4,
+      "regime": "current",
+      "agreement_factor": "3/4",
+      "queries": 311,
+      "min_bytes": 1408093,
+      "max_bytes": 1420837,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1188392,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 509024,
+            "source_auth_bytes": 236640,
+            "fold_leaf_bytes": 260096,
+            "fold_auth_bytes": 178800
+          },
+          "calls": {
+            "bytes": 76232,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 62640,
+            "source_auth_bytes": 3360,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1408093
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1194944,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 514984,
+            "source_auth_bytes": 234384,
+            "fold_leaf_bytes": 258816,
+            "fold_auth_bytes": 182928
+          },
+          "calls": {
+            "bytes": 78632,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 65520,
+            "source_auth_bytes": 2880,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1417045
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1198760,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 519904,
+            "source_auth_bytes": 236160,
+            "fold_leaf_bytes": 260352,
+            "fold_auth_bytes": 178512
+          },
+          "calls": {
+            "bytes": 78608,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 65160,
+            "source_auth_bytes": 3216,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1420837
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1193024,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              4,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 518936,
+            "source_auth_bytes": 234960,
+            "fold_leaf_bytes": 257024,
+            "fold_auth_bytes": 178320
+          },
+          "calls": {
+            "bytes": 77600,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 64440,
+            "source_auth_bytes": 2928,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1414093
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 4,
+      "regime": "upstream_unique",
+      "agreement_factor": "5/8",
+      "queries": 191,
+      "min_bytes": 1028405,
+      "max_bytes": 1044589,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 832536,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 353024,
+            "source_auth_bytes": 175872,
+            "fold_leaf_bytes": 168576,
+            "fold_auth_bytes": 131232
+          },
+          "calls": {
+            "bytes": 62696,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 48240,
+            "source_auth_bytes": 4224,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1038701
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 826408,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 347872,
+            "source_auth_bytes": 175152,
+            "fold_leaf_bytes": 168320,
+            "fold_auth_bytes": 131232
+          },
+          "calls": {
+            "bytes": 62432,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 47880,
+            "source_auth_bytes": 4320,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1032309
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 823392,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 347080,
+            "source_auth_bytes": 174096,
+            "fold_leaf_bytes": 166912,
+            "fold_auth_bytes": 131472
+          },
+          "calls": {
+            "bytes": 61544,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 46800,
+            "source_auth_bytes": 4512,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1028405
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 839336,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 362480,
+            "source_auth_bytes": 174000,
+            "fold_leaf_bytes": 171008,
+            "fold_auth_bytes": 128016
+          },
+          "calls": {
+            "bytes": 61784,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 46800,
+            "source_auth_bytes": 4752,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1044589
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 4,
+      "regime": "upstream_johnson",
+      "agreement_factor": "21/40",
+      "queries": 139,
+      "min_bytes": 834501,
+      "max_bytes": 852157,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 654464,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 272104,
+            "source_auth_bytes": 145488,
+            "fold_leaf_bytes": 127104,
+            "fold_auth_bytes": 105936
+          },
+          "calls": {
+            "bytes": 54224,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 39240,
+            "source_auth_bytes": 4752,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 852157
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 639064,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 258800,
+            "source_auth_bytes": 144432,
+            "fold_leaf_bytes": 125824,
+            "fold_auth_bytes": 106176
+          },
+          "calls": {
+            "bytes": 52376,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 37440,
+            "source_auth_bytes": 4704,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 834909
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 637984,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 260760,
+            "source_auth_bytes": 142656,
+            "fold_leaf_bytes": 125568,
+            "fold_auth_bytes": 105168
+          },
+          "calls": {
+            "bytes": 53048,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 38160,
+            "source_auth_bytes": 4656,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 834501
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 653256,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 272528,
+            "source_auth_bytes": 144816,
+            "fold_leaf_bytes": 129024,
+            "fold_auth_bytes": 103056
+          },
+          "calls": {
+            "bytes": 53816,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 38880,
+            "source_auth_bytes": 4704,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 850541
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 16,
+      "regime": "current",
+      "agreement_factor": "11/16",
+      "queries": 239,
+      "min_bytes": 1573925,
+      "max_bytes": 1592973,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1319328,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 504744,
+            "source_auth_bytes": 339552,
+            "fold_leaf_bytes": 247040,
+            "fold_auth_bytes": 224160
+          },
+          "calls": {
+            "bytes": 130176,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 78120,
+            "source_auth_bytes": 17760,
+            "fold_leaf_bytes": 32000,
+            "fold_auth_bytes": 768
+          },
+          "combined_bytes": 1592973
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1311696,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 498072,
+            "source_auth_bytes": 335232,
+            "fold_leaf_bytes": 249344,
+            "fold_auth_bytes": 225216
+          },
+          "calls": {
+            "bytes": 125288,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 74880,
+            "source_auth_bytes": 17760,
+            "fold_leaf_bytes": 27520,
+            "fold_auth_bytes": 3600
+          },
+          "combined_bytes": 1580453
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1303712,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 492248,
+            "source_auth_bytes": 337680,
+            "fold_leaf_bytes": 247040,
+            "fold_auth_bytes": 222912
+          },
+          "calls": {
+            "bytes": 126744,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 75600,
+            "source_auth_bytes": 17664,
+            "fold_leaf_bytes": 28160,
+            "fold_auth_bytes": 3792
+          },
+          "combined_bytes": 1573925
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1304936,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 494400,
+            "source_auth_bytes": 339888,
+            "fold_leaf_bytes": 244480,
+            "fold_auth_bytes": 222336
+          },
+          "calls": {
+            "bytes": 129216,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 78120,
+            "source_auth_bytes": 17616,
+            "fold_leaf_bytes": 28160,
+            "fold_auth_bytes": 3792
+          },
+          "combined_bytes": 1577621
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 16,
+      "regime": "upstream_unique",
+      "agreement_factor": "17/32",
+      "queries": 142,
+      "min_bytes": 1075605,
+      "max_bytes": 1090621,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 856608,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 306888,
+            "source_auth_bytes": 239232,
+            "fold_leaf_bytes": 179456,
+            "fold_auth_bytes": 127248
+          },
+          "calls": {
+            "bytes": 90544,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 47880,
+            "source_auth_bytes": 14688,
+            "fold_leaf_bytes": 24576,
+            "fold_auth_bytes": 1872
+          },
+          "combined_bytes": 1090621
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 844616,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 299776,
+            "source_auth_bytes": 233808,
+            "fold_leaf_bytes": 179712,
+            "fold_auth_bytes": 127536
+          },
+          "calls": {
+            "bytes": 90552,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 47520,
+            "source_auth_bytes": 14400,
+            "fold_leaf_bytes": 22016,
+            "fold_auth_bytes": 5088
+          },
+          "combined_bytes": 1078637
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 842632,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              2,
+              3
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 299776,
+            "source_auth_bytes": 232800,
+            "fold_leaf_bytes": 153344,
+            "fold_auth_bytes": 152880
+          },
+          "calls": {
+            "bytes": 89504,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 47880,
+            "source_auth_bytes": 14496,
+            "fold_leaf_bytes": 20992,
+            "fold_auth_bytes": 4608
+          },
+          "combined_bytes": 1075605
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 851120,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 300200,
+            "source_auth_bytes": 241200,
+            "fold_leaf_bytes": 179456,
+            "fold_auth_bytes": 126480
+          },
+          "calls": {
+            "bytes": 91520,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 47880,
+            "source_auth_bytes": 15168,
+            "fold_leaf_bytes": 22144,
+            "fold_auth_bytes": 4800
+          },
+          "combined_bytes": 1086109
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 16,
+      "regime": "upstream_johnson",
+      "agreement_factor": "21/80",
+      "queries": 67,
+      "min_bytes": 644461,
+      "max_bytes": 657269,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 458480,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 149544,
+            "source_auth_bytes": 140640,
+            "fold_leaf_bytes": 91648,
+            "fold_auth_bytes": 72864
+          },
+          "calls": {
+            "bytes": 55320,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 23760,
+            "source_auth_bytes": 10272,
+            "fold_leaf_bytes": 17408,
+            "fold_auth_bytes": 2352
+          },
+          "combined_bytes": 657269
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 448624,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              2,
+              2,
+              3
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 144392,
+            "source_auth_bytes": 135408,
+            "fold_leaf_bytes": 87040,
+            "fold_auth_bytes": 77952
+          },
+          "calls": {
+            "bytes": 54328,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 23760,
+            "source_auth_bytes": 9840,
+            "fold_leaf_bytes": 16896,
+            "fold_auth_bytes": 2304
+          },
+          "combined_bytes": 646421
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 458192,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 149544,
+            "source_auth_bytes": 139152,
+            "fold_leaf_bytes": 92416,
+            "fold_auth_bytes": 73296
+          },
+          "calls": {
+            "bytes": 54904,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 23040,
+            "source_auth_bytes": 10224,
+            "fold_leaf_bytes": 17664,
+            "fold_auth_bytes": 2448
+          },
+          "combined_bytes": 656565
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 445728,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              2,
+              3
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 141816,
+            "source_auth_bytes": 137712,
+            "fold_leaf_bytes": 76544,
+            "fold_auth_bytes": 85824
+          },
+          "calls": {
+            "bytes": 55264,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 23400,
+            "source_auth_bytes": 9792,
+            "fold_leaf_bytes": 18432,
+            "fold_auth_bytes": 2112
+          },
+          "combined_bytes": 644461
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 64,
+      "regime": "current",
+      "agreement_factor": "43/64",
+      "queries": 225,
+      "min_bytes": 1874445,
+      "max_bytes": 1892733,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1559520,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              2,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 499624,
+            "source_auth_bytes": 489216,
+            "fold_leaf_bytes": 308992,
+            "fold_auth_bytes": 257856
+          },
+          "calls": {
+            "bytes": 189744,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79560,
+            "source_auth_bytes": 36960,
+            "fold_leaf_bytes": 61952,
+            "fold_auth_bytes": 9744
+          },
+          "combined_bytes": 1892733
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1542016,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              2,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 490184,
+            "source_auth_bytes": 482640,
+            "fold_leaf_bytes": 305536,
+            "fold_auth_bytes": 259824
+          },
+          "calls": {
+            "bytes": 188960,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 78120,
+            "source_auth_bytes": 36288,
+            "fold_leaf_bytes": 63232,
+            "fold_auth_bytes": 9792
+          },
+          "combined_bytes": 1874445
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1544968,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              3,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 491472,
+            "source_auth_bytes": 482880,
+            "fold_leaf_bytes": 310080,
+            "fold_auth_bytes": 256704
+          },
+          "calls": {
+            "bytes": 187576,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79200,
+            "source_auth_bytes": 36000,
+            "fold_leaf_bytes": 60672,
+            "fold_auth_bytes": 10176
+          },
+          "combined_bytes": 1876013
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1546880,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              2,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 492760,
+            "source_auth_bytes": 485664,
+            "fold_leaf_bytes": 309120,
+            "fold_auth_bytes": 255504
+          },
+          "calls": {
+            "bytes": 193136,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 81000,
+            "source_auth_bytes": 36384,
+            "fold_leaf_bytes": 64768,
+            "fold_auth_bytes": 9456
+          },
+          "combined_bytes": 1883485
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 64,
+      "regime": "upstream_unique",
+      "agreement_factor": "65/128",
+      "queries": 132,
+      "min_bytes": 1233861,
+      "max_bytes": 1252621,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 982304,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              2,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 293336,
+            "source_auth_bytes": 325056,
+            "fold_leaf_bytes": 187904,
+            "fold_auth_bytes": 172176
+          },
+          "calls": {
+            "bytes": 126848,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 47160,
+            "source_auth_bytes": 25824,
+            "fold_leaf_bytes": 43264,
+            "fold_auth_bytes": 9072
+          },
+          "combined_bytes": 1252621
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 960856,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 330192,
+            "source_auth_bytes": 307104,
+            "fold_leaf_bytes": 177408,
+            "fold_auth_bytes": 142368
+          },
+          "calls": {
+            "bytes": 129536,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 46440,
+            "source_auth_bytes": 25632,
+            "fold_leaf_bytes": 46336,
+            "fold_auth_bytes": 9600
+          },
+          "combined_bytes": 1233861
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 965880,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 331056,
+            "source_auth_bytes": 311136,
+            "fold_leaf_bytes": 176384,
+            "fold_auth_bytes": 143520
+          },
+          "calls": {
+            "bytes": 124904,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 46800,
+            "source_auth_bytes": 26160,
+            "fold_leaf_bytes": 41728,
+            "fold_auth_bytes": 8688
+          },
+          "combined_bytes": 1234253
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 975296,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              2,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 290760,
+            "source_auth_bytes": 322224,
+            "fold_leaf_bytes": 186880,
+            "fold_auth_bytes": 171600
+          },
+          "calls": {
+            "bytes": 128224,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 47160,
+            "source_auth_bytes": 25488,
+            "fold_leaf_bytes": 44544,
+            "fold_auth_bytes": 9504
+          },
+          "combined_bytes": 1246989
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 64,
+      "regime": "upstream_johnson",
+      "agreement_factor": "21/160",
+      "queries": 45,
+      "min_bytes": 571445,
+      "max_bytes": 582101,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 382024,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 115200,
+            "source_auth_bytes": 135600,
+            "fold_leaf_bytes": 65280,
+            "fold_auth_bytes": 62160
+          },
+          "calls": {
+            "bytes": 56608,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 16200,
+            "source_auth_bytes": 11664,
+            "fold_leaf_bytes": 19968,
+            "fold_auth_bytes": 7248
+          },
+          "combined_bytes": 582101
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 372472,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 112624,
+            "source_auth_bytes": 130128,
+            "fold_leaf_bytes": 64256,
+            "fold_auth_bytes": 61680
+          },
+          "calls": {
+            "bytes": 55504,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 16200,
+            "source_auth_bytes": 12576,
+            "fold_leaf_bytes": 18432,
+            "fold_auth_bytes": 6768
+          },
+          "combined_bytes": 571445
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 382856,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 115200,
+            "source_auth_bytes": 134208,
+            "fold_leaf_bytes": 65536,
+            "fold_auth_bytes": 64128
+          },
+          "calls": {
+            "bytes": 53744,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 15480,
+            "source_auth_bytes": 11856,
+            "fold_leaf_bytes": 17920,
+            "fold_auth_bytes": 6960
+          },
+          "combined_bytes": 580069
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 381496,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 115200,
+            "source_auth_bytes": 133056,
+            "fold_leaf_bytes": 73728,
+            "fold_auth_bytes": 55728
+          },
+          "calls": {
+            "bytes": 56608,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 16200,
+            "source_auth_bytes": 12192,
+            "fold_leaf_bytes": 19200,
+            "fold_auth_bytes": 7488
+          },
+          "combined_bytes": 581573
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 256,
+      "regime": "current",
+      "agreement_factor": "171/256",
+      "queries": 222,
+      "min_bytes": 2216397,
+      "max_bytes": 2238261,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1833720,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 568320,
+            "source_auth_bytes": 644304,
+            "fold_leaf_bytes": 318464,
+            "fold_auth_bytes": 298848
+          },
+          "calls": {
+            "bytes": 261072,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79560,
+            "source_auth_bytes": 57552,
+            "fold_leaf_bytes": 91904,
+            "fold_auth_bytes": 30528
+          },
+          "combined_bytes": 2238261
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1817984,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 567032,
+            "source_auth_bytes": 632160,
+            "fold_leaf_bytes": 318464,
+            "fold_auth_bytes": 296544
+          },
+          "calls": {
+            "bytes": 260488,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79200,
+            "source_auth_bytes": 56544,
+            "fold_leaf_bytes": 92160,
+            "fold_auth_bytes": 31056
+          },
+          "combined_bytes": 2221941
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1812424,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 564032,
+            "source_auth_bytes": 633456,
+            "fold_leaf_bytes": 315904,
+            "fold_auth_bytes": 295248
+          },
+          "calls": {
+            "bytes": 260504,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79920,
+            "source_auth_bytes": 56736,
+            "fold_leaf_bytes": 91648,
+            "fold_auth_bytes": 30672
+          },
+          "combined_bytes": 2216397
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1813832,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 561456,
+            "source_auth_bytes": 637536,
+            "fold_leaf_bytes": 315904,
+            "fold_auth_bytes": 295152
+          },
+          "calls": {
+            "bytes": 263096,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79920,
+            "source_auth_bytes": 57408,
+            "fold_leaf_bytes": 93184,
+            "fold_auth_bytes": 31056
+          },
+          "combined_bytes": 2220397
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 256,
+      "regime": "upstream_unique",
+      "agreement_factor": "257/512",
+      "queries": 130,
+      "min_bytes": 1430557,
+      "max_bytes": 1449885,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1138456,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 332800,
+            "source_auth_bytes": 413808,
+            "fold_leaf_bytes": 210944,
+            "fold_auth_bytes": 177120
+          },
+          "calls": {
+            "bytes": 167960,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 46800,
+            "source_auth_bytes": 37920,
+            "fold_leaf_bytes": 57856,
+            "fold_auth_bytes": 23856
+          },
+          "combined_bytes": 1449885
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1116720,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 331512,
+            "source_auth_bytes": 398784,
+            "fold_leaf_bytes": 190208,
+            "fold_auth_bytes": 192432
+          },
+          "calls": {
+            "bytes": 170368,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 46440,
+            "source_auth_bytes": 37344,
+            "fold_leaf_bytes": 59136,
+            "fold_auth_bytes": 25920
+          },
+          "combined_bytes": 1430557
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1126544,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 331512,
+            "source_auth_bytes": 406896,
+            "fold_leaf_bytes": 189952,
+            "fold_auth_bytes": 194400
+          },
+          "calls": {
+            "bytes": 165432,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 46800,
+            "source_auth_bytes": 38064,
+            "fold_leaf_bytes": 55808,
+            "fold_auth_bytes": 23232
+          },
+          "combined_bytes": 1435445
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1128336,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 331512,
+            "source_auth_bytes": 411072,
+            "fold_leaf_bytes": 207872,
+            "fold_auth_bytes": 174096
+          },
+          "calls": {
+            "bytes": 170872,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 46800,
+            "source_auth_bytes": 37584,
+            "fold_leaf_bytes": 59904,
+            "fold_auth_bytes": 25056
+          },
+          "combined_bytes": 1442677
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 256,
+      "regime": "upstream_johnson",
+      "agreement_factor": "21/320",
+      "queries": 33,
+      "min_bytes": 526197,
+      "max_bytes": 530277,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 332952,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 84480,
+            "source_auth_bytes": 130896,
+            "fold_leaf_bytes": 54656,
+            "fold_auth_bytes": 59136
+          },
+          "calls": {
+            "bytes": 53856,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 11880,
+            "source_auth_bytes": 12480,
+            "fold_leaf_bytes": 16640,
+            "fold_auth_bytes": 11328
+          },
+          "combined_bytes": 530277
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 328216,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 84480,
+            "source_auth_bytes": 126096,
+            "fold_leaf_bytes": 54912,
+            "fold_auth_bytes": 58944
+          },
+          "calls": {
+            "bytes": 54512,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 11880,
+            "source_auth_bytes": 13344,
+            "fold_leaf_bytes": 16384,
+            "fold_auth_bytes": 11376
+          },
+          "combined_bytes": 526197
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 332904,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 84480,
+            "source_auth_bytes": 130176,
+            "fold_leaf_bytes": 54272,
+            "fold_auth_bytes": 60192
+          },
+          "calls": {
+            "bytes": 53568,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 11880,
+            "source_auth_bytes": 12240,
+            "fold_leaf_bytes": 16640,
+            "fold_auth_bytes": 11280
+          },
+          "combined_bytes": 529941
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 330232,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 84480,
+            "source_auth_bytes": 127008,
+            "fold_leaf_bytes": 54912,
+            "fold_auth_bytes": 60048
+          },
+          "calls": {
+            "bytes": 53064,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 11520,
+            "source_auth_bytes": 12432,
+            "fold_leaf_bytes": 15872,
+            "fold_auth_bytes": 11712
+          },
+          "combined_bytes": 526765
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 4,
+      "regime": "current",
+      "agreement_factor": "3/4",
+      "queries": 533,
+      "min_bytes": 1977805,
+      "max_bytes": 2007021,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1752192,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              4,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 750984,
+            "source_auth_bytes": 334080,
+            "fold_leaf_bytes": 408320,
+            "fold_auth_bytes": 255024
+          },
+          "calls": {
+            "bytes": 93344,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 81720,
+            "source_auth_bytes": 1392,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1989005
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1769680,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              4,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 763432,
+            "source_auth_bytes": 332880,
+            "fold_leaf_bytes": 412928,
+            "fold_auth_bytes": 256656
+          },
+          "calls": {
+            "bytes": 93872,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 82440,
+            "source_auth_bytes": 1200,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 2007021
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1742072,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              4,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 750320,
+            "source_auth_bytes": 330384,
+            "fold_leaf_bytes": 405248,
+            "fold_auth_bytes": 252336
+          },
+          "calls": {
+            "bytes": 92264,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 80640,
+            "source_auth_bytes": 1392,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1977805
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1759240,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              4,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 756304,
+            "source_auth_bytes": 334320,
+            "fold_leaf_bytes": 407552,
+            "fold_auth_bytes": 257280
+          },
+          "calls": {
+            "bytes": 93344,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 81720,
+            "source_auth_bytes": 1392,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1996053
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 4,
+      "regime": "upstream_unique",
+      "agreement_factor": "5/8",
+      "queries": 326,
+      "min_bytes": 1448685,
+      "max_bytes": 1463381,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1227592,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 525200,
+            "source_auth_bytes": 244032,
+            "fold_leaf_bytes": 269824,
+            "fold_auth_bytes": 184704
+          },
+          "calls": {
+            "bytes": 77624,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 64080,
+            "source_auth_bytes": 3312,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1448685
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1239888,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              4,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 535640,
+            "source_auth_bytes": 241584,
+            "fold_leaf_bytes": 272640,
+            "fold_auth_bytes": 186240
+          },
+          "calls": {
+            "bytes": 80024,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 66960,
+            "source_auth_bytes": 2832,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1463381
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1236224,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              4,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 534984,
+            "source_auth_bytes": 242976,
+            "fold_leaf_bytes": 270592,
+            "fold_auth_bytes": 183888
+          },
+          "calls": {
+            "bytes": 79904,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 66600,
+            "source_auth_bytes": 3072,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1459597
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1235336,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              4,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 537824,
+            "source_auth_bytes": 241872,
+            "fold_leaf_bytes": 267776,
+            "fold_auth_bytes": 184080
+          },
+          "calls": {
+            "bytes": 79256,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 66240,
+            "source_auth_bytes": 2784,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1458061
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 4,
+      "regime": "upstream_johnson",
+      "agreement_factor": "21/40",
+      "queries": 238,
+      "min_bytes": 1188005,
+      "max_bytes": 1199037,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 985072,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 424072,
+            "source_auth_bytes": 200544,
+            "fold_leaf_bytes": 207872,
+            "fold_auth_bytes": 148752
+          },
+          "calls": {
+            "bytes": 70496,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 56520,
+            "source_auth_bytes": 3744,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1199037
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 982336,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 422744,
+            "source_auth_bytes": 197328,
+            "fold_leaf_bytes": 206080,
+            "fold_auth_bytes": 152352
+          },
+          "calls": {
+            "bytes": 70136,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 56160,
+            "source_auth_bytes": 3744,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1195941
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 976320,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 418088,
+            "source_auth_bytes": 199920,
+            "fold_leaf_bytes": 203520,
+            "fold_auth_bytes": 150960
+          },
+          "calls": {
+            "bytes": 68216,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 54000,
+            "source_auth_bytes": 3984,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1188005
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 979480,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 424352,
+            "source_auth_bytes": 198576,
+            "fold_leaf_bytes": 204544,
+            "fold_auth_bytes": 148176
+          },
+          "calls": {
+            "bytes": 70136,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 56160,
+            "source_auth_bytes": 3744,
+            "fold_leaf_bytes": 8704,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 1193085
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 16,
+      "regime": "current",
+      "agreement_factor": "11/16",
+      "queries": 409,
+      "min_bytes": 2326005,
+      "max_bytes": 2360301,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 2008560,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 803048,
+            "source_auth_bytes": 475632,
+            "fold_leaf_bytes": 383232,
+            "fold_auth_bytes": 342816
+          },
+          "calls": {
+            "bytes": 174224,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 119160,
+            "source_auth_bytes": 18720,
+            "fold_leaf_bytes": 34816,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 2326253
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 2036536,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 820720,
+            "source_auth_bytes": 478416,
+            "fold_leaf_bytes": 387968,
+            "fold_auth_bytes": 345600
+          },
+          "calls": {
+            "bytes": 180296,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 125280,
+            "source_auth_bytes": 18672,
+            "fold_leaf_bytes": 34816,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 2360301
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 2005384,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              2,
+              4,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 799168,
+            "source_auth_bytes": 476976,
+            "fold_leaf_bytes": 384512,
+            "fold_auth_bytes": 340896
+          },
+          "calls": {
+            "bytes": 177152,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 121320,
+            "source_auth_bytes": 19488,
+            "fold_leaf_bytes": 34816,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 2326005
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 2014424,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 806720,
+            "source_auth_bytes": 478944,
+            "fold_leaf_bytes": 392960,
+            "fold_auth_bytes": 331968
+          },
+          "calls": {
+            "bytes": 180056,
+            "groups": [
+              1,
+              4,
+              2
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 124560,
+            "source_auth_bytes": 19152,
+            "fold_leaf_bytes": 34816,
+            "fold_auth_bytes": 0
+          },
+          "combined_bytes": 2337949
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 16,
+      "regime": "upstream_unique",
+      "agreement_factor": "17/32",
+      "queries": 243,
+      "min_bytes": 1594237,
+      "max_bytes": 1611589,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1336232,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 512384,
+            "source_auth_bytes": 342816,
+            "fold_leaf_bytes": 250880,
+            "fold_auth_bytes": 226320
+          },
+          "calls": {
+            "bytes": 131888,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79560,
+            "source_auth_bytes": 17952,
+            "fold_leaf_bytes": 29056,
+            "fold_auth_bytes": 3792
+          },
+          "combined_bytes": 1611589
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1326608,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 504424,
+            "source_auth_bytes": 338064,
+            "fold_leaf_bytes": 252672,
+            "fold_auth_bytes": 227616
+          },
+          "calls": {
+            "bytes": 126688,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 75960,
+            "source_auth_bytes": 17808,
+            "fold_leaf_bytes": 27648,
+            "fold_auth_bytes": 3744
+          },
+          "combined_bytes": 1596765
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1322768,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 501176,
+            "source_auth_bytes": 341280,
+            "fold_leaf_bytes": 250880,
+            "fold_auth_bytes": 225600
+          },
+          "calls": {
+            "bytes": 128000,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 76680,
+            "source_auth_bytes": 17664,
+            "fold_leaf_bytes": 28288,
+            "fold_auth_bytes": 3840
+          },
+          "combined_bytes": 1594237
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1322080,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              4,
+              1
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 502040,
+            "source_auth_bytes": 343104,
+            "fold_leaf_bytes": 248320,
+            "fold_auth_bytes": 224784
+          },
+          "calls": {
+            "bytes": 130376,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79200,
+            "source_auth_bytes": 17568,
+            "fold_leaf_bytes": 28288,
+            "fold_auth_bytes": 3792
+          },
+          "combined_bytes": 1595925
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 16,
+      "regime": "upstream_johnson",
+      "agreement_factor": "21/80",
+      "queries": 115,
+      "min_bytes": 919557,
+      "max_bytes": 940525,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 717776,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 250488,
+            "source_auth_bytes": 206352,
+            "fold_leaf_bytes": 148480,
+            "fold_auth_bytes": 108672
+          },
+          "calls": {
+            "bytes": 79280,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 39960,
+            "source_auth_bytes": 13296,
+            "fold_leaf_bytes": 22528,
+            "fold_auth_bytes": 1968
+          },
+          "combined_bytes": 940525
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 696792,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              2,
+              2,
+              3
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 240800,
+            "source_auth_bytes": 198240,
+            "fold_leaf_bytes": 141696,
+            "fold_auth_bytes": 112224
+          },
+          "calls": {
+            "bytes": 79296,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 39960,
+            "source_auth_bytes": 12816,
+            "fold_leaf_bytes": 20096,
+            "fold_auth_bytes": 4896
+          },
+          "combined_bytes": 919557
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 714664,
+            "groups": [
+              1,
+              3,
+              3,
+              3,
+              3,
+              2,
+              3
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 250240,
+            "source_auth_bytes": 202224,
+            "fold_leaf_bytes": 128000,
+            "fold_auth_bytes": 130368
+          },
+          "calls": {
+            "bytes": 78088,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 39600,
+            "source_auth_bytes": 13488,
+            "fold_leaf_bytes": 21504,
+            "fold_auth_bytes": 1968
+          },
+          "combined_bytes": 936221
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 709408,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 241224,
+            "source_auth_bytes": 208464,
+            "fold_leaf_bytes": 146688,
+            "fold_auth_bytes": 109248
+          },
+          "calls": {
+            "bytes": 78120,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 38160,
+            "source_auth_bytes": 13344,
+            "fold_leaf_bytes": 20096,
+            "fold_auth_bytes": 4992
+          },
+          "combined_bytes": 930997
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 64,
+      "regime": "current",
+      "agreement_factor": "43/64",
+      "queries": 386,
+      "min_bytes": 2855149,
+      "max_bytes": 2877021,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 2441376,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 837576,
+            "source_auth_bytes": 713088,
+            "fold_leaf_bytes": 506624,
+            "fold_auth_bytes": 380304
+          },
+          "calls": {
+            "bytes": 271920,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 129960,
+            "source_auth_bytes": 47760,
+            "fold_leaf_bytes": 73856,
+            "fold_auth_bytes": 18816
+          },
+          "combined_bytes": 2856765
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 2454704,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 836040,
+            "source_auth_bytes": 722256,
+            "fold_leaf_bytes": 506368,
+            "fold_auth_bytes": 386256
+          },
+          "calls": {
+            "bytes": 278848,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 133560,
+            "source_auth_bytes": 50064,
+            "fold_leaf_bytes": 74496,
+            "fold_auth_bytes": 19200
+          },
+          "combined_bytes": 2877021
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 2434376,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 831504,
+            "source_auth_bytes": 711648,
+            "fold_leaf_bytes": 504832,
+            "fold_auth_bytes": 382608
+          },
+          "calls": {
+            "bytes": 277304,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 133920,
+            "source_auth_bytes": 49536,
+            "fold_leaf_bytes": 72832,
+            "fold_auth_bytes": 19488
+          },
+          "combined_bytes": 2855149
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 2441136,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              4
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 832808,
+            "source_auth_bytes": 715776,
+            "fold_leaf_bytes": 507648,
+            "fold_auth_bytes": 381120
+          },
+          "calls": {
+            "bytes": 279024,
+            "groups": [
+              1,
+              2,
+              4
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 133560,
+            "source_auth_bytes": 50640,
+            "fold_leaf_bytes": 74240,
+            "fold_auth_bytes": 19056
+          },
+          "combined_bytes": 2863629
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 64,
+      "regime": "upstream_unique",
+      "agreement_factor": "65/128",
+      "queries": 227,
+      "min_bytes": 1887861,
+      "max_bytes": 1902821,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1569464,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              2,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 502800,
+            "source_auth_bytes": 492048,
+            "fold_leaf_bytes": 311296,
+            "fold_auth_bytes": 259488
+          },
+          "calls": {
+            "bytes": 189888,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79560,
+            "source_auth_bytes": 37104,
+            "fold_leaf_bytes": 61952,
+            "fold_auth_bytes": 9744
+          },
+          "combined_bytes": 1902821
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1554672,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              2,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 494648,
+            "source_auth_bytes": 486048,
+            "fold_leaf_bytes": 308352,
+            "fold_auth_bytes": 261792
+          },
+          "calls": {
+            "bytes": 189720,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 78480,
+            "source_auth_bytes": 36480,
+            "fold_leaf_bytes": 63488,
+            "fold_auth_bytes": 9744
+          },
+          "combined_bytes": 1887861
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1556704,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 570392,
+            "source_auth_bytes": 474672,
+            "fold_leaf_bytes": 292864,
+            "fold_auth_bytes": 214992
+          },
+          "calls": {
+            "bytes": 189256,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79920,
+            "source_auth_bytes": 36240,
+            "fold_leaf_bytes": 61440,
+            "fold_auth_bytes": 10128
+          },
+          "combined_bytes": 1889429
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1558656,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              2,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 497224,
+            "source_auth_bytes": 488928,
+            "fold_leaf_bytes": 311680,
+            "fold_auth_bytes": 256992
+          },
+          "calls": {
+            "bytes": 194768,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 81720,
+            "source_auth_bytes": 36432,
+            "fold_leaf_bytes": 65536,
+            "fold_auth_bytes": 9552
+          },
+          "combined_bytes": 1896893
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 64,
+      "regime": "upstream_johnson",
+      "agreement_factor": "21/160",
+      "queries": 76,
+      "min_bytes": 821861,
+      "max_bytes": 837709,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 607560,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 194560,
+            "source_auth_bytes": 206832,
+            "fold_leaf_bytes": 107776,
+            "fold_auth_bytes": 94608
+          },
+          "calls": {
+            "bytes": 86680,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 27360,
+            "source_auth_bytes": 18672,
+            "fold_leaf_bytes": 30720,
+            "fold_auth_bytes": 8400
+          },
+          "combined_bytes": 837709
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 594056,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 191984,
+            "source_auth_bytes": 198912,
+            "fold_leaf_bytes": 106496,
+            "fold_auth_bytes": 92880
+          },
+          "calls": {
+            "bytes": 84336,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 27000,
+            "source_auth_bytes": 18096,
+            "fold_leaf_bytes": 29696,
+            "fold_auth_bytes": 8016
+          },
+          "combined_bytes": 821861
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 607752,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 194560,
+            "source_auth_bytes": 205920,
+            "fold_leaf_bytes": 107776,
+            "fold_auth_bytes": 95712
+          },
+          "calls": {
+            "bytes": 83920,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 27000,
+            "source_auth_bytes": 17808,
+            "fold_leaf_bytes": 29184,
+            "fold_auth_bytes": 8400
+          },
+          "combined_bytes": 835141
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 605216,
+            "groups": [
+              1,
+              4,
+              3,
+              3,
+              3,
+              2,
+              2
+            ],
+            "header_bytes": 3832,
+            "source_leaf_bytes": 168344,
+            "source_auth_bytes": 208848,
+            "fold_leaf_bytes": 111488,
+            "fold_auth_bytes": 112704
+          },
+          "calls": {
+            "bytes": 85888,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 27000,
+            "source_auth_bytes": 17952,
+            "fold_leaf_bytes": 30720,
+            "fold_auth_bytes": 8688
+          },
+          "combined_bytes": 834573
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 256,
+      "regime": "current",
+      "agreement_factor": "171/256",
+      "queries": 380,
+      "min_bytes": 3438997,
+      "max_bytes": 3472973,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 2913256,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 967648,
+            "source_auth_bytes": 968496,
+            "fold_leaf_bytes": 528128,
+            "fold_auth_bytes": 445200
+          },
+          "calls": {
+            "bytes": 394680,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 134640,
+            "source_auth_bytes": 81936,
+            "fold_leaf_bytes": 141056,
+            "fold_auth_bytes": 35520
+          },
+          "combined_bytes": 3451405
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 2931824,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 967032,
+            "source_auth_bytes": 978912,
+            "fold_leaf_bytes": 529408,
+            "fold_auth_bytes": 452688
+          },
+          "calls": {
+            "bytes": 397680,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 135720,
+            "source_auth_bytes": 84192,
+            "fold_leaf_bytes": 140288,
+            "fold_auth_bytes": 35952
+          },
+          "combined_bytes": 3472973
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 2900768,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 964648,
+            "source_auth_bytes": 965280,
+            "fold_leaf_bytes": 522240,
+            "fold_auth_bytes": 444816
+          },
+          "calls": {
+            "bytes": 394760,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 135360,
+            "source_auth_bytes": 84576,
+            "fold_leaf_bytes": 139264,
+            "fold_auth_bytes": 34032
+          },
+          "combined_bytes": 3438997
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 2907752,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 960784,
+            "source_auth_bytes": 973344,
+            "fold_leaf_bytes": 524544,
+            "fold_auth_bytes": 445296
+          },
+          "calls": {
+            "bytes": 395616,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 135000,
+            "source_auth_bytes": 85200,
+            "fold_leaf_bytes": 137984,
+            "fold_auth_bytes": 35904
+          },
+          "combined_bytes": 3446837
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 256,
+      "regime": "upstream_unique",
+      "agreement_factor": "257/512",
+      "queries": 223,
+      "min_bytes": 2224069,
+      "max_bytes": 2246429,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 1841320,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 570880,
+            "source_auth_bytes": 646800,
+            "fold_leaf_bytes": 320000,
+            "fold_auth_bytes": 299856
+          },
+          "calls": {
+            "bytes": 261640,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79920,
+            "source_auth_bytes": 57648,
+            "fold_leaf_bytes": 92160,
+            "fold_auth_bytes": 30384
+          },
+          "combined_bytes": 2246429
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 1825568,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 569592,
+            "source_auth_bytes": 634896,
+            "fold_leaf_bytes": 319744,
+            "fold_auth_bytes": 297552
+          },
+          "calls": {
+            "bytes": 260640,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 79560,
+            "source_auth_bytes": 56688,
+            "fold_leaf_bytes": 91904,
+            "fold_auth_bytes": 30960
+          },
+          "combined_bytes": 2229677
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 1819336,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 566592,
+            "source_auth_bytes": 635712,
+            "fold_leaf_bytes": 317184,
+            "fold_auth_bytes": 296064
+          },
+          "calls": {
+            "bytes": 261264,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 80280,
+            "source_auth_bytes": 56976,
+            "fold_leaf_bytes": 91904,
+            "fold_auth_bytes": 30576
+          },
+          "combined_bytes": 2224069
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 1821368,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 564016,
+            "source_auth_bytes": 640176,
+            "fold_leaf_bytes": 317184,
+            "fold_auth_bytes": 296208
+          },
+          "calls": {
+            "bytes": 264016,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 80280,
+            "source_auth_bytes": 57504,
+            "fold_leaf_bytes": 93696,
+            "fold_auth_bytes": 31008
+          },
+          "combined_bytes": 2228853
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 256,
+      "regime": "upstream_johnson",
+      "agreement_factor": "21/320",
+      "queries": 57,
+      "min_bytes": 765541,
+      "max_bytes": 773733,
+      "runs": [
+        {
+          "seed": 0,
+          "compression": {
+            "bytes": 544168,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 145920,
+            "source_auth_bytes": 209328,
+            "fold_leaf_bytes": 92928,
+            "fold_auth_bytes": 92208
+          },
+          "calls": {
+            "bytes": 86096,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 20520,
+            "source_auth_bytes": 20448,
+            "fold_leaf_bytes": 27136,
+            "fold_auth_bytes": 16464
+          },
+          "combined_bytes": 773733
+        },
+        {
+          "seed": 1,
+          "compression": {
+            "bytes": 536136,
+            "groups": [
+              2,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 145920,
+            "source_auth_bytes": 200976,
+            "fold_leaf_bytes": 86528,
+            "fold_auth_bytes": 98928
+          },
+          "calls": {
+            "bytes": 85936,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 20520,
+            "source_auth_bytes": 20160,
+            "fold_leaf_bytes": 27648,
+            "fold_auth_bytes": 16080
+          },
+          "combined_bytes": 765541
+        },
+        {
+          "seed": 2,
+          "compression": {
+            "bytes": 542824,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 145920,
+            "source_auth_bytes": 206160,
+            "fold_leaf_bytes": 93696,
+            "fold_auth_bytes": 93264
+          },
+          "calls": {
+            "bytes": 84128,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 20520,
+            "source_auth_bytes": 19536,
+            "fold_leaf_bytes": 27136,
+            "fold_auth_bytes": 15408
+          },
+          "combined_bytes": 770421
+        },
+        {
+          "seed": 3,
+          "compression": {
+            "bytes": 541848,
+            "groups": [
+              2,
+              4,
+              4,
+              3,
+              3,
+              2
+            ],
+            "header_bytes": 3784,
+            "source_leaf_bytes": 145920,
+            "source_auth_bytes": 205584,
+            "fold_leaf_bytes": 94208,
+            "fold_auth_bytes": 92352
+          },
+          "calls": {
+            "bytes": 85760,
+            "groups": [
+              1,
+              3,
+              3
+            ],
+            "header_bytes": 1528,
+            "source_leaf_bytes": 20520,
+            "source_auth_bytes": 19680,
+            "fold_leaf_bytes": 27136,
+            "fold_auth_bytes": 16896
+          },
+          "combined_bytes": 771077
+        }
+      ]
+    }
+  ],
+  "upstream_commit": "afec1fac27c1c8cc7331aa5668bc9800f104d92c",
+  "source": "https://github.com/worldfnd/whir/blob/afec1fac27c1c8cc7331aa5668bc9800f104d92c/src/protocols/params/regime.rs",
+  "scope": "Simulates changing domain blowup and committing after groups of1..4binary folds, retaining all quadratic messages and exact coset leaf/frontier costs. Whole fold cosets are newly committed as single leaves; low-degree source embeddings retain at least paired leaves. Same original query indices propagate through groups. Source widths/packings and upstream scalar overhead fixed. New root layouts/rates/groups/unique/Johnson bounds are NOT implemented or certified for our protocol. No capacity conjecture or grinding. Excludes new error terms, OOD/code-switch messages, full recursion, trusted static AIR/spec and QROM. Query union targets are hypothetical component budgets, not quantum-security conversions.",
+  "hashes": {
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/screen_ext8_grouped_geometry.py": "ad4b04afa5cb06339fdd7b57e5e524418a631fb3fd26cb14ceee1cf2b79824c7",
+    "/tmp/ext8-compression-q309/opening.json": "eeedd04c0153a96684063fe75015d03ef8d11950710f4b6e9e9fcb74119f77ba",
+    "/tmp/ext8-compression-q309/proof.bin": "b2ac3bf31f1dd280f174d67b31d382028a35aefce4c588b04eccad05e4254781",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/call-ext8-q309/proof.json.gz": "6ba7cf743ca98c5de87213cdcff59b872b3a41f5f3c79c59ee7dadcc8ac10bce"
+  }
+}

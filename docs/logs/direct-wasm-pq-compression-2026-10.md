@@ -6513,3 +6513,53 @@ The gate remains NOT_PASSED. Existing two-PCS budget at309queries already fails
 to certify128ideal bits before excluded errors. No PQ128, QROM, full recursive
 verifier, full NEAR1Pgas, or formal implementation-refinement claim is added.
 No Lean changes; last full Lean audit remains4203.
+
+### Joint rate/grouped-fold screen calibrated to all-Ext8 compression
+
+Reviewed the existing WHIR audit before choosing more work. The pinned primary
+implementation remains worldfnd/whir afec1fac27c1c8cc7331aa5668bc9800f104d92c:
+https://github.com/worldfnd/whir/blob/afec1fac27c1c8cc7331aa5668bc9800f104d92c/src/protocols/params/regime.rs
+Its Unique/Johnson formulas are counterfactual inputs, not soundness theorems
+for our implementation. Capacity/grinding remain excluded. The primary paper
+https://eprint.iacr.org/2024/1586.pdf again returned403. No unseen theorem or
+correction is assumed proved. The existing rate-shift sharpness result and
+prior query-only screen already explain why a query-count substitution is
+insufficient; this work extends geometry rather than repeating that audit.
+
+screen_ext8_grouped_geometry.py calibrates the actual compression opening
+1636192bytes and shared call opening83536bytes exactly, hence the1863197-byte
+combined baseline. It retains source widths/packings and143469bytes of other
+reduction/call/receipt overhead. It screens blowups4/16/64/256, groups of1..4
+binary folds, and current/Unique/Johnson agreement factors. Query counts use
+exact rational minimality for TWO query terms at hypothetical128/220-bit
+component budgets. Dynamic programming optimizes all allowed group schedules
+for each sampled geometry, across four deterministic query samples per case.
+All quadratic messages remain; only intermediate roots/openings are grouped.
+
+Crucially, grouped queries account for the entire folded coset, not one pair.
+An initial model retained old paired-leaf Merkle trees; the main screen instead
+permits NEW coset-packed commitment leaves. This is a protocol/root-layout
+change. Heterogeneous source x^(D/d) embeddings reduce distinct queried values;
+at least paired source leaves are retained. Soundness for missing intermediate
+roots, new layouts, alternative rates and stronger extraction remains unproved.
+This is not an estimate of the full upstream WHIR protocol: code switching,
+OOD traffic and its error terms are not included.
+
+Best sampled fixed-source results still FAIL300000bytes:
+-128-bit query-only union target: Johnson/blowup256/q33,526197–530277bytes.
+-220-bit query-only union target: Johnson/blowup256/q57,765541–773733bytes.
+These budgets omit field, functional, list/extraction, hash and QROM errors;
+220 is not a claimed quantum-security conversion. Source packing/pooling and
+code switching were not optimized, and this is not a universal lower bound.
+The geometry does not justify a large standalone formalization of grouping or
+Johnson extraction as the next step. Source commitment layout/opening reduction
+must be included before a candidate has useful end-to-end size headroom.
+
+Validation: exact measured-byte calibration and36independent exhaustive cases
+PASS. The independent test enumerates all scalar coset positions, computes
+Merkle boundaries level by level, and exhaustively searches fold compositions
+through7bits for paired and coset-packed layouts, heterogeneous sources,
+repeated queries and shared roots. Artifacts: results/ext8-grouped-geometry.json
+and results/ext8-grouped-geometry-validation.json; log
+/tmp/ext8-grouped-geometry.log. No executable security profile or Lean theorem
+changed; full NEAR/PQ128/sub300k gate remains NOT_PASSED.
