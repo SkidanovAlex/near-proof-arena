@@ -6232,3 +6232,36 @@ results only identify correct queried values relative to a fixed constructed
 source, or an explicit collision. Adversarial oracle proximity/adaptive folding
 and source recovery, plus hash probability/QROM composition, remain required.
 Full NEAR1Pgas/PQ128/sub300k and NOT_PASSED gate remain open.
+
+### Adaptive near-source composition and retained PCS error budget
+
+CheckedHistoryNear.lean supplies the near-source counterpart to the existing
+CheckedHistorySource far theorem. A wrong functional of a fixed jointly-close
+polynomial tuple gives initial indexed-candidate absence through
+weighted_virtual_no_initial, then the checked adaptive-history theorem bounds
+acceptance. Later oracles may be adaptive; the explicit prechallenge snapshot,
+weight and claim bindings remain required. The close tuple and its separation
+from other candidates are hypotheses, not consequences of a Merkle root.
+
+measure_call_pcs_budget.py instantiates the conditional terms from retained
+proof geometry: degree128, domain512, seven folds and eight queries. The strict
+extraction regime requires T≥385, so its best query term is (384/512)^8 =
+6561/65536 ≈0.100112915 (only3.3203negative-log2 bits). The adaptive fold
+numerator is508 over the challenge-field size; the separate source-far outer
+numerator is3584. The isolated query term requires309queries for128bits,
+478for198bits, and531for220bits. The latter are component-budget examples,
+not claimed quantum-security conversions. Ext4 field terms independently
+prevent this bound from certifying128bits, even with increased queries.
+
+These are upper bounds under explicit ideal hypotheses, not attack-probability
+lower bounds. The report excludes functional reduction, hash/extraction,
+Fiat-Shamir/QROM, full recursion and NEAR errors. It makes no complete proof
+size projection. The existing152200-byte batch remains a diagnostic size only.
+A secure profile requires larger-field analysis and a stronger query/recursion
+strategy; merely adding proofs of diagnostic correctness cannot establish it.
+
+Validation: full check.py PASS4203, /tmp/checked-near-audit.log. Exact rational
+query arithmetic and minimal query counts checked by the measurement script;
+results/call-layer-certificates/ideal-pcs-budget.json records assumptions and
+source hashes. No executable protocol or proof bytes changed. Full goal and
+NOT_PASSED feasibility gate remain open.

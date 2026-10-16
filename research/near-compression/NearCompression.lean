@@ -1604,3 +1604,5 @@ import NearCompression.GKRRootMessageCheck
 import NearCompression.CallSourceOpening
 
 import NearCompression.CallMerkleOpening
+
+import NearCompression.CheckedHistoryNear
