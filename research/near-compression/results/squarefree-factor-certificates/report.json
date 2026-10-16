@@ -1,0 +1,9 @@
+{
+  "formal_derivative_product_identities": 720,
+  "constructed_factor_certificate_pairs": 401,
+  "protected_selected_roots": 296,
+  "rejected_nonsquarefree_products": 319,
+  "repeated_factor_negatives": 4,
+  "finite_field_evaluation_counterexamples": 4,
+  "scope": "Explicit factor/complement and selected-factor derivative certificates from a source derivative unit certificate; collision-count composition. General source separability and factor selection remain open."
+}

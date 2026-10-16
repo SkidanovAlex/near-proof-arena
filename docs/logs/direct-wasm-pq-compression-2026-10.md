@@ -9144,3 +9144,30 @@ Next: derive selected-factor/complement coprimality from squarefreeness,
 connect factor selection and specialization, and prove useful-branch coverage.
 Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
 unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Source separability supplies factor certificates
+
+Added SquarefreeFactorCertificates.lean with six audited public theorems.
+The formal derivative product rule is recovered by evaluating the existing
+pointwise product rule at a transcendental rational indeterminate, then using
+formal embedding injectivity. No inference from finite base-field evaluation
+is used. Derivatives also preserve coefficient equality and padding.
+
+Given P=h*g and S*P+T*P'=1, explicit multipliers U=S*g+T*g', V=T*h'
+satisfy U*h+V*g=1. Replacing V by T*g supplies U*h+(T*g)*h'=1.
+Thus source separability supplies both factor/complement coprimality and
+selected-factor separability. Root conditions and the source-degree collision
+count are composed with these constructed certificates. A derivative unit
+certificate for P and a coefficientwise factorization remain premises;
+separability of arbitrary initial specialization is not assumed automatic.
+
+Validation:720 formal derivative product identities,401 constructed certificate
+pairs,296 protected selected roots and319 rejected nonsquarefree products.
+Four repeated-factor negatives and four finite-field vanishing-polynomial
+counterexamples retained. Full audit4592 PASS, allowed axioms only. Evidence:
+results/squarefree-factor-certificates/.
+
+Next: derive suitable separable initial data and select factors with controlled
+parameter degree, then connect useful-branch forcing and coverage. Full MCA
+and protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

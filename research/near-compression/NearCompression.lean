@@ -1752,3 +1752,5 @@ import NearCompression.PolynomialParameterFamily
 import NearCompression.SelectedFactorSmoothness
 
 import NearCompression.FactorCollisionGuard
+
+import NearCompression.SquarefreeFactorCertificates
