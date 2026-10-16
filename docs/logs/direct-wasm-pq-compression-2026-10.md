@@ -5839,3 +5839,34 @@ objective and NOT_PASSED feasibility gate remain open.
 Full check.py PASS4159 theorem/axiom and boundary checks;
 /tmp/sha384-call-equations-audit.log. New module/Audit/scope entries registered.
 Python compilation and git diff --check pass.
+
+### Exact coefficient batching identity and ideal cancellation bound
+
+CallLinearBatch.lean proves the algebraic step between unbatched descriptors
+and the GKR compiler's coefficient functional. Generic field equations are
+left-minus-optional-right-minus-constant (copies use constant0). Compilation
+scatters +weight/-weight into slots and accumulates weight*constant in the
+claim. call_scatter_dot and call_linear_compilation prove the resulting dot
+product minus claim equals the weighted residual sum. Repeated slots are
+allowed and summed exactly; no unique-slot or nonzero-weight premise is used.
+
+call_compiled_score_mle identifies equality-weight batching with the residual
+table MLE. call_compiled_batch_zero_count applies finite-grid counting directly
+to that compiled functional: a fixed nonzero residual in2^dpositions is hidden
+on at most d*|sample|^(d-1) challenge vectors from a distinct sample. Thus the
+ideal uniform bound is d/|sample|, conditional on fixed residuals and bounded
+slots. The retained2880-equation batch occupies d=12 coordinates; zero padded
+positions are represented algebraically by self-copy equations with constant0.
+This is not an end-to-end soundness or Fiat-Shamir/QROM result.
+
+Remaining refinement: connect actual Nat/Fp descriptor constants to the chosen
+extension representation, prove Python's mutable array accumulation implements
+the mathematical scatter, identify exact padding behavior, and join the GKR
+circuit compiler/PCS and commitment semantics. The theorem quantifies over an
+abstract field; it does not certify the diagnostic Ext4 profile at128PQ bits.
+No proof or protocol change;152200-byte retained bundle unchanged.
+
+Validation: full check.py PASS4164 theorem/axiom and boundary checks,
+/tmp/call-linear-batch-audit.log. Five public theorem audits and module/scope
+entries registered; git diff --check clean. Full NEAR1Pgas/PQ128/sub300k goal
+and NOT_PASSED feasibility gate remain open.

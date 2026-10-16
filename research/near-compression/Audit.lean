@@ -5965,3 +5965,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.call_constant_equations_eval
 #print axioms NearCompression.call_state_equations_eval
 #print axioms NearCompression.call_digest_equations_sound
+
+#print axioms NearCompression.call_scatter_dot
+#print axioms NearCompression.call_linear_compilation
+#print axioms NearCompression.call_residual_batch_zero_count
+#print axioms NearCompression.call_compiled_score_mle
+#print axioms NearCompression.call_compiled_batch_zero_count

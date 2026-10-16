@@ -1580,3 +1580,5 @@ import NearCompression.SHA384ChunkCallCheck
 import NearCompression.SHA384CallLinear
 
 import NearCompression.SHA384CallEquations
+
+import NearCompression.CallLinearBatch
