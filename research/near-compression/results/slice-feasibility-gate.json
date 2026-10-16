@@ -132,7 +132,9 @@
     "NearCompression/Ext4TerminalBinding.lean",
     "results/ext4-terminal-binding-integration.json",
     "NearCompression/NearFunctionalFoldAcceptance.lean",
-    "results/near-functional-fold-acceptance-integration.json"
+    "results/near-functional-fold-acceptance-integration.json",
+    "NearCompression/Literal193GKRGeometry.lean",
+    "results/literal193-geometry-integration.json"
   ],
   "requirements": [
     {
@@ -145,7 +147,8 @@
       "name": "Same committed data throughout",
       "status": "INCOMPLETE",
       "needed": "Bind code/public state, AIR sources, GKR statements and final PCS claims; no separately trusted original proofs or unbound witness data.",
-      "established": "Literal slice frontend reconstructs canonical AIR locally, checks actual Lean preparation against the same public vector, and verifies binary proof against the same statement and source roots. These roots are proof commitments, not externally trusted trace certificates."
+      "established": "Literal slice frontend reconstructs canonical AIR locally, checks actual Lean preparation against the same public vector, and verifies binary proof against the same statement and source roots. These roots are proof commitments, not externally trusted trace certificates.",
+      "captured_geometry": "Packed literal193 fixture metadata replay validated76 lanes and2072 live slots; Lean kernel certificates now discharge lane WellFormed and CanonicalLaneSelectors for these exact table records. Compiler correspondence remains executable parity, not universal formal refinement."
     },
     {
       "name": "Complete soundness ledger",

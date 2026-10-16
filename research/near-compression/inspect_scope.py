@@ -345,6 +345,7 @@ SOURCES = [
     "research/near-compression/NearCompression/PreparedLocalsFrameWrite.lean",
     "research/near-compression/NearCompression/GKRSlotCertificate.lean",
     "research/near-compression/NearCompression/GKRJointLaneSeparation.lean",
+    "research/near-compression/NearCompression/Literal193GKRGeometry.lean",
     "research/near-compression/NearCompression/GKRBooleanLaneSeparator.lean",
     "research/near-compression/NearCompression/GKRWeightCoordinateDegree.lean",
     "research/near-compression/NearCompression/SHA384DirectPublicCheck.lean",

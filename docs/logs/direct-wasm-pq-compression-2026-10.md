@@ -2404,3 +2404,30 @@ and full NEAR1Pgas feasibility remain open. No measured bytes changed.
 
 Validation: full `check.py` passed with 3774 registered results and enforced
 axiom allowlist. Slice feasibility remains NOT_PASSED.
+
+
+### Retained literal193 geometry certificate
+
+Replayed the retained packed193-instruction GKR proof through the existing
+heterogeneous metadata audit:76 lanes,2072 live slot values,76 beta values,
+three partial lanes and13 rejected metadata mutations. Independent live-slot
+enumeration accepted the same76 selectors and rejected four geometry mutations.
+The captured layout has16 row coordinates,inputLog13,commonLog12 and4096
+private slots. Branch degrees are4096,256,4096,4096; their common-domain
+projection exponents are1,16,1,1.
+
+`Literal193GKRGeometry.lean` is reproducibly generated from the retained metadata
+and kernel-checks lane WellFormed and CanonicalLaneSelectors for these exact
+table records. It reuses existing GKRMetadataValidity and GKRSlotCertificate
+proofs. The metadata hash is embedded in the module, while the captured proof
+and statement hashes are retained in the audit report.
+
+This instantiates numerical geometry for the measured fixture. Compiler-export
+correspondence and beta equality are checked by executable parity, not a
+universal Lean compiler refinement. The observed input dimension is not a
+proof that circuit dimensions remain fixed over every transcript. Source
+projection identities, full near/far composition, quantum security and the
+full NEAR1Pgas secure-size target remain open.
+
+Validation: full `check.py` passed with3776 registered results and enforced
+axiom allowlist. No proof bytes or security parameters changed.

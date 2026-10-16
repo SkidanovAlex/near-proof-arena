@@ -507,6 +507,7 @@
     "research/near-compression/NearCompression/PreparedLocalsFrameWrite.lean": "b76f867c3b34857aca7868050edc22c1a407460ca1129ad36206bd67896a83cc",
     "research/near-compression/NearCompression/GKRSlotCertificate.lean": "5d536aa06735618faedd6242ef0712f9c85fe2351114f49da9f67c8a97b8731f",
     "research/near-compression/NearCompression/GKRJointLaneSeparation.lean": "8f0db89a3f140701921eae8735052954f7cd0cee03816af21e92c1b3336223d2",
+    "research/near-compression/NearCompression/Literal193GKRGeometry.lean": "5d0a668e91e6c4fdcf094c7db12dde77460c586b6c8251e1ecfadbb59ffb1230",
     "research/near-compression/NearCompression/GKRBooleanLaneSeparator.lean": "d59dbd90659d2014c2f1f8cd4fcd5f7c16c6a30135261a2ebbfe2b6950930a5a",
     "research/near-compression/NearCompression/GKRWeightCoordinateDegree.lean": "b01505e4cca1c8e74b54ef3b07150a971e7dd30dbbeab2d7b5c8987996d3288a",
     "research/near-compression/NearCompression/SHA384DirectPublicCheck.lean": "9542807a8b8f9c8e7beaa10b4d1a246e0bc4766bf1d91d5fe9382c9e503a813a",
