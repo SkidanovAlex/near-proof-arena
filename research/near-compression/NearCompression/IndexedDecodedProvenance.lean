@@ -1,6 +1,6 @@
 import NearCompression.FixedJointSourceTrace
 namespace NearCompression
-open Lean.Grind ZkFormal.Algebra
+open Lean.Grind ZkFormal.Algebra ZkFormal.Air
 
 /-- A live lane cannot occur at two indices under all-slot disjointness.
 Empty-support lanes are not incorrectly declared unique. -/
@@ -74,5 +74,81 @@ theorem decoded_source_indexed_provenance {K : Type} [Field K]
   rw [same,selected,laneAt]
   have pi : i<polys.length := by omega
   simp only [List.getD,List.getElem?_eq_getElem pi,Option.getD_some]
+
+/-- One index family is selected from metadata before any source oracle,
+polynomial tuple, decoded trace, or auxiliary strategy is supplied. -/
+theorem metadata_source_index_family (tables : List GKRTableMetadata)
+    (disjoint : AllLaneSupportsDisjoint (tables.flatMap gkrMetadataLanes))
+    (tableAt : Nat → GKRTableMetadata)
+    (member : ∀ t,0<(tableAt t).sourceWidth → tableAt t∈tables) :
+    ∃ indices : Nat → Nat → Nat,∀ t column,∀ hc : column<(tableAt t).sourceWidth,
+      ∃ hi : indices t column<(tables.flatMap gkrMetadataLanes).length,
+        (tables.flatMap gkrMetadataLanes)[indices t column]=metadataColumnLane (tableAt t) column ∧
+        ∀ j,∀ hj : j<(tables.flatMap gkrMetadataLanes).length,
+          (tables.flatMap gkrMetadataLanes)[j]=metadataColumnLane (tableAt t) column → j=indices t column := by
+  classical
+  have each : ∀ t column,∃ i,∀ hc : column<(tableAt t).sourceWidth,
+      ∃ hi : i<(tables.flatMap gkrMetadataLanes).length,
+        (tables.flatMap gkrMetadataLanes)[i]=metadataColumnLane (tableAt t) column ∧
+        ∀ j,∀ hj : j<(tables.flatMap gkrMetadataLanes).length,
+          (tables.flatMap gkrMetadataLanes)[j]=metadataColumnLane (tableAt t) column → j=i := by
+    intro t column
+    by_cases hc : column<(tableAt t).sourceWidth
+    · obtain ⟨i,hi,same,unique⟩ := metadata_source_column_index tables disjoint (tableAt t)
+        (member t (by omega)) column hc
+      exact ⟨i,fun _=>⟨hi,same,unique⟩⟩
+    · exact ⟨0,fun h=>False.elim (hc h)⟩
+  exact ⟨fun t column=>Classical.choose (each t column),fun t column=>Classical.choose_spec (each t column)⟩
+
+/-- Compose metadata index selection, decoded provenance and joint PCS
+representatives into a single fixed base source trace. No externally chosen
+index family or indexed provenance premise remains. -/
+theorem metadata_joint_fixed_source_trace {A : Type}
+    (layout : GKRJointLayout) (tables : List GKRTableMetadata)
+    (disjoint : AllLaneSupportsDisjoint (tables.flatMap gkrMetadataLanes))
+    (tableAt : Nat → GKRTableMetadata)
+    (member : ∀ t,0<(tableAt t).sourceWidth → tableAt t∈tables)
+    (valid : ∀ lane∈tables.flatMap gkrMetadataLanes,lane.WellFormed layout)
+    (geometry : CanonicalLaneSelectors layout (tables.flatMap gkrMetadataLanes))
+    (domain : List Fp8) (distinct : domain.Nodup) (basePoints : ∀ x∈domain,Fp8.IsBase x)
+    (D T : Nat) (separation : 2*(domain.length-T)+D≤domain.length)
+    (sourceOracles : Nat → Nat → Fp8 → Fp)
+    (sources : A → List (Fp8 → Fp8)) (polys : A → List (Poly Fp8))
+    (decoded : A → Trace Fp8) (eligible : A → Prop)
+    (sourceShape : ∀ a,eligible a → (sources a).length=(tables.flatMap gkrMetadataLanes).length)
+    (representative : ∀ a,eligible a →
+      JointBetaRepresentative domain (fun _=>1) (heterogeneousJointDimension layout) D T
+        ((tables.flatMap gkrMetadataLanes).map (heterogeneousJointBeta layout)) (sources a) (polys a))
+    (fixedOracle : ∀ a,eligible a → ∀ t column,column<(tableAt t).sourceWidth →
+      ∀ i,∀ hi : i<(tables.flatMap gkrMetadataLanes).length,
+        (tables.flatMap gkrMetadataLanes)[i]=metadataColumnLane (tableAt t) column →
+        (sources a).getD i (fun _=>0)=(fun x=>Fp8.ofBase (sourceOracles t column x)))
+    (logs : ∀ a,eligible a → (decoded a).log=(fun t=>(tableAt t).rowLog))
+    (provenance : ∀ a,eligible a → ∀ t column,column<(tableAt t).sourceWidth →
+      ∃ polynomial : Poly Fp8,
+        (metadataColumnLane (tableAt t) column,polynomial)∈(tables.flatMap gkrMetadataLanes).zip (polys a) ∧
+        (fun row=>(decoded a).cell t row column)=
+          recoveredColumnValues layout.commonLog (metadataColumnLane (tableAt t) column)
+            (metadataColumnOffset (tableAt t) column) polynomial) :
+    ∃ source : Trace Fp,source.log=(fun t=>(tableAt t).rowLog) ∧
+      ∀ a,eligible a → (decoded a).log=source.log ∧
+        ∀ t row column,column<(tableAt t).sourceWidth →
+          (decoded a).cell t row column=Fp8.ofBase (source.cell t row column) := by
+  obtain ⟨indices,indexSpec⟩ := metadata_source_index_family tables disjoint tableAt member
+  have indexBound := fun t column hc=>(indexSpec t column hc).choose
+  apply fixed_joint_representative_source_trace layout (tables.flatMap gkrMetadataLanes) valid geometry
+    domain distinct basePoints D T separation (fun t=>(tableAt t).rowLog)
+    (fun t=>(tableAt t).sourceWidth) indices (fun t column=>metadataColumnOffset (tableAt t) column)
+    indexBound sourceOracles sources polys decoded eligible sourceShape representative
+  · intro a ha t column hc
+    exact fixedOracle a ha t column hc (indices t column) (indexBound t column hc)
+      (indexSpec t column hc).choose_spec.1
+  · exact logs
+  · intro a ha t row column hc
+    exact decoded_source_indexed_provenance layout.commonLog tables (polys a)
+      ((representative a ha).1.trans (sourceShape a ha)) (tableAt t) column
+      (fun column row=>(decoded a).cell t row column) (indices t column) (indexBound t column hc)
+      (indexSpec t column hc).choose_spec.1 (indexSpec t column hc).choose_spec.2
+      (provenance a ha t column hc) row
 
 end NearCompression

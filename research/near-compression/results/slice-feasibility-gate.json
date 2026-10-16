@@ -455,5 +455,6 @@
     "ext12_256_ideal_minimum_queries": 617,
     "scope": "Conditional ideal PCS component only; no full or PQ certification, no new secure byte measurement."
   },
-  "decoded_base_field_boundary": "PARTIAL: joint-representative descent for typed base oracles, recovered base-valued cells, constructed base trace and bounded source AIR/execution witness transport proved. Authenticated typed-oracle/native binding and auxiliary/bus alignment remain open."
+  "decoded_base_field_boundary": "PARTIAL: joint-representative descent for typed base oracles, recovered base-valued cells, constructed base trace and bounded source AIR/execution witness transport proved. Authenticated typed-oracle/native binding and auxiliary/bus alignment remain open.",
+  "metadata_fixed_source_composition": "PROVED_CONDITIONALLY: metadata_source_index_family selects indices independently of polynomial tuples; metadata_joint_fixed_source_trace derives one base source trace from existential decoded provenance and joint representatives. Explicit premises still include fixed typed source oracles, metadata geometry/disjointness, unique-decoding separation, representative eligibility and decoded provenance. Native authentication and global acceptance remain open."
 }

@@ -4080,3 +4080,20 @@ The index-family assembly, native metadata authentication and auxiliary
 formula/global soundness connections remain open.
 Full check.py passed 4030 registered results with the existing axiom allowlist.
 No native/size changes; QROM security remains open, gate NOT_PASSED.
+
+### Metadata index family composed with fixed source trace
+
+`metadata_source_index_family` now chooses all live source-column indices from
+metadata before polynomial tuples or auxiliary strategies are supplied.
+`metadata_joint_fixed_source_trace` uses that family and existential decoded
+provenance to instantiate `fixed_joint_representative_source_trace`. The caller
+no longer supplies indices or an indexed provenance equality. Empty source
+widths impose no membership requirement; live lanes retain unique indices.
+
+Validation: full `check.py` PASS (4032 registered results); existing axiom
+allowlist. Native captures were not rerun for this formal-only composition.
+This does not establish authenticated typed source oracles, representative
+existence from actual verifier acceptance, native auxiliary formula refinement,
+QROM soundness or secure sub-300 KB size. The slice gate stays NOT_PASSED.
+Next: instantiate the slice table enumeration and combine this common source
+with bus/local/GKR failure accounting in one acceptance theorem.
