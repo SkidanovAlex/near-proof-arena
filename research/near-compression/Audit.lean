@@ -6283,3 +6283,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.irreducible_derivative_bezout
 #print axioms NearCompression.irreducible_small_degree_root_smooth
+
+#print axioms NearCompression.transport_polynomial_coefficient
+#print axioms NearCompression.transport_polynomial_add
+#print axioms NearCompression.transport_polynomial_mul
+#print axioms NearCompression.transport_polynomial_derivative
+#print axioms NearCompression.transport_polynomial_bezout
+#print axioms NearCompression.irreducible_extension_root_smooth

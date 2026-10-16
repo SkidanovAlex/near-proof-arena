@@ -1,0 +1,86 @@
+{
+  "coefficient_homomorphism_pairs": 83,
+  "extension_certificate_evaluations": 83,
+  "new_smooth_roots": 6,
+  "witnesses": [
+    {
+      "prime": 3,
+      "nonsquare": 2,
+      "polynomial": [
+        1,
+        0,
+        1
+      ],
+      "A": [
+        1
+      ],
+      "B": [
+        0,
+        1
+      ],
+      "extension_roots": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ]
+    },
+    {
+      "prime": 5,
+      "nonsquare": 2,
+      "polynomial": [
+        3,
+        0,
+        1
+      ],
+      "A": [
+        2
+      ],
+      "B": [
+        0,
+        4
+      ],
+      "extension_roots": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          4
+        ]
+      ]
+    },
+    {
+      "prime": 7,
+      "nonsquare": 3,
+      "polynomial": [
+        4,
+        0,
+        1
+      ],
+      "A": [
+        2
+      ],
+      "B": [
+        0,
+        6
+      ],
+      "extension_roots": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          6
+        ]
+      ]
+    }
+  ],
+  "scope": "Concrete quadratic-extension regressions; generic Lean transport is proved. Generic extension construction and full MCA remain open."
+}

@@ -484,6 +484,7 @@
     "research/near-compression/NearCompression/SmallCharacteristicDerivative.lean": "f51b8f5bccb41bdcca5d2fc899919351d13f26c7606f0ff8884907fcc2dbab2d",
     "research/near-compression/NearCompression/BezoutSmoothness.lean": "8bff43895bf280e2c2637016d1391906b6b8533472583c5973dca48ca74d9c06",
     "research/near-compression/NearCompression/PolynomialDivision.lean": "faaab20396978dc1973e905adc4c3f51bca0652b75f68a820c3ed67ff274632b",
+    "research/near-compression/NearCompression/PolynomialFieldTransport.lean": "0ab036b8abef3c54ce3db7fc159c9f5b8a5e0f38055460c4db75a38d5383e0c3",
     "research/near-compression/NearCompression/IrreducibleDerivativeBezout.lean": "e4c06d306082b206db6659e72c36310297ad899b1c14542f5268637a93600359",
     "research/near-compression/NearCompression/PolynomialBezoutExistence.lean": "b13a30ed78605802ca96f7fabf9ce12d94a4aa573b8795ab6e5bd1f73e92031e",
     "research/near-compression/NearCompression/FormalTranslation.lean": "08dd67f2b94cf06e2adbed07d64d3cdf263bcf968eeae1d0d27105d0b350efb1",

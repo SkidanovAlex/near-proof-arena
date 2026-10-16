@@ -8469,3 +8469,28 @@ coefficient/certificate transport to those extensions. Complete MCA exception
 counting and protocol/QROM composition remain open. No runtime or security-
 parameter change: diagnostic bundle1344645 B, feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Certificate transport to extension-field roots
+
+Added PolynomialFieldTransport.lean with six audited public theorems. An
+explicit unital coefficient homomorphism preserves coefficients, polynomial
+addition and multiplication, and formal differentiation. Unit Bezout
+certificates transport coefficientwise. Combining this with the existing
+low-degree irreducible derivative certificate proves smoothness at roots in
+any target field equipped with the coefficient homomorphism. Irreducibility
+of the mapped polynomial is not assumed: it can split in the extension.
+Root existence and generic extension construction remain separate obligations.
+
+Validation: concrete quadratic extensions F9/F25/F49, including exhaustive
+checks of multiplication associativity/distributivity and nonzero inverses.
+83 base coefficient homomorphism pairs and 83 extension certificate evaluations
+pass; six smooth roots exist outside their respective base fields, where the
+three selected quadratics have no roots. Corrupt zero certificates fail.
+Full audit4421 PASS, allowed axioms only. Evidence:
+results/polynomial-field-transport/.
+
+Next: irreducible factorization and generic algebraic field/root construction,
+then the useful-branch and complete MCA exceptional-set bounds. This closes
+certificate transport, not extension existence or protocol/QROM composition.
+Runtime and security parameters unchanged: diagnostic1344645 B,
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
