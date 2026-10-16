@@ -1,0 +1,10 @@
+{
+  "initial_residual_and_slope_evaluation_checks": 2700,
+  "weighted_slope_degree_cases": 400,
+  "nonzero_slope_pole_counts": 202,
+  "constructed_initial_branches": 12,
+  "matched_lift_specializations": 71,
+  "singular_initial_branch_counterexamples": 1,
+  "sampled_only_initial_root_counterexamples": 1,
+  "scope": "Actual dense input residual, slope, degree and polynomial-initial-branch lift. Existence of a common algebraic branch and singular/inseparable factor treatment remain open."
+}

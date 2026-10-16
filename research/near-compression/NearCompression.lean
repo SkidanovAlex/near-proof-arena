@@ -1690,3 +1690,5 @@ import NearCompression.RationalSpecialization
 import NearCompression.CommonDenominator
 
 import NearCompression.SymbolicHensel
+
+import NearCompression.TrivariateInitialBranch

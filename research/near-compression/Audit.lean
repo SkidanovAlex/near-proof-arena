@@ -6253,3 +6253,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.specialize_hensel_perturb
 #print axioms NearCompression.symbolic_hensel_specializes
 #print axioms NearCompression.symbolic_hensel_high_coefficient_zero
+
+#print axioms NearCompression.trivariate_initial_residual_eval
+#print axioms NearCompression.trivariate_initial_slope_eval
+#print axioms NearCompression.trivariate_initial_slope_degree
+#print axioms NearCompression.trivariate_initial_branch_lift
+#print axioms NearCompression.trivariate_initial_slope_root_count

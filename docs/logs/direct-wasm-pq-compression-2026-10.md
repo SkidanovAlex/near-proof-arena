@@ -8302,3 +8302,37 @@ factor argument, including algebraic extensions and singular/inseparable
 cases. Full MCA/protocol/QROM composition remains open. No runtime or security-
 parameter change: diagnostic bundle1344645 B, feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Derive initial residual and slope from trivariate coefficients
+
+Added TrivariateInitialBranch.lean with five audited public theorems. Dense
+Q(X,Y,Z) uses Y rows, X coefficient lists, and polynomial-in-Z entries. The
+initial residual is Q(0,a(Z),Z); the initial slope is constructed by formal
+Y-division at a(Z) and substitution into that quotient. Their specializations
+are proved to be exactly the numeric initial-root equation and Hensel slope.
+The symbolic lift therefore specializes correctly when the supplied initial
+branch is a FORMAL polynomial root and the computed slope is nonzero at z.
+There is no separately trusted numeric slope input in this composition.
+
+If a has degree≤w and Q(0,Y,Z) has weighted degree<D, the constructed slope
+has degree<D-w. For a formally nonzero slope, its zero challenges on any
+distinct sample are bounded by D-w-1. This pole budget follows from the
+actual weighted input and the quotient-degree theorem. Formal nonzero slope
+remains an explicit requirement. The existence of the initial branch is NOT
+proved here; general useful factors may require an algebraic extension, not
+a polynomial branch a(Z) over the original field.
+
+Validation:2700 initial residual/slope evaluation checks over F2/F3/F5/F17,
+400 weighted slope-degree cases and202 nonzero-slope pole counts. Twelve
+constructed initial branches give71 matched symbolic/numeric lift
+specializations using the slope computed from input data. An independent
+formal Y-derivative calculation matches the quotient-based slope. Boundary
+examples reject inferring smoothness from a formal initial root, and reject
+inferring a formal initial branch from one sampled root. Full audit4396 PASS,
+allowed axioms only. Evidence: results/trivariate-initial-branch/.
+
+Next: the general common-branch/useful-factor construction, algebraic
+extensions, and singular/inseparable factor treatment needed for the full
+MCA exceptional-set argument. The polynomial-branch interface does not close
+those obligations. No runtime or cryptographic parameter change: diagnostic
+bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
