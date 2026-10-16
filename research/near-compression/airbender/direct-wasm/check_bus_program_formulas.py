@@ -39,7 +39,12 @@ def expected(table,public,alpha,gamma,finals,field=None):
     for ii,interaction in enumerate(interactions):
         fp=lit(zero);weight=one
         for e in interaction['msg']:fp=plus(fp,times(expr(e,public,field),lit(weight)));weight=multiply(weight,alpha)
-        fp=plus(fp,lit(multiply(lift(interaction['bus']+1),weight)));p0=minus(lit(gamma),fp);bits=[expr(e,public,field) for e in interaction['mult']]
+        fp=plus(fp,lit(multiply(lift(interaction['bus']+1),weight)))
+        if field is not None:
+            # Match lowerBusInteraction's exact Horner AST for specification checking.
+            fp=lit(lift(interaction['bus']+1))
+            for e in reversed(interaction['msg']):fp=plus(expr(e,public,field),times(lit(alpha),fp))
+        p0=minus(lit(gamma),fp);bits=[expr(e,public,field) for e in interaction['mult']]
         if not bits:factors.append(lit(one));continue
         first=plus(lit(one),times(bits[0],minus(p0,lit(one))))
         if len(bits)==1:factors.append(first);continue

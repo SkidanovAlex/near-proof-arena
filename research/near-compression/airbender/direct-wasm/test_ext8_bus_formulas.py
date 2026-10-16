@@ -101,7 +101,8 @@ def main():
                     except ValueError: rejections += 1
                     else: raise AssertionError('accepted mutation '+mode)
             if trial < 2:
-                capture.append(dict(width=width,current=current,next=nxt,selectors=selectors,residuals=certificates))
+                capture.append(dict(width=width,current=current,next=nxt,selectors=selectors,residuals=certificates,
+                    table=table,public=[],alpha=alpha,gamma=gamma,finals=finals))
     if args.capture:
         args.capture.write_text(json.dumps(capture,separators=(',',':'))+'\n')
     report = {'status': 'PASS', 'cases': cases, 'residual_value_comparisons': comparisons,

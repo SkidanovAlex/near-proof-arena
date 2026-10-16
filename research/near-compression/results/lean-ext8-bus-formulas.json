@@ -7,6 +7,30 @@
   },
   "rejections": [
     {
+      "case": "coherent-wrong-specification",
+      "reason": "uncaught exception: bus specification rejected"
+    },
+    {
+      "case": "changed-bus-id",
+      "reason": "uncaught exception: bus specification rejected"
+    },
+    {
+      "case": "changed-bus-challenge",
+      "reason": "uncaught exception: bus specification rejected"
+    },
+    {
+      "case": "changed-final",
+      "reason": "uncaught exception: bus specification rejected"
+    },
+    {
+      "case": "omitted-residual",
+      "reason": "uncaught exception: bus specification rejected"
+    },
+    {
+      "case": "reordered-residuals",
+      "reason": "uncaught exception: bus specification rejected"
+    },
+    {
       "case": "wrong-root",
       "reason": "uncaught exception: formula route rejected"
     },
@@ -47,7 +71,7 @@
       "reason": "uncaught exception: empty residuals"
     }
   ],
-  "capture_sha256": "b967655ed6885aeaf1c5cd6ccee000f681c033c1a334d4ccd4ed8069ed07e4e3",
-  "checker_sha256": "332916d9da3ceee0fbf6f54e6d7af6815487b8a0930f3c8172f3fd735ec68d97",
-  "scope": "Executable Lean formula routes, acyclicity and sampled values; no universal Python refinement or prover security claim."
+  "capture_sha256": "0277462aedeed14c7ae83c8fb5e5c127c7f70de506b452b0a483d578b1371728",
+  "checker_sha256": "457fefc477e79897c99189aa11531af105f8c12debe5bc323cc03cfc5c941c49",
+  "scope": "Exact formal bus-spec AST binding, formula routes, acyclicity and sampled values; no full prover or authentication claim."
 }

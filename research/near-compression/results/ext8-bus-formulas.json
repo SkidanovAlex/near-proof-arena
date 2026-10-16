@@ -5,8 +5,8 @@
   "register_mutation_rejections": 576,
   "scope": "Ext8 candidate formula generation and independent row semantics; no prover/security/refinement claim.",
   "source_sha256": {
-    "test_ext8_bus_formulas.py": "4a1859fbadd297753afef3d40c155937cf4eaf4b224bf2890bfd0e1ee2b2bc63",
-    "check_bus_program_formulas.py": "97b5b82d0759143c776810a5b2aec7ed428c99bad54a24e25b88b288113f5807",
+    "test_ext8_bus_formulas.py": "48713ee05386c4476f4faf82520a7348cd7dbb0224ce6fb52580be31f17c10d0",
+    "check_bus_program_formulas.py": "ae8b81c103dedc35f343496d726d1a61706c8a5baf008bb67e3e94408598bf10",
     "pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a"
   }
 }

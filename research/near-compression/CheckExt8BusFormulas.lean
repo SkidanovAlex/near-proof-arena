@@ -1,5 +1,5 @@
 import NearCompression.BusFormulaCheck
-import NearCompression.NativeStyleCoordinateAccumulation
+import NearCompression.GeneratedExt8BusSpecCheck
 import Lean
 open Lean NearCompression ZkFormal.Algebra
 private def need (x : Except String α) : IO α :=
@@ -16,6 +16,33 @@ private def scalar (j : Json) : IO Fp8 := do
   require (a.size==8) "Ext8 scalar width"
   let xs ← a.toList.mapM baseScalar
   return Fp8.ofCoeffs (fun i=>xs.getD i 0)
+private partial def expression (j : Json) : IO ZkFormal.Air.Expr := do
+  let a ← need j.getArr?
+  require (0<a.size) "empty AIR expression"
+  let tag ← need a[0]!.getStr?
+  match tag with
+  | "c" | "p" =>
+      require (a.size==2) "AIR constant/pubValues arity"
+      let n ← need a[1]!.getNat?
+      return if tag=="c" then .const n else .pub n
+  | "v" =>
+      require (a.size==3) "AIR column arity"
+      let c ← need a[1]!.getNat?
+      let nx ← need a[2]!.getBool?
+      return .col c nx
+  | "first" | "last" | "trans" =>
+      require (a.size==1) "AIR selector arity"
+      return if tag=="first" then .isFirst else if tag=="last" then .isLast else .isTransition
+  | "+" | "*" =>
+      require (a.size==3) "AIR binary arity"
+      let left ← expression a[1]!
+      let right ← expression a[2]!
+      return if tag=="+" then .add left right else .mul left right
+  | "-" =>
+      require (a.size==2) "AIR negation arity"
+      return .neg (←expression a[1]!)
+  | _ => throw (IO.userError "unknown AIR expression")
+
 private partial def busFormula (j : Json) : IO (BusProgramFormula Fp8) := do
   let a ← need j.getArr?
   require (0<a.size) "empty bus formula"
@@ -44,6 +71,12 @@ private def instruction (j : Json) : IO (TerminalInstruction Fp8) := do
   let code ← need a[0]!.getNat?
   let some opcode := terminalDecodeOpcode code | throw (IO.userError "instruction opcode")
   return ⟨opcode,←need a[1]!.getNat?,←need a[2]!.getNat?,←scalar (Json.arr (a.extract 3 11))⟩
+private def interaction (j : Json) : IO ZkFormal.Air.Interaction := do
+  let bus ← need (←field j "bus").getNat?
+  let send ← need (←field j "send").getBool?
+  let msg ← (←need (←field j "msg").getArr?).toList.mapM expression
+  let mult ← (←need (←field j "mult").getArr?).toList.mapM expression
+  return { bus := bus, send := send, msg := msg, mult := mult }
 def main (args : List String) : IO Unit := do
   let [path] := args | throw (IO.userError "expected fixture path")
   let document ← need (Json.parse (←IO.FS.readFile path))
@@ -64,6 +97,19 @@ def main (args : List String) : IO Unit := do
       transition:=←scalar (←field selectors "trans") }
     let residuals ← need (←field caseData "residuals").getArr?
     require (0<residuals.size) "empty residuals"
+    let table ← field caseData "table"
+    let sourceWidth ← need (←field table "width").getNat?
+    let interactions ← (←need (←field table "interactions").getArr?).toList.mapM interaction
+    let publicValues ← (←need (←field caseData "public").getArr?).toList.mapM baseScalar
+    let alpha ← scalar (←field caseData "alpha")
+    let gamma ← scalar (←field caseData "gamma")
+    let finals ← (←need (←field caseData "finals").getArr?).toList.mapM scalar
+    require (finals.length==interactions.length) "final count"
+    let lowered := interactions.map (lowerBusInteraction (publicValues.map Fp8.ofBase) alpha gamma)
+    require (width==sourceWidth+8*(busTableChainColumns lowered+interactions.length)) "specified coordinate width"
+    let formulas ← residuals.toList.mapM (fun residual=>do busFormula (←field residual "formula"))
+    require (generatedExt8BusSpecCheck lowered sourceWidth (fun i=>finals.getD i 0) formulas) "bus specification rejected"
+
     for residual in residuals do
       let formula ← busFormula (←field residual "formula")
       let program ← (←need (←field residual "instructions").getArr?).toList.mapM instruction

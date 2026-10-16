@@ -26,7 +26,19 @@ def main():
     args = parser.parse_args(); original = json.loads(args.capture.read_text())
     good = run(args.capture, True)
     def residual(x): return x[0]['residuals'][0]
+    def coherent_wrong(x):
+        r = residual(x)
+        r['formula'] = ['lit', [0]*8]
+        r['instructions'] = [[0, 0, 0]+[0]*8]
+        r['root'] = 0
+        r['expected'] = [0]*8
     mutations = [
+        ('coherent-wrong-specification', coherent_wrong),
+        ('changed-bus-id', lambda x: x[3]['table']['interactions'][0].__setitem__('bus', 13)),
+        ('changed-bus-challenge', lambda x: x[1]['alpha'].__setitem__(0, (x[1]['alpha'][0]+1)%2013265921)),
+        ('changed-final', lambda x: x[1]['finals'][0].__setitem__(0, (x[1]['finals'][0][0]+1)%2013265921)),
+        ('omitted-residual', lambda x: x[0]['residuals'].pop()),
+        ('reordered-residuals', lambda x: x[0]['residuals'].reverse()),
         ('wrong-root', lambda x: residual(x).__setitem__('root', len(residual(x)['instructions']))),
         ('unknown-opcode', lambda x: residual(x)['instructions'][0].__setitem__(0, 99)),
         ('truncated-instruction', lambda x: residual(x)['instructions'][0].pop()),
@@ -47,7 +59,7 @@ def main():
     report = dict(status='PASS', positive=good, rejections=rejected,
         capture_sha256=hashlib.sha256(args.capture.read_bytes()).hexdigest(),
         checker_sha256=hashlib.sha256(Path('CheckExt8BusFormulas.lean').read_bytes()).hexdigest(),
-        scope='Executable Lean formula routes, acyclicity and sampled values; no universal Python refinement or prover security claim.')
+        scope='Exact formal bus-spec AST binding, formula routes, acyclicity and sampled values; no full prover or authentication claim.')
     args.output.write_text(json.dumps(report, indent=2)+'\n')
     print(json.dumps(dict(status='PASS', residuals=good['residuals'], rejections=len(rejected))))
 

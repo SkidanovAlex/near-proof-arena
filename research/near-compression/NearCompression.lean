@@ -1537,3 +1537,5 @@ import NearCompression.BoundedBusCoordinateTyping
 import NearCompression.BusCoordinateCoverage
 
 import NearCompression.NativeStyleCoordinateAccumulation
+
+import NearCompression.GeneratedExt8BusSpecCheck

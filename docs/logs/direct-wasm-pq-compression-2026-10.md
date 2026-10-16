@@ -4475,3 +4475,27 @@ full Ext8 slice integration and acceptance-event composition. Native commitment
 and QROM soundness, secure size and full 1 Pgas remain open.
 
 Full `check.py` PASS (4077 registered formal results), existing axiom allowlist.
+
+### Ext8 certificate formulas bound to the formal bus specification
+
+`GeneratedExt8BusSpecCheck.lean` compares the complete ordered formula list to
+`busTableResiduals` followed by native-style Ext8 lowering. Its soundness theorem
+transports accepted formula values to the formal reconstructed environment
+for all environments. `CheckExt8BusFormulas` now parses source interactions,
+public values, challenges and finals; reconstructs this specification; checks
+final count and physical width; and rejects any formula-list disagreement
+before checking routes. The Ext8 Python candidate emits the exact formal
+Horner message AST. Default Ext4 generation remains unchanged.
+
+All 8 cases/64 residuals pass; 16 runtime rejection cases include a coherent
+wrong formula+program+expected-value substitution, changed live bus ID,
+challenge/final, omission and reorder. A test changing an empty-multiplicity
+interaction's bus ID was correctly inert; it was corrected to target a live
+interaction. Forty exact default Ext4 comparisons pass. Full `check.py` PASS
+(4078 registered results), existing axiom allowlist.
+
+The certificate is now bound to the supplied formal bus specification, not
+merely to itself. Supplied statement/table/challenge authentication and full
+Ext8 prover integration are still separate. Next: integrate checks with
+slice/compiler artifacts and finish auxiliary/local/GKR/PCS/bus composition.
+QROM, secure size and full 1 Pgas remain open.
