@@ -1419,3 +1419,27 @@ are excluded; retained proof artifacts are research evidence, not a full NEAR
 proof or a 128-bit post-quantum security certification. Latest completed full
 `python3 check.py` audit passed 3,578 theorem/boundary checks. Future checkpoints
 should follow verified milestones and be pushed to `research/direct-wasm-whir`.
+
+## Checked full ideal rate-shift composition
+
+`CheckedRateShiftComposition.lean` joins the checked source-stage and mixing/
+continuation theorems into an acceptance-count bound. Next oracle and OOD data
+precede source queries; the continuation can adapt to the prior transcript,
+source queries and mixing challenge. NoCorrect is derived, folded weight shape
+is derived, and rejected prefix endpoint checks remain in the event.
+
+For nonempty sample spaces the bound has five terms: virtual extraction, source
+sampling, mixing, continuation extraction, and final sampling. The exact count
+theorem avoids division and remains valid for empty sample spaces. Full audit
+passes 3,579 theorem/boundary checks with the allowed axiom closure.
+
+`check_rate_shift_budget.py` independently normalizes the finite count bound
+and checks exact rational arithmetic for D32/N128 -> D8/N64. Source queries 314
+and continuation queries 256 jointly meet the ideal interactive 2^-128 bound;
+with those respective other counts fixed, minima are 310 and 253. These are
+not simultaneously optimized counts. Four diagnostic source queries do not
+certify that bound. These results are conditional ideal protocol calculations,
+not a quantum security claim or a measured succinct proof. The executable
+diagnostic still discloses terminal coefficients rather than implementing this
+continuation. Next work should connect a scalable executable continuation and
+price its complete authenticated data, then address the commitment/QROM bridge.

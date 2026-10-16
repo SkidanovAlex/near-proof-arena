@@ -11,6 +11,7 @@ SOURCES = [
     "research/near-compression/NearCompression/GKROutputWeights.lean",
     "research/near-compression/NearCompression/TerminalSignedBalance.lean",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean",
+    "research/near-compression/NearCompression/CheckedRateShiftComposition.lean",
     "research/near-compression/NearCompression/CheckedRateShiftQueries.lean",
     "research/near-compression/NearCompression/VirtualFoldCheckedTransfer.lean",
     "research/near-compression/NearCompression/VirtualFoldPrefix.lean",

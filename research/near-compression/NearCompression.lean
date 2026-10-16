@@ -1269,3 +1269,5 @@ import NearCompression.VirtualFoldPrefix
 import NearCompression.VirtualFoldCheckedTransfer
 
 import NearCompression.CheckedRateShiftQueries
+
+import NearCompression.CheckedRateShiftComposition
