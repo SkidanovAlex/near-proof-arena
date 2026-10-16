@@ -1686,3 +1686,5 @@ import NearCompression.HenselCoefficientStep
 import NearCompression.HenselBoundedReconstruction
 
 import NearCompression.RationalSpecialization
+
+import NearCompression.CommonDenominator

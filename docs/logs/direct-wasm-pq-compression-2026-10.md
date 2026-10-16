@@ -8231,3 +8231,37 @@ and the complete exceptional-set argument remain open.
 
 No runtime or cryptographic parameter change: diagnostic bundle1344645 B,
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Common denominator removes repeated-pole overcounting
+
+Added CommonDenominator.lean with seven audited public theorems. The expression
+interface permits polynomial leaves, addition/multiplication/negation and one
+designated reciprocal1/S. It expands to the previously guarded rational
+expression semantics, and every expansion is safe where S does not vanish.
+Normalization produces numerator/S^e, aligns sums at the maximum exponent,
+and has a proved cross-multiplied evaluation identity on that domain. Actual
+normalized numerator degrees and exponents satisfy explicit recursive budgets.
+No assertion of coefficient equality is inferred from finite-field functions.
+
+For ANY finite family using this interface, excluded distinct challenges are
+bounded by degree(S), independently of family size, repeated inversions or
+denominator exponents. Nonzero S and its degree bound are explicit. A further
+theorem proves that sufficiently many distinct SAFE zero specializations force
+the normalized numerator polynomial to be formally zero. This is a component
+needed to force high Hensel coefficients to vanish across challenges.
+
+Validation:600 expressions in20 shared-denominator families over F2/F3/F5/F17,
+including109 formal-zero certificates. Boundary tests reject using an unsafe
+point's totalized inverse-zero value as a root and reject duplicate samples.
+For Y^2+(Z+1)Y-X, the same five coefficients that had raw guard budgets
+1,3,9,27,81 now have denominator exponents1,3,5,7,9, numerator-degree budgets
+0,2,4,6,8, and ONE shared pole bound1, matching the actual excluded set.
+All138 safe specialized coefficients still match the independent finite lift.
+Full audit4385 PASS, allowed axioms only. Evidence: results/common-denominator/.
+
+This resolves repeated-pole overcounting for the explicit interface. The
+generic Lean correspondence between Hensel lifting and these expressions is
+still open (the specific recurrence is tested), as are algebraic extensions,
+useful-factor selection, inseparable cases and complete MCA exception counting.
+No runtime/security-parameter change: diagnostic bundle1344645 B, feasibility
+NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

@@ -6238,3 +6238,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.rational_specialization_eval
 #print axioms NearCompression.rational_degree_budgets
 #print axioms NearCompression.rational_unsafe_specialization_count
+
+#print axioms NearCompression.denominator_power_eval
+#print axioms NearCompression.denominator_power_degree
+#print axioms NearCompression.common_denominator_safe
+#print axioms NearCompression.common_denominator_normalization
+#print axioms NearCompression.common_denominator_family_pole_count
+#print axioms NearCompression.common_denominator_degree
+#print axioms NearCompression.common_denominator_zero_of_specializations

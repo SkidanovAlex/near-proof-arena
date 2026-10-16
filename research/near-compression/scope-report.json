@@ -478,6 +478,7 @@
     "research/near-compression/NearCompression/HenselCoefficientStep.lean": "e1991951a5a2ad7de2cdc337610cb863a51a656118546cd841a3b750a761d0d4",
     "research/near-compression/NearCompression/HenselBoundedReconstruction.lean": "958cdbeb5db7a5910d88fdd9c90128bca3ca4fe38817274e8bfe6f4fcda926c8",
     "research/near-compression/NearCompression/RationalSpecialization.lean": "708d0ca769a28256a03508c0d6d3b81a7642c4c0f44b0565d6d5ff0bac4c3fad",
+    "research/near-compression/NearCompression/CommonDenominator.lean": "ae502247718d92a532b265119c2099ac005580ac19b6839e057cb60de48963fc",
     "research/near-compression/NearCompression/FormalTranslation.lean": "08dd67f2b94cf06e2adbed07d64d3cdf263bcf968eeae1d0d27105d0b350efb1",
     "research/near-compression/NearCompression/PolynomialCoefficientAlgebra.lean": "5d4492d1d393e85ab5049c3eaac5683d494fc9cd526905dcb03a00efd0516c67",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean": "d9a5cbb964e9aab9d9a8bbe2ef3f558f473d587cf9e941cabaf8491b422cc2d9",
