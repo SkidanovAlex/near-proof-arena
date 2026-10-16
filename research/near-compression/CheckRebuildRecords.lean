@@ -1,4 +1,5 @@
 import NearCompression.BusFormulaCheck
+import NearCompression.TerminalSymbolicRebuild
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -270,6 +271,11 @@ private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p a
   let root ← need (←field p "root").getNat?
   require (terminalRebuildRecordsCheck source target (inputValue seed) [] records (ins.size-1) root)
     "rebuild records rejected"
+  let placement : TerminalSymbolicPlacement Fp4 := ⟨base,width,first,last,trans⟩
+  let symbolicSource := program.map (terminalSymbolicProgramNode placement)
+  require (terminalAcyclicCheck 0 symbolicSource) "symbolic source acyclicity"
+  require (terminalSymbolicRebuildCheck symbolicSource target [] records (program.length-1) root)
+    "symbolic reconstruction rejected"
   return (records.length,⟨env,program,records,root⟩)
 
 def main (args : List String) : IO Unit := do
@@ -346,5 +352,5 @@ def main (args : List String) : IO Unit := do
     rho tables finalBalance root zeroNode capacity live positions (inputSize-1) stages rootSlot)
     "combined finite compiler check rejected"
   IO.println (Json.mkObj [("status",toJson "PASS"),("programs",toJson programs.size),
-    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),("bus_formula_checks",toJson true),
+    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),("bus_formula_checks",toJson true),("symbolic_rebuild_check",toJson true),
     ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates")]).compress

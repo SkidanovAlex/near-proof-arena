@@ -3225,3 +3225,33 @@ compilation and diff checks pass; integration and gate evidence updated.
 The gate remains NOT_PASSED. Expected-formula generation, recovered input
 identification, concrete kernel/parser/transcript refinement and global
 execution/PQ soundness and secure full-NEAR size remain open.
+
+### Symbolic reconstruction independent of private assignments
+
+TerminalSymbolicRebuild keeps source current/next reads as input-slot nodes.
+Its finite record checker binds input identities directly, rather than testing
+whether values happen to match for one assignment. Constant, binary and signed
+expanded records reuse the existing arithmetic/expansion/balance checks.
+Acceptance from an empty mapping context yields source/target DAG root equality
+for every private input assignment under checked acyclicity.
+
+A symbolic placement maps current/next columns to base/nextOffset slots and
+retains fixed selectors. The instruction and sequential-run lowering theorems
+connect this DAG to actual TerminalProgramRun execution for every assignment.
+Composition with an accepted finite stored bundle gives program equality at
+that bundle's output. For the retained multi-program circuit, per-program
+symbolic root equalities are the new evidence; a universal combined batched
+interface still needs to substitute them into the complete compiler theorem.
+
+Kernel regressions distinguish slot identity from equal sample values, reject
+input-to-constant substitution and missing records, and accept an actual input
+multiplication route. Full check.py passed3874 results with the existing axiom
+allowlist. The native adapter now invokes the symbolic checker for each program.
+
+Native validation passed both programs/9152 records through the symbolic path;
+both diagnostic combined executions and all24 malformed cases also passed.
+Integration/gate/scope evidence updated; diff checks passed. The gate remains
+NOT_PASSED. Native JSON acceptance is not a concrete kernel capture proof.
+Full universal batching/recovered-input composition, expected AIR/bus generation,
+metadata ownership, parser/transcript/commitment refinement, global/PQ security
+and secure full-NEAR size remain open.

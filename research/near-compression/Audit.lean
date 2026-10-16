@@ -5525,3 +5525,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.air_bus_mix_checked
 #print axioms NearCompression.air_bus_weighted_compiled
 #print axioms NearCompression.bus_formula_check_regressions
+
+#print axioms NearCompression.terminal_symbolic_record_value
+#print axioms NearCompression.terminal_symbolic_records_value
+#print axioms NearCompression.terminal_symbolic_rebuild_executed
+#print axioms NearCompression.terminal_symbolic_instruction_value
+#print axioms NearCompression.terminal_symbolic_program_run
+#print axioms NearCompression.terminal_symbolic_compiled_program
+#print axioms NearCompression.terminal_symbolic_rebuild_regressions
