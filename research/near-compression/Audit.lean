@@ -6218,3 +6218,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.formal_weighted_multiplicity_zero
 #print axioms NearCompression.formal_specialization_root_forcing
 #print axioms NearCompression.formal_specialization_candidate_count
+
+#print axioms NearCompression.hensel_perturbation_order
+#print axioms NearCompression.hensel_perturbation_coefficient
+#print axioms NearCompression.hensel_coefficient_step
+#print axioms NearCompression.hensel_coefficient_unique
+#print axioms NearCompression.hensel_slope_constant_congr
+#print axioms NearCompression.hensel_finite_lift
+#print axioms NearCompression.hensel_lift_unique_modulo

@@ -1680,3 +1680,5 @@ import NearCompression.CurveRootPreservation
 import NearCompression.FormalTranslation
 
 import NearCompression.FormalRootForcing
+
+import NearCompression.HenselCoefficientStep

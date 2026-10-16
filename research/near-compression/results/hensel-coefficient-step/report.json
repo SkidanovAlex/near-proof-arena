@@ -1,0 +1,11 @@
+{
+  "smooth_initial_roots": 441,
+  "singular_initial_roots": 159,
+  "lift_steps": 3087,
+  "exhaustive_coefficient_checks": 24430,
+  "modulo_preservation_checks": 3087,
+  "singular_no_lift_examples": 1,
+  "singular_nonunique_examples": 1,
+  "approximate_not_exact_examples": 1,
+  "scope": "Finite smooth Hensel existence and uniqueness over any field. No rational-function extension construction, useful-factor selection, bounded-degree exactness or full MCA exceptions."
+}

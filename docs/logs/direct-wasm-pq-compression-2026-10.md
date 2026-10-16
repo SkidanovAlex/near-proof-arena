@@ -8124,3 +8124,42 @@ argument. Total annihilation remains bounded separately by DZ-1, but that is
 not the full exception set. Protocol extraction/adaptive/QROM composition and
 recursion remain open. No runtime or security-parameter change: diagnostic
 bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Finite smooth Hensel lifting
+
+Revisited the primary MCA source, sections3.2/4.3:
+https://www.math.toronto.edu/swastik/rs-proximity-gaps-2025.pdf
+SHA256 4added3e55b83c15fcc8a698fb57e137f5bd83e79ea25ce79382817c1ad26a46.
+Its useful-factor argument requires lifting over a rational-function field
+and finite extension, plus exactness and separate inseparable-factor handling;
+per-specialization list counts do not substitute for this step.
+
+Added HenselCoefficientStep.lean with seven audited public theorems. The
+operational slope is the constant coefficient of the formal curve quotient
+evaluated at the current approximation. Order-n curve perturbations preserve
+all lower residual coefficients, and for n>0 change residual coefficient n
+by perturbation_coefficient*slope. A nonzero slope therefore gives the unique
+correction -residual_n/slope. The slope depends only on the constant term.
+
+curveHenselLift constructs successive coefficients. hensel_finite_lift proves
+that after n corrections it retains the chosen constant, has degree<n+1 and
+residual order≥n+1. hensel_lift_unique_modulo proves uniqueness modulo X^n
+for any two approximate roots with the same constant and nonzero local slope,
+without degree bounds on the approximations. All statements are generic over
+a field and all characteristics. They do not construct the rational-function
+field/finite extension, choose a smooth starting point, handle inseparable
+factors, or prove bounded-degree termination/exactness of the lift.
+
+Validation:600 initial roots over F2/F3/F5/F17, of which441 are smooth and159
+singular. The smooth cases exercised3087 lifting steps,24430 exhaustive
+next-coefficient choices and3087 higher-coefficient preservation checks.
+Independent derivative evaluation at the initial point matches the quotient
+slope. Singular examples Y^2-X and Y^2 over F2 demonstrate nonexistence and
+nonuniqueness respectively; Y-X-Y^2 demonstrates that finite approximation
+need not be an exact polynomial root. Full audit4368 PASS, allowed axioms only.
+Evidence: results/hensel-coefficient-step/.
+
+Next: connect finite lifts to specialization and bounded-degree exactness,
+then useful-factor selection and the complete MCA exceptional-set count.
+No runtime or cryptographic parameter change: diagnostic bundle1344645 B,
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

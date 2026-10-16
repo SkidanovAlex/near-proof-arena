@@ -475,6 +475,7 @@
     "research/near-compression/NearCompression/PolynomialIntegralDomain.lean": "f37f18366f90b8a224e956a16b02958bbc70f84f4fedc37256c34be05690ba51",
     "research/near-compression/NearCompression/CurveRootPreservation.lean": "f2f5fb273fc0ebedd38dbbd052a9986aaea9c8a4b52213c0de8dd69217616a34",
     "research/near-compression/NearCompression/FormalRootForcing.lean": "88572b9b43b0521373a5adad8c15411f2f6d0e2f991f5ffa5496355584d1fdc2",
+    "research/near-compression/NearCompression/HenselCoefficientStep.lean": "e1991951a5a2ad7de2cdc337610cb863a51a656118546cd841a3b750a761d0d4",
     "research/near-compression/NearCompression/FormalTranslation.lean": "08dd67f2b94cf06e2adbed07d64d3cdf263bcf968eeae1d0d27105d0b350efb1",
     "research/near-compression/NearCompression/PolynomialCoefficientAlgebra.lean": "5d4492d1d393e85ab5049c3eaac5683d494fc9cd526905dcb03a00efd0516c67",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean": "d9a5cbb964e9aab9d9a8bbe2ef3f558f473d587cf9e941cabaf8491b422cc2d9",
