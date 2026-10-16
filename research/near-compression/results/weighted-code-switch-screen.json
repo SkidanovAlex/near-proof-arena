@@ -1,0 +1,3510 @@
+{
+  "status": "CONDITIONAL_WEIGHTED_CODE_SWITCH_GEOMETRY",
+  "results": [
+    {
+      "regime": "current",
+      "query_bits_per_stage": 134,
+      "best": {
+        "packing": 16,
+        "fixed_bytes": 52488,
+        "expected_subtotal_bytes": 531173.5137794344,
+        "path": [
+          {
+            "degree": 4096,
+            "rate": 4,
+            "skipped": 1,
+            "queries": 323,
+            "widths": [
+              408,
+              216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 8192,
+            "header_bytes": 176,
+            "expected_bytes": 316738.6836409107,
+            "next_rate": 4
+          },
+          {
+            "degree": 2048,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 323,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 2048,
+            "header_bytes": 272,
+            "expected_bytes": 100650.0828349207,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 323,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 368,
+            "expected_bytes": 59248.74730360302,
+            "next_rate": 4
+          }
+        ]
+      },
+      "trials": [
+        {
+          "bytes": 477824,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 199056,
+              "hash_bytes": 116064
+            },
+            {
+              "leaf_bytes": 38784,
+              "hash_bytes": 63264
+            },
+            {
+              "leaf_bytes": 46080,
+              "hash_bytes": 11712
+            }
+          ],
+          "subtotal_bytes": 530312
+        },
+        {
+          "bytes": 479280,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 197184,
+              "hash_bytes": 121920
+            },
+            {
+              "leaf_bytes": 37504,
+              "hash_bytes": 62016
+            },
+            {
+              "leaf_bytes": 45312,
+              "hash_bytes": 12480
+            }
+          ],
+          "subtotal_bytes": 531768
+        },
+        {
+          "bytes": 480624,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 199680,
+              "hash_bytes": 119616
+            },
+            {
+              "leaf_bytes": 38400,
+              "hash_bytes": 62400
+            },
+            {
+              "leaf_bytes": 45568,
+              "hash_bytes": 12096
+            }
+          ],
+          "subtotal_bytes": 533112
+        },
+        {
+          "bytes": 483152,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 198432,
+              "hash_bytes": 121248
+            },
+            {
+              "leaf_bytes": 39040,
+              "hash_bytes": 62112
+            },
+            {
+              "leaf_bytes": 48896,
+              "hash_bytes": 10560
+            }
+          ],
+          "subtotal_bytes": 535640
+        },
+        {
+          "bytes": 474080,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 195312,
+              "hash_bytes": 116544
+            },
+            {
+              "leaf_bytes": 38912,
+              "hash_bytes": 61824
+            },
+            {
+              "leaf_bytes": 46336,
+              "hash_bytes": 12288
+            }
+          ],
+          "subtotal_bytes": 526568
+        },
+        {
+          "bytes": 471200,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 192816,
+              "hash_bytes": 116448
+            },
+            {
+              "leaf_bytes": 38400,
+              "hash_bytes": 62304
+            },
+            {
+              "leaf_bytes": 46848,
+              "hash_bytes": 11520
+            }
+          ],
+          "subtotal_bytes": 523688
+        },
+        {
+          "bytes": 476112,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 195936,
+              "hash_bytes": 117504
+            },
+            {
+              "leaf_bytes": 38272,
+              "hash_bytes": 61632
+            },
+            {
+              "leaf_bytes": 48384,
+              "hash_bytes": 11520
+            }
+          ],
+          "subtotal_bytes": 528600
+        },
+        {
+          "bytes": 478720,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 195312,
+              "hash_bytes": 117888
+            },
+            {
+              "leaf_bytes": 39040,
+              "hash_bytes": 64800
+            },
+            {
+              "leaf_bytes": 47872,
+              "hash_bytes": 10944
+            }
+          ],
+          "subtotal_bytes": 531208
+        },
+        {
+          "bytes": 482240,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 200304,
+              "hash_bytes": 122016
+            },
+            {
+              "leaf_bytes": 38144,
+              "hash_bytes": 60864
+            },
+            {
+              "leaf_bytes": 44800,
+              "hash_bytes": 13248
+            }
+          ],
+          "subtotal_bytes": 534728
+        },
+        {
+          "bytes": 473136,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 198432,
+              "hash_bytes": 115776
+            },
+            {
+              "leaf_bytes": 37632,
+              "hash_bytes": 60384
+            },
+            {
+              "leaf_bytes": 47872,
+              "hash_bytes": 10176
+            }
+          ],
+          "subtotal_bytes": 525624
+        },
+        {
+          "bytes": 481760,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 197808,
+              "hash_bytes": 121248
+            },
+            {
+              "leaf_bytes": 37760,
+              "hash_bytes": 63072
+            },
+            {
+              "leaf_bytes": 46336,
+              "hash_bytes": 12672
+            }
+          ],
+          "subtotal_bytes": 534248
+        },
+        {
+          "bytes": 475552,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 196560,
+              "hash_bytes": 119136
+            },
+            {
+              "leaf_bytes": 37760,
+              "hash_bytes": 60288
+            },
+            {
+              "leaf_bytes": 46848,
+              "hash_bytes": 12096
+            }
+          ],
+          "subtotal_bytes": 528040
+        },
+        {
+          "bytes": 476512,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 197808,
+              "hash_bytes": 116352
+            },
+            {
+              "leaf_bytes": 37504,
+              "hash_bytes": 63360
+            },
+            {
+              "leaf_bytes": 48640,
+              "hash_bytes": 9984
+            }
+          ],
+          "subtotal_bytes": 529000
+        },
+        {
+          "bytes": 483632,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 199680,
+              "hash_bytes": 119232
+            },
+            {
+              "leaf_bytes": 39296,
+              "hash_bytes": 63168
+            },
+            {
+              "leaf_bytes": 46336,
+              "hash_bytes": 13056
+            }
+          ],
+          "subtotal_bytes": 536120
+        },
+        {
+          "bytes": 483808,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 199056,
+              "hash_bytes": 119136
+            },
+            {
+              "leaf_bytes": 38912,
+              "hash_bytes": 64320
+            },
+            {
+              "leaf_bytes": 47616,
+              "hash_bytes": 11904
+            }
+          ],
+          "subtotal_bytes": 536296
+        },
+        {
+          "bytes": 476928,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 195312,
+              "hash_bytes": 119232
+            },
+            {
+              "leaf_bytes": 38912,
+              "hash_bytes": 61536
+            },
+            {
+              "leaf_bytes": 47360,
+              "hash_bytes": 11712
+            }
+          ],
+          "subtotal_bytes": 529416
+        }
+      ],
+      "min_subtotal_bytes": 523688,
+      "max_subtotal_bytes": 536296
+    },
+    {
+      "regime": "current",
+      "query_bits_per_stage": 198,
+      "best": {
+        "packing": 16,
+        "fixed_bytes": 52488,
+        "expected_subtotal_bytes": 684056.5214233159,
+        "path": [
+          {
+            "degree": 4096,
+            "rate": 4,
+            "skipped": 1,
+            "queries": 478,
+            "widths": [
+              408,
+              216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 8192,
+            "header_bytes": 176,
+            "expected_bytes": 441205.9351317384,
+            "next_rate": 4
+          },
+          {
+            "degree": 2048,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 478,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 2048,
+            "header_bytes": 272,
+            "expected_bytes": 125518.75837028485,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 478,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 368,
+            "expected_bytes": 62795.827921292585,
+            "next_rate": 4
+          }
+        ]
+      },
+      "trials": [
+        {
+          "bytes": 628560,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 290784,
+              "hash_bytes": 148896
+            },
+            {
+              "leaf_bytes": 54272,
+              "hash_bytes": 69216
+            },
+            {
+              "leaf_bytes": 55808,
+              "hash_bytes": 6720
+            }
+          ],
+          "subtotal_bytes": 681048
+        },
+        {
+          "bytes": 631344,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 289536,
+              "hash_bytes": 153120
+            },
+            {
+              "leaf_bytes": 54144,
+              "hash_bytes": 70752
+            },
+            {
+              "leaf_bytes": 52480,
+              "hash_bytes": 8448
+            }
+          ],
+          "subtotal_bytes": 683832
+        },
+        {
+          "bytes": 632368,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 292032,
+              "hash_bytes": 150912
+            },
+            {
+              "leaf_bytes": 53760,
+              "hash_bytes": 70656
+            },
+            {
+              "leaf_bytes": 54272,
+              "hash_bytes": 7872
+            }
+          ],
+          "subtotal_bytes": 684856
+        },
+        {
+          "bytes": 643472,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 293280,
+              "hash_bytes": 155328
+            },
+            {
+              "leaf_bytes": 54784,
+              "hash_bytes": 73536
+            },
+            {
+              "leaf_bytes": 58112,
+              "hash_bytes": 5568
+            }
+          ],
+          "subtotal_bytes": 695960
+        },
+        {
+          "bytes": 631440,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 287040,
+              "hash_bytes": 150528
+            },
+            {
+              "leaf_bytes": 56320,
+              "hash_bytes": 73440
+            },
+            {
+              "leaf_bytes": 52224,
+              "hash_bytes": 9024
+            }
+          ],
+          "subtotal_bytes": 683928
+        },
+        {
+          "bytes": 624320,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 287664,
+              "hash_bytes": 148992
+            },
+            {
+              "leaf_bytes": 53632,
+              "hash_bytes": 69984
+            },
+            {
+              "leaf_bytes": 52736,
+              "hash_bytes": 8448
+            }
+          ],
+          "subtotal_bytes": 676808
+        },
+        {
+          "bytes": 638336,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 291408,
+              "hash_bytes": 154752
+            },
+            {
+              "leaf_bytes": 54528,
+              "hash_bytes": 71808
+            },
+            {
+              "leaf_bytes": 56832,
+              "hash_bytes": 6144
+            }
+          ],
+          "subtotal_bytes": 690824
+        },
+        {
+          "bytes": 626528,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 287664,
+              "hash_bytes": 148128
+            },
+            {
+              "leaf_bytes": 55680,
+              "hash_bytes": 69792
+            },
+            {
+              "leaf_bytes": 56064,
+              "hash_bytes": 6336
+            }
+          ],
+          "subtotal_bytes": 679016
+        },
+        {
+          "bytes": 632320,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 293904,
+              "hash_bytes": 150432
+            },
+            {
+              "leaf_bytes": 53632,
+              "hash_bytes": 68640
+            },
+            {
+              "leaf_bytes": 55552,
+              "hash_bytes": 7296
+            }
+          ],
+          "subtotal_bytes": 684808
+        },
+        {
+          "bytes": 634640,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 292032,
+              "hash_bytes": 152256
+            },
+            {
+              "leaf_bytes": 54400,
+              "hash_bytes": 71136
+            },
+            {
+              "leaf_bytes": 54272,
+              "hash_bytes": 7680
+            }
+          ],
+          "subtotal_bytes": 687128
+        },
+        {
+          "bytes": 638688,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 291408,
+              "hash_bytes": 155712
+            },
+            {
+              "leaf_bytes": 54912,
+              "hash_bytes": 70944
+            },
+            {
+              "leaf_bytes": 56320,
+              "hash_bytes": 6528
+            }
+          ],
+          "subtotal_bytes": 691176
+        },
+        {
+          "bytes": 634128,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 289536,
+              "hash_bytes": 151296
+            },
+            {
+              "leaf_bytes": 55552,
+              "hash_bytes": 71520
+            },
+            {
+              "leaf_bytes": 57600,
+              "hash_bytes": 5760
+            }
+          ],
+          "subtotal_bytes": 686616
+        },
+        {
+          "bytes": 626944,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 288912,
+              "hash_bytes": 147936
+            },
+            {
+              "leaf_bytes": 55168,
+              "hash_bytes": 70560
+            },
+            {
+              "leaf_bytes": 54016,
+              "hash_bytes": 7488
+            }
+          ],
+          "subtotal_bytes": 679432
+        },
+        {
+          "bytes": 636752,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 292032,
+              "hash_bytes": 152544
+            },
+            {
+              "leaf_bytes": 55296,
+              "hash_bytes": 72384
+            },
+            {
+              "leaf_bytes": 53760,
+              "hash_bytes": 7872
+            }
+          ],
+          "subtotal_bytes": 689240
+        },
+        {
+          "bytes": 633504,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 291408,
+              "hash_bytes": 152544
+            },
+            {
+              "leaf_bytes": 54400,
+              "hash_bytes": 70656
+            },
+            {
+              "leaf_bytes": 54528,
+              "hash_bytes": 7104
+            }
+          ],
+          "subtotal_bytes": 685992
+        },
+        {
+          "bytes": 630608,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 289536,
+              "hash_bytes": 149760
+            },
+            {
+              "leaf_bytes": 54528,
+              "hash_bytes": 71328
+            },
+            {
+              "leaf_bytes": 55296,
+              "hash_bytes": 7296
+            }
+          ],
+          "subtotal_bytes": 683096
+        }
+      ],
+      "min_subtotal_bytes": 676808,
+      "max_subtotal_bytes": 695960
+    },
+    {
+      "regime": "current",
+      "query_bits_per_stage": 220,
+      "best": {
+        "packing": 16,
+        "fixed_bytes": 52488,
+        "expected_subtotal_bytes": 732485.2925419111,
+        "path": [
+          {
+            "degree": 4096,
+            "rate": 4,
+            "skipped": 1,
+            "queries": 531,
+            "widths": [
+              408,
+              216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 8192,
+            "header_bytes": 176,
+            "expected_bytes": 481816.23997477454,
+            "next_rate": 4
+          },
+          {
+            "degree": 2048,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 531,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 2048,
+            "header_bytes": 272,
+            "expected_bytes": 132664.06347240112,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 531,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 368,
+            "expected_bytes": 63468.989094735436,
+            "next_rate": 4
+          }
+        ]
+      },
+      "trials": [
+        {
+          "bytes": 679456,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 322608,
+              "hash_bytes": 159744
+            },
+            {
+              "leaf_bytes": 58880,
+              "hash_bytes": 72000
+            },
+            {
+              "leaf_bytes": 57600,
+              "hash_bytes": 5760
+            }
+          ],
+          "subtotal_bytes": 731944
+        },
+        {
+          "bytes": 683616,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 321360,
+              "hash_bytes": 162816
+            },
+            {
+              "leaf_bytes": 59776,
+              "hash_bytes": 74016
+            },
+            {
+              "leaf_bytes": 55296,
+              "hash_bytes": 7488
+            }
+          ],
+          "subtotal_bytes": 736104
+        },
+        {
+          "bytes": 680656,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 323232,
+              "hash_bytes": 160512
+            },
+            {
+              "leaf_bytes": 58240,
+              "hash_bytes": 72960
+            },
+            {
+              "leaf_bytes": 57088,
+              "hash_bytes": 5760
+            }
+          ],
+          "subtotal_bytes": 733144
+        },
+        {
+          "bytes": 689344,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 325104,
+              "hash_bytes": 165120
+            },
+            {
+              "leaf_bytes": 59392,
+              "hash_bytes": 74208
+            },
+            {
+              "leaf_bytes": 57088,
+              "hash_bytes": 5568
+            }
+          ],
+          "subtotal_bytes": 741832
+        },
+        {
+          "bytes": 678080,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 318864,
+              "hash_bytes": 159264
+            },
+            {
+              "leaf_bytes": 61056,
+              "hash_bytes": 72864
+            },
+            {
+              "leaf_bytes": 57600,
+              "hash_bytes": 5568
+            }
+          ],
+          "subtotal_bytes": 730568
+        },
+        {
+          "bytes": 674000,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 318240,
+              "hash_bytes": 159264
+            },
+            {
+              "leaf_bytes": 59136,
+              "hash_bytes": 72288
+            },
+            {
+              "leaf_bytes": 54528,
+              "hash_bytes": 7680
+            }
+          ],
+          "subtotal_bytes": 726488
+        },
+        {
+          "bytes": 682208,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 320112,
+              "hash_bytes": 162336
+            },
+            {
+              "leaf_bytes": 60800,
+              "hash_bytes": 73056
+            },
+            {
+              "leaf_bytes": 57856,
+              "hash_bytes": 5184
+            }
+          ],
+          "subtotal_bytes": 734696
+        },
+        {
+          "bytes": 677648,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 318240,
+              "hash_bytes": 158688
+            },
+            {
+              "leaf_bytes": 60800,
+              "hash_bytes": 73056
+            },
+            {
+              "leaf_bytes": 59392,
+              "hash_bytes": 4608
+            }
+          ],
+          "subtotal_bytes": 730136
+        },
+        {
+          "bytes": 684096,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 325104,
+              "hash_bytes": 160800
+            },
+            {
+              "leaf_bytes": 59904,
+              "hash_bytes": 72000
+            },
+            {
+              "leaf_bytes": 57856,
+              "hash_bytes": 5568
+            }
+          ],
+          "subtotal_bytes": 736584
+        },
+        {
+          "bytes": 681360,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 321984,
+              "hash_bytes": 160896
+            },
+            {
+              "leaf_bytes": 60160,
+              "hash_bytes": 73056
+            },
+            {
+              "leaf_bytes": 56064,
+              "hash_bytes": 6336
+            }
+          ],
+          "subtotal_bytes": 733848
+        },
+        {
+          "bytes": 686352,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 323232,
+              "hash_bytes": 165120
+            },
+            {
+              "leaf_bytes": 60544,
+              "hash_bytes": 71040
+            },
+            {
+              "leaf_bytes": 59904,
+              "hash_bytes": 3648
+            }
+          ],
+          "subtotal_bytes": 738840
+        },
+        {
+          "bytes": 678240,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 320112,
+              "hash_bytes": 159648
+            },
+            {
+              "leaf_bytes": 60032,
+              "hash_bytes": 71712
+            },
+            {
+              "leaf_bytes": 59648,
+              "hash_bytes": 4224
+            }
+          ],
+          "subtotal_bytes": 730728
+        },
+        {
+          "bytes": 676624,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 320736,
+              "hash_bytes": 158880
+            },
+            {
+              "leaf_bytes": 60032,
+              "hash_bytes": 71904
+            },
+            {
+              "leaf_bytes": 55296,
+              "hash_bytes": 6912
+            }
+          ],
+          "subtotal_bytes": 729112
+        },
+        {
+          "bytes": 685504,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 322608,
+              "hash_bytes": 161472
+            },
+            {
+              "leaf_bytes": 60544,
+              "hash_bytes": 75360
+            },
+            {
+              "leaf_bytes": 57088,
+              "hash_bytes": 5568
+            }
+          ],
+          "subtotal_bytes": 737992
+        },
+        {
+          "bytes": 683104,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 322608,
+              "hash_bytes": 162240
+            },
+            {
+              "leaf_bytes": 59776,
+              "hash_bytes": 72192
+            },
+            {
+              "leaf_bytes": 58624,
+              "hash_bytes": 4800
+            }
+          ],
+          "subtotal_bytes": 735592
+        },
+        {
+          "bytes": 680928,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 321360,
+              "hash_bytes": 160608
+            },
+            {
+              "leaf_bytes": 60288,
+              "hash_bytes": 72576
+            },
+            {
+              "leaf_bytes": 57856,
+              "hash_bytes": 5376
+            }
+          ],
+          "subtotal_bytes": 733416
+        }
+      ],
+      "min_subtotal_bytes": 726488,
+      "max_subtotal_bytes": 741832
+    },
+    {
+      "regime": "unique",
+      "query_bits_per_stage": 134,
+      "best": {
+        "packing": 16,
+        "fixed_bytes": 52488,
+        "expected_subtotal_bytes": 389639.07207127195,
+        "path": [
+          {
+            "degree": 4096,
+            "rate": 4,
+            "skipped": 1,
+            "queries": 198,
+            "widths": [
+              408,
+              216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 8192,
+            "header_bytes": 176,
+            "expected_bytes": 208172.02586895225,
+            "next_rate": 4
+          },
+          {
+            "degree": 2048,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 198,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 2048,
+            "header_bytes": 272,
+            "expected_bytes": 74331.46616065402,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 198,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 368,
+            "expected_bytes": 52599.58004166566,
+            "next_rate": 4
+          }
+        ]
+      },
+      "trials": [
+        {
+          "bytes": 335472,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 122304,
+              "hash_bytes": 82944
+            },
+            {
+              "leaf_bytes": 24192,
+              "hash_bytes": 51456
+            },
+            {
+              "leaf_bytes": 35584,
+              "hash_bytes": 16128
+            }
+          ],
+          "subtotal_bytes": 387960
+        },
+        {
+          "bytes": 342960,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 123552,
+              "hash_bytes": 89568
+            },
+            {
+              "leaf_bytes": 24448,
+              "hash_bytes": 49728
+            },
+            {
+              "leaf_bytes": 34560,
+              "hash_bytes": 18240
+            }
+          ],
+          "subtotal_bytes": 395448
+        },
+        {
+          "bytes": 338656,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 122928,
+              "hash_bytes": 86688
+            },
+            {
+              "leaf_bytes": 23552,
+              "hash_bytes": 49440
+            },
+            {
+              "leaf_bytes": 35328,
+              "hash_bytes": 17856
+            }
+          ],
+          "subtotal_bytes": 391144
+        },
+        {
+          "bytes": 340256,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 122928,
+              "hash_bytes": 85824
+            },
+            {
+              "leaf_bytes": 24320,
+              "hash_bytes": 52992
+            },
+            {
+              "leaf_bytes": 35584,
+              "hash_bytes": 15744
+            }
+          ],
+          "subtotal_bytes": 392744
+        },
+        {
+          "bytes": 335952,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 122304,
+              "hash_bytes": 85536
+            },
+            {
+              "leaf_bytes": 24320,
+              "hash_bytes": 49920
+            },
+            {
+              "leaf_bytes": 33536,
+              "hash_bytes": 17472
+            }
+          ],
+          "subtotal_bytes": 388440
+        },
+        {
+          "bytes": 327456,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 119184,
+              "hash_bytes": 84480
+            },
+            {
+              "leaf_bytes": 23296,
+              "hash_bytes": 46752
+            },
+            {
+              "leaf_bytes": 35328,
+              "hash_bytes": 15552
+            }
+          ],
+          "subtotal_bytes": 379944
+        },
+        {
+          "bytes": 334784,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 121680,
+              "hash_bytes": 85344
+            },
+            {
+              "leaf_bytes": 23936,
+              "hash_bytes": 49824
+            },
+            {
+              "leaf_bytes": 34048,
+              "hash_bytes": 17088
+            }
+          ],
+          "subtotal_bytes": 387272
+        },
+        {
+          "bytes": 337856,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 121680,
+              "hash_bytes": 85920
+            },
+            {
+              "leaf_bytes": 23424,
+              "hash_bytes": 50208
+            },
+            {
+              "leaf_bytes": 36864,
+              "hash_bytes": 16896
+            }
+          ],
+          "subtotal_bytes": 390344
+        },
+        {
+          "bytes": 338976,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 122928,
+              "hash_bytes": 86592
+            },
+            {
+              "leaf_bytes": 24576,
+              "hash_bytes": 48960
+            },
+            {
+              "leaf_bytes": 35584,
+              "hash_bytes": 17472
+            }
+          ],
+          "subtotal_bytes": 391464
+        },
+        {
+          "bytes": 336192,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 121680,
+              "hash_bytes": 85056
+            },
+            {
+              "leaf_bytes": 24064,
+              "hash_bytes": 50496
+            },
+            {
+              "leaf_bytes": 33792,
+              "hash_bytes": 18240
+            }
+          ],
+          "subtotal_bytes": 388680
+        },
+        {
+          "bytes": 337072,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 122304,
+              "hash_bytes": 86400
+            },
+            {
+              "leaf_bytes": 24064,
+              "hash_bytes": 50880
+            },
+            {
+              "leaf_bytes": 33280,
+              "hash_bytes": 17280
+            }
+          ],
+          "subtotal_bytes": 389560
+        },
+        {
+          "bytes": 338640,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 122304,
+              "hash_bytes": 85536
+            },
+            {
+              "leaf_bytes": 24320,
+              "hash_bytes": 51072
+            },
+            {
+              "leaf_bytes": 35840,
+              "hash_bytes": 16704
+            }
+          ],
+          "subtotal_bytes": 391128
+        },
+        {
+          "bytes": 337120,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 121680,
+              "hash_bytes": 82464
+            },
+            {
+              "leaf_bytes": 24832,
+              "hash_bytes": 52032
+            },
+            {
+              "leaf_bytes": 36352,
+              "hash_bytes": 16896
+            }
+          ],
+          "subtotal_bytes": 389608
+        },
+        {
+          "bytes": 337488,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 123552,
+              "hash_bytes": 85056
+            },
+            {
+              "leaf_bytes": 24832,
+              "hash_bytes": 50304
+            },
+            {
+              "leaf_bytes": 33792,
+              "hash_bytes": 17088
+            }
+          ],
+          "subtotal_bytes": 389976
+        },
+        {
+          "bytes": 338384,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 122304,
+              "hash_bytes": 85056
+            },
+            {
+              "leaf_bytes": 24064,
+              "hash_bytes": 50400
+            },
+            {
+              "leaf_bytes": 37376,
+              "hash_bytes": 16320
+            }
+          ],
+          "subtotal_bytes": 390872
+        },
+        {
+          "bytes": 335392,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 120432,
+              "hash_bytes": 85248
+            },
+            {
+              "leaf_bytes": 24576,
+              "hash_bytes": 49536
+            },
+            {
+              "leaf_bytes": 35072,
+              "hash_bytes": 17664
+            }
+          ],
+          "subtotal_bytes": 387880
+        }
+      ],
+      "min_subtotal_bytes": 379944,
+      "max_subtotal_bytes": 395448
+    },
+    {
+      "regime": "unique",
+      "query_bits_per_stage": 198,
+      "best": {
+        "packing": 16,
+        "fixed_bytes": 52488,
+        "expected_subtotal_bytes": 499083.61973012745,
+        "path": [
+          {
+            "degree": 4096,
+            "rate": 4,
+            "skipped": 1,
+            "queries": 293,
+            "widths": [
+              408,
+              216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 8192,
+            "header_bytes": 176,
+            "expected_bytes": 291473.74541502114,
+            "next_rate": 4
+          },
+          {
+            "degree": 2048,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 293,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 2048,
+            "header_bytes": 272,
+            "expected_bytes": 94965.5174931508,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 293,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 368,
+            "expected_bytes": 58108.35682195553,
+            "next_rate": 4
+          }
+        ]
+      },
+      "trials": [
+        {
+          "bytes": 446016,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 180336,
+              "hash_bytes": 108960
+            },
+            {
+              "leaf_bytes": 35712,
+              "hash_bytes": 61056
+            },
+            {
+              "leaf_bytes": 44032,
+              "hash_bytes": 13056
+            }
+          ],
+          "subtotal_bytes": 498504
+        },
+        {
+          "bytes": 449232,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 179712,
+              "hash_bytes": 117024
+            },
+            {
+              "leaf_bytes": 34176,
+              "hash_bytes": 59136
+            },
+            {
+              "leaf_bytes": 43264,
+              "hash_bytes": 13056
+            }
+          ],
+          "subtotal_bytes": 501720
+        },
+        {
+          "bytes": 449072,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 180960,
+              "hash_bytes": 112512
+            },
+            {
+              "leaf_bytes": 35072,
+              "hash_bytes": 59808
+            },
+            {
+              "leaf_bytes": 44800,
+              "hash_bytes": 13056
+            }
+          ],
+          "subtotal_bytes": 501560
+        },
+        {
+          "bytes": 452368,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 180960,
+              "hash_bytes": 113088
+            },
+            {
+              "leaf_bytes": 35712,
+              "hash_bytes": 60672
+            },
+            {
+              "leaf_bytes": 46592,
+              "hash_bytes": 12480
+            }
+          ],
+          "subtotal_bytes": 504856
+        },
+        {
+          "bytes": 444656,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 179712,
+              "hash_bytes": 109728
+            },
+            {
+              "leaf_bytes": 35584,
+              "hash_bytes": 59232
+            },
+            {
+              "leaf_bytes": 43520,
+              "hash_bytes": 14016
+            }
+          ],
+          "subtotal_bytes": 497144
+        },
+        {
+          "bytes": 439088,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 175968,
+              "hash_bytes": 108480
+            },
+            {
+              "leaf_bytes": 34560,
+              "hash_bytes": 59424
+            },
+            {
+              "leaf_bytes": 43776,
+              "hash_bytes": 14016
+            }
+          ],
+          "subtotal_bytes": 491576
+        },
+        {
+          "bytes": 443728,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 178464,
+              "hash_bytes": 110880
+            },
+            {
+              "leaf_bytes": 34432,
+              "hash_bytes": 59232
+            },
+            {
+              "leaf_bytes": 44800,
+              "hash_bytes": 13056
+            }
+          ],
+          "subtotal_bytes": 496216
+        },
+        {
+          "bytes": 452080,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 178464,
+              "hash_bytes": 112512
+            },
+            {
+              "leaf_bytes": 35584,
+              "hash_bytes": 63264
+            },
+            {
+              "leaf_bytes": 46336,
+              "hash_bytes": 13056
+            }
+          ],
+          "subtotal_bytes": 504568
+        },
+        {
+          "bytes": 447968,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 181584,
+              "hash_bytes": 113376
+            },
+            {
+              "leaf_bytes": 35584,
+              "hash_bytes": 57984
+            },
+            {
+              "leaf_bytes": 41984,
+              "hash_bytes": 14592
+            }
+          ],
+          "subtotal_bytes": 500456
+        },
+        {
+          "bytes": 443776,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 180336,
+              "hash_bytes": 109632
+            },
+            {
+              "leaf_bytes": 34432,
+              "hash_bytes": 58848
+            },
+            {
+              "leaf_bytes": 45568,
+              "hash_bytes": 12096
+            }
+          ],
+          "subtotal_bytes": 496264
+        },
+        {
+          "bytes": 450512,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 180960,
+              "hash_bytes": 114144
+            },
+            {
+              "leaf_bytes": 34944,
+              "hash_bytes": 59616
+            },
+            {
+              "leaf_bytes": 45312,
+              "hash_bytes": 12672
+            }
+          ],
+          "subtotal_bytes": 503000
+        },
+        {
+          "bytes": 444496,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 178464,
+              "hash_bytes": 110688
+            },
+            {
+              "leaf_bytes": 34816,
+              "hash_bytes": 59232
+            },
+            {
+              "leaf_bytes": 46336,
+              "hash_bytes": 12096
+            }
+          ],
+          "subtotal_bytes": 496984
+        },
+        {
+          "bytes": 444176,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 179712,
+              "hash_bytes": 108384
+            },
+            {
+              "leaf_bytes": 34176,
+              "hash_bytes": 60864
+            },
+            {
+              "leaf_bytes": 46848,
+              "hash_bytes": 11328
+            }
+          ],
+          "subtotal_bytes": 496664
+        },
+        {
+          "bytes": 451984,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 180960,
+              "hash_bytes": 112608
+            },
+            {
+              "leaf_bytes": 35840,
+              "hash_bytes": 61344
+            },
+            {
+              "leaf_bytes": 45312,
+              "hash_bytes": 13056
+            }
+          ],
+          "subtotal_bytes": 504472
+        },
+        {
+          "bytes": 449824,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 181584,
+              "hash_bytes": 111264
+            },
+            {
+              "leaf_bytes": 35712,
+              "hash_bytes": 61056
+            },
+            {
+              "leaf_bytes": 43520,
+              "hash_bytes": 13824
+            }
+          ],
+          "subtotal_bytes": 502312
+        },
+        {
+          "bytes": 440624,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 177216,
+              "hash_bytes": 110688
+            },
+            {
+              "leaf_bytes": 34944,
+              "hash_bytes": 57312
+            },
+            {
+              "leaf_bytes": 43776,
+              "hash_bytes": 13824
+            }
+          ],
+          "subtotal_bytes": 493112
+        }
+      ],
+      "min_subtotal_bytes": 491576,
+      "max_subtotal_bytes": 504856
+    },
+    {
+      "regime": "unique",
+      "query_bits_per_stage": 220,
+      "best": {
+        "packing": 16,
+        "fixed_bytes": 52488,
+        "expected_subtotal_bytes": 533278.3904652891,
+        "path": [
+          {
+            "degree": 4096,
+            "rate": 4,
+            "skipped": 1,
+            "queries": 325,
+            "widths": [
+              408,
+              216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 8192,
+            "header_bytes": 176,
+            "expected_bytes": 318407.6216660072,
+            "next_rate": 4
+          },
+          {
+            "degree": 2048,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 325,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 2048,
+            "header_bytes": 272,
+            "expected_bytes": 101017.20118840669,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 325,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 368,
+            "expected_bytes": 59317.56761087528,
+            "next_rate": 4
+          }
+        ]
+      },
+      "trials": [
+        {
+          "bytes": 479296,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 200304,
+              "hash_bytes": 116832
+            },
+            {
+              "leaf_bytes": 39040,
+              "hash_bytes": 62784
+            },
+            {
+              "leaf_bytes": 45568,
+              "hash_bytes": 11904
+            }
+          ],
+          "subtotal_bytes": 531784
+        },
+        {
+          "bytes": 481840,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 198432,
+              "hash_bytes": 122208
+            },
+            {
+              "leaf_bytes": 37888,
+              "hash_bytes": 62400
+            },
+            {
+              "leaf_bytes": 45568,
+              "hash_bytes": 12480
+            }
+          ],
+          "subtotal_bytes": 534328
+        },
+        {
+          "bytes": 483312,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 200928,
+              "hash_bytes": 120384
+            },
+            {
+              "leaf_bytes": 38784,
+              "hash_bytes": 62880
+            },
+            {
+              "leaf_bytes": 45568,
+              "hash_bytes": 11904
+            }
+          ],
+          "subtotal_bytes": 535800
+        },
+        {
+          "bytes": 485264,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 199680,
+              "hash_bytes": 121632
+            },
+            {
+              "leaf_bytes": 39168,
+              "hash_bytes": 62400
+            },
+            {
+              "leaf_bytes": 49152,
+              "hash_bytes": 10368
+            }
+          ],
+          "subtotal_bytes": 537752
+        },
+        {
+          "bytes": 476640,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 196560,
+              "hash_bytes": 117216
+            },
+            {
+              "leaf_bytes": 39168,
+              "hash_bytes": 62016
+            },
+            {
+              "leaf_bytes": 46336,
+              "hash_bytes": 12480
+            }
+          ],
+          "subtotal_bytes": 529128
+        },
+        {
+          "bytes": 473248,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 194064,
+              "hash_bytes": 117024
+            },
+            {
+              "leaf_bytes": 38528,
+              "hash_bytes": 62400
+            },
+            {
+              "leaf_bytes": 46848,
+              "hash_bytes": 11520
+            }
+          ],
+          "subtotal_bytes": 525736
+        },
+        {
+          "bytes": 478608,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 197184,
+              "hash_bytes": 117792
+            },
+            {
+              "leaf_bytes": 38528,
+              "hash_bytes": 62016
+            },
+            {
+              "leaf_bytes": 48896,
+              "hash_bytes": 11328
+            }
+          ],
+          "subtotal_bytes": 531096
+        },
+        {
+          "bytes": 481088,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 196560,
+              "hash_bytes": 117984
+            },
+            {
+              "leaf_bytes": 39296,
+              "hash_bytes": 65184
+            },
+            {
+              "leaf_bytes": 48640,
+              "hash_bytes": 10560
+            }
+          ],
+          "subtotal_bytes": 533576
+        },
+        {
+          "bytes": 484576,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 201552,
+              "hash_bytes": 122496
+            },
+            {
+              "leaf_bytes": 38272,
+              "hash_bytes": 61344
+            },
+            {
+              "leaf_bytes": 45568,
+              "hash_bytes": 12480
+            }
+          ],
+          "subtotal_bytes": 537064
+        },
+        {
+          "bytes": 475216,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 199680,
+              "hash_bytes": 115776
+            },
+            {
+              "leaf_bytes": 38016,
+              "hash_bytes": 60768
+            },
+            {
+              "leaf_bytes": 48128,
+              "hash_bytes": 9984
+            }
+          ],
+          "subtotal_bytes": 527704
+        },
+        {
+          "bytes": 483168,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 199056,
+              "hash_bytes": 121536
+            },
+            {
+              "leaf_bytes": 37888,
+              "hash_bytes": 62880
+            },
+            {
+              "leaf_bytes": 46080,
+              "hash_bytes": 12864
+            }
+          ],
+          "subtotal_bytes": 535656
+        },
+        {
+          "bytes": 476672,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 197808,
+              "hash_bytes": 119328
+            },
+            {
+              "leaf_bytes": 37888,
+              "hash_bytes": 59904
+            },
+            {
+              "leaf_bytes": 47360,
+              "hash_bytes": 11520
+            }
+          ],
+          "subtotal_bytes": 529160
+        },
+        {
+          "bytes": 477936,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 198432,
+              "hash_bytes": 116448
+            },
+            {
+              "leaf_bytes": 37760,
+              "hash_bytes": 63552
+            },
+            {
+              "leaf_bytes": 48896,
+              "hash_bytes": 9984
+            }
+          ],
+          "subtotal_bytes": 530424
+        },
+        {
+          "bytes": 485936,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 200928,
+              "hash_bytes": 119904
+            },
+            {
+              "leaf_bytes": 39552,
+              "hash_bytes": 63168
+            },
+            {
+              "leaf_bytes": 46848,
+              "hash_bytes": 12672
+            }
+          ],
+          "subtotal_bytes": 538424
+        },
+        {
+          "bytes": 485440,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 200304,
+              "hash_bytes": 119520
+            },
+            {
+              "leaf_bytes": 39168,
+              "hash_bytes": 64512
+            },
+            {
+              "leaf_bytes": 47360,
+              "hash_bytes": 11712
+            }
+          ],
+          "subtotal_bytes": 537928
+        },
+        {
+          "bytes": 479296,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 196560,
+              "hash_bytes": 120000
+            },
+            {
+              "leaf_bytes": 39168,
+              "hash_bytes": 61632
+            },
+            {
+              "leaf_bytes": 47360,
+              "hash_bytes": 11712
+            }
+          ],
+          "subtotal_bytes": 531784
+        }
+      ],
+      "min_subtotal_bytes": 525736,
+      "max_subtotal_bytes": 538424
+    },
+    {
+      "regime": "johnson",
+      "query_bits_per_stage": 134,
+      "best": {
+        "packing": 32,
+        "fixed_bytes": 52584,
+        "expected_subtotal_bytes": 295907.7059199491,
+        "path": [
+          {
+            "degree": 8192,
+            "rate": 4,
+            "skipped": 1,
+            "queries": 145,
+            "widths": [
+              208,
+              112
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 16384,
+            "header_bytes": 176,
+            "expected_bytes": 129171.26791731421,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 46,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 272,
+            "expected_bytes": 48565.51049124826,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 46,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 272,
+            "expected_bytes": 39741.08597100006,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 145,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 272,
+            "expected_bytes": 23797.841540386562,
+            "next_rate": 4
+          }
+        ]
+      },
+      "trials": [
+        {
+          "bytes": 240832,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46080,
+              "hash_bytes": 80832
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 42528
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 32256
+            },
+            {
+              "leaf_bytes": 14336,
+              "hash_bytes": 9984
+            }
+          ],
+          "subtotal_bytes": 293416
+        },
+        {
+          "bytes": 245888,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46400,
+              "hash_bytes": 84288
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 42432
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 34080
+            },
+            {
+              "leaf_bytes": 14848,
+              "hash_bytes": 9024
+            }
+          ],
+          "subtotal_bytes": 298472
+        },
+        {
+          "bytes": 243424,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46400,
+              "hash_bytes": 84000
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 40992
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 33792
+            },
+            {
+              "leaf_bytes": 14208,
+              "hash_bytes": 9216
+            }
+          ],
+          "subtotal_bytes": 296008
+        },
+        {
+          "bytes": 243712,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46400,
+              "hash_bytes": 81792
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 42528
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 34368
+            },
+            {
+              "leaf_bytes": 14208,
+              "hash_bytes": 9600
+            }
+          ],
+          "subtotal_bytes": 296296
+        },
+        {
+          "bytes": 243808,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46400,
+              "hash_bytes": 80640
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 43200
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 34272
+            },
+            {
+              "leaf_bytes": 14592,
+              "hash_bytes": 9888
+            }
+          ],
+          "subtotal_bytes": 296392
+        },
+        {
+          "bytes": 237760,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46080,
+              "hash_bytes": 81216
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 41568
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 31104
+            },
+            {
+              "leaf_bytes": 13568,
+              "hash_bytes": 9408
+            }
+          ],
+          "subtotal_bytes": 290344
+        },
+        {
+          "bytes": 244704,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46080,
+              "hash_bytes": 83520
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 41760
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 34464
+            },
+            {
+              "leaf_bytes": 14080,
+              "hash_bytes": 9984
+            }
+          ],
+          "subtotal_bytes": 297288
+        },
+        {
+          "bytes": 243808,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46400,
+              "hash_bytes": 82848
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 42720
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 33696
+            },
+            {
+              "leaf_bytes": 13824,
+              "hash_bytes": 9504
+            }
+          ],
+          "subtotal_bytes": 296392
+        },
+        {
+          "bytes": 242880,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46080,
+              "hash_bytes": 83232
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 42816
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 32928
+            },
+            {
+              "leaf_bytes": 14080,
+              "hash_bytes": 8928
+            }
+          ],
+          "subtotal_bytes": 295464
+        },
+        {
+          "bytes": 244448,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46080,
+              "hash_bytes": 82368
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 42624
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 34368
+            },
+            {
+              "leaf_bytes": 14976,
+              "hash_bytes": 9216
+            }
+          ],
+          "subtotal_bytes": 297032
+        },
+        {
+          "bytes": 244960,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46080,
+              "hash_bytes": 84000
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 42912
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 33312
+            },
+            {
+              "leaf_bytes": 14720,
+              "hash_bytes": 9120
+            }
+          ],
+          "subtotal_bytes": 297544
+        },
+        {
+          "bytes": 245152,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46400,
+              "hash_bytes": 82464
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 43584
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 33984
+            },
+            {
+              "leaf_bytes": 14208,
+              "hash_bytes": 9696
+            }
+          ],
+          "subtotal_bytes": 297736
+        },
+        {
+          "bytes": 243520,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46400,
+              "hash_bytes": 81120
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 41856
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 34464
+            },
+            {
+              "leaf_bytes": 14976,
+              "hash_bytes": 9888
+            }
+          ],
+          "subtotal_bytes": 296104
+        },
+        {
+          "bytes": 242080,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46400,
+              "hash_bytes": 81984
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 43200
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 32352
+            },
+            {
+              "leaf_bytes": 14592,
+              "hash_bytes": 8736
+            }
+          ],
+          "subtotal_bytes": 294664
+        },
+        {
+          "bytes": 242304,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 45760,
+              "hash_bytes": 83520
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 41184
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 34080
+            },
+            {
+              "leaf_bytes": 14208,
+              "hash_bytes": 8736
+            }
+          ],
+          "subtotal_bytes": 294888
+        },
+        {
+          "bytes": 242528,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 46400,
+              "hash_bytes": 82080
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 42624
+            },
+            {
+              "leaf_bytes": 5888,
+              "hash_bytes": 33216
+            },
+            {
+              "leaf_bytes": 14464,
+              "hash_bytes": 8928
+            }
+          ],
+          "subtotal_bytes": 295112
+        }
+      ],
+      "min_subtotal_bytes": 290344,
+      "max_subtotal_bytes": 298472
+    },
+    {
+      "regime": "johnson",
+      "query_bits_per_stage": 198,
+      "best": {
+        "packing": 32,
+        "fixed_bytes": 52584,
+        "expected_subtotal_bytes": 382717.84207358456,
+        "path": [
+          {
+            "degree": 8192,
+            "rate": 4,
+            "skipped": 1,
+            "queries": 213,
+            "widths": [
+              208,
+              112
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 16384,
+            "header_bytes": 176,
+            "expected_bytes": 178274.66695284794,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 68,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 272,
+            "expected_bytes": 67949.76840634824,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 68,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 272,
+            "expected_bytes": 54910.43618811758,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 213,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 272,
+            "expected_bytes": 26950.970526270747,
+            "next_rate": 4
+          }
+        ]
+      },
+      "trials": [
+        {
+          "bytes": 330240,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67840,
+              "hash_bytes": 108096
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 59520
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 47424
+            },
+            {
+              "leaf_bytes": 19328,
+              "hash_bytes": 7584
+            }
+          ],
+          "subtotal_bytes": 382824
+        },
+        {
+          "bytes": 334688,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67840,
+              "hash_bytes": 114336
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 58080
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 47040
+            },
+            {
+              "leaf_bytes": 18304,
+              "hash_bytes": 8640
+            }
+          ],
+          "subtotal_bytes": 387272
+        },
+        {
+          "bytes": 331680,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67840,
+              "hash_bytes": 111168
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 59136
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 46368
+            },
+            {
+              "leaf_bytes": 18560,
+              "hash_bytes": 8160
+            }
+          ],
+          "subtotal_bytes": 384264
+        },
+        {
+          "bytes": 332832,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67840,
+              "hash_bytes": 110688
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 59808
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 47712
+            },
+            {
+              "leaf_bytes": 18944,
+              "hash_bytes": 7392
+            }
+          ],
+          "subtotal_bytes": 385416
+        },
+        {
+          "bytes": 330560,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 68160,
+              "hash_bytes": 110112
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 59424
+            },
+            {
+              "leaf_bytes": 8576,
+              "hash_bytes": 45696
+            },
+            {
+              "leaf_bytes": 18304,
+              "hash_bytes": 8544
+            }
+          ],
+          "subtotal_bytes": 383144
+        },
+        {
+          "bytes": 325344,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 66880,
+              "hash_bytes": 107712
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 58752
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 45216
+            },
+            {
+              "leaf_bytes": 18176,
+              "hash_bytes": 8160
+            }
+          ],
+          "subtotal_bytes": 377928
+        },
+        {
+          "bytes": 330048,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67520,
+              "hash_bytes": 110304
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 58656
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 45888
+            },
+            {
+              "leaf_bytes": 18688,
+              "hash_bytes": 8544
+            }
+          ],
+          "subtotal_bytes": 382632
+        },
+        {
+          "bytes": 330624,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67840,
+              "hash_bytes": 111552
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 58464
+            },
+            {
+              "leaf_bytes": 8576,
+              "hash_bytes": 45408
+            },
+            {
+              "leaf_bytes": 19072,
+              "hash_bytes": 7968
+            }
+          ],
+          "subtotal_bytes": 383208
+        },
+        {
+          "bytes": 330816,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67840,
+              "hash_bytes": 110784
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 60192
+            },
+            {
+              "leaf_bytes": 8576,
+              "hash_bytes": 45888
+            },
+            {
+              "leaf_bytes": 16768,
+              "hash_bytes": 9024
+            }
+          ],
+          "subtotal_bytes": 383400
+        },
+        {
+          "bytes": 329856,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67520,
+              "hash_bytes": 109920
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 58848
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 46656
+            },
+            {
+              "leaf_bytes": 18304,
+              "hash_bytes": 8160
+            }
+          ],
+          "subtotal_bytes": 382440
+        },
+        {
+          "bytes": 333024,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67840,
+              "hash_bytes": 111744
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 60000
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 46560
+            },
+            {
+              "leaf_bytes": 17792,
+              "hash_bytes": 8640
+            }
+          ],
+          "subtotal_bytes": 385608
+        },
+        {
+          "bytes": 328320,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67520,
+              "hash_bytes": 109056
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 59232
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 46176
+            },
+            {
+              "leaf_bytes": 17536,
+              "hash_bytes": 8352
+            }
+          ],
+          "subtotal_bytes": 380904
+        },
+        {
+          "bytes": 329632,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67840,
+              "hash_bytes": 106176
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 61152
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 47328
+            },
+            {
+              "leaf_bytes": 18432,
+              "hash_bytes": 8256
+            }
+          ],
+          "subtotal_bytes": 382216
+        },
+        {
+          "bytes": 329600,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 68160,
+              "hash_bytes": 110496
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 58368
+            },
+            {
+              "leaf_bytes": 8576,
+              "hash_bytes": 45504
+            },
+            {
+              "leaf_bytes": 18688,
+              "hash_bytes": 8064
+            }
+          ],
+          "subtotal_bytes": 382184
+        },
+        {
+          "bytes": 331616,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67520,
+              "hash_bytes": 110496
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 59136
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 46848
+            },
+            {
+              "leaf_bytes": 18816,
+              "hash_bytes": 8352
+            }
+          ],
+          "subtotal_bytes": 384200
+        },
+        {
+          "bytes": 330528,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 67520,
+              "hash_bytes": 110496
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 60384
+            },
+            {
+              "leaf_bytes": 8704,
+              "hash_bytes": 45792
+            },
+            {
+              "leaf_bytes": 17536,
+              "hash_bytes": 8352
+            }
+          ],
+          "subtotal_bytes": 383112
+        }
+      ],
+      "min_subtotal_bytes": 377928,
+      "max_subtotal_bytes": 387272
+    },
+    {
+      "regime": "johnson",
+      "query_bits_per_stage": 220,
+      "best": {
+        "packing": 32,
+        "fixed_bytes": 52584,
+        "expected_subtotal_bytes": 412088.6784110487,
+        "path": [
+          {
+            "degree": 8192,
+            "rate": 4,
+            "skipped": 1,
+            "queries": 237,
+            "widths": [
+              208,
+              112
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 16384,
+            "header_bytes": 176,
+            "expected_bytes": 194824.33174137192,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 76,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 272,
+            "expected_bytes": 74733.66369150557,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 76,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 272,
+            "expected_bytes": 60162.51416732983,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 237,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 272,
+            "expected_bytes": 27736.16881084141,
+            "next_rate": 4
+          }
+        ]
+      },
+      "trials": [
+        {
+          "bytes": 358016,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75520,
+              "hash_bytes": 117504
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 65088
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 50592
+            },
+            {
+              "leaf_bytes": 19712,
+              "hash_bytes": 7104
+            }
+          ],
+          "subtotal_bytes": 410600
+        },
+        {
+          "bytes": 366464,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75200,
+              "hash_bytes": 123936
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 65472
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 51936
+            },
+            {
+              "leaf_bytes": 19072,
+              "hash_bytes": 8352
+            }
+          ],
+          "subtotal_bytes": 419048
+        },
+        {
+          "bytes": 359456,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75520,
+              "hash_bytes": 120384
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 64704
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 48384
+            },
+            {
+              "leaf_bytes": 19712,
+              "hash_bytes": 8256
+            }
+          ],
+          "subtotal_bytes": 412040
+        },
+        {
+          "bytes": 358624,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75520,
+              "hash_bytes": 120384
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 64224
+            },
+            {
+              "leaf_bytes": 9600,
+              "hash_bytes": 48864
+            },
+            {
+              "leaf_bytes": 19968,
+              "hash_bytes": 7296
+            }
+          ],
+          "subtotal_bytes": 411208
+        },
+        {
+          "bytes": 357728,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75840,
+              "hash_bytes": 118080
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 64992
+            },
+            {
+              "leaf_bytes": 9600,
+              "hash_bytes": 49344
+            },
+            {
+              "leaf_bytes": 18944,
+              "hash_bytes": 8160
+            }
+          ],
+          "subtotal_bytes": 410312
+        },
+        {
+          "bytes": 355072,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 74560,
+              "hash_bytes": 115584
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 64800
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 50400
+            },
+            {
+              "leaf_bytes": 19840,
+              "hash_bytes": 7392
+            }
+          ],
+          "subtotal_bytes": 407656
+        },
+        {
+          "bytes": 358400,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75200,
+              "hash_bytes": 118944
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 64416
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 50016
+            },
+            {
+              "leaf_bytes": 19072,
+              "hash_bytes": 8256
+            }
+          ],
+          "subtotal_bytes": 410984
+        },
+        {
+          "bytes": 360448,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 74560,
+              "hash_bytes": 120192
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 65184
+            },
+            {
+              "leaf_bytes": 9600,
+              "hash_bytes": 50400
+            },
+            {
+              "leaf_bytes": 20352,
+              "hash_bytes": 7392
+            }
+          ],
+          "subtotal_bytes": 413032
+        },
+        {
+          "bytes": 361760,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75520,
+              "hash_bytes": 121344
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 65760
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 49056
+            },
+            {
+              "leaf_bytes": 19712,
+              "hash_bytes": 7872
+            }
+          ],
+          "subtotal_bytes": 414344
+        },
+        {
+          "bytes": 360224,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75200,
+              "hash_bytes": 118368
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 66240
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 50784
+            },
+            {
+              "leaf_bytes": 18688,
+              "hash_bytes": 8448
+            }
+          ],
+          "subtotal_bytes": 412808
+        },
+        {
+          "bytes": 360192,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75520,
+              "hash_bytes": 119808
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 65472
+            },
+            {
+              "leaf_bytes": 9472,
+              "hash_bytes": 49824
+            },
+            {
+              "leaf_bytes": 19072,
+              "hash_bytes": 8256
+            }
+          ],
+          "subtotal_bytes": 412776
+        },
+        {
+          "bytes": 358400,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 74880,
+              "hash_bytes": 117696
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 65280
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 50592
+            },
+            {
+              "leaf_bytes": 19968,
+              "hash_bytes": 7488
+            }
+          ],
+          "subtotal_bytes": 410984
+        },
+        {
+          "bytes": 356864,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75200,
+              "hash_bytes": 115392
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 66432
+            },
+            {
+              "leaf_bytes": 9600,
+              "hash_bytes": 49440
+            },
+            {
+              "leaf_bytes": 20352,
+              "hash_bytes": 7680
+            }
+          ],
+          "subtotal_bytes": 409448
+        },
+        {
+          "bytes": 362560,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75520,
+              "hash_bytes": 119904
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 66144
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 51168
+            },
+            {
+              "leaf_bytes": 19840,
+              "hash_bytes": 7488
+            }
+          ],
+          "subtotal_bytes": 415144
+        },
+        {
+          "bytes": 356288,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75200,
+              "hash_bytes": 118368
+            },
+            {
+              "leaf_bytes": 9600,
+              "hash_bytes": 63072
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 48960
+            },
+            {
+              "leaf_bytes": 20736,
+              "hash_bytes": 7584
+            }
+          ],
+          "subtotal_bytes": 408872
+        },
+        {
+          "bytes": 359840,
+          "terminal_degree": 64,
+          "stages": [
+            {
+              "leaf_bytes": 75200,
+              "hash_bytes": 117984
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 66432
+            },
+            {
+              "leaf_bytes": 9728,
+              "hash_bytes": 50016
+            },
+            {
+              "leaf_bytes": 19840,
+              "hash_bytes": 7872
+            }
+          ],
+          "subtotal_bytes": 412424
+        }
+      ],
+      "min_subtotal_bytes": 407656,
+      "max_subtotal_bytes": 419048
+    }
+  ],
+  "rates": [
+    4,
+    16,
+    64
+  ],
+  "isolated_query_bits_per_stage": [
+    134,
+    198,
+    220
+  ],
+  "exhaustive_geometry_cases": 9,
+  "coset_frontier_checks": 414,
+  "scope": "Retained slice widths803/424 pooled by commitment phase, equal packing, base source paired leaves priced by all lanes; subsequent Ext8 pairs64bytes. All source coset openings included. Two separate source trees. Scalar terminal disclosure at most64 coefficients. Fixed bytes include51328 local/GKR plus weighted reduction96logD plus8 framing. Excludes public envelope and parameters. No grinding. Expected costs with16 simulated schedules. Repeated weighted code switching and its soundness composition unimplemented/unproved. Unique/Johnson transfer not established for this protocol. Selected bits apply ONLY to each isolated query term; no algebraic/list/OOD/QROM security claim or gate change."
+}

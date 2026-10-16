@@ -5069,3 +5069,53 @@ extraction and actual code-switch/multi-fold geometry; use the existing
 rate-shift diagnostic as a starting point and budget all source coset openings.
 Avoid a large standalone Johnson formalization before its complete geometry
 shows useful headroom. Full NEAR1Pgas and128-bit PQ remain unestablished.
+
+### Weighted code-switch geometry: marginal classical candidate, PQ headroom unresolved
+
+Added `screen_weighted_code_switch.py` and
+`results/weighted-code-switch-screen.json`. This connects the previous scalar
+repeated-shift geometry model to the actual slice's weighted source widths.
+Two pooled commitment-phase sources have widths803/424,256rows, equal packing
+16/32/64/128/256. Equal degrees deliberately avoid an unproved heterogeneous
+multi-fold lifting shortcut. All base source lanes are transmitted; every
+later paired leaf is64bytes. A k-fold source query opens2^(k-1) paired leaves
+per source tree. The screen includes all replicated cosets and separate
+SHA384 sibling frontiers. It does not pretend a multi-fold query costs one leaf.
+
+Dynamic programming selects skipped folds1..8, continuation rates4/16/64,
+and a final disclosure of at most64Ext8 coefficients. Fixed subtotal includes
+51328local/GKR scalar bytes,96log2(D) weighted-reduction bytes and8framing
+bytes. Each switch costs96k quadratic bytes,48root bytes,32OOD-value bytes,
+plus all opened leaves and frontier hashes. Public envelope excluded. Exact
+rational query counts at134/198/220bits are sensitivity budgets ONLY, not
+claimed total classical or quantum security. No grinding credit.
+
+At134isolated query bits per stage, optimal expected subtotal and16-seed range:
+- Current extraction regime:531174bytes,523688–536296.
+- Upstream Unique factor:389639bytes,379944–395448.
+- Upstream Johnson factor:295908bytes,290344–298472.
+Johnson schedule:packing32,D8192; (degree,rate,skipped,nextRate,queries) =
+(8192,4,1,64,145), (4096,64,2,64,46), (1024,64,2,4,46),
+(256,4,2,4,145); disclose64coefficients. Expected source-stage cost129171,
+later stages48566/39741/23798, fixed52584, terminal2048bytes.
+This is a concrete geometry candidate, not an executable weighted code-switch
+proof. Worst sampled headroom is only1528bytes before the envelope.
+
+Johnson198-bit sensitivity:377928–387272bytes;220-bit sensitivity:
+407656–419048bytes. These larger query budgets are not QROM conversions and
+may exceed available algebraic-security headroom once MCA/list errors are
+included. Their purpose is to show that the marginal134-bit size result is
+not robust to extra query-security requirements.
+
+Validation: nine exhaustive small-domain expectation checks; replicated-coset
+frontier identity checked on small domains/copy counts; every query count
+passes exact rational minimality checks;16 actual sampled index sets per
+selected schedule, using independent frontier counting. Python compilation
+and diff checks pass. No Lean changes. No feasibility gate changed.
+
+Next decision: use this explicit schedule as the candidate for a full
+algebraic/list/OOD and quantum-security feasibility budget before investing
+in a weighted repeated-shift prover. A real result requires weaker-threshold
+adaptive extraction, repeated weighted continuation composition, source
+commitment binding and QROM analysis. The current formal regime still misses
+the target substantially. Full NEAR1Pgas remains open.
