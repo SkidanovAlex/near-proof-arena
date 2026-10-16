@@ -429,6 +429,7 @@ SOURCES = [
     "research/near-compression/NearCompression/BusCoordinateCoverage.lean",
     "research/near-compression/NearCompression/NativeStyleCoordinateAccumulation.lean",
     "research/near-compression/NearCompression/GeneratedExt8BusSpecCheck.lean",
+    "research/near-compression/NearCompression/CheckedBusResidualTransport.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",

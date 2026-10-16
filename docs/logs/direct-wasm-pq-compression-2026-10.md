@@ -4499,3 +4499,23 @@ merely to itself. Supplied statement/table/challenge authentication and full
 Ext8 prover integration are still separate. Next: integrate checks with
 slice/compiler artifacts and finish auxiliary/local/GKR/PCS/bus composition.
 QROM, secure size and full 1 Pgas remain open.
+
+### Checked formula lists connected to bus validity
+
+`CheckedBusResidualTransport.lean` connects the executable specification
+checker to the failure analysis. `checked_bus_decoded_row_values` transports
+actual checked formula-list values to reconstructed bus residuals under bounded
+coordinate typing. `checked_bus_failure_combined_index` derives a nonzero
+combined local residual from a formal bus violation in that checked list.
+`checked_bus_rows_zero` and `checked_bus_tables_residuals_zero` prove the reverse
+zero-validity implication, producing the exact recursive predicate consumed by
+the fixed-source bus acceptance theorem.
+
+Source constraints/interaction bounds, table widths, coordinate typing and
+consistent public/challenge/final inputs remain explicit. Next: discharge the
+bus witness premise outside the full local/GKR/PCS failure event, compose
+adaptive auxiliary-invalid budgets and average bus randomness, then integrate
+authenticated Ext8 slice inputs. QROM, secure size and full 1 Pgas remain open.
+
+Validation: full `check.py` PASS (4082 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only composition.

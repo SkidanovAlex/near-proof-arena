@@ -5824,3 +5824,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.native_style_lowering_bounds
 
 #print axioms NearCompression.generated_ext8_bus_spec_checked
+
+#print axioms NearCompression.checked_bus_decoded_row_values
+
+#print axioms NearCompression.checked_bus_failure_combined_index
+
+#print axioms NearCompression.checked_bus_rows_zero
+
+#print axioms NearCompression.checked_bus_tables_residuals_zero

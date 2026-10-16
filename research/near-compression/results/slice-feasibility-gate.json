@@ -328,7 +328,9 @@
     "results/ext8-bus-formula-capture.json",
     "results/lean-ext8-bus-formulas.json",
     "NearCompression/GeneratedExt8BusSpecCheck.lean",
-    "results/generated-ext8-bus-spec-integration.json"
+    "results/generated-ext8-bus-spec-integration.json",
+    "NearCompression/CheckedBusResidualTransport.lean",
+    "results/checked-bus-residual-transport-integration.json"
   ],
   "requirements": [
     {
@@ -512,5 +514,6 @@
   "bus_coordinate_coverage": "PROVED_CONDITIONALLY: logical width bound derives sourceWidth+8*auxCount physical coverage; zipped typed-representative provenance supplies coordinate descent. Inspected native formula/reconstruction path remains Ext4, with different AST association/order, so no native Ext8 refinement is claimed.",
   "native_style_coordinate_semantics": "PROVED: candidate Ext8 native-style left accumulation with coordinate*basis terms equals the formal lowering, with degree/read bounds. This resolves association/multiplication-order semantics, not native Ext8 slice implementation or generator refinement.",
   "ext8_formula_generator_candidate": "EXECUTABLE_COMPONENT_VALIDATED: expected formula generator accepts explicit Ext8 arithmetic and coordinate degree; register checker supports 8-word literals/coordinates. 24 synthetic cases, 192 independent residual comparisons, 576 mutations rejected, 40 exact legacy Ext4 AST comparisons. No native Ext8 prover/GKR compiler capture, universal generator refinement, secure proof size or security certification.",
-  "ext8_lean_formula_capture": "SPECIFICATION_CHECKED_COMPONENT: Lean reconstructs exact ordered formal bus residual AST from supplied table/public/challenges/finals, checks native-style lowering and coordinate width, then formula routes/acyclicity/values. 64 residuals pass and 16 mutations reject including coherent wrong formula+program. Supplied statement/transcript authentication, full Ext8 prover and QROM remain open."
+  "ext8_lean_formula_capture": "SPECIFICATION_CHECKED_COMPONENT: Lean reconstructs exact ordered formal bus residual AST from supplied table/public/challenges/finals, checks native-style lowering and coordinate width, then formula routes/acyclicity/values. 64 residuals pass and 16 mutations reject including coherent wrong formula+program. Supplied statement/transcript authentication, full Ext8 prover and QROM remain open.",
+  "checked_bus_auxiliary_transport": "PROVED_CONDITIONALLY: executable specification checks connect actual certificate formula-list values to reconstructed bus residuals. Violations transfer to combined local residuals; all-zero checked table residuals yield busExt8TablesResidualsZero. Coordinate typing, source checks and authenticated input/event composition remain explicit."
 }
