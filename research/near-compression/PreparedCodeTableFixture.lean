@@ -121,7 +121,20 @@ private def makeCaseBytes (label : String) (bytes : ByteArray) (prepaid : Nat) :
 end NearCompression
 
 open Lean
-def main : IO Unit := do
+def main (args : List String) : IO Unit := do
+  if !args.isEmpty then
+    let pairs ← match args with
+      | ["--pairs",count] => match count.toNat? with
+        | some n => if 0<n && n≤4095 then pure n else throw (IO.userError "pairs must be in1..4095")
+        | none => throw (IO.userError "invalid pair count")
+      | _ => throw (IO.userError "usage: PreparedCodeTableFixture.lean [--pairs N]")
+    let c ← match NearCompression.makeCaseBytes s!"long-{2*pairs+1}"
+        (NearCompression.preparedLongSliceBytes pairs) 1000000000000000 with
+      | .ok c => pure c
+      | .error e => throw (IO.userError e)
+    IO.println (Lean.Json.mkObj [("schema",toJson "prepared-wasm-function-witness-v0"),
+      ("air_implemented",toJson false),("cases",toJson [c])]).compress
+    return
   let mut cases := []
   for (name,a,b) in [("wrap",127,1),("positive",12,23),("negative",64,127)] do
     match NearCompression.makeCaseBytes name (NearCompression.preparedSliceBytes (UInt8.ofNat a) (UInt8.ofNat b)) 1000000000000000 with

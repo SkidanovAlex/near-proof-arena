@@ -140,7 +140,10 @@
     "results/fixed-input-envelope-integration.json",
     "results/fixed-input-profile-integration.json",
     "results/pq384-literal193-gkr-fixed13/profile-test.json",
-    "results/pq384-literal193-gkr-fixed13/compact-slice-report.json"
+    "results/pq384-literal193-gkr-fixed13/compact-slice-report.json",
+    "results/literal-fixed-input-execution-scaling.json",
+    "results/pq384-literal769-gkr-fixed14/compact-slice-report.json",
+    "results/pq384-literal769-gkr-fixed14/preparation-report.json"
   ],
   "requirements": [
     {
@@ -155,8 +158,8 @@
       "needed": "Bind code/public state, AIR sources, GKR statements and final PCS claims; no separately trusted original proofs or unbound witness data.",
       "established": "Literal slice frontend reconstructs canonical AIR locally, checks actual Lean preparation against the same public vector, and verifies binary proof against the same statement and source roots. These roots are proof commitments, not externally trusted trace certificates.",
       "captured_geometry": "Packed literal193 fixture metadata replay validated76 lanes and2072 live slots; Lean kernel certificates now discharge lane WellFormed and CanonicalLaneSelectors for these exact table records. Compiler correspondence remains executable parity, not universal formal refinement.",
-      "challenge_layout_sweep": "Captured case plus rho=1 baseline and zero/one mutations of rowpoint,mixing,tau,claim preserve private blocks and8192 input slots in10 tested cases. Layer counts vary5..35. Fixed-input helper preserves evaluation on deterministic nonzero private values; not integrated into retained profile and not a universal challenge-independent geometry proof.",
-      "fixed_envelope_semantics": "For arbitrary field inputs, relocating the reserved zero in the first layer preserves all circuit outputs under explicit valid-operand, zero-slot and size conditions. All10 captured/synthetic compiler cases satisfy those preconditions. Integrated trusted-cap transcript binding and universal cap sufficiency remain open.",
+      "challenge_layout_sweep": "Captured case plus rho=1 baseline and zero/one mutations of rowpoint,mixing,tau,claim preserve private blocks and8192 input slots in10 tested cases. Layer counts vary5..35. Fixed-input helper preserves evaluation on deterministic nonzero private values and is integrated in a separate caller-cap-bound profile. This finite sweep is not a universal challenge-independent geometry or cap-sufficiency proof.",
+      "fixed_envelope_semantics": "For arbitrary field inputs, relocating the reserved zero in the first layer preserves all circuit outputs under explicit valid-operand, zero-slot and size conditions. All10 captured/synthetic compiler cases satisfy those preconditions. Trusted-cap transcript binding is implemented and regression-tested; formal transcript refinement and universal cap sufficiency remain open.",
       "fixed_input_profile": "Separate fixed-input profile binds caller cap13 before challenges and verifies GKR input size8192. Fresh proof with same source roots/new auxiliaries independently verified. Compact/prepared-request/envelope now supported with exact roundtrip and14 negatives; existing complete-envelope regressions pass."
     },
     {
@@ -195,7 +198,8 @@
       "packing_screen": "Ideal uniform-query expected multiproof geometry over eligible power-of-two packings1..1024: at309 queries best Ext4 expectation816299 bytes versus retained820634; projected Ext8 best1103809 bytes. Ext8 auxiliary coordinates/field vectors accounted for, but not implemented or secure. Tree formulas validated by exhaustive small-tree query tuples; Ext4 non-PCS51590-byte framing reconciles with measured codec. Statement/request excluded. Repacking separate branches does not approach300000 in this screen.",
       "shared_fold_floor": "Omitting all folded-oracle, round and terminal costs still leaves optimized four-tree source openings at349123 expected bytes for projected Ext8/q309. Speculative same-phase table merging lowers source-only expectation to222888; retaining current local/framing123302 yields346190 before omitted PCS work and statement/request. These are expected-layout screens, not universal lower bounds or authenticated proofs.",
       "gkr_query_scaling": "Actual retained compact leaf contents, all12 reconstructed fold roots matched, Q8 verified/re-encoded:128-query counterfactual283053 proof bytes;309-query504163 proof bytes,728870 current transported bytes. At309 source payload329974 and shared fold payload155344; fixed18845 (outer GKR/local17551 plus weighted PCS header1294). Uses original Q8 transcript, not generated secure profile. Full-word floors do not apply as universal lower bounds to zero-tagged sparse witnesses.",
-      "compact_transport": "Implemented complete binary envelope overhead20041 bytes in place of224709 statement/request JSON bytes. Actual Q8 envelope72486; with separate expected request JSON73405. Applying unchanged overhead to the309-query size replay gives477105 envelope bytes (478024 with separate request), still over target and not a security-certified proof."
+      "compact_transport": "Implemented complete binary envelope overhead20041 bytes in place of224709 statement/request JSON bytes. Actual Q8 envelope72486; with separate expected request JSON73405. Applying unchanged overhead to the309-query size replay gives477105 envelope bytes (478024 with separate request), still over target and not a security-certified proof.",
+      "larger_execution_fixture": "Actual769-instruction Lean fixture,1024 rows/table, independently checked and proved with fixed cap14. Compact proof63206 bytes; complete envelope141712. Q8/Ext4 diagnostic only. Public CODE costs264+100*instructions bytes, exceeding300000 at2998 distinct instructions before proof/Wasm; code commitment authentication is required for this representation to scale."
     },
     {
       "name": "Adversarial validation",

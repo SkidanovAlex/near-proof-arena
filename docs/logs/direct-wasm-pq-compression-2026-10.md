@@ -2526,3 +2526,39 @@ complete-envelope regression and its14 negatives passed. Python compilation,
 diff checks and full check.py passed (3780 registered results). Actual
 acceptance-to-execution composition, quantum hash/Fiat-Shamir reduction, secure
 parameters and full NEAR1Pgas sub300000-byte feasibility remain open.
+
+
+### Literal execution scaling to 769 instructions
+
+Added optional `--pairs N` fixture generation while preserving the original
+seven default cases. Generated actual Lean preparation/execution for 769
+straight-line literal instructions; independent AIR inspection passed and
+rejected altered public CODE fees, published exit and nonterminal final row.
+The larger trace uses 1024 rows per table and a trusted input cap of14.
+
+A fresh Q8/Ext4 proof passed independent verification, exact compact/wire
+roundtrips, prepared-request verification and14 rejection checks. Retained
+proof:63206 bytes; complete envelope:141712 bytes; envelope plus separate
+expected-request JSON:144934 bytes. The193-instruction cap13 baseline is
+47846 proof bytes and67888 envelope bytes. Caps and transcripts differ, so
+this is not an isolated execution-length performance comparison.
+
+Public CODE transport is now a measured scaling obstacle:264+100*n bytes
+for n distinct literal instructions, exceeding300000 at n=2998 before proof
+or Wasm bytes. Full-state scaling therefore needs authenticated code
+commitments. These fixtures do not model1Pgas or certify secure parameters.
+
+Validation: original seven fixture cases preserved, Python compilation,
+independent AIR mutations, fresh compact verifier and14 negatives passed;
+full check.py passed3780 registered results. The feasibility gate remains
+NOT_PASSED. Corrected two stale gate descriptions: fixed-input transcript
+binding is implemented, while formal transcript refinement and universal cap
+sufficiency remain open.
+
+Next composition boundary identified in current source: chosen_gkr_terminal_near_count
+bounds a residual-candidate event for the single chosen source representative;
+near_functional_fold_acceptance_count bounds checked sumcheck/folding acceptance
+for a shared representative. Connecting chosen recovered GKR input to actual
+fold acceptance, retaining source projection, chronology and terminal
+authentication assumptions, is the next formal step. This inspection does
+not itself discharge that composition or quantum Fiat-Shamir security.

@@ -773,7 +773,7 @@
     "research/near-compression/airbender/direct-wasm/pq384_terminal_gkr.py": "7fa66cf0839b8def8c43e11068e8169525018f98e97086c6c72ef96e47904be1",
     "research/near-compression/airbender/direct-wasm/pq384_terminal_input_weights.py": "11b292a43f3a63fcdd61e8f36ad6bd118311d591d4487bb1ee362ba43ee8eb40",
     "research/near-compression/airbender/direct-wasm/test_pq384_terminal_gkr.py": "723b44d9e88149f68981c5db776ea44d86425191f1eedab24798a4c8f690f59f",
-    "research/near-compression/PreparedCodeTableFixture.lean": "8e19e07e566070021a7a6b6829946bea3f597819497d679dedef783308ab3cc9",
+    "research/near-compression/PreparedCodeTableFixture.lean": "39a38294fd57211dd13f723de6432755e0b3ed49e569e9eaad4f73e25127a399",
     "research/near-compression/PreparedCodeTableReplay.lean": "c616ae266b0f190b2f0039004a96ecd366e25478db15c60d4b2990b390ba2d8c",
     "research/near-compression/airbender/direct-wasm/prepared_code_table_air.py": "e6fd3ebdac2ef738333ad185948fc65adcb6e7bb685d0764b4489ec1184b673c",
     "research/near-compression/airbender/direct-wasm/test_prepared_code_table_air.py": "045cb397072636caa449b085f455b7ae3e901488e347a774d4e49f27e32e0e2e",
