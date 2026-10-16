@@ -5315,3 +5315,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.air_kernel_coordinate_degree
 #print axioms NearCompression.air_trace_round_represents
 #print axioms NearCompression.air_trace_adaptive_sumcheck_count
+
+#print axioms NearCompression.air_local_invalid_trace_count

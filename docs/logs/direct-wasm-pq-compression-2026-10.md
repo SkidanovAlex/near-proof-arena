@@ -1820,3 +1820,11 @@ Constructed affine coordinate polynomials from the actual trace MLE at coordinat
 Validation: full check.py passed (3706 registered results; allowed axioms only). No executable changes or performance claims. Remaining theorem premises: fixed trace/formula lists/mixing/equality point, AST degree bounds, false initial weighted sum, and terminal equality to the actual trace evaluator under distinct ideal challenge samples.
 
 Next: compose initial residual-batching/row-MLE error with adaptive rounds, then prove terminal current/next/PCS authentication and common-trace extraction. Full quantum transcript reduction, executable Ext8 migration, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.
+
+### Composed local invalid-trace bound
+
+Composed initial residual power batching/equality-point error with adaptive concrete-trace sumcheck in one integer challenge-count theorem. Strategies can depend on initial mixing/tau and all prior round challenges. A fixed invalid combined trace with zero initial claim and terminal equality to its actual weighted evaluator has conditional ideal acceptance probability at most (residualCount-1+rowLog+roundDegree*rowLog)/fieldSize. The exact count includes every initial and round challenge; no division is used in Lean.
+
+Validation: full check.py passed (3707 registered results; allowed axioms only). Reproducible retained-fixture budget report gives EXEC738 residuals:745 initial+56 adaptive=801; CODE553:560+40=600. These are local component numerators only. No new runtime proof, executable Ext8, secure-size or quantum-security claim.
+
+Next: terminal current/next/PCS authentication and common-trace extraction, then global bus/multi-table/transcript composition. Fixed combined trace before local challenges and honest terminal equality remain explicit premises. Full 1 Pgas scope, quantified quantum soundness and secure sub300k total-input sizing remain open. Slice gate stays NOT_PASSED.
