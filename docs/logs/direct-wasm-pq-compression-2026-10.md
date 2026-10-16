@@ -7445,3 +7445,44 @@ query count or proof bytes changed. Latest measured bundle1344645 B; feasibility
 NOT_PASSED. Next critical work is a rate-changing continuation/agreement
 reduction with an explicit error bound in a useful regime, plus source transfer;
 adding list-size lemmas alone will not close that gap.
+
+## 2026-10-16 — Joint source queries and independent mixing
+
+Added IndependentSwitchQueries.lean with three audited theorems. Templates are
+one fixed OOD answer followed by q sampled source equations, exactly matching
+the independent-mixer shape. The unmixed lemma returns the old claim, OOD
+equation, and ALL source equations for the same coefficient vector. A fixed
+family query theorem bounds existence of a completely correct candidate by
+L*(T-1)^q, assuming each family member with the old functional has source
+agreement strictly below T. The joint theorem then counts actual injection
+acceptance in the query-then-mixer experiment, allowing selection after both
+draws within the fixed prequery family. Its bound is
+L*(T-1)^q*|F|^(q+1) + N^q*L*|F|^q, or after normalization
+L*((T-1)/N)^q + L/|F| for nonempty sampling spaces. The Lean statement also
+covers empty lists and q=0 by integer counting. The OOD equation is retained
+but no extra OOD improvement is claimed. Candidate-family construction is
+available from the preceding Johnson bridge; this theorem is generic in that
+family and does not itself establish its size.
+
+The source no-close premise is still essential: deriving it from a prior
+state is the missing rate-transfer step. The child candidate family and folded
+source must be fixed before queries, and all templates before independent
+mixers. This is not the old power-mixing protocol. It neither proves concrete
+continuation extraction nor recursively composes the changing-rate chain.
+
+Validation:1215 F3 cases covering empty/singleton/two-candidate families,
+q=0,1,2 and all27 received words;110565 joint query/mixer experiments. An
+omitted-noClose counterexample accepts27 outcomes where the unjustified bound
+would allow9. Full audit4260 PASS, allowed axioms only. Evidence and replay:
+results/independent-switch-queries/.
+
+Inspected GeneralListCurveExtraction.lean as a possible route past the
+high-agreement restriction. Its general_list_curve_extraction_bad_count is
+conditional on a fixed jointly agreeing curve family AND exceptional-set
+transfer; it proves the extra two-roots-per-curve functional penalty only.
+It does not discharge correlated agreement, so it cannot be used as an
+unconditional replacement for the high-agreement extraction theorem. Next
+research should attack that correlated-agreement/exceptional-set transfer,
+not add another assumed-family wrapper. Query profile and measured bundle
+remain unchanged at1344645 B; full NEAR/PQ128/sub300000 B remain open and
+feasibility NOT_PASSED.

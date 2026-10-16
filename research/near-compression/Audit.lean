@@ -6093,3 +6093,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.switch_continuation_functional
 #print axioms NearCompression.switch_indexed_continuation_candidate
 #print axioms NearCompression.switch_continuation_candidate_count
+
+#print axioms NearCompression.switch_query_unmixed
+#print axioms NearCompression.switch_query_correct_family_count
+#print axioms NearCompression.switch_query_mixing_joint_count

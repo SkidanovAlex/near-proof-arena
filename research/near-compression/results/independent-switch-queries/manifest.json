@@ -1,0 +1,14 @@
+{
+  "scope": "Fixed-family query-then-mixing count with explicit source no-close premise; not protocol soundness",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_independent_switch_queries.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/IndependentSwitchQueries.lean": "fa32b94fc293e65801439dc38dfd595ccacf6acad7cf34ed8a7b77b82c212913",
+    "research/near-compression/airbender/direct-wasm/test_independent_switch_queries.py": "73a4fc0d3fd3317f317543ec29ae0a938d2ab04f2b74c317f2f86885f29fa162",
+    "research/near-compression/results/independent-switch-queries/report.json": "d4ab5558da504274ba854ca2f93f6fa5942674357487193e3cb0506f10e0905c",
+    "research/near-compression/results/independent-switch-queries/lean-audit.log.gz": "5835761369c9021c6f78421592a2bce66f8161f1b50c3453763850f443fd890e"
+  }
+}

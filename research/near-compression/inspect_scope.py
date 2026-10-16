@@ -286,6 +286,7 @@ SOURCES = [
     "research/near-compression/NearCompression/IndependentConstraintMixing.lean",
     "research/near-compression/NearCompression/IndependentMixingCandidates.lean",
     "research/near-compression/NearCompression/IndependentMixingContinuation.lean",
+    "research/near-compression/NearCompression/IndependentSwitchQueries.lean",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean",
