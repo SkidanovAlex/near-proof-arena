@@ -5906,3 +5906,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.expanded_bus_tagged_degree
 
 #print axioms NearCompression.expanded_bus_tagged_columns
+
+#print axioms NearCompression.expanded_bus_fingerprint_checked_execution
+
+#print axioms NearCompression.expanded_bus_fingerprint_check_regressions

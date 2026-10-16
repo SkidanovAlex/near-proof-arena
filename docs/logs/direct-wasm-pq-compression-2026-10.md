@@ -4890,3 +4890,9 @@ registered results), existing axiom allowlist.
 Next: bind optimized generated programs to the proved rewrite, then integrate
 Ext8 GKR/transcript and round/PCS execution. Full acceptance/QROM, secure size
 and full 1 Pgas remain open; slice gate remains NOT_PASSED.
+
+### Expanded fingerprint instruction checker
+
+Added `ExpandedBusFingerprintCheck.lean`: the executable checker constructs the expanded fingerprint from supplied alpha/tag/message and checks its exact register route. The soundness theorem composes route execution with the universal expansion identity, proving canonical Horner semantics for every environment under acyclicity. Kernel regressions reject wrong tag, challenge, message, root and column width.
+
+Validation: full `check.py` PASS, 4121 audited theorems/regressions, allowed axioms only. This is a component checker: actual optimized terminal-program integration, authenticated challenge/message binding, native Ext8 proving, complete envelope measurement, source-invalid composition and QROM remain open. The feasibility gate remains NOT_PASSED.

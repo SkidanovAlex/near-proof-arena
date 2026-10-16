@@ -600,5 +600,9 @@
     "previous_raw_gkr_scalar_bytes": 104832,
     "minimum_input_log": 13,
     "scope": "Horner public-weight expansion universally proved algebraically with degree/read bounds; Python compiler matches canonical Horner evaluation in tested cases. No full optimized-program refinement/native Ext8 proof/QROM/secure-byte claim."
+  },
+  "expanded_fingerprint_instruction_check": {
+    "status": "UNIVERSAL_CHECKER_SOUNDNESS_PROVED",
+    "scope": "Direct executable check reconstructs expanded fingerprint from supplied alpha/tag/message and checks its instruction route. Acyclic accepted programs equal canonical Horner evaluation in every environment. Kernel regressions reject wrong tag/challenge/message/root/width. Full optimized terminal compiler integration, authenticated inputs, native Ext8 proof and QROM remain open."
   }
 }
