@@ -7,6 +7,18 @@ variable {K : Type} [Field K]
 def gkrHistoryLength (layout : GKRJointLayout) : Nat :=
   layout.rowCoordinates+2*layout.inputLog+1
 
+def gkrHistoryRowpoints (_layout : GKRJointLayout) (history : List K) (lane : GKRSourceLane) : Nat → K :=
+  gkrPointBlock lane.rowOffset lane.rowLog (fun i => history.getD i 0)
+
+def gkrHistoryLeft (layout : GKRJointLayout) (history : List K) : Nat → K :=
+  gkrPointBlock layout.rowCoordinates layout.inputLog (fun i => history.getD i 0)
+
+def gkrHistoryRight (layout : GKRJointLayout) (history : List K) : Nat → K :=
+  gkrPointBlock (layout.rowCoordinates+layout.inputLog) layout.inputLog (fun i => history.getD i 0)
+
+def gkrHistoryGamma (layout : GKRJointLayout) (history : List K) : K :=
+  history.getD (layout.rowCoordinates+2*layout.inputLog) 0
+
 def gkrHistoryTables (layout : GKRJointLayout) (metadata : List GKRSourceLane)
     (history : List K) : List (Nat → K) :=
   liftedHeterogeneousWeights layout.commonLog layout.inputLog metadata

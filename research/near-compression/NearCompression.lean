@@ -1387,3 +1387,5 @@ import NearCompression.ChosenGKRHistoryAcceptance
 import NearCompression.GKRHistoryCoordinates
 
 import NearCompression.GKRHistoryFarAcceptance
+
+import NearCompression.GKRJointFailureAcceptance

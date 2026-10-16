@@ -59,7 +59,7 @@ theorem joint_source_far_acceptance_count [DecidableEq K]
       (fun _ => 1) outerRounds (degrees 0) T betas sources lanes)
     (points : List K → List K) (pointLength : ∀ z,(points z).length=foldRounds)
     (initial : List K → K) (provers : List K → WeightedPrefixProver K)
-    (sourceValues : ∀ z,∀ i<N,(provers z).oracle 0 [] i=
+    (sourceValues : ∀ z∈uniformTuples sample outerRounds,∀ i<N,(provers z).oracle 0 [] i=
       jointBetaSource betas sources (roots 0^i) z)
     (domainDistinct : ((List.range N).map (fun i => roots 0^i)).Nodup)
     (interpolation : degrees 0-1<T)
@@ -72,7 +72,7 @@ theorem joint_source_far_acceptance_count [DecidableEq K]
     (squared : ∀ i<foldRounds,∀ y<sizes (i+1),roots (i+1)^y=roots i^y*roots i^y)
     (negative : ∀ i<foldRounds,∀ y<sizes (i+1),roots i^(y+sizes (i+1))= -(roots i^y))
     (terminalDegree : 1≤degrees foldRounds)
-    (terminalAuthenticated : ∀ z,∀ path∈uniformTuples sample foldRounds,
+    (terminalAuthenticated : ∀ z∈uniformTuples sample outerRounds,∀ path∈uniformTuples sample foldRounds,
       weightedReplayCheck (points z) path ((provers z).messages foldRounds path)
         (initial z) ((provers z).terminal path)=true →
       ∀ y<sizes foldRounds,(provers z).oracles path foldRounds y=(provers z).terminal path) :
@@ -124,7 +124,7 @@ theorem joint_source_far_acceptance_count [DecidableEq K]
         simp only [domain,count,List.countP_map,Function.comp_def]
         apply List.countP_congr
         intro i hi
-        simp [sourceValues z i (List.mem_range.mp hi)]
+        simp [sourceValues z hz i (List.mem_range.mp hi)]
       rwa [transfer] at agreement
     have pcs := weighted_prefix_no_candidate_count sample sampleDistinct (points z) (initial z)
       (provers z) roots N T queries sizes degrees sizeInitial
@@ -133,7 +133,7 @@ theorem joint_source_far_acceptance_count [DecidableEq K]
       (by simpa [pointLength] using pointInjective) (by simpa [pointLength] using nonzero)
       (by simpa [pointLength] using squared) (by simpa [pointLength] using negative)
       (by simpa [pointLength] using terminalDegree)
-      (by simpa [pointLength] using terminalAuthenticated z)
+      (by simpa [pointLength] using terminalAuthenticated z hz)
     simpa only [pointLength,noCandidate,not_false_eq_true,and_true] using pcs)
   apply Nat.le_trans bound
   have scaled := Nat.add_le_add_right

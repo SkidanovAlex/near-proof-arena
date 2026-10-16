@@ -14,7 +14,7 @@ theorem uniform_tuples_append {A : Type} (sample : List A) (a b : Nat) :
     simp only [uniformTuples,ih,List.flatMap_assoc,List.map_flatMap,List.flatMap_map,List.map_map]
     rfl
 
-private theorem tuple_length {A : Type} (sample : List A) (n : Nat) :
+theorem uniform_tuple_member_length {A : Type} (sample : List A) (n : Nat) :
     ∀ x∈uniformTuples sample n,x.length=n := by
   induction n with
   | zero => simp [uniformTuples]
@@ -55,7 +55,7 @@ theorem chronological_suffix_count {A B : Type} (sample : List A)
     congr 1
     apply List.map_congr_left
     intro h hh
-    have length := tuple_length sample earlier h hh
+    have length := uniform_tuple_member_length sample earlier h hh
     simp [←length]
   rw [equal]
   exact fiber

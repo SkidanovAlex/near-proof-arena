@@ -2716,3 +2716,35 @@ No secure full NEAR1Pgas size claim is made.
 Validation: six new results pass module checks and full check.py (3793
 registered results), with the existing axiom allowlist. Imports, audit, scope
 inventory, integration report and NOT_PASSED gate updated.
+
+
+### Merged near/far GKR failure acceptance
+
+Proved gkr_joint_failure_acceptance_count. On one joint history/PCS/folding/
+query experiment it bounds accepted sumcheck+folding AND either absence of a
+common prechallenge representative or a wrong full recovered GKR input for
+the chosen representative. Representative existence is no longer a premise.
+
+The source family fixes whether the near or far branch applies before any
+coordinates are sampled, so the bound is max(nearBudget,farBudget), not their
+sum. The near branch uses chosen_gkr_history_acceptance_count; the far branch
+uses gkr_history_far_acceptance_count. Concrete take/drop oracle identity and
+fixed-length PCS extraction connect both to the same strategy and sample
+space. Sequential constant subtraction remains bound to the full GKR claim.
+
+General and concrete far theorems now require source identity and terminal
+authentication only on sampled outer vectors. This weakens unnecessarily
+universal shape obligations without changing their conclusions. Exposed and
+audited uniform_tuple_member_length; added concrete history accessors.
+
+Remaining assumptions include fixed valid source/layout geometry, initial
+virtual-oracle identity, terminal authentication, ideal independent sampling
+and strict unique decoding. This is not computational extraction from roots,
+full executable refinement, upstream/global GKR/AIR/bus/Wasm composition or
+quantum security. Next is upstream failure propagation into this merged event
+and discharge of concrete commitment/oracle premises.
+
+Validation: full check.py passes3795 registered results with the existing
+axiom allowlist; diff checks pass. Integration report, imports, audit, scope
+and the still-NOT_PASSED feasibility gate updated. Full secure NEAR1Pgas
+sub300000-byte compression remains unestablished.

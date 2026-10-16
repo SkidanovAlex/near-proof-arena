@@ -18,7 +18,7 @@ theorem gkr_history_far_acceptance_count [DecidableEq K]
     (far : ¬∃ lanes,JointBetaRepresentative ((List.range N).map (fun i => roots 0^i))
       (fun _ => 1) (heterogeneousJointDimension layout) (degrees 0) T (metadata.map (heterogeneousJointBeta layout)) sources lanes)
     (initial : List K → K) (provers : List K → WeightedPrefixProver K)
-    (sourceValues : ∀ z,∀ i<N,(provers z).oracle 0 [] i=
+    (sourceValues : ∀ z∈uniformTuples sample (heterogeneousJointDimension layout),∀ i<N,(provers z).oracle 0 [] i=
       jointBetaSource (metadata.map (heterogeneousJointBeta layout)) sources (roots 0^i) z)
     (domainDistinct : ((List.range N).map (fun i => roots 0^i)).Nodup)
     (interpolation : degrees 0-1<T)
@@ -31,7 +31,7 @@ theorem gkr_history_far_acceptance_count [DecidableEq K]
     (squared : ∀ i<layout.commonLog,∀ y<sizes (i+1),roots (i+1)^y=roots i^y*roots i^y)
     (negative : ∀ i<layout.commonLog,∀ y<sizes (i+1),roots i^(y+sizes (i+1))= -(roots i^y))
     (terminalDegree : 1≤degrees layout.commonLog)
-    (terminalAuthenticated : ∀ z,∀ path∈uniformTuples sample layout.commonLog,
+    (terminalAuthenticated : ∀ z∈uniformTuples sample (heterogeneousJointDimension layout),∀ path∈uniformTuples sample layout.commonLog,
       weightedReplayCheck (gkrPCSPoint layout z) path ((provers z).messages layout.commonLog path)
         (initial z) ((provers z).terminal path)=true →
       ∀ y<sizes layout.commonLog,(provers z).oracles path layout.commonLog y=(provers z).terminal path) :
