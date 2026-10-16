@@ -1,0 +1,36 @@
+{
+  "status": "BOUNDED_COORDINATE_TYPING_AND_VIOLATION_TRANSPORT",
+  "module": "NearCompression/BoundedBusCoordinateTyping.lean",
+  "theorems": [
+    "bus_formula_bounded_base_projection",
+    "decoded_bus_coordinate_lowering_bounded",
+    "typed_joint_bus_coordinate_lowering",
+    "lowered_auxiliary_failure_index"
+  ],
+  "proved": [
+    "Formula column bounds restrict base-valuedness requirements to read columns of the selected table, including cyclic next reads.",
+    "Typed joint representative descent supplies bounded coordinate typing from recovered-column provenance, covering auxiliary as well as source lanes.",
+    "Reconstructed auxiliary violations transfer to nonzero combined residual indices on the decoded PCS trace using the coordinate-lowered formula list."
+  ],
+  "assumptions": [
+    "Ideal typed source oracles, distinct base domain, representative geometry and degree/agreement bounds.",
+    "Recovered-lane provenance covers every coordinate below the lowered formula read bound.",
+    "The local formula list is the proved coordinate lowering; native generator equivalence remains open."
+  ],
+  "remaining": [
+    "Derive live coordinate bounds/provenance for actual generated table formulas and authenticate source oracles.",
+    "Prove native generator emits the coordinate-lowered model.",
+    "Instantiate adaptive auxiliary-invalid local bounds, then join/average local/GKR/PCS/bus failures.",
+    "QROM, secure-size feasibility and full 1 Pgas execution remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4066,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

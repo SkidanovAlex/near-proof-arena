@@ -5792,3 +5792,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_coordinate_lowering_degree
 
 #print axioms NearCompression.decoded_bus_coordinate_lowering
+
+#print axioms NearCompression.bus_formula_bounded_base_projection
+
+#print axioms NearCompression.decoded_bus_coordinate_lowering_bounded
+
+#print axioms NearCompression.typed_joint_bus_coordinate_lowering
+
+#print axioms NearCompression.lowered_auxiliary_failure_index

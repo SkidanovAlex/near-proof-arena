@@ -314,7 +314,9 @@
     "NearCompression/BusResidualFailureWitness.lean",
     "results/bus-residual-failure-integration.json",
     "NearCompression/BusCoordinateFormulaLowering.lean",
-    "results/bus-coordinate-formula-lowering-integration.json"
+    "results/bus-coordinate-formula-lowering-integration.json",
+    "NearCompression/BoundedBusCoordinateTyping.lean",
+    "results/bounded-bus-coordinate-typing-integration.json"
   ],
   "requirements": [
     {
@@ -493,5 +495,6 @@
   "two_table_concrete_pcs": "PROVED_CONDITIONALLY: actual concrete_gkr_accepted_failure_budget is lifted over the complete two-table experiment with max(nearBudget,farBudget), including absent representatives. Numerical PCS fiber budget is derived, while ideal source/projection/geometry/authentication, recovered input binding and event inclusion remain explicit.",
   "prepared_branch_budget": "PROVED_CONDITIONALLY: prepared_fixed_source_branch_budget joins actual wrong-output bus bound and selected failed-table local bound over the full experiment, paying max(local0,local1,bus) plus shared accepted-failure budget once. Fixed source, full-experiment local/joint budgets and decoded residual witnesses remain explicit; this is not end-to-end acceptance certification.",
   "bus_auxiliary_validity_gap": "PARTIAL: generated auxiliary formulas now yield an actual table/row/nonzero combined residual when busExt8TablesResidualsZero fails under source checks. This is proved on airAuxCoordinateTrace, not yet native decoded-coordinate formula refinement. Bus witness failure must still include local/GKR errors in addition to PCS failures.",
-  "bus_coordinate_formula_lowering": "PROVED_CONDITIONALLY: lowerBusCoordinates reconstructs logical Ext8 auxiliary operands from eight coordinate columns, preserves row evaluation and does not increase local degree. Decoded transport requires base-valued coordinates; native generator refinement and live auxiliary typing remain open."
+  "bus_coordinate_formula_lowering": "PROVED_CONDITIONALLY: lowerBusCoordinates reconstructs logical Ext8 auxiliary operands from eight coordinate columns, preserves row evaluation and does not increase local degree. Decoded transport requires base-valued coordinates; native generator refinement and live auxiliary typing remain open.",
+  "bus_coordinate_typing": "PROVED_CONDITIONALLY: bounded formula-read typing replaces all-trace base-valuedness; typed joint representative descent discharges it under coordinate provenance. Reconstructed auxiliary violations transfer to decoded combined residuals for the coordinate-lowered list. Native generator/coverage authentication and final event composition remain open."
 }

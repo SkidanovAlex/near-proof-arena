@@ -4370,3 +4370,22 @@ local/GKR/PCS/bus event composition. QROM, secure size and full 1 Pgas remain op
 
 Validation: full `check.py` PASS (4062 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only change.
+
+### Bounded coordinate typing and auxiliary violation transport
+
+`BoundedBusCoordinateTyping.lean` adds formula read bounds and proves base
+projection/value transport using only those columns of the selected table,
+including next-row references. `typed_joint_bus_coordinate_lowering` invokes
+typed joint representative descent to discharge base typing for source and
+auxiliary coordinate lanes with recovered-column provenance.
+`lowered_auxiliary_failure_index` transfers a reconstructed auxiliary failure
+to a nonzero combined residual on the decoded PCS trace, for the exact
+coordinate-lowered formula list. Unreferenced cells need no typing premise.
+
+Remaining: actual generated-formula read bounds/coordinate provenance,
+native generator equivalence and authenticated typed oracles; then adaptive
+invalid-auxiliary acceptance and complete event averaging. QROM, secure size
+and full 1 Pgas scope remain open.
+
+Validation: full `check.py` PASS (4066 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only change.

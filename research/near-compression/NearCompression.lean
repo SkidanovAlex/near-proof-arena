@@ -1531,3 +1531,5 @@ import NearCompression.PreparedFixedSourceBranchBudget
 import NearCompression.BusResidualFailureWitness
 
 import NearCompression.BusCoordinateFormulaLowering
+
+import NearCompression.BoundedBusCoordinateTyping
