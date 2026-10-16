@@ -645,5 +645,11 @@
     "rounds": 474,
     "raw_scalar_bytes": 47744,
     "scope": "Separate Ext8 diagnostic profile binds caller-supplied circuit, statement and claim in SHA384 transcript; native round/fold prover and Python verifier agree on input-opening obligation. Compiled193 uses synthetic terminals and zero private inputs, not a state-transition witness. Obligation checked directly against test inputs, not discharged by PCS. No full slice proof, Rust/implementation refinement or quantum security claim."
+  },
+  "native_ext8_local_kernel": {
+    "status": "DIRECT_MULTILINEAR_DIFFERENTIAL_PASS",
+    "round_node_comparisons": 120,
+    "terminal_pairs": 9,
+    "scope": "Native Ext8 local folded-table instruction evaluator with first/last/transition selectors and cyclic next rows. Independent direct MLE evaluation matches; malformed programs reject. Actual trace/auxiliary witness construction, local transcript, PCS/full proof and Rust refinement remain open."
   }
 }

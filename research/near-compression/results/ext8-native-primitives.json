@@ -7,19 +7,19 @@
   "direct_abi_rejections": 4,
   "timings_4096": [
     {
-      "native_seconds": 0.011568157933652401,
-      "reference_seconds": 0.0924751004204154
+      "native_seconds": 0.01115444302558899,
+      "reference_seconds": 0.09090255806222558
     },
     {
-      "native_seconds": 0.011319599580019712,
-      "reference_seconds": 0.09820060385391116
+      "native_seconds": 0.011324112303555012,
+      "reference_seconds": 0.09788813581690192
     },
     {
-      "native_seconds": 0.011338735930621624,
-      "reference_seconds": 0.1044692499563098
+      "native_seconds": 0.01104647945612669,
+      "reference_seconds": 0.10311743710190058
     }
   ],
-  "source_sha256": "f2f4e7039416806416855ba423c75dbcae5a2b42fe3839680602b98864a1c347",
+  "source_sha256": "46bf8dffdef45809fdace266c0ed1f9766fe41ab0f1f0c8f970cb0f1d403080f",
   "compiler": "rustc 1.96.0 (ac68faa20 2026-05-25)",
   "scope": "Native Ext8 fold/quadratic primitives only. Independent arithmetic and sumcheck identity tests; no Rust-to-Lean refinement, full native GKR/local prover, transcript, PCS integration, quantum security or proof-size claim."
 }

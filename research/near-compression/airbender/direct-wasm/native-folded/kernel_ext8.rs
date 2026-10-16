@@ -1,5 +1,5 @@
-//! Ext8 multilinear folding primitives. Flat basis: X^8 = 11 over BabyBear.
-//! ABI buffers contain canonical u32 coefficients, eight per field element.
+// Ext8 multilinear folding primitives. Flat basis: X^8 = 11 over BabyBear.
+// ABI buffers contain canonical u32 coefficients, eight per field element.
 const P: u64 = 2_013_265_921;
 type E = [u32; 8];
 fn add(a: E, b: E) -> E { std::array::from_fn(|i| ((a[i] as u64+b[i] as u64)%P) as u32) }

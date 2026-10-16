@@ -5,6 +5,6 @@
   "independent_polynomial_evaluations": 162,
   "wrapper_rejections": 5,
   "direct_abi_rejections": 3,
-  "source_sha256": "f2f4e7039416806416855ba423c75dbcae5a2b42fe3839680602b98864a1c347",
+  "source_sha256": "46bf8dffdef45809fdace266c0ed1f9766fe41ab0f1f0c8f970cb0f1d403080f",
   "scope": "Native Ext8 GKR round coefficients and folds over complete two-axis synthetic layers, all add/sub/mul operations. No Fiat-Shamir transcript, full circuit/PCS proof, Rust refinement or security claim."
 }
