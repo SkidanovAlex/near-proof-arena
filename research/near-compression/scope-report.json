@@ -394,6 +394,7 @@
     "research/near-compression/NearCompression/TerminalBooleanRowSemantics.lean": "144999a83e18f0efae7ee0cef2fedda2f42180cd9314eef8df1e15da704a14d4",
     "research/near-compression/NearCompression/WeightedTerminalSemantics.lean": "20e644f1f3093889f7d358540ed1b3c97333982069f6b286c02fea9bd08f5560",
     "research/near-compression/NearCompression/SHA384ChunkCallChain.lean": "cc1b81f13bba8cbb995edb87c43f13cf6062f3b01e8f88b82a0e8e1c45734b20",
+    "research/near-compression/NearCompression/SHA384ChunkCallCheck.lean": "c03667a8b8fea0d4c3ff87803f5b45fcd9aa4083d48a0370356708f90937bdfc",
     "research/near-compression/NearCompression/PreparedTypedEqzStack.lean": "6aebcce70dd6800210c2587259bac23bb0275b51f6118d3d30728cd832d5777d",
     "research/near-compression/NearCompression/PreparedTypedOpcode.lean": "66ff680ecac48876b66419dfe7b40607eaa1027b61a685261f3e1fb2181b8a9d",
     "research/near-compression/NearCompression/BusProgramGateSoundness.lean": "08da9e08908f8b2c0f2151577b0ad3f6760455a61b9df19ade824632b34989b2",

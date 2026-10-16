@@ -226,6 +226,7 @@ SOURCES = [
     "research/near-compression/NearCompression/TerminalBooleanRowSemantics.lean",
     "research/near-compression/NearCompression/WeightedTerminalSemantics.lean",
     "research/near-compression/NearCompression/SHA384ChunkCallChain.lean",
+    "research/near-compression/NearCompression/SHA384ChunkCallCheck.lean",
     "research/near-compression/NearCompression/PreparedTypedEqzStack.lean",
     "research/near-compression/NearCompression/PreparedTypedOpcode.lean",
     "research/near-compression/NearCompression/BusProgramGateSoundness.lean",

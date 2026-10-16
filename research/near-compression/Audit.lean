@@ -5947,3 +5947,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.indexed_initial_candidate_agreement
 #print axioms NearCompression.checked_history_joint_far_acceptance_budget
+
+#print axioms NearCompression.check_chunk_call_wiring_iff
+#print axioms NearCompression.check_chunk_call_sound
+#print axioms NearCompression.sha384_chunks_checked_call_sound

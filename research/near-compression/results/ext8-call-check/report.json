@@ -1,0 +1,43 @@
+{
+  "accepted": 12,
+  "rejected": 11,
+  "status": "PASS",
+  "call_indices": [
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159
+  ],
+  "compression_steps": 24,
+  "negative_cases": [
+    "wrong-IV",
+    "hidden-output-word",
+    "hidden-input-word",
+    "block-word",
+    "operand-byte",
+    "padding-length",
+    "missing-block",
+    "reordered-uses",
+    "out-of-range-use",
+    "wrong-final",
+    "short-block"
+  ],
+  "files": {
+    "/tmp/nearproof-ext8-call-check/cases.json": "7a7dca5c2043b56ea1cba075fa5b6c5a0b1573f65d474d6edd5ce1633257d630",
+    "/tmp/nearproof-ext8-node-batch/config.json": "bf7a502a5759ab52022e8eb2b577507b8d9937ad1bf3e0376a418872c20447e5",
+    "/tmp/nearproof-ext8-node-batch/selection.json": "acf0205dedd4aa75e2e00a1115787c331f11f7ad6866b30558ca5edd374b4fce",
+    "/tmp/nearproof-ext8-node-batch/source-03-rows.json": "885b505af0a4ba2a86b0af4f922cefa8f8de421c7cf9cc7c7ae28ae574edf54a",
+    "/tmp/nearproof-ext8-compression-dag/hash-call-map.json": "1c1411d7f9ab2d78f911bccb534950f097b49879faaa418b157982e5372c4900",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/CheckSHA384ChunkCalls.lean": "9844d949962c3a1405b59e99c2b34c76cb6fb5f09d8de75a540eae9125ee0fc9",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/NearCompression/SHA384ChunkCallCheck.lean": "c03667a8b8fea0d4c3ff87803f5b45fcd9aa4083d48a0370356708f90937bdfc"
+  },
+  "scope": "Lean checker establishes canonical blocks/padding, IV, full512-bit state links and final state for supplied message bytes and ordered-use rows. Compression AIR validity, commitment binding, transcript operand provenance and recursive arithmetization remain separate; no new recursive proof or security claim."
+}

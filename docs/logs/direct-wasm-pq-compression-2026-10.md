@@ -5642,3 +5642,41 @@ causality, full NEAR and QROM remain open. No new security-bit or sub300k claim.
 Validation: full check.py PASS4144 theorems/axiom closures and boundary checks,
 /tmp/checked-history-source-audit.log; module/Audit/scope registrations updated.
 No executable protocol or proof-size change. Feasibility gate NOT_PASSED.
+
+### Executable Lean checker for real chunk hash-call links
+
+Added SHA384ChunkCallCheck.lean: checkChunkCallWiring checks all eight state
+words (512bits) at every link; checkChunkCall checks declared use ordinals,
+128-byte block lengths, block words against ordered-use payloads, canonical
+SHA512-family padding of supplied message bytes, standard SHA384 IV, and final
+full state. check_chunk_call_wiring_iff and check_chunk_call_sound prove that
+successful executable checks discharge the corresponding semantic premises.
+sha384_chunks_checked_call_sound then composes this with actual chunk HoldsP
+compression facts and the explicit ordered-use binding interface to obtain
+the complete sha384ChainDigest. No compression fact is supplied by this checker.
+
+CheckSHA384ChunkCalls.lean runs the exact proved checker. The Python fixture
+builder selects actual calls148..159 and source03 ordered-use rows from the
+retained Ext8 verifier node batch. All12calls/24steps pass. Eleven cases reject:
+wrong IV, hidden output word, hidden input word, block word, operand byte,
+padding length, omitted block, reordered uses, out-of-range use, wrong final
+state, and short block. Hidden-word tests touch the last128bits discarded only
+at final digest extraction, ensuring intermediate chaining uses the full state.
+
+Artifacts: results/ext8-call-check/{cases.json.gz,report.json,lean.log}.
+The gzip expands to the exact cases.json hash recorded in report.json. Replay:
+  gzip -dc results/ext8-call-check/cases.json.gz > /tmp/chunk-call-cases.json
+  lake env lean --run CheckSHA384ChunkCalls.lean /tmp/chunk-call-cases.json
+Generator: airbender/direct-wasm/test_sha384_chunk_call_check.py with the prior
+/tmp/nearproof-ext8-compression-dag and /tmp/nearproof-ext8-node-batch inputs.
+
+Scope: an executable, proved semantic checker, not a new AIR or recursive
+proof. Message bytes must still be bound to actual framed verifier operands;
+this checker does not establish that provenance or unique chronological call
+coverage. Ordered-use roots must still imply trace equality. Recursion must
+arithmetize these checks and compose all chunks. The measured121208-byte
+compression-component envelope and quantum-security status are unchanged.
+
+Validation: full check.py PASS4147 theorem/axiom and boundary checks;
+/tmp/sha384-chunk-call-check-audit.log. Module/Audit/scope registration updated.
+Goal remains full NEAR1Pgas/quantum128/sub300k; feasibility gate NOT_PASSED.
