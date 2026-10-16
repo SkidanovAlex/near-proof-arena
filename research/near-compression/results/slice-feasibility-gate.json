@@ -704,5 +704,14 @@
     "fold_opening_bytes": 205024,
     "metadata_bytes": 2920,
     "scope": "Actual retained execution opening, canonical transcript-derived multiproofs with terminal tree omitted/reconstructed. Roundtrip and fresh-process verification pass; eight malformed binary cases reject. Current encoding exceeds300000bytes before envelope. Not a lower bound for other protocols/layouts, nor a128-bit quantum security certificate."
+  },
+  "ext8_layout_and_rate_screen": {
+    "status": "CALIBRATED_SCREEN_NO_SUB300KB_CANDIDATE",
+    "baseline_calibration_bytes": 620632,
+    "fixed309_pooled_min_opening_bytes": 500200,
+    "fixed309_pooled_max_best_bytes": 516728,
+    "rate4_130ideal_min_bytes": 507640,
+    "rate128_130ideal_min_bytes": 910984,
+    "scope": "Exact baseline geometry, independently checked optimizer, simulated candidate queries. Packing through1024 and same-phase pooling preserve309 queries/48-byte hashes in primary screen. Alternate-rate query counts use existing conditional PCS-only130-ideal-bit arithmetic, not total/PQ security. No candidate below300KB; alternate layouts/rates unimplemented. Protocol-level source-query reduction remains necessary."
   }
 }
