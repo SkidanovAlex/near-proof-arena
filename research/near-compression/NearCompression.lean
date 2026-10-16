@@ -1722,3 +1722,5 @@ import NearCompression.RationalFunctionSpecialization
 import NearCompression.AlgebraicRootSpecialization
 
 import NearCompression.RationalCoefficientGuards
+
+import NearCompression.BoundedBezout

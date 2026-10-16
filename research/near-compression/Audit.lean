@@ -6384,3 +6384,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.presented_bezout_guard_smooth
 #print axioms NearCompression.presented_bezout_singular_count
 #print axioms NearCompression.irreducible_specialization_guard_exists
+
+#print axioms NearCompression.polynomial_bezout_degree_reduction
+#print axioms NearCompression.irreducible_bounded_derivative_bezout
+#print axioms NearCompression.polynomial_bounded_bezout_finite_check
+#print axioms NearCompression.polynomial_derivative_bezout_finite_check

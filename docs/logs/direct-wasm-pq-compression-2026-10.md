@@ -8765,3 +8765,30 @@ Next: bound certificate denominator degrees from source polynomial degrees,
 and preserve useful algebraic branches under specialization. Full MCA and
 protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Bounded Bezout multipliers and finite coefficient checking
+
+Added BoundedBezout.lean with four audited public theorems. Given any unit
+certificate A*p+B*q=1, deg(p)<=m with m>0, and deg(q)=n, divide A by q and
+adjust B to construct U,V with deg(U)<n and deg(V)<m. The constant q case is
+handled explicitly. The bound on V follows from the formal leading-product
+coefficient and the reconstructed identity, not a claimed algorithm invariant.
+
+For degree-d irreducibles below the characteristic this supplies derivative
+certificate multipliers of degree<d-1 and<d, including d=1. With these bounds,
+checking the first2d-1 coefficients suffices for the full formal certificate.
+The generic m+n finite-check theorem also handles constant q and padding.
+These bound the algebraic-variable unknowns/equations; no parameter-variable
+denominator-degree bound or formal matrix invertibility is claimed yet.
+
+Validation:600 coprime inputs over F2/F3/F5/F17, all certificates deliberately
+inflated by arbitrary polynomial syzygies and then reduced. All match an
+independent finite coefficient-matrix solve, totaling3758 equations;120 cases
+have constant q. A high-degree hidden coefficient demonstrates why the finite
+check requires multiplier degree bounds. Full audit4508 PASS, allowed axioms
+only. Evidence: results/bounded-bezout/.
+
+Next: coefficient-system invertibility and a source-degree denominator bound,
+then useful algebraic branch specialization. Full MCA and protocol/QROM
+composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.
