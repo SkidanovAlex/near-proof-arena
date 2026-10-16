@@ -5549,3 +5549,32 @@ Validation: full check.py passed4136 theorem/axiom and boundary checks,
 and scope inventory; only allowed propext/Classical.choice/Quot.sound.
 No prover/proof-size change; feasibility gate remains NOT_PASSED. Host coverage
 remains65/75 with10real-gated names; capacity gap remains290x versus1Pgas.
+
+### Adaptive history terminal/query boundary
+
+Added CheckedHistoryTerminal.lean with four audited theorems. Local path checks
+are defined on successive strategy(history++[challenge]) states. Starting from
+no candidate, absence of checkedHistoryEscape preserves no-candidate status
+through the actual adaptive path. This deterministic induction does not assume
+candidate preservation; the preceding CheckedHistoryEscape supplies the
+separate conditional escape bounds under snapshot/claim/weight bindings.
+
+For a checked final coefficient disclosure, the actual terminal polynomial
+would be a candidate if at least T global-chain query seeds passed. Terminal
+doom therefore implies fewer than T passing seeds. Independent uniform q-query
+sampling yields at most(T-1)^q accepting query tuples. The final theorem places
+local and terminal checks INSIDE acceptance, so malformed branches contribute
+zero even at q=0. It does not assume honest terminal values on rejected paths.
+
+Critical scope: the terminalValues check is complete algebraic oracle equality;
+it is not yet derived from executable Merkle authentication. Initial doom is
+explicit. The query-tuple count is not a claim about each sequential query's
+round-by-round doomed predicate or a QROM theorem. Combining this boundary with
+the escape budget into the full protocol, commitment causality, initial
+source-invalid branch and quantum transformation remain necessary. No proof
+size/security improvement is claimed; the target remains full NEAR1Pgas with
+quantum-resistant sub300k proof, and the feasibility gate remains NOT_PASSED.
+
+Validation: full check.py PASS4140 actual-semantics bridge theorems and boundary
+examples; only permitted axioms. Log /tmp/checked-history-terminal-audit.log.
+Module/Audit/scope registrations updated; git diff --check passes.

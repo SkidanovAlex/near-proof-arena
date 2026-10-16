@@ -1568,3 +1568,5 @@ import NearCompression.WeightedFoldDoomed
 import NearCompression.CheckedFoldEscape
 
 import NearCompression.CheckedHistoryEscape
+
+import NearCompression.CheckedHistoryTerminal
