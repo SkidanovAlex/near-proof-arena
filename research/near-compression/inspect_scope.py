@@ -420,6 +420,7 @@ SOURCES = [
     "research/near-compression/NearCompression/TwoTableTerminalRepair.lean",
     "research/near-compression/NearCompression/SecondTableEvaluatedGKRPCS.lean",
     "research/near-compression/NearCompression/FirstTableEvaluatedGKRPCS.lean",
+    "research/near-compression/NearCompression/CheckedTerminalGKRRepair.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",

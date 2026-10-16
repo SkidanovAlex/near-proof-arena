@@ -1,0 +1,34 @@
+{
+  "status": "CHECKED_SEMANTICS_FEEDS_EVALUATED_GKR_REPAIR",
+  "module": "NearCompression/CheckedTerminalGKRRepair.lean",
+  "theorems": [
+    "checked_terminal_gkr_repair"
+  ],
+  "proved": [
+    "Wrong local terminal plus localTerminalBindingCheck derives an indexed mismatch in the fixed semantic output list.",
+    "terminalCompilerWitnessCheck and decoded-environment agreement derive finite-circuit equality to that same semantic batch.",
+    "Those derived facts feed actual evaluated-GKR/batching repair on twoTablePCSContinuations; accepted mismatch stays in one joint error event count."
+  ],
+  "assumptions": [
+    "Decoded-environment agreement, metadata/history point and formula identity, fixed semantic list before rho.",
+    "Checked placement/selectors, width and slot geometry, constant placement and compiler checks.",
+    "GKR root geometry, zero initial root claim and accepted evaluated-GKR checks.",
+    "Accepted terminal mismatch inclusion in the chosen error event; native authentication and PCS event bound are separate."
+  ],
+  "remaining": [
+    "Instantiate this checked repair across first/second table families and transport selected trace cells into metadata-indexed decoded family.",
+    "Substitute concrete PCS event/budget including absent representatives.",
+    "Join source-local and bus branches, average earlier bus challenges.",
+    "Native/QROM binding, secure sub-300 KB and full 1 Pgas execution remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4046,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

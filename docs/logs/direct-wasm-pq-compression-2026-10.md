@@ -4249,3 +4249,21 @@ Full 1 Pgas remains the objective.
 
 Validation: full `check.py` PASS (4045 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only composition.
+
+### Checked terminal/compiler semantics feed GKR repair
+
+`checked_terminal_gkr_repair` composes `checked_local_terminal_mismatch`,
+`checked_semantic_circuit_value` and the actual evaluated-GKR repair theorem.
+The caller supplies executable checker results rather than an assumed output
+mismatch or finite-circuit evaluation equality. Compiler witnesses may vary
+with rho while their semantic projection stays fixed. The circuit inputs are
+the actual recovered-input function and layers are the witness's stored gates.
+
+Decoded-environment agreement, metadata/history/formula binding, checked
+geometry and placement, root geometry/accepted GKR checks and error inclusion
+remain explicit. Next: instantiate this across both local-table families,
+substitute the concrete PCS event bound, and join/average the source-local and
+bus branches. Native/QROM, secure-size and full 1 Pgas requirements remain open.
+
+Validation: full `check.py` PASS (4046 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only composition.
