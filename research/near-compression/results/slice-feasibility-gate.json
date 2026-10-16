@@ -259,7 +259,9 @@
     "NearCompression/GKRConcreteErrorInclusion.lean",
     "results/gkr-concrete-error-inclusion-integration.json",
     "NearCompression/GKRFullPCSExperiment.lean",
-    "results/gkr-full-pcs-experiment-integration.json"
+    "results/gkr-full-pcs-experiment-integration.json",
+    "NearCompression/TwoTableLocalCoordinates.lean",
+    "results/two-table-local-coordinates-integration.json"
   ],
   "requirements": [
     {

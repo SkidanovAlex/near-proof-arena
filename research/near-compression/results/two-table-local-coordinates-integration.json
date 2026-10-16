@@ -1,0 +1,34 @@
+{
+  "status": "TWO_TABLE_LOCAL_COORDINATES_REGROUPED_WITH_JOINT_BUDGET",
+  "module": "NearCompression/TwoTableLocalCoordinates.lean",
+  "theorems": [
+    "two_table_local_regroup",
+    "two_table_local_joint_coordinates",
+    "two_table_local_joint_budget"
+  ],
+  "proved": [
+    "Sequential two-table local prefix event count equals regrouped initial and rowpoint sampling count.",
+    "Both row paths concatenate into one uniform vector of summed row logs, preserving complete local prefixes by take/drop.",
+    "Per-initial-pair joint rowpoint budget lifts with exact initial challenge multiplicities."
+  ],
+  "assumptions": [
+    "Two-table experiment, matching the current literal slice; arbitrary table count is not covered.",
+    "Fixed row logs and continuation sample space.",
+    "Supplied joint budget must retain all event dependencies; the theorem exchanges counting sums, not protocol messages."
+  ],
+  "remaining": [
+    "Substitute the GKR/PCS event and prove native metadata offsets and input bindings match this partition.",
+    "Assemble invalid-trace and absent-representative acceptance cases.",
+    "Native specification refinement, QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3986,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; finite count regrouping only."
+  }
+}

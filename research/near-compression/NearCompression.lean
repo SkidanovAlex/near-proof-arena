@@ -1477,3 +1477,5 @@ import NearCompression.LocalBatchedGKR
 import NearCompression.GKRConcreteErrorInclusion
 
 import NearCompression.GKRFullPCSExperiment
+
+import NearCompression.TwoTableLocalCoordinates

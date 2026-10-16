@@ -3826,3 +3826,19 @@ remain open, as does final no-representative/invalid-trace assembly.
 
 Full check.py passed 3983 registered results with the existing axiom allowlist.
 No native code or byte measurements changed; gate remains NOT_PASSED.
+
+### Two-table local challenges regroup into joint row coordinates
+
+TwoTableLocalCoordinates preserves both complete local prefixes while
+regrouping the sequential two-table challenge experiment into initial
+mixing/weighting draws and one concatenated uniform rowpoint vector. The
+event reconstructs each table path by take/drop. The proof exchanges finite
+sums only; later messages retain dependence on every earlier challenge.
+A joint rowpoint budget lifts across both initial sample spaces with their
+exact multiplicities, without fixing either table rowpoint.
+
+This covers the current two-table literal slice, not arbitrary table counts.
+Substituting the GKR/PCS event and proving native metadata/input bindings
+still remain, followed by invalid-trace/no-representative assembly.
+Full check.py passed 3986 registered results with the existing axiom allowlist.
+Native code and byte measurements unchanged; gate remains NOT_PASSED.

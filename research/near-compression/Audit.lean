@@ -5669,3 +5669,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_full_pcs_event_budget
 #print axioms NearCompression.evaluated_gkr_full_pcs_count
 #print axioms NearCompression.evaluated_gkr_joint_pcs_budget
+
+#print axioms NearCompression.two_table_local_regroup
+#print axioms NearCompression.two_table_local_joint_coordinates
+#print axioms NearCompression.two_table_local_joint_budget
