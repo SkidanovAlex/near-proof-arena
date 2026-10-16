@@ -6501,3 +6501,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.rational_polynomial_regular_mul
 #print axioms NearCompression.rational_polynomial_regular_division
 #print axioms NearCompression.rational_polynomial_regular_exact_quotient
+
+#print axioms NearCompression.rational_polynomial_specializes_coefficient
+#print axioms NearCompression.rational_polynomial_specializes_regular
+#print axioms NearCompression.algebraic_regular_representative_value_eq
+#print axioms NearCompression.algebraic_residue_value_unique
+#print axioms NearCompression.algebraic_residue_value_add
+#print axioms NearCompression.algebraic_residue_value_mul

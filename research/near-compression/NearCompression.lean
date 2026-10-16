@@ -1758,3 +1758,5 @@ import NearCompression.SquarefreeFactorCertificates
 import NearCompression.SeparableFactorSelection
 
 import NearCompression.RegularPolynomialDivision
+
+import NearCompression.AlgebraicResidueSpecialization

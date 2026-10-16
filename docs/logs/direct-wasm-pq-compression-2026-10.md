@@ -9228,3 +9228,31 @@ at a specialized modulus root, then compose extension operations and lifting.
 Parameter-degree control/useful-branch coverage and protocol/QROM composition
 remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Well-defined partial algebraic residue specialization
+
+Added AlgebraicResidueSpecialization.lean with six audited public theorems.
+Coefficient-list specialization implies coefficient regularity at all indices.
+For equivalent regular representatives, the preceding exact-quotient theorem
+constructs a regular witness for their difference modulo the modulus. Evaluating
+that identity at a specialized modulus root proves their values equal, provided
+the specialized leading coefficient remains nonzero.
+
+AlgebraicResidueValueAt is an existential relation on actual residue classes,
+witnessed by a regular representative and its specialized polynomial. Value
+uniqueness now descends to the quotient; addition and multiplication preserve
+the partial domain and values. No total evaluation homomorphism is introduced.
+Inversion requires more than nonzeroness at the chosen root: for h=Y^2-Z,
+Y-1 is nonzero at z=1,a=-1 but its coefficientwise inverse has a pole at Z=1,
+as the conjugate root a=1 annihilates Y-1. A sufficient certificate/norm guard
+must be used for the Hensel slope inverse.
+
+Validation:193 equivalent-representative pairs,134 specialized-root value
+equalities,268 quotient add/mul values,4 leading-degree-drop counterexamples
+and3 inverse-domain counterexamples. Full audit4609 PASS, allowed axioms only.
+Evidence: results/algebraic-residue-specialization/.
+
+Next: guarded derivative inversion and composition of algebraic-extension
+Hensel specialization. Parameter-degree control/useful-branch coverage and
+protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

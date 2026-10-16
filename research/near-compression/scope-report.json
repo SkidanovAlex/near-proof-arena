@@ -496,6 +496,7 @@
     "research/near-compression/NearCompression/SquarefreeFactorCertificates.lean": "79168e4d5b267a1c02beaf53efea8e717b327b47ba2bb0b4e62a1b563125045b",
     "research/near-compression/NearCompression/SeparableFactorSelection.lean": "c1b462b909bb093b7356a07a1dff9dba0808f3bfc08c85329ccb2d110649d2fd",
     "research/near-compression/NearCompression/RegularPolynomialDivision.lean": "eae3ca1e71dc2d6c136a8af6bcc5aaca611504bf40f1b3f0a5a5c0a0f95b156f",
+    "research/near-compression/NearCompression/AlgebraicResidueSpecialization.lean": "3177943a65fc502fc84e5e1c563b2cc9b67637ab211446589e4f6d3be6e978b8",
     "research/near-compression/NearCompression/DeterminantRowReplacement.lean": "d370eb40254e33b6ea19e4cc6953aeefba795940dc1d3061e26a8cb4a9449a90",
     "research/near-compression/NearCompression/DeterminantCofactorFold.lean": "69cf512f5151a9092a7f9fb0cee72b6dcc5dbc1bff156315f8b0befe1fcf7985",
     "research/near-compression/NearCompression/DeterminantRowLinearity.lean": "7bff151d38e7188fec59eaffdcce11b3080879763728f80a696935a790d8727a",
