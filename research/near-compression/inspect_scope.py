@@ -400,6 +400,7 @@ SOURCES = [
     "research/near-compression/NearCompression/GKRFullPCSExperiment.lean",
     "research/near-compression/NearCompression/TwoTableLocalCoordinates.lean",
     "research/near-compression/NearCompression/TableHistoryBinding.lean",
+    "research/near-compression/NearCompression/LocalTerminalBindingCheck.lean",
     "research/near-compression/NearCompression/TwoTablePCSExperiment.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",

@@ -1483,3 +1483,5 @@ import NearCompression.TwoTableLocalCoordinates
 import NearCompression.TableHistoryBinding
 
 import NearCompression.TwoTablePCSExperiment
+
+import NearCompression.LocalTerminalBindingCheck

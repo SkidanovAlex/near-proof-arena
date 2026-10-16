@@ -265,7 +265,9 @@
     "NearCompression/TableHistoryBinding.lean",
     "results/table-history-binding-integration.json",
     "NearCompression/TwoTablePCSExperiment.lean",
-    "results/two-table-pcs-experiment-integration.json"
+    "results/two-table-pcs-experiment-integration.json",
+    "NearCompression/LocalTerminalBindingCheck.lean",
+    "results/local-terminal-binding-integration.json"
   ],
   "requirements": [
     {

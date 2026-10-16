@@ -55,6 +55,15 @@ def main():
             reason=run(a.bundle,a.rebuild,path,a.air,0,False)
             assert ('batch count' if label=='missing-terminal-table' else 'terminal selector products rejected') in reason
             rejected.append(dict(case=label,reason=reason))
+        binding_cases=[('changed-replay-mixing',lambda x:x['expected_tables'][0]['mixing'].__setitem__(0,(x['expected_tables'][0]['mixing'][0]+1)%2013265921)),
+          ('changed-replay-claim',lambda x:x['expected_tables'][0]['claim'].__setitem__(0,(x['expected_tables'][0]['claim'][0]+1)%2013265921)),
+          ('changed-replay-tau',lambda x:x['expected_tables'][0]['tau'][0].__setitem__(0,(x['expected_tables'][0]['tau'][0][0]+1)%2013265921)),
+          ('truncated-replay-tau',lambda x:x['expected_tables'][0]['tau'].pop())]
+        for label,mutate in binding_cases:
+            value=json.loads(a.manifest.read_text());mutate(value);path=Path(d)/'manifest.json';path.write_text(json.dumps(value))
+            reason=run(a.bundle,a.rebuild,path,a.air,0,False)
+            assert 'local terminal replay binding rejected' in reason
+            rejected.append(dict(case=label,reason=reason))
         air_cases=[('unknown-air-expression',lambda x:x['tables'][0]['expression_routes'][0].__setitem__('expr',['unknown'])),
           ('out-of-range-air-register',lambda x:x['tables'][0]['expression_routes'][0].__setitem__('register',1000000)),
           ('wrong-air-mixing',lambda x:x['tables'][0]['mixing'].__setitem__(0,(x['tables'][0]['mixing'][0]+1)%2013265921)),
@@ -69,6 +78,6 @@ def main():
             value=json.loads(a.air.read_text());mutate(value);path=Path(d)/'air.json';path.write_text(json.dumps(value))
             rejected.append(dict(case=label,reason=run(a.bundle,a.rebuild,a.manifest,path,0,False)))
     report=dict(status='PASS',bundle=str(a.bundle),bundle_sha256=sha(a.bundle),rebuild=str(a.rebuild),rebuild_sha256=sha(a.rebuild),adapter_sha256=sha(Path('CheckRebuildRecords.lean')),manifest_sha256=sha(a.manifest),air_sha256=sha(a.air),positive=positive,rejected=rejected,
-      stored_bundle_check=stored_result,scope='Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, commitment extraction, parser refinement and concrete kernel proof terms.')
+      stored_bundle_check=stored_result,scope='Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes replay mixing/claim and recomputed tau/point kernel-weight binding, selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, commitment extraction, parser refinement and concrete kernel proof terms.')
     a.output.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(dict(status='PASS',assignments=len(positive),rejections=len(rejected))))
 if __name__=='__main__':main()

@@ -4,8 +4,8 @@
   "bundle_sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
   "rebuild": "results/literal193-fixed-rebuild.json",
   "rebuild_sha256": "be3281e9eb335ad2f6640538207ffbf36b411e577ba109733560fabbd27b1586",
-  "adapter_sha256": "1f6e84c3a76014af7f3a9116b7a9749925f339ea3fa62500f92ceb0fe5348838",
-  "manifest_sha256": "357d01e4abac1bb38a1765aa1591c927d657dfd117d76fd43a2407f6916d5e60",
+  "adapter_sha256": "ea9ceed4941b798d3f270e857c1ae0651873ca69df19dec11116e74946905104",
+  "manifest_sha256": "4ea96930e035b4b42a5442273217033e9e2a1454136aef38edd9522882e6b848",
   "air_sha256": "592671413521d34458c826ce8144b31ba3f2c99c9d398bd37fc4400c64537265",
   "positive": [
     {
@@ -23,7 +23,7 @@
         "symbolic_formula_compiler_check": true,
         "symbolic_rebuild_check": true
       },
-      "seconds": 7.784022536128759
+      "seconds": 7.939300865866244
     },
     {
       "result": {
@@ -40,7 +40,7 @@
         "symbolic_formula_compiler_check": true,
         "symbolic_rebuild_check": true
       },
-      "seconds": 8.137134153861552
+      "seconds": 7.910899301059544
     }
   ],
   "rejected": [
@@ -94,11 +94,11 @@
     },
     {
       "case": "changed-expected-weight",
-      "reason": "uncaught exception: batch entries rejected"
+      "reason": "uncaught exception: local terminal replay binding rejected"
     },
     {
       "case": "changed-expected-claim",
-      "reason": "uncaught exception: batch entries rejected"
+      "reason": "uncaught exception: local terminal replay binding rejected"
     },
     {
       "case": "changed-terminal-point",
@@ -115,6 +115,22 @@
     {
       "case": "missing-terminal-table",
       "reason": "uncaught exception: batch count"
+    },
+    {
+      "case": "changed-replay-mixing",
+      "reason": "uncaught exception: local terminal replay binding rejected"
+    },
+    {
+      "case": "changed-replay-claim",
+      "reason": "uncaught exception: local terminal replay binding rejected"
+    },
+    {
+      "case": "changed-replay-tau",
+      "reason": "uncaught exception: local terminal replay binding rejected"
+    },
+    {
+      "case": "truncated-replay-tau",
+      "reason": "uncaught exception: local terminal replay binding rejected"
     },
     {
       "case": "unknown-air-expression",
@@ -164,5 +180,5 @@
     "scope": "Lean checker execution; not a kernel proof of this JSON instance",
     "status": "PASS"
   },
-  "scope": "Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, commitment extraction, parser refinement and concrete kernel proof terms."
+  "scope": "Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes replay mixing/claim and recomputed tau/point kernel-weight binding, selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, commitment extraction, parser refinement and concrete kernel proof terms."
 }

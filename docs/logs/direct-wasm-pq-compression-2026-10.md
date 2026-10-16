@@ -3873,3 +3873,23 @@ GKR failure theorem. Instantiating the full accepted-error event and native
 bindings, then assembling invalid-trace/no-representative acceptance, remains.
 Full check.py passed 3991 registered results with the existing axiom allowlist.
 No native code or proof-size changes; gate remains NOT_PASSED.
+
+### Native local terminal replay binding
+
+The Lean reconstruction adapter now compares compiled mixing and claim values
+to the supplied terminal replay record and recomputes the equality-kernel
+weight from its tau and rowpoint. Both vectors must have the table row-log
+length. Previously weights and claims were checked against supplied batch
+values without this independent kernel recomputation in Lean.
+
+LocalTerminalBindingCheck is executable, and its theorem exposes precisely
+the checked equalities. Capture generation retains tau, mixing and claim from
+the full verified proof replay. This strengthens consistency with a supplied
+manifest; it does not authenticate that manifest, formally refine the parser
+or prove native transcript derivation or expected AIR generation.
+
+Full check.py passed 3992 registered results with the existing axiom allowlist.
+Fresh full-proof replay regenerated the manifest; circuit/AIR artifacts stayed
+unchanged. Native suite passed two diagnostic assignments and 32 runtime
+rejections, including changed replay mixing, claim, tau and truncated tau.
+No secure proof-size claim; gate remains NOT_PASSED.

@@ -1,5 +1,6 @@
 import NearCompression.BusFormulaCheck
 import NearCompression.DecodedSelectorBinding
+import NearCompression.LocalTerminalBindingCheck
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -328,6 +329,14 @@ def main (args : List String) : IO Unit := do
     let entry : TerminalBatchEntry Fp4 := ⟨programRoot,←scalar weights[i]!,←scalar claims[i]!,wn,cn,pn,weighted,delta,term,
       ←arithmetic target .mul programRoot wn weighted,←arithmetic target .sub weighted cn delta,
       ←arithmetic target .mul pn delta term⟩
+    let terminal := expectedTables[i]!
+    let rowLog ← need (←field terminal "row_log").getNat?
+    let point ← (←need (←field terminal "point").getArr?).toList.mapM scalar
+    let tau ← (←need (←field terminal "tau").getArr?).toList.mapM scalar
+    let expectedMixing ← scalar (←field terminal "mixing")
+    let expectedClaim ← scalar (←field terminal "claim")
+    require (localTerminalBindingCheck rowLog point tau parsed.air.mixing expectedMixing entry.weight entry.claim expectedClaim)
+      "local terminal replay binding rejected"
     entries := entry::entries
     tables := ⟨parsed.environment,parsed.program,parsed.program.length-1,parsed.records,entry⟩::tables
     let symbolic : SymbolicCompiledTable Fp4 := ⟨parsed.placement,parsed.program,parsed.program.length-1,parsed.records,entry⟩
