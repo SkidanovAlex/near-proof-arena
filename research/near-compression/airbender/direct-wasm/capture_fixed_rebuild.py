@@ -56,7 +56,10 @@ for ti,(table,program,terminal) in enumerate(zip(spec['air']['tables'],cert['pro
 air_output=cli.output.with_suffix('.air.json')
 air_output.write_text(json.dumps(dict(public=[list(base(v)) for v in spec['public']],tables=air_tables,
     program_sha256=sha(cli.output)),separators=(',',':'))+'\n')
-report=dict(air_sha256=sha(air_output),expected_batch=expected_batch,status='PASS',capture=str(cli.capture),input_log=cli.input_log,profile=profile,counts=counts,
+expected_tables=[dict(row_log=spec['log_rows'][i] if isinstance(spec['log_rows'],list) else spec['log_rows'],
+    point=[list(x) for x in terminal['point']]) for i,terminal in enumerate(terminals)]
+for table in expected_tables:c.require(len(table['point'])==table['row_log'],'terminal point dimension')
+report=dict(expected_tables=expected_tables,air_sha256=sha(air_output),expected_batch=expected_batch,status='PASS',capture=str(cli.capture),input_log=cli.input_log,profile=profile,counts=counts,
     statement_sha256=sha(cli.capture/'statement.json'),proof_sha256=sha(cli.capture/'proof.json'),
     bundle_sha256=sha(cli.bundle),rebuild_sha256=sha(cli.output),
     scope='Full fixed-profile proof verified before replay; reconstructed circuit equals retained bundle. Structural certificate validation, not security certification.')

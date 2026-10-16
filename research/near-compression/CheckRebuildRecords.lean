@@ -1,5 +1,5 @@
 import NearCompression.BusFormulaCheck
-import NearCompression.SymbolicFormulaCheck
+import NearCompression.DecodedSelectorBinding
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -227,7 +227,7 @@ private def checkAIR (program : List (TerminalInstruction Fp4)) (pubValues : Lis
     "AIR accumulator rejected"
   return ⟨pubValues,fullWidth,←scalar (←field air "mixing"),formulas,zeroReg,total,steps⟩
 
-private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p air : Json) (pubValues : List Fp4) : IO (Nat × ParsedProgram) := do
+private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p air expectedTable : Json) (pubValues : List Fp4) : IO (Nat × ParsedProgram) := do
   let ins ← need (←field p "instructions").getArr?
   require (0<ins.size) "empty program"
   let base ← need (←field p "base").getNat?
@@ -236,6 +236,10 @@ private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p a
   let first ← scalar (←field sels "first")
   let last ← scalar (←field sels "last")
   let trans ← scalar (←field sels "trans")
+  let rowLog ← need (←field expectedTable "row_log").getNat?
+  let point ← (←need (←field expectedTable "point").getArr?).toList.mapM scalar
+  require (symbolicSelectorCheck rowLog (⟨base,width,first,last,trans⟩ : TerminalSymbolicPlacement Fp4) point)
+    "terminal selector products rejected"
   let env : TerminalProgramEnvironment Fp4 :=
     ⟨(fun i => inputValue seed (base+i)),(fun i => inputValue seed (base+width+i)),first,last,trans⟩
   let mut program : List (TerminalInstruction Fp4) := []
@@ -298,6 +302,7 @@ def main (args : List String) : IO Unit := do
   let air ← need (Json.parse (←IO.FS.readFile args[3]!))
   let airTables ← need (←field air "tables").getArr?
   let pubValues ← (←need (←field air "public").getArr?).toList.mapM scalar
+  let expectedTables ← need (←field manifest "expected_tables").getArr?
   let expected ← field manifest "expected_batch"
   let rho ← scalar (←field expected "rho")
   let weights ← need (←field expected "weights").getArr?
@@ -308,9 +313,9 @@ def main (args : List String) : IO Unit := do
   let mut tables : List (TerminalCompiledTable Fp4) := []
   let mut formulaTables : List (SymbolicFormulaTable Fp4) := []
   let programs ← need (←field rebuild "programs").getArr?
-  require (outputs.size==programs.size && weights.size==programs.size && claims.size==programs.size && airTables.size==programs.size) "batch count"
+  require (outputs.size==programs.size && weights.size==programs.size && claims.size==programs.size && airTables.size==programs.size && expectedTables.size==programs.size) "batch count"
   for i in List.range programs.size do
-    let (n,parsed) ← checkProgram target seed programs[i]! airTables[i]! pubValues
+    let (n,parsed) ← checkProgram target seed programs[i]! airTables[i]! expectedTables[i]! pubValues
     count := count+n
     let programRoot := parsed.root
     let out := outputs[i]!
@@ -367,5 +372,5 @@ def main (args : List String) : IO Unit := do
   require (symbolicFormulaCompilerCheck target (fun i => constants[i]?.getD 0) rho formulaTables finalBalance
     root zeroNode capacity live positions (inputSize-1) stages rootSlot) "symbolic formula compiler check rejected"
   IO.println (Json.mkObj [("status",toJson "PASS"),("programs",toJson programs.size),
-    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),("bus_formula_checks",toJson true),("symbolic_rebuild_check",toJson true),("symbolic_compiled_check",toJson true),("symbolic_formula_compiler_check",toJson true),
-    ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates")]).compress
+    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("selector_product_checks",toJson true),("air_checks",toJson true),("bus_formula_checks",toJson true),("symbolic_rebuild_check",toJson true),("symbolic_compiled_check",toJson true),("symbolic_formula_compiler_check",toJson true),
+    ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates")]).compress

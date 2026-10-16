@@ -3401,3 +3401,23 @@ The new selector checker is not yet invoked by the executable adapter; transcrip
 point binding and lane alignment remain explicit integration work. Formula
 specification, execution, global/PQ soundness and secure full-NEAR size remain
 open. Gate NOT_PASSED.
+
+### Native selector checks consume replayed terminal points
+
+The fixed-profile capture now retains expected terminal points and statement
+row logs after full proof verification and matching circuit replay. The Lean
+adapter requires exact table coverage and invokes symbolicSelectorCheck before
+reconstruction. It checks point length and first/last/transition products using
+the same Fp4 embedding as the circuit. Circuit, reconstruction and AIR artifacts
+remain unchanged; only the replay manifest gains terminal point data.
+
+Validation passed: full check.py (3899 registered results), stored bundle check,
+two native diagnostic assignments, and 28 runtime rejection cases. Changed
+selector, changed/truncated point and wrong row log fail the new selector check;
+missing terminal table fails coverage. Results retain hashes and reasons.
+
+The manifest is still supplied data to Lean; its transcript derivation and the
+Python replay are not formally refined. Selector products do not uniquely bind
+a point (for example coordinate permutations preserve them). Lane alignment,
+intended formula generation, global execution/soundness, quantum security and
+secure full-NEAR size remain open. Gate remains NOT_PASSED.

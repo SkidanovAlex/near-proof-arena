@@ -4,8 +4,8 @@
   "bundle_sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
   "rebuild": "results/literal193-fixed-rebuild.json",
   "rebuild_sha256": "be3281e9eb335ad2f6640538207ffbf36b411e577ba109733560fabbd27b1586",
-  "adapter_sha256": "8a6a62f57f0a0791742a9beadc969070bc8144bd381788cb8bdd1902e951f87f",
-  "manifest_sha256": "93b34e8fa4792530393660ddb0cda0e7f94e0a8ed42ec1f4101373e2a17d69ad",
+  "adapter_sha256": "1f6e84c3a76014af7f3a9116b7a9749925f339ea3fa62500f92ceb0fe5348838",
+  "manifest_sha256": "357d01e4abac1bb38a1765aa1591c927d657dfd117d76fd43a2407f6916d5e60",
   "air_sha256": "592671413521d34458c826ce8144b31ba3f2c99c9d398bd37fc4400c64537265",
   "positive": [
     {
@@ -15,14 +15,15 @@
         "bus_formula_checks": true,
         "programs": 2,
         "records": 9152,
-        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates",
+        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates",
         "seed": 0,
+        "selector_product_checks": true,
         "status": "PASS",
         "symbolic_compiled_check": true,
         "symbolic_formula_compiler_check": true,
         "symbolic_rebuild_check": true
       },
-      "seconds": 8.052850102074444
+      "seconds": 7.784022536128759
     },
     {
       "result": {
@@ -31,14 +32,15 @@
         "bus_formula_checks": true,
         "programs": 2,
         "records": 9152,
-        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates",
+        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates",
         "seed": 7,
+        "selector_product_checks": true,
         "status": "PASS",
         "symbolic_compiled_check": true,
         "symbolic_formula_compiler_check": true,
         "symbolic_rebuild_check": true
       },
-      "seconds": 8.030119389295578
+      "seconds": 8.137134153861552
     }
   ],
   "rejected": [
@@ -60,7 +62,7 @@
     },
     {
       "case": "changed-selector",
-      "reason": "uncaught exception: rebuild records rejected"
+      "reason": "uncaught exception: terminal selector products rejected"
     },
     {
       "case": "unknown-opcode",
@@ -97,6 +99,22 @@
     {
       "case": "changed-expected-claim",
       "reason": "uncaught exception: batch entries rejected"
+    },
+    {
+      "case": "changed-terminal-point",
+      "reason": "uncaught exception: terminal selector products rejected"
+    },
+    {
+      "case": "truncated-terminal-point",
+      "reason": "uncaught exception: terminal selector products rejected"
+    },
+    {
+      "case": "wrong-terminal-row-log",
+      "reason": "uncaught exception: terminal selector products rejected"
+    },
+    {
+      "case": "missing-terminal-table",
+      "reason": "uncaught exception: batch count"
     },
     {
       "case": "unknown-air-expression",
@@ -146,5 +164,5 @@
     "scope": "Lean checker execution; not a kernel proof of this JSON instance",
     "status": "PASS"
   },
-  "scope": "Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, commitment extraction, parser refinement and concrete kernel proof terms."
+  "scope": "Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, commitment extraction, parser refinement and concrete kernel proof terms."
 }
