@@ -4538,3 +4538,26 @@ gate remains NOT_PASSED; native Ext8 integration, QROM, secure size and full
 
 Validation: full `check.py` PASS (4084 registered results), existing axiom
 allowlist. Native captures were not rerun for this formal-only change.
+
+### Checked auxiliary failures enter the adaptive local bound
+
+`checked_auxiliary_after_earlier_budget` connects invalid generated bus
+residuals to `decoded_adaptive_invalid_rows_budget` through exact formula
+checks and bounded coordinate typing. No row/lane witness or decoded-row
+invalidity premise is supplied by the caller. Trace/formula data and violated
+rows may vary with earlier history; the selected table and its geometry are
+fixed on the supplied history family. Terminal repair and aggregate downstream
+error bounds remain explicit.
+
+Composition findings: split earlier histories by selected invalid table before
+combining bounds. Auxiliary validity can vary with bus challenges, so the
+fixed-source branch maximum cannot simply be reused between auxiliary-invalid
+and bus-bad histories. Use disjoint counts, charging shared PCS failures once.
+Also derive earlier-only auxiliary representatives from authenticated
+commitments: the new theorem requires that chronology, it does not prove it.
+These are the next integration obligations, alongside substituting actual
+checked GKR repair and concrete PCS bounds.
+
+Validation: full `check.py` PASS (4085 registered results), existing axiom
+allowlist. No native captures rerun for this formal-only change. The gate stays
+NOT_PASSED; full native Ext8 slice, QROM, secure size and full 1 Pgas remain open.

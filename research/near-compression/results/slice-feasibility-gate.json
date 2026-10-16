@@ -332,7 +332,9 @@
     "NearCompression/CheckedBusResidualTransport.lean",
     "results/checked-bus-residual-transport-integration.json",
     "NearCompression/CheckedBusFailureSelection.lean",
-    "results/checked-bus-failure-selection-integration.json"
+    "results/checked-bus-failure-selection-integration.json",
+    "NearCompression/CheckedAuxiliaryLocalBudget.lean",
+    "results/checked-auxiliary-local-budget-integration.json"
   ],
   "requirements": [
     {
@@ -518,5 +520,6 @@
   "ext8_formula_generator_candidate": "EXECUTABLE_COMPONENT_VALIDATED: expected formula generator accepts explicit Ext8 arithmetic and coordinate degree; register checker supports 8-word literals/coordinates. 24 synthetic cases, 192 independent residual comparisons, 576 mutations rejected, 40 exact legacy Ext4 AST comparisons. No native Ext8 prover/GKR compiler capture, universal generator refinement, secure proof size or security certification.",
   "ext8_lean_formula_capture": "SPECIFICATION_CHECKED_COMPONENT: Lean reconstructs exact ordered formal bus residual AST from supplied table/public/challenges/finals, checks native-style lowering and coordinate width, then formula routes/acyclicity/values. 64 residuals pass and 16 mutations reject including coherent wrong formula+program. Supplied statement/transcript authentication, full Ext8 prover and QROM remain open.",
   "checked_bus_auxiliary_transport": "PROVED_CONDITIONALLY: executable specification checks connect actual certificate formula-list values to reconstructed bus residuals. Violations transfer to combined local residuals; all-zero checked table residuals yield busExt8TablesResidualsZero. Coordinate typing, source checks and authenticated input/event composition remain explicit.",
-  "checked_bus_failure_selection": "PROVED_CONDITIONALLY: failed bus validity now derives a selected decoded table, bounded row, positive checked residual count and nonzero local lane under source/specification/typing premises. Exact table restriction preserves residual values. Earlier-transcript selection, adaptive local/GKR/PCS budget composition and authentication remain open; no chronology or security claim from witness existence alone."
+  "checked_bus_failure_selection": "PROVED_CONDITIONALLY: failed bus validity now derives a selected decoded table, bounded row, positive checked residual count and nonzero local lane under source/specification/typing premises. Exact table restriction preserves residual values. Earlier-transcript selection, adaptive local/GKR/PCS budget composition and authentication remain open; no chronology or security claim from witness existence alone.",
+  "checked_auxiliary_local_budget": "PROVED_CONDITIONALLY: exact checked formulas and bounded coordinate typing transport invalid generated bus residuals into the adaptive local acceptance bound for each fixed-table earlier-history family. No supplied row/lane witness. Earlier-only decoded trace/formula dependency, terminal repair and joint error bound remain premises. Disjoint table-history partition, authenticated auxiliary representative chronology and full acceptance composition remain open."
 }
