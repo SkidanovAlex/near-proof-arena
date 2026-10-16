@@ -3465,3 +3465,24 @@ No native code changed. Supplied source/auxiliary lists still require intended
 specification binding; decoded execution validity, global chronological
 GKR/PCS composition, commitment extraction, quantum security and secure
 full-NEAR size remain open. Gate NOT_PASSED.
+
+### Adaptive decoded-local soundness and explicit terminal failure
+
+DecodedLocalSoundness identifies the compiler-accumulator terminal event with
+the existing AIR trace local event on complete challenge paths. The initial
+batching plus adaptive sumcheck bound now applies to an invalid decoded row:
+for q>0, r rounds and L residuals, honest-terminal acceptance is at most
+(L-1+r+(d+1)*r)/q. Lean proves the scaled integer count; strategies may depend
+on initial mixing/tau and previous round challenges. Fixed decoded columns,
+formula ordering, degrees, distinct samples and initial zero claims are explicit.
+
+A separate event-split theorem bounds arbitrary acceptance passing sumcheck
+checks by honest-terminal local acceptance plus accepted terminal mismatch on
+the same experiment. No independence is assumed, and terminal correctness is
+not silently included in verifier acceptance. The mismatch event must next be
+connected to the chronological GKR/PCS failure analysis.
+
+Full check.py passed 3916 registered results with the existing axiom allowlist.
+No native code changed. Intended formulas, executable transcript refinement,
+commitment extraction, quantum security and secure full-NEAR size remain open.
+Gate NOT_PASSED.

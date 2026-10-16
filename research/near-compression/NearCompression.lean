@@ -1439,3 +1439,5 @@ import NearCompression.DecodedSelectorBinding
 import NearCompression.HistoryDecodedEnvironment
 
 import NearCompression.DecodedTraceSemantics
+
+import NearCompression.DecodedLocalSoundness

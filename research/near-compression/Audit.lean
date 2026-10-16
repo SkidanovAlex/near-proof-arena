@@ -5580,3 +5580,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.decoded_combined_mixture
 #print axioms NearCompression.decoded_combined_mixture_boolean
 #print axioms NearCompression.decoded_mixture_weighted_zero_count
+
+#print axioms NearCompression.decoded_local_accepted_count_eq
+#print axioms NearCompression.decoded_local_invalid_trace_count
+#print axioms NearCompression.decoded_local_acceptance_split

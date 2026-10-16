@@ -220,7 +220,9 @@
     "NearCompression/HistoryDecodedEnvironment.lean",
     "results/history-decoded-environment-integration.json",
     "NearCompression/DecodedTraceSemantics.lean",
-    "results/decoded-trace-semantics-integration.json"
+    "results/decoded-trace-semantics-integration.json",
+    "NearCompression/DecodedLocalSoundness.lean",
+    "results/decoded-local-soundness-integration.json"
   ],
   "requirements": [
     {
