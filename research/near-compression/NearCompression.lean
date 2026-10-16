@@ -1485,3 +1485,5 @@ import NearCompression.TableHistoryBinding
 import NearCompression.TwoTablePCSExperiment
 
 import NearCompression.LocalTerminalBindingCheck
+
+import NearCompression.CheckedTerminalSemantics

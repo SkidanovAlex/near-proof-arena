@@ -3893,3 +3893,20 @@ Fresh full-proof replay regenerated the manifest; circuit/AIR artifacts stayed
 unchanged. Native suite passed two diagnostic assignments and 32 runtime
 rejections, including changed replay mixing, claim, tau and truncated tau.
 No secure proof-size claim; gate remains NOT_PASSED.
+
+### Executable terminal binding feeds semantic mismatch and batching
+
+CheckedTerminalSemantics uses the exact localTerminalBindingCheck called by
+the native adapter to derive mixing, equality-kernel weight and sent-claim
+equalities. A selected compiler table and ordered semantic-list projection
+supply semantic membership and residual-formula identity. A wrong local
+terminal therefore produces the indexed output mismatch and the existing
+tableCount-1 cancellation bound without separately assuming those scalar
+equalities.
+
+History-point binding, fixed semantic-list projection, decoded-family source
+ownership and checked circuit identity remain separate established interfaces.
+Native transcript authentication and binding the residual list to the intended
+specification remain open; this does not establish global/PQ soundness.
+Full check.py passed 3995 registered results with the existing axiom allowlist.
+Native code unchanged since the prior 32-rejection suite; gate NOT_PASSED.

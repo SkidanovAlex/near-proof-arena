@@ -5682,3 +5682,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.two_table_gkr_pcs_joint_budget
 
 #print axioms NearCompression.local_terminal_binding_checked
+
+#print axioms NearCompression.checked_local_terminal_mismatch
+#print axioms NearCompression.checked_formula_table_mismatch
+#print axioms NearCompression.checked_formula_batch_cancellation

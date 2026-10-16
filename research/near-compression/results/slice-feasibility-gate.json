@@ -267,7 +267,9 @@
     "NearCompression/TwoTablePCSExperiment.lean",
     "results/two-table-pcs-experiment-integration.json",
     "NearCompression/LocalTerminalBindingCheck.lean",
-    "results/local-terminal-binding-integration.json"
+    "results/local-terminal-binding-integration.json",
+    "NearCompression/CheckedTerminalSemantics.lean",
+    "results/checked-terminal-semantics-integration.json"
   ],
   "requirements": [
     {
