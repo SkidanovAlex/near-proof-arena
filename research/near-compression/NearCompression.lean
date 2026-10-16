@@ -1294,3 +1294,5 @@ import NearCompression.PreparedLiteralBusBound
 import NearCompression.PreparedLiteralBusSoundness
 
 import NearCompression.AirResidualBatchSoundness
+
+import NearCompression.AirEqualityWeightedTarget

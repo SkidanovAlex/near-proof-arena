@@ -1698,3 +1698,9 @@ The theorem explicitly assumes one fixed locally valid trace. Cryptographic sour
 Added AirResidualBatchSoundness.lean: exact compiler power-accumulator/Horner identity and joint ideal power-batching plus row-MLE zero count for a fixed nonzero residual matrix. The normalized bound is (L-1+rowLog)/fieldSize. Full audit passed3612 (/tmp/root-local-initial-audit.log). check_slice_local_budget.py evaluates the actual constraint/auxiliary residual lists on deliberately invalid literal rows: EXEC738 residuals gives numerator745; CODE553 gives560. These counts include automatic multiplicity and auxiliary constraints.
 
 This closes the initial random-batching count component, not cryptographic local soundness. Concrete all-row residual/equality-weight adapter, adaptive sumcheck, terminal PCS authentication, common source/auxiliary extraction and QROM remain open. No executable parameter or proof-size change.
+
+### Equality-weighted initial sumcheck target
+
+Added AirEqualityWeightedTarget.lean: equality-weighted Boolean sums reproduce row MLEs, Boolean-only evaluator correspondence suffices, and the initial mixing/row-MLE count transfers to the actual evaluator’s weighted sum under that explicit correspondence. No false claim that nonlinear constraints commute with interpolation. Full audit passed3616 (/tmp/root-weighted-target-audit.log). check_slice_weighted_target.py passed18 checks on both literal tables with synthetic invalid8-row traces, cyclic next rows, source/auxiliary residuals, and zero/one/nontrivial extension challenges.
+
+The concrete evaluator’s Boolean-row correspondence remains an explicit formal premise; runtime parity does not discharge it. Adaptive sumcheck, authenticated terminal/source bindings and complete QROM/security remain open. No proof size or executable security parameter change.

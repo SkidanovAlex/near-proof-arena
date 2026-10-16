@@ -33,7 +33,9 @@
     "NearCompression/PreparedLiteralBusSoundness.lean",
     "results/literal-bus-soundness-integration.json",
     "NearCompression/AirResidualBatchSoundness.lean",
-    "results/pq384-code-table-long193/local-initial-budget.json"
+    "results/pq384-code-table-long193/local-initial-budget.json",
+    "NearCompression/AirEqualityWeightedTarget.lean",
+    "results/pq384-code-table-long193/weighted-target-report.json"
   ],
   "requirements": [
     {
@@ -53,7 +55,7 @@
       "status": "INCOMPLETE",
       "needed": "Close all algebraic/commitment/transcript reductions. Quantify the 128-bit quantum resource target and compiler constants; interactive tails alone do not pass.",
       "established": "Literal slice wrong published runCall output now implies the derived ideal Ext8 bus challenge bound, conditional on all local constraints on the same fixed trace, public fit, executable eligibility and fuel. Concrete source/public tag and width bounds, natural counts, constructed support and multiplicity bounds are discharged. Actual literal Lean/Python budget numerator8589975831 (support1475, send mass1024, receive mass8589934531). Local/PCS/common-trace extraction, auxiliary/global product correspondence, transcript sampler and quantum compiler remain open.",
-      "local_initial_component": "Fixed residual matrix: power batching followed by independent row MLE zero evaluation has ideal error at most (residualCount-1+rowLog)/fieldSize. Compiler increasing-power accumulator equals the Horner batch. Actual EXEC/CODE residual counts738/553 yield numerators745/560; actual all-row adapter, adaptive sumcheck and PCS authentication remain open."
+      "local_initial_component": "Fixed residual matrix: power batching followed by independent row MLE zero evaluation has ideal error at most (residualCount-1+rowLog)/fieldSize. Compiler increasing-power accumulator equals the Horner batch. Actual EXEC/CODE residual counts738/553 yield numerators745/560; actual all-row adapter, adaptive sumcheck and PCS authentication remain open. Equality-weighted Boolean sum now reproduces residual-vector MLE; initial bound transferred under explicit evaluator Boolean-row correspondence. Actual two-table weighted evaluator matches independently folded residual vectors in18 checks; correspondence is not yet formally instantiated."
     },
     {
       "name": "Complete bytes and scaling",

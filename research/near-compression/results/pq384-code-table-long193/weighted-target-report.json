@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "tables": 2,
+  "synthetic_rows_per_table": 8,
+  "target_checks": 18,
+  "scope": "Actual literal table source/auxiliary residuals, cyclic next rows, power batching and equality weighting",
+  "limits": [
+    "Synthetic invalid traces; not proof verification",
+    "Parity check only; formal evaluator Boolean-row adapter remains explicit"
+  ]
+}

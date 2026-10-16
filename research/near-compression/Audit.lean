@@ -5182,3 +5182,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.air_mix_value_power_batch
 
 #print axioms NearCompression.air_residual_batch_zero_count
+
+#print axioms NearCompression.air_equality_weighted_mle
+
+#print axioms NearCompression.air_cube_boolean_congr
+
+#print axioms NearCompression.air_equality_weighted_target
+
+#print axioms NearCompression.air_weighted_target_zero_count
