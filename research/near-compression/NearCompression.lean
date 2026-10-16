@@ -1347,3 +1347,5 @@ import NearCompression.PackedOpeningFailureBudget
 import NearCompression.WeightedPCSRepresentativeSoundness
 
 import NearCompression.WeightedJohnsonList
+
+import NearCompression.WeightedCurveCandidates

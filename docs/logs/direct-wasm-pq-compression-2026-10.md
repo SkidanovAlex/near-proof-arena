@@ -1917,3 +1917,22 @@ transfer remains open. No improved parameters, bytes, or quantum security claime
 
 Validation: full `check.py` passed with 3740 registered results and the existing
 axiom allowlist. The slice feasibility gate remains NOT_PASSED.
+
+
+### Constructed weighted curve candidate family
+
+`WeightedCurveCandidates.lean` constructs the prechallenge family by enumerating
+normalized degree-bounded polynomials and filtering Cartesian pairs by joint
+weighted agreement with the two source words. Proved soundness, completeness
+when the finite alphabet covers the field, coefficientwise distinction, and the
+weighted Johnson gap bound for the constructed family. Normalization retains
+coefficients of every degree-bounded candidate through the existing normalization
+theorems. This is a mathematical witness, not a practical decoder.
+
+The remaining correlated-agreement theorem must map successful postchallenge
+folded candidates into this family outside a quantitatively bounded exceptional
+set. Completeness here covers already jointly agreeing pairs and does not assume
+or imply that transfer. No security/size parameter improvement is claimed.
+
+Validation: full `check.py` passed with 3744 registered results and enforced
+axiom allowlist. Slice feasibility gate remains NOT_PASSED.

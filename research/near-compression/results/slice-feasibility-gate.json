@@ -88,7 +88,9 @@
     "NearCompression/WeightedPCSRepresentativeSoundness.lean",
     "results/unique-basin-budget.json",
     "NearCompression/WeightedJohnsonList.lean",
-    "results/weighted-johnson-list-integration.json"
+    "results/weighted-johnson-list-integration.json",
+    "NearCompression/WeightedCurveCandidates.lean",
+    "results/weighted-curve-candidates-integration.json"
   ],
   "requirements": [
     {
@@ -116,7 +118,8 @@
       "packed_source_component": "Computed mutable Mobius coefficients now provably evaluate to the padded source row MLE at every point. Packed vector wrong-lane count specializes to these coefficients without a sourceBinding premise. Exact PCS authentication remains an explicit unproved cryptographic contract; common-trace extraction and transcript composition remain open.",
       "packed_failure_component": "Joint-experiment composition now replaces exact PCS authentication with an explicit counted failure event: wrong-vector acceptance <= p*Q^(p-1)*R + PCS failure count. Opening strategies may adapt to column coordinates; independence of the two failures is not assumed. The PCS failure count has not been bounded, and no-candidate fold soundness cannot be substituted without common-source/candidate coherence.",
       "unique_basin_component": "Fixed close representative plus a wrong equality functional now implies the adaptive prefix fold/query bound, with no-candidate premise discharged. Existence of a common close representative and terminal authentication remain assumptions. Exact integer screening at rate1/4 and projected BabyBear^8 needs309 queries for128 ideal bits or463 for192;256 ideal bits is excluded by the fold term for tested degrees. These are sufficient-bound costs, not attacks or PQ certification.",
-      "weighted_list_component": "Weighted Johnson bound proved for finite coefficientwise distinct polynomials and joint even/odd curve pairs: L*(T^2-M*B*(D-1))<=M^2. It uses actual surviving mass M and point cap B. Complete prechallenge family construction and exceptional-challenge transfer remain open; no improved query or security parameters are certified."
+      "weighted_list_component": "Weighted Johnson bound proved for finite coefficientwise distinct polynomials and joint even/odd curve pairs: L*(T^2-M*B*(D-1))<=M^2. It uses actual surviving mass M and point cap B. Complete prechallenge family construction and exceptional-challenge transfer remain open; no improved query or security parameters are certified.",
+      "weighted_candidate_family": "Constructed a fixed finite family of all normalized jointly agreeing even/odd polynomial pairs. Soundness, completeness for a covering field alphabet, coefficientwise distinction and weighted Johnson size are proved. This removes supplied-list existence/size duties for jointly agreeing pairs, but does not establish that postchallenge folded candidates transfer to that family. Enumeration is not a practical decoder."
     },
     {
       "name": "Complete bytes and scaling",
