@@ -1499,3 +1499,33 @@ or a full NEAR state transition and does not establish QROM security.
 Next substantive design decision: measure multiple skipped-fold/rate schedules
 and larger degrees under explicit joint budgets, rather than assuming this
 single two-fold rate shift will meet the full end-to-end target.
+
+## Calibrated single-shift schedule screening
+
+`screen_rate_shift_schedules.py` evaluates 30 schedules at each of degrees
+1,024, 8,192, 131,072 and 1,048,576, four simulated seeds each. Skipped folds
+are {1,2,3,4,6,8}; new encoding rates are {2,4,8,16,32}. Query budgets use
+exact rational arithmetic from the joint ideal acceptance bound, with both
+sampling tails at most 2^-130 and the full sum at most 2^-128. The geometry
+exactly matches all four actual codec fixture sizes before extrapolation.
+
+Best schedules in this grid:
+- D1,024: skip8/rate2, 17,992 bytes (opens all original source leaves).
+- D8,192: skip8/rate2, 182,776–227,832 bytes.
+- D131,072: skip2/rate4, 842,184–849,080 bytes versus baseline 871,760–883,928.
+- D1,048,576: skip2/rate4, 1,388,584–1,400,008 bytes versus baseline
+  1,417,384–1,434,632.
+
+None of the tested single-shift schedules reaches 300,000 bytes at the two
+larger degrees, even before external config, GKR, recursion or NEAR data.
+These are calibrated geometry simulations, not measured larger proofs or
+protocol lower bounds. Only skip2/rate8 through D1,024 is implemented. Raw
+scalar coefficient disclosure itself costs just 4D bytes plus context, with
+linear-size verifier reconstruction; small-degree byte wins must not be
+mistaken for succinct scaling. The screen reports source leaf saturation.
+
+Decision: further single-shift variants are not the primary implementation
+priority for the full target. Screen repeated rate shifts under an explicitly
+identified composition obligation, and compare stronger extraction/query
+bounds, before choosing the next protocol implementation. No quantum
+Fiat-Shamir reduction or new post-quantum certification is inferred.

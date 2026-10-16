@@ -1,0 +1,6455 @@
+{
+  "status": "CALIBRATED_GEOMETRY_SCREEN_ONLY",
+  "calibration": [
+    {
+      "fixture": "d1024-s314-c264.json",
+      "bytes": 126680
+    },
+    {
+      "fixture": "d128-s4-c8.json",
+      "bytes": 8840
+    },
+    {
+      "fixture": "d32-s314-c256.json",
+      "bytes": 4888
+    },
+    {
+      "fixture": "d32-s4-c8.json",
+      "bytes": 4152
+    }
+  ],
+  "summaries": [
+    {
+      "degree": 1024,
+      "best_skipped": 8,
+      "best_rate": 2,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "best_min_bytes": 17992,
+      "best_max_bytes": 17992,
+      "baseline_min_bytes": 123664,
+      "baseline_max_bytes": 125880,
+      "scalar_coefficients_only_bytes": 4096,
+      "best_source_leaf_fraction_min": 1.0,
+      "best_source_leaf_fraction_max": 1.0,
+      "tested_schedules_below_300000_all_seeds": 30
+    },
+    {
+      "degree": 8192,
+      "best_skipped": 8,
+      "best_rate": 2,
+      "source_queries": 314,
+      "continuation_queries": 478,
+      "best_min_bytes": 182776,
+      "best_max_bytes": 227832,
+      "baseline_min_bytes": 356096,
+      "baseline_max_bytes": 362272,
+      "scalar_coefficients_only_bytes": 32768,
+      "best_source_leaf_fraction_min": 0.8515625,
+      "best_source_leaf_fraction_max": 0.9296875,
+      "tested_schedules_below_300000_all_seeds": 7
+    },
+    {
+      "degree": 131072,
+      "best_skipped": 2,
+      "best_rate": 4,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "best_min_bytes": 842184,
+      "best_max_bytes": 849080,
+      "baseline_min_bytes": 871760,
+      "baseline_max_bytes": 883928,
+      "scalar_coefficients_only_bytes": 524288,
+      "best_source_leaf_fraction_min": 0.00238800048828125,
+      "best_source_leaf_fraction_max": 0.0023956298828125,
+      "tested_schedules_below_300000_all_seeds": 0
+    },
+    {
+      "degree": 1048576,
+      "best_skipped": 2,
+      "best_rate": 4,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "best_min_bytes": 1388584,
+      "best_max_bytes": 1400008,
+      "baseline_min_bytes": 1417384,
+      "baseline_max_bytes": 1434632,
+      "scalar_coefficients_only_bytes": 4194304,
+      "best_source_leaf_fraction_min": 0.0002994537353515625,
+      "best_source_leaf_fraction_max": 0.0002994537353515625,
+      "tested_schedules_below_300000_all_seeds": 0
+    }
+  ],
+  "schedules": [
+    {
+      "degree": 1024,
+      "skipped": 1,
+      "rate": 2,
+      "next_degree": 512,
+      "source_domain": 4096,
+      "folded_domain": 2048,
+      "next_domain": 1024,
+      "threshold": 3073,
+      "minimum": 1537,
+      "target_threshold": 854,
+      "radius": 170,
+      "source_queries": 314,
+      "continuation_queries": 494,
+      "ideal_error_bound_float": 1.2197015823795275e-39,
+      "min_bytes": 93136,
+      "max_bytes": 94288,
+      "mean_bytes": 93612.0,
+      "trials": [
+        {
+          "proof_bytes": 93136,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2360,
+          "source_hash_bytes": 29568,
+          "continuation_leaf_bytes": 50240,
+          "continuation_hash_bytes": 9408
+        },
+        {
+          "proof_bytes": 94288,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2344,
+          "source_hash_bytes": 31104,
+          "continuation_leaf_bytes": 49920,
+          "continuation_hash_bytes": 9360
+        },
+        {
+          "proof_bytes": 93384,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2272,
+          "source_hash_bytes": 30672,
+          "continuation_leaf_bytes": 48704,
+          "continuation_hash_bytes": 10176
+        },
+        {
+          "proof_bytes": 93640,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2304,
+          "source_hash_bytes": 29808,
+          "continuation_leaf_bytes": 50944,
+          "continuation_hash_bytes": 9024
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 1,
+      "rate": 4,
+      "next_degree": 512,
+      "source_domain": 4096,
+      "folded_domain": 2048,
+      "next_domain": 2048,
+      "threshold": 3073,
+      "minimum": 1537,
+      "target_threshold": 1537,
+      "radius": 511,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 123424,
+      "max_bytes": 124600,
+      "mean_bytes": 124068.0,
+      "trials": [
+        {
+          "proof_bytes": 123952,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2360,
+          "source_hash_bytes": 29568,
+          "continuation_leaf_bytes": 59264,
+          "continuation_hash_bytes": 31200
+        },
+        {
+          "proof_bytes": 123424,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2344,
+          "source_hash_bytes": 31104,
+          "continuation_leaf_bytes": 58752,
+          "continuation_hash_bytes": 29664
+        },
+        {
+          "proof_bytes": 124296,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2272,
+          "source_hash_bytes": 30672,
+          "continuation_leaf_bytes": 57920,
+          "continuation_hash_bytes": 31872
+        },
+        {
+          "proof_bytes": 124600,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2304,
+          "source_hash_bytes": 29808,
+          "continuation_leaf_bytes": 59584,
+          "continuation_hash_bytes": 31344
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 1,
+      "rate": 8,
+      "next_degree": 512,
+      "source_domain": 4096,
+      "folded_domain": 2048,
+      "next_domain": 4096,
+      "threshold": 3073,
+      "minimum": 1537,
+      "target_threshold": 2902,
+      "radius": 1194,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1491142118833191e-39,
+      "min_bytes": 161912,
+      "max_bytes": 163136,
+      "mean_bytes": 162660.0,
+      "trials": [
+        {
+          "proof_bytes": 162704,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2360,
+          "source_hash_bytes": 29568,
+          "continuation_leaf_bytes": 68736,
+          "continuation_hash_bytes": 60480
+        },
+        {
+          "proof_bytes": 163136,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2344,
+          "source_hash_bytes": 31104,
+          "continuation_leaf_bytes": 70336,
+          "continuation_hash_bytes": 57792
+        },
+        {
+          "proof_bytes": 161912,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2272,
+          "source_hash_bytes": 30672,
+          "continuation_leaf_bytes": 68032,
+          "continuation_hash_bytes": 59376
+        },
+        {
+          "proof_bytes": 162888,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2304,
+          "source_hash_bytes": 29808,
+          "continuation_leaf_bytes": 69504,
+          "continuation_hash_bytes": 59712
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 1,
+      "rate": 16,
+      "next_degree": 512,
+      "source_domain": 4096,
+      "folded_domain": 2048,
+      "next_domain": 8192,
+      "threshold": 3073,
+      "minimum": 1537,
+      "target_threshold": 5633,
+      "radius": 2559,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 208840,
+      "max_bytes": 212512,
+      "mean_bytes": 210688.0,
+      "trials": [
+        {
+          "proof_bytes": 210688,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2360,
+          "source_hash_bytes": 29568,
+          "continuation_leaf_bytes": 79808,
+          "continuation_hash_bytes": 97392
+        },
+        {
+          "proof_bytes": 212512,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2344,
+          "source_hash_bytes": 31104,
+          "continuation_leaf_bytes": 80640,
+          "continuation_hash_bytes": 96864
+        },
+        {
+          "proof_bytes": 208840,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2272,
+          "source_hash_bytes": 30672,
+          "continuation_leaf_bytes": 79488,
+          "continuation_hash_bytes": 94848
+        },
+        {
+          "proof_bytes": 210712,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2304,
+          "source_hash_bytes": 29808,
+          "continuation_leaf_bytes": 80320,
+          "continuation_hash_bytes": 96720
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 1,
+      "rate": 32,
+      "next_degree": 512,
+      "source_domain": 4096,
+      "folded_domain": 2048,
+      "next_domain": 16384,
+      "threshold": 3073,
+      "minimum": 1537,
+      "target_threshold": 11094,
+      "radius": 5290,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0959048466173361e-39,
+      "min_bytes": 266408,
+      "max_bytes": 270688,
+      "mean_bytes": 269368.0,
+      "trials": [
+        {
+          "proof_bytes": 269840,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2360,
+          "source_hash_bytes": 29568,
+          "continuation_leaf_bytes": 90816,
+          "continuation_hash_bytes": 145536
+        },
+        {
+          "proof_bytes": 270688,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2344,
+          "source_hash_bytes": 31104,
+          "continuation_leaf_bytes": 91968,
+          "continuation_hash_bytes": 143712
+        },
+        {
+          "proof_bytes": 266408,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2272,
+          "source_hash_bytes": 30672,
+          "continuation_leaf_bytes": 89920,
+          "continuation_hash_bytes": 141984
+        },
+        {
+          "proof_bytes": 270536,
+          "header_bytes": 1560,
+          "source_leaf_bytes": 2304,
+          "source_hash_bytes": 29808,
+          "continuation_leaf_bytes": 93248,
+          "continuation_hash_bytes": 143616
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 2,
+      "rate": 2,
+      "next_degree": 256,
+      "source_domain": 4096,
+      "folded_domain": 1024,
+      "next_domain": 512,
+      "threshold": 3073,
+      "minimum": 769,
+      "target_threshold": 427,
+      "radius": 85,
+      "source_queries": 314,
+      "continuation_queries": 491,
+      "ideal_error_bound_float": 1.2023668541052122e-39,
+      "min_bytes": 73352,
+      "max_bytes": 74920,
+      "mean_bytes": 74224.0,
+      "trials": [
+        {
+          "proof_bytes": 73960,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 36192,
+          "continuation_leaf_bytes": 30016,
+          "continuation_hash_bytes": 1968
+        },
+        {
+          "proof_bytes": 74664,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4448,
+          "source_hash_bytes": 36960,
+          "continuation_leaf_bytes": 29824,
+          "continuation_hash_bytes": 1920
+        },
+        {
+          "proof_bytes": 74920,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 37344,
+          "continuation_leaf_bytes": 29632,
+          "continuation_hash_bytes": 2160
+        },
+        {
+          "proof_bytes": 73352,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4304,
+          "source_hash_bytes": 35616,
+          "continuation_leaf_bytes": 30336,
+          "continuation_hash_bytes": 1584
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 2,
+      "rate": 4,
+      "next_degree": 256,
+      "source_domain": 4096,
+      "folded_domain": 1024,
+      "next_domain": 1024,
+      "threshold": 3073,
+      "minimum": 769,
+      "target_threshold": 769,
+      "radius": 255,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 96280,
+      "max_bytes": 97576,
+      "mean_bytes": 96688.0,
+      "trials": [
+        {
+          "proof_bytes": 96568,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 36192,
+          "continuation_leaf_bytes": 41728,
+          "continuation_hash_bytes": 12864
+        },
+        {
+          "proof_bytes": 96328,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4448,
+          "source_hash_bytes": 36960,
+          "continuation_leaf_bytes": 40256,
+          "continuation_hash_bytes": 13152
+        },
+        {
+          "proof_bytes": 97576,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 37344,
+          "continuation_leaf_bytes": 41344,
+          "continuation_hash_bytes": 13104
+        },
+        {
+          "proof_bytes": 96280,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4304,
+          "source_hash_bytes": 35616,
+          "continuation_leaf_bytes": 41984,
+          "continuation_hash_bytes": 12864
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 2,
+      "rate": 8,
+      "next_degree": 256,
+      "source_domain": 4096,
+      "folded_domain": 1024,
+      "next_domain": 2048,
+      "threshold": 3073,
+      "minimum": 769,
+      "target_threshold": 1451,
+      "radius": 597,
+      "source_queries": 314,
+      "continuation_queries": 261,
+      "ideal_error_bound_float": 1.3121305665655895e-39,
+      "min_bytes": 125880,
+      "max_bytes": 127112,
+      "mean_bytes": 126508.0,
+      "trials": [
+        {
+          "proof_bytes": 126920,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 36192,
+          "continuation_leaf_bytes": 53120,
+          "continuation_hash_bytes": 31824
+        },
+        {
+          "proof_bytes": 126120,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4448,
+          "source_hash_bytes": 36960,
+          "continuation_leaf_bytes": 53248,
+          "continuation_hash_bytes": 29952
+        },
+        {
+          "proof_bytes": 127112,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 37344,
+          "continuation_leaf_bytes": 51584,
+          "continuation_hash_bytes": 32400
+        },
+        {
+          "proof_bytes": 125880,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4304,
+          "source_hash_bytes": 35616,
+          "continuation_leaf_bytes": 53632,
+          "continuation_hash_bytes": 30816
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 2,
+      "rate": 16,
+      "next_degree": 256,
+      "source_domain": 4096,
+      "folded_domain": 1024,
+      "next_domain": 4096,
+      "threshold": 3073,
+      "minimum": 769,
+      "target_threshold": 2817,
+      "radius": 1279,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 164760,
+      "max_bytes": 166424,
+      "mean_bytes": 165652.0,
+      "trials": [
+        {
+          "proof_bytes": 166424,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 36192,
+          "continuation_leaf_bytes": 64064,
+          "continuation_hash_bytes": 60384
+        },
+        {
+          "proof_bytes": 166408,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4448,
+          "source_hash_bytes": 36960,
+          "continuation_leaf_bytes": 66176,
+          "continuation_hash_bytes": 57312
+        },
+        {
+          "proof_bytes": 164760,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 37344,
+          "continuation_leaf_bytes": 64128,
+          "continuation_hash_bytes": 57504
+        },
+        {
+          "proof_bytes": 165016,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4304,
+          "source_hash_bytes": 35616,
+          "continuation_leaf_bytes": 65216,
+          "continuation_hash_bytes": 58368
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 2,
+      "rate": 32,
+      "next_degree": 256,
+      "source_domain": 4096,
+      "folded_domain": 1024,
+      "next_domain": 8192,
+      "threshold": 3073,
+      "minimum": 769,
+      "target_threshold": 5547,
+      "radius": 2645,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0853883782785921e-39,
+      "min_bytes": 213000,
+      "max_bytes": 215592,
+      "mean_bytes": 214668.0,
+      "trials": [
+        {
+          "proof_bytes": 215592,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 36192,
+          "continuation_leaf_bytes": 76992,
+          "continuation_hash_bytes": 96624
+        },
+        {
+          "proof_bytes": 215480,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4448,
+          "source_hash_bytes": 36960,
+          "continuation_leaf_bytes": 77184,
+          "continuation_hash_bytes": 95376
+        },
+        {
+          "proof_bytes": 213000,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4272,
+          "source_hash_bytes": 37344,
+          "continuation_leaf_bytes": 76032,
+          "continuation_hash_bytes": 93840
+        },
+        {
+          "proof_bytes": 214600,
+          "header_bytes": 1512,
+          "source_leaf_bytes": 4304,
+          "source_hash_bytes": 35616,
+          "continuation_leaf_bytes": 77696,
+          "continuation_hash_bytes": 95472
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 3,
+      "rate": 2,
+      "next_degree": 128,
+      "source_domain": 4096,
+      "folded_domain": 512,
+      "next_domain": 256,
+      "threshold": 3073,
+      "minimum": 385,
+      "target_threshold": 214,
+      "radius": 42,
+      "source_queries": 314,
+      "continuation_queries": 491,
+      "ideal_error_bound_float": 1.2023668541052122e-39,
+      "min_bytes": 58648,
+      "max_bytes": 62584,
+      "mean_bytes": 61052.0,
+      "trials": [
+        {
+          "proof_bytes": 58648,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7520,
+          "source_hash_bytes": 33408,
+          "continuation_leaf_bytes": 16256,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 62584,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7488,
+          "source_hash_bytes": 37440,
+          "continuation_leaf_bytes": 16000,
+          "continuation_hash_bytes": 192
+        },
+        {
+          "proof_bytes": 62328,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7392,
+          "source_hash_bytes": 37248,
+          "continuation_leaf_bytes": 16128,
+          "continuation_hash_bytes": 96
+        },
+        {
+          "proof_bytes": 60648,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7264,
+          "source_hash_bytes": 35712,
+          "continuation_leaf_bytes": 16064,
+          "continuation_hash_bytes": 144
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 3,
+      "rate": 4,
+      "next_degree": 128,
+      "source_domain": 4096,
+      "folded_domain": 512,
+      "next_domain": 512,
+      "threshold": 3073,
+      "minimum": 385,
+      "target_threshold": 385,
+      "radius": 127,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 72888,
+      "max_bytes": 76680,
+      "mean_bytes": 75248.0,
+      "trials": [
+        {
+          "proof_bytes": 72888,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7520,
+          "source_hash_bytes": 33408,
+          "continuation_leaf_bytes": 26944,
+          "continuation_hash_bytes": 3552
+        },
+        {
+          "proof_bytes": 76424,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7488,
+          "source_hash_bytes": 37440,
+          "continuation_leaf_bytes": 26240,
+          "continuation_hash_bytes": 3792
+        },
+        {
+          "proof_bytes": 76680,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7392,
+          "source_hash_bytes": 37248,
+          "continuation_leaf_bytes": 26688,
+          "continuation_hash_bytes": 3888
+        },
+        {
+          "proof_bytes": 75000,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7264,
+          "source_hash_bytes": 35712,
+          "continuation_leaf_bytes": 27200,
+          "continuation_hash_bytes": 3360
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 3,
+      "rate": 8,
+      "next_degree": 128,
+      "source_domain": 4096,
+      "folded_domain": 512,
+      "next_domain": 1024,
+      "threshold": 3073,
+      "minimum": 385,
+      "target_threshold": 726,
+      "radius": 298,
+      "source_queries": 314,
+      "continuation_queries": 261,
+      "ideal_error_bound_float": 1.3121305665655895e-39,
+      "min_bytes": 94728,
+      "max_bytes": 98056,
+      "mean_bytes": 96560.0,
+      "trials": [
+        {
+          "proof_bytes": 94728,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7520,
+          "source_hash_bytes": 33408,
+          "continuation_leaf_bytes": 37888,
+          "continuation_hash_bytes": 14448
+        },
+        {
+          "proof_bytes": 97336,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7488,
+          "source_hash_bytes": 37440,
+          "continuation_leaf_bytes": 37120,
+          "continuation_hash_bytes": 13824
+        },
+        {
+          "proof_bytes": 98056,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7392,
+          "source_hash_bytes": 37248,
+          "continuation_leaf_bytes": 37504,
+          "continuation_hash_bytes": 14448
+        },
+        {
+          "proof_bytes": 96120,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7264,
+          "source_hash_bytes": 35712,
+          "continuation_leaf_bytes": 37952,
+          "continuation_hash_bytes": 13728
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 3,
+      "rate": 16,
+      "next_degree": 128,
+      "source_domain": 4096,
+      "folded_domain": 512,
+      "next_domain": 2048,
+      "threshold": 3073,
+      "minimum": 385,
+      "target_threshold": 1409,
+      "radius": 639,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 125000,
+      "max_bytes": 127192,
+      "mean_bytes": 126144.0,
+      "trials": [
+        {
+          "proof_bytes": 125000,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7520,
+          "source_hash_bytes": 33408,
+          "continuation_leaf_bytes": 50112,
+          "continuation_hash_bytes": 32496
+        },
+        {
+          "proof_bytes": 127192,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7488,
+          "source_hash_bytes": 37440,
+          "continuation_leaf_bytes": 50752,
+          "continuation_hash_bytes": 30048
+        },
+        {
+          "proof_bytes": 126520,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7392,
+          "source_hash_bytes": 37248,
+          "continuation_leaf_bytes": 48832,
+          "continuation_hash_bytes": 31584
+        },
+        {
+          "proof_bytes": 125864,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7264,
+          "source_hash_bytes": 35712,
+          "continuation_leaf_bytes": 50176,
+          "continuation_hash_bytes": 31248
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 3,
+      "rate": 32,
+      "next_degree": 128,
+      "source_domain": 4096,
+      "folded_domain": 512,
+      "next_domain": 4096,
+      "threshold": 3073,
+      "minimum": 385,
+      "target_threshold": 2774,
+      "radius": 1322,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0853883782785921e-39,
+      "min_bytes": 164312,
+      "max_bytes": 166504,
+      "mean_bytes": 165196.0,
+      "trials": [
+        {
+          "proof_bytes": 164312,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7520,
+          "source_hash_bytes": 33408,
+          "continuation_leaf_bytes": 61824,
+          "continuation_hash_bytes": 60096
+        },
+        {
+          "proof_bytes": 166504,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7488,
+          "source_hash_bytes": 37440,
+          "continuation_leaf_bytes": 63232,
+          "continuation_hash_bytes": 56880
+        },
+        {
+          "proof_bytes": 164872,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7392,
+          "source_hash_bytes": 37248,
+          "continuation_leaf_bytes": 61120,
+          "continuation_hash_bytes": 57648
+        },
+        {
+          "proof_bytes": 165096,
+          "header_bytes": 1464,
+          "source_leaf_bytes": 7264,
+          "source_hash_bytes": 35712,
+          "continuation_leaf_bytes": 63104,
+          "continuation_hash_bytes": 57552
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 4,
+      "rate": 2,
+      "next_degree": 64,
+      "source_domain": 4096,
+      "folded_domain": 256,
+      "next_domain": 128,
+      "threshold": 3073,
+      "minimum": 193,
+      "target_threshold": 107,
+      "radius": 21,
+      "source_queries": 314,
+      "continuation_queries": 478,
+      "ideal_error_bound_float": 1.2954915685740766e-39,
+      "min_bytes": 42568,
+      "max_bytes": 48392,
+      "mean_bytes": 45768.0,
+      "trials": [
+        {
+          "proof_bytes": 44744,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11072,
+          "source_hash_bytes": 24192,
+          "continuation_leaf_bytes": 8064,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 42568,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11968,
+          "source_hash_bytes": 21120,
+          "continuation_leaf_bytes": 8064,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 47368,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11392,
+          "source_hash_bytes": 26496,
+          "continuation_leaf_bytes": 8064,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 48392,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 10880,
+          "source_hash_bytes": 28032,
+          "continuation_leaf_bytes": 8064,
+          "continuation_hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 4,
+      "rate": 4,
+      "next_degree": 64,
+      "source_domain": 4096,
+      "folded_domain": 256,
+      "next_domain": 256,
+      "threshold": 3073,
+      "minimum": 193,
+      "target_threshold": 193,
+      "radius": 63,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 50328,
+      "max_bytes": 56248,
+      "mean_bytes": 53612.0,
+      "trials": [
+        {
+          "proof_bytes": 52600,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11072,
+          "source_hash_bytes": 24192,
+          "continuation_leaf_bytes": 15296,
+          "continuation_hash_bytes": 624
+        },
+        {
+          "proof_bytes": 50328,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11968,
+          "source_hash_bytes": 21120,
+          "continuation_leaf_bytes": 14912,
+          "continuation_hash_bytes": 912
+        },
+        {
+          "proof_bytes": 55272,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11392,
+          "source_hash_bytes": 26496,
+          "continuation_leaf_bytes": 15488,
+          "continuation_hash_bytes": 480
+        },
+        {
+          "proof_bytes": 56248,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 10880,
+          "source_hash_bytes": 28032,
+          "continuation_leaf_bytes": 15296,
+          "continuation_hash_bytes": 624
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 4,
+      "rate": 8,
+      "next_degree": 64,
+      "source_domain": 4096,
+      "folded_domain": 256,
+      "next_domain": 512,
+      "threshold": 3073,
+      "minimum": 193,
+      "target_threshold": 363,
+      "radius": 149,
+      "source_queries": 314,
+      "continuation_queries": 260,
+      "ideal_error_bound_float": 1.3023692849302677e-39,
+      "min_bytes": 63528,
+      "max_bytes": 69688,
+      "mean_bytes": 67156.0,
+      "trials": [
+        {
+          "proof_bytes": 66424,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11072,
+          "source_hash_bytes": 24192,
+          "continuation_leaf_bytes": 25472,
+          "continuation_hash_bytes": 4272
+        },
+        {
+          "proof_bytes": 63528,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11968,
+          "source_hash_bytes": 21120,
+          "continuation_leaf_bytes": 24512,
+          "continuation_hash_bytes": 4512
+        },
+        {
+          "proof_bytes": 68984,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11392,
+          "source_hash_bytes": 26496,
+          "continuation_leaf_bytes": 25024,
+          "continuation_hash_bytes": 4656
+        },
+        {
+          "proof_bytes": 69688,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 10880,
+          "source_hash_bytes": 28032,
+          "continuation_leaf_bytes": 24896,
+          "continuation_hash_bytes": 4464
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 4,
+      "rate": 16,
+      "next_degree": 64,
+      "source_domain": 4096,
+      "folded_domain": 256,
+      "next_domain": 1024,
+      "threshold": 3073,
+      "minimum": 193,
+      "target_threshold": 705,
+      "radius": 319,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 84216,
+      "max_bytes": 90552,
+      "mean_bytes": 87924.0,
+      "trials": [
+        {
+          "proof_bytes": 87816,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11072,
+          "source_hash_bytes": 24192,
+          "continuation_leaf_bytes": 36352,
+          "continuation_hash_bytes": 14784
+        },
+        {
+          "proof_bytes": 84216,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11968,
+          "source_hash_bytes": 21120,
+          "continuation_leaf_bytes": 35264,
+          "continuation_hash_bytes": 14448
+        },
+        {
+          "proof_bytes": 89112,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11392,
+          "source_hash_bytes": 26496,
+          "continuation_leaf_bytes": 35264,
+          "continuation_hash_bytes": 14544
+        },
+        {
+          "proof_bytes": 90552,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 10880,
+          "source_hash_bytes": 28032,
+          "continuation_leaf_bytes": 35776,
+          "continuation_hash_bytes": 14448
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 4,
+      "rate": 32,
+      "next_degree": 64,
+      "source_domain": 4096,
+      "folded_domain": 256,
+      "next_domain": 2048,
+      "threshold": 3073,
+      "minimum": 193,
+      "target_threshold": 1387,
+      "radius": 661,
+      "source_queries": 314,
+      "continuation_queries": 231,
+      "ideal_error_bound_float": 1.264028395698597e-39,
+      "min_bytes": 112984,
+      "max_bytes": 119416,
+      "mean_bytes": 116888.0,
+      "trials": [
+        {
+          "proof_bytes": 117400,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11072,
+          "source_hash_bytes": 24192,
+          "continuation_leaf_bytes": 48128,
+          "continuation_hash_bytes": 32592
+        },
+        {
+          "proof_bytes": 112984,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11968,
+          "source_hash_bytes": 21120,
+          "continuation_leaf_bytes": 48192,
+          "continuation_hash_bytes": 30288
+        },
+        {
+          "proof_bytes": 117752,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 11392,
+          "source_hash_bytes": 26496,
+          "continuation_leaf_bytes": 46336,
+          "continuation_hash_bytes": 32112
+        },
+        {
+          "proof_bytes": 119416,
+          "header_bytes": 1416,
+          "source_leaf_bytes": 10880,
+          "source_hash_bytes": 28032,
+          "continuation_leaf_bytes": 48320,
+          "continuation_hash_bytes": 30768
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 6,
+      "rate": 2,
+      "next_degree": 16,
+      "source_domain": 4096,
+      "folded_domain": 64,
+      "next_domain": 32,
+      "threshold": 3073,
+      "minimum": 49,
+      "target_threshold": 27,
+      "radius": 5,
+      "source_queries": 314,
+      "continuation_queries": 434,
+      "ideal_error_bound_float": 1.317842534090425e-39,
+      "min_bytes": 19624,
+      "max_bytes": 22184,
+      "mean_bytes": 20904.0,
+      "trials": [
+        {
+          "proof_bytes": 20904,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 1920,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 22184,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 15872,
+          "source_hash_bytes": 3072,
+          "continuation_leaf_bytes": 1920,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 19624,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 1920,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 20904,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 1920,
+          "continuation_hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 6,
+      "rate": 4,
+      "next_degree": 16,
+      "source_domain": 4096,
+      "folded_domain": 64,
+      "next_domain": 64,
+      "threshold": 3073,
+      "minimum": 49,
+      "target_threshold": 49,
+      "radius": 15,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 21544,
+      "max_bytes": 24104,
+      "mean_bytes": 22824.0,
+      "trials": [
+        {
+          "proof_bytes": 22824,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 3840,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 24104,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 15872,
+          "source_hash_bytes": 3072,
+          "continuation_leaf_bytes": 3840,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 21544,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 3840,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 22824,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 3840,
+          "continuation_hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 6,
+      "rate": 8,
+      "next_degree": 16,
+      "source_domain": 4096,
+      "folded_domain": 64,
+      "next_domain": 128,
+      "threshold": 3073,
+      "minimum": 49,
+      "target_threshold": 91,
+      "radius": 37,
+      "source_queries": 314,
+      "continuation_queries": 256,
+      "ideal_error_bound_float": 1.2801667992072632e-39,
+      "min_bytes": 25384,
+      "max_bytes": 27928,
+      "mean_bytes": 26648.0,
+      "trials": [
+        {
+          "proof_bytes": 26648,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 7616,
+          "continuation_hash_bytes": 48
+        },
+        {
+          "proof_bytes": 27928,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 15872,
+          "source_hash_bytes": 3072,
+          "continuation_leaf_bytes": 7616,
+          "continuation_hash_bytes": 48
+        },
+        {
+          "proof_bytes": 25384,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 7680,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 26632,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 7552,
+          "continuation_hash_bytes": 96
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 6,
+      "rate": 16,
+      "next_degree": 16,
+      "source_domain": 4096,
+      "folded_domain": 64,
+      "next_domain": 256,
+      "threshold": 3073,
+      "minimum": 49,
+      "target_threshold": 177,
+      "radius": 79,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 32696,
+      "max_bytes": 35144,
+      "mean_bytes": 33940.0,
+      "trials": [
+        {
+          "proof_bytes": 34024,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 14272,
+          "continuation_hash_bytes": 768
+        },
+        {
+          "proof_bytes": 35144,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 15872,
+          "source_hash_bytes": 3072,
+          "continuation_leaf_bytes": 13632,
+          "continuation_hash_bytes": 1248
+        },
+        {
+          "proof_bytes": 32696,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 13888,
+          "continuation_hash_bytes": 1104
+        },
+        {
+          "proof_bytes": 33896,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 13952,
+          "continuation_hash_bytes": 960
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 6,
+      "rate": 32,
+      "next_degree": 16,
+      "source_domain": 4096,
+      "folded_domain": 64,
+      "next_domain": 512,
+      "threshold": 3073,
+      "minimum": 49,
+      "target_threshold": 347,
+      "radius": 165,
+      "source_queries": 314,
+      "continuation_queries": 230,
+      "ideal_error_bound_float": 1.3046322552824432e-39,
+      "min_bytes": 45176,
+      "max_bytes": 47368,
+      "mean_bytes": 46340.0,
+      "trials": [
+        {
+          "proof_bytes": 46744,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 23104,
+          "continuation_hash_bytes": 4656
+        },
+        {
+          "proof_bytes": 47368,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 15872,
+          "source_hash_bytes": 3072,
+          "continuation_leaf_bytes": 22016,
+          "continuation_hash_bytes": 5088
+        },
+        {
+          "proof_bytes": 45176,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 22144,
+          "continuation_hash_bytes": 5328
+        },
+        {
+          "proof_bytes": 46072,
+          "header_bytes": 1320,
+          "source_leaf_bytes": 16128,
+          "source_hash_bytes": 1536,
+          "continuation_leaf_bytes": 22144,
+          "continuation_hash_bytes": 4944
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 8,
+      "rate": 2,
+      "next_degree": 4,
+      "source_domain": 4096,
+      "folded_domain": 16,
+      "next_domain": 8,
+      "threshold": 3073,
+      "minimum": 13,
+      "target_threshold": 7,
+      "radius": 1,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 17992,
+      "max_bytes": 17992,
+      "mean_bytes": 17992.0,
+      "trials": [
+        {
+          "proof_bytes": 17992,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 384,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 17992,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 384,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 17992,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 384,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 17992,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 384,
+          "continuation_hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 8,
+      "rate": 4,
+      "next_degree": 4,
+      "source_domain": 4096,
+      "folded_domain": 16,
+      "next_domain": 16,
+      "threshold": 3073,
+      "minimum": 13,
+      "target_threshold": 13,
+      "radius": 3,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 18376,
+      "max_bytes": 18376,
+      "mean_bytes": 18376.0,
+      "trials": [
+        {
+          "proof_bytes": 18376,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 768,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 18376,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 768,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 18376,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 768,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 18376,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 768,
+          "continuation_hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 8,
+      "rate": 8,
+      "next_degree": 4,
+      "source_domain": 4096,
+      "folded_domain": 16,
+      "next_domain": 32,
+      "threshold": 3073,
+      "minimum": 13,
+      "target_threshold": 23,
+      "radius": 9,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 19144,
+      "max_bytes": 19144,
+      "mean_bytes": 19144.0,
+      "trials": [
+        {
+          "proof_bytes": 19144,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 1536,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 19144,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 1536,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 19144,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 1536,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 19144,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 1536,
+          "continuation_hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 8,
+      "rate": 16,
+      "next_degree": 4,
+      "source_domain": 4096,
+      "folded_domain": 16,
+      "next_domain": 64,
+      "threshold": 3073,
+      "minimum": 13,
+      "target_threshold": 45,
+      "radius": 19,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 20680,
+      "max_bytes": 20680,
+      "mean_bytes": 20680.0,
+      "trials": [
+        {
+          "proof_bytes": 20680,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 3072,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 20680,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 3072,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 20680,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 3072,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 20680,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 3072,
+          "continuation_hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "skipped": 8,
+      "rate": 32,
+      "next_degree": 4,
+      "source_domain": 4096,
+      "folded_domain": 16,
+      "next_domain": 128,
+      "threshold": 3073,
+      "minimum": 13,
+      "target_threshold": 87,
+      "radius": 41,
+      "source_queries": 314,
+      "continuation_queries": 227,
+      "ideal_error_bound_float": 1.2108057329003612e-39,
+      "min_bytes": 23688,
+      "max_bytes": 23752,
+      "mean_bytes": 23724.0,
+      "trials": [
+        {
+          "proof_bytes": 23720,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 6016,
+          "continuation_hash_bytes": 96
+        },
+        {
+          "proof_bytes": 23736,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 6080,
+          "continuation_hash_bytes": 48
+        },
+        {
+          "proof_bytes": 23752,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 6144,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 23688,
+          "header_bytes": 1224,
+          "source_leaf_bytes": 16384,
+          "source_hash_bytes": 0,
+          "continuation_leaf_bytes": 5888,
+          "continuation_hash_bytes": 192
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 1,
+      "rate": 2,
+      "next_degree": 4096,
+      "source_domain": 32768,
+      "folded_domain": 16384,
+      "next_domain": 8192,
+      "threshold": 24577,
+      "minimum": 12289,
+      "target_threshold": 6827,
+      "radius": 1365,
+      "source_queries": 314,
+      "continuation_queries": 494,
+      "ideal_error_bound_float": 1.3181278241223867e-39,
+      "min_bytes": 324968,
+      "max_bytes": 330808,
+      "mean_bytes": 328900.0,
+      "trials": [
+        {
+          "proof_bytes": 329712,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2488,
+          "source_hash_bytes": 72432,
+          "continuation_leaf_bytes": 132992,
+          "continuation_hash_bytes": 119808
+        },
+        {
+          "proof_bytes": 330112,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2472,
+          "source_hash_bytes": 73632,
+          "continuation_leaf_bytes": 131584,
+          "continuation_hash_bytes": 120432
+        },
+        {
+          "proof_bytes": 324968,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2496,
+          "source_hash_bytes": 72576,
+          "continuation_leaf_bytes": 131072,
+          "continuation_hash_bytes": 116832
+        },
+        {
+          "proof_bytes": 330808,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2480,
+          "source_hash_bytes": 71808,
+          "continuation_leaf_bytes": 133568,
+          "continuation_hash_bytes": 120960
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 1,
+      "rate": 4,
+      "next_degree": 4096,
+      "source_domain": 32768,
+      "folded_domain": 16384,
+      "next_domain": 16384,
+      "threshold": 24577,
+      "minimum": 12289,
+      "target_threshold": 12289,
+      "radius": 4095,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 355240,
+      "max_bytes": 360040,
+      "mean_bytes": 357692.0,
+      "trials": [
+        {
+          "proof_bytes": 357936,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2488,
+          "source_hash_bytes": 72432,
+          "continuation_leaf_bytes": 116864,
+          "continuation_hash_bytes": 164160
+        },
+        {
+          "proof_bytes": 357552,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2472,
+          "source_hash_bytes": 73632,
+          "continuation_leaf_bytes": 116928,
+          "continuation_hash_bytes": 162528
+        },
+        {
+          "proof_bytes": 355240,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2496,
+          "source_hash_bytes": 72576,
+          "continuation_leaf_bytes": 115840,
+          "continuation_hash_bytes": 162336
+        },
+        {
+          "proof_bytes": 360040,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2480,
+          "source_hash_bytes": 71808,
+          "continuation_leaf_bytes": 119168,
+          "continuation_hash_bytes": 164592
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 1,
+      "rate": 8,
+      "next_degree": 4096,
+      "source_domain": 32768,
+      "folded_domain": 16384,
+      "next_domain": 32768,
+      "threshold": 24577,
+      "minimum": 12289,
+      "target_threshold": 23211,
+      "radius": 9557,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1619311796505669e-39,
+      "min_bytes": 408120,
+      "max_bytes": 413216,
+      "mean_bytes": 411220.0,
+      "trials": [
+        {
+          "proof_bytes": 410384,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2488,
+          "source_hash_bytes": 72432,
+          "continuation_leaf_bytes": 115840,
+          "continuation_hash_bytes": 217632
+        },
+        {
+          "proof_bytes": 413216,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2472,
+          "source_hash_bytes": 73632,
+          "continuation_leaf_bytes": 119168,
+          "continuation_hash_bytes": 215952
+        },
+        {
+          "proof_bytes": 408120,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2496,
+          "source_hash_bytes": 72576,
+          "continuation_leaf_bytes": 118848,
+          "continuation_hash_bytes": 212208
+        },
+        {
+          "proof_bytes": 413160,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2480,
+          "source_hash_bytes": 71808,
+          "continuation_leaf_bytes": 119488,
+          "continuation_hash_bytes": 217392
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 1,
+      "rate": 16,
+      "next_degree": 4096,
+      "source_domain": 32768,
+      "folded_domain": 16384,
+      "next_domain": 65536,
+      "threshold": 24577,
+      "minimum": 12289,
+      "target_threshold": 45057,
+      "radius": 20479,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 478296,
+      "max_bytes": 485856,
+      "mean_bytes": 481504.0,
+      "trials": [
+        {
+          "proof_bytes": 478784,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2488,
+          "source_hash_bytes": 72432,
+          "continuation_leaf_bytes": 125440,
+          "continuation_hash_bytes": 276432
+        },
+        {
+          "proof_bytes": 485856,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2472,
+          "source_hash_bytes": 73632,
+          "continuation_leaf_bytes": 127104,
+          "continuation_hash_bytes": 280656
+        },
+        {
+          "proof_bytes": 478296,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2496,
+          "source_hash_bytes": 72576,
+          "continuation_leaf_bytes": 125376,
+          "continuation_hash_bytes": 275856
+        },
+        {
+          "proof_bytes": 483080,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2480,
+          "source_hash_bytes": 71808,
+          "continuation_leaf_bytes": 125376,
+          "continuation_hash_bytes": 281424
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 1,
+      "rate": 32,
+      "next_degree": 4096,
+      "source_domain": 32768,
+      "folded_domain": 16384,
+      "next_domain": 131072,
+      "threshold": 24577,
+      "minimum": 12289,
+      "target_threshold": 88747,
+      "radius": 42325,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0985683608681913e-39,
+      "min_bytes": 561464,
+      "max_bytes": 571088,
+      "mean_bytes": 566632.0,
+      "trials": [
+        {
+          "proof_bytes": 564928,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2488,
+          "source_hash_bytes": 72432,
+          "continuation_leaf_bytes": 136512,
+          "continuation_hash_bytes": 351504
+        },
+        {
+          "proof_bytes": 571088,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2472,
+          "source_hash_bytes": 73632,
+          "continuation_leaf_bytes": 136832,
+          "continuation_hash_bytes": 356160
+        },
+        {
+          "proof_bytes": 561464,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2496,
+          "source_hash_bytes": 72576,
+          "continuation_leaf_bytes": 134336,
+          "continuation_hash_bytes": 350064
+        },
+        {
+          "proof_bytes": 569048,
+          "header_bytes": 1992,
+          "source_leaf_bytes": 2480,
+          "source_hash_bytes": 71808,
+          "continuation_leaf_bytes": 135552,
+          "continuation_hash_bytes": 357216
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 2,
+      "rate": 2,
+      "next_degree": 2048,
+      "source_domain": 32768,
+      "folded_domain": 8192,
+      "next_domain": 4096,
+      "threshold": 24577,
+      "minimum": 6145,
+      "target_threshold": 3414,
+      "radius": 682,
+      "source_queries": 314,
+      "continuation_queries": 494,
+      "ideal_error_bound_float": 1.3181278241223867e-39,
+      "min_bytes": 286280,
+      "max_bytes": 291768,
+      "mean_bytes": 289556.0,
+      "trials": [
+        {
+          "proof_bytes": 289800,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4944,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 103872,
+          "continuation_hash_bytes": 63648
+        },
+        {
+          "proof_bytes": 291768,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4912,
+          "source_hash_bytes": 117984,
+          "continuation_leaf_bytes": 104192,
+          "continuation_hash_bytes": 62736
+        },
+        {
+          "proof_bytes": 286280,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4976,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 102144,
+          "continuation_hash_bytes": 61824
+        },
+        {
+          "proof_bytes": 290376,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4896,
+          "source_hash_bytes": 114624,
+          "continuation_leaf_bytes": 104256,
+          "continuation_hash_bytes": 64656
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 2,
+      "rate": 4,
+      "next_degree": 2048,
+      "source_domain": 32768,
+      "folded_domain": 8192,
+      "next_domain": 8192,
+      "threshold": 24577,
+      "minimum": 6145,
+      "target_threshold": 6145,
+      "radius": 2047,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 323304,
+      "max_bytes": 326264,
+      "mean_bytes": 325188.0,
+      "trials": [
+        {
+          "proof_bytes": 325288,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4944,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 97216,
+          "continuation_hash_bytes": 105792
+        },
+        {
+          "proof_bytes": 326264,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4912,
+          "source_hash_bytes": 117984,
+          "continuation_leaf_bytes": 97216,
+          "continuation_hash_bytes": 104208
+        },
+        {
+          "proof_bytes": 323304,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4976,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 96064,
+          "continuation_hash_bytes": 104928
+        },
+        {
+          "proof_bytes": 325896,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4896,
+          "source_hash_bytes": 114624,
+          "continuation_leaf_bytes": 98688,
+          "continuation_hash_bytes": 105744
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 2,
+      "rate": 8,
+      "next_degree": 2048,
+      "source_domain": 32768,
+      "folded_domain": 8192,
+      "next_domain": 16384,
+      "threshold": 24577,
+      "minimum": 6145,
+      "target_threshold": 11606,
+      "radius": 4778,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1619311796505669e-39,
+      "min_bytes": 372968,
+      "max_bytes": 378648,
+      "mean_bytes": 375992.0,
+      "trials": [
+        {
+          "proof_bytes": 375784,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4944,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 101248,
+          "continuation_hash_bytes": 152256
+        },
+        {
+          "proof_bytes": 378648,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4912,
+          "source_hash_bytes": 117984,
+          "continuation_leaf_bytes": 102272,
+          "continuation_hash_bytes": 151536
+        },
+        {
+          "proof_bytes": 372968,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4976,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 100608,
+          "continuation_hash_bytes": 150048
+        },
+        {
+          "proof_bytes": 376568,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4896,
+          "source_hash_bytes": 114624,
+          "continuation_leaf_bytes": 103040,
+          "continuation_hash_bytes": 152064
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 2,
+      "rate": 16,
+      "next_degree": 2048,
+      "source_domain": 32768,
+      "folded_domain": 8192,
+      "next_domain": 32768,
+      "threshold": 24577,
+      "minimum": 6145,
+      "target_threshold": 22529,
+      "radius": 10239,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 436072,
+      "max_bytes": 444024,
+      "mean_bytes": 439708.0,
+      "trials": [
+        {
+          "proof_bytes": 438392,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4944,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 107264,
+          "continuation_hash_bytes": 208848
+        },
+        {
+          "proof_bytes": 444024,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4912,
+          "source_hash_bytes": 117984,
+          "continuation_leaf_bytes": 112064,
+          "continuation_hash_bytes": 207120
+        },
+        {
+          "proof_bytes": 436072,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4976,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 110720,
+          "continuation_hash_bytes": 203040
+        },
+        {
+          "proof_bytes": 440344,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4896,
+          "source_hash_bytes": 114624,
+          "continuation_leaf_bytes": 111616,
+          "continuation_hash_bytes": 207264
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 2,
+      "rate": 32,
+      "next_degree": 2048,
+      "source_domain": 32768,
+      "folded_domain": 8192,
+      "next_domain": 65536,
+      "threshold": 24577,
+      "minimum": 6145,
+      "target_threshold": 44374,
+      "radius": 21162,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0985683608681913e-39,
+      "min_bytes": 511592,
+      "max_bytes": 520936,
+      "mean_bytes": 516372.0,
+      "trials": [
+        {
+          "proof_bytes": 514376,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4944,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 120512,
+          "continuation_hash_bytes": 271584
+        },
+        {
+          "proof_bytes": 520936,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4912,
+          "source_hash_bytes": 117984,
+          "continuation_leaf_bytes": 122304,
+          "continuation_hash_bytes": 273792
+        },
+        {
+          "proof_bytes": 511592,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4976,
+          "source_hash_bytes": 115392,
+          "continuation_leaf_bytes": 120000,
+          "continuation_hash_bytes": 269280
+        },
+        {
+          "proof_bytes": 518584,
+          "header_bytes": 1944,
+          "source_leaf_bytes": 4896,
+          "source_hash_bytes": 114624,
+          "continuation_leaf_bytes": 120448,
+          "continuation_hash_bytes": 276672
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 3,
+      "rate": 2,
+      "next_degree": 1024,
+      "source_domain": 32768,
+      "folded_domain": 4096,
+      "next_domain": 2048,
+      "threshold": 24577,
+      "minimum": 3073,
+      "target_threshold": 1707,
+      "radius": 341,
+      "source_queries": 314,
+      "continuation_queries": 494,
+      "ideal_error_bound_float": 1.2197015823795275e-39,
+      "min_bytes": 286344,
+      "max_bytes": 293656,
+      "mean_bytes": 289056.0,
+      "trials": [
+        {
+          "proof_bytes": 288376,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9760,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 75456,
+          "continuation_hash_bytes": 28272
+        },
+        {
+          "proof_bytes": 293656,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9664,
+          "source_hash_bytes": 178944,
+          "continuation_leaf_bytes": 75264,
+          "continuation_hash_bytes": 27888
+        },
+        {
+          "proof_bytes": 286344,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9792,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 73344,
+          "continuation_hash_bytes": 28320
+        },
+        {
+          "proof_bytes": 287848,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9696,
+          "source_hash_bytes": 171648,
+          "continuation_leaf_bytes": 76288,
+          "continuation_hash_bytes": 28320
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 3,
+      "rate": 4,
+      "next_degree": 1024,
+      "source_domain": 32768,
+      "folded_domain": 4096,
+      "next_domain": 4096,
+      "threshold": 24577,
+      "minimum": 3073,
+      "target_threshold": 3073,
+      "radius": 1023,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 322904,
+      "max_bytes": 328136,
+      "mean_bytes": 324772.0,
+      "trials": [
+        {
+          "proof_bytes": 324344,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9760,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 77632,
+          "continuation_hash_bytes": 62064
+        },
+        {
+          "proof_bytes": 328136,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9664,
+          "source_hash_bytes": 178944,
+          "continuation_leaf_bytes": 78592,
+          "continuation_hash_bytes": 59040
+        },
+        {
+          "proof_bytes": 322904,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9792,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 77120,
+          "continuation_hash_bytes": 61104
+        },
+        {
+          "proof_bytes": 323704,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9696,
+          "source_hash_bytes": 171648,
+          "continuation_leaf_bytes": 78208,
+          "continuation_hash_bytes": 62256
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 3,
+      "rate": 8,
+      "next_degree": 1024,
+      "source_domain": 32768,
+      "folded_domain": 4096,
+      "next_domain": 8192,
+      "threshold": 24577,
+      "minimum": 3073,
+      "target_threshold": 5803,
+      "radius": 2389,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1491142118833191e-39,
+      "min_bytes": 367592,
+      "max_bytes": 375576,
+      "mean_bytes": 370548.0,
+      "trials": [
+        {
+          "proof_bytes": 369896,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9760,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 85120,
+          "continuation_hash_bytes": 100128
+        },
+        {
+          "proof_bytes": 375576,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9664,
+          "source_hash_bytes": 178944,
+          "continuation_leaf_bytes": 85568,
+          "continuation_hash_bytes": 99504
+        },
+        {
+          "proof_bytes": 367592,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9792,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 84416,
+          "continuation_hash_bytes": 98496
+        },
+        {
+          "proof_bytes": 369128,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9696,
+          "source_hash_bytes": 171648,
+          "continuation_leaf_bytes": 86144,
+          "continuation_hash_bytes": 99744
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 3,
+      "rate": 16,
+      "next_degree": 1024,
+      "source_domain": 32768,
+      "folded_domain": 4096,
+      "next_domain": 16384,
+      "threshold": 24577,
+      "minimum": 3073,
+      "target_threshold": 11265,
+      "radius": 5119,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 423016,
+      "max_bytes": 433032,
+      "mean_bytes": 426852.0,
+      "trials": [
+        {
+          "proof_bytes": 426072,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9760,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 94208,
+          "continuation_hash_bytes": 147216
+        },
+        {
+          "proof_bytes": 433032,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9664,
+          "source_hash_bytes": 178944,
+          "continuation_leaf_bytes": 95744,
+          "continuation_hash_bytes": 146784
+        },
+        {
+          "proof_bytes": 423016,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9792,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 93952,
+          "continuation_hash_bytes": 144384
+        },
+        {
+          "proof_bytes": 425288,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9696,
+          "source_hash_bytes": 171648,
+          "continuation_leaf_bytes": 96320,
+          "continuation_hash_bytes": 145728
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 3,
+      "rate": 32,
+      "next_degree": 1024,
+      "source_domain": 32768,
+      "folded_domain": 4096,
+      "next_domain": 32768,
+      "threshold": 24577,
+      "minimum": 3073,
+      "target_threshold": 22187,
+      "radius": 10581,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0959048466173361e-39,
+      "min_bytes": 489528,
+      "max_bytes": 500632,
+      "mean_bytes": 494724.0,
+      "trials": [
+        {
+          "proof_bytes": 493656,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9760,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 102848,
+          "continuation_hash_bytes": 206160
+        },
+        {
+          "proof_bytes": 500632,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9664,
+          "source_hash_bytes": 178944,
+          "continuation_leaf_bytes": 107712,
+          "continuation_hash_bytes": 202416
+        },
+        {
+          "proof_bytes": 489528,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9792,
+          "source_hash_bytes": 172992,
+          "continuation_leaf_bytes": 105792,
+          "continuation_hash_bytes": 199056
+        },
+        {
+          "proof_bytes": 495080,
+          "header_bytes": 1896,
+          "source_leaf_bytes": 9696,
+          "source_hash_bytes": 171648,
+          "continuation_leaf_bytes": 107264,
+          "continuation_hash_bytes": 204576
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 4,
+      "rate": 2,
+      "next_degree": 512,
+      "source_domain": 32768,
+      "folded_domain": 2048,
+      "next_domain": 1024,
+      "threshold": 24577,
+      "minimum": 1537,
+      "target_threshold": 854,
+      "radius": 170,
+      "source_queries": 314,
+      "continuation_queries": 494,
+      "ideal_error_bound_float": 1.2197015823795275e-39,
+      "min_bytes": 316920,
+      "max_bytes": 328712,
+      "mean_bytes": 322156.0,
+      "trials": [
+        {
+          "proof_bytes": 316920,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18880,
+          "source_hash_bytes": 236544,
+          "continuation_leaf_bytes": 50240,
+          "continuation_hash_bytes": 9408
+        },
+        {
+          "proof_bytes": 328712,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18752,
+          "source_hash_bytes": 248832,
+          "continuation_leaf_bytes": 49920,
+          "continuation_hash_bytes": 9360
+        },
+        {
+          "proof_bytes": 324280,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18176,
+          "source_hash_bytes": 245376,
+          "continuation_leaf_bytes": 48704,
+          "continuation_hash_bytes": 10176
+        },
+        {
+          "proof_bytes": 318712,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18432,
+          "source_hash_bytes": 238464,
+          "continuation_leaf_bytes": 50944,
+          "continuation_hash_bytes": 9024
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 4,
+      "rate": 4,
+      "next_degree": 512,
+      "source_domain": 32768,
+      "folded_domain": 2048,
+      "next_domain": 2048,
+      "threshold": 24577,
+      "minimum": 1537,
+      "target_threshold": 1537,
+      "radius": 511,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 347736,
+      "max_bytes": 357848,
+      "mean_bytes": 352612.0,
+      "trials": [
+        {
+          "proof_bytes": 347736,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18880,
+          "source_hash_bytes": 236544,
+          "continuation_leaf_bytes": 59264,
+          "continuation_hash_bytes": 31200
+        },
+        {
+          "proof_bytes": 357848,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18752,
+          "source_hash_bytes": 248832,
+          "continuation_leaf_bytes": 58752,
+          "continuation_hash_bytes": 29664
+        },
+        {
+          "proof_bytes": 355192,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18176,
+          "source_hash_bytes": 245376,
+          "continuation_leaf_bytes": 57920,
+          "continuation_hash_bytes": 31872
+        },
+        {
+          "proof_bytes": 349672,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18432,
+          "source_hash_bytes": 238464,
+          "continuation_leaf_bytes": 59584,
+          "continuation_hash_bytes": 31344
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 4,
+      "rate": 8,
+      "next_degree": 512,
+      "source_domain": 32768,
+      "folded_domain": 2048,
+      "next_domain": 4096,
+      "threshold": 24577,
+      "minimum": 1537,
+      "target_threshold": 2902,
+      "radius": 1194,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1491142118833191e-39,
+      "min_bytes": 386488,
+      "max_bytes": 397560,
+      "mean_bytes": 391204.0,
+      "trials": [
+        {
+          "proof_bytes": 386488,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18880,
+          "source_hash_bytes": 236544,
+          "continuation_leaf_bytes": 68736,
+          "continuation_hash_bytes": 60480
+        },
+        {
+          "proof_bytes": 397560,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18752,
+          "source_hash_bytes": 248832,
+          "continuation_leaf_bytes": 70336,
+          "continuation_hash_bytes": 57792
+        },
+        {
+          "proof_bytes": 392808,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18176,
+          "source_hash_bytes": 245376,
+          "continuation_leaf_bytes": 68032,
+          "continuation_hash_bytes": 59376
+        },
+        {
+          "proof_bytes": 387960,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18432,
+          "source_hash_bytes": 238464,
+          "continuation_leaf_bytes": 69504,
+          "continuation_hash_bytes": 59712
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 4,
+      "rate": 16,
+      "next_degree": 512,
+      "source_domain": 32768,
+      "folded_domain": 2048,
+      "next_domain": 8192,
+      "threshold": 24577,
+      "minimum": 1537,
+      "target_threshold": 5633,
+      "radius": 2559,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 434472,
+      "max_bytes": 446936,
+      "mean_bytes": 439232.0,
+      "trials": [
+        {
+          "proof_bytes": 434472,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18880,
+          "source_hash_bytes": 236544,
+          "continuation_leaf_bytes": 79808,
+          "continuation_hash_bytes": 97392
+        },
+        {
+          "proof_bytes": 446936,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18752,
+          "source_hash_bytes": 248832,
+          "continuation_leaf_bytes": 80640,
+          "continuation_hash_bytes": 96864
+        },
+        {
+          "proof_bytes": 439736,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18176,
+          "source_hash_bytes": 245376,
+          "continuation_leaf_bytes": 79488,
+          "continuation_hash_bytes": 94848
+        },
+        {
+          "proof_bytes": 435784,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18432,
+          "source_hash_bytes": 238464,
+          "continuation_leaf_bytes": 80320,
+          "continuation_hash_bytes": 96720
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 4,
+      "rate": 32,
+      "next_degree": 512,
+      "source_domain": 32768,
+      "folded_domain": 2048,
+      "next_domain": 16384,
+      "threshold": 24577,
+      "minimum": 1537,
+      "target_threshold": 11094,
+      "radius": 5290,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0959048466173361e-39,
+      "min_bytes": 493624,
+      "max_bytes": 505112,
+      "mean_bytes": 497912.0,
+      "trials": [
+        {
+          "proof_bytes": 493624,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18880,
+          "source_hash_bytes": 236544,
+          "continuation_leaf_bytes": 90816,
+          "continuation_hash_bytes": 145536
+        },
+        {
+          "proof_bytes": 505112,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18752,
+          "source_hash_bytes": 248832,
+          "continuation_leaf_bytes": 91968,
+          "continuation_hash_bytes": 143712
+        },
+        {
+          "proof_bytes": 497304,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18176,
+          "source_hash_bytes": 245376,
+          "continuation_leaf_bytes": 89920,
+          "continuation_hash_bytes": 141984
+        },
+        {
+          "proof_bytes": 495608,
+          "header_bytes": 1848,
+          "source_leaf_bytes": 18432,
+          "source_hash_bytes": 238464,
+          "continuation_leaf_bytes": 93248,
+          "continuation_hash_bytes": 143616
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 6,
+      "rate": 2,
+      "next_degree": 128,
+      "source_domain": 32768,
+      "folded_domain": 512,
+      "next_domain": 256,
+      "threshold": 24577,
+      "minimum": 385,
+      "target_threshold": 214,
+      "radius": 42,
+      "source_queries": 314,
+      "continuation_queries": 491,
+      "ideal_error_bound_float": 1.2023668541052122e-39,
+      "min_bytes": 345432,
+      "max_bytes": 377368,
+      "mean_bytes": 364916.0,
+      "trials": [
+        {
+          "proof_bytes": 345432,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 60160,
+          "source_hash_bytes": 267264,
+          "continuation_leaf_bytes": 16256,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 377368,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59904,
+          "source_hash_bytes": 299520,
+          "continuation_leaf_bytes": 16000,
+          "continuation_hash_bytes": 192
+        },
+        {
+          "proof_bytes": 375096,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59136,
+          "source_hash_bytes": 297984,
+          "continuation_leaf_bytes": 16128,
+          "continuation_hash_bytes": 96
+        },
+        {
+          "proof_bytes": 361768,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 58112,
+          "source_hash_bytes": 285696,
+          "continuation_leaf_bytes": 16064,
+          "continuation_hash_bytes": 144
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 6,
+      "rate": 4,
+      "next_degree": 128,
+      "source_domain": 32768,
+      "folded_domain": 512,
+      "next_domain": 512,
+      "threshold": 24577,
+      "minimum": 385,
+      "target_threshold": 385,
+      "radius": 127,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 359672,
+      "max_bytes": 391208,
+      "mean_bytes": 379112.0,
+      "trials": [
+        {
+          "proof_bytes": 359672,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 60160,
+          "source_hash_bytes": 267264,
+          "continuation_leaf_bytes": 26944,
+          "continuation_hash_bytes": 3552
+        },
+        {
+          "proof_bytes": 391208,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59904,
+          "source_hash_bytes": 299520,
+          "continuation_leaf_bytes": 26240,
+          "continuation_hash_bytes": 3792
+        },
+        {
+          "proof_bytes": 389448,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59136,
+          "source_hash_bytes": 297984,
+          "continuation_leaf_bytes": 26688,
+          "continuation_hash_bytes": 3888
+        },
+        {
+          "proof_bytes": 376120,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 58112,
+          "source_hash_bytes": 285696,
+          "continuation_leaf_bytes": 27200,
+          "continuation_hash_bytes": 3360
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 6,
+      "rate": 8,
+      "next_degree": 128,
+      "source_domain": 32768,
+      "folded_domain": 512,
+      "next_domain": 1024,
+      "threshold": 24577,
+      "minimum": 385,
+      "target_threshold": 726,
+      "radius": 298,
+      "source_queries": 314,
+      "continuation_queries": 261,
+      "ideal_error_bound_float": 1.3121305665655895e-39,
+      "min_bytes": 381512,
+      "max_bytes": 412120,
+      "mean_bytes": 400424.0,
+      "trials": [
+        {
+          "proof_bytes": 381512,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 60160,
+          "source_hash_bytes": 267264,
+          "continuation_leaf_bytes": 37888,
+          "continuation_hash_bytes": 14448
+        },
+        {
+          "proof_bytes": 412120,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59904,
+          "source_hash_bytes": 299520,
+          "continuation_leaf_bytes": 37120,
+          "continuation_hash_bytes": 13824
+        },
+        {
+          "proof_bytes": 410824,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59136,
+          "source_hash_bytes": 297984,
+          "continuation_leaf_bytes": 37504,
+          "continuation_hash_bytes": 14448
+        },
+        {
+          "proof_bytes": 397240,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 58112,
+          "source_hash_bytes": 285696,
+          "continuation_leaf_bytes": 37952,
+          "continuation_hash_bytes": 13728
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 6,
+      "rate": 16,
+      "next_degree": 128,
+      "source_domain": 32768,
+      "folded_domain": 512,
+      "next_domain": 2048,
+      "threshold": 24577,
+      "minimum": 385,
+      "target_threshold": 1409,
+      "radius": 639,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 411784,
+      "max_bytes": 441976,
+      "mean_bytes": 430008.0,
+      "trials": [
+        {
+          "proof_bytes": 411784,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 60160,
+          "source_hash_bytes": 267264,
+          "continuation_leaf_bytes": 50112,
+          "continuation_hash_bytes": 32496
+        },
+        {
+          "proof_bytes": 441976,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59904,
+          "source_hash_bytes": 299520,
+          "continuation_leaf_bytes": 50752,
+          "continuation_hash_bytes": 30048
+        },
+        {
+          "proof_bytes": 439288,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59136,
+          "source_hash_bytes": 297984,
+          "continuation_leaf_bytes": 48832,
+          "continuation_hash_bytes": 31584
+        },
+        {
+          "proof_bytes": 426984,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 58112,
+          "source_hash_bytes": 285696,
+          "continuation_leaf_bytes": 50176,
+          "continuation_hash_bytes": 31248
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 6,
+      "rate": 32,
+      "next_degree": 128,
+      "source_domain": 32768,
+      "folded_domain": 512,
+      "next_domain": 4096,
+      "threshold": 24577,
+      "minimum": 385,
+      "target_threshold": 2774,
+      "radius": 1322,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0853883782785921e-39,
+      "min_bytes": 451096,
+      "max_bytes": 481288,
+      "mean_bytes": 469060.0,
+      "trials": [
+        {
+          "proof_bytes": 451096,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 60160,
+          "source_hash_bytes": 267264,
+          "continuation_leaf_bytes": 61824,
+          "continuation_hash_bytes": 60096
+        },
+        {
+          "proof_bytes": 481288,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59904,
+          "source_hash_bytes": 299520,
+          "continuation_leaf_bytes": 63232,
+          "continuation_hash_bytes": 56880
+        },
+        {
+          "proof_bytes": 477640,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 59136,
+          "source_hash_bytes": 297984,
+          "continuation_leaf_bytes": 61120,
+          "continuation_hash_bytes": 57648
+        },
+        {
+          "proof_bytes": 466216,
+          "header_bytes": 1752,
+          "source_leaf_bytes": 58112,
+          "source_hash_bytes": 285696,
+          "continuation_leaf_bytes": 63104,
+          "continuation_hash_bytes": 57552
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 8,
+      "rate": 2,
+      "next_degree": 32,
+      "source_domain": 32768,
+      "folded_domain": 128,
+      "next_domain": 64,
+      "threshold": 24577,
+      "minimum": 97,
+      "target_threshold": 54,
+      "radius": 10,
+      "source_queries": 314,
+      "continuation_queries": 478,
+      "ideal_error_bound_float": 1.2954915685740766e-39,
+      "min_bytes": 182776,
+      "max_bytes": 227832,
+      "mean_bytes": 197112.0,
+      "trials": [
+        {
+          "proof_bytes": 227832,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 111616,
+          "source_hash_bytes": 110592,
+          "continuation_leaf_bytes": 3968,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 185848,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 61440,
+          "continuation_leaf_bytes": 3968,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 182776,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 121856,
+          "source_hash_bytes": 55296,
+          "continuation_leaf_bytes": 3968,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 191992,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 67584,
+          "continuation_leaf_bytes": 3968,
+          "continuation_hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 8,
+      "rate": 4,
+      "next_degree": 32,
+      "source_domain": 32768,
+      "folded_domain": 128,
+      "next_domain": 128,
+      "threshold": 24577,
+      "minimum": 97,
+      "target_threshold": 97,
+      "radius": 31,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 186744,
+      "max_bytes": 231800,
+      "mean_bytes": 201080.0,
+      "trials": [
+        {
+          "proof_bytes": 231800,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 111616,
+          "source_hash_bytes": 110592,
+          "continuation_leaf_bytes": 7936,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 189816,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 61440,
+          "continuation_leaf_bytes": 7936,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 186744,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 121856,
+          "source_hash_bytes": 55296,
+          "continuation_leaf_bytes": 7936,
+          "continuation_hash_bytes": 0
+        },
+        {
+          "proof_bytes": 195960,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 67584,
+          "continuation_leaf_bytes": 7936,
+          "continuation_hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 8,
+      "rate": 8,
+      "next_degree": 32,
+      "source_domain": 32768,
+      "folded_domain": 128,
+      "next_domain": 256,
+      "threshold": 24577,
+      "minimum": 97,
+      "target_threshold": 182,
+      "radius": 74,
+      "source_queries": 314,
+      "continuation_queries": 260,
+      "ideal_error_bound_float": 1.3023692849302677e-39,
+      "min_bytes": 194424,
+      "max_bytes": 239432,
+      "mean_bytes": 208656.0,
+      "trials": [
+        {
+          "proof_bytes": 239432,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 111616,
+          "source_hash_bytes": 110592,
+          "continuation_leaf_bytes": 14848,
+          "continuation_hash_bytes": 720
+        },
+        {
+          "proof_bytes": 197288,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 61440,
+          "continuation_leaf_bytes": 14208,
+          "continuation_hash_bytes": 1200
+        },
+        {
+          "proof_bytes": 194424,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 121856,
+          "source_hash_bytes": 55296,
+          "continuation_leaf_bytes": 14848,
+          "continuation_hash_bytes": 768
+        },
+        {
+          "proof_bytes": 203480,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 67584,
+          "continuation_leaf_bytes": 14592,
+          "continuation_hash_bytes": 864
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 8,
+      "rate": 16,
+      "next_degree": 32,
+      "source_domain": 32768,
+      "folded_domain": 128,
+      "next_domain": 512,
+      "threshold": 24577,
+      "minimum": 97,
+      "target_threshold": 353,
+      "radius": 159,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 207352,
+      "max_bytes": 252920,
+      "mean_bytes": 221784.0,
+      "trials": [
+        {
+          "proof_bytes": 252920,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 111616,
+          "source_hash_bytes": 110592,
+          "continuation_leaf_bytes": 24448,
+          "continuation_hash_bytes": 4608
+        },
+        {
+          "proof_bytes": 210232,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 61440,
+          "continuation_leaf_bytes": 23552,
+          "continuation_hash_bytes": 4800
+        },
+        {
+          "proof_bytes": 207352,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 121856,
+          "source_hash_bytes": 55296,
+          "continuation_leaf_bytes": 23360,
+          "continuation_hash_bytes": 5184
+        },
+        {
+          "proof_bytes": 216632,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 67584,
+          "continuation_leaf_bytes": 23808,
+          "continuation_hash_bytes": 4800
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "skipped": 8,
+      "rate": 32,
+      "next_degree": 32,
+      "source_domain": 32768,
+      "folded_domain": 128,
+      "next_domain": 1024,
+      "threshold": 24577,
+      "minimum": 97,
+      "target_threshold": 694,
+      "radius": 330,
+      "source_queries": 314,
+      "continuation_queries": 231,
+      "ideal_error_bound_float": 1.264028395698597e-39,
+      "min_bytes": 227304,
+      "max_bytes": 273576,
+      "mean_bytes": 241824.0,
+      "trials": [
+        {
+          "proof_bytes": 273576,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 111616,
+          "source_hash_bytes": 110592,
+          "continuation_leaf_bytes": 34880,
+          "continuation_hash_bytes": 14832
+        },
+        {
+          "proof_bytes": 230008,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 61440,
+          "continuation_leaf_bytes": 33536,
+          "continuation_hash_bytes": 14592
+        },
+        {
+          "proof_bytes": 227304,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 121856,
+          "source_hash_bytes": 55296,
+          "continuation_leaf_bytes": 33664,
+          "continuation_hash_bytes": 14832
+        },
+        {
+          "proof_bytes": 236408,
+          "header_bytes": 1656,
+          "source_leaf_bytes": 118784,
+          "source_hash_bytes": 67584,
+          "continuation_leaf_bytes": 34176,
+          "continuation_hash_bytes": 14208
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 1,
+      "rate": 2,
+      "next_degree": 65536,
+      "source_domain": 524288,
+      "folded_domain": 262144,
+      "next_domain": 131072,
+      "threshold": 393217,
+      "minimum": 196609,
+      "target_threshold": 109227,
+      "radius": 21845,
+      "source_queries": 314,
+      "continuation_queries": 495,
+      "ideal_error_bound_float": 1.2245627799405589e-39,
+      "min_bytes": 956168,
+      "max_bytes": 965384,
+      "mean_bytes": 961364.0,
+      "trials": [
+        {
+          "proof_bytes": 960312,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132384,
+          "continuation_leaf_bytes": 258752,
+          "continuation_hash_bytes": 564096
+        },
+        {
+          "proof_bytes": 963592,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 133104,
+          "continuation_leaf_bytes": 260736,
+          "continuation_hash_bytes": 564672
+        },
+        {
+          "proof_bytes": 956168,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132672,
+          "continuation_leaf_bytes": 258304,
+          "continuation_hash_bytes": 560112
+        },
+        {
+          "proof_bytes": 965384,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 131712,
+          "continuation_leaf_bytes": 255616,
+          "continuation_hash_bytes": 572976
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 1,
+      "rate": 4,
+      "next_degree": 65536,
+      "source_domain": 524288,
+      "folded_domain": 262144,
+      "next_domain": 262144,
+      "threshold": 393217,
+      "minimum": 196609,
+      "target_threshold": 196609,
+      "radius": 65535,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 873576,
+      "max_bytes": 881656,
+      "mean_bytes": 878788.0,
+      "trials": [
+        {
+          "proof_bytes": 878552,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132384,
+          "continuation_leaf_bytes": 198400,
+          "continuation_hash_bytes": 542688
+        },
+        {
+          "proof_bytes": 881368,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 133104,
+          "continuation_leaf_bytes": 198144,
+          "continuation_hash_bytes": 545040
+        },
+        {
+          "proof_bytes": 873576,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132672,
+          "continuation_leaf_bytes": 195968,
+          "continuation_hash_bytes": 539856
+        },
+        {
+          "proof_bytes": 881656,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 131712,
+          "continuation_leaf_bytes": 195456,
+          "continuation_hash_bytes": 549408
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 1,
+      "rate": 8,
+      "next_degree": 65536,
+      "source_domain": 524288,
+      "folded_domain": 262144,
+      "next_domain": 524288,
+      "threshold": 393217,
+      "minimum": 196609,
+      "target_threshold": 371371,
+      "radius": 152917,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1659959596693494e-39,
+      "min_bytes": 917592,
+      "max_bytes": 924472,
+      "mean_bytes": 920688.0,
+      "trials": [
+        {
+          "proof_bytes": 920200,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132384,
+          "continuation_leaf_bytes": 184512,
+          "continuation_hash_bytes": 598224
+        },
+        {
+          "proof_bytes": 924472,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 133104,
+          "continuation_leaf_bytes": 185664,
+          "continuation_hash_bytes": 600624
+        },
+        {
+          "proof_bytes": 917592,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132672,
+          "continuation_leaf_bytes": 184832,
+          "continuation_hash_bytes": 595008
+        },
+        {
+          "proof_bytes": 920488,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 131712,
+          "continuation_leaf_bytes": 185664,
+          "continuation_hash_bytes": 598032
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 1,
+      "rate": 16,
+      "next_degree": 65536,
+      "source_domain": 524288,
+      "folded_domain": 262144,
+      "next_domain": 1048576,
+      "threshold": 393217,
+      "minimum": 196609,
+      "target_threshold": 720897,
+      "radius": 327679,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 1002472,
+      "max_bytes": 1012264,
+      "mean_bytes": 1007100.0,
+      "trials": [
+        {
+          "proof_bytes": 1005192,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132384,
+          "continuation_leaf_bytes": 186368,
+          "continuation_hash_bytes": 681360
+        },
+        {
+          "proof_bytes": 1012264,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 133104,
+          "continuation_leaf_bytes": 187200,
+          "continuation_hash_bytes": 686880
+        },
+        {
+          "proof_bytes": 1002472,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132672,
+          "continuation_leaf_bytes": 185856,
+          "continuation_hash_bytes": 678864
+        },
+        {
+          "proof_bytes": 1008472,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 131712,
+          "continuation_leaf_bytes": 187776,
+          "continuation_hash_bytes": 683904
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 1,
+      "rate": 32,
+      "next_degree": 65536,
+      "source_domain": 524288,
+      "folded_domain": 262144,
+      "next_domain": 2097152,
+      "threshold": 393217,
+      "minimum": 196609,
+      "target_threshold": 1419947,
+      "radius": 677205,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0994035566919296e-39,
+      "min_bytes": 1113496,
+      "max_bytes": 1125368,
+      "mean_bytes": 1121352.0,
+      "trials": [
+        {
+          "proof_bytes": 1121224,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132384,
+          "continuation_leaf_bytes": 195456,
+          "continuation_hash_bytes": 788304
+        },
+        {
+          "proof_bytes": 1125320,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 133104,
+          "continuation_leaf_bytes": 195328,
+          "continuation_hash_bytes": 791808
+        },
+        {
+          "proof_bytes": 1113496,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 132672,
+          "continuation_leaf_bytes": 193536,
+          "continuation_hash_bytes": 782208
+        },
+        {
+          "proof_bytes": 1125368,
+          "header_bytes": 2568,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 131712,
+          "continuation_leaf_bytes": 197440,
+          "continuation_hash_bytes": 791136
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 2,
+      "rate": 2,
+      "next_degree": 32768,
+      "source_domain": 524288,
+      "folded_domain": 131072,
+      "next_domain": 65536,
+      "threshold": 393217,
+      "minimum": 98305,
+      "target_threshold": 54614,
+      "radius": 10922,
+      "source_queries": 314,
+      "continuation_queries": 495,
+      "ideal_error_bound_float": 1.2245627799405589e-39,
+      "min_bytes": 882728,
+      "max_bytes": 892360,
+      "mean_bytes": 888088.0,
+      "trials": [
+        {
+          "proof_bytes": 887304,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 234624,
+          "continuation_leaf_bytes": 225856,
+          "continuation_hash_bytes": 419280
+        },
+        {
+          "proof_bytes": 889960,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5008,
+          "source_hash_bytes": 236256,
+          "continuation_leaf_bytes": 227904,
+          "continuation_hash_bytes": 418272
+        },
+        {
+          "proof_bytes": 882728,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 235200,
+          "continuation_leaf_bytes": 227520,
+          "continuation_hash_bytes": 412464
+        },
+        {
+          "proof_bytes": 892360,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 233280,
+          "continuation_leaf_bytes": 226112,
+          "continuation_hash_bytes": 425424
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 2,
+      "rate": 4,
+      "next_degree": 32768,
+      "source_domain": 524288,
+      "folded_domain": 131072,
+      "next_domain": 131072,
+      "threshold": 393217,
+      "minimum": 98305,
+      "target_threshold": 98305,
+      "radius": 32767,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 842184,
+      "max_bytes": 849080,
+      "mean_bytes": 845996.0,
+      "trials": [
+        {
+          "proof_bytes": 844952,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 234624,
+          "continuation_leaf_bytes": 177024,
+          "continuation_hash_bytes": 425760
+        },
+        {
+          "proof_bytes": 847768,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5008,
+          "source_hash_bytes": 236256,
+          "continuation_leaf_bytes": 178944,
+          "continuation_hash_bytes": 425040
+        },
+        {
+          "proof_bytes": 842184,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 235200,
+          "continuation_leaf_bytes": 174400,
+          "continuation_hash_bytes": 425040
+        },
+        {
+          "proof_bytes": 849080,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 233280,
+          "continuation_leaf_bytes": 175104,
+          "continuation_hash_bytes": 433152
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 2,
+      "rate": 8,
+      "next_degree": 32768,
+      "source_domain": 524288,
+      "folded_domain": 131072,
+      "next_domain": 262144,
+      "threshold": 393217,
+      "minimum": 98305,
+      "target_threshold": 185686,
+      "radius": 76458,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1659959596693494e-39,
+      "min_bytes": 891544,
+      "max_bytes": 898888,
+      "mean_bytes": 894348.0,
+      "trials": [
+        {
+          "proof_bytes": 893112,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 234624,
+          "continuation_leaf_bytes": 170560,
+          "continuation_hash_bytes": 480384
+        },
+        {
+          "proof_bytes": 898888,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5008,
+          "source_hash_bytes": 236256,
+          "continuation_leaf_bytes": 168768,
+          "continuation_hash_bytes": 486336
+        },
+        {
+          "proof_bytes": 891544,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 235200,
+          "continuation_leaf_bytes": 168896,
+          "continuation_hash_bytes": 479904
+        },
+        {
+          "proof_bytes": 893848,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 233280,
+          "continuation_leaf_bytes": 167744,
+          "continuation_hash_bytes": 485280
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 2,
+      "rate": 16,
+      "next_degree": 32768,
+      "source_domain": 524288,
+      "folded_domain": 131072,
+      "next_domain": 524288,
+      "threshold": 393217,
+      "minimum": 98305,
+      "target_threshold": 360449,
+      "radius": 163839,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 974664,
+      "max_bytes": 984568,
+      "mean_bytes": 978648.0,
+      "trials": [
+        {
+          "proof_bytes": 976872,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 234624,
+          "continuation_leaf_bytes": 171328,
+          "continuation_hash_bytes": 563376
+        },
+        {
+          "proof_bytes": 984568,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5008,
+          "source_hash_bytes": 236256,
+          "continuation_leaf_bytes": 171456,
+          "continuation_hash_bytes": 569328
+        },
+        {
+          "proof_bytes": 974664,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 235200,
+          "continuation_leaf_bytes": 171136,
+          "continuation_hash_bytes": 560784
+        },
+        {
+          "proof_bytes": 978488,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 233280,
+          "continuation_leaf_bytes": 172608,
+          "continuation_hash_bytes": 565056
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 2,
+      "rate": 32,
+      "next_degree": 32768,
+      "source_domain": 524288,
+      "folded_domain": 131072,
+      "next_domain": 1048576,
+      "threshold": 393217,
+      "minimum": 98305,
+      "target_threshold": 709974,
+      "radius": 338602,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0994035566919296e-39,
+      "min_bytes": 1079320,
+      "max_bytes": 1090792,
+      "mean_bytes": 1086020.0,
+      "trials": [
+        {
+          "proof_bytes": 1085672,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 234624,
+          "continuation_leaf_bytes": 179712,
+          "continuation_hash_bytes": 663792
+        },
+        {
+          "proof_bytes": 1090792,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5008,
+          "source_hash_bytes": 236256,
+          "continuation_leaf_bytes": 179520,
+          "continuation_hash_bytes": 667488
+        },
+        {
+          "proof_bytes": 1079320,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 235200,
+          "continuation_leaf_bytes": 178496,
+          "continuation_hash_bytes": 658080
+        },
+        {
+          "proof_bytes": 1088296,
+          "header_bytes": 2520,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 233280,
+          "continuation_leaf_bytes": 180416,
+          "continuation_hash_bytes": 667056
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 3,
+      "rate": 2,
+      "next_degree": 16384,
+      "source_domain": 524288,
+      "folded_domain": 65536,
+      "next_domain": 32768,
+      "threshold": 393217,
+      "minimum": 49153,
+      "target_threshold": 27307,
+      "radius": 5461,
+      "source_queries": 314,
+      "continuation_queries": 495,
+      "ideal_error_bound_float": 1.2188174161850437e-39,
+      "min_bytes": 907656,
+      "max_bytes": 915832,
+      "mean_bytes": 912772.0,
+      "trials": [
+        {
+          "proof_bytes": 912520,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 408960,
+          "continuation_leaf_bytes": 195072,
+          "continuation_hash_bytes": 295968
+        },
+        {
+          "proof_bytes": 915832,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 9984,
+          "source_hash_bytes": 412800,
+          "continuation_leaf_bytes": 197056,
+          "continuation_hash_bytes": 293520
+        },
+        {
+          "proof_bytes": 907656,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 410112,
+          "continuation_leaf_bytes": 195968,
+          "continuation_hash_bytes": 289056
+        },
+        {
+          "proof_bytes": 915080,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 406272,
+          "continuation_leaf_bytes": 197248,
+          "continuation_hash_bytes": 299040
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 3,
+      "rate": 4,
+      "next_degree": 16384,
+      "source_domain": 524288,
+      "folded_domain": 65536,
+      "next_domain": 65536,
+      "threshold": 393217,
+      "minimum": 49153,
+      "target_threshold": 49153,
+      "radius": 16383,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 900488,
+      "max_bytes": 905752,
+      "mean_bytes": 903204.0,
+      "trials": [
+        {
+          "proof_bytes": 901640,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 408960,
+          "continuation_leaf_bytes": 156352,
+          "continuation_hash_bytes": 323808
+        },
+        {
+          "proof_bytes": 905752,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 9984,
+          "source_hash_bytes": 412800,
+          "continuation_leaf_bytes": 157120,
+          "continuation_hash_bytes": 323376
+        },
+        {
+          "proof_bytes": 900488,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 410112,
+          "continuation_leaf_bytes": 155584,
+          "continuation_hash_bytes": 322272
+        },
+        {
+          "proof_bytes": 904936,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 406272,
+          "continuation_leaf_bytes": 156288,
+          "continuation_hash_bytes": 329856
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 3,
+      "rate": 8,
+      "next_degree": 16384,
+      "source_domain": 524288,
+      "folded_domain": 65536,
+      "next_domain": 131072,
+      "threshold": 393217,
+      "minimum": 49153,
+      "target_threshold": 92843,
+      "radius": 38229,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1651807166441685e-39,
+      "min_bytes": 952984,
+      "max_bytes": 960984,
+      "mean_bytes": 955360.0,
+      "trials": [
+        {
+          "proof_bytes": 952984,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 408960,
+          "continuation_leaf_bytes": 152832,
+          "continuation_hash_bytes": 378672
+        },
+        {
+          "proof_bytes": 960984,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 9984,
+          "source_hash_bytes": 412800,
+          "continuation_leaf_bytes": 153600,
+          "continuation_hash_bytes": 382128
+        },
+        {
+          "proof_bytes": 953240,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 410112,
+          "continuation_leaf_bytes": 151168,
+          "continuation_hash_bytes": 379440
+        },
+        {
+          "proof_bytes": 954232,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 406272,
+          "continuation_leaf_bytes": 150528,
+          "continuation_hash_bytes": 384912
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 3,
+      "rate": 16,
+      "next_degree": 16384,
+      "source_domain": 524288,
+      "folded_domain": 65536,
+      "next_domain": 262144,
+      "threshold": 393217,
+      "minimum": 49153,
+      "target_threshold": 180225,
+      "radius": 81919,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 1032600,
+      "max_bytes": 1044104,
+      "mean_bytes": 1036168.0,
+      "trials": [
+        {
+          "proof_bytes": 1033576,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 408960,
+          "continuation_leaf_bytes": 158016,
+          "continuation_hash_bytes": 454080
+        },
+        {
+          "proof_bytes": 1044104,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 9984,
+          "source_hash_bytes": 412800,
+          "continuation_leaf_bytes": 156608,
+          "continuation_hash_bytes": 462240
+        },
+        {
+          "proof_bytes": 1032600,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 410112,
+          "continuation_leaf_bytes": 156800,
+          "continuation_hash_bytes": 453168
+        },
+        {
+          "proof_bytes": 1034392,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 406272,
+          "continuation_leaf_bytes": 156288,
+          "continuation_hash_bytes": 459312
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 3,
+      "rate": 32,
+      "next_degree": 16384,
+      "source_domain": 524288,
+      "folded_domain": 65536,
+      "next_domain": 524288,
+      "threshold": 393217,
+      "minimum": 49153,
+      "target_threshold": 354987,
+      "radius": 169301,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0992364088119724e-39,
+      "min_bytes": 1131032,
+      "max_bytes": 1143672,
+      "mean_bytes": 1136876.0,
+      "trials": [
+        {
+          "proof_bytes": 1136056,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 408960,
+          "continuation_leaf_bytes": 164928,
+          "continuation_hash_bytes": 549648
+        },
+        {
+          "proof_bytes": 1143672,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 9984,
+          "source_hash_bytes": 412800,
+          "continuation_leaf_bytes": 164352,
+          "continuation_hash_bytes": 554064
+        },
+        {
+          "proof_bytes": 1131032,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 410112,
+          "continuation_leaf_bytes": 164032,
+          "continuation_hash_bytes": 544368
+        },
+        {
+          "proof_bytes": 1136744,
+          "header_bytes": 2472,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 406272,
+          "continuation_leaf_bytes": 165760,
+          "continuation_hash_bytes": 552192
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 4,
+      "rate": 2,
+      "next_degree": 8192,
+      "source_domain": 524288,
+      "folded_domain": 32768,
+      "next_domain": 16384,
+      "threshold": 393217,
+      "minimum": 24577,
+      "target_threshold": 13654,
+      "radius": 2730,
+      "source_queries": 314,
+      "continuation_queries": 495,
+      "ideal_error_bound_float": 1.2188174161850437e-39,
+      "min_bytes": 1076888,
+      "max_bytes": 1088792,
+      "mean_bytes": 1081192.0,
+      "trials": [
+        {
+          "proof_bytes": 1081176,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20032,
+          "source_hash_bytes": 698112,
+          "continuation_leaf_bytes": 163136,
+          "continuation_hash_bytes": 197472
+        },
+        {
+          "proof_bytes": 1088792,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 19840,
+          "source_hash_bytes": 707328,
+          "continuation_leaf_bytes": 164032,
+          "continuation_hash_bytes": 195168
+        },
+        {
+          "proof_bytes": 1076888,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 699648,
+          "continuation_leaf_bytes": 162432,
+          "continuation_hash_bytes": 192288
+        },
+        {
+          "proof_bytes": 1077912,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 691968,
+          "continuation_leaf_bytes": 166912,
+          "continuation_hash_bytes": 196512
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 4,
+      "rate": 4,
+      "next_degree": 8192,
+      "source_domain": 524288,
+      "folded_domain": 32768,
+      "next_domain": 32768,
+      "threshold": 393217,
+      "minimum": 24577,
+      "target_threshold": 24577,
+      "radius": 8191,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 1092472,
+      "max_bytes": 1102008,
+      "mean_bytes": 1095264.0,
+      "trials": [
+        {
+          "proof_bytes": 1093960,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20032,
+          "source_hash_bytes": 698112,
+          "continuation_leaf_bytes": 134976,
+          "continuation_hash_bytes": 238416
+        },
+        {
+          "proof_bytes": 1102008,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 19840,
+          "source_hash_bytes": 707328,
+          "continuation_leaf_bytes": 137216,
+          "continuation_hash_bytes": 235200
+        },
+        {
+          "proof_bytes": 1092616,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 699648,
+          "continuation_leaf_bytes": 136640,
+          "continuation_hash_bytes": 233808
+        },
+        {
+          "proof_bytes": 1092472,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 691968,
+          "continuation_leaf_bytes": 137792,
+          "continuation_hash_bytes": 240192
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 4,
+      "rate": 8,
+      "next_degree": 8192,
+      "source_domain": 524288,
+      "folded_domain": 32768,
+      "next_domain": 65536,
+      "threshold": 393217,
+      "minimum": 24577,
+      "target_threshold": 46422,
+      "radius": 19114,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1651807166441685e-39,
+      "min_bytes": 1144968,
+      "max_bytes": 1158632,
+      "mean_bytes": 1149136.0,
+      "trials": [
+        {
+          "proof_bytes": 1146056,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20032,
+          "source_hash_bytes": 698112,
+          "continuation_leaf_bytes": 134848,
+          "continuation_hash_bytes": 290640
+        },
+        {
+          "proof_bytes": 1158632,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 19840,
+          "source_hash_bytes": 707328,
+          "continuation_leaf_bytes": 135808,
+          "continuation_hash_bytes": 293232
+        },
+        {
+          "proof_bytes": 1146888,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 699648,
+          "continuation_leaf_bytes": 135424,
+          "continuation_hash_bytes": 289296
+        },
+        {
+          "proof_bytes": 1144968,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 691968,
+          "continuation_leaf_bytes": 133888,
+          "continuation_hash_bytes": 296592
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 4,
+      "rate": 16,
+      "next_degree": 8192,
+      "source_domain": 524288,
+      "folded_domain": 32768,
+      "next_domain": 131072,
+      "threshold": 393217,
+      "minimum": 24577,
+      "target_threshold": 90113,
+      "radius": 40959,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 1219912,
+      "max_bytes": 1237288,
+      "mean_bytes": 1225144.0,
+      "trials": [
+        {
+          "proof_bytes": 1221416,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20032,
+          "source_hash_bytes": 698112,
+          "continuation_leaf_bytes": 141952,
+          "continuation_hash_bytes": 358896
+        },
+        {
+          "proof_bytes": 1237288,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 19840,
+          "source_hash_bytes": 707328,
+          "continuation_leaf_bytes": 142464,
+          "continuation_hash_bytes": 365232
+        },
+        {
+          "proof_bytes": 1221960,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 699648,
+          "continuation_leaf_bytes": 140416,
+          "continuation_hash_bytes": 359376
+        },
+        {
+          "proof_bytes": 1219912,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 691968,
+          "continuation_leaf_bytes": 140672,
+          "continuation_hash_bytes": 364752
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 4,
+      "rate": 32,
+      "next_degree": 8192,
+      "source_domain": 524288,
+      "folded_domain": 32768,
+      "next_domain": 262144,
+      "threshold": 393217,
+      "minimum": 24577,
+      "target_threshold": 177494,
+      "radius": 84650,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0992364088119724e-39,
+      "min_bytes": 1312856,
+      "max_bytes": 1330152,
+      "mean_bytes": 1318396.0,
+      "trials": [
+        {
+          "proof_bytes": 1316376,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20032,
+          "source_hash_bytes": 698112,
+          "continuation_leaf_bytes": 152000,
+          "continuation_hash_bytes": 443808
+        },
+        {
+          "proof_bytes": 1330152,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 19840,
+          "source_hash_bytes": 707328,
+          "continuation_leaf_bytes": 150464,
+          "continuation_hash_bytes": 450096
+        },
+        {
+          "proof_bytes": 1312856,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 699648,
+          "continuation_leaf_bytes": 150336,
+          "continuation_hash_bytes": 440352
+        },
+        {
+          "proof_bytes": 1314200,
+          "header_bytes": 2424,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 691968,
+          "continuation_leaf_bytes": 150528,
+          "continuation_hash_bytes": 449184
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 6,
+      "rate": 2,
+      "next_degree": 2048,
+      "source_domain": 524288,
+      "folded_domain": 8192,
+      "next_domain": 4096,
+      "threshold": 393217,
+      "minimum": 6145,
+      "target_threshold": 3414,
+      "radius": 682,
+      "source_queries": 314,
+      "continuation_queries": 494,
+      "ideal_error_bound_float": 1.3181278241223867e-39,
+      "min_bytes": 2083560,
+      "max_bytes": 2135592,
+      "mean_bytes": 2101640.0,
+      "trials": [
+        {
+          "proof_bytes": 2095224,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79104,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 103872,
+          "continuation_hash_bytes": 63648
+        },
+        {
+          "proof_bytes": 2135592,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78592,
+          "source_hash_bytes": 1887744,
+          "continuation_leaf_bytes": 104192,
+          "continuation_hash_bytes": 62736
+        },
+        {
+          "proof_bytes": 2092184,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79616,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 102144,
+          "continuation_hash_bytes": 61824
+        },
+        {
+          "proof_bytes": 2083560,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78336,
+          "source_hash_bytes": 1833984,
+          "continuation_leaf_bytes": 104256,
+          "continuation_hash_bytes": 64656
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 6,
+      "rate": 4,
+      "next_degree": 2048,
+      "source_domain": 524288,
+      "folded_domain": 8192,
+      "next_domain": 8192,
+      "threshold": 393217,
+      "minimum": 6145,
+      "target_threshold": 6145,
+      "radius": 2047,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 2119080,
+      "max_bytes": 2170088,
+      "mean_bytes": 2137272.0,
+      "trials": [
+        {
+          "proof_bytes": 2130712,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79104,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 97216,
+          "continuation_hash_bytes": 105792
+        },
+        {
+          "proof_bytes": 2170088,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78592,
+          "source_hash_bytes": 1887744,
+          "continuation_leaf_bytes": 97216,
+          "continuation_hash_bytes": 104208
+        },
+        {
+          "proof_bytes": 2129208,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79616,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 96064,
+          "continuation_hash_bytes": 104928
+        },
+        {
+          "proof_bytes": 2119080,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78336,
+          "source_hash_bytes": 1833984,
+          "continuation_leaf_bytes": 98688,
+          "continuation_hash_bytes": 105744
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 6,
+      "rate": 8,
+      "next_degree": 2048,
+      "source_domain": 524288,
+      "folded_domain": 8192,
+      "next_domain": 16384,
+      "threshold": 393217,
+      "minimum": 6145,
+      "target_threshold": 11606,
+      "radius": 4778,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1619311796505669e-39,
+      "min_bytes": 2169752,
+      "max_bytes": 2222472,
+      "mean_bytes": 2188076.0,
+      "trials": [
+        {
+          "proof_bytes": 2181208,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79104,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 101248,
+          "continuation_hash_bytes": 152256
+        },
+        {
+          "proof_bytes": 2222472,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78592,
+          "source_hash_bytes": 1887744,
+          "continuation_leaf_bytes": 102272,
+          "continuation_hash_bytes": 151536
+        },
+        {
+          "proof_bytes": 2178872,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79616,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 100608,
+          "continuation_hash_bytes": 150048
+        },
+        {
+          "proof_bytes": 2169752,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78336,
+          "source_hash_bytes": 1833984,
+          "continuation_leaf_bytes": 103040,
+          "continuation_hash_bytes": 152064
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 6,
+      "rate": 16,
+      "next_degree": 2048,
+      "source_domain": 524288,
+      "folded_domain": 8192,
+      "next_domain": 32768,
+      "threshold": 393217,
+      "minimum": 6145,
+      "target_threshold": 22529,
+      "radius": 10239,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 2233528,
+      "max_bytes": 2287848,
+      "mean_bytes": 2251792.0,
+      "trials": [
+        {
+          "proof_bytes": 2243816,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79104,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 107264,
+          "continuation_hash_bytes": 208848
+        },
+        {
+          "proof_bytes": 2287848,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78592,
+          "source_hash_bytes": 1887744,
+          "continuation_leaf_bytes": 112064,
+          "continuation_hash_bytes": 207120
+        },
+        {
+          "proof_bytes": 2241976,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79616,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 110720,
+          "continuation_hash_bytes": 203040
+        },
+        {
+          "proof_bytes": 2233528,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78336,
+          "source_hash_bytes": 1833984,
+          "continuation_leaf_bytes": 111616,
+          "continuation_hash_bytes": 207264
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 6,
+      "rate": 32,
+      "next_degree": 2048,
+      "source_domain": 524288,
+      "folded_domain": 8192,
+      "next_domain": 65536,
+      "threshold": 393217,
+      "minimum": 6145,
+      "target_threshold": 44374,
+      "radius": 21162,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0985683608681913e-39,
+      "min_bytes": 2311768,
+      "max_bytes": 2364760,
+      "mean_bytes": 2328456.0,
+      "trials": [
+        {
+          "proof_bytes": 2319800,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79104,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 120512,
+          "continuation_hash_bytes": 271584
+        },
+        {
+          "proof_bytes": 2364760,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78592,
+          "source_hash_bytes": 1887744,
+          "continuation_leaf_bytes": 122304,
+          "continuation_hash_bytes": 273792
+        },
+        {
+          "proof_bytes": 2317496,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 79616,
+          "source_hash_bytes": 1846272,
+          "continuation_leaf_bytes": 120000,
+          "continuation_hash_bytes": 269280
+        },
+        {
+          "proof_bytes": 2311768,
+          "header_bytes": 2328,
+          "source_leaf_bytes": 78336,
+          "source_hash_bytes": 1833984,
+          "continuation_leaf_bytes": 120448,
+          "continuation_hash_bytes": 276672
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 8,
+      "rate": 2,
+      "next_degree": 512,
+      "source_domain": 524288,
+      "folded_domain": 2048,
+      "next_domain": 1024,
+      "threshold": 393217,
+      "minimum": 1537,
+      "target_threshold": 854,
+      "radius": 170,
+      "source_queries": 314,
+      "continuation_queries": 494,
+      "ideal_error_bound_float": 1.2197015823795275e-39,
+      "min_bytes": 4148664,
+      "max_bytes": 4342856,
+      "mean_bytes": 4235500.0,
+      "trials": [
+        {
+          "proof_bytes": 4148664,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 302080,
+          "source_hash_bytes": 3784704,
+          "continuation_leaf_bytes": 50240,
+          "continuation_hash_bytes": 9408
+        },
+        {
+          "proof_bytes": 4342856,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 300032,
+          "source_hash_bytes": 3981312,
+          "continuation_leaf_bytes": 49920,
+          "continuation_hash_bytes": 9360
+        },
+        {
+          "proof_bytes": 4277944,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 290816,
+          "source_hash_bytes": 3926016,
+          "continuation_leaf_bytes": 48704,
+          "continuation_hash_bytes": 10176
+        },
+        {
+          "proof_bytes": 4172536,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 294912,
+          "source_hash_bytes": 3815424,
+          "continuation_leaf_bytes": 50944,
+          "continuation_hash_bytes": 9024
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 8,
+      "rate": 4,
+      "next_degree": 512,
+      "source_domain": 524288,
+      "folded_domain": 2048,
+      "next_domain": 2048,
+      "threshold": 393217,
+      "minimum": 1537,
+      "target_threshold": 1537,
+      "radius": 511,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 4179480,
+      "max_bytes": 4371992,
+      "mean_bytes": 4265956.0,
+      "trials": [
+        {
+          "proof_bytes": 4179480,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 302080,
+          "source_hash_bytes": 3784704,
+          "continuation_leaf_bytes": 59264,
+          "continuation_hash_bytes": 31200
+        },
+        {
+          "proof_bytes": 4371992,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 300032,
+          "source_hash_bytes": 3981312,
+          "continuation_leaf_bytes": 58752,
+          "continuation_hash_bytes": 29664
+        },
+        {
+          "proof_bytes": 4308856,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 290816,
+          "source_hash_bytes": 3926016,
+          "continuation_leaf_bytes": 57920,
+          "continuation_hash_bytes": 31872
+        },
+        {
+          "proof_bytes": 4203496,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 294912,
+          "source_hash_bytes": 3815424,
+          "continuation_leaf_bytes": 59584,
+          "continuation_hash_bytes": 31344
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 8,
+      "rate": 8,
+      "next_degree": 512,
+      "source_domain": 524288,
+      "folded_domain": 2048,
+      "next_domain": 4096,
+      "threshold": 393217,
+      "minimum": 1537,
+      "target_threshold": 2902,
+      "radius": 1194,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1491142118833191e-39,
+      "min_bytes": 4218232,
+      "max_bytes": 4411704,
+      "mean_bytes": 4304548.0,
+      "trials": [
+        {
+          "proof_bytes": 4218232,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 302080,
+          "source_hash_bytes": 3784704,
+          "continuation_leaf_bytes": 68736,
+          "continuation_hash_bytes": 60480
+        },
+        {
+          "proof_bytes": 4411704,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 300032,
+          "source_hash_bytes": 3981312,
+          "continuation_leaf_bytes": 70336,
+          "continuation_hash_bytes": 57792
+        },
+        {
+          "proof_bytes": 4346472,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 290816,
+          "source_hash_bytes": 3926016,
+          "continuation_leaf_bytes": 68032,
+          "continuation_hash_bytes": 59376
+        },
+        {
+          "proof_bytes": 4241784,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 294912,
+          "source_hash_bytes": 3815424,
+          "continuation_leaf_bytes": 69504,
+          "continuation_hash_bytes": 59712
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 8,
+      "rate": 16,
+      "next_degree": 512,
+      "source_domain": 524288,
+      "folded_domain": 2048,
+      "next_domain": 8192,
+      "threshold": 393217,
+      "minimum": 1537,
+      "target_threshold": 5633,
+      "radius": 2559,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 4266216,
+      "max_bytes": 4461080,
+      "mean_bytes": 4352576.0,
+      "trials": [
+        {
+          "proof_bytes": 4266216,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 302080,
+          "source_hash_bytes": 3784704,
+          "continuation_leaf_bytes": 79808,
+          "continuation_hash_bytes": 97392
+        },
+        {
+          "proof_bytes": 4461080,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 300032,
+          "source_hash_bytes": 3981312,
+          "continuation_leaf_bytes": 80640,
+          "continuation_hash_bytes": 96864
+        },
+        {
+          "proof_bytes": 4393400,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 290816,
+          "source_hash_bytes": 3926016,
+          "continuation_leaf_bytes": 79488,
+          "continuation_hash_bytes": 94848
+        },
+        {
+          "proof_bytes": 4289608,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 294912,
+          "source_hash_bytes": 3815424,
+          "continuation_leaf_bytes": 80320,
+          "continuation_hash_bytes": 96720
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "skipped": 8,
+      "rate": 32,
+      "next_degree": 512,
+      "source_domain": 524288,
+      "folded_domain": 2048,
+      "next_domain": 16384,
+      "threshold": 393217,
+      "minimum": 1537,
+      "target_threshold": 11094,
+      "radius": 5290,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0959048466173361e-39,
+      "min_bytes": 4325368,
+      "max_bytes": 4519256,
+      "mean_bytes": 4411256.0,
+      "trials": [
+        {
+          "proof_bytes": 4325368,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 302080,
+          "source_hash_bytes": 3784704,
+          "continuation_leaf_bytes": 90816,
+          "continuation_hash_bytes": 145536
+        },
+        {
+          "proof_bytes": 4519256,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 300032,
+          "source_hash_bytes": 3981312,
+          "continuation_leaf_bytes": 91968,
+          "continuation_hash_bytes": 143712
+        },
+        {
+          "proof_bytes": 4450968,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 290816,
+          "source_hash_bytes": 3926016,
+          "continuation_leaf_bytes": 89920,
+          "continuation_hash_bytes": 141984
+        },
+        {
+          "proof_bytes": 4349432,
+          "header_bytes": 2232,
+          "source_leaf_bytes": 294912,
+          "source_hash_bytes": 3815424,
+          "continuation_leaf_bytes": 93248,
+          "continuation_hash_bytes": 143616
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 1,
+      "rate": 2,
+      "next_degree": 524288,
+      "source_domain": 4194304,
+      "folded_domain": 2097152,
+      "next_domain": 1048576,
+      "threshold": 3145729,
+      "minimum": 1572865,
+      "target_threshold": 873814,
+      "radius": 174762,
+      "source_queries": 314,
+      "continuation_queries": 495,
+      "ideal_error_bound_float": 1.2263688901038127e-39,
+      "min_bytes": 1678440,
+      "max_bytes": 1692968,
+      "mean_bytes": 1686120.0,
+      "trials": [
+        {
+          "proof_bytes": 1681880,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177600,
+          "continuation_leaf_bytes": 350656,
+          "continuation_hash_bytes": 1148112
+        },
+        {
+          "proof_bytes": 1692968,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 178320,
+          "continuation_leaf_bytes": 357184,
+          "continuation_hash_bytes": 1151952
+        },
+        {
+          "proof_bytes": 1678440,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177888,
+          "continuation_leaf_bytes": 350912,
+          "continuation_hash_bytes": 1144128
+        },
+        {
+          "proof_bytes": 1691192,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 176928,
+          "continuation_leaf_bytes": 356224,
+          "continuation_hash_bytes": 1152528
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 1,
+      "rate": 4,
+      "next_degree": 524288,
+      "source_domain": 4194304,
+      "folded_domain": 2097152,
+      "next_domain": 2097152,
+      "threshold": 3145729,
+      "minimum": 1572865,
+      "target_threshold": 1572865,
+      "radius": 524287,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 1419384,
+      "max_bytes": 1432712,
+      "mean_bytes": 1427748.0,
+      "trials": [
+        {
+          "proof_bytes": 1427864,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177600,
+          "continuation_leaf_bytes": 258688,
+          "continuation_hash_bytes": 986064
+        },
+        {
+          "proof_bytes": 1432712,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 178320,
+          "continuation_leaf_bytes": 258112,
+          "continuation_hash_bytes": 990768
+        },
+        {
+          "proof_bytes": 1419384,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177888,
+          "continuation_leaf_bytes": 254912,
+          "continuation_hash_bytes": 981072
+        },
+        {
+          "proof_bytes": 1431032,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 176928,
+          "continuation_leaf_bytes": 258880,
+          "continuation_hash_bytes": 989712
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 1,
+      "rate": 8,
+      "next_degree": 524288,
+      "source_domain": 4194304,
+      "folded_domain": 2097152,
+      "next_domain": 4194304,
+      "threshold": 3145729,
+      "minimum": 1572865,
+      "target_threshold": 2970966,
+      "radius": 1223338,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.166250958205705e-39,
+      "min_bytes": 1428504,
+      "max_bytes": 1439608,
+      "mean_bytes": 1434832.0,
+      "trials": [
+        {
+          "proof_bytes": 1434632,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177600,
+          "continuation_leaf_bytes": 237760,
+          "continuation_hash_bytes": 1013760
+        },
+        {
+          "proof_bytes": 1439608,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 178320,
+          "continuation_leaf_bytes": 234816,
+          "continuation_hash_bytes": 1020960
+        },
+        {
+          "proof_bytes": 1428504,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177888,
+          "continuation_leaf_bytes": 234560,
+          "continuation_hash_bytes": 1010544
+        },
+        {
+          "proof_bytes": 1436584,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 176928,
+          "continuation_leaf_bytes": 236160,
+          "continuation_hash_bytes": 1017984
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 1,
+      "rate": 16,
+      "next_degree": 524288,
+      "source_domain": 4194304,
+      "folded_domain": 2097152,
+      "next_domain": 8388608,
+      "threshold": 3145729,
+      "minimum": 1572865,
+      "target_threshold": 5767169,
+      "radius": 2621439,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 1514904,
+      "max_bytes": 1527816,
+      "mean_bytes": 1523224.0,
+      "trials": [
+        {
+          "proof_bytes": 1522552,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177600,
+          "continuation_leaf_bytes": 234816,
+          "continuation_hash_bytes": 1104624
+        },
+        {
+          "proof_bytes": 1527816,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 178320,
+          "continuation_leaf_bytes": 233024,
+          "continuation_hash_bytes": 1110960
+        },
+        {
+          "proof_bytes": 1514904,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177888,
+          "continuation_leaf_bytes": 230144,
+          "continuation_hash_bytes": 1101360
+        },
+        {
+          "proof_bytes": 1527624,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 176928,
+          "continuation_leaf_bytes": 234560,
+          "continuation_hash_bytes": 1110624
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 1,
+      "rate": 32,
+      "next_degree": 524288,
+      "source_domain": 4194304,
+      "folded_domain": 2097152,
+      "next_domain": 16777216,
+      "threshold": 3145729,
+      "minimum": 1572865,
+      "target_threshold": 11359574,
+      "radius": 5417642,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.099455801558368e-39,
+      "min_bytes": 1642680,
+      "max_bytes": 1661128,
+      "mean_bytes": 1654872.0,
+      "trials": [
+        {
+          "proof_bytes": 1657992,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177600,
+          "continuation_leaf_bytes": 243200,
+          "continuation_hash_bytes": 1231680
+        },
+        {
+          "proof_bytes": 1657688,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 178320,
+          "continuation_leaf_bytes": 239488,
+          "continuation_hash_bytes": 1234368
+        },
+        {
+          "proof_bytes": 1642680,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 177888,
+          "continuation_leaf_bytes": 238016,
+          "continuation_hash_bytes": 1221264
+        },
+        {
+          "proof_bytes": 1661128,
+          "header_bytes": 3000,
+          "source_leaf_bytes": 2512,
+          "source_hash_bytes": 176928,
+          "continuation_leaf_bytes": 240576,
+          "continuation_hash_bytes": 1238112
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 2,
+      "rate": 2,
+      "next_degree": 262144,
+      "source_domain": 4194304,
+      "folded_domain": 1048576,
+      "next_domain": 524288,
+      "threshold": 3145729,
+      "minimum": 786433,
+      "target_threshold": 436907,
+      "radius": 87381,
+      "source_queries": 314,
+      "continuation_queries": 495,
+      "ideal_error_bound_float": 1.226007259529485e-39,
+      "min_bytes": 1579800,
+      "max_bytes": 1591176,
+      "mean_bytes": 1585832.0,
+      "trials": [
+        {
+          "proof_bytes": 1583944,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325056,
+          "continuation_leaf_bytes": 320192,
+          "continuation_hash_bytes": 930720
+        },
+        {
+          "proof_bytes": 1591176,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 326496,
+          "continuation_leaf_bytes": 326080,
+          "continuation_hash_bytes": 930624
+        },
+        {
+          "proof_bytes": 1579800,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325632,
+          "continuation_leaf_bytes": 322048,
+          "continuation_hash_bytes": 924144
+        },
+        {
+          "proof_bytes": 1588408,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 323712,
+          "continuation_leaf_bytes": 325760,
+          "continuation_hash_bytes": 930960
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 2,
+      "rate": 4,
+      "next_degree": 262144,
+      "source_domain": 4194304,
+      "folded_domain": 1048576,
+      "next_domain": 1048576,
+      "threshold": 3145729,
+      "minimum": 786433,
+      "target_threshold": 786433,
+      "radius": 262143,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 1388584,
+      "max_bytes": 1400008,
+      "mean_bytes": 1395012.0,
+      "trials": [
+        {
+          "proof_bytes": 1394872,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325056,
+          "continuation_leaf_bytes": 236096,
+          "continuation_hash_bytes": 825744
+        },
+        {
+          "proof_bytes": 1400008,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 326496,
+          "continuation_leaf_bytes": 237248,
+          "continuation_hash_bytes": 828288
+        },
+        {
+          "proof_bytes": 1388584,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325632,
+          "continuation_leaf_bytes": 234176,
+          "continuation_hash_bytes": 820800
+        },
+        {
+          "proof_bytes": 1396584,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 323712,
+          "continuation_leaf_bytes": 237568,
+          "continuation_hash_bytes": 827328
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 2,
+      "rate": 8,
+      "next_degree": 262144,
+      "source_domain": 4194304,
+      "folded_domain": 1048576,
+      "next_domain": 2097152,
+      "threshold": 3145729,
+      "minimum": 786433,
+      "target_threshold": 1485483,
+      "radius": 611669,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1661999495373608e-39,
+      "min_bytes": 1411016,
+      "max_bytes": 1421368,
+      "mean_bytes": 1415728.0,
+      "trials": [
+        {
+          "proof_bytes": 1414616,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325056,
+          "continuation_leaf_bytes": 220224,
+          "continuation_hash_bytes": 861360
+        },
+        {
+          "proof_bytes": 1421368,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 326496,
+          "continuation_leaf_bytes": 219584,
+          "continuation_hash_bytes": 867312
+        },
+        {
+          "proof_bytes": 1411016,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325632,
+          "continuation_leaf_bytes": 217344,
+          "continuation_hash_bytes": 860064
+        },
+        {
+          "proof_bytes": 1415912,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 323712,
+          "continuation_leaf_bytes": 220992,
+          "continuation_hash_bytes": 863232
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 2,
+      "rate": 16,
+      "next_degree": 262144,
+      "source_domain": 4194304,
+      "folded_domain": 1048576,
+      "next_domain": 4194304,
+      "threshold": 3145729,
+      "minimum": 786433,
+      "target_threshold": 2883585,
+      "radius": 1310719,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 1498168,
+      "max_bytes": 1510696,
+      "mean_bytes": 1504912.0,
+      "trials": [
+        {
+          "proof_bytes": 1503048,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325056,
+          "continuation_leaf_bytes": 219904,
+          "continuation_hash_bytes": 950112
+        },
+        {
+          "proof_bytes": 1510696,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 326496,
+          "continuation_leaf_bytes": 217472,
+          "continuation_hash_bytes": 958752
+        },
+        {
+          "proof_bytes": 1498168,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325632,
+          "continuation_leaf_bytes": 217280,
+          "continuation_hash_bytes": 947280
+        },
+        {
+          "proof_bytes": 1507736,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 323712,
+          "continuation_leaf_bytes": 219456,
+          "continuation_hash_bytes": 956592
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 2,
+      "rate": 32,
+      "next_degree": 262144,
+      "source_domain": 4194304,
+      "folded_domain": 1048576,
+      "next_domain": 8388608,
+      "threshold": 3145729,
+      "minimum": 786433,
+      "target_threshold": 5679787,
+      "radius": 2708821,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0994453521601105e-39,
+      "min_bytes": 1621160,
+      "max_bytes": 1636184,
+      "mean_bytes": 1631204.0,
+      "trials": [
+        {
+          "proof_bytes": 1632616,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325056,
+          "continuation_leaf_bytes": 225920,
+          "continuation_hash_bytes": 1073664
+        },
+        {
+          "proof_bytes": 1634856,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 326496,
+          "continuation_leaf_bytes": 224128,
+          "continuation_hash_bytes": 1076256
+        },
+        {
+          "proof_bytes": 1621160,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 325632,
+          "continuation_leaf_bytes": 221376,
+          "continuation_hash_bytes": 1066176
+        },
+        {
+          "proof_bytes": 1636184,
+          "header_bytes": 2952,
+          "source_leaf_bytes": 5024,
+          "source_hash_bytes": 323712,
+          "continuation_leaf_bytes": 225024,
+          "continuation_hash_bytes": 1079472
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 3,
+      "rate": 2,
+      "next_degree": 131072,
+      "source_domain": 4194304,
+      "folded_domain": 524288,
+      "next_domain": 262144,
+      "threshold": 3145729,
+      "minimum": 393217,
+      "target_threshold": 218454,
+      "radius": 43690,
+      "source_queries": 314,
+      "continuation_queries": 495,
+      "ideal_error_bound_float": 1.226007259529485e-39,
+      "min_bytes": 1624232,
+      "max_bytes": 1634600,
+      "mean_bytes": 1629056.0,
+      "trials": [
+        {
+          "proof_bytes": 1627912,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 589824,
+          "continuation_leaf_bytes": 291264,
+          "continuation_hash_bytes": 733872
+        },
+        {
+          "proof_bytes": 1634600,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 592704,
+          "continuation_leaf_bytes": 292288,
+          "continuation_hash_bytes": 736656
+        },
+        {
+          "proof_bytes": 1624232,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 590976,
+          "continuation_leaf_bytes": 290560,
+          "continuation_hash_bytes": 729744
+        },
+        {
+          "proof_bytes": 1629480,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 587136,
+          "continuation_leaf_bytes": 291584,
+          "continuation_hash_bytes": 737808
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 3,
+      "rate": 4,
+      "next_degree": 131072,
+      "source_domain": 4194304,
+      "folded_domain": 524288,
+      "next_domain": 524288,
+      "threshold": 3145729,
+      "minimum": 393217,
+      "target_threshold": 393217,
+      "radius": 131071,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 1492008,
+      "max_bytes": 1502632,
+      "mean_bytes": 1497248.0,
+      "trials": [
+        {
+          "proof_bytes": 1497304,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 589824,
+          "continuation_leaf_bytes": 216192,
+          "continuation_hash_bytes": 678336
+        },
+        {
+          "proof_bytes": 1502632,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 592704,
+          "continuation_leaf_bytes": 218112,
+          "continuation_hash_bytes": 678864
+        },
+        {
+          "proof_bytes": 1492008,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 590976,
+          "continuation_leaf_bytes": 216320,
+          "continuation_hash_bytes": 671760
+        },
+        {
+          "proof_bytes": 1497048,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 587136,
+          "continuation_leaf_bytes": 216704,
+          "continuation_hash_bytes": 680256
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 3,
+      "rate": 8,
+      "next_degree": 131072,
+      "source_domain": 4194304,
+      "folded_domain": 524288,
+      "next_domain": 1048576,
+      "threshold": 3145729,
+      "minimum": 393217,
+      "target_threshold": 742742,
+      "radius": 305834,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1661999495373608e-39,
+      "min_bytes": 1526584,
+      "max_bytes": 1535864,
+      "mean_bytes": 1529604.0,
+      "trials": [
+        {
+          "proof_bytes": 1528408,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 589824,
+          "continuation_leaf_bytes": 201024,
+          "continuation_hash_bytes": 724608
+        },
+        {
+          "proof_bytes": 1535864,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 592704,
+          "continuation_leaf_bytes": 202816,
+          "continuation_hash_bytes": 727392
+        },
+        {
+          "proof_bytes": 1526584,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 590976,
+          "continuation_leaf_bytes": 200064,
+          "continuation_hash_bytes": 722592
+        },
+        {
+          "proof_bytes": 1527560,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 587136,
+          "continuation_leaf_bytes": 202240,
+          "continuation_hash_bytes": 725232
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 3,
+      "rate": 16,
+      "next_degree": 131072,
+      "source_domain": 4194304,
+      "folded_domain": 524288,
+      "next_domain": 2097152,
+      "threshold": 3145729,
+      "minimum": 393217,
+      "target_threshold": 1441793,
+      "radius": 655359,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 1612696,
+      "max_bytes": 1624984,
+      "mean_bytes": 1617696.0,
+      "trials": [
+        {
+          "proof_bytes": 1615320,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 589824,
+          "continuation_leaf_bytes": 203456,
+          "continuation_hash_bytes": 809088
+        },
+        {
+          "proof_bytes": 1624984,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 592704,
+          "continuation_leaf_bytes": 203520,
+          "continuation_hash_bytes": 815808
+        },
+        {
+          "proof_bytes": 1612696,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 590976,
+          "continuation_leaf_bytes": 201408,
+          "continuation_hash_bytes": 807360
+        },
+        {
+          "proof_bytes": 1617784,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 587136,
+          "continuation_leaf_bytes": 205440,
+          "continuation_hash_bytes": 812256
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 3,
+      "rate": 32,
+      "next_degree": 131072,
+      "source_domain": 4194304,
+      "folded_domain": 524288,
+      "next_domain": 4194304,
+      "threshold": 3145729,
+      "minimum": 393217,
+      "target_threshold": 2839894,
+      "radius": 1354410,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0994453521601105e-39,
+      "min_bytes": 1730184,
+      "max_bytes": 1744152,
+      "mean_bytes": 1738632.0,
+      "trials": [
+        {
+          "proof_bytes": 1738648,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 589824,
+          "continuation_leaf_bytes": 211392,
+          "continuation_hash_bytes": 924480
+        },
+        {
+          "proof_bytes": 1744152,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 592704,
+          "continuation_leaf_bytes": 208640,
+          "continuation_hash_bytes": 929856
+        },
+        {
+          "proof_bytes": 1730184,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 590976,
+          "continuation_leaf_bytes": 208832,
+          "continuation_hash_bytes": 917424
+        },
+        {
+          "proof_bytes": 1741544,
+          "header_bytes": 2904,
+          "source_leaf_bytes": 10048,
+          "source_hash_bytes": 587136,
+          "continuation_leaf_bytes": 210496,
+          "continuation_hash_bytes": 930960
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 4,
+      "rate": 2,
+      "next_degree": 65536,
+      "source_domain": 4194304,
+      "folded_domain": 262144,
+      "next_domain": 131072,
+      "threshold": 3145729,
+      "minimum": 196609,
+      "target_threshold": 109227,
+      "radius": 21845,
+      "source_queries": 314,
+      "continuation_queries": 495,
+      "ideal_error_bound_float": 1.2245627799405589e-39,
+      "min_bytes": 1902744,
+      "max_bytes": 1913192,
+      "mean_bytes": 1906512.0,
+      "trials": [
+        {
+          "proof_bytes": 1904872,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1059072,
+          "continuation_leaf_bytes": 258752,
+          "continuation_hash_bytes": 564096
+        },
+        {
+          "proof_bytes": 1913192,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1064832,
+          "continuation_leaf_bytes": 260736,
+          "continuation_hash_bytes": 564672
+        },
+        {
+          "proof_bytes": 1902744,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1061376,
+          "continuation_leaf_bytes": 258304,
+          "continuation_hash_bytes": 560112
+        },
+        {
+          "proof_bytes": 1905240,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1053696,
+          "continuation_leaf_bytes": 255616,
+          "continuation_hash_bytes": 572976
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 4,
+      "rate": 4,
+      "next_degree": 65536,
+      "source_domain": 4194304,
+      "folded_domain": 262144,
+      "next_domain": 262144,
+      "threshold": 3145729,
+      "minimum": 196609,
+      "target_threshold": 196609,
+      "radius": 65535,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 1820152,
+      "max_bytes": 1830968,
+      "mean_bytes": 1823936.0,
+      "trials": [
+        {
+          "proof_bytes": 1823112,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1059072,
+          "continuation_leaf_bytes": 198400,
+          "continuation_hash_bytes": 542688
+        },
+        {
+          "proof_bytes": 1830968,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1064832,
+          "continuation_leaf_bytes": 198144,
+          "continuation_hash_bytes": 545040
+        },
+        {
+          "proof_bytes": 1820152,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1061376,
+          "continuation_leaf_bytes": 195968,
+          "continuation_hash_bytes": 539856
+        },
+        {
+          "proof_bytes": 1821512,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1053696,
+          "continuation_leaf_bytes": 195456,
+          "continuation_hash_bytes": 549408
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 4,
+      "rate": 8,
+      "next_degree": 65536,
+      "source_domain": 4194304,
+      "folded_domain": 262144,
+      "next_domain": 524288,
+      "threshold": 3145729,
+      "minimum": 196609,
+      "target_threshold": 371371,
+      "radius": 152917,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1659959596693494e-39,
+      "min_bytes": 1860344,
+      "max_bytes": 1874072,
+      "mean_bytes": 1865836.0,
+      "trials": [
+        {
+          "proof_bytes": 1864760,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1059072,
+          "continuation_leaf_bytes": 184512,
+          "continuation_hash_bytes": 598224
+        },
+        {
+          "proof_bytes": 1874072,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1064832,
+          "continuation_leaf_bytes": 185664,
+          "continuation_hash_bytes": 600624
+        },
+        {
+          "proof_bytes": 1864168,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1061376,
+          "continuation_leaf_bytes": 184832,
+          "continuation_hash_bytes": 595008
+        },
+        {
+          "proof_bytes": 1860344,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1053696,
+          "continuation_leaf_bytes": 185664,
+          "continuation_hash_bytes": 598032
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 4,
+      "rate": 16,
+      "next_degree": 65536,
+      "source_domain": 4194304,
+      "folded_domain": 262144,
+      "next_domain": 1048576,
+      "threshold": 3145729,
+      "minimum": 196609,
+      "target_threshold": 720897,
+      "radius": 327679,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 1948328,
+      "max_bytes": 1961864,
+      "mean_bytes": 1952248.0,
+      "trials": [
+        {
+          "proof_bytes": 1949752,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1059072,
+          "continuation_leaf_bytes": 186368,
+          "continuation_hash_bytes": 681360
+        },
+        {
+          "proof_bytes": 1961864,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1064832,
+          "continuation_leaf_bytes": 187200,
+          "continuation_hash_bytes": 686880
+        },
+        {
+          "proof_bytes": 1949048,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1061376,
+          "continuation_leaf_bytes": 185856,
+          "continuation_hash_bytes": 678864
+        },
+        {
+          "proof_bytes": 1948328,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1053696,
+          "continuation_leaf_bytes": 187776,
+          "continuation_hash_bytes": 683904
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 4,
+      "rate": 32,
+      "next_degree": 65536,
+      "source_domain": 4194304,
+      "folded_domain": 262144,
+      "next_domain": 2097152,
+      "threshold": 3145729,
+      "minimum": 196609,
+      "target_threshold": 1419947,
+      "radius": 677205,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0994035566919296e-39,
+      "min_bytes": 2060072,
+      "max_bytes": 2074920,
+      "mean_bytes": 2066500.0,
+      "trials": [
+        {
+          "proof_bytes": 2065784,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1059072,
+          "continuation_leaf_bytes": 195456,
+          "continuation_hash_bytes": 788304
+        },
+        {
+          "proof_bytes": 2074920,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1064832,
+          "continuation_leaf_bytes": 195328,
+          "continuation_hash_bytes": 791808
+        },
+        {
+          "proof_bytes": 2060072,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1061376,
+          "continuation_leaf_bytes": 193536,
+          "continuation_hash_bytes": 782208
+        },
+        {
+          "proof_bytes": 2065224,
+          "header_bytes": 2856,
+          "source_leaf_bytes": 20096,
+          "source_hash_bytes": 1053696,
+          "continuation_leaf_bytes": 197440,
+          "continuation_hash_bytes": 791136
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 6,
+      "rate": 2,
+      "next_degree": 16384,
+      "source_domain": 4194304,
+      "folded_domain": 65536,
+      "next_domain": 32768,
+      "threshold": 3145729,
+      "minimum": 49153,
+      "target_threshold": 27307,
+      "radius": 5461,
+      "source_queries": 314,
+      "continuation_queries": 495,
+      "ideal_error_bound_float": 1.2188174161850437e-39,
+      "min_bytes": 3829608,
+      "max_bytes": 3875608,
+      "mean_bytes": 3850036.0,
+      "trials": [
+        {
+          "proof_bytes": 3845864,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3271680,
+          "continuation_leaf_bytes": 195072,
+          "continuation_hash_bytes": 295968
+        },
+        {
+          "proof_bytes": 3875608,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 79872,
+          "source_hash_bytes": 3302400,
+          "continuation_leaf_bytes": 197056,
+          "continuation_hash_bytes": 293520
+        },
+        {
+          "proof_bytes": 3849064,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3280896,
+          "continuation_leaf_bytes": 195968,
+          "continuation_hash_bytes": 289056
+        },
+        {
+          "proof_bytes": 3829608,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3250176,
+          "continuation_leaf_bytes": 197248,
+          "continuation_hash_bytes": 299040
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 6,
+      "rate": 4,
+      "next_degree": 16384,
+      "source_domain": 4194304,
+      "folded_domain": 65536,
+      "next_domain": 65536,
+      "threshold": 3145729,
+      "minimum": 49153,
+      "target_threshold": 49153,
+      "radius": 16383,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 3819464,
+      "max_bytes": 3865528,
+      "mean_bytes": 3840468.0,
+      "trials": [
+        {
+          "proof_bytes": 3834984,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3271680,
+          "continuation_leaf_bytes": 156352,
+          "continuation_hash_bytes": 323808
+        },
+        {
+          "proof_bytes": 3865528,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 79872,
+          "source_hash_bytes": 3302400,
+          "continuation_leaf_bytes": 157120,
+          "continuation_hash_bytes": 323376
+        },
+        {
+          "proof_bytes": 3841896,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3280896,
+          "continuation_leaf_bytes": 155584,
+          "continuation_hash_bytes": 322272
+        },
+        {
+          "proof_bytes": 3819464,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3250176,
+          "continuation_leaf_bytes": 156288,
+          "continuation_hash_bytes": 329856
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 6,
+      "rate": 8,
+      "next_degree": 16384,
+      "source_domain": 4194304,
+      "folded_domain": 65536,
+      "next_domain": 131072,
+      "threshold": 3145729,
+      "minimum": 49153,
+      "target_threshold": 92843,
+      "radius": 38229,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1651807166441685e-39,
+      "min_bytes": 3868760,
+      "max_bytes": 3920760,
+      "mean_bytes": 3892624.0,
+      "trials": [
+        {
+          "proof_bytes": 3886328,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3271680,
+          "continuation_leaf_bytes": 152832,
+          "continuation_hash_bytes": 378672
+        },
+        {
+          "proof_bytes": 3920760,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 79872,
+          "source_hash_bytes": 3302400,
+          "continuation_leaf_bytes": 153600,
+          "continuation_hash_bytes": 382128
+        },
+        {
+          "proof_bytes": 3894648,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3280896,
+          "continuation_leaf_bytes": 151168,
+          "continuation_hash_bytes": 379440
+        },
+        {
+          "proof_bytes": 3868760,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3250176,
+          "continuation_leaf_bytes": 150528,
+          "continuation_hash_bytes": 384912
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 6,
+      "rate": 16,
+      "next_degree": 16384,
+      "source_domain": 4194304,
+      "folded_domain": 65536,
+      "next_domain": 262144,
+      "threshold": 3145729,
+      "minimum": 49153,
+      "target_threshold": 180225,
+      "radius": 81919,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 3948920,
+      "max_bytes": 4003880,
+      "mean_bytes": 3973432.0,
+      "trials": [
+        {
+          "proof_bytes": 3966920,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3271680,
+          "continuation_leaf_bytes": 158016,
+          "continuation_hash_bytes": 454080
+        },
+        {
+          "proof_bytes": 4003880,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 79872,
+          "source_hash_bytes": 3302400,
+          "continuation_leaf_bytes": 156608,
+          "continuation_hash_bytes": 462240
+        },
+        {
+          "proof_bytes": 3974008,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3280896,
+          "continuation_leaf_bytes": 156800,
+          "continuation_hash_bytes": 453168
+        },
+        {
+          "proof_bytes": 3948920,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3250176,
+          "continuation_leaf_bytes": 156288,
+          "continuation_hash_bytes": 459312
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 6,
+      "rate": 32,
+      "next_degree": 16384,
+      "source_domain": 4194304,
+      "folded_domain": 65536,
+      "next_domain": 524288,
+      "threshold": 3145729,
+      "minimum": 49153,
+      "target_threshold": 354987,
+      "radius": 169301,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0992364088119724e-39,
+      "min_bytes": 4051272,
+      "max_bytes": 4103448,
+      "mean_bytes": 4074140.0,
+      "trials": [
+        {
+          "proof_bytes": 4069400,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3271680,
+          "continuation_leaf_bytes": 164928,
+          "continuation_hash_bytes": 549648
+        },
+        {
+          "proof_bytes": 4103448,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 79872,
+          "source_hash_bytes": 3302400,
+          "continuation_leaf_bytes": 164352,
+          "continuation_hash_bytes": 554064
+        },
+        {
+          "proof_bytes": 4072440,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3280896,
+          "continuation_leaf_bytes": 164032,
+          "continuation_hash_bytes": 544368
+        },
+        {
+          "proof_bytes": 4051272,
+          "header_bytes": 2760,
+          "source_leaf_bytes": 80384,
+          "source_hash_bytes": 3250176,
+          "continuation_leaf_bytes": 165760,
+          "continuation_hash_bytes": 552192
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 8,
+      "rate": 2,
+      "next_degree": 4096,
+      "source_domain": 4194304,
+      "folded_domain": 16384,
+      "next_domain": 8192,
+      "threshold": 3145729,
+      "minimum": 12289,
+      "target_threshold": 6827,
+      "radius": 1365,
+      "source_queries": 314,
+      "continuation_queries": 494,
+      "ideal_error_bound_float": 1.3181278241223867e-39,
+      "min_bytes": 9766056,
+      "max_bytes": 9995992,
+      "mean_bytes": 9866764.0,
+      "trials": [
+        {
+          "proof_bytes": 9845224,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 318464,
+          "source_hash_bytes": 9271296,
+          "continuation_leaf_bytes": 132992,
+          "continuation_hash_bytes": 119808
+        },
+        {
+          "proof_bytes": 9995992,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 316416,
+          "source_hash_bytes": 9424896,
+          "continuation_leaf_bytes": 131584,
+          "continuation_hash_bytes": 120432
+        },
+        {
+          "proof_bytes": 9859784,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 319488,
+          "source_hash_bytes": 9289728,
+          "continuation_leaf_bytes": 131072,
+          "continuation_hash_bytes": 116832
+        },
+        {
+          "proof_bytes": 9766056,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 317440,
+          "source_hash_bytes": 9191424,
+          "continuation_leaf_bytes": 133568,
+          "continuation_hash_bytes": 120960
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 8,
+      "rate": 4,
+      "next_degree": 4096,
+      "source_domain": 4194304,
+      "folded_domain": 16384,
+      "next_domain": 16384,
+      "threshold": 3145729,
+      "minimum": 12289,
+      "target_threshold": 12289,
+      "radius": 4095,
+      "source_queries": 314,
+      "continuation_queries": 314,
+      "ideal_error_bound_float": 1.1756192822386972e-39,
+      "min_bytes": 9795288,
+      "max_bytes": 10023432,
+      "mean_bytes": 9895556.0,
+      "trials": [
+        {
+          "proof_bytes": 9873448,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 318464,
+          "source_hash_bytes": 9271296,
+          "continuation_leaf_bytes": 116864,
+          "continuation_hash_bytes": 164160
+        },
+        {
+          "proof_bytes": 10023432,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 316416,
+          "source_hash_bytes": 9424896,
+          "continuation_leaf_bytes": 116928,
+          "continuation_hash_bytes": 162528
+        },
+        {
+          "proof_bytes": 9890056,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 319488,
+          "source_hash_bytes": 9289728,
+          "continuation_leaf_bytes": 115840,
+          "continuation_hash_bytes": 162336
+        },
+        {
+          "proof_bytes": 9795288,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 317440,
+          "source_hash_bytes": 9191424,
+          "continuation_leaf_bytes": 119168,
+          "continuation_hash_bytes": 164592
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 8,
+      "rate": 8,
+      "next_degree": 4096,
+      "source_domain": 4194304,
+      "folded_domain": 16384,
+      "next_domain": 32768,
+      "threshold": 3145729,
+      "minimum": 12289,
+      "target_threshold": 23211,
+      "radius": 9557,
+      "source_queries": 314,
+      "continuation_queries": 262,
+      "ideal_error_bound_float": 1.1619311796505669e-39,
+      "min_bytes": 9848408,
+      "max_bytes": 10079096,
+      "mean_bytes": 9949084.0,
+      "trials": [
+        {
+          "proof_bytes": 9925896,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 318464,
+          "source_hash_bytes": 9271296,
+          "continuation_leaf_bytes": 115840,
+          "continuation_hash_bytes": 217632
+        },
+        {
+          "proof_bytes": 10079096,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 316416,
+          "source_hash_bytes": 9424896,
+          "continuation_leaf_bytes": 119168,
+          "continuation_hash_bytes": 215952
+        },
+        {
+          "proof_bytes": 9942936,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 319488,
+          "source_hash_bytes": 9289728,
+          "continuation_leaf_bytes": 118848,
+          "continuation_hash_bytes": 212208
+        },
+        {
+          "proof_bytes": 9848408,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 317440,
+          "source_hash_bytes": 9191424,
+          "continuation_leaf_bytes": 119488,
+          "continuation_hash_bytes": 217392
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 8,
+      "rate": 16,
+      "next_degree": 4096,
+      "source_domain": 4194304,
+      "folded_domain": 16384,
+      "next_domain": 65536,
+      "threshold": 3145729,
+      "minimum": 12289,
+      "target_threshold": 45057,
+      "radius": 20479,
+      "source_queries": 314,
+      "continuation_queries": 241,
+      "ideal_error_bound_float": 1.194156738690826e-39,
+      "min_bytes": 9918328,
+      "max_bytes": 10151736,
+      "mean_bytes": 10019368.0,
+      "trials": [
+        {
+          "proof_bytes": 9994296,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 318464,
+          "source_hash_bytes": 9271296,
+          "continuation_leaf_bytes": 125440,
+          "continuation_hash_bytes": 276432
+        },
+        {
+          "proof_bytes": 10151736,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 316416,
+          "source_hash_bytes": 9424896,
+          "continuation_leaf_bytes": 127104,
+          "continuation_hash_bytes": 280656
+        },
+        {
+          "proof_bytes": 10013112,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 319488,
+          "source_hash_bytes": 9289728,
+          "continuation_leaf_bytes": 125376,
+          "continuation_hash_bytes": 275856
+        },
+        {
+          "proof_bytes": 9918328,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 317440,
+          "source_hash_bytes": 9191424,
+          "continuation_leaf_bytes": 125376,
+          "continuation_hash_bytes": 281424
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "skipped": 8,
+      "rate": 32,
+      "next_degree": 4096,
+      "source_domain": 4194304,
+      "folded_domain": 16384,
+      "next_domain": 131072,
+      "threshold": 3145729,
+      "minimum": 12289,
+      "target_threshold": 88747,
+      "radius": 42325,
+      "source_queries": 314,
+      "continuation_queries": 232,
+      "ideal_error_bound_float": 1.0985683608681913e-39,
+      "min_bytes": 10004296,
+      "max_bytes": 10236968,
+      "mean_bytes": 10104496.0,
+      "trials": [
+        {
+          "proof_bytes": 10080440,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 318464,
+          "source_hash_bytes": 9271296,
+          "continuation_leaf_bytes": 136512,
+          "continuation_hash_bytes": 351504
+        },
+        {
+          "proof_bytes": 10236968,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 316416,
+          "source_hash_bytes": 9424896,
+          "continuation_leaf_bytes": 136832,
+          "continuation_hash_bytes": 356160
+        },
+        {
+          "proof_bytes": 10096280,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 319488,
+          "source_hash_bytes": 9289728,
+          "continuation_leaf_bytes": 134336,
+          "continuation_hash_bytes": 350064
+        },
+        {
+          "proof_bytes": 10004296,
+          "header_bytes": 2664,
+          "source_leaf_bytes": 317440,
+          "source_hash_bytes": 9191424,
+          "continuation_leaf_bytes": 135552,
+          "continuation_hash_bytes": 357216
+        }
+      ]
+    }
+  ],
+  "security": "Exact rational joint ideal error <= 2^-128; two tails individually <= 2^-130.",
+  "limitations": [
+    "Deterministic simulated independent uniform queries; four seeds, not a distributional theorem.",
+    "Only two skipped folds/rate8 up to degree1024 are executable; other schedules are hypothetical.",
+    "Framing follows current codec; external config, GKR, recursion, AIR and full NEAR excluded.",
+    "Field/root geometry and causal transcript still required; no commitment or QROM certification.",
+    "A single rate shift is screened; no lower bound on multishift protocols or other schemes.",
+    "Raw scalar coefficient disclosure costs 4D bytes but requires linear-size source reconstruction; small-degree wins are not evidence of succinct scaling."
+  ],
+  "source_sha256": "18181e2ce07f9750f7611d6674efcd98075a3c07ad6045437baab0cee6deb63b"
+}
