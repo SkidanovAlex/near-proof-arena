@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "basis_products": 64,
+  "differential_cases": 18,
+  "round_identities": 36,
+  "wrapper_rejections": 4,
+  "direct_abi_rejections": 4,
+  "timings_4096": [
+    {
+      "native_seconds": 0.010998687706887722,
+      "reference_seconds": 0.09280450874939561
+    },
+    {
+      "native_seconds": 0.01104640681296587,
+      "reference_seconds": 0.09731487696990371
+    },
+    {
+      "native_seconds": 0.011195366736501455,
+      "reference_seconds": 0.1004611668176949
+    }
+  ],
+  "source_sha256": "e19a13d2ef46f95ceec244f6d1288e355ee73bdb5c473dd7a13ccf9b3e6ac38e",
+  "compiler": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+  "scope": "Native Ext8 fold/quadratic primitives only. Independent arithmetic and sumcheck identity tests; no Rust-to-Lean refinement, full native GKR/local prover, transcript, PCS integration, quantum security or proof-size claim."
+}

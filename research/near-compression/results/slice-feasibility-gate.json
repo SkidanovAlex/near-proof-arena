@@ -624,5 +624,12 @@
     "registers_per_case": 9624,
     "mutations_rejected": 24,
     "scope": "Explicit Ext8 arithmetic validates instruction reconstruction, signed expansion/balancing, batching and DAG-to-layer routes. JSON rebuild roundtrip passes. Generic Lean route theorems exist but these captures are not kernel checked. No native Ext8 proof, authenticated transcript or security/size certification."
+  },
+  "native_ext8_round_primitives": {
+    "status": "DIFFERENTIAL_PRIMITIVES_PASS",
+    "basis_products": 64,
+    "differential_cases": 18,
+    "round_identities": 36,
+    "scope": "Rust cdylib implements Ext8 affine fold and quadratic sumcheck coefficients, with explicit ctypes adapter. Matches flat X^8=11 reference; wrapper/native rejection checked. No full native Ext8 prover, Rust refinement proof, transcript/PCS integration, secure size or quantum claim."
   }
 }

@@ -4918,3 +4918,11 @@ Extended the existing program-to-DAG certificate generator/checker with explicit
 On the retained 193-instruction AIR with synthetic Ext8 challenges, zero/unit/random batching each validates 9624 reconstructed register records, signed-sum expansion/balancing, terminal equality weights/claims, batching and all DAG-to-layer routes. JSON reconstruction-certificate roundtrip passes; eight mutations per case reject (24 total). Independent canonical-Horner/program/DAG/layer comparisons still pass. Geometry stays 34/35/35 layers and input log13. Report: `results/ext8-terminal-structural-compiler.json`.
 
 Retained Ext4 full-bus certificate remains byte-identical; 62420 register records, 14 malformed certificates and 14 arithmetic shortcut rejection cases pass. These are Python structural checks corresponding to generic Lean route theorems, not Lean-kernel-checked Ext8 captures or universal compiler refinement. Native Ext8 GKR/PCS proof, authenticated transcript, complete secure envelope and QROM remain open. Feasibility gate remains NOT_PASSED.
+
+### First native Ext8 round primitives
+
+Added `native-folded/kernel_ext8.rs` and explicit `pq384_ext8_native.Kernel` adapter. Rust implements affine multilinear folding and quadratic product-sumcheck coefficients in flat Ext8 (X^8=11). Coefficients use canonical u32; multiplication accumulates in u128. The ABI checks shapes/canonicality, while the wrapper checks before allocating and supplies valid disjoint buffers. Library building is explicit, with no profile replacement.
+
+`test_ext8_native.py` builds the library in a temporary directory and checks independent Python arithmetic: 64 basis products, 18 table/challenge cases (sizes0 through4096, zero/unit/random challenge), 36 round identities, four wrapper and four direct ABI rejections. Bad ABI inputs leave output unchanged. Report `results/ext8-native-primitives.json`: PASS. At4096 elements, wrapper-inclusive fold plus quadratic work measured ~11ms versus93–100ms reference on this machine; diagnostic component timing only.
+
+This advances native execution but does not implement the full local/GKR prover, authenticated transcript or PCS integration, and does not prove Rust refinement. Secure envelope size, QROM security and full1Pgas remain open; gate NOT_PASSED.
