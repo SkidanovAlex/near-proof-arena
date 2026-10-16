@@ -3,6 +3,7 @@ import argparse, copy, hashlib, json, random, subprocess, tempfile
 from pathlib import Path
 import pq384_ext8_reference as f
 import pq384_ext8_weighted as p
+import pq384_ext8_weighted_codec as codec
 from pq384_ext8_native import Kernel
 from test_ext8_input_weights import coefficient_claim
 
@@ -23,7 +24,10 @@ def main():
         for queries in (8,309):
             proof=p.prove(caches,native,b'statement',b'parent',branches,claim,queries=queries)
             wire=json.loads(json.dumps(proof));assert p.verify(wire,b'statement',b'parent',branches,claim,queries=queries)
-            results.append(dict(queries=queries,rounds=len(proof['rounds']),json_bytes=len(json.dumps(wire,separators=(',',':')).encode())))
+            binary=codec.encode(wire,b'statement',b'parent',branches,claim,queries=queries)
+            assert codec.decode(binary,b'statement',b'parent',branches,claim,queries=queries)==wire
+            assert codec.verify(binary,b'statement',b'parent',branches,claim,queries=queries)
+            results.append(dict(binary_bytes=len(binary),queries=queries,rounds=len(proof['rounds']),json_bytes=len(json.dumps(wire,separators=(',',':')).encode())))
         # Mutations use the final309-query proof.
         mutations=[('reduction',lambda x:x['reduction'][0][0].__setitem__(0,(x['reduction'][0][0][0]+1)%f.P)),
             ('fold',lambda x:x['rounds'][0]['quadratic'][0].__setitem__(0,(x['rounds'][0]['quadratic'][0][0]+1)%f.P)),
@@ -54,6 +58,6 @@ def main():
         assert p.h.merkle_tree(leaves,ctx)[0]==cache.root
         report=dict(status='PASS',cases=results,rejections=rejected,source_root_reference_match=True,
             source_sha256=hashlib.sha256(Path(p.__file__).read_bytes()).hexdigest(),
-            scope='Heterogeneous-degree weighted Ext8 folding diagnostic with opening-independent source commitments and externally supplied weights/claim. Query309 is a configuration test, not certified128-bit/PQ security. Full slice integration, compact codec/multiproofs, complete size and formal implementation binding remain open.')
+            scope='Heterogeneous-degree weighted Ext8 folding diagnostic with opening-independent source commitments and externally supplied weights/claim. Query309 is a configuration test, not certified128-bit/PQ security. This test covers compact codec parity; complete secure envelope and formal implementation binding remain open.')
         args.output.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
 if __name__=='__main__':main()

@@ -692,5 +692,17 @@
     "source_roots_match_retained": true,
     "opening_json_bytes": 5033829,
     "scope": "Packed source commitments before bus challenges; fresh auxiliary commitments/finals before local challenges. Actual retained execution local/GKR reductions feed weighted multi-branch opening; Python verifier checks Merkle authentication and fold consistency. This closes executable input-opening discharge, not formal proximity/composition/QROM certification. Compact codec, deduplicated multiproofs, complete envelope and128-bit quantum security remain open."
+  },
+  "ext8_compact_weighted_opening": {
+    "status": "CODEC_VERIFIED_SIZE_TARGET_FAILED_FOR_CURRENT_PROFILE",
+    "queries": 309,
+    "opening_bytes": 620632,
+    "local_and_gkr_scalar_bytes": 51328,
+    "subtotal_before_envelope": 671960,
+    "source_leaf_bytes": 231104,
+    "source_authentication_bytes": 181584,
+    "fold_opening_bytes": 205024,
+    "metadata_bytes": 2920,
+    "scope": "Actual retained execution opening, canonical transcript-derived multiproofs with terminal tree omitted/reconstructed. Roundtrip and fresh-process verification pass; eight malformed binary cases reject. Current encoding exceeds300000bytes before envelope. Not a lower bound for other protocols/layouts, nor a128-bit quantum security certificate."
   }
 }

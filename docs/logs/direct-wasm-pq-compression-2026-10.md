@@ -4986,3 +4986,13 @@ Tests: heterogeneous degrees at8and309queries pass;13mutations reject (reduction
 Current opening is5033829JSONbytes with repeated Merkle paths. This is not a compact binary measurement and not the complete envelope. Capture support writes opening config/proof plus reduction data, and checks the opening in a fresh Python process. Working capture: `/tmp/nearproof-ext8-weighted-execution`; reproducible via `test_ext8_execution_reduction.py --pcs-queries 309 --capture-dir ...`.
 
 Executable input-opening discharge is now present, but formal implementation/proximity/composition/QROM security is not.309queries is a configured diagnostic, not128-bit quantum certification. Next: compact codec and deduplicated multiproofs, measured complete envelope, then reconcile actual PCS geometry with the conditional bounds. Gate remains NOT_PASSED.
+
+### Compact weighted Ext8 multiproof: measured size failure
+
+Factored weighted transcript replay for codec metadata and added `pq384_ext8_weighted_codec.py`. Codec includes fixed-width Ext8 round scalars/roots and canonical deduplicated Merkle multiproofs. Counts/indices derive entirely from the verifier-supplied branches/query budget and transcript. The constant terminal tree is reconstructed rather than transmitted. Strict version, canonical scalars, length, authentication and trailing-byte checks are enforced; full PCS verification remains mandatory after decode.
+
+Actual retained309-query opening:5033829JSONbytes →620632binarybytes. Exact decoded proof equality, fresh-process verification, and eight binary mutations pass. Small heterogeneous-degree8/309-query proofs also roundtrip and verify through the codec;13existing adversarial PCS cases still reject. Binary capture: `/tmp/nearproof-ext8-weighted-execution/proof.bin`; report `results/ext8-weighted-codec.json`.
+
+Breakdown:231104source-leaf bytes +181584source-authentication bytes +97408fold-leaf bytes +107616fold-authentication bytes +2920metadata =620632. Add51328raw local/GKR scalar bytes =>671960before any full envelope overhead. The current profile therefore FAILS the300000-byte target even before assembling the envelope. This is measured failure of this layout/codec, not an impossibility bound for other schemes.
+
+Strategic implication: further scalar serialization tuning cannot close the gap. Investigate commitment pooling where transcript chronology permits, rate/fold schedule changes with corresponding soundness bounds, and reductions of source lane payload. Pooling alone cannot remove the large source-leaf and fold costs; do not silently shorten hashes or lower query security. Actual128-bit PQ certification, formal implementation binding and full1Pgas remain open. Gate NOT_PASSED.

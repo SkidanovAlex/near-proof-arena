@@ -1,0 +1,130 @@
+{
+  "status": "PASS",
+  "queries": 309,
+  "opening_bytes": 620632,
+  "opening_json_bytes": 5033829,
+  "sha256": "53d9c1640d3358a1747eaff13fede82ee7f97c1a4761adaac37c3305012f3879",
+  "fresh_process": "PASS fresh weighted Ext8 binary",
+  "rejections": [
+    "version",
+    "truncated",
+    "trailing",
+    "noncanonical",
+    "changed-header",
+    "changed-leaf",
+    "changed-sibling",
+    "changed-query-budget"
+  ],
+  "breakdown": {
+    "header_bytes": 2920,
+    "stages": [
+      {
+        "kind": "sources",
+        "index": 0,
+        "unique_leaves": 304,
+        "leaf_bytes": 92416,
+        "sibling_bytes": 57552
+      },
+      {
+        "kind": "sources",
+        "index": 1,
+        "unique_leaves": 241,
+        "leaf_bytes": 46272,
+        "sibling_bytes": 8928
+      },
+      {
+        "kind": "sources",
+        "index": 2,
+        "unique_leaves": 304,
+        "leaf_bytes": 31616,
+        "sibling_bytes": 57552
+      },
+      {
+        "kind": "sources",
+        "index": 3,
+        "unique_leaves": 304,
+        "leaf_bytes": 60800,
+        "sibling_bytes": 57552
+      },
+      {
+        "kind": "folds",
+        "index": 0,
+        "unique_leaves": 299,
+        "leaf_bytes": 19136,
+        "sibling_bytes": 44592
+      },
+      {
+        "kind": "folds",
+        "index": 1,
+        "unique_leaves": 292,
+        "leaf_bytes": 18688,
+        "sibling_bytes": 31440
+      },
+      {
+        "kind": "folds",
+        "index": 2,
+        "unique_leaves": 272,
+        "leaf_bytes": 17408,
+        "sibling_bytes": 18864
+      },
+      {
+        "kind": "folds",
+        "index": 3,
+        "unique_leaves": 241,
+        "leaf_bytes": 15424,
+        "sibling_bytes": 8928
+      },
+      {
+        "kind": "folds",
+        "index": 4,
+        "unique_leaves": 179,
+        "leaf_bytes": 11456,
+        "sibling_bytes": 3168
+      },
+      {
+        "kind": "folds",
+        "index": 5,
+        "unique_leaves": 116,
+        "leaf_bytes": 7424,
+        "sibling_bytes": 576
+      },
+      {
+        "kind": "folds",
+        "index": 6,
+        "unique_leaves": 63,
+        "leaf_bytes": 4032,
+        "sibling_bytes": 48
+      },
+      {
+        "kind": "folds",
+        "index": 7,
+        "unique_leaves": 32,
+        "leaf_bytes": 2048,
+        "sibling_bytes": 0
+      },
+      {
+        "kind": "folds",
+        "index": 8,
+        "unique_leaves": 16,
+        "leaf_bytes": 1024,
+        "sibling_bytes": 0
+      },
+      {
+        "kind": "folds",
+        "index": 9,
+        "unique_leaves": 8,
+        "leaf_bytes": 512,
+        "sibling_bytes": 0
+      },
+      {
+        "kind": "folds",
+        "index": 10,
+        "unique_leaves": 4,
+        "leaf_bytes": 256,
+        "sibling_bytes": 0
+      }
+    ],
+    "total_bytes": 620632
+  },
+  "scope": "Lossless canonical weighted Ext8 multiproof transport; external statement/parent/roots/weights/claim required. Opening size only, excluding local/GKR/public envelope. No formal codec/refinement or quantum security certification."
+}

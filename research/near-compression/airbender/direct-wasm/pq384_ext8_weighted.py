@@ -118,17 +118,23 @@ def read_opening(op,root,ctx,half,index,base,powers):
     for j,power in enumerate(powers):a=f.add(a,f.scale(power,op['leaf'][2*j]));b=f.add(b,f.scale(power,op['leaf'][2*j+1]))
     return a,b
 
-def verify(proof,statement,parent,branches,claim, *, queries):
+def replay(proof,statement,parent,branches,claim, *, queries):
     degrees,D,contexts,t,claim=public(statement,parent,branches,claim,queries);n=D.bit_length()-1
     h.require(set(proof)=={'profile','reduction','rounds','terminal','queries'} and proof['profile']==PROFILE,'proof fields')
-    h.require(len(proof['reduction'])==len(proof['rounds'])==n and len(proof['queries'])==queries,'proof lengths');u=[]
+    h.require(len(proof['reduction'])==len(proof['rounds'])==n,'proof lengths');u=[]
     for q in proof['reduction']:r,_,claim=round_start(t,q,claim);u.append(r)
     bs=betas(branches,degrees,D,u);roots=[];contexts_fold=[];rs=[];d=D
     for rd in proof['rounds']:
         h.require(set(rd)=={'quadratic','root'},'round fields');r,stage,claim=round_start(t,rd['quadratic'],claim);rs.append(r);d//=2
         root=hashread(rd['root']);roots.append(root);contexts_fold.append(context(stage,d));t.commit(b'ext8-weighted-root',root)
     terminal_check(t,proof['terminal'],roots[-1],contexts_fold[-1],u,rs,claim)
-    for s,q in zip(sample(t,4*D,queries),proof['queries']):
+    return degrees,D,contexts,bs,roots,contexts_fold,rs,sample(t,4*D,queries)
+
+def verify(proof,statement,parent,branches,claim, *, queries):
+    degrees,D,contexts,bs,roots,contexts_fold,rs,samples=replay(proof,statement,parent,branches,claim,queries=queries)
+    n=D.bit_length()-1
+    h.require(len(proof['queries'])==queries,'query count')
+    for s,q in zip(samples,proof['queries']):
         h.require(set(q)=={'sources','folds'} and len(q['sources'])==len(branches) and len(q['folds'])==n,'query shape');a=b=f.ZERO
         for op,branch,d,ctx,powers in zip(q['sources'],branches,degrees,contexts,bs):
             pair=read_opening(op,hashread(branch['root']),ctx,2*d,s%(2*d),True,powers)

@@ -2,11 +2,13 @@
   "status": "PASS",
   "cases": [
     {
+      "binary_bytes": 3720,
       "queries": 8,
       "rounds": 4,
       "json_bytes": 24829
     },
     {
+      "binary_bytes": 3304,
       "queries": 309,
       "rounds": 4,
       "json_bytes": 854283
@@ -28,6 +30,6 @@
     "query-budget"
   ],
   "source_root_reference_match": true,
-  "source_sha256": "989dd5592a29332be7e973ffb6684e89875900bfe613bb202d851f7409bc722b",
-  "scope": "Heterogeneous-degree weighted Ext8 folding diagnostic with opening-independent source commitments and externally supplied weights/claim. Query309 is a configuration test, not certified128-bit/PQ security. Full slice integration, compact codec/multiproofs, complete size and formal implementation binding remain open."
+  "source_sha256": "bde1dcaf20c59611de1c0c2f1c1f2b7e4e93bbef0ae514afbf046c3d16878949",
+  "scope": "Heterogeneous-degree weighted Ext8 folding diagnostic with opening-independent source commitments and externally supplied weights/claim. Query309 is a configuration test, not certified128-bit/PQ security. This test covers compact codec parity; complete secure envelope and formal implementation binding remain open."
 }
