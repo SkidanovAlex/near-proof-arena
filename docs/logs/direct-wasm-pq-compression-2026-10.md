@@ -5217,3 +5217,41 @@ Next protocol work should formalize per-prefix doomed-state transitions and
 rescreen larger-field/hash configurations, or establish a demonstrably tighter
 QROM route. Full NEAR1Pgas, recursion, implementation binding and300k target
 remain open; feasibility gate unchanged.
+
+### Formal per-prefix weighted-fold escape bound
+
+Previous turn was progress (QROM work-factor screen and compiler obligations).
+Added `NearCompression/WeightedFoldDoomed.lean` to begin discharging the
+pointwise prefix obligation with actual extraction, not a numerical premise.
+
+`WeightedFoldPrefix` stores the fixed source-even/source-odd functions,
+domain, agreement weights/threshold, arbitrary coefficient weights and current
+claim. Its `Doomed` predicate says no sufficiently agreeing polynomial pair
+realizes that claim; importantly it does not refer to the next prover message.
+`weightedFoldEscape` includes doomedness, quadratic degree, endpoint check,
+and existence of a valid folded candidate AFTER the challenge. Malformed
+polynomial messages cannot escape because the verifier rejects them.
+
+`weighted_fold_prefix_escape_bound` proves for every valid fixed prefix and
+EVERY fixed next polynomial that at most max(domain.length,2) distinct
+challenges escape. It invokes actual general weighted extraction, then derives
+a contradiction to initial doomedness from the extracted polynomial identity
+and the endpoint check. It does not fix the decoded candidate before sampling.
+
+`weighted_fold_adaptive_escape_budget` allows arbitrary prefix states and
+prover messages depending on the complete prior challenge history. It derives
+the per-history bounds and applies the existing finite-tree adaptive union
+bound: escape-leaves*sample.length <= rounds*limit*sample.length^rounds.
+No independence between different prover messages or different histories is
+assumed; only the next uniform challenge experiment is modeled.
+
+Scope: existing strict regime2*mass+B*(D-1)<3*threshold, not Johnson. This is
+an escape-event component, not a whole-verifier RBR theorem. Actual successive
+state compatibility, false-statement initialization, terminal rejection,
+commitment extraction and BCS/QROM correspondence remain open. In particular,
+arbitrary states(history) does not by itself say the implementation transitions
+between these states. No proof-size or security gate changed.
+
+Validation: full Lean audit PASS4131theorems/regressions; allowed axioms only.
+Registered module/import/axiom checks and scope source hash; diff checks pass.
+Full NEAR1Pgas and128-bit PQ under300k remain unproved.

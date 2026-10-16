@@ -5926,3 +5926,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.rate_shift_truthful_ood_query_count
 
 #print axioms NearCompression.rate_shift_source_threshold_sharp
+
+#print axioms NearCompression.weighted_fold_prefix_escape_bound
+#print axioms NearCompression.weighted_fold_adaptive_escape_budget

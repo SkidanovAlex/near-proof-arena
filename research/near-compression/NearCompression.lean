@@ -1564,3 +1564,4 @@ import NearCompression.ExpandedBusFingerprint
 import NearCompression.ExpandedBusFingerprintCheck
 import NearCompression.BusFormulaReplacement
 import NearCompression.RateShiftQuerySharpness
+import NearCompression.WeightedFoldDoomed
