@@ -1760,3 +1760,5 @@ import NearCompression.SeparableFactorSelection
 import NearCompression.RegularPolynomialDivision
 
 import NearCompression.AlgebraicResidueSpecialization
+
+import NearCompression.AlgebraicGuardedInverse

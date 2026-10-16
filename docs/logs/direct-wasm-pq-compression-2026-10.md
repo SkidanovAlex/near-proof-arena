@@ -9256,3 +9256,30 @@ Next: guarded derivative inversion and composition of algebraic-extension
 Hensel specialization. Parameter-degree control/useful-branch coverage and
 protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Guarded actual algebraic derivative inverse
+
+Added AlgebraicGuardedInverse.lean with three audited public theorems.
+For A*h+B*p=1 with irreducible h, the actual quotient-field inverse of the
+class of p equals the class of B. Safe specialization of h,A,B and the
+evaluation of p at a specialized modulus root proves both nonzero numeric
+value and partial specialization of the actual inverse to its reciprocal.
+This uses an inverse representative supplied by the certificate, not an
+invalid assertion that nonzero value at one root protects every inverse.
+
+The source-degree derivative determinant supplies the safe bounded certificate,
+so its guard now protects the actual inverse of the modulus derivative in the
+constructed algebraic field. Full extension-field Hensel specialization still
+needs composition of coefficient operations, source evaluation and the
+operational slope with this interface.
+
+Validation:240 irreducible parameter families and polynomial quotient inverse
+checks,1355 guarded root inverse values agreeing with independent numeric
+Euclid,167 excluded denominator points. Full audit4612 PASS, allowed axioms
+only. Evidence: results/algebraic-guarded-inverse/.
+
+Next: compose algebraic and numeric Hensel recurrence specialization, including
+the actual full-source slope where it differs from the modulus derivative.
+Parameter-degree control/useful-branch coverage and protocol/QROM composition
+remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

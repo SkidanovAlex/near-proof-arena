@@ -6508,3 +6508,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.algebraic_residue_value_unique
 #print axioms NearCompression.algebraic_residue_value_add
 #print axioms NearCompression.algebraic_residue_value_mul
+
+#print axioms NearCompression.polynomial_residue_certificate_inverse
+#print axioms NearCompression.algebraic_certificate_inverse_specializes
+#print axioms NearCompression.algebraic_derivative_guarded_inverse

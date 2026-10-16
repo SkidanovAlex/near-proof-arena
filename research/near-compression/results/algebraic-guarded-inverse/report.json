@@ -1,0 +1,7 @@
+{
+  "irreducible_parameter_systems": 240,
+  "polynomial_quotient_inverse_checks": 240,
+  "guarded_root_inverse_values": 1355,
+  "excluded_denominator_points": 167,
+  "scope": "Actual quotient derivative inverse represented by a safe certificate multiplier; numeric values agree with independent Euclid. Full extension Hensel specialization and MCA remain open."
+}
