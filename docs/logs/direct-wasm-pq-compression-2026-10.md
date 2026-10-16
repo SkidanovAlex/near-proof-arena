@@ -9415,3 +9415,29 @@ degrees, followed by useful-branch forcing and coverage. These are still open;
 the normalization theorem alone does not establish the full MCA bound.
 Diagnostic 1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR 1Pgas, PQ128 composition, recursion and sub300000 B remain open.
+
+## 2026-10-16 — Gauss primitive-product lemma over polynomial parameter rows
+
+Added PrimitivePolynomialProduct.lean with four audited public theorems.
+Explicit dense addition/multiplication of K[Z][Y] rows transports exactly to
+K(Z)[Y] and to polynomial residue rings. A primitive row family stays nonzero
+modulo every irreducible parameter polynomial. Reducing a hypothetical common
+nonconstant divisor of the product to an irreducible divisor, then using the
+constructed residue field and formal polynomial integral-domain theorem,
+proves that the product of two primitive families is primitive. The argument
+covers zero/padded rows, characteristic two and the zero candidate divisor.
+No unique-factorization instance or sampled evaluation identity is assumed.
+
+Validation: 400 random and 3217 exhaustive primitive products; 17700 residue
+reductions; 2700 parameter-specialization checks. Negative regressions include
+800 nonprimitive factors, four reducible residue moduli with zero divisors,
+and four nonzero formal polynomials vanishing on the entire base field.
+Full audit 4650 PASS, allowed axioms only. Evidence:
+results/primitive-polynomial-product/.
+
+Next: rational scalar descent for primitive factors and source-controlled
+parameter-degree inheritance. The primitive-product lemma is one step in
+Gauss descent, not the completed source-factor degree theorem. Useful-branch
+forcing/coverage, full MCA and protocol/QROM composition remain open.
+Diagnostic 1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR 1Pgas, PQ128 composition, recursion and sub300000 B remain open.

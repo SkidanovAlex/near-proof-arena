@@ -6551,3 +6551,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_parameter_content_identity
 #print axioms NearCompression.polynomial_irreducible_coeff_congr
 #print axioms NearCompression.polynomial_content_normalized_irreducible
+
+#print axioms NearCompression.polynomial_parameter_rows_product
+#print axioms NearCompression.polynomial_parameter_rows_residue_product
+#print axioms NearCompression.polynomial_primitive_residue_nonzero
+#print axioms NearCompression.polynomial_primitive_rows_product

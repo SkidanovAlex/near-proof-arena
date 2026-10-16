@@ -335,6 +335,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SelectedSourceSlopeGuard.lean",
     "research/near-compression/NearCompression/RationalFactorClearing.lean",
     "research/near-compression/NearCompression/PolynomialContentNormalization.lean",
+    "research/near-compression/NearCompression/PrimitivePolynomialProduct.lean",
     "research/near-compression/NearCompression/DeterminantRowReplacement.lean",
     "research/near-compression/NearCompression/DeterminantCofactorFold.lean",
     "research/near-compression/NearCompression/DeterminantRowLinearity.lean",

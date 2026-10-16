@@ -1772,3 +1772,4 @@ import NearCompression.SelectedSourceSlopeGuard
 import NearCompression.RationalFactorClearing
 
 import NearCompression.PolynomialContentNormalization
+import NearCompression.PrimitivePolynomialProduct
