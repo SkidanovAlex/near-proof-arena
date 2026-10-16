@@ -406,6 +406,7 @@
     "research/near-compression/NearCompression/CallGKRRoot.lean": "4acd47d04341a125d0468fcf7a1eed4dbab7267fe3051d3bb959155f127904c1",
     "research/near-compression/NearCompression/GKRMessageCheck.lean": "4c35e51cc725eef93b006c57d0f0f87a8e2a6898da6cb71084562de9d7fb076e",
     "research/near-compression/NearCompression/GKRPathMessageCheck.lean": "3c05e5c170d559ec4e00c68f322c6f2680e72e2dfad3ba234e39163577050175",
+    "research/near-compression/NearCompression/GKRRootMessageCheck.lean": "fd77de6c8f48e53fb074489cbdd697538bfd8e702703179a7cf3ebd28eb2cbf0",
     "research/near-compression/NearCompression/PreparedTypedEqzStack.lean": "6aebcce70dd6800210c2587259bac23bb0275b51f6118d3d30728cd832d5777d",
     "research/near-compression/NearCompression/PreparedTypedOpcode.lean": "66ff680ecac48876b66419dfe7b40607eaa1027b61a685261f3e1fb2181b8a9d",
     "research/near-compression/NearCompression/BusProgramGateSoundness.lean": "08da9e08908f8b2c0f2151577b0ad3f6760455a61b9df19ade824632b34989b2",

@@ -1,4 +1,4 @@
-import NearCompression.GKRPathMessageCheck
+import NearCompression.GKRRootMessageCheck
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -98,7 +98,11 @@ def main (args : List String) : IO Unit := do
     let layers ← (←need (←field testcase "layers").getArr?).toList.mapM fun j=>do
       (←need j.getArr?).toList.mapM gate
     let expected ← need (←field testcase "expected").getBool?
-    let result:=gkrPathMessageCheck (replayStrategy records) layers []
+    let outputSlot ← need (←field testcase "output_slot").getNat?
+    let bits ← (←need (←field testcase "root_bits").getArr?).toList.mapM (fun j=>need j.getBool?)
+    let firstDimension:=(records.map (fun r=>r.1)).getD 0 0
+    let rootChecked:=gkrRootMessageCheck (replayStrategy records) layers firstDimension outputSlot bits
+    let result:=rootChecked && gkrPathMessageCheck (replayStrategy records) layers []
       (records.map (fun r=>r.1)) (records.map (fun r=>r.2.2))
     require (result==expected) "path checker result mismatch"
     if result then accepted:=accepted+1 else rejected:=rejected+1

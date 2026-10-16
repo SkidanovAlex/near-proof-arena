@@ -6148,3 +6148,29 @@ root-query binding is supplied separately by CallGKRRoot. Commitment opening
 composition, hash/QROM reductions, complete recursive operand provenance and
 full NEAR1Pgas/PQ128/sub300k feasibility remain open. The new checked relation
 must not be confused with a complete proof of the Python verifier or protocol.
+
+### Checked initial GKR root query and zero claim
+
+GKRRootMessageCheck.lean checks that the final layer exists, its width is the
+power of two described by the supplied Boolean bits, the selected output slot
+is bounded and equals the decoded Boolean index, the initial weighted gates
+are exactly the corresponding single root query, and the initial claim is0.
+call_root_message_wrong composes these checks with the checked call compiler,
+so CallGKRRoot's root-query/zero-claim/output-shape assumptions are discharged
+by an executable check rather than independently supplied equalities.
+
+CheckGKRPath.lean now checks this starting relation together with the full
+cross-layer path. The root slot and bits are derived from the retained layout,
+which is compared with fresh compile_layout output before replay. The actual
+14-layer path passes. Eleven negatives reject: the prior seven plus changed
+output slot, wrong Boolean root bit, nonzero initial claim, and wrong initial
+root weight. Retained paths fixture/report/log updated in results/call-gkr-path.
+
+Validation: full check.py PASS4194, /tmp/gkr-root-message-audit.log. Combined
+root/path replay PASS1/reject11, /tmp/call-gkr-root-path.log. No prover/verifier
+or retained proof bytes changed. The selected slot's provenance is supplied
+by the existing checked compiler layout; this is still runtime execution of
+proved checkers rather than kernel evaluation of the full JSON capture.
+Transcript causality/Fiat-Shamir, source-opening binding, PCS/QROM composition,
+full recursive operands and full NEAR1Pgas/PQ128/sub300k feasibility remain
+open. Next focus is terminal functional to committed source rows.

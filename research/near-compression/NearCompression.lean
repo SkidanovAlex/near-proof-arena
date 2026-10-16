@@ -1598,3 +1598,5 @@ import NearCompression.CallGKRRoot
 import NearCompression.GKRMessageCheck
 
 import NearCompression.GKRPathMessageCheck
+
+import NearCompression.GKRRootMessageCheck

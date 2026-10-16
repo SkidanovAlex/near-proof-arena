@@ -17,9 +17,11 @@ def main():
     calls=json.loads((source/'calls.json').read_text());receipt=json.loads((package/'results/ext8-node-batch/expected-use.json').read_text())
     layout,_,_,_=cp.compile_layout(st,receipt,calls)
     assert json.loads(json.dumps(layout))==bundle['layout'],'retained layer layout changed'
-    original=dict(records=records,layers=layers,expected=True)
+    dimension=(len(layers[-1])-1).bit_length()
+    original=dict(records=records,layers=layers,output_slot=layout['root'],
+        root_bits=[bool((layout['root']>>i)&1) for i in range(dimension)],expected=True)
     cases=[original];labels=[]
-    for mutation in ('gamma','next-claim','next-gate-order','layer-wiring','missing-layer','extra-layer','empty-path'):
+    for mutation in ('gamma','next-claim','next-gate-order','layer-wiring','missing-layer','extra-layer','empty-path','wrong-output-slot','wrong-root-bit','nonzero-root-claim','wrong-root-weight'):
         bad=copy.deepcopy(original);bad['expected']=False
         if mutation=='gamma':bad['records'][0]['gamma']=cp.g.add(tuple(bad['records'][0]['gamma']),cp.g.ONE)
         elif mutation=='next-claim':bad['records'][1]['initial']=cp.g.add(tuple(bad['records'][1]['initial']),cp.g.ONE)
@@ -27,7 +29,11 @@ def main():
         elif mutation=='layer-wiring':bad['layers'][-2][1][0]='mul' if bad['layers'][-2][1][0]!='mul' else 'add'
         elif mutation=='missing-layer':bad['records'].pop()
         elif mutation=='extra-layer':bad['records'].append(copy.deepcopy(bad['records'][-1]))
-        else:bad['records']=[]
+        elif mutation=='empty-path':bad['records']=[]
+        elif mutation=='wrong-output-slot':bad['output_slot']=(bad['output_slot']+1)%len(layers[-1])
+        elif mutation=='wrong-root-bit':bad['root_bits'][0]=not bad['root_bits'][0]
+        elif mutation=='nonzero-root-claim':bad['records'][0]['initial']=cp.g.ONE
+        else:bad['records'][0]['gates'][0][3]=cp.g.add(tuple(bad['records'][0]['gates'][0][3]),cp.g.ONE)
         cases.append(bad);labels.append(mutation)
     fixture=out/'paths.json';fixture.write_text(json.dumps(cases,separators=(',',':')))
     run=subprocess.run(['lake','env','lean','--run','CheckGKRPath.lean',str(fixture)],cwd=package,text=True,capture_output=True,timeout=120)
@@ -35,8 +41,8 @@ def main():
     report=dict(status='PASS',layers=len(records),accepted_paths=1,rejected_cases=labels,
         fixture_sha256=hashlib.sha256(fixture.read_bytes()).hexdigest(),
         files={str(f.relative_to(package)):hashlib.sha256(f.read_bytes()).hexdigest() for f in
-          [Path(__file__),package/'CheckGKRPath.lean',package/'NearCompression/GKRPathMessageCheck.lean',messages,capture]},
-        scope='The retained 14-layer path passes the proved Lean checker, including adjacent query weights, claim links and circuit-depth alignment. Theorem yields evaluated verifier path for supplied history-indexed functions. Tape replay establishes one finite path, not causal transcript/Fiat-Shamir behavior across sampled paths or PCS/QROM soundness. Root-query binding is a separate interface.')
+          [Path(__file__),package/'CheckGKRPath.lean',package/'NearCompression/GKRPathMessageCheck.lean',package/'NearCompression/GKRRootMessageCheck.lean',messages,capture]},
+        scope='The retained 14-layer path passes the proved Lean checker, including the zero root claim, Boolean output-slot query, adjacent query weights, claim links and circuit-depth alignment. Theorem yields evaluated verifier path for supplied history-indexed functions. Tape replay establishes one finite path, not causal transcript/Fiat-Shamir behavior across sampled paths or PCS/QROM soundness. Root-slot provenance still comes from the checked compiler layout.')
     (out/'report.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
 
 if __name__=='__main__':main()

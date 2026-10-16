@@ -6008,3 +6008,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.gkr_path_message_checked
 #print axioms NearCompression.gkr_path_message_linked
+
+#print axioms NearCompression.gkr_root_message_checked
+#print axioms NearCompression.call_root_message_wrong
