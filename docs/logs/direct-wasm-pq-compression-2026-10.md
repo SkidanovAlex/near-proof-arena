@@ -6442,3 +6442,30 @@ verifies a same-root all-Ext8 call/compression conjunction in a fresh process,
 and accounts for the full PCS geometry and external receipt/call bytes.
 It is syntax-checked but awaits the actual compression output for execution.
 Full NEAR/PQ128/sub300k feasibility remains open.
+
+### Combined Ext8 PCS budget: two query terms must be counted
+
+measure_ext8_bundle_budget.py instantiates the existing conditional ideal
+source-far/fold bound for both the compression geometry (degree262144,
+domain1048576,18folds) and call geometry (degree128,domain512,7folds), using
+Ext8 field cardinality. It sums the field numerators and BOTH query terms with
+exact Fraction arithmetic, then checks minimal equal query counts at selected
+component targets. No independence between the two proof events is required
+for their union bound; each component's theorem premises remain explicit.
+
+At309queries per proof, the conditional two-PCS bound has127.2466negative-log2
+bits, so this bound alone does not certify128bits even in its ideal model.
+At531queries it has219.2722bits. Minimal equal query counts for this restricted
+PCS budget are311for128bits,480for198bits and533for220bits. Functional reduction,
+local/GKR/bus errors, source-case coverage/extraction, hashes and Fiat-Shamir/QROM
+remain excluded. These numbers are neither attacks nor quantum-security
+conversions, and are not a complete parameter prescription. This corrects any
+interpretation of309queries as sufficient for a complete two-proof128-bit
+bundle. The original309-query run remains useful for measured proof geometry.
+
+Validation: exact rational threshold/minimality checks PASS; artifact
+results/ext8-bundle-conditional-budget.json with source hashes, log
+/tmp/ext8-bundle-budget.log. No Lean changes; existing conditional theorem
+hypotheses have not been discharged for the full protocol. The original
+compression process remains active in session24454/PID1725108, in weighted PCS
+at696elapsed seconds with about4.9GiB resident memory. No result yet.
