@@ -2690,3 +2690,29 @@ NEAR1Pgas sub300000-byte feasibility remain open.
 Validation: module and full check.py passed3787 registered results; axioms
 remain within propext/Classical.choice/Quot.sound. Imports, audit, scope report,
 integration evidence and NOT_PASSED slice gate updated.
+
+
+### Concrete history coordinates and far-case acceptance
+
+Added GKRHistoryCoordinates: history length is rowCoordinates+2*inputLog+1.
+For valid lane metadata, row/left/right/gamma blocks read only that history.
+The actual lifted weight-table coefficients at a PCS suffix equal the joint
+beta coefficients at history++suffix. The virtual oracle identity is also
+proved directly on take/drop of a correctly sized full joint vector.
+
+A total fixed-length PCS extraction resolves the far theorem's requirement
+that every strategy input produce commonLog opening coordinates. It equals
+ordinary drop on valid full joint samples, with zero-default lookup for short
+inputs. Added gkr_history_far_acceptance_count using this extraction and the
+concrete heterogeneous coefficient family. Affinity and opening-point length
+are now derived in this specialization.
+
+These results establish concrete coordinate compatibility between the near
+and far experiments. The final case split/event merger is still outstanding,
+as are compiler metadata stability, source-oracle commitment binding, terminal
+authentication, global GKR/AIR/bus/execution composition and quantum security.
+No secure full NEAR1Pgas size claim is made.
+
+Validation: six new results pass module checks and full check.py (3793
+registered results), with the existing axiom allowlist. Imports, audit, scope
+inventory, integration report and NOT_PASSED gate updated.

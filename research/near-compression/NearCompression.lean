@@ -1383,3 +1383,7 @@ import NearCompression.ChronologicalChallengeCount
 import NearCompression.NearHistoryFoldAcceptance
 
 import NearCompression.ChosenGKRHistoryAcceptance
+
+import NearCompression.GKRHistoryCoordinates
+
+import NearCompression.GKRHistoryFarAcceptance

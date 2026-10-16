@@ -1,0 +1,45 @@
+{
+  "status": "CONCRETE_HISTORY_COORDINATES_AND_FAR_ACCEPTANCE_PROVED",
+  "modules": [
+    "NearCompression/GKRHistoryCoordinates.lean",
+    "NearCompression/GKRHistoryFarAcceptance.lean"
+  ],
+  "theorems": [
+    "gkr_history_joint_coefficients",
+    "gkr_history_joint_oracle",
+    "gkr_joint_split_oracle",
+    "gkr_pcs_point_length",
+    "gkr_pcs_point_eq_drop",
+    "gkr_history_far_acceptance_count"
+  ],
+  "proved": [
+    "History length is rowCoordinates+2*inputLog+1; row/left/right/gamma blocks never read the PCS suffix for valid lane metadata.",
+    "Near weight-table coefficients at the suffix equal far joint beta coefficients at history++suffix.",
+    "On a full vector of heterogeneousJointDimension, taking history and dropping PCS gives exactly the same virtual source oracle.",
+    "A total fixed-length PCS point extraction has commonLog entries for every input and equals drop on valid full vectors.",
+    "The concrete heterogeneous family and that PCS point satisfy the existing far checked-fold acceptance bound; beta affinity and point length are derived."
+  ],
+  "normalized_far_interpretation": "q*max(N,2)/Q + sum_i(max(sizes(i+1),2))/Q + ((T-1)/N)^queries for nonempty samples, q=heterogeneousJointDimension; integer bound is the formal result.",
+  "explicit_assumptions": [
+    "Far branch: no common prechallenge joint source representative.",
+    "Valid lane metadata; fixed source oracles before joint coordinates.",
+    "Folding initial oracle equals the concrete joint beta source at every domain index.",
+    "Ideal independent draws, valid fold/root geometry, interpolation threshold, strict unique-decoding regime, terminal authentication."
+  ],
+  "remaining": [
+    "Merge near/far branches into one representative-extraction-or-wrong-GKR failure event; current results establish their coordinate compatibility.",
+    "Refine actual compiler metadata and byte commitments into the fixed formal source/layout.",
+    "Compose global GKR/AIR/bus/execution soundness and quantum transcript reduction.",
+    "Secure sub300000-byte full NEAR1Pgas proof remains unestablished."
+  ],
+  "validation": {
+    "module_checks": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3793,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

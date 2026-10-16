@@ -5426,3 +5426,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.near_history_fold_acceptance_count
 
 #print axioms NearCompression.chosen_gkr_history_acceptance_count
+
+#print axioms NearCompression.gkr_history_joint_coefficients
+#print axioms NearCompression.gkr_history_joint_oracle
+#print axioms NearCompression.gkr_joint_split_oracle
+#print axioms NearCompression.gkr_pcs_point_length
+#print axioms NearCompression.gkr_pcs_point_eq_drop
+
+#print axioms NearCompression.gkr_history_far_acceptance_count

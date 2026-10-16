@@ -155,7 +155,10 @@
     "NearCompression/NearHistoryFoldAcceptance.lean",
     "results/near-history-fold-acceptance-integration.json",
     "NearCompression/ChosenGKRHistoryAcceptance.lean",
-    "results/chosen-gkr-history-acceptance-integration.json"
+    "results/chosen-gkr-history-acceptance-integration.json",
+    "NearCompression/GKRHistoryCoordinates.lean",
+    "NearCompression/GKRHistoryFarAcceptance.lean",
+    "results/gkr-history-coordinate-integration.json"
   ],
   "requirements": [
     {
@@ -205,7 +208,8 @@
       "near_functional_acceptance_component": "Wrong functional of one shared representative now bounds actual weighted-sumcheck plus adaptive-fold acceptance, with normalized2*n/Q+foldSum/Q+queryTail. Folding strategy may depend on preceding sumcheck challenges. Fixed representative/source identity, fold geometry, terminal authentication and ideal sampling remain explicit; full compiled GKR/AIR/bus composition is open.",
       "chosen_gkr_fold_acceptance_component": "A wrong full GKR input functional of the prechallenge chosen joint source tuple bounds checked weighted sumcheck and adaptive folding acceptance. Derives sparse recovery, shared functional agreement and actual sequential constant subtraction from existing geometry and joint representative premises. Representative existence, oracle identity, terminal authentication, ideal sampling and strict unique-decoding regime remain explicit; executable refinement and global quantum composition are open.",
       "near_history_acceptance_component": "Near-case wrong initial functional and checked sumcheck/folding acceptance is now bounded over one joint earlier+PCS coordinate vector. Earlier history may select weights, claims and folding strategies, while a single source representative serves all histories. Exact prefix/suffix counting introduces no extra normalized error. Actual chosen-GKR event instantiation, near/far/global composition and transcript/commitment/PQ refinement remain open.",
-      "chosen_gkr_history_component": "Bounds wrong full recovered GKR input AND checked sumcheck/folding acceptance on a joint earlier-history plus PCS coordinate vector. The single chosen joint source representative depends only on fixed layout, metadata, source oracles, domain and threshold. Actual constant subtraction and sparse/shared recovery are derived for all histories. Representative existence, oracle authentication, ideal sampling, and subsequent near/far/global/quantum composition remain open."
+      "chosen_gkr_history_component": "Bounds wrong full recovered GKR input AND checked sumcheck/folding acceptance on a joint earlier-history plus PCS coordinate vector. The single chosen joint source representative depends only on fixed layout, metadata, source oracles, domain and threshold. Actual constant subtraction and sparse/shared recovery are derived for all histories. Representative existence, oracle authentication, ideal sampling, and subsequent near/far/global/quantum composition remain open.",
+      "concrete_history_far_component": "Concrete chronological coefficient/oracle identities and total PCS suffix extraction are proved. Far checked-fold acceptance now uses the heterogeneous coefficient family and this exact suffix, with affinity/point-length discharged. Near/far event merger, source binding, global execution and quantum composition remain open."
     },
     {
       "name": "Complete bytes and scaling",
