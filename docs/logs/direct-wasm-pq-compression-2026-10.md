@@ -5340,3 +5340,46 @@ or impossibility result follows. Full NEAR1Pgas/PQ/300k gate unchanged.
 Validation: old report exact regression, geometry/minimal-query checks,
 new schedule ledger recomputation, script compilation and clean diff checks.
 No Lean changes; prior4133-theorem audit remains the latest formal result.
+
+### Measured recursive hash work for the retained Ext8 compact proof
+
+Previous goal turn progressed with the larger-field screen, followed by a
+user-requested status update. To assess architectural compression, measured
+the actual retained compact Ext8 weighted opening verifier instead of
+assuming that a recursive wrapper will be cheap.
+
+Added `measure_ext8_recursive_hash_work.py` and
+`results/ext8-recursive-hash-work.json`. The script first independently runs
+the canonical decoder/full weighted verifier, then instruments the existing
+hash_parts function without changing verification. SHA384 framing is checked
+against the implementation at nine payload lengths including padding
+boundaries. Identical inputs are deduplicated by EXACT framed bytes, not by
+assuming collision resistance of an auxiliary counting hash. Every profile
+capture is removed in finally. Input and gadget fixture hashes retained.
+
+Retained q309/proof620632bytes:
+62977hash invocations,177186SHA384compression blocks.
+12762distinct framed inputs,39701blocks after identical-input sharing.
+The current codec expands shared paths then the verifier rechecks them;
+measurement includes those repeated checks. Deduplicating hash computations
+would not eliminate any query consistency checks.
+
+Using the existing formally evaluated128row x6944column compression gadget:
+all calls imply22,679,808rows and586.691GiB dense u32trace storage;
+shared calls imply5,081,728rows and131.456GiB dense u32trace storage.
+These are exact layout products, NOT peak-RAM or runtime measurements, and
+exclude auxiliaries, LDE/FFT, commitments and all non-hash verifier work.
+The supplied local/GKR/statement obligations are external; this measures
+only opening verification, not a complete recursive state-transition proof.
+The inner q309 profile itself is diagnostic, not128-bit quantum certified.
+
+Decision: recursive compression remains an architectural option, but the
+current SHA384gadget is not an economical turnkey outer circuit. Next work
+must measure/constrain shared Merkle verification and substantially improve
+hash-gadget layout before a full recursive prover investment. The unique
+count is a candidate for sharing, not a proven minimal SHA circuit: compression
+prefixes may share further work, and equality/routing constraints have cost.
+No whole-proof compression or quantum security claim follows; gate unchanged.
+
+Validation: fresh ordinary verification, instrumented verification, exact
+framing parity and retained gadget dimensions checked. No Lean changes.
