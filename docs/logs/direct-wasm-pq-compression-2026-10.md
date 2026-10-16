@@ -9283,3 +9283,30 @@ the actual full-source slope where it differs from the modulus derivative.
 Parameter-degree control/useful-branch coverage and protocol/QROM composition
 remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Partial specialization through the Hensel recurrence
+
+Added PartialHenselSpecialization.lean with seven audited public theorems.
+A partial arithmetic relation preserving zero,one,minus one,addition and
+multiplication lifts to polynomial products and bivariate substitution.
+The actual Hensel recurrence preserves its initial coefficient unconditionally;
+the operational slope thus equals the initial slope at every step. One related
+initial slope inverse supplies coefficientwise specialization of all finite
+lifts, without an unconditional inverse-preservation axiom.
+
+The relation is instantiated with AlgebraicResidueValueAt using the proved
+quotient arithmetic and base-constant witnesses. Consequently actual algebraic
+Hensel lift coefficients specialize to the numeric lift, given related source
+rows, the initial root and its guarded initial slope inverse. The concrete
+source/selected-factor interfaces and full-source slope still need to supply
+these premises in the general branch construction.
+
+Validation:36 rational-algebraic source systems,1080 algebraic/numeric lift
+pairs and3240 coefficient specialization comparisons;27 derivative guard
+points excluded. Includes characteristic two via Y^2+Y-Z. Full audit4619 PASS,
+allowed axioms only. Evidence: results/partial-hensel-specialization/.
+
+Next: discharge the concrete source, algebraic root and full-source slope
+interfaces, then parameter-degree/useful-branch forcing and coverage. Full
+MCA and protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

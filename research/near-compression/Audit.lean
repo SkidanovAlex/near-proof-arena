@@ -6512,3 +6512,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_residue_certificate_inverse
 #print axioms NearCompression.algebraic_certificate_inverse_specializes
 #print axioms NearCompression.algebraic_derivative_guarded_inverse
+
+#print axioms NearCompression.related_polynomial_add
+#print axioms NearCompression.related_polynomial_mul
+#print axioms NearCompression.related_bivariate_substitute
+#print axioms NearCompression.hensel_lift_constant_unconditional
+#print axioms NearCompression.partial_hensel_lift_specializes
+#print axioms NearCompression.algebraic_residue_base_constant
+#print axioms NearCompression.algebraic_hensel_lift_specializes

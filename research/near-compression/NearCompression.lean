@@ -1762,3 +1762,5 @@ import NearCompression.RegularPolynomialDivision
 import NearCompression.AlgebraicResidueSpecialization
 
 import NearCompression.AlgebraicGuardedInverse
+
+import NearCompression.PartialHenselSpecialization
