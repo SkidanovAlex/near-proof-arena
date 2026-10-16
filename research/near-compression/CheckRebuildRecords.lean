@@ -1,4 +1,4 @@
-import NearCompression.AIRAccumulatorCheck
+import NearCompression.BusFormulaCheck
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -145,16 +145,41 @@ private partial def expression (j : Json) : IO ZkFormal.Air.Expr := do
       return .neg (←expression a[1]!)
   | _ => throw (IO.userError "unknown AIR expression")
 
+private partial def busFormula (j : Json) : IO (BusProgramFormula Fp4) := do
+  let a ← need j.getArr?
+  require (0<a.size) "empty bus formula"
+  let tag ← need a[0]!.getStr?
+  match tag with
+  | "lit" =>
+      require (a.size==2) "bus literal arity"
+      return .literal (←scalar a[1]!)
+  | "current" | "next" =>
+      require (a.size==2) "bus column arity"
+      let c ← need a[1]!.getNat?
+      return if tag=="current" then .current c else .next c
+  | "first" | "last" | "trans" =>
+      require (a.size==1) "bus selector arity"
+      return if tag=="first" then .first else if tag=="last" then .last else .transition
+  | "add" | "sub" | "mul" =>
+      require (a.size==3) "bus binary arity"
+      let left ← busFormula a[1]!
+      let right ← busFormula a[2]!
+      return if tag=="add" then .add left right else if tag=="sub" then .sub left right else .mul left right
+  | _ => throw (IO.userError "unknown bus formula")
+
 private def checkAIR (program : List (TerminalInstruction Fp4)) (pubValues : List Fp4) (air : Json) : IO Unit := do
   let width ← need (←field air "width").getNat?
   let routes ← need (←field air "expression_routes").getArr?
   let mut registers : List Nat := []
+  let mut sourceFormulas : List (AIRBusResidual Fp4 × Nat) := []
   for route in routes do
     let expr ← expression (←field route "expr")
     let i ← need (←field route "register").getNat?
     require (airExpressionCheck program pubValues width expr i) "AIR expression rejected"
     registers := i::registers
+    sourceFormulas := (.inl expr,i)::sourceFormulas
   registers := registers.reverse
+  sourceFormulas := sourceFormulas.reverse
   let sourceCount ← need (←field air "source_constraints").getNat?
   require (sourceCount≤registers.length) "source expression count"
   let acc ← field air "accumulation"
@@ -175,6 +200,17 @@ private def checkAIR (program : List (TerminalInstruction Fp4)) (pubValues : Lis
     "source residual order"
   require ((←need (←field air "auxiliary_residual_count").getNat?)+sourceCount==residuals.length)
     "auxiliary residual count"
+  let fullWidth ← need (←field air "full_width").getNat?
+  require (width≤fullWidth) "full bus width"
+  let mut formulas := sourceFormulas.take sourceCount
+  for record in (←need (←field air "bus_formulas").getArr?) do
+    let f ← busFormula (←field record "formula")
+    let i ← need (←field record "register").getNat?
+    require (busFormulaCheck program fullWidth f i) "bus formula rejected"
+    formulas := formulas++[(.inr f,i)]
+  require (formulas.map Prod.snd==residuals) "complete formula residual order"
+  require (formulas.all (fun r => airBusResidualCheck program pubValues fullWidth r.1 r.2))
+    "mixed residual formulas rejected"
   require (airWeightedProgramCheck program (←scalar (←field air "mixing")) residuals zeroReg total output steps)
     "AIR accumulator rejected"
 
@@ -310,5 +346,5 @@ def main (args : List String) : IO Unit := do
     rho tables finalBalance root zeroNode capacity live positions (inputSize-1) stages rootSlot)
     "combined finite compiler check rejected"
   IO.println (Json.mkObj [("status",toJson "PASS"),("programs",toJson programs.size),
-    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),
-    ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes AIR expression and ordered accumulation checks; excludes auxiliary bus-formula meaning, extraction, parser refinement and concrete kernel certificates")]).compress
+    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),("bus_formula_checks",toJson true),
+    ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates")]).compress

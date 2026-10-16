@@ -200,7 +200,9 @@
     "NearCompression/AIRAccumulatorCheck.lean",
     "results/air-accumulator-checker-integration.json",
     "results/literal193-fixed-rebuild.air.json",
-    "results/native-air-checker-integration.json"
+    "results/native-air-checker-integration.json",
+    "NearCompression/BusFormulaCheck.lean",
+    "results/bus-formula-checker-integration.json"
   ],
   "requirements": [
     {
@@ -235,7 +237,8 @@
       "recovered_compiler_assignment": "Derived compiler initial-vector equality from current/next lane support bounds and constant separation; composed finite/compiler residual identity with exactly gkrRecoveredCircuitInput and depth-zero reverse GKR values. No assumed vector equality, uniqueness or commitment extraction. Full audit3851 results. Actual recovered-assignment checker acceptance, source AIR/environment identification and global/PQ soundness remain open.",
       "air_expression_checker": "Executable recursive AST/register acceptance derives AIRProgramRoute, then source program execution and checked compiled-table root equality with AST evaluation. Checks exact padding, register bounds, column width and negation zero. Full audit3855. Ordered weighted accumulation, auxiliary bus formulas, retained expected-AIR capture binding and global/PQ soundness remain open.",
       "air_accumulator_checker": "Finite ordered accumulation checker derives exact mixing-power route, binds zero/final copy and last output instruction. Together with expression checks it derives weighted AST evaluation and composes to a checked emitted table root. Full audit3861. Retained capture/expected-AIR validation and auxiliary bus formula meaning remain separate; no global/PQ certification.",
-      "native_air_accumulation_checks": "Retained fixed193 native Lean run checks1386 expression roots,1228 source constraints and1291 ordered accumulator residuals in2 programs before combined reconstruction/batching/layout validation. Two diagnostic assignments pass;20 malformed captures/manifests reject. The63 auxiliary residuals have structural accumulation coverage, not bus-formula meaning coverage. Audit3861; parser/replay/compiler and global/PQ refinement remain open."
+      "native_air_accumulation_checks": "Retained fixed193 native Lean run checks1386 expression roots,1228 source constraints and1291 ordered accumulator residuals in2 programs before combined reconstruction/batching/layout validation. Two diagnostic assignments pass;20 malformed captures/manifests reject. The63 auxiliary residuals have structural accumulation coverage, not bus-formula meaning coverage. Audit3861; parser/replay/compiler and global/PQ refinement remain open.",
+      "auxiliary_formula_checker": "Finite bus formula acceptance derives executed values and composes mixed AIR/bus residual lists with accumulation and checked reconstruction. Native fixed193 validates all63 expected auxiliary formulas (24 square,24 multiplicity-link,15 boundary) and complete1291-residual order;2 diagnostic assignments pass and24 malformed cases reject. Audit3867. Expected formula generation is still Python-derived; no global bus-validity, extraction or PQ theorem."
     },
     {
       "name": "Complete soundness ledger",

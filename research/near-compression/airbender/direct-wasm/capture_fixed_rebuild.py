@@ -21,8 +21,10 @@ def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 expected_batch=dict(rho=list(args[-1]),weights=[list(eq_point(t['tau'],t['point'])) for t in args[-2]],claims=[t['claim'] for t in args[-2]])
 # Bind AST routes and residual order to independently replayed AIR data.
 import check_air_program_certificates as air
+import check_bus_program_formulas as auxiliary
 from verify_whir_toy import P,base
 for k,v in dict(P=P,ZERO=ZERO,ONE=ONE,base=base,mul=mul).items():setattr(air,k,v)
+for k,v in dict(ZERO=ZERO,ONE=ONE,base=base,mul=mul,BASIS=bus.BASIS).items():setattr(auxiliary,k,v)
 spec,alpha,gamma,finals,terminals,rho=args
 c.require(len(spec['air']['tables'])==len(cert['programs'])==len(terminals),'AIR table coverage')
 air_tables=[]
@@ -41,7 +43,14 @@ for ti,(table,program,terminal) in enumerate(zip(spec['air']['tables'],cert['pro
         routes.append(dict(expr=expr,register=register))
     accumulation=air.accumulation(ins);air.check_accumulation(ins,accumulation,terminal['mixing'])
     c.require([r['register'] for r in routes[:len(constraints)]]==[s['residual'] for s in accumulation['steps'][:len(constraints)]],'source residual prefix')
-    air_tables.append(dict(width=table['width'],mixing=terminal['mixing'],expression_routes=routes,
+    formulas,aux_columns=auxiliary.expected(table,spec['public'],alpha,gamma,finals[ti])
+    c.require(aux_columns==bus.aux.layout(table)['aux_columns'],'auxiliary layout mismatch')
+    roots=[step['residual'] for step in accumulation['steps'][len(constraints):]]
+    c.require(len(roots)==len(formulas),'auxiliary coverage')
+    for formula,register in zip(formulas,roots):
+        auxiliary.validate_formula(formula['formula'],register,ins,table['width']+4*aux_columns,{})
+        formula['register']=register
+    air_tables.append(dict(bus_formulas=formulas,full_width=table['width']+4*aux_columns,width=table['width'],mixing=terminal['mixing'],expression_routes=routes,
         source_constraints=len(constraints),accumulation=accumulation,
         auxiliary_residual_count=len(accumulation['steps'])-len(constraints)))
 air_output=cli.output.with_suffix('.air.json')

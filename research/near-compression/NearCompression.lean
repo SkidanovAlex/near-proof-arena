@@ -1419,3 +1419,5 @@ import NearCompression.RecoveredCompiledCheck
 import NearCompression.AIRExpressionCheck
 
 import NearCompression.AIRAccumulatorCheck
+
+import NearCompression.BusFormulaCheck

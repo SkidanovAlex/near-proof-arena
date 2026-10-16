@@ -51,11 +51,15 @@ def main():
           ('wrong-air-mixing',lambda x:x['tables'][0]['mixing'].__setitem__(0,(x['tables'][0]['mixing'][0]+1)%2013265921)),
           ('wrong-accumulator-coefficient',lambda x:x['tables'][0]['accumulation']['steps'][0].__setitem__('coefficient',x['tables'][0]['accumulation']['zero'])),
           ('wrong-air-final-copy',lambda x:x['tables'][0]['accumulation'].__setitem__('output',0)),
-          ('missing-air-table',lambda x:x['tables'].pop())]
+          ('missing-air-table',lambda x:x['tables'].pop()),
+          ('wrong-bus-operation',lambda x:x['tables'][0]['bus_formulas'][0]['formula'].__setitem__(0,'add')),
+          ('missing-bus-register',lambda x:x['tables'][0]['bus_formulas'][0].__setitem__('register',1000000)),
+          ('missing-bus-formula',lambda x:x['tables'][0]['bus_formulas'].pop()),
+          ('reordered-bus-formulas',lambda x:x['tables'][0]['bus_formulas'].reverse())]
         for label,mutate in air_cases:
             value=json.loads(a.air.read_text());mutate(value);path=Path(d)/'air.json';path.write_text(json.dumps(value))
             rejected.append(dict(case=label,reason=run(a.bundle,a.rebuild,a.manifest,path,0,False)))
     report=dict(status='PASS',bundle=str(a.bundle),bundle_sha256=sha(a.bundle),rebuild=str(a.rebuild),rebuild_sha256=sha(a.rebuild),adapter_sha256=sha(Path('CheckRebuildRecords.lean')),manifest_sha256=sha(a.manifest),air_sha256=sha(a.air),positive=positive,rejected=rejected,
-      stored_bundle_check=stored_result,scope='Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes AIR expression and ordered accumulator checks; excludes auxiliary bus-formula meaning, commitment extraction, parser refinement and concrete kernel proof terms.')
+      stored_bundle_check=stored_result,scope='Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, commitment extraction, parser refinement and concrete kernel proof terms.')
     a.output.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(dict(status='PASS',assignments=len(positive),rejections=len(rejected))))
 if __name__=='__main__':main()

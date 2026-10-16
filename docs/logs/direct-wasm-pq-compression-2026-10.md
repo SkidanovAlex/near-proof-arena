@@ -3198,3 +3198,30 @@ replay are not formal parser/compiler refinement or concrete kernel capture
 certificates. Recovered inputs/environments, global cryptographic/PQ soundness
 and secure full-NEAR size remain open. Diagnostic certificates are research
 artifacts, not a newly measured proof envelope.
+
+### Checked auxiliary formulas and mixed AIR/bus residuals
+
+BusFormulaCheck adds a finite recursive checker for arbitrary field-valued
+literals, current/next coordinates, selectors and add/sub/mul formulas.
+Acceptance derives BusProgramFormulaRoute and independently executed formula
+values. A mixed AIR/bus residual list composes with the ordered accumulator and
+checked reconstruction, yielding the exact mixed sum at the emitted table root.
+Exact instruction padding, register bounds and column bounds are checked.
+
+The fixed replay generator now uses the existing auxiliary formula generator,
+checks exact auxiliary width/count/order and retains all expected formula
+register routes. The native adapter checks every supplied formula and requires
+the combined source-constraint/formula register list to equal the complete
+accumulator list. Expected-formula generation remains a Python refinement
+boundary; supplied formula evaluation is not a global bus-validity theorem.
+
+Validation: both diagnostic assignments pass all63 auxiliary formulas
+(24 squares,24 multiplicity links,5 each first/transition/last) and all1291
+residuals. Native invocations took about5.6s each. All24 malformed cases reject,
+including wrong bus operation, absent register/formula and reordered formulas.
+Full check.py passed3867 results under the existing axiom allowlist. Python
+compilation and diff checks pass; integration and gate evidence updated.
+
+The gate remains NOT_PASSED. Expected-formula generation, recovered input
+identification, concrete kernel/parser/transcript refinement and global
+execution/PQ soundness and secure full-NEAR size remain open.
