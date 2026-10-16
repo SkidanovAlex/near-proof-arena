@@ -5610,3 +5610,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_finite_sample_exchange
 #print axioms NearCompression.gkr_earlier_joint_event_count
 #print axioms NearCompression.gkr_earlier_joint_event_budget
+
+#print axioms NearCompression.gkr_history_block_inverse
+#print axioms NearCompression.gkr_history_reindex_inverse
+#print axioms NearCompression.gkr_history_terminal_claim_inverse
+#print axioms NearCompression.gkr_history_strategy_terminal_event
+#print axioms NearCompression.gkr_history_strategy_regressions

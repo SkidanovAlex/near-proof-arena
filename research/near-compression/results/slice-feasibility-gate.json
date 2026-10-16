@@ -232,7 +232,9 @@
     "NearCompression/GKRJointTerminalEvent.lean",
     "results/gkr-joint-terminal-event-integration.json",
     "NearCompression/GKREarlierJointCount.lean",
-    "results/gkr-earlier-joint-count-integration.json"
+    "results/gkr-earlier-joint-count-integration.json",
+    "NearCompression/GKRHistoryStrategy.lean",
+    "results/gkr-history-strategy-integration.json"
   ],
   "requirements": [
     {

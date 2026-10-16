@@ -3584,3 +3584,20 @@ rowpoint values.
 Full check.py passed 3937 registered results with the existing axiom allowlist.
 No native code changed. Global/PQ soundness, secure parameters and full-NEAR
 sub300000-byte feasibility remain open; gate NOT_PASSED.
+
+### Construct history-indexed terminal claims from GKR messages
+
+GKRHistoryStrategy decodes the row prefix and final GKR block from joint history
+and proves the inverse on exact-length samples. Generic downstream families can
+be reindexed without losing their dependencies. The terminalClaim needed by
+the merged PCS theorem is now explicitly constructed from a/b messages for the
+fixed earlier sequence. Evaluated mismatch uses this constructed function,
+rather than a caller-supplied equality to an unrelated terminal claim.
+
+Kernel examples cover distinct row/axis/gamma values and malformed truncated
+history, whose right axis is empty and gamma defaults to zero. The inverse
+lemmas require lengths and do not validate malformed histories. Full check.py
+passed 3942 registered results with the existing axiom allowlist. No native code
+changed. Reindexed sent/claim/folding checks, source representative identity and
+authentication premises still need merged-theorem instantiation. Global/PQ
+soundness and secure full-NEAR size remain open; gate NOT_PASSED.

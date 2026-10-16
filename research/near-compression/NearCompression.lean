@@ -1451,3 +1451,5 @@ import NearCompression.GKRBlockCoordinates
 import NearCompression.GKRJointTerminalEvent
 
 import NearCompression.GKREarlierJointCount
+
+import NearCompression.GKRHistoryStrategy
