@@ -5616,3 +5616,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_history_terminal_claim_inverse
 #print axioms NearCompression.gkr_history_strategy_terminal_event
 #print axioms NearCompression.gkr_history_strategy_regressions
+
+#print axioms NearCompression.gkr_pcs_family_reindex
+#print axioms NearCompression.gkr_pcs_checks_reindex
+#print axioms NearCompression.gkr_pcs_initial_reindex
+#print axioms NearCompression.gkr_pcs_accepted_mismatch_reindex

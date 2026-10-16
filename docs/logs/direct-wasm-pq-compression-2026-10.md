@@ -3601,3 +3601,21 @@ passed 3942 registered results with the existing axiom allowlist. No native code
 changed. Reindexed sent/claim/folding checks, source representative identity and
 authentication premises still need merged-theorem instantiation. Global/PQ
 soundness and secure full-NEAR size remain open; gate NOT_PASSED.
+
+### Reindexed PCS families preserve the accepted mismatch event
+
+GKRHistoryPCSFamily packages concrete row/block-indexed sent polynomials, claims,
+constants and folding provers, then constructs their history-indexed versions.
+Valid assemblies preserve every family, weighted sumcheck checks, full weighted
+folding replay acceptance, and the initial constant-subtracted claim equation.
+The initial equation uses actual final GKR a/b messages and recovered axes.
+
+The combined evaluated-terminal-mismatch AND concrete PCS-acceptance event is
+now equivalent to the history-indexed event used by the joint PCS interface.
+This does not yet invoke the numerical merged bound: chosen representative
+identification, source-oracle equations, geometry and terminal authentication
+still require instantiation. The no-representative branch remains essential.
+
+Full check.py passed 3946 registered results with the existing axiom allowlist.
+No native code changed. Executable refinement, global/PQ soundness and secure
+full-NEAR size remain open; gate NOT_PASSED.

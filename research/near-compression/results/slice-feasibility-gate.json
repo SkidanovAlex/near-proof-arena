@@ -234,7 +234,9 @@
     "NearCompression/GKREarlierJointCount.lean",
     "results/gkr-earlier-joint-count-integration.json",
     "NearCompression/GKRHistoryStrategy.lean",
-    "results/gkr-history-strategy-integration.json"
+    "results/gkr-history-strategy-integration.json",
+    "NearCompression/GKRHistoryPCSFamily.lean",
+    "results/gkr-history-pcs-family-integration.json"
   ],
   "requirements": [
     {

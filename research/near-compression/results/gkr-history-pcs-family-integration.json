@@ -1,0 +1,36 @@
+{
+  "status": "CONCRETE_PCS_ACCEPTED_MISMATCH_REINDEXED_TO_HISTORY_FAMILY",
+  "module": "NearCompression/GKRHistoryPCSFamily.lean",
+  "theorems": [
+    "gkr_pcs_family_reindex",
+    "gkr_pcs_checks_reindex",
+    "gkr_pcs_initial_reindex",
+    "gkr_pcs_accepted_mismatch_reindex"
+  ],
+  "proved": [
+    "Sent polynomials, claims, constants and weighted folding prover families reindex exactly from row/block arguments to chronological history.",
+    "Weighted sumcheck checks and full weighted folding replay acceptance are equivalent under reindexing on valid assemblies.",
+    "Initial constant-subtracted claim equation is equivalent using actual final GKR messages and axis coordinates.",
+    "Evaluated GKR terminal mismatch AND concrete PCS acceptance equals history-indexed recovered-input mismatch AND PCS acceptance."
+  ],
+  "assumptions": [
+    "Exact row/axis lengths and evaluated GKR path checks.",
+    "Explicit recovered tuple; identification with the chosen joint PCS representative is not assumed by this mapping theorem.",
+    "Family objects preserve causal PCS prefix interfaces but their native implementation refinement remains separate."
+  ],
+  "remaining": [
+    "Instantiate merged joint failure theorem with these families, chosen representative and source/authentication hypotheses.",
+    "Handle no-representative branch together with upstream local execution soundness.",
+    "Executable transcript refinement, computational extraction, quantum security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3946,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; generic formal strategy/check/event equivalences only."
+  }
+}
