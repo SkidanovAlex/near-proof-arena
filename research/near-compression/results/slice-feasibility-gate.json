@@ -685,5 +685,12 @@
     "retained_degree": 4096,
     "lde_domain": 16384,
     "scope": "Native natural-order FFT/LDE4, canonical buffers and overlap/capacity rejection. Optional reusable scalar PCS backend gives identical root/proof with independent verifier. Full weighted slice PCS integration, Rust refinement, quantum security and full envelope remain open."
+  },
+  "ext8_weighted_pcs_execution": {
+    "status": "EXECUTABLE_DIAGNOSTIC_OPENING_VERIFIED",
+    "queries": 309,
+    "source_roots_match_retained": true,
+    "opening_json_bytes": 5033829,
+    "scope": "Packed source commitments before bus challenges; fresh auxiliary commitments/finals before local challenges. Actual retained execution local/GKR reductions feed weighted multi-branch opening; Python verifier checks Merkle authentication and fold consistency. This closes executable input-opening discharge, not formal proximity/composition/QROM certification. Compact codec, deduplicated multiproofs, complete envelope and128-bit quantum security remain open."
   }
 }

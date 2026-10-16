@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "queries": 8,
+      "rounds": 4,
+      "json_bytes": 24829
+    },
+    {
+      "queries": 309,
+      "rounds": 4,
+      "json_bytes": 854283
+    }
+  ],
+  "rejections": [
+    "reduction",
+    "fold",
+    "source-leaf",
+    "path",
+    "terminal",
+    "query-count",
+    "noncanonical",
+    "statement",
+    "parent",
+    "root",
+    "weights",
+    "claim",
+    "query-budget"
+  ],
+  "source_root_reference_match": true,
+  "source_sha256": "989dd5592a29332be7e973ffb6684e89875900bfe613bb202d851f7409bc722b",
+  "scope": "Heterogeneous-degree weighted Ext8 folding diagnostic with opening-independent source commitments and externally supplied weights/claim. Query309 is a configuration test, not certified128-bit/PQ security. Full slice integration, compact codec/multiproofs, complete size and formal implementation binding remain open."
+}
