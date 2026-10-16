@@ -6099,3 +6099,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.switch_query_mixing_joint_count
 
 #print axioms NearCompression.support_preserving_weighted_lift
+
+#print axioms NearCompression.synthetic_quotient_coefficient
+#print axioms NearCompression.synthetic_zero_from_quotient
+#print axioms NearCompression.synthetic_root_certificate_zero
+#print axioms NearCompression.synthetic_taylor_evaluation
+#print axioms NearCompression.synthetic_taylor_coefficient
+#print axioms NearCompression.synthetic_jets_certificate
+#print axioms NearCompression.synthetic_multiplicity_bound

@@ -7535,3 +7535,37 @@ sub300000 B remain open. The next substantial formal target is the MCA
 interpolation/exceptions argument itself, beginning with its polynomial
 multiplicity and interpolation infrastructure, not another assumed-family
 composition wrapper.
+
+## 2026-10-16 — Characteristic-independent synthetic multiplicity foundations
+
+Added SyntheticMultiplicity.lean with seven audited public theorems, starting
+the polynomial machinery required by the MCA interpolation proof. No MCA
+exception-count or candidate-family premise is introduced in this module.
+Synthetic jets are successive remainders after division by X-a. The module
+proves a coefficient identity for division, formal zero from zero quotient and
+remainder, Taylor evaluation after translation, identification of Taylor
+coefficients with these jets, equivalence of vanishing jets and repeated-root
+certificates, and the single-point multiplicity bound for a nonzero polynomial.
+A sequential root certificate of length at least D forces a degree-<D
+polynomial to be formally zero, even when nodes repeat. It checks a root on
+the successive quotient at EVERY step; repeated evaluation of the original
+polynomial is not accepted as a multiplicity certificate. Formal zero is
+coefficientwise, not inferred from being the zero function on a finite field.
+
+These constructions require no factorial inverses and work in all field
+characteristics. Validation independently computes translated coefficients
+with binomial coefficients:4330 Taylor cases,20738 evaluation identities,
+933 root certificates across F2,F3,F5. Regressions include X^p, whose ordinary
+positive-order derivatives vanish in characteristic p although its p-th
+synthetic jet is1, and X checked twice at0, which fails after the first
+synthetic division. Full audit4268 PASS, allowed axioms only. Evidence and
+replay:results/synthetic-multiplicity/.
+
+This is a foundation, not the full multiplicity root bound used by GS:
+independently specified jets at MULTIPLE distinct centers have not yet been
+shown equivalent to a sequential certificate. Needed next are quotient/jet
+compatibility across centers and a summed multi-point multiplicity bound,
+then bivariate substitution and interpolation existence. The numerical MCA
+exception bound, factor/Hensel steps, concrete switch-chain extraction, QROM,
+full NEAR1Pgas and sub300000 B remain open. No runtime/query/proof-size change;
+latest measured bundle1344645 B and feasibility NOT_PASSED.
