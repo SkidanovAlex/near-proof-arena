@@ -204,7 +204,9 @@
     "NearCompression/BusFormulaCheck.lean",
     "results/bus-formula-checker-integration.json",
     "NearCompression/TerminalSymbolicRebuild.lean",
-    "results/symbolic-rebuild-integration.json"
+    "results/symbolic-rebuild-integration.json",
+    "NearCompression/SymbolicCompiledCheck.lean",
+    "results/symbolic-compiled-integration.json"
   ],
   "requirements": [
     {
@@ -241,7 +243,8 @@
       "air_accumulator_checker": "Finite ordered accumulation checker derives exact mixing-power route, binds zero/final copy and last output instruction. Together with expression checks it derives weighted AST evaluation and composes to a checked emitted table root. Full audit3861. Retained capture/expected-AIR validation and auxiliary bus formula meaning remain separate; no global/PQ certification.",
       "native_air_accumulation_checks": "Retained fixed193 native Lean run checks1386 expression roots,1228 source constraints and1291 ordered accumulator residuals in2 programs before combined reconstruction/batching/layout validation. Two diagnostic assignments pass;20 malformed captures/manifests reject. The63 auxiliary residuals have structural accumulation coverage, not bus-formula meaning coverage. Audit3861; parser/replay/compiler and global/PQ refinement remain open.",
       "auxiliary_formula_checker": "Finite bus formula acceptance derives executed values and composes mixed AIR/bus residual lists with accumulation and checked reconstruction. Native fixed193 validates all63 expected auxiliary formulas (24 square,24 multiplicity-link,15 boundary) and complete1291-residual order;2 diagnostic assignments pass and24 malformed cases reject. Audit3867. Expected formula generation is still Python-derived; no global bus-validity, extraction or PQ theorem.",
-      "symbolic_reconstruction": "Symbolic source current/next leaves bind physical input identity. One accepted reconstruction proves per-program DAG equality for every assignment and lowers to actual source-program execution with fixed placement/selectors. Native fixed193 passes symbolic checks for2 programs/9152 records;24 negatives still reject. Full audit3874. Universal combined batching/recovered-input interface still needs composition; no extraction/global/PQ claim."
+      "symbolic_reconstruction": "Symbolic source current/next leaves bind physical input identity. One accepted reconstruction proves per-program DAG equality for every assignment and lowers to actual source-program execution with fixed placement/selectors. Native fixed193 passes symbolic checks for2 programs/9152 records;24 negatives still reject. Full audit3874. Universal combined batching/recovered-input interface still needs composition; no extraction/global/PQ claim.",
+      "universal_symbolic_compiler": "Input-independent compiler predicate composes symbolic reconstruction, batching and finite layout; one acceptance gives residual identity for every private input, then for exactly gkrRecoveredCircuitInput under support geometry. No recovered-assignment-specific checker premise. Native fixed193 passes combined symbolic check and24 negatives; full audit3878. Expected formula/metadata identification, extraction and global/PQ soundness remain open."
     },
     {
       "name": "Complete soundness ledger",

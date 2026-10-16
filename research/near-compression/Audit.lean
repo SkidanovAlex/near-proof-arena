@@ -5533,3 +5533,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_symbolic_program_run
 #print axioms NearCompression.terminal_symbolic_compiled_program
 #print axioms NearCompression.terminal_symbolic_rebuild_regressions
+
+#print axioms NearCompression.symbolic_compiled_table_value
+#print axioms NearCompression.symbolic_compiled_finite_value
+#print axioms NearCompression.symbolic_compiled_recovered_value
+#print axioms NearCompression.symbolic_compiled_check_regressions

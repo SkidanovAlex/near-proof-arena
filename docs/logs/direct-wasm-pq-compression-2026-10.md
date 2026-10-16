@@ -3255,3 +3255,32 @@ NOT_PASSED. Native JSON acceptance is not a concrete kernel capture proof.
 Full universal batching/recovered-input composition, expected AIR/bus generation,
 metadata ownership, parser/transcript/commitment refinement, global/PQ security
 and secure full-NEAR size remain open.
+
+### Universal symbolic compiler and recovered-input composition
+
+SymbolicCompiledCheck packages fixed source placement, source program,
+reconstruction records and batch entry. Its predicate has no private input
+argument: one acceptance checks symbolic reconstruction, batching and the
+finite physical layout. The resulting theorem quantifies over every private
+assignment and equates finite GKR output with the residual of independently
+executed source programs under their constructed environments.
+
+A second theorem instantiates this universal result at the scattered decoded
+private tuple and uses support separation to match gkrRecoveredCircuitInput.
+It no longer assumes compiler-checker acceptance specific to that recovered
+assignment. Decoded tuple existence/extraction, metadata ownership and the
+expected AIR/transcript/formula bindings remain separate obligations.
+
+The native adapter constructs the symbolic table packages and invokes the
+combined input-independent checker. Its former per-program symbolic calls are
+subsumed by this combined check. Kernel regressions exercise accepted layout,
+wrong base placement, missing reconstruction, wrong output slot and distinct
+positive/negative input outputs. Full audit passed3878 results with the existing
+axiom allowlist.
+
+Native validation passed the combined symbolic checker on the retained two
+programs/9152 records. Both diagnostic runs and all24 malformed cases pass.
+Integration/gate/scope evidence and diff checks pass; gate remains NOT_PASSED.
+Universal expected AIR/bus value substitution, formula-generation/metadata
+refinement, commitment extraction and global/PQ soundness and secure full-NEAR
+size remain open. Native JSON execution is not a concrete kernel capture proof.

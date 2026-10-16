@@ -1,5 +1,5 @@
 import NearCompression.BusFormulaCheck
-import NearCompression.TerminalSymbolicRebuild
+import NearCompression.SymbolicCompiledCheck
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -113,6 +113,7 @@ private def placement (j : Json) (nodeCount : Nat) : IO (List Nat × List Nat) :
   return (live.reverse,positions.toList)
 
 private structure ParsedProgram where
+  placement : TerminalSymbolicPlacement Fp4
   environment : TerminalProgramEnvironment Fp4
   program : List (TerminalInstruction Fp4)
   records : List (TerminalRebuildRecord Fp4)
@@ -272,11 +273,7 @@ private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p a
   require (terminalRebuildRecordsCheck source target (inputValue seed) [] records (ins.size-1) root)
     "rebuild records rejected"
   let placement : TerminalSymbolicPlacement Fp4 := ⟨base,width,first,last,trans⟩
-  let symbolicSource := program.map (terminalSymbolicProgramNode placement)
-  require (terminalAcyclicCheck 0 symbolicSource) "symbolic source acyclicity"
-  require (terminalSymbolicRebuildCheck symbolicSource target [] records (program.length-1) root)
-    "symbolic reconstruction rejected"
-  return (records.length,⟨env,program,records,root⟩)
+  return (records.length,⟨placement,env,program,records,root⟩)
 
 def main (args : List String) : IO Unit := do
   require (args.length==5) "expected DAG bundle, rebuild capture, replay manifest, expected AIR, diagnostic seed"
@@ -298,6 +295,7 @@ def main (args : List String) : IO Unit := do
   let mut count := 0
   let mut entries : List (TerminalBatchEntry Fp4) := []
   let mut tables : List (TerminalCompiledTable Fp4) := []
+  let mut symbolicTables : List (SymbolicCompiledTable Fp4) := []
   let programs ← need (←field rebuild "programs").getArr?
   require (outputs.size==programs.size && weights.size==programs.size && claims.size==programs.size && airTables.size==programs.size) "batch count"
   for i in List.range programs.size do
@@ -316,8 +314,10 @@ def main (args : List String) : IO Unit := do
       ←arithmetic target .mul pn delta term⟩
     entries := entry::entries
     tables := ⟨parsed.environment,parsed.program,parsed.program.length-1,parsed.records,entry⟩::tables
+    symbolicTables := ⟨parsed.placement,parsed.program,parsed.program.length-1,parsed.records,entry⟩::symbolicTables
   entries := entries.reverse
   tables := tables.reverse
+  symbolicTables := symbolicTables.reverse
   require (terminalBatchEntriesCheck target rho 1 entries) "batch entries rejected"
   let finalBalance ← balance target (←field rebuild "balance")
   require (finalBalance.terms==entries.map (fun e => (e.termNode,true))) "batch terms mismatch"
@@ -351,6 +351,8 @@ def main (args : List String) : IO Unit := do
   require (terminalCompiledFiniteCheck target (inputValue seed) (fun i => constants[i]?.getD 0)
     rho tables finalBalance root zeroNode capacity live positions (inputSize-1) stages rootSlot)
     "combined finite compiler check rejected"
+  require (symbolicCompiledCheck target (fun i => constants[i]?.getD 0) rho symbolicTables finalBalance
+    root zeroNode capacity live positions (inputSize-1) stages rootSlot) "symbolic compiled check rejected"
   IO.println (Json.mkObj [("status",toJson "PASS"),("programs",toJson programs.size),
-    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),("bus_formula_checks",toJson true),("symbolic_rebuild_check",toJson true),
+    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),("bus_formula_checks",toJson true),("symbolic_rebuild_check",toJson true),("symbolic_compiled_check",toJson true),
     ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates")]).compress
