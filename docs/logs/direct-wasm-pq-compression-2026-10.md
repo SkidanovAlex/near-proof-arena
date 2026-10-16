@@ -7960,3 +7960,37 @@ Next: nonzero specialized interpolant root forcing and useful-factor/curve
 extraction, followed by the complete MCA exceptional-count argument. No runtime
 or security parameter change: diagnostic bundle 1344645 B; feasibility
 NOT_PASSED. Full NEAR 1 Petagas, PQ128 and sub300000 B remain open.
+
+## 2026-10-16 — Specialized candidate root forcing
+
+Added TrivariateRootForcing.lean with two audited public theorems.
+gs_specialization_root_forcing connects the actual source-line identities
+to a candidate curve: agreement on distinct source abscissae with total
+multiplicity at least DX forces Q(X,curve(X),z) to be formally zero. The
+weighted substitution degree and mixed constraints are derived from the
+trivariate representation, not assumed as independent candidate properties.
+The theorem retains the existing explicit distinct evaluation-domain
+separation premise for translation/substitution compatibility. It does not
+claim this premise follows from the production field parameters.
+
+gs_interpolation_specialization_certificate chooses ONE sparse vector from
+the dimension inequality and packages its nonzeroness, formal source-line
+identities, degree and mixed constraints at every Z, and the total-annihilation
+count on every distinct sample. It does not choose unrelated interpolants
+after observing a challenge. The DZ-1 bound still counts only identically
+zero specializations, not all MCA exceptions.
+
+Validation: independently constructed 70-variable, 56-equation witnesses over
+F17 and F19 (rank53), with four source lines, one corrupted source ordinate,
+and multiplicity2. Exhaustive enumeration checks 11772 candidate/Z pairs.
+All36 sufficiently agreeing candidates yield zero formal substitutions.
+All36 cases check the actual translation separation premise (maximum list
+length6), and neither witness has a zero specialization. Boundary examples
+show failure without enough total multiplicity or without distinct abscissae.
+Full audit4336 PASS, allowed axioms only. Evidence: results/trivariate-root-forcing/.
+
+Next: useful-factor extraction and the complete exceptional-set bound;
+root forcing alone does not recover a common source candidate. Full protocol
+extraction, adaptive/QROM composition, recursion and full NEAR1Pgas remain
+open. No runtime or parameter change: diagnostic bundle1344645 B, feasibility
+NOT_PASSED; no PQ128 or sub300000 B claim.

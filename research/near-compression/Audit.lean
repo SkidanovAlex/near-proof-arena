@@ -6184,3 +6184,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gs_specialization_mixed_jet
 #print axioms NearCompression.gs_specialization_constraints
 #print axioms NearCompression.gs_zero_specialization_count
+
+#print axioms NearCompression.gs_specialization_root_forcing
+#print axioms NearCompression.gs_interpolation_specialization_certificate
