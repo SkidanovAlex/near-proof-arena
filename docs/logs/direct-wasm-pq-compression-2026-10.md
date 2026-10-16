@@ -2117,3 +2117,32 @@ original frontend fresh process plus14 baseline cases passed. Compact codec had
 80 primitive roundtrips,3 primitive rejections, exact proof roundtrip,2 proof
 rejections and independent-process verification. Python compilation/diff checks
 passed. No Lean theorem changes; gate remains NOT_PASSED.
+
+
+### Actual compact GKR leaf/query scaling
+
+Added `report_gkr_query_scaling.py`. It verifies and re-encodes the retained
+Q8 proof, replays GKR-derived weights, rebuilds the combined source polynomial
+from authenticated cache identities, then reconstructs all12 folded trees and
+checks each root against the proof. Larger query prefixes read actual source
+leaves with authenticated paths and reconstructed folded leaves. Exact zero-tag
+bit lengths and shared-path counts determine payload bytes. Fixed opening
+header1294 bytes is independently reconciled from rounds/roots/terminal layout.
+
+Proof sizes: Q8=52921, Q128=283053, Q239=432188, Q309=504163, Q463=640745.
+Only Q8 is an actual verified profile. Other rows retain the Q8 transcript and
+count authenticated-tree payloads; they do not certify a new high-query proof.
+At309, source payload329974, fold payload155344, fixed18845. Outer GKR/local
+data is17551; current statement/request adds224707, total728870.
+
+This corrects the interpretation of earlier source-only screens: their full-word
+leaf model is not a universal lower bound for this sparse zero-tagged witness.
+Actual compact source data is measured here, and still exceeds300000 at309.
+Local-vector compression has materially reduced its contribution; next focus
+is source openings/shared chain or recursion, alongside common-source soundness.
+No Ext8, full-NEAR, or quantum-security conclusion follows.
+
+Validation: fresh compact decode/re-encode, all12 reconstructed commitment roots,
+canonical leaf word counts, exact zero-tag bit counts, and independently derived
+fixed opening header passed. Script rerun reproduced results; Python compilation
+and diff checks passed. No Lean sources changed.

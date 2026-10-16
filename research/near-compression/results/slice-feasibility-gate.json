@@ -106,7 +106,9 @@
     "airbender/direct-wasm/verify_prepared_gkr_slice.py",
     "results/pq384-literal193-gkr/prover-report.json",
     "results/pq384-literal193-gkr/codec-report.json",
-    "results/pq384-literal193-gkr/slice-frontend-report.json"
+    "results/pq384-literal193-gkr/slice-frontend-report.json",
+    "airbender/direct-wasm/report_gkr_query_scaling.py",
+    "results/literal193-gkr-query-scaling.json"
   ],
   "requirements": [
     {
@@ -146,7 +148,8 @@
       "needed": "Measure all required proof inputs for the actual compiled slice and a degree growth sweep. Sub300000-byte toy PCS alone does not pass.",
       "query_geometry_screen": "Verified Q8 retained artifact exactly re-encodes to121982 bytes. Counterfactual longer query prefixes on the same commitments/Ext4 layout project492238 proof bytes at128 queries,705390 at239,817054 at309. Current total transport at309 is1041761 bytes. Opened leaves alone cost462016 bytes at309. These are exact codec geometry calculations, not regenerated high-query proofs or secure profiles. Hash multiproofs are already included.",
       "packing_screen": "Ideal uniform-query expected multiproof geometry over eligible power-of-two packings1..1024: at309 queries best Ext4 expectation816299 bytes versus retained820634; projected Ext8 best1103809 bytes. Ext8 auxiliary coordinates/field vectors accounted for, but not implemented or secure. Tree formulas validated by exhaustive small-tree query tuples; Ext4 non-PCS51590-byte framing reconciles with measured codec. Statement/request excluded. Repacking separate branches does not approach300000 in this screen.",
-      "shared_fold_floor": "Omitting all folded-oracle, round and terminal costs still leaves optimized four-tree source openings at349123 expected bytes for projected Ext8/q309. Speculative same-phase table merging lowers source-only expectation to222888; retaining current local/framing123302 yields346190 before omitted PCS work and statement/request. These are expected-layout screens, not universal lower bounds or authenticated proofs."
+      "shared_fold_floor": "Omitting all folded-oracle, round and terminal costs still leaves optimized four-tree source openings at349123 expected bytes for projected Ext8/q309. Speculative same-phase table merging lowers source-only expectation to222888; retaining current local/framing123302 yields346190 before omitted PCS work and statement/request. These are expected-layout screens, not universal lower bounds or authenticated proofs.",
+      "gkr_query_scaling": "Actual retained compact leaf contents, all12 reconstructed fold roots matched, Q8 verified/re-encoded:128-query counterfactual283053 proof bytes;309-query504163 proof bytes,728870 current transported bytes. At309 source payload329974 and shared fold payload155344; fixed18845 (outer GKR/local17551 plus weighted PCS header1294). Uses original Q8 transcript, not generated secure profile. Full-word floors do not apply as universal lower bounds to zero-tagged sparse witnesses."
     },
     {
       "name": "Adversarial validation",
@@ -177,7 +180,7 @@
     "request_json_bytes": 919,
     "total_transported_bytes": 346689
   },
-  "next_size_priority": "Measure higher-query GKR/weighted-PCS geometry on the new same-slice52921-byte artifact before deciding between cross-table commitments and recursion. Formal GKR input/common-trace extraction remains required; retain NOT_PASSED gate.",
+  "next_size_priority": "Focus on source opening reduction and shared-chain compression/recursion; local vectors now reduced to17551 bytes in GKR diagnostic. Source-only payload at309 remains329974 even with actual zero tags. Secure parameters and common-source soundness remain open.",
   "gkr_diagnostic_measurement": {
     "instructions": 193,
     "proof_bytes": 52921,
