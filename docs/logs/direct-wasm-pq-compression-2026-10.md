@@ -1716,3 +1716,9 @@ Scope is source expressions in the formal MLE environment, not yet the entire ex
 Added AirSelectorProducts.lean: first=product(1-x), last=product(x), transition=1-last equal row-flag MLEs at all points, including dimension0/off-cube. Added AirExtensionLift.lean: certified Fp8.ofBase preserves actual Expr.eval for the lifted trace/public vector, and product-selector Boolean evaluation agrees with original BabyBear semantics. Full check.py audit passed3627 (/tmp/root-air-selector-lift-audit.log), standard axioms only.
 
 Auxiliary bus residual correspondence, combined target, adaptive sumcheck, authenticated inputs and complete QROM remain open. The Python verifier still runs its diagnostic Ext4 profile; no secure parameter or size claim changes.
+
+### Combined source and auxiliary Boolean-row target
+
+Added AirCombinedResidualRows.lean: BusProgramFormula (extension literals/current/next/selectors/arithmetic) agrees between product-selector MLE and direct row environments on Boolean rows. Combined residual list preserves source then auxiliary order; composed its weighted initial zero bound. Exposed the reusable Boolean-row MLE value lemma previously private. Full audit passed3631 (/tmp/root-combined-residual-audit.log).
+
+This covers the formal formula model. Concrete auxiliary layout-to-formula-list certification and coordinate reconstruction remain required, as do adaptive sumcheck, terminal/source/PCS authentication and QROM. No executable security or size change.

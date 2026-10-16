@@ -9,7 +9,7 @@ noncomputable def airBooleanIndex : List K→Nat
   | [] => 0
   | x::xs => (if x=1 then 1 else 0)+2*airBooleanIndex xs
 
-private theorem boolean_mle (point : List K) (values : Nat→K)
+theorem air_boolean_mle_value (point : List K) (values : Nat→K)
     (boolean : ∀ x∈point,x=0 ∨ x=1) :
     packedGridEval point.length values point=values (airBooleanIndex point) := by
   classical
@@ -49,7 +49,7 @@ theorem air_row_mle_expression_boolean (tr : Trace K) (t : Nat) (pub : List K)
     e.evalWith (airRowMLEEnv tr t pub point)=e.eval tr t (airBooleanIndex point) pub := by
   have atRow (values : Nat→K) : packedGridEval (tr.log t) values point=values (airBooleanIndex point) := by
     rw [←length]
-    exact boolean_mle point values boolean
+    exact air_boolean_mle_value point values boolean
   induction e with
   | const n => rfl
   | pub i => rfl
@@ -68,7 +68,7 @@ theorem air_source_batch_boolean (tr : Trace K) (t : Nat) (pub : List K) (constr
     (boolean : ∀ x∈point,x=0 ∨ x=1) :
     lanePowerBatch mixing (constraints.map (fun e=>e.evalWith (airRowMLEEnv tr t pub point)))=
       packedGridEval (tr.log t) (fun r=>lanePowerBatch mixing (constraints.map (fun e=>e.eval tr t r pub))) point := by
-  rw [←length,boolean_mle point _ boolean]
+  rw [←length,air_boolean_mle_value point _ boolean]
   apply congrArg (lanePowerBatch mixing)
   apply List.map_congr_left
   intro e _

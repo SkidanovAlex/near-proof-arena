@@ -5212,3 +5212,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.air_expression_ext8_lift
 
 #print axioms NearCompression.air_ext8_product_expression_boolean
+
+#print axioms NearCompression.air_boolean_mle_value
+
+#print axioms NearCompression.bus_formula_boolean_row
+
+#print axioms NearCompression.air_combined_residual_boolean
+
+#print axioms NearCompression.air_combined_weighted_zero_count
