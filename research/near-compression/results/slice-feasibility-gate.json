@@ -334,7 +334,10 @@
     "NearCompression/CheckedBusFailureSelection.lean",
     "results/checked-bus-failure-selection-integration.json",
     "NearCompression/CheckedAuxiliaryLocalBudget.lean",
-    "results/checked-auxiliary-local-budget-integration.json"
+    "results/checked-auxiliary-local-budget-integration.json",
+    "NearCompression/HistoryBranchBudget.lean",
+    "NearCompression/PreparedHistoryBranchBudget.lean",
+    "results/prepared-history-branch-integration.json"
   ],
   "requirements": [
     {
@@ -521,5 +524,6 @@
   "ext8_lean_formula_capture": "SPECIFICATION_CHECKED_COMPONENT: Lean reconstructs exact ordered formal bus residual AST from supplied table/public/challenges/finals, checks native-style lowering and coordinate width, then formula routes/acyclicity/values. 64 residuals pass and 16 mutations reject including coherent wrong formula+program. Supplied statement/transcript authentication, full Ext8 prover and QROM remain open.",
   "checked_bus_auxiliary_transport": "PROVED_CONDITIONALLY: executable specification checks connect actual certificate formula-list values to reconstructed bus residuals. Violations transfer to combined local residuals; all-zero checked table residuals yield busExt8TablesResidualsZero. Coordinate typing, source checks and authenticated input/event composition remain explicit.",
   "checked_bus_failure_selection": "PROVED_CONDITIONALLY: failed bus validity now derives a selected decoded table, bounded row, positive checked residual count and nonzero local lane under source/specification/typing premises. Exact table restriction preserves residual values. Earlier-transcript selection, adaptive local/GKR/PCS budget composition and authentication remain open; no chronology or security claim from witness existence alone.",
-  "checked_auxiliary_local_budget": "PROVED_CONDITIONALLY: exact checked formulas and bounded coordinate typing transport invalid generated bus residuals into the adaptive local acceptance bound for each fixed-table earlier-history family. No supplied row/lane witness. Earlier-only decoded trace/formula dependency, terminal repair and joint error bound remain premises. Disjoint table-history partition, authenticated auxiliary representative chronology and full acceptance composition remain open."
+  "checked_auxiliary_local_budget": "PROVED_CONDITIONALLY: exact checked formulas and bounded coordinate typing transport invalid generated bus residuals into the adaptive local acceptance bound for each fixed-table earlier-history family. No supplied row/lane witness. Earlier-only decoded trace/formula dependency, terminal repair and joint error bound remain premises. Disjoint table-history partition, authenticated auxiliary representative chronology and full acceptance composition remain open.",
+  "prepared_history_branch_composition": "PROVED_CONDITIONALLY: exact three-way earlier-history partition combines actual prepared-Wasm valid-auxiliary bus bound and two restricted invalid-table bounds, paying the shared accepted downstream failure budget once. Fixed-source local validity, authenticated branch/witness construction and actual local/GKR/PCS bound substitution remain premises. No maximum shortcut between bus-dependent branches; full acceptance and security remain open."
 }

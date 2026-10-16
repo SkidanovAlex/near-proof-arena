@@ -1543,3 +1543,5 @@ import NearCompression.GeneratedExt8BusSpecCheck
 import NearCompression.CheckedBusResidualTransport
 import NearCompression.CheckedBusFailureSelection
 import NearCompression.CheckedAuxiliaryLocalBudget
+import NearCompression.HistoryBranchBudget
+import NearCompression.PreparedHistoryBranchBudget

@@ -5838,3 +5838,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.checked_bus_invalid_table_witness
 
 #print axioms NearCompression.checked_auxiliary_after_earlier_budget
+
+#print axioms NearCompression.history_three_branch_count
+
+#print axioms NearCompression.history_three_branch_budget
+
+#print axioms NearCompression.prepared_history_branch_budget

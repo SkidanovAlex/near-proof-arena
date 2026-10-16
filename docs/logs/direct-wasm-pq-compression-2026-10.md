@@ -4561,3 +4561,27 @@ checked GKR repair and concrete PCS bounds.
 Validation: full `check.py` PASS (4085 registered results), existing axiom
 allowlist. No native captures rerun for this formal-only change. The gate stays
 NOT_PASSED; full native Ext8 slice, QROM, secure size and full 1 Pgas remain open.
+
+### Disjoint history branches composed with prepared-Wasm bus soundness
+
+`HistoryBranchBudget.lean` proves exact three-way count identities for
+acceptance and shared downstream failures. An earlier-only `Option Bool`
+selector identifies valid auxiliaries or either invalid table. The budget
+composition pays the shared failure count once across these disjoint branches.
+
+`prepared_history_branch_budget` applies the actual prepared-Wasm bus theorem
+to the valid-auxiliary branch and adds the two restricted invalid-table bounds.
+The resulting source-valid bound is bus budget + local0 + local1 + joint PCS
+budget, not an unjustified maximum over bus-dependent branches. The existing
+fixed-source branch theorem is unchanged and remains conditional as documented.
+
+Remaining premises are substantial: derive the selector from earlier committed
+auxiliary traces; establish decoded witnesses on its valid branch; instantiate
+both restricted local budgets with the checked auxiliary/local/GKR/PCS chain;
+normalize their chronological experiments; then combine source-invalid cases.
+This theorem does not derive authenticated commitment chronology or native
+verifier acceptance. Ext8 execution, QROM, secure size and full 1 Pgas remain
+open, and the slice gate remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4088 registered results), existing axiom
+allowlist; native captures not rerun for formal-only composition.
