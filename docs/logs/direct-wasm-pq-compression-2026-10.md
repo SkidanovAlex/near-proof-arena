@@ -4196,3 +4196,22 @@ secure-size certification is implied.
 Validation: full `check.py` PASS (4042 registered results), existing axiom
 allowlist. Native captures not rerun for formal-only composition. The full
 1 Pgas objective and secure sub-300 KB feasibility remain open.
+
+### Evaluated GKR terminal repair over two-table continuations
+
+`two_table_terminal_repair` invokes batching cancellation and evaluated GKR
+soundness for each future local prefix, then sums them while retaining one
+accepted-terminal-error event count. It uses actual `twoTablePCSContinuations`
+and an explicit equality aligning GKR rounds. Repair is the future-prefix
+count times the concrete batching/GKR terms; there is no per-rowpoint PCS
+budget. The event may additionally include absent representatives.
+
+The semantic output vector must be fixed before rho, with a mismatch and
+finite-circuit binding. Accepted GKR checks and error-event inclusion remain
+explicit. Next: specialize the future family to second-local prefixes or a
+singleton, substitute this repair into the table branches, and instantiate
+semantic binding plus the concrete PCS failure theorem. Native/QROM, secure
+size and full 1 Pgas execution remain open.
+
+Validation: full `check.py` PASS (4043 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only composition.

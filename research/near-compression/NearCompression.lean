@@ -1515,3 +1515,5 @@ import NearCompression.FixedSourceLocalBudget
 import NearCompression.SecondTableFixedSourcePCS
 
 import NearCompression.FirstTableFixedSourcePCS
+
+import NearCompression.TwoTableTerminalRepair

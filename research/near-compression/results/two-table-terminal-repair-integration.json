@@ -1,0 +1,34 @@
+{
+  "status": "EVALUATED_GKR_TERMINAL_REPAIR_ON_TWO_TABLE_CONTINUATIONS",
+  "module": "NearCompression/TwoTableTerminalRepair.lean",
+  "theorems": [
+    "two_table_terminal_repair"
+  ],
+  "proved": [
+    "Derives batching cancellation and evaluated GKR repair across any later local-prefix family using actual twoTablePCSContinuations.",
+    "Repair equals future-prefix count times the explicit batching and GKR terms; accepted terminal mismatches remain in a single joint event count.",
+    "Error event may include absent representatives; no conditional per-rowpoint PCS bound is used."
+  ],
+  "assumptions": [
+    "Each semantic output vector is fixed before batching challenge rho, has common table count and an indexed mismatch.",
+    "Whole finite-circuit binding to that vector, root geometry/zero claim and accepted evaluated-GKR checks.",
+    "Accepted terminal mismatch implies the chosen downstream error event.",
+    "Earlier bus choices and already-sampled local prefix are fixed outside this theorem."
+  ],
+  "remaining": [
+    "Specialize future prefixes to second local prefixes or a singleton and substitute repair into first/second table bounds.",
+    "Derive output mismatch and circuit binding from the checked compiler/terminal semantics.",
+    "Instantiate joint event bound with concrete_gkr_accepted_failure_budget, then combine local and bus branches.",
+    "Native/QROM binding, secure size and full NEAR execution remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4043,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}
