@@ -5764,3 +5764,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.two_table_concrete_pcs_failure_budget
 
 #print axioms NearCompression.prepared_fixed_source_branch_budget
+
+#print axioms NearCompression.decoded_adaptive_witness_after_earlier_budget
+
+#print axioms NearCompression.decoded_adaptive_invalid_rows_budget

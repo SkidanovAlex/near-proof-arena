@@ -4306,3 +4306,29 @@ an end-to-end verifier-acceptance theorem.
 
 Validation: full `check.py` PASS (4048 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only composition.
+
+### Audit correction: locally valid source can have invalid bus auxiliaries
+
+Before bus averaging, inspection identified a missing event inclusion:
+source `TableLocal` does not imply valid reconstructed bus auxiliary
+residuals. The existing branch theorem is correct conditionally, but its
+accepted-outside-failure witness premise cannot be discharged by PCS checks
+alone. Local/GKR acceptance errors for invalid auxiliaries must also be
+included and budgeted. The shared failure must not be mislabeled PCS-only.
+
+Added `decoded_adaptive_witness_after_earlier_budget`, allowing the violated
+row/index to vary with earlier bus transcripts. Added
+`decoded_adaptive_invalid_rows_budget`, which derives those indices from
+failure of complete combined-residual validity. Selection precedes the
+selected table's local randomness; the downstream PCS error remains a joint
+sum. This supports the missing invalid-auxiliary branch without falsely
+assuming one source-residual witness exists in that branch.
+
+Next: bind reconstructed bus auxiliary residuals to the generated combined
+formula list, select the invalid table before local challenges, and include
+its local/GKR budget in the bus-witness failure event before averaging. No
+previous conditional theorem is claimed to prove this premise. Full 1 Pgas,
+QROM and secure-size feasibility remain open.
+
+Validation: full `check.py` PASS (4050 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only change.

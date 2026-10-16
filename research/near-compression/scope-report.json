@@ -565,7 +565,7 @@
     "research/near-compression/NearCompression/LocalTerminalBindingCheck.lean": "adfd2fd5d792dcb1288cbb816b66278bca52dcf1f494a45c11ce3d00a0990cae",
     "research/near-compression/NearCompression/CheckedTerminalSemantics.lean": "e01e64bba7fec139607b85e8d75092212889e5ea0794694ef6afe7caed150ae2",
     "research/near-compression/NearCompression/TwoTablePCSExperiment.lean": "47dccd84154c45aff345b1498d8d70bc2993071287c417e549780f46387b821c",
-    "research/near-compression/NearCompression/AdaptiveTableContinuation.lean": "564d52cb265690619f1cc2b78760162e3275dc9dd2ae315c8692aef96ee0cf9d",
+    "research/near-compression/NearCompression/AdaptiveTableContinuation.lean": "8a430391eeb7664899c099f3f526e7b1b247bea5aa538b6a7ea413acc284da7d",
     "research/near-compression/NearCompression/TableLocalResidualWitness.lean": "16dadf9ede63bc1bf658c8206e4890df9a67621ce0606e9a9ae3513c590c855f",
     "research/near-compression/NearCompression/BaseFieldPolynomialDescent.lean": "d6761a5e67d65361c2c758c6541422db01fd22b943291731d5128d6e4392d895",
     "research/near-compression/NearCompression/JointSourceBaseDescent.lean": "5920030337dea81188261f33a1a9359a6c0040dd4ce481b79a879393a836e55b",
