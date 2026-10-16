@@ -2431,3 +2431,28 @@ full NEAR1Pgas secure-size target remain open.
 
 Validation: full `check.py` passed with3776 registered results and enforced
 axiom allowlist. No proof bytes or security parameters changed.
+
+
+### Literal193 compiler challenge-layout sweep
+
+Added a reproducible compiler-only sweep using the retained packed193 proof's
+public inputs. It covers the captured case, a controlled rho=1 baseline, and
+zero/one substitutions for rowpoint, mixing, tau and terminal claim. The nine
+synthetic cases are not claimed to be accepted transcripts. All10 retain the
+same private blocks and8192 input slots; arithmetic layer counts vary from5
+to35. Constant folding therefore changes the arithmetic circuit, while this
+finite sweep does not exhibit a change to the input dimension used by joint
+source contraction.
+
+For every case, the existing experimental fixed-input helper preserves the
+output on a deterministic nonzero private vector both at8192 and at16384
+input slots. The larger cap exercises zero-slot relocation. An undersized4096
+cap is rejected in all10 cases. The retained proof profile remains unchanged;
+this is evidence for integrating a trusted fixed input envelope, not a universal
+challenge-independent bound or formal compiler proof. A production integration
+must bind the trusted cap before challenges and establish overflow behavior.
+
+Validation: all10 compiler cases,20 layout-output comparisons and10 undersized
+cap rejections passed; Python compilation and diff checks passed. No Lean
+sources changed, so the previous full formal audit remains applicable. Quantum
+security, end-to-end soundness and full NEAR secure size remain open.

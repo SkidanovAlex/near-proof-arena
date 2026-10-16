@@ -134,7 +134,8 @@
     "NearCompression/NearFunctionalFoldAcceptance.lean",
     "results/near-functional-fold-acceptance-integration.json",
     "NearCompression/Literal193GKRGeometry.lean",
-    "results/literal193-geometry-integration.json"
+    "results/literal193-geometry-integration.json",
+    "results/literal193-layout-challenge-sweep.json"
   ],
   "requirements": [
     {
@@ -148,7 +149,8 @@
       "status": "INCOMPLETE",
       "needed": "Bind code/public state, AIR sources, GKR statements and final PCS claims; no separately trusted original proofs or unbound witness data.",
       "established": "Literal slice frontend reconstructs canonical AIR locally, checks actual Lean preparation against the same public vector, and verifies binary proof against the same statement and source roots. These roots are proof commitments, not externally trusted trace certificates.",
-      "captured_geometry": "Packed literal193 fixture metadata replay validated76 lanes and2072 live slots; Lean kernel certificates now discharge lane WellFormed and CanonicalLaneSelectors for these exact table records. Compiler correspondence remains executable parity, not universal formal refinement."
+      "captured_geometry": "Packed literal193 fixture metadata replay validated76 lanes and2072 live slots; Lean kernel certificates now discharge lane WellFormed and CanonicalLaneSelectors for these exact table records. Compiler correspondence remains executable parity, not universal formal refinement.",
+      "challenge_layout_sweep": "Captured case plus rho=1 baseline and zero/one mutations of rowpoint,mixing,tau,claim preserve private blocks and8192 input slots in10 tested cases. Layer counts vary5..35. Fixed-input helper preserves evaluation on deterministic nonzero private values; not integrated into retained profile and not a universal challenge-independent geometry proof."
     },
     {
       "name": "Complete soundness ledger",
