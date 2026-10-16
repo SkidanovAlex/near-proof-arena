@@ -488,6 +488,7 @@
     "research/near-compression/NearCompression/DeterminantRowSpan.lean": "114fa1a59d0704fad4c9bb2943ff2d08d80f9d3bcbb6a6a71b1fe6a895d67d20",
     "research/near-compression/NearCompression/BezoutCoefficientMatrix.lean": "0948a4b7e27aac0455fa8851dd7a41577c3dc4520dbe07a602773c9b8941a534",
     "research/near-compression/NearCompression/BezoutPolynomialDenominator.lean": "5ba75754c07a002fa46bc75c0502c3d101c02372d330e74ca532a71d57f67eb1",
+    "research/near-compression/NearCompression/DerivativeBezoutDenominator.lean": "0e91d9f2beab104885c85bd6aa28eaab57f3d3c0c7beff599c4628a230b6b3eb",
     "research/near-compression/NearCompression/DeterminantRowReplacement.lean": "d370eb40254e33b6ea19e4cc6953aeefba795940dc1d3061e26a8cb4a9449a90",
     "research/near-compression/NearCompression/DeterminantCofactorFold.lean": "69cf512f5151a9092a7f9fb0cee72b6dcc5dbc1bff156315f8b0befe1fcf7985",
     "research/near-compression/NearCompression/DeterminantRowLinearity.lean": "7bff151d38e7188fec59eaffdcce11b3080879763728f80a696935a790d8727a",

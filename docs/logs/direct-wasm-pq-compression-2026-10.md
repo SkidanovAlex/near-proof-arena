@@ -9003,3 +9003,29 @@ Next: compose the degree-controlled denominator with the derivative Bezout
 certificate and specialization/Hensel interfaces. Full MCA and protocol/QROM
 composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Derivative certificate with source-degree denominator
+
+Added DerivativeBezoutDenominator.lean with five audited public theorems.
+Formal derivative coefficient entries transport to the rational-function
+field. For an irreducible source of Y-degree d with 0<d<characteristic,
+the row-oriented derivative determinant is nonzero without an assumed unit
+certificate. Its parameter degree is at most (2d-1)*D when source coefficient
+degrees are at most D; the same bound controls distinct denominator roots.
+
+The bounded derivative Bezout certificate exists, and every one of its
+2d-1 coefficient coordinates has an explicit polynomial Cramer numerator
+over that same determinant. This supplies the certificate interface needed
+for safe specialization; the general specialization/Hensel composition is
+not yet proved from this denominator condition alone.
+
+Validation:240 Eisenstein families Y^d+(Z-z0)*C(Y),1278 exact certificate
+coefficient identities,1303 safe smooth roots and192 denominator exception
+points. Four Y^p-Z cases demonstrate failure of derivative separability when
+the degree reaches the characteristic. Full audit4563 PASS, allowed axioms
+only. Evidence: results/derivative-bezout-denominator/.
+
+Next: specialize the bounded certificate coefficients using their shared
+denominator and compose root smoothness/Hensel lifting. Full MCA and
+protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

@@ -1742,3 +1742,5 @@ import NearCompression.DeterminantRowSpan
 import NearCompression.BezoutCoefficientMatrix
 
 import NearCompression.BezoutPolynomialDenominator
+
+import NearCompression.DerivativeBezoutDenominator

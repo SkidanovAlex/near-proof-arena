@@ -6448,3 +6448,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bezout_shared_denominator_exception_count
 #print axioms NearCompression.bezout_polynomial_cramer_formula
 #print axioms NearCompression.bezout_cramer_numerator_degree
+
+#print axioms NearCompression.derivative_coefficient_polynomials_transport
+#print axioms NearCompression.irreducible_derivative_denominator_nonzero
+#print axioms NearCompression.derivative_shared_denominator_degree
+#print axioms NearCompression.irreducible_derivative_denominator_exception_count
+#print axioms NearCompression.irreducible_derivative_shared_certificate
