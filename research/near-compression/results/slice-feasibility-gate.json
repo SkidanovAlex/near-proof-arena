@@ -210,7 +210,9 @@
     "NearCompression/SymbolicFormulaCheck.lean",
     "results/symbolic-formula-integration.json",
     "NearCompression/RecoveredSymbolicEnvironment.lean",
-    "results/recovered-symbolic-environment-integration.json"
+    "results/recovered-symbolic-environment-integration.json",
+    "NearCompression/FormulaEnvironmentTransport.lean",
+    "results/formula-environment-transport-integration.json"
   ],
   "requirements": [
     {

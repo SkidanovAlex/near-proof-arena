@@ -5548,3 +5548,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.recovered_symbolic_column_owner
 #print axioms NearCompression.recovered_symbolic_environment
 #print axioms NearCompression.recovered_environment_placement_regressions
+
+#print axioms NearCompression.air_expression_environment_transport
+#print axioms NearCompression.bus_formula_environment_transport
+#print axioms NearCompression.mixed_formula_environment_transport
+#print axioms NearCompression.mixed_sum_environment_transport
+#print axioms NearCompression.recovered_decoded_environment_agreement
+#print axioms NearCompression.recovered_mixed_formula_transport
+#print axioms NearCompression.formula_environment_transport_regressions

@@ -1429,3 +1429,5 @@ import NearCompression.SymbolicCompiledCheck
 import NearCompression.SymbolicFormulaCheck
 
 import NearCompression.RecoveredSymbolicEnvironment
+
+import NearCompression.FormulaEnvironmentTransport

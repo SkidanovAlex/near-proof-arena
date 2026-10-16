@@ -544,6 +544,7 @@
     "research/near-compression/NearCompression/SymbolicCompiledCheck.lean": "f66c50410c600304963bd10d1d9378c2b6c7abef46abe323cae0d47ac2eca545",
     "research/near-compression/NearCompression/SymbolicFormulaCheck.lean": "1b66a40cb3fd485644b0e36283c8635cdc6fa5509dcf0fdfd57c4c0179298800",
     "research/near-compression/NearCompression/RecoveredSymbolicEnvironment.lean": "de28dc5041d96b0f957861249af2a9ea94a9b3e0070c917a1c70d5bc7e558fe8",
+    "research/near-compression/NearCompression/FormulaEnvironmentTransport.lean": "6629b82249810e2b4a36e61a260fd09a89dabddcac6b6c5bcc6facfc25eee347",
     "research/near-compression/NearCompression/JointSourceFarFold.lean": "ff79009785b516f31aa2ee9d5a407fb6154718867341fdaffeb490b40e13cafe",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean": "6fbcc8b3e2937bf737c04c2575c922f9bd9b5db921fca42665199bd78d675341",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean": "170d9528efb40b38fb199586592ff341780d73d0408cae7844d3d3ef881947af",

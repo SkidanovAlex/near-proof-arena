@@ -3334,3 +3334,24 @@ execution was required. Integration/gate/scope and diff checks pass; gate
 NOT_PASSED. Formula evaluation transport, complete verifier metadata premises,
 specification/transcript binding, global/PQ security and secure full-NEAR size
 remain open.
+
+### Checked formulas transport to fixed decoded columns
+
+FormulaEnvironmentTransport proves that bounded current/next agreement and
+selector agreement preserve checked AIR and bus evaluation and their ordered
+weighted mixture. Combining this with canonical ownership chooses one decoded
+column table before all later rowpoints, programs, public values, mixing powers
+and checked residual lists. The symbolic recovered-input mixture therefore
+has the same value on those decoded-column MLE/next-MLE reads.
+
+Kernel regressions allow differing unused columns, reject out-of-width reads,
+and demonstrate sensitivity to current/next swaps and selector changes. Full
+check.py passed 3893 registered results with the existing axiom allowlist.
+No native adapter/prover changed; no new native capture run was needed.
+
+This is evaluation transport, not AIR satisfaction or commitment extraction.
+Canonical enumeration, support disjointness, placement and width bounds remain
+explicit. Selector/specification binding remains open. Next connect all table
+transports to symbolic_formula_recovered_value, then the global verifier and
+execution contract. Gate remains NOT_PASSED; secure parameters, quantum
+soundness and full-NEAR sub300000-byte feasibility are unresolved.
