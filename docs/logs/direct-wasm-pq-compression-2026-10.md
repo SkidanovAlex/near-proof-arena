@@ -1780,3 +1780,11 @@ Proved that the constructed binding list retains every source interaction with m
 Validation: full check.py passed (3669 registered results; allowed axioms only). This is a formal composition checkpoint without runtime or proof-size changes. Its explicit boundary is same-field source/auxiliary/public arithmetic; the global public theorem requires PubVal K. It does not silently instantiate an unproved Ext8 public adapter.
 
 Next: concrete BabyBear source/public and natural-multiplicity transport into the reconstructed Ext8 trace, then accepted-proof-to-common-trace/residual extraction. Complete adaptive/PCS/transcript quantum soundness, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.
+
+### Concrete BabyBear source to reconstructed Ext8 bus products
+
+Proved exact source-message embedding and natural multiplicity preservation under source-column bounds for airAuxCoordinateTrace. Natural counts are preserved even for nonboolean source values. Original BabyBear source residual validity lifts to Ext8, and generated auxiliary residual validity then identifies constructed table finals with products of the original BabyBear message traffic. All-table composition and public factors (formed directly from the original base public vector) equal the semantic Ext8 side product already used by the ideal challenge bound. No PubVal Ext8 instance or unproved public adapter is introduced.
+
+Validation: full check.py passed (3675 registered results; allowed axioms only). Formal transport only: the executable remains Ext4 and no size/performance/security certification is claimed. Explicit premises are column bounds, source/auxiliary residual validity and a supplied common coordinate trace.
+
+Next: allow challenge-dependent auxiliary coordinates/finals while holding source columns fixed; then connect accepted local/PCS checks to the common trace/residual premises. Complete quantum transcript soundness, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.

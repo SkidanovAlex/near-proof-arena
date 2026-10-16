@@ -1,0 +1,22 @@
+{
+  "status": "PROVED_COMPONENT",
+  "module": "NearCompression/BusExt8SourceTransport.lean",
+  "main_theorem": "bus_ext8_claimed_global_product",
+  "established": [
+    "Bounded source message evaluations equal their BabyBear-to-Ext8 embeddings",
+    "Natural multiplicities are unchanged by coordinate reconstruction, including nonboolean source values",
+    "Original BabyBear source residual validity lifts to Ext8",
+    "Constructed bound finals across all tables and base public factors equal the semantic Ext8 global side products"
+  ],
+  "premises": [
+    "Explicit source expression column bounds within sourceWidth",
+    "Original source constraints vanish; generated auxiliary constraints vanish on reconstructed coordinate rows",
+    "One supplied coordinate trace, public vector, challenge pair and indexed finals"
+  ],
+  "remaining": [
+    "Quantify challenge-dependent auxiliary coordinates while keeping original source columns fixed",
+    "Cryptographic acceptance implies the common source/auxiliary residual premises",
+    "Complete adaptive/PCS/transcript quantum soundness and executable Ext8 migration",
+    "Secure sub300k total-input sizing and full 1 Pgas scope"
+  ]
+}

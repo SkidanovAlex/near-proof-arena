@@ -1319,3 +1319,5 @@ import NearCompression.BusNaturalFactor
 import NearCompression.BusExpandedProducts
 
 import NearCompression.BusBoundFinalProducts
+
+import NearCompression.BusExt8SourceTransport
