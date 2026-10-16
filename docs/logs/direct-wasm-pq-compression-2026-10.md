@@ -2993,3 +2993,31 @@ Integration/gate and scope evidence are updated. The gate remains NOT_PASSED.
 Recursive reconstruction/input binding must still compose these checkers to
 derive TerminalRebuildRoute; concrete JSON parsing/kernel certificates and
 global execution, cryptographic/PQ soundness and secure size remain open.
+
+### Reconstruction checker composed to finite program execution
+
+TerminalRebuildCheck checks finite records in dependency order, maintaining a
+list of already established source/target mappings. Constant and input leaves
+check exact values; binary records reference prior mappings and checked
+arithmetic witnesses. Expanded records compose the signed expansion and balance
+checkers, bind their exact ordered mapped terms, and require all retained leaves
+to have prior mappings. Source and target record indices are bounded.
+
+The final root must occur in the checked mapping context. Starting from an
+empty context derives TerminalRebuildRoute with no assumed routes. The new
+program theorem combines checked source acyclicity, reconstruction and finite
+bundle acceptance to conclude finite circuit output equals independent source
+program execution, without a separate reconstruction-route premise.
+
+Input binding remains assignment-specific: checking a source constant against
+inputs(slot) does not prove universal symbolic correspondence or extraction
+from commitments. Retained JSON records still need translation and execution;
+parser/compiler refinement and concrete kernel instances remain open.
+
+Kernel regressions accept a full constant/input/binary/expanded chain and reject
+wrong input values, unavailable dependencies, wrong final root, truncated
+mapping, missing expansion leaf, forged constant, out-of-range default nodes
+and an empty record list. Full check.py passed 3836 registered results with the
+existing axiom allowlist. Integration, gate and scope evidence updated; gate
+remains NOT_PASSED. Global execution and cryptographic/PQ soundness and secure
+size remain open.

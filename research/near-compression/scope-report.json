@@ -533,6 +533,7 @@
     "research/near-compression/NearCompression/TerminalArithmeticCheck.lean": "eab0629862d841b7f87bf7fa8c1bcf48a18045a3550098ba9d2d4735938bf671",
     "research/near-compression/NearCompression/TerminalExpansionCheck.lean": "6bb1ca16f6779f8405cd2806e06676251c15fd0b126b9f3cf4ac4e3075d306b9",
     "research/near-compression/NearCompression/TerminalBalanceCheck.lean": "74cd18c7916f7a3c74df873e0aa064a7fc944610ebb55dadca09c9bac1189f1a",
+    "research/near-compression/NearCompression/TerminalRebuildCheck.lean": "83281ed521e9ef26b42a4e05615dcfa6782d79c42a4768368666a4be1f221201",
     "research/near-compression/NearCompression/JointSourceFarFold.lean": "ff79009785b516f31aa2ee9d5a407fb6154718867341fdaffeb490b40e13cafe",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean": "6fbcc8b3e2937bf737c04c2575c922f9bd9b5db921fca42665199bd78d675341",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean": "170d9528efb40b38fb199586592ff341780d73d0408cae7844d3d3ef881947af",

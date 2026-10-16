@@ -5483,3 +5483,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_balance_checked
 #print axioms NearCompression.terminal_balance_checked_value
 #print axioms NearCompression.terminal_balance_check_regressions
+
+#print axioms NearCompression.terminal_rebuild_record_checked
+#print axioms NearCompression.terminal_rebuild_records_checked
+#print axioms NearCompression.terminal_program_rebuild_checked_value
+#print axioms NearCompression.terminal_rebuild_check_regressions
