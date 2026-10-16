@@ -6246,3 +6246,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.common_denominator_family_pole_count
 #print axioms NearCompression.common_denominator_degree
 #print axioms NearCompression.common_denominator_zero_of_specializations
+
+#print axioms NearCompression.specialize_hensel_add
+#print axioms NearCompression.specialize_hensel_mul
+#print axioms NearCompression.specialize_hensel_substitution
+#print axioms NearCompression.specialize_hensel_perturb
+#print axioms NearCompression.symbolic_hensel_specializes
+#print axioms NearCompression.symbolic_hensel_high_coefficient_zero

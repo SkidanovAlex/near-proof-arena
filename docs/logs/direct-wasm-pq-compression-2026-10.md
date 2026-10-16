@@ -8265,3 +8265,40 @@ still open (the specific recurrence is tested), as are algebraic extensions,
 useful-factor selection, inseparable cases and complete MCA exception counting.
 No runtime/security-parameter change: diagnostic bundle1344645 B, feasibility
 NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Generic symbolic Hensel specialization
+
+Added SymbolicHensel.lean with six audited public theorems. Symbolic X-polynomial
+coefficient lists use common-denominator expressions; padded addition,
+schoolbook multiplication, bivariate substitution and coefficient perturbation
+specialize exactly to the existing Poly operations. The generic symbolic lift
+uses the designated reciprocal1/S at every correction. Induction using slope
+stability proves it specializes to curveHenselLift at every challenge where
+the initial value is a root, S equals the actual initial slope, and S is nonzero.
+The slope equality is an explicit semantic premise, not inferred from S≠0.
+
+symbolic_hensel_high_coefficient_zero connects this lift to bounded-degree
+reconstruction: if enough distinct safe challenges have degree≤k exact roots
+with the prescribed initial value, every specified coefficient above k has
+a formally zero normalized numerator, provided its numerator-degree bound
+and lift precision are adequate. The theorem does NOT supply the common
+initial branch, useful factors, or those quantitative budgets.
+
+Validation:120 expression-polynomial arithmetic fixtures and12 generic
+Hensel fixtures over F2/F3/F5/F17, using factored bivariate polynomials with
+Z-dependent quadratic root curves. All284 safe specialized coefficients
+match independent numeric lifts and the known root. Three F17 fixtures have
+16 safe challenges against numerator-degree budget6 (strict cutoff7), so
+the high-coefficient zero criterion is exercised with enough points. Other
+small-field examples are not claimed to meet that criterion. An incorrect
+but nonzero slope denominator demonstrably gives a different lift; zero
+slope is excluded. Full audit4391 PASS, allowed axioms only. Evidence:
+results/symbolic-hensel/.
+
+The previous generic Hensel-to-expression correspondence gap is now closed
+under the stated semantic premises. Next: derive the initial-value/slope
+interface from actual trivariate data and advance the common-branch/useful-
+factor argument, including algebraic extensions and singular/inseparable
+cases. Full MCA/protocol/QROM composition remains open. No runtime or security-
+parameter change: diagnostic bundle1344645 B, feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

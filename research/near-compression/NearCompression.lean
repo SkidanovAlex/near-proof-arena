@@ -1688,3 +1688,5 @@ import NearCompression.HenselBoundedReconstruction
 import NearCompression.RationalSpecialization
 
 import NearCompression.CommonDenominator
+
+import NearCompression.SymbolicHensel
