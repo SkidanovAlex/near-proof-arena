@@ -243,7 +243,9 @@
     "results/joint-pcs-parameter-screen.json",
     "results/joint-pcs-parameter-integration.json",
     "NearCompression/JointPCSNormalization.lean",
-    "results/joint-pcs-normalization-integration.json"
+    "results/joint-pcs-normalization-integration.json",
+    "NearCompression/AveragedTerminalFailure.lean",
+    "results/averaged-terminal-failure-integration.json"
   ],
   "requirements": [
     {

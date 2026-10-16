@@ -1461,3 +1461,5 @@ import NearCompression.GKRConcretePCSCount
 import NearCompression.JointPCSParameterArithmetic
 
 import NearCompression.JointPCSNormalization
+
+import NearCompression.AveragedTerminalFailure

@@ -3682,3 +3682,21 @@ ideal sampling, global composition or QROM security.
 Full check.py passed 3955 registered results with the existing axiom allowlist.
 No native code changed. Larger-field implementation, secure query/proof bytes
 and full-NEAR quantum soundness remain open; gate NOT_PASSED.
+
+### Batch/GKR composition keeps PCS errors averaged
+
+AveragedTerminalFailure provides the composition form needed by the merged
+far-case bound. Conditional acceptance keeps variable terminal-error counts;
+batching adds its cancellation term without demanding a uniform conditional
+PCS budget. The evaluated GKR theorem supplies its actual repair term and leaves
+the sum of accepted terminal mismatches over rho explicit. A rowpoint summation
+lemma preserves that total, allowing joint averaging before the PCS estimate.
+
+The earlier per-rho pcsBudget theorem remains valid under its stronger premises,
+but this new theorem does not require that premise and is the appropriate route
+for the joint far-case analysis. It does not yet assemble the selected local
+mismatch and no-representative events into a single global bound.
+
+Full check.py passed 3959 registered results with the existing axiom allowlist.
+No native code changed. Executable source/authentication assumptions, global/PQ
+soundness and secure full-NEAR size remain open; gate NOT_PASSED.

@@ -5633,3 +5633,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.joint_pcs_merged_factor
 #print axioms NearCompression.joint_pcs_normalized_target
 #print axioms NearCompression.literal193_original_merged_target
+
+#print axioms NearCompression.conditional_scaled_accept_errors
+#print axioms NearCompression.terminal_batch_averaged_errors
+#print axioms NearCompression.sum_scaled_error_budget
+#print axioms NearCompression.batched_evaluated_gkr_averaged_errors
