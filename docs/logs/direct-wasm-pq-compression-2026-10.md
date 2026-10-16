@@ -2610,3 +2610,30 @@ from the oracle equality alone.
 Validation: both module proofs and full check.py passed3783 registered
 results with the existing axiom allowlist. Imports, audit, scope inventory,
 integration report and the still-NOT_PASSED feasibility gate are updated.
+
+
+### Executable challenge chronology audit
+
+Added audit_gkr_challenge_order.py, which instruments Transcript.commit/draw
+during fresh verification of retained fixed-cap proofs and restores all
+wrapped functions afterward. It checks source commitment before bus draws,
+auxiliary commitments/finals before row draws, and all selected table mixing,
+tau and row coordinates against the actual verifier output. The final GKR
+draw suffix is checked against both returned query points and gamma.
+
+Both193/cap13 and769/cap14 artifacts pass. Their joint opening dimensions are
+55=16+27+12 and63=20+29+14 respectively (row + final GKR + PCS). Both have
+quadratic commitments before reduction/fold challenges, fold roots after their
+challenges, and query draws after terminal disclosure. Event records and proof
+hashes are retained in literal193-challenge-order.json and
+literal769-challenge-order.json. Python compilation and diff checks passed.
+No Lean source changed; the preceding3783-result audit is unchanged.
+
+This is finite implementation evidence, not a randomness theorem. SHA-384
+draws are deterministic. To combine near/far bounds, the formal model must
+account for intervening adaptive messages and other challenges while treating
+the selected joint coordinates as independent ideal verifier coins. It must
+also establish source/aux metadata is fixed before them, and handle sampler
+abort/rejection semantics. Quantum Fiat-Shamir compilation and universal
+compiler/transcript refinement remain open; the feasibility gate stays
+NOT_PASSED.

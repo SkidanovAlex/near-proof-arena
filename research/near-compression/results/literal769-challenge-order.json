@@ -1,0 +1,7536 @@
+{
+  "status": "PASS",
+  "fixture": "results/pq384-literal769-gkr-fixed14",
+  "trusted_input_log": 14,
+  "proof_sha256": "3928491ce9d7019a8369fa6f98c5c14b2bb7f80769ad70b9eca77d8897d60a9f",
+  "row_coordinates": 20,
+  "final_gkr_coordinates": 29,
+  "pcs_coordinates": 14,
+  "joint_coordinates": 63,
+  "phase_event_counts": {
+    "source-and-bus": 3,
+    "auxiliary": 3,
+    "constraints": 46,
+    "layout": 2,
+    "gkr": 1022,
+    "pcs": 79
+  },
+  "events": [
+    {
+      "phase": "source-and-bus",
+      "kind": "commit",
+      "label": "all-source-commitments",
+      "bytes": 104
+    },
+    {
+      "phase": "source-and-bus",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "source-and-bus",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "auxiliary",
+      "kind": "commit",
+      "label": "all-auxiliary-commitments",
+      "bytes": 104
+    },
+    {
+      "phase": "auxiliary",
+      "kind": "commit",
+      "label": "auxiliary-final-vector",
+      "bytes": 72
+    },
+    {
+      "phase": "auxiliary",
+      "kind": "commit",
+      "label": "auxiliary-final-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "table-constraint-start",
+      "bytes": 16
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 10,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 136
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "table-constraint-start",
+      "bytes": 16
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 10,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "constraints",
+      "kind": "commit",
+      "label": "air-extension-vector",
+      "bytes": 104
+    },
+    {
+      "phase": "constraints",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "layout",
+      "kind": "commit",
+      "label": "all-constraint-proofs-complete",
+      "bytes": 8
+    },
+    {
+      "phase": "layout",
+      "kind": "draw",
+      "label": "air-algebra-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 56
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "gkr",
+      "kind": "commit",
+      "label": "gkr-vector",
+      "bytes": 40
+    },
+    {
+      "phase": "gkr",
+      "kind": "draw",
+      "label": "gkr-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "sumcheck-quadratic",
+      "bytes": 56
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "fold-challenge",
+      "count": 1,
+      "coefficients": 4
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "weighted-joint-next-root",
+      "bytes": 48
+    },
+    {
+      "phase": "pcs",
+      "kind": "commit",
+      "label": "disclosed-terminal-before-queries",
+      "bytes": 32
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "global-chain-domain-index",
+      "count": 1,
+      "coefficients": 1
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "global-chain-domain-index",
+      "count": 1,
+      "coefficients": 1
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "global-chain-domain-index",
+      "count": 1,
+      "coefficients": 1
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "global-chain-domain-index",
+      "count": 1,
+      "coefficients": 1
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "global-chain-domain-index",
+      "count": 1,
+      "coefficients": 1
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "global-chain-domain-index",
+      "count": 1,
+      "coefficients": 1
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "global-chain-domain-index",
+      "count": 1,
+      "coefficients": 1
+    },
+    {
+      "phase": "pcs",
+      "kind": "draw",
+      "label": "global-chain-domain-index",
+      "count": 1,
+      "coefficients": 1
+    }
+  ],
+  "established": [
+    "Source roots precede bus challenges; auxiliary roots/finals precede all row coordinates.",
+    "Fixed input cap determines final GKR coordinate count despite earlier challenge-dependent circuit compilation.",
+    "Final GKR draw suffix exactly equals returned left/right/gamma opening obligation.",
+    "PCS reduction follows GKR; each fold root follows its fold challenge; all queries follow terminal disclosure."
+  ],
+  "limits": [
+    "Replay evidence for this retained artifact, not universal implementation refinement.",
+    "Actual SHA-384 draws are deterministic; this audit proves no independent uniform or quantum random-oracle claim.",
+    "Universal metadata stability and chronological near/far count composition remain open.",
+    "Q8/Ext4 diagnostic, not secure full-NEAR parameters."
+  ]
+}
