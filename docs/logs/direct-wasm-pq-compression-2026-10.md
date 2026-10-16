@@ -8195,3 +8195,39 @@ Singular/inseparable branches and the complete MCA exceptional-set count
 remain open; a smooth-branch decoder is not a full protocol extractor.
 No runtime or security-parameter change: diagnostic bundle1344645 B,
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Guarded rational specialization; denominator-growth diagnostic
+
+Added RationalSpecialization.lean with six audited public theorems. Arithmetic
+expressions over polynomial leaves carry explicit addition, multiplication,
+negation and inversion, an unnormalized numerator/denominator pair, and a
+guard polynomial. The guard is nonzero at a challenge iff every syntactic
+inversion is valid there. On that domain the denominator is nonzero and both
+the cross-multiplied and fraction evaluation identities hold. This avoids
+pretending evaluation at Z=z is a total map on a rational-function field.
+
+Regularity explicitly requires every inverted numerator to be formally
+nonzero. It implies the guard is formally nonzero, NOT that any particular
+challenge is safe. Proved recursive numerator/denominator/guard degree
+budgets yield an excluded-distinct-challenge bound by guard degree. These
+are expression-domain poles only, not the full MCA exceptional set. The
+representation is not a quotient-field or algebraic-extension implementation.
+
+Validation:600 random expressions over F2/F3/F5/F17,497 regular. Tests cover
+cancelled-output poles (Z/Z and inverse(inverse(Z))), four regular expressions
+undefined at every base-field challenge, and an inverse-zero nonregular
+counterexample. Symbolic coefficients of Y^2+(Z+1)Y-X through degree5 match
+138 specialized finite-lift coefficients away from Z=-1. This Hensel-to-circuit
+correspondence is tested here, not yet Lean-proved. Full audit4378 PASS, allowed
+axioms only. Evidence: results/rational-specialization/.
+
+The diagnostic exposes a quantitative problem: raw guard-degree budgets for
+the five Hensel coefficients are1,3,9,27,81, but every coefficient has exactly
+one excluded challenge. Repeated syntactic factors grossly overcount the
+same pole. Next: prove common-denominator-power representation/specialization
+and count the pole set once; do not insert this loose budget into a claimed
+MCA or PQ128 ledger. Useful factors, algebraic extensions, inseparable cases
+and the complete exceptional-set argument remain open.
+
+No runtime or cryptographic parameter change: diagnostic bundle1344645 B,
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

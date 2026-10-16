@@ -6231,3 +6231,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.hensel_bounded_root_iff
 #print axioms NearCompression.hensel_bounded_tail_exact
 #print axioms NearCompression.hensel_bounded_tail_iff
+
+#print axioms NearCompression.rational_specialization_certificate
+#print axioms NearCompression.rational_guard_safe_iff
+#print axioms NearCompression.rational_regular_guard_nonzero
+#print axioms NearCompression.rational_specialization_eval
+#print axioms NearCompression.rational_degree_budgets
+#print axioms NearCompression.rational_unsafe_specialization_count

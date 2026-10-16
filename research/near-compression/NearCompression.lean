@@ -1684,3 +1684,5 @@ import NearCompression.FormalRootForcing
 import NearCompression.HenselCoefficientStep
 
 import NearCompression.HenselBoundedReconstruction
+
+import NearCompression.RationalSpecialization

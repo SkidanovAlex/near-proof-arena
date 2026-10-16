@@ -309,6 +309,7 @@ SOURCES = [
     "research/near-compression/NearCompression/FormalRootForcing.lean",
     "research/near-compression/NearCompression/HenselCoefficientStep.lean",
     "research/near-compression/NearCompression/HenselBoundedReconstruction.lean",
+    "research/near-compression/NearCompression/RationalSpecialization.lean",
     "research/near-compression/NearCompression/FormalTranslation.lean",
     "research/near-compression/NearCompression/PolynomialCoefficientAlgebra.lean",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean",
