@@ -5572,3 +5572,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.history_decoded_mixture
 #print axioms NearCompression.history_decoded_formula_outputs
 #print axioms NearCompression.history_decoded_regressions
+
+#print axioms NearCompression.decoded_air_row_environment
+#print axioms NearCompression.decoded_bus_row_environment
+#print axioms NearCompression.mixed_formula_power_batch
+#print axioms NearCompression.decoded_combined_residual_values
+#print axioms NearCompression.decoded_combined_mixture
+#print axioms NearCompression.decoded_combined_mixture_boolean
+#print axioms NearCompression.decoded_mixture_weighted_zero_count

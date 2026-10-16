@@ -3442,3 +3442,26 @@ history padding, changed offsets and out-of-dimension zero. Full check.py passed
 changed. Executable history/metadata refinement, intended formula generation,
 execution and global/PQ soundness remain open; gate NOT_PASSED. Secure full-NEAR
 capacity and sub300000-byte feasibility are not established.
+
+### Decoded compiler mixtures reach AIR trace semantics and zerocheck bounds
+
+DecodedTraceSemantics constructs a total AIR trace table from decoded columns,
+without assuming valid rows. The decoded common-point environment equals the
+AIR row MLE environment and the auxiliary bus environment. The compiler's
+power accumulator equals ordered lanePowerBatch independently of register labels.
+With an explicit source-then-auxiliary formula ordering, the mixture equals
+combined point residuals and, at Boolean points, actual trace-row residuals.
+Nonlinear expressions are evaluated after column interpolation; no invalid
+commutation of constraints with MLE is used.
+
+The initial zerocheck count now applies directly to the decoded compiler
+accumulator: a nonzero row residual yields the existing finite-sample bound.
+Columns and formulas are fixed before batching samples, sample values are
+distinct, and the offending row and residual-family bounds remain explicit.
+This is ideal initial-check soundness, not global acceptance or Fiat-Shamir.
+
+Full check.py passed 3913 registered results with the existing axiom allowlist.
+No native code changed. Supplied source/auxiliary lists still require intended
+specification binding; decoded execution validity, global chronological
+GKR/PCS composition, commitment extraction, quantum security and secure
+full-NEAR size remain open. Gate NOT_PASSED.

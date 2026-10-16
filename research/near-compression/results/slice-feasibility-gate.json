@@ -218,7 +218,9 @@
     "NearCompression/DecodedSelectorBinding.lean",
     "results/decoded-selector-binding-integration.json",
     "NearCompression/HistoryDecodedEnvironment.lean",
-    "results/history-decoded-environment-integration.json"
+    "results/history-decoded-environment-integration.json",
+    "NearCompression/DecodedTraceSemantics.lean",
+    "results/decoded-trace-semantics-integration.json"
   ],
   "requirements": [
     {
