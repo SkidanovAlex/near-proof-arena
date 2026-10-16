@@ -3910,3 +3910,18 @@ Native transcript authentication and binding the residual list to the intended
 specification remain open; this does not establish global/PQ soundness.
 Full check.py passed 3995 registered results with the existing axiom allowlist.
 Native code unchanged since the prior 32-rejection suite; gate NOT_PASSED.
+
+### Invalid later-table bound preserves earlier transcript adaptivity
+
+AdaptiveTableContinuation lifts the actual invalid decoded-trace local bound
+after arbitrary earlier transcripts. Sent polynomials and claim strategies
+may depend on the entire earlier value, covering the second table's dependence
+on the first table protocol. Downstream errors remain one joint total; no
+per-earlier-transcript or per-rowpoint PCS estimate is introduced. A count
+identity aligns that error sum with the chronological experiment.
+
+Bad-table selection from invalid slice semantics, concrete batching/GKR/PCS
+substitution, native bindings and no-representative branch assembly remain.
+Full check.py passed 3997 registered results with the existing axiom allowlist.
+Native code and proof sizes unchanged; global/PQ soundness remains open and
+gate remains NOT_PASSED.

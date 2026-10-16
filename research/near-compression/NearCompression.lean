@@ -1487,3 +1487,5 @@ import NearCompression.TwoTablePCSExperiment
 import NearCompression.LocalTerminalBindingCheck
 
 import NearCompression.CheckedTerminalSemantics
+
+import NearCompression.AdaptiveTableContinuation

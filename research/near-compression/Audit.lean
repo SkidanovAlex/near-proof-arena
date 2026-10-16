@@ -5686,3 +5686,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.checked_local_terminal_mismatch
 #print axioms NearCompression.checked_formula_table_mismatch
 #print axioms NearCompression.checked_formula_batch_cancellation
+
+#print axioms NearCompression.decoded_invalid_table_after_earlier_budget
+#print axioms NearCompression.earlier_local_error_count

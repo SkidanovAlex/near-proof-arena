@@ -269,7 +269,9 @@
     "NearCompression/LocalTerminalBindingCheck.lean",
     "results/local-terminal-binding-integration.json",
     "NearCompression/CheckedTerminalSemantics.lean",
-    "results/checked-terminal-semantics-integration.json"
+    "results/checked-terminal-semantics-integration.json",
+    "NearCompression/AdaptiveTableContinuation.lean",
+    "results/adaptive-table-continuation-integration.json"
   ],
   "requirements": [
     {
