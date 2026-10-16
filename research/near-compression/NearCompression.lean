@@ -1341,3 +1341,5 @@ import NearCompression.ShiftInitialClaim
 import NearCompression.ShiftAdaptiveSoundness
 
 import NearCompression.PackedComputedOpening
+
+import NearCompression.PackedOpeningFailureBudget

@@ -82,7 +82,9 @@
     "results/shift-adaptive-integration.json",
     "results/pq384-code-table-long193/shift-composed-budget.json",
     "NearCompression/PackedComputedOpening.lean",
-    "results/packed-computed-opening-integration.json"
+    "results/packed-computed-opening-integration.json",
+    "NearCompression/PackedOpeningFailureBudget.lean",
+    "results/packed-opening-failure-budget.json"
   ],
   "requirements": [
     {
@@ -107,7 +109,8 @@
       "global_product_component": "Concrete source/Ext8/global-product composition now permits arbitrary challenge-dependent auxiliary coordinates and finals while source cells and heights remain fixed. Existential adaptive residual acceptance implies the fixed-source semantic bus equation and obeys the same ideal Ext8 budget. The literal wrong actual runCall output theorem composes with this event, conditional on TableLocal, public fit, executable preparation and fuel. Cryptographic common-source extraction, local/adaptive sumcheck/PCS soundness and quantum transcript reduction remain open.",
       "adaptive_sumcheck_component": "Concrete trace-derived adaptive rounds are now composed with initial constraint batching and equality-point error in one integer challenge-count theorem for any fixed invalid combined trace. Strategies depend on mixing/tau and challenge history. Conditional bound: (residualCount-1+rowLog+roundDegree*rowLog)/fieldSize; retained EXEC/CODE numerators801/600. Terminal equality to actual trace evaluation and fixed trace before local challenges remain premises. Current/next/PCS authentication, extraction and global transcript composition remain open.",
       "terminal_shift_component": "Full algebraic shift bound now composes fixed current/next vector batching with trace-derived adaptive quadratic rounds: (2*width-1+2*rowLog)/fieldSize. Honest degree and suffix representation are constructed. Retained Ext4 numerators1249/811; projected eight-coordinate Ext8 numerators1273/1211, not an executable migration. Terminal equality to actual original-column MLEs remains a premise requiring PCS authentication, followed by local/bus/transcript composition.",
-      "packed_source_component": "Computed mutable Mobius coefficients now provably evaluate to the padded source row MLE at every point. Packed vector wrong-lane count specializes to these coefficients without a sourceBinding premise. Exact PCS authentication remains an explicit unproved cryptographic contract; common-trace extraction and transcript composition remain open."
+      "packed_source_component": "Computed mutable Mobius coefficients now provably evaluate to the padded source row MLE at every point. Packed vector wrong-lane count specializes to these coefficients without a sourceBinding premise. Exact PCS authentication remains an explicit unproved cryptographic contract; common-trace extraction and transcript composition remain open.",
+      "packed_failure_component": "Joint-experiment composition now replaces exact PCS authentication with an explicit counted failure event: wrong-vector acceptance <= p*Q^(p-1)*R + PCS failure count. Opening strategies may adapt to column coordinates; independence of the two failures is not assumed. The PCS failure count has not been bounded, and no-candidate fold soundness cannot be substituted without common-source/candidate coherence."
     },
     {
       "name": "Complete bytes and scaling",

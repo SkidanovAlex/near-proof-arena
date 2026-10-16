@@ -5347,3 +5347,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.mobius_tensor_row_mle
 #print axioms NearCompression.packed_computed_tensor
 #print axioms NearCompression.packed_computed_opening_bad_count
+
+#print axioms NearCompression.packed_computed_accept_decomposition
+#print axioms NearCompression.packed_computed_opening_failure_budget

@@ -1862,3 +1862,20 @@ on one committed trace. The slice gate remains NOT_PASSED.
 
 Validation: full `check.py` passed with 3732 registered results and the existing
 axiom allowlist. No new size or security measurement is claimed.
+
+
+### Fallible PCS packing composition
+
+`PackedOpeningFailureBudget.lean` decomposes wrong-vector acceptance into a
+packing collision or an accepted scalar value inconsistent with the computed
+source tensor. Its joint-experiment count is at most p*Q^(p-1)*R plus the
+PCS failure count, allowing opening strategies to adapt to packing coordinates.
+No independence between failures or exact PCS contract is assumed. The PCS
+failure term is not yet bounded. Inspection of `checked_interactive_unique_fold_soundness`
+confirms its initial premise is no candidate; this cannot directly establish
+fixed-source incorrect-opening soundness without candidate coherence and common
+committed-source extraction. This checkpoint establishes the interface for that
+reduction, not the reduction itself. Slice gate remains NOT_PASSED.
+
+Validation: full `check.py` passed, 3734 registered results; existing axiom
+allowlist enforced. No new performance, size, or quantum-security claim.
