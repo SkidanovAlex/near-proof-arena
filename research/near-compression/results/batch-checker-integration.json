@@ -1,0 +1,40 @@
+{
+  "status": "LEAN_FINAL_BATCH_RESIDUAL_IDENTITY_PROVED_AND_CAPTURE_EXECUTED",
+  "module": "NearCompression/TerminalBatchCheck.lean",
+  "theorems": [
+    "terminal_batch_entry_checked",
+    "terminal_batch_entries_checked",
+    "terminal_batch_root_checked",
+    "terminal_batch_checked_value",
+    "terminal_batch_check_regressions"
+  ],
+  "proved": [
+    "Finite arithmetic checks bind each program root times expected weight, subtraction of expected claim, and multiplication by the current rho power.",
+    "Recursive entry checking advances the power by multiplication with rho and derives the exact residual sum.",
+    "Checked final balance and optional forced add-zero root preserve the residual sum as the executed DAG root."
+  ],
+  "qualification": "An exact algebraic identity, not a probability bound: zero batched residual does not by itself imply all individual residuals vanish. Weights, claims and rho are caller-supplied expected values; the native manifest comes from verified Python transcript replay, not a Lean transcript refinement.",
+  "native": {
+    "report": "results/lean-rebuild-captures.json",
+    "programs": 2,
+    "reconstruction_records": 9152,
+    "diagnostic_assignments": 2,
+    "malformed_rejections": 14,
+    "includes_stored_bundle": true,
+    "includes_final_batch": true
+  },
+  "remaining": [
+    "Connect independently reconstructed program values and batching into the global committed-trace/GKR/PCS acceptance theorem.",
+    "Committed assignment extraction, parser/emitter and transcript refinement, concrete kernel certificates remain open.",
+    "Quantum security parameters, full NEAR coverage/capacity and secure sub300000-byte size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3841,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

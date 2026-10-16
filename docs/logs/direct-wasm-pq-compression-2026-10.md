@@ -3051,3 +3051,32 @@ rho batching across programs is still outside this Lean adapter. Parser/emitter
 refinement, source AIR compilation, global cryptographic/PQ soundness and secure
 size remain open. Full check.py again passed 3836 results with the existing
 axiom allowlist; Python compilation and diff checks passed. Gate NOT_PASSED.
+
+### Final batching checks and exact residual identity
+
+TerminalBatchCheck binds each reconstructed program root to multiplication by
+its expected equality weight, subtraction of its expected claim and scaling
+by the current rho power. The recursive checker advances powers by rho.
+Soundness derives the exact terminalResidualValue equation. Checked final
+balance and the optional forced add-zero gate preserve this value at the
+emitted DAG root. Default lookups cannot supply required constant witnesses:
+finite arithmetic bounds connect their lookups to actual stored nodes.
+
+Kernel regressions cover rho progression, expected weight/claim changes,
+wrong arithmetic result, missing power node and direct/forced final roots.
+This is an algebraic identity, not a probabilistic assertion that zero batch
+implies every residual is zero. Expected values remain caller-supplied.
+
+The fixed capture manifest now retains rho, equality weights and claims from
+verified transcript replay. CheckRebuildRecords binds the two source-program
+roots to these values, checks final balance terms and the exact circuit root.
+Both diagnostic assignments pass all 9152 reconstruction records and final
+batching. Fourteen mutations reject, including changed batch powers, weights,
+claims, missing outputs, wrong final root and independently modified expected
+rho/weight/claim. Stored-bundle validation passes in the same harness.
+
+Full check.py passed 3841 results under the existing axiom allowlist; native
+harness, Python compilation and diff checks passed. Integration/gate updated;
+gate remains NOT_PASSED. Verified Python replay is not Lean transcript/parser
+refinement. Committed assignment extraction, global soundness composition,
+quantum security, full NEAR capacity and secure proof size remain open.

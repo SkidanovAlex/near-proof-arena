@@ -4,27 +4,30 @@
   "bundle_sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
   "rebuild": "results/literal193-fixed-rebuild.json",
   "rebuild_sha256": "be3281e9eb335ad2f6640538207ffbf36b411e577ba109733560fabbd27b1586",
-  "adapter_sha256": "fc18375fecb8b61e1e955b8916f50cd1006bc19f5c2b4089a107267c00be0a1c",
+  "adapter_sha256": "0e66343ed9e5a7e117661ab68fe91872783453b9b00af54fb15cfaf13d4bde78",
+  "manifest_sha256": "44894213b947ece5e72c9063086bf25b2c691b28392bd0c15452acf8f1cb677f",
   "positive": [
     {
       "result": {
+        "batch_entries": 2,
         "programs": 2,
         "records": 9152,
-        "scope": "Native Lean program rebuild checks on diagnostic assignment; excludes final batching, parser refinement and concrete kernel certificates",
+        "scope": "Native Lean reconstruction and final batching on diagnostic assignment and supplied replay manifest; excludes extraction, parser refinement and concrete kernel certificates",
         "seed": 0,
         "status": "PASS"
       },
-      "seconds": 2.1337753939442337
+      "seconds": 2.221395972184837
     },
     {
       "result": {
+        "batch_entries": 2,
         "programs": 2,
         "records": 9152,
-        "scope": "Native Lean program rebuild checks on diagnostic assignment; excludes final batching, parser refinement and concrete kernel certificates",
+        "scope": "Native Lean reconstruction and final batching on diagnostic assignment and supplied replay manifest; excludes extraction, parser refinement and concrete kernel certificates",
         "seed": 7,
         "status": "PASS"
       },
-      "seconds": 2.145262131933123
+      "seconds": 2.215889048296958
     }
   ],
   "rejected": [
@@ -51,6 +54,38 @@
     {
       "case": "unknown-opcode",
       "reason": "uncaught exception: instruction opcode"
+    },
+    {
+      "case": "wrong-batch-power",
+      "reason": "uncaught exception: no valid arithmetic witness"
+    },
+    {
+      "case": "wrong-batch-weight",
+      "reason": "uncaught exception: no valid arithmetic witness"
+    },
+    {
+      "case": "wrong-batch-claim",
+      "reason": "uncaught exception: no valid arithmetic witness"
+    },
+    {
+      "case": "missing-batch-entry",
+      "reason": "uncaught exception: batch count"
+    },
+    {
+      "case": "wrong-final-root",
+      "reason": "uncaught exception: circuit root mismatch"
+    },
+    {
+      "case": "changed-expected-rho",
+      "reason": "uncaught exception: batch entries rejected"
+    },
+    {
+      "case": "changed-expected-weight",
+      "reason": "uncaught exception: batch entries rejected"
+    },
+    {
+      "case": "changed-expected-claim",
+      "reason": "uncaught exception: batch entries rejected"
     }
   ],
   "stored_bundle_check": {
@@ -60,5 +95,5 @@
     "scope": "Lean checker execution; not a kernel proof of this JSON instance",
     "status": "PASS"
   },
-  "scope": "Native typed Lean per-program reconstruction on two diagnostic assignments. Excludes global final batching, commitment extraction, parser refinement and concrete kernel proof terms."
+  "scope": "Native typed Lean reconstruction and final batching on two diagnostic assignments with supplied replay manifest. Excludes commitment extraction, parser refinement and concrete kernel proof terms."
 }

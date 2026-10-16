@@ -1,4 +1,4 @@
-import NearCompression.TerminalRebuildCheck
+import NearCompression.TerminalBatchCheck
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -100,7 +100,7 @@ private def balance (nodes : List (TerminalDAGNode Fp4)) (j : Json) : IO (Termin
 private def inputValue (seed slot : Nat) : Fp4 :=
   ⟨⟨Fp.ofNat ((slot+1)*(seed+1)),0⟩,⟨0,0⟩⟩
 
-private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p : Json) : IO Nat := do
+private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p : Json) : IO (Nat × Nat) := do
   let ins ← need (←field p "instructions").getArr?
   require (0<ins.size) "empty program"
   let base ← need (←field p "base").getNat?
@@ -155,20 +155,49 @@ private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p :
   let root ← need (←field p "root").getNat?
   require (terminalRebuildRecordsCheck source target (inputValue seed) [] records (ins.size-1) root)
     "rebuild records rejected"
-  return records.length
+  return (records.length,root)
 
 def main (args : List String) : IO Unit := do
-  require (args.length==3) "expected DAG bundle, rebuild capture, diagnostic seed"
-  let some seed := args[2]!.toNat? | throw (IO.userError "invalid seed")
+  require (args.length==4) "expected DAG bundle, rebuild capture, replay manifest, diagnostic seed"
+  let some seed := args[3]!.toNat? | throw (IO.userError "invalid seed")
   let bundle ← need (Json.parse (←IO.FS.readFile args[0]!))
   let rebuild ← need (Json.parse (←IO.FS.readFile args[1]!))
   let circuit ← field bundle "circuit"
   let target ← (←need (←field circuit "nodes").getArr?).toList.mapM node
   require (terminalAcyclicCheck 0 target) "target acyclicity"
+  let manifest ← need (Json.parse (←IO.FS.readFile args[2]!))
+  let expected ← field manifest "expected_batch"
+  let rho ← scalar (←field expected "rho")
+  let weights ← need (←field expected "weights").getArr?
+  let claims ← need (←field expected "claims").getArr?
+  let outputs ← need (←field rebuild "outputs").getArr?
   let mut count := 0
+  let mut entries : List (TerminalBatchEntry Fp4) := []
   let programs ← need (←field rebuild "programs").getArr?
-  for p in programs do count := count+(←checkProgram target seed p)
+  require (outputs.size==programs.size && weights.size==programs.size && claims.size==programs.size) "batch count"
+  for i in List.range programs.size do
+    let (n,programRoot) ← checkProgram target seed programs[i]!
+    count := count+n
+    let out := outputs[i]!
+    let wn ← need (←field out "weight").getNat?
+    let cn ← need (←field out "claim").getNat?
+    let pn ← need (←field out "power").getNat?
+    let weighted ← need (←field out "node").getNat?
+    let delta ← need (←field out "delta").getNat?
+    let term ← need (←field out "batch_node").getNat?
+    entries := ⟨programRoot,←scalar weights[i]!,←scalar claims[i]!,wn,cn,pn,weighted,delta,term,
+      ←arithmetic target .mul programRoot wn weighted,←arithmetic target .sub weighted cn delta,
+      ←arithmetic target .mul pn delta term⟩::entries
+  entries := entries.reverse
+  require (terminalBatchEntriesCheck target rho 1 entries) "batch entries rejected"
+  let finalBalance ← balance target (←field rebuild "balance")
+  require (finalBalance.terms==entries.map (fun e => (e.termNode,true))) "batch terms mismatch"
+  require (terminalBalanceCheck target finalBalance) "final balance rejected"
+  let root ← need (←field rebuild "root").getNat?
+  require (root==(←need (←field circuit "root").getNat?)) "circuit root mismatch"
+  let zeroNode := target.findIdx (fun n => n==.constant 0)
+  require (terminalBatchRootCheck target finalBalance.result root zeroNode) "final root rejected"
   require (0<programs.size) "no programs"
   IO.println (Json.mkObj [("status",toJson "PASS"),("programs",toJson programs.size),
-    ("records",toJson count),("seed",toJson seed),
-    ("scope",toJson "Native Lean program rebuild checks on diagnostic assignment; excludes final batching, parser refinement and concrete kernel certificates")]).compress
+    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),
+    ("scope",toJson "Native Lean reconstruction and final batching on diagnostic assignment and supplied replay manifest; excludes extraction, parser refinement and concrete kernel certificates")]).compress

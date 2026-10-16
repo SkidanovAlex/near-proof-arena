@@ -1409,3 +1409,5 @@ import NearCompression.TerminalExpansionCheck
 import NearCompression.TerminalBalanceCheck
 
 import NearCompression.TerminalRebuildCheck
+
+import NearCompression.TerminalBatchCheck

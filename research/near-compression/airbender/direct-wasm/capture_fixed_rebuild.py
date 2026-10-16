@@ -18,7 +18,8 @@ cert=c.produce(circuit,args);counts=c.validate(circuit,args,cert);print(counts)
 cli.output.write_text(json.dumps(cert,separators=(',',':'))+'\n')
 
 def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
-report=dict(status='PASS',capture=str(cli.capture),input_log=cli.input_log,profile=profile,counts=counts,
+expected_batch=dict(rho=list(args[-1]),weights=[list(eq_point(t['tau'],t['point'])) for t in args[-2]],claims=[t['claim'] for t in args[-2]])
+report=dict(expected_batch=expected_batch,status='PASS',capture=str(cli.capture),input_log=cli.input_log,profile=profile,counts=counts,
     statement_sha256=sha(cli.capture/'statement.json'),proof_sha256=sha(cli.capture/'proof.json'),
     bundle_sha256=sha(cli.bundle),rebuild_sha256=sha(cli.output),
     scope='Full fixed-profile proof verified before replay; reconstructed circuit equals retained bundle. Structural certificate validation, not security certification.')
