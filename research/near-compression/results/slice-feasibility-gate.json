@@ -160,7 +160,9 @@
     "NearCompression/GKRHistoryFarAcceptance.lean",
     "results/gkr-history-coordinate-integration.json",
     "NearCompression/GKRJointFailureAcceptance.lean",
-    "results/gkr-joint-failure-acceptance-integration.json"
+    "results/gkr-joint-failure-acceptance-integration.json",
+    "NearCompression/GKRContinuationFailure.lean",
+    "results/gkr-continuation-failure-integration.json"
   ],
   "requirements": [
     {
@@ -212,7 +214,8 @@
       "near_history_acceptance_component": "Near-case wrong initial functional and checked sumcheck/folding acceptance is now bounded over one joint earlier+PCS coordinate vector. Earlier history may select weights, claims and folding strategies, while a single source representative serves all histories. Exact prefix/suffix counting introduces no extra normalized error. Actual chosen-GKR event instantiation, near/far/global composition and transcript/commitment/PQ refinement remain open.",
       "chosen_gkr_history_component": "Bounds wrong full recovered GKR input AND checked sumcheck/folding acceptance on a joint earlier-history plus PCS coordinate vector. The single chosen joint source representative depends only on fixed layout, metadata, source oracles, domain and threshold. Actual constant subtraction and sparse/shared recovery are derived for all histories. Representative existence, oracle authentication, ideal sampling, and subsequent near/far/global/quantum composition remain open.",
       "concrete_history_far_component": "Concrete chronological coefficient/oracle identities and total PCS suffix extraction are proved. Far checked-fold acceptance now uses the heterogeneous coefficient family and this exact suffix, with affinity/point-length discharged. Near/far event merger, source binding, global execution and quantum composition remain open.",
-      "joint_near_far_gkr_failure_component": "Checked weighted sumcheck and folding acceptance AND (no common prechallenge source representative OR wrong full recovered GKR input for the chosen representative). is bounded without a representative-existence premise, on one joint coordinate space, by max(nearBudget,farBudget). Initial weighted oracle and terminal authentication, fixed source/layout geometry, ideal sampling and strict unique decoding remain assumed. Computational commitment extraction, upstream/global execution propagation and quantum compilation remain open."
+      "joint_near_far_gkr_failure_component": "Checked weighted sumcheck and folding acceptance AND (no common prechallenge source representative OR wrong full recovered GKR input for the chosen representative). is bounded without a representative-existence premise, on one joint coordinate space, by max(nearBudget,farBudget). Initial weighted oracle and terminal authentication, fixed source/layout geometry, ideal sampling and strict unique decoding remain assumed. Computational commitment extraction, upstream/global execution propagation and quantum compilation remain open.",
+      "gkr_continuation_failure_component": "Fixed-circuit false-output acceptance now has a GKR repair budget plus accepted terminal mismatch count on the same path\u00d7PCS-continuation experiment. Last-layer mismatch is exactly the full recovered GKR input mismatch under explicit same-assignment equality. Matching the full path experiment to selected PCS joint coordinates, constructing that circuit assignment and composing global execution/commitment/quantum bounds remain open."
     },
     {
       "name": "Complete bytes and scaling",

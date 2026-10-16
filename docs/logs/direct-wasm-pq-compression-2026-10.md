@@ -2748,3 +2748,30 @@ Validation: full check.py passes3795 registered results with the existing
 axiom allowlist; diff checks pass. Integration report, imports, audit, scope
 and the still-NOT_PASSED feasibility gate updated. Full secure NEAR1Pgas
 sub300000-byte compression remains unestablished.
+
+
+### GKR terminal failure with subsequent PCS randomness
+
+Reused the existing GKRTerminalFailure verifier-path split instead of
+duplicating its abstraction. Added gkr_terminal_mismatch_last to expose the
+last layer's combined functional with its complete preceding history;
+gkr_terminal_recovered_mismatch identifies that event with the full recovered
+input mismatch when the circuit input equals decoded private slots plus
+known constants. The same-assignment equality remains explicit.
+
+Added gkr_continuation_terminal_error_budget. A false-root accepted path with
+arbitrary subsequent PCS randomness is bounded by the GKR repair term times
+continuation mass plus accepted terminal mismatches counted on that exact
+joint experiment. Acceptance and opening failures may depend on the full
+GKR path; no independence between those events is assumed.
+
+Next: construct the fixed circuit evaluation from the chosen tuple and map
+the full layered path/ancillary randomness to the selected joint coordinates
+used by the merged PCS theorem. Simply conditioning on all earlier or
+intervening challenges would not discharge that mapping. Global AIR/bus/Wasm
+composition, concrete commitment binding and quantum compilation remain open.
+
+Validation: three new results pass module checks and full check.py (3798
+registered results), retaining the axiom allowlist. Imports, audit, scope,
+integration report and NOT_PASSED feasibility gate updated. No secure
+full-NEAR1Pgas or sub300000-byte completion claim is made.

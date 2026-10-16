@@ -5437,3 +5437,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.uniform_tuple_member_length
 #print axioms NearCompression.gkr_joint_failure_acceptance_count
+
+#print axioms NearCompression.gkr_terminal_mismatch_last
+#print axioms NearCompression.gkr_terminal_recovered_mismatch
+#print axioms NearCompression.gkr_continuation_terminal_error_budget

@@ -1,0 +1,38 @@
+{
+  "status": "GKR_TERMINAL_FAILURE_WITH_PCS_CONTINUATIONS_PROVED",
+  "module": "NearCompression/GKRContinuationFailure.lean",
+  "theorems": [
+    "gkr_terminal_mismatch_last",
+    "gkr_terminal_recovered_mismatch",
+    "gkr_continuation_terminal_error_budget"
+  ],
+  "proved": [
+    "Terminal mismatch along a multilayer path is exactly the final layer combined input-functional mismatch, with the entire preceding block history retained.",
+    "When the fixed circuit input equals the decoded private slots plus known constants, this is exactly the recovered full GKR input mismatch used by the PCS theorem.",
+    "False-root acceptance with arbitrary subsequent randomness is bounded by the proved GKR repair term times continuation mass plus accepted terminal mismatches on that same joint experiment."
+  ],
+  "budget": "count(accepted)*Q <= sum_layers(4*m+1)*path_count*continuation_count + count(accepted AND terminal_mismatch)*Q",
+  "reused": "GKRTerminalFailure already supplied verifier-path splitting and a no-continuation budget. The new result reuses that split and the fixed-circuit GKR budget; it does not assume a PCS soundness bound.",
+  "explicit_assumptions": [
+    "One fixed circuit value/wiring assignment for the GKR path, concrete adjacent evaluation and checked claim linkage.",
+    "The initial circuit claim is wrong.",
+    "Recovered-input adapter requires equality of the final fixed circuit input with the decoded tuple plus constants.",
+    "Independent ideal GKR challenge blocks and a fixed continuation sample list; acceptance may depend on both."
+  ],
+  "remaining": [
+    "Construct fixed circuit evaluations from the same chosen decoded tuple, and relate the executable compiler to those values.",
+    "Map full layered GKR paths plus ancillary challenges to the selected joint coordinates in the merged PCS theorem without invalid conditioning.",
+    "Substitute the merged near/far PCS bound and compose AIR/bus-to-actual-execution failure propagation.",
+    "Concrete oracle binding, quantum transcript reduction, secure parameters and full NEAR1Pgas sub300000-byte feasibility."
+  ],
+  "validation": {
+    "module_check": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3798,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}
