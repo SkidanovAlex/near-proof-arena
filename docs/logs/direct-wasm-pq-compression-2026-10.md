@@ -1529,3 +1529,38 @@ priority for the full target. Screen repeated rate shifts under an explicitly
 identified composition obligation, and compare stronger extraction/query
 bounds, before choosing the next protocol implementation. No quantum
 Fiat-Shamir reduction or new post-quantum certification is inferred.
+
+## Repeated-rate-shift feasibility screen
+
+`screen_repeated_rate_shifts.py` searches repeated shifts over rates 2/4/8/16/32
+and 1–8 skipped folds with exact expected Merkle frontier/leaf costs. The
+expectation formula is independently checked by exhaustive query enumeration
+in 12 small cases, including duplicate draws; 654 additional coset-replication
+checks validate the structured opening geometry. All intermediate sources
+are correctly priced as paired Ext8 leaves (64 bytes), not scalar leaves.
+
+Two terminal policies are compared: arbitrary coefficient disclosure and
+disclosure capped at degree64. The latter avoids selecting a large witness
+dump as the apparently best succinct-verifier protocol. With the cap:
+- D131,072: selected repeated schedule estimates 743,000–754,776 bytes over
+  eight seeds, versus 842,184–849,080 for the prior single-shift screen.
+- D1,048,576: 1,259,752–1,273,320 bytes.
+Neither reaches 300,000 bytes before configuration, GKR or NEAR costs.
+
+With unrestricted disclosure, D131,072 instead selects sending all scalar
+coefficients (524,344 bytes including version/root); D1,048,576 selects a
+repeated schedule ending at 4,096 disclosed coefficients (~1.20MB). Such
+choices require source-size verifier reconstruction. They are explicit
+baselines, not claims of succinct verification.
+
+The repeated composition is NOT proved or implemented: the current Lean
+theorem ends in a plain fold continuation. Its extension needs an inductive
+no-candidate invariant through each rate shift and adaptive transcript. The
+script checks only the conditional additive arithmetic budget (134 bits per
+tail, <=20 stages); it does not silently treat this as a formal theorem.
+No commitment/QROM security or impossibility claim follows from this grid.
+
+Decision: repeated scheduling gives modest savings but is not enough with
+current query bounds. Prioritize reviewing stronger extraction/proximity
+bounds and their provable assumptions before implementing another large
+variant. This is evidence to change the research direction, not completion.
