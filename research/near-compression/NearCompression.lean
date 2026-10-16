@@ -1562,3 +1562,4 @@ import NearCompression.PreparedConcreteSoundnessBudget
 import NearCompression.SelectedBranchWeights
 import NearCompression.ExpandedBusFingerprint
 import NearCompression.ExpandedBusFingerprintCheck
+import NearCompression.BusFormulaReplacement

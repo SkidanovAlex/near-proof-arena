@@ -5910,3 +5910,13 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.expanded_bus_fingerprint_checked_execution
 
 #print axioms NearCompression.expanded_bus_fingerprint_check_regressions
+
+#print axioms NearCompression.replace_bus_formula_value
+
+#print axioms NearCompression.expand_bus_fingerprint_in_value
+
+#print axioms NearCompression.bus_expanded_formula_checked
+
+#print axioms NearCompression.bus_expanded_list_checked
+
+#print axioms NearCompression.generated_expanded_bus_spec_checked

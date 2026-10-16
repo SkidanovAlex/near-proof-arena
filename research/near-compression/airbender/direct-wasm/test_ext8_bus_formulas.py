@@ -62,6 +62,7 @@ def direct(k, current, nxt, selectors, alpha, gamma, finals):
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--capture', type=Path)
+    parser.add_argument('--expanded', action='store_true')
     args = parser.parse_args(); rng = random.Random(8048); comparisons = rejections = cases = 0; capture = []
     for k in (0, 1, 2, 4):
         table = {'width': 1, 'interactions': [
@@ -85,7 +86,7 @@ def main():
             assert [evaluate(r['formula'], current, nxt, selectors) for r in expanded] == actual
             comparisons += len(actual); cases += 1
             certificates = []
-            for rec in records:
+            for rec in (expanded if args.expanded else records):
                 ins = []; root = compile_ast(rec['formula'], ins)
                 generator.validate_formula(rec['formula'], root, ins, width, {}, coordinate_degree=8)
                 if trial < 2:

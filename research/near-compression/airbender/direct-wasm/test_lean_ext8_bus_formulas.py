@@ -5,8 +5,8 @@ import argparse, copy, hashlib, json, subprocess, tempfile
 from pathlib import Path
 
 
-def run(path, positive):
-    p = subprocess.run(['lake', 'env', 'lean', '--run', 'CheckExt8BusFormulas.lean', str(path)],
+def run(path, positive, expanded=False):
+    p = subprocess.run(['lake', 'env', 'lean', '--run', 'CheckExt8BusFormulas.lean', *(['--expanded'] if expanded else []), str(path)],
         capture_output=True, text=True, timeout=90)
     text = p.stdout+p.stderr
     if positive:
@@ -22,9 +22,10 @@ def run(path, positive):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--capture', type=Path, required=True)
+    parser.add_argument('--expanded', action='store_true')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args(); original = json.loads(args.capture.read_text())
-    good = run(args.capture, True)
+    good = run(args.capture, True, args.expanded)
     def residual(x): return x[0]['residuals'][0]
     def coherent_wrong(x):
         r = residual(x)
@@ -55,11 +56,12 @@ def main():
         for name, mutate in mutations:
             bad = copy.deepcopy(original); mutate(bad)
             path = Path(tmp)/'bad.json'; path.write_text(json.dumps(bad))
-            rejected.append(dict(case=name, reason=run(path, False)))
+            rejected.append(dict(case=name, reason=run(path, False, args.expanded)))
     report = dict(status='PASS', positive=good, rejections=rejected,
         capture_sha256=hashlib.sha256(args.capture.read_bytes()).hexdigest(),
         checker_sha256=hashlib.sha256(Path('CheckExt8BusFormulas.lean').read_bytes()).hexdigest(),
-        scope='Exact formal bus-spec AST binding, formula routes, acyclicity and sampled values; no full prover or authentication claim.')
+        expanded=args.expanded,
+        scope='Exact or proved fingerprint-expanded formal bus-spec AST binding, formula routes, acyclicity and sampled values; no full prover or authentication claim.')
     args.output.write_text(json.dumps(report, indent=2)+'\n')
     print(json.dumps(dict(status='PASS', residuals=good['residuals'], rejections=len(rejected))))
 

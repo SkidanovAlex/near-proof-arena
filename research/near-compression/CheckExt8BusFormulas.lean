@@ -1,5 +1,5 @@
 import NearCompression.ExpandedBusFingerprintCheck
-import NearCompression.GeneratedExt8BusSpecCheck
+import NearCompression.BusFormulaReplacement
 import Lean
 open Lean NearCompression ZkFormal.Algebra
 private def need (x : Except String α) : IO α :=
@@ -77,7 +77,7 @@ private def interaction (j : Json) : IO ZkFormal.Air.Interaction := do
   let msg ← (←need (←field j "msg").getArr?).toList.mapM expression
   let mult ← (←need (←field j "mult").getArr?).toList.mapM expression
   return { bus := bus, send := send, msg := msg, mult := mult }
-private def checkResiduals (args : List String) : IO Unit := do
+private def checkResiduals (expanded : Bool) (args : List String) : IO Unit := do
   let [path] := args | throw (IO.userError "expected fixture path")
   let document ← need (Json.parse (←IO.FS.readFile path))
   let cases ← need document.getArr?
@@ -108,7 +108,13 @@ private def checkResiduals (args : List String) : IO Unit := do
     let lowered := interactions.map (lowerBusInteraction (publicValues.map Fp8.ofBase) alpha gamma)
     require (width==sourceWidth+8*(busTableChainColumns lowered+interactions.length)) "specified coordinate width"
     let formulas ← residuals.toList.mapM (fun residual=>do busFormula (←field residual "formula"))
-    require (generatedExt8BusSpecCheck lowered sourceWidth (fun i=>finals.getD i 0) formulas) "bus specification rejected"
+    if expanded then
+      let messages := interactions.map (fun i=>(Fp8.ofBase (Fp.ofNat (i.bus+1)),
+        i.msg.map (lowerBusSource (publicValues.map Fp8.ofBase))))
+      require (busExpandedListCheck alpha messages
+        (generatedExt8BusSpec lowered sourceWidth (fun i=>finals.getD i 0)) formulas) "expanded bus specification rejected"
+    else
+      require (generatedExt8BusSpecCheck lowered sourceWidth (fun i=>finals.getD i 0) formulas) "bus specification rejected"
 
     for residual in residuals do
       let formula ← busFormula (←field residual "formula")
@@ -150,4 +156,5 @@ private def checkFingerprints (path : String) : IO Unit := do
 def main (args : List String) : IO Unit :=
   match args with
   | ["--fingerprints",path] => checkFingerprints path
-  | _ => checkResiduals args
+  | ["--expanded",path] => checkResiduals true [path]
+  | _ => checkResiduals false args

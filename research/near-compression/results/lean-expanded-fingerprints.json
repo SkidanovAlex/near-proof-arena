@@ -45,6 +45,6 @@
   ],
   "capture_sha256": "6f3bca0e159b84dc9e0dfeeb1fa4dea1e08827390c018c032454d8815f825a5b",
   "statement_sha256": "10f3561d7d00bb24a853c802def9987f65c2ccd95eb0cab563ed62d2eb391d75",
-  "checker_sha256": "eb6c6ef86767357525e54b4a723cd512ee7c316e5b818f603a411b0de1298fb3",
+  "checker_sha256": "1cb7df3c7ec4da0ef12ddc28df2dab6de32346b2b78e3defaf46dd4cc747c474",
   "scope": "Actual emitted Ext8 weighted programs; Lean reconstructs message expressions and tags from supplied AIR and checks fingerprint routes. Covers zero/unit/random alpha. No optimized DAG refinement, authenticated AIR/challenges, native Ext8 proof, or security certification."
 }

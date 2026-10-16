@@ -611,5 +611,11 @@
     "fingerprints": 15,
     "mutations_rejected": 9,
     "scope": "Retained 193-instruction AIR, zero/unit/random synthetic Ext8 alpha; complete emitted weighted programs. Lean reconstructs source expressions and tags from supplied AIR and checks expansion routes and acyclicity. No optimized DAG refinement, authenticated inputs, native Ext8 proof or security claim."
+  },
+  "expanded_residual_specification_check": {
+    "status": "CONTEXT_SEMANTICS_PROVED_AND_CAPTURE_CHECKED",
+    "residuals": 64,
+    "mutations_rejected": 16,
+    "scope": "Executable ordered-list checker allows unchanged formulas or exact fingerprint expansion within canonical residual contexts. Universal value preservation composes with generated Ext8 coordinate specification. Synthetic expanded captures pass with zero/random challenges; authenticated inputs, whole optimized terminal DAG refinement and native Ext8 proof remain open."
   }
 }
