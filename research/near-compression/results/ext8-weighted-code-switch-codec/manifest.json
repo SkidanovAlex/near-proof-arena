@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "parent_revision": "351b80bdf",
+  "working_directory": "research/near-compression",
+  "replay": "python3 airbender/direct-wasm/ext8_weighted_code_switch_codec.py --proof results/ext8-weighted-code-switch-codec/proof.bin --statement results/ext8-weighted-code-switch-codec/statement.json",
+  "test": "python3 airbender/direct-wasm/test_ext8_weighted_code_switch_codec.py --output /tmp/ext8-switch-codec-replay",
+  "files": {
+    "research/near-compression/results/ext8-weighted-code-switch-codec/statement.json": "63be1577f5324687176304e6be5e731c24bf3d0514e7a55b14975f6268f7611d",
+    "research/near-compression/results/ext8-weighted-code-switch-codec/report.json": "29ecbbe6baec5045597ee68decb8d2a8841ce19e4fdee8bd0504cf77313dbd73",
+    "research/near-compression/results/ext8-weighted-code-switch-codec/fresh-verifier.log": "8aa6e3451a43c857542ca3b4f0e9d334ebd19ea5591273f9a17664b2736af8a4",
+    "research/near-compression/results/ext8-weighted-code-switch-codec/proof.bin": "43f3a921eca55ce600b1d144dcb89812c7b6e47d994b75542444e173bdfdbe32",
+    "research/near-compression/airbender/direct-wasm/ext8_weighted_code_switch_codec.py": "84ab440244ac6597561856538eaa30bf10482bf76da0f810a826a5efc1227960",
+    "research/near-compression/airbender/direct-wasm/test_ext8_weighted_code_switch_codec.py": "84c4e99c0f08cfc07730695dd4b8b2bfae170051d412fd7d90607947efc0e949",
+    "research/near-compression/airbender/direct-wasm/ext8_weighted_code_switch.py": "f037e20f06941e3061a7e1f38aba935058ec0301f34e4d9e3a4d70dbe60b793b",
+    "research/near-compression/airbender/direct-wasm/ext8_code_switch_stage.py": "c00cdf46b021bb283508683bfde7847164872c6012cdc92b48b0a3e3694854e1",
+    "research/near-compression/airbender/direct-wasm/pq384_multiproof.py": "ed443c9d045e8ca002a22bff707b97ba9a3f74818bf15d2c1d65db035976aab5"
+  },
+  "scope": "Sequential multiproof transport of small code-switch prototype. Exact original JSON proof reconstruction tested. No new Lean byte-decoder refinement or whole-protocol/security claim."
+}

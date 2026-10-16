@@ -1,0 +1,117 @@
+{
+  "status": "PASS",
+  "binary_bytes": 12464,
+  "retained_json_bytes": 113161,
+  "roundtrip_exact": true,
+  "sha256": "43f3a921eca55ce600b1d144dcb89812c7b6e47d994b75542444e173bdfdbe32",
+  "breakdown": {
+    "header_and_terminal_bytes": 1336,
+    "groups": [
+      {
+        "kind": "packed-source",
+        "offset": 760,
+        "shared": false,
+        "unique_leaves": 29,
+        "leaf_bytes": 464,
+        "sibling_bytes": 2448
+      },
+      {
+        "kind": "packed-source",
+        "offset": 3672,
+        "shared": false,
+        "unique_leaves": 14,
+        "leaf_bytes": 224,
+        "sibling_bytes": 96
+      },
+      {
+        "kind": "packed-source",
+        "offset": 3992,
+        "shared": false,
+        "unique_leaves": 21,
+        "leaf_bytes": 504,
+        "sibling_bytes": 432
+      },
+      {
+        "kind": "scalar-coset",
+        "offset": 5200,
+        "shared": false,
+        "unique_leaves": 24,
+        "leaf_bytes": 3072,
+        "sibling_bytes": 1248
+      },
+      {
+        "kind": "scalar-coset",
+        "offset": 9696,
+        "shared": false,
+        "unique_leaves": 24,
+        "leaf_bytes": 1536,
+        "sibling_bytes": 1104
+      }
+    ],
+    "total_bytes": 12464
+  },
+  "shared_source": {
+    "binary_bytes": 3560,
+    "breakdown": {
+      "header_and_terminal_bytes": 904,
+      "groups": [
+        {
+          "kind": "packed-source",
+          "offset": 568,
+          "shared": false,
+          "unique_leaves": 20,
+          "leaf_bytes": 320,
+          "sibling_bytes": 528
+        },
+        {
+          "kind": "packed-source",
+          "offset": 1416,
+          "shared": true,
+          "leaf_bytes": 0,
+          "sibling_bytes": 0
+        },
+        {
+          "kind": "scalar-coset",
+          "offset": 1688,
+          "shared": false,
+          "unique_leaves": 13,
+          "leaf_bytes": 1664,
+          "sibling_bytes": 144
+        }
+      ],
+      "total_bytes": 3560
+    }
+  },
+  "native_reference_identical": true,
+  "negative_cases": [
+    "truncated",
+    "trailing",
+    "version",
+    "noncanonical",
+    "input-quadratic",
+    "first-quadratic",
+    "first-root",
+    "ood-answer",
+    "terminal",
+    "group-value-0",
+    "group-auth-0",
+    "truncated-group-0",
+    "group-value-1",
+    "group-auth-1",
+    "truncated-group-1",
+    "group-value-2",
+    "group-auth-2",
+    "truncated-group-2",
+    "group-value-3",
+    "group-auth-3",
+    "truncated-group-3",
+    "group-value-4",
+    "group-auth-4",
+    "truncated-group-4",
+    "external-schedule",
+    "external-root",
+    "external-claim"
+  ],
+  "fresh_verifier": "PASS compact packed-root code-switch proof; diagnostic security only.",
+  "scope": "Small experimental packed-root code-switch proof transport; no full execution envelope, source extraction/proximity/QROM or PQ128 certificate. Decoding checks the continuing obligation, not only authentication."
+}

@@ -7220,3 +7220,45 @@ complete execution profile remains unchanged. Do not infer sub300000 B or
 PQ128 from faster arithmetic. Last fully verified combined slice1431885 B;
 full NEAR1Pgas, source extraction/proximity, adaptive error/QROM composition
 and the feasibility gate remain open/NOT_PASSED.
+
+## 2026-10-16 — Compact sequential code-switch multiproof transport
+
+Added `ext8_weighted_code_switch_codec.py`, magic `NP8WCS01`, as a separate
+experimental transport. External source descriptors and schedule determine
+all scalar counts, leaf widths, domain sizes and terminal length. Queries
+are replayed from the transcript; no query indices/counts are transmitted.
+Original packed base-field pairs and later Ext8 coset leaves use canonical
+multiproofs. Identical root/context/geometry/query lists share bytes even
+when logical branches have different functional weights; every branch still
+participates in verification.
+
+Decoding authenticates each stage's responses, reconstructs the original
+ordered per-query leaves and paths, binds those exact responses, derives the
+mixers, and carries the updated functional into the next stage. It checks
+sumcheck endpoints and the terminal root/residual; it is not merely a parser
+or Merkle checker. Truncation, trailing data and noncanonical scalars fail.
+The32 MiB wire cap is separate from the existing field/domain capacities.
+
+During initial replay testing, encoding failed the second tail's endpoint:
+the first tail's query draw had been replayed on a preview transcript while
+its mixing step used the unadvanced transcript. Corrected this so each scalar
+stage advances its actual transcript through child root, OOD answer and query
+draws before mixing, matching the original verifier. The first packed adapter
+still uses a preview solely to derive read dimensions, then its existing
+`initial_obligation` replays those events on the actual transcript. Exact
+roundtrip across both tail stages now tests this sequencing.
+
+Retained small diagnostic:113161 B JSON→12464 B binary; all original proof
+fields reconstruct exactly. A separate shared-source case is3560 B and uses
+one shared group. Native/reference wire/proof equality, a fresh process, and
+27 malformed-byte/config cases pass. Results and replay commands are in
+`research/near-compression/results/ext8-weighted-code-switch-codec/`.
+No Lean definitions changed; last audit remains4244. Existing algebra and
+multiproof results do not constitute a Lean refinement of this new decoder.
+
+Next: an externally selected full execution envelope using this codec,
+followed by actual root-bound slice proving and combined call/compression
+measurement. Retain the current execution profile unchanged. Code-switch
+error/extraction/QROM obligations remain open; do not treat31-query small
+fixtures as PQ128. Last verified complete slice remains1431885 B. Full NEAR
+1Pgas correctness/PQ128/sub300000 B and the feasibility gate are still open.
