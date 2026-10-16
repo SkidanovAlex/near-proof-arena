@@ -1740,3 +1740,11 @@ Added deterministic per-interaction chain/factor construction and boundary resid
 Validation: full check.py passed with 3642 registered results and allowed axioms only. Lean-exported formulas match the executable Ext4 auxiliary evaluator in 48 cases / 744 residual comparisons, covering 0/1/2/25 bits, first/last/arbitrary extension selectors, distinct next accumulator values, nonboolean bits, and a zero fingerprint. This is parity evidence, not formal Python/parser refinement or executable Ext8 certification.
 
 Next: table-wide chain offsets and send/receive boundary order, then source-expression/fingerprint lowering. Common committed-trace extraction, complete adaptive/PCS/transcript soundness, 128-bit quantum security, secure sub300k sizing and full 1 Pgas scope remain open. Slice feasibility gate stays NOT_PASSED.
+
+### Table-wide auxiliary layout and product composition
+
+Constructed source-order chain allocation and stable send-then-receive boundary ordering, with accumulator columns starting after all chains. Lean proves source-list preservation, total chain length, grouping permutation, consecutive accumulator/final pairs, and inclusion of every bound interaction's residuals in the table residual list. These compose into final-product correctness for every bound interaction, conditional on zero table residuals and explicit selector/next-row environment bindings. Finals are indexed by a total function; parser/list-length agreement remains an implementation boundary.
+
+Validation: full check.py passed with 3648 registered results and allowed axioms only. Exported Lean table formulas match the executable Ext4 evaluator in 72 cases / 2280 residual comparisons over six profiles, including empty tables/multiplicities, mixed directions, long chains, arbitrary extension selectors and distinct next values. Synthetic powers use alpha=0: this validates table layout/order, not general fingerprint/source-expression lowering or actual slice specialization.
+
+Next: general source-expression and fingerprint lowering, then instantiate the table construction for the actual slice. Committed-trace extraction and complete adaptive/PCS/transcript/quantum soundness remain open; neither secure sub300k nor full 1 Pgas execution is established. Slice gate remains NOT_PASSED.
