@@ -396,6 +396,7 @@
     "research/near-compression/NearCompression/SHA384ChunkCallChain.lean": "cc1b81f13bba8cbb995edb87c43f13cf6062f3b01e8f88b82a0e8e1c45734b20",
     "research/near-compression/NearCompression/SHA384ChunkCallCheck.lean": "c03667a8b8fea0d4c3ff87803f5b45fcd9aa4083d48a0370356708f90937bdfc",
     "research/near-compression/NearCompression/SHA384CallLinear.lean": "634f3b5c968c68518d16049660fb076b7d457d8439afecfa6af32be832afc6f6",
+    "research/near-compression/NearCompression/SHA384CallEquations.lean": "8208895dad73945e60299f82c7ba0861e83dd7605197a694c1693f2150579a42",
     "research/near-compression/NearCompression/PreparedTypedEqzStack.lean": "6aebcce70dd6800210c2587259bac23bb0275b51f6118d3d30728cd832d5777d",
     "research/near-compression/NearCompression/PreparedTypedOpcode.lean": "66ff680ecac48876b66419dfe7b40607eaa1027b61a685261f3e1fb2181b8a9d",
     "research/near-compression/NearCompression/BusProgramGateSoundness.lean": "08da9e08908f8b2c0f2151577b0ad3f6760455a61b9df19ade824632b34989b2",

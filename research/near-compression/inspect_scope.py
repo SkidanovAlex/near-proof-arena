@@ -228,6 +228,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SHA384ChunkCallChain.lean",
     "research/near-compression/NearCompression/SHA384ChunkCallCheck.lean",
     "research/near-compression/NearCompression/SHA384CallLinear.lean",
+    "research/near-compression/NearCompression/SHA384CallEquations.lean",
     "research/near-compression/NearCompression/PreparedTypedEqzStack.lean",
     "research/near-compression/NearCompression/PreparedTypedOpcode.lean",
     "research/near-compression/NearCompression/BusProgramGateSoundness.lean",

@@ -5960,3 +5960,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.call_constant_residuals_words
 #print axioms NearCompression.call_link_residuals_wiring
 #print axioms NearCompression.call_iv_residuals_sound
+
+#print axioms NearCompression.call_private_cell
+#print axioms NearCompression.call_constant_equations_eval
+#print axioms NearCompression.call_state_equations_eval
+#print axioms NearCompression.call_digest_equations_sound

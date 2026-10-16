@@ -5802,3 +5802,40 @@ permitted axioms; /tmp/sha384-call-linear-audit.log. Registered module and all
 eight public theorem audits. No executable/proof format changes this turn;
 retained152200-byte diagnostic bundle unchanged. Full NEAR/PQ128 goal and
 feasibility gate remain open.
+
+### Exact Lean/Python descriptor correspondence for retained call proof
+
+Added SHA384CallEquations.lean with the compiler's left-slot/optional-right/
+constant descriptor and row-low/column-high private input interpretation.
+Four audited theorems show slot decoding, exact evaluation of constant and
+state-copy descriptors into the previously proved residual lists, and recovery
+of expected digest bytes from zero digest descriptors. The per-call generator
+uses standard IV, all32state-copy limbs, all64block limbs and48digest bytes in
+the same order as the Python compiler.
+
+ExportSHA384CallEquations.lean independently pads actual message bytes using
+NearSpecV3.SHA512.pad, decodes block words with the Lean words function, and
+exports canonical descriptors. test_sha384_call_equation_parity.py checks that
+input messages/ordinals/digests correspond to the retained caller configuration
+before comparing every descriptor against sha384_call_pcs.equations.
+All2880descriptors match exactly:384copy +2496constant (384IV +1536block +576
+finaldigest), with identical slot indices, sequence and constant values.
+All emitted source slots are inside32x179 and constants below65536.
+
+Retained results/ext8-call-equation-parity/{equations.json.gz,report.json,
+lean.log}; uncompressed descriptor SHA256
+ a7dfacd2c1faf4a69aca31cf79d32c253f1d1f9dd1e268ff9076e1f3154933c0.
+Reproduce from package cwd after lake build NearCompression.SHA384CallEquations:
+python3 airbender/direct-wasm/test_sha384_call_equation_parity.py
+ --output-directory /tmp/nearproof-call-equation-parity
+
+Scope: general Lean descriptor evaluation facts plus exact regression parity
+on the real12call batch. This is not a universal refinement theorem for Python,
+and does not yet prove scattered coefficient accumulation/batching, generic
+GKR circuit compilation, complete framed-operand provenance or QROM soundness.
+The152200-byte same-root diagnostic proof bundle is unchanged. Full1Pgas/PQ128
+objective and NOT_PASSED feasibility gate remain open.
+
+Full check.py PASS4159 theorem/axiom and boundary checks;
+/tmp/sha384-call-equations-audit.log. New module/Audit/scope entries registered.
+Python compilation and git diff --check pass.
