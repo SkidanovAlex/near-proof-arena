@@ -1616,3 +1616,5 @@ import NearCompression.TerminalHeapBalance
 import NearCompression.SeparableCoefficientClaim
 
 import NearCompression.DerivedFoldTransport
+
+import NearCompression.PooledRowFunctional

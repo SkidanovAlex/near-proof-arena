@@ -1,0 +1,89 @@
+{
+  "status": "PASS",
+  "coefficient_claim_cases": 9,
+  "compact_beta_cases": 39,
+  "unused_cells_cases": 9,
+  "rejections": [
+    "offset",
+    "width",
+    "height",
+    "weights",
+    "scalar"
+  ],
+  "naive_cyclic_shift_counterexample": {
+    "correct": 10,
+    "naive": 99
+  },
+  "actual_phase_banks": [
+    {
+      "phase": "source",
+      "log_rows": 11,
+      "width": 7091,
+      "blocks": [
+        {
+          "table": 0,
+          "log_rows": 11,
+          "width": 5234,
+          "offset": 0
+        },
+        {
+          "table": 1,
+          "log_rows": 5,
+          "width": 1666,
+          "offset": 5234
+        },
+        {
+          "table": 2,
+          "log_rows": 5,
+          "width": 191,
+          "offset": 6900
+        }
+      ]
+    },
+    {
+      "phase": "auxiliary",
+      "log_rows": 11,
+      "width": 296,
+      "blocks": [
+        {
+          "table": 0,
+          "log_rows": 11,
+          "width": 24,
+          "offset": 0
+        },
+        {
+          "table": 1,
+          "log_rows": 5,
+          "width": 24,
+          "offset": 24
+        },
+        {
+          "table": 2,
+          "log_rows": 5,
+          "width": 240,
+          "offset": 48
+        },
+        {
+          "table": 3,
+          "log_rows": 5,
+          "width": 8,
+          "offset": 288
+        }
+      ]
+    },
+    {
+      "phase": "source",
+      "log_rows": 5,
+      "width": 179,
+      "blocks": [
+        {
+          "table": 3,
+          "log_rows": 5,
+          "width": 179,
+          "offset": 0
+        }
+      ]
+    }
+  ],
+  "scope": "Pooled coefficient-functional prototype only. No pooled PCS/commitment/transcript integration or actual pooled proof-size/security claim. Compact-beta formula checked numerically; formal specialization remains separate."
+}

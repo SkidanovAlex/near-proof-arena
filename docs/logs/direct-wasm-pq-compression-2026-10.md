@@ -6848,3 +6848,54 @@ The original q309 security limitations remain; slice-feasibility gate stays
 NOT_PASSED. Full NEAR1Pgas/hash-only PQ128 correctness remains the objective.
 Next structural work must address source-value and authentication-path cost,
 with an explicit soundness budget for any changed folding/commitment protocol.
+
+
+### 2026-10-16: pooled-bank logical row projection foundation
+
+Started concrete source/auxiliary pooling rather than another parameter screen.
+An important failure case is now retained: logical rows[10,20] in physical
+rows[10,20,99,77], next-row weight at logical row1, must return10. Extending the
+row point with zero and using the physical cyclic shift returns99. Pooling
+must preserve each logical table's own wrap boundary.
+
+ext8_pooled_weights.py instead masks the logical row equality weights and their
+logical cyclic predecessor permutation before applying the full physical-row
+upper-zeta transform. Column weights scatter into fixed bank intervals, and
+multiple terms add. Unused physical cells may be arbitrary; no repeated-row or
+zero-padding premise is needed for these projected functionals. This resolves
+the functional obstacle behind the older screen's repeated-row placeholder,
+but does not yet implement the source-bank commitment/protocol mapping.
+
+Proposed bank layout from the actual trusted spec:
+- pre-bus source bank:2048x7091, tables0/1/2 in fixed column intervals;
+- post-bus auxiliary bank:2048x296, all coordinate columns;
+- separate use source:32x179, preserving its existing source geometry.
+The phase_layout function records these groups; transcript-phase enforcement
+and external source-root mapping are still integration work.
+
+Validation:9 coefficient-vs-direct functional cases,39 dense-vs-compact beta
+cases,9 arbitrary-unused-cell invariance cases,5 malformed-term rejections and
+the explicit wrong-cyclic-shift counterexample PASS. The actual table0/table1
+seam at global columns5120..5247 was also tested:114 columns from2048 rows,
+14 columns from32 rows, with random unused physical cells. Coefficient/direct
+identity and dense/compact beta identity PASS (2.351s and9.831s respectively).
+Source hashes and retained opening descriptor hash are recorded. Test61167
+and final audit35913 are terminal PASS.
+
+PooledRowFunctional.lean proves masked physical coefficient dots equal logical
+row dots, current-row evaluation, logical cyclic-next evaluation, their linear
+combination, and arbitrary bounded cell scattering through the full coefficient
+transform. The latter composes existing dual-Mobius and scatter lemmas and
+allows repeated cells to add. Full axiom audit4223 PASS. The compact beta
+factorization and Python/mutable transform refinement are not yet proved by
+this module; compact beta has numerical parity checks, including the real seam.
+
+Artifacts:results/ext8-pooled-weights*.json and ext8-pooled-seam.json. Accepted
+verifier/PCS unchanged; last measured combined bundle remains1681677 bytes.
+No pooled proof-size, PQ128 or full NEAR1Pgas claim. Next: combine a bank's
+logical weight terms BEFORE allocating coefficient/weight states (do not send
+three aliases of the7091-column bank through the current state allocator),
+introduce an externally derived pooled weight-family profile and implement its
+commitment mapping. Preserve logical next-wrap and source/auxiliary chronology.
+Full NEAR1Pgas/hash-only PQ128 correctness and sub300000 B remain open;
+slice-feasibility gate stays NOT_PASSED.

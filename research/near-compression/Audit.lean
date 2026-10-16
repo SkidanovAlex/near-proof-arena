@@ -6044,3 +6044,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.fold_pair_restore_exact
 #print axioms NearCompression.fold_transport_restore_exact
 #print axioms NearCompression.fold_transport_preserves_checks
+
+#print axioms NearCompression.pooled_row_mask_dot
+#print axioms NearCompression.pooled_current_row_functional
+#print axioms NearCompression.pooled_next_row_functional
+#print axioms NearCompression.pooled_current_next_row_functional
+
+#print axioms NearCompression.pooled_scatter_coefficient_functional

@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "physical_rows": 2048,
+  "physical_columns": 128,
+  "global_column_start": 5120,
+  "logical_blocks": [
+    {
+      "rows": 2048,
+      "columns": 114,
+      "offset": 0
+    },
+    {
+      "rows": 32,
+      "columns": 14,
+      "offset": 114
+    }
+  ],
+  "unused_short_table_cells": "Seeded nonzero/random values; no padding assumption",
+  "coefficient_identity": true,
+  "compact_beta_identity": true,
+  "coefficient_seconds": 2.351166336797178,
+  "beta_seconds": 9.830793887842447,
+  "total_seconds": 12.520130323246121,
+  "source_sha256": [
+    "19c13e6ae3852a39824d04d83a25356de87c3327b73a3aea54c79a469ed7cfef",
+    "0c11f0bf4340938bfb17f7354cfc80e5fbce6c81946ff0697a78371685d9e756"
+  ],
+  "opening_sha256": "da17b6255edb1ab940ccb7c01035e14b2dcaa0cf665e72cd6de8989c8beb1f84",
+  "scope": "Actual table0/table1 seam and retained GKR weight descriptor. Not a new pooled commitment, PCS proof, full input-opening check or security certificate."
+}
