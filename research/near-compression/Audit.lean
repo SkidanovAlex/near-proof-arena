@@ -5944,3 +5944,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.checked_history_adaptive_escape_sum_budget
 #print axioms NearCompression.checked_history_interactive_acceptance_budget
+
+#print axioms NearCompression.indexed_initial_candidate_agreement
+#print axioms NearCompression.checked_history_joint_far_acceptance_budget

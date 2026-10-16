@@ -5611,3 +5611,34 @@ open; feasibility gate NOT_PASSED.
 Full check.py PASS4142 theorem/axiom and boundary checks; log
 /tmp/checked-history-acceptance-audit.log. Module/Audit/scope registrations
 updated. No executable protocol, proof size or prover performance change.
+
+### Source-far initialization composed with adaptive checked acceptance
+
+CheckedHistorySource.lean now joins the existing joint-beta source-far bound
+to the new successive-prefix acceptance model. indexed_initial_candidate_agreement
+shows an initial indexed candidate implies an actual degree-bounded polynomial
+with at least T source agreements: initial global-chain weights have cap1, so
+consistency mass cannot manufacture source agreement.
+
+checked_history_joint_far_acceptance_budget permits the complete inner strategy
+to depend on all outer batching coordinates. Fixed multiaffine contractions
+of fixed sources with no joint representative yield a bounded outer event
+where an initial scalar candidate could exist. Outside it, the new lemma
+DERIVES noInitial and invokes checked_history_interactive_acceptance_budget.
+The conclusion is the literal checked-acceptance finite count with outer
+batching error plus summed adaptive folding error plus terminal-query error.
+It no longer takes absence of an initial indexed candidate as a premise.
+
+Still explicit: no common joint representative (the far branch), fixed source
+values/root before outer draws, multiaffine batching maps, distinct domains,
+the strict extraction regime/interpolation, inner prechallenge snapshot and
+claim/weight bindings, and ideal independent sampling. This does not identify
+arbitrary source-invalid AIR traces with the far branch; the near branch can
+have a representative and needs functional discrepancy. The existing
+WeightedVirtualInitial provides the near-source no-initial lemma, but full
+executable source classification, commitment authentication, transcript
+causality, full NEAR and QROM remain open. No new security-bit or sub300k claim.
+
+Validation: full check.py PASS4144 theorems/axiom closures and boundary checks,
+/tmp/checked-history-source-audit.log; module/Audit/scope registrations updated.
+No executable protocol or proof-size change. Feasibility gate NOT_PASSED.

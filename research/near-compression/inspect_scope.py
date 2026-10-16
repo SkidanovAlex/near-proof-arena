@@ -458,6 +458,7 @@ SOURCES = [
     "research/near-compression/NearCompression/CheckedHistoryEscape.lean",
     "research/near-compression/NearCompression/CheckedHistoryTerminal.lean",
     "research/near-compression/NearCompression/CheckedHistoryAcceptance.lean",
+    "research/near-compression/NearCompression/CheckedHistorySource.lean",
     "research/near-compression/airbender/direct-wasm/report_composed_slice_parameters.py",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
