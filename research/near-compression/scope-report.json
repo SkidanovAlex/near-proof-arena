@@ -463,6 +463,8 @@
     "research/near-compression/NearCompression/BivariateWeightedDegree.lean": "ba816b1f219e23e3a97e2a32b3d45544bc845d0561272a0b721cf50278ea6aac",
     "research/near-compression/NearCompression/HomogeneousKernel.lean": "bcf376f51a09a7bbef9a6f7d7e9427bd3c012e8a4e923783ee17ac5e03f5a50e",
     "research/near-compression/NearCompression/GSMonomialSpace.lean": "2d34d49a8711719167c9db366721567f2b7d43d385345b4d846925c8998a2516",
+    "research/near-compression/NearCompression/SyntheticJetLinear.lean": "643679e4439e455946fe9ed44a3e88782cb39bd6fd449d80edd2cafcea93390c",
+    "research/near-compression/NearCompression/JetCoefficientMatrix.lean": "842350567110f1f47b17ac8c267957ba1c18bccd87c8c59f31861b53ee94378a",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean": "d9a5cbb964e9aab9d9a8bbe2ef3f558f473d587cf9e941cabaf8491b422cc2d9",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean": "412710950ab5940e517c3d4af7620fe18a9edb0318627fbf88d2ef77cfcd64a0",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean": "09aa0805e94738cf5370b36f8dbbcc1fb5dd0ec6d704dbd7368a5751bbd27b14",

@@ -1,0 +1,6 @@
+{
+  "jet_matrix_rows": 139710,
+  "zero_padding_checks": 20748,
+  "linear_combinations": 800,
+  "scope": "Formal univariate jet linearity and coefficient-matrix identity. Bivariate mixed-jet/translation identification remains open."
+}

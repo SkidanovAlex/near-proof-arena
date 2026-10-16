@@ -6144,3 +6144,12 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gs_jet_order_count
 #print axioms NearCompression.gs_jet_orders_distinct
 #print axioms NearCompression.gs_constraint_count
+
+#print axioms NearCompression.synthetic_jet_congr
+#print axioms NearCompression.synthetic_jet_add
+#print axioms NearCompression.synthetic_jet_scale
+#print axioms NearCompression.synthetic_jet_sum
+#print axioms NearCompression.polynomial_translate_linear
+#print axioms NearCompression.jet_monomial_coefficient
+#print axioms NearCompression.synthetic_jet_coefficient_matrix
+#print axioms NearCompression.synthetic_jet_vector_matrix

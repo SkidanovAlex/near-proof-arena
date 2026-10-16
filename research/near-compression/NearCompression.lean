@@ -1652,3 +1652,7 @@ import NearCompression.BivariateWeightedDegree
 import NearCompression.HomogeneousKernel
 
 import NearCompression.GSMonomialSpace
+
+import NearCompression.SyntheticJetLinear
+
+import NearCompression.JetCoefficientMatrix

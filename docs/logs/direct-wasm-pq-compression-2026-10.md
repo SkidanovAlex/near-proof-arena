@@ -7785,3 +7785,36 @@ large-parameter dimension inequality, MCA factor/Hensel and exceptional-set
 bounds, actual protocol extraction and QROM still need work. No runtime/query/
 proof-size change: latest verified diagnostic bundle1344645 B, feasibility
 NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Formal jet linearity and concrete coefficient-matrix identity
+
+Added SyntheticJetLinear.lean and JetCoefficientMatrix.lean with eight audited
+public theorems. Synthetic jets respect coefficient equality, addition, scalar
+multiplication and finite polynomial sums; polynomial translation is therefore
+coefficient-linear even when stored lengths differ. The proofs use coefficient
+tails and exact synthetic quotient identities. They need no sufficiently-large
+field/domain assumption and never identify formal polynomials from their
+finite-field functions.
+
+A canonical formal monomial X^n has the proved Kronecker coefficient vector.
+The finite monomial expansion reconstructs every polynomial coefficientwise.
+Applying jet linearity proves the actual matrix formula: the r-th synthetic
+jet at a equals the coefficient vector dotted with the r-th jets of these
+monomials. A direct range-indexed vector theorem matches canonical interpolation
+row encoding. Matrix correctness is now derived in one variable rather than
+supplied as a linear-functional premise. No binomial-coefficient identity is
+needed by the Lean theorem; that formula is used independently in tests.
+
+Validation:139710 concrete jet-matrix rows over F2/F3/F5,20748 zero-padding
+checks and800 linear combinations including empty encodings, higher jet orders
+and small characteristic. Full audit4307 PASS, allowed axioms only. Evidence
+and replay:results/jet-coefficient-matrix/.
+
+Next: apply the coefficient-matrix identity in X and Y, prove that the resulting
+nested jets are exactly coefficients of bivariateTranslate, and flatten the
+result onto gsMonomials. This will connect actual mixed jets to the general
+linear-interpolant existence theorem. General mixed-jet interpolation, MCA
+factor/Hensel and exceptional-set bounds, actual protocol extraction and QROM
+remain open. No runtime/query/proof-size change; latest verified diagnostic
+bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain
+open.
