@@ -6208,3 +6208,13 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bivariate_curve_substitution_difference
 #print axioms NearCompression.bivariate_curve_quotient_preserves_root
 #print axioms NearCompression.bivariate_curve_root_count
+
+#print axioms NearCompression.polynomial_translate_mul
+#print axioms NearCompression.polynomial_translate_substitution
+#print axioms NearCompression.bivariate_translate_y_substitution
+#print axioms NearCompression.bivariate_translation_substitution
+
+#print axioms NearCompression.formal_substitution_at_center
+#print axioms NearCompression.formal_weighted_multiplicity_zero
+#print axioms NearCompression.formal_specialization_root_forcing
+#print axioms NearCompression.formal_specialization_candidate_count

@@ -8088,3 +8088,39 @@ annihilation, then the useful-factor/Hensel and complete MCA exceptional-set
 argument. Root counting alone does not recover a common source candidate or
 bound the full exception set. No runtime/security-parameter change: diagnostic
 bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Remove translation separation guard; count specialized candidates
+
+Added FormalTranslation.lean and FormalRootForcing.lean, eight audited public
+theorems. Formal translation is multiplicative; translating X commutes with
+substitution of the translated curve; Y translation commutes with adding the
+constant to the substituted curve. Together these prove the centered
+translation/substitution identity coefficientwise in every field. No finite
+evaluation domain, polynomial list-length separation, or field-size assumption
+is used. This supersedes the separation-guarded route without changing its
+existing API or silently dropping one of its premises.
+
+formal_substitution_at_center transfers mixed multiplicity to univariate
+synthetic jets. formal_weighted_multiplicity_zero then uses the existing
+distinct-center multiplicity bound and weighted degree. The specialization
+root-forcing theorem now needs only the source-line identities, curve degree,
+distinct agreement support and sufficient total multiplicity. Finally,
+formal_specialization_candidate_count applies repeated curve-root extraction
+to show that every pairwise coefficient-distinct eligible candidate list at
+a NONZERO specialization has length≤height-1. Supports may differ by candidate.
+This is not a common-source-candidate theorem or a full MCA exception bound.
+
+Validation:400 formal translation cases (289 exceed field-size separation),
+plus independent trivariate witnesses over F2/F3/F5. Their candidate sets were
+exhaustively enumerated:10 eligible candidates across10 nonzero specializations
+all satisfy root forcing and the count. Their28 agreement-point checks exceed
+the previous coefficient-list-length separation bound. Thus the new test
+exercises cases outside the old theorem's applicability, not just large-field
+examples. Full audit4361 PASS, allowed axioms only. Evidence:
+results/formal-root-forcing/.
+
+Next: useful-factor/Hensel selection and the complete MCA exceptional-set
+argument. Total annihilation remains bounded separately by DZ-1, but that is
+not the full exception set. Protocol extraction/adaptive/QROM composition and
+recursion remain open. No runtime or security-parameter change: diagnostic
+bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

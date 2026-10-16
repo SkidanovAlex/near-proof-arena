@@ -1676,3 +1676,7 @@ import NearCompression.PolynomialIntegralDomain
 import NearCompression.PolynomialCoefficientAlgebra
 
 import NearCompression.CurveRootPreservation
+
+import NearCompression.FormalTranslation
+
+import NearCompression.FormalRootForcing
