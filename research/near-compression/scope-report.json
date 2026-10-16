@@ -557,6 +557,7 @@
     "research/near-compression/NearCompression/GKREarlierJointCount.lean": "71050ece0c12d106405fa2ae27610158dd1391bc195d1e9232fb86ea68724908",
     "research/near-compression/NearCompression/GKRHistoryStrategy.lean": "54d5d6f0877a5f0a1adcb8f6f0e2b04884623cf8e81ca8759c10fd1ec55dc9c2",
     "research/near-compression/NearCompression/GKRHistoryPCSFamily.lean": "ca34a98c1cff49966159f8d6e87c5160b298cbd79d81ffe224e5d8ffb7471610",
+    "research/near-compression/NearCompression/GKRConcretePCSCount.lean": "8c9508e3a507452212dc0bfa1ee1185ea3f1f25639353e8b78a9cfa3e9612532",
     "research/near-compression/NearCompression/JointSourceFarFold.lean": "ff79009785b516f31aa2ee9d5a407fb6154718867341fdaffeb490b40e13cafe",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean": "6fbcc8b3e2937bf737c04c2575c922f9bd9b5db921fca42665199bd78d675341",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean": "170d9528efb40b38fb199586592ff341780d73d0408cae7844d3d3ef881947af",

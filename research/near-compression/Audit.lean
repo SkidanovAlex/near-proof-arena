@@ -5621,3 +5621,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_pcs_checks_reindex
 #print axioms NearCompression.gkr_pcs_initial_reindex
 #print axioms NearCompression.gkr_pcs_accepted_mismatch_reindex
+
+#print axioms NearCompression.gkr_concrete_pcs_event_count
+#print axioms NearCompression.gkr_concrete_joint_failure_count

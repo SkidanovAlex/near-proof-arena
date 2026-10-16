@@ -3619,3 +3619,24 @@ still require instantiation. The no-representative branch remains essential.
 Full check.py passed 3946 registered results with the existing axiom allowlist.
 No native code changed. Executable refinement, global/PQ soundness and secure
 full-NEAR size remain open; gate NOT_PASSED.
+
+### Concrete GKR/PCS sampling now invokes the merged near/far bound
+
+GKRConcretePCSCount proves exact event-count transport from concrete rowpoints,
+final block, PCS point, fold path and query samples to joint history. It invokes
+gkr_joint_failure_acceptance_count with the constructed terminal claim and
+reindexed message/prover families. The resulting concrete accepted failure
+count retains absence of a joint representative OR recovered-input mismatch
+and the max(nearBudget,farBudget) bound. The chosen representative is used
+directly; representative existence is not smuggled in as an assumption.
+
+All original ideal-oracle hypotheses remain explicit: source/projection and
+weighted oracle identities, canonical geometry, initial constant subtraction,
+RS/folding geometry, unique-decoding regime and authenticated terminal oracle.
+This is a numerical theorem instantiation, not a proof those hypotheses hold
+for the native verifier. Earlier-sequence lifting and global local/GKR error
+composition must preserve the joint averaging over rowpoints.
+
+Full check.py passed 3948 registered results with the existing axiom allowlist.
+No native code changed. Computational/QROM soundness, secure parameters and
+full-NEAR size remain open; gate NOT_PASSED.

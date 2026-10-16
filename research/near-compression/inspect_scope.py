@@ -395,6 +395,7 @@ SOURCES = [
     "research/near-compression/NearCompression/GKREarlierJointCount.lean",
     "research/near-compression/NearCompression/GKRHistoryStrategy.lean",
     "research/near-compression/NearCompression/GKRHistoryPCSFamily.lean",
+    "research/near-compression/NearCompression/GKRConcretePCSCount.lean",
     "research/near-compression/NearCompression/JointSourceFarFold.lean",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean",
