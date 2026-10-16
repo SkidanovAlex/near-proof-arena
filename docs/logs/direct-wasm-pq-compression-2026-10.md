@@ -8434,3 +8434,38 @@ separability. Algebraic branch/factor construction and the complete MCA
 exceptional-set argument remain open. No runtime or cryptographic parameter
 change: diagnostic bundle1344645 B, feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Euclidean/Bezout existence and irreducible derivative certificates
+
+Added PolynomialBezoutExistence.lean and IrreducibleDerivativeBezout.lean,
+five audited public theorems. Strong induction on the first nonzero input's
+degree constructs a nonzero common divisor, bounded degree, formal Bezout
+coefficients, and divisibility witnesses for both inputs. Every common divisor
+divides the Bezout combination, giving the greatest-divisor property. If all
+common divisors are nonzero constants, normalization gives a unit certificate.
+The construction uses the proved general division theorem, not a solver oracle.
+
+PolynomialIrreducible explicitly means nonzero, nonconstant and no formal
+factorization into two nonconstant polynomials. For an irreducible polynomial
+of positive degree below the characteristic, the derivative is nonzero and
+has smaller degree. Applying the Euclidean result to derivative and polynomial
+forces their constructed common divisor to be constant: the alternative from
+irreducibility would contradict the polynomial's leading coefficient. Thus a
+unit Bezout certificate against the derivative EXISTS, rather than being
+assumed. Existing roots are smooth. The root corollary does not assert root
+existence or yet transport the certificate to a newly constructed extension.
+
+Validation:600 Euclidean witnesses over F2/F3/F5/F17, including133 zero second
+inputs, compared with independent extended Euclid;420 normalize to unit
+certificates. Exhaustive trial factorization screens475 monic polynomials in
+selected degree ranges below characteristic and verifies all216 irreducible
+derivative certificates. A reducible repeated-root example prevents dropping
+irreducibility, and zero first input is rejected. Full audit4415 PASS, allowed
+axioms only. Evidence: results/polynomial-bezout-existence/, including explicit
+nonlinear irreducible witnesses and their certificates.
+
+Next: irreducible factorization, algebraic field/root construction, and
+coefficient/certificate transport to those extensions. Complete MCA exception
+counting and protocol/QROM composition remain open. No runtime or security-
+parameter change: diagnostic bundle1344645 B, feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

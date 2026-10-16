@@ -1698,3 +1698,7 @@ import NearCompression.SmallCharacteristicDerivative
 import NearCompression.BezoutSmoothness
 
 import NearCompression.PolynomialDivision
+
+import NearCompression.PolynomialBezoutExistence
+
+import NearCompression.IrreducibleDerivativeBezout

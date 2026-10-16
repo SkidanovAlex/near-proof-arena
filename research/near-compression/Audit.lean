@@ -6276,3 +6276,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_monomial_mul_coefficient
 #print axioms NearCompression.polynomial_division_bounded
 #print axioms NearCompression.polynomial_division_exists
+
+#print axioms NearCompression.polynomial_bezout_gcd_exists
+#print axioms NearCompression.polynomial_common_divisor_divides_bezout
+#print axioms NearCompression.polynomial_coprime_bezout_exists
+
+#print axioms NearCompression.irreducible_derivative_bezout
+#print axioms NearCompression.irreducible_small_degree_root_smooth
