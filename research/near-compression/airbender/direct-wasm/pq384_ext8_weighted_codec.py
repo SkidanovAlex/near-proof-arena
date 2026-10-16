@@ -5,6 +5,7 @@ import struct
 import pq384_ext8_weighted as p
 import pq384_multiproof as mp
 MAGIC=b'NP8WMP01'
+SHARED_MAGIC=b'NP8WMP02'
 MAX_BYTES=16*1024*1024
 
 def extread(raw):return list(p.f.canonical(struct.unpack('<8I',raw)))
@@ -21,10 +22,16 @@ def stages(proof,statement,parent,branches,claim,queries):
     p.h.require(terminal.root==roots[-1],'terminal root')
     return result,samples,terminal
 
-def encode(proof,statement,parent,branches,claim, *, queries):
+def source_key(stage):
+    """Only identical authenticated source geometry may share transport bytes.
+    Weights are deliberately absent: each branch is still verified separately.
+    """
+    return (stage['root'],stage['context'],stage['half'],stage['width'],tuple(stage['indices']))
+
+def encode(proof,statement,parent,branches,claim, *, queries, shared_sources=False):
     p.verify(proof,statement,parent,branches,claim,queries=queries)
     plan,_,_=stages(proof,statement,parent,branches,claim,queries)
-    out=bytearray(MAGIC)
+    out=bytearray(SHARED_MAGIC if shared_sources else MAGIC);seen={}
     for q in proof['reduction']:out.extend(p.vector_bytes(q))
     for rd in proof['rounds']:out.extend(p.vector_bytes(rd['quadratic']));out.extend(p.hashread(rd['root']))
     out.extend(p.vector_bytes([proof['terminal']]))
@@ -32,6 +39,11 @@ def encode(proof,statement,parent,branches,claim, *, queries):
         openings=[q[stage['kind']][stage['index']] for q in proof['queries']]
         shared=mp.compress(stage['root'],stage['context'],stage['half'],stage['indices'],
             [p.h.field_words(o['leaf']) for o in openings],[[p.hashread(x) for x in o['path']] for o in openings])
+        if shared_sources and stage['kind']=='sources':
+            key=source_key(stage)
+            if key in seen:
+                p.h.require(shared==seen[key],'conflicting shared source');continue
+            seen[key]=shared
         out.extend(b''.join(shared['leaves']));out.extend(b''.join(shared['siblings']))
     p.h.require(len(out)<=MAX_BYTES,'codec cap');return bytes(out)
 
@@ -42,19 +54,24 @@ def decode(data,statement,parent,branches,claim, *, queries):
         nonlocal offset
         p.h.require(size>=0 and offset+size<=len(data),'truncated codec')
         value=data[offset:offset+size];offset+=size;return value
-    p.h.require(read(len(MAGIC))==MAGIC,'codec version')
+    magic=read(len(MAGIC));p.h.require(magic in (MAGIC,SHARED_MAGIC),'codec version')
+    shared_sources=magic==SHARED_MAGIC;seen={}
     reduction=[[extread(read(32)) for _ in range(3)] for _ in range(n)]
     rounds=[dict(quadratic=[extread(read(32)) for _ in range(3)],root=read(48).hex()) for _ in range(n)]
     proof=dict(profile=p.PROFILE,reduction=reduction,rounds=rounds,terminal=extread(read(32)),queries=[])
     plan,samples,terminal=stages(proof,statement,parent,branches,claim,queries)
     sources=[None]*len(branches);folds=[None]*n
     for stage in plan:
+        key=source_key(stage) if shared_sources and stage['kind']=='sources' else None
+        if key is not None and key in seen:
+            sources[stage['index']]=seen[key];continue
         unique=mp.shape(stage['half'],stage['indices']);boundary=mp.boundary(stage['half'],stage['indices'])
         size=len(unique)*stage['width']+len(boundary)*48;p.h.require(size<=len(data)-offset,'stage size')
         shared=dict(leaves=[read(stage['width']) for _ in unique],siblings=[read(48) for _ in boundary])
         leaves,paths=mp.expand(stage['root'],stage['context'],stage['half'],stage['indices'],shared)
         openings=[dict(leaf=list(struct.unpack('<'+'I'*(len(leaf)//4),leaf)),path=[x.hex() for x in path]) for leaf,path in zip(leaves,paths)]
         (sources if stage['kind']=='sources' else folds)[stage['index']]=openings
+        if key is not None:seen[key]=openings
     p.h.require(offset==len(data),'trailing codec bytes')
     folds[-1]=[terminal.opening(s%2) for s in samples]
     proof['queries']=[dict(sources=[x[i] for x in sources],folds=[x[i] for x in folds]) for i in range(len(samples))]

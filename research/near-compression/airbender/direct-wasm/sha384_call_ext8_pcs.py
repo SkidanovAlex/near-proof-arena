@@ -92,13 +92,13 @@ def verify(proof,statement,expected,calls, *, queries=309):
     return True
 
 
-def encode(proof,statement,expected,calls, *, queries=309):
+def encode(proof,statement,expected,calls, *, queries=309, shared_sources=False):
     verify(proof,statement,expected,calls,queries=queries)
     layout,st,binding,_=compile_layout(statement,expected,calls,queries=queries);gp=proof['gkr'];ob=g.verify(layout,binding,gp)
     data=bytearray(MAGIC)
     for layer in gp['layers']:
         for value in [v for row in layer['rounds'] for v in row]+layer['inputs']:data+=struct.pack('<8I',*g.ext(value))
-    data+=codec.encode(proof['opening'],st,parent(binding,gp),branches(statement,ob),ob['private_claim'],queries=queries)
+    data+=codec.encode(proof['opening'],st,parent(binding,gp),branches(statement,ob),ob['private_claim'],queries=queries,shared_sources=shared_sources)
     return bytes(data)
 
 
@@ -113,4 +113,6 @@ def decode(wire,statement,expected,calls, *, queries=309):
         layers.append(dict(rounds=[[scalar() for _ in range(3)] for _ in range(rounds)],inputs=[scalar(),scalar()]))
     gp=dict(profile=g.PROFILE.decode(),layers=layers);ob=g.verify(layout,binding,gp)
     opening=codec.decode(wire[offset:],st,parent(binding,gp),branches(statement,ob),ob['private_claim'],queries=queries)
+    # Parsing authenticates leaves, but only PCS verification checks fold consistency.
+    pcs.verify(opening,st,parent(binding,gp),branches(statement,ob),ob['private_claim'],queries=queries)
     return dict(gkr=gp,opening=opening)

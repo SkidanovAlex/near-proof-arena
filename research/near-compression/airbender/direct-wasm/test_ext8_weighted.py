@@ -27,6 +27,10 @@ def main():
             binary=codec.encode(wire,b'statement',b'parent',branches,claim,queries=queries)
             assert codec.decode(binary,b'statement',b'parent',branches,claim,queries=queries)==wire
             assert codec.verify(binary,b'statement',b'parent',branches,claim,queries=queries)
+            shared=codec.encode(wire,b'statement',b'parent',branches,claim,queries=queries,shared_sources=True)
+            assert shared[8:]==binary[8:]  # Distinct sources must not alias.
+            assert codec.decode(shared,b'statement',b'parent',branches,claim,queries=queries)==wire
+            assert codec.verify(shared,b'statement',b'parent',branches,claim,queries=queries)
             results.append(dict(binary_bytes=len(binary),queries=queries,rounds=len(proof['rounds']),json_bytes=len(json.dumps(wire,separators=(',',':')).encode())))
         # Mutations use the final309-query proof.
         mutations=[('reduction',lambda x:x['reduction'][0][0].__setitem__(0,(x['reduction'][0][0][0]+1)%f.P)),

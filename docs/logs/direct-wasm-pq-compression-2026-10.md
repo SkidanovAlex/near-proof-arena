@@ -6300,3 +6300,41 @@ library built from the existing kernel_ext8.rs. Artifacts retained under
 results/call-ext8-q309 and results/call-ext8-q531; exact comparison with source
 hashes in results/call-ext8-profiles.json. No Lean change; last full audit4203
 remains applicable. Full NEAR1Pgas/PQ128/sub300k gate stays NOT_PASSED.
+
+### Shared Ext8 source authentication and complete call decode verification
+
+Implemented optional NP8WMP02 transport in pq384_ext8_weighted_codec.py.
+Source multiproofs share bytes only for exact equality of verifier-derived
+root, context, domain half, leaf width and ordered query indices. No wire
+references or counts select aliases. Encoding verifies the full proof and
+requires identical compressed witnesses for aliases; decoding reconstructs
+both branches. Each branch retains its own transcript-bound weights and point.
+NP8WMP01 remains supported and default encoding retains identical old bytes.
+
+Found and fixed a verification omission in sha384_call_ext8_pcs.decode:
+codec.decode authenticates openings and replays the transcript, but does not
+check query fold consistency. The call decoder now explicitly invokes
+pcs.verify after decoding. Earlier fresh-process logs therefore established
+less than complete call verification; both retained old proofs now pass the
+complete decoder, as do both new shared proofs. The older Ext4 codec already
+invokes its full verifier and does not have this omission. Regression fault
+injection tests the parser-to-verifier boundary; it is not a cryptographic
+forgery or proof of exploitability.
+
+Actual measurements (bytes):
+- 309 queries: call168896 ->103064; saved65832; mixed bundle230130.
+- 531 queries: call205360 ->121360; saved84000; mixed bundle248426.
+These replace the previous projections with encoded, freshly verified results.
+The accompanying compression proof STILL uses Q8/Ext4. Neither bundle proves
+PQ128, full recursion or full NEAR1Pgas. The feasibility gate stays NOT_PASSED.
+
+Validation: test_call_ext8_shared_codec.py PASS for both budgets, old-byte
+parity, canonical roundtrip, eight rejection cases per budget, five geometry
+key separation checks and fresh-process conjunction verification without rows.
+Artifacts: results/call-ext8-shared-q309 and results/call-ext8-shared-q531.
+Heterogeneous-source test_ext8_weighted.py PASS at8/309queries: shared encoding
+retains every distinct source; existing13negative cases and independent FFT
+root comparison pass. Reports/source hashes retained in
+results/ext8-weighted-shared.json and results/ext8-shared-codec-sources.json.
+Logs /tmp/call-ext8-shared.log and /tmp/ext8-weighted-shared.log. No Lean changes;
+last full audit remains4203. Codec implementation refinement remains open.
