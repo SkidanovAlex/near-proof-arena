@@ -2241,3 +2241,30 @@ Validation: full `check.py` passed with 3754 registered results and the enforced
 axiom allowlist. Slice feasibility remains NOT_PASSED. Next critical obligation
 is common representative existence with commitment/challenge chronology, followed
 by composed acceptance-to-execution soundness.
+
+
+### Far-source acceptance joined to adaptive weighted folding
+
+`JointSourceAcceptance.lean` connects `joint_beta_candidate_far_count` to
+`weighted_prefix_no_candidate_count`. If no fixed joint source representative
+exists, actual weighted replay acceptance is bounded by the sum of the outer
+tensor-extraction term, the adaptive folding term, and the query tail. The
+initial candidate's indexed-domain agreement is transported to the same joint
+beta source; no honest source polynomial or representative-existence premise
+is introduced. The entire inner strategy, opening point and initial claim may
+depend on the outer coordinates. Inner messages remain prefix-adaptive.
+
+For nonempty sample and domain, normalizing the proved integer count gives
+outerRounds*max(N,2)/Q + sum_i max(sizes(i+1),2)/Q + ((T-1)/N)^queries.
+The strict regime 2*N+D<3*T remains required. Root geometry, source contraction
+identity, independent ideal sampling and authenticated terminal oracles remain
+explicit. This is an abstract far-case acceptance theorem, not a compiled
+verifier or quantum soundness certificate. It does not lower query parameters.
+
+The next composition duties are the actual heterogeneous compiler/transcript
+instantiation and the near-case common trace supporting AIR, GKR, bus and the
+published execution. Full NEAR 1 Pgas semantics, quantum security and secure
+sub300000-byte feasibility are unchanged and incomplete.
+
+Validation: full `check.py` passed with 3755 registered results and the enforced
+axiom allowlist. Slice gate remains NOT_PASSED; byte artifacts are unchanged.

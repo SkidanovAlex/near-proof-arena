@@ -5378,3 +5378,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.shared_representative_equivalent
 #print axioms NearCompression.shared_representative_functionals_unique
+
+#print axioms NearCompression.joint_source_far_acceptance_count

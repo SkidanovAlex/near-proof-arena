@@ -119,7 +119,9 @@
     "results/pq384-literal193-gkr-packed/envelope-report.json",
     "NearCompression/PackedComputedGKRTable.lean",
     "results/packed-computed-gkr-table-integration.json",
-    "results/shared-representative-uniqueness-integration.json"
+    "results/shared-representative-uniqueness-integration.json",
+    "NearCompression/JointSourceAcceptance.lean",
+    "results/joint-source-acceptance-integration.json"
   ],
   "requirements": [
     {
@@ -153,7 +155,8 @@
       "concentration_regression": "Lean modular-arithmetic exhaustive certificate: F5,N4,D2,T3 has positive Johnson gap but four successful fold challenges and no jointly agreeing pair. This refutes zero-exception transfer from a positive gap alone, not the target concentration theorem. Python enumerates202376 normalized source pairs across F5/F7/F11/F17 and two weight profiles; generalization beyond those finite cases is not claimed.",
       "support_interpolation_component": "D distinct fixed agreement points now construct the same affine source-interpolant curve for every candidate. Under no parent outcome, supported success count <=max(domain length,2), with no supplied concentration premise. Global enumeration of all supports can be exponential and has not yielded a feasible concentration bound.",
       "computed_gkr_table_component": "Inverse GKR-table reconstruction of actual mutable source coefficients equals the original padded rows/columns. Actual computed polynomial supplies the current/next GKR functional without a supplied transform identity. Coefficientwise binding of an extracted polynomial suffices for table equality; proving that cryptographic binding or a sound common representative remains open. Proximity is not promoted to equality.",
-      "shared_representative_uniqueness": "Two shared representatives of the same fixed source oracles give identical functional families and all requested values under radiusLeft+radiusRight+D<=domain size. Individual-lane closeness and selector geometry are unnecessary. Common representative existence, AIR satisfaction and crypto extraction remain open."
+      "shared_representative_uniqueness": "Two shared representatives of the same fixed source oracles give identical functional families and all requested values under radiusLeft+radiusRight+D<=domain size. Individual-lane closeness and selector geometry are unnecessary. Common representative existence, AIR satisfaction and crypto extraction remain open.",
+      "far_source_acceptance_component": "No common prechallenge joint representative now bounds actual adaptive weighted replay acceptance: outer tensor error plus folding error plus query tail. Source contraction identity, terminal authentication, strict 2*N+D<3*T regime and ideal independent challenges remain explicit. This discharges the abstract far branch without assuming representative existence; compiled heterogeneous near-case and quantum reductions remain open."
     },
     {
       "name": "Complete bytes and scaling",

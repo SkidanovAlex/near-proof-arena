@@ -347,6 +347,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SHA384DirectPublicCheck.lean",
     "research/near-compression/NearCompression/MultiaffineTensorRealization.lean",
     "research/near-compression/NearCompression/GKRJointTensorCandidate.lean",
+    "research/near-compression/NearCompression/JointSourceAcceptance.lean",
     "research/near-compression/NearCompression/JointSourceFarFold.lean",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean",
