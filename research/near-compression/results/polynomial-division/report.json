@@ -1,0 +1,9 @@
+{
+  "bounded_division_cases": 1200,
+  "constant_divisors": 240,
+  "zero_dividends": 317,
+  "padded_cases": 1115,
+  "monomial_shift_coefficient_checks": 57600,
+  "invalid_leading_or_zero_divisors_rejected": 2,
+  "scope": "General formal polynomial division existence and degree bounds. Euclidean/Bezout certificate existence, irreducible factorization and full MCA remain open."
+}

@@ -6272,3 +6272,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.hensel_slope_initial_derivative
 #print axioms NearCompression.bezout_no_common_root
 #print axioms NearCompression.bezout_initial_root_smooth
+
+#print axioms NearCompression.polynomial_monomial_mul_coefficient
+#print axioms NearCompression.polynomial_division_bounded
+#print axioms NearCompression.polynomial_division_exists

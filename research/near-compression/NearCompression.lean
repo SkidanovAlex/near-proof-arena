@@ -1696,3 +1696,5 @@ import NearCompression.TrivariateInitialBranch
 import NearCompression.SmallCharacteristicDerivative
 
 import NearCompression.BezoutSmoothness
+
+import NearCompression.PolynomialDivision

@@ -315,6 +315,7 @@ SOURCES = [
     "research/near-compression/NearCompression/TrivariateInitialBranch.lean",
     "research/near-compression/NearCompression/SmallCharacteristicDerivative.lean",
     "research/near-compression/NearCompression/BezoutSmoothness.lean",
+    "research/near-compression/NearCompression/PolynomialDivision.lean",
     "research/near-compression/NearCompression/FormalTranslation.lean",
     "research/near-compression/NearCompression/PolynomialCoefficientAlgebra.lean",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean",

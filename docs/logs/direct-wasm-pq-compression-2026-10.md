@@ -8404,3 +8404,33 @@ parameter-polynomial specialization budgets, and the common algebraic initial
 branch. Full MCA/protocol/QROM composition remains open. No runtime or
 cryptographic parameter change: diagnostic bundle1344645 B, feasibility
 NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — General polynomial division foundation for certificate existence
+
+Added PolynomialDivision.lean with three audited public theorems. Multiplying
+by X^n is proved to shift formal coefficients exactly. Long division then
+constructs a quotient of degree<n and remainder of degree<d for an input of
+degree<n+d and divisor of degree exactly d. Each step cancels the actual top
+coefficient and strictly decreases the degree bound; reconstruction is
+coefficientwise, with no finite evaluation-domain assumption. Constant
+divisors, zero dividends and arbitrary trailing zero padding are covered.
+
+A private leading-position construction removes the need to supply the actual
+divisor degree: every nonzero formal divisor admits division with a remainder
+strictly below its leading degree. These are general existence proofs whose
+witness construction is inside the proof; no production prover algorithm or
+complete Euclidean/Bezout construction is claimed by this milestone.
+
+Validation:1200 degree-recursive divisions compared with an independent
+long-division implementation over F2/F3/F5/F17, including240 constant divisors,
+317 zero dividends and1115 padded cases. Checked57600 monomial-shift
+coefficients. Zero divisors and falsely declared leading positions are
+rejected. Full audit4410 PASS, allowed axioms only. Evidence:
+results/polynomial-division/.
+
+Next: use degree-decreasing division to prove Euclidean/Bezout certificate
+existence, then connect irreducibility and the derivative degree bound to
+separability. Algebraic branch/factor construction and the complete MCA
+exceptional-set argument remain open. No runtime or cryptographic parameter
+change: diagnostic bundle1344645 B, feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.
