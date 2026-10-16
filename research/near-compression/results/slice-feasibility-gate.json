@@ -102,7 +102,11 @@
     "airbender/direct-wasm/report_packing_expectation.py",
     "results/slice-packing-expectation.json",
     "airbender/direct-wasm/report_joint_opening_floor.py",
-    "results/slice-joint-opening-floor.json"
+    "results/slice-joint-opening-floor.json",
+    "airbender/direct-wasm/verify_prepared_gkr_slice.py",
+    "results/pq384-literal193-gkr/prover-report.json",
+    "results/pq384-literal193-gkr/codec-report.json",
+    "results/pq384-literal193-gkr/slice-frontend-report.json"
   ],
   "requirements": [
     {
@@ -173,5 +177,14 @@
     "request_json_bytes": 919,
     "total_transported_bytes": 346689
   },
-  "next_size_priority": "Sharing only folded oracles is insufficient in the retained four-tree screen. Compare two-phase cross-table commitments plus local claim-vector compression against recursive compression; preserve source-before-bus and auxiliary-after-bus timing. Model the missing common-point/joint-opening reductions before implementation."
+  "next_size_priority": "Measure higher-query GKR/weighted-PCS geometry on the new same-slice52921-byte artifact before deciding between cross-table commitments and recursion. Formal GKR input/common-trace extraction remains required; retain NOT_PASSED gate.",
+  "gkr_diagnostic_measurement": {
+    "instructions": 193,
+    "proof_bytes": 52921,
+    "statement_json_bytes": 223788,
+    "request_json_bytes": 919,
+    "total_transported_bytes": 277628,
+    "same_statement_and_source_roots_as_direct_slice": true,
+    "qualification": "Fresh GKR/weighted PCS proof with newly derived auxiliary roots. Q8/Ext4 only; acceptance-to-HoldsP, GKR/common-source extraction, proximity and QROM remain unproved. Sub300000 diagnostic transport is not secure feasibility."
+  }
 }

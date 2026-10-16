@@ -17,7 +17,7 @@ import pq384_global_bus_codec as codec
 PACKAGE = Path(__file__).resolve().parents[2]
 
 
-def verify(wire, statement, request):
+def verify(wire, statement, request, *, proof_codec=codec):
     if set(request) != {'wasm_bytes', 'method', 'prepaid'}:
         raise ValueError('request fields')
     if (not isinstance(request['wasm_bytes'], list) or
@@ -28,7 +28,7 @@ def verify(wire, statement, request):
     if set(statement) != {'spec', 'roots'}:
         raise ValueError('statement fields')
     spec = statement['spec']
-    codec.bus.validate(spec)
+    proof_codec.bus.validate(spec)
     public = spec['public']
     count, remainder = divmod(len(public) - literal.CODEPUB, literal.RECORD)
     if count <= 0 or remainder or spec['air'] != literal.air(count):
@@ -42,7 +42,7 @@ def verify(wire, statement, request):
     if eligibility != dict(status='PASS', code_length=count):
         raise ValueError('prepared code length mismatch')
     roots = [bytes.fromhex(r) for r in statement['roots']]
-    codec.decode(wire, spec, roots)
+    proof_codec.decode(wire, spec, roots)
     return dict(status='PASS', security='Q8/Ext4 diagnostic; soundness not certified',
                 code_length=count, execution_fuel=1 << spec['log_rows'][0],
                 published_exit=public[39:66])

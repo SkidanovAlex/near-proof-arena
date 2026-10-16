@@ -2080,3 +2080,40 @@ this screen does not supply a new prover or security theorem.
 Validation: table heights/coordinate widths checked against the actual fixture;
 input statement/report hashes recorded; exhaustive small-tree expectation checks
 rerun; Python compilation and diff checks passed. No Lean changes.
+
+
+### Fresh literal193 GKR compression integration
+
+Ran the existing GKR/weighted-PCS prover on the same actual literal193 rows and
+spec as the direct slice. Source roots and the entire serialized statement match
+the baseline exactly. Auxiliary roots/finals were regenerated from the new GKR
+profile's bus challenges; no old auxiliaries were reused. Proving GKR+weighted
+PCS took14.23s and independent JSON verification1.08s on this run.
+
+Compact binary52921 bytes versus direct121982. Including identical current
+statement223788 and request919 gives277628 bytes. This is a Q8/Ext4 diagnostic
+result, not the requested secure sub300000 result. The codec comparison report's
+unchanged transcript/roundtrip statements refer to compact encoding of this new
+GKR proof, not equality between the GKR and direct-profile transcripts.
+
+Added `verify_prepared_gkr_slice.py`: shares the existing literal request/Lean
+preparation and locally reconstructed AIR checks, then invokes mandatory compact
+GKR/weighted PCS verification. Codec choice is fixed by the entrypoint, never
+selected by proof data. The original frontend retains its default codec.
+The full acceptance-to-literal-HoldsP and GKR common-source soundness composition
+remain unproved. No full NEAR state or quantum-security claim follows.
+
+Reproduction used `run_pq384_gkr_bus.py` with the baseline statement's spec,
+source rows split from `/tmp/near-prepared-code-table/long-193-rows.json`,
+`/tmp/near-pq384-target/release/rs_commit`, `/tmp/libnear_folded_v2.so`, and
+`/tmp/libpq384_fft.so`; reference directory `airbender/generic-air`. Fresh prover
+report and JSON/binary/statement/request artifacts retained under
+`results/pq384-literal193-gkr`. Compact codec tested with
+`test_pq384_compact_gkr_bus_codec.py`; frontend tested with
+`test_prepared_slice.py --fixture results/pq384-literal193-gkr --gkr`.
+
+Validation: GKR frontend fresh process plus15 cross-layer rejection cases passed;
+original frontend fresh process plus14 baseline cases passed. Compact codec had
+80 primitive roundtrips,3 primitive rejections, exact proof roundtrip,2 proof
+rejections and independent-process verification. Python compilation/diff checks
+passed. No Lean theorem changes; gate remains NOT_PASSED.

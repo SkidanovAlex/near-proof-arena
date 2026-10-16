@@ -1,4 +1,5 @@
 """Cross-layer binding tests using a retained real 193-instruction proof."""
+import argparse
 import copy
 import hashlib
 import json
@@ -10,11 +11,21 @@ from verify_prepared_slice import PACKAGE, verify
 
 
 def main():
-    fixture = PACKAGE / 'results/pq384-code-table-long193'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--fixture', type=Path, default=PACKAGE / 'results/pq384-code-table-long193')
+    parser.add_argument('--gkr', action='store_true')
+    args = parser.parse_args()
+    fixture = args.fixture
+    if args.gkr:
+        from verify_prepared_gkr_slice import verify
+        frontend = 'verify_prepared_gkr_slice.py'
+    else:
+        from verify_prepared_slice import verify
+        frontend = 'verify_prepared_slice.py'
     wire = (fixture / 'proof.bin').read_bytes()
     statement = json.loads((fixture / 'statement.json').read_text())
     request = json.loads((fixture / 'request.json').read_text())
-    fresh = subprocess.run([sys.executable, str(Path(__file__).with_name('verify_prepared_slice.py')),
+    fresh = subprocess.run([sys.executable, str(Path(__file__).with_name(frontend)),
                             str(fixture / 'proof.bin'), str(fixture / 'statement.json'),
                             str(fixture / 'request.json')], check=True, capture_output=True, text=True)
     assert json.loads(fresh.stdout)['status'] == 'PASS'
@@ -52,6 +63,9 @@ def main():
     reject('substituted source commitment', lambda s,r:s['roots'].__setitem__(0,'00'*48), 'cryptographic')
     reject('truncated proof', lambda s,r:wire[:-1], 'cryptographic')
     reject('trailing proof bytes', lambda s,r:wire+b'\0', 'cryptographic')
+    if args.gkr:
+        other = (PACKAGE / 'results/pq384-code-table-long193/proof.bin').read_bytes()
+        reject('direct-profile proof substitution', lambda s,r:other, 'cryptographic')
     report = dict(status='PASS', fresh_verifier=json.loads(fresh.stdout), rejections=rejected,
                   proof_bytes=len(wire), statement_json_bytes=(fixture/'statement.json').stat().st_size,
                   request_json_bytes=(fixture/'request.json').stat().st_size,
