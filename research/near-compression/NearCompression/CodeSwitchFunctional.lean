@@ -88,4 +88,26 @@ theorem switch_wrong_answer_unique_mixer (xs : List (K × K)) (claim point answe
     (acceptB : affineFoldDot (switchInjectPairs point b 1 xs)=claim+b*answer) : a=b := by
   rw [switch_inject_dot] at acceptA acceptB
   grind
+/-- Native recurrence carries mixer*point^i directly, avoiding a second
+field multiplication for every coefficient. -/
+def switchInjectRolling (point factor : K) : List (K × K) → List (K × K)
+  | [] => []
+  | (c,w)::rest => (c,w+factor)::switchInjectRolling point (factor*point) rest
+
+theorem switch_inject_rolling_equiv (xs : List (K × K)) (point mixer power : K) :
+    switchInjectRolling point (mixer*power) xs=switchInjectPairs point mixer power xs := by
+  induction xs generalizing power with
+  | nil => rfl
+  | cons a rest ih =>
+    simp only [switchInjectRolling,switchInjectPairs]
+    have assoc : mixer*power*point=mixer*(power*point) := by grind
+    rw [assoc,ih]
+
+theorem switch_inject_rolling_dot (xs : List (K × K)) (point mixer : K) :
+    affineFoldDot (switchInjectRolling point mixer xs)=affineFoldDot xs+
+      mixer*(Poly.mk (xs.map Prod.fst)).eval point := by
+  have same:=switch_inject_rolling_equiv xs point mixer 1
+  have unit : mixer*(1:K)=mixer := by grind
+  rw [unit] at same
+  rw [same,switch_inject_dot,unit]
 end NearCompression

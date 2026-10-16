@@ -154,3 +154,32 @@ pub unsafe extern "C" fn near_ext8_tensor_weights(
     }}
     0
 }
+
+/// weights[0..n], claim at n; constraints are (point,answer,mixer) triples.
+/// All validation precedes writes. Outputs must not overlap either input.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn near_ext8_inject(src:*const u32,n:usize,terms:*const u32,q:usize,out:*mut u32,capacity:usize)->i32 {
+    if n==0 || n>262144 || q>4096 || capacity!=n+1 || src.is_null() || terms.is_null() || out.is_null() {return 1;}
+    if (src as usize)%4!=0 || (terms as usize)%4!=0 || (out as usize)%4!=0 {return 1;}
+    let words=8*(n+1);let tw=24*q;
+    let Some(se)=(src as usize).checked_add(words*4) else{return 1;};
+    let Some(te)=(terms as usize).checked_add(tw*4) else{return 1;};
+    let Some(oe)=(out as usize).checked_add(words*4) else{return 1;};
+    if (src as usize)<oe && (out as usize)<se {return 1;}
+    if q>0 && (terms as usize)<oe && (out as usize)<te {return 1;}
+    let input=unsafe{std::slice::from_raw_parts(src,words)};
+    let constraints=unsafe{std::slice::from_raw_parts(terms,tw)};
+    if !valid(input) || !valid(constraints) {return 1;}
+    let output=unsafe{std::slice::from_raw_parts_mut(out,words)};output.copy_from_slice(input);
+    let mut claim=elem(input,n);
+    for j in 0..q {
+        let point=elem(constraints,3*j);let answer=elem(constraints,3*j+1);let mixer=elem(constraints,3*j+2);
+        let base=point[1..].iter().all(|&x|x==0);let mut factor=mixer;
+        for i in 0..n {
+            let value=add(elem(output,i),factor);output[8*i..8*i+8].copy_from_slice(&value);
+            factor=if base {std::array::from_fn(|k|((factor[k] as u64*point[0] as u64)%P) as u32)} else {mul(factor,point)};
+        }
+        claim=add(claim,mul(mixer,answer));
+    }
+    output[8*n..8*n+8].copy_from_slice(&claim);0
+}

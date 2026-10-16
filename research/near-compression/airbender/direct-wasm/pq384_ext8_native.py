@@ -18,6 +18,10 @@ class Kernel:
         self.lib.near_ext8_gkr_round.argtypes=[ptr,ctypes.c_size_t,ptr,ptr,ctypes.c_size_t,ptr,ctypes.c_size_t,ctypes.c_uint32,ctypes.c_uint32,ptr,ptr]
         self.lib.near_ext8_gkr_round.restype=ctypes.c_int
         self.lib.near_ext8_fold.restype=self.lib.near_ext8_quadratic.restype=ctypes.c_int
+        self.inject_fn=getattr(self.lib,'near_ext8_inject',None)
+        if self.inject_fn is not None:
+            self.inject_fn.argtypes=[ptr,ctypes.c_size_t,ptr,ctypes.c_size_t,ptr,ctypes.c_size_t]
+            self.inject_fn.restype=ctypes.c_int
         self.tensor=getattr(self.lib,'near_ext8_tensor_weights',None)
         if self.tensor is not None:
             self.tensor.argtypes=[ptr,ptr,ctypes.c_size_t,ptr,ptr,ctypes.c_size_t,ptr,ctypes.c_size_t]
@@ -39,6 +43,18 @@ class Kernel:
         a=self.pack(values);b=self.pack(weights);out=(ctypes.c_uint32*24)()
         if self.lib.near_ext8_quadratic(a,b,len(values),out):raise ValueError('native quadratic rejected')
         return self.unpack(out,3)
+
+    def inject(self,weights,claim,points,answers,mixers):
+        n=len(weights);q=len(points)
+        if not 0<n<=262144 or not q<=4096 or len(answers)!=q or len(mixers)!=q:raise ValueError('injection shape/capacity')
+        weights=[f.canonical(x) for x in weights];claim=f.canonical(claim)
+        points,answers,mixers=([f.canonical(x) for x in values] for values in (points,answers,mixers))
+        if self.inject_fn is None:
+            from ext8_code_switch_functional import inject
+            return inject(weights,claim,points,answers,mixers)
+        terms=[x for triple in zip(points,answers,mixers) for x in triple];out=(ctypes.c_uint32*(8*(n+1)))()
+        if self.inject_fn(self.pack(weights+[claim]),n,self.pack(terms),q,out,n+1):raise ValueError('native injection rejected')
+        result=self.unpack(out,n+1);return result[:-1],result[-1]
 
     def lane_weights(self,point,current,next_columns):
         from pq384_ext8_input_weights import upper_zeta,row_weights,lane_weights

@@ -6074,3 +6074,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.switch_fold_pair_sum
 #print axioms NearCompression.heterogeneous_switch_query
 #print axioms NearCompression.weighted_switch_polynomial_query
+
+#print axioms NearCompression.switch_inject_rolling_equiv
+#print axioms NearCompression.switch_inject_rolling_dot

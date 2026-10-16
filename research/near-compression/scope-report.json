@@ -447,7 +447,7 @@
     "research/near-compression/NearCompression/DerivedFoldTransport.lean": "e307ada040841b602e7d0b3ecff11a960958c23c338f24beb6096add992ca6d1",
     "research/near-compression/NearCompression/PooledRowFunctional.lean": "3f4ead6a30fcb4656f7a63c58d8968aa142379bd592336c5cf1535ac40b4e721",
     "research/near-compression/NearCompression/PooledWeightMLE.lean": "ea39461395db772bc7417a89964bc8181e343f45cb8f8828ab2135a60af18169",
-    "research/near-compression/NearCompression/CodeSwitchFunctional.lean": "58dba88e46fad88760e5d86a1db65d8e7d5b21beaecde48130db431afecaf785",
+    "research/near-compression/NearCompression/CodeSwitchFunctional.lean": "177a941d64a65a34aabd20e9321e5c5592cf21fc8cc0ca89a241b658d3704971",
     "research/near-compression/NearCompression/GroupedCosetFold.lean": "4157f90249a398f27d93bd01508ba0c264a43c0f913e571f8ca02872896ddac0",
     "research/near-compression/NearCompression/CodeSwitchStage.lean": "a5d5aad4b10cb4288c2bd04f6d748111609342822382c2aec08220f18d73bd97",
     "research/near-compression/NearCompression/WeightedCodeSwitchQuery.lean": "bec4209e72e517723ba981e4cc4a404a93831448462c9221e66a094d24abeb14",

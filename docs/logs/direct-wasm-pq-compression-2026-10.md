@@ -7174,3 +7174,49 @@ raising later rates cannot retroactively improve its agreement threshold.
 Full malicious-candidate extraction, stage error composition and QROM remain
 open. Latest verified complete slice stays1431885 B; no gate changed and full
 NEAR1Pgas/PQ128/sub300000 B remain the objective.
+
+## 2026-10-16 — Native code-switch functional update and large-domain parity
+
+Added `near_ext8_inject` to the existing Rust kernel, with a checked Python
+adapter and reference fallback for libraries lacking the new symbol. It
+updates the weight vector and claim for all injected evaluation constraints.
+The recurrence carries mixer*point^i, reducing the general multiplication
+count; base-field query points use scalar multiplication of8 coordinates.
+The ABI checks degree/constraint capacity, scalar canonicality, alignment and
+output overlap before writing. Inputs remain caller-owned buffers with declared
+sizes, as with the existing ABI. Direct tests cover rejection without writes.
+
+Code-switch stages now optionally use native FFT, quadratic/fold and injection
+operations, including verification of the updated functional. The packed-root
+adapter uses these paths on its prover side. Verifier CLIs accept an explicit
+`--native-library`; the proof does not select its implementation. The native
+FFT accepts a zero-extended input for arbitrary supported blowups, retaining
+exact reference roots/leaves. No hash, transcript or proof layout changed.
+
+Evidence in `research/near-compression/results/ext8-native-injection/`:
+* 15 small native/reference/fallback cases,11 malformed wrapper/ABI cases.
+* Full-vector equality at131072 coefficients and310 constraints against an
+ independent reference combining repeated-point constraints. There are4
+ distinct points (one extension point and3 base points), so this is an exact
+ arithmetic stress case, not a random-query prover benchmark.
+* Every output of a1048576-point native FFT matches an independently evaluated
+ sparse polynomial; tree/root/leaf equality checked at2×/8×/16× blowups.
+* Complete small scalar-chain native/reference proof equality; retained packed
+ adapter and scalar-stage proof bytes unchanged. Both retained proofs pass
+ fresh native verifiers; original weighted PCS regression also passes.
+* Boundary tests execute262144-weight and4096-constraint injections, reject
+ larger capacities, and validate maximum geometry without allocating a4M
+ tree. Stage caps are now degree262144, domain2^22, queries4095 (plus1 OOD
+ constraint fits the4096 injection cap). This is capacity, not security tuning.
+
+Two Lean lemmas prove the rolling recurrence equals the previously proved
+monomial-power update and preserves its dot identity. Full audit **4244 PASS**.
+Rust ABI/FFT/transcript implementation refinement remains separate; algebraic
+Lean identities plus parity testing are not a full native correctness proof.
+
+Next: compact code-switch proof transport, then a full source-root-bound
+execution measurement using a separately selected opening profile. The old
+complete execution profile remains unchanged. Do not infer sub300000 B or
+PQ128 from faster arithmetic. Last fully verified combined slice1431885 B;
+full NEAR1Pgas, source extraction/proximity, adaptive error/QROM composition
+and the feasibility gate remain open/NOT_PASSED.
