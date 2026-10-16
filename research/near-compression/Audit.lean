@@ -6259,3 +6259,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.trivariate_initial_slope_degree
 #print axioms NearCompression.trivariate_initial_branch_lift
 #print axioms NearCompression.trivariate_initial_slope_root_count
+
+#print axioms NearCompression.bivariate_y_derivative_coefficient
+#print axioms NearCompression.bivariate_y_derivative_zero_iff
+#print axioms NearCompression.bivariate_small_y_derivative_nonzero
+#print axioms NearCompression.fp8_small_y_derivative_nonzero
+#print axioms NearCompression.recorded_interpolation_heights_below_characteristic

@@ -1,0 +1,69 @@
+{
+  "exhaustive_bivariate_polynomials": 3870,
+  "random_coefficient_checks": 400,
+  "characteristic_boundary_counterexamples": 4,
+  "nonzero_derivative_singular_root_examples": [
+    3,
+    5,
+    17
+  ],
+  "recorded_dimension_screen": [
+    {
+      "dimension": 131072,
+      "rate": 8,
+      "height": 58,
+      "max_y_degree": 57,
+      "characteristic": 2013265921,
+      "below_characteristic": true
+    },
+    {
+      "dimension": 16384,
+      "rate": 16,
+      "height": 83,
+      "max_y_degree": 82,
+      "characteristic": 2013265921,
+      "below_characteristic": true
+    },
+    {
+      "dimension": 2048,
+      "rate": 32,
+      "height": 116,
+      "max_y_degree": 115,
+      "characteristic": 2013265921,
+      "below_characteristic": true
+    },
+    {
+      "dimension": 256,
+      "rate": 64,
+      "height": 165,
+      "max_y_degree": 164,
+      "characteristic": 2013265921,
+      "below_characteristic": true
+    },
+    {
+      "dimension": 32,
+      "rate": 128,
+      "height": 236,
+      "max_y_degree": 235,
+      "characteristic": 2013265921,
+      "below_characteristic": true
+    },
+    {
+      "dimension": 4,
+      "rate": 256,
+      "height": 379,
+      "max_y_degree": 378,
+      "characteristic": 2013265921,
+      "below_characteristic": true
+    },
+    {
+      "dimension": 2,
+      "rate": 256,
+      "height": 464,
+      "max_y_degree": 463,
+      "characteristic": 2013265921,
+      "below_characteristic": true
+    }
+  ],
+  "scope": "Nonconstant low-Y-degree polynomials have nonzero formal derivative; does not establish squarefreeness, irreducibility, smooth branches or full MCA. Recorded dimension screen is not an approved security parameter set."
+}

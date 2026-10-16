@@ -8336,3 +8336,40 @@ extensions, and singular/inseparable factor treatment needed for the full
 MCA exceptional-set argument. The polynomial-branch interface does not close
 those obligations. No runtime or cryptographic parameter change: diagnostic
 bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Characteristic screen narrows the factorization route
+
+Rechecked the authoritative dimension-only interpolation screen: Y-heights
+58,83,116,165,236,379,464, hence maximum stored Y-degree463. The existing Fp8
+IsCharP instance proves characteristic2013265921 (not field cardinality).
+These shapes are far below the characteristic; they are still NOT accepted
+protocol/security parameters. This suggests prioritizing the separable-factor
+route rather than implementing arbitrary-characteristic inseparable reduction
+first, subject to proving the missing factorization/degree obligations.
+
+Added SmallCharacteristicDerivative.lean with five audited public theorems.
+The formal Y-derivative has coefficient(j+1)*Q_{i,j+1}. In any field of
+characteristic p, for rows.length≤p, its being zero is equivalent to Q being
+constant in Y. A Y-dependent polynomial therefore has nonzero derivative.
+A concrete corollary uses the existing Fp8 characteristic instance, and the
+seven recorded heights are kernel-checked below that characteristic.
+
+This is NOT a theorem that Q is squarefree, irreducible, or smooth at every
+root. For irreducible nonconstant factors, this degree observation can rule
+out the zero-derivative obstruction once factor degree and irreducibility
+are connected; that composition is not yet proved. Generic same-characteristic
+field instances are supported, but algebraic/rational-function field instances
+are not constructed by this module.
+
+Validation:3870 exhaustive bivariate polynomials and400 randomized coefficient
+cases over F2/F3/F5/F17. Boundary examples Y^p show why the degree condition
+matters. Repeated-factor examples (Y-1)^2 over F3/F5/F17 have nonzero formal
+derivative but zero slope at the repeated root, preventing a false smoothness
+inference. The recorded geometry screen was replayed from its retained report.
+Full audit4401 PASS, allowed axioms only. Evidence:
+results/small-characteristic-derivative/.
+
+Next: factorization, irreducibility/separability certificates and construction
+of the common algebraic initial branch. Full MCA/protocol/QROM composition
+remains open. No runtime or cryptographic parameter change: diagnostic bundle
+1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
