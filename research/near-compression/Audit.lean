@@ -6290,3 +6290,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.transport_polynomial_derivative
 #print axioms NearCompression.transport_polynomial_bezout
 #print axioms NearCompression.irreducible_extension_root_smooth
+
+#print axioms NearCompression.polynomial_leading_product
+#print axioms NearCompression.polynomial_proper_factor_degrees
+#print axioms NearCompression.polynomial_irreducible_factorization
+#print axioms NearCompression.polynomial_irreducible_divisor_exists
+
+#print axioms NearCompression.polynomial_divisor_degree
+#print axioms NearCompression.small_degree_irreducible_divisor_bezout

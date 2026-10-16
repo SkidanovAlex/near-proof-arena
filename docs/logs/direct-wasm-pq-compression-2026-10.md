@@ -8494,3 +8494,35 @@ then the useful-branch and complete MCA exceptional-set bounds. This closes
 certificate transport, not extension existence or protocol/QROM composition.
 Runtime and security parameters unchanged: diagnostic1344645 B,
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Irreducible factorization and inherited separability budgets
+
+Added PolynomialFactorization.lean with six audited public theorems. The
+leading coefficient of a bounded-degree product is proved to be the product
+of the leading coefficients. A decomposition of a nonzero input into two
+nonconstant factors therefore strictly decreases both degrees. Strong
+induction constructs a finite tree whose leaves are nonzero scalars or
+irreducible polynomials and whose product is coefficientwise equal to the
+input. Every nonconstant input has an actual irreducible divisor extracted
+from this tree. Classical existence is claimed, not an efficient algorithm.
+
+A divisor of a nonzero polynomial inherits its degree bound. Consequently,
+every irreducible factor of an input of degree below the characteristic has
+a unit Bezout certificate against its derivative. This applies even when
+the original input has repeated factors; it does not falsely assert that
+the original polynomial itself is squarefree. The earlier field-transport
+result can carry these factor certificates to roots in extension fields.
+
+Validation: exhaustive3397 nonzero polynomials of degree at most4 over
+F2/F3/F5, each with trailing-zero padding, reconstruct exactly from valid
+factor trees. Checked7321 irreducible leaves,3390 nonconstant inputs with
+extracted divisors,6758 below-characteristic factor derivative certificates,
+and597 repeated-factor inputs. Zero input is rejected. Full audit4427 PASS,
+allowed axioms only. Evidence: results/polynomial-factorization/.
+
+Next: construct the algebraic field/root extension from an irreducible
+modulus, then connect useful branches and complete MCA exceptional-set
+bounds. Generic factorization existence is now supplied, but rational-function
+field construction, extension existence, full MCA and protocol/QROM composition
+remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

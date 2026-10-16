@@ -1704,3 +1704,5 @@ import NearCompression.PolynomialBezoutExistence
 import NearCompression.IrreducibleDerivativeBezout
 
 import NearCompression.PolynomialFieldTransport
+
+import NearCompression.PolynomialFactorization
