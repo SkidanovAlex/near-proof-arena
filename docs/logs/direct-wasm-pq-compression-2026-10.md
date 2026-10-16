@@ -4450,3 +4450,28 @@ native GKR/prover capture or a universal Python-to-Lean refinement theorem.
 Next: generated-formula/certificate binding to Lean, full Ext8 slice profile
 integration and remaining event composition. QROM, secure sub-300 KB and full
 1 Pgas execution remain open.
+
+### Executable Lean checking of Ext8 formula certificates
+
+Added `CheckExt8BusFormulas.lean`, using canonical eight-coordinate constants,
+eleven-word instruction parsing, existing `busFormulaCheck` and
+`terminalAcyclicCheck`, plus independent comparisons of formula evaluation and
+`terminalProgramRun` against captured expected values. Python exports eight
+representative zero/random cases (64 residual programs) from the Ext8 generator
+and its independent evaluator. The retained capture is 188987 bytes; this is
+a diagnostic certificate fixture, not a compressed state-transition proof.
+
+Validation: all eight cases/64 residuals accepted; ten runtime rejections for
+bad roots/opcodes, truncated instructions/selectors, noncanonical constants or
+coordinates, altered expected values, cyclic root and empty fixture/residual
+lists. The Python generator suite still passes 24 cases/192 value comparisons
+and 576 mutations. The Lean runner and tests are registered in scope inventory.
+
+The existing proved formula-check semantics applies to accepted routes and
+acyclic programs, but supplied formula lists are still not authenticated as
+the universal intended bus specification. Next: bind generated formulas to
+Lean's bus specification (including challenge-dependent constants), then
+full Ext8 slice integration and acceptance-event composition. Native commitment
+and QROM soundness, secure size and full 1 Pgas remain open.
+
+Full `check.py` PASS (4077 registered formal results), existing axiom allowlist.

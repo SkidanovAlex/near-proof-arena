@@ -61,7 +61,8 @@ def direct(k, current, nxt, selectors, alpha, gamma, finals):
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--output', type=Path, required=True)
-    args = parser.parse_args(); rng = random.Random(8048); comparisons = rejections = cases = 0
+    parser.add_argument('--capture', type=Path)
+    args = parser.parse_args(); rng = random.Random(8048); comparisons = rejections = cases = 0; capture = []
     for k in (0, 1, 2, 4):
         table = {'width': 1, 'interactions': [
             {'send': False, 'bus': 0, 'msg': [['v', 0, False]], 'mult': [['v', 0, False]]*k},
@@ -80,9 +81,13 @@ def main():
             actual = [evaluate(r['formula'], current, nxt, selectors) for r in records]
             assert actual == direct(k, current, nxt, selectors, alpha, gamma, finals)
             comparisons += len(actual); cases += 1
+            certificates = []
             for rec in records:
                 ins = []; root = compile_ast(rec['formula'], ins)
                 generator.validate_formula(rec['formula'], root, ins, width, {}, coordinate_degree=8)
+                if trial < 2:
+                    certificates.append(dict(formula=rec['formula'], instructions=ins, root=root,
+                        expected=actual[len(certificates)]))
                 for mode in ('root-op', 'literal', 'column'):
                     bad = copy.deepcopy(ins)
                     if mode == 'root-op': bad[root][0] = 99
@@ -95,6 +100,10 @@ def main():
                     try: generator.validate_formula(rec['formula'], root, bad, width, {}, coordinate_degree=8)
                     except ValueError: rejections += 1
                     else: raise AssertionError('accepted mutation '+mode)
+            if trial < 2:
+                capture.append(dict(width=width,current=current,next=nxt,selectors=selectors,residuals=certificates))
+    if args.capture:
+        args.capture.write_text(json.dumps(capture,separators=(',',':'))+'\n')
     report = {'status': 'PASS', 'cases': cases, 'residual_value_comparisons': comparisons,
         'register_mutation_rejections': rejections,
         'scope': 'Ext8 candidate formula generation and independent row semantics; no prover/security/refinement claim.',
