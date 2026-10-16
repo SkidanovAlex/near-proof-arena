@@ -1,0 +1,36 @@
+{
+  "status": "EARLIER_FIXED_COORDINATES_AND_RESIDUAL_TRANSPORT_PROVED_CONDITIONALLY",
+  "module": "NearCompression/HistoryFixedCoordinates.lean",
+  "theorems": [
+    "history_fixed_joint_coordinate_trace",
+    "fixed_coordinate_bus_formula",
+    "fixed_coordinate_combined_residuals"
+  ],
+  "proved": [
+    "For each earlier history, all eligible later joint representatives share a fixed base-valued physical coordinate trace, covering source and auxiliary columns.",
+    "The construction handles earlier histories with no eligible later representative.",
+    "Bounded bus formulas preserve evaluation under fixed-coordinate transport, including cyclic next reads, boundary selectors and arbitrary Ext8 constants.",
+    "The complete ordered source-plus-auxiliary local residual vector equals that of the earlier fixed trace."
+  ],
+  "assumptions": [
+    "Fixed typed ideal oracles for every covered physical coordinate across later continuations; oracles may vary with earlier history.",
+    "Joint representative eligibility, scalar uniqueness separation, distinct base domain, metadata geometry and coordinate provenance.",
+    "Matching row logs and source/formula column bounds.",
+    "Residual lists and their public/challenge/final inputs must themselves be fixed before local challenges when used for branch selection."
+  ],
+  "remaining": [
+    "Construct the two-table branch selector from residual validity of the earlier fixed trace and connect it to the exact branch budget experiments.",
+    "Derive fixed typed oracles/provenance from authenticated native commitments; this result alone is not hash extraction.",
+    "Discharge checked local/GKR/PCS composition premises; native Ext8 slice, global acceptance, QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4091,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only change."
+  }
+}

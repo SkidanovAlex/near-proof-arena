@@ -5844,3 +5844,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.history_three_branch_budget
 
 #print axioms NearCompression.prepared_history_branch_budget
+
+#print axioms NearCompression.history_fixed_joint_coordinate_trace
+
+#print axioms NearCompression.fixed_coordinate_bus_formula
+
+#print axioms NearCompression.fixed_coordinate_combined_residuals

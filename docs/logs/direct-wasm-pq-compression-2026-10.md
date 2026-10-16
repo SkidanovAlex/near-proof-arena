@@ -4585,3 +4585,26 @@ open, and the slice gate remains NOT_PASSED.
 
 Validation: full `check.py` PASS (4088 registered results), existing axiom
 allowlist; native captures not rerun for formal-only composition.
+
+### Earlier fixed auxiliary coordinates and residual transport
+
+`HistoryFixedCoordinates.lean` applies joint representative uniqueness to all
+covered physical coordinates, separately for each earlier history. Typed ideal
+oracles can vary with the earlier history but are fixed across later local,
+GKR and PCS continuations. All eligible later decoded witnesses agree with one
+base trace; empty eligible fibers are supported by the existing construction.
+
+`fixed_coordinate_bus_formula` preserves bounded bus formula evaluation,
+including next-row wraparound, selectors and Ext8 constants.
+`fixed_coordinate_combined_residuals` preserves the full ordered local vector.
+Thus representative choices after local challenges cannot alter residual
+validity under these ideal-oracle premises. Formula lists/public/challenge/final
+inputs must also be bound earlier; this theorem does not establish that binding.
+
+Next: define the two-table selector on these fixed residual vectors and connect
+its branches to the checked auxiliary and prepared history budgets. Native
+commitment extraction and coordinate provenance remain separate obligations;
+no claim of end-to-end chronology, QROM or secure size. Full 1 Pgas stays open.
+
+Validation: full `check.py` PASS (4091 registered results), existing axiom
+allowlist. Native captures not rerun for this formal-only composition.
