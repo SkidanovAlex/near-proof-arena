@@ -291,7 +291,8 @@
     "NearCompression/IndexedDecodedProvenance.lean",
     "results/indexed-decoded-provenance-integration.json",
     "NearCompression/PreparedDecodedBusContinuation.lean",
-    "results/prepared-decoded-bus-continuation-integration.json"
+    "results/prepared-decoded-bus-continuation-integration.json",
+    "results/fixed-source-residual-transport-integration.json"
   ],
   "requirements": [
     {
@@ -459,5 +460,6 @@
   },
   "decoded_base_field_boundary": "PARTIAL: joint-representative descent for typed base oracles, recovered base-valued cells, constructed base trace and bounded source AIR/execution witness transport proved. Authenticated typed-oracle/native binding and auxiliary/bus alignment remain open.",
   "metadata_fixed_source_composition": "PROVED_CONDITIONALLY: metadata_source_index_family selects indices independently of polynomial tuples; metadata_joint_fixed_source_trace derives one base source trace from existential decoded provenance and joint representatives. Explicit premises still include fixed typed source oracles, metadata geometry/disjointness, unique-decoding separation, representative eligibility and decoded provenance. Native authentication and global acceptance remain open.",
-  "prepared_bus_continuation_branch": "PROVED_CONDITIONALLY: wrong prepared-Wasm output on a locally valid fixed source yields total accepted continuation count <= bus error budget times sample and continuation lengths plus accepted downstream failures. Residual validity/binding or failure inclusion remains explicit; locally invalid source branch and downstream joint failure bound are not yet combined."
+  "prepared_bus_continuation_branch": "PROVED_CONDITIONALLY: wrong prepared-Wasm output on a locally valid fixed source yields total accepted continuation count <= bus error budget times sample and continuation lengths plus accepted downstream failures. Residual validity/binding or failure inclusion remains explicit; locally invalid source branch and downstream joint failure bound are not yet combined.",
+  "adaptive_invalid_source_branch": "PARTIAL: earlier-transcript local bound now allows decoded auxiliary columns and formulas to vary with earlier challenges. Fixed-source bounded expressions retain their base-lifted value/nonzero witness. Residual-index instantiation and full local/GKR/PCS substitution remain open."
 }

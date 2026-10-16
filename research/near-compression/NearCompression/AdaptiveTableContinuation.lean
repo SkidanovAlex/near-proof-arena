@@ -44,6 +44,57 @@ theorem decoded_invalid_table_after_earlier_budget {K A R : Type} [Field K]
   have result := Nat.le_trans summed (Nat.add_le_add_left jointErrors _)
   simpa only [count,List.countP_flatMap,List.countP_map,Function.comp_def] using result
 
+/-- Earlier bus challenges may change decoded auxiliary columns and auxiliary
+formula constants. Local challenges still follow those choices. The residual
+witness remains nonzero in each earlier fiber, and the PCS error is bounded
+only after summing the whole chronological experiment. -/
+theorem decoded_adaptive_table_after_earlier_budget {K A R : Type} [Field K]
+    (sample : List K) (distinct : sample.Nodup) (earlier : List A)
+    (decoded : A → Nat → Nat → K) (publicValues : List K)
+    (source : List Expr) (auxiliary : A → List (BusProgramFormula K))
+    (auxiliaryLength : Nat) (auxiliaryShape : ∀ a∈earlier,(auxiliary a).length=auxiliaryLength)
+    (residuals : A → List (AIRBusResidual K × Nat))
+    (order : ∀ a∈earlier,(residuals a).map Prod.fst=source.map Sum.inl++(auxiliary a).map Sum.inr)
+    (d n row lane : Nat) (positive : 0<source.length+auxiliaryLength) (rowBound : row<2^(n+1))
+    (wrong : ∀ a∈earlier,(airCombinedRowResiduals (decodedTableTrace (n+1) (decoded a)) 0 publicValues source (auxiliary a) row).getD lane 0≠0)
+    (sourceDegrees : ∀ e∈source,e.degree≤d) (auxDegrees : ∀ a∈earlier,∀ e∈auxiliary a,busFormulaDegree e≤d)
+    (sent : A → K → List K → List K → Poly K) (claim : A → K → List K → List K → K)
+    (initialZero : ∀ a∈earlier,∀ mixing tau,claim a mixing tau []=0)
+    (continuations : List R) (accept : A → LocalChallengePrefix K → R → Prop)
+    (checks : ∀ a∈earlier,∀ p∈decodedLocalPrefixes sample (n+1),∀ r∈continuations,
+      accept a p r → decodedLocalChecks d (sent a) (claim a) p)
+    (repair pcsBudget : Nat) (errors : A → LocalChallengePrefix K → Nat)
+    (wrongTerminal : ∀ a∈earlier,∀ p∈decodedLocalPrefixes sample (n+1),
+      ¬decodedLocalTerminalCorrect (n+1) (decoded a) publicValues (residuals a) (claim a) p →
+      count continuations (accept a p)*sample.length≤repair+errors a p*sample.length)
+    (jointErrors : (earlier.map (fun a => ((decodedLocalPrefixes sample (n+1)).map (errors a)).sum)).sum*
+      sample.length≤pcsBudget) :
+    count (earlier.flatMap (fun a => (decodedLocalPrefixes sample (n+1)).flatMap (fun p =>
+      continuations.map (fun r => (a,p,r))))) (fun x => accept x.1 x.2.1 x.2.2)*sample.length≤
+      earlier.length*
+        (((source.length+auxiliaryLength-1+(n+1)+(d+1)*(n+1))*sample.length^(2*(n+1)+1))*continuations.length+
+          (decodedLocalPrefixes sample (n+1)).length*repair)+pcsBudget := by
+  classical
+  have each : ∀ a∈earlier,
+      ((decodedLocalPrefixes sample (n+1)).map (fun p=>count continuations (accept a p))).sum*sample.length ≤
+      (((source.length+auxiliaryLength-1+(n+1)+(d+1)*(n+1))*sample.length^(2*(n+1)+1))*continuations.length+
+        (decodedLocalPrefixes sample (n+1)).length*repair)+
+      ((decodedLocalPrefixes sample (n+1)).map (errors a)).sum*sample.length := by
+    intro a ha
+    have h := decoded_invalid_trace_continuation_budget sample distinct (decoded a) publicValues
+      source (auxiliary a) (residuals a) (order a ha) d n row lane
+      (by rw [auxiliaryShape a ha];exact positive) rowBound (wrong a ha) sourceDegrees (auxDegrees a ha)
+      (sent a) (claim a) (initialZero a ha) continuations (accept a) (checks a ha) repair
+      (((decodedLocalPrefixes sample (n+1)).map (errors a)).sum*sample.length) (errors a)
+      (wrongTerminal a ha) (Nat.le_refl _)
+    simpa only [auxiliaryShape a ha] using h
+  have summed := sum_scaled_error_budget earlier
+    (fun a => ((decodedLocalPrefixes sample (n+1)).map (fun p => count continuations (accept a p))).sum)
+    (fun a => ((decodedLocalPrefixes sample (n+1)).map (errors a)).sum)
+    sample.length _ each
+  have result := Nat.le_trans summed (Nat.add_le_add_left jointErrors _)
+  simpa only [count,List.countP_flatMap,List.countP_map,Function.comp_def] using result
+
 /-- Error sums over earlier/local prefixes are a single chronological count,
 which can include the absent-representative event as well as terminal errors. -/
 theorem earlier_local_error_count {K A R : Type} [Field K]

@@ -1,0 +1,30 @@
+{
+  "status": "FIXED_SOURCE_RESIDUAL_TRANSPORT_PROVED",
+  "module": "NearCompression/DecodedAdaptiveBus.lean",
+  "theorems": [
+    "fixed_source_decoded_expression",
+    "fixed_source_decoded_nonzero"
+  ],
+  "proved": [
+    "A source-bounded expression on any decoded witness bound to a fixed source equals the base-field lift of its source evaluation.",
+    "A nonzero source residual remains nonzero despite arbitrary auxiliary cells."
+  ],
+  "assumptions": [
+    "Matching row logs and all live source cells.",
+    "Expression column bound fits source width, including next-row accesses."
+  ],
+  "remaining": [
+    "Select the combined residual index and instantiate the adaptive local bound for the slice.",
+    "Compose local-invalid and bus branches with actual joint GKR/PCS error budget.",
+    "Native binding, QROM and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4037,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

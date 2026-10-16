@@ -4116,3 +4116,24 @@ secure size and full NEAR scope remain open; gate remains NOT_PASSED.
 
 Validation: full `check.py` PASS (4034 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only change.
+
+### Earlier-dependent decoded auxiliary tables
+
+Inspection found that `decoded_invalid_table_after_earlier_budget` held the
+whole decoded table fixed, which was too restrictive for bus-challenge-dependent
+auxiliary columns. Added `decoded_adaptive_table_after_earlier_budget`: decoded
+cells, auxiliary formulas and residual entries may depend on the earlier
+transcript, with uniform auxiliary length/degree. It applies the actual local
+bound in each fiber and retains one joint PCS error budget, without assuming
+small per-fiber PCS error. Nonzero row/lane remains an explicit premise.
+
+`fixed_source_decoded_expression` and `fixed_source_decoded_nonzero` establish
+that arbitrary decoded auxiliary changes preserve bounded source-expression
+values and nonzero witnesses when live source cells and logs are fixed.
+Next: select the combined residual index, instantiate the adaptive local bound,
+and join it to the bus branch and actual GKR/PCS error accounting. These are
+formal interface connections, not native or QROM certification.
+
+Validation: full `check.py` PASS (4037 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only change. Gate remains
+NOT_PASSED; secure sub-300 KB and full 1 Pgas scope remain open.

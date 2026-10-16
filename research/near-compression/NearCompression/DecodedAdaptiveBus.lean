@@ -25,6 +25,36 @@ theorem decoded_base_trace_attached (source : Trace Fp) (sourceWidth : Nat → N
       · simp only [live,ite_true,fixed t row column live,Fp8.ofBase]
       · simp only [live,ite_false]
 
+/-- A fixed source expression has the same lifted value in every decoded
+auxiliary attachment. Thus a source violation cannot disappear when earlier
+bus challenges change the auxiliary columns. -/
+theorem fixed_source_decoded_expression (source : Trace Fp) (sourceWidth : Nat → Nat)
+    (decoded : Trace Fp8) (logs : decoded.log=source.log)
+    (fixed : ∀ t row column,column<sourceWidth t →
+      decoded.cell t row column=Fp8.ofBase (source.cell t row column))
+    (t row : Nat) (pub : List Fp) (e : Expr) (bound : e.colBound≤sourceWidth t) :
+    e.eval decoded t row (pub.map Fp8.ofBase)=Fp8.ofBase (e.eval source t row pub) := by
+  have base : ∀ r column,column<sourceWidth t → Fp8.IsBase (decoded.cell t r column) := by
+    intro r column hc
+    rw [fixed t r column hc]
+    exact (Fp8.isBase_iff _).mpr ⟨source.cell t r column,rfl⟩
+  rw [decoded_base_trace_source_eval decoded t row (sourceWidth t) pub base e bound,
+    decoded_base_trace_attached source sourceWidth decoded logs fixed,
+    bus_attached_source_eval source sourceWidth _ t row pub e bound]
+
+/-- Transport one prechallenge nonzero source residual to each later decoded
+witness. Only columns referenced by that residual must be source columns. -/
+theorem fixed_source_decoded_nonzero (source : Trace Fp) (sourceWidth : Nat → Nat)
+    (decoded : Trace Fp8) (logs : decoded.log=source.log)
+    (fixed : ∀ t row column,column<sourceWidth t →
+      decoded.cell t row column=Fp8.ofBase (source.cell t row column))
+    (t row : Nat) (pub : List Fp) (e : Expr) (bound : e.colBound≤sourceWidth t)
+    (wrong : e.eval source t row pub≠0) :
+    e.eval decoded t row (pub.map Fp8.ofBase)≠0 := by
+  rw [fixed_source_decoded_expression source sourceWidth decoded logs fixed t row pub e bound]
+  intro zero
+  exact wrong (Fp8.ofBase_inj zero)
+
 /-- Residual validity on reconstructed coordinates of the decoded trace
 implies the existing adaptive-auxiliary bus event for the same fixed source.
 This does not infer residual validity from a PCS opening alone. -/

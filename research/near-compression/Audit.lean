@@ -5737,3 +5737,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.prefix_event_continuation_count
 #print axioms NearCompression.prepared_decoded_bus_continuation_bound
+
+#print axioms NearCompression.decoded_adaptive_table_after_earlier_budget
+
+#print axioms NearCompression.fixed_source_decoded_expression
+#print axioms NearCompression.fixed_source_decoded_nonzero
