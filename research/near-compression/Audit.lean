@@ -6055,3 +6055,13 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.pooled_upper_zeta_mask
 #print axioms NearCompression.pooled_row_mask_mle
 #print axioms NearCompression.pooled_upper_weight_mle
+
+#print axioms NearCompression.switch_inject_coefficients
+#print axioms NearCompression.switch_inject_dot
+#print axioms NearCompression.switch_inject_all_residual
+#print axioms NearCompression.switch_honest_residual_zero
+#print axioms NearCompression.switch_inject_all_honest
+#print axioms NearCompression.switch_wrong_answer_unique_mixer
+#print axioms NearCompression.grouped_affine_values_eval
+#print axioms NearCompression.grouped_affine_pair_eval
+#print axioms NearCompression.grouped_four_fold_eval

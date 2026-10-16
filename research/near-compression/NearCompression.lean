@@ -1620,3 +1620,7 @@ import NearCompression.DerivedFoldTransport
 import NearCompression.PooledRowFunctional
 
 import NearCompression.PooledWeightMLE
+
+import NearCompression.CodeSwitchFunctional
+
+import NearCompression.GroupedCosetFold

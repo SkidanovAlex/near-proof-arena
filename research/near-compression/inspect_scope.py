@@ -279,6 +279,8 @@ SOURCES = [
     "research/near-compression/NearCompression/DerivedFoldTransport.lean",
     "research/near-compression/NearCompression/PooledRowFunctional.lean",
     "research/near-compression/NearCompression/PooledWeightMLE.lean",
+    "research/near-compression/NearCompression/CodeSwitchFunctional.lean",
+    "research/near-compression/NearCompression/GroupedCosetFold.lean",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean",

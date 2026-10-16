@@ -7016,3 +7016,57 @@ measured compression envelope matches the codec-tested bytes exactly:
 SHA256 `fe7871c889ccfb2835d2d9f3b5268cdfba862852810eee978ec3ad5e7374d4b7`.
 All preparation, prover, audit, legacy regression, new codec and measurement
 processes completed successfully; no background prover remains from this run.
+
+## 2026-10-16 — Executable code-switch functional algebra and nine Lean lemmas
+
+The phase-pooling measurement identifies fold paths (683808 B) as a remaining
+size blocker. Existing code-switch files are conditional geometry/error
+ledgers; they are not an implemented switch protocol. Added
+`ext8_code_switch_functional.py` as an algebra reference for the next protocol
+step, deliberately without accepting it as a PCS profile.
+
+`fold_coset` reads natural-order evaluations f(x*root^j), pairs antipodes,
+decodes even/odd coefficients, and applies each affine folding challenge.
+It validates the primitive2^k-th root, nonzero anchor, exact coset size and
+canonical Ext8 values. `inject` updates coefficient weights by adding
+mixer*point^i and updates the scalar claim by mixer*answer. These are monomial
+evaluation powers, not Boolean equality weights. Multiple source-query and
+extension-field OOD constraints use the same operation.
+
+The independent test covers22 configurations (degrees2..128,1..4 folds),
+compares queried-coset evaluation to both full-domain oracle folding and
+folded-coefficient evaluation, and re-encodes the resulting polynomial at
+16× blowup after starting at4×. It checks22 arbitrary wrong-answer/claim
+residual identities,7 malformed input cases, and two explicit counterexamples:
+adjacent leaf folding gives the wrong result; a wrong old claim and wrong
+answer can cancel at one particular mixer. This last example prevents
+mistaking honest preservation for malicious-prover soundness.
+
+`CodeSwitchFunctional.lean` proves coefficient preservation, the one-injection
+dot identity, arbitrary-depth residual identity, honest preservation, and
+uniqueness of the cancelling mixer for one fixed wrong answer.
+`GroupedCosetFold.lean` proves coefficient-fold evaluation, pair decoding,
+and the four-value/two-fold identity at [x,x*i,-x,-x*i], assuming i²=-1 and
+nonzero divisors. Exact even-shape premises are explicit. Python supports
+arbitrary fold depth; the new Lean coset theorem covers two folds and is not
+a full arbitrary-depth loop refinement. Nine audited lemmas added; full audit
+**4235 PASS**. Results and hashes: `results/ext8-code-switch-functional/`.
+
+Next executable protocol contract:
+1. Fix the source commitment and weighted claim before the stage's sumcheck.
+2. Commit each quadratic before drawing its challenge; evaluate virtual folds
+   without publishing intermediate roots.
+3. Commit the new encoding before drawing an OOD point; bind its answer.
+4. Draw source coset queries, authenticate their source values, and compute
+   their folded values with the grouped evaluator. Bind all supplied answers
+   before drawing constraint mixers.
+5. Inject the query/OOD constraints into the continuing coefficient functional.
+   The next stage must actually prove this updated functional against the new
+   commitment; accepting the injection arithmetic alone is unsound.
+
+Still required: precise query/FS schedule, new-root extraction/common-candidate
+proof, multi-constraint mixing bound, grouped authentication, arbitrary-depth
+formal refinement, complete stage composition and QROM/security accounting.
+The old code-switch byte ledgers cannot be promoted to measured proof sizes.
+No new complete bundle was generated here; last verified slice remains1431885 B.
+Full NEAR1Pgas/PQ128 and sub300000 B remain open; feasibility stays NOT_PASSED.
