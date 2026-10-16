@@ -5,6 +5,7 @@ checks, transcript distribution, commitments and QROM are separate obligations.
 """
 import json
 import math
+import subprocess
 from pathlib import Path
 from reference import public_messages
 from prepared_code_table_air import air, P
@@ -42,15 +43,22 @@ def main():
     spec = json.loads((fixture/'statement.json').read_text())['spec']
     assert spec['air'] == air(193)
     result = budget(spec)
+    lean = subprocess.run(['lake','env','lean','--run','PreparedSliceBusBudget.lean',
+                           str(fixture/'statement.json')],cwd=package,check=True,capture_output=True,text=True)
+    actual = json.loads(lean.stdout)
+    assert actual['support'] == result['support_bound']
+    assert max(actual['send_mass'],actual['receive_mass']) == result['gamma_bad_count']
+    assert actual['numerator'] == result['joint_error_numerator']
+    result['literal_lean_budget'] = actual
     numerator = result['joint_error_numerator']
     result['ideal_uniform_field_bounds'] = [dict(extension_degree=d,
         field_size=P**d, numerator=numerator, denominator=P**d,
         bound_bits=math.log2(P**d)-math.log2(numerator)) for d in (4,8)]
     result['status'] = 'CONDITIONAL_COMPONENT_BOUND'
-    result['theorem'] = 'NearCompression.bus_joint_challenge_bound'
+    result['theorem'] = 'NearCompression.bus_trace_budget_fp8_bound'
     result['conditions'] = [
         'Same fixed source trace/messages before alpha and gamma; commitment extraction not supplied',
-        'Natural trace-count/Ext8 tagged-fingerprint composition proved in BusTraceChallengeBound; formal support/size discharge and authenticated extraction pending',
+        'Constructed support and expanded mass bounds proved; literal descriptor/public width discharge and authenticated extraction pending',
         'Auxiliary gates and final products correspond to expanded natural multiplicities',
         'Independent uniform field challenges; executable hash sampler and QROM not covered']
     result['interpretation'] = 'Upper error bound only, not an attack or lower bound on achievable security. Ext4 budget cannot certify 128 ideal bits via this bound; Ext8 budget alone does not certify quantum security.'

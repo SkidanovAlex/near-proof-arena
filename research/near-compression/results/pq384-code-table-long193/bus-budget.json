@@ -17,6 +17,12 @@
   "alpha_bad_count": 41300,
   "gamma_bad_count": 8589934531,
   "joint_error_numerator": 8589975831,
+  "literal_lean_budget": {
+    "numerator": 8589975831,
+    "receive_mass": 8589934531,
+    "send_mass": 1024,
+    "support": 1475
+  },
   "ideal_uniform_field_bounds": [
     {
       "extension_degree": 4,
@@ -34,10 +40,10 @@
     }
   ],
   "status": "CONDITIONAL_COMPONENT_BOUND",
-  "theorem": "NearCompression.bus_joint_challenge_bound",
+  "theorem": "NearCompression.bus_trace_budget_fp8_bound",
   "conditions": [
     "Same fixed source trace/messages before alpha and gamma; commitment extraction not supplied",
-    "Natural trace-count/Ext8 tagged-fingerprint composition proved in BusTraceChallengeBound; formal support/size discharge and authenticated extraction pending",
+    "Constructed support and expanded mass bounds proved; literal descriptor/public width discharge and authenticated extraction pending",
     "Auxiliary gates and final products correspond to expanded natural multiplicities",
     "Independent uniform field challenges; executable hash sampler and QROM not covered"
   ],

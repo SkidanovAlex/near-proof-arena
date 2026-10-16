@@ -1680,3 +1680,9 @@ Full check.py audit passed3599 public theorems (/tmp/root-slice-trace-challenge-
 Added BusTraceSupport.lean: support contains one message per row/interaction plus all public records; proved coverage of both multiplicity-expanded sides, exact support length, and descriptor/public shape propagation. bus_trace_supported_fp8_bound composes this construction into the actual-trace Ext8 bound, removing supplied coverage and candidate-size premises. Full check.py audit passed3603 (/tmp/root-bus-support-audit.log).
 
 Remaining numerical discharge is concrete literal descriptor/public widths and expanded natural multiplicity mass. Authenticated common trace, auxiliary/global product semantics and the rest of protocol/QROM soundness remain open. No executable profile or proof-size change.
+
+### Descriptor-derived natural multiplicity budget
+
+Added BusTraceMass.lean: proved multNat≤2^bitcount-1, per-side expanded length bounds from actual row heights/descriptors, and bus_trace_budget_fp8_bound with constructed support and bounded expanded lengths. Full check.py audit passed3606 (/tmp/root-bus-mass-audit.log). PreparedSliceBusBudget.lean evaluates the actual literal AIR; integrated Python comparison matches support1475, send mass1024, receive mass8589934531 and total numerator8589975831. Budget does not use trace cell values or honest multiplicities.
+
+Remaining: concrete literal tag/width proof, common authenticated source trace, actual auxiliary/global products and complete protocol/QROM soundness. No executable security or proof-size change.
