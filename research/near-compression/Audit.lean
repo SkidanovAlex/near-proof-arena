@@ -5593,3 +5593,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.evaluated_gkr_zero_root_wrong
 #print axioms NearCompression.batched_evaluated_gkr_budget
+
+#print axioms NearCompression.gkr_block_coordinates_uniform
+#print axioms NearCompression.gkr_challenge_paths_append
+#print axioms NearCompression.gkr_rows_final_block_history
+#print axioms NearCompression.gkr_rows_block_pcs_coordinates
+#print axioms NearCompression.gkr_rows_block_pcs_event_count
+#print axioms NearCompression.gkr_block_coordinate_regressions

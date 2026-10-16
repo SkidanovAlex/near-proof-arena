@@ -390,6 +390,7 @@ SOURCES = [
     "research/near-compression/NearCompression/DecodedLocalSoundness.lean",
     "research/near-compression/NearCompression/TerminalBatchFailure.lean",
     "research/near-compression/NearCompression/BatchedEvaluatedGKR.lean",
+    "research/near-compression/NearCompression/GKRBlockCoordinates.lean",
     "research/near-compression/NearCompression/JointSourceFarFold.lean",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean",

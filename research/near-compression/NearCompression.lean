@@ -1445,3 +1445,5 @@ import NearCompression.DecodedLocalSoundness
 import NearCompression.TerminalBatchFailure
 
 import NearCompression.BatchedEvaluatedGKR
+
+import NearCompression.GKRBlockCoordinates

@@ -226,7 +226,9 @@
     "NearCompression/TerminalBatchFailure.lean",
     "results/terminal-batch-failure-integration.json",
     "NearCompression/BatchedEvaluatedGKR.lean",
-    "results/batched-evaluated-gkr-integration.json"
+    "results/batched-evaluated-gkr-integration.json",
+    "NearCompression/GKRBlockCoordinates.lean",
+    "results/gkr-block-coordinates-integration.json"
   ],
   "requirements": [
     {

@@ -3525,3 +3525,23 @@ checkpoint removes an abstract downstream GKR budget, not the PCS premise.
 Full check.py passed 3923 registered results with the existing axiom allowlist.
 No native code changed. Transcript/specification binding, commitment extraction,
 quantum security and secure full-NEAR size remain open. Gate NOT_PASSED.
+
+### Final GKR block exactly enumerates the PCS joint coordinate space
+
+Review found a composition constraint: merged far-case PCS soundness averages
+over rowpoints as well as final GKR and PCS coordinates. It must not be inserted
+as a conditional bound after fixing rowpoints. GKRBlockCoordinates proves exact
+sampling identities to preserve this required averaging.
+
+Flattening a GKR block as left++right++[gamma] gives uniform tuples of length
+2m+1 exactly, including order and multiplicities. Challenge paths split across
+round-list append. Adding rowpoints and the PCS opening point gives precisely
+the heterogeneous joint outer space; arbitrary event counts with later
+continuations agree after coordinate assembly.
+
+Kernel tests cover axis order, zero axes and duplicate samples. Full check.py
+passed 3929 registered results with the existing axiom allowlist. No native
+code changed. Earlier GKR block rearrangement, concrete accessor/mismatch
+identities and merged PCS assumptions remain to be connected. These ideal
+sample identities do not establish Fiat-Shamir sampling. Global/PQ soundness
+and secure full-NEAR size remain open; gate NOT_PASSED.
