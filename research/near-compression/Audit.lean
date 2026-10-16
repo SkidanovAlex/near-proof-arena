@@ -5424,3 +5424,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.chronological_suffix_count
 
 #print axioms NearCompression.near_history_fold_acceptance_count
+
+#print axioms NearCompression.chosen_gkr_history_acceptance_count

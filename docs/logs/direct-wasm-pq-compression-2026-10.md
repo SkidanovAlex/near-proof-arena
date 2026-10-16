@@ -2664,3 +2664,29 @@ and combine far/near cases before global AIR/bus/execution composition.
 Validation: all three new results pass the module checks and full check.py
 (3786 registered results), with the existing axiom allowlist. Imports, scope
 inventory, integration report and NOT_PASSED feasibility gate are updated.
+
+
+### Full chosen GKR failure over joint history and PCS coordinates
+
+Proved chosen_gkr_history_acceptance_count. The counted event now contains
+a wrong full recovered GKR input claim AND checked sumcheck/folding acceptance
+on the joint earlier-history/PCS coordinate vector. Rowpoints, GKR weights,
+constants, terminal claims and subsequent proof strategies may depend on the
+earlier history. The source representative is chosen once, without a history
+argument; sparse lane recovery and shared functional representation are
+derived for that same tuple.
+
+Exact sequential constant subtraction derives the wrong PCS functional from
+the full GKR failure event, so no separate discrepancy certificate is assumed.
+The prior near-history theorem supplies the acceptance bound with no extra
+normalized error term. Representative existence, received-oracle identities,
+terminal authentication and ideal independent challenges remain premises.
+
+Next is the actual coordinate-block instantiation and joint far/near failure
+event. Protocol metadata stability, commitment extraction, global
+GKR/AIR/bus/execution composition, quantum compilation, and secure full
+NEAR1Pgas sub300000-byte feasibility remain open.
+
+Validation: module and full check.py passed3787 registered results; axioms
+remain within propext/Classical.choice/Quot.sound. Imports, audit, scope report,
+integration evidence and NOT_PASSED slice gate updated.

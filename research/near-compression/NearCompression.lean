@@ -1381,3 +1381,5 @@ import NearCompression.HeterogeneousOpeningOracle
 import NearCompression.ChronologicalChallengeCount
 
 import NearCompression.NearHistoryFoldAcceptance
+
+import NearCompression.ChosenGKRHistoryAcceptance
