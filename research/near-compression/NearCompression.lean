@@ -1636,3 +1636,5 @@ import NearCompression.IndependentMixingCandidates
 import NearCompression.IndependentMixingContinuation
 
 import NearCompression.IndependentSwitchQueries
+
+import NearCompression.SupportPreservingAgreement

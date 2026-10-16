@@ -7486,3 +7486,52 @@ research should attack that correlated-agreement/exceptional-set transfer,
 not add another assumed-family wrapper. Query profile and measured bundle
 remain unchanged at1344645 B; full NEAR/PQ128/sub300000 B remain open and
 feasibility NOT_PASSED.
+
+## 2026-10-16 — Exact-support MCA interface and weighted-transfer counterexample
+
+Reviewed BCSS25 Theorem4.6 against the actual weighted extraction requirement.
+Primary source:https://www.math.toronto.edu/swastik/rs-proximity-gaps-2025.pdf,
+November11,2025 version, SHA256
+4added3e55b83c15fcc8a698fb57e137f5bd83e79ea25ce79382817c1ad26a46.
+Theorem4.6 excludes challenges with a large support on which the mixed word is
+an RS restriction but the source tuple is not. This exact-support statement,
+not ordinary existence of a jointly close tuple on another support, is the
+needed interface. Our affine mixture uses u0=sourceEven and
+u1=sourceOdd-sourceEven, so (1-r)*even+r*odd=u0+r*u1 without dividing by r.
+The published proof uses the Section3 interpolation/factorization pipeline;
+the all-useful-factors extension is needed for the list statement. It is not
+a short consequence of the finite Johnson list-size lemma. Its field-function
+and factor/Hensel arguments remain unformalized here. The separate Habock
+2025/2110 abstract was accessible, but its PDF returned403; no claim of having
+read that PDF is made.
+
+Added SupportPreservingAgreement.lean. AffineSupportException explicitly
+quantifies over a sublist support of the distinct domain and a mixed candidate,
+then says no source pair can interpolate that same support. No numerical
+bound on this event is asserted or introduced as an axiom. The proved
+support_preserving_weighted_lift takes the full agreement support of a candidate.
+If weights are bounded by B and mass≥T with B*(minimum-1)<T, that support has
+at least minimum points. Outside the exact-support event both source words
+interpolate on it, preserving all its mass. With D≤minimum, polynomial root
+uniqueness also yields the SAME affine candidate coefficient identity. This
+removes a potential weighted-support mismatch; the exceptional-set cardinality
+bound, finite joint family and extraction composition still need proof.
+
+Concrete counterexample to replacing this with ordinary unweighted agreement:
+over F3, constant code, even=(0,0,1), odd=(0,0,2), r=2, weights=(1,1,10).
+The mixture is identically zero and has mass12. The joint pair(0,0) agrees on
+two points, but its mass is2; even the best joint constant pair has mass10.
+Thus existence of a two-point jointly agreeing pair cannot transfer the full
+weighted mass. This r belongs to the exact-support exceptional event; it is
+not a counterexample to the published theorem or a protocol attack.
+
+Validation:all729 pairs of F3 words, plus64 deterministic F5 pairs with
+linear candidates;1611 weighted lifts checked outside each computed exception
+set. Small-field exception counts are not an asymptotic security bound.
+Full Lean audit4261 PASS, allowed axioms only. Artifacts and replay:
+results/support-preserving-agreement/. No query/profile/proof-size change:
+1344645 B measured bundle; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128 and
+sub300000 B remain open. The next substantial formal target is the MCA
+interpolation/exceptions argument itself, beginning with its polynomial
+multiplicity and interpolation infrastructure, not another assumed-family
+composition wrapper.

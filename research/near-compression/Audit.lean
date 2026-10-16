@@ -6097,3 +6097,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.switch_query_unmixed
 #print axioms NearCompression.switch_query_correct_family_count
 #print axioms NearCompression.switch_query_mixing_joint_count
+
+#print axioms NearCompression.support_preserving_weighted_lift
