@@ -1592,3 +1592,5 @@ import NearCompression.CallDescriptorLift
 import NearCompression.CallCircuitRoute
 
 import NearCompression.CallCircuitCheck
+
+import NearCompression.CallGKRRoot

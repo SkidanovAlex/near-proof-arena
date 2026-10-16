@@ -6058,3 +6058,34 @@ Runtime checker acceptance is not a kernel reduction of these large JSON
 instances. Parser refinement, arbitrary compiler generation, transcript/PCS/
 QROM composition, full recursive operands and NEAR1Pgas/PQ128/sub300k remain
 open; the feasibility gate remains NOT_PASSED.
+
+### Checked call root enters the GKR terminal-error budget
+
+CallGKRRoot.lean derives the GKR initial wrong-claim predicate from the actual
+checked call circuit and a nonzero weighted residual sum. It uses the computed
+reverse circuit valuation, the exact Boolean output-slot query and initial zero
+claim. These verifier interfaces and output bounds remain explicit. The result
+no longer asks callers to assume an abstract unrelated wrong GKR root.
+call_gkr_terminal_budget specializes the existing evaluated continuation bound:
+accepted paths are charged to sum(4*m+1)/|sample| plus accepted incorrect
+terminal input functionals on the same joint experiment. The opening-error
+term is not dropped, nor is independence from acceptance assumed.
+
+measure_call_gkr_budget.py reads the retained layout rather than estimating
+rounds. Its output-to-input predecessor logs are
+[2,2,3,4,4,5,6,7,8,9,10,11,12,14], giving GKR numerator402. The2880-equation
+batch has12coordinates, giving a conditional component union numerator414.
+For the diagnostic field size2013265921^4 the displayed component bound is
+414/|F| = approximately2^-114.934. This upper bound alone cannot certify128-bit
+classical soundness, let alone128-bit quantum security. It is not an attack
+probability lower bound or a total-protocol error estimate. The report keeps
+PCS/commitment error explicit and states the missing whole-transcript outer
+batching/GKR composition and Fiat-Shamir/QROM obligations.
+
+Validation: full check.py PASS4188, /tmp/call-gkr-audit.log; two public theorem
+audits added. Parameter report retained at
+results/call-layer-certificates/ideal-gkr-budget.json with exact source hashes.
+No proof bytes or executable verifier changed. Next work is the actual GKR
+message-path refinement and source-opening binding, followed by full soundness
+composition; the diagnostic small proof is still not the secure target profile.
+Full recursion, full NEAR1Pgas/PQ128/sub300k and NOT_PASSED gate remain open.

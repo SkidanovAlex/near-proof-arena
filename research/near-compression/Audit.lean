@@ -5999,3 +5999,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.call_layered_checked_functional
 
 #print axioms NearCompression.call_layered_checked_residual_sum
+
+#print axioms NearCompression.call_checked_gkr_root_wrong
+#print axioms NearCompression.call_gkr_terminal_budget
