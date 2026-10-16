@@ -7404,3 +7404,44 @@ remains1344645 B and feasibility stays NOT_PASSED. Next: connect continuation
 acceptance to agreement and the SAME candidate for the carried injected
 functional, then account for failure of that reduction; commitment extraction
 and adaptive/QROM composition remain separate obligations.
+
+## 2026-10-16 — Candidate-independent verifier state and continuation bridge
+
+Added IndependentMixingContinuation.lean, four audited public theorems.
+switchVerifierState computes the new weights and claim from old weights,
+claim, templates and mixers without using any polynomial coefficients.
+switch_inject_verifier_independent proves this independence for arbitrary
+constraint sequences. switch_continuation_functional identifies its scalar
+functional with SwitchMixedAccept for the SAME normalized degree-bounded
+polynomial, with exact weight shape preventing zip truncation. The proof uses
+coefficient preservation and scalar-functional normalization, not an assumed
+identification between the old power accumulator and independent mixers.
+
+switch_indexed_continuation_candidate connects the existing indexedChainCandidate
+relation to one polynomial with both ordinary agreement against a fixed received
+oracle and the injected functional. Global consistency mass is bounded by raw
+agreement. Initial oracle, degree, weights and claim bindings are explicit.
+It does NOT derive indexedChainCandidate from concrete switch-chain acceptance.
+switch_continuation_candidate_count then applies the complete Johnson family
+bound when every agreeing polynomial violates an original constraint. This
+no-correct-candidate/rate-transfer premise remains explicit and unproved for
+the implemented protocol.
+
+Composition finding: general_checked_interactive_fold_soundness requires
+2*N+D<3*T. Every lower Johnson threshold from the prior report fails this
+premise. In the first geometry its minimum threshold is742742, versus388822
+in the Johnson report. The isolated ideal classical query term (T-1)/N to
+power q requires258 versus90 queries for2^-128. Across the seven geometries,
+the high-agreement counts are258,237,228,224,221,220,220; the lower-threshold
+counts are90,67,53,44,38,32,29. Neither is an accepted code-switch or PQ128
+schedule, and terminal-stage counts are mathematical screening only. Other
+errors, composition, extraction and QROM are excluded. This exposes why the
+available binary-fold theorem cannot justify the desired small query schedule;
+the actual rate-changing continuation needs its own applicable reduction.
+
+Full Lean audit4257 PASS, allowed axioms only. Exact-integer regime screening
+and audit evidence:results/independent-mixing-continuation/. No runtime protocol,
+query count or proof bytes changed. Latest measured bundle1344645 B; feasibility
+NOT_PASSED. Next critical work is a rate-changing continuation/agreement
+reduction with an explicit error bound in a useful regime, plus source transfer;
+adding list-size lemmas alone will not close that gap.

@@ -1,0 +1,14 @@
+{
+  "scope": "Same-candidate functional bridge; no rate-changing continuation extraction or PQ128 certificate",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/report_independent_continuation_regime.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/IndependentMixingContinuation.lean": "b3f2a7d23ba4be20dd9d0befc6d6dd841cd6c63fb1007d3c61e318139f4bcda3",
+    "research/near-compression/airbender/direct-wasm/report_independent_continuation_regime.py": "e2f8a4b34909ad08ef62270ebd4218284bbc9efd3fa3894c1df64b808161dea8",
+    "research/near-compression/results/independent-mixing-continuation/regime-report.json": "ad6d3f2577031a636a2afdbcb107631ce247c025a8b8f359901b5ef0b633be6f",
+    "research/near-compression/results/independent-mixing-continuation/lean-audit.log.gz": "37b402c2a885582cf5a2fa666226f72a1d24c5928b38fd48bb9877e9619921dc"
+  }
+}

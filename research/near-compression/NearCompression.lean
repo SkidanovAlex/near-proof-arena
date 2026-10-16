@@ -1632,3 +1632,5 @@ import NearCompression.WeightedCodeSwitchQuery
 import NearCompression.IndependentConstraintMixing
 
 import NearCompression.IndependentMixingCandidates
+
+import NearCompression.IndependentMixingContinuation

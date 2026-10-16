@@ -6088,3 +6088,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.switch_polynomial_pairs_coefficients
 #print axioms NearCompression.switch_johnson_mixing_count
 #print axioms NearCompression.switch_johnson_mixing_gap
+
+#print axioms NearCompression.switch_inject_verifier_independent
+#print axioms NearCompression.switch_continuation_functional
+#print axioms NearCompression.switch_indexed_continuation_candidate
+#print axioms NearCompression.switch_continuation_candidate_count
