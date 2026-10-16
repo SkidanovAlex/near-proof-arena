@@ -1,0 +1,10 @@
+{
+  "indexed_fold_checks": 320,
+  "double_selection_swaps": 320,
+  "symmetric_double_selection_zeros": 320,
+  "arbitrary_adjacent_row_swaps": 320,
+  "separated_equal_row_zeros": 320,
+  "characteristic_two_row_cases": 80,
+  "divide_by_two_counterexamples": 1,
+  "scope": "Lean cofactor/indexed equivalence and determinant alternation, including separated equal rows in characteristic two. Invertibility-to-nonzero and shared-denominator identity remain open."
+}

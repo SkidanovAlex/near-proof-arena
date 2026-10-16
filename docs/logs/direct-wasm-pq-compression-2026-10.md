@@ -8873,3 +8873,29 @@ Next: determinant alternation and connection to inverse maps, then the
 shared-denominator certificate. Full MCA and protocol/QROM composition remain
 open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Determinant alternation in every characteristic
+
+Added DeterminantCofactorFold.lean with nine audited public theorems.
+A signed column-selection fold is proved exactly equal to the existing indexed
+Laplace expansion. Its linearity, paired-selection sign reversal and direct
+cancellation of symmetric paired contributions are proved recursively.
+The cancellation proof never divides by two.
+
+Derived sign reversal on exchanging the first two determinant rows and on
+adjacent row exchanges at arbitrary positions. Equal first rows give zero;
+this extends to two equal rows separated by any prefix/middle/suffix. These
+results include characteristic two, where determinant=-determinant alone
+would not establish zero. No new determinant unrelated to the existing
+polynomial degree construction is substituted.
+
+Validation:320 indexed-fold identities,320 double-selection swaps,320 symmetric
+cancellations,320 arbitrary adjacent-row swaps and320 separated-equal-row
+zeros, including80 characteristic-two row cases. Explicit F2 example rejects
+the invalid divide-by-two inference. Full audit4532 PASS, allowed axioms only.
+Evidence: results/determinant-cofactor-fold/.
+
+Next: determinant nonzeroness from inverse maps and the shared-denominator
+certificate identity. Full MCA and protocol/QROM composition remain open.
+Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

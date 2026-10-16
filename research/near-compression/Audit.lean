@@ -6407,3 +6407,13 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.scalar_minor_zero_row
 #print axioms NearCompression.polynomial_minor_determinant_rational_transport
 #print axioms NearCompression.polynomial_minor_determinant_nonzero_iff
+
+#print axioms NearCompression.determinant_cofactor_fold_linear
+#print axioms NearCompression.determinant_cofactor_fold_indexed
+#print axioms NearCompression.scalar_minor_cofactor_fold
+#print axioms NearCompression.determinant_double_cofactor_symmetric_zero
+#print axioms NearCompression.determinant_double_cofactor_swap
+#print axioms NearCompression.scalar_minor_swap_first_rows
+#print axioms NearCompression.scalar_minor_equal_first_rows
+#print axioms NearCompression.scalar_minor_swap_adjacent_rows
+#print axioms NearCompression.scalar_minor_equal_rows
