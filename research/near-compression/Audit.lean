@@ -5717,3 +5717,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.decoded_base_trace_attached
 #print axioms NearCompression.decoded_bus_implies_adaptive_accept
 #print axioms NearCompression.decoded_adaptive_bus_error_bound
+
+#print axioms NearCompression.recovered_column_coefficient_congr
+#print axioms NearCompression.joint_shared_source_recovered_equal
+#print axioms NearCompression.fixed_source_column_before_auxiliary

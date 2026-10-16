@@ -281,7 +281,9 @@
     "NearCompression/DecodedBaseTrace.lean",
     "results/decoded-base-trace-integration.json",
     "NearCompression/DecodedAdaptiveBus.lean",
-    "results/decoded-adaptive-bus-integration.json"
+    "results/decoded-adaptive-bus-integration.json",
+    "NearCompression/SourceAcrossAuxiliary.lean",
+    "results/source-across-auxiliary-integration.json"
   ],
   "requirements": [
     {

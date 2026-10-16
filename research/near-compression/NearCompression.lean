@@ -1499,3 +1499,5 @@ import NearCompression.JointSourceBaseDescent
 import NearCompression.DecodedBaseTrace
 
 import NearCompression.DecodedAdaptiveBus
+
+import NearCompression.SourceAcrossAuxiliary

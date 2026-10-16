@@ -4018,3 +4018,20 @@ inferred from PCS agreement. Actual generated-formula refinement, global
 acceptance composition, authentication and QROM security remain open.
 Full check.py passed 4020 registered results with the existing axiom allowlist.
 No native/size changes; gate NOT_PASSED.
+
+### Source lane consistency across auxiliary choices
+
+SourceAcrossAuxiliary proves coefficientwise equality preserves every
+recovered column row. Two joint tuples sharing a selected source oracle
+therefore recover the same source lane under unique-decoding separation,
+even if their other oracles, including auxiliary commitments, differ. A
+noncomputable selection theorem chooses one decoded column family valid for
+all eligible auxiliary choices under the same fixed source proximity bounds.
+No candidate is required for every choice; absent-representative cases remain
+separate. This is ideal-model choice, not extraction from unknown hashes.
+
+Assembling fixed lanes into the base source trace and substituting them into
+the adaptive bus bound remain, together with native authentication, formula
+refinement, global counts and QROM security.
+Full check.py passed 4023 registered results with the existing axiom allowlist.
+No native/size changes; gate NOT_PASSED.
