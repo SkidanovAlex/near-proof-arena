@@ -300,7 +300,9 @@
     "NearCompression/FirstTableFixedSourcePCS.lean",
     "results/first-table-fixed-source-pcs-integration.json",
     "NearCompression/TwoTableTerminalRepair.lean",
-    "results/two-table-terminal-repair-integration.json"
+    "results/two-table-terminal-repair-integration.json",
+    "NearCompression/SecondTableEvaluatedGKRPCS.lean",
+    "results/second-table-evaluated-gkr-pcs-integration.json"
   ],
   "requirements": [
     {
@@ -472,5 +474,6 @@
   "adaptive_invalid_source_branch": "PROVED_CONDITIONALLY: fixed_source_invalid_local_budget derives the adaptive local acceptance bound from failed source TableLocal, selecting the row/lane itself and transporting it across decoded auxiliary choices. Source binding, residual order/degree, local checks, terminal repair and joint PCS budget remain explicit. Full two-table acceptance and native/QROM binding remain open.",
   "second_table_acceptance_composition": "PROVED_CONDITIONALLY: second_table_fixed_source_pcs_budget composes failed fixed source TableLocal with adaptive local soundness and the exact joint two-table PCS experiment lifting. Concrete PCS fiber bound and wrong-terminal repair remain assumptions; first-table branch, bus averaging and native/QROM binding remain open.",
   "first_table_acceptance_composition": "PROVED_CONDITIONALLY: first_table_fixed_source_pcs_budget includes the second local protocol in downstream randomness and derives the total error budget from the joint two-table PCS lift. Both invalid-table branches now align with the same chronological experiment. Concrete terminal repair and PCS event bounds, table selection, bus averaging and native/QROM binding remain open.",
-  "two_table_terminal_repair": "PROVED_CONDITIONALLY: two_table_terminal_repair derives explicit batching/evaluated-GKR repair across later local prefixes, preserving accepted terminal mismatch as a joint event count. Semantic output mismatch/circuit binding, event inclusion and final substitution remain explicit. No end-to-end or PQ claim."
+  "two_table_terminal_repair": "PROVED_CONDITIONALLY: two_table_terminal_repair derives explicit batching/evaluated-GKR repair across later local prefixes, preserving accepted terminal mismatch as a joint event count. Semantic output mismatch/circuit binding, event inclusion and final substitution remain explicit. No end-to-end or PQ claim.",
+  "second_table_evaluated_repair": "PROVED_CONDITIONALLY: second_table_evaluated_gkr_pcs_budget removes independent repair/wrong-terminal numeric assumptions, deriving the batching/GKR term. Source and semantic binding, accepted verifier checks, mismatch inclusion and concrete PCS event bound remain explicit."
 }

@@ -4215,3 +4215,20 @@ size and full 1 Pgas execution remain open.
 
 Validation: full `check.py` PASS (4043 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only composition.
+
+### Second-table evaluated GKR repair substituted
+
+`second_table_evaluated_gkr_pcs_budget` invokes the prior second-table
+fixed-source/PCS bound and discharges terminal repair via the singleton
+specialization of `two_table_terminal_repair`. No free repair amount or
+wrong-terminal numerical inequality remains. The conclusion contains the
+actual batching/GKR terms and joint PCS sample multiplicities.
+
+Semantic mismatch, whole circuit binding, accepted GKR checks, event inclusion
+and the concrete PCS event bound remain explicit. Next: corresponding
+first-table substitution, checked semantic bindings and actual concrete PCS
+budget, then table selection/bus averaging. Native/QROM, secure size and the
+full 1 Pgas objective remain open.
+
+Validation: full `check.py` PASS (4044 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only composition.

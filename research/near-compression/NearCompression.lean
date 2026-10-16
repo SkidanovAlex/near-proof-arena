@@ -1517,3 +1517,5 @@ import NearCompression.SecondTableFixedSourcePCS
 import NearCompression.FirstTableFixedSourcePCS
 
 import NearCompression.TwoTableTerminalRepair
+
+import NearCompression.SecondTableEvaluatedGKRPCS
