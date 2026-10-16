@@ -8557,3 +8557,31 @@ and root evaluation. Rational-function field construction, useful branches,
 full MCA exception bounds and protocol/QROM composition remain open.
 Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Actual residue quotient and representative-independent arithmetic
+
+Added PolynomialResidueQuotient.lean with fourteen audited public theorems.
+Formal coefficient equality implies residue congruence; congruence is
+reflexive, symmetric and transitive and respects addition, negation and
+multiplication. These proofs define an actual Setoid/Quotient and lift the
+three arithmetic operations with their representative-independence proofs.
+Quotient equality is exactly divisibility of the representative difference;
+being the zero class is exactly divisibility by the modulus.
+
+Lifted multiplication associativity, commutativity and distributivity to the
+quotient. For an irreducible modulus, every nonzero quotient element has an
+inverse quotient element, and zero and one are distinct. This goes beyond
+representative-level witnesses but does not yet install a complete Lean Field
+instance or construct the embedded coefficient map and root evaluation.
+
+Validation:48 nonzero monic moduli over F2/F3/F5,16578 representative-
+independence pairs and398164 associativity/distributivity triples. Checked295
+nonzero inverses under irreducible moduli and122 nonunit elements under
+reducible moduli. Full audit4447 PASS, allowed axioms only. Evidence:
+results/polynomial-residue-quotient/.
+
+Next: complete the additive/identity laws and Field instance, embed the base
+field, and prove the class of X is a root of the mapped modulus. Rational-
+function construction, useful branches, full MCA exceptions and protocol/QROM
+composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

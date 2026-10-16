@@ -6305,3 +6305,18 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_residue_representative
 #print axioms NearCompression.polynomial_reduced_residue_unique
 #print axioms NearCompression.irreducible_residue_constant_nonzero
+
+#print axioms NearCompression.polynomial_residue_of_coeff_eq
+#print axioms NearCompression.polynomial_residue_refl
+#print axioms NearCompression.polynomial_residue_symm
+#print axioms NearCompression.polynomial_residue_trans
+#print axioms NearCompression.polynomial_residue_add
+#print axioms NearCompression.polynomial_residue_neg
+#print axioms NearCompression.polynomial_residue_mul
+#print axioms NearCompression.polynomial_residue_class_eq_iff
+#print axioms NearCompression.polynomial_residue_zero_iff
+#print axioms NearCompression.polynomial_residue_quotient_inverse
+#print axioms NearCompression.polynomial_residue_mul_assoc
+#print axioms NearCompression.polynomial_residue_mul_comm
+#print axioms NearCompression.polynomial_residue_add_mul
+#print axioms NearCompression.polynomial_residue_one_ne_zero
