@@ -4950,3 +4950,13 @@ Inspection confirmed the existing constraint prover still depends on Ext4-only `
 Independent validation uses direct full multilinear evaluation and a closed-form expression covering every opcode and first/last/transition selectors. 120 round-node comparisons and nine terminal-vector pairs pass at dimensions1/3/4 with zero/unit/random folding challenges. Cyclic next rows are independently rotated before MLE evaluation. Four malformed program cases (opcode, self-cycle, column, noncanonical constant) reject; extra folds and closed-state reads reject. Shared arithmetic/GKR regressions also pass. Report: `results/ext8-local-native.json`.
 
 This supplies the missing Ext8 local execution kernel, not yet a valid state-transition witness or local transcript. Actual source/auxiliary construction and full local→terminal GKR→PCS integration remain next; no Rust refinement, secure envelope or QROM claim. Gate NOT_PASSED.
+
+### Retained execution traces through Ext8 local and GKR reductions
+
+Located the retained literal193 source files and matched both exact SHA256 values to the existing prepared-slice prover report. Stored deterministic gzip copies under `results/ext8-source193` so this test does not depend on temporary external files. Added Ext8 auxiliary construction, adapted from the existing group1 generator, and transcript-driven local sumcheck proving/verifying with scalar Lagrange interpolation and the native local kernel.
+
+`test_ext8_execution_reduction.py` uses fresh eight-coordinate challenges, constructs auxiliary coordinates/finals, checks global bus product equality including public messages, produces both local proofs, reconstructs their terminal metadata independently, and feeds the actual folded current/next values into the compiled terminal GKR. Unlike the earlier synthetic GKR run, the circuit claim is required to be ZERO. The Python GKR verifier returns the same input obligation, which the test checks directly against the witness.
+
+Measured on two256-row source tables:16local rounds,3584local scalar bytes;35GKR layers,47744GKR scalar bytes. Combined raw scalars51328bytes exclude all commitment/opening/envelope data. Initial timings ~0.65s local and~9.66s GKR, excluding auxiliary generation and independent verification. Local proof mutation is rejected; corrupted source-row rejection is also exercised.
+
+Critical limit: source/auxiliary full-vector digest bindings in this diagnostic are NOT polynomial commitments. Mandatory PCS authentication/discharge remains open, as do complete envelope size, native/implementation refinement, full1Pgas and QROM. Feasibility gate remains NOT_PASSED.

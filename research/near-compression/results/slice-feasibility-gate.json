@@ -651,5 +651,17 @@
     "round_node_comparisons": 120,
     "terminal_pairs": 9,
     "scope": "Native Ext8 local folded-table instruction evaluator with first/last/transition selectors and cyclic next rows. Independent direct MLE evaluation matches; malformed programs reject. Actual trace/auxiliary witness construction, local transcript, PCS/full proof and Rust refinement remain open."
+  },
+  "ext8_retained_execution_reduction": {
+    "status": "LOCAL_AND_GKR_REDUCTION_PASS_WITH_DIRECT_WITNESS_CHECK",
+    "source_rows": [
+      256,
+      256
+    ],
+    "local_rounds": 16,
+    "local_scalar_bytes": 3584,
+    "gkr_layers": 35,
+    "gkr_scalar_bytes": 47744,
+    "scope": "Retained193 source files match prior prepared prover hashes. Fresh Ext8 bus auxiliaries satisfy global product equality; local transcripts feed zero-claim GKR and direct witness input-obligation check. Diagnostic full-vector hashes are not PCS commitments. Authenticated opening, full envelope, Rust/implementation refinement and quantum security remain open."
   }
 }

@@ -1,0 +1,23 @@
+{
+  "corrupted_source_rejected": true,
+  "status": "PASS",
+  "source_sha256": [
+    "5fa9723a84cc02f607333258872e3dbc8324d1eeaa748d17d6697fd42e01210b",
+    "276261a96809ac6978e20c2e058cb7dff1240f30cf049eadd09d5b66831e5520"
+  ],
+  "source_rows": [
+    256,
+    256
+  ],
+  "global_bus_product_equal": true,
+  "local_rounds": 16,
+  "local_scalar_bytes": 3584,
+  "gkr_layers": 35,
+  "gkr_scalar_bytes": 47744,
+  "zero_terminal_claim_verified": true,
+  "direct_private_obligation_checked": true,
+  "local_seconds": 0.6468515512533486,
+  "gkr_seconds": 9.557344290893525,
+  "mutated_local_round_rejected": true,
+  "scope": "Retained execution trace hashes match earlier prepared193 prover report. Fresh Ext8 auxiliaries/local transcript feed a zero-claim GKR proof. Full-vector diagnostic hashes are NOT PCS commitments; final input obligation checked directly against witness. No authenticated PCS discharge, full secure proof size, Rust refinement or quantum security certification."
+}
