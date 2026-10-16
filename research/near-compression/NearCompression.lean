@@ -1640,3 +1640,5 @@ import NearCompression.IndependentSwitchQueries
 import NearCompression.SupportPreservingAgreement
 
 import NearCompression.SyntheticMultiplicity
+
+import NearCompression.MultipointMultiplicity

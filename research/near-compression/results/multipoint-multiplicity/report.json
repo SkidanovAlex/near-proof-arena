@@ -1,0 +1,11 @@
+{
+  "polynomials": 5126,
+  "quotient_commutations": 107995,
+  "other_center_zero_jets_preserved": 4748,
+  "multipoint_certificates": 5106,
+  "negative_premises": [
+    "distinct centers",
+    "removed point is a root"
+  ],
+  "scope": "Univariate multi-point multiplicity foundation; bivariate substitution, GS interpolation existence and MCA error bound remain open."
+}

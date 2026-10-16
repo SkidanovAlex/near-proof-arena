@@ -7569,3 +7569,38 @@ then bivariate substitution and interpolation existence. The numerical MCA
 exception bound, factor/Hensel steps, concrete switch-chain extraction, QROM,
 full NEAR1Pgas and sub300000 B remain open. No runtime/query/proof-size change;
 latest measured bundle1344645 B and feasibility NOT_PASSED.
+
+## 2026-10-16 — Multi-point multiplicity bound from independent jets
+
+Added MultipointMultiplicity.lean with six audited public theorems. The central
+result is unconditional: for a nonzero formal polynomial of degree<D, the sum
+of prescribed vanishing-jet counts at distinct centers is<D. It accepts
+independently specified jets at every center, not a prearranged division
+certificate. Empty center lists and zero multiplicities are allowed.
+
+The proof develops the missing compatibility explicitly: quotient coefficients
+are evaluations of coefficient tails; two synthetic divisions commute as
+actual coefficient lists; jets of a quotient satisfy the translated linear
+factor recurrence. Dividing at a root preserves every prescribed jet at a
+different center. Repeated removal therefore converts all independent jet
+conditions into the sequential certificate proved in the prior module, and
+its length yields the total multiplicity bound. No infinite-field assumption,
+ordinary derivatives or factorial division is used. Formal coefficient
+identity is retained throughout, rather than inferred from agreement of
+finite-field functions.
+
+Validation over F2,F3,F5 covers5126 polynomial encodings,107995 quotient
+commutations,4748 preserved zero jets and5106 multi-point certificates in
+reverse center order. Independent jet computation uses the binomial formula.
+Regressions show why centers must be distinct (duplicating a root would count
+it twice) and why division must remove an actual root (dividing X at1 yields
+quotient1 and destroys its root at0). Full audit4274 PASS, allowed axioms only.
+Evidence and replay:results/multipoint-multiplicity/.
+
+This supplies the univariate root-counting foundation needed after GS
+substitution. Next: formal bivariate translation/substitution showing that
+vanishing mixed jets of total order<m at (a,p(a)) give m univariate jets of
+Q(X,p(X)) at a, then the degree/interpolation existence argument. The MCA
+exceptional-set cardinality and factor/Hensel argument remain unproved.
+No runtime/query/profile/proof-size change; latest verified diagnostic bundle
+1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
