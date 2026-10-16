@@ -1533,3 +1533,5 @@ import NearCompression.BusResidualFailureWitness
 import NearCompression.BusCoordinateFormulaLowering
 
 import NearCompression.BoundedBusCoordinateTyping
+
+import NearCompression.BusCoordinateCoverage

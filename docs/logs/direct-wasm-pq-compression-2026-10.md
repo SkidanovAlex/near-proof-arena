@@ -4389,3 +4389,24 @@ and full 1 Pgas scope remain open.
 
 Validation: full `check.py` PASS (4066 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only change.
+
+### Coordinate coverage and precompiler metadata typing
+
+`BusCoordinateCoverage.lean` derives physical read coverage
+`sourceWidth+8*auxCount` from the logical formula bound. Zipped polynomial
+provenance yields typed joint base descent without distinct-lane/index
+assumptions. `metadata_typed_coordinate_formula` composes that with the exact
+precompiler decoded-column provenance interface, removing an independently
+supplied per-coordinate typing premise.
+
+Read-only native inspection confirms `check_bus_program_formulas.py:28` and
+`heterogeneous_bus_whir.py:102` use four-coordinate Ext4 reconstruction, not
+Ext8. Native accumulation is left-associated coordinate*basis; formal lowering
+is right-associated basis*coordinate. Algebraic equivalence/native generator
+refinement has not been inferred from a superficial structural resemblance.
+Next: native-style accumulation equivalence, generated logical-formula bounds
+and an actual Ext8 profile/generator path, alongside event composition. Full
+1 Pgas, QROM and secure-size feasibility remain open.
+
+Validation: full `check.py` PASS (4071 registered results), existing axiom
+allowlist; native captures not rerun for formal-only changes.

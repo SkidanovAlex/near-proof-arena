@@ -5800,3 +5800,13 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.typed_joint_bus_coordinate_lowering
 
 #print axioms NearCompression.lowered_auxiliary_failure_index
+
+#print axioms NearCompression.bus_formula_sum_column_bound
+
+#print axioms NearCompression.bus_coordinate_column_coverage
+
+#print axioms NearCompression.bus_coordinate_formula_coverage
+
+#print axioms NearCompression.typed_joint_zip_recovered_base
+
+#print axioms NearCompression.metadata_typed_coordinate_formula

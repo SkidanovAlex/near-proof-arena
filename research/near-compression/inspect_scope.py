@@ -426,6 +426,7 @@ SOURCES = [
     "research/near-compression/NearCompression/BusResidualFailureWitness.lean",
     "research/near-compression/NearCompression/BusCoordinateFormulaLowering.lean",
     "research/near-compression/NearCompression/BoundedBusCoordinateTyping.lean",
+    "research/near-compression/NearCompression/BusCoordinateCoverage.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",
