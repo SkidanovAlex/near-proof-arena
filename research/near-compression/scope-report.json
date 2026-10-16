@@ -402,7 +402,7 @@
     "research/near-compression/NearCompression/CallPadding.lean": "718467234027d6aefda46633afc0d8ba01083a18614a65d686e9f52bf39d6143",
     "research/near-compression/NearCompression/CallDescriptorLift.lean": "c2d0ff87ff3341a916dd3435466ffab071292fc7e539c65e3117be18f448ecf6",
     "research/near-compression/NearCompression/CallCircuitRoute.lean": "4260348db6a80ba2119aee334753d81a124f558d72d79a958fa891ddecc98908",
-    "research/near-compression/NearCompression/CallCircuitCheck.lean": "c443aadd04a10aa84e236f4424c4ec49a70d83944afb3c95457c5ef9ee0c9609",
+    "research/near-compression/NearCompression/CallCircuitCheck.lean": "45f51578552c8382fba4b4ed3f60916599257ef56d28770e5c1062dc1cf9fa53",
     "research/near-compression/NearCompression/PreparedTypedEqzStack.lean": "6aebcce70dd6800210c2587259bac23bb0275b51f6118d3d30728cd832d5777d",
     "research/near-compression/NearCompression/PreparedTypedOpcode.lean": "66ff680ecac48876b66419dfe7b40607eaa1027b61a685261f3e1fb2181b8a9d",
     "research/near-compression/NearCompression/BusProgramGateSoundness.lean": "08da9e08908f8b2c0f2151577b0ad3f6760455a61b9df19ade824632b34989b2",

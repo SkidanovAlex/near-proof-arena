@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "captures": [
+    {
+      "capture": "/tmp/nearproof-call-layer-certificates/case-0.json",
+      "sha256": "58d10bcf848afd818a79787ca8730179da984bc462efdf3ee9a7d99b50d7431f",
+      "result": {
+        "gates": 8210,
+        "layers": 14,
+        "nodes": 17985,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "seconds": 1.8144153668545187,
+      "rejected": [
+        {
+          "case": "cyclic-node",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "misplaced-initial-input",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "changed-constant",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "nonzero-reserved-slot",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "wrong-zero-gate",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "missing-final-root",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "invalid-source-node",
+          "reason": "uncaught exception: noncanonical/out-of-range node key"
+        },
+        {
+          "case": "out-of-range-live-position",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "unknown-opcode",
+          "reason": "uncaught exception: unknown operation"
+        }
+      ]
+    }
+  ],
+  "adapter_sha256": "139e68258955821a7192e449a8484485a15e3dc1e41505e7d80e06d9e3bd3e92",
+  "scope": "Full JSON instances executed by the Lean checker; generic checker soundness is kernel-proved, these concrete results are not kernel-reduced proof terms.",
+  "remaining": [
+    "Parser refinement, kernel certificates for captures, full cryptographic soundness."
+  ]
+}

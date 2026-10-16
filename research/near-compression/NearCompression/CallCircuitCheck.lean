@@ -77,4 +77,21 @@ theorem call_layered_checked_functional (nodes : List (TerminalDAGNode K)) (capa
       ((List.range capacity).map (fun i=>coeff i*v i)).sum-claim := by
   rw [terminal_checked_bundle_root v constants nodes capacity live positions zeroSlot stages root outputSlot layered]
   exact call_circuit_checked_functional nodes capacity coeff v claim root cert checked
+/-- End-to-end deterministic compiler interface: sequential accumulation,
+checked sparse DAG, and checked layer routing preserve the residual sum. -/
+theorem call_layered_checked_residual_sum (nodes : List (TerminalDAGNode K)) (capacity : Nat)
+    (equations : List (K × CallBatchEquation K)) (v constants : Nat→K)
+    (root : Nat) (cert : CallCircuitCertificate K)
+    (live positions : List Nat) (zeroSlot : Nat) (stages : List TerminalStoredPlan) (outputSlot : Nat)
+    (bounds : ∀ e∈callCompiledEntries equations,e.1<capacity)
+    (checked : callCircuitCheck nodes capacity
+      (fun i=>(callArrayRun equations (Array.replicate capacity 0,0)).1.getD i 0)
+      (callArrayRun equations (Array.replicate capacity 0,0)).2 root cert=true)
+    (layered : terminalStoredBundleCheck nodes capacity constants live positions zeroSlot stages root outputSlot=true) :
+    gkrFiniteCircuit (terminalInitialValues capacity v constants) (stages.map (fun s=>s.gates)) outputSlot=
+      (equations.map (fun pair=>pair.1*pair.2.residual v)).sum := by
+  rw [call_layered_checked_functional nodes capacity _ v constants _ root cert live positions
+    zeroSlot stages outputSlot checked layered]
+  exact call_array_functional capacity equations v bounds
+
 end NearCompression
