@@ -6,13 +6,19 @@
     "NearCompression/PreparedWasmExecution.lean",
     "results/wasm-execution-integration.json",
     "results/rate-shift-codec/report.json",
-    "results/repeated-rate-shift-screen.json"
+    "results/repeated-rate-shift-screen.json",
+    "NearCompression/PreparedLiteralEntry.lean",
+    "NearCompression/PreparedExecBoundary.lean",
+    "results/literal-entry-smoke.json",
+    "results/literal-output-smoke.json",
+    "results/pq384-code-table-long193/binary-report.json"
   ],
   "requirements": [
     {
       "name": "Accepted proof implies actual execution",
       "status": "INCOMPLETE",
-      "needed": "Derive AIR validity, row/code provenance, entry boundary, gas and final state from the verifier and bound public inputs; not supplied per-row certificates."
+      "needed": "Derive the literal HoldsP premise from cryptographic verifier acceptance except with a quantified error; connect trusted preparation and decoded public output in the same verifier contract.",
+      "established": "prepared_literal_call_entry derives actual callEntry from literal HoldsP, actual prepared-function lookup, executable CODE and entry checks, and sufficient fuel. No supplied per-row execution certificate. Boundary theorem binds entry/exit messages under exact natural bus balance."
     },
     {
       "name": "Same committed data throughout",
@@ -35,11 +41,24 @@
       "needed": "Fresh verifier plus coherent wrong state/code/gas/memory/claim and cross-layer substitution cases; existing PCS mutation checks are only component evidence."
     }
   ],
-  "priority": "Finish current candidate-list checkpoint, then integration and soundness/size feasibility review before adding instruction families.",
+  "priority": "Integrate the existing literal const/add/drop/end slice through one verifier contract and complete its soundness and total-input-size ledger before expanding instruction coverage. Candidate-list checkpoint complete.",
   "not_success": [
     "Theorem counts",
     "Separate successful AIR and PCS runs",
     "Conditional unproved Johnson/MCA or quantum compiler premises",
     "A tiny proof at a degree where disclosing coefficients is cheaper"
-  ]
+  ],
+  "diagnostic_measurement": {
+    "instructions": 193,
+    "rows": [
+      256,
+      256
+    ],
+    "proof_bytes": 121982,
+    "public_u32_bytes": 19564,
+    "proof_plus_public_u32_bytes": 141546,
+    "statement_json_bytes": 223788,
+    "proof_plus_current_statement_json_bytes": 345770,
+    "qualification": "Existing report, not rerun in this review. Q8/Ext4 diagnostic only. Compact public bytes omit other statement/configuration inputs; neither subtotal certifies secure complete proof size."
+  }
 }

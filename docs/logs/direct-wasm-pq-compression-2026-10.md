@@ -1638,3 +1638,9 @@ Prioritize this integrated feasibility gate after the current candidate-list
 checkpoint, before further instruction families. A first bounded no-host
 slice is a milestone toward the unchanged full NEAR1Pgas goal, not a narrowed
 definition of completion.
+
+### Slice-first feasibility review: literal semantics correction
+
+Reviewed the newer PreparedLiteralEntry and PreparedExecBoundary sources. The gate previously cited the older supplied-certificate path: actual callEntry is now derived from literal HoldsP plus executable CODE/entry checks, actual function lookup and fuel. Cryptographic acceptance to that HoldsP premise remains the central integration/soundness obligation. Gate remains NOT_PASSED.
+
+Recorded existing 193-instruction diagnostic: 121982 proof bytes, 19564 compact public bytes, 223788 statement JSON bytes. Proof plus current statement JSON is 345770 bytes; compact proof/public subtotal 141546 excludes other configuration inputs. Q8/Ext4 is not certified 128-bit PQ. Existing fixture reports were inspected, not rerun. Validated JSON, evidence paths and arithmetic; no code or theorem changes.
