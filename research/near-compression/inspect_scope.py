@@ -454,6 +454,7 @@ SOURCES = [
     "research/near-compression/NearCompression/BusFormulaReplacement.lean",
     "research/near-compression/NearCompression/RateShiftQuerySharpness.lean",
     "research/near-compression/NearCompression/WeightedFoldDoomed.lean",
+    "research/near-compression/NearCompression/CheckedFoldEscape.lean",
     "research/near-compression/airbender/direct-wasm/report_composed_slice_parameters.py",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",

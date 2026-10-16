@@ -5255,3 +5255,40 @@ between these states. No proof-size or security gate changed.
 Validation: full Lean audit PASS4131theorems/regressions; allowed axioms only.
 Registered module/import/axiom checks and scope source hash; diff checks pass.
 Full NEAR1Pgas and128-bit PQ under300k remain unproved.
+
+### Checked fold transition to per-prefix escape counting
+
+Previous turn progressed with the abstract weighted-prefix escape theorem.
+Added `NearCompression/CheckedFoldEscape.lean` to connect this style of
+per-prefix argument to the existing indexed, consistency-gated fold semantics.
+
+`GeneralFoldStepChecks` contains only local size/degree halving, arbitrary
+coefficient-weight interleaving/folding, endpoint/current-next claim checks,
+and root-domain algebra. It requires no future-round or terminal certificate.
+`checkedFoldEscape` means these checks hold, the parent indexed candidate
+is absent, and a child indexed candidate exists.
+
+`checked_fold_escape_implies_bad` derives the exact general indexed
+extraction bad event from that transition. The child-to-fold-success and
+extracted-outcome-to-parent implications use the literal weight/claim
+recurrences and gated agreement transport; neither implication is an assumed
+candidate-preservation property.
+
+`checked_fold_continuation_escape_bound` quantifies over any fixed prior
+transcript and any challenge-dependent complete continuation. It only fixes
+the extraction snapshot on sampled challenges and binds the current challenge
+to the sampled value. The next oracle and all later data can be adaptive.
+It proves at most max(nextDomainSize,2) sampled challenges escape, using the
+existing proven global measure caps and strict-regime extraction. Invalid
+local checks cannot contribute an escape event.
+
+This advances an algebraic IOP transition, not the Python/Rust verifier or
+Merkle binding. A full RBR proof still must relate successive prefix states,
+show false NEAR statements initialize doomed, handle all other protocol
+phases, establish terminal rejection and instantiate the quantum compiler.
+Snapshot equality is an explicit chronology obligation. No Johnson-bound
+upgrade, smaller proof, or whole-protocol security assertion is made.
+
+Validation: full Lean audit PASS4133theorems/regressions, allowed axioms only;
+module/import/scope registration and diff checks passed. Gate NOT_PASSED;
+full1Pgas/128-bit PQ/300k objective remains open.

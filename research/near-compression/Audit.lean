@@ -5929,3 +5929,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.weighted_fold_prefix_escape_bound
 #print axioms NearCompression.weighted_fold_adaptive_escape_budget
+
+#print axioms NearCompression.checked_fold_escape_implies_bad
+#print axioms NearCompression.checked_fold_continuation_escape_bound
