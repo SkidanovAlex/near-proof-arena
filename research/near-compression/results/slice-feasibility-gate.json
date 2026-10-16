@@ -196,7 +196,9 @@
     "NearCompression/RecoveredCompiledCheck.lean",
     "results/recovered-compiled-integration.json",
     "NearCompression/AIRExpressionCheck.lean",
-    "results/air-expression-checker-integration.json"
+    "results/air-expression-checker-integration.json",
+    "NearCompression/AIRAccumulatorCheck.lean",
+    "results/air-accumulator-checker-integration.json"
   ],
   "requirements": [
     {
@@ -229,7 +231,8 @@
       "final_batch_checker": "Finite entry/rho-power, balance and optional forced-zero-root checks derive the exact weighted residual identity for executed DAG values. Native fixed193 reconstruction now includes final batching and supplied verified-replay expected rho/weights/claims;2 diagnostic assignments pass and14 malformed captures/manifests reject. Full audit3841. This is not a random batching error bound, transcript refinement, committed-input extraction or a global execution/PQ theorem.",
       "combined_finite_compiler_checker": "One Boolean acceptance implies finite GKR output equals the weighted residual of independently executed explicit source programs, deriving all reconstruction, batching and layer premises. Native fixed193 adapter invokes this combined checker on2 diagnostic assignments;14 malformed inputs still reject. Full audit3845 results. AIR compiler/environment identification, recovered committed inputs, transcript refinement and global/PQ soundness remain open.",
       "recovered_compiler_assignment": "Derived compiler initial-vector equality from current/next lane support bounds and constant separation; composed finite/compiler residual identity with exactly gkrRecoveredCircuitInput and depth-zero reverse GKR values. No assumed vector equality, uniqueness or commitment extraction. Full audit3851 results. Actual recovered-assignment checker acceptance, source AIR/environment identification and global/PQ soundness remain open.",
-      "air_expression_checker": "Executable recursive AST/register acceptance derives AIRProgramRoute, then source program execution and checked compiled-table root equality with AST evaluation. Checks exact padding, register bounds, column width and negation zero. Full audit3855. Ordered weighted accumulation, auxiliary bus formulas, retained expected-AIR capture binding and global/PQ soundness remain open."
+      "air_expression_checker": "Executable recursive AST/register acceptance derives AIRProgramRoute, then source program execution and checked compiled-table root equality with AST evaluation. Checks exact padding, register bounds, column width and negation zero. Full audit3855. Ordered weighted accumulation, auxiliary bus formulas, retained expected-AIR capture binding and global/PQ soundness remain open.",
+      "air_accumulator_checker": "Finite ordered accumulation checker derives exact mixing-power route, binds zero/final copy and last output instruction. Together with expression checks it derives weighted AST evaluation and composes to a checked emitted table root. Full audit3861. Retained capture/expected-AIR validation and auxiliary bus formula meaning remain separate; no global/PQ certification."
     },
     {
       "name": "Complete soundness ledger",

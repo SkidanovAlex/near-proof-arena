@@ -5511,3 +5511,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.air_expression_checked_execution
 #print axioms NearCompression.air_expression_checked_compiled_table
 #print axioms NearCompression.air_expression_check_regressions
+
+#print axioms NearCompression.air_accumulator_checked
+#print axioms NearCompression.air_weighted_program_checked
+#print axioms NearCompression.air_expression_mix_checked
+#print axioms NearCompression.air_weighted_expressions_checked
+#print axioms NearCompression.air_weighted_expressions_compiled
+#print axioms NearCompression.air_accumulator_check_regressions

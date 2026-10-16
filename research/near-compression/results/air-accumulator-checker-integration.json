@@ -1,0 +1,42 @@
+{
+  "status": "LEAN_ORDERED_AIR_ACCUMULATOR_CHECKER_SOUNDNESS_PROVED",
+  "module": "NearCompression/AIRAccumulatorCheck.lean",
+  "theorems": [
+    "air_accumulator_checked",
+    "air_weighted_program_checked",
+    "air_expression_mix_checked",
+    "air_weighted_expressions_checked",
+    "air_weighted_expressions_compiled",
+    "air_accumulator_check_regressions"
+  ],
+  "proved": [
+    "Finite accumulator acceptance derives AIRAccumulatorRoute with exact mixing powers and residual order.",
+    "Initial zero and final add-zero copy are checked, and output is required to be the last source instruction.",
+    "Source execution equals ordered residual-register mixing; when all residuals have checked AIR Expr routes this equals their weighted AST evaluations.",
+    "The weighted expression result composes with a checked compiled table to its emitted DAG root."
+  ],
+  "kernel_regressions": [
+    "Two ordered residuals with successive powers accepted",
+    "Changed mixing rejected",
+    "Swapped expected residual order rejected",
+    "Wrong final output rejected",
+    "Wrong second coefficient rejected",
+    "Out-of-range residual rejected",
+    "Missing accumulator steps rejected",
+    "Empty residual sequence with final zero copy accepted"
+  ],
+  "remaining": [
+    "Execute expression/accumulator checks on retained captures against expected AIR data.",
+    "Auxiliary bus-formula meaning is separate; the all-Expr corollary does not silently cover bus residuals.",
+    "Recovered environment/assignment identification, parser/transcript refinement, global/PQ soundness and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3861,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

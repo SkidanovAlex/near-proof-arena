@@ -3152,3 +3152,25 @@ Ordered weighted residual accumulation and auxiliary bus formulas still need
 checked connections; a weighted table is not inferred to be a single AIR Expr.
 Expected AIR capture binding, recovered environments, parser/transcript and
 global/PQ soundness and secure full-NEAR size remain open. Gate NOT_PASSED.
+
+### Checked ordered AIR residual accumulation
+
+AIRAccumulatorCheck verifies finite residual/coefficient/product/result steps
+against the exact source multiply/add instructions. Mixing powers advance in
+order; all step registers are bounded. The full program check binds initial
+zero, expected residual order, final add-zero copy and the last instruction.
+Acceptance derives AIRAccumulatorRoute and the executed weighted-register sum.
+
+When each residual has an accepted AIR expression route, the composed theorem
+replaces register values with AST evaluations. It also composes with the
+checked compiled table to its emitted DAG root. Auxiliary bus residual meaning
+is still separate and is not asserted by the all-Expr corollary.
+
+Kernel regressions accept ordered two-residual and empty sequences and reject
+changed mixing, swapped order, wrong final output/coefficient, absent residual
+and missing steps. Full check.py passed 3861 results under the existing axiom
+allowlist; integration/gate/scope and diff checks pass. Gate NOT_PASSED.
+
+No retained AIR capture execution was added here. Expected-AIR capture binding,
+auxiliary bus formulas, recovered environments, parser/transcript refinement,
+global cryptographic/PQ soundness and secure full-NEAR size remain open.
