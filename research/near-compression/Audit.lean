@@ -5325,3 +5325,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.shift_reduction_coordinate_degree
 #print axioms NearCompression.shift_reduction_slice_degree
 #print axioms NearCompression.shift_reduction_slice_eval
+
+#print axioms NearCompression.row_mle_cube_dot
+#print axioms NearCompression.shift_kernel_initial_sum
+#print axioms NearCompression.shift_reduction_initial_sum
+#print axioms NearCompression.lane_power_batch_append
+#print axioms NearCompression.row_mle_lane_batch
+#print axioms NearCompression.shift_reduction_batched_initial
+#print axioms NearCompression.shift_initial_claim_bad_count
