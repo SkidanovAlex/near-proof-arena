@@ -272,6 +272,7 @@ SOURCES = [
     "research/near-compression/NearCompression/TerminalDAGBalance.lean",
     "research/near-compression/NearCompression/TerminalProgramSemantics.lean",
     "research/near-compression/NearCompression/TerminalSignedExpansion.lean",
+    "research/near-compression/NearCompression/TerminalWeightedExpansion.lean",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean",

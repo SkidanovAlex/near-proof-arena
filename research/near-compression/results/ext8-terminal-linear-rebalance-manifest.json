@@ -1,0 +1,12 @@
+{
+  "files": {
+    "research/near-compression/results/ext8-terminal-linear-rebalance.json": "1f9f1d6f6a255ae2eab84e8b9e6e1bb0863b6df6b43503ad8e63c6990b5900a2",
+    "research/near-compression/airbender/direct-wasm/rebalance_terminal_linear.py": "58de712edcbefc8fbb43af02ba2a4d922a843c31313851e05f1bda718ae5f2b4",
+    "research/near-compression/airbender/direct-wasm/test_terminal_linear_rebalance.py": "42510f0619e0f1e5a976f3be936dea2ab7dc05dfd639a132871a50d93584c004",
+    "research/near-compression/NearCompression/TerminalWeightedExpansion.lean": "86ff31c061297d707d08a97e284a39bd2258121b01c1f71857007a961e4a67b1",
+    "research/near-compression/results/ext8-compression-q309/reduction.json.gz": "e6f63acfdfd48c37a55de4990e14d70454558bf06f8bfd4c600c1fc7d68e5206"
+  },
+  "replay": "python3 airbender/direct-wasm/test_terminal_linear_rebalance.py --reduction results/ext8-compression-q309/reduction.json.gz --output /tmp/ext8-terminal-rebalance-replay.json",
+  "lean_audit": "PASS: 4206 actual-semantics bridge theorems and boundary regression examples.",
+  "scope": "Experimental optimizer; no accepted compiler change, complete-proof measurement, or full optimizer refinement."
+}

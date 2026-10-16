@@ -6659,3 +6659,34 @@ validation and manifest JSON alongside. The test accepts the full.gz archive;
 rerunning the screen writes a full JSON to the requested output path. Log
 /tmp/ext8-code-switch-ledger.log. No Lean change or accepted runtime profile
 change; full NEAR/PQ128/sub300k gate remains NOT_PASSED.
+
+
+### 2026-10-16: affine terminal rewrite and weighted expansion lemmas
+
+The actual Ext8 compression terminal circuit contains long constant-multiply
+Horner chains. Experimental rebalance_terminal_linear.py distributes public
+constant weights through add/sub, retains shared/nonlinear boundaries, combines
+weights and balances emitted sums by depth. Existing accepted compiler/verifier
+remain unchanged. Replay from committed ext8-compression-q309/reduction.json.gz
+reconstructs the terminal circuit via reduction_prefix.
+
+Measured layout: 58 -> 20 layers; 323178 -> 149506 gates; 1124 -> 384
+sumcheck rounds. Calculated GKR scalar payload 111616 -> 38144 bytes, saving
+73472 bytes. Arithmetic node count increases 84338 -> 89475. Zero, one and
+seeded random Ext8 differential vectors pass; the structural layer certificate
+passes. These are not a universal semantic equivalence proof or a newly
+measured complete proof. Last verified combined envelope remains 1863197 B.
+
+TerminalWeightedExpansion.lean proves weighted collector expansion, transport
+under retained-register equality, and its specialization to an executed acyclic
+DAG. All three compile; full axiom audit PASS at 4206 theorems/examples. The
+initial attempted file creation used the wrong relative path; repaired before
+this validation. Remaining refinement obligations include coefficient merging,
+constant accumulation, arbitrary heap reassociation, emitted-node simplification
+and recursive mapping. Thus these lemmas do not certify the whole Python pass.
+
+Retained result and manifest: results/ext8-terminal-linear-rebalance*.json.
+Replay command is in the manifest. Next: finish semantic rewrite validation,
+then generate and independently verify the optimized GKR/PCS proof and measure
+the complete envelope. Full NEAR 1 Pgas, PQ128 and sub300000 B remain unproved;
+slice-feasibility gate stays NOT_PASSED.

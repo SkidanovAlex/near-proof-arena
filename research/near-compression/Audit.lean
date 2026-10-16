@@ -6023,3 +6023,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.call_source_pair_or_collision
 
 #print axioms NearCompression.checked_history_joint_near_acceptance_budget
+
+#print axioms NearCompression.terminal_weighted_expansion_value
+#print axioms NearCompression.terminal_weighted_expansion_transport
+#print axioms NearCompression.terminal_weighted_expansion_executed

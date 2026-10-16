@@ -1606,3 +1606,5 @@ import NearCompression.CallSourceOpening
 import NearCompression.CallMerkleOpening
 
 import NearCompression.CheckedHistoryNear
+
+import NearCompression.TerminalWeightedExpansion
