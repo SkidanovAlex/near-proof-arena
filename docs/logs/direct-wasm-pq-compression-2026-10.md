@@ -6749,3 +6749,9 @@ have completed; input-obligation/PCS/completion checks remain. A baseline codec
 regression runs in session55840/PID1884998 with log
 /tmp/ext8-baseline-profile-codec.log. Do not restart either while live.
 No new complete-proof size or security claim is made at this checkpoint.
+
+Baseline profile regression subsequently completed PASS (session55840 terminal):
+full canonical roundtrip/re-encode, fresh verifier, 10 negative cases, and exact
+byte equality to retained results/ext8-compression-q309/compression.bin. Report
+results/ext8-baseline-profile-codec.json. The additional relabelled-header case
+was tested separately and retained above. Affine run43126 remains live.
