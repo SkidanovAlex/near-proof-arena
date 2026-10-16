@@ -6114,3 +6114,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.synthetic_quotient_preserves_jets
 #print axioms NearCompression.synthetic_multipoint_certificate
 #print axioms NearCompression.synthetic_multipoint_bound
+
+#print axioms NearCompression.polynomial_order_mul
+#print axioms NearCompression.synthetic_jet_zero
+#print axioms NearCompression.bivariate_substitution_order
+#print axioms NearCompression.bivariate_substitution_jets

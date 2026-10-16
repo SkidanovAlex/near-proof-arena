@@ -7604,3 +7604,33 @@ Q(X,p(X)) at a, then the degree/interpolation existence argument. The MCA
 exceptional-set cardinality and factor/Hensel argument remain unproved.
 No runtime/query/profile/proof-size change; latest verified diagnostic bundle
 1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Centered bivariate substitution multiplicity
+
+Added BivariateMultiplicity.lean with four audited public theorems. PolynomialOrder
+is a formal lower-degree bound: every coefficient below m is zero. Multiplication
+adds these lower bounds, proved directly for coefficient-list multiplication.
+Synthetic jets at0 equal formal coefficients. Bivariate polynomials are rows
+Q_j(X), ordered by powers of Y, and substitution uses polynomial Horner arithmetic.
+BivariateOrder requires every mixed coefficient with i+j<m to vanish.
+For any curve with zero constant coefficient, substituting it for Y preserves
+this total-order lower bound and therefore gives m vanishing synthetic jets
+at0. This is unconditional polynomial algebra, with no family, extraction or
+MCA exception-count assumption and no finite-field function identification.
+
+Validation:1000 centered substitutions over F2,F3,F5,F7 compared with direct
+monomial expansion. A further1000 binomial-translation computations check
+arbitrary-center identities numerically. Those computations are explicitly
+NOT a Lean translation theorem: translation and substitution compatibility
+at an arbitrary point(a,b) remains to be proved before applying the earlier
+multi-center bound to Q(X,p(X)). Negative cases show Q=Y loses its order when
+substituting a curve with nonzero constant, and pure-axis constraints miss
+the XY coefficient (which becomes X² under Y=X). Full audit4278 PASS,
+allowed axioms only. Evidence:results/bivariate-multiplicity/.
+
+Next algebraic target is formal translation/substitution compatibility at
+arbitrary centers, followed by weighted-degree control and interpolation
+existence. MCA factor/Hensel and exception-count arguments, actual protocol
+extraction and QROM remain open. No runtime/query/proof-size change: latest
+verified diagnostic bundle1344645 B, feasibility NOT_PASSED; full NEAR1Pgas,
+PQ128 and sub300000 B remain open.
