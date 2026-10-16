@@ -7712,3 +7712,39 @@ constraint-to-mixed-jet bridge. MCA useful-factor/Hensel and exception-count
 arguments remain beyond that. No runtime/query/proof-size change; latest
 verified diagnostic bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas,
 PQ128 and sub300000 B remain open.
+
+## 2026-10-16 — General nonzero homogeneous-kernel existence
+
+Added HomogeneousKernel.lean with two audited public theorems. kernelDot
+expresses a homogeneous row over an explicit list of unknown identifiers.
+homogeneous_nonzero_kernel proves, over EVERY field, that fewer equations
+than distinct unknown identifiers admit a solution nonzero on at least one
+of those identifiers. No finite-field enumeration, rank bound, assumed
+Gaussian solver, interpolation theorem or new axiom is used.
+
+The induction handles a zero leading row by dropping it. Otherwise it selects
+a nonzero pivot, removes that unknown, eliminates its coefficient from all
+remaining rows, invokes induction, then reconstructs the pivot value. An exact
+row-elimination identity and permutation invariance connect the reduced
+solution back to every original equation. Nonzeroness is inherited from a
+remaining unknown, so an arbitrary value outside the declared variable set
+cannot satisfy the conclusion vacuously. Distinctness and the strict dimension
+inequality are essential premises.
+
+Validation enumerates4904 small matrices over F2/F3, including1705 matrices
+with rank below their row count, zero rows and empty systems. Every generated
+solver witness is independently checked against the original matrix. A
+square identity tests the strict inequality boundary; duplicate identifier0
+with coefficients[1,1] over F3 shows why nominal list length cannot replace
+the number of distinct unknowns. These checks validate witnesses, not a formal
+refinement proof of the Python solver. Full Lean audit4288 PASS, allowed axioms
+only. Evidence:results/homogeneous-kernel/.
+
+This proves the linear-algebra existence step needed for GS interpolation.
+Still needed: construct the admissible distinct monomial list, count it against
+the mixed-jet constraints, map a kernel vector injectively to polynomial rows,
+and prove each matrix equation equals the appropriate translated coefficient.
+Only then will general GS interpolation existence be established. MCA
+factor/Hensel and exception-count arguments, actual protocol extraction, QROM,
+full NEAR1Pgas and sub300000 B remain open. No runtime/query/proof-size change;
+latest verified diagnostic bundle1344645 B, feasibility NOT_PASSED.

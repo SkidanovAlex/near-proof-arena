@@ -1648,3 +1648,5 @@ import NearCompression.BivariateMultiplicity
 import NearCompression.BivariateTranslation
 
 import NearCompression.BivariateWeightedDegree
+
+import NearCompression.HomogeneousKernel
