@@ -5734,3 +5734,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.metadata_source_index_family
 #print axioms NearCompression.metadata_joint_fixed_source_trace
+
+#print axioms NearCompression.prefix_event_continuation_count
+#print axioms NearCompression.prepared_decoded_bus_continuation_bound

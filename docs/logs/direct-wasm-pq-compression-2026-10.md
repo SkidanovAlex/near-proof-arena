@@ -4097,3 +4097,22 @@ existence from actual verifier acceptance, native auxiliary formula refinement,
 QROM soundness or secure sub-300 KB size. The slice gate stays NOT_PASSED.
 Next: instantiate the slice table enumeration and combine this common source
 with bus/local/GKR failure accounting in one acceptance theorem.
+
+### Prepared decoded bus continuation branch
+
+`prepared_decoded_bus_continuation_bound` connects the wrong actual prepared
+Wasm output theorem to decoded bus witnesses over the whole chronological
+bus-pair × continuation experiment. Under local validity of one fixed source,
+accepted count is at most the existing bus error budget times sample length
+and continuation length, plus the count of accepted downstream failures.
+Witnesses/finals may depend on the entire transcript. The error event is
+retained explicitly; no per-rowpoint PCS estimate is assumed.
+
+This is the locally valid source branch only. Source binding and reconstructed
+bus residual validity must be supplied outside the retained error event. The
+next composition must handle an invalid fixed source and bound the downstream
+failure event using the local/GKR/PCS results. Native authentication, QROM,
+secure size and full NEAR scope remain open; gate remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4034 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only change.
