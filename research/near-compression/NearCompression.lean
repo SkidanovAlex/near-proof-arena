@@ -1662,3 +1662,5 @@ import NearCompression.MixedJetTranslation
 import NearCompression.GSInterpolation
 
 import NearCompression.JetCenterPolynomial
+
+import NearCompression.TrivariateInterpolation

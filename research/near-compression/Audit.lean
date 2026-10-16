@@ -6173,3 +6173,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.trivariate_jet_polynomial_degree
 #print axioms NearCompression.trivariate_jet_coefficient_matrix
 #print axioms NearCompression.trivariate_jet_constraints_zero
+
+#print axioms NearCompression.gs_trivariate_member
+#print axioms NearCompression.gs_trivariate_distinct
+#print axioms NearCompression.gs_trivariate_count
+#print axioms NearCompression.gs_trivariate_constraint_count
+#print axioms NearCompression.gs_trivariate_interpolant_exists

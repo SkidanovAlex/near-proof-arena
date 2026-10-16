@@ -7894,3 +7894,41 @@ interpolation requirement; MCA useful-factor/Hensel and exceptional-count
 arguments remain beyond it. No runtime/query/proof-size change: latest verified
 diagnostic bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128 and
 sub300000 B remain open.
+
+## 2026-10-16 — General controlled-Z trivariate interpolation existence
+
+Added TrivariateInterpolation.lean with five audited public theorems. The
+explicit monomial list consists of(i,j,h) satisfying j<height, i+k*j<DX and
+j+h<DZ; membership, distinctness and count
+sum_{j<height}(DX-k*j)*(DZ-j) are proved, with truncated natural subtraction.
+The explicit coefficient-constraint set has count
+N*sum_{s<m}(m-s)*(DZ-s). It includes every r+s<m and every Z coefficient
+index t<DZ-s, including cases where a budget is exhausted.
+
+gs_trivariate_interpolant_exists applies the general nonzero-kernel theorem
+to these actual coefficient rows. Under the exact dimension inequality, a
+vector nonzero on the declared distinct monomial set exists, and every required
+mixed jet along every source line is a formally zero polynomial in Z. Thus
+controlled-Z interpolation existence is proved for the sparse coefficient
+representation; it is not merely ordinary interpolation over an abstract
+extension field or checking a few Z samples. The remaining specialization
+bridge must identify this representation with bivariate polynomial rows at
+fixed Z. Nonzeroness is on the sparse monomial set, not a claim that every
+specialization is nonzero.
+
+Validation:2016 support/count cases,486 constraint-count cases and three
+independent small-field witnesses (F3/F5/F17), each with70 variables and42
+coefficient equations. An exact-integer dimension-only screen at seven
+representative geometries uses multiplicity20 and conservative integer ceilings
+of the prior interpolation shape; every variable count exceeds its equation
+count. The first geometry has246995886747 variables versus245450670080
+equations. These enormous matrices are mathematical existence objects, NOT
+a suggested runtime prover algorithm. The screen does not map all protocol
+folds, prove a security ledger, or change parameters. Full audit4330 PASS,
+allowed axioms only. Evidence:results/trivariate-interpolation/.
+
+Next: formal sparse-to-bivariate specialization and its mixed-jet identity,
+then progress on factor/useful-curve extraction and exceptional-set counting.
+The main MCA bound, actual protocol extraction and QROM remain open. No runtime/
+query/profile/proof-size change: latest verified diagnostic bundle1344645 B,
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
