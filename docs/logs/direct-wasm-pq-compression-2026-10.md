@@ -2357,3 +2357,25 @@ diagnostic; no Ext8 implementation, full NEAR or secure-size claim is made.
 
 Validation: full `check.py` passed with 3770 registered results and enforced
 axiom allowlist. Proof artifacts and measured sizes are unchanged.
+
+
+### Concrete terminal reconstruction authentication
+
+`Ext4TerminalBinding.lean` composes the degree-one reconstructed RS check,
+natural-domain scalar-pair interpretation, canonical Ext4 byte serialization
+and framed Merkle collision extraction. An accepted check now yields either
+pointwise constant-oracle authentication or a concrete unequal-input/equal-hash
+collision on constructed terminal path-query supports. A second theorem
+supplies the folding terminal premise when that specific collision is absent.
+No abstract typed-tree injectivity, coordinate canonicality, serialization
+injectivity or prior terminal-oracle degree premise is left to the caller.
+
+The source trees and context are supplied to this theorem; it does not extract
+an oracle from an arbitrary root. Compiled transcript/acceptance plumbing and
+quantitative quantum hash/Fiat-Shamir reductions remain open. The field is the
+diagnostic Fp4 profile, not an implemented secure Ext8 profile. Common-source
+near-case semantics, full NEAR1Pgas and secure sub300000-byte feasibility
+remain incomplete.
+
+Validation: full `check.py` passed with 3772 registered results and enforced
+axiom allowlist. No proof bytes or security parameters changed.

@@ -166,6 +166,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SHA384MerkleSource.lean",
     "research/near-compression/NearCompression/CanonicalFieldWordBytes.lean",
     "research/near-compression/NearCompression/Ext4PairBytes.lean",
+    "research/near-compression/NearCompression/Ext4TerminalBinding.lean",
     "research/near-compression/NearCompression/PreparedTypedDropAuthenticated.lean",
     "research/near-compression/NearCompression/PreparedTypedDropState.lean",
     "research/near-compression/NearCompression/PreparedTypedDropDepth.lean",

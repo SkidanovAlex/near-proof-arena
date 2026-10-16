@@ -128,7 +128,9 @@
     "NearCompression/CanonicalFieldWordBytes.lean",
     "results/canonical-field-word-bytes-integration.json",
     "NearCompression/Ext4PairBytes.lean",
-    "results/ext4-pair-bytes-integration.json"
+    "results/ext4-pair-bytes-integration.json",
+    "NearCompression/Ext4TerminalBinding.lean",
+    "results/ext4-terminal-binding-integration.json"
   ],
   "requirements": [
     {
@@ -167,7 +169,8 @@
       "terminal_authentication_component": "Typed degree-one reconstruction now yields the exact pointwise constant-oracle premise of weighted folding, or an explicit distinct-tree/equal-root collision. Natural-domain i/i+half pairing is proved. Canonical byte/tree refinement and quantitative hash binding remain open; terminal authentication is not declared unconditional.",
       "byte_tree_binding_component": "Distinct fully supplied byte trees with the same constructed root now yield a concrete unequal-message/equal-hash collision on two constructed path-query supports. No global root injectivity is assumed. Typed pair serialization, unknown-root extraction and quantitative quantum hashing bounds are not discharged.",
       "canonical_word_binding_component": "Canonical BabyBear coordinate lists now have injective LE-u32 serialization, and distinct canonical coordinate trees with equal byte-tree roots yield supported concrete hash collisions. Extension-field/pair coordinate refinement, unknown-root extraction and quantitative quantum bounds remain open.",
-      "ext4_pair_binding_component": "Certified Fp4 scalar-pair serialization is injective, canonical, exactly32 bytes and uses Python coefficient order. Different typed pair trees with the same concrete serialized root yield supported hash collisions. Full terminal/transcript instantiation and quantitative quantum security remain open; no Ext8 implementation claim."
+      "ext4_pair_binding_component": "Certified Fp4 scalar-pair serialization is injective, canonical, exactly32 bytes and uses Python coefficient order. Different typed pair trees with the same concrete serialized root yield supported hash collisions. Full terminal/transcript instantiation and quantitative quantum security remain open; no Ext8 implementation claim.",
+      "concrete_terminal_binding_component": "Accepted constant-terminal reconstruction with concrete serialized Ext4 pair Merkle roots yields pointwise terminal authentication or a supported byte hash collision. Abstract typed-tree injectivity and serialization premises are discharged. Transcript event plumbing, quantitative quantum collision bounds and earlier-oracle extraction remain open."
     },
     {
       "name": "Complete bytes and scaling",

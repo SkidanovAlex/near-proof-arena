@@ -5399,3 +5399,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.ext4_pair_bytes_injective
 #print axioms NearCompression.ext4_pair_word_tree_injective
 #print axioms NearCompression.ext4_pair_tree_hash_collision
+
+#print axioms NearCompression.ext4_terminal_check_authenticates_or_collision
+#print axioms NearCompression.ext4_terminal_check_authenticated

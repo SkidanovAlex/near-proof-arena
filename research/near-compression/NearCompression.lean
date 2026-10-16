@@ -1365,3 +1365,5 @@ import NearCompression.WeightedTerminalAuthentication
 import NearCompression.CanonicalFieldWordBytes
 
 import NearCompression.Ext4PairBytes
+
+import NearCompression.Ext4TerminalBinding
