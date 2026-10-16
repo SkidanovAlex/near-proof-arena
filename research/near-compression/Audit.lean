@@ -6125,3 +6125,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bivariate_translate_eval
 #print axioms NearCompression.bivariate_substitution_at_center
 #print axioms NearCompression.bivariate_multiplicity_forces_zero
+
+#print axioms NearCompression.bivariate_substitution_degree
+#print axioms NearCompression.bivariate_weighted_degree_rows
+#print axioms NearCompression.bivariate_weighted_multiplicity_zero

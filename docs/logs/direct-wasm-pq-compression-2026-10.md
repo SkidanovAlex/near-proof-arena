@@ -7674,3 +7674,41 @@ interpolation existence/nonzeroness. MCA factor/Hensel and exceptional-count
 arguments, actual protocol extraction, QROM, full NEAR1Pgas and sub300000 B
 remain open. No query/profile/proof-size change: latest verified diagnostic
 bundle1344645 B, feasibility NOT_PASSED.
+
+## 2026-10-16 — Weighted substitution degree and concrete GS witnesses
+
+Added BivariateWeightedDegree.lean with three audited public theorems.
+BivariateWeightedDegree requires every coefficient X^i Y^j with i+k*j≥D
+to vanish. Substitution of any curve of degree≤k then has degree<D. The proof
+handles k=0, D=0, zero rows, arbitrary trailing-zero encodings, and rows beyond
+the weighted budget. An equivalent row formulation uses degree<D-k*j with
+truncated subtraction; exhausted budgets require formally zero rows. The
+weighted-degree root-forcing theorem now derives the substitution degree,
+removing that separate premise from the prior multiplicity theorem. The
+explicit distinct-point size guard for translation remains unchanged.
+
+Built a small finite-field homogeneous interpolation solver and independent
+witness checks. Six fixtures over F17/F31 use eight distinct points, curve
+degree≤2, multiplicity2, weighted-degree bound12:42 monomials and24 Hasse
+constraints. Gaussian elimination produces a nonzero coefficient vector;
+direct translated coefficients independently check every constraint. All
+104112 possible degree≤2 curves across the six fixtures were enumerated.
+Each fixture has one qualifying candidate (at least six agreements), and
+its substituted polynomial is formally zero. The explicit distinct-sample
+size guard is also checked at every agreeing center. The fixtures include
+two errors in each received word, so interpolation is not restricted to an
+honest polynomial word. All coefficient rows and inputs are retained in the
+report for review/replay. This solver is NOT the main proving system and its
+general existence/correctness has not been formalized in Lean.
+
+Additional144 weighted-degree cases cover F2,F3,F5,F17 and k=0..3,D=0..8.
+A degree-2 curve substituted into Y² demonstrates failure of an incorrectly
+claimed weight1 curve bound. Full Lean audit4286 PASS, allowed axioms only.
+Evidence:results/bivariate-weighted-degree/.
+
+Next is a general nonzero-kernel theorem for fewer homogeneous equations
+than unknowns, followed by the interpolation monomial/constraint count and
+constraint-to-mixed-jet bridge. MCA useful-factor/Hensel and exception-count
+arguments remain beyond that. No runtime/query/proof-size change; latest
+verified diagnostic bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas,
+PQ128 and sub300000 B remain open.
