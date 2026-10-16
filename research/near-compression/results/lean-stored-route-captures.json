@@ -1,0 +1,78 @@
+{
+  "status": "PASS",
+  "captures": [
+    {
+      "capture": "results/literal193-fixed-layer-routes/pq384-literal193-gkr-fixed13-certificate.json",
+      "sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
+      "result": {
+        "gates": 21834,
+        "layers": 35,
+        "nodes": 10509,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "seconds": 1.5546748749911785,
+      "rejected": [
+        {
+          "case": "wrong-zero-gate",
+          "reason": "uncaught exception: stored route chain rejected"
+        },
+        {
+          "case": "missing-final-root",
+          "reason": "uncaught exception: final root route"
+        },
+        {
+          "case": "invalid-source-node",
+          "reason": "uncaught exception: noncanonical/out-of-range node key"
+        },
+        {
+          "case": "out-of-range-live-position",
+          "reason": "uncaught exception: final root route"
+        },
+        {
+          "case": "unknown-opcode",
+          "reason": "uncaught exception: unknown operation"
+        }
+      ]
+    },
+    {
+      "capture": "results/literal769-fixed-layer-routes/pq384-literal769-gkr-fixed14-certificate.json",
+      "sha256": "f106772a834ee58674bdf0951c0097255d610d0063deb15e5cf946dc8dd47d02",
+      "result": {
+        "gates": 21834,
+        "layers": 35,
+        "nodes": 10509,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "seconds": 1.5470776008442044,
+      "rejected": [
+        {
+          "case": "wrong-zero-gate",
+          "reason": "uncaught exception: stored route chain rejected"
+        },
+        {
+          "case": "missing-final-root",
+          "reason": "uncaught exception: final root route"
+        },
+        {
+          "case": "invalid-source-node",
+          "reason": "uncaught exception: noncanonical/out-of-range node key"
+        },
+        {
+          "case": "out-of-range-live-position",
+          "reason": "uncaught exception: final root route"
+        },
+        {
+          "case": "unknown-opcode",
+          "reason": "uncaught exception: unknown operation"
+        }
+      ]
+    }
+  ],
+  "adapter_sha256": "5d066b50a94ec9cce1964a4d6ea09d3768732afc48d4ae3dbcddf0be046de837",
+  "scope": "Full JSON instances executed by the Lean checker; generic checker soundness is kernel-proved, these concrete results are not kernel-reduced proof terms.",
+  "remaining": [
+    "Parser refinement, kernel certificates for captures, initial placement/acyclicity certificates, full cryptographic soundness."
+  ]
+}

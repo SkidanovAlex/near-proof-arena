@@ -172,7 +172,10 @@
     "results/literal193-fixed-layer-routes/report.json",
     "results/literal769-fixed-layer-routes/report.json",
     "NearCompression/TerminalStoredRouteCheck.lean",
-    "results/stored-route-checker-integration.json"
+    "results/stored-route-checker-integration.json",
+    "CheckStoredRoutes.lean",
+    "airbender/direct-wasm/test_lean_stored_routes.py",
+    "results/lean-stored-route-captures.json"
   ],
   "requirements": [
     {
@@ -194,7 +197,8 @@
       "challenge_order_replay": "Fresh verification of retained fixed-cap193 and769 artifacts records all commitment/draw events and matches table row draws and final GKR coordinates to returned opening obligations. Selected joint dimensions55 and63. Source roots precede bus challenges; auxiliary roots/finals precede row challenges; PCS follows GKR; query draws follow fold roots and terminal disclosure. Finite replay evidence only: universal metadata stability, ideal conditional sampling and QROM reduction remain open.",
       "recovered_finite_circuit_assignment": "Reverse GKR layer values are now constructed with the existing finite circuit evaluator from decoded private slots plus known constants. Actual in-range gate steps satisfy the fixed wiring equation, and terminal assignment equality follows from construction and depth alignment. Executable compiler/cube-shape correspondence and strategy/oracle binding remain open.",
       "finite_layer_routes": "Structural DAG routes now preserve the root under the finite circuit evaluator used by recovered GKR values. Fixed-cap193/769 full proofs and their route certificates passed Python validation/JSON roundtrip/12 negatives each; missing or changed trusted caps reject. Universal route semantics is Lean-proved; captures are not kernel-certified and executable parsing/compiler refinement remains open.",
-      "stored_route_checker": "A Lean executable finite route checker now provably supplies semantic DAG route and finite-storage premises, with direct root-preservation composition and kernel-evaluated structural regressions. Full retained capture instances are not yet checked in Lean; initial placement, acyclicity, root liveness and separate compiler shape/operand invariants remain to be discharged."
+      "stored_route_checker": "A Lean executable finite route checker now provably supplies semantic DAG route and finite-storage premises, with direct root-preservation composition and kernel-evaluated structural regressions. Full retained capture instances are not yet checked in Lean; initial placement, acyclicity, root liveness and separate compiler shape/operand invariants remain to be discharged.",
+      "full_lean_route_execution": "Both retained fixed-profile route bundles (10509 nodes,35 layers,21834 gates each) now pass the proved checker executed by Lean, using parsed canonical Fp4 constants and final-root routing checks. Five malformed full-size inputs per capture reject. This is native checker execution, not kernel-reduced concrete certificates or parser refinement; initial placement and DAG acyclicity remain separate obligations."
     },
     {
       "name": "Complete soundness ledger",

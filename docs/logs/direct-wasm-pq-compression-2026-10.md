@@ -2877,3 +2877,29 @@ Validation: module and full check.py passed3815 registered results with the
 existing axiom allowlist. Imports, audit, scope, integration report and
 NOT_PASSED feasibility gate updated. No full capture, executable refinement,
 global execution or quantum-security completion is claimed.
+
+
+### Full retained route captures executed by Lean
+
+Added CheckStoredRoutes.lean to parse the retained JSON bundles into the
+proved finite checker format. It preserves canonical flat Ext4 constants in
+the certified Fp4 tower order, validates node/gate arity and opcodes, rejects
+noncanonical/out-of-range placement keys, and checks final root placement
+before executing terminalStoredChainCheck.
+
+Both fixed193 and fixed769 captures pass:10509 nodes,35 layers,21834 gates
+each. Measured end-to-end Lean invocations took approximately1.55s each in
+this run, including parsing and elaboration. Five full-size mutations per
+capture reject: wrong zero gate, missing final root, invalid source node,
+out-of-range live position, unknown opcode. The harness rejects compilation
+errors as test evidence; all ten were runtime rejections. Input and adapter
+hashes, sizes and outcomes are retained in lean-stored-route-captures.json.
+
+This is native execution of a generically proved checker, not kernel-reduced
+proof terms for the concrete JSON instances. Parser refinement, concrete
+initial placement/acyclicity certificates, executable compiler correspondence
+and cryptographic/global/PQ soundness remain open. No formal module changed;
+the previous3815-result axiom audit remains the latest formal audit.
+
+Validation: full capture and mutation harness passed; Python compilation,
+scope inventory and diff checks passed. The slice gate remains NOT_PASSED.

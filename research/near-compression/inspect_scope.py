@@ -648,6 +648,7 @@ SOURCES = [
     'research/near-compression/airbender/direct-wasm/test_pq384_terminal_gkr.py',
 
     'research/near-compression/PreparedCodeTableFixture.lean',
+    'research/near-compression/CheckStoredRoutes.lean',
     'research/near-compression/PreparedCodeTableReplay.lean',
     'research/near-compression/airbender/direct-wasm/prepared_code_table_air.py',
     'research/near-compression/airbender/direct-wasm/test_prepared_code_table_air.py',
