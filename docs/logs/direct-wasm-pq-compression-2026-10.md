@@ -1692,3 +1692,9 @@ Remaining: concrete literal tag/width proof, common authenticated source trace, 
 Added PreparedLiteralBusBound.lean: literal source descriptors and public records prove tag/width limits for arbitrary public vectors; specialized the constructed-support/mass Ext8 bound. Added PreparedLiteralBusSoundness.lean: wrong actual runCall/public output, executable eligibility and fuel, local table validity, and public fit imply the bus joint error bound. Exact bus balance would construct HoldsP and contradict the existing actual-runCall/public-output theorem. Full check.py audit passed3610 (/tmp/root-literal-bus-soundness-audit.log), standard axioms only.
 
 The theorem explicitly assumes one fixed locally valid trace. Cryptographic source extraction, local/PCS checks to TableLocal, auxiliary/global products to natural products, and transcript/commitment/QROM reductions remain required. This is a semantic bus-error component, not end-to-end soundness. No proof size or executable parameter change.
+
+### Initial local-constraint batching error
+
+Added AirResidualBatchSoundness.lean: exact compiler power-accumulator/Horner identity and joint ideal power-batching plus row-MLE zero count for a fixed nonzero residual matrix. The normalized bound is (L-1+rowLog)/fieldSize. Full audit passed3612 (/tmp/root-local-initial-audit.log). check_slice_local_budget.py evaluates the actual constraint/auxiliary residual lists on deliberately invalid literal rows: EXEC738 residuals gives numerator745; CODE553 gives560. These counts include automatic multiplicity and auxiliary constraints.
+
+This closes the initial random-batching count component, not cryptographic local soundness. Concrete all-row residual/equality-weight adapter, adaptive sumcheck, terminal PCS authentication, common source/auxiliary extraction and QROM remain open. No executable parameter or proof-size change.

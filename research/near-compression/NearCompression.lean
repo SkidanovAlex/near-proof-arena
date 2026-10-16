@@ -1292,3 +1292,5 @@ import NearCompression.BusTraceMass
 
 import NearCompression.PreparedLiteralBusBound
 import NearCompression.PreparedLiteralBusSoundness
+
+import NearCompression.AirResidualBatchSoundness

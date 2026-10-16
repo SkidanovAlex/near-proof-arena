@@ -5178,3 +5178,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.prepared_literal_bus_joint_bound
 
 #print axioms NearCompression.prepared_literal_wrong_output_bus_bound
+
+#print axioms NearCompression.air_mix_value_power_batch
+
+#print axioms NearCompression.air_residual_batch_zero_count
