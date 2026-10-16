@@ -5142,3 +5142,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_tagged_fingerprint
 
 #print axioms NearCompression.bus_tagged_joint_challenge_bound
+
+#print axioms NearCompression.bus_trace_messages_count
+
+#print axioms NearCompression.bus_trace_balance_iff_perm
+
+#print axioms NearCompression.bus_trace_unbalanced_not_perm

@@ -1662,3 +1662,9 @@ check_slice_bus_budget.py reads the retained literal statement and computes cons
 Added BusTaggedChallengeBound.lean with three audited theorems over an arbitrary field: nonzero trailing-tag padding injectivity; the exact fp(message ++ [tag]) = fp(message) + alpha^length * tag encoding; and the joint challenge bound directly for variable-width unpadded message lists. This removes fixed-width padding from the component bound contract while retaining explicit fixed-message, nonzero-tag and unequal-multiset premises. Natural busCount-to-expanded-message correspondence and committed-source extraction are still open for the executable frontend.
 
 Full check.py audit passed3592 theorems (/tmp/root-slice-tagged-audit.log). check_slice_bus_encoding.py passed1560 checks across195 retained public records, widths25/27, four challenges including0/1, and both Ext4/Ext8 implementations. Tests cover the public encoding, not source-trace extraction or whole-protocol soundness. No security or proof-size improvement claimed in this checkpoint.
+
+### Exact natural bus counts for arbitrary public field vectors
+
+Added BusTraceMultiset.lean with expanded per-row/table natural traffic plus public messages, an exact count theorem, and balance iff permutation. All three new public theorems audited; check.py passed3595 (/tmp/root-slice-trace-multiset-audit.log). This works directly with Trace F and List F public inputs. The existing Udr transcript pubOf maps individual claim bytes to field elements and cannot be silently used to represent this slice’s large field-valued public limbs.
+
+The exact count-to-multiset step is now closed independently of transcript decoding. Still required: injective bounded-tag/base-field embedding into extension messages, common committed source extraction, actual auxiliary/global-product correspondence, and complete local/PCS/QROM soundness. No executable security profile, size, or full NEAR coverage change.

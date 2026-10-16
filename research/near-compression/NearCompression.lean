@@ -1281,3 +1281,5 @@ import NearCompression.FiniteRSJohnsonCandidates
 import NearCompression.BusJointChallengeBound
 
 import NearCompression.BusTaggedChallengeBound
+
+import NearCompression.BusTraceMultiset
