@@ -6065,3 +6065,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.grouped_affine_values_eval
 #print axioms NearCompression.grouped_affine_pair_eval
 #print axioms NearCompression.grouped_four_fold_eval
+
+#print axioms NearCompression.switch_inject_all_coefficients
+#print axioms NearCompression.switch_stage_honest
+#print axioms NearCompression.switch_chain_honest

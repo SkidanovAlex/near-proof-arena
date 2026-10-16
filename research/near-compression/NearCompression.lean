@@ -1624,3 +1624,5 @@ import NearCompression.PooledWeightMLE
 import NearCompression.CodeSwitchFunctional
 
 import NearCompression.GroupedCosetFold
+
+import NearCompression.CodeSwitchStage

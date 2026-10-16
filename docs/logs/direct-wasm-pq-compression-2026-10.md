@@ -7070,3 +7070,57 @@ formal refinement, complete stage composition and QROM/security accounting.
 The old code-switch byte ledgers cannot be promoted to measured proof sizes.
 No new complete bundle was generated here; last verified slice remains1431885 B.
 Full NEAR1Pgas/PQ128 and sub300000 B remain open; feasibility stays NOT_PASSED.
+
+## 2026-10-16 — Authenticated scalar code-switch chain prototype
+
+Added `ext8_code_switch_stage.py`, a separate experimental scalar Ext8 profile.
+It creates natural-order coset Merkle leaves under SHA384 contexts binding the
+namespace, coefficient degree, blowup and leaf fold depth. It binds the
+external weighted claim, source root and complete future schedule; commits
+quadratics before folding challenges; commits the child encoding before its
+random extension-field evaluation point; binds the answer before source query
+sampling; authenticates cosets and binds responses before drawing mixers.
+The OOD point is sampled over the extension field without conditioning on
+being outside the base domain. No excluded-point argument is claimed.
+
+`verify_stage` returns a **continuing obligation**, not final acceptance.
+The next stage receives the updated weights and scalar claim derived by the
+verifier. `verify_chain` closes at a fully disclosed terminal polynomial:
+its exact coefficient shape, reconstructed root and residual are all checked.
+A wrong terminal claim is rejected even when the terminal root matches.
+Parameters are externally supplied; proofs cannot select weights or schedules.
+The reference caps degree4096, domain65536, fold depths1..4 and queries128;
+terminal degree is at least2. These are prototype limits, not a NEAR profile.
+
+Four cases at degree8/32/128/256 passed, including two- and three-stage chains
+and blowup changes4→8→16 and4→16→16. A fresh verifier accepted the retained
+case using only the external statement, stage proofs and terminal coefficients;
+it was not given initial source coefficients. Twenty-four negative tests
+cover both stages, reordering, authentication, OOD/terminal changes, shapes,
+noncanonical fields, externally changed configuration/schedule/weights/claim,
+and bypass of the continuing functional. Retained largest-case JSON22130 B
+is a small diagnostic encoding size; it is NOT comparable with the full slice.
+The tests use8 queries/stage and imply no security target.
+
+`CodeSwitchStage.lean` adds3 lemmas: injection preserves coefficients;
+honest fold+injection stage preserves the functional and exact terminal shape;
+arbitrary honest stage lists compose without resetting the functional.
+It composes the earlier repeated affine sumcheck and injection lemmas.
+Honesty of queried/OOD evaluations remains an explicit premise; this does not
+refine the Python transcript/parser or infer honesty from Merkle authentication.
+Full audit **4238 PASS**, permitted axioms only. Evidence and replay commands
+are in `research/near-compression/results/ext8-code-switch-stage/manifest.json`.
+
+Next: adapt the initial multi-source weighted opening to this scalar tail.
+The current execution slice has several differently sized packed sources;
+its combined polynomial is virtual and has no independent initial commitment.
+Do not introduce a free scalar root and silently forget those source roots.
+The adapter must authenticate the original branches, derive their combined
+folded query values using the existing private weights/degree embedding, then
+inject those constraints into the first committed scalar child. Grouped leaf
+layout requires either rebuilding sources or initially retaining one-bit pair
+queries. After that: compact transport/actual slice measurement, malicious
+candidate extraction, complete code-switch error budget and QROM composition.
+No full slice rerun or new complete size claim here: last verified combined
+slice1431885 B; full NEAR1Pgas/PQ128 and sub300000 B remain open. Feasibility
+stays NOT_PASSED.
