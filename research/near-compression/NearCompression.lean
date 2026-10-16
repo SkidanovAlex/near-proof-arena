@@ -1670,3 +1670,5 @@ import NearCompression.TrivariateSpecialization
 import NearCompression.TrivariateRootForcing
 
 import NearCompression.BivariateCurveDivision
+
+import NearCompression.PolynomialIntegralDomain

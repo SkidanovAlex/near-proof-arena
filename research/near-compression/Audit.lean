@@ -6193,3 +6193,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bivariate_curve_factor_iff
 #print axioms NearCompression.bivariate_curve_quotient_nonzero
 #print axioms NearCompression.bivariate_curve_quotient_degree
+
+#print axioms NearCompression.polynomial_order_product_coefficient
+#print axioms NearCompression.polynomial_product_nonzero
+#print axioms NearCompression.polynomial_product_zero_iff

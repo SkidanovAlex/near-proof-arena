@@ -8026,3 +8026,32 @@ distinct formal curve roots, enabling repeated extraction and a root-count
 bound. Useful-factor/Hensel and the complete MCA exceptional-set argument
 remain open. No runtime or cryptographic parameter change: diagnostic bundle
 1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Formal polynomial zero-product cancellation
+
+Added PolynomialIntegralDomain.lean with three audited public theorems.
+For polynomials of orders at least m and n, coefficient m+n of the product
+is exactly the product of coefficients m and n. This is proved directly
+from schoolbook multiplication and the lower-order product bound. A private
+first-nonzero-coefficient construction then establishes that two nonzero
+formal polynomials have nonzero product. Consequently a product is formally
+zero iff at least one factor is formally zero. All characteristics and zero
+padding are supported, without any evaluation-domain or field-size premise.
+
+This supplies cancellation needed to preserve other distinct curve roots
+after removing one factor. It does not yet prove that preservation: the
+formal substitution-through-factor identity remains necessary. In particular,
+pointwise equality over a finite field is not used to infer that identity.
+
+Validation: 26661 polynomial pairs, with exhaustive lists of length≤3 over
+F2/F3/F5 plus500 randomized, zero-prefixed pairs over F17. Tests checked52267
+permitted order-coefficient identities. Four X^p-X examples retain nonzero
+formal products despite vanishing as functions. A Z/6Z counterexample shows
+why the domain hypothesis matters. Full audit4344 PASS, allowed axioms only.
+Evidence: results/polynomial-integral-domain/.
+
+Next: formal substitution compatibility for the curve-factor identity, then
+other-root preservation and repeated extraction/counting. Useful-factor/Hensel,
+full MCA exceptions and protocol/QROM composition remain open. No runtime or
+parameter change: diagnostic bundle1344645 B, feasibility NOT_PASSED. Full
+NEAR1Pgas/PQ128/sub300000 B remain open.
