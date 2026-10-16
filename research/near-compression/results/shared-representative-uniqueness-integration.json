@@ -1,0 +1,25 @@
+{
+  "status": "SHARED_FUNCTIONAL_UNIQUENESS_PROVED_EXISTENCE_OPEN",
+  "module": "NearCompression/FunctionalBatchRepresentative.lean",
+  "proved": [
+    "Any two shared functional representatives of the same fixed source oracles are coefficient-family equivalent when radiusLeft+radiusRight+D <= distinct domain size.",
+    "Consequently every requested coefficient-table functional has the same value for both representatives."
+  ],
+  "quantifiers": "Both tuples simultaneously represent all obligations and all subsequent points. The conclusion does not permit independently chosen per-point witnesses.",
+  "composition_benefit": "Discharges the FunctionalBatchEquivalent premise of shared_functional_equivalence_well_defined using scalar-family proximity alone; no lane selector geometry or individual-lane proximity is required.",
+  "remaining": [
+    "Prove cryptographic acceptance yields existence of one common representative with the required chronology.",
+    "Functional equivalence is not table equality and does not prove AIR satisfaction.",
+    "Unique-decoding separation is explicit; this theorem does not improve list-decoding query parameters.",
+    "Compose GKR/AIR/PCS/bus soundness and justify the quantum transcript/hash reduction."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3754,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

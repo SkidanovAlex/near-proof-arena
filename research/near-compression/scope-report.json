@@ -698,7 +698,7 @@
     "research/near-compression/airbender/direct-wasm/test_sha384_multiblock.py": "e2934c531a96346d953ab9e3762719fa588507e3b6d32fe368451d624f282853",
     "research/near-compression/NearCompression/PreparedExecStackClosure.lean": "14361123e4f038df56733dba305d1c6eb92efa596826ad5bb7d6a191985670b5",
     "research/near-compression/NearCompression/PreparedExecTerminal.lean": "7880c7094b4440307bdd8a7a7da82af0a6e0495aa62b5ce826ff8c01428d7ce2",
-    "research/near-compression/NearCompression/FunctionalBatchRepresentative.lean": "324c0bc122509a83f96bf045cbecb8e2fbf9f2b97317b4f3078ac3321f2cdc9f",
+    "research/near-compression/NearCompression/FunctionalBatchRepresentative.lean": "9009e0228704e9970432cb5f9e63d50788e4ebaeb8fa95eba3e1568c3785c82a",
     "research/near-compression/NearCompression/PreparedLiteral.lean": "6cd361072d2d4ec1049ebc1a28dbcb5d5595f04a0fa2f1d0cb76c7f0f316e8cc",
     "research/near-compression/PreparedLiteralExport.lean": "6a4b66236428a1b4027af451434d96d7273d6285b1b81f47e882f91b78625ab1",
     "research/near-compression/airbender/direct-wasm/generate_prepared_literal.py": "f9f2118bcb6ec06ae7768bfcacf7501a2acba8aa0e783c7b2f7345746675dbe0",

@@ -80,6 +80,46 @@ theorem shared_functional_equivalence_well_defined {Obligation : Type}
   intro obligation
   exact functional_equivalence_well_defined n _ left right (equivalent obligation)
 
+/-- Any two shared representatives of the same source family are equivalent
+for every obligation in the unique-decoding basin. This needs neither lane
+selectors nor proximity of individual lanes. Existence remains a premise. -/
+theorem shared_representative_equivalent {Obligation : Type}
+    (domain : List K) (distinct : domain.Nodup) (n D radiusLeft radiusRight : Nat)
+    (tables : Obligation → List (Nat → K)) (sources : List (K → K))
+    (left right : List (Poly K))
+    (leftRep : SharedFunctionalRepresentative domain n D radiusLeft tables sources left)
+    (rightRep : SharedFunctionalRepresentative domain n D radiusRight tables sources right)
+    (separation : radiusLeft+radiusRight+D≤domain.length) :
+    ∀ obligation,FunctionalBatchEquivalent n (tables obligation) left right := by
+  intro obligation point i
+  have zero := finite_rs_unique_candidate domain distinct
+    (weightedVirtualOracle (functionalBatchCoefficients n (tables obligation) point) sources)
+    (weightedLanePolynomial (functionalBatchCoefficients n (tables obligation) point) left)
+    (weightedLanePolynomial (functionalBatchCoefficients n (tables obligation) point) right)
+    D radiusLeft radiusRight
+    (weighted_lane_degree _ left D leftRep.1)
+    (weighted_lane_degree _ right D rightRep.1)
+    (leftRep.2.2.2 obligation point) (rightRep.2.2.2 obligation point) separation
+  have equal := zero i
+  rw [Poly.coeff_sub] at equal
+  grind
+
+/-- All requested functional values are independent of the choice of a shared
+representative. This does not assert full table equality or that accepted
+cryptographic proofs yield such a representative. -/
+theorem shared_representative_functionals_unique {Obligation : Type}
+    (domain : List K) (distinct : domain.Nodup) (n D radiusLeft radiusRight : Nat)
+    (tables : Obligation → List (Nat → K)) (sources : List (K → K))
+    (left right : List (Poly K))
+    (leftRep : SharedFunctionalRepresentative domain n D radiusLeft tables sources left)
+    (rightRep : SharedFunctionalRepresentative domain n D radiusRight tables sources right)
+    (separation : radiusLeft+radiusRight+D≤domain.length) :
+    ∀ obligation,coefficientTableFunctional n (tables obligation) left=
+      coefficientTableFunctional n (tables obligation) right :=
+  shared_functional_equivalence_well_defined n tables left right
+    (shared_representative_equivalent domain distinct n D radiusLeft radiusRight
+      tables sources left right leftRep rightRep separation)
+
 /-- Uniqueness only needs scalar-family closeness, not joint source closeness.
 Coefficients, weights and candidate can all be chosen after earlier challenges;
 the representative polynomial tuple remains fixed. -/

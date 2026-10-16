@@ -2219,3 +2219,25 @@ Whole compiled GKR/AIR/PCS/bus soundness and quantum compilation remain open.
 
 Validation: full `check.py` passed with 3752 registered results and enforced
 axiom allowlist. No byte measurements or security parameters changed.
+
+
+### Shared representative functional uniqueness
+
+`FunctionalBatchRepresentative.lean` now derives functional-family equivalence
+from two shared representatives of the same fixed source oracles, assuming
+radiusLeft + radiusRight + degreeBound <= distinct domain size. It applies
+scalar Reed–Solomon uniqueness to every obligation and point, then uses the
+existing Boolean-coordinate functional interpretation to identify all requested
+functional values. Unequal radii are supported. Individual lane proximity and
+lane-selector geometry are not required for this functional conclusion.
+
+This discharges the equivalence premise of the existing functional consistency
+interface. It does not establish existence of a common representative, permit
+separate per-point witness choices, identify entire tables, or establish AIR
+satisfaction. The unique-decoding separation is retained; no list-decoding,
+query-count, byte-size or quantum-security improvement is asserted.
+
+Validation: full `check.py` passed with 3754 registered results and the enforced
+axiom allowlist. Slice feasibility remains NOT_PASSED. Next critical obligation
+is common representative existence with commitment/challenge chronology, followed
+by composed acceptance-to-execution soundness.

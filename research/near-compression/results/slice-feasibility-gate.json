@@ -118,7 +118,8 @@
     "airbender/direct-wasm/test_prepared_gkr_envelope.py",
     "results/pq384-literal193-gkr-packed/envelope-report.json",
     "NearCompression/PackedComputedGKRTable.lean",
-    "results/packed-computed-gkr-table-integration.json"
+    "results/packed-computed-gkr-table-integration.json",
+    "results/shared-representative-uniqueness-integration.json"
   ],
   "requirements": [
     {
@@ -151,7 +152,8 @@
       "concentration_component": "Alternative downstream extraction now proved from one affine curve carrying more than max(domain length,2) constrained successes. Universal transfer of every candidate is not required by this route. Quantitative weighted list-decoding concentration remains unproved; constructed candidate lists alone do not establish it.",
       "concentration_regression": "Lean modular-arithmetic exhaustive certificate: F5,N4,D2,T3 has positive Johnson gap but four successful fold challenges and no jointly agreeing pair. This refutes zero-exception transfer from a positive gap alone, not the target concentration theorem. Python enumerates202376 normalized source pairs across F5/F7/F11/F17 and two weight profiles; generalization beyond those finite cases is not claimed.",
       "support_interpolation_component": "D distinct fixed agreement points now construct the same affine source-interpolant curve for every candidate. Under no parent outcome, supported success count <=max(domain length,2), with no supplied concentration premise. Global enumeration of all supports can be exponential and has not yielded a feasible concentration bound.",
-      "computed_gkr_table_component": "Inverse GKR-table reconstruction of actual mutable source coefficients equals the original padded rows/columns. Actual computed polynomial supplies the current/next GKR functional without a supplied transform identity. Coefficientwise binding of an extracted polynomial suffices for table equality; proving that cryptographic binding or a sound common representative remains open. Proximity is not promoted to equality."
+      "computed_gkr_table_component": "Inverse GKR-table reconstruction of actual mutable source coefficients equals the original padded rows/columns. Actual computed polynomial supplies the current/next GKR functional without a supplied transform identity. Coefficientwise binding of an extracted polynomial suffices for table equality; proving that cryptographic binding or a sound common representative remains open. Proximity is not promoted to equality.",
+      "shared_representative_uniqueness": "Two shared representatives of the same fixed source oracles give identical functional families and all requested values under radiusLeft+radiusRight+D<=domain size. Individual-lane closeness and selector geometry are unnecessary. Common representative existence, AIR satisfaction and crypto extraction remain open."
     },
     {
       "name": "Complete bytes and scaling",

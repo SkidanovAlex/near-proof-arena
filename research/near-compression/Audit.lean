@@ -5375,3 +5375,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.packed_computed_gkr_table
 #print axioms NearCompression.bound_polynomial_gkr_table
 #print axioms NearCompression.packed_computed_gkr_functional
+
+#print axioms NearCompression.shared_representative_equivalent
+#print axioms NearCompression.shared_representative_functionals_unique
