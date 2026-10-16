@@ -5280,3 +5280,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_ext8_bound_side_product
 #print axioms NearCompression.bus_ext8_bound_tables_product
 #print axioms NearCompression.bus_ext8_claimed_global_product
+
+#print axioms NearCompression.bus_attached_source_eval
+#print axioms NearCompression.bus_attached_source_interaction
+#print axioms NearCompression.bus_attached_tables_fixed
+#print axioms NearCompression.bus_adaptive_auxiliary_implies_source
+#print axioms NearCompression.bus_adaptive_auxiliary_fp8_bound
+#print axioms NearCompression.prepared_literal_wrong_output_adaptive_bus_bound

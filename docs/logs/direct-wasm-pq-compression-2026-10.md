@@ -1788,3 +1788,11 @@ Proved exact source-message embedding and natural multiplicity preservation unde
 Validation: full check.py passed (3675 registered results; allowed axioms only). Formal transport only: the executable remains Ext4 and no size/performance/security certification is claimed. Explicit premises are column bounds, source/auxiliary residual validity and a supplied common coordinate trace.
 
 Next: allow challenge-dependent auxiliary coordinates/finals while holding source columns fixed; then connect accepted local/PCS checks to the common trace/residual premises. Complete quantum transcript soundness, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.
+
+### Adaptive auxiliary acceptance and literal wrong-output bus bound
+
+Added a source-preserving auxiliary attachment: heights and source columns are fixed, while arbitrary remaining coordinate cells and indexed finals may be chosen after each alpha/gamma pair. Proved bounded source evaluations/messages/natural multiplicities remain unchanged, and generated residual validity plus claimed side-product equality implies the fixed-source bus equation. Existential auxiliary/final choices are inside the challenge event, so the ideal Ext8 budget applies to adaptive witnesses, not just fixed honest auxiliaries.
+
+Composed this event with the literal slice's wrong actual runCall output theorem. Source TableLocal, public fit, executable preparation eligibility and sufficient fuel remain explicit. No cryptographic extraction, Fiat-Shamir or quantum compiler theorem is inferred from this composition.
+
+Validation: full check.py passed (3681 registered results; allowed axioms only). No executable, proof-size or security-parameter changes. Next: derive the common fixed source and source/auxiliary residual premises from accepted local/PCS proofs with correct transcript timing. Adaptive sumcheck/PCS extraction, quantified quantum reduction, executable Ext8 migration, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.

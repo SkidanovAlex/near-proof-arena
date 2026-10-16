@@ -1321,3 +1321,6 @@ import NearCompression.BusExpandedProducts
 import NearCompression.BusBoundFinalProducts
 
 import NearCompression.BusExt8SourceTransport
+
+import NearCompression.BusAdaptiveAuxiliary
+import NearCompression.PreparedLiteralAdaptiveBus
