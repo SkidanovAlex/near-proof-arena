@@ -6488,3 +6488,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.squarefree_selected_factor_certificate
 #print axioms NearCompression.squarefree_selected_root_conditions
 #print axioms NearCompression.squarefree_parameter_factor_collision_count
+
+#print axioms NearCompression.transport_polynomial_coeff_congr
+#print axioms NearCompression.separable_factor_selection
+#print axioms NearCompression.selected_factor_extension_root
+#print axioms NearCompression.separable_source_smooth_extension_exists
+#print axioms NearCompression.initial_polynomial_field_transport
+#print axioms NearCompression.separable_initial_extension_hensel_exists

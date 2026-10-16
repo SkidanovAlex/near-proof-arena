@@ -9171,3 +9171,31 @@ Next: derive suitable separable initial data and select factors with controlled
 parameter degree, then connect useful-branch forcing and coverage. Full MCA
 and protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Constructed separable factor, root field and Hensel lift
+
+Added SeparableFactorSelection.lean with six audited public theorems.
+Coefficient identities transport through field maps. For a nonzero nonconstant
+source with a derivative unit certificate, the existing factorization theorem
+now selects an actual irreducible factor and complement, both inheriting the
+source's algebraic-variable degree bound. Explicit inherited certificates prove
+selected-factor separability and complementary coprimality.
+
+The constructed quotient field contains a root of this factor. The same root
+annihilates the full source, has nonzero full-source derivative, and does not
+annihilate the complement. Initial-polynomial extraction commutes with field
+extension, yielding finite Hensel lifts at every precision in the constructed
+field. No base-field polynomial initial branch is assumed. These statements
+are over a generic field, hence also apply to the rational-function field;
+they do not yet control parameter degrees of rational coefficient
+representatives or specialize the constructed algebraic extension.
+
+Validation:34 selected quotient fields,24 nonbase-field roots,210 smooth
+full-source roots and1050 extension-field Hensel steps. Full audit4598 PASS,
+allowed axioms only. Evidence: results/separable-factor-selection/.
+
+Next: parameter-degree control and safe specialization of algebraic extensions,
+then useful-branch forcing and coverage. Source separability at a suitable
+initial slice still requires proof. Full MCA and protocol/QROM composition
+remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

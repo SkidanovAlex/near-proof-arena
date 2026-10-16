@@ -1754,3 +1754,5 @@ import NearCompression.SelectedFactorSmoothness
 import NearCompression.FactorCollisionGuard
 
 import NearCompression.SquarefreeFactorCertificates
+
+import NearCompression.SeparableFactorSelection
