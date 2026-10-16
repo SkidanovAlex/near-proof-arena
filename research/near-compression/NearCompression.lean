@@ -1427,3 +1427,5 @@ import NearCompression.TerminalSymbolicRebuild
 import NearCompression.SymbolicCompiledCheck
 
 import NearCompression.SymbolicFormulaCheck
+
+import NearCompression.RecoveredSymbolicEnvironment

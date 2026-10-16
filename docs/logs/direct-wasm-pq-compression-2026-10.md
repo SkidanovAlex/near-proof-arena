@@ -3311,3 +3311,26 @@ supplied checked formulas, not proof of constraint satisfaction or formal
 identification of formula generation with the intended AIR/bus specification.
 Decoded-column environments, transcript binding, global sampling/computational
 soundness, quantum security and secure full-NEAR size remain open.
+
+### Canonical decoded columns supply the symbolic environment
+
+RecoveredSymbolicEnvironment uses the existing canonical lane ownership proof
+to identify every live source/auxiliary column with a polynomial in the fixed
+tuple. Checked base and next-offset placement connects these owners to actual
+symbolic program current/next reads. Source and auxiliary packed div/mod
+coordinates are handled separately, including the final partial lane.
+
+The environment theorem chooses one entire decoded column table before all
+rowpoint/current-next choices. Every live column retains tuple provenance and
+both reads equal its MLE/next-MLE at the corresponding lane point. No vector
+agreement is assumed; canonical enumeration and all-support nonoverlap remain
+explicit. This constructs an assignment, not proof of AIR satisfaction or
+commitment extraction.
+
+Kernel regressions cover source/auxiliary offsets, partial source packing,
+current/next addresses and rejection of wrong base/next offset. Full check.py
+passed3886 results with the existing axiom allowlist. No new native capture
+execution was required. Integration/gate/scope and diff checks pass; gate
+NOT_PASSED. Formula evaluation transport, complete verifier metadata premises,
+specification/transcript binding, global/PQ security and secure full-NEAR size
+remain open.

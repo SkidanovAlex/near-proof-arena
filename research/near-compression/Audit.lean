@@ -5544,3 +5544,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.symbolic_formula_compiler_value
 #print axioms NearCompression.symbolic_formula_recovered_value
 #print axioms NearCompression.symbolic_formula_check_regressions
+
+#print axioms NearCompression.recovered_symbolic_column_owner
+#print axioms NearCompression.recovered_symbolic_environment
+#print axioms NearCompression.recovered_environment_placement_regressions
