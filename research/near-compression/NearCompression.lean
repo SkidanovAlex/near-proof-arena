@@ -1527,3 +1527,5 @@ import NearCompression.CheckedTerminalGKRRepair
 import NearCompression.TwoTableConcretePCS
 
 import NearCompression.PreparedFixedSourceBranchBudget
+
+import NearCompression.BusResidualFailureWitness

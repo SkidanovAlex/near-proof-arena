@@ -423,6 +423,7 @@ SOURCES = [
     "research/near-compression/NearCompression/CheckedTerminalGKRRepair.lean",
     "research/near-compression/NearCompression/TwoTableConcretePCS.lean",
     "research/near-compression/NearCompression/PreparedFixedSourceBranchBudget.lean",
+    "research/near-compression/NearCompression/BusResidualFailureWitness.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",

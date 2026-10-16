@@ -310,7 +310,9 @@
     "NearCompression/TwoTableConcretePCS.lean",
     "results/two-table-concrete-pcs-integration.json",
     "NearCompression/PreparedFixedSourceBranchBudget.lean",
-    "results/prepared-fixed-source-branch-budget-integration.json"
+    "results/prepared-fixed-source-branch-budget-integration.json",
+    "NearCompression/BusResidualFailureWitness.lean",
+    "results/bus-residual-failure-integration.json"
   ],
   "requirements": [
     {
@@ -488,5 +490,5 @@
   "checked_terminal_gkr_repair": "PROVED_CONDITIONALLY: checked_terminal_gkr_repair derives semantic output mismatch and finite-circuit identity from executable terminal/compiler checks, then invokes evaluated-GKR repair. Decoded environment agreement, metadata/history/formula binding, root geometry/checks and PCS error inclusion remain explicit.",
   "two_table_concrete_pcs": "PROVED_CONDITIONALLY: actual concrete_gkr_accepted_failure_budget is lifted over the complete two-table experiment with max(nearBudget,farBudget), including absent representatives. Numerical PCS fiber budget is derived, while ideal source/projection/geometry/authentication, recovered input binding and event inclusion remain explicit.",
   "prepared_branch_budget": "PROVED_CONDITIONALLY: prepared_fixed_source_branch_budget joins actual wrong-output bus bound and selected failed-table local bound over the full experiment, paying max(local0,local1,bus) plus shared accepted-failure budget once. Fixed source, full-experiment local/joint budgets and decoded residual witnesses remain explicit; this is not end-to-end acceptance certification.",
-  "bus_auxiliary_validity_gap": "OPEN: source TableLocal does not imply reconstructed bus auxiliary residual validity. prepared_fixed_source_branch_budget witness premise outside failure is stronger than PCS acceptance alone. Its failure event must also account for local/GKR errors on invalid auxiliaries. decoded_adaptive_invalid_rows_budget now selects an earlier-transcript-dependent violation before local challenges; actual formula refinement and event composition remain required."
+  "bus_auxiliary_validity_gap": "PARTIAL: generated auxiliary formulas now yield an actual table/row/nonzero combined residual when busExt8TablesResidualsZero fails under source checks. This is proved on airAuxCoordinateTrace, not yet native decoded-coordinate formula refinement. Bus witness failure must still include local/GKR errors in addition to PCS failures."
 }

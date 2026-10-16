@@ -5768,3 +5768,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.decoded_adaptive_witness_after_earlier_budget
 
 #print axioms NearCompression.decoded_adaptive_invalid_rows_budget
+
+#print axioms NearCompression.bus_ext8_tables_from_generated_residuals
+
+#print axioms NearCompression.bus_ext8_generated_residual_failure
+
+#print axioms NearCompression.auxiliary_nonzero_combined_index

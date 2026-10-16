@@ -4332,3 +4332,22 @@ QROM and secure-size feasibility remain open.
 
 Validation: full `check.py` PASS (4050 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only change.
+
+### Generated bus auxiliary failure witness
+
+`BusResidualFailureWitness.lean` reconstructs the recursive Ext8 bus residual
+predicate from source checks and all generated `busTableResiduals` equalities.
+Its contrapositive selects an actual table, row and generated auxiliary
+formula with nonzero value. `auxiliary_nonzero_combined_index` places that
+violation in the exact combined source-plus-auxiliary local residual list.
+Offsets and table membership are retained, rather than assumed bad indices.
+
+The evaluated trace here is `airAuxCoordinateTrace raw sourceWidth`. It is
+not automatically the decoded PCS coordinate trace. Next: prove coordinate
+formula reconstruction/refinement before feeding this violation to the local
+bound, include local/GKR failures in bus witness failure, and average the
+same full event. Native generator refinement, QROM, secure size and full
+1 Pgas execution remain open.
+
+Validation: full `check.py` PASS (4053 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only change.
