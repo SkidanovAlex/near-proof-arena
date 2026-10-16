@@ -123,7 +123,8 @@
     "NearCompression/JointSourceAcceptance.lean",
     "results/joint-source-acceptance-integration.json",
     "NearCompression/WeightedTerminalAuthentication.lean",
-    "results/weighted-terminal-authentication-integration.json"
+    "results/weighted-terminal-authentication-integration.json",
+    "results/source-tree-collision-integration.json"
   ],
   "requirements": [
     {
@@ -159,7 +160,8 @@
       "computed_gkr_table_component": "Inverse GKR-table reconstruction of actual mutable source coefficients equals the original padded rows/columns. Actual computed polynomial supplies the current/next GKR functional without a supplied transform identity. Coefficientwise binding of an extracted polynomial suffices for table equality; proving that cryptographic binding or a sound common representative remains open. Proximity is not promoted to equality.",
       "shared_representative_uniqueness": "Two shared representatives of the same fixed source oracles give identical functional families and all requested values under radiusLeft+radiusRight+D<=domain size. Individual-lane closeness and selector geometry are unnecessary. Common representative existence, AIR satisfaction and crypto extraction remain open.",
       "far_source_acceptance_component": "No common prechallenge joint representative now bounds actual adaptive weighted replay acceptance: outer tensor error plus folding error plus query tail. Source contraction identity, terminal authentication, strict 2*N+D<3*T regime and ideal independent challenges remain explicit. This discharges the abstract far branch without assuming representative existence; compiled heterogeneous near-case and quantum reductions remain open.",
-      "terminal_authentication_component": "Typed degree-one reconstruction now yields the exact pointwise constant-oracle premise of weighted folding, or an explicit distinct-tree/equal-root collision. Natural-domain i/i+half pairing is proved. Canonical byte/tree refinement and quantitative hash binding remain open; terminal authentication is not declared unconditional."
+      "terminal_authentication_component": "Typed degree-one reconstruction now yields the exact pointwise constant-oracle premise of weighted folding, or an explicit distinct-tree/equal-root collision. Natural-domain i/i+half pairing is proved. Canonical byte/tree refinement and quantitative hash binding remain open; terminal authentication is not declared unconditional.",
+      "byte_tree_binding_component": "Distinct fully supplied byte trees with the same constructed root now yield a concrete unequal-message/equal-hash collision on two constructed path-query supports. No global root injectivity is assumed. Typed pair serialization, unknown-root extraction and quantitative quantum hashing bounds are not discharged."
     },
     {
       "name": "Complete bytes and scaling",

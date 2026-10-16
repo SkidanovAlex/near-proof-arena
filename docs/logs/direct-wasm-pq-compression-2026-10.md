@@ -2293,3 +2293,25 @@ axiom allowlist. Existing independent terminal tests passed for shapes
 (1,4,1), (4,16,3), (16,64,2), using direct power-sum evaluations, Rust SHA384
 roots and independent convolution residuals with rejection mutations. The
 retained integration report records their counts. No proof sizes changed.
+
+
+### Full byte-tree binding reduced to supported hash collisions
+
+`sha384_source_tree_collision` in `SHA384MerkleSource.lean` constructs a
+collision witness from two distinct, fully specified byte trees with equal
+roots. It finds a differing leaf, constructs both accepted source paths and
+applies framed-path collision extraction. The result identifies two unequal
+byte messages with equal hashes inside those concrete path-query lists.
+No global root injectivity or collision-resistance premise is assumed.
+
+The theorem requires a common positive power-of-two tree size, a fixed context,
+and explicit u64 bounds. Each selected path has depth+2 queries; this is the
+support of the resulting witness, not the adversary's total hash-query budget.
+For the current two-leaf terminal, depth is one. Applying this reduction to
+the typed terminal theorem still requires canonical pair serialization to
+preserve inequality. Unknown-root extraction and quantitative quantum hash
+security are separate obligations. Whole-slice and full NEAR feasibility
+remain incomplete, with no change to proof bytes or security parameters.
+
+Validation: full `check.py` passed with 3759 registered results and the enforced
+axiom allowlist. Slice gate remains NOT_PASSED.

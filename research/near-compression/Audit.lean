@@ -5384,3 +5384,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.weighted_terminal_pair_constant
 #print axioms NearCompression.weighted_terminal_collision_or_authenticated
 #print axioms NearCompression.weighted_terminal_binding_authenticated
+
+#print axioms NearCompression.sha384_source_tree_collision

@@ -126,4 +126,47 @@ theorem sha384_fixed_source_opening (hash : SHA384ByteHash) (width : ∀ m,(hash
   · exact Or.inr (sha384_merkle_conflicting_openings hash width _ context leaves.length index claimed
       (leaves.getD index []) path (sha384TreePath hash context leaves depth 0 index) accepted
       (sha384_source_path_accepts hash width context leaves depth index positive shape capacity position contextBound leafBound) same)
+/-- Two different fully reconstructed byte trees with the same root yield an
+explicit hash collision on constructed paths to a differing leaf. This supplies
+full-tree binding from finite hash-query binding, without assuming root
+injectivity. It does not extract a tree from an arbitrary digest. -/
+theorem sha384_source_tree_collision (hash : SHA384ByteHash)
+    (width : ∀ m,(hash m).length=48) (context : List UInt8)
+    (left right : List (List UInt8)) (depth : Nat)
+    (positive : 0<depth) (leftShape : left.length=2^depth)
+    (rightShape : right.length=2^depth) (capacity : left.length<2^64)
+    (contextBound : context.length<2^64)
+    (leftBound : ∀ i,i<left.length → (left.getD i []).length<2^64)
+    (rightBound : ∀ i,i<right.length → (right.getD i []).length<2^64)
+    (different : left≠right)
+    (roots : sha384SourceRoot hash context left depth=sha384SourceRoot hash context right depth) :
+    ∃ index,index<left.length ∧ left.getD index []≠right.getD index [] ∧
+      ∃ a,a∈sha384MerklePathQueries hash context left.length index (left.getD index [])
+        (sha384TreePath hash context left depth 0 index) ∧
+      ∃ b,b∈sha384MerklePathQueries hash context left.length index (right.getD index [])
+        (sha384TreePath hash context right depth 0 index) ∧ a≠b ∧ hash a=hash b := by
+  classical
+  have size : left.length=right.length := leftShape.trans rightShape.symm
+  have witness : ∃ i,i<left.length ∧ left.getD i []≠right.getD i [] := by
+    apply Classical.byContradiction
+    intro absent
+    apply different
+    apply List.ext_getElem size
+    intro i hl hr
+    have same : left.getD i []=right.getD i [] := by
+      apply Classical.byContradiction
+      intro neq
+      exact absent ⟨i,hl,neq⟩
+    simpa [List.getD,hl,hr] using same
+  obtain ⟨index,position,neq⟩ := witness
+  have rightPosition : index<right.length := by omega
+  have leftAccept := sha384_source_path_accepts hash width context left depth index positive
+    leftShape capacity position contextBound (leftBound index position)
+  have rightAccept := sha384_source_path_accepts hash width context right depth index positive
+    rightShape (by omega) rightPosition contextBound (rightBound index rightPosition)
+  rw [←roots,←size] at rightAccept
+  exact ⟨index,position,neq,sha384_merkle_conflicting_openings hash width _ context left.length index
+    (left.getD index []) (right.getD index []) (sha384TreePath hash context left depth 0 index)
+    (sha384TreePath hash context right depth 0 index) leftAccept rightAccept neq⟩
+
 end NearCompression
