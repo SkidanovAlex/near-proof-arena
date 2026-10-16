@@ -5600,3 +5600,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_rows_block_pcs_coordinates
 #print axioms NearCompression.gkr_rows_block_pcs_event_count
 #print axioms NearCompression.gkr_block_coordinate_regressions
+
+#print axioms NearCompression.gkr_joint_history_accessors
+#print axioms NearCompression.gkr_joint_history_rows_unchanged
+#print axioms NearCompression.gkr_joint_history_suffix_split
+#print axioms NearCompression.gkr_evaluated_joint_terminal_event
+#print axioms NearCompression.gkr_joint_accessor_regressions

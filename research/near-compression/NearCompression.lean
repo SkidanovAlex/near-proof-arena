@@ -1447,3 +1447,5 @@ import NearCompression.TerminalBatchFailure
 import NearCompression.BatchedEvaluatedGKR
 
 import NearCompression.GKRBlockCoordinates
+
+import NearCompression.GKRJointTerminalEvent

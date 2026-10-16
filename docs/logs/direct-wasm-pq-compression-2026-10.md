@@ -3545,3 +3545,23 @@ code changed. Earlier GKR block rearrangement, concrete accessor/mismatch
 identities and merged PCS assumptions remain to be connected. These ideal
 sample identities do not establish Fiat-Shamir sampling. Global/PQ soundness
 and secure full-NEAR size remain open; gate NOT_PASSED.
+
+### Evaluated terminal mismatch matches joint-history coordinates
+
+GKRJointTerminalEvent proves left/right/gamma accessor identities for assembled
+row-prefix plus final GKR block. Axes agree even outside their dimensions, where
+both are zero. Valid lane rowpoints are invariant under suffix append, so final
+GKR challenges do not alter source row coordinates. Exact lengths prove the
+merged PCS take/drop split recovers history and opening suffix.
+
+Using evaluated structural path checks, terminal mismatch now equals the
+joint-history recovered-input functional mismatch. The recovered tuple and
+constants remain explicit; this does not establish commitment extraction or
+identify the source tuple with the chosen PCS representative automatically.
+Earlier GKR block rearrangement and prover-message mapping remain necessary
+before applying the merged bound while preserving rowpoint averaging.
+
+Kernel regressions cover distinct axis/gamma values, padding and incorrect row
+prefix offsets. Full check.py passed 3934 registered results with the existing
+axiom allowlist. No native code changed. Global/PQ soundness and secure full-NEAR
+size remain open; gate NOT_PASSED.

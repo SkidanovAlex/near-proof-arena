@@ -228,7 +228,9 @@
     "NearCompression/BatchedEvaluatedGKR.lean",
     "results/batched-evaluated-gkr-integration.json",
     "NearCompression/GKRBlockCoordinates.lean",
-    "results/gkr-block-coordinates-integration.json"
+    "results/gkr-block-coordinates-integration.json",
+    "NearCompression/GKRJointTerminalEvent.lean",
+    "results/gkr-joint-terminal-event-integration.json"
   ],
   "requirements": [
     {
