@@ -1,0 +1,56 @@
+{
+  "status": "COMPLETED_DIAGNOSTIC_BATCH",
+  "timings": {
+    "export": {
+      "wall_seconds": 25.46,
+      "peak_rss_kib": 2358164
+    },
+    "reference_checks": {
+      "wall_seconds": 17.28,
+      "peak_rss_kib": 197032
+    },
+    "diagnostic_proof_pipeline": {
+      "wall_seconds": 379.03,
+      "peak_rss_kib": 714136
+    }
+  },
+  "files": {
+    "checks.json": {
+      "bytes": 3441,
+      "sha256": "e06b60563f09401624202d7b10e504b09931a15fe05f1b96243dda77bf0ee12a"
+    },
+    "chunk-report.json": {
+      "bytes": 1502,
+      "sha256": "93138ce9dbffc57efc4b1e9b57050dad3b2621e2e676cdb3a69364faabbe8faa"
+    },
+    "config.json": {
+      "bytes": 16509,
+      "sha256": "bf7a502a5759ab52022e8eb2b577507b8d9937ad1bf3e0376a418872c20447e5"
+    },
+    "expected-use.json": {
+      "bytes": 731,
+      "sha256": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b"
+    },
+    "fresh-verifier.log": {
+      "bytes": 105,
+      "sha256": "9d21b74af300204db36023a0315e016f0bbf8be9f78ec0f96c0a3c6b10bbc44b"
+    },
+    "proof.bin": {
+      "bytes": 120477,
+      "sha256": "fb2a820479543697e7447a4a4a488414f3b525338f7a3364acf31300a5859521"
+    },
+    "report.json": {
+      "bytes": 2023,
+      "sha256": "b6e817603acbc743cfcc01d71d89d93320267584736c91922d669f11fd50b564"
+    },
+    "selection.json": {
+      "bytes": 7249,
+      "sha256": "acf0205dedd4aa75e2e00a1115787c331f11f7ad6866b30558ca5edd374b4fce"
+    },
+    "statement.json.gz": {
+      "bytes": 93370,
+      "sha256": "63359e5a690f7c3ae04c222b15eccedaa26f6e3e15c654c23bc38f0028e3981e"
+    }
+  },
+  "scope": "Measured24-node compression/routing component from Ext8 inner verifier capture. Outer prover remains Q8/Ext4 diagnostic. Proof pipeline includes setup/prover and repeated verification; not pure proving latency. Expected ordered-use root external. Full call provenance/cross-chunk aggregation/secure recursion excluded. One batch is not representative throughput for every DAG node or full1Pgas execution."
+}

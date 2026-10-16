@@ -5424,3 +5424,56 @@ its routing before making any recursion throughput or compression promise.
 The full inner local/GKR/frontend obligations are external to this capture;
 q309 itself is diagnostic. Gate and full1Pgas/PQ300k objective unchanged.
 No Lean changes this turn; script compilation and diff checks pass.
+
+### Measured24-node constrained batch from the Ext8 verifier DAG
+
+Previous turn progressed with the validated exact compression DAG. Selected
+actual call indices148..159, global nodes1995..2018:24distinct compression
+nodes and24ordered uses. Selection uses existing contiguous chunk limits;
+it is one reproducible batch, not a representative statistical sample of
+all27538nodes. These selected uses do not exercise repeated fanout.
+
+Ran imported Lean witness exporter, independent canonical AIR evaluator,
+natural bus balance checks, fixed the external ordered-use commitment, then
+generated and freshly verified a full diagnostic compression-record proof.
+Native libraries `/tmp/libnear_folded_v2.so`,`/tmp/libpq384_fft.so`, committer
+`/tmp/near-pq384-target/release/rs_commit`; proof process pinned CPUs8-15,24-31,
+RAYON_NUM_THREADS2. Existing run_sha384_node_chunk workflow, no verifier rule
+or cryptographic parameter changes.
+
+Measured stages (wall time; peak RSS):
+-Lean exporter25.46s;2358164KiB (~2.25GiB).
+-Independent checker17.28s;197032KiB.14601248canonical constraint evaluations,
+ exact balance across five buses,21negative cases pass. Actual shapes
+2048x5234,32x1666,32x191,32x179;10784384base-field cells.
+-Full diagnostic proof pipeline379.03s;714136KiB (~697MiB). This includes
+setup, prover, compact encoding and repeated independent verification.
+Within runner:source commitments3.426s,auxiliary construction/commit18.283s,
+local table proofs5.754s total,GKR+weighted PCS288.357s,independent verifier
+12.394s. Runner328.702s; wrapper total379.005s.
+
+Compact proof120477bytes including four source roots; empty public payload,
+external ordered-use receipt731bytes; total121208bytes. Proof SHA256
+`fb2a820479543697e7447a4a4a488414f3b525338f7a3364acf31300a5859521`.
+Fresh-process compact verifier passed against the preexisting receipt.
+
+Retained in `results/ext8-node-batch/`:binary proof, compressed full statement,
+config,selection,checks,receipt,runner/wrapper reports,fresh-verifier output,
+and benchmark manifest with hashes. Added archive_ext8_node_benchmark.py,
+which refuses incomplete/nonzero timing runs. Source traces can be regenerated
+using SHA384NodeChunkImportedFixture.lean with retained config. Exact original
+commands and cwd are in /tmp/nearproof-ext8-node-{export,check,proof}.time.
+
+Scope: workload comes from an Ext8 inner verifier, but THIS OUTER proof is the
+existing Q8/Ext4 diagnostic. It proves a compression-record component with
+external ordered-use commitment; full call padding/IV/digest provenance,
+cross-chunk coverage,aggregation,complete recursive verifier semantics and
+PQ/security parameters remain open. Do not extrapolate its121k envelope to
+one proof of the full DAG or1Pgas. Full workload routing geometry now accounts
+44.283GiBtotal dense source data at25nodes/chunk, not actual resident memory.
+
+Decision: first measured prover optimization target is GKR/PCS, not local AIR
+proof generation. It consumes288s versus5.75s for local tables in this batch.
+A full recursive investment must reduce terminal circuit/prover cost and
+compose chunks securely. Gate remains NOT_PASSED. No Lean changes; prior
+4133-theorem audit remains latest. Artifact/compilation/diff checks pass.
