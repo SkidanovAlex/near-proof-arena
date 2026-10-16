@@ -525,6 +525,7 @@
     "research/near-compression/NearCompression/GKRHistoryFarAcceptance.lean": "1c4f77837a7b0d2821f639cb94e60ddfac6c49c6a53de3f322f418d6f15af7ab",
     "research/near-compression/NearCompression/GKRJointFailureAcceptance.lean": "e23357401bcad446fd66ed0bb43d5b8122df7a1a8f2e109111564b514c8722cf",
     "research/near-compression/NearCompression/GKRContinuationFailure.lean": "000e45bc6fac30dda42666c33fe05343b36ee82845bdfad807a2094a4d475a24",
+    "research/near-compression/NearCompression/GKRRecoveredCircuit.lean": "c433764095e2c92b1ea04ae5ac5a2a4880d7f9731640a4b6b438535fd4cc1f24",
     "research/near-compression/NearCompression/JointSourceFarFold.lean": "ff79009785b516f31aa2ee9d5a407fb6154718867341fdaffeb490b40e13cafe",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean": "6fbcc8b3e2937bf737c04c2575c922f9bd9b5db921fca42665199bd78d675341",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean": "170d9528efb40b38fb199586592ff341780d73d0408cae7844d3d3ef881947af",

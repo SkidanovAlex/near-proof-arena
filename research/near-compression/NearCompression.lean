@@ -1391,3 +1391,5 @@ import NearCompression.GKRHistoryFarAcceptance
 import NearCompression.GKRJointFailureAcceptance
 
 import NearCompression.GKRContinuationFailure
+
+import NearCompression.GKRRecoveredCircuit

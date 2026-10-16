@@ -2775,3 +2775,27 @@ Validation: three new results pass module checks and full check.py (3798
 registered results), retaining the axiom allowlist. Imports, audit, scope,
 integration report and NOT_PASSED feasibility gate updated. No secure
 full-NEAR1Pgas or sub300000-byte completion claim is made.
+
+
+### Constructed circuit values from recovered input
+
+Added GKRRecoveredCircuit using the existing gkrFiniteCircuit evaluator.
+Finite-circuit append composition supplies an output-to-input value sequence
+by evaluating prefixes from a single input assignment. Reverse depth0 is the
+complete output and depth=layer count is the original input. Each actual
+in-range gate agrees with the fixed-wiring layer evaluation required by GKR.
+
+The input is constructed from recovered private slots plus known constants.
+gkr_evaluated_recovered_terminal_mismatch now derives the final recovered
+input mismatch without a separate assignment-equality premise. Path/circuit
+depth alignment is explicit. The GKR output-reduction strategy starts with
+reverse depth1 because its values are inputs to the output layer.
+
+This is finite circuit semantics, not executable AIR compiler refinement.
+Padded cube shapes, verifier-strategy binding to evaluated values, commitment
+authentication, full-path/selected-coordinate sampling alignment and global
+AIR/bus/Wasm/PQ soundness remain open.
+
+Validation: five new results pass module checks and full check.py (3803
+registered results), with the existing axiom allowlist. Imports, audit, scope,
+integration report and the NOT_PASSED feasibility gate updated.

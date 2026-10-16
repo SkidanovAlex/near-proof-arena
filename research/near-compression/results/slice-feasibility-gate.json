@@ -162,7 +162,9 @@
     "NearCompression/GKRJointFailureAcceptance.lean",
     "results/gkr-joint-failure-acceptance-integration.json",
     "NearCompression/GKRContinuationFailure.lean",
-    "results/gkr-continuation-failure-integration.json"
+    "results/gkr-continuation-failure-integration.json",
+    "NearCompression/GKRRecoveredCircuit.lean",
+    "results/gkr-recovered-circuit-integration.json"
   ],
   "requirements": [
     {
@@ -181,7 +183,8 @@
       "fixed_envelope_semantics": "For arbitrary field inputs, relocating the reserved zero in the first layer preserves all circuit outputs under explicit valid-operand, zero-slot and size conditions. All10 captured/synthetic compiler cases satisfy those preconditions. Trusted-cap transcript binding is implemented and regression-tested; formal transcript refinement and universal cap sufficiency remain open.",
       "fixed_input_profile": "Separate fixed-input profile binds caller cap13 before challenges and verifies GKR input size8192. Fresh proof with same source roots/new auxiliaries independently verified. Compact/prepared-request/envelope now supported with exact roundtrip and14 negatives; existing complete-envelope regressions pass.",
       "near_far_oracle_identity": "The MLE coefficients of lifted heterogeneous weight tables equal the joint beta coefficients at the same concatenated row/GKR/gamma/PCS coordinates. Therefore the near and far formulations have exactly the same virtual source oracle for arbitrary received source words. This algebraic identity does not discharge challenge chronology, commitment binding or executable refinement.",
-      "challenge_order_replay": "Fresh verification of retained fixed-cap193 and769 artifacts records all commitment/draw events and matches table row draws and final GKR coordinates to returned opening obligations. Selected joint dimensions55 and63. Source roots precede bus challenges; auxiliary roots/finals precede row challenges; PCS follows GKR; query draws follow fold roots and terminal disclosure. Finite replay evidence only: universal metadata stability, ideal conditional sampling and QROM reduction remain open."
+      "challenge_order_replay": "Fresh verification of retained fixed-cap193 and769 artifacts records all commitment/draw events and matches table row draws and final GKR coordinates to returned opening obligations. Selected joint dimensions55 and63. Source roots precede bus challenges; auxiliary roots/finals precede row challenges; PCS follows GKR; query draws follow fold roots and terminal disclosure. Finite replay evidence only: universal metadata stability, ideal conditional sampling and QROM reduction remain open.",
+      "recovered_finite_circuit_assignment": "Reverse GKR layer values are now constructed with the existing finite circuit evaluator from decoded private slots plus known constants. Actual in-range gate steps satisfy the fixed wiring equation, and terminal assignment equality follows from construction and depth alignment. Executable compiler/cube-shape correspondence and strategy/oracle binding remain open."
     },
     {
       "name": "Complete soundness ledger",

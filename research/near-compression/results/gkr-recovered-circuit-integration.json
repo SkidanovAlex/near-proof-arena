@@ -1,0 +1,34 @@
+{
+  "status": "RECOVERED_INPUT_FINITE_CIRCUIT_ASSIGNMENT_CONSTRUCTED",
+  "module": "NearCompression/GKRRecoveredCircuit.lean",
+  "theorems": [
+    "gkr_finite_circuit_append",
+    "gkr_reverse_circuit_output",
+    "gkr_reverse_circuit_input",
+    "gkr_reverse_circuit_step",
+    "gkr_evaluated_recovered_terminal_mismatch"
+  ],
+  "proved": [
+    "Reuses gkrFiniteCircuit with exact composition across finite layer boundaries.",
+    "Output-to-input GKR values are computed by evaluating finite prefixes from one input assignment.",
+    "Every in-range actual layer entry agrees with gkrLayerValues of the next depth and fixed wiring.",
+    "Recovered private slots plus known constants define the input; the terminal depth returns that input by construction.",
+    "The final GKR mismatch equals the full recovered input mismatch without a caller-supplied assignment-equality premise."
+  ],
+  "indexing": "Reverse depth0 is the complete circuit output; depth=layers.length is the input. A GKR strategy reducing the output layer uses depth1 for its input values. The terminal adapter requires depth+preceding_round_count=layers.length.",
+  "explicit_limits": [
+    "Step equality is for in-range gate indices; padded layer/cube shape correspondence remains an implementation obligation.",
+    "No claim that executable AIR compilation produced these finite layers, or that an arbitrary verifier strategy is bound to their values.",
+    "Decoded source commitment binding, layered-path/selected-coordinate sampling alignment, global AIR/bus/Wasm soundness and quantum transcript reduction remain open."
+  ],
+  "validation": {
+    "module_check": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3803,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}
