@@ -245,7 +245,9 @@
     "NearCompression/JointPCSNormalization.lean",
     "results/joint-pcs-normalization-integration.json",
     "NearCompression/AveragedTerminalFailure.lean",
-    "results/averaged-terminal-failure-integration.json"
+    "results/averaged-terminal-failure-integration.json",
+    "NearCompression/DecodedLocalContinuation.lean",
+    "results/decoded-local-continuation-integration.json"
   ],
   "requirements": [
     {

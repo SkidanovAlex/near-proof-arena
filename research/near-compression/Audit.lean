@@ -5638,3 +5638,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_batch_averaged_errors
 #print axioms NearCompression.sum_scaled_error_budget
 #print axioms NearCompression.batched_evaluated_gkr_averaged_errors
+
+#print axioms NearCompression.decoded_local_prefix_count
+#print axioms NearCompression.decoded_local_continuation_split
+#print axioms NearCompression.decoded_invalid_trace_continuation_budget

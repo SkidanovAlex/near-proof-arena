@@ -3700,3 +3700,21 @@ mismatch and no-representative events into a single global bound.
 Full check.py passed 3959 registered results with the existing axiom allowlist.
 No native code changed. Executable source/authentication assumptions, global/PQ
 soundness and secure full-NEAR size remain open; gate NOT_PASSED.
+
+### Invalid local traces compose with averaged downstream errors
+
+DecodedLocalContinuation materializes the mixing/tau/path experiment and proves
+its good-terminal count equals decodedLocalAcceptedCount. Full acceptance
+implying local checks splits into the already-proved local event and downstream
+repair on wrong terminal claims. Failed local checks contribute no acceptance.
+The invalid-trace theorem supplies the local term; downstream errors remain one
+joint total over all local prefixes, without a per-rowpoint PCS bound.
+
+This is the local-to-downstream composition interface. Its conditional repair
+and joint-error premises still need substitution of the concrete terminal
+output, averaged batching/GKR and merged PCS theorems. No-representative failure
+and executable source/authentication/specification refinement remain open.
+
+Full check.py passed 3962 registered results with the existing axiom allowlist.
+No native code changed. Global/PQ security and secure full-NEAR size remain open;
+gate NOT_PASSED.

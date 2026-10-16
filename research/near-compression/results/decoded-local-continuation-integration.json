@@ -1,0 +1,36 @@
+{
+  "status": "INVALID_DECODED_LOCAL_TRACE_COMPOSES_WITH_AVERAGED_CONTINUATION_ERRORS",
+  "module": "NearCompression/DecodedLocalContinuation.lean",
+  "theorems": [
+    "decoded_local_prefix_count",
+    "decoded_local_continuation_split",
+    "decoded_invalid_trace_continuation_budget"
+  ],
+  "proved": [
+    "Explicit local mixing/tau/path sample count equals the proved decoded local acceptance count.",
+    "Full acceptance implying local checks splits into correct-terminal local acceptance and downstream repair on wrong terminal claims.",
+    "Actual invalid decoded-trace local bound composes with downstream repair and a joint total of errors, without conditional per-rowpoint PCS estimates.",
+    "Prefixes failing local checks contribute zero accepted continuations."
+  ],
+  "assumptions": [
+    "Fixed invalid decoded trace, intended residual ordering/degree and initial zero claim hypotheses of the existing local theorem.",
+    "Full acceptance implies local sumcheck checks.",
+    "Conditional downstream repair inequality only for wrong terminal prefixes.",
+    "One joint downstream error bound on the exact full local-prefix sample space; its concrete GKR/PCS instantiation remains open."
+  ],
+  "remaining": [
+    "Substitute terminal output identities, averaged batching/GKR repair and concrete merged PCS counts into this interface.",
+    "Integrate no-representative branch and executable source/authentication/specification premises.",
+    "Global computational/QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3962,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal event/count composition only."
+  }
+}
