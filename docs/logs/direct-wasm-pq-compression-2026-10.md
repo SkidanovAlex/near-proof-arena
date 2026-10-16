@@ -4926,3 +4926,11 @@ Added `native-folded/kernel_ext8.rs` and explicit `pq384_ext8_native.Kernel` ada
 `test_ext8_native.py` builds the library in a temporary directory and checks independent Python arithmetic: 64 basis products, 18 table/challenge cases (sizes0 through4096, zero/unit/random challenge), 36 round identities, four wrapper and four direct ABI rejections. Bad ABI inputs leave output unchanged. Report `results/ext8-native-primitives.json`: PASS. At4096 elements, wrapper-inclusive fold plus quadratic work measured ~11ms versus93–100ms reference on this machine; diagnostic component timing only.
 
 This advances native execution but does not implement the full local/GKR prover, authenticated transcript or PCS integration, and does not prove Rust refinement. Secure envelope size, QROM security and full1Pgas remain open; gate NOT_PASSED.
+
+### Native Ext8 GKR round coefficients
+
+Extended the native kernel and explicit adapter with GKR gate-round quadratic coefficients on either input axis, supporting add/sub/mul and prior equality weights. The native routine computes coefficients directly from affine gate values and equality factors; the independent Python test evaluates the original gate expression at0,1,2. Native validation checks all gate bounds, folded indices, shapes and scalar canonicality before output writes.
+
+Validation: nine complete synthetic two-axis layer reductions,54rounds,162independent polynomial evaluations, endpoint and final wiring identities all pass. Sizes2/8/32 and zero/unit/random challenges cover all gate operations. Five wrapper and three direct ABI malformed cases reject; output remains unchanged on native errors. Existing native fold/quadratic/basis regression still passes. Reports: `results/ext8-native-gkr-rounds.json`, `results/ext8-native-primitives.json`.
+
+This implements the previously missing gate-round calculation but does not yet provide transcript-driven full Ext8 GKR or PCS integration, a Rust refinement theorem, secure full envelope, or quantum security. Gate remains NOT_PASSED; next execution step is full-circuit transcript integration using these native rounds.

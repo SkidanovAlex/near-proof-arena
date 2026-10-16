@@ -631,5 +631,12 @@
     "differential_cases": 18,
     "round_identities": 36,
     "scope": "Rust cdylib implements Ext8 affine fold and quadratic sumcheck coefficients, with explicit ctypes adapter. Matches flat X^8=11 reference; wrapper/native rejection checked. No full native Ext8 prover, Rust refinement proof, transcript/PCS integration, secure size or quantum claim."
+  },
+  "native_ext8_gkr_rounds": {
+    "status": "DIFFERENTIAL_COMPLETE_LAYER_PASS",
+    "complete_layers": 9,
+    "rounds": 54,
+    "independent_evaluations": 162,
+    "scope": "Native quadratic coefficients for GKR gate rounds, both axes and add/sub/mul, integrated with native folding in synthetic complete-layer reductions. Endpoint and final wiring checks pass. Transcript/full circuit/PCS integration, Rust refinement and quantum proof-size certification remain open."
   }
 }
