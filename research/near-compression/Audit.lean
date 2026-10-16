@@ -5762,3 +5762,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.checked_terminal_gkr_repair
 
 #print axioms NearCompression.two_table_concrete_pcs_failure_budget
+
+#print axioms NearCompression.prepared_fixed_source_branch_budget

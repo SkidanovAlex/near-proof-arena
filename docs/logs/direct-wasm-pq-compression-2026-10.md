@@ -4286,3 +4286,23 @@ size and full 1 Pgas remain open.
 
 Validation: full `check.py` PASS (4047 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only composition.
+
+### Fixed-source local/bus branch composition
+
+`prepared_fixed_source_branch_budget` selects the branch from one fixed base
+source before challenges. If all source tables are locally valid it invokes
+the actual prepared wrong-output bus continuation theorem. Otherwise it selects
+one failed table from the actual two-table AIR. The resulting bound is the
+maximum of the two local budgets and the scaled bus budget, plus a shared
+accepted-downstream-failure budget once. It does not union-bound both table
+branches or duplicate the PCS error.
+
+The local and joint-error premises explicitly cover the full bus-pair ×
+continuation experiment; no fixed-bus bound is silently substituted. Next:
+average existing local/GKR/PCS results across earlier bus choices, supply the
+same-event witnesses and fixed source, then native/QROM refinement. Secure
+size and full 1 Pgas scope remain open. This is conditional composition, not
+an end-to-end verifier-acceptance theorem.
+
+Validation: full `check.py` PASS (4048 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only composition.

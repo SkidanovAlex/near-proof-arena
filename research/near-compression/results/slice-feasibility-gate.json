@@ -308,7 +308,9 @@
     "NearCompression/CheckedTerminalGKRRepair.lean",
     "results/checked-terminal-gkr-repair-integration.json",
     "NearCompression/TwoTableConcretePCS.lean",
-    "results/two-table-concrete-pcs-integration.json"
+    "results/two-table-concrete-pcs-integration.json",
+    "NearCompression/PreparedFixedSourceBranchBudget.lean",
+    "results/prepared-fixed-source-branch-budget-integration.json"
   ],
   "requirements": [
     {
@@ -484,5 +486,6 @@
   "second_table_evaluated_repair": "PROVED_CONDITIONALLY: second_table_evaluated_gkr_pcs_budget removes independent repair/wrong-terminal numeric assumptions, deriving the batching/GKR term. Source and semantic binding, accepted verifier checks, mismatch inclusion and concrete PCS event bound remain explicit.",
   "first_table_evaluated_repair": "PROVED_CONDITIONALLY: first_table_evaluated_gkr_pcs_budget substitutes actual evaluated-GKR repair over second-local prefixes. Both table branches now derive repair terms. Semantic bindings/checks, concrete joint PCS event bound, branch selection and bus averaging remain open.",
   "checked_terminal_gkr_repair": "PROVED_CONDITIONALLY: checked_terminal_gkr_repair derives semantic output mismatch and finite-circuit identity from executable terminal/compiler checks, then invokes evaluated-GKR repair. Decoded environment agreement, metadata/history/formula binding, root geometry/checks and PCS error inclusion remain explicit.",
-  "two_table_concrete_pcs": "PROVED_CONDITIONALLY: actual concrete_gkr_accepted_failure_budget is lifted over the complete two-table experiment with max(nearBudget,farBudget), including absent representatives. Numerical PCS fiber budget is derived, while ideal source/projection/geometry/authentication, recovered input binding and event inclusion remain explicit."
+  "two_table_concrete_pcs": "PROVED_CONDITIONALLY: actual concrete_gkr_accepted_failure_budget is lifted over the complete two-table experiment with max(nearBudget,farBudget), including absent representatives. Numerical PCS fiber budget is derived, while ideal source/projection/geometry/authentication, recovered input binding and event inclusion remain explicit.",
+  "prepared_branch_budget": "PROVED_CONDITIONALLY: prepared_fixed_source_branch_budget joins actual wrong-output bus bound and selected failed-table local bound over the full experiment, paying max(local0,local1,bus) plus shared accepted-failure budget once. Fixed source, full-experiment local/joint budgets and decoded residual witnesses remain explicit; this is not end-to-end acceptance certification."
 }
