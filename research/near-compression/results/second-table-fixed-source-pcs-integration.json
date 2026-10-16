@@ -1,0 +1,34 @@
+{
+  "status": "SECOND_TABLE_INVALID_SOURCE_JOINT_PCS_LIFT_COMPOSED",
+  "module": "NearCompression/SecondTableFixedSourcePCS.lean",
+  "theorems": [
+    "second_table_fixed_source_pcs_budget"
+  ],
+  "proved": [
+    "Instantiates fixed-source invalid local bound with complete first-table local prefix as earlier randomness and actual twoTablePCSContinuations as continuation space.",
+    "Derives the aggregate downstream error budget via two_table_gkr_pcs_joint_budget and earlier_local_error_count.",
+    "Retains both rowpoint vectors in the joint PCS sample, with exact initial-challenge, batching and earlier-GKR-path multiplicities."
+  ],
+  "assumptions": [
+    "Failed selected source TableLocal, fixed decoded source binding, row geometry, residual order/degree, zero initial claims and accepted local checks.",
+    "Wrong-terminal repair bound remains explicit.",
+    "Concrete gkrConcretePCSSamples event bound remains explicit for each initial challenge pair, batching challenge and earlier GKR path; this theorem does not instantiate cryptographic extraction.",
+    "Earlier bus challenges are fixed outside this theorem."
+  ],
+  "remaining": [
+    "Construct the corresponding first-table bound, whose continuation includes the entire second local protocol.",
+    "Instantiate wrong-terminal repair from checked circuit semantics and GKR, and the concrete PCS event bound from concrete_gkr_accepted_failure_budget.",
+    "Join table-selection and locally valid bus branches, then average earlier bus challenges.",
+    "Native/QROM binding, secure size and full NEAR execution remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4041,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

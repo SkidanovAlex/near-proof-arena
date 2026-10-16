@@ -4156,3 +4156,23 @@ open, as does the full 1 Pgas objective.
 
 Validation: full `check.py` PASS (4040 registered results), existing axiom
 allowlist. Native captures not rerun for this formal-only composition.
+
+### Second-table invalid source / joint PCS experiment composition
+
+`second_table_fixed_source_pcs_budget` invokes the fixed-source local theorem
+with the full first-table prefix as earlier randomness and actual
+`twoTablePCSContinuations` as downstream randomness. Its total error sum is
+derived using `earlier_local_error_count` and `two_table_gkr_pcs_joint_budget`.
+Both rowpoint vectors remain jointly sampled, with exact initial challenge,
+batching and earlier GKR path multiplicities. No fixed-rowpoint PCS estimate
+is introduced.
+
+The concrete PCS event bound and wrong-terminal repair still require
+instantiation; they are not cryptographic conclusions of this wrapper.
+Earlier bus challenges are fixed outside this theorem. Next: corresponding
+first-table branch (second local protocol is part of its continuation), then
+actual repair/event substitution, table selection and bus averaging.
+
+Validation: full `check.py` PASS (4041 registered results), existing axiom
+allowlist. Native captures not rerun for formal-only composition. Full NEAR,
+QROM and secure sub-300 KB gates remain open.
