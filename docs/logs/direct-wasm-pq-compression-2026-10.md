@@ -7858,3 +7858,39 @@ abstract extension field alone would NOT supply that Z-degree bound. These
 are the next research targets; no assumed-family theorem closes them.
 No runtime/query/profile/proof-size change: latest diagnostic bundle1344645 B,
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Controlled Z-degree of jets along affine source lines
+
+Added JetCenterPolynomial.lean with eleven audited public theorems. A recursive
+formal polynomial represents each synthetic jet as a function of its center;
+its evaluation equals that jet, and its degree is below coefficientLength-r.
+The construction uses the proved Horner jet recurrence, not factorial division
+or an assumed binomial formula. Affine polynomial composition preserves semantic
+degree bounds, including constant/zero curves and trailing-zero encodings.
+Thus the s-th jet of Y^j along u+vZ has degree≤j-s (or is formally zero for s>j).
+
+trivariateJetTerm represents the mixed(X,Y) jet of X^i Y^j Z^h along(x,u+vZ)
+as a formal Z polynomial. Its evaluation matches the concrete gsMixedRow
+factor times the Z monomial. The coupled budget j+h<Zcap proves degree<Zcap-s.
+Finite linear combinations preserve this bound; each Z coefficient is proved
+to be the exact kernelDot of the trivariate coefficient vector against its
+term-coefficient row. Consequently, checking precisely Zcap-s coefficient
+equations makes the entire jet polynomial formally zero. No sampled-Z
+identity or large-field guard is used for these results.
+
+Validation:4433 center/affine-line cases over F2/F3/F5/F17, including derivative
+orders exceeding degree and characteristic. Three retained trivariate witnesses
+(F3/F5/F17) use70 admissible monomials and42 coefficient equations, and each fixture has three source triples(x,u,v),
+multiplicity2, X weight1, X budget6, Y height5 and coupled Y/Z budget5. Witnesses
+are checked coefficientwise and independently by specializing Q at every field
+Z, then applying the existing bivariate translation. These concrete fixtures
+do not constitute the general trivariate existence or specialization theorem.
+Full audit4325 PASS, allowed axioms only. Evidence:results/jet-center-polynomial/.
+
+Next: construct/count the distinct trivariate monomial and coefficient-constraint
+sets, apply the nonzero-kernel theorem, and formally identify the zero jet
+polynomials with mixed jets of specialized Q. This addresses the controlled-Z
+interpolation requirement; MCA useful-factor/Hensel and exceptional-count
+arguments remain beyond it. No runtime/query/proof-size change: latest verified
+diagnostic bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128 and
+sub300000 B remain open.

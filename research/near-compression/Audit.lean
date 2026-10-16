@@ -6161,3 +6161,15 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gs_mixed_matrix_correct
 #print axioms NearCompression.gs_interpolant_exists
 #print axioms NearCompression.gs_interpolant_exists_counted
+
+#print axioms NearCompression.jet_center_polynomial_eval
+#print axioms NearCompression.jet_center_polynomial_degree
+#print axioms NearCompression.polynomial_compose_eval
+#print axioms NearCompression.polynomial_compose_affine_degree
+#print axioms NearCompression.monomial_jet_line_eval
+#print axioms NearCompression.monomial_jet_line_degree
+#print axioms NearCompression.trivariate_jet_term_eval
+#print axioms NearCompression.trivariate_jet_term_degree
+#print axioms NearCompression.trivariate_jet_polynomial_degree
+#print axioms NearCompression.trivariate_jet_coefficient_matrix
+#print axioms NearCompression.trivariate_jet_constraints_zero
