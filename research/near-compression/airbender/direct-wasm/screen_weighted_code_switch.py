@@ -30,42 +30,42 @@ def queries(regime, rate, bits):
     return minimum_queries(factor, bits)
 
 
-def stage(degree, rate, skipped, regime, widths, bits):
+def stage(degree, rate, skipped, regime, widths, bits, extension=8, hash_bytes=48):
     n=degree*rate//(1<<skipped)
     q=queries(regime,rate,bits)
     leaves,hashes=geometry(n,q)
     copies=1<<(skipped-1)
     # Each source coset contains 2^skipped values, hence 2^(skipped-1) paired leaves.
-    header=96*skipped+48+32
-    cost=header+copies*(sum(widths)*leaves+48*len(widths)*hashes)
+    header=12*extension*skipped+hash_bytes+4*extension
+    cost=header+copies*(sum(widths)*leaves+hash_bytes*len(widths)*hashes)
     return dict(degree=degree,rate=rate,skipped=skipped,queries=q,widths=list(widths),
                 coset_pairs=copies,folded_domain=n,header_bytes=header,expected_bytes=cost)
 
 @lru_cache(None)
-def optimize(degree, rate, regime, bits):
+def optimize(degree, rate, regime, bits, extension=8, hash_bytes=48):
     # Bound final disclosure to 64 Ext8 coefficients.
-    best=(32*degree,[]) if degree<=64 else (float('inf'),[])
+    best=(4*extension*degree,[]) if degree<=64 else (float('inf'),[])
     for k in range(1,min(8,degree.bit_length()-1)+1):
-        edge=stage(degree,rate,k,regime,(64,),bits)
+        edge=stage(degree,rate,k,regime,(8*extension,),bits,extension,hash_bytes)
         for nr in RATES:
             nd=degree//(1<<k)
-            child,path=optimize(nd,nr,regime,bits)
+            child,path=optimize(nd,nr,regime,bits,extension,hash_bytes)
             candidate=edge['expected_bytes']+child
             if candidate<best[0]:best=(candidate,[dict(edge,next_rate=nr)]+path)
     return best
 
 
-def simulate(path,seed):
+def simulate(path,seed,extension=8,hash_bytes=48):
     rng=random.Random(seed);size=0;rows=[]
     for s in path:
         n=s['folded_domain'];samples=[rng.randrange(n) for _ in range(s['queries'])]
         indices={i+j*n for i in samples for j in range(s['coset_pairs'])}
         leaves=len(indices)*sum(s['widths'])
-        hashes=frontier(indices,n*s['coset_pairs'])*48*len(s['widths'])
+        hashes=frontier(indices,n*s['coset_pairs'])*hash_bytes*len(s['widths'])
         size+=leaves+hashes+s['header_bytes']
         rows.append(dict(leaf_bytes=leaves,hash_bytes=hashes))
     last=path[-1];terminal=last['degree']//(1<<last['skipped'])
-    return dict(bytes=size+32*terminal,terminal_degree=terminal,stages=rows)
+    return dict(bytes=size+4*extension*terminal,terminal_degree=terminal,stages=rows)
 
 
 def main():

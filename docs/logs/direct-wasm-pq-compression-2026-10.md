@@ -5292,3 +5292,51 @@ upgrade, smaller proof, or whole-protocol security assertion is made.
 Validation: full Lean audit PASS4133theorems/regressions, allowed axioms only;
 module/import/scope registration and diff checks passed. Gate NOT_PASSED;
 full1Pgas/128-bit PQ/300k objective remains open.
+
+### Larger-field/hash code-switch size screen
+
+Previous turn progressed with checked-transition Lean bounds. Returned to the
+size/security design decision before extending more formal interfaces.
+Parameterized the existing code-switch geometry helpers by extension degree
+and hash-node width, preserving Ext8/SHA384 defaults. Regenerated the original
+nine-case report BYTE-IDENTICALLY, including exhaustive geometry checks.
+Added `screen_larger_field_code_switch.py` and its retained report.
+
+The screen uses digest64bytes, extensions8/10/12, and isolated source-query
+budgets262bits with nominal C1 or270bits with nominal C256. Source width803
+stays base-field; auxiliary width53*extension scales with coordinate count.
+Each extension scalar costs4*extension bytes and paired intermediate leaves
+8*extension bytes. All source cosets, each source tree's separate frontier,
+quadratics, next roots, OOD values and terminal coefficients are counted.
+Local/GKR scalar COUNT1604 is frozen but its byte width scales; a larger-field
+compiler may change the count. Public envelope excluded. Neither new field
+arithmetic nor a secure repeated-shift prover is implemented.
+
+Dynamic programming over the same packing/fold/rate grid,16sampled schedules:
+-Ext8,C1:527640–540120bytes; partial quantum ledger fails.
+-Ext8,C256:538376–550136bytes; partial quantum ledger fails.
+-Ext10,C1:570072–583800bytes; partial quantum ledger passes.
+-Ext10,C256:581792–594352bytes; partial quantum ledger fails.
+-Ext12,C1:611672–624136bytes; partial quantum ledger passes.
+-Ext12,C256:622920–636280bytes; partial quantum ledger passes.
+
+Recomputed the conditional algebra/query ledger for each selected schedule
+and its actual new query counts, fixing the earlier frozen-count limitation.
+Q=2^128, success target1/2, full MCA expression, OOD/mixing/sumcheck modeled;
+local/GKR/bus/initial-reduction errors still excluded. C is nominal, the RBR
+and quantum compiler hypotheses remain unproved, so passing this PARTIAL
+ledger is necessary evidence only for this chosen bound, never certification.
+Failing the bound is not an attack. Extension10/12 means arithmetic size
+sensitivity, not a certified irreducible extension construction.
+
+Decision: larger arithmetic/hash parameters do not preserve the marginal
+300k projection. Even the optimistic passing Ext10 case is about570k before
+the envelope. A successful next architecture must remove substantial opening
+payload (for example via a genuinely cheaper outer recursive verifier), or
+justify a substantially tighter quantum reduction. More parameter tuning in
+this finite grid is not supported as the main path. No universal lower bound
+or impossibility result follows. Full NEAR1Pgas/PQ/300k gate unchanged.
+
+Validation: old report exact regression, geometry/minimal-query checks,
+new schedule ledger recomputation, script compilation and clean diff checks.
+No Lean changes; prior4133-theorem audit remains the latest formal result.
