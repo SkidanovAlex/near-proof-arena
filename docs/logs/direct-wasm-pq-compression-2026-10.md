@@ -9029,3 +9029,34 @@ Next: specialize the bounded certificate coefficients using their shared
 denominator and compose root smoothness/Hensel lifting. Full MCA and
 protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Shared denominator protects specialization and Hensel lifts
+
+Added SharedDenominatorSpecialization.lean with seven audited public theorems.
+Polynomial expressions specialize everywhere; a nonvanishing denominator
+protects every quotient numerator. Coordinatewise partial specialization
+constructs a polynomial preserving coefficient-list length and zero padding.
+The bounded derivative certificate's Cramer formulas therefore yield safe
+specializations of both multipliers whenever the single derivative
+shared denominator is nonzero. Coordinates beyond the degree bounds are
+handled as zero, without multiplying extra coefficient guards.
+
+Composing with the existing certificate theorem proves smoothness of every
+root of a specialized source, and supplies the actual finite Hensel lift:
+correct initial coefficient, degree at most the requested precision, and
+residual vanishing to precision+1. For any family specializing the source,
+singular specialization points have the source-degree bound (2d-1)*D.
+The source-specialization relation is still an explicit interface premise;
+useful-branch extraction, algebraic extension specialization and global MCA
+coverage are not established by these local theorems.
+
+Validation:240 Eisenstein families,1260 exact certificate coefficient
+identities,1314 safe smooth roots,3942 finite Hensel lifts and196 singular
+specialization points, all inside the denominator zero set. Four inseparable
+characteristic-degree counterexamples retained. Full audit4570 PASS, allowed
+axioms only. Evidence: results/shared-denominator-specialization/.
+
+Next: connect the source family/extension-field branch interfaces to this
+bounded exceptional set, then establish useful-branch forcing and coverage.
+Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
+unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

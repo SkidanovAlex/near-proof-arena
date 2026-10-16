@@ -6454,3 +6454,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.derivative_shared_denominator_degree
 #print axioms NearCompression.irreducible_derivative_denominator_exception_count
 #print axioms NearCompression.irreducible_derivative_shared_certificate
+
+#print axioms NearCompression.polynomial_rational_polynomial_specializes
+#print axioms NearCompression.polynomial_rational_quotient_specializes
+#print axioms NearCompression.rational_polynomial_specialization_exists
+#print axioms NearCompression.irreducible_derivative_certificate_specializes
+#print axioms NearCompression.irreducible_shared_denominator_root_smooth
+#print axioms NearCompression.irreducible_shared_denominator_hensel_lift
+#print axioms NearCompression.irreducible_shared_denominator_singular_count

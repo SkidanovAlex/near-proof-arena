@@ -321,6 +321,7 @@ SOURCES = [
     "research/near-compression/NearCompression/BezoutCoefficientMatrix.lean",
     "research/near-compression/NearCompression/BezoutPolynomialDenominator.lean",
     "research/near-compression/NearCompression/DerivativeBezoutDenominator.lean",
+    "research/near-compression/NearCompression/SharedDenominatorSpecialization.lean",
     "research/near-compression/NearCompression/DeterminantRowReplacement.lean",
     "research/near-compression/NearCompression/DeterminantCofactorFold.lean",
     "research/near-compression/NearCompression/DeterminantRowLinearity.lean",

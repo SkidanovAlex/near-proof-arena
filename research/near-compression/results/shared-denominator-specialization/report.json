@@ -1,0 +1,10 @@
+{
+  "eisenstein_families": 240,
+  "exact_certificate_coefficients": 1260,
+  "safe_smooth_roots": 1314,
+  "denominator_exception_points": 196,
+  "singular_specialization_points": 196,
+  "finite_hensel_lifts": 3942,
+  "characteristic_degree_counterexamples": 4,
+  "scope": "Shared denominator protects certificate specialization and finite Hensel lifting; singular points obey the source-degree bound. Useful-branch extraction and protocol/QROM composition remain open."
+}
