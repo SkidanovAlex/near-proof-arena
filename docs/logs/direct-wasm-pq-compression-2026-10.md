@@ -5170,3 +5170,50 @@ explicit adversary resources is now a decisive prerequisite to selecting
 Ext8 versus a larger extension and a viable query budget. Do not treat
 192/214/220 classical bits as automatic128-bit quantum security. Preserve
 NOT_PASSED and full NEAR1Pgas scope. No Lean change this turn.
+
+### QROM applicability and work-factor screen for the candidate schedule
+
+Previous turn was progress (full-expression MCA ledger). Rechecked existing
+`qrom_resource_ledger.py` before extending it; that older report targeted
+advantage2^-128 for specified adversary query budgets. Added a distinct
+constant-success resource screen in `report_code_switch_qrom.py` and
+`results/code-switch-qrom-workfactor.json`.
+
+Primary source inspected: Block/Garreta/Tiwari/Zajac, On Soundness Notions
+for Interactive Oracle Proofs, author-hosted
+https://www.pratyush.site/publication/soundnessnotions/soundnessNotions.pdf
+SHA256 `e95696372fd879e8ac3c0a2d2612cfa3d168bc50d8b68fcceb19b745a3bd27a1`.
+Corollary1.6 and its proof via CMS19Theorem8.6 give the BCS route with error
+O(t²epsilon+t³/2^lambda). Resource t includes verifier/reduction overhead.
+This needs appropriate special or round-by-round soundness. In particular,
+all false statements start in a doomed state, every fixed doomed prefix
+has bounded escape probability for every next prover message, and doomed
+terminal states reject. Total accepting-path counts alone do not establish
+this. The corollary distinguishes soundness from knowledge soundness.
+Exact constants and correspondence to our custom transcript remain open.
+
+Screen uses the EXISTING conditional formula
+C*(Q²epsilon+3*(Q³+Q)/2^h), nominal C1/256, with the partial schedule ledger
+hypothetically substituted for RBR epsilon. This substitution is explicitly
+unproved. Under C1/SHA384, the maximum INTEGER log2Q where this expression is
+at most1/2 is65/97/98 for per-stage query budgets134/198/220 respectively.
+Under C256 it is61/93/94. These are limits of a conditional bound, NOT actual
+attack costs or upper bounds on protocol security.
+
+For target Q=2^128 and success at most1/2, allocate1/4to the Q²term and1/4to
+hashing, then split epsilon between algebra and source-query tails. Holding
+algebra counts frozen, the nominal C1 calculation requires extension degree
+at least10, digest at least388bits, and stage queries281/90/90/281. C256
+requires degree11,digest396bits,queries290/92/92/290. These are arithmetic
+sensitivities, not certified field constructions or complete parameters.
+Changed queries also change algebra counts; the full ledger must be rerun.
+A byte-aligned or standard hash choice would round digest width upward.
+No automatic SHA384 upgrade and no full-proof size claim is made.
+
+Validation: exact rational threshold/minimality checks and script compilation.
+No Lean changes. Decision: stop treating the marginal Ext8/134-bit geometric
+candidate as a plausible128-bit PQ configuration without a better reduction.
+Next protocol work should formalize per-prefix doomed-state transitions and
+rescreen larger-field/hash configurations, or establish a demonstrably tighter
+QROM route. Full NEAR1Pgas, recursion, implementation binding and300k target
+remain open; feasibility gate unchanged.
