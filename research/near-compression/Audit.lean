@@ -5556,3 +5556,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.recovered_decoded_environment_agreement
 #print axioms NearCompression.recovered_mixed_formula_transport
 #print axioms NearCompression.formula_environment_transport_regressions
+
+#print axioms NearCompression.decoded_formula_outputs
+#print axioms NearCompression.decoded_formula_recovered_circuit

@@ -1431,3 +1431,5 @@ import NearCompression.SymbolicFormulaCheck
 import NearCompression.RecoveredSymbolicEnvironment
 
 import NearCompression.FormulaEnvironmentTransport
+
+import NearCompression.DecodedFormulaCircuit

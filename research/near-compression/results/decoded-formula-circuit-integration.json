@@ -1,0 +1,35 @@
+{
+  "status": "COMPLETE_COMPILED_CIRCUIT_IDENTITY_ON_FIXED_DECODED_TABLE_FAMILY",
+  "module": "NearCompression/DecodedFormulaCircuit.lean",
+  "theorems": [
+    "decoded_formula_outputs",
+    "decoded_formula_recovered_circuit"
+  ],
+  "proved": [
+    "One decoded table family is selected from the fixed polynomial tuple before every later rowpoint choice; each live column retains polynomial provenance.",
+    "All compiler table output mixtures agree with decoded-column evaluation, preserving order, weights and claims.",
+    "The full finite GKR circuit on recovered inputs equals the terminal residual evaluated from that decoded table family."
+  ],
+  "assumptions": [
+    "Canonical lane enumeration, disjoint supports, metadata membership, checked placement and bounded formula widths.",
+    "Recovered lane slot bounds and separation from constant slots.",
+    "Accepted symbolic formula compiler certificate, including stored finite circuit, rebuild, batch and formula checks.",
+    "Fixed supplied selector values and compiler tables; challenge-dependent selector/specification generation still requires binding."
+  ],
+  "remaining": [
+    "Instantiate metadata and placement premises from the executable verifier.",
+    "Bind supplied AIR/bus formulas and selectors to the intended protocol specification.",
+    "Compose with chronological GKR/PCS failure bounds and execution semantics.",
+    "Commitment extraction, quantum Fiat-Shamir security, secure parameters and full-NEAR size feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3895,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; this change composes formal identities and does not modify the native prover or adapter."
+  }
+}

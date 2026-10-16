@@ -383,6 +383,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SymbolicFormulaCheck.lean",
     "research/near-compression/NearCompression/RecoveredSymbolicEnvironment.lean",
     "research/near-compression/NearCompression/FormulaEnvironmentTransport.lean",
+    "research/near-compression/NearCompression/DecodedFormulaCircuit.lean",
     "research/near-compression/NearCompression/JointSourceFarFold.lean",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean",

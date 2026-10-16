@@ -212,7 +212,9 @@
     "NearCompression/RecoveredSymbolicEnvironment.lean",
     "results/recovered-symbolic-environment-integration.json",
     "NearCompression/FormulaEnvironmentTransport.lean",
-    "results/formula-environment-transport-integration.json"
+    "results/formula-environment-transport-integration.json",
+    "NearCompression/DecodedFormulaCircuit.lean",
+    "results/decoded-formula-circuit-integration.json"
   ],
   "requirements": [
     {

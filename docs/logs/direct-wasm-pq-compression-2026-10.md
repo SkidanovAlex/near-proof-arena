@@ -3355,3 +3355,26 @@ explicit. Selector/specification binding remains open. Next connect all table
 transports to symbolic_formula_recovered_value, then the global verifier and
 execution contract. Gate remains NOT_PASSED; secure parameters, quantum
 soundness and full-NEAR sub300000-byte feasibility are unresolved.
+
+### Complete circuit evaluated on a fixed decoded table family
+
+DecodedFormulaCircuit composes environment transport across all formula tables
+with symbolic_formula_recovered_value. One decoded table family, chosen from
+the fixed polynomial tuple before rowpoints, preserves every live column's
+provenance. The full finite GKR output is exactly the terminal residual of the
+decoded AIR/bus mixtures, retaining table order, weights and claims.
+
+Full check.py passed 3895 registered results with the existing axiom allowlist.
+This is generic formal composition; no native prover/adapter changed. The
+compiled circuit and supplied selector values are fixed in this theorem;
+challenge-dependent selector generation is not silently certified. Metadata
+membership, placement/width, slot geometry and canonical disjoint ownership
+remain explicit premises. The executable adapter currently reads selector
+values from the reconstruction certificate, so intended selector binding is
+still a concrete verifier integration obligation.
+
+Next bind metadata, formulas and selectors to protocol construction and compose
+with chronological failure bounds and execution semantics. This closes the
+planned all-table recovered-circuit identity, not accepted-proof soundness.
+Gate remains NOT_PASSED; full-NEAR capacity, secure parameters, quantum security
+and secure sub300000-byte feasibility remain unresolved.
