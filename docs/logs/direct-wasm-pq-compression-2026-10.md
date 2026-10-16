@@ -1828,3 +1828,9 @@ Composed initial residual power batching/equality-point error with adaptive conc
 Validation: full check.py passed (3707 registered results; allowed axioms only). Reproducible retained-fixture budget report gives EXEC738 residuals:745 initial+56 adaptive=801; CODE553:560+40=600. These are local component numerators only. No new runtime proof, executable Ext8, secure-size or quantum-security claim.
 
 Next: terminal current/next/PCS authentication and common-trace extraction, then global bus/multi-table/transcript composition. Fixed combined trace before local challenges and honest terminal equality remain explicit premises. Full 1 Pgas scope, quantified quantum soundness and secure sub300k total-input sizing remain open. Slice gate stays NOT_PASSED.
+
+### Ordinary shift kernel and quadratic reduction polynomial
+
+Inspected pq384_shift start_claim/kernel/verify. Current and next values share a power-batching challenge after the vector is committed; next claims use the alpha^width offset. Existing borrow proofs covered DP/bit indexing, while the optimized dual-weight theorem concerned upper-zeta weights. Added the ordinary borrow-DP-to-cyclic-predecessor-row-MLE identity needed here, valid at arbitrary field points. Constructed an affine polynomial for the actual current equality plus shifted kernel, then a quadratic polynomial for its product with batched current-column MLEs, with exact evaluation.
+
+Validation: full check.py passed (3714 registered results; allowed axioms only). Formal algebraic progress only; no executable, proof-size or security-level change. Dimension equalities and the common source trace remain explicit. Next: initial Boolean-sum/current-next-claim identity, vector batching plus adaptive shift count, and authenticated final original-column PCS openings. End-to-end quantum soundness, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.

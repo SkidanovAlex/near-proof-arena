@@ -1333,3 +1333,5 @@ import NearCompression.AirTraceCoordinateSlice
 import NearCompression.AirTraceSumcheck
 
 import NearCompression.AirLocalSoundness
+
+import NearCompression.ShiftReductionPolynomial

@@ -5317,3 +5317,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.air_trace_adaptive_sumcheck_count
 
 #print axioms NearCompression.air_local_invalid_trace_count
+
+#print axioms NearCompression.shift_weighted_cube_row_mle
+#print axioms NearCompression.shift_kernel_row_mle
+#print axioms NearCompression.shift_kernel_zipped_row_mle
+#print axioms NearCompression.shift_reduction_coordinate_eval
+#print axioms NearCompression.shift_reduction_coordinate_degree
+#print axioms NearCompression.shift_reduction_slice_degree
+#print axioms NearCompression.shift_reduction_slice_eval
