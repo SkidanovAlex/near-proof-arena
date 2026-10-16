@@ -178,6 +178,7 @@
   },
   "source_sha256": {
     "research/near-compression/NearCompression/GKROutputWeights.lean": "e9c8d4c3e2a6b78c0f5b05871c6ff6bb305b2081be91eb7a809e551608ce62c7",
+    "research/near-compression/NearCompression/GKRFixedInputEnvelope.lean": "2fabc0e978c9e91b142259d590eade0e2bb9f6bdc051ce4c7abae3f01f04fca6",
     "research/near-compression/NearCompression/TerminalSignedBalance.lean": "7010720417ad013f782a005c5d4d5866f2dafa0f57ee524bc362f36399e7587b",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean": "28d9d89ebe46682f614afb78d21b03e3a054451c59c5a70c73ddeaff840e3688",
     "research/near-compression/NearCompression/PackedComputedOpening.lean": "7c70fafd3d6a7652d3664d709674aeaaae8f80999bc173cc780705d8fd0ad77e",

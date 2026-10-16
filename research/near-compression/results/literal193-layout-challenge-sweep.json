@@ -65,7 +65,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     },
     {
       "name": "rho-one",
@@ -127,7 +128,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     },
     {
       "name": "point-zero",
@@ -186,7 +188,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     },
     {
       "name": "point-one",
@@ -243,7 +246,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     },
     {
       "name": "mixing-zero",
@@ -275,7 +279,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     },
     {
       "name": "mixing-one",
@@ -336,7 +341,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     },
     {
       "name": "tau-zero",
@@ -398,7 +404,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     },
     {
       "name": "tau-one",
@@ -460,7 +467,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     },
     {
       "name": "claim-zero",
@@ -521,7 +529,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     },
     {
       "name": "claim-one",
@@ -583,7 +592,8 @@
       "fixed_output_equal": true,
       "enlarged_input_size": 16384,
       "enlarged_output_equal": true,
-      "undersized_envelope_rejected": true
+      "undersized_envelope_rejected": true,
+      "formal_envelope_preconditions_checked": true
     }
   ],
   "observed_input_sizes": [

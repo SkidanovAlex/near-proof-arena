@@ -48,7 +48,11 @@ def main():
         assert fixed['input_size'] == 1 << fixed_log
         # Independent evaluation of both layouts on a deterministic nonzero input.
         private = [base((17*i+3) % 101) for i in range(layout['private_capacity'])]
-        original_value = bus.gkr.values(layout, private)[-1][layout['root']]
+        original_layers = bus.gkr.values(layout, private)
+        assert original_layers[0][layout['input_size']-1] == ZERO
+        assert all(0 <= a < layout['input_size'] and 0 <= b < layout['input_size']
+                   for _, a, b in layout['layers'][0])
+        original_value = original_layers[-1][layout['root']]
         fixed_value = bus.gkr.values(fixed, private)[-1][fixed['root']]
         assert original_value == fixed_value
         enlarged = fixed_layer_circuit(circuit, input_log=fixed_log+1)
@@ -63,7 +67,7 @@ def main():
                           layers=len(layout['layers']), layer_sizes=[len(x) for x in layout['layers']],
                           input_blocks=circuit['input_blocks'], fixed_input_size=fixed['input_size'],
                           fixed_output_equal=True, enlarged_input_size=enlarged['input_size'],
-                          enlarged_output_equal=True, undersized_envelope_rejected=True))
+                          enlarged_output_equal=True, undersized_envelope_rejected=True, formal_envelope_preconditions_checked=True))
     report = dict(status='PASS', fixture=str(args.fixture),
                   statement_sha256=hashlib.sha256((args.fixture/'statement.json').read_bytes()).hexdigest(),
                   proof_sha256=hashlib.sha256((args.fixture/'proof.json').read_bytes()).hexdigest(),

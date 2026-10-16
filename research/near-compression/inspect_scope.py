@@ -9,6 +9,7 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 SOURCES = [
     "research/near-compression/NearCompression/GKROutputWeights.lean",
+    "research/near-compression/NearCompression/GKRFixedInputEnvelope.lean",
     "research/near-compression/NearCompression/TerminalSignedBalance.lean",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean",
     "research/near-compression/NearCompression/PackedComputedOpening.lean",

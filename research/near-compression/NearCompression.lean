@@ -1371,3 +1371,5 @@ import NearCompression.Ext4TerminalBinding
 import NearCompression.NearFunctionalFoldAcceptance
 
 import NearCompression.Literal193GKRGeometry
+
+import NearCompression.GKRFixedInputEnvelope

@@ -5409,3 +5409,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.literal193_gkr_lanes_well_formed
 #print axioms NearCompression.literal193_gkr_lane_selectors
+
+#print axioms NearCompression.gkr_envelope_index_bound
+#print axioms NearCompression.gkr_envelope_operand_value
+#print axioms NearCompression.gkr_envelope_first_layer
+#print axioms NearCompression.gkr_envelope_circuit

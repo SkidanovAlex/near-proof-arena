@@ -2456,3 +2456,25 @@ Validation: all10 compiler cases,20 layout-output comparisons and10 undersized
 cap rejections passed; Python compilation and diff checks passed. No Lean
 sources changed, so the previous full formal audit remains applicable. Quantum
 security, end-to-end soundness and full NEAR secure size remain open.
+
+
+### Fixed-input envelope semantics
+
+`GKRFixedInputEnvelope.lean` proves the transformation used by the experimental
+fixed-input helper. For positive oldSize<=newSize, a zero reserved final input,
+and bounded first-layer operands, replacing oldSize-1 references with
+newSize-1 preserves each operand value. Consequently every first-layer output
+and every subsequent circuit output is identical for arbitrary field inputs.
+Only first-layer references change; later layers address gate outputs. The
+input vector is extended with zeros, leaving all old positions intact.
+
+The10-case literal compiler sweep now checks these exact zero-slot and operand
+bounds and still passes20 output comparisons and10 undersized-cap rejections.
+This is circuit-value preservation, not proof or transcript equivalence.
+Trusted cap binding must precede challenges in an integrated profile; a changed
+layout requires fresh proofs. Cap sufficiency/completeness, compiler refinement,
+full protocol composition, quantum security and full NEAR secure size remain
+open.
+
+Validation: full `check.py` passed with3780 registered results and enforced
+axiom allowlist; compiler sweep, Python compilation and diff checks passed.

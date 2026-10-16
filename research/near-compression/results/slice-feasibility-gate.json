@@ -135,7 +135,9 @@
     "results/near-functional-fold-acceptance-integration.json",
     "NearCompression/Literal193GKRGeometry.lean",
     "results/literal193-geometry-integration.json",
-    "results/literal193-layout-challenge-sweep.json"
+    "results/literal193-layout-challenge-sweep.json",
+    "NearCompression/GKRFixedInputEnvelope.lean",
+    "results/fixed-input-envelope-integration.json"
   ],
   "requirements": [
     {
@@ -150,7 +152,8 @@
       "needed": "Bind code/public state, AIR sources, GKR statements and final PCS claims; no separately trusted original proofs or unbound witness data.",
       "established": "Literal slice frontend reconstructs canonical AIR locally, checks actual Lean preparation against the same public vector, and verifies binary proof against the same statement and source roots. These roots are proof commitments, not externally trusted trace certificates.",
       "captured_geometry": "Packed literal193 fixture metadata replay validated76 lanes and2072 live slots; Lean kernel certificates now discharge lane WellFormed and CanonicalLaneSelectors for these exact table records. Compiler correspondence remains executable parity, not universal formal refinement.",
-      "challenge_layout_sweep": "Captured case plus rho=1 baseline and zero/one mutations of rowpoint,mixing,tau,claim preserve private blocks and8192 input slots in10 tested cases. Layer counts vary5..35. Fixed-input helper preserves evaluation on deterministic nonzero private values; not integrated into retained profile and not a universal challenge-independent geometry proof."
+      "challenge_layout_sweep": "Captured case plus rho=1 baseline and zero/one mutations of rowpoint,mixing,tau,claim preserve private blocks and8192 input slots in10 tested cases. Layer counts vary5..35. Fixed-input helper preserves evaluation on deterministic nonzero private values; not integrated into retained profile and not a universal challenge-independent geometry proof.",
+      "fixed_envelope_semantics": "For arbitrary field inputs, relocating the reserved zero in the first layer preserves all circuit outputs under explicit valid-operand, zero-slot and size conditions. All10 captured/synthetic compiler cases satisfy those preconditions. Integrated trusted-cap transcript binding and universal cap sufficiency remain open."
     },
     {
       "name": "Complete soundness ledger",
