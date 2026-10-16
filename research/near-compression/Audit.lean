@@ -5198,3 +5198,17 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.air_source_weighted_target
 
 #print axioms NearCompression.air_source_weighted_zero_count
+
+#print axioms NearCompression.air_first_selector_product
+
+#print axioms NearCompression.air_last_selector_product
+
+#print axioms NearCompression.air_transition_selector_product
+
+#print axioms NearCompression.air_product_selector_env
+
+#print axioms NearCompression.air_product_selector_expression_boolean
+
+#print axioms NearCompression.air_expression_ext8_lift
+
+#print axioms NearCompression.air_ext8_product_expression_boolean

@@ -1298,3 +1298,6 @@ import NearCompression.AirResidualBatchSoundness
 import NearCompression.AirEqualityWeightedTarget
 
 import NearCompression.AirBooleanRowEnvironment
+
+import NearCompression.AirSelectorProducts
+import NearCompression.AirExtensionLift

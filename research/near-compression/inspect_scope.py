@@ -11,6 +11,8 @@ SOURCES = [
     "research/near-compression/NearCompression/GKROutputWeights.lean",
     "research/near-compression/NearCompression/TerminalSignedBalance.lean",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean",
+    "research/near-compression/NearCompression/AirSelectorProducts.lean",
+    "research/near-compression/NearCompression/AirExtensionLift.lean",
     "research/near-compression/NearCompression/AirBooleanRowEnvironment.lean",
     "research/near-compression/NearCompression/AirEqualityWeightedTarget.lean",
     "research/near-compression/NearCompression/AirResidualBatchSoundness.lean",

@@ -180,6 +180,8 @@
     "research/near-compression/NearCompression/GKROutputWeights.lean": "e9c8d4c3e2a6b78c0f5b05871c6ff6bb305b2081be91eb7a809e551608ce62c7",
     "research/near-compression/NearCompression/TerminalSignedBalance.lean": "7010720417ad013f782a005c5d4d5866f2dafa0f57ee524bc362f36399e7587b",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean": "28d9d89ebe46682f614afb78d21b03e3a054451c59c5a70c73ddeaff840e3688",
+    "research/near-compression/NearCompression/AirSelectorProducts.lean": "994ab3675f9637668875b1ad1a99fa6a8aec33000f69070d243ad6dec7183515",
+    "research/near-compression/NearCompression/AirExtensionLift.lean": "84f33d4647a55c451e54bf7527ef384a41ccd6c09145b8d1aa86cc5749766c10",
     "research/near-compression/NearCompression/AirBooleanRowEnvironment.lean": "e847f6dc8e4cc9645dbca710e63c1d959fce82e42a2c4cb5c05b02c671d8d040",
     "research/near-compression/NearCompression/AirEqualityWeightedTarget.lean": "0a172fbb2b2aaeeca0724f94d52239cc17ea3c88b3ccede9d22806049a809df9",
     "research/near-compression/NearCompression/AirResidualBatchSoundness.lean": "253aa4a9c86895f473929959b3e7a6d6abb396b013b45d910ad8e7b1601b5815",

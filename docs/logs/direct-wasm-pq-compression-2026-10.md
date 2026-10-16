@@ -1710,3 +1710,9 @@ The concrete evaluator’s Boolean-row correspondence remains an explicit formal
 Added AirBooleanRowEnvironment.lean. The formal input environment interpolates current columns, cyclically permuted next columns, and first/last/transition row flags, while fixing public inputs. Every Expr.evalWith agrees with actual Expr.eval on Boolean rows. Ordered source batching, equality-weighted target and initial zero count now compose without a supplied source Boolean-correspondence premise. Full check.py audit passed3620 (/tmp/root-air-boolean-audit.log).
 
 Scope is source expressions in the formal MLE environment, not yet the entire executable weighted evaluator: auxiliary residuals, concrete selector-product/base-extension adapters, adaptive sumcheck, authenticated source/PCS inputs and QROM remain. No executable security parameters or proof size changed.
+
+### Concrete selector products and base-to-Ext8 source semantics
+
+Added AirSelectorProducts.lean: first=product(1-x), last=product(x), transition=1-last equal row-flag MLEs at all points, including dimension0/off-cube. Added AirExtensionLift.lean: certified Fp8.ofBase preserves actual Expr.eval for the lifted trace/public vector, and product-selector Boolean evaluation agrees with original BabyBear semantics. Full check.py audit passed3627 (/tmp/root-air-selector-lift-audit.log), standard axioms only.
+
+Auxiliary bus residual correspondence, combined target, adaptive sumcheck, authenticated inputs and complete QROM remain open. The Python verifier still runs its diagnostic Ext4 profile; no secure parameter or size claim changes.
