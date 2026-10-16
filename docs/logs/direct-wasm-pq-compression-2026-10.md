@@ -8526,3 +8526,34 @@ bounds. Generic factorization existence is now supplied, but rational-function
 field construction, extension existence, full MCA and protocol/QROM composition
 remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Inverses and normal representatives modulo irreducibles
+
+Added IrreducibleResidueInverse.lean with six audited public theorems.
+A nonzero polynomial below an irreducible modulus's degree has a constructed
+unit Bezout certificate with the modulus. General division extends this to
+any representative not divisible by the modulus. Reducing the Bezout
+coefficient supplies an inverse representative of degree below the modulus,
+with the product formally congruent to one. These results need no bound on
+the characteristic; that restriction is only for derivative separability.
+
+Defined residue equality as formal divisibility of the difference. Every
+polynomial has a reduced representative, and two reduced representatives
+in the same class are coefficientwise equal, regardless of trailing zeros.
+Nonzero base-field constants cannot vanish modulo an irreducible polynomial.
+This establishes key algebraic obligations for a root extension but does not
+yet construct the quotient equivalence, operations, field instance or root.
+
+Validation:34 small irreducible moduli over F2/F3/F5;517 nonzero residue
+inverses checked against exhaustive multiplication tables,1653 representative
+checks,12629 uniqueness pairs and93 nonzero constants. Certificates also
+transport to unreduced representatives. Three reducible Y^2 moduli exhibit
+nonzero nilpotents without inverses, preventing omission of irreducibility.
+Full audit4433 PASS, allowed axioms only. Evidence:
+results/irreducible-residue-inverse/.
+
+Next: quotient congruence and well-defined arithmetic, then the field instance
+and root evaluation. Rational-function field construction, useful branches,
+full MCA exception bounds and protocol/QROM composition remain open.
+Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

@@ -6298,3 +6298,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.polynomial_divisor_degree
 #print axioms NearCompression.small_degree_irreducible_divisor_bezout
+
+#print axioms NearCompression.irreducible_bounded_residue_bezout
+#print axioms NearCompression.irreducible_nondivisible_bezout
+#print axioms NearCompression.irreducible_residue_inverse
+#print axioms NearCompression.polynomial_residue_representative
+#print axioms NearCompression.polynomial_reduced_residue_unique
+#print axioms NearCompression.irreducible_residue_constant_nonzero

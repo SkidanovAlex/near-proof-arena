@@ -1,0 +1,26 @@
+{
+  "scope": "Constructed Bezout certificates and bounded inverses for every nonzero residue modulo an irreducible; reduced representatives exist and are coefficientwise unique. Quotient operations/field laws and root extension remain open.",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_irreducible_residue_inverse.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/airbender/direct-wasm/test_bezout_smoothness.py": "2c6e3e51de58102e7e69c836981e44aa91d8af3cefca74eae18c25c08d537560",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_curve_division.py": "caa6f88b112bdf9ca03d6682425ce69918fbc238532bf8412005bd664e26a52b",
+    "research/near-compression/airbender/direct-wasm/test_synthetic_multiplicity.py": "a61b2cdb7a9e6d2b81098a94de13be3d17a4eabca9bbd0f56996cc651a56f684",
+    "research/near-compression/airbender/direct-wasm/test_hensel_coefficient_step.py": "608f18f357f66021c8a3081ce4c8fd1425bbeff3572fbdba956225bec51ff9d6",
+    "research/near-compression/airbender/direct-wasm/test_hensel_bounded_reconstruction.py": "b67bb2202fb4572c53267e5c8917f9c3862d3518a1cab00c1fb3bc708085bce3",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/airbender/direct-wasm/test_polynomial_bezout_existence.py": "20c1f66fbc6688ad7a1f7acb5d4d0dc5169d8a8dfdb1bf686e3be4e7fb435fb6",
+    "research/near-compression/airbender/direct-wasm/test_polynomial_field_transport.py": "2818a558c55c2866c54173a389e7201b8eb47aec4c5cbee1d2fcd70c4e2e1f50",
+    "research/near-compression/airbender/direct-wasm/test_polynomial_factorization.py": "bde1c5eb42f2d162fe9a7bf95eb5705a8db4d3c3cec51c5b3acdcf5abde65bb7",
+    "research/near-compression/NearCompression/IrreducibleResidueInverse.lean": "2cfc33569ab70db5481ff373596a553ae3cbd4627b7431363633b17049fce74b",
+    "research/near-compression/NearCompression/PolynomialFactorization.lean": "6202e15dc3c045421e6bab5e10fc0015b397a3242dc6ef4271d248070b5b5647",
+    "research/near-compression/NearCompression/PolynomialBezoutExistence.lean": "b13a30ed78605802ca96f7fabf9ce12d94a4aa573b8795ab6e5bd1f73e92031e",
+    "research/near-compression/airbender/direct-wasm/test_irreducible_residue_inverse.py": "d11a492a44b210b6e61a298cba0806e882ef49f2619ad0c792dbe8ef1553e6bf",
+    "research/near-compression/results/irreducible-residue-inverse/report.json": "c8808f6d326602c1c73bc0ded83b35658fcd322fc5f54d212dac6ef2974f8a44",
+    "research/near-compression/results/irreducible-residue-inverse/lean-audit.log.gz": "38514659cd7d5db2b3232bfcb1e5841f4b1435b1823b47315aa704e1fab21df8"
+  }
+}

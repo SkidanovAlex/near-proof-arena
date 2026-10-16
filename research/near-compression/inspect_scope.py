@@ -316,6 +316,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SmallCharacteristicDerivative.lean",
     "research/near-compression/NearCompression/BezoutSmoothness.lean",
     "research/near-compression/NearCompression/PolynomialDivision.lean",
+    "research/near-compression/NearCompression/IrreducibleResidueInverse.lean",
     "research/near-compression/NearCompression/PolynomialFactorization.lean",
     "research/near-compression/NearCompression/PolynomialFieldTransport.lean",
     "research/near-compression/NearCompression/IrreducibleDerivativeBezout.lean",
