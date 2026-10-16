@@ -5642,3 +5642,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.decoded_local_prefix_count
 #print axioms NearCompression.decoded_local_continuation_split
 #print axioms NearCompression.decoded_invalid_trace_continuation_budget
+
+#print axioms NearCompression.decoded_table_before_placement
+#print axioms NearCompression.decoded_family_before_compiler
+#print axioms NearCompression.preselected_decoded_mixture
+#print axioms NearCompression.preselected_formula_outputs

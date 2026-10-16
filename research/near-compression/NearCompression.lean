@@ -1465,3 +1465,5 @@ import NearCompression.JointPCSNormalization
 import NearCompression.AveragedTerminalFailure
 
 import NearCompression.DecodedLocalContinuation
+
+import NearCompression.PrechallengeDecodedTables

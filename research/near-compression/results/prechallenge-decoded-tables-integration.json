@@ -1,0 +1,37 @@
+{
+  "status": "DECODED_FAMILY_PRECEDES_ALL_COMPILER_AND_BATCH_CHALLENGE_CHOICES",
+  "module": "NearCompression/PrechallengeDecodedTables.lean",
+  "theorems": [
+    "decoded_table_before_placement",
+    "decoded_family_before_compiler",
+    "preselected_decoded_mixture",
+    "preselected_formula_outputs"
+  ],
+  "finding": "Prior decoded-circuit existential fixed the compiled tables before selecting decoded columns. Applying it separately per rho does not itself establish a rho-independent decoded assignment required for batching.",
+  "proved": [
+    "Metadata-only zero-selector placement selects one decoded table with source polynomial provenance before later placements.",
+    "A whole metadata-indexed decoded family is chosen before all compiler tables, selector values, rowpoints and batching challenges.",
+    "Any later metadata-consistent placement and checked formula mixture evaluates on that same decoded table.",
+    "All later checked compiler table outputs use the preselected family, suitable for substitution into the universal recovered circuit identity."
+  ],
+  "assumptions": [
+    "Fixed canonical source tuple and metadata with disjoint lane supports.",
+    "Later placements match slot metadata; checked formula widths remain bounded.",
+    "Selector values may vary; intended selector/transcript checks remain separate."
+  ],
+  "remaining": [
+    "Connect local mismatch to a fixed terminal output list using this stronger family.",
+    "Compose concrete global error counts and no-representative branch.",
+    "Executable refinement, computational/QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3966,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; generic quantifier-order strengthening only."
+  }
+}

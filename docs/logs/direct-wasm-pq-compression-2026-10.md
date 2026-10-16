@@ -3718,3 +3718,24 @@ and executable source/authentication/specification refinement remain open.
 Full check.py passed 3962 registered results with the existing axiom allowlist.
 No native code changed. Global/PQ security and secure full-NEAR size remain open;
 gate NOT_PASSED.
+
+### Decoded family now precedes compiler and batching choices
+
+While connecting local mismatch to terminal batching, identified a quantifier
+issue: the previous circuit theorem fixed compiled tables before selecting its
+decoded witness. Applying that existential separately for each rho does not
+establish one assignment fixed before rho. No prior theorem was invalid, but
+this stronger order is required for the planned batching composition.
+
+PrechallengeDecodedTables uses a metadata-only placement with zero selectors
+to select decoded columns, then proves the same columns work for every later
+metadata-consistent placement. The entire metadata-indexed family precedes all
+compiler tables, selectors, rowpoints and batch challenges, retaining polynomial
+provenance. Any later checked formula/output list evaluates on that same family.
+This can be substituted into the universal recovered circuit identity without
+reselecting decoded data for each rho.
+
+Full check.py passed 3966 registered results with the existing axiom allowlist.
+No native code changed. Local-mismatch-to-fixed-output binding, global counts,
+no-representative integration, computational/QROM security and secure full-NEAR
+size remain open; gate NOT_PASSED.

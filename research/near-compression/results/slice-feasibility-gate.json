@@ -247,7 +247,9 @@
     "NearCompression/AveragedTerminalFailure.lean",
     "results/averaged-terminal-failure-integration.json",
     "NearCompression/DecodedLocalContinuation.lean",
-    "results/decoded-local-continuation-integration.json"
+    "results/decoded-local-continuation-integration.json",
+    "NearCompression/PrechallengeDecodedTables.lean",
+    "results/prechallenge-decoded-tables-integration.json"
   ],
   "requirements": [
     {
