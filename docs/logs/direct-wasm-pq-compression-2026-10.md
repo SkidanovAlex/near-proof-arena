@@ -3378,3 +3378,26 @@ with chronological failure bounds and execution semantics. This closes the
 planned all-table recovered-circuit identity, not accepted-proof soundness.
 Gate remains NOT_PASSED; full-NEAR capacity, secure parameters, quantum security
 and secure sub300000-byte feasibility remain unresolved.
+
+### Selector products bind decoded columns to one row environment
+
+Inspected the native selector construction and certificate checker. Python
+computes product(1-r), product(r), and 1-product(r), and checks captured values
+against the terminal point. The Lean adapter currently parses those supplied
+values without deriving them from a terminal point.
+
+DecodedSelectorBinding introduces an executable point-length/product check and
+uses existing selector MLE proofs to derive boundary flag semantics. In-range
+lane-coordinate alignment then connects decoded-column environments to a
+common-point row environment, including cyclic next rows. Checked AIR/bus
+mixtures preserve their values. Padded point coordinates and unused columns
+need not agree. This does not silently assume selectors are Boolean at arbitrary
+field points.
+
+Kernel regressions cover the empty point, off-Boolean [2,3], both Boolean corners,
+and rejection of wrong transition/length. Full check.py passed 3899 registered
+results with the existing axiom allowlist. No native adapter/prover changed.
+The new selector checker is not yet invoked by the executable adapter; transcript
+point binding and lane alignment remain explicit integration work. Formula
+specification, execution, global/PQ soundness and secure full-NEAR size remain
+open. Gate NOT_PASSED.

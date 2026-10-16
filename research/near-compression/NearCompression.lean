@@ -1433,3 +1433,5 @@ import NearCompression.RecoveredSymbolicEnvironment
 import NearCompression.FormulaEnvironmentTransport
 
 import NearCompression.DecodedFormulaCircuit
+
+import NearCompression.DecodedSelectorBinding

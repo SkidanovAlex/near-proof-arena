@@ -1,0 +1,48 @@
+{
+  "status": "CHECKED_SELECTOR_PRODUCTS_AND_COMMON_POINT_ROW_ENVIRONMENT",
+  "module": "NearCompression/DecodedSelectorBinding.lean",
+  "theorems": [
+    "symbolic_selector_checked",
+    "decoded_common_point_environment",
+    "decoded_common_point_mixture",
+    "decoded_selector_regressions"
+  ],
+  "proved": [
+    "symbolicSelectorCheck binds point length and all three supplied selectors to verifier product formulas.",
+    "Product selectors equal MLEs of first/last/transition flags, using existing air selector theorems.",
+    "In-range lane-coordinate agreement gives bounded agreement between decoded-column environment and one common-point row environment with cyclic next rows.",
+    "Every checked mixed AIR/bus formula list preserves its value across this environment connection."
+  ],
+  "implementation_evidence": [
+    "table_constraint_whir.py selectors computes first as product(1-r), last as product(r), transition as 1-last.",
+    "check_terminal_rebuild_certificates.py independently checks captured selectors against selectors(term point).",
+    "CheckRebuildRecords.lean currently parses supplied selectors; the new checker is not yet invoked by that executable."
+  ],
+  "assumptions": [
+    "Lane coordinates align with the table point on indices below rowLog; no equality required outside that range.",
+    "Checked residual list and width within source plus auxiliary columns.",
+    "Selector checker acceptance."
+  ],
+  "remaining": [
+    "Bind table points and lane coordinate alignment to the actual transcript and metadata.",
+    "Invoke selector checks in the complete executable verifier contract.",
+    "Bind intended AIR/bus formula generation and decoded row environment to execution semantics.",
+    "Global soundness, quantum Fiat-Shamir, secure parameters and full-NEAR sub300000-byte feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3899,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "kernel_regressions": [
+      "Zero-dimensional point: first=last=1, transition=0.",
+      "Off-Boolean point [2,3]: first=2, last=6, transition=-5.",
+      "Wrong transition or point length rejected.",
+      "First and last Boolean corners accepted."
+    ],
+    "native_capture_execution": "Not rerun; no native adapter/prover change."
+  }
+}

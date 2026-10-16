@@ -5559,3 +5559,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.decoded_formula_outputs
 #print axioms NearCompression.decoded_formula_recovered_circuit
+
+#print axioms NearCompression.symbolic_selector_checked
+#print axioms NearCompression.decoded_common_point_environment
+#print axioms NearCompression.decoded_common_point_mixture
+#print axioms NearCompression.decoded_selector_regressions
