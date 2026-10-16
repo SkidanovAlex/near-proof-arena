@@ -8706,3 +8706,32 @@ Next: connect algebraic root branches and Hensel construction to specialization,
 including the additional algebraic exceptional points. Full MCA and protocol/
 QROM composition remain open. Diagnostic1344645 B unchanged; feasibility
 NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Specialized algebraic-root smoothness feeds Hensel lifting
+
+Added AlgebraicRootSpecialization.lean with six audited public theorems.
+Defined position-preserving coefficient specialization for polynomials in Y
+with rational-function coefficients. Horner evaluation and derivative
+evaluation preserve this partial relation. A unit rational Bezout certificate
+therefore supplies nonzero derivative at every specialized root whenever
+its polynomial and two certificate polynomials specialize safely.
+
+The existing irreducible low-degree theorem now supplies the certificate
+and its specialization guarantee together over the constructed rational
+field. Composed the resulting nonzero derivative with the actual initial-Y
+polynomial and operational Hensel slope, yielding finite lifts at every
+precision without a separate smoothness oracle. No polynomial convergence,
+bounded-degree exact branch or general branch-specialization theorem is claimed.
+
+Validation:233 parameterized quadratic certificates Q=Y^2+b(Z)Y+c(Z), with
+A=-4/(b^2-4c), B=(2Y+b)/(b^2-4c). Verified699 formal coefficient identities,
+24144 safe certificate evaluations,1822 specialized smooth roots and5466
+finite Hensel lifts. All191 singular roots occur at the191 excluded
+discriminant points; the fixture-specific root count satisfies its actual
+discriminant degree bound. Full audit4495 PASS, allowed axioms only. Evidence:
+results/algebraic-root-specialization/.
+
+Next: general coefficient/certificate denominator degree bounds and preservation
+of the relevant algebraic branch under specialization. Full MCA exceptions and
+protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

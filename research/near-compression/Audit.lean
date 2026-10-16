@@ -6367,3 +6367,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.rational_expression_identity_specializes
 #print axioms NearCompression.polynomial_rational_value_inv
 #print axioms NearCompression.rational_expression_identity_exception_count
+
+#print axioms NearCompression.rational_coefficient_specializes
+#print axioms NearCompression.rational_polynomial_eval_specializes
+#print axioms NearCompression.rational_polynomial_derivative_specializes
+#print axioms NearCompression.rational_bezout_specialized_root_smooth
+#print axioms NearCompression.rational_irreducible_specialization_certificate
+#print axioms NearCompression.rational_certificate_hensel_lift

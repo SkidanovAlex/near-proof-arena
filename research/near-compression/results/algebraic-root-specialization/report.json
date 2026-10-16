@@ -1,0 +1,92 @@
+{
+  "quadratic_certificate_fixtures": 233,
+  "formal_coefficient_identities": 699,
+  "safe_certificate_evaluations": 24144,
+  "specialized_smooth_roots": 1822,
+  "finite_hensel_lifts": 5466,
+  "excluded_discriminant_points": 191,
+  "singular_roots_only_at_excluded_points": 191,
+  "witnesses": [
+    {
+      "prime": 3,
+      "b": [
+        1,
+        2,
+        1
+      ],
+      "c": [
+        0
+      ],
+      "discriminant": [
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "z": 0,
+      "root": 0
+    },
+    {
+      "prime": 3,
+      "b": [
+        1,
+        2,
+        1
+      ],
+      "c": [
+        0
+      ],
+      "discriminant": [
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "z": 0,
+      "root": 2
+    },
+    {
+      "prime": 3,
+      "b": [
+        1,
+        2,
+        1
+      ],
+      "c": [
+        0
+      ],
+      "discriminant": [
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "z": 1,
+      "root": 0
+    },
+    {
+      "prime": 3,
+      "b": [
+        1,
+        2,
+        1
+      ],
+      "c": [
+        0
+      ],
+      "discriminant": [
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "z": 1,
+      "root": 2
+    }
+  ],
+  "scope": "Specialized rational Bezout certificates imply smooth roots and finite Hensel lifts. Generic coefficient-denominator budgets, branch specialization and full MCA remain open."
+}
