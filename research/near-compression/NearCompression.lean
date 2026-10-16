@@ -1720,3 +1720,5 @@ import NearCompression.PolynomialRationalField
 import NearCompression.RationalFunctionSpecialization
 
 import NearCompression.AlgebraicRootSpecialization
+
+import NearCompression.RationalCoefficientGuards

@@ -1,0 +1,8 @@
+{
+  "coefficient_families": 320,
+  "safe_coefficient_evaluations": 4952,
+  "certificate_presentations": 179,
+  "singular_points_inside_guard": 192,
+  "smooth_roots_outside_guard": 764,
+  "scope": "Constructed presentation-dependent denominator guards and singular-point bounds. Bounds from original interpolation dimensions and full MCA remain open."
+}

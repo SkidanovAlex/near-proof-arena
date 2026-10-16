@@ -8735,3 +8735,33 @@ Next: general coefficient/certificate denominator degree bounds and preservation
 of the relevant algebraic branch under specialization. Full MCA exceptions and
 protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Constructed coefficient guards and singular-specialization counts
+
+Added RationalCoefficientGuards.lean with nine audited public theorems.
+Every coefficient of the actual rational-function quotient has a polynomial
+numerator/nonzero denominator presentation, and every polynomial has a finite
+list of such presentations preserving coefficient positions. The product of
+all denominators is formally nonzero and has degree at most the sum of the
+individual presentation degree bounds. Outside its roots, all coefficient
+specialization witnesses are constructed automatically.
+
+A combined guard for a polynomial and both Bezout coefficient polynomials
+therefore guarantees smooth specialized roots. Singular-root specialization
+points are contained in the guard roots and bounded by its degree budget on
+distinct samples. Irreducibility below the characteristic now yields the
+certificate, finite presentations, nonzero guard and singular-point bound
+without assuming per-point coefficient specialization. The bound remains
+presentation-dependent; it is NOT a bound from the original interpolation
+dimensions or the complete MCA exceptional-set theorem.
+
+Validation:320 coefficient families,4952 safe coefficient evaluations and179
+quadratic certificate presentations with deliberately introduced cancellable
+denominator factors and padding. All192 singular points lie inside the shared
+guard;764 roots outside it are smooth. Full audit4504 PASS, allowed axioms
+only. Evidence: results/rational-coefficient-guards/.
+
+Next: bound certificate denominator degrees from source polynomial degrees,
+and preserve useful algebraic branches under specialization. Full MCA and
+protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

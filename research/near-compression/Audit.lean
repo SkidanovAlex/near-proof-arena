@@ -6374,3 +6374,13 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.rational_bezout_specialized_root_smooth
 #print axioms NearCompression.rational_irreducible_specialization_certificate
 #print axioms NearCompression.rational_certificate_hensel_lift
+
+#print axioms NearCompression.rational_coefficient_presentation_exists
+#print axioms NearCompression.rational_polynomial_presentation_exists
+#print axioms NearCompression.coefficient_denominator_guard_nonzero
+#print axioms NearCompression.coefficient_denominator_guard_degree
+#print axioms NearCompression.coefficient_denominator_guard_specializes
+#print axioms NearCompression.coefficient_denominator_guard_root_count
+#print axioms NearCompression.presented_bezout_guard_smooth
+#print axioms NearCompression.presented_bezout_singular_count
+#print axioms NearCompression.irreducible_specialization_guard_exists
