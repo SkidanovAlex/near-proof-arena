@@ -5990,3 +5990,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.call_descriptor_ext8_nonzero
 #print axioms NearCompression.call_generated_ext8_residuals
 #print axioms NearCompression.call_descriptor_array_zero_count
+
+#print axioms NearCompression.call_circuit_functional
+#print axioms NearCompression.call_circuit_residual_sum

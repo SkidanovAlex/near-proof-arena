@@ -5957,3 +5957,36 @@ Ext8 model; the retained small hash-call proof still uses diagnostic Ext4 and
 is not granted Ext8 or PQ128 security by this theorem. GKR circuit lowering,
 commitment/PCS composition, transcript/QROM analysis, full recursive operand
 provenance and full NEAR 1Pgas feasibility remain open.
+
+
+### Sparse call DAG functional and empty-support correction
+
+CallCircuitRoute.lean reuses the existing TerminalDAGRun evaluator and
+TerminalBalanceRoute addition-tree semantics. Its structural certificate binds
+all nonzero coefficient slots to input-times-constant leaves, the balanced sum,
+and the final claim subtraction. Exact support prevents omitted nonzero terms.
+call_circuit_functional derives the root's dot-minus-claim value from acyclic
+execution and this structural route; call_circuit_residual_sum composes the
+result with the sequential array compiler. Neither theorem assumes root-value
+equality. Structural route construction for arbitrary emitted Python circuits
+is still an explicit obligation, not silently discharged by the theorem.
+
+The executable compiler now exposes compile_dag for regression inspection.
+Inspection found a real empty-support bug: terms[0] crashed if all coefficients
+cancelled. It now emits a constant-zero sum node before subtracting the claim.
+This handles both an identically zero functional and a constant nonzero
+functional with zero coefficient support. Existing retained proof bytes are
+unchanged and still verify.
+
+The parity test checks actual DAG acyclicity, exact sparse support and leaf
+constants, root subtraction, and agreement of independent DAG execution,
+layered GKR evaluation and direct dot-minus-claim on three input vectors for
+each of five scenarios: retained, padded, aliases, zero support and constant
+failure. Deliberately changing the root subtraction to addition is rejected.
+These Python checks are concrete evidence, not kernel-checked certificates.
+
+Validation: full check.py PASS4182, /tmp/call-circuit-audit.log. Extended parity
+PASS, /tmp/call-circuit-parity-v2.log; retained results/call-array-parity report
+includes source hashes. Next formal work is certificate extraction/checking
+and composition with existing layer-route semantics. General layering
+refinement, full recursion, PQ128/QROM and full NEAR1Pgas/sub300k remain open.

@@ -46,23 +46,28 @@ def compile_coefficients(eq,weights,capacity):
     return coeff,claim
 
 
-def compile_layout(statement,expected,calls):
-    eq=equations(statement,expected,calls);spec=statement['spec'];n=1<<spec['log_rows'][3];capacity=n*256
-    st=hash_parts(PROFILE,canonical(expected),canonical(calls),canonical(spec),bytes.fromhex(statement['roots'][3]))
-    t=Transcript(st);point=[tuple(x) for x in t.draw(b'call-equations-after-use-root',(len(eq)-1).bit_length(),4)[0]]
-    coeff,claim=compile_coefficients(eq,g.eqs(point),capacity)
+def compile_dag(coeff,claim,capacity):
     nodes=[['input',i] for i in range(capacity)];terms=[]
     def emit(node):nodes.append(node);return len(nodes)-1
     for i,w in enumerate(coeff):
         if w!=g.ZERO:terms.append(emit(['mul',i,emit(['const',*w])]))
     while len(terms)>1:terms=[emit(['add',terms[i],terms[i+1]]) if i+1<len(terms) else terms[i] for i in range(0,len(terms),2)]
-    root=emit(['sub',terms[0],emit(['const',*claim])]);live=set();todo=[root]
+    total=terms[0] if terms else emit(['const',*g.ZERO])
+    root=emit(['sub',total,emit(['const',*claim])]);live=set();todo=[root]
     while todo:
         i=todo.pop()
         if i in live:continue
         live.add(i)
         if nodes[i][0] in ('add','sub','mul'):todo.extend(nodes[i][1:])
-    layout=g.layer_circuit(dict(nodes=nodes,live_nodes=sorted(live),private_input_capacity=capacity,root=root))
+    return dict(nodes=nodes,live_nodes=sorted(live),private_input_capacity=capacity,root=root)
+
+
+def compile_layout(statement,expected,calls):
+    eq=equations(statement,expected,calls);spec=statement['spec'];n=1<<spec['log_rows'][3];capacity=n*256
+    st=hash_parts(PROFILE,canonical(expected),canonical(calls),canonical(spec),bytes.fromhex(statement['roots'][3]))
+    t=Transcript(st);point=[tuple(x) for x in t.draw(b'call-equations-after-use-root',(len(eq)-1).bit_length(),4)[0]]
+    coeff,claim=compile_coefficients(eq,g.eqs(point),capacity)
+    layout=g.layer_circuit(compile_dag(coeff,claim,capacity))
     return layout,st,t.seed,eq
 
 
