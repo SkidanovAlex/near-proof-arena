@@ -676,5 +676,14 @@
     ],
     "retained193_coefficient_sum_matches_gkr_claim": true,
     "scope": "Ext8 current/cyclic-next dual Mobius weights derived from GKR slots. Independent base coefficient conversion matches required aggregate on retained execution. Descriptors omit commitment roots; PCS authentication, batching/folding proof and full envelope remain open."
+  },
+  "native_ext8_fft": {
+    "status": "REFERENCE_AND_PCS_PARITY_PASS",
+    "fft_cases": 10,
+    "direct_evaluations": 27,
+    "merkle_roots": 4,
+    "retained_degree": 4096,
+    "lde_domain": 16384,
+    "scope": "Native natural-order FFT/LDE4, canonical buffers and overlap/capacity rejection. Optional reusable scalar PCS backend gives identical root/proof with independent verifier. Full weighted slice PCS integration, Rust refinement, quantum security and full envelope remain open."
   }
 }

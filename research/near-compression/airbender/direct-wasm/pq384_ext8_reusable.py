@@ -49,9 +49,9 @@ def eqweights(point):
         a=e.canonical(a);w=[e.mul(x,e.sub(e.ONE,a)) for x in w]+[e.mul(x,a) for x in w]
     return w
 
-def tree(coeff,context,base_source):
+def tree(coeff,context,base_source, *, kernel=None):
     d=len(coeff);omega=pow(440564289,(1<<27)//(4*d),e.P)
-    values=e.fft(coeff+[e.ZERO]*(3*d),omega)
+    values=e.fft(coeff+[e.ZERO]*(3*d),omega) if kernel is None else kernel.fft(coeff,lde4=True)
     leaves=[]
     for i in range(2*d):
         a,b=values[i],values[i+2*d]
@@ -61,9 +61,9 @@ def tree(coeff,context,base_source):
         else:leaves.append(extbytes(a)+extbytes(b))
     root,layers=h.merkle_tree(leaves,context)
     return dict(root=root,layers=layers,leaves=leaves)
-def source_tree(coeff,config):
+def source_tree(coeff,config, *, kernel=None):
     h.require(type(coeff)is list and len(coeff)==config['degree'],'source shape')
-    return tree([e.base(a) for a in coeff],source_context(config),True)
+    return tree([e.base(a) for a in coeff],source_context(config),True,kernel=kernel)
 def opening(t,i):return dict(leaf=t['leaves'][i].hex(),path=[v.hex() for v in h.merkle_path(t['layers'],i)])
 def read_opening(o,root,context,d,i,base_source):
     h.require(type(o)is dict and set(o)=={'leaf','path'},'opening fields')
@@ -87,14 +87,14 @@ def sample(t,domain,q):
         if v<e.P//domain*domain:out.append(v%domain)
         if len(out)==q:return out
     raise ValueError('query rejection budget')
-def prove(coeff,config,expected_root):
-    t=start(config,expected_root);src=source_tree(coeff,config)
+def prove(coeff,config,expected_root, *, kernel=None):
+    t=start(config,expected_root);src=source_tree(coeff,config,kernel=kernel)
     h.require(src['root']==expected_root,'source root');cs=[e.base(a) for a in coeff];ws=eqweights(config['point'])
     claim=e.canonical(config['claim']);trees=[src];rounds=[];d=len(cs)
     while d>1:
         wire=[list(a) for a in e.quadratic(cs,ws)];r,claim=round_start(t,wire,claim)
         cs=e.affine_fold(cs,r);ws=e.affine_fold(ws,r);d//=2
-        nxt=tree(cs,fold_context(t.seed,d),False);trees.append(nxt)
+        nxt=tree(cs,fold_context(t.seed,d),False,kernel=kernel);trees.append(nxt)
         t.commit(b'ext8/next-root',nxt['root']);rounds.append(dict(quadratic=wire,root=nxt['root'].hex()))
     h.require(e.mul(cs[0],ws[0])==claim,'terminal claim');terminal=list(cs[0]);t.commit(b'ext8/terminal',extbytes(terminal))
     queries=[]

@@ -4,12 +4,15 @@ Build kernel_ext8.rs as a cdylib and supply its path. Python validates shape
 and scalar canonicality before allocation; Rust independently checks scalars.
 """
 import ctypes
+from array import array
 import pq384_ext8_reference as f
 
 class Kernel:
     def __init__(self, library):
         self.lib=ctypes.CDLL(str(library))
         ptr=ctypes.POINTER(ctypes.c_uint32)
+        self.lib.near_ext8_fft.argtypes=[ptr,ctypes.c_size_t,ptr,ctypes.c_size_t,ctypes.c_size_t]
+        self.lib.near_ext8_fft.restype=ctypes.c_int
         self.lib.near_ext8_fold.argtypes=[ptr,ctypes.c_size_t,ptr,ptr]
         self.lib.near_ext8_quadratic.argtypes=[ptr,ptr,ctypes.c_size_t,ptr]
         self.lib.near_ext8_gkr_round.argtypes=[ptr,ctypes.c_size_t,ptr,ptr,ctypes.c_size_t,ptr,ctypes.c_size_t,ctypes.c_uint32,ctypes.c_uint32,ptr,ptr]
@@ -48,3 +51,18 @@ class Kernel:
         if self.lib.near_ext8_gkr_round(gs,len(gates),w,v,len(original),fv,len(folded),axis,bit,left,out):
             raise ValueError('native GKR round rejected')
         return self.unpack(out,3)
+
+    def fft_words(self,words, *, lde4=False):
+        if not isinstance(words,array) or words.typecode!='I' or words.itemsize!=4 or not words or len(words)%8:
+            raise ValueError('Ext8 uint32 words')
+        n=len(words)//8;domain=n*(4 if lde4 else 1)
+        if domain>1<<22 or domain&(domain-1):raise ValueError('FFT domain')
+        out=array('I',[0])*(8*domain)
+        src=(ctypes.c_uint32*len(words)).from_buffer(words);dst=(ctypes.c_uint32*len(out)).from_buffer(out)
+        if self.lib.near_ext8_fft(src,len(words),dst,len(out),domain):raise ValueError('native FFT rejected')
+        return out
+    def lde4_words(self,words):return self.fft_words(words,lde4=True)
+    def fft(self,coefficients, *, lde4=False):
+        words=array('I',[x for c in coefficients for x in f.canonical(c)])
+        out=self.fft_words(words,lde4=lde4)
+        return [tuple(out[i:i+8]) for i in range(0,len(out),8)]

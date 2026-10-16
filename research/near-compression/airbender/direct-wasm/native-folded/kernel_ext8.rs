@@ -88,3 +88,49 @@ pub unsafe extern "C" fn near_ext8_gkr_round(
     for j in 0..3 {out[8*j..8*j+8].copy_from_slice(&q[j]);}
     0
 }
+
+fn base_power(mut a:u64,mut n:usize)->u64 {
+    let mut result=1;
+    while n>0 {if n&1!=0 {result=result*a%P;}a=a*a%P;n>>=1;}
+    result
+}
+/// Natural-order FFT or LDE4, eight base coefficients per element.
+/// Caller owns aligned buffers of declared sizes. Output must not overlap input.
+/// Validation finishes before any output write. Domain is bounded to 2^22.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn near_ext8_fft(src:*const u32,len:usize,out:*mut u32,cap:usize,domain:usize)->i32 {
+    if domain==0 || !domain.is_power_of_two() || domain>1<<22 || len==0 || len%8!=0 {return 1;}
+    let n=len/8;
+    if n!=domain && n.checked_mul(4)!=Some(domain) {return 1;}
+    let needed=domain*8;
+    if src.is_null() || out.is_null() || (src as usize)%4!=0 || (out as usize)%4!=0 || cap<needed {return 1;}
+    let Some(src_end)=(src as usize).checked_add(len*4) else {return 1;};
+    let Some(out_end)=(out as usize).checked_add(needed*4) else {return 1;};
+    if (src as usize)<out_end && (out as usize)<src_end {return 1;}
+    let input=unsafe {std::slice::from_raw_parts(src,len)};
+    if !valid(input) {return 1;}
+    let a=unsafe {std::slice::from_raw_parts_mut(out,needed)};
+    a.fill(0);a[..len].copy_from_slice(input);
+    let mut j=0;
+    for i in 1..domain {
+        let mut bit=domain>>1;
+        while j&bit!=0 {j^=bit;bit>>=1;}j^=bit;
+        if i<j {for k in 0..8 {a.swap(8*i+k,8*j+k);}}
+    }
+    let omega=base_power(440564289,(1<<27)/domain);let mut size=2;
+    while size<=domain {
+        let step=base_power(omega,domain/size);
+        for start in (0..domain).step_by(size) {
+            let mut w=1;
+            for i in start..start+size/2 {
+                for k in 0..8 {
+                    let u=a[8*i+k] as u64;let v=a[8*(i+size/2)+k] as u64*w%P;
+                    a[8*i+k]=((u+v)%P) as u32;a[8*(i+size/2)+k]=((u+P-v)%P) as u32;
+                }
+                w=w*step%P;
+            }
+        }
+        size*=2;
+    }
+    0
+}
