@@ -7932,3 +7932,31 @@ then progress on factor/useful-curve extraction and exceptional-set counting.
 The main MCA bound, actual protocol extraction and QROM remain open. No runtime/
 query/profile/proof-size change: latest verified diagnostic bundle1344645 B,
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Dense specialization and total-annihilation bound
+
+Added TrivariateSpecialization.lean with four audited public theorems. The
+dense bivariate specialization preserves the weighted X/Y degree budget;
+its actual translated mixed coefficient equals evaluation of the sparse
+source-line jet polynomial. Consequently the formal interpolation constraints
+hold at every Z, without a field-size or sampled-evaluation premise. Finite
+sum reordering explicitly connects the two coefficient enumerations.
+
+A nonzero sparse coefficient vector can yield an identically zero bivariate
+specialization at at most DZ-1 distinct sampled Z values. The proof selects
+one nonzero coefficient polynomial and applies the formal polynomial root
+bound. This counts total annihilation only: it does NOT establish the full
+MCA exceptional set, useful factors, Hensel lifting, or verifier extraction.
+
+Validation: 200 nonzero vectors over F2/F3/F5/F17, 12150 mixed-coefficient
+identities, and all specializations of three previously retained interpolation
+witnesses. Boundary checks include Q=Z, the nonzero formal polynomial Z^3-Z
+over F3, and failures without distinct samples or a nonzero vector. Replaying
+the test reproduced the retained report exactly. Full audit: 4334 PASS,
+allowed axioms only. Evidence: results/trivariate-specialization/, including
+the prior witness report hash and compressed audit.
+
+Next: nonzero specialized interpolant root forcing and useful-factor/curve
+extraction, followed by the complete MCA exceptional-count argument. No runtime
+or security parameter change: diagnostic bundle 1344645 B; feasibility
+NOT_PASSED. Full NEAR 1 Petagas, PQ128 and sub300000 B remain open.

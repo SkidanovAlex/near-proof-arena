@@ -469,6 +469,7 @@
     "research/near-compression/NearCompression/GSInterpolation.lean": "bfe400f202b6875825aa49df8ef5c1b9ff9318d864a5a119794794a24621b66c",
     "research/near-compression/NearCompression/JetCenterPolynomial.lean": "16e006f7dad6d7a6ada1ddef84c149e915e65f122275ee186b088978466bf6c8",
     "research/near-compression/NearCompression/TrivariateInterpolation.lean": "09ddd592efdd456194b442cdbdb492a537ec6c608c77773f85a0948cb9d487f8",
+    "research/near-compression/NearCompression/TrivariateSpecialization.lean": "a166502be464225da86895407f7dda7d859f887c40c7715b966553906a443ade",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean": "d9a5cbb964e9aab9d9a8bbe2ef3f558f473d587cf9e941cabaf8491b422cc2d9",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean": "412710950ab5940e517c3d4af7620fe18a9edb0318627fbf88d2ef77cfcd64a0",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean": "09aa0805e94738cf5370b36f8dbbcc1fb5dd0ec6d704dbd7368a5751bbd27b14",

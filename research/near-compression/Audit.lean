@@ -6179,3 +6179,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gs_trivariate_count
 #print axioms NearCompression.gs_trivariate_constraint_count
 #print axioms NearCompression.gs_trivariate_interpolant_exists
+
+#print axioms NearCompression.gs_specialization_degree
+#print axioms NearCompression.gs_specialization_mixed_jet
+#print axioms NearCompression.gs_specialization_constraints
+#print axioms NearCompression.gs_zero_specialization_count
