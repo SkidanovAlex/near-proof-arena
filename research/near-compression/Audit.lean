@@ -5380,3 +5380,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.shared_representative_functionals_unique
 
 #print axioms NearCompression.joint_source_far_acceptance_count
+
+#print axioms NearCompression.weighted_terminal_pair_constant
+#print axioms NearCompression.weighted_terminal_collision_or_authenticated
+#print axioms NearCompression.weighted_terminal_binding_authenticated

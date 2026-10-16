@@ -1359,3 +1359,5 @@ import NearCompression.CurveSupportInterpolation
 import NearCompression.PackedComputedGKRTable
 
 import NearCompression.JointSourceAcceptance
+
+import NearCompression.WeightedTerminalAuthentication

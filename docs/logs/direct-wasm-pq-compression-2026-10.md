@@ -2268,3 +2268,28 @@ sub300000-byte feasibility are unchanged and incomplete.
 
 Validation: full `check.py` passed with 3755 registered results and the enforced
 axiom allowlist. Slice gate remains NOT_PASSED; byte artifacts are unchanged.
+
+
+### Constant terminal reconstruction to indexed authentication
+
+`WeightedTerminalAuthentication.lean` connects the existing typed reconstructed
+RS terminal checker to the exact pointwise constant-oracle premise required
+by weighted folding soundness. It models natural-domain pair leaves as
+oracle(i), oracle(i+half), rather than adjacent positions. Equality to the
+reconstructed constant tree implies every index below 2*half is that constant.
+Accepted reconstruction therefore yields either this authentication or an
+explicit distinct-tree/equal-root event. No degree premise on an arbitrary
+committed oracle is introduced.
+
+The executable weighted verifier uses degree1/domain4/lane1, so half=2.
+It reconstructs all leaves and checks the terminal residual. Its compact codec
+also reconstructs the last root/openings. The new theorem covers typed tree
+semantics; canonical field/byte serialization and SHA-384 tree binding still
+require refinement and a quantitative cryptographic reduction. Full near-case
+trace composition, quantum security and the full NEAR target remain open.
+
+Validation: full `check.py` passed with 3758 registered results and the enforced
+axiom allowlist. Existing independent terminal tests passed for shapes
+(1,4,1), (4,16,3), (16,64,2), using direct power-sum evaluations, Rust SHA384
+roots and independent convolution residuals with rejection mutations. The
+retained integration report records their counts. No proof sizes changed.

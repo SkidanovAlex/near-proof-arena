@@ -896,6 +896,7 @@
     "research/near-compression/airbender/direct-wasm/packed_disclosure.py": "9745f8d85b23d61280849c3990bb3e77a2bac86b595857344c323805a154f292",
     "research/near-compression/NearCompression/PreparedAddTableLocal.lean": "4d3ff77a67a5e94ce30b562a811f23348784f085375bed3dae6b18adba1da16a",
     "research/near-compression/NearCompression/ScalarRSReconstructedTerminal.lean": "5afd4e182122beb5b9e70d318a0f8dc88c5896d2c627eb496649b00b0726922d",
+    "research/near-compression/NearCompression/WeightedTerminalAuthentication.lean": "7197f7972fc4a4801a87d51223b84d425d81a4addf7d2335e5b45704711a4157",
     "research/near-compression/airbender/direct-wasm/test_pq384_terminal.py": "a1fb021c2fc727b9ad79e89023909b54aeac4904517a0cb3fdcd1700ffbc6f50",
     "research/near-compression/airbender/direct-wasm/pq384_terminal.py": "937da91e9649c0a0afa2f340d6507fd1525a2fabf6e72dd5db982fee3fae5433",
     "research/near-compression/NearCompression/GenericPackedGridCounting.lean": "3c23d8703b7ebde1bc337b473b3306f01f15046ea3ad1323202190cd921c6a4d",

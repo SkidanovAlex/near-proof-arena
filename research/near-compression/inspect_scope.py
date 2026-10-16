@@ -770,6 +770,7 @@ SOURCES = [
     "research/near-compression/airbender/direct-wasm/packed_disclosure.py",
     "research/near-compression/NearCompression/PreparedAddTableLocal.lean",
     "research/near-compression/NearCompression/ScalarRSReconstructedTerminal.lean",
+    "research/near-compression/NearCompression/WeightedTerminalAuthentication.lean",
     "research/near-compression/airbender/direct-wasm/test_pq384_terminal.py",
     "research/near-compression/airbender/direct-wasm/pq384_terminal.py",
     "research/near-compression/NearCompression/GenericPackedGridCounting.lean",
