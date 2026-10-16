@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "small": {
+    "layers": 3,
+    "rounds": 16,
+    "raw_gkr_scalar_bytes": 1728,
+    "prove_seconds": 0.005389340687543154,
+    "verify_seconds": 0.003181405831128359,
+    "proof_sha256": "c8b603eb05b9b6400ae3a8d6625874a1bc6f066d27456b848151fb57ddca3b27"
+  },
+  "exact_reference_proof": true,
+  "rejections": [
+    "round-coefficient",
+    "noncanonical",
+    "truncated-scalar",
+    "missing-round",
+    "wrong-layer-input",
+    "missing-layer",
+    "wrong-profile",
+    "statement",
+    "claim",
+    "public-circuit",
+    "false-prover-claim"
+  ],
+  "compiled193": {
+    "layers": 35,
+    "rounds": 474,
+    "raw_gkr_scalar_bytes": 47744,
+    "prove_seconds": 9.633523466996849,
+    "verify_seconds": 3.335376816801727,
+    "proof_sha256": "e6d77cbce2fef11fd463083831e4a6ea03825cc7073665781da45527c5109d17",
+    "statement_sha256": "10f3561d7d00bb24a853c802def9987f65c2ccd95eb0cab563ed62d2eb391d75"
+  },
+  "source_sha256": {
+    "pq384_ext8_terminal_gkr.py": "7e12ad62b6cba53d5f3b5499e1032d5c5e0093f8428dcfb16df333c6465fb6ba",
+    "pq384_ext8_native.py": "eefafe2faf638820006c3a377b374d279c703ab58dbe00e54ad0f0ced25b06dc"
+  },
+  "scope": "Transcript-driven Ext8 terminal GKR diagnostic. Python verifier agrees with native prover and direct private-input obligation. Compiled193 uses synthetic terminal data and zero private vector, not a valid state-transition witness. No PCS discharge, Rust refinement, full state proof or quantum security certification."
+}

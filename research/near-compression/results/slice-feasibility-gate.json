@@ -638,5 +638,12 @@
     "rounds": 54,
     "independent_evaluations": 162,
     "scope": "Native quadratic coefficients for GKR gate rounds, both axes and add/sub/mul, integrated with native folding in synthetic complete-layer reductions. Endpoint and final wiring checks pass. Transcript/full circuit/PCS integration, Rust refinement and quantum proof-size certification remain open."
+  },
+  "ext8_transcript_terminal_gkr": {
+    "status": "NATIVE_PROVER_PYTHON_VERIFIER_DIAGNOSTIC_PASS",
+    "compiled193_layers": 35,
+    "rounds": 474,
+    "raw_scalar_bytes": 47744,
+    "scope": "Separate Ext8 diagnostic profile binds caller-supplied circuit, statement and claim in SHA384 transcript; native round/fold prover and Python verifier agree on input-opening obligation. Compiled193 uses synthetic terminals and zero private inputs, not a state-transition witness. Obligation checked directly against test inputs, not discharged by PCS. No full slice proof, Rust/implementation refinement or quantum security claim."
   }
 }
