@@ -1756,3 +1756,11 @@ Added total source Expr lowering to auxiliary formulas, preserving arbitrary env
 Validation: full check.py passed (3654 registered results; allowed axioms only). Lean lowered actual preparedLiteralAir(193) EXEC/CODE descriptors and exported the complete auxiliary residual lists. Python comparisons passed in 54 cases / 1701 residual comparisons, covering all 9 EXEC and 54 CODE residuals, alpha=0/1/7, arbitrary Ext4 current/next/auxiliary values and selectors. This finite comparison does not prove Python/parser refinement, sample arbitrary extension challenges, or certify executable Ext8.
 
 Next: connect source bit constraints to natural multiplicity expansion, then compose all interaction finals with global send/receive/public products. Committed-trace extraction, adaptive local/PCS soundness and quantum transcript reductions remain open. Slice gate remains NOT_PASSED; no secure sub300k or full 1 Pgas claim.
+
+### Natural multiplicity factor composition
+
+Connected auxiliary arithmetic factors to Interaction.multNat, preserving natural exponents rather than reducing counts modulo the field. Lean derives bit Booleanity from the actual Table.allConstraints list and proves each generated factor equals both the corresponding fingerprint power and a product over exactly that many replicated tagged messages. The all-row table theorem derives each bound final's product with natural multiplicities and discharges selector/cyclic-next bindings from the actual trace row environment.
+
+Validation: full check.py passed (3660 registered results; allowed axioms only). This is a formal composition change; no executable/proof-size changes or new runtime benchmark are claimed. Explicit premises remain that all source and generated auxiliary residuals vanish on the same trace and that the binding belongs to the constructed table layout.
+
+Next: compose direction-specific finals and public factors into the exact busTraceMessages product. Accepted-proof-to-residual extraction, full adaptive/PCS/transcript quantum soundness, secure sub300k total sizing and full 1 Pgas scope remain open. Slice gate remains NOT_PASSED.

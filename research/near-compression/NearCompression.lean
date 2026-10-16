@@ -1313,3 +1313,5 @@ import NearCompression.BusInteractionFormulaLayout
 import NearCompression.BusTableFormulaLayout
 
 import NearCompression.BusSourceFormulaLowering
+
+import NearCompression.BusNaturalFactor

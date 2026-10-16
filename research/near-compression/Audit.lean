@@ -5255,3 +5255,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_source_interaction_factor
 
 #print axioms NearCompression.bus_source_table_product
+
+#print axioms NearCompression.bus_value_factor
+#print axioms NearCompression.bus_value_multiplicity_source
+#print axioms NearCompression.bus_source_natural_factor
+#print axioms NearCompression.bus_table_source_bits
+#print axioms NearCompression.bus_source_factor_expanded
+#print axioms NearCompression.bus_source_table_natural_product
