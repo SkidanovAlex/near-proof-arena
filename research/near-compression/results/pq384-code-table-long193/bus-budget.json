@@ -1,0 +1,45 @@
+{
+  "tables": [
+    {
+      "rows": 256,
+      "send_mass": 768,
+      "receive_mass": 0
+    },
+    {
+      "rows": 256,
+      "send_mass": 256,
+      "receive_mass": 8589934336
+    }
+  ],
+  "public_records": 195,
+  "support_bound": 1475,
+  "tagged_padded_width": 28,
+  "alpha_bad_count": 41300,
+  "gamma_bad_count": 8589934531,
+  "joint_error_numerator": 8589975831,
+  "ideal_uniform_field_bounds": [
+    {
+      "extension_degree": 4,
+      "field_size": 16428751811598850197311699254593454081,
+      "numerator": 8589975831,
+      "denominator": 16428751811598850197311699254593454081,
+      "bound_bits": 90.62755545915249
+    },
+    {
+      "extension_degree": 8,
+      "field_size": 269903886087112502248563194479599378733081424069948722819014098894255554561,
+      "numerator": 8589975831,
+      "denominator": 269903886087112502248563194479599378733081424069948722819014098894255554561,
+      "bound_bits": 214.25511784445294
+    }
+  ],
+  "status": "CONDITIONAL_COMPONENT_BOUND",
+  "theorem": "NearCompression.bus_joint_challenge_bound",
+  "conditions": [
+    "Same fixed source trace/messages before alpha and gamma; commitment extraction not supplied",
+    "Message padding preserves distinct tagged messages (nonzero tags); concrete adapter pending",
+    "Auxiliary gates and final products correspond to expanded natural multiplicities",
+    "Independent uniform field challenges; executable hash sampler and QROM not covered"
+  ],
+  "interpretation": "Upper error bound only, not an attack or lower bound on achievable security. Ext4 budget cannot certify 128 ideal bits via this bound; Ext8 budget alone does not certify quantum security."
+}

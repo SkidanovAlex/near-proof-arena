@@ -5134,3 +5134,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.johnson_candidate_list_complete
 #print axioms NearCompression.johnson_candidate_list_distinct
 #print axioms NearCompression.johnson_candidate_list_gap_bound
+
+#print axioms NearCompression.bus_joint_challenge_bound

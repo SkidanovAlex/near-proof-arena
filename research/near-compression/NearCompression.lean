@@ -1277,3 +1277,5 @@ import NearCompression.GeneralListCurveExtraction
 import NearCompression.FiniteRSJohnsonList
 
 import NearCompression.FiniteRSJohnsonCandidates
+
+import NearCompression.BusJointChallengeBound

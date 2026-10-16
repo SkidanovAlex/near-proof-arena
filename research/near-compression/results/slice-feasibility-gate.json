@@ -15,7 +15,9 @@
     "NearCompression/PreparedExecFinalRow.lean",
     "PreparedSliceCheck.lean",
     "airbender/direct-wasm/verify_prepared_slice.py",
-    "results/pq384-code-table-long193/slice-frontend-report.json"
+    "results/pq384-code-table-long193/slice-frontend-report.json",
+    "NearCompression/BusJointChallengeBound.lean",
+    "results/pq384-code-table-long193/bus-budget.json"
   ],
   "requirements": [
     {
@@ -33,7 +35,8 @@
     {
       "name": "Complete soundness ledger",
       "status": "INCOMPLETE",
-      "needed": "Close all algebraic/commitment/transcript reductions. Quantify the 128-bit quantum resource target and compiler constants; interactive tails alone do not pass."
+      "needed": "Close all algebraic/commitment/transcript reductions. Quantify the 128-bit quantum resource target and compiler constants; interactive tails alone do not pass.",
+      "established": "Audited joint ideal fingerprint/grand-product challenge bound for fixed unequal expanded message multisets, including distinct support versus natural multiplicity budgets. Conservative actual slice budget: numerator 8589975831 over field cardinality; Ext4 gives 90.63 ideal bits, Ext8 214.26. Concrete adapter, extraction, other protocol errors and quantum compiler remain open."
     },
     {
       "name": "Complete bytes and scaling",
