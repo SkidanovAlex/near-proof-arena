@@ -1,0 +1,7 @@
+{
+  "results/call-ext8-q531/proof.bin": "99af551221ec31b476d49fbd980c34ccf12c13053a5590f3081fd49e3ca46a0f",
+  "results/call-ext8-q531/proof.json.gz": "1a09cb95fb1948b654361f9984e7549194fa6ed5a7789588a9f844b9750e1745",
+  "results/call-ext8-q531/statement.json.gz": "b2067310119950ed6cecf687ef1deaab3098381452a3daec802a0c49eb9793a3",
+  "airbender/direct-wasm/sha384_call_ext8_pcs.py": "442dde94db3ff746e4299ab163f9125797f4b3258d1cae340adfc31ea48884f1",
+  "airbender/direct-wasm/native-folded/kernel_ext8.rs": "d998e7f08282d93550c0fa9a37972708697b038acb1fd300ab476dee770ae9a9"
+}

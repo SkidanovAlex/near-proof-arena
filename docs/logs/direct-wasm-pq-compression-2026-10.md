@@ -6265,3 +6265,38 @@ query arithmetic and minimal query counts checked by the measurement script;
 results/call-layer-certificates/ideal-pcs-budget.json records assumptions and
 source hashes. No executable protocol or proof bytes changed. Full goal and
 NOT_PASSED feasibility gate remain open.
+
+
+### Actual Ext8 call proofs at309 and531 queries
+
+sha384_call_ext8_pcs.py wires the existing Ext8 GKR/native kernel, weighted PCS
+and canonical multiproof codec into the same2880-equation call workload. It
+reuses the existing descriptor generator; its profile/magic are separate and
+the trusted query count enters the initial transcript binding as well as PCS.
+Source commitment root remains identical. No row data is disclosed to the
+fresh verifier. Existing Ext4 call/proof behavior is unchanged.
+
+Both profiles generated, encoded, decoded and verified in fresh processes,
+alongside the existing compression proof. Eight negative tests reject
+(truncation, trailing bytes, GKR coefficient, PCS authentication, changed
+external digest/message/order, mismatched query budget), and five source
+mutations fail equation/circuit checks. The309-query call proof is168896bytes;
+with the existing120477-byte compression proof,5858-byte calls and731-byte
+receipt, total295962bytes. The531-query call proof is205360bytes, mixed total
+332426bytes. Prover/codec timings and exact binary hashes are in the retained
+reports. This is a mixed-strength bundle: the compression proof is STILL
+Q8/Ext4. Neither measurement establishes full PQ128 security or recursion.
+
+Exact codec accounting identifies duplicated authentication for the same root,
+context, leaf width, domain and query indices across the two terminal branches.
+Removing one copy would save65832bytes at309queries and84000at531queries,
+projecting mixed totals230130and248426bytes. Those are projections, not encoded
+or verified smaller proofs. The next concrete optimization is canonical shared
+source authentication; distinct branch weights must remain independently bound.
+
+Validation: test_sha384_call_ext8_pcs.py with /tmp/libnear_call_ext8.so passes
+at both budgets; logs /tmp/call-ext8-q309.log and /tmp/call-ext8-q531.log. Native
+library built from the existing kernel_ext8.rs. Artifacts retained under
+results/call-ext8-q309 and results/call-ext8-q531; exact comparison with source
+hashes in results/call-ext8-profiles.json. No Lean change; last full audit4203
+remains applicable. Full NEAR1Pgas/PQ128/sub300k gate stays NOT_PASSED.
