@@ -25,13 +25,14 @@ def main():
     fresh=subprocess.run(command,text=True,capture_output=True);(a.output/'fresh-verifier.log').write_text(fresh.stdout+fresh.stderr);fresh.check_returncode()
     params=codec.v.opening_parameters(reduction,statement['spec'],statement['roots'],terminal_profile=a.terminal_profile)
     op=codec.v.codec.decode(opening,*params,queries=a.queries)
-    detail=codec.v.codec.breakdown(op,*params,queries=a.queries)
+    derived=opening.startswith(codec.v.codec.DERIVED_MAGIC)
+    detail=codec.v.codec.breakdown(op,*params,queries=a.queries,derived_folds=derived)
     # This compression has one branch per source/auxiliary table: no aliasing.
     stages=codec.v.codec.stages(op,*params,a.queries)[0]
     keys=[codec.v.codec.source_key(s) for s in stages if s['kind']=='sources']
     assert len(keys)==len(set(keys)) and detail['total_bytes']==len(opening)
     total=len(wire)+a.call_proof.stat().st_size+a.receipt.stat().st_size+a.calls.stat().st_size
-    output=dict(status='PASS',terminal_profile=a.terminal_profile,queries=a.queries,compression_extension_degree=8,call_extension_degree=8,
+    output=dict(status='PASS',derived_fold_transport=derived,terminal_profile=a.terminal_profile,queries=a.queries,compression_extension_degree=8,call_extension_degree=8,
         compression_envelope_bytes=len(wire),compression_opening_bytes=len(opening),compression_reduction_bytes=len(wire)-len(opening),
         call_proof_bytes=a.call_proof.stat().st_size,receipt_bytes=a.receipt.stat().st_size,calls_bytes=a.calls.stat().st_size,
         combined_bytes=total,under_300000_bytes=total<300000,fresh_conjunction_verified=True,pcs_breakdown=detail,

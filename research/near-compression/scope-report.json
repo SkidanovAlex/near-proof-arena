@@ -444,6 +444,7 @@
     "research/near-compression/NearCompression/TerminalWeightedAggregation.lean": "867af24492cadd32acf94471973a96a7a63ea3683823d027769745e07e939579",
     "research/near-compression/NearCompression/TerminalHeapBalance.lean": "f9a11afe6bd3efe33b0d9de4a4d5490e7056161d07d8a0d5c2b4cadcca13dcd2",
     "research/near-compression/NearCompression/SeparableCoefficientClaim.lean": "c5b1469e065b853387b18af62937a405e5a32ed74cd6147c882162678275ed29",
+    "research/near-compression/NearCompression/DerivedFoldTransport.lean": "e307ada040841b602e7d0b3ecff11a960958c23c338f24beb6096add992ca6d1",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean": "d9a5cbb964e9aab9d9a8bbe2ef3f558f473d587cf9e941cabaf8491b422cc2d9",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean": "412710950ab5940e517c3d4af7620fe18a9edb0318627fbf88d2ef77cfcd64a0",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean": "09aa0805e94738cf5370b36f8dbbcc1fb5dd0ec6d704dbd7368a5751bbd27b14",

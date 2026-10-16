@@ -1614,3 +1614,5 @@ import NearCompression.TerminalWeightedAggregation
 import NearCompression.TerminalHeapBalance
 
 import NearCompression.SeparableCoefficientClaim
+
+import NearCompression.DerivedFoldTransport

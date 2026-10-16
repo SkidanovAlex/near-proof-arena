@@ -19,7 +19,7 @@ import ext8_terminal_profiles as profiles
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--output',type=Path,required=True);ap.add_argument('--pcs-queries',type=int);ap.add_argument('--capture-dir',type=Path)
-    ap.add_argument('--statement',type=Path);ap.add_argument('--source-directory',type=Path);ap.add_argument('--compression-receipt',type=Path);ap.add_argument('--terminal-profile',choices=profiles.PROFILES,default='baseline');ap.add_argument('--coefficient-check',choices=('contract','tensor'),default='contract');args=ap.parse_args()
+    ap.add_argument('--statement',type=Path);ap.add_argument('--source-directory',type=Path);ap.add_argument('--compression-receipt',type=Path);ap.add_argument('--terminal-profile',choices=profiles.PROFILES,default='baseline');ap.add_argument('--coefficient-check',choices=('contract','tensor'),default='contract');ap.add_argument('--derived-fold-transport',action='store_true');args=ap.parse_args()
     coefficient_claim=contracted_coefficient_claim if args.coefficient_check=='contract' else tensor_coefficient_claim
     if (args.statement is None)!=(args.source_directory is None):ap.error('--statement and --source-directory must be supplied together')
     fixture=Path('results/pq384-literal193-gkr-fixed13')
@@ -130,7 +130,7 @@ def main():
                 fresh=subprocess.run([sys.executable,str(Path(pcs.__file__)),str(args.capture_dir)],check=True,capture_output=True,text=True)
                 assert fresh.stdout.strip()=='PASS weighted Ext8 opening'
                 import pq384_ext8_weighted_codec as codec
-                binary=codec.encode(op,st,parent,opening_branches_bound,verified['private_claim'],queries=args.pcs_queries,shared_sources=True)
+                binary=codec.encode(op,st,parent,opening_branches_bound,verified['private_claim'],queries=args.pcs_queries,shared_sources=True,derived_folds=args.derived_fold_transport)
                 (args.capture_dir/'proof.bin').write_bytes(binary)
                 # Verify from the external statement, deriving all opening parameters.
                 fresh=subprocess.run([sys.executable,str(Path(__file__).with_name('verify_ext8_execution.py')),
@@ -150,7 +150,7 @@ def main():
         except ValueError as exc:
             assert str(exc)=='invalid trace constraints'
         else:raise AssertionError('corrupted source trace accepted')
-        report=dict(terminal_profile=args.terminal_profile,coefficient_check=args.coefficient_check,coefficient_seconds=coefficient_seconds,weighted_pcs=pcs_result,coefficient_opening_target_checked=True,opening_branches=[dict(table=b['table'],branch=b['branch'],width=b['width'],packing=b['packing'],lanes=len(b['lanes'])) for b in branches],corrupted_source_rejected=True,status='PASS',source_sha256=expected,source_rows=[len(r) for r in rows],global_bus_product_equal=True,
+        report=dict(terminal_profile=args.terminal_profile,derived_fold_transport=args.derived_fold_transport,coefficient_check=args.coefficient_check,coefficient_seconds=coefficient_seconds,weighted_pcs=pcs_result,coefficient_opening_target_checked=True,opening_branches=[dict(table=b['table'],branch=b['branch'],width=b['width'],packing=b['packing'],lanes=len(b['lanes'])) for b in branches],corrupted_source_rejected=True,status='PASS',source_sha256=expected,source_rows=[len(r) for r in rows],global_bus_product_equal=True,
             local_rounds=sum(map(len,proofs)),local_scalar_bytes=32*sum(len(cs) for proof in proofs for cs in proof),
             gkr_layers=len(gp['layers']),gkr_scalar_bytes=32*sum(3*len(p['rounds'])+2 for p in gp['layers']),
             zero_terminal_claim_verified=True,direct_private_obligation_checked=True,local_seconds=local_seconds,gkr_seconds=gkr_seconds,

@@ -6802,3 +6802,49 @@ changes the witness-side check, not verifier acceptance or proof bytes. The
 new path was exercised on all actual branches; no redundant full proof rerun
 was needed for replacing that check. All work remains directed at full1Pgas,
 hash-only PQ128 succinct state transitions, which are not yet achieved.
+
+
+### 2026-10-16: lossless derived-fold transport
+
+PCS dominated the measured affine bundle. Added NP8WMP03 transport that omits
+fold-leaf scalars fixed by preceding authenticated source/fold pairs, the public
+fold challenge, and transcript-derived query indices. A queried leaf can have
+one or both coordinates derived; repeated derived coordinates must agree.
+Source aliasing is retained. Reconstructed complete leaves pass the unchanged
+Merkle multiproof check; decode is followed by the original full PCS verifier.
+No roots, transcript messages, samples or query counts were changed. Existing
+transport versions/default encoding remain supported; prover option
+--derived-fold-transport selects the new representation.
+
+Actual q309 compression opening:1644656 ->1528144 bytes, removing3641 Ext8
+scalars (116512 B). Decoded PCS JSON proof is exactly identical to the prior
+proof, including all queries and Merkle paths; canonical re-encode passes.
+Source value bytes513400, source path bytes237744, remaining fold values96992,
+fold path bytes675648, header4360. These figures explain why transport alone
+cannot deliver the final300000-byte requirement with this proof geometry.
+
+Small tests cover terminal-only degree2 and heterogeneous degrees2/8, duplicate
+source roots with different weights, query budgets1/8/80, duplicate samples,
+and both-coordinate derivation.15 invalid transport/context cases are rejected,
+including conflicting derived coordinates and noncanonical retained scalars.
+The complete envelope independently passes canonical roundtrip/re-encode,
+fresh external-statement verification and11 tampering/profile cases. Fresh
+same-root call/compression conjunction also passes. All sessions24631,35362,
+81216 and Lean audit77064 are terminal PASS.
+
+Complete compression envelope1572024 bytes. With unchanged103064-byte call
+proof,731-byte receipt and5858-byte calls, combined1681677 bytes. Savings versus
+the previous1798189-byte affine bundle:116512 (6.48%); versus pre-affine1863197:
+181520 (9.74%). Still5.606x300000. Retained artifacts, reports, logs and source
+hashes:results/ext8-affine-derived-q309/. The archived prover report is from
+the original proof generation; this experiment transcodes that exact proof.
+
+DerivedFoldTransport.lean proves the fold expression matches affine RS pair
+decoding, reconstruction of a selected scalar, reconstruction along a consistent
+query chain, and preservation of predicates on that chain. Full axiom audit4218
+PASS. These are algebraic/per-query completeness lemmas, not a refinement of
+Python bytes, shared-leaf placement, Merkle extraction or quantum soundness.
+The original q309 security limitations remain; slice-feasibility gate stays
+NOT_PASSED. Full NEAR1Pgas/hash-only PQ128 correctness remains the objective.
+Next structural work must address source-value and authentication-path cost,
+with an explicit soundness budget for any changed folding/commitment protocol.

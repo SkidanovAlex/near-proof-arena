@@ -6,6 +6,7 @@ import pq384_ext8_weighted as p
 import pq384_multiproof as mp
 MAGIC=b'NP8WMP01'
 SHARED_MAGIC=b'NP8WMP02'
+DERIVED_MAGIC=b'NP8WMP03'
 MAX_BYTES=16*1024*1024
 
 def extread(raw):return list(p.f.canonical(struct.unpack('<8I',raw)))
@@ -28,7 +29,10 @@ def source_key(stage):
     """
     return (stage['root'],stage['context'],stage['half'],stage['width'],tuple(stage['indices']))
 
-def encode(proof,statement,parent,branches,claim, *, queries, shared_sources=False):
+def encode(proof,statement,parent,branches,claim, *, queries, shared_sources=False, derived_folds=False):
+    if derived_folds:
+        from pq384_ext8_derived_codec import encode as derived_encode
+        return derived_encode(proof,statement,parent,branches,claim,queries=queries)
     p.verify(proof,statement,parent,branches,claim,queries=queries)
     plan,_,_=stages(proof,statement,parent,branches,claim,queries)
     out=bytearray(SHARED_MAGIC if shared_sources else MAGIC);seen={}
@@ -49,6 +53,9 @@ def encode(proof,statement,parent,branches,claim, *, queries, shared_sources=Fal
 
 def decode(data,statement,parent,branches,claim, *, queries):
     p.h.require(type(data)is bytes and len(data)<=MAX_BYTES,'codec cap')
+    if data.startswith(DERIVED_MAGIC):
+        from pq384_ext8_derived_codec import decode as derived_decode
+        return derived_decode(data,statement,parent,branches,claim,queries=queries)
     _,D,_,_,_=p.public(statement,parent,branches,claim,queries);n=D.bit_length()-1;offset=0
     def read(size):
         nonlocal offset
@@ -80,7 +87,10 @@ def decode(data,statement,parent,branches,claim, *, queries):
 def verify(data,statement,parent,branches,claim, *, queries):
     return p.verify(decode(data,statement,parent,branches,claim,queries=queries),statement,parent,branches,claim,queries=queries)
 
-def breakdown(proof,statement,parent,branches,claim, *, queries):
+def breakdown(proof,statement,parent,branches,claim, *, queries, derived_folds=False):
+    if derived_folds:
+        from pq384_ext8_derived_codec import breakdown as derived_breakdown
+        return derived_breakdown(proof,statement,parent,branches,claim,queries=queries)
     plan,_,_=stages(proof,statement,parent,branches,claim,queries);rows=[]
     for s in plan:
         unique=len(mp.shape(s['half'],s['indices']));siblings=len(mp.boundary(s['half'],s['indices']))

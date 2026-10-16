@@ -6039,3 +6039,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_weighted_leaf_route
 
 #print axioms NearCompression.separable_coefficient_claim
+
+#print axioms NearCompression.derived_fold_affine_value
+#print axioms NearCompression.fold_pair_restore_exact
+#print axioms NearCompression.fold_transport_restore_exact
+#print axioms NearCompression.fold_transport_preserves_checks
