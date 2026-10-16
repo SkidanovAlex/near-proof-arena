@@ -1773,3 +1773,4 @@ import NearCompression.RationalFactorClearing
 
 import NearCompression.PolynomialContentNormalization
 import NearCompression.PrimitivePolynomialProduct
+import NearCompression.PrimitiveScalarDescent

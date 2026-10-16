@@ -6556,3 +6556,12 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_parameter_rows_residue_product
 #print axioms NearCompression.polynomial_primitive_residue_nonzero
 #print axioms NearCompression.polynomial_primitive_rows_product
+
+#print axioms NearCompression.polynomial_row_span_common_divisor
+#print axioms NearCompression.polynomial_primitive_row_span_one
+#print axioms NearCompression.polynomial_row_span_scalar_integral
+#print axioms NearCompression.polynomial_primitive_scalar_descent
+#print axioms NearCompression.polynomial_primitive_family_scalar_descent
+#print axioms NearCompression.polynomial_primitive_rational_representation
+#print axioms NearCompression.polynomial_rational_factorization_descent
+#print axioms NearCompression.polynomial_selected_irreducible_factor_descent

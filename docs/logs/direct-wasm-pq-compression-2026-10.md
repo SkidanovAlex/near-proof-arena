@@ -9441,3 +9441,34 @@ Gauss descent, not the completed source-factor degree theorem. Useful-branch
 forcing/coverage, full MCA and protocol/QROM composition remain open.
 Diagnostic 1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR 1Pgas, PQ128 composition, recursion and sub300000 B remain open.
+
+## 2026-10-16 — Rational scalar and selected-factor Gauss descent
+
+Added PrimitiveScalarDescent.lean with eight audited public theorems.
+A finite polynomial row-span construction derives a nonzero common divisor
+as a polynomial linear combination. Primitiveness turns this into a unit
+combination. If a rational scalar sends every primitive row into K[Z], the
+unit combination forces the scalar itself to have a polynomial representative.
+This is a constructed proof, not a coprimality or integrality oracle.
+
+Combined denominator clearing and content normalization to represent any
+nonzero K(Z)[Y] polynomial as a nonzero rational scalar times a primitive
+polynomial family. For a rational factorization of polynomial source data,
+the primitive-product lemma and scalar descent produce a primitive polynomial
+left factor and polynomial complement. The selected irreducible factor stays
+irreducible over K(Z); the source identity is proved at every formal parameter
+coefficient, including unequal lengths and padding. No source-controlled
+parameter-degree bound is yet claimed.
+
+Validation: 400 constructed unit combinations; 3200 scalar integrality checks
+including 1407 nonpolynomial scalar rejections; 160 rational factorizations
+reconstructing 466 source coefficients. Four nonprimitive and four zero-family
+counterexamples exercise necessary premises. Full audit 4658 PASS, allowed
+axioms only. Evidence: results/primitive-scalar-descent/.
+
+Next formal obligation: source-controlled factor parameter-degree inheritance,
+then useful-branch forcing and coverage. User requested an independent agent
+process review; its preliminary finding recommends rechecking the concrete
+size/security viability gate before extending the algebraic critical path.
+Diagnostic 1344645 B unchanged; feasibility NOT_PASSED. Full NEAR 1Pgas,
+PQ128 composition, recursion and sub300000 B remain open.

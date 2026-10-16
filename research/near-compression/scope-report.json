@@ -504,6 +504,7 @@
     "research/near-compression/NearCompression/RationalFactorClearing.lean": "88f6ea97bd5c71b35b2890dac047f5935d7c1ec82b97921fa41a9fec016f22eb",
     "research/near-compression/NearCompression/PolynomialContentNormalization.lean": "9baf130e021429fc6b6dbfe210318a6293b3650cb67883ecdd55c33b7d6b49f8",
     "research/near-compression/NearCompression/PrimitivePolynomialProduct.lean": "5d8bf311be5eeea35df13212500e3fad861655acb4413006d0604a415a8eee8a",
+    "research/near-compression/NearCompression/PrimitiveScalarDescent.lean": "497436b00033086d5f34c8dafe4c9b3d7fd9dee01e3bc3de0bd6138a3532d995",
     "research/near-compression/NearCompression/DeterminantRowReplacement.lean": "d370eb40254e33b6ea19e4cc6953aeefba795940dc1d3061e26a8cb4a9449a90",
     "research/near-compression/NearCompression/DeterminantCofactorFold.lean": "69cf512f5151a9092a7f9fb0cee72b6dcc5dbc1bff156315f8b0befe1fcf7985",
     "research/near-compression/NearCompression/DeterminantRowLinearity.lean": "7bff151d38e7188fec59eaffdcce11b3080879763728f80a696935a790d8727a",
