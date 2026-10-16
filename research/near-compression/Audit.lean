@@ -5363,3 +5363,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.weighted_curve_candidates_complete
 #print axioms NearCompression.weighted_curve_candidates_distinct
 #print axioms NearCompression.weighted_curve_candidates_gap_bound
+
+#print axioms NearCompression.general_fixed_curve_many_outcome
+#print axioms NearCompression.general_concentration_extraction_bad_count

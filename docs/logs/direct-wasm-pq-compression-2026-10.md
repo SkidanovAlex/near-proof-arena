@@ -1936,3 +1936,24 @@ or imply that transfer. No security/size parameter improvement is claimed.
 
 Validation: full `check.py` passed with 3744 registered results and enforced
 axiom allowlist. Slice feasibility gate remains NOT_PASSED.
+
+
+### Concentration target correction
+
+Rechecked the author-uploaded Basefold revision (Section4 Propositions1/2 and
+Section4.2 Theorem4): https://www.researchgate.net/publication/387601318_Basefold_in_the_List_Decoding_Regime
+The route concentrates selected candidates on one affine polynomial curve, using
+Guruswami-Sudan interpolation/factorization. Universal candidate transfer is a
+stronger optional interface, not a prerequisite to follow this route.
+
+`GeneralCurveConcentrationReduction.lean` proves that more than max(|domain|,2)
+constrained successes on one curve yield joint weighted agreement and the
+quadratic formal identity. It then derives the bad-count bound conditional on
+quantitative concentration. This avoids requiring a universal list transfer.
+Concentration is still an explicit unproved premise, not a new axiom. The
+mathematical work remaining is substantial; list enumeration/counting does not
+substitute for rational-function interpolation/factorization or another valid
+concentration proof. No protocol parameters or size claims changed.
+
+Validation: full `check.py` passed with 3746 registered results and enforced
+axiom allowlist. Feasibility gate remains NOT_PASSED.

@@ -1349,3 +1349,5 @@ import NearCompression.WeightedPCSRepresentativeSoundness
 import NearCompression.WeightedJohnsonList
 
 import NearCompression.WeightedCurveCandidates
+
+import NearCompression.GeneralCurveConcentrationReduction

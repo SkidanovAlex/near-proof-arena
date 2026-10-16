@@ -1,0 +1,30 @@
+{
+  "status": "DOWNSTREAM_REDUCTION_PROVED_CONCENTRATION_OPEN",
+  "module": "NearCompression/GeneralCurveConcentrationReduction.lean",
+  "proved": [
+    "More than max(domain length,2) distinct constrained successes on one affine polynomial curve imply joint weighted agreement and the formal quadratic constraint identity.",
+    "If excess existential-candidate successes imply one such populated degree-bounded curve, no parent-compatible outcome bounds the success count."
+  ],
+  "strategy_correction": "Universal transfer of every postchallenge candidate to a prechallenge family is sufficient but not necessary. Concentration of sufficiently many successes on one curve is sufficient.",
+  "source": {
+    "url": "https://www.researchgate.net/publication/387601318_Basefold_in_the_List_Decoding_Regime",
+    "revision": "Author upload June13,2026, web text rechecked; no byte-pinned PDF",
+    "locations": "Section4 Proposition1/2; Section4.2 Theorem4",
+    "finding": "The source route uses affine-curve concentration from Guruswami-Sudan interpolation/factorization, then derives joint agreement and the constraint identity. It does not supply the universal candidate transfer interface used by our optional list-based reduction."
+  },
+  "remaining": [
+    "Prove quantitative concentration in the weighted list-decoding regime; no axiom introduced",
+    "Audit rational-function interpolation/factorization prerequisites or find another proved concentration route",
+    "Initial batching/common-trace extraction",
+    "Quantum compiler and secure total-size validation"
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3746,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}
