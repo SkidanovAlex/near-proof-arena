@@ -6469,3 +6469,47 @@ results/ext8-bundle-conditional-budget.json with source hashes, log
 hypotheses have not been discharged for the full protocol. The original
 compression process remains active in session24454/PID1725108, in weighted PCS
 at696elapsed seconds with about4.9GiB resident memory. No result yet.
+
+### Actual all-Ext8 SHA384 compression/call bundle:1,863,197bytes
+
+The original session24454/PID1725108 completed successfully; no process remains
+from that run. All four packed source roots match the externally fixed node
+statement. Ext8 auxiliaries balance; four local sumchecks and58-layer GKR prove
+zero, the independent coefficient-functional check agrees, and weighted PCS
+passes both in-process and complete fresh-process verification. Mutated local
+round and corrupted source trace checks reject. Measured local proving23.970s,
+GKR156.115s, PCS332.411s; these exclude other preparation/reference checks and
+are not total wall time. This run used the original reference tensor path.
+Its8GiB cgroup cap was raised to12GiB while active after checking available host
+memory and no OOM events; the run was never restarted.
+
+measure_ext8_compression_envelope.py now executes successfully. Actual sizes:
+- Complete compression envelope:1,753,544bytes.
+- Of that, weighted PCS opening:1,636,192bytes; reduction/framing:117,352bytes.
+- Same-root shared Ext8 call proof:103,064bytes.
+- Calls5,858bytes plus mandatory receipt731bytes.
+- Combined:1,863,197bytes (6.21times the300000-byte target).
+Static trusted AIR/spec remain external. Both components use Ext8 at309queries;
+this is no longer the earlier mixed Q8/Ext4 compression experiment. Fresh
+conjunction verification passes without disclosed rows. The binary codec test
+also passes canonical roundtrip, independent fresh CLI verification and9
+rejection cases. The two independently generated envelope binaries match.
+
+PCS accounting: source leaves501496, source authentication237648, fold
+leaves212096, fold authentication680592, header4360bytes. Opened values alone
+sum713592bytes. Serialization-only removal of authentication cannot bring this
+configuration below300000bytes; this is a configuration measurement, not an
+impossibility result for redesigned protocols. Query/source-opening reduction
+and a better folding/authentication schedule are necessary design priorities.
+
+Artifacts, source hashes, complete proof, compressed statement/reduction/prover
+report, fresh verification logs and codec rejection report are retained under
+results/ext8-compression-q309, with manifest.json. Working capture remains
+/tmp/ext8-compression-q309; test logs /tmp/ext8-compression-envelope.log and
+/tmp/ext8-compression-codec-test.log. All three relevant exec sessions24454,
+76560and75826 are terminal PASS. Updated slice-feasibility-gate.json with the
+actual failed size target and prepared complete-envelope size672320bytes.
+The gate remains NOT_PASSED. Existing two-PCS budget at309queries already fails
+to certify128ideal bits before excluded errors. No PQ128, QROM, full recursive
+verifier, full NEAR1Pgas, or formal implementation-refinement claim is added.
+No Lean changes; last full Lean audit remains4203.

@@ -372,7 +372,10 @@
     "results/ext8-terminal-regression.json",
     "NearCompression/ExpandedBusFingerprint.lean",
     "results/ext8-terminal-expanded-compiler.json",
-    "results/expanded-bus-fingerprint-integration.json"
+    "results/expanded-bus-fingerprint-integration.json",
+    "results/ext8-compression-q309/report.json",
+    "results/ext8-complete-verifier/envelope-report.json",
+    "results/ext8-bundle-conditional-budget.json"
   ],
   "requirements": [
     {
@@ -703,7 +706,8 @@
     "source_authentication_bytes": 181584,
     "fold_opening_bytes": 205024,
     "metadata_bytes": 2920,
-    "scope": "Actual retained execution opening, canonical transcript-derived multiproofs with terminal tree omitted/reconstructed. Roundtrip and fresh-process verification pass; eight malformed binary cases reject. Current encoding exceeds300000bytes before envelope. Not a lower bound for other protocols/layouts, nor a128-bit quantum security certificate."
+    "scope": "Actual retained execution opening, canonical transcript-derived multiproofs with terminal tree omitted/reconstructed. Roundtrip and fresh-process verification pass; eight malformed binary cases reject. Current encoding exceeds300000bytes before envelope. Not a lower bound for other protocols/layouts, nor a128-bit quantum security certificate.",
+    "complete_envelope_bytes": 672320
   },
   "ext8_layout_and_rate_screen": {
     "status": "CALIBRATED_SCREEN_NO_SUB300KB_CANDIDATE",
@@ -720,5 +724,18 @@
     "four_queries_at_three_quarters": "81/256",
     "minimum_queries_for_isolated128ideal_term": 309,
     "scope": "Current same-candidate interface with old functional correct and truthful OOD answer has exact source agreement^q count. AtT-1matches the query bound is attained. Not a full protocol attack or rate-shift impossibility theorem. Stronger earlier-oracle/fold relations are needed before reducing source queries; actual quantum security remains open."
+  },
+  "ext8_sha384_compression_conjunction": {
+    "status": "EXECUTABLE_VERIFIED_SIZE_TARGET_FAILED",
+    "queries": 309,
+    "compression_envelope_bytes": 1753544,
+    "call_proof_bytes": 103064,
+    "calls_and_receipt_bytes": 6589,
+    "combined_bytes": 1863197,
+    "source_leaf_bytes": 501496,
+    "source_authentication_bytes": 237648,
+    "fold_leaf_bytes": 212096,
+    "fold_authentication_bytes": 680592,
+    "scope": "Actual all-Ext824-node/12-call SHA384 component, same externally fixed use root; fresh conjunction verification passes. Static AIR/spec excluded. No full recursion, full NEAR1Pgas or PQ128 certificate; conditional two-PCS budget at309queries is below128bits even before excluded errors."
   }
 }
