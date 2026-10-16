@@ -1750,3 +1750,5 @@ import NearCompression.SharedDenominatorSpecialization
 import NearCompression.PolynomialParameterFamily
 
 import NearCompression.SelectedFactorSmoothness
+
+import NearCompression.FactorCollisionGuard

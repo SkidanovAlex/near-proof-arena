@@ -9115,3 +9115,32 @@ degree-controlled denominator and bound collision points. Then connect
 factor selection, useful-branch forcing and coverage. Full MCA and
 protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Source-degree factor-collision guard
+
+Added FactorCollisionGuard.lean with five audited public theorems.
+An arbitrary unit Bezout certificate between polynomial parameter families
+reduces to bounded multipliers; their Cramer coordinates specialize wherever
+the common determinant does not vanish. Partial specialization of the unit
+identity excludes common roots. For explicit source lists of Y-degree bounds
+m,n and coefficient parameter degree at most D, collision parameter points
+are bounded by (m+n)*D. A positive selected-factor degree is required; constant
+complements are supported. A unit certificate remains an explicit premise.
+
+The derivative and collision guards now compose with selected-factor
+smoothness to lift the full source from a selected irreducible initial factor.
+This requires a coefficientwise specialized factorization and the coprime
+certificate. It does not yet derive factor selection/certificates from the
+full general source or establish useful-branch forcing and coverage.
+
+Validation:245 coprime parameter pairs,658 exact certificate coefficient
+identities,158 collision parameter points,1520 protected selected roots,
+2832 guarded full-source lifts and77 constant complements.15 zero determinants
+rejected. Four explicit distinct-factor collisions show why formal distinctness
+alone is insufficient. Full audit4586 PASS, allowed axioms only. Evidence:
+results/factor-collision-guard/.
+
+Next: derive selected-factor/complement coprimality from squarefreeness,
+connect factor selection and specialization, and prove useful-branch coverage.
+Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
+unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

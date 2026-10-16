@@ -1,0 +1,11 @@
+{
+  "coprime_parameter_pairs": 245,
+  "exact_certificate_coefficients": 658,
+  "collision_parameter_points": 158,
+  "protected_selected_roots": 1520,
+  "guarded_full_source_lifts": 2832,
+  "constant_complements": 77,
+  "rejected_zero_determinants": 15,
+  "distinct_factor_collision_examples": 4,
+  "scope": "Shared source-degree collision guard and combined derivative/collision protected lifting. General factor selection, certificate extraction, useful-branch coverage and protocol soundness remain open."
+}

@@ -324,6 +324,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SharedDenominatorSpecialization.lean",
     "research/near-compression/NearCompression/PolynomialParameterFamily.lean",
     "research/near-compression/NearCompression/SelectedFactorSmoothness.lean",
+    "research/near-compression/NearCompression/FactorCollisionGuard.lean",
     "research/near-compression/NearCompression/DeterminantRowReplacement.lean",
     "research/near-compression/NearCompression/DeterminantCofactorFold.lean",
     "research/near-compression/NearCompression/DeterminantRowLinearity.lean",

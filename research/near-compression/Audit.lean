@@ -6475,3 +6475,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.selected_factor_initial_smooth
 #print axioms NearCompression.selected_factor_coprime_smooth
 #print axioms NearCompression.selected_factor_hensel_lift
+
+#print axioms NearCompression.bounded_bezout_shared_certificate_specializes
+#print axioms NearCompression.rational_bezout_specialized_noncollision
+#print axioms NearCompression.parameter_factors_noncollision
+#print axioms NearCompression.parameter_factor_collision_count
+#print axioms NearCompression.guarded_selected_factor_hensel_lift
