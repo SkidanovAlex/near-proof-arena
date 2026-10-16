@@ -1,0 +1,7 @@
+{
+  "monomial_spaces": 1323,
+  "coefficient_encodings": 3969,
+  "kernel_to_polynomial_witnesses": 401,
+  "constraint_counts": 130,
+  "scope": "Formal monomial and generic linear-interpolant construction; mixed-jet matrix equivalence and general GS interpolation remain open."
+}

@@ -6132,3 +6132,15 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.kernel_dot_elimination
 #print axioms NearCompression.homogeneous_nonzero_kernel
+
+#print axioms NearCompression.gs_monomial_member
+#print axioms NearCompression.gs_monomials_distinct
+#print axioms NearCompression.gs_monomial_count
+#print axioms NearCompression.gs_encode_coefficient
+#print axioms NearCompression.gs_encode_weighted_degree
+#print axioms NearCompression.gs_encode_nonzero
+#print axioms NearCompression.gs_linear_interpolant
+#print axioms NearCompression.gs_jet_order_member
+#print axioms NearCompression.gs_jet_order_count
+#print axioms NearCompression.gs_jet_orders_distinct
+#print axioms NearCompression.gs_constraint_count

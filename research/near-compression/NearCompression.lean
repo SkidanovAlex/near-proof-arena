@@ -1650,3 +1650,5 @@ import NearCompression.BivariateTranslation
 import NearCompression.BivariateWeightedDegree
 
 import NearCompression.HomogeneousKernel
+
+import NearCompression.GSMonomialSpace

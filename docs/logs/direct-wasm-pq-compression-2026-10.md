@@ -7748,3 +7748,40 @@ Only then will general GS interpolation existence be established. MCA
 factor/Hensel and exception-count arguments, actual protocol extraction, QROM,
 full NEAR1Pgas and sub300000 B remain open. No runtime/query/proof-size change;
 latest verified diagnostic bundle1344645 B, feasibility NOT_PASSED.
+
+## 2026-10-16 — Distinct GS monomials, exact dimensions and nonzero row encoding
+
+Added GSMonomialSpace.lean with eleven audited public theorems. gsMonomials
+constructs all(i,j) with j<height and i+k*j<D. Membership, distinctness and
+exact count sum_{j<height}(D-k*j) are proved with natural truncated subtraction.
+An explicit height cap makes the definition finite even for k=0. gsEncode
+builds dense polynomial rows from the indexed coefficient vector; every
+admissible coefficient is recovered exactly, every inadmissible coefficient
+is zero, and a vector nonzero on this monomial set gives a formally nonzero
+polynomial. Its weighted-degree bound is proved, not assumed.
+
+gs_linear_interpolant combines this encoding with homogeneous_nonzero_kernel:
+any collection of fewer coefficient-linear equations than admissible monomials
+has nonzero polynomial rows satisfying every equation and the weighted-degree
+bound. The equations are still generic. This is NOT yet a theorem that those
+rows have prescribed mixed jets; the coefficient-linear matrix-to-translation
+identity must be proved next.
+
+gsJetOrders enumerates every(r,s) with r+s<m exactly once, and its twice-length
+is m*(m+1). gsConstraints replicates these orders at each given point, with
+exact twice-count N*m*(m+1). All statements include zero budgets, empty lists
+and exhausted rows without hidden positivity assumptions.
+
+Validation covers1323 monomial spaces,3969 coefficient encodings over F2/F3/F5,
+401 nonzero kernel-to-polynomial witnesses and130 constraint-count cases.
+An out-of-support nonzero vector does not falsely certify a nonzero encoded
+polynomial. Full audit4299 PASS, allowed axioms only. Evidence and replay:
+results/gs-monomial-space/.
+
+Next: prove each interpolation matrix row equals the translated mixed
+coefficient of the encoded polynomial (not merely a binomial-formula test),
+then instantiate the general existence theorem with these constraints. The
+large-parameter dimension inequality, MCA factor/Hensel and exceptional-set
+bounds, actual protocol extraction and QROM still need work. No runtime/query/
+proof-size change: latest verified diagnostic bundle1344645 B, feasibility
+NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
