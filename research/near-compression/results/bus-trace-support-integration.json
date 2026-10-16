@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3603,
+  "audit_log": "/tmp/root-bus-support-audit.log",
+  "source_sha256": "99956f10688ebadb67adc0281d50c3d9accb180ef8e3af52bc8e79ec33f73b33",
+  "established": [
+    "Constructed trace/public support covers both expanded traffic sides",
+    "Exact support size is sum of rows times interactions plus public-record count",
+    "Tag/width bounds follow from source descriptors and public-record shapes",
+    "Ext8 joint bound no longer assumes support coverage or supplied support size"
+  ],
+  "remaining": [
+    "Concrete literal slice descriptor/public shape bounds",
+    "Expanded natural multiplicity mass bounds",
+    "Source authentication and auxiliary/global product correspondence",
+    "Complete local/PCS/transcript/quantum soundness"
+  ]
+}

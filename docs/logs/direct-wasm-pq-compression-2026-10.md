@@ -1674,3 +1674,9 @@ The exact count-to-multiset step is now closed independently of transcript decod
 Added BusTraceChallengeBound.lean: injective payload embedding and bounded tags preserve raw bus/message identities; a locally injective mapping preserves unequal multisets; the concrete natural imbalance theorem composes with the tagged joint bound. Certified Fp8.ofBase and natural bus+1 tags satisfy the premises for bus<P-1, and bus_trace_fp8_joint_bound discharges those encoding assumptions. This field is the certified BabyBear x^8-11 extension.
 
 Full check.py audit passed3599 public theorems (/tmp/root-slice-trace-challenge-audit.log). Fixed source trace/public vector, support coverage and shape, and distinct challenge samples remain explicit. Formal actual-slice support/mass budgets, source extraction, actual auxiliary/global products, local/PCS soundness and QROM are still required. No change to the executable Ext4 profile or proof size.
+
+### Constructed bus support and exact support-size formula
+
+Added BusTraceSupport.lean: support contains one message per row/interaction plus all public records; proved coverage of both multiplicity-expanded sides, exact support length, and descriptor/public shape propagation. bus_trace_supported_fp8_bound composes this construction into the actual-trace Ext8 bound, removing supplied coverage and candidate-size premises. Full check.py audit passed3603 (/tmp/root-bus-support-audit.log).
+
+Remaining numerical discharge is concrete literal descriptor/public widths and expanded natural multiplicity mass. Authenticated common trace, auxiliary/global product semantics and the rest of protocol/QROM soundness remain open. No executable profile or proof-size change.

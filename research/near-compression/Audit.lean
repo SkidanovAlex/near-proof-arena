@@ -5156,3 +5156,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_fp8_encoding_conditions
 
 #print axioms NearCompression.bus_trace_fp8_joint_bound
+
+#print axioms NearCompression.bus_trace_support_covers
+
+#print axioms NearCompression.bus_trace_support_length
+
+#print axioms NearCompression.bus_trace_support_shape
+
+#print axioms NearCompression.bus_trace_supported_fp8_bound

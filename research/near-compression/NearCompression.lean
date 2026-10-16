@@ -1285,3 +1285,5 @@ import NearCompression.BusTaggedChallengeBound
 import NearCompression.BusTraceMultiset
 
 import NearCompression.BusTraceChallengeBound
+
+import NearCompression.BusTraceSupport
