@@ -537,6 +537,7 @@
     "research/near-compression/NearCompression/TerminalBatchCheck.lean": "6ef13a0b6ea7b65e99b231ef556d47e3bfc7085334171481abcb08699acac9f5",
     "research/near-compression/NearCompression/TerminalCompiledCheck.lean": "adf9eacffea8c95fa5e4627afcf6a4593fb978e3bbc1fcf25b68ffd09bba71c7",
     "research/near-compression/NearCompression/RecoveredCompiledCheck.lean": "c50c0455bc9e6ad8666243aa9aca0c1820c6d50f3981ed2f0f5bed13ebfb3217",
+    "research/near-compression/NearCompression/AIRExpressionCheck.lean": "0dac504e289b0b908dba188a88553169d05d27dc7e42a32d8e0a9163e2aa88bd",
     "research/near-compression/NearCompression/JointSourceFarFold.lean": "ff79009785b516f31aa2ee9d5a407fb6154718867341fdaffeb490b40e13cafe",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean": "6fbcc8b3e2937bf737c04c2575c922f9bd9b5db921fca42665199bd78d675341",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean": "170d9528efb40b38fb199586592ff341780d73d0408cae7844d3d3ef881947af",

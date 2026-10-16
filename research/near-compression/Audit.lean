@@ -5506,3 +5506,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.recovered_compiled_finite_value
 #print axioms NearCompression.recovered_compiled_reverse_output
 #print axioms NearCompression.recovered_scatter_split_regressions
+
+#print axioms NearCompression.air_expression_checked
+#print axioms NearCompression.air_expression_checked_execution
+#print axioms NearCompression.air_expression_checked_compiled_table
+#print axioms NearCompression.air_expression_check_regressions

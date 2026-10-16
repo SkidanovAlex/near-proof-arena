@@ -3130,3 +3130,25 @@ passed. Integration/gate/scope evidence updated; gate remains NOT_PASSED. No new
 capture execution is claimed. Actual recovered-assignment checker acceptance,
 AIR compilation/environment identification, global sampling/computational
 soundness, quantum security and secure full-NEAR size remain open.
+
+### Executable AIR expression/register checks
+
+AIRExpressionCheck recursively checks each AIR Expr against actual source
+instructions. It covers all constructors, exact operands and zero padding,
+finite registers, column width and a real zero anchor for negation. Public
+reads preserve the source semantics of default zero outside the public list.
+Acceptance derives AIRProgramRoute and hence actual acyclic program execution
+equals Expr evaluation. When the checked expression is a compiled table's
+source root, this composes with reconstruction to its emitted DAG root.
+
+Kernel regressions include nested current/next arithmetic, natural/public
+constants, default public values and all selectors; they reject changed public
+values, insufficient width, current/next mismatch, missing registers, nonzero
+negation anchor and nonzero padding. Full check.py passed 3855 results with the
+existing axiom allowlist; integration/gate/scope evidence and diff checks pass.
+
+This is generic checker soundness, not new execution on retained AST captures.
+Ordered weighted residual accumulation and auxiliary bus formulas still need
+checked connections; a weighted table is not inferred to be a single AIR Expr.
+Expected AIR capture binding, recovered environments, parser/transcript and
+global/PQ soundness and secure full-NEAR size remain open. Gate NOT_PASSED.
