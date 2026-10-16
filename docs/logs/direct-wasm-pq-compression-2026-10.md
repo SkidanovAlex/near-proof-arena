@@ -2637,3 +2637,30 @@ also establish source/aux metadata is fixed before them, and handle sampler
 abort/rejection semantics. Quantum Fiat-Shamir compilation and universal
 compiler/transcript refinement remain open; the feasibility gate stays
 NOT_PASSED.
+
+
+### Near acceptance over the joint earlier-history/PCS experiment
+
+Added ChronologicalChallengeCount: uniform_tuples_append proves exact ordered
+sample-list equality for prefix/suffix concatenation, and
+chronological_suffix_count lifts uniformly bounded conditional suffix events
+to the full vector. Event/strategy dependence on the complete earlier history
+is allowed; no independence between the strategy and that history is assumed.
+
+Added near_history_fold_acceptance_count. One fixed shared source tuple
+represents every history-dependent weight table. The initial claim, sumcheck
+strategy and folding prover may all depend on the earlier vector. Wrongness
+is part of the counted event rather than required at every earlier history.
+The conclusion bounds actual checked sumcheck/folding acceptance on the joint
+coordinate vector. Its integer budget multiplies the prior near bound by
+Q^earlier, matching the sample-count factor and adding no normalized error.
+
+The result still assumes ideal independent draws, a shared representative,
+virtual source identity, fold geometry and terminal authentication. It does
+not identify SHA-384 outputs with ideal coins or handle all adaptive protocol
+scheduling. Next: instantiate the history-dependent full GKR wrong-input event
+and combine far/near cases before global AIR/bus/execution composition.
+
+Validation: all three new results pass the module checks and full check.py
+(3786 registered results), with the existing axiom allowlist. Imports, scope
+inventory, integration report and NOT_PASSED feasibility gate are updated.

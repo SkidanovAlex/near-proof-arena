@@ -1,0 +1,39 @@
+{
+  "status": "NEAR_ACCEPTANCE_ON_JOINT_HISTORY_PCS_SAMPLE_SPACE_PROVED",
+  "modules": [
+    "NearCompression/ChronologicalChallengeCount.lean",
+    "NearCompression/NearHistoryFoldAcceptance.lean"
+  ],
+  "theorems": [
+    "uniform_tuples_append",
+    "chronological_suffix_count",
+    "near_history_fold_acceptance_count"
+  ],
+  "proved": [
+    "Exact ordered-list identity between joint independent ideal samples and concatenated earlier/suffix samples, including multiplicities.",
+    "A uniform conditional suffix count lifts to the joint space even when the event and continuation strategy depend on the entire earlier vector.",
+    "Wrong initial functional claim AND checked sumcheck/folding acceptance is bounded on the joint earlier+PCS experiment using a single shared source representative for all history-dependent weight tables."
+  ],
+  "normalized_interpretation": {
+    "bound": "2*n/Q + sum_i(max(sizes(i+1),2))/Q + ((T-1)/N)^queries",
+    "history_factor": "The integer bound is multiplied by Q^earlier; the total sample count has the same factor. No extra normalized error arises from arbitrary dependence on the earlier vector.",
+    "conditions": "Normalization requires nonempty challenge/domain samples; ideal independent draws, fixed source tuple and authenticated folding endpoints remain explicit."
+  },
+  "improvement": "Wrongness is part of the counted event, so the initial claim need not be wrong at every earlier history. This matches an upstream failure event more closely than a universal wrong-claim premise.",
+  "remaining": [
+    "Instantiate the history-dependent weight family and full GKR wrong-input event with the chosen common representative.",
+    "Combine far and near branches on this shared experiment and propagate GKR/AIR/bus failures.",
+    "Justify actual adaptive transcript scheduling, metadata stability, oracle binding, rejection/abort behavior and quantum Fiat-Shamir compilation.",
+    "Full NEAR1Pgas semantics and secure proof/envelope below300000 bytes."
+  ],
+  "validation": {
+    "module_checks": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3786,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

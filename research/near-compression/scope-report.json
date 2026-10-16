@@ -518,6 +518,8 @@
     "research/near-compression/NearCompression/NearFunctionalFoldAcceptance.lean": "90e25796da6974c96968d9a6b2cfde75d1db58eb249f425a1b93722a7cfdca80",
     "research/near-compression/NearCompression/ChosenGKRFoldAcceptance.lean": "01c4ac603a759f8ba6b8a72bd550a78bad0506e5d20628670a71eb3588d5206d",
     "research/near-compression/NearCompression/HeterogeneousOpeningOracle.lean": "6c152e995aadb27b4ed33ba7a0ca4a15cc0c0e1e9aee47a906da5ac666cc7c3d",
+    "research/near-compression/NearCompression/ChronologicalChallengeCount.lean": "4df704ba95dbf823b3bb7bda20d04b7bf4f9cce538745142a4e6e7d7fa9098e2",
+    "research/near-compression/NearCompression/NearHistoryFoldAcceptance.lean": "add5a6ebb4aa17f35e5c7ec8fe40f86b0573002758935bbee987b467e1e062bf",
     "research/near-compression/NearCompression/JointSourceFarFold.lean": "ff79009785b516f31aa2ee9d5a407fb6154718867341fdaffeb490b40e13cafe",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean": "6fbcc8b3e2937bf737c04c2575c922f9bd9b5db921fca42665199bd78d675341",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean": "170d9528efb40b38fb199586592ff341780d73d0408cae7844d3d3ef881947af",

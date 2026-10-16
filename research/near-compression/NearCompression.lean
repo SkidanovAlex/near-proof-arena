@@ -1377,3 +1377,7 @@ import NearCompression.GKRFixedInputEnvelope
 import NearCompression.ChosenGKRFoldAcceptance
 
 import NearCompression.HeterogeneousOpeningOracle
+
+import NearCompression.ChronologicalChallengeCount
+
+import NearCompression.NearHistoryFoldAcceptance

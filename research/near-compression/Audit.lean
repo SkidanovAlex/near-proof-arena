@@ -5419,3 +5419,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.heterogeneous_lifted_joint_coefficients
 #print axioms NearCompression.heterogeneous_lifted_joint_oracle
+
+#print axioms NearCompression.uniform_tuples_append
+#print axioms NearCompression.chronological_suffix_count
+
+#print axioms NearCompression.near_history_fold_acceptance_count
