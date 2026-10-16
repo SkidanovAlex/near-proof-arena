@@ -305,6 +305,8 @@ SOURCES = [
     "research/near-compression/NearCompression/TrivariateRootForcing.lean",
     "research/near-compression/NearCompression/BivariateCurveDivision.lean",
     "research/near-compression/NearCompression/PolynomialIntegralDomain.lean",
+    "research/near-compression/NearCompression/CurveRootPreservation.lean",
+    "research/near-compression/NearCompression/PolynomialCoefficientAlgebra.lean",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean",

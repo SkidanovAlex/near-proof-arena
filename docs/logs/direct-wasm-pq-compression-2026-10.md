@@ -8055,3 +8055,36 @@ other-root preservation and repeated extraction/counting. Useful-factor/Hensel,
 full MCA exceptions and protocol/QROM composition remain open. No runtime or
 parameter change: diagnostic bundle1344645 B, feasibility NOT_PASSED. Full
 NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Distinct curve-root preservation and root count
+
+Added PolynomialCoefficientAlgebra.lean (six public theorems) and
+CurveRootPreservation.lean (three). Coefficientwise multiplication respects
+coefficient equality and satisfies left/right distributivity, associativity,
+commutativity and left subtraction. All proofs work directly with schoolbook
+coefficient lists and tolerate arbitrary trailing zero padding.
+
+The formal divided-difference identity is
+Q(X,g)-Q(X,f)=(g-f)*quotient_f(X,g). Combining it with zero-product cancellation
+proves that removing the factor Y-f preserves any other coefficient-distinct
+curve root g. Distinctness is NOT merely structural list inequality. Induction
+on a pairwise coefficient-distinct list then repeatedly removes factors,
+preserving nonzeroness and reducing the number of stored Y rows, to prove
+number_of_curve_roots≤rows.length-1 for nonzero Q. This is a stored Y-degree
+bound and remains valid with padding. These results have no field-size,
+evaluation-domain, or curve-degree assumption. The earlier agreement-to-root
+forcing step still retains its explicit translation separation premise.
+
+Validation:600 coefficient-algebra cases,600 arbitrary divided-difference
+cases and100 fixtures whose affine candidate roots were exhaustively
+enumerated over F2/F3/F5/F17. Checked372 ordered pairs of distinct roots through
+factor removal. Four examples distinguish formal curves with identical finite
+field evaluations. Counterexamples reject counting duplicate roots and
+treating zero-padding differences as distinct roots. Full audit4353 PASS,
+allowed axioms only. Evidence: results/curve-root-preservation/.
+
+Next: connect the root-count bound to specialized interpolants outside total
+annihilation, then the useful-factor/Hensel and complete MCA exceptional-set
+argument. Root counting alone does not recover a common source candidate or
+bound the full exception set. No runtime/security-parameter change: diagnostic
+bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

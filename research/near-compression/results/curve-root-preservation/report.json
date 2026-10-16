@@ -1,0 +1,10 @@
+{
+  "algebra_cases": 600,
+  "divided_difference_cases": 600,
+  "exhaustive_root_fixtures": 100,
+  "distinct_root_preservations": 372,
+  "same_function_distinct_curve_cases": 4,
+  "padding_distinctness_counterexamples": 1,
+  "duplicate_count_counterexamples": 1,
+  "scope": "Formal root preservation and stored Y-degree root count. MCA useful-factor selection, Hensel lifting and complete exceptional set remain open."
+}

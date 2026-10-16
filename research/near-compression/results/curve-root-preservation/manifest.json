@@ -1,0 +1,20 @@
+{
+  "scope": "Formal substitution difference, preservation of distinct roots and repeated-extraction root count bounded by stored Y-degree; no field-size guard. Full MCA exceptions remain open.",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_curve_root_preservation.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/PolynomialCoefficientAlgebra.lean": "5d4492d1d393e85ab5049c3eaac5683d494fc9cd526905dcb03a00efd0516c67",
+    "research/near-compression/NearCompression/CurveRootPreservation.lean": "f2f5fb273fc0ebedd38dbbd052a9986aaea9c8a4b52213c0de8dd69217616a34",
+    "research/near-compression/NearCompression/BivariateCurveDivision.lean": "f12624ddf642f19dfff2f6f40fcad49e5ca601207dcb1030d61affba8d898b7b",
+    "research/near-compression/NearCompression/PolynomialIntegralDomain.lean": "f37f18366f90b8a224e956a16b02958bbc70f84f4fedc37256c34be05690ba51",
+    "research/near-compression/airbender/direct-wasm/test_curve_root_preservation.py": "06b07d2f3a183f03c900a342e0a5ef7b6b57eb4074e476ed399314d0a22a54e3",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_curve_division.py": "caa6f88b112bdf9ca03d6682425ce69918fbc238532bf8412005bd664e26a52b",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/results/curve-root-preservation/report.json": "7cd82a877b42d9bca1b7a061620fbe4da7a8573b1f4c4f8821dd7f66acef57e6",
+    "research/near-compression/results/curve-root-preservation/lean-audit.log.gz": "5b6a9df77ebe828596d283d0034e9a37e4b4158460293907a2e5db1caa2503b3"
+  }
+}

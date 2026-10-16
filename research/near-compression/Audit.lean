@@ -6197,3 +6197,14 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_order_product_coefficient
 #print axioms NearCompression.polynomial_product_nonzero
 #print axioms NearCompression.polynomial_product_zero_iff
+
+#print axioms NearCompression.polynomial_mul_congr
+#print axioms NearCompression.polynomial_add_mul
+#print axioms NearCompression.polynomial_mul_assoc
+#print axioms NearCompression.polynomial_mul_comm
+#print axioms NearCompression.polynomial_mul_add
+#print axioms NearCompression.polynomial_sub_mul
+
+#print axioms NearCompression.bivariate_curve_substitution_difference
+#print axioms NearCompression.bivariate_curve_quotient_preserves_root
+#print axioms NearCompression.bivariate_curve_root_count
