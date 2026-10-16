@@ -72,6 +72,6 @@
     }
   ],
   "capture_sha256": "0277462aedeed14c7ae83c8fb5e5c127c7f70de506b452b0a483d578b1371728",
-  "checker_sha256": "457fefc477e79897c99189aa11531af105f8c12debe5bc323cc03cfc5c941c49",
+  "checker_sha256": "eb6c6ef86767357525e54b4a723cd512ee7c316e5b818f603a411b0de1298fb3",
   "scope": "Exact formal bus-spec AST binding, formula routes, acyclicity and sampled values; no full prover or authentication claim."
 }

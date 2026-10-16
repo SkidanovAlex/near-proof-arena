@@ -4896,3 +4896,9 @@ and full 1 Pgas remain open; slice gate remains NOT_PASSED.
 Added `ExpandedBusFingerprintCheck.lean`: the executable checker constructs the expanded fingerprint from supplied alpha/tag/message and checks its exact register route. The soundness theorem composes route execution with the universal expansion identity, proving canonical Horner semantics for every environment under acyclicity. Kernel regressions reject wrong tag, challenge, message, root and column width.
 
 Validation: full `check.py` PASS, 4121 audited theorems/regressions, allowed axioms only. This is a component checker: actual optimized terminal-program integration, authenticated challenge/message binding, native Ext8 proving, complete envelope measurement, source-invalid composition and QROM remain open. The feasibility gate remains NOT_PASSED.
+
+### Check actual expanded fingerprint compiler routes
+
+Extended `CheckExt8BusFormulas.lean` with `--fingerprints`: derive messages/tags from supplied AIR, check each fingerprint route inside a complete emitted weighted program, and check program acyclicity. Added a deterministic compiler capture runner using the retained 193-instruction AIR and zero/unit/random Ext8 alpha. No compiler production behavior changed.
+
+Validation: 15 fingerprint routes across six cases accepted; nine mutations rejected (alpha, bus, message, root, live constant, cycle, column width, omitted root, empty capture). Existing canonical residual checker regression: 64 residuals accepted and 16 mutations rejected. Reports include statement, capture and checker digests. This connects actual compiler output to the prior universal route theorem at the fingerprint component boundary; full residual semantic replacement, optimized DAG refinement, authenticated inputs and native Ext8 proof/envelope remain open. Gate remains NOT_PASSED.

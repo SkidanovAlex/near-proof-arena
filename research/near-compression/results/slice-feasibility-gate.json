@@ -604,5 +604,12 @@
   "expanded_fingerprint_instruction_check": {
     "status": "UNIVERSAL_CHECKER_SOUNDNESS_PROVED",
     "scope": "Direct executable check reconstructs expanded fingerprint from supplied alpha/tag/message and checks its instruction route. Acyclic accepted programs equal canonical Horner evaluation in every environment. Kernel regressions reject wrong tag/challenge/message/root/width. Full optimized terminal compiler integration, authenticated inputs, native Ext8 proof and QROM remain open."
+  },
+  "expanded_fingerprint_compiler_capture": {
+    "status": "ACTUAL_INSTRUCTION_ROUTES_CHECKED",
+    "cases": 6,
+    "fingerprints": 15,
+    "mutations_rejected": 9,
+    "scope": "Retained 193-instruction AIR, zero/unit/random synthetic Ext8 alpha; complete emitted weighted programs. Lean reconstructs source expressions and tags from supplied AIR and checks expansion routes and acyclicity. No optimized DAG refinement, authenticated inputs, native Ext8 proof or security claim."
   }
 }

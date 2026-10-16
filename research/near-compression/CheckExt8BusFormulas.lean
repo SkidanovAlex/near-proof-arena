@@ -1,4 +1,4 @@
-import NearCompression.BusFormulaCheck
+import NearCompression.ExpandedBusFingerprintCheck
 import NearCompression.GeneratedExt8BusSpecCheck
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -77,7 +77,7 @@ private def interaction (j : Json) : IO ZkFormal.Air.Interaction := do
   let msg ← (←need (←field j "msg").getArr?).toList.mapM expression
   let mult ← (←need (←field j "mult").getArr?).toList.mapM expression
   return { bus := bus, send := send, msg := msg, mult := mult }
-def main (args : List String) : IO Unit := do
+private def checkResiduals (args : List String) : IO Unit := do
   let [path] := args | throw (IO.userError "expected fixture path")
   let document ← need (Json.parse (←IO.FS.readFile path))
   let cases ← need document.getArr?
@@ -121,3 +121,33 @@ def main (args : List String) : IO Unit := do
       require (decide (terminalProgramRun env 0 (fun _=>0) program root=expected)) "program value mismatch"
       count := count+1
   IO.println (Json.mkObj [("status",toJson "PASS"),("cases",toJson cases.size),("residuals",toJson count)]).compress
+
+/-- Check fingerprints inside complete emitted weighted programs, deriving
+messages and tags from AIR interactions rather than a supplied formula AST. -/
+private def checkFingerprints (path : String) : IO Unit := do
+  let cases ← need (Json.parse (←IO.FS.readFile path)) >>= fun j=>need j.getArr?
+  require (0<cases.size) "empty fixture"
+  let mut count := 0
+  for item in cases do
+    let table ← field item "table"
+    let width ← need (←field table "width").getNat?
+    let interactions ← (←need (←field table "interactions").getArr?).toList.mapM interaction
+    let publicValues ← (←need (←field item "public").getArr?).toList.mapM baseScalar
+    let alpha ← scalar (←field item "alpha")
+    let program ← (←need (←field item "instructions").getArr?).toList.mapM instruction
+    let roots ← (←need (←field item "roots").getArr?).toList.mapM (fun j=>need j.getNat?)
+    require (0<roots.length && roots.length==interactions.length) "fingerprint count"
+    let env : TerminalProgramEnvironment Fp8 := {
+      current:=fun _=>0, next:=fun _=>0, first:=0, last:=0, transition:=0 }
+    require (terminalAcyclicCheck 0 (program.map (terminalProgramNode env))) "acyclicity rejected"
+    for (i,root) in interactions.zip roots do
+      let message := i.msg.map (lowerBusSource (publicValues.map Fp8.ofBase))
+      require (expandedBusFingerprintCheck program width alpha (Fp8.ofBase (Fp.ofNat (i.bus+1))) message root)
+        "expanded fingerprint route rejected"
+      count := count+1
+  IO.println (Json.mkObj [("status",toJson "PASS"),("cases",toJson cases.size),("fingerprints",toJson count)]).compress
+
+def main (args : List String) : IO Unit :=
+  match args with
+  | ["--fingerprints",path] => checkFingerprints path
+  | _ => checkResiduals args
