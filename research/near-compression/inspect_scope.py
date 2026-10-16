@@ -11,6 +11,7 @@ SOURCES = [
     "research/near-compression/NearCompression/GKROutputWeights.lean",
     "research/near-compression/NearCompression/TerminalSignedBalance.lean",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean",
+    "research/near-compression/NearCompression/ShiftAdaptiveSoundness.lean",
     "research/near-compression/NearCompression/ShiftInitialClaim.lean",
     "research/near-compression/NearCompression/ShiftReductionPolynomial.lean",
     "research/near-compression/NearCompression/AirLocalSoundness.lean",

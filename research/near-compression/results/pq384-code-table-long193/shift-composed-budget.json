@@ -1,0 +1,66 @@
+{
+  "status": "CONDITIONAL_COMPONENT_BOUND",
+  "theorem": "NearCompression.shift_wrong_vector_count",
+  "formula": "(2*width-1+2*row_log)/field_size",
+  "tables": [
+    {
+      "table": 0,
+      "source_width": 605,
+      "auxiliary_columns": 3,
+      "rounds": 8,
+      "profiles": [
+        {
+          "coordinates_per_auxiliary": 4,
+          "width": 617,
+          "batching_numerator": 1233,
+          "rounds_numerator": 16,
+          "composed_numerator": 1249,
+          "executable_profile": true
+        },
+        {
+          "coordinates_per_auxiliary": 8,
+          "width": 629,
+          "batching_numerator": 1257,
+          "rounds_numerator": 16,
+          "composed_numerator": 1273,
+          "executable_profile": false
+        }
+      ]
+    },
+    {
+      "table": 1,
+      "source_width": 198,
+      "auxiliary_columns": 50,
+      "rounds": 8,
+      "profiles": [
+        {
+          "coordinates_per_auxiliary": 4,
+          "width": 398,
+          "batching_numerator": 795,
+          "rounds_numerator": 16,
+          "composed_numerator": 811,
+          "executable_profile": true
+        },
+        {
+          "coordinates_per_auxiliary": 8,
+          "width": 598,
+          "batching_numerator": 1195,
+          "rounds_numerator": 16,
+          "composed_numerator": 1211,
+          "executable_profile": false
+        }
+      ]
+    }
+  ],
+  "premises": [
+    "Fixed original trace, target point and incorrect vector before batching alpha",
+    "Exact vector width and checked adaptive quadratic rounds",
+    "Terminal equality to actual original-column trace evaluations",
+    "Independent ideal challenge samples"
+  ],
+  "exclusions": [
+    "PCS authentication and common-trace extraction",
+    "Global transcript and quantum security",
+    "Ext8 profile is arithmetic projection; executable migration is not implemented"
+  ]
+}

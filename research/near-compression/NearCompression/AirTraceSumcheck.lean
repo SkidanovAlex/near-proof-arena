@@ -8,7 +8,7 @@ def airBooleanSuffixes : Nat→List (List K)
   | 0 => [[]]
   | n+1 => (airBooleanSuffixes n).map ((0:K)::·)++(airBooleanSuffixes n).map ((1:K)::·)
 
-private theorem suffix_length (n : Nat) (suffix : List K) (member : suffix∈airBooleanSuffixes n) : suffix.length=n := by
+theorem air_boolean_suffix_length (n : Nat) (suffix : List K) (member : suffix∈airBooleanSuffixes n) : suffix.length=n := by
   induction n generalizing suffix with
   | zero => simp [airBooleanSuffixes] at member;subst suffix;rfl
   | succ n ih =>
@@ -22,7 +22,7 @@ private theorem sum_append (xs ys : List K) : (xs++ys).sum=xs.sum+ys.sum := by
   | nil => simp only [List.nil_append,List.sum_nil];grind
   | cons x xs ih => simp only [List.cons_append,List.sum_cons,ih];grind
 
-private theorem suffix_sum (n : Nat) (f : List K→K) :
+theorem air_boolean_suffix_sum (n : Nat) (f : List K→K) :
     ((airBooleanSuffixes n).map f).sum=whirCubeSum n f := by
   induction n generalizing f with
   | zero => simp only [airBooleanSuffixes,List.map_cons,List.map_nil,List.sum_cons,List.sum_nil,whirCubeSum];grind
@@ -58,11 +58,11 @@ theorem air_trace_round_represents (tr : Trace K) (t : Nat) (pubValues : List K)
         (fun suffix=>airTraceWeightedValue tr t pubValues source auxiliary mixing tau (history++x::suffix)) := by
     apply List.map_congr_left
     intro suffix hs
-    have size : history.length+1+suffix.length=tr.log t := by rw [suffix_length _ _ hs];omega
+    have size : history.length+1+suffix.length=tr.log t := by rw [air_boolean_suffix_length _ _ hs];omega
     rw [air_kernel_coordinate_eval,air_trace_coordinate_environment tr t pubValues history suffix size x,
       bus_trace_coordinate_environment tr t pubValues history suffix size x]
     rfl
-  rw [evaluated,suffix_sum]
+  rw [evaluated,air_boolean_suffix_sum]
   simp only [polynomialSumcheckTruth,List.length_append,List.length_singleton,List.append_assoc,List.singleton_append]
 
 /-- Full adaptive local sumcheck bound for the concrete combined trace

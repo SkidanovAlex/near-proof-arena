@@ -5333,3 +5333,13 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.row_mle_lane_batch
 #print axioms NearCompression.shift_reduction_batched_initial
 #print axioms NearCompression.shift_initial_claim_bad_count
+
+#print axioms NearCompression.air_boolean_suffix_length
+#print axioms NearCompression.air_boolean_suffix_sum
+#print axioms NearCompression.conditional_scaled_accept_count
+
+#print axioms NearCompression.shift_honest_round_degree
+#print axioms NearCompression.shift_honest_round_represents
+#print axioms NearCompression.shift_adaptive_round_count
+#print axioms NearCompression.shift_trace_initial_sum
+#print axioms NearCompression.shift_wrong_vector_count

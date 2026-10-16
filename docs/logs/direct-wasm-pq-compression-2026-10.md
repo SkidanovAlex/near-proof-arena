@@ -1840,3 +1840,11 @@ Validation: full check.py passed (3714 registered results; allowed axioms only).
 Connected the ordinary shift kernel's Boolean sum to actual cyclic-next MLEs using the existing natural-index predecessor reindexing theorem. Proved row-MLE Boolean dot products, column-batching/interpolation commutation and the exact current-then-next concatenation identity with alpha^width offset. The actual initial shift sum is now the honest batched claim vector, and a fixed incorrect vector matches it for at most2*width-1 distinct column-batching challenges.
 
 Validation: full check.py passed (3721 registered results; allowed axioms only). Formal composition only, with no runtime/proof-size/security-parameter change. The claim vector must be fixed before the batching challenge and have exactly twice the source-column width. Next: compose adaptive quadratic shift rounds, authenticate final original-column PCS openings, and combine with local AIR/global bus bounds. Quantum transcript soundness, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.
+
+### Full algebraic adaptive shift reduction bound
+
+Constructed honest quadratic shift rounds from actual trace slices and Boolean suffix enumeration, proving degree and exact remaining-sum representation. Composed adaptive rounds with fixed-vector batching: an incorrect current/next vector accepted with honest terminal source evaluations has ideal error at most (2*width-1+2*rowLog)/fieldSize. Strategies may depend on alpha and prior challenges. Promoted existing Boolean-suffix/count-composition lemmas to audited reusable interfaces rather than duplicating them.
+
+Validation: full check.py passed (3729 registered results; allowed axioms only). Reproducible retained-fixture budget: Ext4 coordinate widths617/398 give numerators1249/811; projected Ext8 widths629/598 give1273/1211. Ext8 figures are arithmetic projections, not an executable migration or security certification.
+
+Next: authenticate final original-column MLEs through PCS and establish common-source extraction/transcript timing, then compose local AIR/global bus/shift bounds. Terminal equality remains explicit. Full quantum transcript soundness, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.

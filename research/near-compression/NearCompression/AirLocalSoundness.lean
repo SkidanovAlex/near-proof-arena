@@ -4,7 +4,7 @@ namespace NearCompression
 open Lean.Grind ZkFormal.Air ZkFormal.Algebra ArenaCore.Security
 variable {K : Type} [Field K]
 
-private theorem conditional_scaled_count {A B : Type} (initial : List A) (paths : List B)
+theorem conditional_scaled_accept_count {A B : Type} (initial : List A) (paths : List B)
     (bad : A→Prop) (accept : A→B→Prop) (scale limit : Nat)
     (good : ∀ a∈initial,¬bad a → count paths (accept a)*scale≤limit) :
     (initial.map (fun a=>count paths (accept a))).sum*scale≤
@@ -70,7 +70,7 @@ theorem air_local_invalid_trace_count (sample : List K) (distinct : sample.Nodup
   let accept := fun initial : K × List K=>fun path=>
     polynomialSumcheckChecks (d+1) (sent initial.1 initial.2) (claim initial.1 initial.2) [] path ∧
       claim initial.1 initial.2 path=airTraceWeightedValue tr t pubValues source auxiliary initial.1 initial.2 path
-  have conditional := conditional_scaled_count (airLocalInitialChallenges sample (tr.log t))
+  have conditional := conditional_scaled_accept_count (airLocalInitialChallenges sample (tr.log t))
     (uniformTuples sample (tr.log t)) bad accept sample.length
     (((d+1)*tr.log t)*sample.length^(tr.log t)) (by
       intro initial _ good

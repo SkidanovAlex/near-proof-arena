@@ -77,7 +77,10 @@
     "NearCompression/ShiftReductionPolynomial.lean",
     "results/shift-polynomial-integration.json",
     "NearCompression/ShiftInitialClaim.lean",
-    "results/shift-initial-claim-integration.json"
+    "results/shift-initial-claim-integration.json",
+    "NearCompression/ShiftAdaptiveSoundness.lean",
+    "results/shift-adaptive-integration.json",
+    "results/pq384-code-table-long193/shift-composed-budget.json"
   ],
   "requirements": [
     {
@@ -101,7 +104,7 @@
       "auxiliary_layout_component": "Source Expr and tagged fingerprint lowering, table allocation/order, and actual-row factor semantics compose. Actual allConstraints discharge bit Booleanity; generated factors equal powers with exact Interaction.multNat natural exponents and replicated-message products. All-row final products use those natural exponents with selector/cyclic-next bindings discharged. Actual preparedLiteralAir(193) residuals previously matched Python in 1701 comparisons over 54 cases (9 EXEC, 54 CODE residuals). Global send/receive/public product composition, common committed-trace extraction and complete cryptographic soundness remain open. Finite Ext4 parity is not formal parser refinement or executable Ext8 certification.",
       "global_product_component": "Concrete source/Ext8/global-product composition now permits arbitrary challenge-dependent auxiliary coordinates and finals while source cells and heights remain fixed. Existential adaptive residual acceptance implies the fixed-source semantic bus equation and obeys the same ideal Ext8 budget. The literal wrong actual runCall output theorem composes with this event, conditional on TableLocal, public fit, executable preparation and fuel. Cryptographic common-source extraction, local/adaptive sumcheck/PCS soundness and quantum transcript reduction remain open.",
       "adaptive_sumcheck_component": "Concrete trace-derived adaptive rounds are now composed with initial constraint batching and equality-point error in one integer challenge-count theorem for any fixed invalid combined trace. Strategies depend on mixing/tau and challenge history. Conditional bound: (residualCount-1+rowLog+roundDegree*rowLog)/fieldSize; retained EXEC/CODE numerators801/600. Terminal equality to actual trace evaluation and fixed trace before local challenges remain premises. Current/next/PCS authentication, extraction and global transcript composition remain open.",
-      "terminal_shift_component": "Ordinary borrow kernel MLE and quadratic integrand are proved. Its actual initial Boolean sum now equals the shared-alpha power batch of all current then cyclic-next column claims, with alpha^width offset. Fixed incorrect vector collision count is at most2*width-1. Adaptive quadratic shift-round composition and final PCS authentication remain open."
+      "terminal_shift_component": "Full algebraic shift bound now composes fixed current/next vector batching with trace-derived adaptive quadratic rounds: (2*width-1+2*rowLog)/fieldSize. Honest degree and suffix representation are constructed. Retained Ext4 numerators1249/811; projected eight-coordinate Ext8 numerators1273/1211, not an executable migration. Terminal equality to actual original-column MLEs remains a premise requiring PCS authentication, followed by local/bus/transcript composition."
     },
     {
       "name": "Complete bytes and scaling",
