@@ -4519,3 +4519,22 @@ authenticated Ext8 slice inputs. QROM, secure size and full 1 Pgas remain open.
 
 Validation: full `check.py` PASS (4082 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only composition.
+
+### Checked bus failure selects a decoded local witness
+
+`CheckedBusFailureSelection.lean` derives the table/row/lane witness from
+failed reconstructed bus validity, using the actual checked formula lists.
+The row is below the selected table height and the residual count is positive.
+A separate restriction lemma preserves the whole combined residual vector,
+including cyclic next-row reads and boundary selectors.
+
+Source checks, matching widths, exact specification checks and bounded base
+coordinate typing remain premises. Witness existence does not itself prove
+chronology: the subsequent adaptive application must fix its trace/formula
+inputs before local challenges. Next: use this selection across earlier bus
+transcripts and compose the invalid-auxiliary local/GKR/PCS budget. The slice
+gate remains NOT_PASSED; native Ext8 integration, QROM, secure size and full
+1 Pgas are still open.
+
+Validation: full `check.py` PASS (4084 registered results), existing axiom
+allowlist. Native captures were not rerun for this formal-only change.

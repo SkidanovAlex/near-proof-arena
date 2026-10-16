@@ -1541,3 +1541,4 @@ import NearCompression.NativeStyleCoordinateAccumulation
 import NearCompression.GeneratedExt8BusSpecCheck
 
 import NearCompression.CheckedBusResidualTransport
+import NearCompression.CheckedBusFailureSelection

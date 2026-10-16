@@ -1,0 +1,32 @@
+{
+  "status": "CHECKED_BUS_FAILURE_SELECTS_LOCAL_WITNESS",
+  "module": "NearCompression/CheckedBusFailureSelection.lean",
+  "theorems": [
+    "decoded_table_combined_residuals",
+    "checked_bus_invalid_table_witness"
+  ],
+  "proved": [
+    "Restricting the decoded trace to one table preserves the full ordered combined residual vector, including selectors and cyclic next-row reads.",
+    "Failed reconstructed bus validity, source checks, exact formula specification checks and bounded coordinate typing yield a selected table, a row below its height, positive residual count and a nonzero local residual."
+  ],
+  "assumptions": [
+    "Source constraint validity and source/interaction column bounds.",
+    "Matching table widths and exact ordered Ext8 formula specification checks.",
+    "Base typing of referenced coordinate cells; matching public/challenge/final inputs."
+  ],
+  "remaining": [
+    "Instantiate selection on earlier-transcript-indexed decoded traces and compose adaptive invalid-auxiliary local/GKR/PCS budgets.",
+    "Chronological application must fix selection inputs before local challenges; the existence theorem itself does not enforce protocol chronology.",
+    "Authenticate inputs in a native Ext8 slice verifier; full acceptance soundness, QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4084,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only change."
+  }
+}
