@@ -5414,3 +5414,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_envelope_operand_value
 #print axioms NearCompression.gkr_envelope_first_layer
 #print axioms NearCompression.gkr_envelope_circuit
+
+#print axioms NearCompression.chosen_gkr_terminal_acceptance_count

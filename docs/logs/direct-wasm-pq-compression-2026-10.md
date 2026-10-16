@@ -2562,3 +2562,29 @@ for a shared representative. Connecting chosen recovered GKR input to actual
 fold acceptance, retaining source projection, chronology and terminal
 authentication assumptions, is the next formal step. This inspection does
 not itself discharge that composition or quantum Fiat-Shamir security.
+
+
+### Chosen GKR input to checked folding acceptance
+
+Added chosen_gkr_terminal_acceptance_count. The theorem uses the single
+prechallenge chosen joint source representative, derives its sparse lane
+coefficients from actual source projection, and constructs the shared
+representative for heterogeneous opening weights. Sequential known-constant
+subtraction converts a wrong full recovered GKR input claim into a wrong
+coefficient-table functional of that same tuple. The existing adaptive
+sumcheck/folding theorem then bounds checked acceptance rather than merely
+a close residual-candidate event.
+
+The normalized ideal bound is2*n/Q + sum_i(max(sizes(i+1),2))/Q +
+((T-1)/N)^queries, with n=commonLog, N=4*2^n and initial degree2^n. The
+formal statement is an integer-scaled count. This retains representative
+existence, canonical geometry, source-oracle identity, terminal authentication,
+independent ideal challenges and the strict unique-decoding regime as
+explicit premises. It does not authenticate a commitment, refine executable
+transcripts, compose all AIR/GKR/bus events, or certify quantum security.
+
+Validation: module check and full check.py passed3781 registered results;
+axiom closure remains propext/Classical.choice/Quot.sound. Registered the
+module in imports, axiom audit and scope inventory; retained the integration
+report and updated the still-NOT_PASSED slice gate. Full NEAR1Pgas and secure
+sub300000-byte compression remain the objective.

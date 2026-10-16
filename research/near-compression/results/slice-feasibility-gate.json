@@ -143,7 +143,9 @@
     "results/pq384-literal193-gkr-fixed13/compact-slice-report.json",
     "results/literal-fixed-input-execution-scaling.json",
     "results/pq384-literal769-gkr-fixed14/compact-slice-report.json",
-    "results/pq384-literal769-gkr-fixed14/preparation-report.json"
+    "results/pq384-literal769-gkr-fixed14/preparation-report.json",
+    "NearCompression/ChosenGKRFoldAcceptance.lean",
+    "results/chosen-gkr-fold-acceptance-integration.json"
   ],
   "requirements": [
     {
@@ -188,7 +190,8 @@
       "canonical_word_binding_component": "Canonical BabyBear coordinate lists now have injective LE-u32 serialization, and distinct canonical coordinate trees with equal byte-tree roots yield supported concrete hash collisions. Extension-field/pair coordinate refinement, unknown-root extraction and quantitative quantum bounds remain open.",
       "ext4_pair_binding_component": "Certified Fp4 scalar-pair serialization is injective, canonical, exactly32 bytes and uses Python coefficient order. Different typed pair trees with the same concrete serialized root yield supported hash collisions. Full terminal/transcript instantiation and quantitative quantum security remain open; no Ext8 implementation claim.",
       "concrete_terminal_binding_component": "Accepted constant-terminal reconstruction with concrete serialized Ext4 pair Merkle roots yields pointwise terminal authentication or a supported byte hash collision. Abstract typed-tree injectivity and serialization premises are discharged. Transcript event plumbing, quantitative quantum collision bounds and earlier-oracle extraction remain open.",
-      "near_functional_acceptance_component": "Wrong functional of one shared representative now bounds actual weighted-sumcheck plus adaptive-fold acceptance, with normalized2*n/Q+foldSum/Q+queryTail. Folding strategy may depend on preceding sumcheck challenges. Fixed representative/source identity, fold geometry, terminal authentication and ideal sampling remain explicit; full compiled GKR/AIR/bus composition is open."
+      "near_functional_acceptance_component": "Wrong functional of one shared representative now bounds actual weighted-sumcheck plus adaptive-fold acceptance, with normalized2*n/Q+foldSum/Q+queryTail. Folding strategy may depend on preceding sumcheck challenges. Fixed representative/source identity, fold geometry, terminal authentication and ideal sampling remain explicit; full compiled GKR/AIR/bus composition is open.",
+      "chosen_gkr_fold_acceptance_component": "A wrong full GKR input functional of the prechallenge chosen joint source tuple bounds checked weighted sumcheck and adaptive folding acceptance. Derives sparse recovery, shared functional agreement and actual sequential constant subtraction from existing geometry and joint representative premises. Representative existence, oracle identity, terminal authentication, ideal sampling and strict unique-decoding regime remain explicit; executable refinement and global quantum composition are open."
     },
     {
       "name": "Complete bytes and scaling",

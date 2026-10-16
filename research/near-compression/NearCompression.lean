@@ -1373,3 +1373,5 @@ import NearCompression.NearFunctionalFoldAcceptance
 import NearCompression.Literal193GKRGeometry
 
 import NearCompression.GKRFixedInputEnvelope
+
+import NearCompression.ChosenGKRFoldAcceptance
