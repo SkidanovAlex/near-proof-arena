@@ -3021,3 +3021,33 @@ and an empty record list. Full check.py passed 3836 registered results with the
 existing axiom allowlist. Integration, gate and scope evidence updated; gate
 remains NOT_PASSED. Global execution and cryptographic/PQ soundness and secure
 size remain open.
+
+### Native reconstruction checks on retained fixed193 programs
+
+CheckRebuildRecords parses retained source instructions, constants, selectors,
+register records, signed expansion trees and balance stages into typed Lean
+certificates. It infers arithmetic witnesses only by the proved finite checker,
+orders records by source index, checks source/target acyclicity and executes
+terminalRebuildRecordsCheck for each source program from an empty context.
+
+The fixed193 capture contains two programs and 9152 records. Both programs pass
+on deterministic diagnostic input assignments with seeds 0 and 7; complete
+Lean invocations took about 2.1 seconds each. Six full-capture mutations reject:
+wrong program root, flipped expansion sign, missing root record, changed input
+target, changed selector and unknown opcode. The harness distinguishes runtime
+rejection from compilation failure and also executes CheckStoredRoutes on the
+same target bundle. Hashes, outcomes and timings are retained.
+
+capture_fixed_rebuild.py reproduces the reconstruction artifact after full
+fixed-profile proof verification and requires the replayed circuit to equal
+the retained bundle. The capture helper accepts the two compiler calls made
+by fixed-profile verification/replay only when their arguments agree; legacy
+profiles retain the single-call requirement. The artifact report binds proof,
+statement, bundle and reconstruction hashes.
+
+Scope: native per-program checking on diagnostic assignments, not committed
+input extraction or concrete kernel proof terms. Final equality-weight/claim/
+rho batching across programs is still outside this Lean adapter. Parser/emitter
+refinement, source AIR compilation, global cryptographic/PQ soundness and secure
+size remain open. Full check.py again passed 3836 results with the existing
+axiom allowlist; Python compilation and diff checks passed. Gate NOT_PASSED.

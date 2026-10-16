@@ -185,7 +185,10 @@
     "NearCompression/TerminalBalanceCheck.lean",
     "results/balance-checker-integration.json",
     "NearCompression/TerminalRebuildCheck.lean",
-    "results/rebuild-checker-integration.json"
+    "results/rebuild-checker-integration.json",
+    "CheckRebuildRecords.lean",
+    "results/literal193-fixed-rebuild.report.json",
+    "results/lean-rebuild-captures.json"
   ],
   "requirements": [
     {
@@ -213,7 +216,8 @@
       "arithmetic_reconstruction_checker": "Finite arithmetic witness acceptance derives exact optimization routes and operand/result bounds. Source program execution composes with the checked bundle under an explicit TerminalRebuildRoute premise. Kernel regressions cover14 accepted routes,14 wrong outputs and3 further malformed cases. Recursive signed expansion/balance reconstruction checker and concrete capture certificates remain open. Full audit3823 results; no global/PQ completion.",
       "signed_expansion_checker": "Recursive finite tree acceptance derives signed expansion, bounds root and retained leaves, and preserves executed DAG signed root under checked acyclicity. Kernel regressions cover nested and negative subtraction, retained internal nodes, wrong signs/dependencies, nonadditive expansion and missing nodes. Balanced reduction and complete rebuild/input binding remain open. Audit3827 results; no full-capture or global/PQ claim.",
       "balanced_reduction_checker": "Finite sign-aware join, pass and balance checkers derive existing structural routes and preserve independently executed signed sums under checked acyclicity. Stage adjacency, odd carries and empty/negative terminals are checked. Kernel regressions cover all sign pairs, two-stage odd reduction and malformed boundaries. Recursive reconstruction/input binding and concrete capture refinement remain open. Full audit3832 results; no global/PQ claim.",
-      "composed_rebuild_checker": "Finite reconstruction records derive TerminalRebuildRoute from an empty mapping context using checked arithmetic, expansion, balance and assignment-specific input bindings. Source acyclicity plus accepted reconstruction plus accepted finite bundle implies program execution equals finite GKR output without a separate rebuild-route premise. Full audit3836 results. Typed records are not yet translated/executed on retained JSON captures; universal symbolic input correspondence, parser/compiler refinement and cryptographic composition remain open."
+      "composed_rebuild_checker": "Finite reconstruction records derive TerminalRebuildRoute from an empty mapping context using checked arithmetic, expansion, balance and assignment-specific input bindings. Source acyclicity plus accepted reconstruction plus accepted finite bundle implies program execution equals finite GKR output without a separate rebuild-route premise. Full audit3836 results. Typed records are not yet translated/executed on retained JSON captures; universal symbolic input correspondence, parser/compiler refinement and cryptographic composition remain open.",
+      "native_rebuild_execution": "Fixed193 proof freshly verified, compiler replay arguments agree, generated circuit exactly matches retained bundle. Native Lean adapter checks2 programs/9152 reconstruction records on2 deterministic diagnostic input assignments (about2.1s each);6 malformed captures reject. Stored bundle check passes in same harness. Generic proof audit remains3836. Final cross-program batching, extracted committed inputs, parser/compiler refinement and concrete kernel certificates are not established by these executions."
     },
     {
       "name": "Complete soundness ledger",

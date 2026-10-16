@@ -143,14 +143,16 @@ class Checker:
         require(set(records)==done,'unreachable certificate records')
         return cert['root'],len(done)
 
-def capture(path):
+def capture(path, *, input_log=None):
     import pq384_gkr_bus as old,pq384_seed_gkr_bus as seed
     args=[];original=old.compile_terminal
     def tracked(*a):args.append(a);return original(*a)
     a,b=old.compile_terminal,seed.compile_terminal;old.compile_terminal=tracked;seed.compile_terminal=tracked
-    try:circuit,layout,profile=replay(path)
+    try:circuit,layout,profile=replay(path,input_log=input_log)
     finally:old.compile_terminal=a;seed.compile_terminal=b
-    require(len(args)==1,'compiler capture');return circuit,profile,args[0]
+    require(len(args)==(1 if input_log is None else 2),'compiler capture')
+    require(all(a==args[-1] for a in args),'compiler replay arguments changed')
+    return circuit,profile,args[-1]
 
 def produce(circuit,args):
     spec,alpha,gamma,finals,terminals,rho=args;gen=Generator(circuit);programs=[];outputs=[];blocks={b['table']:b for b in circuit['input_blocks']}

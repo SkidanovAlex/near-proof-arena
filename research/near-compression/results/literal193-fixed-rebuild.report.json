@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "capture": "results/pq384-literal193-gkr-fixed13",
+  "input_log": 13,
+  "profile": "near-pq384-gkr-fixed-input-bus-v1",
+  "counts": {
+    "registers": 9152,
+    "arithmetic": {
+      "constant": 53,
+      "direct": 7711,
+      "add-zero-right": 1115,
+      "mul-one-left": 76,
+      "sub-zero-right": 1,
+      "mul-zero-left": 4,
+      "add-zero-left": 64,
+      "mul-zero-right": 2,
+      "mul-one-right": 60
+    }
+  },
+  "statement_sha256": "10f3561d7d00bb24a853c802def9987f65c2ccd95eb0cab563ed62d2eb391d75",
+  "proof_sha256": "e9463b7b9366576db12a32500f6191acb582f5958fa7574d542834eadeb2a9fc",
+  "bundle_sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
+  "rebuild_sha256": "be3281e9eb335ad2f6640538207ffbf36b411e577ba109733560fabbd27b1586",
+  "scope": "Full fixed-profile proof verified before replay; reconstructed circuit equals retained bundle. Structural certificate validation, not security certification."
+}

@@ -1,0 +1,64 @@
+{
+  "status": "PASS",
+  "bundle": "results/literal193-fixed-layer-routes/pq384-literal193-gkr-fixed13-certificate.json",
+  "bundle_sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
+  "rebuild": "results/literal193-fixed-rebuild.json",
+  "rebuild_sha256": "be3281e9eb335ad2f6640538207ffbf36b411e577ba109733560fabbd27b1586",
+  "adapter_sha256": "fc18375fecb8b61e1e955b8916f50cd1006bc19f5c2b4089a107267c00be0a1c",
+  "positive": [
+    {
+      "result": {
+        "programs": 2,
+        "records": 9152,
+        "scope": "Native Lean program rebuild checks on diagnostic assignment; excludes final batching, parser refinement and concrete kernel certificates",
+        "seed": 0,
+        "status": "PASS"
+      },
+      "seconds": 2.1337753939442337
+    },
+    {
+      "result": {
+        "programs": 2,
+        "records": 9152,
+        "scope": "Native Lean program rebuild checks on diagnostic assignment; excludes final batching, parser refinement and concrete kernel certificates",
+        "seed": 7,
+        "status": "PASS"
+      },
+      "seconds": 2.145262131933123
+    }
+  ],
+  "rejected": [
+    {
+      "case": "wrong-root",
+      "reason": "uncaught exception: rebuild records rejected"
+    },
+    {
+      "case": "wrong-expansion-sign",
+      "reason": "uncaught exception: rebuild records rejected"
+    },
+    {
+      "case": "missing-root-record",
+      "reason": "uncaught exception: rebuild records rejected"
+    },
+    {
+      "case": "changed-input-target",
+      "reason": "uncaught exception: no valid arithmetic witness"
+    },
+    {
+      "case": "changed-selector",
+      "reason": "uncaught exception: rebuild records rejected"
+    },
+    {
+      "case": "unknown-opcode",
+      "reason": "uncaught exception: instruction opcode"
+    }
+  ],
+  "stored_bundle_check": {
+    "gates": 21834,
+    "layers": 35,
+    "nodes": 10509,
+    "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+    "status": "PASS"
+  },
+  "scope": "Native typed Lean per-program reconstruction on two diagnostic assignments. Excludes global final batching, commitment extraction, parser refinement and concrete kernel proof terms."
+}
