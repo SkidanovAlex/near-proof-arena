@@ -96,13 +96,13 @@ def opening_parent(binding,gproof):
     return hash_parts(b'weighted-pcs-after-gkr',binding,json.dumps(gproof,sort_keys=True,separators=(',',':')).encode())
 
 
-def finish_prove(spec,roots,ars,finals,st,t,alpha,gamma,rounds,terminals,private_rows,caches,native, *, input_log=None):
+def finish_prove(spec,roots,ars,finals,st,t,alpha,gamma,rounds,terminals,private_rows,caches,native, *, input_log=None, gkr_kernel=None):
     circuit,layout,binding=terminal_layout(spec,t,alpha,gamma,finals,terminals,input_log=input_log)
     private=[ZERO]*circuit['private_input_capacity']
     for block in circuit['input_blocks']:
         current,nxt=private_rows[block['table']];offset=block['offset'];W=block['column_capacity']
         private[offset:offset+len(current)]=current;private[offset+W:offset+W+len(nxt)]=nxt
-    gp,ob=gkr.prove(layout,binding,private)
+    gp,ob=gkr.prove(layout,binding,private,kernel=gkr_kernel)
     branches=opening_arguments(spec,roots,ars,terminals,circuit,ob)
     opening=pcs.prove(caches,native,st,opening_parent(binding,gp),branches,ob['private_claim'])
     return dict(profile=profile(input_log),aux_roots=[r.hex() for r in ars],finals=finals,tables=rounds,gkr=gp,opening=opening)

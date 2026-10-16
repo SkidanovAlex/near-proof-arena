@@ -11,10 +11,12 @@ def choose_packing(n,width):
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--reference-dir',required=True);ap.add_argument('--spec',required=True)
     ap.add_argument('--source-directory',required=True);ap.add_argument('--source-pattern',default='source-{index:02d}-rows.json')
-    ap.add_argument('--rs-binary',required=True);ap.add_argument('--folded-library',required=True);ap.add_argument('--fft-library',required=True)
+    ap.add_argument('--rs-binary',required=True);ap.add_argument('--folded-library',required=True);ap.add_argument('--fft-library',required=True);ap.add_argument('--gkr-library')
     ap.add_argument('--input-log',type=int,help='trusted fixed input cap; selects separate profile');ap.add_argument('--source-zero-cache');ap.add_argument('--output-dir',required=True);a=ap.parse_args();sys.path.append(a.reference_dir)
     import pq384_gkr_bus as bus
     bus.profile(a.input_log)
+    from pq384_gkr4_native import Kernel
+    gkr_kernel=Kernel(a.gkr_library) if a.gkr_library else None
     from pq384_native_fft import NativeFFT
     from native_folded_v2 import library
     from pq384_source_cache import SourceCache
@@ -79,7 +81,7 @@ def main():
         for ti,table in enumerate(tables):
             caches.append(stack.enter_context(SourceCache(source_caches[ti],expected_root=roots[ti],log_rows=spec['log_rows'][ti],width=table['width'],packing=spec['source_packings'][ti])))
             if aux_caches[ti]:caches.append(stack.enter_context(SourceCache(aux_caches[ti],expected_root=aux_roots[ti],log_rows=spec['log_rows'][ti],width=4*bus.aux.layout(table)['aux_columns'],packing=spec['aux_packings'][ti])))
-        proof=bus.finish_prove(spec,roots,aux_roots,finals,st,t,alpha,gamma,rounds,terminals,private_rows,caches,NativeFFT(a.fft_library),input_log=a.input_log)
+        proof=bus.finish_prove(spec,roots,aux_roots,finals,st,t,alpha,gamma,rounds,terminals,private_rows,caches,NativeFFT(a.fft_library),input_log=a.input_log,gkr_kernel=gkr_kernel)
     timing['gkr_and_weighted_pcs']=time.perf_counter()-started
     save(out/'proof.json',proof);env=os.environ.copy();env['PYTHONPATH']=os.pathsep.join([str(Path(__file__).parent),a.reference_dir])
     started=time.perf_counter();result=subprocess.run([sys.executable,str(Path(bus.__file__)),str(out/'proof.json'),str(out/'statement.json')]+([] if a.input_log is None else ['--input-log',str(a.input_log)]),env=env,check=True,capture_output=True,text=True)
@@ -88,7 +90,9 @@ def main():
         timing=timing,table_timings=table_timings,proof_json_bytes=(out/'proof.json').stat().st_size,verification=result.stdout.strip(),
         scope='Complete local AIR and randomized bus-fingerprint product check; exact natural balance conditional on bad-event exclusions',
         limits=['Q8/Ext4 diagnostic; no certified proximity/RBR/QROM/128-bit security','Fresh auxiliaries depend on new SHA384 challenges'])
-    report.update(profile=bus.profile(a.input_log),trusted_input_log=a.input_log,source_spec_path=str(Path(a.spec).resolve()),
+    report.update(gkr_backend='native-ext4' if a.gkr_library else 'python-reference',
+        gkr_library_sha256=hashlib.sha256(Path(a.gkr_library).read_bytes()).hexdigest() if a.gkr_library else None,
+        profile=bus.profile(a.input_log),trusted_input_log=a.input_log,source_spec_path=str(Path(a.spec).resolve()),
         source_spec_sha256=hashlib.sha256(Path(a.spec).read_bytes()).hexdigest(),
         statement_sha256=hashlib.sha256((out/'statement.json').read_bytes()).hexdigest(),
         proof_sha256=hashlib.sha256((out/'proof.json').read_bytes()).hexdigest(),

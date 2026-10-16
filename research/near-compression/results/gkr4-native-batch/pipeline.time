@@ -1,0 +1,23 @@
+	Command being timed: "python3 research/near-compression/airbender/direct-wasm/run_sha384_node_chunk.py --reference-dir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm --fixture-directory /tmp/nearproof-ext8-node-batch --output-directory /tmp/nearproof-ext8-node-native-v2 --rs-binary /tmp/near-pq384-target/release/rs_commit --folded-library /tmp/libnear_folded_v2.so --fft-library /tmp/libpq384_fft.so --gkr-library /tmp/libnear_gkr4.so"
+	User time (seconds): 213.32
+	System time (seconds): 1.04
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:34.41
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 714004
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1076878
+	Voluntary context switches: 36
+	Involuntary context switches: 1298
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 571952
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

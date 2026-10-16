@@ -5477,3 +5477,43 @@ proof generation. It consumes288s versus5.75s for local tables in this batch.
 A full recursive investment must reduce terminal circuit/prover cost and
 compose chunks securely. Gate remains NOT_PASSED. No Lean changes; prior
 4133-theorem audit remains latest. Artifact/compilation/diff checks pass.
+
+### Native Ext4 GKR acceleration on the retained recursive hash batch
+
+Added explicit prover-only kernel_gkr4.rs and pq384_gkr4_native.py, adapting
+Ext8 coefficient-generation/folding to the existing Ext4 X^4=11 basis.
+Both terminal and seed GKR support optional kernel=; Python reference remains
+the default and independent verification uses Python. --gkr-library threads
+through the diagnostic batch runner; backend/library digest recorded.
+No statement, transcript, profile, verifier, or security parameters changed.
+
+Validation: test_gkr4_native.py checks 54 rounds, 162 independently evaluated
+quadratic values, nine complete two-axis layers, all gate operations,
+zero/one/random challenges, six full terminal/seed transcript and obligation
+parity cases, five wrapper and three ABI rejection cases. The actual retained
+24-node SHA384 batch was rebuilt with native GKR and passed fresh verification.
+Both proof JSON and compact binary match the retained Python proof EXACTLY;
+binary SHA256 fb2a820479543697e7447a4a4a488414f3b525338f7a3364acf31300a5859521.
+Statement, source hashes and external ordered-use receipt match too.
+
+GKR+weighted PCS: 288.357s ->123.443s (2.336x). Full pipeline including repeated
+verification: 379.005s ->214.379s (43.4% less time). Proof remains120477bytes,
+121208bytes with receipt. Single run each, same fixture/CPU affinity and
+RAYON_NUM_THREADS=2; not a throughput estimate for full DAG or1Pgas.
+Reports: results/gkr4-native.json, results/gkr4-native-batch.json and
+results/gkr4-native-batch/{report.json,chunk-report.json,pipeline.time,
+fresh-verifier.log}. compare_gkr4_batch.py requires exact parity before
+reporting timing; no duplicate binary needed because bytes match retained one.
+
+Reproduce: rustc --edition=2024 --crate-type cdylib -O
+ airbender/direct-wasm/native-folded/kernel_gkr4.rs -o /tmp/libnear_gkr4.so;
+use the prior run_sha384_node_chunk.py command with a fresh output directory
+and --gkr-library /tmp/libnear_gkr4.so. Exact command is in pipeline.time.
+An initial integration attempt failed because only seed-GKR had the keyword;
+terminal-GKR support and six-profile parity tests corrected it before the
+successful fresh run. Failed attempt timings excluded.
+
+This accelerates experiments on recursive compression components; it does
+not advance the security bound or prove Rust refinement. No Lean changes;
+4133-theorem audit remains latest. Full recursive composition, secure
+parameters, <300k envelope and full NEAR scope remain open; gate NOT_PASSED.

@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "complete_layer_cases": 9,
+  "rounds": 54,
+  "independent_polynomial_evaluations": 162,
+  "complete_transcript_parity_cases": 6,
+  "wrapper_rejections": 5,
+  "direct_abi_rejections": 3,
+  "source_sha256": "d1b60be5bc50eef105ceb630186d7c7ff515934b6df22e451f2312bed51683fa",
+  "scope": "Native Ext4 GKR round coefficients and folds over complete two-axis synthetic layers, all add/sub/mul operations. Six complete synthetic seed/terminal-GKR transcript/obligation parity cases with independent verifier. No full PCS proof, Rust refinement or security claim."
+}

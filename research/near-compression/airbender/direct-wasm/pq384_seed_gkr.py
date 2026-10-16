@@ -15,7 +15,7 @@ def begin(statement,claim):
     return Transcript(hash_parts(PROFILE,CONFIG,statement,vector_bytes([ext(claim)])))
 
 
-def prove(layout,statement,private,claim=ZERO):
+def prove(layout,statement,private,claim=ZERO, *, kernel=None):
     vs=values(layout,private);require(vs[-1][layout['root']]==claim,'false circuit output')
     t=begin(statement,claim);n=(len(vs[-1])-1).bit_length()
     queries=[([base((layout['root']>>i)&1) for i in range(n)],ONE)];parts=[]
@@ -25,20 +25,24 @@ def prove(layout,statement,private,claim=ZERO):
         for axis in (0,1):
             if axis:folded=list(v)
             for bit in range(m):
-                vals=[]
-                for node in (0,1,2):
-                    r=base(node);ans=ZERO
-                    for k,(op,i,j) in enumerate(gates):
-                        index=(i if axis==0 else j)>>bit
-                        fv=add(folded[index&~1],mul(r,sub(folded[index|1],folded[index&~1])))
-                        ev=r if index&1 else sub(ONE,r)
-                        x,y=(fv,v[j]) if axis==0 else (a,fv)
-                        ans=add(ans,mul(mul(gw[k],ev),gate(op,x,y)))
-                    vals.append(ans)
-                coeff=interpolation(vals);require(add(poly(coeff,ZERO),poly(coeff,ONE))==claim,'honest endpoint')
+                if kernel is not None:
+                    coeff=kernel.gkr_round(gates,gw,v,folded,axis,bit,ZERO if a is None else a)
+                else:
+                    vals=[]
+                    for node in (0,1,2):
+                        r=base(node);ans=ZERO
+                        for k,(op,i,j) in enumerate(gates):
+                            index=(i if axis==0 else j)>>bit
+                            fv=add(folded[index&~1],mul(r,sub(folded[index|1],folded[index&~1])))
+                            ev=r if index&1 else sub(ONE,r)
+                            x,y=(fv,v[j]) if axis==0 else (a,fv)
+                            ans=add(ans,mul(mul(gw[k],ev),gate(op,x,y)))
+                        vals.append(ans)
+                    coeff=interpolation(vals)
+                require(add(poly(coeff,ZERO),poly(coeff,ONE))==claim,'honest endpoint')
                 commit(t,coeff);r=draw(t);claim=poly(coeff,r);rounds.append(coeff)
                 for k,(_,i,j) in enumerate(gates):gw[k]=mul(gw[k],r if ((i if axis==0 else j)>>bit)&1 else sub(ONE,r))
-                folded=fold(folded,r);(ru if axis==0 else rv).append(r)
+                folded=(fold(folded,r) if kernel is None else kernel.affine_fold(folded,r));(ru if axis==0 else rv).append(r)
             if axis==0:a=folded[0]
         b=folded[0];require(wiring(gates,w,ru,rv,a,b)==claim,'honest wiring')
         commit(t,[a,b]);gamma=draw(t);claim=add(a,mul(gamma,b));queries=[(ru,ONE),(rv,gamma)]
