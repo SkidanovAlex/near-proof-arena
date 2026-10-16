@@ -1998,3 +1998,33 @@ measured proof size changes at this checkpoint.
 
 Validation: full `check.py` passed with 3749 registered results and enforced
 axiom allowlist. Slice feasibility gate remains NOT_PASSED.
+
+
+### Slice query-count geometry
+
+Added `report_slice_query_geometry.py`. It freshly verifies the retained binary
+with the shared verifier, exactly re-encodes its JSON proof, derives each table
+reduction and PCS transcript, and reconciles all Q8 branch sizes with the actual
+codec. It then counts longer query prefixes without generating proof openings.
+The process-local query-count override is restored after each calculation; no
+production protocol or domain identifier changes.
+
+Q8 reproduces121982 proof bytes and346689 current transported bytes. At128,239,
+309 queries the retained Ext4 layout projects492238,705390,817054 proof bytes.
+At309 total current transport is1041761 bytes, with462016 leaf bytes and299520
+shared-path bytes. Four branch costs are306870 EXEC-source,48566 EXEC-auxiliary,
+204390 CODE-source,205638 CODE-auxiliary; other wire data is51590 bytes.
+The309-query count comes from the conditional unique-decoding ideal-interactive
+screen, not a post-quantum security choice. Other counts are sensitivity probes.
+
+These are counterfactual sizes for retained commitments and the diagnostic
+transcript, not authenticated high-query proofs. Ext8 and a new profile change
+commitments and indices. Nevertheless, the measured geometry changes the next
+engineering priority: packing/joint-opening or recursive compression must reduce
+opened field data, not only Merkle paths. Simply improving the concentration
+bound and increasing queries on this layout does not demonstrate sub300000 bytes.
+
+Validation: Q8 fresh shared verification, exact whole-proof re-encoding and each
+branch byte reconciliation passed. An independent occupied-parent arithmetic
+calculation matched codec Merkle boundary sizes for every stage/query case.
+Python compilation and diff checks passed; no Lean changes require a new audit.
