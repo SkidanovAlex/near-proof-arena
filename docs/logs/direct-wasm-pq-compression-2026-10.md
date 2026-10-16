@@ -4050,3 +4050,18 @@ joint tuples remains, as do auxiliary residual/native authentication bindings
 and global/PQ soundness. Selection remains ideal-model classical choice.
 Full check.py passed 4025 registered results with the existing axiom allowlist.
 No native/size changes; gate NOT_PASSED.
+
+### Fixed source trace instantiated from joint representatives
+
+FixedJointSourceTrace derives candidate degree bounds and per-lane scalar
+proximity directly from JointBetaRepresentative and its lane-radius theorem.
+Bounded lane indices connect those candidates to decoded-cell provenance.
+The existing uniqueness/descent construction then yields one base source
+trace across all eligible auxiliary choices, rather than assuming independent
+scalar closeness premises. Source-oracle equality, row logs and cell provenance
+remain explicit, and absent-representative choices remain outside eligibility.
+
+Concrete metadata indexing/authentication and auxiliary formula refinement
+still need substitution before global acceptance soundness.
+Full check.py passed 4026 registered results with the existing axiom allowlist.
+No native/size changes; global/PQ security remains open, gate NOT_PASSED.

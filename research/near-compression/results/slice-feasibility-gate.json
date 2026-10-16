@@ -285,7 +285,9 @@
     "NearCompression/SourceAcrossAuxiliary.lean",
     "results/source-across-auxiliary-integration.json",
     "NearCompression/FixedDecodedSourceTrace.lean",
-    "results/fixed-decoded-source-trace-integration.json"
+    "results/fixed-decoded-source-trace-integration.json",
+    "NearCompression/FixedJointSourceTrace.lean",
+    "results/fixed-joint-source-trace-integration.json"
   ],
   "requirements": [
     {

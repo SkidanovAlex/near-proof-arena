@@ -1,0 +1,33 @@
+{
+  "status": "FIXED_BASE_TRACE_INSTANTIATED_FROM_JOINT_REPRESENTATIVES",
+  "module": "NearCompression/FixedJointSourceTrace.lean",
+  "theorems": [
+    "fixed_joint_representative_source_trace"
+  ],
+  "proved": [
+    "Actual JointBetaRepresentative validity supplies candidate polynomial degree bounds and scalar source proximity.",
+    "Together with indexed decoded-cell provenance and fixed typed source oracles, this constructs one base source trace across all eligible auxiliary choices.",
+    "All live indices are bounded before default-valued accessors are reduced to actual list entries."
+  ],
+  "assumptions": [
+    "Well-formed lane metadata and canonical lane selectors.",
+    "Distinct base-valued domain and unique-decoding separation.",
+    "Indexed source oracle binding, decoded-cell provenance and fixed row logs.",
+    "Joint representative required only for eligible choices; absent choices remain separate."
+  ],
+  "remaining": [
+    "Instantiate lane indices/provenance from the compiler metadata family and authenticated sources.",
+    "Auxiliary formula refinement and global acceptance composition.",
+    "Native/QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4026,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal joint-representative instantiation only."
+  }
+}

@@ -5724,3 +5724,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.fixed_decoded_base_source_trace
 #print axioms NearCompression.fixed_source_decoded_bus_family
+
+#print axioms NearCompression.fixed_joint_representative_source_trace
