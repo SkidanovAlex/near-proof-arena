@@ -1,0 +1,26 @@
+{
+  "status": "CERTIFIED_EXT4_PAIR_SERIALIZATION_AND_HASH_BINDING_COMPOSED",
+  "module": "NearCompression/Ext4PairBytes.lean",
+  "proved": [
+    "Certified Fp4 tower coordinates are serialized in flat order c0=a.a, c1=b.a, c2=a.b, c3=b.b, matching DiagnosticExt4Embedding and Python.",
+    "A scalar pair writes the four coordinates of its first value, then the four coordinates of its second value, for exactly32 bytes.",
+    "Pair-to-word and pair-to-byte encodings are injective; all coordinate bounds follow from Fp.toNat_lt.",
+    "Distinct typed Fp4 pair trees with equal serialized Merkle roots yield concrete unequal hash inputs with equal digest on constructed path-query supports."
+  ],
+  "scope": "Single scalar lane per leaf, as used by the degree-one four-point weighted terminal. Certified Fp4 tower is the diagnostic X^4=11 field. This does not implement an Ext8 profile or certify 128-bit security.",
+  "remaining": [
+    "Instantiate the full terminal reconstruction/folding theorem with the concrete serialized root function and actual transcript context.",
+    "Quantify hash binding and Fiat-Shamir under the requested quantum resource model.",
+    "Authenticate earlier oracles and compose the near-case common AIR/GKR/bus/execution trace.",
+    "Secure sub300000-byte full NEAR1Pgas feasibility remains open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3770,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

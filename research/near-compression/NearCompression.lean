@@ -1363,3 +1363,5 @@ import NearCompression.JointSourceAcceptance
 import NearCompression.WeightedTerminalAuthentication
 
 import NearCompression.CanonicalFieldWordBytes
+
+import NearCompression.Ext4PairBytes

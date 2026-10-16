@@ -2335,3 +2335,25 @@ full NEAR1Pgas scope and secure sub300000-byte feasibility remain incomplete.
 
 Validation: full `check.py` passed with 3764 registered results and enforced
 axiom allowlist. No proof byte artifacts or security parameters changed.
+
+
+### Certified Ext4 scalar-pair bytes
+
+`Ext4PairBytes.lean` instantiates canonical word serialization for the certified
+Fp4 tower. Flat coordinates are a.a,b.a,a.b,b.b, matching the existing
+DiagnosticExt4Embedding and Python coefficient order. Pair leaves concatenate
+the first and second scalar's four coordinates. Their encoding has exactly32
+bytes, all coordinates are canonical by Fp.toNat_lt, and both word and byte
+encodings are injective.
+
+The pair-tree theorem composes the full reduction: distinct typed Fp4 pair
+trees with equal serialized Merkle roots yield concrete unequal hash messages
+with equal outputs in constructed path-query supports. This removes the
+pair-coordinate injectivity assumption for the diagnostic terminal format.
+The next step is instantiating the full terminal/folding contract with this
+root function and actual transcript context. Earlier-oracle extraction,
+near-case composition and quantum error bounds remain separate. Ext4 remains
+diagnostic; no Ext8 implementation, full NEAR or secure-size claim is made.
+
+Validation: full `check.py` passed with 3770 registered results and enforced
+axiom allowlist. Proof artifacts and measured sizes are unchanged.
