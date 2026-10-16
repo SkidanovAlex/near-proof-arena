@@ -1469,3 +1469,33 @@ original witness is required by the verifier. They cover only this PCS task,
 not the recursive GKR/NEAR statement. Python-to-Lean refinement, commitments
 and quantum Fiat-Shamir remain open. Next: a canonical multiproof codec with
 unchanged sampled queries, then realistic degree/cost measurements.
+
+## Lossless rate-shift multiproof codec and matched baseline
+
+Added `pq384_ext8_rate_shift_codec.py` with version `NRS8MP01`. Decoder counts
+and indices come exclusively from the supplied configuration and transcript.
+Source quartet leaves share one canonical multiproof; each nonterminal
+continuation oracle has one multiproof; terminal openings are reconstructed
+from the constant oracle. No sampled checks are dropped. Prefix/continuation
+metadata replay is shared with the reference verifier, whose previous four
+fresh-process cases and 15 rejection checks still pass after refactoring.
+
+Codec validation: exact equality with all four original expanded proofs,
+canonical re-encoding, four fresh-process verifications without expanded
+proof input, and 31 malformed/context substitution rejections. D1024/s314/c264
+uses 126,680 proof bytes, 127,192 bytes including canonical external config,
+or 127,475 bytes including the actual external JSON file. D32/s314/c256 uses
+4,888 proof bytes / 5,240 bytes with canonical external config.
+
+A matched-source comparison is less encouraging than the JSON reduction:
+on the same D1024 root, point, claim, statement and source query count, the
+existing no-rate-shift codec is 124,344 proof bytes; this rate-shift proof is
+2,336 bytes larger. At D32 it saves 312 bytes (5,200 -> 4,888). These are
+single-fixture measurements, not statistical superiority results. The new
+codec establishes a complete authenticated PCS transport but does not yet
+show rate-shift savings at useful scale. It does not include recursive GKR
+or a full NEAR state transition and does not establish QROM security.
+
+Next substantive design decision: measure multiple skipped-fold/rate schedules
+and larger degrees under explicit joint budgets, rather than assuming this
+single two-fold rate shift will meet the full end-to-end target.

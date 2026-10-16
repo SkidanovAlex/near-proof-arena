@@ -9,8 +9,8 @@
       "proof_json_bytes": 30968,
       "ideal_error_bound_float": 0.37614557598601905,
       "ideal_bound_below_2powminus128": false,
-      "prove_seconds": 0.00557362986728549,
-      "verify_seconds": 0.003218360710889101,
+      "prove_seconds": 0.005352494306862354,
+      "verify_seconds": 0.0031908387318253517,
       "sha256": "1c0597a59aec6dc6a8a5db464d17521a6225cfa916447f57795dd87359d04cd8"
     },
     {
@@ -21,8 +21,8 @@
       "proof_json_bytes": 57123,
       "ideal_error_bound_float": 0.3788528613488965,
       "ideal_bound_below_2powminus128": false,
-      "prove_seconds": 0.022194021847099066,
-      "verify_seconds": 0.008064313791692257,
+      "prove_seconds": 0.0221933308057487,
+      "verify_seconds": 0.00810029124841094,
       "sha256": "0987e37ba967e5124e099e8a9411c031c9ece25aa201b7a8884d0a5330ff5d50"
     },
     {
@@ -33,8 +33,8 @@
       "proof_json_bytes": 1162084,
       "ideal_error_bound_float": 1.2801667992072632e-39,
       "ideal_bound_below_2powminus128": true,
-      "prove_seconds": 0.05512012494727969,
-      "verify_seconds": 0.08999063400551677,
+      "prove_seconds": 0.05482953879982233,
+      "verify_seconds": 0.08883442915976048,
       "sha256": "581ea756490b67917d8e57109e9fd318ad1606963ddb4c3d42efe1a8dbd2bc91"
     },
     {
@@ -45,8 +45,8 @@
       "proof_json_bytes": 3854891,
       "ideal_error_bound_float": 8.448759619031037e-40,
       "ideal_bound_below_2powminus128": true,
-      "prove_seconds": 1.5041380301117897,
-      "verify_seconds": 0.9913396909832954,
+      "prove_seconds": 1.5000321581028402,
+      "verify_seconds": 0.9838588540442288,
       "sha256": "2095a6518fd2d910000c86ab4401d69ebf4388f1278a96e97401aeb347350b32"
     }
   ],
@@ -74,7 +74,7 @@
     "Ideal error bounds require original no-candidate, root geometry and causal transcript premises."
   ],
   "source_sha256": {
-    "pq384_ext8_rate_shift_continuation.py": "359bc76d982568ca48cce3aec6611038a2175ae4c63449ba20d78d3e80a89827",
+    "pq384_ext8_rate_shift_continuation.py": "246e2b9b56e6764dcbf308090b6163f8017a517d0a09557aac04c9e0d237840c",
     "test_rate_shift_continuation.py": "589a7d19d030c61ac7c06e5531ebbaae2c687ab49b6497e3b913fa4e435b9337"
   }
 }

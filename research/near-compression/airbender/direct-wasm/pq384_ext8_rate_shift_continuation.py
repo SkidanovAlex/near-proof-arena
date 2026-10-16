@@ -109,10 +109,9 @@ def prove(coeff, config, root, continuation_queries):
         source_queries=source_queries, rounds=rounds, terminal=list(cs[0]), queries=queries)
 
 
-def verify(proof, config, root, continuation_queries):
+def prefix_metadata(proof, config, root, continuation_queries):
+    """Replay the fixed prefix before reading source authentication data."""
     t = start(config, root, continuation_queries)
-    h.require(type(proof) is dict and set(proof) == {'profile','quadratics','next_root','ood_value',
-        'source_queries','rounds','terminal','queries'} and proof['profile'] == PROFILE, 'proof fields')
     h.require(type(proof['quadratics']) is list and len(proof['quadratics']) == 2, 'prefix shape')
     ws, claim, rs = p.eqweights(config['point']), e.canonical(config['claim']), []
     for wire in proof['quadratics']:
@@ -127,6 +126,13 @@ def verify(proof, config, root, continuation_queries):
     indices = p.sample(t, config['degree'], config['queries'])
     draw, _ = t.draw(b'rate-shift/mixing', 1, 8)
     gamma = tuple(draw[0])
+    return t, ws, claim, rs, contexts, roots, z, y, indices, gamma
+
+
+def continuation_metadata(proof, config, root, continuation_queries, prefix):
+    """Authenticate source constraints and derive all continuation query indices."""
+    t, ws, claim, rs, contexts, roots, z, y, indices, gamma = prefix
+    d = config['degree']//4
     h.require(type(proof['source_queries']) is list and len(proof['source_queries']) == config['queries'], 'source count')
     values = [source_value(q, root, p.source_context(config), config['degree'], i, rs)
               for q, i in zip(proof['source_queries'], indices)]
@@ -146,10 +152,20 @@ def verify(proof, config, root, continuation_queries):
         t.commit(b'rate-shift/continuation-root', roots[-1])
     terminal = e.canonical(proof['terminal'])
     h.require(e.mul(ws[0], terminal) == claim, 'terminal residual')
-    h.require(tree([terminal], contexts[-1])['root'] == roots[-1], 'terminal oracle')
+    terminal_tree = tree([terminal], contexts[-1])
+    h.require(terminal_tree['root'] == roots[-1], 'terminal oracle')
     t.commit(b'rate-shift/terminal', p.extbytes(terminal))
+    samples = p.sample(t, 2*config['degree'], continuation_queries)
+    return roots, contexts, rs, samples, terminal_tree
+
+
+def verify(proof, config, root, continuation_queries):
+    h.require(type(proof) is dict and set(proof) == {'profile','quadratics','next_root','ood_value',
+        'source_queries','rounds','terminal','queries'} and proof['profile'] == PROFILE, 'proof fields')
+    prefix = prefix_metadata(proof, config, root, continuation_queries)
+    roots, contexts, rs, samples, _ = continuation_metadata(proof, config, root, continuation_queries, prefix)
     h.require(type(proof['queries']) is list and len(proof['queries']) == continuation_queries, 'continuation query count')
-    for s, chain in zip(p.sample(t, 2*config['degree'], continuation_queries), proof['queries']):
+    for s, chain in zip(samples, proof['queries']):
         h.require(type(chain) is list and len(chain) == len(rs), 'chain shape')
         d = config['degree']//4
         for j, (r, query) in enumerate(zip(rs, chain)):

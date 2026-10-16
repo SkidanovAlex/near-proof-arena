@@ -1,0 +1,282 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "header_bytes": 1512,
+      "stages": [
+        {
+          "stage": "source",
+          "sampled_openings": 628,
+          "unique_leaves": 550,
+          "leaf_bytes": 4400,
+          "sibling_bytes": 38112
+        },
+        {
+          "stage": "continuation-0",
+          "sampled_openings": 264,
+          "unique_leaves": 227,
+          "leaf_bytes": 14528,
+          "sibling_bytes": 17136
+        },
+        {
+          "stage": "continuation-1",
+          "sampled_openings": 264,
+          "unique_leaves": 201,
+          "leaf_bytes": 12864,
+          "sibling_bytes": 9024
+        },
+        {
+          "stage": "continuation-2",
+          "sampled_openings": 264,
+          "unique_leaves": 160,
+          "leaf_bytes": 10240,
+          "sibling_bytes": 3408
+        },
+        {
+          "stage": "continuation-3",
+          "sampled_openings": 264,
+          "unique_leaves": 108,
+          "leaf_bytes": 6912,
+          "sibling_bytes": 864
+        },
+        {
+          "stage": "continuation-4",
+          "sampled_openings": 264,
+          "unique_leaves": 64,
+          "leaf_bytes": 4096,
+          "sibling_bytes": 0
+        },
+        {
+          "stage": "continuation-5",
+          "sampled_openings": 264,
+          "unique_leaves": 32,
+          "leaf_bytes": 2048,
+          "sibling_bytes": 0
+        },
+        {
+          "stage": "continuation-6",
+          "sampled_openings": 264,
+          "unique_leaves": 16,
+          "leaf_bytes": 1024,
+          "sibling_bytes": 0
+        },
+        {
+          "stage": "continuation-7",
+          "sampled_openings": 264,
+          "unique_leaves": 8,
+          "leaf_bytes": 512,
+          "sibling_bytes": 0
+        }
+      ],
+      "proof_bytes": 126680,
+      "external_canonical_configuration_bytes": 512,
+      "total_required_input_bytes": 127192,
+      "root_already_in_proof": true,
+      "counts_and_indices_transcript_derived": true,
+      "case": "d1024-s314-c264",
+      "binary_sha256": "e41d19cfe6a828975bdf4339fb31d4f05e02d9e53b97ad005fcf60deff214977",
+      "binary_plus_external_json_bytes": 127475,
+      "exact_expanded_roundtrip": true,
+      "same_source_baseline": {
+        "proof_bytes": 124344,
+        "total_required_input_bytes": 124848,
+        "rate_shift_minus_baseline_bytes": 2336,
+        "query_count": 314,
+        "same_root_point_claim_and_statement": true,
+        "binary_sha256": "fc367489351dcab5215061d8f8cc15b20292887e33eecdf58338f4f357893c66"
+      }
+    },
+    {
+      "header_bytes": 1080,
+      "stages": [
+        {
+          "stage": "source",
+          "sampled_openings": 8,
+          "unique_leaves": 8,
+          "leaf_bytes": 64,
+          "sibling_bytes": 1824
+        },
+        {
+          "stage": "continuation-0",
+          "sampled_openings": 8,
+          "unique_leaves": 8,
+          "leaf_bytes": 512,
+          "sibling_bytes": 1440
+        },
+        {
+          "stage": "continuation-1",
+          "sampled_openings": 8,
+          "unique_leaves": 8,
+          "leaf_bytes": 512,
+          "sibling_bytes": 1008
+        },
+        {
+          "stage": "continuation-2",
+          "sampled_openings": 8,
+          "unique_leaves": 8,
+          "leaf_bytes": 512,
+          "sibling_bytes": 720
+        },
+        {
+          "stage": "continuation-3",
+          "sampled_openings": 8,
+          "unique_leaves": 6,
+          "leaf_bytes": 384,
+          "sibling_bytes": 384
+        },
+        {
+          "stage": "continuation-4",
+          "sampled_openings": 8,
+          "unique_leaves": 4,
+          "leaf_bytes": 256,
+          "sibling_bytes": 144
+        }
+      ],
+      "proof_bytes": 8840,
+      "external_canonical_configuration_bytes": 416,
+      "total_required_input_bytes": 9256,
+      "root_already_in_proof": true,
+      "counts_and_indices_transcript_derived": true,
+      "case": "d128-s4-c8",
+      "binary_sha256": "89a9c2a792fdc683e58dcadffd285a565dfdbd4d18fb25543ad5b6e6549a6ba9",
+      "binary_plus_external_json_bytes": 9528,
+      "exact_expanded_roundtrip": true
+    },
+    {
+      "header_bytes": 792,
+      "stages": [
+        {
+          "stage": "source",
+          "sampled_openings": 628,
+          "unique_leaves": 64,
+          "leaf_bytes": 512,
+          "sibling_bytes": 0
+        },
+        {
+          "stage": "continuation-0",
+          "sampled_openings": 256,
+          "unique_leaves": 32,
+          "leaf_bytes": 2048,
+          "sibling_bytes": 0
+        },
+        {
+          "stage": "continuation-1",
+          "sampled_openings": 256,
+          "unique_leaves": 16,
+          "leaf_bytes": 1024,
+          "sibling_bytes": 0
+        },
+        {
+          "stage": "continuation-2",
+          "sampled_openings": 256,
+          "unique_leaves": 8,
+          "leaf_bytes": 512,
+          "sibling_bytes": 0
+        }
+      ],
+      "proof_bytes": 4888,
+      "external_canonical_configuration_bytes": 352,
+      "total_required_input_bytes": 5240,
+      "root_already_in_proof": true,
+      "counts_and_indices_transcript_derived": true,
+      "case": "d32-s314-c256",
+      "binary_sha256": "77573b1a256499ec070bf55ef649f9b78e585b8b033691c26314b8d0acc19d40",
+      "binary_plus_external_json_bytes": 5511,
+      "exact_expanded_roundtrip": true,
+      "same_source_baseline": {
+        "proof_bytes": 5200,
+        "total_required_input_bytes": 5544,
+        "rate_shift_minus_baseline_bytes": -312,
+        "query_count": 314,
+        "same_root_point_claim_and_statement": true,
+        "binary_sha256": "4630cb69148ad2b0e259fe5a6d8bdd9f5e94b5c37752683935c99406869e7d36"
+      }
+    },
+    {
+      "header_bytes": 792,
+      "stages": [
+        {
+          "stage": "source",
+          "sampled_openings": 8,
+          "unique_leaves": 8,
+          "leaf_bytes": 64,
+          "sibling_bytes": 960
+        },
+        {
+          "stage": "continuation-0",
+          "sampled_openings": 8,
+          "unique_leaves": 7,
+          "leaf_bytes": 448,
+          "sibling_bytes": 672
+        },
+        {
+          "stage": "continuation-1",
+          "sampled_openings": 8,
+          "unique_leaves": 7,
+          "leaf_bytes": 448,
+          "sibling_bytes": 288
+        },
+        {
+          "stage": "continuation-2",
+          "sampled_openings": 8,
+          "unique_leaves": 6,
+          "leaf_bytes": 384,
+          "sibling_bytes": 96
+        }
+      ],
+      "proof_bytes": 4152,
+      "external_canonical_configuration_bytes": 352,
+      "total_required_input_bytes": 4504,
+      "root_already_in_proof": true,
+      "counts_and_indices_transcript_derived": true,
+      "case": "d32-s4-c8",
+      "binary_sha256": "c14b26a839fe61bc872684925c969ff9f8033b808634bc37672f7105a46ec5d0",
+      "binary_plus_external_json_bytes": 4771,
+      "exact_expanded_roundtrip": true
+    }
+  ],
+  "negative_checks": [
+    "truncated-0",
+    "truncated-7",
+    "truncated-8",
+    "truncated-55",
+    "truncated-56",
+    "truncated-247",
+    "truncated-248",
+    "truncated-295",
+    "truncated-296",
+    "truncated-327",
+    "truncated-328",
+    "truncated-2076",
+    "truncated-4151",
+    "mutated-0",
+    "mutated-8",
+    "mutated-56",
+    "mutated-152",
+    "mutated-248",
+    "mutated-296",
+    "mutated-328",
+    "mutated-2076",
+    "mutated-4151",
+    "noncanonical-field",
+    "trailing-byte",
+    "oversize",
+    "wrong-root",
+    "wrong-source-query-count",
+    "wrong-continuation-query-count",
+    "wrong-statement",
+    "wrong-namespace",
+    "unexpected-type"
+  ],
+  "limitations": [
+    "Lossless encoding only: no stronger security bound or fewer sampled checks.",
+    "Degree at most 1024 in the current source implementation.",
+    "PCS proof only; no full NEAR/recursive GKR/QROM certification.",
+    "Canonical configuration byte accounting and actual external JSON file accounting both reported."
+  ],
+  "source_sha256": {
+    "pq384_ext8_rate_shift_codec.py": "fce45e33290d9650e97d2ec98a4507d7b7878029b8e2eb16de9c22bb511617b3",
+    "pq384_ext8_rate_shift_continuation.py": "246e2b9b56e6764dcbf308090b6163f8017a517d0a09557aac04c9e0d237840c",
+    "test_rate_shift_codec.py": "e67ad6fa0d6a6de2b0f890f7d14e9496c80daa9bd308c2bcb0a229e8be748089"
+  }
+}
