@@ -6018,3 +6018,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.call_source_outside_private
 #print axioms NearCompression.call_source_initial_split
 #print axioms NearCompression.call_source_opening_mismatch
+
+#print axioms NearCompression.call_source_words_or_collision
+#print axioms NearCompression.call_source_pair_or_collision

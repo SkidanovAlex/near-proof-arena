@@ -6202,3 +6202,33 @@ are regression inputs only; the verifier remains a no-row proof verifier.
 No executable protocol or proof bytes changed. Generic Python branch/compiler
 refinement, Merkle/PCS soundness, transcript/QROM composition, full recursive
 operand provenance and full NEAR1Pgas/PQ128/sub300k remain open.
+
+### Canonical source openings: fixed-tree equality or hash collision
+
+CallMerkleOpening.lean composes existing SHA384 fixed-source Merkle binding
+with canonical u32 field-word serialization injectivity. An accepted claimed
+word leaf either equals the fixed source leaf or yields distinct equal-hash
+messages in the two actual finite path-query supports. The second theorem
+transports this result to the interleaved antipodal pair consumed by weighted
+PCS, for arbitrary weights (including adaptive or zero weights). No challenge
+inversion, global hash injectivity, or low-degree inference from a root is used.
+
+The independent row-to-LDE reconstruction helper now exposes its byte leaves
+without changing root construction. The actual retained root is reconstructed
+from256leaves. All16source branch openings across8query indices match those
+canonical field words and their weighted antipodal pairs. The existing Lean
+SHA384 path verifier accepts all16actual paths and rejects5mutations (leaf,
+root, context, sibling and index). This is a regression using disclosed source
+rows as reference data; no rows are added to the actual proof verifier.
+
+Validation: full check.py PASS4202, /tmp/call-merkle-audit.log. Opening replay
+PASS16/reject5, /tmp/call-merkle-opening.log. Compressed exact fixtures/results,
+source hashes and logs retained in results/call-merkle-opening. The root remains
+155656d5033f2996c935d8845c1addf3ee97d2d2e56f056c37ed9bda508ad89a6af28a6c756bc9f37d66915ddf5d1acc.
+
+Boundary review: the existing representative theorem explicitly requires a
+fixed close polynomial; Merkle binding does not establish one. The current
+results only identify correct queried values relative to a fixed constructed
+source, or an explicit collision. Adversarial oracle proximity/adaptive folding
+and source recovery, plus hash probability/QROM composition, remain required.
+Full NEAR1Pgas/PQ128/sub300k and NOT_PASSED gate remain open.

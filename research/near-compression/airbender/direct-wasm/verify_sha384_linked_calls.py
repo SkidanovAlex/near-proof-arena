@@ -11,7 +11,7 @@ from packed_claim_handoff import packing_context
 from verify_sha384_node_chunk import contract,verify as verify_compressions
 
 
-def reconstructed_use_root(rows,log_rows,packing):
+def reconstructed_use_leaves(rows,log_rows,packing):
     context=packing_context(log_rows,179,packing)
     require(len(rows)==1<<log_rows and all(len(r)==179 for r in rows),'use rows shape')
     require(all(type(x)is int and 0<=x<P for r in rows for x in r),'canonical use fields')
@@ -42,6 +42,11 @@ def reconstructed_use_root(rows,log_rows,packing):
         encoded.append(v)
     half=domain//2
     leaves=[field_words([x for lane in encoded for x in (lane[i],lane[i+half])]) for i in range(half)]
+    return leaves,context
+
+
+def reconstructed_use_root(rows,log_rows,packing):
+    leaves,context=reconstructed_use_leaves(rows,log_rows,packing)
     return merkle_tree(leaves,context)[0].hex()
 
 
