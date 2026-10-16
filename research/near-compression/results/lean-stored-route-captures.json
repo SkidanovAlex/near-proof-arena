@@ -11,15 +11,31 @@
         "scope": "Lean checker execution; not a kernel proof of this JSON instance",
         "status": "PASS"
       },
-      "seconds": 1.5546748749911785,
+      "seconds": 1.6701751039363444,
       "rejected": [
         {
+          "case": "cyclic-node",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "misplaced-initial-input",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "changed-constant",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "nonzero-reserved-slot",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
           "case": "wrong-zero-gate",
-          "reason": "uncaught exception: stored route chain rejected"
+          "reason": "uncaught exception: stored bundle rejected"
         },
         {
           "case": "missing-final-root",
-          "reason": "uncaught exception: final root route"
+          "reason": "uncaught exception: stored bundle rejected"
         },
         {
           "case": "invalid-source-node",
@@ -27,7 +43,7 @@
         },
         {
           "case": "out-of-range-live-position",
-          "reason": "uncaught exception: final root route"
+          "reason": "uncaught exception: stored bundle rejected"
         },
         {
           "case": "unknown-opcode",
@@ -45,15 +61,31 @@
         "scope": "Lean checker execution; not a kernel proof of this JSON instance",
         "status": "PASS"
       },
-      "seconds": 1.5470776008442044,
+      "seconds": 1.6651658951304853,
       "rejected": [
         {
+          "case": "cyclic-node",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "misplaced-initial-input",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "changed-constant",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "nonzero-reserved-slot",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
           "case": "wrong-zero-gate",
-          "reason": "uncaught exception: stored route chain rejected"
+          "reason": "uncaught exception: stored bundle rejected"
         },
         {
           "case": "missing-final-root",
-          "reason": "uncaught exception: final root route"
+          "reason": "uncaught exception: stored bundle rejected"
         },
         {
           "case": "invalid-source-node",
@@ -61,7 +93,7 @@
         },
         {
           "case": "out-of-range-live-position",
-          "reason": "uncaught exception: final root route"
+          "reason": "uncaught exception: stored bundle rejected"
         },
         {
           "case": "unknown-opcode",
@@ -70,9 +102,9 @@
       ]
     }
   ],
-  "adapter_sha256": "5d066b50a94ec9cce1964a4d6ea09d3768732afc48d4ae3dbcddf0be046de837",
+  "adapter_sha256": "139e68258955821a7192e449a8484485a15e3dc1e41505e7d80e06d9e3bd3e92",
   "scope": "Full JSON instances executed by the Lean checker; generic checker soundness is kernel-proved, these concrete results are not kernel-reduced proof terms.",
   "remaining": [
-    "Parser refinement, kernel certificates for captures, initial placement/acyclicity certificates, full cryptographic soundness."
+    "Parser refinement, kernel certificates for captures, full cryptographic soundness."
   ]
 }

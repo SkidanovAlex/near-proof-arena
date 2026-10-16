@@ -367,6 +367,7 @@ SOURCES = [
     "research/near-compression/NearCompression/GKREvaluatedStrategy.lean",
     "research/near-compression/NearCompression/TerminalFiniteLayerCertificate.lean",
     "research/near-compression/NearCompression/TerminalStoredRouteCheck.lean",
+    "research/near-compression/NearCompression/TerminalStoredBundleCheck.lean",
     "research/near-compression/NearCompression/JointSourceFarFold.lean",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean",

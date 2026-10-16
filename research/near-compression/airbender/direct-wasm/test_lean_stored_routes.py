@@ -35,6 +35,13 @@ def main():
             value = copy.deepcopy(original)
             fn(value)
             mutations.append((label, value))
+        binary = next(i for i,n in enumerate(original['circuit']['nodes']) if n[0] in ('add','sub','mul'))
+        input_node = next(int(i) for i in original['certificate']['initial'] if original['circuit']['nodes'][int(i)][0]=='input')
+        constant_slot = next(iter(original['layout']['constants']))
+        mutation('cyclic-node', lambda x: x['circuit']['nodes'][binary].__setitem__(1,binary))
+        mutation('misplaced-initial-input', lambda x: x['certificate']['initial'].__setitem__(str(input_node),original['circuit']['nodes'][input_node][1]+1))
+        mutation('changed-constant', lambda x: x['layout']['constants'][constant_slot].__setitem__(0,(x['layout']['constants'][constant_slot][0]+1)%2013265921))
+        mutation('nonzero-reserved-slot', lambda x: x['layout']['constants'].__setitem__(str(x['layout']['input_size']-1),[1,0,0,0]))
         mutation('wrong-zero-gate', lambda x: x['layout']['layers'][0].__setitem__(0, ['sub',0,0]))
         mutation('missing-final-root', lambda x: x['certificate']['plans'][-1].pop(str(x['circuit']['root'])))
         mutation('invalid-source-node', lambda x: x['certificate']['plans'][0].__setitem__(str(len(x['circuit']['nodes'])), 1))
@@ -57,7 +64,7 @@ def main():
     report = dict(status='PASS',captures=reports,
                   adapter_sha256=hashlib.sha256(Path('CheckStoredRoutes.lean').read_bytes()).hexdigest(),
                   scope='Full JSON instances executed by the Lean checker; generic checker soundness is kernel-proved, these concrete results are not kernel-reduced proof terms.',
-                  remaining=['Parser refinement, kernel certificates for captures, initial placement/acyclicity certificates, full cryptographic soundness.'])
+                  remaining=['Parser refinement, kernel certificates for captures, full cryptographic soundness.'])
     args.output.write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(dict(status=report['status'],captures=len(reports),rejections=sum(len(r['rejected']) for r in reports))))
 

@@ -2903,3 +2903,25 @@ the previous3815-result axiom audit remains the latest formal audit.
 
 Validation: full capture and mutation harness passed; Python compilation,
 scope inventory and diff checks passed. The slice gate remains NOT_PASSED.
+
+### Combined stored bundle checker derives root preservation
+
+TerminalStoredBundleCheck now checks DAG acyclicity, initial input and constant
+placement, reserved zero, the finite route chain and final root placement in
+one Boolean predicate. Its kernel-proved acceptance theorem preserves the
+sequential source DAG root for every private input without separately assuming
+acyclicity or initial placement. A kernel-evaluated small regression covers a
+valid bundle and four boundary failures.
+
+CheckStoredRoutes parses canonical layout constants and private capacity into
+this combined checker. Both retained captures pass (10509 nodes, 35 layers,
+21834 gates each); all 18 full-size malformed variants reject. Added cases
+exercise cyclic dependency, misplaced input, changed constant and nonzero
+reserved slot. Native capture execution is not a kernel proof term for JSON;
+parser refinement and concrete kernel certificates remain open.
+
+Validation: full check.py passed 3819 registered results with the existing
+axiom allowlist; Python compilation passed. The integration report and slice
+gate record the new evidence while retaining NOT_PASSED. Source program/AIR
+compiler correspondence, global sampling composition, cryptographic binding
+and quantum security remain unfinished. No secure size claim is added.

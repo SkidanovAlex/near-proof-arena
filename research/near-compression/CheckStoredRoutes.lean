@@ -1,4 +1,4 @@
-import NearCompression.TerminalStoredRouteCheck
+import NearCompression.TerminalStoredBundleCheck
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -18,6 +18,12 @@ private def gate (j : Json) : IO GKRWiringGate := do
   let a ← need j.getArr?
   require (a.size==3) "gate arity"
   return ⟨←op (←need a[0]!.getStr?),←need a[1]!.getNat?,←need a[2]!.getNat?⟩
+private def scalar (j : Json) : IO Fp4 := do
+  let a ← need j.getArr?
+  require (a.size==4) "constant width"
+  let xs ← a.toList.mapM (fun x => need x.getNat?)
+  require (xs.all (· < 2013265921)) "noncanonical constant"
+  return ⟨⟨Fp.ofNat xs[0]!,Fp.ofNat xs[2]!⟩,⟨Fp.ofNat xs[1]!,Fp.ofNat xs[3]!⟩⟩
 private def node (j : Json) : IO (TerminalDAGNode Fp4) := do
   let a ← need j.getArr?
   require (0<a.size) "empty node"
@@ -27,9 +33,7 @@ private def node (j : Json) : IO (TerminalDAGNode Fp4) := do
     return .input (←need a[1]!.getNat?)
   else if tag=="const" then
     require (a.size==5) "constant arity"
-    let xs ← (a.toList.drop 1).mapM (fun x => need x.getNat?)
-    require (xs.all (· < 2013265921)) "noncanonical constant"
-    return .constant ⟨⟨Fp.ofNat xs[0]!,Fp.ofNat xs[2]!⟩,⟨Fp.ofNat xs[1]!,Fp.ofNat xs[3]!⟩⟩
+    return .constant (←scalar (Json.arr (a.extract 1 5)))
   else
     require (a.size==3) "binary arity"
     return .binary (←op tag) (←need a[1]!.getNat?) (←need a[2]!.getNat?)
@@ -66,10 +70,14 @@ def main (args : List String) : IO Unit := do
   require (0<inputSize) "empty input"
   let root ← need (←field circuit "root").getNat?
   let rootSlot ← need (←field layout "root").getNat?
-  let final := terminalLastPlacement live (fun i => positions.getD i 0) (stages.map (fun s => s.plan))
-  require (final.1.contains root && final.2 root==rootSlot) "final root route"
-  require (terminalStoredChainCheck nodes live (fun i => positions.getD i 0) (inputSize-1) stages)
-    "stored route chain rejected"
+  let capacity ← need (←field layout "private_capacity").getNat?
+  let mut constants : Array Fp4 := Array.replicate inputSize 0
+  for (key,value) in (←need (←field layout "constants").getObj?).toList do
+    let some i := key.toNat? | throw (IO.userError "invalid constant key")
+    require (toString i==key && capacity≤i && i<inputSize) "constant slot bounds"
+    constants := constants.set! i (←scalar value)
+  require (terminalStoredBundleCheck nodes capacity (fun i => constants[i]?.getD 0)
+    live positions (inputSize-1) stages root rootSlot) "stored bundle rejected"
   IO.println (Json.mkObj [("status",toJson "PASS"),("nodes",toJson nodes.length),
     ("layers",toJson stages.length),("gates",toJson gateCount),
     ("scope",toJson "Lean checker execution; not a kernel proof of this JSON instance")]).compress
