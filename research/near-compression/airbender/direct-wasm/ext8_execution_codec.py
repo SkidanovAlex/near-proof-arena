@@ -5,12 +5,17 @@ and reconstructed terminal circuit. No witness data or opening claims on wire.
 import struct
 import verify_ext8_execution as v
 MAGIC=b'NPEX8001'
+MAGICS={'baseline':MAGIC,'affine-v1':b'NPEX8002'}
+
+def magic(profile):
+    v.require(profile in MAGICS,'unknown terminal profile')
+    return MAGICS[profile]
 MAX_BYTES=32*1024*1024
 
 
-def encode(reduction,opening,spec,roots,*,queries):
-    v.verify(reduction,opening,spec,roots,queries=queries)
-    out=bytearray(MAGIC)
+def encode(reduction,opening,spec,roots,*,queries,terminal_profile="baseline"):
+    v.verify(reduction,opening,spec,roots,queries=queries,terminal_profile=terminal_profile)
+    out=bytearray(magic(terminal_profile))
     for root in roots+reduction['aux_roots']:out.extend(v.codec.p.hashread(root))
     for finals in reduction['finals']:out.extend(v.gkr.vector_bytes(finals))
     for table in reduction['local']:
@@ -21,14 +26,14 @@ def encode(reduction,opening,spec,roots,*,queries):
     out.extend(opening);v.require(len(out)<=MAX_BYTES,'execution size');return bytes(out)
 
 
-def decode(wire,spec,roots,*,queries):
+def decode(wire,spec,roots,*,queries,terminal_profile="baseline"):
     v.require(type(wire)is bytes and len(wire)<=MAX_BYTES,'execution size');offset=0
     def read(n):
         nonlocal offset
         v.require(0<=n<=len(wire)-offset,'truncated execution')
         result=wire[offset:offset+n];offset+=n;return result
     def scalar():return list(v.f.canonical(struct.unpack('<8I',read(32))))
-    v.require(read(8)==MAGIC,'execution version')
+    v.require(read(8)==magic(terminal_profile),'execution version')
     n=len(spec['air']['tables'])
     v.require(len(roots)==n,'source root count')
     v.require([read(48).hex() for _ in range(n)]==roots,'source root binding')
@@ -36,7 +41,7 @@ def decode(wire,spec,roots,*,queries):
     finals=[[scalar() for _ in range(v.aux.layout(table)['finals'])] for table in spec['air']['tables']]
     local=[[[scalar() for _ in range(v.local.protocol.algebra.table_degree(table,spec['air']['numPub'])+2)] for _ in range(log)] for table,log in zip(spec['air']['tables'],spec['log_rows'])]
     reduction=dict(spec=spec,source_roots=roots,aux_roots=ars,finals=finals,local=local,gkr=None)
-    prefix=v.reduction_prefix(reduction,spec,roots);layout=prefix[-1]
+    prefix=v.reduction_prefix(reduction,spec,roots,terminal_profile=terminal_profile);layout=prefix[-1]
     layers=[]
     for i in range(len(layout['layers'])-1,-1,-1):
         prev=layout['input_size'] if i==0 else len(layout['layers'][i-1]);rounds=2*(prev.bit_length()-1)
@@ -52,6 +57,7 @@ if __name__=='__main__':
     import argparse,json
     from pathlib import Path
     parser=argparse.ArgumentParser();parser.add_argument('proof',type=Path);parser.add_argument('statement',type=Path);parser.add_argument('--queries',type=int,required=True)
+    parser.add_argument("--terminal-profile",choices=v.profiles.PROFILES,default="baseline")
     args=parser.parse_args();statement=json.loads(args.statement.read_text())
-    decode(args.proof.read_bytes(),statement['spec'],statement['roots'],queries=args.queries)
+    decode(args.proof.read_bytes(),statement['spec'],statement['roots'],queries=args.queries,terminal_profile=args.terminal_profile)
     print('PASS complete Ext8 binary envelope; diagnostic security only.')

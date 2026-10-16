@@ -14,9 +14,10 @@ from pq384_ext8_terminal_compile import compile_ext8_terminal
 from pq384_ext8_input_weights import opening_branches
 from pq384_primitives import Transcript,hash_parts,require
 from reference import public_messages
+import ext8_terminal_profiles as profiles
 
 
-def reduction_prefix(reduction,spec,roots):
+def reduction_prefix(reduction,spec,roots,*,terminal_profile="baseline"):
     require(type(reduction)is dict and set(reduction)=={'spec','source_roots','aux_roots','finals','local','gkr'},'reduction fields')
     require(reduction['spec']==spec and reduction['source_roots']==roots,'external statement binding')
     count=len(spec['air']['tables'])
@@ -43,12 +44,13 @@ def reduction_prefix(reduction,spec,roots):
     t.commit(b'ext8-all-auxiliary-data',binding)
     terminals=[local.verify(spec,t,ti,proof) for ti,proof in enumerate(reduction['local'])]
     rho=local.draw(t)[0];circuit=compile_ext8_terminal(spec,alpha,gamma,finals,terminals,rho)
+    circuit=profiles.apply(circuit,terminal_profile)
     layout=gkr.layer_circuit(circuit)
     return st,t,terminals,circuit,layout
 
 
-def opening_parameters(reduction,spec,roots):
-    return _opening_parameters(reduction,spec,roots,reduction_prefix(reduction,spec,roots))
+def opening_parameters(reduction,spec,roots,*,terminal_profile="baseline"):
+    return _opening_parameters(reduction,spec,roots,reduction_prefix(reduction,spec,roots,terminal_profile=terminal_profile))
 
 
 def _opening_parameters(reduction,spec,roots,checked_prefix):
@@ -63,8 +65,8 @@ def _opening_parameters(reduction,spec,roots,checked_prefix):
     return st,parent,branches,ob['private_claim']
 
 
-def verify(reduction,wire,spec,roots,*,queries):
-    params=opening_parameters(reduction,spec,roots)
+def verify(reduction,wire,spec,roots,*,queries,terminal_profile="baseline"):
+    params=opening_parameters(reduction,spec,roots,terminal_profile=terminal_profile)
     require(codec.verify(wire,*params,queries=queries),'weighted opening')
     return True
 
@@ -73,11 +75,12 @@ def main():
     p=argparse.ArgumentParser()
     for key in ('reduction','opening','statement'):p.add_argument('--'+key,type=Path,required=True)
     p.add_argument('--queries',type=int,required=True);p.add_argument('--compression-receipt',type=Path)
+    p.add_argument("--terminal-profile",choices=profiles.PROFILES,default="baseline")
     a=p.parse_args();read=lambda x:json.loads(x.read_text());statement=read(a.statement)
     if a.compression_receipt:
         from verify_sha384_node_chunk import contract
         contract(statement,read(a.compression_receipt))
-    verify(read(a.reduction),a.opening.read_bytes(),statement['spec'],statement['roots'],queries=a.queries)
+    verify(read(a.reduction),a.opening.read_bytes(),statement['spec'],statement['roots'],queries=a.queries,terminal_profile=a.terminal_profile)
     print('PASS complete Ext8 local/GKR/PCS reduction; external spec/roots; diagnostic security only.')
 
 if __name__=='__main__':main()

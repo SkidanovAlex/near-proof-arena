@@ -6032,3 +6032,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_weighted_aggregate_value
 #print axioms NearCompression.terminal_weighted_zero_drop
 #print axioms NearCompression.terminal_weighted_permutation_value
+
+#print axioms NearCompression.terminal_heap_route_value
+#print axioms NearCompression.terminal_weighted_heap_rebuild
+
+#print axioms NearCompression.terminal_weighted_leaf_route

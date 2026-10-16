@@ -14,10 +14,11 @@ from reference import public_messages
 from pq384_ext8_input_weights import opening_branches
 from test_ext8_input_weights import coefficient_claim
 import pq384_ext8_weighted as pcs
+import ext8_terminal_profiles as profiles
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--output',type=Path,required=True);ap.add_argument('--pcs-queries',type=int);ap.add_argument('--capture-dir',type=Path)
-    ap.add_argument('--statement',type=Path);ap.add_argument('--source-directory',type=Path);ap.add_argument('--compression-receipt',type=Path);args=ap.parse_args()
+    ap.add_argument('--statement',type=Path);ap.add_argument('--source-directory',type=Path);ap.add_argument('--compression-receipt',type=Path);ap.add_argument('--terminal-profile',choices=profiles.PROFILES,default='baseline');args=ap.parse_args()
     if (args.statement is None)!=(args.source_directory is None):ap.error('--statement and --source-directory must be supplied together')
     fixture=Path('results/pq384-literal193-gkr-fixed13')
     statement_path=args.statement or fixture/'statement.json'
@@ -88,7 +89,7 @@ def main():
         checked=[local.verify(spec,vt,ti,json.loads(json.dumps(proof))) for ti,proof in enumerate(proofs)]
         assert checked==terminals
         rho=local.draw(t)[0];assert local.draw(vt)[0]==rho
-        circuit=compile_ext8_terminal(spec,alpha,gamma,finals,terminals,rho);layout=gkr.layer_circuit(circuit)
+        circuit=profiles.apply(compile_ext8_terminal(spec,alpha,gamma,finals,terminals,rho),args.terminal_profile);layout=gkr.layer_circuit(circuit)
         private=[f.ZERO]*circuit['private_input_capacity']
         for block in circuit['input_blocks']:
             cur,nxt=private_rows[block['table']];offset=block['offset'];width=block['column_capacity']
@@ -129,7 +130,7 @@ def main():
                 # Verify from the external statement, deriving all opening parameters.
                 fresh=subprocess.run([sys.executable,str(Path(__file__).with_name('verify_ext8_execution.py')),
                     '--reduction',str(args.capture_dir/'reduction.json'),'--opening',str(args.capture_dir/'proof.bin'),
-                    '--statement',str(statement_path),'--queries',str(args.pcs_queries)]+(['--compression-receipt',str(args.compression_receipt)] if args.compression_receipt else []),check=True,capture_output=True,text=True)
+                    '--statement',str(statement_path),'--queries',str(args.pcs_queries),'--terminal-profile',args.terminal_profile]+(['--compression-receipt',str(args.compression_receipt)] if args.compression_receipt else []),check=True,capture_output=True,text=True)
                 (args.capture_dir/'complete-verifier.log').write_text(fresh.stdout+fresh.stderr)
             pcs_result=dict(queries=args.pcs_queries,verified=True,json_bytes=len(json.dumps(op,separators=(',',':')).encode()),prove_seconds=prove_time,verify_seconds=verify_time,
                 source_roots_match_retained=True,commitment_binding='packed source roots before bus challenges; packed auxiliary roots/finals before local challenges')
@@ -144,7 +145,7 @@ def main():
         except ValueError as exc:
             assert str(exc)=='invalid trace constraints'
         else:raise AssertionError('corrupted source trace accepted')
-        report=dict(weighted_pcs=pcs_result,coefficient_opening_target_checked=True,opening_branches=[dict(table=b['table'],branch=b['branch'],width=b['width'],packing=b['packing'],lanes=len(b['lanes'])) for b in branches],corrupted_source_rejected=True,status='PASS',source_sha256=expected,source_rows=[len(r) for r in rows],global_bus_product_equal=True,
+        report=dict(terminal_profile=args.terminal_profile,weighted_pcs=pcs_result,coefficient_opening_target_checked=True,opening_branches=[dict(table=b['table'],branch=b['branch'],width=b['width'],packing=b['packing'],lanes=len(b['lanes'])) for b in branches],corrupted_source_rejected=True,status='PASS',source_sha256=expected,source_rows=[len(r) for r in rows],global_bus_product_equal=True,
             local_rounds=sum(map(len,proofs)),local_scalar_bytes=32*sum(len(cs) for proof in proofs for cs in proof),
             gkr_layers=len(gp['layers']),gkr_scalar_bytes=32*sum(3*len(p['rounds'])+2 for p in gp['layers']),
             zero_terminal_claim_verified=True,direct_private_obligation_checked=True,local_seconds=local_seconds,gkr_seconds=gkr_seconds,

@@ -10,19 +10,20 @@ from verify_sha384_node_chunk import contract
 def main():
     p=argparse.ArgumentParser()
     for key in ('capture','prover-report','statement','receipt','call-proof','calls','output'):p.add_argument('--'+key,type=Path,required=True)
+    p.add_argument("--terminal-profile",choices=codec.v.profiles.PROFILES,default="baseline")
     p.add_argument('--queries',type=int,required=True);a=p.parse_args()
     read=lambda path:json.loads(path.read_text())
-    report=read(a.prover_report);assert report['status']=='PASS' and report['weighted_pcs']['verified'] and report['weighted_pcs']['queries']==a.queries
+    report=read(a.prover_report);assert report.get('terminal_profile','baseline')==a.terminal_profile;assert report['status']=='PASS' and report['weighted_pcs']['verified'] and report['weighted_pcs']['queries']==a.queries
     statement,receipt=read(a.statement),read(a.receipt);contract(statement,receipt)
     reduction=read(a.capture/'reduction.json');opening=(a.capture/'proof.bin').read_bytes()
-    wire=codec.encode(reduction,opening,statement['spec'],statement['roots'],queries=a.queries)
-    assert codec.decode(wire,statement['spec'],statement['roots'],queries=a.queries)==(reduction,opening)
+    wire=codec.encode(reduction,opening,statement['spec'],statement['roots'],queries=a.queries,terminal_profile=a.terminal_profile)
+    assert codec.decode(wire,statement['spec'],statement['roots'],queries=a.queries,terminal_profile=a.terminal_profile)==(reduction,opening)
     a.output.mkdir(parents=True,exist_ok=True);(a.output/'compression.bin').write_bytes(wire)
     command=[sys.executable,str(Path(__file__).with_name('verify_sha384_call_ext8_bundle.py')),
-        '--queries',str(a.queries),'--compression-format','ext8','--call-proof',str(a.call_proof),
+        '--queries',str(a.queries),'--terminal-profile',a.terminal_profile,'--compression-format','ext8','--call-proof',str(a.call_proof),
         '--compression-proof',str(a.output/'compression.bin'),'--statement',str(a.statement),'--receipt',str(a.receipt),'--calls',str(a.calls)]
     fresh=subprocess.run(command,text=True,capture_output=True);(a.output/'fresh-verifier.log').write_text(fresh.stdout+fresh.stderr);fresh.check_returncode()
-    params=codec.v.opening_parameters(reduction,statement['spec'],statement['roots'])
+    params=codec.v.opening_parameters(reduction,statement['spec'],statement['roots'],terminal_profile=a.terminal_profile)
     op=codec.v.codec.decode(opening,*params,queries=a.queries)
     detail=codec.v.codec.breakdown(op,*params,queries=a.queries)
     # This compression has one branch per source/auxiliary table: no aliasing.
@@ -30,7 +31,7 @@ def main():
     keys=[codec.v.codec.source_key(s) for s in stages if s['kind']=='sources']
     assert len(keys)==len(set(keys)) and detail['total_bytes']==len(opening)
     total=len(wire)+a.call_proof.stat().st_size+a.receipt.stat().st_size+a.calls.stat().st_size
-    output=dict(status='PASS',queries=a.queries,compression_extension_degree=8,call_extension_degree=8,
+    output=dict(status='PASS',terminal_profile=a.terminal_profile,queries=a.queries,compression_extension_degree=8,call_extension_degree=8,
         compression_envelope_bytes=len(wire),compression_opening_bytes=len(opening),compression_reduction_bytes=len(wire)-len(opening),
         call_proof_bytes=a.call_proof.stat().st_size,receipt_bytes=a.receipt.stat().st_size,calls_bytes=a.calls.stat().st_size,
         combined_bytes=total,under_300000_bytes=total<300000,fresh_conjunction_verified=True,pcs_breakdown=detail,

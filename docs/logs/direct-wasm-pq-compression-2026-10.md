@@ -6719,3 +6719,33 @@ audit PASS at 4210 theorems/examples. Accepted compiler/verifier unchanged;
 next step is an explicitly selected optimized experimental profile and actual
 GKR/PCS generation plus independent verification. Last verified complete size
 remains 1863197 bytes; full NEAR/PQ128/sub300000 B gate remains NOT_PASSED.
+
+
+### 2026-10-16: explicit affine profile and heap composition
+
+Added externally selected terminal profile affine-v1. Both prover and verifier
+rebuild the baseline terminal DAG, apply the affine rewrite, require unchanged
+private-input metadata and run exact symbolic equivalence validation. Baseline
+remains the default. Binary envelope NPEX8002 is accepted only when the caller
+selects affine-v1; baseline keeps NPEX8001. GKR additionally binds the rebuilt
+layout in its transcript. Profile selection propagates through the complete
+verifier, envelope codec, same-root conjunction and measurement commands.
+
+Small GKR roundtrips pass for both layouts; cross-layout proofs, unknown profile,
+changed root and changed metadata are rejected. A retained baseline envelope
+with its header relabelled as affine-v1 is rejected at the GKR endpoint. Reports:
+results/ext8-terminal-profiles-tests.json and ext8-baseline-relabel-test.json.
+
+TerminalHeapBalance.lean proves arbitrary frontier reordering and pairwise
+merge routes preserve the sum, weighted-leaf arithmetic routes yield their
+claimed value, and expansion/aggregation/zero removal/permutation/heap merging
+compose into root equality. Concrete route extraction, constant accumulation,
+and full Python/refinement obligations remain. Full axiom audit PASS:4213.
+
+At this checkpoint the full q309 affine run is LIVE in session43126,
+PID1884997, log /tmp/ext8-affine-q309.log, capture /tmp/ext8-affine-q309,
+report /tmp/ext8-affine-q309-report.json. All local tables and GKR generation
+have completed; input-obligation/PCS/completion checks remain. A baseline codec
+regression runs in session55840/PID1884998 with log
+/tmp/ext8-baseline-profile-codec.log. Do not restart either while live.
+No new complete-proof size or security claim is made at this checkpoint.
