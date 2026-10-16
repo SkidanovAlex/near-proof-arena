@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "parent_revision": "985f4dd98",
+  "lean_audit": 4250,
+  "replay": "python3 airbender/direct-wasm/test_independent_constraint_mixing.py --output /tmp/independent-mixing-replay.json",
+  "working_directory": "research/near-compression",
+  "files": {
+    "research/near-compression/results/independent-constraint-mixing/lean-audit.log.gz": "893cab5d6515d0f4a4f4b8d63703586a9b9518bc49a307baf8d85b47b9b3bb84",
+    "research/near-compression/results/independent-constraint-mixing/report.json": "e17286adc93e2d6913dcb0cdb9dc54765221890c10dc375079a8235e6f785558",
+    "research/near-compression/NearCompression/IndependentConstraintMixing.lean": "de08adf8429b4ee5432a8ac6c9e3c469361088d89b1d1e182e78a4573803265c",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd"
+  },
+  "scope": "Exact ideal independent-mixer counting theorem and injection bridge. Prechallenge candidate family and its size remain unproved for the actual protocol; no FS/QROM, whole-protocol or PQ128 certificate."
+}

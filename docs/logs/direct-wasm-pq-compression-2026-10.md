@@ -7320,3 +7320,51 @@ legacy→switch and switch→legacy. Verified compression SHA256 is recorded
 in `codec-report.json`; manifest contains replay/build/prover commands and
 artifact/source hashes. All prover, audit, conjunction and codec-test
 processes completed successfully; no background proof remains from this run.
+
+## 2026-10-16 — Sharp independent-constraint mixing count and implementation bridge
+
+Added `IndependentConstraintMixing.lean` with6 public audited lemmas.
+The implemented switch samples an independent Ext8 mixer for each OOD/query
+constraint; it does not use the earlier rate-shift power-batching protocol.
+For fixed residual coefficients with at least one nonzero entry, the exact
+Cartesian experiment satisfies count≤|sample|^(m−1), for any old residual
+offset. The proof handles a nonzero coefficient at any position: sum interchange
+isolates it, distinctness bounds its roots by1, and zero prefixes recurse.
+Samples are independent with replacement across coordinates, while the field
+alphabet itself is duplicate-free. Integer counting also handles empty alphabets.
+
+The template-binding and residual lemmas connect this linear sum to the actual
+`switchInjectAll` update, including an incorrect prior functional claim. A
+fixed false candidate satisfies the same bound; if all evaluation constraints
+are true but the prior claim is wrong, acceptance is impossible. A fixed
+prechallenge family of L candidates admits selection after the mixer tuple
+but bounds bad acceptance by L*|sample|^(m−1). For nonempty constraints, the
+scaled theorem is count*|sample|≤L*|sample|^m, i.e. L/|sample| for a nonempty
+uniform alphabet. This replaces a constraint-count factor in this particular
+mixing argument; it is not an automatically applicable WHIR theorem.
+
+Exhaustive validation:96 toy-prime cases,4768 independently computed injection
+identities, later-position nonzero coefficients, fixed-family unions, and
+explicit counterexamples for missing premises. Over F7, choosing the candidate
+c=r/(1+r) after seeing r satisfies a false mixed claim for6/7 mixers; this
+invalidates a1/F fixed-candidate argument without prechallenge list control.
+A repeated alphabet [0,0,0] also violates the distinct-sample root bound.
+Neither example is presented as an attack on the committed protocol.
+
+Conditional arithmetic for the actual7-stage schedule uses Ext8 field size
+2013265921^8. Assuming one candidate/stage gives mixing-only7/F; assuming caps
+10*targetRate gives7600/F. Both are below2^-220 for this term alone, but the
+candidate caps are explicitly unproved here.220 is an illustrative threshold,
+not a quantum-security conversion. This ledger excludes OOD separation,
+source/child proximity and extraction, local/GKR/bus errors, adaptive stage
+composition, hash assumptions and Fiat–Shamir/QROM losses. No query counts,
+accepted profiles or feasibility status changed.
+
+Full audit **4250 PASS**, allowed axioms only. Evidence and replay:
+`research/near-compression/results/independent-constraint-mixing/`.
+Next proof obligation is a complete, bounded candidate family determined by
+the committed child oracle before all mixers, with the SAME candidate supplying
+the carried functional and every query/OOD evaluation. Existing unique-basin
+and older power-mixing lemmas cannot simply be relabeled as that theorem.
+Latest verified diagnostic bundle remains1344645 B; full NEAR1Pgas/PQ128 and
+sub300000 B remain open, with slice feasibility NOT_PASSED.

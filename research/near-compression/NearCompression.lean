@@ -1628,3 +1628,5 @@ import NearCompression.GroupedCosetFold
 import NearCompression.CodeSwitchStage
 
 import NearCompression.WeightedCodeSwitchQuery
+
+import NearCompression.IndependentConstraintMixing

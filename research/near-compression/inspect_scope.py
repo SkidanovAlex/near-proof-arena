@@ -283,6 +283,7 @@ SOURCES = [
     "research/near-compression/NearCompression/GroupedCosetFold.lean",
     "research/near-compression/NearCompression/CodeSwitchStage.lean",
     "research/near-compression/NearCompression/WeightedCodeSwitchQuery.lean",
+    "research/near-compression/NearCompression/IndependentConstraintMixing.lean",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean",

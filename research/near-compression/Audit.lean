@@ -6077,3 +6077,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.switch_inject_rolling_equiv
 #print axioms NearCompression.switch_inject_rolling_dot
+
+#print axioms NearCompression.switch_independent_mixing_count
+#print axioms NearCompression.switch_bound_residual
+#print axioms NearCompression.switch_injection_tuple_residual
+#print axioms NearCompression.switch_fixed_candidate_mixing_count
+#print axioms NearCompression.switch_candidate_family_mixing_count
+#print axioms NearCompression.switch_candidate_family_mixing_scaled
