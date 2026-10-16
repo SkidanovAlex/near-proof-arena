@@ -1,8 +1,8 @@
 """Executable staged direct-Wasm AIR: numeric PC and authenticated CODE table.
 
 No CODE16 limit. Stack8 and one defined function remain explicit. Independent
-actual prepare/step fixtures supply witness provenance; new Lean refinement is
-not yet proved. Public CODE is linear-size, outside the cryptographic proof.
+actual prepare/step fixtures supply witness provenance. PreparedExecFinalRow
+proves literal AIR-to-runCall/public-output refinement under HoldsP and eligibility. Public CODE is linear-size, outside the cryptographic proof.
 """
 from collections import Counter
 from prepared_function_air import c,v,plus,neg,sub,mul,sm,putbits,val,eval_expr,P

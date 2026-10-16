@@ -11,19 +11,24 @@
     "NearCompression/PreparedExecBoundary.lean",
     "results/literal-entry-smoke.json",
     "results/literal-output-smoke.json",
-    "results/pq384-code-table-long193/binary-report.json"
+    "results/pq384-code-table-long193/binary-report.json",
+    "NearCompression/PreparedExecFinalRow.lean",
+    "PreparedSliceCheck.lean",
+    "airbender/direct-wasm/verify_prepared_slice.py",
+    "results/pq384-code-table-long193/slice-frontend-report.json"
   ],
   "requirements": [
     {
       "name": "Accepted proof implies actual execution",
       "status": "INCOMPLETE",
-      "needed": "Derive the literal HoldsP premise from cryptographic verifier acceptance except with a quantified error; connect trusted preparation and decoded public output in the same verifier contract.",
-      "established": "prepared_literal_call_entry derives actual callEntry from literal HoldsP, actual prepared-function lookup, executable CODE and entry checks, and sufficient fuel. No supplied per-row execution certificate. Boundary theorem binds entry/exit messages under exact natural bus balance."
+      "needed": "Prove cryptographic acceptance implies the literal HoldsP premise except with quantified error, including exact natural bus balance; justify the executable/parser-to-formal-model correspondence.",
+      "established": "prepared_literal_public_run_call derives actual outer runCall and published terminal status, fast gas and live stack from literal HoldsP and executable preparation/CODE/entry eligibility with sufficient fuel. Frontend executes that eligibility check against caller-requested bytes/method/prepaid gas; no execution certificate or interpreter replay."
     },
     {
       "name": "Same committed data throughout",
       "status": "INCOMPLETE",
-      "needed": "Bind code/public state, AIR sources, GKR statements and final PCS claims; no separately trusted original proofs or unbound witness data."
+      "needed": "Bind code/public state, AIR sources, GKR statements and final PCS claims; no separately trusted original proofs or unbound witness data.",
+      "established": "Literal slice frontend reconstructs canonical AIR locally, checks actual Lean preparation against the same public vector, and verifies binary proof against the same statement and source roots. These roots are proof commitments, not externally trusted trace certificates."
     },
     {
       "name": "Complete soundness ledger",
@@ -38,7 +43,8 @@
     {
       "name": "Adversarial validation",
       "status": "PARTIAL",
-      "needed": "Fresh verifier plus coherent wrong state/code/gas/memory/claim and cross-layer substitution cases; existing PCS mutation checks are only component evidence."
+      "needed": "Fresh verifier plus coherent wrong state/code/gas/memory/claim and cross-layer substitution cases; existing PCS mutation checks are only component evidence.",
+      "established": "Fresh frontend verification and 14 rejection checks cover different valid requested Wasm, method, prepaid gas, public CODE, AIR substitution, outputs, commitment and binary framing. No newly generated dishonest proof in this checkpoint."
     }
   ],
   "priority": "Integrate the existing literal const/add/drop/end slice through one verifier contract and complete its soundness and total-input-size ledger before expanding instruction coverage. Candidate-list checkpoint complete.",
@@ -59,6 +65,8 @@
     "proof_plus_public_u32_bytes": 141546,
     "statement_json_bytes": 223788,
     "proof_plus_current_statement_json_bytes": 345770,
-    "qualification": "Existing report, not rerun in this review. Q8/Ext4 diagnostic only. Compact public bytes omit other statement/configuration inputs; neither subtotal certifies secure complete proof size."
+    "qualification": "Existing proof reused and freshly verified by the new integrated frontend. Q8/Ext4 only; complete current wire plus statement/request transport is measured, without a quantum security claim. Compact public subtotal still omits other inputs.",
+    "request_json_bytes": 919,
+    "total_transported_bytes": 346689
   }
 }
