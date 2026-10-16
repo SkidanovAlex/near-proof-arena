@@ -4791,3 +4791,40 @@ secure size and full 1 Pgas remain open; gate remains NOT_PASSED.
 
 Validation: full `check.py` PASS (4113 registered results), existing axiom
 allowlist. Native captures not rerun for this formal-only composition.
+
+### Composed source-valid parameter screen on retained geometry
+
+`report_composed_slice_parameters.py` evaluates the derived source-valid bus,
+local/GKR and concrete PCS count terms and independently normalizes them with
+exact rational arithmetic. It checks retained statement/proof hashes against
+the rebuild manifest, matches AIR/public/rows against the degree fixture, and
+recomputes the bus budget against the retained Lean export. All 144 small
+cardinality/count cases agree; each reported minimum query count checks the
+preceding query count fails the target. No native proof was regenerated.
+
+`SelectedBranchWeights.lean` proves disjoint selected-history counts total at
+most the earlier sample length and bounds their weighted contribution by one
+maximum. The separate bus contribution is still added. Full count-to-rational
+normalization remains a Python arithmetic check, not a new Lean theorem.
+
+Retained geometry yields bus 8,589,975,831; local+batching+GKR numerators 1,785
+and 1,584; PCS 917,500. The total challenge coefficient is 8,590,895,116:
+`coefficient / fieldSize + (3/4)^queries`. Under an Ext8 field-size projection,
+128 ideal bits still needs 309 queries and 192 needs 463. The challenge-only
+ceiling is approximately 214.25496 ideal bits; 215 cannot be certified by this
+bound regardless of queries. Ext4 cannot certify 128. These are upper-bound
+screens, not attack/lower-bound results or post-quantum claims.
+
+Crucial limitation: the circuit/packing geometry is the retained Ext4 geometry.
+A native Ext8 circuit can change it and must be measured/re-screened. The
+source-invalid branch and theorem semantic/native premises also remain open.
+No secure byte estimate, QROM compiler or full 1 Pgas conclusion follows.
+
+Development implication: adding the composed terms does not increase the
+128/192 ideal query candidates for this geometry. Secure-size investigation
+still requires the native Ext8 geometry, openings and compression path; extra
+queries cannot fix the field/challenge ceiling.
+
+Validation: full `check.py` PASS (4115 registered results), existing axiom
+allowlist; exact arithmetic screen and minimum-query boundaries pass. Slice
+gate remains NOT_PASSED.

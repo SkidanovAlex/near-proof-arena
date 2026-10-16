@@ -610,6 +610,8 @@
     "research/near-compression/NearCompression/ConcretePCSEvidence.lean": "e5715f5d6095221166e9cee55ba6679a6e8485c8ec029cc7a840db08de03cd92",
     "research/near-compression/NearCompression/HistoryConcretePCS.lean": "8db126050d3c1baf1ab79f3e80a21b7d13967d1831ad5a53c0881aab291a2780",
     "research/near-compression/NearCompression/PreparedConcreteSoundnessBudget.lean": "5032ec7b8b45e4a5eaaf008058f45a3070b973e558ed5ff5538a13a82e75ffc2",
+    "research/near-compression/NearCompression/SelectedBranchWeights.lean": "1a4201db1a2aaba7826284b93c803f1acb09975f8a93358baa644422301d333f",
+    "research/near-compression/airbender/direct-wasm/report_composed_slice_parameters.py": "b1dcd297631fb606705b70c881f0954f4969c9598d9d286d1f5f3f289ff78f58",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean": "997795aabcc383c82e9cc0fee0084abc6b58579a045700a69d17be2b1d9808d6",
     "research/near-compression/NearCompression/JointPCSNormalization.lean": "904d3bdbc623ae03f784a6e15e7f4a03128e792d2416985271ef1fbb389cb3ac",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean": "1ef75981bd822975f8a80400b2216a32d36ea9a0dd40c5d120894021e7dd4157",

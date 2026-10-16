@@ -448,6 +448,8 @@ SOURCES = [
     "research/near-compression/NearCompression/ConcretePCSEvidence.lean",
     "research/near-compression/NearCompression/HistoryConcretePCS.lean",
     "research/near-compression/NearCompression/PreparedConcreteSoundnessBudget.lean",
+    "research/near-compression/NearCompression/SelectedBranchWeights.lean",
+    "research/near-compression/airbender/direct-wasm/report_composed_slice_parameters.py",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",

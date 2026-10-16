@@ -360,7 +360,10 @@
     "NearCompression/ConcretePCSEvidence.lean",
     "NearCompression/HistoryConcretePCS.lean",
     "NearCompression/PreparedConcreteSoundnessBudget.lean",
-    "results/prepared-concrete-soundness-integration.json"
+    "results/prepared-concrete-soundness-integration.json",
+    "NearCompression/SelectedBranchWeights.lean",
+    "airbender/direct-wasm/report_composed_slice_parameters.py",
+    "results/composed-slice-parameter-screen.json"
   ],
   "requirements": [
     {
@@ -557,5 +560,19 @@
   "filtered_selected_branch_transfer": "PROVED: exact filtered first/second nesting counts transfer to their shared branch predicates, and supplied branch bounds aggregate with a single shared failure count. Numerical local/GKR/PCS instantiation and native binding remain open; this count-algebra result does not certify acceptance or security.",
   "two_table_selected_gkr_composition": "PROVED_CONDITIONALLY: both filtered local/GKR bounds are invoked from semantic evidence records, yielding computed geometry budgets in the common experiment. Records contain no acceptance inequalities or numeric repair bounds. Valid-auxiliary bus and one shared failure estimate remain inputs; semantic evidence/native binding and concrete PCS substitution remain open.",
   "prepared_selected_gkr_budget": "PROVED_CONDITIONALLY: full prepared two-table experiment now derives actual prepared-Wasm bus and both selected local/GKR numerical terms, using concrete selector and count transfers. Only shared accepted downstream failure remains a numerical error premise; semantic evidence, native binding and source-validity premises remain. Concrete PCS bus-history lifting and source-invalid composition remain open.",
-  "prepared_concrete_soundness_budget": "PROVED_CONDITIONALLY: locally-valid fixed-source prepared branch now derives all numerical bus/local/GKR/shared PCS terms. Concrete near/far PCS applies per earlier history and sums once. Semantic and ideal-oracle/authentication evidence, event inclusion and source-validity remain premises. Native evidence construction, source-invalid composition, full parameter evaluation and QROM remain open."
+  "prepared_concrete_soundness_budget": "PROVED_CONDITIONALLY: locally-valid fixed-source prepared branch now derives all numerical bus/local/GKR/shared PCS terms. Concrete near/far PCS applies per earlier history and sums once. Semantic and ideal-oracle/authentication evidence, event inclusion and source-validity remain premises. Native evidence construction, source-invalid composition, full parameter evaluation and QROM remain open.",
+  "composed_source_valid_parameter_screen": {
+    "status": "CONDITIONAL_RETAINED_GEOMETRY_PROJECTION",
+    "challenge_numerator": 8590895116,
+    "bus_numerator": 8589975831,
+    "local_gkr_numerators": [
+      1785,
+      1584
+    ],
+    "pcs_numerator": 917500,
+    "ext8_min_queries_128_ideal": 309,
+    "ext8_min_queries_192_ideal": 463,
+    "ext8_challenge_only_ideal_ceiling_bits": 214.25496345787778,
+    "scope": "Source-valid composed bound; exact Python count normalization and Lean disjoint-weight inequality. Ext8/Ext12 project retained Ext4 circuit/packing geometry; native evidence, source-invalid cases, QROM and secure bytes remain open."
+  }
 }

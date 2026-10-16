@@ -5894,3 +5894,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.history_concrete_pcs_failure_budget
 
 #print axioms NearCompression.prepared_concrete_soundness_budget
+
+#print axioms NearCompression.selected_history_counts_le_length
+
+#print axioms NearCompression.selected_history_weighted_budget
