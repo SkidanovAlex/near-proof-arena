@@ -8899,3 +8899,30 @@ Next: determinant nonzeroness from inverse maps and the shared-denominator
 certificate identity. Full MCA and protocol/QROM composition remain open.
 Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Cramer row identities and conditional shared denominator
+
+Added DeterminantRowReplacement.lean with six audited public theorems.
+Two selected rows with equal entries force zero; replacing one selected row
+by another is a direct instance. Finite row-combination expansion follows
+from determinant row linearity. All off-diagonal terms vanish by the proved
+alternation, giving the Cramer row identity: replacement by a combination of
+selected rows multiplies the determinant by that row's coefficient.
+
+For a solved row system and nonzero determinant, every solution entry is
+its row-replacement determinant divided by the common matrix determinant.
+Also proved that a nontrivial row dependence forces determinant zero. These
+results do not yet prove the converse or determinant nonzeroness from the
+previous inverse-map theorem. The row-form system still needs connection to
+the chosen Bezout coefficient-matrix orientation.
+
+Validation:1473 Cramer identities,1377 copied-row zeros,322 nonsingular and158
+singular matrices over F2/F3/F5/F17.992 shared-denominator entries agree with
+independent transposed-system elimination; four explicit dependencies force
+zero determinant. Full audit4538 PASS, allowed axioms only. Evidence:
+results/determinant-row-replacement/.
+
+Next: discharge determinant nonzeroness from invertibility and connect the
+Cramer formula to the Bezout matrix and source-degree bounds. Full MCA and
+protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

@@ -6417,3 +6417,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.scalar_minor_equal_first_rows
 #print axioms NearCompression.scalar_minor_swap_adjacent_rows
 #print axioms NearCompression.scalar_minor_equal_rows
+
+#print axioms NearCompression.scalar_minor_duplicate_row_values
+#print axioms NearCompression.scalar_minor_replace_other_row
+#print axioms NearCompression.scalar_minor_replace_row_sum
+#print axioms NearCompression.scalar_minor_row_cramer_identity
+#print axioms NearCompression.scalar_minor_cramer_denominator
+#print axioms NearCompression.scalar_minor_row_dependence_zero

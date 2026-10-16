@@ -1732,3 +1732,5 @@ import NearCompression.PolynomialDeterminantDegree
 import NearCompression.DeterminantRowLinearity
 
 import NearCompression.DeterminantCofactorFold
+
+import NearCompression.DeterminantRowReplacement

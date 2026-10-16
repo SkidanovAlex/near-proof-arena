@@ -1,0 +1,9 @@
+{
+  "row_cramer_identities": 1473,
+  "copied_other_row_zeros": 1377,
+  "nonsingular_systems": 322,
+  "singular_systems": 158,
+  "independently_solved_denominator_entries": 992,
+  "explicit_row_dependencies": 4,
+  "scope": "Lean Cramer row replacement and conditional shared-denominator formula. Determinant nonzeroness from inverse maps and Bezout matrix integration remain open."
+}
