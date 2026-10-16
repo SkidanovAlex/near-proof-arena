@@ -5228,3 +5228,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.air_aux_coordinate_formula_boolean
 
 #print axioms NearCompression.air_aux_coordinate_source_eval
+
+#print axioms NearCompression.bus_chain_layout_columns
+
+#print axioms NearCompression.bus_chain_layout_lengths
+
+#print axioms NearCompression.bus_chain_layout_zero

@@ -1728,3 +1728,7 @@ This covers the formal formula model. Concrete auxiliary layout-to-formula-list 
 Added AirAuxCoordinateTrace.lean: reconstruct one Ext8 semantic trace from source columns followed by eight base coordinates per auxiliary value. Current/cyclic-next interpolation commutes with reconstruction; coordinate input environment equals the formula environment at all points. Source expressions with colBound within sourceWidth preserve original BabyBear Expr.eval. Full audit passed3635 (/tmp/root-aux-coordinate-audit.log).
 
 This establishes algebraic common-trace correspondence, not PCS authentication. Concrete auxiliary layout/formula-list certification, adaptive sumcheck, accepted-opening extraction and QROM remain. The current executable slice uses Ext4; formal Ext8 progress does not change its security parameters or size.
+
+### Auxiliary chain layout checkpoint
+
+Derived ordered auxiliary square/product formulas and contiguous column allocation in Lean; zero residuals imply chain equations. Full audit passes (3638 registered results, allowed axioms only). Exported Lean formulas match the executable evaluator in nine cases / 150 residual comparisons, including the 24-link CODE chain. This closes the chain layout adapter only: full interaction/fingerprint/boundary layout, accepted-proof extraction, and complete quantum soundness remain open. Slice feasibility gate stays NOT_PASSED.
