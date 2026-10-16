@@ -5578,3 +5578,36 @@ quantum-resistant sub300k proof, and the feasibility gate remains NOT_PASSED.
 Validation: full check.py PASS4140 actual-semantics bridge theorems and boundary
 examples; only permitted axioms. Log /tmp/checked-history-terminal-audit.log.
 Module/Audit/scope registrations updated; git diff --check passes.
+
+### Combined checked-history interactive acceptance theorem
+
+Added CheckedHistoryAcceptance.lean. checkedHistoryAccept contains all
+successive-prefix local checks, actual final coefficient checks, and global
+chain query checks. The acceptance theorem combines the escape analysis with
+terminal doom/query counting, rather than leaving those as disconnected
+lemmas. For nonempty challenge/query alphabets the normalized consequence is
+
+  Pr[checked acceptance] <= sum_i max(sizes(i+1),2)/|sample|
+                            + ((T-1)/N0)^q.
+
+Lean proves the exact cross-multiplied finite-count inequality. Queries are
+independent uniform draws after the final disclosure. Invalid local/terminal
+branches are already excluded inside acceptance. A separate new theorem
+charges each shrinking domain individually instead of rounds times a uniform
+maximum. This sharpening is within the existing strict extraction regime;
+it does not justify any Johnson/code-switch size projection.
+
+Premises remain visible: no initial indexed candidate, distinct ideal challenge
+alphabet, positive/halving domain geometry, degree halving, 2!=0,
+2*N0+D0<3*T, fixed snapshots/parent weights/claims before each challenge, and
+correct sampled challenge values. The local conditional bounds are derived,
+not assumed. This proves algebraic interactive acceptance soundness for the
+stated model, NOT committed implementation soundness or a QROM theorem.
+The source-invalid initial reduction, cryptographic/executable state binding,
+and round-by-round treatment of the actual Fiat-Shamir query schedule remain
+necessary before quantum128 certification. Full NEAR1Pgas/sub300k goal remains
+open; feasibility gate NOT_PASSED.
+
+Full check.py PASS4142 theorem/axiom and boundary checks; log
+/tmp/checked-history-acceptance-audit.log. Module/Audit/scope registrations
+updated. No executable protocol, proof size or prover performance change.
