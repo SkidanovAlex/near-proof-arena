@@ -499,6 +499,7 @@
     "research/near-compression/NearCompression/AlgebraicResidueSpecialization.lean": "3177943a65fc502fc84e5e1c563b2cc9b67637ab211446589e4f6d3be6e978b8",
     "research/near-compression/NearCompression/AlgebraicGuardedInverse.lean": "059d4387b3b40dc2a459a4f0170db34b1254910d98c178c1ccbe691117cedd16",
     "research/near-compression/NearCompression/PartialHenselSpecialization.lean": "ab953cefa43449c07c663e13d71442cfa24c85f7b047e323a743236e5915711d",
+    "research/near-compression/NearCompression/DenseAlgebraicHensel.lean": "90e076b0abef4acb45f1f4e98cdf1cd0af3f986d54c78c74ce1b2d1e746661bf",
     "research/near-compression/NearCompression/DeterminantRowReplacement.lean": "d370eb40254e33b6ea19e4cc6953aeefba795940dc1d3061e26a8cb4a9449a90",
     "research/near-compression/NearCompression/DeterminantCofactorFold.lean": "69cf512f5151a9092a7f9fb0cee72b6dcc5dbc1bff156315f8b0befe1fcf7985",
     "research/near-compression/NearCompression/DeterminantRowLinearity.lean": "7bff151d38e7188fec59eaffdcce11b3080879763728f80a696935a790d8727a",

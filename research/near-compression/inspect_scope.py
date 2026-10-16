@@ -331,6 +331,7 @@ SOURCES = [
     "research/near-compression/NearCompression/AlgebraicResidueSpecialization.lean",
     "research/near-compression/NearCompression/AlgebraicGuardedInverse.lean",
     "research/near-compression/NearCompression/PartialHenselSpecialization.lean",
+    "research/near-compression/NearCompression/DenseAlgebraicHensel.lean",
     "research/near-compression/NearCompression/DeterminantRowReplacement.lean",
     "research/near-compression/NearCompression/DeterminantCofactorFold.lean",
     "research/near-compression/NearCompression/DeterminantRowLinearity.lean",

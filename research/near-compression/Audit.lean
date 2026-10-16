@@ -6520,3 +6520,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.partial_hensel_lift_specializes
 #print axioms NearCompression.algebraic_residue_base_constant
 #print axioms NearCompression.algebraic_hensel_lift_specializes
+
+#print axioms NearCompression.algebraic_residue_rational_constant
+#print axioms NearCompression.algebraic_residue_variable_value
+#print axioms NearCompression.dense_rational_initial_polynomial
+#print axioms NearCompression.dense_algebraic_source_specializes
+#print axioms NearCompression.dense_algebraic_initial_slope
+#print axioms NearCompression.dense_algebraic_hensel_specializes

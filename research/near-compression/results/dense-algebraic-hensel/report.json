@@ -1,0 +1,7 @@
+{
+  "rational_algebraic_source_systems": 36,
+  "algebraic_numeric_lift_pairs": 750,
+  "coefficient_specialization_comparisons": 2250,
+  "excluded_derivative_or_collision_points": 60,
+  "scope": "Dense algebraic source and full-source slope interfaces, with a proper selected factor and combined derivative/collision guards. General certificate guard extraction and useful-branch forcing remain open."
+}

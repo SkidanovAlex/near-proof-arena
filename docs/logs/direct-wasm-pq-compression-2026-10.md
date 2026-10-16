@@ -9310,3 +9310,31 @@ Next: discharge the concrete source, algebraic root and full-source slope
 interfaces, then parameter-degree/useful-branch forcing and coverage. Full
 MCA and protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Dense algebraic source and full-source slope specialization
+
+Added DenseAlgebraicHensel.lean with six audited public theorems.
+Regular rational constants and the residue indeterminate have explicit
+algebraic specialization witnesses. Dense trivariate source coefficients now
+supply the related-input-row premise automatically, including empty rows and
+padding. Initial extraction commutes with rational embedding. The operational
+algebraic slope is exactly the residue class of the derivative of the full
+initial source polynomial, rather than necessarily the modulus derivative.
+
+A safely specialized unit certificate between the modulus and that full-source
+derivative therefore supplies the actual inverse needed by the recurrence.
+The resulting dense-source theorem specializes every finite algebraic lift
+coefficient to the numeric lift. The extension modulus may be a proper factor
+of the initial polynomial. Safe certificate and specialized modulus root
+remain premises; general branch guard extraction/degree control remain open.
+
+Validation:36 proper-factor source systems with initial source
+(Y^2+bY-Z)*(Y-c),750 algebraic/numeric lift pairs and2250 coefficient
+comparisons;60 derivative/collision guard points excluded. The test was fixed
+for a variable-shadowing error before its passing run. Full audit4625 PASS,
+allowed axioms only. Evidence: results/dense-algebraic-hensel/.
+
+Next: derive full-source modular certificate guards and bounds from selected
+branch data, then useful-branch forcing and coverage. Full MCA and protocol/QROM
+composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.
