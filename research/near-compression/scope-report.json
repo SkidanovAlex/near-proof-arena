@@ -180,6 +180,7 @@
     "research/near-compression/NearCompression/GKROutputWeights.lean": "e9c8d4c3e2a6b78c0f5b05871c6ff6bb305b2081be91eb7a809e551608ce62c7",
     "research/near-compression/NearCompression/TerminalSignedBalance.lean": "7010720417ad013f782a005c5d4d5866f2dafa0f57ee524bc362f36399e7587b",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean": "28d9d89ebe46682f614afb78d21b03e3a054451c59c5a70c73ddeaff840e3688",
+    "research/near-compression/NearCompression/BusBoundFinalProducts.lean": "6fed56556151f1883fca9dd2daca804194e88069388378496f079eac0c4bf22a",
     "research/near-compression/NearCompression/BusExpandedProducts.lean": "3af43ec848b79be43b8528e5f94228880a1213e85d120741e8276975b660abe4",
     "research/near-compression/NearCompression/BusNaturalFactor.lean": "339bf9fa68b5300555e42fc6217ebc4ef3613095c7d4826bedd50defd78eb3f2",
     "research/near-compression/NearCompression/BusSourceFormulaLowering.lean": "c675219b1c1329d27e90e54b12848ecd99392957376306ff6d240ce8e178b5c5",

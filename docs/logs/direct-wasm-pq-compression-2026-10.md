@@ -1772,3 +1772,11 @@ Proved exact row, table and all-table product identities for naturally expanded 
 Validation: full check.py passed (3665 registered results; allowed axioms only). This is a formal algebraic/bound transfer; no runtime, proof-size, or security-parameter improvement is claimed. The bound still requires a fixed trace/public vector, bounded shapes, natural imbalance and distinct ideal challenge samples.
 
 Next: fold the constructed bound-final list into the direction-specific semantic products. Per-binding natural-product correctness is already proved, but the aggregate list fold is not claimed here. Common committed-trace extraction and full adaptive/PCS/transcript quantum soundness remain open, as do secure sub300k sizing and full 1 Pgas scope. Slice gate stays NOT_PASSED.
+
+### Bound-final list fold to the global bus product
+
+Proved that the constructed binding list retains every source interaction with multiplicity through allocation and stable direction grouping. Direction-selected bound finals equal semantic formula products; with source/auxiliary residual validity, they equal natural-multiplicity source products. Recursive all-table composition and public factors give the exact expanded global bus-message product. No separate certificate equating aggregate claimed finals to semantic products is assumed.
+
+Validation: full check.py passed (3669 registered results; allowed axioms only). This is a formal composition checkpoint without runtime or proof-size changes. Its explicit boundary is same-field source/auxiliary/public arithmetic; the global public theorem requires PubVal K. It does not silently instantiate an unproved Ext8 public adapter.
+
+Next: concrete BabyBear source/public and natural-multiplicity transport into the reconstructed Ext8 trace, then accepted-proof-to-common-trace/residual extraction. Complete adaptive/PCS/transcript quantum soundness, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.
