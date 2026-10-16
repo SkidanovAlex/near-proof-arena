@@ -6534,3 +6534,12 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.selected_source_slope_guard_exception_count
 #print axioms NearCompression.selected_source_slope_guard_certificate
 #print axioms NearCompression.selected_source_guarded_hensel_specializes
+
+#print axioms NearCompression.rational_coefficient_denominator_identity
+#print axioms NearCompression.rational_polynomial_cleared_identity
+#print axioms NearCompression.rational_polynomial_clearing_scalar_nonzero
+#print axioms NearCompression.rational_polynomial_clearing_exists
+#print axioms NearCompression.rational_polynomial_cleared_degree_iff
+#print axioms NearCompression.rational_polynomial_cleared_root_iff
+#print axioms NearCompression.polynomial_nonzero_scalar_irreducible
+#print axioms NearCompression.rational_polynomial_cleared_irreducible

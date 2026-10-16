@@ -1768,3 +1768,5 @@ import NearCompression.PartialHenselSpecialization
 import NearCompression.DenseAlgebraicHensel
 
 import NearCompression.SelectedSourceSlopeGuard
+
+import NearCompression.RationalFactorClearing

@@ -9367,3 +9367,32 @@ from general source data, then useful-branch forcing and coverage. The record
 does not assert those obligations automatically. Full MCA and protocol/QROM
 composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Clear rational factor coefficients to polynomial parameter rows
+
+Added RationalFactorClearing.lean with eight audited public theorems.
+A presented coefficient times its denominator equals its formal numerator.
+Recursive common-denominator clearing constructs polynomial parameter rows,
+exactly equal after embedding to the original rational polynomial scaled by
+a formally nonzero polynomial. Every rational-function polynomial has such
+a representation. The algebraic-variable degree bounds and generic roots
+are preserved, and nonzero scalar multiplication preserves irreducibility,
+so clearing produces a valid irreducible modulus when the original is one.
+
+This is a representation theorem, not a source-parameter-degree theorem.
+Redundant denominator presentations can introduce arbitrary common content;
+primitive normalization/Gauss-type descent is still needed before claiming
+factor parameter degrees bounded by the original source. Safe specialization
+may exclude newly introduced scalar zeros until that content is removed.
+
+Validation:400 rational polynomial families,1253 exact cleared coefficient
+identities,27507 safe root/evaluation comparisons and2223 nonzero-scalar
+irreducibility checks. Twelve fixed-source examples demonstrate unbounded
+clearing content. Full audit4639 PASS, allowed axioms only. Evidence:
+results/rational-factor-clearing/.
+
+Next: primitive content normalization and descent of rational factorization
+to polynomial parameter data with source-controlled degree bounds. Full MCA,
+useful-branch coverage and protocol/QROM composition remain open.
+Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.
