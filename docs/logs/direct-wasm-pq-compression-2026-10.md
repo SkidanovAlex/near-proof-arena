@@ -5119,3 +5119,54 @@ in a weighted repeated-shift prover. A real result requires weaker-threshold
 adaptive extraction, repeated weighted continuation composition, source
 commitment binding and QROM analysis. The current formal regime still misses
 the target substantially. Full NEAR1Pgas remains open.
+
+### Code-switch algebra ledger: distinguish ordinary from mutual agreement
+
+Retrieved and read the primary paper at
+https://www.math.toronto.edu/swastik/rs-proximity-gaps-2025.pdf
+(November11,2025; PDF SHA256
+`4added3e55b83c15fcc8a698fb57e137f5bd83e79ea25ce79382817c1ad26a46`).
+Verified printed page29 visually as well as text extraction. Ordinary
+Theorem1.5 and mutual/list-correlated Theorem4.6 use different multiplicities:
+the former has ceil(sqrt(rho)/(2eta)); the latter ceil(sqrt(rho)/eta), both
+at least3. The latter also includes positive lower-order terms omitted by
+upstream's leading-only m10 formula. Paper rho uses maximum degree divided
+by domain size, rather than polynomial dimension. These distinctions matter
+when budgeting our candidate, whose needs include adaptive candidate lists.
+This is not a finding of an upstream exploit: its complete proof/other
+references have not been audited.
+
+Added `report_code_switch_algebra.py` and
+`results/code-switch-algebra-ledger.json`, tied to the schedule report hash.
+Uses exact rational intervals enclosing sqrt((degree-1)/domain), proves the
+ceiling integer is identical at both endpoints, and upper-encloses the full
+Theorem4.6 expression for M1. Independent100-digit Decimal evaluation checks
+the integer and formula enclosure; relative overestimate below1e-15. Counts
+include each hypothetical binary virtual fold, target-list OOD pair
+separation, conservative mixing count including full cosets, quadratic
+sumcheck/list terms and the sum of all source-query tails. All comparisons
+against bit targets use rational arithmetic; decimal bits are presentation.
+
+This is explicitly a PARTIAL CONDITIONAL ledger. Theorems have NOT been
+ported to Lean or connected to our weighted protocol. Weighted source
+extraction, coefficient-functional preservation, repeated-step composition,
+local/GKR/bus, initial weighted reduction, commitment and FS/QROM terms
+remain excluded/open. It is not a complete classical or quantum certificate.
+No claim that simply adding these numbers proves the actual protocol.
+
+For the selected Johnson schedules:
+-134query bits per stage: query sum132.778bits; Ext8 partial132.778bits.
+-198query bits per stage: query sum196.488bits; Ext8 partial196.090bits.
+-220query bits per stage: query sum219.056bits; Ext8 partial198.143bits.
+The modeled algebra-only ceiling is198.143bits, chiefly the high-rate
+continuation MCA terms. Full-expression counts are roughly22–28times the
+upstream leading-only expression on these folds. Ext12 arithmetic raises
+the algebra-only ceiling to321.770bits, but that is only field sensitivity;
+Ext12 requires different implementation and proof-byte accounting.
+
+Decision: the near300k candidate is not ruled out at a classical128-bit
+partial-budget level, but there is no PQ conclusion. A QROM reduction with
+explicit adversary resources is now a decisive prerequisite to selecting
+Ext8 versus a larger extension and a viable query budget. Do not treat
+192/214/220 classical bits as automatic128-bit quantum security. Preserve
+NOT_PASSED and full NEAR1Pgas scope. No Lean change this turn.
