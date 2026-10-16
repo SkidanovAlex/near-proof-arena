@@ -339,7 +339,9 @@
     "NearCompression/PreparedHistoryBranchBudget.lean",
     "results/prepared-history-branch-integration.json",
     "NearCompression/HistoryFixedCoordinates.lean",
-    "results/history-fixed-coordinates-integration.json"
+    "results/history-fixed-coordinates-integration.json",
+    "NearCompression/TwoTableAuxiliaryBranch.lean",
+    "results/two-table-auxiliary-branch-integration.json"
   ],
   "requirements": [
     {
@@ -528,5 +530,6 @@
   "checked_bus_failure_selection": "PROVED_CONDITIONALLY: failed bus validity now derives a selected decoded table, bounded row, positive checked residual count and nonzero local lane under source/specification/typing premises. Exact table restriction preserves residual values. Earlier-transcript selection, adaptive local/GKR/PCS budget composition and authentication remain open; no chronology or security claim from witness existence alone.",
   "checked_auxiliary_local_budget": "PROVED_CONDITIONALLY: exact checked formulas and bounded coordinate typing transport invalid generated bus residuals into the adaptive local acceptance bound for each fixed-table earlier-history family. No supplied row/lane witness. Earlier-only decoded trace/formula dependency, terminal repair and joint error bound remain premises. Disjoint table-history partition, authenticated auxiliary representative chronology and full acceptance composition remain open.",
   "prepared_history_branch_composition": "PROVED_CONDITIONALLY: exact three-way earlier-history partition combines actual prepared-Wasm valid-auxiliary bus bound and two restricted invalid-table bounds, paying the shared accepted downstream failure budget once. Fixed-source local validity, authenticated branch/witness construction and actual local/GKR/PCS bound substitution remain premises. No maximum shortcut between bus-dependent branches; full acceptance and security remain open.",
-  "history_fixed_auxiliary_coordinates": "PROVED_CONDITIONALLY: earlier-indexed fixed typed ideal coordinate oracles and joint representative uniqueness yield one fixed base trace per earlier history, including auxiliary physical coordinates. Bounded source/bus formulas and full ordered residual vectors agree across eligible later decoded representatives. Native commitment extraction, earlier formula/final binding and branch instantiation remain open."
+  "history_fixed_auxiliary_coordinates": "PROVED_CONDITIONALLY: earlier-indexed fixed typed ideal coordinate oracles and joint representative uniqueness yield one fixed base trace per earlier history, including auxiliary physical coordinates. Bounded source/bus formulas and full ordered residual vectors agree across eligible later decoded representatives. Native commitment extraction, earlier formula/final binding and branch instantiation remain open.",
+  "two_table_auxiliary_selector": "PROVED_CONDITIONALLY: analytical selector defined on earlier fixed actual auxiliary residuals returns none iff both tables vanish; selected branches yield nonzero bounded-row decoded local witnesses, while none plus source/specification checks yields reconstructed bus validity. Fixed-coordinate and formula binding remain explicit; final branch budget instantiation, native authentication and security remain open."
 }

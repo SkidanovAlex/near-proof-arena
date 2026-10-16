@@ -5850,3 +5850,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.fixed_coordinate_bus_formula
 
 #print axioms NearCompression.fixed_coordinate_combined_residuals
+
+#print axioms NearCompression.two_table_auxiliary_none
+
+#print axioms NearCompression.two_table_auxiliary_selected_invalid
+
+#print axioms NearCompression.selected_auxiliary_decoded_witness
+
+#print axioms NearCompression.unselected_auxiliary_decoded_bus_validity

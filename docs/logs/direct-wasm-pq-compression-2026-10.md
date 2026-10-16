@@ -4608,3 +4608,26 @@ no claim of end-to-end chronology, QROM or secure size. Full 1 Pgas stays open.
 
 Validation: full `check.py` PASS (4091 registered results), existing axiom
 allowlist. Native captures not rerun for this formal-only composition.
+
+### Two-table auxiliary selector with decoded branch meaning
+
+`TwoTableAuxiliaryBranch.lean` defines an analytical selector on the earlier
+fixed trace's actual auxiliary formula lists. It prefers invalid table 0,
+otherwise invalid table 1, and returns none iff both tables vanish on every
+live row. This is a noncomputable proof construction, not an executable prover.
+
+A selected branch transports to a nonzero combined local residual, with a
+bounded row and positive residual count, in every decoded continuation sharing
+the covered fixed coordinates. The none branch, exact formula specification
+checks and source checks imply the recursive reconstructed bus-validity
+predicate for exactly two tables. This supplies the semantic meaning previously
+left abstract in the disjoint branch composition.
+
+Next: instantiate prepared history budgets with this selector and substitute
+the selected-table local/GKR/PCS bounds in the common chronological experiment.
+Earlier binding of formulas/finals and authenticated fixed typed coordinate
+oracles remains necessary. Native Ext8 integration, global acceptance, QROM,
+secure size and full 1 Pgas remain open; gate remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4095 registered results), existing axiom
+allowlist. No native captures rerun for formal-only composition.
