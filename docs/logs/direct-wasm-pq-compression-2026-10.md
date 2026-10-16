@@ -2971,3 +2971,25 @@ kernel certificates for retained JSON. Balanced reduction and recursive
 reconstruction/input binding still need executable checked certificates before
 TerminalRebuildRoute can be removed as an explicit composition premise. Global
 soundness, quantum security and secure proof size remain open.
+
+### Checked balanced reduction certificates
+
+TerminalBalanceCheck adds executable certificates for sign-aware pair joins,
+whole passes and recursive balanced reduction. Soundness derives the existing
+TerminalJoinRoute, TerminalPassRoute and TerminalBalanceRoute relations. With
+checked DAG acyclicity the result equals the independently executed signed
+sum of initial terms. Finite arithmetic witnesses check pair operands/results;
+singleton carries and final empty/positive nodes also require finite bounds.
+
+Stage output must exactly match the next stage's input. Passes must contain
+at least two terms; empty and negative final terms require the correct zero
+node and arithmetic route. Kernel regressions cover all four sign pairs,
+two-stage reduction with an odd carry, exact initial terms/final result,
+empty/positive/negative terminals, and rejection of wrong signs, subtraction
+order, stage mismatch, nonreducing passes, nonzero anchor and missing nodes.
+
+Full check.py passed 3832 registered results under the existing axiom allowlist.
+Integration/gate and scope evidence are updated. The gate remains NOT_PASSED.
+Recursive reconstruction/input binding must still compose these checkers to
+derive TerminalRebuildRoute; concrete JSON parsing/kernel certificates and
+global execution, cryptographic/PQ soundness and secure size remain open.

@@ -1405,3 +1405,5 @@ import NearCompression.TerminalStoredBundleCheck
 import NearCompression.TerminalArithmeticCheck
 
 import NearCompression.TerminalExpansionCheck
+
+import NearCompression.TerminalBalanceCheck
