@@ -2854,3 +2854,26 @@ Validation: three new results pass full check.py (3811 registered results)
 with the existing axiom allowlist; Python compilation and diff checks pass.
 Gate remains NOT_PASSED; compiler/transcript/global execution/PQ composition
 and secure full NEAR1Pgas sub300000-byte feasibility remain incomplete.
+
+
+### Lean finite route checker
+
+Added TerminalStoredRouteCheck with finite live-node, position and gate lists.
+The executable Boolean checker inspects source/position/storage bounds, zero
+gates, and computed or relay routes against prior live placement. Its proved
+soundness yields TerminalLayerRoute and finite storage bounds, then recursively
+TerminalFiniteRouteChain. terminal_stored_certified_root composes checker
+acceptance directly with finite acyclic DAG root preservation.
+
+A kernel-evaluated regression theorem accepts a valid add route and rejects
+six malformed cases: missing previous node, wrong zero gate, wrong computed
+operation, invalid source node, invalid stored position and truncated positions.
+The retained full fixed-profile captures are not yet encoded or checked as
+instances of this Lean format. Initial placement, DAG acyclicity and root
+liveness remain explicit root-theorem premises. Padding powers and operand
+bounds for unused gates are separate executable shape invariants.
+
+Validation: module and full check.py passed3815 registered results with the
+existing axiom allowlist. Imports, audit, scope, integration report and
+NOT_PASSED feasibility gate updated. No full capture, executable refinement,
+global execution or quantum-security completion is claimed.

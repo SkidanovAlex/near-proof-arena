@@ -1397,3 +1397,5 @@ import NearCompression.GKRRecoveredCircuit
 import NearCompression.GKREvaluatedStrategy
 
 import NearCompression.TerminalFiniteLayerCertificate
+
+import NearCompression.TerminalStoredRouteCheck

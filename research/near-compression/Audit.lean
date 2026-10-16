@@ -5457,3 +5457,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_finite_gate_value
 #print axioms NearCompression.terminal_finite_chain_values
 #print axioms NearCompression.terminal_finite_certified_root
+
+#print axioms NearCompression.terminal_stored_route_checked
+#print axioms NearCompression.terminal_stored_chain_checked
+#print axioms NearCompression.terminal_stored_certified_root
+#print axioms NearCompression.terminal_stored_route_regressions
