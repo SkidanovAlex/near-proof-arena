@@ -8975,3 +8975,31 @@ Next: transport the explicit matrix over rational functions to polynomial
 entries and compose nonzeroness with source-degree denominator bounds.
 Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
 unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Source-degree common Bezout denominator
+
+Added BezoutPolynomialDenominator.lean with six audited public theorems.
+Formal coefficient presentations identify the polynomial-entry transposed
+matrix with the rational-function coefficient matrix. A unit certificate now
+proves the explicit shared polynomial determinant nonzero. For source
+coefficient degrees at most D, its degree is at most (n+m)*D, hence at most
+(n+m)*D distinct specialization points annihilate it. No elimination pivot
+or presentation-dependent denominator budget enters this bound.
+
+Cramer replacement determinants give polynomial numerators over this same
+denominator for every bounded solution coefficient. Numerators also have
+degree at most (n+m)*D when target entries have degree at most D, including
+constant targets. Derivative-certificate instantiation and safe coefficient
+specialization still require composition; this does not finish useful-branch
+extraction or the protocol soundness argument.
+
+Validation:333 nonzero polynomial systems,1815 exact coefficient identities,
+2085 safe specializations,257 exceptional points,27 singular systems and28
+empty systems. Four nonzero formal denominators vanishing at every base-field
+point guard against assuming existence of a safe specialization. Full audit4558
+PASS, allowed axioms only. Evidence: results/bezout-polynomial-denominator/.
+
+Next: compose the degree-controlled denominator with the derivative Bezout
+certificate and specialization/Hensel interfaces. Full MCA and protocol/QROM
+composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

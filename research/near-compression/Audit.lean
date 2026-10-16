@@ -6441,3 +6441,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bezout_coefficient_row_inverse
 #print axioms NearCompression.bezout_coefficient_determinant_nonzero
 #print axioms NearCompression.bezout_coefficient_cramer
+
+#print axioms NearCompression.bezout_polynomial_matrix_rational_transport
+#print axioms NearCompression.bezout_shared_denominator_nonzero
+#print axioms NearCompression.bezout_shared_denominator_degree
+#print axioms NearCompression.bezout_shared_denominator_exception_count
+#print axioms NearCompression.bezout_polynomial_cramer_formula
+#print axioms NearCompression.bezout_cramer_numerator_degree

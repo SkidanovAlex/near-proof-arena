@@ -1740,3 +1740,5 @@ import NearCompression.DeterminantRowPermutations
 import NearCompression.DeterminantRowSpan
 
 import NearCompression.BezoutCoefficientMatrix
+
+import NearCompression.BezoutPolynomialDenominator
