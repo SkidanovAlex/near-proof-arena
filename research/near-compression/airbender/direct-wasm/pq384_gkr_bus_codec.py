@@ -21,11 +21,11 @@ def shape(spec):
     _,minimum,maximum=joint.limits(dimensions);return fixed,minimum,maximum
 
 
-def prefix(spec,roots,proof):
-    st,t,alpha,gamma=bus.begin(spec,roots);ars=[bus.pcs.decode_hash(x) for x in proof['aux_roots']]
+def prefix(spec,roots,proof, *, input_log=None):
+    st,t,alpha,gamma=bus.begin(spec,roots,input_log=input_log);ars=[bus.pcs.decode_hash(x) for x in proof['aux_roots']]
     bus.initialize_aux(t,spec,ars,proof['finals']);require(len(proof['tables'])==len(roots),'table count')
     terminals=[bus.constraint_verify(spec,t,ti,rd) for ti,rd in enumerate(proof['tables'])]
-    circuit,layout,binding=bus.terminal_layout(spec,t,alpha,gamma,proof['finals'],terminals)
+    circuit,layout,binding=bus.terminal_layout(spec,t,alpha,gamma,proof['finals'],terminals,input_log=input_log)
     sizes=[2*((layout['input_size'] if i==0 else len(layout['layers'][i-1])).bit_length()-1) for i in range(len(layout['layers'])-1,-1,-1)]
     size=16*sum(3*n+2 for n in sizes);require(size<=MAX_GKR_BYTES,'GKR codec cap')
     return st,alpha,gamma,ars,terminals,circuit,layout,binding,sizes,size

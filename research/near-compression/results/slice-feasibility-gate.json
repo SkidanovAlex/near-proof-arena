@@ -139,7 +139,8 @@
     "NearCompression/GKRFixedInputEnvelope.lean",
     "results/fixed-input-envelope-integration.json",
     "results/fixed-input-profile-integration.json",
-    "results/pq384-literal193-gkr-fixed13/profile-test.json"
+    "results/pq384-literal193-gkr-fixed13/profile-test.json",
+    "results/pq384-literal193-gkr-fixed13/compact-slice-report.json"
   ],
   "requirements": [
     {
@@ -156,7 +157,7 @@
       "captured_geometry": "Packed literal193 fixture metadata replay validated76 lanes and2072 live slots; Lean kernel certificates now discharge lane WellFormed and CanonicalLaneSelectors for these exact table records. Compiler correspondence remains executable parity, not universal formal refinement.",
       "challenge_layout_sweep": "Captured case plus rho=1 baseline and zero/one mutations of rowpoint,mixing,tau,claim preserve private blocks and8192 input slots in10 tested cases. Layer counts vary5..35. Fixed-input helper preserves evaluation on deterministic nonzero private values; not integrated into retained profile and not a universal challenge-independent geometry proof.",
       "fixed_envelope_semantics": "For arbitrary field inputs, relocating the reserved zero in the first layer preserves all circuit outputs under explicit valid-operand, zero-slot and size conditions. All10 captured/synthetic compiler cases satisfy those preconditions. Integrated trusted-cap transcript binding and universal cap sufficiency remain open.",
-      "fixed_input_profile": "Separate fixed-input diagnostic profile binds caller cap13 before challenges and checks actual GKR input size8192. Fresh proof with same sources/new auxiliaries independently verified;11 profile/cap negatives rejected. Original prepared compact profile regression passes. New compact/request frontend integration remains open."
+      "fixed_input_profile": "Separate fixed-input profile binds caller cap13 before challenges and verifies GKR input size8192. Fresh proof with same source roots/new auxiliaries independently verified. Compact/prepared-request/envelope now supported with exact roundtrip and14 negatives; existing complete-envelope regressions pass."
     },
     {
       "name": "Complete soundness ledger",
@@ -257,5 +258,12 @@
     "all_statement_request_proof_inputs_carried": true,
     "air_reconstructed_locally": true,
     "qualification": "Exact original Q8/Ext4 GKR proof and statement/request roundtrip. Caller expected request pinned externally. Transport only, no secure parameter or formal codec claim."
+  },
+  "fixed_input_compact_measurement": {
+    "proof_bytes": 47846,
+    "complete_envelope_bytes": 67888,
+    "transport_overhead_bytes": 20042,
+    "envelope_plus_external_request_json_bytes": 68807,
+    "qualification": "Fresh fixed-cap13 profile with full prepared-request frontend. Q8/Ext4 only, no quantum/soundness certification; cap is caller configuration checked against envelope byte."
   }
 }

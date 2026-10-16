@@ -2503,3 +2503,26 @@ profile currently has JSON verification only; compact codec and prepared-request
 frontend integration remain open. No compact-size or secure-profile claim is
 made. Formal transcript refinement, cap sufficiency, common-trace composition,
 quantum security and full NEAR1Pgas feasibility remain incomplete.
+
+
+### Compact fixed-input prepared slice and complete envelope
+
+Extended the compact GKR codec and prepared literal frontend with explicit
+caller input_log configuration. The fixed profile has distinct compact magic;
+decoding replays its cap-bound statement and fixed layout. The complete literal
+envelope also has distinct magic and carries one cap byte, which must equal the
+caller's configured cap. No proof-selected cap or profile dispatch is introduced.
+Old defaults and original wire formats retain their behavior.
+
+The retained fresh cap13 proof exactly roundtrips and verifies against the
+requested Wasm/method/prepaid gas in a fresh process. Compact proof47846 bytes;
+complete envelope67888 bytes = proof +20042 transport bytes. Including a separate
+expected-request JSON gives68807 bytes. These are Q8/Ext4 diagnostic measurements.
+The earlier proof used a different transcript/auxiliary witness, so this size
+difference cannot be attributed solely to the fixed envelope.
+
+Validation:14 cap/profile/framing/request/output negatives rejected; original
+complete-envelope regression and its14 negatives passed. Python compilation,
+diff checks and full check.py passed (3780 registered results). Actual
+acceptance-to-execution composition, quantum hash/Fiat-Shamir reduction, secure
+parameters and full NEAR1Pgas sub300000-byte feasibility remain open.

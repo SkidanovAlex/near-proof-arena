@@ -13,16 +13,22 @@ from pq384_primitives import P, require
 from verify_prepared_gkr_slice import verify as verify_slice
 
 MAGIC = b'NPLG\x00\x01'
+FIXED_MAGIC = b'NPLF\x00\x01'
+
+def wire_magic(input_log):
+    require(input_log is None or (type(input_log) is int and 1 <= input_log <= 25), 'trusted input log')
+    return MAGIC if input_log is None else FIXED_MAGIC
 
 
-def encode(proof, statement, request):
-    verify_slice(proof, statement, request)
+def encode(proof, statement, request, *, input_log=None):
+    verify_slice(proof, statement, request, input_log=input_log)
     spec = statement['spec']
     method = request['method'].encode('utf-8')
     wasm = bytes(request['wasm_bytes'])
     require(0 <= request['prepaid'] < 1 << 64, 'envelope gas range')
     require(len(spec['log_rows']) == len(statement['roots']) == 2, 'literal table count')
-    out = bytearray(MAGIC)
+    out = bytearray(wire_magic(input_log))
+    if input_log is not None: out.append(input_log)
     out.extend(struct.pack('<I', len(spec['public'])))
     out.extend(struct.pack('<'+'I'*len(spec['public']), *spec['public']))
     out.extend(bytes(spec['log_rows']))
@@ -39,7 +45,8 @@ def encode(proof, statement, request):
     return bytes(out)
 
 
-def decode(data):
+def decode(data, *, input_log=None):
+    magic = wire_magic(input_log)
     require(type(data) is bytes, 'envelope bytes')
     offset = 0
     def read(n):
@@ -50,7 +57,8 @@ def decode(data):
         return out
     def number(fmt):
         return struct.unpack(fmt, read(struct.calcsize(fmt)))[0]
-    require(read(len(MAGIC)) == MAGIC, 'envelope profile')
+    require(read(len(magic)) == magic, 'envelope profile')
+    if input_log is not None: require(number('<B') == input_log, 'envelope trusted cap mismatch')
     count = number('<I')
     instructions, remainder = divmod(count-literal.CODEPUB, literal.RECORD)
     require(instructions > 0 and remainder == 0, 'literal public shape')
@@ -74,15 +82,16 @@ def decode(data):
     return proof, statement, request
 
 
-def verify(data, expected_request):
-    proof, statement, request = decode(data)
+def verify(data, expected_request, *, input_log=None):
+    proof, statement, request = decode(data, input_log=input_log)
     require(request == expected_request, 'envelope caller request mismatch')
-    return verify_slice(proof, statement, expected_request)
+    return verify_slice(proof, statement, expected_request, input_log=input_log)
 
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('envelope', type=Path)
     ap.add_argument('expected_request', type=Path)
+    ap.add_argument("--input-log", type=int, help="trusted fixed-input cap, checked against envelope")
     args = ap.parse_args()
-    print(json.dumps(verify(args.envelope.read_bytes(), json.loads(args.expected_request.read_text()))))
+    print(json.dumps(verify(args.envelope.read_bytes(), json.loads(args.expected_request.read_text()), input_log=args.input_log)))
