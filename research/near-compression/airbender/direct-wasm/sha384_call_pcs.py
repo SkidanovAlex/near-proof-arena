@@ -37,15 +37,20 @@ def equations(statement,expected,calls):
     return eq
 
 
+def compile_coefficients(eq,weights,capacity):
+    coeff=[g.ZERO]*capacity;claim=g.ZERO
+    for (left,right,value),w in zip(eq,weights):
+        coeff[left]=g.add(coeff[left],w)
+        if right is not None:coeff[right]=g.sub(coeff[right],w)
+        claim=g.add(claim,g.mul(w,g.base(value)))
+    return coeff,claim
+
+
 def compile_layout(statement,expected,calls):
     eq=equations(statement,expected,calls);spec=statement['spec'];n=1<<spec['log_rows'][3];capacity=n*256
     st=hash_parts(PROFILE,canonical(expected),canonical(calls),canonical(spec),bytes.fromhex(statement['roots'][3]))
     t=Transcript(st);point=[tuple(x) for x in t.draw(b'call-equations-after-use-root',(len(eq)-1).bit_length(),4)[0]]
-    coeff=[g.ZERO]*capacity;claim=g.ZERO
-    for (left,right,value),w in zip(eq,g.eqs(point)):
-        coeff[left]=g.add(coeff[left],w)
-        if right is not None:coeff[right]=g.sub(coeff[right],w)
-        claim=g.add(claim,g.mul(w,g.base(value)))
+    coeff,claim=compile_coefficients(eq,g.eqs(point),capacity)
     nodes=[['input',i] for i in range(capacity)];terms=[]
     def emit(node):nodes.append(node);return len(nodes)-1
     for i,w in enumerate(coeff):

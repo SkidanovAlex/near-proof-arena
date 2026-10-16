@@ -1582,3 +1582,5 @@ import NearCompression.SHA384CallLinear
 import NearCompression.SHA384CallEquations
 
 import NearCompression.CallLinearBatch
+
+import NearCompression.CallArrayCompilation

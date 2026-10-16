@@ -5870,3 +5870,36 @@ Validation: full check.py PASS4164 theorem/axiom and boundary checks,
 /tmp/call-linear-batch-audit.log. Five public theorem audits and module/scope
 entries registered; git diff --check clean. Full NEAR1Pgas/PQ128/sub300k goal
 and NOT_PASSED feasibility gate remain open.
+
+
+### Sequential call coefficient compiler refinement
+
+CallArrayCompilation.lean now proves the sequential Array.modify accumulator
+implements mathematical scatter and constant accumulation. Five public results
+cover size preservation, reads after each update, the full loop, initialization
+from zero, and the resulting weighted residual functional. Same-slot addition
+and subtraction read the updated array and cancel correctly. The final
+functional theorem requires bounded descriptor slots; the array loop itself
+has defined out-of-range no-op behavior and does not establish input bounds.
+
+The executable Python compiler now exposes its existing coefficient loop as
+compile_coefficients, used directly by compile_layout. ReplayCallArray.lean
+executes the proved Lean loop over Fp for all four coordinates of actual Ext4
+weights. This coordinatewise comparison is applicable because the loop only
+adds/subtracts weights and multiplies them by base-field constants. It is a
+concrete parity check, not a universal refinement theorem for Python or Ext4.
+The retained 2880 equations produce exactly matching 8192 coefficients and
+claim in all four coordinates. An additional case covers aliasing, repeated
+slots, and zero/unit weights. Existing call proof verification passes and its
+binary encoding is unchanged (SHA256
+53f90c09443952465d10da72a356754028d90234192292ba46b1cc3be429dba2).
+
+Validation: full check.py PASS4169; /tmp/call-array-audit.log. Replay command:
+python3 airbender/direct-wasm/test_call_array_parity.py --output-directory
+/tmp/nearproof-call-array-parity (from research/near-compression, after the Lean
+build). Retained results/call-array-parity/report.json records source hashes.
+
+Remaining work includes general descriptor-to-extension correspondence, exact
+zero-padding refinement, GKR circuit lowering, commitment/PCS composition and
+Fiat-Shamir/QROM analysis. The 152200-byte diagnostic bundle is unchanged;
+full NEAR 1Pgas / PQ128 / sub300k feasibility remains NOT_PASSED.

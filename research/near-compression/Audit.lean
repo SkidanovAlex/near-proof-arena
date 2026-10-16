@@ -5971,3 +5971,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.call_residual_batch_zero_count
 #print axioms NearCompression.call_compiled_score_mle
 #print axioms NearCompression.call_compiled_batch_zero_count
+
+#print axioms NearCompression.call_array_update_size
+#print axioms NearCompression.call_array_update_read
+#print axioms NearCompression.call_array_run_sound
+#print axioms NearCompression.call_array_zero_compile
+#print axioms NearCompression.call_array_functional
