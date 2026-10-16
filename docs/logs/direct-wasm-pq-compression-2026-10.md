@@ -6609,3 +6609,53 @@ results/ext8-pooled-packing-{geometry,validation}.json. Scripts run successfully
 logs /tmp/ext8-joint-packing.log and /tmp/ext8-pooled-packing.log. Existing36
 independent coset/schedule tests still pass. No Lean changes; full NEAR/PQ128/
 sub300k feasibility remains NOT_PASSED.
+
+### Code-switch ledger includes stage queries, OOD and field errors
+
+Inspected pinned WHIR implementation afec1fac27c1c8cc7331aa5668bc9800f104d92c,
+src/protocols/{code_switch.rs,params/{regime,sumcheck,code_switch,layout}.rs}.
+Primary source:
+https://github.com/worldfnd/whir/tree/afec1fac27c1c8cc7331aa5668bc9800f104d92c/src/protocols
+The source commits a target after sumcheck, samples OOD points/answers, opens
+the prior IRS, then draws constraint-mixing coefficients. Source query, OOD
+list-separation and mixing errors are separate; sumcheck also charges proximity
+gaps and polynomial identities. No grinding/capacity-conjecture credit used.
+
+Added screen_ext8_code_switch.py. It REPRICES the existing joint/pooled packing
+and group schedules (not a new global optimization) with stage rates stepping
+B_next=B*2^(k-1), either unbounded or capped256. Queries are recomputed at each
+stage. Both proofs share a per-error allocation sized for2*sum(k)+3*stages;
+every stage charges k MCA/identity terms plus query/OOD/mixing. Each switch
+includes96*kquadratic bytes,48root bytes and32bytes per OOD answer, plus
+coset-packed source/intermediate Merkle openings. Initial functional reduction,
+terminal scalars and fixed upstream costs remain charged. OOD sample count is
+at least one and is increased until its source-formula bound fits.
+
+Critical finding: canonical Johnson MCA error from the pinned code is
+(21^5/48)*message_length*B^(5/2)/|Fp8|. It cannot be omitted when selecting a
+high-rate-inverse profile. Exact squared comparisons avoid irrational rounding;
+the printed additive ledger uses a conservative rounded-up square root. List
+size is10B, identity error2L/F, and mixing error(t_ood+q*2^k)*L_target/F.
+These are SOURCE-FORMULA transcriptions, not newly proved bounds for our PCS.
+The script requires the exact pinned Git HEAD and clean formula files.
+
+Results across256sampled runs:
+-128-bit illustrative component target: best conditional-ledger-passing case
+ is pooled Johnson/stepping startingB256,433469bytes.
+-220-bit illustrative component target: NO tested Johnson candidate passes the
+ MCA field allocation. Best passing Unique/capped256 case startsB4 and costs
+ 1413653bytes. This does not imply a general impossibility for Ext8 or PQ128;
+ 220is not a derived quantum target and schedules were not reoptimized.
+Neither tested family supplies a sub300000-byte candidate or certified security.
+Earlier query-only Johnson220-bit projections must not be selected as parameters.
+Theorem mapping, common-candidate/extraction obligations, initial batching,
+local/GKR/bus errors and Fiat-Shamir/QROM remain outside this conditional ledger.
+
+Validation:30independent source-log/formula cases (including odd-rate logarithms)
+and256exact per-stage additive ledgers PASS; OOD/query minimality, known Unique
+case and Johnson field-budget rejection checked. Artifacts: readable decision
+summary results/ext8-code-switch-ledger.json; full ledger in matching.json.gz;
+validation and manifest JSON alongside. The test accepts the full.gz archive;
+rerunning the screen writes a full JSON to the requested output path. Log
+/tmp/ext8-code-switch-ledger.log. No Lean change or accepted runtime profile
+change; full NEAR/PQ128/sub300k gate remains NOT_PASSED.
