@@ -5874,3 +5874,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.first_selected_history_reindex
 
 #print axioms NearCompression.second_selected_history_reindex
+
+#print axioms NearCompression.first_selected_branch_count
+
+#print axioms NearCompression.second_selected_branch_count
+
+#print axioms NearCompression.two_table_filtered_history_budget

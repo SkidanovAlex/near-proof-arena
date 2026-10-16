@@ -1552,3 +1552,4 @@ import NearCompression.SelectedAuxiliaryLocalBudget
 import NearCompression.SelectedAuxiliaryGKR
 import NearCompression.SelectedAuxiliaryFutureGKR
 import NearCompression.SelectedHistoryExperiment
+import NearCompression.SelectedBranchTransfer

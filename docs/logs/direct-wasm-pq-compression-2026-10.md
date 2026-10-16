@@ -4696,3 +4696,25 @@ remain open. Slice gate remains NOT_PASSED.
 
 Validation: full `check.py` PASS (4103 registered results), existing axiom
 allowlist; native captures not rerun for formal-only changes.
+
+### Filtered table bounds transfer to shared branch counts
+
+`SelectedBranchTransfer.lean` combines the earlier selector filter and
+chronological reindexing into direct equalities for each table's actual nested
+experiment. `two_table_filtered_history_budget` consumes those differently
+nested bounds, converts their accepted-failure counts to the shared branch
+experiment, and applies the disjoint three-branch budget exactly once.
+
+This is a count-composition result. It does not manufacture numerical bounds:
+the bus, first/second local/GKR and joint PCS estimates remain inputs. Their
+existing theorem outputs now have explicit transfer interfaces to the shared
+experiment, including retained accepted errors, without inferring per-history
+budgets from aggregate bounds.
+
+Next: instantiate these interfaces with the actual prepared-Wasm and selected
+local/GKR data, then concrete joint PCS. Checked terminal/native binding,
+full Ext8, global acceptance, QROM, secure size and full 1 Pgas remain open.
+Slice gate remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4106 registered results), existing axiom
+allowlist; native captures not rerun for formal-only count composition.
