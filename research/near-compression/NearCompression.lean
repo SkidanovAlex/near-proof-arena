@@ -1584,3 +1584,5 @@ import NearCompression.SHA384CallEquations
 import NearCompression.CallLinearBatch
 
 import NearCompression.CallArrayCompilation
+
+import NearCompression.CallPadding

@@ -9,6 +9,13 @@
       "replay_sha256": "c148a8c5cf4a3e545c819e55c35db8dbbc564971444e798b66dd2fc383d5d1f7"
     },
     {
+      "name": "padded",
+      "equations": 4096,
+      "capacity": 8192,
+      "all_coefficients_and_claim_match": true,
+      "replay_sha256": "c148a8c5cf4a3e545c819e55c35db8dbbc564971444e798b66dd2fc383d5d1f7"
+    },
+    {
       "name": "aliases",
       "equations": 5,
       "capacity": 2,
@@ -16,13 +23,15 @@
       "replay_sha256": "a5cb375aeb112526e554cc3476564892000383edccb3ad26d361b454aedae6bc"
     }
   ],
+  "padded_and_unpadded_compilation_identical": true,
   "retained_proof_verifies_and_encoding_unchanged": true,
   "proof_sha256": "53f90c09443952465d10da72a356754028d90234192292ba46b1cc3be429dba2",
   "scope": "Coordinatewise concrete parity for base-constant accumulation, including aliases and zero/unit weights. General Lean array functional theorem is audited. This does not prove arbitrary Python correspondence, GKR lowering, Fiat-Shamir/QROM soundness or full recursion.",
   "files": {
     "NearCompression/CallArrayCompilation.lean": "652158f242e2c24dcaa0a97fd1ba16d82fa2fcdfc46e4445ba7f475a696f09ce",
+    "NearCompression/CallPadding.lean": "718467234027d6aefda46633afc0d8ba01083a18614a65d686e9f52bf39d6143",
     "ReplayCallArray.lean": "3219fe454a51ae9af7f1dcaa5d37b37bd9bf50adbcb23b822e1e80fdc5c76eae",
     "airbender/direct-wasm/sha384_call_pcs.py": "173f8a62761371395e867abbefb55ea676dc1343ca2338c3489ec18dcd013d55",
-    "airbender/direct-wasm/test_call_array_parity.py": "0273aeead4e07f133a88993334442d9753de2aa0cfc8fdf38474328d657e011f"
+    "airbender/direct-wasm/test_call_array_parity.py": "71816870537dfc3e2366f86d9bf7e8e21b7c6ecfbf43cd5f2b93a880e2cd4660"
   }
 }

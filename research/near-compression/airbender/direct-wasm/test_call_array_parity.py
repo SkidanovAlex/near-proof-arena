@@ -14,8 +14,11 @@ def main():
     eq=cp.equations(st,receipt,calls)
     seed=hash_parts(cp.PROFILE,cp.canonical(receipt),cp.canonical(calls),cp.canonical(st['spec']),bytes.fromhex(st['roots'][3]))
     point=[tuple(x) for x in Transcript(seed).draw(b'call-equations-after-use-root',(len(eq)-1).bit_length(),4)[0]]
-    weights=cp.g.eqs(point)[:len(eq)]
-    scenarios=[('retained',eq,weights,capacity),('aliases',[(0,0,0),(1,None,7),(1,1,0),(0,1,3),(1,None,2)],
+    all_weights=cp.g.eqs(point)
+    weights=all_weights[:len(eq)]
+    padded=eq+[(0,0,0)]*(len(all_weights)-len(eq))
+    assert cp.compile_coefficients(eq,weights,capacity)==cp.compile_coefficients(padded,all_weights,capacity)
+    scenarios=[('retained',eq,weights,capacity),('padded',padded,all_weights,capacity),('aliases',[(0,0,0),(1,None,7),(1,1,0),(0,1,3),(1,None,2)],
         [cp.g.ZERO,cp.g.ONE,(2,3,4,5),(6,7,8,9),cp.g.ONE],2)]
     reports=[]
     for name,eqs,ws,cap in scenarios:
@@ -33,7 +36,7 @@ def main():
     proof=json.loads(gzip.decompress((proofdir/'proof.json.gz').read_bytes()))
     wire=(proofdir/'proof.bin').read_bytes()
     assert cp.encode(proof,st,receipt,calls)==wire
-    report=dict(status='PASS',scenarios=reports,retained_proof_verifies_and_encoding_unchanged=True,
+    report=dict(status='PASS',scenarios=reports,padded_and_unpadded_compilation_identical=True,retained_proof_verifies_and_encoding_unchanged=True,
         proof_sha256=hashlib.sha256(wire).hexdigest(),
         scope='Coordinatewise concrete parity for base-constant accumulation, including aliases and zero/unit weights. General Lean array functional theorem is audited. This does not prove arbitrary Python correspondence, GKR lowering, Fiat-Shamir/QROM soundness or full recursion.')
     (out/'report.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

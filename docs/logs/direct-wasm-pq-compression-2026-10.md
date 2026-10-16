@@ -5903,3 +5903,30 @@ Remaining work includes general descriptor-to-extension correspondence, exact
 zero-padding refinement, GKR circuit lowering, commitment/PCS composition and
 Fiat-Shamir/QROM analysis. The 152200-byte diagnostic bundle is unchanged;
 full NEAR 1Pgas / PQ128 / sub300k feasibility remains NOT_PASSED.
+
+
+### Unpadded array compiler to padded residual soundness
+
+CallPadding.lean closes the mathematical zero-padding interface. Missing
+positions use a self-copy equation (left=right=0, constant=0), whose residual
+is zero for every private vector. call_short_batch_mle proves the weighted sum
+over the actual equation count equals the MLE of the full power-of-two padded
+residual table. call_short_array_mle composes this with the sequential array
+compiler theorem; call_short_array_zero_count derives the finite challenge-grid
+cancellation bound directly for that array functional. No disjointness or
+nonzero-challenge premise is introduced. Bounds on actual slots and on equation
+count, plus a fixed nonzero residual before sampling, remain explicit premises.
+
+The concrete regression now compares 2880 real equations with 4096 equations
+including neutral padding. Both Python and the proved Lean array program yield
+identical 8192 coefficient vectors and claims in all four base-field
+coordinates; both replay outputs have SHA256
+c148a8c5cf4a3e545c819e55c35db8dbbc564971444e798b66dd2fc383d5d1f7.
+Retained call proof verification and exact binary re-encoding still pass.
+Full check.py PASS4174; /tmp/call-padding-audit.log. Parity command is unchanged,
+with output /tmp/nearproof-call-padding-parity; retained report is updated.
+
+This proves abstract equality-weight truncation and neutral padding, not the
+universal correspondence of Python eqs/transcript sampling to the Lean field
+model. Descriptor lifting, GKR lowering, PCS/commitment composition, QROM and
+full NEAR feasibility remain open. No security or size gate is newly passed.
