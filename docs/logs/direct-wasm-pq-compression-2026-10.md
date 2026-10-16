@@ -2379,3 +2379,28 @@ remain incomplete.
 
 Validation: full `check.py` passed with 3772 registered results and enforced
 axiom allowlist. No proof bytes or security parameters changed.
+
+
+### Near functional acceptance through adaptive folding
+
+Inspection found that `ChosenGKRSourceRecovery` already derives the sparse
+lane image from projected sources and natural-domain geometry. The new work
+therefore closes the downstream candidate-to-acceptance gap instead of adding
+a duplicate sparsity lemma.
+
+`NearFunctionalFoldAcceptance.lean` composes the close-family weighted
+sumcheck theorem with adaptive weighted folding. For a wrong functional of
+one shared representative, checked sumcheck-plus-folding acceptance has the
+integer-scaled bound corresponding to 2*n/Q + foldSum/Q + ((T-1)/N)^queries.
+The initial folding candidate's agreement is transported to the exact weighted
+virtual source. Each folding strategy may depend on the full preceding
+sumcheck path and remains prefix-adaptive in its own challenges. A general
+finite product-count lemma is now shared with the far-case composition.
+
+Representative/source identity, decoding separation, folding geometry,
+terminal authentication and independent ideal sampling are explicit. Full
+compiled GKR/AIR/bus/execution composition, quantum reductions, secure size
+and full NEAR1Pgas feasibility remain open. No measured bytes changed.
+
+Validation: full `check.py` passed with 3774 registered results and enforced
+axiom allowlist. Slice feasibility remains NOT_PASSED.

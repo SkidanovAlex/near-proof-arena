@@ -5402,3 +5402,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.ext4_terminal_check_authenticates_or_collision
 #print axioms NearCompression.ext4_terminal_check_authenticated
+
+#print axioms NearCompression.finite_product_acceptance_budget
+
+#print axioms NearCompression.near_functional_fold_acceptance_count

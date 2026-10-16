@@ -1367,3 +1367,5 @@ import NearCompression.CanonicalFieldWordBytes
 import NearCompression.Ext4PairBytes
 
 import NearCompression.Ext4TerminalBinding
+
+import NearCompression.NearFunctionalFoldAcceptance

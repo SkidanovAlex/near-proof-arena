@@ -19,7 +19,8 @@ private theorem unit_mass (domain : List K) (event : K → Prop) :
     simp only [consistencyMass,count,List.map_cons,List.sum_cons,List.countP_cons] at ih ⊢
     by_cases h : event x <;> simp_all <;> omega
 
-private theorem count_product_budget {A B : Type} (outer : List A) (inner : List B)
+/-- Compose an outer exceptional event with a uniformly bounded inner error. -/
+theorem finite_product_acceptance_budget {A B : Type} (outer : List A) (inner : List B)
     (accept : A → B → Prop) (good : A → Prop) (scale budget : Nat)
     (bad : ∀ a∈outer,¬good a → count inner (accept a)*scale≤budget) :
     count (outer.flatMap (fun a => inner.map (fun b => (a,b))))
@@ -104,7 +105,7 @@ theorem joint_source_far_acceptance_count [DecidableEq K]
     (by simpa using interpolation) betas sources affine far
   let inner := (uniformTuples sample foldRounds).flatMap (fun path =>
     (uniformTuples (List.range N) queries).map (fun qs => (path,qs)))
-  have bound := count_product_budget (uniformTuples sample outerRounds) inner
+  have bound := finite_product_acceptance_budget (uniformTuples sample outerRounds) inner
     (fun z pair => weightedReplayAccept (points z) (initial z)
       ((provers z).messages foldRounds) (provers z).terminal roots
       (provers z).oracles sizes pair.1 pair.2) good sample.length
