@@ -5447,3 +5447,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_reverse_circuit_input
 #print axioms NearCompression.gkr_reverse_circuit_step
 #print axioms NearCompression.gkr_evaluated_recovered_terminal_mismatch
+
+#print axioms NearCompression.gkr_bind_values_preserves_checks
+#print axioms NearCompression.gkr_evaluated_path_shape
+#print axioms NearCompression.gkr_evaluated_path_linked
+#print axioms NearCompression.gkr_evaluated_continuation_budget
+#print axioms NearCompression.gkr_evaluated_path_recovered_mismatch

@@ -2799,3 +2799,30 @@ AIR/bus/Wasm/PQ soundness remain open.
 Validation: five new results pass module checks and full check.py (3803
 registered results), with the existing axiom allowlist. Imports, audit, scope,
 integration report and the NOT_PASSED feasibility gate updated.
+
+
+### Evaluated strategy binding and terminal alignment
+
+Added GKREvaluatedStrategy. gkrBindCircuitValues replaces only the analysis
+assignment; raw messages, adaptive strategies and gate data are unchanged.
+gkr_bind_values_preserves_checks proves that verifier message checks do not
+read that assignment. A structural finite-circuit path relation retains raw
+checks, padded cube/gate shape, next-query wiring and transmitted-claim
+linkage, while removing independently supplied layer values/equations.
+
+The evaluated path implies the existing gkrCircuitVerifierPath: per-layer
+values and adjacent evaluations follow from finite execution. Its shape
+theorem derives the exact remaining layer/block count. The recovered terminal
+mismatch adapter therefore no longer takes separate shape, depth or
+assignment-equality premises. A false-root continuation budget is instantiated
+for this evaluated strategy, leaving accepted terminal failures explicit.
+
+Executable parser/compiler refinement must still establish the structural
+checks and AIR output semantics. Full layered challenge sampling must still
+be mapped to the selected joint PCS experiment before substituting its merged
+near/far bound. Commitment authentication, global AIR/bus/Wasm soundness and
+quantum compilation remain open.
+
+Validation: five new results pass module checks and full check.py (3808
+registered results), with the existing axiom allowlist. Imports, audit, scope,
+integration evidence and NOT_PASSED gate updated.
