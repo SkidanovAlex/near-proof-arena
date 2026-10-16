@@ -216,7 +216,9 @@
     "NearCompression/DecodedFormulaCircuit.lean",
     "results/decoded-formula-circuit-integration.json",
     "NearCompression/DecodedSelectorBinding.lean",
-    "results/decoded-selector-binding-integration.json"
+    "results/decoded-selector-binding-integration.json",
+    "NearCompression/HistoryDecodedEnvironment.lean",
+    "results/history-decoded-environment-integration.json"
   ],
   "requirements": [
     {

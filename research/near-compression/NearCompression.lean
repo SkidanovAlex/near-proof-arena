@@ -1435,3 +1435,5 @@ import NearCompression.FormulaEnvironmentTransport
 import NearCompression.DecodedFormulaCircuit
 
 import NearCompression.DecodedSelectorBinding
+
+import NearCompression.HistoryDecodedEnvironment

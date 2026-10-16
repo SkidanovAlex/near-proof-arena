@@ -5564,3 +5564,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.decoded_common_point_environment
 #print axioms NearCompression.decoded_common_point_mixture
 #print axioms NearCompression.decoded_selector_regressions
+
+#print axioms NearCompression.gkr_table_history_point_length
+#print axioms NearCompression.gkr_table_history_lane_alignment
+#print axioms NearCompression.gkr_table_history_point_unpadded
+#print axioms NearCompression.history_decoded_environment
+#print axioms NearCompression.history_decoded_mixture
+#print axioms NearCompression.history_decoded_formula_outputs
+#print axioms NearCompression.history_decoded_regressions

@@ -3421,3 +3421,24 @@ Python replay are not formally refined. Selector products do not uniquely bind
 a point (for example coordinate permutations preserve them). Lane alignment,
 intended formula generation, global execution/soundness, quantum security and
 secure full-NEAR size remain open. Gate remains NOT_PASSED.
+
+### Chronological history derives common table rowpoints
+
+HistoryDecodedEnvironment eliminates the separate lane-alignment premise when
+using gkrHistoryRowpoints: source/auxiliary lanes inherit rowOffset and rowLog
+from table metadata regardless of packing/group. Total table point extraction
+has exactly rowLog entries; checked metadata and complete chronological history
+length prove these are actual history entries, not zero-padding.
+
+Selector-checked decoded environments and mixtures therefore agree with the
+common-point row environment. An all-table theorem transports decoded formula
+outputs to historyRowFormulaOutputs with unchanged order, weights and claims.
+This output identity can be substituted directly into the recovered circuit
+identity. It does not authenticate history or prove its transcript derivation.
+
+Kernel regressions cover nonzero offsets, partial source/auxiliary lanes, short
+history padding, changed offsets and out-of-dimension zero. Full check.py passed
+3906 registered results with the existing axiom allowlist. No native code
+changed. Executable history/metadata refinement, intended formula generation,
+execution and global/PQ soundness remain open; gate NOT_PASSED. Secure full-NEAR
+capacity and sub300000-byte feasibility are not established.
