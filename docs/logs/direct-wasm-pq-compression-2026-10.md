@@ -4631,3 +4631,25 @@ secure size and full 1 Pgas remain open; gate remains NOT_PASSED.
 
 Validation: full `check.py` PASS (4095 registered results), existing axiom
 allowlist. No native captures rerun for formal-only composition.
+
+### Concrete checked selector enters prepared acceptance budget
+
+`prepared_checked_history_budget` instantiates the history partition with
+`twoTableAuxiliaryBranch` on earlier fixed traces and formula lists. Accepted
+witnesses supply source/coordinate binding and equal claimed final products;
+bus residual validity is derived on the none branch from exact formula checks.
+`table_local_all_constraints_zero` derives explicit and multiplicity-bit source
+residual validity directly from TableLocal, removing a redundant premise.
+
+The result preserves bus + local0 + local1 + joint failure scaling and counts
+the shared downstream failure once. The actual restricted local budgets and
+PCS budget still need substitution, and the accepted decoded bindings/final
+equality still need native-verifier derivation. Source-invalid cases remain
+separate. This is conditional composition, not full acceptance certification.
+
+Next: instantiate selected-table local/GKR/PCS bounds on these precise branch
+experiments. Native Ext8 execution, QROM, secure envelope size and full 1 Pgas
+remain open; slice gate remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4097 registered results), existing axiom
+allowlist. Native captures not rerun for this formal-only change.

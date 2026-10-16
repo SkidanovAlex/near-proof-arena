@@ -1547,3 +1547,4 @@ import NearCompression.HistoryBranchBudget
 import NearCompression.PreparedHistoryBranchBudget
 import NearCompression.HistoryFixedCoordinates
 import NearCompression.TwoTableAuxiliaryBranch
+import NearCompression.PreparedCheckedHistoryBudget

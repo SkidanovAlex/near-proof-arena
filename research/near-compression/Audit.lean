@@ -5858,3 +5858,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.selected_auxiliary_decoded_witness
 
 #print axioms NearCompression.unselected_auxiliary_decoded_bus_validity
+
+#print axioms NearCompression.table_local_all_constraints_zero
+
+#print axioms NearCompression.prepared_checked_history_budget
