@@ -1566,3 +1566,5 @@ import NearCompression.BusFormulaReplacement
 import NearCompression.RateShiftQuerySharpness
 import NearCompression.WeightedFoldDoomed
 import NearCompression.CheckedFoldEscape
+
+import NearCompression.CheckedHistoryEscape

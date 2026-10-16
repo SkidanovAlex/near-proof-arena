@@ -5517,3 +5517,35 @@ This accelerates experiments on recursive compression components; it does
 not advance the security bound or prove Rust refinement. No Lean changes;
 4133-theorem audit remains latest. Full recursive composition, secure
 parameters, <300k envelope and full NEAR scope remain open; gate NOT_PASSED.
+
+### Actual adaptive prefix-to-prefix fold escape composition
+
+Added CheckedHistoryEscape.lean. The previous CheckedFoldEscape result used
+absence/presence of candidates inside one completed transcript. The new event
+uses absence in strategy(history), presence in strategy(history++[challenge]),
+and literal local fold checks in the latter. This distinguishes state binding
+from an assumed semantic candidate-preservation statement.
+
+indexed_candidate_snapshot_congr derives equality of the indexed candidate
+predicate from fixed extraction snapshot plus fixed parent weights and claim.
+The snapshot supplies the consistency measure, source oracle and root; no
+whole future transcript equality is imposed. checked_history_escape_bound
+then derives the per-prefix count <=max(nextDomainSize,2), including rejecting
+invalid prechallenge branches. checked_history_adaptive_escape_budget composes
+these conditional counts across a full adaptive history tree with uniform
+limit L: failingLeaves*|sample| <=rounds*L*|sample|^rounds. The strategy and
+next oracle are arbitrary; only sampled continuations require the bindings.
+
+Explicit premises: distinct uniform ideal challenge sample, size/degree
+halving, positive domains, 2!=0, the existing strict 2*N0+D0<3*T regime,
+prechallenge snapshot/parent weights/claim binding and literal sampled
+challenge values. No Johnson code-switch improvement or cryptographic
+binding is silently inferred. The budget counts escape events, not verifier
+acceptance. Initial doom, terminal/query rejection, executable transcript
+causality, Merkle binding and QROM composition remain to be discharged.
+
+Validation: full check.py passed4136 theorem/axiom and boundary checks,
+/tmp/checked-history-escape-audit.log. Registered module, public axiom audits
+and scope inventory; only allowed propext/Classical.choice/Quot.sound.
+No prover/proof-size change; feasibility gate remains NOT_PASSED. Host coverage
+remains65/75 with10real-gated names; capacity gap remains290x versus1Pgas.
