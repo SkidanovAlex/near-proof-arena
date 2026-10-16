@@ -283,7 +283,9 @@
     "NearCompression/DecodedAdaptiveBus.lean",
     "results/decoded-adaptive-bus-integration.json",
     "NearCompression/SourceAcrossAuxiliary.lean",
-    "results/source-across-auxiliary-integration.json"
+    "results/source-across-auxiliary-integration.json",
+    "NearCompression/FixedDecodedSourceTrace.lean",
+    "results/fixed-decoded-source-trace-integration.json"
   ],
   "requirements": [
     {

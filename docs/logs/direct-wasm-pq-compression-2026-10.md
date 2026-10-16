@@ -4035,3 +4035,18 @@ the adaptive bus bound remain, together with native authentication, formula
 refinement, global counts and QROM security.
 Full check.py passed 4023 registered results with the existing axiom allowlist.
 No native/size changes; gate NOT_PASSED.
+
+### One base source trace for all eligible auxiliary choices
+
+FixedDecodedSourceTrace assembles scalar source uniqueness, base descent and
+cell provenance into a single base-field trace shared by every eligible
+decoded auxiliary choice. Fixed row logs and live source-column equality are
+derived; auxiliary cells are unrestricted. No eligible choice is required to
+exist, and absent-representative choices remain a separate failure branch.
+The trace can be used directly by the decoded adaptive-bus family theorem.
+
+Instantiation of scalar proximity and provenance from concrete metadata and
+joint tuples remains, as do auxiliary residual/native authentication bindings
+and global/PQ soundness. Selection remains ideal-model classical choice.
+Full check.py passed 4025 registered results with the existing axiom allowlist.
+No native/size changes; gate NOT_PASSED.

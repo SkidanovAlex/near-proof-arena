@@ -410,6 +410,7 @@ SOURCES = [
     "research/near-compression/NearCompression/DecodedBaseTrace.lean",
     "research/near-compression/NearCompression/DecodedAdaptiveBus.lean",
     "research/near-compression/NearCompression/SourceAcrossAuxiliary.lean",
+    "research/near-compression/NearCompression/FixedDecodedSourceTrace.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",

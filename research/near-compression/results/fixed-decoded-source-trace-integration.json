@@ -1,0 +1,37 @@
+{
+  "status": "ONE_BASE_SOURCE_TRACE_FOR_ALL_ELIGIBLE_AUXILIARY_CHOICES",
+  "module": "NearCompression/FixedDecodedSourceTrace.lean",
+  "theorems": [
+    "fixed_decoded_base_source_trace",
+    "fixed_source_decoded_bus_family"
+  ],
+  "proved": [
+    "Typed fixed source oracles, uniform scalar proximity and polynomial cell provenance construct one base trace shared by all eligible decoded auxiliary traces.",
+    "The trace retains fixed row logs and matches every live source column; no auxiliary-column equality is required.",
+    "Residual-valid later decoded witnesses imply adaptive bus acceptance for that same source trace."
+  ],
+  "assumptions": [
+    "Distinct base-valued domain, fixed typed source functions, degree bound and unique-decoding separation.",
+    "Live-column polynomial provenance and fixed row logs for every eligible decoded trace.",
+    "Auxiliary residual validity and final-product equality for bus acceptance remain explicit."
+  ],
+  "limitations": [
+    "Selection is noncomputable ideal-model analysis, not extraction from unknown commitments.",
+    "Absent-representative choices are not declared valid or discarded from the global soundness goal."
+  ],
+  "remaining": [
+    "Instantiate scalar proximity/provenance from concrete joint representative families and metadata.",
+    "Discharge auxiliary formula/native authentication bindings and compose global acceptance errors.",
+    "QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4025,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; fixed-source trace construction only."
+  }
+}

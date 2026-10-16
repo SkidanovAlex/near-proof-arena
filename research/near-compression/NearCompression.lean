@@ -1501,3 +1501,5 @@ import NearCompression.DecodedBaseTrace
 import NearCompression.DecodedAdaptiveBus
 
 import NearCompression.SourceAcrossAuxiliary
+
+import NearCompression.FixedDecodedSourceTrace
