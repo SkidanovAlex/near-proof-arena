@@ -320,7 +320,10 @@
     "NearCompression/BusCoordinateCoverage.lean",
     "results/bus-coordinate-coverage-integration.json",
     "NearCompression/NativeStyleCoordinateAccumulation.lean",
-    "results/native-style-coordinate-accumulation-integration.json"
+    "results/native-style-coordinate-accumulation-integration.json",
+    "airbender/direct-wasm/test_ext8_bus_formulas.py",
+    "results/ext8-bus-formulas.json",
+    "results/ext4-formula-generator-regression.json"
   ],
   "requirements": [
     {
@@ -502,5 +505,6 @@
   "bus_coordinate_formula_lowering": "PROVED_CONDITIONALLY: lowerBusCoordinates reconstructs logical Ext8 auxiliary operands from eight coordinate columns, preserves row evaluation and does not increase local degree. Decoded transport requires base-valued coordinates; native generator refinement and live auxiliary typing remain open.",
   "bus_coordinate_typing": "PROVED_CONDITIONALLY: bounded formula-read typing replaces all-trace base-valuedness; typed joint representative descent discharges it under coordinate provenance. Reconstructed auxiliary violations transfer to decoded combined residuals for the coordinate-lowered list. Native generator/coverage authentication and final event composition remain open.",
   "bus_coordinate_coverage": "PROVED_CONDITIONALLY: logical width bound derives sourceWidth+8*auxCount physical coverage; zipped typed-representative provenance supplies coordinate descent. Inspected native formula/reconstruction path remains Ext4, with different AST association/order, so no native Ext8 refinement is claimed.",
-  "native_style_coordinate_semantics": "PROVED: candidate Ext8 native-style left accumulation with coordinate*basis terms equals the formal lowering, with degree/read bounds. This resolves association/multiplication-order semantics, not native Ext8 slice implementation or generator refinement."
+  "native_style_coordinate_semantics": "PROVED: candidate Ext8 native-style left accumulation with coordinate*basis terms equals the formal lowering, with degree/read bounds. This resolves association/multiplication-order semantics, not native Ext8 slice implementation or generator refinement.",
+  "ext8_formula_generator_candidate": "EXECUTABLE_COMPONENT_VALIDATED: expected formula generator accepts explicit Ext8 arithmetic and coordinate degree; register checker supports 8-word literals/coordinates. 24 synthetic cases, 192 independent residual comparisons, 576 mutations rejected, 40 exact legacy Ext4 AST comparisons. No native Ext8 prover/GKR compiler capture, universal generator refinement, secure proof size or security certification."
 }

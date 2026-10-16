@@ -12,29 +12,36 @@ def plus(a,b):return ['add',a,b]
 def minus(a,b):return ['sub',a,b]
 def times(a,b):return ['mul',a,b]
 
-def expr(e,public):
+def expr(e,public,field=None):
+    lift=base if field is None else field.base
+    zero=ZERO if field is None else field.ZERO
     op=e[0]
-    if op=='c':return lit(base(e[1]))
-    if op=='p':return lit(base(public[e[1]] if e[1]<len(public) else 0))
+    if op=='c':return lit(lift(e[1]))
+    if op=='p':return lit(lift(public[e[1]] if e[1]<len(public) else 0))
     if op=='v':return ['next' if e[2] else 'current',e[1]]
     if op in ('first','last','trans'):return [op]
-    if op=='-':return minus(lit(ZERO),expr(e[1],public))
-    return (plus if op=='+' else times)(expr(e[1],public),expr(e[2],public))
+    if op=='-':return minus(lit(zero),expr(e[1],public,field))
+    return (plus if op=='+' else times)(expr(e[1],public,field),expr(e[2],public,field))
 
-def expected(table,public,alpha,gamma,finals):
+def expected(table,public,alpha,gamma,finals,field=None):
+    # Explicit candidate arithmetic; default preserves the active Ext4 ABI.
+    zero,one,lift,multiply,basis_values = ((ZERO,ONE,base,mul,BASIS) if field is None else
+        (field.ZERO,field.ONE,field.base,field.mul,
+         tuple(tuple(int(i==j) for j in range(len(field.ZERO))) for i in range(len(field.ZERO)))))
+    coordinate_degree=len(zero)
     interactions=table['interactions'];chains=sum(2*max(0,len(i['mult'])-1) for i in interactions)
     order=[i for i,x in enumerate(interactions) if x['send']]+[i for i,x in enumerate(interactions) if not x['send']]
     require(len(finals)==len(order),'final shape');width=table['width'];residuals=[];factors=[];offset=0
     def aux(index,nxt=False):
-        value=lit(ZERO)
-        for j,basis in enumerate(BASIS):value=plus(value,times(['next' if nxt else 'current',width+4*index+j],lit(basis)))
+        value=lit(zero)
+        for j,basis in enumerate(basis_values):value=plus(value,times(['next' if nxt else 'current',width+coordinate_degree*index+j],lit(basis)))
         return value
     for ii,interaction in enumerate(interactions):
-        fp=lit(ZERO);weight=ONE
-        for e in interaction['msg']:fp=plus(fp,times(expr(e,public),lit(weight)));weight=mul(weight,alpha)
-        fp=plus(fp,lit(mul(base(interaction['bus']+1),weight)));p0=minus(lit(gamma),fp);bits=[expr(e,public) for e in interaction['mult']]
-        if not bits:factors.append(lit(ONE));continue
-        first=plus(lit(ONE),times(bits[0],minus(p0,lit(ONE))))
+        fp=lit(zero);weight=one
+        for e in interaction['msg']:fp=plus(fp,times(expr(e,public,field),lit(weight)));weight=multiply(weight,alpha)
+        fp=plus(fp,lit(multiply(lift(interaction['bus']+1),weight)));p0=minus(lit(gamma),fp);bits=[expr(e,public,field) for e in interaction['mult']]
+        if not bits:factors.append(lit(one));continue
+        first=plus(lit(one),times(bits[0],minus(p0,lit(one))))
         if len(bits)==1:factors.append(first);continue
         k=len(bits)-1;ps=[aux(offset+j) for j in range(k)];pis=[aux(offset+k+j) for j in range(k)]
         for j in range(k):
@@ -42,25 +49,25 @@ def expected(table,public,alpha,gamma,finals):
             residuals.append(dict(kind='square',interaction=ii,step=j,formula=minus(ps[j],times(prev,prev))))
         for j in range(k):
             prev=first if j==0 else pis[j-1]
-            residuals.append(dict(kind='multiplicity-link',interaction=ii,step=j,formula=minus(pis[j],times(prev,plus(lit(ONE),times(bits[j+1],minus(ps[j],lit(ONE))))))))
+            residuals.append(dict(kind='multiplicity-link',interaction=ii,step=j,formula=minus(pis[j],times(prev,plus(lit(one),times(bits[j+1],minus(ps[j],lit(one))))))))
         factors.append(pis[-1]);offset+=2*k
     require(offset==chains,'chain offset')
     for j,ii in enumerate(order):
         a,an=aux(offset+j),aux(offset+j,True);factor=times(a,factors[ii])
-        for kind,formula in [('first',times(['first'],minus(a,lit(ONE)))),('transition',times(['trans'],minus(an,factor))),('last',times(['last'],minus(factor,lit(finals[j]))))]:
+        for kind,formula in [('first',times(['first'],minus(a,lit(one)))),('transition',times(['trans'],minus(an,factor))),('last',times(['last'],minus(factor,lit(finals[j]))))]:
             residuals.append(dict(kind=kind,interaction=ii,accumulator=j,formula=formula))
     return residuals,chains+len(order)
 
-def validate_formula(formula,index,ins,width,counts):
+def validate_formula(formula,index,ins,width,counts,coordinate_degree=4):
     require(type(index)is int and 0<=index<len(ins),'formula register index');op=formula[0];row=ins[index];counts[op]=counts.get(op,0)+1
     if op=='lit':require(row==[0,0,0,*formula[1]],'literal formula')
     elif op in ('current','next'):
         require(type(formula[1])is int and 0<=formula[1]<width,'aux column bound')
-        require(row==[1 if op=='current' else 2,formula[1],0,0,0,0,0],'coordinate formula')
-    elif op in ('first','last','trans'):require(row==[{'first':3,'last':4,'trans':5}[op],0,0,0,0,0,0],'boundary selector')
+        require(row==[1 if op=='current' else 2,formula[1],0,*([0]*coordinate_degree)],'coordinate formula')
+    elif op in ('first','last','trans'):require(row==[{'first':3,'last':4,'trans':5}[op],0,0,*([0]*coordinate_degree)],'boundary selector')
     else:
-        require(op in ('add','sub','mul') and len(formula)==3,'formula shape');require(row[0]=={'add':6,'sub':7,'mul':8}[op] and row[3:]==[0]*4,'arithmetic formula')
-        validate_formula(formula[1],row[1],ins,width,counts);validate_formula(formula[2],row[2],ins,width,counts)
+        require(op in ('add','sub','mul') and len(formula)==3,'formula shape');require(row[0]=={'add':6,'sub':7,'mul':8}[op] and row[3:]==[0]*coordinate_degree,'arithmetic formula')
+        validate_formula(formula[1],row[1],ins,width,counts,coordinate_degree);validate_formula(formula[2],row[2],ins,width,counts,coordinate_degree)
 
 def main():
     global ZERO,ONE,base,mul,BASIS

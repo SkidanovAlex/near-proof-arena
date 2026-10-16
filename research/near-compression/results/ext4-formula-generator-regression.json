@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "legacy_commit": "59c3833bd5709a2b890aae4ea8ff0185903b77e2",
+  "legacy_source_sha256": "c5954f249cd48f7d37032052dcf656214d8528f7be244aaf12bf8e65475db2b9",
+  "exact_formula_cases": 40,
+  "scope": "Exact default Ext4 AST/layout equivalence with previous generator over deterministic synthetic inputs; not an end-to-end prover test."
+}

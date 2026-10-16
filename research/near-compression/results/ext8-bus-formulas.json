@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "cases": 24,
+  "residual_value_comparisons": 192,
+  "register_mutation_rejections": 576,
+  "scope": "Ext8 candidate formula generation and independent row semantics; no prover/security/refinement claim.",
+  "source_sha256": {
+    "test_ext8_bus_formulas.py": "c594e52673286dcb93a6400c95a4842528211e29b8c73c4dc1d3ef704987fbe8",
+    "check_bus_program_formulas.py": "97b5b82d0759143c776810a5b2aec7ed428c99bad54a24e25b88b288113f5807",
+    "pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a"
+  }
+}

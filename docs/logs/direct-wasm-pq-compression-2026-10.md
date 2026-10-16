@@ -4428,3 +4428,25 @@ failure/event composition. QROM, secure size and full 1 Pgas remain open.
 
 Validation: full `check.py` PASS (4077 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only change.
+
+### Executable Ext8 auxiliary formula candidate
+
+Parameterized `check_bus_program_formulas.expected`/source-expression lowering
+with explicit arithmetic and derived coordinate degree; default Ext4 behavior
+is retained. `validate_formula` supports an explicit coordinate degree while
+retaining its default four-word ABI. Ext8 tests use the existing certified-layout
+arithmetic adapter and an independent direct row evaluator with tuple-slice
+reconstruction, rather than evaluating a second copy of the generated AST.
+
+Validation: 24 Ext8 cases covering 0/1/2/4 multiplicity bits, zero/random bus
+challenges, arbitrary selectors and coordinate values; 192 residual value
+comparisons and 576 rejected opcode/literal/column mutations. 40 exact default
+Ext4 formula/layout comparisons against commit `59c3833bd`'s generator passed
+(using deterministic synthetic arithmetic inputs). Full `check.py` PASS
+(4077 registered formal results); no Lean theorem changed.
+
+This is executable formula generation/register validation, not a full Ext8
+native GKR/prover capture or a universal Python-to-Lean refinement theorem.
+Next: generated-formula/certificate binding to Lean, full Ext8 slice profile
+integration and remaining event composition. QROM, secure sub-300 KB and full
+1 Pgas execution remain open.
