@@ -9199,3 +9199,32 @@ then useful-branch forcing and coverage. Source separability at a suitable
 initial slice still requires proof. Full MCA and protocol/QROM composition
 remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Safe long division for extension specialization
+
+Added RegularPolynomialDivision.lean with five audited public theorems.
+Coefficient regularity at a parameter point is preserved under polynomial
+addition, subtraction and multiplication. Long division produces regular
+quotient and remainder coefficients when the divisor's specialized leading
+coefficient is nonzero. The proof follows the actual degree-reducing
+corrections and uses partial reciprocal specialization only at that leading
+value. Constant divisors, zero input and trailing zeros are supported.
+
+For an exactly divisible regular input, reduced-residue uniqueness forces
+the regular remainder to zero, yielding a regular quotient even if the
+original divisibility witness had a pole-bearing representation. This
+removes the hidden-quotient-pole obstacle to representative-independent
+algebraic-extension specialization. The latter composition remains next;
+no total evaluation homomorphism on the rational-function field is claimed.
+
+Validation:220 regular rational-function divisions,112 exact divisions,
+360 safe output coefficients and73 constant divisors, checked against
+independent numeric division after specialization. Four examples with a
+vanishing specialized leading coefficient force quotient poles. Full audit4603
+PASS, allowed axioms only. Evidence: results/regular-polynomial-division/.
+
+Next: prove equivalent regular residue representatives have the same value
+at a specialized modulus root, then compose extension operations and lifting.
+Parameter-degree control/useful-branch coverage and protocol/QROM composition
+remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

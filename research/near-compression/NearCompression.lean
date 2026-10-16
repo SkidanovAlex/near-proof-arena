@@ -1756,3 +1756,5 @@ import NearCompression.FactorCollisionGuard
 import NearCompression.SquarefreeFactorCertificates
 
 import NearCompression.SeparableFactorSelection
+
+import NearCompression.RegularPolynomialDivision

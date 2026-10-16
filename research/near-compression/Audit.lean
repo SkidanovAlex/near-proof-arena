@@ -6495,3 +6495,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.separable_source_smooth_extension_exists
 #print axioms NearCompression.initial_polynomial_field_transport
 #print axioms NearCompression.separable_initial_extension_hensel_exists
+
+#print axioms NearCompression.rational_polynomial_regular_add
+#print axioms NearCompression.rational_polynomial_regular_sub
+#print axioms NearCompression.rational_polynomial_regular_mul
+#print axioms NearCompression.rational_polynomial_regular_division
+#print axioms NearCompression.rational_polynomial_regular_exact_quotient
