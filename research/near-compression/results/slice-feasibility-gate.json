@@ -21,7 +21,9 @@
     "NearCompression/BusTaggedChallengeBound.lean",
     "results/pq384-code-table-long193/bus-encoding-report.json",
     "NearCompression/BusTraceMultiset.lean",
-    "results/bus-trace-multiset-integration.json"
+    "results/bus-trace-multiset-integration.json",
+    "NearCompression/BusTraceChallengeBound.lean",
+    "results/bus-trace-challenge-integration.json"
   ],
   "requirements": [
     {
@@ -40,7 +42,7 @@
       "name": "Complete soundness ledger",
       "status": "INCOMPLETE",
       "needed": "Close all algebraic/commitment/transcript reductions. Quantify the 128-bit quantum resource target and compiler constants; interactive tails alone do not pass.",
-      "established": "Audited joint ideal fingerprint/grand-product challenge bound for fixed unequal expanded message multisets, including distinct support versus natural multiplicity budgets. Conservative actual slice budget: numerator 8589975831 over field cardinality; Ext4 gives 90.63 ideal bits, Ext8 214.26. Concrete adapter, extraction, other protocol errors and quantum compiler remain open. Variable-length nonzero-tag padding and unpadded joint bound now proved over any field; 1560 public-record encoding checks pass for Ext4/Ext8. Natural bus-count/source-trace adapter remains open. Exact trace/public natural bus-count-to-multiset permutation equivalence proved for arbitrary field public vectors. This bypasses the older transcript model whose pubOf maps individual bytes. Injective extension encoding of these concrete messages and source extraction remain open."
+      "established": "Exact natural bus imbalance now composes with variable-length nonzero-tag fingerprints and joint ideal challenge counting, including a concrete certified BabyBear/Ext8 instantiation. Public inputs are arbitrary field vectors. Conservative actual slice budget remains numerator 8589975831 over field cardinality (Ext4 90.63 ideal bits, Ext8 214.26); formal support/size discharge, common authenticated trace, auxiliary/local/PCS errors and quantum compiler remain open."
     },
     {
       "name": "Complete bytes and scaling",

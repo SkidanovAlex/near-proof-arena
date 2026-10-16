@@ -1668,3 +1668,9 @@ Full check.py audit passed3592 theorems (/tmp/root-slice-tagged-audit.log). chec
 Added BusTraceMultiset.lean with expanded per-row/table natural traffic plus public messages, an exact count theorem, and balance iff permutation. All three new public theorems audited; check.py passed3595 (/tmp/root-slice-trace-multiset-audit.log). This works directly with Trace F and List F public inputs. The existing Udr transcript pubOf maps individual claim bytes to field elements and cannot be silently used to represent this slice’s large field-valued public limbs.
 
 The exact count-to-multiset step is now closed independently of transcript decoding. Still required: injective bounded-tag/base-field embedding into extension messages, common committed source extraction, actual auxiliary/global-product correspondence, and complete local/PCS/QROM soundness. No executable security profile, size, or full NEAR coverage change.
+
+### Natural trace imbalance to concrete Ext8 fingerprint bound
+
+Added BusTraceChallengeBound.lean: injective payload embedding and bounded tags preserve raw bus/message identities; a locally injective mapping preserves unequal multisets; the concrete natural imbalance theorem composes with the tagged joint bound. Certified Fp8.ofBase and natural bus+1 tags satisfy the premises for bus<P-1, and bus_trace_fp8_joint_bound discharges those encoding assumptions. This field is the certified BabyBear x^8-11 extension.
+
+Full check.py audit passed3599 public theorems (/tmp/root-slice-trace-challenge-audit.log). Fixed source trace/public vector, support coverage and shape, and distinct challenge samples remain explicit. Formal actual-slice support/mass budgets, source extraction, actual auxiliary/global products, local/PCS soundness and QROM are still required. No change to the executable Ext4 profile or proof size.

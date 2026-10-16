@@ -50,7 +50,7 @@ def main():
     result['theorem'] = 'NearCompression.bus_joint_challenge_bound'
     result['conditions'] = [
         'Same fixed source trace/messages before alpha and gamma; commitment extraction not supplied',
-        'Variable-width nonzero-tag padding proved in BusTaggedChallengeBound; natural bus-count/source-trace adapter pending',
+        'Natural trace-count/Ext8 tagged-fingerprint composition proved in BusTraceChallengeBound; formal support/size discharge and authenticated extraction pending',
         'Auxiliary gates and final products correspond to expanded natural multiplicities',
         'Independent uniform field challenges; executable hash sampler and QROM not covered']
     result['interpretation'] = 'Upper error bound only, not an attack or lower bound on achievable security. Ext4 budget cannot certify 128 ideal bits via this bound; Ext8 budget alone does not certify quantum security.'
