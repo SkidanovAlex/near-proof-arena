@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "lean_audit": 4214,
+  "files": {
+    "research/near-compression/NearCompression/SeparableCoefficientClaim.lean": "c5b1469e065b853387b18af62937a405e5a32ed74cd6147c882162678275ed29",
+    "research/near-compression/airbender/direct-wasm/ext8_coefficient_claim_contract.py": "9137d75d89074dfc7d34a421fb42729e3dce6443370f3b82ec1c9fb53ed21f5d",
+    "research/near-compression/airbender/direct-wasm/test_ext8_coefficient_contract.py": "280c5e5b877238c5e7a30809d186ed776eb6548bdc6a1ba6f2dc694e1486a472",
+    "research/near-compression/airbender/direct-wasm/test_ext8_coefficient_contract_execution.py": "b95221bca48845f3c3a56a5a39beb368221dec83c5fde2e741dc7a4fc0881518",
+    "research/near-compression/results/ext8-coefficient-contract.json": "3290b0deabdd9378ae160cdf6b3fcd3047bbbeb7fc4209ab149ea272b7a926f3",
+    "research/near-compression/results/ext8-coefficient-contract-execution.json": "215b0d2129509d8cf4d18011c47875bb35813eba1271750b4d690a3e7703bbcd"
+  },
+  "scope": "Independent witness-side contraction; full affine proof above was generated before this acceleration was integrated."
+}

@@ -6755,3 +6755,50 @@ full canonical roundtrip/re-encode, fresh verifier, 10 negative cases, and exact
 byte equality to retained results/ext8-compression-q309/compression.bin. Report
 results/ext8-baseline-profile-codec.json. The additional relabelled-header case
 was tested separately and retained above. Affine run43126 remains live.
+
+
+### 2026-10-16: complete affine Ext8 slice and faster independent contraction
+
+Full affine run43126 is TERMINAL PASS. Fresh complete local/GKR/PCS verification,
+canonical envelope roundtrip/re-encode, fresh same-root call/compression
+conjunction and 11 malformed/tampered/profile cases pass. Measurement60544 and
+codec74789 are also TERMINAL PASS. Do not restart these runs.
+
+Retained results/ext8-affine-q309/ contains envelope, compressed statement and
+reduction, prover/codec/measurement reports and verification logs plus manifest.
+Actual byte accounting (baseline -> affine):
+- GKR scalars:111616 ->38144; 58 ->20 layers.
+- Compression reduction/framing:117352 ->43880.
+- PCS opening:1636192 ->1644656 (changed transcript/query paths).
+- Compression envelope:1753544 ->1688536.
+- Same-root call proof103064, receipt731, calls5858 unchanged.
+- Combined:1863197 ->1798189, saving65008 bytes (3.489%).
+Static AIR/spec excluded as before. Result remains5.994x300000; no full NEAR,
+recursive verifier, PQ128/QROM or complete proximity-soundness claim. q309 is a
+comparison profile, not a certified128-bit setting. Slice feasibility gate
+remains NOT_PASSED. PCS now dominates the residual size.
+
+Measured local proving24.630s, GKR81.866s, PCS137.838s and PCS verification0.949s.
+The earlier baseline was GKR156.115s and PCS332.411s; this run also includes the
+previous native tensor-weight optimization, so do not attribute every timing
+change to terminal balancing or treat these single runs as controlled benchmarks.
+The prover source at launch is equivalent to fc7c85f07 and used the slow tensor
+coefficient check; later contraction integration was not used for this proof.
+
+During the run, added an independent separable coefficient-claim implementation.
+It retains Python Mobius conversion and contracts base-field coefficients with
+two row-weight vectors before multiplying by column weights, avoiding the large
+Ext8 weight tensor. 36 small cases agree with both the old tensor method and
+direct cyclic-row evaluation. Actual2048x128 lane:5.476s ->0.471s (11.64x
+microbenchmark only). All8 actual source/auxiliary branches sum to the independently
+verified GKR input claim; contraction19.030s, full standalone validation84.186s.
+Report results/ext8-coefficient-contract-execution.json; session7420 terminalPASS.
+
+SeparableCoefficientClaim.lean proves the algebraic row-contraction identity;
+full axiom audit4214 PASS. Python integer/Ext8 refinement remains outside the
+lemma. Future prover diagnostics default to --coefficient-check contract;
+--coefficient-check tensor retains the independent slower reference. This only
+changes the witness-side check, not verifier acceptance or proof bytes. The
+new path was exercised on all actual branches; no redundant full proof rerun
+was needed for replacing that check. All work remains directed at full1Pgas,
+hash-only PQ128 succinct state transitions, which are not yet achieved.

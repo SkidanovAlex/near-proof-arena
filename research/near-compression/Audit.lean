@@ -6037,3 +6037,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_weighted_heap_rebuild
 
 #print axioms NearCompression.terminal_weighted_leaf_route
+
+#print axioms NearCompression.separable_coefficient_claim

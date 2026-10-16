@@ -1612,3 +1612,5 @@ import NearCompression.TerminalWeightedExpansion
 import NearCompression.TerminalWeightedAggregation
 
 import NearCompression.TerminalHeapBalance
+
+import NearCompression.SeparableCoefficientClaim

@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "prover_source_equivalent_revision": "fc7c85f07",
+  "prover_coefficient_check": "tensor reference; contraction introduced only after this run",
+  "launch_command": "HEAVY_MEM=12G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 airbender/direct-wasm/test_ext8_execution_reduction.py --statement /tmp/nearproof-ext8-node-native-v2/statement.json --source-directory /tmp/nearproof-ext8-node-batch --compression-receipt /tmp/nearproof-ext8-node-batch/expected-use.json --pcs-queries 309 --terminal-profile affine-v1 --capture-dir /tmp/ext8-affine-q309 --output /tmp/ext8-affine-q309-report.json",
+  "source_report": "prover-report.json.gz records hashes for all four source row files",
+  "files": {
+    "research/near-compression/results/ext8-affine-q309/compression.bin": "17a9cc611d1b292ce7ee211c7da7820b586a895d8596f8651c0860731c48c2ab",
+    "research/near-compression/results/ext8-affine-q309/reduction.json.gz": "1f4306122af14d84825404a766e1ce98ab9cac190cd38e171dd2e40cb1ba5944",
+    "research/near-compression/results/ext8-affine-q309/prover.log": "bc1117d948634e7b1938f3ddf0fbc52b4c0e608bc9f9f7fa8d66bf150b8f76ab",
+    "research/near-compression/results/ext8-affine-q309/codec-test.log": "37f36a3742dbe9a9f0f8f30578bc6406fa8c090a74f8f127491f6c330f407d3a",
+    "research/near-compression/results/ext8-affine-q309/report.json": "7843e569b45b7812ca61edbefaad7783519bdb66bda6c9caf7566ed3f926921f",
+    "research/near-compression/results/ext8-affine-q309/prover-report.json.gz": "da56d911326aa7d2c8dd1ecea0df6410514ef2ad97834d1f78af9c682946f216",
+    "research/near-compression/results/ext8-affine-q309/complete-verifier.log": "bc7facc3d44389e42a156060795b8133eca7cef422356f9603b0d78ff8fa72e3",
+    "research/near-compression/results/ext8-affine-q309/fresh-verifier.log": "f7ed72442c06a4091ddd341c6a4b0063dd1542236fd75527fcac486b31eeb78f",
+    "research/near-compression/results/ext8-affine-q309/codec-report.json": "37f36a3742dbe9a9f0f8f30578bc6406fa8c090a74f8f127491f6c330f407d3a",
+    "research/near-compression/results/ext8-affine-q309/statement.json.gz": "63359e5a690f7c3ae04c222b15eccedaa26f6e3e15c654c23bc38f0028e3981e",
+    "research/near-compression/airbender/direct-wasm/ext8_terminal_profiles.py": "3f39afeef7ff7c5c4e7774eec7a3adc252bf5cd0caf2f49c29faa916a74018e9",
+    "research/near-compression/airbender/direct-wasm/verify_ext8_execution.py": "fda4e90d48d06b6140e8b8fb7af0f85eb14c7d83352d1031cde27e07b29ec39e",
+    "research/near-compression/airbender/direct-wasm/ext8_execution_codec.py": "a1a3f057a21e3e3d5a694539b78ea8096ea5afd9980f9d880b03846d9306e1ef",
+    "research/near-compression/airbender/direct-wasm/measure_ext8_compression_envelope.py": "86cd34847b796a0afc3cb76692840bef0806a89daf1813ba09cc418ef9f0d3ce",
+    "research/near-compression/airbender/direct-wasm/test_ext8_execution_codec.py": "c998caeb7a560bcd307af7e9343a6996a132be5858482850a3bed551096a2f2b",
+    "research/near-compression/results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e",
+    "research/near-compression/results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996",
+    "/tmp/nearproof-ext8-node-batch/expected-use.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "research/near-compression/results/ext8-affine-q309/receipt.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b"
+  },
+  "scope": "Actual Ext8 SHA384 compression/call slice. Not full NEAR, full recursion or PQ128. q309 conditional two-PCS query bound alone is below128 bits; no cryptographic security certification."
+}
