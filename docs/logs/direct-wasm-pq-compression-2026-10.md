@@ -4765,3 +4765,29 @@ remains NOT_PASSED.
 
 Validation: full `check.py` PASS (4110 registered results), existing axiom
 allowlist. Native captures not rerun for formal-only composition.
+
+### Source-valid prepared branch: all numerical terms derived
+
+`ConcretePCSEvidence.lean` packages the existing concrete PCS hypotheses and
+invokes `two_table_concrete_pcs_failure_budget`; it contains no numerical
+failure inequality. `HistoryConcretePCS.lean` lifts that theorem over earlier
+histories. Each history may choose its own source oracles and strategy, but
+oracles are fixed across the subsequent local/PCS draws in its evidence.
+
+`prepared_concrete_soundness_budget` substitutes that history-averaged PCS
+bound into the prepared-Wasm composition. For the locally valid fixed-source
+branch, the actual bus, both selected local/GKR and shared PCS numerical terms
+are now derived. There is no independent numerical error-budget premise.
+
+Substantial semantic premises remain: accepted decoded bindings/final equality,
+exact checks, local/GKR evidence, fixed ideal PCS oracles/projection/geometry,
+authentication, recovered-input binding and accepted-failure event inclusion.
+These need compatible construction from actual verifier artifacts. This is
+not an end-to-end native acceptance theorem or a Fiat-Shamir/QROM theorem.
+
+Next: construct compatible evidence, include fixed-source-invalid cases and
+evaluate the complete ideal bound at candidate parameters. Native Ext8, QROM,
+secure size and full 1 Pgas remain open; gate remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4113 registered results), existing axiom
+allowlist. Native captures not rerun for this formal-only composition.

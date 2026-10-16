@@ -356,7 +356,11 @@
     "NearCompression/TwoTableSelectedGKRComposition.lean",
     "results/two-table-selected-gkr-composition-integration.json",
     "NearCompression/PreparedSelectedGKRBudget.lean",
-    "results/prepared-selected-gkr-budget-integration.json"
+    "results/prepared-selected-gkr-budget-integration.json",
+    "NearCompression/ConcretePCSEvidence.lean",
+    "NearCompression/HistoryConcretePCS.lean",
+    "NearCompression/PreparedConcreteSoundnessBudget.lean",
+    "results/prepared-concrete-soundness-integration.json"
   ],
   "requirements": [
     {
@@ -552,5 +556,6 @@
   "selected_future_gkr_and_reindexing": "PROVED_CONDITIONALLY: selected-table local/GKR bound includes arbitrary later local prefixes; actual evaluated repair and shared accepted-failure count are preserved. Exact selector-filter and both table nesting count identities normalize to common history/first/second/PCS order. Final branch-budget substitution, concrete joint PCS and authenticated binding remain open.",
   "filtered_selected_branch_transfer": "PROVED: exact filtered first/second nesting counts transfer to their shared branch predicates, and supplied branch bounds aggregate with a single shared failure count. Numerical local/GKR/PCS instantiation and native binding remain open; this count-algebra result does not certify acceptance or security.",
   "two_table_selected_gkr_composition": "PROVED_CONDITIONALLY: both filtered local/GKR bounds are invoked from semantic evidence records, yielding computed geometry budgets in the common experiment. Records contain no acceptance inequalities or numeric repair bounds. Valid-auxiliary bus and one shared failure estimate remain inputs; semantic evidence/native binding and concrete PCS substitution remain open.",
-  "prepared_selected_gkr_budget": "PROVED_CONDITIONALLY: full prepared two-table experiment now derives actual prepared-Wasm bus and both selected local/GKR numerical terms, using concrete selector and count transfers. Only shared accepted downstream failure remains a numerical error premise; semantic evidence, native binding and source-validity premises remain. Concrete PCS bus-history lifting and source-invalid composition remain open."
+  "prepared_selected_gkr_budget": "PROVED_CONDITIONALLY: full prepared two-table experiment now derives actual prepared-Wasm bus and both selected local/GKR numerical terms, using concrete selector and count transfers. Only shared accepted downstream failure remains a numerical error premise; semantic evidence, native binding and source-validity premises remain. Concrete PCS bus-history lifting and source-invalid composition remain open.",
+  "prepared_concrete_soundness_budget": "PROVED_CONDITIONALLY: locally-valid fixed-source prepared branch now derives all numerical bus/local/GKR/shared PCS terms. Concrete near/far PCS applies per earlier history and sums once. Semantic and ideal-oracle/authentication evidence, event inclusion and source-validity remain premises. Native evidence construction, source-invalid composition, full parameter evaluation and QROM remain open."
 }

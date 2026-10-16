@@ -1556,3 +1556,6 @@ import NearCompression.SelectedBranchTransfer
 import NearCompression.SelectedGKREvidence
 import NearCompression.TwoTableSelectedGKRComposition
 import NearCompression.PreparedSelectedGKRBudget
+import NearCompression.ConcretePCSEvidence
+import NearCompression.HistoryConcretePCS
+import NearCompression.PreparedConcreteSoundnessBudget
