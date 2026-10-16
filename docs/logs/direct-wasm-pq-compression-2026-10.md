@@ -7124,3 +7124,53 @@ candidate extraction, complete code-switch error budget and QROM composition.
 No full slice rerun or new complete size claim here: last verified combined
 slice1431885 B; full NEAR1Pgas/PQ128 and sub300000 B remain open. Feasibility
 stays NOT_PASSED.
+
+## 2026-10-16 — Original packed commitments feed code-switch tail
+
+Added `ext8_weighted_code_switch.py`. It reuses the original weighted PCS
+public-parameter validation, input sumcheck, beta evaluation, packed source
+contexts and authenticated pair reader. A distinct adapter domain binds its
+externally chosen complete schedule. The first committed scalar is the child
+of a one-bit fold; there is no independently trusted combined-source root.
+
+After input reduction, the prover combines lane coefficients at sparse
+indices i*(D/d), with verifier-derived beta weights. It commits the folded
+child before the OOD draw and authenticates original source pairs at each
+query. For d<D it selects the correct full-domain side and duplicates it;
+for d=D it retains both sides. The verifier sums these branch pairs, derives
+the folded query value, injects query/OOD constraints, and passes the updated
+functional into the scalar code-switch stages. Tail terminal root and claim
+are both checked. Source commitments and their original pair layouts remain
+unchanged in this adapter; queries cannot replace them with a free scalar root.
+
+Four positive cases (queries8/31; separate or mixed pooled/legacy weights)
+pass at source degrees64/8/16. An independent direct-polynomial evaluation
+matches the authenticated combined pair at **256 exhaustive positions**.
+The retained proof passes a fresh process without initial source rows or
+prover caches. Twenty-two negatives cover input sumcheck, first child/round,
+source roots/leaves/paths/order/count, unknown scalar root metadata, tail,
+terminal, canonical scalars, and externally changed weights/claim/schedule.
+These small-fixture query counts and JSON sizes are not a security or full
+slice measurement. Runtime numbers are test timings, not capacity benchmarks.
+
+`WeightedCodeSwitchQuery.lean` adds4 lemmas: affine pair-fold linearity,
+linearity over branch sums, the existing heterogeneous authenticated-source
+projection feeding the switch query, and the folded polynomial evaluation
+when a combined polynomial representation is separately established.
+The arbitrary-oracle projection lemma does not require honest polynomials;
+the polynomial conclusion explicitly does. These are algebraic composition
+lemmas, not a proof that hash authentication establishes low degree.
+Full audit **4242 PASS**; evidence/replay in
+`research/near-compression/results/ext8-weighted-code-switch/manifest.json`.
+
+The adapter currently inherits the small scalar-stage geometry/query caps.
+Next full-slice work must replace reference large-domain FFT/functional
+injection with parity-checked native paths, define compact multiproof transport,
+and then integrate an externally selected execution opening profile. Do not
+silently change the existing verified execution codec. Source-side first-fold
+queries can retain one-bit pair leaves while later scalar commitments use
+larger cosets. The first source stage still needs its own soundness budget;
+raising later rates cannot retroactively improve its agreement threshold.
+Full malicious-candidate extraction, stage error composition and QROM remain
+open. Latest verified complete slice stays1431885 B; no gate changed and full
+NEAR1Pgas/PQ128/sub300000 B remain the objective.

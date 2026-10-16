@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "parent_revision": "c6f7eeded",
+  "lean_audit": 4242,
+  "working_directory": "research/near-compression",
+  "replay": "python3 airbender/direct-wasm/ext8_weighted_code_switch.py --proof results/ext8-weighted-code-switch/proof.json --statement results/ext8-weighted-code-switch/statement.json",
+  "test": "python3 airbender/direct-wasm/test_ext8_weighted_code_switch.py --output /tmp/ext8-weighted-code-switch-replay",
+  "files": {
+    "research/near-compression/results/ext8-weighted-code-switch/statement.json": "63be1577f5324687176304e6be5e731c24bf3d0514e7a55b14975f6268f7611d",
+    "research/near-compression/results/ext8-weighted-code-switch/proof.json": "9290a79f98478a9063560716994d1285e99719e910370baaaebc893410567010",
+    "research/near-compression/results/ext8-weighted-code-switch/lean-audit.log.gz": "65727bfcd3d46529e96535a6a5ee54d726df715ed6ca614dd101d1f7fcb32b06",
+    "research/near-compression/results/ext8-weighted-code-switch/report.json": "6ab415b09489c2f4c8d1eeb2315dca63d75c6f80349d923d8f6fbdc19ac48206",
+    "research/near-compression/results/ext8-weighted-code-switch/fresh-verifier.log": "f285b5d3dc099ea4a87793907d39dc5762f23c6e12c7691458c9688fde872558",
+    "research/near-compression/airbender/direct-wasm/ext8_weighted_code_switch.py": "6544cdb63b9caa908cd7da4196e89c16bfbce2b90cf28a6ca956f090eb8f3467",
+    "research/near-compression/airbender/direct-wasm/test_ext8_weighted_code_switch.py": "57019095df06cb3fb7aa9eef115aecfd27c344a5f0b6e661af729f772eb54972",
+    "research/near-compression/airbender/direct-wasm/ext8_code_switch_stage.py": "1dcd60ea6bd44dab963c6a4170de19e49bd78c621c25fe1b45a9fe6dcec2c72e",
+    "research/near-compression/airbender/direct-wasm/ext8_code_switch_functional.py": "f672709cc8268b65f01e20dff68bcd060cb185c7b7e6cbc4da58b962714db09c",
+    "research/near-compression/airbender/direct-wasm/pq384_ext8_weighted.py": "b0726b2265de376c45cb00087aff66cdc79826609b6c776c1d9768bbfe50acb5",
+    "research/near-compression/NearCompression/WeightedCodeSwitchQuery.lean": "bec4209e72e517723ba981e4cc4a404a93831448462c9221e66a094d24abeb14"
+  },
+  "scope": "Original packed commitment to scalar code-switch adapter on small diagnostic fixtures. No full execution bundle, compact transport, proximity/extraction, PQ128/QROM, or NEAR1Pgas certificate."
+}

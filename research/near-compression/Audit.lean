@@ -6069,3 +6069,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.switch_inject_all_coefficients
 #print axioms NearCompression.switch_stage_honest
 #print axioms NearCompression.switch_chain_honest
+
+#print axioms NearCompression.switch_fold_pair_add
+#print axioms NearCompression.switch_fold_pair_sum
+#print axioms NearCompression.heterogeneous_switch_query
+#print axioms NearCompression.weighted_switch_polynomial_query
