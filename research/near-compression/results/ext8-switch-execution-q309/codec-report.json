@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "roundtrip": true,
+  "negative_cases": [
+    "truncated",
+    "trailing",
+    "version",
+    "source-root",
+    "aux-root",
+    "bus-final",
+    "pcs-terminal",
+    "noncanonical",
+    "external-schedule",
+    "legacy-profile",
+    "relabelled-legacy-profile",
+    "relabelled-switch-as-legacy"
+  ],
+  "compression_envelope_bytes": 1234992,
+  "opening_bytes": 1191112,
+  "sha256": "a656ad0f8d1314ff1b921cc2596a906aaa8f8c21215c5f687082b1ca78bcbd1d",
+  "scope": "Full fixture envelope checks, not full NEAR or cryptographic soundness certification."
+}

@@ -7262,3 +7262,61 @@ measurement. Retain the current execution profile unchanged. Code-switch
 error/extraction/QROM obligations remain open; do not treat31-query small
 fixtures as PQ128. Last verified complete slice remains1431885 B. Full NEAR
 1Pgas correctness/PQ128/sub300000 B and the feasibility gate are still open.
+
+## 2026-10-16 — Full retained execution slice with code-switch opening
+
+Added a separate full envelope `ext8_switch_execution_codec.py`, magic
+`NPEX8CS1`, fixed to pooled commitments and affine terminal reduction. The
+external switch schedule is bound by the opening protocol. Existing execution
+codecs and their accepted profiles were left unchanged. New prover reconstructs
+the original packed sources and Ext8 auxiliary vectors from the four hashed
+fixtures, checks every root/final against the retained reduction, and derives
+opening parameters by independently verifying that local/GKR reduction.
+It then reproves the opening with the original-root adapter and scalar tail.
+This reuses the local/GKR proof; it does not claim a new trace execution.
+
+Actual full SHA384 node/call slice, unchanged24 nodes/12 calls:
+*  Initial source stage is one fold at rate4 with309 queries.
+*  Scalar source degrees131072,16384,2048,256,32,4 use rates8,16,32,64,128,256
+  and fold depths3,3,3,3,3,1; each stage uses309 queries plus one OOD answer.
+*  Terminal degree2 is fully disclosed and checked against its rate256 root.
+*  Full opening1191112 B, reduction/framing43880 B, compression envelope1234992 B.
+*  Unchanged call proof103064 B, receipt731 B, calls5858 B: **1344645 B combined**.
+  This is **87240 B /6.09% smaller** than1431885 B and still **4.482×300000**.
+
+Fresh execution verification, exact codec/envelope roundtrip and a fresh
+same-root call/compression conjunction passed. The schedule is a deliberately
+uniform-query diagnostic baseline, not an accepted128-bit/PQ128 profile.
+Security cannot be compared merely by holding query counts equal across
+protocols. No extracted-candidate/proximity/QROM theorem is inferred.
+
+Measured new opening prover195.085 s, source/aux regeneration87.944 s,
+encode+opening decode23.740 s. Total445.052 s includes repeated verification
+and envelope/fresh-process checks; local/GKR proving was reused, so this is
+not an end-to-end prover-time comparison. The process completed inside its
+12 GiB cap; precise peak memory was not recorded.
+
+Byte diagnosis: original-source values228672 B and paths264624 B, totaling
+* *493296 B**. Scalar coset values384320 B and paths309504 B; opening
+header/terminal3992 B. Relative to prior pooling, scalar paths shrink from
+683808 B, but coset values grow from97824 B. This modest net reduction is a
+real measurement, not the earlier counterfactual code-switch estimate.
+The measured original-source openings alone exceed300000 B; this source
+layout/query configuration cannot meet the target by tail compression alone.
+This is a transport/configuration observation, not a universal proof-size
+lower bound.
+
+Evidence: `research/near-compression/results/ext8-switch-execution-q309/`.
+Full Lean audit4244 PASS; repository `make pin-check` passed. No Lean theorem
+or native/byte-decoder refinement was added in this integration chunk.
+Full NEAR1Pgas, complete relation coverage, source extraction, adaptive
+code-switch error/QROM composition and PQ128 remain open; feasibility stays
+NOT_PASSED. Next work should optimize source geometry/rate and stage query
+budgets against explicit proven assumptions, not silently reduce queries to
+make size pass. The full-state-transition objective remains unchanged.
+
+Final envelope tests passed12 malformed/profile cases, including relabeling
+legacy→switch and switch→legacy. Verified compression SHA256 is recorded
+in `codec-report.json`; manifest contains replay/build/prover commands and
+artifact/source hashes. All prover, audit, conjunction and codec-test
+processes completed successfully; no background proof remains from this run.
