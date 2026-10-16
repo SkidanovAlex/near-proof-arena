@@ -1401,3 +1401,5 @@ import NearCompression.TerminalFiniteLayerCertificate
 import NearCompression.TerminalStoredRouteCheck
 
 import NearCompression.TerminalStoredBundleCheck
+
+import NearCompression.TerminalArithmeticCheck

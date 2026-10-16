@@ -2925,3 +2925,27 @@ axiom allowlist; Python compilation passed. The integration report and slice
 gate record the new evidence while retaining NOT_PASSED. Source program/AIR
 compiler correspondence, global sampling composition, cryptographic binding
 and quantum security remain unfinished. No secure size claim is added.
+
+### Executable arithmetic witnesses and checked program composition
+
+TerminalArithmeticCheck checks all ten existing arithmetic route constructors:
+direct operation, constant folding, zero/one shortcuts and subtraction of an
+operand from itself. The soundness theorem derives TerminalArithmeticRoute
+from acceptance. The finite wrapper checks all operand/result indices so a
+missing node cannot manufacture evidence through the default zero value.
+
+The source-program composition theorem now uses the combined finite bundle
+checker and a source acyclicity check. It concludes finite circuit output equals
+independent TerminalProgramRun execution, under the explicit reconstruction
+route including leaf bindings. This does not yet derive the reconstruction
+route from the Python certificate: recursive signed expansion, balancing and
+leaf-binding checks are the next compiler-certificate gap.
+
+Kernel-evaluated Rat regressions cover 14 valid cases (all witness constructors
+and all three constant-fold operations), reject 14 wrong-result substitutions,
+and reject missing nodes, forged constant operands and a mismatched opcode.
+The regression uses decide +kernel, not native_decide. Full check.py passed
+3823 registered results with the existing axiom allowlist. No new full-capture
+arithmetic check or concrete JSON kernel certificate is claimed. Integration
+and gate evidence updated; the gate remains NOT_PASSED and full execution,
+cryptographic composition, quantum security and secure size remain open.

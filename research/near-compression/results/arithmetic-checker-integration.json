@@ -1,0 +1,40 @@
+{
+  "status": "LEAN_ARITHMETIC_CERTIFICATE_CHECKER_AND_PROGRAM_BUNDLE_COMPOSITION_PROVED",
+  "module": "NearCompression/TerminalArithmeticCheck.lean",
+  "theorems": [
+    "terminal_arithmetic_witness_checked",
+    "terminal_stored_arithmetic_checked",
+    "terminal_program_checked_bundle_value",
+    "terminal_arithmetic_check_regressions"
+  ],
+  "proved": [
+    "Finite arithmetic witnesses are checked against exact nodes, opcode, operands and result. Acceptance derives TerminalArithmeticRoute.",
+    "Stored checker additionally derives bounds for all three indices, preventing default lookup from manufacturing zero-node evidence.",
+    "Source acyclicity check plus checked finite bundle plus explicit TerminalRebuildRoute imply finite circuit output equals independent source program execution."
+  ],
+  "kernel_regressions": {
+    "field": "Rat",
+    "method": "decide +kernel; no native_decide",
+    "positive_cases": 14,
+    "wrong_result_rejections": 14,
+    "additional_rejections": [
+      "Missing zero operand node",
+      "Forged constant-fold operands",
+      "Wrong opcode for shortcut"
+    ]
+  },
+  "remaining": [
+    "Recursive rebuild checker for signed expansion, balanced reduction and input/selector binding. The program composition theorem still assumes TerminalRebuildRoute.",
+    "No new full-capture arithmetic execution or concrete JSON kernel certificate in this checkpoint.",
+    "Parser/compiler refinement, full GKR/PCS sampling composition, global execution soundness and quantum security remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3823,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}
