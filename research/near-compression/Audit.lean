@@ -5750,3 +5750,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.fixed_source_invalid_local_budget
 
 #print axioms NearCompression.second_table_fixed_source_pcs_budget
+
+#print axioms NearCompression.first_table_fixed_source_pcs_budget

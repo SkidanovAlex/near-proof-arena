@@ -4176,3 +4176,23 @@ actual repair/event substitution, table selection and bus averaging.
 Validation: full `check.py` PASS (4041 registered results), existing axiom
 allowlist. Native captures not rerun for formal-only composition. Full NEAR,
 QROM and secure sub-300 KB gates remain open.
+
+### First-table invalid source / joint PCS experiment composition
+
+`firstTablePCSContinuations` retains the complete second local protocol before
+batching/GKR/PCS randomness. `first_table_fixed_source_pcs_budget` derives its
+nonzero residual from fixed-source `TableLocal` failure, invokes the actual
+local continuation bound, and discharges the total error sum with the joint
+two-table PCS lift. Both invalid-table branches now use the same chronological
+two-table experiment; no conditional fixed-rowpoint PCS bound is introduced.
+
+Wrong-terminal repair and the concrete PCS event bound remain explicit. Next:
+instantiate repair from checked semantics/evaluated GKR and the event bound
+from `concrete_gkr_accepted_failure_budget`, including absent representatives;
+then select the invalid table and combine/average with the bus branch.
+Earlier bus challenges remain fixed outside this theorem. No native/QROM or
+secure-size certification is implied.
+
+Validation: full `check.py` PASS (4042 registered results), existing axiom
+allowlist. Native captures not rerun for formal-only composition. The full
+1 Pgas objective and secure sub-300 KB feasibility remain open.

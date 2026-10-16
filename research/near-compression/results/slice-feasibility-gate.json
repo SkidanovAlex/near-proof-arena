@@ -296,7 +296,9 @@
     "NearCompression/FixedSourceLocalBudget.lean",
     "results/fixed-source-local-budget-integration.json",
     "NearCompression/SecondTableFixedSourcePCS.lean",
-    "results/second-table-fixed-source-pcs-integration.json"
+    "results/second-table-fixed-source-pcs-integration.json",
+    "NearCompression/FirstTableFixedSourcePCS.lean",
+    "results/first-table-fixed-source-pcs-integration.json"
   ],
   "requirements": [
     {
@@ -466,5 +468,6 @@
   "metadata_fixed_source_composition": "PROVED_CONDITIONALLY: metadata_source_index_family selects indices independently of polynomial tuples; metadata_joint_fixed_source_trace derives one base source trace from existential decoded provenance and joint representatives. Explicit premises still include fixed typed source oracles, metadata geometry/disjointness, unique-decoding separation, representative eligibility and decoded provenance. Native authentication and global acceptance remain open.",
   "prepared_bus_continuation_branch": "PROVED_CONDITIONALLY: wrong prepared-Wasm output on a locally valid fixed source yields total accepted continuation count <= bus error budget times sample and continuation lengths plus accepted downstream failures. Residual validity/binding or failure inclusion remains explicit; locally invalid source branch and downstream joint failure bound are not yet combined.",
   "adaptive_invalid_source_branch": "PROVED_CONDITIONALLY: fixed_source_invalid_local_budget derives the adaptive local acceptance bound from failed source TableLocal, selecting the row/lane itself and transporting it across decoded auxiliary choices. Source binding, residual order/degree, local checks, terminal repair and joint PCS budget remain explicit. Full two-table acceptance and native/QROM binding remain open.",
-  "second_table_acceptance_composition": "PROVED_CONDITIONALLY: second_table_fixed_source_pcs_budget composes failed fixed source TableLocal with adaptive local soundness and the exact joint two-table PCS experiment lifting. Concrete PCS fiber bound and wrong-terminal repair remain assumptions; first-table branch, bus averaging and native/QROM binding remain open."
+  "second_table_acceptance_composition": "PROVED_CONDITIONALLY: second_table_fixed_source_pcs_budget composes failed fixed source TableLocal with adaptive local soundness and the exact joint two-table PCS experiment lifting. Concrete PCS fiber bound and wrong-terminal repair remain assumptions; first-table branch, bus averaging and native/QROM binding remain open.",
+  "first_table_acceptance_composition": "PROVED_CONDITIONALLY: first_table_fixed_source_pcs_budget includes the second local protocol in downstream randomness and derives the total error budget from the joint two-table PCS lift. Both invalid-table branches now align with the same chronological experiment. Concrete terminal repair and PCS event bounds, table selection, bus averaging and native/QROM binding remain open."
 }

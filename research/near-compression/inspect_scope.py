@@ -416,6 +416,7 @@ SOURCES = [
     "research/near-compression/NearCompression/PreparedDecodedBusContinuation.lean",
     "research/near-compression/NearCompression/FixedSourceLocalBudget.lean",
     "research/near-compression/NearCompression/SecondTableFixedSourcePCS.lean",
+    "research/near-compression/NearCompression/FirstTableFixedSourcePCS.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",
