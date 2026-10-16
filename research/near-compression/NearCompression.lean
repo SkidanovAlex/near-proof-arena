@@ -1586,3 +1586,5 @@ import NearCompression.CallLinearBatch
 import NearCompression.CallArrayCompilation
 
 import NearCompression.CallPadding
+
+import NearCompression.CallDescriptorLift

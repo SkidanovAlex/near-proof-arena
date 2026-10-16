@@ -5930,3 +5930,30 @@ This proves abstract equality-weight truncation and neutral padding, not the
 universal correspondence of Python eqs/transcript sampling to the Lean field
 model. Descriptor lifting, GKR lowering, PCS/commitment composition, QROM and
 full NEAR feasibility remain open. No security or size gate is newly passed.
+
+### Source call descriptors through extension batching
+
+CallDescriptorLift.lean proves the missing semantic transport from source
+CallLinearEquation.eval to CallBatchEquation.residual. The two formats differ:
+source copy descriptors ignore the constant field, while batch equations always
+subtract it. CallLinearEquation.Valid records the necessary zero-constant
+invariant for copies. Every descriptor emitted by callBlockEquations and
+callEquations satisfies it, without bounds or assumptions about private values.
+
+The general lift theorem requires preservation of zero and subtraction.
+Instantiation with the existing Fp8.ofBase model identifies every generated
+extension residual with the embedding of its source Fp residual; injectivity
+preserves nonzero residuals. call_descriptor_array_zero_count composes this with
+the previous unpadded array theorem. Its failure premise is now an actual source
+descriptor evaluated over Fp, not an assumed unrelated extension residual.
+The count bound remains d*|sample|^(d-1) for a distinct ideal challenge sample,
+with fixed descriptors/private values, bounded real slots and at most 2^d real
+equations. Generated descriptor validity discharges the zero-copy premise.
+
+Validation: full check.py PASS4180; /tmp/call-lift-audit.log. Six public theorem
+axiom audits added; no new axioms beyond propext/Classical.choice/Quot.sound.
+No executable protocol or retained proof bytes changed. This uses the formal
+Ext8 model; the retained small hash-call proof still uses diagnostic Ext4 and
+is not granted Ext8 or PQ128 security by this theorem. GKR circuit lowering,
+commitment/PCS composition, transcript/QROM analysis, full recursive operand
+provenance and full NEAR 1Pgas feasibility remain open.

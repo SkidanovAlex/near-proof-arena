@@ -5983,3 +5983,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.call_short_batch_mle
 #print axioms NearCompression.call_short_array_mle
 #print axioms NearCompression.call_short_array_zero_count
+
+#print axioms NearCompression.call_block_descriptors_valid
+#print axioms NearCompression.call_descriptors_valid
+#print axioms NearCompression.call_descriptor_lift
+#print axioms NearCompression.call_descriptor_ext8_nonzero
+#print axioms NearCompression.call_generated_ext8_residuals
+#print axioms NearCompression.call_descriptor_array_zero_count
