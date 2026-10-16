@@ -80,6 +80,9 @@ def main():
                 current = [0]*width; nxt = [0]*width
             actual = [evaluate(r['formula'], current, nxt, selectors) for r in records]
             assert actual == direct(k, current, nxt, selectors, alpha, gamma, finals)
+            expanded, expanded_width = generator.expected(table, [], alpha, gamma, finals, field=f, expanded_messages=True)
+            assert expanded_width == auxiliary
+            assert [evaluate(r['formula'], current, nxt, selectors) for r in expanded] == actual
             comparisons += len(actual); cases += 1
             certificates = []
             for rec in records:
@@ -106,7 +109,7 @@ def main():
     if args.capture:
         args.capture.write_text(json.dumps(capture,separators=(',',':'))+'\n')
     report = {'status': 'PASS', 'cases': cases, 'residual_value_comparisons': comparisons,
-        'register_mutation_rejections': rejections,
+        'register_mutation_rejections': rejections, 'expanded_vs_horner_residual_comparisons': comparisons,
         'scope': 'Ext8 candidate formula generation and independent row semantics; no prover/security/refinement claim.',
         'source_sha256': {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
             for name in ('test_ext8_bus_formulas.py', 'check_bus_program_formulas.py', 'pq384_ext8_reference.py')}}

@@ -3,10 +3,11 @@
   "cases": 24,
   "residual_value_comparisons": 192,
   "register_mutation_rejections": 576,
+  "expanded_vs_horner_residual_comparisons": 192,
   "scope": "Ext8 candidate formula generation and independent row semantics; no prover/security/refinement claim.",
   "source_sha256": {
-    "test_ext8_bus_formulas.py": "48713ee05386c4476f4faf82520a7348cd7dbb0224ce6fb52580be31f17c10d0",
-    "check_bus_program_formulas.py": "ae8b81c103dedc35f343496d726d1a61706c8a5baf008bb67e3e94408598bf10",
+    "test_ext8_bus_formulas.py": "064886d61037d03561cca152cd1a8666ad988510fbf191e5a408563d97e1585f",
+    "check_bus_program_formulas.py": "81ef909e69f5e17db99dc1c74710b113a2f6599f0e271ba4f65b3ec86f928690",
     "pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a"
   }
 }

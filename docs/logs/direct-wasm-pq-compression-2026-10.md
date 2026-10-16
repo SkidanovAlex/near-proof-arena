@@ -4860,3 +4860,33 @@ universal Lean compiler refinement, secure size or QROM claim is made. Full
 
 Validation: differential/negative tests and retained Ext4 frontend PASS; full
 `check.py` PASS (4115 registered results), existing axiom allowlist.
+
+### Ext8 fingerprint expansion restores shallow terminal geometry
+
+The candidate's long Horner dependency was removed by expanding fixed public
+challenge powers into scalar-weighted message terms. The canonical generator
+remains default; only the Ext8 terminal candidate opts into expansion. The
+shared compiler can then balance additions using its existing DAG pass.
+
+`ExpandedBusFingerprint.lean` proves the accumulator/weight identity for all
+fields and environments, specializes it to the canonical tagged fingerprint,
+and preserves local degree and column coverage bounds. Zero challenges need
+no special assumptions. This is the algebraic rewrite proof; universal Python
+AST/refinement and checked optimized-program binding remain outstanding.
+
+On the same actual 193-instruction AIR and seeded Ext8 input cases, random
+batching drops from 78 to 35 layers and raw GKR scalar payload from 104832 to
+47744 bytes (57088 bytes less, about 54.5%). Minimum input log remains 13,
+private capacity 4096, and sum(4*m+1) is 983. These are compiler geometry/scalar
+counts, not a generated proof or complete transport size.
+
+Validation: six canonical-Horner instruction vs optimized DAG/layer output
+comparisons; three exact pinned Ext4 compiler comparisons; 192 expanded vs
+canonical bus residual comparisons with independent row-semantic checks;
+576 register mutations rejected. Canonical Lean specification capture still
+passes 64 residuals and rejects 16 mutations. Full `check.py` PASS (4119
+registered results), existing axiom allowlist.
+
+Next: bind optimized generated programs to the proved rewrite, then integrate
+Ext8 GKR/transcript and round/PCS execution. Full acceptance/QROM, secure size
+and full 1 Pgas remain open; slice gate remains NOT_PASSED.

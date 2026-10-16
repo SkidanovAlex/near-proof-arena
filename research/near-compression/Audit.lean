@@ -5898,3 +5898,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.selected_history_counts_le_length
 
 #print axioms NearCompression.selected_history_weighted_budget
+
+#print axioms NearCompression.expanded_bus_tagged_value
+
+#print axioms NearCompression.expanded_bus_fingerprint_value
+
+#print axioms NearCompression.expanded_bus_tagged_degree
+
+#print axioms NearCompression.expanded_bus_tagged_columns

@@ -89,7 +89,7 @@ def main():
         circuit=compile_ext8_terminal(spec,alpha,gamma,finals,terminals,batch)
         layout=layer_circuit(circuit,field=f)
         blocks={b['table']:b for b in circuit['input_blocks']}
-        programs=[compile_weighted(t,spec['public'],alpha,gamma,finals[i],terminals[i]['mixing'],bus) for i,t in enumerate(spec['air']['tables'])]
+        programs=[compile_weighted(t,spec['public'],alpha,gamma,finals[i],terminals[i]['mixing'],bus,expanded_messages=False) for i,t in enumerate(spec['air']['tables'])]
         for private in ([f.ZERO]*circuit['private_input_capacity'],[scalar(8) for _ in range(circuit['private_input_capacity'])]):
             expected=f.ZERO;weight=f.ONE
             for i,t in enumerate(spec['air']['tables']):
@@ -111,7 +111,7 @@ def main():
         legacy_reference='04eaa8e31',legacy_geometry=legacy_geometry,legacy_compiler_sha256=hashlib.sha256(old.encode()).hexdigest(),exact_ext4_compiler_comparisons=legacy_cases,
         ext8_raw_program_dag_layer_comparisons=checks,malformed_inputs_rejected=rejected,geometries=geometries,
         limitations=['No Ext8 native round kernel, GKR prover/transcript, PCS integration or full slice proof.',
-            'Independent unoptimized instruction evaluation checks DAG/layer transforms; it is not independent universal formula-generator semantics.',
+            'Canonical Horner instruction evaluation checks expanded-message DAG/layer outputs; universal Python-to-Lean generator refinement remains open.',
             'Synthetic terminal challenges/finals on the actual 193-instruction AIR; no authenticated Ext8 transcript.',
             'No universal Lean compiler refinement or secure size/security claim.'])
     a.output.write_text(json.dumps(report,indent=2)+'\n')

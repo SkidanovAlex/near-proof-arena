@@ -369,7 +369,10 @@
     "airbender/direct-wasm/pq384_ext8_terminal_compile.py",
     "airbender/direct-wasm/test_ext8_terminal_compile.py",
     "results/ext8-terminal-compiler.json",
-    "results/ext8-terminal-regression.json"
+    "results/ext8-terminal-regression.json",
+    "NearCompression/ExpandedBusFingerprint.lean",
+    "results/ext8-terminal-expanded-compiler.json",
+    "results/expanded-bus-fingerprint-integration.json"
   ],
   "requirements": [
     {
@@ -588,5 +591,14 @@
     "legacy_ext4_layers": 35,
     "random_batch_raw_gkr_scalar_bytes": 104832,
     "scope": "Actual 193-instruction AIR with synthetic Ext8 terminals/challenges, 11-word instructions, optimized DAG and layered evaluation. Six differential cases, three exact Ext4 compiler regressions and three malformed-input rejections. Retained Ext4 slice verifies. No native Ext8 kernel/GKR proof/PCS/secure-byte claim."
+  },
+  "ext8_expanded_fingerprint": {
+    "status": "ALGEBRA_PROVED_COMPILER_DIFFERENTIAL_PASS",
+    "layers": 35,
+    "raw_gkr_scalar_bytes": 47744,
+    "previous_layers": 78,
+    "previous_raw_gkr_scalar_bytes": 104832,
+    "minimum_input_log": 13,
+    "scope": "Horner public-weight expansion universally proved algebraically with degree/read bounds; Python compiler matches canonical Horner evaluation in tested cases. No full optimized-program refinement/native Ext8 proof/QROM/secure-byte claim."
   }
 }

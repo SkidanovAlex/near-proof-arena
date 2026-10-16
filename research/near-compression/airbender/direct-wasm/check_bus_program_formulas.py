@@ -23,7 +23,7 @@ def expr(e,public,field=None):
     if op=='-':return minus(lit(zero),expr(e[1],public,field))
     return (plus if op=='+' else times)(expr(e[1],public,field),expr(e[2],public,field))
 
-def expected(table,public,alpha,gamma,finals,field=None):
+def expected(table,public,alpha,gamma,finals,field=None, *, expanded_messages=False):
     # Explicit candidate arithmetic; default preserves the active Ext4 ABI.
     zero,one,lift,multiply,basis_values = ((ZERO,ONE,base,mul,BASIS) if field is None else
         (field.ZERO,field.ONE,field.base,field.mul,
@@ -40,7 +40,7 @@ def expected(table,public,alpha,gamma,finals,field=None):
         fp=lit(zero);weight=one
         for e in interaction['msg']:fp=plus(fp,times(expr(e,public,field),lit(weight)));weight=multiply(weight,alpha)
         fp=plus(fp,lit(multiply(lift(interaction['bus']+1),weight)))
-        if field is not None:
+        if field is not None and not expanded_messages:
             # Match lowerBusInteraction's exact Horner AST for specification checking.
             fp=lit(lift(interaction['bus']+1))
             for e in reversed(interaction['msg']):fp=plus(expr(e,public,field),times(lit(alpha),fp))
