@@ -237,6 +237,7 @@ impl FakeWorker {
                             ref_runs_ns: vec![],
                             ref_verify_runs_ns: vec![],
                             ref_proof_bytes_runs: vec![],
+                            gas_runs: vec![],
                         }
                     })
                     .collect();
@@ -249,6 +250,7 @@ impl FakeWorker {
                     prepare_ns: 1,
                     public_artifact_bytes: 1,
                     measured_by: "[DEMO] fake worker".into(),
+                    succinct: None,
                     cost: None,
                 })
             }

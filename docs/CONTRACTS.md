@@ -339,8 +339,15 @@ without the new fields behave exactly as in v1.6.
   not a soundness failure and counts as coverage. It does not raise the declared tier, which needs
   its completeness theorem.
 * **The `succinct` badge thresholds** live in `CoverageSpec.succinct: Option<{max_proof_bytes,
-  max_verify_ns}>`, together with the slope test of BENCHMARK_SPEC §17. They are display-only and
-  not implemented yet.
+  max_verify_ns, exponent_bound_ppm?, ucb_bound_ppm?}>`, together with the slope test of
+  BENCHMARK_SPEC §17 (bounds default to 0.1 = 100,000 ppm and 0.25 = 250,000 ppm).
+  **As implemented (lane stream-a, v1.8):** serialized only when present (ids unchanged); the
+  evaluation is recomputed by the control plane at VALIDATE (`BenchmarkResult.succinct`, into the
+  signed report) and on the board (`LeaderboardEntry.succinct`); the slope test fits per measured
+  run the log-log exponent of Σ proof bytes and Σ verify wall ns against Σ case gas of the batch
+  (≤ 0.1, 95% t-based upper bound ≤ 0.25), and denies the badge fail-closed when the oracle records
+  no per-case gas axis or the fit is degenerate (< 4 gas-bearing runs or < one doubling of gas
+  spread). The board offers a "succinct only" filter (`GET /v1/leaderboards/{id}?succinct_only=true`).
 * **Covert channel.** Per-class held-out abstention counts are chosen by the candidate, so they
   leak a few bits per class about the secret inputs. Mitigation: publish held-out coverage only in
   aggregate, `share_ppm` over all held-out classes, until a successor rotates the set.

@@ -57,3 +57,14 @@ export function EdgeStatusBadge({ status }: { status: EdgeStatus }) {
 }
 
 export const RevokedBadge = () => <span className="badge revoked">REVOKED</span>;
+
+/// `succinct` badge (BENCHMARK_SPEC §17): proofs stay small and verification
+/// fast, with growth bounded independently of the chunk's gas. Display-only.
+export const SuccinctBadge = () => (
+  <span
+    className="badge gate-pass"
+    title="succinct: proof bytes and verify time within the challenge's thresholds, with log-log growth bounded independently of the case's gas"
+  >
+    SUCCINCT
+  </span>
+);

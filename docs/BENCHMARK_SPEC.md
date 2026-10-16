@@ -1456,3 +1456,22 @@ offers a "succinct only" filter.
 * **When a gate would be right.** If the user later wants the board to mean "ZK proofs only",
   promote the badge criteria to a hard gate in a versioned successor. The criteria above are
   already measurable and recorded per run.
+
+**As implemented (v1.8, lane stream-a).** The thresholds live in the challenge's
+`coverage.succinct` (`max_proof_bytes`, `max_verify_ns`, optional slope bounds in ppm, defaults
+0.1/0.25). Over the measured benchmark classes (abstained classes excluded, §17):
+
+* `max_proof_bytes` = the largest `proof_bytes_max`; `max_verify_ns` = the largest per-run Σ
+  verify wall ns of a class's batch (the quantity `cost_v1` pays; ≥ any single proof's verify
+  wall), falling back to the stored median for results recorded before per-run verify sums.
+* The growth test fits, over all per-run batch sums with a recorded gas axis
+  (`ClassMeasurement.gas_runs`, the x axis = Σ case gas), `ln y` against `ln x` for
+  y = Σ proof bytes and y = Σ verify ns; both fitted exponents must be ≤ 0.1 with a
+  Student-t (n−2 dof) 95% upper confidence bound ≤ 0.25. The chunk-v3 oracle records per-case
+  function-call gas (`fc_gas_burnt_for_function_call`), the challenge's own size axis; runs
+  without a gas axis cannot enter the fit.
+* Fail-closed: no gas data, a degenerate fit (< 4 gas-bearing runs or < one doubling of gas
+  spread) denies the badge, and the evaluation records every failed criterion in `denied`.
+* The evaluation is recomputed by the control plane (never trusted from the worker), stored in
+  the run's `BenchmarkResult.succinct` (signed report) and shown on the board
+  (`LeaderboardEntry.succinct`, `SUCCINCT` badge, "succinct only" filter).

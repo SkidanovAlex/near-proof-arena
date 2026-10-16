@@ -250,6 +250,9 @@ impl BatchRunner for Runner<'_, '_> {
         } else {
             batch
         };
+        // Σ case gas of the batch (v1.8): the x axis of the `succinct`
+        // badge's log-log slope test. Constant across runs of one batch.
+        let gas_total: u64 = batch.iter().map(|c| c.gas.unwrap_or(0)).sum();
         if let Some(pin) = &self.pin {
             for c in &batch {
                 common::check_case_pin(pin, c).map_err(|e| RunError::Infra(e.to_string()))?;
@@ -288,9 +291,13 @@ impl BatchRunner for Runner<'_, '_> {
                     verify_ns: refs.total_verify_ns(),
                     proof_bytes: refs.proof_bytes_total,
                 });
+                cand.gas_total = gas_total;
                 return Ok(cand);
             }
-            return self.run_batch_shared(&batch, phase, false);
+            return self.run_batch_shared(&batch, phase, false).map(|mut s| {
+                s.gas_total = gas_total;
+                s
+            });
         }
         let mut s = BatchSample::default();
         for case in &batch {
@@ -362,6 +369,7 @@ impl BatchRunner for Runner<'_, '_> {
                 }
             }
         }
+        s.gas_total = gas_total;
         Ok(s)
     }
 }
@@ -766,6 +774,7 @@ pub fn run(r: &mut JobRun<'_>, j: &ExecJob) -> Result<StageOut, ExecError> {
                 ref_runs_ns: vec![],
                 ref_verify_runs_ns: vec![],
                 ref_proof_bytes_runs: vec![],
+                gas_runs: vec![],
             },
         })
         .collect();
@@ -827,6 +836,9 @@ pub fn run(r: &mut JobRun<'_>, j: &ExecJob) -> Result<StageOut, ExecError> {
         prepare_ns,
         public_artifact_bytes: public_bytes,
         measured_by,
+        // Recomputed by the control plane from the challenge thresholds
+        // (never trusted from the worker).
+        succinct: None,
         cost,
     };
     let report = serde_json::json!({

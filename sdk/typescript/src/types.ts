@@ -41,6 +41,8 @@ export interface BenchmarkResult {
   score_ci_milli?: number | null;
   /** Score * 1000 as integer (e.g. 100000 == 100.000). */
   score_milli?: number | null;
+  /** `succinct` badge evaluation (v1.8, additive; BENCHMARK_SPEC §17), recomputed by the control plane from the measurements and the challenge's thresholds. Serialized only when the challenge defines thresholds. */
+  succinct?: SuccinctBadge | null;
   suite_revision: string;
 }
 
@@ -151,6 +153,8 @@ export interface ClassMeasurement {
   baseline_ns: number;
   class_id: string;
   cold_ns?: number | null;
+  /** Per measured run: Σ total gas of the batch's cases (v1.8, additive; empty when the oracle records no per-case gas). The x axis of the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17). */
+  gas_runs?: number[];
   mad_ns: number;
   median_ns: number;
   peak_rss_bytes: number;
@@ -237,6 +241,8 @@ export interface CoverageSpec {
   soundness_lift: string;
   /** Lean declaration of the top `ChallengeSpec` (the statement every admitted verifier is sound for), e.g. `NearSpecV3.challengeSpecChunkTop`. */
   statement_spec: string;
+  /** `succinct` badge thresholds (v1.8, BENCHMARK_SPEC §17). Serialized only when present, so ids of challenges without the badge are unchanged. Display-only: not a gate and not a score component. */
+  succinct?: SuccinctSpec | null;
   /** Tiers in any order; `rank` is the total order (higher = larger domain). */
   tiers: CoverageTier[];
   /** `"coverage-v1"`. */
@@ -399,6 +405,8 @@ export interface LeaderboardEntry {
   security_profile: string;
   submission_id: string;
   submitted_at: string;
+  /** `succinct` badge evaluation of the ranked run (v1.8, additive; BENCHMARK_SPEC §17): `granted` drives the board's "succinct only" filter. Display-only: not a gate, not a score component. */
+  succinct?: SuccinctBadge | null;
   /** Set when the challenge has been superseded: the board is historical (frozen, closed for new submissions) and scores are not comparable with the successor's (additive, v1.4). */
   superseded_by?: string | null;
   tier: Tier;
@@ -608,6 +616,37 @@ export interface SubmissionView {
   verified_surface?: VerifiedSurface | null;
 }
 
+/** One measured evaluation of the badge criteria ("recorded per run"). */
+export interface SuccinctBadge {
+  /** Log-log slope of proof bytes against per-run batch gas, in ppm of the exponent (0.137 → 137_000). `None` without gas data or spread. */
+  bytes_exponent_ppm?: number | null;
+  /** 95% upper confidence bound of the bytes exponent, ppm. */
+  bytes_ucb_ppm?: number | null;
+  /** Why the badge was denied (empty when granted). */
+  denied?: string[];
+  /** Both the thresholds and both slope tests passed (fail-closed: a fit that cannot be computed denies the badge). */
+  granted: boolean;
+  /** Largest proof over the measured runs (`ClassMeasurement.proof_bytes_max`). */
+  max_proof_bytes: number;
+  /** Largest per-run Σ verify wall ns of a class's batch over the measured runs (cost_v1's paid quantity; ≥ any single proof's verify wall). */
+  max_verify_ns: number;
+  /** Log-log slope of verify time against per-run batch gas, ppm. */
+  verify_exponent_ppm?: number | null;
+  /** 95% upper confidence bound of the verify exponent, ppm. */
+  verify_ucb_ppm?: number | null;
+}
+
+/** Thresholds of the `succinct` badge (BENCHMARK_SPEC §17; proposal for `near-chunk-v3`: 2 MiB and 50 ms). */
+export interface SuccinctSpec {
+  /** Log-log slope test (§17): fitted exponent of proof bytes and of verify time against the case's total gas must be ≤ 0.1 (`exponent_bound_ppm`), with a 95% upper confidence bound ≤ `ucb_bound_ppm` ppm of the same quantity (proposal: 0.25 = 250,000 ppm). */
+  exponent_bound_ppm?: number;
+  /** Largest accepted proof over the conformance and held-out runs. */
+  max_proof_bytes: number;
+  /** Largest verify wall time over the conformance and held-out runs. */
+  max_verify_ns: number;
+  ucb_bound_ppm?: number;
+}
+
 export type Tier = "formal" | "experimental" | "demo";
 
 export interface ToolchainPolicy {
@@ -653,6 +692,17 @@ export type VerifyRoute = "native" | "npai-v1" | "native-lean";
 /** How the per-run verify totals of a class are aggregated into the `V` component of the cost (docs/BENCHMARK_SPEC.md §14.3; contracts v1.6). */
 export type VerifyStatistic = "median" | "lower_quartile";
 
+/** Provenance of `WorkloadSuite` class weights (contracts v1.7, additive). */
+export interface WeightSource {
+  /** What the weights rest on (the assumption, or how they were measured). */
+  note: string;
+  /** Repo-relative path or digest of the supporting record (the documented assumption, or the measurement report). Required for `MEASURED`. */
+  ref?: string | null;
+  status: WeightSourceStatus;
+}
+
+export type WeightSourceStatus = "ASSUMED" | "MEASURED";
+
 export interface WorkloadClass {
   /** Number of requests per measured batch. */
   batch_size: number;
@@ -674,4 +724,6 @@ export interface WorkloadSuite {
   /** Public dev fixtures (tree digest). Held-out and fresh inputs are not listed here. */
   public_fixtures: Digest;
   revision: string;
+  /** Where the class weights come from (v1.7, additive; absent ⇒ not serialized, so existing challenge ids are unchanged). docs/CONTRACTS.md §11, docs/BENCHMARK_SPEC.md §17. */
+  weight_source?: WeightSource | null;
 }

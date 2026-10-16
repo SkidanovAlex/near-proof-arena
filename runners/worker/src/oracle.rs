@@ -57,6 +57,11 @@ pub struct Case {
     pub public: bool,
     /// Workload class of a sampled or held-out case (`None` for fixtures).
     pub class: Option<String>,
+    /// The case's total gas when the oracle records one (v1.8): the x axis of
+    /// the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17). The
+    /// chunk-v3 oracle reads `meta.json` features; `None` means unknown, and
+    /// such cases cannot enter a slope fit (fail-closed).
+    pub gas: Option<u64>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -652,6 +657,7 @@ impl ToyArith {
             expected_claim,
             public: false,
             class: Some(class.into()),
+            gas: None,
         }
     }
 
@@ -704,6 +710,7 @@ impl ToyArith {
                 expected_claim: want,
                 public,
                 class: None,
+                gas: None,
             });
         }
         Ok(out)
@@ -899,6 +906,7 @@ impl NearOracle {
                 expected_claim,
                 public,
                 class: class.map(String::from),
+                gas: meta_gas(&d),
             });
         }
         Ok(out)
@@ -1082,9 +1090,22 @@ fn read_case_dirs(
             expected_claim,
             public,
             class: class.map(String::from),
+            gas: meta_gas(&d),
         });
     }
     Ok(out)
+}
+
+/// The case's gas axis from its `meta.json` features, when the generator
+/// records one (v1.8). Only `fc_gas_burnt_for_function_call` (the chunk-v3
+/// oracle's per-case function-call gas: the size-bearing component of chunk
+/// gas and the `d3-maxgas` class predicate) is trusted here; anything else
+/// stays unknown, so a slope fit can never rest on an undocumented quantity.
+/// Classes without a gas axis still count for the badge's thresholds.
+fn meta_gas(d: &Path) -> Option<u64> {
+    let meta = std::fs::read(d.join("meta.json")).ok()?;
+    let v: serde_json::Value = serde_json::from_slice(&meta).ok()?;
+    v["features"]["fc_gas_burnt_for_function_call"].as_u64()
 }
 
 /// `near-arena-claim-v3` (spec/near-chunk-validation-v0.md, spec/claim-v3.md):

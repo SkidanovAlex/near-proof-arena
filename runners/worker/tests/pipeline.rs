@@ -541,6 +541,7 @@ fn coverage_tiers_abstain_and_gap() {
         let mut j = base.clone();
         j.challenge.coverage = Some(CoverageSpec {
             version: "coverage-v1".into(),
+            succinct: None,
             statement_spec: "Toy.top".into(),
             soundness_lift: "Toy.lift".into(),
             tiers: vec![

@@ -482,6 +482,7 @@ mod tests {
         .unwrap();
         c.coverage = Some(arena_types::CoverageSpec {
             version: "coverage-v1".into(),
+            succinct: None,
             statement_spec: "S".into(),
             soundness_lift: "L".into(),
             tiers: vec![arena_types::CoverageTier {

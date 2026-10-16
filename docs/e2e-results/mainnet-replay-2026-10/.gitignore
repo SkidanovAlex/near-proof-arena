@@ -1,0 +1,5 @@
+# Regenerable crawl cache (per-block JSON, ~200 MB) and crawler resume state:
+# results live in samples.jsonl / weights.json / gas.json.
+blocks/
+state.json
+sample.log

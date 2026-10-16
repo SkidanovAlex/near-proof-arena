@@ -469,6 +469,9 @@ async fn cancel(
 struct BoardQuery {
     /// `speed` (default) or `cost_v1`.
     board: Option<arena_types::ScoringKind>,
+    /// Only entries holding the `succinct` badge (BENCHMARK_SPEC §17;
+    /// challenges without thresholds have none).
+    succinct_only: Option<bool>,
 }
 
 async fn leaderboard(
@@ -484,17 +487,20 @@ async fn leaderboard(
     };
     let bundles = views::list_bundles(&st.api_db, &f).await?;
     let board = q.board.unwrap_or(arena_types::ScoringKind::Speed);
-    views::compute_leaderboard(
+    let mut entries = views::compute_leaderboard(
         &chal.id,
         &chal.definition,
         chal.superseded_by.as_deref(),
         &bundles,
     )
     .entries_for(board)
-    .map(Json)
     .ok_or_else(|| {
         ApiError::not_found("this challenge has no cost board (no scoring.kind = cost_v1)")
-    })
+    })?;
+    if q.succinct_only.unwrap_or(false) {
+        entries.retain(|e| e.succinct.as_ref().is_some_and(|s| s.granted));
+    }
+    Ok(Json(entries))
 }
 
 // ------------------------------------------------------------------ SSE

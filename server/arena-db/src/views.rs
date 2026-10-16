@@ -679,6 +679,15 @@ fn entry(
         coverage_share_ppm: run
             .and_then(|r| r.coverage.as_ref())
             .map(|c| c.conformance.share_ppm),
+        succinct: bench.and_then(|b| b.succinct.clone()).or_else(|| {
+            // Runs stored before v1.8 compute the badge on read from the
+            // stored measurements and the challenge's thresholds.
+            bench.and_then(|b| {
+                chal.coverage
+                    .as_ref()
+                    .and_then(|c| c.evaluate_succinct(&b.classes))
+            })
+        }),
         declared_tier: tier.map(|t| t.id.clone()),
         tier_rank: tier.map(|t| t.rank),
         rank: None,
@@ -893,6 +902,7 @@ mod tests {
             prepare_ns: 0,
             public_artifact_bytes: 0,
             measured_by: "t".into(),
+            succinct: None,
             cost: cost.map(|(s, d)| arena_types::CostResult {
                 kind: ScoringKind::CostV1,
                 price_model_id: "pm".into(),
@@ -1009,6 +1019,7 @@ mod tests {
         let class0 = c.workload_suite.classes[0].id.clone();
         c.coverage = Some(arena_types::CoverageSpec {
             version: "coverage-v1".into(),
+            succinct: None,
             statement_spec: "S".into(),
             soundness_lift: "L".into(),
             tiers: vec![

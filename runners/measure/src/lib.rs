@@ -31,6 +31,10 @@ pub struct BatchSample {
     /// Σ proof bytes of the batch's timed proofs (cost_v1, §14).
     pub proof_bytes_total: u64,
     pub peak_rss_bytes: u64,
+    /// Σ total gas of the batch's cases (`succinct` slope test, §17; 0 when
+    /// the oracle records no per-case gas).
+    #[serde(default)]
+    pub gas_total: u64,
     /// The paired reference's run on the same batch (bench-spec-v1.6,
     /// `baseline_mode = paired`); `None` otherwise.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -158,6 +162,10 @@ pub struct ClassSession {
     /// Per measured run: Σ proof bytes of the batch (cost_v1).
     #[serde(default)]
     pub measured_proof_bytes_runs: Vec<u64>,
+    /// Per measured run: Σ total gas of the batch's cases (`succinct` slope
+    /// test, §17).
+    #[serde(default)]
+    pub measured_gas_runs: Vec<u64>,
     /// Paired reference (bench-spec-v1.6), per measured run, same order.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub measured_ref_runs_ns: Vec<u64>,
@@ -187,6 +195,7 @@ impl ClassSession {
             peak_rss_bytes: self.peak_rss_bytes,
             verify_runs_ns: self.measured_verify_runs_ns.clone(),
             proof_bytes_runs: self.measured_proof_bytes_runs.clone(),
+            gas_runs: self.measured_gas_runs.clone(),
             ref_runs_ns: self.measured_ref_runs_ns.clone(),
             ref_verify_runs_ns: self.measured_ref_verify_runs_ns.clone(),
             ref_proof_bytes_runs: self.measured_ref_proof_bytes_runs.clone(),
@@ -272,6 +281,7 @@ pub fn run_session(
             verify_runs_ns: vec![],
             measured_verify_runs_ns: vec![],
             measured_proof_bytes_runs: vec![],
+            measured_gas_runs: vec![],
             measured_ref_runs_ns: vec![],
             measured_ref_verify_runs_ns: vec![],
             measured_ref_proof_bytes_runs: vec![],
@@ -341,6 +351,7 @@ pub fn run_session(
             cs.verify_runs_ns.extend_from_slice(sample.verify_wall_ns());
             cs.measured_verify_runs_ns.push(sample.total_verify_ns());
             cs.measured_proof_bytes_runs.push(sample.proof_bytes_total);
+            cs.measured_gas_runs.push(sample.gas_total);
             if let Some(r) = sample.reference {
                 cs.measured_ref_runs_ns.push(r.prove_ns);
                 cs.measured_ref_verify_runs_ns.push(r.verify_ns);

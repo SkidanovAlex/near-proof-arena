@@ -72,6 +72,13 @@ pub fn normalize_benchmark(
     }
     b.score_milli = compute_score_milli(&b);
     b.cost = compute_cost(chal, &b);
+    // v1.8: recomputed from the measurements and the challenge's thresholds;
+    // a worker-sent evaluation is never trusted. `None` (and omitted from the
+    // stored result) when the challenge defines no thresholds.
+    b.succinct = chal
+        .coverage
+        .as_ref()
+        .and_then(|c| c.evaluate_succinct(&b.classes));
     b.hardware_profile = arena_jobs::sanitize::sanitize_line(&b.hardware_profile, 128);
     b.measured_by = arena_jobs::sanitize::sanitize_line(&b.measured_by, 128);
     Ok(b)
@@ -150,6 +157,7 @@ mod tests {
             ref_runs_ns: vec![],
             ref_verify_runs_ns: vec![],
             ref_proof_bytes_runs: vec![],
+            gas_runs: vec![],
             class_id: id.into(),
             weight_ppm: w,
             runs_ns: vec![med],
@@ -174,6 +182,7 @@ mod tests {
             prepare_ns: 0,
             public_artifact_bytes: 0,
             measured_by: "judge".into(),
+            succinct: None,
             cost: None,
         }
     }
@@ -240,6 +249,7 @@ mod tests {
                 ref_runs_ns: vec![],
                 ref_verify_runs_ns: vec![],
                 ref_proof_bytes_runs: vec![],
+                gas_runs: vec![],
                 class_id: id.clone(),
                 weight_ppm: c
                     .workload_suite
@@ -378,6 +388,7 @@ mod tests {
             .collect();
         c.coverage = Some(arena_types::CoverageSpec {
             version: "coverage-v1".into(),
+            succinct: None,
             statement_spec: "S".into(),
             soundness_lift: "L".into(),
             tiers: vec![arena_types::CoverageTier {

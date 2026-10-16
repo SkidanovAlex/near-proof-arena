@@ -16,6 +16,7 @@ export type CoverageSpec = {
    * Lean declaration of the top `ChallengeSpec` (the statement every admitted verifier is sound for), e.g. `NearSpecV3.challengeSpecChunkTop`.
    */
   statement_spec: string;
+  succinct?: SuccinctSpec;
   /**
    * Tiers in any order; `rank` is the total order (higher = larger domain).
    */
@@ -24,6 +25,24 @@ export type CoverageSpec = {
    * `"coverage-v1"`.
    */
   version: string;
+} | null;
+/**
+ * `succinct` badge thresholds (v1.8, BENCHMARK_SPEC §17). Serialized only when present, so ids of challenges without the badge are unchanged. Display-only: not a gate and not a score component.
+ */
+export type SuccinctSpec = {
+  /**
+   * Log-log slope test (§17): fitted exponent of proof bytes and of verify time against the case's total gas must be ≤ 0.1 (`exponent_bound_ppm`), with a 95% upper confidence bound ≤ `ucb_bound_ppm` ppm of the same quantity (proposal: 0.25 = 250,000 ppm).
+   */
+  exponent_bound_ppm?: number;
+  /**
+   * Largest accepted proof over the conformance and held-out runs.
+   */
+  max_proof_bytes: number;
+  /**
+   * Largest verify wall time over the conformance and held-out runs.
+   */
+  max_verify_ns: number;
+  ucb_bound_ppm?: number;
 } | null;
 /**
  * Formal admission-statement parameters (v1.2, additive; absent ⇒ not serialized, so existing challenge ids are unchanged).
@@ -158,6 +177,20 @@ export type PriceModel = {
    */
   verifier_vcpus: number;
   version: number;
+} | null;
+/**
+ * Where the class weights come from (v1.7, additive; absent ⇒ not serialized, so existing challenge ids are unchanged). docs/CONTRACTS.md §11, docs/BENCHMARK_SPEC.md §17.
+ */
+export type WeightSource = {
+  /**
+   * What the weights rest on (the assumption, or how they were measured).
+   */
+  note: string;
+  /**
+   * Repo-relative path or digest of the supporting record (the documented assumption, or the measurement report). Required for `MEASURED`.
+   */
+  ref?: string | null;
+  status: 'ASSUMED' | 'MEASURED';
 } | null;
 
 export interface ArenaApiTypes {
@@ -443,6 +476,7 @@ export interface WorkloadSuite {
    */
   public_fixtures: string;
   revision: string;
+  weight_source?: WeightSource;
 }
 export interface WorkloadClass {
   /**

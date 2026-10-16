@@ -1,0 +1,28 @@
+{
+ "definition": "Per chunk: \u03a3 of the whole metadata.gas_profile of each FunctionCall-receipt outcome ('profile'; the VM burnt gas wasm_gas + actions + ext \u2014 the quantity oracle/v3-d3/src/d3.rs sums into fc_gas_burnt_for_function_call), else that outcome's gas_burnt ('outcome'; includes wiring gas, an overestimate).",
+ "gas_source_chunks": {
+  "profile": 5567,
+  "outcome": 652,
+  "none": 7551
+ },
+ "chunks": 13770,
+ "g_alpha": 3450888781824,
+ "percentiles_all_chunks": {
+  "p50": 0,
+  "p90": 7007290587486,
+  "p99": 528902729338090
+ },
+ "max_all_chunks": 541604888983552,
+ "percentiles_chunks_with_function_calls": {
+  "p50": 2449067342149,
+  "p90": 13423482016082,
+  "p99": 537371532697266
+ },
+ "max_chunks_with_function_calls": 541604888983552,
+ "share_at_or_above_half_g_alpha_ppm": 309078,
+ "window_heights": [
+  220185437,
+  220186815
+ ],
+ "note": "Rows feed the operator's G_alpha checkpoint decision (STATUS-V3-D3 \u00a74); re-fixing the value is a user decision."
+}

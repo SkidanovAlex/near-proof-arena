@@ -224,6 +224,10 @@ export interface BenchmarkResult {
    * Score * 1000 as integer (e.g. 100000 == 100.000).
    */
   score_milli?: number | null;
+  /**
+   * `succinct` badge evaluation (v1.8, additive; BENCHMARK_SPEC §17), recomputed by the control plane from the measurements and the challenge's thresholds. Serialized only when the challenge defines thresholds.
+   */
+  succinct?: SuccinctBadge | null;
   suite_revision: string;
 }
 /**
@@ -238,6 +242,10 @@ export interface ClassMeasurement {
   baseline_ns: number;
   class_id: string;
   cold_ns?: number | null;
+  /**
+   * Per measured run: Σ total gas of the batch's cases (v1.8, additive; empty when the oracle records no per-case gas). The x axis of the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17).
+   */
+  gas_runs?: number[];
   mad_ns: number;
   median_ns: number;
   peak_rss_bytes: number;
@@ -305,6 +313,46 @@ export interface CostClass {
   verify_fusd: number;
   verify_ns: number;
   weight_ppm: number;
+}
+/**
+ * One measured evaluation of the badge criteria ("recorded per run").
+ *
+ * This interface was referenced by `SubmissionView`'s JSON-Schema
+ * via the `definition` "SuccinctBadge".
+ */
+export interface SuccinctBadge {
+  /**
+   * Log-log slope of proof bytes against per-run batch gas, in ppm of the exponent (0.137 → 137_000). `None` without gas data or spread.
+   */
+  bytes_exponent_ppm?: number | null;
+  /**
+   * 95% upper confidence bound of the bytes exponent, ppm.
+   */
+  bytes_ucb_ppm?: number | null;
+  /**
+   * Why the badge was denied (empty when granted).
+   */
+  denied?: string[];
+  /**
+   * Both the thresholds and both slope tests passed (fail-closed: a fit that cannot be computed denies the badge).
+   */
+  granted: boolean;
+  /**
+   * Largest proof over the measured runs (`ClassMeasurement.proof_bytes_max`).
+   */
+  max_proof_bytes: number;
+  /**
+   * Largest per-run Σ verify wall ns of a class's batch over the measured runs (cost_v1's paid quantity; ≥ any single proof's verify wall).
+   */
+  max_verify_ns: number;
+  /**
+   * Log-log slope of verify time against per-run batch gas, ppm.
+   */
+  verify_exponent_ppm?: number | null;
+  /**
+   * 95% upper confidence bound of the verify exponent, ppm.
+   */
+  verify_ucb_ppm?: number | null;
 }
 /**
  * This interface was referenced by `SubmissionView`'s JSON-Schema
