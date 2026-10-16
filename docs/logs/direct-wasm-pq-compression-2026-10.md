@@ -2028,3 +2028,29 @@ Validation: Q8 fresh shared verification, exact whole-proof re-encoding and each
 branch byte reconciliation passed. An independent occupied-parent arithmetic
 calculation matched codec Merkle boundary sizes for every stage/query case.
 Python compilation and diff checks passed; no Lean changes require a new audit.
+
+
+### Packing-only expected-size screen
+
+Added `report_packing_expectation.py`, which evaluates uniform-query expected
+unique leaves and Merkle boundary nodes and optimizes each source/auxiliary
+branch independently over power-of-two packing1..1024 within the degree and
+64-lane limits. Expected stage sums do not require independence across stages.
+Twelve exhaustive small-tree/query-count cases verify both expectation formulas
+against actual codec boundaries. Ext4 non-PCS bytes reconcile to51590.
+
+At309 queries, retained Ext4 expectation820634 bytes improves only to816299
+with packings[16,1,8,8]. Projected Ext8 best is1103809 bytes with[16,1,4,8];
+its non-PCS vectors/framing already cost123302 bytes. Retained Ext8 CODE auxiliary
+packing4 would have100 lanes, above the64-lane limit, and is labeled ineligible.
+At128 queries optimized expectations are495517 Ext4 and683223 Ext8.
+
+These are expectations, not generated proofs or worst-case/security guarantees.
+No statement/request cost is included; Ext8 is a coordinate-width/field-byte
+projection. The result disfavors packing-only engineering: investigate joint
+source/auxiliary PCS folding/commitments or recursion while retaining all binding
+and adaptive-transcript obligations. Query counts are sensitivity inputs, not
+secure parameter selections.
+
+Validation: exhaustive expectation checks, baseline framing reconciliation,
+Python compilation and diff checks passed. No Lean sources changed.
