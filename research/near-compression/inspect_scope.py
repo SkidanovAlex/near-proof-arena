@@ -12,6 +12,7 @@ SOURCES = [
     "research/near-compression/NearCompression/TerminalSignedBalance.lean",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean",
     "research/near-compression/NearCompression/PackedComputedOpening.lean",
+    "research/near-compression/NearCompression/PackedComputedGKRTable.lean",
     "research/near-compression/NearCompression/WeightedJohnsonList.lean",
     "research/near-compression/NearCompression/CurveSupportInterpolation.lean",
     "research/near-compression/NearCompression/SmallFieldCurveCounterexample.lean",

@@ -116,7 +116,9 @@
     "results/literal193-gkr-packed-query-scaling.json",
     "airbender/direct-wasm/prepared_gkr_envelope.py",
     "airbender/direct-wasm/test_prepared_gkr_envelope.py",
-    "results/pq384-literal193-gkr-packed/envelope-report.json"
+    "results/pq384-literal193-gkr-packed/envelope-report.json",
+    "NearCompression/PackedComputedGKRTable.lean",
+    "results/packed-computed-gkr-table-integration.json"
   ],
   "requirements": [
     {
@@ -148,7 +150,8 @@
       "weighted_candidate_family": "Constructed a fixed finite family of all normalized jointly agreeing even/odd polynomial pairs. Soundness, completeness for a covering field alphabet, coefficientwise distinction and weighted Johnson size are proved. This removes supplied-list existence/size duties for jointly agreeing pairs, but does not establish that postchallenge folded candidates transfer to that family. Enumeration is not a practical decoder.",
       "concentration_component": "Alternative downstream extraction now proved from one affine curve carrying more than max(domain length,2) constrained successes. Universal transfer of every candidate is not required by this route. Quantitative weighted list-decoding concentration remains unproved; constructed candidate lists alone do not establish it.",
       "concentration_regression": "Lean modular-arithmetic exhaustive certificate: F5,N4,D2,T3 has positive Johnson gap but four successful fold challenges and no jointly agreeing pair. This refutes zero-exception transfer from a positive gap alone, not the target concentration theorem. Python enumerates202376 normalized source pairs across F5/F7/F11/F17 and two weight profiles; generalization beyond those finite cases is not claimed.",
-      "support_interpolation_component": "D distinct fixed agreement points now construct the same affine source-interpolant curve for every candidate. Under no parent outcome, supported success count <=max(domain length,2), with no supplied concentration premise. Global enumeration of all supports can be exponential and has not yielded a feasible concentration bound."
+      "support_interpolation_component": "D distinct fixed agreement points now construct the same affine source-interpolant curve for every candidate. Under no parent outcome, supported success count <=max(domain length,2), with no supplied concentration premise. Global enumeration of all supports can be exponential and has not yielded a feasible concentration bound.",
+      "computed_gkr_table_component": "Inverse GKR-table reconstruction of actual mutable source coefficients equals the original padded rows/columns. Actual computed polynomial supplies the current/next GKR functional without a supplied transform identity. Coefficientwise binding of an extracted polynomial suffices for table equality; proving that cryptographic binding or a sound common representative remains open. Proximity is not promoted to equality."
     },
     {
       "name": "Complete bytes and scaling",

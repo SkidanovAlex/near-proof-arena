@@ -2200,3 +2200,22 @@ Validation: exact three-object roundtrip, fresh-process verifier,14 rejection
 cases (caller mismatch, framing, fields, shape, roots, UTF8, published output,
 proof integrity) and Python compilation/diff checks passed. Existing proof
 artifact unchanged; envelope and report retained. Feasibility gate stays open.
+
+
+### Computed-source GKR table interpretation
+
+`PackedComputedGKRTable.lean` joins the modeled mutable Mobius transform with
+the inverse table decoder used by recovered GKR candidate semantics. On every
+bounded row/column, decoding computed coefficients returns the original packed
+source cell, including partial-lane padding. A second theorem transfers this
+identity to any polynomial with the same bounded coefficients. A third derives
+the exact GKR current/next slot functional for the computed polynomial without
+assuming its coefficient transform.
+
+These are algebraic interpretation/refinement identities, not PCS extraction.
+Accepted openings must still establish a common source binding or appropriate
+common representative; mere polynomial proximity is not enough for equality.
+Whole compiled GKR/AIR/PCS/bus soundness and quantum compilation remain open.
+
+Validation: full `check.py` passed with 3752 registered results and enforced
+axiom allowlist. No byte measurements or security parameters changed.

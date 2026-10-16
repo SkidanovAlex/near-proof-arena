@@ -1355,3 +1355,5 @@ import NearCompression.GeneralCurveConcentrationReduction
 import NearCompression.SmallFieldCurveCounterexample
 
 import NearCompression.CurveSupportInterpolation
+
+import NearCompression.PackedComputedGKRTable

@@ -5371,3 +5371,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.curve_support_interpolation
 #print axioms NearCompression.supported_curve_bad_count
+
+#print axioms NearCompression.packed_computed_gkr_table
+#print axioms NearCompression.bound_polynomial_gkr_table
+#print axioms NearCompression.packed_computed_gkr_functional
