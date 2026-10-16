@@ -5453,3 +5453,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_evaluated_path_linked
 #print axioms NearCompression.gkr_evaluated_continuation_budget
 #print axioms NearCompression.gkr_evaluated_path_recovered_mismatch
+
+#print axioms NearCompression.terminal_finite_gate_value
+#print axioms NearCompression.terminal_finite_chain_values
+#print axioms NearCompression.terminal_finite_certified_root

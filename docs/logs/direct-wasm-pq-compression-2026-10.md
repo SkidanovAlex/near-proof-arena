@@ -2826,3 +2826,31 @@ quantum compilation remain open.
 Validation: five new results pass module checks and full check.py (3808
 registered results), with the existing axiom allowlist. Imports, audit, scope,
 integration evidence and NOT_PASSED gate updated.
+
+
+### Fixed-profile layer routes and finite evaluator semantics
+
+Extended the existing terminal DAG route checker with caller-supplied fixed
+input caps. The profile must match that configuration; fixed captures undergo
+full proof verification before route extraction. Legacy replay calls remain
+supported. Added out-of-range/negative operands and non-power-of-two layer
+mutations to the prior nine route negatives.
+
+Both193/cap13 and769/cap14 pass full proof verification, route validation,
+JSON roundtrip and12 negatives. Each has35 layers,7708 computed gates,6753
+relays and7338 padding gates. The legacy193 route regression also passes all
+12 negatives. Missing cap and changed cap12/cap14 reject the cap13 artifact.
+Retained complete circuit/layout/route bundles and reports for both fixed
+profiles. These are Python-validated captures, not concrete kernel proofs.
+
+Added TerminalFiniteLayerCertificate. Existing DAG route semantics now
+compose through finite gate lists, with explicit stored-gate and live-position
+bounds. Acyclic DAG equations and initial placement yield root preservation
+under the same gkrFiniteCircuit evaluator used by recovered GKR values.
+The universal theorem assumes structural certificates; no emitter or parser
+refinement is claimed by the captured Python checks.
+
+Validation: three new results pass full check.py (3811 registered results)
+with the existing axiom allowlist; Python compilation and diff checks pass.
+Gate remains NOT_PASSED; compiler/transcript/global execution/PQ composition
+and secure full NEAR1Pgas sub300000-byte feasibility remain incomplete.

@@ -73,18 +73,21 @@ def validate(circuit,layout,cert):
     require(circuit['root'] in previous and previous[circuit['root']]==layout['root'],'root route')
     return counts
 
-def replay(path):
+def replay(path, *, input_log=None):
     statement=json.loads((path/'statement.json').read_text());proof=json.loads((path/'proof.json').read_text());spec=statement['spec'];roots=[bytes.fromhex(x) for x in statement['roots']]
     if proof['profile']=='near-pq384-seed-gkr-bus-v1':
+        require(input_log is None,'seed profile has no fixed input cap')
         import pq384_seed_gkr_bus as bus
         st,t,a,g=bus.begin(spec,roots,bus.configure(spec['air']))
     else:
-        require(proof['profile']=='near-pq384-gkr-bus-v1','profile')
         import pq384_gkr_bus as bus
-        st,t,a,g=bus.begin(spec,roots)
+        require(proof['profile']==bus.profile(input_log),'profile/configuration mismatch')
+        if input_log is not None:
+            require(bus.verify(proof,spec,roots,input_log=input_log),'fixed proof verification')
+        st,t,a,g=bus.begin(spec,roots,input_log=input_log)
     ars=[bus.pcs.decode_hash(x) for x in proof['aux_roots']];bus.initialize_aux(t,spec,ars,proof['finals'])
     terminals=[bus.constraint_verify(spec,t,ti,rs) for ti,rs in enumerate(proof['tables'])]
-    circuit,layout,_=bus.terminal_layout(spec,t,a,g,proof['finals'],terminals)
+    circuit,layout,_=bus.terminal_layout(spec,t,a,g,proof['finals'],terminals,**({} if input_log is None else {'input_log':input_log}))
     return circuit,layout,proof['profile']
 
 def negatives(circuit,layout,cert):
@@ -92,6 +95,9 @@ def negatives(circuit,layout,cert):
     def add(label,which,fn):
         c,l,s=copy.deepcopy(circuit),copy.deepcopy(layout),copy.deepcopy(cert)
         fn({'c':c,'l':l,'s':s}[which]);mutations.append((label,c,l,s))
+    add('out-of-range-operand','l',lambda x:x['layers'][0].__setitem__(1,('add',layout['input_size'],0)))
+    add('negative-operand','l',lambda x:x['layers'][0].__setitem__(1,('add',-1,0)))
+    add('non-power-two-layer','l',lambda x:x['layers'][0].pop())
     add('zero-relay','l',lambda x:x['layers'][0].__setitem__(0,('sub',0,0)))
     add('root-position','l',lambda x:x.__setitem__('root',0))
     add('source-live-missing-root','c',lambda x:x['live_nodes'].remove(x['root']))
@@ -117,13 +123,13 @@ def negatives(circuit,layout,cert):
     return rejected
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--reference-dir',required=True);p.add_argument('--capture',action='append',required=True);p.add_argument('--output',required=True);a=p.parse_args();sys.path.insert(0,a.reference_dir)
+    p=argparse.ArgumentParser();p.add_argument('--reference-dir',required=True);p.add_argument('--capture',action='append',required=True);p.add_argument('--output',required=True);p.add_argument('--input-log',type=int);a=p.parse_args();sys.path.insert(0,a.reference_dir)
     out=Path(a.output);out.mkdir(parents=True,exist_ok=True);reports=[]
     for name in a.capture:
-        start=time.perf_counter();path=Path(name);c,l,profile=replay(path);s=generate(c,l);counts=validate(c,l,s);bad=negatives(c,l,s)
+        start=time.perf_counter();path=Path(name);c,l,profile=replay(path,input_log=a.input_log);s=generate(c,l);counts=validate(c,l,s);bad=negatives(c,l,s)
         bundle=dict(circuit=c,layout=l,certificate=s);raw=json.dumps(bundle,separators=(',',':')).encode();dest=out/(path.name+'-certificate.json');dest.write_bytes(raw)
         restored=json.loads(raw);restored['certificate']['initial']={int(k):v for k,v in restored['certificate']['initial'].items()};restored['certificate']['plans']=[{int(k):v for k,v in plan.items()} for plan in restored['certificate']['plans']]
         require(validate(restored['circuit'],restored['layout'],restored['certificate'])==counts,'certificate JSON roundtrip')
-        r=dict(profile=profile,capture=str(path),nodes=len(c['nodes']),layers=len(l['layers']),counts=counts,rejected=bad,artifact=str(dest),sha256=hashlib.sha256(raw).hexdigest(),seconds=time.perf_counter()-start)
+        r=dict(profile=profile,trusted_input_log=a.input_log,full_proof_verified=a.input_log is not None,capture=str(path),nodes=len(c['nodes']),layers=len(l['layers']),counts=counts,rejected=bad,artifact=str(dest),sha256=hashlib.sha256(raw).hexdigest(),seconds=time.perf_counter()-start)
         reports.append(r);print(json.dumps(r),flush=True);(out/'report.json').write_text(json.dumps(dict(status='PASS',captures=reports,scope='Python structural premise validation, not a kernel proof for captures or emitter/AIR refinement.'),indent=2))
 if __name__=='__main__':main()
