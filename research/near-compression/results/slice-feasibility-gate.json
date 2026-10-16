@@ -363,7 +363,13 @@
     "results/prepared-concrete-soundness-integration.json",
     "NearCompression/SelectedBranchWeights.lean",
     "airbender/direct-wasm/report_composed_slice_parameters.py",
-    "results/composed-slice-parameter-screen.json"
+    "results/composed-slice-parameter-screen.json",
+    "airbender/direct-wasm/pq384_terminal_compile.py",
+    "airbender/direct-wasm/pq384_terminal_gkr.py",
+    "airbender/direct-wasm/pq384_ext8_terminal_compile.py",
+    "airbender/direct-wasm/test_ext8_terminal_compile.py",
+    "results/ext8-terminal-compiler.json",
+    "results/ext8-terminal-regression.json"
   ],
   "requirements": [
     {
@@ -574,5 +580,13 @@
     "ext8_min_queries_192_ideal": 463,
     "ext8_challenge_only_ideal_ceiling_bits": 214.25496345787778,
     "scope": "Source-valid composed bound; exact Python count normalization and Lean disjoint-weight inequality. Ext8/Ext12 project retained Ext4 circuit/packing geometry; native evidence, source-invalid cases, QROM and secure bytes remain open."
+  },
+  "ext8_terminal_compiler_candidate": {
+    "status": "DIFFERENTIAL_COMPONENT_VALIDATED",
+    "minimum_input_log": 13,
+    "random_batch_layers": 78,
+    "legacy_ext4_layers": 35,
+    "random_batch_raw_gkr_scalar_bytes": 104832,
+    "scope": "Actual 193-instruction AIR with synthetic Ext8 terminals/challenges, 11-word instructions, optimized DAG and layered evaluation. Six differential cases, three exact Ext4 compiler regressions and three malformed-input rejections. Retained Ext4 slice verifies. No native Ext8 kernel/GKR proof/PCS/secure-byte claim."
   }
 }

@@ -722,6 +722,8 @@ SOURCES = [
     'research/near-compression/airbender/direct-wasm/pq384_weighted_joint.py',
     'research/near-compression/airbender/direct-wasm/pq384_gkr_bus.py',
     'research/near-compression/airbender/direct-wasm/pq384_terminal_compile.py',
+    'research/near-compression/airbender/direct-wasm/pq384_ext8_terminal_compile.py',
+    'research/near-compression/airbender/direct-wasm/test_ext8_terminal_compile.py',
     'research/near-compression/airbender/direct-wasm/run_pq384_gkr_bus.py',
 
     "research/near-compression/NearCompression/SharedCurveConcentration.lean",

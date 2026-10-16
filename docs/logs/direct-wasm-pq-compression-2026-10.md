@@ -4828,3 +4828,35 @@ queries cannot fix the field/challenge ceiling.
 Validation: full `check.py` PASS (4115 registered results), existing axiom
 allowlist; exact arithmetic screen and minimum-query boundaries pass. Slice
 gate remains NOT_PASSED.
+
+### Ext8 terminal compiler candidate and measured circuit geometry
+
+The terminal DAG compiler now accepts explicit field arithmetic and a matching
+instruction compiler; default Ext4 behavior retains its ABI and output. The
+layer builder accepts explicit constant decoding. The separate
+`pq384_ext8_terminal_compile.py` candidate builds 11-word instructions from the
+existing Ext8 formula generator and uses shared constant folding, CSE and
+balancing. It does not call the Ext4 native round kernel.
+
+On the actual 193-instruction AIR with deterministic synthetic Ext8 terminals,
+six unoptimized-program vs DAG vs layered-output comparisons pass, covering
+zero/one/random batching and zero/random private inputs. Three complete Ext4
+compiler outputs match the pinned pre-edit compiler at `04eaa8e31` exactly;
+three malformed input/API cases reject. The retained Ext4 fixed13 binary proof
+also passes the full prepared-slice frontend after these shared-code changes.
+
+Measured candidate geometry: private capacity 4096 and minimum input log 13
+remain unchanged; random batching has 78 layers versus 35 in the Ext4 baseline.
+Its sum(4*m+1) is 2158 and raw GKR scalar payload is 104832 bytes at 32 bytes
+per Ext8 element. This counts scalar payload only, not framing, PCS openings,
+statement transport or a generated proof. Zero/one batching yield different
+specialized shapes, explicitly recorded in the report.
+
+Next: investigate the increased depth (the candidate retains the exact Horner
+formula structure), prove/validate a shallower lowering, then integrate Ext8
+GKR/transcript and native round/PCS execution. No authenticated Ext8 transcript,
+universal Lean compiler refinement, secure size or QROM claim is made. Full
+1 Pgas remains open and the slice gate stays NOT_PASSED.
+
+Validation: differential/negative tests and retained Ext4 frontend PASS; full
+`check.py` PASS (4115 registered results), existing axiom allowlist.

@@ -29,7 +29,7 @@ def gate(op,a,b):return {'add':add,'sub':sub,'mul':mul}[op](a,b)
 def size(n):return 1<<max(0,(n-1).bit_length())
 
 
-def layer_circuit(circuit):
+def layer_circuit(circuit, *, field=None):
     """Public DAG -> layers with explicit zero/relay gates and private slots."""
     nodes=circuit['nodes'];live=set(circuit['live_nodes']);capacity=circuit['private_input_capacity']
     require(capacity>0 and capacity&(capacity-1)==0,'input capacity')
@@ -49,7 +49,7 @@ def layer_circuit(circuit):
         node=nodes[i]
         if node[0]=='input':
             require(type(node[1])is int and 0<=node[1]<capacity,'private slot');positions[i]=node[1]
-        elif node[0]=='const':constants[cursor]=ext(node[1:]);positions[i]=cursor;cursor+=1
+        elif node[0]=='const':constants[cursor]=(ext(node[1:]) if field is None else field.canonical(node[1:]));positions[i]=cursor;cursor+=1
     input_size=size(cursor+1);zero=input_size-1;layers=[]
     for d in range(1,levels[circuit['root']]+1):
         gates=[('add',zero,zero)];new={}
