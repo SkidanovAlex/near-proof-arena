@@ -5499,3 +5499,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_compiled_dag_checked
 #print axioms NearCompression.terminal_compiled_finite_checked
 #print axioms NearCompression.terminal_compiled_check_regressions
+
+#print axioms NearCompression.gkr_scatter_split_initial
+#print axioms NearCompression.recovered_private_slots_capacity
+#print axioms NearCompression.recovered_circuit_input_initial
+#print axioms NearCompression.recovered_compiled_finite_value
+#print axioms NearCompression.recovered_compiled_reverse_output
+#print axioms NearCompression.recovered_scatter_split_regressions

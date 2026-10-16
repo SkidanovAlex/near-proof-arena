@@ -3105,3 +3105,28 @@ not the external identification of explicit programs/environments with AIR
 compilation and recovered committed data. Transcript/parser refinement,
 concrete kernel capture certificates, global sampling composition, quantum
 security, full NEAR capacity and secure proof size remain open.
+
+### Recovered assignment connected to compiled execution
+
+RecoveredCompiledCheck closes the representation difference between the
+protocol's scattered recovered private values plus constants and the compiler's
+capacity-split initial vector. Current/next lane support bounds imply that all
+recovered private slots fall below capacity, including masked partial lanes.
+Constants at or above capacity then establish exact function equality.
+
+The compiled residual theorem is instantiated on gkrRecoveredCircuitInput and
+on depth zero of gkrReverseCircuitValues. No input-vector equality is assumed.
+The result remains conditional on the decoded tuple, metadata geometry and
+combined compiler checker acceptance for that recovered assignment.
+
+Support separation does not establish unique ownership or commitment
+extraction. Kernel regressions preserve additive duplicate keys and missing
+slots and show that constants inside the private region, or private slots
+outside it, break the split. Existing canonical ownership is a separate theorem
+for interpreting individual recovered columns.
+
+Full check.py passed 3851 results with the existing axiom allowlist; diff checks
+passed. Integration/gate/scope evidence updated; gate remains NOT_PASSED. No new
+capture execution is claimed. Actual recovered-assignment checker acceptance,
+AIR compilation/environment identification, global sampling/computational
+soundness, quantum security and secure full-NEAR size remain open.

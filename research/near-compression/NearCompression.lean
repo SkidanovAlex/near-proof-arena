@@ -1413,3 +1413,5 @@ import NearCompression.TerminalRebuildCheck
 import NearCompression.TerminalBatchCheck
 
 import NearCompression.TerminalCompiledCheck
+
+import NearCompression.RecoveredCompiledCheck

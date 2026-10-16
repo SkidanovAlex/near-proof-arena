@@ -1,0 +1,39 @@
+{
+  "status": "RECOVERED_GKR_ASSIGNMENT_CONNECTED_TO_COMPILED_OUTPUT",
+  "module": "NearCompression/RecoveredCompiledCheck.lean",
+  "theorems": [
+    "gkr_scatter_split_initial",
+    "recovered_private_slots_capacity",
+    "recovered_circuit_input_initial",
+    "recovered_compiled_finite_value",
+    "recovered_compiled_reverse_output",
+    "recovered_scatter_split_regressions"
+  ],
+  "proved": [
+    "Scatter(private)+scatter(constants) equals the compiler split initial vector when private keys are below capacity and constant keys are at or above it.",
+    "Current/next lane metadata bounds imply recovered private slot bounds, including partial-lane masking.",
+    "The combined compiler theorem applies to exactly gkrRecoveredCircuitInput and its depth-zero gkrReverseCircuitValues, without an assumed input-vector equality."
+  ],
+  "scope": "Conditional on decoded polynomial entries, lane geometry, constant support and compiler checker acceptance for the recovered assignment. Does not extract these entries from a commitment or infer unique ownership from support separation.",
+  "kernel_regressions": [
+    "Duplicate private keys remain additive",
+    "Unassigned private slot is zero",
+    "Constant region read is preserved",
+    "Constants overlapping private region refute the split",
+    "Private slots outside the region refute the split"
+  ],
+  "remaining": [
+    "Establish combined checker acceptance for the actual recovered assignment and source AIR-derived environments.",
+    "Use canonical ownership separately when identifying individual columns; support bounds alone do not imply uniqueness.",
+    "AIR compiler/parser/transcript refinement, global GKR/PCS soundness, quantum security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3851,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}
