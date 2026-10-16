@@ -3565,3 +3565,22 @@ Kernel regressions cover distinct axis/gamma values, padding and incorrect row
 prefix offsets. Full check.py passed 3934 registered results with the existing
 axiom allowlist. No native code changed. Global/PQ soundness and secure full-NEAR
 size remain open; gate NOT_PASSED.
+
+### Earlier GKR sequences lift joint PCS counts without fixing rowpoints
+
+GKREarlierJointCount proves a finite-count exchange retaining all event and
+continuation dependencies. The rows-first GKR/PCS experiment becomes a sum over
+earlier GKR sequences of exactly the merged PCS joint-coordinate experiment.
+Rows, final left/right/gamma and opening coordinates remain sampled together.
+A uniform bound for each earlier sequence lifts with the exact earlier-path
+multiplicity, without an independence assumption or reordering protocol messages.
+
+This resolves the counting-order obstacle, not the concrete prover-family
+mapping. The sent/claim/folding strategy families and accepted event still need
+instantiation for each fixed earlier sequence, with all source/authentication
+premises preserved. It remains invalid to use the far-case theorem after fixing
+rowpoint values.
+
+Full check.py passed 3937 registered results with the existing axiom allowlist.
+No native code changed. Global/PQ soundness, secure parameters and full-NEAR
+sub300000-byte feasibility remain open; gate NOT_PASSED.

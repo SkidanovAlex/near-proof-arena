@@ -230,7 +230,9 @@
     "NearCompression/GKRBlockCoordinates.lean",
     "results/gkr-block-coordinates-integration.json",
     "NearCompression/GKRJointTerminalEvent.lean",
-    "results/gkr-joint-terminal-event-integration.json"
+    "results/gkr-joint-terminal-event-integration.json",
+    "NearCompression/GKREarlierJointCount.lean",
+    "results/gkr-earlier-joint-count-integration.json"
   ],
   "requirements": [
     {

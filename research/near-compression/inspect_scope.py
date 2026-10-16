@@ -392,6 +392,7 @@ SOURCES = [
     "research/near-compression/NearCompression/BatchedEvaluatedGKR.lean",
     "research/near-compression/NearCompression/GKRBlockCoordinates.lean",
     "research/near-compression/NearCompression/GKRJointTerminalEvent.lean",
+    "research/near-compression/NearCompression/GKREarlierJointCount.lean",
     "research/near-compression/NearCompression/JointSourceFarFold.lean",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean",

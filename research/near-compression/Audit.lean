@@ -5606,3 +5606,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_joint_history_suffix_split
 #print axioms NearCompression.gkr_evaluated_joint_terminal_event
 #print axioms NearCompression.gkr_joint_accessor_regressions
+
+#print axioms NearCompression.gkr_finite_sample_exchange
+#print axioms NearCompression.gkr_earlier_joint_event_count
+#print axioms NearCompression.gkr_earlier_joint_event_budget
