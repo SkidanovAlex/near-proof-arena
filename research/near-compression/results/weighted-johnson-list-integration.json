@@ -1,0 +1,40 @@
+{
+  "status": "WEIGHTED_FINITE_LIST_BOUND_PROVED_TRANSFER_OPEN",
+  "module": "NearCompression/WeightedJohnsonList.lean",
+  "bound": "L*(T*T-M*B*(D-1)) <= M*M",
+  "symbols": {
+    "L": "number of coefficientwise distinct candidate polynomials or joint even/odd pairs",
+    "T": "minimum weighted agreement",
+    "M": "sum of surviving integer weights",
+    "B": "pointwise weight cap",
+    "D": "strict polynomial degree bound"
+  },
+  "requirements": [
+    "Distinct original domain points for polynomial root counting",
+    "Degree bounds and weighted agreement for each family member",
+    "Coefficientwise pairwise distinction",
+    "Positive Johnson gap needed for a useful list bound"
+  ],
+  "established": [
+    "Generic weighted finite agreement counting by exact replication",
+    "Weighted RS list bound",
+    "Joint even/odd curve list bound without a product-of-lists penalty",
+    "Gap form using actual surviving mass"
+  ],
+  "remaining": [
+    "Construct a complete prechallenge joint curve family",
+    "Prove exceptional-challenge transfer of arbitrary postchallenge candidates into that family",
+    "Compose history-dependent weighted extraction with adaptive transcript",
+    "Extract one common committed trace",
+    "QROM and total proof-size validation"
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3740,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

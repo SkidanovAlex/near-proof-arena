@@ -5353,3 +5353,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.weighted_replay_representative_no_candidate
 #print axioms NearCompression.weighted_prefix_representative_wrong_count
+
+#print axioms NearCompression.weighted_agreement_list_bound
+#print axioms NearCompression.weighted_rs_johnson_list_bound
+#print axioms NearCompression.weighted_curve_johnson_list_bound
+#print axioms NearCompression.weighted_curve_johnson_gap_bound

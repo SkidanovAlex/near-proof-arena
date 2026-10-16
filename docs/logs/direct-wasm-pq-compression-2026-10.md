@@ -1900,3 +1900,20 @@ stronger list-decoding/proximity reduction before a secure size claim.
 Validation: full `check.py` passed with 3736 registered results and enforced
 axiom allowlist. Independent Python Fraction arithmetic confirmed that each
 reported query count meets its target and one fewer does not.
+
+
+### Weighted Johnson list bound
+
+Proved weighted finite agreement counting by replication and specialized it to
+RS polynomial families and joint even/odd polynomial pairs. For total surviving
+mass M, point cap B, strict degree D, agreement T and family length L, the bound
+is L*(T*T-M*B*(D-1))<=M*M when the gap is nonnegative. A positive gap is required
+to constrain L. Joint pairs need no product-of-two-list penalty. These bounds
+apply to fixed finite coefficientwise distinct families, not extracted candidates.
+
+This discharges the weighted list-size ingredient for a suitable family in
+`GeneralListCurveExtraction`; constructing that family with complete correlated
+transfer remains open. No improved parameters, bytes, or quantum security claimed.
+
+Validation: full `check.py` passed with 3740 registered results and the existing
+axiom allowlist. The slice feasibility gate remains NOT_PASSED.
