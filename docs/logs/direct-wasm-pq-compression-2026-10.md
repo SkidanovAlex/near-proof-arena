@@ -1796,3 +1796,11 @@ Added a source-preserving auxiliary attachment: heights and source columns are f
 Composed this event with the literal slice's wrong actual runCall output theorem. Source TableLocal, public fit, executable preparation eligibility and sufficient fuel remain explicit. No cryptographic extraction, Fiat-Shamir or quantum compiler theorem is inferred from this composition.
 
 Validation: full check.py passed (3681 registered results; allowed axioms only). No executable, proof-size or security-parameter changes. Next: derive the common fixed source and source/auxiliary residual premises from accepted local/PCS proofs with correct transcript timing. Adaptive sumcheck/PCS extraction, quantified quantum reduction, executable Ext8 migration, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.
+
+### Degree-generic adaptive local sumcheck
+
+Inspected verify_table_reduction: source/auxiliary zerocheck rounds enforce table_degree+2 coefficients, endpoint sums, and an exact claim update before a terminal weighted-evaluator equality. Existing adaptive weighted theorem was quadratic PCS-specific. Added the degree-generic adaptive checked-message bound, false-claim persistence, and specialization to the actual Boolean suffix-sum truth function. Endpoint consistency is derived by splitting the Boolean cube. Integer counting theorem covers zero rounds/empty samples and needs no degree premises on malformed/aborting branches.
+
+Validation: full check.py passed (3687 registered results; allowed axioms only). Inspected retained actual degrees: EXEC table_degree6/round_degree7 with8 rounds; CODE4/5 with8 rounds. Conditional sumcheck numerators56/40 follow, but actual combined source/auxiliary honest-polynomial degree and representation remain uninstantiated. Terminal equality is still an authenticated-honest-value premise, not a proved PCS conclusion.
+
+Next: construct those combined evaluator round polynomials and discharge degree/representation, then compose terminal current/next/PCS authentication. Initial batching, adaptive bus and quantum transcript components still require full composition. No secure sub300k, 128-bit quantum or full 1 Pgas completion claim. Slice gate stays NOT_PASSED.

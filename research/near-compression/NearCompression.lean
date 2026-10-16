@@ -1324,3 +1324,5 @@ import NearCompression.BusExt8SourceTransport
 
 import NearCompression.BusAdaptiveAuxiliary
 import NearCompression.PreparedLiteralAdaptiveBus
+
+import NearCompression.AdaptivePolynomialSumcheck

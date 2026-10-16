@@ -5287,3 +5287,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_adaptive_auxiliary_implies_source
 #print axioms NearCompression.bus_adaptive_auxiliary_fp8_bound
 #print axioms NearCompression.prepared_literal_wrong_output_adaptive_bus_bound
+
+#print axioms NearCompression.polynomial_sumcheck_round_count
+#print axioms NearCompression.polynomial_sumcheck_false_persists
+#print axioms NearCompression.adaptive_polynomial_sumcheck_count
+#print axioms NearCompression.polynomial_sumcheck_truth_endpoints
+#print axioms NearCompression.polynomial_sumcheck_truth_terminal
+#print axioms NearCompression.adaptive_polynomial_cube_sumcheck_count
