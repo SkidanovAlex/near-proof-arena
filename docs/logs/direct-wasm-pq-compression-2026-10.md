@@ -4065,3 +4065,18 @@ Concrete metadata indexing/authentication and auxiliary formula refinement
 still need substitution before global acceptance soundness.
 Full check.py passed 4026 registered results with the existing axiom allowlist.
 No native/size changes; global/PQ security remains open, gate NOT_PASSED.
+
+### Metadata-fixed source indices and indexed decoded provenance
+
+IndexedDecodedProvenance derives a unique live source-lane index from
+canonical metadata coverage and all-support disjointness. This choice
+precedes the polynomial tuple. Existential zipped lane/polynomial membership
+then identifies the polynomial at that fixed index, converting preselected
+decoded-family provenance into the exact indexed cell equality used by
+fixed_joint_representative_source_trace. Empty-support lanes are not assumed
+globally unique.
+
+The index-family assembly, native metadata authentication and auxiliary
+formula/global soundness connections remain open.
+Full check.py passed 4030 registered results with the existing axiom allowlist.
+No native/size changes; QROM security remains open, gate NOT_PASSED.

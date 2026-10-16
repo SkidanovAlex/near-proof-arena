@@ -287,7 +287,9 @@
     "NearCompression/FixedDecodedSourceTrace.lean",
     "results/fixed-decoded-source-trace-integration.json",
     "NearCompression/FixedJointSourceTrace.lean",
-    "results/fixed-joint-source-trace-integration.json"
+    "results/fixed-joint-source-trace-integration.json",
+    "NearCompression/IndexedDecodedProvenance.lean",
+    "results/indexed-decoded-provenance-integration.json"
   ],
   "requirements": [
     {

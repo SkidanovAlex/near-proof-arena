@@ -1505,3 +1505,5 @@ import NearCompression.SourceAcrossAuxiliary
 import NearCompression.FixedDecodedSourceTrace
 
 import NearCompression.FixedJointSourceTrace
+
+import NearCompression.IndexedDecodedProvenance
