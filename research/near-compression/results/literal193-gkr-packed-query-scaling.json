@@ -1,0 +1,665 @@
+{
+  "status": "VERIFIED_Q8_AND_AUTHENTICATED_TREE_SIZE_REPLAY",
+  "proof_sha256": "b4a24341e342aebcdbf2fb6e4bde8fb806f4edff588a1ddd3ccb3097a8762655",
+  "fixed_proof_bytes": 18845,
+  "outer_gkr_and_local_bytes": 17551,
+  "reconstructed_fold_roots": 12,
+  "cases": [
+    {
+      "queries": 8,
+      "sections": [
+        {
+          "kind": "source",
+          "stage": 0,
+          "leaf_bytes": 1006,
+          "sibling_bytes": 3552,
+          "zero_words": 368,
+          "nonzero_words": 240
+        },
+        {
+          "kind": "source",
+          "stage": 1,
+          "leaf_bytes": 582,
+          "sibling_bytes": 1968,
+          "zero_words": 48,
+          "nonzero_words": 144
+        },
+        {
+          "kind": "source",
+          "stage": 2,
+          "leaf_bytes": 460,
+          "sibling_bytes": 3552,
+          "zero_words": 96,
+          "nonzero_words": 112
+        },
+        {
+          "kind": "source",
+          "stage": 3,
+          "leaf_bytes": 832,
+          "sibling_bytes": 3552,
+          "zero_words": 0,
+          "nonzero_words": 208
+        },
+        {
+          "kind": "fold",
+          "stage": 4,
+          "leaf_bytes": 256,
+          "sibling_bytes": 3072,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 5,
+          "leaf_bytes": 256,
+          "sibling_bytes": 2928,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 6,
+          "leaf_bytes": 256,
+          "sibling_bytes": 2544,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 7,
+          "leaf_bytes": 256,
+          "sibling_bytes": 1968,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 8,
+          "leaf_bytes": 256,
+          "sibling_bytes": 1680,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 9,
+          "leaf_bytes": 256,
+          "sibling_bytes": 1440,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 10,
+          "leaf_bytes": 192,
+          "sibling_bytes": 960,
+          "zero_words": 0,
+          "nonzero_words": 48
+        },
+        {
+          "kind": "fold",
+          "stage": 11,
+          "leaf_bytes": 160,
+          "sibling_bytes": 624,
+          "zero_words": 0,
+          "nonzero_words": 40
+        },
+        {
+          "kind": "fold",
+          "stage": 12,
+          "leaf_bytes": 160,
+          "sibling_bytes": 384,
+          "zero_words": 0,
+          "nonzero_words": 40
+        },
+        {
+          "kind": "fold",
+          "stage": 13,
+          "leaf_bytes": 128,
+          "sibling_bytes": 192,
+          "zero_words": 0,
+          "nonzero_words": 32
+        },
+        {
+          "kind": "fold",
+          "stage": 14,
+          "leaf_bytes": 128,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 32
+        }
+      ],
+      "opening_payload_bytes": 33600,
+      "projected_proof_bytes": 52445,
+      "projected_current_transport_bytes": 277154,
+      "source_payload_bytes": 15504,
+      "fold_payload_bytes": 18096
+    },
+    {
+      "queries": 128,
+      "sections": [
+        {
+          "kind": "source",
+          "stage": 0,
+          "leaf_bytes": 15544,
+          "sibling_bytes": 32592,
+          "zero_words": 5952,
+          "nonzero_words": 3700
+        },
+        {
+          "kind": "source",
+          "stage": 1,
+          "leaf_bytes": 8367,
+          "sibling_bytes": 9552,
+          "zero_words": 690,
+          "nonzero_words": 2070
+        },
+        {
+          "kind": "source",
+          "stage": 2,
+          "leaf_bytes": 6954,
+          "sibling_bytes": 32592,
+          "zero_words": 1614,
+          "nonzero_words": 1688
+        },
+        {
+          "kind": "source",
+          "stage": 3,
+          "leaf_bytes": 13092,
+          "sibling_bytes": 32592,
+          "zero_words": 30,
+          "nonzero_words": 3272
+        },
+        {
+          "kind": "fold",
+          "stage": 4,
+          "leaf_bytes": 4032,
+          "sibling_bytes": 25872,
+          "zero_words": 0,
+          "nonzero_words": 1008
+        },
+        {
+          "kind": "fold",
+          "stage": 5,
+          "leaf_bytes": 4032,
+          "sibling_bytes": 19920,
+          "zero_words": 0,
+          "nonzero_words": 1008
+        },
+        {
+          "kind": "fold",
+          "stage": 6,
+          "leaf_bytes": 3936,
+          "sibling_bytes": 14256,
+          "zero_words": 0,
+          "nonzero_words": 984
+        },
+        {
+          "kind": "fold",
+          "stage": 7,
+          "leaf_bytes": 3680,
+          "sibling_bytes": 9552,
+          "zero_words": 0,
+          "nonzero_words": 920
+        },
+        {
+          "kind": "fold",
+          "stage": 8,
+          "leaf_bytes": 3136,
+          "sibling_bytes": 5184,
+          "zero_words": 0,
+          "nonzero_words": 784
+        },
+        {
+          "kind": "fold",
+          "stage": 9,
+          "leaf_bytes": 2432,
+          "sibling_bytes": 2064,
+          "zero_words": 0,
+          "nonzero_words": 608
+        },
+        {
+          "kind": "fold",
+          "stage": 10,
+          "leaf_bytes": 1664,
+          "sibling_bytes": 480,
+          "zero_words": 0,
+          "nonzero_words": 416
+        },
+        {
+          "kind": "fold",
+          "stage": 11,
+          "leaf_bytes": 1024,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 256
+        },
+        {
+          "kind": "fold",
+          "stage": 12,
+          "leaf_bytes": 512,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 128
+        },
+        {
+          "kind": "fold",
+          "stage": 13,
+          "leaf_bytes": 256,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 14,
+          "leaf_bytes": 128,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 32
+        }
+      ],
+      "opening_payload_bytes": 253445,
+      "projected_proof_bytes": 272290,
+      "projected_current_transport_bytes": 496999,
+      "source_payload_bytes": 151285,
+      "fold_payload_bytes": 102160
+    },
+    {
+      "queries": 239,
+      "sections": [
+        {
+          "kind": "source",
+          "stage": 0,
+          "leaf_bytes": 28608,
+          "sibling_bytes": 49344,
+          "zero_words": 11132,
+          "nonzero_words": 6804
+        },
+        {
+          "kind": "source",
+          "stage": 1,
+          "leaf_bytes": 13968,
+          "sibling_bytes": 9648,
+          "zero_words": 1152,
+          "nonzero_words": 3456
+        },
+        {
+          "kind": "source",
+          "stage": 2,
+          "leaf_bytes": 12702,
+          "sibling_bytes": 49344,
+          "zero_words": 3056,
+          "nonzero_words": 3080
+        },
+        {
+          "kind": "source",
+          "stage": 3,
+          "leaf_bytes": 24304,
+          "sibling_bytes": 49344,
+          "zero_words": 62,
+          "nonzero_words": 6074
+        },
+        {
+          "kind": "fold",
+          "stage": 4,
+          "leaf_bytes": 7360,
+          "sibling_bytes": 37440,
+          "zero_words": 0,
+          "nonzero_words": 1840
+        },
+        {
+          "kind": "fold",
+          "stage": 5,
+          "leaf_bytes": 7296,
+          "sibling_bytes": 27360,
+          "zero_words": 0,
+          "nonzero_words": 1824
+        },
+        {
+          "kind": "fold",
+          "stage": 6,
+          "leaf_bytes": 7008,
+          "sibling_bytes": 17616,
+          "zero_words": 0,
+          "nonzero_words": 1752
+        },
+        {
+          "kind": "fold",
+          "stage": 7,
+          "leaf_bytes": 6144,
+          "sibling_bytes": 9648,
+          "zero_words": 0,
+          "nonzero_words": 1536
+        },
+        {
+          "kind": "fold",
+          "stage": 8,
+          "leaf_bytes": 4864,
+          "sibling_bytes": 3744,
+          "zero_words": 0,
+          "nonzero_words": 1216
+        },
+        {
+          "kind": "fold",
+          "stage": 9,
+          "leaf_bytes": 3328,
+          "sibling_bytes": 1056,
+          "zero_words": 0,
+          "nonzero_words": 832
+        },
+        {
+          "kind": "fold",
+          "stage": 10,
+          "leaf_bytes": 2016,
+          "sibling_bytes": 48,
+          "zero_words": 0,
+          "nonzero_words": 504
+        },
+        {
+          "kind": "fold",
+          "stage": 11,
+          "leaf_bytes": 1024,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 256
+        },
+        {
+          "kind": "fold",
+          "stage": 12,
+          "leaf_bytes": 512,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 128
+        },
+        {
+          "kind": "fold",
+          "stage": 13,
+          "leaf_bytes": 256,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 14,
+          "leaf_bytes": 128,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 32
+        }
+      ],
+      "opening_payload_bytes": 374110,
+      "projected_proof_bytes": 392955,
+      "projected_current_transport_bytes": 617664,
+      "source_payload_bytes": 237262,
+      "fold_payload_bytes": 136848
+    },
+    {
+      "queries": 309,
+      "sections": [
+        {
+          "kind": "source",
+          "stage": 0,
+          "leaf_bytes": 36665,
+          "sibling_bytes": 58512,
+          "zero_words": 14152,
+          "nonzero_words": 8724
+        },
+        {
+          "kind": "source",
+          "stage": 1,
+          "leaf_bytes": 16806,
+          "sibling_bytes": 9120,
+          "zero_words": 1386,
+          "nonzero_words": 4158
+        },
+        {
+          "kind": "source",
+          "stage": 2,
+          "leaf_bytes": 16347,
+          "sibling_bytes": 58512,
+          "zero_words": 3860,
+          "nonzero_words": 3966
+        },
+        {
+          "kind": "source",
+          "stage": 3,
+          "leaf_bytes": 31041,
+          "sibling_bytes": 58512,
+          "zero_words": 68,
+          "nonzero_words": 7758
+        },
+        {
+          "kind": "fold",
+          "stage": 4,
+          "leaf_bytes": 9376,
+          "sibling_bytes": 44064,
+          "zero_words": 0,
+          "nonzero_words": 2344
+        },
+        {
+          "kind": "fold",
+          "stage": 5,
+          "leaf_bytes": 9152,
+          "sibling_bytes": 30048,
+          "zero_words": 0,
+          "nonzero_words": 2288
+        },
+        {
+          "kind": "fold",
+          "stage": 6,
+          "leaf_bytes": 8672,
+          "sibling_bytes": 18096,
+          "zero_words": 0,
+          "nonzero_words": 2168
+        },
+        {
+          "kind": "fold",
+          "stage": 7,
+          "leaf_bytes": 7392,
+          "sibling_bytes": 9120,
+          "zero_words": 0,
+          "nonzero_words": 1848
+        },
+        {
+          "kind": "fold",
+          "stage": 8,
+          "leaf_bytes": 5792,
+          "sibling_bytes": 2784,
+          "zero_words": 0,
+          "nonzero_words": 1448
+        },
+        {
+          "kind": "fold",
+          "stage": 9,
+          "leaf_bytes": 3616,
+          "sibling_bytes": 624,
+          "zero_words": 0,
+          "nonzero_words": 904
+        },
+        {
+          "kind": "fold",
+          "stage": 10,
+          "leaf_bytes": 2048,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 512
+        },
+        {
+          "kind": "fold",
+          "stage": 11,
+          "leaf_bytes": 1024,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 256
+        },
+        {
+          "kind": "fold",
+          "stage": 12,
+          "leaf_bytes": 512,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 128
+        },
+        {
+          "kind": "fold",
+          "stage": 13,
+          "leaf_bytes": 256,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 14,
+          "leaf_bytes": 128,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 32
+        }
+      ],
+      "opening_payload_bytes": 438219,
+      "projected_proof_bytes": 457064,
+      "projected_current_transport_bytes": 681773,
+      "source_payload_bytes": 285515,
+      "fold_payload_bytes": 152704
+    },
+    {
+      "queries": 463,
+      "sections": [
+        {
+          "kind": "source",
+          "stage": 0,
+          "leaf_bytes": 53834,
+          "sibling_bytes": 73968,
+          "zero_words": 20940,
+          "nonzero_words": 12804
+        },
+        {
+          "kind": "source",
+          "stage": 1,
+          "leaf_bytes": 21898,
+          "sibling_bytes": 7728,
+          "zero_words": 1806,
+          "nonzero_words": 5418
+        },
+        {
+          "kind": "source",
+          "stage": 2,
+          "leaf_bytes": 23926,
+          "sibling_bytes": 73968,
+          "zero_words": 5742,
+          "nonzero_words": 5802
+        },
+        {
+          "kind": "source",
+          "stage": 3,
+          "leaf_bytes": 45742,
+          "sibling_bytes": 73968,
+          "zero_words": 112,
+          "nonzero_words": 11432
+        },
+        {
+          "kind": "fold",
+          "stage": 4,
+          "leaf_bytes": 13568,
+          "sibling_bytes": 53136,
+          "zero_words": 0,
+          "nonzero_words": 3392
+        },
+        {
+          "kind": "fold",
+          "stage": 5,
+          "leaf_bytes": 13024,
+          "sibling_bytes": 34320,
+          "zero_words": 0,
+          "nonzero_words": 3256
+        },
+        {
+          "kind": "fold",
+          "stage": 6,
+          "leaf_bytes": 11712,
+          "sibling_bytes": 18912,
+          "zero_words": 0,
+          "nonzero_words": 2928
+        },
+        {
+          "kind": "fold",
+          "stage": 7,
+          "leaf_bytes": 9632,
+          "sibling_bytes": 7728,
+          "zero_words": 0,
+          "nonzero_words": 2408
+        },
+        {
+          "kind": "fold",
+          "stage": 8,
+          "leaf_bytes": 6784,
+          "sibling_bytes": 1872,
+          "zero_words": 0,
+          "nonzero_words": 1696
+        },
+        {
+          "kind": "fold",
+          "stage": 9,
+          "leaf_bytes": 3936,
+          "sibling_bytes": 240,
+          "zero_words": 0,
+          "nonzero_words": 984
+        },
+        {
+          "kind": "fold",
+          "stage": 10,
+          "leaf_bytes": 2048,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 512
+        },
+        {
+          "kind": "fold",
+          "stage": 11,
+          "leaf_bytes": 1024,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 256
+        },
+        {
+          "kind": "fold",
+          "stage": 12,
+          "leaf_bytes": 512,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 128
+        },
+        {
+          "kind": "fold",
+          "stage": 13,
+          "leaf_bytes": 256,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 64
+        },
+        {
+          "kind": "fold",
+          "stage": 14,
+          "leaf_bytes": 128,
+          "sibling_bytes": 0,
+          "zero_words": 0,
+          "nonzero_words": 32
+        }
+      ],
+      "opening_payload_bytes": 553864,
+      "projected_proof_bytes": 572709,
+      "projected_current_transport_bytes": 797418,
+      "source_payload_bytes": 375032,
+      "fold_payload_bytes": 178832
+    }
+  ],
+  "qualifications": [
+    "Only Q8 is an actual verified profile. Larger query prefixes retain its domain separation; no secure profile is defined.",
+    "Sizes include actual zero-tagged leaves authenticated against retained source roots and reconstructed fold roots.",
+    "This supersedes full-word leaf estimates only for this retained compact diagnostic; sparsity is witness-dependent.",
+    "Ext8 migration, soundness bounds, full NEAR scope and scaling remain open."
+  ]
+}

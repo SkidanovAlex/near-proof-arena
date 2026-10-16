@@ -2146,3 +2146,30 @@ Validation: fresh compact decode/re-encode, all12 reconstructed commitment roots
 canonical leaf word counts, exact zero-tag bit counts, and independently derived
 fixed opening header passed. Script rerun reproduced results; Python compilation
 and diff checks passed. No Lean sources changed.
+
+
+### Fresh joint-packing experiment
+
+`screen_joint_packing.py` accounts for source trees plus one chain at the maximum
+source degree. Exhaustive eligible power-of-two combinations select
+[16,1,16,16] instead of[16,1,4,4], preserving max degree4096. Full-word expectation
+is only a ranking heuristic; actual zero-tag payloads were measured next.
+
+Generated a new GKR/weighted-PCS literal193 proof with source_packings[16,16]
+and aux_packings[1,16], fresh commitments/challenges/auxiliaries. AIR,public,
+rows,request and terminal degree match the previous fixture; roots/transcript
+are not assumed unchanged. Proof52445 bytes, total current transport277154.
+Artifact retained in `results/pq384-literal193-gkr-packed`. Existing prover and
+codec runners used with `/tmp/near-literal193-gkr-packed-spec.json`; same native
+libraries and source rows as the prior checkpoint.
+
+Actual compact authenticated-tree replay: Q128272290,Q239392955,Q309457064,
+Q463572709 bytes. At309, saving47099 bytes (about9.3%), source payload285515,
+fold payload152704, fixed18845. Only Q8 is a generated verified profile; higher
+counts remain counterfactual sizes without secure parameter certification.
+This is a measurable improvement but not a solution to the secure size target.
+
+Validation: independent JSON verifier, exact compact codec roundtrip/fresh process,
+80 bitcodec roundtrips and primitive/proof negatives, new literal frontend with
+15 cross-layer rejections, all12 reconstructed fold roots and exact query-size
+accounting passed. No Lean changes or new soundness claims.

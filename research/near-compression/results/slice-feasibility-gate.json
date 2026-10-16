@@ -108,7 +108,12 @@
     "results/pq384-literal193-gkr/codec-report.json",
     "results/pq384-literal193-gkr/slice-frontend-report.json",
     "airbender/direct-wasm/report_gkr_query_scaling.py",
-    "results/literal193-gkr-query-scaling.json"
+    "results/literal193-gkr-query-scaling.json",
+    "airbender/direct-wasm/screen_joint_packing.py",
+    "results/literal193-joint-packing-screen.json",
+    "results/literal193-joint-packing-comparison.json",
+    "results/pq384-literal193-gkr-packed/slice-frontend-report.json",
+    "results/literal193-gkr-packed-query-scaling.json"
   ],
   "requirements": [
     {
@@ -189,5 +194,20 @@
     "total_transported_bytes": 277628,
     "same_statement_and_source_roots_as_direct_slice": true,
     "qualification": "Fresh GKR/weighted PCS proof with newly derived auxiliary roots. Q8/Ext4 only; acceptance-to-HoldsP, GKR/common-source extraction, proximity and QROM remain unproved. Sub300000 diagnostic transport is not secure feasibility."
+  },
+  "gkr_packed_diagnostic_measurement": {
+    "instructions": 193,
+    "proof_bytes": 52445,
+    "current_total_transport_bytes": 277154,
+    "packings": [
+      16,
+      1,
+      16,
+      16
+    ],
+    "max_degree": 4096,
+    "projected_309_query_proof_bytes": 457064,
+    "projected_309_query_source_payload_bytes": 285515,
+    "qualification": "Fresh Q8/Ext4 proof verified;15 cross-layer rejections passed. Larger-query figures are retained-transcript authenticated-tree replays. SameAIR/public/rows/request; sourceCODE root and profile-specific challenges changed. Security/common-trace extraction remain open."
   }
 }
