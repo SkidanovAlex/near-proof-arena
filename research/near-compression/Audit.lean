@@ -5707,3 +5707,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.fp8_joint_representative_base
 #print axioms NearCompression.fp8_typed_joint_recovered_base
 #print axioms NearCompression.fp8_natural_domain_base
+
+#print axioms NearCompression.decoded_base_trace_cell
+#print axioms NearCompression.decoded_base_trace_source_eval
+#print axioms NearCompression.decoded_base_trace_table_local
+#print axioms NearCompression.decoded_base_residual_nonzero
+#print axioms NearCompression.decoded_wrong_output_residual_or_bus

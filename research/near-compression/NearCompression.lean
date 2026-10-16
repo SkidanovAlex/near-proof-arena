@@ -1495,3 +1495,5 @@ import NearCompression.TableLocalResidualWitness
 import NearCompression.BaseFieldPolynomialDescent
 
 import NearCompression.JointSourceBaseDescent
+
+import NearCompression.DecodedBaseTrace

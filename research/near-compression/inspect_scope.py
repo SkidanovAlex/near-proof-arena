@@ -407,6 +407,7 @@ SOURCES = [
     "research/near-compression/NearCompression/TableLocalResidualWitness.lean",
     "research/near-compression/NearCompression/BaseFieldPolynomialDescent.lean",
     "research/near-compression/NearCompression/JointSourceBaseDescent.lean",
+    "research/near-compression/NearCompression/DecodedBaseTrace.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",

@@ -3983,3 +3983,21 @@ typed-oracle/native refinement remain open, as does matching base-trace assembly
 
 Full check.py passed 4012 registered results with the existing axiom allowlist.
 No native code or proof-size change; gate NOT_PASSED.
+
+### Constructed base trace preserves source AIR and execution witnesses
+
+DecodedBaseTrace projects recovered cells to one base-field trace with the
+same row geometry. Base-valuedness is required only within live source
+columns. Bounded expressions evaluate identically after embedding, including
+current and cyclic-next reads. Zero source residuals therefore imply actual
+TableLocal on this constructed trace, and nonzero residuals transport back
+to the recovered extension trace. The prepared wrong-output theorem now yields
+an extension-trace source residual or a bus imbalance on the constructed
+base trace. Auxiliary cells outside source width remain unrestricted.
+
+Joint-source descent can supply source base-valuedness once authenticated
+typed-oracle binding is established. Auxiliary/bus alignment and the final
+concrete acceptance theorem still need composition; native/QROM security and
+secure full-NEAR size remain open.
+Full check.py passed 4017 registered results with the existing axiom allowlist.
+No native or measured-size changes; gate NOT_PASSED.
