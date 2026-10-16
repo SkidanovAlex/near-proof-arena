@@ -1303,3 +1303,5 @@ import NearCompression.AirSelectorProducts
 import NearCompression.AirExtensionLift
 
 import NearCompression.AirCombinedResidualRows
+
+import NearCompression.AirAuxCoordinateTrace

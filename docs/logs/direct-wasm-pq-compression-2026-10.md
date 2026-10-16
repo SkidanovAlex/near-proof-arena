@@ -1722,3 +1722,9 @@ Auxiliary bus residual correspondence, combined target, adaptive sumcheck, authe
 Added AirCombinedResidualRows.lean: BusProgramFormula (extension literals/current/next/selectors/arithmetic) agrees between product-selector MLE and direct row environments on Boolean rows. Combined residual list preserves source then auxiliary order; composed its weighted initial zero bound. Exposed the reusable Boolean-row MLE value lemma previously private. Full audit passed3631 (/tmp/root-combined-residual-audit.log).
 
 This covers the formal formula model. Concrete auxiliary layout-to-formula-list certification and coordinate reconstruction remain required, as do adaptive sumcheck, terminal/source/PCS authentication and QROM. No executable security or size change.
+
+### Common source/auxiliary coordinate trace
+
+Added AirAuxCoordinateTrace.lean: reconstruct one Ext8 semantic trace from source columns followed by eight base coordinates per auxiliary value. Current/cyclic-next interpolation commutes with reconstruction; coordinate input environment equals the formula environment at all points. Source expressions with colBound within sourceWidth preserve original BabyBear Expr.eval. Full audit passed3635 (/tmp/root-aux-coordinate-audit.log).
+
+This establishes algebraic common-trace correspondence, not PCS authentication. Concrete auxiliary layout/formula-list certification, adaptive sumcheck, accepted-opening extraction and QROM remain. The current executable slice uses Ext4; formal Ext8 progress does not change its security parameters or size.

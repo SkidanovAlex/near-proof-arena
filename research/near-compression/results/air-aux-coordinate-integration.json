@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3635,
+  "audit_log": "/tmp/root-aux-coordinate-audit.log",
+  "source_sha256": "a9a235ef1d6ff6ec157b8c16a64be31828ee3fc1004e8728668020c8ab47ce91",
+  "established": [
+    "One semantic Ext8 trace reconstructed from source plus eight-coordinate auxiliary columns",
+    "Current and cyclic-next interpolation commute with reconstruction at all points",
+    "Coordinate-input and formula-model environments agree",
+    "Source expressions with checked colBound preserve original BabyBear evaluations"
+  ],
+  "remaining": [
+    "Concrete auxiliary layout-to-formula-list certification",
+    "PCS acceptance authenticates coordinate MLEs and common raw trace",
+    "Adaptive sumcheck and full protocol/QROM soundness",
+    "Secure1Pgas sub300KB proof"
+  ],
+  "profile_note": "Formal Ext8 adapter; current executable slice proof is still diagnostic Ext4."
+}
