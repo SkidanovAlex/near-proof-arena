@@ -1600,3 +1600,5 @@ import NearCompression.GKRMessageCheck
 import NearCompression.GKRPathMessageCheck
 
 import NearCompression.GKRRootMessageCheck
+
+import NearCompression.CallSourceOpening

@@ -6174,3 +6174,31 @@ proved checkers rather than kernel evaluation of the full JSON capture.
 Transcript causality/Fiat-Shamir, source-opening binding, PCS/QROM composition,
 full recursive operands and full NEAR1Pgas/PQ128/sub300k feasibility remain
 open. Next focus is terminal functional to committed source rows.
+
+### Terminal call functional to source-table opening
+
+CallSourceOpening.lean proves the exact row-low/column-high MLE decomposition
+for the zero-padded call input. The column weights retain all high GKR input
+coordinates, including coordinates beyond the256-column private capacity when
+public constants enlarge the total input space. Six results cover the source
+functional, its two-query combination, private/public input splitting, zero
+values beyond the private capacity, the specialized source input split, and
+an iff between wrong full-input and wrong constant-subtracted source openings.
+This is algebraic obligation preservation; cryptographic binding is separate.
+
+ReplayCallSource.lean evaluates these identities in the existing diagnostic
+Fp4 model against the retained32x179source table and both actual terminal
+queries. All358column weights match sha384_call_pcs.branches; all next-row and
+packing-padding weights are zero; both branches use the same intended use-root.
+The source total and full-input-minus-constant total equal the verifier's
+private claim. Actual input log14 splits into5row and9column coordinates.
+Truncating the column weight to8coordinates changes all358weights, confirming
+that the extra high-coordinate factor cannot be omitted by an adapter.
+
+Validation: full check.py PASS4200, /tmp/call-source-audit.log. Runtime replay
+PASS2queries, /tmp/call-source-opening.log. Exact compressed input/output,
+source hashes and logs retained in results/call-source-opening. Source rows
+are regression inputs only; the verifier remains a no-row proof verifier.
+No executable protocol or proof bytes changed. Generic Python branch/compiler
+refinement, Merkle/PCS soundness, transcript/QROM composition, full recursive
+operand provenance and full NEAR1Pgas/PQ128/sub300k remain open.

@@ -6011,3 +6011,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.gkr_root_message_checked
 #print axioms NearCompression.call_root_message_wrong
+
+#print axioms NearCompression.call_source_mle
+#print axioms NearCompression.call_source_two_queries
+#print axioms NearCompression.call_initial_input_split
+#print axioms NearCompression.call_source_outside_private
+#print axioms NearCompression.call_source_initial_split
+#print axioms NearCompression.call_source_opening_mismatch
