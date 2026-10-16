@@ -5703,3 +5703,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.fp8_projected_coefficients_base
 #print axioms NearCompression.fp8_lower_zeta_base
 #print axioms NearCompression.fp8_recovered_column_base
+
+#print axioms NearCompression.fp8_joint_representative_base
+#print axioms NearCompression.fp8_typed_joint_recovered_base
+#print axioms NearCompression.fp8_natural_domain_base

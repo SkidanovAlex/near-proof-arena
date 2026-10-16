@@ -275,7 +275,9 @@
     "NearCompression/TableLocalResidualWitness.lean",
     "results/table-local-residual-witness-integration.json",
     "NearCompression/BaseFieldPolynomialDescent.lean",
-    "results/base-field-polynomial-descent-integration.json"
+    "results/base-field-polynomial-descent-integration.json",
+    "NearCompression/JointSourceBaseDescent.lean",
+    "results/joint-source-base-descent-integration.json"
   ],
   "requirements": [
     {
@@ -441,5 +443,5 @@
     "ext12_256_ideal_minimum_queries": 617,
     "scope": "Conditional ideal PCS component only; no full or PQ certification, no new secure byte measurement."
   },
-  "decoded_base_field_boundary": "PARTIAL: Fp8 coefficient descent and recovered-cell base-valuedness proved conditional on distinct base domain, full-domain base-valued oracle and sufficient scalar agreement. Actual adversarial source-oracle binding and matching base trace remain open."
+  "decoded_base_field_boundary": "PARTIAL: joint-representative lane agreement now supplies Fp8 descent for typed base-valued source oracles, including reconstructed cells; base-root domain proved. Linking full-domain typed oracles to authenticated bytes and constructing the matching execution trace remain open."
 }

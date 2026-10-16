@@ -1493,3 +1493,5 @@ import NearCompression.AdaptiveTableContinuation
 import NearCompression.TableLocalResidualWitness
 
 import NearCompression.BaseFieldPolynomialDescent
+
+import NearCompression.JointSourceBaseDescent

@@ -3964,3 +3964,22 @@ values and sampled checks alone do not establish those hypotheses.
 
 Full check.py passed 4009 registered results with the existing axiom allowlist.
 No native or proof-size change; global/PQ soundness remains open. Gate NOT_PASSED.
+
+### Joint representative descent for typed source oracles
+
+JointSourceBaseDescent uses the actual joint representative lane radius and
+agreement partition to supply D scalar agreements for every polynomial in
+the same fixed tuple. Typed Fp-valued source functions embedded into Fp8
+discharge full-domain base-valuedness; reconstructed source cells are therefore
+base-valued. Powers of an embedded base-field root satisfy the domain premise.
+
+Read-only native inspection found that weighted_joint source branches already
+use check_opening(first=True): canonical scalar words are embedded with base()
+before extension weighting, while folded leaves use a different format. This
+is evidence for the typed source model, not formal full-domain authentication.
+The inspected native path is Ext4; these descent theorems instantiate Fp8 and
+do not implement a new Ext8 profile. Unknown Merkle preimage extraction and
+typed-oracle/native refinement remain open, as does matching base-trace assembly.
+
+Full check.py passed 4012 registered results with the existing axiom allowlist.
+No native code or proof-size change; gate NOT_PASSED.
