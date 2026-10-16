@@ -1339,3 +1339,5 @@ import NearCompression.ShiftReductionPolynomial
 import NearCompression.ShiftInitialClaim
 
 import NearCompression.ShiftAdaptiveSoundness
+
+import NearCompression.PackedComputedOpening

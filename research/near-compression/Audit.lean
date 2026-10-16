@@ -5343,3 +5343,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.shift_adaptive_round_count
 #print axioms NearCompression.shift_trace_initial_sum
 #print axioms NearCompression.shift_wrong_vector_count
+
+#print axioms NearCompression.mobius_tensor_row_mle
+#print axioms NearCompression.packed_computed_tensor
+#print axioms NearCompression.packed_computed_opening_bad_count

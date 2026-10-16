@@ -1848,3 +1848,17 @@ Constructed honest quadratic shift rounds from actual trace slices and Boolean s
 Validation: full check.py passed (3729 registered results; allowed axioms only). Reproducible retained-fixture budget: Ext4 coordinate widths617/398 give numerators1249/811; projected Ext8 widths629/598 give1273/1211. Ext8 figures are arithmetic projections, not an executable migration or security certification.
 
 Next: authenticate final original-column MLEs through PCS and establish common-source extraction/transcript timing, then compose local AIR/global bus/shift bounds. Terminal equality remains explicit. Full quantum transcript soundness, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.
+
+
+### Computed packed source binding
+
+Proved `mobius_tensor_row_mle`, `packed_computed_tensor`, and
+`packed_computed_opening_bad_count`. The mutable source transform now discharges
+the algebraic sourceBinding premise of packed vector authentication, including
+zero padding, at arbitrary field points. The wrong-lane count remains conditional
+on `PackedPCSExact`; this is not a cryptographic extraction theorem. The next
+critical task is replacing that contract with a quantified authentication bound
+on one committed trace. The slice gate remains NOT_PASSED.
+
+Validation: full `check.py` passed with 3732 registered results and the existing
+axiom allowlist. No new size or security measurement is claimed.
