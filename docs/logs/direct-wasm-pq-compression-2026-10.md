@@ -1732,3 +1732,11 @@ This establishes algebraic common-trace correspondence, not PCS authentication. 
 ### Auxiliary chain layout checkpoint
 
 Derived ordered auxiliary square/product formulas and contiguous column allocation in Lean; zero residuals imply chain equations. Full audit passes (3638 registered results, allowed axioms only). Exported Lean formulas match the executable evaluator in nine cases / 150 residual comparisons, including the 24-link CODE chain. This closes the chain layout adapter only: full interaction/fingerprint/boundary layout, accepted-proof extraction, and complete quantum soundness remain open. Slice feasibility gate stays NOT_PASSED.
+
+### Per-interaction layout to final product
+
+Added deterministic per-interaction chain/factor construction and boundary residuals. Lean proves the generated factor equals busBitFactor from vanishing chain residuals, derives the exact chain length, and composes all-row generated residuals into the final running product. Environment selector and next-row bindings remain explicit; empty multiplicities, nonboolean arithmetic factors, and zero fingerprints require no division. Boolean multiplicity validity remains a separate source constraint.
+
+Validation: full check.py passed with 3642 registered results and allowed axioms only. Lean-exported formulas match the executable Ext4 auxiliary evaluator in 48 cases / 744 residual comparisons, covering 0/1/2/25 bits, first/last/arbitrary extension selectors, distinct next accumulator values, nonboolean bits, and a zero fingerprint. This is parity evidence, not formal Python/parser refinement or executable Ext8 certification.
+
+Next: table-wide chain offsets and send/receive boundary order, then source-expression/fingerprint lowering. Common committed-trace extraction, complete adaptive/PCS/transcript soundness, 128-bit quantum security, secure sub300k sizing and full 1 Pgas scope remain open. Slice feasibility gate stays NOT_PASSED.

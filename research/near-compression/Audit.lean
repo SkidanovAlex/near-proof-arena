@@ -5234,3 +5234,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_chain_layout_lengths
 
 #print axioms NearCompression.bus_chain_layout_zero
+
+#print axioms NearCompression.bus_interaction_layout_factor
+#print axioms NearCompression.bus_interaction_layout_length
+#print axioms NearCompression.bus_interaction_residuals_zero
+
+#print axioms NearCompression.bus_interaction_layout_product

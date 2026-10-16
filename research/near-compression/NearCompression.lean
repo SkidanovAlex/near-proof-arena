@@ -1307,3 +1307,5 @@ import NearCompression.AirCombinedResidualRows
 import NearCompression.AirAuxCoordinateTrace
 
 import NearCompression.BusChainFormulaLayout
+
+import NearCompression.BusInteractionFormulaLayout
