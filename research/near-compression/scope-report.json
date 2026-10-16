@@ -482,6 +482,7 @@
     "research/near-compression/NearCompression/SymbolicHensel.lean": "0790697ca03678cd16c4691d33c53ba0a4b6ea471661d3efe29119a8726b076c",
     "research/near-compression/NearCompression/TrivariateInitialBranch.lean": "a6e1e2b64776d6ad19c1ddf00d84b3174ce9575eb8034f49a454b947e1083a44",
     "research/near-compression/NearCompression/SmallCharacteristicDerivative.lean": "f51b8f5bccb41bdcca5d2fc899919351d13f26c7606f0ff8884907fcc2dbab2d",
+    "research/near-compression/NearCompression/BezoutSmoothness.lean": "8bff43895bf280e2c2637016d1391906b6b8533472583c5973dca48ca74d9c06",
     "research/near-compression/NearCompression/FormalTranslation.lean": "08dd67f2b94cf06e2adbed07d64d3cdf263bcf968eeae1d0d27105d0b350efb1",
     "research/near-compression/NearCompression/PolynomialCoefficientAlgebra.lean": "5d4492d1d393e85ab5049c3eaac5683d494fc9cd526905dcb03a00efd0516c67",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean": "d9a5cbb964e9aab9d9a8bbe2ef3f558f473d587cf9e941cabaf8491b422cc2d9",

@@ -1694,3 +1694,5 @@ import NearCompression.SymbolicHensel
 import NearCompression.TrivariateInitialBranch
 
 import NearCompression.SmallCharacteristicDerivative
+
+import NearCompression.BezoutSmoothness

@@ -8373,3 +8373,34 @@ Next: factorization, irreducibility/separability certificates and construction
 of the common algebraic initial branch. Full MCA/protocol/QROM composition
 remains open. No runtime or cryptographic parameter change: diagnostic bundle
 1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Checked Bezout certificates supply initial-root smoothness
+
+Added BezoutSmoothness.lean with six audited public theorems. The actual
+Horner derivative has coefficient(i+1)*p_{i+1}, lowers a degree bound by one,
+and evaluates to the first synthetic jet (quotient evaluated at its center).
+The operational curveHenselSlope at an initial constant is proved equal to
+the derivative of the actual initial Y-polynomial formed from X-constant
+coefficients. No finite-field evaluation uniqueness is used.
+
+A coefficientwise certificate A*p+B*q=C(c) with c≠0 proves that p and q have
+no common root. Taking q=p' and p equal to the initial Y-polynomial supplies
+nonzero Hensel slope for every initial root. This is a checked certificate
+interface; it does not assume nonzero formal derivative alone implies
+smoothness, and does not yet prove general Bezout certificate existence,
+irreducible factorization, or algebraic-root/extension existence.
+
+Validation:600 extended-Euclidean identities over F2/F3/F5/F17,473 with
+nonzero constant gcd and127 rejected noncoprime cases. Checked4050
+derivative/synthetic-quotient evaluations,320 certified initial roots and
+finite lifts, and rejection of473 mutated certificates. The cleared identity
+-Q+(Y/2)Q'=Z for Q=Y^2-Z certifies22 smooth specialized roots when Z≠0; at Z=0
+it has zero right-hand side and a singular root. A separate zero-certificate
+counterexample prevents dropping c≠0. Full audit4407 PASS, allowed axioms only.
+Evidence: results/bezout-smoothness/, with concrete witness coefficients.
+
+Next: existence/construction of the Bezout and factorization certificates,
+parameter-polynomial specialization budgets, and the common algebraic initial
+branch. Full MCA/protocol/QROM composition remains open. No runtime or
+cryptographic parameter change: diagnostic bundle1344645 B, feasibility
+NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
