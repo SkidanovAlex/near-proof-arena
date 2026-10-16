@@ -1509,3 +1509,5 @@ import NearCompression.FixedJointSourceTrace
 import NearCompression.IndexedDecodedProvenance
 
 import NearCompression.PreparedDecodedBusContinuation
+
+import NearCompression.FixedSourceLocalBudget

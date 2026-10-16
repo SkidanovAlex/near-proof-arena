@@ -4137,3 +4137,22 @@ formal interface connections, not native or QROM certification.
 Validation: full `check.py` PASS (4037 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only change. Gate remains
 NOT_PASSED; secure sub-300 KB and full 1 Pgas scope remain open.
+
+### Fixed invalid source instantiates adaptive local budget
+
+`FixedSourceLocalBudget.lean` proves exact selected-table expression semantics,
+selects a nonzero row/source-residual index from failed base `TableLocal`, and
+transports that same index across all earlier-dependent decoded auxiliary
+attachments. `fixed_source_invalid_local_budget` invokes the actual adaptive
+local bound with this derived witness. Appended auxiliary residuals cannot
+change the source index. Cyclic next rows and selectors are preserved.
+
+The caller no longer supplies a nonzero combined row/lane premise. It still
+supplies source binding, residual order/degrees, local checks, terminal-repair
+and joint PCS error budgets. Next: select the invalid table in the full slice,
+align its sample space and substitute actual GKR/PCS budgets, then combine
+with the locally valid bus branch. Native/QROM and secure-size gates remain
+open, as does the full 1 Pgas objective.
+
+Validation: full `check.py` PASS (4040 registered results), existing axiom
+allowlist. Native captures not rerun for this formal-only composition.

@@ -1,0 +1,35 @@
+{
+  "status": "FIXED_INVALID_SOURCE_INSTANTIATES_ADAPTIVE_LOCAL_BOUND",
+  "module": "NearCompression/FixedSourceLocalBudget.lean",
+  "theorems": [
+    "decoded_table_expression",
+    "fixed_source_invalid_residual_index",
+    "fixed_source_invalid_local_budget"
+  ],
+  "proved": [
+    "Single-table restriction preserves expression evaluation including selectors and cyclic next rows.",
+    "Invalid base source table selects a row and source-list index independent of earlier challenge values or appended auxiliary formulas.",
+    "All source-bound decoded witnesses have a nonzero combined residual at that index.",
+    "The actual adaptive local continuation bound follows from failed source TableLocal without a caller-supplied row/lane witness."
+  ],
+  "assumptions": [
+    "Valid row geometry, source expression column bounds, fixed source cells and logs for each earlier decoded witness.",
+    "Uniform auxiliary count and degree bounds, source-first residual order, local checks and zero initial claims.",
+    "Wrong-terminal continuation repair and joint PCS error budget remain explicit."
+  ],
+  "remaining": [
+    "Select an invalid table from the slice and align its earlier/local/continuation experiment with the complete two-table experiment.",
+    "Combine invalid-source and bus branches and substitute actual GKR/PCS repair and error budgets.",
+    "Native authentication/formula refinement, QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4040,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}
