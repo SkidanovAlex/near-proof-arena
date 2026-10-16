@@ -6119,3 +6119,32 @@ negative checks6, /tmp/call-gkr-messages.log. Compressed fixture, uncompressed
 hash, source hashes and Lean log are retained in results/call-gkr-messages.
 No executable proof/verifier was modified. Full NEAR1Pgas/PQ128/sub300k goal
 and NOT_PASSED feasibility gate remain unchanged.
+
+### Checked cross-layer GKR path
+
+GKRPathMessageCheck.lean extends the finite message checker with actual
+next-layer weighted wiring, a+gamma*b claim linkage and circuit-depth/shape
+checks. Acceptance implies gkrEvaluatedVerifierPath for the same supplied
+history-indexed strategies. Composition with gkr_evaluated_path_linked gives
+gkrCircuitVerifierPath for the computed finite-circuit assignment, removing
+independent adjacent-layer evaluation assumptions from this checked interface.
+
+CheckGKRPath.lean builds replay strategies from the retained arithmetic records
+and executes the path checker against the actual retained layer wiring. The
+capture layout is first required to equal fresh compile_layout output. The
+full14-layer path passes; seven mutations reject: gamma, next claim, next
+weighted-gate order, circuit layer wiring, missing layer, extra layer and empty
+path. The gamma mutation is especially useful: gamma does not enter the local
+layer check but must bind the following weighted queries and claim.
+
+Validation: full check.py PASS4192, /tmp/gkr-path-audit.log. Runtime path replay
+PASS1 / reject7, /tmp/call-gkr-path.log. Compressed exact path cases, fixture
+hash, source hashes and Lean log are retained in results/call-gkr-path.
+No executable prover/verifier or proof bytes changed.
+
+Remaining boundaries: replay strategies certify this finite path, not causal
+Fiat-Shamir/adversarial strategy behavior over all challenge paths. Initial
+root-query binding is supplied separately by CallGKRRoot. Commitment opening
+composition, hash/QROM reductions, complete recursive operand provenance and
+full NEAR1Pgas/PQ128/sub300k feasibility remain open. The new checked relation
+must not be confused with a complete proof of the Python verifier or protocol.

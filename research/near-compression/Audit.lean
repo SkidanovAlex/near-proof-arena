@@ -6005,3 +6005,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.gkr_axis_message_checked
 #print axioms NearCompression.gkr_layer_message_checked
+
+#print axioms NearCompression.gkr_path_message_checked
+#print axioms NearCompression.gkr_path_message_linked

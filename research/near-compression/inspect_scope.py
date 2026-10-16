@@ -237,6 +237,7 @@ SOURCES = [
     "research/near-compression/NearCompression/CallCircuitCheck.lean",
     "research/near-compression/NearCompression/CallGKRRoot.lean",
     "research/near-compression/NearCompression/GKRMessageCheck.lean",
+    "research/near-compression/NearCompression/GKRPathMessageCheck.lean",
     "research/near-compression/NearCompression/PreparedTypedEqzStack.lean",
     "research/near-compression/NearCompression/PreparedTypedOpcode.lean",
     "research/near-compression/NearCompression/BusProgramGateSoundness.lean",
