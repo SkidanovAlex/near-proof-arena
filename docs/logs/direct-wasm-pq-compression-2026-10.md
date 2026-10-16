@@ -5383,3 +5383,44 @@ No whole-proof compression or quantum security claim follows; gate unchanged.
 
 Validation: fresh ordinary verification, instrumented verification, exact
 framing parity and retained gadget dimensions checked. No Lean changes.
+
+### Ext8 verifier compression DAG and existing batched hash layout
+
+Previous turn measured whole-input dedup against the baseline128x6944gadget.
+Inspection found existing exact-state/block capture tooling and a more compact
+5234column core/1668column endpoint layout. Reused them instead of inventing
+another hash profile or claiming the old baseline was the best available.
+Added `measure_ext8_compression_dag.py`; reports `ext8-compression-dag.json`
+and `ext8-compression-dag-check.json`.
+
+Captured the accepted compact Ext8/q309 verifier via the existing native
+SHA384 state probe. Every final digest equals hashlib; keys are the full
+512bit chaining state concatenated with the128byte block. Sharing solely
+on block bytes would be invalid and is not done. Return values are checked
+against captured digests, and every observed hash occurrence is accounted for.
+Capture artifacts under `/tmp/nearproof-ext8-compression-dag` can be regenerated
+from the retained proof/config using the script; their hashes are in reports.
+Build probe reproducibly with `cc -O2 -shared -fPIC sha384_state_probe.c -o
+<library> -lcrypto` (OpenSSL low-level API deprecation warnings are expected).
+
+Counts reconcile with previous instrumentation:177186compression calls,
+39701after whole-input dedup,27538distinct state/block records. Prefix reuse
+removes another12163blocks. All12762distinct framed calls replay correctly;
+20862distinct chain edges form an acyclic graph. Independent artifact checker
+rejects eight mutations:input/block/output state, negative/out-of-range node,
+digest, duplicate record, partial record.
+
+Applying existing25block batched core/endpoint GEOMETRY gives1102batches,
+2,256,896core rows,35248endpoint rows,11,871,387,328base-field cells or
+44.224GiBtotal dense u32source data. Largest raw chunk source is43,090,432bytes
+(~41.1MiB), existing source degree262144. This improves the previously quoted
+131.456GiBwhole-input baseline projection but is not measured peak RAM or
+runtime: routed DAG constraints, auxiliaries,LDE,trees,GKR and nonhash verifier
+operations remain excluded. No newly generated recursive AIR/proof is claimed.
+
+Decision: use exact DAG records and existing batched layout as the next
+recursive benchmark input. Measure a representative constrained batch and
+its routing before making any recursion throughput or compression promise.
+The full inner local/GKR/frontend obligations are external to this capture;
+q309 itself is diagnostic. Gate and full1Pgas/PQ300k objective unchanged.
+No Lean changes this turn; script compilation and diff checks pass.
