@@ -1590,3 +1590,5 @@ import NearCompression.CallPadding
 import NearCompression.CallDescriptorLift
 
 import NearCompression.CallCircuitRoute
+
+import NearCompression.CallCircuitCheck

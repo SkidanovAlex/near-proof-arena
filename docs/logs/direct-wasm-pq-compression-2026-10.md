@@ -5990,3 +5990,36 @@ PASS, /tmp/call-circuit-parity-v2.log; retained results/call-array-parity report
 includes source hashes. Next formal work is certificate extraction/checking
 and composition with existing layer-route semantics. General layering
 refinement, full recursion, PQ128/QROM and full NEAR1Pgas/sub300k remain open.
+
+
+### Proved call circuit checker and actual certificate replay
+
+CallCircuitCheck.lean reuses the existing proved TerminalBalanceCheck instead
+of introducing a second addition-tree checker. callCircuitCheck recomputes
+exact nonzero support from caller-supplied coefficients, checks finite input /
+constant / product node bindings, final claim subtraction and all DAG
+acyclicity, then checks the supplied balance certificate. Acceptance constructs
+the CallCircuitRoute required by the previous theorem. The resulting root
+functional theorem holds for all private inputs, not just regression vectors.
+call_layered_checked_functional additionally composes it with the existing
+terminalStoredBundleCheck theorem; actual layer-certificate replay is still
+pending for this call compiler.
+
+CheckCallCircuit.lean parses the existing diagnostic Ext4 scalar representation
+using the repository's Fp4 model. Extracted actual addition stages, product and
+constant-node maps feed the proved checker. Five fixtures pass: the retained
+2880-equation batch, its 4096-equation padded equivalent, aliases, zero support,
+and zero support with a nonzero claim. Four mutated retained certificates
+reject (root operation, coefficient constant, product operation, support map).
+The fixture is retained as results/call-array-parity/circuits.json.gz alongside
+the checker log, source hashes and uncompressed fixture hash. This runtime
+execution uses a checker whose acceptance theorem is kernel-checked; it is not
+a kernel evaluation of the full large fixture.
+
+Validation: full check.py PASS4185, /tmp/call-checked-audit.log. Extended parity
+and certificate replay PASS, /tmp/call-checked-parity.log. Existing proof still
+verifies and has identical binary encoding. Expected coefficients in the
+fixture are supplied by the executable compiler (their concrete array parity
+was checked); arbitrary Python compiler correspondence and transcript sampling
+are not inferred from this replay. No PQ128 claim, full-recursion completion,
+or full NEAR1Pgas/sub300k feasibility gate is newly established.

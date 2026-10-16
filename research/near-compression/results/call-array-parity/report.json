@@ -57,16 +57,21 @@
       "replay_sha256": "2aa1a0acfb5b4c8335f717e2e607d0d31779b018c066a146007842cc40be1f1d"
     }
   ],
+  "lean_circuit_certificates_accepted": 5,
+  "lean_circuit_mutations_rejected": 4,
   "padded_and_unpadded_compilation_identical": true,
   "retained_proof_verifies_and_encoding_unchanged": true,
   "proof_sha256": "53f90c09443952465d10da72a356754028d90234192292ba46b1cc3be429dba2",
-  "scope": "Concrete array parity and structural sparse-DAG checks, with three input vectors per DAG/layer comparison, aliases and empty support. General Lean DAG-to-functional theorem requires an acyclic structural route. Python checks are not Lean certificate construction; general layering refinement, Fiat-Shamir/QROM soundness and full recursion remain open.",
+  "scope": "Concrete array parity and structural sparse-DAG checks, with three input vectors per DAG/layer comparison, aliases and empty support. General Lean DAG-to-functional theorem requires an acyclic structural route. Extracted DAG certificates also pass the proved Lean checker, with four mutations rejected; actual layered certificate replay, Fiat-Shamir/QROM soundness and full recursion remain open.",
   "files": {
     "NearCompression/CallArrayCompilation.lean": "652158f242e2c24dcaa0a97fd1ba16d82fa2fcdfc46e4445ba7f475a696f09ce",
     "NearCompression/CallPadding.lean": "718467234027d6aefda46633afc0d8ba01083a18614a65d686e9f52bf39d6143",
     "NearCompression/CallCircuitRoute.lean": "4260348db6a80ba2119aee334753d81a124f558d72d79a958fa891ddecc98908",
+    "NearCompression/CallCircuitCheck.lean": "c443aadd04a10aa84e236f4424c4ec49a70d83944afb3c95457c5ef9ee0c9609",
     "ReplayCallArray.lean": "3219fe454a51ae9af7f1dcaa5d37b37bd9bf50adbcb23b822e1e80fdc5c76eae",
+    "CheckCallCircuit.lean": "d84fee3fb33f2beabf8a9c9dc0f856da11ac4487e7c0aa1d415312d8f0def71c",
     "airbender/direct-wasm/sha384_call_pcs.py": "63ae695727b6fb92ab939d4ad7e90e992a160d71d56601d1d55cd7da66ba8619",
-    "airbender/direct-wasm/test_call_array_parity.py": "6bf415415bb307c7d609e63696ae3c6911e852de79388797ebb8e0ccb9f0bed2"
-  }
+    "airbender/direct-wasm/test_call_array_parity.py": "048d2ea163983457d50bc160133312cc8e55000405d57bdc794b09f609f93b25"
+  },
+  "circuit_fixture_sha256": "cfd4a1284ba7fc7c8233c5ba4a2e400959b32de6738674158f54a5e0dc6885fb"
 }

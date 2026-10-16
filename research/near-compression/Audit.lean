@@ -5993,3 +5993,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.call_circuit_functional
 #print axioms NearCompression.call_circuit_residual_sum
+
+#print axioms NearCompression.call_circuit_checked_route
+#print axioms NearCompression.call_circuit_checked_functional
+#print axioms NearCompression.call_layered_checked_functional
