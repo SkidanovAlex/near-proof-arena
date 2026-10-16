@@ -1425,3 +1425,5 @@ import NearCompression.BusFormulaCheck
 import NearCompression.TerminalSymbolicRebuild
 
 import NearCompression.SymbolicCompiledCheck
+
+import NearCompression.SymbolicFormulaCheck

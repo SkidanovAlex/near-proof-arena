@@ -1,5 +1,5 @@
 import NearCompression.BusFormulaCheck
-import NearCompression.SymbolicCompiledCheck
+import NearCompression.SymbolicFormulaCheck
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -112,12 +112,22 @@ private def placement (j : Json) (nodeCount : Nat) : IO (List Nat × List Nat) :
     positions := positions.set! i (←need value.getNat?)
   return (live.reverse,positions.toList)
 
+private structure ParsedAIR where
+  publicValues : List Fp4
+  width : Nat
+  mixing : Fp4
+  residuals : List (AIRBusResidual Fp4 × Nat)
+  zeroReg : Nat
+  total : Nat
+  steps : List AIRAccumulatorStep
+
 private structure ParsedProgram where
   placement : TerminalSymbolicPlacement Fp4
   environment : TerminalProgramEnvironment Fp4
   program : List (TerminalInstruction Fp4)
   records : List (TerminalRebuildRecord Fp4)
   root : Nat
+  air : ParsedAIR
 
 private partial def expression (j : Json) : IO ZkFormal.Air.Expr := do
   let a ← need j.getArr?
@@ -169,7 +179,7 @@ private partial def busFormula (j : Json) : IO (BusProgramFormula Fp4) := do
       return if tag=="add" then .add left right else if tag=="sub" then .sub left right else .mul left right
   | _ => throw (IO.userError "unknown bus formula")
 
-private def checkAIR (program : List (TerminalInstruction Fp4)) (pubValues : List Fp4) (air : Json) : IO Unit := do
+private def checkAIR (program : List (TerminalInstruction Fp4)) (pubValues : List Fp4) (air : Json) : IO ParsedAIR := do
   let width ← need (←field air "width").getNat?
   let routes ← need (←field air "expression_routes").getArr?
   let mut registers : List Nat := []
@@ -215,6 +225,7 @@ private def checkAIR (program : List (TerminalInstruction Fp4)) (pubValues : Lis
     "mixed residual formulas rejected"
   require (airWeightedProgramCheck program (←scalar (←field air "mixing")) residuals zeroReg total output steps)
     "AIR accumulator rejected"
+  return ⟨pubValues,fullWidth,←scalar (←field air "mixing"),formulas,zeroReg,total,steps⟩
 
 private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p air : Json) (pubValues : List Fp4) : IO (Nat × ParsedProgram) := do
   let ins ← need (←field p "instructions").getArr?
@@ -238,7 +249,7 @@ private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p a
     if code==1 || code==2 then require (left<width) "column bound"
     program := ⟨opcode,left,right,←scalar (Json.arr (a.extract 3 7))⟩::program
   program := program.reverse
-  checkAIR program pubValues air
+  let parsedAIR ← checkAIR program pubValues air
   let source := program.map (terminalProgramNode env)
   require (terminalAcyclicCheck 0 source) "source acyclicity"
   let entries ← need (←field p "records").getObj?
@@ -273,7 +284,7 @@ private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p a
   require (terminalRebuildRecordsCheck source target (inputValue seed) [] records (ins.size-1) root)
     "rebuild records rejected"
   let placement : TerminalSymbolicPlacement Fp4 := ⟨base,width,first,last,trans⟩
-  return (records.length,⟨placement,env,program,records,root⟩)
+  return (records.length,⟨placement,env,program,records,root,parsedAIR⟩)
 
 def main (args : List String) : IO Unit := do
   require (args.length==5) "expected DAG bundle, rebuild capture, replay manifest, expected AIR, diagnostic seed"
@@ -295,7 +306,7 @@ def main (args : List String) : IO Unit := do
   let mut count := 0
   let mut entries : List (TerminalBatchEntry Fp4) := []
   let mut tables : List (TerminalCompiledTable Fp4) := []
-  let mut symbolicTables : List (SymbolicCompiledTable Fp4) := []
+  let mut formulaTables : List (SymbolicFormulaTable Fp4) := []
   let programs ← need (←field rebuild "programs").getArr?
   require (outputs.size==programs.size && weights.size==programs.size && claims.size==programs.size && airTables.size==programs.size) "batch count"
   for i in List.range programs.size do
@@ -314,10 +325,12 @@ def main (args : List String) : IO Unit := do
       ←arithmetic target .mul pn delta term⟩
     entries := entry::entries
     tables := ⟨parsed.environment,parsed.program,parsed.program.length-1,parsed.records,entry⟩::tables
-    symbolicTables := ⟨parsed.placement,parsed.program,parsed.program.length-1,parsed.records,entry⟩::symbolicTables
+    let symbolic : SymbolicCompiledTable Fp4 := ⟨parsed.placement,parsed.program,parsed.program.length-1,parsed.records,entry⟩
+    formulaTables := ⟨symbolic,parsed.air.publicValues,parsed.air.width,parsed.air.mixing,
+      parsed.air.residuals,parsed.air.zeroReg,parsed.air.total,parsed.air.steps⟩::formulaTables
   entries := entries.reverse
   tables := tables.reverse
-  symbolicTables := symbolicTables.reverse
+  formulaTables := formulaTables.reverse
   require (terminalBatchEntriesCheck target rho 1 entries) "batch entries rejected"
   let finalBalance ← balance target (←field rebuild "balance")
   require (finalBalance.terms==entries.map (fun e => (e.termNode,true))) "batch terms mismatch"
@@ -351,8 +364,8 @@ def main (args : List String) : IO Unit := do
   require (terminalCompiledFiniteCheck target (inputValue seed) (fun i => constants[i]?.getD 0)
     rho tables finalBalance root zeroNode capacity live positions (inputSize-1) stages rootSlot)
     "combined finite compiler check rejected"
-  require (symbolicCompiledCheck target (fun i => constants[i]?.getD 0) rho symbolicTables finalBalance
-    root zeroNode capacity live positions (inputSize-1) stages rootSlot) "symbolic compiled check rejected"
+  require (symbolicFormulaCompilerCheck target (fun i => constants[i]?.getD 0) rho formulaTables finalBalance
+    root zeroNode capacity live positions (inputSize-1) stages rootSlot) "symbolic formula compiler check rejected"
   IO.println (Json.mkObj [("status",toJson "PASS"),("programs",toJson programs.size),
-    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),("bus_formula_checks",toJson true),("symbolic_rebuild_check",toJson true),("symbolic_compiled_check",toJson true),
+    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),("bus_formula_checks",toJson true),("symbolic_rebuild_check",toJson true),("symbolic_compiled_check",toJson true),("symbolic_formula_compiler_check",toJson true),
     ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates")]).compress

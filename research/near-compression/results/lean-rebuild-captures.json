@@ -4,7 +4,7 @@
   "bundle_sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
   "rebuild": "results/literal193-fixed-rebuild.json",
   "rebuild_sha256": "be3281e9eb335ad2f6640538207ffbf36b411e577ba109733560fabbd27b1586",
-  "adapter_sha256": "8b45f6e81eb82686cfb55d6fa6ae8dce3bf0d6134b6c07ed21fd5d3de8ebaa67",
+  "adapter_sha256": "8a6a62f57f0a0791742a9beadc969070bc8144bd381788cb8bdd1902e951f87f",
   "manifest_sha256": "93b34e8fa4792530393660ddb0cda0e7f94e0a8ed42ec1f4101373e2a17d69ad",
   "air_sha256": "592671413521d34458c826ce8144b31ba3f2c99c9d398bd37fc4400c64537265",
   "positive": [
@@ -19,9 +19,10 @@
         "seed": 0,
         "status": "PASS",
         "symbolic_compiled_check": true,
+        "symbolic_formula_compiler_check": true,
         "symbolic_rebuild_check": true
       },
-      "seconds": 7.342385834082961
+      "seconds": 8.052850102074444
     },
     {
       "result": {
@@ -34,9 +35,10 @@
         "seed": 7,
         "status": "PASS",
         "symbolic_compiled_check": true,
+        "symbolic_formula_compiler_check": true,
         "symbolic_rebuild_check": true
       },
-      "seconds": 7.330363261979073
+      "seconds": 8.030119389295578
     }
   ],
   "rejected": [

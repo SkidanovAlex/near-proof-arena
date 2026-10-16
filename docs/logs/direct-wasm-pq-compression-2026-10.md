@@ -3284,3 +3284,30 @@ Integration/gate/scope evidence and diff checks pass; gate remains NOT_PASSED.
 Universal expected AIR/bus value substitution, formula-generation/metadata
 refinement, commitment extraction and global/PQ soundness and secure full-NEAR
 size remain open. Native JSON execution is not a concrete kernel capture proof.
+
+### Universal formula-to-finite-circuit contract
+
+SymbolicFormulaCheck proves acyclicity checks depend only on binary register
+dependencies, so symbolic program acceptance supplies acyclicity for every
+value-specialized environment. Checked mixed AIR/bus formulas and ordered
+accumulation then replace program outputs with formula sums for every input.
+
+The combined predicate includes the input-independent compiler certificate and
+all per-table formula/accumulator checks. Its main theorem equates finite GKR
+output with the explicit batched mixed-formula residual for every private
+assignment. A recovered-input corollary uses the same predicate and support
+separation, with no assignment-specific acceptance or program-value premise.
+
+The adapter now preserves parsed formula/accumulator packages and invokes the
+combined formula-level checker. Kernel regressions cover one complete nonzero
+input path plus changed current/next formula, missing residual, wrong final
+copy, changed base and differing positive/negative inputs. Full audit passed
+3883 results with the existing axiom allowlist; adapter elaboration passed.
+
+Native validation passed the combined formula compiler predicate for both
+retained diagnostic assignments; all24 malformed cases reject. Integration,
+gate, scope and diff checks pass. Gate NOT_PASSED. This is equality with the
+supplied checked formulas, not proof of constraint satisfaction or formal
+identification of formula generation with the intended AIR/bus specification.
+Decoded-column environments, transcript binding, global sampling/computational
+soundness, quantum security and secure full-NEAR size remain open.
