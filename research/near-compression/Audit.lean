@@ -6468,3 +6468,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_parameter_family_singular_count
 #print axioms NearCompression.trivariate_initial_parameter_specialization
 #print axioms NearCompression.trivariate_parameter_denominator_hensel_lift
+
+#print axioms NearCompression.polynomial_derivative_product_eval
+#print axioms NearCompression.selected_factor_smooth_iff
+#print axioms NearCompression.repeated_factor_root_singular
+#print axioms NearCompression.selected_factor_initial_smooth
+#print axioms NearCompression.selected_factor_coprime_smooth
+#print axioms NearCompression.selected_factor_hensel_lift

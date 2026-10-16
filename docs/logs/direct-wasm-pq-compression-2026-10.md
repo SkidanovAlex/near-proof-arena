@@ -9087,3 +9087,31 @@ Next: extend the branch interface to selected initial irreducible factors
 and account for other-factor collisions before useful-branch forcing.
 Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
 unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Selected-factor smoothness and lifting the full source
+
+Added SelectedFactorSmoothness.lean with six audited public theorems.
+The derivative product rule at a point follows from multiplicative formal
+translation, including small characteristic and degree beyond field size.
+At a root of h, the product h*g is smooth iff h is smooth there and g does
+not vanish. A repeated selected factor is singular at its roots. The result
+transfers through coefficientwise equality, so padding does not change it.
+
+A unit Bezout certificate between h and g supplies noncollision. The actual
+source's finite Hensel lift now follows from a selected smooth initial factor
+and a nonvanishing complement; irreducibility of the entire initial polynomial
+is unnecessary. Selected-factor existence, source-degree collision guards
+and coverage remain separate obligations; noncollision is not inferred from
+mere distinctness of formal factors.
+
+Validation:2700 derivative-product evaluations,374 selected-root criteria,
+103 colliding roots,374 repeated-factor singular roots,233 unit-certificate
+noncollisions and573 actual-source finite lifts. Explicit collisions of two
+individually smooth factors included in all four characteristics. Full audit4581
+PASS, allowed axioms only. Evidence: results/selected-factor-smoothness/.
+
+Next: specialize a coprime factor/complement certificate with a shared
+degree-controlled denominator and bound collision points. Then connect
+factor selection, useful-branch forcing and coverage. Full MCA and
+protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

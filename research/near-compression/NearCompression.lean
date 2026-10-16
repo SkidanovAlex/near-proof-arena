@@ -1748,3 +1748,5 @@ import NearCompression.DerivativeBezoutDenominator
 import NearCompression.SharedDenominatorSpecialization
 
 import NearCompression.PolynomialParameterFamily
+
+import NearCompression.SelectedFactorSmoothness
