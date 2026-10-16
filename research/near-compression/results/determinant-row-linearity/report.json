@@ -1,0 +1,8 @@
+{
+  "row_linearity_cases": 400,
+  "zero_row_cases": 400,
+  "rational_determinant_transports": 100,
+  "nonzero_transports": 79,
+  "missing_row_membership_counterexamples": 1,
+  "scope": "Lean selected-row linearity and formal rational-field determinant transport. Alternation, invertibility-to-nonzero and adjugate identity remain open."
+}

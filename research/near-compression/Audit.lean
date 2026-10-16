@@ -6401,3 +6401,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bezout_polynomial_matrix_degree
 #print axioms NearCompression.derivative_bezout_matrix_degree
 #print axioms NearCompression.derivative_bezout_determinant_degree
+
+#print axioms NearCompression.scalar_minor_rows_congr
+#print axioms NearCompression.scalar_minor_row_linear
+#print axioms NearCompression.scalar_minor_zero_row
+#print axioms NearCompression.polynomial_minor_determinant_rational_transport
+#print axioms NearCompression.polynomial_minor_determinant_nonzero_iff

@@ -8846,3 +8846,30 @@ Next: determinant nonzeroness and inverse-certificate identity, then connect
 the bounded denominator to algebraic branch specialization. Full MCA and
 protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Determinant row linearity and rational-field transport
+
+Added DeterminantRowLinearity.lean with five audited public theorems.
+The Laplace minor depends only on its selected rows. For distinct row labels,
+replacing any selected row by a linear combination gives the same linear
+combination of determinants; a zero selected row gives zero determinant.
+These are general field results preserving the original column order/signs.
+
+Proved that embedding the explicit polynomial determinant into the constructed
+rational-function field gives exactly the scalar determinant of the embedded
+matrix. Formal polynomial nonzeroness is therefore equivalent to determinant
+nonzeroness in that field, without a finite evaluation-domain assumption.
+This prepares the connection to the previously proved coefficient-map
+invertibility but does not yet establish determinant alternation, nonzeroness
+from invertibility, or an adjugate/shared-denominator identity.
+
+Validation:400 row-linearity cases and400 zero-row cases over F2/F3/F5/F17,
+plus100 polynomial-to-rational determinant transports (79 nonzero). An empty
+minor example confirms selected-row membership cannot simply be omitted.
+Full audit4523 PASS, allowed axioms only. Evidence:
+results/determinant-row-linearity/.
+
+Next: determinant alternation and connection to inverse maps, then the
+shared-denominator certificate. Full MCA and protocol/QROM composition remain
+open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

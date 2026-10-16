@@ -1728,3 +1728,5 @@ import NearCompression.BoundedBezout
 import NearCompression.BezoutSystemInvertibility
 
 import NearCompression.PolynomialDeterminantDegree
+
+import NearCompression.DeterminantRowLinearity
