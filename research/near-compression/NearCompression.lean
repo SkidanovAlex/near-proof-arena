@@ -1608,3 +1608,5 @@ import NearCompression.CallMerkleOpening
 import NearCompression.CheckedHistoryNear
 
 import NearCompression.TerminalWeightedExpansion
+
+import NearCompression.TerminalWeightedAggregation

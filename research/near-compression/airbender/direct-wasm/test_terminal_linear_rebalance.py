@@ -5,6 +5,7 @@ import pq384_ext8_reference as f
 import pq384_ext8_terminal_gkr as g
 from rebalance_terminal_linear import rebalance
 from check_terminal_dag_certificates import generate,validate
+from check_terminal_linear_equivalence import validate as validate_equivalence
 
 
 def evaluate(circuit,private):
@@ -37,12 +38,14 @@ def main():
     started=time.perf_counter()
     new,stats=rebalance(old);new_layout=g.layer_circuit(new);elapsed=time.perf_counter()-started
     cert=generate(new,new_layout);counts=validate(new,new_layout,cert,coordinate_degree=8)
+    semantic_started=time.perf_counter();semantic=validate_equivalence(old,new)
+    semantic['seconds']=time.perf_counter()-semantic_started
     rng=random.Random(90400);checks=[]
     for case in ('zero','one','random_ext8'):
         values=[f.ZERO if case=='zero' else f.ONE if case=='one' else tuple(rng.randrange(f.P) for _ in range(8)) for _ in range(old['private_input_capacity'])]
         assert evaluate(old,values)==evaluate(new,values);checks.append(case)
     baseline=summary(old,layout);optimized=summary(new,new_layout);assert baseline['gkr_scalar_bytes']==111616
-    report=dict(status='PASS',baseline=baseline,optimized=optimized,rewrite_seconds=elapsed,region_stats=stats,layer_certificate=counts,differential_vectors=checks,gkr_scalar_bytes_saved=baseline['gkr_scalar_bytes']-optimized['gkr_scalar_bytes'],scope='Prototype rewrite of the actual verifier-derived compression terminal DAG. Three differential input vectors and structural layer certificate pass. No actual new GKR/PCS proof, accepted compiler change, universal semantic theorem or full-proof size claim.',source_sha256=hashlib.sha256(raw).hexdigest(),source_kind='reduction' if a.reduction else 'compiled_fixture')
+    report=dict(status='PASS',baseline=baseline,optimized=optimized,rewrite_seconds=elapsed,region_stats=stats,layer_certificate=counts,semantic_certificate=semantic,differential_vectors=checks,gkr_scalar_bytes_saved=baseline['gkr_scalar_bytes']-optimized['gkr_scalar_bytes'],scope='Prototype rewrite of the actual verifier-derived compression terminal DAG. Exact symbolic affine equivalence, three differential input vectors and structural layer certificate pass. No actual new GKR/PCS proof, accepted compiler change, universal semantic theorem or full-proof size claim.',source_sha256=hashlib.sha256(raw).hexdigest(),source_kind='reduction' if a.reduction else 'compiled_fixture')
     a.output.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
     a.output.with_suffix('.circuit.json').write_text(json.dumps(dict(circuit=new,layout=new_layout),separators=(',',':')))
 

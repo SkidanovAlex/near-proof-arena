@@ -6027,3 +6027,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_weighted_expansion_value
 #print axioms NearCompression.terminal_weighted_expansion_transport
 #print axioms NearCompression.terminal_weighted_expansion_executed
+
+#print axioms NearCompression.terminal_weighted_insert_value
+#print axioms NearCompression.terminal_weighted_aggregate_value
+#print axioms NearCompression.terminal_weighted_zero_drop
+#print axioms NearCompression.terminal_weighted_permutation_value

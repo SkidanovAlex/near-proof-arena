@@ -6690,3 +6690,32 @@ Replay command is in the manifest. Next: finish semantic rewrite validation,
 then generate and independently verify the optimized GKR/PCS proof and measure
 the complete envelope. Full NEAR 1 Pgas, PQ128 and sub300000 B remain unproved;
 slice-feasibility gate stays NOT_PASSED.
+
+
+### 2026-10-16: exact symbolic rewrite check and aggregation algebra
+
+Added check_terminal_linear_equivalence.py, an independent exact symbolic
+normalizer. It expands affine arithmetic, combines coefficients in Ext8, and
+interns nonlinear products by normalized operand expressions. Source and target
+must normalize to the identical root expression; no random identity testing is
+used for this check. On the actual terminal DAG, PASS with 133099 forms,
+26272 atoms and maximum 10877 terms per form, in 1.19 seconds. This implies
+all-input equality under the checker/field implementation; the Python checker
+and its arithmetic refinement are not Lean verified. It does not certify input
+block metadata, security, or the full state transition.
+
+Validation: 100 generated rewrite pairs pass symbolic normalization and 300
+independent concrete evaluations. 100 changed-root variants and 9 malformed or
+changed circuits are rejected. Replay from the committed reduction reproduces
+the 20-layer, 38144-byte calculated GKR scalar payload. Results and hashes are
+updated in ext8-terminal-linear-rebalance*.json; negative/generated test counts
+are retained in ext8-terminal-linear-equivalence-tests.json.
+
+TerminalWeightedAggregation.lean proves reference association-list insertion,
+coefficient aggregation, zero-weight deletion, and permutation preserve weighted
+value. Combined with the expansion lemmas these cover more of the algebra,
+but do not establish Python dictionary/heap/compiler refinement. Full axiom
+audit PASS at 4210 theorems/examples. Accepted compiler/verifier unchanged;
+next step is an explicitly selected optimized experimental profile and actual
+GKR/PCS generation plus independent verification. Last verified complete size
+remains 1863197 bytes; full NEAR/PQ128/sub300000 B gate remains NOT_PASSED.
