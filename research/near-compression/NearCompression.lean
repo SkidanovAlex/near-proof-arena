@@ -1271,3 +1271,5 @@ import NearCompression.VirtualFoldCheckedTransfer
 import NearCompression.CheckedRateShiftQueries
 
 import NearCompression.CheckedRateShiftComposition
+
+import NearCompression.GeneralListCurveExtraction

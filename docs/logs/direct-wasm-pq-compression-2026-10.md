@@ -1564,3 +1564,28 @@ Decision: repeated scheduling gives modest savings but is not enough with
 current query bounds. Prioritize reviewing stronger extraction/proximity
 bounds and their provable assumptions before implementing another large
 variant. This is evidence to change the research direction, not completion.
+
+## Stronger agreement route and checked constraint reduction
+
+Pinned the November2025 primary paper at
+https://www.math.toronto.edu/swastik/rs-proximity-gaps-2025.pdf
+(SHA256 in `results/johnson-curve-bridge-review.json`); inspected Corollary4.4
+and Theorem4.6, including the rendered error formula. The latter offers a
+stronger analytic starting point than our current three-candidate extraction.
+The Basefold PDF remains HTTP403. A September2026 prime-field capacity
+preprint was identified but is not audited or adopted for our Ext8 setting.
+
+Our new `GeneralListCurveExtraction.lean` isolates the protocol-specific
+constraint step without treating the analytic theorem as an axiom. Given a
+fixed prechallenge complete family of jointly agreeing curves and an explicit
+exceptional-set transfer, success without a valid parent outcome is bounded
+by `exceptional_count + 2*family.length`. This follows from two roots per
+nonzero residual quadratic. A second checked lemma derives coefficient
+identity from agreement on at least D distinct points, matching the required
+support-preserving interface. Full audit: 3,581 theorem/boundary checks PASS.
+
+This is a conditional reduction, not a proved Johnson-regime extractor. The
+MCA transfer and complete finite family/cardinality still need proof. The
+next formal target is the finite Johnson list bound and support-preserving
+transfer; then list/OOD/mixing penalties must replace the unique-list ledger.
+No runtime query profile or claimed security level changes in this checkpoint.

@@ -1,0 +1,49 @@
+{
+  "status": "REVIEWED_PRIMARY_SOURCE_AND_CONDITIONAL_LEAN_BRIDGE",
+  "sources": [
+    {
+      "url": "https://www.math.toronto.edu/swastik/rs-proximity-gaps-2025.pdf",
+      "sha256": "4added3e55b83c15fcc8a698fb57e137f5bd83e79ea25ce79382817c1ad26a46",
+      "date_on_pdf": "2025-11-11",
+      "locations": [
+        "Corollary 4.4, printed p28",
+        "Theorem 4.6, printed pp28-29"
+      ],
+      "verified": "Downloaded PDF, pdftotext extraction, visual check of page29 formula.",
+      "facts": "Weighted and list-correlated agreement extend to the Johnson regime. The exceptional-set bound is explicit. Nonlinear constraints refer to the Basefold analysis.",
+      "formula": "E <= M * (((2*(m+1/2)^5 + 3*(m+1/2)*gamma*rho)/(3*rho^(3/2)))*n + (m+1/2)/sqrt(rho)); m=max(ceil(sqrt(rho)/(1-sqrt(rho)-gamma)),3); rho=(dimension-1)/n."
+    },
+    {
+      "url": "https://eprint.iacr.org/2024/1571",
+      "facts": "Abstract identifies a nonlinear variant; current metadata last revision 2025-09-04.",
+      "access": "PDF download returned HTTP403. Earlier ResearchGate extraction is not a pinned substitute."
+    },
+    {
+      "url": "https://arxiv.org/html/2609.05870v1",
+      "facts": "September2026 preprint claims capacity-regime results for prime fields with asymptotic parameter dependencies.",
+      "applicability": "Not audited or adopted: current challenge field is Ext8; prime-field assumptions do not transfer automatically."
+    }
+  ],
+  "integrated_theorems": 3581,
+  "added_theorems": 2,
+  "lean_source_sha256": "1f33e9c89039f8dba1ae60b5b04f0a2d38b92dd9c2429e6ac40c3058654dac5f",
+  "audit_sha256": "1ed88d9f33371934eb18134f9c5202570f4f960006e7e8557f016d80b196ce56",
+  "proved_here": [
+    "Agreement on at least D distinct support points gives coefficient identity for degree<D candidate and affine curve.",
+    "Given a fixed complete curve family and an exceptional-set transfer, constrained adaptive candidate success is at most exceptional_count + 2*family.length when no valid outcome exists."
+  ],
+  "not_proved": [
+    "The strong correlated-agreement transfer premise.",
+    "Construction, normalization and numerical cardinality bound for the full prechallenge curve family.",
+    "Connecting that transfer to integer consistency weights and concrete finite extension roots.",
+    "Johnson-regime rate-shift list completeness and its additional list/OOD/mixing terms.",
+    "End-to-end protocol, commitment binding, QROM and full NEAR size/capacity."
+  ],
+  "arithmetic_only": {
+    "agreement_ratio": "9/16",
+    "tail_target": "2^-130",
+    "minimum_queries": 157,
+    "warning": "One hypothetical tail term, not a replacement protocol query count. List and extraction errors still require accounting."
+  },
+  "next_formal_obligation": "Finite Johnson list-size bound plus support-preserving MCA transfer; instantiate fixed complete curve family before changing parameter profiles."
+}

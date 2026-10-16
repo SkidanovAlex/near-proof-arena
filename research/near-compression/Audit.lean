@@ -5121,3 +5121,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.checked_virtual_source_stage_bound
 
 #print axioms NearCompression.checked_rate_shift_composition
+
+#print axioms NearCompression.general_list_curve_extraction_bad_count
+
+#print axioms NearCompression.list_curve_candidate_identity
