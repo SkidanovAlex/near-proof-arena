@@ -19,7 +19,35 @@ cli.output.write_text(json.dumps(cert,separators=(',',':'))+'\n')
 
 def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 expected_batch=dict(rho=list(args[-1]),weights=[list(eq_point(t['tau'],t['point'])) for t in args[-2]],claims=[t['claim'] for t in args[-2]])
-report=dict(expected_batch=expected_batch,status='PASS',capture=str(cli.capture),input_log=cli.input_log,profile=profile,counts=counts,
+# Bind AST routes and residual order to independently replayed AIR data.
+import check_air_program_certificates as air
+from verify_whir_toy import P,base
+for k,v in dict(P=P,ZERO=ZERO,ONE=ONE,base=base,mul=mul).items():setattr(air,k,v)
+spec,alpha,gamma,finals,terminals,rho=args
+c.require(len(spec['air']['tables'])==len(cert['programs'])==len(terminals),'AIR table coverage')
+air_tables=[]
+for ti,(table,program,terminal) in enumerate(zip(spec['air']['tables'],cert['programs'],terminals)):
+    ins=program['instructions'];air.valid_program(ins);lookup={}
+    fresh=compile_weighted(table,spec['public'],alpha,gamma,[tuple(x) for x in finals[ti]],terminal['mixing'],bus)
+    c.require(ins==[list(fresh[i:i+7]) for i in range(0,len(fresh),7)],'fresh AIR program mismatch')
+    for j,row in enumerate(ins):lookup.setdefault(tuple(row),j)
+    constraints=bus.constraints(table);expressions=list(constraints)
+    for interaction in table['interactions']:
+        expressions.extend(interaction['msg']);expressions.extend(interaction['mult'])
+    routes=[]
+    for expr in expressions:
+        register=air.locate_expr(expr,lookup,spec['public'])
+        air.check_expr(expr,register,ins,spec['public'],table['width'])
+        routes.append(dict(expr=expr,register=register))
+    accumulation=air.accumulation(ins);air.check_accumulation(ins,accumulation,terminal['mixing'])
+    c.require([r['register'] for r in routes[:len(constraints)]]==[s['residual'] for s in accumulation['steps'][:len(constraints)]],'source residual prefix')
+    air_tables.append(dict(width=table['width'],mixing=terminal['mixing'],expression_routes=routes,
+        source_constraints=len(constraints),accumulation=accumulation,
+        auxiliary_residual_count=len(accumulation['steps'])-len(constraints)))
+air_output=cli.output.with_suffix('.air.json')
+air_output.write_text(json.dumps(dict(public=[list(base(v)) for v in spec['public']],tables=air_tables,
+    program_sha256=sha(cli.output)),separators=(',',':'))+'\n')
+report=dict(air_sha256=sha(air_output),expected_batch=expected_batch,status='PASS',capture=str(cli.capture),input_log=cli.input_log,profile=profile,counts=counts,
     statement_sha256=sha(cli.capture/'statement.json'),proof_sha256=sha(cli.capture/'proof.json'),
     bundle_sha256=sha(cli.bundle),rebuild_sha256=sha(cli.output),
     scope='Full fixed-profile proof verified before replay; reconstructed circuit equals retained bundle. Structural certificate validation, not security certification.')

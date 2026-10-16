@@ -1,4 +1,4 @@
-import NearCompression.TerminalCompiledCheck
+import NearCompression.AIRAccumulatorCheck
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -117,7 +117,68 @@ private structure ParsedProgram where
   records : List (TerminalRebuildRecord Fp4)
   root : Nat
 
-private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p : Json) : IO (Nat × ParsedProgram) := do
+private partial def expression (j : Json) : IO ZkFormal.Air.Expr := do
+  let a ← need j.getArr?
+  require (0<a.size) "empty AIR expression"
+  let tag ← need a[0]!.getStr?
+  match tag with
+  | "c" | "p" =>
+      require (a.size==2) "AIR constant/pubValues arity"
+      let n ← need a[1]!.getNat?
+      return if tag=="c" then .const n else .pub n
+  | "v" =>
+      require (a.size==3) "AIR column arity"
+      let c ← need a[1]!.getNat?
+      let nx ← need a[2]!.getNat?
+      require (nx≤1) "AIR next flag"
+      return .col c (nx==1)
+  | "first" | "last" | "trans" =>
+      require (a.size==1) "AIR selector arity"
+      return if tag=="first" then .isFirst else if tag=="last" then .isLast else .isTransition
+  | "+" | "*" =>
+      require (a.size==3) "AIR binary arity"
+      let left ← expression a[1]!
+      let right ← expression a[2]!
+      return if tag=="+" then .add left right else .mul left right
+  | "-" =>
+      require (a.size==2) "AIR negation arity"
+      return .neg (←expression a[1]!)
+  | _ => throw (IO.userError "unknown AIR expression")
+
+private def checkAIR (program : List (TerminalInstruction Fp4)) (pubValues : List Fp4) (air : Json) : IO Unit := do
+  let width ← need (←field air "width").getNat?
+  let routes ← need (←field air "expression_routes").getArr?
+  let mut registers : List Nat := []
+  for route in routes do
+    let expr ← expression (←field route "expr")
+    let i ← need (←field route "register").getNat?
+    require (airExpressionCheck program pubValues width expr i) "AIR expression rejected"
+    registers := i::registers
+  registers := registers.reverse
+  let sourceCount ← need (←field air "source_constraints").getNat?
+  require (sourceCount≤registers.length) "source expression count"
+  let acc ← field air "accumulation"
+  let zeroReg ← need (←field acc "zero").getNat?
+  let total ← need (←field acc "total").getNat?
+  let output ← need (←field acc "output").getNat?
+  let mut cursor := zeroReg
+  let mut steps : List AIRAccumulatorStep := []
+  for row in (←need (←field acc "steps").getArr?) do
+    require ((←need (←field row "previous").getNat?)==cursor) "accumulator continuity"
+    let next ← need (←field row "result").getNat?
+    steps := ⟨←need (←field row "residual").getNat?,←need (←field row "coefficient").getNat?,
+      ←need (←field row "product").getNat?,next⟩::steps
+    cursor := next
+  steps := steps.reverse
+  let residuals := steps.map (fun step => step.residual)
+  require (sourceCount≤residuals.length && registers.take sourceCount==residuals.take sourceCount)
+    "source residual order"
+  require ((←need (←field air "auxiliary_residual_count").getNat?)+sourceCount==residuals.length)
+    "auxiliary residual count"
+  require (airWeightedProgramCheck program (←scalar (←field air "mixing")) residuals zeroReg total output steps)
+    "AIR accumulator rejected"
+
+private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p air : Json) (pubValues : List Fp4) : IO (Nat × ParsedProgram) := do
   let ins ← need (←field p "instructions").getArr?
   require (0<ins.size) "empty program"
   let base ← need (←field p "base").getNat?
@@ -139,6 +200,7 @@ private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p :
     if code==1 || code==2 then require (left<width) "column bound"
     program := ⟨opcode,left,right,←scalar (Json.arr (a.extract 3 7))⟩::program
   program := program.reverse
+  checkAIR program pubValues air
   let source := program.map (terminalProgramNode env)
   require (terminalAcyclicCheck 0 source) "source acyclicity"
   let entries ← need (←field p "records").getObj?
@@ -175,14 +237,17 @@ private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p :
   return (records.length,⟨env,program,records,root⟩)
 
 def main (args : List String) : IO Unit := do
-  require (args.length==4) "expected DAG bundle, rebuild capture, replay manifest, diagnostic seed"
-  let some seed := args[3]!.toNat? | throw (IO.userError "invalid seed")
+  require (args.length==5) "expected DAG bundle, rebuild capture, replay manifest, expected AIR, diagnostic seed"
+  let some seed := args[4]!.toNat? | throw (IO.userError "invalid seed")
   let bundle ← need (Json.parse (←IO.FS.readFile args[0]!))
   let rebuild ← need (Json.parse (←IO.FS.readFile args[1]!))
   let circuit ← field bundle "circuit"
   let target ← (←need (←field circuit "nodes").getArr?).toList.mapM node
   require (terminalAcyclicCheck 0 target) "target acyclicity"
   let manifest ← need (Json.parse (←IO.FS.readFile args[2]!))
+  let air ← need (Json.parse (←IO.FS.readFile args[3]!))
+  let airTables ← need (←field air "tables").getArr?
+  let pubValues ← (←need (←field air "public").getArr?).toList.mapM scalar
   let expected ← field manifest "expected_batch"
   let rho ← scalar (←field expected "rho")
   let weights ← need (←field expected "weights").getArr?
@@ -192,9 +257,9 @@ def main (args : List String) : IO Unit := do
   let mut entries : List (TerminalBatchEntry Fp4) := []
   let mut tables : List (TerminalCompiledTable Fp4) := []
   let programs ← need (←field rebuild "programs").getArr?
-  require (outputs.size==programs.size && weights.size==programs.size && claims.size==programs.size) "batch count"
+  require (outputs.size==programs.size && weights.size==programs.size && claims.size==programs.size && airTables.size==programs.size) "batch count"
   for i in List.range programs.size do
-    let (n,parsed) ← checkProgram target seed programs[i]!
+    let (n,parsed) ← checkProgram target seed programs[i]! airTables[i]! pubValues
     count := count+n
     let programRoot := parsed.root
     let out := outputs[i]!
@@ -245,5 +310,5 @@ def main (args : List String) : IO Unit := do
     rho tables finalBalance root zeroNode capacity live positions (inputSize-1) stages rootSlot)
     "combined finite compiler check rejected"
   IO.println (Json.mkObj [("status",toJson "PASS"),("programs",toJson programs.size),
-    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),
-    ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; excludes extraction, AIR compiler refinement, parser refinement and concrete kernel certificates")]).compress
+    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("air_checks",toJson true),
+    ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes AIR expression and ordered accumulation checks; excludes auxiliary bus-formula meaning, extraction, parser refinement and concrete kernel certificates")]).compress

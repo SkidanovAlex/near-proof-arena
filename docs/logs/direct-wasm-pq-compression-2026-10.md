@@ -3174,3 +3174,27 @@ allowlist; integration/gate/scope and diff checks pass. Gate NOT_PASSED.
 No retained AIR capture execution was added here. Expected-AIR capture binding,
 auxiliary bus formulas, recovered environments, parser/transcript refinement,
 global cryptographic/PQ soundness and secure full-NEAR size remain open.
+
+### Retained AIR/accumulator capture checked in Lean
+
+The fixed-profile capture generator now re-emits source programs from verified
+replay, requires exact retained instruction equality, and records expected AIR
+expression routes, source-constraint prefix, mixing values and full accumulator
+steps. The replay manifest includes the AIR artifact hash. CheckRebuildRecords
+parses the expected ASTs and executes airExpressionCheck and
+ airWeightedProgramCheck before its combined reconstruction/batching/layout
+check. Column flags, AST shape, accumulator continuity and counts are checked.
+
+Fixed193 has 2 programs, 1386 expression roots, 1228 source constraints and
+1291 accumulator residuals. Both diagnostic assignments pass (about4.6s per
+complete Lean invocation). All20 malformed cases reject, including6 new cases
+for unknown AST, missing expression register, altered mixing/coefficient,
+wrong final copy and missing AIR table. The full audit remains PASS3861.
+Python compilation and diff checks pass; gate remains NOT_PASSED.
+
+The63 auxiliary residuals are structurally covered by accumulation but their
+bus-formula meaning remains separate. Native execution and verified Python
+replay are not formal parser/compiler refinement or concrete kernel capture
+certificates. Recovered inputs/environments, global cryptographic/PQ soundness
+and secure full-NEAR size remain open. Diagnostic certificates are research
+artifacts, not a newly measured proof envelope.

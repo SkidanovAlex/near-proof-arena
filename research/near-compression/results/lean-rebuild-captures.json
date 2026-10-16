@@ -4,30 +4,33 @@
   "bundle_sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
   "rebuild": "results/literal193-fixed-rebuild.json",
   "rebuild_sha256": "be3281e9eb335ad2f6640538207ffbf36b411e577ba109733560fabbd27b1586",
-  "adapter_sha256": "0fef87fb0b10496fb822e45a6c2a621b4aefd09734031161f9e589dd01d364aa",
-  "manifest_sha256": "44894213b947ece5e72c9063086bf25b2c691b28392bd0c15452acf8f1cb677f",
+  "adapter_sha256": "d031404bdbe6bfd74fc93c7182a0702116ff865b3434a97ea75c2749b98a1567",
+  "manifest_sha256": "f64de4ee79a30a50dd4e83e591addaa9c5ddacade1639a1e20dd19a22eb0b17c",
+  "air_sha256": "4a94259c2105fcd64ca6540744d402ede91e7486d22fece7eb2e081c8f6a55c1",
   "positive": [
     {
       "result": {
+        "air_checks": true,
         "batch_entries": 2,
         "programs": 2,
         "records": 9152,
-        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; excludes extraction, AIR compiler refinement, parser refinement and concrete kernel certificates",
+        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes AIR expression and ordered accumulation checks; excludes auxiliary bus-formula meaning, extraction, parser refinement and concrete kernel certificates",
         "seed": 0,
         "status": "PASS"
       },
-      "seconds": 3.9731842558830976
+      "seconds": 4.608257389161736
     },
     {
       "result": {
+        "air_checks": true,
         "batch_entries": 2,
         "programs": 2,
         "records": 9152,
-        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; excludes extraction, AIR compiler refinement, parser refinement and concrete kernel certificates",
+        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes AIR expression and ordered accumulation checks; excludes auxiliary bus-formula meaning, extraction, parser refinement and concrete kernel certificates",
         "seed": 7,
         "status": "PASS"
       },
-      "seconds": 3.7954531866125762
+      "seconds": 4.563397923018783
     }
   ],
   "rejected": [
@@ -86,6 +89,30 @@
     {
       "case": "changed-expected-claim",
       "reason": "uncaught exception: batch entries rejected"
+    },
+    {
+      "case": "unknown-air-expression",
+      "reason": "uncaught exception: unknown AIR expression"
+    },
+    {
+      "case": "out-of-range-air-register",
+      "reason": "uncaught exception: AIR expression rejected"
+    },
+    {
+      "case": "wrong-air-mixing",
+      "reason": "uncaught exception: AIR accumulator rejected"
+    },
+    {
+      "case": "wrong-accumulator-coefficient",
+      "reason": "uncaught exception: AIR accumulator rejected"
+    },
+    {
+      "case": "wrong-air-final-copy",
+      "reason": "uncaught exception: AIR accumulator rejected"
+    },
+    {
+      "case": "missing-air-table",
+      "reason": "uncaught exception: batch count"
     }
   ],
   "stored_bundle_check": {
@@ -95,5 +122,5 @@
     "scope": "Lean checker execution; not a kernel proof of this JSON instance",
     "status": "PASS"
   },
-  "scope": "Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Excludes commitment extraction, AIR compiler refinement, parser refinement and concrete kernel proof terms."
+  "scope": "Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes AIR expression and ordered accumulator checks; excludes auxiliary bus-formula meaning, commitment extraction, parser refinement and concrete kernel proof terms."
 }
