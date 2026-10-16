@@ -58,7 +58,7 @@ def main():
     result['theorem'] = 'NearCompression.bus_trace_budget_fp8_bound'
     result['conditions'] = [
         'Same fixed source trace/messages before alpha and gamma; commitment extraction not supplied',
-        'Constructed support and expanded mass bounds proved; literal descriptor/public width discharge and authenticated extraction pending',
+        'Literal tags/widths, support and mass discharged in PreparedLiteralBusSoundness; local validity and authenticated extraction pending',
         'Auxiliary gates and final products correspond to expanded natural multiplicities',
         'Independent uniform field challenges; executable hash sampler and QROM not covered']
     result['interpretation'] = 'Upper error bound only, not an attack or lower bound on achievable security. Ext4 budget cannot certify 128 ideal bits via this bound; Ext8 budget alone does not certify quantum security.'

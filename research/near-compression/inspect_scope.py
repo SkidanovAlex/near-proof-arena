@@ -11,6 +11,8 @@ SOURCES = [
     "research/near-compression/NearCompression/GKROutputWeights.lean",
     "research/near-compression/NearCompression/TerminalSignedBalance.lean",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean",
+    "research/near-compression/NearCompression/PreparedLiteralBusBound.lean",
+    "research/near-compression/NearCompression/PreparedLiteralBusSoundness.lean",
     "research/near-compression/NearCompression/BusTraceMass.lean",
     "research/near-compression/NearCompression/BusTraceSupport.lean",
     "research/near-compression/NearCompression/BusTraceChallengeBound.lean",

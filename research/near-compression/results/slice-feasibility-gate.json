@@ -28,7 +28,10 @@
     "results/bus-trace-support-integration.json",
     "NearCompression/BusTraceMass.lean",
     "PreparedSliceBusBudget.lean",
-    "results/bus-trace-mass-integration.json"
+    "results/bus-trace-mass-integration.json",
+    "NearCompression/PreparedLiteralBusBound.lean",
+    "NearCompression/PreparedLiteralBusSoundness.lean",
+    "results/literal-bus-soundness-integration.json"
   ],
   "requirements": [
     {
@@ -47,7 +50,7 @@
       "name": "Complete soundness ledger",
       "status": "INCOMPLETE",
       "needed": "Close all algebraic/commitment/transcript reductions. Quantify the 128-bit quantum resource target and compiler constants; interactive tails alone do not pass.",
-      "established": "Exact natural bus imbalance now composes with variable-length nonzero-tag fingerprints and joint ideal challenge counting, including a concrete certified BabyBear/Ext8 instantiation. Public inputs are arbitrary field vectors. Conservative actual slice budget remains numerator 8589975831 over field cardinality (Ext4 90.63 ideal bits, Ext8 214.26); formal support/size discharge, common authenticated trace, auxiliary/local/PCS errors and quantum compiler remain open. Support is now constructed from actual row/interaction pairs plus public records; coverage and exact support length are proved and composed into the Ext8 bound. Expanded-multiplicity length bounds and concrete slice descriptor/public width discharge remain open. Expanded natural multiplicities now have descriptor-derived side-specific bounds, composed into bus_trace_budget_fp8_bound. Actual literal Lean budget equals Python numerator8589975831 with support1475, send mass1024 and receive mass8589934531. Concrete literal width/tag discharge remains."
+      "established": "Literal slice wrong published runCall output now implies the derived ideal Ext8 bus challenge bound, conditional on all local constraints on the same fixed trace, public fit, executable eligibility and fuel. Concrete source/public tag and width bounds, natural counts, constructed support and multiplicity bounds are discharged. Actual literal Lean/Python budget numerator8589975831 (support1475, send mass1024, receive mass8589934531). Local/PCS/common-trace extraction, auxiliary/global product correspondence, transcript sampler and quantum compiler remain open."
     },
     {
       "name": "Complete bytes and scaling",

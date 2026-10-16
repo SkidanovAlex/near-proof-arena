@@ -5170,3 +5170,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_trace_mass_bound
 
 #print axioms NearCompression.bus_trace_budget_fp8_bound
+
+#print axioms NearCompression.prepared_literal_bus_source_shape
+
+#print axioms NearCompression.prepared_literal_bus_public_shape
+
+#print axioms NearCompression.prepared_literal_bus_joint_bound
+
+#print axioms NearCompression.prepared_literal_wrong_output_bus_bound

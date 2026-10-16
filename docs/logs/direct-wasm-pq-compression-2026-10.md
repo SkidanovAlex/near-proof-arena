@@ -1686,3 +1686,9 @@ Remaining numerical discharge is concrete literal descriptor/public widths and e
 Added BusTraceMass.lean: proved multNat≤2^bitcount-1, per-side expanded length bounds from actual row heights/descriptors, and bus_trace_budget_fp8_bound with constructed support and bounded expanded lengths. Full check.py audit passed3606 (/tmp/root-bus-mass-audit.log). PreparedSliceBusBudget.lean evaluates the actual literal AIR; integrated Python comparison matches support1475, send mass1024, receive mass8589934531 and total numerator8589975831. Budget does not use trace cell values or honest multiplicities.
 
 Remaining: concrete literal tag/width proof, common authenticated source trace, actual auxiliary/global products and complete protocol/QROM soundness. No executable security or proof-size change.
+
+### Literal bus bound reaches actual runCall output semantics
+
+Added PreparedLiteralBusBound.lean: literal source descriptors and public records prove tag/width limits for arbitrary public vectors; specialized the constructed-support/mass Ext8 bound. Added PreparedLiteralBusSoundness.lean: wrong actual runCall/public output, executable eligibility and fuel, local table validity, and public fit imply the bus joint error bound. Exact bus balance would construct HoldsP and contradict the existing actual-runCall/public-output theorem. Full check.py audit passed3610 (/tmp/root-literal-bus-soundness-audit.log), standard axioms only.
+
+The theorem explicitly assumes one fixed locally valid trace. Cryptographic source extraction, local/PCS checks to TableLocal, auxiliary/global products to natural products, and transcript/commitment/QROM reductions remain required. This is a semantic bus-error component, not end-to-end soundness. No proof size or executable parameter change.
