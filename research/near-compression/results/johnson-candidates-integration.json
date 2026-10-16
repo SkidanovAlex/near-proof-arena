@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3588,
+  "added_theorems": 4,
+  "source_sha256": "79a8a937c32220114a3a714ccb574842983241d2ddb834c942092ff36af4c208",
+  "audit_sha256": "a733e6bcc82567cce7c341a5730aaa1fee1ae0fefa8d5aa184c89e63d26e5aeb",
+  "proved": [
+    "Construct a normalized coefficient-distinct prechallenge list by finite alphabet enumeration and filtering.",
+    "Every listed polynomial has exactly D coefficients and at least T agreements.",
+    "Every degree<D close polynomial appears after normalization, provided alphabet covers the field.",
+    "Constructed list satisfies the finite Johnson gap bound."
+  ],
+  "limits": [
+    "Mathematical exhaustive enumeration, not a proposed decoding algorithm.",
+    "Finite field alphabet coverage remains an explicit premise to instantiate for Ext8.",
+    "Support-preserving correlated-agreement transfer remains unproved.",
+    "No changed query counts, QROM certification or full slice acceptance theorem."
+  ]
+}

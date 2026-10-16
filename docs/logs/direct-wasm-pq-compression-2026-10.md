@@ -1613,3 +1613,28 @@ Remaining analytic/composition work: construct the complete normalized
 prechallenge lists and prove support-preserving correlated agreement (the
 main unproved transfer). Only then connect the list penalties throughout
 rate shifts and the full transcript/QROM ledger. Runtime profiles unchanged.
+
+## Complete candidate lists and slice-first gate
+
+`FiniteRSJohnsonCandidates.lean` constructs a coefficient-distinct normalized
+list, proves soundness/completeness and applies the Johnson gap bound to it.
+The list depends only on the alphabet, fixed domain/received oracle and degree/
+agreement thresholds. It has no challenge argument. Completeness assumes a
+finite alphabet covering the field; its exponential enumeration is a
+mathematical construction, not a proposed prover algorithm. Full audit3,588
+checks PASS. Support-preserving MCA remains the major unproved transfer.
+
+User asked whether we are on track to prove a slice with soundness feasibility
+first. Candid assessment: executable PCS and semantic components exist, but
+no integrated Wasm slice yet meets soundness and size requirements together.
+Theorem growth alone has not passed that gate. Recorded explicit requirements
+in `results/slice-feasibility-gate.json`: accepted proof implies actual bounded
+Wasm execution; same data is committed across semantics/AIR/GKR/PCS; complete
+quantified quantum soundness ledger; total byte measurement and scaling;
+coherent cross-layer adversarial validation. All unclosed requirements are
+marked incomplete, not assumed.
+
+Prioritize this integrated feasibility gate after the current candidate-list
+checkpoint, before further instruction families. A first bounded no-host
+slice is a milestone toward the unchanged full NEAR1Pgas goal, not a narrowed
+definition of completion.

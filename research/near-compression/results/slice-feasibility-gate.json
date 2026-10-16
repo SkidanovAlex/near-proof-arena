@@ -1,0 +1,45 @@
+{
+  "status": "NOT_PASSED",
+  "purpose": "First integrated slice feasibility gate; preserves full NEAR 1 Pgas objective.",
+  "slice": "Bounded prepared Wasm const/add/drop/end execution with entry/exit and gas; no-host restriction explicit.",
+  "evidence_reviewed": [
+    "NearCompression/PreparedWasmExecution.lean",
+    "results/wasm-execution-integration.json",
+    "results/rate-shift-codec/report.json",
+    "results/repeated-rate-shift-screen.json"
+  ],
+  "requirements": [
+    {
+      "name": "Accepted proof implies actual execution",
+      "status": "INCOMPLETE",
+      "needed": "Derive AIR validity, row/code provenance, entry boundary, gas and final state from the verifier and bound public inputs; not supplied per-row certificates."
+    },
+    {
+      "name": "Same committed data throughout",
+      "status": "INCOMPLETE",
+      "needed": "Bind code/public state, AIR sources, GKR statements and final PCS claims; no separately trusted original proofs or unbound witness data."
+    },
+    {
+      "name": "Complete soundness ledger",
+      "status": "INCOMPLETE",
+      "needed": "Close all algebraic/commitment/transcript reductions. Quantify the 128-bit quantum resource target and compiler constants; interactive tails alone do not pass."
+    },
+    {
+      "name": "Complete bytes and scaling",
+      "status": "NOT_DEMONSTRATED",
+      "needed": "Measure all required proof inputs for the actual compiled slice and a degree growth sweep. Sub300000-byte toy PCS alone does not pass."
+    },
+    {
+      "name": "Adversarial validation",
+      "status": "PARTIAL",
+      "needed": "Fresh verifier plus coherent wrong state/code/gas/memory/claim and cross-layer substitution cases; existing PCS mutation checks are only component evidence."
+    }
+  ],
+  "priority": "Finish current candidate-list checkpoint, then integration and soundness/size feasibility review before adding instruction families.",
+  "not_success": [
+    "Theorem counts",
+    "Separate successful AIR and PCS runs",
+    "Conditional unproved Johnson/MCA or quantum compiler premises",
+    "A tiny proof at a degree where disclosing coefficients is cheaper"
+  ]
+}
