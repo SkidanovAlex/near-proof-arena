@@ -1748,3 +1748,11 @@ Constructed source-order chain allocation and stable send-then-receive boundary 
 Validation: full check.py passed with 3648 registered results and allowed axioms only. Exported Lean table formulas match the executable Ext4 evaluator in 72 cases / 2280 residual comparisons over six profiles, including empty tables/multiplicities, mixed directions, long chains, arbitrary extension selectors and distinct next values. Synthetic powers use alpha=0: this validates table layout/order, not general fingerprint/source-expression lowering or actual slice specialization.
 
 Next: general source-expression and fingerprint lowering, then instantiate the table construction for the actual slice. Committed-trace extraction and complete adaptive/PCS/transcript/quantum soundness remain open; neither secure sub300k nor full 1 Pgas execution is established. Slice gate remains NOT_PASSED.
+
+### Source AST and tagged fingerprint to table product
+
+Added total source Expr lowering to auxiliary formulas, preserving arbitrary environment evaluation and actual cyclic trace-row semantics. Tagged Horner formulas evaluate to fp of the source message with the trailing bus+1 tag, matching the bus challenge-bound encoding. Generated table products now have an existential source-interaction witness derived from allocation/grouping membership; their factors are expressed in source message/multiplicity semantics rather than supplied abstract powers.
+
+Validation: full check.py passed (3654 registered results; allowed axioms only). Lean lowered actual preparedLiteralAir(193) EXEC/CODE descriptors and exported the complete auxiliary residual lists. Python comparisons passed in 54 cases / 1701 residual comparisons, covering all 9 EXEC and 54 CODE residuals, alpha=0/1/7, arbitrary Ext4 current/next/auxiliary values and selectors. This finite comparison does not prove Python/parser refinement, sample arbitrary extension challenges, or certify executable Ext8.
+
+Next: connect source bit constraints to natural multiplicity expansion, then compose all interaction finals with global send/receive/public products. Committed-trace extraction, adaptive local/PCS soundness and quantum transcript reductions remain open. Slice gate remains NOT_PASSED; no secure sub300k or full 1 Pgas claim.

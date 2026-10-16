@@ -5247,3 +5247,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_table_binding_pairs
 #print axioms NearCompression.bus_table_interaction_residual_mem
 #print axioms NearCompression.bus_table_layout_product
+
+#print axioms NearCompression.bus_source_formula_value
+#print axioms NearCompression.bus_tagged_formula_value
+#print axioms NearCompression.bus_lowered_interaction_values
+#print axioms NearCompression.bus_source_formula_row
+#print axioms NearCompression.bus_source_interaction_factor
+
+#print axioms NearCompression.bus_source_table_product
