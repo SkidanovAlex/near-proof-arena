@@ -1328,3 +1328,6 @@ import NearCompression.PreparedLiteralAdaptiveBus
 import NearCompression.AdaptivePolynomialSumcheck
 
 import NearCompression.BusPolynomialLowering
+
+import NearCompression.AirTraceCoordinateSlice
+import NearCompression.AirTraceSumcheck

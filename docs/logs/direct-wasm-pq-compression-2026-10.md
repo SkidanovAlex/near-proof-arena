@@ -1812,3 +1812,11 @@ Added auxiliary formula degree and polynomial lowering, with evaluation/degree p
 Validation: full check.py passed (3694 registered results; allowed axioms only). Computed actual preparedLiteralAir(193) source and generated auxiliary AST degrees for alpha0/1/7, compared with the executable verifier caps: EXEC729 source residuals degree6 plus9 auxiliary degree4 yields weighted round degree7; CODE499 source degree3 plus54 auxiliary degree4 yields round degree5. Both match coefficient limits8/6 and conditional eight-round numerators56/40. These are component bounds, not protocol security claims.
 
 Next: construct affine coordinate slices from the common trace MLE and equality kernel and prove suffix-sum representation; then terminal current/next/PCS authentication. Quantum reduction, executable Ext8 migration, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.
+
+### Concrete trace-coordinate honest sumcheck rounds
+
+Constructed affine coordinate polynomials from the actual trace MLE at coordinate endpoints, allowing arbitrary nonboolean history/suffix values. Proved they evaluate to current and cyclic-next MLEs, constant public inputs and actual product selectors; constructed the affine equality-kernel coordinate polynomial as well. Boolean suffix enumeration now builds honest combined source/auxiliary round polynomials and proves exact remaining-sum representation. The concrete adaptive sumcheck bound therefore no longer takes detached affine environment, honest-degree or representation certificates.
+
+Validation: full check.py passed (3706 registered results; allowed axioms only). No executable changes or performance claims. Remaining theorem premises: fixed trace/formula lists/mixing/equality point, AST degree bounds, false initial weighted sum, and terminal equality to the actual trace evaluator under distinct ideal challenge samples.
+
+Next: compose initial residual-batching/row-MLE error with adaptive rounds, then prove terminal current/next/PCS authentication and common-trace extraction. Full quantum transcript reduction, executable Ext8 migration, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.
