@@ -5880,3 +5880,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.second_selected_branch_count
 
 #print axioms NearCompression.two_table_filtered_history_budget
+
+#print axioms NearCompression.selected_last_evidence_bound
+
+#print axioms NearCompression.selected_future_evidence_bound
+
+#print axioms NearCompression.two_table_selected_gkr_composition

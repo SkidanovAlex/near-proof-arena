@@ -4718,3 +4718,27 @@ Slice gate remains NOT_PASSED.
 
 Validation: full `check.py` PASS (4106 registered results), existing axiom
 allowlist; native captures not rerun for formal-only count composition.
+
+### Both numerical selected local/GKR budgets derived in one composition
+
+`SelectedGKREvidence.lean` packages the existing last-local and future-local
+semantic hypotheses into Lean records. These contain geometry, binding,
+verifier checks and mismatch/error-inclusion proofs; neither record contains
+an acceptance inequality or numeric repair budget. Evidence-bound theorems
+invoke the existing selected local/GKR soundness proofs and compute the local
+budget from geometry.
+
+`two_table_selected_gkr_composition` invokes both evidence-bound theorems on
+their filtered, differently nested experiments and transfers the results to
+the common history/first/second/PCS count. This removes the two independent
+numerical local-budget premises from this composition. Valid-auxiliary bus
+and shared accepted-failure estimates remain inputs, paid once as documented.
+
+Next: instantiate bus with prepared-Wasm checked results and shared failure
+with concrete PCS, and construct semantic evidence from checked terminal and
+native artifacts. These records are mathematical proof data, not native
+certificates. Full Ext8, global acceptance, QROM, secure size and full 1 Pgas
+remain open; slice gate remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4109 registered results), existing axiom
+allowlist. Native captures not rerun for formal-only composition.

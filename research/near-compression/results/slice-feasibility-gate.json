@@ -351,7 +351,10 @@
     "NearCompression/SelectedHistoryExperiment.lean",
     "results/selected-future-experiment-integration.json",
     "NearCompression/SelectedBranchTransfer.lean",
-    "results/selected-branch-transfer-integration.json"
+    "results/selected-branch-transfer-integration.json",
+    "NearCompression/SelectedGKREvidence.lean",
+    "NearCompression/TwoTableSelectedGKRComposition.lean",
+    "results/two-table-selected-gkr-composition-integration.json"
   ],
   "requirements": [
     {
@@ -545,5 +548,6 @@
   "prepared_checked_history_budget": "PROVED_CONDITIONALLY: actual fixed-residual selector instantiates prepared history composition; source TableLocal supplies allConstraints zero, and checked formulas plus coordinate binding derive bus validity on the none branch. No assumed bus-validity witness. Restricted local budgets, shared PCS bound, accepted decoded binding/final equality and native authentication remain premises.",
   "selected_auxiliary_gkr_budget": "PROVED_CONDITIONALLY: concrete selector supplies adaptive local invalidity; exact accepted shared-failure count is retained. Last-local-table composition substitutes actual batching/evaluated-GKR repair. Earlier coordinate/formula binding, semantic circuit/mismatch and checks remain premises; first-table later-prefix extension, common-experiment reindexing and joint PCS substitution remain open.",
   "selected_future_gkr_and_reindexing": "PROVED_CONDITIONALLY: selected-table local/GKR bound includes arbitrary later local prefixes; actual evaluated repair and shared accepted-failure count are preserved. Exact selector-filter and both table nesting count identities normalize to common history/first/second/PCS order. Final branch-budget substitution, concrete joint PCS and authenticated binding remain open.",
-  "filtered_selected_branch_transfer": "PROVED: exact filtered first/second nesting counts transfer to their shared branch predicates, and supplied branch bounds aggregate with a single shared failure count. Numerical local/GKR/PCS instantiation and native binding remain open; this count-algebra result does not certify acceptance or security."
+  "filtered_selected_branch_transfer": "PROVED: exact filtered first/second nesting counts transfer to their shared branch predicates, and supplied branch bounds aggregate with a single shared failure count. Numerical local/GKR/PCS instantiation and native binding remain open; this count-algebra result does not certify acceptance or security.",
+  "two_table_selected_gkr_composition": "PROVED_CONDITIONALLY: both filtered local/GKR bounds are invoked from semantic evidence records, yielding computed geometry budgets in the common experiment. Records contain no acceptance inequalities or numeric repair bounds. Valid-auxiliary bus and one shared failure estimate remain inputs; semantic evidence/native binding and concrete PCS substitution remain open."
 }

@@ -1553,3 +1553,5 @@ import NearCompression.SelectedAuxiliaryGKR
 import NearCompression.SelectedAuxiliaryFutureGKR
 import NearCompression.SelectedHistoryExperiment
 import NearCompression.SelectedBranchTransfer
+import NearCompression.SelectedGKREvidence
+import NearCompression.TwoTableSelectedGKRComposition
