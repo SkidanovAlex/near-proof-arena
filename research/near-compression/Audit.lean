@@ -5647,3 +5647,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.decoded_family_before_compiler
 #print axioms NearCompression.preselected_decoded_mixture
 #print axioms NearCompression.preselected_formula_outputs
+
+#print axioms NearCompression.terminal_outputs_semantic_projection
+#print axioms NearCompression.terminal_outputs_fixed_meaning
+#print axioms NearCompression.terminal_pair_mismatch_index
+#print axioms NearCompression.local_terminal_semantic_mismatch
+#print axioms NearCompression.preselected_semantic_outputs
+#print axioms NearCompression.local_terminal_compiler_cancellation

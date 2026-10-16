@@ -3739,3 +3739,21 @@ Full check.py passed 3966 registered results with the existing axiom allowlist.
 No native code changed. Local-mismatch-to-fixed-output binding, global counts,
 no-representative integration, computational/QROM security and secure full-NEAR
 size remain open; gate NOT_PASSED.
+
+### Local terminal mismatch reaches fixed semantic batching outputs
+
+TerminalSemanticOutputs erases compiler register and reconstruction witnesses
+while retaining the ordered formulas, public values, metadata, mixing, weights
+and claims. The preselected decoded family transports checked compiler outputs
+through chronological rowpoints and selector checks into this semantic list.
+A wrong local weighted claim yields an indexed unequal output/claim pair; with
+the list fixed before rho, a later rho-dependent circuit can cancel it at at
+most tableCount-1 distinct sampled challenges.
+
+The semantic-list binding and local point/mixing/formula/weight/claim identities
+remain explicit premises. This does not prove that the native transcript or
+formula generator satisfies them. Concrete global counts, no-representative
+integration, executable specification binding and QROM security remain open.
+
+Full check.py passed 3972 registered results with the existing axiom allowlist.
+No native code changed. No new secure byte measurement; gate NOT_PASSED.
