@@ -6527,3 +6527,10 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.dense_algebraic_source_specializes
 #print axioms NearCompression.dense_algebraic_initial_slope
 #print axioms NearCompression.dense_algebraic_hensel_specializes
+
+#print axioms NearCompression.selected_full_source_derivative_certificate
+#print axioms NearCompression.selected_source_slope_guard_nonzero
+#print axioms NearCompression.selected_source_slope_guard_degree
+#print axioms NearCompression.selected_source_slope_guard_exception_count
+#print axioms NearCompression.selected_source_slope_guard_certificate
+#print axioms NearCompression.selected_source_guarded_hensel_specializes

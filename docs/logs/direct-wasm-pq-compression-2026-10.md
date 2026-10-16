@@ -9338,3 +9338,32 @@ Next: derive full-source modular certificate guards and bounds from selected
 branch data, then useful-branch forcing and coverage. Full MCA and protocol/QROM
 composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — One source-degree guard for the full algebraic lifting slope
+
+Added SelectedSourceSlopeGuard.lean with six audited public theorems.
+From P=h*g and S*P+T*P'=1, the explicit identity (S*g)*h+T*P'=1
+supplies the modular full-source slope certificate. SelectedSourceSlopeData
+records concrete dense source and polynomial parameter factor rows, the
+factorization and source certificate, a positive factor degree bound m, and
+exact derivative degree n. These remain explicit input obligations.
+
+The corresponding Bezout determinant is nonzero and has parameter degree at
+most (m+n)*D when both source and selected-factor coefficient degrees are at
+most D. Its nonvanishing constructs safe bounded certificate multipliers,
+then discharges the dense algebraic Hensel specialization theorem at every
+precision. One exceptional set therefore protects all lift coefficients;
+there is no precision-dependent product of coefficient denominators.
+
+Validation:36 source systems,132 exact modular certificate coefficients,
+760 algebraic/numeric lift pairs and2280 coefficient comparisons;59 guard
+points excluded. Nine characteristic-induced derivative degree drops use the
+actual derivative degree. A test-loop variable collision was corrected before
+the passing run. Full audit4631 PASS, allowed axioms only. Evidence:
+results/selected-source-slope-guard/.
+
+Next: derive polynomial parameter factor representations and degree bounds
+from general source data, then useful-branch forcing and coverage. The record
+does not assert those obligations automatically. Full MCA and protocol/QROM
+composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.
