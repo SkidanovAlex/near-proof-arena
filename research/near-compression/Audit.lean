@@ -6328,3 +6328,21 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.polynomial_residue_embedding_injective
 #print axioms NearCompression.polynomial_root_extension_exists
+
+#print axioms NearCompression.formal_polynomial_eq_iff
+#print axioms NearCompression.formal_polynomial_zero_iff
+#print axioms NearCompression.formal_polynomial_mul_zero
+#print axioms NearCompression.formal_polynomial_one_nonzero
+#print axioms NearCompression.formal_polynomial_cancel
+#print axioms NearCompression.polynomial_fraction_refl
+#print axioms NearCompression.polynomial_fraction_symm
+#print axioms NearCompression.polynomial_fraction_trans
+#print axioms NearCompression.polynomial_fraction_add_congr
+#print axioms NearCompression.polynomial_fraction_mul_congr
+#print axioms NearCompression.polynomial_fraction_neg_congr
+#print axioms NearCompression.polynomial_rational_class_eq_iff
+#print axioms NearCompression.polynomial_rational_polynomial_injective
+#print axioms NearCompression.polynomial_fraction_zero_iff
+#print axioms NearCompression.polynomial_fraction_inv_congr
+#print axioms NearCompression.polynomial_rational_mul_inverse
+#print axioms NearCompression.polynomial_rational_inv_zero

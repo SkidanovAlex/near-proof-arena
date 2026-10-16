@@ -8617,3 +8617,33 @@ exception bounds. Generic algebraic root-extension existence is now supplied;
 full MCA exceptions and protocol/QROM composition remain open.
 Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Formal polynomial fractions and rational-function quotient
+
+Added PolynomialFractions.lean with seventeen audited public theorems.
+The polynomial residue ring at modulus zero is proved to identify exactly
+coefficient-equal polynomials and is an integral domain with cancellation.
+Polynomial fractions carry formally nonzero denominators. Cross multiplication
+is proved to be an equivalence relation, including transitivity by cancellation
+of the middle denominator. Addition, multiplication, negation and reciprocal
+respect the relation and descend to an actual rational-function quotient.
+
+The denominator-one polynomial embedding is injective. Zero is characterized
+by a zero numerator, reciprocal maps zero to zero, and every nonzero rational
+function multiplies by its reciprocal to one. No evaluation-domain or sampled
+identity premise appears. A complete rational-function Field instance remains
+to be installed, and no total specialization map at poles is claimed.
+
+Validation:600 fraction cases checked against independent gcd normalization,
+including46 zero numerators, plus3208 common safe specializations. Four
+nonzero denominators Z^p-Z vanish everywhere in their base fields but remain
+valid formal denominators; four Z/Z examples preserve the distinction between
+rational equality and a representative's evaluation domain. Formally zero
+denominators are rejected. Full audit4470 PASS, allowed axioms only. Evidence:
+results/polynomial-fractions/.
+
+Next: complete the rational-function Field instance and connect specialization
+to pole bounds, then use the algebraic extension and Hensel construction for
+useful branches. Full MCA exceptions and protocol/QROM composition remain open.
+Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.
