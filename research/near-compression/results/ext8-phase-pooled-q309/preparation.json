@@ -1,0 +1,94 @@
+{
+  "status": "PASS",
+  "source_sha256": [
+    "19c13e6ae3852a39824d04d83a25356de87c3327b73a3aea54c79a469ed7cfef",
+    "0c11f0bf4340938bfb17f7354cfc80e5fbce6c81946ff0697a78371685d9e756",
+    "1cd9ad0061379f127b427285c30ccbbc0c2443aed5b5207f601a22e747efb70c",
+    "885b505af0a4ba2a86b0af4f922cefa8f8de421c7cf9cc7c7ae28ae574edf54a"
+  ],
+  "use_root_unchanged": true,
+  "logical_spec_unchanged": true,
+  "roots": [
+    "d123e0dda5fd91b685e32b9e543958101bd4a64c84ee6666a6bc6f02e19e89073f8bfa1b83228d68814a16b893a97504",
+    "d123e0dda5fd91b685e32b9e543958101bd4a64c84ee6666a6bc6f02e19e89073f8bfa1b83228d68814a16b893a97504",
+    "d123e0dda5fd91b685e32b9e543958101bd4a64c84ee6666a6bc6f02e19e89073f8bfa1b83228d68814a16b893a97504",
+    "155656d5033f2996c935d8845c1addf3ee97d2d2e56f056c37ed9bda508ad89a6af28a6c756bc9f37d66915ddf5d1acc"
+  ],
+  "banks": [
+    {
+      "phase": "source",
+      "log_rows": 11,
+      "width": 7091,
+      "blocks": [
+        {
+          "table": 0,
+          "log_rows": 11,
+          "width": 5234,
+          "offset": 0
+        },
+        {
+          "table": 1,
+          "log_rows": 5,
+          "width": 1666,
+          "offset": 5234
+        },
+        {
+          "table": 2,
+          "log_rows": 5,
+          "width": 191,
+          "offset": 6900
+        }
+      ],
+      "packing": 128
+    },
+    {
+      "phase": "auxiliary",
+      "log_rows": 11,
+      "width": 296,
+      "blocks": [
+        {
+          "table": 0,
+          "log_rows": 11,
+          "width": 24,
+          "offset": 0
+        },
+        {
+          "table": 1,
+          "log_rows": 5,
+          "width": 24,
+          "offset": 24
+        },
+        {
+          "table": 2,
+          "log_rows": 5,
+          "width": 240,
+          "offset": 48
+        },
+        {
+          "table": 3,
+          "log_rows": 5,
+          "width": 8,
+          "offset": 288
+        }
+      ],
+      "packing": 32
+    },
+    {
+      "phase": "source",
+      "log_rows": 5,
+      "width": 179,
+      "blocks": [
+        {
+          "table": 3,
+          "log_rows": 5,
+          "width": 179,
+          "offset": 0
+        }
+      ],
+      "packing": 4
+    }
+  ],
+  "seconds": 49.346507424023,
+  "statement_sha256": "4851b51b4625e64109c12058512eea3abecfec2d171692a87b72ff2ad32f5416",
+  "scope": "Fixture source commitments prepared before bus/local challenges. No auxiliary root chosen here and no full NEAR/PQ claim."
+}

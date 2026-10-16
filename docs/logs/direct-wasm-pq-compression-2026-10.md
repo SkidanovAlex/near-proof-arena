@@ -6952,3 +6952,67 @@ reuse. Sum terms into one state per bank lane as implemented here. Full-pool
 memory/commitment overhead still needs measurement. No gate is passed by this
 component work: full NEAR1Pgas, hash-only PQ128 correctness and sub300000 B
 remain open; slice-feasibility stays NOT_PASSED.
+
+## 2026-10-16 — Full execution integration of phase-pooled commitments
+
+Added externally selected `phase-pooled-v1` alongside unchanged `separate`.
+The verifier derives three banks from the logical AIR: source0/1/2 at
+2048×7091, packing128; all auxiliaries at2048×296, packing32; use source3
+at32×179, packing4. It enforces source0=source1=source2 and equality of all
+auxiliary roots. Offsets, logical heights, lane padding and coverage are
+checked; none is selected by the proof. Source commitments precede bus
+challenges; the auxiliary commitment follows bus challenges and precedes
+local challenges. A distinct statement domain and envelope versions bind the
+external profile. Reusing logical spec and use root preserves the call PCS:
+the retained call proof was decoded and verified against the new statement.
+
+Actual full fixture run (24 SHA384 nodes,12 linked calls, q309, affine-v1,
+derived-fold transport) passed fresh local/GKR/PCS verification and a separate
+fresh same-root call/compression conjunction. Combined bytes are **1431885**,
+versus1681677 previously: **249792 B /14.85% smaller**;23.15% below the earlier
+1863197 B baseline. Compression envelope1322232; opening1278352;
+reduction/framing43880; call103064; receipt731; calls5858. This is still
+**4.773×300000**, not a successful size gate. Static AIR/spec remain external.
+
+Physical PCS lanes fall279→111. Source values513400→227592 B, source paths
+237744→264768 B; fold values96992→97824 B, fold paths675648→683808 B;
+header4360 B. The transcript changes, so fold-path variation is not a
+transport regression. Fold paths alone exceed the entire300000 B target.
+Next size work should therefore target the folding/code-switch protocol,
+with an explicit composable soundness ledger, rather than just more pooling.
+
+Measured local24.613 s, GKR81.430 s, independent logical coefficient check
+18.675 s, PCSprove184.306 s, PCSverify1.305 s. Earlier PCSprove137.838 s is
+not a controlled timing baseline; no overall performance improvement is
+claimed. Expanded physical source rows increase prover work despite fewer
+opening lanes. The full run stayed inside the12 GiB process cap; no precise
+peak-memory benchmark was recorded.
+
+Evidence: `research/near-compression/results/ext8-phase-pooled-q309/`.
+Mapping regression checks8 logical descriptors→3 physical banks, canonical
+ordering, domain separation, fixed use descriptor, and15 negative cases.
+Legacy complete envelope remains byte-identical (SHA256ff42a773…258bbe2).
+The Lean audit passes4226 checks, including previously proved pooled row
+projection/compact mask identities. This commit adds execution wiring, not a
+new complete Lean implementation-refinement theorem. Full NEAR1Pgas,
+recursive verifier coverage, proximity/extraction/QROM and PQ128 remain
+unproved; q309 is still only the diagnostic profile. Slice-feasibility stays
+NOT_PASSED. No signed challenge, oracle or main D1 relation was modified.
+
+Replay mapping from retained inputs (package working directory):
+```
+python3 airbender/direct-wasm/test_ext8_commitment_profiles.py \
+ --statement results/ext8-phase-pooled-q309/statement.json.gz \
+ --opening results/ext8-phase-pooled-q309/mapping-input.json.gz \
+ --output /tmp/ext8-mapping-replay.json
+```
+Full source preparation and prover commands, file hashes, and verifier replay
+are retained in the manifest. Source row fixtures remain external, with the
+same four hashes checked against the prior retained prover report.
+
+Final envelope regression passed roundtrip and12 malformed/profile cases,
+including relabeling pooled→separate and affine→baseline. The independently
+measured compression envelope matches the codec-tested bytes exactly:
+SHA256 `fe7871c889ccfb2835d2d9f3b5268cdfba862852810eee978ec3ad5e7374d4b7`.
+All preparation, prover, audit, legacy regression, new codec and measurement
+processes completed successfully; no background prover remains from this run.

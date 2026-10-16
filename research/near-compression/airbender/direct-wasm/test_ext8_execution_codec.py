@@ -1,17 +1,18 @@
 """Full-envelope measurement and malformed-input checks on a retained proof."""
+import ext8_commitment_profiles as commitments
 import argparse,json,hashlib,subprocess,sys
 from pathlib import Path
 import ext8_execution_codec as c
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--capture',type=Path,required=True);p.add_argument('--statement',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--queries',type=int,required=True);p.add_argument('--terminal-profile',choices=c.v.profiles.PROFILES,default='baseline');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--capture',type=Path,required=True);p.add_argument('--statement',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--queries',type=int,required=True);p.add_argument('--terminal-profile',choices=c.v.profiles.PROFILES,default='baseline');p.add_argument("--commitment-profile",choices=commitments.PROFILES,default="separate");a=p.parse_args()
     statement=json.loads(a.statement.read_text());spec,roots=statement['spec'],statement['roots']
     reduction=json.loads((a.capture/'reduction.json').read_text());opening=(a.capture/'proof.bin').read_bytes()
-    wire=c.encode(reduction,opening,spec,roots,queries=a.queries,terminal_profile=a.terminal_profile)
-    rd,op=c.decode(wire,spec,roots,queries=a.queries,terminal_profile=a.terminal_profile)
+    wire=c.encode(reduction,opening,spec,roots,queries=a.queries,terminal_profile=a.terminal_profile,commitment_profile=a.commitment_profile)
+    rd,op=c.decode(wire,spec,roots,queries=a.queries,terminal_profile=a.terminal_profile,commitment_profile=a.commitment_profile)
     assert rd==reduction and op==opening
-    assert c.encode(rd,op,spec,roots,queries=a.queries,terminal_profile=a.terminal_profile)==wire
+    assert c.encode(rd,op,spec,roots,queries=a.queries,terminal_profile=a.terminal_profile,commitment_profile=a.commitment_profile)==wire
     negatives=[]
     cases=[('truncated',wire[:-1]),('trailing',wire+b'\0'),('version',b'BADMAGIC'+wire[8:]),('source-root',wire[:8]+bytes([wire[8]^1])+wire[9:])]
     at=8+96*len(roots)
@@ -20,19 +21,23 @@ def main():
     for name,pos in [('aux-root',8+48*len(roots)),('bus-final',at),('gkr-round',gkr_at),('pcs-authentication',len(wire)-1)]:
         cases.append((name,wire[:pos]+bytes([wire[pos]^1])+wire[pos+1:]))
     for name,bad in cases:
-        try:c.decode(bad,spec,roots,queries=a.queries,terminal_profile=a.terminal_profile)
+        try:c.decode(bad,spec,roots,queries=a.queries,terminal_profile=a.terminal_profile,commitment_profile=a.commitment_profile)
         except ValueError:negatives.append(name)
         else:raise AssertionError(name)
     other='affine-v1' if a.terminal_profile=='baseline' else 'baseline'
-    try:c.decode(wire,spec,roots,queries=a.queries,terminal_profile=other)
+    try:c.decode(wire,spec,roots,queries=a.queries,terminal_profile=other,commitment_profile=a.commitment_profile)
     except ValueError:negatives.append('wrong-external-profile')
     else:raise AssertionError('wrong external profile accepted')
-    try:c.decode(c.MAGICS[other]+wire[8:],spec,roots,queries=a.queries,terminal_profile=other)
+    try:c.decode(c.magic(other,a.commitment_profile)+wire[8:],spec,roots,queries=a.queries,terminal_profile=other,commitment_profile=a.commitment_profile)
     except ValueError:negatives.append('relabelled-external-profile')
     else:raise AssertionError('relabelled profile accepted')
+    other_commitment='phase-pooled-v1' if a.commitment_profile=='separate' else 'separate'
+    try:c.decode(c.magic(a.terminal_profile,other_commitment)+wire[8:],spec,roots,queries=a.queries,terminal_profile=a.terminal_profile,commitment_profile=other_commitment)
+    except ValueError:negatives.append('relabelled-commitment-profile')
+    else:raise AssertionError('relabelled commitment profile accepted')
     (a.capture/'envelope.bin').write_bytes(wire)
-    fresh=subprocess.run([sys.executable,str(Path(c.__file__)),str(a.capture/'envelope.bin'),str(a.statement),'--queries',str(a.queries),'--terminal-profile',a.terminal_profile],text=True,capture_output=True);fresh.check_returncode()
-    report=dict(fresh_verifier=fresh.stdout.strip(),status='PASS',terminal_profile=a.terminal_profile,queries=a.queries,opening_bytes=len(opening),complete_envelope_bytes=len(wire),reduction_and_framing_bytes=len(wire)-len(opening),negative_cases=negatives,roundtrip=True,sha256=hashlib.sha256(wire).hexdigest(),scope='Includes source/auxiliary commitments, bus finals, local/GKR proofs and PCS opening. Static trusted AIR/spec and external receipts excluded. Not PQ128 or full NEAR certification.')
+    fresh=subprocess.run([sys.executable,str(Path(c.__file__)),str(a.capture/'envelope.bin'),str(a.statement),'--queries',str(a.queries),'--terminal-profile',a.terminal_profile,'--commitment-profile',a.commitment_profile],text=True,capture_output=True);fresh.check_returncode()
+    report=dict(fresh_verifier=fresh.stdout.strip(),status='PASS',terminal_profile=a.terminal_profile,commitment_profile=a.commitment_profile,queries=a.queries,opening_bytes=len(opening),complete_envelope_bytes=len(wire),reduction_and_framing_bytes=len(wire)-len(opening),negative_cases=negatives,roundtrip=True,sha256=hashlib.sha256(wire).hexdigest(),scope='Includes source/auxiliary commitments, bus finals, local/GKR proofs and PCS opening. Static trusted AIR/spec and external receipts excluded. Not PQ128 or full NEAR certification.')
     a.output.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
 
 if __name__=='__main__':main()

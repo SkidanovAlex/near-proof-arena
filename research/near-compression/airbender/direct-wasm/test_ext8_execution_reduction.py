@@ -16,15 +16,18 @@ from test_ext8_input_weights import coefficient_claim as tensor_coefficient_clai
 from ext8_coefficient_claim_contract import coefficient_claim as contracted_coefficient_claim
 import pq384_ext8_weighted as pcs
 import ext8_terminal_profiles as profiles
+import ext8_commitment_profiles as commitments
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--output',type=Path,required=True);ap.add_argument('--pcs-queries',type=int);ap.add_argument('--capture-dir',type=Path)
-    ap.add_argument('--statement',type=Path);ap.add_argument('--source-directory',type=Path);ap.add_argument('--compression-receipt',type=Path);ap.add_argument('--terminal-profile',choices=profiles.PROFILES,default='baseline');ap.add_argument('--coefficient-check',choices=('contract','tensor'),default='contract');ap.add_argument('--derived-fold-transport',action='store_true');args=ap.parse_args()
+    ap.add_argument('--statement',type=Path);ap.add_argument('--source-directory',type=Path);ap.add_argument('--compression-receipt',type=Path);ap.add_argument('--terminal-profile',choices=profiles.PROFILES,default='baseline');ap.add_argument('--coefficient-check',choices=('contract','tensor'),default='contract');ap.add_argument('--derived-fold-transport',action='store_true');ap.add_argument("--commitment-profile",choices=commitments.PROFILES,default="separate");args=ap.parse_args()
+    if args.commitment_profile!="separate" and args.pcs_queries is None:ap.error("pooled profile requires PCS commitments")
     coefficient_claim=contracted_coefficient_claim if args.coefficient_check=='contract' else tensor_coefficient_claim
     if (args.statement is None)!=(args.source_directory is None):ap.error('--statement and --source-directory must be supplied together')
     fixture=Path('results/pq384-literal193-gkr-fixed13')
     statement_path=args.statement or fixture/'statement.json'
     statement=json.loads(statement_path.read_text());spec=statement['spec'];rows=[];digests=[]
+    commitments.check_roots(spec,statement['roots'],profile=args.commitment_profile)
     if args.compression_receipt:
         from verify_sha384_node_chunk import contract
         contract(statement,json.loads(args.compression_receipt.read_text()))
@@ -45,13 +48,17 @@ def main():
         with tempfile.TemporaryDirectory(prefix='ext8-source-commit-') as tmp:
             libpath=Path(tmp)/'kernel.so';subprocess.run(['rustc','--edition=2024','--crate-type','cdylib','-O',str(source),'-o',str(libpath)],check=True)
             native=Kernel(libpath)
-            source_caches=[]
-            for ti,(rs,packing) in enumerate(zip(rows,spec['source_packings'])):
-                source_caches.append(pcs.Source(rs,packing,native));print('Committed source '+str(ti),flush=True)
+            if args.commitment_profile=='phase-pooled-v1':
+                source_caches=commitments.source_caches(spec,rows,native)
+                print('Committed pooled source bank and separate use source',flush=True)
+            else:
+                source_caches=[]
+                for ti,(rs,packing) in enumerate(zip(rows,spec['source_packings'])):
+                    source_caches.append(pcs.Source(rs,packing,native));print('Committed source '+str(ti),flush=True)
         digests=[c.root for c in source_caches]
         retained=statement['roots']
         assert [x.hex() for x in digests]==retained
-    st=hash_parts(b'ext8-execution-reduction-diagnostic-v1',json.dumps(spec,sort_keys=True).encode(),*digests)
+    st=commitments.statement(spec,digests,args.commitment_profile)
     def begin():
         t=Transcript(st);alpha,gamma=local.draw(t,2);return t,alpha,gamma
     print('Source roots checked; generating Ext8 auxiliaries',flush=True)
@@ -74,7 +81,8 @@ def main():
     aux_binding=hash_parts(b'ext8-diagnostic-aux-vectors',json.dumps(coordinates).encode(),gkr.vector_bytes([v for fs in finals for v in fs]))
     if args.pcs_queries is not None:
         # Reuse loaded library; ctypes keeps the image mapped after temp unlink.
-        aux_caches=[pcs.Source(rs,packing,native) for rs,packing in zip(coordinates,spec['aux_packings'])]
+        aux_caches=(commitments.auxiliary_caches(spec,coordinates,native) if args.commitment_profile=='phase-pooled-v1' else
+            [pcs.Source(rs,packing,native) for rs,packing in zip(coordinates,spec['aux_packings'])])
         aux_binding=hash_parts(b'ext8-packed-auxiliary-roots',*[c.root for c in aux_caches],gkr.vector_bytes([v for fs in finals for v in fs]))
     print('Auxiliary commitments complete',flush=True)
     t.commit(b'ext8-all-auxiliary-data',aux_binding)
@@ -114,8 +122,9 @@ def main():
         print(f'Coefficient obligation checked ({args.coefficient_check}, {coefficient_seconds:.3f}s)',flush=True)
         pcs_result=None
         if args.pcs_queries is not None:
-            opening_caches=[(source_caches if b['branch']==0 else aux_caches)[b['table']] for b in branches]
-            opening_branches_bound=[{**{key:value for key,value in b.items() if key not in ('table','branch')},'root':cache.root.hex()} for b,cache in zip(branches,opening_caches)]
+            opening_caches=commitments.opening_caches(source_caches,aux_caches,branches,args.commitment_profile)
+            opening_branches_bound=commitments.bind_branches(spec,branches,[c.root.hex() for c in source_caches],
+                [c.root.hex() for c in aux_caches],args.commitment_profile)
             parent=hash_parts(b'ext8-after-gkr',t.seed,json.dumps(gp,sort_keys=True,separators=(',',':')).encode())
             print('Starting weighted PCS',flush=True)
             start=time.perf_counter();op=pcs.prove(opening_caches,kernel,st,parent,opening_branches_bound,verified['private_claim'],queries=args.pcs_queries);prove_time=time.perf_counter()-start
@@ -135,7 +144,7 @@ def main():
                 # Verify from the external statement, deriving all opening parameters.
                 fresh=subprocess.run([sys.executable,str(Path(__file__).with_name('verify_ext8_execution.py')),
                     '--reduction',str(args.capture_dir/'reduction.json'),'--opening',str(args.capture_dir/'proof.bin'),
-                    '--statement',str(statement_path),'--queries',str(args.pcs_queries),'--terminal-profile',args.terminal_profile]+(['--compression-receipt',str(args.compression_receipt)] if args.compression_receipt else []),check=True,capture_output=True,text=True)
+                    '--statement',str(statement_path),'--queries',str(args.pcs_queries),'--terminal-profile',args.terminal_profile,'--commitment-profile',args.commitment_profile]+(['--compression-receipt',str(args.compression_receipt)] if args.compression_receipt else []),check=True,capture_output=True,text=True)
                 (args.capture_dir/'complete-verifier.log').write_text(fresh.stdout+fresh.stderr)
             pcs_result=dict(queries=args.pcs_queries,verified=True,json_bytes=len(json.dumps(op,separators=(',',':')).encode()),prove_seconds=prove_time,verify_seconds=verify_time,
                 source_roots_match_retained=True,commitment_binding='packed source roots before bus challenges; packed auxiliary roots/finals before local challenges')
@@ -150,7 +159,8 @@ def main():
         except ValueError as exc:
             assert str(exc)=='invalid trace constraints'
         else:raise AssertionError('corrupted source trace accepted')
-        report=dict(terminal_profile=args.terminal_profile,derived_fold_transport=args.derived_fold_transport,coefficient_check=args.coefficient_check,coefficient_seconds=coefficient_seconds,weighted_pcs=pcs_result,coefficient_opening_target_checked=True,opening_branches=[dict(table=b['table'],branch=b['branch'],width=b['width'],packing=b['packing'],lanes=len(b['lanes'])) for b in branches],corrupted_source_rejected=True,status='PASS',source_sha256=expected,source_rows=[len(r) for r in rows],global_bus_product_equal=True,
+        report=dict(terminal_profile=args.terminal_profile,commitment_profile=args.commitment_profile,
+            physical_opening_branches=([dict(log_rows=b['log_rows'],width=b['width'],packing=b['packing'],lanes=pcs.lane_count(b),terms=len(b.get('terms',[]))) for b in opening_branches_bound] if args.pcs_queries is not None else None),derived_fold_transport=args.derived_fold_transport,coefficient_check=args.coefficient_check,coefficient_seconds=coefficient_seconds,weighted_pcs=pcs_result,coefficient_opening_target_checked=True,opening_branches=[dict(table=b['table'],branch=b['branch'],width=b['width'],packing=b['packing'],lanes=len(b['lanes'])) for b in branches],corrupted_source_rejected=True,status='PASS',source_sha256=expected,source_rows=[len(r) for r in rows],global_bus_product_equal=True,
             local_rounds=sum(map(len,proofs)),local_scalar_bytes=32*sum(len(cs) for proof in proofs for cs in proof),
             gkr_layers=len(gp['layers']),gkr_scalar_bytes=32*sum(3*len(p['rounds'])+2 for p in gp['layers']),
             zero_terminal_claim_verified=True,direct_private_obligation_checked=True,local_seconds=local_seconds,gkr_seconds=gkr_seconds,
