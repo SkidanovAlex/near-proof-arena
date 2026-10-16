@@ -1,0 +1,33 @@
+{
+  "status": "LOCAL_BATCHING_GKR_COUNTS_COMPOSED_WITH_JOINT_TERMINAL_ERRORS",
+  "module": "NearCompression/LocalBatchedGKR.lean",
+  "theorems": [
+    "decoded_local_batched_gkr_split",
+    "local_gkr_joint_error_count"
+  ],
+  "proved": [
+    "Local accepted count, terminal batching cancellation and concrete evaluated GKR repair compose on the local-prefix/rho/GKR/continuation experiment.",
+    "The residual accepted GKR terminal-mismatch sum is exactly a single chronological joint event count, retaining sample multiplicities."
+  ],
+  "assumptions": [
+    "Wrong local terminal implies an indexed mismatch in the fixed output list; supplied by local_terminal_semantic_mismatch with semantic bindings.",
+    "Actual circuit equals output batching; supplied by checked_semantic_circuit_value with checker and geometry obligations.",
+    "Fixed table count and GKR round geometry across local prefixes.",
+    "Acceptance implies local and GKR checks; root query, zero root claim and root slot bounds are explicit."
+  ],
+  "remaining": [
+    "Bound the residual chronological event using the matching joint PCS experiment, preserving all challenge dependencies.",
+    "Integrate no-representative failure and actual invalid-trace local bound into one final acceptance theorem.",
+    "Native specification binding, QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3976,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal experiment composition only."
+  }
+}

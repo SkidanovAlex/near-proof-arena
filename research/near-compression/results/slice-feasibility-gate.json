@@ -253,7 +253,9 @@
     "NearCompression/TerminalSemanticOutputs.lean",
     "results/terminal-semantic-outputs-integration.json",
     "NearCompression/SemanticCircuitBinding.lean",
-    "results/semantic-circuit-binding-integration.json"
+    "results/semantic-circuit-binding-integration.json",
+    "NearCompression/LocalBatchedGKR.lean",
+    "results/local-batched-gkr-integration.json"
   ],
   "requirements": [
     {

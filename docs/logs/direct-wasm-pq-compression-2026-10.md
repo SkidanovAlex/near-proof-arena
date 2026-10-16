@@ -3773,3 +3773,22 @@ theorem for a canonical disjoint source tuple. Native transcript/specification
 binding, global averaged counts and no-representative integration remain open.
 Full check.py passed 3974 registered results with the existing axiom allowlist.
 No native code or measured proof size changed; gate remains NOT_PASSED.
+
+### Local, batching and evaluated GKR counts composed
+
+LocalBatchedGKR substitutes the concrete evaluated GKR repair theorem into
+the local-prefix continuation split through terminal batching cancellation.
+The result has a local accepted-count term, explicit batching/GKR repair terms,
+and one residual accepted GKR terminal-mismatch sum over local prefixes and
+rho. A second theorem identifies that sum with the chronological joint event
+count, including duplicate sample multiplicities. No conditional PCS bound
+after fixing rowpoints is introduced.
+
+Wrong-terminal-to-output mismatch and checked-circuit identities are explicit
+interfaces supplied by the preceding semantic modules. Concrete transcript
+binding, joint PCS substitution, no-representative integration and the final
+invalid-trace bound still need assembly.
+
+Full check.py passed 3976 registered results with the existing axiom allowlist.
+Native code and byte measurements unchanged; global/PQ soundness and secure
+full-NEAR size remain open, and gate remains NOT_PASSED.

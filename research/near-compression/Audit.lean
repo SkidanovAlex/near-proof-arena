@@ -5657,3 +5657,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.checked_semantic_circuit_value
 #print axioms NearCompression.checked_semantic_circuit_cancellation
+
+#print axioms NearCompression.decoded_local_batched_gkr_split
+#print axioms NearCompression.local_gkr_joint_error_count
