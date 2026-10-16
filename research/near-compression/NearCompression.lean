@@ -1576,3 +1576,5 @@ import NearCompression.CheckedHistoryAcceptance
 import NearCompression.CheckedHistorySource
 
 import NearCompression.SHA384ChunkCallCheck
+
+import NearCompression.SHA384CallLinear

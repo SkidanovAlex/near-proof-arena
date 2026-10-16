@@ -5771,3 +5771,34 @@ canonical limbs and compression facts. Native transcript operand provenance,
 full recursive verifier, aggregation and quantum128 parameters remain open.
 No Lean changes this turn; latest4147audit remains applicable to existing
 formal modules. Python compilation and git diff --check pass. Goal/gate open.
+
+### Lean refinement foundations for the new call-link compiler
+
+SHA384CallLinear.lean adds eight audited results. callWordLimb matches the
+compiler's little-endian16-bit decomposition. Each limb survives Fp embedding
+exactly, and four limbs decode a bounded64-bit constant exactly. Constant
+residual lists recover arbitrary bounded expected word lists. The specific
+SHA384 IV follows from its32constant residuals, without assuming the decoded
+initial state.
+
+callStateLinkResiduals uses the actual use-row column offsets3and99 and all32
+limbs. Zero residuals imply equality of all eight decoded words. Concatenating
+these residuals for every adjacent use establishes the existing chunkCallWiring
+predicate for the entire ordered sequence. The final state is the last output
+state by the same fold definition; no truncated digest is used in any link.
+The row-low/column-high slot injection theorem proves r+rows*c cannot alias
+s+rows*d when both row indices are bounded. This supports the8192-slot packing
+used in the actual call-link GKR proof.
+
+These are deterministic semantic refinement pieces. They do not yet prove
+Python generator correspondence or randomized residual-batching soundness,
+connect canonical framed bytes to every generated block constraint, or complete
+the final digest/PCS/compiler join. The generic constant-word theorem can
+supply block-word equality once that framing/coverage connection is made.
+No claim that all new Python/GKR behavior is now formally verified.
+
+Validation: full check.py PASS4155 theorem/axiom and boundary checks, only
+permitted axioms; /tmp/sha384-call-linear-audit.log. Registered module and all
+eight public theorem audits. No executable/proof format changes this turn;
+retained152200-byte diagnostic bundle unchanged. Full NEAR/PQ128 goal and
+feasibility gate remain open.

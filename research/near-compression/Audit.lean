@@ -5951,3 +5951,12 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.check_chunk_call_wiring_iff
 #print axioms NearCompression.check_chunk_call_sound
 #print axioms NearCompression.sha384_chunks_checked_call_sound
+
+#print axioms NearCompression.call_word_limb_nat
+#print axioms NearCompression.call_word_limbs_decode
+#print axioms NearCompression.call_constant_limbs_words
+#print axioms NearCompression.call_state_link_residuals_sound
+#print axioms NearCompression.call_input_slot_injective
+#print axioms NearCompression.call_constant_residuals_words
+#print axioms NearCompression.call_link_residuals_wiring
+#print axioms NearCompression.call_iv_residuals_sound
