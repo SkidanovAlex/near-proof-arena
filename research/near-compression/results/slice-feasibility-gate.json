@@ -124,7 +124,9 @@
     "results/joint-source-acceptance-integration.json",
     "NearCompression/WeightedTerminalAuthentication.lean",
     "results/weighted-terminal-authentication-integration.json",
-    "results/source-tree-collision-integration.json"
+    "results/source-tree-collision-integration.json",
+    "NearCompression/CanonicalFieldWordBytes.lean",
+    "results/canonical-field-word-bytes-integration.json"
   ],
   "requirements": [
     {
@@ -161,7 +163,8 @@
       "shared_representative_uniqueness": "Two shared representatives of the same fixed source oracles give identical functional families and all requested values under radiusLeft+radiusRight+D<=domain size. Individual-lane closeness and selector geometry are unnecessary. Common representative existence, AIR satisfaction and crypto extraction remain open.",
       "far_source_acceptance_component": "No common prechallenge joint representative now bounds actual adaptive weighted replay acceptance: outer tensor error plus folding error plus query tail. Source contraction identity, terminal authentication, strict 2*N+D<3*T regime and ideal independent challenges remain explicit. This discharges the abstract far branch without assuming representative existence; compiled heterogeneous near-case and quantum reductions remain open.",
       "terminal_authentication_component": "Typed degree-one reconstruction now yields the exact pointwise constant-oracle premise of weighted folding, or an explicit distinct-tree/equal-root collision. Natural-domain i/i+half pairing is proved. Canonical byte/tree refinement and quantitative hash binding remain open; terminal authentication is not declared unconditional.",
-      "byte_tree_binding_component": "Distinct fully supplied byte trees with the same constructed root now yield a concrete unequal-message/equal-hash collision on two constructed path-query supports. No global root injectivity is assumed. Typed pair serialization, unknown-root extraction and quantitative quantum hashing bounds are not discharged."
+      "byte_tree_binding_component": "Distinct fully supplied byte trees with the same constructed root now yield a concrete unequal-message/equal-hash collision on two constructed path-query supports. No global root injectivity is assumed. Typed pair serialization, unknown-root extraction and quantitative quantum hashing bounds are not discharged.",
+      "canonical_word_binding_component": "Canonical BabyBear coordinate lists now have injective LE-u32 serialization, and distinct canonical coordinate trees with equal byte-tree roots yield supported concrete hash collisions. Extension-field/pair coordinate refinement, unknown-root extraction and quantitative quantum bounds remain open."
     },
     {
       "name": "Complete bytes and scaling",

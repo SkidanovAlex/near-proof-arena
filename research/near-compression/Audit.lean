@@ -5386,3 +5386,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.weighted_terminal_binding_authenticated
 
 #print axioms NearCompression.sha384_source_tree_collision
+
+#print axioms NearCompression.canonical_field_word_bytes_length
+#print axioms NearCompression.canonical_field_words_read_append
+#print axioms NearCompression.canonical_field_word_bytes_injective
+#print axioms NearCompression.canonical_field_word_tree_injective
+#print axioms NearCompression.canonical_field_tree_hash_collision

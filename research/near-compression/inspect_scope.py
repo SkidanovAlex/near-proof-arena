@@ -164,6 +164,7 @@ SOURCES = [
     "research/near-compression/NearCompression/PreparedTypedLocalGetState.lean",
     "research/near-compression/NearCompression/PreparedTypedLocalGetAuthenticated.lean",
     "research/near-compression/NearCompression/SHA384MerkleSource.lean",
+    "research/near-compression/NearCompression/CanonicalFieldWordBytes.lean",
     "research/near-compression/NearCompression/PreparedTypedDropAuthenticated.lean",
     "research/near-compression/NearCompression/PreparedTypedDropState.lean",
     "research/near-compression/NearCompression/PreparedTypedDropDepth.lean",

@@ -2315,3 +2315,23 @@ remain incomplete, with no change to proof bytes or security parameters.
 
 Validation: full `check.py` passed with 3759 registered results and the enforced
 axiom allowlist. Slice gate remains NOT_PASSED.
+
+
+### Canonical field-word serialization and tree binding
+
+`CanonicalFieldWordBytes.lean` models `field_words` as concatenated four-byte
+little-endian encodings of canonical natural coordinates below2013265921.
+It proves encoded length, prefix parser roundtrip, and injectivity without an
+assumed common input length. Coordinate-tree serialization consequently
+preserves inequality. The final theorem composes this with constructed byte-tree
+binding: different canonical coordinate trees sharing a root yield a concrete
+unequal-input/equal-hash collision on constructed path-query supports.
+
+This covers the exact canonical coordinate stream interface. Connecting an
+abstract extension-field pair to that stream still needs the fixed coordinate
+representation and layout refinement. No arbitrary-root extraction, quantum
+collision bound or Fiat-Shamir theorem is implied. Full near-case semantics,
+full NEAR1Pgas scope and secure sub300000-byte feasibility remain incomplete.
+
+Validation: full `check.py` passed with 3764 registered results and enforced
+axiom allowlist. No proof byte artifacts or security parameters changed.

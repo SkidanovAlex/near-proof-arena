@@ -1,0 +1,28 @@
+{
+  "status": "CANONICAL_WORD_SERIALIZATION_AND_TREE_COLLISION_COMPOSED",
+  "module": "NearCompression/CanonicalFieldWordBytes.lean",
+  "executable": "airbender/direct-wasm/pq384_primitives.py:field_words",
+  "proved": [
+    "Encoding n coordinates produces exactly 4*n bytes.",
+    "Count-directed u32 decoding recovers bounded words and preserves any appended suffix.",
+    "Canonical BabyBear coordinate lists have injective little-endian encodings, including across different list lengths.",
+    "Canonical coordinate trees preserve inequality under leaf serialization.",
+    "Distinct canonical coordinate trees with equal framed byte-tree roots yield explicit unequal messages with equal hashes in constructed path-query supports."
+  ],
+  "bounds": "Coordinates are natural integers below2013265921; complete trees have positive power-of-two size, and context/leaf payload sizes fit u64.",
+  "remaining": [
+    "Extension-field value-to-coordinate and pair-layout refinement must instantiate this canonical stream interface.",
+    "No tree is extracted from an arbitrary commitment digest.",
+    "Quantum hash collision probability and Fiat-Shamir compiler remain unproved.",
+    "Near-case AIR/GKR/bus/execution composition and secure full NEAR1Pgas sub300000-byte feasibility remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3764,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

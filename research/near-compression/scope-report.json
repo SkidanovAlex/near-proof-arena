@@ -332,6 +332,7 @@
     "research/near-compression/NearCompression/PreparedTypedLocalGetState.lean": "4b2da5a0d0d3e8e632e08003c41f4a37d8631f663404397a7d5696fd5370fb57",
     "research/near-compression/NearCompression/PreparedTypedLocalGetAuthenticated.lean": "1a7db73f70188d7062bf62559aa7f993d5fb0f14fdd0b0bb01a33e91a4ce13f9",
     "research/near-compression/NearCompression/SHA384MerkleSource.lean": "33e76b8d560308dcff987f0b932fe11f06eb8dac6904c00ce374cdd8ef0fab67",
+    "research/near-compression/NearCompression/CanonicalFieldWordBytes.lean": "1c864b8e0cc754b0d67e0354f33b6875eecac34895aaaf0a2825e94343c5baf2",
     "research/near-compression/NearCompression/PreparedTypedDropAuthenticated.lean": "1e9667325383e5420577d4cfe5cbf4c961ce429bb20dc5231e2f755ce61db204",
     "research/near-compression/NearCompression/PreparedTypedDropState.lean": "a0212c0df4bd804d41de15c44c31910f22767672ddb9315ef5b5eab5d9b874dc",
     "research/near-compression/NearCompression/PreparedTypedDropDepth.lean": "4cef6568632b333032ae938147b2a73f0b76c7d79381dbc59edd736cad87ed6c",

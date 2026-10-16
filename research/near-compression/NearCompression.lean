@@ -1361,3 +1361,5 @@ import NearCompression.PackedComputedGKRTable
 import NearCompression.JointSourceAcceptance
 
 import NearCompression.WeightedTerminalAuthentication
+
+import NearCompression.CanonicalFieldWordBytes
