@@ -606,6 +606,7 @@
     "research/near-compression/NearCompression/SelectedBranchTransfer.lean": "3f6d33c8afd620966ea2984e1b1d53a806c0316baee262c7cf15bb0ab4f743bd",
     "research/near-compression/NearCompression/SelectedGKREvidence.lean": "5b70f3590190bd0a66959c32dbc4267dc2091ad4b00dd8dc74dbfb48db5b3eaa",
     "research/near-compression/NearCompression/TwoTableSelectedGKRComposition.lean": "ccaca320cffb20b8b0a961d34b24966450321f212e23e37c303814ace21d94cf",
+    "research/near-compression/NearCompression/PreparedSelectedGKRBudget.lean": "deebf88e328f721dd9cddb3a1441f7e61d10a0aa54f0495d844f0b58ec4e98e1",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean": "997795aabcc383c82e9cc0fee0084abc6b58579a045700a69d17be2b1d9808d6",
     "research/near-compression/NearCompression/JointPCSNormalization.lean": "904d3bdbc623ae03f784a6e15e7f4a03128e792d2416985271ef1fbb389cb3ac",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean": "1ef75981bd822975f8a80400b2216a32d36ea9a0dd40c5d120894021e7dd4157",

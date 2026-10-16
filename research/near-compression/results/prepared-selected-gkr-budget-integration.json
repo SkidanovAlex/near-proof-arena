@@ -1,0 +1,34 @@
+{
+  "status": "PREPARED_WASM_BUS_AND_BOTH_SELECTED_GKR_TERMS_DERIVED",
+  "module": "NearCompression/PreparedSelectedGKRBudget.lean",
+  "theorems": [
+    "prepared_selected_gkr_budget"
+  ],
+  "proved": [
+    "Defines the full prepared two-table continuation including both local protocols, batching, GKR and PCS draws.",
+    "Invokes prepared_checked_history_budget, deriving the bus error term from actual prepared-Wasm soundness and the concrete fixed-residual selector.",
+    "Invokes both semantic evidence-bound theorems and exact branch-count transfers, removing numerical local-budget and invalid-branch inequality inputs.",
+    "Retains exactly one joint accepted downstream-failure budget."
+  ],
+  "assumptions": [
+    "Locally valid fixed source, prepared execution/public fit/fuel/wrong-output premises.",
+    "Exact formula checks, covered coordinate/source binding and equal final side products outside the shared failure event.",
+    "First/second semantic evidence includes local/GKR verifier checks, mismatch/binding and shared-error inclusion.",
+    "The remaining joint accepted-failure numerical budget is still supplied; it is not yet discharged by concrete PCS in this theorem."
+  ],
+  "remaining": [
+    "Lift two_table_concrete_pcs_failure_budget over earlier bus pairs and instantiate the shared failure bound with the correct event inclusion.",
+    "Derive semantic evidence/native bindings and include fixed-source-invalid cases.",
+    "Full native Ext8, global acceptance, QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4110,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only composition."
+  }
+}

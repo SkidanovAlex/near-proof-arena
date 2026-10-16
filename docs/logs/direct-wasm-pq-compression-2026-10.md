@@ -4742,3 +4742,26 @@ remain open; slice gate remains NOT_PASSED.
 
 Validation: full `check.py` PASS (4109 registered results), existing axiom
 allowlist. Native captures not rerun for formal-only composition.
+
+### Prepared-Wasm bus and both selected local/GKR terms derived
+
+`prepared_selected_gkr_budget` instantiates the checked prepared-Wasm theorem
+with the full two-local/GKR/PCS continuation and computes both local budgets
+from semantic evidence. Exact first/second branch-count transfers discharge
+its invalid-branch inequality premises. The actual prepared-Wasm bus theorem
+supplies the bus term. Only one shared accepted downstream-failure estimate
+remains a numerical error premise.
+
+This is the locally valid fixed-source branch. Source/coordinate binding,
+checked formulas/finals, semantic local/GKR evidence and native authentication
+remain explicit. The theorem does not yet discharge its shared error count
+using concrete PCS or include fixed-source-invalid cases.
+
+Next: lift `two_table_concrete_pcs_failure_budget` across earlier bus pairs,
+where source oracles may vary with the pair but are fixed across local draws,
+and supply the matching accepted-failure event inclusion. Full native Ext8,
+global acceptance, QROM, secure size and full 1 Pgas remain open; slice gate
+remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4110 registered results), existing axiom
+allowlist. Native captures not rerun for formal-only composition.

@@ -444,6 +444,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SelectedBranchTransfer.lean",
     "research/near-compression/NearCompression/SelectedGKREvidence.lean",
     "research/near-compression/NearCompression/TwoTableSelectedGKRComposition.lean",
+    "research/near-compression/NearCompression/PreparedSelectedGKRBudget.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",
