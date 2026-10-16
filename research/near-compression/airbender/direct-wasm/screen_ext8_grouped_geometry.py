@@ -16,7 +16,7 @@ def minimum_queries(factor,bits):
     return q
 
 
-def geometry(branches,degree,rate,samples,*,grouped,merkle_layout="paired"):
+def geometry(branches,degree,rate,samples,*,grouped,merkle_layout="paired",first_group=None):
     n=degree.bit_length()-1
     def opening(half,width,step,k):
         if merkle_layout=='coset':
@@ -50,7 +50,8 @@ def geometry(branches,degree,rate,samples,*,grouped,merkle_layout="paired"):
             candidates.append((size+48+rest,[k]+path,leaves+rl,auth+ra))
         return min(candidates,key=lambda x:x[0])
     candidates=[]
-    for k in range(1,min(4 if grouped else 1,n)+1):
+    for k in ([first_group] if first_group is not None else range(1,min(4 if grouped else 1,n)+1)):
+        assert 1<=k<=min(4 if grouped else 1,n)
         source,sl,sa=source_cost(k);rest,path,fl,fa=tail(n-k)
         groups=[k]+path;header=40+192*n+48*len(groups)
         candidates.append(dict(bytes=header+source+rest-48*len(path),groups=groups,header_bytes=header,source_leaf_bytes=sl,source_auth_bytes=sa,fold_leaf_bytes=fl,fold_auth_bytes=fa))

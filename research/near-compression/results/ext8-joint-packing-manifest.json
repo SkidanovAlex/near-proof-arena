@@ -1,0 +1,9 @@
+{
+  "airbender/direct-wasm/screen_ext8_grouped_geometry.py": "e469ce729a1456e7faed7c5d01c6837a2110c18b76e9bc34b49d900fcce3e547",
+  "airbender/direct-wasm/screen_ext8_joint_packing.py": "d9ae26e34d95db9711e1a2c008cce441c4545d92e3a43a199723622c87214004",
+  "airbender/direct-wasm/test_ext8_joint_packing.py": "5ffb1b7b9ddb5881f97ae8e1853a0efa4cc9d04ba53ea269357de4a8e8729828",
+  "results/ext8-joint-packing-geometry.json": "ebbed4489df3e4cd02fc740961168aa6fb3816e95c88e18d03e037740aa5157e",
+  "results/ext8-joint-packing-validation.json": "ced7dcc61931c9fae4dfc0c3f45fb9ffe8c8f3c11f229857eb65d830740f091d",
+  "results/ext8-pooled-packing-geometry.json": "0f6cda239fef996f1e4f462767f54e52a767a3175dfa68abf1f1b94c0396eede",
+  "results/ext8-pooled-packing-validation.json": "ced7dcc61931c9fae4dfc0c3f45fb9ffe8c8f3c11f229857eb65d830740f091d"
+}

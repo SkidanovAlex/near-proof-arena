@@ -1,0 +1,5272 @@
+{
+  "status": "COUNTERFACTUAL_SHARED_ROOT_CONSTRAINED_SEARCH",
+  "phase_pooling": true,
+  "original_cells": 10842240,
+  "modeled_cells": 15134304,
+  "shapes": [
+    [
+      11,
+      7091
+    ],
+    [
+      11,
+      296
+    ],
+    [
+      5,
+      179
+    ]
+  ],
+  "use_branch": 2,
+  "fixed_bytes": 143229,
+  "records": [
+    {
+      "query_union_target_bits": 128,
+      "blowup": 4,
+      "regime": "current",
+      "queries": 311,
+      "min_bytes": 1133645,
+      "max_bytes": 1142773,
+      "runs": [
+        {
+          "opening_bytes": 991976,
+          "compression_opening_bytes": 920848,
+          "call_opening_bytes": 71128,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 286048,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 139440,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 53096,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1135205
+        },
+        {
+          "opening_bytes": 999544,
+          "compression_opening_bytes": 929336,
+          "call_opening_bytes": 70208,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            4,
+            4
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 288368,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 143840,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 53280,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1142773
+        },
+        {
+          "opening_bytes": 991824,
+          "compression_opening_bytes": 920840,
+          "call_opening_bytes": 70984,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 284528,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 141104,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 52672,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1135053
+        },
+        {
+          "opening_bytes": 990416,
+          "compression_opening_bytes": 919400,
+          "call_opening_bytes": 71016,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            4,
+            4
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 285488,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 141008,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 52320,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1133645
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 4,
+      "regime": "upstream_unique",
+      "queries": 191,
+      "min_bytes": 815829,
+      "max_bytes": 819549,
+      "runs": [
+        {
+          "opening_bytes": 672600,
+          "compression_opening_bytes": 614720,
+          "call_opening_bytes": 57880,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 180400,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 91824,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 39416,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 815829
+        },
+        {
+          "opening_bytes": 676320,
+          "compression_opening_bytes": 618432,
+          "call_opening_bytes": 57888,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 183344,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 93776,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 39448,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 819549
+        },
+        {
+          "opening_bytes": 675056,
+          "compression_opening_bytes": 616184,
+          "call_opening_bytes": 58872,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 181904,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 93056,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 38512,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 818285
+        },
+        {
+          "opening_bytes": 675968,
+          "compression_opening_bytes": 610232,
+          "call_opening_bytes": 65736,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 182336,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 93008,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 33072,
+              "packing": 16,
+              "log_degree": 9,
+              "leaf_bits": 1,
+              "lanes": 12
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 16,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 819197
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 4,
+      "regime": "upstream_johnson",
+      "queries": 139,
+      "min_bytes": 665173,
+      "max_bytes": 668701,
+      "runs": [
+        {
+          "opening_bytes": 521944,
+          "compression_opening_bytes": 470664,
+          "call_opening_bytes": 51280,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 133920,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 69744,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 31712,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 665173
+        },
+        {
+          "opening_bytes": 522592,
+          "compression_opening_bytes": 470872,
+          "call_opening_bytes": 51720,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 135712,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 71232,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 30864,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 665821
+        },
+        {
+          "opening_bytes": 523560,
+          "compression_opening_bytes": 472640,
+          "call_opening_bytes": 50920,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 135040,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 70464,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 31048,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 666789
+        },
+        {
+          "opening_bytes": 525472,
+          "compression_opening_bytes": 474352,
+          "call_opening_bytes": 51120,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 136000,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 71328,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 32904,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 668701
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 16,
+      "regime": "current",
+      "queries": 239,
+      "min_bytes": 1189709,
+      "max_bytes": 1195373,
+      "runs": [
+        {
+          "opening_bytes": 1046480,
+          "compression_opening_bytes": 926040,
+          "call_opening_bytes": 120440,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 246512,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 135536,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 69792,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1189709
+        },
+        {
+          "opening_bytes": 1052144,
+          "compression_opening_bytes": 931128,
+          "call_opening_bytes": 121016,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            2,
+            4
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 247472,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 137248,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 68704,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1195373
+        },
+        {
+          "opening_bytes": 1046968,
+          "compression_opening_bytes": 923904,
+          "call_opening_bytes": 123064,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 247040,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 135280,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 68376,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1190197
+        },
+        {
+          "opening_bytes": 1049616,
+          "compression_opening_bytes": 926968,
+          "call_opening_bytes": 122648,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 245600,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 136528,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 68816,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1192845
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 16,
+      "regime": "upstream_unique",
+      "queries": 142,
+      "min_bytes": 820837,
+      "max_bytes": 827197,
+      "runs": [
+        {
+          "opening_bytes": 677608,
+          "compression_opening_bytes": 588560,
+          "call_opening_bytes": 89048,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 152368,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 84912,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 45432,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 820837
+        },
+        {
+          "opening_bytes": 683968,
+          "compression_opening_bytes": 592256,
+          "call_opening_bytes": 91712,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 152944,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 86336,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 44712,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 827197
+        },
+        {
+          "opening_bytes": 682896,
+          "compression_opening_bytes": 593824,
+          "call_opening_bytes": 89072,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 151840,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 85520,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 46408,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 826125
+        },
+        {
+          "opening_bytes": 682568,
+          "compression_opening_bytes": 592936,
+          "call_opening_bytes": 89632,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 151936,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 86624,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 45408,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 825797
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 16,
+      "regime": "upstream_johnson",
+      "queries": 67,
+      "min_bytes": 508949,
+      "max_bytes": 510749,
+      "runs": [
+        {
+          "opening_bytes": 367416,
+          "compression_opening_bytes": 311416,
+          "call_opening_bytes": 56000,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 74992,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 43536,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 25536,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 510645
+        },
+        {
+          "opening_bytes": 367200,
+          "compression_opening_bytes": 313416,
+          "call_opening_bytes": 53784,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            2,
+            3,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 75472,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 44288,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 25152,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 510429
+        },
+        {
+          "opening_bytes": 367520,
+          "compression_opening_bytes": 312080,
+          "call_opening_bytes": 55440,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 74512,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 43856,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 25336,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 510749
+        },
+        {
+          "opening_bytes": 365720,
+          "compression_opening_bytes": 310616,
+          "call_opening_bytes": 55104,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 75376,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 44528,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 24480,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 508949
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 64,
+      "regime": "current",
+      "queries": 225,
+      "min_bytes": 1389157,
+      "max_bytes": 1398045,
+      "runs": [
+        {
+          "opening_bytes": 1245928,
+          "compression_opening_bytes": 1059272,
+          "call_opening_bytes": 186656,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 252672,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 150048,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 87072,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1389157
+        },
+        {
+          "opening_bytes": 1254816,
+          "compression_opening_bytes": 1064856,
+          "call_opening_bytes": 189960,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 256800,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 150864,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 87120,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1398045
+        },
+        {
+          "opening_bytes": 1248704,
+          "compression_opening_bytes": 1058512,
+          "call_opening_bytes": 190192,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            3,
+            1
+          ],
+          "call_groups": [
+            1,
+            3,
+            3,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 255168,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 150672,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 86360,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1391933
+        },
+        {
+          "opening_bytes": 1248872,
+          "compression_opening_bytes": 1060056,
+          "call_opening_bytes": 188816,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 254352,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 149760,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 86400,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1392101
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 64,
+      "regime": "upstream_unique",
+      "queries": 132,
+      "min_bytes": 936645,
+      "max_bytes": 941797,
+      "runs": [
+        {
+          "opening_bytes": 793416,
+          "compression_opening_bytes": 663984,
+          "call_opening_bytes": 129432,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 154320,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 93360,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 55976,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 936645
+        },
+        {
+          "opening_bytes": 798568,
+          "compression_opening_bytes": 666064,
+          "call_opening_bytes": 132504,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 155040,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 94464,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 55560,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 941797
+        },
+        {
+          "opening_bytes": 794240,
+          "compression_opening_bytes": 666880,
+          "call_opening_bytes": 127360,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            3,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 154560,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 93024,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 56504,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 937469
+        },
+        {
+          "opening_bytes": 793872,
+          "compression_opening_bytes": 661544,
+          "call_opening_bytes": 132328,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 153600,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 92928,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 54640,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 937101
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 64,
+      "regime": "upstream_johnson",
+      "queries": 45,
+      "min_bytes": 462029,
+      "max_bytes": 463725,
+      "runs": [
+        {
+          "opening_bytes": 319056,
+          "compression_opening_bytes": 259776,
+          "call_opening_bytes": 59280,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 55392,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 34896,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 22392,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 462285
+        },
+        {
+          "opening_bytes": 319416,
+          "compression_opening_bytes": 260456,
+          "call_opening_bytes": 58960,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 55488,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 34728,
+              "packing": 64,
+              "log_degree": 17,
+              "leaf_bits": 1,
+              "lanes": 5
+            },
+            {
+              "cost": 23208,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 462645
+        },
+        {
+          "opening_bytes": 318800,
+          "compression_opening_bytes": 260576,
+          "call_opening_bytes": 58224,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 56400,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 34512,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 23016,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 462029
+        },
+        {
+          "opening_bytes": 320496,
+          "compression_opening_bytes": 261744,
+          "call_opening_bytes": 58752,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 56304,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 36000,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 22920,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 463725
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 256,
+      "regime": "current",
+      "queries": 222,
+      "min_bytes": 1635973,
+      "max_bytes": 1647517,
+      "runs": [
+        {
+          "opening_bytes": 1492744,
+          "compression_opening_bytes": 1228832,
+          "call_opening_bytes": 263912,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 271872,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 167616,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 107496,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1635973
+        },
+        {
+          "opening_bytes": 1504288,
+          "compression_opening_bytes": 1238384,
+          "call_opening_bytes": 265904,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 274032,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 171888,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 106952,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1647517
+        },
+        {
+          "opening_bytes": 1501528,
+          "compression_opening_bytes": 1233568,
+          "call_opening_bytes": 267960,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 273408,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 170160,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 107096,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1644757
+        },
+        {
+          "opening_bytes": 1500208,
+          "compression_opening_bytes": 1234448,
+          "call_opening_bytes": 265760,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 274032,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 169680,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 107192,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1643437
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 256,
+      "regime": "upstream_unique",
+      "queries": 130,
+      "min_bytes": 1081173,
+      "max_bytes": 1086853,
+      "runs": [
+        {
+          "opening_bytes": 938824,
+          "compression_opening_bytes": 762320,
+          "call_opening_bytes": 176504,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 164560,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 104240,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 68136,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1082053
+        },
+        {
+          "opening_bytes": 943624,
+          "compression_opening_bytes": 763408,
+          "call_opening_bytes": 180216,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 164608,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 104864,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 67128,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1086853
+        },
+        {
+          "opening_bytes": 937944,
+          "compression_opening_bytes": 763600,
+          "call_opening_bytes": 174344,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 164416,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 104288,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 67416,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1081173
+        },
+        {
+          "opening_bytes": 940824,
+          "compression_opening_bytes": 761392,
+          "call_opening_bytes": 179432,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 164944,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 103664,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 66984,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1084053
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 128,
+      "blowup": 256,
+      "regime": "upstream_johnson",
+      "queries": 33,
+      "min_bytes": 423005,
+      "max_bytes": 426253,
+      "runs": [
+        {
+          "opening_bytes": 283024,
+          "compression_opening_bytes": 222960,
+          "call_opening_bytes": 60064,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 45024,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 29040,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 21000,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 426253
+        },
+        {
+          "opening_bytes": 279776,
+          "compression_opening_bytes": 226176,
+          "call_opening_bytes": 53600,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 44832,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 28848,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 24648,
+              "packing": 4,
+              "log_degree": 7,
+              "leaf_bits": 1,
+              "lanes": 45
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 4,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 423005
+        },
+        {
+          "opening_bytes": 280784,
+          "compression_opening_bytes": 223408,
+          "call_opening_bytes": 57376,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 45216,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 29760,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 20760,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 424013
+        },
+        {
+          "opening_bytes": 282048,
+          "compression_opening_bytes": 224160,
+          "call_opening_bytes": 57888,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 45072,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 29616,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 21144,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 425277
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 4,
+      "regime": "current",
+      "queries": 533,
+      "min_bytes": 1650413,
+      "max_bytes": 1663677,
+      "runs": [
+        {
+          "opening_bytes": 1513808,
+          "compression_opening_bytes": 1418280,
+          "call_opening_bytes": 95528,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            4,
+            4
+          ],
+          "call_groups": [
+            1,
+            4,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 470992,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 221344,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 58560,
+              "packing": 16,
+              "log_degree": 9,
+              "leaf_bits": 1,
+              "lanes": 12
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 16,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1657037
+        },
+        {
+          "opening_bytes": 1520448,
+          "compression_opening_bytes": 1435680,
+          "call_opening_bytes": 84768,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            4,
+            4
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 472688,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 225776,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 67960,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1663677
+        },
+        {
+          "opening_bytes": 1518560,
+          "compression_opening_bytes": 1422792,
+          "call_opening_bytes": 95768,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            4,
+            4
+          ],
+          "call_groups": [
+            1,
+            4,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 469040,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 225584,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 58992,
+              "packing": 16,
+              "log_degree": 9,
+              "leaf_bits": 1,
+              "lanes": 12
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 16,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1661789
+        },
+        {
+          "opening_bytes": 1507184,
+          "compression_opening_bytes": 1411368,
+          "call_opening_bytes": 95816,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            4,
+            4
+          ],
+          "call_groups": [
+            1,
+            4,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 466544,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 222128,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 58128,
+              "packing": 16,
+              "log_degree": 9,
+              "leaf_bits": 1,
+              "lanes": 12
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 16,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1650413
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 4,
+      "regime": "upstream_unique",
+      "queries": 326,
+      "min_bytes": 1171389,
+      "max_bytes": 1179093,
+      "runs": [
+        {
+          "opening_bytes": 1028160,
+          "compression_opening_bytes": 956432,
+          "call_opening_bytes": 71728,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            4,
+            4
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 299296,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 145008,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 54200,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1171389
+        },
+        {
+          "opening_bytes": 1035864,
+          "compression_opening_bytes": 963928,
+          "call_opening_bytes": 71936,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            4,
+            4
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 300800,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 149408,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 54144,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1179093
+        },
+        {
+          "opening_bytes": 1029936,
+          "compression_opening_bytes": 956896,
+          "call_opening_bytes": 73040,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 297200,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 146864,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 53784,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1173165
+        },
+        {
+          "opening_bytes": 1029352,
+          "compression_opening_bytes": 955776,
+          "call_opening_bytes": 73576,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            4,
+            4
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 297632,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 146384,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 53880,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1172581
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 4,
+      "regime": "upstream_johnson",
+      "queries": 238,
+      "min_bytes": 941205,
+      "max_bytes": 951205,
+      "runs": [
+        {
+          "opening_bytes": 802512,
+          "compression_opening_bytes": 731736,
+          "call_opening_bytes": 70776,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 222240,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 110800,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 38640,
+              "packing": 16,
+              "log_degree": 9,
+              "leaf_bits": 1,
+              "lanes": 12
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 16,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 945741
+        },
+        {
+          "opening_bytes": 807976,
+          "compression_opening_bytes": 744336,
+          "call_opening_bytes": 63640,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 224272,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 114336,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 45880,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 951205
+        },
+        {
+          "opening_bytes": 797976,
+          "compression_opening_bytes": 733872,
+          "call_opening_bytes": 64104,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 222400,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 111264,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 44360,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 941205
+        },
+        {
+          "opening_bytes": 805512,
+          "compression_opening_bytes": 741440,
+          "call_opening_bytes": 64072,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            4,
+            3
+          ],
+          "branches": [
+            {
+              "cost": 223600,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 113040,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 45976,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 4,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 948741
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 16,
+      "regime": "current",
+      "queries": 409,
+      "min_bytes": 1761269,
+      "max_bytes": 1772109,
+      "runs": [
+        {
+          "opening_bytes": 1621792,
+          "compression_opening_bytes": 1455352,
+          "call_opening_bytes": 166440,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 407536,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 218928,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 100704,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1765021
+        },
+        {
+          "opening_bytes": 1626384,
+          "compression_opening_bytes": 1459720,
+          "call_opening_bytes": 166664,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 407296,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 219344,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 101056,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1769613
+        },
+        {
+          "opening_bytes": 1628880,
+          "compression_opening_bytes": 1460544,
+          "call_opening_bytes": 168336,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 405808,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 215888,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 103272,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1772109
+        },
+        {
+          "opening_bytes": 1618040,
+          "compression_opening_bytes": 1452080,
+          "call_opening_bytes": 165960,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 403696,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 215600,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 104360,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1761269
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 16,
+      "regime": "upstream_unique",
+      "queries": 243,
+      "min_bytes": 1204549,
+      "max_bytes": 1210733,
+      "runs": [
+        {
+          "opening_bytes": 1061320,
+          "compression_opening_bytes": 939848,
+          "call_opening_bytes": 121472,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 250512,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 137728,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 70768,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1204549
+        },
+        {
+          "opening_bytes": 1067504,
+          "compression_opening_bytes": 945288,
+          "call_opening_bytes": 122216,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            2,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 251376,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 139440,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 69728,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1210733
+        },
+        {
+          "opening_bytes": 1061648,
+          "compression_opening_bytes": 936944,
+          "call_opening_bytes": 124704,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            3,
+            3,
+            3,
+            3,
+            4,
+            1
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 250992,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 137376,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 69256,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1204877
+        },
+        {
+          "opening_bytes": 1063808,
+          "compression_opening_bytes": 940552,
+          "call_opening_bytes": 123256,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 249600,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 138336,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 69888,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1207037
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 16,
+      "regime": "upstream_johnson",
+      "queries": 115,
+      "min_bytes": 712781,
+      "max_bytes": 719397,
+      "runs": [
+        {
+          "opening_bytes": 570784,
+          "compression_opening_bytes": 492744,
+          "call_opening_bytes": 78040,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 124576,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 70320,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 38992,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 714013
+        },
+        {
+          "opening_bytes": 576168,
+          "compression_opening_bytes": 495616,
+          "call_opening_bytes": 80552,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            2,
+            2,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 125536,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 71888,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 38088,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 719397
+        },
+        {
+          "opening_bytes": 570048,
+          "compression_opening_bytes": 494192,
+          "call_opening_bytes": 75856,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 123904,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 70400,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 39128,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 713277
+        },
+        {
+          "opening_bytes": 569552,
+          "compression_opening_bytes": 490672,
+          "call_opening_bytes": 78880,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 123760,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 70832,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 38040,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 16,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 712781
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 64,
+      "regime": "current",
+      "queries": 386,
+      "min_bytes": 2102829,
+      "max_bytes": 2110893,
+      "runs": [
+        {
+          "opening_bytes": 1965096,
+          "compression_opening_bytes": 1694344,
+          "call_opening_bytes": 270752,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 421760,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 244912,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 133744,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 2108325
+        },
+        {
+          "opening_bytes": 1967664,
+          "compression_opening_bytes": 1693912,
+          "call_opening_bytes": 273752,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 422912,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 243808,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 134960,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 2110893
+        },
+        {
+          "opening_bytes": 1967560,
+          "compression_opening_bytes": 1692680,
+          "call_opening_bytes": 274880,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 421808,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 242416,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 136368,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 2110789
+        },
+        {
+          "opening_bytes": 1959600,
+          "compression_opening_bytes": 1688232,
+          "call_opening_bytes": 271368,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "call_groups": [
+            1,
+            3,
+            4
+          ],
+          "branches": [
+            {
+              "cost": 420176,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 240112,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 135696,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 2102829
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 64,
+      "regime": "upstream_unique",
+      "queries": 227,
+      "min_bytes": 1398453,
+      "max_bytes": 1407901,
+      "runs": [
+        {
+          "opening_bytes": 1255224,
+          "compression_opening_bytes": 1067080,
+          "call_opening_bytes": 188144,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 255008,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 151408,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 87440,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1398453
+        },
+        {
+          "opening_bytes": 1264672,
+          "compression_opening_bytes": 1073208,
+          "call_opening_bytes": 191464,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 258992,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 152032,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 87728,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1407901
+        },
+        {
+          "opening_bytes": 1257424,
+          "compression_opening_bytes": 1066608,
+          "call_opening_bytes": 190816,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            3,
+            1
+          ],
+          "call_groups": [
+            1,
+            3,
+            3,
+            1
+          ],
+          "branches": [
+            {
+              "cost": 257360,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 151936,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 86920,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1400653
+        },
+        {
+          "opening_bytes": 1258680,
+          "compression_opening_bytes": 1068824,
+          "call_opening_bytes": 189856,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 256496,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 151024,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 87152,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1401909
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 64,
+      "regime": "upstream_johnson",
+      "queries": 76,
+      "min_bytes": 638333,
+      "max_bytes": 641213,
+      "runs": [
+        {
+          "opening_bytes": 497944,
+          "compression_opening_bytes": 409504,
+          "call_opening_bytes": 88440,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 91312,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 56192,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 34872,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 641173
+        },
+        {
+          "opening_bytes": 497720,
+          "compression_opening_bytes": 413288,
+          "call_opening_bytes": 84432,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 92080,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 56960,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 35728,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 640949
+        },
+        {
+          "opening_bytes": 497984,
+          "compression_opening_bytes": 410888,
+          "call_opening_bytes": 87096,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 92512,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 55904,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 35248,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 641213
+        },
+        {
+          "opening_bytes": 495104,
+          "compression_opening_bytes": 409720,
+          "call_opening_bytes": 85384,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 91648,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 56720,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 35008,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 64,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 638333
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 256,
+      "regime": "current",
+      "queries": 380,
+      "min_bytes": 2522397,
+      "max_bytes": 2540253,
+      "runs": [
+        {
+          "opening_bytes": 2388720,
+          "compression_opening_bytes": 1985416,
+          "call_opening_bytes": 403304,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 452816,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 275728,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 170512,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 2531949
+        },
+        {
+          "opening_bytes": 2397024,
+          "compression_opening_bytes": 1991096,
+          "call_opening_bytes": 405928,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 452768,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 276976,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 170352,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 2540253
+        },
+        {
+          "opening_bytes": 2394992,
+          "compression_opening_bytes": 1988760,
+          "call_opening_bytes": 406232,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 454400,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 275824,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 170592,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 2538221
+        },
+        {
+          "opening_bytes": 2379168,
+          "compression_opening_bytes": 1977920,
+          "call_opening_bytes": 401248,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 455408,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 274336,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 168712,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 2522397
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 256,
+      "regime": "upstream_unique",
+      "queries": 223,
+      "min_bytes": 1641861,
+      "max_bytes": 1653549,
+      "runs": [
+        {
+          "opening_bytes": 1498632,
+          "compression_opening_bytes": 1234216,
+          "call_opening_bytes": 264416,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 273136,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 168464,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 107968,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 1641861
+        },
+        {
+          "opening_bytes": 1510320,
+          "compression_opening_bytes": 1243192,
+          "call_opening_bytes": 267128,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 275104,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 172592,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 107280,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 1653549
+        },
+        {
+          "opening_bytes": 1506728,
+          "compression_opening_bytes": 1238296,
+          "call_opening_bytes": 268432,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 274624,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 170864,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 107472,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 1649957
+        },
+        {
+          "opening_bytes": 1506416,
+          "compression_opening_bytes": 1239880,
+          "call_opening_bytes": 266536,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 275248,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 170528,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 107664,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 1649645
+        }
+      ]
+    },
+    {
+      "query_union_target_bits": 220,
+      "blowup": 256,
+      "regime": "upstream_johnson",
+      "queries": 57,
+      "min_bytes": 597605,
+      "max_bytes": 600861,
+      "runs": [
+        {
+          "opening_bytes": 456144,
+          "compression_opening_bytes": 365168,
+          "call_opening_bytes": 90976,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 75072,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 48240,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 33768,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 0,
+          "combined_bytes": 599373
+        },
+        {
+          "opening_bytes": 457632,
+          "compression_opening_bytes": 365152,
+          "call_opening_bytes": 92480,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 74832,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 48576,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 33432,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 1,
+          "combined_bytes": 600861
+        },
+        {
+          "opening_bytes": 457392,
+          "compression_opening_bytes": 366656,
+          "call_opening_bytes": 90736,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 76176,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 49680,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 33048,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 2,
+          "combined_bytes": 600621
+        },
+        {
+          "opening_bytes": 454376,
+          "compression_opening_bytes": 366400,
+          "call_opening_bytes": 87976,
+          "degree": 262144,
+          "compression_groups": [
+            1,
+            4,
+            4,
+            3,
+            3,
+            3
+          ],
+          "call_groups": [
+            1,
+            3,
+            2,
+            2
+          ],
+          "branches": [
+            {
+              "cost": 75456,
+              "packing": 128,
+              "log_degree": 18,
+              "leaf_bits": 1,
+              "lanes": 56
+            },
+            {
+              "cost": 49392,
+              "packing": 32,
+              "log_degree": 16,
+              "leaf_bits": 1,
+              "lanes": 10
+            },
+            {
+              "cost": 33672,
+              "packing": 8,
+              "log_degree": 8,
+              "leaf_bits": 1,
+              "lanes": 23
+            }
+          ],
+          "shared_use_layout": {
+            "row_log": 5,
+            "width": 179,
+            "packing": 8,
+            "blowup": 256,
+            "leaf_bits": 1
+          },
+          "seed": 3,
+          "combined_bytes": 597605
+        }
+      ]
+    }
+  ],
+  "scope": "Geometry optimizer over per-source power-of-two packing up to next power covering width, groups1..4, base-field domains<=2^27. Shared use table has identical packing/domain/coset leaf size in compression and call proofs; contexts must encode this layout. Optional pooling keeps the external use root separate and pools other sources/auxiliaries in their respective transcript phases. Short tables require repeated-row embeddings; their algebraic binding is not implemented or proved here. Code switching absent. Runtime degree/lane caps are not imposed. Fixed upstream overhead retained. Query-only budgets exclude field/local/GKR/bus/extraction/hash/QROM errors;220bits is not a quantum conversion. No implemented proof-size or security claim.",
+  "hashes": {
+    "airbender/direct-wasm/screen_ext8_joint_packing.py": "d9ae26e34d95db9711e1a2c008cce441c4545d92e3a43a199723622c87214004",
+    "results/ext8-compression-q309/prover-report.json.gz": "d709be3fc9f83c625da2b5c7e1249341f1c3715afbc37f9dad573197625db396"
+  }
+}

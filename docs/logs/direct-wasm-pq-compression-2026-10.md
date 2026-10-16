@@ -6563,3 +6563,49 @@ repeated queries and shared roots. Artifacts: results/ext8-grouped-geometry.json
 and results/ext8-grouped-geometry-validation.json; log
 /tmp/ext8-grouped-geometry.log. No executable security profile or Lean theorem
 changed; full NEAR/PQ128/sub300k gate remains NOT_PASSED.
+
+### Joint source packing and phase pooling with shared-root constraints
+
+Added screen_ext8_joint_packing.py. The optimizer jointly chooses per-source
+power-of-two packing (through the next power covering width), global maximum
+degree, groups of1..4folds and the call schedule, subject to base-field domains
+at most2^27. It enforces that some source actually attains the selected maximum
+degree. For the external use table, compression and call proofs MUST use the
+same packing, blowup and coset leaf size; independent minima that would require
+different roots are rejected. This is a constrained geometry search, not a
+new prover/security profile. Existing runtime lane/degree caps are not imposed
+on all candidates. Grouped geometry gained an optional fixed-first-group
+argument so independently checked costs can replay selected schedules.
+
+Separate-source search: best sampled totals at hypothetical query-only union
+targets128/220bits are502157–506277 and723197–727365bytes respectively. Both
+use the unproved-for-us Johnson formula at blowup256 (q33/q57). Eight brute-force
+small packing cases match the optimizer, and96selected full-size geometries
+match the independent previously calibrated estimator, including shared-root
+layout and domain checks.
+
+Phase pooling keeps the externally bound use table separate. Other prechallenge
+source tables pool into2048x7091; postchallenge auxiliaries pool into2048x296;
+uses remain32x179. Shorter tables require a repeated-row embedding and per-table
+functional/column ownership binding. Those implementation/formal obligations
+are not discharged here. Source roots remain separated across the bus challenge;
+no future auxiliary commitment is moved before its challenge. Modeled cell
+count grows10842240 ->15134304; only240root bytes are removed from fixed
+upstream overhead. The same constrained optimizer gives423005–426253bytes at
+the128-bit query-only target and597605–600861 at220bits. Best source packings
+are[128,32,4] and[128,32,8], max degree262144. Eight independent brute-force
+cases and96full-size replays pass for this pooled scenario too.
+
+These are NOT measured proof bytes, total soundness budgets or quantum-security
+conversions. Query factors, changed Merkle layouts, pooling/embedding, extraction,
+Fiat-Shamir/QROM and additional errors remain unproved/unimplemented. Neither
+separate nor pooled search reaches300000bytes. Do not start a large standalone
+pooling/Johnson formalization based on these results: the next useful model
+must include actual code switching with stage-specific query counts, and its
+OOD/constraint traffic, rather than one fixed rate/query budget throughout.
+
+Artifacts: results/ext8-joint-packing-{geometry,validation,manifest}.json and
+results/ext8-pooled-packing-{geometry,validation}.json. Scripts run successfully;
+logs /tmp/ext8-joint-packing.log and /tmp/ext8-pooled-packing.log. Existing36
+independent coset/schedule tests still pass. No Lean changes; full NEAR/PQ128/
+sub300k feasibility remains NOT_PASSED.
