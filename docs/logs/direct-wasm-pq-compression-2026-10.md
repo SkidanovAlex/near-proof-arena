@@ -1764,3 +1764,11 @@ Connected auxiliary arithmetic factors to Interaction.multNat, preserving natura
 Validation: full check.py passed (3660 registered results; allowed axioms only). This is a formal composition change; no executable/proof-size changes or new runtime benchmark are claimed. Explicit premises remain that all source and generated auxiliary residuals vanish on the same trace and that the binding belongs to the constructed table layout.
 
 Next: compose direction-specific finals and public factors into the exact busTraceMessages product. Accepted-proof-to-residual extraction, full adaptive/PCS/transcript quantum soundness, secure sub300k total sizing and full 1 Pgas scope remain open. Slice gate remains NOT_PASSED.
+
+### Expanded traffic to global side products
+
+Proved exact row, table and all-table product identities for naturally expanded bus traffic, allowing an arbitrary payload embedding and tag function. Row-major traffic is transposed into per-interaction row products without dividing by any factor. Public traffic then gives exactly the source-plus-public message product and trailing-tag encoding already used by the joint challenge bound. The existing concrete Ext8 budget now bounds equality of these semantic global side products.
+
+Validation: full check.py passed (3665 registered results; allowed axioms only). This is a formal algebraic/bound transfer; no runtime, proof-size, or security-parameter improvement is claimed. The bound still requires a fixed trace/public vector, bounded shapes, natural imbalance and distinct ideal challenge samples.
+
+Next: fold the constructed bound-final list into the direction-specific semantic products. Per-binding natural-product correctness is already proved, but the aggregate list fold is not claimed here. Common committed-trace extraction and full adaptive/PCS/transcript quantum soundness remain open, as do secure sub300k sizing and full 1 Pgas scope. Slice gate stays NOT_PASSED.

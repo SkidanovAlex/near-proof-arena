@@ -5262,3 +5262,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_table_source_bits
 #print axioms NearCompression.bus_source_factor_expanded
 #print axioms NearCompression.bus_source_table_natural_product
+
+#print axioms NearCompression.bus_expanded_row_product
+#print axioms NearCompression.bus_expanded_table_product
+#print axioms NearCompression.bus_expanded_tables_product
+#print axioms NearCompression.bus_expanded_global_product
+#print axioms NearCompression.bus_global_side_fp8_bound
