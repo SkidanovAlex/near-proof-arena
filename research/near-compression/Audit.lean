@@ -6320,3 +6320,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_residue_mul_comm
 #print axioms NearCompression.polynomial_residue_add_mul
 #print axioms NearCompression.polynomial_residue_one_ne_zero
+
+#print axioms NearCompression.polynomial_residue_field_exists
+#print axioms NearCompression.polynomial_residue_eval_variable
+#print axioms NearCompression.polynomial_residue_modulus_root
+#print axioms NearCompression.polynomial_residue_modulus_smooth
+
+#print axioms NearCompression.polynomial_residue_embedding_injective
+#print axioms NearCompression.polynomial_root_extension_exists

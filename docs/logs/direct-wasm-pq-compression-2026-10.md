@@ -8585,3 +8585,35 @@ field, and prove the class of X is a root of the mapped modulus. Rational-
 function construction, useful branches, full MCA exceptions and protocol/QROM
 composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Constructed field extension and actual polynomial roots
+
+Added PolynomialResidueField.lean with six audited public theorems. Completed
+all commutative-ring laws, casts, scalar operations and powers for the residue
+quotient. For an irreducible modulus, classical selection of the already
+proved inverse witnesses yields a complete Lean.Grind.Field structure with
+zero inverse zero. The field-existence audit entry covers the construction
+and every field axiom; no field structure or root-existence oracle is assumed.
+This is a noncomputable existence construction, not a production field backend.
+
+Constructed the canonical unital coefficient map and proved it injective.
+Horner evaluation of any transported polynomial at the class of X equals
+its residue class. Thus the mapped irreducible modulus has an actual root.
+The earlier transported derivative certificate proves this root smooth when
+the modulus degree is positive and below the characteristic. Combining the
+proved irreducible-divisor existence theorem with this construction also
+supplies a root extension for every nonzero nonconstant polynomial.
+
+Validation:34 constructed small-field quotients,317711 additive associativity
+triples,8265 cast/scalar checks,34 modulus roots,23 below-characteristic smooth
+roots,1020 variable-evaluation identities and1020 composite-root checks,
+including repeated-modulus products. Base-field constants remain distinct.
+Full audit4453 PASS, allowed axioms only. Evidence:
+results/polynomial-residue-field/.
+
+Next: construct the rational-function coefficient field and connect the
+algebraic root extension to the useful Hensel branches and specialization
+exception bounds. Generic algebraic root-extension existence is now supplied;
+full MCA exceptions and protocol/QROM composition remain open.
+Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

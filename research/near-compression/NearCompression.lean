@@ -1710,3 +1710,5 @@ import NearCompression.PolynomialFactorization
 import NearCompression.IrreducibleResidueInverse
 
 import NearCompression.PolynomialResidueQuotient
+
+import NearCompression.PolynomialResidueField
