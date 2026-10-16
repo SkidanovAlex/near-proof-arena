@@ -271,7 +271,9 @@
     "NearCompression/CheckedTerminalSemantics.lean",
     "results/checked-terminal-semantics-integration.json",
     "NearCompression/AdaptiveTableContinuation.lean",
-    "results/adaptive-table-continuation-integration.json"
+    "results/adaptive-table-continuation-integration.json",
+    "NearCompression/TableLocalResidualWitness.lean",
+    "results/table-local-residual-witness-integration.json"
   ],
   "requirements": [
     {
@@ -436,5 +438,6 @@
     "ext8_256_ideal_bits": "NOT_CERTIFIABLE_BY_THIS_BOUND",
     "ext12_256_ideal_minimum_queries": 617,
     "scope": "Conditional ideal PCS component only; no full or PQ certification, no new secure byte measurement."
-  }
+  },
+  "decoded_base_field_boundary": "OPEN: generic extension-field recovered source trace must descend to a base-field execution trace or receive a separate extension-field extraction theorem; forward embedding alone does not discharge this."
 }

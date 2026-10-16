@@ -404,6 +404,7 @@ SOURCES = [
     "research/near-compression/NearCompression/CheckedTerminalSemantics.lean",
     "research/near-compression/NearCompression/TwoTablePCSExperiment.lean",
     "research/near-compression/NearCompression/AdaptiveTableContinuation.lean",
+    "research/near-compression/NearCompression/TableLocalResidualWitness.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",

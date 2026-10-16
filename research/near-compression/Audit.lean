@@ -5689,3 +5689,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.decoded_invalid_table_after_earlier_budget
 #print axioms NearCompression.earlier_local_error_count
+
+#print axioms NearCompression.table_source_residuals_local
+#print axioms NearCompression.table_local_failure_residual
+#print axioms NearCompression.table_local_failure_combined_residual
+#print axioms NearCompression.prepared_wrong_output_residual_or_bus

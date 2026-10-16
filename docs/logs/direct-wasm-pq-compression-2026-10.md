@@ -3925,3 +3925,22 @@ substitution, native bindings and no-representative branch assembly remain.
 Full check.py passed 3997 registered results with the existing axiom allowlist.
 Native code and proof sizes unchanged; global/PQ soundness remains open and
 gate remains NOT_PASSED.
+
+### Wrong execution supplies a residual or bus witness; base-field gap explicit
+
+TableLocalResidualWitness defines the inspected native source residual order:
+table constraints followed by interaction multiplicity bit polynomials. Zero
+residuals and valid row geometry imply TableLocal. Local failure yields a
+fixed nonzero source residual and an indexed combined source/auxiliary
+coefficient. The prepared Wasm extraction theorem then gives a contrapositive:
+wrong published runCall output implies a local residual or bus imbalance.
+
+Critical boundary: this extraction uses Trace Fp, whereas PCS recovery produces
+a generic extension-field decoded trace. The existing forward airExt8Trace
+lift does not prove descent of arbitrary recovered source cells. Descent from
+base-valued source oracles, or a separate extension-field extraction theorem,
+is still required. This gap is explicitly recorded in the feasibility gate.
+
+Full check.py passed 4001 registered results with the existing axiom allowlist.
+Native formula generation remains unrefined; no security or size claim changed.
+Gate remains NOT_PASSED.

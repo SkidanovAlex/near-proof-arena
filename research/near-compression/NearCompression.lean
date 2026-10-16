@@ -1489,3 +1489,5 @@ import NearCompression.LocalTerminalBindingCheck
 import NearCompression.CheckedTerminalSemantics
 
 import NearCompression.AdaptiveTableContinuation
+
+import NearCompression.TableLocalResidualWitness
