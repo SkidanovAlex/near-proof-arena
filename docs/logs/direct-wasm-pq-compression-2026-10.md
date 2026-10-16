@@ -8926,3 +8926,30 @@ Next: discharge determinant nonzeroness from invertibility and connect the
 Cramer formula to the Bezout matrix and source-degree bounds. Full MCA and
 protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Determinant nonzeroness from a row inverse
+
+Added DeterminantRowPermutations.lean and DeterminantRowSpan.lean with nine
+audited public theorems. Every row permutation scales all minors by one
+nonzero factor; repeated row labels give zero. An equally long selection
+from a singular distinct row family also has zero determinant, by splitting
+between repeated selections and permutations. Row reindexing is linked
+exactly to row selection in the existing determinant.
+
+A vector-list form is proved equal to that determinant and used to expand
+finite combinations in every row. Consequently any equally large family of
+linear combinations of a singular row family remains singular. The ordered
+identity minor has determinant one. A row inverse producing identity thus
+forces the original determinant nonzero, with no assumed determinant
+multiplicativity or nonsingularity oracle. This closes the generic implication;
+the concrete Bezout encoding/orientation still must provide that inverse.
+
+Validation:400 row permutations,329 singular row-combination families,
+5648 singular row selections and289 constructed row inverses (2226 entries),
+including71 empty identity cases and characteristic two. Full audit4547 PASS,
+allowed axioms only. Evidence: results/determinant-row-span/.
+
+Next: connect bounded polynomial solutions to the explicit Bezout matrix
+and compose nonzeroness, Cramer identity and source-degree denominator bounds.
+Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
+unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

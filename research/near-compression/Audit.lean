@@ -6424,3 +6424,14 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.scalar_minor_row_cramer_identity
 #print axioms NearCompression.scalar_minor_cramer_denominator
 #print axioms NearCompression.scalar_minor_row_dependence_zero
+
+#print axioms NearCompression.scalar_minor_row_permutation_factor
+#print axioms NearCompression.scalar_minor_row_permutation_zero
+#print axioms NearCompression.scalar_minor_nonnodup_zero
+#print axioms NearCompression.scalar_minor_selected_rows_zero
+#print axioms NearCompression.scalar_minor_row_reindex
+
+#print axioms NearCompression.scalar_minor_row_vectors
+#print axioms NearCompression.scalar_minor_row_span_zero
+#print axioms NearCompression.scalar_minor_identity
+#print axioms NearCompression.scalar_minor_nonzero_of_row_inverse
