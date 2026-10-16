@@ -5774,3 +5774,21 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_ext8_generated_residual_failure
 
 #print axioms NearCompression.auxiliary_nonzero_combined_index
+
+#print axioms NearCompression.bus_formula_sum_value
+
+#print axioms NearCompression.bus_coordinate_formula_value
+
+#print axioms NearCompression.ext8_coordinate_sum
+
+#print axioms NearCompression.bus_coordinate_row_environment
+
+#print axioms NearCompression.bus_coordinate_lowering_row_value
+
+#print axioms NearCompression.bus_formula_sum_degree
+
+#print axioms NearCompression.bus_coordinate_column_degree
+
+#print axioms NearCompression.bus_coordinate_lowering_degree
+
+#print axioms NearCompression.decoded_bus_coordinate_lowering

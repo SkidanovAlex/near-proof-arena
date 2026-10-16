@@ -1,0 +1,41 @@
+{
+  "status": "EXT8_COORDINATE_FORMULA_VALUE_AND_DEGREE_PROVED",
+  "module": "NearCompression/BusCoordinateFormulaLowering.lean",
+  "theorems": [
+    "bus_formula_sum_value",
+    "bus_coordinate_formula_value",
+    "ext8_coordinate_sum",
+    "bus_coordinate_row_environment",
+    "bus_coordinate_lowering_row_value",
+    "bus_formula_sum_degree",
+    "bus_coordinate_column_degree",
+    "bus_coordinate_lowering_degree",
+    "decoded_bus_coordinate_lowering"
+  ],
+  "proved": [
+    "Constructs an AST lowering from logical auxiliary columns to eight base coordinate columns using the certified Ext8 basis.",
+    "Formula evaluation equals evaluation in the reconstructed coordinate environment, including current/next cells and selectors.",
+    "At rows the lowering exactly matches airAuxCoordinateTrace semantics.",
+    "Lowering does not increase busFormulaDegree.",
+    "For base-valued decoded coordinates, lowered formula values equal reconstructed decodedBaseTrace formula values."
+  ],
+  "assumptions": [
+    "Decoded trace transport currently requires all coordinate cells base-valued, stronger than source-only descent.",
+    "The executable native generator has not yet been shown to emit this lowering."
+  ],
+  "remaining": [
+    "Use typed joint-representative descent for all live auxiliary coordinate columns, or narrow the transport premise to a formula column bound.",
+    "Prove native generated coordinate formula refinement and transfer auxiliary violations into actual local sumcheck.",
+    "Compose local/GKR/PCS and bus event accounting; native/QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4062,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal lowering only."
+  }
+}

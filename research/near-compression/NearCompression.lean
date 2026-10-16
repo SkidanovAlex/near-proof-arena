@@ -1529,3 +1529,5 @@ import NearCompression.TwoTableConcretePCS
 import NearCompression.PreparedFixedSourceBranchBudget
 
 import NearCompression.BusResidualFailureWitness
+
+import NearCompression.BusCoordinateFormulaLowering

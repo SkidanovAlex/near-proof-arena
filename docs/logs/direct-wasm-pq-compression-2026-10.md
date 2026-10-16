@@ -4351,3 +4351,22 @@ same full event. Native generator refinement, QROM, secure size and full
 
 Validation: full `check.py` PASS (4053 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only change.
+
+### Ext8 coordinate formula lowering
+
+`BusCoordinateFormulaLowering.lean` defines `lowerBusCoordinates`, retaining
+source indices and replacing each logical auxiliary read with an eight-term
+certified-basis linear combination. It proves value preservation for arbitrary
+environments and exact reconstructed row semantics, including cyclic next
+rows/selectors. The lowering does not increase `busFormulaDegree`.
+
+`decoded_bus_coordinate_lowering` transports this equality to decoded PCS
+coordinates under explicit base-valued coordinate cells. This requires more
+than source-only descent; live auxiliary coordinate typing must be supplied
+from the typed joint representative or the premise narrowed by formula bounds.
+The native generator has not yet been proved to emit this AST. Next: live
+coordinate typing/native formula refinement, violation transport, and complete
+local/GKR/PCS/bus event composition. QROM, secure size and full 1 Pgas remain open.
+
+Validation: full `check.py` PASS (4062 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only change.
