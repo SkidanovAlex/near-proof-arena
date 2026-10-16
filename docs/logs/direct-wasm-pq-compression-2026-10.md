@@ -2588,3 +2588,25 @@ axiom closure remains propext/Classical.choice/Quot.sound. Registered the
 module in imports, axiom audit and scope inventory; retained the integration
 report and updated the still-NOT_PASSED slice gate. Full NEAR1Pgas and secure
 sub300000-byte compression remain the objective.
+
+
+### Near/far heterogeneous opening oracle identity
+
+Proved heterogeneous_lifted_joint_coefficients and
+heterogeneous_lifted_joint_oracle: the near-case lifted heterogeneous weight
+MLEs equal the far-case joint beta coefficients at the same row/GKR/gamma/PCS
+coordinates. The low PCS coordinates skipped by smaller lanes follow from
+the repeated-weight MLE theorem. The resulting virtual source identity holds
+for arbitrary received source functions, without honesty or proximity.
+
+This removes an algebraic mismatch between the two acceptance formulations.
+It does not yet merge their sample spaces: the far theorem samples the full
+joint vector, while the near theorem fixes earlier row/GKR coordinates and
+samples the PCS suffix. A chronological composition must additionally justify
+conditional uniformity and fixed source/aux metadata in the actual protocol.
+No representative existence, hash binding or quantum security claim follows
+from the oracle equality alone.
+
+Validation: both module proofs and full check.py passed3783 registered
+results with the existing axiom allowlist. Imports, audit, scope inventory,
+integration report and the still-NOT_PASSED feasibility gate are updated.

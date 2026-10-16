@@ -5416,3 +5416,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.gkr_envelope_circuit
 
 #print axioms NearCompression.chosen_gkr_terminal_acceptance_count
+
+#print axioms NearCompression.heterogeneous_lifted_joint_coefficients
+#print axioms NearCompression.heterogeneous_lifted_joint_oracle

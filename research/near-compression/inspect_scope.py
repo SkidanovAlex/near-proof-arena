@@ -355,6 +355,7 @@ SOURCES = [
     "research/near-compression/NearCompression/JointSourceAcceptance.lean",
     "research/near-compression/NearCompression/NearFunctionalFoldAcceptance.lean",
     "research/near-compression/NearCompression/ChosenGKRFoldAcceptance.lean",
+    "research/near-compression/NearCompression/HeterogeneousOpeningOracle.lean",
     "research/near-compression/NearCompression/JointSourceFarFold.lean",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean",
