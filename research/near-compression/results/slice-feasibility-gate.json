@@ -238,7 +238,10 @@
     "NearCompression/GKRHistoryPCSFamily.lean",
     "results/gkr-history-pcs-family-integration.json",
     "NearCompression/GKRConcretePCSCount.lean",
-    "results/gkr-concrete-pcs-count-integration.json"
+    "results/gkr-concrete-pcs-count-integration.json",
+    "NearCompression/JointPCSParameterArithmetic.lean",
+    "results/joint-pcs-parameter-screen.json",
+    "results/joint-pcs-parameter-integration.json"
   ],
   "requirements": [
     {
@@ -394,5 +397,14 @@
     "transport_overhead_bytes": 20042,
     "envelope_plus_external_request_json_bytes": 68807,
     "qualification": "Fresh fixed-cap13 profile with full prepared-request frontend. Q8/Ext4 only, no quantum/soundness certification; cap is caller configuration checked against envelope byte."
+  },
+  "merged_pcs_parameter_screen": {
+    "challenge_numerator": 917500,
+    "ext4_128_ideal_bits": "NOT_CERTIFIABLE_BY_THIS_BOUND",
+    "ext8_128_ideal_minimum_queries": 309,
+    "ext8_192_ideal_minimum_queries": 463,
+    "ext8_256_ideal_bits": "NOT_CERTIFIABLE_BY_THIS_BOUND",
+    "ext12_256_ideal_minimum_queries": 617,
+    "scope": "Conditional ideal PCS component only; no full or PQ certification, no new secure byte measurement."
   }
 }

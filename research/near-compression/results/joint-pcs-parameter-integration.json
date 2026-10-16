@@ -1,0 +1,28 @@
+{
+  "status": "MERGED_PCS_PARAMETER_ARITHMETIC_KERNEL_CHECKED",
+  "module": "NearCompression/JointPCSParameterArithmetic.lean",
+  "theorems": [
+    "joint_pcs_challenge_arithmetic",
+    "joint_pcs_query_arithmetic"
+  ],
+  "screen": "results/joint-pcs-parameter-screen.json",
+  "findings": [
+    "Retained geometry yields merged challenge numerator 917500, including the far-case joint-dimension term.",
+    "Ext4 cannot certify 128 ideal bits under this bound regardless of query count.",
+    "Ext8 projects to 309 queries for 128 ideal bits, 463 for 192; its challenge term exceeds the 256-bit ideal target.",
+    "Ext12 arithmetic projects to 617 queries for 256 ideal bits; this is not an implemented or security-certified profile."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3950,
+    "python_exact_normalization_cases": 324,
+    "actual_geometry_normalization_and_adjacent_query_checks": "PASS",
+    "kernel_arithmetic": "Exact coefficient, challenge-only obstructions and adjacent query boundaries."
+  },
+  "limitations": [
+    "Python normalization checked against literal theorem count formulas; no new generic Lean normalization theorem claimed.",
+    "Kernel arithmetic does not establish field construction, ideal sampling, native correspondence, global composition or QROM security.",
+    "Failure of a sufficient bound is not an attack or impossibility theorem.",
+    "No size estimates for larger extensions or regenerated high-query proofs."
+  ]
+}

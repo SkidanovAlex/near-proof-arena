@@ -3640,3 +3640,26 @@ composition must preserve the joint averaging over rowpoints.
 Full check.py passed 3948 registered results with the existing axiom allowlist.
 No native code changed. Computational/QROM soundness, secure parameters and
 full-NEAR size remain open; gate NOT_PASSED.
+
+### Parameter feasibility checked against the merged PCS bound
+
+Added report_joint_pcs_parameters.py reading the retained fixed193 statement and
+replay manifest with statement hash validation. The normalized merged bound is
+(A+max(2*C,jointDimension*max(N,2)))/fieldSize+((T-1)/N)^queries.
+For rowCoordinates16,inputLog13,C12,N16384,T12289 the challenge coefficient is
+917500. The far-case term is included; the older unique-basin screen alone did
+not account for it. Exact normalization matches literal theorem-count formulas
+on 324 small cases and all feasible actual-geometry parameter boundaries.
+
+Ext4 cannot certify even 128 ideal bits under this bound at any query count.
+Ext8 projects to 309 queries for128 ideal bits and463 for192, but cannot certify
+256. Ext12 arithmetic projects to617 queries for256. These are sufficient-bound
+screens, not attacks or impossibility claims. Ext8/12 projections do not create
+implemented fields or new proof profiles; 128 ideal bits is not 128 PQ bits.
+
+JointPCSParameterArithmetic kernel-checks the coefficient, challenge-only
+obstructions and adjacent query boundaries. Full check.py passed3950 registered
+results with the existing axiom allowlist. No generic normalization theorem or
+secure-byte claim is made. Global composition, QROM loss and high-query/extension
+size remain unresolved. Gate NOT_PASSED. This reinforces that closing soundness
+alone will not make the present Q8/Ext4 diagnostic profile a secure solution.

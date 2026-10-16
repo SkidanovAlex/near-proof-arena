@@ -1457,3 +1457,5 @@ import NearCompression.GKRHistoryStrategy
 import NearCompression.GKRHistoryPCSFamily
 
 import NearCompression.GKRConcretePCSCount
+
+import NearCompression.JointPCSParameterArithmetic

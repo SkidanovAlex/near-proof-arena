@@ -5624,3 +5624,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.gkr_concrete_pcs_event_count
 #print axioms NearCompression.gkr_concrete_joint_failure_count
+
+#print axioms NearCompression.joint_pcs_challenge_arithmetic
+#print axioms NearCompression.joint_pcs_query_arithmetic
