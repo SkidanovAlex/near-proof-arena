@@ -1443,3 +1443,29 @@ not a quantum security claim or a measured succinct proof. The executable
 diagnostic still discloses terminal coefficients rather than implementing this
 continuation. Next work should connect a scalable executable continuation and
 price its complete authenticated data, then address the commitment/QROM bridge.
+
+## Executable arbitrary-weight rate-shift continuation
+
+Added a separate versioned reference `pq384_ext8_rate_shift_continuation.py`.
+It authenticates the rate-4 scalar source, performs two virtual folds, commits
+a paired-leaf rate-8 next oracle before OOD/source queries, accumulates the
+actual arbitrary weight vector, and proves its continuation down to one
+coefficient. Each continuation checks quadratic endpoints, folds both weights
+and coefficients, authenticates queried transitions, and reconstructs the
+complete constant terminal oracle. Initial root, statement and both query
+budgets are transcript-bound. The prior diagnostic remains unchanged.
+
+`test_rate_shift_continuation.py` passed four fresh-process verification cases
+and 15 negative checks covering endpoint equations, authentication, field
+shapes/counts, terminal value and external context substitution. Exact rational
+checks instantiate the joint ideal bound for each degree (no inherited small
+degree query assumption). D32/s314/c256 and D1024/s314/c264 are below 2^-128
+under the theorem's assumptions; low-query diagnostics are not.
+
+Complete uncompressed JSON envelope sizes, including configuration and root:
+D32/s314/c256 = 1,162,716 bytes; D1024/s314/c264 = 3,855,695 bytes. These sizes
+include repeated Merkle paths and all source and continuation openings; no
+original witness is required by the verifier. They cover only this PCS task,
+not the recursive GKR/NEAR statement. Python-to-Lean refinement, commitments
+and quantum Fiat-Shamir remain open. Next: a canonical multiproof codec with
+unchanged sampled queries, then realistic degree/cost measurements.
