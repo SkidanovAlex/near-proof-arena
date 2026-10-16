@@ -5660,3 +5660,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.decoded_local_batched_gkr_split
 #print axioms NearCompression.local_gkr_joint_error_count
+
+#print axioms NearCompression.concrete_pcs_sample_lengths
+#print axioms NearCompression.concrete_gkr_error_inclusion
+#print axioms NearCompression.concrete_gkr_accepted_failure_budget

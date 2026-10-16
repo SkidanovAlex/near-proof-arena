@@ -255,7 +255,9 @@
     "NearCompression/SemanticCircuitBinding.lean",
     "results/semantic-circuit-binding-integration.json",
     "NearCompression/LocalBatchedGKR.lean",
-    "results/local-batched-gkr-integration.json"
+    "results/local-batched-gkr-integration.json",
+    "NearCompression/GKRConcreteErrorInclusion.lean",
+    "results/gkr-concrete-error-inclusion-integration.json"
   ],
   "requirements": [
     {

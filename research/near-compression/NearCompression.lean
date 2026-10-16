@@ -1473,3 +1473,5 @@ import NearCompression.TerminalSemanticOutputs
 import NearCompression.SemanticCircuitBinding
 
 import NearCompression.LocalBatchedGKR
+
+import NearCompression.GKRConcreteErrorInclusion

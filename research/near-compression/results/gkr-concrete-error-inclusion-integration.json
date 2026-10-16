@@ -1,0 +1,35 @@
+{
+  "status": "CONCRETE_ACCEPTED_GKR_FAILURE_BOUNDED_BY_MERGED_PCS",
+  "module": "NearCompression/GKRConcreteErrorInclusion.lean",
+  "theorems": [
+    "concrete_pcs_sample_lengths",
+    "concrete_gkr_error_inclusion",
+    "concrete_gkr_accepted_failure_budget"
+  ],
+  "proved": [
+    "Concrete sample membership gives row and final-block lengths required by history reindexing.",
+    "Accepted GKR terminal mismatch or absent representative embeds into the accepted PCS failure event.",
+    "The actual merged near/far numerical PCS theorem bounds this accepted GKR event, with no representative existence premise."
+  ],
+  "assumptions": [
+    "Earlier GKR blocks fixed for this counting fiber; rowpoints remain jointly sampled.",
+    "Whole-function binding of GKR inputs to recovered chosen source tuple and constants.",
+    "Acceptance implies evaluated GKR and PCS checks.",
+    "All original PCS source projection, geometry, unique-regime and authenticated terminal oracle hypotheses remain explicit."
+  ],
+  "remaining": [
+    "Lift across earlier GKR paths and local-prefix/rho sample spaces with exact dependency and multiplicity preservation.",
+    "Discharge native transcript, source authentication and intended AIR specification bindings.",
+    "Global computational/QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3979,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; ideal-model formal event inclusion and count composition only."
+  }
+}

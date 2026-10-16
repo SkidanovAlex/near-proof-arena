@@ -3792,3 +3792,20 @@ invalid-trace bound still need assembly.
 Full check.py passed 3976 registered results with the existing axiom allowlist.
 Native code and byte measurements unchanged; global/PQ soundness and secure
 full-NEAR size remain open, and gate remains NOT_PASSED.
+
+### Concrete accepted GKR failure receives merged PCS budget
+
+GKRConcreteErrorInclusion proves lengths from concrete sample membership,
+then embeds accepted evaluated-GKR mismatch or absent representative into the
+concrete PCS failure event. The numerical theorem invokes the existing merged
+near/far bound directly. It retains the absent-representative branch rather
+than assuming a decoded source exists. Whole-function recovered-input binding
+and acceptance-implies-GKR/PCS checks remain explicit.
+
+The earlier GKR block sequence is fixed for this fiber, while rowpoints remain
+jointly sampled. Summation over earlier paths and local-prefix/rho experiments
+still needs connection. All original ideal source, unique-regime and terminal
+authentication premises remain; native refinement and QROM security are open.
+
+Full check.py passed 3979 registered results with the existing axiom allowlist.
+No native code or proof-size measurement changed. Gate remains NOT_PASSED.
