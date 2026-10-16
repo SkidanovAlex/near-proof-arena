@@ -9396,3 +9396,22 @@ to polynomial parameter data with source-controlled degree bounds. Full MCA,
 useful-branch coverage and protocol/QROM composition remain open.
 Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Primitive normalization of polynomial parameter rows
+
+Added PolynomialContentNormalization.lean with seven audited public theorems.
+Constructed nonzero greatest common content for any nonzero coefficient family,
+quotient rows and exact reconstruction. Proved the normalized rows primitive,
+transported reconstruction to the rational-function polynomial, and proved
+that normalization preserves generic irreducibility.
+
+Validation: 400 families, 2204 exact row reconstructions, 8000 universal common
+divisor checks, 1605 primitive divisor checks, 30249 safe scaled evaluations,
+and 16 redundant-denominator examples with content removed. Full audit
+4646 PASS, allowed axioms only. Evidence: results/polynomial-content-normalization/.
+
+Next: primitive-product/Gauss descent and source-controlled factor parameter
+degrees, followed by useful-branch forcing and coverage. These are still open;
+the normalization theorem alone does not establish the full MCA bound.
+Diagnostic 1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR 1Pgas, PQ128 composition, recursion and sub300000 B remain open.

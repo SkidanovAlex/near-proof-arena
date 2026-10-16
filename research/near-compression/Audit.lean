@@ -6543,3 +6543,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.rational_polynomial_cleared_root_iff
 #print axioms NearCompression.polynomial_nonzero_scalar_irreducible
 #print axioms NearCompression.rational_polynomial_cleared_irreducible
+
+#print axioms NearCompression.polynomial_list_content_exists
+#print axioms NearCompression.polynomial_content_quotients_exist
+#print axioms NearCompression.polynomial_content_quotient_primitive
+#print axioms NearCompression.polynomial_primitive_normalization_exists
+#print axioms NearCompression.polynomial_parameter_content_identity
+#print axioms NearCompression.polynomial_irreducible_coeff_congr
+#print axioms NearCompression.polynomial_content_normalized_irreducible
