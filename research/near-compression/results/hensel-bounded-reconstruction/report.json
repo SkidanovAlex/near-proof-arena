@@ -1,0 +1,12 @@
+{
+  "fixtures": 220,
+  "exhaustive_candidates": 10280,
+  "smooth_exact_roots": 172,
+  "singular_roots_outside_scope": 71,
+  "smooth_initial_branches": 220,
+  "nonterminating_within_bound": 48,
+  "high_coefficient_certificates": 220,
+  "insufficient_precision_counterexamples": 1,
+  "missing_tail_condition_counterexamples": 1,
+  "scope": "Sound and complete bounded-degree reconstruction through smooth initial values. Singular branches, rational-function specialization, useful factors and full MCA exceptions remain open."
+}

@@ -1,0 +1,20 @@
+{
+  "scope": "Sound and complete bounded-degree reconstruction through a smooth initial value, with residual and high-coefficient certificates. No singular-branch or full MCA coverage.",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_hensel_bounded_reconstruction.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/HenselBoundedReconstruction.lean": "958cdbeb5db7a5910d88fdd9c90128bca3ca4fe38817274e8bfe6f4fcda926c8",
+    "research/near-compression/NearCompression/HenselCoefficientStep.lean": "e1991951a5a2ad7de2cdc337610cb863a51a656118546cd841a3b750a761d0d4",
+    "research/near-compression/NearCompression/BivariateWeightedDegree.lean": "ba816b1f219e23e3a97e2a32b3d45544bc845d0561272a0b721cf50278ea6aac",
+    "research/near-compression/airbender/direct-wasm/test_hensel_bounded_reconstruction.py": "b67bb2202fb4572c53267e5c8917f9c3862d3518a1cab00c1fb3bc708085bce3",
+    "research/near-compression/airbender/direct-wasm/test_hensel_coefficient_step.py": "608f18f357f66021c8a3081ce4c8fd1425bbeff3572fbdba956225bec51ff9d6",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_curve_division.py": "caa6f88b112bdf9ca03d6682425ce69918fbc238532bf8412005bd664e26a52b",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/results/hensel-bounded-reconstruction/report.json": "00577de5e655756de15dd8f16b5a052dcabdfdb9c5d219d4a00cdccaba50a036",
+    "research/near-compression/results/hensel-bounded-reconstruction/lean-audit.log.gz": "e04d2d4d081ce1c916f1b3b27682bb2d3fa27f478f36c57ed17522fa47215d79"
+  }
+}

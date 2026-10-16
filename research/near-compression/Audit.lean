@@ -6226,3 +6226,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.hensel_slope_constant_congr
 #print axioms NearCompression.hensel_finite_lift
 #print axioms NearCompression.hensel_lift_unique_modulo
+
+#print axioms NearCompression.hensel_reconstruct_bounded_root
+#print axioms NearCompression.hensel_bounded_root_iff
+#print axioms NearCompression.hensel_bounded_tail_exact
+#print axioms NearCompression.hensel_bounded_tail_iff

@@ -8163,3 +8163,35 @@ Next: connect finite lifts to specialization and bounded-degree exactness,
 then useful-factor selection and the complete MCA exceptional-set count.
 No runtime or cryptographic parameter change: diagnostic bundle1344645 B,
 feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Bounded-degree Hensel reconstruction and exactness certificates
+
+Added HenselBoundedReconstruction.lean with four audited public theorems.
+Any exact root f of degree≤n with nonzero local slope is coefficientwise
+equal to the n-step lift from f(0). Consequently, through a fixed smooth
+initial root, exact residual checking after k corrections is sound AND
+complete for degree≤k polynomial roots. This proves a reconstruction method
+without assuming that every smooth branch terminates within that degree.
+
+A second exactness certificate uses a weighted substitution bound: if Q has
+weighted degree<D, lift precision n+1≥D, and all lift coefficients above k
+vanish, its residual is formally zero. When also k≤n, that high-coefficient
+condition is equivalent to existence of a degree≤k exact root through the
+smooth initial value. Smoothness, sufficient precision and the coefficient
+condition remain explicit; finite precision alone is not called exactness.
+
+Validation:220 fixtures over F2/F3/F5/F17,10280 exhaustive polynomial candidates.
+All172 smooth exact roots were reconstructed;48 smooth initial branches had
+no exact root within the requested degree and were rejected. The220 higher-
+precision coefficient certificates agreed with exhaustive existence checks.
+The same fixtures contain71 singular roots, explicitly outside the theorem's
+scope. Counterexamples show failure with insufficient precision or with the
+high-coefficient condition omitted. Full audit4372 PASS, allowed axioms only.
+Evidence: results/hensel-bounded-reconstruction/.
+
+Next: denominator-aware specialization of these lifts and the useful-factor
+argument needed to force bounded-degree exactness across many challenges.
+Singular/inseparable branches and the complete MCA exceptional-set count
+remain open; a smooth-branch decoder is not a full protocol extractor.
+No runtime or security-parameter change: diagnostic bundle1344645 B,
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
