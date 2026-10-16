@@ -179,7 +179,9 @@
     "NearCompression/TerminalStoredBundleCheck.lean",
     "results/stored-bundle-checker-integration.json",
     "NearCompression/TerminalArithmeticCheck.lean",
-    "results/arithmetic-checker-integration.json"
+    "results/arithmetic-checker-integration.json",
+    "NearCompression/TerminalExpansionCheck.lean",
+    "results/expansion-checker-integration.json"
   ],
   "requirements": [
     {
@@ -204,7 +206,8 @@
       "stored_route_checker": "A Lean executable finite route checker now provably supplies semantic DAG route and finite-storage premises, with direct root-preservation composition and kernel-evaluated structural regressions. Full retained capture instances are not yet checked in Lean; initial placement, acyclicity, root liveness and separate compiler shape/operand invariants remain to be discharged.",
       "full_lean_route_execution": "Both retained fixed-profile route bundles (10509 nodes,35 layers,21834 gates each) now pass the proved checker executed by Lean, using parsed canonical Fp4 constants and final-root routing checks. Five malformed full-size inputs per capture reject. This is native checker execution, not kernel-reduced concrete certificates or parser refinement; initial placement and DAG acyclicity remain separate obligations.",
       "stored_bundle_checker": "Combined checked-bundle theorem derives acyclicity, initial constant/input placement, reserved zero, finite routes and final root placement from Boolean acceptance, preserving source DAG root for every private input. Full Lean audit passed3819 results. Both retained captures execute successfully with18 malformed cases rejected. Native JSON execution is not a concrete kernel certificate; parser/compiler refinement and cryptographic composition remain open.",
-      "arithmetic_reconstruction_checker": "Finite arithmetic witness acceptance derives exact optimization routes and operand/result bounds. Source program execution composes with the checked bundle under an explicit TerminalRebuildRoute premise. Kernel regressions cover14 accepted routes,14 wrong outputs and3 further malformed cases. Recursive signed expansion/balance reconstruction checker and concrete capture certificates remain open. Full audit3823 results; no global/PQ completion."
+      "arithmetic_reconstruction_checker": "Finite arithmetic witness acceptance derives exact optimization routes and operand/result bounds. Source program execution composes with the checked bundle under an explicit TerminalRebuildRoute premise. Kernel regressions cover14 accepted routes,14 wrong outputs and3 further malformed cases. Recursive signed expansion/balance reconstruction checker and concrete capture certificates remain open. Full audit3823 results; no global/PQ completion.",
+      "signed_expansion_checker": "Recursive finite tree acceptance derives signed expansion, bounds root and retained leaves, and preserves executed DAG signed root under checked acyclicity. Kernel regressions cover nested and negative subtraction, retained internal nodes, wrong signs/dependencies, nonadditive expansion and missing nodes. Balanced reduction and complete rebuild/input binding remain open. Audit3827 results; no full-capture or global/PQ claim."
     },
     {
       "name": "Complete soundness ledger",

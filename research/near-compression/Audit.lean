@@ -5472,3 +5472,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_stored_arithmetic_checked
 #print axioms NearCompression.terminal_program_checked_bundle_value
 #print axioms NearCompression.terminal_arithmetic_check_regressions
+
+#print axioms NearCompression.terminal_expansion_checked
+#print axioms NearCompression.terminal_expansion_checked_bounds
+#print axioms NearCompression.terminal_expansion_checked_value
+#print axioms NearCompression.terminal_expansion_check_regressions

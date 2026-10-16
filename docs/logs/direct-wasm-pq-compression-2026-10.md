@@ -2949,3 +2949,25 @@ The regression uses decide +kernel, not native_decide. Full check.py passed
 arithmetic check or concrete JSON kernel certificate is claimed. Integration
 and gate evidence updated; the gate remains NOT_PASSED and full execution,
 cryptographic composition, quantum security and secure size remain open.
+
+### Checked signed expansion trees
+
+TerminalExpansionCheck introduces recursive finite collect certificates with
+explicit register identity and sign. Acceptance derives the existing
+TerminalSignedExpansion relation, bounds the root and every retained leaf,
+and preserves the executed DAG's signed root value under checked acyclicity.
+The checker permits stopping at retained internal registers, while only add
+and sub nodes may expand. Subtraction flips the right subtree sign.
+
+Kernel regressions accept nested subtraction with exact ordered leaves,
+retained internal registers and negative-root subtraction; they reject wrong
+signs, swapped dependencies, multiplication expansion and absent leaf/branch
+registers. Full check.py passed 3827 registered results under the existing
+axiom allowlist. Imports, axiom audit, scope inventory and integration/gate
+evidence are updated; the slice gate remains NOT_PASSED.
+
+This establishes generic checker soundness, not parser refinement or concrete
+kernel certificates for retained JSON. Balanced reduction and recursive
+reconstruction/input binding still need executable checked certificates before
+TerminalRebuildRoute can be removed as an explicit composition premise. Global
+soundness, quantum security and secure proof size remain open.
