@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "profile": "near-pq384-gkr-fixed-input-bus-v1",
+  "trusted_input_log": 13,
+  "rejected": [
+    "changed cap None",
+    "changed cap 12",
+    "changed cap 14",
+    "invalid cap True",
+    "invalid cap 0",
+    "invalid cap 26",
+    "invalid cap -1",
+    "old proof fixed verifier",
+    "retagged old proof",
+    "proof selected cap field",
+    "changed constraint message"
+  ],
+  "baseline_statement_digest_unchanged": true,
+  "same_source_roots": true,
+  "auxiliary_roots_changed": true,
+  "scope": "Integrated AIR/GKR/weighted PCS JSON proof; compact codec and prepared-request frontend not yet extended to this profile; Q8/Ext4 only."
+}

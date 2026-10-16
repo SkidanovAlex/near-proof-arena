@@ -21,18 +21,26 @@ from pq384_source_cache import SourceCache
 import pq384_native_shift as ns
 import pq384_shift as shift
 PROFILE='near-pq384-gkr-bus-v1'
+FIXED_PROFILE='near-pq384-gkr-fixed-input-bus-v1'
+
+def profile(input_log=None):
+    if input_log is None:return PROFILE
+    require(type(input_log)is int and 1<=input_log<=25,'trusted input log')
+    return FIXED_PROFILE
 aux=old.aux;validate=old.validate;initialize_aux=old.initialize_aux;empty_aux_root=old.empty_aux_root
 
 
-def statement(spec):
+def statement(spec, *, input_log=None):
     old.validate(spec);require(spec['terminal_degree']==1,'constant terminal only')
     static=hash_parts(b'gkr-static-air-config-v1',json.dumps(spec['air'],sort_keys=True,separators=(',',':')).encode())
     shape=b''.join(u64(v) for key in ('log_rows','source_packings','aux_packings') for v in spec[key])
-    return hash_parts(PROFILE.encode(),static,u64(len(spec['public'])),field_words(spec['public']),u64(len(spec['log_rows'])),shape,u64(1))
+    parts=(static,u64(len(spec['public'])),field_words(spec['public']),u64(len(spec['log_rows'])),shape,u64(1))
+    selected=profile(input_log)
+    return hash_parts(selected.encode(),*parts,*(() if input_log is None else (u64(input_log),)))
 
 
-def begin(spec,roots):
-    old.check_roots(roots,len(spec['air']['tables']));st=statement(spec);t=AirTranscript(st);t.statement_digest=st
+def begin(spec,roots, *, input_log=None):
+    old.check_roots(roots,len(spec['air']['tables']));st=statement(spec,input_log=input_log);t=AirTranscript(st);t.statement_digest=st
     t.t.commit(b'all-source-commitments',u64(len(roots))+b''.join(roots))
     return st,t,t.draw(1,True)[0],t.draw(1,True)[0]
 
@@ -60,11 +68,16 @@ def constraint_verify(spec,t,ti,rounds):
     return dict(point=point,mixing=mixing,tau=tau,claim=claim)
 
 
-def terminal_layout(spec,t,alpha,gamma,finals,terminals):
+def terminal_layout(spec,t,alpha,gamma,finals,terminals, *, input_log=None):
     t.t.commit(b'all-constraint-proofs-complete',u64(len(terminals)));rho=t.draw(1,True)[0]
     circuit=compile_terminal(spec,alpha,gamma,finals,terminals,rho)
     binding=hash_parts(b'gkr-after-all-constraints',t.seed)
-    return circuit,gkr.layer_circuit(circuit),binding
+    if input_log is None:layout=gkr.layer_circuit(circuit)
+    else:
+        profile(input_log)
+        from pq384_fixed_gkr_layout import fixed_layer_circuit
+        layout=fixed_layer_circuit(circuit,input_log=input_log)
+    return circuit,layout,binding
 
 
 def opening_arguments(spec,roots,ars,terminals,circuit,obligation):
@@ -83,8 +96,8 @@ def opening_parent(binding,gproof):
     return hash_parts(b'weighted-pcs-after-gkr',binding,json.dumps(gproof,sort_keys=True,separators=(',',':')).encode())
 
 
-def finish_prove(spec,roots,ars,finals,st,t,alpha,gamma,rounds,terminals,private_rows,caches,native):
-    circuit,layout,binding=terminal_layout(spec,t,alpha,gamma,finals,terminals)
+def finish_prove(spec,roots,ars,finals,st,t,alpha,gamma,rounds,terminals,private_rows,caches,native, *, input_log=None):
+    circuit,layout,binding=terminal_layout(spec,t,alpha,gamma,finals,terminals,input_log=input_log)
     private=[ZERO]*circuit['private_input_capacity']
     for block in circuit['input_blocks']:
         current,nxt=private_rows[block['table']];offset=block['offset'];W=block['column_capacity']
@@ -92,27 +105,30 @@ def finish_prove(spec,roots,ars,finals,st,t,alpha,gamma,rounds,terminals,private
     gp,ob=gkr.prove(layout,binding,private)
     branches=opening_arguments(spec,roots,ars,terminals,circuit,ob)
     opening=pcs.prove(caches,native,st,opening_parent(binding,gp),branches,ob['private_claim'])
-    return dict(profile=PROFILE,aux_roots=[r.hex() for r in ars],finals=finals,tables=rounds,gkr=gp,opening=opening)
+    return dict(profile=profile(input_log),aux_roots=[r.hex() for r in ars],finals=finals,tables=rounds,gkr=gp,opening=opening)
 
 
-def verify_local(proof,spec,roots):
-    require(set(proof)=={'profile','aux_roots','finals','tables','gkr','opening'} and proof['profile']==PROFILE,'proof fields')
-    st,t,alpha,gamma=begin(spec,roots);ars=[pcs.decode_hash(x) for x in proof['aux_roots']];initialize_aux(t,spec,ars,proof['finals'])
+def verify_local(proof,spec,roots, *, input_log=None):
+    require(set(proof)=={'profile','aux_roots','finals','tables','gkr','opening'} and proof['profile']==profile(input_log),'proof fields')
+    st,t,alpha,gamma=begin(spec,roots,input_log=input_log);ars=[pcs.decode_hash(x) for x in proof['aux_roots']];initialize_aux(t,spec,ars,proof['finals'])
     require(len(proof['tables'])==len(roots),'table count')
     terminals=[constraint_verify(spec,t,ti,rounds) for ti,rounds in enumerate(proof['tables'])]
-    circuit,layout,binding=terminal_layout(spec,t,alpha,gamma,proof['finals'],terminals)
+    circuit,layout,binding=terminal_layout(spec,t,alpha,gamma,proof['finals'],terminals,input_log=input_log)
     ob=gkr.verify(layout,binding,proof['gkr']);branches=opening_arguments(spec,roots,ars,terminals,circuit,ob)
     pcs.verify(proof['opening'],st,opening_parent(binding,proof['gkr']),branches,ob['private_claim'])
     return alpha,gamma
 
 
-def verify(proof,spec,roots):
-    alpha,gamma=verify_local(proof,spec,roots)
+def verify(proof,spec,roots, *, input_log=None):
+    alpha,gamma=verify_local(proof,spec,roots,input_log=input_log)
     require(old.global_fingerprint_balance(spec,proof['finals'],alpha,gamma),'randomized bus fingerprint product')
     return True
 
 if __name__=='__main__':
     from pathlib import Path
-    p=json.loads(Path(sys.argv[1]).read_text());s=json.loads(Path(sys.argv[2]).read_text())
-    assert verify(p,s['spec'],[bytes.fromhex(x) for x in s['roots']])
+    import argparse
+    ap=argparse.ArgumentParser();ap.add_argument('proof');ap.add_argument('statement');ap.add_argument('--input-log',type=int)
+    args=ap.parse_args()
+    p=json.loads(Path(args.proof).read_text());s=json.loads(Path(args.statement).read_text())
+    assert verify(p,s['spec'],[bytes.fromhex(x) for x in s['roots']],input_log=args.input_log)
     print('PASS: GKR and mandatory weighted opening diagnostic; security not certified')

@@ -2478,3 +2478,28 @@ open.
 
 Validation: full `check.py` passed with3780 registered results and enforced
 axiom allowlist; compiler sweep, Python compilation and diff checks passed.
+
+
+### Fresh trusted fixed-input GKR-bus profile
+
+The GKR-bus prover/verifier now accept an optional caller-supplied input_log.
+Omitting it preserves the old profile and statement digest. Supplying it selects
+`near-pq384-gkr-fixed-input-bus-v1`, binds the u64 cap in the statement digest
+before bus challenges, and uses the fixed-input layer transformation. The cap
+is not selected from proof fields. CLI verification requires the external
+--input-log configuration; invalid caps and envelope overflow reject.
+
+Generated a fresh literal193 proof with cap13 (8192 input slots), the same
+source commitments and fresh profile-specific auxiliaries. Independent process
+verification passed. Measured GKR+weighted PCS time was14.17s and independent
+verification1.06s in this run; these exclude source/aux and table work and are
+not general performance claims. Proof, statement, prover and negative-test
+reports are retained under results/pq384-literal193-gkr-fixed13.
+
+Validation:11 changed-cap/profile/message cases rejected, original statement
+digest unchanged, old prepared compact frontend plus15 rejections passed,
+Python compilation and full check.py passed (3780 registered results). The new
+profile currently has JSON verification only; compact codec and prepared-request
+frontend integration remain open. No compact-size or secure-profile claim is
+made. Formal transcript refinement, cap sufficiency, common-trace composition,
+quantum security and full NEAR1Pgas feasibility remain incomplete.
