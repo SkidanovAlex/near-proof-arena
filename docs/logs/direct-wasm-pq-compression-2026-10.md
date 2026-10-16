@@ -4267,3 +4267,22 @@ bus branches. Native/QROM, secure-size and full 1 Pgas requirements remain open.
 
 Validation: full `check.py` PASS (4046 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only composition.
+
+### Actual merged PCS bound over the complete two-table experiment
+
+`two_table_concrete_pcs_failure_budget` invokes the actual
+`concrete_gkr_accepted_failure_budget` in each initial-challenge/batching/earlier
+GKR context, then the two-table joint lift. It derives max(nearBudget,farBudget)
+with exact outer multiplicities, including accepted absence of a joint source
+representative. No numeric PCS fiber budget is supplied. Source oracles remain
+fixed across the contexts; both rowpoint vectors are still jointly sampled.
+
+Ideal source projection/geometry, root/fold conditions, initial weighted
+oracle equality, terminal authentication, whole recovered-input binding,
+accepted verifier checks and event inclusion remain explicit. Next: substitute
+this same-event bound in table branches, handle absent representatives and
+join table selection/bus averaging. Native commitment/QROM refinement, secure
+size and full 1 Pgas remain open.
+
+Validation: full `check.py` PASS (4047 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only composition.

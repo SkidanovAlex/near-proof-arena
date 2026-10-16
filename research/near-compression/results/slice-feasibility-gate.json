@@ -306,7 +306,9 @@
     "NearCompression/FirstTableEvaluatedGKRPCS.lean",
     "results/first-table-evaluated-gkr-pcs-integration.json",
     "NearCompression/CheckedTerminalGKRRepair.lean",
-    "results/checked-terminal-gkr-repair-integration.json"
+    "results/checked-terminal-gkr-repair-integration.json",
+    "NearCompression/TwoTableConcretePCS.lean",
+    "results/two-table-concrete-pcs-integration.json"
   ],
   "requirements": [
     {
@@ -481,5 +483,6 @@
   "two_table_terminal_repair": "PROVED_CONDITIONALLY: two_table_terminal_repair derives explicit batching/evaluated-GKR repair across later local prefixes, preserving accepted terminal mismatch as a joint event count. Semantic output mismatch/circuit binding, event inclusion and final substitution remain explicit. No end-to-end or PQ claim.",
   "second_table_evaluated_repair": "PROVED_CONDITIONALLY: second_table_evaluated_gkr_pcs_budget removes independent repair/wrong-terminal numeric assumptions, deriving the batching/GKR term. Source and semantic binding, accepted verifier checks, mismatch inclusion and concrete PCS event bound remain explicit.",
   "first_table_evaluated_repair": "PROVED_CONDITIONALLY: first_table_evaluated_gkr_pcs_budget substitutes actual evaluated-GKR repair over second-local prefixes. Both table branches now derive repair terms. Semantic bindings/checks, concrete joint PCS event bound, branch selection and bus averaging remain open.",
-  "checked_terminal_gkr_repair": "PROVED_CONDITIONALLY: checked_terminal_gkr_repair derives semantic output mismatch and finite-circuit identity from executable terminal/compiler checks, then invokes evaluated-GKR repair. Decoded environment agreement, metadata/history/formula binding, root geometry/checks and PCS error inclusion remain explicit."
+  "checked_terminal_gkr_repair": "PROVED_CONDITIONALLY: checked_terminal_gkr_repair derives semantic output mismatch and finite-circuit identity from executable terminal/compiler checks, then invokes evaluated-GKR repair. Decoded environment agreement, metadata/history/formula binding, root geometry/checks and PCS error inclusion remain explicit.",
+  "two_table_concrete_pcs": "PROVED_CONDITIONALLY: actual concrete_gkr_accepted_failure_budget is lifted over the complete two-table experiment with max(nearBudget,farBudget), including absent representatives. Numerical PCS fiber budget is derived, while ideal source/projection/geometry/authentication, recovered input binding and event inclusion remain explicit."
 }
