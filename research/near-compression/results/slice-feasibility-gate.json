@@ -263,7 +263,9 @@
     "NearCompression/TwoTableLocalCoordinates.lean",
     "results/two-table-local-coordinates-integration.json",
     "NearCompression/TableHistoryBinding.lean",
-    "results/table-history-binding-integration.json"
+    "results/table-history-binding-integration.json",
+    "NearCompression/TwoTablePCSExperiment.lean",
+    "results/two-table-pcs-experiment-integration.json"
   ],
   "requirements": [
     {

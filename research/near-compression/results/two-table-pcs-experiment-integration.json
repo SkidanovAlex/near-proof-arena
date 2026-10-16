@@ -1,0 +1,32 @@
+{
+  "status": "TWO_TABLE_BATCH_GKR_PCS_SAMPLE_BUDGET_COMPOSED",
+  "module": "NearCompression/TwoTablePCSExperiment.lean",
+  "theorems": [
+    "two_table_gkr_pcs_joint_budget"
+  ],
+  "proved": [
+    "A concrete joint PCS event budget lifts through both local initial challenge families, batching rho and all earlier GKR paths.",
+    "The conclusion uses the chronological two-table local-prefix experiment followed by rho, full evaluated GKR and PCS continuation.",
+    "All row coordinates remain jointly averaged; every event argument is preserved."
+  ],
+  "assumptions": [
+    "Two fixed table row logs whose sum equals layout.rowCoordinates.",
+    "Fixed GKR round envelope.",
+    "The supplied per-initial-pair/rho/earlier-path budget must be instantiated by concrete_gkr_accepted_failure_budget and its ideal oracle premises."
+  ],
+  "remaining": [
+    "Instantiate the complete accepted-error event and native source/constants/formula bindings.",
+    "Combine this terminal error term with invalid-trace local/batching/GKR repair and absent-representative cases.",
+    "Computational/QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3991,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal sample-space composition only."
+  }
+}

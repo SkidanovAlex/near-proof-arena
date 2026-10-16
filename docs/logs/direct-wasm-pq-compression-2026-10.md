@@ -3858,3 +3858,18 @@ and constant-list binding. Native derivation of metadata/constants/formulas
 and global invalid-execution count assembly remain open.
 Full check.py passed 3990 registered results with the existing axiom allowlist.
 Native code and proof sizes unchanged; gate remains NOT_PASSED.
+
+### Two-table batching/GKR/PCS sampling budget composed
+
+TwoTablePCSExperiment combines the prior count identities into one theorem
+for sequential local prefixes followed by batching rho, the full evaluated
+GKR path and PCS continuation. A concrete PCS budget for each initial-pair,
+rho and earlier-path choice lifts with exactly their sampling multiplicities.
+All row coordinates remain jointly averaged throughout. The event retains
+both complete local prefixes and every continuation value.
+
+The per-choice budget is still an explicit interface to the concrete accepted
+GKR failure theorem. Instantiating the full accepted-error event and native
+bindings, then assembling invalid-trace/no-representative acceptance, remains.
+Full check.py passed 3991 registered results with the existing axiom allowlist.
+No native code or proof-size changes; gate remains NOT_PASSED.

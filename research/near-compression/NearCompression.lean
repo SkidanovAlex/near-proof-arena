@@ -1481,3 +1481,5 @@ import NearCompression.GKRFullPCSExperiment
 import NearCompression.TwoTableLocalCoordinates
 
 import NearCompression.TableHistoryBinding
+
+import NearCompression.TwoTablePCSExperiment
