@@ -134,3 +134,23 @@ pub unsafe extern "C" fn near_ext8_fft(src:*const u32,len:usize,out:*mut u32,cap
     }
     0
 }
+
+/// Column-major tensor a[c]*r[i] + b[c]*s[i]. Caller supplies disjoint buffers.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn near_ext8_tensor_weights(
+    a:*const u32,b:*const u32,cols:usize,r:*const u32,s:*const u32,rows:usize,
+    output:*mut u32,capacity:usize,
+)->i32 {
+    let Some(n)=cols.checked_mul(rows) else{return 1;};
+    if cols==0 || rows==0 || n>isize::MAX as usize/32 || capacity!=n ||
+        a.is_null() || b.is_null() || r.is_null() || s.is_null() || output.is_null(){return 1;}
+    let (a,b,r,s)=unsafe{(std::slice::from_raw_parts(a,8*cols),std::slice::from_raw_parts(b,8*cols),
+        std::slice::from_raw_parts(r,8*rows),std::slice::from_raw_parts(s,8*rows))};
+    if !valid(a) || !valid(b) || !valid(r) || !valid(s){return 1;}
+    let out=unsafe{std::slice::from_raw_parts_mut(output,8*n)};
+    for c in 0..cols {for i in 0..rows {
+        let value=add(mul(elem(a,c),elem(r,i)),mul(elem(b,c),elem(s,i)));
+        let at=8*(c*rows+i);out[at..at+8].copy_from_slice(&value);
+    }}
+    0
+}

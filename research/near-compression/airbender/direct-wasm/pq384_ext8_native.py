@@ -18,6 +18,10 @@ class Kernel:
         self.lib.near_ext8_gkr_round.argtypes=[ptr,ctypes.c_size_t,ptr,ptr,ctypes.c_size_t,ptr,ctypes.c_size_t,ctypes.c_uint32,ctypes.c_uint32,ptr,ptr]
         self.lib.near_ext8_gkr_round.restype=ctypes.c_int
         self.lib.near_ext8_fold.restype=self.lib.near_ext8_quadratic.restype=ctypes.c_int
+        self.tensor=getattr(self.lib,'near_ext8_tensor_weights',None)
+        if self.tensor is not None:
+            self.tensor.argtypes=[ptr,ptr,ctypes.c_size_t,ptr,ptr,ctypes.c_size_t,ptr,ctypes.c_size_t]
+            self.tensor.restype=ctypes.c_int
     @staticmethod
     def pack(values):
         words=[x for value in values for x in f.canonical(value)]
@@ -35,6 +39,17 @@ class Kernel:
         a=self.pack(values);b=self.pack(weights);out=(ctypes.c_uint32*24)()
         if self.lib.near_ext8_quadratic(a,b,len(values),out):raise ValueError('native quadratic rejected')
         return self.unpack(out,3)
+
+    def lane_weights(self,point,current,next_columns):
+        from pq384_ext8_input_weights import upper_zeta,row_weights,lane_weights
+        if not current or len(current)!=len(next_columns) or len(current)&(len(current)-1):raise ValueError('column shape')
+        point=[f.canonical(x) for x in point]
+        current=[f.canonical(x) for x in current];next_columns=[f.canonical(x) for x in next_columns]
+        if self.tensor is None:return lane_weights(point,current,next_columns)
+        a,b=upper_zeta(current),upper_zeta(next_columns);r,s=row_weights(point)
+        n=len(a)*len(r);out=(ctypes.c_uint32*(8*n))()
+        if self.tensor(self.pack(a),self.pack(b),len(a),self.pack(r),self.pack(s),len(r),out,n):raise ValueError('native tensor rejected')
+        return self.unpack(out,n)
 
     def gkr_round(self,gates,weights,original,folded,axis,bit,fixed_left=f.ZERO):
         if type(axis)is not int or axis not in (0,1) or type(bit)is not int or not 0<=bit<32:

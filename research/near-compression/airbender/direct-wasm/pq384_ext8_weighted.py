@@ -81,7 +81,7 @@ def prove(caches,native,statement,parent,branches,claim, *, queries):
         h.require(cache.root.hex()==b['root'] and cache.context==ctx and cache.degree==d and cache.lanes==len(b['lanes']),'source binding')
         low=(D//d).bit_length()-1
         for j,(a,c) in enumerate(b['lanes']):
-            cs=[f.base(x) for x in cache.coefficients(j)];ws=lane_weights(b['row_point'],a,c)
+            cs=[f.base(x) for x in cache.coefficients(j)];ws=native.lane_weights(b['row_point'],a,c) if hasattr(native,'lane_weights') else lane_weights(b['row_point'],a,c)
             q=native.quadratic(cs,ws);dot=f.add(q[0],f.evaluate(q,f.ONE));states.append([cs,ws,low,f.ONE,dot])
     reduction=[];u=[]
     for bit in range(D.bit_length()-1):

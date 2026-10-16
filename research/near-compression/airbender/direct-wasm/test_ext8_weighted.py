@@ -23,6 +23,10 @@ def main():
         results=[]
         for queries in (8,309):
             proof=p.prove(caches,native,b'statement',b'parent',branches,claim,queries=queries)
+            if queries==8:
+                tensor=native.tensor;native.tensor=None
+                fallback=p.prove(caches,native,b'statement',b'parent',branches,claim,queries=queries)
+                native.tensor=tensor;assert fallback==proof
             wire=json.loads(json.dumps(proof));assert p.verify(wire,b'statement',b'parent',branches,claim,queries=queries)
             binary=codec.encode(wire,b'statement',b'parent',branches,claim,queries=queries)
             assert codec.decode(binary,b'statement',b'parent',branches,claim,queries=queries)==wire

@@ -6409,3 +6409,36 @@ An initial invocation from repo root exited2 before starting Python; the active
 run uses research/near-compression as cwd. Do not restart the active run without
 checking its handle/process and terminal result. This checkpoint does NOT claim
 an all-Ext8 compression proof, PQ128 or a passed full-NEAR feasibility gate.
+
+### Native Ext8 tensor weights; compression run reaches PCS
+
+Added near_ext8_tensor_weights to the existing Rust kernel and an optional
+Kernel.lane_weights adapter. The kernel evaluates the exact column-major
+current/next tensor a[c]*r[i]+b[c]*s[i]; Python still constructs the independently
+specified upper-zeta and row-weight inputs. ABI rejects invalid capacity,
+zero dimensions, null pointers, overflow and noncanonical scalar buffers.
+Existing libraries without the symbol retain the reference path. Weighted PCS
+uses the optional adapter; its verifier and transcript are unchanged.
+
+Validation:12small randomized cases and a complete2048x128 lane (262144Ext8
+values) match the Python reference exactly. Representative single-pass timing:
+reference4.81568s, native0.150686s,31.96x for tensor materialization only. Three
+malformed ABI cases and three Python input checks reject. The heterogeneous
+weighted PCS test passes at8/309queries, with exact proof equality between
+native and reference weight paths at8queries, existing13negative cases,
+shared/unshared codec checks and independent source-root comparison. This is
+not an end-to-end speedup or formal Rust refinement theorem. Reports and source
+hashes: results/ext8-native-tensor; logs /tmp/ext8-native-weights.log and
+/tmp/ext8-native-weighted-pcs.log. No Lean changes.
+
+The original all-Ext8 compression run (session24454/PID1725108) is still running
+with its originally loaded reference tensor code; it was not restarted to use
+this optimization. At541elapsed seconds it logged Starting weighted PCS after
+GKR verification and independent coefficient-target parity. Full proof result
+and size remain pending. The prepared measurement utility
+measure_ext8_compression_envelope.py requires a terminal PASS prover report,
+checks the canonical compression receipt, builds the complete envelope,
+verifies a same-root all-Ext8 call/compression conjunction in a fresh process,
+and accounts for the full PCS geometry and external receipt/call bytes.
+It is syntax-checked but awaits the actual compression output for execution.
+Full NEAR/PQ128/sub300k feasibility remains open.

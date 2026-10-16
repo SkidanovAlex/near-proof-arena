@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "small_cases": 12,
+  "representative_elements": 262144,
+  "reference_seconds": 4.815680467057973,
+  "native_seconds": 0.15068570477887988,
+  "speedup": 31.958442734329893,
+  "old_library_fallback": true,
+  "abi_rejections": 3,
+  "python_rejections": [
+    "shape",
+    "width",
+    "canonical"
+  ],
+  "source_sha256": "93fc90a4da0958c66d02849d8a7613378f933281dde49cf46f07e6ae0231f56f",
+  "scope": "Exact reference/native tensor parity, including representative2048x128 lane. Microbenchmark only, not end-to-end prover speedup or formal Rust refinement."
+}

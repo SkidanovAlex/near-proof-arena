@@ -1,0 +1,7 @@
+{
+  "native-folded/kernel_ext8.rs": "93fc90a4da0958c66d02849d8a7613378f933281dde49cf46f07e6ae0231f56f",
+  "pq384_ext8_native.py": "2baf27d51f4b16b8ff0d00b22ff34b345b058b3e644363a51fcbd9e02295d999",
+  "pq384_ext8_weighted.py": "023b4daa06e6c576e32a877777a0515319e081e84260eb23b0be9f2f6b998355",
+  "test_ext8_native_weights.py": "4b67468fc86ec4a28b7bb6d6b0351355cc329bc6671cd7d798c37c274c643300",
+  "test_ext8_weighted.py": "d0524a32d550710af506a16c23e827facea996ceb84be0b14285f3975d07a660"
+}
