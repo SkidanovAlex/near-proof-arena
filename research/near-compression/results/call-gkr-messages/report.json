@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "layers": 14,
+  "rounds": 194,
+  "negative_cases": 6,
+  "terminal_obligation_exactly_matches_verifier": true,
+  "fixture_sha256": "b700510765cf8cb6663f336e8c7cd680404e6ffe9f9976401602363f923b9dc0",
+  "files": {
+    "airbender/direct-wasm/test_call_gkr_messages.py": "f0df9657f3a6d7523b4c799b4335189db462d00d0d855830554b89cefc3e52cc",
+    "CheckGKRMessages.lean": "d143923a36af04412d081c610a9675969aea2fb76194e09f06e704bfcd2896b2",
+    "NearCompression/GKRMessageCheck.lean": "4c35e51cc725eef93b006c57d0f0f87a8e2a6898da6cb71084562de9d7fb076e",
+    "airbender/direct-wasm/pq384_terminal_gkr.py": "58c32cabd696c89aee5003b64062c4a4297fd0f809d720a6a9499e7f4f9d4cbc"
+  },
+  "scope": "Actual transcript-derived challenges, weighted gates and arithmetic messages replay through a proved finite Lean checker. Tape functions certify this path only; they do not establish a causal prover strategy across challenge paths. Transcript derivation, cross-layer query binding and PCS/QROM remain separate obligations; no PQ128 claim."
+}

@@ -6089,3 +6089,33 @@ No proof bytes or executable verifier changed. Next work is the actual GKR
 message-path refinement and source-opening binding, followed by full soundness
 composition; the diagnostic small proof is still not the secure target profile.
 Full recursion, full NEAR1Pgas/PQ128/sub300k and NOT_PASSED gate remain open.
+
+### Actual GKR message arithmetic replay through proved checks
+
+GKRMessageCheck.lean adds a computable axis check for coefficient length≤3,
+endpoint equality and evaluation at each supplied challenge. Its acceptance
+theorem yields weightedSumcheckChecks for the SAME history-indexed message and
+claim functions. The layer checker includes both axis lengths, the left/right
+claim connection and gkrLayerWiring equality; its acceptance theorem yields the
+existing GKRLayerStrategy.checked predicate and both length equalities.
+
+CheckGKRMessages.lean replays finite transcript tapes in the existing diagnostic
+Fp4 model. test_call_gkr_messages.py extracts actual challenge draws, weighted
+gates, quadratic messages and terminal inputs from the retained call proof.
+All14layers /194sumcheck rounds pass the Lean checker. Six modified paths reject:
+wrong initial claim, coefficient, excessive degree, challenge, terminal input
+and axis length. The independently extracted terminal obligation equals the
+actual Python verifier's returned obligation exactly.
+
+Scope boundary: the replay's tape functions certify one finite path. This does
+not reconstruct a causal adversarial strategy across all sampled paths, prove
+Fiat-Shamir challenge derivation, or formally establish every cross-layer query
+binding. The full evaluated-path assumption in CallGKRRoot is therefore not yet
+universally discharged. PCS opening/binding and QROM obligations remain open;
+no PQ128 or full-recursion conclusion follows from arithmetic parity.
+
+Validation: full check.py PASS4190, /tmp/gkr-message-audit.log. Replay PASS14,
+negative checks6, /tmp/call-gkr-messages.log. Compressed fixture, uncompressed
+hash, source hashes and Lean log are retained in results/call-gkr-messages.
+No executable proof/verifier was modified. Full NEAR1Pgas/PQ128/sub300k goal
+and NOT_PASSED feasibility gate remain unchanged.

@@ -6002,3 +6002,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.call_checked_gkr_root_wrong
 #print axioms NearCompression.call_gkr_terminal_budget
+
+#print axioms NearCompression.gkr_axis_message_checked
+#print axioms NearCompression.gkr_layer_message_checked
