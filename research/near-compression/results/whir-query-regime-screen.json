@@ -1,0 +1,555 @@
+{
+  "status": "COUNTERFACTUAL_QUERY_ONLY_SCREEN",
+  "upstream_commit": "afec1fac27c1c8cc7331aa5668bc9800f104d92c",
+  "source": "src/protocols/params/regime.rs:one_minus_distance_log2",
+  "source_sha256": "8b621e391eeb6f039d0f4aec14b717859111f126d07f2461ac1e8c8a5f24a70a",
+  "records": [
+    {
+      "regime": "current_extraction",
+      "factor": "3/4",
+      "isolated_query_bits": 128,
+      "queries": 309,
+      "layout": "separate",
+      "winners": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 612488,
+          "subtotal_bytes": 663816
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 607720,
+          "subtotal_bytes": 659048
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 598520,
+          "subtotal_bytes": 649848
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 596888,
+          "subtotal_bytes": 648216
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 613304,
+          "subtotal_bytes": 664632
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 604072,
+          "subtotal_bytes": 655400
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 610392,
+          "subtotal_bytes": 661720
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            4,
+            16,
+            16
+          ],
+          "opening_bytes": 607704,
+          "subtotal_bytes": 659032
+        }
+      ],
+      "min_subtotal_bytes": 648216,
+      "max_subtotal_bytes": 664632
+    },
+    {
+      "regime": "current_extraction",
+      "factor": "3/4",
+      "isolated_query_bits": 128,
+      "queries": 309,
+      "layout": "pooled_by_phase",
+      "winners": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 513864,
+          "subtotal_bytes": 565192
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 510728,
+          "subtotal_bytes": 562056
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 504008,
+          "subtotal_bytes": 555336
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 502728,
+          "subtotal_bytes": 554056
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 515176,
+          "subtotal_bytes": 566504
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 507256,
+          "subtotal_bytes": 558584
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 512488,
+          "subtotal_bytes": 563816
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 510456,
+          "subtotal_bytes": 561784
+        }
+      ],
+      "min_subtotal_bytes": 554056,
+      "max_subtotal_bytes": 566504
+    },
+    {
+      "regime": "upstream_unique",
+      "factor": "5/8",
+      "isolated_query_bits": 128,
+      "queries": 189,
+      "layout": "separate",
+      "winners": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            4,
+            16,
+            16
+          ],
+          "opening_bytes": 436936,
+          "subtotal_bytes": 488264
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 435464,
+          "subtotal_bytes": 486792
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 432856,
+          "subtotal_bytes": 484184
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            4,
+            16,
+            16
+          ],
+          "opening_bytes": 419432,
+          "subtotal_bytes": 470760
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 436296,
+          "subtotal_bytes": 487624
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 425464,
+          "subtotal_bytes": 476792
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 433640,
+          "subtotal_bytes": 484968
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            4,
+            16,
+            16
+          ],
+          "opening_bytes": 430776,
+          "subtotal_bytes": 482104
+        }
+      ],
+      "min_subtotal_bytes": 470760,
+      "max_subtotal_bytes": 488264
+    },
+    {
+      "regime": "upstream_unique",
+      "factor": "5/8",
+      "isolated_query_bits": 128,
+      "queries": 189,
+      "layout": "pooled_by_phase",
+      "winners": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 364312,
+          "subtotal_bytes": 415640
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 362520,
+          "subtotal_bytes": 413848
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 361416,
+          "subtotal_bytes": 412744
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 350808,
+          "subtotal_bytes": 402136
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 363720,
+          "subtotal_bytes": 415048
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 354504,
+          "subtotal_bytes": 405832
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 361144,
+          "subtotal_bytes": 412472
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 359528,
+          "subtotal_bytes": 410856
+        }
+      ],
+      "min_subtotal_bytes": 402136,
+      "max_subtotal_bytes": 415640
+    },
+    {
+      "regime": "upstream_johnson",
+      "factor": "21/40",
+      "isolated_query_bits": 128,
+      "queries": 138,
+      "layout": "separate",
+      "winners": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 347384,
+          "subtotal_bytes": 398712
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 343304,
+          "subtotal_bytes": 394632
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 345304,
+          "subtotal_bytes": 396632
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 342984,
+          "subtotal_bytes": 394312
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 347304,
+          "subtotal_bytes": 398632
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 342184,
+          "subtotal_bytes": 393512
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 346904,
+          "subtotal_bytes": 398232
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "opening_bytes": 346872,
+          "subtotal_bytes": 398200
+        }
+      ],
+      "min_subtotal_bytes": 393512,
+      "max_subtotal_bytes": 398712
+    },
+    {
+      "regime": "upstream_johnson",
+      "factor": "21/40",
+      "isolated_query_bits": 128,
+      "queries": 138,
+      "layout": "pooled_by_phase",
+      "winners": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 288632,
+          "subtotal_bytes": 339960
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 285000,
+          "subtotal_bytes": 336328
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 287368,
+          "subtotal_bytes": 338696
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 285368,
+          "subtotal_bytes": 336696
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 288744,
+          "subtotal_bytes": 340072
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 284264,
+          "subtotal_bytes": 335592
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 288312,
+          "subtotal_bytes": 339640
+        },
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "opening_bytes": 288488,
+          "subtotal_bytes": 339816
+        }
+      ],
+      "min_subtotal_bytes": 335592,
+      "max_subtotal_bytes": 340072
+    }
+  ],
+  "scope": "Exact rational query counts; simulated existing binary-fold codec geometry. Upstream unique/Johnson proximity bounds are NOT proved for our protocol. Excludes extraction, list, OOD, mixing, composition, Fiat-Shamir and quantum losses. Not a WHIR proof-size estimate: WHIR code switching changes geometry. Pooling and alternate packing unimplemented; excludes public envelope. No capacity conjecture or grinding used; no feasibility gate changed."
+}

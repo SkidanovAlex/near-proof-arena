@@ -5014,3 +5014,58 @@ Inspected the existing contract and `RateShiftQueryTransfer`/continuation compos
 This is an interface limitation, NOT an attack on the full protocol or an impossibility result for WHIR/rate shifting. It does not assert that every such agreement pattern satisfies additional earlier-oracle/folding premises. It shows that fewer queries cannot be justified solely by the current threshold and a truthful candidate OOD answer; a stronger quantitative prior-oracle/fold/candidate relation is necessary.
 
 Validation: full Lean audit PASS4129theorems/regressions, allowed axioms only. Exact rational budget check:96matches/128seeds gives81/256at4queries; minimum309queries for this isolated term to reach2^-128. Existing4-query diagnostic remains algebraic/chronological only. Updated the rate-shift contract and feasibility gate with this distinction. Full security, compression and1Pgas goal remain open.
+
+### WHIR source audit: stronger query bounds still need different geometry
+
+Reviewed upstream https://github.com/worldfnd/whir at commit
+`afec1fac27c1c8cc7331aa5668bc9800f104d92c` (2026-10-09), fetched into
+`/tmp/nearproof-whir-review-20261016`. Current source differs from README's
+older SoundnessType CLI: `src/protocols/params/regime.rs` exposes Unique,
+Johnson, and Capacity. Do not infer implementation policy from that README.
+The IACR PDF fetch returned HTTP403; this entry verifies source formulas,
+not the underlying paper's theorem hypotheses.
+
+Pinned source:
+- `src/protocols/params/regime.rs`, SHA256
+  `8b621e391eeb6f039d0f4aec14b717859111f126d07f2461ac1e8c8a5f24a70a`:
+  unique agreement factor `(1+rho)/2`; Johnson `sqrt(rho)+eta`, canonical
+  `eta=sqrt(rho)/20`. Capacity explicitly cites STIR Conjecture5.6 and is
+  excluded from our screen. Johnson MCA code cites BCSS25 Theorem1.5;
+  that theorem has not been imported or formally validated here.
+- `src/protocols/irs_commit.rs`, SHA256
+  `d8039161eba7c737c277bbf01452944a130ba1af219e3874eee513e4dec7a4fe`:
+  `rbr_queries` computes `-q*log2(agreement factor)`.
+- `src/protocols/params/code_switch.rs`, SHA256
+  `731f461e450f0f06c74c0616c3909a9f2a2735a3952534b87eddbe7abb1df96d`:
+  source-query, OOD list-separation, and combination errors are separate
+  terms; its solver can add grinding. We take no grinding credit.
+
+Our `GeneralWeightedExtraction.general_weighted_unique_extraction` calls
+`weighted_three_candidate_curve` and requires `2*mass+B*(D-1)<3*T`.
+`CheckedRateShiftComposition` consequently requires `2*N+D<3*T`.
+This is a stricter extraction regime than upstream Unique; simply changing
+query counts to use `(1+rho)/2` would be unjustified. The needed replacement
+must extract a shared affine polynomial curve from adaptively chosen decoded
+candidates at the weaker threshold, quantify exceptional fold challenges,
+and preserve the coefficient-functional identity and chronological bindings.
+Ordinary uniqueness of one nearby codeword does not establish that result.
+
+Added `screen_whir_query_regimes.py` and
+`results/whir-query-regime-screen.json`. Exact rational arithmetic checks
+minimal q for the isolated128-bit query term at rho=1/4:
+current3/4 ->309; upstream Unique5/8 ->189; Johnson21/40 ->138.
+Eight simulated seeds per geometry, existing SHA384/Ext8 binary-fold codec,
+256rows, all packing powers through1024, separate or pooled-by-phase tables.
+Pooled subtotal ranges including51328local/GKR scalar bytes:
+554056–566504 current;402136–415640 Unique;335592–340072 Johnson.
+These are counterfactual geometry projections, not implemented proofs,
+not WHIR proof-size predictions, and exclude envelope and all other error
+terms. No parameter or feasibility gate changed. Exact q minimality assertions
+pass; screen completes successfully. No Lean changes or new formal claims.
+
+Decision: improving extraction alone does not reach300000bytes in the sampled
+fixed binary-fold layouts. Next design work should jointly target stronger
+extraction and actual code-switch/multi-fold geometry; use the existing
+rate-shift diagnostic as a starting point and budget all source coset openings.
+Avoid a large standalone Johnson formalization before its complete geometry
+shows useful headroom. Full NEAR1Pgas and128-bit PQ remain unestablished.
