@@ -1980,3 +1980,21 @@ The regression prevents mistaking list cardinality for candidate coherence.
 
 Validation: full `check.py` passed with3747 registered results and enforced axiom
 allowlist. All eight finite enumerations completed. Feasibility gate remains open.
+
+
+### Constructive support interpolation
+
+`CurveSupportInterpolation.lean` derives coefficientwise and evaluation equality
+between each degree<D candidate and the affine combination of source Lagrange
+interpolants on D fixed distinct agreement points. The candidate may depend on
+the challenge; the points and source words are fixed. This feeds the checked
+single-curve result to bound supported constrained successes by max(N,2) under
+no compatible parent. There is no supplied concentration or transfer hypothesis.
+
+This is a local proof component, not global list-decoding soundness. A union over
+all supports can be exponential, so support control or polynomial-cost algebraic
+concentration is still necessary. Neither the security parameters nor the
+measured proof size changes at this checkpoint.
+
+Validation: full `check.py` passed with 3749 registered results and enforced
+axiom allowlist. Slice feasibility gate remains NOT_PASSED.

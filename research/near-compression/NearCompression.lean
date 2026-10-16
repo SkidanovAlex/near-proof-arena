@@ -1353,3 +1353,5 @@ import NearCompression.WeightedCurveCandidates
 import NearCompression.GeneralCurveConcentrationReduction
 
 import NearCompression.SmallFieldCurveCounterexample
+
+import NearCompression.CurveSupportInterpolation
