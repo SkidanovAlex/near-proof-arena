@@ -5694,3 +5694,12 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.table_local_failure_residual
 #print axioms NearCompression.table_local_failure_combined_residual
 #print axioms NearCompression.prepared_wrong_output_residual_or_bus
+
+#print axioms NearCompression.project_polynomial_coefficient
+#print axioms NearCompression.project_polynomial_evaluation
+#print axioms NearCompression.polynomial_descent_from_agreement
+#print axioms NearCompression.fp8_base_projection_linear
+#print axioms NearCompression.fp8_polynomial_base_descent
+#print axioms NearCompression.fp8_projected_coefficients_base
+#print axioms NearCompression.fp8_lower_zeta_base
+#print axioms NearCompression.fp8_recovered_column_base

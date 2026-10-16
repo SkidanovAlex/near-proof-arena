@@ -3944,3 +3944,23 @@ is still required. This gap is explicitly recorded in the feasibility gate.
 Full check.py passed 4001 registered results with the existing axiom allowlist.
 Native formula generation remains unrefined; no security or size claim changed.
 Gate remains NOT_PASSED.
+
+### Base-field polynomial descent and recovered-cell preservation
+
+BaseFieldPolynomialDescent proves a projection argument: a zero-preserving
+additive projection commuting with domain scalar multiplication commutes with
+polynomial evaluation. If a degree-<D polynomial agrees with projection-fixed
+oracle values at at least D distinct points, the polynomial and its projected
+coefficient polynomial agree on enough points to force coefficient equality.
+This is instantiated with the Fp8 base-coordinate projection, which is Fp-linear
+but is not treated as a ring homomorphism on arbitrary extension values.
+
+Base-valued coefficients survive projected-coefficient recovery and inverse
+Mobius reconstruction, so recovered source cells descend too. This resolves
+the algebraic route conditionally, not the whole execution boundary: the actual
+adversarial source oracle must be base-valued on the full domain, and chosen
+joint representatives must supply the scalar agreement premise. Honest capture
+values and sampled checks alone do not establish those hypotheses.
+
+Full check.py passed 4009 registered results with the existing axiom allowlist.
+No native or proof-size change; global/PQ soundness remains open. Gate NOT_PASSED.

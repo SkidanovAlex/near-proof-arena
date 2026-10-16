@@ -1,0 +1,40 @@
+{
+  "status": "CONDITIONAL_BASE_FIELD_DESCENT_THROUGH_RECOVERED_SOURCE_CELLS",
+  "module": "NearCompression/BaseFieldPolynomialDescent.lean",
+  "theorems": [
+    "project_polynomial_coefficient",
+    "project_polynomial_evaluation",
+    "polynomial_descent_from_agreement",
+    "fp8_base_projection_linear",
+    "fp8_polynomial_base_descent",
+    "fp8_projected_coefficients_base",
+    "fp8_lower_zeta_base",
+    "fp8_recovered_column_base"
+  ],
+  "proved": [
+    "A zero-preserving additive projection commuting with domain scalar multiplication commutes with polynomial evaluation.",
+    "A degree-less-than-D polynomial agreeing with projection-fixed oracle values on at least D distinct domain points has projection-fixed coefficients.",
+    "Fp8 base-coordinate projection is Fp-linear, yielding base-valued coefficients from a base-valued oracle on base domain points.",
+    "Projected coefficient recovery and inverse Mobius reconstruction preserve base-valuedness of recovered column cells."
+  ],
+  "assumptions": [
+    "Distinct base-field domain points.",
+    "Actual source oracle values on the full domain lie in the base field.",
+    "Representative degree bound and at least D agreements."
+  ],
+  "remaining": [
+    "Establish full-domain source base-valuedness for the actual adversarial commitment model; honest captures alone are insufficient.",
+    "Connect chosen joint representatives to the scalar agreement premise and construct a matching base trace.",
+    "Native refinement, global/QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4009,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; algebraic descent and reconstruction preservation only."
+  }
+}
