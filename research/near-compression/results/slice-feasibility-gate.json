@@ -257,7 +257,9 @@
     "NearCompression/LocalBatchedGKR.lean",
     "results/local-batched-gkr-integration.json",
     "NearCompression/GKRConcreteErrorInclusion.lean",
-    "results/gkr-concrete-error-inclusion-integration.json"
+    "results/gkr-concrete-error-inclusion-integration.json",
+    "NearCompression/GKRFullPCSExperiment.lean",
+    "results/gkr-full-pcs-experiment-integration.json"
   ],
   "requirements": [
     {

@@ -3809,3 +3809,20 @@ authentication premises remain; native refinement and QROM security are open.
 
 Full check.py passed 3979 registered results with the existing axiom allowlist.
 No native code or proof-size measurement changed. Gate remains NOT_PASSED.
+
+### Full GKR path and PCS experiment counts aligned
+
+GKRFullPCSExperiment defines the chronological rows/full-GKR-path/PCS
+continuation experiment. Splitting the final GKR block and exchanging finite
+sums identifies its event count with the sum of concrete PCS counts over
+earlier paths. A per-earlier-path budget lifts with exactly the earlier path
+space's multiplicity. The event still receives the original complete path;
+no message dependency or rowpoint averaging is removed.
+
+The row-averaged evaluatedGKRExperiment used by the local/batching work is
+proved equal to that full experiment and receives the lifted budget. The
+multi-table local-prefix coordinate connection and concrete native bindings
+remain open, as does final no-representative/invalid-trace assembly.
+
+Full check.py passed 3983 registered results with the existing axiom allowlist.
+No native code or byte measurements changed; gate remains NOT_PASSED.

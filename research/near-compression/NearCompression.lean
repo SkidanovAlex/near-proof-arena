@@ -1475,3 +1475,5 @@ import NearCompression.SemanticCircuitBinding
 import NearCompression.LocalBatchedGKR
 
 import NearCompression.GKRConcreteErrorInclusion
+
+import NearCompression.GKRFullPCSExperiment
