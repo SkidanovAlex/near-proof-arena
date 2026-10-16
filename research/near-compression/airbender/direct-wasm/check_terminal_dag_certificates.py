@@ -36,14 +36,15 @@ def generate(circuit,layout):
         plans.append(current)
     return dict(initial=initial,plans=plans)
 
-def validate(circuit,layout,cert):
+def validate(circuit,layout,cert, *, coordinate_degree=4):
+    require(type(coordinate_degree) is int and coordinate_degree>0,'coordinate degree')
     nodes=circuit['nodes'];ops=('add','sub','mul');size=layout['input_size'];cap=layout['private_capacity']
     require(size>cap>0 and size&(size-1)==0 and cap&(cap-1)==0,'input shape')
     for i,node in enumerate(nodes):
         require(node[0] in (*ops,'const','input'),'node kind')
         if node[0] in ops:require(len(node)==3 and all(type(j)is int and 0<=j<i for j in node[1:]),'acyclic')
         elif node[0]=='input':require(len(node)==2 and type(node[1])is int and 0<=node[1]<cap,'input slot')
-        else:require(len(node)==5 and all(type(v)is int and 0<=v<2013265921 for v in node[1:]),'constant canonical')
+        else:require(len(node)==1+coordinate_degree and all(type(v)is int and 0<=v<2013265921 for v in node[1:]),'constant canonical')
     require(set(circuit['live_nodes'])==closure(nodes,circuit['root']) and len(set(circuit['live_nodes']))==len(circuit['live_nodes']),'source live closure')
     constants={int(i):tuple(v) for i,v in layout['constants'].items()}
     require(all(cap<=i<size-1 for i in constants),'constant range')
@@ -52,7 +53,7 @@ def validate(circuit,layout,cert):
     for i,pos in previous.items():
         require(0<=i<len(nodes) and 0<=pos<size,'initial bounds');node=nodes[i]
         if node[0]=='input':require(pos==node[1] and pos<cap,'initial input route')
-        else:require(node[0]=='const' and cap<=pos and constants.get(pos,(0,0,0,0))==tuple(node[1:]),'initial constant route')
+        else:require(node[0]=='const' and cap<=pos and constants.get(pos,(0,)*coordinate_degree)==tuple(node[1:]),'initial constant route')
     require(len(cert['plans'])==len(layout['layers']),'layer count')
     for positions,gates in zip(cert['plans'],layout['layers']):
         require(len(gates)>0 and len(gates)&(len(gates)-1)==0,'layer shape')

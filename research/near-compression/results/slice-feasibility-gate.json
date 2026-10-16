@@ -617,5 +617,12 @@
     "residuals": 64,
     "mutations_rejected": 16,
     "scope": "Executable ordered-list checker allows unchanged formulas or exact fingerprint expansion within canonical residual contexts. Universal value preservation composes with generated Ext8 coordinate specification. Synthetic expanded captures pass with zero/random challenges; authenticated inputs, whole optimized terminal DAG refinement and native Ext8 proof remain open."
+  },
+  "ext8_terminal_structural_certificates": {
+    "status": "PYTHON_STRUCTURAL_CERTIFICATES_PASS",
+    "batch_cases": 3,
+    "registers_per_case": 9624,
+    "mutations_rejected": 24,
+    "scope": "Explicit Ext8 arithmetic validates instruction reconstruction, signed expansion/balancing, batching and DAG-to-layer routes. JSON rebuild roundtrip passes. Generic Lean route theorems exist but these captures are not kernel checked. No native Ext8 proof, authenticated transcript or security/size certification."
   }
 }

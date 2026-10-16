@@ -1,7 +1,7 @@
 """Differential compiler checks and candidate Ext8 terminal geometry.
 No GKR proof, native round kernel, PCS proof, or security certification.
 """
-import argparse, hashlib, json, random, subprocess, sys
+import argparse, copy, hashlib, json, random, subprocess, sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'generic-air'))
 import pq384_ext8_reference as f
@@ -9,6 +9,8 @@ import pq384_global_bus as bus
 from pq384_ext8_terminal_compile import compile_ext8_terminal,compile_weighted
 from pq384_terminal_compile import compile_terminal
 from pq384_terminal_gkr import layer_circuit
+import check_terminal_rebuild_certificates as rebuild
+import check_terminal_dag_certificates as routing
 
 
 def environment(point,tau):
@@ -84,10 +86,42 @@ def main():
         try:operation()
         except ValueError:rejected+=1
         else:raise AssertionError('malformed compiler input accepted')
-    checks=0;geometries=[]
+    checks=0;geometries=[];structural=[]
+    def env(point,tau):
+        sels,eq=environment(point,tau)
+        return dict(zip(('first','last','trans'),sels)),eq
+    context=dict(field=f,program_compiler=compile_weighted,environment=env)
     for batch in (f.ZERO,f.ONE,rho):
         circuit=compile_ext8_terminal(spec,alpha,gamma,finals,terminals,batch)
         layout=layer_circuit(circuit,field=f)
+        args=(spec,alpha,gamma,finals,terminals,batch)
+        certificate=rebuild.produce(circuit,args,**context)
+        counts=rebuild.validate(circuit,args,certificate,**context)
+        wire=json.loads(json.dumps(certificate))
+        assert rebuild.validate(circuit,args,wire,**context)==counts
+        route=routing.generate(circuit,layout)
+        route_counts=routing.validate(circuit,layout,route,coordinate_degree=8)
+        mutations=[('wrong-root',lambda c:c.__setitem__('root',0)),
+            ('wrong-placement',lambda c:c['programs'][0].__setitem__('base',1)),
+            ('missing-table',lambda c:c['programs'].pop()),
+            ('wrong-equality-weight',lambda c:c['outputs'][0].__setitem__('weight',0)),
+            ('bad-instruction-width',lambda c:c['programs'][0]['instructions'][0].pop())]
+        ti,ri=next((ti,ri) for ti,p in enumerate(certificate['programs']) for ri,r in p['records'].items() if 'tree' in r)
+        mutations.extend([
+            ('wrong-expansion-sign',lambda c:c['programs'][ti]['records'][ri]['tree'].__setitem__(2,False)),
+            ('wrong-balanced-term',lambda c:c['programs'][ti]['records'][ri]['balance']['stages'][0].__setitem__(0,(len(circuit['nodes']),True)))])
+        rejected_certs=[]
+        for name,mutate in mutations:
+            bad=copy.deepcopy(certificate);mutate(bad)
+            try:rebuild.validate(circuit,args,bad,**context)
+            except (ValueError,KeyError,IndexError):rejected_certs.append(name)
+            else:raise AssertionError('accepted '+name)
+        bad_route=copy.deepcopy(route);bad_route['plans'][-1][circuit['root']]=0
+        try:routing.validate(circuit,layout,bad_route,coordinate_degree=8)
+        except ValueError:rejected_certs.append('wrong-layer-placement')
+        else:raise AssertionError('accepted layer mutation')
+        structural.append(dict(rebuild=counts,layers=route_counts,rejections=rejected_certs,
+            certificate_sha256=hashlib.sha256(json.dumps(certificate,sort_keys=True).encode()).hexdigest()))
         blocks={b['table']:b for b in circuit['input_blocks']}
         programs=[compile_weighted(t,spec['public'],alpha,gamma,finals[i],terminals[i]['mixing'],bus,expanded_messages=False) for i,t in enumerate(spec['air']['tables'])]
         for private in ([f.ZERO]*circuit['private_input_capacity'],[scalar(8) for _ in range(circuit['private_input_capacity'])]):
@@ -109,8 +143,10 @@ def main():
             minimum_input_log=layout['input_size'].bit_length()-1,layer_sizes=[len(layer) for layer in layout['layers']]))
     report=dict(status='EXT8_TERMINAL_COMPILER_CANDIDATE_DIFFERENTIAL_PASS',statement=str(source),statement_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
         legacy_reference='04eaa8e31',legacy_geometry=legacy_geometry,legacy_compiler_sha256=hashlib.sha256(old.encode()).hexdigest(),exact_ext4_compiler_comparisons=legacy_cases,
-        ext8_raw_program_dag_layer_comparisons=checks,malformed_inputs_rejected=rejected,geometries=geometries,
-        limitations=['No Ext8 native round kernel, GKR prover/transcript, PCS integration or full slice proof.',
+        structural_certificates=structural,ext8_raw_program_dag_layer_comparisons=checks,malformed_inputs_rejected=rejected,geometries=geometries,
+        checker_source_sha256={name:hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest() for name in ('check_terminal_rebuild_certificates.py','check_terminal_dag_certificates.py')},
+        limitations=['Structural certificates checked in Python against generic Lean route shapes; these captures are not checked by the Lean kernel.',
+            'No Ext8 native round kernel, GKR prover/transcript, PCS integration or full slice proof.',
             'Canonical Horner instruction evaluation checks expanded-message DAG/layer outputs; universal Python-to-Lean generator refinement remains open.',
             'Synthetic terminal challenges/finals on the actual 193-instruction AIR; no authenticated Ext8 transcript.',
             'No universal Lean compiler refinement or secure size/security claim.'])

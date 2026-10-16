@@ -5,16 +5,19 @@ import argparse,copy,hashlib,json,sys,time
 from pathlib import Path
 from check_terminal_dag_certificates import require,replay
 
-def arithmetic(nodes,kind,x,y,z):
+def arithmetic(nodes,kind,x,y,z, *, field=None):
+    ops=OPS if field is None else dict(add=field.add,sub=field.sub,mul=field.mul)
+    zero=ZERO if field is None else field.ZERO
+    one=ONE if field is None else field.ONE
     require(all(type(i)is int and 0<=i<len(nodes) for i in (x,y,z)),'arithmetic index')
     a,b,c=nodes[x],nodes[y],nodes[z]
     if tuple(c)==(kind,x,y):return 'direct'
-    if a[0]==b[0]=='const' and tuple(c)==('const',*OPS[kind](a[1:],b[1:])):return 'constant'
-    az=a==('const',*ZERO);bz=b==('const',*ZERO);ao=a==('const',*ONE);bo=b==('const',*ONE)
+    if a[0]==b[0]=='const' and tuple(c)==('const',*ops[kind](a[1:],b[1:])):return 'constant'
+    az=a==('const',*zero);bz=b==('const',*zero);ao=a==('const',*one);bo=b==('const',*one)
     if kind=='add' and az and z==y:return 'add-zero-left'
     if kind=='add' and bz and z==x:return 'add-zero-right'
     if kind=='sub' and bz and z==x:return 'sub-zero-right'
-    if kind=='sub' and x==y and c==('const',*ZERO):return 'sub-same'
+    if kind=='sub' and x==y and c==('const',*zero):return 'sub-same'
     if kind=='mul' and az and z==x:return 'mul-zero-left'
     if kind=='mul' and bz and z==y:return 'mul-zero-right'
     if kind=='mul' and ao and z==y:return 'mul-one-left'
@@ -22,13 +25,17 @@ def arithmetic(nodes,kind,x,y,z):
     raise ValueError('invalid arithmetic route')
 
 class Generator:
-    def __init__(self,circuit):
+    def __init__(self,circuit, *, field=None):
+        self.field=field
+        self.zero_value=ZERO if field is None else field.ZERO
+        self.one_value=ONE if field is None else field.ONE
+        self.ops=OPS if field is None else dict(add=field.add,sub=field.sub,mul=field.mul)
         self.nodes=[tuple(n) for n in circuit['nodes']];self.lookup={n:i for i,n in enumerate(self.nodes)}
-        self.zero=self.const(ZERO);self.one=self.const(ONE)
+        self.zero=self.const(self.zero_value);self.one=self.const(self.one_value)
     def const(self,value):return self.lookup[('const',*value)]
     def op(self,kind,x,y):
         a,b=self.nodes[x],self.nodes[y]
-        if a[0]==b[0]=='const':return self.const(OPS[kind](a[1:],b[1:]))
+        if a[0]==b[0]=='const':return self.const(self.ops[kind](a[1:],b[1:]))
         if kind=='add':
             if x==self.zero:return y
             if y==self.zero:return x
@@ -82,13 +89,17 @@ class Generator:
         return dict(instructions=instructions,base=base,column_capacity=W,selectors=sels,records=records,root=root)
 
 class Checker:
-    def __init__(self,circuit):
+    def __init__(self,circuit, *, field=None):
+        self.field=field
+        self.zero_value=ZERO if field is None else field.ZERO
+        self.one_value=ONE if field is None else field.ONE
+        self.ops=OPS if field is None else dict(add=field.add,sub=field.sub,mul=field.mul)
         self.nodes=[tuple(n) for n in circuit['nodes']];self.counts={}
     def index(self,i):
         require(type(i) is int and 0<=i<len(self.nodes),'finite node index')
         return i
     def op(self,kind,x,y,z):
-        label=arithmetic(self.nodes,kind,x,y,z);self.counts[label]=self.counts.get(label,0)+1
+        label=arithmetic(self.nodes,kind,x,y,z,field=self.field);self.counts[label]=self.counts.get(label,0)+1
     def balance(self,cert,expected):
         stages=[[(self.index(x),s) for x,s in st] for st in cert['stages']]
         require(all(type(sign) is bool for stage in stages for _,sign in stage),'balance sign')
@@ -103,12 +114,12 @@ class Checker:
                 elif s:require(u is True,'positive subtraction');self.op('sub',x,y,z)
                 else:require(u is True,'negative subtraction');self.op('sub',y,x,z)
         require(len(stages[-1])<=1,'unfinished balance');result=self.index(cert['result'])
-        if not stages[-1]:require(self.nodes[result]==('const',*ZERO),'empty balance')
+        if not stages[-1]:require(self.nodes[result]==('const',*self.zero_value),'empty balance')
         else:
             x,s=stages[-1][0]
             if s:require(result==x,'positive singleton')
             else:
-                zeros=[i for i,n in enumerate(self.nodes) if n==('const',*ZERO)]
+                zeros=[i for i,n in enumerate(self.nodes) if n==('const',*self.zero_value)]
                 require(zeros,'zero missing');self.op('sub',zeros[0],x,result)
         return result
     def program(self,cert,expected_instructions,base,W,sels):
@@ -116,7 +127,7 @@ class Checker:
         require({k:tuple(v) for k,v in cert['selectors'].items()}=={k:tuple(v) for k,v in sels.items()},'selector binding')
         ins=cert['instructions'];records={int(i):r for i,r in cert['records'].items()};done=set();active=set()
         for i,(op,x,y,*c) in enumerate(ins):
-            require(0<=op<=8 and len(c)==4,'seven word opcode')
+            require(0<=op<=8 and len(c)==len(self.zero_value),'instruction width/opcode')
             if op>=6:require(0<=x<i and 0<=y<i,'program acyclicity')
         def expansion(tree,i,sign):
             require(tree[1:3]==[i,sign] and type(tree[2])is bool,'expansion identity/sign')
@@ -154,37 +165,47 @@ def capture(path, *, input_log=None):
     require(all(a==args[-1] for a in args),'compiler replay arguments changed')
     return circuit,profile,args[-1]
 
-def produce(circuit,args):
-    spec,alpha,gamma,finals,terminals,rho=args;gen=Generator(circuit);programs=[];outputs=[];blocks={b['table']:b for b in circuit['input_blocks']}
+def context(field,program_compiler,environment):
+    if field is None:
+        require(program_compiler is None and environment is None,'partial field context')
+        return ONE,mul,compile_weighted,lambda p,t:(selectors(p),eq_point(t,p)),bus,7
+    require(program_compiler is not None and environment is not None,'incomplete field context')
+    import pq384_global_bus as protocol
+    return field.ONE,field.mul,program_compiler,environment,protocol,3+len(field.ZERO)
+
+def produce(circuit,args, *, field=None,program_compiler=None,environment=None):
+    one,multiply,compiler,env,protocol,stride=context(field,program_compiler,environment)
+    spec,alpha,gamma,finals,terminals,rho=args;gen=Generator(circuit,field=field);programs=[];outputs=[];blocks={b['table']:b for b in circuit['input_blocks']}
     for ti,(table,term) in enumerate(zip(spec['air']['tables'],terminals)):
-        raw=compile_weighted(table,spec['public'],alpha,gamma,[tuple(x) for x in finals[ti]],term['mixing'],bus)
-        ins=[list(raw[i:i+7]) for i in range(0,len(raw),7)];block=blocks[ti]
-        cert=gen.program(ins,block['offset'],block['column_capacity'],selectors(term['point']));programs.append(cert)
-        weight=gen.const(eq_point(term['tau'],term['point']));node=gen.op('mul',cert['root'],weight);outputs.append(dict(node=node,weight=weight,claim=gen.const(term['claim'])))
-    terms=[];power=ONE
+        raw=compiler(table,spec['public'],alpha,gamma,[tuple(x) for x in finals[ti]],term['mixing'],protocol)
+        ins=[list(raw[i:i+stride]) for i in range(0,len(raw),stride)];block=blocks[ti]
+        cert=gen.program(ins,block['offset'],block['column_capacity'],env(term['point'],term['tau'])[0]);programs.append(cert)
+        weight=gen.const(env(term['point'],term['tau'])[1]);node=gen.op('mul',cert['root'],weight);outputs.append(dict(node=node,weight=weight,claim=gen.const(term['claim'])))
+    terms=[];power=one
     for output in outputs:
         p=gen.const(power);delta=gen.op('sub',output['node'],output['claim']);node=gen.op('mul',p,delta)
-        terms.append((node,True));output.update(power=p,delta=delta,batch_node=node);power=mul(power,rho)
+        terms.append((node,True));output.update(power=p,delta=delta,batch_node=node);power=multiply(power,rho)
     balance=gen.balance(terms);root=balance['result']
     if gen.nodes[root][0] in ('const','input'):root=gen.lookup[('add',root,gen.zero)]
     require(root==circuit['root'],'compiler root reproduced')
     return dict(programs=programs,outputs=outputs,balance=balance,root=root)
 
-def validate(circuit,args,cert):
-    spec,alpha,gamma,finals,terminals,rho=args;checker=Checker(circuit);checker.index(cert['root']);blocks={b['table']:b for b in circuit['input_blocks']};records=0;power=ONE;terms=[]
-    require(len(cert['programs'])==len(cert['outputs'])==len(terminals),'table count')
+def validate(circuit,args,cert, *, field=None,program_compiler=None,environment=None):
+    one,multiply,compiler,env,protocol,stride=context(field,program_compiler,environment)
+    spec,alpha,gamma,finals,terminals,rho=args;checker=Checker(circuit,field=field);checker.index(cert['root']);blocks={b['table']:b for b in circuit['input_blocks']};records=0;power=one;terms=[]
+    require(len(cert['programs'])==len(cert['outputs'])==len(terminals)==len(finals)==len(spec['air']['tables']),'table count')
     for ti,(table,term,program,output) in enumerate(zip(spec['air']['tables'],terminals,cert['programs'],cert['outputs'])):
         for key in ('weight','claim','power','node','delta','batch_node'):checker.index(output[key])
-        raw=compile_weighted(table,spec['public'],alpha,gamma,[tuple(x) for x in finals[ti]],term['mixing'],bus)
-        ins=[list(raw[i:i+7]) for i in range(0,len(raw),7)];b=blocks[ti]
-        root,n=checker.program(program,ins,b['offset'],b['column_capacity'],selectors(term['point']));records+=n
-        require(checker.nodes[output['weight']]==('const',*eq_point(term['tau'],term['point'])),'terminal equality weight')
+        raw=compiler(table,spec['public'],alpha,gamma,[tuple(x) for x in finals[ti]],term['mixing'],protocol)
+        ins=[list(raw[i:i+stride]) for i in range(0,len(raw),stride)];b=blocks[ti]
+        root,n=checker.program(program,ins,b['offset'],b['column_capacity'],env(term['point'],term['tau'])[0]);records+=n
+        require(checker.nodes[output['weight']]==('const',*env(term['point'],term['tau'])[1]),'terminal equality weight')
         require(checker.nodes[output['claim']]==('const',*term['claim']),'terminal claim')
         require(checker.nodes[output['power']]==('const',*power),'rho power')
         checker.op('mul',root,output['weight'],output['node']);checker.op('sub',output['node'],output['claim'],output['delta']);checker.op('mul',output['power'],output['delta'],output['batch_node'])
-        terms.append((output['batch_node'],True));power=mul(power,rho)
+        terms.append((output['batch_node'],True));power=multiply(power,rho)
     root=checker.balance(cert['balance'],terms)
-    if checker.nodes[root][0] in ('const','input'):require(checker.nodes[cert['root']]==('add',root,Generator(circuit).zero),'forced final layer')
+    if checker.nodes[root][0] in ('const','input'):require(checker.nodes[cert['root']]==('add',root,Generator(circuit,field=field).zero),'forced final layer')
     else:require(cert['root']==root,'final root')
     require(cert['root']==circuit['root'],'bound circuit root')
     return dict(registers=records,arithmetic=checker.counts)
