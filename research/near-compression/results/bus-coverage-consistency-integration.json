@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "audit_count": 3054,
+  "audit_log": "/tmp/root-bus-coverage-consistency-audit.log",
+  "coverage_report": "results/sha384-node-chunk/coverage-report.json",
+  "coverage_scope": "32587 declared unique-call-step uses,899 chunks,final24nodes;41542 occurrence-step frequency total is not chronological ordering",
+  "source_sha256": {
+    "BusAuxiliarySemantics": "3a5b7d3b88fd40fa4e21e1db743e9671e4d493666405722c1d19b4a87a230b29",
+    "SHA384ChunkConsistency": "f09d9e6015032b07b70d893a1086d4ea1bf5b9b2726b9c90941e9846e29fb60f"
+  },
+  "scope": "Bus bit-factor semantics from exact square/product equations, including zero fingerprint; ABI formulas still separate. Same global node ID implies all176 payload fields agree under actual chunk HoldsP and explicit ordered-use binding. No cryptographic binding, chronology or full call-chain claim."
+}

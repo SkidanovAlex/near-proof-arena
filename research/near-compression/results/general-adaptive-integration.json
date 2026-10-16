@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3553,
+  "added_theorems": 5,
+  "sources_sha256": {
+    "GeneralInteractiveFold": "a39265902b7cea48e8329c3b2a5d983f4e2db0f1b248ef55fa2bca5eaeeb3b01",
+    "GeneralCheckedFold": "cf5c9aceeb6d1a800ceb5bae8afb5baa268826461a73aa01e8b5026a8ccec0da"
+  },
+  "audit_log": "/tmp/root-general-adaptive-audit.log",
+  "audit_sha256": "e91d45f216fe43c89222962f67b5de8ef68dc30b8dbff96340784ac657415c0c",
+  "scope": "Adaptive ideal-oracle continuation with unrestricted even/odd weights and explicit rejection checks.",
+  "normalized_bound": "E/|sample| + ((T-1)/N0)^q for nonempty sample and N0; E=sum_i max(sizes(i+1),2).",
+  "requirements": [
+    "Ideal independent uniform challenges and query seeds with replacement.",
+    "Prefix-causal snapshots include current oracle, accumulated measure, even/odd weights and sent quadratic.",
+    "2*N0+degree0<3*T; valid halving/root domains.",
+    "No initial functional candidate is the reduction premise, not a verifier test."
+  ],
+  "diagnostic_continuation": {
+    "domain": 64,
+    "degree": 8,
+    "minimum_T": 46,
+    "maximum_mismatches": 18,
+    "three_round_extraction_count": 56,
+    "query_count_for_isolated_tail_2powminus130": 256
+  },
+  "limits": [
+    "Causality remains a theorem premise; executable prefix strategy still needs instantiation.",
+    "Accepted transcripts do not deterministically imply a candidate; failure probability is explicitly bounded.",
+    "No Merkle-root extraction, rate-shift domain/OOD transfer or QROM argument.",
+    "This does not change the four-query diagnostic into a secure protocol."
+  ]
+}

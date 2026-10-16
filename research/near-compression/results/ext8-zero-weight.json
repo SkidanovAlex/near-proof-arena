@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "first_fold": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_point": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "honest_verified": true,
+      "codec_roundtrip": true,
+      "zero_terminal_residual": true,
+      "altered_terminal_root_authenticated": true,
+      "all_altered_paths_authenticated": true,
+      "rejected_by": "fold consistency",
+      "queries": 314
+    },
+    {
+      "first_fold": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_point": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "honest_verified": true,
+      "codec_roundtrip": true,
+      "zero_terminal_residual": true,
+      "altered_terminal_root_authenticated": true,
+      "all_altered_paths_authenticated": true,
+      "rejected_by": "fold consistency",
+      "queries": 314
+    }
+  ],
+  "scope": "Scripted zero/one fold challenges; adversarial terminal is freshly committed and paths regenerated. No hash-uniformity or QROM claim.",
+  "source_sha256": "9fb36f8a4f7730b7c9bb99d82abf0192d2b201ad7051311744313234d0e17f36"
+}

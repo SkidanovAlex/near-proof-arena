@@ -1,0 +1,19 @@
+{
+  "scope": "Conditional query-tail arithmetic only; assumes good-transcript acceptance fraction at most3/4. No security parameter selection.",
+  "hypothesis": "count(accepting seeds)/domain size <=3/4",
+  "query_tail_at_q8": {
+    "numerator": 6561,
+    "denominator": 65536
+  },
+  "minimum_queries_for_tail": {
+    "128": 309,
+    "192": 463,
+    "256": 617
+  },
+  "limitations": [
+    "Nonlinear extraction theorem still requires actual domain/weight instantiation",
+    "Does not include sumcheck, batching, commitment or oracle/compiler losses",
+    "256-bit tail is a sensitivity case, not a proved QROM requirement",
+    "Current Q8 diagnostic cannot obtain a128-bit guarantee from this bound"
+  ]
+}

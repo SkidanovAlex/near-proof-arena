@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3141,
+  "added_theorems": 6,
+  "sources": {
+    "GKRRootOutput": "2f79c2585446c1be8b7a142e3c0e7264f7cb24d7b1e7e9514b4d3beff35aabe4",
+    "GKRCircuitPath": "7fc11b2cfd02cad2c5db0fedd339f32e0478215323b60cb58faad58ba02c1c89",
+    "SHA384HashDecodeSound": "902ed903fb7fa00b1a875f6416812e5c72189bd45250f2214e6b8c68ea6abe1e"
+  },
+  "audit_log": "/tmp/root-output-decoder-combined-audit.log",
+  "audit_sha256": "b4f0b8433eb4cc3437fc1cd6c5d4cdfc35983b527e68f5db54452707acc848e3",
+  "changes": [
+    "False Boolean-selected circuit output implies initial GKR wrong claim and fixed-path error bound",
+    "Terminal circuit-path condition now matches combined query functional, not separate a/b openings",
+    "Arbitrary successful frame decode forces canonical bytes; actual chunk claims imply SHA384 for decoded caller tuple"
+  ],
+  "limitations": [
+    "Ideal independent uniform challenges only",
+    "Terminal combined obligation still needs PCS authentication",
+    "Caller tuple operand routing still explicit",
+    "Full NEAR 1Pgas / secure sub300KB unachieved"
+  ]
+}

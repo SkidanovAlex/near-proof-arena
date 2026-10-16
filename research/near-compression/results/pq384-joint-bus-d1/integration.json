@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "same_statement_and_source_roots_as_verified_baseline": true,
+  "same_air_reductions_finals_aux_roots_as_verified_baseline": true,
+  "whole_binary_bytes": 522596,
+  "binary_sha256": "aa1827cc791422e1672f99e9a82b238ecc19662061322ae8726bbfca470d6022",
+  "codec_evidence": "../pq384-joint-bus-codec/report.json",
+  "small_algebra_checks": {
+    "status": "PASS",
+    "degrees": [
+      128,
+      256
+    ],
+    "independent_lift_checks": 2048,
+    "negative_checks": 10,
+    "exceptional_eq_weights_pass": true,
+    "scope": "honest algebra/negative tests only; no soundness theorem"
+  },
+  "remaining": [
+    "Joint reduction and adaptive virtual batching soundness",
+    "Weighted correlated agreement and QROM",
+    "Further compression below300000B",
+    "FullNEAR/1Pgas"
+  ],
+  "binding_regressions": "binding-regressions.json",
+  "binding_rejections": 259
+}

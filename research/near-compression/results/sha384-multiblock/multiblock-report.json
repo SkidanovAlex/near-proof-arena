@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "compression_blocks": 4,
+  "message_bytes": 376,
+  "public_bytes": 424,
+  "single_multitable_proof": true,
+  "proof_bytes_including_source_roots": 1508054,
+  "proof_sha256": "3accc8ff32aceb253e54549c32c3f6e6d3886cf502fffef2db7d828edecc8cf8",
+  "negative_checks": 12,
+  "natural_bus_balance_checked_on_actual_witness": true,
+  "hashlib_digest_match": true,
+  "boundary_residual_checks": 75776,
+  "padding_bit_mutations_rejected": 3,
+  "scope": "All compression, padding, IV, digest and state-link constraints under one diagnostic AIR proof. Randomized bus fingerprint soundness and PCS soundness remain conditional; not a recursive verifier or 128-bit security claim."
+}

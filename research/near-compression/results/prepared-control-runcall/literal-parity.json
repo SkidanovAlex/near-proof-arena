@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "code_length": 11,
+  "tables": [
+    {
+      "user_constraints": 870,
+      "automatic_constraints": 3,
+      "total_constraints": 873
+    },
+    {
+      "user_constraints": 543,
+      "automatic_constraints": 26,
+      "total_constraints": 569
+    }
+  ],
+  "all_interactions_and_public_segments_equal": true,
+  "generated_source_sha256": "0bad9a78254c25e12edaa96e3e58cfac9518444e4221c74dc13763d7d65e1496",
+  "export_sha256": "8f3ed98fd2e34b0f05b68e4d4d9df9e7b7a8ebdcc1699d4654c4217ca1f73e14",
+  "scope": "Exact literal AST and executable export parity; supported semantic instantiation is separately proved, cryptographic soundness remains open"
+}

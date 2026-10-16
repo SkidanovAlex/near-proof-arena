@@ -1,0 +1,36 @@
+{
+  "status": "executable diagnostic PASS; formal refinement pending",
+  "source_module": "SHA384BatchedCore.lean",
+  "original_semantic_baseline": [
+    "SHA384EndpointRouting.sha384_endpoint_compression_link",
+    "SHA384EndpointMessage.sha384_endpoint_digest_sound"
+  ],
+  "required_interfaces": [
+    {
+      "name": "phase_and_active_prefix",
+      "claim": "From first/step/stop constraints prove exactly N contiguous80rowsegments, onehotphase=r mod80, tag=r/80, active iff r<80N. Need field-to-Nat tag injectivity and logheight bound; no caller phase premise."
+    },
+    {
+      "name": "gadget_slice",
+      "claim": "For every active segment and phase0..79 derive existing combined row gadget constraints; phase0..78 transition links, explicitly exempt reset79. This must not assert old128row Holds without constructing its48tailrows."
+    },
+    {
+      "name": "round_run",
+      "claim": "Reuse existing window/round80-step induction to derive compression of segment initial words using actual K schedule; initial message comes from derived-public bus4."
+    },
+    {
+      "name": "message_payload",
+      "claim": "Verifier deterministically pads original bytes, emits64 little16bit limbs per128byteblock with indexBase tag; prove this derives exact sha512DecodedBlock. Current Python checker independently matches Lean public tape to hashlib padding."
+    },
+    {
+      "name": "state_routing",
+      "claim": "Retain natural bus0/1/2/3 count matching and endpoint arithmetic; replace per-table core index by unique segment tag. Bus5 binds initialIV."
+    },
+    {
+      "name": "recursive_input_routing",
+      "claim": "Additional64N+40 fieldvalues are currently verifier-derived public setup. Internal recursive input-to-padding routing is not implemented and must not be counted as free."
+    }
+  ],
+  "power_of_two_note": "8/16/32 block batches retain old total rowcount; phase columns save0.87% cells.6/12/24 save33.8%. Aggregate across differently sized hashcalls needed for asymptotic80/128 benefit; call identifiers/boundaries are additional unresolved interface.",
+  "security": "Q8 Ext4 diagnostic. No new proximity, QROM,128bit or fullrecursiveverifier claim."
+}

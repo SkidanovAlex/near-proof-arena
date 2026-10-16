@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "tables": 33,
+  "verification_seconds": 1.5660259039141238,
+  "complete_proof_json_bytes": 5493870,
+  "proof_sha256": "f191d73c9f61f044c053354d7f55123650adfc98ac6f40256e98899a43e6ab71",
+  "external_witness_read": false,
+  "security_bits_claimed": null,
+  "scope": "Independent diagnostic verification; not a security or full NEAR coverage certificate."
+}

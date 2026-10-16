@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "binary_bytes": 367492,
+  "sha256": "b9d137f90b77388375aed5e3e8401de23cd0c8af6d90c10de67d6c3660067e4b",
+  "roundtrip": true,
+  "scope": "Single padded-empty-message compression with SHA384 IV; old complete global-bus diagnostic; no recursive verifier",
+  "limits": [
+    "Q8/Ext4 diagnostic",
+    "SHA384 padding/IV/truncation refinement not formally composed",
+    "Public block and output, not hidden inner verifier state"
+  ],
+  "fresh_process_verification": "PASS: complete AIR and randomized bus-fingerprint binary diagnostic",
+  "public_binding_rejections": [
+    "initial-state",
+    "message-block",
+    "compression-output"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3279,
+  "added_theorems": 30,
+  "sources": {
+    "PreparedTypedAdd32Operands": "c7fd2f69d4ece64771fc039b3746bdcda607abf08c5c7af8e4b984d609b6fdb3",
+    "PreparedTypedAdd32Arithmetic": "5ed8d9e8c08e8fcc52d036a313ba9af23c5b34d7f534abf2f82c53a9dbfc145c",
+    "PreparedTypedAdd32Stack": "219312476a25757e3aa9aa5b7802c2854f7d27def202b823a5e1f9e3cdc9e1e5",
+    "PreparedTypedAdd32Depth": "9befb1ee3f9a850fa3f88ee69da33e41271ddf9e454bac0ecb7d90fa7dfd395e",
+    "PreparedTypedAdd32State": "b83386eefbecdea5e559c8647e89f1496506e1744b672cdf3f9fd6177f8783ea",
+    "PreparedTypedAdd32Authenticated": "4526ae0338f964049455a3fb8aee9250112f2ab2f14f9d3f4bc3a1fd13ab5b57",
+    "PreparedTypedLocalArray": "f5e2f0d34a7363b450a6895f2f2ce6e836d7890cbecbbd8619e9706ac78725ea",
+    "PreparedTypedLocalStack": "6a127c57c478f90dc44bf279cae3cc7e8582b907ed979217eeeb55894b34aef6",
+    "PreparedTypedLocalStackValues": "6102859a3029eb3d4ff8246feaf3cceac298ac1c3f27a3331e4df4be66447390",
+    "PreparedTypedLocalGetState": "4b2da5a0d0d3e8e632e08003c41f4a37d8631f663404397a7d5696fd5370fb57",
+    "PreparedTypedLocalGetAuthenticated": "1a7db73f70188d7062bf62559aa7f993d5fb0f14fdd0b0bb01a33e91a4ce13f9",
+    "SHA384MerkleSource": "340bea5cd74d77c3ebb5768b56f8e10a044ec36b5f89f392f024f786f946e5a7"
+  },
+  "audit_log": "/tmp/root-instruction-merkle-audit.log",
+  "audit_sha256": "3176f5ab003087a6e923962e23e4a03e48ecf9ba14597677887f199425b469d8",
+  "parity_report": "results/sha384-merkle-source/report.json",
+  "parity_report_sha256": "0638a09dbcb0adf47a3c96872168c0acce451e95a0dd636a3147b829b7f5338b",
+  "scope": [
+    "Authenticated actual i32.add and local.get successors from literal AIR, preserving full mixed typed state.",
+    "Constructed fixed-source Merkle paths and arbitrary accepted opening equality or collision among the two paths actual query supports."
+  ],
+  "remaining": [
+    "local.set/tee and execution shape checked by agents, pending root review/integration",
+    "mixed control successors and whole-call composition",
+    "adversarial commitment extraction and quantum probability bounds",
+    "recursive aggregation, full 1Pgas NEAR, secure sub300KB"
+  ]
+}

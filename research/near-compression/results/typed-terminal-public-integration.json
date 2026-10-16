@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3291,
+  "added_theorems": 3,
+  "sources": {
+    "PreparedTypedTerminalWitness": "25cc4fd3cae4251eff45db943c3d0a17a6492281cb89563f45f7ec50da58d9a5",
+    "PreparedTypedRunCallCheck": "aa1d12bc6a3af9fb20ee9f9a1afe179086de213ace349a99575ed8b04b2499f4",
+    "PreparedTypedTerminalPublic": "a8ae6499f7d8e36e96ddfb236ffdf034cc620f5500b6d60283520c5250defc71"
+  },
+  "audit_log": "/tmp/root-terminal-public-audit.log",
+  "audit_sha256": "8dc29ec196bc3a34b001426fd6e3d3083cd924cf1797dda46fa9284e599af62f",
+  "scope": [
+    "Actual setup plus entry eligibility checker decomposition and terminal witness representation.",
+    "Actual root-return step linked to public gas and success flags after arbitrary padding.",
+    "Actual exhaustion abort linked to public failure flags and pretrap snapshot gas after arbitrary padding."
+  ],
+  "limitations": [
+    "Exhaustion public gas is not synchronized abort gas.",
+    "Concrete whole-call driver still awaits all authenticated mixed control successors.",
+    "No full NEAR capacity, recursive aggregation or quantum-security certification."
+  ]
+}

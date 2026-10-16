@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "focused_reference_negative_cases": 4,
+  "savings_bytes": {
+    "aux_roots": 96,
+    "path": 177248,
+    "whir_pow_schedule": 1368,
+    "pow_nonces": 1248,
+    "whir_queries_schedule": 1248,
+    "whir_steps_lde_factors": 1072,
+    "whir_steps_schedule": 1248,
+    "cap": 768,
+    "statement_words": 1626560,
+    "leaf_values_concatenated": 22408,
+    "rows": 2920
+  },
+  "reference_counts": {
+    "aux_roots": 3,
+    "path": 5539,
+    "whir_pow_schedule": 48,
+    "pow_nonces": 44,
+    "whir_queries_schedule": 44,
+    "whir_steps_lde_factors": 44,
+    "whir_steps_schedule": 44,
+    "cap": 24,
+    "statement_words": 65,
+    "leaf_values_concatenated": 28,
+    "rows": 20
+  },
+  "total_savings_bytes": 1836184
+}

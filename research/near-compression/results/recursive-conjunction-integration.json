@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "conjunction_negative_cases": 6,
+  "header_negative_cases": 5,
+  "host_residual_evaluators_disabled": true,
+  "derived_headers": true,
+  "files": {
+    "airbender/direct-wasm/recursive_conjunction_gkr.py": "919dfca2007e8548b014104ab4cb66ca07e09c8e348ece49ce336553b33ca496",
+    "airbender/direct-wasm/test_recursive_conjunction_gkr.py": "9e421c1616ad45dfd0437d6583c3cb32738de85be301c3be1b77c1162c3331ec",
+    "airbender/direct-wasm/recursive_gkr_header_binding.py": "6f9dca5bc80ddb002559d87df0b3fa246f3ee1500d72a23a5c5aa1a812e0c27f"
+  },
+  "limits": [
+    "Original proof/header/hash verification is native.",
+    "Full disclosed trace required; not succinct recursive verification."
+  ]
+}

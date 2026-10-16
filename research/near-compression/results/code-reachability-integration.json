@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1656,
+  "audit_log": "/tmp/near-code-reachability-audit.log",
+  "module": "PreparedCodeReachability",
+  "smoke_evidence": "prepared-code-binding-smoke.json",
+  "actual_prepare_cases": 5,
+  "checked_public_fields_per_case": 216,
+  "mutations_rejected": 860,
+  "entry_runtime_scope": "Selected gas/stack/frame properties; whole entry identity supplied by PreparedWasmEntry theorem",
+  "reachability_contract": "Actual final-end check and selected live non-end instruction imply nextPC remains in actual code",
+  "remaining": [
+    "Construct execution certificate from valid AIR and actualentry",
+    "Original prepare-to-public/code provenance for arbitraryprogram",
+    "FullWasm/host/fullNEAR and cryptographicsecurity"
+  ]
+}

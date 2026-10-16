@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "operand_pairs": 320,
+  "operation_comparisons": 1280,
+  "sources": {
+    "DiagnosticExt4Parity.lean": "d43a15d91333b0df86bf03b54ffb04f588b0d5e84a1c4199c8b80f1aac2d584e",
+    "NearCompression/DiagnosticExt4Embedding.lean": "8e9e8eeb49e253fcffcfcb3e2fac3ee90686265b2a6800243d24f2338ad0575c",
+    "airbender/direct-wasm/check_whir_handoff.py": "d01f61822dd66d77c1d64a43cc2656d7569cf319807c0aeb192d75b10ffc10b7"
+  },
+  "scope": "Canonical operand executable parity, including all basis pairs, modular boundaries, and deterministic mixed coordinates. Complements universal algebra lemmas; not parser/native implementation or cryptographic security proof."
+}

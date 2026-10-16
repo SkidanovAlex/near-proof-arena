@@ -1,0 +1,20 @@
+{
+  "status": "incremental progress; full goal remains open",
+  "audit": {
+    "declarations": 1540,
+    "log": "/tmp/near-onefold-composition-audit.log"
+  },
+  "evidence": [
+    "pq384-one-fold/verified.json",
+    "prepared-terminal-source-parity.json"
+  ],
+  "onefold_honest_cases": 2,
+  "negative_checks": 108,
+  "fresh_process_witness_free_verifications": 2,
+  "remaining": [
+    "General multi-round/multilane PCS and actualD1proof integration",
+    "Prove proximity/coherentRBR and applicableQROMbudget",
+    "FullpreparedWasm/PREP/host/state coverage",
+    "1Pgas measurements andrecursivecompleteproof below300000bytes"
+  ]
+}

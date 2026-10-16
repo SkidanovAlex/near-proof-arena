@@ -1,0 +1,29 @@
+{
+  "kind": "actual AIR result-to-operand linking validation",
+  "honest_trace_rows": 4,
+  "previous_right_operand_gap_rejected": true,
+  "additional_coherent_right_operand_forgeries_rejected": 3,
+  "remaining_left_operand_gap": {
+    "forged_trace_accepted": true,
+    "claimed_result": 102,
+    "actual_typed_stack_result": 7,
+    "prefix_preserved": true
+  },
+  "table": {
+    "columns": 225,
+    "constraints": 236,
+    "max_degree": 2
+  },
+  "full_audit_theorems": 935,
+  "command": "lake env lean --run InstructionOperandSmoke.lean",
+  "source_sha256": {
+    "NearCompression/InstructionOperandSequence.lean": "5eccf16aea3fc1139424274fe6058dc2b6385be13d804aeadd3dc86a22e36d95",
+    "NearCompression/InstructionStackPair.lean": "c9e6d56c473a3b7d9f813a5f9b2e8907bdbbe187c25f6cf16ec05b50c5c5bb68",
+    "InstructionOperandSmoke.lean": "66f83a2431c4bc4712a6b0fbe7137c2a01b264783003a49c1ac394fbbf034abb"
+  },
+  "limitations": [
+    "Initial right input and left-operand stream unauthenticated.",
+    "No code/gas authentication, mixed opcode dispatch or full transition proof.",
+    "No proof-size or quantum-security bound."
+  ]
+}

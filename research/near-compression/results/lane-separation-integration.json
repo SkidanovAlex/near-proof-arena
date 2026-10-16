@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_checks": 2585,
+  "new_public_theorems": 19,
+  "modules": {
+    "GKRBooleanLaneSeparator": "d59dbd90659d2014c2f1f8cd4fcd5f7c16c6a30135261a2ebbfe2b6950930a5a",
+    "GKRJointLaneSeparation": "8f0db89a3f140701921eae8735052954f7cd0cee03816af21e92c1b3336223d2"
+  },
+  "geometry_report": "results/heterogeneous-metadata/lane-separation.json",
+  "scope": "Actual heterogeneous beta Boolean selectors and same-witness simultaneous lane agreement. Natural slot geometry independently checked for 1052 captured lanes with 12 rejected mutations. No cryptographic acceptance, QROM, 128-bit security, full NEAR or recursion claim."
+}

@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "rows": 64,
+      "width": 2,
+      "rounds": 1,
+      "proof_json_bytes": 16280,
+      "negative_checks": 22,
+      "query_sides_per_round": [
+        [
+          0,
+          1
+        ]
+      ],
+      "fresh_intermediate_and_all_later_rounds_rebuilt_attack_rejected": true
+    },
+    {
+      "rows": 64,
+      "width": 8,
+      "rounds": 3,
+      "proof_json_bytes": 49037,
+      "negative_checks": 52,
+      "query_sides_per_round": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "fresh_intermediate_and_all_later_rounds_rebuilt_attack_rejected": true
+    },
+    {
+      "rows": 256,
+      "width": 8,
+      "rounds": 5,
+      "proof_json_bytes": 88051,
+      "negative_checks": 80,
+      "query_sides_per_round": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "fresh_intermediate_and_all_later_rounds_rebuilt_attack_rejected": true
+    }
+  ],
+  "independent_fft_points": 32,
+  "independent_pair_indices": 7936,
+  "scope": "SinglelaneSHA384multiroundcoefficientfolding; witnessfreeverifier",
+  "limits": [
+    "No proximity/RBR/QROM theorem",
+    "8queries/Ext4 not128-bitsecurity",
+    "No completeAIRintegration orrecursion",
+    "NoZK; terminalcoefficients disclosed"
+  ]
+}

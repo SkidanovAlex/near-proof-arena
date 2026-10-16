@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3249,
+  "added_theorems": 14,
+  "sources": {
+    "PreparedTypedConst32Stack": "d49131d20a9bd6a322ee04eb07f3fdebfe4110e78f9cfdceefc666123157dad6",
+    "PreparedTypedConst32Depth": "59546648e5d8b3353764b0321aaf32b1667fa8016eb61ee7c0b5a16a5ab41108",
+    "PreparedTypedConst32State": "af9e59a69cbdf0e029fceb72b016baac19ce4689487ab768eb71a486da82e4b6",
+    "PreparedTypedConst32Authenticated": "903a0bc9e0e782eb148632aec9fd4a984b1ea55aa07e35397cac29f2dc38e962",
+    "PreparedTypedDropStack": "d5ba44842779ca9d846471c70c7aab6897b7a93cdbe0cabb863dd3ee957cc5dd",
+    "PreparedTypedDropDepth": "4cef6568632b333032ae938147b2a73f0b76c7d79381dbc59edd736cad87ed6c",
+    "PreparedTypedDropState": "a0212c0df4bd804d41de15c44c31910f22767672ddb9315ef5b5eab5d9b874dc",
+    "PreparedTypedDropAuthenticated": "1e9667325383e5420577d4cfe5cbf4c961ce429bb20dc5231e2f755ce61db204"
+  },
+  "audit_log": "/tmp/root-const32-drop-audit.log",
+  "audit_sha256": "ee2b04e94acd037df17b555f23cad252501e82ffd64b8c7e2b5978b4e3a315df",
+  "scope": "Authenticated actual i32.const and mixed-type drop successors from literal AIR, with full typed state, stack/PC/gas/local/label updates.",
+  "remaining": [
+    "i32.add and complete local/control successors",
+    "Whole-call composition and general/fullNEAR capacity",
+    "Cryptographic binding, quantum soundness and secure sub300KB"
+  ]
+}

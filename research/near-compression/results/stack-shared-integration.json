@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3522,
+  "added_theorems": 15,
+  "audit_log": "/tmp/root-stack-shared-audit.log",
+  "audit_sha256": "941fb925d051d65ed4370528c4c217afbf369d755636baabc481b8fc9671eb5a",
+  "sources": {
+    "PreparedMemorySenderStack": "aa41e525c849c734e7ff359bf0054b641ea76ed18354c44d97e26e6af45cf692",
+    "PreparedMemorySenderStackInput": "622fbe3ae23339fdf0a41169913a00c2f489951a7b7d6627272098188d4d238d",
+    "RecursiveSharedSource": "5e160f0bed8f7c10c0a5256212c63693d4ac0ff6f33b97392a2b8e68922479f4"
+  },
+  "scope": [
+    "Complete mixed stack input decoding with canonical numeric slots and load/store prefix preservation.",
+    "Exact shared seven-node lane emitter length, acyclicity and execution."
+  ],
+  "limits": [
+    "Whole next-row stack transition and attached execution pending.",
+    "Shared branch/query compiler pending.",
+    "No full NEAR or cryptographic security certification."
+  ]
+}

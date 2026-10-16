@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "profile": "near-pq384-global-chain-v1",
+  "rows": 8192,
+  "width": 544,
+  "packing": 32,
+  "degree": 262144,
+  "terminal_degree": 1,
+  "fold_rounds": 18,
+  "global_queries": 8,
+  "prover_seconds": 5.352692480199039,
+  "separate_verifier_seconds": 0.042098930571228266,
+  "proof_json_bytes": 324665,
+  "verification": "PASS: global-chain diagnostic; no inherited security theorem",
+  "source_root": "38fdb616c24b4a7bec36ba71073cec05e865edb2ff3753804b859479d12302a6def3559577689f9ff617b8077bc95350",
+  "limits": [
+    "Diagnostic Q8/Ext4; no proximity/RBR/QROM theorem inherited",
+    "Constant terminal baseline"
+  ]
+}

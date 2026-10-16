@@ -1,0 +1,35 @@
+{
+  "status": "refreshed remote and reviewed",
+  "research_base": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "fetched_origin_main": "f025caf629bd1caa5a919a442545c07de2f55cb2",
+  "changed_paths": [
+    "docs/HANDOVER.md"
+  ],
+  "document_sha256": {
+    "docs/HANDOVER.md": "2212ba82b313734b876852457fc4c96282e6df8dea41c793aaea2c86b14a6b5e",
+    "docs/logs/v3-d1-a7b-2026-10.md": "8ae5634c40de75a5ed8719022301f89e5eb644b2afe8b7361bb05fcb3ebe5bdf",
+    "docs/logs/v3-d1-phase2-2026-10.md": "2866cfab944ad15bc4895630695f83e20105193de4689a4391d8400bd06ffad3",
+    "docs/requirements/D3_WASM_REQUIREMENTS.md": "1a7353a570408d9c6e76e69ac8c029b7858be7268b42f273683c5015874846cc"
+  },
+  "pin_check": "PASS make pin-check",
+  "integration_requirements": [
+    "Preserve exact validate_chunk_state_witness statement, signedchallenge/oraclepins and B0 limits.",
+    "Keep today signed R5 policy distinct from permitted longterm recursive research.",
+    "Whole chunk state transition at1e15gas remains target; component/prototype success is not admission.",
+    "Use exact finite-wasm gaspoints, host/storage-proof-size/compute semantics; no perinstruction gas substitute.",
+    "Validate entire supplied witness before prover admission, including rejected-witness/trueclaim cases.",
+    "D1nativeEd25519 remains interim scope; no fullquantumsecurity inference."
+  ],
+  "upstream_open_from_logs": [
+    "A7D1Step, LinkD1CoreStmt and F1/R1/R2/A1 not complete in handover.",
+    "Stub/nmem accepted fixture absent from257fixtureconformance report.",
+    "33tableAIR realproof not rerun in upstream handover; researchdiagnostics are separate backend evidence."
+  ],
+  "current_research_gaps": [
+    "FullNEAR/Wasm/host semanticcoverage and1Pgas execution capacity.",
+    "Whole recursive verifier including nativeoriginalhash/transcriptchecks.",
+    "Proved fullprotocol quantum resourcebound and adversarialoracle extraction.",
+    "Complete serialized proof under300000bytes at targetcapacity."
+  ],
+  "action": "No rebase/source merge required at fetched ref; continue isolated research and preserve contracts."
+}

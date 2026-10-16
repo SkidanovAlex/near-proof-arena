@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "audit": 2564,
+  "audit_log": "/tmp/root-recovery-locals-gas-audit.log",
+  "modules": {
+    "ProjectedSourceRecovery": "ad493e712deca6a338b1fa33efefd01e810b25e082edb6e5fa18234c1d54f2ae",
+    "PreparedLocalsArray": "1b20c391d6aeb24507b94192eaaef44007ebabf27109ffabbe4824ba1735337a",
+    "PreparedLocalsGas": "6e26c5f21ec794f41afb7fd83aa62010f82dc3c590fd5a2b82deae3571d87ec1"
+  },
+  "recovery_scope": "arbitrary orbit-symmetric word with rotation-closed distinct domain, uniquely close degree bound and root-order certificate yields sparse coefficients and recovered original degree",
+  "locals_scope": "actual source local-write equations +selected stack/index+successful charge yield exact Array.set!; exact newAIR gas source certificate enables prior generic gas lemmas",
+  "remaining": [
+    "concrete lane separator and canonical disjoint slot metadata",
+    "RS domain/root instantiation",
+    "authenticated fee decode and full locals state-step",
+    "whole-run/fullNEAR/cryptographic quantum security"
+  ]
+}

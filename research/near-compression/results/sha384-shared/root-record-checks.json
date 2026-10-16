@@ -1,0 +1,100 @@
+{
+  "status": "PASS",
+  "all_source_constraint_residuals": 3659896,
+  "exact_padded_records": 6,
+  "natural_sent": {
+    "1": 5,
+    "3": 5,
+    "0": 10,
+    "2": 5,
+    "4": 6,
+    "5": 6
+  },
+  "natural_received": {
+    "0": 10,
+    "2": 5,
+    "1": 5,
+    "3": 5,
+    "4": 6,
+    "5": 6
+  },
+  "forgeries": [
+    {
+      "name": "fanout-two-to-three",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "fanout-two-to-zero",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "hidden-C-word6-record",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "hidden-A-word7-record",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "same-block-wrong-node",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "call-ID-splice",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "within-segment-tag-change",
+      "local_accepts": false,
+      "natural_balance_accepts": true
+    },
+    {
+      "name": "wrong-core-reset-tag",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "duplicate-record-ID",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "early-call-stop",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "padding-traffic",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "nonboolean-fanout",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "phase-reorder",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "endpoint-D-not-C",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "coherent-record-spliced-chain",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    }
+  ],
+  "seconds": 3.8229884412139654,
+  "scope": "Actual canonical AST full-witness checks with exact natural multiplicities, not cryptographic soundness or formal refinement."
+}

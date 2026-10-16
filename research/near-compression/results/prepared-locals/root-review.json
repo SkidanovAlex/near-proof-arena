@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "root_independent_validation": {
+    "actual_fixture_cases": 6,
+    "reference_cases": 12,
+    "adversarial_rejections": 740,
+    "audit": 2501,
+    "audit_log": "/tmp/root-locals-step-audit.log",
+    "test_log": "/tmp/root-prepared-locals-test.log"
+  },
+  "agent_only_evidence": "seven additional older straightline fixtures, including193instructions; not rerun by root",
+  "scope": "Isolated stack8/single function/zero parameters/up to4i32 locals/one nested voidblock; actual interpreter lemmas, executable reference AIR",
+  "remaining": [
+    "Lean literal AIR export parity",
+    "actual PREP/CODE/local-count provenance checker",
+    "AIR-to-local-step refinement",
+    "whole-run/public-output theorem extension",
+    "full NEAR and cryptographic soundness"
+  ]
+}

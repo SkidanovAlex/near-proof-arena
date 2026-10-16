@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "profile": "near-committed-input-sha384-v1/captured376",
+  "proof_bytes_including_all_source_roots": 796630,
+  "public_fixed_width_bytes": 352,
+  "proof_plus_public_bytes": 796982,
+  "external_receipt_json_bytes": 719,
+  "proof_public_and_external_receipt_bytes": 797701,
+  "external_input_root_created_before_prover": true,
+  "external_root_matches_actual_input_and_proof": true,
+  "fresh_process_verify": true,
+  "elapsed_after_external_commit": 16.522499836049974,
+  "binary_sha256": "1370052e614fc929c0e6ec75eb6e20e946ce9d7a56cb0a61235bd89eb36d2696",
+  "receipt_sha256": "95198cfa0032bfb0f15b278bcf69d2e63cfa412f272e1a94c78bf702225d62a8",
+  "scope": "Committed-input framed SHA384 component. No recursive producer-to-input commitment routing; no QROM or128bitsecurity claim; new AIR semantic refinement pending."
+}

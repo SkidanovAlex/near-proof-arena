@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "rejected": [
+    "missing table",
+    "reordered tables",
+    "missing auxiliary root",
+    "source root binding",
+    "auxiliary root binding",
+    "public tape binding",
+    "row dimension binding",
+    "source/aux opening swap",
+    "truncated zerocheck",
+    "excess zerocheck degree",
+    "truncated shift",
+    "disclosed two-row witness mutation",
+    "small-table format confusion",
+    "large-table downgrade attempt"
+  ],
+  "count": 14,
+  "scope": "Actual D1 binding and malformed-proof regressions; no cryptographic soundness bound."
+}

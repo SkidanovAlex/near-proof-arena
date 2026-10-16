@@ -1,0 +1,38 @@
+{
+  "residuals": 12432,
+  "fixed_slots": 11632,
+  "free_slots": 512,
+  "output_coordinates": 14,
+  "nodes": 89536,
+  "status": "PASS",
+  "complete_recursive_proof": false,
+  "profile": "NEAR-RECURSIVE-SINGLE-RS-CONJUNCTION-V1",
+  "proof_json_bytes": 342047,
+  "required_additional_metadata_bytes": 0,
+  "derived_dependency_cache_bytes": 1211664,
+  "original_expanded_inner_proof_file_bytes": 801300,
+  "original_compact_inner_proof_bytes": 222527,
+  "trusted_statement_file_bytes": 3215215,
+  "derive_native_seconds": 39.99732841271907,
+  "gkr_prover_seconds": 139.54391441773623,
+  "pcs_prover_seconds": 1.6081771505996585,
+  "core_verify_seconds": 9.248177998233587,
+  "full_trace_required": false,
+  "trace_root_required": false,
+  "rs_root": "0880cc323174665337e42245b1634127e59e82151babd9a378d7183f9fd59fcbb5a5dff6d4f1a2277a10a55dbb084b89",
+  "inner_paths": [
+    "/tmp/near-sha384-direct-proof/proof.json",
+    "/tmp/near-sha384-committed-gkr-proof/proof.json"
+  ],
+  "statement_paths": [
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/sha384-direct/statement.json",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/sha384-committed-gkr/statement.json"
+  ],
+  "limits": [
+    "No disclosed trace or separate trace root/link check; every fixed operand has explicit equality residual under same PCS root.",
+    "Derived dependency is internal cache, regenerated from original proofs/statements, never accepted as prover-selected metadata.",
+    "Original component proofs and native GKR/transcript/SHA384/Merkle checks remain required; this is not complete recursion.",
+    "Trusted statements still require application receipt policy; no new receipt extraction theorem.",
+    "Q8/Ext4 diagnostic, no PQ128/QROM/proximity/zero-knowledge certification."
+  ]
+}

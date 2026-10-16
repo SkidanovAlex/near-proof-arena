@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "blocks": 4,
+  "snapshots": 12,
+  "residual_checks": 164352,
+  "broken_transition_rejections": 12,
+  "scope": "Captured four-block witness, original combined constraints on two-row snapshots at phases0,39,78. Lean theorem covers every eligible segment phase; regression is not proof-acceptance or security evidence."
+}

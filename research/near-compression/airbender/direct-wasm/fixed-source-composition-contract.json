@@ -1,0 +1,51 @@
+{
+  "profile": "near-pq384-seed-gkr-bus-v1",
+  "status": "composition design with explicit unproved premises, not an extraction theorem",
+  "source_chronology": {
+    "observed_implementation": "pq384_seed_gkr_bus.begin commits all source roots before alpha/gamma; verify_local initializes and commits all auxiliary roots/finals before constraint rounds; all constraints precede rho/GKR; PCS binding includes final GKR seed",
+    "conditioning_boundary": "Condition on statement, source roots, bus challenges, all auxiliary roots/finals and deterministic metadata before constraint-rowpoint/GKR/PCS challenges.",
+    "required_metadata_check": "The lane metadata and full beta family must be fixed by that prefix. Any compiler optimization that changes lane ownership according to later challenges requires an additional proof or a fixed envelope."
+  },
+  "interfaces_in_order": [
+    {
+      "name": "root_to_fixed_oracle",
+      "status": "open cryptographic extraction or oracle-model assumption",
+      "contract": "For each fixed prefix choose one immutable received leaf vector per ordered root and supported index, before future challenges. Every accepted source authentication agrees with that vector outside an explicitly bounded binding event. Decode all lane pairs and apply the verified lifted index projection.",
+      "not_sufficient": "Pairwise consistency of only observed openings, or a completion selected after all challenges, does not prove this quantifier order. Root bytes alone do not construct a polynomial or a complete oracle.",
+      "available": "Finite supported collision extraction for conflicting concrete paths; fixed constructed-tree source binding; native computed-source/Fp4 polynomial correspondence."
+    },
+    {
+      "name": "fold_acceptance_to_scalar_candidate",
+      "status": "open profile-specific statistical soundness obligation",
+      "contract": "For the actual fixed received oracles and actual transcript chronology, accepted global-chain PCS outside an explicit bad event yields a degree-bounded scalar candidate meeting both the checked residual and agreement threshold T on the full natural RS domain.",
+      "not_sufficient": "A candidate selected separately for each query, or honest affine-fold completeness, does not establish this predicate. The terminal reconstruction and query coupling must be covered."
+    },
+    {
+      "name": "far_or_fixed_representative",
+      "status": "existing finite uniform-sampling algebra, application assumptions explicit",
+      "contract": "Split once on existence of JointBetaRepresentative for the fixed prefix/domain/beta family. In the far branch use joint_beta_candidate_far_count only with its actual separation, distinctness, multiaffinity and sampling hypotheses. In the near branch choose one tuple from prefix data, never from the realized GKR/PCS path.",
+      "available": "joint_tensor_reconstruct, joint_beta_candidate_far_count, chosen_joint_source_representative_valid",
+      "not_sufficient": "Fiat-Shamir-derived adaptive coordinates cannot be replaced by independent uniform samples without a separate theorem."
+    },
+    {
+      "name": "unique_assignment_and_projected_recovery",
+      "status": "deterministic algebra",
+      "contract": "Under canonical lane selectors and 2*(N-T)+D<=N, every universal representative has the same lane coefficients and fixed-length coefficient normal form. Projected-source symmetry then recovers sparse original-branch polynomials; inverse Mobius decoding yields a single table assignment independent of later rowpoints and GKR weights.",
+      "new": "FixedJointSourceRepresentative: coefficient uniqueness, normalized storage uniqueness, recovered table equality, prechallenge mathematical selection",
+      "available": "joint_representative_projected_recovery, natural_rs_joint_projected_recovery, recoveredGKRTable"
+    },
+    {
+      "name": "gkr_terminal_and_air",
+      "status": "existing conditional deterministic/counting interfaces",
+      "contract": "Use that same decoded tuple for every source/aux obligation. Derive sparse image via recovery rather than assuming it. Compose recovered_private_vector_pcs, gkr_recovered_terminal_iff and gkr_terminal_recovered_near_count with actual GKR constraint/compiler and known-constant checks.",
+      "not_sufficient": "Separate per-obligation representatives do not imply one coherent AIR witness. Randomized bus fingerprint equality still requires its own collision/degree soundness bound for exact natural multiplicities."
+    },
+    {
+      "name": "fiat_shamir_qrom",
+      "status": "open",
+      "contract": "Prove the adaptive random-oracle/QROM reduction for the exact transcript domains, rejection sampler, branching and query dependencies, with concrete security losses; combine binding, proximity, algebraic and bus bad events.",
+      "not_sufficient": "SHA384 algebra/parity and exact rejection-sampler preimage counts do not prove hash uniformity, quantum extraction or 128-bit security."
+    }
+  ],
+  "scope": "No protocol edits, new proof generation, cryptographic security claim, or proof-size certification."
+}

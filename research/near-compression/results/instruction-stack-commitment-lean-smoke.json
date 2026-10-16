@@ -1,0 +1,25 @@
+{
+  "kind": "full initial-stack opening validation outside AIR",
+  "honest_pair_passed": true,
+  "valid_reference_passed": true,
+  "forged_or_malformed_checks_rejected": 11,
+  "hash_equal_out_of_range_reference_rejected": true,
+  "independent_fixture": {
+    "message_hex": "6e65617270726f6f662d737461636b2d763104000000014d00000000000000000400000000010000000002000000",
+    "message_bytes": 46,
+    "sha512": "bb7f65548b4d035cf1375051318247b98d54380b8a0bd5bd96e6adc69a7634e6d26e2a2ec07348502323af0f3305e20c6f0810b6d98f30fe6524faf12f2b76c6",
+    "implementation": "Python hashlib + explicit struct little-endian codec"
+  },
+  "full_audit_theorems": 944,
+  "command": "lake env lean --run InstructionStackCommitmentSmoke.lean",
+  "source_sha256": {
+    "NearCompression/InstructionStackCommitment.lean": "4ca8059d50ed9c01cc34fa9abaf66cbccb70fdff8fcd03d97eba003f279ce18b",
+    "InstructionStackCommitmentSmoke.lean": "b76611c9fad53206d5979b0ad2967b55e937b52326ca6196c0f377275e34d01d"
+  },
+  "limitations": [
+    "Full-stack opening and hash validation outside AIR.",
+    "Expected stack root must be bound to enclosing actual state.",
+    "Two-addition composition, not arbitrary full execution.",
+    "No proof generation or quantum-security bound."
+  ]
+}

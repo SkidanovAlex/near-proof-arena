@@ -1,0 +1,119 @@
+{
+  "status": "PASS",
+  "audit_checks": 2851,
+  "previous_checks": 2800,
+  "new_public_theorems": 51,
+  "modules": {
+    "PreparedLocalsQuiet": {
+      "sha256": "c85c4f643a4d0f289a6b8f174b3239fa63fc18ba9259b96022305dd9bee3000e",
+      "public_theorems": 3
+    },
+    "PreparedLocalsPadding": {
+      "sha256": "6ff2a9c013673676dd012b8dab2552e45d6647106373b4b4e2d42a8a9783d5a3",
+      "public_theorems": 2
+    },
+    "PreparedLocalsPublicOutput": {
+      "sha256": "ad31d4352fa3b4d646a49f69d1220b618a8e369623d07a2bb2ecc5cc98aa1a13",
+      "public_theorems": 3
+    },
+    "PreparedLocalsGasContext": {
+      "sha256": "efd1cb45a6e1865533b48446a1386f1975d7909f008fb9c73b9bff35e6b8e4da",
+      "public_theorems": 2
+    },
+    "PreparedLocalsOpcode": {
+      "sha256": "c20d120b60f98c593b42eed17ebfc43da467b360ca75603194ce0b11f48029ac",
+      "public_theorems": 3
+    },
+    "PreparedLocalsBranch": {
+      "sha256": "fab8ccfb1f2e69b795864ae7d844771c1626aee31604835000961367625d4604",
+      "public_theorems": 4
+    },
+    "PreparedLocalsTakenStack": {
+      "sha256": "b100957b7124ae857e49d4aeb687d821da1d844bce834080cf69fe66634d5f18",
+      "public_theorems": 4
+    },
+    "PreparedLocalsUntaken": {
+      "sha256": "cd2a89eb2a554d133ef7a9e46f3a668487ab71995e2a8e0919b976a495af88c3",
+      "public_theorems": 4
+    },
+    "PreparedLocalsBranchBounds": {
+      "sha256": "8fad38f63855963dc02597bf48f65f8ee0a77a6ddeace528a22f54535a116df8",
+      "public_theorems": 2
+    },
+    "PreparedLocalsControlPreserve": {
+      "sha256": "7f995bf8233ea820f0134b29b29ade929e7576b4d81466bd37683b573131fdaa",
+      "public_theorems": 1
+    },
+    "PreparedLocalsBranchState": {
+      "sha256": "a4df2c062daf73383d905fe8c06b8836111cf038036550b39cbb4c8747e56448",
+      "public_theorems": 2
+    },
+    "PreparedLocalsBranchContinue": {
+      "sha256": "b0e977685438b50e506c6f816b980b27b6f8dcfe300f8ef6d67a7d43385ed4f4",
+      "public_theorems": 1
+    },
+    "PreparedLocalsBlock": {
+      "sha256": "8fffe2e62acbf66ae8f56beb77efd02b4bd5da27d334402d972bb9b12731cff7",
+      "public_theorems": 2
+    },
+    "PreparedLocalsFrameStack": {
+      "sha256": "c4bc96104addccac6a3c6dc5d4cc5e2934a8cdf14cf335cd153a520a141cfc1a",
+      "public_theorems": 2
+    },
+    "PreparedLocalsControlState": {
+      "sha256": "beab4fceb310306dacd05dee007c568c7e89ecbdbbd9dbad82ed3af9f443ee82",
+      "public_theorems": 2
+    },
+    "PreparedLocalsAuthenticatedControl": {
+      "sha256": "ef03ca83fd69a1ee21dc2f46f3055d65874d727b3bb85c28cb1ddd179f40ece6",
+      "public_theorems": 2
+    },
+    "PreparedLocalsRun": {
+      "sha256": "d7482cc867fecf69367dca8984a66bf253d32418737531bdf9bb3fed0b290b03",
+      "public_theorems": 2
+    },
+    "PreparedLocalsRunCall": {
+      "sha256": "fb0f614dbbef600b9584b9e03969fba0475700abaf2c2035cd99239a915e0e7f",
+      "public_theorems": 3
+    },
+    "PreparedLocalsFinalRow": {
+      "sha256": "403df0627559970511213830780e4cdf588f3c73d7fd4ade7d5db2d76871d134",
+      "public_theorems": 3
+    },
+    "SHA384SharedMessage": {
+      "sha256": "c9fa5d123e7be9325fb06532dedb1f0dfaa218b413ba12f413e6a4e7781ba042",
+      "public_theorems": 4
+    }
+  },
+  "audit_log": "/tmp/root-locals-run-shared-message-audit.log",
+  "wasm": {
+    "theorem": "NearCompression.prepared_locals_public_run_call",
+    "premises": [
+      "literal locals AIR HoldsP",
+      "executable setup/CODE and entry checker accepts",
+      "fuel >= EXEC trace height"
+    ],
+    "conclusion": "actual outer runCall .done plus published DONE/failure boolean, fast gas and live i32 stack",
+    "limits": [
+      "single-function supported control profile",
+      "stack <=8",
+      "locals <=4",
+      "no host calls/memory/general Wasm",
+      "preparation computed outside AIR",
+      "exit PC metadata is not a final-state output guarantee"
+    ]
+  },
+  "hash": {
+    "theorem": "NearCompression.sha384_shared_message_sound",
+    "premises": [
+      "shared AIR HoldsP",
+      "call<2"
+    ],
+    "conclusion": "standard sha384ChainDigest of actual decoded267-byte input equals corresponding public48-byte natural slice",
+    "limits": [
+      "two calls/five compression nodes",
+      "cryptographic root binding and verifier acceptance to HoldsP not proved"
+    ]
+  },
+  "security": "No full NEAR/1Pgas, recursion, 128-bit quantum or <300000-byte secure proof completion claim."
+}

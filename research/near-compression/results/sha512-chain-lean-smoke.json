@@ -1,0 +1,59 @@
+{
+  "kind": "Verifier-side composition of SHA512 public compression AIR claims",
+  "formal_claims": [
+    "Each block compression equality is derived from an actual sha512PublicClaim,not assumed as a computational premise.",
+    "Exact ordered input concatenation and state wiring imply actual SHA512.blocks with count=number of instances.",
+    "The complete input is consumed without truncation or leftovers; empty chains preserve their initial state.",
+    "Checked actual specification padding,H0,and digest serialization plus individual AIR claims imply equality to NearSpecV3.sha512."
+  ],
+  "validation": {
+    "individually_valid_128_row_instances": 4,
+    "honest_chain_blocks": 2,
+    "message": "128 bytes with values0..127",
+    "independent_hashlib_digest_hex": "1dffd5e3adb71d45d2245939665521ae001a317a03720a45732ba1900ca3b8351fc5c9b4ca513eba6f80bc7b1d1fdad4abd13491cb824d61b08d8c0e1561b3f7",
+    "invalid_chain_transcripts_rejected": 7,
+    "invalid_cases": [
+      "wrong intermediate state despite both individual instances satisfying AIR",
+      "changed message block with valid state wiring",
+      "reordered instances",
+      "truncated block sequence",
+      "duplicated instance",
+      "substituted final state",
+      "substituted initial state"
+    ],
+    "zero_block_message_rejected": true,
+    "wrong_digest_bytes_rejected": true,
+    "empty_chain_identity_accepted": true,
+    "actual_specification_and_hashlib_match": true,
+    "tests_use_formal_boundary_check_functions": true
+  },
+  "new_theorems": 11,
+  "full_audit_theorems": 1177,
+  "commands": [
+    "lake build NearCompression.SHA512Chain",
+    "lake env lean --run SHA512ChainSmoke.lean",
+    "python3 check.py"
+  ],
+  "logs": [
+    "/tmp/near-chain.log",
+    "/tmp/near-sha512-chain-smoke.log",
+    "/tmp/near-sha512-chain-audit.log"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512Chain.lean": "2fd11635c355463e53882df5a838db0e8677f41a6daa20ddf4910f59d828d42b",
+    "SHA512ChainSmoke.lean": "260084eb665b1cd00a488ddd5a119d6be17ab61cb760ff75353cbe5fdf826be7"
+  },
+  "limitations": [
+    "This composes semantic AIR claims with executable boundary checks; it does not produce a recursive cryptographic proof.",
+    "Padding and digest serialization are verifier-side equalities; no AIR padding gadget,multiblock bus,or private block commitment is introduced.",
+    "Instance count and exposed block/public data scale linearly with message blocks; no succinctness improvement is measured.",
+    "Universal honest full-trace completeness remains.",
+    "No full NEAR state-transition proof,1Pgas capacity measurement,sub-300KB proof,or128-bit quantum-security proof."
+  ],
+  "next_step": {
+    "status": "unimplemented",
+    "module": "SHA512ScheduleWindowWitness.lean",
+    "objective": "Prove universal honest witness completeness for128-row schedule-window traces from16bounded input words,including all768extra Boolean constraints and1024temporal links;then extend through combined rounds/constants/feed-forward/public bindings.",
+    "reason": "Current soundness assumes actual AIR satisfaction;selected fixtures do not prove a satisfying trace exists for every valid input."
+  }
+}

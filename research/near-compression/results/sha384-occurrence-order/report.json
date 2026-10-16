@@ -1,0 +1,203 @@
+{
+  "schema": "sha384-occurrence-order-v1",
+  "status": "PASS",
+  "verifier_accepts": true,
+  "calls": 13698,
+  "unique_calls": 11181,
+  "occurrence_steps": 41542,
+  "unique_call_steps": 32587,
+  "first_seen_unique_order_preserved": true,
+  "histograms_exact": true,
+  "configured_replay_seconds": 11.479691275861114,
+  "ordered_use_columns": [
+    "occurrence_ordinal",
+    "unique_call_id",
+    "block_step",
+    "global_node_id"
+  ],
+  "files": [
+    {
+      "path": "results/pq384-seed-gkr-bus-full/proof.json",
+      "sha256": "83d6e6e4946ffe9439c833d1bebde506e3edb0244e838ec0aed553948ce2de83",
+      "bytes": 933244
+    },
+    {
+      "path": "results/pq384-seed-gkr-bus-full/statement.json",
+      "sha256": "83dca46ee650f6d96a3a1da51ec2434450ac658cd0315e1eecb7bde077d2402a",
+      "bytes": 1737041
+    },
+    {
+      "path": "/tmp/near-sha384-block-dag/hash-call-map.json",
+      "sha256": "f92c84f2c47d0bbfb22da68992a0e5e80b875605cb757c839380c3bb4cc2de7a",
+      "bytes": 6757967
+    },
+    {
+      "path": "/tmp/near-sha384-block-dag/compression-records.bin",
+      "sha256": "c2c2653ead19eaa8b0176a95239ffff471a0016e067051ba8b3d955564800db4",
+      "bytes": 5753344
+    },
+    {
+      "path": "results/sha384-occurrence-order/occurrence-call-ids.json",
+      "sha256": "d295a93a65b8e995739df4a2793dc9c75c043f1067fafd142344d32211a99741",
+      "bytes": 68606
+    },
+    {
+      "path": "results/sha384-occurrence-order/ordered-occurrence-uses.json",
+      "sha256": "1d88cb2957d258e6d22ee88a6c4cad914c33b243c71a9cac00b327869666ff29",
+      "bytes": 832048
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/capture_sha384_occurrence_order.py",
+      "sha256": "3bbd79d1d05cb60939d3ae40e61b4afb0e118de2416add12b6c5c0d4b877a428",
+      "bytes": 5075
+    }
+  ],
+  "loaded_verifier_sources": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/capture_sha384_occurrence_order.py",
+      "sha256": "3bbd79d1d05cb60939d3ae40e61b4afb0e118de2416add12b6c5c0d4b877a428"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/check_commitment.py",
+      "sha256": "2361daff8d7fdeab1ee557467433fa9838f4fc17c424d284ffa88bf0ba5bd77b"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/check_whir_handoff.py",
+      "sha256": "d01f61822dd66d77c1d64a43cc2656d7569cf319807c0aeb192d75b10ffc10b7"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/constraint_sumcheck.py",
+      "sha256": "fe07faad6fba93ea3f60e9284094d7350824f61e981cb21bdd46d97c21483c9f"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/folded_prover.py",
+      "sha256": "23ad28b898ce07d2bfb65a9c076b8cedbed4a8965f2566a7993da5eef17a13ab"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/heterogeneous_bus_whir.py",
+      "sha256": "38763f0230a2f152b995b988954061a6644940074d575406743a34f45418bf9a"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/native_folded.py",
+      "sha256": "d3a26e2b0b26c2719f794d6ce68ad6b2c3db294fb1d91693109a317b14658d90"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/native_folded_v2.py",
+      "sha256": "cff63690a4f01562d331fac667b368884d1c185ff58eec46e3f39d21e7fef466"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/packed_claim_handoff.py",
+      "sha256": "09f5e215a5c57bc6adfc110f081d2bc15031eb53f071eda5ee8e491f1fbe9046"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/packed_disclosure.py",
+      "sha256": "9745f8d85b23d61280849c3990bb3e77a2bac86b595857344c323805a154f292"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_batched_fold.py",
+      "sha256": "e9cb1ac4f966d5c2a36f2f2e53f654e8cd2b380cd5a1b9154624b23142e63dca"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_cached_prover.py",
+      "sha256": "28cc274837e07d225fa051b3b24c309f585b2aad18a2eb3b8a582ca1018682ff"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_derived_weight_joint.py",
+      "sha256": "9d5defa281583396c8ff2350802d7bcf6a6381e46b2bf02ed81e1ec2c2953fea"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_global_bus.py",
+      "sha256": "d75b2247c8d2373d45452416aaf3bf434038aca7d3469a8047ccdd1478b713de"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_global_chain.py",
+      "sha256": "da7d3f4e652621fd2cc08f1fc796daba4cd69330571debaa3b6c656a32940092"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_joint_opening.py",
+      "sha256": "4516eab2ce5ec24cfcd080081043fcf0a122323d40cb9686b86479cb19948c46"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_native_fft.py",
+      "sha256": "6feb2db05b28fa253d06ccd994468e9e0381f45387525da24ee3bed4460a4a0a"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_native_shift.py",
+      "sha256": "05d8404fb0bc0972dbe4683f00c08414c6dc65dadf73d862f8ed8fd24fab56eb"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_one_fold.py",
+      "sha256": "d0d5e9e7e3c1d4ade2a40e4036dbd5594dd46959ca42351145e2a66cbd8efb6c"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_primitives.py",
+      "sha256": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_seed_gkr.py",
+      "sha256": "a91b0939397477f2ceb8de0599c8d18708ed6b2ef92a6637c229777f5300ff97"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_seed_gkr_bus.py",
+      "sha256": "8532f47a300afc915c8010ce37965e63ce0b372592c83d343d7150765816630f"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_shift.py",
+      "sha256": "8b2249d49f38929b05da9d95f01e1782970fc13908aedbb6aeb9d01899e818ee"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_source_cache.py",
+      "sha256": "48d1eccab18845d4d2c43d5cd731cd455279ec2b0b70cb4cc6b3107b83e03245"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_table_air.py",
+      "sha256": "d2657fe4c1b591333424ed5dd807d7cb410f6d44036e14f59c9bb7dc80f36436"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_terminal.py",
+      "sha256": "937da91e9649c0a0afa2f340d6507fd1525a2fabf6e72dd5db982fee3fae5433"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_terminal_compile.py",
+      "sha256": "beaa37dc851ec1faa1c0ca2148df1b5a3331aa7b24c62a3b2b234200522300be"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_terminal_gkr.py",
+      "sha256": "7fa66cf0839b8def8c43e11068e8169525018f98e97086c6c72ef96e47904be1"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_terminal_input_weights.py",
+      "sha256": "11b292a43f3a63fcdd61e8f36ad6bd118311d591d4487bb1ee362ba43ee8eb40"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/scheduled_bus_whir.py",
+      "sha256": "d86f577c00aa6af124b5f2862abd6164235bfa70585121778e772000d2a3c8f2"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/shift_opening.py",
+      "sha256": "f4118b0c2d63f639d7ef1627ab683b57c72a3caa9897830b171cbd0d1e97c4e8"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/table_constraint_whir.py",
+      "sha256": "ed5d77aab5f788a90f26184224f932b1f98a3421cc34601ee8f26f9a2ae31d83"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/verify_whir_scheduled.py",
+      "sha256": "ae5df9e9f29f827dd2d932da4e94209a19f8da779054249f10a670239bff8745"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/verify_whir_toy.py",
+      "sha256": "750247ebb4beb6a9ae3cc21513d4de13973efacd70927a4a226125fce87aec51"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/verify_whir_variable.py",
+      "sha256": "eee0b4199eb1021bd3562b3f9efe86c933efed66ceddd2482589606f110b61c3"
+    }
+  ],
+  "scope": [
+    "Configured original JSON verifier only; setup excluded exactly as original DAG capture.",
+    "No new proof generated. Original chronological invocation order observed, not inferred from frequencies.",
+    "Unique-call-step and original-occurrence-step spaces remain separate.",
+    "This is executable provenance evidence, not a Lean refinement of capture or a recursive/security theorem."
+  ]
+}

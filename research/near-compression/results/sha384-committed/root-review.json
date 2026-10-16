@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "source_manifest_hashes_verified": 6,
+  "independent_fresh_process_full_verification": true,
+  "proof_bytes": 796630,
+  "proof_sha256": "1370052e614fc929c0e6ec75eb6e20e946ce9d7a56cb0a61235bd89eb36d2696",
+  "public_bytes": 352,
+  "receipt_bytes": 719,
+  "agent_negative_tests_report_reviewed": 12,
+  "root_reran_negative_suite": false,
+  "scope": "Captured376 profile; externally trusted root/context/AIR receipt required. New AIR semantic theorem and enclosing recursive producer binding remain open. Diagnostic Q8/Ext4 has no128-bit quantum security claim."
+}

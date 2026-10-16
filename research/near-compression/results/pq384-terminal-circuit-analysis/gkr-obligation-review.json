@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "constant_padding_cases": 32,
+  "scope": "Reduction only; private opening obligation must be verified by PCS",
+  "actual_layers": 41,
+  "private_weights": 16384,
+  "witness_loaded": false,
+  "field_message_bytes": 35680
+}

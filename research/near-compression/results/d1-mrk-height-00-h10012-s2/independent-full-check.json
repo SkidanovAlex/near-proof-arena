@@ -1,0 +1,246 @@
+{
+  "status": "PASS",
+  "table_count": 33,
+  "canonical_cells_scanned": 7346834,
+  "public_messages": 1153,
+  "air_sha256": "61047e9e2719c03adfd66f2e5aac407d830515f33050a9c543c0f9c54efef9dd",
+  "prepared_sha256": "a173e8d4ef341527cf37af1ae070f74a3db21ca2ca8fa31a66a00a7dc1fcb28c",
+  "tables": [
+    {
+      "index": 0,
+      "rows": 8192,
+      "width": 544,
+      "checked_rows": 8192,
+      "sha256": "8de483fecc1e94ec8c0a6b554f7a663d9df7ed730a9e8351179dd21f19b17157"
+    },
+    {
+      "index": 1,
+      "rows": 1024,
+      "width": 544,
+      "checked_rows": 1024,
+      "sha256": "0c3787505f5a0c5d16d3e542fd58c42135b99cf3be9c33d6818696a86259e1b3"
+    },
+    {
+      "index": 2,
+      "rows": 8192,
+      "width": 192,
+      "checked_rows": 8192,
+      "sha256": "78d86fdbe983690c969c908977dbc9675344b95dda0c80a3b31aaf7d002e2517"
+    },
+    {
+      "index": 3,
+      "rows": 128,
+      "width": 73,
+      "checked_rows": 128,
+      "sha256": "91dec17999615f83e45d54b288740100b2923722b5f09566dfacb62bcfad0660"
+    },
+    {
+      "index": 4,
+      "rows": 1024,
+      "width": 17,
+      "checked_rows": 1024,
+      "sha256": "3923902c87976728ed2dc0ce317cad8ddc7c85084bf0c95778f651354e8acff3"
+    },
+    {
+      "index": 5,
+      "rows": 128,
+      "width": 56,
+      "checked_rows": 128,
+      "sha256": "ac9388c4cef095b72aae105ea1bbf74f39c99838a2480bfcbdde59bd55c74929"
+    },
+    {
+      "index": 6,
+      "rows": 1024,
+      "width": 56,
+      "checked_rows": 1024,
+      "sha256": "1f27b127e0f1a396e2b2197d106c0174ff2cffc3bba93e5136bd91d35512a38a"
+    },
+    {
+      "index": 7,
+      "rows": 1024,
+      "width": 202,
+      "checked_rows": 1024,
+      "sha256": "429d802c3f20eea3b5b6cb25052c0885f0e33d2dca3e46bf31616001ccdc57be"
+    },
+    {
+      "index": 8,
+      "rows": 2,
+      "width": 272,
+      "checked_rows": 2,
+      "sha256": "80f20131462dd252692e9c6218098064b66f220c1ccb12af09be08f03758d248"
+    },
+    {
+      "index": 9,
+      "rows": 2,
+      "width": 158,
+      "checked_rows": 2,
+      "sha256": "f166e3df24d2d8a588ac662638e41bcb8c75858cf509853e9547263ad289706b"
+    },
+    {
+      "index": 10,
+      "rows": 2,
+      "width": 77,
+      "checked_rows": 2,
+      "sha256": "53496c175f8bee7a7ac914fb0641f2301dd2ed5d9fcb993bc317a3a6ff248878"
+    },
+    {
+      "index": 11,
+      "rows": 1024,
+      "width": 91,
+      "checked_rows": 1024,
+      "sha256": "f8d5a6f338458e3f3d8acae53aeb432710fca6fe0940378616bae9b39185e939"
+    },
+    {
+      "index": 12,
+      "rows": 1024,
+      "width": 119,
+      "checked_rows": 1024,
+      "sha256": "ea3237da5007d72a7766691ed35769ff728999f418c5c6afdeb703ff9a10a53a"
+    },
+    {
+      "index": 13,
+      "rows": 1024,
+      "width": 64,
+      "checked_rows": 1024,
+      "sha256": "7e3676ade1ad1529275b940c1dec310b3725f57b4e6cb9ff298394c6b71bcbdd"
+    },
+    {
+      "index": 14,
+      "rows": 1024,
+      "width": 18,
+      "checked_rows": 1024,
+      "sha256": "f57e65b47436fdd4467b069b3672dddfe23875056045c9dc8c35bd612b30337b"
+    },
+    {
+      "index": 15,
+      "rows": 1024,
+      "width": 33,
+      "checked_rows": 1024,
+      "sha256": "f3765850dfe4e3bd2d21153146e7d3d2d2379fbd167058610971d5e7b868c522"
+    },
+    {
+      "index": 16,
+      "rows": 128,
+      "width": 263,
+      "checked_rows": 128,
+      "sha256": "d7740f1db845c87d203692b7a9e3718351429fd0b7071daeaaa2824fc5392e73"
+    },
+    {
+      "index": 17,
+      "rows": 16,
+      "width": 16,
+      "checked_rows": 16,
+      "sha256": "7ccdb898e35198be9c5318adb1a4d23dc0cd4f9caf8c3132f3645e8ccb8798d0"
+    },
+    {
+      "index": 18,
+      "rows": 2,
+      "width": 7,
+      "checked_rows": 2,
+      "sha256": "a04c174cd6df5ba4af32d95b009e8e06bde38ecc1232d2b99928545558ffa559"
+    },
+    {
+      "index": 19,
+      "rows": 128,
+      "width": 6,
+      "checked_rows": 128,
+      "sha256": "7e619af321ceb35e18dbe4a96dd3758363533cd571be2b9a7b7df693fd52e9a9"
+    },
+    {
+      "index": 20,
+      "rows": 1024,
+      "width": 63,
+      "checked_rows": 1024,
+      "sha256": "44e4ad1432edd957c2fdb9212665472d0b8528e92a2a11d7e4ce60c7e40bfb4e"
+    },
+    {
+      "index": 21,
+      "rows": 16,
+      "width": 57,
+      "checked_rows": 16,
+      "sha256": "980b207007e834be0f649972602838ddb68ec5be51288c48f3d255d685dc3465"
+    },
+    {
+      "index": 22,
+      "rows": 16,
+      "width": 52,
+      "checked_rows": 16,
+      "sha256": "8e49cc09a6da581305de4fcdcd3f2659e434f8e4a326606c6198c6925dc5c37c"
+    },
+    {
+      "index": 23,
+      "rows": 16,
+      "width": 60,
+      "checked_rows": 16,
+      "sha256": "abd5679924a32fb3925f3a3562406eb6fb44e1cbe73653f2fc93a178a5db5e0c"
+    },
+    {
+      "index": 24,
+      "rows": 2,
+      "width": 49,
+      "checked_rows": 2,
+      "sha256": "02d24ab7e7206e2f370f3e72f048a7fac496b33653f97cfece83662728aae4cf"
+    },
+    {
+      "index": 25,
+      "rows": 16,
+      "width": 147,
+      "checked_rows": 16,
+      "sha256": "286a89305de6c7dfdb196cebd9901c62af33bfc7710515ec2c1bb34dc93d2a94"
+    },
+    {
+      "index": 26,
+      "rows": 16,
+      "width": 70,
+      "checked_rows": 16,
+      "sha256": "338bca205b6503208f3467fb6b8fdfb10e307eefab98fd8cbdd9932b880dba6c"
+    },
+    {
+      "index": 27,
+      "rows": 1024,
+      "width": 15,
+      "checked_rows": 1024,
+      "sha256": "d85bcc3b3d032b0d1d10ce2ded2897bbe48743bcc727e41ed25f0f114815f741"
+    },
+    {
+      "index": 28,
+      "rows": 2,
+      "width": 34,
+      "checked_rows": 2,
+      "sha256": "64addce88abf85ea10289211087281877b61cbc6bfbdffcae94fb2f1534ae2e1"
+    },
+    {
+      "index": 29,
+      "rows": 2,
+      "width": 21,
+      "checked_rows": 2,
+      "sha256": "df531c48dcea3f63d6a4177fa33a6c313ad844be95395d91a311ec509079b5a9"
+    },
+    {
+      "index": 30,
+      "rows": 128,
+      "width": 58,
+      "checked_rows": 128,
+      "sha256": "e31f6e161548290f5e3551cf461f79121f2f25d108922190420eec2ea43d695a"
+    },
+    {
+      "index": 31,
+      "rows": 2,
+      "width": 67,
+      "checked_rows": 2,
+      "sha256": "8cbb32c288940b608860536f10d7d1b20f5565cfe42e9be7e97edcdf02d2df85"
+    },
+    {
+      "index": 32,
+      "rows": 2,
+      "width": 12,
+      "checked_rows": 2,
+      "sha256": "02f58a5584f5f837273fa2d1f2c3e09a3fb8f7dec2d90d5e777b2f783e3605b1"
+    }
+  ],
+  "limitations": [
+    "Full-witness diagnostic, not a succinct proof or formal implementation refinement."
+  ],
+  "full_constraint_residuals": 15333322,
+  "exact_bus_message_keys": 8716
+}

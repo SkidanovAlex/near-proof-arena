@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "audit": 2540,
+  "audit_log": "/tmp/root-locals-bus-audit.log",
+  "module": "PreparedLocalsBus",
+  "source_sha256": "4434ffb2ae36e709417b0c66d9742e7ecc2289efaaebbdf7b44cc246e7d1a286",
+  "public_theorems": 16,
+  "result": "Literal locals AIR HoldsP authenticates every EXEC32field fetch against active CODE row at same numeric PC and exact public32field record",
+  "discharged": [
+    "natural fetch/public bus balances",
+    "nonzero receive implies active row",
+    "CODE PC-order source constraints",
+    "inactive rows cannot receive fetches",
+    "exact literal/parametric bus AIR equality"
+  ],
+  "remaining": [
+    "public record plus actual prepared-code checker provenance composition",
+    "local update/full state refinement",
+    "whole-run output theorem",
+    "cryptographic acceptance-to-HoldsP"
+  ]
+}

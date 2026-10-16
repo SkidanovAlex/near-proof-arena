@@ -1,0 +1,72 @@
+{
+  "slice": "prepared-void-block-br_if0-v1",
+  "source_semantics": {
+    "exec": "spec/lean/v3/NearSpecV3/Wasm/Exec.lean:167-197",
+    "branch": "spec/lean/v3/NearSpecV3/Wasm/Exec.lean:47-57",
+    "prepared_targets": "spec/lean/v3/NearSpecV3/Wasm/Prepare.lean:81-100"
+  },
+  "layout": {
+    "exec_width": 683,
+    "code_width": 232,
+    "public_header_fields": 66,
+    "code_record_fields": 29,
+    "exec_new_fields": {
+      "block_opcode": 605,
+      "br_if_opcode": 606,
+      "prepared_target_bits": [
+        607,
+        638
+      ],
+      "label_active": 639,
+      "saved_height_onehot": [
+        640,
+        648
+      ],
+      "saved_target_bits": [
+        649,
+        680
+      ],
+      "condition_nonzero": 681,
+      "condition_inverse": 682
+    },
+    "code_new_fields": {
+      "block_opcode": 198,
+      "br_if_opcode": 199,
+      "prepared_target_bits": [
+        200,
+        231
+      ]
+    }
+  },
+  "dependencies": [
+    "Actual prepare supplies instruction, endOf target and non-linear range charge.",
+    "CODE sequential unique keys and exact repeated-fetch multiset follow prior design but expanded descriptor requires fresh formal bus/source adapters.",
+    "EXEC saves block height and target on opening; initial label state empty.",
+    "Nonzero is constrained by bit-sum inverse and annihilator, not direct 32-bit Fp value.",
+    "Taken branch pops condition, truncates to saved height, clears label and jumps; false branch only pops and increments.",
+    "Nested end pops label and increments; outer end alone returns."
+  ],
+  "checked_interfaces": [
+    "prepared_control_inspect",
+    "prepared_control_target_checked",
+    "prepared_control_entry_checked",
+    "prepared_control_code_checked",
+    "prepared_control_step_block",
+    "prepared_control_step_br_if",
+    "prepared_control_step_nested_end"
+  ],
+  "remaining_formal_bridges": [
+    "Literal source export and AIR membership certificates for new constraints.",
+    "Field constraints to nonzero, saved-label provenance and branch stack/PC transition.",
+    "Expanded29-field natural bus authentication to actual prepared CODE checker.",
+    "Whole-run induction supporting two-label invariant and nested end, preserving existing terminal/public boundary proof."
+  ],
+  "excluded": [
+    "Loop, br and nonzero-depth br_if",
+    "Multiple nested blocks and block result arities",
+    "local.get/local.set/local.tee",
+    "Unbounded stack, calls, memory and hosts",
+    "PREP AIR or succinct public CODE preprocessing",
+    "Cryptographic soundness and proof-size/security claims"
+  ]
+}

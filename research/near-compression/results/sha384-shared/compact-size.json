@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "whole_binary_bytes": 112786,
+  "roots_bus_finals_and_AIR_bytes": 2413,
+  "gkr_bytes": 37479,
+  "opening_framing_bytes": 8,
+  "weighted_joint_opening_bytes": 72886,
+  "source_roots_included": 6,
+  "bus_finals": 18,
+  "gkr_layers": 59,
+  "gkr_quadratic_rounds": 1150,
+  "scope": "Exact accepted-wire accounting; this analyzer does not replace the complete verifier."
+}

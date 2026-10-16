@@ -1,0 +1,44 @@
+{
+  "status": "conditional arithmetic only",
+  "parameters": {
+    "p": 2013265921,
+    "N": 524288,
+    "D": 131072,
+    "T": 393217,
+    "tensor_coordinates": 17
+  },
+  "tensor_error_numerator": 8912896,
+  "weighted_sumcheck_error_numerator": 34,
+  "functional_opening_error_numerator": 8912930,
+  "fold_error_numerator": 524284,
+  "union_numerator": 9437214,
+  "ideal_ext4_tensor": {
+    "numerator": 8912896,
+    "denominator": 16428751811598850197311699254593454081,
+    "integer_bits_supported_by_this_bound": 100
+  },
+  "ideal_ext4_union": {
+    "numerator": 9437214,
+    "denominator": 16428751811598850197311699254593454081,
+    "integer_bits_supported_by_this_bound": 100
+  },
+  "minimum_extension_degree_for_isolated_union": {
+    "128": 5,
+    "192": 7,
+    "256": 10
+  },
+  "assumptions": [
+    "Sample set has exactly p^e distinct field elements and independent uniform coordinates",
+    "Tensor extraction is instantiated with the same fixed actual weighted-source tensor and T",
+    "FunctionalOpeningReduction establishes the abstract initial candidate-event bound; executable sparse-lift/current-next mapping remains separate",
+    "Union with folding is arithmetic here; transcript-prefix and full protocol composition remain separate"
+  ],
+  "excluded": [
+    "Query tail",
+    "Other sumcheck/GKR/bus collision errors (the first weighted quadratic sumcheck is included)",
+    "Hash commitment errors",
+    "Sampler refinement and rejection failure",
+    "Fiat-Shamir/QROM losses"
+  ],
+  "security_certified": false
+}

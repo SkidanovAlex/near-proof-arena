@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1719,
+  "audit_log": "/tmp/near-two-lane-reconstruction-audit.log",
+  "formal_module": "NearCompression/TwoLaneReconstruction.lean",
+  "formal_sha256": "94d65c4be6cdec934bf754fe0ac9cdbef04ebd6ec431e917919fa7fda2a9f0ca",
+  "formal_result": "Two successful distinct scalar batching challenges construct a degree-bounded, residual-claim-compatible pair of polynomials with joint error at most the sum of scalar radii. If no such pair exists within2r, at most one challenge succeeds.",
+  "formal_limits": [
+    "Two lanes only",
+    "Radius expansion must fit folding invariant",
+    "No whole proximity/RBR/QROM proof"
+  ],
+  "size_evidence": "pq384-joint-source-cost.json",
+  "shared_authentication_evidence": "pq384-shared-merkle-work.json",
+  "next": [
+    "Joint distinct-point opening prototype",
+    "Claim-vector reduction",
+    "Weighted affine-fold reconstruction and radius recurrence",
+    "Outer runCall linkage"
+  ],
+  "full_goal_complete": false
+}

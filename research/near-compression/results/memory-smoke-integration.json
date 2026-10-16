@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "fixture": "PreparedMemorySmoke.lean",
+  "fixture_sha256": "f8eab3bcd9767c12358d4d014989c125372051c0a5ca194a0ceca0a80f060a3a",
+  "log": "/tmp/root-memory-smoke.log",
+  "log_sha256": "d8d6a152a18586dba59416d78c6288aae73ba64e6f48239451e7bccd049cfda1",
+  "coverage": [
+    "16 authenticated reads with different page patterns",
+    "4 stores with distinct value bytes across page boundary",
+    "6 actual traps",
+    "malformed openings and ordering rejected"
+  ],
+  "limits": [
+    "Executable regression only; no AIR binding or quantum-security conclusion."
+  ]
+}

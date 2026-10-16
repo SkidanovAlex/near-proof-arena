@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "whole_proof_bytes": 318996,
+  "source_commitments_included": 1584,
+  "air_roots_finals_zerocheck_prefix": 28086,
+  "gkr_field_bytes": 35680,
+  "opening_length_frame": 8,
+  "weighted_joint_header": 2470,
+  "initial_source_leaves": 28864,
+  "initial_source_siblings": 181632,
+  "shared_fold_leaves": 3904,
+  "shared_fold_siblings": 38352,
+  "negative_checks": 2,
+  "exact_roundtrip": true,
+  "fresh_process_verification": "PASS: complete GKR-bus binary diagnostic; security not certified",
+  "test_seconds": 48.36704633804038,
+  "scope": "Complete actual transport; diagnosticQ8/Ext4, no security certification"
+}

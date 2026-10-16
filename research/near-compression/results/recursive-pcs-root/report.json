@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "complete_recursive_proof": false,
+  "profile": "NEAR-RECURSIVE-PACKED-PCS-CONJUNCTION-V1",
+  "compiler_config": "recursive-fold-source-dag-v1/all-residuals-mle-zero-padded/trace-root-and-packed-rs-root-before-output-point/relay-v1/Ext4-v4=11/row-low4096/column-group-high/coordinate-basis4",
+  "rs_root": "0880cc323174665337e42245b1634127e59e82151babd9a378d7183f9fd59fcbb5a5dff6d4f1a2277a10a55dbb084b89",
+  "trace_root": "70355e5a007a74cfd532aec522b0a21915dbf07b034450c0ee9c7fa01c4818b915bbc5521dea56934f4c609524c6a5c7",
+  "rows": 4096,
+  "width": 16,
+  "packing": 16,
+  "degree": 65536,
+  "input_slots": 16384,
+  "gkr_proof_json_bytes": 182579,
+  "pcs_proof_json_bytes": 155149,
+  "proof_json_bytes": 338021,
+  "verified_dependency_json_bytes": 500508,
+  "commit_seconds": 0.13218726590275764,
+  "independent_full_root_link_seconds": 1.8752274769358337,
+  "gkr_prover_seconds": 91.98436227813363,
+  "pcs_prover_seconds": 1.5743621634319425,
+  "core_verify_seconds": 5.886902679223567,
+  "full_trace_disclosure_needed_for_native_root_link": true,
+  "limits": [
+    "Actual packed PCS replaces disclosed terminal dot-product in core verifier.",
+    "Verified dependency MUST come from native root-link/provenance check; hashing roots together does not establish equal committed data.",
+    "End-to-end wrapper still needs full3.70MB trace for root link/native header/hash binding; proof payload alone is not complete recursive compression.",
+    "New configured GKR transcript and compiler CONFIG; no legacy proof relabeling.",
+    "Q8/Ext4 diagnostic; no PQ128,QROM,proximity or zero-knowledge certification."
+  ]
+}

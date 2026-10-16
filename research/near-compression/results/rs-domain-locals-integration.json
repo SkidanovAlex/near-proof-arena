@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_checks": 2607,
+  "new_public_theorems": 13,
+  "modules": {
+    "ProjectedRSDomain": "e66898703332c4c7865c68df4f57305cc7572661587bc7fa72898d495dde8d61",
+    "PreparedLocalsSequential": "5d52fcda0d529376af331b720102e20a13a7d555c2d2d690a71ad2644352f1c9",
+    "PreparedLocalsDepth": "e0204f28938bb97b14d2996fe3139050ea0fcb8510efc3c1d9fbbfaad21d9291"
+  },
+  "scope": "Natural rate1/4 RS recovery now derives branch order, permutation and distinctness from one original exact-order certificate. Locals literal constraints imply natural depth/guards and PC/status/label updates under explicit opcode/status hypotheses. Original prover-root binding and full locals successor-state composition remain pending."
+}

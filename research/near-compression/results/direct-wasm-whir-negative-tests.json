@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "honest_proofs_accepted": 1,
+  "mutations_rejected": 286,
+  "coherent_handoff_mutation_rejected": true,
+  "sumcheck_identity_preserving_mutation_rejected": true,
+  "witness_required": false,
+  "full_fixed_profile_whir_checks": true,
+  "scope": "Fixed eight-row toy opening only; no GKR or NEAR transition proof; no security claim.",
+  "sha256": {
+    "research/near-compression/results/direct-wasm-whir-opening.json": "066702564b5368a2bdf9ad592d9d10772f432d285eec19aca1bc144fed88cda6",
+    "research/near-compression/results/direct-wasm-whir-statement.json": "97b902c286066ff2279595591e25637447595981f47cb2e4de6ad96aa84563a7",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_whir_toy.py": "c40ed53824008064502f351116c074b9f052e0ec39b52131ae276a740a161000",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/verify_whir_toy.py": "750247ebb4beb6a9ae3cc21513d4de13973efacd70927a4a226125fce87aec51"
+  }
+}

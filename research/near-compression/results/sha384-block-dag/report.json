@@ -1,0 +1,92 @@
+{
+  "status": "PASS",
+  "totals": {
+    "calls": 13698,
+    "unique_hash_inputs": 11181,
+    "total_compression_calls": 41542,
+    "compression_calls_after_whole_input_dedup": 32587,
+    "unique_state_block_pairs": 22474,
+    "extra_compressions_removed_by_prefix_reuse": 10113,
+    "block_bytes_only_unique_INCORRECT_FOR_REUSE": 14682
+  },
+  "lean_block_state_differential_checks": 7,
+  "independent_direct_layout_after_whole_call_dedup": {
+    "core_rows": 3955584,
+    "active_core_rows": 2606960,
+    "padding_core_rows": 1348624,
+    "endpoint_rows": 34338,
+    "source_cells": 20760802440,
+    "input_source_cells": 47778288
+  },
+  "shared_core_layout_estimates": [
+    {
+      "reuse": "whole-hash-input",
+      "blocks": 32587,
+      "chunk_blocks": 25,
+      "batches": 1304,
+      "core_rows": 2669568,
+      "active_core_rows": 2606960,
+      "padding_core_rows": 62608,
+      "endpoint_rows": 41712,
+      "source_cells": 14042094528,
+      "peak_raw_source_bytes": 43090432,
+      "largest_source_degree": 262144,
+      "profile_supported": true
+    },
+    {
+      "reuse": "whole-hash-input",
+      "blocks": 32587,
+      "chunk_blocks": 102,
+      "batches": 320,
+      "core_rows": 2617344,
+      "active_core_rows": 2606960,
+      "padding_core_rows": 10384,
+      "endpoint_rows": 40896,
+      "source_cells": 13767393024,
+      "peak_raw_source_bytes": 172361728,
+      "largest_source_degree": 1048576,
+      "profile_supported": false
+    },
+    {
+      "reuse": "exact-compression-state-block",
+      "blocks": 22474,
+      "chunk_blocks": 25,
+      "batches": 899,
+      "core_rows": 1841152,
+      "active_core_rows": 1797920,
+      "padding_core_rows": 43232,
+      "endpoint_rows": 28768,
+      "source_cells": 9684574592,
+      "peak_raw_source_bytes": 43090432,
+      "largest_source_degree": 262144,
+      "profile_supported": true
+    },
+    {
+      "reuse": "exact-compression-state-block",
+      "blocks": 22474,
+      "chunk_blocks": 102,
+      "batches": 221,
+      "core_rows": 1806336,
+      "active_core_rows": 1797920,
+      "padding_core_rows": 8416,
+      "endpoint_rows": 28224,
+      "source_cells": 9501440256,
+      "peak_raw_source_bytes": 172361728,
+      "largest_source_degree": 1048576,
+      "profile_supported": false
+    }
+  ],
+  "source_proof_sha256": "83d6e6e4946ffe9439c833d1bebde506e3edb0244e838ec0aed553948ce2de83",
+  "source_statement_sha256": "83dca46ee650f6d96a3a1da51ec2434450ac658cd0315e1eecb7bde077d2402a",
+  "records_sha256": "c2c2653ead19eaa8b0176a95239ffff471a0016e067051ba8b3d955564800db4",
+  "record_bytes": 256,
+  "record_order": "input state8 big-endian uint64,block128bytes,output state8 big-endian uint64",
+  "limits": [
+    "Trusted config setup excluded",
+    "Exact state+block equality measured; routing/fanout consistency still requires a new constrained AIR",
+    "Batched estimates preserve80 rounds per compression but omit new call/block/reset metadata and routing constraints",
+    "25-block chunks fit existing width5234/packing128/degree262144 limits;102-block chunks do not",
+    "Source cells are total work; peak raw chunk source bytes exclude JSON,auxiliary FFT/leaves/tree/GKR buffers",
+    "No recursive verifier coverage,zero-knowledge,proximity,QROM or128-bit security certification"
+  ]
+}

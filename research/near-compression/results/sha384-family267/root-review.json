@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "independent_root_checks": [
+    "all8 frozen source SHA256 hashes",
+    "proof SHA256",
+    "complete binary verification with required external receipt",
+    "regenerated canonical Lean fixture exact JSON parity",
+    "4428 input residuals,3 exact padded block records and6 natural bus balances",
+    "95611-byte full proof/public/receipt accounting"
+  ],
+  "agent_checks_not_rerun": [
+    "28 wrapper/codec negatives",
+    "8 Lean export boundary cases"
+  ],
+  "audit": 2496,
+  "audit_log": "/tmp/root-joint-fold-audit.log",
+  "new_formal_module": "JointSourceFarFold",
+  "formal_scope": "ideal checked folding acceptance FAR case, fixed prechallenge joint source family; explicit causality/regime premises",
+  "remaining": [
+    "upstream product-tape and heterogeneous mapping",
+    "near-case sparse-lift image recovery",
+    "commitment/QROM security",
+    "full recursive verifier",
+    "full NEAR1Petagas transition"
+  ],
+  "proof_scope": "One actual267-byte hash invocation, diagnostic Q8/Ext4, not128-bit secure or zero-knowledge"
+}

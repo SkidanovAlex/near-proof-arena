@@ -1,0 +1,48 @@
+{
+  "kind": "wired SHA512 round AIR validation",
+  "honest_round_cases": 4,
+  "locally_valid_dependency_forgeries_rejected": 40,
+  "independent_layout_matches_formal_constraints": true,
+  "independent_python_fixture": {
+    "vars": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "k": 81985529216486895,
+    "w": 18364758544493064720,
+    "a": 5981413123817488,
+    "e": 5981343297044497
+  },
+  "table": {
+    "columns": 2608,
+    "constraints": 2676,
+    "word_dependencies": 10,
+    "limb_wiring_constraints": 40,
+    "max_degree": 3,
+    "max_log": 22
+  },
+  "formal_claim": "Satisfying a row implies its decoded full output equals NearSpecV3.SHA512.round on its decoded inputs.",
+  "full_audit_theorems": 1008,
+  "commands": [
+    "lake build NearCompression.SHA512Round",
+    "lake env lean --run SHA512RoundSmoke.lean",
+    "python3 check.py"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512Relocate.lean": "51384be33d7b5e22670096c3c25bb6fb380883870132d3e29518064a97c6d85f",
+    "NearCompression/SHA512Round.lean": "65d2fa57b21447b96828c06490b31a303b1fc60d2b6c1d473f5eceb0156e1726",
+    "SHA512RoundSmoke.lean": "14ea40d7cde3c93956ece1a3af46210881487d56fefd7f6a23cf9350414eec16"
+  },
+  "limitations": [
+    "Universal completeness of the assembled round witness is not yet proved.",
+    "Round k and w are inputs; constant-table binding, message schedule and 80-round chaining remain.",
+    "Feed-forward, padding, length and byte/digest binding remain.",
+    "No full state-transition proof, proof-size measurement or 128-bit quantum soundness bound."
+  ]
+}

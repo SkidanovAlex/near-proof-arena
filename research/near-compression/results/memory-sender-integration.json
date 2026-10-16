@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "profile": "memory-exec-sender-v1",
+  "columns": 795,
+  "constraints": 2243,
+  "actual_prepared_steps": 4,
+  "actual_run_call": true,
+  "matched_exec_fields": 23,
+  "coherent_bus_forgeries_rejected": 20,
+  "source_transition_forgeries_rejected": 24,
+  "fixture": "/tmp/root-memory-sender-fixture.json",
+  "fixture_sha256": "4e757598a9ad7d9c55072bc53e0a8d42cd8d6cab20cb6340437a453b23a69029",
+  "sources": {
+    "PreparedMemorySenderFixture.lean": "307cd65be0effe630ae4d5524a251fe70a0e07c2f57ae01e32ea360dd44d431b",
+    "airbender/direct-wasm/prepared_memory_sender.py": "4c52d98cfd9a52b9088a63a1846f18b3a1128a8cc732f2386b65d1b13bc3a80e",
+    "airbender/direct-wasm/test_prepared_memory_sender.py": "cf92baf94b4b904d6e4070e54cc1b3168da227fdfb5647966993e3e53756d25d"
+  },
+  "limits": [
+    "Separate memory-only contiguous segment ABI, stack capacity eight.",
+    "CODE receiver, gas and public segment boundaries unauthenticated.",
+    "Last row successor not constrained; fixture runCall comparison is regression evidence, not a formal sender refinement."
+  ]
+}

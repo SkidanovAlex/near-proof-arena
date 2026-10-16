@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "table_count": 33,
+  "sampled_cells_checked": 31242,
+  "sampled_constraint_residuals": 32938,
+  "samples_sha256": "bfc7e9efada8e02735dac270527c50dc7a1541309f1834e897f121972e182b67",
+  "limitations": [
+    "Independent boundary/interior sample checks, not a full trace check or proof.",
+    "Full constraints and exact bus balance are native exporter evidence only."
+  ],
+  "air_sha256": "61047e9e2719c03adfd66f2e5aac407d830515f33050a9c543c0f9c54efef9dd",
+  "prepared_sha256": "f93938ce9c254cbae0191e5f1b3e706607f7e6bcf8510c3594b43617edae5366",
+  "public_messages": 1775
+}

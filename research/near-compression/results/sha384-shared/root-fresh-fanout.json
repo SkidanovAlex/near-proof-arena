@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "local_GKR_PCS_accepts": true,
+  "complete_verifier_rejects": "randomized bus fingerprint product",
+  "proof_sha256": "24ef649f26b80956d66992652afc794a0d8a66f7273c4abb3ca775ded964fcdd",
+  "scope": "Fresh proof for bit-valid fanout2-to1 mutation. Diagnostic global multiplicity test, not cryptographic security certification."
+}

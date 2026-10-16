@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2389,
+  "audit_log": "/tmp/root-control-entry-audit.log",
+  "source_sha256": {
+    "PreparedControlBoundary": "6d143edc25a8fbba16a050dcd8a7ed0cbb749e18b420cb5fee9fd24d1ac97982",
+    "PreparedControlEntry": "6d585b26bd215e3a9c4e18f18218686a9406ced8a32c628d2203adca475cb273",
+    "PreparedControlRunCall": "fc91d38f534b53253c219cbd4ef4910bd5866475152f7f9fb26d0eabfe0e2dc6"
+  },
+  "new_theorems": 9,
+  "proved": [
+    "Natural boundary bus balance binds entry gas from public record",
+    "Literal first-row constraints derive PC0, empty stack selection and absent nested label",
+    "Executable preparation/CODE/entry checks derive actual callEntry and outer runCall terminal result"
+  ],
+  "explicit_requirements": [
+    "Actual control AIR HoldsP",
+    "Executable preparedControlRunCallCheck acceptance",
+    "Fuel at least execution trace height"
+  ],
+  "remaining": [
+    "Bind final witness to all published output fields",
+    "Preparation is checked by verifier, not proved by PREP AIR",
+    "Supported profile only: one defined function, stack8,one nested void block",
+    "Cryptographic acceptance to HoldsP;fullNEAR1Pgas;recursive quantum security"
+  ]
+}

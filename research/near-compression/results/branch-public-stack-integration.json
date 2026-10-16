@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3331,
+  "added_theorems": 19,
+  "sources": {
+    "PreparedTypedCondition": "c5bb1c90edbb69c0ecb7fcd2101f73e021cb3ec992ef582151dabc68b81a2de4",
+    "PreparedTypedBranch": "824bf857dcd0034522eecc2d765de3ddbb829f5e405b964e07e721e136d3909c",
+    "PreparedTypedBranchBounds": "a55fcf7435697636ee28f57840c242db7616aa125d9ad6772a0422768a96d676",
+    "PreparedTypedBranchStack": "d4004566644087a315e0e0d45a5188877c90ee874edbf2c34b84bf816da9d194",
+    "PreparedTypedBranchDepth": "a5fe4116fb74c7bda4827debf0ce103120796e971d5b50956a23b2726c6c51f7",
+    "PreparedTypedUntaken": "cb04378a88d5e8ecd311f69680557155c5aa3a100233792b8281c6078c5856b4",
+    "PreparedTypedBranchArrays": "49172ebf5899f9f0c0815cdc1d1dfdd5aacf4e35bcf3a324035980a4aa5104de",
+    "PreparedTypedPublicStack": "5de79cc3d93d1943a5aa75ea363e582fa2fe2d373a6e52bdc7bd2b5fef6e9a4a"
+  },
+  "audit_log": "/tmp/root-branch-stack-audit.log",
+  "audit_sha256": "aef8823f4d40f78966fa9edbc09fda5d9f5993d70c40a36b1f5185f0dbf4007c",
+  "scope": [
+    "Branch condition i32 tag/zero test, strict saved-height bound, taken/untaken PC/labels/depth, exact mixed-stack truncation.",
+    "Public boundary51 depth/tag/four-limb decoding and DONE-padding stack transport."
+  ],
+  "remaining": [
+    "Actual authenticated branch wrapper handoff ready, pending root review/integration.",
+    "Concrete whole-call driver and interpreter-to-public-stack linkage.",
+    "Computed-source runtime parity session68201 remains live, not PASS.",
+    "FullNEAR/1Pgas/recursive aggregation/quantum security/sub300KB."
+  ]
+}

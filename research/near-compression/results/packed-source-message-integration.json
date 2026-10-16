@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2415,
+  "audit_log": "/tmp/root-packed-source-message-audit.log",
+  "new_theorems": 15,
+  "source_sha256": {
+    "PackedSourceExecution": "66dbb0f6812135b6edda1636c8d03ffdf76efb77da1a3a50616412a7348407c0",
+    "SHA384CommittedMessage": "276b1a240f73c8e5e0fbbf9e488dee5f57559fe2e7583412438a401d2a22f0b4"
+  },
+  "proved": [
+    "Full modeled packed initialization/Mobius/zero-tail/FFT pipeline and same-polynomial current/next functional and leaf values",
+    "Actual committed message list decoded from input row with length and byte bounds",
+    "Every existing padding row byte equals canonical padding of that decoded message"
+  ],
+  "remaining": [
+    "Native arithmetic/memory and adversarial pre-GKR witness binding",
+    "Committed padding capacity and hash core composition",
+    "Complete recursive verifier and128-bit quantum security"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "status": "Heterogeneous8/16row bus proof verified; variable WHIR openings8..256rows independently verified. FullD1/PQsecurity remain.",
+  "goal": "Full near-chunk-v3 D3 state transition, 1 Pgas workload, under 300000 bytes, quantum-resistant security with explicit 128-bit target analysis, Lean correctness",
+  "architecture": [
+    "Trace actual NEAR Wasm execution into per-instruction-family tables.",
+    "Prove arithmetic, control/frames, stack/locals, linear memory, gas and traps directly.",
+    "Use shared authenticated program lookups and typed memory/state/host-event arguments across tables.",
+    "Compile proven table relations to layered low-degree GKR circuits.",
+    "Commit witness polynomials using WHIR and hash-based Merkle commitments.",
+    "Recursively verify and aggregate in dedicated verifier circuits, with a hash-only final proof."
+  ],
+  "airbender_reuse_assessment": {
+    "arithmetic_backend": "Generic prover entry accepts GKRCircuitArtifact, GKRFullWitnessTrace, setup and configurable transcript/tree types.",
+    "frontend": "Family compiler assumes executor-machine state, register/RAM access types and fixed bytecode-word preprocessing; adaptation is real work.",
+    "recursion": "Existing recursion proves RISC-V verifier guests; direct verifier-circuit recursion must be developed or separately justified.",
+    "security": "Do not inherit Sec100 or reduced-round/grinding assumptions as 128-bit quantum security."
+  },
+  "first_vertical_slice": [
+    "Direct Wasm i32.add execution trace using existing Lean semantics and range/operand/control lemmas.",
+    "GKR circuit satisfaction correspondence plus malicious witness rejection.",
+    "Produce and verify a fresh hash-based proof; report witness, proof and verifier costs.",
+    "Extend to control flow and loads/stores with actual global consistency argument before throughput extrapolation."
+  ],
+  "formal_obligations": [
+    "Execution trace completeness and soundness for actual Wasm step and host effects.",
+    "Constraint-to-GKR compiler relation preservation.",
+    "Memory, program lookup and cross-table composition correctness.",
+    "Recursive verifier circuit correctness and statement binding.",
+    "Explicit cryptographic assumptions and QROM concrete security reduction."
+  ],
+  "evidence": [
+    "Airbender commit 129f827003b34acd64a3315a5863eac75bc09fe6: prover/src/gkr/prover/mod.rs:545",
+    "Airbender same commit: cs/src/gkr_compiler/family_circuit.rs:22",
+    "NearCompression/InstructionAddStep.lean"
+  ],
+  "pending_prior_experiment": "PinnedStatementVerifier.sol adapter drafted but not tested; not part of passed 19-test fixture result.",
+  "completed_experiments": [
+    "instruction-layer-circuit-lean-smoke.json",
+    "direct-wasm-airbender-kernel.json",
+    "direct-wasm-commitment-check.json",
+    "direct-wasm-whir-handoff-check.json",
+    "direct-wasm-whir-verified.json",
+    "direct-wasm-whir-negative-tests.json",
+    "direct-wasm-constraint-verified.json",
+    "direct-wasm-public-constraint-verified.json",
+    "direct-wasm-shift-verified.json",
+    "generic-air-table-verified.json",
+    "generic-bus-verified.json",
+    "generic-bus-negative-tests.json",
+    "heterogeneous-bus-verified.json",
+    "heterogeneous-bus-negative-tests.json",
+    "variable-whir-verified.json"
+  ],
+  "next_integration": "Actual33table D1 witness and scalable multi-roundPCS schedule, including real small/large heights; optimize prover evaluation cost and prove protocol composition.",
+  "main_alignment": "main-alignment-20261015.json"
+}

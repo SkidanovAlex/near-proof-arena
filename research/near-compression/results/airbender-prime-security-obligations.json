@@ -1,0 +1,79 @@
+{
+  "kind": "Airbender Prime security upgrade obligations; not a security certificate",
+  "commit": "129f827003b34acd64a3315a5863eac75bc09fe6",
+  "observations": [
+    {
+      "finding": "Pipeline exposes only Sec100.",
+      "source": "prover/src/definitions/mod.rs:31"
+    },
+    {
+      "finding": "Default recursive transcript is Blake2sTranscript<true>, with seven-round reduced BLAKE2s.",
+      "sources": [
+        "transcript/src/blake2s.rs:13",
+        "blake2s_u32/src/lib.rs:22",
+        "program_prover/src/unified_transition.rs:443"
+      ]
+    },
+    {
+      "finding": "Proximity query selection uses PessimisticConjectureMode, including a heuristic 20 percent query margin.",
+      "source": "prover/src/gkr/whir/proximity_testing_modes.rs:34"
+    },
+    {
+      "finding": "BabyBear quartic and Proth120 challenge fields have approximately 123.63 and 122.81 bits of order; algebraic bounds lose additional degree factors. PoW accounting closes the classical target gap.",
+      "source": "prover/src/gkr/prover_config/pow_bits.rs:6"
+    },
+    {
+      "finding": "Final WHIR schedule uses per-round grinding between 21 and 30 bits, plus other grinding challenges.",
+      "source": "prover/src/gkr/prover_config/example_configs.rs:198"
+    },
+    {
+      "finding": "Full-round Blake2sU32MerkleTreeWithCap<Global,false> still associates Blake2sForEverythingVerifier, whose hash rounds use global USE_REDUCED_BLAKE2_ROUNDS=true. Custom hash profile requires matching verifier changes, not just tree type selection.",
+      "sources": [
+        "prover/src/merkle_trees/blake2s_for_everything_tree.rs:123",
+        "prover/src/definitions/leaf_inclusion_verifier/blake2s_for_everything.rs",
+        "prover/src/definitions/mod.rs:6"
+      ],
+      "scope": "Configuration mismatch for custom full-round instantiation; not a claim of an attack against the default reduced-round profile."
+    }
+  ],
+  "required_work": [
+    {
+      "task": "Define concrete quantum security target",
+      "deliverable": "Adversary query/work/memory budget and acceptable total failure probability; distinguish 128-bit work factor from 2^-128 statistical error."
+    },
+    {
+      "task": "Derive concrete end-to-end soundness bound",
+      "deliverable": "Sumcheck, lookups, memory argument, WHIR proximity, Merkle binding, transcript transformation and recursive composition bounds for actual implementation."
+    },
+    {
+      "task": "Replace heuristic proximity margin for formally justified profile",
+      "deliverable": "Applicable theorem with finite-field correction terms and exact query schedule, or explicitly retained conjecture."
+    },
+    {
+      "task": "Re-evaluate grinding against quantum adversaries",
+      "deliverable": "Applicable QROM reduction and concrete losses; do not add classical grinding bits unchanged."
+    },
+    {
+      "task": "Select challenge fields/repetitions and hash outputs jointly",
+      "deliverable": "Larger fields or independent repetitions if required by derived bound; hash collision/preimage/collapsing requirements and reduced-round assumption explicitly justified."
+    },
+    {
+      "task": "Upgrade every recursive layer",
+      "deliverable": "Versioned base, inner verifier, feeder and final proof configurations; regenerate verifier binaries/circuits and measure total proof size."
+    },
+    {
+      "task": "Connect Lean semantics to backend acceptance",
+      "deliverable": "Prove compiler/constraint correspondence, guest binary and transition statement binding; keep cryptographic assumptions explicit."
+    }
+  ],
+  "primary_references": [
+    "https://eprint.iacr.org/2024/1586",
+    "https://arxiv.org/abs/2003.05207",
+    "https://arxiv.org/abs/1902.07556"
+  ],
+  "not_claimed": [
+    "No 128-bit quantum-security parameter set derived yet.",
+    "No whole-protocol attack inferred solely from generic quantum search or hash collision complexity.",
+    "No theorem that increasing query count or final wrapper security repairs weaker inner layers."
+  ]
+}

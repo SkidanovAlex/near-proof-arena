@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3352,
+  "added_theorems": 9,
+  "sources": {
+    "SHA384PackingContext": "7544602856c55d725a71b3862b835acece7197cdd6d4a65c1e82c8f3d757030c",
+    "SHA384NativePackedSource": "af01e9f1ae0697e072775cce2ac17045ec952ba74d3742197f16bc8e84d9e0d9"
+  },
+  "audit_log": "/tmp/root-packing-context-audit.log",
+  "audit_sha256": "91062f818fb9ecb4f586af34d5bd174b7431baf5f742460776b82b30d16518eb",
+  "parity_report": "results/sha384-packing-context/report.json",
+  "parity_sha256": "6fe9f717737e7250c03b6539aef25087d944ea7ff6a21151660786bd7bb3a867",
+  "scope": [
+    "Exact197-byte packing context and injective dimensions for supported shapes.",
+    "Certified native root half-order and fixed computed-source authentication with derived capacity/context bounds."
+  ],
+  "limits": [
+    "Native refers to literal root formula, not machine-code refinement.",
+    "Fixed computed source tree; no adversarial extraction or quantum probability bound.",
+    "Computed-source runtime parity remains active session68201, no PASS claimed."
+  ]
+}

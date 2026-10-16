@@ -1,0 +1,26 @@
+{
+  "status": "proved unique-decoding basin; not full RBR",
+  "module": "NearCompression/UniqueBatchCandidates.lean",
+  "checked": "root-environment Lean passed without warnings",
+  "quantifiers": "Fix domain, arbitrary source-oracle list, low-degree lane tuple, claims, and residual weights before alpha. For each alpha, an existential scalar candidate may be selected adaptively.",
+  "proved": {
+    "joint_radius": "At most R domain points have unequal full source/candidate evaluation vectors.",
+    "scalar_radius": "Accepted degree<D scalar candidate differs from the virtual batched oracle at at most r points.",
+    "condition": "R+r+D<=N",
+    "consequence": "Every accepted scalar candidate equals the deterministic alpha-power batch coefficientwise. If one fixed lane residual claim is wrong, at most L-1 distinct sampled alpha values admit any accepted scalar candidate."
+  },
+  "parameter_route": {
+    "rate_one_quarter": "N=4D permits R+r<=3D. Equal radii can satisfy 2r<=3D, equivalent to the usual strict unique-distance inequality 2r<N-D+1.",
+    "scope": "This supplies the close-tuple branch only. It does not establish that a jointly close tuple exists for an arbitrary source vector.",
+    "far_branch_possible_elementary_route": "Research direction, unproved: L distinct successful batching challenges might reconstruct lane polynomials by a Vandermonde inverse. Intersecting their agreement sets loses at most L*r positions. Under (L+1)*r+D<=N, uniqueness would identify any further successful scalar candidate with the reconstructed batch. This requires formal reconstruction, residual-claim compatibility, and matching the initial joint-agreement threshold; it is not a claimed theorem and may be unattractive for many lanes.",
+    "large_lane_limitation": "A small scalar radius scaling inversely with L greatly worsens global-query requirements, so it cannot be treated as a free replacement for constrained correlated agreement."
+  },
+  "remaining_obligations": [
+    "Far-source constrained correlated agreement: bound alpha values admitting scalar candidates when no admissible jointly-close tuple exists.",
+    "Weighted per-round correlated agreement for affine folding and quadratic residual constraints, with exact candidate thresholds and challenge order.",
+    "Global-chain query soundness from failure of the candidate invariant and exact terminal state.",
+    "Authenticated-oracle binding/extraction and transcript-preserving virtual-oracle reduction.",
+    "Applicable QROM Fiat-Shamir theorem, explicit loss constants, and field/hash/query budget."
+  ],
+  "security_claim": null
+}

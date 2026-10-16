@@ -1,0 +1,10 @@
+{
+  "NearCompression/SHA384DirectInput.lean": "4b9da18ea1d69681eaff7881327ab5ef360bf382d728a434231c3974d3f2825c",
+  "SHA384DirectFixture.lean": "d4f3295ba2a6dff4328591527f36793250762d2c75e99e5fe0abf8910e45093f",
+  "airbender/direct-wasm/prepare_sha384_direct.py": "87961802158de89b96890d8c89f435e76dc776bc0d16344d309d20c5a853f2ec",
+  "airbender/direct-wasm/run_sha384_direct.py": "210ce88da880e08603793a0c34075e5b4c984f102bb2dcdaa8af900674f90903",
+  "airbender/direct-wasm/verify_sha384_direct.py": "684cf852337613e669c1fd6ecf0031c4f0079615387af767455d2058194ed6a5",
+  "airbender/direct-wasm/test_sha384_direct_records.py": "5a6a589d6256807dafdd8527fef0e99df01fde2c2e3ad3f3031e4bd6aecd6fc7",
+  "airbender/direct-wasm/test_sha384_direct.py": "984f8649b8e8e4678b4fce52fb62a089c682809e7ad6bccae0a7c515cc49a034",
+  "airbender/direct-wasm/analyze_sha384_gkr_size.py": "5de737f4102946e737a28ffd67aae98d93f86899c91651d8cb5cd12402d24c1d"
+}

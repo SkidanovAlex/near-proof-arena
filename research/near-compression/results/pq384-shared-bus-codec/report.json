@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "case": "small",
+      "bytes": 31630,
+      "transported_source_commitment_bytes": 96,
+      "tables": 2,
+      "verification": "PASS: complete AIR and randomized bus-fingerprint binary diagnostic",
+      "test_seconds": 0.19272503489628434
+    },
+    {
+      "case": "full",
+      "bytes": 1151130,
+      "transported_source_commitment_bytes": 1584,
+      "tables": 33,
+      "verification": "PASS: complete AIR and randomized bus-fingerprint binary diagnostic",
+      "test_seconds": 14.880876567214727
+    }
+  ],
+  "negative_checks": 24,
+  "global_only_invalid_local_accepts": true,
+  "global_only_invalid_full_rejects": true,
+  "empty_auxiliary_policy_pass": true,
+  "extra_artifacts": "/tmp/near-globalbus-negative-pcyj98vz",
+  "shared_binary_verification": true,
+  "shared_binary_rejections": 22,
+  "scope": "Complete diagnostic AIR/bus fingerprint checks, not certified exact balance or security"
+}

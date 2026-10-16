@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2302,
+  "audit_log": "/tmp/root-batched-message-soundness-audit.log",
+  "theorem": "NearCompression.sha384_batched_message_sound",
+  "conclusion": "sha384ChainDigest message = digest",
+  "premises": [
+    "digest.length = 48",
+    "HoldsP (sha384BatchedAir message.length) (sha384BatchedPublic message digest) tr",
+    "padded block count < P"
+  ],
+  "no_longer_assumed": [
+    "decoded message blocks",
+    "public record count correctness",
+    "phase/reset schedule",
+    "round/compression correctness",
+    "IV correctness",
+    "natural routing correctness",
+    "digest binding"
+  ],
+  "modules": {
+    "SHA384BatchedMessageCount": {
+      "sha256": "8ea8f26c465bbddad3c5dff9c57866ea94865a053008601cc1ef0de58a5a6538",
+      "theorems": 4
+    },
+    "SHA384BatchedMessage": {
+      "sha256": "6ef57aa862e1171219d13e299cc1f8608602022885d91933d1bff14f7941e1fc",
+      "theorems": 12
+    },
+    "SHA384BatchedTraceBytes": {
+      "sha256": "fe6fda2656dca72e68825060a99e8d1bf2141e62c0ce6d479e8685fc6b245ff5",
+      "theorems": 5
+    },
+    "SHA384BatchedSoundness": {
+      "sha256": "d236d601d2daea38c5f9e5f82664a61c22fcd3ad531dae3687e09e3feff22c46",
+      "theorems": 1
+    }
+  },
+  "canonical_statement_regeneration": "exact JSON match",
+  "binary_bytes": 406974,
+  "binary_sha256": "4c46270564d18b43bd611944123672e82463e2f7b8e11c07a8b5930946e38de8",
+  "fresh_binary_verification": "PASS",
+  "remaining": [
+    "cryptographic acceptance to HoldsP",
+    "recursive input routing rather than verifier-expanded public payload",
+    "complete recursive verifier",
+    "128-bit quantum security",
+    "full NEAR and1Petagas coverage",
+    "complete secure proof below300000bytes"
+  ]
+}

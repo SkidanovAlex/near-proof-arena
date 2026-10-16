@@ -1,0 +1,8 @@
+{
+  "NearCompression/SHA384CommittedInput.lean": "0f2a4c1731d9afb1c8a7952a323a585a8cd5c1a0664fb5a6053481dc5a04cae9",
+  "SHA384CommittedFixture.lean": "e0d838c19cd3721dacf87f4848af94fab7cb669f7e147f49ebda843380a38c4b",
+  "airbender/direct-wasm/prepare_sha384_committed.py": "6bef044ed7eb3726a64cca4392aa44188f405aac0bcd3571d089ebdd193e8c55",
+  "airbender/direct-wasm/run_sha384_committed.py": "15580ce34a037225fab12c4e04b6c409964a8dcd36f684eaea3ea5be369d9277",
+  "airbender/direct-wasm/verify_sha384_committed.py": "3126d9ed522cbac6c22ff65a4fb023f8f68fc0addc3c23e4ba23826c3828b5e6",
+  "airbender/direct-wasm/test_sha384_committed.py": "f68f21b60b81dd3977f84ce9fd1347826b968aa8f90927d293e4b3e29176e349"
+}

@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3361,
+  "added_theorems": 7,
+  "sources": {
+    "PreparedMemoryScalar": "92322ede105bd64713b6ba9e387ffaee3f832ed74d323c762816a4f994713223",
+    "PreparedMemoryExec": "adfee1be213fccc411b4cc1c8f49dcb1b828ae55b3ccd225cdb29308c16becf9"
+  },
+  "audit_log": "/tmp/root-memory-scalar-audit.log",
+  "audit_sha256": "806e95369549c463fc179b06211d1223739bd90d08cc3501c02a2b5443d17a1c",
+  "scope": [
+    "Actual readLE/writeLE loops equal ordered byte-request semantics.",
+    "Actual scalar load and i32/i64 store execution including natural effective addresses, bounds traps, extension/tagging and narrowing.",
+    "Accepted checked subpage store yields actual successor memory descriptor or supported collision."
+  ],
+  "limits": [
+    "Initial descriptor tied to actual memory and fullPages are explicit.",
+    "Hash parameter/digest well-formedness are explicit, no SHA384 or quantum bound inferred.",
+    "No gas/code provenance/scalar AIR/event bus integration yet.",
+    "Computed-source runtime parity session68201 remains CPU-active, no PASS."
+  ]
+}

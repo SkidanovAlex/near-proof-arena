@@ -1,0 +1,209 @@
+No files changed, compilation skipped
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:297:56
+    │
+297 │                     if iszero(lt(val, mload(P_PTR))) { revert(0, 0) }
+    │                                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:297:56
+    │
+297 │                     if iszero(lt(val, mload(P_PTR))) { revert(0, 0) }
+    │                                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:401:30
+    │
+401 │                 if acc_num { revert(0, 0) }
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:402:38
+    │
+402 │                 if iszero(acc_den) { revert(0, 0) }
+    │                                      ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:401:30
+    │
+401 │                 if acc_num { revert(0, 0) }
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:402:38
+    │
+402 │                 if iszero(acc_den) { revert(0, 0) }
+    │                                      ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:420:17
+    │
+420 │                 revert(0, 0) }
+    │                 ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:420:17
+    │
+420 │                 revert(0, 0) }
+    │                 ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:508:45
+    │
+508 │                 if iszero(lt(a, modulus)) { revert(0, 0) }
+    │                                             ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:509:45
+    │
+509 │                 if iszero(lt(b, modulus)) { revert(0, 0) }
+    │                                             ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:508:45
+    │
+508 │                 if iszero(lt(a, modulus)) { revert(0, 0) }
+    │                                             ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:509:45
+    │
+509 │                 if iszero(lt(b, modulus)) { revert(0, 0) }
+    │                                             ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:482:13
+    │
+482 │             revert(0, 0) }
+    │             ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:482:13
+    │
+482 │             revert(0, 0) }
+    │             ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:565:55
+    │
+565 │                     if iszero(lt(cv, mload(P_PTR))) { revert(0, 0) }
+    │                                                       ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:565:55
+    │
+565 │                     if iszero(lt(cv, mload(P_PTR))) { revert(0, 0) }
+    │                                                       ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:641:55
+    │
+641 │                     if iszero(lt(cv, mload(P_PTR))) { revert(0, 0) }
+    │                                                       ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:641:55
+    │
+641 │                     if iszero(lt(cv, mload(P_PTR))) { revert(0, 0) }
+    │                                                       ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:720:55
+    │
+720 │                     if iszero(lt(cv, mload(P_PTR))) { revert(0, 0) }
+    │                                                       ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:720:55
+    │
+720 │                     if iszero(lt(cv, mload(P_PTR))) { revert(0, 0) }
+    │                                                       ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifier.sol:827:55
+    │
+827 │                     if iszero(lt(cv, mload(P_PTR))) { revert(0, 0) }
+    │                                                       ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/GkrVerifierProduction.sol:827:55
+    │
+827 │                     if iszero(lt(cv, mload(P_PTR))) { revert(0, 0) }
+    │                                                       ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+     ╭▸ src/GkrVerifier.sol:1233:113
+     │
+1233 │                     if iszero(lt(shr(128, calldataload(add(mload(CIRCUIT_PTR), mul(16, wk)))), mload(P_PTR))) { revert(0, 0) }
+     │                                                                                                                 ━━━━━━━━━━━━
+     │
+     ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+     ╭▸ src/GkrVerifierProduction.sol:1233:113
+     │
+1233 │                     if iszero(lt(shr(128, calldataload(add(mload(CIRCUIT_PTR), mul(16, wk)))), mload(P_PTR))) { revert(0, 0) }
+     │                                                                                                                 ━━━━━━━━━━━━
+     │
+     ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+     ╭▸ src/GkrVerifier.sol:1815:66
+     │
+1815 │         if mod(add(claim, sub(modulus, g0g1_scaled)), modulus) { revert(0, 0) }
+     │                                                                  ━━━━━━━━━━━━
+     │
+     ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+     ╭▸ src/GkrVerifierProduction.sol:1815:66
+     │
+1815 │         if mod(add(claim, sub(modulus, g0g1_scaled)), modulus) { revert(0, 0) }
+     │                                                                  ━━━━━━━━━━━━
+     │
+     ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+

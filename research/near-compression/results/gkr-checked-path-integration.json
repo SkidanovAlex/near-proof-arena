@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "audit_count": 3057,
+  "audit_log": "/tmp/root-checked-path-audit.log",
+  "source_sha256": "ba3a5ba6de33a6d0d0427c7409db5b87e9b5f3baaec779bfefba04673e99bb8a",
+  "scope": "Checked sumcheck/wiring path from false initial claim to correct final input functional implies a repair event, conditional on explicit adjacent-layer semantic linkage. Linkage lemma names transmitted-claim and fixed honest-functional identities. Not yet a complete cryptographic acceptance probability theorem or PCS binding result."
+}

@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "components": 2,
+  "header_bytes": 2110437,
+  "derive_seconds": 40.044062898959965,
+  "negative_cases": [
+    "missing component",
+    "wrong GKR input claim",
+    "omitted GKR layer",
+    "substituted PCS proof",
+    "seed profile relabel forbidden"
+  ],
+  "conjunction_verified_with_derived_headers": true,
+  "limits": [
+    "PCS headers derived from actual constraint transcript, exact terminal compiler, native final GKR wiring/functional verification and bus product checks.",
+    "No caller-supplied PCS header or private claim remains in this interface.",
+    "Trusted component statements/public input receipts still application supplied; original GKR and hash checks are native, not recursively proved.",
+    "Expanded original-profile proof inputs used; seed migration uses different interfaces and is explicitly rejected here."
+  ]
+}

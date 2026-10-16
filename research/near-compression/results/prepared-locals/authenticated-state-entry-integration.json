@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "audit_checks": 2666,
+  "new_public_theorems": 9,
+  "modules": {
+    "PreparedLocalsStackState": "bae9408f2a4589879421c11e5f2c116e9cfdf9c0b150a57f6d4003ee7e66cb52",
+    "PreparedLocalsSuccessState": "132442e8372fca4a83041d8c778c61285ca19fd77e8511d462d1384bd8e38917",
+    "PreparedLocalsAuthenticatedState": "28590be28c2aaf1aa8a2828548564fa5eec5b38dd451c89fdcade59d7f2bfaf5",
+    "PreparedLocalsBoundary": "f55e0c3c53ff15967e508906e02eab6d4994756094fdd1edb5543473433d64ea",
+    "PreparedLocalsEntryFrame": "a26475549781685d22ffea5ee65b9f57c86cc12b01be7b925c15e3168415a22a"
+  },
+  "scope": "Actual setup+literal HoldsP authenticates successful local get/set/tee full successor state under current state relation, chosen tag, fn tie, nonlast and enoughgas. Boundary natural bus balance binds entry/exit gas; actual prepared frame default locals equal initial decoded array. Whole-entry/control/run composition remains pending."
+}

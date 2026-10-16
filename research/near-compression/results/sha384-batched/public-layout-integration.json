@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2208,
+  "canonical_statement_unchanged": true,
+  "public_elements": 724,
+  "source_sha256": {
+    "NearCompression/SHA384BatchedPublic.lean": "891b07ec28671292e937e7c5a85be9727bade1e203f0cef284699d6f975fa44d",
+    "SHA384BatchedFixture.lean": "79b27308ab14373a73ce05bb76199c67177177985000949478743f4e0eaa31f3"
+  },
+  "proved": [
+    "payload length 64*N",
+    "IV payload length32",
+    "count encoding length4",
+    "total public length n+92+64*N for48-byte digest",
+    "message and claimed digest exact field public prefix"
+  ],
+  "remaining": "Payload limb decoding, count decoding, routing and final batched digest theorem remain open. This records a layout refinement, not complete public binding or cryptographic soundness."
+}

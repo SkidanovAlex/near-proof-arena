@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2367,
+  "audit_log": "/tmp/root-control-run-bytes-audit.log",
+  "source_sha256": {
+    "PreparedControlRun": "e5143ee6996ad67360cb10d378ab8a4ae82cb291e2b106d1bde1466ee1ab9102",
+    "SHA384CommittedBytes": "477926e37c96a4b317794cce70a4e51d7955acc7de1c606530b03467c612550a"
+  },
+  "new_theorems": 9,
+  "scope": [
+    "Actual Wasm.run composition from initial state, authenticated setup and full control HoldsP; no per-step certificate",
+    "Actual committed input/pad bit constraints imply byte values below256",
+    "Fixed framing field equality from actual first-row constraint"
+  ],
+  "remaining": [
+    "Derive control entry relation and bind published terminal output",
+    "Match private byte bus messages and derive pad capacity",
+    "Cryptographic acceptance to HoldsP, complete recursion,128-bit quantum security,full NEAR1Pgas"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 2059,
+  "source_hashes": {
+    "FunctionalOpeningFold": "4c5a4c5f0dc64467b231c70c03c21a47e21cf041da75f3d77533322e97fd801a",
+    "SparseLiftMLE": "cbf7ff9fba099b878f92297fb707512b1fe3904931d6a7db79b4518755f71318",
+    "PreparedControlStep": "5b6d82cc5aac7b17ebfe963c35194c5a5120009cf1dcfc6643eb4692fb66e04a",
+    "SHA384EndpointCoreSemantics": "6557d9fac8598c1bd170b11a6a5bbd74856a5b3293b6225819808a8e8f3c34f3"
+  },
+  "sparse_lift_parity": {
+    "status": "PASS",
+    "cases": 75,
+    "full_vs_skipped_low_round_checks": 300,
+    "lifted_coefficient_cells": 2883,
+    "lean_export_sha256": "f6d358b8d88ec35f167da20d00f08c7350cb7b7912128f2e55a1460557970561",
+    "fft_library_sha256": "9bcae9610938c6109260c4c4677a58b625cd5783dea910c040ba6a23c460b038",
+    "scope": "Actual branch_words and native quadratic/fold functions vs executable Lean sparse coefficients, repeated weights and MLEs; base-field embedded challenges only; no commitment or QROM claim"
+  },
+  "endpoint_review": "results/sha384-endpoint/root-review.json",
+  "ideal_interactive_bound": "(n*max(N,2)+2*n+sum_i max(N_(i+1),2))/|S| + ((T-1)/N)^q",
+  "limitations": [
+    "Fixed sources and weights before weighted sumcheck; pre-GKR shared witness not established",
+    "Actual current/next weight transform, source authentication and transcript/sampler binding remain separate",
+    "Endpoint split full routed SHA384 theorem pending",
+    "Control instruction actual-step/checker theorems integrated; new AIR-to-step refinement pending",
+    "Full NEAR 1 Pgas and secure sub300KB recursion not achieved"
+  ]
+}

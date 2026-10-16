@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "session": 23343,
+  "log": "/tmp/root-seed-pair-hash-capture.log",
+  "output": "/tmp/root-seed-pair-hash-capture",
+  "capture_exit_code": 0,
+  "analysis_exit_code": 0,
+  "report": "results/seed-pair-hash-nodes/report.json"
+}

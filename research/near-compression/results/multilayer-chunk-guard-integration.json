@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_count": 3046,
+  "audit_log": "/tmp/root-multilayer-chunks-guard-audit.log",
+  "source_sha256": {
+    "SHA384ChunkComposition": "9ed94ed09b2ef8cd1a524ef2f636c99adc86d65918c7b10ed7953d1f200ccf44",
+    "PreparedTypedEqzGuard": "9556ed975c8efcbf17b037e4e7d0f2a3d34dc0dba45b39ee337ca1a5c67d5d4e",
+    "GKRAdaptiveLayers": "6ef1166d512b76418b7bc18123e779ca10759e40953f494fa743f78b94a2cf41"
+  },
+  "scope": "Actual adaptive GKR repair-event union across arbitrary layer counts/axis lengths with earlier-history strategy dependence; not whole-proof acceptance or Fiat-Shamir. Conditional global chunk compression under explicitly named ordered-use binding. Source eqz guard derives nonempty typed operand; full successor open."
+}

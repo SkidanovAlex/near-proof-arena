@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "profiles": [
+    {
+      "profile": "batched",
+      "proof_bytes": 406974,
+      "public_bytes": 2896,
+      "receipt_bytes": 0,
+      "total_bytes": 409870,
+      "source_roots": 2
+    },
+    {
+      "profile": "committed",
+      "proof_bytes": 796630,
+      "public_bytes": 352,
+      "receipt_bytes": 719,
+      "total_bytes": 797701,
+      "source_roots": 4
+    },
+    {
+      "profile": "committed-gkr",
+      "proof_bytes": 123145,
+      "public_bytes": 352,
+      "receipt_bytes": 719,
+      "total_bytes": 124216,
+      "source_roots": 4
+    },
+    {
+      "profile": "direct",
+      "proof_bytes": 99382,
+      "public_bytes": 352,
+      "receipt_bytes": 716,
+      "total_bytes": 100450,
+      "source_roots": 3
+    }
+  ],
+  "scope": "Same captured376B framed SHA384 call and Q8/Ext4 diagnostics. Batched profile exposes expanded public payload; other profiles require external committed witness input. Static canonical AIR is reusable verifier configuration excluded consistently. No zero-knowledge,128-bit security or full recursive verifier claim."
+}

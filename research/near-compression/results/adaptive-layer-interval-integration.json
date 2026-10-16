@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "audit_count": 3025,
+  "audit_log": "/tmp/root-adaptive-interval-audit.log",
+  "source_sha256": {
+    "AdaptiveLayerBudget": "50b4454f3c418db20729d99d297f3a7df1a19cb0325ce203a39443e192ba5fde",
+    "ChunkIntervalBounds": "99067fd71ba48393aa282310b61fcc234df601af1e1e071f21e00395a1b2dc4f"
+  },
+  "scope": "Generic finite adaptive union bound across unequal block samples under per-history scaled bounds; not yet instantiated as full GKR acceptance bound. Exact possibly-short final chunk node counts. Fiat-Shamir/QROM, commitment binding and complete NEAR coverage remain open."
+}

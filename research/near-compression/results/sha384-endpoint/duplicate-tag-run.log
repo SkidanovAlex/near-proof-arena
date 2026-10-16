@@ -1,0 +1,25 @@
+source commitment 1/5
+source commitment 2/5
+source commitment 3/5
+source commitment 4/5
+source commitment 5/5
+fresh auxiliary 1/5
+fresh auxiliary 2/5
+fresh auxiliary 3/5
+fresh auxiliary 4/5
+fresh auxiliary 5/5
+proved table 1/5 {'zerocheck': 0.3571576471440494, 'shift': 0.2046081661246717, 'openings': 0.5440012761391699}
+proved table 2/5 {'zerocheck': 0.3530969237908721, 'shift': 0.20216156030073762, 'openings': 0.5425595720298588}
+proved table 3/5 {'zerocheck': 0.3543749121017754, 'shift': 0.2020792430266738, 'openings': 0.5405206712894142}
+proved table 4/5 {'zerocheck': 0.3481993409805, 'shift': 0.2013564989902079, 'openings': 0.5410246970131993}
+proved table 5/5 {'zerocheck': 0.003680652007460594, 'shift': 0.036900825798511505, 'openings': 0.016411943826824427}
+Traceback (most recent call last):
+  File "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/run_pq384_global_bus.py", line 91, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/run_pq384_global_bus.py", line 76, in main
+    started=time.perf_counter();result=subprocess.run([sys.executable,str(Path(bus.__file__)),str(out/'proof.json'),str(out/'statement.json')],env=env,check=True,capture_output=True,text=True)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/usr/bin/python3', '/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_global_bus.py', 'results/sha384-endpoint/duplicate-tag-proof/proof.json', 'results/sha384-endpoint/duplicate-tag-proof/statement.json']' returned non-zero exit status 1.

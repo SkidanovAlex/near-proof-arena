@@ -1,0 +1,402 @@
+{
+  "status": "PASS",
+  "actual_tables": 33,
+  "actual_terminal_values_checked": 9106,
+  "raw_compiler_instructions": 89272,
+  "raw_max_table_depth": 1101,
+  "balanced_live_nodes": 81176,
+  "balanced_depth": 41,
+  "constant_nodes": 8833,
+  "private_input_nodes": 7905,
+  "private_input_capacity": 16384,
+  "relay_copy_nodes": 71389,
+  "layered_nodes": 152565,
+  "max_layer_width": 27851,
+  "layer_widths": [
+    16738,
+    27851,
+    24239,
+    18698,
+    12907,
+    10546,
+    8664,
+    7130,
+    5126,
+    4434,
+    3409,
+    2686,
+    2167,
+    1739,
+    1383,
+    1117,
+    897,
+    663,
+    503,
+    375,
+    302,
+    225,
+    169,
+    129,
+    99,
+    77,
+    62,
+    49,
+    39,
+    32,
+    25,
+    20,
+    16,
+    12,
+    9,
+    7,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+  ],
+  "gkr_batch_two_claims_transport_bytes": 35296,
+  "gkr_line_reduction_transport_bytes": 41616,
+  "source_statement_sha256": "c3904572d2a407c7259b87b6a52afefd2e7e47ec63788ec3bdafb7512db6c27f",
+  "circuit_sha256": "ddc7c23a6c3a3753b99470bba2ede52295fddfafb1fb4dd04d45e0675fea9cf8",
+  "cost_assumptions": [
+    "Ext4 is16bytes; quadratic message is3elements",
+    "Generic binary layer relation sums over2*log(previouswidth) variables",
+    "Two-claim batching requires new proof theorem/transcript; line option adds m+1 coefficients perlayer",
+    "Public wiring evaluation/sparse sumcheck algorithm not implemented",
+    "Final circuit input claims need generalized current/shifted coefficient-weight PCS; excluded from GKR byte estimates",
+    "Circuit constantfolding uses publicconstants only; oldproof evaluations are used solely for parity checks",
+    "No cryptographic security or formal compiler refinement claim"
+  ],
+  "layers": [
+    {
+      "level": 1,
+      "width": 27851,
+      "previous_log_width": 15,
+      "sumcheck_rounds": 30,
+      "batch_two_claims_bytes": 1472,
+      "line_reduction_bytes": 1728
+    },
+    {
+      "level": 2,
+      "width": 24239,
+      "previous_log_width": 15,
+      "sumcheck_rounds": 30,
+      "batch_two_claims_bytes": 1472,
+      "line_reduction_bytes": 1728
+    },
+    {
+      "level": 3,
+      "width": 18698,
+      "previous_log_width": 15,
+      "sumcheck_rounds": 30,
+      "batch_two_claims_bytes": 1472,
+      "line_reduction_bytes": 1728
+    },
+    {
+      "level": 4,
+      "width": 12907,
+      "previous_log_width": 15,
+      "sumcheck_rounds": 30,
+      "batch_two_claims_bytes": 1472,
+      "line_reduction_bytes": 1728
+    },
+    {
+      "level": 5,
+      "width": 10546,
+      "previous_log_width": 14,
+      "sumcheck_rounds": 28,
+      "batch_two_claims_bytes": 1376,
+      "line_reduction_bytes": 1616
+    },
+    {
+      "level": 6,
+      "width": 8664,
+      "previous_log_width": 14,
+      "sumcheck_rounds": 28,
+      "batch_two_claims_bytes": 1376,
+      "line_reduction_bytes": 1616
+    },
+    {
+      "level": 7,
+      "width": 7130,
+      "previous_log_width": 14,
+      "sumcheck_rounds": 28,
+      "batch_two_claims_bytes": 1376,
+      "line_reduction_bytes": 1616
+    },
+    {
+      "level": 8,
+      "width": 5126,
+      "previous_log_width": 13,
+      "sumcheck_rounds": 26,
+      "batch_two_claims_bytes": 1280,
+      "line_reduction_bytes": 1504
+    },
+    {
+      "level": 9,
+      "width": 4434,
+      "previous_log_width": 13,
+      "sumcheck_rounds": 26,
+      "batch_two_claims_bytes": 1280,
+      "line_reduction_bytes": 1504
+    },
+    {
+      "level": 10,
+      "width": 3409,
+      "previous_log_width": 13,
+      "sumcheck_rounds": 26,
+      "batch_two_claims_bytes": 1280,
+      "line_reduction_bytes": 1504
+    },
+    {
+      "level": 11,
+      "width": 2686,
+      "previous_log_width": 12,
+      "sumcheck_rounds": 24,
+      "batch_two_claims_bytes": 1184,
+      "line_reduction_bytes": 1392
+    },
+    {
+      "level": 12,
+      "width": 2167,
+      "previous_log_width": 12,
+      "sumcheck_rounds": 24,
+      "batch_two_claims_bytes": 1184,
+      "line_reduction_bytes": 1392
+    },
+    {
+      "level": 13,
+      "width": 1739,
+      "previous_log_width": 12,
+      "sumcheck_rounds": 24,
+      "batch_two_claims_bytes": 1184,
+      "line_reduction_bytes": 1392
+    },
+    {
+      "level": 14,
+      "width": 1383,
+      "previous_log_width": 11,
+      "sumcheck_rounds": 22,
+      "batch_two_claims_bytes": 1088,
+      "line_reduction_bytes": 1280
+    },
+    {
+      "level": 15,
+      "width": 1117,
+      "previous_log_width": 11,
+      "sumcheck_rounds": 22,
+      "batch_two_claims_bytes": 1088,
+      "line_reduction_bytes": 1280
+    },
+    {
+      "level": 16,
+      "width": 897,
+      "previous_log_width": 11,
+      "sumcheck_rounds": 22,
+      "batch_two_claims_bytes": 1088,
+      "line_reduction_bytes": 1280
+    },
+    {
+      "level": 17,
+      "width": 663,
+      "previous_log_width": 10,
+      "sumcheck_rounds": 20,
+      "batch_two_claims_bytes": 992,
+      "line_reduction_bytes": 1168
+    },
+    {
+      "level": 18,
+      "width": 503,
+      "previous_log_width": 10,
+      "sumcheck_rounds": 20,
+      "batch_two_claims_bytes": 992,
+      "line_reduction_bytes": 1168
+    },
+    {
+      "level": 19,
+      "width": 375,
+      "previous_log_width": 9,
+      "sumcheck_rounds": 18,
+      "batch_two_claims_bytes": 896,
+      "line_reduction_bytes": 1056
+    },
+    {
+      "level": 20,
+      "width": 302,
+      "previous_log_width": 9,
+      "sumcheck_rounds": 18,
+      "batch_two_claims_bytes": 896,
+      "line_reduction_bytes": 1056
+    },
+    {
+      "level": 21,
+      "width": 225,
+      "previous_log_width": 9,
+      "sumcheck_rounds": 18,
+      "batch_two_claims_bytes": 896,
+      "line_reduction_bytes": 1056
+    },
+    {
+      "level": 22,
+      "width": 169,
+      "previous_log_width": 8,
+      "sumcheck_rounds": 16,
+      "batch_two_claims_bytes": 800,
+      "line_reduction_bytes": 944
+    },
+    {
+      "level": 23,
+      "width": 129,
+      "previous_log_width": 8,
+      "sumcheck_rounds": 16,
+      "batch_two_claims_bytes": 800,
+      "line_reduction_bytes": 944
+    },
+    {
+      "level": 24,
+      "width": 99,
+      "previous_log_width": 8,
+      "sumcheck_rounds": 16,
+      "batch_two_claims_bytes": 800,
+      "line_reduction_bytes": 944
+    },
+    {
+      "level": 25,
+      "width": 77,
+      "previous_log_width": 7,
+      "sumcheck_rounds": 14,
+      "batch_two_claims_bytes": 704,
+      "line_reduction_bytes": 832
+    },
+    {
+      "level": 26,
+      "width": 62,
+      "previous_log_width": 7,
+      "sumcheck_rounds": 14,
+      "batch_two_claims_bytes": 704,
+      "line_reduction_bytes": 832
+    },
+    {
+      "level": 27,
+      "width": 49,
+      "previous_log_width": 6,
+      "sumcheck_rounds": 12,
+      "batch_two_claims_bytes": 608,
+      "line_reduction_bytes": 720
+    },
+    {
+      "level": 28,
+      "width": 39,
+      "previous_log_width": 6,
+      "sumcheck_rounds": 12,
+      "batch_two_claims_bytes": 608,
+      "line_reduction_bytes": 720
+    },
+    {
+      "level": 29,
+      "width": 32,
+      "previous_log_width": 6,
+      "sumcheck_rounds": 12,
+      "batch_two_claims_bytes": 608,
+      "line_reduction_bytes": 720
+    },
+    {
+      "level": 30,
+      "width": 25,
+      "previous_log_width": 5,
+      "sumcheck_rounds": 10,
+      "batch_two_claims_bytes": 512,
+      "line_reduction_bytes": 608
+    },
+    {
+      "level": 31,
+      "width": 20,
+      "previous_log_width": 5,
+      "sumcheck_rounds": 10,
+      "batch_two_claims_bytes": 512,
+      "line_reduction_bytes": 608
+    },
+    {
+      "level": 32,
+      "width": 16,
+      "previous_log_width": 5,
+      "sumcheck_rounds": 10,
+      "batch_two_claims_bytes": 512,
+      "line_reduction_bytes": 608
+    },
+    {
+      "level": 33,
+      "width": 12,
+      "previous_log_width": 4,
+      "sumcheck_rounds": 8,
+      "batch_two_claims_bytes": 416,
+      "line_reduction_bytes": 496
+    },
+    {
+      "level": 34,
+      "width": 9,
+      "previous_log_width": 4,
+      "sumcheck_rounds": 8,
+      "batch_two_claims_bytes": 416,
+      "line_reduction_bytes": 496
+    },
+    {
+      "level": 35,
+      "width": 7,
+      "previous_log_width": 4,
+      "sumcheck_rounds": 8,
+      "batch_two_claims_bytes": 416,
+      "line_reduction_bytes": 496
+    },
+    {
+      "level": 36,
+      "width": 6,
+      "previous_log_width": 3,
+      "sumcheck_rounds": 6,
+      "batch_two_claims_bytes": 320,
+      "line_reduction_bytes": 384
+    },
+    {
+      "level": 37,
+      "width": 5,
+      "previous_log_width": 3,
+      "sumcheck_rounds": 6,
+      "batch_two_claims_bytes": 320,
+      "line_reduction_bytes": 384
+    },
+    {
+      "level": 38,
+      "width": 4,
+      "previous_log_width": 3,
+      "sumcheck_rounds": 6,
+      "batch_two_claims_bytes": 320,
+      "line_reduction_bytes": 384
+    },
+    {
+      "level": 39,
+      "width": 3,
+      "previous_log_width": 2,
+      "sumcheck_rounds": 4,
+      "batch_two_claims_bytes": 224,
+      "line_reduction_bytes": 272
+    },
+    {
+      "level": 40,
+      "width": 2,
+      "previous_log_width": 2,
+      "sumcheck_rounds": 4,
+      "batch_two_claims_bytes": 224,
+      "line_reduction_bytes": 272
+    },
+    {
+      "level": 41,
+      "width": 1,
+      "previous_log_width": 1,
+      "sumcheck_rounds": 2,
+      "batch_two_claims_bytes": 128,
+      "line_reduction_bytes": 160
+    }
+  ]
+}

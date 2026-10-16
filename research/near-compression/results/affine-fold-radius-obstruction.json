@@ -1,0 +1,30 @@
+{
+  "module": "NearCompression/AffineFoldReconstruction.lean",
+  "lean_check": "PASS without warnings",
+  "actual_geometry": "Canonical pair at x,-x decodes e,o. Two candidates at child point x^2 constrain e+r(o-e). Reconstruction returns degree<D polynomials E,O and matches both source locations wherever both candidate agreements hold.",
+  "recurrence": {
+    "pair_errors": "Rpair <= t_a+t_b",
+    "parent_full_errors": "Rparent <= 2*(t_a+t_b), hence <=4*t for equal radii",
+    "domain_sizes": "Nparent=2*Nchild",
+    "relative_errors": "delta_parent <=2*delta_child for equal child radii; preserving an invariant requires delta_child<=delta_parent/2. After k folds delta_k<=delta_0/2^k.",
+    "18_round_factor": 262144,
+    "rate_quarter_unique_radius_cap": "delta_0 approximately 3/8 (strict integer bound is 2R<N-D+1)",
+    "18_round_child_fraction": 1.430511474609375e-06,
+    "integer_effect": "With initial D=2^18, N=2^20, taking R0 approximately 3N/8 yields Rj approximately R0/4^j. At j=10 this is below 1; the resulting invariant permits zero errors thereafter. This is not a useful constant-proximity theorem.",
+    "scope": "This diagnoses the naive reconstruction bound; it is not an impossibility proof for a different invariant or a theorem handling integer radii separately."
+  },
+  "weighted_constraint": {
+    "formula": "Q(r)=((1-r)w0+r*w1)*((1-r)Eres+r*Ores)",
+    "degree": "at most 2",
+    "endpoint_identity": "Q(0)+Q(1)=w0*Eres+w1*Ores",
+    "actual_composition": "affine_weighted_residual_actual composes scalarRSResidual with actual Poly.smul/add fold.",
+    "formal_counterexample": "two_weighted_challenges_insufficient: zero source residual, sent q(r)=r(r-2), agrees at 0 and 2 but q(0)+q(1)=-1. Distinctness of these challenges requires char!=2, already needed by RS pair decoding.",
+    "next_step": "A third successful challenge can identify a fixed reconstructed pair only after a uniqueness/correlated-agreement argument. Then three distinct roots identify the quadratic. Simply adding a third point without identifying its candidate is circular."
+  },
+  "recommended_direction": "Keep this elementary route as a verified obstruction and possible short-fold baseline. For 18-round constant-proximity soundness, implement the primary weighted constrained correlated-agreement candidate invariant rather than repeatedly doubling the relative radius. Exact theorem threshold, degree-two weight family, and field-loss factors must be instantiated.",
+  "unproved": [
+    "Parent interleaving polynomial constructor degree<2D (this module proves separate E/O degree<D and exact evaluation geometry).",
+    "Complete weighted candidate extraction with controlled constant proximity.",
+    "Global-chain RBR/query and QROM composition."
+  ]
+}

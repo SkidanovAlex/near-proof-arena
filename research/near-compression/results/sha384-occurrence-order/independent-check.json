@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "calls": 13698,
+  "steps": 41542,
+  "chunks": 899,
+  "negative_cases": [
+    "omitted call",
+    "duplicated call",
+    "omitted step",
+    "duplicated step",
+    "reordered steps",
+    "wrong occurrence",
+    "wrong unique call",
+    "wrong step",
+    "wrong node"
+  ],
+  "source_sha256": "e9f9e7e5d08f55755d7e6675d865da0fd143b86e5ec06bb11c3249d12ce649fe",
+  "scope": "Structural consistency only. A coordinated reordering preserving histogram and first-seen order requires authenticated replay provenance to distinguish; this checker does not prove chronology."
+}

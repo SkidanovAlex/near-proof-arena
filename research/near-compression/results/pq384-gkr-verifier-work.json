@@ -1,0 +1,195 @@
+{
+  "status": "PASS",
+  "tables": 33,
+  "binary_bytes": 298961,
+  "proof_sha256": "f3788eec6c02371bbdf417199f2ed2a367e1c883a0d2d78af10c535579c21e8e",
+  "statement_sha256": "83dca46ee650f6d96a3a1da51ec2434450ac658cd0315e1eecb7bde077d2402a",
+  "expanded_verifier": {
+    "hash_tags": {
+      "gkr-after-all-constraints": {
+        "calls": 1,
+        "framed_input_bytes": 113,
+        "compression_blocks": 2
+      },
+      "gkr-static-air-config-v1": {
+        "calls": 1,
+        "framed_input_bytes": 1720405,
+        "compression_blocks": 13441
+      },
+      "merkle/leaf": {
+        "calls": 666,
+        "framed_input_bytes": 200190,
+        "compression_blocks": 1942
+      },
+      "merkle/node": {
+        "calls": 6857,
+        "framed_input_bytes": 2445427,
+        "compression_blocks": 26203
+      },
+      "merkle/root": {
+        "calls": 665,
+        "framed_input_bytes": 198587,
+        "compression_blocks": 1867
+      },
+      "near-pq384-gkr-bus-v1": {
+        "calls": 1,
+        "framed_input_bytes": 23273,
+        "compression_blocks": 182
+      },
+      "near-pq384-terminal-gkr-v1": {
+        "calls": 2,
+        "framed_input_bytes": 3520089,
+        "compression_blocks": 27502
+      },
+      "transcript/commit": {
+        "calls": 1082,
+        "framed_input_bytes": 220698,
+        "compression_blocks": 2420
+      },
+      "transcript/draw-result": {
+        "calls": 1072,
+        "framed_input_bytes": 194202,
+        "compression_blocks": 2144
+      },
+      "transcript/init": {
+        "calls": 3,
+        "framed_input_bytes": 337,
+        "compression_blocks": 4
+      },
+      "transcript/ratchet": {
+        "calls": 1129,
+        "framed_input_bytes": 209377,
+        "compression_blocks": 2258
+      },
+      "transcript/request": {
+        "calls": 1072,
+        "framed_input_bytes": 172762,
+        "compression_blocks": 2144
+      },
+      "transcript/squeeze": {
+        "calls": 1129,
+        "framed_input_bytes": 164217,
+        "compression_blocks": 2258
+      },
+      "weighted-joint-public-v1": {
+        "calls": 1,
+        "framed_input_bytes": 450891,
+        "compression_blocks": 3523
+      },
+      "weighted-joint-stage-v1": {
+        "calls": 18,
+        "framed_input_bytes": 1998,
+        "compression_blocks": 18
+      },
+      "weighted-pcs-after-gkr": {
+        "calls": 1,
+        "framed_input_bytes": 96431,
+        "compression_blocks": 754
+      }
+    },
+    "total_hash_calls": 13700,
+    "total_sha384_compression_blocks": 86662,
+    "ext4_operation_calls": {
+      "mul": 2990519,
+      "add": 884520,
+      "sub": 952375
+    }
+  },
+  "compact_decode_authenticate_verify": {
+    "hash_tags": {
+      "gkr-after-all-constraints": {
+        "calls": 1,
+        "framed_input_bytes": 113,
+        "compression_blocks": 2
+      },
+      "gkr-static-air-config-v1": {
+        "calls": 1,
+        "framed_input_bytes": 1720405,
+        "compression_blocks": 13441
+      },
+      "merkle/leaf": {
+        "calls": 1318,
+        "framed_input_bytes": 397170,
+        "compression_blocks": 3850
+      },
+      "merkle/node": {
+        "calls": 12008,
+        "framed_input_bytes": 4283718,
+        "compression_blocks": 45902
+      },
+      "merkle/root": {
+        "calls": 749,
+        "framed_input_bytes": 223665,
+        "compression_blocks": 2103
+      },
+      "near-pq384-gkr-bus-v1": {
+        "calls": 1,
+        "framed_input_bytes": 23273,
+        "compression_blocks": 182
+      },
+      "near-pq384-terminal-gkr-v1": {
+        "calls": 4,
+        "framed_input_bytes": 7040178,
+        "compression_blocks": 55004
+      },
+      "transcript/commit": {
+        "calls": 1941,
+        "framed_input_bytes": 381416,
+        "compression_blocks": 4138
+      },
+      "transcript/draw-result": {
+        "calls": 1905,
+        "framed_input_bytes": 343473,
+        "compression_blocks": 3810
+      },
+      "transcript/init": {
+        "calls": 6,
+        "framed_input_bytes": 702,
+        "compression_blocks": 9
+      },
+      "transcript/ratchet": {
+        "calls": 1962,
+        "framed_input_bytes": 361980,
+        "compression_blocks": 3924
+      },
+      "transcript/request": {
+        "calls": 1905,
+        "framed_input_bytes": 305373,
+        "compression_blocks": 3810
+      },
+      "transcript/squeeze": {
+        "calls": 1962,
+        "framed_input_bytes": 283500,
+        "compression_blocks": 3924
+      },
+      "weighted-joint-public-v1": {
+        "calls": 3,
+        "framed_input_bytes": 1352673,
+        "compression_blocks": 10569
+      },
+      "weighted-joint-stage-v1": {
+        "calls": 37,
+        "framed_input_bytes": 4107,
+        "compression_blocks": 37
+      },
+      "weighted-pcs-after-gkr": {
+        "calls": 1,
+        "framed_input_bytes": 96431,
+        "compression_blocks": 754
+      }
+    },
+    "total_hash_calls": 23804,
+    "total_sha384_compression_blocks": 151459,
+    "ext4_operation_calls": {
+      "sub": 977566,
+      "mul": 3028002,
+      "add": 931425
+    }
+  },
+  "limits": [
+    "Actual33table fullheight Q8/Ext4 verifier",
+    "Counts include current duplicate hashing/authentication and compiler arithmetic",
+    "Hash blocks and Ext4 calls are not circuit gate counts",
+    "No recursive proof or security claim"
+  ]
+}

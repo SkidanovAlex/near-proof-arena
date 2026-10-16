@@ -1,0 +1,219 @@
+{
+  "status": "PASS",
+  "actual_d1_tables": [
+    {
+      "table": 0,
+      "source_constraints": 1028,
+      "program_nodes": 18705,
+      "degree": 4
+    },
+    {
+      "table": 1,
+      "source_constraints": 1028,
+      "program_nodes": 18705,
+      "degree": 4
+    },
+    {
+      "table": 2,
+      "source_constraints": 490,
+      "program_nodes": 5001,
+      "degree": 5
+    },
+    {
+      "table": 3,
+      "source_constraints": 88,
+      "program_nodes": 1353,
+      "degree": 4
+    },
+    {
+      "table": 4,
+      "source_constraints": 56,
+      "program_nodes": 814,
+      "degree": 5
+    },
+    {
+      "table": 5,
+      "source_constraints": 82,
+      "program_nodes": 988,
+      "degree": 4
+    },
+    {
+      "table": 6,
+      "source_constraints": 88,
+      "program_nodes": 867,
+      "degree": 5
+    },
+    {
+      "table": 7,
+      "source_constraints": 638,
+      "program_nodes": 5940,
+      "degree": 5
+    },
+    {
+      "table": 8,
+      "source_constraints": 381,
+      "program_nodes": 5012,
+      "degree": 4
+    },
+    {
+      "table": 9,
+      "source_constraints": 200,
+      "program_nodes": 1805,
+      "degree": 4
+    },
+    {
+      "table": 10,
+      "source_constraints": 93,
+      "program_nodes": 1229,
+      "degree": 5
+    },
+    {
+      "table": 11,
+      "source_constraints": 255,
+      "program_nodes": 2644,
+      "degree": 4
+    },
+    {
+      "table": 12,
+      "source_constraints": 261,
+      "program_nodes": 2417,
+      "degree": 4
+    },
+    {
+      "table": 13,
+      "source_constraints": 119,
+      "program_nodes": 1486,
+      "degree": 4
+    },
+    {
+      "table": 14,
+      "source_constraints": 45,
+      "program_nodes": 525,
+      "degree": 4
+    },
+    {
+      "table": 15,
+      "source_constraints": 33,
+      "program_nodes": 360,
+      "degree": 4
+    },
+    {
+      "table": 16,
+      "source_constraints": 900,
+      "program_nodes": 6869,
+      "degree": 4
+    },
+    {
+      "table": 17,
+      "source_constraints": 40,
+      "program_nodes": 942,
+      "degree": 4
+    },
+    {
+      "table": 18,
+      "source_constraints": 19,
+      "program_nodes": 280,
+      "degree": 4
+    },
+    {
+      "table": 19,
+      "source_constraints": 5,
+      "program_nodes": 203,
+      "degree": 4
+    },
+    {
+      "table": 20,
+      "source_constraints": 134,
+      "program_nodes": 1341,
+      "degree": 4
+    },
+    {
+      "table": 21,
+      "source_constraints": 74,
+      "program_nodes": 709,
+      "degree": 4
+    },
+    {
+      "table": 22,
+      "source_constraints": 195,
+      "program_nodes": 1973,
+      "degree": 6
+    },
+    {
+      "table": 23,
+      "source_constraints": 144,
+      "program_nodes": 1433,
+      "degree": 5
+    },
+    {
+      "table": 24,
+      "source_constraints": 66,
+      "program_nodes": 558,
+      "degree": 4
+    },
+    {
+      "table": 25,
+      "source_constraints": 212,
+      "program_nodes": 2353,
+      "degree": 4
+    },
+    {
+      "table": 26,
+      "source_constraints": 181,
+      "program_nodes": 1677,
+      "degree": 4
+    },
+    {
+      "table": 27,
+      "source_constraints": 13,
+      "program_nodes": 298,
+      "degree": 5
+    },
+    {
+      "table": 28,
+      "source_constraints": 4,
+      "program_nodes": 388,
+      "degree": 4
+    },
+    {
+      "table": 29,
+      "source_constraints": 22,
+      "program_nodes": 300,
+      "degree": 4
+    },
+    {
+      "table": 30,
+      "source_constraints": 85,
+      "program_nodes": 1052,
+      "degree": 5
+    },
+    {
+      "table": 31,
+      "source_constraints": 89,
+      "program_nodes": 933,
+      "degree": 4
+    },
+    {
+      "table": 32,
+      "source_constraints": 11,
+      "program_nodes": 157,
+      "degree": 4
+    }
+  ],
+  "actual_d1_random_point_parity_seconds": 4.276302237063646,
+  "saved_real_pcs_proof_and_handoff_identical": true,
+  "independent_verifier_accepted": true,
+  "tiny_native_prover_seconds": 0.01714068604633212,
+  "random_shift_parity_log_rows": [
+    1,
+    2,
+    3,
+    5,
+    8
+  ],
+  "limitations": [
+    "D1 parity uses4randomrows per actualtable, not fullD1proof.",
+    "Transcript and scalar shift reduction still Python; matrix operations native.",
+    "No security level or formal Rust refinement claim."
+  ]
+}

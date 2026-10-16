@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "tables": 33,
+  "verification_seconds": 1.1996170519851148,
+  "complete_proof_bytes": 1256796,
+  "encoding": "shared-vector-v2",
+  "proof_sha256": "5233791058a9f42f5a4a4fe57bf8c3378be32d5bb39f0c6282f88123ad9a9f4d",
+  "external_witness_read": false,
+  "security_bits_claimed": null,
+  "scope": "Independent diagnostic verification; not a security or full NEAR coverage certificate."
+}

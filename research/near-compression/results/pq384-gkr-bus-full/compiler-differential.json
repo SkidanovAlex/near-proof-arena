@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "tables": 33,
+  "aggregate_checks": 20,
+  "compiler_sha256": "beaa37dc851ec1faa1c0ca2148df1b5a3331aa7b24c62a3b2b234200522300be",
+  "actual_transcript_rho": [
+    327547500,
+    1550330156,
+    819705887,
+    454443509
+  ],
+  "scope": "Dynamic compiler parity for zero, one and random private inputs; actual, zero, one and random rho",
+  "limitations": [
+    "Not formal compiler correctness or protocol soundness"
+  ]
+}

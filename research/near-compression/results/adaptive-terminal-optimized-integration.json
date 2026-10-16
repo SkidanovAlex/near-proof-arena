@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1763,
+  "audit_log": "/tmp/near-indexed-pullback-audit.log",
+  "modules": [
+    "GlobalChainTerminalDecomposition",
+    "AdaptiveRoundBudget",
+    "IndexedWeightedPullback"
+  ],
+  "formal_scope": "Concrete disclosedterminal plus acceptingquerycount yields a false-to-true candidate transition; finiteinteractive conditional perhistory bad-event bounds sum across adaptive rounds. Extraction/indexed-domain mapping/binding/QROM remain separate.",
+  "terminal_circuit_differential": "pq384-terminal-circuit-analysis/differential.json",
+  "optimized_proof": "pq384-optimized-joint-bus/integration.json",
+  "full_goal_complete": false,
+  "indexed_pullback": "Explicitroot-square/sign/nonzero certificates map weighteddecodedpairagreement to natural-index parentcandidate with exactresidual"
+}

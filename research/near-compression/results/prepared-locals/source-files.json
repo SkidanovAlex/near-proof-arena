@@ -1,0 +1,7 @@
+{
+  "PreparedLocalsFixture.lean": "2c057fe675caed00b6587b16514b4edadfbe596d72f9562c6ab36b3e8ae3a418",
+  "NearCompression/PreparedLocalsStep.lean": "6fbcc8b3e2937bf737c04c2575c922f9bd9b5db921fca42665199bd78d675341",
+  "airbender/direct-wasm/prepared_locals_air.py": "407747b6c51fa8fd86801c5ba9b52572c96ff84d19fe6b9857e40bfa1570d291",
+  "airbender/direct-wasm/test_prepared_locals_air.py": "a5dd6161e245eaad6fc766b303438ac26978ef1672b53f1126a8fe921cf2adba",
+  "airbender/direct-wasm/prepared_locals_contract.json": "13c254c8e273b6c3fb5ea4bbb530e639fb22ea2fec3e6a1f19498b8a442db6dd"
+}

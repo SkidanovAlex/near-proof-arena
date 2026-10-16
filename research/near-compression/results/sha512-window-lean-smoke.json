@@ -1,0 +1,60 @@
+{
+  "kind": "full SHA512 schedule window AIR with temporal binding",
+  "table": {
+    "columns": 2544,
+    "local_constraints": 2572,
+    "sequence_constraints": 3596,
+    "cross_row_bit_links": 1024,
+    "max_degree": 3,
+    "max_log": 22
+  },
+  "formal_claims": [
+    "Actual AIR satisfaction implies every consecutive decoded window follows the actual SHA512.nextWindow function.",
+    "Every prefix and terminal output equal repeated specification window expansion from the decoded initial window.",
+    "Final-row links vanish without cyclic wraparound."
+  ],
+  "validation": {
+    "four_row_traces": 2,
+    "coherent_window_discontinuities_rejected": 96,
+    "full_expansion_trace_rows": 64,
+    "independent_python_w79": 7471377847041668307,
+    "initial_words": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "independent_layout_matches_formal": true,
+    "terminal_all_16_words_match": true
+  },
+  "new_theorems": 10,
+  "full_audit_theorems": 1083,
+  "commands": [
+    "lake build NearCompression.SHA512ScheduleWindowRun",
+    "lake env lean --run SHA512ScheduleWindowSmoke.lean",
+    "python3 check.py"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512ScheduleWindow.lean": "a071f1d874bfb69018b5fcbca72c5b14ba046d861093f6590c259352e33723ef",
+    "NearCompression/SHA512ScheduleWindowRun.lean": "8f0c2f387072c881becae7f496f4256e7429140680f428b9f1896fe2d51f8b5e",
+    "SHA512ScheduleWindowSmoke.lean": "58aac37d514ca6689cd81a27865e96e62df7ca0021f5ebc6c181812498fb5e4d"
+  },
+  "limitations": [
+    "Universal completeness for the extended full-window witness is not yet proved.",
+    "Initial message-byte binding and schedule consumption by compression rounds remain.",
+    "Round constant binding, 80-round boundaries, feed-forward, padding and digest binding remain.",
+    "Full NEAR execution, 1 Pgas capacity, sub-300 KB proof size and 128-bit quantum soundness remain unverified."
+  ]
+}

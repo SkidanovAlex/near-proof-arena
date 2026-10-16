@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "rs_evaluations_checked": 3328,
+  "merkle_openings_checked": 16,
+  "opening_mutations_rejected": 64,
+  "hash": "full-round BLAKE2s-256",
+  "witness_rows": 8,
+  "witness_columns": 104,
+  "root_hex": "ed97f9c0383fd6424e929ac6bcf89b018dced8c962bb16bcdd805bff011a3dcd",
+  "scope": "Independent full-data RS encoding and Merkle inclusion diagnostics.",
+  "whir_proximity_proof_generated": false,
+  "gkr_proof_generated": false,
+  "quantum_security_established": false,
+  "sha256": {
+    "/data/illia/nearproof/research/near-compression/results/direct-wasm-commitment-data.json": "48789074a69c05a7dd052786fcc1e50e2c77c9d7fc7b6ae5e5ad3fd007278083",
+    "/data/illia/nearproof/research/near-compression/results/direct-wasm-air-export.json": "0ddd7a217b6e054b56b089f65d160e3d1cc4b38f97662c2c2a4dd5804c1d5800",
+    "/data/illia/nearproof/research/near-compression/airbender/direct-wasm/check_commitment.py": "2361daff8d7fdeab1ee557467433fa9838f4fc17c424d284ffa88bf0ba5bd77b",
+    "/data/illia/nearproof/research/near-compression/airbender/direct-wasm/near_wasm_commitment.rs": "c072605bf358a539fc508e854c07e4fc699c8b08ae8f2d8dab7575027cc5442c"
+  },
+  "upstream_commit": "129f827003b34acd64a3315a5863eac75bc09fe6",
+  "integration_note": "Full-round tree selected explicitly; upstream associated leaf verifier uses global reduced-round setting and is not used by this independent checker.",
+  "log": "/data/illia/nearproof/research/near-compression/results/direct-wasm-commitment.log"
+}

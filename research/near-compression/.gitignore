@@ -1,0 +1,2 @@
+# Regenerable prover caches; retain proof artifacts and validation reports.
+/results/**/*-cache/

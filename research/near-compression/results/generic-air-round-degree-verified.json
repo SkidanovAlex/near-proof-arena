@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "audit_theorems": 1319,
+  "new_theorems": 6,
+  "module": "GenericAirRoundDegree",
+  "source_sha256": "9660241f1f5b7e362b43dbc5473c88f556ad8b68f2292958ffae9efe81089a80",
+  "result": "For actual weighted constraint/suffix lists, source degree<=d gives rounddegree<=d+1 and at mostd+1 distinct agreement roots for wrong Boolean sum.",
+  "limitations": "Affine input/weight premises still require actual MLE instantiation; no fullinteractive/PCS/QROM soundness theorem.",
+  "audit_log": "/tmp/near-generic-table-degree-audit.log"
+}

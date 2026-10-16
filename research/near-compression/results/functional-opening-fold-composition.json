@@ -1,0 +1,75 @@
+{
+  "status": "Lean checked ideal interactive functional-opening composition; no cryptographic security certification",
+  "date": "2026-10-15",
+  "module": "NearCompression/FunctionalOpeningFold.lean",
+  "theorems": [
+    "bound_opening_initial_candidate",
+    "functional_opening_fold_count"
+  ],
+  "dependencies": [
+    "FunctionalOpeningReduction",
+    "CheckedInteractiveFoldSoundness"
+  ],
+  "experiment": {
+    "outer": "n independent uniform field challenges for actual quadratic weighted sumcheck",
+    "inner": "m independent uniform field challenges for actual checked global-chain folding",
+    "queries": "q independent uniform seeds with replacement from range N",
+    "acceptance": "weightedSumcheckChecks AND checkedFoldAccept; malformed checked paths reject",
+    "initial_binding": "bindFunctionalOpening definition sets stage-zero root, beta-weighted virtual source oracle, equalityWeights(point), claim(point)"
+  },
+  "bound": {
+    "L": "sample.length",
+    "A": "n*max(N,2)+2*n",
+    "E": "sum i<m max(sizes(i+1),2)",
+    "exact": "accepted_count*L <= A*L^n*(L^m*N^q) + L^n*(E*L^m*N^q + L^(m+1)*(T-1)^q)",
+    "normalized_when_denominators_positive": "(A+E)/L + ((T-1)/N)^q"
+  },
+  "assumptions": [
+    "sample and initial evaluation domain have no duplicate elements",
+    "initial degree D and domain N; positive halving sizes and halving degrees",
+    "2 != 0 in generic field",
+    "2*N+D < 3*T; T <= N; D-1 < T; 2*(N-T)+D <= N",
+    "one fixed source-oracle family and coefficient weight tables before weighted sumcheck, with matching lane counts",
+    "false existence of a fixed functional representative whose coefficient functional equals the initial claim",
+    "fold snapshot equality between complete paths and prefixes, including consistency weights; actual challenges equal sampled path values"
+  ],
+  "not_assumed": [
+    "honest source polynomials",
+    "initial candidate absence",
+    "nonlinear extraction theorem",
+    "all rejected branches have valid certificates"
+  ],
+  "remaining_executable_bridges": [
+    {
+      "code": "pq384_derived_weight_joint.py:betas/prove; pq384_weighted_joint.py:betas/prove",
+      "obligation": "common-degree sparse low-bit coefficient lifting and repeated low-bit weight table lifting; root is developing SparseLiftMLE; formal list block equivalence still must match implementation states/scale updates"
+    },
+    {
+      "code": "pq384_terminal_input_weights.py:upper_zeta,row_weights,row_weight_mles,lane_weights,lane_weight_mle,branch_lanes",
+      "obligation": "exact dual-Mobius coefficient functional from verifier GKR current/cyclic-next slot weights, including wraparound subtraction, packing order, padding and offsets; existing shift DP algebra does not automatically prove this entire composed extraction"
+    },
+    {
+      "code": "pq384_derived_weight_joint.py:verify; pq384_batched_fold.py:check_opening",
+      "obligation": "authenticated source pair and heterogeneous domain projection equal bindFunctionalOpening virtual source for fixed committed oracles; commitment binding is external"
+    },
+    {
+      "code": "pq384_seed_gkr_bus.py:opening_arguments,opening_parent; pq384_derived_weight_joint.py:public",
+      "obligation": "all lane weights are derived from verified GKR obligations; public digest omits these arrays and relies on derivation and parent-seed binding; prove canonical deterministic derivation"
+    },
+    {
+      "code": "upstream AIR/zerocheck/GKR composition",
+      "obligation": "post-GKR functional representative does not establish one witness fixed before upstream random challenges. Need shared assignment across relevant upstream obligations or a different reduction; present theorem does not resolve this adaptivity problem"
+    },
+    {
+      "code": "SHA384 transcript/commitment and rejection sampler",
+      "obligation": "bridge real sequential Fiat-Shamir bytes to causal ideal experiment with explicit QROM and commitment loss; query8/Ext4 are diagnostic only"
+    }
+  ],
+  "compile": {
+    "environment": "direct-wasm-whir current root compiled dependencies",
+    "command": "HEAVY_MEM=8G LEAN_NUM_THREADS=2 taskset -c 8-15,24-31 heavy lake env lean /absolute/own/FunctionalOpeningFold.lean",
+    "exit_code": 0,
+    "warnings": 0,
+    "seconds": 0.191
+  }
+}

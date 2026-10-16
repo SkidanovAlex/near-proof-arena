@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1713,
+  "audit_log": "/tmp/near-public-output-audit.log",
+  "modules": {
+    "PreparedWasmFinalRow": {
+      "sha256": "5aae4b678d24ff16609898ce65cf6050d638159876b4393c8531c9578c80e375"
+    },
+    "PreparedPublicOutput": {
+      "sha256": "d60f5f97b46ee54893a2af9465a5ada30a83e68e86e34177b3cecaac0e01798b"
+    },
+    "UniqueBatchCandidates": {
+      "sha256": "8050e8891c5f7196b6e9fa36e0c6c83df343d9d3ae6718575bbd3be33f81f7df"
+    }
+  },
+  "wasm_result": "prepared_wasm_public_call_entry derives actual callEntry execution and public live-stack/fast-gas/error-status output from source AIR, HoldsP, checked prepared code and public entry check",
+  "wasm_premises_remaining": [
+    "Actual prepared function lookup",
+    "Host/prologue gas and stack eligibility",
+    "Preparation/loading/outer runCall context",
+    "Exact natural bus balance, not diagnostic fingerprint alone"
+  ],
+  "batch_result": "Fixed jointly-close lane tuple forces every challenge-dependent close scalar candidate to equal deterministic batch; wrong residual claims admit at most L-1 challenges",
+  "batch_remaining": [
+    "Existence/far-source correlated agreement",
+    "Weighted folding invariant",
+    "Authenticated oracle and QROM reduction"
+  ],
+  "evidence": [
+    "prepared-boundary-source-parity.json",
+    "unique-batch-candidate-route.json",
+    "pq384-global-bus-codec/report.json",
+    "pq384-global-bus-verifier-work.json"
+  ],
+  "full_goal_complete": false
+}

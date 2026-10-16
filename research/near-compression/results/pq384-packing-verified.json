@@ -1,0 +1,103 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "rows": 4,
+      "width": 7,
+      "packing": 1,
+      "lanes": 7,
+      "padded_width": 7,
+      "root_hex": "003c27d8e088e78dc7367d88002978ccc6831c07a1222f6ede69b372086ed330ca5e33bf89b30cf1523eae31ca791d3f",
+      "sampled_pairs": 8,
+      "full_root_reconstruction": true,
+      "negative_checks": 24,
+      "first_opening_leaf_and_path_bytes": 200,
+      "native_seconds_including_io": 0.0013179960660636425
+    },
+    {
+      "rows": 4,
+      "width": 7,
+      "packing": 2,
+      "lanes": 4,
+      "padded_width": 8,
+      "root_hex": "eb3ffd5782664cf410ebb4f824a76ff4615c6019d7736b92e96ce0585eb9f52c45930cb37ee12602a949b15dc116680e",
+      "sampled_pairs": 16,
+      "full_root_reconstruction": true,
+      "negative_checks": 48,
+      "first_opening_leaf_and_path_bytes": 224,
+      "native_seconds_including_io": 0.0010928800329566002
+    },
+    {
+      "rows": 4,
+      "width": 7,
+      "packing": 8,
+      "lanes": 1,
+      "padded_width": 8,
+      "root_hex": "4747d1c94556fcaab42bf3d8fbd309e45473a5b2a572edc03235d0fce19cd7cbd3f3b03b4917d0a5a98cd351335a8c6f",
+      "sampled_pairs": 64,
+      "full_root_reconstruction": true,
+      "negative_checks": 192,
+      "first_opening_leaf_and_path_bytes": 296,
+      "native_seconds_including_io": 0.001333524938672781
+    },
+    {
+      "rows": 8192,
+      "width": 544,
+      "packing": 1,
+      "lanes": 544,
+      "padded_width": 544,
+      "root_hex": "3b18155dc119435e58318cf6aa5a640e12039dd492c4f0a0110b5368daad4105f0213cc7a832c8ba77b158db2effd5b5",
+      "sampled_pairs": 3,
+      "full_root_reconstruction": false,
+      "negative_checks": 9,
+      "first_opening_leaf_and_path_bytes": 5024,
+      "native_seconds_including_io": 1.5700429170392454
+    },
+    {
+      "rows": 8192,
+      "width": 544,
+      "packing": 8,
+      "lanes": 68,
+      "padded_width": 544,
+      "root_hex": "f8ffc2bffb84b31992848006bd642283b9783e40d54ecd0c2d91f334a54003060257a2d5cc0d66087bebdb8668507db5",
+      "sampled_pairs": 3,
+      "full_root_reconstruction": false,
+      "negative_checks": 9,
+      "first_opening_leaf_and_path_bytes": 1360,
+      "native_seconds_including_io": 1.1878457446582615
+    },
+    {
+      "rows": 8192,
+      "width": 544,
+      "packing": 32,
+      "lanes": 17,
+      "padded_width": 544,
+      "root_hex": "38fdb616c24b4a7bec36ba71073cec05e865edb2ff3753804b859479d12302a6def3559577689f9ff617b8077bc95350",
+      "sampled_pairs": 3,
+      "full_root_reconstruction": false,
+      "negative_checks": 9,
+      "first_opening_leaf_and_path_bytes": 1048,
+      "native_seconds_including_io": 2.636512339115143
+    },
+    {
+      "rows": 8192,
+      "width": 544,
+      "packing": 128,
+      "lanes": 5,
+      "padded_width": 640,
+      "root_hex": "fe379a3ad4b6c972fa9a629cf1b7c95c05b709dd0b6d5bcec2c6d1bbcb54291bbddb1f7177cbc05d306d3a451be1b99d",
+      "sampled_pairs": 3,
+      "full_root_reconstruction": false,
+      "negative_checks": 9,
+      "first_opening_leaf_and_path_bytes": 1048,
+      "native_seconds_including_io": 4.647553764283657
+    }
+  ],
+  "scope": "SHA384 packed RS encoding; opening bytes exclude framing/root and are NOT complete proof sizes",
+  "reference": "Direct row MLE then column MLE; independent of native Mobius and FFT",
+  "limits": [
+    "Three full vector pairs checked per large case; not full independent root reconstruction",
+    "Single-run shared-host timings; no peak memory measurement",
+    "Terminal column claims retained; no PCS integration or quantum security claim"
+  ]
+}

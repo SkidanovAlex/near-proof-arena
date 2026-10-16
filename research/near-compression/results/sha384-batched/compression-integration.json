@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "audit": 2230,
+  "audit_log": "/tmp/root-batch-compression-audit.log",
+  "modules": {
+    "SHA384BatchedSlice": {
+      "sha256": "66eb66966c44c12adfa793a8304ee0bca0e874f3f6ae0ff48d44b9efb2a818c0",
+      "theorems": 8
+    },
+    "SHA384BatchedCompression": {
+      "sha256": "41f72e03f5bba974e287826a7cec9bc622b781b91d257766ef26d6669213d378",
+      "theorems": 6
+    }
+  },
+  "snapshot_review": "results/sha384-batched/snapshot-review.json",
+  "proved": "Actual batched HoldsP implies each decoded segment executes all80 fixed SHA512 rounds and the exact compression feed-forward arithmetic.",
+  "remaining": [
+    "message payload decoding",
+    "endpoint natural bus routing",
+    "initial IV and final digest binding",
+    "recursive input routing",
+    "cryptographic acceptance and quantum soundness"
+  ]
+}

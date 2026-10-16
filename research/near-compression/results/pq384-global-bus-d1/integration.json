@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "tables": 33,
+  "root_fresh_process_verification": "PASS: all-table local AIR and randomized bus-fingerprint diagnostic",
+  "proof_json_sha256": "ef7063f751567a4bc4025c2dff307c3f799e21cbe998c6c6e91660f37981bec7",
+  "canonical_air_public_logs_match_legacy_d1_baseline": true,
+  "binding_rejections_actual33": 22,
+  "binding_rejections_small2": 16,
+  "fresh_auxiliaries": true,
+  "source_commitment_transport_bytes": 1584,
+  "binary_codec": "PASS: transport-v3 exact roundtrip and fresh-process verification",
+  "scope": "Complete33tablelocalAIR+randomizedbusfingerprint check, diagnosticQ8/Ext4; no naturalbalance/proximity/QROM certification",
+  "remaining": [
+    "Completeprotocol soundness",
+    "Recursion/aggregation below300000B",
+    "Wasm/host/fullNEAR relation",
+    "1Pgasbenchmark"
+  ],
+  "binary_transport_bytes": 1151130,
+  "codec_negative_checks": 24,
+  "global_only_invalid_local_accepts": true,
+  "global_only_invalid_full_rejects": true,
+  "empty_auxiliary_policy_pass": true,
+  "size_breakdown": "results/pq384-global-bus-size-breakdown.json"
+}

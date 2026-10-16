@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "fullheight_opening_binary_bytes": 55814,
+  "binary_sha256": "56d391e7e1f050ef2a9faffc745266e35207fbe8e904843ed441e1629429148a",
+  "root_fresh_process_binary_verify": "PASS unchanged globalchain verifier",
+  "codec": {
+    "status": "PASS",
+    "lossless_roundtrips": 3,
+    "negative_checks": 48,
+    "cases": [
+      {
+        "case": "small1",
+        "terminal_degree": 1,
+        "rounds": 7,
+        "bytes": 7078,
+        "header_and_terminal_bytes": 694,
+        "unique_leaf_bytes": 1344,
+        "shared_sibling_bytes": 5040,
+        "individual_path_upper_bytes": 16438
+      },
+      {
+        "case": "small64",
+        "terminal_degree": 64,
+        "rounds": 1,
+        "bytes": 3718,
+        "header_and_terminal_bytes": 1126,
+        "unique_leaf_bytes": 384,
+        "shared_sibling_bytes": 2208,
+        "individual_path_upper_bytes": 7270
+      },
+      {
+        "case": "full",
+        "terminal_degree": 1,
+        "rounds": 18,
+        "bytes": 55814,
+        "header_and_terminal_bytes": 1750,
+        "unique_leaf_bytes": 5248,
+        "shared_sibling_bytes": 48816,
+        "individual_path_upper_bytes": 80406
+      }
+    ],
+    "scope": "Unchanged diagnostic Q8 globalchain profile; codec adds no security theorem"
+  },
+  "formal_module": "GlobalChainGeometry",
+  "formal_scope": "Domain projection, canonical pair and selected next-side represent foldedpolynomial equality at squared full-domain point; explicit root-order/nonzero assumptions",
+  "audit_log": "/tmp/near-global-codec-geometry-audit.log",
+  "limits": [
+    "Standalone opening, statement and columnclaims external",
+    "DiagnosticExt4/Q8; no proximity/RBR/QROM theorem",
+    "Not fullNEAR/alltableAIR or1Pgas benchmark"
+  ],
+  "audited_theorems": 1653
+}

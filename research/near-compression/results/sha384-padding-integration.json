@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 1919,
+  "source_sha256": "2bfa36b731aa7801b3d5a8dbb35d3c6d25191addbe335c407774731b922090a9",
+  "theorems": [
+    "sha384_padding_length",
+    "sha384_padding_byte",
+    "sha384_padding_expr"
+  ],
+  "scope": "General exact specification padding and AIR-expression equality; public prefix binding explicit",
+  "remaining": "Full HoldsP to SHA384 digest semantics still needs message/state/digest composition"
+}

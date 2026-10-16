@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "mutation": "canonical2 at table0,row3,column0",
+  "rejected": "constraint residual table0 row2 (next-row dependency), outside fixed boundary samples",
+  "scope": "Full-row checking regression on real D1 binary trace."
+}

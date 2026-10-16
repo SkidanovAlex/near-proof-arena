@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "lean_cases": 104,
+  "lean_operation_comparisons": 728,
+  "fft_vs_naive_evaluations": 62,
+  "quadratic_fold_identities": 15,
+  "canonical_rejections": 5,
+  "field": "existing certified ZkFormal.Algebra.Fp8; x^8=11 flat coordinates",
+  "scope": "reference arithmetic and mixed base-twiddle FFT only; no new PCS wire profile or security certification",
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_pq384_ext8_reference.py",
+      "sha256": "05250a0b88705fb7eed2109dede9fe958cda8ad3c43f52a09973dbf42bba3fed"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_ext8_reference.py",
+      "sha256": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a"
+    },
+    {
+      "path": "/tmp/root-ext8-arithmetic.json",
+      "sha256": "6f0170f5e4f49ccfcc385daa5dd41d2b5937ae0bd5a49bea1ebd6367d9647404"
+    }
+  ]
+}

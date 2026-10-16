@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "audit": 2524,
+  "audit_log": "/tmp/root-locals-code-metadata-audit.log",
+  "independent_locals_setup": {
+    "actual_prepare_cases": 6,
+    "exact_code_fields": 3648,
+    "rejected": 3774,
+    "scope": "Executable actual PREP/CODE/local count provenance checker, not full AIR/runCall refinement",
+    "status": "PASS"
+  },
+  "independent_metadata_counts": {
+    "lanes": 601,
+    "slot_values": 29596,
+    "beta_values": 601,
+    "lane_weight_positions": 216,
+    "partial_lanes": 45,
+    "negative_checks": 26,
+    "row_pairs": 53
+  },
+  "lean_metadata_table_certificates": 36,
+  "sources": {
+    "NearCompression/PreparedLocalsCode.lean": "ba80b089871053df1d4e66033edfca547df81d6842a4654ad550440ca2319a15",
+    "PreparedLocalsCodeSmoke.lean": "431b5580a54ac3f13ad9ffa8188d37509a2fe6db9f7737c4e6d7afc67935696a",
+    "NearCompression/GKRMetadataValidity.lean": "269e556a7c8e9192135ca6edbbcd738bc7c08a4c03969c6e6b8d22e56c10115a",
+    "airbender/direct-wasm/check_heterogeneous_metadata.py": "6263c960b752c3ea8bd5f15d8f91cc7b2a75cc8f7ecdcf0341adfaba6d95bb20"
+  },
+  "scope": [
+    "Actual PREP/CODE checker acceptance soundness, not full locals AIR/runCall refinement",
+    "Metadata numerical bounds proved; captured weight parity tested, not formal Python semantics",
+    "Observed GKR input dimensions checked, not fixed-envelope production integration"
+  ],
+  "remaining": [
+    "locals update/whole-run refinement",
+    "pre-challenge fixed metadata and causal sampling",
+    "near-case sparse-lift image",
+    "commitment and QROM security",
+    "full NEAR1Petagas small proof"
+  ]
+}

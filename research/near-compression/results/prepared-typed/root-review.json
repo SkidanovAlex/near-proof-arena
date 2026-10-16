@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "files": {
+    "results/prepared-typed/fixture.json": "18792abbfa9602ffc49f81930c3845cb6639e804db01f860906f623a1c753045",
+    "results/prepared-typed/air.json": "778811503c14e58e59c7feca2daddfaec3b13f0df4b7bbf33dee751496bf28cc",
+    "results/prepared-typed/report.json": "0f810c5b202695d49d421214f7e4d8f709f8215fb3edb39cd4d366b2bf6fd897",
+    "NearCompression/PreparedTypedValue.lean": "7f1175e8ab49600b22beca55b27de2da75face085a9915f2bb7fd723a4f0a4ad",
+    "NearCompression/PreparedTypedStep.lean": "b88cb838d2726ba829fc48433da24bb8dce2f0a44d9f93e1e8b523f87534e69e"
+  },
+  "scope": "Root-generated Lean fixtures and AST; independent Python gadget and typed trace replay. Whole typed EXEC/CODE semantic composition pending. prepared_typed_contract.json is the historical initial gadget contract; its planned-layout status predates the separate full typed profile handoff."
+}

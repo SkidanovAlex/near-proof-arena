@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "scope": "Canonical AIR table-local only; buses not checked",
+  "source_fixture": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/generic-air/table-fixture.json",
+  "degree": 16,
+  "rows": 8,
+  "width": 2,
+  "negative_checks": 10,
+  "verifier": "PASS: SHA384 canonical AIR table-local opening diagnostic",
+  "elapsed_seconds": 0.2707098061218858,
+  "artifact_bytes": 21029,
+  "limits": [
+    "Q8 diagnostic Ext4; no claimed 128-bit or QROM security",
+    "No cross-table natural bus balance"
+  ]
+}

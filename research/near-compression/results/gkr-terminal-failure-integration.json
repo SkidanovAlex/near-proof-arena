@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3167,
+  "added_theorems": 2,
+  "source_sha256": "d319669b66ddbb4de905d38e1c24ad872906fe9eb99b5665e207f2a813822350",
+  "audit_log": "/tmp/root-gkr-terminal-failure-audit.log",
+  "result": "Accepted false-root circuit paths bounded by ideal GKR error plus accepted incorrect combined terminal openings; no terminal correctness assumed.",
+  "limitations": [
+    "PCS failure term not yet bounded for actual commitments",
+    "Ideal independent uniform challenges",
+    "Actual verifier refinement and fullNEAR capacity remain open"
+  ]
+}

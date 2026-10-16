@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "scope": "Canonical AIR table-local only; buses not checked",
+  "source_fixture": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/generic-air/table-fixture.json",
+  "degree": 16,
+  "rows": 8,
+  "width": 2,
+  "negative_checks": 10,
+  "verifier": "PASS: SHA384 canonical AIR table-local opening diagnostic",
+  "elapsed_seconds": 0.2707098061218858,
+  "artifact_bytes": 21029,
+  "limits": [
+    "Q8 diagnostic Ext4; no claimed 128-bit or QROM security",
+    "No cross-table natural bus balance"
+  ],
+  "proof_payload_compact_json_bytes": 19174,
+  "artifact_sha256": "0a5c0a9fcefa2a4fc4d8024e0c1445a6fea9ad458b53078925e3efaaecb1778c",
+  "reviewed_handoff": [
+    "Canonical verifier-supplied spec binds AIR/public/table/height/packing before challenges",
+    "Expected source root and packing context committed before constraint mixing/tau",
+    "Zerocheck terminal checks current/next evaluations",
+    "Shift reduction derives PCS point and checks final column claims",
+    "Post-shift seed and branch domain bind packed opening to same source root"
+  ],
+  "remaining": [
+    "Efficient fullheight AIR prover",
+    "Cross-table/source-aux bus composition",
+    "Formal full-protocol refinement",
+    "Proximity/RBR and QROM security theorem",
+    "Recursion and fullNEAR/1Pgas coverage"
+  ]
+}

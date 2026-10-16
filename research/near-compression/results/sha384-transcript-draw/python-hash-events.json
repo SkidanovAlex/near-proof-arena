@@ -1,0 +1,333 @@
+[
+  {
+    "name": "actual-small",
+    "calls": [
+      {
+        "tag": "transcript/request",
+        "parts_hex": [
+          "f46209ec7124ffcc92a7dc8336eaa1dd59db5f97af922c7d59db25c4abb9e66b2e65256d8cac6e3f8a9bb441343564d7",
+          "6c6162656c",
+          "0100000000000000",
+          "0100000000000000"
+        ],
+        "digest_hex": "5d4f9a3867cbd6ee8f221d151b27605fe01305ec2dd7a76b21f68b544c81a0c0a3408eae00a281d544b7aebe880d147f"
+      },
+      {
+        "tag": "transcript/squeeze",
+        "parts_hex": [
+          "5d4f9a3867cbd6ee8f221d151b27605fe01305ec2dd7a76b21f68b544c81a0c0a3408eae00a281d544b7aebe880d147f",
+          "6c6162656c",
+          "0000000000000000"
+        ],
+        "digest_hex": "fdad96ce92f0b29d9862ad091859eb39fa9e94c6f71934ee913e69b891a78e69bb607aaa6b7001f404e8fab3bbaf2978"
+      },
+      {
+        "tag": "transcript/ratchet",
+        "parts_hex": [
+          "5d4f9a3867cbd6ee8f221d151b27605fe01305ec2dd7a76b21f68b544c81a0c0a3408eae00a281d544b7aebe880d147f",
+          "6c6162656c",
+          "fdad96ce92f0b29d9862ad091859eb39fa9e94c6f71934ee913e69b891a78e69bb607aaa6b7001f404e8fab3bbaf2978"
+        ],
+        "digest_hex": "a677e4669791018146ffb4d15c38d958c010cb7fa4155f7c7570d51759611de8be3a2214258525d7dce074b7e4525d63"
+      },
+      {
+        "tag": "transcript/draw-result",
+        "parts_hex": [
+          "a677e4669791018146ffb4d15c38d958c010cb7fa4155f7c7570d51759611de8be3a2214258525d7dce074b7e4525d63",
+          "6c6162656c",
+          "0100000000000000",
+          "0100000000000000",
+          "0100000000000000"
+        ],
+        "digest_hex": "504ec1aae513af1af0e5116f2605053401c35629464dcdb98837905e3fa82adc11cf493288a0da43ebec1397c2ae23d2"
+      }
+    ]
+  },
+  {
+    "name": "actual-ext4",
+    "calls": [
+      {
+        "tag": "transcript/request",
+        "parts_hex": [
+          "f46209ec7124ffcc92a7dc8336eaa1dd59db5f97af922c7d59db25c4abb9e66b2e65256d8cac6e3f8a9bb441343564d7",
+          "6c6162656c",
+          "0200000000000000",
+          "0400000000000000"
+        ],
+        "digest_hex": "56a28cc73dba01ec6117b96d166586b93c7f7fc1f3752c3c67df64a8eb8a95076a83fba556476b08c56bfe94a6436c11"
+      },
+      {
+        "tag": "transcript/squeeze",
+        "parts_hex": [
+          "56a28cc73dba01ec6117b96d166586b93c7f7fc1f3752c3c67df64a8eb8a95076a83fba556476b08c56bfe94a6436c11",
+          "6c6162656c",
+          "0000000000000000"
+        ],
+        "digest_hex": "24119774a7c98e3f127be1f78eab35fb50ec4def130e643dd8a0cf16f605c13a8ab7c7c1e2fd8c84545d11d70eb2217d"
+      },
+      {
+        "tag": "transcript/ratchet",
+        "parts_hex": [
+          "56a28cc73dba01ec6117b96d166586b93c7f7fc1f3752c3c67df64a8eb8a95076a83fba556476b08c56bfe94a6436c11",
+          "6c6162656c",
+          "24119774a7c98e3f127be1f78eab35fb50ec4def130e643dd8a0cf16f605c13a8ab7c7c1e2fd8c84545d11d70eb2217d"
+        ],
+        "digest_hex": "6a35d53010ec8ac86fe44cf5545146a297239eaebfcb9ded2aba9fcff55eb56fbc79a37be9edbf7c490f7f991b27736d"
+      },
+      {
+        "tag": "transcript/draw-result",
+        "parts_hex": [
+          "6a35d53010ec8ac86fe44cf5545146a297239eaebfcb9ded2aba9fcff55eb56fbc79a37be9edbf7c490f7f991b27736d",
+          "6c6162656c",
+          "0200000000000000",
+          "0400000000000000",
+          "0100000000000000"
+        ],
+        "digest_hex": "c16294ce396da79f3edc60612524ec8128c8a402724f3d2c8911a836cb8c1018269104d067ee1892e9635380bcd6281e"
+      }
+    ]
+  },
+  {
+    "name": "actual-multiblock",
+    "calls": [
+      {
+        "tag": "transcript/request",
+        "parts_hex": [
+          "f46209ec7124ffcc92a7dc8336eaa1dd59db5f97af922c7d59db25c4abb9e66b2e65256d8cac6e3f8a9bb441343564d7",
+          "6c6162656c",
+          "0400000000000000",
+          "0400000000000000"
+        ],
+        "digest_hex": "ecd5ee62e9d0e5a9252437334928733b68604310f3c99caa5c202a75ae3bc387b02e126b9b4c3deec600f8c13225490f"
+      },
+      {
+        "tag": "transcript/squeeze",
+        "parts_hex": [
+          "ecd5ee62e9d0e5a9252437334928733b68604310f3c99caa5c202a75ae3bc387b02e126b9b4c3deec600f8c13225490f",
+          "6c6162656c",
+          "0000000000000000"
+        ],
+        "digest_hex": "2f6ad5a69b10578bef15863a81a22b657511b5238127e0b7b36b6bc66f5381a12338a18b058c038191ee0a83118b9aa0"
+      },
+      {
+        "tag": "transcript/ratchet",
+        "parts_hex": [
+          "ecd5ee62e9d0e5a9252437334928733b68604310f3c99caa5c202a75ae3bc387b02e126b9b4c3deec600f8c13225490f",
+          "6c6162656c",
+          "2f6ad5a69b10578bef15863a81a22b657511b5238127e0b7b36b6bc66f5381a12338a18b058c038191ee0a83118b9aa0"
+        ],
+        "digest_hex": "d305c7edf952fe77508713861af96cd1a21eb7e86d173d63fb5c7ec43538c721a19f3ea09ff215487f8d4b221b0f7307"
+      },
+      {
+        "tag": "transcript/squeeze",
+        "parts_hex": [
+          "d305c7edf952fe77508713861af96cd1a21eb7e86d173d63fb5c7ec43538c721a19f3ea09ff215487f8d4b221b0f7307",
+          "6c6162656c",
+          "0100000000000000"
+        ],
+        "digest_hex": "ce407b9dd598054aedf302da248080a395584c922094bd8c5a66c7332e162df6c71d30c40e36e2951a5e69757feb22c7"
+      },
+      {
+        "tag": "transcript/ratchet",
+        "parts_hex": [
+          "d305c7edf952fe77508713861af96cd1a21eb7e86d173d63fb5c7ec43538c721a19f3ea09ff215487f8d4b221b0f7307",
+          "6c6162656c",
+          "ce407b9dd598054aedf302da248080a395584c922094bd8c5a66c7332e162df6c71d30c40e36e2951a5e69757feb22c7"
+        ],
+        "digest_hex": "268a6bf87ca4e1cebdbae2c5a9ad3916216e2e6e1a475266767b2d4d01837654a9b7b6157ef8da565c25d198a67f05d2"
+      },
+      {
+        "tag": "transcript/draw-result",
+        "parts_hex": [
+          "268a6bf87ca4e1cebdbae2c5a9ad3916216e2e6e1a475266767b2d4d01837654a9b7b6157ef8da565c25d198a67f05d2",
+          "6c6162656c",
+          "0400000000000000",
+          "0400000000000000",
+          "0200000000000000"
+        ],
+        "digest_hex": "e4eb4720732d262c5ab46f7a6121270c04e3400a76cbb83ef541b91c3e12c573e6943f8dfa27bef3b704c19f5e896362"
+      }
+    ]
+  },
+  {
+    "name": "forced-reject-stop",
+    "calls": [
+      {
+        "tag": "transcript/request",
+        "parts_hex": [
+          "f46209ec7124ffcc92a7dc8336eaa1dd59db5f97af922c7d59db25c4abb9e66b2e65256d8cac6e3f8a9bb441343564d7",
+          "6c6162656c",
+          "0100000000000000",
+          "0300000000000000"
+        ],
+        "digest_hex": "4600bf09373dd03ebe60ae9b31ea36d4ea55949acc454fea1bb1200aef5483a0d1f38560c83cb1622e693dd8a7852e13"
+      },
+      {
+        "tag": "transcript/squeeze",
+        "parts_hex": [
+          "4600bf09373dd03ebe60ae9b31ea36d4ea55949acc454fea1bb1200aef5483a0d1f38560c83cb1622e693dd8a7852e13",
+          "6c6162656c",
+          "0000000000000000"
+        ],
+        "digest_hex": "020000f0ffffffff00000000000000780100007802000078020000f0020000f0020000f0020000f0020000f0020000f0"
+      },
+      {
+        "tag": "transcript/ratchet",
+        "parts_hex": [
+          "4600bf09373dd03ebe60ae9b31ea36d4ea55949acc454fea1bb1200aef5483a0d1f38560c83cb1622e693dd8a7852e13",
+          "6c6162656c",
+          "020000f0ffffffff00000000000000780100007802000078020000f0020000f0020000f0020000f0020000f0020000f0"
+        ],
+        "digest_hex": "1314609f43c42c626fcf6d4fc7c6ccc756217110240b4fc2984abc8298ad4c8b758a4bb6d439d2d49fcc42fafa23cdec"
+      },
+      {
+        "tag": "transcript/draw-result",
+        "parts_hex": [
+          "1314609f43c42c626fcf6d4fc7c6ccc756217110240b4fc2984abc8298ad4c8b758a4bb6d439d2d49fcc42fafa23cdec",
+          "6c6162656c",
+          "0100000000000000",
+          "0300000000000000",
+          "0100000000000000"
+        ],
+        "digest_hex": "0bedec2e6990fc46da25eb23e98c9532860eb9e3bb944c8f6012e51bd0b230e7ea32885f4e2a372463297a6ea5eee2ae"
+      }
+    ]
+  },
+  {
+    "name": "forced-crossblock",
+    "calls": [
+      {
+        "tag": "transcript/request",
+        "parts_hex": [
+          "f46209ec7124ffcc92a7dc8336eaa1dd59db5f97af922c7d59db25c4abb9e66b2e65256d8cac6e3f8a9bb441343564d7",
+          "6c6162656c",
+          "0d00000000000000",
+          "0100000000000000"
+        ],
+        "digest_hex": "ef1565df4bee375c2e21df1efcb10f77eee04caf78fff5c3ff85040d0de80d53153e8dfb25b972cc8df7f8787d499dd4"
+      },
+      {
+        "tag": "transcript/squeeze",
+        "parts_hex": [
+          "ef1565df4bee375c2e21df1efcb10f77eee04caf78fff5c3ff85040d0de80d53153e8dfb25b972cc8df7f8787d499dd4",
+          "6c6162656c",
+          "0000000000000000"
+        ],
+        "digest_hex": "000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000b000000"
+      },
+      {
+        "tag": "transcript/ratchet",
+        "parts_hex": [
+          "ef1565df4bee375c2e21df1efcb10f77eee04caf78fff5c3ff85040d0de80d53153e8dfb25b972cc8df7f8787d499dd4",
+          "6c6162656c",
+          "000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000b000000"
+        ],
+        "digest_hex": "4e7bd29ae3c8ccd18f6d7afa2feb425b0817a8edfa2bc352dddac0cd379c38b117aca63a4a89c39fce15d47051f0fb28"
+      },
+      {
+        "tag": "transcript/squeeze",
+        "parts_hex": [
+          "4e7bd29ae3c8ccd18f6d7afa2feb425b0817a8edfa2bc352dddac0cd379c38b117aca63a4a89c39fce15d47051f0fb28",
+          "6c6162656c",
+          "0100000000000000"
+        ],
+        "digest_hex": "020000f0ffffffff00000000000000780100007802000078020000f0020000f0020000f0020000f0020000f0020000f0"
+      },
+      {
+        "tag": "transcript/ratchet",
+        "parts_hex": [
+          "4e7bd29ae3c8ccd18f6d7afa2feb425b0817a8edfa2bc352dddac0cd379c38b117aca63a4a89c39fce15d47051f0fb28",
+          "6c6162656c",
+          "020000f0ffffffff00000000000000780100007802000078020000f0020000f0020000f0020000f0020000f0020000f0"
+        ],
+        "digest_hex": "0d8dcf632c377987135b43753eda68ad3330abe2a8ce5bf39e713a076d0203e81cfc7a5bc74942c5ce8bc24b56187c3e"
+      },
+      {
+        "tag": "transcript/draw-result",
+        "parts_hex": [
+          "0d8dcf632c377987135b43753eda68ad3330abe2a8ce5bf39e713a076d0203e81cfc7a5bc74942c5ce8bc24b56187c3e",
+          "6c6162656c",
+          "0d00000000000000",
+          "0100000000000000",
+          "0200000000000000"
+        ],
+        "digest_hex": "0c26520784aa531059ba18eb65ce8bf389466241127f7ef68a4e2f3b890d84c9c442652b03314bf84ba8936c2b4b6cfd"
+      }
+    ]
+  },
+  {
+    "name": "exhaustion",
+    "calls": [
+      {
+        "tag": "transcript/request",
+        "parts_hex": [
+          "f46209ec7124ffcc92a7dc8336eaa1dd59db5f97af922c7d59db25c4abb9e66b2e65256d8cac6e3f8a9bb441343564d7",
+          "6c6162656c",
+          "0100000000000000",
+          "0100000000000000"
+        ],
+        "digest_hex": "5d4f9a3867cbd6ee8f221d151b27605fe01305ec2dd7a76b21f68b544c81a0c0a3408eae00a281d544b7aebe880d147f"
+      },
+      {
+        "tag": "transcript/squeeze",
+        "parts_hex": [
+          "5d4f9a3867cbd6ee8f221d151b27605fe01305ec2dd7a76b21f68b544c81a0c0a3408eae00a281d544b7aebe880d147f",
+          "6c6162656c",
+          "0000000000000000"
+        ],
+        "digest_hex": "020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0"
+      },
+      {
+        "tag": "transcript/ratchet",
+        "parts_hex": [
+          "5d4f9a3867cbd6ee8f221d151b27605fe01305ec2dd7a76b21f68b544c81a0c0a3408eae00a281d544b7aebe880d147f",
+          "6c6162656c",
+          "020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0"
+        ],
+        "digest_hex": "c08ee2d7623cbcefabf8cccd1b76dc76fef26fa6fa6faa969dff38162de3402fddc537bc16548b9fa539bcec0b44fd78"
+      },
+      {
+        "tag": "transcript/squeeze",
+        "parts_hex": [
+          "c08ee2d7623cbcefabf8cccd1b76dc76fef26fa6fa6faa969dff38162de3402fddc537bc16548b9fa539bcec0b44fd78",
+          "6c6162656c",
+          "0100000000000000"
+        ],
+        "digest_hex": "020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0"
+      },
+      {
+        "tag": "transcript/ratchet",
+        "parts_hex": [
+          "c08ee2d7623cbcefabf8cccd1b76dc76fef26fa6fa6faa969dff38162de3402fddc537bc16548b9fa539bcec0b44fd78",
+          "6c6162656c",
+          "020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0020000f0"
+        ],
+        "digest_hex": "829895c0e72b31b6e98bec2709fc4240c88c45b29df1e44a79dfc2cc95ac95bf4b9bcef0a9a6cdb8e65eeabec1128779"
+      }
+    ]
+  },
+  {
+    "name": "zero-count",
+    "calls": []
+  },
+  {
+    "name": "zero-coefficients",
+    "calls": []
+  },
+  {
+    "name": "over-count",
+    "calls": []
+  },
+  {
+    "name": "over-coefficients",
+    "calls": []
+  },
+  {
+    "name": "zero-budget",
+    "calls": []
+  },
+  {
+    "name": "over-budget",
+    "calls": []
+  }
+]

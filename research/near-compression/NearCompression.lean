@@ -1,0 +1,1271 @@
+import NearCompression.Segments
+import NearCompression.Scope
+import NearCompression.Boundary
+
+import NearCompression.MapBoundary
+import NearCompression.HostBoundary
+import NearCompression.StorageEquivalence
+import NearCompression.CoreHost
+import NearCompression.WriteHost
+import NearCompression.StackHost
+import NearCompression.StorageCalls
+import NearCompression.StorageMutations
+import NearCompression.Observational
+import NearCompression.ObservedChain
+import NearCompression.Control
+import NearCompression.Calls
+import NearCompression.Numeric
+import NearCompression.StackControl
+import NearCompression.MemoryTable
+import NearCompression.BulkMemory
+import NearCompression.BulkTable
+import NearCompression.Instruction
+import NearCompression.HashHosts
+import NearCompression.HostCoverage
+import NearCompression.ContextHosts
+import NearCompression.RegisterHosts
+import NearCompression.BalanceHosts
+import NearCompression.ReturnHost
+import NearCompression.LogHelpers
+import NearCompression.Utf16
+import NearCompression.LogHost
+import NearCompression.Utf8
+import NearCompression.Utf8Hosts
+import NearCompression.AbortHost
+import NearCompression.SignatureHost
+import NearCompression.PromiseResults
+import NearCompression.PromiseCreate
+import NearCompression.PromiseThen
+
+import NearCompression.PromiseAnd
+
+import NearCompression.ActionTransfer
+
+import NearCompression.FunctionAction
+
+import NearCompression.PromiseCalls
+
+import NearCompression.DeployAction
+
+import NearCompression.KeyActions
+
+import NearCompression.RestrictedKey
+
+import NearCompression.StakeAction
+
+import NearCompression.AccountActions
+
+import NearCompression.YieldResume
+
+import NearCompression.YieldCreate
+
+import NearCompression.YieldId
+
+import NearCompression.LegacyHosts
+
+import NearCompression.ValidatorHosts
+
+import NearCompression.ContractCodeHost
+
+import NearCompression.YieldIdResume
+
+import NearCompression.RealHostGate
+
+import NearCompression.RealInstruction
+
+import NearCompression.BackendPersistence
+
+import NearCompression.HostPersistence
+
+import NearCompression.HostDataPersistence
+
+import NearCompression.PromisePersistence
+
+import NearCompression.FunctionPersistence
+
+import NearCompression.PromiseCallPersistence
+
+import NearCompression.ActionPersistence
+
+import NearCompression.AccountPersistence
+
+import NearCompression.PromiseObservationPersistence
+
+import NearCompression.ContextPersistence
+
+import NearCompression.OutputPersistence
+
+import NearCompression.LegacyPersistence
+
+import NearCompression.YieldPersistence
+
+import NearCompression.YieldCreationPersistence
+
+import NearCompression.LogPersistence
+
+import NearCompression.StoragePersistence
+
+import NearCompression.PersistenceCoverage
+
+import NearCompression.CallPersistence
+
+import NearCompression.NumericPersistence
+
+import NearCompression.DataInstructionPersistence
+
+import NearCompression.BulkPersistence
+
+import NearCompression.RunPersistence
+
+import NearCompression.RealSegments
+
+import NearCompression.BoundaryWire
+
+import NearCompression.ValueWire
+
+import NearCompression.FrameWire
+
+import NearCompression.GasWire
+
+import NearCompression.CollectionWire
+
+import NearCompression.StorageWire
+
+import NearCompression.MapWire
+
+import NearCompression.AccountingWire
+
+import NearCompression.RealStoreWire
+
+import NearCompression.ContextValueWire
+
+import NearCompression.ContextWire
+
+import NearCompression.ActionWire
+
+import NearCompression.StateWire
+
+import NearCompression.ResultWire
+
+import NearCompression.BackedWire
+
+import NearCompression.PageCommitment
+
+import NearCompression.PageTree
+
+import NearCompression.IndexedPageTree
+
+import NearCompression.MemoryDescriptor
+
+import NearCompression.PageTreeUpdate
+
+import NearCompression.UntrustedPageUpdate
+
+import NearCompression.MemoryWriteChain
+
+import NearCompression.WriteBytesBridge
+
+import NearCompression.PageBatch
+
+import NearCompression.PageBatchChain
+
+import NearCompression.SubpageRead
+
+import NearCompression.SubpageWrite
+
+import NearCompression.SubpageIndex
+
+import NearCompression.SubpageDirectoryUpdate
+
+import NearCompression.FullPages
+
+import NearCompression.SubpageBounds
+
+import NearCompression.SubpageCommitment
+
+import NearCompression.SubpageCommitmentWrite
+
+import NearCompression.BlockDescriptor
+
+import NearCompression.AuthenticatedBlockRead
+
+import NearCompression.AuthenticatedBlockWrite
+
+import NearCompression.CheckedBlockWrite
+
+import NearCompression.BlockWriteChain
+
+import NearCompression.BlockWriteBytes
+
+import NearCompression.BlockBatch
+
+import NearCompression.CheckedBlockBatch
+
+import NearCompression.BlockBatchChain
+
+import NearCompression.HonestBlockBatch
+
+import NearCompression.HonestBlockSequence
+
+import NearCompression.BlockGrouping
+
+import NearCompression.CachedPageTree
+
+import NearCompression.CachedBlockSequence
+
+import NearCompression.CachedWriteBytes
+
+import NearCompression.MemoryHostPhases
+
+import NearCompression.CheckedMemoryHost
+
+import NearCompression.InstructionAdd
+
+import NearCompression.InstructionAddTrace
+
+import NearCompression.InstructionAddRange
+
+import NearCompression.InstructionRangeTrace
+
+import NearCompression.InstructionAddStep
+
+import NearCompression.InstructionAddControl
+
+import NearCompression.InstructionControlTrace
+
+import NearCompression.InstructionSequence
+
+import NearCompression.InstructionOperandSequence
+
+import NearCompression.InstructionStackPair
+
+import NearCompression.InstructionStackCommitment
+
+import NearCompression.InstructionAdd64
+
+import NearCompression.SHA512AddBridge
+
+import NearCompression.SHA512BitSemantics
+
+import NearCompression.SHA512Bits
+
+import NearCompression.SHA512Relocate
+
+import NearCompression.SHA512Round
+
+import NearCompression.SHA512RoundWitness
+
+import NearCompression.SHA512RoundTrace
+
+import NearCompression.SHA512BitBinding
+
+import NearCompression.SHA512RoundSequence
+
+import NearCompression.SHA512SequenceRun
+
+import NearCompression.SHA512Schedule
+
+import NearCompression.SHA512ScheduleTrace
+
+import NearCompression.SHA512ScheduleWindow
+
+import NearCompression.SHA512ScheduleWindowRun
+
+import NearCompression.SHA512Combined
+
+import NearCompression.SHA512CombinedRun
+
+import NearCompression.SHA512Constants
+
+import NearCompression.SHA512FeedForward
+
+import NearCompression.SHA512WindowBounds
+
+import NearCompression.SHA512BlockDecode
+
+import NearCompression.SHA512Compression
+
+import NearCompression.SHA512Bytes
+
+import NearCompression.SHA512Public
+
+import NearCompression.SHA512Chain
+
+import NearCompression.SHA512WindowInvariant
+
+import NearCompression.SHA512ScheduleWindowWitness
+
+import NearCompression.SHA512RoundInvariant
+
+import NearCompression.SHA512CombinedWitness
+
+import NearCompression.SHA512LimbDecode
+
+import NearCompression.SHA512ConstantsWitness
+
+import NearCompression.InstructionLayerCircuit
+
+import NearCompression.InstructionSumcheckRows
+
+import NearCompression.InstructionPublicBinding
+
+import NearCompression.AirPolynomialLowering
+
+import NearCompression.InstructionSumcheckSoundness
+
+import NearCompression.AirSumcheckComposition
+
+import NearCompression.GenericRowMLE
+
+import NearCompression.GenericShiftKernel
+
+import NearCompression.GenericShiftIndex
+
+import NearCompression.GenericAirRoundDegree
+
+import NearCompression.GenericCoordinateMLE
+
+import NearCompression.GenericBusAccumulator
+
+import NearCompression.GenericBusDegree
+
+import NearCompression.GenericMonomialTensor
+
+import NearCompression.GenericMLEFold
+
+import NearCompression.GenericPaddingTraffic
+
+import NearCompression.GenericPaddingLocal
+
+import NearCompression.GenericPaddingComposition
+import NearCompression.GenericCmpPadding
+import NearCompression.GenericCmpTraffic
+import NearCompression.MerklePaddingBridge
+import NearCompression.MerklePaddingTraffic
+import NearCompression.WHIRTerminalWeight
+import NearCompression.WHIRRoundRecurrence
+import NearCompression.FieldRejectionSampler
+import NearCompression.PreparedGasBorrow
+import NearCompression.PreparedFunctionRow
+import NearCompression.GenericRSPairRepresentation
+import NearCompression.PreparedGasPublicBridge
+import NearCompression.PreparedOperandBridge
+import NearCompression.GenericPackingIdentity
+import NearCompression.ScalarRSTerminal
+import NearCompression.PreparedAddTransition
+import NearCompression.GenericPackedClaimAuthentication
+import NearCompression.GenericPackedGridCounting
+import NearCompression.ScalarRSReconstructedTerminal
+import NearCompression.PreparedAddTableLocal
+import NearCompression.GenericPackedOpeningComposition
+import NearCompression.PreparedTerminalCases
+import NearCompression.OneFoldScalarComposition
+import NearCompression.PreparedStackCases
+import NearCompression.GenericAffineFoldParameter
+import NearCompression.RepeatedAffineFold
+import NearCompression.GenericLaneBatching
+import NearCompression.PreparedWasmStep
+import NearCompression.PreparedWasmAddStep
+import NearCompression.CompactAffineWeights
+import NearCompression.PreparedWasmTerminal
+import NearCompression.PreparedWasmExecution
+import NearCompression.BasefoldCoefficientInnerProduct
+import NearCompression.PreparedCodeBinding
+import NearCompression.PreparedWasmEntry
+import NearCompression.GlobalChainGeometry
+import NearCompression.PreparedCodeReachability
+import NearCompression.VirtualSourceBatching
+import NearCompression.PreparedWasmConstruct
+import NearCompression.FiniteBatchCandidates
+import NearCompression.PreparedPublicBoundary
+import NearCompression.PreparedDonePadding
+import NearCompression.FiniteRSUniqueDecoding
+import NearCompression.UniqueBatchCandidates
+import NearCompression.PreparedWasmFinalRow
+import NearCompression.PreparedPublicOutput
+import NearCompression.TwoLaneReconstruction
+import NearCompression.AffineFoldReconstruction
+import NearCompression.WeightedConsistencyTransfer
+import NearCompression.PreparedRunCall
+import NearCompression.GlobalChainMass
+import NearCompression.InterleavedRSPullback
+import NearCompression.CanonicalPolynomial
+import NearCompression.InterleavedResidual
+import NearCompression.WeightedFoldComposition
+import NearCompression.GlobalChainTerminalDecomposition
+import NearCompression.AdaptiveRoundBudget
+import NearCompression.IndexedWeightedPullback
+import NearCompression.IndexedFoldExtraction
+
+import NearCompression.PreparedCodeOrder
+
+import NearCompression.IndependentQueryBudget
+
+import NearCompression.PreparedCodeBus
+
+import NearCompression.SharedCurveConcentration
+
+import NearCompression.WeightedThreeCandidate
+import NearCompression.SumcheckLinearCodec
+
+import NearCompression.PreparedCodeProvenance
+import NearCompression.WeightedUniqueExtraction
+
+import NearCompression.FiniteIndexTransport
+
+import NearCompression.IndexedUniqueExtraction
+import NearCompression.GlobalChainWeightBounds
+
+import NearCompression.GlobalChainUniqueRegime
+
+import NearCompression.InteractiveUniqueFoldSoundness
+
+import NearCompression.PreparedExecAdapter
+import NearCompression.PreparedExecPC
+
+import NearCompression.CheckedInteractiveFoldSoundness
+
+import NearCompression.PreparedExecTransition
+
+import NearCompression.PreparedExecWasm
+
+import NearCompression.WeightedVirtualInitial
+
+import NearCompression.SHA384Chain
+
+import NearCompression.PreparedExecGas
+
+import NearCompression.PreparedExecState
+
+import NearCompression.StructuredBatchKernel
+
+import NearCompression.PreparedExecStack
+
+import NearCompression.PreparedExecClosure
+
+import NearCompression.SHA384MultiBlock
+
+import NearCompression.PreparedLiteral
+
+import NearCompression.FunctionalBatchRepresentative
+
+import NearCompression.PreparedExecStackClosure
+
+import NearCompression.PreparedExecTerminal
+
+import NearCompression.VectorAffineExtraction
+
+import NearCompression.PreparedLiteralCertificates
+
+import NearCompression.VectorTensorExtraction
+
+import NearCompression.SHA384Padding
+
+import NearCompression.SharedLaneInterpolation
+
+import NearCompression.PreparedExecContinue
+
+import NearCompression.PreparedLiteralRun
+
+import NearCompression.PreparedExecBoundary
+
+import NearCompression.StructuredWeightTensor
+
+import NearCompression.PreparedLiteralEntry
+
+import NearCompression.PreparedLiteralRunCall
+
+import NearCompression.SHA384MultiBlockSemantics
+
+import NearCompression.SHA384Message
+
+import NearCompression.AdaptiveWeightedSumcheck
+
+import NearCompression.WeightedSumcheckTerminal
+
+import NearCompression.PreparedExecPadding
+
+import NearCompression.ColumnQuotient
+
+import NearCompression.EqualityWeightResidual
+
+import NearCompression.ColumnQuotientSHA384
+
+import NearCompression.PreparedExecPublicOutput
+
+import NearCompression.CloseFamilySumcheck
+
+import NearCompression.PreparedExecFinalRow
+
+import NearCompression.SHA384EndpointSplit
+
+import NearCompression.FunctionalOpeningReduction
+
+import NearCompression.EqualityWeightAppend
+
+import NearCompression.FunctionalOpeningFold
+
+import NearCompression.SparseLiftMLE
+
+import NearCompression.PreparedControlStep
+
+import NearCompression.SHA384EndpointCoreSemantics
+
+import NearCompression.DualMobiusWeights
+import NearCompression.PreparedControlLiteral
+
+import NearCompression.PreparedControlCondition
+
+import NearCompression.PackedDualMobiusWeights
+
+import NearCompression.PreparedControlBus
+
+import NearCompression.SHA384EndpointRouting
+
+import NearCompression.PreparedControlProvenance
+
+import NearCompression.SHA384EndpointMessage
+
+import NearCompression.SHA384EndpointPublic
+
+import NearCompression.PreparedControlBranch
+
+import NearCompression.PreparedControlSetup
+
+import NearCompression.SHA384BatchedCore
+
+import NearCompression.DualBorrowWeightMLE
+
+import NearCompression.UpperZetaBitPass
+
+import NearCompression.PreparedControlStack
+
+import NearCompression.PreparedControlGas
+
+import NearCompression.PreparedControlSequential
+
+import NearCompression.PreparedControlChargedBranch
+
+import NearCompression.SHA384BatchedPhase
+
+import NearCompression.SHA384BatchedPadding
+
+import NearCompression.SHA384BatchedPublic
+
+import NearCompression.HeterogeneousSourcePair
+
+import NearCompression.SHA384BatchedSlice
+
+import NearCompression.SHA384BatchedCompression
+
+import NearCompression.SHA384BatchedPayloadIndex
+
+import NearCompression.SparseLiftPolynomial
+
+import NearCompression.PreparedControlUntaken
+
+import NearCompression.PreparedControlBlock
+
+import NearCompression.PreparedControlFrameStack
+
+import NearCompression.PreparedControlState
+
+import NearCompression.SHA384BatchedRouting
+
+import NearCompression.SHA384BatchedPublicRouting
+
+import NearCompression.SHA384BatchedIVLayout
+
+import NearCompression.SHA384BatchedPayloadField
+
+import NearCompression.SHA384BatchedMessageRouting
+
+import NearCompression.SHA384BatchedMessageCount
+
+import NearCompression.SHA384BatchedMessage
+
+import NearCompression.SHA384BatchedTraceBytes
+
+import NearCompression.SHA384BatchedSoundness
+
+import NearCompression.PreparedControlAuthenticated
+
+import NearCompression.PreparedControlBranchState
+
+import NearCompression.PreparedControlBranchBounds
+
+import NearCompression.PreparedControlTakenState
+
+import NearCompression.PreparedControlBranchContinue
+
+import NearCompression.RadixTwoFFTStages
+
+import NearCompression.PreparedControlLegacyAdapter
+
+import NearCompression.PreparedControlLegacyProjection
+
+import NearCompression.PreparedControlLegacyLocal
+
+import NearCompression.PreparedControlLegacyState
+
+import NearCompression.FFTBitReversal
+
+import NearCompression.SHA384CommittedPadPhase
+
+import NearCompression.PreparedControlTerminal
+
+import NearCompression.PreparedControlGasContext
+
+import NearCompression.PreparedControlRun
+
+import NearCompression.SHA384CommittedBytes
+
+import NearCompression.FFTButterflyWrites
+
+import NearCompression.FFTMutableSchedule
+
+import NearCompression.PreparedControlBoundary
+
+import NearCompression.PreparedControlEntry
+
+import NearCompression.PreparedControlRunCall
+
+import NearCompression.LowerMobiusBitPass
+
+import NearCompression.SHA384CommittedRouting
+
+import NearCompression.PackedSourceExecution
+
+import NearCompression.SHA384CommittedMessage
+
+import NearCompression.PreparedControlQuiet
+
+import NearCompression.PreparedControlPadding
+
+import NearCompression.PreparedControlPublicOutput
+
+import NearCompression.PreparedControlFinalRow
+
+import NearCompression.GKRCommonInputBoundary
+
+import NearCompression.SHA384DirectInput
+
+import NearCompression.SHA384DirectSemantics
+
+import NearCompression.GKRRowSlotSpanning
+
+import NearCompression.SHA384DirectRouting
+
+import NearCompression.SHA384DirectPublic
+
+import NearCompression.SHA384DirectProjection
+
+import NearCompression.SHA384DirectCounts
+
+import NearCompression.SHA384DirectRecords
+
+import NearCompression.SHA384DirectPublicFit
+
+import NearCompression.SHA384DirectBalance
+
+import NearCompression.SHA384DirectSoundness
+
+import NearCompression.GKRWeightCoordinateDegree
+
+import NearCompression.SHA384DirectPublicCheck
+
+import NearCompression.MultiaffineTensorRealization
+
+import NearCompression.GKRJointTensorCandidate
+
+import NearCompression.JointSourceFarFold
+
+import NearCompression.PreparedLocalsStep
+
+import NearCompression.HeterogeneousGKRWeights
+
+import NearCompression.HeterogeneousFarFold
+
+import NearCompression.PreparedLocalsLiteral
+
+import NearCompression.PreparedLocalsIndex
+
+import NearCompression.PreparedLocalsOperand
+
+import NearCompression.PreparedLocalsCode
+
+import NearCompression.GKRMetadataValidity
+
+import NearCompression.PreparedLocalsBus
+
+import NearCompression.PreparedLocalsProvenance
+
+import NearCompression.PreparedLocalsUpdate
+
+import NearCompression.PreparedLocalsInitialization
+
+import NearCompression.PreparedLocalsArray
+
+import NearCompression.ProjectedSourceRecovery
+
+import NearCompression.PreparedLocalsGas
+
+import NearCompression.GKRBooleanLaneSeparator
+
+import NearCompression.GKRJointLaneSeparation
+
+import NearCompression.GKRSlotCertificate
+
+import NearCompression.PreparedLocalsFrameWrite
+
+import NearCompression.PreparedLocalsAuthenticated
+
+import NearCompression.GKRProjectedRepresentative
+
+import NearCompression.ProjectedRSDomain
+
+import NearCompression.PreparedLocalsSequential
+
+import NearCompression.PreparedLocalsDepth
+
+import NearCompression.SHA384SharedCore
+
+import NearCompression.PowerTwoRootOrder
+
+import NearCompression.SHA384SharedCompression
+
+import NearCompression.PreparedLocalsStack
+
+import NearCompression.RecoveredProjectedEvaluation
+
+import NearCompression.PreparedLocalsStackState
+
+import NearCompression.PreparedLocalsSuccessState
+
+import NearCompression.PreparedLocalsAuthenticatedState
+
+import NearCompression.PreparedLocalsBoundary
+
+import NearCompression.PreparedLocalsEntryFrame
+
+import NearCompression.SHA384SharedRouting
+
+import NearCompression.SHA384SharedPrefix
+
+import NearCompression.PreparedLocalsEntry
+
+import NearCompression.DiagnosticExt4Embedding
+
+import NearCompression.PreparedLocalsLegacyAdapter
+
+import NearCompression.SHA384SharedNodes
+
+import NearCompression.PreparedLocalsLegacyLocal
+
+import NearCompression.PreparedLocalsControlDecode
+
+import NearCompression.PreparedLocalsLegacyState
+
+import NearCompression.RecoveredGKRTable
+
+import NearCompression.PreparedLocalsTerminal
+
+import NearCompression.PreparedLocalsCondition
+
+import NearCompression.JointRepresentativeNearCase
+
+import NearCompression.SHA384SharedDecode
+
+import NearCompression.SHA384SharedCalls
+
+import NearCompression.SHA384SharedInputRouting
+
+import NearCompression.SHA384SharedBlockDecode
+
+import NearCompression.SHA384SharedInputMatch
+
+import NearCompression.SHA384SharedCallRecords
+
+import NearCompression.SHA384PairedByteDecode
+
+import NearCompression.SHA384SharedPaddedBlock
+
+import NearCompression.SHA384SharedCallState
+
+import NearCompression.SHA384SharedChain
+
+import NearCompression.PreparedLocalsQuiet
+
+import NearCompression.PreparedLocalsPadding
+
+import NearCompression.PreparedLocalsPublicOutput
+
+import NearCompression.PreparedLocalsGasContext
+
+import NearCompression.PreparedLocalsOpcode
+
+import NearCompression.PreparedLocalsBranch
+
+import NearCompression.PreparedLocalsTakenStack
+
+import NearCompression.PreparedLocalsUntaken
+
+import NearCompression.PreparedLocalsBranchBounds
+
+import NearCompression.PreparedLocalsControlPreserve
+
+import NearCompression.PreparedLocalsBranchState
+
+import NearCompression.PreparedLocalsBranchContinue
+
+import NearCompression.PreparedLocalsBlock
+
+import NearCompression.PreparedLocalsFrameStack
+
+import NearCompression.PreparedLocalsControlState
+
+import NearCompression.PreparedLocalsAuthenticatedControl
+
+import NearCompression.PreparedLocalsRun
+
+import NearCompression.PreparedLocalsRunCall
+
+import NearCompression.PreparedLocalsFinalRow
+
+import NearCompression.SHA384SharedMessage
+
+import NearCompression.RecoveredHeterogeneousClaim
+
+import NearCompression.GKRPrivateVectorGlue
+
+import NearCompression.GKRCanonicalCoverage
+
+import NearCompression.GKRAllSlotCertificate
+
+import NearCompression.RecoveredPrivateSlots
+
+import NearCompression.GKRPrivateOwnership
+
+import NearCompression.GKRCanonicalAssignment
+
+import NearCompression.GKRLayerTransition
+
+import NearCompression.GKRHonestRound
+
+import NearCompression.GKRRoundState
+
+import NearCompression.GKRAdaptiveRounds
+
+import NearCompression.GKRAxisExecution
+
+import NearCompression.GKRAxisHistory
+
+import NearCompression.GKRLayerSoundness
+
+import NearCompression.GKRLayerBudget
+
+import NearCompression.GKROutputWeights
+
+import NearCompression.TerminalSignedBalance
+
+import NearCompression.TerminalDAGEvaluation
+
+import NearCompression.TerminalDAGLayerCertificate
+
+import NearCompression.SHA384NodeChunk
+
+import NearCompression.PreparedTypedValue
+
+import NearCompression.PreparedTypedStep
+
+import NearCompression.SHA384NodeChunkRouting
+
+import NearCompression.TerminalDAGTotalSemantics
+
+import NearCompression.TerminalDAGArithmetic
+
+import NearCompression.TerminalSignedExpansion
+
+import NearCompression.TerminalProgramSemantics
+
+import NearCompression.TerminalDAGBalance
+
+import NearCompression.TerminalRebuildCertificate
+
+import NearCompression.SHA384NodeChunkNodes
+
+import NearCompression.TerminalProgramLayer
+
+import NearCompression.SHA384NodeChunkDecode
+
+import NearCompression.PreparedTypedLiteral
+
+import NearCompression.PreparedTypedCode
+
+import NearCompression.SHA384NodeChunkUse
+
+import NearCompression.ChunkOrdinalCoverage
+
+import NearCompression.AIRProgramLowering
+
+import NearCompression.AIRLayerComposition
+
+import NearCompression.PreparedTypedSource
+
+import NearCompression.AdaptiveLayerBudget
+
+import NearCompression.ChunkIntervalBounds
+
+import NearCompression.GKRChallengeBlock
+
+import NearCompression.AIRProgramAccumulation
+
+import NearCompression.PreparedTypedStackValues
+
+import NearCompression.PreparedTypedEqzSource
+
+import NearCompression.GKRStrategyRepair
+
+import NearCompression.SHA384ChunkComposition
+
+import NearCompression.PreparedTypedEqzGuard
+
+import NearCompression.GKRAdaptiveLayers
+
+import NearCompression.BusAuxiliarySemantics
+
+import NearCompression.SHA384ChunkConsistency
+
+import NearCompression.GKRCheckedPath
+
+import NearCompression.BusProgramFormulas
+
+import NearCompression.BusProgramGateSoundness
+
+import NearCompression.PreparedTypedOpcode
+
+import NearCompression.PreparedTypedEqzStack
+
+import NearCompression.SHA384ChunkCallChain
+
+import NearCompression.WeightedTerminalSemantics
+
+import NearCompression.TerminalBooleanRowSemantics
+
+import NearCompression.GKRPathCount
+
+import NearCompression.SHA384HashFraming
+
+import NearCompression.GKRFixedLayerLink
+
+import NearCompression.PreparedTypedBus
+
+import NearCompression.PreparedTypedProvenance
+
+import NearCompression.PreparedTypedSequential
+
+import NearCompression.PreparedTypedGas
+
+import NearCompression.PreparedTypedEqzDepth
+
+import NearCompression.PreparedTypedLocalPreserve
+
+import NearCompression.PreparedTypedEqzArray
+
+import NearCompression.PreparedTypedEqzState
+
+import NearCompression.PreparedTypedEqzAuthenticated
+
+import NearCompression.SHA384HashFrameDecoder
+
+import NearCompression.GKRCircuitPath
+
+import NearCompression.GKRRootOutput
+
+import NearCompression.SHA384HashDecodeSound
+
+import NearCompression.GKRRecoveredTerminal
+
+import NearCompression.PreparedTypedBoundary
+
+import NearCompression.PreparedTypedInitialization
+
+import NearCompression.PreparedTypedEntry
+
+import NearCompression.SHA384TranscriptCommit
+
+import NearCompression.PreparedTypedConstStack
+
+import NearCompression.PreparedTypedConstDepth
+
+import NearCompression.PreparedTypedConstState
+
+import NearCompression.PreparedTypedConstAuthenticated
+
+import NearCompression.GKRTerminalFailure
+
+import NearCompression.PreparedTypedTerminal
+
+import NearCompression.PreparedTypedQuietStack
+
+import NearCompression.PreparedTypedQuietControl
+
+import NearCompression.PreparedTypedQuietLocals
+
+import NearCompression.PreparedTypedPadding
+
+import NearCompression.PreparedTypedGasContext
+
+import NearCompression.PreparedTypedPaddedExit
+
+import NearCompression.SHA384TranscriptDraw
+
+import NearCompression.PreparedTypedExhaustion
+
+import NearCompression.SHA384DrawBounds
+
+import NearCompression.PreparedTypedAddOperands
+
+import NearCompression.PreparedTypedAddArithmetic
+
+import NearCompression.PreparedTypedAddStack
+
+import NearCompression.PreparedTypedAddDepth
+
+import NearCompression.PreparedTypedAddState
+
+import NearCompression.PreparedTypedAddAuthenticated
+
+import NearCompression.PreparedTypedLocalIndex
+
+import NearCompression.PreparedTypedLocalUpdate
+
+import NearCompression.PreparedTypedLocalDepth
+
+import NearCompression.GKRTerminalNearCase
+
+import NearCompression.SHA384MerklePath
+
+import NearCompression.PreparedTypedConst32Stack
+
+import NearCompression.PreparedTypedConst32Depth
+
+import NearCompression.PreparedTypedConst32State
+
+import NearCompression.PreparedTypedConst32Authenticated
+
+import NearCompression.PreparedTypedDropStack
+
+import NearCompression.PreparedTypedDropDepth
+
+import NearCompression.PreparedTypedDropState
+
+import NearCompression.PreparedTypedDropAuthenticated
+
+import NearCompression.PreparedTypedAdd32Operands
+
+import NearCompression.PreparedTypedAdd32Arithmetic
+
+import NearCompression.PreparedTypedAdd32Stack
+
+import NearCompression.PreparedTypedAdd32Depth
+
+import NearCompression.PreparedTypedAdd32State
+
+import NearCompression.PreparedTypedAdd32Authenticated
+
+import NearCompression.PreparedTypedLocalArray
+
+import NearCompression.PreparedTypedLocalStack
+
+import NearCompression.PreparedTypedLocalStackValues
+
+import NearCompression.PreparedTypedLocalGetState
+
+import NearCompression.PreparedTypedLocalGetAuthenticated
+
+import NearCompression.SHA384MerkleSource
+
+import NearCompression.PreparedTypedLocalStoreState
+
+import NearCompression.PreparedTypedLocalStoreAuthenticated
+
+import NearCompression.PreparedTypedExecutionShape
+
+import NearCompression.PreparedTypedTerminalWitness
+
+import NearCompression.PreparedTypedRunCallCheck
+
+import NearCompression.PreparedTypedTerminalPublic
+
+import NearCompression.PreparedTypedBlock
+
+import NearCompression.PreparedTypedFrameStack
+
+import NearCompression.PreparedTypedFrameDepth
+
+import NearCompression.PreparedTypedControlState
+
+import NearCompression.PreparedTypedAuthenticatedControl
+
+import NearCompression.SHA384PackedSourceBinding
+
+import NearCompression.PreparedTypedWitnessPublic
+
+import NearCompression.SHA384ComputedSource
+
+import NearCompression.PreparedTypedCondition
+
+import NearCompression.PreparedTypedBranch
+
+import NearCompression.PreparedTypedBranchBounds
+
+import NearCompression.PreparedTypedBranchStack
+
+import NearCompression.PreparedTypedBranchDepth
+
+import NearCompression.PreparedTypedUntaken
+
+import NearCompression.PreparedTypedBranchArrays
+
+import NearCompression.PreparedTypedPublicStack
+
+import NearCompression.PreparedTypedBranchState
+
+import NearCompression.PreparedTypedControlContinue
+
+import NearCompression.PreparedTypedRun
+
+import NearCompression.PreparedTypedRunCall
+
+import NearCompression.PreparedTypedPublicRunCall
+
+import NearCompression.PreparedTypedTerminalStack
+
+import NearCompression.SHA384PackingContext
+
+import NearCompression.SHA384NativePackedSource
+
+import NearCompression.PreparedTypedWitnessStack
+
+import NearCompression.PreparedTypedPublicStackRunCall
+
+import NearCompression.PreparedMemoryScalar
+
+import NearCompression.PreparedMemoryExec
+
+import NearCompression.SHA384EvaluatedSource
+
+import NearCompression.SHA384NativeProjectedSource
+
+import NearCompression.PreparedMemoryRead
+
+import NearCompression.PreparedMemoryLoad
+
+import NearCompression.PreparedMemoryStoreService
+
+import NearCompression.DiagnosticExt4Polynomial
+
+import NearCompression.SHA384Ext4ProjectedSource
+
+import NearCompression.PreparedMemoryService
+
+import NearCompression.FixedJointSourceRepresentative
+
+import NearCompression.PreparedMemoryAddress
+
+import NearCompression.ChosenGKRSourceRecovery
+
+import NearCompression.RateFourRepresentativeThreshold
+
+import NearCompression.PreparedMemoryBounds
+
+import NearCompression.PreparedMemoryLiteral
+
+import NearCompression.PreparedMemorySource
+
+import NearCompression.RecursiveResidualConjunction
+
+import NearCompression.PreparedMemorySignExtension
+
+import NearCompression.PreparedMemoryResultBits
+
+import NearCompression.PreparedMemoryWords
+
+import NearCompression.PreparedMemoryUnsigned
+
+import NearCompression.PreparedMemorySigned
+
+import NearCompression.WeightedPCSReplay
+
+import NearCompression.RateFourFoldThreshold
+
+import NearCompression.PreparedMemoryLoadService
+
+import NearCompression.PreparedMemoryStoreBridge
+
+import NearCompression.WeightedPCSReplayBound
+
+import NearCompression.WeightedPCSPrefixStrategy
+
+import NearCompression.RecursiveOperandCoordinates
+
+import NearCompression.PreparedMemorySenderLiteral
+
+import NearCompression.PreparedMemorySenderSource
+
+import NearCompression.PreparedMemorySenderOperands
+
+import NearCompression.PreparedMemorySenderTypes
+
+import NearCompression.Ext8ReplayParameters
+
+import NearCompression.RecursiveOperandPacking
+
+import NearCompression.PreparedMemoryWordBinding
+import NearCompression.PreparedMemoryMessageLink
+import NearCompression.PreparedMemoryMatchedOperands
+import NearCompression.PreparedMemoryMessageFields
+import NearCompression.PreparedMemoryAttachedExec
+
+import NearCompression.RecursiveFixedConjunction
+
+import NearCompression.RecursiveSourceProgram
+
+import NearCompression.Ext8OperandPacking
+
+import NearCompression.RateShiftConstraintMixing
+
+import NearCompression.PreparedMemorySenderStack
+
+import NearCompression.PreparedMemorySenderStackInput
+
+import NearCompression.RecursiveSharedSource
+
+import NearCompression.RateShiftWeightAccumulator
+
+import NearCompression.RateShiftCandidateList
+
+import NearCompression.GeneralWeightedExtraction
+
+import NearCompression.GeneralIndexedParent
+
+import NearCompression.GeneralIndexedExtraction
+
+import NearCompression.GeneralInteractiveFold
+
+import NearCompression.GeneralCheckedFold
+
+import NearCompression.RateShiftContinuationCandidate
+
+import NearCompression.RateShiftContinuationComposition
+
+import NearCompression.RateShiftQueryTransfer
+
+import NearCompression.VirtualFoldTransfer
+
+import NearCompression.VirtualFoldPrefix
+
+import NearCompression.VirtualFoldCheckedTransfer
+
+import NearCompression.CheckedRateShiftQueries

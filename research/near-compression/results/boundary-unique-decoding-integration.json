@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1694,
+  "audit_log": "/tmp/near-boundary-unique-decoding-audit.log",
+  "modules": {
+    "PreparedPublicBoundary": {
+      "sha256": "276de0277d2152e3c3589c0da554893af74e2c3e3a91d3cff2ebcde3831b41c2"
+    },
+    "PreparedDonePadding": {
+      "sha256": "35df8ff9de7137a5ea06a6065f7622e9b56a1cc1ba3b6bfb5be8ab184b7579f6"
+    },
+    "FiniteRSUniqueDecoding": {
+      "sha256": "35ec0e6466a58315d4eaa9f3476bf270a79b81f880040239a54d8f3ae568799d"
+    }
+  },
+  "boundary_source_parity": "prepared-boundary-source-parity.json",
+  "scope": [
+    "Natural bus balance authenticates complete public boundary messages; diagnostic fingerprint acceptance alone does not establish this premise.",
+    "DONE padding preserves terminal snapshot semantics.",
+    "Finite RS distance and unique decoding for arbitrary received words; no correlated-agreement or protocol soundness theorem."
+  ],
+  "remaining": [
+    "Actual final-output and outer runCall composition",
+    "Far-source correlated agreement and adaptive proximity/RBR",
+    "QROM compiler and concrete security bounds",
+    "Full NEAR/1Pgas/recursive size target"
+  ]
+}

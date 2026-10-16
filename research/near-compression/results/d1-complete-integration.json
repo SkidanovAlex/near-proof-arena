@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "scope": "Two actual33tableD1 diagnostic proofs with independent verification and complete lossless binary artifacts. D1 excludes Wasm execution; not fullNEAR.",
+  "cases": [
+    {
+      "fixture": "00-h10012-s2",
+      "tables": 33,
+      "preparation_seconds": 52.7456463011913,
+      "proof_generation_and_verification_seconds": 39.023141648154706,
+      "constraint_shift_seconds": 28.884614752139896,
+      "verification_seconds": 1.1277978923171759,
+      "complete_binary_bytes": 1256796,
+      "binary_sha256": "5233791058a9f42f5a4a4fe57bf8c3378be32d5bb39f0c6282f88123ad9a9f4d",
+      "codec_malformed_cases_rejected": 213,
+      "decoded_proof_verified": true,
+      "proof_directory": "d1-scheduled-proof"
+    },
+    {
+      "fixture": "00-h10038-s3",
+      "tables": 33,
+      "preparation_seconds": 63.99083763919771,
+      "proof_generation_and_verification_seconds": 51.0123092578724,
+      "constraint_shift_seconds": 37.237661842256784,
+      "verification_seconds": 1.5880406508222222,
+      "complete_binary_bytes": 1434548,
+      "binary_sha256": "e0769a9717b7e2f65c1ed3c921cd698c9c1d36d45011a3261ea8d1c004d85e94",
+      "codec_malformed_cases_rejected": 213,
+      "decoded_proof_verified": true,
+      "proof_directory": "d1-scheduled-proof-second"
+    }
+  ],
+  "lean": {
+    "audited_theorems": 1405,
+    "audit_log": "/tmp/near-whir-terminal-audit.log",
+    "latest_module": "NearCompression/WHIRTerminalWeight.lean",
+    "scope": "Algebraic and renderer bridges; not end-to-end verifier refinement or cryptographic soundness."
+  },
+  "native_speedup_evidence": "d1-native-v2-comparison.json",
+  "security_bits_claimed": null,
+  "remaining": [
+    "FullpreparedWasm EXEC/CODE/STACK/GAS and D2/D3callboundary binding",
+    "SHA384andadequatefield/challengeprofile with explicit128bitPQ/QROMbudget",
+    "End-to-endcryptographicandverifiercomposition Leanproof",
+    "Recursivecompression andcompleteproof under300000bytes",
+    "Representative1Pgasbenchmark"
+  ],
+  "performance_caveat": "Single runs on shared host; no1Pgas throughput extrapolation."
+}

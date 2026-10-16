@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "actual_complete_proof_byte_identical": true,
+  "proof_sha256": "f191d73c9f61f044c053354d7f55123650adfc98ac6f40256e98899a43e6ab71",
+  "v1_constraint_shift_seconds": 183.2629719316028,
+  "v2_constraint_shift_seconds": 28.884614752139896,
+  "constraint_shift_speedup": 6.3446569567982865,
+  "v1_total_seconds": 194.1836347510107,
+  "v2_total_seconds": 39.023141648154706,
+  "scope": "Same small actualD1 fixture; one run each, same33tableproof. Not1Pgasthroughput."
+}

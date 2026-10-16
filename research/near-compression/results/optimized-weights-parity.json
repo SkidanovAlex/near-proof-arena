@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "cases": 72,
+  "transformed_entries": 756,
+  "lean_export_sha256": "bcd68598a6dbfa109c1e5fcf263ff351641b0f470245a3ca2deec35cbd4da772",
+  "scope": "Executable Lean mutable transform and optimized DP vs actual Python. Dimensions 0..5; zero, one, minus-one and mixed coordinates. Runtime parity uses base-field embeddings; formal algebra is generic over fields. Not a full PCS implementation or cryptographic soundness proof."
+}

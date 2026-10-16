@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3507,
+  "audit_log": "/tmp/root-rate-shift-audit.log",
+  "audit_sha256": "6c226c40916262d0e6a0296cc587405d26b731045c2d4c59125e91a7b603d45e",
+  "scope": "Fixed-candidate constraint mixing; degree32/domain128 to degree8/domain64 executable diagnostic.",
+  "limits": [
+    "Four-query algebra diagnostic only.",
+    "Prechallenge candidate extraction and rate-shift soundness open.",
+    "No total PQ128 or full-state compression claim."
+  ]
+}

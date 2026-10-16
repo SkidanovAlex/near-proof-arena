@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 2123,
+  "source_hashes": {
+    "NearCompression/PreparedControlCondition.lean": "88991b3c8ac52ae43d2f8f2fde93e0db380769024a427b09cfdee40e15133629",
+    "NearCompression/PreparedControlBus.lean": "32ec0c146cb5cf343e8d4e08beed7b97dec42f3d24a8a3d86f4f2604bfb02740",
+    "NearCompression/PreparedControlProvenance.lean": "210c733d53cf8b9537f4964713951706f4e88a46ee2a9f58767d51d72f42a1b3",
+    "NearCompression/PackedDualMobiusWeights.lean": "b33aa1222862285fb64ef0e1f823b86a0f4bc4a7406e06f286b1ede5e1f5b9ab",
+    "NearCompression/SHA384EndpointRouting.lean": "7dc6dc18721c681309a62ace425375fcc7a672295064d31891b4f1478da8284b",
+    "PackedDualMobiusExport.lean": "0b078b5d632a1d5464741a5e38ab71350520aa7a1cc98148029e9385760d2c56",
+    "airbender/direct-wasm/check_packed_dual_parity.py": "624d17ba170b0342f67627007320336964b5c92ed0bd94cea6b28180a8c2cdcd"
+  },
+  "packed_weight_parity": {
+    "status": "PASS",
+    "cases": 48,
+    "packed_coefficient_positions": 675,
+    "lean_export_sha256": "13bc5fb01215b7618244504ebbfc10b399f4937eb071e78bd24f2c6335372799",
+    "scope": "Actual Python lane_weights/lane_weight_mle vs executable Lean packed weights and functional, partial zero-padded lanes and base-field embedded challenges. Not native commitment refinement or quantum security."
+  },
+  "milestones": [
+    "Literal condition selector equals zero iff selected actual i32 word is zero, with bit ranges derived from constraints",
+    "Literal natural fetch/public buses authenticate full29field descriptors; executable CODE checker supplies actual instruction/charge/prepared target at proved-live actual PC",
+    "Full row-low/column-high packed Mobius functional and weight MLE decomposition proved",
+    "Endpoint core-to-adder and compression-to-next-core links derived from exact natural bus counts"
+  ],
+  "remaining": [
+    "Control PC/label/stack transitions and complete new runCall theorem",
+    "Endpoint final public digest and full message theorem",
+    "Borrow-DP and mutable-transform implementation refinement",
+    "Actual committed source and transcript bindings, pre-GKR witness causality and QROM",
+    "Full NEAR1Pgas and certified sub300KB recursive proof"
+  ]
+}

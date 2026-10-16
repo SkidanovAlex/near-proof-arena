@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "audit_count": 3031,
+  "audit_log": "/tmp/root-gkr-block-accumulation-audit.log",
+  "tables": 69,
+  "expression_roots": 30432,
+  "negative_checks": 415,
+  "checker_sha256": "66b8feb0abe25776ae30839c95b6bbd0a9d46bf8c1fb1d6da808c766f319df6c",
+  "scope": "Exact ideal GKR challenge-block count and single-layer repair bound; full causal layer instantiation remains open. Executable AIR AST and ordered mixing certificates bind fresh actual compile_weighted output; auxiliary formulas and kernel capture proofs remain open."
+}

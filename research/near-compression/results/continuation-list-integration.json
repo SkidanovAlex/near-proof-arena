@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3558,
+  "added_theorems": 5,
+  "source_sha256": "48b18be3e82428d1b15a8b6ce9204f7b5489e0cfb9f14d92cb71ee5581d817fa",
+  "audit_log": "/tmp/root-continuation-list-audit.log",
+  "audit_sha256": "d762f8342339a958d2b3e4d5d49a6e963dc0b940e5ad60692523a24c4de4f236",
+  "scope": "Actual indexed initial continuation candidate maps to the fixed rate-shift candidate list and satisfies the same accumulated functional.",
+  "requirements": [
+    "Degree D and weights length at least D.",
+    "N<=T+radius and 2*radius+D<=N.",
+    "Distinct root-power domain and explicit received-oracle binding.",
+    "Actual continuation initial weights/claim equal the rate-shift accumulator."
+  ],
+  "notes": [
+    "Existing canonicalPolynomial truncates but does not pad to D; new normalization explicitly includes all D coefficients.",
+    "Normalization preserves every coefficient and evaluation under the degree bound.",
+    "Initial transcript mass is bounded by plain domain agreement; no hidden polynomial oracle assumed."
+  ],
+  "limits": [
+    "Candidate existence is not assumed as a security conclusion: combine with the preceding adaptive failure bound.",
+    "Joint continuation and mixing experiment still needs composition.",
+    "Causal executable strategy, root binding, prior-domain/OOD transfer and QROM remain open."
+  ]
+}

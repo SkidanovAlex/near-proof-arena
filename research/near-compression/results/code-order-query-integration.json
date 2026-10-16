@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "audit_checks": 1782,
+  "new_code_order_theorems": 8,
+  "new_query_budget_theorems": 6,
+  "code_source_expressions_matched": 233,
+  "code_order_result": "Actual TableLocal and literal constraint membership imply active row PC=index and active-key injectivity",
+  "interactive_result": "Exact with-replacement Cartesian counts and conditional adaptive-round/query bound",
+  "remaining": [
+    "Exact natural-bus authenticated CODE fetch bridge",
+    "Whole new CODE-table execution refinement",
+    "Nonlinear weighted extraction and initial statement reduction",
+    "Commitment binding, sampling refinement and RBR-to-QROM",
+    "Full NEAR1Pgas and secure complete sub300000-byte proof"
+  ]
+}

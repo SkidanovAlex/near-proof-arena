@@ -1,0 +1,504 @@
+{
+  "status": "DESIGN_SCREEN_ONLY",
+  "byte_limit": 300000,
+  "profiles": [
+    {
+      "name": "interactive_only_existing_ext8",
+      "queries": 314,
+      "extension": 8,
+      "digest_bytes": 48,
+      "security": "Isolated replay bound; no QROM certification",
+      "sizes": [
+        {
+          "degree": 32,
+          "min_bytes": 5152,
+          "max_bytes": 5192,
+          "remaining_at_max_bytes": 294808
+        },
+        {
+          "degree": 64,
+          "min_bytes": 10208,
+          "max_bytes": 10384,
+          "remaining_at_max_bytes": 289616
+        },
+        {
+          "degree": 128,
+          "min_bytes": 21272,
+          "max_bytes": 21816,
+          "remaining_at_max_bytes": 278184
+        },
+        {
+          "degree": 256,
+          "min_bytes": 42368,
+          "max_bytes": 43464,
+          "remaining_at_max_bytes": 256536
+        },
+        {
+          "degree": 512,
+          "min_bytes": 76528,
+          "max_bytes": 78376,
+          "remaining_at_max_bytes": 221624
+        },
+        {
+          "degree": 1024,
+          "min_bytes": 123656,
+          "max_bytes": 127160,
+          "remaining_at_max_bytes": 172840
+        },
+        {
+          "degree": 2048,
+          "min_bytes": 186216,
+          "max_bytes": 191704,
+          "remaining_at_max_bytes": 108296
+        },
+        {
+          "degree": 4096,
+          "min_bytes": 263856,
+          "max_bytes": 270712,
+          "remaining_at_max_bytes": 29288
+        },
+        {
+          "degree": 8192,
+          "min_bytes": 356088,
+          "max_bytes": 364320,
+          "remaining_at_max_bytes": -64320
+        },
+        {
+          "degree": 16384,
+          "min_bytes": 462888,
+          "max_bytes": 474496,
+          "remaining_at_max_bytes": -174496
+        },
+        {
+          "degree": 32768,
+          "min_bytes": 584240,
+          "max_bytes": 599872,
+          "remaining_at_max_bytes": -299872
+        },
+        {
+          "degree": 65536,
+          "min_bytes": 720608,
+          "max_bytes": 739904,
+          "remaining_at_max_bytes": -439904
+        },
+        {
+          "degree": 131072,
+          "min_bytes": 871752,
+          "max_bytes": 894976,
+          "remaining_at_max_bytes": -594976
+        },
+        {
+          "degree": 262144,
+          "min_bytes": 1037448,
+          "max_bytes": 1065648,
+          "remaining_at_max_bytes": -765648
+        }
+      ],
+      "largest_tested_degree_all_seeds_below_limit": 4096
+    },
+    {
+      "name": "conditional_Q2pow32_advantage2powminus128_C1",
+      "queries": 468,
+      "extension": 8,
+      "digest_bytes": 48,
+      "security": "Uninstantiated reduction; arithmetic field/hash sizes only",
+      "sizes": [
+        {
+          "degree": 32,
+          "min_bytes": 5152,
+          "max_bytes": 5152,
+          "remaining_at_max_bytes": 294848
+        },
+        {
+          "degree": 64,
+          "min_bytes": 9944,
+          "max_bytes": 10144,
+          "remaining_at_max_bytes": 289856
+        },
+        {
+          "degree": 128,
+          "min_bytes": 20304,
+          "max_bytes": 20968,
+          "remaining_at_max_bytes": 279032
+        },
+        {
+          "degree": 256,
+          "min_bytes": 42472,
+          "max_bytes": 43544,
+          "remaining_at_max_bytes": 256456
+        },
+        {
+          "degree": 512,
+          "min_bytes": 82048,
+          "max_bytes": 84800,
+          "remaining_at_max_bytes": 215200
+        },
+        {
+          "degree": 1024,
+          "min_bytes": 141192,
+          "max_bytes": 144232,
+          "remaining_at_max_bytes": 155768
+        },
+        {
+          "degree": 2048,
+          "min_bytes": 221656,
+          "max_bytes": 225376,
+          "remaining_at_max_bytes": 74624
+        },
+        {
+          "degree": 4096,
+          "min_bytes": 324496,
+          "max_bytes": 328136,
+          "remaining_at_max_bytes": -28136
+        },
+        {
+          "degree": 8192,
+          "min_bytes": 448056,
+          "max_bytes": 453512,
+          "remaining_at_max_bytes": -153512
+        },
+        {
+          "degree": 16384,
+          "min_bytes": 594928,
+          "max_bytes": 602656,
+          "remaining_at_max_bytes": -302656
+        },
+        {
+          "degree": 32768,
+          "min_bytes": 763752,
+          "max_bytes": 773872,
+          "remaining_at_max_bytes": -473872
+        },
+        {
+          "degree": 65536,
+          "min_bytes": 954912,
+          "max_bytes": 967736,
+          "remaining_at_max_bytes": -667736
+        },
+        {
+          "degree": 131072,
+          "min_bytes": 1168032,
+          "max_bytes": 1184000,
+          "remaining_at_max_bytes": -884000
+        },
+        {
+          "degree": 262144,
+          "min_bytes": 1404768,
+          "max_bytes": 1423840,
+          "remaining_at_max_bytes": -1123840
+        }
+      ],
+      "largest_tested_degree_all_seeds_below_limit": 2048
+    },
+    {
+      "name": "conditional_Q2pow64_advantage2powminus128_C1",
+      "queries": 622,
+      "extension": 9,
+      "digest_bytes": 48,
+      "security": "Uninstantiated reduction; arithmetic field/hash sizes only",
+      "sizes": [
+        {
+          "degree": 32,
+          "min_bytes": 5696,
+          "max_bytes": 5696,
+          "remaining_at_max_bytes": 294304
+        },
+        {
+          "degree": 64,
+          "min_bytes": 10972,
+          "max_bytes": 11132,
+          "remaining_at_max_bytes": 288868
+        },
+        {
+          "degree": 128,
+          "min_bytes": 21936,
+          "max_bytes": 22472,
+          "remaining_at_max_bytes": 277528
+        },
+        {
+          "degree": 256,
+          "min_bytes": 45924,
+          "max_bytes": 46524,
+          "remaining_at_max_bytes": 253476
+        },
+        {
+          "degree": 512,
+          "min_bytes": 91040,
+          "max_bytes": 93136,
+          "remaining_at_max_bytes": 206864
+        },
+        {
+          "degree": 1024,
+          "min_bytes": 162428,
+          "max_bytes": 165132,
+          "remaining_at_max_bytes": 134868
+        },
+        {
+          "degree": 2048,
+          "min_bytes": 260984,
+          "max_bytes": 266056,
+          "remaining_at_max_bytes": 33944
+        },
+        {
+          "degree": 4096,
+          "min_bytes": 389300,
+          "max_bytes": 397420,
+          "remaining_at_max_bytes": -97420
+        },
+        {
+          "degree": 8192,
+          "min_bytes": 547296,
+          "max_bytes": 557544,
+          "remaining_at_max_bytes": -257544
+        },
+        {
+          "degree": 16384,
+          "min_bytes": 735020,
+          "max_bytes": 746308,
+          "remaining_at_max_bytes": -446308
+        },
+        {
+          "degree": 32768,
+          "min_bytes": 953400,
+          "max_bytes": 964736,
+          "remaining_at_max_bytes": -664736
+        },
+        {
+          "degree": 65536,
+          "min_bytes": 1201132,
+          "max_bytes": 1214092,
+          "remaining_at_max_bytes": -914092
+        },
+        {
+          "degree": 131072,
+          "min_bytes": 1478840,
+          "max_bytes": 1493600,
+          "remaining_at_max_bytes": -1193600
+        },
+        {
+          "degree": 262144,
+          "min_bytes": 1786244,
+          "max_bytes": 1803692,
+          "remaining_at_max_bytes": -1503692
+        }
+      ],
+      "largest_tested_degree_all_seeds_below_limit": 2048
+    },
+    {
+      "name": "conditional_Q2pow128_advantage2powminus128_C1",
+      "queries": 931,
+      "extension": 14,
+      "digest_bytes": 65,
+      "security": "Uninstantiated reduction; arithmetic field/hash sizes only",
+      "sizes": [
+        {
+          "degree": 32,
+          "min_bytes": 8518,
+          "max_bytes": 8518,
+          "remaining_at_max_bytes": 291482
+        },
+        {
+          "degree": 64,
+          "min_bytes": 16431,
+          "max_bytes": 16431,
+          "remaining_at_max_bytes": 283569
+        },
+        {
+          "degree": 128,
+          "min_bytes": 32138,
+          "max_bytes": 32537,
+          "remaining_at_max_bytes": 267463
+        },
+        {
+          "degree": 256,
+          "min_bytes": 66411,
+          "max_bytes": 67079,
+          "remaining_at_max_bytes": 232921
+        },
+        {
+          "degree": 512,
+          "min_bytes": 137258,
+          "max_bytes": 138692,
+          "remaining_at_max_bytes": 161308
+        },
+        {
+          "degree": 1024,
+          "min_bytes": 256203,
+          "max_bytes": 262539,
+          "remaining_at_max_bytes": 37461
+        },
+        {
+          "degree": 2048,
+          "min_bytes": 433753,
+          "max_bytes": 444131,
+          "remaining_at_max_bytes": -144131
+        },
+        {
+          "degree": 4096,
+          "min_bytes": 671639,
+          "max_bytes": 688837,
+          "remaining_at_max_bytes": -388837
+        },
+        {
+          "degree": 8192,
+          "min_bytes": 966422,
+          "max_bytes": 993826,
+          "remaining_at_max_bytes": -693826
+        },
+        {
+          "degree": 16384,
+          "min_bytes": 1321290,
+          "max_bytes": 1358360,
+          "remaining_at_max_bytes": -1058360
+        },
+        {
+          "degree": 32768,
+          "min_bytes": 1738909,
+          "max_bytes": 1783004,
+          "remaining_at_max_bytes": -1483004
+        },
+        {
+          "degree": 65536,
+          "min_bytes": 2215151,
+          "max_bytes": 2266433,
+          "remaining_at_max_bytes": -1966433
+        },
+        {
+          "degree": 131072,
+          "min_bytes": 2753420,
+          "max_bytes": 2810401,
+          "remaining_at_max_bytes": -2510401
+        },
+        {
+          "degree": 262144,
+          "min_bytes": 3355139,
+          "max_bytes": 3416008,
+          "remaining_at_max_bytes": -3116008
+        }
+      ],
+      "largest_tested_degree_all_seeds_below_limit": 1024
+    },
+    {
+      "name": "conditional_Q2pow128_advantage_half_C1",
+      "queries": 625,
+      "extension": 10,
+      "digest_bytes": 49,
+      "security": "Constant-success query-workfactor scenario; reduction and constant NOT established",
+      "sizes": [
+        {
+          "degree": 32,
+          "min_bytes": 6246,
+          "max_bytes": 6246,
+          "remaining_at_max_bytes": 293754
+        },
+        {
+          "degree": 64,
+          "min_bytes": 12047,
+          "max_bytes": 12211,
+          "remaining_at_max_bytes": 287789
+        },
+        {
+          "degree": 128,
+          "min_bytes": 24056,
+          "max_bytes": 24565,
+          "remaining_at_max_bytes": 275435
+        },
+        {
+          "degree": 256,
+          "min_bytes": 50088,
+          "max_bytes": 50633,
+          "remaining_at_max_bytes": 249367
+        },
+        {
+          "degree": 512,
+          "min_bytes": 98604,
+          "max_bytes": 100591,
+          "remaining_at_max_bytes": 199409
+        },
+        {
+          "degree": 1024,
+          "min_bytes": 174576,
+          "max_bytes": 177106,
+          "remaining_at_max_bytes": 122894
+        },
+        {
+          "degree": 2048,
+          "min_bytes": 279060,
+          "max_bytes": 284735,
+          "remaining_at_max_bytes": 15265
+        },
+        {
+          "degree": 4096,
+          "min_bytes": 414145,
+          "max_bytes": 423317,
+          "remaining_at_max_bytes": -123317
+        },
+        {
+          "degree": 8192,
+          "min_bytes": 579710,
+          "max_bytes": 590800,
+          "remaining_at_max_bytes": -290800
+        },
+        {
+          "degree": 16384,
+          "min_bytes": 776236,
+          "max_bytes": 788221,
+          "remaining_at_max_bytes": -488221
+        },
+        {
+          "degree": 32768,
+          "min_bytes": 1004006,
+          "max_bytes": 1016276,
+          "remaining_at_max_bytes": -716276
+        },
+        {
+          "degree": 65536,
+          "min_bytes": 1261956,
+          "max_bytes": 1275884,
+          "remaining_at_max_bytes": -975884
+        },
+        {
+          "degree": 131072,
+          "min_bytes": 1550730,
+          "max_bytes": 1566211,
+          "remaining_at_max_bytes": -1266211
+        },
+        {
+          "degree": 262144,
+          "min_bytes": 1869934,
+          "max_bytes": 1886961,
+          "remaining_at_max_bytes": -1586961
+        }
+      ],
+      "largest_tested_degree_all_seeds_below_limit": 2048
+    }
+  ],
+  "source_sha256": {
+    "estimate_ext8_multiproof_geometry.py": "d578307102649e3c280f0018881dc230a844d0477eed7fa6f2d2f1aec4e9eb07",
+    "qrom_resource_ledger.py": "f82d8d21cf7824a31f6f30b68d18b29844dd1a7c202ae726512ffd437a70cca9"
+  },
+  "exclusions": [
+    "Framing and trusted statement transport",
+    "GKR and recursive verifier overhead",
+    "Full NEAR witness validation and 1-Petagas execution",
+    "Upstream errors and actual quantum reduction constants"
+  ],
+  "conclusions": [
+    "Current binary-fold geometry exceeds the entire byte budget at large tested dimensions even before composition.",
+    "Do not fund serialization-only optimization as the primary route to the requested target.",
+    "Rate-shift remains a research candidate, pending scalable extraction and prior-domain transfer; this model does not evaluate its size."
+  ],
+  "cautions": [
+    "Simulated seeds are neither universal lower bounds nor worst-case size guarantees.",
+    "Degrees are PCS coefficient counts, not a demonstrated mapping from Petagas.",
+    "128-bit workfactor is not the same requirement as advantage2^-128 at a specified query budget.",
+    "Only Ext8/SHA384 are implemented in this comparison; larger widths are hypothetical.",
+    "No proof of impossibility for binary protocols or alternative parameterizations."
+  ],
+  "independent_check": {
+    "status": "PASS",
+    "method": "Fraction arithmetic checks allocated terms and minimal integer parameters independently of integer search predicates.",
+    "implemented_protocol_security": false
+  },
+  "analysis_source_sha256": "b6c7cd01543de52ff5cfee29017fc216a4515c2bb7e3984b6b2ccc63c8fb39ff"
+}

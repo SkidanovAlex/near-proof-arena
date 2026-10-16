@@ -1,0 +1,126 @@
+{
+  "status": "PASS",
+  "full_hash_inputs": 15594,
+  "total_compression_invocations": 64079,
+  "blocks_of_unique_complete_hash_inputs": 59604,
+  "unique_full_state_block_nodes": 56354,
+  "nodes_shared_across_all_components": 95,
+  "component_node_counts": {
+    "0": 26584,
+    "1": 29865
+  },
+  "block_bytes_reencountered_with_different_state": 20028,
+  "by_tag": {
+    "seed-gkr-static-air-config-v1": {
+      "calls": 2,
+      "total_blocks": 25110,
+      "blocks_unique_inputs": 25110,
+      "distinct_full_state_block_nodes": 25110
+    },
+    "near-pq384-seed-gkr-bus-v1": {
+      "calls": 2,
+      "total_blocks": 11,
+      "blocks_unique_inputs": 11,
+      "distinct_full_state_block_nodes": 11
+    },
+    "transcript/init": {
+      "calls": 6,
+      "total_blocks": 8,
+      "blocks_unique_inputs": 8,
+      "distinct_full_state_block_nodes": 8
+    },
+    "transcript/commit": {
+      "calls": 2612,
+      "total_blocks": 5350,
+      "blocks_unique_inputs": 5350,
+      "distinct_full_state_block_nodes": 5350
+    },
+    "transcript/request": {
+      "calls": 2594,
+      "total_blocks": 5188,
+      "blocks_unique_inputs": 5188,
+      "distinct_full_state_block_nodes": 5188
+    },
+    "transcript/squeeze": {
+      "calls": 2599,
+      "total_blocks": 5198,
+      "blocks_unique_inputs": 5198,
+      "distinct_full_state_block_nodes": 5198
+    },
+    "transcript/ratchet": {
+      "calls": 2599,
+      "total_blocks": 5198,
+      "blocks_unique_inputs": 5198,
+      "distinct_full_state_block_nodes": 5198
+    },
+    "transcript/draw-result": {
+      "calls": 2594,
+      "total_blocks": 5188,
+      "blocks_unique_inputs": 5188,
+      "distinct_full_state_block_nodes": 5188
+    },
+    "gkr-after-all-constraints": {
+      "calls": 2,
+      "total_blocks": 4,
+      "blocks_unique_inputs": 4,
+      "distinct_full_state_block_nodes": 4
+    },
+    "near-pq384-seed-gkr-v1": {
+      "calls": 2,
+      "total_blocks": 6,
+      "blocks_unique_inputs": 6,
+      "distinct_full_state_block_nodes": 5
+    },
+    "weighted-pcs-after-seed-gkr": {
+      "calls": 2,
+      "total_blocks": 4,
+      "blocks_unique_inputs": 4,
+      "distinct_full_state_block_nodes": 4
+    },
+    "derived-weight-joint-public-v1": {
+      "calls": 2,
+      "total_blocks": 20,
+      "blocks_unique_inputs": 20,
+      "distinct_full_state_block_nodes": 20
+    },
+    "weighted-joint-stage-v1": {
+      "calls": 34,
+      "total_blocks": 34,
+      "blocks_unique_inputs": 32,
+      "distinct_full_state_block_nodes": 32
+    },
+    "merkle/leaf": {
+      "calls": 372,
+      "total_blocks": 1068,
+      "blocks_unique_inputs": 950,
+      "distinct_full_state_block_nodes": 557
+    },
+    "merkle/node": {
+      "calls": 3250,
+      "total_blocks": 10822,
+      "blocks_unique_inputs": 7238,
+      "distinct_full_state_block_nodes": 4395
+    },
+    "merkle/root": {
+      "calls": 370,
+      "total_blocks": 870,
+      "blocks_unique_inputs": 99,
+      "distinct_full_state_block_nodes": 86
+    }
+  },
+  "limits": [
+    "Native probe checked final digest for each complete input; full intermediate state is8uint64, never truncated48bytes.",
+    "Exact measured equality sharing; no constrained routing or cache soundness theorem.",
+    "All captured core/configuration hash families are included; outer wrapper AIR checks were excluded from capture.",
+    "No outer recursive proof or quantum security claim."
+  ],
+  "evidence_files": {
+    "/tmp/root-seed-pair-hash-nodes/compression-records.bin": "f966d311feca7a1f135ba5576b94183476f10b801832b694a4fa97eed163a0c7",
+    "/tmp/root-seed-pair-hash-nodes/call-node-ids.json": "3937f7b106920e06182f3ddac42eb3fc4ddc107654a6faf527e5ede1e1b14ee6",
+    "/tmp/root-seed-pair-hash-capture/hash-calls.json": "c803a83a9a3dceff7b46b868a3a52d0dd03a8533ef913ac51d9218ad2bc4ec9a",
+    "/tmp/root-seed-pair-hash-capture/hash-occurrences.json": "f5df23eb09452c95ce4cc5fd0c55de7fb53fd2a7214f9c670affab2ffab88093",
+    "/tmp/libsha384_state_probe.so": "46554c952f28a62f14f11adb263e8c671f2c108b666452348d59f36715e56511",
+    "airbender/direct-wasm/analyze_component_hash_nodes.py": "3944dc41b90a974689f57954eb2dfe3f5a32fab4cc7420f2b25dcf5696f6519c",
+    "airbender/direct-wasm/capture_seed_component_hashes.py": "8eee5fc0790c8ef93c682fbf697921591dd8c452464914b28eec30d7b5e38581"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "profile": "prepared-locals-v1",
+  "family": [
+    "local.get",
+    "local.set",
+    "local.tee"
+  ],
+  "reason": "Current six-opcode control slice rejects all local operations; locals enable compiled function temporaries without introducing memory or inter-function calls.",
+  "source_semantics": "spec/lean/v3/NearSpecV3/Wasm/Exec.lean:220",
+  "actual_preparation": "spec/lean/v3/NearSpecV3/Wasm/Exec.lean:27 constructs args ++ pf.locals.map Val.default",
+  "layout": {
+    "exec_width": 818,
+    "code_width": 235,
+    "code_record_fields": 32,
+    "local_get": 683,
+    "local_set": 684,
+    "local_tee": 685,
+    "local_bits": 686,
+    "local_index_onehot": 814
+  },
+  "parameters": {
+    "local_count": "integer 0..4; must equal actual prepared i32 local count; zero function parameters"
+  },
+  "semantics_interface": "PreparedLocalsStep.lean extends PreparedControlState with exact frame.locals decoding; concrete interpreter get/set/tee and actual prepared gas charging proved.",
+  "constraints": [
+    "All added selector/local columns Boolean",
+    "Selected index equals immediate via separate 16-bit low/high equalities; no 32-bit field alias",
+    "All locals zero on first row; unused locals zero",
+    "get pushes selected local; set pops and writes selected local; tee writes and preserves stack",
+    "Unselected locals preserve across each transition, including branches, failure and DONE padding",
+    "Existing authenticated CODE fetch expanded with three local opcode tags"
+  ],
+  "dependencies_remaining": [
+    "Generate exact Lean literal AIR and establish AST parity/source membership",
+    "Extend executable actual PREP/CODE/local-count provenance checker",
+    "Prove new local arithmetic/stack/state projection from AIR",
+    "Extend whole-run induction and public-output theorem to nine opcode tags"
+  ],
+  "limits": [
+    "stack8",
+    "one function, zero parameters, at most four i32 locals",
+    "one nested void block, br_if0 only",
+    "no memory, calls, loops, deeper branch or host calls",
+    "linear public CODE",
+    "reference diagnostic, no new crypto soundness claim"
+  ]
+}

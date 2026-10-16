@@ -1,0 +1,31 @@
+{
+  "kind": "actual AIR row sequencing validation",
+  "honest_trace_rows": 4,
+  "actual_execNum_reduction_result": 15,
+  "locally_valid_discontinuities_rejected": 2,
+  "final_row_links_proved_and_tested_disabled": 3,
+  "operand_binding_gap": {
+    "disconnected_trace_accepted": true,
+    "claimed_result": 9,
+    "connected_result": 7,
+    "status": "required missing constraint family"
+  },
+  "table": {
+    "columns": 225,
+    "constraints": 234,
+    "max_degree": 2,
+    "configured_max_log": 22,
+    "proved_addition_segment_max_log": 15
+  },
+  "full_audit_theorems": 926,
+  "command": "lake env lean --run InstructionSequenceSmoke.lean",
+  "source_sha256": {
+    "NearCompression/InstructionSequence.lean": "f71a077f0d15d1ad7f894a4f86664d16b1dd9dbafbef7f3bdb042d4467b23146",
+    "InstructionSequenceSmoke.lean": "6e4e4abc32a2fc02168f1f243975c2b9e51d98c99e2899af4e3be695efa3eabd"
+  },
+  "limitations": [
+    "Addition-only segment without padding or mixed opcode dispatch.",
+    "No operand stack authentication, code authentication or gas AIR.",
+    "No full transition proof, proof-size or quantum-security result."
+  ]
+}

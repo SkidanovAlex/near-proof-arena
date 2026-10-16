@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "audit": 2566,
+  "audit_log": "/tmp/root-locals-fee-audit.log",
+  "source_sha256": "461dff27519af51f3769386c83c0b4d64873795538bb3ca6baca7398e4fcc66a",
+  "new_theorems": [
+    "prepared_locals_authenticated_fee",
+    "prepared_locals_setup_authenticated_fee"
+  ],
+  "result": "Actual literal AIR+prepared CODE or actual setup checker reconstructs fee502 as actual PreparedWasmCharge at numericPC and proves u64 bound",
+  "removed_premises": [
+    "independent fee equality",
+    "independent fee bound",
+    "independently supplied prepared function for setup corollary"
+  ],
+  "remaining": [
+    "actual locals stack/gas/control fullstate-step",
+    "whole-run result",
+    "fullNEAR1Petagas",
+    "cryptographic and QROM security"
+  ]
+}

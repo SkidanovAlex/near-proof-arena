@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1727,
+  "audit_log": "/tmp/near-affine-reconstruction-audit.log",
+  "module": "NearCompression/AffineFoldReconstruction.lean",
+  "module_sha256": "afe45c6fb609d69f00843ef19effa37db0c92376a149b67875e0f8d443321f73",
+  "obstruction": "affine-fold-radius-obstruction.json",
+  "shared_branch_verification": "pq384-shared-global-verify.json",
+  "shared_complete_verification": "pq384-shared-bus-codec/report.json",
+  "shared_complete_work": "pq384-shared-bus-work.json",
+  "joint_proof_integration": "pq384-joint-bus-d1/integration.json",
+  "full_goal_complete": false
+}

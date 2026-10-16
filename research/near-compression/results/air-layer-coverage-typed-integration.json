@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "audit_count": 3020,
+  "audit_log": "/tmp/root-air-coverage-typed-source-audit.log",
+  "source_sha256": {
+    "ChunkOrdinalCoverage": "5de61f0bfae2617dc97f4848abd080e1f9a801cc5d3cea16f378c5a78eb985a8",
+    "AIRProgramLowering": "a2522a520959d614cc7003069a3d62d73f9b65b9820f168c8dd1ff9fcf47591f",
+    "AIRLayerComposition": "dbaeed82c55f3cfeaf9be4d75e9426f0bc767063617d8d5d7f6e35eb89db073b",
+    "PreparedTypedSource": "3e1ab0eb57ce1010d13628c2f2e7b3c5c8eb3b48851cfb976a1b8862fb17f2bb"
+  },
+  "results": [
+    "Exact Expr evaluation equals physical circuit output under explicit structural lowering/rebuild/layer certificates",
+    "Deterministic original-use ordinals have unique chunk/local coordinates and preserve duplicates and original order",
+    "Typed Boolean columns, SP onehot, public local type equality and stack limb/word bounds derive from exact literal AIR membership"
+  ],
+  "scope": "Generic audited implications. Actual compiler route generation, weighted residual composition, ordered-use commitment binding, full typed successor/runCall and end-to-end PQ128 security remain open."
+}

@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "lean_differential_cases": 3,
+  "lean_residuals_compared": 54,
+  "honest_auxiliary_profiles": 2,
+  "rejections": 52,
+  "upstream_extension_arithmetic_checks": 32,
+  "layout": {
+    "chain_columns": 6,
+    "aux_columns": 10,
+    "finals": 4,
+    "order": [
+      1,
+      2,
+      0,
+      3
+    ]
+  },
+  "zero_factor_accepted": true,
+  "limitations": [
+    "Full-witness auxiliary generation and local algebra evaluation only.",
+    "No commitment, transcript, global balance or succinct-proof claim.",
+    "Differential tests are not formal implementation refinement."
+  ],
+  "sha256": {
+    "bus_auxiliary.py": "f10834d4b0879a623ef9dedd3447f4def497e68edd683518ea1e40ee03d608fb",
+    "BusAuxFixture.lean": "9b3eb7d62ef6db2c6f0151c5ee738a3ae8ebeb066a6101f2566f0cda35d3b3fb",
+    "bus-aux-fixture.json": "21bc02554bfb355a4f22f0968e775c85e51eeff7e1993d5e170d06e46ee3ce6f",
+    "test_bus_auxiliary.py": "f9621afa6087aca428ee4434137be7e81fe40455d220a98d041ef85c8b2c1629"
+  }
+}

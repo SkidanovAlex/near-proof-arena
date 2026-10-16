@@ -1,0 +1,3333 @@
+{
+  "status": "PASS",
+  "cases": 19,
+  "rejected": 747,
+  "reports": [
+    {
+      "case": "typed-profile-wrap",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 895,
+      "explicit_constraints": [
+        1899,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "rows": [
+        2,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 895,
+      "explicit_constraints": [
+        1899,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "rows": [
+        16,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 895,
+      "explicit_constraints": [
+        1899,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 895,
+      "explicit_constraints": [
+        1899,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "typed-profile-modulus",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 895,
+      "explicit_constraints": [
+        1899,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "typed-profile-high32",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 895,
+      "explicit_constraints": [
+        1899,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "typed-profile-signbit",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 895,
+      "explicit_constraints": [
+        1899,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "locals-untaken",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 821,
+      "explicit_constraints": [
+        1833,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "locals-taken",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 821,
+      "explicit_constraints": [
+        1833,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "locals-negative",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 821,
+      "explicit_constraints": [
+        1833,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "rows": [
+        2,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 821,
+      "explicit_constraints": [
+        1833,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 821,
+      "explicit_constraints": [
+        1833,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "locals-exact-gas",
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 821,
+      "explicit_constraints": [
+        1833,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "branch-not-taken",
+      "rows": [
+        16,
+        16
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 525,
+      "explicit_constraints": [
+        2097,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "branch-taken",
+      "rows": [
+        8,
+        16
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 525,
+      "explicit_constraints": [
+        2097,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "branch-negative",
+      "rows": [
+        8,
+        16
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 525,
+      "explicit_constraints": [
+        2097,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "branch-exact-gas",
+      "rows": [
+        8,
+        16
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 525,
+      "explicit_constraints": [
+        2097,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "rows": [
+        8,
+        16
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 525,
+      "explicit_constraints": [
+        2097,
+        621
+      ],
+      "max_degree": 12
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "rows": [
+        2,
+        16
+      ],
+      "widths": [
+        1285,
+        270
+      ],
+      "public_fields": 525,
+      "explicit_constraints": [
+        2097,
+        621
+      ],
+      "max_degree": 12
+    }
+  ],
+  "attacks": [
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-18-1074"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-18-1081"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-18-1210"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-18-818"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-18-1073"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-18-1082"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-18-1209"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-18-1214"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-18-1284"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "fetch-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "fetch-high-immediate-4"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "coherent-add-result-limb-5-0"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "coherent-add-result-limb-5-1"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "coherent-add-result-limb-5-2"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "coherent-add-result-limb-5-3"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "wrap-carry-5-463"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "wrap-carry-5-464"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "wrap-carry-5-1278"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "wrap-carry-5-1279"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "eqz-wrong-i64-result-7"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "eqz-false-zero-7"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-wrap",
+      "attack": "public-code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "public-code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-13-1074"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-13-1081"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-13-1210"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-13-818"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-13-1073"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-13-1082"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-13-1209"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-13-1214"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-13-1284"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-15-1074"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-15-1081"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-15-1210"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-15-818"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-15-1073"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-15-1082"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-15-1209"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-15-1214"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-cell-15-1284"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "fetch-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "fetch-high-immediate-4"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "coherent-add-result-limb-5-0"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "coherent-add-result-limb-5-1"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "coherent-add-result-limb-5-2"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "coherent-add-result-limb-5-3"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "wrap-carry-5-463"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "wrap-carry-5-464"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "wrap-carry-5-1278"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "wrap-carry-5-1279"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "eqz-wrong-i64-result-7"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "eqz-false-zero-7"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-late-exhaustion",
+      "attack": "public-code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-21-1074"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-21-1081"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-21-1210"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-21-818"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-21-1073"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-21-1082"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-21-1209"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-21-1214"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-21-1284"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "fetch-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "fetch-high-immediate-4"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "coherent-add-result-limb-5-0"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "coherent-add-result-limb-5-1"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "coherent-add-result-limb-5-2"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "coherent-add-result-limb-5-3"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "wrap-carry-5-463"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "wrap-carry-5-464"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "wrap-carry-5-1278"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "wrap-carry-5-1279"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "eqz-wrong-i64-result-7"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "eqz-false-zero-7"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "fetch-high-immediate-12"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "local-write-type-13"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-nonzero",
+      "attack": "public-code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-21-1074"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-21-1081"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-21-1210"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-21-818"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-21-1073"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-21-1082"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-21-1209"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-21-1214"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-21-1284"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "fetch-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "fetch-high-immediate-4"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "coherent-add-result-limb-5-0"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "coherent-add-result-limb-5-1"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "coherent-add-result-limb-5-2"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "coherent-add-result-limb-5-3"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "wrap-carry-5-463"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "wrap-carry-5-464"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "wrap-carry-5-1278"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "wrap-carry-5-1279"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "eqz-wrong-i64-result-7"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "eqz-false-zero-7"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "fetch-high-immediate-12"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "local-write-type-13"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-modulus",
+      "attack": "public-code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-21-1074"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-21-1081"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-21-1210"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-21-818"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-21-1073"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-21-1082"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-21-1209"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-21-1214"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-21-1284"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "fetch-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "fetch-high-immediate-4"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "coherent-add-result-limb-5-0"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "coherent-add-result-limb-5-1"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "coherent-add-result-limb-5-2"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "coherent-add-result-limb-5-3"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "wrap-carry-5-463"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "wrap-carry-5-464"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "wrap-carry-5-1278"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "wrap-carry-5-1279"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "eqz-wrong-i64-result-7"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "eqz-false-zero-7"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "fetch-high-immediate-12"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "local-write-type-13"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-high32",
+      "attack": "public-code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-21-1074"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-21-1081"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-21-1210"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-21-818"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-21-1073"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-21-1082"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-21-1209"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-21-1214"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-21-1284"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "fetch-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "fetch-high-immediate-4"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "coherent-add-result-limb-5-0"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "coherent-add-result-limb-5-1"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "coherent-add-result-limb-5-2"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "coherent-add-result-limb-5-3"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "wrap-carry-5-463"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "wrap-carry-5-464"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "wrap-carry-5-1278"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "wrap-carry-5-1279"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "eqz-wrong-i64-result-7"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "eqz-false-zero-7"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "fetch-high-immediate-12"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "local-write-type-13"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "code-high-immediate-2"
+    },
+    {
+      "case": "typed-profile-signbit",
+      "attack": "public-code-high-immediate-2"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-19-1074"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-19-1081"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-19-1210"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-19-818"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-19-1073"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-19-1082"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-19-1209"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-19-1214"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-19-1284"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "local-write-type-14"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-16-1074"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-16-1081"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-16-1210"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-16-818"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-16-1073"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-16-1082"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-16-1209"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-16-1214"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-16-1284"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-16-1074"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-16-1081"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-16-1210"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-16-818"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-16-1073"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-16-1082"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-16-1209"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-16-1214"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-16-1284"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-17-1074"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-17-1081"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-17-1210"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-17-818"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-17-1073"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-17-1082"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-17-1209"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-17-1214"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-17-1284"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "local-write-type-14"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-19-1074"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-19-1081"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-19-1210"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-19-818"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-19-1073"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-19-1082"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-19-1209"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-19-1214"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-19-1284"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-31-1074"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-31-1081"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-31-1210"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-31-818"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-31-1073"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-31-1082"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-31-1209"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-31-1214"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-cell-31-1284"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "local-write-type-3"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-add-input-type-5-1"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-add-input-type-5-0"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "local-write-type-6"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "local-write-type-8"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "local-write-type-14"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-declared-local-type-change"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-11-1074"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-11-1081"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-11-1210"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-11-818"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-11-1073"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-11-1082"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-11-1209"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-11-1214"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-11-1284"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-15-1074"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-15-1081"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-15-1210"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-15-818"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-15-1073"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-15-1082"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-15-1209"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-15-1214"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-cell-15-1284"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-7-1074"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-7-1081"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-7-1210"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-7-818"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-7-1073"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-7-1082"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-7-1209"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-7-1214"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-cell-7-1284"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-7-1074"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-7-1081"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-7-1210"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-7-818"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-7-1073"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-7-1082"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-7-1209"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-7-1214"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-cell-7-1284"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-7-1074"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-7-1081"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-7-1210"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-7-818"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-7-1073"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-7-1082"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-7-1209"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-7-1214"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-cell-7-1284"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-6-1074"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-6-1081"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-6-1210"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-6-818"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-6-1073"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-6-1082"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-6-1209"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-6-1214"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-6-1284"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-7-1074"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-7-1081"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-7-1210"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-7-818"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-7-1073"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-7-1082"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-7-1209"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-7-1214"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-cell-7-1284"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "typed-public-117"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-cell-1-1074"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-cell-1-1081"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-cell-1-1210"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-cell-1-818"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-cell-1-1073"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-cell-1-1082"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-cell-1-1209"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-cell-1-1214"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-cell-1-1284"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-public-23"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-public-26"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-public-27"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-public-74"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-public-77"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-public-78"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-public-114"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "typed-public-117"
+    }
+  ],
+  "known_external_provenance_cases": [
+    {
+      "case": "typed-profile-first-exhaustion",
+      "attack": "changed unused declared local type and public header",
+      "obligation": "actual PREP/type-header checker must reject; AIR alone defines a different statement"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "changed unused declared local type and public header",
+      "obligation": "actual PREP/type-header checker must reject; AIR alone defines a different statement"
+    }
+  ],
+  "scope": "Full-witness actual prepared trace against typed EXEC/CODE source, exact natural buses and public boundaries; typed whole-call formal refinement and cryptographic proof pending"
+}

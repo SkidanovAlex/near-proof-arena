@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "audit": 2203,
+  "audit_log": "/tmp/root-batch-padding-audit.log",
+  "modules": {
+    "SHA384BatchedPhase": {
+      "sha256": "df8e9b7b7b65b5a32f362e7876b67edd553bdd2c1116b790fef63f72b72b1c89",
+      "theorems": 19
+    },
+    "SHA384BatchedPadding": {
+      "sha256": "0efd24b97092293e15c7fc046765be09003e729dfaa0bce45071ff646b593782",
+      "theorems": 2
+    }
+  },
+  "proved": [
+    "exact active prefix of 80*N rows",
+    "canonical phase and block tag on each active row",
+    "capacity and no restart from padding",
+    "inactive phases and initial-row selector zero",
+    "field tag uniquely identifies natural block index"
+  ],
+  "assumptions": [
+    "HoldsP of actual sha384BatchedAir",
+    "padded block count less than field modulus"
+  ],
+  "remaining": [
+    "round gadget extraction and compression semantics",
+    "derived public payload decoding",
+    "natural state routing and digest composition",
+    "recursive input routing",
+    "proof acceptance to HoldsP and quantum cryptographic soundness"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1732,
+  "audit_log": "/tmp/near-weighted-consistency-audit.log",
+  "module": "NearCompression/WeightedConsistencyTransfer.lean",
+  "module_sha256": "5b89fddb6b9e11f695466d5ef19ef956d3e14b9c808cf6b9f96ca39fb32bc64d",
+  "contract": "weighted-correlated-agreement-contract.json",
+  "result": "Natural consistency mass projection, gating and joint-pair pullback preserve normalized agreement threshold; no nonlinear extraction theorem assumed.",
+  "remaining": [
+    "Actual global-query chain count connection",
+    "Nonlinear weighted correlated-agreement extraction",
+    "Finite-field/domain instantiation and QROM",
+    "Joint initial source batching reduction"
+  ],
+  "full_goal_complete": false
+}

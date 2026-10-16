@@ -1,0 +1,60 @@
+{
+  "status": "Formal and executable counterexample to unconditional joint-tuple proximity extraction; not a false-claim attack",
+  "date": "2026-10-15",
+  "formal_module": "NearCompression/StructuredBatchKernel.lean",
+  "formal_validation": "Lean PASS, exit 0, no warnings, 0.077 seconds; concrete kernelMonomial degree and leading coefficient included",
+  "script": "airbender/direct-wasm/reproduce_structured_batch_kernel.py",
+  "artifacts": "/tmp/near-structured-batch-kernel",
+  "instance": {
+    "degree_bound": 128,
+    "domain_size": 512,
+    "source_polynomial": "X^128 and -X^128",
+    "root": "8fd25c7c5adbe9baec19f48cdf8fabba091790f944a46479c6bceac9d518dc47fc0d363408700a37c6800972ec4d8906",
+    "maximum_agreement_with_degree_less_than_D": 128,
+    "minimum_joint_mismatches": 384,
+    "shared_threshold": 385,
+    "joint_radius_for_threshold": 127,
+    "source_is_valid_degree_bound": false,
+    "classification": "kernel extraction obstruction; not a false-claim attack",
+    "profiles": [
+      {
+        "profile": "near-pq384-weighted-joint-v1",
+        "accepted_true_zero": true,
+        "wrong_nonzero_claim_rejected": "quadratic endpoints",
+        "beta_equal": true,
+        "beta_nonzero": true,
+        "queries": 8
+      },
+      {
+        "profile": "near-pq384-derived-weight-joint-v1",
+        "accepted_true_zero": true,
+        "wrong_nonzero_claim_rejected": "quadratic endpoints",
+        "beta_equal": true,
+        "beta_nonzero": true,
+        "queries": 8
+      }
+    ]
+  },
+  "source_hashes": {
+    "pq384_weighted_joint.py": "3e41fabea53000bbd70c294f8dab073f0a8a7625fac027bb1efde11cb343c6a9",
+    "pq384_derived_weight_joint.py": "9d5defa281583396c8ff2350802d7bcf6a6381e46b2bf02ed81e1ec2c2953fea",
+    "pq384_terminal_input_weights.py": "11b292a43f3a63fcdd61e8f36ad6bd118311d591d4487bb1ee362ba43ee8eb40"
+  },
+  "why_actual_beta_permits_kernel": [
+    "Choose equal row point and equal current/next column arrays in the two lanes. lane_weight_mle then returns identical beta_j(u) at every u, not merely at sampled test points.",
+    "Both public validators permit this. For the derived API, the experiment uses fixed external weights and parent; it does not claim these exact weights arise from a particular honest D1 GKR transcript. Restricting derived GKR weights would require a separate proved structural property.",
+    "Sources h and -h have zero weighted virtual oracle for every beta, so the folding proof checks a true zero aggregate. Existing source commitments authenticate arbitrary leaves and do not by themselves assert source RS degree."
+  ],
+  "refuted_contract": "For arbitrary allowed functional weights, scalar virtual proximity at many u implies a jointly-close low-degree representative for every committed source lane.",
+  "corrected_functional_contract": {
+    "fixed_inputs": "Authenticated source functions F_j on the common lifted RS domain; externally bound weight tables W_j; fixed original scalar claim c. All fixed before weighted-sumcheck randomness u.",
+    "coefficient_family": "beta_j(u) = MLE(W_j)(u), including actual sparse-lift/current/next mapping.",
+    "equivalence": "Polynomial tuples P and Q are equivalent when sum_j beta_j(u)*(P_j-Q_j) is the zero univariate polynomial for every relevant u. No requirement that each P_j=Q_j.",
+    "representative_basin": "A tuple P fixed before u represents the source family if the scalar oracle sum_j beta_j(u)*F_j is R-close to sum_j beta_j(u)*P_j on the RS domain, for every relevant u or outside a separately bounded bad set. This allows cancelling arbitrary source noise and is weaker than joint lane proximity.",
+    "functional_well_definedness": "Prove equivalence preserves the requested original functional L(P)=sum_boolean_b sum_j W_j(b)*coeff_b(P_j). At Boolean u=b, beta_j(b)=W_j(b); coefficient_b of the zero batched polynomial is precisely the corresponding summand. This requires the exact common lift/weight identity, not an independent alpha argument.",
+    "close_case": "If such a fixed representative exists and R+(N-T)+D<=N, RS uniqueness forces every sufficiently close adaptive scalar candidate to its weighted batch. Weighted sumcheck residual discrepancy then supplies noInitialCandidate. Existing WeightedVirtualInitial proves the stronger joint-close sufficient case; scalar-basin generalization is direct.",
+    "far_case_missing": "If no fixed functional-equivalence representative exists, bound the challenge paths for which an adaptive degree<D scalar candidate exists AND satisfies the weighted residual. This is a structured-family extraction/concentration statement modulo the functional kernel; no bound is proved by the cancellation example. Candidate tuples cannot be selected independently after u and treated as fixed sumcheck witnesses.",
+    "possible_alternative": "Add a separately analyzed independent vector-oracle proximity test to establish joint proximity; this would be a versioned protocol change, not an interpretation of beta(u) as independent alpha."
+  },
+  "remaining": "No source binding, initial AIR/GKR functional correspondence, structured-family extraction, field/security parameter, or QROM claim is made."
+}

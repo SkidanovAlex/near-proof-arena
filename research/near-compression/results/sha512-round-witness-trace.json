@@ -1,0 +1,36 @@
+{
+  "kind": "SHA512 round universal witness completeness and actual AIR trace bridge",
+  "new_theorems": 24,
+  "full_audit_theorems": 1032,
+  "formal_claims": [
+    "For all bounded eight-word states and k/w inputs, the executable witness satisfies all round constraints.",
+    "Witness input decoding returns the supplied state and k/w exactly.",
+    "Actual AIR Holds implies the decoded round output equals the specification round.",
+    "At every legal height, a family of bounded inputs constructs a satisfying isolated round trace."
+  ],
+  "executable_checks": {
+    "honest_round_cases": 4,
+    "constructor_columns_compared_per_case": 2608,
+    "actual_trace_rows_checked_per_case": 2,
+    "coherent_dependency_forgeries_rejected": 40,
+    "python_fixture_matched": true
+  },
+  "commands": [
+    "lake build NearCompression.SHA512RoundWitness",
+    "lake env lean --run SHA512RoundSmoke.lean",
+    "python3 check.py"
+  ],
+  "audit_log": "/tmp/near-sha512-witness-trace-audit.log",
+  "source_sha256": {
+    "NearCompression/SHA512BitBinding.lean": "c8020d0d381f89d9997519ef307fe89e732d59fade78115b9cdae63b9af541c3",
+    "NearCompression/SHA512RoundWitness.lean": "5a3751ee1c282f61b2b023db54f3e953c8bc421e97357ba4e570a82767585e58",
+    "NearCompression/SHA512RoundTrace.lean": "3bb1fc67e39ea55c0b2dc8b9427fd1db6bb4eeb111ec2e6dde5651f30b85f4e0",
+    "SHA512RoundSmoke.lean": "9b58775e3739d4cccb333867e96f379307c7ea472d05c41acccf01a90169d160"
+  },
+  "limitations": [
+    "Trace rows are independent; no consecutive-round constraint is claimed.",
+    "k and w remain inputs, with no constant-table or message-schedule binding.",
+    "Full SHA512 schedule, chaining, feed-forward, padding and digest binding remain.",
+    "Full NEAR semantics, 1 Pgas proving, sub-300 KB proofs and 128-bit quantum security remain unverified."
+  ]
+}

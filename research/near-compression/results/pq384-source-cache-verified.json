@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "rows": 8192,
+  "width": 544,
+  "packing": 32,
+  "lanes": 17,
+  "cache_directory": "/tmp/near-pq384-source-cache-abpkzpnc/cache",
+  "root_hex": "38fdb616c24b4a7bec36ba71073cec05e865edb2ff3753804b859479d12302a6def3559577689f9ff617b8077bc95350",
+  "native_seconds_including_io": 1.9510700260289013,
+  "cache_bytes": 139461204,
+  "independent_full_vector_pairs": 3,
+  "independent_coefficients": 15,
+  "negative_checks": 5,
+  "scope": "Full-height source commitment cache; not a complete opening proof or AIR proof",
+  "limits": [
+    "Coefficient file remains untrusted prover data",
+    "Only sampled pairs/coefficients independently checked",
+    "Single-run shared-host timing; no128-bitsecurity claim"
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "case": "00-h10012-s2",
+      "report": "/tmp/near-d1-mrk-height-00-h10012-s2/report.json",
+      "baseline": "/tmp/near-d1-real-00-h10012-s2-final-check/report.json",
+      "status": "PASS",
+      "exact_bus_records_equal": 61,
+      "statement_hashes_equal": {
+        "air": "61047e9e2719c03adfd66f2e5aac407d830515f33050a9c543c0f9c54efef9dd",
+        "claim": "257f333655c22cd7b6a9766c31b1840334a412628668426a5194eca964ec8cf9",
+        "hint": "1570f60dc3c664ddf08a14d6c12434271674575e1518ff269cf68b568cb36d53",
+        "prepared": "a173e8d4ef341527cf37af1ae070f74a3db21ca2ca8fa31a66a00a7dc1fcb28c",
+        "witness": "20b3772f4e19d59216e3fc93fe1f497686e0809fd4d015b4051441bc3cd50c4b"
+      },
+      "height_plan": {
+        "mrk_log": 4,
+        "mrk_required": 3,
+        "plannedrowsperrenderer": [
+          {
+            "name": "codec",
+            "planned": 453,
+            "required": 454,
+            "tail": 0
+          },
+          {
+            "name": "scandist",
+            "planned": 28,
+            "required": 29,
+            "tail": 0
+          },
+          {
+            "name": "proc",
+            "planned": 16,
+            "required": 18,
+            "tail": 1
+          },
+          {
+            "name": "mem",
+            "planned": 24,
+            "required": 25,
+            "tail": 0
+          },
+          {
+            "name": "cmp",
+            "planned": 49,
+            "required": 50,
+            "tail": 0
+          }
+        ],
+        "receipt_log": 7,
+        "receipt_planned": 36,
+        "receipt_required": 37,
+        "scheduler_log": 10
+      },
+      "wall_seconds": 0.53,
+      "peak_rss_kib": 66560,
+      "total_cells": 7346834,
+      "compact_trace_bytes": 8482546,
+      "row_dump_bytes": 29387600
+    },
+    {
+      "case": "00-h10038-s3",
+      "report": "/tmp/near-d1-mrk-height-00-h10038-s3/report.json",
+      "baseline": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/d1-height-00-h10038-s3/report.json",
+      "status": "PASS",
+      "exact_bus_records_equal": 61,
+      "statement_hashes_equal": {
+        "air": "61047e9e2719c03adfd66f2e5aac407d830515f33050a9c543c0f9c54efef9dd",
+        "claim": "3514116d215b9eb75bee095ac6cc5cd5818069002e73ab41dd7fa22e021b47ca",
+        "hint": "dbf97ed5e566e1fae2b27d77807f5511b2929cbf05dcc985dfa647e8dedf536c",
+        "prepared": "f93938ce9c254cbae0191e5f1b3e706607f7e6bcf8510c3594b43617edae5366",
+        "witness": "91da10c66343292bdcd3371a060a95f2704953c50ff9c3efd79ea2424e62a880"
+      },
+      "height_plan": {
+        "mrk_log": 10,
+        "mrk_required": 131,
+        "plannedrowsperrenderer": [
+          {
+            "name": "codec",
+            "planned": 453,
+            "required": 454,
+            "tail": 0
+          },
+          {
+            "name": "scandist",
+            "planned": 28,
+            "required": 29,
+            "tail": 0
+          },
+          {
+            "name": "proc",
+            "planned": 16,
+            "required": 18,
+            "tail": 1
+          },
+          {
+            "name": "mem",
+            "planned": 24,
+            "required": 25,
+            "tail": 0
+          },
+          {
+            "name": "cmp",
+            "planned": 56,
+            "required": 57,
+            "tail": 0
+          }
+        ],
+        "receipt_log": 10,
+        "receipt_planned": 313,
+        "receipt_required": 314,
+        "scheduler_log": 10
+      },
+      "wall_seconds": 0.64,
+      "peak_rss_kib": 66560,
+      "total_cells": 7821952,
+      "compact_trace_bytes": 9037760,
+      "row_dump_bytes": 31288072
+    }
+  ],
+  "artifact_sha256": {
+    "prepare_d1_mrk_height.py": "b39d3b22131c682c39cd00939d1e8a57e8c4443ccdd1ecd5e7f5949d1dee2dd8",
+    "near_d1_mrk_height_export.rs": "453c445e7a8ec30fff252505c80d55d624311699c770ee71761ff2ee6ed5aa37",
+    "near_d1_mrk_capacity.rs": "c843c29c9bf8cadccf9b7c2a36c9775dbd2db1614201da6474b5d6f8d05b0b6a",
+    "run_d1_height_experiment.py": "a103ac9d166dab681958365915914a3180c63df45e7129d3da09f0de7e76d324",
+    "d1-mrk-height.patch": "e0dddba5405c1a80c93077ab25ce68239c0b00aab155eb8eb711c66e3159410e",
+    "d1-mrk-height-source.json": "ec54114968d70a0a0e3090ed11261a643dd6738a4ff7e377d61c270712f1d5b4",
+    "d1-mrk-capacity-00-h10012-s2.json": "ef711d1eeba90055628a883d8d2af6981465b533e5488ddf7965b7333542f4ad",
+    "d1-mrk-capacity-00-h10038-s3.json": "3b3e32786313b4a1f692684e98d7d025aad00e8e32dc435ab8c7bd777f80f831"
+  },
+  "scope": "Two real fixture native local checks and exact natural bus parity. Whole root/node blocks preserved before inactive padding; default API retains log19. No full proof or general formal implementation equivalence."
+}

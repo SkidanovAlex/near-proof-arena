@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "main_commit": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "total_audited_theorems": 1343,
+  "monomial_tensor_new_theorems": 5,
+  "audit_log": "/tmp/near-variable-whir-audit.log",
+  "runtime_reports": [
+    "heterogeneous-bus-verified.json",
+    "heterogeneous-bus-negative-tests.json",
+    "variable-whir-verified.json"
+  ],
+  "d1_static_profile": {
+    "tables": 33,
+    "source_columns": 3513,
+    "group1_auxiliary_extension_columns": 260,
+    "group1_auxiliary_base_coordinate_columns": 1040,
+    "max_combined_constraint_degree": 6,
+    "height_caps_log2": [
+      4,
+      13,
+      16,
+      19,
+      20,
+      22
+    ],
+    "public_segments": 15
+  },
+  "next_constraints": [
+    "maxLog values are static caps, not measured witness heights",
+    "Fixed twofoldPCS final polynomial grows asN/4; cannot extrapolate this schedule to production",
+    "Python constraint prover recomputes MLEs exhaustively; requires scalable implementation",
+    "No actual D1 witness proved, no1Pgas throughput benchmark, no128bitPQ theorem"
+  ],
+  "sha256": {
+    "airbender/generic-air/D1Profile.lean": "9fa456a0247aec69224bf5e2625d2ad230a2539608e83d005bb9577761676226",
+    "airbender/generic-air/HeterogeneousBusFixture.lean": "c1d69fd43bcdb02c38d62b8a6227de0bc08cf17c5c68cef33f384184c45dc91c",
+    "airbender/direct-wasm/verify_whir_variable.py": "eee0b4199eb1021bd3562b3f9efe86c933efed66ceddd2482589606f110b61c3",
+    "airbender/direct-wasm/heterogeneous_bus_whir.py": "38763f0230a2f152b995b988954061a6644940074d575406743a34f45418bf9a",
+    "NearCompression/GenericMonomialTensor.lean": "a6aaac8efceda0f31a273ab8ebb16f72847dfefc5d893a68d46045259fcaee71"
+  }
+}

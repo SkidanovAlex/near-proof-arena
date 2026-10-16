@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "audit": 2494,
+  "audit_log": "/tmp/root-joint-candidate-audit.log",
+  "module": "GKRJointTensorCandidate",
+  "scope": "Concrete concatenated row,left,right,gamma,PCS coordinate family; one-table minimal input envelope specialization, plus general fixed coefficient lists with explicit affine premise",
+  "remaining": [
+    "actual heterogeneous multi-table offsets and shared input envelope mapping",
+    "accepted transcript to bounded candidate event",
+    "causal sampling embedding",
+    "sparse-lift image recovery",
+    "commitment extraction and QROM security"
+  ],
+  "prototype": {
+    "source": "airbender/direct-wasm/pq384_fixed_gkr_layout.py",
+    "test": "results/fixed-gkr-layout-regression.json",
+    "behavior": "trusted fixed dimension, overflow rejection, exact first-layer zero remapping, transcript-bound new layout profile",
+    "not_integrated": "current complete AIR/PCS profiles"
+  }
+}

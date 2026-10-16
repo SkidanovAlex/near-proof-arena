@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2358,
+  "audit_log": "/tmp/root-control-terminal-pad-audit.log",
+  "source_sha256": {
+    "PreparedControlTerminal": "61cbfaa942d02284b3773992e0e4a6b92f459655dd32d30950f2b067a8883174",
+    "PreparedControlGasContext": "bcacf81c52e7f607362b62adae8684800c5e3c00d145a7c624974341e06e11fd",
+    "SHA384CommittedPadPhase": "5366e3bfb20f26a3fbba01280826a73f97fc4ec2b1f1b78c99bd7796f379bb22"
+  },
+  "new_theorems": 9,
+  "scope": [
+    "Root end and gas exhaustion derive real terminal interpreter results and status flags",
+    "Supported actual exec continuations preserve gas before deferred charging; full step preserves gas context",
+    "Committed pad bus multiplicity and tag follow exact row schedule"
+  ],
+  "remaining": [
+    "Control entry/output composition and whole-run integration",
+    "Committed input byte routing and capacity",
+    "Full recursive verifier and quantum security"
+  ]
+}

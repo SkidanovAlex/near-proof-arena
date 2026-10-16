@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "bytes": 298961,
+  "sha256": "f3788eec6c02371bbdf417199f2ed2a367e1c883a0d2d78af10c535579c21e8e",
+  "exact_original_proof": true,
+  "independent_bitstream_cases": 100,
+  "scope": "Lossless diagnostic transport only; no secure parameter claim"
+}

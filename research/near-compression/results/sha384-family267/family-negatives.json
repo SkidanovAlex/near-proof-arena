@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "negative_tests": [
+    "missing-root",
+    "wrong-root",
+    "wrong-context",
+    "wrong-AIR",
+    "wrong-length",
+    "bool-length",
+    "length-zero",
+    "length-over-bound",
+    "missing-framing",
+    "changed-framing-byte",
+    "duplicate-framing-index",
+    "out-of-range-framing-index",
+    "bool-framing-byte",
+    "wrong-IV",
+    "wrong-digest-count",
+    "wrong-IV-count",
+    "digest-byte256",
+    "digest-negative",
+    "digest-bool",
+    "count-bool",
+    "IV-bool",
+    "digest-field-alias",
+    "IV-field-alias",
+    "different-byte-digest",
+    "truncated-wire",
+    "trailing-wire",
+    "source-root-wire",
+    "opening-wire"
+  ],
+  "contract_boundary_checks": [
+    1,
+    1024
+  ],
+  "strict_canonical_public": true,
+  "mandatory_external_root": true,
+  "scope": "Only selected actual267B representative has complete proof evidence; endpoint length checks are contract validation, not extra proved traces. No zero-knowledge/security certification."
+}

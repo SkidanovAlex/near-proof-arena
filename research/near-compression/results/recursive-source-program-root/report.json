@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "queries": 16,
+  "source_outputs": 32,
+  "branches": 112,
+  "lane_pairs": 3440,
+  "nodes": 24369,
+  "source_input_slots": 10352,
+  "global_offset": 1792,
+  "arbitrary_vector_cases": 6,
+  "output_comparisons": 192,
+  "negative_cases": [
+    "omitted query",
+    "duplicated query",
+    "missing output",
+    "reversed even odd output",
+    "wrong operand input node",
+    "wrong multiply edge",
+    "overlapping branch slots",
+    "false lane count",
+    "Boolean projection index",
+    "wrong projection",
+    "wrong target slot",
+    "wrong firstfold target",
+    "wrong flat operand offset"
+  ],
+  "seconds": 0.9654914899729192,
+  "limits": [
+    "Native-derived provenance/headers remain trusted output of original component checks, not a new prover-selected certificate.",
+    "All emitted DAG nodes and outputs regenerated, including exact left-associated operation order.",
+    "Executable captured-instance check, not closed kernel proof. Lean route theorem supplies conditional structural-certificate implication.",
+    "No Merkle/FS/QROM/PQ128 security claim."
+  ]
+}

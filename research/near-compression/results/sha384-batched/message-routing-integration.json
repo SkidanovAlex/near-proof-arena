@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2280,
+  "audit_log": "/tmp/root-batch-message-routing-audit.log",
+  "module_sha256": "42b3d498638ebb8554dc59a746b9c9787bf9a4155c16adc15b90ac8bc104a14a",
+  "theorems": 3,
+  "proved": [
+    "exact indexed bus4 public record matching",
+    "ordered64limb payload equality",
+    "individual schedule limb equals public field value"
+  ],
+  "explicit_assumptions": [
+    "actual batched HoldsP",
+    "N<P",
+    "message public segment count\u2264P",
+    "valid block/word/limb indices"
+  ],
+  "remaining": [
+    "canonical count bound discharge",
+    "receiving trace byte/block decoding",
+    "full digest theorem composition"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "status": "PASS",
+  "boundary_checks": 228,
+  "conditional_accounting": {
+    "D": 131072,
+    "N": 524288,
+    "T": 393217,
+    "near_condition": true,
+    "far_condition": true,
+    "near_minimum": 327680,
+    "far_minimum": 393216,
+    "near_slack": 131074,
+    "far_strict_slack": 4
+  },
+  "fullheight_rate_four_example": {
+    "D": 262144,
+    "N": 1048576,
+    "T": 786432,
+    "near_condition": true,
+    "far_condition": true,
+    "near_minimum": 655360,
+    "far_minimum": 786432,
+    "near_slack": 262144,
+    "far_strict_slack": 1
+  },
+  "excluded_examples": [
+    {
+      "D": 131072,
+      "N": 524288,
+      "T": 262144,
+      "near_condition": false,
+      "far_condition": false,
+      "near_minimum": 327680,
+      "far_minimum": 393216,
+      "near_slack": -131072,
+      "far_strict_slack": -393215
+    },
+    {
+      "D": 131072,
+      "N": 524288,
+      "T": 393215,
+      "near_condition": true,
+      "far_condition": false,
+      "near_minimum": 327680,
+      "far_minimum": 393216,
+      "near_slack": 131070,
+      "far_strict_slack": -2
+    }
+  ],
+  "facts": [
+    "Near recovery requires T>=ceil(5D/2), i.e. agreement >=5/8 of N at rate four.",
+    "Existing far tensor condition requires T>=3D, i.e. agreement >=3/4 of N.",
+    "Conditional accounting T=393217; minimum far threshold is 393216.",
+    "Threshold conditions are satisfiable but no runtime verifier check establishes T-agreement.",
+    "Q8 is a diagnostic query setting, not a certificate of either threshold or 128-bit security."
+  ],
+  "security_certified": false,
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/check_joint_thresholds.py",
+      "sha256": "3d8d86ade4ef5c93c70d02fcfc323bd8cd6ce3e2e0cadc1f39259df5b378bbcc"
+    },
+    {
+      "path": "results/tensor-security-accounting.json",
+      "sha256": "24d33d952cb04a768c2ab971f42852d20db32df96b3d1faf76527daf0d311f16"
+    }
+  ]
+}

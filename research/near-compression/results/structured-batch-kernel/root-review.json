@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "source_hashes_match": true,
+  "both_actual_verifiers_reproduced": true,
+  "same_source_root": true,
+  "changed_nonzero_claim_rejected": true,
+  "claim": "Unconditional joint-source proximity extraction is false; no false-claim attack demonstrated",
+  "remaining": "One fixed functional representative across challenges and consistent global assignment across AIR/GKR/bus obligations"
+}

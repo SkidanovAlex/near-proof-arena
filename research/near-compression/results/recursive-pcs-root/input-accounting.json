@@ -1,0 +1,44 @@
+{
+  "status": "ACCOUNTED",
+  "core_with_caller_verified_dependency": {
+    "input_bytes": 838529,
+    "files": [
+      {
+        "path": "results/recursive-pcs-root/proof.json",
+        "bytes": 338021,
+        "sha256": "60294a79cba485c8de16fd5dad39da78e8bb0e0eaf5abac9886ee1f17d30120e"
+      },
+      {
+        "path": "results/recursive-pcs-root/verified-dependency.json",
+        "bytes": 500508,
+        "sha256": "bae63344881f9ebaef4884f7290e6f7e56f2d1ad8937c0711a3e7334f142ba6f"
+      }
+    ]
+  },
+  "native_link_wrapper_with_caller_verified_headers": {
+    "input_bytes": 6145238,
+    "files": [
+      {
+        "path": "results/recursive-pcs-root/proof.json",
+        "bytes": 338021,
+        "sha256": "60294a79cba485c8de16fd5dad39da78e8bb0e0eaf5abac9886ee1f17d30120e"
+      },
+      {
+        "path": "results/recursive-source-fold-root/trace.json",
+        "bytes": 3696780,
+        "sha256": "54e44eb1600fb51596f27520e1048194cdd42bb1806974d1d0abfd93f4c83888"
+      },
+      {
+        "path": "/tmp/near-recursive-complete-fold-trace/expected-headers.json",
+        "bytes": 2110437,
+        "sha256": "fd824a67b5d5ad74dd463472a6f9d2ab03b5e412865cd274c4c356d7494201a0"
+      }
+    ]
+  },
+  "limits": [
+    "Sum of actual separate expanded input files; not a minimum encoding or lower bound.",
+    "Core assumes dependency has already been linked to authentic verifier operands.",
+    "Native link wrapper assumes externally verified PCS headers; original component verification adds further dependencies.",
+    "No compact codec or final recursive verifier package measured."
+  ]
+}

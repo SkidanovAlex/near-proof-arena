@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "cases": [
+    "actual-small",
+    "actual-ext4",
+    "actual-multiblock",
+    "forced-reject-stop",
+    "forced-crossblock",
+    "exhaustion",
+    "zero-count",
+    "zero-coefficients",
+    "over-count",
+    "over-coefficients",
+    "zero-budget",
+    "over-budget"
+  ],
+  "oracle_input_mutations_rejected": 1,
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/SHA384TranscriptDrawFixture.lean",
+      "sha256": "ad271630fdfb25cf37cc0be5a2dbd5d8cebe5c2049afb09bf3db8180de1085d6"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_transcript_draw.py",
+      "sha256": "c0f88f9e421ab5d6dd4aca59fb367c41f29828a32e0670139b104e9127c49735"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_primitives.py",
+      "sha256": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+    },
+    {
+      "path": "results/sha384-transcript-draw/inputs.json",
+      "sha256": "5840e140cf9f7ac47c62f7640500e5d047d4c35c8c403e479574e6e41a347ea5"
+    },
+    {
+      "path": "results/sha384-transcript-draw/lean-results.json",
+      "sha256": "96cb3f1dca4a796ac527f640658019f8aa2d96b5756e34b75b5d3aa81f39079d"
+    }
+  ],
+  "limits": [
+    "Values/ranges/order/counter/meta/seed parity only; SHA output uniformity or independence not assumed.",
+    "Scripted squeeze blocks exercise rejection and exhaustion, not a cryptographic hash implementation.",
+    "Flat coefficient vector matches Python row-major grouping; next recursive AIR enforcement remains open."
+  ]
+}

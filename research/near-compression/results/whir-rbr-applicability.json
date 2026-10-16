@@ -1,0 +1,45 @@
+{
+  "status": "Conditional theorem mapping; not a certified security parameterization",
+  "implementation": {
+    "upstream_revision": "129f827003b34acd64a3315a5863eac75bc09fe6",
+    "schedule": "One-bit folds; degree and domain halve together, retaining rate 1/4. Eight sampled checks per stage. No grinding.",
+    "small_table": "log_rows=1 discloses both rows and recomputes the entire committed RS tree. Exact binding conditional on hash collision resistance; not zero knowledge.",
+    "oracle_representation_gap": "Intermediate leaves are transformed coefficient pairs. Prove their invertible local correspondence to scalar RS oracle evaluations before applying a scalar-oracle IOPP theorem.",
+    "paths": ["prover/src/gkr/whir/mod.rs:1372", "prover/src/gkr/whir/mod.rs:1481", "prover/src/gkr/whir/mod.rs:1518", "prover/src/gkr/whir/mod.rs:1552", "research/near-compression/airbender/direct-wasm/verify_whir_scheduled.py"]
+  },
+  "primary_sources": [
+    {"url": "https://eprint.iacr.org/2024/1586.pdf", "contract": "Construction 5.1 and Theorem 5.2 in the October 2024 search-indexed version; later references number the theorem 5.6. Requires mutual correlated agreement for EVERY intermediate folded RS code, list bounds, allowed proximity radii and a constrained-RS initial statement.", "version_caveat": "Full PDF retrieval unavailable in this review. Search extraction exposes ambiguous repetition subscripts; exact constants and indexing must be checked against a pinned PDF before certifying a budget."},
+    {"url": "https://openvm.dev/swirl.pdf", "contract": "Theorem 4.2.4 provides a batch-WHIR unique-decoding contract, with batching error involving (width-1)*domain_size/field_size. This is not automatically a theorem about our entire AIR protocol."},
+    {"url": "https://eprint.iacr.org/2019/834", "contract": "Theorem 8.6 gives a BCS/QROM bound of order t^2*epsilon_RBR + t^3/2^lambda, conditional on its RBR and oracle-compiler hypotheses; t includes verifier query overhead. Concrete constants remain to be extracted."},
+    {"url": "https://dspace.ut.ee/items/a795f7ff-5c78-4a35-945b-31bfddb19fa3/full", "contract": "A 2026 primary thesis reports corrections to WHIR proofs and error bounds. Corrected theorem not yet inspected; do not silently certify the earlier statement."}
+  ],
+  "conservative_route": {
+    "regime": "Unique decoding: delta strictly below (1-rate)/2. At rate 1/4 choose delta=1/3, giving list size one. Original WHIR's stronger list-decoding assumptions must not be treated as proved by this choice.",
+    "initial_constraint": "w0(Z,X)=Z*eq(z,X), hence d*=3 and d=3. Initial column batching is an additional obligation, not included for free.",
+    "ledger_recipe": [
+      "For each actual folded code record its domain size, message dimension, rate, distance parameter and mutual-correlated-agreement error from the chosen theorem.",
+      "Charge fold error as d*list_size/|K| plus its MCA error; initial d is d*, later d is max(d*,3).",
+      "Charge OOD candidate collisions using the theorem's polynomial-degree/list-size bound; the indexed statement has 2^m*list_size^2/(2|K|).",
+      "Charge sampled consistency as (1-delta)^s and constraint batching by the number of combined terms divided by |K|, after resolving exact theorem indexing.",
+      "Include final consistency, initial multi-column batching, AIR sumcheck, bus identity, shift consistency, all tables and all transcript forks.",
+      "Only after constructing the full doomed-state RBR invariant apply an applicable QROM compiler and allocate hash, field, query and extraction losses. Do not substitute generic q^2 without that invariant."
+    ],
+    "query_component_only": "For delta=1/3, (2/3)^s <= 2^-260 requires s>=445. Eight checks give approximately 4.68 bits for this conservative component. These figures are not full security levels.",
+    "small_domain_obstacle": "Hundreds of queries exceed small folded domain sizes and the original construction's stated repetition side conditions. Our with-replacement sampler needs a fresh theorem mapping. Prefer deterministic small-oracle disclosure or stop folding earlier with a larger explicit terminal polynomial, with a proved terminal rule."
+  },
+  "required_coherent_state": [
+    "One oracle fixed per stage before verifier challenges; candidates are nearby codewords satisfying the SAME residual constraint, not fresh unrelated codewords for each opening.",
+    "Initial batched columns require a common decoded tuple or an applicable batch-WHIR theorem.",
+    "OOD replies and random constraint mixing select and preserve the candidate matching the next oracle.",
+    "Folded queries connect consecutive candidates through an explicit scalar-evaluation/leaf representation relation.",
+    "Terminal candidate satisfies the residual sumcheck statement; current/next and bus forks must refer to the same committed source polynomial.",
+    "Direct two-row disclosure has a separate exact-binding state; caller log_rows forces the format, preventing proof-selected downgrade."
+  ],
+  "next_implementation_order": [
+    "Pin and audit the precise original/corrected WHIR theorem text before selecting field degree or security queries.",
+    "Define scalar RS oracle semantics and prove local pair decoding plus axis/coefficient ordering.",
+    "Choose a small-domain deterministic terminal rule and prove it composes with the residual constraint.",
+    "Implement a parameter validator which refuses unmet theorem side conditions and prints a complete per-stage ledger.",
+    "Instantiate one RBR candidate invariant across AIR, shift, batching and PCS, then specialize a QROM compiler."
+  ]
+}

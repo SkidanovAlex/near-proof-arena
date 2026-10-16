@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "audit": 2510,
+  "audit_log": "/tmp/root-heterogeneous-fold-audit.log",
+  "modules": {
+    "HeterogeneousGKRWeights": "170d9528efb40b38fb199586592ff341780d73d0408cae7844d3d3ef881947af",
+    "HeterogeneousFarFold": "81d6bca0bd6fabe1203e28a76d3eae7366cd1c4cf8aea89785183049fc159e32"
+  },
+  "proved": [
+    "explicit heterogeneous current/next source and auxiliary private slot weights with final-lane zero padding",
+    "shared row/GKR/PCS coordinate-family affinity and exact tensor identity",
+    "ideal checked-fold FAR acceptance bound for this concrete family without arbitrary beta-affinity premise"
+  ],
+  "required_premises": [
+    "fixed metadata and source functions before joint challenges",
+    "lane shape and private-slot bounds",
+    "FAR absence of shared representative",
+    "domain distinctness and strict unique regime",
+    "causal raw fold strategy with challenges matching independent product tape"
+  ],
+  "remaining": [
+    "compiler metadata and actual list arithmetic refinement",
+    "upstream causal transcript embedding",
+    "near-case original sparse-lift image recovery",
+    "Merkle source binding and QROM reduction",
+    "128-bit secure parameters under300000bytes",
+    "full NEAR1Petagas execution"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "profile": "near-shared-sha384-v1/two267-five-nodes",
+  "proof_profile": "near-pq384-gkr-bus-v1",
+  "codec": "NPGC compact GKR v1",
+  "proof_bytes_including_six_source_roots": 112786,
+  "public_fixed_width_bytes": 384,
+  "external_receipt_json_bytes": 2494,
+  "proof_public_and_receipt_bytes": 115664,
+  "external_roots_created_before_prover": true,
+  "fresh_process_verify": true,
+  "elapsed_after_external_commits": 418.2414444158785,
+  "binary_sha256": "b806d1e6741f40e446eb87e660c9179d66eb30f8eaae96a75d8e282381ea89f6",
+  "receipt_sha256": "be8f7eec4589b74da08d4f65cdbfdf306954f2752b029c6edbac927138f58617",
+  "logical_blocks": 6,
+  "unique_compressions": 5,
+  "padded_core_row_savings": 0,
+  "scope": "Shared compression diagnostic; no full recursive verifier, zero knowledge, QROM or128-bit security claim. Exact natural AIR checks are separate from randomized fingerprint proof soundness."
+}

@@ -1,0 +1,20 @@
+{
+  "kind": "actual Lean addition gadget smoke test",
+  "honest_cases": 8,
+  "rejected_output_carry_mutations": 32,
+  "range_omission_counterexample": {
+    "arithmetic_constraints_accept": true,
+    "wasm_result_matches": false,
+    "external_range_guard_rejects": true
+  },
+  "full_audit_theorems": 889,
+  "command": "lake env lean --run InstructionAddSmoke.lean",
+  "source_sha256": {
+    "NearCompression/InstructionAdd.lean": "d269f86238d0e00f377a415b3be69c1918c5a68e62529c9910aa4eaa39340fef",
+    "InstructionAddSmoke.lean": "fba1a106a26ce17caf62f732639aba5d76dd2ab4380aec7da2afff06526e3435"
+  },
+  "limitations": [
+    "Six limb ranges are assumptions in AIR soundness, enforced only by the smoke test guard.",
+    "No full execution AIR, succinct proof, size or quantum-security measurement."
+  ]
+}

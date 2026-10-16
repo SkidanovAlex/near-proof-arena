@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "quadratics": 40,
+  "fold_evaluations": 120,
+  "nonfactorable_injection": {
+    "old_weights": [
+      2,
+      -4,
+      -3,
+      6
+    ],
+    "new_weights": [
+      3,
+      -1,
+      6,
+      33
+    ],
+    "determinant": 105
+  },
+  "scope": "General quadratic and child functional parity, including r=0 and r=1; explicit witness that accumulated weights need not factor.",
+  "limits": [
+    "No runtime probability or extraction theorem established by this check.",
+    "No PCS acceptance-to-candidate or rate-shift transfer theorem."
+  ],
+  "source_sha256": {
+    "check_general_weighted_extraction.py": "698f1339b6ad4db154f8be3f66373b138834bb5ce465a7333109a48dbd36fd5a",
+    "pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a"
+  }
+}

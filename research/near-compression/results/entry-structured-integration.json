@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 1951,
+  "source_hashes": {
+    "StructuredWeightTensor": "580ff54c9739a8f1238daa1614070ec29508dbda57e409305210dc155a0395f7",
+    "PreparedLiteralEntry": "4e2d94c464275c77c585e0d6caa9c20d93da4ca17fde70030c4e4886082888f4",
+    "PreparedLiteralRunCall": "23150e4b45b4cd83af2c792ac1375f80737e3d7e328b71caa16dcfaee4c8e41b"
+  },
+  "eligibility_smoke": {
+    "actual_setup_cases": 7,
+    "entry_mutations_rejected": 91,
+    "scope": "Actual setup/CODE/header eligibility; final public output composition remains open",
+    "status": "PASS"
+  },
+  "remaining": [
+    "Final public output and DONE-padding linkage",
+    "General Wasm and full NEAR 1 Pgas",
+    "Concrete sparse lift/current-next mapping, close-case sumcheck and upstream GKR timing",
+    "Full hash semantics root review",
+    "Recursive prover and certified quantum security"
+  ]
+}

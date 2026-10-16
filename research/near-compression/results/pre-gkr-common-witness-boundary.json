@@ -1,0 +1,71 @@
+{
+  "status": "Read-only protocol review plus six checked Lean lemmas; no adversarial extraction theorem claimed",
+  "module": "NearCompression.GKRCommonInputBoundary",
+  "formal_check": {
+    "exit_code": 0,
+    "seconds": 0.086,
+    "warnings": 0
+  },
+  "concrete_order": [
+    {
+      "prefix": "source",
+      "code": "pq384_seed_gkr_bus.py:begin",
+      "facts": "All source roots absorbed before bus alpha/gamma."
+    },
+    {
+      "prefix": "auxiliary",
+      "code": "pq384_seed_gkr_bus.py:verify_local / initialize_aux",
+      "facts": "Auxiliary roots and finals absorbed before all constraint sumchecks."
+    },
+    {
+      "prefix": "terminal",
+      "code": "pq384_seed_gkr_bus.py:terminal_layout",
+      "facts": "All zerocheck row points/claims fixed, then rho, compiled circuit and GKR binding."
+    },
+    {
+      "prefix": "GKR-final",
+      "code": "pq384_seed_gkr.py:verify; pq384_terminal_gkr.py:obligation",
+      "facts": "Final 2m quadratic messages interleaved with ru/rv challenges; a,b committed before gamma. Input weights are eq(ru)+gamma eq(rv); known constants subtracted."
+    },
+    {
+      "prefix": "PCS",
+      "code": "pq384_seed_gkr_bus.py:opening_arguments/opening_parent",
+      "facts": "Source coefficient weight tables derived from terminal rowpoints and final GKR private weights; PCS transcript bound to final GKR seed."
+    }
+  ],
+  "existing_implications": {
+    "PackedSourceExecution": "Honest field/state computation -> one actual polynomial family and matching functionals/leaf values; does NOT extract that family from adversarial commitments.",
+    "FunctionalOpeningFold.functional_opening_fold_count": "For fixed sources and fixed coefficient weight tables before weighted PCS challenges, false existence of a matching representative implies accepted-count bound. Tables already depend on GKR challenges.",
+    "StructuredWeightTensor.compressed_tensor_reconstructs_lanes": "A universal fixed tensor representative implies one lane tuple on common agreement points; obligation family must be fixed in advance.",
+    "GKRCommonInputBoundary.gkr_universal_functionals_separate": "Equality for every final GKR weight functional implies equality of every fixed input slot, by gamma=0 and Boolean ru. No source extraction assumption hidden.",
+    "GKRCommonInputBoundary.gkr_adaptive_input_kernel": "Moving representative after challenge invalidates universal separation: [r,r-1] has MLE at r equal zero for every r, yet no fixed vector equals this family. This does not pass authentication to a fixed source like [1,1]."
+  },
+  "needed_adversarial_contract": {
+    "source_binding": "Replace received authenticated leaf values by ONE fixed ordered source oracle family before all dependent verifier challenges; commitment/root extraction, including quantum semantics, is separate.",
+    "extractor_prefix": "For full AIR, polynomial tuple must be a function only of source+auxiliary commitment prefix before constraint row challenges. Fixing it merely before GKR proves only the terminal circuit reduction.",
+    "near_case": "There exists one degree-bounded lane tuple L selected at that prefix, with an explicit shared source-agreement/representation relation sufficient for every later terminal rowpoint, current/next slot, GKR ru/rv/gamma and PCS u. This is not independent existential per opening.",
+    "far_case": "If no such prefix-fixed tuple exists, bound accepted complete interactive paths for the actual universal contraction family, preserving all challenge causality and aborts. Existing fixed-weight PCS theorem does not prove this event.",
+    "terminal_binding": "Outside a bounded event, accepted mandatory PCS implies private_claim = sum_i private_weights_i * EvalTerminalInputs(L,rowpoints)_i for that same prefix-fixed L.",
+    "composition": "Prove actual GKR interactive reduction with this fixed input vector; then zerocheck/AIR reduction with prefix-fixed L, plus bus exact semantics. Circuit implementation lowering alone is not GKR soundness."
+  },
+  "concrete_next_route": [
+    "Model final GKR contraction universally over ru,rv,gamma; its private weights do not depend on prover messages. Existing Boolean spanning lemma identifies all private slots.",
+    "At fixed pre-GKR rowpoints, append weighted-PCS u coordinates and prove exact source contraction is a fixed multi-affine tensor. Use tensor extraction and shared interpolation before GKR challenge sampling, not separately after each transcript.",
+    "To cover AIR, extend the same universal tensor to all earlier zerocheck rowpoints (current and cyclic-next weights are multi-affine in those points). Same lane tuple must then cover all rows/slots/obligations.",
+    "Resolve variable GKR input dimension: terminal compiler constant-folds and deduplicates challenge-dependent constants, changing live constant count and input_size. A fixed envelope/padded layout profile is a clean new-profile option; do not assume the varying compiler is one fixed-degree polynomial map.",
+    "Alternatively add a separate independently randomized vector proximity/extraction stage fixed before zerocheck. This may simplify the common-witness theorem but needs its own far-case/adaptive/commitment security proof and cost; no certified parameters supplied."
+  ],
+  "finite_count_interface": {
+    "form": "For prefix-fixed arbitrary sources, count(accepted paths with no common L) <= B_global/|S| plus fold query term, after clearing denominators in the exact finite transcript tree.",
+    "recurrence_requirement": "Each universal tensor coordinate needs a proved extraction-failure fiber bound and causal prefix. Existing IndexedUniqueExtraction supports a strict unique-decoding regime; applying its max(N,2) bound to extra GKR/rowpoint coordinates requires an actual tensor representation and accepted-event inclusion proof.",
+    "not_certified": "No numerical B_global claimed: variable compiler shape, complete GKR reduction, universal-family sampling order and source-oracle extraction still require proofs."
+  },
+  "primary_source_files": [
+    "airbender/direct-wasm/pq384_seed_gkr_bus.py",
+    "airbender/direct-wasm/pq384_seed_gkr.py",
+    "airbender/direct-wasm/pq384_terminal_gkr.py",
+    "airbender/direct-wasm/pq384_terminal_compile.py",
+    "airbender/direct-wasm/pq384_terminal_input_weights.py"
+  ],
+  "security": "No false-claim attack demonstrated; no QROM/PQ128 conclusion."
+}

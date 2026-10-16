@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "components": 2,
+  "unique_calls": 15594,
+  "occurrences": 17042,
+  "files": {
+    "results/sha384-direct-seed/proof.json": "567d664190d37535f69aa3340b812a849120614a006b85b0c9f321d7cd357300",
+    "results/sha384-direct-seed/statement.json": "33c96c0132c73c9670057f328076a6a104422f97135f96814cc6970f56bcb516",
+    "results/sha384-committed-seed/proof.json": "3c5186c8802d4d54001efaf0ce48421dc3d0aaac68e68c0815f1a9890f397722",
+    "results/sha384-committed-seed/statement.json": "7d3fdc8416166ac1be4e985e3a8841c7bc8380bc1cef09854a4aeca5f7a34f47",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/capture_seed_component_hashes.py": "8eee5fc0790c8ef93c682fbf697921591dd8c452464914b28eec30d7b5e38581",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_seed_gkr_bus.py": "8532f47a300afc915c8010ce37965e63ce0b372592c83d343d7150765816630f",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_primitives.py": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+  },
+  "limits": [
+    "Configured core and configuration setup only; application wrapper AIR digest checks excluded.",
+    "No operation coverage or recursion soundness claim.",
+    "Full-state deduplication is a separate checked analysis."
+  ]
+}

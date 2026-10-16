@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "same_trusted_statement_and_source_roots": true,
+  "root_fresh_process_verification": true,
+  "root_reproduced_profile_exactly": true,
+  "per_proof_sha384_blocks": 41542,
+  "configuration_sha384_blocks": 13442,
+  "total_setup_plus_proof_blocks": 54984,
+  "previous_per_proof_blocks": 86662,
+  "ext4_multiplications": 2990519,
+  "audit_checks": 1839,
+  "limitations": [
+    "Newprofile separate from298961-byte compactproof; newcompactcodec not measured",
+    "Trusted caller fixes AIR/compiler configuration",
+    "No complete recursive verifier or128bit/QROM security proof"
+  ],
+  "root_binding_rejections": [
+    "missing-opening",
+    "empty-opening-queries",
+    "altered-source-leaf",
+    "altered-final-gkr-input",
+    "altered-last-table-constraint",
+    "altered-public-input",
+    "altered-source-root",
+    "altered-config-digest",
+    "altered-config-compiler"
+  ]
+}

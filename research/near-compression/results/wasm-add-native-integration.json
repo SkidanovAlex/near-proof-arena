@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "lean_audited_theorems": 1596,
+  "lean_log": "/tmp/near-add-native-audit.log",
+  "integrated_module": "PreparedWasmAddStep",
+  "native_kernels": {
+    "python_fft_parity_cases": 20,
+    "naive_evaluations": 80,
+    "kernel_identity_checks": 20,
+    "rejected_inputs": 13,
+    "full": {
+      "degree": 262144,
+      "domain": 1048576,
+      "input_bytes": 4194304,
+      "output_bytes": 16777216,
+      "fft_seconds": 0.08630275214090943,
+      "direct_checks": 5
+    }
+  },
+  "source_cache": {
+    "status": "PASS",
+    "rows": 8192,
+    "width": 544,
+    "packing": 32,
+    "lanes": 17,
+    "cache_directory": "/tmp/near-pq384-source-cache-abpkzpnc/cache",
+    "root_hex": "38fdb616c24b4a7bec36ba71073cec05e865edb2ff3753804b859479d12302a6def3559577689f9ff617b8077bc95350",
+    "native_seconds_including_io": 1.9510700260289013,
+    "cache_bytes": 139461204,
+    "independent_full_vector_pairs": 3,
+    "independent_coefficients": 15,
+    "negative_checks": 5,
+    "scope": "Full-height source commitment cache; not a complete opening proof or AIR proof",
+    "limits": [
+      "Coefficient file remains untrusted prover data",
+      "Only sampled pairs/coefficients independently checked",
+      "Single-run shared-host timing; no128-bitsecurity claim"
+    ]
+  },
+  "cache_matches_previous_packed_root": true,
+  "scope": "Actual Wasm add step bridge and full-height prover acceleration; not full NEAR semantics, complete packed opening, recursion, or 128-bit PQ security."
+}
