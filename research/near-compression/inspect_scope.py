@@ -399,6 +399,7 @@ SOURCES = [
     "research/near-compression/NearCompression/GKRConcreteErrorInclusion.lean",
     "research/near-compression/NearCompression/GKRFullPCSExperiment.lean",
     "research/near-compression/NearCompression/TwoTableLocalCoordinates.lean",
+    "research/near-compression/NearCompression/TableHistoryBinding.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",

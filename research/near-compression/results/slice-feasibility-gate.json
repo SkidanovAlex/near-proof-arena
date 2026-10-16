@@ -261,7 +261,9 @@
     "NearCompression/GKRFullPCSExperiment.lean",
     "results/gkr-full-pcs-experiment-integration.json",
     "NearCompression/TwoTableLocalCoordinates.lean",
-    "results/two-table-local-coordinates-integration.json"
+    "results/two-table-local-coordinates-integration.json",
+    "NearCompression/TableHistoryBinding.lean",
+    "results/table-history-binding-integration.json"
   ],
   "requirements": [
     {

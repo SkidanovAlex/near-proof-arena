@@ -1,0 +1,36 @@
+{
+  "status": "TABLE_HISTORY_AND_WHOLE_RECOVERED_INPUT_BINDING_PROVED",
+  "module": "NearCompression/TableHistoryBinding.lean",
+  "theorems": [
+    "table_history_segment",
+    "two_table_history_points",
+    "recovered_input_history_suffix",
+    "concrete_pcs_recovered_input_binding"
+  ],
+  "proved": [
+    "Metadata offset and row-log extraction returns its actual history segment despite arbitrary trailing coordinates.",
+    "Two adjacent table offsets match the joint vector take/drop partition.",
+    "Whole recovered input function is invariant under appended history suffix when all live lane row segments fit the original row prefix.",
+    "Concrete PCS input binding follows from sample row lengths, lane bounds and unchanged constants."
+  ],
+  "assumptions": [
+    "Correct table offsets and lengths; no native transcript derivation is claimed.",
+    "Each source lane row segment lies within layout.rowCoordinates.",
+    "PCS constants equal the earlier circuit constants; constants may depend on rows."
+  ],
+  "remaining": [
+    "Bind native metadata, constants and semantic formula list to the formal experiment.",
+    "Assemble the local, batching, GKR and PCS estimates into a global invalid-execution bound.",
+    "Computational/QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3990,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; generic history/input transport only."
+  }
+}

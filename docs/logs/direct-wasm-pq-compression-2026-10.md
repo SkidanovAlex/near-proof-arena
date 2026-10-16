@@ -3842,3 +3842,19 @@ Substituting the GKR/PCS event and proving native metadata/input bindings
 still remain, followed by invalid-trace/no-representative assembly.
 Full check.py passed 3986 registered results with the existing axiom allowlist.
 Native code and byte measurements unchanged; gate remains NOT_PASSED.
+
+### Table history partition and whole recovered input binding
+
+TableHistoryBinding proves that metadata offsets select the actual table
+rowpoint segment inside a history with arbitrary suffix. Adjacent two-table
+metadata therefore matches the take/drop coordinate partition. For bounded
+live source lanes, appending GKR/PCS coordinates leaves the entire recovered
+input function unchanged. Concrete PCS sample membership supplies the row
+length, so the earlier whole-function input-binding obligation follows when
+the PCS constants match the earlier circuit constants.
+
+This replaces an input-function equality premise with explicit lane geometry
+and constant-list binding. Native derivation of metadata/constants/formulas
+and global invalid-execution count assembly remain open.
+Full check.py passed 3990 registered results with the existing axiom allowlist.
+Native code and proof sizes unchanged; gate remains NOT_PASSED.
