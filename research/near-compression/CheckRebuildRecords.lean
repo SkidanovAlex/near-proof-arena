@@ -1,4 +1,4 @@
-import NearCompression.TerminalBatchCheck
+import NearCompression.TerminalCompiledCheck
 import NearCompression.DiagnosticExt4Embedding
 import Lean
 open Lean NearCompression ZkFormal.Algebra
@@ -100,7 +100,24 @@ private def balance (nodes : List (TerminalDAGNode Fp4)) (j : Json) : IO (Termin
 private def inputValue (seed slot : Nat) : Fp4 :=
   ⟨⟨Fp.ofNat ((slot+1)*(seed+1)),0⟩,⟨0,0⟩⟩
 
-private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p : Json) : IO (Nat × Nat) := do
+private def placement (j : Json) (nodeCount : Nat) : IO (List Nat × List Nat) := do
+  let obj ← need j.getObj?
+  let mut live := []
+  let mut positions := Array.replicate nodeCount 0
+  for (key,value) in obj.toList do
+    let some i := key.toNat? | throw (IO.userError "invalid node key")
+    require (toString i==key && i<nodeCount) "noncanonical/out-of-range node key"
+    live := i::live
+    positions := positions.set! i (←need value.getNat?)
+  return (live.reverse,positions.toList)
+
+private structure ParsedProgram where
+  environment : TerminalProgramEnvironment Fp4
+  program : List (TerminalInstruction Fp4)
+  records : List (TerminalRebuildRecord Fp4)
+  root : Nat
+
+private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p : Json) : IO (Nat × ParsedProgram) := do
   let ins ← need (←field p "instructions").getArr?
   require (0<ins.size) "empty program"
   let base ← need (←field p "base").getNat?
@@ -155,7 +172,7 @@ private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p :
   let root ← need (←field p "root").getNat?
   require (terminalRebuildRecordsCheck source target (inputValue seed) [] records (ins.size-1) root)
     "rebuild records rejected"
-  return (records.length,root)
+  return (records.length,⟨env,program,records,root⟩)
 
 def main (args : List String) : IO Unit := do
   require (args.length==4) "expected DAG bundle, rebuild capture, replay manifest, diagnostic seed"
@@ -173,11 +190,13 @@ def main (args : List String) : IO Unit := do
   let outputs ← need (←field rebuild "outputs").getArr?
   let mut count := 0
   let mut entries : List (TerminalBatchEntry Fp4) := []
+  let mut tables : List (TerminalCompiledTable Fp4) := []
   let programs ← need (←field rebuild "programs").getArr?
   require (outputs.size==programs.size && weights.size==programs.size && claims.size==programs.size) "batch count"
   for i in List.range programs.size do
-    let (n,programRoot) ← checkProgram target seed programs[i]!
+    let (n,parsed) ← checkProgram target seed programs[i]!
     count := count+n
+    let programRoot := parsed.root
     let out := outputs[i]!
     let wn ← need (←field out "weight").getNat?
     let cn ← need (←field out "claim").getNat?
@@ -185,10 +204,13 @@ def main (args : List String) : IO Unit := do
     let weighted ← need (←field out "node").getNat?
     let delta ← need (←field out "delta").getNat?
     let term ← need (←field out "batch_node").getNat?
-    entries := ⟨programRoot,←scalar weights[i]!,←scalar claims[i]!,wn,cn,pn,weighted,delta,term,
+    let entry : TerminalBatchEntry Fp4 := ⟨programRoot,←scalar weights[i]!,←scalar claims[i]!,wn,cn,pn,weighted,delta,term,
       ←arithmetic target .mul programRoot wn weighted,←arithmetic target .sub weighted cn delta,
-      ←arithmetic target .mul pn delta term⟩::entries
+      ←arithmetic target .mul pn delta term⟩
+    entries := entry::entries
+    tables := ⟨parsed.environment,parsed.program,parsed.program.length-1,parsed.records,entry⟩::tables
   entries := entries.reverse
+  tables := tables.reverse
   require (terminalBatchEntriesCheck target rho 1 entries) "batch entries rejected"
   let finalBalance ← balance target (←field rebuild "balance")
   require (finalBalance.terms==entries.map (fun e => (e.termNode,true))) "batch terms mismatch"
@@ -198,6 +220,30 @@ def main (args : List String) : IO Unit := do
   let zeroNode := target.findIdx (fun n => n==.constant 0)
   require (terminalBatchRootCheck target finalBalance.result root zeroNode) "final root rejected"
   require (0<programs.size) "no programs"
+  let layout ← field bundle "layout"
+  let certificate ← field bundle "certificate"
+  let (live,positions) ← placement (←field certificate "initial") target.length
+  let layers ← need (←field layout "layers").getArr?
+  let plans ← need (←field certificate "plans").getArr?
+  require (layers.size==plans.size) "layer/plan count"
+  let mut stages : List TerminalStoredPlan := []
+  for i in List.range layers.size do
+    let (ls,ps) ← placement plans[i]! target.length
+    let gates ← (←need layers[i]!.getArr?).toList.mapM gate
+    stages := ⟨ls,ps,gates⟩::stages
+  stages := stages.reverse
+  let inputSize ← need (←field layout "input_size").getNat?
+  require (0<inputSize) "empty input"
+  let rootSlot ← need (←field layout "root").getNat?
+  let capacity ← need (←field layout "private_capacity").getNat?
+  let mut constants : Array Fp4 := Array.replicate inputSize 0
+  for (key,value) in (←need (←field layout "constants").getObj?).toList do
+    let some i := key.toNat? | throw (IO.userError "invalid constant key")
+    require (toString i==key && capacity≤i && i<inputSize) "constant slot bounds"
+    constants := constants.set! i (←scalar value)
+  require (terminalCompiledFiniteCheck target (inputValue seed) (fun i => constants[i]?.getD 0)
+    rho tables finalBalance root zeroNode capacity live positions (inputSize-1) stages rootSlot)
+    "combined finite compiler check rejected"
   IO.println (Json.mkObj [("status",toJson "PASS"),("programs",toJson programs.size),
     ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),
-    ("scope",toJson "Native Lean reconstruction and final batching on diagnostic assignment and supplied replay manifest; excludes extraction, parser refinement and concrete kernel certificates")]).compress
+    ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; excludes extraction, AIR compiler refinement, parser refinement and concrete kernel certificates")]).compress

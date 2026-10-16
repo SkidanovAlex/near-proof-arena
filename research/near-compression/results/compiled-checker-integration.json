@@ -1,0 +1,44 @@
+{
+  "status": "LEAN_COMBINED_FINITE_COMPILER_CHECKER_SOUNDNESS_PROVED",
+  "module": "NearCompression/TerminalCompiledCheck.lean",
+  "theorems": [
+    "terminal_compiled_table_checked",
+    "terminal_compiled_dag_checked",
+    "terminal_compiled_finite_checked",
+    "terminal_compiled_check_regressions"
+  ],
+  "proved": "One Boolean acceptance derives exact equality between finite GKR circuit output and the rho-weighted residual of independently executed source programs. It derives source/target acyclicity, reconstruction routes, arithmetic/expansion/balance correctness, constant/input placement, finite layer routing and final output placement; none are separate theorem premises.",
+  "scope": "The theorem is for explicit typed programs, environments, input assignment and expected batching values. It is not AIR compiler refinement, transcript refinement, commitment extraction or probabilistic/global execution soundness.",
+  "native": {
+    "report": "results/lean-rebuild-captures.json",
+    "combined_checker_invoked": true,
+    "programs": 2,
+    "records": 9152,
+    "diagnostic_assignments": 2,
+    "malformed_rejections": 14
+  },
+  "kernel_regressions": [
+    "Complete optimized one-input finite compiler acceptance",
+    "Mismatched input rejected",
+    "Missing reconstruction rejected",
+    "Changed claim rejected",
+    "Wrong finite output slot rejected",
+    "Inconsistent final balance rejected",
+    "Omitted source program rejected"
+  ],
+  "remaining": [
+    "Identify explicit source program/environment with the actual AIR compiler and recovered committed trace.",
+    "Align global GKR/PCS sampling and computational commitment/transcript assumptions.",
+    "Parser/emitter refinement and concrete kernel certificates.",
+    "Quantum security, full NEAR coverage/capacity and secure sub300000-byte size."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3845,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

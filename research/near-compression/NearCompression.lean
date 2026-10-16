@@ -1411,3 +1411,5 @@ import NearCompression.TerminalBalanceCheck
 import NearCompression.TerminalRebuildCheck
 
 import NearCompression.TerminalBatchCheck
+
+import NearCompression.TerminalCompiledCheck

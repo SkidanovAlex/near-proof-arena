@@ -3080,3 +3080,28 @@ harness, Python compilation and diff checks passed. Integration/gate updated;
 gate remains NOT_PASSED. Verified Python replay is not Lean transcript/parser
 refinement. Committed assignment extraction, global soundness composition,
 quantum security, full NEAR capacity and secure proof size remain open.
+
+### One checked finite compiler contract
+
+TerminalCompiledCheck packages each explicit source program, environment,
+reconstruction records and batch entry. Its combined checker verifies source
+and target acyclicity, reconstruction, batching, final balance/root and the
+finite stored bundle. The main theorem derives finite GKR output equals the
+rho-weighted residual of independently executed source programs from one
+Boolean acceptance. No route, intermediate value equality or node equation
+is a separate premise of that theorem.
+
+The native adapter now preserves parsed source programs and records, constructs
+these packages, parses the actual finite layout and invokes the same combined
+checker. Both diagnostic assignments pass the retained two-program/9152-record
+capture; all 14 malformed cases still reject. Kernel regressions also exercise
+the complete finite interface and reject input/reconstruction/claim/output/
+balance/program mismatches.
+
+Full check.py passed 3845 registered results with the existing axiom allowlist;
+native harness, Python compilation and diff checks passed. The gate remains
+NOT_PASSED. This closes the generic structural compiler composition boundary,
+not the external identification of explicit programs/environments with AIR
+compilation and recovered committed data. Transcript/parser refinement,
+concrete kernel capture certificates, global sampling composition, quantum
+security, full NEAR capacity and secure proof size remain open.

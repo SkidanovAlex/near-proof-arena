@@ -47,6 +47,6 @@ def main():
             path=Path(d)/'manifest.json';path.write_text(json.dumps(m))
             rejected.append(dict(case=label,reason=run(a.bundle,a.rebuild,path,0,False)))
     report=dict(status='PASS',bundle=str(a.bundle),bundle_sha256=sha(a.bundle),rebuild=str(a.rebuild),rebuild_sha256=sha(a.rebuild),adapter_sha256=sha(Path('CheckRebuildRecords.lean')),manifest_sha256=sha(a.manifest),positive=positive,rejected=rejected,
-      stored_bundle_check=stored_result,scope='Native typed Lean reconstruction and final batching on two diagnostic assignments with supplied replay manifest. Excludes commitment extraction, parser refinement and concrete kernel proof terms.')
+      stored_bundle_check=stored_result,scope='Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Excludes commitment extraction, AIR compiler refinement, parser refinement and concrete kernel proof terms.')
     a.output.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(dict(status='PASS',assignments=len(positive),rejections=len(rejected))))
 if __name__=='__main__':main()

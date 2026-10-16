@@ -373,6 +373,7 @@ SOURCES = [
     "research/near-compression/NearCompression/TerminalBalanceCheck.lean",
     "research/near-compression/NearCompression/TerminalRebuildCheck.lean",
     "research/near-compression/NearCompression/TerminalBatchCheck.lean",
+    "research/near-compression/NearCompression/TerminalCompiledCheck.lean",
     "research/near-compression/NearCompression/JointSourceFarFold.lean",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean",
