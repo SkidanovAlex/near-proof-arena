@@ -113,7 +113,10 @@
     "results/literal193-joint-packing-screen.json",
     "results/literal193-joint-packing-comparison.json",
     "results/pq384-literal193-gkr-packed/slice-frontend-report.json",
-    "results/literal193-gkr-packed-query-scaling.json"
+    "results/literal193-gkr-packed-query-scaling.json",
+    "airbender/direct-wasm/prepared_gkr_envelope.py",
+    "airbender/direct-wasm/test_prepared_gkr_envelope.py",
+    "results/pq384-literal193-gkr-packed/envelope-report.json"
   ],
   "requirements": [
     {
@@ -154,7 +157,8 @@
       "query_geometry_screen": "Verified Q8 retained artifact exactly re-encodes to121982 bytes. Counterfactual longer query prefixes on the same commitments/Ext4 layout project492238 proof bytes at128 queries,705390 at239,817054 at309. Current total transport at309 is1041761 bytes. Opened leaves alone cost462016 bytes at309. These are exact codec geometry calculations, not regenerated high-query proofs or secure profiles. Hash multiproofs are already included.",
       "packing_screen": "Ideal uniform-query expected multiproof geometry over eligible power-of-two packings1..1024: at309 queries best Ext4 expectation816299 bytes versus retained820634; projected Ext8 best1103809 bytes. Ext8 auxiliary coordinates/field vectors accounted for, but not implemented or secure. Tree formulas validated by exhaustive small-tree query tuples; Ext4 non-PCS51590-byte framing reconciles with measured codec. Statement/request excluded. Repacking separate branches does not approach300000 in this screen.",
       "shared_fold_floor": "Omitting all folded-oracle, round and terminal costs still leaves optimized four-tree source openings at349123 expected bytes for projected Ext8/q309. Speculative same-phase table merging lowers source-only expectation to222888; retaining current local/framing123302 yields346190 before omitted PCS work and statement/request. These are expected-layout screens, not universal lower bounds or authenticated proofs.",
-      "gkr_query_scaling": "Actual retained compact leaf contents, all12 reconstructed fold roots matched, Q8 verified/re-encoded:128-query counterfactual283053 proof bytes;309-query504163 proof bytes,728870 current transported bytes. At309 source payload329974 and shared fold payload155344; fixed18845 (outer GKR/local17551 plus weighted PCS header1294). Uses original Q8 transcript, not generated secure profile. Full-word floors do not apply as universal lower bounds to zero-tagged sparse witnesses."
+      "gkr_query_scaling": "Actual retained compact leaf contents, all12 reconstructed fold roots matched, Q8 verified/re-encoded:128-query counterfactual283053 proof bytes;309-query504163 proof bytes,728870 current transported bytes. At309 source payload329974 and shared fold payload155344; fixed18845 (outer GKR/local17551 plus weighted PCS header1294). Uses original Q8 transcript, not generated secure profile. Full-word floors do not apply as universal lower bounds to zero-tagged sparse witnesses.",
+      "compact_transport": "Implemented complete binary envelope overhead20041 bytes in place of224709 statement/request JSON bytes. Actual Q8 envelope72486; with separate expected request JSON73405. Applying unchanged overhead to the309-query size replay gives477105 envelope bytes (478024 with separate request), still over target and not a security-certified proof."
     },
     {
       "name": "Adversarial validation",
@@ -209,5 +213,13 @@
     "projected_309_query_proof_bytes": 457064,
     "projected_309_query_source_payload_bytes": 285515,
     "qualification": "Fresh Q8/Ext4 proof verified;15 cross-layer rejections passed. Larger-query figures are retained-transcript authenticated-tree replays. SameAIR/public/rows/request; sourceCODE root and profile-specific challenges changed. Security/common-trace extraction remain open."
+  },
+  "compact_transport_measurement": {
+    "proof_bytes": 52445,
+    "complete_envelope_bytes": 72486,
+    "envelope_plus_external_request_json_bytes": 73405,
+    "all_statement_request_proof_inputs_carried": true,
+    "air_reconstructed_locally": true,
+    "qualification": "Exact original Q8/Ext4 GKR proof and statement/request roundtrip. Caller expected request pinned externally. Transport only, no secure parameter or formal codec claim."
   }
 }

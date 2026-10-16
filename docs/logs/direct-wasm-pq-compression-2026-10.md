@@ -2173,3 +2173,30 @@ Validation: independent JSON verifier, exact compact codec roundtrip/fresh proce
 80 bitcodec roundtrips and primitive/proof negatives, new literal frontend with
 15 cross-layer rejections, all12 reconstructed fold roots and exact query-size
 accounting passed. No Lean changes or new soundness claims.
+
+
+### Complete canonical GKR slice transport
+
+Added `prepared_gkr_envelope.py`. Carries canonical public u32 values, two-table
+shapes/packings, source commitments, exact Wasm bytes, UTF8 method, uint64 prepaid
+gas, and framed compact proof. Reconstructs literal AIR locally from public CODE
+length; no AIR JSON is transmitted or trusted. Decoded statement/request/proof
+are exactly equal to the retained originals. Verification pins the caller's
+expected request before invoking the same preparation and compact GKR verifier.
+
+Actual envelope72486 bytes = proof52445 + transport20041, versus prior277154.
+Including a separate expected-request JSON file gives73405 bytes, explicitly
+counting that redundant caller input too. Security remains Q8/Ext4 diagnostic.
+At309-query replay, unchanged overhead would yield477105 bytes, or478024 with
+external request, so this does not resolve high-query secure size feasibility.
+
+The parser checks framing before allocation/reconstruction, canonical field
+encodings, strict UTF8, no trailing bytes, and profile identity. Shape/security
+validation remains in the existing verifier. Oversized malformed lengths fail
+against remaining input length; the u64 gas envelope is an explicit wire range.
+No new Lean codec refinement or acceptance-to-HoldsP claim is made.
+
+Validation: exact three-object roundtrip, fresh-process verifier,14 rejection
+cases (caller mismatch, framing, fields, shape, roots, UTF8, published output,
+proof integrity) and Python compilation/diff checks passed. Existing proof
+artifact unchanged; envelope and report retained. Feasibility gate stays open.
