@@ -3663,3 +3663,22 @@ results with the existing axiom allowlist. No generic normalization theorem or
 secure-byte claim is made. Global composition, QROM loss and high-query/extension
 size remain unresolved. Gate NOT_PASSED. This reinforces that closing soundness
 alone will not make the present Q8/Ext4 diagnostic profile a secure solution.
+
+### Merged parameter normalization is now proved generically
+
+JointPCSNormalization closes the preceding arithmetic-normalization gap.
+Literal near/far count formulas factor by S^(H+2C); their maximum has coefficient
+A+max(2C,(H+C)*max(N,2)). For S>0 and H+C>0 the original scaled-budget target is
+equivalent to the normalized integer test. No approximate logs or division by
+zero are used. The maximum is preserved rather than replaced by a union bound.
+
+For retained193 geometry the theorem identifies the original budget target
+with literal193MergedBoundMeets for every extension degree, bit target and query
+count. Previous kernel query-boundary checks therefore apply to the original
+budget arithmetic, not only to a separately asserted normalization. This still
+does not establish native field construction, source/authentication hypotheses,
+ideal sampling, global composition or QROM security.
+
+Full check.py passed 3955 registered results with the existing axiom allowlist.
+No native code changed. Larger-field implementation, secure query/proof bytes
+and full-NEAR quantum soundness remain open; gate NOT_PASSED.

@@ -241,7 +241,9 @@
     "results/gkr-concrete-pcs-count-integration.json",
     "NearCompression/JointPCSParameterArithmetic.lean",
     "results/joint-pcs-parameter-screen.json",
-    "results/joint-pcs-parameter-integration.json"
+    "results/joint-pcs-parameter-integration.json",
+    "NearCompression/JointPCSNormalization.lean",
+    "results/joint-pcs-normalization-integration.json"
   ],
   "requirements": [
     {

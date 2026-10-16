@@ -5627,3 +5627,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.joint_pcs_challenge_arithmetic
 #print axioms NearCompression.joint_pcs_query_arithmetic
+
+#print axioms NearCompression.joint_pcs_near_factor
+#print axioms NearCompression.joint_pcs_far_factor
+#print axioms NearCompression.joint_pcs_merged_factor
+#print axioms NearCompression.joint_pcs_normalized_target
+#print axioms NearCompression.literal193_original_merged_target

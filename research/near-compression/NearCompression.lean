@@ -1459,3 +1459,5 @@ import NearCompression.GKRHistoryPCSFamily
 import NearCompression.GKRConcretePCSCount
 
 import NearCompression.JointPCSParameterArithmetic
+
+import NearCompression.JointPCSNormalization
