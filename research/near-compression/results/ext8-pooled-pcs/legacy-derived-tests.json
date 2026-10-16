@@ -1,0 +1,326 @@
+{
+  "status": "PASS",
+  "old_bytes": 1644656,
+  "new_bytes": 1528144,
+  "saved_bytes": 116512,
+  "breakdown": {
+    "header_bytes": 4360,
+    "stages": [
+      {
+        "kind": "sources",
+        "index": 0,
+        "unique_leaves": 309,
+        "leaf_bytes": 101352,
+        "sibling_bytes": 147360,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "sources",
+        "index": 1,
+        "unique_leaves": 298,
+        "leaf_bytes": 57216,
+        "sibling_bytes": 44880,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "sources",
+        "index": 2,
+        "unique_leaves": 284,
+        "leaf_bytes": 120416,
+        "sibling_bytes": 30384,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "sources",
+        "index": 3,
+        "unique_leaves": 182,
+        "leaf_bytes": 8736,
+        "sibling_bytes": 3024,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "sources",
+        "index": 4,
+        "unique_leaves": 182,
+        "leaf_bytes": 69888,
+        "sibling_bytes": 3024,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "sources",
+        "index": 5,
+        "unique_leaves": 182,
+        "leaf_bytes": 87360,
+        "sibling_bytes": 3024,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "sources",
+        "index": 6,
+        "unique_leaves": 182,
+        "leaf_bytes": 65520,
+        "sibling_bytes": 3024,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "sources",
+        "index": 7,
+        "unique_leaves": 182,
+        "leaf_bytes": 2912,
+        "sibling_bytes": 3024,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 0,
+        "unique_leaves": 309,
+        "leaf_bytes": 9888,
+        "sibling_bytes": 131664,
+        "derived_scalar_count": 309,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 1,
+        "unique_leaves": 308,
+        "leaf_bytes": 9824,
+        "sibling_bytes": 116688,
+        "derived_scalar_count": 309,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 2,
+        "unique_leaves": 308,
+        "leaf_bytes": 9856,
+        "sibling_bytes": 102960,
+        "derived_scalar_count": 308,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 3,
+        "unique_leaves": 306,
+        "leaf_bytes": 9728,
+        "sibling_bytes": 86736,
+        "derived_scalar_count": 308,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 4,
+        "unique_leaves": 303,
+        "leaf_bytes": 9600,
+        "sibling_bytes": 72144,
+        "derived_scalar_count": 306,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 5,
+        "unique_leaves": 302,
+        "leaf_bytes": 9632,
+        "sibling_bytes": 58416,
+        "derived_scalar_count": 303,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 6,
+        "unique_leaves": 298,
+        "leaf_bytes": 9408,
+        "sibling_bytes": 44880,
+        "derived_scalar_count": 302,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 7,
+        "unique_leaves": 284,
+        "leaf_bytes": 8640,
+        "sibling_bytes": 30384,
+        "derived_scalar_count": 298,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 8,
+        "unique_leaves": 261,
+        "leaf_bytes": 7616,
+        "sibling_bytes": 19008,
+        "derived_scalar_count": 284,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 9,
+        "unique_leaves": 237,
+        "leaf_bytes": 6816,
+        "sibling_bytes": 9072,
+        "derived_scalar_count": 261,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 10,
+        "unique_leaves": 182,
+        "leaf_bytes": 4064,
+        "sibling_bytes": 3024,
+        "derived_scalar_count": 237,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 11,
+        "unique_leaves": 115,
+        "leaf_bytes": 1536,
+        "sibling_bytes": 624,
+        "derived_scalar_count": 182,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 12,
+        "unique_leaves": 63,
+        "leaf_bytes": 352,
+        "sibling_bytes": 48,
+        "derived_scalar_count": 115,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 13,
+        "unique_leaves": 32,
+        "leaf_bytes": 32,
+        "sibling_bytes": 0,
+        "derived_scalar_count": 63,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 14,
+        "unique_leaves": 16,
+        "leaf_bytes": 0,
+        "sibling_bytes": 0,
+        "derived_scalar_count": 32,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 15,
+        "unique_leaves": 8,
+        "leaf_bytes": 0,
+        "sibling_bytes": 0,
+        "derived_scalar_count": 16,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 16,
+        "unique_leaves": 4,
+        "leaf_bytes": 0,
+        "sibling_bytes": 0,
+        "derived_scalar_count": 8,
+        "shared_source": false
+      }
+    ],
+    "total_bytes": 1528144,
+    "derived_scalar_bytes_saved": 116512
+  },
+  "decoded_proof_identical": true,
+  "negative_cases": [
+    "truncated",
+    "trailing",
+    "version",
+    "old-format-relabel",
+    "noncanonical-header",
+    "changed-source",
+    "changed-authentication",
+    "noncanonical-retained-fold",
+    "statement",
+    "parent",
+    "claim",
+    "query-budget",
+    "source-root",
+    "weights",
+    "conflicting-derived-coordinate"
+  ],
+  "small_cases": [
+    {
+      "degrees": [
+        2,
+        2
+      ],
+      "queries": 1,
+      "old_bytes": 384,
+      "new_bytes": 384,
+      "derived_scalars": 0
+    },
+    {
+      "degrees": [
+        2,
+        2
+      ],
+      "queries": 8,
+      "old_bytes": 312,
+      "new_bytes": 312,
+      "derived_scalars": 0
+    },
+    {
+      "degrees": [
+        2,
+        2
+      ],
+      "queries": 80,
+      "old_bytes": 312,
+      "new_bytes": 312,
+      "derived_scalars": 0
+    },
+    {
+      "degrees": [
+        2,
+        2,
+        8,
+        8
+      ],
+      "queries": 1,
+      "old_bytes": 1448,
+      "new_bytes": 1384,
+      "derived_scalars": 2
+    },
+    {
+      "degrees": [
+        2,
+        2,
+        8,
+        8
+      ],
+      "queries": 8,
+      "old_bytes": 1944,
+      "new_bytes": 1592,
+      "derived_scalars": 11
+    },
+    {
+      "degrees": [
+        2,
+        2,
+        8,
+        8
+      ],
+      "queries": 80,
+      "old_bytes": 1848,
+      "new_bytes": 1080,
+      "derived_scalars": 24
+    }
+  ],
+  "sha256": "6e2e7fc3180ce5baa7268804229f174c71220a16ebb99dc56ecb2b006f13fa99",
+  "scope": "Same transcript, roots, queries and decoded PCS proof; transport-only reduction. No new proximity/QROM/PQ security claim."
+}

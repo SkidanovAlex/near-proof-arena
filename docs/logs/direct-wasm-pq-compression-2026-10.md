@@ -6899,3 +6899,56 @@ introduce an externally derived pooled weight-family profile and implement its
 commitment mapping. Preserve logical next-wrap and source/auxiliary chronology.
 Full NEAR1Pgas/hash-only PQ128 correctness and sub300000 B remain open;
 slice-feasibility gate stays NOT_PASSED.
+
+
+### 2026-10-16: pooled PCS weight family and compact mask algebra
+
+Integrated the externally supplied pooled weight descriptor into weighted PCS.
+A branch is either the legacy row_point/lanes descriptor or a physical bank
+with terms. Exact schema validation is required. Any pooled descriptor selects
+the distinct near-pq384-ext8-pooled-weighted-diagnostic-v1 transcript domain;
+proofs cannot choose this family. All three binary transports derive the profile
+and lane count from the trusted descriptors. The existing execution verifier
+still derives legacy descriptors: full execution-bank mapping is NOT integrated.
+
+Native tensor_weights now accepts explicit row and column factors, allowing
+logical row masks. A pooled lane sums its logical terms BEFORE allocating its
+sumcheck state; all-zero terms are skipped. Small tests observe4 pooled weight
+vectors for4 bank lanes with4 logical terms, rather than16 duplicated vectors.
+Mixed pooled/legacy source degrees, aliased legacy roots, overlapping terms,
+native/reference weights, q8/q309 proofs and all3 transports PASS.16 malformed
+shape/transcript/profile cases are rejected. Legacy weighted tests and actual
+retained derived-codec roundtrip/byte parity PASS; native tensor regression
+including262144 elements and old-library fallback PASS.
+
+Actual seam proof:2048x128, degree262144, one committed lane, combining114
+columns from a2048-row logical table and14 from a32-row logical table. q309
+pooled PCS generation, reference verification, binary roundtrip and fresh JSON
+and binary verification PASS. Commitment2.515s, PCS proving13.105s, fullrun20.135s.
+Component transport926272 bytes. This is NOT the full7091-column source bank,
+not the auxiliary pool, and not a new complete execution size measurement.
+The last verified complete slice bundle remains1681677 bytes. Retained fixture,
+proof, reports, logs and hashes:results/ext8-pooled-pcs/. Source rows are not
+required by the archived functional-statement/binary verification interface.
+All test sessions55288,86306,64557 and audit1064 are terminal PASS.
+
+PooledWeightMLE.lean proves upper-zeta preserves the logical prefix mask, the
+mask's multilinear extension has the exact high-row-bit product(1-u), and the
+same compact factor applies to the actual masked dual transform. These apply
+to both logical current and cyclic-next row weights and close the previously
+unproved ROW part of the compact beta formula. Full axiom audit4226 PASS.
+Python/Rust refinement, full packing composition, execution binding and
+proximity/QROM/PQ128 soundness remain separate obligations.
+
+Next integration: derive three physical bank descriptors from the logical
+spec/GKR private weights: source0/1/2 at2048x7091; all auxiliary coordinates at
+2048x296; use source at32x179. Candidate packings128/32/4 fit current degree/lane
+caps. Keep source banks before bus challenges and auxiliary bank after them.
+A dedicated externally selected commitment profile must enforce logical-root
+aliases and derive term offsets/heights, rather than accept prover metadata.
+The logical spec can remain unchanged, preserving the existing use-root call
+binding if its contract checks permit it; verify this before claiming call-proof
+reuse. Sum terms into one state per bank lane as implemented here. Full-pool
+memory/commitment overhead still needs measurement. No gate is passed by this
+component work: full NEAR1Pgas, hash-only PQ128 correctness and sub300000 B
+remain open; slice-feasibility stays NOT_PASSED.

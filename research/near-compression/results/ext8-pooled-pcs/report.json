@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "profile": "near-pq384-ext8-pooled-weighted-diagnostic-v1",
+  "queries": 309,
+  "physical_bank": {
+    "rows": 2048,
+    "width": 128,
+    "packing": 128,
+    "degree": 262144,
+    "lanes": 1,
+    "root": "e755783e779f4400cc0c00f12cdc637ce384d3dbc137aa984a45b8d958f813b495e7a3c2004c43f6e679ad55350ec152"
+  },
+  "logical_terms": [
+    {
+      "rows": 2048,
+      "offset": 0,
+      "width": 114
+    },
+    {
+      "rows": 32,
+      "offset": 114,
+      "width": 14
+    }
+  ],
+  "native_states_per_bank_lane": 1,
+  "proof_bytes": 926272,
+  "commit_seconds": 2.5146065410226583,
+  "prove_seconds": 13.105312472209334,
+  "total_seconds": 20.1348856119439,
+  "fresh_verifier": "PASS weighted Ext8 opening",
+  "source_sha256": [
+    "19c13e6ae3852a39824d04d83a25356de87c3327b73a3aea54c79a469ed7cfef",
+    "0c11f0bf4340938bfb17f7354cfc80e5fbce6c81946ff0697a78371685d9e756"
+  ],
+  "opening_sha256": "da17b6255edb1ab940ccb7c01035e14b2dcaa0cf665e72cd6de8989c8beb1f84",
+  "proof_sha256": "2e21c6300c73442c0f89ef3b4d790cb452c597861439cb5e343768d74c4e8a1c",
+  "scope": "One actual 2048x128 mixed-height seam PCS opening. Not the full pooled source/auxiliary bank, complete execution proof, full NEAR or PQ128 soundness certificate."
+}

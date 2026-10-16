@@ -97,7 +97,7 @@ def decode(data,statement,parent,branches,claim,*,queries):
     p.h.require(read(8)==MAGIC,'codec version')
     reduction=[[base.extread(read(32)) for _ in range(3)] for _ in range(n)]
     rounds=[dict(quadratic=[base.extread(read(32)) for _ in range(3)],root=read(48).hex()) for _ in range(n)]
-    proof=dict(profile=p.PROFILE,reduction=reduction,rounds=rounds,terminal=base.extread(read(32)),queries=[])
+    proof=dict(profile=p.profile(branches),reduction=reduction,rounds=rounds,terminal=base.extread(read(32)),queries=[])
     degrees,D,betas,rs,samples,plan,terminal=prepare(proof,statement,parent,branches,claim,queries)
     sources=[None]*len(branches);folds=[None]*n;seen={};previous=None
     for stage in plan:

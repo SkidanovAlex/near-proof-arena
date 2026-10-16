@@ -1618,3 +1618,5 @@ import NearCompression.SeparableCoefficientClaim
 import NearCompression.DerivedFoldTransport
 
 import NearCompression.PooledRowFunctional
+
+import NearCompression.PooledWeightMLE

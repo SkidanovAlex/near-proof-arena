@@ -14,7 +14,7 @@ def stages(proof,statement,parent,branches,claim,queries):
     ds,D,ctx,_,roots,fc,_,samples=p.replay(proof,statement,parent,branches,claim,queries=queries)
     result=[]
     for j,(b,d,c) in enumerate(zip(branches,ds,ctx)):
-        result.append(dict(kind='sources',index=j,root=p.hashread(b['root']),context=c,half=2*d,width=8*len(b['lanes']),indices=[s%(2*d) for s in samples]))
+        result.append(dict(kind='sources',index=j,root=p.hashread(b['root']),context=c,half=2*d,width=8*p.lane_count(b),indices=[s%(2*d) for s in samples]))
     d=D
     for j,(root,c) in enumerate(zip(roots[:-1],fc[:-1])):
         result.append(dict(kind='folds',index=j,root=root,context=c,half=d,width=64,indices=[s%d for s in samples]));d//=2
@@ -65,7 +65,7 @@ def decode(data,statement,parent,branches,claim, *, queries):
     shared_sources=magic==SHARED_MAGIC;seen={}
     reduction=[[extread(read(32)) for _ in range(3)] for _ in range(n)]
     rounds=[dict(quadratic=[extread(read(32)) for _ in range(3)],root=read(48).hex()) for _ in range(n)]
-    proof=dict(profile=p.PROFILE,reduction=reduction,rounds=rounds,terminal=extread(read(32)),queries=[])
+    proof=dict(profile=p.profile(branches),reduction=reduction,rounds=rounds,terminal=extread(read(32)),queries=[])
     plan,samples,terminal=stages(proof,statement,parent,branches,claim,queries)
     sources=[None]*len(branches);folds=[None]*n
     for stage in plan:

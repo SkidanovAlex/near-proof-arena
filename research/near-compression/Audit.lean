@@ -6051,3 +6051,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.pooled_current_next_row_functional
 
 #print axioms NearCompression.pooled_scatter_coefficient_functional
+
+#print axioms NearCompression.pooled_upper_zeta_mask
+#print axioms NearCompression.pooled_row_mask_mle
+#print axioms NearCompression.pooled_upper_weight_mle

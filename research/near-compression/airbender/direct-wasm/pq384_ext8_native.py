@@ -45,9 +45,17 @@ class Kernel:
         if not current or len(current)!=len(next_columns) or len(current)&(len(current)-1):raise ValueError('column shape')
         point=[f.canonical(x) for x in point]
         current=[f.canonical(x) for x in current];next_columns=[f.canonical(x) for x in next_columns]
-        if self.tensor is None:return lane_weights(point,current,next_columns)
         a,b=upper_zeta(current),upper_zeta(next_columns);r,s=row_weights(point)
-        n=len(a)*len(r);out=(ctypes.c_uint32*(8*n))()
+        return self.tensor_weights(a,b,r,s)
+
+    def tensor_weights(self,a,b,r,s):
+        if not a or len(a)!=len(b) or len(a)&(len(a)-1):raise ValueError('column tensor shape')
+        if not r or len(r)!=len(s) or len(r)&(len(r)-1):raise ValueError('row tensor shape')
+        n=len(a)*len(r)
+        if n>1<<22:raise ValueError('tensor capacity')
+        a,b,r,s=([f.canonical(x) for x in values] for values in (a,b,r,s))
+        if self.tensor is None:return [f.add(f.mul(x,y),f.mul(z,t)) for x,z in zip(a,b) for y,t in zip(r,s)]
+        out=(ctypes.c_uint32*(8*n))()
         if self.tensor(self.pack(a),self.pack(b),len(a),self.pack(r),self.pack(s),len(r),out,n):raise ValueError('native tensor rejected')
         return self.unpack(out,n)
 

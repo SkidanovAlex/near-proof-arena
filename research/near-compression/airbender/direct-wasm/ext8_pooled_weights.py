@@ -1,7 +1,7 @@
 """Experimental phase-separated bank projections and coefficient weights.
 A logical table occupies its first 2**n rows and a fixed column interval.
 Unused bank cells are unrestricted. Next-row rotation wraps at the LOGICAL
-height, not the bank height. No commitment/transcript profile is implemented.
+height, not the bank height. The PCS weight-family adapter is separate from execution commitment mapping.
 """
 import pq384_ext8_reference as f
 import pq384_ext8_input_weights as w
