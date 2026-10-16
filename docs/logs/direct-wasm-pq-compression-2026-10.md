@@ -8647,3 +8647,32 @@ to pole bounds, then use the algebraic extension and Hensel construction for
 useful branches. Full MCA exceptions and protocol/QROM composition remain open.
 Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Rational-function field and transcendental indeterminate
+
+Added PolynomialRationalField.lean with eight audited public theorems.
+Completed all ring laws, casts, scalar operations and natural powers for the
+formal fraction quotient; the proved reciprocal laws yield a complete
+Lean.Grind.Field instance. The field-existence audit entry covers every field
+axiom. No ambient rational-function field is assumed.
+
+The polynomial embedding preserves addition/multiplication and identifies
+exactly coefficient-equal polynomials. Constructed an injective unital base-
+field coefficient map and an IsCharP instance inheriting the base
+characteristic. Horner evaluation of a transported polynomial at the rational
+indeterminate returns its embedded formal polynomial. Therefore no nonzero
+formal base polynomial vanishes at that indeterminate: transcendence is
+proved, including over finite fields with nonzero vanishing functions.
+The constructed coefficient field can now instantiate the generic algebraic
+root-extension and degree-bounded smoothness constructions.
+
+Validation:400 field-law cases against independent gcd normalization,
+112 characteristic/cast checks,400 indeterminate-evaluation checks and four
+Z^p-Z negatives distinguishing formal polynomials from base-field functions.
+Full audit4478 PASS, allowed axioms only. Evidence:
+results/polynomial-rational-field/.
+
+Next: safe specialization of formal rational functions, linkage to guarded
+expressions and pole bounds, then useful algebraic branches and complete MCA
+exceptions. Protocol/QROM composition remains open. Diagnostic1344645 B
+unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

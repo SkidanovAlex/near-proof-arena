@@ -1714,3 +1714,5 @@ import NearCompression.PolynomialResidueQuotient
 import NearCompression.PolynomialResidueField
 
 import NearCompression.PolynomialFractions
+
+import NearCompression.PolynomialRationalField

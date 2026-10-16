@@ -6346,3 +6346,12 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_fraction_inv_congr
 #print axioms NearCompression.polynomial_rational_mul_inverse
 #print axioms NearCompression.polynomial_rational_inv_zero
+
+#print axioms NearCompression.polynomial_rational_field_exists
+#print axioms NearCompression.polynomial_rational_of_polynomial_add
+#print axioms NearCompression.polynomial_rational_of_polynomial_mul
+#print axioms NearCompression.polynomial_rational_of_polynomial_eq_iff
+#print axioms NearCompression.polynomial_rational_coefficient_injective
+#print axioms NearCompression.polynomial_rational_characteristic_preserved
+#print axioms NearCompression.polynomial_rational_eval_variable
+#print axioms NearCompression.polynomial_rational_variable_transcendental
