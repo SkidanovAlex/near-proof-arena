@@ -1326,3 +1326,5 @@ import NearCompression.BusAdaptiveAuxiliary
 import NearCompression.PreparedLiteralAdaptiveBus
 
 import NearCompression.AdaptivePolynomialSumcheck
+
+import NearCompression.BusPolynomialLowering

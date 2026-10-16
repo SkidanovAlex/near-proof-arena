@@ -1804,3 +1804,11 @@ Inspected verify_table_reduction: source/auxiliary zerocheck rounds enforce tabl
 Validation: full check.py passed (3687 registered results; allowed axioms only). Inspected retained actual degrees: EXEC table_degree6/round_degree7 with8 rounds; CODE4/5 with8 rounds. Conditional sumcheck numerators56/40 follow, but actual combined source/auxiliary honest-polynomial degree and representation remain uninstantiated. Terminal equality is still an authenticated-honest-value premise, not a proved PCS conclusion.
 
 Next: construct those combined evaluator round polynomials and discharge degree/representation, then compose terminal current/next/PCS authentication. Initial batching, adaptive bus and quantum transcript components still require full composition. No secure sub300k, 128-bit quantum or full 1 Pgas completion claim. Slice gate stays NOT_PASSED.
+
+### Combined source/auxiliary polynomial lowering and honest round degree
+
+Added auxiliary formula degree and polynomial lowering, with evaluation/degree preservation for arbitrary extension constants and current/next/selectors. Source-then-auxiliary power batching and affine equality-weighted suffix summation now have combined evaluation/degree theorems. The adaptive sumcheck theorem consumes the derived honest degree, leaving concrete affine slice construction and suffix-sum representation explicit.
+
+Validation: full check.py passed (3694 registered results; allowed axioms only). Computed actual preparedLiteralAir(193) source and generated auxiliary AST degrees for alpha0/1/7, compared with the executable verifier caps: EXEC729 source residuals degree6 plus9 auxiliary degree4 yields weighted round degree7; CODE499 source degree3 plus54 auxiliary degree4 yields round degree5. Both match coefficient limits8/6 and conditional eight-round numerators56/40. These are component bounds, not protocol security claims.
+
+Next: construct affine coordinate slices from the common trace MLE and equality kernel and prove suffix-sum representation; then terminal current/next/PCS authentication. Quantum reduction, executable Ext8 migration, secure sub300k sizing and full 1 Pgas scope remain open. Slice gate stays NOT_PASSED.

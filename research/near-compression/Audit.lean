@@ -5294,3 +5294,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_sumcheck_truth_endpoints
 #print axioms NearCompression.polynomial_sumcheck_truth_terminal
 #print axioms NearCompression.adaptive_polynomial_cube_sumcheck_count
+
+#print axioms NearCompression.bus_polynomial_lower_eval
+#print axioms NearCompression.bus_polynomial_lower_degree
+#print axioms NearCompression.combined_air_polynomial_eval
+#print axioms NearCompression.combined_air_polynomial_degree
+#print axioms NearCompression.combined_air_round_eval
+#print axioms NearCompression.combined_air_round_degree
+#print axioms NearCompression.combined_air_adaptive_sumcheck_count
