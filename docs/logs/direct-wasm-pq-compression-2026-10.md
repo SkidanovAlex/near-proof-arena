@@ -8792,3 +8792,29 @@ Next: coefficient-system invertibility and a source-degree denominator bound,
 then useful algebraic branch specialization. Full MCA and protocol/QROM
 composition remain open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Bounded Bezout coefficient-map invertibility
+
+Added BezoutSystemInvertibility.lean with four audited public theorems.
+A unit Bezout certificate proves Euclid's divisibility lemma. Consequently,
+a bounded syzygy U*p+V*q=0 with deg(U)<deg(q) must have both U and V zero.
+Differences of solutions give uniqueness up to formal coefficient equality.
+
+For every target of degree<m+n, divide A*target by q and adjust B*target to
+construct U,V with deg(U)<n and deg(V)<m, satisfying U*p+V*q=target. The
+leading-product argument proves the second bound. Together these prove the
+bounded coefficient map is bijective, including constant-polynomial and
+zero-target cases. These are algebraic polynomial-space results, not yet a
+matrix determinant construction or parameter-variable denominator bound.
+
+Validation:400 arbitrary-target systems compared with independent Gaussian
+elimination, including151 cases with a constant polynomial and29 zero targets.
+Exhaustively enumerated98 small coefficient maps (2184 vectors), checking
+unique zero preimage and complete image. Three noncoprime examples exhibit
+nonzero bounded kernels. Full audit4512 PASS, allowed axioms only. Evidence:
+results/bezout-system-invertibility/.
+
+Next: degree-controlled matrix inverse/denominator construction, then useful
+algebraic branch specialization. Full MCA and protocol/QROM composition remain
+open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
+Full NEAR1Pgas/PQ128/sub300000 B remain open.

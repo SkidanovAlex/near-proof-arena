@@ -316,6 +316,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SmallCharacteristicDerivative.lean",
     "research/near-compression/NearCompression/BezoutSmoothness.lean",
     "research/near-compression/NearCompression/PolynomialDivision.lean",
+    "research/near-compression/NearCompression/BezoutSystemInvertibility.lean",
     "research/near-compression/NearCompression/BoundedBezout.lean",
     "research/near-compression/NearCompression/RationalCoefficientGuards.lean",
     "research/near-compression/NearCompression/AlgebraicRootSpecialization.lean",
