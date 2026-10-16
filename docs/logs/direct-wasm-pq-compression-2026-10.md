@@ -1879,3 +1879,24 @@ reduction, not the reduction itself. Slice gate remains NOT_PASSED.
 
 Validation: full `check.py` passed, 3734 registered results; existing axiom
 allowlist enforced. No new performance, size, or quantum-security claim.
+
+
+### Fixed representative folding and unique-basin cost
+
+`WeightedPCSRepresentativeSoundness.lean` derives no initial candidate from a
+wrong equality functional of a fixed degree-bounded representative within R
+mismatches of the source oracle, provided R+(N-T)+D<=N. This composes with the
+prefix-prover adaptive count bound. Common representative existence, terminal
+authentication, and cryptographic/quantum transcript reductions remain open.
+
+Exact integer screening of A/Q+((T-1)/N)^q at N=4D, minimal admissible
+T=3D+1, and projected BabyBear^8 requires 309 queries for 128 ideal bits and
+463 for 192 at D=1024,131072,1048576. The fold term alone prevents this bound
+from certifying 256 ideal bits. These are costs of the sufficient theorem, not
+security upper bounds or attacks. The Q8 diagnostic cannot inherit these targets.
+No byte-cost estimate is made here. The query cost motivates prioritizing a
+stronger list-decoding/proximity reduction before a secure size claim.
+
+Validation: full `check.py` passed with 3736 registered results and enforced
+axiom allowlist. Independent Python Fraction arithmetic confirmed that each
+reported query count meets its target and one fewer does not.

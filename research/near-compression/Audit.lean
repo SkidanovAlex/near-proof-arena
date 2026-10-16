@@ -5350,3 +5350,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.packed_computed_accept_decomposition
 #print axioms NearCompression.packed_computed_opening_failure_budget
+
+#print axioms NearCompression.weighted_replay_representative_no_candidate
+#print axioms NearCompression.weighted_prefix_representative_wrong_count

@@ -84,7 +84,9 @@
     "NearCompression/PackedComputedOpening.lean",
     "results/packed-computed-opening-integration.json",
     "NearCompression/PackedOpeningFailureBudget.lean",
-    "results/packed-opening-failure-budget.json"
+    "results/packed-opening-failure-budget.json",
+    "NearCompression/WeightedPCSRepresentativeSoundness.lean",
+    "results/unique-basin-budget.json"
   ],
   "requirements": [
     {
@@ -110,7 +112,8 @@
       "adaptive_sumcheck_component": "Concrete trace-derived adaptive rounds are now composed with initial constraint batching and equality-point error in one integer challenge-count theorem for any fixed invalid combined trace. Strategies depend on mixing/tau and challenge history. Conditional bound: (residualCount-1+rowLog+roundDegree*rowLog)/fieldSize; retained EXEC/CODE numerators801/600. Terminal equality to actual trace evaluation and fixed trace before local challenges remain premises. Current/next/PCS authentication, extraction and global transcript composition remain open.",
       "terminal_shift_component": "Full algebraic shift bound now composes fixed current/next vector batching with trace-derived adaptive quadratic rounds: (2*width-1+2*rowLog)/fieldSize. Honest degree and suffix representation are constructed. Retained Ext4 numerators1249/811; projected eight-coordinate Ext8 numerators1273/1211, not an executable migration. Terminal equality to actual original-column MLEs remains a premise requiring PCS authentication, followed by local/bus/transcript composition.",
       "packed_source_component": "Computed mutable Mobius coefficients now provably evaluate to the padded source row MLE at every point. Packed vector wrong-lane count specializes to these coefficients without a sourceBinding premise. Exact PCS authentication remains an explicit unproved cryptographic contract; common-trace extraction and transcript composition remain open.",
-      "packed_failure_component": "Joint-experiment composition now replaces exact PCS authentication with an explicit counted failure event: wrong-vector acceptance <= p*Q^(p-1)*R + PCS failure count. Opening strategies may adapt to column coordinates; independence of the two failures is not assumed. The PCS failure count has not been bounded, and no-candidate fold soundness cannot be substituted without common-source/candidate coherence."
+      "packed_failure_component": "Joint-experiment composition now replaces exact PCS authentication with an explicit counted failure event: wrong-vector acceptance <= p*Q^(p-1)*R + PCS failure count. Opening strategies may adapt to column coordinates; independence of the two failures is not assumed. The PCS failure count has not been bounded, and no-candidate fold soundness cannot be substituted without common-source/candidate coherence.",
+      "unique_basin_component": "Fixed close representative plus a wrong equality functional now implies the adaptive prefix fold/query bound, with no-candidate premise discharged. Existence of a common close representative and terminal authentication remain assumptions. Exact integer screening at rate1/4 and projected BabyBear^8 needs309 queries for128 ideal bits or463 for192;256 ideal bits is excluded by the fold term for tested degrees. These are sufficient-bound costs, not attacks or PQ certification."
     },
     {
       "name": "Complete bytes and scaling",

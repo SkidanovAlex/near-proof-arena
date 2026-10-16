@@ -12,6 +12,7 @@ SOURCES = [
     "research/near-compression/NearCompression/TerminalSignedBalance.lean",
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean",
     "research/near-compression/NearCompression/PackedComputedOpening.lean",
+    "research/near-compression/NearCompression/WeightedPCSRepresentativeSoundness.lean",
     "research/near-compression/NearCompression/PackedOpeningFailureBudget.lean",
     "research/near-compression/NearCompression/ShiftAdaptiveSoundness.lean",
     "research/near-compression/NearCompression/ShiftInitialClaim.lean",

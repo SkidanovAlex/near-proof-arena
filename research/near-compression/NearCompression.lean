@@ -1343,3 +1343,5 @@ import NearCompression.ShiftAdaptiveSoundness
 import NearCompression.PackedComputedOpening
 
 import NearCompression.PackedOpeningFailureBudget
+
+import NearCompression.WeightedPCSRepresentativeSoundness
