@@ -402,6 +402,7 @@ SOURCES = [
     "research/near-compression/NearCompression/DecodedLocalContinuation.lean",
     "research/near-compression/NearCompression/PrechallengeDecodedTables.lean",
     "research/near-compression/NearCompression/TerminalSemanticOutputs.lean",
+    "research/near-compression/NearCompression/SemanticCircuitBinding.lean",
     "research/near-compression/NearCompression/JointSourceFarFold.lean",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean",

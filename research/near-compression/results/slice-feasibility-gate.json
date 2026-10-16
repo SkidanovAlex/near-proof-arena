@@ -251,7 +251,9 @@
     "NearCompression/PrechallengeDecodedTables.lean",
     "results/prechallenge-decoded-tables-integration.json",
     "NearCompression/TerminalSemanticOutputs.lean",
-    "results/terminal-semantic-outputs-integration.json"
+    "results/terminal-semantic-outputs-integration.json",
+    "NearCompression/SemanticCircuitBinding.lean",
+    "results/semantic-circuit-binding-integration.json"
   ],
   "requirements": [
     {

@@ -3757,3 +3757,19 @@ integration, executable specification binding and QROM security remain open.
 
 Full check.py passed 3972 registered results with the existing axiom allowlist.
 No native code changed. No new secure byte measurement; gate NOT_PASSED.
+
+### Checked recovered circuit binds the fixed semantic batch
+
+SemanticCircuitBinding packages the existing compiler witnesses without
+changing their checker, and composes symbolic_formula_recovered_value with
+preselected_semantic_outputs. The actual finite circuit on recovered source
+inputs equals semantic residual batching. Its cancellation theorem allows
+compiler witnesses, constants and circuit structure to vary with rho while
+requiring a fixed semantic list. Circuit evaluation equality is now derived
+from the checker and geometry rather than supplied as an assumption.
+
+Source environment agreement is supplied by the prechallenge decoded-family
+theorem for a canonical disjoint source tuple. Native transcript/specification
+binding, global averaged counts and no-representative integration remain open.
+Full check.py passed 3974 registered results with the existing axiom allowlist.
+No native code or measured proof size changed; gate remains NOT_PASSED.

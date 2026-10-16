@@ -564,6 +564,7 @@
     "research/near-compression/NearCompression/DecodedLocalContinuation.lean": "720479a068d19aab19c5b9df50c9192393e685453693ed49b3f0775cb060af8c",
     "research/near-compression/NearCompression/PrechallengeDecodedTables.lean": "79108ce37a981e46f4606ea20477bfa11f63059c9b939c8d745ee001f00036c5",
     "research/near-compression/NearCompression/TerminalSemanticOutputs.lean": "845a052c2ecb81e928932e07c8e5df309f2f781a0defa441c89f261b2970f1bd",
+    "research/near-compression/NearCompression/SemanticCircuitBinding.lean": "871c1a53a4d0fac7ddc41e2d5ab08c9e403f9879dbb9b9e1dd7d384252037182",
     "research/near-compression/NearCompression/JointSourceFarFold.lean": "ff79009785b516f31aa2ee9d5a407fb6154718867341fdaffeb490b40e13cafe",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean": "6fbcc8b3e2937bf737c04c2575c922f9bd9b5db921fca42665199bd78d675341",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean": "170d9528efb40b38fb199586592ff341780d73d0408cae7844d3d3ef881947af",

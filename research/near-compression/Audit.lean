@@ -5654,3 +5654,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.local_terminal_semantic_mismatch
 #print axioms NearCompression.preselected_semantic_outputs
 #print axioms NearCompression.local_terminal_compiler_cancellation
+
+#print axioms NearCompression.checked_semantic_circuit_value
+#print axioms NearCompression.checked_semantic_circuit_cancellation
