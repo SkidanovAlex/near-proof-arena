@@ -4232,3 +4232,20 @@ full 1 Pgas objective remain open.
 
 Validation: full `check.py` PASS (4044 registered results), existing axiom
 allowlist; native captures not rerun for this formal-only composition.
+
+### First-table evaluated GKR repair substituted
+
+`first_table_evaluated_gkr_pcs_budget` instantiates the first-table local/PCS
+bound with the actual repair theorem over all second-table local prefixes.
+Both invalid-table branches now derive the numerical repair term rather than
+assuming it. The first branch pays the exact second-prefix multiplicity;
+accepted terminal errors remain jointly counted over both rowpoint vectors.
+
+Semantic output mismatch/binding, root geometry, accepted verifier checks and
+concrete joint PCS error bound remain explicit. Next: checked semantic
+instantiation and concrete PCS event/budget, followed by table-selection/bus
+composition and earlier bus averaging. No native/QROM or secure-size claim.
+Full 1 Pgas remains the objective.
+
+Validation: full `check.py` PASS (4045 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only composition.

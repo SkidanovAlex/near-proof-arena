@@ -1,0 +1,34 @@
+{
+  "status": "FIRST_TABLE_EVALUATED_GKR_REPAIR_SUBSTITUTED",
+  "module": "NearCompression/FirstTableEvaluatedGKRPCS.lean",
+  "theorems": [
+    "first_table_evaluated_gkr_pcs_budget"
+  ],
+  "proved": [
+    "First-table fixed-source acceptance now invokes evaluated GKR repair across every complete second-table local prefix.",
+    "No separate repair constant or wrong-terminal numerical inequality is assumed.",
+    "The second-prefix multiplicity and batching/GKR terms are explicit; PCS errors remain jointly counted over both rowpoint vectors."
+  ],
+  "assumptions": [
+    "Fixed source/decoded binding, source validity failure, local residual order/degrees and accepted local checks.",
+    "Wrong first terminal implies an indexed semantic output mismatch for each later second prefix.",
+    "Outputs fixed before rho; whole circuit binding, root geometry and accepted evaluated-GKR checks.",
+    "Accepted terminal mismatch is included in the chosen error event; concrete joint PCS event bound remains explicit."
+  ],
+  "remaining": [
+    "Instantiate semantic mismatch/binding with checked compiler/terminal results.",
+    "Instantiate concrete PCS event/budget including absent representatives.",
+    "Combine both table branches with bus failure and average earlier bus randomness.",
+    "Native/QROM binding, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4045,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}
