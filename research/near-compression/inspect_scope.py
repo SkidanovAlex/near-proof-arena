@@ -297,6 +297,8 @@ SOURCES = [
     "research/near-compression/NearCompression/GSMonomialSpace.lean",
     "research/near-compression/NearCompression/SyntheticJetLinear.lean",
     "research/near-compression/NearCompression/JetCoefficientMatrix.lean",
+    "research/near-compression/NearCompression/MixedJetTranslation.lean",
+    "research/near-compression/NearCompression/GSInterpolation.lean",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean",

@@ -7818,3 +7818,43 @@ factor/Hensel and exceptional-set bounds, actual protocol extraction and QROM
 remain open. No runtime/query/proof-size change; latest verified diagnostic
 bundle1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain
 open.
+
+## 2026-10-16 — General GS mixed-jet interpolation existence proved
+
+Added MixedJetTranslation.lean and GSInterpolation.lean, seven audited public
+theorems. The coefficients of row-Horner translation in Y equal successive
+synthetic jets of the corresponding coefficient polynomial. Combining this
+with X translation proves that every actual mixed coefficient of Q(X+a,Y+b)
+is exactly the nested X/Y synthetic jet. This identity works over every field,
+with no distinct evaluation sample or field-size guard. Total-order vanishing
+is therefore equivalent to ALL nested mixed jets below that order vanishing.
+
+The actual gsMixedRow entries are products of univariate monomial jets.
+Applying the univariate coefficient-matrix theorem in each variable and
+flattening the nested sums over gsMonomials proves matrix correctness for
+every encoded coefficient vector. No matrix/jet linearity premise is assumed.
+The homogeneous-kernel theorem now yields gs_interpolant_exists: under the
+exact dimension inequality, a formally nonzero bivariate polynomial exists,
+has weighted degree<D, and satisfies every mixed-jet constraint at every
+specified point. gs_interpolant_exists_counted uses the denominator-free
+inequality N*m*(m+1)<2*sum_{j<height}(D-k*j). Repeated points are permitted
+(the equation count may overestimate independent constraints); no distinct
+point premise is needed for existence.
+
+Validation checks8000 mixed matrix entries against direct translation,
+and retains18 independently checked nonzero interpolation witnesses over
+F2/F3/F5/F17/F31. Cases include k=0, m=0, repeated points, small characteristic
+and rectangular weighted spaces. The witness solver remains an executable
+check, not a formally refined implementation. Full audit4314 PASS, allowed
+axioms only. Evidence:results/gs-interpolation/.
+
+This completes the ordinary bivariate mixed-jet interpolation-existence
+component, not MCA. The earlier substitution/root-forcing theorem still has
+its explicit algebraic separation guard. For the published improved MCA
+bound, further work is needed on interpolation along u0+Z*u1 with controlled
+Z degree (a trivariate coefficient budget), followed by useful-factor/Hensel
+and exceptional-set arguments. Instantiating ordinary interpolation over an
+abstract extension field alone would NOT supply that Z-degree bound. These
+are the next research targets; no assumed-family theorem closes them.
+No runtime/query/profile/proof-size change: latest diagnostic bundle1344645 B,
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

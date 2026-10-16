@@ -6153,3 +6153,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.jet_monomial_coefficient
 #print axioms NearCompression.synthetic_jet_coefficient_matrix
 #print axioms NearCompression.synthetic_jet_vector_matrix
+
+#print axioms NearCompression.synthetic_jet_cons_succ
+#print axioms NearCompression.bivariate_translate_y_coefficient
+#print axioms NearCompression.bivariate_translate_mixed_jet
+#print axioms NearCompression.bivariate_order_mixed_jets
+#print axioms NearCompression.gs_mixed_matrix_correct
+#print axioms NearCompression.gs_interpolant_exists
+#print axioms NearCompression.gs_interpolant_exists_counted

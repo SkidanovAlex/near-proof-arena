@@ -1656,3 +1656,7 @@ import NearCompression.GSMonomialSpace
 import NearCompression.SyntheticJetLinear
 
 import NearCompression.JetCoefficientMatrix
+
+import NearCompression.MixedJetTranslation
+
+import NearCompression.GSInterpolation
