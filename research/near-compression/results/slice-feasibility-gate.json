@@ -100,7 +100,9 @@
     "airbender/direct-wasm/report_slice_query_geometry.py",
     "results/slice-query-geometry.json",
     "airbender/direct-wasm/report_packing_expectation.py",
-    "results/slice-packing-expectation.json"
+    "results/slice-packing-expectation.json",
+    "airbender/direct-wasm/report_joint_opening_floor.py",
+    "results/slice-joint-opening-floor.json"
   ],
   "requirements": [
     {
@@ -139,7 +141,8 @@
       "status": "NOT_DEMONSTRATED",
       "needed": "Measure all required proof inputs for the actual compiled slice and a degree growth sweep. Sub300000-byte toy PCS alone does not pass.",
       "query_geometry_screen": "Verified Q8 retained artifact exactly re-encodes to121982 bytes. Counterfactual longer query prefixes on the same commitments/Ext4 layout project492238 proof bytes at128 queries,705390 at239,817054 at309. Current total transport at309 is1041761 bytes. Opened leaves alone cost462016 bytes at309. These are exact codec geometry calculations, not regenerated high-query proofs or secure profiles. Hash multiproofs are already included.",
-      "packing_screen": "Ideal uniform-query expected multiproof geometry over eligible power-of-two packings1..1024: at309 queries best Ext4 expectation816299 bytes versus retained820634; projected Ext8 best1103809 bytes. Ext8 auxiliary coordinates/field vectors accounted for, but not implemented or secure. Tree formulas validated by exhaustive small-tree query tuples; Ext4 non-PCS51590-byte framing reconciles with measured codec. Statement/request excluded. Repacking separate branches does not approach300000 in this screen."
+      "packing_screen": "Ideal uniform-query expected multiproof geometry over eligible power-of-two packings1..1024: at309 queries best Ext4 expectation816299 bytes versus retained820634; projected Ext8 best1103809 bytes. Ext8 auxiliary coordinates/field vectors accounted for, but not implemented or secure. Tree formulas validated by exhaustive small-tree query tuples; Ext4 non-PCS51590-byte framing reconciles with measured codec. Statement/request excluded. Repacking separate branches does not approach300000 in this screen.",
+      "shared_fold_floor": "Omitting all folded-oracle, round and terminal costs still leaves optimized four-tree source openings at349123 expected bytes for projected Ext8/q309. Speculative same-phase table merging lowers source-only expectation to222888; retaining current local/framing123302 yields346190 before omitted PCS work and statement/request. These are expected-layout screens, not universal lower bounds or authenticated proofs."
     },
     {
       "name": "Adversarial validation",
@@ -170,5 +173,5 @@
     "request_json_bytes": 919,
     "total_transported_bytes": 346689
   },
-  "next_size_priority": "Evaluate shared folding/commitments across the four source/auxiliary PCS branches or recursive compression. Packing-only screen gives little benefit. Retain common-source and adaptive-transcript proof obligations; no secure profile selected."
+  "next_size_priority": "Sharing only folded oracles is insufficient in the retained four-tree screen. Compare two-phase cross-table commitments plus local claim-vector compression against recursive compression; preserve source-before-bus and auxiliary-after-bus timing. Model the missing common-point/joint-opening reductions before implementation."
 }

@@ -2054,3 +2054,29 @@ secure parameter selections.
 
 Validation: exhaustive expectation checks, baseline framing reconciliation,
 Python compilation and diff checks passed. No Lean sources changed.
+
+
+### Optimistic shared-fold/source-opening floor
+
+Added a layout screen that deliberately removes every PCS round, terminal and
+folded-oracle byte, then optimizes source packing. At309 queries, the four-tree
+source-only expected floor is321599 Ext4 or349123 projected Ext8 bytes. Thus
+sharing only the folding tail cannot reach300000 under this retained geometry.
+These are expectations over uniform queries, not per-proof lower bounds or
+impossibility statements about arbitrary protocols.
+
+An optimistic alternative combines equal-height tables within each commitment
+phase: source before bus challenges, auxiliary after. At projected Ext8/q309,
+two source trees cost222888 expected bytes. Current local/framing data adds
+123302, giving346190 before all omitted PCS work and public transport. Old
+root/framing costs are intentionally retained, so this is a sensitivity subtotal,
+not an exact hypothetical new format. No cross-phase root merging is allowed.
+
+Next engineering comparison must include local claim-vector compression as
+well as common folding/commitments, or use recursion. Common-point reductions,
+source/auxiliary transcript timing, and candidate coherence remain necessary;
+this screen does not supply a new prover or security theorem.
+
+Validation: table heights/coordinate widths checked against the actual fixture;
+input statement/report hashes recorded; exhaustive small-tree expectation checks
+rerun; Python compilation and diff checks passed. No Lean changes.
