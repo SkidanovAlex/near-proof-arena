@@ -1273,3 +1273,5 @@ import NearCompression.CheckedRateShiftQueries
 import NearCompression.CheckedRateShiftComposition
 
 import NearCompression.GeneralListCurveExtraction
+
+import NearCompression.FiniteRSJohnsonList

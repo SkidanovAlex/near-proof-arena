@@ -5125,3 +5125,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.general_list_curve_extraction_bad_count
 
 #print axioms NearCompression.list_curve_candidate_identity
+
+#print axioms NearCompression.finite_agreement_list_bound
+#print axioms NearCompression.finite_rs_johnson_list_bound
+#print axioms NearCompression.finite_rs_johnson_gap_bound

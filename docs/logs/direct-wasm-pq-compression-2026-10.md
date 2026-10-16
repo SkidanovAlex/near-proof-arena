@@ -1589,3 +1589,27 @@ MCA transfer and complete finite family/cardinality still need proof. The
 next formal target is the finite Johnson list bound and support-preserving
 transfer; then list/OOD/mixing penalties must replace the unique-list ledger.
 No runtime query profile or claimed security level changes in this checkpoint.
+
+## Checked finite Johnson list-size bound
+
+Added `FiniteRSJohnsonList.lean`: three public theorems prove a conservative
+Johnson-regime finite-family bound. With N distinct evaluation points, degree
+below D, agreement at least T, and L coefficient-distinct candidates,
+`L*T*T <= N*N + L*N*(D-1)`. When the gap is nonnegative this yields
+`L*(T*T-N*(D-1)) <= N*N`. A strictly positive gap gives a numerical list cap.
+The proof derives the incidence second-moment inequality over natural numbers
+and combines it with the existing polynomial-root bound; no decoder or MCA
+axiom is introduced. Full audit: 3,584 checks PASS.
+
+Independent finite-code check enumerated all 3,125 received words for the
+25 affine polynomials over F5, including a duplicate-candidate counterexample
+to demonstrate why coefficient distinctness is necessary. At rate1/4 and
+agreement9/16 the large-domain bound gives L<=15, hence at most225 pairs
+and at most450 quadratic constraint roots across those pairs. An isolated
+list-union sampling term needs162 queries for2^-130 at those parameters.
+These components are NOT a replacement total security budget.
+
+Remaining analytic/composition work: construct the complete normalized
+prechallenge lists and prove support-preserving correlated agreement (the
+main unproved transfer). Only then connect the list penalties throughout
+rate shifts and the full transcript/QROM ledger. Runtime profiles unchanged.
