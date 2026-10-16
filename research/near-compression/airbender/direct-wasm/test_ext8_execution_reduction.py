@@ -11,6 +11,8 @@ from pq384_ext8_local_native import library
 from pq384_ext8_native import Kernel
 from pq384_primitives import Transcript,hash_parts
 from reference import public_messages
+from pq384_ext8_input_weights import opening_branches
+from test_ext8_input_weights import coefficient_claim
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--output',type=Path,required=True);args=ap.parse_args()
@@ -64,6 +66,12 @@ def main():
         value=f.ZERO
         for x,w in zip(private,verified['private_weights']):value=f.add(value,f.mul(x,w))
         assert value==verified['private_claim']
+        branches=opening_branches(spec,terminals,circuit,verified['private_weights'])
+        coefficient_total=f.ZERO
+        for branch in branches:
+            data=(rows if branch['branch']==0 else coordinates)[branch['table']]
+            coefficient_total=f.add(coefficient_total,coefficient_claim(data,branch))
+        assert coefficient_total==verified['private_claim']
         bad=copy.deepcopy(proofs[0]);bad[0][0]=f.add(bad[0][0],f.ONE)
         bt,_,_=begin();bt.commit(b'ext8-all-auxiliary-data',aux_binding)
         try:local.verify(spec,bt,0,bad)
@@ -75,7 +83,7 @@ def main():
         except ValueError as exc:
             assert str(exc)=='invalid trace constraints'
         else:raise AssertionError('corrupted source trace accepted')
-        report=dict(corrupted_source_rejected=True,status='PASS',source_sha256=expected,source_rows=[len(r) for r in rows],global_bus_product_equal=True,
+        report=dict(coefficient_opening_target_checked=True,opening_branches=[dict(table=b['table'],branch=b['branch'],width=b['width'],packing=b['packing'],lanes=len(b['lanes'])) for b in branches],corrupted_source_rejected=True,status='PASS',source_sha256=expected,source_rows=[len(r) for r in rows],global_bus_product_equal=True,
             local_rounds=sum(map(len,proofs)),local_scalar_bytes=32*sum(len(cs) for proof in proofs for cs in proof),
             gkr_layers=len(gp['layers']),gkr_scalar_bytes=32*sum(3*len(p['rounds'])+2 for p in gp['layers']),
             zero_terminal_claim_verified=True,direct_private_obligation_checked=True,local_seconds=local_seconds,gkr_seconds=gkr_seconds,

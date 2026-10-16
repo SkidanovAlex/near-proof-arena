@@ -4960,3 +4960,11 @@ Located the retained literal193 source files and matched both exact SHA256 value
 Measured on two256-row source tables:16local rounds,3584local scalar bytes;35GKR layers,47744GKR scalar bytes. Combined raw scalars51328bytes exclude all commitment/opening/envelope data. Initial timings ~0.65s local and~9.66s GKR, excluding auxiliary generation and independent verification. Local proof mutation is rejected; corrupted source-row rejection is also exercised.
 
 Critical limit: source/auxiliary full-vector digest bindings in this diagnostic are NOT polynomial commitments. Mandatory PCS authentication/discharge remains open, as do complete envelope size, native/implementation refinement, full1Pgas and QROM. Feasibility gate remains NOT_PASSED.
+
+### Ext8 coefficient opening target
+
+Added Ext8 dual Mobius/current/cyclic-next weight functions and branch derivation from the compiler input blocks and verifier GKR weights. Branch descriptors deliberately omit roots until actual PCS commitment binding exists. Independent base-field Boolean Mobius conversion plus direct row evaluation validates27small coefficient claims and57lane-weight MLE evaluations.
+
+Integrated the coefficient conversion check into the retained execution reduction. The sum across all four source/auxiliary branches equals the REQUIRED GKR private-input claim. Actual widths/packing/lanes: table0 source605/16/38, auxiliary24/1/24; table1 source198/16/13, auxiliary400/16/25. Local and GKR checks, direct witness opening, mutated-round and corrupted-source rejection continue to pass.
+
+Size implication:100lanes ×2base scalars ×4bytes ×309queries =247200bytes for naive per-query source-leaf payloads alone. Adding51328raw local/GKR bytes gives298528bytes before PCS reductions/folds, authentication, framing or statement. This is an uncompressed projection, NOT a lower bound (query deduplication/multiproofs can reduce it), and309 is the prior conditional128-ideal-bit projection, not a quantum security certificate. Next PCS work must preserve opening-point-independent commitments and measure deduplicated full geometry. Existing reusable Ext8 scalar PCS supports only equality-weight openings through degree1024; existing weighted-joint PCS is Ext4 and needs Ext8 arithmetic/FFT/encoding adaptation. Gate NOT_PASSED.

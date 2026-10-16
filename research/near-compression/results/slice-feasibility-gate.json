@@ -663,5 +663,18 @@
     "gkr_layers": 35,
     "gkr_scalar_bytes": 47744,
     "scope": "Retained193 source files match prior prepared prover hashes. Fresh Ext8 bus auxiliaries satisfy global product equality; local transcripts feed zero-claim GKR and direct witness input-obligation check. Diagnostic full-vector hashes are not PCS commitments. Authenticated opening, full envelope, Rust/implementation refinement and quantum security remain open."
+  },
+  "ext8_weighted_opening_target": {
+    "status": "EXACT_TARGET_DIFFERENTIAL_PASS",
+    "small_coefficient_claim_cases": 27,
+    "lane_mle_cases": 57,
+    "retained193_branch_lane_counts": [
+      38,
+      24,
+      13,
+      25
+    ],
+    "retained193_coefficient_sum_matches_gkr_claim": true,
+    "scope": "Ext8 current/cyclic-next dual Mobius weights derived from GKR slots. Independent base coefficient conversion matches required aggregate on retained execution. Descriptors omit commitment roots; PCS authentication, batching/folding proof and full envelope remain open."
   }
 }
