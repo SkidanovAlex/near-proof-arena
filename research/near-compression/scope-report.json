@@ -452,6 +452,7 @@
     "research/near-compression/NearCompression/CodeSwitchStage.lean": "a5d5aad4b10cb4288c2bd04f6d748111609342822382c2aec08220f18d73bd97",
     "research/near-compression/NearCompression/WeightedCodeSwitchQuery.lean": "bec4209e72e517723ba981e4cc4a404a93831448462c9221e66a094d24abeb14",
     "research/near-compression/NearCompression/IndependentConstraintMixing.lean": "de08adf8429b4ee5432a8ac6c9e3c469361088d89b1d1e182e78a4573803265c",
+    "research/near-compression/NearCompression/IndependentMixingCandidates.lean": "2cc47aefb5237040f097540e46d147a8b4b614b3f427a2339251674c20bd9d66",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean": "d9a5cbb964e9aab9d9a8bbe2ef3f558f473d587cf9e941cabaf8491b422cc2d9",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean": "412710950ab5940e517c3d4af7620fe18a9edb0318627fbf88d2ef77cfcd64a0",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean": "09aa0805e94738cf5370b36f8dbbcc1fb5dd0ec6d704dbd7368a5751bbd27b14",

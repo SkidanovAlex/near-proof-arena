@@ -7368,3 +7368,39 @@ the carried functional and every query/OOD evaluation. Existing unique-basin
 and older power-mixing lemmas cannot simply be relabeled as that theorem.
 Latest verified diagnostic bundle remains1344645 B; full NEAR1Pgas/PQ128 and
 sub300000 B remain open, with slice feasibility NOT_PASSED.
+
+## 2026-10-16 — Complete Johnson family connected to independent mixing
+
+Added IndependentMixingCandidates.lean with three audited public theorems.
+The earlier FiniteRSJohnsonCandidates construction already enumerates a complete
+normalized candidate family for a fixed received oracle, provided the coefficient
+alphabet covers the field. Its list bound is L*(T²-N*(D-1))≤N². The new bridge
+maps this family to the actual coefficient/weight pairs consumed by switchInjectAll
+and bounds the existential bad-mixing event over ALL degree-bounded candidates
+with agreement at least T. The same polynomial supplies the old functional and
+all evaluation constraints. Selection within this family may depend on mixers.
+Exact weight length preserves all normalized coefficients; the shape lemma
+explicitly prevents zip truncation when applying the arithmetic interpretation.
+
+For m>0 independent mixers from a distinct alphabet S, the composed result is
+badCount*|S|*(T²-N*(D-1))≤N²*|S|^m. This is useful only for positive Johnson gap
+and nonempty S. The complete family depends on the received oracle/domain and
+threshold, not mixers. It is a mathematical enumeration, not a proposed runtime
+list-decoding algorithm. No oracle extraction from a Merkle root is proved.
+
+The seven diagnostic target geometries admit explicit thresholds
+388822,68733,12149,2145,375,60,25 with fixed-oracle candidate caps
+79,159,319,634,1229,1985,2319 respectively. These are integer consequences of
+the proved Johnson bound, replacing an assumed 10*rate list cap ONLY under
+the stated agreement premise. Protocol acceptance has not been shown to imply
+that premise. These numbers are not an all-stage error ledger or a PQ128 claim.
+
+Validation:79 exhaustive/structured small-field received-oracle cases and1111
+mixer tuples, including empty and multiple-candidate lists, independent injection
+checks, and explicit incomplete-alphabet/zero-gap premise checks. Full audit
+4253 PASS, allowed axioms only. Evidence:results/independent-mixing-candidates/.
+No query profile, serialization, or prover was changed. Latest verified bundle
+remains1344645 B and feasibility stays NOT_PASSED. Next: connect continuation
+acceptance to agreement and the SAME candidate for the carried injected
+functional, then account for failure of that reduction; commitment extraction
+and adaptive/QROM composition remain separate obligations.

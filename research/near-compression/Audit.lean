@@ -6084,3 +6084,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.switch_fixed_candidate_mixing_count
 #print axioms NearCompression.switch_candidate_family_mixing_count
 #print axioms NearCompression.switch_candidate_family_mixing_scaled
+
+#print axioms NearCompression.switch_polynomial_pairs_coefficients
+#print axioms NearCompression.switch_johnson_mixing_count
+#print axioms NearCompression.switch_johnson_mixing_gap
