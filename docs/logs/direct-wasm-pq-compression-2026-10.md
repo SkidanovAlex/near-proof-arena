@@ -1957,3 +1957,26 @@ concentration proof. No protocol parameters or size claims changed.
 
 Validation: full `check.py` passed with 3746 registered results and enforced
 axiom allowlist. Feasibility gate remains NOT_PASSED.
+
+
+### Small-field concentration validation
+
+Added exact finite enumeration of all normalized source pairs, every degree<2
+polynomial and all challenges over F5,F7,F11,F17. Two profiles: uniform weights
+with T=3 and weights[1,1,1,2] with T=4, on four points. Total202376 normalized
+source pairs. Maximum false-success challenge counts are respectively4 and3
+in each field. Arbitrary-word normalization by subtracting separate affine
+interpolants preserves agreement supports; that reduction is explanatory math,
+not a newly proved Lean generalization.
+
+`SmallFieldCurveCounterexample.lean` independently checks the explicit F5
+example e=[0,0,0,1],o=[0,0,1,2]: successful challenges[0,1,2,4], no jointly
+agreeing pair at T=3, positive Johnson gap5. It exhausts all25 canonical
+affine polynomials and all625 pairs via kernel `decide`. This is a counterexample
+to zero-exception transfer from the gap alone, not a cryptographic attack and
+not a contradiction of a concentration theorem with a nonzero error allowance.
+The zero functional/zero sent polynomial satisfies the quadratic constraint.
+The regression prevents mistaking list cardinality for candidate coherence.
+
+Validation: full `check.py` passed with3747 registered results and enforced axiom
+allowlist. All eight finite enumerations completed. Feasibility gate remains open.

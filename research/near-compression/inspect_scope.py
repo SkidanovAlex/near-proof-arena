@@ -13,6 +13,7 @@ SOURCES = [
     "research/near-compression/NearCompression/TerminalDAGEvaluation.lean",
     "research/near-compression/NearCompression/PackedComputedOpening.lean",
     "research/near-compression/NearCompression/WeightedJohnsonList.lean",
+    "research/near-compression/NearCompression/SmallFieldCurveCounterexample.lean",
     "research/near-compression/NearCompression/GeneralCurveConcentrationReduction.lean",
     "research/near-compression/NearCompression/WeightedCurveCandidates.lean",
     "research/near-compression/NearCompression/WeightedPCSRepresentativeSoundness.lean",

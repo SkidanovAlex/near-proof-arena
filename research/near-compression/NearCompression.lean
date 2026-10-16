@@ -1351,3 +1351,5 @@ import NearCompression.WeightedJohnsonList
 import NearCompression.WeightedCurveCandidates
 
 import NearCompression.GeneralCurveConcentrationReduction
+
+import NearCompression.SmallFieldCurveCounterexample

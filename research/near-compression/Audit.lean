@@ -5366,3 +5366,5 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.general_fixed_curve_many_outcome
 #print axioms NearCompression.general_concentration_extraction_bad_count
+
+#print axioms NearCompression.curve_f5_zero_exception_transfer_counterexample

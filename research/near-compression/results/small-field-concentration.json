@@ -1,0 +1,564 @@
+{
+  "status": "EXACT_FINITE_ENUMERATION_NOT_GENERAL_THEOREM",
+  "constraint": "ew=ow=0 and sent=0, so the quadratic constraint is identically satisfied.",
+  "coverage": "All normalized source pairs for each field/profile; every degree<2 polynomial and every challenge enumerated. Reduction of arbitrary words by affine subtraction is mathematical reasoning, not yet a Lean theorem.",
+  "lesson": "Positive weighted Johnson gap alone does not imply that every successful folded candidate has a jointly agreeing parent. An exceptional-challenge term is necessary.",
+  "cases": [
+    {
+      "prime": 5,
+      "domain": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "strict_degree": 2,
+      "weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "threshold": 3,
+      "johnson_gap": 5,
+      "unique_separation_holds": false,
+      "normalized_source_pairs_checked": 625,
+      "pairs_without_joint_candidate": 528,
+      "maximum_successful_challenges_without_joint_candidate": 4,
+      "witness": {
+        "source_even": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "source_odd": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "successes": [
+          {
+            "challenge": 0,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 1,
+            "candidates": [
+              [
+                4,
+                1
+              ]
+            ]
+          },
+          {
+            "challenge": 2,
+            "candidates": [
+              [
+                0,
+                1
+              ]
+            ]
+          },
+          {
+            "challenge": 4,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prime": 5,
+      "domain": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "strict_degree": 2,
+      "weights": [
+        1,
+        1,
+        1,
+        2
+      ],
+      "threshold": 4,
+      "johnson_gap": 6,
+      "unique_separation_holds": false,
+      "normalized_source_pairs_checked": 625,
+      "pairs_without_joint_candidate": 552,
+      "maximum_successful_challenges_without_joint_candidate": 3,
+      "witness": {
+        "source_even": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "source_odd": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "successes": [
+          {
+            "challenge": 1,
+            "candidates": [
+              [
+                4,
+                1
+              ]
+            ]
+          },
+          {
+            "challenge": 2,
+            "candidates": [
+              [
+                0,
+                1
+              ]
+            ]
+          },
+          {
+            "challenge": 4,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prime": 7,
+      "domain": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "strict_degree": 2,
+      "weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "threshold": 3,
+      "johnson_gap": 5,
+      "unique_separation_holds": false,
+      "normalized_source_pairs_checked": 2401,
+      "pairs_without_joint_candidate": 2208,
+      "maximum_successful_challenges_without_joint_candidate": 4,
+      "witness": {
+        "source_even": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "source_odd": [
+          0,
+          0,
+          1,
+          0
+        ],
+        "successes": [
+          {
+            "challenge": 0,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 1,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 5,
+            "candidates": [
+              [
+                2,
+                5
+              ]
+            ]
+          },
+          {
+            "challenge": 6,
+            "candidates": [
+              [
+                0,
+                3
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prime": 7,
+      "domain": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "strict_degree": 2,
+      "weights": [
+        1,
+        1,
+        1,
+        2
+      ],
+      "threshold": 4,
+      "johnson_gap": 6,
+      "unique_separation_holds": false,
+      "normalized_source_pairs_checked": 2401,
+      "pairs_without_joint_candidate": 2256,
+      "maximum_successful_challenges_without_joint_candidate": 3,
+      "witness": {
+        "source_even": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "source_odd": [
+          0,
+          0,
+          1,
+          0
+        ],
+        "successes": [
+          {
+            "challenge": 1,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 5,
+            "candidates": [
+              [
+                2,
+                5
+              ]
+            ]
+          },
+          {
+            "challenge": 6,
+            "candidates": [
+              [
+                0,
+                3
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prime": 11,
+      "domain": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "strict_degree": 2,
+      "weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "threshold": 3,
+      "johnson_gap": 5,
+      "unique_separation_holds": false,
+      "normalized_source_pairs_checked": 14641,
+      "pairs_without_joint_candidate": 14160,
+      "maximum_successful_challenges_without_joint_candidate": 4,
+      "witness": {
+        "source_even": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "source_odd": [
+          0,
+          0,
+          1,
+          0
+        ],
+        "successes": [
+          {
+            "challenge": 0,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 1,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 4,
+            "candidates": [
+              [
+                7,
+                4
+              ]
+            ]
+          },
+          {
+            "challenge": 7,
+            "candidates": [
+              [
+                0,
+                9
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prime": 11,
+      "domain": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "strict_degree": 2,
+      "weights": [
+        1,
+        1,
+        1,
+        2
+      ],
+      "threshold": 4,
+      "johnson_gap": 6,
+      "unique_separation_holds": false,
+      "normalized_source_pairs_checked": 14641,
+      "pairs_without_joint_candidate": 14280,
+      "maximum_successful_challenges_without_joint_candidate": 3,
+      "witness": {
+        "source_even": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "source_odd": [
+          0,
+          0,
+          1,
+          0
+        ],
+        "successes": [
+          {
+            "challenge": 1,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 4,
+            "candidates": [
+              [
+                7,
+                4
+              ]
+            ]
+          },
+          {
+            "challenge": 7,
+            "candidates": [
+              [
+                0,
+                9
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prime": 17,
+      "domain": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "strict_degree": 2,
+      "weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "threshold": 3,
+      "johnson_gap": 5,
+      "unique_separation_holds": false,
+      "normalized_source_pairs_checked": 83521,
+      "pairs_without_joint_candidate": 82368,
+      "maximum_successful_challenges_without_joint_candidate": 4,
+      "witness": {
+        "source_even": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "source_odd": [
+          0,
+          0,
+          1,
+          0
+        ],
+        "successes": [
+          {
+            "challenge": 0,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 1,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 6,
+            "candidates": [
+              [
+                11,
+                6
+              ]
+            ]
+          },
+          {
+            "challenge": 14,
+            "candidates": [
+              [
+                0,
+                7
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prime": 17,
+      "domain": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "strict_degree": 2,
+      "weights": [
+        1,
+        1,
+        1,
+        2
+      ],
+      "threshold": 4,
+      "johnson_gap": 6,
+      "unique_separation_holds": false,
+      "normalized_source_pairs_checked": 83521,
+      "pairs_without_joint_candidate": 82656,
+      "maximum_successful_challenges_without_joint_candidate": 3,
+      "witness": {
+        "source_even": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "source_odd": [
+          0,
+          0,
+          1,
+          0
+        ],
+        "successes": [
+          {
+            "challenge": 1,
+            "candidates": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "challenge": 6,
+            "candidates": [
+              [
+                11,
+                6
+              ]
+            ]
+          },
+          {
+            "challenge": 14,
+            "candidates": [
+              [
+                0,
+                7
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
