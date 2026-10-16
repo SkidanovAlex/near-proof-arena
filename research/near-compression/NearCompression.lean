@@ -1441,3 +1441,5 @@ import NearCompression.HistoryDecodedEnvironment
 import NearCompression.DecodedTraceSemantics
 
 import NearCompression.DecodedLocalSoundness
+
+import NearCompression.TerminalBatchFailure

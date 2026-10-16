@@ -3486,3 +3486,23 @@ Full check.py passed 3916 registered results with the existing axiom allowlist.
 No native code changed. Intended formulas, executable transcript refinement,
 commitment extraction, quantum security and secure full-NEAR size remain open.
 Gate NOT_PASSED.
+
+### Terminal mismatch batching cancellation is explicit
+
+TerminalBatchFailure identifies terminalResidualValue with the difference of
+ordered output/claim power batches. For a fixed wrong table claim, cancellation
+occurs at at most tableCount-1 distinct rho values. The result transfers through
+per-rho circuit identities even when the compiled DAG changes with rho; only
+the semantic output/claim list must be fixed before rho.
+
+A continuation theorem adds this cancellation budget to a conditional downstream
+nonzero-circuit-output acceptance budget. Strategies may depend on rho and no
+independence between acceptance and failures is assumed. This is the interface
+needed between local terminal mismatch and GKR/PCS; the downstream budget is
+still an explicit premise, not a claimed completed composition.
+
+Kernel examples show opposite mismatches cancelling at rho=1 and a later-only
+mismatch disappearing at rho=0. Full check.py passed 3921 registered results
+with the existing axiom allowlist. No native code changed. Actual chronological
+experiment matching, intended formulas, commitment extraction, quantum security
+and secure full-NEAR size remain open. Gate NOT_PASSED.

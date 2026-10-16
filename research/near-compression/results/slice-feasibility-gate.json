@@ -222,7 +222,9 @@
     "NearCompression/DecodedTraceSemantics.lean",
     "results/decoded-trace-semantics-integration.json",
     "NearCompression/DecodedLocalSoundness.lean",
-    "results/decoded-local-soundness-integration.json"
+    "results/decoded-local-soundness-integration.json",
+    "NearCompression/TerminalBatchFailure.lean",
+    "results/terminal-batch-failure-integration.json"
   ],
   "requirements": [
     {

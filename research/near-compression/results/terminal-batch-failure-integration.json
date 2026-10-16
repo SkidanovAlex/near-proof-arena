@@ -1,0 +1,39 @@
+{
+  "status": "TERMINAL_BATCH_CANCELLATION_AND_CONDITIONAL_CONTINUATION_BUDGET",
+  "module": "NearCompression/TerminalBatchFailure.lean",
+  "theorems": [
+    "terminal_residual_power_batch",
+    "terminal_residual_cancellation_count",
+    "terminal_circuit_cancellation_count",
+    "terminal_batch_continuation_budget",
+    "terminal_batch_cancellation_regressions"
+  ],
+  "proved": [
+    "Exact terminal compiler residual equals the difference of output and claim power batches.",
+    "A fixed wrong table claim can cancel at at most tableCount-1 distinct batch challenges.",
+    "The root bound transfers to rho-dependent circuit evaluations through per-rho exact compiler identities; no shared-DAG assumption.",
+    "Total acceptance count is bounded by cancellation plus a conditional downstream budget for nonzero circuit outputs, allowing rho-adaptive strategies."
+  ],
+  "assumptions": [
+    "Output/claim list fixed before rho; a nonzero indexed mismatch and nonempty list.",
+    "Distinct finite rho sample.",
+    "Circuit identity for each sampled rho.",
+    "Downstream nonzero-output acceptance budget remains an explicit premise requiring the actual GKR/PCS experiment."
+  ],
+  "remaining": [
+    "Instantiate the downstream continuation bound using evaluated GKR and PCS soundness on matching chronological coordinates.",
+    "Bind local mismatch to the intended fixed terminal output list and executable transcript chronology.",
+    "Commitment extraction, quantum Fiat-Shamir, secure parameters and full-NEAR sub300000-byte feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3921,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "kernel_regressions": "Two opposite nonzero mismatches cancel at rho=1; rho=0/2 differ; a later mismatch disappears at rho=0.",
+    "native_capture_execution": "Not rerun; generic algebra and finite counting only."
+  }
+}

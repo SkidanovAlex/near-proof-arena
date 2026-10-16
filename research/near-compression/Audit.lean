@@ -5584,3 +5584,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.decoded_local_accepted_count_eq
 #print axioms NearCompression.decoded_local_invalid_trace_count
 #print axioms NearCompression.decoded_local_acceptance_split
+
+#print axioms NearCompression.terminal_residual_power_batch
+#print axioms NearCompression.terminal_residual_cancellation_count
+#print axioms NearCompression.terminal_circuit_cancellation_count
+#print axioms NearCompression.terminal_batch_continuation_budget
+#print axioms NearCompression.terminal_batch_cancellation_regressions
