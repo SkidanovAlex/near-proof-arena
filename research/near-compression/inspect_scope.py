@@ -439,6 +439,8 @@ SOURCES = [
     "research/near-compression/NearCompression/PreparedCheckedHistoryBudget.lean",
     "research/near-compression/NearCompression/SelectedAuxiliaryLocalBudget.lean",
     "research/near-compression/NearCompression/SelectedAuxiliaryGKR.lean",
+    "research/near-compression/NearCompression/SelectedAuxiliaryFutureGKR.lean",
+    "research/near-compression/NearCompression/SelectedHistoryExperiment.lean",
     "research/near-compression/NearCompression/JointPCSParameterArithmetic.lean",
     "research/near-compression/NearCompression/JointPCSNormalization.lean",
     "research/near-compression/NearCompression/AveragedTerminalFailure.lean",

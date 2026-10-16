@@ -4674,3 +4674,25 @@ checked terminal semantic instantiation, full Ext8, QROM, secure size and full
 
 Validation: full `check.py` PASS (4099 registered results), existing axiom
 allowlist. Native captures not rerun for formal-only composition.
+
+### First-table future GKR and common chronological counts
+
+`selected_auxiliary_future_gkr_error_count` extends selected-table local/GKR
+composition over arbitrary future prefixes. Instantiating these with second
+local prefixes covers the first-table continuation; outputs and GKR strategy
+may depend on those future prefixes, while the selected local trace/formulas
+remain earlier-indexed. Actual evaluated-GKR repair is substituted and the
+accepted shared-failure count remains exact.
+
+`SelectedHistoryExperiment.lean` proves selector-filter count equality and
+reindexes both first-table future nesting and second-table earlier nesting to
+the common history/first/second/PCS experiment. These identities preserve list
+multiplicities and apply to arbitrary events, including accepted failures.
+
+Next: substitute both selected branch bounds into the concrete prepared history
+theorem, then apply the concrete joint PCS budget once. Semantic GKR checks,
+authenticated native bindings, full Ext8, QROM, secure size and full 1 Pgas
+remain open. Slice gate remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4103 registered results), existing axiom
+allowlist; native captures not rerun for formal-only changes.

@@ -5866,3 +5866,11 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.selected_auxiliary_local_error_count
 
 #print axioms NearCompression.selected_auxiliary_gkr_error_count
+
+#print axioms NearCompression.selected_auxiliary_future_gkr_error_count
+
+#print axioms NearCompression.selected_history_filter_count
+
+#print axioms NearCompression.first_selected_history_reindex
+
+#print axioms NearCompression.second_selected_history_reindex

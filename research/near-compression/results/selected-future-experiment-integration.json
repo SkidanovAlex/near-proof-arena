@@ -1,0 +1,39 @@
+{
+  "status": "SELECTED_FIRST_TABLE_GKR_AND_COMMON_HISTORY_COUNTS",
+  "modules": [
+    "NearCompression/SelectedAuxiliaryFutureGKR.lean",
+    "NearCompression/SelectedHistoryExperiment.lean"
+  ],
+  "theorems": [
+    "selected_auxiliary_future_gkr_error_count",
+    "selected_history_filter_count",
+    "first_selected_history_reindex",
+    "second_selected_history_reindex"
+  ],
+  "proved": [
+    "Selected auxiliary local soundness composes with actual evaluated-GKR repair across an arbitrary future prefix list, covering the first-table continuation.",
+    "Future-prefix circuit outputs and GKR strategies may vary with future prefixes; selected local decoded traces/formulas remain earlier-history indexed.",
+    "Filtering earlier histories by the actual selector is exactly the restricted branch predicate count in the full product, preserving multiplicities.",
+    "Both first-table future nesting and second-table earlier nesting reindex to the same history/first/second/PCS event count. Equalities apply to arbitrary events, including accepted failures."
+  ],
+  "assumptions": [
+    "Selected-table fixed-coordinate binding, residual geometry/order/degree, and local checks.",
+    "GKR semantic output mismatch/circuit binding, verifier checks and shared terminal-error inclusion.",
+    "Finite future list is instantiated with second local prefixes for the intended first-table application."
+  ],
+  "remaining": [
+    "Substitute these bounds and reindexing equalities into prepared_checked_history_budget for both actual branches.",
+    "Apply concrete joint PCS bound once after branch aggregation and derive checked terminal/native bindings.",
+    "Full Ext8 slice, global acceptance, QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4103,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only composition."
+  }
+}
