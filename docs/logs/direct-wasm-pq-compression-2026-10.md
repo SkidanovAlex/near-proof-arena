@@ -3506,3 +3506,22 @@ mismatch disappearing at rho=0. Full check.py passed 3921 registered results
 with the existing axiom allowlist. No native code changed. Actual chronological
 experiment matching, intended formulas, commitment extraction, quantum security
 and secure full-NEAR size remain open. Gate NOT_PASSED.
+
+### Batch cancellation composes with evaluated GKR repair
+
+BatchedEvaluatedGKR derives the first wrong-claim predicate from a nonzero
+finite circuit output, actual computed layer values, a Boolean root query and
+zero transmitted claim. It instantiates the downstream GKR repair term in the
+batching continuation bound. The remaining term is accepted terminal mismatch
+on the exact fixed-envelope GKR-path/continuation experiment. Circuits, inputs
+and strategies may depend on rho; semantic output/claim pairs remain fixed
+before rho. No independence of acceptance and mismatch is assumed.
+
+The merged PCS theorem cannot yet supply the remaining pcsBudget without
+matching chronological coordinates and event predicates. Root/path checks and
+per-rho compiler identities also need executable verifier instantiation. This
+checkpoint removes an abstract downstream GKR budget, not the PCS premise.
+
+Full check.py passed 3923 registered results with the existing axiom allowlist.
+No native code changed. Transcript/specification binding, commitment extraction,
+quantum security and secure full-NEAR size remain open. Gate NOT_PASSED.

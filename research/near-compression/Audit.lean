@@ -5590,3 +5590,6 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.terminal_circuit_cancellation_count
 #print axioms NearCompression.terminal_batch_continuation_budget
 #print axioms NearCompression.terminal_batch_cancellation_regressions
+
+#print axioms NearCompression.evaluated_gkr_zero_root_wrong
+#print axioms NearCompression.batched_evaluated_gkr_budget

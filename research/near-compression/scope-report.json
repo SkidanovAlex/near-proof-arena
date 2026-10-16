@@ -551,6 +551,7 @@
     "research/near-compression/NearCompression/DecodedTraceSemantics.lean": "48863f6cb96fc8e6904b85b2349b4c2ea74cdd18f3b147e1c6d361898cd88db7",
     "research/near-compression/NearCompression/DecodedLocalSoundness.lean": "abf93ade129674899e7f3986c7de3d470751236c2db5bfc0cedf77f35ecca9a6",
     "research/near-compression/NearCompression/TerminalBatchFailure.lean": "4adce14f0649d55db9302997f58907182940a9e4346ea54baf66727112e790ca",
+    "research/near-compression/NearCompression/BatchedEvaluatedGKR.lean": "c738ebcb773c47805571274739fa81f4567e4a926123a94c41d1648089ebdd9a",
     "research/near-compression/NearCompression/JointSourceFarFold.lean": "ff79009785b516f31aa2ee9d5a407fb6154718867341fdaffeb490b40e13cafe",
     "research/near-compression/NearCompression/PreparedLocalsStep.lean": "6fbcc8b3e2937bf737c04c2575c922f9bd9b5db921fca42665199bd78d675341",
     "research/near-compression/NearCompression/HeterogeneousGKRWeights.lean": "170d9528efb40b38fb199586592ff341780d73d0408cae7844d3d3ef881947af",

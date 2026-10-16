@@ -224,7 +224,9 @@
     "NearCompression/DecodedLocalSoundness.lean",
     "results/decoded-local-soundness-integration.json",
     "NearCompression/TerminalBatchFailure.lean",
-    "results/terminal-batch-failure-integration.json"
+    "results/terminal-batch-failure-integration.json",
+    "NearCompression/BatchedEvaluatedGKR.lean",
+    "results/batched-evaluated-gkr-integration.json"
   ],
   "requirements": [
     {

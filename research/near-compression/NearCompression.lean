@@ -1443,3 +1443,5 @@ import NearCompression.DecodedTraceSemantics
 import NearCompression.DecodedLocalSoundness
 
 import NearCompression.TerminalBatchFailure
+
+import NearCompression.BatchedEvaluatedGKR
