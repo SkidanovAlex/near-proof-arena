@@ -2,14 +2,42 @@
   "status": "frozen interface plan, not proved rate-shift soundness",
   "field": "ZkFormal.Algebra.Fp8 with certified P^8 cardinality",
   "state": "Fixed prior oracle/root, public prior and next domains, degree bounds, current coefficient functional weights w and claim c. Two sequential binary folds reduce D32 to D8; next domain64 versus previous128.",
-  "chronology": ["Prior root fixed before fold challenges; each quadratic committed before its challenge", "Next oracle/root committed after both folds, before OOD challenge", "OOD point z drawn outside base domain; claimed y committed before consistency queries and mixing challenge", "Consistency locations drawn from folded previous domain; source leaves authenticated and folded with prior challenges", "Mixing gamma drawn after locations; check values are verifier-derived, not prover-selected", "Degree8 coefficients disclosed last; full next-domain reconstruction binds the diagnostic candidate and the aggregate residual is checked"],
+  "chronology": [
+    "Prior root fixed before fold challenges; each quadratic committed before its challenge",
+    "Next oracle/root committed after both folds, before OOD challenge",
+    "OOD point z drawn outside base domain; claimed y committed before consistency queries and mixing challenge",
+    "Consistency locations drawn from folded previous domain; source leaves authenticated and folded with prior challenges",
+    "Mixing gamma drawn after locations; check values are verifier-derived, not prover-selected",
+    "Degree8 coefficients disclosed last; full next-domain reconstruction binds the diagnostic candidate and the aggregate residual is checked"
+  ],
   "same_candidate_relation": "For ONE p of degree<8: scalarRSResidual(w,p)=c, p.eval(z)=y, and every p.eval(x_j)=v_j. v_j comes from authenticated prior-oracle coset folds.",
   "aggregate": "w' = w + gamma*monomialWeights(z) + sum_j gamma^(j+2)*monomialWeights(x_j); c' = c + gamma*y + sum_j gamma^(j+2)*v_j.",
   "fixed_candidate_lemma": "Define error polynomial coefficients [residual(w,p)-c, p(z)-y, p(x_0)-v_0, ...]. Aggregate residual equals its evaluation at gamma. If any constituent error is nonzero, the polynomial is nonzero and has at most query_count+1 roots in a distinct challenge sample.",
   "candidate_list_lemma_needed": "A candidate list must be fixed before gamma. Union-bound the fixed-candidate bad sets over its bounded cardinality. A candidate chosen after gamma cannot be assigned a single-polynomial root bound.",
   "MCA_unique_bridge_needed": "From accepted continuation and sufficiently large agreement mass derive a SAME next-domain candidate satisfying the new constrained functional, then use OOD/list separation and rate-shift queries to transfer to a prior-domain candidate. Prove unique-decoding hypotheses first; no Johnson/MCA conjecture assumed.",
-  "existing_interfaces": ["scalarRSResidual and Poly.eval", "GenericRSPairRepresentation and OneFoldScalarComposition", "TerminalWeight and WHIRRoundRecurrence", "SHA384 fixed computed-source binding", "WeightedPCSPrefixStrategy chronology design"],
+  "existing_interfaces": [
+    "scalarRSResidual and Poly.eval",
+    "GenericRSPairRepresentation and OneFoldScalarComposition",
+    "TerminalWeight and WHIRRoundRecurrence",
+    "SHA384 fixed computed-source binding",
+    "WeightedPCSPrefixStrategy chronology design"
+  ],
   "diagnostic_boundary": "Full coefficient disclosure supplies a bounded candidate at the end and exact next-root reconstruction. This is an executable algebra/chronology test, not recursive extraction or an improved soundness bound.",
   "zero_scale": "Do not divide by any running equality factor. Gamma=0 is a possible algebraic bad challenge when only new constraints are false; record it explicitly.",
-  "cryptographic_gaps": ["adversarial Merkle-root to fixed-oracle extraction", "actual FS/QROM correspondence", "full protocol union budget and upstream functional provenance"]
+  "cryptographic_gaps": [
+    "adversarial Merkle-root to fixed-oracle extraction",
+    "actual FS/QROM correspondence",
+    "full protocol union budget and upstream functional provenance"
+  ],
+  "current_query_bound_assessment": {
+    "status": "SOURCE_QUERY_INTERFACE_BOUND_SHARP",
+    "theorems": [
+      "rate_shift_truthful_ood_iff",
+      "rate_shift_truthful_ood_query_count",
+      "rate_shift_source_threshold_sharp"
+    ],
+    "finding": "For a fixed candidate satisfying the old functional and a truthful OOD answer, remaining candidate correctness is exactly all source queries passing. At agreement(T-1), the count equals(T-1)^q. OOD alone gives no additional factor.",
+    "needed_before_fewer_source_queries": "A stronger earlier-oracle/folding/list or OOD relation that quantitatively excludes high-agreement wrong candidates, composed with candidate extraction and continuation. Existing noClose threshold alone is insufficient.",
+    "limitation": "Not a full protocol attack or impossibility result for rate shifting; does not assert attainability under every earlier folding premise."
+  }
 }

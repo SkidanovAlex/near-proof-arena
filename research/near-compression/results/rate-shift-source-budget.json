@@ -1,0 +1,58 @@
+{
+  "status": "EXACT_INTERFACE_BUDGET_CHECK",
+  "seeds": 128,
+  "agreements": 96,
+  "strict_threshold": 97,
+  "min_queries128_ideal": 309,
+  "four_query_pass_fraction": "81/256",
+  "cases": [
+    {
+      "queries": 4,
+      "numerator": "81",
+      "denominator": "256",
+      "meets128_ideal_query_bits": false
+    },
+    {
+      "queries": 8,
+      "numerator": "6561",
+      "denominator": "65536",
+      "meets128_ideal_query_bits": false
+    },
+    {
+      "queries": 32,
+      "numerator": "1853020188851841",
+      "denominator": "18446744073709551616",
+      "meets128_ideal_query_bits": false
+    },
+    {
+      "queries": 64,
+      "numerator": "3433683820292512484657849089281",
+      "denominator": "340282366920938463463374607431768211456",
+      "meets128_ideal_query_bits": false
+    },
+    {
+      "queries": 128,
+      "numerator": "11790184577738583171520872861412518665678211592275841109096961",
+      "denominator": "115792089237316195423570985008687907853269984665640564039457584007913129639936",
+      "meets128_ideal_query_bits": false
+    },
+    {
+      "queries": 308,
+      "numerator": "898144994103398334879090065653881441055968306997838920689381527104178990481571441531923152587475144448311428414763438914899457039675729976927532561",
+      "denominator": "271942652322184754529069161754863937192751676276240344678115398758606622648756348282451201159797394262471336696958208519857448620878186106577674229128492724195241610667721328144244801536",
+      "meets128_ideal_query_bits": false
+    },
+    {
+      "queries": 309,
+      "numerator": "2694434982310195004637270196961644323167904920993516762068144581312536971444714324595769457762425433344934285244290316744698371119027189930782597683",
+      "denominator": "1087770609288739018116276647019455748771006705104961378712461595034426490595025393129804804639189577049885346787832834079429794483512744426310696916513970896780966442670885312576979206144",
+      "meets128_ideal_query_bits": true
+    }
+  ],
+  "formal_theorems": [
+    "rate_shift_truthful_ood_iff",
+    "rate_shift_truthful_ood_query_count",
+    "rate_shift_source_threshold_sharp"
+  ],
+  "scope": "Tight count for same-candidate/source-query interface when old functional and truthful OOD equation hold. Not a full protocol attack or lower bound on WHIR/rate-shift designs; earlier oracle/fold relations can supply stronger premises. No quantum security claim."
+}

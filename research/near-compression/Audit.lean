@@ -5920,3 +5920,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.bus_expanded_list_checked
 
 #print axioms NearCompression.generated_expanded_bus_spec_checked
+
+#print axioms NearCompression.rate_shift_truthful_ood_iff
+
+#print axioms NearCompression.rate_shift_truthful_ood_query_count
+
+#print axioms NearCompression.rate_shift_source_threshold_sharp

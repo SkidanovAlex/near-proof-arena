@@ -713,5 +713,12 @@
     "rate4_130ideal_min_bytes": 507640,
     "rate128_130ideal_min_bytes": 910984,
     "scope": "Exact baseline geometry, independently checked optimizer, simulated candidate queries. Packing through1024 and same-phase pooling preserve309 queries/48-byte hashes in primary screen. Alternate-rate query counts use existing conditional PCS-only130-ideal-bit arithmetic, not total/PQ security. No candidate below300KB; alternate layouts/rates unimplemented. Protocol-level source-query reduction remains necessary."
+  },
+  "rate_shift_source_query_sharpness": {
+    "status": "FORMAL_INTERFACE_LIMIT_PROVED",
+    "theorems": 3,
+    "four_queries_at_three_quarters": "81/256",
+    "minimum_queries_for_isolated128ideal_term": 309,
+    "scope": "Current same-candidate interface with old functional correct and truthful OOD answer has exact source agreement^q count. AtT-1matches the query bound is attained. Not a full protocol attack or rate-shift impossibility theorem. Stronger earlier-oracle/fold relations are needed before reducing source queries; actual quantum security remains open."
   }
 }
