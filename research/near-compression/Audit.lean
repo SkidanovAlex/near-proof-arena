@@ -5713,3 +5713,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.decoded_base_trace_table_local
 #print axioms NearCompression.decoded_base_residual_nonzero
 #print axioms NearCompression.decoded_wrong_output_residual_or_bus
+
+#print axioms NearCompression.decoded_base_trace_attached
+#print axioms NearCompression.decoded_bus_implies_adaptive_accept
+#print axioms NearCompression.decoded_adaptive_bus_error_bound

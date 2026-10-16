@@ -1497,3 +1497,5 @@ import NearCompression.BaseFieldPolynomialDescent
 import NearCompression.JointSourceBaseDescent
 
 import NearCompression.DecodedBaseTrace
+
+import NearCompression.DecodedAdaptiveBus

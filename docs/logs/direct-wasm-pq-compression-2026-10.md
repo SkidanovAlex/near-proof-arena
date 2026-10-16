@@ -4001,3 +4001,20 @@ concrete acceptance theorem still need composition; native/QROM security and
 secure full-NEAR size remain open.
 Full check.py passed 4017 registered results with the existing axiom allowlist.
 No native or measured-size changes; gate NOT_PASSED.
+
+### Decoded coordinates connect to adaptive bus soundness
+
+DecodedAdaptiveBus proves that a decoded coordinate trace with fixed source
+cells and logs projects to an allowed auxiliary attachment on that source.
+Validity of reconstructed auxiliary residuals and claimed final-product
+equality therefore imply the existing adaptive bus acceptance event. The
+resulting ideal bus bound permits a different decoded auxiliary witness and
+final products for every alpha/gamma pair.
+
+Source cells must still be fixed before those challenges; consistency of
+source representatives across later auxiliary commitments remains open.
+Auxiliary residual validity is explicit on reconstructed coordinates, not
+inferred from PCS agreement. Actual generated-formula refinement, global
+acceptance composition, authentication and QROM security remain open.
+Full check.py passed 4020 registered results with the existing axiom allowlist.
+No native/size changes; gate NOT_PASSED.

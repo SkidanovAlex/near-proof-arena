@@ -279,7 +279,9 @@
     "NearCompression/JointSourceBaseDescent.lean",
     "results/joint-source-base-descent-integration.json",
     "NearCompression/DecodedBaseTrace.lean",
-    "results/decoded-base-trace-integration.json"
+    "results/decoded-base-trace-integration.json",
+    "NearCompression/DecodedAdaptiveBus.lean",
+    "results/decoded-adaptive-bus-integration.json"
   ],
   "requirements": [
     {
