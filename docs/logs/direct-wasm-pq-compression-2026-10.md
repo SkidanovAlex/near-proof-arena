@@ -8818,3 +8818,31 @@ Next: degree-controlled matrix inverse/denominator construction, then useful
 algebraic branch specialization. Full MCA and protocol/QROM composition remain
 open. Diagnostic1344645 B unchanged; feasibility NOT_PASSED.
 Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Source-degree bound for polynomial Bezout determinants
+
+Added PolynomialDeterminantDegree.lean with six audited public theorems.
+Defined matching scalar and polynomial Laplace expansions using ordered
+row/column minors, with empty determinant one. Proved parameter degree<=N*D
+for N-row minors whose entries have degree<=D, and that polynomial evaluation
+commutes with this determinant construction. Conditional on formal nonzeroness,
+at most N*D distinct sample points make the specialized determinant vanish.
+
+Defined the bounded Bezout coefficient matrix and its derivative specialization.
+Multiplying source coefficients by derivative indices preserves parameter
+degree in every characteristic. The degree-d derivative matrix has size2d-1,
+and its polynomial determinant has degree<=(2d-1)*D. Nonzeroness from the
+previous coefficient-map bijectivity theorem, and the determinant's inverse/
+shared-denominator interpretation, remain separate unproved obligations.
+
+Validation:240 polynomial matrices checked against independent permutation
+expansion,1620 specialized numeric Gaussian determinants and220 nonzero
+root-count bounds.100 derivative Bezout matrices satisfy the source-degree
+bound,99 with nonzero determinants. A constant singular matrix demonstrates
+why the exceptional-point count needs nonzeroness. Full audit4518 PASS,
+allowed axioms only. Evidence: results/polynomial-determinant-degree/.
+
+Next: determinant nonzeroness and inverse-certificate identity, then connect
+the bounded denominator to algebraic branch specialization. Full MCA and
+protocol/QROM composition remain open. Diagnostic1344645 B unchanged;
+feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

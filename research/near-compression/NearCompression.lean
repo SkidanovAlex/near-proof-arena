@@ -1726,3 +1726,5 @@ import NearCompression.RationalCoefficientGuards
 import NearCompression.BoundedBezout
 
 import NearCompression.BezoutSystemInvertibility
+
+import NearCompression.PolynomialDeterminantDegree
