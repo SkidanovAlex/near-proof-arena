@@ -1,0 +1,13 @@
+{
+  "research/near-compression/airbender/direct-wasm/sha384_call_pcs.py": "3ea20c6c5ebb322b55bc7beba6f5f282f320580ad621ecce539ac5f06a8f2220",
+  "research/near-compression/airbender/direct-wasm/test_sha384_call_pcs.py": "908fd3c6746d21e0ec17f50619738255803e6b2a1fadde59e762ddc9287e5d22",
+  "research/near-compression/airbender/direct-wasm/verify_sha384_call_pcs_bundle.py": "9205fe4dd675bc8d97e251cdffe85afc9112eae9db5eceb3823b26e942a23e7e",
+  "research/near-compression/airbender/direct-wasm/pq384_terminal_gkr.py": "58c32cabd696c89aee5003b64062c4a4297fd0f809d720a6a9499e7f4f9d4cbc",
+  "research/near-compression/airbender/direct-wasm/pq384_weighted_joint.py": "3e41fabea53000bbd70c294f8dab073f0a8a7625fac027bb1efde11cb343c6a9",
+  "research/near-compression/airbender/direct-wasm/pq384_weighted_joint_codec.py": "2074b770371060765bb331786ce53b3aa9598b244e69c50ef3d134fc29b787f1",
+  "research/near-compression/results/ext8-call-pcs/report.json": "f3f06730ef293c509ef5809f3a48d443165b75be485621fd17a75fd613fc7714",
+  "research/near-compression/results/ext8-call-pcs/fresh-verifier.log": "f7ed72442c06a4091ddd341c6a4b0063dd1542236fd75527fcac486b31eeb78f",
+  "research/near-compression/results/ext8-call-pcs/proof.bin": "53f90c09443952465d10da72a356754028d90234192292ba46b1cc3be429dba2",
+  "research/near-compression/results/ext8-call-pcs/statement.json.gz": "b2067310119950ed6cecf687ef1deaab3098381452a3daec802a0c49eb9793a3",
+  "research/near-compression/results/ext8-call-pcs/proof.json.gz": "0328b5af62732190ec1b1b5f3b23926d9a4604b5eb4639e81ccaacc692459e6a"
+}

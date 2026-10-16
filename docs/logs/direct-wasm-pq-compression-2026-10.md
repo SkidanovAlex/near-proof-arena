@@ -5720,3 +5720,54 @@ python3 airbender/direct-wasm/test_sha384_linked_calls.py --output-directory
 /tmp/nearproof-ext8-linked-calls (package cwd; all inputs retained in repo).
 No Lean source changed; latest full audit remains4147. Python compilation and
 git diff --check pass. Full1Pgas/PQ128 objective and feasibility gate stay open.
+
+### Same-root GKR/PCS call-link proof removes use-row disclosure
+
+sha384_call_pcs.py compiles the externally configured12calls into2880linear
+field equalities:768input-state/chain limbs,1536canonical padded-block limbs,
+576expected digest bytes. Each first block uses the standard IV; every later
+block equates all32input limbs with the preceding32output limbs. Messages,
+ordinals and digest expectations remain verifier inputs. Exact ordered ordinal
+coverage is checked; framing bytes derive from caller context, not proof data.
+Compression AIR supplies the byte/limb range and output-digest relationships.
+
+After binding the trusted statement/calls/use root, a transcript challenge
+batches the residuals. A verifier-derived14-layer arithmetic circuit checks
+the resulting linear functional against its derived constant. Generic terminal
+GKR reduces to two input MLE queries, then existing weighted PCS opens exactly
+the SAME packed use root as the compression proof. Input slots are row-low,
+column-high with zero column padding; direct row-MLE/obligation parity checked
+before proving. The public verifier receives no rows or cache. A canonical
+binary format carries fixed-shape GKR scalars plus the existing weighted PCS
+codec; configuration derives all dimensions/weights and must verify.
+
+Actual12call/24step experiment: call proof25134bytes, compression proof120477,
+combined proofs145611; with trusted calls5858 and receipt731,total152200bytes,
+static AIR/spec external. Disclosed row bytes0. New proof generation~2seconds.
+This is2713bytes MORE than the149487byte disclosure baseline at this small
+size; the progress is replacing full-source disclosure with a PCS interface,
+not claiming a size win. Same proof binary reproduced on the second run:
+53f90c09443952465d10da72a356754028d90234192292ba46b1cc3be429dba2.
+
+Fresh process verified both proofs together without rows. Seven wire/config
+negatives reject: truncated/trailing bytes,GKR coefficient,PCS authentication,
+external digest,message,and call order. Five source mutations independently
+violate both exact equations and the compiled output: IV,block,hidden chaining
+output,hidden chaining input,final digest. Full canonical encode/decode parity
+and original native-source root parity pass. Retained results/ext8-call-pcs
+includes proof.bin,proof.json.gz,statement.json.gz,report,verifier log,manifest.
+
+Reproduce from package cwd:
+python3 airbender/direct-wasm/test_sha384_call_pcs.py --output-directory <fresh>
+ --rs-binary /tmp/near-pq384-target/release/rs_commit
+ --fft-library /tmp/libpq384_fft.so --gkr-library /tmp/libnear_gkr4.so
+Standalone verifier: verify_sha384_call_pcs_bundle.py, requiring call proof,
+compression proof, trusted statement/receipt/calls; no witness arguments.
+
+Limits: Q8/Ext4 diagnostic remains. No Lean refinement of the new compiler or
+root-to-AIR cryptographic implication is claimed. Next formal obligation is
+linear-constraint compiler equivalence to the proved call checker under
+canonical limbs and compression facts. Native transcript operand provenance,
+full recursive verifier, aggregation and quantum128 parameters remain open.
+No Lean changes this turn; latest4147audit remains applicable to existing
+formal modules. Python compilation and git diff --check pass. Goal/gate open.

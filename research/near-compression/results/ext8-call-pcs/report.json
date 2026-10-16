@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "call_count": 12,
+  "equations": 2880,
+  "input_capacity": 8192,
+  "gkr_layers": 14,
+  "call_proof_bytes": 25134,
+  "compression_proof_bytes": 120477,
+  "combined_proof_bytes": 145611,
+  "trusted_calls_json_bytes": 5858,
+  "receipt_json_bytes": 731,
+  "combined_proofs_calls_receipt_bytes": 152200,
+  "prover_seconds": 2.0212490181438625,
+  "encode_decode_seconds": 2.350840425118804,
+  "fresh_conjunction_verified": true,
+  "disclosed_row_bytes": 0,
+  "negative_cases": [
+    "truncated",
+    "trailing",
+    "gkr-coefficient",
+    "pcs-authentication",
+    "external-digest",
+    "external-message",
+    "call-order"
+  ],
+  "source_mutation_checks": [
+    "IV",
+    "message-block",
+    "hidden-chaining-output",
+    "hidden-chaining-input",
+    "final-digest"
+  ],
+  "proof_sha256": "53f90c09443952465d10da72a356754028d90234192292ba46b1cc3be429dba2",
+  "scope": "Same committed use root for call-link GKR/PCS and compression proof. Caller fixes message bytes, digests and ordered use ordinals. Q8/Ext4 diagnostic; no 128-bit security, QROM, compiler refinement, full recursive verifier or zero-knowledge claim; static AIR/spec external."
+}
