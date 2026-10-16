@@ -1716,3 +1716,5 @@ import NearCompression.PolynomialResidueField
 import NearCompression.PolynomialFractions
 
 import NearCompression.PolynomialRationalField
+
+import NearCompression.RationalFunctionSpecialization

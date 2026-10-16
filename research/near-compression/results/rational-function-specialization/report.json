@@ -1,0 +1,11 @@
+{
+  "regular_expressions": 484,
+  "guarded_function_bridge_checks": 3254,
+  "safe_identity_checks": 2805,
+  "pole_only_disagreements": 289,
+  "safe_arithmetic_checks": 2818,
+  "safe_reciprocal_checks": 2348,
+  "cancellation_domain_negatives": 1,
+  "reciprocal_zero_value_negatives": 1,
+  "scope": "Unique partial specialization, guarded-expression bridge and syntactic-pole identity exception bound; full algebraic branch/MCA exception bounds remain open."
+}

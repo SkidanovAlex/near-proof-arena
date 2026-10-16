@@ -6355,3 +6355,15 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_rational_characteristic_preserved
 #print axioms NearCompression.polynomial_rational_eval_variable
 #print axioms NearCompression.polynomial_rational_variable_transcendental
+
+#print axioms NearCompression.formal_polynomial_eval_add
+#print axioms NearCompression.formal_polynomial_eval_mul
+#print axioms NearCompression.polynomial_fraction_safe_value_eq
+#print axioms NearCompression.polynomial_rational_value_unique
+#print axioms NearCompression.polynomial_rational_value_add
+#print axioms NearCompression.polynomial_rational_value_mul
+#print axioms NearCompression.rational_regular_denominator_nonzero
+#print axioms NearCompression.rational_expression_function_specializes
+#print axioms NearCompression.rational_expression_identity_specializes
+#print axioms NearCompression.polynomial_rational_value_inv
+#print axioms NearCompression.rational_expression_identity_exception_count

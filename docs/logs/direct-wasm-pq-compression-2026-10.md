@@ -8676,3 +8676,33 @@ Next: safe specialization of formal rational functions, linkage to guarded
 expressions and pole bounds, then useful algebraic branches and complete MCA
 exceptions. Protocol/QROM composition remains open. Diagnostic1344645 B
 unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Partial specialization of constructed rational functions
+
+Added RationalFunctionSpecialization.lean with eleven audited public theorems.
+Evaluation descends to the formal polynomial quotient and preserves addition
+and multiplication. Equivalent fractions have the same value whenever both
+denominators evaluate nonzero. Defined partial rational-function specialization
+by existence of a safe representative, and proved uniqueness, addition and
+multiplication preservation, plus reciprocal specialization when the value
+is nonzero. No total field evaluation at poles is claimed.
+
+Formal regularity ensures the earlier expression fraction has a nonzero
+formal denominator, so it now constructs an actual rational-function element.
+Its guarded evaluator specializes that element on the original syntactic
+safe domain. Equal formal expression functions therefore evaluate equally
+where both expressions are safe. Their totalized evaluator disagreement count
+is bounded by the sum of their guard-degree budgets on distinct samples.
+This is a syntactic-pole bound, not the complete MCA exceptional-set bound.
+
+Validation:484 regular expressions,3254 guarded-function bridge checks,
+2805 safe identities,2818 safe arithmetic checks and2348 safe reciprocals.
+All289 evaluator disagreements occur at excluded poles and satisfy the guard
+bound. Cancellation and reciprocal-at-zero negatives distinguish intrinsic
+rational values from unsafe representative evaluation. Full audit4489 PASS,
+allowed axioms only. Evidence: results/rational-function-specialization/.
+
+Next: connect algebraic root branches and Hensel construction to specialization,
+including the additional algebraic exceptional points. Full MCA and protocol/
+QROM composition remain open. Diagnostic1344645 B unchanged; feasibility
+NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
