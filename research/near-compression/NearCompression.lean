@@ -1535,3 +1535,5 @@ import NearCompression.BusCoordinateFormulaLowering
 import NearCompression.BoundedBusCoordinateTyping
 
 import NearCompression.BusCoordinateCoverage
+
+import NearCompression.NativeStyleCoordinateAccumulation

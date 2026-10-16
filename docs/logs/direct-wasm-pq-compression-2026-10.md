@@ -4410,3 +4410,21 @@ and an actual Ext8 profile/generator path, alongside event composition. Full
 
 Validation: full `check.py` PASS (4071 registered results), existing axiom
 allowlist; native captures not rerun for formal-only changes.
+
+### Native-style Ext8 accumulation semantics
+
+`NativeStyleCoordinateAccumulation.lean` models zero-initialized left-fold
+coordinate*basis accumulation and proves equality with the existing
+right-associated basis*coordinate lowering for arbitrary environments.
+The equality extends to complete formulas; degree and physical read bounds
+are preserved. This resolves the association/operand-order difference without
+assuming syntactic AST equality or honest-only evaluations.
+
+This remains an Ext8 candidate AST model. The inspected native slice path is
+Ext4; existing standalone Ext8 arithmetic/PCS prototypes do not by themselves
+supply a full native Ext8 slice generator/profile. Next: generated logical
+formula refinement and actual native Ext8 validation, alongside auxiliary
+failure/event composition. QROM, secure size and full 1 Pgas remain open.
+
+Validation: full `check.py` PASS (4077 registered results), existing axiom
+allowlist; native captures not rerun for this formal-only change.

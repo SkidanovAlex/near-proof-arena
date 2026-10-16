@@ -5810,3 +5810,15 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.typed_joint_zip_recovered_base
 
 #print axioms NearCompression.metadata_typed_coordinate_formula
+
+#print axioms NearCompression.bus_formula_foldl_value
+
+#print axioms NearCompression.native_style_coordinate_value
+
+#print axioms NearCompression.bus_formula_foldl_bounds
+
+#print axioms NearCompression.native_style_coordinate_bounds
+
+#print axioms NearCompression.native_style_lowering_value
+
+#print axioms NearCompression.native_style_lowering_bounds

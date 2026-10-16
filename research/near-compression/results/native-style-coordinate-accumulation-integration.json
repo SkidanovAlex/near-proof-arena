@@ -1,0 +1,36 @@
+{
+  "status": "NATIVE_STYLE_EXT8_AST_EQUIVALENCE_PROVED",
+  "module": "NearCompression/NativeStyleCoordinateAccumulation.lean",
+  "theorems": [
+    "bus_formula_foldl_value",
+    "native_style_coordinate_value",
+    "bus_formula_foldl_bounds",
+    "native_style_coordinate_bounds",
+    "native_style_lowering_value",
+    "native_style_lowering_bounds"
+  ],
+  "proved": [
+    "Left-associated zero-initialized coordinate*basis accumulation equals the right-associated basis*coordinate model in arbitrary environments.",
+    "Single-column and complete native-style Ext8 formula lowering preserve semantic values.",
+    "The native-style lowering does not increase degree and respects sourceWidth+8*auxCount read coverage."
+  ],
+  "scope": [
+    "Models the inspected accumulation convention at Ext8 width; does not certify that current Ext4 slice code implements Ext8.",
+    "Existing standalone Ext8 arithmetic/PCS prototype files are present; full native Ext8 slice generator/profile binding remains separate."
+  ],
+  "remaining": [
+    "Refine generated bus logical formulas and validate an actual Ext8 slice generator/checker against the model.",
+    "Instantiate metadata provenance and invalid-auxiliary local error bounds in the full composition.",
+    "Native commitment/QROM binding, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4077,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal AST semantics only."
+  }
+}
