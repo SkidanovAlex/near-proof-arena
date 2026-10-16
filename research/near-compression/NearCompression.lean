@@ -1738,3 +1738,5 @@ import NearCompression.DeterminantRowReplacement
 import NearCompression.DeterminantRowPermutations
 
 import NearCompression.DeterminantRowSpan
+
+import NearCompression.BezoutCoefficientMatrix

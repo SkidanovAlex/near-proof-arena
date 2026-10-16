@@ -6435,3 +6435,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.scalar_minor_row_span_zero
 #print axioms NearCompression.scalar_minor_identity
 #print axioms NearCompression.scalar_minor_nonzero_of_row_inverse
+
+#print axioms NearCompression.polynomial_bounded_product_coefficient
+#print axioms NearCompression.bezout_coefficient_matrix_action
+#print axioms NearCompression.bezout_coefficient_row_inverse
+#print axioms NearCompression.bezout_coefficient_determinant_nonzero
+#print axioms NearCompression.bezout_coefficient_cramer

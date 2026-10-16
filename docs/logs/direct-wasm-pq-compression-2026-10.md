@@ -8953,3 +8953,25 @@ Next: connect bounded polynomial solutions to the explicit Bezout matrix
 and compose nonzeroness, Cramer identity and source-degree denominator bounds.
 Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
 unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
+
+## 2026-10-16 — Explicit Bezout matrix inverse and common determinant
+
+Added BezoutCoefficientMatrix.lean with five audited public theorems.
+Finite coefficient convolution identifies the explicit matrix action with
+U*p+V*q, including trailing-zero representations. Solving each monomial
+target constructs a row inverse for the transposed coefficient matrix; its
+identity holds at every output coefficient, including beyond the square block.
+The proved row-inverse criterion now establishes this determinant nonzero
+from a unit Bezout certificate. Every bounded solution coefficient satisfies
+the Cramer formula with that same determinant denominator.
+
+Validation:320 coprime systems,10611 coefficient actions,923 monomial targets,
+4396 Cramer entries checked against Euclidean reduction and independent
+elimination. Includes24 empty matrices,159 constant cases,168 loose bounds
+on p's degree and four noncoprime singular counterexamples. Full audit4552
+PASS, allowed axioms only. Evidence: results/bezout-coefficient-matrix/.
+
+Next: transport the explicit matrix over rational functions to polynomial
+entries and compose nonzeroness with source-degree denominator bounds.
+Full MCA and protocol/QROM composition remain open. Diagnostic1344645 B
+unchanged; feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.
