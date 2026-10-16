@@ -6187,3 +6187,9 @@ example (decode : List UInt8 → Option Res) (s : St)
 
 #print axioms NearCompression.gs_specialization_root_forcing
 #print axioms NearCompression.gs_interpolation_specialization_certificate
+
+#print axioms NearCompression.bivariate_curve_quotient_length
+#print axioms NearCompression.bivariate_curve_division
+#print axioms NearCompression.bivariate_curve_factor_iff
+#print axioms NearCompression.bivariate_curve_quotient_nonzero
+#print axioms NearCompression.bivariate_curve_quotient_degree

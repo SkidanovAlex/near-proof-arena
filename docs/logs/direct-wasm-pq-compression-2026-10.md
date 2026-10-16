@@ -7994,3 +7994,35 @@ root forcing alone does not recover a common source candidate. Full protocol
 extraction, adaptive/QROM composition, recursion and full NEAR1Pgas remain
 open. No runtime or parameter change: diagnostic bundle1344645 B, feasibility
 NOT_PASSED; no PQ128 or sub300000 B claim.
+
+## 2026-10-16 — Formal division by a curve factor
+
+Added BivariateCurveDivision.lean with five audited public theorems. An
+explicit synthetic quotient for division by Y-curve(X) has rows.length-1
+stored Y rows. The exact coefficient identity is
+Q=(Y-curve(X))*quotient+Q(X,curve(X)); the factor product is represented by
+its explicit coefficient formula. Formal substitution zero is equivalent
+to that factor identity. This is coefficient algebra, with no sampled
+evaluation, field-size, or separation premise. Arbitrary zero padding,
+empty and constant polynomials are included.
+
+If Q is nonzero and the curve is a root, the quotient is nonzero. If Q has
+weighted degree<D and curve has degree≤k, the quotient has weighted degree
+<D-k (truncated natural subtraction). The latter follows from tail weighted
+bounds and the already proved substitution bound. These results connect
+root forcing to an actual formal linear factor with decreasing degree,
+not merely agreement as a finite-field function.
+
+Independent validation uses reverse Horner synthetic division, rather than
+the Lean tail-substitution definition. 1600 cases over F2/F3/F5/F17 include
+1062 formal-root cases, of which574 have nonzero input. Tests check full
+coefficient reconstruction, factor equivalence, quotient length, nonzeroness
+and weighted degree. Four X^p-X examples reject the invalid inference from
+zero polynomial function to a formal curve root. Full audit4341 PASS, allowed
+axioms only. Evidence: results/bivariate-curve-division/.
+
+Next algebraic obligation: show removing one curve factor preserves other
+distinct formal curve roots, enabling repeated extraction and a root-count
+bound. Useful-factor/Hensel and the complete MCA exceptional-set argument
+remain open. No runtime or cryptographic parameter change: diagnostic bundle
+1344645 B, feasibility NOT_PASSED. Full NEAR1Pgas/PQ128/sub300000 B remain open.

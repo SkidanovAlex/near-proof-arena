@@ -1668,3 +1668,5 @@ import NearCompression.TrivariateInterpolation
 import NearCompression.TrivariateSpecialization
 
 import NearCompression.TrivariateRootForcing
+
+import NearCompression.BivariateCurveDivision
