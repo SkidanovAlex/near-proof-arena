@@ -459,6 +459,7 @@
     "research/near-compression/NearCompression/SyntheticMultiplicity.lean": "af4620db94eef8b8a327d544ef8f37f73be36771e654df1861aec00a39f33289",
     "research/near-compression/NearCompression/MultipointMultiplicity.lean": "2f30f0104b29d2ffafd2a3580630b929b5ec478a23fb3be6fbda133e3d1d9f40",
     "research/near-compression/NearCompression/BivariateMultiplicity.lean": "dc7e00e3553cc08960d06fa16243fa1fdc6a0cda340d2fd0402f87994cfd7d5e",
+    "research/near-compression/NearCompression/BivariateTranslation.lean": "1a460c56d231d2424fa2765b4227900fbddd8564beb5ab6aa25e00cc34909379",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean": "d9a5cbb964e9aab9d9a8bbe2ef3f558f473d587cf9e941cabaf8491b422cc2d9",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean": "412710950ab5940e517c3d4af7620fe18a9edb0318627fbf88d2ef77cfcd64a0",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean": "09aa0805e94738cf5370b36f8dbbcc1fb5dd0ec6d704dbd7368a5751bbd27b14",

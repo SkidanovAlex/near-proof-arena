@@ -1644,3 +1644,5 @@ import NearCompression.SyntheticMultiplicity
 import NearCompression.MultipointMultiplicity
 
 import NearCompression.BivariateMultiplicity
+
+import NearCompression.BivariateTranslation

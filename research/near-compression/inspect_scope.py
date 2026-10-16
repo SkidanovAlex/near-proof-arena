@@ -291,6 +291,7 @@ SOURCES = [
     "research/near-compression/NearCompression/SyntheticMultiplicity.lean",
     "research/near-compression/NearCompression/MultipointMultiplicity.lean",
     "research/near-compression/NearCompression/BivariateMultiplicity.lean",
+    "research/near-compression/NearCompression/BivariateTranslation.lean",
     "research/near-compression/NearCompression/TerminalDAGArithmetic.lean",
     "research/near-compression/NearCompression/TerminalDAGTotalSemantics.lean",
     "research/near-compression/NearCompression/SHA384NodeChunkRouting.lean",

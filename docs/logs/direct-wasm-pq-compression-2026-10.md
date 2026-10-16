@@ -7634,3 +7634,43 @@ existence. MCA factor/Hensel and exception-count arguments, actual protocol
 extraction and QROM remain open. No runtime/query/proof-size change: latest
 verified diagnostic bundle1344645 B, feasibility NOT_PASSED; full NEAR1Pgas,
 PQ128 and sub300000 B remain open.
+
+## 2026-10-16 — Arbitrary-center translation and GS root-forcing bridge
+
+Added BivariateTranslation.lean with five audited public theorems. Translation
+uses synthetic Taylor coefficients in X and explicit polynomial-row Horner
+arithmetic for Y. Proved its evaluation identity and that EVERY translated
+coefficient equals the corresponding synthetic jet, including indices beyond
+the stored coefficient list. The arbitrary-center substitution result uses
+Q(X+a,Y+p(a)) and p(X+a)-p(a), whose constant coefficient is zero, to apply
+the centered multiplicity theorem.
+
+Coefficient equality is recovered via the existing polynomial root bound,
+with an EXPLICIT separation condition: both translated/substituted polynomials
+have degree<D and there are at least D distinct evaluation points. This domain
+is an algebraic witness, not a verifier query sample. No arbitrary equality of
+finite-field functions is used as formal coefficient equality. The final
+bivariate_multiplicity_forces_zero theorem takes a concrete sufficient size
+(maximum of both coefficient-list lengths at each center), so its internal
+translation degree bounds follow from lengths. It then combines all centers
+with the multi-point multiplicity theorem: if total prescribed multiplicity
+reaches the substitution degree bound, Q(X,p(X)) is formally zero.
+
+This closes the arbitrary-center interface left computational-only in the
+previous turn, subject to the stated field/domain-size condition. It does
+NOT prove this condition for the actual Ext8 MCA construction, supply the
+substitution's weighted-degree bound, or construct an interpolant. Those
+remain explicit tasks; the theorem introduces no MCA or extraction axiom.
+
+Validation:500 translation/substitution cases compare synthetic/Horner
+translation with binomial expansion over F2,F3,F5,F17,F31. Another200 graph
+square examples verify mixed multiplicity at three centers, total multiplicity,
+and the exact size guard. The X³-X/F3 regression demonstrates why equality
+on too few field elements cannot prove coefficient equality. Full audit4283
+PASS, allowed axioms only. Evidence:results/bivariate-translation/.
+
+Next: bound substitution degree from bivariate weighted degree, then prove
+interpolation existence/nonzeroness. MCA factor/Hensel and exceptional-count
+arguments, actual protocol extraction, QROM, full NEAR1Pgas and sub300000 B
+remain open. No query/profile/proof-size change: latest verified diagnostic
+bundle1344645 B, feasibility NOT_PASSED.
