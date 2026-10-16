@@ -1704,3 +1704,9 @@ This closes the initial random-batching count component, not cryptographic local
 Added AirEqualityWeightedTarget.lean: equality-weighted Boolean sums reproduce row MLEs, Boolean-only evaluator correspondence suffices, and the initial mixing/row-MLE count transfers to the actual evaluator’s weighted sum under that explicit correspondence. No false claim that nonlinear constraints commute with interpolation. Full audit passed3616 (/tmp/root-weighted-target-audit.log). check_slice_weighted_target.py passed18 checks on both literal tables with synthetic invalid8-row traces, cyclic next rows, source/auxiliary residuals, and zero/one/nontrivial extension challenges.
 
 The concrete evaluator’s Boolean-row correspondence remains an explicit formal premise; runtime parity does not discharge it. Adaptive sumcheck, authenticated terminal/source bindings and complete QROM/security remain open. No proof size or executable security parameter change.
+
+### Source AIR Boolean-row correspondence
+
+Added AirBooleanRowEnvironment.lean. The formal input environment interpolates current columns, cyclically permuted next columns, and first/last/transition row flags, while fixing public inputs. Every Expr.evalWith agrees with actual Expr.eval on Boolean rows. Ordered source batching, equality-weighted target and initial zero count now compose without a supplied source Boolean-correspondence premise. Full check.py audit passed3620 (/tmp/root-air-boolean-audit.log).
+
+Scope is source expressions in the formal MLE environment, not yet the entire executable weighted evaluator: auxiliary residuals, concrete selector-product/base-extension adapters, adaptive sumcheck, authenticated source/PCS inputs and QROM remain. No executable security parameters or proof size changed.
