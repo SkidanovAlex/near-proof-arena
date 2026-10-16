@@ -5680,3 +5680,43 @@ compression-component envelope and quantum-security status are unchanged.
 Validation: full check.py PASS4147 theorem/axiom and boundary checks;
 /tmp/sha384-chunk-call-check-audit.log. Module/Audit/scope registration updated.
 Goal remains full NEAR1Pgas/quantum128/sub300k; feasibility gate NOT_PASSED.
+
+### Same-root compression proof and full-call checker conjunction
+
+Added verify_sha384_linked_calls.py. It independently reconstructs the packed
+base-field use-table root in Python (lower Mobius, LDE4 FFT, exact lane-pair
+leaves and SHA384 Merkle context) and requires equality with the externally
+fixed use receipt AND the compression proof's source3 root. On the retained
+batch this matches the original Rust-produced root exactly. The verifier then
+checks externally supplied message bytes, expected digests and use ordinals:
+all active use ordinals must occur once in exact order; final digest must match
+the expected call result; the proved Lean checker must accept every call.
+Finally the full compact compression proof decoder verifies local/GKR/PCS/bus
+conditions. Caller configuration is not read from the proof as an assertion.
+
+This joins the previous separate checker/proof runs using the SAME committed
+use payload. It uses full use-table disclosure for a concrete integration
+baseline; it does not create a succinct recursive linkage proof. Equal Merkle
+roots give cryptographic binding only under the separately required hash
+assumption. Neither this Python reconstruction nor the Q8 proof establishes
+Lean HoldsP unconditionally. Message framing/operand provenance must still
+come from the enclosing verifier, and calls cover only this selected batch.
+
+Actual retained proof accepted in a fresh process for12calls/24active uses,
+32padded rows x179columns. Fourteen negative cases reject: node ID, input,
+block, hidden output, digest-field and padding-row changes, noncanonical
+field, reordered use rows, missing/reordered calls, duplicate ordinal, wrong
+expected digest, wrong same-length message, and corrupt compression-proof
+magic. The last check ensures a valid call checker cannot bypass proof verify.
+
+Retained results/ext8-linked-calls contains rows.json,calls.json,report.json,
+fresh-verifier.log and statement.json.gz. Proof/receipt are the unchanged
+results/ext8-node-batch artifacts. Total actual proof + disclosed-row JSON +
+trusted-call JSON + receipt =149487bytes (static AIR/spec external). Raw u32
+row data would be22912bytes; this is an accounting alternative, not an encoded
+format used here. No sub300k secure-recursion claim: parameters remainQ8/Ext4.
+Fresh verification was approximately13seconds. Regression reproduction:
+python3 airbender/direct-wasm/test_sha384_linked_calls.py --output-directory
+/tmp/nearproof-ext8-linked-calls (package cwd; all inputs retained in repo).
+No Lean source changed; latest full audit remains4147. Python compilation and
+git diff --check pass. Full1Pgas/PQ128 objective and feasibility gate stay open.
