@@ -1548,3 +1548,5 @@ import NearCompression.PreparedHistoryBranchBudget
 import NearCompression.HistoryFixedCoordinates
 import NearCompression.TwoTableAuxiliaryBranch
 import NearCompression.PreparedCheckedHistoryBudget
+import NearCompression.SelectedAuxiliaryLocalBudget
+import NearCompression.SelectedAuxiliaryGKR

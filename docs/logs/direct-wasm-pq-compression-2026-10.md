@@ -4653,3 +4653,24 @@ remain open; slice gate remains NOT_PASSED.
 
 Validation: full `check.py` PASS (4097 registered results), existing axiom
 allowlist. Native captures not rerun for this formal-only change.
+
+### Selected auxiliary local bound with evaluated GKR repair
+
+`selected_auxiliary_local_error_count` uses the actual auxiliary selector to
+derive local invalidity and invokes adaptive local soundness. Its downstream
+term is the exact accepted shared-failure count over the chronological
+experiment, avoiding an independent PCS budget per branch or history.
+
+`selected_auxiliary_gkr_error_count` substitutes the actual batching/evaluated
+GKR repair theorem for the last-local-table case. Semantic output mismatch,
+circuit binding, verifier checks and shared-error inclusion remain explicit;
+there is no assumed numeric repair term. The first-table case still needs the
+second local protocol included as future randomness.
+
+Next: extend over later local prefixes, normalize both branch experiments to
+the prepared continuation, then apply concrete joint PCS once. Native bindings,
+checked terminal semantic instantiation, full Ext8, QROM, secure size and full
+1 Pgas remain open. The slice gate remains NOT_PASSED.
+
+Validation: full `check.py` PASS (4099 registered results), existing axiom
+allowlist. Native captures not rerun for formal-only composition.

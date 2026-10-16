@@ -1,0 +1,37 @@
+{
+  "status": "SELECTED_AUXILIARY_LOCAL_AND_EVALUATED_GKR_BOUND",
+  "modules": [
+    "NearCompression/SelectedAuxiliaryLocalBudget.lean",
+    "NearCompression/SelectedAuxiliaryGKR.lean"
+  ],
+  "theorems": [
+    "selected_auxiliary_local_error_count",
+    "selected_auxiliary_gkr_error_count"
+  ],
+  "proved": [
+    "Actual twoTableAuxiliaryBranch selection supplies adaptive local invalidity without a caller-provided row/lane.",
+    "Local acceptance bound retains the exact accepted shared-failure count over the chronological experiment; no per-branch numerical PCS budget is spent.",
+    "For the last local protocol, two_table_terminal_repair supplies the explicit batching/evaluated-GKR repair term, with semantic output mismatch, circuit binding and verifier checks remaining explicit."
+  ],
+  "assumptions": [
+    "Earlier-history selected invalid branch, fixed coordinate binding and row logs, formula coverage/order/degree/length.",
+    "Local verifier checks and zero initial claims.",
+    "Evaluated GKR semantic mismatch/circuit binding, circuit/root geometry, verifier checks and terminal-error inclusion into the shared failure event."
+  ],
+  "remaining": [
+    "Extend selected-table GKR composition across later local prefixes for the first-table case.",
+    "Reindex both restricted branch experiments into the common prepared history continuation and apply the concrete joint PCS bound once.",
+    "Derive native authentication/bindings and checked terminal semantic premises.",
+    "Full Ext8 slice, global acceptance soundness, QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4099,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only composition."
+  }
+}

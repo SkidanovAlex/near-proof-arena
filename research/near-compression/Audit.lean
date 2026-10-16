@@ -5862,3 +5862,7 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.table_local_all_constraints_zero
 
 #print axioms NearCompression.prepared_checked_history_budget
+
+#print axioms NearCompression.selected_auxiliary_local_error_count
+
+#print axioms NearCompression.selected_auxiliary_gkr_error_count
