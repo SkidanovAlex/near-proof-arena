@@ -1,0 +1,1517 @@
+{
+  "status": "POOLED_JOINT_NIBBLE_GEOMETRY_ONLY",
+  "scenarios": [
+    {
+      "name": "measured_full_verifier",
+      "blocks": 242409,
+      "queries": 8,
+      "degree": 33554432,
+      "banks": [
+        {
+          "rows": 16777216,
+          "width": 274,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 137,
+          "half": 67108864,
+          "leaf_bytes": 1096,
+          "expected_bytes": 17293.56204941956,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 274,
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "rows": 33554432,
+          "width": 498,
+          "packing": 1,
+          "degree": 33554432,
+          "lanes": 498,
+          "half": 67108864,
+          "leaf_bytes": 3984,
+          "expected_bytes": 40397.5608444521,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 1,
+              "rows": 33554432,
+              "width": 498,
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 1240,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 10,
+          "half": 67108864,
+          "leaf_bytes": 80,
+          "expected_bytes": 9165.562473327784,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 515,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 33,
+              "offset": 515
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 33,
+              "offset": 548
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 33,
+              "offset": 581
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 29,
+              "offset": 614
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 29,
+              "offset": 643
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 29,
+              "offset": 672
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 25,
+              "offset": 701
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 514,
+              "offset": 726
+            }
+          ]
+        },
+        {
+          "rows": 16777216,
+          "width": 1224,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 612,
+          "half": 67108864,
+          "leaf_bytes": 4896,
+          "expected_bytes": 47693.56046393605,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 1224,
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "rows": 33554432,
+          "width": 1560,
+          "packing": 1,
+          "degree": 33554432,
+          "lanes": 1560,
+          "half": 67108864,
+          "leaf_bytes": 12480,
+          "expected_bytes": 108365.55729964476,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 1,
+              "rows": 33554432,
+              "width": 1560,
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 4840,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 38,
+          "half": 67108864,
+          "leaf_bytes": 304,
+          "expected_bytes": 10957.562379867704,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 1728,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 328,
+              "offset": 1728
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2056
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2384
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 328,
+              "offset": 2712
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 328,
+              "offset": 3040
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 328,
+              "offset": 3368
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 328,
+              "offset": 3696
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 816,
+              "offset": 4024
+            }
+          ]
+        }
+      ],
+      "expected_opening_bytes": 342552.10617647634,
+      "bank_count": 6,
+      "expected_optimistic_total_bytes": 393856.10617647634,
+      "separate_expected_bytes": 471151.79476542585,
+      "expected_saving_bytes": 77295.6885889495,
+      "simulated_totals": [
+        394464,
+        390832,
+        389152,
+        396080,
+        393904,
+        394928,
+        393408,
+        395584,
+        392288,
+        390736,
+        396448,
+        391424,
+        392064,
+        396080,
+        394528,
+        393776
+      ],
+      "sampled_min_bytes": 389152,
+      "sampled_max_bytes": 396448,
+      "logical_base_cells": 95128646928,
+      "bank_base_cells": 95781126144,
+      "padded_packed_base_coefficients": 95797903360,
+      "packed_base_coefficient_payload_bytes": 383191613440,
+      "comparisons": [
+        {
+          "component": "entire_opening",
+          "allowance_bytes": 146466,
+          "expected_headroom_bytes": -247390.10617647634
+        },
+        {
+          "component": "entire_compression_envelope",
+          "allowance_bytes": 190346,
+          "expected_headroom_bytes": -203510.10617647634
+        },
+        {
+          "component": "entire_bundle",
+          "allowance_bytes": 299999,
+          "expected_headroom_bytes": -93857.10617647634
+        }
+      ],
+      "executable_profile": false,
+      "security_certified": false
+    },
+    {
+      "name": "measured_full_verifier",
+      "blocks": 242409,
+      "queries": 309,
+      "degree": 33554432,
+      "banks": [
+        {
+          "rows": 16777216,
+          "width": 274,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 137,
+          "half": 67108864,
+          "leaf_bytes": 1096,
+          "expected_bytes": 588446.3876120632,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 274,
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "rows": 33554432,
+          "width": 498,
+          "packing": 1,
+          "degree": 33554432,
+          "lanes": 498,
+          "half": 67108864,
+          "leaf_bytes": 3984,
+          "expected_bytes": 1480836.3397729218,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 1,
+              "rows": 33554432,
+              "width": 498,
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 1240,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 10,
+          "half": 67108864,
+          "leaf_bytes": 80,
+          "expected_bytes": 274503.10804300767,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 515,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 33,
+              "offset": 515
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 33,
+              "offset": 548
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 33,
+              "offset": 581
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 29,
+              "offset": 614
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 29,
+              "offset": 643
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 29,
+              "offset": 672
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 25,
+              "offset": 701
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 514,
+              "offset": 726
+            }
+          ]
+        },
+        {
+          "rows": 16777216,
+          "width": 1224,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 612,
+          "half": 67108864,
+          "leaf_bytes": 4896,
+          "expected_bytes": 1762643.693086877,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 1224,
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "rows": 33554432,
+          "width": 1560,
+          "packing": 1,
+          "degree": 33554432,
+          "lanes": 1560,
+          "half": 67108864,
+          "leaf_bytes": 12480,
+          "expected_bytes": 4106094.3153818743,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 1,
+              "rows": 33554432,
+              "width": 1560,
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 4840,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 38,
+          "half": 67108864,
+          "leaf_bytes": 304,
+          "expected_bytes": 343718.9492078388,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 1728,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 328,
+              "offset": 1728
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2056
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2384
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 328,
+              "offset": 2712
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 328,
+              "offset": 3040
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 328,
+              "offset": 3368
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 328,
+              "offset": 3696
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 816,
+              "offset": 4024
+            }
+          ]
+        }
+      ],
+      "expected_opening_bytes": 10919792.866092727,
+      "bank_count": 6,
+      "expected_optimistic_total_bytes": 10971096.866092727,
+      "separate_expected_bytes": 12713359.211845396,
+      "expected_saving_bytes": 1742262.3457526695,
+      "simulated_totals": [
+        10989816,
+        10974216,
+        10972344,
+        10984920,
+        10986536,
+        10965288,
+        10970040,
+        10980216,
+        10979256,
+        10955704,
+        10960696,
+        10964648,
+        10975672,
+        10963096,
+        10950136,
+        10991880
+      ],
+      "sampled_min_bytes": 10950136,
+      "sampled_max_bytes": 10991880,
+      "logical_base_cells": 95128646928,
+      "bank_base_cells": 95781126144,
+      "padded_packed_base_coefficients": 95797903360,
+      "packed_base_coefficient_payload_bytes": 383191613440,
+      "comparisons": [
+        {
+          "component": "entire_opening",
+          "allowance_bytes": 146466,
+          "expected_headroom_bytes": -10824630.866092727
+        },
+        {
+          "component": "entire_compression_envelope",
+          "allowance_bytes": 190346,
+          "expected_headroom_bytes": -10780750.866092727
+        },
+        {
+          "component": "entire_bundle",
+          "allowance_bytes": 299999,
+          "expected_headroom_bytes": -10671097.866092727
+        }
+      ],
+      "executable_profile": false,
+      "security_certified": false
+    },
+    {
+      "name": "closed_stage_binding_counterfactual",
+      "blocks": 204966,
+      "queries": 8,
+      "degree": 33554432,
+      "banks": [
+        {
+          "rows": 16777216,
+          "width": 772,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 386,
+          "half": 67108864,
+          "leaf_bytes": 3088,
+          "expected_bytes": 33229.56121829242,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 274,
+              "offset": 0
+            },
+            {
+              "table": 1,
+              "rows": 16777216,
+              "width": 498,
+              "offset": 274
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 1240,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 10,
+          "half": 67108864,
+          "leaf_bytes": 80,
+          "expected_bytes": 9165.562473327784,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 515,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 33,
+              "offset": 515
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 33,
+              "offset": 548
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 33,
+              "offset": 581
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 29,
+              "offset": 614
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 29,
+              "offset": 643
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 29,
+              "offset": 672
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 25,
+              "offset": 701
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 514,
+              "offset": 726
+            }
+          ]
+        },
+        {
+          "rows": 16777216,
+          "width": 2784,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 1392,
+          "half": 67108864,
+          "leaf_bytes": 11136,
+          "expected_bytes": 97613.55786040524,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 1224,
+              "offset": 0
+            },
+            {
+              "table": 1,
+              "rows": 16777216,
+              "width": 1560,
+              "offset": 1224
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 4840,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 38,
+          "half": 67108864,
+          "leaf_bytes": 304,
+          "expected_bytes": 10957.562379867704,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 1728,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 328,
+              "offset": 1728
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2056
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2384
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 328,
+              "offset": 2712
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 328,
+              "offset": 3040
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 328,
+              "offset": 3368
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 328,
+              "offset": 3696
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 816,
+              "offset": 4024
+            }
+          ]
+        }
+      ],
+      "expected_opening_bytes": 259644.98459772157,
+      "bank_count": 4,
+      "expected_optimistic_total_bytes": 310724.9845977216,
+      "separate_expected_bytes": 405071.7982000838,
+      "expected_saving_bytes": 94346.81360236218,
+      "simulated_totals": [
+        311200,
+        307760,
+        306656,
+        312624,
+        310448,
+        311568,
+        310240,
+        312416,
+        309120,
+        308240,
+        312992,
+        307872,
+        309088,
+        312912,
+        311360,
+        310416
+      ],
+      "sampled_min_bytes": 306656,
+      "sampled_max_bytes": 312992,
+      "logical_base_cells": 60601136400,
+      "bank_base_cells": 61253615616,
+      "padded_packed_base_coefficients": 61270392832,
+      "packed_base_coefficient_payload_bytes": 245081571328,
+      "comparisons": [
+        {
+          "component": "entire_opening",
+          "allowance_bytes": 146466,
+          "expected_headroom_bytes": -164258.9845977216
+        },
+        {
+          "component": "entire_compression_envelope",
+          "allowance_bytes": 190346,
+          "expected_headroom_bytes": -120378.9845977216
+        },
+        {
+          "component": "entire_bundle",
+          "allowance_bytes": 299999,
+          "expected_headroom_bytes": -10725.984597721603
+        }
+      ],
+      "executable_profile": false,
+      "security_certified": false
+    },
+    {
+      "name": "closed_stage_binding_counterfactual",
+      "blocks": 204966,
+      "queries": 309,
+      "degree": 33554432,
+      "banks": [
+        {
+          "rows": 16777216,
+          "width": 772,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 386,
+          "half": 67108864,
+          "leaf_bytes": 3088,
+          "expected_bytes": 1203972.9751135972,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 274,
+              "offset": 0
+            },
+            {
+              "table": 1,
+              "rows": 16777216,
+              "width": 498,
+              "offset": 274
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 1240,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 10,
+          "half": 67108864,
+          "leaf_bytes": 80,
+          "expected_bytes": 274503.10804300767,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 515,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 33,
+              "offset": 515
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 33,
+              "offset": 548
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 33,
+              "offset": 581
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 29,
+              "offset": 614
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 29,
+              "offset": 643
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 29,
+              "offset": 672
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 25,
+              "offset": 701
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 514,
+              "offset": 726
+            }
+          ]
+        },
+        {
+          "rows": 16777216,
+          "width": 2784,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 1392,
+          "half": 67108864,
+          "leaf_bytes": 11136,
+          "expected_bytes": 3690799.268392887,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 1224,
+              "offset": 0
+            },
+            {
+              "table": 1,
+              "rows": 16777216,
+              "width": 1560,
+              "offset": 1224
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 4840,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 38,
+          "half": 67108864,
+          "leaf_bytes": 304,
+          "expected_bytes": 343718.9492078388,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 1728,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 328,
+              "offset": 1728
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2056
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2384
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 328,
+              "offset": 2712
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 328,
+              "offset": 3040
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 328,
+              "offset": 3368
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 328,
+              "offset": 3696
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 816,
+              "offset": 4024
+            }
+          ]
+        }
+      ],
+      "expected_opening_bytes": 7876544.373745474,
+      "bank_count": 4,
+      "expected_optimistic_total_bytes": 7927624.373745474,
+      "separate_expected_bytes": 10169453.049037851,
+      "expected_saving_bytes": 2241828.6752923774,
+      "simulated_totals": [
+        7944688,
+        7932256,
+        7925008,
+        7940368,
+        7942272,
+        7921888,
+        7926160,
+        7934704,
+        7935856,
+        7916720,
+        7917200,
+        7920576,
+        7930928,
+        7923728,
+        7908848,
+        7946560
+      ],
+      "sampled_min_bytes": 7908848,
+      "sampled_max_bytes": 7946560,
+      "logical_base_cells": 60601136400,
+      "bank_base_cells": 61253615616,
+      "padded_packed_base_coefficients": 61270392832,
+      "packed_base_coefficient_payload_bytes": 245081571328,
+      "comparisons": [
+        {
+          "component": "entire_opening",
+          "allowance_bytes": 146466,
+          "expected_headroom_bytes": -7781158.373745474
+        },
+        {
+          "component": "entire_compression_envelope",
+          "allowance_bytes": 190346,
+          "expected_headroom_bytes": -7737278.373745474
+        },
+        {
+          "component": "entire_bundle",
+          "allowance_bytes": 299999,
+          "expected_headroom_bytes": -7627625.373745474
+        }
+      ],
+      "executable_profile": false,
+      "security_certified": false
+    },
+    {
+      "name": "prior_optimistic_hash_erasure",
+      "blocks": 152167,
+      "queries": 8,
+      "degree": 33554432,
+      "banks": [
+        {
+          "rows": 16777216,
+          "width": 772,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 386,
+          "half": 67108864,
+          "leaf_bytes": 3088,
+          "expected_bytes": 33229.56121829242,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 274,
+              "offset": 0
+            },
+            {
+              "table": 1,
+              "rows": 16777216,
+              "width": 498,
+              "offset": 274
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 1240,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 10,
+          "half": 67108864,
+          "leaf_bytes": 80,
+          "expected_bytes": 9165.562473327784,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 515,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 33,
+              "offset": 515
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 33,
+              "offset": 548
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 33,
+              "offset": 581
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 29,
+              "offset": 614
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 29,
+              "offset": 643
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 29,
+              "offset": 672
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 25,
+              "offset": 701
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 514,
+              "offset": 726
+            }
+          ]
+        },
+        {
+          "rows": 16777216,
+          "width": 2784,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 1392,
+          "half": 67108864,
+          "leaf_bytes": 11136,
+          "expected_bytes": 97613.55786040524,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 1224,
+              "offset": 0
+            },
+            {
+              "table": 1,
+              "rows": 16777216,
+              "width": 1560,
+              "offset": 1224
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 4840,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 38,
+          "half": 67108864,
+          "leaf_bytes": 304,
+          "expected_bytes": 10957.562379867704,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 1728,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 328,
+              "offset": 1728
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2056
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2384
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 328,
+              "offset": 2712
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 328,
+              "offset": 3040
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 328,
+              "offset": 3368
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 328,
+              "offset": 3696
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 816,
+              "offset": 4024
+            }
+          ]
+        }
+      ],
+      "expected_opening_bytes": 259644.98459772157,
+      "bank_count": 4,
+      "expected_optimistic_total_bytes": 310724.9845977216,
+      "separate_expected_bytes": 405071.7982000838,
+      "expected_saving_bytes": 94346.81360236218,
+      "simulated_totals": [
+        311200,
+        307760,
+        306656,
+        312624,
+        310448,
+        311568,
+        310240,
+        312416,
+        309120,
+        308240,
+        312992,
+        307872,
+        309088,
+        312912,
+        311360,
+        310416
+      ],
+      "sampled_min_bytes": 306656,
+      "sampled_max_bytes": 312992,
+      "logical_base_cells": 60601136400,
+      "bank_base_cells": 61253615616,
+      "padded_packed_base_coefficients": 61270392832,
+      "packed_base_coefficient_payload_bytes": 245081571328,
+      "comparisons": [
+        {
+          "component": "entire_opening",
+          "allowance_bytes": 146466,
+          "expected_headroom_bytes": -164258.9845977216
+        },
+        {
+          "component": "entire_compression_envelope",
+          "allowance_bytes": 190346,
+          "expected_headroom_bytes": -120378.9845977216
+        },
+        {
+          "component": "entire_bundle",
+          "allowance_bytes": 299999,
+          "expected_headroom_bytes": -10725.984597721603
+        }
+      ],
+      "executable_profile": false,
+      "security_certified": false
+    },
+    {
+      "name": "prior_optimistic_hash_erasure",
+      "blocks": 152167,
+      "queries": 309,
+      "degree": 33554432,
+      "banks": [
+        {
+          "rows": 16777216,
+          "width": 772,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 386,
+          "half": 67108864,
+          "leaf_bytes": 3088,
+          "expected_bytes": 1203972.9751135972,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 274,
+              "offset": 0
+            },
+            {
+              "table": 1,
+              "rows": 16777216,
+              "width": 498,
+              "offset": 274
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 1240,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 10,
+          "half": 67108864,
+          "leaf_bytes": 80,
+          "expected_bytes": 274503.10804300767,
+          "phase": "source",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 515,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 33,
+              "offset": 515
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 33,
+              "offset": 548
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 33,
+              "offset": 581
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 29,
+              "offset": 614
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 29,
+              "offset": 643
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 29,
+              "offset": 672
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 25,
+              "offset": 701
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 514,
+              "offset": 726
+            }
+          ]
+        },
+        {
+          "rows": 16777216,
+          "width": 2784,
+          "packing": 2,
+          "degree": 33554432,
+          "lanes": 1392,
+          "half": 67108864,
+          "leaf_bytes": 11136,
+          "expected_bytes": 3690799.268392887,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 0,
+              "rows": 16777216,
+              "width": 1224,
+              "offset": 0
+            },
+            {
+              "table": 1,
+              "rows": 16777216,
+              "width": 1560,
+              "offset": 1224
+            }
+          ]
+        },
+        {
+          "rows": 262144,
+          "width": 4840,
+          "packing": 128,
+          "degree": 33554432,
+          "lanes": 38,
+          "half": 67108864,
+          "leaf_bytes": 304,
+          "expected_bytes": 343718.9492078388,
+          "phase": "auxiliary",
+          "blocks": [
+            {
+              "table": 2,
+              "rows": 262144,
+              "width": 1728,
+              "offset": 0
+            },
+            {
+              "table": 3,
+              "rows": 4096,
+              "width": 328,
+              "offset": 1728
+            },
+            {
+              "table": 4,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2056
+            },
+            {
+              "table": 5,
+              "rows": 4096,
+              "width": 328,
+              "offset": 2384
+            },
+            {
+              "table": 6,
+              "rows": 256,
+              "width": 328,
+              "offset": 2712
+            },
+            {
+              "table": 7,
+              "rows": 256,
+              "width": 328,
+              "offset": 3040
+            },
+            {
+              "table": 8,
+              "rows": 256,
+              "width": 328,
+              "offset": 3368
+            },
+            {
+              "table": 9,
+              "rows": 16,
+              "width": 328,
+              "offset": 3696
+            },
+            {
+              "table": 10,
+              "rows": 262144,
+              "width": 816,
+              "offset": 4024
+            }
+          ]
+        }
+      ],
+      "expected_opening_bytes": 7876544.373745474,
+      "bank_count": 4,
+      "expected_optimistic_total_bytes": 7927624.373745474,
+      "separate_expected_bytes": 10169453.049037851,
+      "expected_saving_bytes": 2241828.6752923774,
+      "simulated_totals": [
+        7944688,
+        7932256,
+        7925008,
+        7940368,
+        7942272,
+        7921888,
+        7926160,
+        7934704,
+        7935856,
+        7916720,
+        7917200,
+        7920576,
+        7930928,
+        7923728,
+        7908848,
+        7946560
+      ],
+      "sampled_min_bytes": 7908848,
+      "sampled_max_bytes": 7946560,
+      "logical_base_cells": 60601136400,
+      "bank_base_cells": 61253615616,
+      "padded_packed_base_coefficients": 61270392832,
+      "packed_base_coefficient_payload_bytes": 245081571328,
+      "comparisons": [
+        {
+          "component": "entire_opening",
+          "allowance_bytes": 146466,
+          "expected_headroom_bytes": -7781158.373745474
+        },
+        {
+          "component": "entire_compression_envelope",
+          "allowance_bytes": 190346,
+          "expected_headroom_bytes": -7737278.373745474
+        },
+        {
+          "component": "entire_bundle",
+          "allowance_bytes": 299999,
+          "expected_headroom_bytes": -7627625.373745474
+        }
+      ],
+      "executable_profile": false,
+      "security_certified": false
+    }
+  ],
+  "assumptions": [
+    "Single joint envelope, 22 separate source/auxiliary trees, existing rate4 weighted folding codec.",
+    "Retain baseline widths and finals; multiplicity growth is priced at zero. New constraints and GKR priced at zero.",
+    "Hash call routing, message framing/chaining, verifier arithmetic, challenge derivation and application binding priced at zero.",
+    "Uniform-with-replacement query model; expected costs and 16 seeded simulations are not worst-case bounds.",
+    "Lift implementation degree2^18 and lane64 caps, retain BabyBear subgroup/rate4 degree2^25 cap.",
+    "q8 and q309 are sensitivity scenarios, neither certifies PQ128. Old workloads do not measure a redesigned transcript.",
+    "Replace separate source/auxiliary trees with phase-separated banks of contiguous columns, padded to each bank maximum height.",
+    "Exhaustive partition search within each 11-table phase; no cross-phase, row concatenation, new AIR or hash substitution.",
+    "Logical root slots retained in execution header; static bank mapping and logical masked weights required but unimplemented for this 11-table profile.",
+    "Packed base coefficient payload is a buffer size, not measured peak RAM; excludes Ext8 expansion, evaluations, Merkle trees, witnesses and scratch."
+  ],
+  "decision": "Do not implement enlarged pooled SHA proving solely for these results. Use exact bank groups and padded costs to assess whether pooling changes the byte decision. Failing expected/sampled scenarios do not rule out code switching, different AIR layouts, or algebraic hashing.",
+  "sha256": {
+    "airbender/direct-wasm/model_pooled_nibble_geometry.py": "edf7d90e12e27668bd88194a884d2a0d437e776c742c8c2a9b98f3fd951249bc",
+    "airbender/direct-wasm/model_joint_nibble_geometry.py": "78b6865026458f8631636cda544cc6b26015f3873d9cc9629afd5dadbde1afd4",
+    "results/joint-nibble-geometry.json": "b6bf88dec908159d0607a1dd6e4a1d6f720fc6cd4b61ae1fc1788133bc958903",
+    "airbender/direct-wasm/ext8_pooled_weights.py": "5aecc3ba5a91a2dda60c71fc0302da0da064e7b61949c9a4dc89ec2038c7ee8a",
+    "airbender/direct-wasm/ext8_commitment_profiles.py": "95c18696b7a5c8d3fa963b644c6d8c985b97b949b9d1911c67098b65a3616402"
+  }
+}

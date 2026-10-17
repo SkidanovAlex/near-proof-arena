@@ -1,0 +1,1 @@
+{"status": "PASS", "exhaustive_cases": 12, "enumerated_partition_packing_choices": 1074, "cross_phase_merge_rejected": true, "coverage_offsets_checked": true, "scope": "Finite expected-cost optimization and layout coverage only; no proof profile or soundness certification."}

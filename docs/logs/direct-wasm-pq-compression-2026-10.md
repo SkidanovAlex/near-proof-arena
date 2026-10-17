@@ -10417,3 +10417,44 @@ must supply its own costs and assumptions; algebraic S-box counts alone do not
 provide outer proof bytes. No new Lean lemmas were needed for this cost decision.
 Full NEAR1Pgas, PQ128, recursive acceptance soundness and secure sub300000B proof
 remain NOT_PASSED. Current dashboard now points to the changed-layout gate.
+
+### 2026-10-17: phase-pooled joint SHA screen
+
+Extended the witness-free joint model with model_pooled_nibble_geometry.py.
+For each allowed maximum degree, subset dynamic programming enumerates all
+partitions of the11logical source tables and separately all partitions of the11
+auxiliary tables. Each bank concatenates columns, pads to its tallest member,
+and searches power-of-two packings. No source/auxiliary merge is permitted:
+the commitments occur on different sides of bus challenges. Existing
+ext8_pooled_weights supplies the logical masking/rotation design precedent;
+the existing executable phase-pooled-v1 only supports its four-table profile,
+so this11-table search is explicitly counterfactual, not a new working profile.
+Logical root slots remain in the existing envelope accounting.
+
+Independent small enumeration checks12cases and1074partition/packing choices
+against the optimizer, verifies exact logical-slot coverage and column offsets,
+and rejects a cross-phase merge. No witness or larger prover job was launched.
+All zero-cost omissions and uncertified q8/q309 sensitivity assumptions from
+the previous joint screen remain in force.
+
+For242409blocks, six selected banks reduce expected q8 bytes471152->393856;
+16simulated totals are389152–396448B. For the204966/152167block counterfactuals,
+four banks reduce405072->310725B, with simulated306656–312992B. Even these
+incomplete projections exceed the299999B whole-bundle allowance and190346B
+compression replacement allowance. At q309 the projected totals remain about
+7.93–10.97MB. This finite-family expected/sampled result is not a universal
+lower bound for pooling, alternative commitments or recursive protocols.
+
+Selected packed base coefficient buffers contain95,797,903,360 or61,270,392,832
+field coordinates: respectively383,191,613,440B or245,081,571,328B at4B each.
+These are shape accounting, not measured memory and not total peak RAM; they
+exclude extension expansion, evaluation vectors, witnesses, trees and scratch.
+Streaming/recomputation could change residency. The cost is another reason not
+to launch this unimplemented enlarged SHA profile.
+
+Decision: pooling changes costs materially but does not rescue this candidate.
+Next obtain a concrete algebraic-hash AIR layout and connect it to a full
+verifier cost model, keeping quantum permutation/sponge/FS assumptions explicit.
+Do not infer outer bytes from S-box count or switch protocol hashes based on
+this geometry. Current-feasibility reconciliation rejects27inconsistent cases.
+No Lean or security theorem changed; full goal remains NOT_PASSED.

@@ -960,6 +960,72 @@
     ],
     "next_gate": "This screen prices a named joint SHA architecture before witness generation. Expected/sampled budget failures reject this candidate for further scale-up at these packings, not all joint/pooled/code-switch/algebraic-hash protocols. An algebraic-hash candidate still needs its own table layout and security assumptions; S-box counts do not determine outer bytes."
   },
+  "pooled_joint_nibble_geometry": {
+    "evidence": "results/pooled-joint-nibble-geometry.json",
+    "scenarios": [
+      {
+        "name": "measured_full_verifier",
+        "queries": 8,
+        "bank_count": 6,
+        "expected_optimistic_total_bytes": 393856.10617647634,
+        "expected_saving_bytes": 77295.6885889495,
+        "packed_base_coefficient_payload_bytes": 383191613440
+      },
+      {
+        "name": "measured_full_verifier",
+        "queries": 309,
+        "bank_count": 6,
+        "expected_optimistic_total_bytes": 10971096.866092727,
+        "expected_saving_bytes": 1742262.3457526695,
+        "packed_base_coefficient_payload_bytes": 383191613440
+      },
+      {
+        "name": "closed_stage_binding_counterfactual",
+        "queries": 8,
+        "bank_count": 4,
+        "expected_optimistic_total_bytes": 310724.9845977216,
+        "expected_saving_bytes": 94346.81360236218,
+        "packed_base_coefficient_payload_bytes": 245081571328
+      },
+      {
+        "name": "closed_stage_binding_counterfactual",
+        "queries": 309,
+        "bank_count": 4,
+        "expected_optimistic_total_bytes": 7927624.373745474,
+        "expected_saving_bytes": 2241828.6752923774,
+        "packed_base_coefficient_payload_bytes": 245081571328
+      },
+      {
+        "name": "prior_optimistic_hash_erasure",
+        "queries": 8,
+        "bank_count": 4,
+        "expected_optimistic_total_bytes": 310724.9845977216,
+        "expected_saving_bytes": 94346.81360236218,
+        "packed_base_coefficient_payload_bytes": 245081571328
+      },
+      {
+        "name": "prior_optimistic_hash_erasure",
+        "queries": 309,
+        "bank_count": 4,
+        "expected_optimistic_total_bytes": 7927624.373745474,
+        "expected_saving_bytes": 2241828.6752923774,
+        "packed_base_coefficient_payload_bytes": 245081571328
+      }
+    ],
+    "assumptions": [
+      "Single joint envelope, 22 separate source/auxiliary trees, existing rate4 weighted folding codec.",
+      "Retain baseline widths and finals; multiplicity growth is priced at zero. New constraints and GKR priced at zero.",
+      "Hash call routing, message framing/chaining, verifier arithmetic, challenge derivation and application binding priced at zero.",
+      "Uniform-with-replacement query model; expected costs and 16 seeded simulations are not worst-case bounds.",
+      "Lift implementation degree2^18 and lane64 caps, retain BabyBear subgroup/rate4 degree2^25 cap.",
+      "q8 and q309 are sensitivity scenarios, neither certifies PQ128. Old workloads do not measure a redesigned transcript.",
+      "Replace separate source/auxiliary trees with phase-separated banks of contiguous columns, padded to each bank maximum height.",
+      "Exhaustive partition search within each 11-table phase; no cross-phase, row concatenation, new AIR or hash substitution.",
+      "Logical root slots retained in execution header; static bank mapping and logical masked weights required but unimplemented for this 11-table profile.",
+      "Packed base coefficient payload is a buffer size, not measured peak RAM; excludes Ext8 expansion, evaluations, Merkle trees, witnesses and scratch."
+    ],
+    "next_gate": "Do not implement enlarged pooled SHA proving solely for these results. Use exact bank groups and padded costs to assess whether pooling changes the byte decision. Failing expected/sampled scenarios do not rule out code switching, different AIR layouts, or algebraic hashing."
+  },
   "hash_architecture_screen": {
     "evidence": "results/hash-architecture-review/geometry.json",
     "digest_screens": [
@@ -1060,7 +1126,7 @@
     "qualification": "Gas-capacity ratio only; NOT a proved trace count or operator bound"
   },
   "decision": {
-    "next_experiment": "Independent envelopes fail framing; the named joint separate-tree SHA shape also exceeds budget in expected/sampled q8 geometry with GKR/routing/arithmetic omitted. Next price a changed joint layout (pooling/code switching or an algebraic-hash AIR) with its own assumptions, rather than scale this SHA profile. Require nonzero full-verifier coverage costs and a conditional byte/security ledger before a large run.",
+    "next_experiment": "Independent, joint separate-tree and phase-pooled SHA shapes miss the byte budget in expected/sampled q8 projections with major costs omitted. Pooling still needs at least about245GB of packed base coefficients in the screened workloads. Next obtain a concrete algebraic-hash AIR layout and whole-verifier cost model with explicit unresolved quantum assumptions; do not scale these SHA profiles. No hash security or protocol claim follows from geometry alone.",
     "standalone_mca_expansion": "DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.",
     "reopen_mca_if": "A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.",
     "do_not_repeat": "Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.",
@@ -1101,9 +1167,10 @@
     "results/full-hybrid-verifier.json": "3a12ac46c58563e851087f0b99595af5d58f930f921e51effdcfbbca062461f0",
     "results/closed-hybrid-work.json": "563244c14e4d9f058c298d992fd622112740f8aa9fd1ebbcca1d32edde7f0787",
     "results/joint-nibble-geometry.json": "b6bf88dec908159d0607a1dd6e4a1d6f720fc6cd4b61ae1fc1788133bc958903",
+    "results/pooled-joint-nibble-geometry.json": "91dcd38f59ce948adb813c197abe4e3a8d1baacc278b05c65210617f5ff5fbd3",
     "results/hash-architecture-review/geometry.json": "427ac2dda26912860315c2b278e62ca4caa472e0e3fea6f043f0ed323be3be67",
     "results/hash-architecture-review/sources.json": "e620af0b265ca3b90057ff2a46ade877101c30bb6835ac5529d61bee5a7956c4",
-    "airbender/direct-wasm/report_current_feasibility.py": "af887194a49ac78e6b6406d74587c9f592e97f80d1cc219e1e022820e68cf50d",
+    "airbender/direct-wasm/report_current_feasibility.py": "9bd43abc0f775ec6986dfdf361ca67af48a99d13f8db5055e568cde38d700726",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

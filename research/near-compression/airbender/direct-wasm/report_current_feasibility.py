@@ -224,6 +224,20 @@ def build(root=ROOT):
         assert row['sampled_max_bytes']==max(row['simulated_totals'])
         for comparison in row['comparisons']:
             assert comparison['expected_headroom_bytes']==comparison['allowance_bytes']-row['expected_optimistic_total_bytes']
+    pooled_joint=read('results/pooled-joint-nibble-geometry.json')
+    assert pooled_joint['status']=='POOLED_JOINT_NIBBLE_GEOMETRY_ONLY'
+    for relative,expected in pooled_joint['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    assert len(pooled_joint['scenarios'])==len(joint['scenarios'])
+    for pooled,prior in zip(pooled_joint['scenarios'],joint['scenarios']):
+        assert (pooled['name'],pooled['queries'])==(prior['name'],prior['queries'])
+        assert pooled['security_certified'] is False and pooled['executable_profile'] is False
+        assert pooled['expected_optimistic_total_bytes']==prior['optimistic_fixed_bytes']+pooled['expected_opening_bytes']
+        assert pooled['expected_saving_bytes']==prior['expected_optimistic_total_bytes']-pooled['expected_optimistic_total_bytes']
+        assert pooled['packed_base_coefficient_payload_bytes']==4*sum(b['degree']*b['lanes'] for b in pooled['banks'])
+        slots=[(b['phase'],block['table']) for b in pooled['banks'] for block in b['blocks']]
+        assert len(slots)==len(set(slots))==22
+        assert set(slots)=={(phase,i) for phase in ('source','auxiliary') for i in range(11)}
     hash_geometry=read('results/hash-architecture-review/geometry.json')
     assert hash_geometry['status']=='ALGEBRAIC_HASH_GEOMETRY_ONLY_SECURITY_OPEN'
     assert hash_geometry['field']==2013265921
@@ -334,12 +348,15 @@ def build(root=ROOT):
             baseline_reconciled_bytes=joint['baseline']['proof_bytes'],
             scenarios=[{k:r[k] for k in ('name','queries','expected_optimistic_total_bytes','sampled_min_bytes','sampled_max_bytes')} for r in joint['scenarios']],
             assumptions=joint['assumptions'],next_gate=joint['decision']),
+        pooled_joint_nibble_geometry=dict(evidence='results/pooled-joint-nibble-geometry.json',
+            scenarios=[{k:r[k] for k in ('name','queries','bank_count','expected_optimistic_total_bytes','expected_saving_bytes','packed_base_coefficient_payload_bytes')} for r in pooled_joint['scenarios']],
+            assumptions=pooled_joint['assumptions'],next_gate=pooled_joint['decision']),
         hash_architecture_screen=dict(evidence='results/hash-architecture-review/geometry.json',
             digest_screens=hash_geometry['digest_screens'],candidates=hash_geometry['candidates'],
             scope=hash_geometry['scope'],next_gate=hash_geometry['decision'],security_certified=False),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
-        decision=dict(next_experiment='Independent envelopes fail framing; the named joint separate-tree SHA shape also exceeds budget in expected/sampled q8 geometry with GKR/routing/arithmetic omitted. Next price a changed joint layout (pooling/code switching or an algebraic-hash AIR) with its own assumptions, rather than scale this SHA profile. Require nonzero full-verifier coverage costs and a conditional byte/security ledger before a large run.',
+        decision=dict(next_experiment='Independent, joint separate-tree and phase-pooled SHA shapes miss the byte budget in expected/sampled q8 projections with major costs omitted. Pooling still needs at least about245GB of packed base coefficients in the screened workloads. Next obtain a concrete algebraic-hash AIR layout and whole-verifier cost model with explicit unresolved quantum assumptions; do not scale these SHA profiles. No hash security or protocol claim follows from geometry alone.',
             standalone_mca_expansion=('REASSESS against the surviving candidate; partial ledger is not certification.' if feasible else 'DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.'),
             reopen_mca_if='A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.',
             do_not_repeat='Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.',
