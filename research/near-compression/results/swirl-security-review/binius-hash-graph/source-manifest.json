@@ -1,0 +1,38 @@
+{
+  "Cargo.lock": {
+    "sha256": "fe8640fb68ba0e566bce5e5406bab25ffc0fdfdb8e4aea5f0390dd8c0680c724",
+    "snapshot": "Cargo.lock.gz"
+  },
+  "rust-toolchain.toml": {
+    "sha256": "0bf007546885bfdc84484863a3b2dd936a89627191998d987cd798759e3935f1",
+    "snapshot": "rust-toolchain.toml.gz"
+  },
+  "crates/circuits/src/sha512/mod.rs": {
+    "sha256": "4829329775f5e5fe707e2d9e4666b018873e489e871b34a4089c13fa0a2aa981",
+    "snapshot": "crates__circuits__src__sha512__mod.rs.gz"
+  },
+  "crates/examples/src/circuits/nearproof_hash_graph.rs": {
+    "sha256": "7ae733b32e26da22d79b48ce21901954e7077f92be450d25d88e8f747ccfde07",
+    "snapshot": "crates__examples__src__circuits__nearproof_hash_graph.rs.gz"
+  },
+  "crates/examples/src/circuits/nearproof_sha384.rs": {
+    "sha256": "7c3e4e488ac589b972add50587d3fb4f2c0bb932b05cd8d222aec9b8ddd18df5",
+    "snapshot": "crates__examples__src__circuits__nearproof_sha384.rs.gz"
+  },
+  "crates/verifier/src/protocols/shift/wiring.rs": {
+    "sha256": "b1af2f41f08f51a8189c4bec609c949767bcf2d2086b5279ca7c2e39760e31c3",
+    "snapshot": "crates__verifier__src__protocols__shift__wiring.rs.gz"
+  },
+  "crates/math/src/multilinear/sparse.rs": {
+    "sha256": "7086e93c318676c459e8102f017455fa61c13ae9c0f45f5c4c28c337081d306c",
+    "snapshot": "crates__math__src__multilinear__sparse.rs.gz"
+  },
+  "crates/verifier/src/verify.rs": {
+    "sha256": "c1751c314bd85492ca9c5e6002e5402b74fa001d44d7723e3ceba3007bd5ed8c",
+    "snapshot": "crates__verifier__src__verify.rs.gz"
+  },
+  "crates/iop/src/fri/common.rs": {
+    "sha256": "4d82f637e874229aca6e9a30478ab75a825d8c7ba11209b7c6fcdd2af93e794f",
+    "snapshot": "crates__iop__src__fri__common.rs.gz"
+  }
+}

@@ -12388,3 +12388,60 @@ Evidence:sha384-recursion-screen/ and binius-sha384/ reports/proof/message/logs,
 lockfile,upstream/sourcepins,patch. Reproduce screen_swirl_sha384_work.py;
 apply saved patch to pinned Binius64,restore lock,build -p binius-examples with
 RUSTFLAGS='-C target-cpu=native',then run check_binius_sha384.py.
+
+## 2026-10-17 — Connected Binius hash graph and concrete scaling limit
+
+Previous goal turn produced evidence changing the next action: the full graph
+failed at setup. Revalidated source and terminal logs; did not restart a live
+process. This turn tested a supported intermediate workload and preserved the
+source patch, runner, proofs, logs, lockfile and pinned source snapshots.
+
+Added a fixed-graph example to the pinned Binius64 checkout (same4428e759 pin).
+Every hash-parent reference uses the parent's computed digest wires, with
+framing lengths/tags/literals fixed in the verifier key. Input bytes are public
+word wires. Squeeze digests and final seed are public outputs. Host sha2 is the
+independent output oracle; Python reconstructs every frame and checks its saved
+digest and compression-block count before export. No unconstrained intermediate
+digest inputs. Graph shape is NOT an untrusted runtime proof parameter.
+
+Measured results at unchanged diagnostic settings:
+- 8draws:42hashes,83compressionblocks;182720Bpayload/182756Bserialized;
+  117public words/936B external. Fresh verification passes.
+- 64draws:322hashes,643compressionblocks;280480Bpayload/280516Bserialized;
+  833public words/6664B external. Fresh verification passes. Changedpublicinput
+  rejects in proof verification; changedproof rejects Merkle authentication.
+- Full437draws:2187hashes,4373blocks,5650public words/45200B external.
+  Setup panics: wiring needs67bits, maximum63. NO full proof or size result.
+  Observed process exit101,12.20s wall,5741388KiB peakRSS; diagnostic resource
+  observations, not a comparative throughput benchmark.
+
+Source explains the failure: shift/wiring.rs packs operand bits,18shift bits,
+word index and constraint index into u64; SparseBitVector independently requires
+log_len<64. Removing the assertion alone would truncate/alias addresses.
+The implementation needs a wider/split sparse address representation or a
+smaller circuit layout. Fragmenting into independent proofs would additionally
+require authenticated links and another compression layer; do not assume the
+component sizes amortize. No backend address modification made in this turn.
+
+Scope remains restricted: pinned SECURITY_BITS=96 covers query parameterization,
+not a complete security proof; default SHA256 suite, no PQ128 claim. The CLI
+fresh verifier derives public reference outputs and evaluates a witness; this
+is a diagnostic harness, not a production public-statement verifier API. Fixed
+observed squeeze schedule does not constrain arbitrary rejection-sampling
+control flow. Field sampling, GKR arithmetic, native prefix and PCS verification,
+full NEAR state transition and Lean circuit refinement are not covered.
+
+Decision: connected hash proving is real, but 64draws already consume most of
+300000B before stronger security and other verifier work. Keep Binius as an
+alternative, not evidence that the final target fits. Next investigate whether
+wider sparse addresses are a small semantics-preserving backend repair and
+measure the complete graph before deciding on integration. In parallel design
+terms, the leading integrated route remains specialized GKR/WHIR recursion;
+no new broad Lean campaign is justified by these component results alone.
+
+Reproduction: apply binius-hash-graph/binius.patch to pinned checkout, restore
+archived Cargo.lock, build release binius-examples with nativeCPU and four build
+workers, then run check_binius_hash_graph.py. --reuse-tmp imports original proof
+runs but always reruns fresh verification and negative checks. Full run is
+expected to fail setup on the pinned implementation. make pin-check passes.
+Evidence in results/swirl-security-review/binius-hash-graph/. No goal completion.
