@@ -1,0 +1,8 @@
+PROFILE n_stack=20 k=3 log_blowup=3 queries=[210, 118, 82, 63, 51, 43, 37] interaction_log=27
+KEYGEN_SECONDS 0.00
+SOUNDNESS target=268 total=268.3 logup=332.6 proximity=321.9 query=268.3
+SHAPE n=256 main_rows_used=11264 main_height=16384 main_width=442 main_cells=7241728 cells_per_compression_padded=28288.0 cells_per_compression_dense=19448 table=64x18 harness=8192x7
+PROOF_BYTES total=834237 gkr=31256 relations=48472 stacking=2368 whir=752044
+WHIR_CENSUS auth_bytes=584448 auth_digests=12176 unique_auth_digests=8763 initial_values_bytes=13440 codeword_values_bytes=151296
+TIMES tracegen_s=0.01 prove_s=35.12 verify_s=0.025
+PEAK_RSS_KIB 4642432

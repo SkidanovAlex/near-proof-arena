@@ -310,3 +310,32 @@ Corrected fixed point (iteration 2/3 tables superseded):
 Hash-only at realistic SHA cost: ≈ 444–570 KB (today), ≈ 356–449 KB (all levers).
 **Lattice-wrap statement size:** verifying the cheapest penultimate costs
 ≈ 9–12k SHA-384 compressions + ≈ 6×10⁴ Ext12 multiply-equivalents.
+
+## L3 milestone 1: measured narrow SHA-384 compression AIR
+
+Crate `research/near-compression/native/sha384-air/`; results
+`research/near-compression/results/pq384-sha-air/` (report.json, README.md, logs).
+SHA-512 compression (SHA-384 = IV + truncation, chosen by the consumer) on the pinned
+SWIRL backend, native SHA-384/Ext12 config. Two rounds per row, 44 rows per
+compression; a/e/W as bits (Σ/σ/Ch/Maj are free degree-≤3 expressions), 3-limb adds
+with lookup-range-checked carries, history beyond one row over a permutation bus keyed
+by a global row counter, flags + K from a 64-row in-trace table (no preprocessed
+commitment). Interface bus: (cid, idx 0..31, 4×16-bit limbs) for input state, block,
+output state.
+
+**Measured:** 442 columns, **19,448 committed cells per compression** dense
+(N = 1,489 / 5,957 fill 2¹⁶ / 2¹⁸ rows: 19,454 / 19,451); 28,288 at N = 1,024 / 4,096
+(power-of-two padding). Word-bit floor 15,360. Max degree 4, 43 interactions/row.
+Proofs (n_stack 20, b = 3, 268.3 bits by the backend calculator): N = 1,024 → 874,845 B,
+67.7 s prove, 27 ms verify, 7.2 GB; N = 4,096 → 1,024,317 B, 198.6 s, 27 ms, 15.4 GB
+(SHA-only proofs, dominated by 584 KB of WHIR auth paths). N = 16,384 not run
+(~45 GB extrapolated > 16G cap). Tests: 1,008 compressions incl. SHA-384/512 vectors
+equal `sha2`; backend debug checker passes; 7,208/7,208 single-cell mutations and
+10/10 constraint-consistent bus edits rejected.
+
+**Implied final layer (model, `fixed_point`, cols = 300):** c_sha = 19,448 →
+**502,609 B today (268/268, 48 B)**, **398,173 B all levers (236/226, 42 B)**;
+padded c_sha = 28,288 → 549,481 / 433,741 B. The AIR's own 442 (+18) columns exceed
+the model's 300-column allowance by ≥ 15 KB. Hash-only < 300 KB stays out of reach
+with this AIR; at this density the lattice-wrap statement (≈ 9–12k compressions) carries
+≈ 2²⁷·⁴–2²⁷·⁸ SHA cells (estimate).
