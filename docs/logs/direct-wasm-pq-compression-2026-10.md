@@ -10294,3 +10294,40 @@ support the structured updates; no additional Lean theorem count claimed (4662).
 Next validate the full retained shape and account for remaining hash/arithmetic
 cost before a large new-profile proof. Dashboard20negative evidence checks pass.
 Original1Pgas/PQ128/sub300000B goal remains NOT_PASSED.
+
+## 2026-10-17 — Full hybrid decoder replay and remaining-work decision
+
+check_full_hybrid_verifier.py now replays the complete retained q309contract,
+call-link and binary compression decoder with baseline vector-hash binding
+preserved. Every104839ordered framed hash preimage matches literally between
+dense and hybrid runs; all17folds and7injections execute on hybrid state, with
+materialization atdegree1024/930terms. Full run session86889 exited0. Timings
+50.257s dense/48.306s hybrid include asymmetric instrumentation and mandatory
+vector expansions; they are NOT a production speedup result.
+
+Harness development caught two isolation/coverage errors before any success
+claim: cloning after a temporary verifier substitution could recursively call
+the wrapper (that run was terminated); replacing top-level verify did not affect
+binary decode's inline verification (event-count assertion failed). Corrected
+by cloning the decoder's adapter namespace and supplying the hybrid backend at
+the actual inline fold/injection calls. A retained small binary proof exercised
+this exact path before the final full replay. No baseline verifier code changed.
+
+account_closed_hybrid_work.py derives the closed-profile shape costs from that
+replay. Original dense injections46437380coefficient/point terms; hybrid planned
+materialization952320terms plus91140dense tail injection terms and3720geometric
+fold-term updates. These are loop units, not comparable timing/field-operation
+ratios: native injection specializes base points. Counts exclude the temporary
+expansions required to preserve baseline hashes in the compatibility replay.
+
+Six old stage-start bindings take37479SHA384blocks; versioned derived bindings
+would take36on the same geometry/configuration lengths. Holding all OTHER
+recorded hash work fixed gives204966blocks, NOT a measured new-transcript total
+or a global lower bound. New challenges and sharing change (as the tiny-profile
+experiment already demonstrated). This optimization is useful but still leaves
+large hash work: do not launch a large new proof solely on this improvement.
+Next assess the remaining hash architecture and joint-verifier geometry/security
+ledger. FullNEAR1Pgas, PQ128, and sub300000B secure proof remain NOT_PASSED.
+
+Dashboard reconciliation rejects21inconsistent-evidence cases. No Lean changes;
+last full audit4662. Full replay and cost screen source/input pins retained.

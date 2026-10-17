@@ -1,1 +1,1 @@
-{"status": "PASS", "corrupt_or_inconsistent_evidence_rejections": 20, "strict_target_boundary_checked": true, "scope": "Evidence reconciliation and arithmetic only; no security certification."}
+{"status": "PASS", "corrupt_or_inconsistent_evidence_rejections": 21, "strict_target_boundary_checked": true, "scope": "Evidence reconciliation and arithmetic only; no security certification."}

@@ -897,7 +897,11 @@
     "scope": "One small heterogeneous complete packed-root/code-switch proof under separate experimental profile. Full adapter derives all weights; standalone stage unchanged. Dense arithmetic still used. No compact full-NEAR proof, full-size benchmark, universal derived-state/FS/QROM proof or PQ128 claim.",
     "hybrid_evidence": "results/closed-hybrid-verifier/report.json",
     "hybrid_scope": "One generated degree1024 closed-profile proof verified by dense and hybrid implementations with identical hash census and fresh pure-Python hybrid verification. Additional transition equality checks cover zero/one/random folds and zero/base/extension points. No full NEAR, formal Python refinement, PQ128 certificate, full-size proof or verifier speedup claim.",
-    "next_gate": "Hybrid implementation preserves all ordered hash preimages on the degree1024 fixture. Validate the full retained verifier shape and quantify remaining hash/arithmetic/security cost before full-scale proving."
+    "full_replay_evidence": "results/full-hybrid-verifier.json",
+    "ordered_hash_calls_compared": 104839,
+    "work_evidence": "results/closed-hybrid-work.json",
+    "remaining_hash_counterfactual": 204966,
+    "next_gate": "Hybrid derivation removes large dense-functional work, but stage-start omission alone leaves about205000hash compression blocks if other recorded work is held fixed. Keep the prototype separate; next evaluate remaining hash architecture and full joint-verifier geometry/security rather than generate a large proof solely for this optimization."
   },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
@@ -944,7 +948,9 @@
     "results/structured-verifier-states.json": "52ba82d28312e42017bc55b6548cab1fdcd9e193b01a46229a28b6a49dae6ef8",
     "results/closed-derived-switch/report.json": "52d499fc13141c2478f284fcf0c2861bbd0b47d561ba4c38c39268d4416bf91f",
     "results/closed-hybrid-verifier/report.json": "04c6721e718ffc8fc9e3b2e4699abcde80b2cf7b727e40aae15b8647cc8ade61",
-    "airbender/direct-wasm/report_current_feasibility.py": "0bd3c1977779e0d20673120b32cd7120e6a020fff52543c82d813b03ee3f6e5a",
+    "results/full-hybrid-verifier.json": "3a12ac46c58563e851087f0b99595af5d58f930f921e51effdcfbbca062461f0",
+    "results/closed-hybrid-work.json": "563244c14e4d9f058c298d992fd622112740f8aa9fd1ebbcca1d32edde7f0787",
+    "airbender/direct-wasm/report_current_feasibility.py": "44fed89f96a1b3a1d9aa5afe11b39430232b6baad72140ed7c062166272c27cb",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

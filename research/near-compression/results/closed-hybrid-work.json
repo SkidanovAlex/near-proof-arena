@@ -1,0 +1,53 @@
+{
+  "status": "CLOSED_HYBRID_SHAPE_COST_ACCOUNTED",
+  "baseline_injection_coefficient_terms": 46437380,
+  "hybrid_materialization_coefficient_terms": 952320,
+  "hybrid_dense_injection_coefficient_terms": 91140,
+  "structured_geometric_fold_updates": 3720,
+  "stage_start_hash_blocks": [
+    {
+      "degree": 131072,
+      "baseline_blocks": 32773,
+      "closed_candidate_blocks": 6
+    },
+    {
+      "degree": 16384,
+      "baseline_blocks": 4101,
+      "closed_candidate_blocks": 6
+    },
+    {
+      "degree": 2048,
+      "baseline_blocks": 517,
+      "closed_candidate_blocks": 6
+    },
+    {
+      "degree": 256,
+      "baseline_blocks": 69,
+      "closed_candidate_blocks": 6
+    },
+    {
+      "degree": 32,
+      "baseline_blocks": 13,
+      "closed_candidate_blocks": 6
+    },
+    {
+      "degree": 4,
+      "baseline_blocks": 6,
+      "closed_candidate_blocks": 6
+    }
+  ],
+  "baseline_stage_blocks": 37479,
+  "candidate_stage_blocks": 36,
+  "unchanged_other_work_counterfactual_blocks": 204966,
+  "decision": "Hybrid derivation removes large dense-functional work, but stage-start omission alone leaves about205000hash compression blocks if other recorded work is held fixed. Keep the prototype separate; next evaluate remaining hash architecture and full joint-verifier geometry/security rather than generate a large proof solely for this optimization.",
+  "scope": "Hybrid loop counts exclude temporary expansions required by baseline vector hashing; they describe the closed-profile candidate on this shape, not all work in the compatibility replay. Not field-operation or runtime ratios: native injection distinguishes base and extension points. Candidate stage framing uses fixed-width placeholder digests and exact configuration lengths; new challenges and hash sharing elsewhere can change, so remaining-work figure is a counterfactual, not a measured new protocol or rigorous global bound. Excludes full-verifier arithmetic beyond functional state, application routing, outer proof size and PQ128 soundness.",
+  "sha256": {
+    "airbender/direct-wasm/account_closed_hybrid_work.py": "1f2ebb9c36a5fb7e97d1ec092720e6be40a0792ff51b1f45676fd19f15e8a4e0",
+    "airbender/direct-wasm/ext8_closed_derived_switch.py": "2b2d4a3813105f82164a358d9e9c11d7fcf34f62d8f6396690c8f401d0080c3d",
+    "airbender/direct-wasm/ext8_code_switch_stage.py": "c00cdf46b021bb283508683bfde7847164872c6012cdc92b48b0a3e3694854e1",
+    "results/full-hybrid-verifier.json": "3a12ac46c58563e851087f0b99595af5d58f930f921e51effdcfbbca062461f0",
+    "results/structured-verifier-states.json": "52ba82d28312e42017bc55b6548cab1fdcd9e193b01a46229a28b6a49dae6ef8",
+    "results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd",
+    "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21"
+  }
+}

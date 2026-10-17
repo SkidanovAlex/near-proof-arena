@@ -1,0 +1,163 @@
+{
+  "status": "FULL_RETAINED_HYBRID_VERIFIER_TRANSCRIPT_PARITY",
+  "fresh_dense_and_hybrid_verified": true,
+  "ordered_hash_calls_compared": 104839,
+  "ordered_framed_preimages_sha256": "59048a2023db44736087b5493c7ff37412f481936d3cf052a6a7f7231d51e291",
+  "events": [
+    {
+      "kind": "fold",
+      "degree": 262144,
+      "structured": true
+    },
+    {
+      "kind": "inject",
+      "degree": 131072,
+      "points": 310,
+      "structured": true
+    },
+    {
+      "kind": "fold",
+      "degree": 131072,
+      "structured": true
+    },
+    {
+      "kind": "fold",
+      "degree": 65536,
+      "structured": true
+    },
+    {
+      "kind": "fold",
+      "degree": 32768,
+      "structured": true
+    },
+    {
+      "kind": "inject",
+      "degree": 16384,
+      "points": 310,
+      "structured": true
+    },
+    {
+      "kind": "fold",
+      "degree": 16384,
+      "structured": true
+    },
+    {
+      "kind": "fold",
+      "degree": 8192,
+      "structured": true
+    },
+    {
+      "kind": "fold",
+      "degree": 4096,
+      "structured": true
+    },
+    {
+      "kind": "inject",
+      "degree": 2048,
+      "points": 310,
+      "structured": true
+    },
+    {
+      "kind": "fold",
+      "degree": 2048,
+      "structured": true
+    },
+    {
+      "kind": "materialize",
+      "degree": 1024,
+      "terms": 930
+    },
+    {
+      "kind": "fold",
+      "degree": 1024,
+      "structured": false
+    },
+    {
+      "kind": "fold",
+      "degree": 512,
+      "structured": false
+    },
+    {
+      "kind": "inject",
+      "degree": 256,
+      "points": 310,
+      "structured": false
+    },
+    {
+      "kind": "fold",
+      "degree": 256,
+      "structured": false
+    },
+    {
+      "kind": "fold",
+      "degree": 128,
+      "structured": false
+    },
+    {
+      "kind": "fold",
+      "degree": 64,
+      "structured": false
+    },
+    {
+      "kind": "inject",
+      "degree": 32,
+      "points": 310,
+      "structured": false
+    },
+    {
+      "kind": "fold",
+      "degree": 32,
+      "structured": false
+    },
+    {
+      "kind": "fold",
+      "degree": 16,
+      "structured": false
+    },
+    {
+      "kind": "fold",
+      "degree": 8,
+      "structured": false
+    },
+    {
+      "kind": "inject",
+      "degree": 4,
+      "points": 310,
+      "structured": false
+    },
+    {
+      "kind": "fold",
+      "degree": 4,
+      "structured": false
+    },
+    {
+      "kind": "inject",
+      "degree": 2,
+      "points": 310,
+      "structured": false
+    }
+  ],
+  "timings": {
+    "dense_seconds": 50.25681995321065,
+    "hybrid_with_required_vector_hashing_seconds": 48.30550281377509
+  },
+  "scope": "Same complete retained q309 baseline proof, contract, call-link and compression decoder verified twice. Every ordered framed hash preimage compared literally. Test adapter preserves baseline expanded-vector hash binding; expansions still performed. Timings include asymmetric instrumentation and must not be treated as a production speedup. No new-profile full proof, PQ128/security certificate, Lean implementation refinement or full NEAR claim.",
+  "input_sha256": {
+    "results/ext8-switch-execution-q309/compression.bin": "a656ad0f8d1314ff1b921cc2596a906aaa8f8c21215c5f687082b1ca78bcbd1d",
+    "results/ext8-switch-execution-q309/statement.json.gz": "f0739ebd3b97c3e83d1a354cfe8b054e0f33d22484c32a702474459de00bed98",
+    "results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd",
+    "results/ext8-affine-q309/receipt.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996",
+    "results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e"
+  },
+  "source_sha256": {
+    "airbender/direct-wasm/check_full_hybrid_verifier.py": "186d92484fd0e5593457112be30b48c785fe2fe22ae794e362eb4a0fc44c00b2",
+    "airbender/direct-wasm/ext8_closed_hybrid_verify.py": "722bd00f892d048cf5527eb72e93b6db98b46c6f0e9db6377c45128ace0f64e6",
+    "airbender/direct-wasm/ext8_closed_derived_switch.py": "2b2d4a3813105f82164a358d9e9c11d7fcf34f62d8f6396690c8f401d0080c3d",
+    "airbender/direct-wasm/ext8_weighted_code_switch.py": "f037e20f06941e3061a7e1f38aba935058ec0301f34e4d9e3a4d70dbe60b793b",
+    "airbender/direct-wasm/ext8_code_switch_stage.py": "c00cdf46b021bb283508683bfde7847164872c6012cdc92b48b0a3e3694854e1",
+    "airbender/direct-wasm/ext8_switch_execution_codec.py": "1f71e6342cac9984188a4760d0fc904e577c11524b4892e5115ff3fba26234d9",
+    "airbender/direct-wasm/pq384_ext8_native.py": "7580e46a27303d48023368312e7f0fcfd83f252aea86ba4d7ac58f23161a9fac"
+  },
+  "native_library_sha256": "50495ed0a19e9f26eac6dfba4d1bca968929192fb60e8e8e8d781eaad7b8ab6c"
+}

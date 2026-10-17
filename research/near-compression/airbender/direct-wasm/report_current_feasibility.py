@@ -197,6 +197,18 @@ def build(root=ROOT):
     assert hybrid['exact_ordered_hash_preimages_match'] and hybrid['exact_hash_census_match']
     for relative,expected in hybrid['sha256'].items():
         assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    full_hybrid=read('results/full-hybrid-verifier.json')
+    assert full_hybrid['fresh_dense_and_hybrid_verified']
+    assert full_hybrid['ordered_hash_calls_compared']==hash_work['measurement']['totals']['calls']
+    for key in ('input_sha256','source_sha256'):
+        for relative,expected in full_hybrid[key].items():
+            assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    hybrid_work=read('results/closed-hybrid-work.json')
+    for relative,expected in hybrid_work['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    assert hybrid_work['baseline_stage_blocks']==hash_work['measurement']['tags']['near-ext8-code-switch-stage-diagnostic-v1']['unique_blocks']
+    assert hybrid_work['candidate_stage_blocks']==sum(s['closed_candidate_blocks'] for s in hybrid_work['stage_start_hash_blocks'])
+    assert hybrid_work['unchanged_other_work_counterfactual_blocks']==hash_work['measurement']['totals']['unique_blocks']-hybrid_work['baseline_stage_blocks']+hybrid_work['candidate_stage_blocks']
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -282,7 +294,11 @@ def build(root=ROOT):
             negative_cases=closed['negative_cases'],hash_measurements=closed['hash_measurements'],scope=closed['scope'],
             hybrid_evidence='results/closed-hybrid-verifier/report.json',
             hybrid_scope=hybrid['scope'],
-            next_gate='Hybrid implementation preserves all ordered hash preimages on the degree1024 fixture. Validate the full retained verifier shape and quantify remaining hash/arithmetic/security cost before full-scale proving.'),
+            full_replay_evidence='results/full-hybrid-verifier.json',
+            ordered_hash_calls_compared=full_hybrid['ordered_hash_calls_compared'],
+            work_evidence='results/closed-hybrid-work.json',
+            remaining_hash_counterfactual=hybrid_work['unchanged_other_work_counterfactual_blocks'],
+            next_gate=hybrid_work['decision']),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
         decision=dict(next_experiment='Independent 64-block envelope transport fails the framing budget. Specify a joint closed-verifier relation with amortized proof messages, same-root call binding and arithmetic coverage; require a complete byte/security ledger before larger-scale proving. q8 is diagnostic, not PQ128.',
