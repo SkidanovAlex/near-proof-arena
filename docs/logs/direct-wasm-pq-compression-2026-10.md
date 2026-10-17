@@ -10787,3 +10787,53 @@ Next gate: count actual extension-field elements and digest payloads in the
 conditional quantum budget. Also account for VM/NEAR public binding and
 recursive key stabilization before treating this as a deployable architecture.
 Full1Petagas NEAR, PQ128, Lean acceptance soundness remain open.
+
+
+## 2026-10-17 — Exact wire census and frozen PQ parameter sensitivity
+
+Previous turn classified progress (three real parent proofs and measured root
+geometry242809B). Revalidated clean authoritative worktree atf14c40ca2.
+Decoded all three saved proofs with the pinned backend, checked EOF and exact
+byte-for-byte re-encoding. No proof regeneration was needed. Added typed
+field/digest counts and unique digest counting to the local Rust experiment;
+nightly formatting and targeted Clippy passed.
+
+Root geometry census:
+-4708extension elements at16B =75328B.
+-14657base elements at4B =58628B.
+-3374digest occurrences at32B =107968B.
+-885B framing. Total242809B, reconciled exactly.
+-Extension counts: GKR715, constraints2853, stacking58, WHIR1082.
+-2606distinct digests; repeated occurrences768.
+
+screen_swirl_wire_cost.py verifies source/log hashes and recomputes 72
+fixed-slot profiles (three stages, six extension degrees, four digest widths).
+A hypothetical dictionary stores each unique digest once plus a four-byte
+count and a two-byte reference for every occurrence. No dictionary codec was
+implemented; all table entries except baseline are projections.
+
+| Root extension | Digest bytes | Ordinary | Dictionary | Free dictionary references |
+| --- | ---: | ---: | ---: | ---: |
+|4|32|242809|224985|218233|
+|4|52|310289|277105|270353|
+|9|32|336969|319145|312393|
+|9|52|404449|371265|364513|
+
+Degree9 corresponds only to the earlier conditional term-budget screen, NOT a
+complete PQ128 parameter set or implemented field. Digest52 is a hypothetical
+larger-hash profile, NOT a certified Poseidon instantiation. These counts freeze
+queries, circuit layout, hash repetition and framing. A real parameter upgrade
+changes the recursive verifier workload too. Thus this is neither a feasibility
+certificate nor a universal lower bound for redesigned PCS/frontier multiproofs.
+Even granting free dictionary references does not bring degree9 below300000B
+in this family. The earlier242809B result therefore does not establish spare
+capacity for PQ128 by simple field/hash widening.
+
+Next architectural target: constraint messages contain2853/4708extension
+values. Investigate a proved reduction of per-column evaluation disclosure,
+while jointly modeling its added rounds, PCS openings and recursion circuit.
+These claims cannot simply be omitted. Also retain terminal-polynomial work
+and actual frontier multiproofs in the comparison. Need a new full size and
+quantum ledger before more large Lean development. Evidence and exact source
+patch saved under results/swirl-security-review/census; full NEAR1Petagas,
+PQ128 and Lean recursive-acceptance soundness remain open.
