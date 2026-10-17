@@ -10930,3 +10930,55 @@ not PQ128 candidates. Source/shape logs are hash-pinned in
 results/swirl-security-review/query-payload. Typed decode/re-encode test passed,
 exact minimal-query checks passed; no new proof or new Lean soundness theorem
 is claimed. Full NEAR1Petagas/PQ128/Lean acceptance remains open.
+
+
+## 2026-10-17 — Broad stacking/frontier screen and workload threshold
+
+Previous turn classified progress: conditional query payload rejected unchanged
+geometry with free column reduction. Revalidated clean branch at9081cef4b.
+Implemented witness-free screen_swirl_stacking_geometry.py. It reproduces the
+242809B raw-path baseline EXACTLY from measured field counts, widths, three
+query stages and Merkle depths before exploring any changed layout.
+
+Search: heights2^15..2^25, every blowup2^b with b>=2 and height*blowup<=2^27,
+folds1..8 and maximum terminal degree logs1..12, excluding negative final-degree
+logs.5790configurations per profile,46320total across extension9/12,digest52/64,
+and cached-trace-opened/public variants. Geometry includes source widths from
+measured14447856common cells and393216cached cells; terminal polynomial,
+sumcheck/stacking message lengths, roots, query values, and expected binary
+Merkle frontier hashes. Column-reduction argument is FREE throughout.
+
+Queries use the earlier exact interval method with conditional C=1,Q=2^128,
+zero grinding credit and the entire1/2budget granted independently to EACH
+query term (optimistically ignoring their sum and every other soundness term).
+The model freezes verifier trace work despite larger fields/hashes. It is not
+an executable new protocol, PQ128 certificate or universal size lower bound.
+
+At extension9/digest52, best expected full frontier cost396024.72B. Granting
+all cached-source verification/openings/authentication free gives326824.40B.
+Both prefer stacked logheight19,logblowup8,fold3,final logdegree10,queries76/59/48.
+That LDE reaches the BabyBear2^27limit. Thus taller stacking alone is not the
+winner; high blowup and a different fold tradeoff also matter. All eight
+profiles have zero expected-size survivors. Public-cache best costs for other
+profiles: extension9/digest64=362695.95B,extension12/digest52=360940.40B,
+extension12/digest64=396811.95B.
+
+Frontier expectation independently matched exhaustive enumeration of682
+with-replacement query sequences on small trees. Sixteen seeded full-size
+frontier samples for the two extension9/digest52 winners:393709–398129B with
+cache opened,325405–328317B with cache free. These are geometry simulations,
+not generated proofs; expected size is not a deterministic lower bound.
+
+For a concrete next research threshold, keeping the best free-cache geometry
+and fixed non-column messages, reducing common trace cells by2x/4x/8x projects
+292272.40/274996.40/267592.40B. No such workload reduction is implemented. These
+figures still omit the column-replacement argument and complete security/NEAR
+costs; even2x leaves little useful headroom. Fourfold reduction is a more useful
+hypothesis to test, especially jointly reducing hash calls and terminal-
+polynomial evaluation rather than optimizing one in isolation.
+
+The saved report pins its measured input report. No large proof run was spent
+on a failed candidate. Next: identify a specific verifier specialization or
+transcript change that reduces the measured common trace, then recalculate
+its full authenticated statement and soundness budget. Full NEAR1Petagas,
+PQ128 and Lean recursive acceptance remain open.
