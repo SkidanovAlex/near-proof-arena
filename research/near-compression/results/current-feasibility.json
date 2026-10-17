@@ -199,6 +199,18 @@
       "evidence": "results/recursive-pcs-root/report.json"
     }
   },
+  "bounded_merkle_verifier_experiment": {
+    "evidence": "results/private-merkle-proof-q8/report.json",
+    "complete_bounded_merkle_verifier": true,
+    "complete_recursive_pcs_verifier": false,
+    "quantum_security_certified": false,
+    "queries": 8,
+    "proof_bytes": 149968,
+    "proof_and_public_bytes": 150593,
+    "raw_path_bytes": 48,
+    "beats_raw_path_bytes": false,
+    "scope": "Complete executable bounded Merkle verification via compression AIR and same-use-root routing GKR/PCS. Trusted static canonical AIR/spec excluded from wire; public statement counted separately. No original sibling path, expected call messages or full use trace is a verifier input. PCS openings may leak witness information; no zero-knowledge claim. Ext8/query diagnostic, not a soundness/PQ128 certificate, full PCS recursion, 1Pgas NEAR proof, or formal route-compiler correctness theorem."
+  },
   "latest_verifier_hash_work": {
     "totals": {
       "calls": 104839,
@@ -296,9 +308,10 @@
     "results/larger-field-code-switch-screen.json": "f1ad5181272cea7db34147a0226bb63ad81cd4c04c0b9cb9b632c3ca47d9894f",
     "results/recursive-pcs-root/report.json": "1d905381180c940a885581288e08179bcdaa8a775b19c6d9b5101c25d187610d",
     "results/recursive-single-root-root/report.json": "a4d811dcf05e3226072f8969c643d1bc98d82462710c365965b78137e3a7adf0",
+    "results/private-merkle-proof-q8/report.json": "84a4fc273a65d7875d5e235e7fd67ca604476a4f5ad16d30e08b7754fa442af2",
     "scope-report.json": "fcea1becba48a6f0e97c704b7048b71993852c2713441fe1acdf0c1d2b04f9ea",
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
-    "airbender/direct-wasm/report_current_feasibility.py": "bc5b15ffbb07af64e92fca71dc049b354dc41601373223fb2888f33e64766a20",
+    "airbender/direct-wasm/report_current_feasibility.py": "09f7c2c4ece2c76a4439e5acebe9c4d6aaf51b35f5bd49b5d0a3174bbb4f6cb7",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

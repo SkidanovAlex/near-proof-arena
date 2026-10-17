@@ -84,6 +84,7 @@ def build(root=ROOT):
     feasible = [c for c in candidates if c['partial_conditional_quantum_bound_passes'] and c['projected_subtotal_under_target']]
     historical_recursive = read('results/recursive-pcs-root/report.json')
     recursive = read('results/recursive-single-root-root/report.json')
+    bounded_merkle = read('results/private-merkle-proof-q8/report.json')
     scope = read('scope-report.json')
     hash_work = read('results/switch-full-verifier-hash-work.json')
     assert hash_work['fresh_verifier_passed']
@@ -112,6 +113,13 @@ def build(root=ROOT):
             limits=recursive['limits'],
             historical_pcs_only_prototype=dict(full_trace_disclosure_needed=historical_recursive['full_trace_disclosure_needed_for_native_root_link'],
                 evidence='results/recursive-pcs-root/report.json')),
+        bounded_merkle_verifier_experiment=dict(evidence='results/private-merkle-proof-q8/report.json',
+            complete_bounded_merkle_verifier=bounded_merkle['complete_bounded_merkle_verifier'],
+            complete_recursive_pcs_verifier=bounded_merkle['complete_recursive_pcs_verifier'],
+            quantum_security_certified=bounded_merkle['quantum_security_certified'],queries=bounded_merkle['queries'],
+            proof_bytes=bounded_merkle['proof_bytes'],proof_and_public_bytes=bounded_merkle['proof_and_public_bytes'],
+            raw_path_bytes=bounded_merkle['original_private_path_bytes'],beats_raw_path_bytes=bounded_merkle['beats_raw_path_bytes'],
+            scope=bounded_merkle['scope']),
         latest_verifier_hash_work=dict(totals=hash_work['measurement']['totals'],
             largest_unique_block_tags=dict(top_hash_tags),gadget_accounting=hash_work['current_gadget_accounting'],
             scope=hash_work['scope']),

@@ -752,6 +752,15 @@
     "hash_work_report": "results/switch-full-verifier-hash-work.json",
     "unique_sha384_blocks_in_complete_fixture_verifier": 242409,
     "recursion_prototype_correction": "Newer recursive-single-root-root already removes trace disclosure; original inner proofs and native transcript/GKR/hash/Merkle checks remain required.",
-    "next_binding_experiment": "results/merkle-recursive-call-routing/report.json; public-only private Merkle path routing plus Lean compression witness, same-root proof composition pending."
+    "next_binding_experiment": "results/merkle-recursive-call-routing/report.json; public-only private Merkle path routing plus Lean compression witness, same-root proof composition pending.",
+    "bounded_merkle_verifier_experiment": {
+      "report": "results/private-merkle-proof-q8/report.json",
+      "proof_and_public_bytes": 150593,
+      "queries": 8,
+      "beats_raw_48_byte_path": false,
+      "complete_bounded_merkle_verifier": true,
+      "complete_recursive_pcs_verifier": false,
+      "PQ128_certified": false
+    }
   }
 }

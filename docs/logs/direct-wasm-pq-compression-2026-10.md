@@ -9573,3 +9573,53 @@ still required. No existing transcript/profile has been relabeled or weakened.
 Evidence:results/merkle-recursive-call-routing/. No Lean source changes; prior
 full audit4658 remains the last full audit. Full NEAR1Pgas/PQ128/sub300000 B
 remain open; latest full fixture1344645 B unchanged; feasibility NOT_PASSED.
+
+## 2026-10-17 — Complete bounded private Merkle diagnostic proof
+
+Added private_merkle_proof.py with distinct bundle/routing profiles. The
+public Merkle root/context/count/index/leaf and all four proof-carried source
+commitments bind the routing transcript before its random equation weights.
+The verifier regenerates all984 equations from public data, compiles their
+weighted linear sum into GKR, and authenticates the input obligation through
+PCS on the compression proof's exact use-table root. SHA384 compression,
+full state, messages, padding and all natural bus/use relations are handled
+by the existing four-table compression AIR proof. Neither expected calls,
+original path siblings, nor a full use trace is an external verifier input.
+The source commitments are witness commitments carried in the proof; the
+public Merkle root is a distinct, constrained application input.
+
+Generated fresh Ext8/q8 compression proof for the10-block actual-context
+fixture. Local table proofs, zero-claim GKR and weighted opening verify.
+Generated a27456-byte routing proof (5.70s prove/encode/check) on the same
+use root. Concrete generated13-layer circuit matches independently weighted
+equations on honest, zero and arbitrary extension-field vectors, including
+negative coefficients represented modulo the base prime. This is finite
+compiler parity, not the missing universal compiler theorem.
+
+Combined proof149968 B =122496compression +27456routing +16framing.
+Public statement625 B; complete dynamic proof/public total150593 B.
+Configured static canonical AIR/spec1143101 B excluded and reported.
+Original private path48 B: this instance expands rather than compresses.
+It is a complete executable bounded Merkle-verifier diagnostic, not a
+complete recursive PCS verifier, zero-knowledge construction, PQ128 result,
+or a full NEAR state-transition proof. PCS openings can leak witness data.
+
+Fresh-process verification passes in27.99s. Ten negative cases reject:
+changed public root/index/leaf, truncated/trailing/altered routing bytes,
+substituted use root/query count, missing routing component, and changed
+compression root. An isolated verifier audit admits only proof/spec/public
+data-file reads and disables bytecode writes before importing verifier code.
+The native/Lean compression witness and routing-boundary tests from the
+previous checkpoint remain prerequisites, not replacements for either proof
+component. No original inner Merkle verification is called by this API.
+
+Evidence:results/private-merkle-proof-q8/. Existing full fixture remains
+1344645 B at diagnosticq309; no secure parameters changed. Full audit4658
+is unchanged (no Lean source changes). Feasibility NOT_PASSED.
+
+Next: measure how complete proof size scales with larger paths/batches and
+shared hash work, then decide whether this architecture can reach a useful
+compression break-even. Full PCS transcript/arithmetic/canonical decoding
+constraints, a universal routing-compiler theorem, interactive/QROM security
+composition and the full NEAR1Pgas capacity/semantics gates remain open.
+Do not interpret150593 B atq8 as progress through the PQ128/300000 B gate.

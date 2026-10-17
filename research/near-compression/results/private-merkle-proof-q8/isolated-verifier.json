@@ -1,0 +1,1 @@
+{"status": "PASS", "data_files_read": ["proof.bin", "public.json", "trusted-spec.json"], "original_path_or_trace_data_read": false, "scope": "Observed fresh verifier data-file audit. Code/library imports allowed; no confidentiality or formal information-flow claim."}
