@@ -169,6 +169,15 @@ def build(root=ROOT):
     for case in coverage['scenarios']:
         assert case['independent_64_slot_envelopes']==(case['sha384_compression_blocks']+63)//64
         assert case['mandatory_header_roots_finals_local_bytes']==case['independent_64_slot_envelopes']*coverage['mandatory_bytes_per_fixed_spec_envelope']['total']
+    arithmetic=read('results/closed-verifier-arithmetic.json')
+    assert arithmetic['fresh_verifier_passed'] and arithmetic['hash_calls_match_prior_census']
+    assert sum(stage.get('hash_parts',0) for stage in arithmetic['stages'].values())==hash_work['measurement']['totals']['calls']
+    for key in ('input_sha256','source_sha256'):
+        for relative,expected in arithmetic[key].items():
+            assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    structured=read('results/structured-functional/manifest.json')
+    for relative,expected in structured['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -242,6 +251,11 @@ def build(root=ROOT):
         nibble_full_verifier_coverage=dict(evidence='results/nibble-full-verifier-screen.json',
             status=coverage['status'],scenarios=coverage['scenarios'],coverage=coverage['coverage'],
             decision=coverage['decision'],scope=coverage['scope']),
+        closed_verifier_arithmetic=dict(evidence='results/closed-verifier-arithmetic.json',
+            stages=arithmetic['stages'],scope=arithmetic['scope']),
+        structured_functional_candidate=dict(evidence='results/structured-functional/manifest.json',
+            new_theorems=structured['new_theorems'],scope=structured['scope'],
+            next_gate='Shadow all retained code-switch state transitions with structured weights. Keep existing expanded-vector transcript binding until a closed versioned descriptor contract and soundness analysis exist.'),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
         decision=dict(next_experiment='Independent 64-block envelope transport fails the framing budget. Specify a joint closed-verifier relation with amortized proof messages, same-root call binding and arithmetic coverage; require a complete byte/security ledger before larger-scale proving. q8 is diagnostic, not PQ128.',

@@ -634,6 +634,50 @@
     "decision": "Do not transport one existing envelope per hash batch or launch larger SHA-only proving as a substitute for full-verifier recursion. A next viable candidate must jointly prove the closed verifier, amortize fixed messages globally, and account for call routing plus arithmetic; validate its complete byte/security ledger before full-scale proving.",
     "scope": "Exact lower bound only for concatenating independent envelopes with this fixed 64-slot specification. Workload is the recorded verifier after whole-input hash deduplication, not a minimum over new algorithms, block/state sharing or transcript redesign. Optimistic scenario is an assumed workload, not an implemented protocol. This does not rule out joint proofs, recursive aggregation, different AIR/codec, or a redesigned verifier. q8 and hash-only coverage cannot establish PQ128 or full NEAR feasibility."
   },
+  "closed_verifier_arithmetic": {
+    "evidence": "results/closed-verifier-arithmetic.json",
+    "stages": {
+      "contract": {},
+      "call_link": {
+        "ext8/add": 137027,
+        "ext8/base": 2881,
+        "ext8/canonical": 15106,
+        "ext8/evaluate": 638,
+        "ext8/mul": 306360,
+        "ext8/scale": 59946,
+        "ext8/sub": 118096,
+        "hash_parts": 23800
+      },
+      "compression": {
+        "ext8/add": 1289946,
+        "ext8/base": 19839,
+        "ext8/canonical": 2180753,
+        "ext8/evaluate": 1274,
+        "ext8/fft": 1,
+        "ext8/mul": 3379214,
+        "ext8/scale": 93768,
+        "ext8/sub": 1231735,
+        "hash_parts": 81039,
+        "native/affine_fold": 17,
+        "native/affine_fold/values_elements": 524284,
+        "native/inject": 7,
+        "native/inject/points_elements": 2170,
+        "native/inject/weights_elements": 149798
+      }
+    },
+    "scope": "Executed full retained diagnostic fixture contract, call-link and compression verifier. Counts Python reference functions including imported aliases; composite operations also count their nested scalar calls, so do not sum all counters as disjoint gates. Native calls and vector lengths recorded separately; native scalar arithmetic and built-in base-field arithmetic not counted. Not a circuit gate count, formal verifier compiler, full NEAR run, or soundness/security proof."
+  },
+  "structured_functional_candidate": {
+    "evidence": "results/structured-functional/manifest.json",
+    "new_theorems": [
+      "structured_power_fold",
+      "structured_tensor_fold",
+      "structured_sum_fold",
+      "structured_scale_eq"
+    ],
+    "scope": "Four pointwise field identities plus small executable sequence parity. No universal list/implementation refinement, transcript binding or security proof.",
+    "next_gate": "Shadow all retained code-switch state transitions with structured weights. Keep existing expanded-vector transcript binding until a closed versioned descriptor contract and soundness analysis exist."
+  },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
     "legacy_cap": 3450888781824,
@@ -674,7 +718,9 @@
     "results/ext8-packed-prover-parity.json": "e4293057d4f3d691226f47c347be6fffca148d050689cf64a82ca54db4f7d6c1",
     "results/sha384-nibble64/prover-attempt.json": "f865af35b745671612df2364970c93f5f55cccb0c0482c89105065791b2d1ba6",
     "results/nibble-full-verifier-screen.json": "5ea5148cc9d91faa2212ab85098ac1253a646d816586632704fedc99cc20f720",
-    "airbender/direct-wasm/report_current_feasibility.py": "909ae1499b8b97647a27a20844a45405002fa7e3858816866066d1c76454a095",
+    "results/closed-verifier-arithmetic.json": "e1cf506fc4c5702adf5017fb3c5f76cf491e19d6832ab255237d21e8ecf9e38b",
+    "results/structured-functional/manifest.json": "96f88ab9e2668826a908f9a75f4c04c6505ffad9048e0b4efe4ad3909642f7ff",
+    "airbender/direct-wasm/report_current_feasibility.py": "c9b39bec79c737e3436ee1d7ea699703613108fb62e070997e0493a947c4f64d",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

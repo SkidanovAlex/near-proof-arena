@@ -10150,3 +10150,39 @@ side; it distinguishes Python Ext8 function calls from native vector calls and
 lengths. Its full run is pending at this checkpoint (session69594/PID3024571).
 Do not treat nested composite-call counts as disjoint gates or claim native
 scalar operations were counted. Full1Pgas/PQ128/sub300000B remains NOT_PASSED.
+
+## 2026-10-17 — Arithmetic workload and structured functional candidate
+
+Profiler session69594 exited0 in69.998s. Contract, call-link and full compression
+verifier all passed. Counted3685574Python Ext8 multiplications:306360call-link
+and3379214compression. Native work is separate:17affine folds across524284input
+values;7injections across149798weight elements and2170evaluation points. Counts
+exclude native scalar operations and built-in base arithmetic; composite calls
+include nested operations and must not be summed as disjoint circuit gates.
+Hash calls104839exactly match the earlier full verifier census. Retained input
+and source pins in results/closed-verifier-arithmetic.json.
+
+Named candidate for closed-verifier arithmetic: represent a functional as one
+scaled tensor-equality term plus a list of geometric terms m*z^i. Injection
+appends terms. Folding removes the low tensor coordinate and updates each
+geometric term to m*(1-r+r*z)*(z^2)^i. This avoids constructing every coefficient
+merely to carry a functional forward. Existing stages hash the entire expanded
+vector, so the current protocol still requires expansion; no transcript/profile
+change or speedup claim is made. Any descriptor-only transcript must bind the
+closed derivation history, not caller-selected replacement weights (see prior
+derived-transcript counterexamples).
+
+ext8_structured_functional.py and its test pass18alternating injection/fold
+sequences (1098Ext8value comparisons), zero/one/random fold challenges,
+zero/duplicate evaluation points, and zero mixers. This is small executable
+parity, not full-stage shadow validation. Next shadow the retained full verifier
+state transitions and count structured work before proposing a protocol change.
+
+NearCompression/StructuredFunctional.lean proves four universal POINTWISE field
+identities: geometric fold, tensor low-bit fold, fold linearity, and agreement
+with the existing oneFoldScale convention. These support this specific measured
+arithmetic candidate; they do not prove Python/list refinement or transcript
+soundness. Reuses CodeSwitchFunctional and OneFoldScalarComposition. Root module
+build passes and full Audit.lean now4662theorems; no sorryAx. Exact audit and
+build logs retained under results/structured-functional. Original goal still
+NOT_PASSED: no full closed-verifier proof, PQ128 certificate, or fullNEAR1Pgas.

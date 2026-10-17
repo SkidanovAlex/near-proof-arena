@@ -6565,3 +6565,8 @@ example (decode : List UInt8 → Option Res) (s : St)
 #print axioms NearCompression.polynomial_primitive_rational_representation
 #print axioms NearCompression.polynomial_rational_factorization_descent
 #print axioms NearCompression.polynomial_selected_irreducible_factor_descent
+
+#print axioms NearCompression.structured_power_fold
+#print axioms NearCompression.structured_tensor_fold
+#print axioms NearCompression.structured_sum_fold
+#print axioms NearCompression.structured_scale_eq
