@@ -490,3 +490,15 @@ mutations, 13/13 bus forgeries). Modelled final layer (ext2 fixed point + measur
 laws, 100 other columns): **283,692 B** at z = 32 + 42 B (was 336,453), 335,116 B at
 today's settings. Cost: SHA-only prove 10× slower on CPU (degree-21 interpreted Ext12
 DAG; k = 2: 291,389 B, 2.4× slower). Non-SHA budget for the narrow verifier: ≈ 100 columns.
+
+**H-rob** (`lane/pq-weak-binding` @ `70bbb8c2e`, `weak-binding/HROB.md`; review 1 in
+`REVIEW-1.md`: no fatal flaw in Thm 4, fixes 1–5 applied, H-rob(strong) dropped).
+H-rob **fails for WHIR as specified/built**: shift-query answers y_{i,j} are not absorbed
+before γ_i, so one equivocated leaf chosen after γ solves the combination equation
+(quantum attack ≈ t²/2ⁿ ⇒ no digest < 32 B sound with today's order; 41/42 B unaffected).
+**Fix WHIR-Y**: observe y_{i,·} before sampling γ_i (incl. final round): 0 proof bytes,
+≈ +90 verifier compressions. With WHIR-Y, Thm R proves H-rob(shift) [T, unreviewed]:
+26–27 B digests (c = 11–12, K = 5–7), net −34.8 KB (z = 32 levers) / −39 KB (268-bit).
+Residual: [H-M], [H-outer] (outer protocol reads columns via the list at δ₀ + K/B₀),
+reviews of Thm 4/Thm R, user U-7 decisions (WHIR-Y, position-indexed nodes, dedup,
+48-B top levels, 384-bit FS chain).
