@@ -16,13 +16,15 @@ OUT = ROOT/'results/swirl-security-review/dag-export'
 
 
 def input_value(key, seed):
+    if key[0] == 'output_weight':
+        return ((seed+1)*(key[1]+1))%P
     if key[0] == 'variable':
         _, kind, part, offset, index, *namespace = key
         return ((seed+1)*(1+kind*100003+part*1009+offset*97+index*7)) % P
     return {'first_row': seed+13, 'last_row': seed+17, 'transition': 1-(seed+17)}[key[0]] % P
 
 
-def compile_air(record, *, reassociate=False, return_artifacts=False):
+def compile_air(record, *, reassociate=False, return_artifacts=False, public_weights=False):
     nodes=[]; mapping=[]; slots={}
     for original_index, node in enumerate(record['nodes']):
         op,*args=node
@@ -48,7 +50,12 @@ def compile_air(record, *, reassociate=False, return_artifacts=False):
     # Diagnostic balanced output checksum keeps all semantic outputs reachable.
     terms=[]
     for j,i in enumerate(outputs):
-        c=len(nodes);nodes.append(('const',j+1,0,0,0))
+        c=len(nodes)
+        if public_weights:
+            slot=slots.setdefault(('output_weight',i),len(slots))
+            nodes.append(('input',slot))
+        else:
+            nodes.append(('const',j+1,0,0,0))
         terms.append(len(nodes));nodes.append(('mul',mapping[i],c))
     while len(terms)>1:
         nxt=[]

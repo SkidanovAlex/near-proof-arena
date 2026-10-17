@@ -11403,3 +11403,50 @@ close the full300000-byte gap or NEAR1Petagas semantics/capacity obligations.
 Evidence:research/near-compression/results/swirl-security-review/dag-gkr/.
 Reproduce:airbender/direct-wasm/prove_swirl_fixed_dag.py; replay with
 --verify-saved. Full goal remains active and unachieved.
+
+
+## 2026-10-17 — Native output-consumer weights and dynamic GKR coefficient inputs
+
+Previous goal turn classified progress: executed GKR component and full-witness
+input-obligation check. Revalidated clean branch at46ce467fc. Inspected pinned
+backend verifier/batch_constraints.rs: terminal evaluated_claim combines
+2*Tinteraction outputs followed byTconstraint outputs with mu powers. Constraint
+terms use lambda powers and eq_ns; interaction numerators use eq3b,norm_factor,
+eq_sharp; denominators use beta_logup powers,eq3b,eq_sharp and bus_index+1.
+Lambda and mu are sampled earlier, not after a new diagnostic output checksum.
+
+Implemented terminal_weights: derives sparse node coefficients plus a constant
+bus-identifier offset for this exact scalar formula, given controls and trace
+order. Independent procedural transcription of the native consumers matches
+for arbitrary Ext4 node values across six scenarios (forward/reverse AIR order,
+random/zero/one scalar challenges). Four nonzero-offset cases reject dropping
+the bus constant. Four malformed cases reject wrong trace-control shape,
+interaction shape, node index and bus range. This is algebraic interface
+validation, not replay against controls captured from a real native proof.
+
+Extended compiler with optional public_weights input slots. Keeps AIR variable
+coordinates distinct, adds3871output-coefficient slots to2373DAG inputs and
+retains23layers. Result:66214padded gates,1264GKR extension messages,45504bytes
+at hypotheticaldegree9 (versus1198/43128for fixed checksum). Same native-node,
+layer-output and independent-slot reassociation checks pass. Default saved GKR
+proof still verifies in a fresh process after the compiler option change.
+No dynamic-weight GKR proof generated this turn.
+
+Crucial boundary: the additional slots are physically ordinary GKR inputs;
+they are NOT automatically public/constrained just because the option is named
+public_weights. The verifier must compute their values from bound parameters,
+trace order and actual transcript, and subtract their exact contribution from
+the final input functional obligation. The remaining obligation must link to
+the SAME earlier committed trace evaluations, including rotations and cached
+parts. Neither constant offset nor arbitrary prover-supplied coefficient slots
+may be dropped. No claim that exposing all coefficients costs zero verifier
+work, or that the original transcript remains valid after omitting columns.
+
+Next: execute the weighted component with verifier-supplied controls, split
+known coefficient inputs out of its obligation, and map remaining coordinates
+to the PCS opening interface. Before cryptographic/Lean composition, derive
+real controls, challenge chronology and the native evaluated_claim equality.
+Full NEAR1Petagas, PQ128, secure sub300000bytes and end-to-end Lean remain open.
+
+Reproducer:test_swirl_consumer_weights.py. Artifacts, pinned native source and
+new layout:results/swirl-security-review/consumer-weights/.

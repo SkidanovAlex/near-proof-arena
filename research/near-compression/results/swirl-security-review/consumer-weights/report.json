@@ -1,0 +1,19 @@
+{
+  "status": "TERMINAL_SCALAR_IDENTITY_CHECKED",
+  "cases": 6,
+  "nonzero_offset_checks": 4,
+  "malformed_rejected": 4,
+  "airs": 39,
+  "sha256": {
+    "results/swirl-security-review/dag-export/dag.jsonl.gz": "78a24241e778d287a3bc05c694bc1fb0101107abd1e22fa7a3f69427b0043e96",
+    "airbender/direct-wasm/test_swirl_consumer_weights.py": "9bdb79c28350f253759898520bc09b08a65a74f4bc08cf33c38ff1cf9c39818a",
+    "airbender/direct-wasm/swirl_consumer_weights.py": "23870f5b5703832ad55833812b5004461aa90d0a406e999450b136bd7dd67e29",
+    "airbender/direct-wasm/compile_swirl_fixed_dag.py": "e0eda935f8b6547ae6f5925981bd386afb1b92095675456921eca7ca31716456"
+  },
+  "limitations": [
+    "Controls supplied, not derived from actual proof transcript.",
+    "Trace order supplied; real trace/AIR permutation binding remains required.",
+    "Tested arbitrary Ext4 node values; not native verifier acceptance.",
+    "No PCS input proof, GKR integration, Lean theorem, PQ128 or NEAR proof."
+  ]
+}
