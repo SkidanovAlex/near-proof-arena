@@ -12914,3 +12914,39 @@ Artifacts: research/near-compression/results/swirl-security-review/
 pcs-field-compatibility/. Audit passes; full NEAR1Pgas, PQ128, sub300000B at
 that security and end-to-end Lean correctness remain open.
 
+## 2026-10-17 — Shared equality products: proved identity and measured tradeoff
+
+Previous goal turn made progress at84ebaf975 by source-gating an unchanged
+Binius/WHIR adapter. Clean branch revalidated. Returned to the native-field
+arithmetic verifier and inspected reachable costs: equality checks alone use
+325519multiplications, residual45498 and PCScoordinates26333 (these sets overlap;
+counts must not be added). Wiring/check evaluation remains the dominant target.
+
+Implemented a separate candidate equality-table expansion: compute high=x*r
+once, low=x-high, instead of independently multiplying x*(1-r). Prior baseline
+and artifacts remain unchanged. Complete fixed-layout compilation and retained
+proof replay pass all437checks, residual and2603PCScoordinates, including four
+invalid-input checks and the known-value residual mutation. Complete baseline/
+candidate output vectors also match for all-zero, all-one and seeded random
+assignments to all5983inputs; inputs are not frozen to the honest witness.
+
+Live census: multiplications382848->367934 (-14914,3.90%); subtractions68785->
+98884 (+30099); adds82498 and inputs unchanged. Maximum emitted depth stays105.
+This is NOT an unconditional improvement: multiplication must cost more than
+30099/14914 (~2.018) subtractions in the chosen implementation for this simple
+weighted operation metric to favor the candidate. Total live node count grows.
+No recursive proof-size/runtime improvement has been measured, and no assumption
+is made that generic GKR/AIR prices multiplication differently from subtraction.
+Keep the candidate separate pending a real native-field circuit cost model.
+
+SwirlSharedEquality.lean proves the child identity and full recursively expanded
+ordered table equality for arbitrary field points and initial value lists.
+Targeted lake build passes; axioms propext/Classical.choice/Quot.sound only.
+This is an algorithmic identity, not Python interning/compiler refinement or
+cryptographic soundness. Candidate does not change transcript or PCS obligations.
+
+Reproduce check_swirl_shared_eq_products.py; artifacts in shared-eq-gkr-verifier/.
+Next substantial workload reduction must address fixed wiring/check evaluation,
+which dominates the measured full arithmetic, or use a circuit layout whose
+actual cost makes these shared products valuable. FullNEAR1Pgas/PQ128/sub300000B
+at that security and end-to-end correctness remain open.
