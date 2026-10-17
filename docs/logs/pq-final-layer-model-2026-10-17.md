@@ -185,3 +185,36 @@ best (c_sha 12k). Under 300 KB needs user decisions (grinding z ≈ 32,
 ≈ 336-bit truncated digests) plus backend changes (per-round k1, m = 8) and a
 SHA-384 AIR at ≲ 8k cells/compression — none demonstrated. Or a non-hash final
 wrap (lattice), which adds an assumption class.
+
+## Iteration 5: lattice final wrap — fits easily, but needs decisions
+
+LaBRADOR (Beullens–Seiler, CRYPTO 2023, ePrint 2022/1341): ≈ 58 KB at 128-bit
+security for R1CS mod 2⁶⁴+1 with 2²⁰ constraints; size nearly constant in the
+practical range (dominated by the last recursion step). Greyhound (CRYPTO 2024)
+gives a lattice PCS with ≈ 53 KB proofs at N = 2³⁰ and O(√N) verification.
+A final layer "LaBRADOR proof that the penultimate SWIRL proof verifies" is
+estimated at **≈ 60–80 KB**: SHA-384 at ~50–100k R1CS constraints per
+compression × 2–6k compressions ≈ 2²⁷–2²⁹ constraints, plus non-native BabyBear
+Ext12 arithmetic.
+
+What it costs (none resolved here):
+1. **New assumption class** (Module-SIS hardness, lattice-estimator based) beside
+   SHA-384-as-QRO; amends U-7 "SHA-384 throughout". User decision.
+2. **Security proofs:** LaBRADOR's knowledge soundness is classical ROM with
+   relaxed (norm-bounded) extraction; QROM/rbr treatment at the U-6 contract and
+   "proven bounds only" (U-2) not established.
+3. **Verifier:** LaBRADOR verification is linear in the R1CS size (~2²⁸ mults)
+   unless the fixed verifier R1CS is preprocessed with a Greyhound-style
+   commitment; NEAR validators need cheap verification.
+4. **Prover latency:** a 2²⁸-constraint lattice proof per chunk against U-8
+   real-time; unmeasured.
+5. **Formal correctness:** no Lean model of lattice soundness exists.
+
+## Decision point after five iterations
+
+| route | final size | needs |
+|---|---:|---|
+| hash-only, current settings, realistic SHA AIR | ≈ 400–530 KB | nothing new |
+| hash-only, all levers | ≈ 300–415 KB (< 300 only if c_sha ≲ 8k) | grinding z≈32, ≈336-bit digests (U-7), per-round k1 + m=8 backend changes |
+| accumulation (WARP/Arc) | same as hash-only | — (prover speed only) |
+| lattice final wrap | ≈ 60–80 KB | MSIS assumption, QROM/proven-bound work, verifier preprocessing, latency |
