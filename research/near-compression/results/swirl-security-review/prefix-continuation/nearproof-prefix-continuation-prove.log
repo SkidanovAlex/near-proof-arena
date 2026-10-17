@@ -1,0 +1,12 @@
+   Compiling openvm-recursion-circuit v2.1.0 (/tmp/nearproof-openvm/crates/recursion)
+    Finished `fast` profile [optimized + debuginfo] target(s) in 18.18s
+     Running unittests src/lib.rs (target/fast/deps/openvm_recursion_circuit-0e902e15daeda90d)
+
+running 1 test
+{"status":"WEIGHTED_STACKING_WHIR_VERIFIED","whir_bytes":337932,"stacking_bytes":1476,"negative_checks":4}
+
+NEARPROOF_WEIGHTED_SUMCHECK rounds=17 extension_elements=91 matrix_openings_checked=50
+test tests::nearproof_weighted_native_sumcheck ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 273 filtered out; finished in 16.84s
+

@@ -11831,3 +11831,41 @@ then implement prefix-only shape/wire validation and assess root geometry.
 Evidence:opening-free-prefix/ and prefix-dag-gkr/ under swirl-security-review.
 No new Lean theorem, complete compressed protocol, PQ128 or full NEAR1Petagas
 claim. Full goal remains active.
+
+## 2026-10-17 — Public GKR drives an authenticated continuation
+
+Previous goal turn classified progress: opening-free prefix/GKR at44785ef02.
+Revalidated clean worktree. Public GKR verifier now returns its derived residual
+and statement/proof. New preparation derives all1549native pairs (1548used,
+one zero-filled) from that verified residual and fixed public trace/layout
+metadata, without reading opening values or source matrices.
+
+Added explicit SHA384 digest of canonical domain-separated public GKR statement
+and complete GKR proof to native stacking transcript seed. Native prover and
+replayer absorb domain tag, length and all48digest bytes as field elements
+before the first stacking message/challenge. Digest is computed by verifier
+preparation, not accepted from proof metadata. This is diagnostic composition
+of existing hash transcripts, not a proved Fiat-Shamir/QROM transformation.
+
+Generated fresh weighted sumcheck+WHIR for the NEW public-statement GKR residual.
+Full probe passes16.84s; 50full-matrix evaluations agree. Encoded sizes remain
+337932WHIR and1476stacking. Four native WHIR tampering checks reject. Saved
+native replay passes0.22s without source matrices. Changing one binding digest
+byte rejects at terminal sumcheck equality; saved expected-failure log. Clippy
+passes. Original weighted/native artifacts remain unchanged in repository.
+
+Added replay_swirl_prefix_continuation.py orchestrator. It re-verifies retained
+native proof and recomputes opening-free prefix, compares complete prefix log
+and controls, verifies public GKR, derives weights AND digest, and then replays
+native weighted sumcheck/WHIR. Successful complete diagnostic replay reads no
+source matrices. Public trace metadata is fixed exported key/proof data; a
+standalone parser must derive/validate it instead of trusting a fixture file.
+
+This closes the previous NEW-residual PCS gap at the executable component level.
+Still retains original native proof for prefix/shape validation; no independent
+compressed-prefix codec or complete proof-size claim. Next remove that retained
+full-proof dependency using typed prefix-only decoding/shape validation, then
+measure on root geometry and formalize composition interfaces. Internal WHIR
+alone already exceeds300000, so this interface success is not size feasibility.
+No PQ128, new Lean security theorem or full NEAR1Petagas proof. Goal stays active.
+Evidence:results/swirl-security-review/prefix-continuation/.

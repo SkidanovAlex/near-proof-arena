@@ -39,6 +39,7 @@ def main():
     result=dict(status='OPENING_FREE_GKR_REPLAY_MATCHES_RESIDUAL',known_slots=len(known),pcs_coordinates=len(residual['coordinates']),
         scope='Uses trusted public prefix controls and fixed DAG. No witness nodes, column openings or source matrices read. PCS authentication of this new residual remains pending.')
     (OUT/'opening-free-replay.json').write_text(json.dumps(result,indent=2)+'\n');print(result)
+    return residual, description, proof
 
 
 if __name__=='__main__':main()
