@@ -1234,7 +1234,7 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..23beab0
+index 0000000..f54c982
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
 @@ -0,0 +1,666 @@
@@ -1789,10 +1789,10 @@ index 0000000..23beab0
 +    pub fn node(&mut self, l: &DigestCells, r: &DigestCells) -> DigestCells {
 +        use openvm_stark_backend::hasher::MerkleHasher;
 +        let id = self.job_units.len() as u32;
-+        let units: Vec<Option<U2>> = digest_words(l.digest)
++        let units: Vec<Option<U2>> = super::hash::digest_units(digest_words(l.digest))
 +            .into_iter()
-+            .chain(digest_words(r.digest))
-+            .flat_map(|w| [Some(U2::Word(w)), None])
++            .chain(super::hash::digest_units(digest_words(r.digest)))
++            .flat_map(|u| [Some(u), None])
 +            .collect();
 +        self.job_units.push(BJob { tag: 0, node: true, units });
 +        self.merkle_nodes += 1;
@@ -1828,10 +1828,10 @@ index 0000000..23beab0
 +            // node job: cur goes left iff bit = 0 (UnitWS: unit index + 12 * bit)
 +            use openvm_stark_backend::hasher::MerkleHasher;
 +            let id = self.job_units.len() as u32;
-+            let units: Vec<Option<U2>> = digest_words(ld)
++            let units: Vec<Option<U2>> = super::hash::digest_units(digest_words(ld))
 +                .into_iter()
-+                .chain(digest_words(rd))
-+                .flat_map(|w| [Some(U2::Word(w)), None])
++                .chain(super::hash::digest_units(digest_words(rd)))
++                .flat_map(|u| [Some(u), None])
 +                .collect();
 +            self.job_units.push(BJob { tag: 0, node: true, units });
 +            self.merkle_nodes += 1;
@@ -2223,10 +2223,10 @@ index 0000000..0c335cf
 +}
 diff --git a/crates/recursion/src/nv/glue.rs b/crates/recursion/src/nv/glue.rs
 new file mode 100644
-index 0000000..3d38d19
+index 0000000..31de21f
 --- /dev/null
 +++ b/crates/recursion/src/nv/glue.rs
-@@ -0,0 +1,516 @@
+@@ -0,0 +1,653 @@
 +//! NV GLUE role: one row per *pair* of message words of a job compression (8 rows per
 +//! compression).  Replaces the packer (one row per word) and the block-chaining AIR
 +//! (one 102-column row per compression).
@@ -2304,6 +2304,16 @@ index 0000000..3d38d19
 +    pub s: [T; 6],
 +    /// Merkle-node job (one block: NODE_WORD || L || R, aligned word units)
 +    pub nd: T,
++    /// next row's second byte (42-byte digests: shift-2 word units in node jobs)
++    pub carry2: T,
++    /// low 6 bits of limb 2 of output word 5 (truncated away in 42-byte digests)
++    pub lo6: T,
++    /// Merkle job (leaf / coset leaf / node): output digest truncated to 42 bytes
++    pub tr: T,
++    /// slot 2 holds a 2-byte digest tail followed by the 0x80 padding (42-byte digests)
++    pub hp: T,
++    /// a tail slot occurred before this row (bit length correction)
++    pub hs: T,
 +}
 +pub const GLUE_W: usize = GlueCols::<u8>::width();
 +
@@ -2325,7 +2335,7 @@ index 0000000..3d38d19
 +    let one = AB::Expr::ONE;
 +    let c = |v: u64| AB::Expr::from_u64(v);
 +    let bool_g = |b: &mut AB, x: AB::Var| b.assert_zero(kg.clone() * x * (x - AB::Expr::ONE));
-+    for x in [l.start, l.blk0, l.last, l.end, l.nd]
++    for x in [l.start, l.blk0, l.last, l.end, l.nd, l.tr, l.hp, l.hs]
 +        .into_iter()
 +        .chain(l.q)
 +        .chain(l.p)
@@ -2363,6 +2373,11 @@ index 0000000..3d38d19
 +        w.assert_one(l.blk0);
 +        w.assert_zero(l.phase);
 +        w.assert_zero(l.uidx);
++        w.assert_zero(l.hs);
++    }
++    let w42 = sha_levers().digest_bytes == 42;
++    if !w42 {
++        builder.assert_zero(kg.clone() * l.hp);
 +    }
 +
 +    // ---- felt / word unit slots ----
@@ -2386,9 +2401,23 @@ index 0000000..3d38d19
 +    let mut phb: AB::Expr = l.phase.into();
 +    let mut uidx: AB::Expr = l.uidx.into();
 +    let mut d: Vec<AB::Expr> = vec![];
++    // 2-byte tail view (bytes 0, 1 of slot 2 = b9, b10), as a word with zero low bytes
++    let tail = limbs_from_bytes(
++        &[b[9].clone(), b[10].clone(), AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO],
++        AB::Expr::ZERO,
++        AB::Expr::ZERO,
++    );
 +    for s in 0..4 {
 +        let p = l.p[s];
-+        let ds = act.clone() * (one.clone() - phb.clone()) - p;
++        let hps: AB::Expr = if s == 2 { l.hp.into() } else { AB::Expr::ZERO };
++        let ds = act.clone() * (one.clone() - phb.clone()) - p - hps.clone();
++        if s == 2 {
++            builder.assert_zero(kg.clone() * l.hp * phb.clone());
++            builder.assert_zero(kg.clone() * l.hp * (one.clone() - act.clone()));
++            builder.assert_zero(kg.clone() * l.hp * l.wd[1]);
++            builder.assert_zero(kg.clone() * l.hp * (slots[2][2].clone() - c(0x80)));
++            builder.assert_zero(kg.clone() * l.hp * slots[2][3].clone());
++        }
 +        builder.assert_zero(kg.clone() * p * phb.clone());
 +        builder.assert_zero(kg.clone() * p * (one.clone() - act.clone()));
 +        let a = &slots[s];
@@ -2410,19 +2439,21 @@ index 0000000..3d38d19
 +        builder.assert_zero(kg.clone() * l.zm[s] * (a[0].clone() + a[1].clone() + a[2].clone()));
 +        if s % 2 == 0 {
 +            let wdv: AB::Expr = l.wd[w].into();
++            let wordish = wdv.clone() + hps.clone();
 +            let [u0, u1, u2] = ul[w].clone();
++            let [t0, t1, t2] = tail.clone();
 +            slot.receive(
 +                builder,
 +                [
 +                    one.clone(),
 +                    l.job.into(),
 +                    uidx.clone(),
-+                    wdv.clone() * c(UNIT_WORD as u64) + (one.clone() - wdv.clone()) * c(UNIT_FELT as u64),
-+                    (one.clone() - wdv.clone()) * felt + wdv.clone() * u0,
-+                    wdv.clone() * u1,
-+                    wdv * u2,
++                    wordish.clone() * c(UNIT_WORD as u64) + (one.clone() - wordish.clone()) * c(UNIT_FELT as u64),
++                    (one.clone() - wordish) * felt + wdv.clone() * u0 + hps.clone() * t0,
++                    wdv.clone() * u1 + hps.clone() * t1,
++                    wdv * u2 + hps.clone() * t2,
 +                ],
-+                kg.clone() * ds.clone(),
++                kg.clone() * (ds.clone() + hps.clone()),
 +            );
 +        } else {
 +            slot.receive(
@@ -2439,8 +2470,8 @@ index 0000000..3d38d19
 +                kg.clone() * is_felt,
 +            );
 +        }
-+        phb = phb + p;
-+        uidx = uidx + ds.clone();
++        phb = phb + p + hps.clone();
++        uidx = uidx + ds.clone() + hps.double();
 +        d.push(ds);
 +    }
 +    for w in 0..2 {
@@ -2464,7 +2495,7 @@ index 0000000..3d38d19
 +    builder.assert_zero(
 +        kp.clone()
 +            * l.end
-+            * (l.b[13] * c(1 << 16) + l.b[14] * c(1 << 8) + l.b[15] - (c(33) + l.uidx * c(4)) * c(8)),
++            * (l.b[13] * c(1 << 16) + l.b[14] * c(1 << 8) + l.b[15] - (c(33) + l.uidx * c(4) - l.hs * c(6)) * c(8)),
 +    );
 +    // padding must have started by word 13 exactly in the last block
 +    builder.assert_zero(kp.clone() * is_q(6) * (l.last - phase_after.clone()));
@@ -2474,17 +2505,45 @@ index 0000000..3d38d19
 +        [l.job.into(), pj.clone() * b[0].clone() + l.nd * c(NODE_TAG as u64)],
 +        kg.clone() * l.blk0 * (pj.clone() * is_q(2) + l.nd * q_0.clone()),
 +    );
-+    // node jobs: constant words 0 (NODE_WORD), 13 (0x80 pad), 14 (0), 15 (bit length 832)
++    // node jobs: constant words 0 (node prefix), padding and bit length
 +    let kn = kg.clone() * l.nd;
 +    let node_w = sha_levers().node_prefix();
-+    let pad_w = (0x80u64 << 56).to_be_bytes();
-+    let len_w = [0u64.to_be_bytes(), 832u64.to_be_bytes()].concat();
 +    for k in 0..8 {
 +        builder.assert_zero(kn.clone() * q_0.clone() * (l.b[k] - c(node_w[k] as u64)));
-+        builder.assert_zero(kn.clone() * is_q(6) * (l.b[8 + k] - c(pad_w[k] as u64)));
 +    }
-+    for k in 0..16 {
-+        builder.assert_zero(kn.clone() * q7.clone() * (l.b[k] - c(len_w[k] as u64)));
++    if !w42 {
++        // 48 B: words 13 (0x80 pad), 14 (0), 15 (832)
++        let pad_w = (0x80u64 << 56).to_be_bytes();
++        let len_w = [0u64.to_be_bytes(), 832u64.to_be_bytes()].concat();
++        for k in 0..8 {
++            builder.assert_zero(kn.clone() * is_q(6) * (l.b[8 + k] - c(pad_w[k] as u64)));
++        }
++        for k in 0..16 {
++            builder.assert_zero(kn.clone() * q7.clone() * (l.b[k] - c(len_w[k] as u64)));
++        }
++    } else {
++        // 42 B: message 8 + 84 = 92 bytes: byte 92 (row 5, b12) = 0x80, then zeros, length 736
++        builder.assert_zero(kn.clone() * is_q(5) * (l.b[12] - c(0x80)));
++        for k in 13..16 {
++            builder.assert_zero(kn.clone() * is_q(5) * l.b[k]);
++        }
++        for k in 0..16 {
++            builder.assert_zero(kn.clone() * is_q(6) * l.b[k]);
++        }
++        let len_w = [0u64.to_be_bytes(), 736u64.to_be_bytes()].concat();
++        for k in 0..16 {
++            builder.assert_zero(kn.clone() * q7.clone() * (l.b[k] - c(len_w[k] as u64)));
++        }
++    }
++    // Merkle-job flag: node jobs and leaf jobs (tags 0, 6) truncate; transcript jobs (3, 4, 5, 7) not
++    if w42 {
++        builder.assert_zero(kn.clone() * (one.clone() - l.tr));
++        let tagrow = kg.clone() * pj.clone() * l.blk0 * is_q(2);
++        let t0: AB::Expr = b[0].clone();
++        builder.assert_zero(tagrow.clone() * l.tr * t0.clone() * (t0.clone() - c(6)));
++        builder.assert_zero(
++            tagrow * (one.clone() - l.tr) * (t0.clone() - c(3)) * (t0.clone() - c(4)) * (t0.clone() - c(5)) * (t0 - c(7)),
++        );
 +    }
 +
 +    // ---- sequencing ----
@@ -2502,6 +2561,9 @@ index 0000000..3d38d19
 +        t.assert_zero(cont.clone() * (one.clone() - q7.clone()) * (n.last - l.last));
 +        t.assert_zero(cont.clone() * n.start);
 +        t.assert_zero(cont.clone() * (n.nd - l.nd));
++        t.assert_zero(cont.clone() * (n.tr - l.tr));
++        t.assert_zero(cont.clone() * (n.hs - l.hs - l.hp));
++        t.assert_zero(cont.clone() * (n.b[1] - l.carry2));
 +        t.assert_zero(kg.clone() * nkg.clone() * l.end * (one.clone() - n.start));
 +        t.assert_zero(kg.clone() * (one.clone() - nkg.clone()) * (one.clone() - l.end));
 +        t.assert_zero(nkg.clone() * (one.clone() - kg.clone()) * (one.clone() - n.start));
@@ -2526,21 +2588,60 @@ index 0000000..3d38d19
 +    let w0 = limbs_from_bytes(&w0b, l.lo[0].into(), l.lo[1].into());
 +    let w1 = limbs_from_bytes(&w1b, l.lo[2].into(), l.lo[3].into());
 +    let qv = q0 + q1 * c(2) + q2 * c(4);
-+    // node jobs: word 2q (q in 1..=6) is unit 4q - 2, word 2q + 1 (q in 0..=5) is unit 4q
-+    for (w, (limbs, idx, mult)) in [
-+        (w0.clone(), qv.clone() * c(4) - c(2), one.clone() - q_0.clone() - q7.clone()),
-+        (w1.clone(), qv.clone() * c(4), one.clone() - is_q(6) - q7.clone()),
-+    ]
-+    .into_iter()
-+    .enumerate()
-+    {
-+        let _ = w;
-+        let [l0, l1, l2] = limbs;
-+        slot.receive(
-+            builder,
-+            [one.clone(), l.job.into(), idx, c(UNIT_WORD as u64), l0, l1, l2],
-+            kn.clone() * mult,
-+        );
++    if !w42 {
++        // node jobs: word 2q (q in 1..=6) is unit 4q - 2, word 2q + 1 (q in 0..=5) is unit 4q
++        for (limbs, idx, mult) in [
++            (w0.clone(), qv.clone() * c(4) - c(2), one.clone() - q_0.clone() - q7.clone()),
++            (w1.clone(), qv.clone() * c(4), one.clone() - is_q(6) - q7.clone()),
++        ] {
++            let [l0, l1, l2] = limbs;
++            slot.receive(
++                builder,
++                [one.clone(), l.job.into(), idx, c(UNIT_WORD as u64), l0, l1, l2],
++                kn.clone() * mult,
++            );
++        }
++    } else {
++        // 42 B node: L0..L4 aligned (words 1..5), L5 tail = bytes 0,1 of word 6, R words at
++        // byte offset 50 (shift 2), R5 tail = bytes 2,3 of word 11.
++        let zero = || AB::Expr::ZERO;
++        let virt = |x0: AB::Expr, x1: AB::Expr| {
++            limbs_from_bytes(&[x0, x1, zero(), zero(), zero(), zero(), zero(), zero()], zero(), zero())
++        };
++        let s2: [AB::Expr; 8] = core::array::from_fn(|k| b[2 + k].clone());
++        let s3: [AB::Expr; 8] = core::array::from_fn(|k| match k {
++            0..=5 => b[10 + k].clone(),
++            6 => l.carry.into(),
++            _ => l.carry2.into(),
++        });
++        let s2l = limbs_from_bytes(&s2, l.ulo[0].into(), l.ulo[1].into());
++        let s3l = limbs_from_bytes(&s3, l.ulo[2].into(), l.ulo[3].into());
++        let l5 = virt(b[0].clone(), b[1].clone());
++        let r5 = virt(b[10].clone(), b[11].clone());
++        let (q_2, q_3, q_4, q_5) = (is_q(2), is_q(3), is_q(4), is_q(5));
++        let mix = |parts: &[(AB::Expr, &[AB::Expr; 3])]| -> [AB::Expr; 3] {
++            core::array::from_fn(|t| parts.iter().fold(AB::Expr::ZERO, |acc, (sel, l)| acc + sel.clone() * l[t].clone()))
++        };
++        // unit 1: q0 w1 (0), q1 w0 (2), q2 w0 (6), q3 L5 tail (10)
++        let u1 = mix(&[(q_0.clone(), &w1), (q_1.clone(), &w0), (q_2.clone(), &w0), (q_3.clone(), &l5)]);
++        let i1 = q_1.clone() * c(2) + q_2.clone() * c(6) + q_3.clone() * c(10);
++        let m1 = q_0.clone() + q_1.clone() + q_2.clone() + q_3.clone();
++        // unit 2: q1 w1 (4), q2 w1 (8), q3 R0 (12), q4 R2 (16), q5 R4 (20)
++        let u2 = mix(&[(q_1.clone(), &w1), (q_2.clone(), &w1), (q_3.clone() + q_4.clone() + q_5.clone(), &s2l)]);
++        let i2 = q_1.clone() * c(4) + q_2.clone() * c(8) + q_3.clone() * c(12) + q_4.clone() * c(16) + q_5.clone() * c(20);
++        let m2 = q_1.clone() + q_2.clone() + q_3.clone() + q_4.clone() + q_5.clone();
++        // unit 3: q3 R1 (14), q4 R3 (18), q5 R5 tail (22)
++        let u3 = mix(&[(q_3.clone() + q_4.clone(), &s3l), (q_5.clone(), &r5)]);
++        let i3 = q_3.clone() * c(14) + q_4.clone() * c(18) + q_5.clone() * c(22);
++        let m3 = q_3 + q_4 + q_5;
++        for (limbs, idx, mult) in [(u1, i1, m1), (u2, i2, m2), (u3, i3, m3)] {
++            let [l0, l1, l2] = limbs;
++            slot.receive(
++                builder,
++                [one.clone(), l.job.into(), idx, c(UNIT_WORD as u64), l0, l1, l2],
++                kn.clone() * mult,
++            );
++        }
 +    }
 +    let iface = PermutationCheckBus::new(buses.iface);
 +    let mut msg = vec![l.cid.into(), qv.clone() + c(4)];
@@ -2560,7 +2661,18 @@ index 0000000..3d38d19
 +        kg.clone() * ((one.clone() - q2) * (one.clone() - l.blk0) + q2 * l.last),
 +    );
 +    let mut msg = vec![l.job.into(), q0 + q1 * c(2)];
-+    msg.extend(s.iter().cloned());
++    if w42 {
++        // Merkle jobs: word 5 truncated to its top 2 bytes (limbs (0, 0, l2 - lo6), lo6 < 64)
++        let t6 = l.tr * is_q(6);
++        let mut sv = s.clone();
++        sv[3] = s[3].clone() * (one.clone() - t6.clone());
++        sv[4] = s[4].clone() * (one.clone() - t6.clone());
++        sv[5] = s[5].clone() - t6 * l.lo6;
++        msg.extend(sv);
++    } else {
++        msg.extend(s.iter().cloned());
++    }
++    lookup_byte(builder, buses.byte, l.lo6 * c(4), kg.clone());
 +    PermutationCheckBus::new(buses.digest).send(
 +        builder,
 +        msg,
@@ -2618,13 +2730,16 @@ index 0000000..3d38d19
 +        debug_assert_eq!(&padded[..m.len()], &m[..]);
 +        let mut slots: Vec<U2> = vec![];
 +        for u in &j.units {
-+            assert!(!matches!(u, U2::Word(_)) || slots.len() % 2 == 0, "word units must start at an even unit index");
++            assert!(matches!(u, U2::Felt(_)) || slots.len() % 2 == 0, "word units must start at an even unit index");
 +            for _ in 0..u.nunits() {
 +                slots.push(*u);
 +            }
 +        }
 +        let total = slots.len();
 +        let (mut phase, mut uidx) = (false, 0usize);
++        let w42 = sha_levers().digest_bytes == 42;
++        let trunc = w42 && (j.node || j.tag == 0 || j.tag == crate::sha384::config::TAG_COSET_LEAF);
++        let mut hs = false;
 +        if j.node {
 +            assert_eq!(nb, 1);
 +            uidx = total;
@@ -2650,6 +2765,8 @@ index 0000000..3d38d19
 +                g.act = F::from_bool(!(hdr || lenw || j.node));
 +                g.phase = F::from_bool(phase && !j.node);
 +                g.uidx = F::from_usize(if j.node { 0 } else { uidx });
++                g.tr = F::from_bool(trunc);
++                g.hs = F::from_bool(hs);
 +                let off = 128 * k + 16 * q;
 +                let bytes = &padded[off..off + 16];
 +                for t in 0..16 {
@@ -2659,7 +2776,9 @@ index 0000000..3d38d19
 +                    cnt2(counts, bytes[2 * t] as usize, bytes[2 * t + 1] as usize);
 +                }
 +                let carry = if off + 16 < padded.len() { padded[off + 16] } else { 0 };
++                let carry2 = if off + 17 < padded.len() { padded[off + 17] } else { 0 };
 +                g.carry = F::from_u8(carry);
++                g.carry2 = F::from_u8(carry2);
 +                let los = [split_lo(bytes[5], a5), split_lo(bytes[2], a2), split_lo(bytes[13], a5), split_lo(bytes[10], a2)];
 +                let mut ulos = [0u8; 4];
 +                let sb: [[u8; 4]; 4] = [
@@ -2673,6 +2792,16 @@ index 0000000..3d38d19
 +                    while s < 4 {
 +                        let w = s / 2;
 +                        if !phase && uidx < total {
++                            if let U2::Half(_) = slots[uidx] {
++                                assert_eq!(s, 2, "digest tail must sit in slot 2");
++                                debug_assert_eq!(&sb[2][2..], &[0x80, 0]);
++                                g.hp = F::ONE;
++                                hs = true;
++                                uidx += 2;
++                                phase = true;
++                                s += 1;
++                                continue;
++                            }
 +                            if let U2::Word(wv) = slots[uidx] {
 +                                assert_eq!(s % 2, 0, "word unit must start at a word slot");
 +                                let ub: Vec<u8> = sb[s].iter().chain(sb[s + 1].iter()).copied().collect();
@@ -2699,6 +2828,14 @@ index 0000000..3d38d19
 +                        s += 1;
 +                    }
 +                }
++                if j.node && w42 && (3..=5).contains(&q) {
++                    // shift-2 views (b2..b9), (b10..b15, carry, carry2): splits of their bytes 5, 2
++                    ulos = [split_lo(bytes[7], a5), split_lo(bytes[4], a2), split_lo(bytes[15], a5), split_lo(bytes[12], a2)];
++                }
++                if trunc && last && q == 6 {
++                    g.lo6 = F::from_u32(wl(out[5])[2] & 63);
++                }
++                cnt2(counts, (p3_field::PrimeField32::as_canonical_u32(&g.lo6) * 4) as usize, 0);
 +                for t in 0..4 {
 +                    g.lo[t] = F::from_u8(los[t]);
 +                    g.ulo[t] = F::from_u8(ulos[t]);
@@ -2745,10 +2882,10 @@ index 0000000..3d38d19
 +}
 diff --git a/crates/recursion/src/nv/hash.rs b/crates/recursion/src/nv/hash.rs
 new file mode 100644
-index 0000000..67171e5
+index 0000000..814b054
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash.rs
-@@ -0,0 +1,330 @@
+@@ -0,0 +1,340 @@
 +//! NV hashing subsystem, word format v2 (air2 limbs).  Same job model as
 +//! `sha384/airs.rs` (framed messages `PREFIX || tag || units`), with:
 +//! * units: a canonical felt (4 LE bytes) or a whole 64-bit word (8 BE bytes, e.g. a
@@ -2951,20 +3088,30 @@ index 0000000..67171e5
 +pub enum U2 {
 +    Felt(u32),
 +    Word(u64),
++    /// the top 2 bytes of a word (tail of a 42-byte digest); occupies 2 unit indices and is
++    /// carried as a word unit whose low 6 bytes are zero
++    Half(u64),
 +}
 +impl U2 {
 +    pub fn nunits(self) -> usize {
 +        match self {
 +            U2::Felt(_) => 1,
-+            U2::Word(_) => 2,
++            U2::Word(_) | U2::Half(_) => 2,
 +        }
 +    }
 +    pub fn bytes(self) -> Vec<u8> {
 +        match self {
 +            U2::Felt(x) => x.to_le_bytes().to_vec(),
 +            U2::Word(w) => w.to_be_bytes().to_vec(),
++            U2::Half(w) => w.to_be_bytes()[..2].to_vec(),
 +        }
 +    }
++}
++/// A digest as word units: 6 words (48 B) or 5 words + a 2-byte tail (42 B).
++pub fn digest_units(words: [u64; 6]) -> Vec<U2> {
++    let mut v: Vec<U2> = words[..5].iter().map(|&w| U2::Word(w)).collect();
++    v.push(if crate::sha384::config::sha_levers().digest_bytes == 42 { U2::Half(words[5]) } else { U2::Word(words[5]) });
++    v
 +}
 +
 +#[derive(Clone, Debug)]
@@ -2981,10 +3128,10 @@ index 0000000..67171e5
 +        if self.node {
 +            let mut m = sha_levers().node_prefix().to_vec();
 +            for u in &self.units {
-+                assert!(matches!(u, U2::Word(_)));
++                assert!(matches!(u, U2::Word(_) | U2::Half(_)));
 +                m.extend(u.bytes());
 +            }
-+            assert_eq!(m.len(), 104);
++            assert_eq!(m.len(), 8 + 2 * sha_levers().digest_bytes);
 +            return m;
 +        }
 +        let mut m = sha_levers().prefix().to_vec();
@@ -3081,10 +3228,10 @@ index 0000000..67171e5
 +}
 diff --git a/crates/recursion/src/nv/hash_tests.rs b/crates/recursion/src/nv/hash_tests.rs
 new file mode 100644
-index 0000000..9682bf6
+index 0000000..b3766c3
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash_tests.rs
-@@ -0,0 +1,194 @@
+@@ -0,0 +1,212 @@
 +//! Standalone test of the NV v2 hashing subsystem on the air2 compression AIR.
 +use std::sync::Arc;
 +
@@ -3157,8 +3304,18 @@ index 0000000..9682bf6
 +    }
 +    // Merkle-node jobs: 12 aligned word units
 +    for t in 0..3 {
-+        let units = (0..12).map(|_| U2::Word(rng.next())).collect();
++        let mut units = digest_units(std::array::from_fn(|_| rng.next()));
++        units.extend(digest_units(std::array::from_fn(|_| rng.next())));
 +        out.insert(2 * t + 1, Job2 { id: 100 + t as u32, node: true, tag: 0, units });
++    }
++    // commit-shaped transcript jobs (48 B: 6 word units; 42 B: 5 words + 2-byte tail)
++    for t in 0..2 {
++        let mut units = vec![U2::Felt(48), U2::Felt(0)];
++        units.extend((0..6).map(|_| U2::Word(rng.next())));
++        units.push(U2::Felt(crate::sha384::config::sha_levers().digest_bytes as u32));
++        units.push(U2::Felt(0));
++        units.extend(digest_units(std::array::from_fn(|_| rng.next())));
++        out.push(Job2 { id: 200 + t as u32, node: false, tag: 4, units });
 +    }
 +    out
 +}
@@ -3186,6 +3343,11 @@ index 0000000..9682bf6
 +                    let l = wl(w);
 +                    r[7..10].copy_from_slice(&l);
 +                }
++                U2::Half(w) => {
++                    r[1] = 1;
++                    let l = wl(w & 0xffff_0000_0000_0000);
++                    r[7..10].copy_from_slice(&l);
++                }
 +            }
 +            idx += u.nunits() as u32;
 +            rows.push(r);
@@ -3193,8 +3355,11 @@ index 0000000..9682bf6
 +        let mut r = [0u32; PW];
 +        r[3] = 1;
 +        r[5] = j.id;
++        let trunc = crate::sha384::config::sha_levers().digest_bytes == 42
++            && (j.node || j.tag == 0 || j.tag == crate::sha384::config::TAG_COSET_LEAF);
 +        for q in 0..6 {
-+            let l = wl(dig[job][q]);
++            let w = if trunc && q == 5 { dig[job][q] & 0xffff_0000_0000_0000 } else { dig[job][q] };
++            let l = wl(w);
 +            r[11 + 3 * q..14 + 3 * q].copy_from_slice(&l);
 +        }
 +        rows.push(r);
@@ -3912,7 +4077,7 @@ index 0000000..e9f9a7c
 +}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
-index 0000000..f2cc3eb
+index 0000000..098b0c8
 --- /dev/null
 +++ b/crates/recursion/src/nv/transcript2.rs
 @@ -0,0 +1,639 @@
@@ -4037,9 +4202,9 @@ index 0000000..f2cc3eb
 +                if self.op == Op2::Pow { crate::sha384::config::TAG_POW } else { TAG_FLUSH }
 +            }
 +            Op2::Commit => {
-+                units.push(U2::Felt(48));
++                units.push(U2::Felt(crate::sha384::config::sha_levers().digest_bytes as u32));
 +                units.push(U2::Felt(0));
-+                units.extend(digest_words(limbs_digest(&self.payload)).map(U2::Word));
++                units.extend(super::hash::digest_units(digest_words(limbs_digest(&self.payload))));
 +                TAG_COMMIT
 +            }
 +            Op2::Squeeze => TAG_SQUEEZE,
@@ -4275,7 +4440,7 @@ index 0000000..f2cc3eb
 +            g(l.hn.into()),
 +        );
 +    }
-+    h.send_felt(builder, l.job, c(14), l.op_c * c(48) + (l.op_f + l.op_p) * l.cnt * c(4), g(l.op_c + l.op_f + l.op_p));
++    h.send_felt(builder, l.job, c(14), l.op_c * c(crate::sha384::config::sha_levers().digest_bytes as u64) + (l.op_f + l.op_p) * l.cnt * c(4), g(l.op_c + l.op_f + l.op_p));
 +    h.send_felt(builder, l.job, c(15), c(0), g(l.op_c + l.op_f + l.op_p));
 +    // PoW jobs: the output word 0 (limbs) goes to the ALU's leading-zero check
 +    PermutationCheckBus::new(h.slot).send(
@@ -5229,10 +5394,10 @@ index 0000000..e490f57
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..e78d8c6
+index 0000000..3f43bd5
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1373 @@
+@@ -0,0 +1,1381 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -5520,7 +5685,7 @@ index 0000000..e78d8c6
 +
 +/// Per-query Merkle paths from a canonical multiproof (levers spec): `leaves` are
 +/// (index, leaf digest) in query order; returns each query's siblings bottom-up.
-+fn decompress_multiproof(leaves: &[(usize, crate::sha384::config::Digest)], stream: &[crate::sha384::config::Digest], depth: usize) -> Vec<Vec<crate::sha384::config::Digest>> {
++fn decompress_multiproof(leaves: &[(usize, crate::sha384::config::Digest)], stream: &[crate::sha384::config::Digest], depth: usize, failures: &mut Vec<String>) -> Vec<Vec<crate::sha384::config::Digest>> {
 +    use std::collections::BTreeMap;
 +    let mut levels: Vec<BTreeMap<usize, crate::sha384::config::Digest>> = vec![BTreeMap::new(); depth + 1];
 +    for &(i, d) in leaves {
@@ -5534,7 +5699,13 @@ index 0000000..e78d8c6
 +            let idx = known[i];
 +            let pair = idx ^ 1;
 +            if !(i + 1 < known.len() && known[i + 1] == pair) {
-+                let sib = *it.next().expect("multiproof stream too short");
++                let sib = match it.next() {
++                    Some(d) => *d,
++                    None => {
++                        failures.push("multiproof stream too short".into());
++                        [0u64; 6]
++                    }
++                };
 +                levels[l].insert(pair, sib);
 +                i += 1;
 +            } else {
@@ -5544,7 +5715,9 @@ index 0000000..e78d8c6
 +            levels[l + 1].insert(idx >> 1, ShaHasher.compress(lft, rgt));
 +        }
 +    }
-+    assert!(it.next().is_none(), "multiproof stream too long");
++    if it.next().is_some() {
++        failures.push("multiproof stream too long".into());
++    }
 +    leaves
 +        .iter()
 +        .map(|&(i, _)| (0..depth).map(|l| levels[l][&((i >> l) ^ 1)]).collect())
@@ -6507,7 +6680,7 @@ index 0000000..e78d8c6
 +                        (*idx, layer[0])
 +                    })
 +                    .collect();
-+                decompress_multiproof(&leaves, &proofs[0], depth)
++                decompress_multiproof(&leaves, &proofs[0], depth, &mut b.failures)
 +            } else {
 +                proofs.clone()
 +            };
