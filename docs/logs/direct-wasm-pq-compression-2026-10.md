@@ -13653,3 +13653,31 @@ Concrete artifact checks are executed through proved checkers but not yet a
 closed kernel theorem identifying the entire concrete AIR. Native acceptance,
 QROM recursive knowledge composition, fullNEAR1Pgas and sub300000 remain open.
 Packed357069B remains provisional pending complete semantic refinement.
+
+## 2026-10-17 — Combined packed-to-original HoldsP theorem
+
+Previous turn progressed ate376b9189; clean state revalidated. Added
+PackedHoldsRefinement.lean with a structural PackedAirRefinement certificate
+and universal packed_holds_refinement theorem. From packed HoldsP it constructs
+original HoldsP on the lifted trace: log bounds, every source constraint,
+multiplicity-bit Booleanity, public-segment fit and every bus balance. The
+original absent-bus4 case is handled explicitly; all other counts use the global
+bus theorem. Certificate premises are structural layout/constraint/interaction,
+receiver/sender and public-metadata facts, not assumptions of semantic execution
+or the desired original HoldsP conclusion.
+
+Kernel build passes. Axiom audit for the combined theorem lists only propext,
+Classical.choice and Quot.sound. Integrated check_packed_refinement.py validates
+all six current component checkers plus table shapes, public segments/maxPub,
+non-increased maximum heights and equal public values. All pass; consolidated
+refinement-check.json and lean-holds-audit.log retained. No proof-size or native
+proving configuration change.
+
+Important remaining gate: the current concrete candidate's coverage/layout/
+interaction evidence is executed through proved checkers, but has not yet been
+assembled as one closed kernel PackedAirRefinement value identifying the actual
+full AIR. Thus this is a complete conditional semantic theorem, not yet a closed
+concrete artifact theorem. Next build that certificate and compose with the
+existing original Wasm/runCall refinement. Native cryptographic acceptance-to-
+HoldsP, QROM recursive knowledge composition, fullNEAR1Pgas and sub300000 remain
+open; packed357069B remains provisional.

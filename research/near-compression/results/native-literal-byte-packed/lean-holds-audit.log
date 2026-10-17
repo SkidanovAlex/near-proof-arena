@@ -1,0 +1,1 @@
+'NearCompression.packed_holds_refinement' depends on axioms: [propext, Classical.choice, Quot.sound]
