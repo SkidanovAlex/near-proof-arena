@@ -1,0 +1,2 @@
+PASS: weighted saved proof and residual PCS functional (full witness)
+PASS: prefix statement binding ['changed_prefix_digest', 'old_capture_bound_proof']

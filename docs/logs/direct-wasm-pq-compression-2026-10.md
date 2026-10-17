@@ -11785,3 +11785,49 @@ replacement on root geometry, with full byte/security accounting. Lean
 known-input algebra remains useful but no new cryptographic composition theorem
 is claimed. Full NEAR1Petagas, PQ128 and secure sub300000remain unachieved.
 Full goal stays active.
+
+## 2026-10-17 — Opening-free prefix controls and public-statement GKR
+
+Previous goal turn classified progress: weighted WHIR authentication at
+b4f74c8cc. Revalidated clean worktree. Source chronology audit corrects an
+over-broad dependency concern: native lambda,beta,mu,r and terminal cur_sum
+are ALL fixed before column openings are observed. Removing openings changes
+later stacking/WHIR challenges, not these earlier controls. Thus a retained
+native prefix can feed a new terminal GKR without that apparent cycle.
+
+Refactored pinned native verifier into shared verify_zerocheck_and_logup_prefix
+plus existing terminal evaluation. New typed BatchConstraintPrefixMessage has
+only numerator/denominator terms and sumcheck messages; NO column-opening field.
+Returns controls/point/equality factors and terminal scalar. Public selectors
+computed through native evaluator with empty column inputs. Caller must still
+validate prefix shapes and preamble; the diagnostic test validates original
+proof first. This is not a standalone compressed-prefix wire decoder.
+
+Test compares baseline with removed and changed column openings. Controls AND
+complete prefix transcript log match exactly in both cases. Altered retained
+numerator claim rejects. All exported controls/selectors equal the original
+accepted capture after removing witness nodes and redundant evaluated_claim.
+Full native verification remains passing after refactor; saved weighted-WHIR
+replay regression and clippy pass. Native prefix test0.34s after compilation.
+
+Generated a NEW1258EF/20128Ext4field-byte GKR proof whose statement hashes only
+public prefix controls and the opening-free prefix transcript log hash. It no
+longer hashes captured witness node values. Existing fixture supplies prover
+witness inputs; fresh replay passes. Changed prefix digest and old capture-bound
+GKR proof reject (two binding checks). Log uses pinned Debug representation as
+a diagnostic checkpoint, not a stable production codec or QROM construction.
+
+Added separate verify_swirl_prefix_dag.py: derives all3941known slots from
+public controls and fixed DAG, verifies GKR, and emits the same2303-coordinate
+residual without reading column openings, captured witness nodes or source
+matrices. This closes the public-data interface gap in the old replay runner.
+It trusts verified native prefix controls; it does not independently replay
+native Poseidon or authenticate the residual PCS obligation.
+
+New statement changes GKR challenges/residual weights, so prior weighted-WHIR
+artifact cannot be reused. Next regenerate weighted stacking+WHIR for this
+residual and bind their diagnostic statement to the verified GKR transcript,
+then implement prefix-only shape/wire validation and assess root geometry.
+Evidence:opening-free-prefix/ and prefix-dag-gkr/ under swirl-security-review.
+No new Lean theorem, complete compressed protocol, PQ128 or full NEAR1Petagas
+claim. Full goal remains active.

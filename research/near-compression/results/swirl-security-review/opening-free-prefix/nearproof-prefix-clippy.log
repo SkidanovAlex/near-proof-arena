@@ -1,0 +1,9 @@
+   Compiling openvm-recursion-circuit v2.1.0 (/tmp/nearproof-openvm/crates/recursion)
+    Checking openvm-stark-backend v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+    Checking openvm-cpu-backend v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+    Checking openvm-instructions v2.1.0 (/tmp/nearproof-openvm/crates/toolchain/instructions)
+    Checking openvm-stark-sdk v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+    Checking openvm-circuit-primitives v2.1.0 (/tmp/nearproof-openvm/crates/circuits/primitives)
+    Checking openvm-poseidon2-air v2.1.0 (/tmp/nearproof-openvm/crates/circuits/poseidon2-air)
+    Checking openvm-circuit v2.1.0 (/tmp/nearproof-openvm/crates/vm)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 6.98s
