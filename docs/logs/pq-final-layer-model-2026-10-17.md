@@ -394,3 +394,23 @@ would be an alternative/extra lever on the ≈ 120–165 KB auth term.
 Gates now: (1) WHIR soundness on 15·2ᴺ domains; (2) coset-hash test on gas-failure5
 (predict 6,947 compressions); (3) user decision on 42-B digests + grinding;
 (4) streamed ×15 LDE timing; (5) a real shape-equivalent final-layer proof.
+
+## Levers implemented and measured; gate 2 confirmed, gate 5 corrects the model (2026-10-17, lane/pq-whir-levers)
+
+Native prover + verifier levers (`native/patches/stark-backend-levers.patch`,
+`airbender/direct-wasm/native_sha384_levers_*.rs`; report and circuit spec in
+`research/near-compression/results/pq-whir-levers/README.md`). Defaults re-prove
+gas-failure5 byte-identically. Measured on gas-failure5: grinding z=24 −27.8 KB,
+42-B digests −32.2 KB, m=8 −8.4 KB, multiproof −90.3 KB, E5 −20.5 KB, k1 hurts at W=1;
+all combined 378,849 → **246,016 B**, verify 10,227 → 4,898 compressions. Grinding:
+2.9–5.3·10⁷ SHA-384/s on 8 threads ⇒ z=32 ≈ 81–148 s per round (extrapolated).
+**Gate 2: 6,956 compressions measured vs 6,947 predicted** (leaf/node exact).
+**Gate 5** (460-column dummy at the model's best shape b=8 k1=1 k=3 log_h=19, measured
+at W ≤ 15, extrapolated with laws exact at three widths): WHIR terms match the model
+(auth −0.5 %, initial/codeword/final poly exact), but GKR (72L²+264L+248 B; 44.4 KB at
+L=23 for the L3 SHA AIR at 2^18 rows), stacking openings (48 B per stacked column) and
+relations exceed the model's child constants by ≈ 47–49 KB: 2^26.4 cells → **479 KB
+(268/48 B) and 409 KB (z=32/42 B)** vs model 432 / 360 KB. E6 (one opening per column)
+gives no gain: the next-row values must be sent for the nonlinear constraint check.
+Applied to the L4-C COMBO+E5 levers point (263,884 B) this gives ≈ 309 KB with E6 and
+≈ 332 KB without: the GKR term is now the largest correctable item.

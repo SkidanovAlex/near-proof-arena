@@ -121,7 +121,9 @@ def child_table():
 
 
 def gkr_bytes(L):
-    """Measured fit on the dummy AIR (L = log2 of interaction messages = h + 1): exact at L = 13, 14, 15."""
+    """GKR proof bytes vs GKR depth L. Fit on the dummy AIR (L = h + 1, exact at L = 13, 14, 15); it also
+    reproduces the L3 SHA-384 AIR lane exactly (43 interactions/row, L = log2(height) + 5:
+    31,256 / 37,544 / 44,408 B at heights 2^14 / 2^16 / 2^18)."""
     return 72 * L * L + 264 * L + 248
 
 
@@ -152,7 +154,7 @@ def gate5():
     print()
 
 
-def extrapolate(log_cells=26.4, L_values=(19, 24, 28)):
+def extrapolate(log_cells=26.4, L_values=(21, 23, 25)):
     """Extrapolate the measured W<=15 runs to the model's cell count, component by component."""
     print(f'## gate 5 extrapolated to 2^{log_cells} cells, 460 columns (log_h = 19 -> W = model W)\n')
     cells = 2 ** log_cells
@@ -186,12 +188,12 @@ def extrapolate(log_cells=26.4, L_values=(19, 24, 28)):
             print(f'| {key} | {round(ext[key]):,} | {model[key]:,} | {basis[key]} |')
         for Lv in L_values:
             g = gkr_bytes(Lv)
-            print(f'| gkr (L = log2 interactions = {Lv}) | {g:,} | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |')
-        print(f'| **total** (gkr at L={L_values[0]}..{L_values[-1]}) | **{round(fixed + gkr_bytes(L_values[0])):,} .. {round(fixed + gkr_bytes(L_values[-1])):,}** | **{best["bytes"]:,}** | |')
+            print(f'| gkr (L = log2 interactions = {Lv}) | {g:,} | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |')
+        print(f'| **total** (gkr at L={L_values[0]} / **23** / {L_values[-1]}) | {round(fixed + gkr_bytes(L_values[0])):,} / **{round(fixed + gkr_bytes(23)):,}** / {round(fixed + gkr_bytes(L_values[-1])):,} | **{best["bytes"]:,}** | L=23: SHA AIR (43 interactions/row) at 2^18 rows |')
         print()
 
 
-def baseline_extrapolated(log_cells=26.4, L=24):
+def baseline_extrapolated(log_cells=26.4, L=23):
     """Upstream backend (no levers) at the model's 'today' best shape, extrapolated like extrapolate()."""
     r = parse('g5base-h14')
     c = r['census']

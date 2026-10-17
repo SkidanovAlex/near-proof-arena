@@ -1,4 +1,4 @@
-No levers (upstream; b=6 k=3 log_h=21 log_final=9, W=43) at 2^26.4: extrapolated 629,209 B with gkr(L=24); final_layer_model 582,945 B (its gkr/stacking/relations constants).
+No levers (upstream; b=6 k=3 log_h=21 log_final=9, W=43) at 2^26.4: extrapolated 625,561 B with gkr(L=23); final_layer_model 582,945 B (its gkr/stacking/relations constants).
 
 ## gas-failure5 child, one lever at a time (measured vs model at the measured query schedule)
 
@@ -45,10 +45,10 @@ No levers (upstream; b=6 k=3 log_h=21 log_final=9, W=43) at 2^26.4: extrapolated
 | relations | 52,344 | 47,272 | measured h=14 + 432 B/doubling (fit h=12..14) to h=17.55 |
 | stacking | 10,096 | 1,840 | measured + 48 B per stacked column (exact at W=4,8,15) |
 | other | 73 | 861 | measured |
-| gkr (L = log2 interactions = 19) | 31,256 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| gkr (L = log2 interactions = 24) | 48,056 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| gkr (L = log2 interactions = 28) | 64,088 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| **total** (gkr at L=19..28) | **466,004 .. 498,836** | **431,689.0** | |
+| gkr (L = log2 interactions = 21) | 37,544 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| gkr (L = log2 interactions = 23) | 44,408 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| gkr (L = log2 interactions = 25) | 51,848 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| **total** (gkr at L=21 / **23** / 25) | 472,292 / **479,156** / 486,596 | **431,689.0** | L=23: SHA AIR (43 interactions/row) at 2^18 rows |
 
 **z=32 / 42 B (226-bit queries; proved at z=24, +4 B/round for a 2-element z=32 witness)** (model best shape b=8 k1=1 k=3 log_h=19 log_final=9, W=169.0, q=[58, 58, 47, 39])
 
@@ -62,10 +62,10 @@ No levers (upstream; b=6 k=3 log_h=21 log_final=9, W=43) at 2^26.4: extrapolated
 | relations | 52,344 | 47,272 | measured h=14 + 432 B/doubling (fit h=12..14) to h=17.55 |
 | stacking | 10,096 | 1,840 | measured + 48 B per stacked column (exact at W=4,8,15) |
 | other | 67 | 861 | measured |
-| gkr (L = log2 interactions = 19) | 31,256 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| gkr (L = log2 interactions = 24) | 48,056 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| gkr (L = log2 interactions = 28) | 64,088 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| **total** (gkr at L=19..28) | **395,582 .. 428,414** | **359,643.0** | |
+| gkr (L = log2 interactions = 21) | 37,544 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| gkr (L = log2 interactions = 23) | 44,408 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| gkr (L = log2 interactions = 25) | 51,848 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| **total** (gkr at L=21 / **23** / 25) | 401,870 / **408,734** / 416,174 | **359,643.0** | L=23: SHA AIR (43 interactions/row) at 2^18 rows |
 
 ## gate 5 extrapolated to 2^26.6 cells, 460 columns (log_h = 19 -> W = model W)
 
@@ -81,10 +81,10 @@ No levers (upstream; b=6 k=3 log_h=21 log_final=9, W=43) at 2^26.4: extrapolated
 | relations | 52,430 | 47,272 | measured h=14 + 432 B/doubling (fit h=12..14) to h=17.75 |
 | stacking | 11,344 | 1,840 | measured + 48 B per stacked column (exact at W=4,8,15) |
 | other | 73 | 861 | measured |
-| gkr (L = log2 interactions = 19) | 31,256 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| gkr (L = log2 interactions = 24) | 48,056 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| gkr (L = log2 interactions = 28) | 64,088 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| **total** (gkr at L=19..28) | **481,690 .. 514,522** | **446,041.0** | |
+| gkr (L = log2 interactions = 21) | 37,544 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| gkr (L = log2 interactions = 23) | 44,408 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| gkr (L = log2 interactions = 25) | 51,848 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| **total** (gkr at L=21 / **23** / 25) | 487,978 / **494,842** / 502,282 | **446,041.0** | L=23: SHA AIR (43 interactions/row) at 2^18 rows |
 
 **z=32 / 42 B (226-bit queries; proved at z=24, +4 B/round for a 2-element z=32 witness)** (model best shape b=8 k1=1 k=3 log_h=19 log_final=9, W=195.0, q=[58, 58, 47, 39])
 
@@ -98,8 +98,8 @@ No levers (upstream; b=6 k=3 log_h=21 log_final=9, W=43) at 2^26.4: extrapolated
 | relations | 52,430 | 47,272 | measured h=14 + 432 B/doubling (fit h=12..14) to h=17.75 |
 | stacking | 11,344 | 1,840 | measured + 48 B per stacked column (exact at W=4,8,15) |
 | other | 67 | 861 | measured |
-| gkr (L = log2 interactions = 19) | 31,256 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| gkr (L = log2 interactions = 24) | 48,056 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| gkr (L = log2 interactions = 28) | 64,088 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
-| **total** (gkr at L=19..28) | **408,980 .. 441,812** | **371,707.0** | |
+| gkr (L = log2 interactions = 21) | 37,544 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| gkr (L = log2 interactions = 23) | 44,408 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| gkr (L = log2 interactions = 25) | 51,848 | 8,456 | fit 72L^2+264L+248 (dummy L=13..15; SHA-AIR lane L=19,21,23 exact) |
+| **total** (gkr at L=21 / **23** / 25) | 415,268 / **422,132** / 429,572 | **371,707.0** | L=23: SHA AIR (43 interactions/row) at 2^18 rows |
 
