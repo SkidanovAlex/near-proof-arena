@@ -11170,3 +11170,53 @@ end-to-end Lean correctness remain open.
 
 Artifacts and source pins:research/near-compression/results/swirl-security-review/
 split-geometry/. Reproducer:airbender/direct-wasm/screen_swirl_split_geometry.py.
+
+
+## 2026-10-17 — No-cache DAG binding is real work, not free preprocessing
+
+Previous goal turn classified progress: split-layout stronger-security screen.
+Revalidated clean branch at bcf109db0. Inspected upstream has_cached=false:
+it adds DagCommitSubAir to SymbolicExpressionAir, hashing the constraint DAG
+in a row-to-row onion chain with the digest exposed as public values. The
+production RootProver selects this mode; StaticVerifierCircuit explicitly pins
+the digest to internal_recursive_dag_onion_commit. Merely verifying a generic
+proof with arbitrary public values is insufficient to pin the intended DAG.
+This is not a newly discovered upstream binding defect.
+
+Implemented opt-in NEARPROOF_DAG_COMMIT and NEARPROOF_TRACE_ONLY in the pinned
+single-child chain fixture, retaining the previous hash-table split. Generated
+and verified leaf/internal proofs, then generated and debug-checked the final
+no-cache trace. Command:NEARPROOF_DAG_COMMIT=1 NEARPROOF_TRACE_ONLY=1
+NEARPROOF_SPLIT_HASH=1 RAYON_NUM_THREADS=4 cargo test --locked --profile fast
+-p openvm-recursion-circuit tests::nearproof_recursive_chain -- --exact --nocapture.
+Final proof was deliberately NOT generated. Existing log stage label remains
+root_split_hash; environment/options distinguish this no-cache experiment.
+
+SymbolicExpressionAir height32768, common width24->328. Common cells rise
+9670384->19631856 (+9961472), cached cells393216->0. Distinct standalone hash
+rows16874still fit16384+512; embedded DAG hashing accounts for the new work
+and is not captured by the standalone hash census. Debug checks and targeted
+clippy passed. This does not measure full production RootProver (hash field,
+continuations and statement still differ).
+
+A5790-geometry sensitivity screen substitutes these measured common cells,
+one source tree and free column replacement into the earlier conditional
+extension9/digest52 ledger. It freezes the prior fixed messages and omits new
+public-value overhead: best expected frontier351596.40bytes. This is only a
+favorable workload comparison, not a final proof size or rigorous lower bound.
+Reproducer:airbender/direct-wasm/check_swirl_dag_screen.py. No PQ128 inference.
+
+Decision: do not treat has_cached=false as realizing the free-cache optimization.
+Its concrete replacement is more expensive in trace area and still fails the
+favorable size screen. Next architecture to examine is specialized evaluation
+of a fixed constraint DAG with the circuit shape bound by keygen, avoiding
+both a generic cached-DAG opening and rehashing the DAG every proof. Such a
+change must preserve actual constraint/interaction evaluation and PCS links;
+constant-folding alone is not evidence that the nonlinear verification work
+can be removed. Compare its full input claims and circuit costs before another
+large proof/Lean campaign. Full NEAR1Petagas/PQ128/Lean completion remains open.
+
+Evidence:research/near-compression/results/swirl-security-review/dag-trace/
+contains source snapshots for DAG AIR, production root and static digest pin,
+trace/clippy logs, patch, lockfile and raw hashes. No final proof artifact or
+new Lean soundness theorem is claimed.
