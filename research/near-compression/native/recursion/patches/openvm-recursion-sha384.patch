@@ -1232,12 +1232,334 @@ index 1c28aa8..e9147a4 100644
 -    };
 +    pub use crate::sha384::config::{Sha384Config as SC, Digest, DIGEST_SIZE, D_EF, EF, F};
  }
+diff --git a/crates/recursion/src/nv/alu.rs b/crates/recursion/src/nv/alu.rs
+new file mode 100644
+index 0000000..5aba1d0
+--- /dev/null
++++ b/crates/recursion/src/nv/alu.rs
+@@ -0,0 +1,316 @@
++//! NV ALU AIR: one Ext12 instruction per row (see isa.rs), operands through a read-only
++//! memory (row x writes c at address x), transcript/unit traffic through 12 slot
++//! messages, keys for the Merkle AIR, and the in-circuit program-binding accumulator.
++use core::borrow::{Borrow, BorrowMut};
++
++use openvm_recursion_circuit_derive::AlignedBorrow;
++use openvm_stark_backend::{
++    interaction::{BusIndex, InteractionBuilder, LookupBus, PermutationCheckBus},
++    BaseAirWithPublicValues, PartitionedBaseAir,
++};
++use p3_air::{Air, AirBuilder, BaseAir};
++use p3_field::{BasedVectorSpace, Field, PrimeCharacteristicRing};
++use p3_matrix::{dense::RowMajorMatrix, Matrix};
++
++use super::isa::{Op, ADDR_BITS, NUM_OPS};
++use crate::{
++    sha384::config::{EF, F},
++    utils::{ext_field_add, ext_field_multiply},
++};
++
++/// Rows [0, E1_SIZE) hold the E1 binding table, [E1_SIZE, E1_SIZE + E2_SIZE) the E2 table.
++pub const E1_BITS: usize = 9;
++pub const E1_SIZE: usize = 1 << E1_BITS;
++
++#[derive(Clone, Copy, Debug)]
++pub struct AluBuses {
++    pub mem: BusIndex,
++    pub slot: BusIndex,
++    pub job: BusIndex,
++    pub key: BusIndex,
++}
++
++#[repr(C)]
++#[derive(AlignedBorrow, Debug)]
++pub struct AluCols<T> {
++    pub a: [T; 12],
++    pub b: [T; 12],
++    pub c: [T; 12],
++    /// program words P0..P3
++    pub p: [T; 4],
++    /// one-hot op flags for ops 1..NUM_OPS (Nop = none)
++    pub f: [T; NUM_OPS - 1],
++    pub wit: T,
++    pub mult: T,
++    pub kmult: T,
++    pub xa: T,
++    pub xb: T,
++    pub zw: T,
++    pub inv_w: T,
++    pub e1: [T; 12],
++    pub e2: [T; 12],
++    pub acc: [T; 12],
++}
++pub const ALU_WIDTH: usize = AluCols::<u8>::width();
++
++/// Binding constant tau = X + 1 (any element outside F works; see DESIGN.md).
++pub fn tau() -> EF {
++    let mut c = [F::ZERO; 12];
++    c[0] = F::ONE;
++    c[1] = F::ONE;
++    EF::from_basis_coefficients_slice(&c).unwrap()
++}
++pub fn tau_pows() -> [EF; 4] {
++    let t = tau();
++    [EF::ONE, t, t * t, t * t * t]
++}
++
++pub struct AluAir {
++    pub buses: AluBuses,
++    pub log_rows: usize,
++}
++impl<T> BaseAir<T> for AluAir {
++    fn width(&self) -> usize {
++        ALU_WIDTH
++    }
++}
++impl<T> BaseAirWithPublicValues<T> for AluAir {}
++impl<T> PartitionedBaseAir<T> for AluAir {}
++
++fn fidx(op: Op) -> usize {
++    op as usize - 1
++}
++
++impl<AB: AirBuilder + InteractionBuilder> Air<AB> for AluAir
++where
++    <AB::Expr as PrimeCharacteristicRing>::PrimeSubfield:
++        p3_field::extension::BinomiallyExtendable<12>,
++{
++    fn eval(&self, builder: &mut AB) {
++        let main = builder.main();
++        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let l: &AluCols<AB::Var> = (*local).borrow();
++        let n: &AluCols<AB::Var> = (*next).borrow();
++        let one = AB::Expr::ONE;
++        let cst = |v: u64| AB::Expr::from_u64(v);
++        let fl = |op: Op| -> AB::Expr { l.f[fidx(op)].into() };
++        let ex = |x: &[AB::Var; 12]| -> [AB::Expr; 12] { x.map(Into::into) };
++
++        // flags
++        let mut fsum = AB::Expr::ZERO;
++        let mut opv = AB::Expr::ZERO;
++        for op in Op::all().into_iter().skip(1) {
++            builder.assert_bool(fl(op));
++            fsum += fl(op);
++            opv += fl(op) * cst(op as u64);
++        }
++        builder.assert_bool(fsum.clone());
++        let bfield = l.p[1] - opv * cst(1 << ADDR_BITS);
++
++        // result
++        let a = ex(&l.a);
++        let bb = ex(&l.b);
++        let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
++        let free = fl(Op::Load) + fl(Op::Smp1) + fl(Op::Smp12) + fl(Op::Acc);
++        for k in 0..12 {
++            let mut e = fl(Op::Mul) * ab[k].clone()
++                + fl(Op::Add) * (a[k].clone() + bb[k].clone())
++                + fl(Op::Sub) * (a[k].clone() - bb[k].clone())
++                + fl(Op::DblAdd) * (a[k].clone().double() + bb[k].clone())
++                + fl(Op::MulAddA) * (ab[k].clone() + a[k].clone())
++                + fl(Op::Horn) * ab[k].clone()
++                + (fl(Op::Obs1)
++                    + fl(Op::Obs12)
++                    + fl(Op::ObsC12)
++                    + fl(Op::Unit12)
++                    + fl(Op::Bit)
++                    + fl(Op::KeyC))
++                    * a[k].clone();
++            if k == 0 {
++                e += fl(Op::Const) * l.p[0] + fl(Op::Horn) * l.wit;
++            }
++            if k == 1 {
++                e += fl(Op::ConstX) * l.p[0];
++            }
++            builder.assert_zero((one.clone() - free.clone()) * (l.c[k] - e));
++            // zero / bit / smp1 side conditions
++            builder.assert_zero(fl(Op::Zero) * l.a[k]);
++            if k > 0 {
++                builder.assert_zero(fl(Op::Bit) * l.a[k]);
++                builder.assert_zero(fl(Op::Smp1) * l.c[k]);
++            }
++        }
++        builder.assert_zero(fl(Op::Bit) * l.a[0] * (l.a[0] - one.clone()));
++
++        // binding accumulator: w = e1 * e2; P = sum tau^j P_j
++        let w = ext_field_multiply::<AB::Expr>(ex(&l.e1), ex(&l.e2));
++        let tp = tau_pows();
++        let mut wp: [AB::Expr; 12] = core::array::from_fn(|_| AB::Expr::ZERO);
++        for j in 0..4 {
++            let tj: [AB::Expr; 12] = core::array::from_fn(|k| {
++                let cf: &[F] = tp[j].as_basis_coefficients_slice();
++                AB::Expr::from_u32(p3_field::PrimeField32::as_canonical_u32(&cf[k]))
++            });
++            let wt = ext_field_multiply::<AB::Expr>(w.clone(), tj);
++            let term: [AB::Expr; 12] = core::array::from_fn(|k| wt[k].clone() * l.p[j]);
++            wp = ext_field_add::<AB::Expr>(wp, term);
++        }
++        for k in 0..12 {
++            builder.when_first_row().assert_zero(l.acc[k]);
++            builder
++                .when_transition()
++                .assert_eq(n.acc[k], l.acc[k] + wp[k].clone());
++            builder.assert_zero(fl(Op::Acc) * (l.c[k] - l.acc[k] - wp[k].clone()));
++        }
++
++        // row index x = xa + 2^E1_BITS xb
++        let top = cst((E1_SIZE - 1) as u64);
++        builder.assert_bool(l.zw);
++        builder.assert_zero(l.zw * (l.xa - top.clone()));
++        builder.assert_eq((l.xa - top) * l.inv_w, one.clone() - l.zw);
++        builder.when_first_row().assert_zero(l.xa);
++        builder.when_first_row().assert_zero(l.xb);
++        builder
++            .when_transition()
++            .assert_eq(n.xa, (l.xa + one.clone()) * (one.clone() - l.zw));
++        builder.when_transition().assert_eq(n.xb, l.xb + l.zw);
++        let x = l.xa + l.xb * cst(E1_SIZE as u64);
++
++        // memory
++        let mem = LookupBus::new(self.buses.mem);
++        let key = |addr: AB::Expr, v: &[AB::Var; 12]| -> Vec<AB::Expr> {
++            core::iter::once(addr).chain(v.iter().map(|&t| t.into())).collect()
++        };
++        mem.add_key_with_lookups(builder, key(x, &l.c), l.mult);
++        let reads_a: AB::Expr = Op::all()
++            .into_iter()
++            .filter(|o| o.reads_a())
++            .map(|o| fl(o))
++            .fold(AB::Expr::ZERO, |s, t| s + t);
++        let reads_b: AB::Expr = Op::all()
++            .into_iter()
++            .filter(|o| o.reads_b())
++            .map(|o| fl(o))
++            .fold(AB::Expr::ZERO, |s, t| s + t);
++        mem.lookup_key(builder, key(l.p[0].into(), &l.a), reads_a);
++        mem.lookup_key(builder, key(bfield.clone(), &l.b), reads_b);
++        mem.lookup_key(builder, key(l.xa.into(), &l.e1), one.clone());
++        mem.lookup_key(builder, key(l.xb + cst(E1_SIZE as u64), &l.e2), one.clone());
++
++        // slots: (chan, key1, key2, kind, v0, v1)
++        let slot = PermutationCheckBus::new(self.buses.slot);
++        let tr12 = fl(Op::Obs12) + fl(Op::ObsC12) + fl(Op::Smp12);
++        let kind = fl(Op::Smp1) + fl(Op::Smp12) + fl(Op::ObsC12).double();
++        let chan = fl(Op::Unit12) + fl(Op::Horn) + fl(Op::Job);
++        for k in 0..12usize {
++            let kk = cst(k as u64);
++            let tr = if k == 0 {
++                fl(Op::Obs1) + fl(Op::Smp1) + tr12.clone()
++            } else {
++                tr12.clone()
++            };
++            let mut unit = fl(Op::Unit12);
++            if k == 0 {
++                unit += fl(Op::Horn) + fl(Op::Job);
++            }
++            if k == 1 {
++                unit += fl(Op::Job);
++            }
++            let key1 = l.p[2] + tr12.clone() * kk.clone();
++            let mut key2 = fl(Op::Unit12) * (l.p[3] + kk.clone()) + fl(Op::Job) * kk.clone();
++            if k == 0 {
++                key2 += fl(Op::Horn) * l.p[3];
++            }
++            let mut v0 = (tr.clone() + fl(Op::Unit12)) * l.c[k];
++            if k == 0 {
++                v0 += fl(Op::Horn) * l.wit + fl(Op::Job) * bfield.clone();
++            }
++            slot.send(
++                builder,
++                [chan.clone(), key1, key2, kind.clone(), v0, AB::Expr::ZERO],
++                unit - tr,
++            );
++        }
++        // job start
++        PermutationCheckBus::new(self.buses.job).send(builder, [l.p[2], l.p[0]], fl(Op::Job));
++        // keys: (type, P2, P3, m0..m11)
++        let keyty = fl(Op::KeyP) + fl(Op::Bit).double();
++        let mut msg = vec![keyty, l.p[2].into(), l.p[3].into()];
++        for k in 0..12 {
++            let mut m = fl(Op::KeyC) * l.a[k];
++            if k == 0 {
++                m += fl(Op::KeyP) * l.p[0] + fl(Op::Bit) * l.a[0];
++            }
++            if k == 1 {
++                m += fl(Op::KeyP) * bfield.clone();
++            }
++            msg.push(m);
++        }
++        let is_key = fl(Op::KeyC) + fl(Op::KeyP) + fl(Op::Bit);
++        builder.assert_zero(l.kmult * (one.clone() - is_key));
++        LookupBus::new(self.buses.key).add_key_with_lookups(builder, msg, l.kmult);
++    }
++}
++
++/// ALU trace from an executed program.
++pub fn alu_trace(
++    instrs: &[super::isa::Instr],
++    vals: &[EF],
++    wits: &[F],
++    key_mults: &[u32],
++) -> RowMajorMatrix<F> {
++    let n = instrs.len();
++    assert!(n.is_power_of_two());
++    let read_counts = {
++        let mut m = vec![0u32; n];
++        for ins in instrs {
++            if ins.op.reads_a() {
++                m[ins.a as usize] += 1;
++            }
++            if ins.op.reads_b() {
++                m[ins.b as usize] += 1;
++            }
++        }
++        for x in 0..n {
++            m[x % E1_SIZE] += 1;
++            m[E1_SIZE + x / E1_SIZE] += 1;
++        }
++        m
++    };
++    let mut t = F::zero_vec(n * ALU_WIDTH);
++    let coeffs = |x: EF| -> [F; 12] { x.as_basis_coefficients_slice().try_into().unwrap() };
++    let tp = tau_pows();
++    let mut acc = EF::ZERO;
++    for (x, ins) in instrs.iter().enumerate() {
++        let r: &mut AluCols<F> = t[x * ALU_WIDTH..(x + 1) * ALU_WIDTH].borrow_mut();
++        if ins.op.reads_a() {
++            r.a = coeffs(vals[ins.a as usize]);
++        }
++        if ins.op.reads_b() {
++            r.b = coeffs(vals[ins.b as usize]);
++        }
++        r.c = coeffs(vals[x]);
++        let w = ins.words();
++        r.p = w.map(F::from_u32);
++        if ins.op != Op::Nop {
++            r.f[fidx(ins.op)] = F::ONE;
++        }
++        r.wit = wits[x];
++        r.mult = F::from_u32(read_counts[x]);
++        r.kmult = F::from_u32(key_mults[x]);
++        let (xa, xb) = (x % E1_SIZE, x / E1_SIZE);
++        r.xa = F::from_usize(xa);
++        r.xb = F::from_usize(xb);
++        let d = F::from_usize(xa) - F::from_usize(E1_SIZE - 1);
++        r.zw = F::from_bool(xa == E1_SIZE - 1);
++        r.inv_w = if d == F::ZERO { F::ZERO } else { d.inverse() };
++        let (e1, e2) = (vals[xa], vals[E1_SIZE + xb]);
++        r.e1 = coeffs(e1);
++        r.e2 = coeffs(e2);
++        r.acc = coeffs(acc);
++        let pw: EF = (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum();
++        acc += e1 * e2 * pw;
++    }
++    debug_assert_eq!(acc, vals[n - 1], "ACC row must hold the full binding sum");
++    RowMajorMatrix::new(t, ALU_WIDTH)
++}
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..f15dead
+index 0000000..afae8ff
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,356 @@
+@@ -0,0 +1,366 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1560,7 +1882,7 @@ index 0000000..f15dead
 +    }
 +
 +    /// Finish: pad with NOPs, put the accumulator row last.  Returns the program length 2^log_rows.
-+    pub fn finish(&mut self, acc_total: EF) {
++    pub fn finish(&mut self) {
 +        let n = 1usize << self.log_rows;
 +        while self.instrs.len() < n - 1 {
 +            self.instrs.push(Instr::NOP);
@@ -1574,8 +1896,18 @@ index 0000000..f15dead
 +            k1: 0,
 +            k2: 0,
 +        });
-+        self.vals.push(acc_total);
++        self.vals.push(EF::ZERO);
 +        self.wits.push(F::ZERO);
++        // binding sum over all rows (including the ACC row itself)
++        let e1n = super::alu::E1_SIZE;
++        let tp = super::alu::tau_pows();
++        let mut acc = EF::ZERO;
++        for (x, ins) in self.instrs.iter().enumerate() {
++            let w = ins.words();
++            let pw: EF = (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum();
++            acc += self.vals[x % e1n] * self.vals[e1n + x / e1n] * pw;
++        }
++        *self.vals.last_mut().unwrap() = acc;
 +    }
 +
 +    /// Read counts per address (memory multiplicities).
@@ -1594,6 +1926,246 @@ index 0000000..f15dead
 +}
 +
 +pub const DIGEST_CELLS: usize = DIGEST_SIZE / 12;
+diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
+new file mode 100644
+index 0000000..af21fd9
+--- /dev/null
++++ b/crates/recursion/src/nv/circuit.rs
+@@ -0,0 +1,234 @@
++//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
++use std::{collections::HashMap, sync::Arc};
++
++use openvm_stark_backend::{
++    interaction::BusIndex, keygen::types::MultiStarkVerifyingKey, proof::Proof, AirRef,
++    StarkProtocolConfig,
++};
++use p3_field::{PrimeCharacteristicRing, PrimeField32};
++use p3_matrix::dense::RowMajorMatrix;
++
++use super::{
++    alu::{alu_trace, AluAir, AluBuses, E1_BITS, E1_SIZE},
++    builder::Builder,
++    isa::Op,
++    merkle::{merkle_trace, MerkleNvAir, MerkleNvCols, MERKLE_WIDTH},
++    verifier::build_verifier,
++};
++use crate::{
++    bus::TranscriptBus,
++    sha384::{
++        airs::{ShaBlockAir, ShaBusInventory, ShaByteAir, ShaMsgAir},
++        compress_air::{ShaBuses, Sha512Air, TableAir, CID_OFFSET_1},
++        config::{Sha384Config, F},
++        jobs::{self, ShaWork},
++    },
++    transcript::sha_transcript::{
++        generate_transcript_traces, replay_transcript, TranscriptHashAir, TranscriptInternalBuses,
++        TranscriptObsAir, TranscriptSampleAir, TranscriptTraceInput,
++    },
++};
++
++#[derive(Clone, Copy, Debug)]
++pub struct NvBuses {
++    pub alu: AluBuses,
++    pub sha: ShaBusInventory,
++    pub tr: TranscriptInternalBuses,
++    pub merkle_internal: BusIndex,
++    pub dummy_transcript: BusIndex,
++}
++
++impl NvBuses {
++    pub fn new() -> Self {
++        let mut i: BusIndex = 0;
++        let mut next = || {
++            i += 1;
++            i - 1
++        };
++        let slot = next();
++        let job = next();
++        let alu = AluBuses {
++            mem: next(),
++            slot,
++            job,
++            key: next(),
++        };
++        let sha = ShaBusInventory {
++            compress: ShaBuses {
++                ctl: next(),
++                rng: next(),
++                lb: next(),
++                iface: next(),
++            },
++            lb1: next(),
++            word: next(),
++            unit: slot,
++            job,
++            digest: next(),
++            byte: next(),
++            unit_chan: true,
++        };
++        let tr = TranscriptInternalBuses {
++            obs: next(),
++            sample: next(),
++            word: next(),
++        };
++        Self {
++            alu,
++            sha,
++            tr,
++            merkle_internal: next(),
++            dummy_transcript: next(),
++        }
++    }
++}
++
++impl Default for NvBuses {
++    fn default() -> Self {
++        Self::new()
++    }
++}
++
++pub struct NvCircuit {
++    pub buses: NvBuses,
++    /// WHIR folding factor of the child (coset tree height)
++    pub k: usize,
++    pub log_rows: usize,
++    pub sha_instances: usize,
++}
++
++impl NvCircuit {
++    pub fn new(k: usize, log_rows: usize, sha_instances: usize) -> Self {
++        Self {
++            buses: NvBuses::new(),
++            k,
++            log_rows,
++            sha_instances,
++        }
++    }
++
++    pub fn airs<SC: StarkProtocolConfig<F = F>>(&self) -> Vec<AirRef<SC>> {
++        let b = self.buses;
++        let tb = TranscriptBus::new(b.dummy_transcript);
++        let mut v: Vec<AirRef<SC>> = vec![
++            Arc::new(AluAir {
++                buses: b.alu,
++                log_rows: self.log_rows,
++            }),
++            Arc::new(TranscriptHashAir {
++                transcript_bus: tb,
++                slot_bus: Some(b.alu.slot),
++                sha: b.sha,
++                internal: b.tr,
++            }),
++            Arc::new(TranscriptObsAir {
++                transcript_bus: tb,
++                slot_bus: Some(b.alu.slot),
++                sha: b.sha,
++                internal: b.tr,
++            }),
++            Arc::new(TranscriptSampleAir {
++                transcript_bus: tb,
++                slot_bus: Some(b.alu.slot),
++                sha: b.sha,
++                internal: b.tr,
++            }),
++            Arc::new(MerkleNvAir {
++                sha: b.sha,
++                key: b.alu.key,
++                internal: b.merkle_internal,
++                k: self.k,
++            }),
++            Arc::new(Sha512Air {
++                buses: b.sha.compress_instance(0),
++                cid_offset: 0,
++            }),
++        ];
++        if self.sha_instances == 2 {
++            v.push(Arc::new(Sha512Air {
++                buses: b.sha.compress_instance(1),
++                cid_offset: CID_OFFSET_1,
++            }));
++        }
++        v.push(Arc::new(TableAir {
++            buses: b.sha.compress,
++        }));
++        v.push(Arc::new(ShaBlockAir { buses: b.sha }));
++        v.push(Arc::new(ShaMsgAir { buses: b.sha }));
++        v.push(Arc::new(ShaByteAir { buses: b.sha }));
++        v
++    }
++
++    pub fn reserved(&self) -> usize {
++        E1_SIZE + (1 << (self.log_rows - E1_BITS))
++    }
++
++    /// Execute the verifier program and generate every trace (AIR order as `airs`).
++    pub fn generate(
++        &self,
++        vk: &MultiStarkVerifyingKey<Sha384Config>,
++        proof: &Proof<Sha384Config>,
++    ) -> (Vec<RowMajorMatrix<F>>, Builder) {
++        let mut b = Builder::new(self.log_rows, self.reserved());
++        build_verifier(&mut b, vk, proof);
++        b.finish();
++        assert_eq!(vk.inner.params.k_whir(), self.k);
++
++        // key multiplicities
++        let mut commit_uses: HashMap<u32, u32> = HashMap::new();
++        let mut path_rows: HashMap<u32, u32> = HashMap::new();
++        let mut bit_uses: HashMap<(u32, u32), u32> = HashMap::new();
++        for p in &b.paths {
++            *commit_uses.entry(p.commit_id).or_default() += 1;
++            *path_rows.entry(p.path_id).or_default() +=
++                ((1u32 << self.k) - 1) + p.siblings.len() as u32;
++            for lv in 0..p.siblings.len() as u32 {
++                *bit_uses.entry((p.qid, lv)).or_default() += 1;
++            }
++        }
++        let key_mults: Vec<u32> = b
++            .instrs
++            .iter()
++            .map(|ins| match ins.op {
++                Op::KeyC => commit_uses.get(&ins.k1).copied().unwrap_or(0),
++                Op::KeyP => path_rows.get(&ins.k1).copied().unwrap_or(0),
++                Op::Bit => bit_uses.get(&(ins.k1, ins.k2)).copied().unwrap_or(0),
++                _ => 0,
++            })
++            .collect();
++
++        // transcript jobs follow the leaf jobs
++        let leaf_jobs = b.jobs();
++        let log = b.transcript.clone().into_log();
++        let tr_jobs = replay_transcript(&log);
++        let base = leaf_jobs.len();
++        let (mut mtrace, nodes) = merkle_trace(&b.paths, self.k);
++        let mut work = ShaWork {
++            jobs: leaf_jobs,
++            nodes,
++        };
++        work.jobs.extend(tr_jobs.iter().map(|j| j.sha_job()));
++        let sha = jobs::generate(&work, self.sha_instances);
++        {
++            use core::borrow::BorrowMut;
++            for row in mtrace.values.chunks_exact_mut(MERKLE_WIDTH) {
++                let c: &mut MerkleNvCols<F> = row.borrow_mut();
++                if c.valid == F::ONE {
++                    c.cid = F::from_usize(sha.split.cid(c.cid.as_canonical_u32() as usize));
++                }
++            }
++        }
++        let tr = generate_transcript_traces(&TranscriptTraceInput {
++            proof_jobs: vec![(tr_jobs.as_slice(), base)],
++        });
++        let mut counts = sha.byte_counts.clone();
++        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
++            *c += t;
++        }
++        let alu = alu_trace(&b.instrs, &b.vals, &b.wits, &key_mults);
++        let mut mats = vec![alu, tr.hash, tr.obs, tr.sample, mtrace];
++        mats.extend(sha.compress);
++        mats.extend([sha.table, sha.block, sha.msg, jobs::byte_table(&counts)]);
++        (mats, b)
++    }
++}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
 index 0000000..c5cb7c5
@@ -1708,24 +2280,397 @@ index 0000000..c5cb7c5
 +        [self.a, self.b + ((self.op as u32) << ADDR_BITS), self.k1, self.k2]
 +    }
 +}
+diff --git a/crates/recursion/src/nv/merkle.rs b/crates/recursion/src/nv/merkle.rs
+new file mode 100644
+index 0000000..8208f1b
+--- /dev/null
++++ b/crates/recursion/src/nv/merkle.rs
+@@ -0,0 +1,364 @@
++//! NV Merkle AIR: one SHA-384 node compression per row.  Per path: 2^k - 1 coset-tree
++//! rows (leaf digests from the leaf jobs, internal results over a permutation bus),
++//! then `depth` path rows (cur = previous row's output, direction bit from the ALU's bit
++//! keys); the last row's output must equal the commitment key offered by the ALU.
++use core::{
++    array,
++    borrow::{Borrow, BorrowMut},
++};
++
++use openvm_recursion_circuit_derive::AlignedBorrow;
++use openvm_stark_backend::{
++    interaction::{BusIndex, InteractionBuilder, LookupBus, PermutationCheckBus},
++    BaseAirWithPublicValues, PartitionedBaseAir,
++};
++use p3_air::{Air, AirBuilder, BaseAir};
++use p3_field::{Field, PrimeCharacteristicRing};
++use p3_matrix::{dense::RowMajorMatrix, Matrix};
++
++use super::builder::MerklePath;
++use crate::{
++    sha384::{
++        airs::{iv_limbs, ShaBusInventory},
++        compress_trace::Comp,
++        config::{digest_to_limbs, word_limbs, Digest, ShaHasher, DIGEST_SIZE, F},
++    },
++    transcript::merkle_verify::{node_comp, NODE_WORD},
++};
++
++#[repr(C)]
++#[derive(AlignedBorrow, Debug)]
++pub struct MerkleNvCols<T> {
++    pub valid: T,
++    pub path_id: T,
++    pub qid: T,
++    pub job_base: T,
++    pub commit_id: T,
++    pub depth: T,
++    pub is_comb: T,
++    pub lvl0: T,
++    pub croot: T,
++    pub level: T,
++    pub cidx: T,
++    pub wid: T,
++    pub lastc: T,
++    pub inv_c: T,
++    pub bit: T,
++    pub is_last: T,
++    /// first row of a path
++    pub start: T,
++    /// = is_comb * (1 - lastc)
++    pub cnl: T,
++    /// = is_comb * lastc - croot
++    pub clv: T,
++    pub cid: T,
++    pub cur: [T; DIGEST_SIZE],
++    pub sib: [T; DIGEST_SIZE],
++    pub out: [T; DIGEST_SIZE],
++    pub out67: [T; 8],
++}
++pub const MERKLE_WIDTH: usize = MerkleNvCols::<u8>::width();
++
++pub struct MerkleNvAir {
++    pub sha: ShaBusInventory,
++    pub key: BusIndex,
++    pub internal: BusIndex,
++    pub k: usize,
++}
++impl<T> BaseAir<T> for MerkleNvAir {
++    fn width(&self) -> usize {
++        MERKLE_WIDTH
++    }
++}
++impl<T> BaseAirWithPublicValues<T> for MerkleNvAir {}
++impl<T> PartitionedBaseAir<T> for MerkleNvAir {}
++
++impl<AB: AirBuilder + InteractionBuilder> Air<AB> for MerkleNvAir {
++    fn eval(&self, builder: &mut AB) {
++        let main = builder.main();
++        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let l: &MerkleNvCols<AB::Var> = (*local).borrow();
++        let n: &MerkleNvCols<AB::Var> = (*next).borrow();
++        let one = AB::Expr::ONE;
++        let c = |v: u64| AB::Expr::from_u64(v);
++        for x in [l.valid, l.is_comb, l.lvl0, l.croot, l.lastc, l.bit, l.is_last] {
++            builder.assert_bool(x);
++        }
++        for x in [l.is_comb, l.is_last] {
++            builder.when(x).assert_one(l.valid);
++        }
++        builder.when(l.is_comb).assert_zero(l.bit);
++        builder.when(l.is_comb).assert_zero(l.is_last);
++        builder.when(l.lvl0).assert_one(l.is_comb);
++        builder.when(l.lvl0).assert_zero(l.level);
++        builder.when(l.croot).assert_one(l.is_comb);
++        builder.when(l.croot).assert_one(l.lastc);
++        builder.when(l.croot).assert_eq(l.wid, one.clone());
++        let d = l.cidx - (l.wid - one.clone());
++        builder.assert_zero(l.lastc * d.clone());
++        builder.assert_eq(d * l.inv_c, one.clone() - l.lastc);
++        builder
++            .when(l.is_last)
++            .assert_eq(l.level, l.depth - one.clone());
++
++        // path start (first row, or after a last row)
++        builder.assert_bool(l.start);
++        builder.assert_eq(l.cnl, l.is_comb * (one.clone() - l.lastc));
++        builder.assert_eq(l.clv, l.is_comb * l.lastc - l.croot);
++        {
++            let mut w = builder.when(l.start);
++            w.assert_one(l.valid);
++            w.assert_one(l.is_comb);
++            w.assert_zero(l.level);
++            w.assert_zero(l.cidx);
++            w.assert_eq(l.wid, AB::Expr::from_usize(1 << (self.k - 1)));
++        }
++        builder.when_first_row().assert_eq(l.start, l.valid);
++        {
++            let mut t = builder.when_transition();
++            t.assert_zero((one.clone() - l.valid) * n.valid);
++            t.when(l.valid)
++                .assert_zero((one.clone() - n.valid) * (one.clone() - l.is_last));
++            t.when(n.valid).assert_eq(n.start, l.is_last);
++            // within a path
++            let same = n.valid - n.start;
++            for (a, b) in [
++                (n.path_id, l.path_id),
++                (n.qid, l.qid),
++                (n.job_base, l.job_base),
++                (n.commit_id, l.commit_id),
++                (n.depth, l.depth),
++            ] {
++                t.when(same.clone()).assert_eq(a, b);
++            }
++            let mut w = t.when(same.clone());
++            w.when(l.cnl).assert_one(n.is_comb);
++            w.when(l.cnl).assert_eq(n.level, l.level);
++            w.when(l.cnl).assert_eq(n.cidx, l.cidx + one.clone());
++            w.when(l.cnl).assert_eq(n.wid, l.wid);
++            w.when(l.clv).assert_one(n.is_comb);
++            w.when(l.clv).assert_eq(n.level, l.level + one.clone());
++            w.when(l.clv).assert_zero(n.cidx);
++            w.when(l.clv).assert_eq(n.wid.into() * AB::Expr::TWO, l.wid);
++            w.when(l.croot).assert_zero(n.is_comb);
++            w.when(l.croot).assert_zero(n.level);
++            let pr = one.clone() - l.is_comb;
++            w.when(pr.clone()).assert_zero(n.is_comb);
++            w.when(pr).assert_eq(n.level, l.level + one.clone());
++            // cur flows into path rows
++            for i in 0..DIGEST_SIZE {
++                t.when(n.valid - n.is_comb).assert_eq(n.cur[i], l.out[i]);
++            }
++        }
++        builder
++            .when_last_row()
++            .assert_zero(l.valid * (one.clone() - l.is_last));
++
++        // data
++        let digest = self.sha.digest_bus();
++        let internal = PermutationCheckBus::new(self.internal);
++        let msg = |head: Vec<AB::Expr>, v: &[AB::Var]| -> Vec<AB::Expr> {
++            head.into_iter().chain(v.iter().map(|&x| x.into())).collect()
++        };
++        let jl = l.job_base + l.cidx * AB::Expr::TWO;
++        digest.receive(builder, msg(vec![jl.clone()], &l.cur), l.lvl0);
++        digest.receive(builder, msg(vec![jl + one.clone()], &l.sib), l.lvl0);
++        let up = l.is_comb - l.lvl0;
++        let lm = l.level - one.clone();
++        internal.receive(
++            builder,
++            msg(vec![l.path_id.into(), lm.clone(), l.cidx * AB::Expr::TWO], &l.cur),
++            up.clone(),
++        );
++        internal.receive(
++            builder,
++            msg(
++                vec![l.path_id.into(), lm, l.cidx * AB::Expr::TWO + one.clone()],
++                &l.sib,
++            ),
++            up,
++        );
++        internal.send(
++            builder,
++            msg(vec![l.path_id.into(), l.level.into(), l.cidx.into()], &l.out),
++            l.is_comb - l.croot,
++        );
++        // keys
++        let key = LookupBus::new(self.key);
++        let pad = |mut v: Vec<AB::Expr>| -> Vec<AB::Expr> {
++            v.resize(15, AB::Expr::ZERO);
++            v
++        };
++        key.lookup_key(
++            builder,
++            pad(vec![
++                c(1),
++                l.path_id.into(),
++                l.job_base.into(),
++                l.qid.into(),
++                l.commit_id + l.depth * c(256),
++            ]),
++            l.valid,
++        );
++        key.lookup_key(
++            builder,
++            pad(vec![c(2), l.qid.into(), l.level.into(), l.bit.into()]),
++            l.valid - l.is_comb,
++        );
++        for half in 0..2 {
++            key.lookup_key(
++                builder,
++                msg(
++                    vec![c(0), l.commit_id.into(), c(half)],
++                    &l.out[12 * half as usize..12 * half as usize + 12],
++                ),
++                l.is_last,
++            );
++        }
++        // SHA node compression
++        let left: [AB::Expr; DIGEST_SIZE] =
++            array::from_fn(|i| l.cur[i] + l.bit * (l.sib[i] - l.cur[i]));
++        let right: [AB::Expr; DIGEST_SIZE] =
++            array::from_fn(|i| l.sib[i] + l.bit * (l.cur[i] - l.sib[i]));
++        let word = |w: u64| -> [AB::Expr; 4] { array::from_fn(|k| c((w >> (16 * k)) & 0xffff)) };
++        let iv = iv_limbs();
++        let mut words: Vec<[AB::Expr; 4]> = (0..8)
++            .map(|q| array::from_fn(|k| c(iv[4 * q + k] as u64)))
++            .collect();
++        words.push(word(NODE_WORD));
++        for d in [&left, &right] {
++            for q in 0..6 {
++                words.push(array::from_fn(|k| d[4 * q + k].clone()));
++            }
++        }
++        words.push(word(0x80u64 << 56));
++        words.push(word(0));
++        words.push(word(832));
++        for q in 0..6 {
++            words.push(array::from_fn(|k| l.out[4 * q + k].into()));
++        }
++        for q in 0..2 {
++            words.push(array::from_fn(|k| l.out67[4 * q + k].into()));
++        }
++        let iface = self.sha.iface_bus();
++        for (idx, w) in words.into_iter().enumerate() {
++            let [w0, w1, w2, w3] = w;
++            iface.receive(
++                builder,
++                [l.cid.into(), c(idx as u64), w0, w1, w2, w3],
++                l.valid,
++            );
++        }
++    }
++}
++
++/// Merkle trace (cid = node index; remapped once the compression split is known) and the
++/// node compressions in row order.
++pub fn merkle_trace(paths: &[MerklePath], k: usize) -> (RowMajorMatrix<F>, Vec<Comp>) {
++    let rows_per = |p: &MerklePath| (1usize << k) - 1 + p.siblings.len();
++    let n: usize = paths.iter().map(rows_per).sum();
++    let h = n.next_power_of_two().max(2);
++    let mut t = F::zero_vec(h * MERKLE_WIDTH);
++    let mut comps = Vec::with_capacity(n);
++    let mut row = 0usize;
++    let set = |dst: &mut [F; DIGEST_SIZE], d: Digest| *dst = digest_to_limbs(d);
++    for p in paths {
++        let mut layer: Vec<Digest> = p.leaf_digests.clone();
++        let mut level = 0usize;
++        // coset tree
++        while layer.len() > 1 {
++            let wid = layer.len() / 2;
++            let mut nextl = vec![];
++            for i in 0..wid {
++                let r: &mut MerkleNvCols<F> =
++                    t[row * MERKLE_WIDTH..(row + 1) * MERKLE_WIDTH].borrow_mut();
++                let (lft, rgt) = (layer[2 * i], layer[2 * i + 1]);
++                fill_common(r, p);
++                r.is_comb = F::ONE;
++                r.lvl0 = F::from_bool(level == 0);
++                r.croot = F::from_bool(wid == 1);
++                r.start = F::from_bool(level == 0 && i == 0);
++                r.level = F::from_usize(level);
++                r.cidx = F::from_usize(i);
++                r.wid = F::from_usize(wid);
++                fill_last(r);
++                set(&mut r.cur, lft);
++                set(&mut r.sib, rgt);
++                let (comp, out) = node_comp(lft, rgt);
++                fill_out(r, &out, comps.len());
++                comps.push(comp);
++                nextl.push(ShaHasher_compress(lft, rgt));
++                row += 1;
++            }
++            layer = nextl;
++            level += 1;
++        }
++        let mut cur = layer[0];
++        let mut idx = p.index;
++        for (lv, &sib) in p.siblings.iter().enumerate() {
++            let r: &mut MerkleNvCols<F> =
++                t[row * MERKLE_WIDTH..(row + 1) * MERKLE_WIDTH].borrow_mut();
++            fill_common(r, p);
++            let bit = idx & 1 == 1;
++            r.bit = F::from_bool(bit);
++            r.level = F::from_usize(lv);
++            r.cidx = F::ZERO;
++            r.wid = F::ONE;
++            fill_last(r);
++            r.is_last = F::from_bool(lv + 1 == p.siblings.len());
++            set(&mut r.cur, cur);
++            set(&mut r.sib, sib);
++            let (l, rr) = if bit { (sib, cur) } else { (cur, sib) };
++            let (comp, out) = node_comp(l, rr);
++            fill_out(r, &out, comps.len());
++            comps.push(comp);
++            cur = ShaHasher_compress(l, rr);
++            idx >>= 1;
++            row += 1;
++        }
++        debug_assert_eq!(cur, p.root, "merkle root mismatch");
++    }
++    // padding rows: satisfy the lastc gadget (cidx = 0, wid = 0 -> d = 1, inv = 1)
++    for r in row..h {
++        let c: &mut MerkleNvCols<F> = t[r * MERKLE_WIDTH..(r + 1) * MERKLE_WIDTH].borrow_mut();
++        c.inv_c = F::ONE;
++    }
++    (RowMajorMatrix::new(t, MERKLE_WIDTH), comps)
++}
++
++#[allow(non_snake_case)]
++fn ShaHasher_compress(l: Digest, r: Digest) -> Digest {
++    use openvm_stark_backend::hasher::MerkleHasher;
++    ShaHasher.compress(l, r)
++}
++
++fn fill_common(r: &mut MerkleNvCols<F>, p: &MerklePath) {
++    r.valid = F::ONE;
++    r.path_id = F::from_u32(p.path_id);
++    r.qid = F::from_u32(p.qid);
++    r.job_base = F::from_u32(p.job_base);
++    r.commit_id = F::from_u32(p.commit_id);
++    r.depth = F::from_usize(p.siblings.len());
++}
++fn fill_last(r: &mut MerkleNvCols<F>) {
++    let d = r.cidx - (r.wid - F::ONE);
++    r.lastc = F::from_bool(d == F::ZERO);
++    r.inv_c = if d == F::ZERO { F::ZERO } else { d.inverse() };
++    r.cnl = r.is_comb * (F::ONE - r.lastc);
++    r.clv = r.is_comb * r.lastc - r.croot;
++}
++fn fill_out(r: &mut MerkleNvCols<F>, out: &[u64; 8], node_idx: usize) {
++    for q in 0..6 {
++        let l = word_limbs(out[q]);
++        for k in 0..4 {
++            r.out[4 * q + k] = F::from_u32(l[k]);
++        }
++    }
++    for q in 0..2 {
++        let l = word_limbs(out[6 + q]);
++        for k in 0..4 {
++            r.out67[4 * q + k] = F::from_u32(l[k]);
++        }
++    }
++    r.cid = F::from_usize(node_idx);
++}
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 new file mode 100644
-index 0000000..0211ce6
+index 0000000..c617ea9
 --- /dev/null
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,9 @@
 +//! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
++pub mod alu;
 +pub mod builder;
++pub mod circuit;
 +pub mod isa;
++pub mod merkle;
 +pub mod verifier;
 +#[cfg(test)]
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..58956c7
+index 0000000..89d4a92
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,163 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -1790,6 +2735,104 @@ index 0000000..58956c7
 +            assert!(!b.failures.is_empty(), "{name} not detected");
 +        }
 +    }
++}
++
++fn nv_debug(fx: &impl TestFixture<Sha384Config>, log_rows: usize) {
++    use openvm_cpu_backend::CpuBackend;
++    use openvm_stark_backend::prover::{AirProvingContext, MatrixDimensions, ProvingContext};
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = fx.keygen_and_prove(&engine);
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), log_rows, 1);
++    let airs = circ.airs::<Sha384Config>();
++    let (mats, b) = circ.generate(&vk, &proof);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    let mut total = 0;
++    for (a, m) in airs.iter().zip(&mats) {
++        println!("NV_AIR {} {} x {}", a.name(), m.height(), m.width());
++        total += m.height() * m.width();
++    }
++    println!("NV_TOTAL_CELLS {total}");
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> =
++        mats.into_iter().map(AirProvingContext::simple_no_pis).collect();
++    let parent = Sha384CpuEngine::new(crate::sha384::e2e_tests::parent_params_debug());
++    parent.debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++}
++
++#[test]
++fn nv_circuit_fib_debug() {
++    nv_debug(&FibFixture::new(0, 1, 1 << 5), 14);
++}
++
++fn nv_debug_mats(
++    vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>,
++    proof: &openvm_stark_backend::proof::Proof<Sha384Config>,
++    log_rows: usize,
++    mutate: impl FnOnce(&mut Vec<p3_matrix::dense::RowMajorMatrix<F>>, &[String]),
++) {
++    use openvm_cpu_backend::CpuBackend;
++    use openvm_stark_backend::prover::{AirProvingContext, ProvingContext};
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), log_rows, 1);
++    let airs = circ.airs::<Sha384Config>();
++    let names: Vec<String> = airs.iter().map(|a| a.name()).collect();
++    let (mut mats, _b) = circ.generate(vk, proof);
++    mutate(&mut mats, &names);
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> =
++        mats.into_iter().map(AirProvingContext::simple_no_pis).collect();
++    let parent = Sha384CpuEngine::new(crate::sha384::e2e_tests::parent_params_debug());
++    parent.debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++}
++
++fn must_fail(name: &str, f: impl FnOnce()) {
++    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
++    assert!(r.is_err(), "tamper `{name}` accepted");
++    println!("NV_TAMPER_REJECTED {name}");
++}
++
++#[test]
++fn nv_circuit_tamper() {
++    use core::borrow::BorrowMut;
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    // 1. merkle sibling digest
++    let mut bad = proof.clone();
++    bad.whir_proof.initial_round_merkle_proofs[0][0][1][2] ^= 1;
++    must_fail("merkle-sibling-digest", || nv_debug_mats(&vk, &bad, 14, |_, _| {}));
++    // 2. opened value
++    let mut bad = proof.clone();
++    bad.whir_proof.initial_round_opened_rows[0][0][1][0] += F::ONE;
++    must_fail("opened-value", || nv_debug_mats(&vk, &bad, 14, |_, _| {}));
++    // 3. transcript sample (row-consistent refill)
++    must_fail("transcript-sample", || {
++        nv_debug_mats(&vk, &proof, 14, |mats, names| {
++            use crate::transcript::sha_transcript::{fill_sample_row, TranscriptSampleCols};
++            use p3_field::PrimeField32;
++            let i = names.iter().position(|n| n == "TranscriptSampleAir").unwrap();
++            let w = mats[i].width;
++            let row: &mut TranscriptSampleCols<F> = mats[i].values[..w].borrow_mut();
++            let n: u32 = (0..4).map(|k| row.c[k].as_canonical_u32() << (8 * k)).sum();
++            let mut dummy = vec![0u32; 256];
++            fill_sample_row(row, n ^ 0x100, true, &mut dummy);
++        })
++    });
++    // 4. commit limb on the transcript (first hash job = vk pre-hash commit)
++    must_fail("transcript-commit-limb", || {
++        nv_debug_mats(&vk, &proof, 14, |mats, names| {
++            let i = names.iter().position(|n| n == "TranscriptHashAir").unwrap();
++            mats[i].values[9 + 48] += F::ONE;
++        })
++    });
++    // 5. an ALU result (row 1000's c0)
++    must_fail("alu-result", || {
++        nv_debug_mats(&vk, &proof, 14, |mats, _| {
++            let w = mats[0].width;
++            mats[0].values[1000 * w + 24] += F::ONE;
++        })
++    });
++}
++
++#[test]
++fn nv_circuit_interactions_debug() {
++    nv_debug(&InteractionsFixture11, 14);
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
@@ -3099,10 +4142,10 @@ index 60ce802..b663060 100644
      fn generate_trace(
 diff --git a/crates/recursion/src/sha384/airs.rs b/crates/recursion/src/sha384/airs.rs
 new file mode 100644
-index 0000000..d8495ca
+index 0000000..b17233d
 --- /dev/null
 +++ b/crates/recursion/src/sha384/airs.rs
-@@ -0,0 +1,526 @@
+@@ -0,0 +1,530 @@
 +//! Generic in-circuit SHA-384 hashing of framed messages, on top of the narrow SHA-512
 +//! compression AIR (`compress_air.rs`).
 +//!
@@ -3154,6 +4197,8 @@ index 0000000..d8495ca
 +    pub digest: BusIndex,
 +    /// byte lookup table.
 +    pub byte: BusIndex,
++    /// NV: units share the slot bus and carry channel prefix 1 (transcript events use 0).
++    pub unit_chan: bool,
 +}
 +
 +impl ShaBusInventory {
@@ -3195,17 +4240,18 @@ index 0000000..d8495ca
 +        v1: impl Into<AB::Expr>,
 +        enabled: impl Into<AB::Expr>,
 +    ) {
-+        self.unit_bus().send(
-+            builder,
-+            [
-+                job.into(),
-+                idx.into(),
-+                AB::Expr::from_u32(kind),
-+                v0.into(),
-+                v1.into(),
-+            ],
-+            enabled,
-+        );
++        let mut msg = vec![];
++        if self.unit_chan {
++            msg.push(AB::Expr::ONE);
++        }
++        msg.extend([
++            job.into(),
++            idx.into(),
++            AB::Expr::from_u32(kind),
++            v0.into(),
++            v1.into(),
++        ]);
++        self.unit_bus().send(builder, msg, enabled);
 +    }
 +    /// Producer side: send the units of a digest/state given as 24 limbs (H0 limb 0 first).
 +    #[allow(clippy::too_many_arguments)]
@@ -3397,11 +4443,12 @@ index 0000000..d8495ca
 +            let lo = a[2].clone() * c(256) + a[3].clone();
 +            let v0 = felt.clone() + kind * (hi - felt);
 +            let v1 = lo * kind;
-+            unit_bus.receive(
-+                builder,
-+                [l.job.into(), uidx.clone(), kind.into(), v0, v1],
-+                d,
-+            );
++            let mut msg = vec![];
++            if self.buses.unit_chan {
++                msg.push(AB::Expr::ONE);
++            }
++            msg.extend([l.job.into(), uidx.clone(), kind.into(), v0, v1]);
++            unit_bus.receive(builder, msg, d);
 +            // canonical field element: top byte <= 0x78, and == 0x78 only for p - 1
 +            let gap = c(0x78) - a[3].clone();
 +            let is_felt = d * (one.clone() - kind);
@@ -6234,10 +7281,10 @@ index 0000000..2b34b20
 +}
 diff --git a/crates/recursion/src/sha384/tests.rs b/crates/recursion/src/sha384/tests.rs
 new file mode 100644
-index 0000000..d9f019c
+index 0000000..726e3ee
 --- /dev/null
 +++ b/crates/recursion/src/sha384/tests.rs
-@@ -0,0 +1,224 @@
+@@ -0,0 +1,225 @@
 +//! Standalone tests of the SHA subsystem: random framed jobs through packer, block
 +//! chaining and compression AIRs, checked by the debug constraint/bus checker.
 +use std::sync::Arc;
@@ -6275,6 +7322,7 @@ index 0000000..d9f019c
 +        job: 6,
 +        digest: 7,
 +        byte: 8,
++        unit_chan: false,
 +    }
 +}
 +
@@ -6872,7 +7920,7 @@ index 3bd0c6e..b7ed26b 100644
              params: mvk.inner.params.clone(),
              per_air: mvk.inner.per_air.iter().map(Into::into).collect_vec(),
 diff --git a/crates/recursion/src/system/mod.rs b/crates/recursion/src/system/mod.rs
-index f1294c9..b6ca602 100644
+index f1294c9..800a434 100644
 --- a/crates/recursion/src/system/mod.rs
 +++ b/crates/recursion/src/system/mod.rs
 @@ -7,16 +7,14 @@ use std::{iter, sync::Arc};
@@ -7103,7 +8151,7 @@ index f1294c9..b6ca602 100644
      pub starting_tidx: Vec<usize>,
      pub pvs_tidx: Vec<usize>,
      pub post_tidx: usize,
-@@ -371,8 +387,25 @@ impl BusInventory {
+@@ -371,8 +387,26 @@ impl BusInventory {
      pub(crate) fn new(b: &mut BusIndexManager) -> Self {
          Self {
              transcript_bus: TranscriptBus::new(b.new_bus_idx()),
@@ -7122,6 +8170,7 @@ index f1294c9..b6ca602 100644
 +                job: b.new_bus_idx(),
 +                digest: b.new_bus_idx(),
 +                byte: b.new_bus_idx(),
++                unit_chan: false,
 +            },
 +            transcript_internal: TranscriptInternalBuses {
 +                obs: b.new_bus_idx(),
@@ -7131,7 +8180,7 @@ index f1294c9..b6ca602 100644
              merkle_verify_bus: MerkleVerifyBus::new(b.new_bus_idx()),
  
              // Control flow buses
-@@ -423,20 +456,6 @@ impl BusInventory {
+@@ -423,20 +457,6 @@ impl BusInventory {
      }
  }
  
@@ -7152,7 +8201,7 @@ index f1294c9..b6ca602 100644
  
  #[derive(Clone, Copy, strum_macros::Display)]
  enum TraceModuleRef<'a> {
-@@ -457,13 +476,13 @@ impl<'a> TraceModuleRef<'a> {
+@@ -457,13 +477,13 @@ impl<'a> TraceModuleRef<'a> {
      )]
      fn run_preflight<TS>(
          self,
@@ -7170,7 +8219,7 @@ index f1294c9..b6ca602 100644
      {
          match self {
              TraceModuleRef::ProofShape(module) => {
-@@ -488,8 +507,8 @@ impl<'a> TraceModuleRef<'a> {
+@@ -488,8 +508,8 @@ impl<'a> TraceModuleRef<'a> {
      )]
      fn generate_cpu_ctxs<SC: StarkProtocolConfig<F = F>>(
          self,
@@ -7181,7 +8230,7 @@ index f1294c9..b6ca602 100644
          preflights: &[Preflight],
          cached_trace_record: Option<&CachedTraceRecord>,
          pow_checker_gen: &Arc<PowerCheckerCpuTraceGenerator<2, POW_CHECKER_HEIGHT>>,
-@@ -498,16 +517,9 @@ impl<'a> TraceModuleRef<'a> {
+@@ -498,16 +518,9 @@ impl<'a> TraceModuleRef<'a> {
          required_heights: Option<&[usize]>,
      ) -> Option<Vec<AirProvingContext<CpuBackend<SC>>>> {
          match self {
@@ -7201,7 +8250,7 @@ index f1294c9..b6ca602 100644
              TraceModuleRef::ProofShape(module) => module.generate_proving_ctxs(
                  child_vk,
                  proofs,
-@@ -565,12 +577,12 @@ pub struct VerifierSubCircuit<const MAX_NUM_PROOFS: usize> {
+@@ -565,12 +578,12 @@ pub struct VerifierSubCircuit<const MAX_NUM_PROOFS: usize> {
  }
  
  impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
@@ -7216,7 +8265,7 @@ index f1294c9..b6ca602 100644
          config: VerifierConfig,
      ) -> Self {
          // The verifier must enforce the child VK's linear `trace_height_constraints`.
-@@ -608,6 +620,7 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
+@@ -608,6 +621,7 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
              bus_inventory.clone(),
              child_mvk.inner.params.clone(),
              config.final_state_bus_enabled,
@@ -7224,7 +8273,7 @@ index f1294c9..b6ca602 100644
          );
          let child_mvk_frame = child_mvk.as_ref().into();
          let proof_shape = ProofShapeModule::new(
-@@ -640,16 +653,12 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
+@@ -640,16 +654,12 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
      }
  
      #[tracing::instrument(name = "execute_preflight", skip_all)]
@@ -7246,7 +8295,7 @@ index f1294c9..b6ca602 100644
          let mut preflight = Preflight::default();
  
          // NOTE: it is not required that we group preflight into modules
-@@ -670,316 +679,17 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
+@@ -670,316 +680,17 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
  
      /// Runs preflight for a single proof.
      #[tracing::instrument(name = "execute_preflight", skip_all)]
@@ -7569,7 +8618,7 @@ index f1294c9..b6ca602 100644
      /// Utility function to split a slice of required trace heights per-module. Fails
      /// an assert if the slice length doesn't match the number of AIRs.
      #[allow(clippy::type_complexity)]
-@@ -1058,7 +768,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1058,7 +769,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
      VerifierTraceGen<CpuBackend<SC>, SC, ()> for VerifierSubCircuit<MAX_NUM_PROOFS>
  {
      fn new(
@@ -7578,7 +8627,7 @@ index f1294c9..b6ca602 100644
          config: VerifierConfig,
      ) -> Self {
          Self::new_with_options(child_mvk, config)
-@@ -1067,7 +777,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1067,7 +778,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
      fn commit_child_vk<E: StarkEngine<SC = SC, PB = CpuBackend<SC>>>(
          &self,
          engine: &E,
@@ -7587,7 +8636,7 @@ index f1294c9..b6ca602 100644
      ) -> CommittedTraceData<CpuBackend<SC>>
      where
          (): From<EngineDeviceCtx<E>>,
-@@ -1077,7 +787,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1077,7 +788,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
  
      fn cached_trace_record(
          &self,
@@ -7596,7 +8645,7 @@ index f1294c9..b6ca602 100644
      ) -> CachedTraceRecord {
          crate::batch_constraint::expr_eval::build_cached_trace_record(
              child_vk,
-@@ -1086,22 +796,16 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1086,22 +797,16 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
      }
  
      #[tracing::instrument(name = "subcircuit_generate_proving_ctxs", skip_all)]
@@ -7623,7 +8672,7 @@ index f1294c9..b6ca602 100644
          let span = tracing::Span::current();
          let mut preflights = std::thread::scope(|s| {
              let handles: Vec<_> = proofs
-@@ -1111,14 +815,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1111,14 +816,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
                      let span = span.clone();
                      s.spawn(move || {
                          let _guard = span.enter();
@@ -7639,7 +8688,7 @@ index f1294c9..b6ca602 100644
                      })
                  })
                  .collect();
-@@ -1127,21 +824,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1127,21 +825,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
                  .map(|h| h.join().unwrap())
                  .collect::<Vec<_>>()
          });
@@ -7662,7 +8711,7 @@ index f1294c9..b6ca602 100644
  
          let power_checker_gen =
              Arc::new(PowerCheckerCpuTraceGenerator::<2, POW_CHECKER_HEIGHT>::default());
-@@ -1338,7 +1021,7 @@ pub mod cuda_tracegen {
+@@ -1338,7 +1022,7 @@ pub mod cuda_tracegen {
          for VerifierSubCircuit<MAX_NUM_PROOFS>
      {
          fn new(
@@ -7671,7 +8720,7 @@ index f1294c9..b6ca602 100644
              config: VerifierConfig,
          ) -> Self {
              Self::new_with_options(child_mvk, config)
-@@ -1347,7 +1030,7 @@ pub mod cuda_tracegen {
+@@ -1347,7 +1031,7 @@ pub mod cuda_tracegen {
          fn commit_child_vk<E: StarkEngine<SC = HS::SC, PB = GenericGpuBackend<HS>>>(
              &self,
              engine: &E,
@@ -7680,7 +8729,7 @@ index f1294c9..b6ca602 100644
          ) -> CommittedTraceData<GenericGpuBackend<HS>>
          where
              GpuDeviceCtx: From<EngineDeviceCtx<E>>,
-@@ -1361,7 +1044,7 @@ pub mod cuda_tracegen {
+@@ -1361,7 +1045,7 @@ pub mod cuda_tracegen {
  
          fn cached_trace_record(
              &self,
@@ -7689,7 +8738,7 @@ index f1294c9..b6ca602 100644
          ) -> CachedTraceRecord {
              crate::batch_constraint::expr_eval::build_cached_trace_record(
                  child_vk,
-@@ -1371,13 +1054,13 @@ pub mod cuda_tracegen {
+@@ -1371,13 +1055,13 @@ pub mod cuda_tracegen {
  
          #[tracing::instrument(name = "subcircuit_generate_proving_ctxs", skip_all)]
          fn generate_proving_ctxs<
@@ -9004,7 +10053,7 @@ index eb75ffc..7fa9410 100644
      ) -> Vec<[F; DIGEST_SIZE]> {
          let whir_proof = &proof.whir_proof;
 diff --git a/crates/recursion/src/transcript/mod.rs b/crates/recursion/src/transcript/mod.rs
-index ac36b7d..0908acb 100644
+index ac36b7d..09819dc 100644
 --- a/crates/recursion/src/transcript/mod.rs
 +++ b/crates/recursion/src/transcript/mod.rs
 @@ -1,47 +1,44 @@
@@ -9077,7 +10126,7 @@ index ac36b7d..0908acb 100644
  }
  
  impl TranscriptModule {
-@@ -49,621 +46,139 @@ impl TranscriptModule {
+@@ -49,621 +46,142 @@ impl TranscriptModule {
          bus_inventory: BusInventory,
          params: SystemParams,
          final_state_bus_enabled: bool,
@@ -9340,16 +10389,19 @@ index ac36b7d..0908acb 100644
 +        let mut airs: Vec<AirRef<SC>> = vec![
 +            Arc::new(TranscriptHashAir {
 +                transcript_bus: b.transcript_bus,
++                slot_bus: None,
 +                sha,
 +                internal,
 +            }) as AirRef<SC>,
 +            Arc::new(TranscriptObsAir {
 +                transcript_bus: b.transcript_bus,
++                slot_bus: None,
 +                sha,
 +                internal,
 +            }),
 +            Arc::new(TranscriptSampleAir {
 +                transcript_bus: b.transcript_bus,
++                slot_bus: None,
 +                sha,
 +                internal,
 +            }),
@@ -9805,10 +10857,10 @@ index ac36b7d..0908acb 100644
  }
 diff --git a/crates/recursion/src/transcript/sha_transcript.rs b/crates/recursion/src/transcript/sha_transcript.rs
 new file mode 100644
-index 0000000..d3e8e77
+index 0000000..2c071e3
 --- /dev/null
 +++ b/crates/recursion/src/transcript/sha_transcript.rs
-@@ -0,0 +1,753 @@
+@@ -0,0 +1,790 @@
 +//! In-circuit SHA-384 Fiat–Shamir transcript (`ShaTranscript` in `sha384/config.rs`).
 +//!
 +//! The native transcript is a chain of SHA-384 jobs on a 48-byte state:
@@ -9859,6 +10911,37 @@ index 0000000..d3e8e77
 +    pub sample: BusIndex,
 +    /// (job, wi, hi, lo): squeeze state words -> sample rows
 +    pub word: BusIndex,
++}
++
++/// Emit one transcript event (sender side).
++#[allow(clippy::too_many_arguments)]
++fn emit_tr<AB: InteractionBuilder>(
++    tb: &TranscriptBus,
++    slot: Option<BusIndex>,
++    builder: &mut AB,
++    proof_idx: AB::Var,
++    tidx: AB::Expr,
++    value: AB::Expr,
++    kind: AB::Expr,
++    mult: AB::Expr,
++) {
++    match slot {
++        None => tb.send(
++            builder,
++            proof_idx,
++            TranscriptBusMessage {
++                tidx,
++                value,
++                is_sample: kind,
++            },
++            mult,
++        ),
++        Some(bus) => PermutationCheckBus::new(bus).send(
++            builder,
++            [AB::Expr::ZERO, tidx, AB::Expr::ZERO, kind, value, AB::Expr::ZERO],
++            mult,
++        ),
++    }
 +}
 +
 +fn state_words(state: &[u8; 48]) -> [u64; 6] {
@@ -10062,6 +11145,8 @@ index 0000000..d3e8e77
 +
 +pub struct TranscriptHashAir {
 +    pub transcript_bus: TranscriptBus,
++    /// NV: emit transcript events on this slot bus as (0, tidx, 0, kind, value, 0).
++    pub slot_bus: Option<BusIndex>,
 +    pub sha: ShaBusInventory,
 +    pub internal: TranscriptInternalBuses,
 +}
@@ -10156,15 +11241,15 @@ index 0000000..d3e8e77
 +
 +        // Commit limbs on the transcript bus.
 +        for i in 0..DIGEST_SIZE {
-+            self.transcript_bus.send(
++            emit_tr(
++                &self.transcript_bus,
++                self.slot_bus,
 +                builder,
 +                l.proof_idx,
-+                TranscriptBusMessage {
-+                    tidx: l.t_start + c(i as u64),
-+                    value: l.payload[i].into(),
-+                    is_sample: c(KIND_COMMIT as u64),
-+                },
-+                l.op_c,
++                l.t_start + c(i as u64),
++                l.payload[i].into(),
++                c(KIND_COMMIT as u64),
++                l.op_c.into(),
 +            );
 +        }
 +        // Run summaries.
@@ -10215,6 +11300,8 @@ index 0000000..d3e8e77
 +
 +pub struct TranscriptObsAir {
 +    pub transcript_bus: TranscriptBus,
++    /// NV: emit transcript events on this slot bus as (0, tidx, 0, kind, value, 0).
++    pub slot_bus: Option<BusIndex>,
 +    pub sha: ShaBusInventory,
 +    pub internal: TranscriptInternalBuses,
 +}
@@ -10269,15 +11356,15 @@ index 0000000..d3e8e77
 +            s.assert_eq(n.tidx, l.tidx + AB::Expr::ONE);
 +            s.assert_eq(n.t_first, l.t_first);
 +        }
-+        self.transcript_bus.send(
++        emit_tr(
++            &self.transcript_bus,
++            self.slot_bus,
 +            builder,
 +            l.proof_idx,
-+            TranscriptBusMessage {
-+                tidx: l.tidx.into(),
-+                value: l.value.into(),
-+                is_sample: c(KIND_OBSERVE as u64),
-+            },
-+            l.valid,
++            l.tidx.into(),
++            l.value.into(),
++            c(KIND_OBSERVE as u64),
++            l.valid.into(),
 +        );
 +        self.sha.send_unit(
 +            builder,
@@ -10337,6 +11424,8 @@ index 0000000..d3e8e77
 +
 +pub struct TranscriptSampleAir {
 +    pub transcript_bus: TranscriptBus,
++    /// NV: emit transcript events on this slot bus as (0, tidx, 0, kind, value, 0).
++    pub slot_bus: Option<BusIndex>,
 +    pub sha: ShaBusInventory,
 +    pub internal: TranscriptInternalBuses,
 +}
@@ -10388,14 +11477,14 @@ index 0000000..d3e8e77
 +        byte.lookup_key(builder, [u], l.valid);
 +
 +        let value = l.c[0] + l.c[1] * c(1 << 8) + l.c[2] * c(1 << 16) + l.c[3] * c(1 << 24);
-+        self.transcript_bus.send(
++        emit_tr(
++            &self.transcript_bus,
++            self.slot_bus,
 +            builder,
 +            l.proof_idx,
-+            TranscriptBusMessage {
-+                tidx: l.t_job + l.macc - l.acc,
-+                value,
-+                is_sample: c(KIND_SAMPLE as u64),
-+            },
++            l.t_job + l.macc - l.acc,
++            value,
++            c(KIND_SAMPLE as u64),
 +            l.acc * l.valid,
 +        );
 +        PermutationCheckBus::new(self.internal.word).receive(
