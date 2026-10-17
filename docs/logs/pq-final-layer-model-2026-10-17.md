@@ -520,3 +520,10 @@ mask (≈ 3 KB), 41-B digests (3 KB), 43-row SHA (≈ 1 KB), padding-free height
 weak-binding reserve (≈ 35 KB, conditional). Gaps: L2 doesn't yet check L1's app-verifier
 program; levers not in circuit (needs levers backend on the CPU backend); real run needs
 a ~2^38.8-element streamed LDE (multi-GPU / 100+ GB host).
+
+**User decision 2026-10-17: approve 42-B digests, grinding z = 32, and WHIR-Y; keep going.**
+Recorded as U-10 in `docs/zk-formal/V3-D3A-STUDY.md` §D (amends U-7 for the PQ track).
+Padding-free heights implemented (`lane/pq-whir-levers` @ `561c934f7`, `tight_heights`:
+commit only up to the last non-zero row in power-of-two chunks; zerocheck/GKR unchanged
+over a virtual zero tail; measured exact on the dummy) — needs zero-row-valid AIRs; NV
+model 308.5 → 298.9 KB.
