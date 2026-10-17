@@ -1,0 +1,13 @@
+{
+  "status": "ARBITRARY_PAIR_STACK_KERNEL_DENSE_PARITY",
+  "identity_checks": 240,
+  "native_kernel_checks": 30,
+  "short_trace_cases": 48,
+  "wrong_rotation_distinguished": 72,
+  "script_sha256": "76dadfc8f03a8c5af2407635610a6b2f430589db02f092cdb9ed619dd351ca8f",
+  "limitations": [
+    "Small synthetic base-field domains, not captured native evaluation points.",
+    "No sumcheck proof or commitment authentication.",
+    "No transcript/QROM soundness, Lean kernel proof or full NEAR proof."
+  ]
+}

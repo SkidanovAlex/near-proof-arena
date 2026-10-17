@@ -11584,3 +11584,46 @@ and prove an authenticated opening of it. Existing known-input subtraction
 lemmas cover only algebra; compiler and cryptographic composition remain open.
 Artifacts:results/swirl-security-review/native-dag-gkr/; reproducible with
 prove_swirl_native_dag.py and --verify-saved. Full goal remains active.
+
+
+## 2026-10-17 — Arbitrary-pair stacking kernel and actual residual grouping
+
+Previous goal turn classified progress: native openings mapped through GKR.
+Revalidated clean worktree at60f3bd135. Inspected pinned stacked_reduction.rs,
+StackedLayout and poly_common. Native opening reduction batches current/rotated
+claims with(lambda^(2j),lambda^(2j+1)); the kernel is linear in those two
+coefficients. A GKR residual supplies arbitrary pairs instead. This requires
+changing both initial claim and terminal coefficients, not merely changing
+lambda or discarding openings in the existing verifier.
+
+Implemented source_weight for arbitrary pairs, including high-cube placement,
+negative-n short-trace indicator, r0 power transport and the native forward
+rotation kernel. Independent dense Lagrange/Boolean interpolation checks cover
+240identities across120fixtures,48short-trace cases;72fixtures distinguish
+backward rotation from required forward rotation. Each fixture checks both the
+weighted trace functional and off-domain kernel interpolation. Toy sources are
+placed at aligned offsets in individual stacked columns; heterogeneous shared
+column packing and full native-layout instantiation remain to be tested.
+
+Added native Rust oracle using pinned poly_common kernels. All30off-domain
+comparisons match, including BabyBear root-of-unity convention and short-trace
+lift. Oracle test and targeted clippy -D warnings pass. Saved native outputs,
+source snapshots, patch and hashes permit replay without recompilation.
+
+Grouped the ACTUAL native-data GKR residual's2303coordinates into1548column
+pairs,757with nonzero rotated weights. Current/cached partition extraction is
+rechecked against saved proof openings; grouped scalar equals residual
+[293547415,1139398467,1412829188,92166400]. No assertion that all pairs are
+powers of one challenge. Source and target slot conventions are explicit.
+
+This is kernel/data-interface evidence, not a generated stacking sumcheck or
+PCS proof. It does not establish adaptive challenge soundness, commitment
+binding, actual r-point extraction, Lean kernel correctness, PQ128 or full
+NEAR1Petagas. Existing source point and full authenticated layout still must be
+bound. No proof-size saving inferred from240checks or pair counts.
+
+Next: instantiate weighted sumcheck with the actual committed stacking layout,
+prove its terminal opening relation and preserve chronology after GKR, then
+price the extra argument against the full stronger-security ledger. Full goal
+remains active. Reproducers:test_swirl_weighted_stack_kernel.py and
+group_swirl_pcs_pairs.py; evidence:results/swirl-security-review/weighted-stack-kernel/.
