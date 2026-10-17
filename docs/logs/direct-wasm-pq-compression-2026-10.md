@@ -12238,3 +12238,58 @@ schedule is a versioned protocol change requiring fresh GKR/PCS proofs, not a
 lossless transport optimization. Current proof remains204076B at diagnostic
 settings. No new Lean/hash-security/composition theorem, PQ128 or full NEAR
 claim. Evidence:gkr-transcript-census/; full goal remains active.
+
+## 2026-10-17 — Binary transcript v2 complete root bundle
+
+Previous goal turn progressed via exact transcript census/fixed-key preparation
+at0b6ba9dfd. Revalidated clean worktree. Introduced separate NPBND002 diagnostic
+bundle. Native prefix remains canonical NPREF001; terminal GKR statement is
+framed SHA384(tag=nearproof-binary-prefix-gkr-v2,prefixbytes). Continuation digest
+is framed SHA384(tag=nearproof-binary-gkr-to-whir-v2,statementdigest,GKRbinary).
+No Debug log or decimal JSON is hashed by v2; later removed the unused Debug-log
+read from its public context and verifier path. Existing v1 behavior retained.
+
+Security interface: native prefix is decoded/shape-checked and its sumcheck
+prefix verified under fixed native VK before derived controls/known weights
+are used. GKR begin still binds fixed layout and output claim. New binary
+statement binds exact prefix; known values must remain deterministically
+derived by trusted native prefix replay, never caller-provided replacement
+controls. This is a changed Fiat-Shamir transcript, not lossless v1 transport.
+No QROM or full security theorem is inferred from these bindings.
+
+Fresh root GKR proves/verifies1288EF,20608bytes. Generated new root weighted
+sumcheck/WHIR using its new residual and binding:884stacking,168268WHIRbytes,
+18rounds,11matrixopenings checked, native run25.71s including recommit/checks
+(not benchmark), four WHIR negatives reject. Source native code unchanged.
+Complete v2 bundle:14292prefix+20608GKR+884stacking+168268WHIR+24framing
+=204076bytes. Full verification passes while original root/internal proofs and
+saved v2 GKRJSON are temporarily unavailable. Fifteen negatives reject: prior
+13codec/payload checks plus both relabelled cross-version directions. Fresh
+process replay passes; both v1 root204076 and internal375127 regressions pass.
+
+Exact v2 hash census replays public GKR from binary bundle (no saved GKRJSON
+needed):prefixbinding14362framed bytes/113SHA384blocks, continuationbinding
+20735bytes/163blocks. Dynamic GKR remains4373blocks; total4649vs6855v1,
+saving2206blocks (32.18%).437draws use437squeezes and reject103words for this
+instance. Fixed-layout hash may be precomputed as before. Native prefix/WHIR
+hashes are excluded; no total-recursive cost, proving speed or PQ128 claim.
+Proof bytes unchanged. Census first attempted reading GKRJSON during the
+intentional missing-file test; corrected it to decode the already-written
+bundle, then replay passed without that dependency.
+
+Reproduce:prove_swirl_binary_root.py; then native test
+NEARPROOF_ROOT_SPLIT=1 NEARPROOF_WITNESS_DIR=/tmp/nearproof-root-split-witness
+NEARPROOF_SOURCE_PROOF=/tmp/nearproof-root-split-witness/native.proof
+NEARPROOF_GKR_BINDING=/tmp/nearproof-prefix-gkr-binding.bin
+NEARPROOF_WEIGHTED_WHIR=1 RAYON_NUM_THREADS=4 cargo test --locked --profile fast
+-p openvm-recursion-circuit tests::nearproof_weighted_native_sumcheck -- --exact
+--nocapture. Preserve its stacking/WHIR outputs in binary-root-gkr/; run
+swirl_binary_root_bundle.py, --verify-saved, measure_swirl_binary_transcript.py.
+
+Evidence:binary-root-gkr/,binary-root-bundle/. New public_context/prepare options
+are opt-in; v1 defaults preserved. No new Lean codec/transcript/composition
+proof, circuit proving bundle acceptance, PQ128 or full NEAR1Petagas. The next
+remaining hash cost is mostly the per-round transcript itself, not JSON;
+any schedule/hash redesign needs separate analysis and new proofs. Goal active.
+Final fresh replay after removal of the unused Debug-log read also passed;
+log preserved as binary-root-bundle/fresh-no-debug.log.gz.

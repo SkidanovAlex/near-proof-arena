@@ -11,8 +11,8 @@ from prove_swirl_prefix_dag import BASE,PREFIX
 OUT=BASE/'prefix-continuation'
 
 
-def main(proof=None, c=None, prefix_log=None, shapes=None, layouts=None, write_outputs=True, dag_path=None):
-    residual,description,proof=verify(proof,c,prefix_log,check_fixture=write_outputs,write_report=write_outputs,dag_path=dag_path)
+def main(proof=None, c=None, prefix_log=None, shapes=None, layouts=None, write_outputs=True, dag_path=None, prefix_bytes=None):
+    residual,description,proof=verify(proof,c,prefix_log,check_fixture=write_outputs,write_report=write_outputs,dag_path=dag_path,prefix_bytes=prefix_bytes)
     if c is None:c=json.loads((PREFIX/'controls.json').read_text())
     if shapes is None:shapes=json.loads((OUT/'trace-shapes.json').read_text())
     if layouts is None:layouts=json.loads((BASE/'committed-witness/layouts.json').read_text())
@@ -45,9 +45,14 @@ def main(proof=None, c=None, prefix_log=None, shapes=None, layouts=None, write_o
     words += [v for x in c['r'] for v in x]+list(residual['claim'])+[len(ordered)//2]
     words += [v for x in ordered for v in x]
     data=struct.pack('<'+'I'*len(words),*words)
-    # Canonical JSON boundary binds the preceding public statement and ALL GKR messages.
-    binding=hashlib.sha384(json.dumps(dict(profile='nearproof-prefix-gkr-to-whir-v1',
-        statement=description,gkr_proof=proof),sort_keys=True,separators=(',',':')).encode()).digest()
+    if prefix_bytes is None:
+        binding=hashlib.sha384(json.dumps(dict(profile='nearproof-prefix-gkr-to-whir-v1',
+            statement=description,gkr_proof=proof),sort_keys=True,separators=(',',':')).encode()).digest()
+    else:
+        from swirl_binary_transcript import binding as binary_binding
+        from verify_swirl_prefix_dag import public_context
+        layout,*_=public_context(c,prefix_log,dag_path,prefix_bytes)
+        binding=binary_binding(bytes.fromhex(description['prefix_statement']),layout,proof)
     if write_outputs:
         (OUT/'weighted-input.bin').write_bytes(data);(OUT/'gkr-binding.bin').write_bytes(binding)
     Path('/tmp/nearproof-reconstructed-witness/weighted-input.bin').write_bytes(data)

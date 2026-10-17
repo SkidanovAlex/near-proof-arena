@@ -20,11 +20,17 @@ def native(name,env,label,output_dir=OUT):
     if result.returncode:raise ValueError('native rejection: '+label)
 
 
-def verify_blob(data,label='replay',root=False):
+def verify_blob(data,label='replay',root=False,typed=False):
     output_dir=BASE/'root-bundle-codec' if root else OUT
     output_dir.mkdir(exist_ok=True)
+    if typed:
+        if not root:raise ValueError('v2 requires root profile')
+        output_dir=BASE/'binary-root-bundle';output_dir.mkdir(exist_ok=True)
     dag_path=BASE/'root-split-witness/dag.jsonl.gz' if root else None
-    prefix,gkr_bytes,stack,whir=unpack(data)
+    if typed:
+        from swirl_binary_transcript import unpack_v2
+        prefix,gkr_bytes,stack,whir=unpack_v2(data)
+    else:prefix,gkr_bytes,stack,whir=unpack(data)
     assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()=='e74f9b1ee868c42776faf821b8b9f2e8829a7f68'
     env=os.environ.copy()
     for key in ('NEARPROOF_GKR_BINDING','NEARPROOF_WEIGHTED_WHIR','NEARPROOF_NATIVE_CAPTURE','NEARPROOF_PREFIX_ONLY','NEARPROOF_EXPORT_PREFIX','NEARPROOF_ROOT_SPLIT','NEARPROOF_SOURCE_PROOF','NEARPROOF_WITNESS_DIR'):env.pop(key,None)
@@ -35,14 +41,14 @@ def verify_blob(data,label='replay',root=False):
     Path('/tmp/nearproof-weighted-whir.proof').write_bytes(whir)
     native('nearproof_opening_free_prefix',env,label+'-prefix',output_dir)
     c=json.loads(Path('/tmp/nearproof-opening-free-controls.json').read_text())
-    log=Path('/tmp/nearproof-opening-free-prefix-log.txt').read_bytes()
+    log=None if typed else Path('/tmp/nearproof-opening-free-prefix-log.txt').read_bytes()
     shapes=json.loads(Path('/tmp/nearproof-prefix-trace-shapes.json').read_text())
     layouts=json.loads(Path('/tmp/nearproof-prefix-layouts.json').read_text())
-    layout,*_=public_context(c,log,dag_path)
+    layout,*_=public_context(c,log,dag_path,prefix if typed else None)
     proof=decode_gkr(layout,gkr_bytes)
     assert encode_gkr(layout,proof)==gkr_bytes
     Path('/tmp/nearproof-reconstructed-witness').mkdir(exist_ok=True)
-    prepare(proof,c,log,shapes,layouts,write_outputs=False,dag_path=dag_path)
+    prepare(proof,c,log,shapes,layouts,write_outputs=False,dag_path=dag_path,prefix_bytes=prefix if typed else None)
     env['NEARPROOF_GKR_BINDING']='/tmp/nearproof-prefix-gkr-binding.bin'
     native('nearproof_replay_weighted_whir',env,label+'-continuation',output_dir)
     return dict(prefix=len(prefix),gkr=len(gkr_bytes),stacking=len(stack),whir=len(whir),framing=24,total=len(data))
@@ -60,27 +66,31 @@ def build():
     return blob,layout
 
 
-def tests(blob,layout,root=False):
+def tests(blob,layout,root=False,typed=False):
+    packer,unpacker=pack,unpack
+    if typed:
+        from swirl_binary_transcript import pack_v2,unpack_v2
+        packer,unpacker=pack_v2,unpack_v2
     framing=[('truncated_header',blob[:23]),('truncated_body',blob[:-1]),('trailing_byte',blob+b'\0'),
              ('wrong_version',b'X'+blob[1:]),('zero_section',blob[:8]+b'\0'*4+blob[12:]),
              ('oversized_length',blob[:8]+b'\xff'*4+blob[12:])]
     rejected=[]
     for label,data in framing:
-        try:unpack(data)
+        try:unpacker(data)
         except ValueError:rejected.append(label)
         else:raise AssertionError(label)
-    gkr=unpack(blob)[1]
+    gkr=unpacker(blob)[1]
     for label,data in [('gkr_truncation',gkr[:-1]),('gkr_trailing',gkr+b'\0'),('gkr_noncanonical',struct.pack('<I',P)+gkr[4:])]:
         try:decode_gkr(layout,data)
         except ValueError:rejected.append(label)
         else:raise AssertionError(label)
     # Same-shape payload mutations must fail the actual arithmetic/authentication path.
     for section,name in enumerate(['prefix','gkr','stacking','whir']):
-        pieces=unpack(blob);changed=bytearray(pieces[section])
+        pieces=unpacker(blob);changed=bytearray(pieces[section])
         # Prefix offset8 is the first commitment byte; other tail bytes are field payload.
         offset=8 if section==0 else (0 if section==1 else len(changed)-1)
         changed[offset]^=1;pieces[section]=bytes(changed)
-        try:verify_blob(pack(pieces),'mutated-'+name,root=root)
+        try:verify_blob(packer(pieces),'mutated-'+name,root=root,typed=typed)
         except (ValueError,AssertionError):rejected.append('mutated_'+name)
         else:raise AssertionError('mutation accepted: '+name)
     return rejected
