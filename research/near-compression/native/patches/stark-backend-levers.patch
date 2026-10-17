@@ -1421,7 +1421,7 @@ index 6bdbaa8..57e0537 100644
  }
  
 diff --git a/crates/stark-backend/src/soundness/calculator.rs b/crates/stark-backend/src/soundness/calculator.rs
-index 7ba58fb..86c80a0 100644
+index 7ba58fb..7b5736d 100644
 --- a/crates/stark-backend/src/soundness/calculator.rs
 +++ b/crates/stark-backend/src/soundness/calculator.rs
 @@ -360,7 +360,7 @@ impl SoundnessCalculator {
@@ -1443,7 +1443,24 @@ index 7ba58fb..86c80a0 100644
              // log2(list size) only depends on proximity regime, will not change depending on the
              // sub-round
              let mut log2_list_size: Option<f64> = None;
-@@ -957,9 +958,9 @@ pub fn print_soundness_report(
+@@ -445,7 +446,15 @@ impl SoundnessCalculator {
+                     log_inv_rate,
+                     log_query_domain,
+                     base_field_order,
+-                ) + Self::effective_pow_bits(whir.query_phase_pow_bits, base_field_order);
++                ) + if whir.levers.wide_query_pow && whir.query_phase_pow_bits > 30 {
++                    // Wide (two-element) PoW: the transcript's wide check must accept a uniformly
++                    // random witness with probability exactly 2^-bits (the SHA-384 config checks
++                    // leading zero bits of a fresh hash); a single field sample cannot exceed
++                    // log2(p) bits, which is what `effective_pow_bits` models.
++                    whir.query_phase_pow_bits as f64
++                } else {
++                    Self::effective_pow_bits(whir.query_phase_pow_bits, base_field_order)
++                };
+             min_query_bits = min_query_bits.min(query_bits);
+ 
+             // ε_shift and ε_out reference m_i, ℓ_{i,0} where `i = round + 1` refers to the *next*
+@@ -957,9 +966,9 @@ pub fn print_soundness_report(
      println!();
  
      println!("WHIR Round Breakdown:");
@@ -1454,7 +1471,7 @@ index 7ba58fb..86c80a0 100644
          let query_sec =
              proximity_regime.whir_query_security_bits(round_config.num_queries, log_inv_rate);
          println!(
-@@ -971,7 +972,7 @@ pub fn print_soundness_report(
+@@ -971,7 +980,7 @@ pub fn print_soundness_report(
              params.whir.query_phase_pow_bits,
              params.whir.folding_pow_bits
          );
@@ -1463,7 +1480,7 @@ index 7ba58fb..86c80a0 100644
      }
  }
  
-@@ -1011,6 +1012,7 @@ mod tests {
+@@ -1011,6 +1020,7 @@ mod tests {
                  query_phase_pow_bits: 16,
                  folding_pow_bits: 10,
                  proximity: WhirProximityStrategy::UniqueDecoding,
@@ -2495,3 +2512,46 @@ index 756e26f..9fd4896 100644
  pub fn merkle_verify<H: MerkleHasher>(
      hasher: &H,
      root: H::Digest,
+diff --git a/crates/stark-backend/tests/integration.rs b/crates/stark-backend/tests/integration.rs
+index 19c9196..302764a 100644
+--- a/crates/stark-backend/tests/integration.rs
++++ b/crates/stark-backend/tests/integration.rs
+@@ -77,8 +77,8 @@ fn test_stacked_opening_reduction(log_trace_degree: usize) -> eyre::Result<()> {
+         &common_main_pcs_data,
+     )?;
+ 
+-    let need_rot = pk.per_air[ctx.per_trace[0].0].vk.params.need_rot;
+-    let need_rot_per_commit = vec![vec![need_rot]];
++    // Per commit, per matrix, per column (opening masks; lane/pq-whir-levers next_mask lever).
++    let need_rot_per_commit = vec![vec![pk.per_air[ctx.per_trace[0].0].vk.params.opening_masks()[0].clone()]];
+     let (stacking_proof, _) = prove_stacked_opening_reduction::<SC, _, _, _, StackedReductionCpu<SC>>(
+         device,
+         &mut default_duplex_sponge(),
+diff --git a/crates/stark-backend/tests/stacked_reduction.rs b/crates/stark-backend/tests/stacked_reduction.rs
+index d723097..f6ac119 100644
+--- a/crates/stark-backend/tests/stacked_reduction.rs
++++ b/crates/stark-backend/tests/stacked_reduction.rs
+@@ -31,7 +31,7 @@ struct StackedReductionTestCase {
+     pub transcript: DuplexSponge,
+     pub proof: StackingProof<SC>,
+     pub layouts: Vec<StackedLayout>,
+-    pub need_rot_per_commit: Vec<Vec<bool>>,
++    pub need_rot_per_commit: Vec<Vec<Vec<bool>>>,
+     pub column_openings: Vec<Vec<Vec<EF>>>,
+     pub r: Vec<EF>,
+     pub omega_pows: Vec<F>,
+@@ -160,11 +160,13 @@ fn generate_single_column_test_case() -> StackedReductionTestCase {
+         stacking_openings: vec![vec![q_at_u]],
+     };
+ 
++    // Per column of the single matrix (opening masks; lane/pq-whir-levers next_mask lever).
++    let ncols = layout.sorted_cols.iter().map(|&(_, c, _)| c + 1).max().unwrap_or(0);
+     StackedReductionTestCase {
+         transcript: default_duplex_sponge(),
+         proof,
+         layouts: vec![layout],
+-        need_rot_per_commit: vec![vec![true]],
++        need_rot_per_commit: vec![vec![vec![true; ncols]]],
+         column_openings,
+         r,
+         omega_pows,

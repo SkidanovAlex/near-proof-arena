@@ -414,3 +414,15 @@ relations exceed the model's child constants by ≈ 47–49 KB: 2^26.4 cells →
 gives no gain: the next-row values must be sent for the nonlinear constraint check.
 Applied to the L4-C COMBO+E5 levers point (263,884 B) this gives ≈ 309 KB with E6 and
 ≈ 332 KB without: the GKR term is now the largest correctable item.
+
+## Round-2 levers measured (2026-10-17, lane/pq-whir-levers)
+
+Gruen GKR + derived GKR claims: GKR = **48L² + 192L + 152 B** (was 72L² + 264L + 248), exact on
+the dummy and on the real L3 SHA AIR at 2^18 rows (L=23: 29,960 vs 44,408 B). Gruen batch-constraint
+rounds and `max_constraint_degree` = 4 (our driver used 8) cut relations ≈ 3.5–4.3 KB. Next-row mask
+(per column, in the vk): child 116/271 rotated, **SHA AIR 438/442 main columns read at the next
+row** — ext2's "next 0.3" is not available for that AIR. Two-element PoW: z=32 proved in a real
+proof; z=28 3.8 s, z=32 65.5 s (8 threads). Gate 5 re-measured (W=15): 350,713 B (268/48 B) and
+293,903 B (z=32 proved, 42 B); extrapolated to 2^26.4 cells: **459,923 / 389,561 B** (round 1:
+479,156 / 408,734). On ext2's `L m=3 combo` point the measured laws give ≈ 325 KB. Laws:
+`native/levers_laws.py`; report: `results/pq-whir-levers/README.md`.

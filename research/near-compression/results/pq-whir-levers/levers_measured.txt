@@ -1,3 +1,19 @@
+## round 2: all levers (coset, multiproof, k1=1, m=8, gruen GKR + derived claims, gruen zerocheck,
+## next-row mask, max_constraint_degree 4; z=32 via the two-element PoW)
+
+| run | total | auth | initial | codeword | final poly | whir small | relations (law) | gkr (law) | stacking (law) | other |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| g6-h14 | 350,713 | 187,248 | 8,280 | 65,280 | 24,576 | 1,360 | 47,356 (47,356) | 13,832 (13,832) | 2,704 (2,704) | 77 |
+| g6z32-h14 | 293,903 | 141,750 | 6,960 | 55,296 | 24,576 | 1,358 | 47,356 (47,356) | 13,832 (13,832) | 2,704 (2,704) | 71 |
+| sha18-lev | 743,353 | 423,984 | 42,560 | 188,928 | 3,072 | 2,176 | 48,956 (48,940) | 29,960 (29,960) | 3,616 (3,616) | 101 |
+
+Extrapolated to 2^26.4 cells (W=169, n = 15.55 zerocheck rounds, GKR at L=23 as for the SHA AIR at 2^18 rows):
+
+| setting | auth | initial | codeword | final poly | whir small | relations | gkr | stacking | other | **total** | round 1 | model (levers_model) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 268-bit / 48 B | 187,248 | 93,288.0 | 65,280 | 24,576 | 1,360 | 48,038 | 29,960 | 10,096.0 | 77 | **459,923.0** | 479,156 | 431,689.0 |
+| z=32 / 42 B (proved) | 141,750 | 78,416.0 | 55,296 | 24,576 | 1,358 | 48,038 | 29,960 | 10,096.0 | 71 | **389,561.0** | 408,734 | 359,643.0 |
+
 No levers (upstream; b=6 k=3 log_h=21 log_final=9, W=43) at 2^26.4: extrapolated 625,561 B with gkr(L=23); final_layer_model 582,945 B (its gkr/stacking/relations constants).
 
 ## gas-failure5 child, one lever at a time (measured vs model at the measured query schedule)

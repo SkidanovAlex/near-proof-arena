@@ -221,6 +221,92 @@ digests must agree). The verifier must consume the whole stream and end at the r
 multiproof u8, keep_domain u8, then the upstream fields with each tree's paths encoded as
 either `u32 count + digests` (multiproof) or `u32 depth + q·depth digests`.
 
+## Round 2 (coordinator request after gate 5): GKR, zerocheck, next-row, wide PoW
+
+All behind default-off `WhirLevers` flags (`gruen_gkr`, `gkr_derive_claims`, `gruen_zerocheck`,
+`next_mask`, `wide_query_pow`) plus the `max_constraint_degree` parameter; gas-failure5 at defaults
+re-proved byte-identically after every step. Laws for fixed points: `native/levers_laws.py`
+(self-checking); tables: `levers_measured.txt` (round-2 section first).
+
+| lever | effect (measured) | law | negative tests |
+|---|---|---|---|
+| Gruen GKR (send s(1), s(2); verifier rebuilds s from `eq(ξ_t,X)·t(X)`) + derived claims (p_xi_1 per layer, root q0) | child GKR 8,456 → 5,784 B; dummy L=9/11/13: 5,768 / 8,072 / 10,760; **SHA AIR 2^18 (L=23): 29,960 vs 44,408 upstream** | **48L² + 192L + 152** (was 72L² + 264L + 248) | s(1), s(2), root and layer claims, dropped s(3) / derived fields set non-zero |
+| Gruen batch-constraint sumcheck | −48 B per round in which no trace is exhausted (dummy: all rounds; SHA AIR: 4 rounds, the table AIR has 64 rows) | relations law below | dropped eval set non-zero, batch eval |
+| `max_constraint_degree` = real degree | the parameter, not the AIR, sets the round degree; our driver used 8: d=8 → 4 saves 2.5 KB at 2^12 rows, ≈ 3.5 KB at 2^17.5 | relations law | — |
+| next-row mask (per column, from the symbolic DAG at keygen, in the vk) | child: 116 of 271 rotated columns, relations −7.4 KB; **L3 SHA AIR: 438 of 442 main + 16 of 18 table columns are read at the next row** → −0.3 KB there | relations law (rot_cols) | vk mask dropping a read column (rejected), rotated claim removed / changed |
+| two-element query PoW witness | z=32 proven in a real proof (gate 5); **z=28: 3.8 s mean of 8 grinds; z=32: 65.5 s mean of 3** (8 threads; expected 2^z/(4.8–5.6·10⁷/s) = 4.8–5.7 s / 77–90 s); +4 B per round | — | first element changed, element missing |
+
+Relations law (exact on the dummy and child; SHA AIR 48,940 vs 48,956 measured):
+`48·Σ_cols(1+rot_c) + 48·((d+1)(2^l_skip−1)+1) + 48·((d+1)·n − g) + 96·airs + 24 (+4 lever format)`,
+n = max log2(rows) − l_skip, g = Gruen rounds. Stacking: `352 + 96·n_stack + 48·W` (exact, W=4..28).
+
+**Gate 5 re-measured** (same shape, h=14, W=15; `logs/g6-*.log`): 268-bit/48 B **350,713 B**
+(was 361,220; GKR 20,408 → 13,832, relations 50,808 → 47,356); **z=32 / 42 B, really proved
+with z=32: 293,903 B** (four grinds 28–276 s, 592 s total under contention; 23 negative cases).
+Extrapolated to 2^26.4 cells (W=169, GKR at L=23):
+
+| | 268-bit / 48 B | z=32 / 42 B |
+|---|---:|---:|
+| WHIR (auth + initial + codeword + final poly + small) | 371,752 | 301,396 |
+| relations (d=4, Gruen) | 48,038 | 48,038 |
+| GKR (L=23, Gruen + derived) | 29,960 | 29,960 |
+| stacking | 10,096 | 10,096 |
+| **total (extrapolated)** | **459,923** | **389,561** |
+| round 1 | 479,156 | 408,734 |
+
+**Second data point: the real L3 SHA AIR at 2^18 rows** (n=4096 compressions, 2^26.8 cells, 467
+columns over 3 AIRs; at b=3, log_h=22 because the final shape needs ≈ 100 GB): 743,353 B total,
+**GKR 29,960 = law at L=23 exactly, relations 48,956, stacking 3,616 = law**; 14.8 GB, 323 s.
+Its WHIR part is not at the final-layer shape (b=3); the non-WHIR parts are shape-independent and
+confirm the laws on a real circuit.
+
+**For the ext2 fixed point.** ext2's "+gruen" rows use 48L² + 264L + 248; measured is
+48L² + 192L + 152 (−1.8 KB more at L=24). ext2's relations (2·48·cols + 5,784 + 432·(h−12)) assume
+d=8 and no Gruen; with d=4 and Gruen the law gives ≈ −4.3 KB at h≈17.5. **ext2's "next 0.3" rows
+are not available for the SHA AIR** (438/442 columns rotated); only a narrower or re-laid-out AIR
+gets there. Applying the measured laws to ext2's `L m=3 combo` point (345,176 B, c_sha 19,448):
+≈ 345,176 − 15,648 (GKR) − 4,300 (relations) ≈ **325 KB** (model + measured laws, not a proof).
+
+### Other non-WHIR candidates (item 4)
+
+| candidate | estimate | status |
+|---|---:|---|
+| degree parameter = real AIR degree | −3.5 KB at d 8→4 | done (config) |
+| Gruen zerocheck | −48 B × rounds with all traces active (≤ 0.8 KB) | done |
+| derive the last AIR's numerator/denominator terms from the GKR claims | −96 B | not done (tiny) |
+| strip eq_uni from the univariate skip round | −(2^l_skip−1)·48 = −144 B | not done (tiny) |
+| derive one stacking opening from the stacking-sumcheck check | −48 B | not done (tiny) |
+| stacking openings 48·W: reuse stacking coefficients as WHIR batching coefficients | up to −8 KB at W=169 | **not sound without a proximity-gap argument for structured coefficients**; larger log_h (×15 domains) shrinks W soundly |
+| fewer interactions per SHA-AIR row (GKR depth) | −2.4 KB per halving at L=23 (43 → 11/row: L 23→21, −4.6 KB) | AIR lane |
+| narrower final AIR (columns × 2 openings) | −96 B per column removed (230 cols: −22 KB) | AIR lane |
+| GKR: 3 claims/layer and 2 values/round are minimal for this protocol | — | — |
+
+### Round-2 spec additions
+
+* **Lever header:** lever-format proofs carry `CODEC_VERSION_LEVERS` then 4 bytes
+  `k_first, multiproof, keep_domain, flags` (flags bit 0 gruen_gkr, 1 gkr_derive_claims,
+  2 next_mask, 3 gruen_zerocheck, 4 wide_query_pow); the WHIR body no longer repeats them.
+* **GKR (Gruen):** layer j, round t: s(X) = eq_pre·eq1(ξ_t, X)·t(X), eq1(ξ,X) = (1−ξ)(1−X) + ξX,
+  eq_pre = Π_{u<t} eq1(ξ_u, r_u); the proof (and transcript) carry s(1), s(2) only; the verifier sets
+  s(0) = claim − s(1), t(k) = s(k)/(eq_pre·eq1(ξ_t,k)) for k = 0,1,2, claim' = eq_pre·eq1(ξ_t,r)·t(r)
+  (quadratic interpolation); any zero divisor rejects.
+* **GKR (derived claims):** proof omits root q0_claim and every layer's p_xi_1; the verifier computes
+  root p_xi_1 = −p_xi_0·q_xi_1/q_xi_0, q0 = q_xi_0·q_xi_1, layer j ≥ 1
+  p_xi_1 = (claim'/eq − λ·q_xi_0·q_xi_1 − p_xi_0·q_xi_1)/q_xi_0, then observes exactly the upstream
+  sequence (q0, p0, q0, p1, q1 per layer). Wire: pow witness, u32 layers, per layer p0, q0, [p1], q1,
+  [q0_claim], rounds.
+* **Gruen zerocheck:** rounds t < g = min over traces of max(n_trace, 0) carry s(1..d) (d values); the
+  verifier rebuilds s(d+1) = eq1(d+1)·s'(d+1) from s'(k) = s(k)/eq1(ξ_{l_skip+t}, k), k = 0..d.
+  Wire: after n_max and s_deg, u32 g', then rounds (the first g' without their last, zero, value).
+* **next_mask:** `StarkVerifyingParams.rot_mask = Some(per part (common, preprocessed, cached),
+  per column bool)` (serde-skipped when None, so upstream vks are unchanged); column openings per part
+  are `[c_0, (r_0 if rot_0), c_1, ...]`; the stacking reduction includes a rotated claim exactly where
+  the mask is set.
+* **wide PoW (SHA-384 config):** s' = H(7, [state, w0_le32 ‖ w1_le32]) (105-byte message, one
+  compression), accept iff the first z bits of s' are zero; s' becomes the state. Query-phase
+  witnesses are 2 field elements per round. The soundness calculator counts it as exactly z bits for
+  z > 30 (a single-field-element model caps at log2 p).
+
 ## Blockers / next steps
 
 1. **GKR term (≈ 44 KB at L=23)** is the largest item the model missed. Levers to test:
@@ -230,6 +316,6 @@ either `u32 count + digests` (multiproof) or `u32 depth + q·depth digests`.
    reduces W and these bytes together with the initial term.
 3. Update `levers_model.py` / `ext.py` constants: GKR(L), stacking(W), relations(h, degree),
    remove E6, transcript ≈ 1.4k compressions at final-layer shape; re-run the L4 fixed point.
-4. z ≥ 29 needs a 2-element PoW witness (backend `query_phase_pow_witnesses` type).
+4. ~~z ≥ 29 needs a 2-element PoW witness~~ done in round 2 (`wide_query_pow`).
 5. Full-size gate 5 (W=169) needs ≈ 100 GB or a streamed commit (per-column LDE into
    incremental per-leaf SHA states, ≈ 3.6 GB for 2^24 states; recompute opened rows).

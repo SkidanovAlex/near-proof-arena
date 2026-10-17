@@ -208,7 +208,44 @@ def baseline_extrapolated(log_cells=26.4, L=23):
     print()
 
 
+def round2(log_cells=26.4, L_gkr=23):
+    """Round 2 (GKR/zerocheck/next-row/wide-PoW levers): gate 5 at W=15 and the SHA AIR at 2^18 rows."""
+    import levers_laws as LW
+    print('## round 2: all levers (coset, multiproof, k1=1, m=8, gruen GKR + derived claims, gruen zerocheck,')
+    print('## next-row mask, max_constraint_degree 4; z=32 via the two-element PoW)\n')
+    print('| run | total | auth | initial | codeword | final poly | whir small | relations (law) | gkr (law) | stacking (law) | other |')
+    print('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+    laws = {'g6-h14': (LW.relations_bytes(460, 460, 4, 12, gruen_rounds=12), LW.gkr_bytes(15), LW.stacking_bytes(15, 17)),
+            'g6z32-h14': (LW.relations_bytes(460, 460, 4, 12, gruen_rounds=12), LW.gkr_bytes(15), LW.stacking_bytes(15, 17)),
+            'sha18-lev': (LW.relations_bytes(467, 454, 4, 16, airs=3, gruen_rounds=4), LW.gkr_bytes(23), LW.stacking_bytes(28, 20))}
+    for name in ['g6-h14', 'g6z32-h14', 'sha18-lev']:
+        c = parse(name)['census']
+        rl, gl, sl = laws[name]
+        print(f"| {name} | {c['total']:,} | {c['auth']:,} | {c['initial']:,} | {c['codeword']:,} | {c['final_poly']:,} | {c['whir_small']:,} | "
+              f"{c['relations']:,} ({rl:,}) | {c['gkr']:,} ({gl:,}) | {c['stacking']:,} ({sl:,}) | {c['other']:,} |")
+    print()
+    cells = 2 ** log_cells
+    h_real = math.log2(cells / 460)
+    n_rounds = h_real - 2
+    print(f'Extrapolated to 2^{log_cells} cells (W=169, n = {n_rounds:.2f} zerocheck rounds, GKR at L={L_gkr} as for the SHA AIR at 2^18 rows):\n')
+    print('| setting | auth | initial | codeword | final poly | whir small | relations | gkr | stacking | other | **total** | round 1 | model (levers_model) |')
+    print('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+    for label, name, target, digest, r1 in [('268-bit / 48 B', 'g6-h14', 268, 48, 479156), ('z=32 / 42 B (proved)', 'g6z32-h14', 226, 42, 408734)]:
+        r = parse(name)
+        c = r['census']
+        best = L.best(cells, 460, target, 8, digest, True)
+        W = best['width']
+        comp = dict(auth=c['auth'], initial=r['q'][0] * 2 * W * BASE, codeword=c['codeword'], final_poly=c['final_poly'],
+                    whir_small=c['whir_small'],
+                    relations=round(LW.relations_bytes(460, 460, 4, n_rounds, gruen_rounds=n_rounds)),
+                    gkr=LW.gkr_bytes(L_gkr), stacking=LW.stacking_bytes(W, 17), other=c['other'])
+        tot = sum(comp.values())
+        print(f"| {label} | " + ' | '.join(f'{v:,}' for v in comp.values()) + f" | **{tot:,}** | {r1:,} | {best['bytes']:,} |")
+    print()
+
+
 if __name__ == '__main__':
+    round2()
     baseline_extrapolated(26.4)
     child_table()
     gate5()
