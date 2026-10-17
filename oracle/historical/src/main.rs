@@ -253,6 +253,88 @@ fn main() -> anyhow::Result<()> {
                     "root_present": map.contains_key(&root), "keys": n, "first_key_nibbles": lo, "last_key_nibbles": hi})
             );
         }
+        Some("get-key") => {
+            // DEBUG/driver aid: trie-get KEY_HEX over the union of PARTS...
+            let root = CryptoHash::from_str(&a[2]).unwrap();
+            let key = hex::decode(&a[3])?;
+            let vals = (a[4..].iter())
+                .flat_map(|p| load_part(p).unwrap())
+                .collect::<Vec<_>>();
+            let storage = replay::storage_from_parts(&a[4..].to_vec()).unwrap();
+            let trie = near_store::Trie::from_recorded_storage(storage, root, false);
+            match trie.get(&key, near_store::trie::AccessOptions::DEFAULT) {
+                Ok(Some(v)) => println!("{}", serde_json::json!({"found": true, "value_len": v.len(), "value_hex": hex::encode(&v)})),
+                Ok(None) => println!("{}", serde_json::json!({"found": false})),
+                Err(e) => println!("{}", serde_json::json!({"error": format!("{e:?}")})),
+            }
+        }
+        Some("config-view") => {
+            // Print the built-in RuntimeConfigView for a protocol version, to
+            // diff against EXPERIMENTAL_protocol_config's runtime_config.
+            let pv: u32 = a[2].parse().unwrap();
+            let store = near_parameters::RuntimeConfigStore::new(None);
+            let view = near_parameters::RuntimeConfigView::from(store.get_config(pv).as_ref().clone());
+            println!("{}", serde_json::to_value(&view).unwrap());
+        }
+        Some("chunk-of-header") => {
+            // Decode the peer-served sync header's chunk: receipts/transactions
+            // as nearcore stored them (ground truth for the chunk contents).
+            let hdr_bytes = std::fs::read(&a[2])?;
+            // what `header` wrote: borsh of the inner ShardStateSyncResponseHeader
+            let hdr: near_primitives::state_sync::ShardStateSyncResponseHeader =
+                borsh::from_slice(&hdr_bytes)?;
+            let chunk = hdr.cloned_chunk(); // always present in a state-sync header
+            // `chunk.prev_outgoing_receipts` = the PREVIOUS chunk's receipts
+            // SENT FROM this shard (mostly to other shards). The chunk's TRUE
+            // incoming receipts live in the header's incoming_receipts_proofs
+            // (grouped by the sending block), with merkle proofs against the
+            // sending chunks' prev_outgoing_receipts_root.
+            let shard_id = match a.get(3).and_then(|x| x.parse::<u64>().ok()) {
+                Some(s) => s,
+                None => panic!("usage: chunk-of-header HEADER.bin SHARD_ID"),
+            };
+            let prev_out = chunk.prev_outgoing_receipts();
+            let hdr2 = chunk.cloned_header();
+            println!("{}", serde_json::json!({
+                "chunk_hash": chunk.chunk_hash().0.to_string(),
+                "height_included": hdr2.height_included(),
+                "num_transactions": chunk.to_transactions().len(),
+                "num_prev_outgoing_receipts": prev_out.len(),
+                "prev_outgoing_receipt_ids": prev_out.iter().map(|r| r.receipt_id().to_string()).collect::<Vec<_>>(),
+                "prev_outgoing_receipts_root": hex::encode(hdr2.prev_outgoing_receipts_root().0),
+                "outcome_root_prev_block": hex::encode(hdr2.prev_outcome_root().0),
+                "gas_used_prev_block": hdr2.prev_gas_used().as_gas(),
+                "incoming_receipts_by_block": hdr.incoming_receipts_proofs().iter().map(|rr| {
+                    let receipts: Vec<serde_json::Value> = rr.1.iter()
+                        .filter(|rp| rp.1.to_shard_id == ShardId::new(shard_id))
+                        .flat_map(|rp| rp.0.iter().cloned())
+                        .map(|receipt| serde_json::to_value(near_primitives::views::ReceiptView::from(receipt)).unwrap())
+                        .collect();
+                    serde_json::json!({"block_hash": rr.0.to_string(), "receipts": receipts})
+                }).collect::<Vec<_>>(),
+            }));
+        }
+        Some("exec-chunk") => {
+            // v3 lane: run ONE authentic sync-prev chunk (its incoming
+            // receipts, no transactions) under the real Runtime::apply on the
+            // harvested trie, recording everything read. Prints a JSON
+            // summary (post_state_root, per-outcome status/gas, ...) for the
+            // Python driver's on-chain anchors.
+            let get = |n: &str| a.iter().position(|x| x == n).and_then(|i| a.get(i + 1)).cloned().context(n.to_string());
+            let ctx: serde_json::Value = serde_json::from_slice(&std::fs::read(get("--ctx")?)?)?;
+            let parts: Vec<String> = get("--parts")?.split(',').map(String::from).collect();
+            let req = replay::parse_ctx(&ctx).map_err(|e| anyhow::anyhow!(e))?;
+            let storage = replay::storage_from_parts(&parts).map_err(|e| anyhow::anyhow!(e))?;
+            let witness_out = get("--out-witness").ok().map(std::path::PathBuf::from);
+            match replay::run_chunk(req, &storage, witness_out.as_deref()) {
+                Ok(v) => println!("{v}"),
+                Err(e) => {
+                    // Missing-region feedback for the driver's harvest loop.
+                    eprintln!("{e}");
+                    std::process::exit(2);
+                }
+            }
+        }
         Some("build") => {
             let get = |n: &str| a.iter().position(|x| x == n).and_then(|i| a.get(i + 1)).cloned().context(n.to_string());
             let ctx: serde_json::Value = serde_json::from_slice(&std::fs::read(get("--ctx")?)?)?;
