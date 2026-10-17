@@ -82,10 +82,11 @@ DESIGNS = [
     ('v1 + 1 round/row, duplicated history', 84, 350, 15, 332, 15, 5, 'modelled'),
     ('v2 k=1 (bits + v2 overhead cuts)', 44, 384 + 39, 13, 384 + 12, 14, 8, 'built'),
     ('spread/limb lookups, 2 rounds/row (estimate)', 44, 330, 20, 200, 220, 4, 'modelled'),
-    ('v2 k=2 (base-4 digits)', 44, 192 + 39, 13, 192 + 12, 14, 9, 'built'),
-    ('v2 k=3 (base-8 digits)', 44, 132 + 39, 13, 132 + 12, 14, 21, 'built'),
+    ('v2 k=2, 44 rows (e6eb1a55f)', 44, 192 + 39, 13, 192 + 12, 14, 9, 'built'),
+    ('v2 k=3, 44 rows (e6eb1a55f)', 44, 132 + 39, 13, 132 + 12, 14, 21, 'built'),
+    ('v2.1 k=2, 43 rows, zero padding', 43, 192 + 39, 13, 192 + 12, 14, 9, 'built'),
+    ('v2.1 k=3, 43 rows, zero padding', 43, 132 + 39, 13, 132 + 12, 14, 21, 'built'),
     ('v2 k=4 (base-16 digits)', 44, 96 + 39, 13, 96 + 12, 14, 45, 'modelled'),
-    ('v2 k=3 with 43 rows', 43, 132 + 39, 13, 132 + 12, 14, 21, 'modelled'),
 ]
 
 if __name__ == '__main__':

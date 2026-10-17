@@ -15,7 +15,97 @@ this AIR through four quantities:
 
 It also pays through the backend's `max_constraint_degree`.
 
-## Result
+## v2.1 update (current head): 43 rows, zero-valid padding
+
+This update changes three things:
+* **Zero-valid padding.** All-zero rows satisfy every constraint and contribute zero bus
+  multiplicity, so the backend's `tight_heights` lever (lane/pq-whir-levers 561c934f7) can
+  leave the padding uncommitted.
+  * is_real = F_IV + F_ROUND + F_OUT. The control lookup uses is_real as its multiplicity.
+    Every other interaction is already gated by flags.
+  * On padding rows, r, g and every flag must be zero, and the digit, carry and V rules
+    already force zeros.
+  * S_A and DE gate their only terms that do not vanish (h, Ch and DE) by is_real(next
+    row). Those terms have degree 15, so the overall degree stays 21. As a result, even the
+    row after the last real row is all zero.
+  * Real rows must form a prefix that starts at row 0 (`(1 - real) * real' = 0`), and a
+    full segment must end before the padding starts.
+* **43 rows.** The OUT row 43 is gone:
+  * H'2 and H'3 sit in row 0's free W slots, and H'6 and H'7 in row 1's.
+  * Their carries use row 0's carry columns, which are free because row 1 has no
+    additions.
+  * Their final words a_76, a_77, e_76, e_77 arrive by bus residual from row 40.
+  * Row 42 computes H'0, H'1, H'4 and H'5 from row 41's words, plus the IV of row 1 by bus.
+* **One more DAG fix:** 12,718 nodes (one derived flag).
+
+| | v2 (44 rows) | **v2.1 k=3** | v2.1 k=2 |
+|---|---:|---:|---:|
+| rows per compression | 44 | **43** | 43 |
+| main / table columns | 171 / 13 | **171 / 13** | 231 / 13 |
+| **cells per compression** | 7,524 | **7,353** | 9,933 |
+| next-row columns (main) | 144 | **144** | 204 |
+| interactions per row | 14 | **14** | 14 |
+| degree | 21 | **21** | 9 |
+| modelled final layer, L (z=32, 42 B) | 283,692 | **282,688 (−1.0 KB)** | 294,911 |
+| modelled final layer, T | 335,116 | **333,949** | 350,549 |
+| SHA-only proof, N=1,024 (measured) | 828,957 | 828,957 | 831,693 |
+| SHA-only prove time, N=1,024 (measured) | 779 s | 585 s | 121 s |
+
+Notes on these numbers:
+* **SHA-only proof bytes are unchanged.** The trace still pads to 2^16 rows, and
+  `tight_heights` is not in this backend pin. The tight-height saving is the NV lane's to
+  measure.
+* **Prove times differ only through machine load.** The constraints are the same apart
+  from the gating.
+* **The k=2 L figure moves the wrong way** (+3.5 KB, while T moves −1.9 KB). The model
+  makes a discrete WHIR shape choice, and that choice jumps at this cell count. This is a
+  model artifact, not a real cost of the 43-row layout.
+
+**6-word output mode: not built, because it saves nothing.** With 43 rows, H'6 and H'7
+occupy row 1's W slots, which would otherwise be idle. Dropping them saves no cell, column
+or row. Getting to 42 rows would need 6 output words in free slots, and only the 4 W slots
+of rows 0 and 1 are free.
+
+**Flags: no further reduction found.**
+* There are 7 flags. F_FIN and F_DA are derived from F_TAIL, and is_real is derived from
+  F_IV + F_ROUND + F_OUT.
+* The remaining sender flags (F_S01: rows 2–33; F_S2: rows 6–37) cover ranges that cannot
+  be expressed with the neighbouring row.
+
+**Padding tests (k=3, also run for k=2 and k=1).**
+* Single-cell mutations now include three padding rows: the first, one in the middle, and
+  the last.
+* The honest tail is asserted to be all zero.
+* Three edits are tried, and all are caught:
+  * a copy of a real round row placed inside the zero tail: rejected by constraint;
+  * a fully consistent fake 4th compression placed right after the last segment, with no
+    consumer messages: rejected by the bus;
+  * the same segment placed one row later, after a gap: rejected by constraint.
+* Totals: 5,921 / 5,921 mutations detected for k=3, and 8,315 / 8,315 each for k=2 and k=1.
+  All 13 bus-only forgeries are rejected by a bus. All the other selftests pass (10k
+  reference, 1,008 trace outputs including vectors and multi-block, and the checker on
+  65,536 rows).
+
+### Interface for the NV lane (v2.1)
+
+* **Bus 3 message:** (cid, pair, 3 limbs of word 2m, 3 limbs of word 2m+1), with
+  **cid = g − r = 43 · compression index** (it was 44).
+  * Limbs are split at bits 21/42 for k=3, and at 22/44 for k ≤ 2.
+  * Pairs 0–3 are the input state H0..H7, pairs 4–11 the block W0..W15, and pairs 12–15
+    the output H'0..H'7.
+  * Each compression sends all 16 pairs, and the consumer must receive all 16. That
+    includes pair 15 (H'6, H'7) even for SHA-384 final blocks, so the consumer must take it
+    even if it only reads 6 words.
+  * The pair numbering is the same as v2. Only the AIR rows that produce the pairs changed,
+    and that is internal.
+* **Rows:** 43 per compression, laid back to back from trace row 0.
+* **Padding:** every row after the last segment must be all zero, with no multiplicity.
+  This makes the AIR safe with `tight_heights`.
+* **Degree:** `max_constraint_degree` must be 21 for k=3 (9 for k=2).
+* **Table:** the AIR uses a 64-row control/K table (`TableAir`, 13 columns, buses 0 and 1).
+  It is not zero-padded: it is a fixed 64 rows.
+
+## Result (v2, 44 rows; superseded by v2.1 above)
 
 | | v1 (bits) | **v2 k=3** | v2 k=2 | v2 k=1 |
 |---|---:|---:|---:|---:|
