@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/alu.rs b/crates/recursion/src/nv/alu.rs
 new file mode 100644
-index 0000000..5aba1d0
+index 0000000..f6e56a1
 --- /dev/null
 +++ b/crates/recursion/src/nv/alu.rs
-@@ -0,0 +1,316 @@
+@@ -0,0 +1,323 @@
 +//! NV ALU AIR: one Ext12 instruction per row (see isa.rs), operands through a read-only
 +//! memory (row x writes c at address x), transcript/unit traffic through 12 slot
 +//! messages, keys for the Merkle AIR, and the in-circuit program-binding accumulator.
@@ -1314,14 +1314,18 @@ index 0000000..5aba1d0
 +        ALU_WIDTH
 +    }
 +}
-+impl<T> BaseAirWithPublicValues<T> for AluAir {}
++impl<T> BaseAirWithPublicValues<T> for AluAir {
++    fn num_public_values(&self) -> usize {
++        1
++    }
++}
 +impl<T> PartitionedBaseAir<T> for AluAir {}
 +
 +fn fidx(op: Op) -> usize {
 +    op as usize - 1
 +}
 +
-+impl<AB: AirBuilder + InteractionBuilder> Air<AB> for AluAir
++impl<AB: p3_air::AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for AluAir
 +where
 +    <AB::Expr as PrimeCharacteristicRing>::PrimeSubfield:
 +        p3_field::extension::BinomiallyExtendable<12>,
@@ -1364,7 +1368,8 @@ index 0000000..5aba1d0
 +                    + fl(Op::ObsC12)
 +                    + fl(Op::Unit12)
 +                    + fl(Op::Bit)
-+                    + fl(Op::KeyC))
++                    + fl(Op::KeyC)
++                    + fl(Op::Pv))
 +                    * a[k].clone();
 +            if k == 0 {
 +                e += fl(Op::Const) * l.p[0] + fl(Op::Horn) * l.wit;
@@ -1381,6 +1386,8 @@ index 0000000..5aba1d0
 +            }
 +        }
 +        builder.assert_zero(fl(Op::Bit) * l.a[0] * (l.a[0] - one.clone()));
++        let pv0: AB::Expr = builder.public_values()[0].into();
++        builder.assert_zero(fl(Op::Pv) * (l.a[0] - pv0));
 +
 +        // binding accumulator: w = e1 * e2; P = sum tau^j P_j
 +        let w = ext_field_multiply::<AB::Expr>(ex(&l.e1), ex(&l.e2));
@@ -1556,10 +1563,10 @@ index 0000000..5aba1d0
 +}
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..afae8ff
+index 0000000..8f8fb5c
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,366 @@
+@@ -0,0 +1,426 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1622,6 +1629,17 @@ index 0000000..afae8ff
 +    pub job_units: Vec<(u8, Vec<Option<Unit>>)>,
 +    pub paths: Vec<MerklePath>,
 +    pub log_rows: usize,
++    /// deferred binding check: (sub row, zero row, child program evaluation)
++    pub acc_check: Option<(u32, u32, EF)>,
++    pub acc_flag: Option<EF>,
++    /// debug: batch point and the child's per-trace openings
++    pub dbg_rs: Vec<EF>,
++    pub dbg_openings: Vec<Vec<EF>>,
++    pub dbg_tid: Vec<usize>,
++    /// bind the child's ALU program (air 0) to this program
++    pub bind: bool,
++    /// own recursion level (public value of the ALU AIR)
++    pub level: u32,
 +}
 +
 +impl Builder {
@@ -1638,7 +1656,48 @@ index 0000000..afae8ff
 +            job_units: vec![],
 +            paths: vec![],
 +            log_rows,
++            acc_check: None,
++            acc_flag: None,
++            dbg_rs: vec![],
++            dbg_openings: vec![],
++            dbg_tid: vec![],
++            bind: false,
++            level: 0,
 +        }
++    }
++
++    /// Fill reserved row `row` with c = x * y.
++    pub fn set_reserved_mul(&mut self, row: usize, x: V, y: V) -> V {
++        assert!(row < self.reserved);
++        self.instrs[row] = Instr {
++            op: Op::Mul,
++            a: x.addr,
++            b: y.addr,
++            k1: 0,
++            k2: 0,
++        };
++        self.vals[row] = x.val * y.val;
++        V {
++            addr: row as u32,
++            val: self.vals[row],
++        }
++    }
++
++    /// Expose the own level: a0 == public value 0.
++    pub fn pv_level(&mut self, x: V) {
++        self.level = coeffs(x.val)[0].as_canonical_u32();
++        self.push(Op::Pv, x.addr, 0, 0, 0, x.val, F::ZERO);
++    }
++
++    /// Assert flag * (binding total - phat) == 0; the total is the ACC row (last row), known at finish.
++    pub fn defer_acc_check(&mut self, phat: V, flag: V) {
++        let last = (1u32 << self.log_rows) - 1;
++        let d = self.push(Op::Sub, last, phat.addr, 0, 0, EF::ZERO, F::ZERO);
++        let g = self.push(Op::Mul, d.addr, flag.addr, 0, 0, EF::ZERO, F::ZERO);
++        let z = self.push(Op::Zero, g.addr, 0, 0, 0, EF::ZERO, F::ZERO);
++        self.acc_check = Some((d.addr, g.addr, phat.val));
++        self.acc_flag = Some(flag.val);
++        let _ = z;
 +    }
 +
 +    fn push(&mut self, op: Op, a: u32, b: u32, k1: u32, k2: u32, val: EF, wit: F) -> V {
@@ -1908,6 +1967,14 @@ index 0000000..afae8ff
 +            acc += self.vals[x % e1n] * self.vals[e1n + x / e1n] * pw;
 +        }
 +        *self.vals.last_mut().unwrap() = acc;
++        if let Some((d, g, phat)) = self.acc_check {
++            let flag = self.acc_flag.unwrap();
++            self.vals[d as usize] = acc - phat;
++            self.vals[g as usize] = (acc - phat) * flag;
++            if flag != EF::ZERO && acc != phat {
++                self.failures.push("program binding".into());
++            }
++        }
 +    }
 +
 +    /// Read counts per address (memory multiplicities).
@@ -1928,10 +1995,10 @@ index 0000000..afae8ff
 +pub const DIGEST_CELLS: usize = DIGEST_SIZE / 12;
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..af21fd9
+index 0000000..82301de
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,234 @@
+@@ -0,0 +1,298 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -1958,7 +2025,7 @@ index 0000000..af21fd9
 +        jobs::{self, ShaWork},
 +    },
 +    transcript::sha_transcript::{
-+        generate_transcript_traces, replay_transcript, TranscriptHashAir, TranscriptInternalBuses,
++        generate_transcript_traces_h, replay_transcript, TranscriptHashAir, TranscriptInternalBuses,
 +        TranscriptObsAir, TranscriptSampleAir, TranscriptTraceInput,
 +    },
 +};
@@ -2029,6 +2096,10 @@ index 0000000..af21fd9
 +    pub k: usize,
 +    pub log_rows: usize,
 +    pub sha_instances: usize,
++    /// bind the child's ALU program to ours (child must be NV with the same program)
++    pub bind: bool,
++    /// fixed trace heights (AIR order of `airs`); None = natural (next power of two)
++    pub heights: Option<Vec<usize>>,
 +}
 +
 +impl NvCircuit {
@@ -2038,6 +2109,8 @@ index 0000000..af21fd9
 +            k,
 +            log_rows,
 +            sha_instances,
++            bind: false,
++            heights: None,
 +        }
 +    }
 +
@@ -2104,6 +2177,7 @@ index 0000000..af21fd9
 +        proof: &Proof<Sha384Config>,
 +    ) -> (Vec<RowMajorMatrix<F>>, Builder) {
 +        let mut b = Builder::new(self.log_rows, self.reserved());
++        b.bind = self.bind;
 +        build_verifier(&mut b, vk, proof);
 +        b.finish();
 +        assert_eq!(vk.inner.params.k_whir(), self.k);
@@ -2136,13 +2210,19 @@ index 0000000..af21fd9
 +        let log = b.transcript.clone().into_log();
 +        let tr_jobs = replay_transcript(&log);
 +        let base = leaf_jobs.len();
-+        let (mut mtrace, nodes) = merkle_trace(&b.paths, self.k);
++        let hh = |i: usize| self.heights.as_ref().map_or(1, |h| h[i]);
++        let (mut mtrace, nodes) = merkle_trace(&b.paths, self.k, hh(4));
 +        let mut work = ShaWork {
 +            jobs: leaf_jobs,
 +            nodes,
 +        };
 +        work.jobs.extend(tr_jobs.iter().map(|j| j.sha_job()));
-+        let sha = jobs::generate(&work, self.sha_instances);
++        let shift = self.sha_instances - 1;
++        let sha = jobs::generate_with_heights(
++            &work,
++            self.sha_instances,
++            self.heights.as_ref().map(|_| (hh(5), hh(7 + shift), hh(8 + shift))),
++        );
 +        {
 +            use core::borrow::BorrowMut;
 +            for row in mtrace.values.chunks_exact_mut(MERKLE_WIDTH) {
@@ -2152,9 +2232,12 @@ index 0000000..af21fd9
 +                }
 +            }
 +        }
-+        let tr = generate_transcript_traces(&TranscriptTraceInput {
-+            proof_jobs: vec![(tr_jobs.as_slice(), base)],
-+        });
++        let tr = generate_transcript_traces_h(
++            &TranscriptTraceInput {
++                proof_jobs: vec![(tr_jobs.as_slice(), base)],
++            },
++            self.heights.as_ref().map(|_| (hh(1), hh(2), hh(3))),
++        );
 +        let mut counts = sha.byte_counts.clone();
 +        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
 +            *c += t;
@@ -2163,15 +2246,63 @@ index 0000000..af21fd9
 +        let mut mats = vec![alu, tr.hash, tr.obs, tr.sample, mtrace];
 +        mats.extend(sha.compress);
 +        mats.extend([sha.table, sha.block, sha.msg, jobs::byte_table(&counts)]);
++        if let Some(h) = &self.heights {
++            use p3_matrix::Matrix;
++            for (i, m) in mats.iter().enumerate() {
++                assert_eq!(m.height(), h[i], "AIR {i}: natural height exceeds the fixed height");
++            }
++        }
 +        (mats, b)
 +    }
 +}
++
++/// Prove one NV level; returns (vk, proof, executed builder, trace matrices' shapes).
++pub fn prove_level(
++    circ: &NvCircuit,
++    engine: &crate::sha384::config::Sha384CpuEngine,
++    child_vk: &MultiStarkVerifyingKey<Sha384Config>,
++    child: &Proof<Sha384Config>,
++) -> (
++    MultiStarkVerifyingKey<Sha384Config>,
++    Proof<Sha384Config>,
++    Builder,
++    Vec<(usize, usize)>,
++) {
++    use openvm_cpu_backend::CpuBackend;
++    use openvm_stark_backend::{
++        prover::{AirProvingContext, DeviceDataTransporter, MatrixDimensions, ProvingContext},
++        StarkEngine,
++    };
++    let airs = circ.airs::<Sha384Config>();
++    let (pk, vk) = engine.keygen(&airs);
++    let (mats, b) = circ.generate(child_vk, child);
++    assert!(b.failures.is_empty(), "verifier program failures: {:?}", b.failures);
++    let shapes = mats.iter().map(|m| (m.height(), m.width())).collect();
++    let level = F::from_u32(b.level);
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| {
++            if i == 0 {
++                AirProvingContext::simple(m, vec![level])
++            } else {
++                AirProvingContext::simple_no_pis(m)
++            }
++        })
++        .collect();
++    let d_pk = engine.device().transport_pk_to_device(&pk);
++    let proof = engine
++        .prove(&d_pk, ProvingContext::new(ctxs.into_iter().enumerate().collect()))
++        .unwrap();
++    engine.verify(&vk, &proof).unwrap();
++    (vk, proof, b, shapes)
++}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..c5cb7c5
+index 0000000..3644019
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,108 @@
+@@ -0,0 +1,110 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -2182,7 +2313,7 @@ index 0000000..c5cb7c5
 +//! in-circuit multilinear evaluation (see DESIGN.md §2.1).
 +
 +/// Address bits available for operand `B` in `P1`.
-+pub const ADDR_BITS: u32 = 17;
++pub const ADDR_BITS: u32 = 20;
 +pub const MAX_ROWS: usize = 1 << ADDR_BITS;
 +
 +#[repr(u32)]
@@ -2232,16 +2363,18 @@ index 0000000..c5cb7c5
 +    DblAdd = 20,
 +    /// c = a * b + a
 +    MulAddA = 21,
++    /// c = a; a0 == public value 0 (the recursion level)
++    Pv = 22,
 +}
 +
-+pub const NUM_OPS: usize = 22;
++pub const NUM_OPS: usize = 23;
 +
 +impl Op {
 +    pub fn all() -> [Op; NUM_OPS] {
 +        use Op::*;
 +        [
 +            Nop, Mul, Add, Sub, Const, ConstX, Load, Obs1, Obs12, ObsC12, Smp1, Smp12, Unit12,
-+            Horn, Job, Bit, Zero, KeyC, KeyP, Acc, DblAdd, MulAddA,
++            Horn, Job, Bit, Zero, KeyC, KeyP, Acc, DblAdd, MulAddA, Pv,
 +        ]
 +    }
 +    pub fn reads_a(self) -> bool {
@@ -2249,7 +2382,7 @@ index 0000000..c5cb7c5
 +        matches!(
 +            self,
 +            Mul | Add | Sub | Obs1 | Obs12 | ObsC12 | Unit12 | Horn | Bit | Zero | KeyC | DblAdd
-+                | MulAddA
++                | MulAddA | Pv
 +        )
 +    }
 +    pub fn reads_b(self) -> bool {
@@ -2282,7 +2415,7 @@ index 0000000..c5cb7c5
 +}
 diff --git a/crates/recursion/src/nv/merkle.rs b/crates/recursion/src/nv/merkle.rs
 new file mode 100644
-index 0000000..8208f1b
+index 0000000..51d497d
 --- /dev/null
 +++ b/crates/recursion/src/nv/merkle.rs
 @@ -0,0 +1,364 @@
@@ -2542,10 +2675,10 @@ index 0000000..8208f1b
 +
 +/// Merkle trace (cid = node index; remapped once the compression split is known) and the
 +/// node compressions in row order.
-+pub fn merkle_trace(paths: &[MerklePath], k: usize) -> (RowMajorMatrix<F>, Vec<Comp>) {
++pub fn merkle_trace(paths: &[MerklePath], k: usize, min_h: usize) -> (RowMajorMatrix<F>, Vec<Comp>) {
 +    let rows_per = |p: &MerklePath| (1usize << k) - 1 + p.siblings.len();
 +    let n: usize = paths.iter().map(rows_per).sum();
-+    let h = n.next_power_of_two().max(2);
++    let h = n.next_power_of_two().max(2).max(min_h);
 +    let mut t = F::zero_vec(h * MERKLE_WIDTH);
 +    let mut comps = Vec::with_capacity(n);
 +    let mut row = 0usize;
@@ -2667,10 +2800,10 @@ index 0000000..c617ea9
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..89d4a92
+index 0000000..6ca8bdb
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,163 @@
+@@ -0,0 +1,302 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -2752,8 +2885,11 @@ index 0000000..89d4a92
 +        total += m.height() * m.width();
 +    }
 +    println!("NV_TOTAL_CELLS {total}");
-+    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> =
-+        mats.into_iter().map(AirProvingContext::simple_no_pis).collect();
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, vec![F::ONE]) } else { AirProvingContext::simple_no_pis(m) })
++        .collect();
 +    let parent = Sha384CpuEngine::new(crate::sha384::e2e_tests::parent_params_debug());
 +    parent.debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
 +}
@@ -2776,8 +2912,11 @@ index 0000000..89d4a92
 +    let names: Vec<String> = airs.iter().map(|a| a.name()).collect();
 +    let (mut mats, _b) = circ.generate(vk, proof);
 +    mutate(&mut mats, &names);
-+    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> =
-+        mats.into_iter().map(AirProvingContext::simple_no_pis).collect();
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, vec![F::ONE]) } else { AirProvingContext::simple_no_pis(m) })
++        .collect();
 +    let parent = Sha384CpuEngine::new(crate::sha384::e2e_tests::parent_params_debug());
 +    parent.debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
 +}
@@ -2834,12 +2973,145 @@ index 0000000..89d4a92
 +fn nv_circuit_interactions_debug() {
 +    nv_debug(&InteractionsFixture11, 14);
 +}
++
++/// The opening of a column of the child's ALU equals sum_x w(x) T[x] with
++/// w(x) = L_{x mod 2^l}(r0) * eq(r_1..r_n, bits(x >> l)) (LSB first).
++#[test]
++fn nv_opening_formula() {
++    use openvm_stark_backend::poly_common::eval_eq_uni;
++    use p3_field::TwoAdicField;
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let mut pp = openvm_stark_backend::test_utils::test_system_params_small(2, 16, 3);
++    pp.max_constraint_degree = 4;
++    let parent = Sha384CpuEngine::new(pp);
++    let circ = super::circuit::NvCircuit::new(3, 14, 1);
++    let t0 = std::time::Instant::now();
++    let (vk1, p1, b1, _) = super::circuit::prove_level(&circ, &parent, &vk0, &p0);
++    println!("NV_L1_PROVE_S {:.1}", t0.elapsed().as_secs_f64());
++    // level 2 program (no binding) to obtain the batch point and the openings
++    let mut b2 = Builder::new(19, 1024);
++    build_verifier(&mut b2, &vk1, &p1);
++    println!("NV_L2_PROGRAM_ROWS {}", b2.instrs.len());
++    let l = 2usize;
++    let t = b2.dbg_tid.iter().position(|&a| a == 0).unwrap();
++    let rs = &b2.dbg_rs;
++    let omega = F::two_adic_generator(l);
++    let n = 14 - l;
++    let mut ok = 0;
++    for j in 0..4 {
++        let col: Vec<F> = b1.instrs.iter().map(|i| F::from_u32(i.words()[j])).collect();
++        let mut s = EF::ZERO;
++        for (x, &v) in col.iter().enumerate() {
++            let lw: EF = eval_eq_uni(l, rs[0], EF::from(omega.exp_u64((x % 4) as u64)));
++            let mut e = EF::ONE;
++            for i in 0..n {
++                let bit = (x >> (l + i)) & 1 == 1;
++                e *= if bit { rs[1 + i] } else { EF::ONE - rs[1 + i] };
++            }
++            s += lw * e * v;
++        }
++        let open = b2.dbg_openings[t][36 + j];
++        println!("NV_OPENING P{j}: formula == opening: {}", s == open);
++        ok += (s == open) as usize;
++    }
++    assert_eq!(ok, 4);
++}
++
++/// NV-verifies-NV chain (ignored; env-driven).
++///   NV_LEVELS=4 NV_LOG_ROWS=17 PARENT_N_STACK=16 PARENT_BITS=20 PARENT_LIST_M=3 ...
++#[test]
++#[ignore]
++fn nv_chain() {
++    use crate::sha384::e2e_tests::{describe, env_usize, params_from_env, proof_sizes, soundness};
++    use openvm_stark_backend::keygen::types::MultiStarkVerifyingKey;
++    use openvm_stark_backend::proof::Proof;
++    let levels = env_usize("NV_LEVELS", 4);
++    let log_rows = env_usize("NV_LOG_ROWS", 18);
++    let child_engine = Sha384CpuEngine::new(child_params_small());
++    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&child_engine);
++    let pp = params_from_env("PARENT", [16, 3, 20, 3]);
++    describe("NV_PARENT", &pp);
++    let engine = Sha384CpuEngine::new(pp);
++    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
++    assert_eq!(k, 3, "coset tree height must match the child");
++    let run = |circ: &super::circuit::NvCircuit,
++               vk: &MultiStarkVerifyingKey<Sha384Config>,
++               p: &Proof<Sha384Config>,
++               tag: &str| {
++        let t = std::time::Instant::now();
++        let (vk1, p1, b, shapes) = super::circuit::prove_level(circ, &engine, vk, p);
++        let secs = t.elapsed().as_secs_f64();
++        let airs = circ.airs::<Sha384Config>();
++        let (mut cols, mut opened, mut ints, mut cells, mut sha_cells) = (0, 0, 0usize, 0usize, 0usize);
++        for (i, a) in vk1.inner.per_air.iter().enumerate() {
++            let w = a.params.width.common_main;
++            cols += w;
++            opened += w * (1 + a.params.need_rot as usize);
++            ints += shapes[i].0 * a.symbolic_constraints.interactions.len();
++            cells += shapes[i].0 * shapes[i].1;
++            if airs[i].name().starts_with("Sha512Air") || airs[i].name().starts_with("TableAir") {
++                sha_cells += shapes[i].0 * shapes[i].1;
++            }
++            println!(
++                "{tag}_AIR {} h={} w={} rot={} int/row={}",
++                airs[i].name(),
++                shapes[i].0,
++                w,
++                a.params.need_rot as usize,
++                a.symbolic_constraints.interactions.len()
++            );
++        }
++        let merkle_rows: usize = b.paths.iter().map(|p| 7 + p.siblings.len()).sum();
++        let blocks: usize = b.jobs().iter().map(|j| j.num_blocks()).sum::<usize>();
++        let l = (usize::BITS - (ints - 1).leading_zeros()) as usize;
++        println!(
++            "{tag}_SUMMARY cols={cols} opened={opened} interactions={ints} L={l} cells={cells} sha_cells={sha_cells} other_cells={} alu_used={} merkle_nodes={merkle_rows} leaf_blocks={blocks} prove_s={secs:.1}",
++            cells - sha_cells,
++            b.instrs.iter().filter(|i| i.op != super::isa::Op::Nop).count()
++        );
++        soundness(tag, &vk1);
++        println!("{tag}_PROOF_BYTES {}", proof_sizes(&p1));
++        (vk1, p1, shapes)
++    };
++    // phase A: natural heights until the shape repeats
++    let circ = super::circuit::NvCircuit::new(k, log_rows, 1);
++    let (mut vka, mut pa, mut prev) = (vk0.clone(), p0.clone(), vec![]);
++    let mut fixed: Vec<usize> = std::env::var("NV_FIXED")
++        .map(|s| s.split(',').map(|x| x.trim().parse().unwrap()).collect())
++        .unwrap_or_default();
++    let phase_a = if fixed.is_empty() { env_usize("NV_PHASE_A", 4) } else { 0 };
++    for i in 1..=phase_a {
++        let (v, q, sh) = run(&circ, &vka, &pa, &format!("A{i}"));
++        let hs: Vec<usize> = sh.iter().map(|s| s.0).collect();
++        println!("A{i}_HEIGHTS {hs:?}");
++        if hs == prev {
++            fixed = hs;
++            break;
++        }
++        fixed = if prev.is_empty() { hs.clone() } else { hs.iter().zip(&prev).map(|(a, b)| *a.max(b)).collect() };
++        prev = hs;
++        vka = v;
++        pa = q;
++    }
++    println!("NV_FIXED_HEIGHTS {fixed:?}");
++    // phase B: fixed heights; binding from level 3
++    let mut circ = super::circuit::NvCircuit::new(k, log_rows, 1);
++    circ.heights = Some(fixed);
++    let (mut vk, mut p) = (vk0, p0);
++    for level in 1..=levels {
++        circ.bind = level >= 2;
++        let (v, q, _) = run(&circ, &vk, &p, &format!("L{level}"));
++        vk = v;
++        p = q;
++    }
++}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..d7da1e5
+index 0000000..53e1e68
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1015 @@
+@@ -0,0 +1,1107 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -3377,6 +3649,31 @@ index 0000000..d7da1e5
 +            .collect();
 +        open_cells.push(pairs);
 +    }
++    b.dbg_rs = rs.iter().map(|v| v.val).collect();
++    b.dbg_tid = tid.clone();
++    b.dbg_openings = open_cells
++        .iter()
++        .map(|cs| cs.iter().map(|(c, _)| c.val).collect())
++        .collect();
++    if b.bind {
++        // child is NV: level = child level + 1; binding enforced iff child level != 1
++        let cl = pv_cells[0][0];
++        let one = b.c(F::ONE);
++        let own = b.add(cl, one);
++        b.pv_level(own);
++        let clm1 = b.sub(cl, one);
++        let cv = coeffs(clm1.val)[0];
++        let inv = b.load_f(if cv == F::ZERO { F::ZERO } else { cv.inverse() });
++        let flag = b.mul(clm1, inv);
++        let nf = b.one_minus(flag);
++        let t = b.mul(clm1, nf);
++        b.zero(t, "level flag");
++        bind_child_program(b, &tid, &n_per_trace, &rs, &open_cells, l_skip, flag);
++    } else {
++        let one = b.c(F::ONE);
++        b.pv_level(one);
++    }
++    eprintln!("NV_PHASE before_dag {}", b.instrs.len());
 +    // per-trace constraint and interaction evaluation
 +    let omega = F::two_adic_generator(l_skip);
 +    let inv_n = F::from_usize(1 << l_skip).inverse();
@@ -3457,6 +3754,7 @@ index 0000000..d7da1e5
 +            lp = b.mul(lp, lambda);
 +        }
 +        constr_evals.push(b.mul(eq_ns[n], expr));
++        eprintln!("NV_DAG air={a} nodes={} rows_so_far={}", dag.nodes.len(), b.instrs.len());
 +        let mut num = b.c(F::ZERO);
 +        let mut den = b.c(F::ZERO);
 +        for (i, inter) in avk.symbolic_constraints.interactions.iter().enumerate() {
@@ -3489,6 +3787,7 @@ index 0000000..d7da1e5
 +        mp = b.mul(mp, mu);
 +    }
 +    b.assert_eq(cur_sum, evaluated, "batch constraint claim");
++    eprintln!("NV_PHASE after_dag {}", b.instrs.len());
 +
 +    // ---- stacked reduction ----
 +    let sp = &proof.stacking_proof;
@@ -3532,52 +3831,57 @@ index 0000000..d7da1e5
 +        let sj0 = b.sub(claim, s1);
 +        claim = interp_quadratic(b, [sj0, s1, s2], uj);
 +    }
-+    // q_coeffs
++    // q_coeffs: kernels depend only on (n, need_rot); cache per n.
 +    let width = sp.stacking_openings[0].len();
 +    let mut qc = vec![b.c(F::ZERO); width];
++    let om_u: Vec<V> = u.iter().map(|&x| b.one_minus(x)).collect();
++    let mut kern: std::collections::BTreeMap<(usize, bool), V> = Default::default();
 +    for (col, &(mat_idx, _, s)) in layout.sorted_cols.iter().enumerate() {
 +        let need = need_rot[mat_idx];
 +        let n = s.log_height() - l_skip;
-+        let bits: Vec<bool> = (l_skip + n..l_skip + n_stack)
-+            .map(|j| (s.row_idx >> j) & 1 == 1)
-+            .collect();
-+        let em = eq_mle_bits(b, &u[n + 1..], &bits);
-+        let rs_n = &rs[..=n];
-+        let eu = eq_uni(b, l_skip, u[0], rs_n[0]);
-+        let emr = eq_mle(b, &u[1..=n], &rs_n[1..]);
-+        let eq_prism = b.mul(eu, emr);
-+        let mut batched = b.mul(l2p[col], eq_prism);
-+        if need {
-+            // eval_rot_kernel_prism(l_skip, u[..=n], rs_n)
-+            let mut rot = b.c(F::ONE);
-+            let mut eqc = b.c(F::ONE);
-+            for i in (1..=n).rev() {
-+                let x = u[i];
-+                let y = rs_n[i];
-+                let oy = b.one_minus(y);
-+                let ox = b.one_minus(x);
-+                let t1 = b.mul(x, oy);
-+                let t1 = b.mul(t1, eqc);
-+                let t2 = b.mul(ox, y);
-+                let t2 = b.mul(t2, rot);
-+                rot = b.add(t1, t2);
-+                let e = eq1(b, x, y);
-+                eqc = b.mul(eqc, e);
++        if !kern.contains_key(&(n, need)) {
++            let rs_n = &rs[..=n];
++            let eu = eq_uni(b, l_skip, u[0], rs_n[0]);
++            let emr = eq_mle(b, &u[1..=n], &rs_n[1..]);
++            let eq_prism = b.mul(eu, emr);
++            let mut kv = eq_prism;
++            if need {
++                let mut rot = b.c(F::ONE);
++                let mut eqc = b.c(F::ONE);
++                for i in (1..=n).rev() {
++                    let x = u[i];
++                    let y = rs_n[i];
++                    let oy = b.one_minus(y);
++                    let t1 = b.mul(x, oy);
++                    let t1 = b.mul(t1, eqc);
++                    let t2 = b.mul(om_u[i], y);
++                    let t2 = b.mul(t2, rot);
++                    rot = b.add(t1, t2);
++                    let e = eq1(b, x, y);
++                    eqc = b.mul(eqc, e);
++                }
++                let yw = b.mul_c(rs_n[0], omega);
++                let a1 = eq_uni(b, l_skip, u[0], yw);
++                let a1 = b.mul(a1, eqc);
++                let b1 = eq_uni_at_one(b, l_skip, u[0]);
++                let b2 = eq_uni_at_one(b, l_skip, yw);
++                let d = b.sub(rot, eqc);
++                let bb = b.mul(b1, b2);
++                let bb = b.mul(bb, d);
++                let rk = b.add(a1, bb);
++                let lrk = b.mul(lambda_s, rk);
++                kv = b.add(eq_prism, lrk);
 +            }
-+            let yw = b.mul_c(rs_n[0], omega);
-+            let a1 = eq_uni(b, l_skip, u[0], yw);
-+            let a1 = b.mul(a1, eqc);
-+            let b1 = eq_uni_at_one(b, l_skip, u[0]);
-+            let b2 = eq_uni_at_one(b, l_skip, yw);
-+            let d = b.sub(rot, eqc);
-+            let bb = b.mul(b1, b2);
-+            let bb = b.mul(bb, d);
-+            let rk = b.add(a1, bb);
-+            let t = b.mul(l2p[col], lambda_s);
-+            let t = b.mul(t, rk);
-+            batched = b.add(batched, t);
++            kern.insert((n, need), kv);
 +        }
-+        let t = b.mul(em, batched);
++        let kv = kern[&(n, need)];
++        let mut em = b.c(F::ONE);
++        for (i, j) in (l_skip + n..l_skip + n_stack).enumerate() {
++            let f = if (s.row_idx >> j) & 1 == 1 { u[n + 1 + i] } else { om_u[n + 1 + i] };
++            em = b.mul(em, f);
++        }
++        let t = b.mul(em, kv);
++        let t = b.mul(t, l2p[col]);
 +        qc[s.col_idx] = b.add(qc[s.col_idx], t);
 +    }
 +    let stack_open: Vec<V> = sp.stacking_openings[0]
@@ -3591,6 +3895,7 @@ index 0000000..d7da1e5
 +    }
 +    b.assert_eq(claim, final_sum, "stacking final sum");
 +
++    eprintln!("NV_PHASE after_stacking {}", b.instrs.len());
 +    // ---- WHIR ----
 +    let u_cube: Vec<V> = {
 +        let mut v = powers_of_2(b, u[0], l_skip);
@@ -3600,8 +3905,67 @@ index 0000000..d7da1e5
 +    whir(b, vk, proof, &stack_open, &main_commit, &u_cube, &mut pow_id);
 +}
 +
-+fn t_idx(t: usize) -> usize {
-+    t
++/// Program binding (DESIGN §2.1): the child's ALU (air 0) program columns P0..P3 must
++/// equal this program.  Fills the reserved E1/E2 rows with the row weights
++/// w(x) = L_{x mod 2^l}(r0) * eq(r_1.., bits(x >> l)) and checks
++/// sum_x w(x) sum_j tau^j P_j[x] (the ACC row) == sum_j tau^j open(P_j).
++fn bind_child_program(
++    b: &mut Builder,
++    tid: &[usize],
++    n_per_trace: &[usize],
++    rs: &[V],
++    open_cells: &[Vec<(V, V)>],
++    l_skip: usize,
++    flag: V,
++) {
++    use super::alu::{tau_pows, E1_BITS, E1_SIZE};
++    let t = tid.iter().position(|&a| a == 0).expect("child ALU");
++    let n = n_per_trace[t];
++    assert_eq!(l_skip + n, b.log_rows, "child ALU height must equal ours");
++    let omega = F::two_adic_generator(l_skip);
++    let lv: Vec<V> = (0..1usize << l_skip)
++        .map(|i| {
++            let w = b.c(omega.exp_u64(i as u64));
++            eq_uni(b, l_skip, rs[0], w)
++        })
++        .collect();
++    // eq table over r[1..=m1], m1 = E1_BITS - l_skip (LSB = r[1])
++    let eq_table = |b: &mut Builder, vars: &[V]| -> Vec<V> {
++        let mut tab = vec![b.c(F::ONE)];
++        for &r in vars {
++            let om = b.one_minus(r);
++            let mut next = Vec::with_capacity(2 * tab.len());
++            for &e in &tab {
++                next.push(b.mul(e, om));
++            }
++            for &e in &tab {
++                next.push(b.mul(e, r));
++            }
++            tab = next;
++        }
++        tab
++    };
++    let m1 = E1_BITS - l_skip;
++    let t1 = eq_table(b, &rs[1..=m1]);
++    for x in 0..E1_SIZE {
++        let (lo, hi) = (x & ((1 << l_skip) - 1), x >> l_skip);
++        b.set_reserved_mul(x, lv[lo], t1[hi]);
++    }
++    let m2 = n - m1;
++    let t2 = eq_table(b, &rs[m1 + 1..=n]);
++    let one = b.c(F::ONE);
++    for x in 0..1usize << m2 {
++        b.set_reserved_mul(E1_SIZE + x, t2[x], one);
++    }
++    let tp = tau_pows();
++    let mut phat = b.c(F::ZERO);
++    for j in 0..4 {
++        let tj = b.ce(tp[j]);
++        let o = open_cells[t][36 + j].0;
++        let term = b.mul(tj, o);
++        phat = b.add(phat, term);
++    }
++    b.defer_acc_check(phat, flag);
 +}
 +
 +fn whir(
@@ -6291,7 +6655,7 @@ index 0000000..7c9769f
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..faac18f
+index 0000000..4977453
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
 @@ -0,0 +1,405 @@
@@ -6469,7 +6833,7 @@ index 0000000..faac18f
 +//   E2E_LEVELS=1 E2E_PROVE=1 cargo test --release --lib e2e_measure -- --ignored --nocapture
 +// ---------------------------------------------------------------------------------------
 +
-+fn env_usize(name: &str, default: usize) -> usize {
++pub fn env_usize(name: &str, default: usize) -> usize {
 +    std::env::var(name)
 +        .map(|s| s.parse().unwrap())
 +        .unwrap_or(default)
@@ -6513,7 +6877,7 @@ index 0000000..faac18f
 +    )
 +}
 +
-+fn describe(tag: &str, p: &SystemParams) {
++pub fn describe(tag: &str, p: &SystemParams) {
 +    println!(
 +        "{tag}_PARAMS l_skip={} n_stack={} k={} log_blowup={} queries={:?} pow(mu,fold,query,logup)=({},{},{},{})",
 +        p.l_skip,
@@ -6528,7 +6892,7 @@ index 0000000..faac18f
 +    );
 +}
 +
-+fn soundness(tag: &str, vk: &MultiStarkVerifyingKey<Sha384Config>) {
++pub fn soundness(tag: &str, vk: &MultiStarkVerifyingKey<Sha384Config>) {
 +    let b = openvm_stark_backend::soundness::SoundnessCalculator::calculate_from_vk(vk);
 +    println!(
 +        "{tag}_SOUNDNESS total={:.1} logup={:.1} proximity={:.1} query={:.1}",
@@ -6536,7 +6900,7 @@ index 0000000..faac18f
 +    );
 +}
 +
-+fn proof_sizes(p: &Proof<Sha384Config>) -> String {
++pub fn proof_sizes(p: &Proof<Sha384Config>) -> String {
 +    use openvm_stark_backend::codec::Encode;
 +    fn size<T: Encode>(x: &T) -> usize {
 +        let mut b = Vec::new();
@@ -6702,10 +7066,10 @@ index 0000000..faac18f
 +}
 diff --git a/crates/recursion/src/sha384/jobs.rs b/crates/recursion/src/sha384/jobs.rs
 new file mode 100644
-index 0000000..bf156ad
+index 0000000..e4738e3
 --- /dev/null
 +++ b/crates/recursion/src/sha384/jobs.rs
-@@ -0,0 +1,324 @@
+@@ -0,0 +1,336 @@
 +//! Trace generation for the SHA subsystem (`airs.rs` + `compress_air.rs`).
 +use core::borrow::BorrowMut;
 +
@@ -6843,7 +7207,15 @@ index 0000000..bf156ad
 +}
 +
 +pub fn generate(work: &ShaWork, instances: usize) -> ShaTraces {
-+    let heights: Option<(usize, usize, usize)> = None;
++    generate_with_heights(work, instances, None)
++}
++
++/// As `generate`, with minimum heights (compress instance 0, block, msg).
++pub fn generate_with_heights(
++    work: &ShaWork,
++    instances: usize,
++    heights: Option<(usize, usize, usize)>,
++) -> ShaTraces {
 +    let job_blocks: Vec<(Vec<Comp>, [u64; 6])> = work
 +        .jobs
 +        .par_iter()
@@ -6860,7 +7232,7 @@ index 0000000..bf156ad
 +        CompressSplit::single(comps.len())
 +    };
 +    let (c0, c1) = comps.split_at(split.n0);
-+    let h0 = heights.map_or(main_height(c0.len()), |h| h.0);
++    let h0 = heights.map_or(main_height(c0.len()), |h| h.0.max(main_height(c0.len())));
 +    let main0 = gen_main(c0, h0);
 +    let mut table = gen_table(&main0, h0);
 +    let (main1, t1) = if instances == 2 {
@@ -6878,7 +7250,9 @@ index 0000000..bf156ad
 +    }
 +
 +    // Block AIR.
-+    let bh = heights.map_or(n_blocks.next_power_of_two().max(1), |h| h.1);
++    let bh = heights.map_or(n_blocks.next_power_of_two().max(1), |h| {
++        h.1.max(n_blocks.next_power_of_two().max(1))
++    });
 +    assert!(bh >= n_blocks);
 +    let mut block = F::zero_vec(bh * BLOCK_WIDTH);
 +    {
@@ -6914,7 +7288,9 @@ index 0000000..bf156ad
 +
 +    // Packer.
 +    let n_words = 16 * n_blocks;
-+    let mh = heights.map_or(n_words.next_power_of_two().max(1), |h| h.2);
++    let mh = heights.map_or(n_words.next_power_of_two().max(1), |h| {
++        h.2.max(n_words.next_power_of_two().max(1))
++    });
 +    assert!(mh >= n_words);
 +    let mut msg = F::zero_vec(mh * MSG_WIDTH);
 +    let mut byte_counts = vec![0u32; 256];
@@ -10857,10 +11233,10 @@ index ac36b7d..09819dc 100644
  }
 diff --git a/crates/recursion/src/transcript/sha_transcript.rs b/crates/recursion/src/transcript/sha_transcript.rs
 new file mode 100644
-index 0000000..2c071e3
+index 0000000..0d32a4b
 --- /dev/null
 +++ b/crates/recursion/src/transcript/sha_transcript.rs
-@@ -0,0 +1,790 @@
+@@ -0,0 +1,799 @@
 +//! In-circuit SHA-384 Fiat–Shamir transcript (`ShaTranscript` in `sha384/config.rs`).
 +//!
 +//! The native transcript is a chain of SHA-384 jobs on a 48-byte state:
@@ -11526,6 +11902,15 @@ index 0000000..2c071e3
 +}
 +
 +pub fn generate_transcript_traces(input: &TranscriptTraceInput) -> TranscriptTraces {
++    generate_transcript_traces_h(input, None)
++}
++
++/// With minimum heights (hash, obs, sample).
++pub fn generate_transcript_traces_h(
++    input: &TranscriptTraceInput,
++    min_h: Option<(usize, usize, usize)>,
++) -> TranscriptTraces {
++    let mh = min_h.unwrap_or((1, 1, 1));
 +    let n_jobs: usize = input.proof_jobs.iter().map(|(j, _)| j.len()).sum();
 +    let n_obs: usize = input
 +        .proof_jobs
@@ -11539,9 +11924,9 @@ index 0000000..2c071e3
 +        .flat_map(|(j, _)| j.iter())
 +        .map(|j| j.reads.len())
 +        .sum();
-+    let mut hash = F::zero_vec(pad_height(n_jobs) * HASH_WIDTH);
-+    let mut obs = F::zero_vec(pad_height(n_obs) * OBS_WIDTH);
-+    let sh = pad_height(n_reads);
++    let mut hash = F::zero_vec(pad_height(n_jobs).max(mh.0) * HASH_WIDTH);
++    let mut obs = F::zero_vec(pad_height(n_obs).max(mh.1) * OBS_WIDTH);
++    let sh = pad_height(n_reads).max(mh.2);
 +    let mut sample = F::zero_vec(sh * SAMPLE_WIDTH);
 +    let mut byte_counts = vec![0u32; 256];
 +    let (mut hr, mut or, mut sr) = (0usize, 0usize, 0usize);

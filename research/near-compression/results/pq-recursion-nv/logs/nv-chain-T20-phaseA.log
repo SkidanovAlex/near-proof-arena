@@ -1,0 +1,198 @@
+
+running 1 test
+NV_PARENT_PARAMS l_skip=2 n_stack=19 k=3 log_blowup=3 queries=[16, 9, 7, 5, 4, 4, 3] pow(mu,fold,query,logup)=(0,0,0,0)
+NV_PHASE before_dag 1654
+NV_DAG air=0 nodes=21 rows_so_far=1704
+NV_PHASE after_dag 1717
+NV_PHASE after_stacking 2020
+test nv::tests::nv_chain has been running for over 60 seconds
+A1_AIR AluAir h=262144 w=104 rot=1 int/row=19
+A1_AIR TranscriptHashAir h=128 w=95 rot=1 int/row=68
+A1_AIR TranscriptObsAir h=1024 w=8 rot=1 int/row=3
+A1_AIR TranscriptSampleAir h=1024 w=20 rot=1 int/row=8
+A1_AIR MerkleNvAir h=256 w=100 rot=1 int/row=41
+A1_AIR Sha512Air h=32768 w=442 rot=1 int/row=43
+A1_AIR TableAir h=64 w=18 rot=1 int/row=2
+A1_AIR ShaBlockAir h=512 w=134 rot=1 int/row=49
+A1_AIR ShaMsgAir h=8192 w=45 rot=1 int/row=14
+A1_AIR ShaByteAir h=256 w=2 rot=1 int/row=1
+A1_SUMMARY cols=968 opened=1936 interactions=6560384 L=23 cells=42251776 sha_cells=14484608 other_cells=27767168 alu_used=7293 merkle_nodes=232 leaf_blocks=128 prove_s=93.2
+A1_SOUNDNESS total=20.4 logup=331.6 proximity=322.9 query=20.4
+A1_PROOF_BYTES total=212682 gkr=40904 relations=98592 stacking=3184 whir=69820
+A1_HEIGHTS [262144, 128, 1024, 1024, 256, 32768, 64, 512, 8192, 256]
+NV_PHASE before_dag 19794
+NV_DAG air=0 nodes=1542 rows_so_far=21604
+NV_DAG air=5 nodes=13163 rows_so_far=37044
+NV_DAG air=8 nodes=480 rows_so_far=38686
+NV_DAG air=2 nodes=63 rows_so_far=38989
+NV_DAG air=3 nodes=124 rows_so_far=39259
+NV_DAG air=7 nodes=446 rows_so_far=39889
+NV_DAG air=4 nodes=561 rows_so_far=41733
+NV_DAG air=9 nodes=15 rows_so_far=43180
+NV_DAG air=1 nodes=451 rows_so_far=43804
+NV_DAG air=6 nodes=1254 rows_so_far=46721
+NV_PHASE after_dag 46875
+NV_PHASE after_stacking 64880
+A2_AIR AluAir h=262144 w=104 rot=1 int/row=19
+A2_AIR TranscriptHashAir h=1024 w=95 rot=1 int/row=68
+A2_AIR TranscriptObsAir h=65536 w=8 rot=1 int/row=3
+A2_AIR TranscriptSampleAir h=8192 w=20 rot=1 int/row=8
+A2_AIR MerkleNvAir h=2048 w=100 rot=1 int/row=41
+A2_AIR Sha512Air h=262144 w=442 rot=1 int/row=43
+A2_AIR TableAir h=64 w=18 rot=1 int/row=2
+A2_AIR ShaBlockAir h=4096 w=134 rot=1 int/row=49
+A2_AIR ShaMsgAir h=65536 w=45 rot=1 int/row=14
+A2_AIR ShaByteAir h=256 w=2 rot=1 int/row=1
+A2_SUMMARY cols=968 opened=1936 interactions=17787264 L=25 cells=147620480 sha_cells=115868800 other_cells=31751680 alu_used=84008 merkle_nodes=1252 leaf_blocks=512 prove_s=324.9
+A2_SOUNDNESS total=20.4 logup=331.6 proximity=322.9 query=20.4
+A2_PROOF_BYTES total=247834 gkr=48056 relations=98592 stacking=5584 whir=95420
+A2_HEIGHTS [262144, 1024, 65536, 8192, 2048, 262144, 64, 4096, 65536, 256]
+NV_PHASE before_dag 21236
+NV_DAG air=0 nodes=1542 rows_so_far=23046
+NV_DAG air=5 nodes=13163 rows_so_far=38495
+NV_DAG air=2 nodes=63 rows_so_far=39395
+NV_DAG air=8 nodes=480 rows_so_far=40359
+NV_DAG air=3 nodes=124 rows_so_far=40746
+NV_DAG air=7 nodes=446 rows_so_far=41385
+NV_DAG air=4 nodes=561 rows_so_far=43238
+NV_DAG air=1 nodes=451 rows_so_far=45257
+NV_DAG air=9 nodes=15 rows_so_far=46908
+NV_DAG air=6 nodes=1254 rows_so_far=48235
+NV_PHASE after_dag 48389
+NV_PHASE after_stacking 64182
+A3_AIR AluAir h=262144 w=104 rot=1 int/row=19
+A3_AIR TranscriptHashAir h=2048 w=95 rot=1 int/row=68
+A3_AIR TranscriptObsAir h=65536 w=8 rot=1 int/row=3
+A3_AIR TranscriptSampleAir h=8192 w=20 rot=1 int/row=8
+A3_AIR MerkleNvAir h=2048 w=100 rot=1 int/row=41
+A3_AIR Sha512Air h=262144 w=442 rot=1 int/row=43
+A3_AIR TableAir h=64 w=18 rot=1 int/row=2
+A3_AIR ShaBlockAir h=4096 w=134 rot=1 int/row=49
+A3_AIR ShaMsgAir h=65536 w=45 rot=1 int/row=14
+A3_AIR ShaByteAir h=256 w=2 rot=1 int/row=1
+A3_SUMMARY cols=968 opened=1936 interactions=17856896 L=25 cells=147717760 sha_cells=115868800 other_cells=31848960 alu_used=89860 merkle_nodes=1252 leaf_blocks=640 prove_s=260.9
+A3_SOUNDNESS total=20.4 logup=331.6 proximity=322.9 query=20.4
+A3_PROOF_BYTES total=247834 gkr=48056 relations=98592 stacking=5584 whir=95420
+A3_HEIGHTS [262144, 2048, 65536, 8192, 2048, 262144, 64, 4096, 65536, 256]
+NV_PHASE before_dag 21162
+NV_DAG air=0 nodes=1542 rows_so_far=22973
+NV_DAG air=5 nodes=13163 rows_so_far=38422
+NV_DAG air=2 nodes=63 rows_so_far=39322
+NV_DAG air=8 nodes=480 rows_so_far=40286
+NV_DAG air=3 nodes=124 rows_so_far=40673
+NV_DAG air=7 nodes=446 rows_so_far=41312
+NV_DAG air=1 nodes=451 rows_so_far=43172
+NV_DAG air=4 nodes=561 rows_so_far=45391
+NV_DAG air=9 nodes=15 rows_so_far=46838
+NV_DAG air=6 nodes=1254 rows_so_far=48165
+NV_PHASE after_dag 48319
+NV_PHASE after_stacking 63822
+A4_AIR AluAir h=262144 w=104 rot=1 int/row=19
+A4_AIR TranscriptHashAir h=2048 w=95 rot=1 int/row=68
+A4_AIR TranscriptObsAir h=65536 w=8 rot=1 int/row=3
+A4_AIR TranscriptSampleAir h=8192 w=20 rot=1 int/row=8
+A4_AIR MerkleNvAir h=2048 w=100 rot=1 int/row=41
+A4_AIR Sha512Air h=262144 w=442 rot=1 int/row=43
+A4_AIR TableAir h=64 w=18 rot=1 int/row=2
+A4_AIR ShaBlockAir h=4096 w=134 rot=1 int/row=49
+A4_AIR ShaMsgAir h=65536 w=45 rot=1 int/row=14
+A4_AIR ShaByteAir h=256 w=2 rot=1 int/row=1
+A4_SUMMARY cols=968 opened=1936 interactions=17856896 L=25 cells=147717760 sha_cells=115868800 other_cells=31848960 alu_used=89500 merkle_nodes=1252 leaf_blocks=640 prove_s=192.2
+A4_SOUNDNESS total=20.4 logup=331.6 proximity=322.9 query=20.4
+A4_PROOF_BYTES total=247834 gkr=48056 relations=98592 stacking=5584 whir=95420
+A4_HEIGHTS [262144, 2048, 65536, 8192, 2048, 262144, 64, 4096, 65536, 256]
+NV_FIXED_HEIGHTS [262144, 2048, 65536, 8192, 2048, 262144, 64, 4096, 65536, 256]
+NV_PHASE before_dag 1654
+NV_DAG air=0 nodes=21 rows_so_far=1704
+NV_PHASE after_dag 1717
+NV_PHASE after_stacking 2020
+L1_AIR AluAir h=262144 w=104 rot=1 int/row=19
+L1_AIR TranscriptHashAir h=2048 w=95 rot=1 int/row=68
+L1_AIR TranscriptObsAir h=65536 w=8 rot=1 int/row=3
+L1_AIR TranscriptSampleAir h=8192 w=20 rot=1 int/row=8
+L1_AIR MerkleNvAir h=2048 w=100 rot=1 int/row=41
+L1_AIR Sha512Air h=262144 w=442 rot=1 int/row=43
+L1_AIR TableAir h=64 w=18 rot=1 int/row=2
+L1_AIR ShaBlockAir h=4096 w=134 rot=1 int/row=49
+L1_AIR ShaMsgAir h=65536 w=45 rot=1 int/row=14
+L1_AIR ShaByteAir h=256 w=2 rot=1 int/row=1
+L1_SUMMARY cols=968 opened=1936 interactions=17856896 L=25 cells=147717760 sha_cells=115868800 other_cells=31848960 alu_used=7293 merkle_nodes=232 leaf_blocks=128 prove_s=196.0
+L1_SOUNDNESS total=20.4 logup=331.6 proximity=322.9 query=20.4
+L1_PROOF_BYTES total=247834 gkr=48056 relations=98592 stacking=5584 whir=95420
+NV_PHASE before_dag 21162
+NV_DAG air=0 nodes=1542 rows_so_far=22973
+NV_DAG air=5 nodes=13163 rows_so_far=38422
+NV_DAG air=2 nodes=63 rows_so_far=39322
+NV_DAG air=8 nodes=480 rows_so_far=40286
+NV_DAG air=3 nodes=124 rows_so_far=40673
+NV_DAG air=7 nodes=446 rows_so_far=41312
+NV_DAG air=1 nodes=451 rows_so_far=43172
+NV_DAG air=4 nodes=561 rows_so_far=45391
+NV_DAG air=9 nodes=15 rows_so_far=46838
+NV_DAG air=6 nodes=1254 rows_so_far=48165
+NV_PHASE after_dag 48319
+NV_PHASE after_stacking 63822
+L2_AIR AluAir h=262144 w=104 rot=1 int/row=19
+L2_AIR TranscriptHashAir h=2048 w=95 rot=1 int/row=68
+L2_AIR TranscriptObsAir h=65536 w=8 rot=1 int/row=3
+L2_AIR TranscriptSampleAir h=8192 w=20 rot=1 int/row=8
+L2_AIR MerkleNvAir h=2048 w=100 rot=1 int/row=41
+L2_AIR Sha512Air h=262144 w=442 rot=1 int/row=43
+L2_AIR TableAir h=64 w=18 rot=1 int/row=2
+L2_AIR ShaBlockAir h=4096 w=134 rot=1 int/row=49
+L2_AIR ShaMsgAir h=65536 w=45 rot=1 int/row=14
+L2_AIR ShaByteAir h=256 w=2 rot=1 int/row=1
+L2_SUMMARY cols=968 opened=1936 interactions=17856896 L=25 cells=147717760 sha_cells=115868800 other_cells=31848960 alu_used=89500 merkle_nodes=1252 leaf_blocks=640 prove_s=178.2
+L2_SOUNDNESS total=20.4 logup=331.6 proximity=322.9 query=20.4
+L2_PROOF_BYTES total=247834 gkr=48056 relations=98592 stacking=5584 whir=95420
+NV_PHASE before_dag 22593
+NV_DAG air=0 nodes=1542 rows_so_far=24404
+NV_DAG air=5 nodes=13163 rows_so_far=39853
+NV_DAG air=2 nodes=63 rows_so_far=40753
+NV_DAG air=8 nodes=480 rows_so_far=41717
+NV_DAG air=3 nodes=124 rows_so_far=42104
+NV_DAG air=7 nodes=446 rows_so_far=42743
+NV_DAG air=1 nodes=451 rows_so_far=44603
+NV_DAG air=4 nodes=561 rows_so_far=46822
+NV_DAG air=9 nodes=15 rows_so_far=48269
+NV_DAG air=6 nodes=1254 rows_so_far=49596
+NV_PHASE after_dag 49750
+NV_PHASE after_stacking 65253
+
+thread 'nv::tests::nv_chain' (477925) panicked at crates/recursion/src/nv/circuit.rs:278:5:
+verifier program failures: ["program binding"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test nv::tests::nv_chain ... FAILED
+
+failures:
+
+failures:
+    nv::tests::nv_chain
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 22 filtered out; finished in 1245.86s
+
+Command exited with non-zero status 101
+	Command being timed: "/data/illia/nearproof-deps/pq-recursion/target-sha/release/deps/openvm_recursion_circuit-41e0f9a769bcd7a3 nv_chain --ignored --nocapture"
+	User time (seconds): 8577.66
+	System time (seconds): 64.46
+	Percent of CPU this job got: 693%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 20:45.97
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23252968
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 69360705
+	Voluntary context switches: 239586
+	Involuntary context switches: 68805
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 80
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 101
+EXIT 101
