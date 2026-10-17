@@ -1,0 +1,39 @@
+{
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "products": 16,
+  "private_words": 1920,
+  "public_io_words": 192,
+  "serialized_bytes": 190340,
+  "payload_bytes": 190304,
+  "public_io_bytes": 1536,
+  "census": {
+    "algebra": 26368,
+    "merkle": 94496,
+    "leaf_values": 69440
+  },
+  "scalar_composed_reference": {
+    "private_words": 255,
+    "and_constraints": 111,
+    "zero_constraints": 157,
+    "imul_constraints": 44,
+    "bmul_constraints": 12
+  },
+  "per_product": {
+    "private_words": 120,
+    "and_constraints": 64,
+    "zero_constraints": 72,
+    "imul_constraints": 26
+  },
+  "checks": [
+    "fresh proof verification",
+    "changed canonical public input rejected in verifier",
+    "changed proof rejected at Merkle authentication",
+    "1 and16 product statistics"
+  ],
+  "limitations": [
+    "Diagnostic96-bit query budget/rate1/8; not PQ128 or full security audit.",
+    "Ext4 multiplication only; no combined GKR verifier.",
+    "Standalone public operands/results; integration can change sharing and private/public layout.",
+    "Lean wide-addition/remainder soundness is conditional on word-operation equations; no Rust frontend refinement."
+  ]
+}

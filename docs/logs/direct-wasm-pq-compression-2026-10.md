@@ -12779,3 +12779,48 @@ continuation, fullNEAR1Pgas, PQ128 or end-to-end formalcorrectness achieved.
 Evidence under binius-babybear/: incrementalpatch,sourcepin,proof,negativeproof,
 logs,statistics,report and Leanbuild. Apply after prior Binius patches, rebuild,
 run check_binius_babybear.py (optional --reuse-tmp). make pin-check passes.
+
+## 2026-10-17 — Fused Ext4 coefficient reductions halve private word count
+
+Previous goal turn progressed at41bc27977 with constrained canonical BabyBear
+multiplication and conditional Lean word equations. Revalidated clean research
+tree and actual extension convention in check_whir_handoff.py: basis1,X,X²,X³,
+X⁴=11. Added a matched Ext4 component; no whole-GKR lowering claimed.
+
+Compute16canonical scalar products, weight6wrapped terms by11, accumulate each
+output coefficient in exact128-bit words, and reduce each coefficient ONCE.
+Four quotient witnesses have bounds[34,24,14,4]*P; all8input and4outputcoefficients
+are canonical.128-bit addition checks upper overflow and uses only the low
+addition's MSBcarry. Fullhigh/low quotientproduct+remainder matches the accumulator.
+Maximumcoefficients exceed64bits, so a lowword-only implementation would be wrong.
+
+Measured actual compiled circuit, same12publicwords for both approaches:
+- Fused:178gates,120privatewords,72ZERO,64AND,26IMUL,0BMUL;4quotientwitnesses.
+- Scalar-composed reference:394gates,255privatewords,157ZERO,111AND,44IMUL,
+  12BMUL;22scalar reductions,44quotient/remainderwitnesses. Rangecheck sharing is
+  whatever the same frontend actually performs, not an assumed multiplier.
+Privatewords fall52.94%, IMUL40.91%. This is a component layout comparison,
+not a measured fullverifier speedup or final proof-size improvement.
+
+147valid pairs (allzero,allmax,mixed,16basisproducts,128random) agree with an
+independent reduce-each-term polynomial reference. Eachpair has8wrongquotient/
+wrongremainder cases, plus2noncanonical cases:1325assignments tested. Three
+scalar-reference examples populate/evaluate successfully. Bothtargetedtests pass.
+A16product fusedproof has190304Bpayload/190340Bserialized, plus1536Bpublicio.
+Census exact:26368Balgebra,94496BMerkle,69440Bopenedvalues. Freshverify and
+changedcanonicalinput/changedproof verification negatives pass. Statistics for
+1and16products match linear constraint/privateword counts.
+
+WordWideReduction.lean proves exact128-bit addition from explicit low/highcarry
+equations and modular remainder soundness for a full128-bit numerator. Targeted
+build/axioms pass (propext/Quot.sound only). These are conditional arithmetic
+interfaces, not Rust frontend refinement, extensionpolynomial irreducibility,
+or a complete Ext4 compiler proof. Diagnosticfield/security remain unchanged.
+
+Next use these measured gates to budget/lower the actual fixed GKR arithmetic
+DAG with shared inputs and challenge wiring. Standalone component bytes are
+not additive; fully internal values and shared rangechecks affect layout. Still
+no combinedGKR/hash/sampler/nativePCS proof, fullNEAR1Pgas, PQ128, or end-to-end
+Lean correctness. Evidence binius-ext4/:patch/sourcepin/proof/tests/stats/logs/
+report. check_binius_ext4.py reproduces, including the matchedreference test.
+make pin-check passes; goal remains active.
