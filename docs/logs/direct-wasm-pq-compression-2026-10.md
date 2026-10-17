@@ -13717,3 +13717,37 @@ slice. It does NOT prove native Rust/compiler refinement or native cryptographic
 acceptance-to-HoldsP, a concrete QROM security bound, recursive knowledge
 composition, fullNEAR1Pgas correctness/performance, or sub300000bytes. Those remain
 open; the full active objective is not complete.
+
+## 2026-10-17 — Uniform CODE-length proof and boundary/scaling regression
+
+Previous turn progressed at32dcf65ca. Revisited handover/A7b/phase2 instructions;
+full-chunk scope and frozen challenge/oracle restrictions remain unchanged.
+PackedLiteralFamily.lean generalizes the closed certificate and public runCall
+theorem over arbitrary public CODE length by varying numPub/maxPub; no instruction,
+stack, preparation or eligibility restriction was weakened. Kernel build/audit
+pass with standard axioms only. Exporter supports variable lengths, preserving
+its original default output.
+
+Broadened actual Lean prepare/step fixtures with empty/one/eight/nine-slot stack
+programs and signed32-bit arithmetic boundary programs. Stable boundary checker
+runs full polynomial and exact natural-bus checks, compares both AIRs to Lean
+family exports, runs eligibility and separately executes runCall without claimed
+outputs. Sixteen supported cases pass: wrap/positive/negative, exact gas and
+range-charge exhaustion, empty/one/eight-slot programs, signed max+one/min-1,
+and code lengths25,193,255,257,513,1025. Nine-slot case fails in witness generation
+at the explicit eight-slot bound; this is not a malicious-proof verifier test.
+
+The1025-instruction/2048EXEC-row case exposed a real generator limit: a receiver
+value count exceeded65535. Fixed witness generation by splitting that count into
+multiple receiver rows and padding the receiver table. The same proved AIR allows
+repeated values/zero counts; no AIR or soundness premise change. Larger case now
+has2048CODE rows,512range rows,155648lookups and maximum per-row count65535, with
+all exact bus balances and oracle parity passing. This is witness scaling, not
+native prover throughput/size evidence. Range-height growth must be included in
+future native key/interaction budgets.
+
+Original193-instruction spec,metadata,public,alltraces and generated Rust source
+remain byte-identical; closed certificate checker still passes. Reports in
+boundary-check.json and lean-family-audit.log. make pin-check and git diff --check
+pass. Next meaningful measurement is actual native proving across these workloads;
+fullNEAR state/host/control coverage and QROM recursive soundness remain open.

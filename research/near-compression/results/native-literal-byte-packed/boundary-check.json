@@ -1,0 +1,173 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "label": "wrap",
+      "code_length": 5,
+      "exec_rows": 8,
+      "code_rows": 8,
+      "range_rows": 256,
+      "range_lookups": 608,
+      "max_range_multiplicity": 471,
+      "failed": false
+    },
+    {
+      "label": "positive",
+      "code_length": 5,
+      "exec_rows": 8,
+      "code_rows": 8,
+      "range_rows": 256,
+      "range_lookups": 608,
+      "max_range_multiplicity": 481,
+      "failed": false
+    },
+    {
+      "label": "negative",
+      "code_length": 5,
+      "exec_rows": 8,
+      "code_rows": 8,
+      "range_rows": 256,
+      "range_lookups": 608,
+      "max_range_multiplicity": 454,
+      "failed": false
+    },
+    {
+      "label": "exact-gas",
+      "code_length": 5,
+      "exec_rows": 8,
+      "code_rows": 8,
+      "range_rows": 256,
+      "range_lookups": 608,
+      "max_range_multiplicity": 580,
+      "failed": false
+    },
+    {
+      "label": "range-charge-exhaustion",
+      "code_length": 5,
+      "exec_rows": 2,
+      "code_rows": 8,
+      "range_rows": 256,
+      "range_lookups": 224,
+      "max_range_multiplicity": 180,
+      "failed": true
+    },
+    {
+      "label": "long-25",
+      "code_length": 25,
+      "exec_rows": 32,
+      "code_rows": 32,
+      "range_rows": 256,
+      "range_lookups": 2432,
+      "max_range_multiplicity": 1940,
+      "failed": false
+    },
+    {
+      "label": "long-193",
+      "code_length": 193,
+      "exec_rows": 256,
+      "code_rows": 256,
+      "range_rows": 256,
+      "range_lookups": 19456,
+      "max_range_multiplicity": 15578,
+      "failed": false
+    },
+    {
+      "label": "stack-0",
+      "code_length": 1,
+      "exec_rows": 2,
+      "code_rows": 2,
+      "range_rows": 256,
+      "range_lookups": 152,
+      "max_range_multiplicity": 124,
+      "failed": false
+    },
+    {
+      "label": "stack-1",
+      "code_length": 3,
+      "exec_rows": 4,
+      "code_rows": 4,
+      "range_rows": 256,
+      "range_lookups": 304,
+      "max_range_multiplicity": 230,
+      "failed": false
+    },
+    {
+      "label": "stack-8",
+      "code_length": 17,
+      "exec_rows": 32,
+      "code_rows": 32,
+      "range_rows": 256,
+      "range_lookups": 2432,
+      "max_range_multiplicity": 1658,
+      "failed": false
+    },
+    {
+      "label": "signed-max-plus-one",
+      "code_length": 5,
+      "exec_rows": 8,
+      "code_rows": 8,
+      "range_rows": 256,
+      "range_lookups": 608,
+      "max_range_multiplicity": 469,
+      "failed": false
+    },
+    {
+      "label": "signed-min-minus-one",
+      "code_length": 5,
+      "exec_rows": 8,
+      "code_rows": 8,
+      "range_rows": 256,
+      "range_lookups": 608,
+      "max_range_multiplicity": 466,
+      "failed": false
+    },
+    {
+      "label": "long-255",
+      "code_length": 255,
+      "exec_rows": 256,
+      "code_rows": 256,
+      "range_rows": 256,
+      "range_lookups": 19456,
+      "max_range_multiplicity": 15483,
+      "failed": false
+    },
+    {
+      "label": "long-257",
+      "code_length": 257,
+      "exec_rows": 512,
+      "code_rows": 512,
+      "range_rows": 256,
+      "range_lookups": 38912,
+      "max_range_multiplicity": 31355,
+      "failed": false
+    },
+    {
+      "label": "long-513",
+      "code_length": 513,
+      "exec_rows": 1024,
+      "code_rows": 1024,
+      "range_rows": 256,
+      "range_lookups": 77824,
+      "max_range_multiplicity": 62714,
+      "failed": false
+    },
+    {
+      "label": "long-1025",
+      "code_length": 1025,
+      "exec_rows": 2048,
+      "code_rows": 2048,
+      "range_rows": 512,
+      "range_lookups": 155648,
+      "max_range_multiplicity": 65535,
+      "failed": false
+    }
+  ],
+  "rejected": [
+    {
+      "label": "stack-9",
+      "stage": "witness generator",
+      "reason": "eight-slot capacity"
+    }
+  ],
+  "scope": "Actual Lean preparation/step fixtures, full polynomial and exact natural-bus checks, family AIR export equality, eligibility and independent runCall parity. No new native proofs or performance/security claims."
+}

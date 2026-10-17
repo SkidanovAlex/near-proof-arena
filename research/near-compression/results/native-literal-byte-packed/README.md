@@ -68,3 +68,12 @@ python3 airbender/direct-wasm/check_packed_literal_certificate.py
 
 No fullNEAR, complete QROM security, upgraded recursive parent or controlled
 performance result is established by this candidate.
+
+2026-10-17 scaling update: PackedLiteralFamily.lean generalizes the closed
+semantic certificate and runCall theorem to varying public CODE lengths.
+Boundary-check.json records sixteen supported semantic cases through1025
+instructions and a nine-slot witness-generator rejection. A per-value receiver
+count above65535 is now split over repeated range rows, preserving the same AIR.
+The1025-instruction case uses2048EXEC rows and512range rows. The193-instruction
+native proving inputs remain byte-identical. No new native proof or throughput
+measurement is claimed for the larger cases.

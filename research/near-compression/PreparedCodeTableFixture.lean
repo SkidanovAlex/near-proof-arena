@@ -54,6 +54,13 @@ def preparedLongSliceBytes (pairs : Nat) : ByteArray :=
   ⟨([0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,7,8,1,4,109,97,105,110,0,0,10] ++
     shortULEB payload.length ++ payload).toArray⟩
 
+/-- Small edge programs share the standard exported []→[] wrapper. -/
+def preparedEdgeBytes (instructions : List UInt8) : ByteArray :=
+  let body := [0] ++ instructions ++ [11]
+  let payload := [1] ++ shortULEB body.length ++ body
+  ⟨([0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,7,8,1,4,109,97,105,110,0,0,10] ++
+    shortULEB payload.length ++ payload).toArray⟩
+
 private def need (x : Option α) (why : String) : Except String α :=
   match x with | some a => .ok a | none => .error why
 
@@ -122,6 +129,20 @@ end NearCompression
 
 open Lean
 def main (args : List String) : IO Unit := do
+  if args == ["--edges"] then
+    let mut cases := []
+    for depth in [0,1,8,9] do
+      let body := (List.replicate depth ([65,127] : List UInt8)).flatten ++ List.replicate depth 26
+      match NearCompression.makeCaseBytes s!"stack-{depth}" (NearCompression.preparedEdgeBytes body) 1000000000000000 with
+      | .ok c => cases := cases ++ [c]
+      | .error e => throw (IO.userError e)
+    for (name,body) in [("signed-max-plus-one",([65,255,255,255,255,7,65,1,106,26] : List UInt8)),
+        ("signed-min-minus-one",([65,128,128,128,128,120,65,127,106,26] : List UInt8))] do
+      match NearCompression.makeCaseBytes name (NearCompression.preparedEdgeBytes body) 1000000000000000 with
+      | .ok c => cases := cases ++ [c]
+      | .error e => throw (IO.userError e)
+    IO.println (Json.mkObj [("cases",toJson cases)]).compress
+    return
   if !args.isEmpty then
     let pairs ← match args with
       | ["--pairs",count] => match count.toNat? with

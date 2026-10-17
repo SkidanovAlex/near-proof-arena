@@ -1,5 +1,6 @@
 """Byte-pack selected integer regions; fail closed on unhandled bit expressions.
-New AIR requires a separate formal refinement; differential checks are not that proof.
+PackedLiteralFamily proves semantic AIR refinement; generator/native implementation
+refinement remains separate. Differential checks do not prove cryptographic soundness.
 """
 import copy,json
 from collections import Counter
@@ -63,16 +64,24 @@ def transform(spec,rows):
     # integer counts. Native LogUp must additionally enforce total-count limits.
     cs=[sub(mul(v(i),sub(v(i),c(1))),c(0)) for i in range(24)]
     range_table=dict(width=24,maxLog=22,constraints=cs,interactions=[dict(bus=4,msg=[lit.bits(0,8)],mult=[v(8+i) for i in range(16)],send=False)])
+    # Receivers need not enumerate each value exactly once. Split a frequent
+    # value across repeated receiver rows, each with a bounded multiplicity.
     table_rows=[]
     for value in range(256):
-        count=all_counts[value];assert count<65536
-        table_rows.append([(value>>i)&1 for i in range(8)]+[(count>>i)&1 for i in range(16)])
-    spec['air']['tables'].append(range_table);spec['air']['numBuses']=5;spec['log_rows'].append(8);packed.append(table_rows)
+        count=all_counts[value]
+        while True:
+            chunk=min(count,65535)
+            table_rows.append([(value>>i)&1 for i in range(8)]+[(chunk>>i)&1 for i in range(16)])
+            count-=chunk
+            if count==0:break
+    range_log=max(1,(len(table_rows)-1).bit_length())
+    table_rows += [[0]*24 for _ in range(2**range_log-len(table_rows))]
+    spec['air']['tables'].append(range_table);spec['air']['numBuses']=5;spec['log_rows'].append(range_log);packed.append(table_rows)
     # Check every actual row constraint and the exact integer range-bus balance.
     for table,trace in zip(spec['air']['tables'],packed):
         for i,row in enumerate(trace):
             for j,e in enumerate(table['constraints']):
                 assert eval_expr(e,row,trace[(i+1)%len(trace)],spec['public'],i==0,i+1==len(trace))==0,(i,j)
     assert sum(sum(row[8+i]<<i for i in range(16)) for row in table_rows)==sum(all_counts.values())
-    return spec,packed,dict(code_count_column=maps[1][lit.COUNT],tables=rewrites,range_rows=256,
-        range_lookups=sum(all_counts.values()),max_range_multiplicity=max(all_counts.values()),formal_refinement_proved=False)
+    return spec,packed,dict(code_count_column=maps[1][lit.COUNT],tables=rewrites,range_rows=len(table_rows),
+        range_lookups=sum(all_counts.values()),max_range_multiplicity=max(sum(row[8+i]<<i for i in range(16)) for row in table_rows),formal_refinement_proved=False)
