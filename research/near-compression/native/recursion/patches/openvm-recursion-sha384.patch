@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/alu.rs b/crates/recursion/src/nv/alu.rs
 new file mode 100644
-index 0000000..f6e56a1
+index 0000000..06b463f
 --- /dev/null
 +++ b/crates/recursion/src/nv/alu.rs
-@@ -0,0 +1,323 @@
+@@ -0,0 +1,338 @@
 +//! NV ALU AIR: one Ext12 instruction per row (see isa.rs), operands through a read-only
 +//! memory (row x writes c at address x), transcript/unit traffic through 12 slot
 +//! messages, keys for the Merkle AIR, and the in-circuit program-binding accumulator.
@@ -1447,14 +1447,21 @@ index 0000000..f6e56a1
 +        // slots: (chan, key1, key2, kind, v0, v1)
 +        let slot = PermutationCheckBus::new(self.buses.slot);
 +        let tr12 = fl(Op::Obs12) + fl(Op::ObsC12) + fl(Op::Smp12);
++        let tr12k = |k: usize| -> AB::Expr {
++            if k < 9 {
++                tr12.clone()
++            } else {
++                fl(Op::Obs12) + fl(Op::Smp12)
++            }
++        };
 +        let kind = fl(Op::Smp1) + fl(Op::Smp12) + fl(Op::ObsC12).double();
 +        let chan = fl(Op::Unit12) + fl(Op::Horn) + fl(Op::Job);
 +        for k in 0..12usize {
 +            let kk = cst(k as u64);
 +            let tr = if k == 0 {
-+                fl(Op::Obs1) + fl(Op::Smp1) + tr12.clone()
++                fl(Op::Obs1) + fl(Op::Smp1) + tr12k(0)
 +            } else {
-+                tr12.clone()
++                tr12k(k)
 +            };
 +            let mut unit = fl(Op::Unit12);
 +            if k == 0 {
@@ -1474,7 +1481,15 @@ index 0000000..f6e56a1
 +            }
 +            slot.send(
 +                builder,
-+                [chan.clone(), key1, key2, kind.clone(), v0, AB::Expr::ZERO],
++                [
++                    chan.clone(),
++                    key1,
++                    key2,
++                    kind.clone(),
++                    v0,
++                    AB::Expr::ZERO,
++                    AB::Expr::ZERO,
++                ],
 +                unit - tr,
 +            );
 +        }
@@ -1563,10 +1578,10 @@ index 0000000..f6e56a1
 +}
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..8f8fb5c
+index 0000000..dde7dc2
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,426 @@
+@@ -0,0 +1,475 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1576,12 +1591,48 @@ index 0000000..8f8fb5c
 +use p3_field::{BasedVectorSpace, PrimeCharacteristicRing, PrimeField32};
 +
 +use super::isa::{Instr, Op, ADDR_BITS};
++use super::fmt::{digest_limbs, limbs_digest, NV_DIGEST};
 +use crate::sha384::{
 +    config::{
-+        digest_to_limbs, limbs_to_digest, Digest, ShaTranscriptRecorder, DIGEST_SIZE, EF, F,
++        Digest, Sha384Config, ShaTranscript, ShaTranscriptLog, KIND_COMMIT, KIND_OBSERVE,
++        KIND_SAMPLE, EF, F,
 +    },
 +    jobs::{ShaJob, Unit},
 +};
++
++/// Transcript recorder with NV event granularity: a commitment is NV_DIGEST limb events.
++#[derive(Clone, Debug, Default)]
++pub struct NvRecorder {
++    pub inner: ShaTranscript,
++    pub values: Vec<F>,
++    pub kinds: Vec<u32>,
++}
++impl NvRecorder {
++    pub fn into_log(self) -> ShaTranscriptLog {
++        ShaTranscriptLog {
++            values: self.values,
++            kinds: self.kinds,
++        }
++    }
++}
++impl FiatShamirTranscript<Sha384Config> for NvRecorder {
++    fn observe(&mut self, v: F) {
++        self.inner.observe(v);
++        self.values.push(v);
++        self.kinds.push(KIND_OBSERVE);
++    }
++    fn observe_commit(&mut self, d: Digest) {
++        self.inner.observe_commit(d);
++        self.values.extend(digest_limbs(d));
++        self.kinds.extend([KIND_COMMIT; NV_DIGEST]);
++    }
++    fn sample(&mut self) -> F {
++        let s = self.inner.sample();
++        self.values.push(s);
++        self.kinds.push(KIND_SAMPLE);
++        s
++    }
++}
 +
 +#[derive(Clone, Copy, Debug)]
 +pub struct V {
@@ -1610,6 +1661,16 @@ index 0000000..8f8fb5c
 +    pub root: Digest,
 +}
 +
++/// A digest as two cells of 9 limbs (coefficients 9..11 zero).
++pub fn digest_cells(d: Digest) -> ([F; 12], [F; 12]) {
++    let l = digest_limbs(d);
++    let mut lo = [F::ZERO; 12];
++    let mut hi = [F::ZERO; 12];
++    lo[..9].copy_from_slice(&l[..9]);
++    hi[..9].copy_from_slice(&l[9..]);
++    (lo, hi)
++}
++
 +pub fn coeffs(x: EF) -> [F; 12] {
 +    x.as_basis_coefficients_slice().try_into().unwrap()
 +}
@@ -1624,7 +1685,7 @@ index 0000000..8f8fb5c
 +    /// rows [0, reserved) are filled at the end (binding tables)
 +    pub reserved: usize,
 +    consts: HashMap<u32, u32>,
-+    pub transcript: ShaTranscriptRecorder,
++    pub transcript: NvRecorder,
 +    pub failures: Vec<String>,
 +    pub job_units: Vec<(u8, Vec<Option<Unit>>)>,
 +    pub paths: Vec<MerklePath>,
@@ -1651,7 +1712,7 @@ index 0000000..8f8fb5c
 +            wits: vec![F::ZERO; reserved],
 +            reserved,
 +            consts: HashMap::new(),
-+            transcript: ShaTranscriptRecorder::default(),
++            transcript: NvRecorder::default(),
 +            failures: vec![],
 +            job_units: vec![],
 +            paths: vec![],
@@ -1842,16 +1903,16 @@ index 0000000..8f8fb5c
 +    }
 +    /// Load a digest as two cells and observe it as a commitment (24 limb events).
 +    pub fn load_commit(&mut self, d: Digest) -> DigestCells {
-+        let limbs = digest_to_limbs(d);
-+        let lo = self.load(ef_from(limbs[..12].try_into().unwrap()));
-+        let hi = self.load(ef_from(limbs[12..].try_into().unwrap()));
++        let (lo, hi) = digest_cells(d);
++        let lo = self.load(ef_from(lo));
++        let hi = self.load(ef_from(hi));
 +        self.observe_commit_cells(lo, hi, d)
 +    }
 +    /// Constant digest (e.g. the vk pre-hash) as cells, observed as a commitment.
 +    pub fn const_commit(&mut self, d: Digest) -> DigestCells {
-+        let limbs = digest_to_limbs(d);
-+        let lo = self.ce(ef_from(limbs[..12].try_into().unwrap()));
-+        let hi = self.ce(ef_from(limbs[12..].try_into().unwrap()));
++        let (lo, hi) = digest_cells(d);
++        let lo = self.ce(ef_from(lo));
++        let hi = self.ce(ef_from(hi));
 +        self.observe_commit_cells(lo, hi, d)
 +    }
 +    fn observe_commit_cells(&mut self, lo: V, hi: V, d: Digest) -> DigestCells {
@@ -1860,9 +1921,12 @@ index 0000000..8f8fb5c
 +            &mut self.transcript,
 +            d,
 +        );
-+        debug_assert_eq!(limbs_to_digest(&[coeffs(lo.val), coeffs(hi.val)].concat()), d);
++        debug_assert_eq!(
++            limbs_digest(&[&coeffs(lo.val)[..9], &coeffs(hi.val)[..9]].concat()),
++            d
++        );
 +        let lo = self.push(Op::ObsC12, lo.addr, 0, t, 0, lo.val, F::ZERO);
-+        let hi = self.push(Op::ObsC12, hi.addr, 0, t + 12, 0, hi.val, F::ZERO);
++        let hi = self.push(Op::ObsC12, hi.addr, 0, t + 9, 0, hi.val, F::ZERO);
 +        DigestCells { lo, hi, digest: d }
 +    }
 +    /// Offer a commitment as the root key of `commit_id`.
@@ -1992,13 +2056,13 @@ index 0000000..8f8fb5c
 +    }
 +}
 +
-+pub const DIGEST_CELLS: usize = DIGEST_SIZE / 12;
++
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..82301de
+index 0000000..db83bd1
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,298 @@
+@@ -0,0 +1,290 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2012,31 +2076,25 @@ index 0000000..82301de
 +use super::{
 +    alu::{alu_trace, AluAir, AluBuses, E1_BITS, E1_SIZE},
 +    builder::Builder,
++    fmt::sha_k,
++    hash::{byte_table2, generate2, BlockAir, ByteAir, HashBuses, Job2, PackAir, Work2, U2},
 +    isa::Op,
-+    merkle::{merkle_trace, MerkleNvAir, MerkleNvCols, MERKLE_WIDTH},
++    merkle2::{merkle2_trace, Merkle2Air, Merkle2Cols, MERKLE2_WIDTH},
++    transcript2::{replay2, tr2_traces, Hash2Air, Obs2Air, Samp2Air, TrBuses},
 +    verifier::build_verifier,
 +};
-+use crate::{
-+    bus::TranscriptBus,
-+    sha384::{
-+        airs::{ShaBlockAir, ShaBusInventory, ShaByteAir, ShaMsgAir},
-+        compress_air::{ShaBuses, Sha512Air, TableAir, CID_OFFSET_1},
-+        config::{Sha384Config, F},
-+        jobs::{self, ShaWork},
-+    },
-+    transcript::sha_transcript::{
-+        generate_transcript_traces_h, replay_transcript, TranscriptHashAir, TranscriptInternalBuses,
-+        TranscriptObsAir, TranscriptSampleAir, TranscriptTraceInput,
-+    },
++use crate::sha384::{
++    compress2_air::{Layout, Sha512Air, TableAir},
++    config::{Sha384Config, F},
++    jobs::Unit,
 +};
 +
 +#[derive(Clone, Copy, Debug)]
 +pub struct NvBuses {
 +    pub alu: AluBuses,
-+    pub sha: ShaBusInventory,
-+    pub tr: TranscriptInternalBuses,
++    pub h: HashBuses,
++    pub tr: TrBuses,
 +    pub merkle_internal: BusIndex,
-+    pub dummy_transcript: BusIndex,
 +}
 +
 +impl NvBuses {
@@ -2054,32 +2112,27 @@ index 0000000..82301de
 +            job,
 +            key: next(),
 +        };
-+        let sha = ShaBusInventory {
-+            compress: ShaBuses {
-+                ctl: next(),
-+                rng: next(),
-+                lb: next(),
-+                iface: next(),
-+            },
-+            lb1: next(),
++        let h = HashBuses {
++            ctl: next(),
++            k: next(),
++            lb: next(),
++            iface: next(),
 +            word: next(),
-+            unit: slot,
++            slot,
 +            job,
 +            digest: next(),
 +            byte: next(),
-+            unit_chan: true,
 +        };
-+        let tr = TranscriptInternalBuses {
++        let tr = TrBuses {
 +            obs: next(),
 +            sample: next(),
 +            word: next(),
 +        };
 +        Self {
 +            alu,
-+            sha,
++            h,
 +            tr,
 +            merkle_internal: next(),
-+            dummy_transcript: next(),
 +        }
 +    }
 +}
@@ -2114,56 +2167,41 @@ index 0000000..82301de
 +        }
 +    }
 +
++    pub fn layout(&self) -> Layout {
++        Layout::new(sha_k())
++    }
++
 +    pub fn airs<SC: StarkProtocolConfig<F = F>>(&self) -> Vec<AirRef<SC>> {
 +        let b = self.buses;
-+        let tb = TranscriptBus::new(b.dummy_transcript);
-+        let mut v: Vec<AirRef<SC>> = vec![
++        let lay = self.layout();
++        assert_eq!(self.sha_instances, 1, "NV v1 uses one compression AIR");
++        vec![
 +            Arc::new(AluAir {
 +                buses: b.alu,
 +                log_rows: self.log_rows,
-+            }),
-+            Arc::new(TranscriptHashAir {
-+                transcript_bus: tb,
-+                slot_bus: Some(b.alu.slot),
-+                sha: b.sha,
-+                internal: b.tr,
-+            }),
-+            Arc::new(TranscriptObsAir {
-+                transcript_bus: tb,
-+                slot_bus: Some(b.alu.slot),
-+                sha: b.sha,
-+                internal: b.tr,
-+            }),
-+            Arc::new(TranscriptSampleAir {
-+                transcript_bus: tb,
-+                slot_bus: Some(b.alu.slot),
-+                sha: b.sha,
-+                internal: b.tr,
-+            }),
-+            Arc::new(MerkleNvAir {
-+                sha: b.sha,
++            }) as AirRef<SC>,
++            Arc::new(Hash2Air { h: b.h, t: b.tr }),
++            Arc::new(Obs2Air { h: b.h, t: b.tr }),
++            Arc::new(Samp2Air { h: b.h, t: b.tr }),
++            Arc::new(Merkle2Air {
++                sha: b.h,
 +                key: b.alu.key,
 +                internal: b.merkle_internal,
 +                k: self.k,
 +            }),
 +            Arc::new(Sha512Air {
-+                buses: b.sha.compress_instance(0),
++                lay,
++                buses: b.h.sha(),
 +                cid_offset: 0,
 +            }),
-+        ];
-+        if self.sha_instances == 2 {
-+            v.push(Arc::new(Sha512Air {
-+                buses: b.sha.compress_instance(1),
-+                cid_offset: CID_OFFSET_1,
-+            }));
-+        }
-+        v.push(Arc::new(TableAir {
-+            buses: b.sha.compress,
-+        }));
-+        v.push(Arc::new(ShaBlockAir { buses: b.sha }));
-+        v.push(Arc::new(ShaMsgAir { buses: b.sha }));
-+        v.push(Arc::new(ShaByteAir { buses: b.sha }));
-+        v
++            Arc::new(TableAir {
++                lay,
++                buses: b.h.sha(),
++            }),
++            Arc::new(BlockAir { buses: b.h }),
++            Arc::new(PackAir { buses: b.h }),
++            Arc::new(ByteAir { buses: b.h }),
++        ]
 +    }
 +
 +    pub fn reserved(&self) -> usize {
@@ -2206,46 +2244,64 @@ index 0000000..82301de
 +            .collect();
 +
 +        // transcript jobs follow the leaf jobs
-+        let leaf_jobs = b.jobs();
++        let leaf_jobs: Vec<Job2> = b
++            .jobs()
++            .into_iter()
++            .map(|j| Job2 {
++                tag: j.tag,
++                units: j
++                    .units
++                    .into_iter()
++                    .map(|u| match u {
++                        Unit::Felt(x) => U2::Felt(x),
++                        Unit::Pair(..) => unreachable!(),
++                    })
++                    .collect(),
++            })
++            .collect();
 +        let log = b.transcript.clone().into_log();
-+        let tr_jobs = replay_transcript(&log);
++        let tr_jobs = replay2(&log);
 +        let base = leaf_jobs.len();
 +        let hh = |i: usize| self.heights.as_ref().map_or(1, |h| h[i]);
-+        let (mut mtrace, nodes) = merkle_trace(&b.paths, self.k, hh(4));
-+        let mut work = ShaWork {
++        let (mut mtrace, nodes) = merkle2_trace(&b.paths, self.k, hh(4));
++        let mut work = Work2 {
 +            jobs: leaf_jobs,
 +            nodes,
 +        };
-+        work.jobs.extend(tr_jobs.iter().map(|j| j.sha_job()));
-+        let shift = self.sha_instances - 1;
-+        let sha = jobs::generate_with_heights(
++        work.jobs.extend(tr_jobs.iter().map(|j| j.job()));
++        let sha = generate2(
 +            &work,
-+            self.sha_instances,
-+            self.heights.as_ref().map(|_| (hh(5), hh(7 + shift), hh(8 + shift))),
++            self.layout(),
++            self.heights.as_ref().map(|_| (hh(5), hh(7), hh(8))),
 +        );
 +        {
 +            use core::borrow::BorrowMut;
-+            for row in mtrace.values.chunks_exact_mut(MERKLE_WIDTH) {
-+                let c: &mut MerkleNvCols<F> = row.borrow_mut();
++            use crate::sha384::compress2_air::ROWS;
++            for row in mtrace.values.chunks_exact_mut(MERKLE2_WIDTH) {
++                let c: &mut Merkle2Cols<F> = row.borrow_mut();
 +                if c.valid == F::ONE {
-+                    c.cid = F::from_usize(sha.split.cid(c.cid.as_canonical_u32() as usize));
++                    c.cid = F::from_usize(c.cid.as_canonical_u32() as usize * ROWS);
 +                }
 +            }
 +        }
-+        let tr = generate_transcript_traces_h(
-+            &TranscriptTraceInput {
-+                proof_jobs: vec![(tr_jobs.as_slice(), base)],
-+            },
-+            self.heights.as_ref().map(|_| (hh(1), hh(2), hh(3))),
-+        );
++        let tr = tr2_traces(&tr_jobs, base, self.heights.as_ref().map(|_| (hh(1), hh(2), hh(3))));
 +        let mut counts = sha.byte_counts.clone();
 +        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
 +            *c += t;
 +        }
 +        let alu = alu_trace(&b.instrs, &b.vals, &b.wits, &key_mults);
-+        let mut mats = vec![alu, tr.hash, tr.obs, tr.sample, mtrace];
-+        mats.extend(sha.compress);
-+        mats.extend([sha.table, sha.block, sha.msg, jobs::byte_table(&counts)]);
++        let mats = vec![
++            alu,
++            tr.hash,
++            tr.obs,
++            tr.samp,
++            mtrace,
++            sha.compress,
++            sha.table,
++            sha.block,
++            sha.pack,
++            byte_table2(&counts),
++        ];
 +        if let Some(h) = &self.heights {
 +            use p3_matrix::Matrix;
 +            for (i, m) in mats.iter().enumerate() {
@@ -3321,7 +3377,7 @@ index 0000000..93aeff2
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..3644019
+index 0000000..e057858
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
 @@ -0,0 +1,110 @@
@@ -3359,7 +3415,7 @@ index 0000000..3644019
 +    Obs1 = 7,
 +    /// c = a; observe c0..c11 at tidx P2..P2+11
 +    Obs12 = 8,
-+    /// c = a; observe c0..c11 as commit limbs (kind 2) at tidx P2..
++    /// c = a; observe c0..c8 as commit limbs (kind 2) at tidx P2..P2+8
 +    ObsC12 = 9,
 +    /// c0 = sample at tidx P2 (c1..c11 = 0)
 +    Smp1 = 10,
@@ -3805,12 +3861,397 @@ index 0000000..51d497d
 +    }
 +    r.cid = F::from_usize(node_idx);
 +}
+diff --git a/crates/recursion/src/nv/merkle2.rs b/crates/recursion/src/nv/merkle2.rs
+new file mode 100644
+index 0000000..4125f05
+--- /dev/null
++++ b/crates/recursion/src/nv/merkle2.rs
+@@ -0,0 +1,379 @@
++//! NV Merkle AIR, word format v2 (18-limb digests, pair interface): one SHA-384 node compression per row.  Per path: 2^k - 1 coset-tree
++//! rows (leaf digests from the leaf jobs, internal results over a permutation bus),
++//! then `depth` path rows (cur = previous row's output, direction bit from the ALU's bit
++//! keys); the last row's output must equal the commitment key offered by the ALU.
++use core::{
++    array,
++    borrow::{Borrow, BorrowMut},
++};
++
++use openvm_recursion_circuit_derive::AlignedBorrow;
++use openvm_stark_backend::{
++    interaction::{BusIndex, InteractionBuilder, LookupBus, PermutationCheckBus},
++    BaseAirWithPublicValues, PartitionedBaseAir,
++};
++use p3_air::{Air, AirBuilder, BaseAir};
++use p3_field::{Field, PrimeCharacteristicRing};
++use p3_matrix::{dense::RowMajorMatrix, Matrix};
++
++use super::{
++    builder::MerklePath,
++    fmt::{digest_limbs, wl, NV_DIGEST},
++    hash::{iv_limbs18, HashBuses},
++};
++use crate::{
++    sha384::{
++        compress2_trace::{sha2_compress, Comp, SHA384_IV},
++        config::{node_message, Digest, ShaHasher, F},
++    },
++    transcript::merkle_verify::NODE_WORD,
++};
++
++const DIGEST_SIZE: usize = NV_DIGEST;
++
++/// The single compression of a Merkle node and its full output state.
++pub fn node_comp2(left: Digest, right: Digest) -> (Comp, [u64; 8]) {
++    let mut m = [0u8; 128];
++    m[..104].copy_from_slice(&node_message(left, right));
++    m[104] = 0x80;
++    m[120..].copy_from_slice(&(832u64).to_be_bytes());
++    let block = std::array::from_fn(|i| u64::from_be_bytes(m[8 * i..8 * i + 8].try_into().unwrap()));
++    let c = Comp { h: SHA384_IV, block };
++    let out = sha2_compress(&c);
++    (c, out)
++}
++
++#[repr(C)]
++#[derive(AlignedBorrow, Debug)]
++pub struct Merkle2Cols<T> {
++    pub valid: T,
++    pub path_id: T,
++    pub qid: T,
++    pub job_base: T,
++    pub commit_id: T,
++    pub depth: T,
++    pub is_comb: T,
++    pub lvl0: T,
++    pub croot: T,
++    pub level: T,
++    pub cidx: T,
++    pub wid: T,
++    pub lastc: T,
++    pub inv_c: T,
++    pub bit: T,
++    pub is_last: T,
++    /// first row of a path
++    pub start: T,
++    /// = is_comb * (1 - lastc)
++    pub cnl: T,
++    /// = is_comb * lastc - croot
++    pub clv: T,
++    pub cid: T,
++    pub cur: [T; DIGEST_SIZE],
++    pub sib: [T; DIGEST_SIZE],
++    pub out: [T; DIGEST_SIZE],
++    pub out67: [T; 6],
++}
++pub const MERKLE2_WIDTH: usize = Merkle2Cols::<u8>::width();
++
++pub struct Merkle2Air {
++    pub sha: HashBuses,
++    pub key: BusIndex,
++    pub internal: BusIndex,
++    pub k: usize,
++}
++impl<T> BaseAir<T> for Merkle2Air {
++    fn width(&self) -> usize {
++        MERKLE2_WIDTH
++    }
++}
++impl<T> BaseAirWithPublicValues<T> for Merkle2Air {}
++impl<T> PartitionedBaseAir<T> for Merkle2Air {}
++
++impl<AB: AirBuilder + InteractionBuilder> Air<AB> for Merkle2Air {
++    fn eval(&self, builder: &mut AB) {
++        let main = builder.main();
++        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let l: &Merkle2Cols<AB::Var> = (*local).borrow();
++        let n: &Merkle2Cols<AB::Var> = (*next).borrow();
++        let one = AB::Expr::ONE;
++        let c = |v: u64| AB::Expr::from_u64(v);
++        for x in [l.valid, l.is_comb, l.lvl0, l.croot, l.lastc, l.bit, l.is_last] {
++            builder.assert_bool(x);
++        }
++        for x in [l.is_comb, l.is_last] {
++            builder.when(x).assert_one(l.valid);
++        }
++        builder.when(l.is_comb).assert_zero(l.bit);
++        builder.when(l.is_comb).assert_zero(l.is_last);
++        builder.when(l.lvl0).assert_one(l.is_comb);
++        builder.when(l.lvl0).assert_zero(l.level);
++        builder.when(l.croot).assert_one(l.is_comb);
++        builder.when(l.croot).assert_one(l.lastc);
++        builder.when(l.croot).assert_eq(l.wid, one.clone());
++        let d = l.cidx - (l.wid - one.clone());
++        builder.assert_zero(l.lastc * d.clone());
++        builder.assert_eq(d * l.inv_c, one.clone() - l.lastc);
++        builder
++            .when(l.is_last)
++            .assert_eq(l.level, l.depth - one.clone());
++
++        // path start (first row, or after a last row)
++        builder.assert_bool(l.start);
++        builder.assert_eq(l.cnl, l.is_comb * (one.clone() - l.lastc));
++        builder.assert_eq(l.clv, l.is_comb * l.lastc - l.croot);
++        {
++            let mut w = builder.when(l.start);
++            w.assert_one(l.valid);
++            w.assert_one(l.is_comb);
++            w.assert_zero(l.level);
++            w.assert_zero(l.cidx);
++            w.assert_eq(l.wid, AB::Expr::from_usize(1 << (self.k - 1)));
++        }
++        builder.when_first_row().assert_eq(l.start, l.valid);
++        {
++            let mut t = builder.when_transition();
++            t.assert_zero((one.clone() - l.valid) * n.valid);
++            t.when(l.valid)
++                .assert_zero((one.clone() - n.valid) * (one.clone() - l.is_last));
++            t.when(n.valid).assert_eq(n.start, l.is_last);
++            // within a path
++            let same = n.valid - n.start;
++            for (a, b) in [
++                (n.path_id, l.path_id),
++                (n.qid, l.qid),
++                (n.job_base, l.job_base),
++                (n.commit_id, l.commit_id),
++                (n.depth, l.depth),
++            ] {
++                t.when(same.clone()).assert_eq(a, b);
++            }
++            let mut w = t.when(same.clone());
++            w.when(l.cnl).assert_one(n.is_comb);
++            w.when(l.cnl).assert_eq(n.level, l.level);
++            w.when(l.cnl).assert_eq(n.cidx, l.cidx + one.clone());
++            w.when(l.cnl).assert_eq(n.wid, l.wid);
++            w.when(l.clv).assert_one(n.is_comb);
++            w.when(l.clv).assert_eq(n.level, l.level + one.clone());
++            w.when(l.clv).assert_zero(n.cidx);
++            w.when(l.clv).assert_eq(n.wid.into() * AB::Expr::TWO, l.wid);
++            w.when(l.croot).assert_zero(n.is_comb);
++            w.when(l.croot).assert_zero(n.level);
++            let pr = one.clone() - l.is_comb;
++            w.when(pr.clone()).assert_zero(n.is_comb);
++            w.when(pr).assert_eq(n.level, l.level + one.clone());
++            // cur flows into path rows
++            for i in 0..DIGEST_SIZE {
++                t.when(n.valid - n.is_comb).assert_eq(n.cur[i], l.out[i]);
++            }
++        }
++        builder
++            .when_last_row()
++            .assert_zero(l.valid * (one.clone() - l.is_last));
++
++        // data
++        let digest = PermutationCheckBus::new(self.sha.digest);
++        let internal = PermutationCheckBus::new(self.internal);
++        let msg = |head: Vec<AB::Expr>, v: &[AB::Var]| -> Vec<AB::Expr> {
++            head.into_iter().chain(v.iter().map(|&x| x.into())).collect()
++        };
++        let jl = l.job_base + l.cidx * AB::Expr::TWO;
++        digest.receive(builder, msg(vec![jl.clone()], &l.cur), l.lvl0);
++        digest.receive(builder, msg(vec![jl + one.clone()], &l.sib), l.lvl0);
++        let up = l.is_comb - l.lvl0;
++        let lm = l.level - one.clone();
++        internal.receive(
++            builder,
++            msg(vec![l.path_id.into(), lm.clone(), l.cidx * AB::Expr::TWO], &l.cur),
++            up.clone(),
++        );
++        internal.receive(
++            builder,
++            msg(
++                vec![l.path_id.into(), lm, l.cidx * AB::Expr::TWO + one.clone()],
++                &l.sib,
++            ),
++            up,
++        );
++        internal.send(
++            builder,
++            msg(vec![l.path_id.into(), l.level.into(), l.cidx.into()], &l.out),
++            l.is_comb - l.croot,
++        );
++        // keys
++        let key = LookupBus::new(self.key);
++        let pad = |mut v: Vec<AB::Expr>| -> Vec<AB::Expr> {
++            v.resize(15, AB::Expr::ZERO);
++            v
++        };
++        key.lookup_key(
++            builder,
++            pad(vec![
++                c(1),
++                l.path_id.into(),
++                l.job_base.into(),
++                l.qid.into(),
++                l.commit_id + l.depth * c(256),
++            ]),
++            l.valid,
++        );
++        key.lookup_key(
++            builder,
++            pad(vec![c(2), l.qid.into(), l.level.into(), l.bit.into()]),
++            l.valid - l.is_comb,
++        );
++        for half in 0..2usize {
++            key.lookup_key(
++                builder,
++                pad(msg(
++                    vec![c(0), l.commit_id.into(), c(half as u64)],
++                    &l.out[9 * half..9 * half + 9],
++                )),
++                l.is_last,
++            );
++        }
++        // SHA node compression
++        let left: [AB::Expr; DIGEST_SIZE] =
++            array::from_fn(|i| l.cur[i] + l.bit * (l.sib[i] - l.cur[i]));
++        let right: [AB::Expr; DIGEST_SIZE] =
++            array::from_fn(|i| l.sib[i] + l.bit * (l.cur[i] - l.sib[i]));
++        let word = |w: u64| -> [AB::Expr; 3] { super::fmt::const_limbs::<AB::Expr>(w) };
++        let iv = iv_limbs18();
++        let mut words: Vec<[AB::Expr; 3]> = (0..8)
++            .map(|q| array::from_fn(|k| c(iv[3 * q + k] as u64)))
++            .collect();
++        words.push(word(NODE_WORD));
++        for d in [&left, &right] {
++            for q in 0..6 {
++                words.push(array::from_fn(|k| d[3 * q + k].clone()));
++            }
++        }
++        words.push(word(0x80u64 << 56));
++        words.push(word(0));
++        words.push(word(832));
++        for q in 0..6 {
++            words.push(array::from_fn(|k| l.out[3 * q + k].into()));
++        }
++        for q in 0..2 {
++            words.push(array::from_fn(|k| l.out67[3 * q + k].into()));
++        }
++        let iface = PermutationCheckBus::new(self.sha.iface);
++        for m in 0..16 {
++            let mut msg = vec![l.cid.into(), c(m as u64)];
++            msg.extend(words[2 * m].iter().cloned());
++            msg.extend(words[2 * m + 1].iter().cloned());
++            iface.receive(builder, msg, l.valid);
++        }
++    }
++}
++
++/// Merkle trace (cid = node index; remapped once the compression split is known) and the
++/// node compressions in row order.
++pub fn merkle2_trace(paths: &[MerklePath], k: usize, min_h: usize) -> (RowMajorMatrix<F>, Vec<Comp>) {
++    let rows_per = |p: &MerklePath| (1usize << k) - 1 + p.siblings.len();
++    let n: usize = paths.iter().map(rows_per).sum();
++    let h = n.next_power_of_two().max(2).max(min_h);
++    let mut t = F::zero_vec(h * MERKLE2_WIDTH);
++    let mut comps = Vec::with_capacity(n);
++    let mut row = 0usize;
++    let set = |dst: &mut [F; DIGEST_SIZE], d: Digest| *dst = digest_limbs(d);
++    for p in paths {
++        let mut layer: Vec<Digest> = p.leaf_digests.clone();
++        let mut level = 0usize;
++        // coset tree
++        while layer.len() > 1 {
++            let wid = layer.len() / 2;
++            let mut nextl = vec![];
++            for i in 0..wid {
++                let r: &mut Merkle2Cols<F> =
++                    t[row * MERKLE2_WIDTH..(row + 1) * MERKLE2_WIDTH].borrow_mut();
++                let (lft, rgt) = (layer[2 * i], layer[2 * i + 1]);
++                fill_common(r, p);
++                r.is_comb = F::ONE;
++                r.lvl0 = F::from_bool(level == 0);
++                r.croot = F::from_bool(wid == 1);
++                r.start = F::from_bool(level == 0 && i == 0);
++                r.level = F::from_usize(level);
++                r.cidx = F::from_usize(i);
++                r.wid = F::from_usize(wid);
++                fill_last(r);
++                set(&mut r.cur, lft);
++                set(&mut r.sib, rgt);
++                let (comp, out) = node_comp2(lft, rgt);
++                fill_out(r, &out, comps.len());
++                comps.push(comp);
++                nextl.push(ShaHasher_compress(lft, rgt));
++                row += 1;
++            }
++            layer = nextl;
++            level += 1;
++        }
++        let mut cur = layer[0];
++        let mut idx = p.index;
++        for (lv, &sib) in p.siblings.iter().enumerate() {
++            let r: &mut Merkle2Cols<F> =
++                t[row * MERKLE2_WIDTH..(row + 1) * MERKLE2_WIDTH].borrow_mut();
++            fill_common(r, p);
++            let bit = idx & 1 == 1;
++            r.bit = F::from_bool(bit);
++            r.level = F::from_usize(lv);
++            r.cidx = F::ZERO;
++            r.wid = F::ONE;
++            fill_last(r);
++            r.is_last = F::from_bool(lv + 1 == p.siblings.len());
++            set(&mut r.cur, cur);
++            set(&mut r.sib, sib);
++            let (l, rr) = if bit { (sib, cur) } else { (cur, sib) };
++            let (comp, out) = node_comp2(l, rr);
++            fill_out(r, &out, comps.len());
++            comps.push(comp);
++            cur = ShaHasher_compress(l, rr);
++            idx >>= 1;
++            row += 1;
++        }
++        debug_assert_eq!(cur, p.root, "merkle root mismatch");
++    }
++    // padding rows: satisfy the lastc gadget (cidx = 0, wid = 0 -> d = 1, inv = 1)
++    for r in row..h {
++        let c: &mut Merkle2Cols<F> = t[r * MERKLE2_WIDTH..(r + 1) * MERKLE2_WIDTH].borrow_mut();
++        c.inv_c = F::ONE;
++    }
++    (RowMajorMatrix::new(t, MERKLE2_WIDTH), comps)
++}
++
++#[allow(non_snake_case)]
++fn ShaHasher_compress(l: Digest, r: Digest) -> Digest {
++    use openvm_stark_backend::hasher::MerkleHasher;
++    ShaHasher.compress(l, r)
++}
++
++fn fill_common(r: &mut Merkle2Cols<F>, p: &MerklePath) {
++    r.valid = F::ONE;
++    r.path_id = F::from_u32(p.path_id);
++    r.qid = F::from_u32(p.qid);
++    r.job_base = F::from_u32(p.job_base);
++    r.commit_id = F::from_u32(p.commit_id);
++    r.depth = F::from_usize(p.siblings.len());
++}
++fn fill_last(r: &mut Merkle2Cols<F>) {
++    let d = r.cidx - (r.wid - F::ONE);
++    r.lastc = F::from_bool(d == F::ZERO);
++    r.inv_c = if d == F::ZERO { F::ZERO } else { d.inverse() };
++    r.cnl = r.is_comb * (F::ONE - r.lastc);
++    r.clv = r.is_comb * r.lastc - r.croot;
++}
++fn fill_out(r: &mut Merkle2Cols<F>, out: &[u64; 8], node_idx: usize) {
++    for q in 0..6 {
++        let l = wl(out[q]);
++        for k in 0..3 {
++            r.out[3 * q + k] = F::from_u32(l[k]);
++        }
++    }
++    for q in 0..2 {
++        let l = wl(out[6 + q]);
++        for k in 0..3 {
++            r.out67[3 * q + k] = F::from_u32(l[k]);
++        }
++    }
++    r.cid = F::from_usize(node_idx);
++}
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 new file mode 100644
-index 0000000..7cdad3c
+index 0000000..dca5a62
 --- /dev/null
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,15 @@
 +//! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
 +pub mod alu;
 +pub mod builder;
@@ -3819,6 +4260,8 @@ index 0000000..7cdad3c
 +pub mod hash;
 +pub mod isa;
 +pub mod merkle;
++pub mod merkle2;
++pub mod transcript2;
 +pub mod verifier;
 +#[cfg(test)]
 +mod hash_tests;
@@ -3826,10 +4269,10 @@ index 0000000..7cdad3c
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..6ca8bdb
+index 0000000..39353f8
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,302 @@
+@@ -0,0 +1,310 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -3896,6 +4339,12 @@ index 0000000..6ca8bdb
 +    }
 +}
 +
++fn nv_debug_params() -> openvm_stark_backend::SystemParams {
++    let mut p = crate::sha384::e2e_tests::parent_params_debug();
++    p.max_constraint_degree = super::circuit::NvCircuit::new(3, 14, 1).layout().degree().max(4);
++    p
++}
++
 +fn nv_debug(fx: &impl TestFixture<Sha384Config>, log_rows: usize) {
 +    use openvm_cpu_backend::CpuBackend;
 +    use openvm_stark_backend::prover::{AirProvingContext, MatrixDimensions, ProvingContext};
@@ -3916,7 +4365,7 @@ index 0000000..6ca8bdb
 +        .enumerate()
 +        .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, vec![F::ONE]) } else { AirProvingContext::simple_no_pis(m) })
 +        .collect();
-+    let parent = Sha384CpuEngine::new(crate::sha384::e2e_tests::parent_params_debug());
++    let parent = Sha384CpuEngine::new(nv_debug_params());
 +    parent.debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
 +}
 +
@@ -3943,7 +4392,7 @@ index 0000000..6ca8bdb
 +        .enumerate()
 +        .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, vec![F::ONE]) } else { AirProvingContext::simple_no_pis(m) })
 +        .collect();
-+    let parent = Sha384CpuEngine::new(crate::sha384::e2e_tests::parent_params_debug());
++    let parent = Sha384CpuEngine::new(nv_debug_params());
 +    parent.debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
 +}
 +
@@ -3966,24 +4415,25 @@ index 0000000..6ca8bdb
 +    let mut bad = proof.clone();
 +    bad.whir_proof.initial_round_opened_rows[0][0][1][0] += F::ONE;
 +    must_fail("opened-value", || nv_debug_mats(&vk, &bad, 14, |_, _| {}));
-+    // 3. transcript sample (row-consistent refill)
++    // 3. transcript sample (row-consistent refill of the candidate gadgets)
 +    must_fail("transcript-sample", || {
 +        nv_debug_mats(&vk, &proof, 14, |mats, names| {
-+            use crate::transcript::sha_transcript::{fill_sample_row, TranscriptSampleCols};
++            use super::transcript2::{fill_cand, Samp2Cols};
 +            use p3_field::PrimeField32;
-+            let i = names.iter().position(|n| n == "TranscriptSampleAir").unwrap();
++            let i = names.iter().position(|n| n == "Samp2Air").unwrap();
 +            let w = mats[i].width;
-+            let row: &mut TranscriptSampleCols<F> = mats[i].values[..w].borrow_mut();
-+            let n: u32 = (0..4).map(|k| row.c[k].as_canonical_u32() << (8 * k)).sum();
++            let row: &mut Samp2Cols<F> = mats[i].values[..w].borrow_mut();
++            row.b[1] += F::ONE;
++            let cb: [u8; 4] = core::array::from_fn(|k| row.b[k].as_canonical_u32() as u8);
 +            let mut dummy = vec![0u32; 256];
-+            fill_sample_row(row, n ^ 0x100, true, &mut dummy);
++            fill_cand(row, 0, cb, &mut dummy);
 +        })
 +    });
 +    // 4. commit limb on the transcript (first hash job = vk pre-hash commit)
 +    must_fail("transcript-commit-limb", || {
 +        nv_debug_mats(&vk, &proof, 14, |mats, names| {
-+            let i = names.iter().position(|n| n == "TranscriptHashAir").unwrap();
-+            mats[i].values[9 + 48] += F::ONE;
++            let i = names.iter().position(|n| n == "Hash2Air").unwrap();
++            mats[i].values[44] += F::ONE;
 +        })
 +    });
 +    // 5. an ALU result (row 1000's c0)
@@ -4009,7 +4459,7 @@ index 0000000..6ca8bdb
 +    let engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
 +    let mut pp = openvm_stark_backend::test_utils::test_system_params_small(2, 16, 3);
-+    pp.max_constraint_degree = 4;
++    pp.max_constraint_degree = nv_debug_params().max_constraint_degree;
 +    let parent = Sha384CpuEngine::new(pp);
 +    let circ = super::circuit::NvCircuit::new(3, 14, 1);
 +    let t0 = std::time::Instant::now();
@@ -4056,7 +4506,8 @@ index 0000000..6ca8bdb
 +    let log_rows = env_usize("NV_LOG_ROWS", 18);
 +    let child_engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&child_engine);
-+    let pp = params_from_env("PARENT", [16, 3, 20, 3]);
++    let mut pp = params_from_env("PARENT", [16, 3, 20, 3]);
++    pp.max_constraint_degree = nv_debug_params().max_constraint_degree;
 +    describe("NV_PARENT", &pp);
 +    let engine = Sha384CpuEngine::new(pp);
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
@@ -4131,6 +4582,697 @@ index 0000000..6ca8bdb
 +        vk = v;
 +        p = q;
 +    }
++}
+diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
+new file mode 100644
+index 0000000..6366a2a
+--- /dev/null
++++ b/crates/recursion/src/nv/transcript2.rs
+@@ -0,0 +1,685 @@
++//! NV in-circuit SHA-384 transcript, word format v2 (see transcript/sha_transcript.rs for
++//! the protocol).  Differences: the state and commit digests are 18 air2 limbs and are
++//! framed as word units; commit events are 18 limb events; samples are extracted per
++//! 64-bit state word (two little-endian u32 candidates per word).
++//! Transcript events travel on the slot bus as (0, tidx, 0, kind, value, 0, 0).
++use core::borrow::{Borrow, BorrowMut};
++
++use openvm_recursion_circuit_derive::AlignedBorrow;
++use openvm_stark_backend::{
++    interaction::{BusIndex, InteractionBuilder, PermutationCheckBus},
++    BaseAirWithPublicValues, PartitionedBaseAir,
++};
++use p3_air::{Air, AirBuilder, BaseAir};
++use p3_field::{Field, PrimeCharacteristicRing, PrimeField32};
++use p3_matrix::{dense::RowMajorMatrix, Matrix};
++
++use super::{
++    fmt::{digest_limbs, limbs_digest, limbs_from_bytes, split_bits, wl, NV_DIGEST},
++    hash::{HashBuses, Job2, U2},
++};
++use crate::sha384::config::{
++    digest_bytes, digest_words, hash_parts, initial_state, ShaTranscriptLog, F, KIND_COMMIT,
++    KIND_OBSERVE, KIND_SAMPLE, SAMPLE_BOUND, TAG_COMMIT, TAG_FLUSH, TAG_SQUEEZE,
++};
++
++#[derive(Clone, Copy, Debug)]
++pub struct TrBuses {
++    pub obs: BusIndex,
++    pub sample: BusIndex,
++    pub word: BusIndex,
++}
++
++fn state_words(state: &[u8; 48]) -> [u64; 6] {
++    std::array::from_fn(|i| u64::from_be_bytes(state[8 * i..8 * i + 8].try_into().unwrap()))
++}
++fn state_limbs(state: &[u8; 48]) -> [u32; NV_DIGEST] {
++    let w = state_words(state);
++    std::array::from_fn(|i| wl(w[i / 3])[i % 3])
++}
++
++fn emit<AB: InteractionBuilder>(
++    b: &mut AB,
++    slot: BusIndex,
++    tidx: AB::Expr,
++    kind: AB::Expr,
++    value: AB::Expr,
++    mult: AB::Expr,
++) {
++    PermutationCheckBus::new(slot).send(
++        b,
++        [
++            AB::Expr::ZERO,
++            tidx,
++            AB::Expr::ZERO,
++            kind,
++            value,
++            AB::Expr::ZERO,
++            AB::Expr::ZERO,
++        ],
++        mult,
++    );
++}
++
++// ---------------------------------------------------------------------------------------
++// Replay
++// ---------------------------------------------------------------------------------------
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum Op2 {
++    Flush,
++    Commit,
++    Squeeze,
++}
++
++#[derive(Clone, Debug)]
++pub struct Read2 {
++    pub wi: usize,
++    pub n: u32,
++    pub acc: bool,
++}
++
++#[derive(Clone, Debug)]
++pub struct TrJob2 {
++    pub op: Op2,
++    pub t_start: usize,
++    pub cnt: usize,
++    pub state_in: [u8; 48],
++    pub state_out: [u8; 48],
++    pub payload: [F; NV_DIGEST],
++    pub obs: Vec<F>,
++    pub reads: Vec<Read2>,
++}
++
++impl TrJob2 {
++    pub fn job(&self) -> Job2 {
++        let mut units = vec![U2::Felt(48), U2::Felt(0)];
++        units.extend(state_words(&self.state_in).map(U2::Word));
++        let tag = match self.op {
++            Op2::Flush => {
++                units.push(U2::Felt(4 * self.obs.len() as u32));
++                units.push(U2::Felt(0));
++                units.extend(self.obs.iter().map(|x| U2::Felt(x.as_canonical_u32())));
++                TAG_FLUSH
++            }
++            Op2::Commit => {
++                units.push(U2::Felt(48));
++                units.push(U2::Felt(0));
++                units.extend(digest_words(limbs_digest(&self.payload)).map(U2::Word));
++                TAG_COMMIT
++            }
++            Op2::Squeeze => TAG_SQUEEZE,
++        };
++        Job2 { tag, units }
++    }
++}
++
++pub fn replay2(log: &ShaTranscriptLog) -> Vec<TrJob2> {
++    let mut jobs: Vec<TrJob2> = vec![];
++    let mut state = initial_state();
++    let mut nw = 12usize;
++    let mut pending: Vec<F> = vec![];
++    let mut pstart = 0usize;
++    let flush = |jobs: &mut Vec<TrJob2>, state: &mut [u8; 48], nw: &mut usize, pending: &mut Vec<F>, ps: usize| {
++        if !pending.is_empty() {
++            let bytes = crate::sha384::config::felt_bytes(pending);
++            let out = hash_parts(TAG_FLUSH, &[&state[..], &bytes]);
++            jobs.push(TrJob2 {
++                op: Op2::Flush,
++                t_start: ps,
++                cnt: pending.len(),
++                state_in: *state,
++                state_out: out,
++                payload: [F::ZERO; NV_DIGEST],
++                obs: std::mem::take(pending),
++                reads: vec![],
++            });
++            *state = out;
++            *nw = 12;
++        }
++    };
++    let n = log.len();
++    let mut i = 0;
++    while i < n {
++        match log.kinds[i] {
++            KIND_OBSERVE => {
++                if pending.is_empty() {
++                    pstart = i;
++                }
++                pending.push(log.values[i]);
++                nw = 12;
++                i += 1;
++            }
++            KIND_COMMIT => {
++                flush(&mut jobs, &mut state, &mut nw, &mut pending, pstart);
++                let payload: [F; NV_DIGEST] = log.values[i..i + NV_DIGEST].try_into().unwrap();
++                let d = limbs_digest(&payload);
++                let out = hash_parts(TAG_COMMIT, &[&state[..], &digest_bytes(d)]);
++                jobs.push(TrJob2 {
++                    op: Op2::Commit,
++                    t_start: i,
++                    cnt: NV_DIGEST,
++                    state_in: state,
++                    state_out: out,
++                    payload,
++                    obs: vec![],
++                    reads: vec![],
++                });
++                state = out;
++                nw = 12;
++                i += NV_DIGEST;
++            }
++            KIND_SAMPLE => {
++                flush(&mut jobs, &mut state, &mut nw, &mut pending, pstart);
++                loop {
++                    if nw == 12 {
++                        let out = hash_parts(TAG_SQUEEZE, &[&state[..]]);
++                        jobs.push(TrJob2 {
++                            op: Op2::Squeeze,
++                            t_start: i,
++                            cnt: 0,
++                            state_in: state,
++                            state_out: out,
++                            payload: [F::ZERO; NV_DIGEST],
++                            obs: vec![],
++                            reads: vec![],
++                        });
++                        state = out;
++                        nw = 0;
++                    }
++                    let w = u32::from_le_bytes(state[4 * nw..4 * nw + 4].try_into().unwrap());
++                    let acc = (w as u64) < SAMPLE_BOUND;
++                    let job = jobs.last_mut().unwrap();
++                    job.reads.push(Read2 { wi: nw, n: w, acc });
++                    nw += 1;
++                    if acc {
++                        job.cnt += 1;
++                        assert_eq!(F::from_u32(w), log.values[i], "replay disagrees at tidx {i}");
++                        break;
++                    }
++                }
++                i += 1;
++            }
++            k => panic!("bad kind {k}"),
++        }
++    }
++    assert!(pending.is_empty());
++    jobs
++}
++
++// ---------------------------------------------------------------------------------------
++// Hash-chain AIR
++// ---------------------------------------------------------------------------------------
++
++#[repr(C)]
++#[derive(AlignedBorrow, Debug)]
++pub struct Hash2Cols<T> {
++    pub valid: T,
++    pub is_first: T,
++    pub op_f: T,
++    pub op_c: T,
++    pub op_s: T,
++    pub job: T,
++    pub t_start: T,
++    pub cnt: T,
++    pub state_in: [T; NV_DIGEST],
++    pub state_out: [T; NV_DIGEST],
++    pub payload: [T; NV_DIGEST],
++    /// state words read by the sample AIR (prefix)
++    pub rdw: [T; 6],
++    pub last_word: T,
++    pub last_half: T,
++    pub last_acc: T,
++    /// = rdw[5] * last_half (all 12 candidates read)
++    pub full: T,
++}
++pub const HASH2_WIDTH: usize = Hash2Cols::<u8>::width();
++
++pub struct Hash2Air {
++    pub h: HashBuses,
++    pub t: TrBuses,
++}
++impl<T> BaseAir<T> for Hash2Air {
++    fn width(&self) -> usize {
++        HASH2_WIDTH
++    }
++}
++impl<T> BaseAirWithPublicValues<T> for Hash2Air {}
++impl<T> PartitionedBaseAir<T> for Hash2Air {}
++
++impl<AB: AirBuilder + InteractionBuilder> Air<AB> for Hash2Air {
++    fn eval(&self, builder: &mut AB) {
++        let main = builder.main();
++        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let l: &Hash2Cols<AB::Var> = (*local).borrow();
++        let n: &Hash2Cols<AB::Var> = (*next).borrow();
++        let one = AB::Expr::ONE;
++        let c = |v: u64| AB::Expr::from_u64(v);
++        for x in [l.valid, l.is_first, l.op_f, l.op_c, l.op_s, l.last_acc, l.last_half] {
++            builder.assert_bool(x);
++        }
++        builder.assert_eq(l.op_f + l.op_c + l.op_s, l.valid);
++        builder.when(l.is_first).assert_one(l.valid);
++        builder.when_first_row().assert_eq(l.is_first, l.valid);
++        let s0 = state_limbs(&initial_state());
++        for i in 0..NV_DIGEST {
++            builder.when(l.is_first).assert_eq(l.state_in[i], c(s0[i] as u64));
++        }
++        builder.when(l.is_first).assert_zero(l.t_start);
++        builder.when(l.op_c).assert_eq(l.cnt, c(NV_DIGEST as u64));
++        for i in 0..6 {
++            builder.assert_bool(l.rdw[i]);
++        }
++        builder.assert_eq(l.rdw[0], l.op_s);
++        for i in 0..5 {
++            builder.assert_zero(l.rdw[i + 1] * (one.clone() - l.rdw[i]));
++        }
++        let rd_sum = l.rdw.iter().fold(AB::Expr::ZERO, |a, &x| a + x);
++        builder.assert_eq(rd_sum, l.last_word + l.op_s);
++        builder.assert_zero(l.last_acc * (one.clone() - l.op_s));
++        builder.assert_zero(l.last_half * (one.clone() - l.op_s));
++        builder.assert_eq(l.full, l.rdw[5] * l.last_half);
++        let not_full = l.op_s - l.full;
++        let rej = l.op_s - l.last_acc;
++        builder.assert_zero(rej.clone() * (one.clone() - l.full));
++        {
++            let mut t = builder.when_transition();
++            t.assert_zero((one.clone() - l.valid) * n.valid);
++            t.when(n.valid).assert_zero(n.is_first);
++            let same: AB::Expr = n.valid.into();
++            for i in 0..NV_DIGEST {
++                t.when(same.clone()).assert_eq(n.state_in[i], l.state_out[i]);
++            }
++            t.when(same.clone()).assert_eq(n.t_start, l.t_start + l.cnt);
++            t.assert_zero(same.clone() * l.op_f * n.op_f);
++            t.assert_zero(l.op_f * (one.clone() - same.clone()));
++            t.assert_zero(same.clone() * n.op_s * not_full);
++            t.assert_zero(rej.clone() * (one.clone() - same * n.op_s));
++        }
++        builder.when_last_row().assert_zero(l.op_f);
++        builder.when_last_row().assert_zero(rej);
++
++        let h = self.h;
++        let tag = l.op_f * c(TAG_FLUSH as u64) + l.op_c * c(TAG_COMMIT as u64) + l.op_s * c(TAG_SQUEEZE as u64);
++        h.send_job(builder, l.job, tag, l.valid);
++        h.send_felt(builder, l.job, c(0), c(48), l.valid);
++        h.send_felt(builder, l.job, c(1), c(0), l.valid);
++        for i in 0..6 {
++            h.send_word(
++                builder,
++                l.job,
++                c(2 + 2 * i as u64),
++                core::array::from_fn(|k| l.state_in[3 * i + k].into()),
++                l.valid,
++            );
++        }
++        h.send_felt(builder, l.job, c(14), l.op_c * c(48) + l.op_f * l.cnt * c(4), l.op_c + l.op_f);
++        h.send_felt(builder, l.job, c(15), c(0), l.op_c + l.op_f);
++        for i in 0..6 {
++            h.send_word(
++                builder,
++                l.job,
++                c(16 + 2 * i as u64),
++                core::array::from_fn(|k| l.payload[3 * i + k].into()),
++                l.op_c,
++            );
++        }
++        let sout: Vec<AB::Expr> = l.state_out.iter().map(|&x| x.into()).collect();
++        h.receive_digest(builder, l.job, &sout, l.valid);
++        for i in 0..NV_DIGEST {
++            emit(
++                builder,
++                h.slot,
++                l.t_start + c(i as u64),
++                c(KIND_COMMIT as u64),
++                l.payload[i].into(),
++                l.op_c.into(),
++            );
++        }
++        PermutationCheckBus::new(self.t.obs).receive(builder, [l.job, l.t_start, l.cnt], l.op_f);
++        PermutationCheckBus::new(self.t.sample).receive(
++            builder,
++            [l.job, l.t_start, l.cnt, l.last_word, l.last_half, l.last_acc],
++            l.op_s,
++        );
++        let wbus = PermutationCheckBus::new(self.t.word);
++        for i in 0..6 {
++            wbus.send(
++                builder,
++                [
++                    l.job.into(),
++                    c(i as u64),
++                    l.state_out[3 * i].into(),
++                    l.state_out[3 * i + 1].into(),
++                    l.state_out[3 * i + 2].into(),
++                ],
++                l.rdw[i],
++            );
++        }
++    }
++}
++
++// ---------------------------------------------------------------------------------------
++// Observe AIR
++// ---------------------------------------------------------------------------------------
++
++#[repr(C)]
++#[derive(AlignedBorrow, Debug)]
++pub struct Obs2Cols<T> {
++    pub valid: T,
++    pub job: T,
++    pub tidx: T,
++    pub t_first: T,
++    pub value: T,
++    pub is_first: T,
++    pub is_last: T,
++}
++pub const OBS2_WIDTH: usize = Obs2Cols::<u8>::width();
++
++pub struct Obs2Air {
++    pub h: HashBuses,
++    pub t: TrBuses,
++}
++impl<T> BaseAir<T> for Obs2Air {
++    fn width(&self) -> usize {
++        OBS2_WIDTH
++    }
++}
++impl<T> BaseAirWithPublicValues<T> for Obs2Air {}
++impl<T> PartitionedBaseAir<T> for Obs2Air {}
++
++fn runs<AB: AirBuilder>(b: &mut AB, valid: AB::Expr, first: AB::Expr, last: AB::Expr, nvalid: AB::Expr, nfirst: AB::Expr) {
++    let one = AB::Expr::ONE;
++    b.assert_bool(valid.clone());
++    b.assert_bool(first.clone());
++    b.assert_bool(last.clone());
++    b.when(first.clone()).assert_one(valid.clone());
++    b.when(last.clone()).assert_one(valid.clone());
++    b.when_first_row().assert_eq(first, valid.clone());
++    let mut t = b.when_transition();
++    t.assert_zero((one.clone() - valid.clone()) * nvalid.clone());
++    t.when(nvalid.clone()).assert_eq(nfirst, last.clone());
++    t.when(valid.clone()).assert_zero((one.clone() - nvalid) * (one.clone() - last.clone()));
++    b.when_last_row().assert_zero(valid * (one - last));
++}
++
++impl<AB: AirBuilder + InteractionBuilder> Air<AB> for Obs2Air {
++    fn eval(&self, builder: &mut AB) {
++        let main = builder.main();
++        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let l: &Obs2Cols<AB::Var> = (*local).borrow();
++        let n: &Obs2Cols<AB::Var> = (*next).borrow();
++        let c = |v: u64| AB::Expr::from_u64(v);
++        runs::<AB>(builder, l.valid.into(), l.is_first.into(), l.is_last.into(), n.valid.into(), n.is_first.into());
++        builder.when(l.is_first).assert_eq(l.t_first, l.tidx);
++        {
++            let mut t = builder.when_transition();
++            let mut s = t.when(n.valid - n.is_first);
++            s.assert_eq(n.job, l.job);
++            s.assert_eq(n.tidx, l.tidx + AB::Expr::ONE);
++            s.assert_eq(n.t_first, l.t_first);
++        }
++        emit(builder, self.h.slot, l.tidx.into(), c(KIND_OBSERVE as u64), l.value.into(), l.valid.into());
++        self.h.send_felt(builder, l.job, c(16) + l.tidx - l.t_first, l.value, l.valid);
++        PermutationCheckBus::new(self.t.obs).send(
++            builder,
++            [l.job.into(), l.t_first.into(), l.tidx - l.t_first + AB::Expr::ONE],
++            l.is_last,
++        );
++    }
++}
++
++// ---------------------------------------------------------------------------------------
++// Sample AIR: one row per state word, two candidates
++// ---------------------------------------------------------------------------------------
++
++#[repr(C)]
++#[derive(AlignedBorrow, Debug)]
++pub struct Samp2Cols<T> {
++    pub valid: T,
++    pub job: T,
++    /// word index 0..5
++    pub wi: T,
++    pub t_job: T,
++    /// accepted samples in the run before this row
++    pub mbefore: T,
++    pub is_first: T,
++    pub is_last: T,
++    /// big-endian bytes of the state word; candidate 0 = LE(b0..b3), 1 = LE(b4..b7)
++    pub b: [T; 8],
++    pub lo5: T,
++    pub lo2: T,
++    /// candidate 1 read
++    pub h1: T,
++    /// per candidate: c3 >= 0xF0, is_zero(c3 - 0xF0) + inv, is_zero(v) + inv, is_zero(c0(c0-1)) + inv, acc
++    pub g: [T; 2],
++    pub z: [T; 2],
++    pub iz: [T; 2],
++    pub zv: [T; 2],
++    pub iv: [T; 2],
++    pub zc: [T; 2],
++    pub ic: [T; 2],
++    pub acc: [T; 2],
++}
++pub const SAMP2_WIDTH: usize = Samp2Cols::<u8>::width();
++
++pub struct Samp2Air {
++    pub h: HashBuses,
++    pub t: TrBuses,
++}
++impl<T> BaseAir<T> for Samp2Air {
++    fn width(&self) -> usize {
++        SAMP2_WIDTH
++    }
++}
++impl<T> BaseAirWithPublicValues<T> for Samp2Air {}
++impl<T> PartitionedBaseAir<T> for Samp2Air {}
++
++impl<AB: AirBuilder + InteractionBuilder> Air<AB> for Samp2Air {
++    fn eval(&self, builder: &mut AB) {
++        let main = builder.main();
++        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let l: &Samp2Cols<AB::Var> = (*local).borrow();
++        let n: &Samp2Cols<AB::Var> = (*next).borrow();
++        let one = AB::Expr::ONE;
++        let c = |v: u64| AB::Expr::from_u64(v);
++        runs::<AB>(builder, l.valid.into(), l.is_first.into(), l.is_last.into(), n.valid.into(), n.is_first.into());
++        builder.assert_bool(l.h1);
++        builder.when(l.h1).assert_one(l.valid);
++        // only the last row may skip candidate 1
++        builder.assert_zero(l.valid * (one.clone() - l.h1) * (one.clone() - l.is_last));
++        builder.when(l.is_first).assert_zero(l.wi);
++        builder.when(l.is_first).assert_zero(l.mbefore);
++        let macc = l.mbefore + l.acc[0] + l.h1 * l.acc[1];
++        {
++            let mut t = builder.when_transition();
++            let mut s = t.when(n.valid - n.is_first);
++            s.assert_eq(n.job, l.job);
++            s.assert_eq(n.wi, l.wi + one.clone());
++            s.assert_eq(n.t_job, l.t_job);
++            s.assert_eq(n.mbefore, macc.clone());
++        }
++        let byte = openvm_stark_backend::interaction::LookupBus::new(self.h.byte);
++        for k in 0..8 {
++            byte.lookup_key(builder, [l.b[k]], l.valid);
++        }
++        let (a5, a2) = split_bits();
++        byte.lookup_key(builder, [l.lo5 * c(1 << (8 - a5))], l.valid);
++        byte.lookup_key(builder, [l.lo2 * c(1 << (8 - a2))], l.valid);
++        let bw: [AB::Expr; 8] = core::array::from_fn(|k| l.b[k].into());
++        let [w0, w1, w2] = limbs_from_bytes(&bw, l.lo5.into(), l.lo2.into());
++        PermutationCheckBus::new(self.t.word).receive(builder, [l.job.into(), l.wi.into(), w0, w1, w2], l.valid);
++        let mut tidx = l.t_job + l.mbefore;
++        for h in 0..2usize {
++            let cb = [l.b[4 * h], l.b[4 * h + 1], l.b[4 * h + 2], l.b[4 * h + 3]];
++            builder.assert_bool(l.g[h]);
++            let d3 = cb[3] - c(0xF0);
++            builder.assert_zero(l.z[h] * d3.clone());
++            builder.assert_eq(d3 * l.iz[h], one.clone() - l.z[h]);
++            let v = cb[1] * c(1 << 8) + cb[2] * c(1 << 16);
++            builder.assert_zero(l.zv[h] * v.clone());
++            builder.assert_eq(v * l.iv[h], one.clone() - l.zv[h]);
++            let w = cb[0] * cb[0] - cb[0];
++            builder.assert_zero(l.zc[h] * w.clone());
++            builder.assert_eq(w * l.ic[h], one.clone() - l.zc[h]);
++            builder.assert_eq(l.acc[h], one.clone() - l.g[h] + l.g[h] * l.z[h] * l.zv[h] * l.zc[h]);
++            let u = l.g[h] * (cb[3] - c(0xF0)) + (one.clone() - l.g[h]) * (c(0xEF) - cb[3]);
++            byte.lookup_key(builder, [u], l.valid);
++            let value = cb[0] + cb[1] * c(1 << 8) + cb[2] * c(1 << 16) + cb[3] * c(1 << 24);
++            let read: AB::Expr = if h == 0 { l.valid.into() } else { l.h1.into() };
++            emit(builder, self.h.slot, tidx.clone(), c(KIND_SAMPLE as u64), value, l.acc[h] * read);
++            tidx = tidx + l.acc[h];
++        }
++        PermutationCheckBus::new(self.t.sample).send(
++            builder,
++            [l.job.into(), l.t_job.into(), macc, l.wi.into(), l.h1.into(), l.acc[0] + l.h1 * (l.acc[1] - l.acc[0])],
++            l.is_last,
++        );
++    }
++}
++
++// ---------------------------------------------------------------------------------------
++// Trace generation
++// ---------------------------------------------------------------------------------------
++
++pub struct Tr2Traces {
++    pub hash: RowMajorMatrix<F>,
++    pub obs: RowMajorMatrix<F>,
++    pub samp: RowMajorMatrix<F>,
++    pub byte_counts: Vec<u32>,
++}
++
++fn ph(n: usize, m: usize) -> usize {
++    n.next_power_of_two().max(1).max(m)
++}
++
++pub(crate) fn fill_cand(s: &mut Samp2Cols<F>, h: usize, cb: [u8; 4], counts: &mut [u32]) -> bool {
++    let g = cb[3] >= 0xF0;
++    s.g[h] = F::from_bool(g);
++    let u = if g { cb[3] - 0xF0 } else { 0xEF - cb[3] };
++    counts[u as usize] += 1;
++    let d3 = F::from_u8(cb[3]) - F::from_u32(0xF0);
++    s.z[h] = F::from_bool(d3 == F::ZERO);
++    s.iz[h] = if d3 == F::ZERO { F::ZERO } else { d3.inverse() };
++    let v = F::from_u32((cb[1] as u32) << 8 | (cb[2] as u32) << 16);
++    s.zv[h] = F::from_bool(v == F::ZERO);
++    s.iv[h] = if v == F::ZERO { F::ZERO } else { v.inverse() };
++    let w = F::from_u32(cb[0] as u32 * cb[0] as u32) - F::from_u8(cb[0]);
++    s.zc[h] = F::from_bool(w == F::ZERO);
++    s.ic[h] = if w == F::ZERO { F::ZERO } else { w.inverse() };
++    let acc = !g || (cb[3] == 0xF0 && cb[1] == 0 && cb[2] == 0 && cb[0] <= 1);
++    s.acc[h] = F::from_bool(acc);
++    acc
++}
++
++pub fn tr2_traces(jobs: &[TrJob2], base: usize, min_h: Option<(usize, usize, usize)>) -> Tr2Traces {
++    let mh = min_h.unwrap_or((1, 1, 1));
++    let n_obs: usize = jobs.iter().map(|j| j.obs.len()).sum();
++    let n_words: usize = jobs.iter().map(|j| j.reads.len().div_ceil(2)).sum();
++    let hh = ph(jobs.len(), mh.0);
++    let oh = ph(n_obs, mh.1);
++    let sh = ph(n_words, mh.2);
++    let mut hash = F::zero_vec(hh * HASH2_WIDTH);
++    let mut obs = F::zero_vec(oh * OBS2_WIDTH);
++    let mut samp = F::zero_vec(sh * SAMP2_WIDTH);
++    let mut counts = vec![0u32; 256];
++    let (a5, a2) = split_bits();
++    let (mut orow, mut srow) = (0usize, 0usize);
++    let fu = |x: usize| F::from_usize(x);
++    for (k, j) in jobs.iter().enumerate() {
++        let job = base + k;
++        let r: &mut Hash2Cols<F> = hash[k * HASH2_WIDTH..(k + 1) * HASH2_WIDTH].borrow_mut();
++        r.valid = F::ONE;
++        r.is_first = F::from_bool(k == 0);
++        r.op_f = F::from_bool(j.op == Op2::Flush);
++        r.op_c = F::from_bool(j.op == Op2::Commit);
++        r.op_s = F::from_bool(j.op == Op2::Squeeze);
++        r.job = fu(job);
++        r.t_start = fu(j.t_start);
++        r.cnt = fu(j.cnt);
++        let (si, so) = (state_limbs(&j.state_in), state_limbs(&j.state_out));
++        for i in 0..NV_DIGEST {
++            r.state_in[i] = F::from_u32(si[i]);
++            r.state_out[i] = F::from_u32(so[i]);
++        }
++        if j.op == Op2::Commit {
++            r.payload = j.payload;
++        }
++        if j.op == Op2::Squeeze {
++            let last = j.reads.last().unwrap();
++            for i in 0..=last.wi / 2 {
++                r.rdw[i] = F::ONE;
++            }
++            r.last_word = fu(last.wi / 2);
++            r.last_half = F::from_bool(last.wi % 2 == 1);
++            r.last_acc = F::from_bool(last.acc);
++            r.full = F::from_bool(last.wi == 11);
++        }
++        for (i, &v) in j.obs.iter().enumerate() {
++            let o: &mut Obs2Cols<F> = obs[orow * OBS2_WIDTH..(orow + 1) * OBS2_WIDTH].borrow_mut();
++            orow += 1;
++            o.valid = F::ONE;
++            o.job = fu(job);
++            o.tidx = fu(j.t_start + i);
++            o.t_first = fu(j.t_start);
++            o.value = v;
++            o.is_first = F::from_bool(i == 0);
++            o.is_last = F::from_bool(i + 1 == j.obs.len());
++        }
++        let nrows = j.reads.len().div_ceil(2);
++        let mut mbefore = 0usize;
++        let sw = state_words(&j.state_out);
++        for wi in 0..nrows {
++            let s: &mut Samp2Cols<F> = samp[srow * SAMP2_WIDTH..(srow + 1) * SAMP2_WIDTH].borrow_mut();
++            srow += 1;
++            s.valid = F::ONE;
++            s.job = fu(job);
++            s.wi = fu(wi);
++            s.t_job = fu(j.t_start);
++            s.mbefore = fu(mbefore);
++            s.is_first = F::from_bool(wi == 0);
++            s.is_last = F::from_bool(wi + 1 == nrows);
++            let bytes = sw[wi].to_be_bytes();
++            for t in 0..8 {
++                s.b[t] = F::from_u8(bytes[t]);
++                counts[bytes[t] as usize] += 1;
++            }
++            let lo5 = bytes[5] & ((1 << a5) - 1);
++            let lo2 = bytes[2] & ((1 << a2) - 1);
++            s.lo5 = F::from_u8(lo5);
++            s.lo2 = F::from_u8(lo2);
++            counts[(lo5 as usize) << (8 - a5)] += 1;
++            counts[(lo2 as usize) << (8 - a2)] += 1;
++            let h1 = 2 * wi + 1 < j.reads.len();
++            s.h1 = F::from_bool(h1);
++            for h in 0..2 {
++                let cb = [bytes[4 * h], bytes[4 * h + 1], bytes[4 * h + 2], bytes[4 * h + 3]];
++                let acc = fill_cand(s, h, cb, &mut counts);
++                if h == 0 || h1 {
++                    debug_assert_eq!(acc, j.reads[2 * wi + h].acc);
++                    mbefore += acc as usize;
++                }
++            }
++        }
++    }
++    // padding sample rows: gadgets satisfied (bytes 0 -> acc 1)
++    for r in srow..sh {
++        let s: &mut Samp2Cols<F> = samp[r * SAMP2_WIDTH..(r + 1) * SAMP2_WIDTH].borrow_mut();
++        let mut dummy = vec![0u32; 256];
++        for h in 0..2 {
++            fill_cand(s, h, [0, 0, 0, 0], &mut dummy);
++        }
++    }
++    let _ = digest_limbs;
++    Tr2Traces {
++        hash: RowMajorMatrix::new(hash, HASH2_WIDTH),
++        obs: RowMajorMatrix::new(obs, OBS2_WIDTH),
++        samp: RowMajorMatrix::new(samp, SAMP2_WIDTH),
++        byte_counts: counts,
++    }
++}
++
++#[allow(dead_code)]
++fn _m(m: &RowMajorMatrix<F>) -> usize {
++    m.width()
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
