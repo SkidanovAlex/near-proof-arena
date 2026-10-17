@@ -11450,3 +11450,49 @@ Full NEAR1Petagas, PQ128, secure sub300000bytes and end-to-end Lean remain open.
 
 Reproducer:test_swirl_consumer_weights.py. Artifacts, pinned native source and
 new layout:results/swirl-security-review/consumer-weights/.
+
+
+## 2026-10-17 — Weighted GKR execution and formal known-input subtraction
+
+Previous goal turn classified progress: exact native-consumer coefficient
+formula and dynamic-weight layout. Revalidated clean worktree at8b05a32d2.
+Added prove_swirl_weighted_dag.py. Derives output coefficients/constant offset
+from synthetic fixture-owned controls, independently evaluates original Ext4
+DAG nodes, and proves the weighted output equals native-form scalar minus the
+bus offset. GKR layout23layers,1264extension elements,20224Ext4 field bytes.
+Native round kernel/Python verifier agree. Fresh-process replay reconstructs
+fixture/layout and verifies saved proof and residual obligation.
+
+Known inputs are3871output coefficients plus70selector inputs =3941slots.
+Remaining2303variable coordinates are typed as PCS inputs with AIR namespace,
+main/preprocessed kind, partition, rotation and column index retained. No Public
+or Challenge variable nodes occur in this particular DAG fixture. Split code
+accepts known values from the caller, not proof metadata, subtracts their
+weighted contribution, and emits the remaining coordinate weights/claim.
+It validates canonical contiguous slot assignment and input length. The
+unused private-capacity tail is explicitly a zero-padding range; fixture
+validation rejects nonzero padding rather than silently discarding it.
+
+The complete residual is checked against the original full input witness.
+Changed known value changes the residual, missing known input rejects, altered
+GKR input claim rejects, and nonzero padding rejects (four checks). This is
+NOT a PCS opening proof. Controls/selectors are synthetic and statement-bound
+before GKR in this fixture; they are NOT extracted from a native proof transcript.
+Actual native evaluated_claim acceptance, trace order, selectors and challenge
+chronology still require integration. Proof/obligations/logs/source pins saved
+under results/swirl-security-review/weighted-dag-gkr/.
+
+Added NearCompression.SwirlKnownInputSplit, imported by package root. Two Lean
+theorems establish exact partition of a weighted list into known/PCS terms and
+the equivalence between the complete claim and residual=claim-known_sum.
+Targeted lake build passes; #print axioms lists only propext,Classical.choice,
+Quot.sound, no sorryAx. This proves the subtraction algebra, not correctness of
+the Python coordinate classifier, compiler, GKR security or commitment binding.
+Full historical theorem audit was not rerun; do not update its count from this.
+
+Next: extract real native terminal controls and evaluation coordinates, then
+match the residual functional to an actual PCS opening relation with fixed
+trace/AIR provenance. Price that complete link and recursive workload before
+claiming a compression win. Ext4/20224bytes remain diagnostic; no degree9
+implementation, PQ128 certificate, full NEAR1Petagas proof or end-to-end Lean
+correctness is claimed. Full goal remains active.

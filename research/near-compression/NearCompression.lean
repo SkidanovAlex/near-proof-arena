@@ -1777,3 +1777,5 @@ import NearCompression.PrimitiveScalarDescent
 import NearCompression.StructuredFunctional
 
 import NearCompression.SwirlColumnClaimBoundary
+
+import NearCompression.SwirlKnownInputSplit
