@@ -1,0 +1,44 @@
+{
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "rows": [
+    {
+      "log_inverse_rate": 1,
+      "queries": 232,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 203680,
+      "leaf_bytes": 186368,
+      "payload_bytes": 399696,
+      "serialized_bytes": 399732,
+      "with_public_io_bytes": 444932
+    },
+    {
+      "log_inverse_rate": 2,
+      "queries": 142,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 155616,
+      "leaf_bytes": 125440,
+      "payload_bytes": 290704,
+      "serialized_bytes": 290740,
+      "with_public_io_bytes": 335940
+    },
+    {
+      "log_inverse_rate": 3,
+      "queries": 116,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 139040,
+      "leaf_bytes": 120320,
+      "payload_bytes": 269008,
+      "serialized_bytes": 269044,
+      "with_public_io_bytes": 314244
+    }
+  ],
+  "public_io_bytes": 45200,
+  "scope": "Same fixed 2187-hash graph; no field sampler, GKR arithmetic, prefix/PCS verifier, full NEAR or Lean refinement.",
+  "security": "Unchanged SECURITY_BITS=96 controls FRI query phase only; default SHA256, not PQ128.",
+  "census": "Upstream SizeTrackingChannel executed with counters. Exact total matched all three serialized payloads; not a soundness proof.",
+  "checks": [
+    "three fresh verifications",
+    "rate3 changed input rejected",
+    "rate3 changed proof rejected"
+  ]
+}

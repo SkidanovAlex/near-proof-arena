@@ -1,0 +1,14 @@
+{
+  "crates/verifier/src/verify.rs": {
+    "snapshot": "crates__verifier__src__verify.rs.gz",
+    "sha256": "9b926dcf9d056b1360686d71c0d9edf24999dde452ead6ba63c2463a5727cfe1"
+  },
+  "crates/iop/src/channel/size_tracking.rs": {
+    "snapshot": "crates__iop__src__channel__size_tracking.rs.gz",
+    "sha256": "38f044c01e11557f4ef9e2ad04fb619a854d0e96a957070c1c335b42cba18468"
+  },
+  "crates/iop/src/fri/common.rs": {
+    "snapshot": "crates__iop__src__fri__common.rs.gz",
+    "sha256": "4d82f637e874229aca6e9a30478ab75a825d8c7ba11209b7c6fcdd2af93e794f"
+  }
+}

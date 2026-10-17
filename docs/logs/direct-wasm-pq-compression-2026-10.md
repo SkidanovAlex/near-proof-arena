@@ -12491,3 +12491,46 @@ means the GKR hash graph only, not a full verifier. Archived report/sourcepatch/
 sourcepins/proofs/logs under binius-wide-graph. Reproduction script defaults to
 new proof generation; --reuse-tmp imports original proof and reruns verification
 and negatives. make pin-check passes. Goal remains unachieved.
+
+## 2026-10-17 — Rate sweep corrects default-only size conclusion
+
+Previous goal turn progressed atb3077bc1e: widened address representation and
+full fixed hash graph proof. Revalidated worktree and inspected upstream code
+rate selection before further integration. The prior rejection applies to the
+unchanged rate1/2 profile, not to the graph at every code rate.
+
+Proved identical437draw/2187hash/4373compressionblock graph with unchanged
+SECURITY_BITS=96, SHA256 suite and u128-address patch:
+- log_inverse_rate1:232queries,399696Bpayload/399732Bserialized.
+- log_inverse_rate2:142queries,290704Bpayload/290740Bserialized.
+- log_inverse_rate3:269008Bpayload/269044Bserialized.
+Public inout45200B remains external: rate3 totals314244B with those bytes.
+This does not include verifier-key transport or any missing verifier relation.
+Code-rate tuning materially improves proof size without lowering the configured
+query-security target. calculate_n_test_queries uses ceil(96/-log2((1+rate)/2));
+this is explicitly query-phase-only accounting, not full96-bit or PQ128 security.
+
+Added opt-in NEARPROOF_SIZE_CENSUS using upstream SizeTrackingChannel and an
+IOP verifier run on zero placeholders, without accepting that synthetic run as
+verification. Counters distinguish ordinary algebra messages, Merkle roots and
+authentication, and opened/full-vector field values. Actual saved proofs are
+then separately verified. For rate1,9648Balgebra+203680BMerkle+186368Bvalues
+exactly reproduce399696Bpayload. For rate2,9648+155616+125440=290704B.
+Thus current cost is dominated by the PCS, not the algebra messages. The runner
+asserts census total equals actual serialized size minus36B for all three rates.
+A synthetic size census is neither a proof nor a security calculation.
+
+Reproduction: apply hash-graph patch, wide-address patch, then census.patch;
+restore archived lockfile and release-build examples with nativeCPU/fourworkers.
+check_binius_rate_sweep.py defaults to fresh generation, or --reuse-tmp imports
+the observed runs and always fresh-verifies allthree and checks changed public
+input and changedproof rejection for rate3. Report is written only on success.
+Source snapshots, patches, proofs, exact logs and run resource observations are
+under results/swirl-security-review/binius-rate-sweep. make pin-check passes.
+
+Decision: retain rate-tuned Binius as a component candidate; do not infer it
+meets the final target. Next investigate PCS scheduling and whether a single
+combined verifier circuit can keep intermediate digest outputs private, while
+charging the added arithmetic/sampler cost and stronger security requirements.
+No full NEAR1Pgas, sampler/GKR/prefix/PCS verification circuit, PQ128 certificate,
+or Lean implementation refinement has been established by this sweep.
