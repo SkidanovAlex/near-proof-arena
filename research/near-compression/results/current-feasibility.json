@@ -1119,6 +1119,76 @@
     "next_gate": "Width32 with13output/13capacity elements is a cost-screen candidate, not an approved hash. Retain SHA384 baseline. Establish concrete quantum permutation assumptions/parameters and full protocol budget before substitution. Do not treat the upstream M128 selector as PQ128 or repair a narrow inner digest by wrapping it in SHA384.",
     "security_certified": false
   },
+  "algebraic_permutation_layout": {
+    "evidence": "results/poseidon2-permutation-layout/report.json",
+    "width": 2106,
+    "constraints_per_row": 2074,
+    "independent_permutations": 44,
+    "scope": "Complete permutation relation in one wide row; canonical inputs and outputs share the same row. No call binding, sponge framing/padding, transcript, Merkle compression, ZK, recursive proof, quantum security, or NEAR certificate. Pair-hash count imports the earlier hypothetical width32/capacity13/rate19 wrapper; it is not implemented.",
+    "workload_evidence": "results/poseidon2-permutation-layout/workload.json",
+    "hypothetical_permutations": 503684,
+    "projections": [
+      {
+        "queries": 8,
+        "degree": 4194304,
+        "searched_degree_cap": 4194304,
+        "branches": [
+          {
+            "rows": 524288,
+            "width": 2106,
+            "packing": 8,
+            "degree": 4194304,
+            "lanes": 264,
+            "half": 8388608,
+            "leaf_bytes": 2112,
+            "expected_bytes": 24269.55587771789
+          }
+        ],
+        "expected_opening_bytes": 107419.60873637111,
+        "optimistic_fixed_bytes": 2488,
+        "expected_permutation_only_bytes": 109907.60873637111,
+        "packed_base_coefficient_payload_bytes": 4429185024,
+        "missing_costs": [
+          "GKR",
+          "sponge chaining, byte canonicalization and padding constraints",
+          "logical hash-call/root binding and all nonhash verifier arithmetic",
+          "auxiliary/adapter integration"
+        ],
+        "executable_profile": false,
+        "security_certified": false
+      },
+      {
+        "queries": 309,
+        "degree": 8388608,
+        "searched_degree_cap": 8388608,
+        "branches": [
+          {
+            "rows": 524288,
+            "width": 2106,
+            "packing": 16,
+            "degree": 8388608,
+            "lanes": 132,
+            "half": 16777216,
+            "leaf_bytes": 1056,
+            "expected_bytes": 546420.4759297329
+          }
+        ],
+        "expected_opening_bytes": 2414868.083234293,
+        "optimistic_fixed_bytes": 2488,
+        "expected_permutation_only_bytes": 2417356.083234293,
+        "packed_base_coefficient_payload_bytes": 4429185024,
+        "missing_costs": [
+          "GKR",
+          "sponge chaining, byte canonicalization and padding constraints",
+          "logical hash-call/root binding and all nonhash verifier arithmetic",
+          "auxiliary/adapter integration"
+        ],
+        "executable_profile": false,
+        "security_certified": false
+      }
+    ],
+    "workload_scope": "Actual old verifier is replayed unchanged and its complete four-count hash census matches. 57bytes/rate block is a counterfactual injective encoding shape, not a new-transcript measurement. Exact-input dedup requires proved routing. Output52bytes, new domain separation and challenges would change downstream lengths/sharing. Application hashes are not substituted. No quantum security, recursive proof or fullNEAR claim."
+  },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
     "legacy_cap": 3450888781824,
@@ -1126,7 +1196,7 @@
     "qualification": "Gas-capacity ratio only; NOT a proved trace count or operator bound"
   },
   "decision": {
-    "next_experiment": "Independent, joint separate-tree and phase-pooled SHA shapes miss the byte budget in expected/sampled q8 projections with major costs omitted. Pooling still needs at least about245GB of packed base coefficients in the screened workloads. Next obtain a concrete algebraic-hash AIR layout and whole-verifier cost model with explicit unresolved quantum assumptions; do not scale these SHA profiles. No hash security or protocol claim follows from geometry alone.",
+    "next_experiment": "Concrete algebraic permutation AIR matches pinned upstream Rust. Old-input byte-wrapper geometry projects about110KB at diagnostic q8 but2.42MB at q309 before major costs. Next assess a changed outer PCS schedule and complete security/byte ledger for this named layout before implementing a full sponge verifier or running a large proof. Permutation parity does not establish quantum hash security, compiler refinement, or recursive soundness.",
     "standalone_mca_expansion": "DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.",
     "reopen_mca_if": "A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.",
     "do_not_repeat": "Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.",
@@ -1170,7 +1240,9 @@
     "results/pooled-joint-nibble-geometry.json": "91dcd38f59ce948adb813c197abe4e3a8d1baacc278b05c65210617f5ff5fbd3",
     "results/hash-architecture-review/geometry.json": "427ac2dda26912860315c2b278e62ca4caa472e0e3fea6f043f0ed323be3be67",
     "results/hash-architecture-review/sources.json": "e620af0b265ca3b90057ff2a46ade877101c30bb6835ac5529d61bee5a7956c4",
-    "airbender/direct-wasm/report_current_feasibility.py": "9bd43abc0f775ec6986dfdf361ca67af48a99d13f8db5055e568cde38d700726",
+    "results/poseidon2-permutation-layout/report.json": "fb7c30031ee9e0c37228a4cc728c982b2596e8022c5b264dafeea72da12db1c2",
+    "results/poseidon2-permutation-layout/workload.json": "2fa1398a424cd0f2cc69e5b22f4b9737d6f41d9e2d004d3184c65fc77611a834",
+    "airbender/direct-wasm/report_current_feasibility.py": "cd0823de2cea2b84289bc87f15713942875d99213222a3d57f825e0c2faa3dca",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

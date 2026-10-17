@@ -10458,3 +10458,59 @@ verifier cost model, keeping quantum permutation/sponge/FS assumptions explicit.
 Do not infer outer bytes from S-box count or switch protocol hashes based on
 this geometry. Current-feasibility reconciliation rejects27inconsistent cases.
 No Lean or security theorem changed; full goal remains NOT_PASSED.
+
+### 2026-10-17: concrete algebraic permutation AIR and verifier-length replay
+
+Implemented poseidon2_permutation_air.py for the pinned Plonky3 width32
+BabyBear permutation: initial external linear layer,4initial full rounds,
+30internal rounds,4final full rounds, and all round constants. The
+[external layer source](https://github.com/Plonky3/Plonky3/blob/f98331687e47106a64ab82a77e2e1d0d66c9161b/poseidon2/src/external.rs)
+and [Monty31 layer source](https://github.com/Plonky3/Plonky3/blob/f98331687e47106a64ab82a77e2e1d0d66c9161b/monty-31/src/poseidon2.rs)
+are retained as pinned unmodified compressed snapshots. Constants come from
+the already pinned BabyBear source. These upstream M128 rounds are NOT a
+PQ128 security certificate; no hash in the proof protocol has been replaced.
+
+The concrete canonical np-air-v2 relation has2106columns and2074degree2
+constraints in ONE row per permutation. Inputs occupy32columns; each round
+allocates its32output coordinates. Each x^7 uses three intermediate columns
+x^2,x^3,x^6; its final multiplication appears inside linear-output equations.
+Every noninput column has one acyclic defining equation. Inputs and outputs
+share the same row, avoiding a new internal routing bus. This does not supply
+external call binding, sponge constraints or a universal Lean compiler theorem.
+
+Built a separate Rust oracle calling default_babybear_poseidon2_32 directly
+at commit f98331687e47106a64ab82a77e2e1d0d66c9161b, with Cargo.lock retained.
+All44inputs match: zero, one, p-1,32basis states,8seeded random states and the
+upstream known-answer vector. Canonical AIR evaluation checks64padded rows,
+132736constraints. All2074intermediate/output coordinates are individually
+corrupted and rejected by their defining canonical equation;32input mutations
+are also rejected. These2106negative controls and causal-column checks are
+finite implementation evidence, not a formal correctness or soundness proof.
+
+measure_algebraic_hash_workload.py replays the complete original retained
+contract/call-link/compression verifier unchanged and records exact framed
+input lengths. The four old census counts match:104839calls,419568SHAblocks,
+40726unique inputs,242409unique SHAblocks. For a hypothetical width32/rate19/
+capacity13 wrapper,3bytes per field element plus byte01 delimiter and zero
+padding gives57bytes per rate block. The old unique inputs would require
+503684permutations, padded to524288rows, or1060758504logical source cells.
+This is a specified byte-wrapper shape, not one permutation per SHA block.
+The wrapper is unimplemented;52byte digests, new domains/challenges and sharing
+would alter the actual new protocol workload. NEAR application hashes are
+not substituted. Exact-input sharing still requires a proved routing relation.
+
+A permutation-only weighted-codec projection gives109907.61B at q8 and
+2417356.08B at q309, including source root and local degree2 sumcheck but
+excluding GKR, sponge chaining/encoding, call binding, verifier arithmetic and
+auxiliary integration. Existing degree/lane caps are lifted in this model;
+selected lanes264/132 and degrees2^22/2^23 exceed current implementation limits.
+The current adapter also requires positive auxiliary width, so this zero-bus
+layout is not an executable whole-proof profile. Packed base coefficient
+payload4429185024B is arithmetic accounting, not observed peak RAM.
+
+Decision: the concrete hash relation substantially changes cost, but the q309
+outer schedule still misses size even with major components omitted. Next
+screen a changed outer PCS schedule plus complete conditional security/byte
+ledger before full sponge-verifier implementation or a large proof run.
+Current dashboard rejects29inconsistent-evidence cases. No Lean changes;
+full NEAR1Pgas, secure sub300000B, PQ128 and recursive acceptance remain open.

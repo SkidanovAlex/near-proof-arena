@@ -254,6 +254,25 @@ def build(root=ROOT):
     hash_sources=read('results/hash-architecture-review/sources.json')
     for item in hash_sources['code']:
         assert hashlib.sha256((root/item['snapshot']).read_bytes()).hexdigest()==item['snapshot_sha256']
+    permutation=read('results/poseidon2-permutation-layout/report.json')
+    assert permutation['status']=='POSEIDON2_32_PERMUTATION_AIR_PARITY'
+    assert (permutation['width'],permutation['constraints_per_row'],permutation['reported_table_degree'])==(2106,2074,2)
+    assert permutation['known_answer_matches'] and permutation['independent_permutations']==44
+    assert permutation['mutation_rejections']==2106
+    assert permutation['compiler_lean_certified'] is False and permutation['pq128_certified'] is False
+    assert permutation['sponge_implemented'] is False
+    for relative,expected in permutation['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    algebraic_work=read('results/poseidon2-permutation-layout/workload.json')
+    assert algebraic_work['fresh_original_verifier_passed']
+    assert algebraic_work['totals']==hash_work['measurement']['totals']
+    assert algebraic_work['hypothetical_permutations']==sum(((int(n)+57)//57)*count for n,count in algebraic_work['unique_input_lengths'].items())
+    assert algebraic_work['logical_permutation_source_cells']==algebraic_work['hypothetical_permutations']*permutation['width']
+    for relative,expected in algebraic_work['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    for projection in algebraic_work['projections']:
+        assert projection['security_certified'] is False and projection['executable_profile'] is False
+        assert projection['expected_permutation_only_bytes']==projection['optimistic_fixed_bytes']+projection['expected_opening_bytes']
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -354,9 +373,15 @@ def build(root=ROOT):
         hash_architecture_screen=dict(evidence='results/hash-architecture-review/geometry.json',
             digest_screens=hash_geometry['digest_screens'],candidates=hash_geometry['candidates'],
             scope=hash_geometry['scope'],next_gate=hash_geometry['decision'],security_certified=False),
+        algebraic_permutation_layout=dict(evidence='results/poseidon2-permutation-layout/report.json',
+            width=permutation['width'],constraints_per_row=permutation['constraints_per_row'],
+            independent_permutations=permutation['independent_permutations'],scope=permutation['scope'],
+            workload_evidence='results/poseidon2-permutation-layout/workload.json',
+            hypothetical_permutations=algebraic_work['hypothetical_permutations'],
+            projections=algebraic_work['projections'],workload_scope=algebraic_work['scope']),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
-        decision=dict(next_experiment='Independent, joint separate-tree and phase-pooled SHA shapes miss the byte budget in expected/sampled q8 projections with major costs omitted. Pooling still needs at least about245GB of packed base coefficients in the screened workloads. Next obtain a concrete algebraic-hash AIR layout and whole-verifier cost model with explicit unresolved quantum assumptions; do not scale these SHA profiles. No hash security or protocol claim follows from geometry alone.',
+        decision=dict(next_experiment='Concrete algebraic permutation AIR matches pinned upstream Rust. Old-input byte-wrapper geometry projects about110KB at diagnostic q8 but2.42MB at q309 before major costs. Next assess a changed outer PCS schedule and complete security/byte ledger for this named layout before implementing a full sponge verifier or running a large proof. Permutation parity does not establish quantum hash security, compiler refinement, or recursive soundness.',
             standalone_mca_expansion=('REASSESS against the surviving candidate; partial ledger is not certification.' if feasible else 'DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.'),
             reopen_mca_if='A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.',
             do_not_repeat='Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.',

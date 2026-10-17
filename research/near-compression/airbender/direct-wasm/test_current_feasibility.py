@@ -20,6 +20,10 @@ def main():
     base=report.ROOT/'results/ext8-switch-execution-q309'
     manifest_path=base/'manifest.json'
     mutations=[
+        (report.ROOT/'results/poseidon2-permutation-layout/report.json',
+            lambda d:d.update(pq128_certified=True),False),
+        (report.ROOT/'results/poseidon2-permutation-layout/workload.json',
+            lambda d:d.update(hypothetical_permutations=1),False),
         (report.ROOT/'results/pooled-joint-nibble-geometry.json',
             lambda d:d['scenarios'][0].update(packed_base_coefficient_payload_bytes=1),False),
         (report.ROOT/'results/pooled-joint-nibble-geometry.json',

@@ -1,0 +1,12 @@
+[package]
+name = "near-poseidon2-layout-oracle"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+p3-baby-bear = { git = "https://github.com/Plonky3/Plonky3", rev = "f98331687e47106a64ab82a77e2e1d0d66c9161b" }
+p3-field = { git = "https://github.com/Plonky3/Plonky3", rev = "f98331687e47106a64ab82a77e2e1d0d66c9161b" }
+p3-symmetric = { git = "https://github.com/Plonky3/Plonky3", rev = "f98331687e47106a64ab82a77e2e1d0d66c9161b" }
