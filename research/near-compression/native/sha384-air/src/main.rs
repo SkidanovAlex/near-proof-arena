@@ -337,11 +337,13 @@ mod config {
         // rows: trace row 0, every row type of segment 1, the first padding row and the last row
         let mut rows: Vec<usize> = vec![0];
         rows.extend(
-            [0usize, 1, 2, 3, 8, 9, 10, 17, 33, 37, 38, 39, 40, 41, 42, 43]
+            [0usize, 1, 2, 3, 8, 9, 10, 17, 33, 37, 38, 39, 40, 41, 42]
                 .iter()
                 .map(|r| ROWS + r),
         );
-        rows.extend([3 * ROWS, t.main_height - 1]);
+        // padding: first zero row, one in the middle, the last row
+        rows.extend([3 * ROWS, (3 * ROWS + t.main_height) / 2, t.main_height - 1]);
+        assert!(t.main[3 * ROWS * w..].iter().all(|&v| v == 0), "padding must be all zero");
         // Digits: move to another in-range value (v -> v xor 1); other cells: +1.
         let newval = |v: F, digit: bool| {
             if digit {
@@ -434,8 +436,8 @@ mod config {
                 ("round_K1_residual_via_carry", vec![(at(12, lay.c1a + 2), F::ONE)]),
                 ("round_d_residual_via_carry", vec![(at(13, lay.c1e + 2), F::ONE)]),
                 ("out_IV_residual_via_carry_row42", vec![(at(41, lay.c0a + 2), F::ONE)]),
-                ("out_IV_residual_via_carry_row43", vec![(at(42, lay.c1e + 2), F::ONE)]),
-                ("out_received_fin_plus_carry", vec![(at(42, lay.v0 + 2), top), (at(42, lay.c0e + 2), F::ONE)]),
+                ("out_fin_residual_via_carry_row0_H3", vec![(at(0, lay.c1a + 2), F::ONE)]),
+                ("out_fin_residual_via_carry_row1_H6", vec![(at(0, lay.c0e + 2), F::ONE)]),
             ];
             for (name, ed) in edits {
                 let mut mm = m.main.clone();
@@ -463,6 +465,33 @@ mod config {
                 mm.values[at(40, lay.c1e + 2)] += d;
                 let res = check(pk, airs, &[&mm, &m.table, &m.harness]);
                 println!("NEGATIVE carry_range_half detected={} by={}", res.is_err(), by(&res));
+            }
+            // Padding region: a copy of a real row placed in the zero tail, a fake complete
+            // compression segment right after the last real one (consistent trace, no consumer
+            // messages), and the same segment one row further (not contiguous).
+            {
+                let mut mm = m.main.clone();
+                let (src, dst) = (ROWS + 20, (3 * ROWS + t.main_height) / 2);
+                for col in 0..w {
+                    mm.values[dst * w + col] = mm.values[src * w + col];
+                }
+                let res = check(pk, airs, &[&mm, &m.table, &m.harness]);
+                println!("NEGATIVE_PAD fake_real_row_in_padding detected={} by={}", res.is_err(), by(&res));
+                let mut c4 = comps.clone();
+                c4.push(rng.comp());
+                let t4 = gen_all(lay, &c4);
+                let m4 = mats(&t4);
+                let res = check(pk, airs, &[&m4.main, &m4.table, &m.harness]);
+                println!("NEGATIVE_PAD fake_segment_after_last detected={} by={}", res.is_err(), by(&res));
+                let mut mm = m4.main.clone();
+                let seg = 3 * ROWS * w;
+                let block: Vec<F> = mm.values[seg..seg + ROWS * w].to_vec();
+                for v in &mut mm.values[seg..seg + (ROWS + 1) * w] {
+                    *v = F::ZERO;
+                }
+                mm.values[seg + w..seg + (ROWS + 1) * w].copy_from_slice(&block);
+                let res = check(pk, airs, &[&mm, &m4.table, &m.harness]);
+                println!("NEGATIVE_PAD fake_segment_after_gap detected={} by={}", res.is_err(), by(&res));
             }
             // A different (input state, block) with a fully consistent AIR trace but the
             // consumer's original messages: only the interface bus can reject it.

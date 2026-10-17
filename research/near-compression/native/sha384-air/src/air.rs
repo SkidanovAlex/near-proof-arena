@@ -29,8 +29,7 @@ use p3_air::{Air, AirBuilder, AirBuilderWithPublicValues, BaseAir, BaseAirWithPu
 use p3_field::{Field, PrimeCharacteristicRing};
 use p3_matrix::Matrix;
 
-pub const ROWS: usize = 44;
-pub const PAD_R: u32 = 44;
+pub const ROWS: usize = 43;
 /// Carry columns hold c + CARRY_OFF for the signed (e) equations; every carry column is
 /// range-checked to [0, CARRY_RANGE).
 pub const CARRY_RANGE: u64 = 8;
@@ -183,22 +182,20 @@ impl Layout {
     }
 }
 
-/// Control-table entry for table index i: (r, flags).  Indices >= 44 describe the
-/// padding row (r = 44, every flag 0).
+/// Control-table entry for table index i: (r, flags).  Exactly one of F_IV, F_ROUND, F_OUT
+/// is set, so is_real = F_IV + F_ROUND + F_OUT is 1 on every real row; padding rows are all
+/// zero and do not look up.  Indices >= ROWS repeat the last entry.
 pub fn ctl_entry(i: usize) -> [u64; 1 + NFLAGS] {
+    let i = i.min(ROWS - 1);
     let mut e = [0u64; 1 + NFLAGS];
-    if i >= ROWS {
-        e[0] = PAD_R as u64;
-        return e;
-    }
     let f = |lo: usize, hi: usize| (lo..=hi).contains(&i) as u64;
     e[0] = i as u64;
     e[1 + FI_IV] = f(0, 1);
     e[1 + FI_ROUND] = f(2, 41);
     e[1 + FI_SCHED] = f(10, 41);
-    e[1 + FI_OUT] = f(42, 43);
+    e[1 + FI_OUT] = f(42, 42);
     // rows 40, 41.  Derived: F_FIN = F_TAIL (41 - r) (row 40 sends a_76, a_77, e_76, e_77
-    // to row 42); F_DA = F_IV + F_ROUND - F_TAIL (rows 0..39 send d terms one row ahead).
+    // to row 0); F_DA = F_IV + F_ROUND - F_TAIL (rows 0..39 send d terms one row ahead).
     e[1 + FI_TAIL] = f(40, 41);
     e[1 + FI_S01] = f(2, 33); // V senders (received 7 rows later, for the row after)
     e[1 + FI_S2] = f(6, 37); // W[t-7] senders, both slots (received 3 rows later)
@@ -209,7 +206,8 @@ pub fn ctl_entry(i: usize) -> [u64; 1 + NFLAGS] {
 /// a round row, else zeros.
 pub fn k_entry(lay: &Layout, i: usize) -> [u64; 7] {
     let mut e = [0u64; 7];
-    e[0] = if i >= ROWS { PAD_R as u64 } else { i as u64 };
+    let i = i.min(ROWS - 1);
+    e[0] = i as u64;
     let n = i + 1;
     if i < ROWS && (2..=41).contains(&n) {
         e[1..4].copy_from_slice(&lay.limbs(K[2 * n - 4]));
@@ -448,9 +446,10 @@ impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air 
         let one = AB::Expr::ONE;
         let c = |v: u64| AB::Expr::from_u64(v);
         let fl = |x: &[AB::Expr], i: usize| x[lay.flags + i].clone();
-        let pad = |x: &[AB::Expr]| one.clone() - fl(x, FI_IV) - fl(x, FI_ROUND) - fl(x, FI_OUT);
-        // Row 42 of a segment (OUT row holding the received final words of row 40).
-        let row42 = |x: &[AB::Expr]| fl(x, FI_OUT) * (c(43) - x[lay.r].clone());
+        let real = |x: &[AB::Expr]| fl(x, FI_IV) + fl(x, FI_ROUND) + fl(x, FI_OUT);
+        let pad = |x: &[AB::Expr]| one.clone() - real(x);
+        // Row 0 of a segment: holds H'2, H'3 (W slots) and its carries serve row 1's H'6, H'7.
+        let row0 = |x: &[AB::Expr]| fl(x, FI_IV) * (one.clone() - x[lay.r].clone());
         let coef = all_sign_coefs::<AB::F>(lay.k);
 
         // ---- range checks and zero cells ----
@@ -475,11 +474,11 @@ impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air 
         for col in 0..lay.w0 {
             b.assert_zero(padl.clone() * l[col].clone());
         }
-        let no_w = one.clone() - fl(&l, FI_ROUND) - row42(&l);
+        let no_w = one.clone() - fl(&l, FI_ROUND) - fl(&l, FI_IV);
         for col in lay.w0..lay.ndig {
             b.assert_zero(no_w.clone() * l[col].clone());
         }
-        let no_rc = one.clone() - fl(&n, FI_ROUND) - fl(&n, FI_OUT);
+        let no_rc = one.clone() - fl(&n, FI_ROUND) - fl(&n, FI_OUT) - row0(&l);
         for col in lay.c1a..lay.cw0 {
             b.assert_zero(no_rc.clone() * l[col].clone());
         }
@@ -487,26 +486,31 @@ impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air 
         for col in lay.cw0..lay.cw1 + 3 {
             b.assert_zero(no_sched.clone() * l[col].clone());
         }
-        let no_v = no_sched.clone() - row42(&l);
+        let no_v = no_sched.clone();
         for col in lay.v0..lay.v1 + 3 {
             b.assert_zero(no_v.clone() * l[col].clone());
         }
 
-        // ---- row sequencing: segments 0..43 back to back, then padding (r = 44) ----
+        // Padding rows are all zero: r, g and every flag vanish where is_real = 0 (digits,
+        // carries and V by the rules above; S_A and DE by their definitions).
+        for col in [lay.r, lay.g].into_iter().chain(lay.flags..lay.flags + NFLAGS) {
+            b.assert_zero(padl.clone() * l[col].clone());
+        }
+
+        // ---- row sequencing: segments 0..42 back to back from row 0, then zero rows ----
+        let last = c(ROWS as u64 - 1);
         b.when_first_row().assert_zero(l[lay.r].clone());
         b.when_first_row().assert_zero(l[lay.g].clone());
         b.when_last_row()
-            .assert_zero((l[lay.r].clone() - c(43)) * (one.clone() - pad(&l)));
+            .assert_zero((l[lay.r].clone() - last.clone()) * real(&l));
         {
             let (r, g) = (lay.r, lay.g);
             let mut t = b.when_transition();
-            t.assert_zero(n[g].clone() - l[g].clone() - one.clone());
-            t.assert_zero(
-                (n[r].clone() - l[r].clone() - one.clone()) * (one.clone() - pad(&n)) * n[r].clone(),
-            );
-            t.assert_zero(pad(&n) * (one.clone() - pad(&l)) * (l[r].clone() - c(43)));
-            t.assert_zero((one.clone() - n[r].clone()) * fl(&n, FI_IV) * (l[r].clone() - c(43)));
-            t.assert_zero(pad(&l) * (one.clone() - pad(&n)));
+            t.assert_zero(real(&n) * (n[g].clone() - l[g].clone() - one.clone()));
+            t.assert_zero(real(&n) * (n[r].clone() - l[r].clone() - one.clone()) * n[r].clone());
+            t.assert_zero(pad(&n) * real(&l) * (l[r].clone() - last.clone()));
+            t.assert_zero((one.clone() - n[r].clone()) * fl(&n, FI_IV) * (l[r].clone() - last));
+            t.assert_zero(pad(&l) * real(&n));
         }
 
         // ---- words ----
@@ -522,17 +526,22 @@ impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air 
         let lb2 = |sg: &[AB::Expr]| limbs_of_signs::<AB::F, AB::Expr>(lay, sg, half_f);
 
         // S (row n) = partial sums for slot 0 of row n+1; DE (row n) = E1 of row l.
-        // Defined on every row, cyclically, with no gate.
+        // Defined on every row, cyclically.  The terms that do not vanish when row n is zero
+        // (h and Ch's g input) are gated by is_real(n), degree 15 < 21, so the row after the
+        // last real row is all zero too.
         {
-            let h = &e0l.limbs;
+            let rn = real(&n);
             let s1 = lb(&big_sigma1(&e1n.sg));
             let chv = lb2(&ch2(&e1n.sg, &e0n.sg, &e1l.sg));
             let s0 = lb(&big_sigma0(&a1n.sg));
             let mj = lb2(&maj2(&a1n.sg, &a0n.sg, &a1l.sg));
-            let sa = add3(&[h, &s1, &chv, &s0, &mj]);
             for i in 0..3 {
-                b.assert_zero(n[lay.sa + i].clone() - sa[i].clone());
-                b.assert_zero(n[lay.de + i].clone() - e1l.limbs[i].clone());
+                let sa = rn.clone() * (e0l.limbs[i].clone() + chv[i].clone())
+                    + s1[i].clone()
+                    + s0[i].clone()
+                    + mj[i].clone();
+                b.assert_zero(n[lay.sa + i].clone() - sa);
+                b.assert_zero(n[lay.de + i].clone() - rn.clone() * e1l.limbs[i].clone());
             }
         }
         // d - T2 for slot 0 of row n+1, sent from this window (row l) to row n.
@@ -577,39 +586,39 @@ impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air 
             &lhs(lay, &w1n.limbs, &cols3(&l, lay.cw1), 0),
             &add3(&[&lb(&small_sigma1(&w1l.sg)), &cols3(&l, lay.v1)]),
         );
-        // Feed-forward for OUT row n: out = IV + fin (IV by bus).  fin = slots of row 41
-        // (for n = 42) or the words received on row 42 (for n = 43).
+        // Feed-forward.  OUT row 42 (window 41, 42): slot q = slot q of row 41 + IV word of
+        // row 1 (by bus).  Row 0 (window 0, 1): W0/W1 of row 0 = H2/H3 + a_77/a_76 and W0/W1
+        // of row 1 = H6/H7 + e_77/e_76 (H from row 0's slots, final words by bus from row 40).
         let res_out: Vec<[AB::Expr; 3]> = {
-            let sel = row42(&l);
-            let unsel = one.clone() - sel.clone();
-            let fin42 = [&a0l.limbs, &a1l.limbs, &e0l.limbs, &e1l.limbs];
-            let fin43 = [w0l.limbs.clone(), w1l.limbs.clone(), cols3(&l, lay.v0), cols3(&l, lay.v1)];
+            let fin = [&a0l.limbs, &a1l.limbs, &e0l.limbs, &e1l.limbs];
             let outs = [&a0n.limbs, &a1n.limbs, &e0n.limbs, &e1n.limbs];
             let carries = [lay.c0a, lay.c1a, lay.c0e, lay.c1e];
             (0..4)
-                .map(|q| {
-                    let fin: [AB::Expr; 3] = std::array::from_fn(|i| {
-                        unsel.clone() * fin42[q][i].clone() + sel.clone() * fin43[q][i].clone()
-                    });
-                    sub3(&lhs(lay, outs[q], &cols3(&l, carries[q]), 0), &fin)
-                })
+                .map(|q| sub3(&lhs(lay, outs[q], &cols3(&l, carries[q]), 0), fin[q]))
                 .collect()
         };
+        // in the order row 40 sends: a_76, a_77, e_76, e_77
+        let res_row0: Vec<[AB::Expr; 3]> = vec![
+            sub3(&lhs(lay, &w1l.limbs, &cols3(&l, lay.c1a), 0), &a0l.limbs),
+            sub3(&lhs(lay, &w0l.limbs, &cols3(&l, lay.c0a), 0), &a1l.limbs),
+            sub3(&lhs(lay, &w1n.limbs, &cols3(&l, lay.c1e), 0), &e0l.limbs),
+            sub3(&lhs(lay, &w0n.limbs, &cols3(&l, lay.c0e), 0), &e1l.limbs),
+        ];
 
         // ---- interactions ----
         let mut ctl = vec![l[lay.r].clone()];
         ctl.extend((0..NFLAGS).map(|i| fl(&l, i)));
-        b.push_interaction(BUS_CTL, ctl, one.clone(), 1);
+        b.push_interaction(BUS_CTL, ctl, real(&l), 1);
         let mut kmsg = vec![l[lay.r].clone()];
         kmsg.extend(res_a0.iter().cloned());
         kmsg.extend(res_a1.iter().cloned());
         b.push_interaction(BUS_K, kmsg, nround.clone(), 1);
 
         // Interface bus: (compression id, pair index, limbs of word 2m, limbs of word 2m+1).
-        // Pairs 0..3 input state, 4..11 block, 12..15 output state.
+        // Pairs 0..3 input state, 4..11 block, 12..15 output state.  Row 0/1 W slots carry
+        // output pairs 13 (H'2, H'3) and 15 (H'6, H'7); row 42 carries pairs 12 and 14.
         let cid = l[lay.g].clone() - l[lay.r].clone();
-        let idx_a = fl(&l, FI_IV) * (one.clone() - l[lay.r].clone())
-            + fl(&l, FI_OUT) * (l[lay.r].clone() - c(30));
+        let idx_a = row0(&l) + fl(&l, FI_OUT) * c(12);
         let st_mult = fl(&l, FI_IV) + fl(&l, FI_OUT);
         for (idx, hi, lo) in [
             (idx_a.clone(), &a1l, &a0l),
@@ -621,10 +630,13 @@ impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air 
             b.push_interaction(BUS_IF, msg, st_mult.clone(), 1);
         }
         {
-            let mut msg = vec![cid.clone(), l[lay.r].clone() + c(2)];
+            let blk = fl(&l, FI_ROUND) - fl(&l, FI_SCHED);
+            let idx = blk.clone() * (l[lay.r].clone() + c(2))
+                + fl(&l, FI_IV) * (c(13) + l[lay.r].clone().double());
+            let mut msg = vec![cid.clone(), idx];
             msg.extend(w0l.limbs.iter().cloned());
             msg.extend(w1l.limbs.iter().cloned());
-            b.push_interaction(BUS_IF, msg, fl(&l, FI_ROUND) - fl(&l, FI_SCHED), 1);
+            b.push_interaction(BUS_IF, msg, blk + fl(&l, FI_IV), 1);
         }
 
         // Lookback bus (permutation), keyed by the sender's global row g.
@@ -637,7 +649,7 @@ impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air 
         let flat = |xs: &[&[AB::Expr; 3]]| -> Vec<AB::Expr> {
             xs.iter().flat_map(|x| x.iter().cloned()).collect()
         };
-        // state words: IV rows (for the feed-forward) and row 40 (for row 42)
+        // state words: row 1 (IV for row 42) and row 40 (final words for row 0)
         let f_fin = fl(&l, FI_TAIL) * (c(41) - l[lay.r].clone());
         let f_da = fl(&l, FI_IV) + fl(&l, FI_ROUND) - fl(&l, FI_TAIL);
         send(
@@ -645,7 +657,7 @@ impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air 
             g.clone(),
             TAG_ST,
             flat(&[&a0l.limbs, &a1l.limbs, &e0l.limbs, &e1l.limbs]),
-            fl(&l, FI_IV) + f_fin,
+            fl(&l, FI_IV) * l[lay.r].clone() + f_fin,
         );
         // d for slot 1 and d - T2 for slot 0 of the row after next
         send(b, g.clone(), TAG_DA, flat(&[&a1l.limbs, &d_minus_t2]), f_da);
@@ -657,20 +669,19 @@ impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air 
         // W[t-7] for slot 0 (W1 of this row) and slot 1 (W0 of the next row), 3 rows later
         send(b, g.clone(), TAG_W7, flat(&[&w1l.limbs, &w0n.limbs]), fl(&l, FI_S2));
         // receivers
-        let r = l[lay.r].clone();
         send(
             b,
-            g.clone() - r.clone().double() + c(42),
+            g.clone() - c(40),
             TAG_ST,
             res_out.iter().flat_map(|x| x.iter().cloned()).collect(),
             -nout.clone(),
         );
         send(
             b,
-            g.clone() - c(2),
+            g.clone() + c(40),
             TAG_ST,
-            flat(&[&w0l.limbs, &w1l.limbs, &cols3(&l, lay.v0), &cols3(&l, lay.v1)]),
-            -row42(&l),
+            res_row0.iter().flat_map(|x| x.iter().cloned()).collect(),
+            -row0(&l),
         );
         send(b, g.clone() - c(1), TAG_DA, flat(&[&res_e1, &res_e0]), -nround.clone());
         send(
