@@ -3592,10 +3592,10 @@ index 0000000..df6e338
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..e9f9a7c
+index 0000000..7895009
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,479 @@
+@@ -0,0 +1,579 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -3714,6 +3714,11 @@ index 0000000..e9f9a7c
 +    let airs = circ.airs::<Sha384Config>();
 +    let names: Vec<String> = airs.iter().map(|a| a.name()).collect();
 +    let (mut mats, _b) = circ.generate(vk, proof);
++    if let Ok(rows) = std::env::var("NV_DUMP_ROWS") {
++        for r in rows.split(',').map(|x| x.parse::<usize>().unwrap()) {
++            eprintln!("NV_DUMP row {r}: {:?}", _b.instrs.get(r));
++        }
++    }
 +    mutate(&mut mats, &names);
 +    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
 +        .into_iter()
@@ -3777,6 +3782,21 @@ index 0000000..e9f9a7c
 +        nv_debug_mats(&vk, &proof, 16, |mats, _| {
 +            let w = mats[0].width;
 +            mats[0].values[1000 * w + super::uair::U_C] += F::ONE;
++        })
++    });
++    // 5b. NvAir padding rows must be all zero: a non-zero value in the last (padding) row
++    must_fail("nvair padding row y", || {
++        nv_debug_mats(&vk, &proof, 16, |mats, _| {
++            let w = mats[0].width;
++            let h = mats[0].values.len() / w;
++            mats[0].values[(h - 1) * w + 5] += F::ONE;
++        })
++    });
++    must_fail("nvair padding row pool", || {
++        nv_debug_mats(&vk, &proof, 16, |mats, _| {
++            let w = mats[0].width;
++            let h = mats[0].values.len() / w;
++            mats[0].values[(h - 1) * w + super::uair::N_COMMON + 20] += F::ONE;
 +        })
 +    });
 +    // 6. a BIND row's accumulator (row na + 10)
@@ -4074,6 +4094,86 @@ index 0000000..e9f9a7c
 +        m(&mut bad);
 +        must_fail(name, || nv_debug_mats(&vk, &bad, 16, |_, _| {}));
 +    }
++}
++
++/// A trace whose last rows are all zero (for tight-heights chunks): columns (real, a, b) with
++/// real * (a^2 - b) = 0 and next.real * (next.a - a - 1) = 0; 700 of 1024 rows real.
++#[derive(Clone, Copy)]
++pub struct ZeroTailAir;
++impl<T> p3_air::BaseAir<T> for ZeroTailAir {
++    fn width(&self) -> usize {
++        3
++    }
++}
++impl<T> openvm_stark_backend::BaseAirWithPublicValues<T> for ZeroTailAir {}
++impl<T> openvm_stark_backend::PartitionedBaseAir<T> for ZeroTailAir {}
++impl<AB: p3_air::AirBuilder> p3_air::Air<AB> for ZeroTailAir {
++    fn eval(&self, builder: &mut AB) {
++        use p3_air::AirBuilder;
++        use p3_matrix::Matrix;
++        let main = builder.main();
++        let (l, n) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let real: AB::Expr = l[0].clone().into();
++        let a: AB::Expr = l[1].clone().into();
++        let bb: AB::Expr = l[2].clone().into();
++        let (n0, n1): (AB::Expr, AB::Expr) = (n[0].clone().into(), n[1].clone().into());
++        builder.assert_bool(real.clone());
++        builder.assert_zero(real * (a.clone() * a.clone() - bb));
++        builder.when_transition().assert_zero(n0 * (n1 - a - AB::Expr::ONE));
++    }
++}
++pub struct ZeroTailFixture(pub usize, pub usize);
++impl openvm_stark_backend::test_utils::TestFixture<Sha384Config> for ZeroTailFixture {
++    fn airs(&self) -> Vec<openvm_stark_backend::AirRef<Sha384Config>> {
++        vec![std::sync::Arc::new(ZeroTailAir)]
++    }
++    fn generate_proving_ctx(&self) -> openvm_stark_backend::prover::ProvingContext<openvm_stark_backend::prover::CpuColMajorBackend<Sha384Config>> {
++        use openvm_stark_backend::prover::{AirProvingContext, ColMajorMatrix, ProvingContext};
++        let (h, real) = (self.0, self.1);
++        let mut v = vec![F::ZERO; h * 3];
++        for i in 0..real {
++            v[3 * i] = F::ONE;
++            v[3 * i + 1] = F::from_usize(i);
++            v[3 * i + 2] = F::from_usize(i * i);
++        }
++        let m = p3_matrix::dense::RowMajorMatrix::new(v, 3);
++        ProvingContext::new(vec![(0, AirProvingContext::simple(ColMajorMatrix::from_row_major(&m), vec![]))])
++    }
++}
++
++/// Tight heights in-circuit: a child with a zero tail is verified with chunked stacking.
++#[test]
++fn nv_tight_heights() {
++    use crate::sha384::e2e_tests::with_levers;
++    use openvm_stark_backend::WhirLevers;
++    for (lv, x15) in [
++        (WhirLevers { tight_heights: true, ..Default::default() }, 1),
++        (WhirLevers { tight_heights: true, next_mask: true, multiproof: true, whir_y: true, ..Default::default() }, 15),
++    ] {
++        let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 8, 3);
++        p.max_constraint_degree = 4;
++        let p = with_levers(p, lv, x15, 5);
++        let engine = Sha384CpuEngine::new(p);
++        let (vk, proof) = ZeroTailFixture(1024, 700).keygen_and_prove(&engine);
++        println!("NV_TIGHT child tight={:?}", proof.trace_vdata.iter().flatten().map(|v| v.tight_height).collect::<Vec<_>>());
++        let mut b = Builder::new(17, 0);
++        build_verifier(&mut b, &vk, &proof);
++        assert!(b.failures.is_empty(), "{:?}", b.failures);
++        nv_debug_mats(&vk, &proof, 16, |_, _| {});
++        let mut bad = proof.clone();
++        bad.stacking_proof.stacking_openings[0][0] += EF::ONE;
++        must_fail("tight stacking opening", || nv_debug_mats(&vk, &bad, 16, |_, _| {}));
++        let mut bad = proof.clone();
++        bad.whir_proof.initial_round_opened_rows[0][0][0][0] += F::ONE;
++        must_fail("tight opened row", || nv_debug_mats(&vk, &bad, 16, |_, _| {}));
++    }
++}
++
++#[test]
++fn nv_zero_tail_plain() {
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = ZeroTailFixture(1024, 700).keygen_and_prove(&engine);
++    nv_debug_mats(&vk, &proof, 16, |_, _| {});
 +}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
@@ -4722,10 +4822,10 @@ index 0000000..098b0c8
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..e490f57
+index 0000000..b90153f
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,666 @@
+@@ -0,0 +1,674 @@
 +//! NV merged non-SHA AIR ("NvAir", U2): one AIR, row roles sharing a column pool.
 +//!
 +//! Common columns: role flags ka (ALU), kb (BIND), kg (GLUE), kh (transcript hash chain),
@@ -4988,8 +5088,16 @@ index 0000000..e490f57
 +            ksum += k.into();
 +        }
 +        builder.assert_bool(ksum.clone());
++        // y = row index on role rows; padding rows (no role, the last region) are all zero, so
++        // all-zero rows satisfy the AIR (tight-heights lever: a zero tail is not committed)
 +        builder.when_first_row().assert_zero(cl.y);
-+        builder.when_transition().assert_eq(cn.y, cl.y + one.clone());
++        let npad: AB::Expr = cn.ka + cn.kb + cn.kg + cn.kh + cn.ks;
++        builder.when_transition().assert_zero(npad * (cn.y - cl.y - one.clone()));
++        builder.assert_zero((one.clone() - ksum.clone()) * cl.y);
++        // padding rows are all zero (pool included), so a non-zero tail is rejected
++        for &x in pl.iter() {
++            builder.assert_zero((one.clone() - ksum.clone()) * x);
++        }
 +        for j in 0..4 {
 +            builder.assert_zero((one.clone() - cl.ka) * cl.p[j]);
 +        }
@@ -5382,7 +5490,7 @@ index 0000000..e490f57
 +    for x in samp {
 +        put(4, x);
 +    }
-+    for r in 0..h {
++    for r in 0..used {
 +        t[r * w + 5] = F::from_usize(r);
 +    }
 +    RowMajorMatrix::new(t, w)
@@ -5394,10 +5502,10 @@ index 0000000..e490f57
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..3f43bd5
+index 0000000..b8120cc
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1381 @@
+@@ -0,0 +1,1433 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -5791,6 +5899,11 @@ index 0000000..3f43bd5
 +        let lh = proof.trace_vdata[a].as_ref().unwrap().log_height;
 +        let lhv = b.cu(lh as u64);
 +        b.obs1(lhv);
++        // tight-heights lever: the committed height is observed after log_height
++        if let Some(h) = proof.trace_vdata[a].as_ref().unwrap().tight_height {
++            let hv = b.cu(h as u64);
++            b.obs1(hv);
++        }
 +        pv_cells.push(
 +            proof.public_values[a]
 +                .iter()
@@ -6326,16 +6439,53 @@ index 0000000..3f43bd5
 +    let width = sp.stacking_openings[0].len();
 +    let mut qc = vec![b.c(F::ZERO); width];
 +    let om_u: Vec<V> = u.iter().map(|&x| b.one_minus(x)).collect();
-+    let mut kern: std::collections::BTreeMap<(usize, bool), V> = Default::default();
-+    for (col, &(mat_idx, col_idx, s)) in layout.sorted_cols.iter().enumerate() {
++    // claim index of (mat, col): position in (matrix, column) order (tight chunks share it)
++    let mut col_base = vec![];
++    {
++        let mut acc = 0;
++        for m in &masks {
++            col_base.push(acc);
++            acc += m.len();
++        }
++    }
++    let mut kern: std::collections::BTreeMap<(usize, bool, usize, usize), V> = Default::default();
++    for &(mat_idx, col_idx, s) in layout.sorted_cols.iter() {
 +        let need = masks[mat_idx][col_idx];
 +        let n = s.log_height() - l_skip;
-+        if !kern.contains_key(&(n, need)) {
++        let key = (n, need, s.src_row, s.col_log_height());
++        if !kern.contains_key(&key) {
 +            let rs_n = &rs[..=n];
 +            let eu = eq_uni(b, l_skip, u[0], rs_n[0]);
 +            let emr = eq_mle(b, &u[1..=n], &rs_n[1..]);
 +            let eq_prism = b.mul(eu, emr);
-+            let mut kv = eq_prism;
++            // chunk factors (c, delta) of the tight-heights lever ((1, 0) for whole columns)
++            let whole = s.src_row == 0 && s.col_log_height() == s.log_height();
++            let (cf, delta) = if whole {
++                (None, None)
++            } else {
++                let m = s.log_height() - l_skip;
++                let n_t = s.col_log_height() - l_skip;
++                let o = s.src_row >> l_skip;
++                let eqb = |b: &mut Builder, bit: usize, r: V| if bit == 1 { r } else { b.one_minus(r) };
++                let mut c = b.c(F::ONE);
++                for t in m..n_t {
++                    let e = eqb(b, (o >> t) & 1, rs[1 + t]);
++                    c = b.mul(c, e);
++                }
++                let prev = (o + (1 << n_t) - 1) & ((1 << n_t) - 1);
++                let mut ep = b.c(F::ONE);
++                for t in 0..n_t {
++                    let e = eqb(b, (prev >> t) & 1, rs[1 + t]);
++                    ep = b.mul(ep, e);
++                }
++                let mut ones = b.c(F::ONE);
++                for t in 0..m {
++                    ones = b.mul(ones, rs[1 + t]);
++                }
++                let co = b.mul(c, ones);
++                (Some(c), Some(b.sub(ep, co)))
++            };
++            let mut kv = match cf { Some(c) => b.mul(c, eq_prism), None => eq_prism };
 +            if need {
 +                let mut rot = b.c(F::ONE);
 +                let mut eqc = b.c(F::ONE);
@@ -6359,20 +6509,30 @@ index 0000000..3f43bd5
 +                let d = b.sub(rot, eqc);
 +                let bb = b.mul(b1, b2);
 +                let bb = b.mul(bb, d);
-+                let rk = b.add(a1, bb);
++                let mut rk = b.add(a1, bb);
++                if let (Some(c), Some(delta)) = (cf, delta) {
++                    // c * rot kernel + eq_D(w r0, 1) eq_D(u0, 1) prod (1 - u_t) delta
++                    let mut corr = b.mul(b1, b2);
++                    for t in 1..=n {
++                        corr = b.mul(corr, om_u[t]);
++                    }
++                    let corr = b.mul(corr, delta);
++                    let crk = b.mul(c, rk);
++                    rk = b.add(crk, corr);
++                }
 +                let lrk = b.mul(lambda_s, rk);
-+                kv = b.add(eq_prism, lrk);
++                kv = b.add(kv, lrk);
 +            }
-+            kern.insert((n, need), kv);
++            kern.insert(key, kv);
 +        }
-+        let kv = kern[&(n, need)];
++        let kv = kern[&key];
 +        let mut em = b.c(F::ONE);
 +        for (i, j) in (l_skip + n..l_skip + n_stack).enumerate() {
 +            let f = if (s.row_idx >> j) & 1 == 1 { u[n + 1 + i] } else { om_u[n + 1 + i] };
 +            em = b.mul(em, f);
 +        }
 +        let t = b.mul(em, kv);
-+        let t = b.mul(t, l2p[col]);
++        let t = b.mul(t, l2p[col_base[mat_idx] + col_idx]);
 +        qc[s.col_idx] = b.add(qc[s.col_idx], t);
 +    }
 +    let stack_open: Vec<V> = sp.stacking_openings[0]
