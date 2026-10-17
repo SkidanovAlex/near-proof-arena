@@ -13232,3 +13232,44 @@ are in results/babybear-ext12-construction/. git diff --check passes. Next step
 is actual literal-Wasm proving with this field and a SHA-384 configuration, then
 upgrading recursive AIRs; this prerequisite experiment alone cannot certify the
 integrated relation. FullNEAR1Pgas, secure <300000B and Lean correctness remain open.
+
+## 2026-10-17 — Actual literal Wasm proof with SHA-384 and Ext12
+
+Previous turn progressed at5d84a698d. Revalidated worktree and actual backend.
+Implemented standalone ReferenceDevice configuration with concrete Ext12 patch,
+48-byte SHA-384 commitment digests and a domain-separated SHA-384 transcript.
+Reused the SAME generated literal AIR, public vector and witness files; no
+RISC-V translation or generic replacement fixture. WHIR268,blowup32,zero grinding.
+Actual child key minimum268.525252bits,LogUp342.882687,proximity322.930875.
+These remain native component bounds, not a whole-QROM certificate.
+
+Actual proof generated and verified:740881bytes including4891public fields;
+plus919-byte request=741800. Census20408GKR+81248relations+1936stacking+
+617640WHIR+19649other. Six changed public statements rejected. Fresh-process
+saved proof replay passes with rows/fixture/spec hidden. Independent Lean
+preparation check and runCall execution match exactly. No recursive parent with
+these primitives is implemented yet; do not present this as end-to-end PQ recursion.
+
+First transcript prototype used one32-bit word per SHA384 output. Preserved it
+in native-literal-sha384-ext12-singleword/, then implemented domain-v2 buffered
+sampling using all12words, discarding leftovers whenever observations occur.
+Reproved actual child; same serialized size. Python/OpenSSL independently
+reproduces96samples,sixrejections,13drawblocks and final state/cursor, covering
+buffer exhaustion and observation invalidation. Existing Lean rejection-preimage
+cardinality theorem rechecked; it does not prove oracle independence or the new
+transcript/compiler refinement. New transcript QROM applicability is an explicit
+open obligation, not inherited from the Poseidon2 configuration.
+
+Instrumented actual v2 saved-proof verification:64770SHA384 compression blocks
+excluding keygen/decoding:4456leaf,28642node,1init,31283field-observe,
+14commit-observe,374draw. These counts expose the next implementation priority:
+batch field observations (currently hashed individually) and address Merkle
+verification cost before lowering a full recursive circuit. Counts are not AIR
+rows or performance timings. CPU prover is reference implementation, no speed
+claim. Archived all sources,patches,locks,proofs,logs and checked artifact hashes.
+
+Tools: prepare_native_sha384.py, native_sha384_{config,driver}.rs,
+check_native_sha384.py. Reproduction and transcript framing in artifact README.
+No new Lean theorem this turn. Rust build, integrated proof, fresh replay,
+independent transcript/Lean checks and git diff --check passed. Secure <300000B,
+recursive composition, fullNEAR1Pgas and formal acceptance-to-execution remain open.
