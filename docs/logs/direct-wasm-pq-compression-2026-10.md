@@ -10261,3 +10261,36 @@ closed verifier, with terminal-dot and every injection/fold checked. The full
 hash/arithmetic/security ledger must have headroom before another large proving
 run. No Lean changes this turn; last audit4662. Dashboard rejects19inconsistent
 evidence cases; full1Pgas/PQ128/sub300000B remains NOT_PASSED.
+
+## 2026-10-17 — Hybrid verifier integrated without transcript changes
+
+Added ext8_closed_hybrid_verify.py, a representation-only verifier fork of the
+separate closed-derived experiment. Initial equality weights and large
+continuations stay structured; when structured scalar payload reaches dense
+payload, the implementation materializes once and continues dense. Injection
+updates claims exactly; terminal verification still checks the disclosed
+polynomial's committed root and coefficient/weight dot product. Public entry
+accepts proof/statement/branches/claim/config, never a caller-selected weight state.
+Original standalone stage and dense closed verifier remain unchanged.
+
+A newly generated degree1024/q31 closed-profile proof passes dense, native hybrid
+and fresh pure-Python hybrid verification. Ordered framed hash PREIMAGES match
+exactly across dense/hybrid executions, in addition to equal3029hash calls,
+7752blocks and6308unique blocks. This is stronger than merely comparing totals;
+no new transcript or proof bytes are needed for this arithmetic change. This
+fixture materializes atdegree128with64geometric terms, then exercises dense
+folding and injection. It does not imply the same crossover for other profiles.
+
+Six negative mutations rejected by both verifiers:terminal,OOD,tail,source leaf,
+external claim and injected weight field. Separate256-entry transition sequence
+checks765Ext8coefficients and all injected claims across zero/one/random folds
+and zero/base/extension evaluation points. A structural regression confirms the
+authenticated initial/tail obligation functions differ from their originals only
+in preserving the internal weight object instead of converting it to JSON lists.
+
+This is executable bounded equivalence, not universal Python refinement, whole
+protocol soundness, fullNEAR or PQ128. Existing four Lean pointwise identities
+support the structured updates; no additional Lean theorem count claimed (4662).
+Next validate the full retained shape and account for remaining hash/arithmetic
+cost before a large new-profile proof. Dashboard20negative evidence checks pass.
+Original1Pgas/PQ128/sub300000B goal remains NOT_PASSED.

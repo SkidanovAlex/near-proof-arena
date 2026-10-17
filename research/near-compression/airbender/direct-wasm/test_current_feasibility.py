@@ -20,6 +20,8 @@ def main():
     base=report.ROOT/'results/ext8-switch-execution-q309'
     manifest_path=base/'manifest.json'
     mutations=[
+        (report.ROOT/'results/closed-hybrid-verifier/report.json',
+            lambda d:d.update(exact_ordered_hash_preimages_match=False),False),
         (report.ROOT/'results/closed-derived-switch/report.json',
             lambda d:d.update(baseline_isolation_verified=False),False),
         (report.ROOT/'results/structured-verifier-states.json',

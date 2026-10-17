@@ -192,6 +192,11 @@ def build(root=ROOT):
     assert closed['fresh_verifier_passed'] and closed['baseline_isolation_verified']
     for relative,expected in closed['sha256'].items():
         assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    hybrid=read('results/closed-hybrid-verifier/report.json')
+    assert hybrid['status']=='CLOSED_HYBRID_VERIFIER_PARITY' and hybrid['fresh_verifier_passed']
+    assert hybrid['exact_ordered_hash_preimages_match'] and hybrid['exact_hash_census_match']
+    for relative,expected in hybrid['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -275,7 +280,9 @@ def build(root=ROOT):
             next_gate='All retained states match. Design a closed versioned derivation binding and account for hybrid materialization before changing transcript hashes. Existing standalone stage APIs must keep explicit weight binding.'),
         closed_derived_transcript_experiment=dict(evidence='results/closed-derived-switch/report.json',
             negative_cases=closed['negative_cases'],hash_measurements=closed['hash_measurements'],scope=closed['scope'],
-            next_gate='Implement a hybrid structured functional inside this closed verifier and check all algebraic obligations; retain separate versioned profile. No full-scale proof until complete hash/arithmetic/security ledger has headroom.'),
+            hybrid_evidence='results/closed-hybrid-verifier/report.json',
+            hybrid_scope=hybrid['scope'],
+            next_gate='Hybrid implementation preserves all ordered hash preimages on the degree1024 fixture. Validate the full retained verifier shape and quantify remaining hash/arithmetic/security cost before full-scale proving.'),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
         decision=dict(next_experiment='Independent 64-block envelope transport fails the framing budget. Specify a joint closed-verifier relation with amortized proof messages, same-root call binding and arithmetic coverage; require a complete byte/security ledger before larger-scale proving. q8 is diagnostic, not PQ128.',
