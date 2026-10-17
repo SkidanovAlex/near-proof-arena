@@ -11119,3 +11119,54 @@ for that target if the complete modeled ledger improves. Before production
 integration, prove local-row/lookup-multiset preservation and account for the
 changed verification key and downstream recursion. Full NEAR1Petagas, PQ128
 and end-to-end Lean correctness remain open.
+
+
+## 2026-10-17 — Split-layout stronger-security budget still misses target
+
+Previous goal turn classified progress: implemented/verified hash AIR partition.
+Revalidated clean worktree at bdc617d8f. Extended typed wire census to decode
+and byte-identically reencode the saved split proof without reproving. Exact
+counts:5007extension,10753base,3374digest occurrences,905framing bytes. Of the
+3156constraint extension values,2995are column claims (baseline2694); fixed
+constraint count rises159to161. Initial query has176base values vs240;
+queries remain61/30/20,continuation16extension values per query. Unique digest
+count2598is instance-specific. Decode/reencode and targeted clippy passed.
+
+Parameterized the existing geometry cost function for column-claim count,
+fixed constraint messages and framing. Defaults preserve the old screen:
+reran it, with no report changes, including682exhaustive frontier checks.
+The new comparison independently reproduces BOTH measured wire sizes exactly
+(242809and231997), then screens5790geometries per scenario,46320total.
+
+Same conditional ledger:extension9,digest52,C=1,Q=2^128,zero grinding credit,
+each query error independently granted the entire half-budget. These are
+uninstantiated sensitivity parameters, not a QROM or PQ128 certificate. Work
+is frozen despite different fields/hashes/queries. Expected frontier cost is
+not a deterministic lower bound.
+
+| Assumed work retained | Baseline best expected bytes | Split best expected bytes |
+| --- | ---: | ---: |
+| columns and cached work |493008.72|471034.81|
+| columns retained, cached work free |423808.40|408076.20|
+| column replacement free, cached work retained |396024.72|363214.81|
+| column replacement AND cached work free |326824.40|300256.20|
+
+Zero sub300000expected-size survivors in all eight scenarios. Split winners
+use logheight18,logblowup9,fold3,final logdegree9,queries66/53/44, at the2^27
+LDE cap. Baseline winners remain19/8/3/10,queries76/59/48. The split helps in
+all modeled scenarios but does NOT independently meet the target. The300256
+row omits the entire column-replacement argument and cached evaluation/binding;
+it is not meaningful production headroom. Keeping both costs yields471035.
+
+Decision: retain the actual hash-partition improvement, but do not start a
+large Lean campaign around a standalone split-only compression candidate.
+Next viable work must reduce authenticated initial opening/cached evaluation
+cost and column-claim cost together, or change the PCS/recursive-verifier
+architecture; merely shaving the256-byte optimistic excess is insufficient.
+The eventual partition integration still needs local-row and lookup-multiset
+preservation formalized. No security assumption is strengthened by this screen,
+and no universal impossibility/attack is inferred. Full NEAR1Petagas/PQ128/
+end-to-end Lean correctness remain open.
+
+Artifacts and source pins:research/near-compression/results/swirl-security-review/
+split-geometry/. Reproducer:airbender/direct-wasm/screen_swirl_split_geometry.py.

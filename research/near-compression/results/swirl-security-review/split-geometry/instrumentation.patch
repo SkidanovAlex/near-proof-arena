@@ -1,0 +1,429 @@
+diff --git a/crates/recursion/src/tests.rs b/crates/recursion/src/tests.rs
+index faecdbb..9fc54ea 100644
+--- a/crates/recursion/src/tests.rs
++++ b/crates/recursion/src/tests.rs
+@@ -4,7 +4,7 @@ use itertools::Itertools;
+ use openvm_cpu_backend::CpuBackend;
+ use openvm_stark_backend::{
+     keygen::types::{MultiStarkProvingKey, MultiStarkVerifyingKey},
+-    prover::{AirProvingContext, ProvingContext},
++    prover::{AirProvingContext, DeviceDataTransporter, ProvingContext},
+     test_utils::{
+         default_test_params_small, test_system_params_small,
+         test_system_params_small_with_poly_len, CachedFixture11, FibFixture, InteractionsFixture11,
+@@ -76,7 +76,7 @@ fn run_test<const MAX_NUM_PROOFS: usize, Fx: TestFixture<BabyBearPoseidon2Config
+ ) {
+     assert!(num_proofs <= MAX_NUM_PROOFS);
+     let (vk, proof) = fx.keygen_and_prove(child_engine);
+-    let (circuit, _pk) = verifier_circuit_keygen::<MAX_NUM_PROOFS>(parent_engine, &vk);
++    let (circuit, pk) = verifier_circuit_keygen::<MAX_NUM_PROOFS>(parent_engine, &vk);
+     let vk_commit_data = circuit.commit_child_vk(parent_engine, &vk);
+     let proofs: Vec<_> = (0..num_proofs).map(|_| proof.clone()).collect();
+     let ctxs = circuit.generate_proving_ctxs_base(
+@@ -87,6 +87,32 @@ fn run_test<const MAX_NUM_PROOFS: usize, Fx: TestFixture<BabyBearPoseidon2Config
+         default_duplex_sponge_recorder(),
+     );
+     debug(parent_engine, &circuit.airs(), ctxs);
++    let ctxs = circuit.generate_proving_ctxs_base(
++        &vk,
++        CachedTraceCtx::PcsData(circuit.commit_child_vk(parent_engine, &vk)),
++        &proofs,
++        &(),
++        default_duplex_sponge_recorder(),
++    );
++    let parent_vk = pk.get_vk();
++    let d_pk = parent_engine.device().transport_pk_to_device(&pk);
++    let outer = parent_engine
++        .prove(
++            &d_pk,
++            ProvingContext::new(ctxs.into_iter().enumerate().collect()),
++        )
++        .unwrap();
++    parent_engine.verify(&parent_vk, &outer).unwrap();
++    use openvm_stark_backend::codec::Encode;
++    let mut inner_bytes = Vec::new();
++    proof.encode(&mut inner_bytes).unwrap();
++    let mut outer_bytes = Vec::new();
++    outer.encode(&mut outer_bytes).unwrap();
++    println!(
++        "NEARPROOF_CHILD_BYTES={} NEARPROOF_PARENT_BYTES={}",
++        inner_bytes.len(),
++        outer_bytes.len()
++    );
+ }
+ 
+ #[test_matrix(
+@@ -914,3 +940,277 @@ mod cuda {
+         compare_cpu_tracegen_vs_gpu_tracegen(fx, params, num_proofs);
+     }
+ }
++
++#[test]
++fn nearproof_recursion_production_parameters() {
++    use openvm_stark_sdk::config::{
++        app_params_with_100_bits_security, leaf_params_with_100_bits_security,
++    };
++    let child_engine =
++        BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(app_params_with_100_bits_security(12));
++    let parent_engine =
++        BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(leaf_params_with_100_bits_security());
++    let fib = FibFixture::new_with_num_airs(0, 1, 1 << 8, 9);
++    run_test::<2, _>(fib, &child_engine, &parent_engine, 1);
++}
++
++#[test]
++fn nearproof_recursive_chain() {
++    use openvm_stark_backend::{codec::Encode, prover::MatrixDimensions};
++    use openvm_stark_sdk::config::{
++        app_params_with_100_bits_security, baby_bear_poseidon2::F,
++        internal_params_with_100_bits_security, leaf_params_with_100_bits_security,
++        root_params_with_100_bits_security,
++    };
++    use p3_field::PrimeCharacteristicRing;
++    use p3_matrix::dense::RowMajorMatrix;
++    let child_engine =
++        BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(app_params_with_100_bits_security(12));
++    let fib = FibFixture::new_with_num_airs(0, 1, 1 << 8, 9);
++    let (mut child_vk, mut child_proof) = fib.keygen_and_prove(&child_engine);
++    for (name, params) in [
++        ("leaf", leaf_params_with_100_bits_security()),
++        ("internal", internal_params_with_100_bits_security()),
++        (
++            "root_geometry_babybear_hash",
++            root_params_with_100_bits_security(),
++        ),
++    ] {
++        let engine = BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(params);
++        let (circuit, mut pk) = verifier_circuit_keygen::<2>(&engine, &child_vk);
++        let mut ctxs = circuit.generate_proving_ctxs_base(
++            &child_vk,
++            CachedTraceCtx::PcsData(circuit.commit_child_vk(&engine, &child_vk)),
++            &[child_proof],
++            &(),
++            default_duplex_sponge_recorder(),
++        );
++        let mut airs = circuit.airs::<BabyBearPoseidon2Config>();
++        let split = name == "root_geometry_babybear_hash"
++            && std::env::var_os("NEARPROOF_SPLIT_HASH").is_some();
++        let name = if split { "root_split_hash" } else { name };
++        if split {
++            let idx = airs
++                .iter()
++                .position(|air| air.name().starts_with("Poseidon2Air<"))
++                .unwrap();
++            let original = &ctxs[idx];
++            assert!(original.cached_mains.is_empty() && original.public_values.is_empty());
++            let matrix = &original.common_main;
++            let width = matrix.width();
++            let live = matrix
++                .values
++                .chunks_exact(width)
++                .rposition(|row| row[width - 2] != F::ZERO || row[width - 1] != F::ZERO)
++                .unwrap()
++                + 1;
++            let first_height = 1usize << live.ilog2();
++            assert!(live > first_height);
++            let second_height = (live - first_height).next_power_of_two();
++            assert!(first_height + second_height <= matrix.height());
++            // Reuse valid zero-multiplicity padding rows; do not fabricate all-zero permutations.
++            for row in matrix.values[(first_height + second_height) * width..].chunks_exact(width) {
++                assert_eq!(row[width - 2], F::ZERO);
++                assert_eq!(row[width - 1], F::ZERO);
++            }
++            let first = RowMajorMatrix::new(matrix.values[..first_height * width].to_vec(), width);
++            let second = RowMajorMatrix::new(
++                matrix.values[first_height * width..(first_height + second_height) * width]
++                    .to_vec(),
++                width,
++            );
++            println!("NEARPROOF_SPLIT live={live} original={} first={first_height} second={second_height}", matrix.height());
++            ctxs[idx].common_main = first;
++            ctxs.push(AirProvingContext {
++                cached_mains: vec![],
++                common_main: second,
++                public_values: vec![],
++            });
++            airs.push(airs[idx].clone());
++            (pk, _) = engine.keygen(&airs);
++        }
++        let mut common_cells = 0;
++        let mut cached_cells = 0;
++        for (air, ctx) in airs.iter().zip(&ctxs) {
++            let height = ctx.common_main.height();
++            let width = ctx.common_main.width();
++            common_cells += height * width;
++            for cached in &ctx.cached_mains {
++                cached_cells += cached.trace.height() * cached.trace.width();
++            }
++            println!(
++                "NEARPROOF_TRACE stage={name} air={} height={height} width={width}",
++                air.name()
++            );
++        }
++        println!("NEARPROOF_CELLS stage={name} common={common_cells} cached={cached_cells}");
++        let ctx = ProvingContext::new(ctxs.into_iter().enumerate().collect());
++        engine.debug(&airs, &ctx);
++        let d_pk = engine.device().transport_pk_to_device(&pk);
++        let proof = engine.prove(&d_pk, ctx).unwrap();
++        let vk = pk.get_vk();
++        engine.verify(&vk, &proof).unwrap();
++        let mut bytes = Vec::new();
++        proof.encode(&mut bytes).unwrap();
++        println!("NEARPROOF_CHAIN stage={name} bytes={}", bytes.len());
++        for (label, count) in [
++            ("gkr", {
++                let mut b = Vec::new();
++                proof.gkr_proof.encode(&mut b).unwrap();
++                b.len()
++            }),
++            ("constraints", {
++                let mut b = Vec::new();
++                proof.batch_constraint_proof.encode(&mut b).unwrap();
++                b.len()
++            }),
++            ("stacking", {
++                let mut b = Vec::new();
++                proof.stacking_proof.encode(&mut b).unwrap();
++                b.len()
++            }),
++            ("whir", {
++                let mut b = Vec::new();
++                proof.whir_proof.encode(&mut b).unwrap();
++                b.len()
++            }),
++        ] {
++            println!("NEARPROOF_PART stage={name} part={label} bytes={count}");
++        }
++        std::fs::write(format!("/tmp/nearproof-chain-{name}.proof"), bytes).unwrap();
++        child_vk = vk;
++        child_proof = proof;
++    }
++}
++
++#[test]
++fn nearproof_wire_census() {
++    use openvm_stark_backend::{
++        codec::{Decode, Encode},
++        proof::Proof,
++    };
++    for stage in [
++        "leaf",
++        "internal",
++        "root_geometry_babybear_hash",
++        "root_split_hash",
++    ] {
++        let bytes = std::fs::read(format!("/tmp/nearproof-chain-{stage}.proof")).unwrap();
++        let mut reader = &bytes[..];
++        let p = Proof::<BabyBearPoseidon2Config>::decode(&mut reader).unwrap();
++        assert!(reader.is_empty());
++        let mut encoded = Vec::new();
++        p.encode(&mut encoded).unwrap();
++        assert_eq!(bytes, encoded);
++        let opening = &p.whir_proof;
++        let first_q = opening.initial_round_opened_rows[0].len();
++        let first_base_per_query: usize = opening
++            .initial_round_opened_rows
++            .iter()
++            .map(|c| c[0].iter().map(Vec::len).sum::<usize>())
++            .sum();
++        let later_q: Vec<_> = opening
++            .codeword_opened_values
++            .iter()
++            .map(Vec::len)
++            .collect();
++        let later_values: Vec<_> = opening
++            .codeword_opened_values
++            .iter()
++            .map(|r| r[0].len())
++            .collect();
++        println!("NEARPROOF_QUERY_SHAPE stage={stage} first_q={first_q} first_base_per_query={first_base_per_query} later_q={later_q:?} later_values={later_values:?}");
++        let g = &p.gkr_proof;
++        let b = &p.batch_constraint_proof;
++        let s = &p.stacking_proof;
++        let w = &p.whir_proof;
++        let g_ef = 1
++            + 4 * g.claims_per_layer.len()
++            + g.sumcheck_polys.iter().map(|r| 3 * r.len()).sum::<usize>();
++        let column_ef = b
++            .column_openings
++            .iter()
++            .flatten()
++            .map(Vec::len)
++            .sum::<usize>();
++        println!("NEARPROOF_COLUMNS stage={stage} column_ef={column_ef}");
++        let b_ef = b.numerator_term_per_air.len()
++            + b.denominator_term_per_air.len()
++            + b.univariate_round_coeffs.len()
++            + b.sumcheck_round_polys.iter().map(Vec::len).sum::<usize>()
++            + b.column_openings
++                .iter()
++                .flatten()
++                .map(Vec::len)
++                .sum::<usize>();
++        let s_ef = s.univariate_round_coeffs.len()
++            + 2 * s.sumcheck_round_polys.len()
++            + s.stacking_openings.iter().map(Vec::len).sum::<usize>();
++        let w_ef = 2 * w.whir_sumcheck_polys.len()
++            + w.ood_values.len()
++            + w.codeword_opened_values
++                .iter()
++                .flatten()
++                .map(Vec::len)
++                .sum::<usize>()
++            + w.final_poly.len();
++        let ef = g_ef + b_ef + s_ef + w_ef;
++        let bf = p.public_values.iter().map(Vec::len).sum::<usize>()
++            + 2
++            + w.folding_pow_witnesses.len()
++            + w.query_phase_pow_witnesses.len()
++            + w.initial_round_opened_rows
++                .iter()
++                .flatten()
++                .flatten()
++                .map(Vec::len)
++                .sum::<usize>();
++        let digests = 1
++            + p.trace_vdata
++                .iter()
++                .flatten()
++                .map(|t| t.cached_commitments.len())
++                .sum::<usize>()
++            + w.codeword_commits.len()
++            + w.initial_round_merkle_proofs
++                .iter()
++                .flatten()
++                .map(Vec::len)
++                .sum::<usize>()
++            + w.codeword_merkle_proofs
++                .iter()
++                .flatten()
++                .map(Vec::len)
++                .sum::<usize>();
++        use openvm_stark_backend::codec::EncodableConfig;
++        let digest_refs = std::iter::once(&p.common_main_commit)
++            .chain(
++                p.trace_vdata
++                    .iter()
++                    .flatten()
++                    .flat_map(|t| t.cached_commitments.iter()),
++            )
++            .chain(w.codeword_commits.iter())
++            .chain(w.initial_round_merkle_proofs.iter().flatten().flatten())
++            .chain(w.codeword_merkle_proofs.iter().flatten().flatten());
++        let mut unique = std::collections::HashSet::new();
++        let mut seen = 0;
++        for d in digest_refs {
++            let mut b = Vec::new();
++            BabyBearPoseidon2Config::encode_digest(d, &mut b).unwrap();
++            unique.insert(b);
++            seen += 1;
++        }
++        assert_eq!(seen, digests);
++        println!(
++            "NEARPROOF_DIGESTS stage={stage} unique={} occurrences={digests}",
++            unique.len()
++        );
++        let framing = bytes
++            .len()
++            .checked_sub(16 * ef + 4 * bf + 32 * digests)
++            .unwrap();
++        assert!(framing < 4096);
++        println!("NEARPROOF_CENSUS stage={stage} bytes={} ef={ef} bf={bf} digests={digests} framing={framing} gkr_ef={g_ef} constraints_ef={b_ef} stacking_ef={s_ef} whir_ef={w_ef}",bytes.len());
++    }
++}
+diff --git a/crates/recursion/src/transcript/mod.rs b/crates/recursion/src/transcript/mod.rs
+index ac36b7d..0be5a7f 100644
+--- a/crates/recursion/src/transcript/mod.rs
++++ b/crates/recursion/src/transcript/mod.rs
+@@ -349,6 +349,16 @@ impl<SC: StarkProtocolConfig<F = F>> TraceGenModule<GlobalCtxCpu, CpuBackend<SC>
+             })?;
+         let merkle_verify_trace =
+             RowMajorMatrix::new(merkle_verify_trace_vec, MerkleVerifyCols::<F>::width());
++        let census_merkle = poseidon2_compress_inputs.clone();
++        let census_initial = preflights
++            .iter()
++            .flat_map(|p| p.poseidon2_perm_inputs.iter().copied())
++            .collect_vec();
++        let census_continuation = preflights
++            .iter()
++            .flat_map(|p| p.poseidon2_compress_inputs.iter().copied())
++            .collect_vec();
++
+         let TranscriptTraceArtifacts {
+             transcript_trace,
+             mut poseidon2_perm_inputs,
+@@ -361,12 +371,64 @@ impl<SC: StarkProtocolConfig<F = F>> TraceGenModule<GlobalCtxCpu, CpuBackend<SC>
+                 required_transcript,
+             )
+         })?;
++        // Diagnostic fixture has one child; its initial-row inputs precede transcript inputs.
++        assert_eq!(preflights.len(), 1);
++        assert_eq!(
++            &poseidon2_perm_inputs[..census_initial.len()],
++            census_initial.as_slice()
++        );
++        let census_transcript = poseidon2_perm_inputs[census_initial.len()..].to_vec();
++        let census_external = external_poseidon2_permute_inputs
++            .iter()
++            .chain(external_poseidon2_compress_inputs.iter())
++            .copied()
++            .collect_vec();
++        let groups = [
++            census_merkle,
++            census_initial,
++            census_continuation,
++            census_transcript,
++            census_external,
++        ];
++        let names = [
++            "merkle",
++            "initial",
++            "continuation",
++            "transcript",
++            "external",
++        ];
++        let mut memberships = std::collections::BTreeMap::new();
++        for (i, group) in groups.iter().enumerate() {
++            for state in group {
++                *memberships
++                    .entry(state.map(|x| x.as_canonical_u32()))
++                    .or_insert(0usize) |= 1 << i;
++            }
++        }
++        for (i, group) in groups.iter().enumerate() {
++            let distinct = memberships
++                .values()
++                .filter(|&&mask| mask & (1 << i) != 0)
++                .count();
++            let exclusive = memberships
++                .values()
++                .filter(|&&mask| mask == (1 << i))
++                .count();
++            eprintln!(
++                "NEARPROOF_HASH_SOURCE source={} raw={} distinct={distinct} exclusive={exclusive}",
++                names[i],
++                group.len()
++            );
++        }
++        eprintln!("NEARPROOF_HASH_UNION distinct={}", memberships.len());
+         poseidon2_perm_inputs.extend_from_slice(external_poseidon2_permute_inputs);
+         poseidon2_compress_inputs.extend_from_slice(external_poseidon2_compress_inputs);
+ 
+         let poseidon2_trace =
+             trace_span!("wrapper.generate_trace", air = "Poseidon2").in_scope(|| {
+                 trace_span!("generate_trace").in_scope(|| {
++                    let raw_perm = poseidon2_perm_inputs.len();
++                    let raw_compress = poseidon2_compress_inputs.len();
+                     let (mut poseidon_states, poseidon_counts) = Self::dedup_poseidon_inputs(
+                         poseidon2_perm_inputs,
+                         poseidon2_compress_inputs,
+@@ -382,6 +444,9 @@ impl<SC: StarkProtocolConfig<F = F>> TraceGenModule<GlobalCtxCpu, CpuBackend<SC>
+                     } else {
+                         poseidon2_valid_rows.next_power_of_two()
+                     };
++                    eprintln!("NEARPROOF_HASH raw_perm={raw_perm} raw_compress={raw_compress} distinct={poseidon2_valid_rows} padded={poseidon2_num_rows}");
++                    assert_eq!(poseidon_counts.iter().map(|c| c.perm as usize).sum::<usize>(), raw_perm);
++                    assert_eq!(poseidon_counts.iter().map(|c| c.compress as usize).sum::<usize>(), raw_compress);
+                     poseidon_states.resize(poseidon2_num_rows, [F::ZERO; POSEIDON2_WIDTH]);
+ 
+                     let inner_width = self.sub_chip.air.width();

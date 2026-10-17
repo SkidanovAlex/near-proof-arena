@@ -44,7 +44,8 @@ def queries(log_rate, domain):
 
 
 def cost(cells, cached, height, log_rate, fold, terminal, extension, digest,
-         supplied_queries=None, remove_columns=True, public_cached=False):
+         supplied_queries=None, remove_columns=True, public_cached=False,
+         column_claims=2694, constraint_fixed=159, framing_base=885):
     rounds = (height-terminal+fold-1)//fold
     final_log = height-rounds*fold
     assert rounds > 0 and final_log >= 0 and height+log_rate <= 27
@@ -56,11 +57,11 @@ def cost(cells, cached, height, log_rate, fold, terminal, extension, digest,
     qs = supplied_queries or [queries(log_rate+r*(fold-1),d) for r,d in enumerate(domains)]
     assert len(qs)==rounds and min(domains)>0
     # Exact fixed-layout message counts, calibrated to the retained root proof.
-    fixed_ext = 715+159+(0 if remove_columns else 2694)
+    fixed_ext = 715+constraint_fixed+(0 if remove_columns else column_claims)
     fixed_ext += 7+2*(height-2)+sum(widths)  # stacking
     fixed_ext += 2*fold*rounds+(rounds-1)+(1<<final_log)
     fixed_base = 2+fold*rounds+rounds
-    framing = 885+4*(rounds-3)-4*int(public_cached)
+    framing = framing_base+4*(rounds-3)-4*int(public_cached)
     fixed = framing+4*fixed_base+4*extension*fixed_ext+digest*(rounds-1+trees)
     values = []
     for r,q in enumerate(qs):
