@@ -1,0 +1,33 @@
+measured L3 SHA AIR: 19,448 dense / 28,288 padded cells per compression; 460 columns
+c_sha=19448 today baseline       cols=300 final= 502,609 penSHA=10488 cells=2^27.64
+c_sha=19448 today baseline       cols=460 final= 517,969 penSHA=10488 cells=2^27.64
+c_sha=19448 today x15            cols=300 final= 373,025 penSHA=7877 cells=2^27.23
+c_sha=19448 today x15            cols=460 final= 388,385 penSHA=7877 cells=2^27.23
+c_sha=19448 today COMBO neutral  cols=300 final= 333,248 penSHA=5100 cells=2^26.60
+c_sha=19448 today COMBO neutral  cols=460 final= 340,928 penSHA=5100 cells=2^26.60
+c_sha=19448 today COMBO +E5      cols=300 final= 320,041 penSHA=5056 cells=2^26.57
+c_sha=19448 today COMBO +E5      cols=460 final= 327,721 penSHA=5056 cells=2^26.57
+c_sha=19448 levers baseline       cols=300 final= 398,173 penSHA=9015 cells=2^27.43
+c_sha=19448 levers baseline       cols=460 final= 413,533 penSHA=9015 cells=2^27.43
+c_sha=19448 levers x15            cols=300 final= 302,469 penSHA=6920 cells=2^27.05
+c_sha=19448 levers x15            cols=460 final= 317,829 penSHA=6920 cells=2^27.05
+c_sha=19448 levers COMBO neutral  cols=300 final= 269,147 penSHA=4636 cells=2^26.46
+c_sha=19448 levers COMBO neutral  cols=460 final= 276,827 penSHA=4636 cells=2^26.46
+c_sha=19448 levers COMBO +E5      cols=300 final= 256,204 penSHA=4505 cells=2^26.41
+c_sha=19448 levers COMBO +E5      cols=460 final= 263,884 penSHA=4505 cells=2^26.41
+c_sha=28288 today baseline       cols=300 final= 549,481 penSHA=11687 cells=2^28.35
+c_sha=28288 today baseline       cols=460 final= 564,841 penSHA=11687 cells=2^28.35
+c_sha=28288 today x15            cols=300 final= 396,033 penSHA=8709 cells=2^27.89
+c_sha=28288 today x15            cols=460 final= 411,393 penSHA=8709 cells=2^27.89
+c_sha=28288 today COMBO neutral  cols=300 final= 352,623 penSHA=5376 cells=2^27.21
+c_sha=28288 today COMBO neutral  cols=460 final= 360,303 penSHA=5376 cells=2^27.21
+c_sha=28288 today COMBO +E5      cols=300 final= 338,643 penSHA=5308 cells=2^27.18
+c_sha=28288 today COMBO +E5      cols=460 final= 346,323 penSHA=5308 cells=2^27.18
+c_sha=28288 levers baseline       cols=300 final= 433,741 penSHA=10461 cells=2^28.15
+c_sha=28288 levers baseline       cols=460 final= 449,101 penSHA=10461 cells=2^28.15
+c_sha=28288 levers x15            cols=300 final= 318,479 penSHA=7741 cells=2^27.72
+c_sha=28288 levers x15            cols=460 final= 333,839 penSHA=7741 cells=2^27.72
+c_sha=28288 levers COMBO neutral  cols=300 final= 284,476 penSHA=4891 cells=2^27.06
+c_sha=28288 levers COMBO neutral  cols=460 final= 292,156 penSHA=4891 cells=2^27.06
+c_sha=28288 levers COMBO +E5      cols=300 final= 270,868 penSHA=4747 cells=2^27.02
+c_sha=28288 levers COMBO +E5      cols=460 final= 278,548 penSHA=4747 cells=2^27.02

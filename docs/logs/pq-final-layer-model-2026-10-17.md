@@ -361,3 +361,36 @@ on C's auth term (164 KB of C's best point) — not yet modelled jointly. Gates,
 order: (1) L3's measured c_sha; (2) WHIR soundness on 15·2ᴺ domains (paper
 check); (3) coset-hash test on gas-failure5 (predict 6,947); (4) streamed ×15 LDE
 timing; (5) optional: weak-binding lemmas (B) for a further 40–80 KB.
+
+## L3 milestone 1 measured + L4 levers → hash-only < 300 KB in the model (2026-10-17)
+
+L3 (`lane/pq-sha384-air` @ `58889824f`, report in that lane's
+`research/near-compression/results/pq384-sha-air/`): narrow SHA-512-compression AIR
+(SHA-384 = IV + truncation), 2 rounds/row, 44 rows × 442 columns (+18 table) =
+**19,448 committed cells per compression dense (28,288 padded to 2ᵏ)**, 1.27× the
+15,360-cell floor of a bit-based design. Tests: 10,000 + 1,008 compressions equal
+`sha2::compress512` (incl. SHA-384/512 vectors, multi-block); debug checker passes;
+7,208/7,208 single-cell mutations and 10/10 constraint-preserving bus forgeries
+rejected. SHA-only proofs (not a final layer): N = 1,024 → 874,845 B, 67.7 s;
+N = 4,096 → 1,024,317 B, 198.6 s; verify 27 ms; ≤ 15.4 GB. N = 16,384 not run (~45 GB).
+
+Fixed point with the measured cost (`l4-study/models-C/run-measured-csha.txt`, L4-C
+model, 460 columns):
+
+| c_sha | settings | baseline | ×15 domain | C combo | C combo + non-halving |
+|---:|---|---:|---:|---:|---:|
+| 19,448 | today (268, m=8, 48 B) | 517,969 | 388,385 | 340,928 | **327,721** |
+| 19,448 | levers (236/226, z=32, 42 B) | 413,533 | 317,829 | 276,827 | **263,884** |
+| 28,288 | today | 564,841 | 411,393 | 360,303 | 346,323 |
+| 28,288 | levers | 449,101 | 333,839 | 292,156 | **278,548** |
+
+**Hash-only < 300 KB is reachable in the model with the measured SHA AIR** — needs
+×15 BabyBear domains, coset-as-one-message hashing, the small C levers, grinding
+z = 32 (Grover-tight, proven; 2³² SHA-384 per query phase on the prover), digests
+truncated to 42 B (t³/2³³⁶ = 2⁻¹⁴⁴ — within the proven-bound contract but amends U-7's
+"SHA-384" to "SHA-384 truncated to 336 bits"), per-round k1 and m = 8 backend
+changes. Today's settings alone stop at ≈ 320–346 KB. B's weak-binding digests
+would be an alternative/extra lever on the ≈ 120–165 KB auth term.
+Gates now: (1) WHIR soundness on 15·2ᴺ domains; (2) coset-hash test on gas-failure5
+(predict 6,947 compressions); (3) user decision on 42-B digests + grinding;
+(4) streamed ×15 LDE timing; (5) a real shape-equivalent final-layer proof.
