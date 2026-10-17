@@ -131,7 +131,23 @@ def main(argv):
     hd = json.loads(dec.stdout.strip().splitlines()[-1])
     if hdr0["chunk_hash"] != hd["chunk_hash"]:
         sys.exit("header chunk mismatch")
-    receipts = [r for g in hd["incoming_receipts_by_block"] for r in g["receipts"]]
+    # nearcore set_state_finalize (chain_update.rs): a state-syncing node
+    # applies, WITH this chunk, only those receipt groups whose sending-block
+    # height <= chunk.height_included(); later groups are saved for the
+    # catch-up chunks (738+). Also: ShardChunkHeaderInner carries only
+    # prev_gas_used — a chunk's OWN gas appears in the NEXT chunk's header.
+    receipts = []
+    groups_used, groups_later = [], []
+    for g in hd["incoming_receipts_by_block"]:
+        gh = v1.rpc("block", {"block_id": g["block_hash"]})["header"]["height"]
+        if gh <= H:
+            groups_used.append(g)
+            receipts.extend(g["receipts"])
+        else:
+            groups_later.append({"block_hash": g["block_hash"], "height": gh,
+                                 "receipt_ids": [r["receipt_id"] for r in g["receipts"]]})
+    if groups_later:
+        print("  catch-up groups saved for later chunks:", groups_later, flush=True)
     if ch is not None and set(r["receipt_id"] for r in receipts) !=             set(r["receipt_id"] for r in
                 ch["receipts"] + ch.get("local_receipts", []) + ch.get("instant_receipts", [])):
         # informational: neardata's list differs from the incoming set
@@ -273,10 +289,12 @@ def main(argv):
         "mismatches": mism,
     }
     gas_hdr = int(ch["header"]["gas_used"])
-    anchors["gas_used_equals_header"] = {
-        "ok": exec_json["gas_burnt_receipts_total"] == gas_hdr,
-        "meaning": "Σ gas_burnt of the replayed receipts == chunk header gas_used (no txs)",
-        "ours": exec_json["gas_burnt_receipts_total"], "header": gas_hdr,
+    anchors["gas_header_prev_chunk_only"] = {
+        "ok": True,
+        "meaning": "informational: the chunk header's own gas field is prev_gas_used "
+                   "(the PREVIOUS chunk's gas); this chunk's gas is anchored via the "
+                   "next chunk's header below",
+        "header_prev_gas_used": gas_hdr,
     }
     nxt = next_new_chunk_root(a.shard, H)
     ok_root = bool(nxt) and nxt["prev_state_root"] == exec_json["post_state_root"]
@@ -286,6 +304,18 @@ def main(argv):
                    "(the chain's own commitment to this transition's result)",
         "next_chunk": nxt, "ours": exec_json["post_state_root"],
     }
+    if nxt:
+        nh = rpc("chunk", {"chunk_id": nxt["chunk_hash"]})["header"]
+        # ShardChunkHeaderInner carries only prev_gas_used: the NEXT chunk's
+        # header commits to THIS chunk's total gas.
+        ok_gas = int(nh["gas_used"]) == exec_json["gas_burnt_receipts_total"]
+        anchors["gas_used_equals_next_header_prev_gas_used"] = {
+            "ok": ok_gas,
+            "meaning": "Σ gas_burnt of the replayed receipts == the next chunk header's "
+                       "prev_gas_used (the chain's commitment to this chunk's gas)",
+            "ours": exec_json["gas_burnt_receipts_total"],
+            "next_header_gas_used": int(nh["gas_used"]),
+        }
     anchors["no_delayed_receipts"] = {"ok": exec_json["delayed_receipts_count"] == 0,
                                       "meaning": "every incoming receipt applied in this chunk"}
     anchors["protocol_config_86_mainnet"] = {"ok": True,

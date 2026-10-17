@@ -2,100 +2,72 @@
  "protocol_version": 86,
  "chain_id": "mainnet",
  "shard_id": 13,
- "block_height": 220290737,
+ "block_height": 220333936,
  "block_gas_price": "100000000",
  "gas_limit": 1000000000000000,
- "pre_state_root": "CyMSdP6iiyegr3PXgQaCoBLav9i1TPvhxPXrMW6qX5Cv",
+ "pre_state_root": "9goUjZ1Wwte8H9wjLy7L2csNwgcTUb2C1oeGQjLcapNe",
  "receipts": [
   {
-   "predecessor_id": "dclv2.ref-labs.near",
+   "predecessor_id": "system",
    "priority": 0,
    "receipt": {
     "Action": {
      "actions": [
       {
-       "FunctionCall": {
-        "args": "eyJhbW91bnQiOiIxOTE3NzE5NTk3NTE0NzAzMjgxMTQxOTU1NiJ9",
-        "deposit": "1",
-        "gas": 133544784787585,
-        "method_name": "near_withdraw"
+       "Transfer": {
+        "deposit": "10650588570482300000000"
        }
       }
      ],
-     "gas_price": "1000000000",
+     "gas_price": "0",
      "input_data_ids": [],
      "is_promise_yield": false,
-     "output_data_receivers": [
-      {
-       "data_id": "GQ4C1u8kKJ9nAsiSmEaGK8zhwR4oXuRhzPxQdHkMzh6y",
-       "receiver_id": "dclv2.ref-labs.near"
-      }
-     ],
-     "signer_id": "976b2ad5b28f7665d2890ee05b331a8996e37b548f7072ed9d4bbf0069493fe8",
-     "signer_public_key": "ed25519:BC5LpS2JWAsaJJZmNtC1AzQmff2UfA4ABDuFkunHnhxj"
+     "output_data_receivers": [],
+     "signer_id": "wx-cruce.near",
+     "signer_public_key": "ed25519:2uXZonVqdB3fqxbeVjWgcDz1dXwdT114Y4WuYXMuCt4G"
     }
    },
-   "receipt_id": "3DGm1NV5WK1ZRJVnNTNBELb9sD58CEupZoNESCckq6xL",
-   "receiver_id": "wrap.near"
+   "receipt_id": "87jJGEX7GszZKPM6AdMhb2XFWAwoNPzuqBZC76AGJYPa",
+   "receiver_id": "wx-cruce.near"
   },
   {
-   "predecessor_id": "omft.near",
+   "predecessor_id": "hideon.near",
    "priority": 0,
    "receipt": {
     "Action": {
      "actions": [
       {
        "FunctionCall": {
-        "args": "eyJvd25lcl9pZCI6Im9tZnQubmVhciIsImFtb3VudCI6IjE2NTY3MDUwIiwibWVtbyI6bnVsbH0=",
-        "deposit": "1250000000000000000000",
-        "gas": 78138387127219,
-        "method_name": "ft_deposit"
-       }
-      }
-     ],
-     "gas_price": "1000000000",
-     "input_data_ids": [],
-     "is_promise_yield": false,
-     "output_data_receivers": [
-      {
-       "data_id": "FgG7MFPzhQhKTX8RDPePS5Uv5zVb25CPCcgknrTmTjh2",
-       "receiver_id": "xrp.omft.near"
-      }
-     ],
-     "signer_id": "bridge-mng.near",
-     "signer_public_key": "ed25519:22Rh9RxeqhJ63KxKD4EJ5AgyMZ5xMcb5iqNEPFpR86S6"
-    }
-   },
-   "receipt_id": "6y8mXFFU49rFLdMaX8TdbBsNSugfuhrtrHKuGSbmbGTa",
-   "receiver_id": "xrp.omft.near"
-  },
-  {
-   "predecessor_id": "omft.near",
-   "priority": 0,
-   "receipt": {
-    "Action": {
-     "actions": [
-      {
-       "FunctionCall": {
-        "args": "eyJyZWNlaXZlcl9pZCI6ImludGVudHMubmVhciIsImFtb3VudCI6IjE2NTY3MDUwIiwibWVtbyI6IkJSSURHRURfRlJPTTp7XCJuZXR3b3JrVHlwZVwiOlwieHJwXCIsXCJjaGFpbklkXCI6XCJtYWlubmV0XCIsXCJ0eEhhc2hcIjpcIjlGQzFDODBGQ0E3OEJDMEJBOTBEMkY0MjMyMTZGMUE5OEI4QTQ4NzM4RDYxMTA4RjQ4NjkwMDYyQzcyQzAzNzFcIn0iLCJtc2ciOiJ7XCJyZWNlaXZlcl9pZFwiOlwiZTBjMTUwODY3MjI2MjY0OGRhYjgwNzE0MzAxMzQzYjcxMjk2NjEyYWZkODUyZmZhYzgxNjFhMTFiMjQ3MDFhNFwifSJ9",
+        "args": "eyJyZWNlaXZlcl9pZCI6InYyLnJlZi1maW5hbmNlLm5lYXIiLCJhbW91bnQiOiIyMDUwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsIm1zZyI6IntcImFjdGlvbnNcIjpbe1wicG9vbF9pZFwiOjU0NjksXCJ0b2tlbl9pblwiOlwid3JhcC5uZWFyXCIsXCJ0b2tlbl9vdXRcIjpcImFhYWFhYTIwZDllMGUyNDYxNjk3NzgyZWYxMTY3NWY2NjgyMDc5NjEuZmFjdG9yeS5icmlkZ2UubmVhclwiLFwiYW1vdW50X2luXCI6XCIyMDUwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMFwiLFwibWluX2Ftb3VudF9vdXRcIjpcIjE4MDM5NTc5NDA3NjE5NDQzNjYxNzRcIn1dLFwicmVmZXJyYWxfaWRcIjpudWxsfSJ9",
         "deposit": "1",
-        "gas": 68138387127219,
+        "gas": 280000000000000,
         "method_name": "ft_transfer_call"
        }
       }
      ],
      "gas_price": "1000000000",
-     "input_data_ids": [
-      "FgG7MFPzhQhKTX8RDPePS5Uv5zVb25CPCcgknrTmTjh2"
-     ],
+     "input_data_ids": [],
      "is_promise_yield": false,
      "output_data_receivers": [],
-     "signer_id": "bridge-mng.near",
-     "signer_public_key": "ed25519:22Rh9RxeqhJ63KxKD4EJ5AgyMZ5xMcb5iqNEPFpR86S6"
+     "signer_id": "hideon.near",
+     "signer_public_key": "ed25519:BBoirwf8khFwfbgv7wBGtB75STGG8QiirSsrX1GBgPfu"
     }
    },
-   "receipt_id": "GwX5dZZqh9V13TP2CeoaJAH59wYy3Ch1zamkYauSRTEh",
-   "receiver_id": "xrp.omft.near"
+   "receipt_id": "BXfwnRtUdmYLSW1ANpPJ6XTXm6iPqhbUZK6cVRrPjiJd",
+   "receiver_id": "wrap.near"
+  },
+  {
+   "predecessor_id": "grid.deltatrade.near",
+   "priority": 0,
+   "receipt": {
+    "Data": {
+     "data": "IjAi",
+     "data_id": "CBD8PDyDX3NoW4scfqhMkNQFKLg4h4q7zdnCaHe3Au4U",
+     "is_promise_resume": false
+    }
+   },
+   "receipt_id": "AZsePcjs9efemz5aJHS2BQCTFBtCBh7unqRHkT8Dyz7f",
+   "receiver_id": "wrap.near"
   },
   {
    "predecessor_id": "system",
@@ -105,7 +77,7 @@
      "actions": [
       {
        "Transfer": {
-        "deposit": "20568416447672300000000"
+        "deposit": "16165648932375900000000"
        }
       }
      ],
@@ -113,12 +85,12 @@
      "input_data_ids": [],
      "is_promise_yield": false,
      "output_data_receivers": [],
-     "signer_id": "zinzinmar2.tg",
-     "signer_public_key": "ed25519:2hQGMgryJEzTUFiATJBmDSnp4wAo42rF2MQAQKbTj9d5"
+     "signer_id": "wx-cruce.near",
+     "signer_public_key": "ed25519:GHezvEDcr4wiFmBfBM6txottGeu82WBxEUdsTgQVyLje"
     }
    },
-   "receipt_id": "7ZyL3p1aJ3AJ5KeDFaay1xGQCQBVy3wQWpQamHhDe4UZ",
-   "receiver_id": "zinzinmar2.tg"
+   "receipt_id": "6SLwofftGTYyUUZN47xVfRKm5dyGZdei9tWsNLPsRsDf",
+   "receiver_id": "wx-cruce.near"
   }
  ]
 }

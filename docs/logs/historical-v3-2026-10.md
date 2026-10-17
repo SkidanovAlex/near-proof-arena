@@ -44,20 +44,45 @@ pinned nearcore 2.13.4 `Runtime::apply`, anchor against the chain, and emit a
 
 ## Open (next session, one focused item)
 
-**Receipt-set ↔ gas-header semantics of the state-sync header.** The header
-groups incoming receipts by sending block ("for B_sync and B_prev_chunk" —
-here: FYkg39… = sync block 738, Lcv5TeRD… = sync_prev 737). Our replay of all
-4 receipts costs Σ 4,105,330,161,839 gas, and each per-receipt gas equals an
-on-chain outcome — but chunk-737's header says `gas_used` 1,825,297,923,553
-and chunk-738's says 223,182,562,500, so the 4 receipts evidently split
-across the chunks of 737 and 738 (the header carries receipts for BOTH
-because a state-syncing node catches up through both). Decode needed:
-nearcore `chain/chain/src/state_sync.rs` + `get_incoming_receipts_for_shard`
-— which consuming chunk each `ReceiptProofResponse` group belongs to
-(likely: receipts for the chunk included in block X come from chunks included
-in blocks (prev_chunk.height_included, X]); then per-chunk Σ gas must equal
-that chunk's header `gas_used`, and the post-state-root anchor follows.
-The measured gases suggest: chunk-737 gas 1,825,297,923,553 = ?
+**Receipt-set ↔ gas attribution across the state-sync catch-up window.** All
+machinery works and per-receipt gases match the chain exactly; what remains
+is pinning WHICH receipt groups (and resumed postponed receipts) belong to
+WHICH consuming chunk. Evidence collected 2026-10-17:
+
+* nearcore `set_state_finalize` (chain_update.rs:430-530) applies, with the
+  chunk, only receipt groups whose block height ≤ chunk.height_included()
+  (`collect_receipts_from_response`), and runs with
+  `RuntimeStorageConfig::new(root, /*record=*/true)` — the state-sync apply
+  records the witness; block timestamp/gas price/random seed come from the
+  chunk's own block (our replay must, and now does, match these fields).
+* `ShardChunkHeaderInner` carries ONLY `prev_gas_used` — but RPC `chunk`
+  header `gas_used` matches each chunk's OWN application gas in the verified
+  cases below (937: 2,739,107,435,531 == receipt 8mjs… alone; 938:
+  1,360,942,840,432 == receipt 8At5… alone), so RPC `gas_used` = OWN gas.
+* Group→consumer evidence (new epoch, shard 13, sync_prev 220333936):
+  * group `ASuMf19r` = {87jJG(223.18G ✓chain), BXfwnR(2,678.6G ✓chain),
+    6SLwo(223.18G ✓chain), AZsePc(never executed 936–939 → postponed)} —
+    our replay of exactly these four reproduced all three executed gases
+    EXACTLY and postponed the fourth — yet chunk-936's header gas_used =
+    669,547,687,500 = exactly 3 × 223,182,562,500 (three flat executions),
+    which EXCLUDES BXfwnR's 2.679T whose outcome neardata lists under block
+    936. So neardata's outcome↔block attribution and/or the header gas
+    semantics still disagree by one notch somewhere.
+  * group `4BvXAtnr` = {8mjs(→ executed at 937, gas == chunk-937 gas_used),
+    8At5(→ executed at 938, gas == chunk-938 gas_used)} — one group's
+    receipts spread over TWO consuming chunks via postponement.
+* Next concrete steps: (1) read `get_incoming_receipts_for_shard` +
+  `set_state_finalize_on_height` in full and instrument ONE chunk end-to-end
+  against nearcore's own catch-up order; (2) treat RESUMED postponed
+  receipts (state cols 04/05/06 + DELAYED col 07) as part of a chunk's
+  execution set — chunk gas includes them without any incoming group;
+  (3) re-check whether RPC `gas_used` is own-gas or prev-chunk gas per case
+  (the two verified 937/938 cases say own-gas; the 936 case says otherwise —
+  likely OUR receipt-set was the 937-set, shifted one group early).
+
+The execution core is UNAFFECTED: given the correct receipt set + pre-state,
+per-receipt outcomes (status + gas + postponement) reproduce the chain
+exactly, which is the property succinct-prover fixtures need.
 
 ## Artifacts (this session, untracked cache regenerable)
 
