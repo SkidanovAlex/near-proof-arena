@@ -1,10 +1,12 @@
 """Self-contained digest deduplication; exact proof reconstruction and native replay."""
 from collections import Counter
-import hashlib,json,os,struct,subprocess,shutil
+import hashlib,json,os,struct,subprocess,shutil,argparse
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-SOURCE=ROOT/'results/native-literal-sha384-ext12-compact'
-OUT=ROOT/'results/native-literal-digest-dictionary';OUT.mkdir(exist_ok=True)
+ap=argparse.ArgumentParser();ap.add_argument('--source',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-digest-dictionary');ap.add_argument('--census-log',type=Path,default=Path('/tmp/nearproof-whir-census.log'));args=ap.parse_args()
+SOURCE=args.source.resolve();OUT=args.out.resolve();OUT.mkdir(exist_ok=True)
+source_report=json.loads((SOURCE/'report.json').read_text())
+params=source_report['security'].get('parameters',dict(n_stack=16,k=3,log_blowup=5,all_list=0))
 raw=(SOURCE/'child.proof').read_bytes()
 auth=(SOURCE/'auth-digests.bin').read_bytes();assert len(auth)%48==0
 counts=Counter(auth[i:i+48] for i in range(0,len(auth),48))
@@ -42,6 +44,7 @@ assert decode(wire)==raw
 shutil.copyfile(SOURCE/'public.bin',OUT/'public.bin')
 env=dict(os.environ,NEARPROOF_REPLAY='1',NEARPROOF_DICTIONARY=str(OUT/'child.dictionary'),
          NEARPROOF_LITERAL_OUT=str(OUT),NEARPROOF_QUERY_BITS='268',RAYON_NUM_THREADS='4')
+env.update(NEARPROOF_N_STACK=str(params['n_stack']),NEARPROOF_K=str(params['k']),NEARPROOF_LOG_BLOWUP=str(params['log_blowup']),NEARPROOF_ALL_LIST=str(params['all_list']))
 for name in ['NEARPROOF_TRANSCRIPT_VECTORS','NEARPROOF_WHIR_CENSUS']:env.pop(name,None)
 command=['cargo','run','--locked','--manifest-path','/tmp/nearproof-native-sha384/Cargo.toml','--release']
 result=subprocess.run(command,env=env,text=True,capture_output=True,check=True)
@@ -82,9 +85,9 @@ for name in ['main.rs','native_sha384_config.rs','literal.rs']:
 for name in ['Cargo.toml','Cargo.lock']:
     shutil.copyfile('/tmp/nearproof-native-sha384/'+name,OUT/name)
 (OUT/'native_digest_dictionary.rs').write_text(source)
-shutil.copyfile('/tmp/nearproof-whir-census.log',OUT/'whir-census.log')
+shutil.copyfile(args.census_log,OUT/'whir-census.log')
 shutil.copyfile(SOURCE/'auth-digests.bin',OUT/'auth-digests.bin')
-report=dict(status='LOSSLESS_DICTIONARY_NATIVE_REPLAY_VERIFIED',native_bytes=len(raw),wire_bytes=len(wire),
+report=dict(status='LOSSLESS_DICTIONARY_NATIVE_REPLAY_VERIFIED',source_profile=SOURCE.name,parameters=params,native_bytes=len(raw),wire_bytes=len(wire),
     total_wire_plus_request_bytes=len(wire)+919,bytes_saved=len(raw)-len(wire),dictionary_entries=len(dictionary),references=refs,
     native_sha256=hashlib.sha256(raw).hexdigest(),wire_sha256=hashlib.sha256(wire).hexdigest(),
     exact_python_roundtrip=True,independent_rust_native_replay=True,dictionary_payload_mutation_rejected=True,

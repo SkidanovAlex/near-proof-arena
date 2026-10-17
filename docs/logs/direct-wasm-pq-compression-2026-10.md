@@ -13341,3 +13341,39 @@ Conclusion: a real size reduction, still nearly2x the300000target. Shared Merkle
 opening reconstruction and WHIR opening parameters need further work. No claim
 that dictionary savings predict a final bound; fullNEAR1Pgas/PQcomposition/
 end-to-end Lean correctness remain open. git diff --check passes.
+
+## 2026-10-17 — Actual WHIR profile changes reduce transmitted slice to451221B
+
+Previous turn progressed at34f3d6163; state revalidated. Three bounded experiments
+on the SAME literal Wasm relation and SHA384-v4/Ext12 implementation, target268,
+zero grinding. Larger blowup128 alone reduces native740881 ->719329bytes.
+All-round list decoding m3 at blowup32 reduces to579185. Their combination
+reduces to512609. Native minimum component estimates268.9462/268.7577/268.7638
+respectively; initial list penalties included, not assumed zero. No QROM or
+Lean cryptographic certification inferred from the calculator.
+
+Combined query schedule[82,63,51,43,37,33] versus baseline[281,82,63,51,43,37].
+Actual combined LogUp337.5753,proximity317.9309bits. Every new proof passes native
+verify,six public mutations,fresh witness-independent replay,Lean preparation and
+independent runCall parity. Input files match original slice exactly. Instrumented
+combined verification12474SHA384 blocks; no controlled performance claim. Larger
+blowup increases evaluation-domain cost and is not a demonstrated speed win.
+
+Combined wire census20408GKR+81248relations+1936stacking+389368WHIR+19649other.
+WHIR auth297168bytes/6191digests/4741distinct; initialvalues2624bytes and
+extensionvalues87168bytes. Dictionary encoding of this proof is450302bytes,
+including459entries/1909references, plus919request=451221. Exact reconstruction,
+independent Rust native verification, Merkle-rejected live-digest mutation and
+eight malformed-format checks pass. Still151221bytes above the strict target.
+
+Generalized preparation/check tools with explicit output paths and archived
+parameter profiles; native driver refuses proving if calculator minimum misses
+target. Old fixed-profile proof logs remain unedited. Current defaults preserve
+old parameters; optional settings change keys and are captured/reapplied for
+replay. Added report_native_whir_profiles.py to reconcile actual hashes, bounds,
+statements,census and dictionary size. Artifacts native-literal-sha384-{rate7,
+alllist,alllist-rate7}/ and native-literal-alllist-rate7-dictionary/ retain evidence.
+No new Lean theorem or recursive parent this turn. git diff --check passes.
+Next: shared Merkle openings at the retained actual profile, not a broad sweep.
+FullNEAR1Pgas, concrete quantum composition, sub300000 and formal end-to-end
+acceptance-to-execution remain open.

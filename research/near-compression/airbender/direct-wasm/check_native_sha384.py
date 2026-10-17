@@ -1,11 +1,14 @@
 """Check actual Ext12/SHA384 Wasm proof, independent transcript and Lean oracle."""
-import hashlib,json,os,re,shutil,struct,subprocess,tempfile
+import hashlib,json,os,re,shutil,struct,subprocess,tempfile,argparse
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-OUT=ROOT/'results/native-literal-sha384-ext12-compact'
+ap=argparse.ArgumentParser();ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--prove-log',type=Path,default=Path('/tmp/nearproof-native-sha384.log'));args=ap.parse_args()
+OUT=args.out.resolve()
 TMP=Path('/tmp/nearproof-native-sha384')
 BACKEND=Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5')
-log=Path('/tmp/nearproof-native-sha384.log').read_text()
+log=args.prove_log.read_text()
+profile=re.search(r'NATIVE_SHA384_PROFILE n_stack=(\d+) k=(\d+) log_blowup=(\d+) (?:all_list=(\d+) )?queries=(\[[^\n]+\])',log)
+params=(dict(n_stack=int(profile[1]),k=int(profile[2]),log_blowup=int(profile[3]),all_list=int(profile[4] or 0),queries=json.loads(profile[5])) if profile else dict(n_stack=16,k=3,log_blowup=5,all_list=0,queries=None))
 assert 'NATIVE_SHA384_EXT12_PASS public_mutations_rejected=6' in log
 m=re.search(r'NATIVE_SHA384_EXT12_BYTES total=(\d+) gkr=(\d+) relations=(\d+) stacking=(\d+) whir=(\d+)',log)
 assert m
@@ -40,6 +43,9 @@ assert rejections>0 and vectors['VECTOR_SAMPLES']==samples and vectors['VECTOR_S
 # Reconstruct only fixed key and expected statement; no trace or fixture access.
 env=dict(os.environ,NEARPROOF_LITERAL_OUT=str(OUT),NEARPROOF_REPLAY='1',NEARPROOF_QUERY_BITS='268',RAYON_NUM_THREADS='4')
 env.pop('NEARPROOF_TRANSCRIPT_VECTORS',None)
+env.pop('NEARPROOF_DICTIONARY',None)
+env.pop('NEARPROOF_WHIR_CENSUS',None)
+env.update(NEARPROOF_N_STACK=str(params['n_stack']),NEARPROOF_K=str(params['k']),NEARPROOF_LOG_BLOWUP=str(params['log_blowup']),NEARPROOF_ALL_LIST=str(params['all_list']))
 moved=[]
 try:
     for name in ['rows-0.bin','rows-1.bin','fixture.json','spec.json']:
@@ -72,7 +78,7 @@ report=dict(status='NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED',child_bytes=census[
     independent_Lean_runCall=actual,eligibility=json.loads(eligibility.stdout),public_mutations_rejected=6,
     witness_independent_replay=True,transcript_oracle=dict(samples=96,rejections=rejections,draw_blocks=draw_blocks,final_state_equal=True,version=4),
     verifier_hash_cost=dict(tags=['leaf','node','init','observe_field','observe_commit','draw_block'],calls=verify_calls,compression_blocks=verify_blocks,total_compression_blocks=sum(verify_blocks),scope='single engine.verify call; excludes keygen and decoding'),
-    security=dict(hash='SHA-384',field='BabyBear[X]/(X^12-31)',query_target_bits=268,grinding_bits=0,
+    security=dict(hash='SHA-384',field='BabyBear[X]/(X^12-31)',query_target_bits=268,grinding_bits=0,parameters=params,
         native_component_min_bits=float(bound[2]),logup_bits=float(bound[3]),proximity_bits=float(bound[4]),query_bits=float(bound[5]),certified=False),
     backend_pin=subprocess.check_output(['git','rev-parse','HEAD'],cwd=BACKEND,text=True).strip(),
     exclusions=['custom transcript compiler/QROM applicability and concrete constants',

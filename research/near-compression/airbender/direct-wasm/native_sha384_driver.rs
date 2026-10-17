@@ -6,18 +6,29 @@ mod config {use super::*;include!("native_sha384_config.rs");include!("native_di
         use openvm_stark_backend::{codec::{Encode,Decode},proof::Proof,soundness::SoundnessCalculator};
         if std::env::var_os("NEARPROOF_TRANSCRIPT_VECTORS").is_some() {transcript_vectors();return;}
         let out=std::env::var("NEARPROOF_LITERAL_OUT").unwrap();
-        let mut params=test_system_params_small(2,16,3);
+        fn setting(name:&str,default:usize)->usize {std::env::var(name).map(|s|s.parse().unwrap()).unwrap_or(default)}
+        let n_stack=setting("NEARPROOF_N_STACK",16);
+        let k=setting("NEARPROOF_K",3);
+        let blowup=setting("NEARPROOF_LOG_BLOWUP",5);
+        assert!((8..=20).contains(&n_stack) && (1..=5).contains(&k) && (1..=8).contains(&blowup));
+        assert!(2+n_stack+blowup<=27);
+        let mut params=test_system_params_small(2,n_stack,k);
         params.max_constraint_degree=8;params.logup.max_interaction_count=1<<20;
-        params.logup.pow_bits=0;params.log_blowup=5;
+        params.logup.pow_bits=0;params.log_blowup=blowup;
+        let all_list=setting("NEARPROOF_ALL_LIST",0);
+        assert!(all_list<=1);
+        if all_list==1 {params.whir.proximity=openvm_stark_backend::WhirProximityStrategy::ListDecoding {m:3};}
         let bits:usize=std::env::var("NEARPROOF_QUERY_BITS").unwrap_or("268".into()).parse().unwrap();
         params.whir=openvm_stark_backend::WhirConfig::new(params.log_blowup,params.l_skip+params.n_stack,
             openvm_stark_backend::WhirParams {k:params.whir.k,log_final_poly_len:params.log_final_poly_len(),
                 proximity:params.whir.proximity,query_phase_pow_bits:0,folding_pow_bits:0,mu_pow_bits:0},bits);
+        println!("NATIVE_SHA384_PROFILE n_stack={} k={} log_blowup={} all_list={} queries={:?}",n_stack,k,blowup,all_list,params.whir.rounds.iter().map(|r|r.num_queries).collect::<Vec<_>>());
         let engine=Engine::new(params);
         let fx=literal::LiteralFixture;
         let (pk,vk)=fx.keygen(&engine);
         let bound=SoundnessCalculator::calculate_from_vk(&vk);
         println!("NATIVE_SHA384_EXT12 target={} min={} logup={} proximity={} query={}",bits,bound.total_bits,bound.logup_bits,bound.whir_details.proximity_gaps_bits,bound.whir_details.query_bits);
+        assert!(bound.total_bits>=bits as f64,"native component budget failed; do not prove this profile");
         let expected:Vec<F>=std::fs::read(format!("{out}/public.bin")).unwrap().chunks_exact(4)
             .map(|b|F::from_u32(u32::from_le_bytes(b.try_into().unwrap()))).collect();
         if std::env::var_os("NEARPROOF_REPLAY").is_some() {
