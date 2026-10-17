@@ -7767,10 +7767,10 @@ index 0000000..b17233d
 +}
 diff --git a/crates/recursion/src/sha384/compress2_air.rs b/crates/recursion/src/sha384/compress2_air.rs
 new file mode 100644
-index 0000000..e479aca
+index 0000000..f1d0b9a
 --- /dev/null
 +++ b/crates/recursion/src/sha384/compress2_air.rs
-@@ -0,0 +1,778 @@
+@@ -0,0 +1,789 @@
 +//! (Copied from research/near-compression/native/sha384-air/src/air.rs, lane/pq-sha384-air2;
 +//! bus indices and a compression-id offset are fields.)
 +//!
@@ -7806,8 +7806,7 @@ index 0000000..e479aca
 +use p3_field::{Field, PrimeCharacteristicRing};
 +use p3_matrix::Matrix;
 +
-+pub const ROWS: usize = 44;
-+pub const PAD_R: u32 = 44;
++pub const ROWS: usize = 43;
 +/// Carry columns hold c + CARRY_OFF for the signed (e) equations; every carry column is
 +/// range-checked to [0, CARRY_RANGE).
 +pub const CARRY_RANGE: u64 = 8;
@@ -7964,22 +7963,20 @@ index 0000000..e479aca
 +    }
 +}
 +
-+/// Control-table entry for table index i: (r, flags).  Indices >= 44 describe the
-+/// padding row (r = 44, every flag 0).
++/// Control-table entry for table index i: (r, flags).  Exactly one of F_IV, F_ROUND, F_OUT
++/// is set, so is_real = F_IV + F_ROUND + F_OUT is 1 on every real row; padding rows are all
++/// zero and do not look up.  Indices >= ROWS repeat the last entry.
 +pub fn ctl_entry(i: usize) -> [u64; 1 + NFLAGS] {
++    let i = i.min(ROWS - 1);
 +    let mut e = [0u64; 1 + NFLAGS];
-+    if i >= ROWS {
-+        e[0] = PAD_R as u64;
-+        return e;
-+    }
 +    let f = |lo: usize, hi: usize| (lo..=hi).contains(&i) as u64;
 +    e[0] = i as u64;
 +    e[1 + FI_IV] = f(0, 1);
 +    e[1 + FI_ROUND] = f(2, 41);
 +    e[1 + FI_SCHED] = f(10, 41);
-+    e[1 + FI_OUT] = f(42, 43);
++    e[1 + FI_OUT] = f(42, 42);
 +    // rows 40, 41.  Derived: F_FIN = F_TAIL (41 - r) (row 40 sends a_76, a_77, e_76, e_77
-+    // to row 42); F_DA = F_IV + F_ROUND - F_TAIL (rows 0..39 send d terms one row ahead).
++    // to row 0); F_DA = F_IV + F_ROUND - F_TAIL (rows 0..39 send d terms one row ahead).
 +    e[1 + FI_TAIL] = f(40, 41);
 +    e[1 + FI_S01] = f(2, 33); // V senders (received 7 rows later, for the row after)
 +    e[1 + FI_S2] = f(6, 37); // W[t-7] senders, both slots (received 3 rows later)
@@ -7990,7 +7987,8 @@ index 0000000..e479aca
 +/// a round row, else zeros.
 +pub fn k_entry(lay: &Layout, i: usize) -> [u64; 7] {
 +    let mut e = [0u64; 7];
-+    e[0] = if i >= ROWS { PAD_R as u64 } else { i as u64 };
++    let i = i.min(ROWS - 1);
++    e[0] = i as u64;
 +    let n = i + 1;
 +    if i < ROWS && (2..=41).contains(&n) {
 +        e[1..4].copy_from_slice(&lay.limbs(K[2 * n - 4]));
@@ -8231,9 +8229,10 @@ index 0000000..e479aca
 +        let one = AB::Expr::ONE;
 +        let c = |v: u64| AB::Expr::from_u64(v);
 +        let fl = |x: &[AB::Expr], i: usize| x[lay.flags + i].clone();
-+        let pad = |x: &[AB::Expr]| one.clone() - fl(x, FI_IV) - fl(x, FI_ROUND) - fl(x, FI_OUT);
-+        // Row 42 of a segment (OUT row holding the received final words of row 40).
-+        let row42 = |x: &[AB::Expr]| fl(x, FI_OUT) * (c(43) - x[lay.r].clone());
++        let real = |x: &[AB::Expr]| fl(x, FI_IV) + fl(x, FI_ROUND) + fl(x, FI_OUT);
++        let pad = |x: &[AB::Expr]| one.clone() - real(x);
++        // Row 0 of a segment: holds H'2, H'3 (W slots) and its carries serve row 1's H'6, H'7.
++        let row0 = |x: &[AB::Expr]| fl(x, FI_IV) * (one.clone() - x[lay.r].clone());
 +        let coef = all_sign_coefs::<AB::F>(lay.k);
 +
 +        // ---- range checks and zero cells ----
@@ -8258,11 +8257,11 @@ index 0000000..e479aca
 +        for col in 0..lay.w0 {
 +            b.assert_zero(padl.clone() * l[col].clone());
 +        }
-+        let no_w = one.clone() - fl(&l, FI_ROUND) - row42(&l);
++        let no_w = one.clone() - fl(&l, FI_ROUND) - fl(&l, FI_IV);
 +        for col in lay.w0..lay.ndig {
 +            b.assert_zero(no_w.clone() * l[col].clone());
 +        }
-+        let no_rc = one.clone() - fl(&n, FI_ROUND) - fl(&n, FI_OUT);
++        let no_rc = one.clone() - fl(&n, FI_ROUND) - fl(&n, FI_OUT) - row0(&l);
 +        for col in lay.c1a..lay.cw0 {
 +            b.assert_zero(no_rc.clone() * l[col].clone());
 +        }
@@ -8270,26 +8269,31 @@ index 0000000..e479aca
 +        for col in lay.cw0..lay.cw1 + 3 {
 +            b.assert_zero(no_sched.clone() * l[col].clone());
 +        }
-+        let no_v = no_sched.clone() - row42(&l);
++        let no_v = no_sched.clone();
 +        for col in lay.v0..lay.v1 + 3 {
 +            b.assert_zero(no_v.clone() * l[col].clone());
 +        }
 +
-+        // ---- row sequencing: segments 0..43 back to back, then padding (r = 44) ----
++        // Padding rows are all zero: r, g and every flag vanish where is_real = 0 (digits,
++        // carries and V by the rules above; S_A and DE by their definitions).
++        for col in [lay.r, lay.g].into_iter().chain(lay.flags..lay.flags + NFLAGS) {
++            b.assert_zero(padl.clone() * l[col].clone());
++        }
++
++        // ---- row sequencing: segments 0..42 back to back from row 0, then zero rows ----
++        let last = c(ROWS as u64 - 1);
 +        b.when_first_row().assert_zero(l[lay.r].clone());
 +        b.when_first_row().assert_zero(l[lay.g].clone());
 +        b.when_last_row()
-+            .assert_zero((l[lay.r].clone() - c(43)) * (one.clone() - pad(&l)));
++            .assert_zero((l[lay.r].clone() - last.clone()) * real(&l));
 +        {
 +            let (r, g) = (lay.r, lay.g);
 +            let mut t = b.when_transition();
-+            t.assert_zero(n[g].clone() - l[g].clone() - one.clone());
-+            t.assert_zero(
-+                (n[r].clone() - l[r].clone() - one.clone()) * (one.clone() - pad(&n)) * n[r].clone(),
-+            );
-+            t.assert_zero(pad(&n) * (one.clone() - pad(&l)) * (l[r].clone() - c(43)));
-+            t.assert_zero((one.clone() - n[r].clone()) * fl(&n, FI_IV) * (l[r].clone() - c(43)));
-+            t.assert_zero(pad(&l) * (one.clone() - pad(&n)));
++            t.assert_zero(real(&n) * (n[g].clone() - l[g].clone() - one.clone()));
++            t.assert_zero(real(&n) * (n[r].clone() - l[r].clone() - one.clone()) * n[r].clone());
++            t.assert_zero(pad(&n) * real(&l) * (l[r].clone() - last.clone()));
++            t.assert_zero((one.clone() - n[r].clone()) * fl(&n, FI_IV) * (l[r].clone() - last));
++            t.assert_zero(pad(&l) * real(&n));
 +        }
 +
 +        // ---- words ----
@@ -8305,17 +8309,22 @@ index 0000000..e479aca
 +        let lb2 = |sg: &[AB::Expr]| limbs_of_signs::<AB::F, AB::Expr>(lay, sg, half_f);
 +
 +        // S (row n) = partial sums for slot 0 of row n+1; DE (row n) = E1 of row l.
-+        // Defined on every row, cyclically, with no gate.
++        // Defined on every row, cyclically.  The terms that do not vanish when row n is zero
++        // (h and Ch's g input) are gated by is_real(n), degree 15 < 21, so the row after the
++        // last real row is all zero too.
 +        {
-+            let h = &e0l.limbs;
++            let rn = real(&n);
 +            let s1 = lb(&big_sigma1(&e1n.sg));
 +            let chv = lb2(&ch2(&e1n.sg, &e0n.sg, &e1l.sg));
 +            let s0 = lb(&big_sigma0(&a1n.sg));
 +            let mj = lb2(&maj2(&a1n.sg, &a0n.sg, &a1l.sg));
-+            let sa = add3(&[h, &s1, &chv, &s0, &mj]);
 +            for i in 0..3 {
-+                b.assert_zero(n[lay.sa + i].clone() - sa[i].clone());
-+                b.assert_zero(n[lay.de + i].clone() - e1l.limbs[i].clone());
++                let sa = rn.clone() * (e0l.limbs[i].clone() + chv[i].clone())
++                    + s1[i].clone()
++                    + s0[i].clone()
++                    + mj[i].clone();
++                b.assert_zero(n[lay.sa + i].clone() - sa);
++                b.assert_zero(n[lay.de + i].clone() - rn.clone() * e1l.limbs[i].clone());
 +            }
 +        }
 +        // d - T2 for slot 0 of row n+1, sent from this window (row l) to row n.
@@ -8360,39 +8369,39 @@ index 0000000..e479aca
 +            &lhs(lay, &w1n.limbs, &cols3(&l, lay.cw1), 0),
 +            &add3(&[&lb(&small_sigma1(&w1l.sg)), &cols3(&l, lay.v1)]),
 +        );
-+        // Feed-forward for OUT row n: out = IV + fin (IV by bus).  fin = slots of row 41
-+        // (for n = 42) or the words received on row 42 (for n = 43).
++        // Feed-forward.  OUT row 42 (window 41, 42): slot q = slot q of row 41 + IV word of
++        // row 1 (by bus).  Row 0 (window 0, 1): W0/W1 of row 0 = H2/H3 + a_77/a_76 and W0/W1
++        // of row 1 = H6/H7 + e_77/e_76 (H from row 0's slots, final words by bus from row 40).
 +        let res_out: Vec<[AB::Expr; 3]> = {
-+            let sel = row42(&l);
-+            let unsel = one.clone() - sel.clone();
-+            let fin42 = [&a0l.limbs, &a1l.limbs, &e0l.limbs, &e1l.limbs];
-+            let fin43 = [w0l.limbs.clone(), w1l.limbs.clone(), cols3(&l, lay.v0), cols3(&l, lay.v1)];
++            let fin = [&a0l.limbs, &a1l.limbs, &e0l.limbs, &e1l.limbs];
 +            let outs = [&a0n.limbs, &a1n.limbs, &e0n.limbs, &e1n.limbs];
 +            let carries = [lay.c0a, lay.c1a, lay.c0e, lay.c1e];
 +            (0..4)
-+                .map(|q| {
-+                    let fin: [AB::Expr; 3] = std::array::from_fn(|i| {
-+                        unsel.clone() * fin42[q][i].clone() + sel.clone() * fin43[q][i].clone()
-+                    });
-+                    sub3(&lhs(lay, outs[q], &cols3(&l, carries[q]), 0), &fin)
-+                })
++                .map(|q| sub3(&lhs(lay, outs[q], &cols3(&l, carries[q]), 0), fin[q]))
 +                .collect()
 +        };
++        // in the order row 40 sends: a_76, a_77, e_76, e_77
++        let res_row0: Vec<[AB::Expr; 3]> = vec![
++            sub3(&lhs(lay, &w1l.limbs, &cols3(&l, lay.c1a), 0), &a0l.limbs),
++            sub3(&lhs(lay, &w0l.limbs, &cols3(&l, lay.c0a), 0), &a1l.limbs),
++            sub3(&lhs(lay, &w1n.limbs, &cols3(&l, lay.c1e), 0), &e0l.limbs),
++            sub3(&lhs(lay, &w0n.limbs, &cols3(&l, lay.c0e), 0), &e1l.limbs),
++        ];
 +
 +        // ---- interactions ----
 +        let mut ctl = vec![l[lay.r].clone()];
 +        ctl.extend((0..NFLAGS).map(|i| fl(&l, i)));
-+        b.push_interaction(self.buses.ctl, ctl, one.clone(), 1);
++        b.push_interaction(self.buses.ctl, ctl, real(&l), 1);
 +        let mut kmsg = vec![l[lay.r].clone()];
 +        kmsg.extend(res_a0.iter().cloned());
 +        kmsg.extend(res_a1.iter().cloned());
 +        b.push_interaction(self.buses.k, kmsg, nround.clone(), 1);
 +
 +        // Interface bus: (compression id, pair index, limbs of word 2m, limbs of word 2m+1).
-+        // Pairs 0..3 input state, 4..11 block, 12..15 output state.
++        // Pairs 0..3 input state, 4..11 block, 12..15 output state.  Row 0/1 W slots carry
++        // output pairs 13 (H'2, H'3) and 15 (H'6, H'7); row 42 carries pairs 12 and 14.
 +        let cid = l[lay.g].clone() - l[lay.r].clone() + c(self.cid_offset as u64);
-+        let idx_a = fl(&l, FI_IV) * (one.clone() - l[lay.r].clone())
-+            + fl(&l, FI_OUT) * (l[lay.r].clone() - c(30));
++        let idx_a = row0(&l) + fl(&l, FI_OUT) * c(12);
 +        let st_mult = fl(&l, FI_IV) + fl(&l, FI_OUT);
 +        for (idx, hi, lo) in [
 +            (idx_a.clone(), &a1l, &a0l),
@@ -8404,10 +8413,13 @@ index 0000000..e479aca
 +            b.push_interaction(self.buses.iface, msg, st_mult.clone(), 1);
 +        }
 +        {
-+            let mut msg = vec![cid.clone(), l[lay.r].clone() + c(2)];
++            let blk = fl(&l, FI_ROUND) - fl(&l, FI_SCHED);
++            let idx = blk.clone() * (l[lay.r].clone() + c(2))
++                + fl(&l, FI_IV) * (c(13) + l[lay.r].clone().double());
++            let mut msg = vec![cid.clone(), idx];
 +            msg.extend(w0l.limbs.iter().cloned());
 +            msg.extend(w1l.limbs.iter().cloned());
-+            b.push_interaction(self.buses.iface, msg, fl(&l, FI_ROUND) - fl(&l, FI_SCHED), 1);
++            b.push_interaction(self.buses.iface, msg, blk + fl(&l, FI_IV), 1);
 +        }
 +
 +        // Lookback bus (permutation), keyed by the sender's global row g.
@@ -8420,7 +8432,7 @@ index 0000000..e479aca
 +        let flat = |xs: &[&[AB::Expr; 3]]| -> Vec<AB::Expr> {
 +            xs.iter().flat_map(|x| x.iter().cloned()).collect()
 +        };
-+        // state words: IV rows (for the feed-forward) and row 40 (for row 42)
++        // state words: row 1 (IV for row 42) and row 40 (final words for row 0)
 +        let f_fin = fl(&l, FI_TAIL) * (c(41) - l[lay.r].clone());
 +        let f_da = fl(&l, FI_IV) + fl(&l, FI_ROUND) - fl(&l, FI_TAIL);
 +        send(
@@ -8428,7 +8440,7 @@ index 0000000..e479aca
 +            g.clone(),
 +            TAG_ST,
 +            flat(&[&a0l.limbs, &a1l.limbs, &e0l.limbs, &e1l.limbs]),
-+            fl(&l, FI_IV) + f_fin,
++            fl(&l, FI_IV) * l[lay.r].clone() + f_fin,
 +        );
 +        // d for slot 1 and d - T2 for slot 0 of the row after next
 +        send(b, g.clone(), TAG_DA, flat(&[&a1l.limbs, &d_minus_t2]), f_da);
@@ -8440,20 +8452,19 @@ index 0000000..e479aca
 +        // W[t-7] for slot 0 (W1 of this row) and slot 1 (W0 of the next row), 3 rows later
 +        send(b, g.clone(), TAG_W7, flat(&[&w1l.limbs, &w0n.limbs]), fl(&l, FI_S2));
 +        // receivers
-+        let r = l[lay.r].clone();
 +        send(
 +            b,
-+            g.clone() - r.clone().double() + c(42),
++            g.clone() - c(40),
 +            TAG_ST,
 +            res_out.iter().flat_map(|x| x.iter().cloned()).collect(),
 +            -nout.clone(),
 +        );
 +        send(
 +            b,
-+            g.clone() - c(2),
++            g.clone() + c(40),
 +            TAG_ST,
-+            flat(&[&w0l.limbs, &w1l.limbs, &cols3(&l, lay.v0), &cols3(&l, lay.v1)]),
-+            -row42(&l),
++            res_row0.iter().flat_map(|x| x.iter().cloned()).collect(),
++            -row0(&l),
 +        );
 +        send(b, g.clone() - c(1), TAG_DA, flat(&[&res_e1, &res_e0]), -nround.clone());
 +        send(
@@ -8551,10 +8562,10 @@ index 0000000..e479aca
 +
 diff --git a/crates/recursion/src/sha384/compress2_trace.rs b/crates/recursion/src/sha384/compress2_trace.rs
 new file mode 100644
-index 0000000..f4057d7
+index 0000000..7e54692
 --- /dev/null
 +++ b/crates/recursion/src/sha384/compress2_trace.rs
-@@ -0,0 +1,390 @@
+@@ -0,0 +1,400 @@
 +//! Trace generation for the packed-digit SHA-512 compression AIR, plus a native
 +//! reference round function checked against `sha2::compress512`.
 +use super::compress2_air::*;
@@ -8745,10 +8756,9 @@ index 0000000..f4057d7
 +    let w = lay.width;
 +    let mut t = vec![0u32; height * w];
 +    let mut gn = Gen { lay, t: &mut t };
-+    // Pass 1: r, g, flags.
-+    for gi in 0..height {
-+        let s = gi / ROWS;
-+        let r = if s < comps.len() { gi % ROWS } else { PAD_R as usize };
++    // Pass 1: r, g, flags on real rows; padding rows stay all zero.
++    for gi in 0..comps.len() * ROWS {
++        let r = gi % ROWS;
 +        let e = ctl_entry(r);
 +        gn.t[gi * w + lay.r] = r as u32;
 +        gn.t[gi * w + lay.g] = gi as u32;
@@ -8764,10 +8774,8 @@ index 0000000..f4057d7
 +            let gi = base + r;
 +            let (sa, se): ([u64; 2], [u64; 2]) = if r < 42 {
 +                ([wd.a[2 * r], wd.a[2 * r + 1]], [wd.e[2 * r], wd.e[2 * r + 1]])
-+            } else if r == 42 {
-+                ([wd.out[1], wd.out[0]], [wd.out[5], wd.out[4]])
 +            } else {
-+                ([wd.out[3], wd.out[2]], [wd.out[7], wd.out[6]])
++                ([wd.out[1], wd.out[0]], [wd.out[5], wd.out[4]])
 +            };
 +            gn.put_word(gi, lay.a0, sa[0]);
 +            gn.put_word(gi, lay.a1, sa[1]);
@@ -8776,18 +8784,18 @@ index 0000000..f4057d7
 +            if (2..42).contains(&r) {
 +                gn.put_word(gi, lay.w0, wd.w[2 * r - 4]);
 +                gn.put_word(gi, lay.w1, wd.w[2 * r - 3]);
-+            } else if r == 42 {
-+                // received final words of row 40: a_76, a_77 as digits, e_76, e_77 as limbs
-+                gn.put_word(gi, lay.w0, wd.a[80]);
-+                gn.put_word(gi, lay.w1, wd.a[81]);
-+                let (v0, v1) = (gn.l3(wd.e[80]), gn.l3(wd.e[81]));
-+                gn.put3(gi, lay.v0, v0);
-+                gn.put3(gi, lay.v1, v1);
++            } else if r < 2 {
++                // output pairs (H'2, H'3) on row 0 and (H'6, H'7) on row 1
++                gn.put_word(gi, lay.w0, wd.out[2 + 4 * r]);
++                gn.put_word(gi, lay.w1, wd.out[3 + 4 * r]);
 +            }
 +        }
 +    }
-+    // Pass 3: S and DE on every row, cyclically, from (previous row, row).
++    // Pass 3: S and DE on every row, cyclically, from (previous row, row); h, Ch and DE
++    // are gated by is_real(row), so rows after the last real row stay zero.
++    let nreal = comps.len() * ROWS;
 +    for gi in 0..height {
++        let rl = (gi < nreal) as i64;
 +        let p = (gi + height - 1) % height;
 +        let gw = |gn: &Gen, r: usize, b: usize| gn.get_word(r, b);
 +        let (a1l, e0l, e1l) = (gw(&gn, p, lay.a1), gw(&gn, p, lay.e0), gw(&gn, p, lay.e1));
@@ -8797,9 +8805,9 @@ index 0000000..f4057d7
 +            gw(&gn, gi, lay.e0),
 +            gw(&gn, gi, lay.e1),
 +        );
-+        let t1 = sum3(&[gn.l3(e0l), gn.l3(bsig1(e1n)), gn.l3(chf(e1n, e0n, e1l))]);
-+        let sa = sum3(&[t1, gn.l3(bsig0(a1n)), gn.l3(majf(a1n, a0n, a1l))]);
-+        let de = gn.l3(e1l);
++        let hc = sum3(&[gn.l3(e0l), gn.l3(chf(e1n, e0n, e1l))]).map(|v| v * rl);
++        let sa = sum3(&[hc, gn.l3(bsig1(e1n)), gn.l3(bsig0(a1n)), gn.l3(majf(a1n, a0n, a1l))]);
++        let de = gn.l3(e1l).map(|v| v * rl);
 +        gn.put3(gi, lay.sa, sa);
 +        gn.put3(gi, lay.de, de);
 +    }
@@ -8866,20 +8874,32 @@ index 0000000..f4057d7
 +                    gn.put3(x, lay.cw0, cw0);
 +                    gn.put3(x, lay.cw1, cw1);
 +                }
-+            } else if rn == 42 || rn == 43 {
-+                // feed-forward: slot q of row n = IV word q + final word q
-+                let (ivr, fin): (usize, [u64; 4]) = if rn == 42 {
-+                    (1, [wd.a[82], wd.a[83], wd.e[82], wd.e[83]])
-+                } else {
-+                    (0, [wd.a[80], wd.a[81], wd.e[80], wd.e[81]])
-+                };
++            } else if rn == 42 {
++                // feed-forward on row 42: slot q = IV word q (row 1) + final word q (row 41)
++                let fin = [wd.a[82], wd.a[83], wd.e[82], wd.e[83]];
 +                let carries = [lay.c0a, lay.c1a, lay.c0e, lay.c1e];
 +                for (q, &slot) in lay.slots().iter().enumerate() {
-+                    let iv = gn.get_word(base + ivr, slot);
++                    let iv = gn.get_word(base + 1, slot);
 +                    let out = gn.get_word(n, slot);
 +                    assert_eq!(out, iv.wrapping_add(fin[q]));
 +                    let c = gn.carries(out, sum3(&[gn.l3(iv), gn.l3(fin[q])]), 0);
 +                    gn.put3(x, carries[q], c);
++                }
++            } else if rn == 1 {
++                // feed-forward into the W slots of rows 0 and 1, carries on row 0:
++                // (output row, slot, IV slot of row 0, final word, carry columns)
++                let cases = [
++                    (x, lay.w0, lay.a1, wd.a[81], lay.c0a), // H'2 = H2 + a_77
++                    (x, lay.w1, lay.a0, wd.a[80], lay.c1a), // H'3 = H3 + a_76
++                    (n, lay.w0, lay.e1, wd.e[81], lay.c0e), // H'6 = H6 + e_77
++                    (n, lay.w1, lay.e0, wd.e[80], lay.c1e), // H'7 = H7 + e_76
++                ];
++                for (orow, oslot, islot, fin, cc) in cases {
++                    let iv = gn.get_word(x, islot);
++                    let out = gn.get_word(orow, oslot);
++                    assert_eq!(out, iv.wrapping_add(fin));
++                    let c = gn.carries(out, sum3(&[gn.l3(iv), gn.l3(fin)]), 0);
++                    gn.put3(x, cc, c);
 +                }
 +            }
 +        }
@@ -8898,8 +8918,9 @@ index 0000000..f4057d7
 +        t[i * T_WIDTH + T_W + e / 16] = 1;
 +    }
 +    for gi in 0..height {
++        let real: u32 = [FI_IV, FI_ROUND, FI_OUT].iter().map(|&f| main[gi * w + lay.flags + f]).sum();
 +        let r = main[gi * w + lay.r] as usize;
-+        t[r * T_WIDTH + T_MC] += 1;
++        t[r * T_WIDTH + T_MC] += real;
 +        let nx = (gi + 1) % height;
 +        if main[nx * w + lay.flags + FI_ROUND] == 1 {
 +            t[r * T_WIDTH + T_MK] += 1;
@@ -8918,12 +8939,12 @@ index 0000000..f4057d7
 +    [
 +        get(42, lay.a1),
 +        get(42, lay.a0),
-+        get(43, lay.a1),
-+        get(43, lay.a0),
++        get(0, lay.w0),
++        get(0, lay.w1),
 +        get(42, lay.e1),
 +        get(42, lay.e0),
-+        get(43, lay.e1),
-+        get(43, lay.e0),
++        get(1, lay.w0),
++        get(1, lay.w1),
 +    ]
 +}
 +
