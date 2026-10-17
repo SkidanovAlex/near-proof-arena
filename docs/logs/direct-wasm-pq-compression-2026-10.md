@@ -11220,3 +11220,47 @@ Evidence:research/near-compression/results/swirl-security-review/dag-trace/
 contains source snapshots for DAG AIR, production root and static digest pin,
 trace/clippy logs, patch, lockfile and raw hashes. No final proof artifact or
 new Lean soundness theorem is claimed.
+
+
+## 2026-10-17 — Fixed-DAG arithmetic census and backend boundary
+
+Previous goal turn classified progress: measured authenticated no-cache DAG
+cost and inspected its production digest binding. Revalidated clean worktree
+at a1d094c7b. Inspected openvm-static-verifier: it fixes the VK, all nonzero
+trace heights and AIR permutation, then eval_symbolic_nodes_assigned compiles
+symbolic nodes directly into arithmetic. Its implementation backend is
+Halo2/KZG. We may reuse the specialization design, not claim its proof backend
+satisfies our hash-only requirement. Merely using BN254 field arithmetic is
+not the issue; the KZG commitment assumption is the excluded component.
+
+Added a cheap keygen-only census for the child VK consumed by the generic
+root: Fibonacci fixture -> leaf verifier keygen -> internal verifier keygen.
+No recursive proofs needed for this count. Runtime0.12s after compilation.
+Checks every arithmetic operand refers to an earlier node and total counts
+sum exactly, per AIR and across all39AIRs. Results:
+15516nodes =3773add +2110sub +192neg +5626dynamic mul +930base-constant mul
++512constant +2303variable +34first-row +2last-row +34transition. No
+constant-times-constant multiplication nodes remain. Source confirms upstream
+SymbolicDagBuilder already folds constants, simplifies identities and performs
+structural deduplication; do not claim these as new optimization opportunities.
+
+This counts the DAG used for constraint AND interaction expressions. It is not
+a full arithmetic-verifier size: variable selection/evaluation, selectors,
+constraint batching, interaction reduction, transcript and PCS work are extra.
+2303variable nodes are not a count of unique PCS opening claims. The root input
+claims must remain tied to the same earlier committed trace; hardcoding the
+DAG only removes structural authentication, not that obligation.
+
+Next concrete design: export/compile this fixed DAG to a native-field GKR
+circuit, validate node/output evaluation parity and make its input-opening
+interface explicit. Compare complete GKR plus input-link costs with the
+existing symbolic-expression AIR and cached/DAG authentication. Do not port
+the Halo2 wrapper or infer speed/security from node counts. Existing Lean
+common-input/GKR lemmas are potential components, not a soundness theorem for
+this compiler. A broad formalization remains gated on that cost/interface test.
+
+Census and clippy --lib --tests -- -D warnings passed after correcting the
+probe's VK field paths. Evidence/source pins/patch are saved under
+research/near-compression/results/swirl-security-review/fixed-dag/. Full
+NEAR1Petagas, PQ128, sub300000secure bytes and end-to-end Lean correctness
+remain unachieved.
