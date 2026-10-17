@@ -13625,3 +13625,31 @@ proof of Python/parser/Rust execution. Global original-bus count preservation an
 full HoldsP transfer remain unfinished. Native acceptance-to-HoldsP, quantum
 recursive composition, fullNEAR1Pgas and sub300000 remain open. Proof bytes and
 parameters unchanged; packed357069B still provisional.
+
+## 2026-10-17 — Natural multiplicities and global original-bus counts
+
+Previous turn progressed at0c6f1ba9d; clean state revalidated. Added
+PackedBusRefinement.lean proving equal multiplicity-bit evaluations imply equal
+natural multiplicities, rewritten interaction semantics on the lifted trace,
+row traffic equality, and complete table-count equality across all rows.
+Appending interactions on a different bus leaves queried traffic unchanged.
+Composed this with actual concrete rewrites plus range-only additions, then
+proved global counts agree for two retained tables and an appended range table
+on every bus other than4. Multiplicity-bit Booleanity also transfers. These
+are universal exact-natural-count proofs, not modular sum or witness checks.
+
+Added a proved interaction-pair checker. PackedBusCheck.lean and
+check_packed_bus.py check allfive actual interaction pairs, unchanged public
+segments, range-only added traffic and no original bus4 traffic. Six mutations
+(bus,direction,message,multiplicity,missing interaction,duplicate interaction)
+are rejected. Results in bus-check.json. Kernel build and axiom audits pass;
+lean-bus-audit.log records only standard Lean axioms. No proof bytes/config
+changed. No need to regenerate the cryptographic proof for these formal-only
+additions and executable structural checks.
+
+Next: compose constraint, bit, height and balance preservation into one HoldsP
+transfer theorem, including the absent original bus4 case and public segments.
+Concrete artifact checks are executed through proved checkers but not yet a
+closed kernel theorem identifying the entire concrete AIR. Native acceptance,
+QROM recursive knowledge composition, fullNEAR1Pgas and sub300000 remain open.
+Packed357069B remains provisional pending complete semantic refinement.

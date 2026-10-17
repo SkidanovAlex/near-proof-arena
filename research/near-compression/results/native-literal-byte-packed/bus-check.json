@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "paired_interactions": 5,
+  "negative_pairings_rejected": 6,
+  "public_segments_unchanged": true,
+  "added_traffic_only_bus": 4,
+  "scope": "Executable pairing checks use a kernel-proved checker; universal natural-count and global two-table preservation proved. Full concrete HoldsP transfer remains to be assembled."
+}
