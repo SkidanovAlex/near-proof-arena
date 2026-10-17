@@ -2929,7 +2929,7 @@
   "sha256": {
     "results/swirl-security-review/dag-export/dag.jsonl.gz": "78a24241e778d287a3bc05c694bc1fb0101107abd1e22fa7a3f69427b0043e96",
     "airbender/direct-wasm/measure_swirl_rebalanced_gkr.py": "f708fec3efa1d41ca3327ed4d3d0e390b61a1bb19c85d25ab1bda1af3e33876c",
-    "airbender/direct-wasm/compile_swirl_fixed_dag.py": "38490844e6da62fc99dc7073a9b2f760bd0b7273667b60beec2221b650269f90",
+    "airbender/direct-wasm/compile_swirl_fixed_dag.py": "6261873898307aeb216afa4f0d63dabed350e3ff7121b379a2f08dfb53a958ae",
     "airbender/direct-wasm/rebalance_swirl_dag.py": "0e7166a3e5fbef5948853fb7b35b65ebfc1c3541fee84f78b08acd2e7cb3365c"
   },
   "exclusions": [

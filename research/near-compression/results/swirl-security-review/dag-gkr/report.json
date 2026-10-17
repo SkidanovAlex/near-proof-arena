@@ -1,0 +1,69 @@
+{
+  "status": "COMPONENT_PROOF_VERIFIED_WITH_EXPLICIT_INPUT_CHECK",
+  "prover_seconds": 10.051376876886934,
+  "verifier_seconds": 2.503630720078945,
+  "extension_degree": 4,
+  "field_elements": 1198,
+  "field_payload_bytes": 19168,
+  "layout": {
+    "gkr_field_elements": 1198,
+    "air": "combined",
+    "source_nodes": 15516,
+    "inputs": 2373,
+    "semantic_outputs": 3871,
+    "lowered_nodes": 98668,
+    "live_nodes": 29420,
+    "input_size": 16384,
+    "layers": 23,
+    "layer_widths": [
+      16384,
+      16384,
+      8192,
+      8192,
+      4096,
+      4096,
+      2048,
+      1024,
+      1024,
+      512,
+      256,
+      256,
+      128,
+      128,
+      64,
+      32,
+      32,
+      16,
+      8,
+      8,
+      4,
+      4,
+      2
+    ],
+    "padded_gates": 62890,
+    "cases": 3
+  },
+  "rejected_mutations": [
+    "round",
+    "claim",
+    "statement",
+    "layer_count"
+  ],
+  "changed_input_rejected_by_obligation": true,
+  "raw_sha256": {
+    "proof.json": "2daaaf933d781f1ccf6ebab14c7ae01f416d44989a5d36fdd74150459bd5c377",
+    "obligation.json": "fd9abf4e6af5222d533ce8860169a3050d19649cdbb9d9cf47881831ebc70283",
+    "layout.json": "8b301e30f1994bc69de3c44a0c0cf27cf1a4767ee0a5ccaca491c72a2d2a9fe6",
+    "inputs.json": "2bbd3983efa6336fa869697b11c6b856a63905b10d32cf1581d7a3fb65d8777c",
+    "input-coordinates.json": "66e8995515df5779b33aeba1726733d6d009a4690e7b59f6c60a2d2da4abeb43",
+    "claim.json": "3ffbe0cb060776bc048768802eccdf32c6f2607da321505f4760ad0341691e9d"
+  },
+  "source_export_sha256": "78a24241e778d287a3bc05c694bc1fb0101107abd1e22fa7a3f69427b0043e96",
+  "limitations": [
+    "Ext4 is diagnostic, not PQ128.",
+    "Field payload excludes framing, circuit, input-opening proof and other verifier components.",
+    "Fixed output checksum is not sound batching of native verifier constraints.",
+    "Input dot product checked with full witness, not a PCS proof.",
+    "No end-to-end verifier acceptance, NEAR state transition or Lean compiler theorem."
+  ]
+}

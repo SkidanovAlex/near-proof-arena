@@ -11359,3 +11359,47 @@ PQ128, secure sub300000bytes and end-to-end Lean correctness remain open.
 
 Reproducer:airbender/direct-wasm/measure_swirl_rebalanced_gkr.py.
 Evidence/source hashes:results/swirl-security-review/dag-rebalance/.
+
+
+## 2026-10-17 — Executed rebalanced DAG GKR with explicit input obligation
+
+Previous goal turn classified progress: depth rewrite/combined layout passed
+component-size gate. Revalidated clean worktree at4026f8a9b. Exposed optional
+compiler artifacts and added prove_swirl_fixed_dag.py. Uses independent seeded
+Ext4 coordinates, evaluates original exported DAG and its diagnostic checksum,
+then checks the layered circuit returns the same checksum. Real native Ext4
+GKR prover and Python verifier executed on the combined23-layer graph.
+
+Proof has1198extension elements exactly as predicted,19168bytes of canonical
+Ext4 field payload. Prover10.05s; verifier2.50s on this host, not a production
+benchmark. The earlier43128bytes is degree9 sensitivity only; no Ext9 proof,
+field instantiation or PQ128 claim. Framing, circuit/input metadata, PCS input
+proof and all other verifier work are excluded from field-payload counts.
+
+Prover and verifier return the same input functional obligation. Its dot
+product matches the original padded input vector. Changing a nonzero-weight
+input fails that explicitly checked obligation. Altered proof round, output
+claim, statement and layer count reject. Fresh process reconstructs the trusted
+layout from the exported DAG, compares stored layout/coordinate mapping,
+verifies saved proof, and checks the full-witness obligation again. Layout is
+not accepted solely from proof-supplied metadata. Source export, payload,
+proof/layout/inputs/claim/obligation, logs and hashes are retained.
+
+Scope limits: fixed diagnostic output coefficients are NOT sound random
+batching, the output is not native verifier acceptance, and checking a full
+input vector is NOT authenticated PCS linking. An input linear functional
+alone does not bind all coordinates. This experiment establishes an executable
+GKR component, not a secure recursive compression proof. Original source
+compiler reports and layout estimates reproduce after the optional API change.
+No Lean theorem or full NEAR/PQ128 result is claimed.
+
+Next must jointly price the actual output-reduction interface and the PCS link:
+previous free-column cost screens charged ZERO for this replacement; they must
+now pay its messages and account for changes in the recursively verified
+circuit. Then instantiate challenge chronology and common-input obligations
+before compiler/GKR Lean composition. The small component alone does not
+close the full300000-byte gap or NEAR1Petagas semantics/capacity obligations.
+
+Evidence:research/near-compression/results/swirl-security-review/dag-gkr/.
+Reproduce:airbender/direct-wasm/prove_swirl_fixed_dag.py; replay with
+--verify-saved. Full goal remains active and unachieved.

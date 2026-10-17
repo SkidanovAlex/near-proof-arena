@@ -22,7 +22,7 @@ def input_value(key, seed):
     return {'first_row': seed+13, 'last_row': seed+17, 'transition': 1-(seed+17)}[key[0]] % P
 
 
-def compile_air(record, *, reassociate=False):
+def compile_air(record, *, reassociate=False, return_artifacts=False):
     nodes=[]; mapping=[]; slots={}
     for original_index, node in enumerate(record['nodes']):
         op,*args=node
@@ -110,10 +110,11 @@ def compile_air(record, *, reassociate=False):
         assert v[layout['root']]==values[root]
     previous_widths=[layout['input_size']]+[len(x) for x in layout['layers'][:-1]]
     gkr_elements=sum(6*((w-1).bit_length())+2 for w in previous_widths)
-    return dict(gkr_field_elements=gkr_elements, air=record['air'],source_nodes=len(mapping),inputs=len(slots),semantic_outputs=len(outputs),
+    stats=dict(gkr_field_elements=gkr_elements, air=record['air'],source_nodes=len(mapping),inputs=len(slots),semantic_outputs=len(outputs),
                 lowered_nodes=len(nodes),live_nodes=len(live),input_size=layout['input_size'],
                 layers=len(layout['layers']),layer_widths=[len(x) for x in layout['layers']],
                 padded_gates=sum(len(x) for x in layout['layers']),cases=len(record['cases']))
+    return (stats,layout,slots) if return_artifacts else stats
 
 
 def main():
