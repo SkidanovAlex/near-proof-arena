@@ -55,9 +55,13 @@ mod config {use super::*;include!("native_sha384_config.rs");include!("native_di
                     digests.len(),digests.len()/48,unique.len(),base_values*4,ext_values*48);
                 std::fs::write(format!("{out}/auth-digests.bin"),&digests).unwrap();
             }
+            let trace_path=std::env::var("NEARPROOF_MERKLE_TRACE").ok();
+            if trace_path.is_some() {MERKLE_TRACE.lock().unwrap().clear();MERKLE_TRACE_ON.store(true,std::sync::atomic::Ordering::Relaxed);}
             let before=hash_counts();
             engine.verify(&vk,&proof).unwrap();
             let after=hash_counts();
+            if let Some(path)=trace_path {MERKLE_TRACE_ON.store(false,std::sync::atomic::Ordering::Relaxed);
+                std::fs::write(path,&*MERKLE_TRACE.lock().unwrap()).unwrap();}
             let calls:[u64;6]=std::array::from_fn(|i|after.0[i]-before.0[i]);
             let blocks:[u64;6]=std::array::from_fn(|i|after.1[i]-before.1[i]);
             println!("NATIVE_SHA384_VERIFY_CALLS {:?}",calls);

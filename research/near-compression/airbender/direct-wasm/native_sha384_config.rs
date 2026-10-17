@@ -11,6 +11,15 @@ type Digest=[u64;6];
 fn digest_bytes(d:Digest)->Vec<u8> {d.into_iter().flat_map(u64::to_le_bytes).collect()}
 static HASH_CALLS:[std::sync::atomic::AtomicU64;6]=[const {std::sync::atomic::AtomicU64::new(0)};6];
 static HASH_BLOCKS:[std::sync::atomic::AtomicU64;6]=[const {std::sync::atomic::AtomicU64::new(0)};6];
+static MERKLE_TRACE_ON:std::sync::atomic::AtomicBool=std::sync::atomic::AtomicBool::new(false);
+static MERKLE_TRACE:std::sync::Mutex<Vec<u8>>=std::sync::Mutex::new(Vec::new());
+fn record_merkle(kind:u8,payload:&[u8],digest:Digest) {
+    if MERKLE_TRACE_ON.load(std::sync::atomic::Ordering::Relaxed) {
+        let mut log=MERKLE_TRACE.lock().unwrap();
+        log.push(kind);log.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+        log.extend_from_slice(payload);log.extend(digest_bytes(digest));
+    }
+}
 fn hash_counts()->([u64;6],[u64;6]) {
     use std::sync::atomic::Ordering::Relaxed;
     (std::array::from_fn(|i|HASH_CALLS[i].load(Relaxed)),std::array::from_fn(|i|HASH_BLOCKS[i].load(Relaxed)))
@@ -31,7 +40,7 @@ impl MerkleHasher for ShaHasher {
     type F=F;type Digest=Digest;
     fn hash_slice(&self,values:&[F])->Digest {
         let bytes:Vec<u8>=values.iter().flat_map(|x|x.as_canonical_u32().to_le_bytes()).collect();
-        words(hash_parts(0,&[&bytes]))
+        let digest=words(hash_parts(0,&[&bytes]));record_merkle(0,&bytes,digest);digest
     }
     fn compress(&self,left:Digest,right:Digest)->Digest {
         // Fixed-width, disjoint node domain: 8+48+48=104 bytes fits
@@ -40,7 +49,8 @@ impl MerkleHasher for ShaHasher {
         HASH_CALLS[1].fetch_add(1,Relaxed);HASH_BLOCKS[1].fetch_add(1,Relaxed);
         let mut h=Sha384::new();h.update(b"NPQ4NODE");
         h.update(digest_bytes(left));h.update(digest_bytes(right));
-        words(h.finalize().into())
+        let digest=words(h.finalize().into());
+        record_merkle(1,&[digest_bytes(left),digest_bytes(right)].concat(),digest);digest
     }
 }
 #[derive(Clone,Debug)]

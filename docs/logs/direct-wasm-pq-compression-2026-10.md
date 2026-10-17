@@ -13377,3 +13377,37 @@ No new Lean theorem or recursive parent this turn. git diff --check passes.
 Next: shared Merkle openings at the retained actual profile, not a broad sweep.
 FullNEAR1Pgas, concrete quantum composition, sub300000 and formal end-to-end
 acceptance-to-execution remain open.
+
+## 2026-10-17 — Executed shared-Merkle reconstruction does not close size gap
+
+Previous turn progressed at9fbad0ff1; worktree clean revalidated. Instrumented
+optional hash tracing during actual saved-proof verification, after keygen and
+before decoding outputs are discarded. No protocol/hash/parameter change.
+All-list/blowup128 native proof replays successfully. Trace contains2472leaf and
+8354node hash calls; independent Python/OpenSSL recomputes every output and
+checks consistency of9073distinct hash outputs.
+
+Analyzed all4741distinct auth digests (6191serialized occurrences). Recursive
+expansion through the captured hash DAG needs4135frontier digests,2472leaf
+computations and6595internal computations. Every leaf source is located in
+native proof bytes OUTSIDE all omitted authentication slots. Analyzer zeroes
+all auth slots, computes the plan only from frontier values and retained
+non-auth bytes, then restores exact original proof bytes. This excludes circular
+use of omitted hashes and validates reconstruction beyond duplicate counting.
+
+Under this fixed reconstruction plan, raw frontier198480bytes + unchanged
+non-auth payload215441bytes + request919 =414840bytes before metadata. Not a
+universal lower bound: other algebraic structure/parameters/layouts are excluded.
+A naive explicit program costs257838bytes; adding references and unchanged
+payload gives491852before framing, worse than existing450302dictionary wire.
+Decision: do not implement/adopt that naive transport; shared path reconstruction
+alone does not reach300000 in this plan. Additional protocol-level reduction is
+needed. This result does not dismiss all multiproof strategies.
+
+Retained trace, executable analysis, plan,source snapshots,replay log and report
+under native-literal-merkle-reconstruction/. Gzip metadata is deterministic;
+source proof and trace hashes checked. Optional instrumentation leaves cryptographic
+hash outputs unchanged. git diff --check passes. No new proof generation, wire
+codec or Lean theorem claimed. Best tested transmitted slice remains451221B.
+FullNEAR1Pgas, recursive SHA384 parent, concrete QROM composition, sub300000 and
+end-to-end Lean correctness remain open.
