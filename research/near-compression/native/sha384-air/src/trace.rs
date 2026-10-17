@@ -1,4 +1,4 @@
-//! Trace generation for the narrow SHA-512 compression AIR, plus a native
+//! Trace generation for the packed-digit SHA-512 compression AIR, plus a native
 //! reference round function checked against `sha2::compress512`.
 use crate::air::*;
 
@@ -54,22 +54,22 @@ pub fn pad_message(msg: &[u8]) -> Vec<[u64; 16]> {
         .collect()
 }
 
-fn bsig0(x: u64) -> u64 {
+pub fn bsig0(x: u64) -> u64 {
     x.rotate_right(28) ^ x.rotate_right(34) ^ x.rotate_right(39)
 }
-fn bsig1(x: u64) -> u64 {
+pub fn bsig1(x: u64) -> u64 {
     x.rotate_right(14) ^ x.rotate_right(18) ^ x.rotate_right(41)
 }
-fn ssig0(x: u64) -> u64 {
+pub fn ssig0(x: u64) -> u64 {
     x.rotate_right(1) ^ x.rotate_right(8) ^ (x >> 7)
 }
-fn ssig1(x: u64) -> u64 {
+pub fn ssig1(x: u64) -> u64 {
     x.rotate_right(19) ^ x.rotate_right(61) ^ (x >> 6)
 }
-fn chf(e: u64, f: u64, g: u64) -> u64 {
+pub fn chf(e: u64, f: u64, g: u64) -> u64 {
     (e & f) ^ (!e & g)
 }
-fn majf(a: u64, b: u64, c: u64) -> u64 {
+pub fn majf(a: u64, b: u64, c: u64) -> u64 {
     (a & b) ^ (a & c) ^ (b & c)
 }
 
@@ -114,43 +114,8 @@ pub fn round_words(c: &Comp) -> Words {
     Words { a, e, w, out }
 }
 
-fn put(row: &mut [u32], base: usize, x: u64) {
-    for i in 0..64 {
-        row[base + i] = ((x >> i) & 1) as u32;
-    }
-}
-pub fn get(row: &[u32], base: usize) -> u64 {
-    (0..64).fold(0u64, |acc, i| acc | ((row[base + i] as u64 & 1) << i))
-}
-fn put3(row: &mut [u32], base: usize, v: [u64; 3]) {
-    for i in 0..3 {
-        assert!(v[i] < (1 << 31));
-        row[base + i] = v[i] as u32;
-    }
-}
-fn l3(x: u64) -> [u64; 3] {
-    limbs3(x)
-}
-fn sum3(xs: &[[u64; 3]]) -> [u64; 3] {
-    std::array::from_fn(|i| xs.iter().map(|x| x[i]).sum())
-}
-/// Carries for out + 2^{s_i} c_i - c_{i-1} = rhs_i; checks the output limbs.
-fn carries(out: u64, rhs: [u64; 3]) -> [u64; 3] {
-    let ol = l3(out);
-    let mut c = [0u64; 3];
-    let mut prev = 0u64;
-    for i in 0..3 {
-        let w = LIMB_OFF[i + 1] - LIMB_OFF[i];
-        let v = rhs[i] + prev;
-        assert_eq!(v & ((1 << w) - 1), ol[i], "limb mismatch");
-        c[i] = v >> w;
-        assert!(c[i] < RANGE as u64);
-        prev = c[i];
-    }
-    c
-}
-
 pub struct Traces {
+    pub lay: Layout,
     pub main: Vec<u32>,
     pub main_height: usize,
     pub table: Vec<u32>,
@@ -162,218 +127,278 @@ pub fn main_height(n: usize) -> usize {
     (n * ROWS).next_power_of_two().max(4)
 }
 
-/// Main trace (row-major, WIDTH).  `height` >= n*ROWS, a power of two.
-pub fn gen_main(comps: &[Comp], height: usize) -> Vec<u32> {
-    assert!(height >= comps.len() * ROWS && height.is_power_of_two());
-    let mut t = vec![0u32; height * WIDTH];
-    // Pass 1: bits, control, round constants.
-    for gi in 0..height {
-        let row = &mut t[gi * WIDTH..(gi + 1) * WIDTH];
-        let s = gi / ROWS;
-        let r = if s < comps.len() {
-            gi % ROWS
-        } else {
-            PAD_R as usize
-        };
-        let e = ctl_entry(r);
-        row[R] = r as u32;
-        row[G] = gi as u32;
-        for (k, col) in (F_IV..=F_S3).enumerate() {
-            row[col] = e[1 + k] as u32;
-        }
-        for k in 0..6 {
-            row[K0 + k] = e[9 + k] as u32;
+type L3 = [i64; 3];
+fn sum3(xs: &[L3]) -> L3 {
+    std::array::from_fn(|i| xs.iter().map(|x| x[i]).sum())
+}
+fn neg3(x: L3) -> L3 {
+    std::array::from_fn(|i| -x[i])
+}
+
+struct Gen<'a> {
+    lay: Layout,
+    t: &'a mut [u32],
+}
+impl Gen<'_> {
+    fn row(&self, gi: usize) -> &[u32] {
+        &self.t[gi * self.lay.width..(gi + 1) * self.lay.width]
+    }
+    fn put_word(&mut self, gi: usize, base: usize, x: u64) {
+        let w = self.lay.width;
+        for (j, d) in self.lay.digits(x).into_iter().enumerate() {
+            self.t[gi * w + base + j] = d as u32;
         }
     }
-    for (s, c) in comps.iter().enumerate() {
-        let wd = round_words(c);
+    fn get_word(&self, gi: usize, base: usize) -> u64 {
+        let row = self.row(gi);
+        (0..self.lay.nd).fold(0u64, |acc, j| acc | ((row[base + j] as u64) << (self.lay.k * j)))
+    }
+    fn l3(&self, x: u64) -> L3 {
+        self.lay.limbs(x).map(|v| v as i64)
+    }
+    fn get3(&self, gi: usize, c: usize) -> L3 {
+        let row = self.row(gi);
+        std::array::from_fn(|i| row[c + i] as i64)
+    }
+    fn put3(&mut self, gi: usize, c: usize, v: L3) {
+        let w = self.lay.width;
+        for i in 0..3 {
+            assert!(v[i] >= 0 && v[i] < (1 << 30), "value out of range: {v:?}");
+            self.t[gi * w + c + i] = v[i] as u32;
+        }
+    }
+    /// Carries for out_i + 2^{w_i} c_i - c_{i-1} = rhs_i, stored with offset `off`.
+    fn carries(&self, out: u64, rhs: L3, off: i64) -> L3 {
+        let ol = self.l3(out);
+        let mut c = [0i64; 3];
+        let mut prev = 0i64;
+        for i in 0..3 {
+            let w = self.lay.lw(i) as i64;
+            let v = rhs[i] + prev - ol[i];
+            assert_eq!(v.rem_euclid(1 << w), 0, "limb mismatch");
+            c[i] = v >> w;
+            prev = c[i];
+            assert!((0..CARRY_RANGE as i64).contains(&(c[i] + off)), "carry {} off {off}", c[i]);
+        }
+        c.map(|x| x + off)
+    }
+}
+
+/// Main trace (row-major).  `height` >= n*ROWS, a power of two.
+pub fn gen_main(lay: Layout, comps: &[Comp], height: usize) -> Vec<u32> {
+    assert!(height >= comps.len() * ROWS && height.is_power_of_two());
+    let w = lay.width;
+    let mut t = vec![0u32; height * w];
+    let mut gn = Gen { lay, t: &mut t };
+    // Pass 1: r, g, flags.
+    for gi in 0..height {
+        let s = gi / ROWS;
+        let r = if s < comps.len() { gi % ROWS } else { PAD_R as usize };
+        let e = ctl_entry(r);
+        gn.t[gi * w + lay.r] = r as u32;
+        gn.t[gi * w + lay.g] = gi as u32;
+        for f in 0..NFLAGS {
+            gn.t[gi * w + lay.flags + f] = e[1 + f] as u32;
+        }
+    }
+    // Pass 2: word digits.
+    let words: Vec<Words> = comps.iter().map(round_words).collect();
+    for (s, wd) in words.iter().enumerate() {
         let base = s * ROWS;
         for r in 0..ROWS {
-            let row = &mut t[(base + r) * WIDTH..(base + r + 1) * WIDTH];
+            let gi = base + r;
             let (sa, se): ([u64; 2], [u64; 2]) = if r < 42 {
-                // a index (j+4) for slots j = 2r-4, 2r-3
-                (
-                    [wd.a[2 * r], wd.a[2 * r + 1]],
-                    [wd.e[2 * r], wd.e[2 * r + 1]],
-                )
+                ([wd.a[2 * r], wd.a[2 * r + 1]], [wd.e[2 * r], wd.e[2 * r + 1]])
             } else if r == 42 {
                 ([wd.out[1], wd.out[0]], [wd.out[5], wd.out[4]])
             } else {
                 ([wd.out[3], wd.out[2]], [wd.out[7], wd.out[6]])
             };
-            put(row, A0, sa[0]);
-            put(row, A1, sa[1]);
-            put(row, E0, se[0]);
-            put(row, E1, se[1]);
+            gn.put_word(gi, lay.a0, sa[0]);
+            gn.put_word(gi, lay.a1, sa[1]);
+            gn.put_word(gi, lay.e0, se[0]);
+            gn.put_word(gi, lay.e1, se[1]);
             if (2..42).contains(&r) {
-                put(row, W0, wd.w[2 * r - 4]);
-                put(row, W1, wd.w[2 * r - 3]);
+                gn.put_word(gi, lay.w0, wd.w[2 * r - 4]);
+                gn.put_word(gi, lay.w1, wd.w[2 * r - 3]);
+            } else if r == 42 {
+                // received final words of row 40: a_76, a_77 as digits, e_76, e_77 as limbs
+                gn.put_word(gi, lay.w0, wd.a[80]);
+                gn.put_word(gi, lay.w1, wd.a[81]);
+                let (v0, v1) = (gn.l3(wd.e[80]), gn.l3(wd.e[81]));
+                gn.put3(gi, lay.v0, v0);
+                gn.put3(gi, lay.v1, v1);
             }
         }
     }
-    // Pass 2: S and D for every non-OUT row, from the (cyclic) previous row.
-    let gs = |t: &[u32], gi: usize, base: usize| get(&t[gi * WIDTH..(gi + 1) * WIDTH], base);
+    // Pass 3: S and DE on every row, cyclically, from (previous row, row).
     for gi in 0..height {
-        if t[gi * WIDTH + F_OUT] == 1 {
-            continue;
-        }
         let p = (gi + height - 1) % height;
-        let (a0l, a1l, e0l, e1l) = (gs(&t, p, A0), gs(&t, p, A1), gs(&t, p, E0), gs(&t, p, E1));
+        let gw = |gn: &Gen, r: usize, b: usize| gn.get_word(r, b);
+        let (a1l, e0l, e1l) = (gw(&gn, p, lay.a1), gw(&gn, p, lay.e0), gw(&gn, p, lay.e1));
         let (a0n, a1n, e0n, e1n) = (
-            gs(&t, gi, A0),
-            gs(&t, gi, A1),
-            gs(&t, gi, E0),
-            gs(&t, gi, E1),
+            gw(&gn, gi, lay.a0),
+            gw(&gn, gi, lay.a1),
+            gw(&gn, gi, lay.e0),
+            gw(&gn, gi, lay.e1),
         );
-        let t1 = sum3(&[l3(e0l), l3(bsig1(e1n)), l3(chf(e1n, e0n, e1l))]);
-        let sa = sum3(&[t1, l3(bsig0(a1n)), l3(majf(a1n, a0n, a1l))]);
-        let se = sum3(&[t1, l3(a0l)]);
-        let row = &mut t[gi * WIDTH..(gi + 1) * WIDTH];
-        put3(row, SA, sa);
-        put3(row, SE, se);
-        put3(row, DA, l3(a1l));
-        put3(row, DE, l3(e1l));
+        let t1 = sum3(&[gn.l3(e0l), gn.l3(bsig1(e1n)), gn.l3(chf(e1n, e0n, e1l))]);
+        let sa = sum3(&[t1, gn.l3(bsig0(a1n)), gn.l3(majf(a1n, a0n, a1l))]);
+        let de = gn.l3(e1l);
+        gn.put3(gi, lay.sa, sa);
+        gn.put3(gi, lay.de, de);
     }
-    // Pass 3: received values and carries (needs S/D of the previous row).
-    for s in 0..comps.len() {
+    // Pass 4: carries and received values on row x, for the additions of row x+1.
+    for (s, wd) in words.iter().enumerate() {
         let base = s * ROWS;
-        for r in 0..ROWS {
-            let gi = base + r;
-            let prev: Vec<u32> = t[(gi - if gi > 0 { 1 } else { 0 }) * WIDTH..][..WIDTH].to_vec();
-            let at = |rr: usize, col: usize| gs(&t, base + rr, col);
-            let mut row: Vec<u32> = t[gi * WIDTH..(gi + 1) * WIDTH].to_vec();
-            if (2..42).contains(&r) {
-                let (a0l, a1l, e0l, e1l) = (
-                    get(&prev, A0),
-                    get(&prev, A1),
-                    get(&prev, E0),
-                    get(&prev, E1),
-                );
+        for x in base..base + ROWS {
+            let n = x + 1;
+            let rn = n - base; // segment row of x+1 (44 = next segment)
+            if (2..42).contains(&rn) {
+                let get = |b: usize, gi: usize| gn.get_word(gi, b);
+                let (a0l, a1l, e0l, e1l) =
+                    (get(lay.a0, x), get(lay.a1, x), get(lay.e0, x), get(lay.e1, x));
                 let (a0n, a1n, e0n, e1n) =
-                    (get(&row, A0), get(&row, A1), get(&row, E0), get(&row, E1));
-                let (w0n, w1n) = (get(&row, W0), get(&row, W1));
-                let pv = |c: usize| -> [u64; 3] { std::array::from_fn(|i| prev[c + i] as u64) };
-                let k0: [u64; 3] = std::array::from_fn(|i| row[K0 + i] as u64);
-                let k1: [u64; 3] = std::array::from_fn(|i| row[K1 + i] as u64);
-                // slot 1
-                let t1 = sum3(&[pv(DE), l3(bsig1(e0n)), l3(chf(e0n, e1l, e0l)), k1, l3(w1n)]);
-                let ra = sum3(&[t1, l3(bsig0(a0n)), l3(majf(a0n, a1l, a0l))]);
-                let re = sum3(&[t1, pv(DA)]);
-                put3(&mut row, C1A, carries(a1n, ra));
-                put3(&mut row, C1E, carries(e1n, re));
+                    (get(lay.a0, n), get(lay.a1, n), get(lay.e0, n), get(lay.e1, n));
+                let (w0n, w1n) = (get(lay.w0, n), get(lay.w1, n));
+                let (sa, de) = (gn.get3(x, lay.sa), gn.get3(x, lay.de));
+                // d - T2 for slot 0, from rows x-1 and x
+                let a1x = get(lay.a1, x - 1);
+                let d0 = get(lay.a0, x - 1);
+                let dmt2 = sum3(&[
+                    gn.l3(d0),
+                    neg3(gn.l3(bsig0(a1l))),
+                    neg3(gn.l3(majf(a1l, a0l, a1x))),
+                ]);
+                let k0 = gn.l3(K[2 * rn - 4]);
+                let k1 = gn.l3(K[2 * rn - 3]);
                 // slot 0
-                put3(&mut row, C0A, carries(a0n, sum3(&[pv(SA), l3(w0n), k0])));
-                put3(&mut row, C0E, carries(e0n, sum3(&[pv(SE), l3(w0n), k0])));
-                if r >= 10 {
-                    let v0 = sum3(&[l3(at(r - 8, W0)), l3(ssig0(at(r - 8, W1)))]);
-                    let v1 = sum3(&[l3(at(r - 8, W1)), l3(ssig0(at(r - 7, W0)))]);
-                    put3(&mut row, RV0, v0);
-                    put3(&mut row, RV1, v1);
-                    put3(&mut row, R7A, l3(at(r - 4, W1)));
-                    put3(&mut row, R7B, l3(at(r - 3, W0)));
-                    let (w0l, w1l) = (get(&prev, W0), get(&prev, W1));
-                    put3(
-                        &mut row,
-                        CW0,
-                        carries(w0n, sum3(&[l3(ssig1(w0l)), l3(at(r - 4, W1)), v0])),
+                let c0a = gn.carries(a0n, sum3(&[sa, gn.l3(w0n), k0]), 0);
+                let c0e = gn.carries(e0n, sum3(&[gn.l3(a0n), dmt2]), CARRY_OFF);
+                // slot 1
+                let t2 = sum3(&[gn.l3(bsig0(a0n)), gn.l3(majf(a0n, a1l, a0l))]);
+                let t1 = sum3(&[
+                    de,
+                    gn.l3(bsig1(e0n)),
+                    gn.l3(chf(e0n, e1l, e0l)),
+                    k1,
+                    gn.l3(w1n),
+                ]);
+                let c1a = gn.carries(a1n, sum3(&[t1, t2]), 0);
+                let d = gn.get_word(x - 1, lay.a1);
+                let c1e = gn.carries(e1n, sum3(&[gn.l3(a1n), neg3(t2), gn.l3(d)]), CARRY_OFF);
+                gn.put3(x, lay.c0a, c0a);
+                gn.put3(x, lay.c0e, c0e);
+                gn.put3(x, lay.c1a, c1a);
+                gn.put3(x, lay.c1e, c1e);
+                if rn >= 10 {
+                    let tw = |t: usize| wd.w[t];
+                    let t0 = 2 * rn - 4;
+                    let v0 = sum3(&[gn.l3(tw(t0 - 16)), gn.l3(ssig0(tw(t0 - 15)))]);
+                    let v1 = sum3(&[gn.l3(tw(t0 - 15)), gn.l3(ssig0(tw(t0 - 14)))]);
+                    let cw0 = gn.carries(
+                        tw(t0),
+                        sum3(&[gn.l3(ssig1(tw(t0 - 2))), v0, gn.l3(tw(t0 - 7))]),
+                        0,
                     );
-                    put3(
-                        &mut row,
-                        CW1,
-                        carries(w1n, sum3(&[l3(ssig1(w1l)), l3(at(r - 3, W0)), v1])),
+                    let cw1 = gn.carries(
+                        tw(t0 + 1),
+                        sum3(&[gn.l3(ssig1(tw(t0 - 1))), v1, gn.l3(tw(t0 - 6))]),
+                        0,
                     );
+                    gn.put3(x, lay.v0, v0);
+                    gn.put3(x, lay.v1, v1);
+                    gn.put3(x, lay.cw0, cw0);
+                    gn.put3(x, lay.cw1, cw1);
                 }
-            } else if r >= 42 {
-                let (ivr, finr) = if r == 42 { (1, 41) } else { (0, 40) };
-                for (q, &slot) in SLOTS.iter().enumerate() {
-                    let iv = at(ivr, slot);
-                    let fin = at(finr, slot);
-                    put3(&mut row, OUT_IV + 3 * q, l3(iv));
-                    put3(&mut row, OUT_FIN + 3 * q, l3(fin));
-                    let outw = get(&row, slot);
-                    assert_eq!(outw, iv.wrapping_add(fin));
-                    put3(
-                        &mut row,
-                        OUT_C + 3 * q,
-                        carries(outw, sum3(&[l3(iv), l3(fin)])),
-                    );
+            } else if rn == 42 || rn == 43 {
+                // feed-forward: slot q of row n = IV word q + final word q
+                let (ivr, fin): (usize, [u64; 4]) = if rn == 42 {
+                    (1, [wd.a[82], wd.a[83], wd.e[82], wd.e[83]])
+                } else {
+                    (0, [wd.a[80], wd.a[81], wd.e[80], wd.e[81]])
+                };
+                let carries = [lay.c0a, lay.c1a, lay.c0e, lay.c1e];
+                for (q, &slot) in lay.slots().iter().enumerate() {
+                    let iv = gn.get_word(base + ivr, slot);
+                    let out = gn.get_word(n, slot);
+                    assert_eq!(out, iv.wrapping_add(fin[q]));
+                    let c = gn.carries(out, sum3(&[gn.l3(iv), gn.l3(fin[q])]), 0);
+                    gn.put3(x, carries[q], c);
                 }
             }
-            t[gi * WIDTH..(gi + 1) * WIDTH].copy_from_slice(&row);
         }
     }
     t
 }
 
 /// Table trace (64 rows) with multiplicities counted from the main trace.
-pub fn gen_table(main: &[u32], height: usize) -> Vec<u32> {
+pub fn gen_table(lay: &Layout, main: &[u32], height: usize) -> Vec<u32> {
+    let w = lay.width;
     let mut t = vec![0u32; 64 * T_WIDTH];
     for i in 0..64 {
-        t[i * T_WIDTH + T_U + i % 8] = 1;
-        t[i * T_WIDTH + T_V + i / 8] = 1;
+        let e = table_index(i);
+        t[i * T_WIDTH + T_U + e % 4] = 1;
+        t[i * T_WIDTH + T_V + (e / 4) % 4] = 1;
+        t[i * T_WIDTH + T_W + e / 16] = 1;
     }
     for gi in 0..height {
-        let row = &main[gi * WIDTH..(gi + 1) * WIDTH];
-        t[row[R] as usize * T_WIDTH + T_MC] += 1;
-        for col in C1A..C1A + NCARRY {
-            t[row[col] as usize * T_WIDTH + T_MR] += 1;
+        let r = main[gi * w + lay.r] as usize;
+        t[r * T_WIDTH + T_MC] += 1;
+        let nx = (gi + 1) % height;
+        if main[nx * w + lay.flags + FI_ROUND] == 1 {
+            t[r * T_WIDTH + T_MK] += 1;
         }
     }
     t
 }
 
 /// Interface consumer rows from the reference compression (independent of the AIR trace).
-pub fn gen_harness(comps: &[Comp]) -> (Vec<u32>, usize) {
-    let height = (comps.len() * 32).next_power_of_two().max(4);
+pub fn gen_harness(lay: &Layout, comps: &[Comp]) -> (Vec<u32>, usize) {
+    let height = (comps.len() * 16).next_power_of_two().max(4);
     let mut t = vec![0u32; height * H_WIDTH];
     for (s, c) in comps.iter().enumerate() {
         let out = sha2_compress(c);
-        let ws: Vec<u64> =
-            c.h.iter()
-                .chain(c.block.iter())
-                .chain(out.iter())
-                .copied()
-                .collect();
-        for (idx, w) in ws.into_iter().enumerate() {
-            let row = &mut t[(s * 32 + idx) * H_WIDTH..][..H_WIDTH];
+        let ws: Vec<u64> = c.h.iter().chain(c.block.iter()).chain(out.iter()).copied().collect();
+        for m in 0..16 {
+            let row = &mut t[(s * 16 + m) * H_WIDTH..][..H_WIDTH];
             row[0] = (s * ROWS) as u32;
-            row[1] = idx as u32;
-            for k in 0..4 {
-                row[2 + k] = ((w >> (16 * k)) & 0xffff) as u32;
+            row[1] = m as u32;
+            for (h, wv) in [ws[2 * m], ws[2 * m + 1]].into_iter().enumerate() {
+                for (i, v) in lay.limbs(wv).into_iter().enumerate() {
+                    row[2 + 3 * h + i] = v as u32;
+                }
             }
-            row[6] = 1;
+            row[8] = 1;
         }
     }
     (t, height)
 }
 
-pub fn gen_all(comps: &[Comp]) -> Traces {
+pub fn gen_all(lay: Layout, comps: &[Comp]) -> Traces {
     let h = main_height(comps.len());
-    let main = gen_main(comps, h);
-    let table = gen_table(&main, h);
-    let (harness, hh) = gen_harness(comps);
-    Traces {
-        main,
-        main_height: h,
-        table,
-        harness,
-        harness_height: hh,
-    }
+    let main = gen_main(lay, comps, h);
+    let table = gen_table(&lay, &main, h);
+    let (harness, hh) = gen_harness(&lay, comps);
+    Traces { lay, main, main_height: h, table, harness, harness_height: hh }
 }
 
 /// Output state read back from the trace's OUT rows of compression s.
-pub fn trace_output(main: &[u32], s: usize) -> [u64; 8] {
-    let row = |r: usize| &main[(s * ROWS + r) * WIDTH..][..WIDTH];
-    let (r42, r43) = (row(42), row(43));
+pub fn trace_output(lay: &Layout, main: &[u32], s: usize) -> [u64; 8] {
+    let w = lay.width;
+    let get = |r: usize, base: usize| {
+        let row = &main[(s * ROWS + r) * w..][..w];
+        (0..lay.nd).fold(0u64, |acc, j| acc | ((row[base + j] as u64) << (lay.k * j)))
+    };
     [
-        get(r42, A1),
-        get(r42, A0),
-        get(r43, A1),
-        get(r43, A0),
-        get(r42, E1),
-        get(r42, E0),
-        get(r43, E1),
-        get(r43, E0),
+        get(42, lay.a1),
+        get(42, lay.a0),
+        get(43, lay.a1),
+        get(43, lay.a0),
+        get(42, lay.e1),
+        get(42, lay.e0),
+        get(43, lay.e1),
+        get(43, lay.e0),
     ]
 }
 

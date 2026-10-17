@@ -1,0 +1,46 @@
+SELFTEST native_reference_vs_sha2 pass=10000
+SELFTEST vector sha384(abc) blocks=1 digest_ok
+SELFTEST vector sha512(abc) blocks=1 digest_ok
+SELFTEST vector sha384(empty) blocks=1 digest_ok
+SELFTEST vector sha512(empty) blocks=1 digest_ok
+SELFTEST vector sha384(200B) blocks=2 digest_ok
+SELFTEST vector sha512(200B) blocks=2 digest_ok
+SELFTEST trace_outputs_vs_sha2 pass=1008 (vectors 8 + random 1000)
+KEYGEN_SECONDS 0.00
+AIR Sha512Air next_row_cols=204 width=[231] degree=9 constraints=440 interactions=14 need_rot=true dag_nodes=9513
+AIR TableAir next_row_cols=11 width=[13] degree=4 constraints=28 interactions=2 need_rot=true dag_nodes=1126
+AIR HarnessAir next_row_cols=0 width=[9] degree=2 constraints=1 interactions=1 need_rot=false dag_nodes=13
+SELFTEST debug_checker pass rows=65536 compressions=1008 secs=6.0
+NEGATIVE consistent_output_forgery detected=true by=constraint
+NEGATIVE_BUS sched_received_V0_plus_carry detected=true by=bus
+NEGATIVE_BUS sched_received_V1_plus_carry detected=true by=bus
+NEGATIVE_BUS sched_W7a_residual_via_carry detected=true by=bus
+NEGATIVE_BUS sched_W7b_residual_via_carry detected=true by=bus
+NEGATIVE_BUS round_d_minus_T2_residual_via_carry detected=true by=bus
+NEGATIVE_BUS round_K0_residual_via_carry detected=true by=bus
+NEGATIVE_BUS round_K1_residual_via_carry detected=true by=bus
+NEGATIVE_BUS round_d_residual_via_carry detected=true by=bus
+NEGATIVE_BUS out_IV_residual_via_carry_row42 detected=true by=bus
+NEGATIVE_BUS out_IV_residual_via_carry_row43 detected=true by=bus
+NEGATIVE_BUS out_received_fin_plus_carry detected=true by=bus
+NEGATIVE carry_range_half detected=true by=constraint
+NEGATIVE_BUS interface_block_word detected=true by=bus
+NEGATIVE_BUS interface_input_state detected=true by=bus
+NEGATIVE harness mutations=72 detected=72 by_constraint=8 by_bus=64
+NEGATIVE main/a_digits mutations=1216 detected=1216 by_constraint=960 by_bus=256
+NEGATIVE main/a_digits_topbit mutations=1216 detected=1216 by_constraint=943 by_bus=273
+NEGATIVE main/carry mutations=342 detected=342 by_constraint=126 by_bus=216
+NEGATIVE main/copy_DE mutations=57 detected=57 by_constraint=57 by_bus=0
+NEGATIVE main/digit_out_of_range mutations=76 detected=76 by_constraint=76 by_bus=0
+NEGATIVE main/e_digits mutations=1216 detected=1216 by_constraint=1216 by_bus=0
+NEGATIVE main/e_digits_topbit mutations=1216 detected=1216 by_constraint=1216 by_bus=0
+NEGATIVE main/flag mutations=133 detected=133 by_constraint=66 by_bus=67
+NEGATIVE main/global_row mutations=19 detected=19 by_constraint=19 by_bus=0
+NEGATIVE main/partial_sum_SA mutations=57 detected=57 by_constraint=57 by_bus=0
+NEGATIVE main/received_V mutations=114 detected=114 by_constraint=60 by_bus=54
+NEGATIVE main/row_index mutations=19 detected=19 by_constraint=17 by_bus=2
+NEGATIVE main/w_digits mutations=1216 detected=1216 by_constraint=384 by_bus=832
+NEGATIVE main/w_digits_topbit mutations=1216 detected=1216 by_constraint=384 by_bus=832
+NEGATIVE table mutations=130 detected=130 by_constraint=110 by_bus=20
+NEGATIVE total mutations=8315 detected=8315 undetected=0
+wall 107.47

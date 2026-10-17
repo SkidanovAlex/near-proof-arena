@@ -1,202 +1,231 @@
-//! Narrow SHA-512 compression AIR (FIPS 180-4 §6.4.2); SHA-384 is the same
-//! compression with the SHA-384 IV and a 48-byte truncation, both chosen by the
-//! consumer of the interface bus.
+//! Packed-digit SHA-512 compression AIR (FIPS 180-4 §6.4.2), v2.
 //!
-//! Layout: one segment of `ROWS` = 44 rows per compression, two rounds per row.
-//! Words are carried as bits (needed by Σ/σ/Ch/Maj); 64-bit additions use
-//! three limbs (22/21/21 bits) with carries range-checked by lookup.  History
-//! further than one row back moves over a permutation bus keyed by the global
-//! row counter, so no column holds a duplicated word.  Layout, alternatives
-//! and measurements: research/near-compression/results/pq384-sha-air/README.md.
-// Column-range loops read clearer than iterator chains here.
+//! SHA-384 is the same compression with the SHA-384 IV and a 48-byte truncation,
+//! both chosen by the consumer of the interface bus.
+//!
+//! What changed against v1 (442 bit columns x 44 rows):
+//! * Words are stored as `nd = ceil(64/k)` little-endian base-2^k digits (k = 1, 2, 3),
+//!   not bits.  A digit is range-checked by the polynomial prod_{m<2^s}(v - m), and each
+//!   bit is the degree-(2^s - 1) interpolating polynomial of its digit.  Integer values
+//!   (limbs) stay linear in the digits; only Σ/σ/Ch/Maj see the bit polynomials, so the
+//!   constraint degree becomes 3(2^k - 1) (21 for k = 3), with no gate on those
+//!   constraints.
+//! * Values that v1 stored only to use them in one constraint are gone: the constraint
+//!   itself is sent over a bus as a residual.  The slot-0/1 `a` additions are looked up
+//!   against the round-constant table (no K columns); the `e` additions are matched against
+//!   `d` (slot 1) and `d - T2` (slot 0) sent by the row two back (no D_a, S_E columns); the
+//!   schedule additions are matched against W[t-7] (no received W[t-7] columns); the
+//!   feed-forward is matched against the input-state words (no received IV columns).
+//!   Interactions may read the next row, so one message can carry values of two rows.
+//! * Carries are range-checked by polynomial, so the [0, 64) range table and its 18
+//!   lookups per row are gone.  Signed carries (e = a - T2 + d) carry an offset of 4.
+//! * Carries and received values used by the constraint for row x+1 are stored on row x,
+//!   so they are only ever referenced at the current row.
+//!
+//! Layout and measurements: research/near-compression/results/pq384-sha-air2/README.md.
 #![allow(clippy::needless_range_loop)]
 use openvm_stark_backend::{PartitionedBaseAir, interaction::InteractionBuilder};
 use p3_air::{Air, AirBuilder, AirBuilderWithPublicValues, BaseAir, BaseAirWithPublicValues};
-use p3_field::PrimeCharacteristicRing;
+use p3_field::{Field, PrimeCharacteristicRing};
 use p3_matrix::Matrix;
 
 pub const ROWS: usize = 44;
 pub const PAD_R: u32 = 44;
-pub const LIMB_OFF: [usize; 4] = [0, 22, 43, 64];
-
-// Main AIR columns.
-pub const A0: usize = 0;
-pub const A1: usize = 64;
-pub const E0: usize = 128;
-pub const E1: usize = 192;
-pub const W0: usize = 256;
-pub const W1: usize = 320;
-pub const NBITS: usize = 384;
-pub const SLOTS: [usize; 4] = [A0, A1, E0, E1];
-/// Unnormalised partial sums for slot 0 of the next row (a, e).
-pub const SA: usize = 384;
-pub const SE: usize = 387;
-/// Packed copy of the previous row's slot-1 words (a, e).
-pub const DA: usize = 390;
-pub const DE: usize = 393;
-/// Carries: slot-1 a/e, slot-0 a/e, schedule words 0/1.
-pub const C1A: usize = 396;
-pub const C1E: usize = 399;
-pub const C0A: usize = 402;
-pub const C0E: usize = 405;
-pub const CW0: usize = 408;
-pub const CW1: usize = 411;
-pub const NCARRY: usize = 18;
-/// Received schedule terms: V0/V1 (W[t-16] + σ0(W[t-15])), W[t-7] for slots 0/1.
-pub const RV0: usize = 414;
-pub const RV1: usize = 417;
-pub const R7A: usize = 420;
-pub const R7B: usize = 423;
-/// Round constants (limbs) for slots 0/1, from the control table.
-pub const K0: usize = 426;
-pub const K1: usize = 429;
-pub const R: usize = 432;
-pub const G: usize = 433;
-pub const F_IV: usize = 434;
-pub const F_ROUND: usize = 435;
-pub const F_SCHED: usize = 436;
-pub const F_OUT: usize = 437;
-pub const F_FIN: usize = 438;
-pub const F_S01: usize = 439;
-pub const F_S2: usize = 440;
-pub const F_S3: usize = 441;
-pub const WIDTH: usize = 442;
-// OUT rows reuse: received IV words at RV0+3q, received final words at SA+3q,
-// feed-forward carries at C1A+3q.
-pub const OUT_IV: usize = RV0;
-pub const OUT_FIN: usize = SA;
-pub const OUT_C: usize = C1A;
+/// Carry columns hold c + CARRY_OFF for the signed (e) equations; every carry column is
+/// range-checked to [0, CARRY_RANGE).
+pub const CARRY_RANGE: u64 = 8;
+pub const CARRY_OFF: i64 = 4;
 
 pub const BUS_CTL: u16 = 0;
-pub const BUS_RNG: u16 = 1;
+pub const BUS_K: u16 = 1;
 pub const BUS_LB: u16 = 2;
 pub const BUS_IF: u16 = 3;
-/// Range table [0, 64) bounds every carry.
-pub const RANGE: usize = 64;
-pub const CTL_FIELDS: usize = 15;
+pub const TAG_V: u64 = 0;
+pub const TAG_W7: u64 = 1;
+pub const TAG_DA: u64 = 3;
+pub const TAG_ST: u64 = 10;
 
 pub const K: [u64; 80] = [
-    0x428a2f98d728ae22,
-    0x7137449123ef65cd,
-    0xb5c0fbcfec4d3b2f,
-    0xe9b5dba58189dbbc,
-    0x3956c25bf348b538,
-    0x59f111f1b605d019,
-    0x923f82a4af194f9b,
-    0xab1c5ed5da6d8118,
-    0xd807aa98a3030242,
-    0x12835b0145706fbe,
-    0x243185be4ee4b28c,
-    0x550c7dc3d5ffb4e2,
-    0x72be5d74f27b896f,
-    0x80deb1fe3b1696b1,
-    0x9bdc06a725c71235,
-    0xc19bf174cf692694,
-    0xe49b69c19ef14ad2,
-    0xefbe4786384f25e3,
-    0x0fc19dc68b8cd5b5,
-    0x240ca1cc77ac9c65,
-    0x2de92c6f592b0275,
-    0x4a7484aa6ea6e483,
-    0x5cb0a9dcbd41fbd4,
-    0x76f988da831153b5,
-    0x983e5152ee66dfab,
-    0xa831c66d2db43210,
-    0xb00327c898fb213f,
-    0xbf597fc7beef0ee4,
-    0xc6e00bf33da88fc2,
-    0xd5a79147930aa725,
-    0x06ca6351e003826f,
-    0x142929670a0e6e70,
-    0x27b70a8546d22ffc,
-    0x2e1b21385c26c926,
-    0x4d2c6dfc5ac42aed,
-    0x53380d139d95b3df,
-    0x650a73548baf63de,
-    0x766a0abb3c77b2a8,
-    0x81c2c92e47edaee6,
-    0x92722c851482353b,
-    0xa2bfe8a14cf10364,
-    0xa81a664bbc423001,
-    0xc24b8b70d0f89791,
-    0xc76c51a30654be30,
-    0xd192e819d6ef5218,
-    0xd69906245565a910,
-    0xf40e35855771202a,
-    0x106aa07032bbd1b8,
-    0x19a4c116b8d2d0c8,
-    0x1e376c085141ab53,
-    0x2748774cdf8eeb99,
-    0x34b0bcb5e19b48a8,
-    0x391c0cb3c5c95a63,
-    0x4ed8aa4ae3418acb,
-    0x5b9cca4f7763e373,
-    0x682e6ff3d6b2b8a3,
-    0x748f82ee5defb2fc,
-    0x78a5636f43172f60,
-    0x84c87814a1f0ab72,
-    0x8cc702081a6439ec,
-    0x90befffa23631e28,
-    0xa4506cebde82bde9,
-    0xbef9a3f7b2c67915,
-    0xc67178f2e372532b,
-    0xca273eceea26619c,
-    0xd186b8c721c0c207,
-    0xeada7dd6cde0eb1e,
-    0xf57d4f7fee6ed178,
-    0x06f067aa72176fba,
-    0x0a637dc5a2c898a6,
-    0x113f9804bef90dae,
-    0x1b710b35131c471b,
-    0x28db77f523047d84,
-    0x32caab7b40c72493,
-    0x3c9ebe0a15c9bebc,
-    0x431d67c49c100d4c,
-    0x4cc5d4becb3e42b6,
-    0x597f299cfc657e2a,
-    0x5fcb6fab3ad6faec,
-    0x6c44198c4a475817,
+    0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
+    0x3956c25bf348b538, 0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118,
+    0xd807aa98a3030242, 0x12835b0145706fbe, 0x243185be4ee4b28c, 0x550c7dc3d5ffb4e2,
+    0x72be5d74f27b896f, 0x80deb1fe3b1696b1, 0x9bdc06a725c71235, 0xc19bf174cf692694,
+    0xe49b69c19ef14ad2, 0xefbe4786384f25e3, 0x0fc19dc68b8cd5b5, 0x240ca1cc77ac9c65,
+    0x2de92c6f592b0275, 0x4a7484aa6ea6e483, 0x5cb0a9dcbd41fbd4, 0x76f988da831153b5,
+    0x983e5152ee66dfab, 0xa831c66d2db43210, 0xb00327c898fb213f, 0xbf597fc7beef0ee4,
+    0xc6e00bf33da88fc2, 0xd5a79147930aa725, 0x06ca6351e003826f, 0x142929670a0e6e70,
+    0x27b70a8546d22ffc, 0x2e1b21385c26c926, 0x4d2c6dfc5ac42aed, 0x53380d139d95b3df,
+    0x650a73548baf63de, 0x766a0abb3c77b2a8, 0x81c2c92e47edaee6, 0x92722c851482353b,
+    0xa2bfe8a14cf10364, 0xa81a664bbc423001, 0xc24b8b70d0f89791, 0xc76c51a30654be30,
+    0xd192e819d6ef5218, 0xd69906245565a910, 0xf40e35855771202a, 0x106aa07032bbd1b8,
+    0x19a4c116b8d2d0c8, 0x1e376c085141ab53, 0x2748774cdf8eeb99, 0x34b0bcb5e19b48a8,
+    0x391c0cb3c5c95a63, 0x4ed8aa4ae3418acb, 0x5b9cca4f7763e373, 0x682e6ff3d6b2b8a3,
+    0x748f82ee5defb2fc, 0x78a5636f43172f60, 0x84c87814a1f0ab72, 0x8cc702081a6439ec,
+    0x90befffa23631e28, 0xa4506cebde82bde9, 0xbef9a3f7b2c67915, 0xc67178f2e372532b,
+    0xca273eceea26619c, 0xd186b8c721c0c207, 0xeada7dd6cde0eb1e, 0xf57d4f7fee6ed178,
+    0x06f067aa72176fba, 0x0a637dc5a2c898a6, 0x113f9804bef90dae, 0x1b710b35131c471b,
+    0x28db77f523047d84, 0x32caab7b40c72493, 0x3c9ebe0a15c9bebc, 0x431d67c49c100d4c,
+    0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817,
 ];
 
-pub fn limbs3(x: u64) -> [u64; 3] {
-    std::array::from_fn(|i| (x >> LIMB_OFF[i]) & ((1u64 << (LIMB_OFF[i + 1] - LIMB_OFF[i])) - 1))
+/// Column layout for digit width k.  Word slots first, then the 44 other columns.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Layout {
+    pub k: usize,
+    pub nd: usize,
+    /// Limb boundaries (bits); every boundary is a digit boundary.
+    pub limb_off: [usize; 4],
+    pub a0: usize,
+    pub a1: usize,
+    pub e0: usize,
+    pub e1: usize,
+    pub w0: usize,
+    pub w1: usize,
+    pub ndig: usize,
+    /// Partial sum h + Σ1 + Ch + Σ0 + Maj for slot 0 of the next row, defined on every row.
+    pub sa: usize,
+    /// Packed copy of the previous row's E1 word (h for slot 1 of the next row).
+    pub de: usize,
+    /// Received V = W[t-16] + σ0(W[t-15]) for the next row's two W slots.  On row 42 they
+    /// hold e_76 and e_77 for the feed-forward of row 43.
+    pub v0: usize,
+    pub v1: usize,
+    /// Carries of the next row's additions (stored +CARRY_OFF for the e equations).
+    pub c1a: usize,
+    pub c1e: usize,
+    pub c0a: usize,
+    pub c0e: usize,
+    pub cw0: usize,
+    pub cw1: usize,
+    pub r: usize,
+    pub g: usize,
+    /// Flags, in control-table order: F_IV, F_ROUND, F_SCHED, F_OUT, F_TAIL, F_S01, F_S2.
+    pub flags: usize,
+    pub width: usize,
+}
+pub const NFLAGS: usize = 7;
+pub const FI_IV: usize = 0;
+pub const FI_ROUND: usize = 1;
+pub const FI_SCHED: usize = 2;
+pub const FI_OUT: usize = 3;
+pub const FI_TAIL: usize = 4;
+pub const FI_S01: usize = 5;
+pub const FI_S2: usize = 6;
+
+impl Layout {
+    pub fn new(k: usize) -> Self {
+        assert!((1..=3).contains(&k));
+        let nd = 64usize.div_ceil(k);
+        let limb_off = match k {
+            1 | 2 => [0, 22, 44, 64],
+            _ => [0, 21, 42, 64],
+        };
+        let ndig = 6 * nd;
+        let mut c = ndig;
+        let mut take = |n: usize| {
+            let v = c;
+            c += n;
+            v
+        };
+        let (sa, de, v0, v1) = (take(3), take(3), take(3), take(3));
+        let (c1a, c1e, c0a, c0e, cw0, cw1) =
+            (take(3), take(3), take(3), take(3), take(3), take(3));
+        let (r, g, flags) = (take(1), take(1), take(NFLAGS));
+        Layout {
+            k,
+            nd,
+            limb_off,
+            a0: 0,
+            a1: nd,
+            e0: 2 * nd,
+            e1: 3 * nd,
+            w0: 4 * nd,
+            w1: 5 * nd,
+            ndig,
+            sa,
+            de,
+            v0,
+            v1,
+            c1a,
+            c1e,
+            c0a,
+            c0e,
+            cw0,
+            cw1,
+            r,
+            g,
+            flags,
+            width: c,
+        }
+    }
+    pub fn slots(&self) -> [usize; 4] {
+        [self.a0, self.a1, self.e0, self.e1]
+    }
+    /// Number of bits in digit j.
+    pub fn dsize(&self, j: usize) -> usize {
+        (64 - self.k * j).min(self.k)
+    }
+    pub fn lw(&self, l: usize) -> usize {
+        self.limb_off[l + 1] - self.limb_off[l]
+    }
+    /// Constraint degree of the AIR: Σ/Maj of bit polynomials, digit and carry range checks.
+    pub fn degree(&self) -> usize {
+        let bitdeg = (1usize << self.k) - 1;
+        (3 * bitdeg).max(CARRY_RANGE as usize).max(1 << self.k)
+    }
+    pub fn digits(&self, x: u64) -> Vec<u64> {
+        (0..self.nd)
+            .map(|j| (x >> (self.k * j)) & ((1u64 << self.dsize(j)) - 1))
+            .collect()
+    }
+    pub fn limbs(&self, x: u64) -> [u64; 3] {
+        std::array::from_fn(|l| (x >> self.limb_off[l]) & ((1u64 << self.lw(l)) - 1))
+    }
 }
 
-/// Control-table entry for table index i in [0, 64): (r, flags..., K0 limbs, K1 limbs).
-/// Indices >= 44 all describe the padding row (r = 44, every flag 0).
-pub fn ctl_entry(i: usize) -> [u64; CTL_FIELDS] {
-    let mut e = [0u64; CTL_FIELDS];
+/// Control-table entry for table index i: (r, flags).  Indices >= 44 describe the
+/// padding row (r = 44, every flag 0).
+pub fn ctl_entry(i: usize) -> [u64; 1 + NFLAGS] {
+    let mut e = [0u64; 1 + NFLAGS];
     if i >= ROWS {
         e[0] = PAD_R as u64;
         return e;
     }
     let f = |lo: usize, hi: usize| (lo..=hi).contains(&i) as u64;
     e[0] = i as u64;
-    e[1] = f(0, 1); // f_iv
-    e[2] = f(2, 41); // f_round
-    e[3] = f(10, 41); // f_sched
-    e[4] = f(42, 43); // f_out
-    e[5] = f(40, 41); // f_fin: rows whose words feed the feed-forward
-    e[6] = f(2, 33); // f_s01: senders of V0/V1 (received 8 rows later)
-    e[7] = f(6, 37); // f_s2: senders of W[t-7] for slot 0 (4 rows later)
-    e[8] = f(7, 38); // f_s3: senders of W[t-7] for slot 1 (3 rows later)
-    if e[2] == 1 {
-        e[9..12].copy_from_slice(&limbs3(K[2 * i - 4]));
-        e[12..15].copy_from_slice(&limbs3(K[2 * i - 3]));
+    e[1 + FI_IV] = f(0, 1);
+    e[1 + FI_ROUND] = f(2, 41);
+    e[1 + FI_SCHED] = f(10, 41);
+    e[1 + FI_OUT] = f(42, 43);
+    // rows 40, 41.  Derived: F_FIN = F_TAIL (41 - r) (row 40 sends a_76, a_77, e_76, e_77
+    // to row 42); F_DA = F_IV + F_ROUND - F_TAIL (rows 0..39 send d terms one row ahead).
+    e[1 + FI_TAIL] = f(40, 41);
+    e[1 + FI_S01] = f(2, 33); // V senders (received 7 rows later, for the row after)
+    e[1 + FI_S2] = f(6, 37); // W[t-7] senders, both slots (received 3 rows later)
+    e
+}
+
+/// K-table entry for index i: (i, K limbs of slot 0 and slot 1 of row i+1) if row i+1 is
+/// a round row, else zeros.
+pub fn k_entry(lay: &Layout, i: usize) -> [u64; 7] {
+    let mut e = [0u64; 7];
+    e[0] = if i >= ROWS { PAD_R as u64 } else { i as u64 };
+    let n = i + 1;
+    if i < ROWS && (2..=41).contains(&n) {
+        e[1..4].copy_from_slice(&lay.limbs(K[2 * n - 4]));
+        e[4..7].copy_from_slice(&lay.limbs(K[2 * n - 3]));
     }
     e
 }
 
-fn xor2<E: PrimeCharacteristicRing + Clone>(x: &E, y: &E) -> E {
-    x.clone() + y.clone() - (x.clone() * y.clone()).double()
-}
-fn xor3<E: PrimeCharacteristicRing + Clone>(x: &E, y: &E, z: &E) -> E {
-    let xy = x.clone() * y.clone();
-    x.clone() + y.clone() + z.clone()
-        - (xy.clone() + x.clone() * z.clone() + y.clone() * z.clone()).double()
-        + (xy * z.clone()) * E::from_u32(4)
-}
-/// Bitwise rotate-xor family: bit i = x[i+r1] ^ x[i+r2] ^ (x[i+r3] or shr bit).
+// ---------- bit-level helpers over symbolic or concrete expressions ----------
+//
+// Bits are carried as signs σ = 1 - 2b ∈ {1, -1}: XOR is a product, and for an s-bit digit
+// v every bit sign is an odd function of the centred digit u = v - (2^s - 1)/2 (complementing
+// v negates u and flips every bit), so σ_t = u S_t(u^2) with deg S_t = 2^{s-1} - 1.  The
+// degree of a bit is still 2^s - 1, but the expressions are much smaller.
+
+/// Signs of Σ/σ: bit i = x[i+r1] ^ x[i+r2] ^ (x[i+r3] or the shifted-out zero).
 fn rx<E: PrimeCharacteristicRing + Clone>(
     x: &[E],
     r1: usize,
@@ -206,17 +235,8 @@ fn rx<E: PrimeCharacteristicRing + Clone>(
 ) -> Vec<E> {
     (0..64)
         .map(|i| {
-            let a = &x[(i + r1) % 64];
-            let b = &x[(i + r2) % 64];
-            if shr {
-                if i + r3 < 64 {
-                    xor3(a, b, &x[i + r3])
-                } else {
-                    xor2(a, b)
-                }
-            } else {
-                xor3(a, b, &x[(i + r3) % 64])
-            }
+            let ab = x[(i + r1) % 64].clone() * x[(i + r2) % 64].clone();
+            if shr && i + r3 >= 64 { ab } else { ab * x[(i + r3) % 64].clone() }
         })
         .collect()
 }
@@ -232,64 +252,188 @@ pub fn small_sigma0<E: PrimeCharacteristicRing + Clone>(w: &[E]) -> Vec<E> {
 pub fn small_sigma1<E: PrimeCharacteristicRing + Clone>(w: &[E]) -> Vec<E> {
     rx(w, 19, 61, 6, true)
 }
-pub fn ch<E: PrimeCharacteristicRing + Clone>(e: &[E], f: &[E], g: &[E]) -> Vec<E> {
+/// 2 x sign of Ch(e, f, g) = (e ? f : g):  σf + σg + σe (σg - σf).
+pub fn ch2<E: PrimeCharacteristicRing + Clone>(e: &[E], f: &[E], g: &[E]) -> Vec<E> {
     (0..64)
-        .map(|i| g[i].clone() + e[i].clone() * (f[i].clone() - g[i].clone()))
+        .map(|i| f[i].clone() + g[i].clone() + e[i].clone() * (g[i].clone() - f[i].clone()))
         .collect()
 }
-pub fn maj<E: PrimeCharacteristicRing + Clone>(a: &[E], b: &[E], c: &[E]) -> Vec<E> {
+/// 2 x sign of Maj(a, b, c):  σa + σb + σc - σa σb σc.
+pub fn maj2<E: PrimeCharacteristicRing + Clone>(a: &[E], b: &[E], c: &[E]) -> Vec<E> {
     (0..64)
         .map(|i| {
-            let ab = a[i].clone() * b[i].clone();
-            ab.clone() + a[i].clone() * c[i].clone() + b[i].clone() * c[i].clone()
-                - (ab * c[i].clone()).double()
+            a[i].clone() + b[i].clone() + c[i].clone()
+                - a[i].clone() * b[i].clone() * c[i].clone()
         })
         .collect()
 }
-pub fn pack3<E: PrimeCharacteristicRing + Clone>(bits: &[E]) -> [E; 3] {
-    std::array::from_fn(|l| {
-        (LIMB_OFF[l]..LIMB_OFF[l + 1]).fold(E::ZERO, |acc, b| {
-            acc + bits[b].clone() * E::from_u64(1u64 << (b - LIMB_OFF[l]))
+
+/// Monomial coefficients of the polynomial P of degree < n with P(xs[m]) = ys[m].
+pub fn interp<F: Field>(xs: &[F], ys: &[F]) -> Vec<F> {
+    let n = xs.len();
+    let mut out = vec![F::ZERO; n];
+    for m in 0..n {
+        let mut poly = vec![F::ONE];
+        let mut den = F::ONE;
+        for j in 0..n {
+            if j == m {
+                continue;
+            }
+            let mut next = vec![F::ZERO; poly.len() + 1];
+            for (d, &c) in poly.iter().enumerate() {
+                next[d + 1] += c;
+                next[d] -= c * xs[j];
+            }
+            poly = next;
+            den *= xs[m] - xs[j];
+        }
+        let s = ys[m] * den.inverse();
+        for (d, c) in poly.into_iter().enumerate() {
+            out[d] += c * s;
+        }
+    }
+    out
+}
+
+/// For an s-bit digit (s >= 2): (centre c, [S_t coefficients in w = u^2] per bit t), with
+/// σ_t(v) = (v - c) S_t((v - c)^2).
+pub fn sign_coefs<F: Field>(s: usize) -> (F, Vec<Vec<F>>) {
+    let half = F::from_u32(2).inverse();
+    let c = F::from_u64((1u64 << s) - 1) * half;
+    let top: Vec<u64> = ((1u64 << (s - 1))..(1u64 << s)).collect();
+    let us: Vec<F> = top.iter().map(|&v| F::from_u64(v) - c).collect();
+    let ws: Vec<F> = us.iter().map(|&u| u * u).collect();
+    let per_bit = (0..s)
+        .map(|t| {
+            let ys: Vec<F> = top
+                .iter()
+                .zip(&us)
+                .map(|(&v, &u)| {
+                    let sg = if (v >> t) & 1 == 1 { -F::ONE } else { F::ONE };
+                    sg * u.inverse()
+                })
+                .collect();
+            interp(&ws, &ys)
         })
+        .collect();
+    (c, per_bit)
+}
+
+/// Builder-agnostic view of one word's digits: bit signs (degree 2^s - 1 in each digit) and
+/// limbs (linear).
+pub struct Word<E> {
+    pub sg: Vec<E>,
+    pub limbs: [E; 3],
+}
+
+pub type SignCoefs<F> = Vec<(F, Vec<Vec<F>>)>;
+pub fn all_sign_coefs<F: Field>(k: usize) -> SignCoefs<F> {
+    (0..=k)
+        .map(|s| if s < 2 { (F::ZERO, vec![]) } else { sign_coefs::<F>(s) })
+        .collect()
+}
+
+/// Bit signs and limbs of the word whose digits start at `base` in `row`.
+pub fn word<F: Field, E: PrimeCharacteristicRing + Clone + From<F>>(
+    lay: &Layout,
+    coef: &SignCoefs<F>,
+    row: &[E],
+    base: usize,
+) -> Word<E> {
+    let mut sg = Vec::with_capacity(64);
+    for j in 0..lay.nd {
+        let v = row[base + j].clone();
+        let s = lay.dsize(j);
+        if s == 1 {
+            sg.push(E::ONE - v.double());
+            continue;
+        }
+        let (c, per_bit) = &coef[s];
+        let u = v - E::from(*c);
+        let w = u.clone() * u.clone();
+        let mut pw = vec![E::ONE, w.clone()];
+        for d in 2..per_bit[0].len() {
+            let p = pw[d - 1].clone() * w.clone();
+            pw.push(p);
+        }
+        for t in 0..s {
+            let cf = &per_bit[t];
+            let mut acc = E::from(cf[0]);
+            for d in 1..cf.len() {
+                acc += pw[d].clone() * E::from(cf[d]);
+            }
+            sg.push(u.clone() * acc);
+        }
+    }
+    let limbs = limbs_of_digits(lay, &row[base..base + lay.nd]);
+    Word { sg, limbs }
+}
+
+/// Linear limbs of a word from its digits.
+pub fn limbs_of_digits<E: PrimeCharacteristicRing + Clone>(lay: &Layout, d: &[E]) -> [E; 3] {
+    std::array::from_fn(|l| {
+        let (lo, hi) = (lay.limb_off[l], lay.limb_off[l + 1]);
+        let mut acc = E::ZERO;
+        for j in 0..lay.nd {
+            let b = lay.k * j;
+            if b >= lo && b < hi {
+                acc += d[j].clone() * E::from_u64(1u64 << (b - lo));
+            }
+        }
+        acc
     })
 }
-pub fn pack16<E: PrimeCharacteristicRing + Clone>(bits: &[E]) -> [E; 4] {
+/// Limbs of the word whose bit signs are `scale * raw[b]`:
+/// limb = sum 2^{b-off} (1 - σ_b) / 2 = (2^w - 1)/2 - scale/2 sum 2^{b-off} raw_b.
+pub fn limbs_of_signs<F: Field, E: PrimeCharacteristicRing + Clone + From<F>>(
+    lay: &Layout,
+    raw: &[E],
+    scale: F,
+) -> [E; 3] {
+    let half = F::from_u32(2).inverse();
     std::array::from_fn(|l| {
-        (0..16).fold(E::ZERO, |acc, b| {
-            acc + bits[16 * l + b].clone() * E::from_u32(1 << b)
-        })
+        let (lo, hi) = (lay.limb_off[l], lay.limb_off[l + 1]);
+        let mut acc = E::from(F::from_u64((1u64 << (hi - lo)) - 1) * half);
+        for b in lo..hi {
+            acc -= raw[b].clone() * E::from(F::from_u64(1u64 << (b - lo)) * half * scale);
+        }
+        acc
     })
 }
-fn add3<E: PrimeCharacteristicRing + Clone>(x: &[E; 3], y: &[E; 3]) -> [E; 3] {
-    std::array::from_fn(|i| x[i].clone() + y[i].clone())
+
+fn add3<E: PrimeCharacteristicRing + Clone>(xs: &[&[E; 3]]) -> [E; 3] {
+    std::array::from_fn(|i| xs.iter().fold(E::ZERO, |a, x| a + x[i].clone()))
 }
 fn cols3<E: Clone>(row: &[E], c: usize) -> [E; 3] {
     std::array::from_fn(|i| row[c + i].clone())
 }
-
-/// Limb-wise addition constraint: out + 2^{s_i} c_i - c_{i-1} == rhs_i (times gate).
-fn add_constraint<AB: AirBuilder>(
-    b: &mut AB,
-    gate: &AB::Expr,
-    out: &[AB::Expr; 3],
-    carry: &[AB::Expr; 3],
-    rhs: &[AB::Expr; 3],
-) {
-    for i in 0..3 {
-        let w = LIMB_OFF[i + 1] - LIMB_OFF[i];
-        let mut lhs = out[i].clone() + carry[i].clone() * AB::Expr::from_u64(1u64 << w);
+/// out_i + 2^{w_i} c_i - c_{i-1}, with carries stored with offset `off`.
+fn lhs<E: PrimeCharacteristicRing + Clone>(
+    lay: &Layout,
+    out: &[E; 3],
+    carry: &[E; 3],
+    off: i64,
+) -> [E; 3] {
+    let o = E::from_i64(off);
+    std::array::from_fn(|i| {
+        let mut v = out[i].clone() + (carry[i].clone() - o.clone()) * E::from_u64(1u64 << lay.lw(i));
         if i > 0 {
-            lhs -= carry[i - 1].clone();
+            v -= carry[i - 1].clone() - o.clone();
         }
-        b.assert_zero(gate.clone() * (lhs - rhs[i].clone()));
-    }
+        v
+    })
+}
+fn sub3<E: PrimeCharacteristicRing + Clone>(x: &[E; 3], y: &[E; 3]) -> [E; 3] {
+    std::array::from_fn(|i| x[i].clone() - y[i].clone())
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct Sha512Air;
+pub struct Sha512Air {
+    pub lay: Layout,
+}
 impl<F> BaseAir<F> for Sha512Air {
     fn width(&self) -> usize {
-        WIDTH
+        self.lay.width
     }
 }
 impl<F> PartitionedBaseAir<F> for Sha512Air {}
@@ -297,245 +441,266 @@ impl<F> BaseAirWithPublicValues<F> for Sha512Air {}
 
 impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Sha512Air {
     fn eval(&self, b: &mut AB) {
+        let lay = &self.lay;
         let main = b.main();
-        let l: Vec<AB::Expr> = main
-            .row_slice(0)
-            .unwrap()
-            .iter()
-            .map(|&v| v.into())
-            .collect();
-        let n: Vec<AB::Expr> = main
-            .row_slice(1)
-            .unwrap()
-            .iter()
-            .map(|&v| v.into())
-            .collect();
+        let l: Vec<AB::Expr> = main.row_slice(0).unwrap().iter().map(|&v| v.into()).collect();
+        let n: Vec<AB::Expr> = main.row_slice(1).unwrap().iter().map(|&v| v.into()).collect();
         let one = AB::Expr::ONE;
         let c = |v: u64| AB::Expr::from_u64(v);
-        let f_pad = |x: &[AB::Expr]| {
-            AB::Expr::ONE - x[F_IV].clone() - x[F_ROUND].clone() - x[F_OUT].clone()
-        };
-        let s = |x: &[AB::Expr], base: usize| x[base..base + 64].to_vec();
+        let fl = |x: &[AB::Expr], i: usize| x[lay.flags + i].clone();
+        let pad = |x: &[AB::Expr]| one.clone() - fl(x, FI_IV) - fl(x, FI_ROUND) - fl(x, FI_OUT);
+        // Row 42 of a segment (OUT row holding the received final words of row 40).
+        let row42 = |x: &[AB::Expr]| fl(x, FI_OUT) * (c(43) - x[lay.r].clone());
+        let coef = all_sign_coefs::<AB::F>(lay.k);
 
-        // Bits, and zero cells wherever a column has no role, so that every cell
-        // of an accepted trace is determined by (input state, block).
-        for col in 0..NBITS {
-            b.assert_bool(l[col].clone());
+        // ---- range checks and zero cells ----
+        for j in 0..lay.ndig {
+            let s = lay.dsize(j % lay.nd);
+            let v = l[j].clone();
+            let mut p = v.clone();
+            for m in 1..(1u64 << s) {
+                p *= v.clone() - c(m);
+            }
+            b.assert_zero(p);
         }
-        let not_round = one.clone() - l[F_ROUND].clone();
-        for col in W0..NBITS {
-            b.assert_zero(not_round.clone() * l[col].clone());
+        for col in lay.c1a..lay.cw1 + 3 {
+            let v = l[col].clone();
+            let mut p = v.clone();
+            for m in 1..CARRY_RANGE {
+                p *= v.clone() - c(m);
+            }
+            b.assert_zero(p);
         }
-        let pad = f_pad(&l);
-        for col in 0..W0 {
-            b.assert_zero(pad.clone() * l[col].clone());
+        let padl = pad(&l);
+        for col in 0..lay.w0 {
+            b.assert_zero(padl.clone() * l[col].clone());
         }
-        let no_rc = one.clone() - l[F_ROUND].clone() - l[F_OUT].clone();
-        for col in C1A..CW0 {
+        let no_w = one.clone() - fl(&l, FI_ROUND) - row42(&l);
+        for col in lay.w0..lay.ndig {
+            b.assert_zero(no_w.clone() * l[col].clone());
+        }
+        let no_rc = one.clone() - fl(&n, FI_ROUND) - fl(&n, FI_OUT);
+        for col in lay.c1a..lay.cw0 {
             b.assert_zero(no_rc.clone() * l[col].clone());
         }
-        for col in CW0..RV0 {
-            b.assert_zero((one.clone() - l[F_SCHED].clone()) * l[col].clone());
+        let no_sched = one.clone() - fl(&n, FI_SCHED);
+        for col in lay.cw0..lay.cw1 + 3 {
+            b.assert_zero(no_sched.clone() * l[col].clone());
         }
-        let no_recv = one.clone() - l[F_SCHED].clone() - l[F_OUT].clone();
-        for col in RV0..K0 {
-            b.assert_zero(no_recv.clone() * l[col].clone());
+        let no_v = no_sched.clone() - row42(&l);
+        for col in lay.v0..lay.v1 + 3 {
+            b.assert_zero(no_v.clone() * l[col].clone());
         }
 
-        // Row sequencing: segments 0..43 back to back, then padding (r = 44) to the end.
-        b.when_first_row().assert_zero(l[R].clone());
-        b.when_first_row().assert_zero(l[G].clone());
+        // ---- row sequencing: segments 0..43 back to back, then padding (r = 44) ----
+        b.when_first_row().assert_zero(l[lay.r].clone());
+        b.when_first_row().assert_zero(l[lay.g].clone());
         b.when_last_row()
-            .assert_zero((l[R].clone() - c(43)) * (one.clone() - f_pad(&l)));
+            .assert_zero((l[lay.r].clone() - c(43)) * (one.clone() - pad(&l)));
         {
+            let (r, g) = (lay.r, lay.g);
             let mut t = b.when_transition();
-            t.assert_zero(n[G].clone() - l[G].clone() - one.clone());
+            t.assert_zero(n[g].clone() - l[g].clone() - one.clone());
             t.assert_zero(
-                (n[R].clone() - l[R].clone() - one.clone())
-                    * (one.clone() - f_pad(&n))
-                    * n[R].clone(),
+                (n[r].clone() - l[r].clone() - one.clone()) * (one.clone() - pad(&n)) * n[r].clone(),
             );
-            t.assert_zero(f_pad(&n) * (one.clone() - f_pad(&l)) * (l[R].clone() - c(43)));
-            t.assert_zero((one.clone() - n[R].clone()) * n[F_IV].clone() * (l[R].clone() - c(43)));
-            t.assert_zero(f_pad(&l) * (one.clone() - f_pad(&n)));
+            t.assert_zero(pad(&n) * (one.clone() - pad(&l)) * (l[r].clone() - c(43)));
+            t.assert_zero((one.clone() - n[r].clone()) * fl(&n, FI_IV) * (l[r].clone() - c(43)));
+            t.assert_zero(pad(&l) * (one.clone() - pad(&n)));
         }
 
-        let (a0l, a1l, e0l, e1l, w0l, w1l) = (
-            s(&l, A0),
-            s(&l, A1),
-            s(&l, E0),
-            s(&l, E1),
-            s(&l, W0),
-            s(&l, W1),
-        );
-        let (a0n, a1n, e0n, e1n, w0n, w1n) = (
-            s(&n, A0),
-            s(&n, A1),
-            s(&n, E0),
-            s(&n, E1),
-            s(&n, W0),
-            s(&n, W1),
-        );
+        // ---- words ----
+        let wl = |base: usize| word::<AB::F, AB::Expr>(lay, &coef, &l, base);
+        let wn = |base: usize| word::<AB::F, AB::Expr>(lay, &coef, &n, base);
+        let (a0l, a1l, e0l, e1l, w0l, w1l) =
+            (wl(lay.a0), wl(lay.a1), wl(lay.e0), wl(lay.e1), wl(lay.w0), wl(lay.w1));
+        let (a0n, a1n, e0n, e1n, w0n, w1n) =
+            (wn(lay.a0), wn(lay.a1), wn(lay.e0), wn(lay.e1), wn(lay.w0), wn(lay.w1));
+        let one_f = AB::F::ONE;
+        let half_f = AB::F::from_u32(2).inverse();
+        let lb = |sg: &[AB::Expr]| limbs_of_signs::<AB::F, AB::Expr>(lay, sg, one_f);
+        let lb2 = |sg: &[AB::Expr]| limbs_of_signs::<AB::F, AB::Expr>(lay, sg, half_f);
 
-        // S (next row) = partial sums for slot 0 of the row after next, from (local, next);
-        // D (next row) = packed slot-1 words of local.  Cyclic, disabled on OUT rows.
-        let keep = one.clone() - n[F_OUT].clone();
+        // S (row n) = partial sums for slot 0 of row n+1; DE (row n) = E1 of row l.
+        // Defined on every row, cyclically, with no gate.
         {
-            let sig1 = pack3(&big_sigma1(&e1n));
-            let chv = pack3(&ch(&e1n, &e0n, &e1l));
-            let sig0 = pack3(&big_sigma0(&a1n));
-            let mj = pack3(&maj(&a1n, &a0n, &a1l));
-            let h = pack3(&e0l);
-            let d = pack3(&a0l);
+            let h = &e0l.limbs;
+            let s1 = lb(&big_sigma1(&e1n.sg));
+            let chv = lb2(&ch2(&e1n.sg, &e0n.sg, &e1l.sg));
+            let s0 = lb(&big_sigma0(&a1n.sg));
+            let mj = lb2(&maj2(&a1n.sg, &a0n.sg, &a1l.sg));
+            let sa = add3(&[h, &s1, &chv, &s0, &mj]);
             for i in 0..3 {
-                let t1 = h[i].clone() + sig1[i].clone() + chv[i].clone();
-                b.assert_zero(
-                    keep.clone()
-                        * (n[SA + i].clone() - (t1.clone() + sig0[i].clone() + mj[i].clone())),
-                );
-                b.assert_zero(keep.clone() * (n[SE + i].clone() - (t1 + d[i].clone())));
-            }
-            let pa = pack3(&a1l);
-            let pe = pack3(&e1l);
-            for i in 0..3 {
-                b.assert_zero(keep.clone() * (n[DA + i].clone() - pa[i].clone()));
-                b.assert_zero(keep.clone() * (n[DE + i].clone() - pe[i].clone()));
+                b.assert_zero(n[lay.sa + i].clone() - sa[i].clone());
+                b.assert_zero(n[lay.de + i].clone() - e1l.limbs[i].clone());
             }
         }
+        // d - T2 for slot 0 of row n+1, sent from this window (row l) to row n.
+        let d_minus_t2 = {
+            let s0 = lb(&big_sigma0(&a1n.sg));
+            let mj = lb2(&maj2(&a1n.sg, &a0n.sg, &a1l.sg));
+            sub3(&a0l.limbs, &add3(&[&s0, &mj]))
+        };
 
-        // Round, slot 1 of next row: j-1 = next slot 0, j-2/j-3 = local slots 1/0, j-4 from D(local).
-        let g_round = n[F_ROUND].clone();
-        {
-            let sig1 = pack3(&big_sigma1(&e0n));
-            let chv = pack3(&ch(&e0n, &e1l, &e0l));
-            let sig0 = pack3(&big_sigma0(&a0n));
-            let mj = pack3(&maj(&a0n, &a1l, &a0l));
-            let w = pack3(&w1n);
-            let t1: [AB::Expr; 3] = std::array::from_fn(|i| {
-                l[DE + i].clone()
-                    + sig1[i].clone()
-                    + chv[i].clone()
-                    + n[K1 + i].clone()
-                    + w[i].clone()
-            });
-            let ra: [AB::Expr; 3] =
-                std::array::from_fn(|i| t1[i].clone() + sig0[i].clone() + mj[i].clone());
-            let re: [AB::Expr; 3] = std::array::from_fn(|i| t1[i].clone() + l[DA + i].clone());
-            add_constraint(b, &g_round, &pack3(&a1n), &cols3(&n, C1A), &ra);
-            add_constraint(b, &g_round, &pack3(&e1n), &cols3(&n, C1E), &re);
-        }
-        // Round, slot 0 of next row: partial sum S(local) + W + K.
-        {
-            let w = pack3(&w0n);
-            let ra: [AB::Expr; 3] =
-                std::array::from_fn(|i| l[SA + i].clone() + w[i].clone() + n[K0 + i].clone());
-            let re: [AB::Expr; 3] =
-                std::array::from_fn(|i| l[SE + i].clone() + w[i].clone() + n[K0 + i].clone());
-            add_constraint(b, &g_round, &pack3(&a0n), &cols3(&n, C0A), &ra);
-            add_constraint(b, &g_round, &pack3(&e0n), &cols3(&n, C0E), &re);
-        }
-        // Message schedule for the next row's W slots: σ1(W[t-2]) (local) + W[t-7] + V (received).
-        {
-            let g_sched = n[F_SCHED].clone();
-            for (wl, wn, cw, r7, rv) in [(&w0l, &w0n, CW0, R7A, RV0), (&w1l, &w1n, CW1, R7B, RV1)] {
-                let s1 = pack3(&small_sigma1(wl));
-                let rhs: [AB::Expr; 3] =
-                    std::array::from_fn(|i| s1[i].clone() + n[r7 + i].clone() + n[rv + i].clone());
-                add_constraint(b, &g_sched, &pack3(wn), &cols3(&n, cw), &rhs);
-            }
-        }
-        // Feed-forward on OUT rows: slot q = IV word q + final word q (both received).
-        for (q, &base) in SLOTS.iter().enumerate() {
-            let rhs = add3(&cols3(&l, OUT_IV + 3 * q), &cols3(&l, OUT_FIN + 3 * q));
-            add_constraint(
-                b,
-                &l[F_OUT],
-                &pack3(&l[base..base + 64]),
-                &cols3(&l, OUT_C + 3 * q),
-                &rhs,
-            );
-        }
+        let nround = fl(&n, FI_ROUND);
+        let nsched = fl(&n, FI_SCHED);
+        let nout = fl(&n, FI_OUT);
+        // Round, slot 0 of row n: a = S_A + W + K (K by lookup), e = a + (d - T2) (by bus).
+        let res_a0 = sub3(
+            &lhs(lay, &a0n.limbs, &cols3(&l, lay.c0a), 0),
+            &add3(&[&cols3(&l, lay.sa), &w0n.limbs]),
+        );
+        let res_e0 = sub3(&lhs(lay, &e0n.limbs, &cols3(&l, lay.c0e), CARRY_OFF), &a0n.limbs);
+        // Round, slot 1 of row n: j-1 = slot 0 of n, j-2/j-3 = slots 1/0 of l, h = DE(l),
+        // d = A1 two rows back (bus).  a = T1 + T2 (K by lookup), e = a - T2 + d.
+        let t2 = {
+            let s0 = lb(&big_sigma0(&a0n.sg));
+            let mj = lb2(&maj2(&a0n.sg, &a1l.sg, &a0l.sg));
+            add3(&[&s0, &mj])
+        };
+        let res_a1 = {
+            let s1 = lb(&big_sigma1(&e0n.sg));
+            let chv = lb2(&ch2(&e0n.sg, &e1l.sg, &e0l.sg));
+            let rhs = add3(&[&cols3(&l, lay.de), &s1, &chv, &w1n.limbs, &t2]);
+            sub3(&lhs(lay, &a1n.limbs, &cols3(&l, lay.c1a), 0), &rhs)
+        };
+        let res_e1 = sub3(
+            &add3(&[&lhs(lay, &e1n.limbs, &cols3(&l, lay.c1e), CARRY_OFF), &t2]),
+            &a1n.limbs,
+        );
+        // Schedule for row n's W slots: W = σ1(W[t-2]) + V + W[t-7] (W[t-7] by bus).
+        let res_w0 = sub3(
+            &lhs(lay, &w0n.limbs, &cols3(&l, lay.cw0), 0),
+            &add3(&[&lb(&small_sigma1(&w0l.sg)), &cols3(&l, lay.v0)]),
+        );
+        let res_w1 = sub3(
+            &lhs(lay, &w1n.limbs, &cols3(&l, lay.cw1), 0),
+            &add3(&[&lb(&small_sigma1(&w1l.sg)), &cols3(&l, lay.v1)]),
+        );
+        // Feed-forward for OUT row n: out = IV + fin (IV by bus).  fin = slots of row 41
+        // (for n = 42) or the words received on row 42 (for n = 43).
+        let res_out: Vec<[AB::Expr; 3]> = {
+            let sel = row42(&l);
+            let unsel = one.clone() - sel.clone();
+            let fin42 = [&a0l.limbs, &a1l.limbs, &e0l.limbs, &e1l.limbs];
+            let fin43 = [w0l.limbs.clone(), w1l.limbs.clone(), cols3(&l, lay.v0), cols3(&l, lay.v1)];
+            let outs = [&a0n.limbs, &a1n.limbs, &e0n.limbs, &e1n.limbs];
+            let carries = [lay.c0a, lay.c1a, lay.c0e, lay.c1e];
+            (0..4)
+                .map(|q| {
+                    let fin: [AB::Expr; 3] = std::array::from_fn(|i| {
+                        unsel.clone() * fin42[q][i].clone() + sel.clone() * fin43[q][i].clone()
+                    });
+                    sub3(&lhs(lay, outs[q], &cols3(&l, carries[q]), 0), &fin)
+                })
+                .collect()
+        };
 
         // ---- interactions ----
-        let mut ctl = vec![l[R].clone()];
-        ctl.extend((F_IV..=F_S3).map(|col| l[col].clone()));
-        ctl.extend((K0..K0 + 6).map(|col| l[col].clone()));
+        let mut ctl = vec![l[lay.r].clone()];
+        ctl.extend((0..NFLAGS).map(|i| fl(&l, i)));
         b.push_interaction(BUS_CTL, ctl, one.clone(), 1);
-        for col in C1A..C1A + NCARRY {
-            b.push_interaction(BUS_RNG, [l[col].clone()], one.clone(), 1);
-        }
-        // Interface bus: (compression id, word index 0..31, four 16-bit limbs).
-        // 0..7 input state, 8..23 block, 24..31 output state.
-        let cid = l[G].clone() - l[R].clone();
-        let two_r = l[R].clone().double();
-        for (q, &base) in SLOTS.iter().enumerate() {
-            let civ = [3u64, 2, 7, 6][q];
-            let cout = [59u64, 60, 55, 56][q];
-            let idx = l[F_IV].clone() * (c(civ) - two_r.clone())
-                + l[F_OUT].clone() * (two_r.clone() - c(cout));
+        let mut kmsg = vec![l[lay.r].clone()];
+        kmsg.extend(res_a0.iter().cloned());
+        kmsg.extend(res_a1.iter().cloned());
+        b.push_interaction(BUS_K, kmsg, nround.clone(), 1);
+
+        // Interface bus: (compression id, pair index, limbs of word 2m, limbs of word 2m+1).
+        // Pairs 0..3 input state, 4..11 block, 12..15 output state.
+        let cid = l[lay.g].clone() - l[lay.r].clone();
+        let idx_a = fl(&l, FI_IV) * (one.clone() - l[lay.r].clone())
+            + fl(&l, FI_OUT) * (l[lay.r].clone() - c(30));
+        let st_mult = fl(&l, FI_IV) + fl(&l, FI_OUT);
+        for (idx, hi, lo) in [
+            (idx_a.clone(), &a1l, &a0l),
+            (idx_a.clone() + c(2), &e1l, &e0l),
+        ] {
             let mut msg = vec![cid.clone(), idx];
-            msg.extend(pack16(&l[base..base + 64]));
-            b.push_interaction(BUS_IF, msg, l[F_IV].clone() + l[F_OUT].clone(), 1);
+            msg.extend(hi.limbs.iter().cloned());
+            msg.extend(lo.limbs.iter().cloned());
+            b.push_interaction(BUS_IF, msg, st_mult.clone(), 1);
         }
-        for (k, base) in [W0, W1].into_iter().enumerate() {
-            let mut msg = vec![cid.clone(), two_r.clone() + c(4 + k as u64)];
-            msg.extend(pack16(&l[base..base + 64]));
-            b.push_interaction(BUS_IF, msg, l[F_ROUND].clone() - l[F_SCHED].clone(), 1);
+        {
+            let mut msg = vec![cid.clone(), l[lay.r].clone() + c(2)];
+            msg.extend(w0l.limbs.iter().cloned());
+            msg.extend(w1l.limbs.iter().cloned());
+            b.push_interaction(BUS_IF, msg, fl(&l, FI_ROUND) - fl(&l, FI_SCHED), 1);
         }
+
         // Lookback bus (permutation), keyed by the sender's global row g.
-        for (q, &base) in SLOTS.iter().enumerate() {
-            let mut msg = vec![l[G].clone(), c(10 + q as u64)];
-            msg.extend(pack3(&l[base..base + 64]));
-            b.push_interaction(BUS_LB, msg, l[F_IV].clone() + l[F_FIN].clone(), 1);
-        }
+        let g = l[lay.g].clone();
+        let send = |b: &mut AB, key: AB::Expr, tag: u64, fields: Vec<AB::Expr>, m: AB::Expr| {
+            let mut msg = vec![key, c(tag)];
+            msg.extend(fields);
+            b.push_interaction(BUS_LB, msg, m, 1);
+        };
+        let flat = |xs: &[&[AB::Expr; 3]]| -> Vec<AB::Expr> {
+            xs.iter().flat_map(|x| x.iter().cloned()).collect()
+        };
+        // state words: IV rows (for the feed-forward) and row 40 (for row 42)
+        let f_fin = fl(&l, FI_TAIL) * (c(41) - l[lay.r].clone());
+        let f_da = fl(&l, FI_IV) + fl(&l, FI_ROUND) - fl(&l, FI_TAIL);
+        send(
+            b,
+            g.clone(),
+            TAG_ST,
+            flat(&[&a0l.limbs, &a1l.limbs, &e0l.limbs, &e1l.limbs]),
+            fl(&l, FI_IV) + f_fin,
+        );
+        // d for slot 1 and d - T2 for slot 0 of the row after next
+        send(b, g.clone(), TAG_DA, flat(&[&a1l.limbs, &d_minus_t2]), f_da);
         {
-            let v0 = add3(&pack3(&w0l), &pack3(&small_sigma0(&w1l)));
-            let v1 = add3(&pack3(&w1l), &pack3(&small_sigma0(&w0n)));
-            let mut msg = vec![l[G].clone(), c(0)];
-            msg.extend(v0);
-            msg.extend(v1);
-            b.push_interaction(BUS_LB, msg, l[F_S01].clone(), 1);
-            let mut msg = vec![l[G].clone(), c(1)];
-            msg.extend(pack3(&w1l));
-            b.push_interaction(BUS_LB, msg, l[F_S2].clone(), 1);
-            let mut msg = vec![l[G].clone(), c(2)];
-            msg.extend(pack3(&w0l));
-            b.push_interaction(BUS_LB, msg, l[F_S3].clone(), 1);
+            let v0 = add3(&[&w0l.limbs, &lb(&small_sigma0(&w1l.sg))]);
+            let v1 = add3(&[&w1l.limbs, &lb(&small_sigma0(&w0n.sg))]);
+            send(b, g.clone(), TAG_V, flat(&[&v0, &v1]), fl(&l, FI_S01));
         }
-        {
-            let neg = -l[F_SCHED].clone();
-            let mut msg = vec![l[G].clone() - c(8), c(0)];
-            msg.extend((RV0..RV0 + 6).map(|col| l[col].clone()));
-            b.push_interaction(BUS_LB, msg, neg.clone(), 1);
-            let mut msg = vec![l[G].clone() - c(4), c(1)];
-            msg.extend(cols3(&l, R7A));
-            b.push_interaction(BUS_LB, msg, neg.clone(), 1);
-            let mut msg = vec![l[G].clone() - c(3), c(2)];
-            msg.extend(cols3(&l, R7B));
-            b.push_interaction(BUS_LB, msg, neg, 1);
-        }
-        let neg_out = -l[F_OUT].clone();
-        for q in 0..4 {
-            let mut msg = vec![l[G].clone() - two_r.clone() + c(43), c(10 + q as u64)];
-            msg.extend(cols3(&l, OUT_IV + 3 * q));
-            b.push_interaction(BUS_LB, msg, neg_out.clone(), 1);
-            let mut msg = vec![l[G].clone() - two_r.clone() + c(83), c(10 + q as u64)];
-            msg.extend(cols3(&l, OUT_FIN + 3 * q));
-            b.push_interaction(BUS_LB, msg, neg_out.clone(), 1);
-        }
+        // W[t-7] for slot 0 (W1 of this row) and slot 1 (W0 of the next row), 3 rows later
+        send(b, g.clone(), TAG_W7, flat(&[&w1l.limbs, &w0n.limbs]), fl(&l, FI_S2));
+        // receivers
+        let r = l[lay.r].clone();
+        send(
+            b,
+            g.clone() - r.clone().double() + c(42),
+            TAG_ST,
+            res_out.iter().flat_map(|x| x.iter().cloned()).collect(),
+            -nout.clone(),
+        );
+        send(
+            b,
+            g.clone() - c(2),
+            TAG_ST,
+            flat(&[&w0l.limbs, &w1l.limbs, &cols3(&l, lay.v0), &cols3(&l, lay.v1)]),
+            -row42(&l),
+        );
+        send(b, g.clone() - c(1), TAG_DA, flat(&[&res_e1, &res_e0]), -nround.clone());
+        send(
+            b,
+            g.clone() - c(7),
+            TAG_V,
+            flat(&[&cols3(&l, lay.v0), &cols3(&l, lay.v1)]),
+            -nsched.clone(),
+        );
+        send(b, g - c(3), TAG_W7, flat(&[&res_w0, &res_w1]), -nsched);
     }
 }
 
-/// Fixed control + range table: 64 rows, row index i = 8*v + u with one-hot u, v
-/// rotated by transition constraints, so its content is pinned without a
-/// preprocessed commitment.  Columns: u[8], v[8], mult_ctl, mult_rng.
+/// Control + round-constant table: 64 rows, entry index i = u + 4v + 16w (mod 48) with
+/// one-hot u[4], v[4], w[3] advanced by transition constraints, so its content is pinned
+/// without a preprocessed commitment.  Columns: u, v, w, mult_ctl, mult_k.
 #[derive(Clone, Copy, Debug)]
-pub struct TableAir;
+pub struct TableAir {
+    pub lay: Layout,
+}
 pub const T_U: usize = 0;
-pub const T_V: usize = 8;
-pub const T_MC: usize = 16;
-pub const T_MR: usize = 17;
-pub const T_WIDTH: usize = 18;
+pub const T_V: usize = 4;
+pub const T_W: usize = 8;
+pub const T_MC: usize = 11;
+pub const T_MK: usize = 12;
+pub const T_WIDTH: usize = 13;
+pub const T_ENTRIES: usize = 48;
+pub fn table_index(row: usize) -> usize {
+    row % T_ENTRIES
+}
 impl<F> BaseAir<F> for TableAir {
     fn width(&self) -> usize {
         T_WIDTH
@@ -546,64 +711,65 @@ impl<F> BaseAirWithPublicValues<F> for TableAir {}
 impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for TableAir {
     fn eval(&self, b: &mut AB) {
         let main = b.main();
-        let l: Vec<AB::Expr> = main
-            .row_slice(0)
-            .unwrap()
-            .iter()
-            .map(|&v| v.into())
-            .collect();
-        let n: Vec<AB::Expr> = main
-            .row_slice(1)
-            .unwrap()
-            .iter()
-            .map(|&v| v.into())
-            .collect();
-        let one = AB::Expr::ONE;
-        for k in 0..16 {
+        let l: Vec<AB::Expr> = main.row_slice(0).unwrap().iter().map(|&v| v.into()).collect();
+        let n: Vec<AB::Expr> = main.row_slice(1).unwrap().iter().map(|&v| v.into()).collect();
+        for k in 0..11 {
             b.assert_bool(l[k].clone());
         }
-        b.assert_one((0..8).fold(AB::Expr::ZERO, |a, k| a + l[T_U + k].clone()));
-        b.assert_one((0..8).fold(AB::Expr::ZERO, |a, k| a + l[T_V + k].clone()));
+        let sum = |lo: usize, cnt: usize| (lo..lo + cnt).fold(AB::Expr::ZERO, |a, k| a + l[k].clone());
+        b.assert_one(sum(T_U, 4));
+        b.assert_one(sum(T_V, 4));
+        b.assert_one(sum(T_W, 3));
         b.when_first_row().assert_one(l[T_U].clone());
         b.when_first_row().assert_one(l[T_V].clone());
+        b.when_first_row().assert_one(l[T_W].clone());
         {
             let mut t = b.when_transition();
-            for k in 0..8 {
-                t.assert_zero(n[T_U + k].clone() - l[T_U + (k + 7) % 8].clone());
+            let wrap_u = l[T_U + 3].clone();
+            let wrap_uv = l[T_U + 3].clone() * l[T_V + 3].clone();
+            for k in 0..4 {
+                t.assert_zero(n[T_U + k].clone() - l[T_U + (k + 3) % 4].clone());
                 t.assert_zero(
                     n[T_V + k].clone()
                         - l[T_V + k].clone()
-                        - l[T_U + 7].clone() * (l[T_V + (k + 7) % 8].clone() - l[T_V + k].clone()),
+                        - wrap_u.clone() * (l[T_V + (k + 3) % 4].clone() - l[T_V + k].clone()),
+                );
+            }
+            for k in 0..3 {
+                t.assert_zero(
+                    n[T_W + k].clone()
+                        - l[T_W + k].clone()
+                        - wrap_uv.clone() * (l[T_W + (k + 2) % 3].clone() - l[T_W + k].clone()),
                 );
             }
         }
-        let _ = one;
         let field = |vals: &dyn Fn(usize) -> u64| -> AB::Expr {
             let mut acc = AB::Expr::ZERO;
-            for i in 0..64 {
+            for i in 0..T_ENTRIES {
                 let v = vals(i);
                 if v != 0 {
-                    acc += l[T_U + i % 8].clone() * l[T_V + i / 8].clone() * AB::Expr::from_u64(v);
+                    acc += l[T_U + i % 4].clone()
+                        * l[T_V + (i / 4) % 4].clone()
+                        * l[T_W + i / 16].clone()
+                        * AB::Expr::from_u64(v);
                 }
             }
             acc
         };
-        let entries: Vec<[u64; CTL_FIELDS]> = (0..64).map(ctl_entry).collect();
-        let msg: Vec<AB::Expr> = (0..CTL_FIELDS).map(|f| field(&|i| entries[i][f])).collect();
+        let ce: Vec<_> = (0..T_ENTRIES).map(ctl_entry).collect();
+        let msg: Vec<AB::Expr> = (0..1 + NFLAGS).map(|f| field(&|i| ce[i][f])).collect();
         b.push_interaction(BUS_CTL, msg, -l[T_MC].clone(), 0);
-        let idx = (0..8).fold(AB::Expr::ZERO, |a, k| {
-            a + l[T_U + k].clone() * AB::Expr::from_u64(k as u64)
-                + l[T_V + k].clone() * AB::Expr::from_u64(8 * k as u64)
-        });
-        b.push_interaction(BUS_RNG, [idx], -l[T_MR].clone(), 0);
+        let ke: Vec<_> = (0..T_ENTRIES).map(|i| k_entry(&self.lay, i)).collect();
+        let msg: Vec<AB::Expr> = (0..7).map(|f| field(&|i| ke[i][f])).collect();
+        b.push_interaction(BUS_K, msg, -l[T_MK].clone(), 0);
     }
 }
 
-/// Test consumer of the interface bus: one row per (compression, word).
-/// Columns: cid, idx, four 16-bit limbs, multiplicity.
+/// Test consumer of the interface bus: one row per (compression, word pair).
+/// Columns: cid, pair index, 3 + 3 limbs, multiplicity.
 #[derive(Clone, Copy, Debug)]
 pub struct HarnessAir;
-pub const H_WIDTH: usize = 7;
+pub const H_WIDTH: usize = 9;
 impl<F> BaseAir<F> for HarnessAir {
     fn width(&self) -> usize {
         H_WIDTH
@@ -614,13 +780,8 @@ impl<F> BaseAirWithPublicValues<F> for HarnessAir {}
 impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for HarnessAir {
     fn eval(&self, b: &mut AB) {
         let main = b.main();
-        let l: Vec<AB::Expr> = main
-            .row_slice(0)
-            .unwrap()
-            .iter()
-            .map(|&v| v.into())
-            .collect();
-        b.assert_bool(l[6].clone());
-        b.push_interaction(BUS_IF, l[0..6].to_vec(), -l[6].clone(), 1);
+        let l: Vec<AB::Expr> = main.row_slice(0).unwrap().iter().map(|&v| v.into()).collect();
+        b.assert_bool(l[8].clone());
+        b.push_interaction(BUS_IF, l[0..8].to_vec(), -l[8].clone(), 1);
     }
 }

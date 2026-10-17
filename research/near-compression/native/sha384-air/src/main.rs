@@ -1,5 +1,6 @@
-//! Narrow SHA-512/384 compression AIR on the pinned SWIRL backend
-//! (SHA-384 transcript/Merkle hash, BabyBear Ext12, WHIR).
+//! Packed-digit SHA-512/384 compression AIR (v2) on the pinned SWIRL backend
+//! (SHA-384 transcript/Merkle hash, BabyBear Ext12, WHIR).  Digit width k from
+//! NEARPROOF_SHA_K (1, 2 or 3; default 3).
 //!
 //! Usage:
 //!   nearproof-sha384-air selftest [n_random]     correctness + debug checker + negative tests
@@ -42,10 +43,14 @@ mod config {
             .unwrap_or(default)
     }
 
-    fn airs() -> Vec<AirRef<SC>> {
+    pub fn layout() -> Layout {
+        Layout::new(setting("NEARPROOF_SHA_K", 3))
+    }
+
+    fn airs(lay: Layout) -> Vec<AirRef<SC>> {
         vec![
-            Arc::new(Sha512Air),
-            Arc::new(TableAir),
+            Arc::new(Sha512Air { lay }),
+            Arc::new(TableAir { lay }),
             Arc::new(HarnessAir),
         ]
     }
@@ -61,14 +66,14 @@ mod config {
     }
     fn mats(t: &Traces) -> Mats {
         Mats {
-            main: RowMajorMatrix::new(to_f(&t.main), WIDTH),
+            main: RowMajorMatrix::new(to_f(&t.main), t.lay.width),
             table: RowMajorMatrix::new(to_f(&t.table), T_WIDTH),
             harness: RowMajorMatrix::new(to_f(&t.harness), H_WIDTH),
         }
     }
 
     /// Engine with the native SHA-384/Ext12 profile; heights up to 2^log_h.
-    fn engine(log_h: usize) -> Engine {
+    fn engine(lay: &Layout, log_h: usize) -> Engine {
         let n_stack = setting("NEARPROOF_N_STACK", log_h.saturating_sub(2).max(8));
         let k = setting("NEARPROOF_K", 3);
         let blowup = setting("NEARPROOF_LOG_BLOWUP", 2);
@@ -81,7 +86,7 @@ mod config {
         let mut params = test_system_params_small(2, n_stack, k);
         let interaction_log = setting("NEARPROOF_INTERACTION_LOG", 27);
         assert!((20..=30).contains(&interaction_log));
-        params.max_constraint_degree = 4;
+        params.max_constraint_degree = lay.degree();
         params.logup.max_interaction_count = 1 << interaction_log;
         params.logup.pow_bits = 0;
         params.log_blowup = blowup;
@@ -104,7 +109,9 @@ mod config {
             bits,
         );
         println!(
-            "PROFILE n_stack={} k={} log_blowup={} queries={:?} interaction_log={}",
+            "PROFILE digit_k={} degree={} n_stack={} k={} log_blowup={} queries={:?} interaction_log={}",
+            lay.k,
+            lay.degree(),
             n_stack,
             k,
             blowup,
@@ -184,6 +191,7 @@ mod config {
     }
 
     pub fn selftest(n_random: usize) {
+        let lay = layout();
         let mut rng = Rng(0x9e3779b97f4a7c15);
         // 1. Native round function vs sha2 (sanity of the generator's reference).
         for _ in 0..10_000 {
@@ -208,15 +216,11 @@ mod config {
         for _ in 0..n_random {
             comps.push(rng.comp());
         }
-        let t = gen_all(&comps);
+        let t = gen_all(lay, &comps);
         // 3. Outputs read back from the AIR trace equal sha2's compression.
         let mut ok = 0;
         for (s, c) in comps.iter().enumerate() {
-            assert_eq!(
-                trace_output(&t.main, s),
-                sha2_compress(c),
-                "compression {s}"
-            );
+            assert_eq!(trace_output(&lay, &t.main, s), sha2_compress(c), "compression {s}");
             ok += 1;
         }
         for (name, first, nb, digest) in &vec_checks {
@@ -224,7 +228,7 @@ mod config {
             let mut st = comps[*first].h;
             for b in 0..*nb {
                 assert_eq!(comps[first + b].h, st);
-                st = trace_output(&t.main, first + b);
+                st = trace_output(&lay, &t.main, first + b);
             }
             let bytes: Vec<u8> = st.iter().flat_map(|w| w.to_be_bytes()).collect();
             assert_eq!(&bytes[..digest.len()], &digest[..], "{name}");
@@ -233,19 +237,12 @@ mod config {
         println!("SELFTEST trace_outputs_vs_sha2 pass={ok} (vectors {n_vec} + random {n_random})");
         // 4. Backend debug checker on the full trace.
         let log_h = t.main_height.trailing_zeros() as usize;
-        let eng = engine(log_h.max(10));
-        let airs = airs();
+        let eng = engine(&lay, log_h.max(10));
+        let airs = airs(lay);
+        let kt = std::time::Instant::now();
         let (pk, _vk) = eng.keygen(&airs);
-        for p in &pk.per_air {
-            println!(
-                "AIR {} width={:?} degree={} constraints={} interactions={}",
-                p.air_name,
-                p.vk.params.width.main_widths(),
-                p.vk.max_constraint_degree,
-                p.vk.symbolic_constraints.constraints.constraint_idx.len(),
-                p.vk.symbolic_constraints.interactions.len()
-            );
-        }
+        println!("KEYGEN_SECONDS {:.2}", kt.elapsed().as_secs_f64());
+        print_airs(&pk);
         let m = mats(&t);
         let start = std::time::Instant::now();
         check(&pk, &airs, &[&m.main, &m.table, &m.harness])
@@ -257,29 +254,79 @@ mod config {
             start.elapsed().as_secs_f64()
         );
         // 5. Negative tests on a small trace.
-        negative(&pk, &airs);
+        negative(&lay, &pk, &airs);
     }
 
-    fn category(col: usize) -> &'static str {
-        match col {
-            0..=127 => "a_bits",
-            128..=255 => "e_bits",
-            W0..=383 => "w_bits",
-            SA..=389 => "partial_sum_S",
-            DA..=395 => "copy_D",
-            C1A..=413 => "carry",
-            RV0..=425 => "received_limb",
-            K0..=431 => "lookup_K",
-            R => "row_index",
-            G => "global_row",
-            _ => "lookup_flag",
+    /// Columns referenced at the next row (offset 1) anywhere in constraints or interactions.
+    fn next_row_columns(p: &openvm_stark_backend::keygen::types::StarkProvingKey<SC>) -> usize {
+        use openvm_stark_backend::air_builders::symbolic::{
+            SymbolicExpressionNode, symbolic_variable::Entry,
+        };
+        let mut cols = std::collections::BTreeSet::new();
+        for node in &p.vk.symbolic_constraints.constraints.nodes {
+            if let SymbolicExpressionNode::Variable(v) = node {
+                if let Entry::Main { offset: 1, .. } = v.entry {
+                    cols.insert(v.index);
+                }
+            }
+        }
+        cols.len()
+    }
+
+    fn print_airs(pk: &MultiStarkProvingKey<SC>) {
+        for p in &pk.per_air {
+            println!(
+                "AIR {} next_row_cols={} width={:?} degree={} constraints={} interactions={} need_rot={} dag_nodes={}",
+                p.air_name,
+                next_row_columns(p),
+                p.vk.params.width.main_widths(),
+                p.vk.max_constraint_degree,
+                p.vk.symbolic_constraints.constraints.constraint_idx.len(),
+                p.vk.symbolic_constraints.interactions.len(),
+                p.vk.params.need_rot,
+                p.vk.symbolic_constraints.constraints.nodes.len()
+            );
         }
     }
 
-    fn negative(pk: &MultiStarkProvingKey<SC>, airs: &[AirRef<SC>]) {
+    fn category(lay: &Layout, col: usize) -> &'static str {
+        if col < lay.e0 {
+            "a_digits"
+        } else if col < lay.w0 {
+            "e_digits"
+        } else if col < lay.ndig {
+            "w_digits"
+        } else if col < lay.de {
+            "partial_sum_SA"
+        } else if col < lay.v0 {
+            "copy_DE"
+        } else if col < lay.c1a {
+            "received_V"
+        } else if col < lay.r {
+            "carry"
+        } else if col == lay.r {
+            "row_index"
+        } else if col == lay.g {
+            "global_row"
+        } else {
+            "flag"
+        }
+    }
+
+    fn by(res: &Result<(), String>) -> &'static str {
+        match res {
+            Ok(()) => "-",
+            Err(s) if s.contains("LogUp") => "bus",
+            Err(_) => "constraint",
+        }
+    }
+
+    fn negative(lay: &Layout, pk: &MultiStarkProvingKey<SC>, airs: &[AirRef<SC>]) {
+        let lay = *lay;
+        let w = lay.width;
         let mut rng = Rng(0x1234_5678_9abc_def1);
         let comps: Vec<Comp> = (0..3).map(|_| rng.comp()).collect();
-        let t = gen_all(&comps);
+        let t = gen_all(lay, &comps);
         let m = mats(&t);
         check(pk, airs, &[&m.main, &m.table, &m.harness]).expect("honest small trace");
         let prev_hook = std::panic::take_hook();
@@ -290,22 +337,26 @@ mod config {
         // rows: trace row 0, every row type of segment 1, the first padding row and the last row
         let mut rows: Vec<usize> = vec![0];
         rows.extend(
-            [0usize, 1, 2, 3, 9, 10, 17, 33, 38, 40, 41, 42, 43]
+            [0usize, 1, 2, 3, 8, 9, 10, 17, 33, 37, 38, 39, 40, 41, 42, 43]
                 .iter()
                 .map(|r| ROWS + r),
         );
         rows.extend([3 * ROWS, t.main_height - 1]);
-        let mutate = |mm: &mut RowMajorMatrix<F>, idx: usize, bit: bool| {
-            let v = mm.values[idx];
-            mm.values[idx] = if bit { F::ONE - v } else { v + F::ONE };
+        // Digits: move to another in-range value (v -> v xor 1); other cells: +1.
+        let newval = |v: F, digit: bool| {
+            if digit {
+                F::from_u32(v.as_canonical_u32() ^ 1)
+            } else {
+                v + F::ONE
+            }
         };
-        let mut run = |label: String, which: usize, idx: usize, bit: bool| {
+        let mut run = |label: String, which: usize, idx: usize, nv: &dyn Fn(F) -> F| {
             let mut mm = match which {
                 0 => m.main.clone(),
                 1 => m.table.clone(),
                 _ => m.harness.clone(),
             };
-            mutate(&mut mm, idx, bit);
+            mm.values[idx] = nv(mm.values[idx]);
             let res = match which {
                 0 => check(pk, airs, &[&mm, &m.table, &m.harness]),
                 1 => check(pk, airs, &[&m.main, &mm, &m.harness]),
@@ -321,23 +372,32 @@ mod config {
             e.3 = e.1 + e.2;
         };
         for &gi in &rows {
-            for col in 0..WIDTH {
-                run(
-                    format!("main/{}", category(col)),
-                    0,
-                    gi * WIDTH + col,
-                    col < NBITS,
-                );
+            for col in 0..w {
+                let d = col < lay.ndig;
+                run(format!("main/{}", category(&lay, col)), 0, gi * w + col, &|v| newval(v, d));
+                if d && lay.dsize(col % lay.nd) > 1 {
+                    // second in-range mutation: flip the digit's top bit
+                    let top = 1u32 << (lay.dsize(col % lay.nd) - 1);
+                    run(format!("main/{}_topbit", category(&lay, col)), 0, gi * w + col,
+                        &|v| F::from_u32(v.as_canonical_u32() ^ top));
+                }
             }
         }
-        for i in [0usize, 7, 31, 43, 44, 63] {
+        // Out-of-range digit: +2^s on a digit (constraint must reject).
+        for &gi in &rows {
+            for col in [lay.a0 + 3, lay.e1 + 5, lay.w0 + 7, lay.w1 + lay.nd - 1] {
+                let s = lay.dsize((col - lay.a0) % lay.nd);
+                run("main/digit_out_of_range".into(), 0, gi * w + col, &|v| v + F::from_u32(1 << s));
+            }
+        }
+        for i in [0usize, 1, 7, 31, 41, 43, 44, 47, 48, 63] {
             for col in 0..T_WIDTH {
-                run("table".into(), 1, i * T_WIDTH + col, col < 16);
+                run("table".into(), 1, i * T_WIDTH + col, &|v| newval(v, col < 11));
             }
         }
-        for i in [0usize, 31, 32, 95] {
+        for i in [0usize, 3, 4, 11, 12, 15, 16, 47] {
             for col in 0..H_WIDTH {
-                run("harness".into(), 2, i * H_WIDTH + col, false);
+                run("harness".into(), 2, i * H_WIDTH + col, &|v| newval(v, false));
             }
         }
         // Consistent forgery: flip an output bit AND the interface consumer's copy.
@@ -345,67 +405,37 @@ mod config {
             let mut mm = m.main.clone();
             let mut hh = m.harness.clone();
             let gi = ROWS + 42;
-            mutate(&mut mm, gi * WIDTH + A1 + 5, true); // H'_0 bit 5 of compression 1
-            let hrow = 32 + 24; // compression 1, idx 24 (H'_0)
-            let v = hh.values[hrow * H_WIDTH + 2];
-            hh.values[hrow * H_WIDTH + 2] = v + F::from_u32(1 << 5)
-                * (F::ONE - F::from_u32(2) * F::from_u32((t.main[gi * WIDTH + A1 + 5]) as u32));
+            let idx = gi * w + lay.a1; // H'_0, digit 0 of compression 1
+            let old = mm.values[idx].as_canonical_u32();
+            mm.values[idx] = F::from_u32(old ^ 1);
+            let hrow = 16 + 12; // compression 1, pair 12 = (H'_0, H'_1); limb 0 of H'_0
+            let d = if old & 1 == 1 { -F::ONE } else { F::ONE };
+            hh.values[hrow * H_WIDTH + 2] += d;
             let res = check(pk, airs, &[&mm, &m.table, &hh]);
             println!(
                 "NEGATIVE consistent_output_forgery detected={} by={}",
                 res.is_err(),
-                res.err()
-                    .map(|s| if s.contains("LogUp") {
-                        "bus"
-                    } else {
-                        "constraint"
-                    })
-                    .unwrap_or("-")
+                by(&res)
             );
         }
-        // Constraint-consistent mutations: each edit keeps every AIR constraint
-        // satisfied, so only a bus (LogUp) can reject it.
+        // Constraint-consistent edits: each keeps every AIR constraint satisfied, so only a
+        // bus (LogUp) can reject it.  Top-limb edits: the top carry feeds no further limb.
         {
-            let p21 = F::from_u32(1 << 21);
-            // Edits hit the top limb (index 2), whose carry feeds no further limb.
-            let at = |r: usize, col: usize| (ROWS + r) * WIDTH + col;
+            let top = F::from_u32(1 << lay.lw(2));
+            let at = |r: usize, col: usize| (ROWS + r) * w + col;
             let edits: Vec<(&str, Vec<(usize, F)>)> = vec![
-                (
-                    "sched_received_V0_plus_carry",
-                    vec![(at(20, RV0 + 2), p21), (at(20, CW0 + 2), F::ONE)],
-                ),
-                (
-                    "sched_received_V1_plus_carry",
-                    vec![(at(25, RV1 + 2), p21), (at(25, CW1 + 2), F::ONE)],
-                ),
-                (
-                    "sched_received_W7_plus_carry",
-                    vec![(at(30, R7B + 2), p21), (at(30, CW1 + 2), F::ONE)],
-                ),
-                (
-                    "round_K_plus_carries",
-                    vec![
-                        (at(12, K1 + 2), p21),
-                        (at(12, C1A + 2), F::ONE),
-                        (at(12, C1E + 2), F::ONE),
-                    ],
-                ),
-                (
-                    "out_received_IV_plus_carry",
-                    vec![(at(43, OUT_IV + 8), p21), (at(43, OUT_C + 8), F::ONE)],
-                ),
-                (
-                    "out_received_final_plus_carry",
-                    vec![(at(42, OUT_FIN + 5), p21), (at(42, OUT_C + 5), F::ONE)],
-                ),
-                (
-                    "carry_out_of_range_via_K",
-                    vec![
-                        (at(12, K1 + 2), F::from_u32(64 << 21)),
-                        (at(12, C1A + 2), F::from_u32(64)),
-                        (at(12, C1E + 2), F::from_u32(64)),
-                    ],
-                ),
+                // row x stores values for row x+1
+                ("sched_received_V0_plus_carry", vec![(at(19, lay.v0 + 2), top), (at(19, lay.cw0 + 2), F::ONE)]),
+                ("sched_received_V1_plus_carry", vec![(at(24, lay.v1 + 2), top), (at(24, lay.cw1 + 2), F::ONE)]),
+                ("sched_W7a_residual_via_carry", vec![(at(29, lay.cw0 + 2), F::ONE)]),
+                ("sched_W7b_residual_via_carry", vec![(at(30, lay.cw1 + 2), F::ONE)]),
+                ("round_d_minus_T2_residual_via_carry", vec![(at(14, lay.c0e + 2), F::ONE)]),
+                ("round_K0_residual_via_carry", vec![(at(11, lay.c0a + 2), F::ONE)]),
+                ("round_K1_residual_via_carry", vec![(at(12, lay.c1a + 2), F::ONE)]),
+                ("round_d_residual_via_carry", vec![(at(13, lay.c1e + 2), F::ONE)]),
+                ("out_IV_residual_via_carry_row42", vec![(at(41, lay.c0a + 2), F::ONE)]),
+                ("out_IV_residual_via_carry_row43", vec![(at(42, lay.c1e + 2), F::ONE)]),
+                ("out_received_fin_plus_carry", vec![(at(42, lay.v0 + 2), top), (at(42, lay.c0e + 2), F::ONE)]),
             ];
             for (name, ed) in edits {
                 let mut mm = m.main.clone();
@@ -413,74 +443,40 @@ mod config {
                     mm.values[idx] += dv;
                 }
                 let res = check(pk, airs, &[&mm, &m.table, &m.harness]);
-                println!(
-                    "NEGATIVE_BUS {name} detected={} by={}",
-                    res.is_err(),
-                    res.as_ref()
-                        .err()
-                        .map(|s| if s.contains("LogUp") {
-                            "bus"
-                        } else {
-                            "constraint"
-                        })
-                        .unwrap_or("-")
-                );
+                println!("NEGATIVE_BUS {name} detected={} by={}", res.is_err(), by(&res));
             }
-            // Pure range-check test: flip W[79] bit 63 (feeds only round 79 and its own
-            // schedule equation) and re-solve the three top-limb carries in the field.
-            // All constraints hold; the carries become ±1/2 mod p, so only the range bus rejects.
+            // Range check (polynomial now): flip W[79] bit 63 (feeds only round 79) and
+            // re-solve the three top-limb carries to ±1/2 mod p: every other relation holds.
             {
                 use p3_field::Field;
                 let mut mm = m.main.clone();
-                let bit = at(41, W1 + 63);
-                let up = mm.values[bit] == F::ZERO;
-                mm.values[bit] = F::ONE - mm.values[bit];
+                let dj = 63 / lay.k;
+                let bit = 63 - lay.k * dj;
+                let idx = at(41, lay.w1 + dj);
+                let v = mm.values[idx].as_canonical_u32();
+                let up = (v >> bit) & 1 == 0;
+                mm.values[idx] = F::from_u32(v ^ (1 << bit));
                 let half = F::from_u32(2).inverse();
                 let d = if up { half } else { -half };
-                mm.values[at(41, CW1 + 2)] -= d;
-                mm.values[at(41, C1A + 2)] += d;
-                mm.values[at(41, C1E + 2)] += d;
+                mm.values[at(40, lay.cw1 + 2)] -= d;
+                mm.values[at(40, lay.c1a + 2)] += d;
+                mm.values[at(40, lay.c1e + 2)] += d;
                 let res = check(pk, airs, &[&mm, &m.table, &m.harness]);
-                println!(
-                    "NEGATIVE_BUS carry_range_only detected={} by={}",
-                    res.is_err(),
-                    res.as_ref()
-                        .err()
-                        .map(|s| if s.contains("LogUp") {
-                            "bus"
-                        } else {
-                            "constraint"
-                        })
-                        .unwrap_or("-")
-                );
+                println!("NEGATIVE carry_range_half detected={} by={}", res.is_err(), by(&res));
             }
             // A different (input state, block) with a fully consistent AIR trace but the
             // consumer's original messages: only the interface bus can reject it.
-            for (name, edit_iv) in [
-                ("interface_block_word", false),
-                ("interface_input_state", true),
-            ] {
+            for (name, edit_iv) in [("interface_block_word", false), ("interface_input_state", true)] {
                 let mut c2 = comps.clone();
                 if edit_iv {
                     c2[1].h[5] ^= 1 << 17
                 } else {
                     c2[1].block[9] ^= 1 << 40
                 }
-                let t2 = gen_all(&c2);
+                let t2 = gen_all(lay, &c2);
                 let m2 = mats(&t2);
                 let res = check(pk, airs, &[&m2.main, &m2.table, &m.harness]);
-                println!(
-                    "NEGATIVE_BUS {name} detected={} by={}",
-                    res.is_err(),
-                    res.as_ref()
-                        .err()
-                        .map(|s| if s.contains("LogUp") {
-                            "bus"
-                        } else {
-                            "constraint"
-                        })
-                        .unwrap_or("-")
-                );
+                println!("NEGATIVE_BUS {name} detected={} by={}", res.is_err(), by(&res));
             }
         }
         std::panic::set_hook(prev_hook);
@@ -502,10 +498,12 @@ mod config {
     }
 
     pub fn negative_main() {
-        let eng = engine(10);
-        let airs = airs();
+        let lay = layout();
+        let eng = engine(&lay, 10);
+        let airs = airs(lay);
         let (pk, _) = eng.keygen(&airs);
-        negative(&pk, &airs);
+        print_airs(&pk);
+        negative(&lay, &pk, &airs);
     }
 
     fn peak_rss_kib() -> u64 {
@@ -523,14 +521,16 @@ mod config {
         let mut rng = Rng(0xdead_beef_cafe_f00d ^ n as u64);
         let comps: Vec<Comp> = (0..n).map(|_| rng.comp()).collect();
         let tg = std::time::Instant::now();
-        let t = gen_all(&comps);
+        let lay = layout();
+        let t = gen_all(lay, &comps);
         let tracegen = tg.elapsed().as_secs_f64();
         let log_h = t.main_height.trailing_zeros() as usize;
-        let eng = engine(log_h);
-        let airs = airs();
+        let eng = engine(&lay, log_h);
+        let airs = airs(lay);
         let kt = std::time::Instant::now();
         let (pk, vk) = eng.keygen(&airs);
         println!("KEYGEN_SECONDS {:.2}", kt.elapsed().as_secs_f64());
+        print_airs(&pk);
         let bound = SoundnessCalculator::calculate_from_vk(&vk);
         let target = setting("NEARPROOF_QUERY_BITS", 268) as f64;
         println!(
@@ -545,16 +545,16 @@ mod config {
             bound.total_bits >= target,
             "component budget failed; not proving this profile"
         );
-        let main_cells = t.main_height * WIDTH;
+        let main_cells = t.main_height * lay.width;
         println!(
             "SHAPE n={} main_rows_used={} main_height={} main_width={} main_cells={} cells_per_compression_padded={:.1} cells_per_compression_dense={} table={}x{} harness={}x{}",
             n,
             n * ROWS,
             t.main_height,
-            WIDTH,
+            lay.width,
             main_cells,
             main_cells as f64 / n as f64,
-            ROWS * WIDTH,
+            ROWS * lay.width,
             64,
             T_WIDTH,
             t.harness_height,
@@ -638,24 +638,27 @@ mod config {
         fn outputs_and_checker_small() {
             let mut rng = Rng(7);
             let comps: Vec<Comp> = (0..20).map(|_| rng.comp()).collect();
-            let t = gen_all(&comps);
+            for k in 1..=3 {
+            let lay = Layout::new(k);
+            let t = gen_all(lay, &comps);
             for (s, c) in comps.iter().enumerate() {
-                assert_eq!(trace_output(&t.main, s), sha2_compress(c));
+                assert_eq!(trace_output(&lay, &t.main, s), sha2_compress(c));
             }
-            let eng = engine(10);
-            let airs = airs();
+            let eng = engine(&lay, 10);
+            let airs = airs(lay);
             let (pk, _) = eng.keygen(&airs);
             let m = mats(&t);
             check(&pk, &airs, &[&m.main, &m.table, &m.harness]).unwrap();
             // one corrupted state bit must be rejected
             let mut bad = m.main.clone();
-            bad.values[(ROWS + 20) * WIDTH + A1 + 3] =
-                F::ONE - bad.values[(ROWS + 20) * WIDTH + A1 + 3];
+            let idx = (ROWS + 20) * lay.width + lay.a1 + 3;
+            bad.values[idx] = F::from_u32(bad.values[idx].as_canonical_u32() ^ 1);
             let prev = std::panic::take_hook();
             std::panic::set_hook(Box::new(|_| {}));
             let r = check(&pk, &airs, &[&bad, &m.table, &m.harness]);
             std::panic::set_hook(prev);
             assert!(r.is_err());
+            }
         }
     }
 }
