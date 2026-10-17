@@ -19,10 +19,10 @@ index 08e139b..b432c73 100644
  }
  
 diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
-index c776e1c..d06be07 100644
+index c776e1c..d65078e 100644
 --- a/crates/stark-backend/src/config.rs
 +++ b/crates/stark-backend/src/config.rs
-@@ -188,6 +188,45 @@ pub struct WhirConfig {
+@@ -188,6 +188,51 @@ pub struct WhirConfig {
      /// of queries in the `rounds` field. However we store it in `WhirConfig` for security analysis
      /// purposes.
      pub proximity: WhirProximityStrategy,
@@ -53,6 +53,9 @@ index c776e1c..d06be07 100644
 +    /// Next-row (rotated) column openings only for columns that some constraint or interaction
 +    /// reads at offset 1 (per-column mask computed at keygen and stored in the verifying key).
 +    pub next_mask: bool,
++    /// Batch-constraint sumcheck rounds in which no trace is exhausted send one evaluation less:
++    /// there `s(X) = eq(xi, X) * s'(X)` and the verifier reconstructs s' (Gruen).
++    pub gruen_zerocheck: bool,
 +}
 +
 +impl WhirLevers {
@@ -63,12 +66,15 @@ index c776e1c..d06be07 100644
 +    /// Wire flags byte for the GKR / opening levers (bit 0 gruen_gkr, bit 1 gkr_derive_claims,
 +    /// bit 2 next_mask).
 +    pub fn flags(&self) -> u8 {
-+        self.gruen_gkr as u8 | (self.gkr_derive_claims as u8) << 1 | (self.next_mask as u8) << 2
++        self.gruen_gkr as u8
++            | (self.gkr_derive_claims as u8) << 1
++            | (self.next_mask as u8) << 2
++            | (self.gruen_zerocheck as u8) << 3
 +    }
  }
  
  #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-@@ -288,20 +327,49 @@ impl WhirConfig {
+@@ -288,20 +333,49 @@ impl WhirConfig {
          log_stacked_height: usize,
          whir_params: WhirParams,
          security_bits: usize,
@@ -122,7 +128,7 @@ index c776e1c..d06be07 100644
  
              let num_queries = Self::queries(
                  proximity.in_round(round),
-@@ -320,12 +388,35 @@ impl WhirConfig {
+@@ -320,12 +394,35 @@ impl WhirConfig {
              query_phase_pow_bits,
              folding_pow_bits: whir_params.folding_pow_bits,
              proximity,
@@ -159,7 +165,7 @@ index c776e1c..d06be07 100644
      }
  
      pub fn num_whir_rounds(&self) -> usize {
-@@ -334,7 +425,7 @@ impl WhirConfig {
+@@ -334,7 +431,7 @@ impl WhirConfig {
  
      #[inline]
      pub fn num_sumcheck_rounds(&self) -> usize {
@@ -218,7 +224,7 @@ index 3074dd0..640a600 100644
              )
              .unwrap();
 diff --git a/crates/stark-backend/src/proof.rs b/crates/stark-backend/src/proof.rs
-index 30b7914..262fd24 100644
+index 30b7914..286a2d5 100644
 --- a/crates/stark-backend/src/proof.rs
 +++ b/crates/stark-backend/src/proof.rs
 @@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
@@ -265,23 +271,28 @@ index 30b7914..262fd24 100644
          SC::encode_digest(&self.common_main_commit, writer)?;
  
          // We encode trace_vdata by encoding the number of AIRs, encoding a bitmap of
-@@ -249,9 +264,14 @@ impl<SC: EncodableConfig> Encode for Proof<SC> {
+@@ -249,9 +264,18 @@ impl<SC: EncodableConfig> Encode for Proof<SC> {
          for pv in &self.public_values {
              SC::encode_base_field_slice(pv, writer)?;
          }
 -        self.gkr_proof.encode(writer)?;
+-        self.batch_constraint_proof.encode(writer)?;
 +        if levers.is_default() {
 +            self.gkr_proof.encode(writer)?;
 +        } else {
 +            self.gkr_proof.encode_levers(&levers, writer)?;
 +        }
-         self.batch_constraint_proof.encode(writer)?;
++        if levers.is_default() {
++            self.batch_constraint_proof.encode(writer)?;
++        } else {
++            self.batch_constraint_proof.encode_levers(writer)?;
++        }
          self.stacking_proof.encode(writer)?;
 +        // Dispatches to the lever wire format when `levers` is non-default.
          self.whir_proof.encode(writer)
      }
  }
-@@ -322,6 +342,9 @@ impl<SC: EncodableConfig> Encode for StackingProof<SC> {
+@@ -322,6 +346,9 @@ impl<SC: EncodableConfig> Encode for StackingProof<SC> {
  
  impl<SC: EncodableConfig> Encode for WhirProof<SC> {
      fn encode<W: Write>(&self, writer: &mut W) -> Result<()> {
@@ -291,7 +302,7 @@ index 30b7914..262fd24 100644
          SC::encode_base_field(&self.mu_pow_witness, writer)?;
          // whir_sumcheck_polys: Vec<[SC::EF; 2]>
          self.whir_sumcheck_polys.len().encode(writer)?;
-@@ -445,7 +468,35 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -445,7 +472,36 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          // We explicitly implement Decode for Proof to check CODEC_VERSION
          let codec_version = u32::decode(reader)?;
@@ -306,7 +317,7 @@ index 30b7914..262fd24 100644
 +                    _ => Err(invalid("lever flag")),
 +                }
 +            };
-+            if h[3] & !7 != 0 {
++            if h[3] & !15 != 0 {
 +                return Err(invalid("lever flags"));
 +            }
 +            let levers = WhirLevers {
@@ -316,6 +327,7 @@ index 30b7914..262fd24 100644
 +                gruen_gkr: h[3] & 1 != 0,
 +                gkr_derive_claims: h[3] & 2 != 0,
 +                next_mask: h[3] & 4 != 0,
++                gruen_zerocheck: h[3] & 8 != 0,
 +            };
 +            if levers.is_default() {
 +                return Err(invalid("lever format with default levers"));
@@ -328,16 +340,20 @@ index 30b7914..262fd24 100644
              return Err(Error::other(format!(
                  "CODEC_VERSION mismatch, expected: {}, actual: {}",
                  CODEC_VERSION, codec_version
-@@ -488,10 +539,16 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -488,10 +544,19 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
              common_main_commit,
              trace_vdata,
              public_values,
 -            gkr_proof: GkrProof::decode(reader)?,
+-            batch_constraint_proof: BatchConstraintProof::decode(reader)?,
 +            gkr_proof: match &levers {
 +                Some(l) => GkrProof::decode_levers(reader, l)?,
 +                None => GkrProof::decode(reader)?,
 +            },
-             batch_constraint_proof: BatchConstraintProof::decode(reader)?,
++            batch_constraint_proof: match &levers {
++                Some(_) => BatchConstraintProof::decode_levers(reader)?,
++                None => BatchConstraintProof::decode(reader)?,
++            },
              stacking_proof: StackingProof::decode(reader)?,
 -            whir_proof: WhirProof::decode(reader)?,
 +            whir_proof: match levers {
@@ -347,10 +363,93 @@ index 30b7914..262fd24 100644
          })
      }
  }
-@@ -526,6 +583,94 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
+@@ -526,6 +591,177 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
      }
  }
  
++/// Lever wire format of [`BatchConstraintProof`]: as upstream, except that after `n_max` and
++/// `s_deg` it writes `g:u32`, the number of leading rounds whose last evaluation is zero, and
++/// omits that (zero) evaluation in those rounds. Lossless; the verifier decides independently
++/// which rounds are Gruen rounds (`gruen_zerocheck`) and requires their last entry to be zero.
++impl<SC: StarkProtocolConfig> BatchConstraintProof<SC> {
++    pub fn encode_levers<W: Write>(&self, writer: &mut W) -> Result<()>
++    where
++        SC: EncodableConfig,
++    {
++        SC::encode_extension_field_slice(&self.numerator_term_per_air, writer)?;
++        SC::encode_extension_field_iter(self.denominator_term_per_air.iter(), writer)?;
++        SC::encode_extension_field_slice(&self.univariate_round_coeffs, writer)?;
++        let n_max = self.sumcheck_round_polys.len();
++        n_max.encode(writer)?;
++        if n_max > 0 {
++            let s_deg = self.sumcheck_round_polys[0].len();
++            s_deg.encode(writer)?;
++            let g = self
++                .sumcheck_round_polys
++                .iter()
++                .take_while(|r| r.last().is_some_and(|x| *x == SC::EF::ZERO))
++                .count();
++            g.encode(writer)?;
++            for (i, round_polys) in self.sumcheck_round_polys.iter().enumerate() {
++                if round_polys.len() != s_deg {
++                    return Err(invalid("ragged batch sumcheck rounds"));
++                }
++                let n = if i < g { s_deg - 1 } else { s_deg };
++                SC::encode_extension_field_iter(round_polys[..n].iter(), writer)?;
++            }
++        }
++        for part_col_openings in &self.column_openings {
++            part_col_openings.len().encode(writer)?;
++            for col_opening in part_col_openings {
++                SC::encode_extension_field_slice(col_opening, writer)?;
++            }
++        }
++        Ok(())
++    }
++
++    pub fn decode_levers<R: Read>(reader: &mut R) -> Result<Self>
++    where
++        SC: DecodableConfig,
++    {
++        let numerator_term_per_air = SC::decode_extension_field_vec(reader)?;
++        let num_present_airs = numerator_term_per_air.len();
++        let denominator_term_per_air = SC::decode_extension_field_n(reader, num_present_airs)?;
++        let univariate_round_coeffs = SC::decode_extension_field_vec(reader)?;
++        let n_max = usize::decode(reader)?;
++        let mut sumcheck_round_polys = vec_with_capped_capacity(n_max);
++        if n_max > 0 {
++            let s_deg = usize::decode(reader)?;
++            let g = usize::decode(reader)?;
++            if s_deg == 0 || g > n_max {
++                return Err(invalid("batch sumcheck shape"));
++            }
++            for i in 0..n_max {
++                let mut v = SC::decode_extension_field_n(reader, if i < g { s_deg - 1 } else { s_deg })?;
++                if i < g {
++                    v.push(SC::EF::ZERO);
++                }
++                sumcheck_round_polys.push(v);
++            }
++        }
++        let mut column_openings = vec_with_capped_capacity(num_present_airs);
++        for _ in 0..num_present_airs {
++            let num_parts = usize::decode(reader)?;
++            let mut parts = vec_with_capped_capacity(num_parts);
++            for _ in 0..num_parts {
++                parts.push(SC::decode_extension_field_vec(reader)?);
++            }
++            column_openings.push(parts);
++        }
++        Ok(Self {
++            numerator_term_per_air,
++            denominator_term_per_air,
++            univariate_round_coeffs,
++            sumcheck_round_polys,
++            column_openings,
++        })
++    }
++}
++
 +/// Lever wire format of [`GkrProof`]: `logup_pow_witness:F, num_layers:u32`, per layer
 +/// `p_xi_0, q_xi_0, [p_xi_1 unless gkr_derive_claims], q_xi_1`, then `q0_claim` unless
 +/// (`gkr_derive_claims` and num_layers > 0), then per layer-sumcheck round `s(1), s(2),
@@ -442,7 +541,7 @@ index 30b7914..262fd24 100644
  impl<SC: DecodableConfig> Decode for BatchConstraintProof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          let numerator_term_per_air = SC::decode_extension_field_vec(reader)?;
-@@ -701,6 +846,218 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
+@@ -701,6 +937,218 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
              codeword_opened_values,
              codeword_merkle_proofs,
              final_poly,
@@ -717,7 +816,7 @@ index 7c37275..c0b6192 100644
                  }
                  round_polys_eval.push(s_evals);
 diff --git a/crates/stark-backend/src/prover/logup_zerocheck/mod.rs b/crates/stark-backend/src/prover/logup_zerocheck/mod.rs
-index d0a5646..67d9f70 100644
+index d0a5646..3033da6 100644
 --- a/crates/stark-backend/src/prover/logup_zerocheck/mod.rs
 +++ b/crates/stark-backend/src/prover/logup_zerocheck/mod.rs
 @@ -168,7 +168,12 @@ where
@@ -734,7 +833,26 @@ index d0a5646..67d9f70 100644
  
      // Sample more for `\xi` in the edge case that some AIRs don't have interactions
      let n_global = max(n_max, n_logup);
-@@ -428,11 +433,18 @@ where
+@@ -380,10 +385,16 @@ where
+             coeffs[1] += sp_tail;
+             UnivariatePoly::new(coeffs)
+         };
+-        let batch_s_evals = (1..=s_deg)
++        let mut batch_s_evals = (1..=s_deg)
+             .map(|i| batch_s.eval_at_point(SC::EF::from_usize(i)))
+             .collect_vec();
+-        for &eval in &batch_s_evals {
++        // Gruen lever: with no exhausted trace, s(X) = eq(xi, X) s'(X); the verifier recovers
++        // s(s_deg) from s(1..s_deg-1), so it is neither sent nor observed (stored as zero).
++        let gruen_round = mpk.params.whir.levers.gruen_zerocheck && tail_start == num_traces;
++        if gruen_round {
++            *batch_s_evals.last_mut().unwrap() = SC::EF::ZERO;
++        }
++        for &eval in &batch_s_evals[..s_deg - gruen_round as usize] {
+             transcript.observe_ext(eval);
+         }
+         sumcheck_round_polys.push(batch_s_evals);
+@@ -428,11 +439,18 @@ where
          sumcheck_round_polys,
          column_openings,
      };
@@ -1047,7 +1165,7 @@ index 7ba58fb..86c80a0 100644
              logup: LogUpSecurityParameters {
                  max_interaction_count: 1 << 20,
 diff --git a/crates/stark-backend/src/verifier/batch_constraints.rs b/crates/stark-backend/src/verifier/batch_constraints.rs
-index e677b48..554af06 100644
+index e677b48..073e0fc 100644
 --- a/crates/stark-backend/src/verifier/batch_constraints.rs
 +++ b/crates/stark-backend/src/verifier/batch_constraints.rs
 @@ -286,7 +286,13 @@ pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamir
@@ -1065,6 +1183,57 @@ index e677b48..554af06 100644
          debug_assert_eq!(xi.len(), l_skip + n_logup);
      } else if gkr_proof.q0_claim != SC::EF::ONE {
          return Err(GkrVerificationError::InvalidZeroRoundValue {
+@@ -361,6 +367,12 @@ pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamir
+     }
+     let mut cur_sum = s_0.eval_at_point(r_0);
+     let mut rs = vec![r_0];
++    // Gruen lever: rounds in which every trace still has variables (no tail term).
++    let gruen_rounds = if mvk.params.whir.levers.gruen_zerocheck {
++        n_per_trace.iter().map(|&n| n.max(0) as usize).min().unwrap_or(0).min(n_max)
++    } else {
++        0
++    };
+ 
+     // 6. Multilinear sumcheck rounds
+     #[allow(clippy::needless_range_loop)]
+@@ -369,11 +381,36 @@ pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamir
+         // Proof shape asserts that sumcheck_round_polys.len() == n_max
+         let batch_s_evals = &sumcheck_round_polys[round];
+         // Proof shape asserts that batch_s_evals.len() == s_deg
+-        for &eval in batch_s_evals.iter() {
++        let gruen = round < gruen_rounds;
++        if gruen && batch_s_evals.last() != Some(&SC::EF::ZERO) {
++            return Err(BatchConstraintError::InconsistentClaims);
++        }
++        for &eval in &batch_s_evals[..batch_s_evals.len() - gruen as usize] {
+             transcript.observe_ext(eval);
+         }
+         let s_1 = batch_s_evals[0];
+         let s_0 = cur_sum - s_1;
++        let mut gruen_evals = Vec::new();
++        if gruen {
++            // s(X) = eq1(X) s'(X), eq1(X) = (1 - xi) (1 - X) + xi X, deg s' = s_deg - 1: recover
++            // s'(0..s_deg-1), then s(s_deg) = eq1(s_deg) s'(s_deg).
++            let xi_cur = xi[l_skip + round];
++            let eq1 = |x: SC::EF| xi_cur * x + (SC::EF::ONE - xi_cur) * (SC::EF::ONE - x);
++            let pts = (0..s_deg).map(SC::F::from_usize).collect_vec();
++            let mut sp = Vec::with_capacity(s_deg);
++            for k in 0..s_deg {
++                let s_k = if k == 0 { s_0 } else { batch_s_evals[k - 1] };
++                let Some(inv) = eq1(SC::EF::from_usize(k)).try_inverse() else {
++                    return Err(BatchConstraintError::InconsistentClaims);
++                };
++                sp.push(s_k * inv);
++            }
++            let sp_poly = UnivariatePoly::lagrange_interpolate(&pts, &sp);
++            let x = SC::EF::from_usize(s_deg);
++            gruen_evals = batch_s_evals[..s_deg - 1].to_vec();
++            gruen_evals.push(eq1(x) * sp_poly.eval_at_point(x));
++        }
++        let batch_s_evals: &[SC::EF] = if gruen { &gruen_evals } else { batch_s_evals };
+         let batch_s_evals = iter::once(&s_0).chain(batch_s_evals).collect_vec();
+ 
+         let mut factorials = vec![SC::F::ONE; s_deg + 1];
 diff --git a/crates/stark-backend/src/verifier/fractional_sumcheck_gkr.rs b/crates/stark-backend/src/verifier/fractional_sumcheck_gkr.rs
 index be62b0f..d85a15e 100644
 --- a/crates/stark-backend/src/verifier/fractional_sumcheck_gkr.rs

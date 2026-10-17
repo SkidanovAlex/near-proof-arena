@@ -32,7 +32,8 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         let (auth,initial,codeword,final_poly)=(digests*db,base_values*4,ext_values*48,w.final_poly.len()*48);
         let lv=proof.whir_proof.levers;
         let gkr=if lv.is_default() {size(&proof.gkr_proof)} else {let mut b=Vec::new();proof.gkr_proof.encode_levers(&lv,&mut b).unwrap();b.len()};
-        let (rel,stack)=(size(&proof.batch_constraint_proof),size(&proof.stacking_proof));
+        let rel=if lv.is_default() {size(&proof.batch_constraint_proof)} else {let mut b=Vec::new();proof.batch_constraint_proof.encode_levers(&mut b).unwrap();b.len()};
+        let stack=size(&proof.stacking_proof);
         let openings:usize=proof.batch_constraint_proof.column_openings.iter().flat_map(|a|a.iter()).map(|p|p.len()).sum();
         println!("LEVERS_CENSUS total={} auth={} auth_digests={} auth_per_tree={:?} initial={} codeword={} final_poly={} whir_small={} whir={} relations={} column_openings_ef={} gkr={} stacking={} stacking_openings_ef={} other={}",
             total,auth,digests,per_round,initial,codeword,final_poly,whir-auth-initial-codeword-final_poly,whir,rel,openings,gkr,stack,
@@ -79,7 +80,7 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         let whir_levers=WhirLevers{k_first:setting("NEARPROOF_K1",0),multiproof:setting("NEARPROOF_MULTIPROOF",0)==1,
             keep_domain:setting("NEARPROOF_KEEP_DOMAIN",0)==1,
             gruen_gkr:setting("NEARPROOF_GRUEN_GKR",0)==1,gkr_derive_claims:setting("NEARPROOF_GKR_DERIVE",0)==1,
-            next_mask:setting("NEARPROOF_NEXT_MASK",0)==1};
+            next_mask:setting("NEARPROOF_NEXT_MASK",0)==1,gruen_zerocheck:setting("NEARPROOF_GRUEN_ZC",0)==1};
         let sha=levers();
         let log_final=setting("NEARPROOF_LOG_FINAL",params.log_final_poly_len());
         let (qpow,fpow,mpow)=(setting("NEARPROOF_QUERY_POW",0),setting("NEARPROOF_FOLDING_POW",0),setting("NEARPROOF_MU_POW",0));
@@ -88,7 +89,7 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
                 proximity:params.whir.proximity,query_phase_pow_bits:qpow,folding_pow_bits:fpow,mu_pow_bits:mpow},bits,whir_levers);
         println!("NATIVE_SHA384_PROFILE n_stack={} k={} log_blowup={} all_list={} queries={:?}",n_stack,k,blowup,all_list,params.whir.rounds.iter().map(|r|r.num_queries).collect::<Vec<_>>());
         println!("NATIVE_SHA384_INTERACTION_LOG {}",interaction_log);
-        println!("LEVERS_PROFILE_GKR gruen={} derive={} next_mask={} max_degree={}",whir_levers.gruen_gkr,whir_levers.gkr_derive_claims,whir_levers.next_mask,params.max_constraint_degree);
+        println!("LEVERS_PROFILE_GKR gruen={} derive={} next_mask={} gruen_zc={} max_degree={}",whir_levers.gruen_gkr,whir_levers.gkr_derive_claims,whir_levers.next_mask,whir_levers.gruen_zerocheck,params.max_constraint_degree);
         println!("LEVERS_PROFILE k1={} log_final={} multiproof={} keep_domain={} m={} query_pow={} folding_pow={} mu_pow={} digest_bytes={} coset_leaf={} dummy={}",
             params.whir.k_first(),params.log_final_poly_len(),whir_levers.multiproof,whir_levers.keep_domain,m,qpow,fpow,mpow,
             sha.digest_bytes,sha.coset_leaf,dummy);
@@ -205,6 +206,9 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         }
         if !proof.batch_constraint_proof.sumcheck_round_polys.is_empty() {
             let mut bad=proof.clone();bad.batch_constraint_proof.sumcheck_round_polys[0][0]+=EF::ONE;cases.push(("batch sumcheck eval",bad));
+            if p.whir.levers.gruen_zerocheck {
+                let mut bad=proof.clone();*bad.batch_constraint_proof.sumcheck_round_polys[0].last_mut().unwrap()=EF::ONE;cases.push(("batch gruen: dropped eval set",bad));
+            }
         }
         let n=cases.len();
         for (name,bad) in cases {
