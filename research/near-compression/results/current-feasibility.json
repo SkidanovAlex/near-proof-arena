@@ -676,7 +676,10 @@
       "structured_scale_eq"
     ],
     "scope": "Four pointwise field identities plus small executable sequence parity. No universal list/implementation refinement, transcript binding or security proof.",
-    "next_gate": "Shadow all retained code-switch state transitions with structured weights. Keep existing expanded-vector transcript binding until a closed versioned descriptor contract and soundness analysis exist."
+    "full_state_parity_evidence": "results/structured-verifier-states.json",
+    "compared_ext8_coefficients": 674084,
+    "dense_injection_coefficient_terms": 46437380,
+    "next_gate": "All retained states match. Design a closed versioned derivation binding and account for hybrid materialization before changing transcript hashes. Existing standalone stage APIs must keep explicit weight binding."
   },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
@@ -720,7 +723,8 @@
     "results/nibble-full-verifier-screen.json": "5ea5148cc9d91faa2212ab85098ac1253a646d816586632704fedc99cc20f720",
     "results/closed-verifier-arithmetic.json": "e1cf506fc4c5702adf5017fb3c5f76cf491e19d6832ab255237d21e8ecf9e38b",
     "results/structured-functional/manifest.json": "96f88ab9e2668826a908f9a75f4c04c6505ffad9048e0b4efe4ad3909642f7ff",
-    "airbender/direct-wasm/report_current_feasibility.py": "c9b39bec79c737e3436ee1d7ea699703613108fb62e070997e0493a947c4f64d",
+    "results/structured-verifier-states.json": "52ba82d28312e42017bc55b6548cab1fdcd9e193b01a46229a28b6a49dae6ef8",
+    "airbender/direct-wasm/report_current_feasibility.py": "5487933c6ef4b8f2932a775c6ab7dbf6bc85ec87c6807e57f38764d08c1195cf",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

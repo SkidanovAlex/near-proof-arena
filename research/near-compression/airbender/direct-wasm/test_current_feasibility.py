@@ -20,6 +20,8 @@ def main():
     base=report.ROOT/'results/ext8-switch-execution-q309'
     manifest_path=base/'manifest.json'
     mutations=[
+        (report.ROOT/'results/structured-verifier-states.json',
+            lambda d:d.update(compared_ext8_coefficients=0),False),
         (report.ROOT/'results/closed-verifier-arithmetic.json',
             lambda d:d['stages']['compression'].update(hash_parts=0),False),
         (report.ROOT/'results/nibble-full-verifier-screen.json',

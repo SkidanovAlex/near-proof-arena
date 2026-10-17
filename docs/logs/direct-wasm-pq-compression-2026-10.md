@@ -10186,3 +10186,45 @@ soundness. Reuses CodeSwitchFunctional and OneFoldScalarComposition. Root module
 build passes and full Audit.lean now4662theorems; no sorryAx. Exact audit and
 build logs retained under results/structured-functional. Original goal still
 NOT_PASSED: no full closed-verifier proof, PQ128 certificate, or fullNEAR1Pgas.
+
+## 2026-10-17 — Full verifier structured-state equivalence
+
+check_structured_verifier_states.py completed session83039/PID3039481 with
+exit0 in57.324s. Replayed original retained contract, call-link and compression
+verifier; all accepted. Every coefficient of initial262144-entry functional,
+all17fold outputs and all7injection outputs matches the structured shadow:
+674084Ext8coefficient comparisons. Each injected claim independently matches
+claim+sum(mixer*answer). Full expansion reuses the tested native injection kernel
+with transformed geometric points/mixers; three positions per state also use
+independent Python at(), and earlier small tests compare full Python expansion.
+This is executable full-state parity, not universal implementation refinement.
+
+Actual dense injections process46437380coefficient/point terms. Structured
+folds update15810geometric terms. These are different work units, not a measured
+speedup ratio: native injection specializes base-field points, and the shadow
+materializes all states for checking. Initial structured scalar payload608bytes
+versus8388608dense payload; after first injection20416versus4194304. Dense wins
+by degree1024 (32768versus59872); final state64versus138944. Thus a future closed
+verifier should use a hybrid, not retain geometric terms to the terminal blindly.
+Neither payload count is proof size or total Python/Rust memory.
+
+Next binding contract to design BEFORE a transcript migration:
+- Closed entry binds external statement/spec/source roots, commitment/terminal
+  profiles, code-switch schedule and the exact functional-derivation version.
+- Initial equality point is derived only from checked input-reduction challenges.
+- Each fold consumes the previously checked state and transcript challenge.
+- Each injection derives points/answers from authenticated openings and child
+  commitment, then draws mixers only after binding those responses.
+- A continuation may omit expanded weights only when it derives the identical
+  functional from this bound history. Caller-supplied structured terms are not
+  an authorized replacement for that derivation. Standalone stage.start keeps
+  its explicit vector binding.
+- Hybrid materialization must preserve pointwise weights and terminal dot claim.
+This is an interface plan, not a proved hash-chain/QROM reduction or changed
+protocol. Current ext8_code_switch_stage.start still hashes expanded weights;
+no hash omission or verifier-speed claim follows from this parity result.
+
+Dashboard now records full state parity,18inconsistent-evidence negatives.
+No Lean changes this turn; last full audit4662. Full1Pgas/PQ128/sub300000B
+NOT_PASSED. Next quantify a closed derived-state transcript and remaining full
+verifier costs before producing a new larger proof.
