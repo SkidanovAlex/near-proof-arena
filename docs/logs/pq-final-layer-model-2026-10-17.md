@@ -394,3 +394,26 @@ would be an alternative/extra lever on the ≈ 120–165 KB auth term.
 Gates now: (1) WHIR soundness on 15·2ᴺ domains; (2) coset-hash test on gas-failure5
 (predict 6,947 compressions); (3) user decision on 42-B digests + grinding;
 (4) streamed ×15 LDE timing; (5) a real shape-equivalent final-layer proof.
+
+## Push to a measured recursive final layer — lanes started (2026-10-17)
+
+User: "continue until we have recursive last step under 300k". Three lanes off this branch:
+`lane/pq-recursion-sha384` (port OpenVM v2.1 `crates/recursion` — same stark-backend
+commit d667af5 — to SHA-384/Ext12 using the L3 SHA AIR), `lane/pq-whir-levers`
+(grinding, 42-B digests, k1, m, coset-as-one-message leaves; gate 2; gate 5 dummy
+final layer), `lane/pq-x15-domains` (gate 1 + prototype).
+
+**Gate 1 — ×15 domains: PASS on paper** (`lane/pq-x15-domains` @ `2cf46f1a4`,
+`x15-domains/SOUNDNESS.md`). WHIR's smoothness is used only via −x ∈ L, |L^(2^j)| =
+|L|/2^j, disjoint 2^k fibres and power-of-two degree; all hold for 15·2ᴺ. BCGM Thm 9.2
+and BCHKS25 Thm 1.5 are stated for arbitrary evaluation sets. One edit needed in
+WHIR Thm 5.2 ("smooth" → "coset of order c·2^K"), exact uniform query sampling
+(reject p−1, reduce mod 15·2^j). **Caveat: at |Ext12| = 2^370.88 and W ≈ 530–600
+stacked columns, m = 8 misses 2⁻²⁶⁸ by 2.4–7.5 bits (passes 2⁻²⁵⁸); m = 3 clears
+(≤ 2⁻²⁶⁹·⁴, 1.4-bit margin on the batching term) → use m = 3 (≈ +4 KB in model).**
+Prototype: `WhirConfig.domain_odd_factor` (default 1, byte-identical: gas-failure5
+re-proof ba042e71…), ×15 in every WHIR round, 55/55 tamper tests rejected; 15 coset
+DFTs are faster per point than one radix-2 DFT (2¹⁶×64: 5.6–8.5 s vs 11.3–11.9 s).
+Streamed LDE (modelled): 0.77–1.22 TB never materialised; ≤ 10 GiB/worker; 30–73 min
+on 8 threads, minutes on 192 cores. Open: recursion circuit needs the sampler, 15-point
+table, +4 Merkle depth; cpu/cuda backends not ported.
