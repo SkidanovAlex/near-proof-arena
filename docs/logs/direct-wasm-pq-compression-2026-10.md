@@ -10039,3 +10039,43 @@ its state and message. Separate fixed lookup/range semantics, bounded word
 operations, phase/word routing and boundary extraction, and SHA composition.
 Cryptographic extraction of these premises remains separate and unproved.
 No new Lean audit claimed; last4658. Full1Pgas/PQ128/sub300000B NOT_PASSED.
+
+## 2026-10-17 — Independently resumable PCS and retained reduction
+
+The same retry session73727/PID2987258 completed GKR and its48.282s coefficient
+check, independently rederived opening parameters, and saved its pre-PCS
+checkpoint. Packed PCS remains live at this checkpoint; no full proof claimed.
+Retained compressed reduction/opening/status under results/sha384-nibble64/checkpoint
+with a separate hash manifest. These are intermediate evidence, not a proof.
+
+resume_ext8_checkpoint.py verifies checkpoint hashes and independently derives
+local/GKR opening parameters from the external statement. It regenerates one
+table's auxiliaries at a time, checks every source/aux root and final, and proves
+only PCS. It does not repeat local/GKR proving. A fresh verifier process derives
+its own descriptors from the external statement and verifies the resumed output.
+The output is a PCS capture/resume report, not a fabricated original prover report.
+
+Tiny four-row, one-table AIR test passes: uninterrupted adapter and separate
+recovery from compressed checkpoint give identical1768-byte opening proofs.
+Five negatives reject wrong query count, external root, checkpoint opening hash,
+source root and auxiliary root. This also exercises the adapter end-to-end.
+No full-scale recovery has been launched alongside the still-live full prover.
+
+Recovery command (when needed, after confirming current process terminal):
+python3 airbender/direct-wasm/resume_ext8_checkpoint.py
+--checkpoint results/sha384-nibble64/checkpoint
+--statement results/sha384-nibble64/statement.json.gz
+--source-directory results/sha384-nibble64
+--native-library /tmp/merkle-route-ext8.so
+--output-dir /tmp/sha384-nibble64-resumed --queries 8
+Use the same bounded heavy execution wrapper. Native library must include local
+and tensor symbols. The retained source JSON files are compressed; recovery
+supports those and uncompressed source files.
+
+Exact opening geometry:22branches,834lanes,28178816scalars per vector. Packed
+coefficient+weight array payload1803444224bytes; keeping initial coefficients
+as base uint32 would hypothetically save789006848bytes before fold temporaries.
+This excludes caches/trees/Python/native temporary memory and is not a peak-RAM
+prediction. Current live cgroup memory.peak6273830912bytes observed at elapsed
+6m56s; this is an interim measurement, not final peak. FullNEAR/PQ128/sub300000B
+remain NOT_PASSED. Next finish this PCS and measure its complete envelope.

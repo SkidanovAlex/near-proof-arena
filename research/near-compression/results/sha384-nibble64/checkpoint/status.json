@@ -1,0 +1,6 @@
+{
+  "status": "LOCAL_GKR_AND_OPENING_PARAMETERS_CHECKED_PCS_PENDING",
+  "reduction_sha256": "ad32128f5169962471eaa16d71f9fee5d90709ab613dd84bcd3f7dcfebf58228",
+  "opening_sha256": "2c250d5cfa79804eaca8210899a7b1f194e2351717fec975043c836f36e1b2d5",
+  "scope": "Checked local/GKR reduction and exact PCS obligation, not a complete proof."
+}

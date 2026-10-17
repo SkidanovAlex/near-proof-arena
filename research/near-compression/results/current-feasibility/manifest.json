@@ -19,6 +19,7 @@
     "python3 airbender/direct-wasm/test_sha384_nibble_boundary_air.py --probe-library /tmp/nibble-sha384-probe.so --output results/sha384-nibble-boundary-air.json",
     "python3 airbender/direct-wasm/test_ext8_auxiliary_base.py --output results/ext8-auxiliary-base-parity.json",
     "python3 airbender/direct-wasm/test_ext8_packed_prover.py --native-library /tmp/feasibility-ext8-replay.so --output results/ext8-packed-prover-parity.json",
+    "python3 airbender/direct-wasm/test_ext8_checkpoint_resume.py --native-library /tmp/feasibility-ext8-replay.so --output results/ext8-checkpoint-resume.json",
     "python3 airbender/direct-wasm/report_current_feasibility.py"
   ],
   "replay_note": "Hash workload counts and sizes are deterministic; timing and native-library hash can vary across machines. Replay regenerated measurement changes its artifact hash.",
@@ -70,6 +71,14 @@
     "results/ext8-packed-prover-parity.json": "e4293057d4f3d691226f47c347be6fffca148d050689cf64a82ca54db4f7d6c1",
     "results/sha384-nibble64/prover-attempt.json": "15ce621ffac37e0a08c5a2fd989077b8a465cb070800ac3bb7ef6f9ec308efbe",
     "results/sha384-nibble64/reference-oom.log": "cb0573c2b15902858a2f540a2ecc77addf0cfa42236d13a5355d5c21492a0ead",
-    "results/sha384-nibble64/reference-oom-journal.log": "1a32283648b89da6f64e27bc980bb487bbf877d970a61d86a53aaed9d84db29b"
+    "results/sha384-nibble64/reference-oom-journal.log": "1a32283648b89da6f64e27bc980bb487bbf877d970a61d86a53aaed9d84db29b",
+    "airbender/direct-wasm/resume_ext8_checkpoint.py": "0ea53b024f8fbdc594fbe9b7f027d45e96331a1b231a03512acf296bd8462cf8",
+    "airbender/direct-wasm/test_ext8_checkpoint_resume.py": "2138a2b011af7d0091b572a643486bb8849153c3042d4c742f46363b58596f0d",
+    "results/ext8-checkpoint-resume.json": "049d8175dd21a4faf269274329e78207edcc34b219b825b8930e0bf17049abc6",
+    "results/sha384-nibble64/checkpoint/status.json": "9fca5d871700aaba4d4cd08600c69267c21e06bec2b403066fad38f7bea8f7d4",
+    "results/sha384-nibble64/checkpoint/opening.json.gz": "131b6641609b8b42da830c1aa02397e6cda7526a37633999e9cdc873be7c0d18",
+    "results/sha384-nibble64/checkpoint/reduction.json.gz": "22cc0e1735beca91a66a6c9ac3cf6e4823684abe41f68e86764fa0cedebe88c7",
+    "results/sha384-nibble64/checkpoint/input-memory-ledger.json": "03a6c7bd5c272830810a40ce92367a3fd825c1908b7b329b671cb160fda826a5",
+    "results/sha384-nibble64/checkpoint/manifest.json": "81353e913c5e62e5bf74532d6a544623e7aa48a6f9895ab77d4b3d0291905ff2"
   }
 }

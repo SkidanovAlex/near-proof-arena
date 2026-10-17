@@ -1,0 +1,10 @@
+{
+  "status": "CHECKED_REDUCTION_PCS_PENDING",
+  "scope": "Retained verified local/GKR reduction and opening obligation. No completed PCS proof. Reconstruct cache roots from retained source rows for recovery.",
+  "sha256": {
+    "results/sha384-nibble64/checkpoint/status.json": "9fca5d871700aaba4d4cd08600c69267c21e06bec2b403066fad38f7bea8f7d4",
+    "results/sha384-nibble64/checkpoint/opening.json.gz": "131b6641609b8b42da830c1aa02397e6cda7526a37633999e9cdc873be7c0d18",
+    "results/sha384-nibble64/checkpoint/reduction.json.gz": "22cc0e1735beca91a66a6c9ac3cf6e4823684abe41f68e86764fa0cedebe88c7",
+    "results/sha384-nibble64/checkpoint/input-memory-ledger.json": "03a6c7bd5c272830810a40ce92367a3fd825c1908b7b329b671cb160fda826a5"
+  }
+}
