@@ -97,6 +97,11 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         let keygen_start=std::time::Instant::now();
         let (pk,vk)=if dummy {dummy::DummyFixture.keygen(&engine)} else {literal::LiteralFixture.keygen(&engine)};
         println!("NATIVE_SHA384_KEYGEN_SECONDS {}",keygen_start.elapsed().as_secs_f64());
+        for (i,a) in vk.inner.per_air.iter().enumerate() {
+            let m=a.params.opening_masks();
+            println!("LEVERS_ROT_MASK air={} widths={:?} need_rot={} rotated_per_part={:?}",i,a.params.opening_part_widths(),a.params.need_rot,
+                m.iter().map(|p|p.iter().filter(|&&b|b).count()).collect::<Vec<_>>());
+        }
         let bound=SoundnessCalculator::calculate_from_vk(&vk);
         println!("NATIVE_SHA384_EXT12 target={} min={} logup={} proximity={} query={}",bits,bound.total_bits,bound.logup_bits,bound.whir_details.proximity_gaps_bits,bound.whir_details.query_bits);
         if setting("NEARPROOF_ALLOW_BELOW_TARGET",0)==0 {
@@ -208,6 +213,26 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
             let mut bad=proof.clone();bad.batch_constraint_proof.sumcheck_round_polys[0][0]+=EF::ONE;cases.push(("batch sumcheck eval",bad));
             if p.whir.levers.gruen_zerocheck {
                 let mut bad=proof.clone();*bad.batch_constraint_proof.sumcheck_round_polys[0].last_mut().unwrap()=EF::ONE;cases.push(("batch gruen: dropped eval set",bad));
+            }
+        }
+        if p.whir.levers.next_mask {
+            // A verifying key whose mask drops one column that the constraints read at the next
+            // row, with the proof's rotated claim for it removed: must be rejected.
+            let air=0;let masks=vk.inner.per_air[air].params.opening_masks();
+            if let Some(col)=masks[0].iter().position(|&b|b) {
+                let mut vk2=vk.clone();let mut m2=masks.clone();m2[0][col]=false;
+                vk2.inner.per_air[air].params.rot_mask=Some(m2);
+                let mut bad=proof.clone();
+                let pos=masks[0][..col].iter().map(|&b|1+b as usize).sum::<usize>()+1;
+                bad.batch_constraint_proof.column_openings[0][0].remove(pos);
+                let rejected=engine.verify(&vk2,&bad).is_err();
+                println!("LEVERS_NEGATIVE case=\"next_mask: vk drops a rotated column\" rejected={}",rejected);
+                assert!(rejected);
+                let mut bad=proof.clone();bad.batch_constraint_proof.column_openings[0][0].remove(pos);
+                let rejected=engine.verify(vk,&bad).is_err();
+                println!("LEVERS_NEGATIVE case=\"next_mask: rotated claim removed\" rejected={}",rejected);
+                assert!(rejected);
+                let mut bad=proof.clone();bad.batch_constraint_proof.column_openings[0][0][pos]+=EF::ONE;cases.push(("next_mask: rotated claim value",bad));
             }
         }
         let n=cases.len();

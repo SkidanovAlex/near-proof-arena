@@ -195,9 +195,18 @@ index d03985a..8ca44f0 100644
  
  /// [MerkleHasher] implementation built from a cryptographic hash function and a compression
 diff --git a/crates/stark-backend/src/keygen/mod.rs b/crates/stark-backend/src/keygen/mod.rs
-index 3074dd0..640a600 100644
+index 3074dd0..f71f0dd 100644
 --- a/crates/stark-backend/src/keygen/mod.rs
 +++ b/crates/stark-backend/src/keygen/mod.rs
+@@ -81,7 +81,7 @@ impl<SC: StarkProtocolConfig> MultiStarkKeygenBuilder<SC> {
+             .into_iter()
+             .map(|keygen_builder| {
+                 // Second pass: get final constraints, where RAP phase constraints may have changed
+-                keygen_builder.generate_pk(max_constraint_degree)
++                keygen_builder.generate_pk(max_constraint_degree, params.whir.levers.next_mask)
+             })
+             .collect::<Result<Vec<_>, KeygenError>>()?;
+ 
 @@ -202,7 +202,14 @@ impl<SC: StarkProtocolConfig> MultiStarkKeygenBuilder<SC> {
          tracing::debug!("pre-vkey: {} bytes", vk_bytes.len());
          // Since postcard serialization is not self-describing, we include a version for domain
@@ -214,7 +223,28 @@ index 3074dd0..640a600 100644
              .to_le_bytes()
              .into_iter()
              .chain((vk_bytes.len() as u64).to_le_bytes())
-@@ -337,7 +344,7 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
+@@ -240,6 +247,7 @@ impl<SC: StarkProtocolConfig> AirKeygenBuilder<SC> {
+     pub fn generate_pk(
+         self,
+         max_constraint_degree: usize,
++        next_mask: bool,
+     ) -> Result<StarkProvingKey<SC>, KeygenError> {
+         let air_name = self.air.name();
+ 
+@@ -289,10 +297,12 @@ impl<SC: StarkProtocolConfig> AirKeygenBuilder<SC> {
+         let max_rotation = dag.constraints.max_rotation();
+         debug_assert!(max_rotation <= 1);
+         let need_rot = max_rotation == 1;
++        let rot_mask = next_mask.then(|| rotated_columns(&dag, &width));
+         let vparams = StarkVerifyingParams {
+             width,
+             num_public_values,
+             need_rot,
++            rot_mask,
+         };
+ 
+         let unused_variables = find_unused_vars(&dag, &vparams.width, need_rot);
+@@ -337,7 +347,7 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
                  params.l_skip,
                  params.n_stack,
                  params.log_blowup,
@@ -223,8 +253,79 @@ index 3074dd0..640a600 100644
                  &[&trace],
              )
              .unwrap();
+@@ -368,6 +378,32 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
+     }
+ }
+ 
++/// Lever `next_mask`: per opened part (common main, preprocessed, cached mains), the columns read
++/// at offset 1 by any node of the constraint/interaction DAG.
++pub(crate) fn rotated_columns<F: Field>(
++    constraints: &SymbolicConstraintsDag<F>,
++    width: &TraceWidth,
++) -> Vec<Vec<bool>> {
++    let mut preprocessed = vec![false; width.preprocessed.unwrap_or(0)];
++    let mut main: Vec<Vec<bool>> = width.main_widths().into_iter().map(|w| vec![false; w]).collect();
++    for node in &constraints.constraints.nodes {
++        let SymbolicExpressionNode::Variable(var) = node else {
++            continue;
++        };
++        match var.entry {
++            Entry::Preprocessed { offset } if offset > 0 => preprocessed[var.index] = true,
++            Entry::Main { part_index, offset } if offset > 0 => main[part_index][var.index] = true,
++            _ => {}
++        }
++    }
++    // main_widths() lists cached mains first and the common main last (when non-empty).
++    let common = if width.common_main != 0 { main.pop().unwrap() } else { vec![] };
++    std::iter::once(common)
++        .chain(width.preprocessed.map(|_| preprocessed))
++        .chain(main)
++        .collect()
++}
++
+ pub(crate) fn find_unused_vars<F: Field>(
+     constraints: &SymbolicConstraintsDag<F>,
+     width: &TraceWidth,
+diff --git a/crates/stark-backend/src/keygen/types.rs b/crates/stark-backend/src/keygen/types.rs
+index 493a87f..f1bd1e6 100644
+--- a/crates/stark-backend/src/keygen/types.rs
++++ b/crates/stark-backend/src/keygen/types.rs
+@@ -102,6 +102,33 @@ pub struct StarkVerifyingParams {
+     /// of the constraints and/or interactions across all trace parts (common,
+     /// preprocessed if there is one, all cached).
+     pub need_rot: bool,
++    /// Lever `next_mask`: per opened trace part, in opening order (common main, preprocessed if
++    /// any, cached mains), which columns are read at the next row by some constraint or
++    /// interaction. `None`: every column of every part iff `need_rot` (upstream).
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub rot_mask: Option<Vec<Vec<bool>>>,
++}
++
++impl StarkVerifyingParams {
++    /// Widths of the opened parts in opening order: common main, preprocessed, cached mains.
++    pub fn opening_part_widths(&self) -> Vec<usize> {
++        std::iter::once(self.width.common_main)
++            .chain(self.width.preprocessed)
++            .chain(self.width.cached_mains.iter().copied())
++            .collect()
++    }
++
++    /// Per opened part (opening order), per column: is the next-row (rotated) opening sent.
++    pub fn opening_masks(&self) -> Vec<Vec<bool>> {
++        match &self.rot_mask {
++            Some(m) => m.clone(),
++            None => self
++                .opening_part_widths()
++                .into_iter()
++                .map(|w| vec![self.need_rot; w])
++                .collect(),
++        }
++    }
+ }
+ 
+ /// Verifier data for preprocessed trace for a single AIR.
 diff --git a/crates/stark-backend/src/proof.rs b/crates/stark-backend/src/proof.rs
-index 30b7914..286a2d5 100644
+index 30b7914..2856833 100644
 --- a/crates/stark-backend/src/proof.rs
 +++ b/crates/stark-backend/src/proof.rs
 @@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
@@ -236,7 +337,32 @@ index 30b7914..286a2d5 100644
  };
  
  #[derive(Derivative, Serialize, Deserialize)]
-@@ -197,6 +197,11 @@ pub struct WhirProof<SC: StarkProtocolConfig> {
+@@ -133,6 +133,24 @@ pub struct BatchConstraintProof<SC: StarkProtocolConfig> {
+     pub column_openings: Vec<Vec<Vec<SC::EF>>>,
+ }
+ 
++/// Per-column version of [`column_openings_by_rot`]: column `i` carries a rotated claim iff
++/// `mask[i]` (otherwise its rotated claim is 0 and absent from the proof).
++pub fn column_openings_by_mask<EF: PrimeCharacteristicRing + Copy>(
++    openings: &[EF],
++    mask: &[bool],
++) -> Vec<(EF, EF)> {
++    let mut out = Vec::with_capacity(mask.len());
++    let mut it = openings.iter();
++    for &rot in mask {
++        let (Some(&c), r) = (it.next(), if rot { it.next().copied() } else { Some(EF::ZERO) }) else {
++            break;
++        };
++        let Some(r) = r else { break };
++        out.push((c, r));
++    }
++    out
++}
++
+ pub fn column_openings_by_rot<'a, EF: PrimeCharacteristicRing + Copy + 'a>(
+     openings: &'a [EF],
+     need_rot: bool,
+@@ -197,6 +215,11 @@ pub struct WhirProof<SC: StarkProtocolConfig> {
      pub codeword_merkle_proofs: Vec<Vec<MerkleProof<SC::Digest>>>,
      /// Coefficients of the polynomial after the final round.
      pub final_poly: Vec<SC::EF>,
@@ -248,7 +374,7 @@ index 30b7914..286a2d5 100644
  }
  
  // ==================== Encode implementations ====================
-@@ -222,11 +227,21 @@ impl<SC: EncodableConfig> Encode for GkrLayerClaims<SC> {
+@@ -222,11 +245,21 @@ impl<SC: EncodableConfig> Encode for GkrLayerClaims<SC> {
  /// The codec version **must** change if the verifying key serialization/deserialization format
  /// changes. It does _not_ correspond to the main openvm version (which may change more frequently).
  pub(crate) const CODEC_VERSION: u32 = 3;
@@ -271,7 +397,7 @@ index 30b7914..286a2d5 100644
          SC::encode_digest(&self.common_main_commit, writer)?;
  
          // We encode trace_vdata by encoding the number of AIRs, encoding a bitmap of
-@@ -249,9 +264,18 @@ impl<SC: EncodableConfig> Encode for Proof<SC> {
+@@ -249,9 +282,18 @@ impl<SC: EncodableConfig> Encode for Proof<SC> {
          for pv in &self.public_values {
              SC::encode_base_field_slice(pv, writer)?;
          }
@@ -292,7 +418,7 @@ index 30b7914..286a2d5 100644
          self.whir_proof.encode(writer)
      }
  }
-@@ -322,6 +346,9 @@ impl<SC: EncodableConfig> Encode for StackingProof<SC> {
+@@ -322,6 +364,9 @@ impl<SC: EncodableConfig> Encode for StackingProof<SC> {
  
  impl<SC: EncodableConfig> Encode for WhirProof<SC> {
      fn encode<W: Write>(&self, writer: &mut W) -> Result<()> {
@@ -302,7 +428,7 @@ index 30b7914..286a2d5 100644
          SC::encode_base_field(&self.mu_pow_witness, writer)?;
          // whir_sumcheck_polys: Vec<[SC::EF; 2]>
          self.whir_sumcheck_polys.len().encode(writer)?;
-@@ -445,7 +472,36 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -445,7 +490,36 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          // We explicitly implement Decode for Proof to check CODEC_VERSION
          let codec_version = u32::decode(reader)?;
@@ -340,7 +466,7 @@ index 30b7914..286a2d5 100644
              return Err(Error::other(format!(
                  "CODEC_VERSION mismatch, expected: {}, actual: {}",
                  CODEC_VERSION, codec_version
-@@ -488,10 +544,19 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -488,10 +562,19 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
              common_main_commit,
              trace_vdata,
              public_values,
@@ -363,7 +489,7 @@ index 30b7914..286a2d5 100644
          })
      }
  }
-@@ -526,6 +591,177 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
+@@ -526,6 +609,177 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
      }
  }
  
@@ -541,7 +667,7 @@ index 30b7914..286a2d5 100644
  impl<SC: DecodableConfig> Decode for BatchConstraintProof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          let numerator_term_per_air = SC::decode_extension_field_vec(reader)?;
-@@ -701,6 +937,218 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
+@@ -701,6 +955,218 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
              codeword_opened_values,
              codeword_merkle_proofs,
              final_poly,
@@ -761,7 +887,7 @@ index 30b7914..286a2d5 100644
      }
  }
 diff --git a/crates/stark-backend/src/prover/cpu_backend.rs b/crates/stark-backend/src/prover/cpu_backend.rs
-index c4c53ae..b75a2db 100644
+index c4c53ae..16a5211 100644
 --- a/crates/stark-backend/src/prover/cpu_backend.rs
 +++ b/crates/stark-backend/src/prover/cpu_backend.rs
 @@ -91,7 +91,7 @@ where
@@ -773,6 +899,78 @@ index c4c53ae..b75a2db 100644
              traces,
          )?)
      }
+@@ -146,11 +146,13 @@ where
+     ) -> Result<(StackingProof<SC>, WhirProof<SC>), Self::Error> {
+         let params = self.params();
+ 
+-        let need_rot_per_trace = ctx
++        // Per commit, per matrix, per column: rotated opening present (opening masks).
++        let masks_per_trace = ctx
+             .per_trace
+             .iter()
+-            .map(|(air_idx, _)| mpk.per_air[*air_idx].vk.params.need_rot)
++            .map(|(air_idx, _)| mpk.per_air[*air_idx].vk.params.opening_masks())
+             .collect_vec();
++        let need_rot_per_trace = masks_per_trace.iter().map(|m| m[0].clone()).collect_vec();
+ 
+         // Currently alternates between preprocessed and cached pcs data
+         let pre_cached_pcs_data_per_commit: Vec<_> = ctx
+@@ -181,13 +183,15 @@ where
+         }
+ 
+         let mut need_rot_per_commit = vec![need_rot_per_trace];
+-        for (air_idx, trace_ctx) in &ctx.per_trace {
+-            let need_rot = mpk.per_air[*air_idx].vk.params.need_rot;
++        for (masks, (air_idx, trace_ctx)) in masks_per_trace.iter().zip(&ctx.per_trace) {
++            let mut part = 1;
+             if mpk.per_air[*air_idx].preprocessed_data.is_some() {
+-                need_rot_per_commit.push(vec![need_rot]);
++                need_rot_per_commit.push(vec![masks[part].clone()]);
++                part += 1;
+             }
+             for _ in &trace_ctx.cached_mains {
+-                need_rot_per_commit.push(vec![need_rot]);
++                need_rot_per_commit.push(vec![masks[part].clone()]);
++                part += 1;
+             }
+         }
+         let (stacking_proof, u_prisma) =
+diff --git a/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs b/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs
+index a070663..a4af4c7 100644
+--- a/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs
++++ b/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs
+@@ -185,6 +185,7 @@ where
+                     public_values,
+                     preprocessed_trace,
+                     needs_next,
++                    rot_masks: pk.vk.params.opening_masks(),
+                     constraint_degree,
+                 })
+             })
+@@ -662,12 +663,20 @@ where
+                     .ok_or(LogupZerocheckError::MatEvalsPopNone)?;
+                 iter::once(&[common_main, common_main_rot] as &[_])
+                     .chain(mat_evals.chunks_exact(2))
+-                    .map(|pair| {
++                    .zip(&helper.rot_masks)
++                    .map(|(pair, mask)| {
+                         zip(pair[0].columns(), pair[1].columns())
+-                            .flat_map(|(claim, claim_rot)| {
++                            .zip(mask)
++                            .flat_map(|((claim, claim_rot), &rot)| {
+                                 debug_assert_eq!(claim.len(), 1);
+                                 debug_assert_eq!(claim_rot.len(), 1);
+-                                [claim[0], claim_rot[0]]
++                                // next_mask lever: rotated claim only where some constraint
++                                // reads the column at the next row.
++                                if rot {
++                                    vec![claim[0], claim_rot[0]]
++                                } else {
++                                    vec![claim[0]]
++                                }
+                             })
+                             .collect_vec()
+                     })
 diff --git a/crates/stark-backend/src/prover/logup_zerocheck/fractional_sumcheck_gkr.rs b/crates/stark-backend/src/prover/logup_zerocheck/fractional_sumcheck_gkr.rs
 index 7c37275..c0b6192 100644
 --- a/crates/stark-backend/src/prover/logup_zerocheck/fractional_sumcheck_gkr.rs
@@ -816,9 +1014,22 @@ index 7c37275..c0b6192 100644
                  }
                  round_polys_eval.push(s_evals);
 diff --git a/crates/stark-backend/src/prover/logup_zerocheck/mod.rs b/crates/stark-backend/src/prover/logup_zerocheck/mod.rs
-index d0a5646..3033da6 100644
+index d0a5646..13ff23e 100644
 --- a/crates/stark-backend/src/prover/logup_zerocheck/mod.rs
 +++ b/crates/stark-backend/src/prover/logup_zerocheck/mod.rs
+@@ -14,10 +14,10 @@ use crate::{
+     calculate_n_logup,
+     dft::Radix2BowersSerial,
+     poly_common::{eq_uni_poly, UnivariatePoly},
+-    proof::{column_openings_by_rot, BatchConstraintProof, GkrProof},
++    proof::{column_openings_by_mask, BatchConstraintProof, GkrProof},
+     prover::{
+         error::LogupZerocheckError,
+-        fractional_sumcheck_gkr::{fractional_sumcheck, Frac},
++        fractional_sumcheck_gkr::Frac,
+         poly::eq_sharp_uni_poly,
+         stacked_pcs::StackedLayout,
+         sumcheck::sumcheck_round0_deg,
 @@ -168,7 +168,12 @@ where
      };
  
@@ -852,6 +1063,24 @@ index d0a5646..3033da6 100644
              transcript.observe_ext(eval);
          }
          sumcheck_round_polys.push(batch_s_evals);
+@@ -407,14 +418,14 @@ where
+ 
+     // Observe common main openings first, and then preprocessed/cached
+     for (helper, openings) in prover.eval_helpers.iter().zip(column_openings.iter()) {
+-        for (claim, claim_rot) in column_openings_by_rot(&openings[0], helper.needs_next) {
++        for (claim, claim_rot) in column_openings_by_mask(&openings[0], &helper.rot_masks[0]) {
+             transcript.observe_ext(claim);
+             transcript.observe_ext(claim_rot);
+         }
+     }
+     for (helper, openings) in prover.eval_helpers.iter().zip(column_openings.iter()) {
+-        for part in openings.iter().skip(1) {
+-            for (claim, claim_rot) in column_openings_by_rot(part, helper.needs_next) {
++        for (part, mask) in openings.iter().zip(&helper.rot_masks).skip(1) {
++            for (claim, claim_rot) in column_openings_by_mask(part, mask) {
+                 transcript.observe_ext(claim);
+                 transcript.observe_ext(claim_rot);
+             }
 @@ -428,11 +439,18 @@ where
          sumcheck_round_polys,
          column_openings,
@@ -872,6 +1101,19 @@ index d0a5646..3033da6 100644
 +    }
      Ok((gkr_proof, batch_constraint_proof, r))
  }
+diff --git a/crates/stark-backend/src/prover/logup_zerocheck/single.rs b/crates/stark-backend/src/prover/logup_zerocheck/single.rs
+index aeb5938..30436c8 100644
+--- a/crates/stark-backend/src/prover/logup_zerocheck/single.rs
++++ b/crates/stark-backend/src/prover/logup_zerocheck/single.rs
+@@ -24,6 +24,8 @@ pub struct EvalHelper<'a, F> {
+     pub preprocessed_trace: Option<StridedColMajorMatrixView<'a, F>>,
+     // PERF: skip rotation if vk dictates it is never used
+     pub needs_next: bool,
++    /// Per opened part (common, preprocessed, cached), per column: rotated opening sent.
++    pub rot_masks: Vec<Vec<bool>>,
+     pub constraint_degree: u8,
+ }
+ 
 diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
 index 97271aa..2a6b88f 100644
 --- a/crates/stark-backend/src/prover/stacked_pcs.rs
@@ -1006,6 +1248,52 @@ index 97271aa..2a6b88f 100644
          let mut digest_layers = vec![query_digest_layer];
          while digest_layers
              .last()
+diff --git a/crates/stark-backend/src/prover/stacked_reduction.rs b/crates/stark-backend/src/prover/stacked_reduction.rs
+index 504c7b3..92b88b7 100644
+--- a/crates/stark-backend/src/prover/stacked_reduction.rs
++++ b/crates/stark-backend/src/prover/stacked_reduction.rs
+@@ -37,7 +37,7 @@ pub trait StackedReductionProver<'a, PB: ProverBackend, PD> {
+     fn new(
+         device: &'a PD,
+         stacked_per_commit: Vec<&'a PB::PcsData>,
+-        need_rot_per_commit: Vec<Vec<bool>>,
++        need_rot_per_commit: Vec<Vec<Vec<bool>>>,
+         r: &[PB::Challenge],
+         lambda: PB::Challenge,
+     ) -> Self;
+@@ -68,7 +68,7 @@ pub fn prove_stacked_opening_reduction<'a, SC, PB, PD, TS, SRP>(
+     transcript: &mut TS,
+     n_stack: usize,
+     stacked_per_commit: Vec<&'a PB::PcsData>,
+-    need_rot_per_commit: Vec<Vec<bool>>,
++    need_rot_per_commit: Vec<Vec<Vec<bool>>>,
+     r: &[PB::Challenge],
+ ) -> (StackingProof<SC>, Vec<PB::Challenge>)
+ where
+@@ -169,7 +169,7 @@ where
+     fn new(
+         device: &ReferenceDevice<SC>,
+         stacked_per_commit: Vec<&'a StackedPcsData<SC::F, SC::Digest>>,
+-        need_rot_per_commit: Vec<Vec<bool>>,
++        need_rot_per_commit: Vec<Vec<Vec<bool>>>,
+         r: &[SC::EF],
+         lambda: SC::EF,
+     ) -> Self {
+@@ -181,10 +181,12 @@ where
+         for (com_idx, d) in stacked_per_commit.iter().enumerate() {
+             let need_rot_for_commit = &need_rot_per_commit[com_idx];
+             debug_assert_eq!(need_rot_for_commit.len(), d.layout.mat_starts.len());
+-            for &(mat_idx, _col_idx, slice) in &d.layout.sorted_cols {
++            for &(mat_idx, col_idx, slice) in &d.layout.sorted_cols {
+                 let lambda_eq_idx = lambda_idx;
+                 lambda_idx += 1;
+-                let lambda_rot_idx = if need_rot_for_commit[mat_idx] {
++                // Per column (next_mask lever); without the lever every column of a matrix
++                // shares the AIR's need_rot.
++                let lambda_rot_idx = if need_rot_for_commit[mat_idx][col_idx] {
+                     Some(lambda_idx)
+                 } else {
+                     None
 diff --git a/crates/stark-backend/src/prover/whir.rs b/crates/stark-backend/src/prover/whir.rs
 index 6bdbaa8..658833e 100644
 --- a/crates/stark-backend/src/prover/whir.rs
@@ -1164,11 +1452,112 @@ index 7ba58fb..86c80a0 100644
              },
              logup: LogUpSecurityParameters {
                  max_interaction_count: 1 << 20,
+diff --git a/crates/stark-backend/src/soundness/vk.rs b/crates/stark-backend/src/soundness/vk.rs
+index fb6d6cf..f13b0ff 100644
+--- a/crates/stark-backend/src/soundness/vk.rs
++++ b/crates/stark-backend/src/soundness/vk.rs
+@@ -184,6 +184,7 @@ mod tests {
+                             },
+                             num_public_values: 3,
+                             need_rot: false,
++                            rot_mask: None,
+                         },
+                         symbolic_constraints: constraints_with_counts(4, 0),
+                         max_constraint_degree: 1,
+@@ -200,6 +201,7 @@ mod tests {
+                             },
+                             num_public_values: 0,
+                             need_rot: false,
++                            rot_mask: None,
+                         },
+                         symbolic_constraints: constraints_with_counts(0, 1),
+                         max_constraint_degree: 1,
+@@ -216,6 +218,7 @@ mod tests {
+                             },
+                             num_public_values: 0,
+                             need_rot: false,
++                            rot_mask: None,
+                         },
+                         symbolic_constraints: constraints_with_counts(0, 1),
+                         max_constraint_degree: 1,
 diff --git a/crates/stark-backend/src/verifier/batch_constraints.rs b/crates/stark-backend/src/verifier/batch_constraints.rs
-index e677b48..073e0fc 100644
+index e677b48..312b6b7 100644
 --- a/crates/stark-backend/src/verifier/batch_constraints.rs
 +++ b/crates/stark-backend/src/verifier/batch_constraints.rs
-@@ -286,7 +286,13 @@ pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamir
+@@ -13,10 +13,10 @@ use crate::{
+     calculate_n_logup,
+     keygen::types::MultiStarkVerifyingKey0,
+     poly_common::{eval_eq_mle, eval_eq_sharp_uni, eval_eq_uni, UnivariatePoly},
+-    proof::{column_openings_by_rot, BatchConstraintProof, GkrProof},
++    proof::{column_openings_by_mask, BatchConstraintProof, GkrProof},
+     verifier::{
+         evaluator::VerifierConstraintEvaluator,
+-        fractional_sumcheck_gkr::{verify_gkr, GkrVerificationError},
++        fractional_sumcheck_gkr::GkrVerificationError,
+     },
+     FiatShamirTranscript, StarkProtocolConfig,
+ };
+@@ -88,19 +88,19 @@ pub fn verify_zerocheck_and_logup<SC: StarkProtocolConfig, TS: FiatShamirTranscr
+     // 9. Compute the interaction/constraint evals and their hash
+     let mut interactions_evals = Vec::new(); // len = 2 * num_traces
+     let mut constraints_evals = Vec::new(); // len = num_traces
+-    let need_rot_per_trace = trace_id_to_air_id
++    // Per trace, per opened part, per column: rotated claim present (opening masks).
++    let masks_per_trace = trace_id_to_air_id
+         .iter()
+-        .map(|&air_idx| mvk.per_air[air_idx].params.need_rot)
++        .map(|&air_idx| mvk.per_air[air_idx].params.opening_masks())
+         .collect_vec();
+ 
+     // Observe common main openings first, and then preprocessed/cached
+     // Proof shape asserts that:
+     // - column_openings.len() == num_traces
+-    // - air_openings.len() == vk.num_parts() > 0
++    // - air_openings.len() == vk.num_parts() > 0, each part's length matches its mask
+     for (trace_idx, air_openings) in column_openings.iter().enumerate() {
+-        let need_rot = need_rot_per_trace[trace_idx];
+-        // Proof shape asserts that air_openings[0].len() == width.common_main * (needs_rot ? 2 : 1)
+-        for (claim, claim_rot) in column_openings_by_rot(&air_openings[0], need_rot) {
++        let masks = &masks_per_trace[trace_idx];
++        for (claim, claim_rot) in column_openings_by_mask(&air_openings[0], &masks[0]) {
+             transcript.observe_ext(claim);
+             transcript.observe_ext(claim_rot);
+         }
+@@ -111,25 +111,24 @@ pub fn verify_zerocheck_and_logup<SC: StarkProtocolConfig, TS: FiatShamirTranscr
+         let vk = &mvk.per_air[air_idx];
+         let n = n_per_trace[trace_idx];
+         let n_lift = n.max(0) as usize;
+-        let need_rot = need_rot_per_trace[trace_idx];
++        let masks = &masks_per_trace[trace_idx];
+ 
+-        // claim lengths are checked in proof shape
+-        for claims in air_openings.iter().skip(1) {
+-            // Proof shape asserts that claims.len() is always multiple of (needs_rot ? 2 : 1)
+-            for (claim, claim_rot) in column_openings_by_rot(claims, need_rot) {
++        for (claims, mask) in air_openings.iter().zip(masks).skip(1) {
++            for (claim, claim_rot) in column_openings_by_mask(claims, mask) {
+                 transcript.observe_ext(claim);
+                 transcript.observe_ext(claim_rot);
+             }
+         }
+ 
+         let has_preprocessed = vk.preprocessed_data.is_some();
+-        let common_main = column_openings_by_rot(&air_openings[0], need_rot).collect::<Vec<_>>();
+-        let preprocessed = has_preprocessed
+-            .then(|| column_openings_by_rot(&air_openings[1], need_rot).collect::<Vec<_>>());
++        let common_main = column_openings_by_mask(&air_openings[0], &masks[0]);
++        let preprocessed =
++            has_preprocessed.then(|| column_openings_by_mask(&air_openings[1], &masks[1]));
+         let cached_idx = 1 + has_preprocessed as usize;
+         let mut partitioned_main: Vec<_> = air_openings[cached_idx..]
+             .iter()
+-            .map(|opening| column_openings_by_rot(opening, need_rot).collect::<Vec<_>>())
++            .zip(&masks[cached_idx..])
++            .map(|(opening, mask)| column_openings_by_mask(opening, mask))
+             .collect();
+         partitioned_main.push(common_main);
+         let part_main_slices = partitioned_main
+@@ -286,7 +285,13 @@ pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamir
      let mut q_xi_claim = alpha_logup;
      if total_interactions > 0 {
          (p_xi_claim, q_xi_claim, xi) =
@@ -1183,7 +1572,7 @@ index e677b48..073e0fc 100644
          debug_assert_eq!(xi.len(), l_skip + n_logup);
      } else if gkr_proof.q0_claim != SC::EF::ONE {
          return Err(GkrVerificationError::InvalidZeroRoundValue {
-@@ -361,6 +367,12 @@ pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamir
+@@ -361,6 +366,12 @@ pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamir
      }
      let mut cur_sum = s_0.eval_at_point(r_0);
      let mut rs = vec![r_0];
@@ -1196,7 +1585,7 @@ index e677b48..073e0fc 100644
  
      // 6. Multilinear sumcheck rounds
      #[allow(clippy::needless_range_loop)]
-@@ -369,11 +381,36 @@ pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamir
+@@ -369,11 +380,36 @@ pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamir
          // Proof shape asserts that sumcheck_round_polys.len() == n_max
          let batch_s_evals = &sumcheck_round_polys[round];
          // Proof shape asserts that batch_s_evals.len() == s_deg
@@ -1483,8 +1872,46 @@ index be62b0f..d85a15e 100644
  fn observe_layer_claims<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
      transcript: &mut TS,
      claims: &GkrLayerClaims<SC>,
+diff --git a/crates/stark-backend/src/verifier/mod.rs b/crates/stark-backend/src/verifier/mod.rs
+index 4ee438b..20998cf 100644
+--- a/crates/stark-backend/src/verifier/mod.rs
++++ b/crates/stark-backend/src/verifier/mod.rs
+@@ -176,15 +176,17 @@ where
+         &omega_skip_pows,
+     )?;
+ 
+-    let need_rot_per_trace = trace_id_to_air_id
++    // Per commit, per matrix, per column: rotated opening present (opening masks).
++    let masks_per_trace = trace_id_to_air_id
+         .iter()
+-        .map(|&air_id| per_air[air_id].params.need_rot)
++        .map(|&air_id| per_air[air_id].params.opening_masks())
+         .collect_vec();
+-    let mut need_rot_per_commit = vec![need_rot_per_trace];
+-    for &air_id in &trace_id_to_air_id {
+-        let need_rot = per_air[air_id].params.need_rot;
++    let mut need_rot_per_commit = vec![masks_per_trace.iter().map(|m| m[0].clone()).collect_vec()];
++    for (masks, &air_id) in masks_per_trace.iter().zip(&trace_id_to_air_id) {
++        let mut part = 1;
+         if per_air[air_id].preprocessed_data.is_some() {
+-            need_rot_per_commit.push(vec![need_rot]);
++            need_rot_per_commit.push(vec![masks[part].clone()]);
++            part += 1;
+         }
+         let cached_len = trace_vdata[air_id]
+             .as_ref()
+@@ -192,7 +194,8 @@ where
+             .cached_commitments
+             .len();
+         for _ in 0..cached_len {
+-            need_rot_per_commit.push(vec![need_rot]);
++            need_rot_per_commit.push(vec![masks[part].clone()]);
++            part += 1;
+         }
+     }
+ 
 diff --git a/crates/stark-backend/src/verifier/proof_shape.rs b/crates/stark-backend/src/verifier/proof_shape.rs
-index a3216a9..439c2ef 100644
+index a3216a9..380e4eb 100644
 --- a/crates/stark-backend/src/verifier/proof_shape.rs
 +++ b/crates/stark-backend/src/verifier/proof_shape.rs
 @@ -188,6 +188,8 @@ pub enum StackingProofShapeError {
@@ -1496,7 +1923,68 @@ index a3216a9..439c2ef 100644
      #[error(
          "whir_sumcheck_polys should have num_whir_sumcheck_rounds = {expected} polynomials, but it has {actual}"
      )]
-@@ -610,9 +612,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -466,8 +468,23 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+     }
+ 
+     for (part_openings, &(air_idx, vk, _)) in batch_proof.column_openings.iter().zip(&per_trace) {
+-        let need_rot = mvk.per_air[air_idx].params.need_rot;
+-        let openings_per_col = if need_rot { 2 } else { 1 };
++        // Expected openings per part: one per column plus one per column with a rotated claim.
++        let masks = mvk.per_air[air_idx].params.opening_masks();
++        let expect = |part: usize| masks.get(part).map(|m| m.len() + m.iter().filter(|&&b| b).count());
++        if masks.len() != vk.num_parts()
++            || masks
++                .iter()
++                .zip(vk.params.opening_part_widths())
++                .any(|(m, w)| m.len() != w)
++        {
++            return ProofShapeError::invalid_batch_constraint(
++                BatchProofShapeError::InvalidColumnOpeningsPerAir {
++                    air_idx,
++                    expected: vk.num_parts(),
++                    actual: masks.len(),
++                },
++            );
++        }
+         if part_openings.len() != vk.num_parts() {
+             return ProofShapeError::invalid_batch_constraint(
+                 BatchProofShapeError::InvalidColumnOpeningsPerAir {
+@@ -476,7 +493,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+                     actual: part_openings.len(),
+                 },
+             );
+-        } else if part_openings[0].len() != vk.params.width.common_main * openings_per_col {
++        } else if Some(part_openings[0].len()) != expect(0) {
+             return ProofShapeError::invalid_batch_constraint(
+                 BatchProofShapeError::InvalidColumnOpeningsPerAirMain {
+                     air_idx,
+@@ -485,7 +502,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+                 },
+             );
+         } else if let Some(preprocessed_width) = &vk.params.width.preprocessed {
+-            if part_openings[1].len() != *preprocessed_width * openings_per_col {
++            if Some(part_openings[1].len()) != expect(1) {
+                 return ProofShapeError::invalid_batch_constraint(
+                     BatchProofShapeError::InvalidColumnOpeningsPerAirPreprocessed {
+                         air_idx,
+@@ -496,13 +513,14 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+             }
+         }
+ 
+-        let cached_openings = &part_openings[1 + (vk.preprocessed_data.is_some() as usize)..];
++        let first_cached = 1 + (vk.preprocessed_data.is_some() as usize);
++        let cached_openings = &part_openings[first_cached..];
+         for (cached_idx, (col_opening, &width)) in cached_openings
+             .iter()
+             .zip(&vk.params.width.cached_mains)
+             .enumerate()
+         {
+-            if col_opening.len() != width * openings_per_col {
++            if Some(col_opening.len()) != expect(first_cached + cached_idx) {
+                 return ProofShapeError::invalid_batch_constraint(
+                     BatchProofShapeError::InvalidColumnOpeningsPerAirCached {
+                         air_idx,
+@@ -610,9 +628,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
      let log_stacked_height = mvk.params.log_stacked_height();
      let num_whir_rounds = mvk.params.num_whir_rounds();
      let num_whir_sumcheck_rounds = mvk.params.num_whir_sumcheck_rounds();
@@ -1514,7 +2002,7 @@ index a3216a9..439c2ef 100644
      if whir_proof.whir_sumcheck_polys.len() != num_whir_sumcheck_rounds {
          return ProofShapeError::invalid_whir(WhirProofShapeError::InvalidSumcheckPolys {
              expected: num_whir_sumcheck_rounds,
-@@ -682,11 +691,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -682,11 +707,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_rows.len(),
                  },
              );
@@ -1528,7 +2016,7 @@ index a3216a9..439c2ef 100644
                      actual: merkle_proofs.len(),
                  },
              );
-@@ -718,7 +727,8 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -718,7 +743,8 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
          }
  
          let merkle_depth = (log_stacked_height + mvk.params.log_blowup).saturating_sub(k_whir);
@@ -1538,7 +2026,7 @@ index a3216a9..439c2ef 100644
              if proof.len() != merkle_depth {
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidInitialRoundMerkleProofDepth {
-@@ -749,31 +759,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -749,31 +775,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_values_per_query.len(),
                  },
              );
@@ -1578,6 +2066,59 @@ index a3216a9..439c2ef 100644
              if proof.len() != merkle_depth {
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidCodewordMerkleProofDepth {
+diff --git a/crates/stark-backend/src/verifier/stacked_reduction.rs b/crates/stark-backend/src/verifier/stacked_reduction.rs
+index f4085b1..8a133a9 100644
+--- a/crates/stark-backend/src/verifier/stacked_reduction.rs
++++ b/crates/stark-backend/src/verifier/stacked_reduction.rs
+@@ -10,7 +10,7 @@ use crate::{
+         eval_eq_mle, eval_eq_prism, eval_in_uni, eval_rot_kernel_prism, horner_eval,
+         interpolate_quadratic_at_012,
+     },
+-    proof::{column_openings_by_rot, StackingProof},
++    proof::{column_openings_by_mask, StackingProof},
+     prover::stacked_pcs::StackedLayout,
+     FiatShamirTranscript, StarkProtocolConfig,
+ };
+@@ -31,7 +31,7 @@ pub fn verify_stacked_reduction<SC: StarkProtocolConfig, TS: FiatShamirTranscrip
+     transcript: &mut TS,
+     proof: &StackingProof<SC>,
+     layouts: &[StackedLayout],
+-    need_rot_per_commit: &[Vec<bool>],
++    need_rot_per_commit: &[Vec<Vec<bool>>],
+     l_skip: usize,
+     n_stack: usize,
+     column_openings: &Vec<Vec<Vec<SC::EF>>>,
+@@ -69,9 +69,9 @@ where
+             layout
+                 .sorted_cols
+                 .iter()
+-                .map(|&(mat_idx, _col_idx, _slice)| {
++                .map(|&(mat_idx, col_idx, _slice)| {
+                     lambda_idx += 1;
+-                    (lambda_idx - 1, need_rot_for_commit[mat_idx])
++                    (lambda_idx - 1, need_rot_for_commit[mat_idx][col_idx])
+                 })
+                 .collect_vec()
+         })
+@@ -83,16 +83,14 @@ where
+     // Proof shape asserts that column_openings.len() == num_traces and each parts.len() ==
+     // vk.num_parts() common main columns (commit 0)
+     for (trace_idx, parts) in column_openings.iter().enumerate() {
+-        let need_rot = need_rot_per_commit[0][trace_idx];
+-        t_claims.extend(column_openings_by_rot(&parts[0], need_rot));
++        t_claims.extend(column_openings_by_mask(&parts[0], &need_rot_per_commit[0][trace_idx]));
+     }
+ 
+     // preprocessed and cached columns (commits 1..)
+     let mut commit_idx = 1usize;
+     for parts in column_openings {
+         for cols in parts.iter().skip(1) {
+-            let need_rot = need_rot_per_commit[commit_idx][0];
+-            t_claims.extend(column_openings_by_rot(cols, need_rot));
++            t_claims.extend(column_openings_by_mask(cols, &need_rot_per_commit[commit_idx][0]));
+             commit_idx += 1;
+         }
+     }
 diff --git a/crates/stark-backend/src/verifier/transcript_extractor.rs b/crates/stark-backend/src/verifier/transcript_extractor.rs
 index 846ff0a..753b7ed 100644
 --- a/crates/stark-backend/src/verifier/transcript_extractor.rs
