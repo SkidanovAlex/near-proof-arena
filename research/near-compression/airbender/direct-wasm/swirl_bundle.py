@@ -13,34 +13,38 @@ REPO=Path('/tmp/nearproof-openvm')
 OUT=BASE/'bundle-codec'
 
 
-def native(name,env,label):
+def native(name,env,label,output_dir=OUT):
     result=subprocess.run(['cargo','test','--locked','--profile','fast','-p','openvm-recursion-circuit',
         'tests::'+name,'--','--exact','--nocapture'],cwd=REPO,env=env,capture_output=True,text=True)
-    (OUT/(label+'.log')).write_text(result.stdout+result.stderr)
+    (output_dir/(label+'.log')).write_text(result.stdout+result.stderr)
     if result.returncode:raise ValueError('native rejection: '+label)
 
 
-def verify_blob(data,label='replay'):
+def verify_blob(data,label='replay',root=False):
+    output_dir=BASE/'root-bundle-codec' if root else OUT
+    output_dir.mkdir(exist_ok=True)
+    dag_path=BASE/'root-split-witness/dag.jsonl.gz' if root else None
     prefix,gkr_bytes,stack,whir=unpack(data)
     assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()=='e74f9b1ee868c42776faf821b8b9f2e8829a7f68'
     env=os.environ.copy()
-    for key in ('NEARPROOF_GKR_BINDING','NEARPROOF_WEIGHTED_WHIR','NEARPROOF_NATIVE_CAPTURE','NEARPROOF_PREFIX_ONLY','NEARPROOF_EXPORT_PREFIX'):env.pop(key,None)
+    for key in ('NEARPROOF_GKR_BINDING','NEARPROOF_WEIGHTED_WHIR','NEARPROOF_NATIVE_CAPTURE','NEARPROOF_PREFIX_ONLY','NEARPROOF_EXPORT_PREFIX','NEARPROOF_ROOT_SPLIT','NEARPROOF_SOURCE_PROOF','NEARPROOF_WITNESS_DIR'):env.pop(key,None)
+    if root:env['NEARPROOF_ROOT_SPLIT']='1'
     env['RAYON_NUM_THREADS']='4';env['NEARPROOF_PREFIX_ONLY']='/tmp/nearproof-retained-prefix.bin'
     Path('/tmp/nearproof-retained-prefix.bin').write_bytes(prefix)
     Path('/tmp/nearproof-weighted-stacking.proof').write_bytes(stack)
     Path('/tmp/nearproof-weighted-whir.proof').write_bytes(whir)
-    native('nearproof_opening_free_prefix',env,label+'-prefix')
+    native('nearproof_opening_free_prefix',env,label+'-prefix',output_dir)
     c=json.loads(Path('/tmp/nearproof-opening-free-controls.json').read_text())
     log=Path('/tmp/nearproof-opening-free-prefix-log.txt').read_bytes()
     shapes=json.loads(Path('/tmp/nearproof-prefix-trace-shapes.json').read_text())
     layouts=json.loads(Path('/tmp/nearproof-prefix-layouts.json').read_text())
-    layout,*_=public_context(c,log)
+    layout,*_=public_context(c,log,dag_path)
     proof=decode_gkr(layout,gkr_bytes)
     assert encode_gkr(layout,proof)==gkr_bytes
     Path('/tmp/nearproof-reconstructed-witness').mkdir(exist_ok=True)
-    prepare(proof,c,log,shapes,layouts,write_outputs=False)
+    prepare(proof,c,log,shapes,layouts,write_outputs=False,dag_path=dag_path)
     env['NEARPROOF_GKR_BINDING']='/tmp/nearproof-prefix-gkr-binding.bin'
-    native('nearproof_replay_weighted_whir',env,label+'-continuation')
+    native('nearproof_replay_weighted_whir',env,label+'-continuation',output_dir)
     return dict(prefix=len(prefix),gkr=len(gkr_bytes),stacking=len(stack),whir=len(whir),framing=24,total=len(data))
 
 
@@ -56,7 +60,7 @@ def build():
     return blob,layout
 
 
-def tests(blob,layout):
+def tests(blob,layout,root=False):
     framing=[('truncated_header',blob[:23]),('truncated_body',blob[:-1]),('trailing_byte',blob+b'\0'),
              ('wrong_version',b'X'+blob[1:]),('zero_section',blob[:8]+b'\0'*4+blob[12:]),
              ('oversized_length',blob[:8]+b'\xff'*4+blob[12:])]
@@ -76,7 +80,7 @@ def tests(blob,layout):
         # Prefix offset8 is the first commitment byte; other tail bytes are field payload.
         offset=8 if section==0 else (0 if section==1 else len(changed)-1)
         changed[offset]^=1;pieces[section]=bytes(changed)
-        try:verify_blob(pack(pieces),'mutated-'+name)
+        try:verify_blob(pack(pieces),'mutated-'+name,root=root)
         except (ValueError,AssertionError):rejected.append('mutated_'+name)
         else:raise AssertionError('mutation accepted: '+name)
     return rejected

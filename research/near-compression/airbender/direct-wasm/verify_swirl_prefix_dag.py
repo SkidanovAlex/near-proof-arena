@@ -35,8 +35,8 @@ def public_context(c=None, prefix_log=None, dag_path=None):
     return layout,slots,known,claim,statement,description
 
 
-def main(proof=None, c=None, prefix_log=None, check_fixture=True, write_report=True):
-    layout,slots,known,claim,statement,description=public_context(c,prefix_log)
+def main(proof=None, c=None, prefix_log=None, check_fixture=True, write_report=True, dag_path=None):
+    layout,slots,known,claim,statement,description=public_context(c,prefix_log,dag_path)
     if proof is None:proof=json.loads(gzip.decompress((OUT/'proof.json.gz').read_bytes()))
     obligation=g.verify(layout,statement,proof,claim)
     residual=split_obligation(obligation,slots,known)

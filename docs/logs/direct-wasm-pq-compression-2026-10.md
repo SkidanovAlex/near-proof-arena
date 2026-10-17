@@ -11985,3 +11985,43 @@ Evidence:root-split-witness/,root-split-dag-gkr/,root-split-public-gkr/ under
 swirl-security-review. This is generic cached-VK recursive root geometry, not
 production RootProver/full NEAR1Petagas. Upstream diagnostic security is not
 PQ128; no new Lean correctness/composition theorem claimed. Goal stays active.
+
+## 2026-10-17 — Complete root bundle and charged-GKR security screen
+
+Previous comparison turn rechecked published sources and current artifacts;
+no new protocol implementation was completed during that comparison. Resumed
+pending root continuation work from authoritative logs and saved outputs.
+Native root-specific arbitrary-weight stacking and WHIR generation passed:
+884 stacking bytes,168268 WHIR bytes,18 rounds,11 matrix openings checked,
+four WHIR negatives. Generalized root key/source/witness selection while
+preserving internal defaults. Native clippy passed.
+
+Complete root bundle is14292prefix+20608GKR+884stacking+168268WHIR+24framing
+=204076bytes. Prefix-only key-directed replay, public GKR, residual derivation,
+weighted sumcheck and WHIR all pass. Thirteen codec/payload negatives reject
+while both original native proofs and saved root GKR JSON are unavailable.
+Fresh-process saved-bundle replay passes; internal375127-byte bundle regression
+also passes. Source snapshots/full native patch (including untracked prefix
+module), logs and hash pins retained in root-split-continuation/ and
+root-bundle-codec/. This is generic cached-VK root geometry at upstream Ext4
+diagnostic settings, not production RootProver, PQ128 or full NEAR.
+
+Added screen_swirl_root_bundle.py. It reproduces204076 baseline bytes with the
+measured1288EF GKR replacement charged, removing2995old column claims. The296B
+framing residual is calibrated to the measured bundle, NOT an independent
+new typed census. Screens5790geometries each with cached work retained/free.
+Conditional extension9/digest52,C1,Q2^128,zero grinding credit; each query term
+independently receives half budget, other security losses omitted. Frozen
+trace/GKR workload despite changed parameters is explicitly optimistic.
+
+Best expected frontier sizes:408973.81bytes with cache retained;346015.20with
+cached evaluation/binding granted free. Zero sub300000survivors. Both winners
+use height18,logblowup9,fold3,terminal9,queries66/53/44. Expected frontier sizes
+are not deterministic lower bounds; extension/hash and QROM compiler remain
+uninstantiated. These results reject this frozen-workload sensitivity profile,
+not all hash-based PQ128 designs. Complete diagnostic bundle is useful progress,
+but next work must reduce authenticated verifier workload or change the PCS
+architecture rather than treating diagnostic size as secure feasibility.
+
+No new Lean codec/compiler/composition theorem. Full NEAR1Petagas/PQ128/secure
+sub300000bytes/end-to-end correctness remain unachieved; goal stays active.

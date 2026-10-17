@@ -11,8 +11,8 @@ from prove_swirl_prefix_dag import BASE,PREFIX
 OUT=BASE/'prefix-continuation'
 
 
-def main(proof=None, c=None, prefix_log=None, shapes=None, layouts=None, write_outputs=True):
-    residual,description,proof=verify(proof,c,prefix_log,check_fixture=write_outputs,write_report=write_outputs)
+def main(proof=None, c=None, prefix_log=None, shapes=None, layouts=None, write_outputs=True, dag_path=None):
+    residual,description,proof=verify(proof,c,prefix_log,check_fixture=write_outputs,write_report=write_outputs,dag_path=dag_path)
     if c is None:c=json.loads((PREFIX/'controls.json').read_text())
     if shapes is None:shapes=json.loads((OUT/'trace-shapes.json').read_text())
     if layouts is None:layouts=json.loads((BASE/'committed-witness/layouts.json').read_text())
