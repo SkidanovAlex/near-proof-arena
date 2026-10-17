@@ -1,0 +1,1139 @@
+diff --git a/crates/backend-tests/src/lib.rs b/crates/backend-tests/src/lib.rs
+index 08e139b..b432c73 100644
+--- a/crates/backend-tests/src/lib.rs
++++ b/crates/backend-tests/src/lib.rs
+@@ -157,6 +157,7 @@ pub fn proof_shape_verifier_rng_system_params<E: StarkEngine<SC = SC>>() -> eyre
+                 m: 3,
+                 list_start_round: 1,
+             },
++            levers: Default::default(),
+         };
+         let params = SystemParams {
+             l_skip,
+@@ -1262,6 +1263,7 @@ pub fn whir_test_config(k_whir: usize) -> WhirConfig {
+         folding_pow_bits: 1,
+         proximity: WhirProximityStrategy::UniqueDecoding, /* not relevant since `rounds` is
+                                                            * manually set above */
++        levers: Default::default(),
+     }
+ }
+ 
+diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
+index c776e1c..ee43551 100644
+--- a/crates/stark-backend/src/config.rs
++++ b/crates/stark-backend/src/config.rs
+@@ -188,6 +188,30 @@ pub struct WhirConfig {
+     /// of queries in the `rounds` field. However we store it in `WhirConfig` for security analysis
+     /// purposes.
+     pub proximity: WhirProximityStrategy,
++    /// Research levers (nearproof `lane/pq-whir-levers`). Skipped by serde when default, so the
++    /// verifying-key pre-hash of upstream parameters is unchanged.
++    #[serde(default, skip_serializing_if = "WhirLevers::is_default")]
++    pub levers: WhirLevers,
++}
++
++/// Proof-size levers layered on upstream WHIR. `WhirLevers::default()` is exactly upstream.
++#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
++pub struct WhirLevers {
++    /// Folding factor of the first WHIR round (the stacked commitment's leaves hold `2^k_first`
++    /// rows). `0` means "same as `k`".
++    pub k_first: usize,
++    /// Send each round's Merkle openings as one canonical batched multiproof (siblings that the
++    /// verifier can compute from other opened leaves are omitted).
++    pub multiproof: bool,
++    /// Keep every WHIR round's evaluation domain at the initial size instead of halving it, so
++    /// the rate improves by `2^k` per round instead of `2^(k-1)`.
++    pub keep_domain: bool,
++}
++
++impl WhirLevers {
++    pub fn is_default(&self) -> bool {
++        *self == Self::default()
++    }
+ }
+ 
+ #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+@@ -288,20 +312,49 @@ impl WhirConfig {
+         log_stacked_height: usize,
+         whir_params: WhirParams,
+         security_bits: usize,
++    ) -> Self {
++        Self::new_with_levers(
++            log_blowup,
++            log_stacked_height,
++            whir_params,
++            security_bits,
++            WhirLevers::default(),
++        )
++    }
++
++    /// [`Self::new`] with research levers. With `WhirLevers::default()` this is exactly `new`.
++    pub fn new_with_levers(
++        log_blowup: usize,
++        log_stacked_height: usize,
++        whir_params: WhirParams,
++        security_bits: usize,
++        levers: WhirLevers,
+     ) -> Self {
+         let query_phase_pow_bits = whir_params.query_phase_pow_bits;
+         let protocol_security_level = security_bits.saturating_sub(query_phase_pow_bits);
+         let k_whir = whir_params.k;
+-        let num_rounds = log_stacked_height
+-            .saturating_sub(whir_params.log_final_poly_len)
+-            .div_ceil(k_whir);
++        let num_rounds = if levers.k_first == 0 {
++            log_stacked_height
++                .saturating_sub(whir_params.log_final_poly_len)
++                .div_ceil(k_whir)
++        } else {
++            1 + log_stacked_height
++                .saturating_sub(whir_params.log_final_poly_len + levers.k_first)
++                .div_ceil(k_whir)
++        };
++        let shrink = usize::from(!levers.keep_domain);
+         let mut log_inv_rate = log_blowup;
+         let proximity = whir_params.proximity;
+ 
+         let mut round_parameters = Vec::with_capacity(num_rounds);
+         for round in 0..num_rounds {
++            let k_round = if round == 0 && levers.k_first != 0 {
++                levers.k_first
++            } else {
++                k_whir
++            };
+             // Queries are set w.r.t. to old rate, while the rest to the new rate
+-            let next_rate = log_inv_rate + (k_whir - 1);
++            let next_rate = log_inv_rate + k_round - shrink;
+ 
+             let num_queries = Self::queries(
+                 proximity.in_round(round),
+@@ -320,12 +373,35 @@ impl WhirConfig {
+             query_phase_pow_bits,
+             folding_pow_bits: whir_params.folding_pow_bits,
+             proximity,
++            levers,
++        }
++    }
++
++    /// Folding factor of WHIR round `round`.
++    #[inline]
++    pub fn k_round(&self, round: usize) -> usize {
++        if round == 0 && self.levers.k_first != 0 {
++            self.levers.k_first
++        } else {
++            self.k
+         }
+     }
+ 
++    /// Folding factor of the first round = log2 of rows per leaf of the stacked commitments.
++    #[inline]
++    pub fn k_first(&self) -> usize {
++        self.k_round(0)
++    }
++
++    /// log2 of the evaluation-domain shrink factor per WHIR round (1 upstream, 0 keep-domain).
++    #[inline]
++    pub fn domain_shrink(&self) -> usize {
++        usize::from(!self.levers.keep_domain)
++    }
++
+     #[inline]
+     pub fn log_final_poly_len(&self, log_stacked_height: usize) -> usize {
+-        log_stacked_height - self.num_whir_rounds() * self.k
++        log_stacked_height - self.num_sumcheck_rounds()
+     }
+ 
+     pub fn num_whir_rounds(&self) -> usize {
+@@ -334,7 +410,7 @@ impl WhirConfig {
+ 
+     #[inline]
+     pub fn num_sumcheck_rounds(&self) -> usize {
+-        self.num_whir_rounds() * self.k
++        (0..self.num_whir_rounds()).map(|r| self.k_round(r)).sum()
+     }
+ 
+     /// Pure function to calculate the number of queries necessary for a given WHIR round.
+diff --git a/crates/stark-backend/src/hasher.rs b/crates/stark-backend/src/hasher.rs
+index d03985a..8ca44f0 100644
+--- a/crates/stark-backend/src/hasher.rs
++++ b/crates/stark-backend/src/hasher.rs
+@@ -39,6 +39,15 @@ pub trait MerkleHasher: 'static + Clone + Send + Sync {
+         }
+         hashes.pop().unwrap()
+     }
++
++    /// Digest of one Merkle leaf, i.e. of the `2^k` rows of one WHIR fold coset (rows in coset
++    /// order `t = 0..2^k`, each row the flattened base-field coordinates). Upstream behaviour
++    /// (the default): hash every row with [`Self::hash_slice`] and compress the row digests with
++    /// a binary subtree ([`Self::tree_compress`]). Configs may override this, e.g. to hash the
++    /// whole coset as one message.
++    fn hash_coset(&self, rows: &[Vec<Self::F>]) -> Self::Digest {
++        self.tree_compress(rows.iter().map(|row| self.hash_slice(row)).collect())
++    }
+ }
+ 
+ /// [MerkleHasher] implementation built from a cryptographic hash function and a compression
+diff --git a/crates/stark-backend/src/keygen/mod.rs b/crates/stark-backend/src/keygen/mod.rs
+index 3074dd0..640a600 100644
+--- a/crates/stark-backend/src/keygen/mod.rs
++++ b/crates/stark-backend/src/keygen/mod.rs
+@@ -202,7 +202,14 @@ impl<SC: StarkProtocolConfig> MultiStarkKeygenBuilder<SC> {
+         tracing::debug!("pre-vkey: {} bytes", vk_bytes.len());
+         // Since postcard serialization is not self-describing, we include a version for domain
+         // separation. For further domain separation, we include the byte length.
+-        let versioned_vk_bytes = CODEC_VERSION
++        // Lever parameters are serialized only when non-default; such keys also carry a distinct
++        // version word so they can never collide with an upstream-format key.
++        let vk_version = if params.whir.levers.is_default() {
++            CODEC_VERSION
++        } else {
++            crate::proof::CODEC_VERSION_LEVERS
++        };
++        let versioned_vk_bytes = vk_version
+             .to_le_bytes()
+             .into_iter()
+             .chain((vk_bytes.len() as u64).to_le_bytes())
+@@ -337,7 +344,7 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
+                 params.l_skip,
+                 params.n_stack,
+                 params.log_blowup,
+-                params.k_whir(),
++                params.whir.k_first(),
+                 &[&trace],
+             )
+             .unwrap();
+diff --git a/crates/stark-backend/src/proof.rs b/crates/stark-backend/src/proof.rs
+index 30b7914..4b2faf5 100644
+--- a/crates/stark-backend/src/proof.rs
++++ b/crates/stark-backend/src/proof.rs
+@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
+ 
+ use crate::{
+     codec::{vec_with_capped_capacity, DecodableConfig, Decode, EncodableConfig, Encode},
+-    StarkProtocolConfig,
++    StarkProtocolConfig, WhirLevers,
+ };
+ 
+ #[derive(Derivative, Serialize, Deserialize)]
+@@ -197,6 +197,11 @@ pub struct WhirProof<SC: StarkProtocolConfig> {
+     pub codeword_merkle_proofs: Vec<Vec<MerkleProof<SC::Digest>>>,
+     /// Coefficients of the polynomial after the final round.
+     pub final_poly: Vec<SC::EF>,
++    /// Research levers this proof was produced with. Default = upstream proof format. With
++    /// `levers.multiproof`, each `*_merkle_proofs[..]` vector holds exactly one entry: the flat
++    /// canonical multiproof of that round's queries.
++    #[serde(default)]
++    pub levers: WhirLevers,
+ }
+ 
+ // ==================== Encode implementations ====================
+@@ -222,11 +227,17 @@ impl<SC: EncodableConfig> Encode for GkrLayerClaims<SC> {
+ /// The codec version **must** change if the verifying key serialization/deserialization format
+ /// changes. It does _not_ correspond to the main openvm version (which may change more frequently).
+ pub(crate) const CODEC_VERSION: u32 = 3;
++/// Codec version of proofs (and verifying-key pre-hashes) that use non-default [`WhirLevers`].
++pub(crate) const CODEC_VERSION_LEVERS: u32 = 0x4c56_0003;
+ 
+ impl<SC: EncodableConfig> Encode for Proof<SC> {
+     fn encode<W: Write>(&self, writer: &mut W) -> Result<()> {
+         // We explicitly implement Encode for Proof to add CODEC_VERSION
+-        CODEC_VERSION.encode(writer)?;
++        if self.whir_proof.levers.is_default() {
++            CODEC_VERSION.encode(writer)?;
++        } else {
++            CODEC_VERSION_LEVERS.encode(writer)?;
++        }
+         SC::encode_digest(&self.common_main_commit, writer)?;
+ 
+         // We encode trace_vdata by encoding the number of AIRs, encoding a bitmap of
+@@ -252,6 +263,7 @@ impl<SC: EncodableConfig> Encode for Proof<SC> {
+         self.gkr_proof.encode(writer)?;
+         self.batch_constraint_proof.encode(writer)?;
+         self.stacking_proof.encode(writer)?;
++        // Dispatches to the lever wire format when `levers` is non-default.
+         self.whir_proof.encode(writer)
+     }
+ }
+@@ -322,6 +334,9 @@ impl<SC: EncodableConfig> Encode for StackingProof<SC> {
+ 
+ impl<SC: EncodableConfig> Encode for WhirProof<SC> {
+     fn encode<W: Write>(&self, writer: &mut W) -> Result<()> {
++        if !self.levers.is_default() {
++            return self.encode_levers(writer);
++        }
+         SC::encode_base_field(&self.mu_pow_witness, writer)?;
+         // whir_sumcheck_polys: Vec<[SC::EF; 2]>
+         self.whir_sumcheck_polys.len().encode(writer)?;
+@@ -445,7 +460,7 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+     fn decode<R: Read>(reader: &mut R) -> Result<Self> {
+         // We explicitly implement Decode for Proof to check CODEC_VERSION
+         let codec_version = u32::decode(reader)?;
+-        if codec_version != CODEC_VERSION {
++        if codec_version != CODEC_VERSION && codec_version != CODEC_VERSION_LEVERS {
+             return Err(Error::other(format!(
+                 "CODEC_VERSION mismatch, expected: {}, actual: {}",
+                 CODEC_VERSION, codec_version
+@@ -491,7 +506,11 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+             gkr_proof: GkrProof::decode(reader)?,
+             batch_constraint_proof: BatchConstraintProof::decode(reader)?,
+             stacking_proof: StackingProof::decode(reader)?,
+-            whir_proof: WhirProof::decode(reader)?,
++            whir_proof: if codec_version == CODEC_VERSION_LEVERS {
++                WhirProof::decode_levers(reader)?
++            } else {
++                WhirProof::decode(reader)?
++            },
+         })
+     }
+ }
+@@ -701,6 +720,235 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
+             codeword_opened_values,
+             codeword_merkle_proofs,
+             final_poly,
++            levers: WhirLevers::default(),
++        })
++    }
++}
++
++fn invalid(msg: &'static str) -> Error {
++    Error::new(std::io::ErrorKind::InvalidData, msg)
++}
++
++/// Lever wire format of [`WhirProof`] (used iff `levers` is non-default; the enclosing proof then
++/// carries `CODEC_VERSION_LEVERS`):
++///
++/// ```text
++/// k_first:u8  multiproof:u8  keep_domain:u8
++/// mu_pow_witness:F
++/// num_sumcheck_rounds:u32  [2 x EF] * num_sumcheck_rounds
++/// codeword_commits: u32 len + digests        (num_whir_rounds = len + 1)
++/// ood_values: EF * (num_whir_rounds - 1)
++/// folding_pow_witnesses: F * num_sumcheck_rounds
++/// query_phase_pow_witnesses: F * num_whir_rounds
++/// num_commits:u32  q0:u32  width:u32 * num_commits
++/// opened rows: per commit, per query, 2^k_first rows of `width` F
++/// initial Merkle: per commit: multiproof ? (u32 count + digests) : (u32 depth, then q0*depth digests)
++/// per later round r: q_r:u32, then q_r * 2^k EF values
++/// per later round r: multiproof ? (u32 count + digests) : (u32 depth, then q_r*depth digests)
++/// final_poly: u32 len + EF values
++/// ```
++impl<SC: StarkProtocolConfig> WhirProof<SC> {
++    pub fn encode_levers<W: Write>(&self, writer: &mut W) -> Result<()>
++    where
++        SC: EncodableConfig,
++    {
++        let lv = &self.levers;
++        let k_first: u8 = lv.k_first.try_into().map_err(Error::other)?;
++        k_first.encode(writer)?;
++        (lv.multiproof as u8).encode(writer)?;
++        (lv.keep_domain as u8).encode(writer)?;
++        SC::encode_base_field(&self.mu_pow_witness, writer)?;
++        self.whir_sumcheck_polys.len().encode(writer)?;
++        for arr in &self.whir_sumcheck_polys {
++            SC::encode_extension_field_iter(arr.iter(), writer)?;
++        }
++        SC::encode_digest_slice(&self.codeword_commits, writer)?;
++        SC::encode_extension_field_iter(self.ood_values.iter(), writer)?;
++        SC::encode_base_field_iter(self.folding_pow_witnesses.iter(), writer)?;
++        SC::encode_base_field_iter(self.query_phase_pow_witnesses.iter(), writer)?;
++        let num_commits = self.initial_round_opened_rows.len();
++        num_commits.encode(writer)?;
++        let q0 = self.initial_round_opened_rows[0].len();
++        q0.encode(writer)?;
++        let widths: Vec<usize> = self
++            .initial_round_opened_rows
++            .iter()
++            .map(|c| c.first().and_then(|q| q.first()).map(|r| r.len()).unwrap_or(0))
++            .collect();
++        for w in &widths {
++            w.encode(writer)?;
++        }
++        for (commit_rows, &width) in self.initial_round_opened_rows.iter().zip(&widths) {
++            for query_rows in commit_rows {
++                for row in query_rows {
++                    if row.len() != width {
++                        return Err(invalid("ragged opened rows"));
++                    }
++                    SC::encode_base_field_iter(row.iter(), writer)?;
++                }
++            }
++        }
++        let encode_paths = |groups: &[Vec<Vec<SC::Digest>>], writer: &mut W| -> Result<()> {
++            for proofs in groups {
++                if lv.multiproof {
++                    if proofs.len() != 1 {
++                        return Err(invalid("multiproof must be a single entry"));
++                    }
++                    SC::encode_digest_slice(&proofs[0], writer)?;
++                } else {
++                    let depth = proofs.first().map(|p| p.len()).unwrap_or(0);
++                    depth.encode(writer)?;
++                    for p in proofs {
++                        if p.len() != depth {
++                            return Err(invalid("ragged merkle paths"));
++                        }
++                        SC::encode_digest_iter(p.iter(), writer)?;
++                    }
++                }
++            }
++            Ok(())
++        };
++        encode_paths(&self.initial_round_merkle_proofs, writer)?;
++        for round in &self.codeword_opened_values {
++            round.len().encode(writer)?;
++            for vals in round {
++                SC::encode_extension_field_iter(vals.iter(), writer)?;
++            }
++        }
++        for round in &self.codeword_merkle_proofs {
++            encode_paths(std::slice::from_ref(round), writer)?;
++        }
++        SC::encode_extension_field_slice(&self.final_poly, writer)
++    }
++
++    pub fn decode_levers<R: Read>(reader: &mut R) -> Result<Self>
++    where
++        SC: DecodableConfig,
++    {
++        let k_first = u8::decode(reader)? as usize;
++        let flag = |b: u8| -> Result<bool> {
++            match b {
++                0 => Ok(false),
++                1 => Ok(true),
++                _ => Err(invalid("lever flag")),
++            }
++        };
++        let multiproof = flag(u8::decode(reader)?)?;
++        let keep_domain = flag(u8::decode(reader)?)?;
++        let levers = WhirLevers {
++            k_first,
++            multiproof,
++            keep_domain,
++        };
++        if levers.is_default() {
++            return Err(invalid("lever format with default levers"));
++        }
++        let mu_pow_witness = SC::decode_base_field(reader)?;
++        let num_sumcheck = usize::decode(reader)?;
++        let mut whir_sumcheck_polys = vec_with_capped_capacity(num_sumcheck);
++        for _ in 0..num_sumcheck {
++            whir_sumcheck_polys.push([
++                SC::decode_extension_field(reader)?,
++                SC::decode_extension_field(reader)?,
++            ]);
++        }
++        let codeword_commits = SC::decode_digest_vec(reader)?;
++        let num_rounds = codeword_commits.len() + 1;
++        // Per-round folding factors: round 0 folds k_first (or k), the rest fold k.
++        let (k0, k) = if k_first == 0 {
++            if num_sumcheck % num_rounds != 0 {
++                return Err(invalid("sumcheck rounds not a multiple of WHIR rounds"));
++            }
++            (num_sumcheck / num_rounds, num_sumcheck / num_rounds)
++        } else {
++            let rest = num_sumcheck
++                .checked_sub(k_first)
++                .ok_or_else(|| invalid("k_first exceeds sumcheck rounds"))?;
++            if num_rounds == 1 {
++                if rest != 0 {
++                    return Err(invalid("sumcheck rounds"));
++                }
++                (k_first, 0)
++            } else {
++                if rest % (num_rounds - 1) != 0 {
++                    return Err(invalid("sumcheck rounds"));
++                }
++                (k_first, rest / (num_rounds - 1))
++            }
++        };
++        if k0 > 16 || k > 16 {
++            return Err(invalid("folding factor"));
++        }
++        let ood_values = SC::decode_extension_field_n(reader, num_rounds - 1)?;
++        let folding_pow_witnesses = SC::decode_base_field_n(reader, num_sumcheck)?;
++        let query_phase_pow_witnesses = SC::decode_base_field_n(reader, num_rounds)?;
++        let num_commits = usize::decode(reader)?;
++        if num_commits == 0 {
++            return Err(invalid("num_commits must be nonzero"));
++        }
++        let q0 = usize::decode(reader)?;
++        let mut widths = vec_with_capped_capacity(num_commits);
++        for _ in 0..num_commits {
++            widths.push(usize::decode(reader)?);
++        }
++        let mut initial_round_opened_rows = vec_with_capped_capacity(num_commits);
++        for &width in &widths {
++            let mut per_query = vec_with_capped_capacity(q0);
++            for _ in 0..q0 {
++                let mut rows = vec_with_capped_capacity(1 << k0);
++                for _ in 0..(1usize << k0) {
++                    rows.push(SC::decode_base_field_n(reader, width)?);
++                }
++                per_query.push(rows);
++            }
++            initial_round_opened_rows.push(per_query);
++        }
++        let decode_paths = |reader: &mut R, q: usize| -> Result<Vec<Vec<SC::Digest>>> {
++            if multiproof {
++                Ok(vec![SC::decode_digest_vec(reader)?])
++            } else {
++                let depth = usize::decode(reader)?;
++                if depth > 64 {
++                    return Err(invalid("merkle depth"));
++                }
++                let mut v = vec_with_capped_capacity(q);
++                for _ in 0..q {
++                    v.push(SC::decode_digest_n(reader, depth)?);
++                }
++                Ok(v)
++            }
++        };
++        let mut initial_round_merkle_proofs = vec_with_capped_capacity(num_commits);
++        for _ in 0..num_commits {
++            initial_round_merkle_proofs.push(decode_paths(reader, q0)?);
++        }
++        let mut codeword_opened_values = vec_with_capped_capacity(num_rounds - 1);
++        for _ in 0..num_rounds - 1 {
++            let q = usize::decode(reader)?;
++            let mut vals = vec_with_capped_capacity(q);
++            for _ in 0..q {
++                vals.push(SC::decode_extension_field_n(reader, 1 << k)?);
++            }
++            codeword_opened_values.push(vals);
++        }
++        let mut codeword_merkle_proofs = vec_with_capped_capacity(num_rounds - 1);
++        for vals in &codeword_opened_values {
++            codeword_merkle_proofs.push(decode_paths(reader, vals.len())?);
++        }
++        let final_poly = SC::decode_extension_field_vec(reader)?;
++        Ok(Self {
++            mu_pow_witness,
++            whir_sumcheck_polys,
++            codeword_commits,
++            ood_values,
++            folding_pow_witnesses,
++            query_phase_pow_witnesses,
++            initial_round_opened_rows,
++            initial_round_merkle_proofs,
++            codeword_opened_values,
++            codeword_merkle_proofs,
++            final_poly,
++            levers,
+         })
+     }
+ }
+diff --git a/crates/stark-backend/src/prover/cpu_backend.rs b/crates/stark-backend/src/prover/cpu_backend.rs
+index c4c53ae..b75a2db 100644
+--- a/crates/stark-backend/src/prover/cpu_backend.rs
++++ b/crates/stark-backend/src/prover/cpu_backend.rs
+@@ -91,7 +91,7 @@ where
+             self.params().l_skip,
+             self.params().n_stack,
+             self.params().log_blowup,
+-            self.params().k_whir(),
++            self.params().whir.k_first(),
+             traces,
+         )?)
+     }
+diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
+index 97271aa..903f627 100644
+--- a/crates/stark-backend/src/prover/stacked_pcs.rs
++++ b/crates/stark-backend/src/prover/stacked_pcs.rs
+@@ -403,6 +403,44 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+         }
+         Ok(proof)
+     }
++
++    /// Canonical batched Merkle multiproof for leaf (query) indices `indices` (any order,
++    /// duplicates allowed): level by level from the leaves, in ascending node index, every
++    /// sibling that is not itself derivable from the opened leaves. Verified by
++    /// [`crate::verifier::whir::merkle_multiproof_verify`].
++    pub fn query_multiproof(&self, indices: &[usize]) -> Result<Vec<Digest>, StackedPcsError> {
++        let stride = self.query_stride();
++        let mut known: Vec<usize> = indices.to_vec();
++        known.sort_unstable();
++        known.dedup();
++        if let Some(&max) = known.last() {
++            if max >= stride {
++                return Err(StackedPcsError::MerkleTreeQueryOutOfBounds {
++                    query_idx: max,
++                    query_stride: stride,
++                });
++            }
++        }
++        let mut proof = Vec::new();
++        for layer in self.digest_layers.iter().take(self.proof_depth()) {
++            let mut next = Vec::with_capacity(known.len());
++            let mut i = 0;
++            while i < known.len() {
++                let idx = known[i];
++                let pair = idx ^ 1;
++                if i + 1 < known.len() && known[i + 1] == pair {
++                    i += 2;
++                } else {
++                    proof.push(layer[pair].clone());
++                    i += 1;
++                }
++                next.push(idx >> 1);
++            }
++            next.dedup();
++            known = next;
++        }
++        Ok(proof)
++    }
+ }
+ 
+ impl<EF: Field, Digest> MerkleTree<EF, Digest>
+@@ -432,34 +470,23 @@ where
+                 num_leaves,
+             });
+         }
+-        let row_hashes: Vec<_> = (0..num_leaves)
++        let query_stride = num_leaves / rows_per_query;
++        // One Merkle leaf per query index `y`: the coset rows { y + t * query_stride }. The
++        // default `MerkleHasher::hash_coset` reproduces upstream (row hashes + binary subtree).
++        let query_digest_layer: Vec<_> = (0..query_stride)
+             .into_par_iter()
+-            .map(|r| {
+-                let hash_input: Vec<H::F> = Self::row_iter(&matrix, r)
+-                    .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
++            .map(|y| {
++                let rows: Vec<Vec<H::F>> = (0..rows_per_query)
++                    .map(|t| {
++                        Self::row_iter(&matrix, t * query_stride + y)
++                            .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
++                            .collect()
++                    })
+                     .collect();
+-                hasher.hash_slice(&hash_input)
++                hasher.hash_coset(&rows)
+             })
+             .collect();
+ 
+-        let query_stride = num_leaves / rows_per_query;
+-        let mut query_digest_layer = row_hashes;
+-        // For the first log2(rows_per_query) layers, we hash in `query_stride` pairs and don't
+-        // need to store the digest layers
+-        for _ in 0..log2_strict_usize(rows_per_query) {
+-            let prev_layer = query_digest_layer;
+-            query_digest_layer = (0..prev_layer.len() / 2)
+-                .into_par_iter()
+-                .map(|i| {
+-                    let x = i / query_stride;
+-                    let y = i % query_stride;
+-                    let left = prev_layer[2 * x * query_stride + y];
+-                    let right = prev_layer[(2 * x + 1) * query_stride + y];
+-                    hasher.compress(left, right)
+-                })
+-                .collect();
+-        }
+-
+         let mut digest_layers = vec![query_digest_layer];
+         while digest_layers
+             .last()
+diff --git a/crates/stark-backend/src/prover/whir.rs b/crates/stark-backend/src/prover/whir.rs
+index 6bdbaa8..658833e 100644
+--- a/crates/stark-backend/src/prover/whir.rs
++++ b/crates/stark-backend/src/prover/whir.rs
+@@ -104,7 +104,8 @@ where
+     debug_assert!(committed_mats.iter().all(|(mat, _)| mat.height() == height));
+     let mut m = log2_strict_usize(height);
+ 
+-    let k_whir = whir_params.k;
++    let shrink = whir_params.domain_shrink();
++    let multiproof = whir_params.levers.multiproof;
+     let num_whir_rounds = whir_params.num_whir_rounds();
+     let num_sumcheck_rounds = whir_params.num_sumcheck_rounds();
+ 
+@@ -153,6 +154,7 @@ where
+     let mut final_poly = None;
+     for (whir_round, round_params) in whir_params.rounds.iter().enumerate() {
+         let is_last_round = whir_round == num_whir_rounds - 1;
++        let k_whir = whir_params.k_round(whir_round);
+         // Run k_whir rounds of sumcheck on `sum_{x in H_m} \hat{w}(\hat{f}(x), x)`
+         for round in 0..k_whir {
+             debug_assert_eq!(f_evals.len(), 1 << (m - round));
+@@ -212,10 +214,12 @@ where
+             let dft = Radix2DitParallel::default();
+             let mut g_coeffs = g_mle.coeffs().to_vec();
+             debug_assert_eq!(g_coeffs.len(), 1 << (m - k_whir));
+-            g_coeffs.resize(1 << (log_rs_domain_size - 1), SC::EF::ZERO);
++            g_coeffs.resize(1 << (log_rs_domain_size - shrink), SC::EF::ZERO);
+             // `g: \mathcal{L}^{(2)} \to \mathbb F`
+             let g_rs = dft.dft(g_coeffs);
+-            let g_tree = MerkleTree::new(hasher, ColMajorMatrix::new(g_rs, 1), 1 << k_whir)?;
++            // The tree is opened in the next round, with that round's folding factor.
++            let k_next = whir_params.k_round(whir_round + 1);
++            let g_tree = MerkleTree::new(hasher, ColMajorMatrix::new(g_rs, 1), 1 << k_next)?;
+             let g_commit = g_tree.root()?;
+             transcript.observe_commit(g_commit);
+             codeword_commits.push(g_commit);
+@@ -247,6 +251,7 @@ where
+             let index = transcript.sample_bits(log_rs_domain_size - k_whir);
+             query_indices.push(index as usize);
+         }
++        let all_query_indices = query_indices.clone();
+         let mut zs = Vec::with_capacity(num_queries);
+         if !is_last_round {
+             codeword_opened_values.push(vec![]);
+@@ -279,9 +284,11 @@ where
+                     let opened_rows = tree.get_opened_rows(index)?;
+                     initial_round_opened_rows[com_idx].push(opened_rows);
+                     debug_assert_eq!(tree.proof_depth(), depth);
+-                    let proof = tree.query_merkle_proof(index)?;
+-                    debug_assert_eq!(proof.len(), depth);
+-                    initial_round_merkle_proofs[com_idx].push(proof);
++                    if !multiproof {
++                        let proof = tree.query_merkle_proof(index)?;
++                        debug_assert_eq!(proof.len(), depth);
++                        initial_round_merkle_proofs[com_idx].push(proof);
++                    }
+                 }
+             } else {
+                 let tree: &MerkleTree<SC::EF, SC::Digest> =
+@@ -297,9 +304,26 @@ where
+                     .collect_vec();
+                 codeword_opened_values[whir_round - 1].push(opened_rows);
+                 debug_assert_eq!(tree.proof_depth(), depth);
+-                let proof = tree.query_merkle_proof(index)?;
+-                debug_assert_eq!(proof.len(), depth);
+-                codeword_merkle_proofs[whir_round - 1].push(proof);
++                if !multiproof {
++                    let proof = tree.query_merkle_proof(index)?;
++                    debug_assert_eq!(proof.len(), depth);
++                    codeword_merkle_proofs[whir_round - 1].push(proof);
++                }
++            }
++        }
++        // Multiproof lever: one flat, deduplicated sibling list per tree per round, stored as the
++        // single entry of the per-query proof vector.
++        if multiproof {
++            if whir_round == 0 {
++                for (com_idx, (_, tree)) in committed_mats.iter().enumerate() {
++                    initial_round_merkle_proofs[com_idx]
++                        .push(tree.query_multiproof(&all_query_indices)?);
++                }
++            } else {
++                let tree: &MerkleTree<SC::EF, SC::Digest> =
++                    rs_tree.as_ref().ok_or(WhirProverError::RsTreeNone)?;
++                codeword_merkle_proofs[whir_round - 1]
++                    .push(tree.query_multiproof(&all_query_indices)?);
+             }
+         }
+         rs_tree = g_tree;
+@@ -322,7 +346,7 @@ where
+         }
+ 
+         m -= k_whir;
+-        log_rs_domain_size -= 1;
++        log_rs_domain_size -= shrink;
+     }
+ 
+     Ok(WhirProof::<SC> {
+@@ -337,6 +361,7 @@ where
+         codeword_opened_values,
+         codeword_merkle_proofs,
+         final_poly: final_poly.ok_or(WhirProverError::FinalPolyNone)?,
++        levers: whir_params.levers,
+     })
+ }
+ 
+diff --git a/crates/stark-backend/src/soundness/calculator.rs b/crates/stark-backend/src/soundness/calculator.rs
+index 7ba58fb..86c80a0 100644
+--- a/crates/stark-backend/src/soundness/calculator.rs
++++ b/crates/stark-backend/src/soundness/calculator.rs
+@@ -360,7 +360,7 @@ impl SoundnessCalculator {
+         proximity: WhirProximityStrategy,
+     ) -> (f64, WhirSoundnessCalculator) {
+         let whir = &params.whir;
+-        let k_whir = whir.k;
++        let shrink = whir.domain_shrink();
+         let log_stacked_height = params.log_stacked_height();
+         let num_whir_rounds = whir.rounds.len();
+ 
+@@ -393,7 +393,8 @@ impl SoundnessCalculator {
+         for (round, round_config) in whir.rounds.iter().enumerate() {
+             let proximity_regime = proximity.in_round(round);
+             let is_final_round = round == num_whir_rounds - 1;
+-            let next_rate = log_inv_rate + (k_whir - 1);
++            let k_whir = whir.k_round(round);
++            let next_rate = log_inv_rate + k_whir - shrink;
+             // log2(list size) only depends on proximity regime, will not change depending on the
+             // sub-round
+             let mut log2_list_size: Option<f64> = None;
+@@ -957,9 +958,9 @@ pub fn print_soundness_report(
+     println!();
+ 
+     println!("WHIR Round Breakdown:");
+-    let k_whir = params.whir.k;
+     let mut log_inv_rate = params.log_blowup;
+     for (round, round_config) in params.whir.rounds.iter().enumerate() {
++        let k_whir = params.whir.k_round(round);
+         let query_sec =
+             proximity_regime.whir_query_security_bits(round_config.num_queries, log_inv_rate);
+         println!(
+@@ -971,7 +972,7 @@ pub fn print_soundness_report(
+             params.whir.query_phase_pow_bits,
+             params.whir.folding_pow_bits
+         );
+-        log_inv_rate += k_whir - 1;
++        log_inv_rate += k_whir - params.whir.domain_shrink();
+     }
+ }
+ 
+@@ -1011,6 +1012,7 @@ mod tests {
+                 query_phase_pow_bits: 16,
+                 folding_pow_bits: 10,
+                 proximity: WhirProximityStrategy::UniqueDecoding,
++                levers: Default::default(),
+             },
+             logup: LogUpSecurityParameters {
+                 max_interaction_count: 1 << 20,
+diff --git a/crates/stark-backend/src/verifier/proof_shape.rs b/crates/stark-backend/src/verifier/proof_shape.rs
+index a3216a9..439c2ef 100644
+--- a/crates/stark-backend/src/verifier/proof_shape.rs
++++ b/crates/stark-backend/src/verifier/proof_shape.rs
+@@ -188,6 +188,8 @@ pub enum StackingProofShapeError {
+ 
+ #[derive(Debug, Error, PartialEq, Eq)]
+ pub enum WhirProofShapeError {
++    #[error("WHIR proof levers do not match the verifying key")]
++    LeversMismatch,
+     #[error(
+         "whir_sumcheck_polys should have num_whir_sumcheck_rounds = {expected} polynomials, but it has {actual}"
+     )]
+@@ -610,9 +612,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+     let log_stacked_height = mvk.params.log_stacked_height();
+     let num_whir_rounds = mvk.params.num_whir_rounds();
+     let num_whir_sumcheck_rounds = mvk.params.num_whir_sumcheck_rounds();
+-    let k_whir = mvk.params.k_whir();
++    let k_whir = mvk.params.whir.k_first();
++    let multiproof = mvk.params.whir.levers.multiproof;
++    let shrink = mvk.params.whir.domain_shrink();
++    let num_paths = |num_queries: usize| if multiproof { 1 } else { num_queries };
+     debug_assert_ne!(num_whir_rounds, 0);
+ 
++    if whir_proof.levers != mvk.params.whir.levers {
++        return ProofShapeError::invalid_whir(WhirProofShapeError::LeversMismatch);
++    }
++
+     if whir_proof.whir_sumcheck_polys.len() != num_whir_sumcheck_rounds {
+         return ProofShapeError::invalid_whir(WhirProofShapeError::InvalidSumcheckPolys {
+             expected: num_whir_sumcheck_rounds,
+@@ -682,11 +691,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+                     actual: opened_rows.len(),
+                 },
+             );
+-        } else if merkle_proofs.len() != initial_whir_round_num_queries {
++        } else if merkle_proofs.len() != num_paths(initial_whir_round_num_queries) {
+             return ProofShapeError::invalid_whir(
+                 WhirProofShapeError::InvalidInitialRoundMerkleProofsQueries {
+                     commit_idx,
+-                    expected: initial_whir_round_num_queries,
++                    expected: num_paths(initial_whir_round_num_queries),
+                     actual: merkle_proofs.len(),
+                 },
+             );
+@@ -718,7 +727,8 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+         }
+ 
+         let merkle_depth = (log_stacked_height + mvk.params.log_blowup).saturating_sub(k_whir);
+-        for (opened_idx, proof) in merkle_proofs.iter().enumerate() {
++        // Multiproof: the single flat sibling list is length-checked by the verifier.
++        for (opened_idx, proof) in merkle_proofs.iter().enumerate().filter(|_| !multiproof) {
+             if proof.len() != merkle_depth {
+                 return ProofShapeError::invalid_whir(
+                     WhirProofShapeError::InvalidInitialRoundMerkleProofDepth {
+@@ -749,31 +759,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+                     actual: opened_values_per_query.len(),
+                 },
+             );
+-        } else if merkle_proofs.len() != num_queries {
++        } else if merkle_proofs.len() != num_paths(num_queries) {
+             return ProofShapeError::invalid_whir(
+                 WhirProofShapeError::InvalidCodewordMerkleProofsQueries {
+                     round,
+-                    expected: num_queries,
++                    expected: num_paths(num_queries),
+                     actual: merkle_proofs.len(),
+                 },
+             );
+         }
+ 
+         for (opened_idx, opened_values) in opened_values_per_query.iter().enumerate() {
+-            if opened_values.len() != 1 << mvk.params.k_whir() {
++            if opened_values.len() != 1 << mvk.params.whir.k_round(round) {
+                 return ProofShapeError::invalid_whir(
+                     WhirProofShapeError::InvalidCodewordOpenedValues {
+                         round,
+                         opened_idx,
+-                        expected: 1 << mvk.params.k_whir(),
++                        expected: 1 << mvk.params.whir.k_round(round),
+                         actual: opened_values.len(),
+                     },
+                 );
+             }
+         }
+ 
+-        let merkle_depth = log_stacked_height + mvk.params.log_blowup - k_whir - round;
+-        for (opened_idx, proof) in merkle_proofs.iter().enumerate() {
++        let merkle_depth = log_stacked_height + mvk.params.log_blowup
++            - mvk.params.whir.k_round(round)
++            - shrink * round;
++        for (opened_idx, proof) in merkle_proofs.iter().enumerate().filter(|_| !multiproof) {
+             if proof.len() != merkle_depth {
+                 return ProofShapeError::invalid_whir(
+                     WhirProofShapeError::InvalidCodewordMerkleProofDepth {
+diff --git a/crates/stark-backend/src/verifier/whir.rs b/crates/stark-backend/src/verifier/whir.rs
+index 756e26f..af8c70e 100644
+--- a/crates/stark-backend/src/verifier/whir.rs
++++ b/crates/stark-backend/src/verifier/whir.rs
+@@ -63,11 +63,14 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+         folding_pow_witnesses,
+         query_phase_pow_witnesses,
+         final_poly,
++        levers,
+     } = whir_proof;
++    // Proof shape checks this too.
++    ensure(*levers == params.whir.levers, VerifyWhirError::MerkleVerify)?;
++    let multiproof = params.whir.levers.multiproof;
++    let shrink = params.whir.domain_shrink();
+ 
+     let m = params.l_skip + params.n_stack;
+-    let k_whir = params.k_whir();
+-    debug_assert_eq!((m - params.log_final_poly_len()) % k_whir, 0);
+     let num_whir_rounds = params.num_whir_rounds();
+     let mut log_rs_domain_size = m + params.log_blowup;
+     debug_assert!(params.num_whir_sumcheck_rounds() <= m);
+@@ -113,6 +116,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+ 
+         let is_initial_round = whir_round == 0;
+         let is_final_round = whir_round == num_whir_rounds - 1;
++        let k_whir = params.whir.k_round(whir_round);
+ 
+         let mut alphas_round = Vec::with_capacity(k_whir);
+ 
+@@ -167,6 +171,9 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+ 
+         let mut zs_round = Vec::with_capacity(num_queries);
+         let mut ys_round = Vec::with_capacity(num_queries);
++        // Leaf digests per Merkle tree of this round (for the multiproof lever).
++        let mut leaf_digests_per_tree: std::collections::BTreeMap<usize, Vec<(usize, SC::Digest)>> =
++            Default::default();
+ 
+         let hasher = config.hasher();
+         let omega = SC::F::two_adic_generator(log_rs_domain_size);
+@@ -178,27 +185,31 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+                 let mut codeword_vals = vec![SC::EF::ZERO; 1 << k_whir];
+                 let mut mu_pow_iter = mu_pows.iter();
+                 // Proof shape asserts everything in the izip! has length equal to layouts.len()
+-                for (&commit, &width, opened_rows_per_query, merkle_proofs) in izip!(
++                for (tree_idx, (&commit, &width, opened_rows_per_query, merkle_proofs)) in izip!(
+                     commitments,
+                     &widths,
+                     initial_round_opened_rows,
+                     initial_round_merkle_proofs
+-                ) {
++                )
++                .enumerate()
++                {
+                     // Proof shape asserts
+                     // - opened_rows_per_query.len() = whir.rounds[0].num_queries
+                     // - opened_rows.len() = 2^k_whir
+                     let opened_rows = &opened_rows_per_query[query_idx];
+-                    let leaf_hashes = opened_rows
+-                        .iter()
+-                        .map(|opened_row| hasher.hash_slice(opened_row))
+-                        .collect_vec();
+-                    let query_digest = hasher.tree_compress(leaf_hashes);
+-                    // Proof shape asserts
+-                    // - merkle_proofs.len() = whir.rounds[0].num_queries
+-                    // - merkle_proof.len() = l_skip + n_stack + log_blowup - k_whir =:
+-                    //   log_rs_domain_size - k_whir
+-                    let merkle_proof = &merkle_proofs[query_idx];
+-                    merkle_verify(hasher, commit, index as u32, query_digest, merkle_proof)?;
++                    let query_digest = hasher.hash_coset(opened_rows);
++                    if multiproof {
++                        let _ = commit;
++                        let _ = merkle_proofs;
++                    } else {
++                        // Proof shape asserts
++                        // - merkle_proofs.len() = whir.rounds[0].num_queries
++                        // - merkle_proof.len() = l_skip + n_stack + log_blowup - k_whir =:
++                        //   log_rs_domain_size - k_whir
++                        let merkle_proof = &merkle_proofs[query_idx];
++                        merkle_verify(hasher, commit, index as u32, query_digest, merkle_proof)?;
++                    }
++                    leaf_digests_per_tree.entry(tree_idx).or_default().push((index as usize, query_digest));
+ 
+                     for c in 0..width {
+                         let mu_pow = mu_pow_iter.next().unwrap(); // ok; mu_pows has total_width length
+@@ -217,28 +228,55 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+                 //   whir.rounds[whir_round].num_queries
+                 // - codeword_opened_values[whir_round - 1][query_idx].len() = 2^k_whir
+                 let opened_values = codeword_opened_values[whir_round - 1][query_idx].clone();
+-                let merkle_proof = &codeword_merkle_proofs[whir_round - 1][query_idx];
+-                let leaf_hashes = opened_values
++                let merkle_proof: &[SC::Digest] = if multiproof {
++                    &[]
++                } else {
++                    &codeword_merkle_proofs[whir_round - 1][query_idx]
++                };
++                let leaf_rows = opened_values
+                     .iter()
+-                    .map(|opened_value| {
+-                        hasher.hash_slice(opened_value.as_basis_coefficients_slice())
+-                    })
++                    .map(|opened_value| opened_value.as_basis_coefficients_slice().to_vec())
+                     .collect_vec();
+-                let query_digest = hasher.tree_compress(leaf_hashes);
+-                // Proof shape asserts `merkle_proof.len() == l_skip + n_stack + log_blowup - k_whir
+-                // - round`, which equals `log_rs_domain_size - k_whir` at this point in time
+-                merkle_verify(
+-                    hasher,
+-                    codeword_commits[whir_round - 1],
+-                    index as u32,
+-                    query_digest,
+-                    merkle_proof,
+-                )?;
++                let query_digest = hasher.hash_coset(&leaf_rows);
++                if !multiproof {
++                    // Proof shape asserts `merkle_proof.len() == log_rs_domain_size - k_whir`.
++                    merkle_verify(
++                        hasher,
++                        codeword_commits[whir_round - 1],
++                        index as u32,
++                        query_digest,
++                        merkle_proof,
++                    )?;
++                }
++                leaf_digests_per_tree.entry(0).or_default().push((index as usize, query_digest));
+                 binary_k_fold::<SC::F, SC::EF>(opened_values, &alphas_round, zi_root)
+             };
+             zs_round.push(zi);
+             ys_round.push(yi);
+         }
++        if multiproof {
++            let depth = log_rs_domain_size - k_whir;
++            if is_initial_round {
++                for (tree_idx, (&commit, proofs)) in
++                    zip(commitments, initial_round_merkle_proofs).enumerate()
++                {
++                    let leaves = leaf_digests_per_tree.remove(&tree_idx).unwrap_or_default();
++                    ensure(proofs.len() == 1, VerifyWhirError::MerkleVerify)?;
++                    merkle_multiproof_verify(hasher, commit, depth, &leaves, &proofs[0])?;
++                }
++            } else {
++                let leaves = leaf_digests_per_tree.remove(&0).unwrap_or_default();
++                let proofs = &codeword_merkle_proofs[whir_round - 1];
++                ensure(proofs.len() == 1, VerifyWhirError::MerkleVerify)?;
++                merkle_multiproof_verify(
++                    hasher,
++                    codeword_commits[whir_round - 1],
++                    depth,
++                    &leaves,
++                    &proofs[0],
++                )?;
++            }
++        }
+         // We sample `gamma` even in the final round. There are no observations
+         // after this challenge and strictly serves to unify the verifier logic.
+         // Rather than checking that `final_poly(zi) = yi` for all `i` in the
+@@ -255,7 +293,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+         zs.push(zs_round);
+         alphas.extend(alphas_round);
+ 
+-        log_rs_domain_size -= 1;
++        log_rs_domain_size -= shrink;
+     }
+     debug_assert!(sumcheck_poly_iter.next().is_none());
+ 
+@@ -264,7 +302,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+         VerifyWhirError::FinalPolyDegree,
+     )?;
+ 
+-    debug_assert_eq!(alphas.len(), k_whir * num_whir_rounds);
++    debug_assert_eq!(alphas.len(), params.num_whir_sumcheck_rounds());
+     debug_assert_eq!(z0s.len(), num_whir_rounds - 1);
+     debug_assert_eq!(zs.len(), num_whir_rounds);
+     debug_assert_eq!(gammas.len(), num_whir_rounds);
+@@ -288,11 +326,11 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+     //
+     // Similar algebra allows us to control the terms with eq(pow(z_i)). Note that here we actually
+     // end up with f(pow(z_i^{2^p})) for some power p, which is a univariate evaluation.
+-    let t = k_whir * num_whir_rounds;
++    let t = params.num_whir_sumcheck_rounds();
+     let prefix = eval_mobius_eq_mle(&u[..t], &alphas[..t]);
+     let suffix_sum = eval_mle_evals_at_point(&mut final_poly.clone(), &u[t..]);
+     let mut acc = prefix * suffix_sum;
+-    let mut j = k_whir;
++    let mut j = params.whir.k_round(0);
+     for i in 0..num_whir_rounds {
+         let zis = &zs[i];
+         let gamma = gammas[i];
+@@ -315,7 +353,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+                 * eval_eq_mle(alpha_slc, zi_pow_left)
+                 * horner_eval::<SC::EF, SC::F, SC::EF>(final_poly, *zi_pow_max);
+         }
+-        j += k_whir;
++        j += params.whir.k_round(i + 1);
+     }
+     ensure(acc == claim, VerifyWhirError::FinalPolyConstraint)
+ }
+@@ -385,6 +423,56 @@ pub fn binary_k_fold<F: TwoAdicField, EF: ExtensionField<F>>(
+     values[0]
+ }
+ 
++/// Verify a canonical batched multiproof (see `MerkleTree::query_multiproof`): `leaves` are
++/// `(leaf index, leaf digest)` pairs in any order (duplicates must agree), `proof` the flat sibling
++/// list, consumed level by level in ascending node index. Every sibling must be consumed.
++pub fn merkle_multiproof_verify<H: MerkleHasher>(
++    hasher: &H,
++    root: H::Digest,
++    depth: usize,
++    leaves: &[(usize, H::Digest)],
++    proof: &[H::Digest],
++) -> Result<(), VerifyWhirError>
++where
++    H::Digest: Eq,
++{
++    let mut level: std::collections::BTreeMap<usize, H::Digest> = Default::default();
++    for &(idx, d) in leaves {
++        ensure(depth >= 64 || idx < (1usize << depth), VerifyWhirError::MerkleVerify)?;
++        if let Some(prev) = level.insert(idx, d) {
++            ensure(prev == d, VerifyWhirError::MerkleVerify)?;
++        }
++    }
++    ensure(!level.is_empty(), VerifyWhirError::MerkleVerify)?;
++    let mut stream = proof.iter();
++    for _ in 0..depth {
++        let mut next: std::collections::BTreeMap<usize, H::Digest> = Default::default();
++        let mut it = level.iter().peekable();
++        while let Some((&idx, &d)) = it.next() {
++            let parent = if idx & 1 == 0 {
++                let right = match it.peek() {
++                    Some((&j, &dj)) if j == idx + 1 => {
++                        it.next();
++                        dj
++                    }
++                    _ => *stream.next().ok_or(VerifyWhirError::MerkleVerify)?,
++                };
++                hasher.compress(d, right)
++            } else {
++                let left = *stream.next().ok_or(VerifyWhirError::MerkleVerify)?;
++                hasher.compress(left, d)
++            };
++            next.insert(idx >> 1, parent);
++        }
++        level = next;
++    }
++    ensure(stream.next().is_none(), VerifyWhirError::MerkleVerify)?;
++    ensure(
++        level.len() == 1 && level.get(&0) == Some(&root),
++        VerifyWhirError::MerkleVerify,
++    )
++}
++
+ pub fn merkle_verify<H: MerkleHasher>(
+     hasher: &H,
+     root: H::Digest,
