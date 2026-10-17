@@ -207,6 +207,15 @@ Tests passing:
 Step 5 adds 5 columns. In exchange it halves the BIND rows, which lets NvAir fit 2^18
 rows instead of 2^19.
 
+**Step 6** makes three changes:
+* the byte table becomes a byte-pair table (65,536 × 5; single bytes are looked up as
+  (v, 0));
+* NvAir drops to 48 interactions per row (from 60);
+* Merkle path nodes use new select-push ops `UnitWS4` / `UnitWS2`. The unit index is
+  offset by 12 × bit, so a path level costs 10 ALU rows instead of 17.
+
+This brings the non-SHA columns to 74 (NvAir 69 + byte table 5), and 258 in total.
+
 **Chain at T = 20, n_stack = 19 (measured):** NV_LOG_ROWS = 18, NV_PROG_LOG = 17.
 Log: `logs/nvu2b-chain-T20.log`.
 
@@ -214,6 +223,22 @@ Log: `logs/nvu2b-chain-T20.log`.
 |---:|---|---:|---:|---:|---:|---:|---|---:|
 | A1 | Fib | 255 (510) | 16.19M (24) | 23.69M (5.60M / 18.09M) | 10,509 | 232 | 157,509 (44,408 / 45,024 / 2,752 / 65,212) | 494 |
 | A2 | A1 (NV) | 255 (510) | 19.40M (25) | 62.92M (44.83M / 18.09M) | 79,104 | 1,252 | 171,797 (48,056 / 45,024 / 3,664 / 74,940) | 2,154 |
+| A3 | A2 (NV) | 255 (510) | 19.40M (25) | 62.92M | 81,818 | 1,252 | 171,797 (same) | 2,161 |
+| L1 | Fib, fixed heights | 255 (510) | 19.40M (25) | 62.92M | 10,509 | 232 | 171,797 | 2,141 |
+| L2 | L1 (NV) | 255 (510) | 19.40M (25) | 62.92M | 84,025 | 1,252 | 171,797 | 2,146 |
+| L3 | L2 (NV), **binding on** | 255 (510) | 19.40M (25) | 62.92M | 84,025 | 1,252 | 171,797 | 2,149 |
+| step 6 A1 | Fib | 258 (516) | 13.11M (24) | 24.02M | 9,669 | 232 | 157,797 (44,408 / 45,312 / 2,752 / 65,212) | 505 |
+| step 6 A2 | A1 (NV) | 258 (516) | 16.32M (**24**) | 63.24M | 72,843 | 1,252 | **168,437** (44,408 / 45,312 / 3,664 / 74,940) | 2,130 |
+
+What the chain shows:
+* **Fixed point:** A3 has the same heights as A2, so the fixed point is reached:
+  heights [2^18, 2^18, 64, 256].
+* **Binding:** phase B ran L1 to L3. L3 verifies L2 with in-circuit program binding
+  enforced. Every proof verifies natively.
+* **Resources:** peak RSS 19.3 GB, 3 h 07 min for 6 levels. Log:
+  `logs/nvu2b-chain-T20.log`.
+* **Step 6:** two levels, peak 11.2 GB. Log: `logs/nvu2c-chain-T20.log`. Interactions
+  fall under 2^24, so L drops to 24 and saves 3.6 KB of GKR.
 
 **Against v1 step 1 at the same level (A2):**
 * relations 82,032 → 45,024 B;
@@ -252,26 +277,27 @@ What is measured and what is not:
 
 | setting | heights | final bytes | whir | gkr (L) | relations | penultimate compressions | queries | program → padded | cells | interactions |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| L (z = 32, 42 B, 236 / 226 bits) | pow2 | **310,803** | 222,982 | 34,952 (25) | 45,004 | 4,843 | 102 | 124,414 → 2^17 | 2^25.91 | 2^24.21 |
-| L | none | **299,667** | 215,542 | 32,408 (24) | 45,004 | 4,729 | 102 | 120,842 | 2^25.60 | 2^23.95 |
-| L + byte-pair lookups (48 int/row) | pow2 | 308,259 | 222,982 | 32,408 (24) | 45,004 | 4,843 | 102 | 124,414 → 2^17 | 2^25.91 | 2^23.95 |
-| T (268 bits, 48 B) | pow2 | 378,827 | 289,374 | 37,592 (26) | 46,060 | 5,446 | 115 | 141,476 → 2^18 | 2^26.27 | 2^25.07 |
-| T | none | 364,514 | 272,277 | 34,952 (25) | 45,004 | 5,182 | 115 | 132,940 | 2^25.73 | 2^24.08 |
+| L (z = 32, 42 B, 236 / 226 bits) | pow2 | **308,547** | 222,982 | 32,408 (24) | 45,292 | 4,843 | 102 | 107,952 → 2^17 | 2^25.91 | 2^23.95 |
+| L | none | **298,881** | 214,612 | 32,408 (24) | 45,292 | 4,729 | 102 | 103,924 | 2^25.55 | 2^23.55 |
+| T (268 bits, 48 B) | pow2 | 363,519 | 277,954 | 32,408 (24) | 45,292 | 5,270 | 115 | 116,963 → 2^17 | 2^25.91 | 2^23.95 |
+| T | none | 359,535 | 269,890 | 32,408 (24) | 45,292 | 5,182 | 115 | 113,883 | 2^25.68 | 2^23.68 |
+
+These are the step 6 numbers. Before step 6 the model gave L = 310,803 (pow2) /
+299,667 (none), and T = 378,827, because the T program crossed 2^17.
 
 **Reading:**
 * With NV U2 the final layer is WHIR-dominated, at about 215–223 KB of the
-  300–311 KB. Relations are about 45 KB. Of that, about 24.5 KB is the 255 columns
+  299–309 KB. Relations are about 45 KB. Of that, about 24.8 KB is the 258 columns
   opened at two points. About 17 KB is the degree-21 SHA AIR's (d + 1)·n sumcheck term.
 * Under 300 KB at the L settings needs all of:
   * the in-circuit levers (×15, coset leaves, 42 B digests, z = 32 grinding, multiproof);
   * NV U2 as built;
   * either padding-free trace heights, or about 9 KB of other savings. The candidates
-    are byte-pair lookups (−2.5 KB), a 43-row SHA layout and a cheaper Merkle select.
-* At power-of-two heights the model gives about 308–311 KB.
+    are per-column next-row openings (about 3 KB) and a 43-row SHA layout.
+* At power-of-two heights the model gives about 308.5 KB.
 * At the T settings nothing gets below about 360 KB.
-* **The program sits at 124k rows, close to 2^17.** The fixed point holds only while
-  the program stays under 2^17 rows. At the T settings it crosses into 2^18, and the
-  NvAir height doubles.
+* **Program margin:** after step 6 the program is about 108k rows (117k at T), so both
+  settings fit under 2^17. If it crossed 2^17, the NvAir height would double.
 
 **Hardware for the real final-layer run [estimate]:**
 * The fixed point is about 2^25.9 cells, at L = 24–25, with a ×15 domain at rate 2^-9
@@ -279,5 +305,5 @@ What is measured and what is not:
   elements. That has to be streamed or sharded; the CPU backend here cannot hold it.
 * That points to the multi-GPU (H200-class) prover in the chunk-proof target, with
   about 100+ GB of host RAM.
-* At T = 20 the measured CPU prover takes about 36 min per level on 8 threads at
-  23 GB. The degree-21 SHA AIR dominates that.
+* At T = 20 the measured CPU prover takes about 36 min per level on 8 threads, with a
+  peak of 11–19 GB. The degree-21 SHA AIR dominates that.

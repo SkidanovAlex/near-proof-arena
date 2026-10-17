@@ -8,9 +8,9 @@ lever combination (x15 domains, coset leaves, multiproof, packing; 'L' = z = 32 
 + 42-byte digests at 236 / 226 bits; 'T' = 268 bits, 48-byte digests).
 
 NV U2 (measured, debug + T = 20 chain):
-  * one non-SHA AIR, NvAir: 69 columns, 60 interactions / row, degree 8 (BIND rows
-    cover 2 ALU rows);
-  * byte table 2 columns; air2 SHA AIR (k = 3): 171 columns, 44 rows / compression,
+  * one non-SHA AIR, NvAir: 69 columns, 48 interactions / row (byte-pair lookups),
+    degree 8 (BIND rows cover 2 ALU rows); byte-pair table 5 columns;
+  * air2 SHA AIR (k = 3): 171 columns, 44 rows / compression,
     14 interactions / row, degree 21; table 13 columns;
   * NvAir rows = 1.5 * program (ALU + BIND) + 8 * job compressions (GLUE) + transcript
     jobs + sample words;
@@ -18,7 +18,7 @@ NV U2 (measured, debug + T = 20 chain):
       round 0: 875 rows at depth 16, k = 3, child width W ~ 38;
       rounds >= 1: 490 + 19 (depth - 11) rows;
     split as 230 (index bits, fold, misc) + leaves + Merkle, Merkle = 2 * 2^k (digests)
-    + 7 (2^k - 1) (coset nodes) + 17 per path level + 4.
+    + 7 (2^k - 1) (coset nodes) + 10 per path level (17 before the select-push ops) + 4.
 The levers are not implemented in-circuit: their in-circuit cost is modelled with the
 same per-node / per-row costs (coset leaf = one leaf job of 2^k rows, multiproof = the
 expected number of distinct path nodes).
@@ -38,16 +38,17 @@ from score_designs import settings  # noqa: E402
 # measured structure (NV U2)
 SHA_ROWS, SHA_COLS, SHA_NEXT, SHA_IPR, SHA_DEG = 44, 171, 144, 14, 21
 TABLE_COLS, TABLE_CELLS = 13, 64 * 13
-NV_COLS, NV_IPR, NV_DEG = 69, 60, 8
-BYTE_COLS = 2
+NV_COLS, NV_IPR, NV_DEG = 69, 48, 8
+BYTE_COLS = 5
 PROG_FIXED = 40_000      # preamble, GKR, batch-constraint DAG, stacking (measured ~40k)
 Q_MISC = 230             # per query: 31 index bits + recomposition, fold, misc
-TRANSCRIPT_ROWS = 1_100  # hash-chain + sample rows (measured ~1k + ~4k at T = 20; scaled below)
+TRANSCRIPT_ROWS = 1_100
+PATH_ROWS = 10           # ALU rows per Merkle path level (select-push UnitWS; was 17)  # hash-chain + sample rows (measured ~1k + ~4k at T = 20; scaled below)
 
 
 def merkle_rows(kk, depth, multiproof_nodes=None):
     leaves = 2 * (1 << kk) + 7 * ((1 << kk) - 1)
-    path = 17 * depth if multiproof_nodes is None else 17 * multiproof_nodes
+    path = PATH_ROWS * depth if multiproof_nodes is None else PATH_ROWS * multiproof_nodes
     return leaves + path + 4
 
 
@@ -108,8 +109,7 @@ def nv_fixed_point(kind, pad=True, per_column_next=False, coset_leaf=True, bind_
 
 
 VARIANTS = [
-    ('as built (U2, BIND covers 2 ALU rows)', dict(bind_per_row=2)),
-    ('+ 16-bit byte-pair lookups (48 int/row)', dict(bind_per_row=2, nv_ipr=48)),
+    ('as built (U2 step 6)', dict(bind_per_row=2)),
 ]
 
 if __name__ == '__main__':
