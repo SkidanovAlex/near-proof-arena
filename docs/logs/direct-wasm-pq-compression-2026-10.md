@@ -12534,3 +12534,48 @@ combined verifier circuit can keep intermediate digest outputs private, while
 charging the added arithmetic/sampler cost and stronger security requirements.
 No full NEAR1Pgas, sampler/GKR/prefix/PCS verification circuit, PQ128 certificate,
 or Lean implementation refinement has been established by this sweep.
+
+## 2026-10-17 — Stronger query-budget screen fails fixed Binius graph size gate
+
+Previous goal turn progressed at84cb84ac3 with measured rate tuning and exact
+byte census. Revalidated clean research branch and pinned external sources.
+Before adding sampler/arithmetic circuits, extended the diagnostic census to
+30combinations: query-only budgets96/128/160/256/272bits, inverse-rate logs1..6.
+Each candidate uses the same actual oracle specs and native optimized BaseFold
+schedule selection; a synthetic IOP/PCS verifier run counts messages without
+claiming synthetic acceptance. No new stronger-parameter proof generated.
+Original saved rate3 proof independently verifies after the census.
+
+All30query counts are independently checked with exact Fraction arithmetic:
+((1+2^-r)/2)^q <=2^-b and the inequality fails at q-1. All three96-bit measured
+profiles match every saved byte category and actual serialized size. The query
+formula is the pinned upstream unique-decoding query-phase bound. It excludes
+FRI folding and other protocols; these sensitivity points are NOT labels for
+quantum security, and no QROM conversion is asserted.
+
+Best serialized sizes over the six rates (all select rate1/8):
+query budget96:116queries,269044B; with publicio314244B.
+query budget128:155queries,341716B; with publicio386916B.
+query budget160:193queries,411028B; with publicio456228B.
+query budget256:309queries,612436B; with publicio657636B.
+query budget272:328queries,643444B; with publicio688644B.
+Algebra messages remain9648B. At128budget Merkle176768B and openedvalues155264B
+sum with algebra to341680Bpayload, plus36BCLIenvelope. Fixed32-byte Merkle
+digests and128-bit binary field are unchanged in every modeled row; no costs
+of stronger hash/field instantiations or remaining verifier circuit are charged.
+
+Decision: for this fixed graph and tested schedules, simply making public
+intermediates private cannot meet the size gate at even128-bit QUERY budget:
+proof bytes alone exceed300000 by41716. This is a conditional cost finding,
+not an impossibility theorem for Binius or PQ128. Stop adding whole-verifier
+circuitry to this profile until a smaller commitment/opening layout or smaller
+circuit has a concrete budget. Rate tuning alone has been tested through1/64.
+Next useful work is reducing the authenticated opening cost or transcript
+workload, with complete security accounting kept separate from size sensitivity.
+
+Reproduce screen_binius_query_budget.py after applying prior hashgraph,
+wide-address,census patches and new parameter-screen.patch, then release-build.
+Evidence in results/swirl-security-review/binius-query-screen includes all30rows,
+exact-check runner, native log, incremental patch and source snapshots. make
+pin-check passes. No Lean theorem changed, no full NEAR1Pgas proof/PQ128/end-to-end
+correctness achieved; goal remains active.
