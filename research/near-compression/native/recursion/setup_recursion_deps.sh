@@ -47,4 +47,7 @@ cmp -s "$HERE/../../airbender/direct-wasm/native_sha384_config.rs" \
        "$DEPS/openvm-sha384/crates/recursion/src/sha384/native_ref.rs" \
   || { echo "native_ref.rs differs from airbender/direct-wasm/native_sha384_config.rs" >&2; exit 1; }
 
+# openvm-sha384 builds against the unified research backend (levers + x15 + NV-lane additions).
+NEARPROOF_PQ_DEPS="$DEPS" "$HERE/setup_unified_deps.sh"
+
 echo "recursion deps OK: $DEPS"

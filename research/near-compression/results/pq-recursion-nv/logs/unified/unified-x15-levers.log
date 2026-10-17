@@ -1,0 +1,21 @@
+UNIFIED_X15 domain_odd_factor=15
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=3 all_list=1 queries=[75, 66, 47, 37, 31, 26]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE_GKR gruen=true derive=true next_mask=true gruen_zc=true max_degree=8
+LEVERS_PROFILE k1=1 log_final=1 multiproof=true keep_domain=true m=8 query_pow=16 folding_pow=0 mu_pow=0 digest_bytes=42 coset_leaf=true dummy=false
+NATIVE_SHA384_KEYGEN_SECONDS 0.000627201
+LEVERS_ROT_MASK air=0 widths=[157] need_rot=true rotated_per_part=[83]
+LEVERS_ROT_MASK air=1 widths=[114] need_rot=true rotated_per_part=[33]
+LEVERS_ROT_MASK air=2 widths=[24] need_rot=false rotated_per_part=[0]
+NATIVE_SHA384_EXT12 target=268 min=268.201128496786 logup=330.3417790168468 proximity=303.26310896092826 query=268.201128496786
+NATIVE_SHA384_PROVE_SECONDS 31.514401445
+LEVERS_GRIND bits=16 seconds=0.0022 witness=101583
+LEVERS_GRIND bits=16 seconds=0.0012 witness=44345
+LEVERS_GRIND bits=16 seconds=0.0024 witness=95947
+LEVERS_GRIND bits=16 seconds=0.0022 witness=99558
+LEVERS_GRIND bits=16 seconds=0.0029 witness=124363
+LEVERS_GRIND bits=16 seconds=0.0004 witness=10373
+
+thread 'main' (1689669) panicked at src/main.rs:155:35:
+called `Result::unwrap()` on an `Err` value: WhirError(MerkleVerify)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

@@ -307,3 +307,61 @@ These are the step 6 numbers. Before step 6 the model gave L = 310,803 (pow2) /
   about 100+ GB of host RAM.
 * At T = 20 the measured CPU prover takes about 36 min per level on 8 threads, with a
   peak of 11–19 GB. The degree-21 SHA AIR dominates that.
+
+## Phase 2, step 1: one unified backend patch stack [measured]
+
+`native/recursion/patches/stark-backend-unified.patch`, built by
+`native/recursion/setup_unified_deps.sh` on top of the pinned d667af5 + native base tree. It
+contains:
+
+* **Levers:** the levers patch from lane/pq-whir-levers, round 3 at 85be07ae2: k1, multiproof,
+  keep-domain, coset-leaf hook, next-row mask, Gruen GKR and Gruen batch, derived GKR claims,
+  2-element PoW, and `tight_heights`.
+* **×15 domains:** the ×15 patch from lane/pq-x15-domains at 2cf46f1a4.
+* **Merge fixes:** conflicts resolved, plus three interplay fixes I found by bisection:
+  * `MerkleTree::new_with_cosets` now hashes each fold coset with `MerkleHasher::hash_coset`.
+    Before the fix, ×15 with coset leaves failed with `MerkleVerify`.
+  * the multiproof depth now adds `ceil_log2(c)`. Before the fix, ×15 with multiproof failed.
+  * `stacked_commit_odd` takes the tight flag.
+* **CPU backend port** (`crates/cpu-backend`):
+  * commit and WHIR opening go through the reference PCS (`stacked_commit_odd`,
+    `prover::whir::prove_whir_opening`), and the PCS data is the reference `StackedPcsData`;
+  * the stacking reduction is the reference `StackedReductionCpu`, which carries the rotation
+    masks and tight chunks;
+  * the row-major zerocheck/GKR prover gets the four lever edits: per-column rotation masks,
+    Gruen GKR, Gruen zerocheck, derived claims;
+  * `committed_heights` is implemented.
+
+Every lever is off by default.
+
+* **Defaults reproduce existing proofs:**
+  * gas-failure5 re-proved on the unified backend is byte-identical (`ba042e71…`), with both
+    the native driver and the levers driver at defaults (`logs/unified/unified-default.log`).
+  * The x15 lane's `ident` hashes equal its recorded base hashes.
+* **Upstream tests:** 142 backend tests plus the CPU-backend tests pass.
+* **Levers alone, on gas-failure5:** coset + 42 B + multiproof + m = 8 + z = 16 + Gruen +
+  derive + next mask gives 241,027 B, with 21 negative cases rejected.
+* **×15 alone:** the x15 lane's self-test rejects 55/55 cases, and its adversarial words are
+  rejected.
+* **Every lever plus ×15 plus tight heights,** on a 17-column dummy with 700 of 1,024 rows
+  real: 176,587 B, with 26 negative cases rejected (`logs/unified/unified-all-tight-x15-dummy.log`).
+* **CPU backend equals the reference** (`nv::tests::unified_cpu_matches_reference`): the
+  row-major CPU backend produces byte-identical proofs to the reference backend for Fib and
+  interactions fixtures. The cases are: default, k1 = 1, keep-domain, multiproof,
+  Gruen + derive, next mask, ×15, tight, and all of them together. They hold both with the
+  SHA levers at default and with `NEARPROOF_COSET_LEAF=1 NEARPROOF_DIGEST_BYTES=42`.
+
+**Recursion SHA config** (`sha384/config.rs`):
+* It ports the hash levers of `native_sha384_levers_config.rs`: v5 framing prefix,
+  42-byte truncation, tag-6 coset leaves, and tag-7 PoW with one or two witness elements. They
+  are process-global (env), because the codec is static.
+* The native transcript vectors and the native differential test still pass.
+
+**First in-circuit lever, the PoW check:**
+* NV's `pow_check` now follows the tag-7 scheme:
+  * a static transcript job `H(7, [state, witness])` hashed by GLUE and chained by the hash
+    role;
+  * the hash role sends the output word 0 (limbs) to a new ALU op `PowChk`;
+  * the ALU proves that the top `bits` bits are zero, by recomposing only the allowed low bits
+    of limbs 1 and 2 from BIT rows.
+* The NV debug, tamper and opening tests pass with the child's PoW bits active.

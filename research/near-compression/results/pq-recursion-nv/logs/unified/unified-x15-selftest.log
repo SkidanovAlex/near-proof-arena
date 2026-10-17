@@ -1,0 +1,11 @@
+SELFTEST fib odd=15 log_blowup=1 k=3 queries=[45, 31, 24] bytes=81201 calc_total=100.2 whir=100.2 query=100.2
+SELFTEST fib odd=15 log_blowup=2 k=3 queries=[37, 27, 22] bytes=75089 calc_total=100.7 whir=100.7 query=100.7
+SELFTEST fib odd=3 log_blowup=2 k=2 queries=[64, 49, 39, 33, 29] bytes=141765 calc_total=100.2 whir=100.2 query=100.2
+SELFTEST fib odd=5 log_blowup=1 k=4 queries=[70, 35] bytes=84805 calc_total=100.7 whir=100.7 query=100.7
+SELFTEST fib odd=15 log_blowup=3 k=4 queries=[31, 22] bytes=55621 calc_total=100.2 whir=100.2 query=100.2
+SELFTEST interactions odd=15 honest proof verifies
+SELFTEST preprocessed odd=15 honest proof verifies
+SELFTEST cached odd=15 honest proof verifies
+SELFTEST mixture odd=15 honest proof verifies
+SELFTEST wide odd=15 honest proof verifies
+SELFTEST_PASS negative_cases_rejected=55
