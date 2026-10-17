@@ -1232,356 +1232,12 @@ index 1c28aa8..e9147a4 100644
 -    };
 +    pub use crate::sha384::config::{Sha384Config as SC, Digest, DIGEST_SIZE, D_EF, EF, F};
  }
-diff --git a/crates/recursion/src/nv/alu.rs b/crates/recursion/src/nv/alu.rs
-new file mode 100644
-index 0000000..06b463f
---- /dev/null
-+++ b/crates/recursion/src/nv/alu.rs
-@@ -0,0 +1,338 @@
-+//! NV ALU AIR: one Ext12 instruction per row (see isa.rs), operands through a read-only
-+//! memory (row x writes c at address x), transcript/unit traffic through 12 slot
-+//! messages, keys for the Merkle AIR, and the in-circuit program-binding accumulator.
-+use core::borrow::{Borrow, BorrowMut};
-+
-+use openvm_recursion_circuit_derive::AlignedBorrow;
-+use openvm_stark_backend::{
-+    interaction::{BusIndex, InteractionBuilder, LookupBus, PermutationCheckBus},
-+    BaseAirWithPublicValues, PartitionedBaseAir,
-+};
-+use p3_air::{Air, AirBuilder, BaseAir};
-+use p3_field::{BasedVectorSpace, Field, PrimeCharacteristicRing};
-+use p3_matrix::{dense::RowMajorMatrix, Matrix};
-+
-+use super::isa::{Op, ADDR_BITS, NUM_OPS};
-+use crate::{
-+    sha384::config::{EF, F},
-+    utils::{ext_field_add, ext_field_multiply},
-+};
-+
-+/// Rows [0, E1_SIZE) hold the E1 binding table, [E1_SIZE, E1_SIZE + E2_SIZE) the E2 table.
-+pub const E1_BITS: usize = 9;
-+pub const E1_SIZE: usize = 1 << E1_BITS;
-+
-+#[derive(Clone, Copy, Debug)]
-+pub struct AluBuses {
-+    pub mem: BusIndex,
-+    pub slot: BusIndex,
-+    pub job: BusIndex,
-+    pub key: BusIndex,
-+}
-+
-+#[repr(C)]
-+#[derive(AlignedBorrow, Debug)]
-+pub struct AluCols<T> {
-+    pub a: [T; 12],
-+    pub b: [T; 12],
-+    pub c: [T; 12],
-+    /// program words P0..P3
-+    pub p: [T; 4],
-+    /// one-hot op flags for ops 1..NUM_OPS (Nop = none)
-+    pub f: [T; NUM_OPS - 1],
-+    pub wit: T,
-+    pub mult: T,
-+    pub kmult: T,
-+    pub xa: T,
-+    pub xb: T,
-+    pub zw: T,
-+    pub inv_w: T,
-+    pub e1: [T; 12],
-+    pub e2: [T; 12],
-+    pub acc: [T; 12],
-+}
-+pub const ALU_WIDTH: usize = AluCols::<u8>::width();
-+
-+/// Binding constant tau = X + 1 (any element outside F works; see DESIGN.md).
-+pub fn tau() -> EF {
-+    let mut c = [F::ZERO; 12];
-+    c[0] = F::ONE;
-+    c[1] = F::ONE;
-+    EF::from_basis_coefficients_slice(&c).unwrap()
-+}
-+pub fn tau_pows() -> [EF; 4] {
-+    let t = tau();
-+    [EF::ONE, t, t * t, t * t * t]
-+}
-+
-+pub struct AluAir {
-+    pub buses: AluBuses,
-+    pub log_rows: usize,
-+}
-+impl<T> BaseAir<T> for AluAir {
-+    fn width(&self) -> usize {
-+        ALU_WIDTH
-+    }
-+}
-+impl<T> BaseAirWithPublicValues<T> for AluAir {
-+    fn num_public_values(&self) -> usize {
-+        1
-+    }
-+}
-+impl<T> PartitionedBaseAir<T> for AluAir {}
-+
-+fn fidx(op: Op) -> usize {
-+    op as usize - 1
-+}
-+
-+impl<AB: p3_air::AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for AluAir
-+where
-+    <AB::Expr as PrimeCharacteristicRing>::PrimeSubfield:
-+        p3_field::extension::BinomiallyExtendable<12>,
-+{
-+    fn eval(&self, builder: &mut AB) {
-+        let main = builder.main();
-+        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
-+        let l: &AluCols<AB::Var> = (*local).borrow();
-+        let n: &AluCols<AB::Var> = (*next).borrow();
-+        let one = AB::Expr::ONE;
-+        let cst = |v: u64| AB::Expr::from_u64(v);
-+        let fl = |op: Op| -> AB::Expr { l.f[fidx(op)].into() };
-+        let ex = |x: &[AB::Var; 12]| -> [AB::Expr; 12] { x.map(Into::into) };
-+
-+        // flags
-+        let mut fsum = AB::Expr::ZERO;
-+        let mut opv = AB::Expr::ZERO;
-+        for op in Op::all().into_iter().skip(1) {
-+            builder.assert_bool(fl(op));
-+            fsum += fl(op);
-+            opv += fl(op) * cst(op as u64);
-+        }
-+        builder.assert_bool(fsum.clone());
-+        let bfield = l.p[1] - opv * cst(1 << ADDR_BITS);
-+
-+        // result
-+        let a = ex(&l.a);
-+        let bb = ex(&l.b);
-+        let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
-+        let free = fl(Op::Load) + fl(Op::Smp1) + fl(Op::Smp12) + fl(Op::Acc);
-+        for k in 0..12 {
-+            let mut e = fl(Op::Mul) * ab[k].clone()
-+                + fl(Op::Add) * (a[k].clone() + bb[k].clone())
-+                + fl(Op::Sub) * (a[k].clone() - bb[k].clone())
-+                + fl(Op::DblAdd) * (a[k].clone().double() + bb[k].clone())
-+                + fl(Op::MulAddA) * (ab[k].clone() + a[k].clone())
-+                + fl(Op::Horn) * ab[k].clone()
-+                + (fl(Op::Obs1)
-+                    + fl(Op::Obs12)
-+                    + fl(Op::ObsC12)
-+                    + fl(Op::Unit12)
-+                    + fl(Op::Bit)
-+                    + fl(Op::KeyC)
-+                    + fl(Op::Pv))
-+                    * a[k].clone();
-+            if k == 0 {
-+                e += fl(Op::Const) * l.p[0] + fl(Op::Horn) * l.wit;
-+            }
-+            if k == 1 {
-+                e += fl(Op::ConstX) * l.p[0];
-+            }
-+            builder.assert_zero((one.clone() - free.clone()) * (l.c[k] - e));
-+            // zero / bit / smp1 side conditions
-+            builder.assert_zero(fl(Op::Zero) * l.a[k]);
-+            if k > 0 {
-+                builder.assert_zero(fl(Op::Bit) * l.a[k]);
-+                builder.assert_zero(fl(Op::Smp1) * l.c[k]);
-+            }
-+        }
-+        builder.assert_zero(fl(Op::Bit) * l.a[0] * (l.a[0] - one.clone()));
-+        let pv0: AB::Expr = builder.public_values()[0].into();
-+        builder.assert_zero(fl(Op::Pv) * (l.a[0] - pv0));
-+
-+        // binding accumulator: w = e1 * e2; P = sum tau^j P_j
-+        let w = ext_field_multiply::<AB::Expr>(ex(&l.e1), ex(&l.e2));
-+        let tp = tau_pows();
-+        let mut wp: [AB::Expr; 12] = core::array::from_fn(|_| AB::Expr::ZERO);
-+        for j in 0..4 {
-+            let tj: [AB::Expr; 12] = core::array::from_fn(|k| {
-+                let cf: &[F] = tp[j].as_basis_coefficients_slice();
-+                AB::Expr::from_u32(p3_field::PrimeField32::as_canonical_u32(&cf[k]))
-+            });
-+            let wt = ext_field_multiply::<AB::Expr>(w.clone(), tj);
-+            let term: [AB::Expr; 12] = core::array::from_fn(|k| wt[k].clone() * l.p[j]);
-+            wp = ext_field_add::<AB::Expr>(wp, term);
-+        }
-+        for k in 0..12 {
-+            builder.when_first_row().assert_zero(l.acc[k]);
-+            builder
-+                .when_transition()
-+                .assert_eq(n.acc[k], l.acc[k] + wp[k].clone());
-+            builder.assert_zero(fl(Op::Acc) * (l.c[k] - l.acc[k] - wp[k].clone()));
-+        }
-+
-+        // row index x = xa + 2^E1_BITS xb
-+        let top = cst((E1_SIZE - 1) as u64);
-+        builder.assert_bool(l.zw);
-+        builder.assert_zero(l.zw * (l.xa - top.clone()));
-+        builder.assert_eq((l.xa - top) * l.inv_w, one.clone() - l.zw);
-+        builder.when_first_row().assert_zero(l.xa);
-+        builder.when_first_row().assert_zero(l.xb);
-+        builder
-+            .when_transition()
-+            .assert_eq(n.xa, (l.xa + one.clone()) * (one.clone() - l.zw));
-+        builder.when_transition().assert_eq(n.xb, l.xb + l.zw);
-+        let x = l.xa + l.xb * cst(E1_SIZE as u64);
-+
-+        // memory
-+        let mem = LookupBus::new(self.buses.mem);
-+        let key = |addr: AB::Expr, v: &[AB::Var; 12]| -> Vec<AB::Expr> {
-+            core::iter::once(addr).chain(v.iter().map(|&t| t.into())).collect()
-+        };
-+        mem.add_key_with_lookups(builder, key(x, &l.c), l.mult);
-+        let reads_a: AB::Expr = Op::all()
-+            .into_iter()
-+            .filter(|o| o.reads_a())
-+            .map(|o| fl(o))
-+            .fold(AB::Expr::ZERO, |s, t| s + t);
-+        let reads_b: AB::Expr = Op::all()
-+            .into_iter()
-+            .filter(|o| o.reads_b())
-+            .map(|o| fl(o))
-+            .fold(AB::Expr::ZERO, |s, t| s + t);
-+        mem.lookup_key(builder, key(l.p[0].into(), &l.a), reads_a);
-+        mem.lookup_key(builder, key(bfield.clone(), &l.b), reads_b);
-+        mem.lookup_key(builder, key(l.xa.into(), &l.e1), one.clone());
-+        mem.lookup_key(builder, key(l.xb + cst(E1_SIZE as u64), &l.e2), one.clone());
-+
-+        // slots: (chan, key1, key2, kind, v0, v1)
-+        let slot = PermutationCheckBus::new(self.buses.slot);
-+        let tr12 = fl(Op::Obs12) + fl(Op::ObsC12) + fl(Op::Smp12);
-+        let tr12k = |k: usize| -> AB::Expr {
-+            if k < 9 {
-+                tr12.clone()
-+            } else {
-+                fl(Op::Obs12) + fl(Op::Smp12)
-+            }
-+        };
-+        let kind = fl(Op::Smp1) + fl(Op::Smp12) + fl(Op::ObsC12).double();
-+        let chan = fl(Op::Unit12) + fl(Op::Horn) + fl(Op::Job);
-+        for k in 0..12usize {
-+            let kk = cst(k as u64);
-+            let tr = if k == 0 {
-+                fl(Op::Obs1) + fl(Op::Smp1) + tr12k(0)
-+            } else {
-+                tr12k(k)
-+            };
-+            let mut unit = fl(Op::Unit12);
-+            if k == 0 {
-+                unit += fl(Op::Horn) + fl(Op::Job);
-+            }
-+            if k == 1 {
-+                unit += fl(Op::Job);
-+            }
-+            let key1 = l.p[2] + tr12.clone() * kk.clone();
-+            let mut key2 = fl(Op::Unit12) * (l.p[3] + kk.clone()) + fl(Op::Job) * kk.clone();
-+            if k == 0 {
-+                key2 += fl(Op::Horn) * l.p[3];
-+            }
-+            let mut v0 = (tr.clone() + fl(Op::Unit12)) * l.c[k];
-+            if k == 0 {
-+                v0 += fl(Op::Horn) * l.wit + fl(Op::Job) * bfield.clone();
-+            }
-+            slot.send(
-+                builder,
-+                [
-+                    chan.clone(),
-+                    key1,
-+                    key2,
-+                    kind.clone(),
-+                    v0,
-+                    AB::Expr::ZERO,
-+                    AB::Expr::ZERO,
-+                ],
-+                unit - tr,
-+            );
-+        }
-+        // job start
-+        PermutationCheckBus::new(self.buses.job).send(builder, [l.p[2], l.p[0]], fl(Op::Job));
-+        // keys: (type, P2, P3, m0..m11)
-+        let keyty = fl(Op::KeyP) + fl(Op::Bit).double();
-+        let mut msg = vec![keyty, l.p[2].into(), l.p[3].into()];
-+        for k in 0..12 {
-+            let mut m = fl(Op::KeyC) * l.a[k];
-+            if k == 0 {
-+                m += fl(Op::KeyP) * l.p[0] + fl(Op::Bit) * l.a[0];
-+            }
-+            if k == 1 {
-+                m += fl(Op::KeyP) * bfield.clone();
-+            }
-+            msg.push(m);
-+        }
-+        let is_key = fl(Op::KeyC) + fl(Op::KeyP) + fl(Op::Bit);
-+        builder.assert_zero(l.kmult * (one.clone() - is_key));
-+        LookupBus::new(self.buses.key).add_key_with_lookups(builder, msg, l.kmult);
-+    }
-+}
-+
-+/// ALU trace from an executed program.
-+pub fn alu_trace(
-+    instrs: &[super::isa::Instr],
-+    vals: &[EF],
-+    wits: &[F],
-+    key_mults: &[u32],
-+) -> RowMajorMatrix<F> {
-+    let n = instrs.len();
-+    assert!(n.is_power_of_two());
-+    let read_counts = {
-+        let mut m = vec![0u32; n];
-+        for ins in instrs {
-+            if ins.op.reads_a() {
-+                m[ins.a as usize] += 1;
-+            }
-+            if ins.op.reads_b() {
-+                m[ins.b as usize] += 1;
-+            }
-+        }
-+        for x in 0..n {
-+            m[x % E1_SIZE] += 1;
-+            m[E1_SIZE + x / E1_SIZE] += 1;
-+        }
-+        m
-+    };
-+    let mut t = F::zero_vec(n * ALU_WIDTH);
-+    let coeffs = |x: EF| -> [F; 12] { x.as_basis_coefficients_slice().try_into().unwrap() };
-+    let tp = tau_pows();
-+    let mut acc = EF::ZERO;
-+    for (x, ins) in instrs.iter().enumerate() {
-+        let r: &mut AluCols<F> = t[x * ALU_WIDTH..(x + 1) * ALU_WIDTH].borrow_mut();
-+        if ins.op.reads_a() {
-+            r.a = coeffs(vals[ins.a as usize]);
-+        }
-+        if ins.op.reads_b() {
-+            r.b = coeffs(vals[ins.b as usize]);
-+        }
-+        r.c = coeffs(vals[x]);
-+        let w = ins.words();
-+        r.p = w.map(F::from_u32);
-+        if ins.op != Op::Nop {
-+            r.f[fidx(ins.op)] = F::ONE;
-+        }
-+        r.wit = wits[x];
-+        r.mult = F::from_u32(read_counts[x]);
-+        r.kmult = F::from_u32(key_mults[x]);
-+        let (xa, xb) = (x % E1_SIZE, x / E1_SIZE);
-+        r.xa = F::from_usize(xa);
-+        r.xb = F::from_usize(xb);
-+        let d = F::from_usize(xa) - F::from_usize(E1_SIZE - 1);
-+        r.zw = F::from_bool(xa == E1_SIZE - 1);
-+        r.inv_w = if d == F::ZERO { F::ZERO } else { d.inverse() };
-+        let (e1, e2) = (vals[xa], vals[E1_SIZE + xb]);
-+        r.e1 = coeffs(e1);
-+        r.e2 = coeffs(e2);
-+        r.acc = coeffs(acc);
-+        let pw: EF = (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum();
-+        acc += e1 * e2 * pw;
-+    }
-+    debug_assert_eq!(acc, vals[n - 1], "ACC row must hold the full binding sum");
-+    RowMajorMatrix::new(t, ALU_WIDTH)
-+}
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..c7f3b61
+index 0000000..82a9b9b
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,481 @@
+@@ -0,0 +1,537 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1701,6 +1357,11 @@ index 0000000..c7f3b61
 +    pub bind: bool,
 +    /// own recursion level (public value of the ALU AIR)
 +    pub level: u32,
++    /// open flush job (job id, t_start, observed felts)
++    tr_pending: Option<(u32, u32, u32)>,
++    /// static transcript jobs allocated so far
++    tr_static: u32,
++    tr_started: bool,
 +}
 +
 +impl Builder {
@@ -1725,6 +1386,9 @@ index 0000000..c7f3b61
 +            dbg_tid: vec![],
 +            bind: false,
 +            level: 0,
++            tr_pending: None,
++            tr_static: 0,
++            tr_started: false,
 +        }
 +    }
 +
@@ -1875,17 +1539,51 @@ index 0000000..c7f3b61
 +    pub fn load_f(&mut self, x: F) -> V {
 +        self.load(EF::from(x))
 +    }
++    /// First transcript job of the chain: push the initial state as its state units 2..13.
++    fn tr_first(&mut self, job: u32) {
++        if self.tr_started {
++            return;
++        }
++        self.tr_started = true;
++        let w = super::transcript2::initial_state_words();
++        let l: Vec<F> = w.iter().flat_map(|&x| super::fmt::wl(x)).map(F::from_u32).collect();
++        for h in 0..2 {
++            let mut c = [F::ZERO; 12];
++            c[..9].copy_from_slice(&l[9 * h..9 * h + 9]);
++            let v = self.ce(ef_from(c));
++            self.push(Op::UnitW3, v.addr, 0, job, 2 + 6 * h as u32, v.val, F::ZERO);
++        }
++    }
++    /// The open flush job (allocated at the first observe of a run): (job, unit index).
++    fn tr_obs_slot(&mut self, n: u32) -> (u32, u32) {
++        if self.tr_pending.is_none() {
++            let job = super::transcript2::TJOB_STATIC_BASE + self.tr_static;
++            self.tr_static += 1;
++            self.tr_first(job);
++            self.tr_pending = Some((job, self.tidx(), 0));
++        }
++        let p = self.tr_pending.as_mut().unwrap();
++        let slot = (p.0, 16 + p.2);
++        p.2 += n;
++        slot
++    }
++    /// Close the open flush job: anchor (job, t_start, count).
++    fn tr_close(&mut self) {
++        if let Some((job, t, cnt)) = self.tr_pending.take() {
++            self.push(Op::Anchor, t, cnt, job, 0, EF::ZERO, F::ZERO);
++        }
++    }
 +    pub fn obs1(&mut self, x: V) -> V {
-+        let t = self.tidx();
 +        let c0 = coeffs(x.val)[0];
 +        debug_assert!(coeffs(x.val)[1..].iter().all(|c| *c == F::ZERO));
++        let (job, u) = self.tr_obs_slot(1);
 +        self.transcript.observe(c0);
-+        self.push(Op::Obs1, x.addr, 0, t, 0, x.val, F::ZERO)
++        self.push(Op::Unit1, x.addr, 0, job, u, x.val, F::ZERO)
 +    }
 +    pub fn obs12(&mut self, x: V) -> V {
-+        let t = self.tidx();
++        let (job, u) = self.tr_obs_slot(12);
 +        self.transcript.observe_ext(x.val);
-+        self.push(Op::Obs12, x.addr, 0, t, 0, x.val, F::ZERO)
++        self.push(Op::Unit12, x.addr, 0, job, u, x.val, F::ZERO)
 +    }
 +    pub fn load_obs(&mut self, x: EF) -> V {
 +        let v = self.load(x);
@@ -1896,11 +1594,19 @@ index 0000000..c7f3b61
 +        self.obs1(v)
 +    }
 +    pub fn smp1(&mut self) -> V {
++        self.tr_close();
++        if !self.tr_started {
++            self.tr_first(super::transcript2::TJOB_SQUEEZE_BASE);
++        }
 +        let t = self.tidx();
 +        let s = self.transcript.sample();
 +        self.push(Op::Smp1, 0, 0, t, 0, EF::from(s), F::ZERO)
 +    }
 +    pub fn smp12(&mut self) -> V {
++        self.tr_close();
++        if !self.tr_started {
++            self.tr_first(super::transcript2::TJOB_SQUEEZE_BASE);
++        }
 +        let t = self.tidx();
 +        let s = FiatShamirTranscript::<crate::sha384::config::Sha384Config>::sample_ext(
 +            &mut self.transcript,
@@ -1922,6 +1628,10 @@ index 0000000..c7f3b61
 +        self.observe_commit_cells(lo, hi, d)
 +    }
 +    fn observe_commit_cells(&mut self, lo: V, hi: V, d: Digest) -> DigestCells {
++        self.tr_close();
++        let job = super::transcript2::TJOB_STATIC_BASE + self.tr_static;
++        self.tr_static += 1;
++        self.tr_first(job);
 +        let t = self.tidx();
 +        FiatShamirTranscript::<crate::sha384::config::Sha384Config>::observe_commit(
 +            &mut self.transcript,
@@ -1931,8 +1641,9 @@ index 0000000..c7f3b61
 +            limbs_digest(&[&coeffs(lo.val)[..9], &coeffs(hi.val)[..9]].concat()),
 +            d
 +        );
-+        let lo = self.push(Op::ObsC12, lo.addr, 0, t, 0, lo.val, F::ZERO);
-+        let hi = self.push(Op::ObsC12, hi.addr, 0, t + 9, 0, hi.val, F::ZERO);
++        let lo = self.push(Op::UnitW3, lo.addr, 0, job, 16, lo.val, F::ZERO);
++        let hi = self.push(Op::UnitW3, hi.addr, 0, job, 22, hi.val, F::ZERO);
++        self.push(Op::Anchor, t, NV_DIGEST as u32, job, 0, EF::ZERO, F::ZERO);
 +        DigestCells { lo, hi, digest: d }
 +    }
 +    /// Offer a commitment as the root key of `commit_id`.
@@ -2012,6 +1723,7 @@ index 0000000..c7f3b61
 +
 +    /// Finish: pad with NOPs, put the accumulator row last.  Returns the program length 2^log_rows.
 +    pub fn finish(&mut self) {
++        self.tr_close();
 +        let n = self.prog_len();
 +        while self.instrs.len() < n - 1 {
 +            self.instrs.push(Instr::NOP);
@@ -2028,8 +1740,8 @@ index 0000000..c7f3b61
 +        self.vals.push(EF::ZERO);
 +        self.wits.push(F::ZERO);
 +        // binding sum over all rows (including the ACC row itself)
-+        let e1n = super::alu::E1_SIZE;
-+        let tp = super::alu::tau_pows();
++        let e1n = super::uair::E1_SIZE;
++        let tp = super::uair::tau_pows();
 +        let mut acc = EF::ZERO;
 +        for (x, ins) in self.instrs.iter().enumerate() {
 +            let w = ins.words();
@@ -2065,10 +1777,10 @@ index 0000000..c7f3b61
 +
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..f268ebb
+index 0000000..ffbb654
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,289 @@
+@@ -0,0 +1,286 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2080,15 +1792,14 @@ index 0000000..f268ebb
 +use p3_matrix::dense::RowMajorMatrix;
 +
 +use super::{
-+    alu::{E1_BITS, E1_SIZE},
-+    uair::{u_trace, UAir, UBuses},
++    uair::{u_trace, UAir, UBuses, E1_BITS, E1_SIZE},
 +    builder::Builder,
 +    fmt::sha_k,
 +    glue::{glue_matrix, GlueAir},
 +    hash::{byte_table2, generate2, ByteAir, HashBuses, Job2, Work2, U2},
 +    isa::Op,
 +    merkle2::{merkle2_trace, Merkle2Air, Merkle2Cols, MERKLE2_WIDTH},
-+    transcript2::{replay2, tr2_traces, Hash2Air, Obs2Air, Samp2Air, TrBuses},
++    transcript2::{replay2, tr2_traces, Hash2Air, Samp2Air, TrBuses},
 +    verifier::build_verifier,
 +};
 +use crate::sha384::{
@@ -2134,7 +1845,6 @@ index 0000000..f268ebb
 +            byte: next(),
 +        };
 +        let tr = TrBuses {
-+            obs: next(),
 +            sample: next(),
 +            word: next(),
 +        };
@@ -2188,7 +1898,6 @@ index 0000000..f268ebb
 +        vec![
 +            Arc::new(UAir { buses: b.alu }) as AirRef<SC>,
 +            Arc::new(Hash2Air { h: b.h, t: b.tr }),
-+            Arc::new(Obs2Air { h: b.h, t: b.tr }),
 +            Arc::new(Samp2Air { h: b.h, t: b.tr }),
 +            Arc::new(Merkle2Air {
 +                sha: b.h,
@@ -2253,7 +1962,9 @@ index 0000000..f268ebb
 +        let leaf_jobs: Vec<Job2> = b
 +            .jobs()
 +            .into_iter()
-+            .map(|j| Job2 {
++            .enumerate()
++            .map(|(i, j)| Job2 {
++                id: i as u32,
 +                tag: j.tag,
 +                units: j
 +                    .units
@@ -2267,9 +1978,8 @@ index 0000000..f268ebb
 +            .collect();
 +        let log = b.transcript.clone().into_log();
 +        let tr_jobs = replay2(&log);
-+        let base = leaf_jobs.len();
 +        let hh = |i: usize| self.heights.as_ref().map_or(1, |h| h[i]);
-+        let (mut mtrace, nodes) = merkle2_trace(&b.paths, self.k, hh(4));
++        let (mut mtrace, nodes) = merkle2_trace(&b.paths, self.k, hh(3));
 +        let mut work = Work2 {
 +            jobs: leaf_jobs,
 +            nodes,
@@ -2278,7 +1988,7 @@ index 0000000..f268ebb
 +        let sha = generate2(
 +            &work,
 +            self.layout(),
-+            self.heights.as_ref().map(|_| hh(5)),
++            self.heights.as_ref().map(|_| hh(4)),
 +        );
 +        {
 +            use core::borrow::BorrowMut;
@@ -2290,7 +2000,7 @@ index 0000000..f268ebb
 +                }
 +            }
 +        }
-+        let tr = tr2_traces(&tr_jobs, base, self.heights.as_ref().map(|_| (hh(1), hh(2), hh(3))));
++        let tr = tr2_traces(&tr_jobs, self.heights.as_ref().map(|_| (hh(1), hh(2))));
 +        let mut counts = sha.byte_counts.clone();
 +        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
 +            *c += t;
@@ -2299,12 +2009,11 @@ index 0000000..f268ebb
 +        let mats = vec![
 +            alu,
 +            tr.hash,
-+            tr.obs,
 +            tr.samp,
 +            mtrace,
 +            sha.compress,
 +            sha.table,
-+            glue_matrix(&sha.glue_rows, hh(7)),
++            glue_matrix(&sha.glue_rows, hh(6)),
 +            byte_table2(&counts),
 +        ];
 +        if let Some(h) = &self.heights {
@@ -2448,7 +2157,7 @@ index 0000000..0c335cf
 +}
 diff --git a/crates/recursion/src/nv/glue.rs b/crates/recursion/src/nv/glue.rs
 new file mode 100644
-index 0000000..c713c5e
+index 0000000..8524e6a
 --- /dev/null
 +++ b/crates/recursion/src/nv/glue.rs
 @@ -0,0 +1,472 @@
@@ -2819,7 +2528,7 @@ index 0000000..c713c5e
 +                let mut r = [F::ZERO; GLUE_W];
 +                let g: &mut GlueCols<F> = r.as_mut_slice().borrow_mut();
 +                g.start = F::from_bool(k == 0 && q == 0);
-+                g.job = F::from_usize(job);
++                g.job = F::from_u32(j.id);
 +                for i in 0..3 {
 +                    g.q[i] = F::from_bool((q >> i) & 1 == 1);
 +                }
@@ -2926,10 +2635,10 @@ index 0000000..c713c5e
 +}
 diff --git a/crates/recursion/src/nv/hash.rs b/crates/recursion/src/nv/hash.rs
 new file mode 100644
-index 0000000..f64c8b0
+index 0000000..487892c
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash.rs
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,278 @@
 +//! NV hashing subsystem, word format v2 (air2 limbs).  Same job model as
 +//! `sha384/airs.rs` (framed messages `PREFIX || tag || units`), with:
 +//! * units: a canonical felt (4 LE bytes) or a whole 64-bit word (8 BE bytes, e.g. a
@@ -3124,6 +2833,8 @@ index 0000000..f64c8b0
 +
 +#[derive(Clone, Debug)]
 +pub struct Job2 {
++    /// job id (unit / digest key)
++    pub id: u32,
 +    pub tag: u8,
 +    pub units: Vec<U2>,
 +}
@@ -3208,7 +2919,7 @@ index 0000000..f64c8b0
 +}
 diff --git a/crates/recursion/src/nv/hash_tests.rs b/crates/recursion/src/nv/hash_tests.rs
 new file mode 100644
-index 0000000..fa293ef
+index 0000000..ac205ba
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash_tests.rs
 @@ -0,0 +1,189 @@
@@ -3280,7 +2991,7 @@ index 0000000..fa293ef
 +                cnt += 1;
 +            }
 +        }
-+        out.push(Job2 { tag: [0u8, 3, 4, 5, 6][i % 5], units });
++        out.push(Job2 { id: i as u32, tag: [0u8, 3, 4, 5, 6][i % 5], units });
 +    }
 +    out
 +}
@@ -3403,7 +3114,7 @@ index 0000000..fa293ef
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..5f14353
+index 0000000..4d53d30
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
 @@ -0,0 +1,113 @@
@@ -3437,12 +3148,12 @@ index 0000000..5f14353
 +    ConstX = 5,
 +    /// c = free witness (bound by later uses)
 +    Load = 6,
-+    /// c = a; observe c0 at tidx P2
-+    Obs1 = 7,
-+    /// c = a; observe c0..c11 at tidx P2..P2+11
-+    Obs12 = 8,
-+    /// c = a; observe c0..c8 as commit limbs (kind 2) at tidx P2..P2+8
-+    ObsC12 = 9,
++    /// c = a; push c0 as felt unit of job P2 at unit index P3 (transcript observe)
++    Unit1 = 7,
++    /// anchor transcript job P2: send (2, P2, 0, 0, A = t_start, B = count, 0); c = 0
++    Anchor = 8,
++    /// c = a; push 3 word units (limbs c[3i..3i+3]) of job P2 at unit index P3 + 2i
++    UnitW3 = 9,
 +    /// c0 = sample at tidx P2 (c1..c11 = 0)
 +    Smp1 = 10,
 +    /// c = 12 samples at tidx P2..P2+11
@@ -3480,7 +3191,7 @@ index 0000000..5f14353
 +    pub fn all() -> [Op; NUM_OPS] {
 +        use Op::*;
 +        [
-+            Nop, Mul, Add, Sub, Const, ConstX, Load, Obs1, Obs12, ObsC12, Smp1, Smp12, Unit12,
++            Nop, Mul, Add, Sub, Const, ConstX, Load, Unit1, Anchor, UnitW3, Smp1, Smp12, Unit12,
 +            Horn, Job, Bit, Zero, KeyC, KeyP, Acc, DblAdd, MulAddA, Pv,
 +        ]
 +    }
@@ -3488,7 +3199,7 @@ index 0000000..5f14353
 +        use Op::*;
 +        matches!(
 +            self,
-+            Mul | Add | Sub | Obs1 | Obs12 | ObsC12 | Unit12 | Horn | Bit | Zero | KeyC | DblAdd
++            Mul | Add | Sub | Unit1 | UnitW3 | Unit12 | Horn | Bit | Zero | KeyC | DblAdd
 +                | MulAddA | Pv
 +        )
 +    }
@@ -4280,12 +3991,11 @@ index 0000000..2b31338
 +}
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 new file mode 100644
-index 0000000..856627f
+index 0000000..77850ed
 --- /dev/null
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,16 @@
 +//! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
-+pub mod alu;
 +pub mod builder;
 +pub mod circuit;
 +pub mod fmt;
@@ -4303,7 +4013,7 @@ index 0000000..856627f
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..d69796d
+index 0000000..c294335
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
 @@ -0,0 +1,326 @@
@@ -4463,11 +4173,11 @@ index 0000000..d69796d
 +            fill_cand(row, 0, cb, &mut dummy);
 +        })
 +    });
-+    // 4. commit limb on the transcript (first hash job = vk pre-hash commit)
-+    must_fail("transcript-commit-limb", || {
++    // 4. output-state limb of the first transcript job (vk pre-hash commit)
++    must_fail("transcript-state-limb", || {
 +        nv_debug_mats(&vk, &proof, 15, |mats, names| {
 +            let i = names.iter().position(|n| n == "Hash2Air").unwrap();
-+            mats[i].values[44] += F::ONE;
++            mats[i].values[10] += F::ONE;
 +        })
 +    });
 +    // 5. an ALU result (row 1000's c0)
@@ -4635,15 +4345,19 @@ index 0000000..d69796d
 +}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
-index 0000000..6366a2a
+index 0000000..4d74501
 --- /dev/null
 +++ b/crates/recursion/src/nv/transcript2.rs
-@@ -0,0 +1,685 @@
+@@ -0,0 +1,631 @@
 +//! NV in-circuit SHA-384 transcript, word format v2 (see transcript/sha_transcript.rs for
 +//! the protocol).  Differences: the state and commit digests are 18 air2 limbs and are
 +//! framed as word units; commit events are 18 limb events; samples are extracted per
 +//! 64-bit state word (two little-endian u32 candidates per word).
-+//! Transcript events travel on the slot bus as (0, tidx, 0, kind, value, 0, 0).
++//! v3 (U2): observed felts and commitment words are pushed by the ALU directly as units of
++//! statically numbered flush / commit jobs (ids TJOB_STATIC_BASE + i, anchored by the ALU
++//! with (job, t_start, count)); squeeze jobs are numbered TJOB_SQUEEZE_BASE + i.  The
++//! hash-chain AIR forwards each job's output state as the state units of the next job.
++//! Samples travel on the slot bus as (0, tidx, 0, KIND_SAMPLE, value, 0, 0).
 +use core::borrow::{Borrow, BorrowMut};
 +
 +use openvm_recursion_circuit_derive::AlignedBorrow;
@@ -4666,9 +4380,17 @@ index 0000000..6366a2a
 +
 +#[derive(Clone, Copy, Debug)]
 +pub struct TrBuses {
-+    pub obs: BusIndex,
 +    pub sample: BusIndex,
 +    pub word: BusIndex,
++}
++
++pub const TJOB_STATIC_BASE: u32 = 1 << 24;
++pub const TJOB_SQUEEZE_BASE: u32 = 1 << 25;
++pub const SLOT_ANCHOR: u32 = 2;
++
++/// Units of a transcript job's initial-state block (for the first job of the chain).
++pub fn initial_state_words() -> [u64; 6] {
++    state_words(&initial_state())
 +}
 +
 +fn state_words(state: &[u8; 48]) -> [u64; 6] {
@@ -4722,6 +4444,7 @@ index 0000000..6366a2a
 +
 +#[derive(Clone, Debug)]
 +pub struct TrJob2 {
++    pub id: u32,
 +    pub op: Op2,
 +    pub t_start: usize,
 +    pub cnt: usize,
@@ -4751,7 +4474,7 @@ index 0000000..6366a2a
 +            }
 +            Op2::Squeeze => TAG_SQUEEZE,
 +        };
-+        Job2 { tag, units }
++        Job2 { id: self.id, tag, units }
 +    }
 +}
 +
@@ -4761,11 +4484,16 @@ index 0000000..6366a2a
 +    let mut nw = 12usize;
 +    let mut pending: Vec<F> = vec![];
 +    let mut pstart = 0usize;
-+    let flush = |jobs: &mut Vec<TrJob2>, state: &mut [u8; 48], nw: &mut usize, pending: &mut Vec<F>, ps: usize| {
++    let mut n_static = 0u32;
++    let mut n_squeeze = 0u32;
++    let flush = |jobs: &mut Vec<TrJob2>, state: &mut [u8; 48], nw: &mut usize, pending: &mut Vec<F>, ps: usize, n_static: &mut u32| {
 +        if !pending.is_empty() {
++            let id = TJOB_STATIC_BASE + *n_static;
++            *n_static += 1;
 +            let bytes = crate::sha384::config::felt_bytes(pending);
 +            let out = hash_parts(TAG_FLUSH, &[&state[..], &bytes]);
 +            jobs.push(TrJob2 {
++                id,
 +                op: Op2::Flush,
 +                t_start: ps,
 +                cnt: pending.len(),
@@ -4792,11 +4520,14 @@ index 0000000..6366a2a
 +                i += 1;
 +            }
 +            KIND_COMMIT => {
-+                flush(&mut jobs, &mut state, &mut nw, &mut pending, pstart);
++                flush(&mut jobs, &mut state, &mut nw, &mut pending, pstart, &mut n_static);
 +                let payload: [F; NV_DIGEST] = log.values[i..i + NV_DIGEST].try_into().unwrap();
 +                let d = limbs_digest(&payload);
 +                let out = hash_parts(TAG_COMMIT, &[&state[..], &digest_bytes(d)]);
++                let id = TJOB_STATIC_BASE + n_static;
++                n_static += 1;
 +                jobs.push(TrJob2 {
++                    id,
 +                    op: Op2::Commit,
 +                    t_start: i,
 +                    cnt: NV_DIGEST,
@@ -4811,11 +4542,14 @@ index 0000000..6366a2a
 +                i += NV_DIGEST;
 +            }
 +            KIND_SAMPLE => {
-+                flush(&mut jobs, &mut state, &mut nw, &mut pending, pstart);
++                flush(&mut jobs, &mut state, &mut nw, &mut pending, pstart, &mut n_static);
 +                loop {
 +                    if nw == 12 {
 +                        let out = hash_parts(TAG_SQUEEZE, &[&state[..]]);
++                        let id = TJOB_SQUEEZE_BASE + n_squeeze;
++                        n_squeeze += 1;
 +                        jobs.push(TrJob2 {
++                            id,
 +                            op: Op2::Squeeze,
 +                            t_start: i,
 +                            cnt: 0,
@@ -4861,11 +4595,13 @@ index 0000000..6366a2a
 +    pub op_c: T,
 +    pub op_s: T,
 +    pub job: T,
++    /// job id of the next row (whose state units this row's output provides)
++    pub nxt: T,
++    /// has a next job
++    pub hn: T,
 +    pub t_start: T,
 +    pub cnt: T,
-+    pub state_in: [T; NV_DIGEST],
 +    pub state_out: [T; NV_DIGEST],
-+    pub payload: [T; NV_DIGEST],
 +    /// state words read by the sample AIR (prefix)
 +    pub rdw: [T; 6],
 +    pub last_word: T,
@@ -4896,16 +4632,12 @@ index 0000000..6366a2a
 +        let n: &Hash2Cols<AB::Var> = (*next).borrow();
 +        let one = AB::Expr::ONE;
 +        let c = |v: u64| AB::Expr::from_u64(v);
-+        for x in [l.valid, l.is_first, l.op_f, l.op_c, l.op_s, l.last_acc, l.last_half] {
++        for x in [l.valid, l.is_first, l.op_f, l.op_c, l.op_s, l.last_acc, l.last_half, l.hn] {
 +            builder.assert_bool(x);
 +        }
 +        builder.assert_eq(l.op_f + l.op_c + l.op_s, l.valid);
 +        builder.when(l.is_first).assert_one(l.valid);
 +        builder.when_first_row().assert_eq(l.is_first, l.valid);
-+        let s0 = state_limbs(&initial_state());
-+        for i in 0..NV_DIGEST {
-+            builder.when(l.is_first).assert_eq(l.state_in[i], c(s0[i] as u64));
-+        }
 +        builder.when(l.is_first).assert_zero(l.t_start);
 +        builder.when(l.op_c).assert_eq(l.cnt, c(NV_DIGEST as u64));
 +        for i in 0..6 {
@@ -4928,9 +4660,8 @@ index 0000000..6366a2a
 +            t.assert_zero((one.clone() - l.valid) * n.valid);
 +            t.when(n.valid).assert_zero(n.is_first);
 +            let same: AB::Expr = n.valid.into();
-+            for i in 0..NV_DIGEST {
-+                t.when(same.clone()).assert_eq(n.state_in[i], l.state_out[i]);
-+            }
++            t.assert_zero(l.valid * (l.hn - n.valid));
++            t.when(same.clone()).assert_eq(n.job, l.nxt);
 +            t.when(same.clone()).assert_eq(n.t_start, l.t_start + l.cnt);
 +            t.assert_zero(same.clone() * l.op_f * n.op_f);
 +            t.assert_zero(l.op_f * (one.clone() - same.clone()));
@@ -4939,45 +4670,41 @@ index 0000000..6366a2a
 +        }
 +        builder.when_last_row().assert_zero(l.op_f);
 +        builder.when_last_row().assert_zero(rej);
++        builder.when_last_row().assert_zero(l.hn);
 +
 +        let h = self.h;
 +        let tag = l.op_f * c(TAG_FLUSH as u64) + l.op_c * c(TAG_COMMIT as u64) + l.op_s * c(TAG_SQUEEZE as u64);
 +        h.send_job(builder, l.job, tag, l.valid);
 +        h.send_felt(builder, l.job, c(0), c(48), l.valid);
 +        h.send_felt(builder, l.job, c(1), c(0), l.valid);
++        // output state = state units 2..13 of the next job
 +        for i in 0..6 {
 +            h.send_word(
 +                builder,
-+                l.job,
++                l.nxt,
 +                c(2 + 2 * i as u64),
-+                core::array::from_fn(|k| l.state_in[3 * i + k].into()),
-+                l.valid,
++                core::array::from_fn(|k| l.state_out[3 * i + k].into()),
++                l.hn,
 +            );
 +        }
 +        h.send_felt(builder, l.job, c(14), l.op_c * c(48) + l.op_f * l.cnt * c(4), l.op_c + l.op_f);
 +        h.send_felt(builder, l.job, c(15), c(0), l.op_c + l.op_f);
-+        for i in 0..6 {
-+            h.send_word(
-+                builder,
-+                l.job,
-+                c(16 + 2 * i as u64),
-+                core::array::from_fn(|k| l.payload[3 * i + k].into()),
-+                l.op_c,
-+            );
-+        }
 +        let sout: Vec<AB::Expr> = l.state_out.iter().map(|&x| x.into()).collect();
 +        h.receive_digest(builder, l.job, &sout, l.valid);
-+        for i in 0..NV_DIGEST {
-+            emit(
-+                builder,
-+                h.slot,
-+                l.t_start + c(i as u64),
-+                c(KIND_COMMIT as u64),
-+                l.payload[i].into(),
-+                l.op_c.into(),
-+            );
-+        }
-+        PermutationCheckBus::new(self.t.obs).receive(builder, [l.job, l.t_start, l.cnt], l.op_f);
++        // flush / commit jobs are anchored by the ALU: (2, job, 0, 0, t_start, cnt, 0)
++        PermutationCheckBus::new(h.slot).receive(
++            builder,
++            [
++                c(SLOT_ANCHOR as u64),
++                l.job.into(),
++                AB::Expr::ZERO,
++                AB::Expr::ZERO,
++                l.t_start.into(),
++                l.cnt.into(),
++                AB::Expr::ZERO,
++            ],
++            l.op_f + l.op_c,
++        );
 +        PermutationCheckBus::new(self.t.sample).receive(
 +            builder,
 +            [l.job, l.t_start, l.cnt, l.last_word, l.last_half, l.last_acc],
@@ -5000,35 +4727,6 @@ index 0000000..6366a2a
 +    }
 +}
 +
-+// ---------------------------------------------------------------------------------------
-+// Observe AIR
-+// ---------------------------------------------------------------------------------------
-+
-+#[repr(C)]
-+#[derive(AlignedBorrow, Debug)]
-+pub struct Obs2Cols<T> {
-+    pub valid: T,
-+    pub job: T,
-+    pub tidx: T,
-+    pub t_first: T,
-+    pub value: T,
-+    pub is_first: T,
-+    pub is_last: T,
-+}
-+pub const OBS2_WIDTH: usize = Obs2Cols::<u8>::width();
-+
-+pub struct Obs2Air {
-+    pub h: HashBuses,
-+    pub t: TrBuses,
-+}
-+impl<T> BaseAir<T> for Obs2Air {
-+    fn width(&self) -> usize {
-+        OBS2_WIDTH
-+    }
-+}
-+impl<T> BaseAirWithPublicValues<T> for Obs2Air {}
-+impl<T> PartitionedBaseAir<T> for Obs2Air {}
-+
 +fn runs<AB: AirBuilder>(b: &mut AB, valid: AB::Expr, first: AB::Expr, last: AB::Expr, nvalid: AB::Expr, nfirst: AB::Expr) {
 +    let one = AB::Expr::ONE;
 +    b.assert_bool(valid.clone());
@@ -5042,32 +4740,6 @@ index 0000000..6366a2a
 +    t.when(nvalid.clone()).assert_eq(nfirst, last.clone());
 +    t.when(valid.clone()).assert_zero((one.clone() - nvalid) * (one.clone() - last.clone()));
 +    b.when_last_row().assert_zero(valid * (one - last));
-+}
-+
-+impl<AB: AirBuilder + InteractionBuilder> Air<AB> for Obs2Air {
-+    fn eval(&self, builder: &mut AB) {
-+        let main = builder.main();
-+        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
-+        let l: &Obs2Cols<AB::Var> = (*local).borrow();
-+        let n: &Obs2Cols<AB::Var> = (*next).borrow();
-+        let c = |v: u64| AB::Expr::from_u64(v);
-+        runs::<AB>(builder, l.valid.into(), l.is_first.into(), l.is_last.into(), n.valid.into(), n.is_first.into());
-+        builder.when(l.is_first).assert_eq(l.t_first, l.tidx);
-+        {
-+            let mut t = builder.when_transition();
-+            let mut s = t.when(n.valid - n.is_first);
-+            s.assert_eq(n.job, l.job);
-+            s.assert_eq(n.tidx, l.tidx + AB::Expr::ONE);
-+            s.assert_eq(n.t_first, l.t_first);
-+        }
-+        emit(builder, self.h.slot, l.tidx.into(), c(KIND_OBSERVE as u64), l.value.into(), l.valid.into());
-+        self.h.send_felt(builder, l.job, c(16) + l.tidx - l.t_first, l.value, l.valid);
-+        PermutationCheckBus::new(self.t.obs).send(
-+            builder,
-+            [l.job.into(), l.t_first.into(), l.tidx - l.t_first + AB::Expr::ONE],
-+            l.is_last,
-+        );
-+    }
 +}
 +
 +// ---------------------------------------------------------------------------------------
@@ -5185,7 +4857,6 @@ index 0000000..6366a2a
 +
 +pub struct Tr2Traces {
 +    pub hash: RowMajorMatrix<F>,
-+    pub obs: RowMajorMatrix<F>,
 +    pub samp: RowMajorMatrix<F>,
 +    pub byte_counts: Vec<u32>,
 +}
@@ -5213,22 +4884,19 @@ index 0000000..6366a2a
 +    acc
 +}
 +
-+pub fn tr2_traces(jobs: &[TrJob2], base: usize, min_h: Option<(usize, usize, usize)>) -> Tr2Traces {
-+    let mh = min_h.unwrap_or((1, 1, 1));
-+    let n_obs: usize = jobs.iter().map(|j| j.obs.len()).sum();
++pub fn tr2_traces(jobs: &[TrJob2], min_h: Option<(usize, usize)>) -> Tr2Traces {
++    let mh = min_h.unwrap_or((1, 1));
 +    let n_words: usize = jobs.iter().map(|j| j.reads.len().div_ceil(2)).sum();
 +    let hh = ph(jobs.len(), mh.0);
-+    let oh = ph(n_obs, mh.1);
-+    let sh = ph(n_words, mh.2);
++    let sh = ph(n_words, mh.1);
 +    let mut hash = F::zero_vec(hh * HASH2_WIDTH);
-+    let mut obs = F::zero_vec(oh * OBS2_WIDTH);
 +    let mut samp = F::zero_vec(sh * SAMP2_WIDTH);
 +    let mut counts = vec![0u32; 256];
 +    let (a5, a2) = split_bits();
-+    let (mut orow, mut srow) = (0usize, 0usize);
++    let mut srow = 0usize;
 +    let fu = |x: usize| F::from_usize(x);
 +    for (k, j) in jobs.iter().enumerate() {
-+        let job = base + k;
++        let job = j.id as usize;
 +        let r: &mut Hash2Cols<F> = hash[k * HASH2_WIDTH..(k + 1) * HASH2_WIDTH].borrow_mut();
 +        r.valid = F::ONE;
 +        r.is_first = F::from_bool(k == 0);
@@ -5238,13 +4906,13 @@ index 0000000..6366a2a
 +        r.job = fu(job);
 +        r.t_start = fu(j.t_start);
 +        r.cnt = fu(j.cnt);
-+        let (si, so) = (state_limbs(&j.state_in), state_limbs(&j.state_out));
-+        for i in 0..NV_DIGEST {
-+            r.state_in[i] = F::from_u32(si[i]);
-+            r.state_out[i] = F::from_u32(so[i]);
++        if k + 1 < jobs.len() {
++            r.hn = F::ONE;
++            r.nxt = F::from_u32(jobs[k + 1].id);
 +        }
-+        if j.op == Op2::Commit {
-+            r.payload = j.payload;
++        let so = state_limbs(&j.state_out);
++        for i in 0..NV_DIGEST {
++            r.state_out[i] = F::from_u32(so[i]);
 +        }
 +        if j.op == Op2::Squeeze {
 +            let last = j.reads.last().unwrap();
@@ -5255,17 +4923,6 @@ index 0000000..6366a2a
 +            r.last_half = F::from_bool(last.wi % 2 == 1);
 +            r.last_acc = F::from_bool(last.acc);
 +            r.full = F::from_bool(last.wi == 11);
-+        }
-+        for (i, &v) in j.obs.iter().enumerate() {
-+            let o: &mut Obs2Cols<F> = obs[orow * OBS2_WIDTH..(orow + 1) * OBS2_WIDTH].borrow_mut();
-+            orow += 1;
-+            o.valid = F::ONE;
-+            o.job = fu(job);
-+            o.tidx = fu(j.t_start + i);
-+            o.t_first = fu(j.t_start);
-+            o.value = v;
-+            o.is_first = F::from_bool(i == 0);
-+            o.is_last = F::from_bool(i + 1 == j.obs.len());
 +        }
 +        let nrows = j.reads.len().div_ceil(2);
 +        let mut mbefore = 0usize;
@@ -5314,7 +4971,6 @@ index 0000000..6366a2a
 +    let _ = digest_limbs;
 +    Tr2Traces {
 +        hash: RowMajorMatrix::new(hash, HASH2_WIDTH),
-+        obs: RowMajorMatrix::new(obs, OBS2_WIDTH),
 +        samp: RowMajorMatrix::new(samp, SAMP2_WIDTH),
 +        byte_counts: counts,
 +    }
@@ -5326,10 +4982,10 @@ index 0000000..6366a2a
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..022d609
+index 0000000..d4c1739
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,374 @@
+@@ -0,0 +1,401 @@
 +//! NV merged non-SHA AIR ("UAIR"), stage U1: ALU rows and BIND rows share one column pool.
 +//!
 +//! * ALU rows (ka = 1), rows [0, 2^(H-1)): one Ext12 instruction (isa.rs) per row; row y
@@ -5356,12 +5012,25 @@ index 0000000..022d609
 +use p3_field::{BasedVectorSpace, Field, PrimeCharacteristicRing};
 +use p3_matrix::{dense::RowMajorMatrix, Matrix};
 +
-+use super::{
-+    alu::{tau_pows, E1_BITS, E1_SIZE},
-+    isa::{Instr, Op, ADDR_BITS, OP_HI, OP_LO},
-+};
++use super::isa::{Instr, Op, ADDR_BITS, OP_HI, OP_LO};
++
++/// Binding tables: E1 over the low E1_BITS row bits, E2 over the rest.
++pub const E1_BITS: usize = 9;
++pub const E1_SIZE: usize = 1 << E1_BITS;
++
++/// Binding constant tau = X + 1 (any element outside F works; see DESIGN.md).
++pub fn tau() -> EF {
++    let mut c = [F::ZERO; 12];
++    c[0] = F::ONE;
++    c[1] = F::ONE;
++    EF::from_basis_coefficients_slice(&c).unwrap()
++}
++pub fn tau_pows() -> [EF; 4] {
++    let t = tau();
++    [EF::ONE, t, t * t, t * t * t]
++}
 +use crate::{
-+    sha384::config::{EF, F},
++    sha384::config::{EF, F, KIND_SAMPLE},
 +    utils::{ext_field_add, ext_field_multiply},
 +};
 +
@@ -5469,9 +5138,8 @@ index 0000000..022d609
 +        let bb: [AB::Expr; 12] = l.b.map(Into::into);
 +        let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
 +        let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc);
-+        let copy_a = s(Op::Obs1)
-+            + s(Op::Obs12)
-+            + s(Op::ObsC12)
++        let copy_a = s(Op::Unit1)
++            + s(Op::UnitW3)
 +            + s(Op::Unit12)
 +            + s(Op::Bit)
 +            + s(Op::KeyC)
@@ -5526,36 +5194,51 @@ index 0000000..022d609
 +            reads_b + kb.clone(),
 +        );
 +
-+        // transcript / SHA unit slots: (chan, key1, key2, kind, v0, v1, v2)
++        // slot bus (chan, key1, key2, kind, v0, v1, v2):
++        //   units (chan 1, job P2, uidx, kind 0 felt | 2 word, value(s)) are sent;
++        //   samples (chan 0, tidx P2 + k, 0, KIND_SAMPLE, c_k) are received;
++        //   transcript anchors (chan 2, job P2, 0, 0, A, B, 0) are sent.
 +        let slot = PermutationCheckBus::new(self.buses.slot);
-+        let tr12 = s(Op::Obs12) + s(Op::ObsC12) + s(Op::Smp12);
-+        let kind = s(Op::Smp1) + s(Op::Smp12) + s(Op::ObsC12).double();
-+        let chan = s(Op::Unit12) + s(Op::Horn) + s(Op::Job);
++        let smp = s(Op::Smp1) + s(Op::Smp12);
++        let chan = s(Op::Unit1) + s(Op::UnitW3) + s(Op::Unit12) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor).double();
 +        for k in 0..12usize {
 +            let kk = cst(k as u64);
-+            let trk = if k < 9 { tr12.clone() } else { s(Op::Obs12) + s(Op::Smp12) };
-+            let tr = if k == 0 { s(Op::Obs1) + s(Op::Smp1) + trk } else { trk };
-+            let mut unit = s(Op::Unit12);
++            let mut send = s(Op::Unit12);
++            let mut recv = s(Op::Smp12);
 +            if k == 0 {
-+                unit += s(Op::Horn) + s(Op::Job);
++                send += s(Op::Unit1) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor);
++                recv += s(Op::Smp1);
 +            }
 +            if k == 1 {
-+                unit += s(Op::Job);
++                send += s(Op::Job);
 +            }
-+            let key1 = l.p[2] + tr12.clone() * kk.clone();
-+            let mut key2 = s(Op::Unit12) * (l.p[3] + kk.clone()) + s(Op::Job) * kk.clone();
++            if k < 3 {
++                send += s(Op::UnitW3);
++            }
++            let key1 = l.p[2] + s(Op::Smp12) * kk.clone();
++            let mut key2 = s(Op::Unit12) * (l.p[3] + kk.clone())
++                + s(Op::UnitW3) * (l.p[3] + cst(2 * k as u64))
++                + s(Op::Job) * kk.clone();
 +            if k == 0 {
-+                key2 += s(Op::Horn) * l.p[3];
++                key2 += (s(Op::Horn) + s(Op::Unit1)) * l.p[3];
 +            }
-+            let mut v0 = (tr.clone() + s(Op::Unit12)) * l.c[k];
++            let kind = s(Op::UnitW3).double() + smp.clone() * cst(KIND_SAMPLE as u64);
++            let mut v = [AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO];
++            v[0] = (s(Op::Unit12) + s(Op::Smp12)) * l.c[k];
 +            if k == 0 {
-+                v0 += s(Op::Horn) * l.wit + s(Op::Job) * bfield.clone();
++                v[0] += (s(Op::Unit1) + s(Op::Smp1)) * l.c[0]
++                    + s(Op::Horn) * l.wit
++                    + s(Op::Job) * bfield.clone()
++                    + s(Op::Anchor) * l.p[0];
++                v[1] = s(Op::Anchor) * bfield.clone();
 +            }
-+            slot.send(
-+                builder,
-+                [chan.clone(), key1, key2, kind.clone(), v0, AB::Expr::ZERO, AB::Expr::ZERO],
-+                unit - tr,
-+            );
++            if k < 3 {
++                for t in 0..3 {
++                    v[t] += s(Op::UnitW3) * l.c[3 * k + t];
++                }
++            }
++            let [v0, v1, v2] = v;
++            slot.send(builder, [chan.clone(), key1, key2, kind, v0, v1, v2], send - recv);
 +        }
 +        PermutationCheckBus::new(self.buses.job).send(builder, [l.p[2], l.p[0]], s(Op::Job));
 +        // keys: (type, P2, P3, m0..m11)
@@ -5706,7 +5389,7 @@ index 0000000..022d609
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..5ea0ddc
+index 0000000..b91540e
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
 @@ -0,0 +1,1108 @@
@@ -6516,7 +6199,7 @@ index 0000000..5ea0ddc
 +    l_skip: usize,
 +    flag: V,
 +) {
-+    use super::alu::{tau_pows, E1_BITS, E1_SIZE};
++    use super::uair::{tau_pows, E1_BITS, E1_SIZE};
 +    let t = tid.iter().position(|&a| a == 0).expect("child ALU");
 +    let n = n_per_trace[t];
 +    assert_eq!(l_skip + n, b.log_rows, "child ALU height must equal ours");
