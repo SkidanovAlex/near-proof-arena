@@ -126,3 +126,35 @@ per SHA-384 compression (plus the arithmetic guesses holding); ≲ 8k with grind
 and 42-B digests (both need user decisions). Next: measure c_sha with a real
 SHA-512-family AIR on the pinned backend, then prove a shape-equivalent final
 layer (same cells/columns/params) to measure final bytes directly.
+
+## Iteration 3: realistic in-circuit SHA-384 cost closes the hash-only gap only partly
+
+Existing lane SHA-384 AIRs (`results/sha384-batched`, `sha384-shared` on
+`research/direct-wasm-whir`): core table 5,234 columns × 80 rows ≈ 419k cells per
+compression (bit-decomposed), ~100× over the gate; its width alone would add
+≈ 500 KB of column openings to a final layer. A compact one-row-per-round
+SHA-512-family AIR on BabyBear needs the 192 new bits per round (a, e, W) plus
+split decompositions for the non-byte-aligned Σ/σ rotations and copies of
+b, c, f, g: ≈ 120–600 committed cells per row, i.e. **≈ 10–48k per compression**
+(published reference: OpenVM SHA-256 ≈ 12k cells per compression; SHA-512 ~2×).
+The ≲ 4k gate is not reachable with a committed-trace AIR.
+
+Fixed point at realistic cost (same assumptions as iteration 2):
+
+| c_sha | today | + k1, m=8, 258 | + z=32, 42 B |
+|---:|---:|---:|---:|
+| 12k | 398,113 | 376,465 | 321,547 |
+| 16k | 430,681 | 402,337 | 344,283 |
+| 24k | 485,209 | 456,065 | 384,425 |
+| 32k | 526,417 | 494,785 | 415,645 |
+
+Binius (lane, binary-field PCS, unique-decoding queries, 32-B digests): the fixed
+hash graph alone is 341,716 B at a 128-bit query budget and 643,444 B at 272 —
+the same Merkle-query floor.
+
+**Verdict at this iteration:** a hash-only SWIRL/WHIR recursion with a realistic
+SHA-384 AIR lands at ≈ 320–530 KB; < 300 KB needs ALL of: c_sha ≲ 8k, grinding
+z ≈ 32, 42-B digests, per-round k1 and m = 8. Structural alternatives to
+investigate: (1) hash-based accumulation (Arc/WARP-style) so the final circuit
+does not re-verify multi-round Merkle openings; (2) a non-hash final wrap
+(lattice: LaBRADOR/Greyhound) — a new assumption class, user decision.
