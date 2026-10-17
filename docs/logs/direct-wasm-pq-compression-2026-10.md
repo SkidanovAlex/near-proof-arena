@@ -11538,3 +11538,49 @@ partition, rotation, AIR permutation). This establishes the data interface befor
 attempting authenticated opening replacement or a new transcript schedule.
 Reproducer:airbender/direct-wasm/check_swirl_native_controls.py.
 Evidence:results/swirl-security-review/native-controls/. Full goal stays active.
+
+
+## 2026-10-17 — Native openings mapped through weighted GKR residual
+
+Previous goal turn classified progress: real native terminal control replay.
+Revalidated clean branch at f33978554. Extended keygen-only upstream fixture
+with optional saved-proof opening export. Decode/reencode saved internal proof
+byte-identically, regenerate its internal verification key, and verify the
+proof. Derive trace order independently from trace heights/air-id tie breaking;
+export per-trace need_rot, preprocessed/cache structure and ordered openings.
+A Rust extension-field basis type inference error in the probe was corrected;
+export test and targeted clippy pass. No new upstream recursive proof run needed.
+
+New prove_swirl_native_dag.py maps every source variable coordinate to that
+export: common opening part0, cached parts after optional preprocessed part,
+main DAG common part last, and interleaved current/rotated claims when need_rot.
+All2303variable values equal their native captured node evaluations, including
+757rotated coordinates and12cached-column coordinates. Actual trace permutation
+matches the capture. Selector values and consumer coefficients come from that
+accepted native control capture. No synthetic inputs remain in this fixture.
+
+Ran native-kernel GKR prove/Python verify on the combined weighted circuit.
+Native trace order slightly changes layering versus AIR-id order:1258extension
+elements,20128Ext4field bytes (previous synthetic ordering1264/20224). All3941
+known inputs are subtracted, leaving2303PCS coordinates plus explicit zero
+padding. Full-witness residual check and four existing negative checks pass.
+Fresh process rebuilds fixture/layout from captures, verifies saved proof and
+checks residual; default synthetic fixture's saved proof replay still passes.
+Prover about10.17s on this host, not a production benchmark.
+
+This completes a concrete DATA interface between the original accepted proof,
+its terminal scalar, weighted GKR and the remaining coordinate functional.
+It does NOT replace native verification: the original proof and column openings
+remain required. The diagnostic GKR statement hashes the entire native capture,
+including node values; that binding is deliberately not claimed to compress
+those values. Deriving controls after removing disclosed openings requires a
+new justified transcript schedule. A PCS proof of the residual functional and
+its same-trace/rotation binding remain unimplemented. Ext4 is not PQ128; field
+payload is not total proof size. No new Lean theorem/full NEAR1Petagas claim.
+
+Next: derive the residual's functional on actual committed trace polynomials
+using the original evaluation point, lift and rotation conventions, then price
+and prove an authenticated opening of it. Existing known-input subtraction
+lemmas cover only algebra; compiler and cryptographic composition remain open.
+Artifacts:results/swirl-security-review/native-dag-gkr/; reproducible with
+prove_swirl_native_dag.py and --verify-saved. Full goal remains active.

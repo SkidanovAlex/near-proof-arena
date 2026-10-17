@@ -72,8 +72,9 @@ def fixture():
     return stats,layout,slots,private,known,claim,statement
 
 
-def main():
-    stats,layout,slots,private,known,claim,statement=fixture()
+def main(fixture_builder=fixture, output_dir=OUT, fixture_scope='Synthetic verifier-owned controls/selectors; no native transcript extraction.'):
+
+    stats,layout,slots,private,known,claim,statement=fixture_builder()
     with tempfile.TemporaryDirectory() as tmp:
         lib=Path(tmp)/'kernel.so';source=Path(__file__).with_name('native-folded')/'kernel_gkr4.rs'
         subprocess.run(['rustc','--edition=2024','--crate-type','cdylib','-O',str(source),'-o',str(lib)],check=True)
@@ -96,25 +97,25 @@ def main():
     try:check_residual_fixture(pcs,changed_padding)
     except AssertionError:pass
     else:raise AssertionError('nonzero padded input')
-    elements=sum(3*len(p['rounds'])+2 for p in proof['layers']);assert elements==1264
-    OUT.mkdir(parents=True,exist_ok=True)
+    elements=sum(3*len(p['rounds'])+2 for p in proof['layers']);assert elements==stats['gkr_field_elements']
+    output_dir.mkdir(parents=True,exist_ok=True)
     for name,value in [('proof',proof),('pcs-obligation',pcs),('input-obligation',ob)]:
-        (OUT/(name+'.json.gz')).write_bytes(gzip.compress(json.dumps(value).encode(),mtime=0))
+        (output_dir/(name+'.json.gz')).write_bytes(gzip.compress(json.dumps(value).encode(),mtime=0))
     result=dict(status='WEIGHTED_COMPONENT_AND_KNOWN_INPUT_SPLIT_CHECKED',field_elements=elements,
         ext4_field_payload_bytes=elements*16,known_slots=len(known),pcs_coordinates=len(pcs['coordinates']),
         total_input_slots=len(slots),prover_seconds=seconds,negative_checks=4,
-        limitations=['Synthetic verifier-owned controls/selectors; no native transcript extraction.',
+        limitations=[fixture_scope,
                     'Residual PCS claim checked with full witness, not a PCS opening proof.',
                     'Ext4 diagnostic only; no PQ128, full NEAR or compiler correctness theorem.'])
-    (OUT/'report.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))
+    (output_dir/'report.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))
 
 
-def replay():
-    _,layout,slots,private,known,claim,statement=fixture()
-    proof=json.loads(gzip.decompress((OUT/'proof.json.gz').read_bytes()))
+def replay(fixture_builder=fixture, output_dir=OUT):
+    _,layout,slots,private,known,claim,statement=fixture_builder()
+    proof=json.loads(gzip.decompress((output_dir/'proof.json.gz').read_bytes()))
     ob=g.verify(layout,statement,proof,claim);pcs=split_obligation(ob,slots,known)
     check_residual_fixture(pcs,private)
-    assert json.loads(json.dumps(pcs))==json.loads(gzip.decompress((OUT/'pcs-obligation.json.gz').read_bytes()))
+    assert json.loads(json.dumps(pcs))==json.loads(gzip.decompress((output_dir/'pcs-obligation.json.gz').read_bytes()))
     print('PASS: weighted saved proof and residual PCS functional (full witness)')
 
 
