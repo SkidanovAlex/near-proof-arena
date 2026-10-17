@@ -218,3 +218,35 @@ What it costs (none resolved here):
 | hash-only, all levers | ≈ 300–415 KB (< 300 only if c_sha ≲ 8k) | grinding z≈32, ≈336-bit digests (U-7), per-round k1 + m=8 backend changes |
 | accumulation (WARP/Arc) | same as hash-only | — (prover speed only) |
 | lattice final wrap | ≈ 60–80 KB | MSIS assumption, QROM/proven-bound work, verifier preprocessing, latency |
+
+## Iteration 6: is there new science for hash-only? (user: "otherwise use lattice")
+
+The hash-only floor rests on (1) the ≈ 258–268-bit per-round target (Grover-tight
+t² loss on Fiat–Shamir query sampling — no known way around it), (2) 48-B digests
+(t³/2ⁿ binding), and (3) **per-query bits ≈ b/2 at the Johnson radius**. Only (3)
+has live research: proximity gaps up to list-decoding *capacity* would give
+≈ b bits per query.
+
+* Jeronimo–Liu–Rajpal, arXiv 2601.10047 (folded RS, capacity): **withdrawn**,
+  "subsumed by the prior work of Goyal and Guruswami".
+* Jeronimo, arXiv 2609.05870 (Sept 2026, single author, unreviewed): RS list
+  decoding to 1−ρ−γ and MCA for curves with error n^{O_γ(1)}/q, constants
+  unstated. Polynomial-in-n factors with exponent ~1/γ force a much larger
+  field for small slack; no FRI/STIR/WHIR theorem.
+* Capacity is the hard limit: beyond it the conjectures are false (ePrint 2025/2046).
+
+Model (`levers_model.py`, `bits` patched to b − 0.5 or b − 1; Ext24 = 96-B elements to absorb the error):
+
+| assumption | c_sha 12k, today | 12k, z=32 + 42 B | 24k, today | 24k, z=32 + 42 B |
+|---|---:|---:|---:|---:|
+| Johnson (proven), Ext12 | 398,113 | 321,547 | 485,209 | 384,425 |
+| capacity b−0.5, Ext24 | 292,177 | 245,509 | 334,609 | 278,953 |
+| capacity b−1, Ext24 | 303,393 | 258,831 | 353,209 | 295,039 |
+| capacity b−0.5, Ext12 (optimistic) | 218,129 | 180,751 | 253,585 | 208,521 |
+
+**Verdict:** hash-only < 300 KB is plausible only if capacity-regime MCA for RS
+(or folded RS) is proven with explicit, small-enough constants and plugged into a
+WHIR-class protocol — open research, not usable under U-2 today.
+
+**User decision (2026-10-17): pursue the lattice final wrap**; keep capacity-regime
+proximity gaps as a watch item that could later make a hash-only final layer viable.
