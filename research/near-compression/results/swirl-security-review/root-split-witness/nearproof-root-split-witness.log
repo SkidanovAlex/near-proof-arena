@@ -1,0 +1,18 @@
+   Compiling openvm-recursion-circuit v2.1.0 (/tmp/nearproof-openvm/crates/recursion)
+    Finished `fast` profile [optimized + debuginfo] target(s) in 17.33s
+     Running unittests src/lib.rs (target/fast/deps/openvm_recursion_circuit-0e902e15daeda90d)
+
+running 1 test
+NEARPROOF_HASH_SOURCE source=merkle raw=6254 distinct=5049 exclusive=5049
+NEARPROOF_HASH_SOURCE source=initial raw=8704 distinct=8704 exclusive=8704
+NEARPROOF_HASH_SOURCE source=continuation raw=800 distinct=800 exclusive=800
+NEARPROOF_HASH_SOURCE source=transcript raw=2321 distinct=2321 exclusive=2321
+NEARPROOF_HASH_SOURCE source=external raw=0 distinct=0 exclusive=0
+NEARPROOF_HASH_UNION distinct=16874
+NEARPROOF_HASH raw_perm=11025 raw_compress=7054 distinct=16874 padded=32768
+NEARPROOF_OPENINGS proof_bytes=231997 airs=40 verified=true
+NEARPROOF_ROOT_SPLIT_WITNESS proof_bytes=231997 prefix_bytes=14292 live_hash_rows=16874 split=16384+512 matrices=41 cells=10063600 commitments_match=true
+test tests::nearproof_root_split_witness ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 274 filtered out; finished in 46.13s
+

@@ -11948,3 +11948,40 @@ QROM theorem is claimed. This internal geometry fails300000 already at Ext4/
 upstream diagnostic settings. Next prioritize root geometry and complete
 stronger-security accounting, not more transport micro-optimization. Full
 NEAR1Petagas, PQ128 and secure sub300000remain unachieved; goal stays active.
+
+## 2026-10-17 — Matched split-root witness and public terminal GKR
+
+Previous goal turn classified progress: framed internal bundle at5e1ef183f.
+Revalidated clean worktree. Generated root-geometry proof over the preserved
+internal child, with existing hash-table partition:16874live rows,16384+512
+heights. Native debug/prove/verify passes; root231997bytes. Independently
+recomputed common/cached commitments match the exact exported41matrices,
+10063600base cells. Root prefix encodes/roundtrips at14292bytes.
+
+Preserved root proof, DAG18196nodes, openings, layouts, accepted capture and
+witness archive. Last two native captures (root verification and export replay)
+match exactly. Raw source-matrix opening probe independently checks2995current/
+rotated claims at native point; all pass. Archive23453666bytes,43file hashes
+rechecked. Witness storage is NOT proof size. Native root run46.13s including
+debug, commitment recomputation and exports; not a production benchmark.
+
+Generalized fixture DAG input and witness-probe directory without changing
+internal defaults. Initial capture-bound root GKR1288EF/20608field bytes passes
+(component-only diagnostic). Then generated root opening-free prefix controls
+using a keygen-only root-split key helper. Public controls/selectors exactly
+match captured root; native prefix trace metadata/layouts match native export.
+Root public-statement GKR also1288EF/20608bytes; independent public-only replay
+passes with4257known slots and2603PCS coordinates. No witness openings read by
+that replay. Internal public GKR and native prefix regressions plus clippy pass.
+
+Root commitment layout is height2^20 with widths10+1, versus internal2^19 with
+49+1. This is the concrete root geometry for next authenticated continuation;
+do not reuse internal weights, keys, query schedules or WHIR proof. Root prefix
+probe still uses full native proof to derive controls; prefix-only root replay
+and root weighted WHIR integration remain next. No complete new root bundle
+size inferred from component sums.
+
+Evidence:root-split-witness/,root-split-dag-gkr/,root-split-public-gkr/ under
+swirl-security-review. This is generic cached-VK recursive root geometry, not
+production RootProver/full NEAR1Petagas. Upstream diagnostic security is not
+PQ128; no new Lean correctness/composition theorem claimed. Goal stays active.

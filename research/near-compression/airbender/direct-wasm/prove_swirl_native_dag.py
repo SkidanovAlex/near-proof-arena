@@ -14,9 +14,9 @@ ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'results/swirl-security-review/native-dag-gkr'
 
 
-def fixture(capture_path=None, openings_path=None, output_dir=OUT):
+def fixture(capture_path=None, openings_path=None, output_dir=OUT, dag_path=None):
     base=ROOT/'results/swirl-security-review'
-    dags={r['air']:r for r in [json.loads(x) for x in gzip.decompress((base/'dag-export/dag.jsonl.gz').read_bytes()).splitlines()]}
+    dags={r['air']:r for r in [json.loads(x) for x in gzip.decompress((dag_path or base/'dag-export/dag.jsonl.gz').read_bytes()).splitlines()]}
     capture_path = capture_path or base/'native-controls/capture.jsonl.gz'
     captures = gzip.decompress(capture_path.read_bytes()).splitlines()
     c=json.loads(captures[1] if len(captures)==3 else captures[0])

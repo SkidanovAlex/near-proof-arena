@@ -12,10 +12,10 @@ from prove_swirl_weighted_dag import split_obligation
 from prove_swirl_prefix_dag import BASE,PREFIX,OUT
 
 
-def public_context(c=None, prefix_log=None):
+def public_context(c=None, prefix_log=None, dag_path=None):
     if c is None:c=json.loads((PREFIX/'controls.json').read_text())
     if prefix_log is None:prefix_log=gzip.decompress((PREFIX/'transcript-log.txt.gz').read_bytes())
-    dags={r['air']:r for r in map(json.loads,gzip.decompress((BASE/'dag-export/dag.jsonl.gz').read_bytes()).splitlines())}
+    dags={r['air']:r for r in map(json.loads,gzip.decompress((dag_path or BASE/'dag-export/dag.jsonl.gz').read_bytes()).splitlines())}
     records=[dags[t['air']] for t in c['traces']]
     controls=dict(lam=tuple(c['lambda']),beta=tuple(c['beta']),mu=tuple(c['mu']),
         eq_ns=[tuple(t['eq_ns']) for t in c['traces']],eq_sharp=[tuple(t['eq_sharp']) for t in c['traces']],
