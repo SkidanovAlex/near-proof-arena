@@ -426,3 +426,15 @@ proof; z=28 3.8 s, z=32 65.5 s (8 threads). Gate 5 re-measured (W=15): 350,713 B
 293,903 B (z=32 proved, 42 B); extrapolated to 2^26.4 cells: **459,923 / 389,561 B** (round 1:
 479,156 / 408,734). On ext2's `L m=3 combo` point the measured laws give ≈ 325 KB. Laws:
 `native/levers_laws.py`; report: `results/pq-whir-levers/README.md`.
+
+## Padding-free trace heights implemented (2026-10-17, lane/pq-whir-levers)
+
+`WhirLevers.tight_heights`: each common-main trace commits only its rows up to the last non-zero row
+(rounded to 2^l_skip) as power-of-two chunks. The zerocheck and GKR are unchanged (virtual zero tail
+up to 2^k). The stacking reduction scales each chunk by an eq factor and adds one first-row rotation
+term per chunk. Sound by construction (the proved statement is the upstream one for a zero-padded
+trace); AIRs must accept all-zero rows. Circuit-level splitting was rejected: each extra AIR instance
+re-pays its column openings (NvAir +6.6 KB, SHA +16 KB). Measured: committed width drops exactly to the
+real rows (gate-5 shape at 78 % fill: W 15 → 12, 353,497 → 350,789 B); saving = ΔW × (q0·2^k1·4 + 48),
+the W-proportional law the NV model uses, so its ≈ 9.7 KB (308.5 → 298.9 KB at L) applies, provided the
+NV AIRs' padding rows are zero-valid. Report: `results/pq-whir-levers/README.md` (round 3).

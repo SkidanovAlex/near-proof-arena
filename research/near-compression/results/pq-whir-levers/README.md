@@ -307,6 +307,88 @@ gets there. Applying the measured laws to ext2's `L m=3 combo` point (345,176 B,
   witnesses are 2 field elements per round. The soundness calculator counts it as exactly z bits for
   z > 30 (a single-field-element model caps at log2 p).
 
+## Round 3: padding-free (non-power-of-two) trace heights (`tight_heights`)
+
+**Where SWIRL needs powers of two (v2.0.1).** Trace heights are 2^k: the zerocheck/batch-constraint
+sumcheck runs over the hypercube {0,1}^(k−l_skip) × the univariate skip domain D (|D| = 2^l_skip),
+the GKR runs over Σ interactions × 2^k leaves, and `TraceVData` only carries `log_height`. Stacking
+(`StackedLayout::new`) puts every column as one slice of exactly 2^k rows, aligned to 2^k, sorted by
+height (perfect packing), and the stacking reduction's kernel for a slice is a product
+`eq_D(Z, r_0) · eq(x, r[1..1+n]) · eq(x_high, b_slice)` that relies on that alignment. So a 1.3·2^k
+AIR commits 2^k·... = 2^(k+1) rows today: there is **no padding-free packing in the backend**.
+
+**Options considered.**
+* *Circuit-level split* (one AIR as two AIRs of heights 2^k and 2^(k−2)): every extra AIR instance
+  re-pays its column openings (`2 × 48 B` per rotated column): NvAir 69 columns → +6.6 KB, the
+  171-column SHA AIR → +16 KB per extra piece, plus 2 EF per AIR in the batch proof. At the NV shape
+  this eats most or all of the ≈ 10 KB. **Rejected.**
+* *Masked tail in one slice* (kernel `· [x < H]`): needs the tail space to be reused by other columns
+  at unaligned offsets, which breaks the product kernels. Rejected for the chunk scheme below.
+* **Chunked columns (implemented).** Only the commitment changes; the zerocheck and GKR still run
+  over 2^k with a *virtual zero tail*.
+
+**Mechanism.** With `WhirLevers.tight_heights`, each common-main trace commits only
+`H = last non-zero row + 1`, rounded up to a multiple of 2^l_skip (`tight_height`). Each column is
+split into the power-of-two chunks of H's binary decomposition (descending, each ≥ 2^l_skip). Chunk i
+holds column rows [o_i, o_i + 2^(l+m_i)), and each o_i is a multiple of its own size. All chunks of
+all columns are sorted by size and packed greedily, so every slice stays aligned and packing stays
+perfect. The stacking reduction treats each chunk as an ordinary slice of height 2^(l+m_i) at point
+r[..1+m_i], scaled by `c_i = eq(bits(o_i/2^l) above m_i, r[1+m_i..1+n_T])`, and shares the column's
+λ power. The rotation (next-row) kernel of a chunk is `c_i` times its own cyclic kernel plus one
+first-row term `eq_D(ω r_0, 1) · eq_D(Z, 1) · eq(x, 0) · δ_i`, with
+`δ_i = eq(bits((o_i/2^l − 1) mod 2^n_T), r[1..1+n_T]) − c_i · Π_{t<m_i} r[1+t]`. That term is needed
+because the predecessor of a chunk's first row is the previous chunk's last row (or, for the first
+chunk, the column's last virtual row). For a whole column, `(c, δ) = (1, 0)`, so one formula covers
+every slice. The prover tracks the correction through round 0 (`eq_D(z,1)` at x = 0), the PLE fold
+(`· eq_D(u_0, 1)`) and the MLE rounds (`· (1 − u_t)` while the chunk has variables). `TraceVData`
+carries H (encoded only in the lever format; 0 = none), it is observed in the transcript after
+`log_height`, and proof shape requires `H = Some(h)` with 2^l_skip | h and 0 < h ≤ 2^log_height for
+every lever-mode trace of height ≥ 2^l_skip with common-main columns.
+
+**Soundness.** The opened column is, by definition of the kernels, "the committed rows followed by
+zeros up to 2^k". The batch-constraint sumcheck, GKR and column-opening claims are unchanged and still
+prove that this full 2^k-row trace satisfies the AIR and the buses. So the statement proved is the
+upstream statement for a trace whose padding rows are zero. A dishonest H, or a non-zero tail, can only
+make an honest proof fail (completeness), not make a false one pass. H is bound in the transcript and
+the vk/version (lever header bit 5). Requirement for circuits: **all-zero rows must satisfy the AIR**
+(an `is_real` column gating constraints and bus counts, as the driver's dummy does), otherwise
+the prover simply cannot use the lever for that AIR. Note the L3/air2 SHA AIRs pad with non-zero
+segments today, so `tight_height` returns their full height (measured: `logs/sha-tight.log`, no saving,
+verifies).
+
+**Measured** (`logs/t1,t2,tg-*.log`; gas-failure5 at defaults still `ba042e71…`; 142 upstream tests pass):
+
+| run | rows (real / 2^k) | W | total | initial | stacking | negative tests |
+|---|---|---:|---:|---:|---:|---|
+| dummy 17 cols, b=2 | 700 / 1,024, pow2 | 2 | 285,993 | 22,080 | 1,600 | |
+| same, tight (6 chunks per column) | 700 / 1,024 | 1 | 273,229 | 11,040 | 1,552 | 19 (24 with all round-2 levers) |
+| same, tight at full height | 1,024 / 1,024 | — | verifies | | | 16 |
+| gate-5 shape + all levers, pow2 | 12,780 / 16,384 | 15 | 353,497 | 8,280 | 2,704 | |
+| gate-5 shape + all levers, **tight** | 12,780 / 16,384 | 12 | **350,789** | 6,624 | 2,560 | 24 |
+
+Committed rows drop exactly to H (rounded to 2^l_skip); the byte saving is exactly
+`ΔW × (q0 · 2^k1 · 4 + 48)` (initial + stacking openings), plus query-position noise in auth
+(gate-5: −1,656 − 144 deterministic, −912 auth noise).
+
+**At the NV final-layer shape.** Their model's "none" heights are exactly what this mechanism
+commits: NvAir at 2^17.57 and SHA at 2^17.67 rows instead of 2^18. That takes cells from 2^25.91 to
+2^25.55, the stacked width from 121 to 94, and keeps relations and GKR unchanged (zerocheck/GKR still
+over 2^18, as the model assumes). The model's −9.7 KB (308,547 → 298,881 B at L) is −8.4 KB of WHIR
+(initial ∝ W, plus the fixed point) and −1.3 KB of stacking. Those are exactly the W-proportional laws
+measured above. **Expected saving ≈ 9.7 KB at L, ≈ 4.0 KB at T**, provided the NV AIRs accept zero
+padding rows. In-circuit cost is small: c_i and δ_i depend only on (AIR, chunk), not on the column, so
+the verifier computes them once per chunk; each extra slice costs one more `eq_mle(b)` term and a few
+Ext12 multiplies. With ~8 chunks per column that is ≈ 2,000 slices × a few Ext12 ops ≈ 0.3 % of the
+circuit. Rounding H to a coarser multiple, e.g. 2^(k−3) (≤ 3 chunks, < 1 % rows wasted), would cut this
+further but needs a granularity parameter (not implemented).
+
+**Spec additions.** Lever header flags bit 5 = `tight_heights`. `TraceVData`: after `log_height` (and
+cached commitments) the lever format writes `u32 H` (0 = none). Transcript: `observe(H)` right after
+`observe(log_height)` (or after the preprocessed commit) for every present AIR with `H` set. Layout:
+for each trace in height order, for each column, chunks of H's binary decomposition (descending sizes
+2^e, e ≥ l_skip, offsets o accumulated); stable sort of all chunks by size descending; greedy packing
+into columns of 2^(l_skip+n_stack) rows. Kernel factors as above (`StackedSlice::chunk_factors`).
+
 ## Blockers / next steps
 
 1. **GKR term (≈ 44 KB at L=23)** is the largest item the model missed. Levers to test:

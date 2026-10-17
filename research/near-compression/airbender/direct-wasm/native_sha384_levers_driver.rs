@@ -16,6 +16,8 @@
 //                                on n random compressions (main 442 cols x 44n rows, table, harness)
 //   NEARPROOF_GRUEN_GKR / NEARPROOF_GKR_DERIVE / NEARPROOF_GRUEN_ZC / NEARPROOF_NEXT_MASK = 1
 //   NEARPROOF_MAX_DEGREE=<d>     max constraint degree in the params (default 8; SHA AIR needs 4)
+//   NEARPROOF_TIGHT=1            padding-free trace heights (commit rows up to the last non-zero row)
+//   NEARPROOF_DUMMY_ROWS=<H>     dummy: H real rows (rest of 2^LOG_HEIGHT zero) with an is_real column
 //   NEARPROOF_NEGATIVE=1         run lever negative tests after proving
 use std::sync::Arc;
 use openvm_stark_backend::{StarkEngine,SystemParams,AirRef,prover::{CpuColMajorBackend,AirProvingContext,ProvingContext},test_utils::{TestFixture,test_system_params_small}};
@@ -39,6 +41,7 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         let rel=if lv.is_default() {size(&proof.batch_constraint_proof)} else {let mut b=Vec::new();proof.batch_constraint_proof.encode_levers(&mut b).unwrap();b.len()};
         let stack=size(&proof.stacking_proof);
         let openings:usize=proof.batch_constraint_proof.column_openings.iter().flat_map(|a|a.iter()).map(|p|p.len()).sum();
+        println!("LEVERS_TIGHT heights={:?}",proof.trace_vdata.iter().flatten().map(|v|(v.log_height,v.tight_height)).collect::<Vec<_>>());
         println!("LEVERS_CENSUS total={} auth={} auth_digests={} auth_per_tree={:?} initial={} codeword={} final_poly={} whir_small={} whir={} relations={} column_openings_ef={} gkr={} stacking={} stacking_openings_ef={} other={}",
             total,auth,digests,per_round,initial,codeword,final_poly,whir-auth-initial-codeword-final_poly,whir,rel,openings,gkr,stack,
             proof.stacking_proof.stacking_openings.iter().map(|v|v.len()).sum::<usize>(),total-whir-rel-gkr-stack);
@@ -92,7 +95,7 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
             keep_domain:setting("NEARPROOF_KEEP_DOMAIN",0)==1,
             gruen_gkr:setting("NEARPROOF_GRUEN_GKR",0)==1,gkr_derive_claims:setting("NEARPROOF_GKR_DERIVE",0)==1,
             next_mask:setting("NEARPROOF_NEXT_MASK",0)==1,gruen_zerocheck:setting("NEARPROOF_GRUEN_ZC",0)==1,
-            wide_query_pow:setting("NEARPROOF_WIDE_POW",0)==1};
+            wide_query_pow:setting("NEARPROOF_WIDE_POW",0)==1,tight_heights:setting("NEARPROOF_TIGHT",0)==1};
         let sha=levers();
         let log_final=setting("NEARPROOF_LOG_FINAL",params.log_final_poly_len());
         let (qpow,fpow,mpow)=(setting("NEARPROOF_QUERY_POW",0),setting("NEARPROOF_FOLDING_POW",0),setting("NEARPROOF_MU_POW",0));
@@ -251,6 +254,16 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
                 let mut bad=proof.clone();bad.batch_constraint_proof.column_openings[0][0][pos]+=EF::ONE;cases.push(("next_mask: rotated claim value",bad));
             }
         }
+        if p.whir.levers.tight_heights {
+            let l=1usize<<p.l_skip;
+            if let Some((i,h))=proof.trace_vdata.iter().enumerate().find_map(|(i,v)|v.as_ref().and_then(|v|v.tight_height.map(|h|(i,h)))) {
+                let mut bad=proof.clone();bad.trace_vdata[i].as_mut().unwrap().tight_height=Some(h+l);cases.push(("tight: committed height +2^l_skip",bad));
+                if h>l {let mut bad=proof.clone();bad.trace_vdata[i].as_mut().unwrap().tight_height=Some(h-l);cases.push(("tight: committed height -2^l_skip",bad));}
+                let mut bad=proof.clone();bad.trace_vdata[i].as_mut().unwrap().tight_height=None;cases.push(("tight: committed height dropped",bad));
+                let mut bad=proof.clone();bad.trace_vdata[i].as_mut().unwrap().tight_height=Some(h+1);cases.push(("tight: height not a multiple of 2^l_skip",bad));
+            }
+            let mut bad=proof.clone();let n=bad.stacking_proof.stacking_openings[0].len();bad.stacking_proof.stacking_openings[0][n-1]+=EF::ONE;cases.push(("tight: last stacked column opening",bad));
+        }
         let n=cases.len();
         for (name,bad) in cases {
             let rejected=engine.verify(vk,&bad).is_err();
@@ -296,8 +309,10 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         use openvm_stark_backend::{PartitionedBaseAir,interaction::InteractionBuilder,prover::ColMajorMatrix};
         fn cols()->usize {super::setting("NEARPROOF_DUMMY_COLS",460)}
         fn log_height()->usize {super::setting("NEARPROOF_DUMMY_LOG_HEIGHT",14)}
-        pub(super) struct DummyAir {width:usize}
-        impl<T> BaseAir<T> for DummyAir {fn width(&self)->usize {self.width}}
+        /// Real rows; `None` = the original dummy (all 2^h rows real, no is_real column).
+        fn real_rows()->Option<usize> {std::env::var("NEARPROOF_DUMMY_ROWS").ok().map(|s|s.parse().unwrap())}
+        pub(super) struct DummyAir {width:usize,is_real:bool}
+        impl<T> BaseAir<T> for DummyAir {fn width(&self)->usize {self.width+self.is_real as usize}}
         impl<T> PartitionedBaseAir<T> for DummyAir {}
         impl<T> BaseAirWithPublicValues<T> for DummyAir {}
         impl<AB:AirBuilder+InteractionBuilder> Air<AB> for DummyAir {
@@ -306,6 +321,20 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
                 let local:Vec<AB::Expr>=main.row_slice(0).unwrap().iter().map(|v|(*v).into()).collect();
                 let next:Vec<AB::Expr>=main.row_slice(1).unwrap().iter().map(|v|(*v).into()).collect();
                 let n=self.width;
+                if self.is_real {
+                    // Zero rows are valid: every constraint is gated by is_real of the next row,
+                    // is_real is boolean and non-increasing, the bus count is is_real.
+                    let (r,rn)=(local[n].clone(),next[n].clone());
+                    builder.assert_bool(r.clone());
+                    builder.when_transition().assert_zero(rn.clone()*(AB::Expr::ONE-r.clone()));
+                    for c in 0..n {
+                        let rhs=local[c].clone()*local[(c+1)%n].clone()+local[(c+2)%n].clone()+AB::Expr::from(AB::F::from_u32(c as u32+1));
+                        builder.when_transition().assert_zero(rn.clone()*(next[c].clone()-rhs));
+                    }
+                    builder.push_interaction(0,vec![local[0].clone(),local[1].clone()],r.clone(),1);
+                    builder.push_interaction(0,vec![local[0].clone(),local[1].clone()],-r,1);
+                    return;
+                }
                 for c in 0..n {
                     let rhs=local[c].clone()*local[(c+1)%n].clone()+local[(c+2)%n].clone()+AB::Expr::from(AB::F::from_u32(c as u32+1));
                     builder.when_transition().assert_eq(next[c].clone(),rhs);
@@ -316,16 +345,20 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         }
         pub(super) struct DummyFixture;
         impl TestFixture<SC> for DummyFixture {
-            fn airs(&self)->Vec<AirRef<SC>> {vec![Arc::new(DummyAir{width:cols()})]}
+            fn airs(&self)->Vec<AirRef<SC>> {vec![Arc::new(DummyAir{width:cols(),is_real:real_rows().is_some()})]}
             fn generate_proving_ctx(&self)->ProvingContext<CpuColMajorBackend<SC>> {
                 let (n,h)=(cols(),1usize<<log_height());
-                let mut v=vec![F::ZERO;n*h];
+                let real=real_rows();
+                let w=n+real.is_some() as usize;
+                let rows=real.unwrap_or(h);assert!(rows<=h);
+                let mut v=vec![F::ZERO;w*h];
                 for c in 0..n {v[c]=F::from_u32((c as u32).wrapping_mul(2654435761)%2013265921);}
-                for r in 1..h {
-                    let (prev,cur)=v.split_at_mut(r*n);let prev=&prev[(r-1)*n..];
+                for r in 1..rows {
+                    let (prev,cur)=v.split_at_mut(r*w);let prev=&prev[(r-1)*w..];
                     for c in 0..n {cur[c]=prev[c]*prev[(c+1)%n]+prev[(c+2)%n]+F::from_u32(c as u32+1);}
                 }
-                ProvingContext::new(vec![(0,AirProvingContext::simple(ColMajorMatrix::from_row_major(&RowMajorMatrix::new(v,n)),vec![]))])
+                if real.is_some() {for r in 0..rows {v[r*w+n]=F::ONE;}}
+                ProvingContext::new(vec![(0,AirProvingContext::simple(ColMajorMatrix::from_row_major(&RowMajorMatrix::new(v,w)),vec![]))])
             }
         }
     }

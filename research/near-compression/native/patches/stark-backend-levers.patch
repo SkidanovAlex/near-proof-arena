@@ -19,10 +19,10 @@ index 08e139b..b432c73 100644
  }
  
 diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
-index c776e1c..4d58e90 100644
+index c776e1c..a333495 100644
 --- a/crates/stark-backend/src/config.rs
 +++ b/crates/stark-backend/src/config.rs
-@@ -188,6 +188,55 @@ pub struct WhirConfig {
+@@ -188,6 +188,60 @@ pub struct WhirConfig {
      /// of queries in the `rounds` field. However we store it in `WhirConfig` for security analysis
      /// purposes.
      pub proximity: WhirProximityStrategy,
@@ -59,6 +59,10 @@ index c776e1c..4d58e90 100644
 +    /// Query-phase proof-of-work witnesses are two field elements (`grind_wide`), so
 +    /// `query_phase_pow_bits` up to ~2·log2(p) is feasible; one base element caps it near 30.
 +    pub wide_query_pow: bool,
++    /// Padding-free trace heights: each common-main trace commits only its rows up to the last
++    /// non-zero row (rounded up to `2^l_skip`), as power-of-two chunks; the zerocheck and GKR still
++    /// run over the power-of-two height with a virtual zero tail.
++    pub tight_heights: bool,
 +}
 +
 +impl WhirLevers {
@@ -74,11 +78,12 @@ index c776e1c..4d58e90 100644
 +            | (self.next_mask as u8) << 2
 +            | (self.gruen_zerocheck as u8) << 3
 +            | (self.wide_query_pow as u8) << 4
++            | (self.tight_heights as u8) << 5
 +    }
  }
  
  #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-@@ -288,20 +337,49 @@ impl WhirConfig {
+@@ -288,20 +342,49 @@ impl WhirConfig {
          log_stacked_height: usize,
          whir_params: WhirParams,
          security_bits: usize,
@@ -132,7 +137,7 @@ index c776e1c..4d58e90 100644
  
              let num_queries = Self::queries(
                  proximity.in_round(round),
-@@ -320,12 +398,35 @@ impl WhirConfig {
+@@ -320,12 +403,35 @@ impl WhirConfig {
              query_phase_pow_bits,
              folding_pow_bits: whir_params.folding_pow_bits,
              proximity,
@@ -169,7 +174,7 @@ index c776e1c..4d58e90 100644
      }
  
      pub fn num_whir_rounds(&self) -> usize {
-@@ -334,7 +435,7 @@ impl WhirConfig {
+@@ -334,7 +440,7 @@ impl WhirConfig {
  
      #[inline]
      pub fn num_sumcheck_rounds(&self) -> usize {
@@ -329,7 +334,7 @@ index 493a87f..f1bd1e6 100644
  
  /// Verifier data for preprocessed trace for a single AIR.
 diff --git a/crates/stark-backend/src/proof.rs b/crates/stark-backend/src/proof.rs
-index 30b7914..22b4f8b 100644
+index 30b7914..4e4c4bc 100644
 --- a/crates/stark-backend/src/proof.rs
 +++ b/crates/stark-backend/src/proof.rs
 @@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
@@ -341,7 +346,19 @@ index 30b7914..22b4f8b 100644
  };
  
  #[derive(Derivative, Serialize, Deserialize)]
-@@ -133,6 +133,24 @@ pub struct BatchConstraintProof<SC: StarkProtocolConfig> {
+@@ -56,6 +56,11 @@ pub struct TraceVData<SC: StarkProtocolConfig> {
+     ///
+     /// The length must match the value in the vkey.
+     pub cached_commitments: Vec<SC::Digest>,
++    /// Tight-heights lever: committed rows of the common-main trace (multiple of `2^l_skip`,
++    /// `<= 2^log_height`); rows beyond are a virtual zero tail. `None` without the lever or for
++    /// traces shorter than `2^l_skip`. Encoded (u32, 0 = None) only in the lever format.
++    #[serde(default)]
++    pub tight_height: Option<usize>,
+ }
+ 
+ #[derive(Derivative, Serialize, Deserialize)]
+@@ -133,6 +138,24 @@ pub struct BatchConstraintProof<SC: StarkProtocolConfig> {
      pub column_openings: Vec<Vec<Vec<SC::EF>>>,
  }
  
@@ -366,7 +383,7 @@ index 30b7914..22b4f8b 100644
  pub fn column_openings_by_rot<'a, EF: PrimeCharacteristicRing + Copy + 'a>(
      openings: &'a [EF],
      need_rot: bool,
-@@ -197,6 +215,11 @@ pub struct WhirProof<SC: StarkProtocolConfig> {
+@@ -197,6 +220,11 @@ pub struct WhirProof<SC: StarkProtocolConfig> {
      pub codeword_merkle_proofs: Vec<Vec<MerkleProof<SC::Digest>>>,
      /// Coefficients of the polynomial after the final round.
      pub final_poly: Vec<SC::EF>,
@@ -378,7 +395,7 @@ index 30b7914..22b4f8b 100644
  }
  
  // ==================== Encode implementations ====================
-@@ -222,11 +245,21 @@ impl<SC: EncodableConfig> Encode for GkrLayerClaims<SC> {
+@@ -222,11 +250,21 @@ impl<SC: EncodableConfig> Encode for GkrLayerClaims<SC> {
  /// The codec version **must** change if the verifying key serialization/deserialization format
  /// changes. It does _not_ correspond to the main openvm version (which may change more frequently).
  pub(crate) const CODEC_VERSION: u32 = 3;
@@ -401,7 +418,17 @@ index 30b7914..22b4f8b 100644
          SC::encode_digest(&self.common_main_commit, writer)?;
  
          // We encode trace_vdata by encoding the number of AIRs, encoding a bitmap of
-@@ -249,9 +282,18 @@ impl<SC: EncodableConfig> Encode for Proof<SC> {
+@@ -242,6 +280,9 @@ impl<SC: EncodableConfig> Encode for Proof<SC> {
+         }
+         for vdata in self.trace_vdata.iter().flatten() {
+             vdata.encode(writer)?;
++            if levers.tight_heights {
++                vdata.tight_height.unwrap_or(0).encode(writer)?;
++            }
+         }
+ 
+         // public_values: Vec<Vec<SC::F>>
+@@ -249,9 +290,18 @@ impl<SC: EncodableConfig> Encode for Proof<SC> {
          for pv in &self.public_values {
              SC::encode_base_field_slice(pv, writer)?;
          }
@@ -422,7 +449,7 @@ index 30b7914..22b4f8b 100644
          self.whir_proof.encode(writer)
      }
  }
-@@ -322,6 +364,9 @@ impl<SC: EncodableConfig> Encode for StackingProof<SC> {
+@@ -322,6 +372,9 @@ impl<SC: EncodableConfig> Encode for StackingProof<SC> {
  
  impl<SC: EncodableConfig> Encode for WhirProof<SC> {
      fn encode<W: Write>(&self, writer: &mut W) -> Result<()> {
@@ -432,7 +459,15 @@ index 30b7914..22b4f8b 100644
          SC::encode_base_field(&self.mu_pow_witness, writer)?;
          // whir_sumcheck_polys: Vec<[SC::EF; 2]>
          self.whir_sumcheck_polys.len().encode(writer)?;
-@@ -445,7 +490,37 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -426,6 +479,7 @@ impl<SC: DecodableConfig> Decode for TraceVData<SC> {
+         Ok(Self {
+             log_height: usize::decode(reader)?,
+             cached_commitments: SC::decode_digest_vec(reader)?,
++            tight_height: None,
+         })
+     }
+ }
+@@ -445,7 +499,38 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          // We explicitly implement Decode for Proof to check CODEC_VERSION
          let codec_version = u32::decode(reader)?;
@@ -447,7 +482,7 @@ index 30b7914..22b4f8b 100644
 +                    _ => Err(invalid("lever flag")),
 +                }
 +            };
-+            if h[3] & !31 != 0 {
++            if h[3] & !63 != 0 {
 +                return Err(invalid("lever flags"));
 +            }
 +            let levers = WhirLevers {
@@ -459,6 +494,7 @@ index 30b7914..22b4f8b 100644
 +                next_mask: h[3] & 4 != 0,
 +                gruen_zerocheck: h[3] & 8 != 0,
 +                wide_query_pow: h[3] & 16 != 0,
++                tight_heights: h[3] & 32 != 0,
 +            };
 +            if levers.is_default() {
 +                return Err(invalid("lever format with default levers"));
@@ -471,7 +507,21 @@ index 30b7914..22b4f8b 100644
              return Err(Error::other(format!(
                  "CODEC_VERSION mismatch, expected: {}, actual: {}",
                  CODEC_VERSION, codec_version
-@@ -488,10 +563,19 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -470,7 +555,12 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+                     break;
+                 }
+                 if byte & (1u8 << i) != 0 {
+-                    trace_vdata.push(Some(TraceVData::decode(reader)?));
++                    let mut vdata = TraceVData::decode(reader)?;
++                    if levers.is_some_and(|l| l.tight_heights) {
++                        let h = usize::decode(reader)?;
++                        vdata.tight_height = (h != 0).then_some(h);
++                    }
++                    trace_vdata.push(Some(vdata));
+                 } else {
+                     trace_vdata.push(None);
+                 }
+@@ -488,10 +578,19 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
              common_main_commit,
              trace_vdata,
              public_values,
@@ -494,7 +544,7 @@ index 30b7914..22b4f8b 100644
          })
      }
  }
-@@ -526,6 +610,177 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
+@@ -526,6 +625,177 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
      }
  }
  
@@ -672,7 +722,7 @@ index 30b7914..22b4f8b 100644
  impl<SC: DecodableConfig> Decode for BatchConstraintProof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          let numerator_term_per_air = SC::decode_extension_field_vec(reader)?;
-@@ -701,6 +956,219 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
+@@ -701,6 +971,219 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
              codeword_opened_values,
              codeword_merkle_proofs,
              final_poly,
@@ -893,19 +943,61 @@ index 30b7914..22b4f8b 100644
      }
  }
 diff --git a/crates/stark-backend/src/prover/cpu_backend.rs b/crates/stark-backend/src/prover/cpu_backend.rs
-index c4c53ae..16a5211 100644
+index c4c53ae..47118d4 100644
 --- a/crates/stark-backend/src/prover/cpu_backend.rs
 +++ b/crates/stark-backend/src/prover/cpu_backend.rs
-@@ -91,7 +91,7 @@ where
+@@ -13,7 +13,7 @@ use crate::{
+     prover::{
+         error::RefProverError,
+         prove_zerocheck_and_logup,
+-        stacked_pcs::{stacked_commit, StackedPcsData},
++        stacked_pcs::StackedPcsData,
+         stacked_reduction::{prove_stacked_opening_reduction, StackedReductionCpu},
+         whir::WhirProver,
+         ColMajorMatrix, CommittedTraceData, DeviceDataTransporter, DeviceMultiStarkProvingKey,
+@@ -86,15 +86,39 @@ where
+         &self,
+         traces: &[&ColMajorMatrix<SC::F>],
+     ) -> Result<(SC::Digest, StackedPcsData<SC::F, SC::Digest>), Self::Error> {
+-        Ok(stacked_commit(
++        Ok(crate::prover::stacked_pcs::stacked_commit_tight(
+             self.config().hasher(),
              self.params().l_skip,
              self.params().n_stack,
              self.params().log_blowup,
 -            self.params().k_whir(),
 +            self.params().whir.k_first(),
              traces,
++            self.params().whir.levers.tight_heights,
          )?)
      }
-@@ -146,11 +146,13 @@ where
++
++    fn committed_heights(&self, data: &StackedPcsData<SC::F, SC::Digest>) -> Vec<Option<usize>> {
++        if !self.params().whir.levers.tight_heights {
++            return Vec::new();
++        }
++        let l_skip = self.params().l_skip;
++        (0..data.layout.mat_starts.len())
++            .map(|mat| {
++                let chunks = data
++                    .layout
++                    .sorted_cols
++                    .iter()
++                    .filter(|(m, c, _)| *m == mat && *c == 0)
++                    .map(|(_, _, s)| s)
++                    .collect_vec();
++                if chunks.is_empty() || chunks[0].col_log_height() < l_skip {
++                    None
++                } else {
++                    Some(chunks.iter().map(|s| 1usize << s.log_height()).sum())
++                }
++            })
++            .collect()
++    }
+ }
+ 
+ impl<SC, TS> MultiRapProver<CpuColMajorBackend<SC>, TS> for ReferenceDevice<SC>
+@@ -146,11 +170,13 @@ where
      ) -> Result<(StackingProof<SC>, WhirProof<SC>), Self::Error> {
          let params = self.params();
  
@@ -921,7 +1013,7 @@ index c4c53ae..16a5211 100644
  
          // Currently alternates between preprocessed and cached pcs data
          let pre_cached_pcs_data_per_commit: Vec<_> = ctx
-@@ -181,13 +183,15 @@ where
+@@ -181,13 +207,15 @@ where
          }
  
          let mut need_rot_per_commit = vec![need_rot_per_trace];
@@ -941,6 +1033,23 @@ index c4c53ae..16a5211 100644
              }
          }
          let (stacking_proof, u_prisma) =
+diff --git a/crates/stark-backend/src/prover/hal.rs b/crates/stark-backend/src/prover/hal.rs
+index 89f5a89..17cd810 100644
+--- a/crates/stark-backend/src/prover/hal.rs
++++ b/crates/stark-backend/src/prover/hal.rs
+@@ -84,6 +84,12 @@ pub trait ProverDevice<PB: ProverBackend, TS>:
+ pub trait TraceCommitter<PB: ProverBackend> {
+     type Error: std::fmt::Debug;
+     fn commit(&self, traces: &[&PB::Matrix]) -> Result<(PB::Commitment, PB::PcsData), Self::Error>;
++
++    /// Tight-heights lever: committed rows per trace (in commit order) of `data`, `None` for a
++    /// trace committed at full (or strided) height. Backends without the lever return empty.
++    fn committed_heights(&self, _data: &PB::PcsData) -> Vec<Option<usize>> {
++        Vec::new()
++    }
+ }
+ 
+ /// This trait is responsible for the proving steps that reduce AIR zerocheck constraints and
 diff --git a/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs b/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs
 index a070663..a4af4c7 100644
 --- a/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs
@@ -1120,11 +1229,286 @@ index aeb5938..30436c8 100644
      pub constraint_degree: u8,
  }
  
+diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/prover/mod.rs
+index 59e87a0..4baf3cf 100644
+--- a/crates/stark-backend/src/prover/mod.rs
++++ b/crates/stark-backend/src/prover/mod.rs
+@@ -127,13 +127,19 @@ where
+         let mut trace_vdata: Vec<Option<TraceVData<SC>>> = vec![None; mpk.per_air.len()];
+         let mut public_values: Vec<Vec<SC::F>> = vec![Vec::new(); mpk.per_air.len()];
+ 
++        let committed_heights = self.device.committed_heights(&common_main_pcs_data);
+         // Hypercube dimension per trace (present AIR)
+-        for (air_id, trace_ctx) in &ctx.per_trace {
++        for (trace_idx, (air_id, trace_ctx)) in ctx.per_trace.iter().enumerate() {
+             let trace_height = trace_ctx.common_main.height();
+             let log_height = log2_strict_usize(trace_height);
+ 
+             trace_vdata[*air_id] = Some(TraceVData::<SC> {
+                 log_height,
++                tight_height: if mpk.params.whir.levers.tight_heights {
++                    committed_heights.get(trace_idx).copied().flatten()
++                } else {
++                    None
++                },
+                 cached_commitments: trace_ctx
+                     .cached_mains
+                     .iter()
+@@ -165,6 +171,9 @@ where
+                 } else {
+                     transcript.observe(SC::F::from_usize(trace_vdata.log_height));
+                 }
++                if let Some(h) = trace_vdata.tight_height {
++                    transcript.observe(SC::F::from_usize(h));
++                }
+                 for commit in &trace_vdata.cached_commitments {
+                     transcript.observe_commit(*commit);
+                 }
 diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
-index 97271aa..2a6b88f 100644
+index 97271aa..4f2cf25 100644
 --- a/crates/stark-backend/src/prover/stacked_pcs.rs
 +++ b/crates/stark-backend/src/prover/stacked_pcs.rs
-@@ -347,21 +347,22 @@ pub fn rs_code_matrix<F: TwoAdicField + Ord>(
+@@ -52,9 +52,58 @@ pub struct StackedSlice {
+     /// log_height}`.
+     #[getset(get_copy = "pub")]
+     log_height: usize,
++    /// Tight-heights lever: first row of this slice within its unstacked column (0 for a whole
++    /// column). A column of a tight trace is split into power-of-two chunks.
++    #[serde(default)]
++    #[new(default)]
++    pub src_row: usize,
++    /// Log2 of the (virtual, power-of-two) height of the unstacked column this slice belongs to;
++    /// equals `log_height` for a whole column (`0` also means "whole column", see
++    /// [`Self::col_log_height`]).
++    #[serde(default)]
++    #[new(default)]
++    pub col_log_height: usize,
+ }
+ 
+ impl StackedSlice {
++    /// Log2 height of the unstacked column (`log_height` for a whole column).
++    #[inline(always)]
++    pub fn col_log_height(&self) -> usize {
++        if self.col_log_height == 0 {
++            self.log_height
++        } else {
++            self.col_log_height
++        }
++    }
++
++    /// Tight-heights lever. For a slice holding rows `[src_row, src_row + 2^log_height)` of a
++    /// column of virtual height `2^col_log_height` (zero beyond its real rows), returns
++    /// `(c, delta)` with
++    /// - `c = eq(bits(o') above m, r[1+m..1+n_T])`, `o' = src_row / 2^l_skip`,
++    ///   `m = log_height - l_skip`, `n_T = col_log_height - l_skip`: the column's eq kernel
++    ///   restricted to the slice is `c` times the slice's own kernel at `r[..1+m]`;
++    /// - `delta = eq(bits((o'-1) mod 2^n_T), r[1..1+n_T]) - c * prod_{t<m} r[1+t]`: the
++    ///   rotation kernel of the slice is `c` times its own cyclic one plus
++    ///   `eq_D(omega r_0, 1) eq_D(Z, 1) eq(x, 0) delta` (the first row's predecessor is the previous
++    ///   chunk's last row, or the column's last virtual row).
++    /// A whole column (`src_row = 0`, `col_log_height = log_height`) gives `(1, 0)`.
++    pub fn chunk_factors<EF: Field>(&self, l_skip: usize, r: &[EF]) -> (EF, EF) {
++        if self.log_height < l_skip
++            || (self.src_row == 0 && self.col_log_height() == self.log_height)
++        {
++            return (EF::ONE, EF::ZERO);
++        }
++        let m = self.log_height - l_skip;
++        let n_t = self.col_log_height() - l_skip;
++        let o = self.src_row >> l_skip;
++        let eq_bit = |bit: usize, r: EF| if bit == 1 { r } else { EF::ONE - r };
++        let c = (m..n_t).fold(EF::ONE, |acc, t| acc * eq_bit((o >> t) & 1, r[1 + t]));
++        let prev = (o + (1 << n_t) - 1) & ((1 << n_t) - 1);
++        let e_prev = (0..n_t).fold(EF::ONE, |acc, t| acc * eq_bit((prev >> t) & 1, r[1 + t]));
++        let ones = (0..m).fold(EF::ONE, |acc, t| acc * r[1 + t]);
++        (c, e_prev - c * ones)
++    }
++
+     #[inline(always)]
+     pub fn len(&self, l_skip: usize) -> usize {
+         Self::_len(self.log_height, l_skip)
+@@ -125,7 +174,24 @@ where
+     H::F: TwoAdicField + Ord,
+     H::Digest: Copy,
+ {
+-    let (q_trace, layout) = stacked_matrix(l_skip, n_stack, traces)?;
++    stacked_commit_tight(hasher, l_skip, n_stack, log_blowup, k_whir, traces, false)
++}
++
++/// [`stacked_commit`] with the tight-heights lever.
++pub fn stacked_commit_tight<H: MerkleHasher>(
++    hasher: &H,
++    l_skip: usize,
++    n_stack: usize,
++    log_blowup: usize,
++    k_whir: usize,
++    traces: &[&ColMajorMatrix<H::F>],
++    tight: bool,
++) -> Result<(H::Digest, StackedPcsData<H::F, H::Digest>), StackedPcsError>
++where
++    H::F: TwoAdicField + Ord,
++    H::Digest: Copy,
++{
++    let (q_trace, layout) = stacked_matrix_tight(l_skip, n_stack, traces, tight)?;
+     let rs_matrix = rs_code_matrix(l_skip, log_blowup, &q_trace)?;
+     let tree = MerkleTree::new(hasher, rs_matrix, 1 << k_whir)?;
+     let root = tree.root()?;
+@@ -179,6 +245,8 @@ impl StackedLayout {
+                     col_idx,
+                     row_idx,
+                     log_height: log_ht,
++                    src_row: 0,
++                    col_log_height: log_ht,
+                 };
+                 sorted_cols.push((mat_idx, j, slice));
+                 row_idx += slice_len;
+@@ -202,6 +270,82 @@ impl StackedLayout {
+         })
+     }
+ 
++    /// Tight-heights lever: like [`Self::new`], but a matrix with `Some(h)` commits only its first
++    /// `h` rows (`h` a multiple of `2^l_skip`, `0 < h <= 2^log_height`; the rest is a virtual zero
++    /// tail). Each of its columns becomes chunks of the binary decomposition of `h` (descending,
++    /// each `>= 2^l_skip`); all slices are then sorted by size (stable) and packed greedily, so
++    /// every slice stays aligned to its own size. With no `Some`, identical to [`Self::new`].
++    pub fn new_tight(
++        l_skip: usize,
++        log_stacked_height: usize,
++        sorted: Vec<(usize, usize, Option<usize>)>,
++    ) -> Result<Self, StackedPcsError> {
++        if sorted.iter().all(|(_, _, t)| t.is_none()) {
++            return Self::new(l_skip, log_stacked_height, sorted.into_iter().map(|(w, h, _)| (w, h)).collect());
++        }
++        let mut entries: Vec<(usize, usize, StackedSlice)> = Vec::new();
++        let mut mat_starts = Vec::new();
++        for (mat_idx, (width, log_ht, tight)) in sorted.into_iter().enumerate() {
++            mat_starts.push(entries.len());
++            if log_ht > log_stacked_height {
++                return Err(StackedPcsError::LayoutHeightExceeded {
++                    log_height: log_ht,
++                    log_stacked_height,
++                });
++            }
++            let chunks: Vec<(usize, usize)> = match tight {
++                Some(h) if log_ht >= l_skip => {
++                    assert!(h > 0 && h <= 1 << log_ht && h % (1 << l_skip) == 0, "tight height");
++                    let mut out = Vec::new();
++                    let mut off = 0;
++                    for e in (l_skip..=log_ht).rev() {
++                        if (h >> e) & 1 == 1 {
++                            out.push((e, off));
++                            off += 1 << e;
++                        }
++                    }
++                    out
++                }
++                _ => vec![(log_ht, 0)],
++            };
++            for j in 0..width {
++                for &(e, off) in &chunks {
++                    entries.push((
++                        mat_idx,
++                        j,
++                        StackedSlice {
++                            col_idx: 0,
++                            row_idx: 0,
++                            log_height: e,
++                            src_row: off,
++                            col_log_height: log_ht,
++                        },
++                    ));
++                }
++            }
++        }
++        entries.sort_by_key(|(_, _, s)| std::cmp::Reverse(s.log_height));
++        let height = 1usize << log_stacked_height;
++        let (mut col_idx, mut row_idx) = (0usize, 0usize);
++        for (_, _, s) in entries.iter_mut() {
++            let len = s.len(l_skip);
++            if row_idx + len > height {
++                col_idx += 1;
++                row_idx = 0;
++            }
++            s.col_idx = col_idx;
++            s.row_idx = row_idx;
++            row_idx += len;
++        }
++        Ok(Self {
++            l_skip,
++            height,
++            width: col_idx + usize::from(row_idx != 0),
++            sorted_cols: entries,
++            mat_starts,
++        })
++    }
++
+     /// Raw unsafe constructor
+     pub fn from_raw_parts(
+         l_skip: usize,
+@@ -295,20 +439,48 @@ pub fn stacked_matrix<F: Field>(
+     l_skip: usize,
+     n_stack: usize,
+     traces: &[&ColMajorMatrix<F>],
++) -> Result<(ColMajorMatrix<F>, StackedLayout), StackedPcsError> {
++    stacked_matrix_tight(l_skip, n_stack, traces, false)
++}
++
++/// Tight-heights lever: number of committed rows of a trace = rows up to its last non-zero row,
++/// rounded up to a multiple of `2^l_skip` (at least `2^l_skip`). `None` for traces shorter than
++/// `2^l_skip` (they are strided, never tight). Prover and verifier-facing `TraceVData` use this.
++pub fn tight_height<F: Field>(trace: &ColMajorMatrix<F>, l_skip: usize) -> Option<usize> {
++    let h = trace.height();
++    if h < 1 << l_skip {
++        return None;
++    }
++    let w = trace.width();
++    let last = (0..h)
++        .rev()
++        .find(|&r| (0..w).any(|c| trace.values[c * h + r] != F::ZERO))
++        .map_or(0, |r| r + 1);
++    Some(last.max(1).next_multiple_of(1 << l_skip))
++}
++
++/// [`stacked_matrix`] with the tight-heights lever: when `tight`, each trace commits only
++/// [`tight_height`] rows (its tail must be zero, which `tight_height` guarantees).
++pub fn stacked_matrix_tight<F: Field>(
++    l_skip: usize,
++    n_stack: usize,
++    traces: &[&ColMajorMatrix<F>],
++    tight: bool,
+ ) -> Result<(ColMajorMatrix<F>, StackedLayout), StackedPcsError> {
+     let sorted_meta = traces
+         .iter()
+         .map(|trace| {
+             // height cannot be zero:
+             let log_height = log2_strict_usize(trace.height());
+-            (trace.width(), log_height)
++            (trace.width(), log_height, if tight { tight_height(trace, l_skip) } else { None })
+         })
+         .collect_vec();
+-    let mut layout = StackedLayout::new(l_skip, l_skip + n_stack, sorted_meta)?;
+-    let total_cells: usize = traces
++    let total_cells: usize = sorted_meta
+         .iter()
+-        .map(|t| t.height().max(1 << l_skip) * t.width())
++        .zip(traces)
++        .map(|((_, _, th), t)| th.unwrap_or(t.height().max(1 << l_skip)) * t.width())
+         .sum();
++    let mut layout = StackedLayout::new_tight(l_skip, l_skip + n_stack, sorted_meta)?;
+     let height = 1usize << (l_skip + n_stack);
+     let width = total_cells.div_ceil(height);
+ 
+@@ -319,7 +491,8 @@ pub fn stacked_matrix<F: Field>(
+     );
+     for (mat_idx, j, s) in &mut layout.sorted_cols {
+         let start = s.col_idx * height + s.row_idx;
+-        let t_col = traces[*mat_idx].column(*j);
++        let full_col = traces[*mat_idx].column(*j);
++        let t_col = &full_col[s.src_row..s.src_row + (1usize << s.log_height).min(full_col.len())];
+         debug_assert_eq!(t_col.len(), 1 << s.log_height);
+         if s.log_height >= l_skip {
+             q_mat[start..start + t_col.len()].copy_from_slice(t_col);
+@@ -347,21 +520,22 @@ pub fn rs_code_matrix<F: TwoAdicField + Ord>(
      let rs_height = height
          .checked_shl(log_blowup as u32)
          .ok_or(StackedPcsError::RsCodeShiftOverflow { height, log_blowup })?;
@@ -1162,7 +1546,7 @@ index 97271aa..2a6b88f 100644
  
      Ok(ColMajorMatrix::new(codewords, eval_matrix.width()))
  }
-@@ -403,6 +404,44 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+@@ -403,6 +577,44 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
          }
          Ok(proof)
      }
@@ -1207,7 +1591,7 @@ index 97271aa..2a6b88f 100644
  }
  
  impl<EF: Field, Digest> MerkleTree<EF, Digest>
-@@ -432,34 +471,23 @@ where
+@@ -432,34 +644,23 @@ where
                  num_leaves,
              });
          }
@@ -1255,7 +1639,7 @@ index 97271aa..2a6b88f 100644
          while digest_layers
              .last()
 diff --git a/crates/stark-backend/src/prover/stacked_reduction.rs b/crates/stark-backend/src/prover/stacked_reduction.rs
-index 504c7b3..92b88b7 100644
+index 504c7b3..53a292b 100644
 --- a/crates/stark-backend/src/prover/stacked_reduction.rs
 +++ b/crates/stark-backend/src/prover/stacked_reduction.rs
 @@ -37,7 +37,7 @@ pub trait StackedReductionProver<'a, PB: ProverBackend, PD> {
@@ -1276,7 +1660,19 @@ index 504c7b3..92b88b7 100644
      r: &[PB::Challenge],
  ) -> (StackingProof<SC>, Vec<PB::Challenge>)
  where
-@@ -169,7 +169,7 @@ where
+@@ -138,6 +138,11 @@ pub struct StackedReductionCpu<'a, SC: StarkProtocolConfig> {
+     ht_diff_idxs: Vec<usize>,
+ 
+     eq_r_per_lht: HashMap<usize, ColMajorMatrix<SC::EF>>,
++    /// Tight-heights lever, per trace view: chunk coefficient `c` (scales both kernels) and the
++    /// rotation correction scalar (`eq_D(omega r_0, 1) * delta`, times the folded `eq_D(., 1)` and
++    /// `(1 - u)` factors as rounds proceed). `(1, 0)` for whole columns.
++    view_coeff: Vec<SC::EF>,
++    view_corr: Vec<SC::EF>,
+ 
+     // After round 0:
+     k_rot_r_per_lht: HashMap<usize, ColMajorMatrix<SC::EF>>,
+@@ -169,7 +174,7 @@ where
      fn new(
          device: &ReferenceDevice<SC>,
          stacked_per_commit: Vec<&'a StackedPcsData<SC::F, SC::Digest>>,
@@ -1285,21 +1681,128 @@ index 504c7b3..92b88b7 100644
          r: &[SC::EF],
          lambda: SC::EF,
      ) -> Self {
-@@ -181,10 +181,12 @@ where
+@@ -178,18 +183,33 @@ where
+ 
+         let mut trace_views = Vec::new();
+         let mut lambda_idx = 0usize;
++        let mut view_coeff = Vec::new();
++        let mut view_corr = Vec::new();
++        let eq_const = eval_eq_uni_at_one(l_skip, r[0] * omega_skip);
          for (com_idx, d) in stacked_per_commit.iter().enumerate() {
              let need_rot_for_commit = &need_rot_per_commit[com_idx];
              debug_assert_eq!(need_rot_for_commit.len(), d.layout.mat_starts.len());
 -            for &(mat_idx, _col_idx, slice) in &d.layout.sorted_cols {
-+            for &(mat_idx, col_idx, slice) in &d.layout.sorted_cols {
-                 let lambda_eq_idx = lambda_idx;
-                 lambda_idx += 1;
+-                let lambda_eq_idx = lambda_idx;
+-                lambda_idx += 1;
 -                let lambda_rot_idx = if need_rot_for_commit[mat_idx] {
+-                    Some(lambda_idx)
++            // Claim index of (mat, col) = position in (matrix, column) order; with tight heights
++            // a column has several slices (chunks) sharing its claim.
++            let mut col_base = Vec::with_capacity(need_rot_for_commit.len());
++            let mut acc = 0;
++            for m in need_rot_for_commit {
++                col_base.push(acc);
++                acc += m.len();
++            }
++            for &(mat_idx, col_idx, slice) in &d.layout.sorted_cols {
++                let claim = lambda_idx + 2 * (col_base[mat_idx] + col_idx);
++                let lambda_eq_idx = claim;
 +                // Per column (next_mask lever); without the lever every column of a matrix
 +                // shares the AIR's need_rot.
 +                let lambda_rot_idx = if need_rot_for_commit[mat_idx][col_idx] {
-                     Some(lambda_idx)
++                    Some(claim + 1)
                  } else {
                      None
+                 };
+-                lambda_idx += 1;
++                let (c, delta) = slice.chunk_factors(l_skip, r);
++                view_coeff.push(c);
++                view_corr.push(eq_const * delta);
+                 trace_views.push(TraceViewMeta {
+                     com_idx,
+                     slice,
+@@ -197,6 +217,7 @@ where
+                     lambda_rot_idx,
+                 });
+             }
++            lambda_idx += 2 * acc;
+         }
+         let lambda_pows = lambda.powers().take(lambda_idx).collect_vec();
+ 
+@@ -228,6 +249,8 @@ where
+             trace_views,
+             ht_diff_idxs,
+             eq_r_per_lht,
++            view_coeff,
++            view_corr,
+             q_evals: vec![],
+             k_rot_r_per_lht: HashMap::new(),
+             eq_ub_per_trace,
+@@ -306,11 +329,15 @@ where
+                     let eq = eq_uni_r0 * eq_cube;
+                     let k_rot =
+                         eq_uni_r0_rot * eq_cube + self.eq_const * eq_uni_1 * (k_rot_cube - eq_cube);
+-                    zip(t_window, evals).fold([SC::EF::ZERO; 2], |mut acc, (tv, eval)| {
++                    zip(window[0]..window[1], evals).fold([SC::EF::ZERO; 2], |mut acc, (v, eval)| {
++                        let tv = &self.trace_views[v];
++                        let (c, corr) = (self.view_coeff[v], self.view_corr[v]);
+                         let q = eval[0];
+-                        acc[0] += self.lambda_pows[tv.lambda_eq_idx] * eq * q * ind;
++                        acc[0] += self.lambda_pows[tv.lambda_eq_idx] * c * eq * q * ind;
+                         if let Some(rot_idx) = tv.lambda_rot_idx {
+-                            acc[1] += self.lambda_pows[rot_idx] * k_rot * q * ind;
++                            // chunk: c * kappa_rot + eq_D(omega r0, 1) eq_D(Z, 1) eq(x, 0) delta
++                            let k = c * k_rot + if x == 0 { corr * eq_uni_1 } else { SC::EF::ZERO };
++                            acc[1] += self.lambda_pows[rot_idx] * k * q * ind;
+                         }
+                         acc
+                     })
+@@ -341,6 +368,9 @@ where
+         let eq_uni_u0r0 = eval_eq_uni(l_skip, u_0, r_0);
+         let eq_uni_u0r0_rot = eval_eq_uni(l_skip, u_0, r_0 * omega_skip);
+         let eq_uni_u01 = eval_eq_uni_at_one(l_skip, u_0);
++        for corr in &mut self.view_corr {
++            *corr *= eq_uni_u01;
++        }
+         // \kappa_\rot(x, r) = eq(rot^{-1}(x), r)
+         self.k_rot_r_per_lht = self
+             .eq_r_per_lht
+@@ -449,9 +479,18 @@ where
+                                     + k_rot_rs[(y << 1) + 1] * x;
+                                 (eq_r * eq_ub, k_rot_r * eq_ub)
+                             };
+-                            acc[0] += self.lambda_pows[tv.lambda_eq_idx] * q * eq;
++                            let (c, corr) = (self.view_coeff[t_idx], self.view_corr[t_idx]);
++                            acc[0] += self.lambda_pows[tv.lambda_eq_idx] * q * c * eq;
+                             if let Some(rot_idx) = tv.lambda_rot_idx {
+-                                acc[1] += self.lambda_pows[rot_idx] * q * k_rot;
++                                // Correction table is corr * [remaining x == 0].
++                                let corr_term = if round > n_lift {
++                                    corr * eq_ub
++                                } else if y == 0 {
++                                    corr * (SC::EF::ONE - x) * eq_ub
++                                } else {
++                                    SC::EF::ZERO
++                                };
++                                acc[1] += self.lambda_pows[rot_idx] * q * (c * k_rot + corr_term);
+                             }
+                             acc
+                         })
+@@ -472,9 +511,13 @@ where
+             .into_par_iter()
+             .map(|(lht, mat)| (lht, fold_mle_evals(mat, u_round)))
+             .collect();
+-        for (tv, eq_ub) in zip(&self.trace_views, &mut self.eq_ub_per_trace) {
++        for ((tv, eq_ub), corr) in zip(zip(&self.trace_views, &mut self.eq_ub_per_trace), &mut self.view_corr) {
+             let s = tv.slice;
+             let n_lift = s.log_height().saturating_sub(l_skip);
++            if round <= n_lift {
++                // the [x == 0] correction folds like eq(x, 0)
++                *corr *= SC::EF::ONE - u_round;
++            }
+             if round > n_lift {
+                 // Folding above did nothing, and we update the eq(u[1+n_T..=round],
+                 // b_{T,j}[..=round-n_T-1]) value
 diff --git a/crates/stark-backend/src/prover/whir.rs b/crates/stark-backend/src/prover/whir.rs
 index 6bdbaa8..57e0537 100644
 --- a/crates/stark-backend/src/prover/whir.rs
@@ -1952,10 +2455,21 @@ index be62b0f..d85a15e 100644
      transcript: &mut TS,
      claims: &GkrLayerClaims<SC>,
 diff --git a/crates/stark-backend/src/verifier/mod.rs b/crates/stark-backend/src/verifier/mod.rs
-index 4ee438b..20998cf 100644
+index 4ee438b..2bc2f49 100644
 --- a/crates/stark-backend/src/verifier/mod.rs
 +++ b/crates/stark-backend/src/verifier/mod.rs
-@@ -176,15 +176,17 @@ where
+@@ -146,6 +146,10 @@ where
+             } else {
+                 transcript.observe(SC::F::from_usize(trace_vdata.log_height));
+             }
++            // Tight-heights lever: the committed height fixes the stacking layout.
++            if let Some(h) = trace_vdata.tight_height {
++                transcript.observe(SC::F::from_usize(h));
++            }
+             debug_assert_eq!(
+                 avk.params.width.cached_mains.len(),
+                 trace_vdata.cached_commitments.len()
+@@ -176,15 +180,17 @@ where
          &omega_skip_pows,
      )?;
  
@@ -1979,7 +2493,7 @@ index 4ee438b..20998cf 100644
          }
          let cached_len = trace_vdata[air_id]
              .as_ref()
-@@ -192,7 +194,8 @@ where
+@@ -192,7 +198,8 @@ where
              .cached_commitments
              .len();
          for _ in 0..cached_len {
@@ -1990,10 +2504,19 @@ index 4ee438b..20998cf 100644
      }
  
 diff --git a/crates/stark-backend/src/verifier/proof_shape.rs b/crates/stark-backend/src/verifier/proof_shape.rs
-index a3216a9..2e680a4 100644
+index a3216a9..fcf6be2 100644
 --- a/crates/stark-backend/src/verifier/proof_shape.rs
 +++ b/crates/stark-backend/src/verifier/proof_shape.rs
-@@ -188,6 +188,8 @@ pub enum StackingProofShapeError {
+@@ -52,6 +52,8 @@ pub enum ProofShapeVDataError {
+     InvalidPublicValuesLength { len: usize, num_airs: usize },
+     #[error("AIR {air_idx} is required, but trace_vdata[{air_idx}] is None")]
+     RequiredAirNoVData { air_idx: usize },
++    #[error("AIR {air_idx}: tight height missing, unexpected or out of range (tight-heights lever)")]
++    InvalidTightHeight { air_idx: usize },
+     #[error("AIR {air_idx} has no TraceVData, but a non-zero amount of public values")]
+     PublicValuesNoVData { air_idx: usize },
+     #[error(
+@@ -188,6 +190,8 @@ pub enum StackingProofShapeError {
  
  #[derive(Debug, Error, PartialEq, Eq)]
  pub enum WhirProofShapeError {
@@ -2002,7 +2525,7 @@ index a3216a9..2e680a4 100644
      #[error(
          "whir_sumcheck_polys should have num_whir_sumcheck_rounds = {expected} polynomials, but it has {actual}"
      )]
-@@ -466,8 +468,23 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -466,8 +470,23 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
      }
  
      for (part_openings, &(air_idx, vk, _)) in batch_proof.column_openings.iter().zip(&per_trace) {
@@ -2028,7 +2551,7 @@ index a3216a9..2e680a4 100644
          if part_openings.len() != vk.num_parts() {
              return ProofShapeError::invalid_batch_constraint(
                  BatchProofShapeError::InvalidColumnOpeningsPerAir {
-@@ -476,7 +493,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -476,7 +495,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: part_openings.len(),
                  },
              );
@@ -2037,7 +2560,7 @@ index a3216a9..2e680a4 100644
              return ProofShapeError::invalid_batch_constraint(
                  BatchProofShapeError::InvalidColumnOpeningsPerAirMain {
                      air_idx,
-@@ -485,7 +502,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -485,7 +504,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                  },
              );
          } else if let Some(preprocessed_width) = &vk.params.width.preprocessed {
@@ -2046,7 +2569,7 @@ index a3216a9..2e680a4 100644
                  return ProofShapeError::invalid_batch_constraint(
                      BatchProofShapeError::InvalidColumnOpeningsPerAirPreprocessed {
                          air_idx,
-@@ -496,13 +513,14 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -496,13 +515,14 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              }
          }
  
@@ -2063,7 +2586,41 @@ index a3216a9..2e680a4 100644
                  return ProofShapeError::invalid_batch_constraint(
                      BatchProofShapeError::InvalidColumnOpeningsPerAirCached {
                          air_idx,
-@@ -610,9 +628,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -535,12 +555,31 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+         );
+     }
+ 
+-    let common_main_layout = StackedLayout::new(
++    // Tight-heights lever: every trace of height >= 2^l_skip declares its committed height.
++    let tight = mvk.params.whir.levers.tight_heights;
++    for (air_idx, vk, vdata) in &per_trace {
++        let ok = match vdata.tight_height {
++            None => !tight || vdata.log_height < l_skip || vk.params.width.common_main == 0,
++            Some(h) => {
++                tight
++                    && vdata.log_height >= l_skip
++                    && h > 0
++                    && h <= 1 << vdata.log_height
++                    && h % (1 << l_skip) == 0
++            }
++        };
++        if !ok {
++            return Err(ProofShapeError::InvalidVData(ProofShapeVDataError::InvalidTightHeight {
++                air_idx: *air_idx,
++            }));
++        }
++    }
++    let common_main_layout = StackedLayout::new_tight(
+         l_skip,
+         mvk.params.n_stack + l_skip,
+         per_trace
+             .iter()
+-            .map(|(_, vk, vdata)| (vk.params.width.common_main, vdata.log_height))
++            .map(|(_, vk, vdata)| (vk.params.width.common_main, vdata.log_height, vdata.tight_height))
+             .collect_vec(),
+     )
+     .unwrap();
+@@ -610,9 +649,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
      let log_stacked_height = mvk.params.log_stacked_height();
      let num_whir_rounds = mvk.params.num_whir_rounds();
      let num_whir_sumcheck_rounds = mvk.params.num_whir_sumcheck_rounds();
@@ -2081,7 +2638,7 @@ index a3216a9..2e680a4 100644
      if whir_proof.whir_sumcheck_polys.len() != num_whir_sumcheck_rounds {
          return ProofShapeError::invalid_whir(WhirProofShapeError::InvalidSumcheckPolys {
              expected: num_whir_sumcheck_rounds,
-@@ -633,9 +658,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -633,9 +679,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              expected: num_whir_sumcheck_rounds,
              actual: whir_proof.folding_pow_witnesses.len(),
          });
@@ -2095,7 +2652,7 @@ index a3216a9..2e680a4 100644
              actual: whir_proof.query_phase_pow_witnesses.len(),
          });
      } else if whir_proof.initial_round_opened_rows.len() != layouts.len() {
-@@ -682,11 +709,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -682,11 +730,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_rows.len(),
                  },
              );
@@ -2109,7 +2666,7 @@ index a3216a9..2e680a4 100644
                      actual: merkle_proofs.len(),
                  },
              );
-@@ -718,7 +745,8 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -718,7 +766,8 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
          }
  
          let merkle_depth = (log_stacked_height + mvk.params.log_blowup).saturating_sub(k_whir);
@@ -2119,7 +2676,7 @@ index a3216a9..2e680a4 100644
              if proof.len() != merkle_depth {
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidInitialRoundMerkleProofDepth {
-@@ -749,31 +777,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -749,31 +798,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_values_per_query.len(),
                  },
              );
@@ -2160,10 +2717,14 @@ index a3216a9..2e680a4 100644
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidCodewordMerkleProofDepth {
 diff --git a/crates/stark-backend/src/verifier/stacked_reduction.rs b/crates/stark-backend/src/verifier/stacked_reduction.rs
-index f4085b1..8a133a9 100644
+index f4085b1..1555fac 100644
 --- a/crates/stark-backend/src/verifier/stacked_reduction.rs
 +++ b/crates/stark-backend/src/verifier/stacked_reduction.rs
-@@ -10,7 +10,7 @@ use crate::{
+@@ -7,10 +7,11 @@ use tracing::{debug, instrument};
+ 
+ use crate::{
+     poly_common::{
++        eval_eq_uni_at_one,
          eval_eq_mle, eval_eq_prism, eval_in_uni, eval_rot_kernel_prism, horner_eval,
          interpolate_quadratic_at_012,
      },
@@ -2172,7 +2733,7 @@ index f4085b1..8a133a9 100644
      prover::stacked_pcs::StackedLayout,
      FiatShamirTranscript, StarkProtocolConfig,
  };
-@@ -31,7 +31,7 @@ pub fn verify_stacked_reduction<SC: StarkProtocolConfig, TS: FiatShamirTranscrip
+@@ -31,7 +32,7 @@ pub fn verify_stacked_reduction<SC: StarkProtocolConfig, TS: FiatShamirTranscrip
      transcript: &mut TS,
      proof: &StackingProof<SC>,
      layouts: &[StackedLayout],
@@ -2181,19 +2742,32 @@ index f4085b1..8a133a9 100644
      l_skip: usize,
      n_stack: usize,
      column_openings: &Vec<Vec<Vec<SC::EF>>>,
-@@ -69,9 +69,9 @@ where
+@@ -66,12 +67,21 @@ where
+             let need_rot_for_commit = &need_rot_per_commit[commit_idx];
+             // This is true by construction of need_rot_for_commit:
+             debug_assert_eq!(need_rot_for_commit.len(), layout.mat_starts.len());
++            // Claim index of (mat, col) = position in (matrix, column) order (tight heights:
++            // several slices of one column share it).
++            let mut col_base = Vec::with_capacity(need_rot_for_commit.len());
++            let mut acc = 0;
++            for m in need_rot_for_commit {
++                col_base.push(acc);
++                acc += m.len();
++            }
++            let base = lambda_idx;
++            lambda_idx += acc;
              layout
                  .sorted_cols
                  .iter()
 -                .map(|&(mat_idx, _col_idx, _slice)| {
-+                .map(|&(mat_idx, col_idx, _slice)| {
-                     lambda_idx += 1;
+-                    lambda_idx += 1;
 -                    (lambda_idx - 1, need_rot_for_commit[mat_idx])
-+                    (lambda_idx - 1, need_rot_for_commit[mat_idx][col_idx])
++                .map(|&(mat_idx, col_idx, _slice)| {
++                    (base + col_base[mat_idx] + col_idx, need_rot_for_commit[mat_idx][col_idx])
                  })
                  .collect_vec()
          })
-@@ -83,16 +83,14 @@ where
+@@ -83,16 +93,14 @@ where
      // Proof shape asserts that column_openings.len() == num_traces and each parts.len() ==
      // vk.num_parts() common main columns (commit 0)
      for (trace_idx, parts) in column_openings.iter().enumerate() {
@@ -2212,11 +2786,45 @@ index f4085b1..8a133a9 100644
              commit_idx += 1;
          }
      }
+@@ -209,10 +217,23 @@ where
+                         (l_skip, &r[..=n_lift])
+                     };
+                     let eq_prism = eval_eq_prism(l, &u[..=n_lift], rs_n);
+-                    let mut batched = lambda_sqr_powers[lambda_idx] * eq_prism;
++                    // Tight heights: chunk coefficient c and first-row rotation correction delta
++                    // ((1, 0) for whole columns).
++                    let (c, delta) = s.chunk_factors(l_skip, r);
++                    let mut batched = lambda_sqr_powers[lambda_idx] * c * eq_prism;
+                     if need_rot {
+                         let rot_kernel_prism = eval_rot_kernel_prism(l, &u[..=n_lift], rs_n);
+-                        batched += lambda_sqr_powers[lambda_idx] * lambda * rot_kernel_prism;
++                        let corr = if delta == SC::EF::ZERO {
++                            SC::EF::ZERO
++                        } else {
++                            // eq_D(omega r0, 1) * eq_D(u0, 1) * eq(u[1..=m], 0) * delta
++                            eval_eq_uni_at_one(l_skip, r[0] * omega_shift_pows[1])
++                                * eval_eq_uni_at_one(l_skip, u[0])
++                                * u[1..=n_lift].iter().fold(SC::EF::ONE, |a, &ut| a * (SC::EF::ONE - ut))
++                                * delta
++                        };
++                        batched +=
++                            lambda_sqr_powers[lambda_idx] * lambda * (c * rot_kernel_prism + corr);
+                     }
+                     coeffs[s.col_idx] += eq_mle * batched * ind;
+                 });
 diff --git a/crates/stark-backend/src/verifier/transcript_extractor.rs b/crates/stark-backend/src/verifier/transcript_extractor.rs
-index 846ff0a..753b7ed 100644
+index 846ff0a..8862fb4 100644
 --- a/crates/stark-backend/src/verifier/transcript_extractor.rs
 +++ b/crates/stark-backend/src/verifier/transcript_extractor.rs
-@@ -754,6 +754,8 @@ where
+@@ -450,6 +450,7 @@ where
+                 cached_commitments.push(cursor.observe_digest::<RATE>()?);
+             }
+             trace_vdata[air_id] = Some(TraceVData {
++                tight_height: None,
+                 log_height,
+                 cached_commitments,
+             });
+@@ -754,6 +755,8 @@ where
          codeword_opened_values,
          codeword_merkle_proofs,
          final_poly,
