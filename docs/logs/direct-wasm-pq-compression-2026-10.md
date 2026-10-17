@@ -12638,3 +12638,46 @@ freshverify/negatives). Binius uses previous hashgraph/wide-address/census/query
 screen patches and lockfile; no further upstream source change. Logs, proofs,
 graphs and30row report under fused-gkr-candidate/ and fused-binius-graph/.
 make pin-check passes. Full goal remains active and unachieved.
+
+## 2026-10-17 — Formal fused-transcript operational and framing interface
+
+Previous goal turn progressed at27b4b4e0b with a fresh separately versioned GKR
+and smaller actual hash circuit. Revalidated clean research worktree. Added
+NearCompression/FusedGKRTranscript.lean, importing existing SHA384 sampler and
+framing decoder results rather than duplicating those foundations.
+
+Generic kernel-checked results:
+- Framing injectivity: equal canonical preimages imply equal seed, payload,
+  round and retry counter. Explicit frame-fit and u64 counter bounds required;
+  this is byte-encoding injectivity, NOT hash collision resistance.
+- Bounded retry-loop specification: accepted result has exactly needed canonical
+  field values, counter<blocks<=counter+fuel, a48-byte nextseed equal to the
+  actual last consumed block. Retries use the SAME oldseed/payload; onlycounter
+  changes, matching the new Python candidate rather than old ratchet semantics.
+- Public draw specification specializes to4coefficients and a positive bounded
+  blockcount, with the pendingpayload tied to the final hash preimage.
+- Failure preserves entire modeled state (seed,round,pending), success advances
+  round once and clears pending, doublecommit rejects, absentcommit cannotdraw.
+
+Hash remains an arbitrary function parameter. No hash uniformity, collision
+resistance, Fiat-Shamir/QROM, recursive soundness or SHA implementation theorem
+is asserted. Model covers operational state, not Python's diagnostic graph
+recording. Frame-fit bounds remain explicit premises. Initialization's layout/
+statement binding and compiler implementation refinement remain separate work.
+
+Generated concrete first/second/last frames from the actual candidate artifact
+(indices0,1,436). Kernel checks exact byte framing, little-endian digest decoding
+and full one-block scan result against Python. These are three concrete boundary
+checks, not a universal Python/Rust equivalence proof. Literal byte constants
+replace opaque UTF8 conversion in the Lean model to permit kernel reduction.
+Scanner proofs use existing recursion equations, not native_decide.
+
+Targeted lake build NearCompression.FusedGKRTranscript succeeds. Axiom output
+for generic results and concrete frame/scan results contains only standard
+propext/Classical.choice/Quot.sound as applicable; no sorryAx or native-decision
+axiom. check_fused_lean_parity.py regenerates fixtures, compiles and checks output.
+Evidence under results/swirl-security-review/fused-transcript-lean; make pin-check
+passes. Next connect constrained hash output/scan relations to arithmetic
+challenge inputs and budget their combined circuit, without treating these
+operational lemmas as cryptographic security. No full NEAR1Pgas/PQ128/end-to-end
+Lean correctness completion; goal remains active.
