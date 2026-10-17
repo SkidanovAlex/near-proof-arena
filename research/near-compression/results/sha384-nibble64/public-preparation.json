@@ -1,0 +1,52 @@
+{
+  "status": "PREPARED_FULL_WITNESS_CHECKED",
+  "blocks": 64,
+  "full_witness_verified": true,
+  "source_constraints_evaluated": 8769184,
+  "source_rows": [
+    4096,
+    8192,
+    64,
+    4096,
+    4096,
+    4096,
+    256,
+    256,
+    256,
+    16
+  ],
+  "table_names": [
+    "schedule",
+    "round",
+    "endpoint",
+    "xor3/fixed",
+    "choose/fixed",
+    "majority/fixed",
+    "splice1/fixed",
+    "splice2/fixed",
+    "splice3/fixed",
+    "range/fixed"
+  ],
+  "public_field_elements": 105992,
+  "public_json_bytes": 256707,
+  "minimum_public_u32_bytes": 423968,
+  "source_aux_cells": 27854288,
+  "generation_seconds": 7.799534075893462,
+  "canonical_check_seconds": 22.804553909227252,
+  "source_commit_seconds": 17.477754969149828,
+  "generator_sha256": "17aa5ccc103f94c33fb0c88cfe798a7b101524082e183b132f48f2fc507ff949",
+  "files": {
+    "source/source-00-rows.json": "55dea8af44240cdb835898d5c1e2154207de1a8b8756ea7deeb784e0958f2683",
+    "source/source-01-rows.json": "ea96a9d84af7d1eac83e94652424764751491da1830b1fe5688d092c85373eae",
+    "source/source-02-rows.json": "29342f338cafe266c98697681951958b10f8887429e618d591215922bc3c531a",
+    "source/source-03-rows.json": "dae04856356d8f72a8751de8a459933152907cb8e9b165005b3fecc9ed19b819",
+    "source/source-04-rows.json": "38f7b66b2097cc5adc2d84c6511e99619804611beece0cfc656c43969843dff4",
+    "source/source-05-rows.json": "161ac356835947434c47e8da6175585c911547f30de262ae8e34cf26081bb670",
+    "source/source-06-rows.json": "3e8006eb2961b2ab213990f2477f51688c7bc246ef3268b318a47c0c1eb696af",
+    "source/source-07-rows.json": "2c8b085073c7e3c5faab16ef43bae5d079dec6df4d7515b8f1ab050d38b5b5b7",
+    "source/source-08-rows.json": "b73809d79a7e493444b398cd4c79adb9e90abd87278153592e09b8987ae6b17e",
+    "source/source-09-rows.json": "cbeba751a6820cc5dfa21b290a5ea0a9cecd28c87c1e568fe9d2c40604a4da66",
+    "statement.json": "87f3329609f38f221c616e13f1657ca12d02e36e77adafe3668d095c749dce52"
+  },
+  "scope": "Actual full witness, canonical AIR interpreter and source commitments. Public state/block/result boundaries included in statement; not a compact private recursive interface. No proof yet, Lean theorem or PQ128 certification."
+}

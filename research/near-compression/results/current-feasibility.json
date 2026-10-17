@@ -520,6 +520,16 @@
     "scope": "Canonical AIR jointly enforces phase programs, bounded additions, lookup relations, routing and public full512-bit state/block/result boundaries. Full-witness interpreter only; no generated succinct proof, universal compiler/Lean theorem or PQ128 security. Public boundary transport is diagnostic, not private recursive call binding.",
     "next_gate": "Check a full 64-block witness and generate a proof with complete byte accounting. Replace verbose diagnostic public boundaries with same-root private call binding before evaluating recursive compression."
   },
+  "nibble_64_block_preparation": {
+    "evidence": "results/sha384-nibble64/manifest.json",
+    "status": "FULL_64_BLOCK_WITNESS_CHECKED_PROOF_NOT_YET_CAPTURED",
+    "full_witness_verified": true,
+    "source_constraints_evaluated": 8802336,
+    "source_aux_cells": 27939408,
+    "boundary_root": "fc52a781c41cefe14fbd90a313758e8837710fb120e53944da16911a8b491a1268684695a51ab577548a88f6c655c25a",
+    "scope": "Full compression AIR with proof-committed private state/message/result table. Empty public vector does not bind any application hash claim: boundary root still needs same-root recursive call routing. No zero-knowledge, succinct proof, formal compiler, or PQ128 claim.",
+    "proof_captured": false
+  },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
     "legacy_cap": 3450888781824,
@@ -552,7 +562,10 @@
     "results/sha384-nibble-row-plan.json": "8b222813cc6e734b8ce0c28c10548d5be207d2c0fc8ac72c8298b33751cd9fd2",
     "results/sha384-nibble-lookup-air.json": "1676aeafcef624cbcfe809523d340bbb769e5fe1ae1fabd8063101643374091b",
     "results/sha384-nibble-phase-air.json": "62d61257105112555bdf01800f1ea2a56135dde09b67e6d08a84694279e4e95e",
-    "airbender/direct-wasm/report_current_feasibility.py": "8cc9f68cbd50798c021549e268fe47b6b94ec0aebfa8b0294cfade8dce97072f",
+    "results/sha384-nibble64/manifest.json": "7b8ed8f364c33c194c8966720f0c8ac7a26bb2de2bed1f7a8d6591f306d661e2",
+    "results/sha384-nibble64/private-preparation.json": "33aca9f2cceaa595f5257d3de4257a1bff2a00c1cbfd29c6410d58c5bc186b73",
+    "results/sha384-nibble-boundary-air.json": "6316eac59f800d62980e6591194fda4bedf25e25b9f2cd894ff505ee8d4bc737",
+    "airbender/direct-wasm/report_current_feasibility.py": "07a25ddd6b1c667ef22144050156cfba5e27fe1cb89d697ffc5b118dd2c7418b",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

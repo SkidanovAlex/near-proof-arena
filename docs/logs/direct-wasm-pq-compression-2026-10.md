@@ -9906,3 +9906,45 @@ checker do not provide a universal Lean theorem, a cryptographic bus/PCS/QROM
 certificate or a recursive verifier. Next check64-block execution and actual
 proof transport, then replace verbose public boundaries with private same-root
 call binding. Full NEAR1Pgas/PQ128/sub300000B remains NOT_PASSED.
+
+## 2026-10-17 — Full64-block witness and committed private boundary
+
+Generated64actual SHA384compression blocks (8175-byte deterministic message),
+checked full512-bit states with the independent probe, and passed8769184
+canonical AIR source constraints plus natural bus balance. Generation7.80s,
+full canonical check22.80s, source commitments17.48s on reserved benchmark CPUs.
+Retained complete compressed source witnesses and statement with raw-file hashes
+under results/sha384-nibble64, approximately1.66MB including preparation evidence.
+
+Diagnostic public boundary105992field elements is423968bytes under fixed-u32
+encoding, but256707JSON bytes. The former is NOT an encoding-independent lower
+bound; an earlier commentary saying public data alone exceeds300KB was corrected.
+Neither representation is a claim about an optimized public encoding.
+
+Added sha384_nibble_boundary_air.py, replacing the public word sends/receives
+with an additional514-column committed source table. It contains block index,
+active flag, full input state/message/output words; prefix/index/stop constraints
+enforce the exact block sequence.24input-word sends use compiler-fixed fanouts,
+and8output-word receives link the table to the existing phase AIR. All boundary
+nibbles are linked to constrained computation words. No application root or
+recursive call list is bound yet: the new boundary root must be consumed by
+same-root call routing, not treated as a proof of a named hash by itself.
+
+Private64-block version passes8802336canonical constraints and natural balance
+in22.53s, with zero public field elements. Total source+aux cells27939408;
+boundary table root fc52a781c41cefe14fbd90a313758e8837710fb120e53944da16911a8b491a1268684695a51ab577548a88f6c655c25a.
+Two-block boundary regression rejects inactive row, wrong ID, initial-state,
+message and result changes. No zero-knowledge claim: source PCS can leak values.
+
+Started existing Ext8 prover at diagnosticq8, affine-v1, separate commitments,
+using /tmp/sha384-nibble64-private. Source roots checked; auxiliary generation
+was live at this checkpoint. No completed proof or proof-size result is claimed.
+Tool session93870 / Python PID2943677 identifies this specific live run; inspect
+that process and its prover.log before restarting. Command is retained in
+results/sha384-nibble64/manifest.json. Static evidence status explicitly says
+FULL_64_BLOCK_WITNESS_CHECKED_PROOF_NOT_YET_CAPTURED.
+
+Current evidence reconciliation rejects13inconsistent cases;37manifest pins
+and oracle pins pass. No Lean changes (last audit4658). Full1Pgas/PQ128/sub300000B
+remains NOT_PASSED. Next finish the current prover run, encode/freshly verify its
+complete result, and measure bytes before adding private recursive-call linkage.

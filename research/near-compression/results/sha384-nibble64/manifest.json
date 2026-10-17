@@ -1,0 +1,31 @@
+{
+  "status": "FULL_64_BLOCK_WITNESS_CHECKED_PROOF_NOT_YET_CAPTURED",
+  "scope": "Full compression AIR with proof-committed private state/message/result table. Empty public vector does not bind any application hash claim: boundary root still needs same-root recursive call routing. No zero-knowledge, succinct proof, formal compiler, or PQ128 claim.",
+  "cwd": "research/near-compression",
+  "replay": [
+    "Decompress statement.json.gz and source-XX-rows.json.gz into a temporary statement.json and source directory; verify raw hashes against private-preparation.json.",
+    "python3 airbender/direct-wasm/test_ext8_execution_reduction.py --statement TEMP/statement.json --source-directory TEMP/source --pcs-queries 8 --terminal-profile affine-v1 --capture-dir TEMP/proof --output TEMP/prover-report.json"
+  ],
+  "sha256": {
+    "results/sha384-nibble64/source-09-rows.json.gz": "887a570f3d6bbe22bf22638b2007c29e34c96b6eb91b1d5791af3a9eb806f943",
+    "results/sha384-nibble64/source-02-rows.json.gz": "e677e147b493f175e0e5d8e2fa3bc581c9298c0ccdd344cb0793c2e948c5c603",
+    "results/sha384-nibble64/source-07-rows.json.gz": "b6cbbbc91179665adbd74952e0a50a222e21aa6800f473a256dc1cf166f1c647",
+    "results/sha384-nibble64/source-04-rows.json.gz": "fe8e7f17ff9af45b34a36865d4accd226cd89034b49c84fbb697ecf49530dd23",
+    "results/sha384-nibble64/source-06-rows.json.gz": "38eac2de358949f341ec582ea7fd0f0abae76b014747a22ccbf04e198f9f758f",
+    "results/sha384-nibble64/public-preparation.json": "b724fe09a970ca948ec4d829df21f80a366cd355c2fdb2f081fdf7ca2ddc8510",
+    "results/sha384-nibble64/source-08-rows.json.gz": "7cd857b27d200d4365f4f347a3d84b7e894357dfc76a5bce80cbb3ea6fa8a231",
+    "results/sha384-nibble64/source-10-rows.json.gz": "c0fc3acd761d6378d486d9868871b1f8acecf052707811f844dd38832109f23d",
+    "results/sha384-nibble64/source-00-rows.json.gz": "27677668a04785abb5aca09bfae3b9873099c06554792201dd97a2866e8cef24",
+    "results/sha384-nibble64/source-05-rows.json.gz": "cf5cbda1fbfb436bdeec8bc30fdeff9fadaf0c0c16e959d967ef10fad1840b1a",
+    "results/sha384-nibble64/source-03-rows.json.gz": "e9b4fedef66077ae4212f9592e1ef27340cce1ae01fa95eaaf57455aa7dd1b4c",
+    "results/sha384-nibble64/private-preparation.json": "33aca9f2cceaa595f5257d3de4257a1bff2a00c1cbfd29c6410d58c5bc186b73",
+    "results/sha384-nibble64/source-01-rows.json.gz": "3bb19014bf6011c143ad75e2ae81b7aef487dea85593f786c8ba728470a0077b",
+    "results/sha384-nibble64/statement.json.gz": "32c18d1dd33c9bd6949de80861acf5f4c5df94b4843af0b6039f76662cb09fbc",
+    "airbender/direct-wasm/run_sha384_nibble_proof.py": "17aa5ccc103f94c33fb0c88cfe798a7b101524082e183b132f48f2fc507ff949",
+    "airbender/direct-wasm/prepare_sha384_nibble_private.py": "8370c946d4c985d55a0657f29511b717ffb6e5cf29b0377a6e8f7019a7a3744e",
+    "airbender/direct-wasm/sha384_nibble_boundary_air.py": "39ba65dd1a5972ba7a1ed6ef70100b5d78b632f6a4f1e669e2174c6347377428",
+    "airbender/direct-wasm/test_sha384_nibble_boundary_air.py": "2ec799ca0e9a659679a3819b8baa7fa0d360bf3aca1f80cfe96a418ec10ae36a",
+    "airbender/direct-wasm/sha384_nibble_phase_air.py": "035f41e5a91df1e6522f5bf655eebdede8a0e3fb9942a760492ea34111951518",
+    "airbender/direct-wasm/test_ext8_execution_reduction.py": "a396fe6b79cd839d05e35036ab2bb25cb720a0c7d8201c63e65db901d78747a3"
+  }
+}
