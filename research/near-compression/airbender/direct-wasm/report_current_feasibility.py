@@ -144,6 +144,11 @@ def build(root=ROOT):
     boundary_test=read('results/sha384-nibble-boundary-air.json')
     for relative, expected in boundary_test['sha256'].items():
         assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
+    aux_parity=read('results/ext8-auxiliary-base-parity.json')
+    assert aux_parity['status'] == 'EXACT_AUXILIARY_GENERATOR_PARITY' and aux_parity['auxiliary_base_cells_compared'] > 0
+    for mapping in ('sha256','input_sha256'):
+        for relative, expected in aux_parity[mapping].items():
+            assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -205,6 +210,10 @@ def build(root=ROOT):
             source_constraints_evaluated=nibble64['source_constraints_evaluated'],
             source_aux_cells=nibble64['source_aux_cells'],boundary_root=nibble64['boundary_root'],
             scope=nibble64['scope'], proof_captured=False),
+        auxiliary_generator_optimization=dict(evidence='results/ext8-auxiliary-base-parity.json',
+            cases=aux_parity['cases'],compared_base_cells=aux_parity['auxiliary_base_cells_compared'],
+            large_case=aux_parity['large_case'],scope=aux_parity['scope'],
+            baseline_prover_changed=False),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
         decision=dict(next_experiment=('Implement and measure the surviving projected candidate with all excluded costs and explicit security obligations.' if feasible else 'Stop larger-path proving in the existing 25-block profile: mandatory 416 bytes exceed its at-most-288-byte deduplicated sibling budget. Screen a scalable complete-verifier replacement against the explicit replacement budgets; include transcript/arithmetic and public binding, not authentication alone. Measure a versioned canonical transcript design only with all original bindings accounted for.'),

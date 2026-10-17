@@ -9948,3 +9948,45 @@ Current evidence reconciliation rejects13inconsistent cases;37manifest pins
 and oracle pins pass. No Lean changes (last audit4658). Full1Pgas/PQ128/sub300000B
 remains NOT_PASSED. Next finish the current prover run, encode/freshly verify its
 complete result, and measure bytes before adding private recursive-call linkage.
+
+## 2026-10-17 — Base-field auxiliary generation parity; baseline prover continues
+
+Revalidated live prover session93870/PID2943677 rather than restarting it.
+Reference auxiliary generation/commitment completed; all11local tables proved.
+No completed GKR/PCS result was present at this checkpoint. Original prover,
+source commitments and verifier code remain unchanged.
+
+Added pq384_ext8_auxiliary_base.py, a separate prover-side generator. It compiles
+source expressions into a shared base-field DAG, caches powers of the Ext8
+fingerprint challenge and scales those powers by base values. Extension-valued
+accumulator and multiplicity-power operations retain the original arithmetic.
+This optimization applies only to generation on canonical base traces, NOT to
+verifier evaluation at arbitrary extension points. Nonboolean multiplicity
+values are not silently coerced; source constraints still enforce Booleanity.
+
+Exact differential comparison passes16cases /814800base coordinates, including
+empty messages/multiplicities, zero factors, next-row/public/selector terms,
+nonboolean multiplicities, two rows from every retained source table, and512
+round rows. Larger case:13.7439s reference versus2.0161s optimized (~6.82x).
+Compilation overhead made the tiny preliminary two-row aggregate slower;
+therefore no claim of universal speedup is made. Evidence pins all source
+inputs. Full64-block vector/commitment parity has not yet been checked and
+this generator is NOT substituted into the running baseline proof.
+
+Existing Lean BusExt8SourceTransport.bus_ext8_coordinate_message and the
+underlying air_aux_coordinate_source_eval establish the semantic base-to-Ext8
+source-expression transport under column bounds. Reuse those facts; they do
+not prove the Python DAG compiler, cached evaluation or complete generator
+refinement. No new Lean modules/audit count are claimed.
+
+Added finish_sha384_nibble_proof.py for the pending encode/fresh-verify step.
+It requires a completed matching prover report, includes source/aux roots in
+the binary envelope, and freshly verifies from proof plus trusted static spec.
+The boundary root is returned for a future recursive-call consumer. Only syntax
+was checked at this checkpoint; positive codec execution awaits the live prover.
+Run after completion: python3 airbender/direct-wasm/finish_sha384_nibble_proof.py
+--capture /tmp/sha384-nibble64-private --queries 8.
+
+Current reconciliation and41manifest pins pass. No Lean changes; last full
+audit4658. Full1Pgas/PQ128/sub300000B NOT_PASSED. Continue polling the existing
+prover and finish its concrete envelope before drawing proof-size conclusions.
