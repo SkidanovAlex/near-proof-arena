@@ -10633,3 +10633,51 @@ algebraic, hash, grinding and recursive-composition terms under one security
 convention. Before proposing implementation, assess larger challenge-field and
 hash costs against the narrow root stacking geometry. Keep the full 1 Petagas
 NEAR goal active; no completion or PQ128 claim.
+
+
+## 2026-10-17 — Executable pinned SWIRL baseline
+
+Previous goal turn was progress (pinned calculator and exact field screen).
+Revalidated clean worktree at c06c06f63. Cloned stark-backend v2.0.0 into
+/tmp/nearproof-swirl-backend, verified revision
+16d60de724c21dcadfde7d8315a1db507e5832d7, read its AGENTS.md, and ran only
+individual-crate commands. Rust toolchain 1.90.0. All six production soundness
+integration tests pass. Re-ran the all-configs test alone to obtain uninterleaved
+output. This is reproduction of upstream RBR accounting, not a PQ128 theorem.
+
+Actual pinned query schedules: app [193,88,81,81], leaf [118,84,81], internal
+[68,30,20], root [61,30,20], hook [193,42,24]. k_whir=4 throughout. Root has
+l_skip=2, n_stack=18, w_stack=18, blowup16, list-decoding m=1 and 15-bit
+fold/mu/query grinding. This differs from the previously reviewed documentation
+configuration; do not transfer size measurements or security claims between them.
+
+Ran the upstream CPU Keccak example with unchanged workload and protocol
+parameters: 1,024 seeded Keccak-f1600 permutations, 2,633 columns, 3,182
+constraints, no interactions, app_params_with_100_bits_security(21), four Rayon
+threads. Instrumentation only encodes the proof, reports bytes, decodes, checks
+round-trip equality and verifies the decoded proof. Actual proof: 859,137 bytes.
+A second run added component accounting and produced the same total:
+
+- GKR: 24 bytes (this workload has no lookup interactions).
+- Batch constraints: 85,992 bytes.
+- Stacking: 1,728 bytes.
+- WHIR: 771,336 bytes (89.78%).
+- Remaining framing/metadata: 57 bytes.
+
+Both processes exited zero. The second timed cargo invocation took 15.48s and
+maximum RSS 2,398,432 KiB; elapsed time includes compilation and must not be
+reported as prover-only latency. Instrumented example passed crate/example
+Clippy with -D warnings and was formatted with rustfmt.
+
+Results, exact generated Cargo.lock, instrumented example source, compressed
+proof and raw-hash-pinned logs are in
+research/near-compression/results/swirl-security-review/baseline/report.json.
+The proof is an application-level Keccak permutation proof, not OpenVM's final
+recursive root, an Ethereum block, or NEAR. Therefore its size does not refute
+OpenVM's published sub-300kB root claim. The reference now has executable
+provenance; reproducing the dedicated recursive verifier/root remains next.
+
+Strategic implication: stacking protocol messages themselves are small, while
+PCS openings dominate this wide application relation. Move to the actual
+recursive-verifier layout before adjusting the hash or quoting a final size.
+Full NEAR1Pgas, end-to-end PQ128, recursive acceptance and <300000B remain open.
