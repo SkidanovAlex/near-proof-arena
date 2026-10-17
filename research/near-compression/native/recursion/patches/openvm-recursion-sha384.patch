@@ -1517,10 +1517,10 @@ index 60ce802..b663060 100644
      fn generate_trace(
 diff --git a/crates/recursion/src/sha384/airs.rs b/crates/recursion/src/sha384/airs.rs
 new file mode 100644
-index 0000000..7bc369f
+index 0000000..d8495ca
 --- /dev/null
 +++ b/crates/recursion/src/sha384/airs.rs
-@@ -0,0 +1,516 @@
+@@ -0,0 +1,526 @@
 +//! Generic in-circuit SHA-384 hashing of framed messages, on top of the narrow SHA-512
 +//! compression AIR (`compress_air.rs`).
 +//!
@@ -1560,6 +1560,8 @@ index 0000000..7bc369f
 +#[derive(Clone, Copy, Debug)]
 +pub struct ShaBusInventory {
 +    pub compress: ShaBuses,
++    /// lookback bus of the second compression AIR instance
++    pub lb1: BusIndex,
 +    /// (job, word index, l0, l1, l2, l3): packer -> block AIR.
 +    pub word: BusIndex,
 +    /// (job, unit index, kind, v0, v1): producers -> packer.
@@ -1584,6 +1586,14 @@ index 0000000..7bc369f
 +    }
 +    pub fn digest_bus(&self) -> PermutationCheckBus {
 +        PermutationCheckBus::new(self.digest)
++    }
++    /// Buses of compression AIR instance `i` (0 or 1): shared table and interface.
++    pub fn compress_instance(&self, i: usize) -> ShaBuses {
++        let mut b = self.compress;
++        if i == 1 {
++            b.lb = self.lb1;
++        }
++        b
 +    }
 +    pub fn iface_bus(&self) -> PermutationCheckBus {
 +        PermutationCheckBus::new(self.compress.iface)
@@ -2039,10 +2049,10 @@ index 0000000..7bc369f
 +}
 diff --git a/crates/recursion/src/sha384/compress_air.rs b/crates/recursion/src/sha384/compress_air.rs
 new file mode 100644
-index 0000000..4f7ac93
+index 0000000..62a9aa1
 --- /dev/null
 +++ b/crates/recursion/src/sha384/compress_air.rs
-@@ -0,0 +1,641 @@
+@@ -0,0 +1,646 @@
 +//! (Copied from research/near-compression/native/sha384-air/src/air.rs, L3 milestone 1;
 +//! bus indices are now fields so the AIR can live inside the verifier circuit.)
 +//!
@@ -2342,7 +2352,12 @@ index 0000000..4f7ac93
 +#[derive(Clone, Copy, Debug)]
 +pub struct Sha512Air {
 +    pub buses: ShaBuses,
++    /// Added to the compression id (g - r): instance i of the AIR uses a disjoint id range.
++    pub cid_offset: u32,
 +}
++
++/// Compression-id offset of the second compression AIR instance (> any trace height).
++pub const CID_OFFSET_1: u32 = 1 << 28;
 +impl<F> BaseAir<F> for Sha512Air {
 +    fn width(&self) -> usize {
 +        WIDTH
@@ -2522,7 +2537,7 @@ index 0000000..4f7ac93
 +        }
 +        // Interface bus: (compression id, word index 0..31, four 16-bit limbs).
 +        // 0..7 input state, 8..23 block, 24..31 output state.
-+        let cid = l[G].clone() - l[R].clone();
++        let cid = l[G].clone() - l[R].clone() + AB::Expr::from_u32(self.cid_offset);
 +        let two_r = l[R].clone().double();
 +        for (q, &base) in SLOTS.iter().enumerate() {
 +            let civ = [3u64, 2, 7, 6][q];
@@ -3647,10 +3662,10 @@ index 0000000..7c9769f
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..98fe564
+index 0000000..a48f4c0
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
-@@ -0,0 +1,364 @@
+@@ -0,0 +1,401 @@
 +//! End-to-end: the ported verifier sub-circuit verifies real SHA-384/Ext12 child proofs.
 +//!
 +//!   cargo test --release -p openvm-recursion-circuit --lib e2e_ -- --nocapture
@@ -3936,6 +3951,7 @@ index 0000000..98fe564
 +    let child_spec = std::env::var("E2E_CHILD").unwrap_or("fib:10".into());
 +    let levels = env_usize("E2E_LEVELS", 1);
 +    let prove = env_usize("E2E_PROVE", 1) == 1;
++    let prove_levels = env_usize("E2E_PROVE_LEVELS", usize::MAX);
 +    let check = env_usize("E2E_DEBUG", 0) == 1;
 +    let child_params = params_from_env("CHILD", [8, 3, 100, 0]);
 +    let parent_params = params_from_env("PARENT", [20, 3, 268, 3]);
@@ -3956,7 +3972,11 @@ index 0000000..98fe564
 +    for level in 1..=levels {
 +        let tag = format!("L{level}");
 +        let t = std::time::Instant::now();
-+        let circuit = VerifierSubCircuit::<1>::new(Arc::new(vk.clone()));
++        let config = crate::system::VerifierConfig {
++            sha_instances: env_usize("E2E_SHA_INSTANCES", 1),
++            ..Default::default()
++        };
++        let circuit = VerifierSubCircuit::<1>::new_with_options(Arc::new(vk.clone()), config);
 +        let airs = circuit.airs::<Sha384Config>();
 +        let (pk, pvk) = parent.keygen(&airs);
 +        let commit = circuit.commit_child_vk(&parent, &vk);
@@ -3994,12 +4014,44 @@ index 0000000..98fe564
 +                opened * 48
 +            );
 +        }
++        {
++            // Per-AIR columns, next-row use, interactions; SHA vs other cells.
++            let (mut total_int, mut sha_cells, mut other_cells) = (0usize, 0usize, 0usize);
++            println!("{tag}_AIRTAB idx name height width need_rot interactions_per_row rows_x_interactions cells");
++            for (i, (air, ctx)) in airs.iter().zip(ctxs.iter()).enumerate() {
++                let a = &pvk.inner.per_air[i];
++                let w = &a.params.width;
++                let width = w.common_main + w.cached_mains.iter().sum::<usize>() + w.preprocessed.unwrap_or(0);
++                let h = ctx.common_main.height();
++                let ni = a.symbolic_constraints.interactions.len();
++                total_int += h * ni;
++                let cells = h * width;
++                let name = air.name();
++                if name.starts_with("Sha512Air") || name.starts_with("TableAir") {
++                    sha_cells += cells;
++                } else {
++                    other_cells += cells;
++                }
++                println!(
++                    "{tag}_AIRTAB {i} {} {h} {width} {} {ni} {} {cells}",
++                    name.replace(' ', ""),
++                    a.params.need_rot as usize,
++                    h * ni
++                );
++            }
++            let l = (usize::BITS - (total_int - 1).leading_zeros()) as usize;
++            println!(
++                "{tag}_INTERACTIONS total={total_int} L={l} gkr_model_bytes={}",
++                72 * l * l + 264 * l + 248
++            );
++            println!("{tag}_CELLS_SPLIT sha_compress={sha_cells} other={other_cells}");
++        }
 +        let ctx = ProvingContext::new(ctxs.into_iter().enumerate().collect());
 +        if check {
 +            parent.debug(&airs, &ctx);
 +            println!("{tag}_DEBUG_OK");
 +        }
-+        if !prove {
++        if !prove || level > prove_levels {
 +            return;
 +        }
 +        soundness(&tag, &pvk);
@@ -4017,10 +4069,10 @@ index 0000000..98fe564
 +}
 diff --git a/crates/recursion/src/sha384/jobs.rs b/crates/recursion/src/sha384/jobs.rs
 new file mode 100644
-index 0000000..edf07e4
+index 0000000..bf156ad
 --- /dev/null
 +++ b/crates/recursion/src/sha384/jobs.rs
-@@ -0,0 +1,271 @@
+@@ -0,0 +1,324 @@
 +//! Trace generation for the SHA subsystem (`airs.rs` + `compress_air.rs`).
 +use core::borrow::BorrowMut;
 +
@@ -4114,8 +4166,37 @@ index 0000000..edf07e4
 +    pub nodes: Vec<Comp>,
 +}
 +
++/// Split of the compressions over the two compression AIR instances.
++#[derive(Clone, Copy, Debug)]
++pub struct CompressSplit {
++    pub n0: usize,
++}
++impl CompressSplit {
++    /// Instance 0 takes the largest power-of-two number of rows not exceeding the total
++    /// (so neither instance pads by more than the other's size); both are non-empty.
++    pub fn single(n: usize) -> Self {
++        Self { n0: n }
++    }
++    pub fn new(n: usize) -> Self {
++        assert!(n >= 2);
++        let rows = n * ROWS;
++        let h0 = if rows.is_power_of_two() { rows / 2 } else { 1 << (usize::BITS - 1 - rows.leading_zeros()) };
++        let n0 = (h0 / ROWS).clamp(1, n - 1);
++        Self { n0 }
++    }
++    pub fn cid(&self, idx: usize) -> usize {
++        if idx < self.n0 {
++            idx * ROWS
++        } else {
++            super::compress_air::CID_OFFSET_1 as usize + (idx - self.n0) * ROWS
++        }
++    }
++}
++
 +pub struct ShaTraces {
-+    pub compress: RowMajorMatrix<F>,
++    /// one matrix per compression AIR instance
++    pub compress: Vec<RowMajorMatrix<F>>,
++    pub split: CompressSplit,
 +    pub table: RowMajorMatrix<F>,
 +    pub block: RowMajorMatrix<F>,
 +    pub msg: RowMajorMatrix<F>,
@@ -4128,7 +4209,8 @@ index 0000000..edf07e4
 +    RowMajorMatrix::new(v.into_par_iter().map(F::from_u32).collect(), width)
 +}
 +
-+pub fn generate(work: &ShaWork, heights: Option<(usize, usize, usize)>) -> ShaTraces {
++pub fn generate(work: &ShaWork, instances: usize) -> ShaTraces {
++    let heights: Option<(usize, usize, usize)> = None;
 +    let job_blocks: Vec<(Vec<Comp>, [u64; 6])> = work
 +        .jobs
 +        .par_iter()
@@ -4138,10 +4220,29 @@ index 0000000..edf07e4
 +    let mut comps = work.nodes.clone();
 +    comps.extend(job_blocks.iter().flat_map(|b| b.0.iter().copied()));
 +
-+    // Compression AIR.
-+    let ch = heights.map_or(main_height(comps.len()), |h| h.0);
-+    let main = gen_main(&comps, ch);
-+    let table = gen_table(&main, ch);
++    // Compression AIR instances.
++    let split = if instances == 2 {
++        CompressSplit::new(comps.len())
++    } else {
++        CompressSplit::single(comps.len())
++    };
++    let (c0, c1) = comps.split_at(split.n0);
++    let h0 = heights.map_or(main_height(c0.len()), |h| h.0);
++    let main0 = gen_main(c0, h0);
++    let mut table = gen_table(&main0, h0);
++    let (main1, t1) = if instances == 2 {
++        let h1 = main_height(c1.len());
++        let m = gen_main(c1, h1);
++        let t = gen_table(&m, h1);
++        (Some(m), t)
++    } else {
++        (None, vec![0u32; table.len()])
++    };
++    for r in 0..64 {
++        for c in [super::compress_air::T_MC, super::compress_air::T_MR] {
++            table[r * super::compress_air::T_WIDTH + c] += t1[r * super::compress_air::T_WIDTH + c];
++        }
++    }
 +
 +    // Block AIR.
 +    let bh = heights.map_or(n_blocks.next_power_of_two().max(1), |h| h.1);
@@ -4159,7 +4260,7 @@ index 0000000..edf07e4
 +                r.blk = F::from_usize(k);
 +                r.first = F::from_bool(k == 0);
 +                r.last = F::from_bool(k + 1 == cs.len());
-+                r.cid = F::from_usize((work.nodes.len() + row) * ROWS);
++                r.cid = F::from_usize(split.cid(work.nodes.len() + row));
 +                for q in 0..8 {
 +                    let (li, lo) = (word_limbs(c.h[q]), word_limbs(out[q]));
 +                    for t in 0..4 {
@@ -4274,7 +4375,11 @@ index 0000000..edf07e4
 +        }
 +    }
 +    ShaTraces {
-+        compress: to_f(main, COMPRESS_WIDTH),
++        compress: core::iter::once(main0)
++            .chain(main1)
++            .map(|m| to_f(m, COMPRESS_WIDTH))
++            .collect(),
++        split,
 +        table: to_f(table, super::compress_air::T_WIDTH),
 +        block: RowMajorMatrix::new(block, BLOCK_WIDTH),
 +        msg: RowMajorMatrix::new(msg, MSG_WIDTH),
@@ -4543,10 +4648,10 @@ index 0000000..2b34b20
 +}
 diff --git a/crates/recursion/src/sha384/tests.rs b/crates/recursion/src/sha384/tests.rs
 new file mode 100644
-index 0000000..30a4e80
+index 0000000..d9f019c
 --- /dev/null
 +++ b/crates/recursion/src/sha384/tests.rs
-@@ -0,0 +1,215 @@
+@@ -0,0 +1,224 @@
 +//! Standalone tests of the SHA subsystem: random framed jobs through packer, block
 +//! chaining and compression AIRs, checked by the debug constraint/bus checker.
 +use std::sync::Arc;
@@ -4578,6 +4683,7 @@ index 0000000..30a4e80
 +            lb: 2,
 +            iface: 3,
 +        },
++        lb1: 9,
 +        word: 4,
 +        unit: 5,
 +        job: 6,
@@ -4643,7 +4749,7 @@ index 0000000..30a4e80
 +    jobs
 +}
 +
-+fn producer_trace(work: &ShaWork, digests: &[[u64; 6]]) -> RowMajorMatrix<F> {
++fn producer_trace(work: &ShaWork, digests: &[[u64; 6]], split: CompressSplit) -> RowMajorMatrix<F> {
 +    let mut rows: Vec<[u32; P_W]> = Vec::new();
 +    for (job, j) in work.jobs.iter().enumerate() {
 +        let mut r = [0u32; P_W];
@@ -4678,7 +4784,7 @@ index 0000000..30a4e80
 +            let mut r = [0u32; P_W];
 +            r[3] = 1;
 +            r[5] = idx as u32;
-+            r[34] = (s * super::compress_air::ROWS) as u32;
++            r[34] = split.cid(s) as u32;
 +            let l = word_limbs(w);
 +            r[35..39].copy_from_slice(&l);
 +            rows.push(r);
@@ -4691,7 +4797,7 @@ index 0000000..30a4e80
 +
 +fn run(work: &ShaWork, mutate: Option<(usize, usize, usize)>) {
 +    let b = buses();
-+    let t = generate(work, None);
++    let t = generate(work, 2);
 +    // digests must equal the native SHA-384 of the framed message
 +    for (j, d) in work.jobs.iter().zip(&t.job_digests) {
 +        use sha2::Digest as _;
@@ -4699,20 +4805,28 @@ index 0000000..30a4e80
 +        assert_eq!(digest_bytes(digest_from_words(*d)), native);
 +    }
 +    let airs: Vec<AirRef<Sha384Config>> = vec![
-+        Arc::new(Sha512Air { buses: b.compress }),
++        Arc::new(Sha512Air { buses: b.compress_instance(0), cid_offset: 0 }),
++        Arc::new(Sha512Air {
++            buses: b.compress_instance(1),
++            cid_offset: super::compress_air::CID_OFFSET_1,
++        }),
 +        Arc::new(TableAir { buses: b.compress }),
 +        Arc::new(ShaBlockAir { buses: b }),
 +        Arc::new(ShaMsgAir { buses: b }),
 +        Arc::new(ShaByteAir { buses: b }),
 +        Arc::new(ProducerAir(b)),
 +    ];
++    let split = t.split;
++    let mut it = t.compress.into_iter();
++    let (c0, c1) = (it.next().unwrap(), it.next().unwrap());
 +    let mut mats = vec![
-+        t.compress,
++        c0,
++        c1,
 +        t.table,
 +        t.block,
 +        t.msg,
 +        byte_table(&t.byte_counts),
-+        producer_trace(work, &t.job_digests),
++        producer_trace(work, &t.job_digests, split),
 +    ];
 +    if let Some((m, r, c)) = mutate {
 +        let w = mats[m].width();
@@ -4742,21 +4856,21 @@ index 0000000..30a4e80
 +    let jobs = random_jobs(&mut rng)[..6].to_vec();
 +    let work = ShaWork { jobs, nodes: vec![] };
 +    run(&work, None);
-+    let t = generate(&work, None);
++    let t = generate(&work, 2);
 +    let n_msg = t.msg.height();
 +    // (matrix, row, column): packer bytes/flags, block words, producer values
 +    let mut cases = vec![];
 +    for r in [0usize, 4, 5, 13, 15, 16, 31] {
 +        if r < n_msg {
 +            for c in [5usize, 25, 26, 28, 31, 34, 35, 36, 38] {
-+                cases.push((3usize, r, c));
++                cases.push((4usize, r, c));
 +            }
 +        }
 +    }
-+    cases.push((2, 0, 10));
-+    cases.push((2, 1, 50));
-+    cases.push((5, 3, 7));
-+    cases.push((5, 0, 9));
++    cases.push((3, 0, 10));
++    cases.push((3, 1, 50));
++    cases.push((6, 3, 7));
++    cases.push((6, 0, 9));
 +    for case in cases {
 +        let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| run(&work, Some(case))));
 +        assert!(res.is_err(), "mutation {case:?} accepted");
@@ -5172,7 +5286,7 @@ index 3bd0c6e..b7ed26b 100644
              params: mvk.inner.params.clone(),
              per_air: mvk.inner.per_air.iter().map(Into::into).collect_vec(),
 diff --git a/crates/recursion/src/system/mod.rs b/crates/recursion/src/system/mod.rs
-index f1294c9..2b76bde 100644
+index f1294c9..b6ca602 100644
 --- a/crates/recursion/src/system/mod.rs
 +++ b/crates/recursion/src/system/mod.rs
 @@ -7,16 +7,14 @@ use std::{iter, sync::Arc};
@@ -5222,7 +5336,24 @@ index f1294c9..2b76bde 100644
      whir::WhirModule,
  };
  
-@@ -79,12 +84,9 @@ impl Default for VerifierConfig {
+@@ -65,6 +70,9 @@ pub struct VerifierConfig {
+     pub continuations_enabled: bool,
+     pub final_state_bus_enabled: bool,
+     pub has_cached: bool,
++    /// Number of SHA-512 compression AIR instances (1 or 2).  One minimises columns
++    /// (each instance is 442 opened-twice columns); two halve power-of-two padding.
++    pub sha_instances: usize,
+ }
+ 
+ impl Default for VerifierConfig {
+@@ -73,18 +81,16 @@ impl Default for VerifierConfig {
+             continuations_enabled: false,
+             final_state_bus_enabled: false,
+             has_cached: true,
++            sha_instances: 1,
+         }
+     }
+ }
  
  #[derive(Debug)]
  pub struct VerifierExternalData<'a> {
@@ -5235,7 +5366,7 @@ index f1294c9..2b76bde 100644
  }
  
  // Trait to make tracegen functions generic on ProverBackend.
-@@ -96,64 +98,53 @@ pub trait VerifierTraceGen<
+@@ -96,64 +102,53 @@ pub trait VerifierTraceGen<
  >
  {
      fn new(
@@ -5313,7 +5444,7 @@ index f1294c9..2b76bde 100644
              child_vk,
              cached_trace_ctx,
              proofs,
-@@ -211,8 +202,8 @@ pub trait TraceGenModule<GC: GlobalTraceGenCtx, PB: ProverBackend>: Send + Sync
+@@ -211,8 +206,8 @@ pub trait TraceGenModule<GC: GlobalTraceGenCtx, PB: ProverBackend>: Send + Sync
  pub struct GlobalCtxCpu;
  
  impl GlobalTraceGenCtx for GlobalCtxCpu {
@@ -5324,7 +5455,7 @@ index f1294c9..2b76bde 100644
      type PreflightRecords = [Preflight];
  }
  
-@@ -238,8 +229,8 @@ impl BusIndexManager {
+@@ -238,8 +233,8 @@ impl BusIndexManager {
  pub struct BusInventory {
      // Control flow buses
      pub transcript_bus: TranscriptBus,
@@ -5335,7 +5466,7 @@ index f1294c9..2b76bde 100644
      pub merkle_verify_bus: MerkleVerifyBus,
      pub gkr_module_bus: GkrModuleBus,
      pub bc_module_bus: BatchConstraintModuleBus,
-@@ -290,22 +281,43 @@ pub struct BusInventory {
+@@ -290,22 +285,43 @@ pub struct BusInventory {
  pub struct Preflight {
      /// The concatenated sequence of observes/samples. Not available during preflight; populated
      /// after.
@@ -5386,7 +5517,7 @@ index f1294c9..2b76bde 100644
      pub starting_tidx: Vec<usize>,
      pub pvs_tidx: Vec<usize>,
      pub post_tidx: usize,
-@@ -371,8 +383,24 @@ impl BusInventory {
+@@ -371,8 +387,25 @@ impl BusInventory {
      pub(crate) fn new(b: &mut BusIndexManager) -> Self {
          Self {
              transcript_bus: TranscriptBus::new(b.new_bus_idx()),
@@ -5399,6 +5530,7 @@ index f1294c9..2b76bde 100644
 +                    lb: b.new_bus_idx(),
 +                    iface: b.new_bus_idx(),
 +                },
++                lb1: b.new_bus_idx(),
 +                word: b.new_bus_idx(),
 +                unit: b.new_bus_idx(),
 +                job: b.new_bus_idx(),
@@ -5413,7 +5545,7 @@ index f1294c9..2b76bde 100644
              merkle_verify_bus: MerkleVerifyBus::new(b.new_bus_idx()),
  
              // Control flow buses
-@@ -423,20 +451,6 @@ impl BusInventory {
+@@ -423,20 +456,6 @@ impl BusInventory {
      }
  }
  
@@ -5434,7 +5566,7 @@ index f1294c9..2b76bde 100644
  
  #[derive(Clone, Copy, strum_macros::Display)]
  enum TraceModuleRef<'a> {
-@@ -457,13 +471,13 @@ impl<'a> TraceModuleRef<'a> {
+@@ -457,13 +476,13 @@ impl<'a> TraceModuleRef<'a> {
      )]
      fn run_preflight<TS>(
          self,
@@ -5452,7 +5584,7 @@ index f1294c9..2b76bde 100644
      {
          match self {
              TraceModuleRef::ProofShape(module) => {
-@@ -488,8 +502,8 @@ impl<'a> TraceModuleRef<'a> {
+@@ -488,8 +507,8 @@ impl<'a> TraceModuleRef<'a> {
      )]
      fn generate_cpu_ctxs<SC: StarkProtocolConfig<F = F>>(
          self,
@@ -5463,7 +5595,7 @@ index f1294c9..2b76bde 100644
          preflights: &[Preflight],
          cached_trace_record: Option<&CachedTraceRecord>,
          pow_checker_gen: &Arc<PowerCheckerCpuTraceGenerator<2, POW_CHECKER_HEIGHT>>,
-@@ -498,16 +512,9 @@ impl<'a> TraceModuleRef<'a> {
+@@ -498,16 +517,9 @@ impl<'a> TraceModuleRef<'a> {
          required_heights: Option<&[usize]>,
      ) -> Option<Vec<AirProvingContext<CpuBackend<SC>>>> {
          match self {
@@ -5483,7 +5615,7 @@ index f1294c9..2b76bde 100644
              TraceModuleRef::ProofShape(module) => module.generate_proving_ctxs(
                  child_vk,
                  proofs,
-@@ -565,12 +572,12 @@ pub struct VerifierSubCircuit<const MAX_NUM_PROOFS: usize> {
+@@ -565,12 +577,12 @@ pub struct VerifierSubCircuit<const MAX_NUM_PROOFS: usize> {
  }
  
  impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
@@ -5498,7 +5630,15 @@ index f1294c9..2b76bde 100644
          config: VerifierConfig,
      ) -> Self {
          // The verifier must enforce the child VK's linear `trace_height_constraints`.
-@@ -640,16 +647,12 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
+@@ -608,6 +620,7 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
+             bus_inventory.clone(),
+             child_mvk.inner.params.clone(),
+             config.final_state_bus_enabled,
++            config.sha_instances,
+         );
+         let child_mvk_frame = child_mvk.as_ref().into();
+         let proof_shape = ProofShapeModule::new(
+@@ -640,16 +653,12 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
      }
  
      #[tracing::instrument(name = "execute_preflight", skip_all)]
@@ -5520,7 +5660,7 @@ index f1294c9..2b76bde 100644
          let mut preflight = Preflight::default();
  
          // NOTE: it is not required that we group preflight into modules
-@@ -670,316 +673,17 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
+@@ -670,316 +679,17 @@ impl<const MAX_NUM_PROOFS: usize> VerifierSubCircuit<MAX_NUM_PROOFS> {
  
      /// Runs preflight for a single proof.
      #[tracing::instrument(name = "execute_preflight", skip_all)]
@@ -5843,7 +5983,7 @@ index f1294c9..2b76bde 100644
      /// Utility function to split a slice of required trace heights per-module. Fails
      /// an assert if the slice length doesn't match the number of AIRs.
      #[allow(clippy::type_complexity)]
-@@ -1058,7 +762,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1058,7 +768,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
      VerifierTraceGen<CpuBackend<SC>, SC, ()> for VerifierSubCircuit<MAX_NUM_PROOFS>
  {
      fn new(
@@ -5852,7 +5992,7 @@ index f1294c9..2b76bde 100644
          config: VerifierConfig,
      ) -> Self {
          Self::new_with_options(child_mvk, config)
-@@ -1067,7 +771,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1067,7 +777,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
      fn commit_child_vk<E: StarkEngine<SC = SC, PB = CpuBackend<SC>>>(
          &self,
          engine: &E,
@@ -5861,7 +6001,7 @@ index f1294c9..2b76bde 100644
      ) -> CommittedTraceData<CpuBackend<SC>>
      where
          (): From<EngineDeviceCtx<E>>,
-@@ -1077,7 +781,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1077,7 +787,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
  
      fn cached_trace_record(
          &self,
@@ -5870,7 +6010,7 @@ index f1294c9..2b76bde 100644
      ) -> CachedTraceRecord {
          crate::batch_constraint::expr_eval::build_cached_trace_record(
              child_vk,
-@@ -1086,22 +790,16 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1086,22 +796,16 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
      }
  
      #[tracing::instrument(name = "subcircuit_generate_proving_ctxs", skip_all)]
@@ -5897,7 +6037,7 @@ index f1294c9..2b76bde 100644
          let span = tracing::Span::current();
          let mut preflights = std::thread::scope(|s| {
              let handles: Vec<_> = proofs
-@@ -1111,14 +809,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1111,14 +815,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
                      let span = span.clone();
                      s.spawn(move || {
                          let _guard = span.enter();
@@ -5913,7 +6053,7 @@ index f1294c9..2b76bde 100644
                      })
                  })
                  .collect();
-@@ -1127,21 +818,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
+@@ -1127,21 +824,7 @@ impl<SC: StarkProtocolConfig<F = F>, const MAX_NUM_PROOFS: usize>
                  .map(|h| h.join().unwrap())
                  .collect::<Vec<_>>()
          });
@@ -5936,7 +6076,7 @@ index f1294c9..2b76bde 100644
  
          let power_checker_gen =
              Arc::new(PowerCheckerCpuTraceGenerator::<2, POW_CHECKER_HEIGHT>::default());
-@@ -1338,7 +1015,7 @@ pub mod cuda_tracegen {
+@@ -1338,7 +1021,7 @@ pub mod cuda_tracegen {
          for VerifierSubCircuit<MAX_NUM_PROOFS>
      {
          fn new(
@@ -5945,7 +6085,7 @@ index f1294c9..2b76bde 100644
              config: VerifierConfig,
          ) -> Self {
              Self::new_with_options(child_mvk, config)
-@@ -1347,7 +1024,7 @@ pub mod cuda_tracegen {
+@@ -1347,7 +1030,7 @@ pub mod cuda_tracegen {
          fn commit_child_vk<E: StarkEngine<SC = HS::SC, PB = GenericGpuBackend<HS>>>(
              &self,
              engine: &E,
@@ -5954,7 +6094,7 @@ index f1294c9..2b76bde 100644
          ) -> CommittedTraceData<GenericGpuBackend<HS>>
          where
              GpuDeviceCtx: From<EngineDeviceCtx<E>>,
-@@ -1361,7 +1038,7 @@ pub mod cuda_tracegen {
+@@ -1361,7 +1044,7 @@ pub mod cuda_tracegen {
  
          fn cached_trace_record(
              &self,
@@ -5963,7 +6103,7 @@ index f1294c9..2b76bde 100644
          ) -> CachedTraceRecord {
              crate::batch_constraint::expr_eval::build_cached_trace_record(
                  child_vk,
-@@ -1371,13 +1048,13 @@ pub mod cuda_tracegen {
+@@ -1371,13 +1054,13 @@ pub mod cuda_tracegen {
  
          #[tracing::instrument(name = "subcircuit_generate_proving_ctxs", skip_all)]
          fn generate_proving_ctxs<
@@ -7049,10 +7189,10 @@ index 8e7af52..e166844 100644
  }
  
 diff --git a/crates/recursion/src/transcript/merkle_verify/trace.rs b/crates/recursion/src/transcript/merkle_verify/trace.rs
-index eb75ffc..c671f1c 100644
+index eb75ffc..7fa9410 100644
 --- a/crates/recursion/src/transcript/merkle_verify/trace.rs
 +++ b/crates/recursion/src/transcript/merkle_verify/trace.rs
-@@ -1,12 +1,32 @@
+@@ -1,12 +1,31 @@
  use core::borrow::BorrowMut;
  
  use itertools::Itertools;
@@ -7067,7 +7207,6 @@ index eb75ffc..c671f1c 100644
 +use p3_field::{BasedVectorSpace, PrimeCharacteristicRing, PrimeField32};
 +
 +use crate::sha384::{
-+    compress_air::ROWS,
 +    compress_trace::{sha2_compress, Comp, SHA384_IV},
 +    config::{digest_bytes, digest_to_limbs, word_limbs, Digest, Sha384Config, ShaHasher, F},
 +};
@@ -7090,7 +7229,7 @@ index eb75ffc..c671f1c 100644
  
  use crate::{
      system::Preflight,
-@@ -15,16 +35,16 @@ use crate::{
+@@ -15,16 +34,16 @@ use crate::{
  
  #[tracing::instrument(level = "trace", skip_all)]
  pub fn generate_trace(
@@ -7111,7 +7250,7 @@ index eb75ffc..c671f1c 100644
      let logs_per_proof = preflights
          .iter()
          .map(|preflight| build_merkle_logs(preflight, params))
-@@ -58,14 +78,14 @@ pub fn generate_trace(
+@@ -58,14 +77,14 @@ pub fn generate_trace(
          num_valid_rows.next_power_of_two()
      };
      let mut trace = vec![F::ZERO; height * width];
@@ -7128,7 +7267,7 @@ index eb75ffc..c671f1c 100644
  
      for (row_idx, row) in trace.chunks_mut(width).take(num_valid_rows).enumerate() {
          let proof_idx = num_rows_cum_sums.partition_point(|&x| x <= row_idx);
-@@ -95,19 +115,21 @@ pub fn generate_trace(
+@@ -95,19 +114,21 @@ pub fn generate_trace(
  
          if i == 0 {
              if commit_major == 0 {
@@ -7155,7 +7294,7 @@ index eb75ffc..c671f1c 100644
                  }
              }
          }
-@@ -142,15 +164,30 @@ pub fn generate_trace(
+@@ -142,15 +163,31 @@ pub fn generate_trace(
              cols.is_last_merkle = F::ONE;
          }
  
@@ -7163,7 +7302,8 @@ index eb75ffc..c671f1c 100644
 +            cols.left = digest_to_limbs(left);
 +            cols.right = digest_to_limbs(right);
 +            let (comp, out) = node_comp(left, right);
-+            cols.cid = F::from_usize(nodes.len() * ROWS);
++            // node index; mapped to the compression id once the split is known
++            cols.cid = F::from_usize(nodes.len());
 +            nodes.push(comp);
 +            for q in 0..2 {
 +                let l = word_limbs(out[6 + q]);
@@ -7278,10 +7418,10 @@ index eb75ffc..c671f1c 100644
      ) -> Vec<[F; DIGEST_SIZE]> {
          let whir_proof = &proof.whir_proof;
 diff --git a/crates/recursion/src/transcript/mod.rs b/crates/recursion/src/transcript/mod.rs
-index ac36b7d..e02d7a1 100644
+index ac36b7d..0908acb 100644
 --- a/crates/recursion/src/transcript/mod.rs
 +++ b/crates/recursion/src/transcript/mod.rs
-@@ -1,47 +1,45 @@
+@@ -1,47 +1,44 @@
 -use core::borrow::BorrowMut;
 +//! Transcript and hashing module of the SHA-384 verifier circuit.
 +//!
@@ -7335,11 +7475,10 @@ index ac36b7d..e02d7a1 100644
 -pub mod poseidon2;
 -#[allow(clippy::module_inception)]
 -pub mod transcript;
-+pub mod sha_transcript;
- 
+-
 -// Should be 1 when 3 <= max_constraint_degree < 7
 -const SBOX_REGISTERS: usize = 1;
-+pub const NUM_TRANSCRIPT_AIRS: usize = 9;
++pub mod sha_transcript;
  
  pub struct TranscriptModule {
      pub bus_inventory: BusInventory,
@@ -7348,14 +7487,18 @@ index ac36b7d..e02d7a1 100644
 -
 -    sub_chip: Poseidon2SubChip<F, SBOX_REGISTERS>,
 -    perm: Poseidon2BabyBear<POSEIDON2_WIDTH>,
++    sha_instances: usize,
  }
  
  impl TranscriptModule {
-@@ -50,620 +48,125 @@ impl TranscriptModule {
+@@ -49,621 +46,139 @@ impl TranscriptModule {
+         bus_inventory: BusInventory,
          params: SystemParams,
          final_state_bus_enabled: bool,
++        sha_instances: usize,
      ) -> Self {
 -        let sub_chip = Poseidon2SubChip::<F, 1>::new(Poseidon2Config::default().constants);
++        assert!(sha_instances == 1 || sha_instances == 2);
 +        assert!(
 +            !final_state_bus_enabled,
 +            "final transcript state bus (continuations) not supported by the SHA-384 port"
@@ -7517,6 +7660,7 @@ index ac36b7d..e02d7a1 100644
 -            }
 -            skip += valid_rows[pidx];
 -            assert_eq!(tidx, preflight.transcript.len());
++            sha_instances,
          }
 -
 -        Some(TranscriptTraceArtifacts {
@@ -7576,7 +7720,7 @@ index ac36b7d..e02d7a1 100644
  impl AirModule for TranscriptModule {
      fn num_airs(&self) -> usize {
 -        3
-+        NUM_TRANSCRIPT_AIRS
++        8 + self.sha_instances
      }
  
      fn airs<SC: StarkProtocolConfig<F = F>>(&self) -> Vec<AirRef<SC>> {
@@ -7599,13 +7743,15 @@ index ac36b7d..e02d7a1 100644
 -            right_shift_bus: self.bus_inventory.right_shift_bus,
 -            k: self.params.k_whir(),
 -        };
-+        let b = &self.bus_inventory;
-+        let sha = b.sha;
-+        let internal = b.transcript_internal;
-         vec![
+-        vec![
 -            Arc::new(transcript_air),
 -            Arc::new(poseidon2_air),
 -            Arc::new(merkle_verify_air),
+-        ]
++        let b = &self.bus_inventory;
++        let sha = b.sha;
++        let internal = b.transcript_internal;
++        let mut airs: Vec<AirRef<SC>> = vec![
 +            Arc::new(TranscriptHashAir {
 +                transcript_bus: b.transcript_bus,
 +                sha,
@@ -7629,7 +7775,8 @@ index ac36b7d..e02d7a1 100644
 +                k: self.params.k_whir(),
 +            }),
 +            Arc::new(Sha512Air {
-+                buses: sha.compress,
++                buses: sha.compress_instance(0),
++                cid_offset: 0,
 +            }),
 +            Arc::new(TableAir {
 +                buses: sha.compress,
@@ -7637,7 +7784,17 @@ index ac36b7d..e02d7a1 100644
 +            Arc::new(ShaBlockAir { buses: sha }),
 +            Arc::new(ShaMsgAir { buses: sha }),
 +            Arc::new(ShaByteAir { buses: sha }),
-         ]
++        ];
++        if self.sha_instances == 2 {
++            airs.insert(
++                5,
++                Arc::new(Sha512Air {
++                    buses: sha.compress_instance(1),
++                    cid_offset: crate::sha384::compress_air::CID_OFFSET_1,
++                }),
++            );
++        }
++        airs
      }
  }
  
@@ -7679,7 +7836,39 @@ index ac36b7d..e02d7a1 100644
 -            if let Some(heights) = required_heights {
 -                if heights.len() != 3 {
 -                    return None;
--                }
++        let required_merkle = required_heights.map(|h| h[3]);
++        let (merkle_trace, nodes) = merkle_verify::generate_trace(
++            child_vk,
++            proofs,
++            preflights,
++            &self.params,
++            required_merkle,
++        )?;
++        let mut merkle_trace = RowMajorMatrix::new(merkle_trace, MerkleVerifyCols::<F>::width());
++
++        // Every SHA job, in global job-id order.
++        let mut work = ShaWork {
++            jobs: Vec::new(),
++            nodes,
++        };
++        for (proof, preflight) in proofs.iter().zip(preflights) {
++            let layout = preflight.sha.layout;
++            assert_eq!(work.jobs.len(), layout.base);
++            work.jobs
++                .extend(preflight.sha.transcript_jobs.iter().map(|j| j.sha_job()));
++            work.jobs.extend(leaf_jobs(proof, &child_vk.inner.params));
++            assert_eq!(work.jobs.len(), layout.end());
++        }
++        let sha = jobs::generate(&work, self.sha_instances);
++        {
++            use core::borrow::BorrowMut;
++            use p3_field::{PrimeCharacteristicRing, PrimeField32};
++            let w = MerkleVerifyCols::<F>::width();
++            for row in merkle_trace.values.chunks_exact_mut(w) {
++                let cols: &mut MerkleVerifyCols<F> = row.borrow_mut();
++                if cols.is_valid == F::ONE && cols.is_last_merkle == F::ZERO {
++                    cols.cid = F::from_usize(sha.split.cid(cols.cid.as_canonical_u32() as usize));
+                 }
 -                (Some(heights[0]), Some(heights[1]), Some(heights[2]))
 -            } else {
 -                (None, None, None)
@@ -7858,29 +8047,7 @@ index ac36b7d..e02d7a1 100644
 -                num_prefix_perms,
 -                num_suffix_perms,
 -                num_compress_inputs,
--            }
-+        let required_merkle = required_heights.map(|h| h[3]);
-+        let (merkle_trace, nodes) = merkle_verify::generate_trace(
-+            child_vk,
-+            proofs,
-+            preflights,
-+            &self.params,
-+            required_merkle,
-+        )?;
-+        let merkle_trace = RowMajorMatrix::new(merkle_trace, MerkleVerifyCols::<F>::width());
-+
-+        // Every SHA job, in global job-id order.
-+        let mut work = ShaWork {
-+            jobs: Vec::new(),
-+            nodes,
-+        };
-+        for (proof, preflight) in proofs.iter().zip(preflights) {
-+            let layout = preflight.sha.layout;
-+            assert_eq!(work.jobs.len(), layout.base);
-+            work.jobs
-+                .extend(preflight.sha.transcript_jobs.iter().map(|j| j.sha_job()));
-+            work.jobs.extend(leaf_jobs(proof, &child_vk.inner.params));
-+            assert_eq!(work.jobs.len(), layout.end());
+             }
          }
 -    }
 -
@@ -8034,7 +8201,6 @@ index ac36b7d..e02d7a1 100644
 -                AirProvingContext::simple_no_pis(poseidon_trace),
 -                AirProvingContext::simple_no_pis(merkle_trace),
 -            ])
-+        let sha = jobs::generate(&work, None);
 +        let tr = generate_transcript_traces(&TranscriptTraceInput {
 +            proof_jobs: preflights
 +                .iter()
@@ -8045,22 +8211,10 @@ index ac36b7d..e02d7a1 100644
 +        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
 +            *c += t;
          }
-+        Some(
-+            [
-+                tr.hash,
-+                tr.obs,
-+                tr.sample,
-+                merkle_trace,
-+                sha.compress,
-+                sha.table,
-+                sha.block,
-+                sha.msg,
-+                jobs::byte_table(&counts),
-+            ]
-+            .map(AirProvingContext::simple_no_pis)
-+            .into_iter()
-+            .collect(),
-+        )
++        let mut mats = vec![tr.hash, tr.obs, tr.sample, merkle_trace];
++        mats.extend(sha.compress);
++        mats.extend([sha.table, sha.block, sha.msg, jobs::byte_table(&counts)]);
++        Some(mats.into_iter().map(AirProvingContext::simple_no_pis).collect())
      }
  }
 diff --git a/crates/recursion/src/transcript/sha_transcript.rs b/crates/recursion/src/transcript/sha_transcript.rs

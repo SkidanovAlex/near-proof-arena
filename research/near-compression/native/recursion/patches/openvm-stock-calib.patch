@@ -1,9 +1,9 @@
 diff --git a/crates/recursion/src/calib_tests.rs b/crates/recursion/src/calib_tests.rs
 new file mode 100644
-index 0000000..f32b36d
+index 0000000..da6d3c7
 --- /dev/null
 +++ b/crates/recursion/src/calib_tests.rs
-@@ -0,0 +1,177 @@
+@@ -0,0 +1,190 @@
 +//! NEAR PQ R-lane calibration of the stock (Poseidon2 / Ext4) verifier sub-circuit.
 +//! Measures per-AIR committed cells for verifying one child proof, proves the verifier
 +//! circuit, and repeats one level up (verifying a proof of the verifier circuit).
@@ -141,6 +141,19 @@ index 0000000..f32b36d
 +            "CALIB_L{level}_AIR {i} {} {h} {w} {cw} {cells} used_rows={used}",
 +            air.name()
 +        );
++    }
++    {
++        let (mut cols, mut opened, mut ints) = (0usize, 0usize, 0usize);
++        for (i, a) in vk.inner.per_air.iter().enumerate() {
++            let w = &a.params.width;
++            let t = w.common_main + w.cached_mains.iter().sum::<usize>() + w.preprocessed.unwrap_or(0);
++            cols += t;
++            opened += t * (1 + a.params.need_rot as usize);
++            let h = ctxs[i].common_main.height();
++            ints += h * a.symbolic_constraints.interactions.len();
++            println!("CALIB_L{level}_AIRTAB {i} {} w={t} rot={} int_per_row={}", airs[i].name().replace(' ', ""), a.params.need_rot as usize, a.symbolic_constraints.interactions.len());
++        }
++        println!("CALIB_L{level}_COLUMNS columns={cols} opened={opened} interactions={ints}");
 +    }
 +    println!("CALIB_L{level}_TOTAL_CELLS {total} rows={total_padded_rows} used_cells={used_cells}");
 +    let ctx = ProvingContext::new(ctxs.into_iter().enumerate().collect());
