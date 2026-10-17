@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "corrupt_or_inconsistent_evidence_rejections": 6,
+  "strict_target_boundary_checked": true,
+  "scope": "Evidence reconciliation and arithmetic only; no security certification."
+}

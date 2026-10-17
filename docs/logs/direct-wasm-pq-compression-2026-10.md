@@ -9472,3 +9472,56 @@ process review; its preliminary finding recommends rechecking the concrete
 size/security viability gate before extending the algebraic critical path.
 Diagnostic 1344645 B unchanged; feasibility NOT_PASSED. Full NEAR 1Pgas,
 PQ128 composition, recursion and sub300000 B remain open.
+
+## 2026-10-16 — Reconcile feasibility and measure the complete fixture verifier
+
+Following the independent process review, deferred further standalone MCA
+algebra until a named full-byte/security candidate makes its remaining
+obligations decisive. The previous scalar-descent checkpoint remains valid.
+No theorem count is treated as compression or full-NEAR progress.
+
+Added report_current_feasibility.py and results/current-feasibility.json.
+The generator checks all 24 pins in the latest switch capture manifest,
+reconciles actual retained file lengths with the codec component ledger,
+and recomputes each larger-field schedule's conditional quantum ledger.
+Fresh native-assisted full bundle verification passes. The six-case larger
+field screen replays byte-identically; zero candidates meet both its partial
+quantum bound and projected size target. This finite screen is not a universal
+lower bound and omits costs explicitly retained in its scope. Ext10/C1 remains
+570072–583800 bytes before excluded envelope costs.
+
+Actual current bundle:1344645 B. Source values/authentication:493296 B.
+Continuation values/authentication:693824 B. Eliminating all opening
+authentication for free still leaves770517 B. Keeping all other components,
+a replacement of the entire opening must cost at most146466 B for strict
+sub300000 total; replacing the compression envelope allows190346 B. These
+are accounting budgets, not secure deletion/substitution constructions.
+The historical slice gate now points to current evidence while retaining
+its older1863197-byte record as history. Six mutated evidence/ledger cases
+are rejected; the strict299999-byte boundary is checked. No Lean changes.
+
+Added measure_switch_verifier_work.py, covering the actual current contract,
+call-link decoder, and compression envelope including local/GKR and PCS.
+Measured104839 framed SHA384 calls /419568 compression blocks; identical
+framed-input deduplication leaves40726 calls /242409 blocks. At the existing
+128x6944 hash gadget this is802.65 GiB of dense u32 trace accounting after
+sharing, NOT measured RAM/runtime/proof size. Sharing still needs authenticated
+routing/equality constraints. The old PCS-only census is not substituted
+for this complete-fixture workload.
+
+Largest unique block tags include transcript/commit44326, Merkle nodes43072,
+code-switch stage initialization37479, terminal GKR layouts31080, and Merkle
+leaves11957. Code inspection confirms stage initialization hashes the full
+derived weight vector, and authenticated response commits hash JSON openings.
+No such binding has been removed. An optimized transcript would require a
+new version, regenerated proofs, and exact derivation/provenance checks.
+
+Next experiment: a bounded complete small recursive-verifier slice with
+explicit public binding and no full-trace disclosure, recording full outer
+bytes across workloads. First inspect deterministic transcript inputs and
+hash-gadget routing so avoidable serialization is not mistaken for necessary
+recursion cost. Existing recursive-pcs-root still discloses a full trace for
+root linkage and is not a compression success. Evidence:
+results/current-feasibility/ and results/switch-full-verifier-hash-work.json.
+Full NEAR1Pgas/PQ128/recursive correctness/sub300000 B remain open; feasibility
+NOT_PASSED. Source-controlled parameter degrees and full MCA remain open too.

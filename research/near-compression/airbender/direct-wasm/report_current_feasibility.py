@@ -1,0 +1,131 @@
+"""Reconcile retained evidence and architecture break-even; never certify security."""
+import hashlib
+import json
+from pathlib import Path
+from screen_larger_field_code_switch import ledger
+
+ROOT = Path(__file__).resolve().parents[2]
+REPO = ROOT.parent.parent
+TARGET = 300000
+
+
+def build(root=ROOT):
+    evidence = {}
+    def read(relative):
+        path = root / relative
+        raw = path.read_bytes()
+        evidence[relative] = hashlib.sha256(raw).hexdigest()
+        return json.loads(raw)
+    bundle = 'results/ext8-switch-execution-q309/'
+    manifest = read(bundle+'manifest.json')
+    # Validate the measured bundle and the exact executable sources against its capture.
+    for relative, expected in manifest['files'].items():
+        raw = (REPO/relative).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != expected:
+            raise ValueError('capture manifest mismatch: '+relative)
+    measured = read(bundle+'report.json')
+    prover = read(bundle+'prover-report.json')
+    codec = read(bundle+'codec-report.json')
+    config = read(bundle+'config.json')
+    assert measured['status']=='PASS' and measured['fresh_conjunction_verified']
+    assert prover['status']=='PASS' and prover['fresh_execution_verified']
+    assert codec['status']=='PASS' and codec['roundtrip']
+    sizes = {
+        'compression_envelope_bytes': (root/bundle/'compression.bin').stat().st_size,
+        'call_proof_bytes': (root/'results/call-ext8-shared-q309/proof.bin').stat().st_size,
+        'receipt_bytes': (root/'results/ext8-affine-q309/receipt.json').stat().st_size,
+        'calls_bytes': (root/'results/ext8-linked-calls/calls.json').stat().st_size,
+    }
+    for key, value in sizes.items():
+        assert measured[key] == value, key
+    total = sum(sizes.values())
+    assert total == measured['combined_bytes']
+    breakdown = prover['breakdown']
+    costs = {'opening_header_terminal': breakdown['header_and_terminal_bytes']}
+    for kind, prefix in (('packed-source','source'), ('scalar-coset','continuation')):
+        groups = [g for g in breakdown['groups'] if g['kind'] == kind]
+        costs[prefix+'_values'] = sum(g['leaf_bytes'] for g in groups)
+        costs[prefix+'_authentication'] = sum(g['sibling_bytes'] for g in groups)
+    opening = sum(costs.values())
+    assert opening == breakdown['total_bytes'] == codec['opening_bytes'] == prover['compression_opening_bytes']
+    costs['local_gkr_and_framing'] = sizes['compression_envelope_bytes']-opening
+    assert costs['local_gkr_and_framing'] == prover['reduction_and_framing_bytes']
+    costs.update({k.removesuffix('_bytes'):v for k,v in sizes.items() if k!='compression_envelope_bytes'})
+    assert sum(costs.values()) == total
+    removed = {
+        'source_values_and_authentication': costs['source_values']+costs['source_authentication'],
+        'continuation_values_and_authentication': costs['continuation_values']+costs['continuation_authentication'],
+        'all_opening_authentication': costs['source_authentication']+costs['continuation_authentication'],
+        'entire_opening': opening,
+        'entire_compression_envelope': sizes['compression_envelope_bytes'],
+        'entire_bundle': total,
+    }
+    replacement = []
+    for name, size in removed.items():
+        fixed = total-size
+        allowance = TARGET-1-fixed
+        replacement.append(dict(replaced_component=name,removed_bytes=size,
+            fixed_remainder_bytes=fixed,maximum_replacement_bytes_for_strict_target=allowance,
+            possible_even_with_free_replacement=allowance>=0,
+            scope='Accounting only; no ability to delete or securely replace this component is assumed.'))
+    screen = read('results/larger-field-code-switch-screen.json')
+    candidates = []
+    for case in screen['results']:
+        recomputed = ledger(case['best']['path'],case['extension'],case['assumed_log2_C'])
+        assert recomputed == case['conditional_ledger']
+        sizes_screen = [t['bytes']+case['best']['fixed_bytes'] for t in case['trials']]
+        assert min(sizes_screen)==case['min_subtotal_bytes'] and max(sizes_screen)==case['max_subtotal_bytes']
+        candidates.append(dict(extension=case['extension'],hash_bytes=case['hash_bytes'],
+            assumed_log2_C=case['assumed_log2_C'],isolated_query_bits=case['isolated_query_bits'],
+            min_projected_subtotal_bytes=min(sizes_screen),max_projected_subtotal_bytes=max(sizes_screen),
+            partial_conditional_quantum_bound_passes=recomputed['partial_within_half_success'],
+            projected_subtotal_under_target=min(sizes_screen)<TARGET,
+            minimum_savings_to_strict_target_before_excluded_costs=max(0,min(sizes_screen)-(TARGET-1))))
+    feasible = [c for c in candidates if c['partial_conditional_quantum_bound_passes'] and c['projected_subtotal_under_target']]
+    recursive = read('results/recursive-pcs-root/report.json')
+    scope = read('scope-report.json')
+    hash_work = read('results/switch-full-verifier-hash-work.json')
+    assert hash_work['fresh_verifier_passed']
+    assert hash_work['compression_envelope_bytes']==sizes['compression_envelope_bytes']
+    assert hash_work['call_proof_bytes']==sizes['call_proof_bytes']
+    for relative, expected in hash_work['input_sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
+    script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
+        Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
+        Path(__file__).with_name('report_code_switch_qrom.py')]
+    for path in script_files: evidence[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return dict(status='NOT_PASSED',purpose='Current decision surface; original full NEAR 1 Pgas/PQ128 objective unchanged.',
+        target_bytes_strict=TARGET,measured_fixture=dict(combined_bytes=total,components=costs,
+            queries=config['queries'],configuration=config,manifest_pins_checked=len(manifest['files']),
+            scope=measured['scope'],security_certified=False,full_near_one_pgas=False,
+            verification='Retained conjunction verification evidence pinned by manifest; replay command in source manifest.'),
+        replacement_break_even=replacement,counterfactual_candidates=candidates,
+        counterfactual_scope=screen['scope'],same_parameters_as_measured_fixture=False,
+        screened_candidates_passing_partial_bound_and_size=len(feasible),
+        recursion=dict(complete_recursive_proof=recursive['complete_recursive_proof'],
+            full_trace_disclosure_needed=recursive['full_trace_disclosure_needed_for_native_root_link'],
+            limits=recursive['limits']),
+        latest_verifier_hash_work=dict(totals=hash_work['measurement']['totals'],
+            largest_unique_block_tags=dict(top_hash_tags),gadget_accounting=hash_work['current_gadget_accounting'],
+            scope=hash_work['scope']),
+        full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
+            capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
+        decision=dict(next_experiment=('Implement and measure the surviving projected candidate with all excluded costs and explicit security obligations.' if feasible else 'Measure and then prove a complete small verifier instance with bound public inputs, all arithmetic/hash checks, and no full-trace disclosure; compare complete outer and inner bytes across workloads.'),
+            standalone_mca_expansion=('REASSESS against the surviving candidate; partial ledger is not certification.' if feasible else 'DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.'),
+            reopen_mca_if='A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.',
+            do_not_repeat='Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.',
+            limits='Failure of this finite projected family is not an impossibility theorem. Hash-work measurements are not recursive proof-size predictions. Full verifier recursion and PQ128 remain open.'),
+        evidence_sha256=evidence)
+
+
+def main():
+    report=build()
+    out=ROOT/'results/current-feasibility.json'
+    out.write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps(dict(status=report['status'],measured_bytes=report['measured_fixture']['combined_bytes'],
+        surviving_screened_candidates=report['screened_candidates_passing_partial_bound_and_size'],
+        replacements=report['replacement_break_even']),indent=2))
+
+
+if __name__=='__main__':main()

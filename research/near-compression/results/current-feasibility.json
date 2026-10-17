@@ -1,0 +1,298 @@
+{
+  "status": "NOT_PASSED",
+  "purpose": "Current decision surface; original full NEAR 1 Pgas/PQ128 objective unchanged.",
+  "target_bytes_strict": 300000,
+  "measured_fixture": {
+    "combined_bytes": 1344645,
+    "components": {
+      "opening_header_terminal": 3992,
+      "source_values": 228672,
+      "source_authentication": 264624,
+      "continuation_values": 384320,
+      "continuation_authentication": 309504,
+      "local_gkr_and_framing": 43880,
+      "call_proof": 103064,
+      "receipt": 731,
+      "calls": 5858
+    },
+    "queries": 309,
+    "configuration": {
+      "queries": 309,
+      "child_blowup": 8,
+      "child_fold_bits": 3,
+      "tail_steps": [
+        {
+          "next_blowup": 16,
+          "next_fold_bits": 3,
+          "queries": 309
+        },
+        {
+          "next_blowup": 32,
+          "next_fold_bits": 3,
+          "queries": 309
+        },
+        {
+          "next_blowup": 64,
+          "next_fold_bits": 3,
+          "queries": 309
+        },
+        {
+          "next_blowup": 128,
+          "next_fold_bits": 3,
+          "queries": 309
+        },
+        {
+          "next_blowup": 256,
+          "next_fold_bits": 1,
+          "queries": 309
+        },
+        {
+          "next_blowup": 256,
+          "next_fold_bits": 0,
+          "queries": 309
+        }
+      ]
+    },
+    "manifest_pins_checked": 24,
+    "scope": "Actual diagnostic code-switch compression and unchanged call proof. External static AIR/spec/schedule excluded; no NEAR1Pgas, source-extraction/proximity/QROM/PQ128 certificate.",
+    "security_certified": false,
+    "full_near_one_pgas": false,
+    "verification": "Retained conjunction verification evidence pinned by manifest; replay command in source manifest."
+  },
+  "replacement_break_even": [
+    {
+      "replaced_component": "source_values_and_authentication",
+      "removed_bytes": 493296,
+      "fixed_remainder_bytes": 851349,
+      "maximum_replacement_bytes_for_strict_target": -551350,
+      "possible_even_with_free_replacement": false,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "continuation_values_and_authentication",
+      "removed_bytes": 693824,
+      "fixed_remainder_bytes": 650821,
+      "maximum_replacement_bytes_for_strict_target": -350822,
+      "possible_even_with_free_replacement": false,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "all_opening_authentication",
+      "removed_bytes": 574128,
+      "fixed_remainder_bytes": 770517,
+      "maximum_replacement_bytes_for_strict_target": -470518,
+      "possible_even_with_free_replacement": false,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "entire_opening",
+      "removed_bytes": 1191112,
+      "fixed_remainder_bytes": 153533,
+      "maximum_replacement_bytes_for_strict_target": 146466,
+      "possible_even_with_free_replacement": true,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "entire_compression_envelope",
+      "removed_bytes": 1234992,
+      "fixed_remainder_bytes": 109653,
+      "maximum_replacement_bytes_for_strict_target": 190346,
+      "possible_even_with_free_replacement": true,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "entire_bundle",
+      "removed_bytes": 1344645,
+      "fixed_remainder_bytes": 0,
+      "maximum_replacement_bytes_for_strict_target": 299999,
+      "possible_even_with_free_replacement": true,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    }
+  ],
+  "counterfactual_candidates": [
+    {
+      "extension": 8,
+      "hash_bytes": 64,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "min_projected_subtotal_bytes": 527640,
+      "max_projected_subtotal_bytes": 540120,
+      "partial_conditional_quantum_bound_passes": false,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 227641
+    },
+    {
+      "extension": 8,
+      "hash_bytes": 64,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "min_projected_subtotal_bytes": 538376,
+      "max_projected_subtotal_bytes": 550136,
+      "partial_conditional_quantum_bound_passes": false,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 238377
+    },
+    {
+      "extension": 10,
+      "hash_bytes": 64,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "min_projected_subtotal_bytes": 570072,
+      "max_projected_subtotal_bytes": 583800,
+      "partial_conditional_quantum_bound_passes": true,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 270073
+    },
+    {
+      "extension": 10,
+      "hash_bytes": 64,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "min_projected_subtotal_bytes": 581792,
+      "max_projected_subtotal_bytes": 594352,
+      "partial_conditional_quantum_bound_passes": false,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 281793
+    },
+    {
+      "extension": 12,
+      "hash_bytes": 64,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "min_projected_subtotal_bytes": 611672,
+      "max_projected_subtotal_bytes": 624136,
+      "partial_conditional_quantum_bound_passes": true,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 311673
+    },
+    {
+      "extension": 12,
+      "hash_bytes": 64,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "min_projected_subtotal_bytes": 622920,
+      "max_projected_subtotal_bytes": 636280,
+      "partial_conditional_quantum_bound_passes": true,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 322921
+    }
+  ],
+  "counterfactual_scope": "All source cosets and Merkle frontiers priced. Auxiliary coordinate width scales53*extension; base source width803 retained. Ext scalars4*extension bytes; hash nodes64bytes. Local/GKR count1604 scalars frozen; compiler layout can change and has NOT been measured. Public envelope excluded. Fields10/12 are arithmetic projections, not implemented/certified extensions. Ledger assumes Johnson/MCA, repeated weighted composition and QROM compiler applicability; none established. Ledger recomputed for selected query counts/schedule but excludes local/GKR/bus/initial-reduction errors. C1/256 nominal, not certified constants. Q=2^128 includes overhead, target probability1/2. No feasibility gate changed. This finite search is not a protocol size lower bound.",
+  "same_parameters_as_measured_fixture": false,
+  "screened_candidates_passing_partial_bound_and_size": 0,
+  "recursion": {
+    "complete_recursive_proof": false,
+    "full_trace_disclosure_needed": true,
+    "limits": [
+      "Actual packed PCS replaces disclosed terminal dot-product in core verifier.",
+      "Verified dependency MUST come from native root-link/provenance check; hashing roots together does not establish equal committed data.",
+      "End-to-end wrapper still needs full3.70MB trace for root link/native header/hash binding; proof payload alone is not complete recursive compression.",
+      "New configured GKR transcript and compiler CONFIG; no legacy proof relabeling.",
+      "Q8/Ext4 diagnostic; no PQ128,QROM,proximity or zero-knowledge certification."
+    ]
+  },
+  "latest_verifier_hash_work": {
+    "totals": {
+      "calls": 104839,
+      "blocks": 419568,
+      "unique_calls": 40726,
+      "unique_blocks": 242409
+    },
+    "largest_unique_block_tags": {
+      "transcript/commit": {
+        "calls": 745,
+        "blocks": 44388,
+        "unique_calls": 721,
+        "unique_blocks": 44326
+      },
+      "merkle/node": {
+        "calls": 65498,
+        "blocks": 181188,
+        "unique_calls": 15209,
+        "unique_blocks": 43072
+      },
+      "near-ext8-code-switch-stage-diagnostic-v1": {
+        "calls": 6,
+        "blocks": 37479,
+        "unique_calls": 6,
+        "unique_blocks": 37479
+      },
+      "near-pq384-ext8-terminal-gkr-diagnostic-v1": {
+        "calls": 4,
+        "blocks": 31080,
+        "unique_calls": 4,
+        "unique_blocks": 31080
+      },
+      "merkle/leaf": {
+        "calls": 8978,
+        "blocks": 32146,
+        "unique_calls": 3293,
+        "unique_blocks": 11957
+      },
+      "ext8-execution-phase-pooled-diagnostic-v1": {
+        "calls": 1,
+        "blocks": 10837,
+        "unique_calls": 1,
+        "unique_blocks": 10837
+      },
+      "transcript/squeeze": {
+        "calls": 6006,
+        "blocks": 12012,
+        "unique_calls": 5373,
+        "unique_blocks": 10746
+      },
+      "transcript/ratchet": {
+        "calls": 6006,
+        "blocks": 12012,
+        "unique_calls": 5373,
+        "unique_blocks": 10746
+      }
+    },
+    "gadget_accounting": {
+      "blocks": {
+        "compression_blocks": 419568,
+        "rows": 53704704,
+        "base_field_cells": 372925464576,
+        "dense_u32_bytes": 1491701858304,
+        "dense_u32_gib": 1389.255615234375
+      },
+      "unique_blocks": {
+        "compression_blocks": 242409,
+        "rows": 31028352,
+        "base_field_cells": 215460876288,
+        "dense_u32_bytes": 861843505152,
+        "dense_u32_gib": 802.6543121337891
+      }
+    },
+    "scope": "Actual latest switch fixture contract, call-link decoder and compression envelope decoder, including local/GKR and PCS verification. Counts pq384_primitives.hash_parts calls and their exact framing. Static statement/configuration are externally supplied. This is not full NEAR verification or a recursive proof. Unique sharing requires proved routing/equality constraints. Gadget dense bytes are arithmetic estimates, not measured RAM, runtime or outer proof size. No PQ128 certification."
+  },
+  "full_near_capacity": {
+    "target_gas": 1000000000000000,
+    "legacy_cap": 3450888781824,
+    "capacity_ratio": 290,
+    "qualification": "Gas-capacity ratio only; NOT a proved trace count or operator bound"
+  },
+  "decision": {
+    "next_experiment": "Measure and then prove a complete small verifier instance with bound public inputs, all arithmetic/hash checks, and no full-trace disclosure; compare complete outer and inner bytes across workloads.",
+    "standalone_mca_expansion": "DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.",
+    "reopen_mca_if": "A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.",
+    "do_not_repeat": "Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.",
+    "limits": "Failure of this finite projected family is not an impossibility theorem. Hash-work measurements are not recursive proof-size predictions. Full verifier recursion and PQ128 remain open."
+  },
+  "evidence_sha256": {
+    "results/ext8-switch-execution-q309/manifest.json": "6fe0e640fbd4c0cfd3f1f0cc2b97d55bba48b4b80a8670f5daac2ddb8e96d286",
+    "results/ext8-switch-execution-q309/report.json": "a56cc786cb66529a398785caced9fd51e6a8b78e9edc76e1b06de4bbc3e643b4",
+    "results/ext8-switch-execution-q309/prover-report.json": "9bb9e47f811b25615516a668a2a1d83cd998ed01951b09c0ebee13f5b26b05e8",
+    "results/ext8-switch-execution-q309/codec-report.json": "0bd112a656b25d607915bff5bd78cc1d61efad5d7eb9537497a54d0a547cca83",
+    "results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd",
+    "results/larger-field-code-switch-screen.json": "f1ad5181272cea7db34147a0226bb63ad81cd4c04c0b9cb9b632c3ca47d9894f",
+    "results/recursive-pcs-root/report.json": "1d905381180c940a885581288e08179bcdaa8a775b19c6d9b5101c25d187610d",
+    "scope-report.json": "fcea1becba48a6f0e97c704b7048b71993852c2713441fe1acdf0c1d2b04f9ea",
+    "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
+    "airbender/direct-wasm/report_current_feasibility.py": "357f83f02291b8363de00d586ad6a9b9e01cefda8ce3252874b179487058d7db",
+    "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
+    "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
+    "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",
+    "airbender/direct-wasm/report_code_switch_qrom.py": "ee18d1d5d3b5bb57726a22394686e0a88a736640d1a5d009b753b522b526daf1"
+  }
+}

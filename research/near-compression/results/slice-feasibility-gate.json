@@ -375,7 +375,9 @@
     "results/expanded-bus-fingerprint-integration.json",
     "results/ext8-compression-q309/report.json",
     "results/ext8-complete-verifier/envelope-report.json",
-    "results/ext8-bundle-conditional-budget.json"
+    "results/ext8-bundle-conditional-budget.json",
+    "results/current-feasibility.json",
+    "results/current-feasibility/fresh-verifier.log"
   ],
   "requirements": [
     {
@@ -737,5 +739,17 @@
     "fold_leaf_bytes": 212096,
     "fold_authentication_bytes": 680592,
     "scope": "Actual all-Ext824-node/12-call SHA384 component, same externally fixed use root; fresh conjunction verification passes. Static AIR/spec excluded. No full recursion, full NEAR1Pgas or PQ128 certificate; conditional two-PCS budget at309queries is below128bits even before excluded errors."
+  },
+  "current_feasibility": {
+    "status": "NOT_PASSED",
+    "report": "results/current-feasibility.json",
+    "combined_fixture_bytes": 1344645,
+    "under_300000_bytes": false,
+    "fresh_bundle_replay": "results/current-feasibility/fresh-verifier.log",
+    "screened_candidates_passing_partial_quantum_bound_and_projected_size": 0,
+    "next_experiment": "Complete small recursive-verifier break-even; public binding and no disclosed trace are required.",
+    "scope": "Latest diagnostic evidence supersedes older size entries for decision-making; historical captures retained. This is not full NEAR 1Pgas or PQ128 feasibility.",
+    "hash_work_report": "results/switch-full-verifier-hash-work.json",
+    "unique_sha384_blocks_in_complete_fixture_verifier": 242409
   }
 }
