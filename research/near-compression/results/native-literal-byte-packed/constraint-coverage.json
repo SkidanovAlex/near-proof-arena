@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "constraints": 1199,
+  "tables": [
+    {
+      "retained": 214,
+      "boolean": 512
+    },
+    {
+      "retained": 281,
+      "boolean": 96,
+      "inactive": 96
+    }
+  ],
+  "negative_certificates_rejected": 4,
+  "scope": "Every original constraint has an accepted certificate under a kernel-proved checker soundness theorem. Executable artifact correspondence is not yet a closed kernel theorem for concrete AIR; global bus transfer remains open."
+}

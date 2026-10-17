@@ -1,0 +1,3 @@
+'NearCompression.packed_lift_trace_env' depends on axioms: [propext, Quot.sound]
+'NearCompression.packed_constraints_from_holds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_constraint_cert_sound' depends on axioms: [propext]

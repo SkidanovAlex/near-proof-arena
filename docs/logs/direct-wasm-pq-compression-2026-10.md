@@ -13598,3 +13598,30 @@ Remaining semantic assembly: whole source constraint list, global original-bus
 preservation and trace heights. Native cryptographic acceptance-to-HoldsP is
 still unproved, as are QROM recursive composition and fullNEAR1Pgas correctness.
 The packed357069B result remains provisional, sub300000 not achieved.
+
+## 2026-10-17 — Full constraint coverage and lifted trace assembly
+
+Previous turn progressed atcf5d98d58; clean state revalidated. Added
+PackedConstraintRefinement.lean: concrete lifted trace, unchanged heights and
+row-environment equivalence (including cyclic next row). PackedConstraintWitness
+covers only retained expressions with proved rewrites, Boolean constraints on
+decoded bit columns, or inactive bit constraints whose active column is retained
+and byte-level inactive constraint is present. Universal witness soundness is
+composed with range derivation from HoldsP to prove all covered source constraints
+on the reconstructed trace.
+
+Added an executable certificate checker and proved accepted certificates imply
+valid witnesses. It uses decidable structural Expr equality (local lawful BEq),
+not unproved Boolean equality assumptions. PackedConstraintCheck.lean plus
+check_packed_constraints.py validate all1199original constraints: EXEC214retained
+and512Boolean; CODE281retained,96Boolean and96inactive. Four negative certificates
+(scalar-as-bit, forged Boolean expression, missing inactive target, wrong rewrite)
+reject. Kernel build and axiom audit pass; constraint-coverage.json and
+lean-constraint-audit.log retained. Only standard Lean axioms are used.
+
+The concrete artifact coverage was executed through the proved checker; it is
+not yet a closed kernel theorem identifying the complete concrete AIR, nor a
+proof of Python/parser/Rust execution. Global original-bus count preservation and
+full HoldsP transfer remain unfinished. Native acceptance-to-HoldsP, quantum
+recursive composition, fullNEAR1Pgas and sub300000 remain open. Proof bytes and
+parameters unchanged; packed357069B still provisional.
