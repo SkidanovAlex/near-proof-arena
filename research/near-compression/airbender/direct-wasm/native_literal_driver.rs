@@ -1,4 +1,35 @@
 // Appended to the generated literal AIR adapter. Diagnostic parameters only.
+fn requested_whir(params: &mut SystemParams, stage: &str) {
+    if let Ok(raw) = std::env::var("NEARPROOF_LITERAL_QUERY_BITS") {
+        let bits:usize=raw.parse().unwrap();
+        assert!((1..=512).contains(&bits));
+        let log_final_poly_len=params.log_final_poly_len();
+        if let Ok(raw)=std::env::var("NEARPROOF_LITERAL_LOG_BLOWUP") {
+            params.log_blowup=raw.parse().unwrap();
+            assert!((1..=8).contains(&params.log_blowup));
+        }
+        params.whir=openvm_stark_backend::WhirConfig::new(
+            params.log_blowup,params.l_skip+params.n_stack,
+            openvm_stark_backend::WhirParams {
+                k:params.whir.k,log_final_poly_len,
+                proximity:params.whir.proximity,
+                query_phase_pow_bits:0,folding_pow_bits:0,mu_pow_bits:0,
+            },bits);
+        params.logup.pow_bits=0;
+        println!("NEARPROOF_LITERAL_QUERY_PROFILE stage={} query_bits={} log_blowup={} queries={:?} pow=0 field=Ext4 hash=Poseidon2",
+            stage,bits,params.log_blowup,params.whir.rounds.iter().map(|r|r.num_queries).collect::<Vec<_>>());
+    }
+}
+
+fn literal_wire_census(stage:&str,proof:&openvm_stark_backend::proof::Proof<BabyBearPoseidon2Config>) {
+    use openvm_stark_backend::codec::Encode;
+    fn size<T:Encode>(x:&T)->usize {let mut bytes=Vec::new();x.encode(&mut bytes).unwrap();bytes.len()}
+    let (total,gkr,relations,stacking,whir)=(size(proof),size(&proof.gkr_proof),
+        size(&proof.batch_constraint_proof),size(&proof.stacking_proof),size(&proof.whir_proof));
+    println!("NEARPROOF_LITERAL_CENSUS stage={} total={} gkr={} relations={} stacking={} whir={} other={}",
+        stage,total,gkr,relations,stacking,whir,total-gkr-relations-stacking-whir);
+}
+
 struct PublishedChild {
     pvs: crate::bus::PublicValuesBus,
     prehash: crate::bus::PreHashBus,
@@ -34,9 +65,11 @@ fn nearproof_literal_slice_recursion() {
     params.max_constraint_degree=8;
     // Make the native multiplicity constraint implied by the recursive shape bound.
     params.logup.max_interaction_count=1 << 20;
+    requested_whir(&mut params,"child");
     let child=BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(params);
     let mut parent_params=test_system_params_small(2,16,3);
     parent_params.max_constraint_degree=MAX_CONSTRAINT_DEGREE;
+    requested_whir(&mut parent_params,"parent");
     let parent=BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(parent_params);
     let fx=LiteralFixture;
     let (child_pk,child_vk)=fx.keygen(&child);
@@ -47,6 +80,13 @@ fn nearproof_literal_slice_recursion() {
     airs.push(Arc::new(PublishedChild {pvs:circuit.bus_inventory().public_values_bus,
         prehash:circuit.bus_inventory().pre_hash_bus}));
     let (parent_pk,parent_vk)=parent.keygen(&airs);
+    for (stage,key) in [("child",&child_vk),("parent",&parent_vk)] {
+        let bound=openvm_stark_backend::soundness::SoundnessCalculator::calculate_from_vk(key);
+        println!("NEARPROOF_LITERAL_RBR stage={} min_component={} logup={} gkr_sumcheck={} gkr_batching={} zerocheck={} constraint_batching={} stacking={} whir={} query={} proximity={}",
+            stage,bound.total_bits,bound.logup_bits,bound.gkr_sumcheck_bits,bound.gkr_batching_bits,
+            bound.zerocheck_sumcheck_bits,bound.constraint_batching_bits,bound.stacked_reduction_bits,
+            bound.whir_bits,bound.whir_details.query_bits,bound.whir_details.proximity_gaps_bits);
+    }
     let expected:Vec<openvm_stark_sdk::config::baby_bear_poseidon2::F>=
         std::fs::read(format!("{out}/public.bin")).unwrap().chunks_exact(4)
         .map(|x|openvm_stark_sdk::config::baby_bear_poseidon2::F::from_u32(u32::from_le_bytes(x.try_into().unwrap()))).collect();
@@ -58,11 +98,13 @@ fn nearproof_literal_slice_recursion() {
         assert_eq!(cursor.position() as usize,bytes.len());
         assert_eq!(outer.public_values[published_index],expected);
         parent.verify(&parent_vk,&outer).unwrap();
+        literal_wire_census("parent",&outer);
         println!("NEARPROOF_LITERAL_REPLAY_PASS");
         return;
     }
     let proof=fx.prove(&child,&child_pk);
     child.verify(&child_vk,&proof).unwrap();
+    literal_wire_census("child",&proof);
     assert_eq!(proof.public_values[0],expected);
     let mut child_bytes=Vec::new(); proof.encode(&mut child_bytes).unwrap();
     std::fs::write(format!("{out}/child.proof"),&child_bytes).unwrap();
@@ -81,6 +123,7 @@ fn nearproof_literal_slice_recursion() {
     let dpk=parent.device().transport_pk_to_device(&parent_pk);
     let outer=parent.prove(&dpk,ctx).unwrap();
     parent.verify(&parent_vk,&outer).unwrap();
+    literal_wire_census("parent",&outer);
     assert_eq!(outer.public_values[published_index],expected);
     let mut bytes=Vec::new();outer.encode(&mut bytes).unwrap();
     std::fs::write(format!("{out}/parent.proof"),&bytes).unwrap();

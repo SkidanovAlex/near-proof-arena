@@ -13063,3 +13063,64 @@ stronger security profile, accounting for field/hash/QROM/composition errors,
 then scale execution workload. No more isolated arithmetic sweep before that.
 FullNEAR1Pgas/PQ128/sub300000B at target security/end-to-end Lean correctness remain
 open. Targeted Lean build and make pin-check pass.
+
+## 2026-10-17 — Integrated Wasm recursion at stronger query targets
+
+Previous turn progressed at60d44a334: native literal child plus publicly bound
+parent, but only five-bit test WHIR parameters. Clean research state revalidated.
+Added explicitly selected query target and blowup controls to the same driver;
+when enabled, ALL WHIR and LogUp grinding bits are zero. Both child and parent
+use the requested WHIR query target. Field remains BabyBear Ext4 and hash remains
+Poseidon2; no nominal query parameter is labeled PQ128 or end-to-end128security.
+
+Fresh native proof generation, parent verification, six public mutation
+rejections and witness-independent saved replay pass for all three configurations:
+
+| log blowup | child bytes | parent bytes incl public | parent+request | test seconds |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 366641 | 875289 | 876208 | 4.02 |
+| 3 | 257393 | 513561 | 514480 | 7.65 |
+| 5 | 236977 | 470137 | 471056 | 26.12 |
+
+Times are native test harness wall times excluding compilation, not controlled
+benchmarks. Same193instructions,256execution rows,4891public fields, request and
+literal semantics as preceding checkpoint. Public vector is already serialized
+inside parent; do not add its19564bytes again. Replays hide childproof, bothtrace
+files, fixture and spec. Lean eligibility and independent runCall parity rerun
+for each retained parent. The five-bit parent still verifies as a regression.
+
+Census from actual proof encoding at logblowup5:10424GKR +45572constraint
+relations +1124stacking +392892WHIR +20125other =470137bytes. WHIR is83.57% of
+this integrated parent. The lower-rate case has796956WHIR bytes. This establishes
+opening cost as the dominant measured term; removing a few arithmetic DAG gates
+is not an adequate size plan. Three configurations are a finite experiment, not
+a global rate optimum or an impossibility proof.
+
+The actual verifying-key SoundnessCalculator adds decisive security evidence:
+parent min-component estimates85.62756/80.67575/75.67575bits, while query estimates
+128.24659/128.32823/128.05119. At logblowup5 the proximity term is75.67575bits;
+parent LogUp is85.62756bits. Ext4 cardinality has123.62756bits. Upstream's minimum
+of conservative component/RBR estimates is NOT a union-bound composition, a
+Fiat-Shamir/QROM certificate, a demonstrated attack, or the exact achievable
+security. But these current bounds do not certify the required128bits, even
+before quantum and recursive composition losses. Larger blowup improves bytes
+while degrading this proximity bound; measuring bytes alone would select a
+misleading candidate.
+
+Decision: stop query-only tuning of this fixedExt4 configuration. Next candidate
+must have explicit field/hash/proximity parameters and a composed quantum ledger
+for THIS integrated relation. Preserve the parent public binding and execution
+semantics; do not regress to generic fixtures or standalone component metrics.
+The larger-field/hashing implementation work remains open, not assumed free.
+
+Artifacts: native-literal-query128{,-rate3,-rate5}/ with proofs, exact query
+schedules, wire census, fresh replay logs, actual-key estimates and source snapshots.
+Native driver preserves default five-bit settings when no explicit query target
+is supplied. Generator now accepts --out and reads witness files from the runtime
+NEARPROOF_LITERAL_OUT directory. Set NEARPROOF_LITERAL_QUERY_BITS=128 and
+NEARPROOF_LITERAL_LOG_BLOWUP={1,3,5} for proving/replay. Generalized archive harness
+accepts --out, --prove-log, --query-bits and --log-blowup. report_native_literal_security.py
+checks proof hashes, actual lengths and census sums, and archives the calculator,
+key-bound derivation and configuration sources. No new Lean theorem this turn;
+prior bound lemmas unchanged. make pin-check and git diff --check pass.
+FullNEAR1Pgas/PQ128/secure sub300000B/end-to-end formal correctness remain open.

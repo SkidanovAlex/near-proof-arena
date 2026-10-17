@@ -1,0 +1,6 @@
+diff --git a/crates/recursion/src/tests.rs b/crates/recursion/src/tests.rs
+--- a/crates/recursion/src/tests.rs
++++ b/crates/recursion/src/tests.rs
+@@ -1,0 +1,2 @@
++#[path = "native_literal.rs"]
++mod native_literal;

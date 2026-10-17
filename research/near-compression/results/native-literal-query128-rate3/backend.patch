@@ -1,0 +1,51 @@
+diff --git a/crates/stark-backend/src/interaction/debug.rs b/crates/stark-backend/src/interaction/debug.rs
+index 0aab880..861b9dc 100644
+--- a/crates/stark-backend/src/interaction/debug.rs
++++ b/crates/stark-backend/src/interaction/debug.rs
+@@ -92,12 +92,12 @@ impl<F: Field> SymbolicEvaluator<F, F> for Evaluator<'_, F> {
+         }
+     }
+     fn eval_is_first_row(&self) -> F {
+-        unreachable!()
++        F::from_bool(self.local_index == 0)
+     }
+     fn eval_is_last_row(&self) -> F {
+-        unreachable!()
++        F::from_bool(self.local_index + 1 == self.height)
+     }
+     fn eval_is_transition(&self) -> F {
+-        unreachable!()
++        F::from_bool(self.local_index + 1 < self.height)
+     }
+ }
+diff --git a/crates/stark-backend/src/keygen/types.rs b/crates/stark-backend/src/keygen/types.rs
+index b265f22..493a87f 100644
+--- a/crates/stark-backend/src/keygen/types.rs
++++ b/crates/stark-backend/src/keygen/types.rs
+@@ -55,12 +55,20 @@ impl LinearConstraint {
+     /// Returns true if `self` is logically implied by `other`, i.e.,
+     /// whenever `other` is satisfied, `self` is also satisfied.
+     pub fn is_implied_by(&self, other: &LinearConstraint) -> bool {
+-        self.threshold >= other.threshold
+-            && self
+-                .coefficients
+-                .iter()
+-                .zip(&other.coefficients)
+-                .all(|(a, b)| a <= b)
++        if self.coefficients.len() != other.coefficients.len() {
++            return false;
++        }
++        // For nonnegative heights h: self.dot(h) <= scale * other.dot(h).
++        // Positive scale preserves the strict bound; u32 products fit in u64.
++        let mut scale = 1u64;
++        for (&a, &b) in self.coefficients.iter().zip(&other.coefficients) {
++            if b == 0 {
++                if a != 0 { return false; }
++            } else {
++                scale = scale.max(u64::from(a).div_ceil(u64::from(b)));
++            }
++        }
++        scale * u64::from(other.threshold) <= u64::from(self.threshold)
+     }
+ }
+ 

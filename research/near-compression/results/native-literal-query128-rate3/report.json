@@ -1,0 +1,132 @@
+{
+  "status": "NATIVE_LITERAL_CHILD_AND_BOUND_PARENT_VERIFIED",
+  "child_bytes": 257393,
+  "parent_bytes": 513561,
+  "public_fields": 4891,
+  "public_fields_are_inside_parent_serialization": true,
+  "request_bytes": 919,
+  "total_parent_plus_request_bytes": 514480,
+  "fresh_replay_without": [
+    "child proof",
+    "source rows",
+    "fixture",
+    "spec"
+  ],
+  "parent_public_mutation_rejections": 6,
+  "parent_wire_census": {
+    "total": 513561,
+    "gkr": 10424,
+    "relations": 45572,
+    "stacking": 1124,
+    "whir": 436316,
+    "other": 20125
+  },
+  "independent_runCall": {
+    "done": true,
+    "failed": false,
+    "gas": 999999447071257,
+    "stack": []
+  },
+  "eligibility": {
+    "code_length": 193,
+    "status": "PASS"
+  },
+  "security": {
+    "whir_query_target_bits": 128,
+    "profiles": [
+      {
+        "stage": "child",
+        "query_bits": 128,
+        "log_blowup": 3,
+        "queries": [
+          155,
+          57,
+          40,
+          30,
+          25,
+          21
+        ],
+        "grinding_bits": 0
+      },
+      {
+        "stage": "parent",
+        "query_bits": 128,
+        "log_blowup": 3,
+        "queries": [
+          155,
+          57,
+          40,
+          30,
+          25,
+          21
+        ],
+        "grinding_bits": 0
+      }
+    ],
+    "field": "BabyBear Ext4",
+    "field_cardinality_bits": 123.62756238530045,
+    "hash": "Poseidon2",
+    "PQ128": false
+  },
+  "native_vk_component_estimates": [
+    {
+      "stage": "child",
+      "min_component": 80.67574853784195,
+      "logup": 95.62756238530045,
+      "gkr_sumcheck": 122.04259988457929,
+      "gkr_batching": 123.62756238530045,
+      "zerocheck": 118.87267488313698,
+      "constraint_batching": 114.09034398476186,
+      "stacking": 112.97830620778313,
+      "whir": 80.67574853784195,
+      "query": 128.3282269644555,
+      "proximity": 80.67574853800312
+    },
+    {
+      "stage": "parent",
+      "min_component": 80.67574853784195,
+      "logup": 85.62756238530045,
+      "gkr_sumcheck": 122.04259988457929,
+      "gkr_batching": 123.62756238530045,
+      "zerocheck": 119.72067178969193,
+      "constraint_batching": 115.46265545862477,
+      "stacking": 112.03978486897225,
+      "whir": 80.67574853784195,
+      "query": 128.3282269644555,
+      "proximity": 80.67574853800312
+    }
+  ],
+  "native_estimate_scope": "Upstream conservative component/RBR calculator; its minimum is not a composed Fiat-Shamir/QROM security certificate.",
+  "modifications": [
+    "Exact original AIR expression DAG and bus messages lowered to native builder.",
+    "CODE multiplicity high bits >=9 constrained zero (511 bound, 256 actual execution rows).",
+    "Twelve public count bytes fixed to [1,0,0,0,1,0,0,0,193,0,0,0].",
+    "Parent continuation public-value bus consumed by public binding AIR; prehash bus consumed.",
+    "Scaled trace-height implication gate and selector-aware debug evaluator."
+  ],
+  "limits": [
+    "WHIR query target alone does not establish whole-protocol or PQ security; field and hash unchanged.",
+    "No compiler refinement or cryptographic acceptance-to-HoldsP Lean theorem.",
+    "No adversarial-witness proving test yet.",
+    "Bounded i32 Wasm slice only; no full NEAR1Pgas."
+  ],
+  "pins": {
+    "/tmp/nearproof-openvm": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+    "/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a"
+  },
+  "sha256": {
+    "openvm-hook.patch": "17882dfc35317faf9987c6279a88521b426629f35cb1bf400074e87f93b3fd89",
+    "native_literal.rs": "3aad7b2b2a360a04c9c51868a0827115a3202a0db04c42400d6f9297ff808d87",
+    "spec.json": "d5af1a689f6c8ba61c315c74ece9433ed5587056130c4c476c605a7eda420deb",
+    "public.bin": "2214c301b99a881c039544a7235ff4ac867ad472f1ae93325f89381c0cc4d82a",
+    "replay.log": "1bc55c8f37617424f3bf0d83508c2ecc2d4c66f0eceb6cda08c836a8d2d69bdd",
+    "rows-0.bin": "ab34e36616d070adfa36e613f552581973d1996b4f998ff22f21a17b4cb3db54",
+    "fixture.json": "f86142cae0e1df917444dbbf340920ffb34ba3c3a170e8ae7f1251ae9b2bcb80",
+    "rows-1.bin": "6d3da5d8dd402dcbe025823b99d938c7ed4f9d232f2416cd02d1a471a3d07975",
+    "replay-source.rs.txt": "a762079ab34472d9e563af0a535d7a57c1fde44e9e5e1ac26cdd5c44d84fcac0",
+    "child.proof": "7a60bab1c16d0fc44dbd933806ecfd660c009d7d80f28a86402cfbab4f3ae7a8",
+    "parent.proof": "5726d40f459a9067bac140e14f3a1222c25dcaa45ce19c35c4e5d8a992299331",
+    "backend.patch": "2d9ba95066045d2ee16435fe0bbb625f4149e36649086f8b901de76f2a63e6ee",
+    "prove.log": "dcbdd18485b7a93b2250bd3267bd545769877639fdebdb95bb90eb8648dbd8d1"
+  }
+}

@@ -1,10 +1,12 @@
-import sys,json,struct,hashlib
+import sys,json,struct,hashlib,argparse
 from pathlib import Path
 R=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(R/'airbender/direct-wasm'))
 import prepared_code_table_air as lit
-out=R/'results/native-literal-recursion';out.mkdir(exist_ok=True)
-case=json.loads((out/'fixture.json').read_text())
+ap=argparse.ArgumentParser()
+ap.add_argument('--out',type=Path,default=R/'results/native-literal-recursion')
+out=ap.parse_args().out.resolve();out.mkdir(exist_ok=True)
+case=json.loads((R/'results/native-literal-recursion/fixture.json').read_text())
 spec,rows=lit.make(case)
 ret=json.loads((R/'results/pq384-code-table-long193/statement.json').read_text())
 assert spec['air']==ret['spec']['air'] and spec['public']==ret['spec']['public']
@@ -53,8 +55,8 @@ for ti,table in enumerate(spec['air']['tables']):
    s.append(f'for row in 0..{count} {{ let start={seg["start"]}+row*{seg["width"]}; let first=builder.is_first_row(); builder.push_interaction({seg["bus"]}, public[start..start+{seg["width"]}].to_vec(),-first,1); }}')
  s.insert(start,'let e=eval_nodes(builder,&['+',\n'.join(defs)+']);')
  s+=['}}']
-s+=['struct LiteralFixture;','impl TestFixture<BabyBearPoseidon2Config> for LiteralFixture {', 'fn airs(&self)->Vec<AirRef<BabyBearPoseidon2Config>> {vec![Arc::new(Literal0),Arc::new(Literal1)]}', 'fn generate_proving_ctx(&self)->ProvingContext<CpuColMajorBackend<BabyBearPoseidon2Config>> {', 'use p3_baby_bear::BabyBear;', 'fn read(p:&str)->Vec<BabyBear> { std::fs::read(p).unwrap().chunks_exact(4).map(|x|BabyBear::from_u32(u32::from_le_bytes(x.try_into().unwrap()))).collect() }',f'let public=read("{out}/public.bin");', 'ProvingContext::new(vec![']
-for i,table in enumerate(rows):s.append(f'({i},AirProvingContext::simple(ColMajorMatrix::from_row_major(&RowMajorMatrix::new(read("{out}/rows-{i}.bin"),{len(table[0])})), {"public" if i==0 else "vec![]"})),')
+s+=['struct LiteralFixture;','impl TestFixture<BabyBearPoseidon2Config> for LiteralFixture {', 'fn airs(&self)->Vec<AirRef<BabyBearPoseidon2Config>> {vec![Arc::new(Literal0),Arc::new(Literal1)]}', 'fn generate_proving_ctx(&self)->ProvingContext<CpuColMajorBackend<BabyBearPoseidon2Config>> {', 'use p3_baby_bear::BabyBear;', 'fn read(p:&str)->Vec<BabyBear> { std::fs::read(p).unwrap().chunks_exact(4).map(|x|BabyBear::from_u32(u32::from_le_bytes(x.try_into().unwrap()))).collect() }','let dir=std::env::var("NEARPROOF_LITERAL_OUT").unwrap(); let public=read(&format!("{dir}/public.bin"));', 'ProvingContext::new(vec![']
+for i,table in enumerate(rows):s.append(f'({i},AirProvingContext::simple(ColMajorMatrix::from_row_major(&RowMajorMatrix::new(read(&format!("{{dir}}/rows-{i}.bin")),{len(table[0])})), {"public" if i==0 else "vec![]"})),')
 s+=[']) }}','#[test] fn nearproof_literal_slice_recursion() {','let mut params=test_system_params_small(2,16,3); params.max_constraint_degree=8;','let child=BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(params);','let parent=test_engine_small();','run_test::<1,_>(LiteralFixture,&child,&parent,1);','}']
 s=s[:s.index('#[test] fn nearproof_literal_slice_recursion() {')]
 source='\n'.join(s)+'\n'+Path(__file__).with_name('native_literal_driver.rs').read_text()
