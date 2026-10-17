@@ -463,3 +463,14 @@ wire bytes in the final proof and transcript SHA in the parent. ⇒ The final (a
 penultimate) layer needs a purpose-built **narrow verifier circuit** (≤ ~500 opened
 columns incl. preprocessed, ≤ 2²² interactions, one narrow SHA AIR, Ext12 verifier logic
 as a small row-serial ALU), single round-0 commit (SHA `dag_commit`).
+
+**Levers round 2** (`lane/pq-whir-levers` @ `ab3cfd969`, laws in `native/levers_laws.py`):
+Gruen GKR + derived claims → **GKR = 48L² + 192L + 152 B** (measured, L = 23: 29,960 vs
+44,408 B); Gruen on batch-constraint sumcheck (< 1 KB); next-row openings only for
+referenced columns (vk mask; gas-failure5 −7.4 KB, but the L3 SHA AIR references 438/442
+columns at the next row → ≈ 0 there; ext2's "next 0.3" rows are void for that AIR);
+2-element PoW (z = 32 proves directly: 65.5 s/grind on 8 threads, z = 28 3.8 s);
+max_constraint_degree 8 → 4 saves ≈ 3.5 KB. Gate 5 re-measured: 459,923 B (268/48 B) /
+**389,561 B (z = 32 / 42 B, z proved)** at 2²⁶·⁴ cells, 460 cols. Model best point with
+measured laws: **≈ 325 KB** at 460 final columns. Remaining gap must come from the
+narrow verifier circuit (columns, next-row columns, interactions) and fewer cells.
