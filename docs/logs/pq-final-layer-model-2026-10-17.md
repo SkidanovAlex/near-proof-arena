@@ -502,3 +502,21 @@ before γ_i, so one equivocated leaf chosen after γ solves the combination equa
 Residual: [H-M], [H-outer] (outer protocol reads columns via the list at δ₀ + K/B₀),
 reviews of Thm 4/Thm R, user U-7 decisions (WHIR-Y, position-indexed nodes, dedup,
 48-B top levels, 384-bit FS chain).
+
+**Narrow verifier circuit NV — measured fixed point** (`lane/pq-recursion-sha384` @
+`f6596503d`, `results/pq-recursion-nv/README.md`). All non-SHA logic in one 69-column
+role-multiplexed AIR (NvAir: verifier program, program binding, hashing glue, transcript
+chain, sampling; degree 8, 48 interactions/row) + 5-col byte table + k = 3 SHA AIR:
+**258 opened columns (OpenVM port: 3,481–3,923)**. Measured chain at a T = 20 test target,
+all proofs verify natively, 7 tamper classes rejected in-circuit: fixed point A2 = A3 →
+L1–L3 at **171,797 B** (510 cols incl. both SHA instances in that build, 2²⁵ interactions,
+62.9M cells); step-6 build 168,437 B (2²⁴ interactions). 3 h 07 min for six levels,
+19.3 GB. **Modelled final layer** (`extrapolate_nv.py`: measured NvAir structure and
+per-query program costs + levers, ×15, coset, 42 B, z = 32, multiproof — levers not yet in
+the circuit): **308,547 B** (power-of-two heights) / **298,881 B** (padding-free heights);
+268-bit no-grinding: 363,519 / 359,535 B. Breakdown: WHIR 215–223 KB (≈ 2²⁵·⁹ cells),
+relations 45 KB (25 KB openings, 17 KB degree-21 sumcheck). Remaining levers: next-row
+mask (≈ 3 KB), 41-B digests (3 KB), 43-row SHA (≈ 1 KB), padding-free heights (≈ 10 KB),
+weak-binding reserve (≈ 35 KB, conditional). Gaps: L2 doesn't yet check L1's app-verifier
+program; levers not in circuit (needs levers backend on the CPU backend); real run needs
+a ~2^38.8-element streamed LDE (multi-GPU / 100+ GB host).
