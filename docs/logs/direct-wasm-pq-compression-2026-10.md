@@ -12076,3 +12076,44 @@ Preserve fixed-key binding and all public state links when specializing.
 
 Evidence:root-workload-screen/report.json with source pins and all14scenarios.
 No new Lean theorem; fullNEAR1Petagas/PQ128/secure sub300000B goal remains active.
+
+## 2026-10-17 — Compile compressed-bundle GKR arithmetic and prove two identities
+
+Previous goal turn progressed via measured workload attribution atd6e541ff7.
+Revalidated clean worktree. Added compile_swirl_gkr_verifier.py: fixed-layout
+Ext4 DAG with explicit proof coefficients, layer input claims, external initial
+claim,437transcript challenge inputs and4257known input values. No honest proof
+values are frozen into circuit constants. Endpoint/wiring tests are437output
+residuals; output also includes the known-subtracted PCS claim and2603weights.
+Constants and circuit wiring come from the verifier-owned layout.
+
+Actual root public proof is replayed by an isolated clone of existing verifier
+to capture authenticated challenge order (no global monkeypatch). Compiled DAG
+matches all equality checks, every2603PCS weight and final residual. Four
+mutations (initial claim, coefficient, layer input, challenge) produce a nonzero
+check. A changed known input correctly leaves GKR checks unchanged but changes
+the PCS residual, documenting its separate authentication obligation.
+
+Initial sequential arithmetic:820866nodes, maxdepth13789. Grouped wiring
+factors op(a,b) outside each operation-specific sum. Balanced sum compilation
+reduces maxdepth to34 with820866nodes, including627955extension multiplications.
+All parity/negative checks rerun successfully after balancing. Independent
+reachability/acyclicity check finds782476reachable nodes; unused emitted nodes
+are not a necessary cost. Counts are Ext4 operations, not base-field AIRcells,
+proof bytes or a proven speedup. Both source versions/reports preserved.
+
+Added SwirlGkrVerifierArithmetic.lean and package import. Two compiled theorems:
+operation-grouped wiring preserves weighted gate evaluation; emitted quadratic
+endpoint residual is equivalent to the endpoint sumcheck equality. Targeted
+lake build passes; axiom reports contain only propext,Classical.choice,Quot.sound.
+These are reusable algebraic identities, NOT a Python compiler refinement,
+Fiat-Shamir/QROM theorem or full GKR/recursive soundness proof.
+
+Transcript hash/challenge derivation, public-prefix validation, known input
+coefficient derivation and weighted stacking/WHIR are still external. This is
+an executable circuit component, not a generated recursive proof. Its substantial
+arithmetic count means fixed layout alone must not be assumed to deliver the
+required4xworkload reduction. Next reduce/evaluate the fixed wiring polynomial
+cost and connect authenticated transcript/PCS interfaces before large proving.
+Evidence:compiled-gkr-verifier/ circuit, reports, logs and pins. Full NEAR1Pgas,
+PQ128, secure sub300000bytes and end-to-end Lean correctness remain open.

@@ -1,0 +1,2 @@
+'NearCompression.swirl_grouped_wiring' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.swirl_quadratic_endpoint' depends on axioms: [propext, Classical.choice, Quot.sound]
