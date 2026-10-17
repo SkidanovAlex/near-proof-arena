@@ -14,11 +14,14 @@ ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'results/swirl-security-review/native-dag-gkr'
 
 
-def fixture():
+def fixture(capture_path=None, openings_path=None, output_dir=OUT):
     base=ROOT/'results/swirl-security-review'
     dags={r['air']:r for r in [json.loads(x) for x in gzip.decompress((base/'dag-export/dag.jsonl.gz').read_bytes()).splitlines()]}
-    c=json.loads(gzip.decompress((base/'native-controls/capture.jsonl.gz').read_bytes()).splitlines()[1])
-    openings=json.loads(gzip.decompress((OUT/'openings.json.gz').read_bytes()))
+    capture_path = capture_path or base/'native-controls/capture.jsonl.gz'
+    captures = gzip.decompress(capture_path.read_bytes()).splitlines()
+    c=json.loads(captures[1] if len(captures)==3 else captures[0])
+    assert len(captures) in (1,3)
+    openings=json.loads(gzip.decompress((openings_path or OUT/'openings.json.gz').read_bytes()))
     assert [x['air'] for x in openings]==[x['air'] for x in c['traces']]
     by_air={x['air']:x for x in openings};records=[dags[t['air']] for t in c['traces']]
     controls=dict(lam=tuple(c['lambda']),beta=tuple(c['beta']),mu=tuple(c['mu']),
@@ -62,8 +65,8 @@ def fixture():
     statement=hashlib.sha384(b'nearproof-native-weighted-v1'+json.dumps(c,sort_keys=True).encode()).digest()
     # This oversized diagnostic statement binds the original capture, including
     # openings via node evaluations. It is NOT a replacement compression transcript.
-    OUT.mkdir(parents=True,exist_ok=True)
-    (OUT/'coordinate-report.json').write_text(json.dumps(dict(checked=checked,rotated=rotated,cached=cached,
+    output_dir.mkdir(parents=True,exist_ok=True)
+    (output_dir/'coordinate-report.json').write_text(json.dumps(dict(checked=checked,rotated=rotated,cached=cached,
         trace_order=[x['air'] for x in openings],layout=stats),indent=2)+'\n')
     return stats,layout,slots,private,known,claim,statement
 

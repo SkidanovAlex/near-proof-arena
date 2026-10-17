@@ -11699,3 +11699,48 @@ arbitrary current/rotated coefficients into stacking sumcheck using these
 matching committed matrices. Old residual cannot be silently reused. No new
 weighted sumcheck/PCS authentication, PQ128, Lean composition or full NEAR
 1Petagas proof has been achieved. Full goal remains active.
+
+## 2026-10-17 — Native arbitrary-weight stacking sumcheck executed
+
+Previous goal turn classified progress: matched committed witness saved at
+d99d444c2. Revalidated clean worktree. Parameterized native GKR fixture and
+pair grouping to preserve old artifacts while using the fresh committed-witness
+capture. New GKR proof1258EF/20128Ext4field bytes; fresh-process replay and
+old native fixture replay pass. New residual is
+[822778656,238050685,651066353,73744785],2303coordinates/1548column pairs,
+757nonzero rotated weights. Explicitly do not reuse the old residual.
+
+Encoded weights in actual commitment/layout sorted-column order, with zero
+weights for the one unreferenced source column:1549pairs total. Added a
+DIAGNOSTIC native CPU prover setter replacing both current and rotated
+lambda-power coefficients. Default upstream constructor/protocol unchanged.
+Probe loads the saved40source matrices, recomputes common/cached commitments
+and matches fresh proof roots before running sumcheck. Full native code and
+patches are saved. Compile fixes: private module export, polynomial accessor,
+explicit transcript configuration and unused-result annotations.
+
+Standalone diagnostic transcript binds commitments, dimensions, source point,
+residual claim and all weights before any sumcheck round. Native receiver
+independently replays the challenges. Generated degree6initial polynomial and
+17quadratic rounds:41EF, plus50terminal stacked-column evaluations. Every
+terminal evaluation independently recomputed by full matrix dot product against
+hyperprism evaluation weights. Native test passes in11.63s including commitment
+reconstruction; this is not a production proving benchmark. Clippy passes.
+
+Independent Python verifier checks initial domain sum, all round reductions
+and final arbitrary-weight kernel equation at captured challenges using actual
+layout/short-trace conventions. Four mutations (initial coefficient, round
+value, challenge, terminal opening) reject. Checks canonical Ext4 encoding and
+expected dimensions. Total91EF=1456Ext4field payload bytes; this excludes
+serialization/context and is NOT a PCS proof or complete compressed proof.
+Evidence:results/swirl-security-review/weighted-native-sumcheck/ and
+witness-dag-gkr/. Prepare and checker scripts preserve explicit source hashes.
+
+This supplies the previously missing executable weighted SUMCHECK bridge.
+Its final50evaluations are checked with full witness, not authenticated by a
+new WHIR proof. The GKR controls still come from a native transcript containing
+all old disclosed openings; the diagnostic capture-bound GKR statement is not
+compression. Next connect a new PCS opening at the actual sumcheck point,
+then justify a causal combined transcript and price all costs at stronger
+security. No PQ128, new Lean composition theorem or full NEAR1Petagas claim.
+Full goal remains active.

@@ -1,0 +1,18 @@
+{
+  "status": "NATIVE_ARBITRARY_WEIGHT_SUMCHECK_ALGEBRA_VERIFIED",
+  "sumcheck_extension_elements": 41,
+  "terminal_opening_elements": 50,
+  "field_elements": 91,
+  "ext4_field_payload_bytes": 1456,
+  "negative_checks": [
+    "('s0', 0, 0)",
+    "('rounds', 0, 0, 0)",
+    "('u', 0, 0)",
+    "('openings', 0, 0, 0)"
+  ],
+  "limitations": [
+    "Terminal evaluations checked against full matched witness, not a fresh PCS opening proof.",
+    "Native transcript replay tested; Python checks captured challenge equations only.",
+    "GKR/native controls still depend on old full-opening transcript. No compression/QROM/PQ128 theorem."
+  ]
+}

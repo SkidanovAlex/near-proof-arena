@@ -1,0 +1,2 @@
+PASS: weighted saved proof and residual PCS functional (full witness)
+{'status': 'NATIVE_RESIDUAL_COLUMN_PAIRS_CHECKED', 'source_coordinates': 2303, 'column_pairs': 1548, 'nonzero_rotation_pairs': 757, 'claim': (822778656, 238050685, 651066353, 73744785), 'scope': 'Column pairing only; committed stacked-layout placement and new PCS proof remain required.'}

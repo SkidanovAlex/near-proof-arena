@@ -1,0 +1,30 @@
+{
+  "inputs": {
+    "committed-witness/internal.proof.gz": "a5de2cf628532ecd5bb3e462b195a23a6a4088cc6201c568a5b17f37c3b80c84",
+    "committed-witness/witness.tar.gz": "53936c49bdcb71afc3b45665b882f47fd6bdcafb949f6ceeb2542120a5fb0db1",
+    "committed-witness/point-capture.jsonl.gz": "d7752c69f18d6476a8ddb81db944b60562e47293a320753df92beec7b8e5ab1b",
+    "committed-witness/layouts.json": "e90431def485035efdec2031446dc03670274aa95636d0e7d2005405a8836b62",
+    "witness-dag-gkr/native-pairs.json.gz": "6a8388023b32a1760dc752423c327642a0362ce4b1e3ec7fdd60853f88901340"
+  },
+  "artifacts": {
+    "coefficients.json": "2daad9eeb1ffce526578abfa09d9325915897c917a00a8677fc3f3b9f9ed0dea",
+    "cpu-backend-lib.rs.gz": "89ef604fd5664c68f55a4151199815206fea5323df7d0b25e1571f522eba0499",
+    "cpu-backend-stacked_reduction.rs.gz": "bd63079e0853c95a819e7760b8ff6c505dbbc72e5aa28bc7e37c4b5b8a2390d4",
+    "cpu-backend.patch.gz": "a7df6f9ba2b16a75231243018f428826517cadeb916161787dddd0d562b56416",
+    "nearproof-weighted-clippy.log": "dbe0c1bb7bc4516d29aa6b300008786ae4629024b5c9ac01fdf4a804d44cc67b",
+    "nearproof-weighted-sumcheck.log": "f9b241c521dd1d337e463facbbef43f2bd1973e71628ab181e08a0933e2f6248",
+    "openvm-tests.rs.gz": "7ff45d99d53eade5e043cf16094a4697a4677a64ba77312bfbec0bf2faab6e90",
+    "openvm.patch.gz": "f25c477e68a010af7c7bdf1cfb61c432c473311c1c50d7b57e24bd6513006552",
+    "proof.json": "345eeef14b66ed0a9b0f17c1e03fbbc346f57beea8ea78f2f628e2265370ed76",
+    "report.json": "7f2f0b3d5d2901997e0e04b18902fdb9f27a7e1735733bd762228b38371ad87d",
+    "weighted-input.bin.gz": "754eedc592be024f48534a1f2f05134c8ed78d7f4002e1bed38d0eea4cba7377"
+  },
+  "reproduce": [
+    "prove_swirl_witness_dag.py",
+    "prove_swirl_witness_dag.py --verify-saved",
+    "prepare_swirl_weighted_sumcheck.py",
+    "Apply saved diagnostic native source patches and clean only the fast-profile openvm-cpu-backend package.",
+    "Run tests::nearproof_weighted_native_sumcheck with matched witness extracted to /tmp/nearproof-reconstructed-witness and saved internal proof decompressed to /tmp/nearproof-witness-internal.proof.",
+    "Copy /tmp/nearproof-weighted-sumcheck.json to proof.json; run check_swirl_weighted_sumcheck.py."
+  ]
+}
