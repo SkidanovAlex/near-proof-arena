@@ -90,3 +90,39 @@ only 75.7 bits. Under U-7 (48-B digests vs 32 B) and 268 query bits (≈ 2× que
 the same shape would be well above 1 MB. No recursive layer at the PQ contract
 has been measured yet; the model's 0.5–0.8 MB already assumes list decoding in
 every round, multiproof dedup and an optimized final-poly cut.
+
+## Iteration 2: levers and the decisive parameter (correction)
+
+`native/levers_model.py` (output `results/pq384-final-layer-levers.txt`)
+generalises the calibrated model: per-round query target, list multiplicity m,
+digest width, a separate first-round fold k1, grinding (under U-6's bounded
+queries the attack succeeds with O(t²·2⁻ᶻ·ε), so z PoW bits lower the target by z;
+honest cost 2ᶻ SHA-384 per round), and the final circuit's cell count. It
+reproduces the measured child.
+
+**Correction to the earlier conclusion.** The ≥ 521 KB figure assumed 8k–30k
+committed cells per in-circuit SHA-384 compression and 20k cells per query.
+The final layer's size is driven by its committed cell count (first-round
+leaf width), and in SWIRL lookups/interactions are proven by GKR, not committed:
+
+| final circuit | today (268, m=3, 48 B) | all levers (226, m=8, 42 B, k1 free) |
+|---|---:|---:|
+| 2²² cells | 261,697 | 206,317 |
+| 2²⁴ cells | 342,177 | 260,373 |
+| 2²⁷ cells | 525,041 | 374,777 |
+
+Fixed point (penultimate shaped for minimal in-circuit SHA work; 2,000 cells per
+query, 2²⁰ fixed arithmetic cells — both guesses):
+
+| c_sha (cells/compression) | penultimate SHA | final cells | today | +k1,m=8, 258 | + z=32, 42 B |
+|---:|---:|---:|---:|---:|---:|
+| 1,000 | 2,343 | 2²¹·⁷ | 237,953 | 228,737 | 197,581 |
+| 2,500 | 2,803 | 2²³·⁰ | 272,001 | 259,585 | 224,317 |
+| 4,000 | 3,355 | 2²³·⁸ | 301,569 | 287,041 | 248,341 |
+| 8,000 | 5,133 | 2²⁵·³ | 362,977 | 344,545 | 295,171 |
+
+**Gate:** < 300 KB at today's protocol settings needs c_sha ≲ 4k committed cells
+per SHA-384 compression (plus the arithmetic guesses holding); ≲ 8k with grinding
+and 42-B digests (both need user decisions). Next: measure c_sha with a real
+SHA-512-family AIR on the pinned backend, then prove a shape-equivalent final
+layer (same cells/columns/params) to measure final bytes directly.
