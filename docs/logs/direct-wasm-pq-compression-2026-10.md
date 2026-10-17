@@ -11307,3 +11307,55 @@ secure sub300000bytes/end-to-end Lean correctness remain open.
 Artifacts:research/near-compression/results/swirl-security-review/dag-export/
 contains compressed full DAG/reference export, compiler report, source/log
 pins and upstream patch. Reproducer:airbender/direct-wasm/compile_swirl_fixed_dag.py.
+
+
+## 2026-10-17 — Reassociation plus combined layering passes component-size gate
+
+Previous goal turn classified progress: exported fixed DAG/native parity and
+rejected naive separate GKR layout. Revalidated clean branch at d7cb128ae.
+Implemented bounded linear reassociation over BabyBear: flatten add/sub and
+base-constant multiplication into modular coefficient maps, discard zero
+coefficients, hash-cons emitted operations, and combine terms by increasing
+subtree depth. Forms larger than512terms fall back to the original operation.
+Dynamic multiplications remain nonlinear atoms. Original node outputs remain
+addressable for parity; unused generated nodes are pruned by existing layout.
+
+Combined all39AIR DAGs with explicit AIR namespaces on variable and selector
+inputs; operation and semantic output indices are offset, interaction bus/count
+metadata retained. Assert combined input count equals the sum of separate
+counts2373, so equal synthetic values cannot accidentally merge independently
+bound coordinates. Output checksum still uses FIXED DIAGNOSTIC coefficients;
+it is not a sound batching protocol or the native verifier acceptance predicate.
+
+| Layout | Padded gates | Total layers | GKR extension elements | Degree9 field bytes |
+| --- | ---: | ---: | ---: | ---: |
+| separate, original |137070|937|36452|1312272|
+| separate, rebalanced |54514|489|17598|633528|
+| combined, original |146218|232|11810|425160|
+| combined, rebalanced |62890|23|1198|43128|
+
+Message count uses the existing GKR format: each layer6*log2(previous width)+2
+extension values. No proof generated, framing/input openings/PCS links excluded.
+Reassociation reduces deepest separate circuit229to21layers; combined has23.
+This passes a component payload gate that failed badly for naive lowering,
+not the complete secure300000-byte target. Input commitments and output batching
+may change the circuit and size. Degree9 is still a sensitivity parameter.
+
+Every exported node matches three native base-field assignments, and layered
+checksum outputs match. Rewrites additionally compare every requested original
+node/root at all-zero, all-one, all-minus-one and independent seeded random
+slot assignments. Tests include selectors/AIR namespaces independently rather
+than relying only on equal synthetic selector values. Existing malformed-edge
+and altered-reference rejection checks still pass; unchanged default compiler
+report reproduces. No extension-field/Lean compiler soundness theorem yet.
+
+Next: execute GKR prove/verify for the combined rebalanced graph and validate
+the returned input functional obligation against the same original coordinates.
+Then replace diagnostic output checksum with a sound reduction matching actual
+constraint/interaction consumers and establish challenge chronology. Those
+interfaces, and arithmetic rewrite correctness, are the relevant Lean targets.
+Do not call the43128-byte component an end-to-end proof. Full NEAR1Petagas,
+PQ128, secure sub300000bytes and end-to-end Lean correctness remain open.
+
+Reproducer:airbender/direct-wasm/measure_swirl_rebalanced_gkr.py.
+Evidence/source hashes:results/swirl-security-review/dag-rebalance/.

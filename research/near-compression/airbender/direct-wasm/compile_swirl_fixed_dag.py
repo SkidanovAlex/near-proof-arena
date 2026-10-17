@@ -17,12 +17,12 @@ OUT = ROOT/'results/swirl-security-review/dag-export'
 
 def input_value(key, seed):
     if key[0] == 'variable':
-        _, kind, part, offset, index = key
+        _, kind, part, offset, index, *namespace = key
         return ((seed+1)*(1+kind*100003+part*1009+offset*97+index*7)) % P
     return {'first_row': seed+13, 'last_row': seed+17, 'transition': 1-(seed+17)}[key[0]] % P
 
 
-def compile_air(record):
+def compile_air(record, *, reassociate=False):
     nodes=[]; mapping=[]; slots={}
     for original_index, node in enumerate(record['nodes']):
         op,*args=node
@@ -56,7 +56,34 @@ def compile_air(record):
             if j+1==len(terms): nxt.append(terms[j]);continue
             nxt.append(len(nodes));nodes.append(('add',terms[j],terms[j+1]))
         terms=nxt
-    root=terms[0]; live=set(); todo=[root]
+    root=terms[0]
+    if reassociate:
+        from rebalance_swirl_dag import rebalance
+        original_nodes=nodes
+        requested=mapping+[root]
+        nodes, rewritten = rebalance(nodes, requested)
+        # Independent slot assignments exercise different AIR namespaces and
+        # selectors; these are rewrite checks, not accepted verifier witnesses.
+        import random
+        def evaluate_base(graph, private):
+            vals=[]
+            for op,*args in graph:
+                if op=='input':value=private[args[0]]
+                elif op=='const':value=args[0]
+                elif op=='add':value=vals[args[0]]+vals[args[1]]
+                elif op=='sub':value=vals[args[0]]-vals[args[1]]
+                else:value=vals[args[0]]*vals[args[1]]
+                vals.append(value%P)
+            return vals
+        rng=random.Random(20261017)
+        assignments=[[c]*len(slots) for c in (0,1,P-1)]
+        assignments.append([rng.randrange(P) for _ in slots])
+        for private in assignments:
+            old_values=evaluate_base(original_nodes,private)
+            new_values=evaluate_base(nodes,private)
+            assert [old_values[i] for i in requested]==[new_values[i] for i in rewritten]
+        mapping, root = rewritten[:-1], rewritten[-1]
+    live=set(); todo=[root]
     while todo:
         i=todo.pop()
         if i in live:continue
