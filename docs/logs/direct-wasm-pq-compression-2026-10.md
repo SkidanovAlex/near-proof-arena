@@ -12733,3 +12733,49 @@ creation an inherited output path initially targeted the earlier evidence dir;
 new artifacts were separated, original committed evidence restored, path fixed,
 and verification/negatives rerun. Earlier evidence remains byte-identical.
 make pin-check passes. No full NEAR1Pgas/PQ128/end-to-end proof achieved.
+
+## 2026-10-17 — Canonical BabyBear word multiplication baseline
+
+Previous goal turn progressed at7653dc054 by constraining sampled challenges.
+Revalidated clean research tree and pinned Binius checkout. Next integration
+obligation is the GKR verifier's prime-field/extension-field arithmetic inside
+a binary-word circuit. Added an isolated canonical base-field multiplication
+example, not a claim that the full arithmetic verifier is compiled.
+
+Relation: a,b,q,r<P withP=2013265921, a*b=q*P+r. Both products use Binius's
+full128-bit integer multiplication; highwords assertedzero. Addition checks
+only the most-significant carry bit for overflow (carry wire also records
+internal carries). Lowword product equals reconstructed quotientproduct+remainder.
+The private quotient is supplied by host computation but fully constrained.
+Public a,b,r are not baked into the key. Canonical q is sufficient for these
+canonical a,b products; no unchecked integer/mod2^64 equality substitutes for
+field reduction. Four range constraints prevent noncanonical representatives.
+
+One product compiles to15gates,10privatewords,8ZERO/5AND/2IMULconstraints,
+3publicinoutwords and3constants.64independent products reproduce exactlinear
+counts:640privatewords,512ZERO,320AND,128IMUL;192publicwords/1536B external.
+Actual rate1/8 diagnostic proof:185808Bpayload/185844Bserialized. Census exact:
+algebra25584B,Merkle90784B,openedvalues69440B. Freshverification passes;
+changedCANONICAL publicinput rejects in proofverifier, changedproof rejects
+Merkle authentication. Initial bitflip negative crossedP and was correctly
+rejected by witness rangecheck; replaced with decrement to exercise the actual
+proofverifier and do not count that early failure as cryptographic evidence.
+
+Gadget tests cover240assignments:36boundaryproducts and corresponding wrong
+remainders/quotients, noncanonical representations, wraparound attempt, and128
+random canonical products. Targeted tests pass. New WordModularProduct.lean
+proves canonical integer quotient/remainder identity gives field product and
+composes explicit highword/carry equations into that identity. Axiom output
+onlypropext/Quot.sound, no sorry/nativeaxiom. This is a conditional mathematical
+interface, NOT a Rust/frontend refinement proof.
+
+Decision: use measured relation as a baseline for Ext4 lowering and shared
+rangechecks. Do not extrapolate standalone proof bytes additively or treat
+privateword cost as the full verifier's exact cost; shared operands/constants,
+new internaloutputs and integer-multiplication protocol overhead change layout.
+No extensionmultiplication, combinedhash/sampler/arithmetic proof, nativePCS
+continuation, fullNEAR1Pgas, PQ128 or end-to-end formalcorrectness achieved.
+
+Evidence under binius-babybear/: incrementalpatch,sourcepin,proof,negativeproof,
+logs,statistics,report and Leanbuild. Apply after prior Binius patches, rebuild,
+run check_binius_babybear.py (optional --reuse-tmp). make pin-check passes.
