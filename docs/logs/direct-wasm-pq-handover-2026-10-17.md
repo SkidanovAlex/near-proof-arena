@@ -88,8 +88,9 @@ heavy runs. Never share mutable .lake traces via hard links.
 Native tools: generate_native_literal_recursion.py --packed-bytes --no-install
 [--fixture PATH] --out PATH; prepare_native_sha384.py --literal-source PATH --out PATH;
 then build the standalone crate. check_native_sha384.py accepts --input-source,
---out, --request and --prove-log. Its oracle currently has fuel 256: raise this
-explicitly and validate the fuel requirement before using it for long workloads.
+--out, --request, --prove-log and --oracle-fuel (positive integer, default 256).
+Set sufficient fuel explicitly before using it for long workloads; the report
+records the chosen fuel. Exhaustion is rejected, not accepted as a guest trap.
 Preparing a workload overwrites /tmp/nearproof-native-sha384/src/literal.rs;
 do not prepare workloads concurrently. At wrap-up the binary/source contain gas-failure5.
 
@@ -141,3 +142,14 @@ All listed review subagents were completed at wrap-up.
 The main checkout at /data/illia/nearproof contains pre-existing untracked req.log
 and research/near-compression content. It was left untouched; use the integration
 worktree for the merged tree rather than resetting or deleting those files.
+
+## Follow-up: explicit oracle fuel
+
+The native checker now accepts and records --oracle-fuel. Validation on the staged
+1,025-instruction request: fuel 256 rejects with unmodeled fuel exhausted; fuel
+1,026 terminates successfully with empty stack and gas 999997403098105. Zero fuel
+is rejected by argument parsing before artifact access. The existing gas-failure
+native proof also passed the complete checker with fuel 1,026, including hidden
+witness replay, transcript vectors, eligibility, exported AIR and runCall parity.
+This removes a validation harness limit; no new long native proof or security
+claim follows from these tests.

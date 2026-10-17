@@ -2,7 +2,8 @@
 import hashlib,json,os,re,shutil,struct,subprocess,tempfile,argparse
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-ap=argparse.ArgumentParser();ap.add_argument('--input-source',type=Path,default=ROOT/'results/native-literal-field-screen');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--prove-log',type=Path,default=Path('/tmp/nearproof-native-sha384.log'));ap.add_argument('--request',type=Path,default=ROOT/'results/pq384-code-table-long193/request.json');args=ap.parse_args()
+ap=argparse.ArgumentParser();ap.add_argument('--input-source',type=Path,default=ROOT/'results/native-literal-field-screen');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--prove-log',type=Path,default=Path('/tmp/nearproof-native-sha384.log'));ap.add_argument('--request',type=Path,default=ROOT/'results/pq384-code-table-long193/request.json');ap.add_argument('--oracle-fuel',type=int,default=256);args=ap.parse_args()
+if args.oracle_fuel <= 0:ap.error('--oracle-fuel must be positive')
 OUT=args.out.resolve()
 TMP=Path('/tmp/nearproof-native-sha384')
 BACKEND=Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5')
@@ -65,7 +66,7 @@ with tempfile.TemporaryDirectory() as tmp:
     inp=Path(tmp)/'input.json';inp.write_text(json.dumps(dict(request=json.loads(request.read_text()),public=public)))
     eligibility=subprocess.run(['lake','env','lean','--run','PreparedSliceCheck.lean',str(inp)],cwd=ROOT,text=True,capture_output=True,check=True)
     assert json.loads(eligibility.stdout)==dict(status='PASS',code_length=code_length)
-    oracle=subprocess.run(['lake','env','lean','--run','PreparedSliceOracle.lean',str(request),'256'],cwd=ROOT,text=True,capture_output=True,check=True)
+    oracle=subprocess.run(['lake','env','lean','--run','PreparedSliceOracle.lean',str(request),str(args.oracle_fuel)],cwd=ROOT,text=True,capture_output=True,check=True)
 actual=json.loads(oracle.stdout)
 verify_calls=json.loads(re.search(r'NATIVE_SHA384_VERIFY_CALLS (\[[^\n]+\])',replay.stdout)[1])
 verify_blocks=json.loads(re.search(r'NATIVE_SHA384_VERIFY_BLOCKS (\[[^\n]+\])',replay.stdout)[1])
@@ -84,7 +85,7 @@ if packing:
     assert json.loads(family.stdout)[1]==json.loads((OUT/'spec.json').read_text())['air']
 report=dict(packing=packing,input_source=str(args.input_source),status='NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED',child_bytes=census['total'],wire_census=census,
     public_fields=len(public),code_length=code_length,closed_semantic_air=bool(packing),public_included=True,request_bytes=request.stat().st_size,total_child_plus_request_bytes=census['total']+request.stat().st_size,
-    independent_Lean_runCall=actual,eligibility=json.loads(eligibility.stdout),public_mutations_rejected=6,
+    independent_Lean_runCall=actual,oracle_fuel=args.oracle_fuel,eligibility=json.loads(eligibility.stdout),public_mutations_rejected=6,
     witness_independent_replay=True,transcript_oracle=dict(samples=96,rejections=rejections,draw_blocks=draw_blocks,final_state_equal=True,version=4),
     verifier_hash_cost=dict(tags=['leaf','node','init','observe_field','observe_commit','draw_block'],calls=verify_calls,compression_blocks=verify_blocks,total_compression_blocks=sum(verify_blocks),scope='single engine.verify call; excludes keygen and decoding'),
     security=dict(hash='SHA-384',field='BabyBear[X]/(X^12-31)',query_target_bits=268,grinding_bits=0,parameters=params,

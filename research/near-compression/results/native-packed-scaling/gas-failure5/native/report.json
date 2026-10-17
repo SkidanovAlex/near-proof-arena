@@ -47,6 +47,7 @@
     "gas": 3291023,
     "stack": []
   },
+  "oracle_fuel": 1026,
   "eligibility": {
     "code_length": 5,
     "status": "PASS"
@@ -136,7 +137,7 @@
     "plonky3-ext12.patch": "cd82dbb5f650b277146db19eecaa93fc133c4095de429e0db36f60c7c6d83c50",
     "prove.log": "9fbb972af4a7255c8ed265353cd59091c46daf7e2a7df89b82739ffcd63f3bad",
     "public.bin": "18b308208f4b3164f48a5161dd9d47d258f91b80d765df184f1cce03a6b262e1",
-    "replay.log": "850a495f8366e4d6f9ec03aabe1bd60ea99698d5ef0e78d48f1f9c218ede86a4",
+    "replay.log": "e369ac130ca61a0e69fe849ac81f1b3f969ceceeabb691c738324a7abf991ba2",
     "rows-0.bin": "4b4281e9a3b6479ec53f0f0c4dfae1a7ec9298ed8435984109135d0611702931",
     "rows-1.bin": "23d07875344c1205def22f4ee0b47320946dac93cc6820eb6e8a3c21915e369c",
     "rows-2.bin": "11ab7652729d0138df6c861305a612b885cab4a41830ba79a5b136a73e33ab5c",
