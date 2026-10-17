@@ -10228,3 +10228,36 @@ Dashboard now records full state parity,18inconsistent-evidence negatives.
 No Lean changes this turn; last full audit4662. Full1Pgas/PQ128/sub300000B
 NOT_PASSED. Next quantify a closed derived-state transcript and remaining full
 verifier costs before producing a new larger proof.
+
+## 2026-10-17 — Separate closed derived-functional transcript experiment
+
+Added ext8_closed_derived_switch.py with explicit experimental adapter/stage
+profiles. It clones helper function namespaces without global monkeypatching;
+original standalone stage.start still binds its full external weight vector.
+The only public proving/verifying entry points run the complete packed-root
+adapter, deriving initial weights from input-reduction challenges and every
+continuation from checked previous stages. New stage seeds bind versioned
+profile, fixed derivation identifier, complete config/history parent and claim,
+omitting the derived expanded vector. Root/schedule/namespace and initial
+statement/branches remain bound. This is a changed experimental Fiat-Shamir
+protocol, NOT a backwards-compatible transport or a security-certified omission.
+
+One heterogeneous small q8 proof completes and verifies in a fresh process.
+17negative cases pass, including old/new profile rejection after relabeling,
+external statement/parent/source-weight/root/claim changes, schedule/query changes,
+mutated reduction/root/OOD/tail/terminal, and an injected caller-selected weights
+field. Original baseline proof still verifies and its stage.start function is
+unchanged. New proof is27432JSON bytes; no compact/full-execution size claim.
+
+Measured this small fixture's stage-start hashing:20SHAblocks baseline versus12
+closed. Overall blocks1635versus1628, but exact-input-deduplicated blocks1268
+versus1296. Changed challenges change query/path overlap; report that increase,
+not a misleading total savings claim. This is an interface/algebra experiment,
+not a full-scale benefit, whole acceptance theorem, adaptive-QROM analysis or
+PQ128 claim. Dense arithmetic is still used in both prover and verifier.
+
+Next implement the already-tested structured/hybrid functional inside this
+closed verifier, with terminal-dot and every injection/fold checked. The full
+hash/arithmetic/security ledger must have headroom before another large proving
+run. No Lean changes this turn; last audit4662. Dashboard rejects19inconsistent
+evidence cases; full1Pgas/PQ128/sub300000B remains NOT_PASSED.
