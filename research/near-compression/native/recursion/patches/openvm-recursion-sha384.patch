@@ -1826,10 +1826,10 @@ index 0000000..8630a30
 +
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..e9b5bdb
+index 0000000..9b043fd
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,219 @@
+@@ -0,0 +1,223 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -1995,6 +1995,10 @@ index 0000000..e9b5bdb
 +        let mut counts = sha.byte_counts.clone();
 +        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
 +            *c += t;
++        }
++        // BIND rows range-check ya / 2 on the byte table
++        for t in 0..b.prog_len() / 2 {
++            counts[(2 * t % E1_SIZE) / 2] += 1;
 +        }
 +        let nv = nv_trace(&b.instrs, &b.vals, &b.wits, &sha.glue_rows, &tr.hash, &tr.samp, self.log_rows);
 +        let mats = vec![nv, sha.compress, sha.table, byte_table2(&counts)];
@@ -3297,7 +3301,7 @@ index 0000000..df6e338
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..2f8489e
+index 0000000..254b5c8
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
 @@ -0,0 +1,362 @@
@@ -3490,7 +3494,7 @@ index 0000000..2f8489e
 +        nv_debug_mats(&vk, &proof, 16, |mats, _| {
 +            let w = mats[0].width;
 +            let na = role_row(&mats[0], 1);
-+            mats[0].values[(na + 10) * w + super::uair::U_C] += F::ONE;
++            mats[0].values[(na + 10) * w + super::uair::N_COMMON + 36] += F::ONE;
 +        })
 +    });
 +    // 7. a BIND row's copy of the program word P0 (row na + 600)
@@ -3498,7 +3502,7 @@ index 0000000..2f8489e
 +        nv_debug_mats(&vk, &proof, 16, |mats, _| {
 +            let w = mats[0].width;
 +            let na = role_row(&mats[0], 1);
-+            mats[0].values[(na + 600) * w + super::uair::N_COMMON + 36] += F::ONE;
++            mats[0].values[(na + 300) * w + super::uair::N_COMMON + 48] += F::ONE;
 +        })
 +    });
 +}
@@ -4255,10 +4259,10 @@ index 0000000..b9037f7
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..58528a6
+index 0000000..f993017
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,613 @@
+@@ -0,0 +1,659 @@
 +//! NV merged non-SHA AIR ("NvAir", U2): one AIR, row roles sharing a column pool.
 +//!
 +//! Common columns: role flags ka (ALU), kb (BIND), kg (GLUE), kh (transcript hash chain),
@@ -4357,6 +4361,25 @@ index 0000000..58528a6
 +}
 +pub const AB_W: usize = AbCols::<u8>::width();
 +
++#[repr(C)]
++#[derive(AlignedBorrow, Debug)]
++pub struct BindCols<T> {
++    /// E1[ya], E1[ya + 1], E2[yb]
++    pub e1a: [T; 12],
++    pub e1b: [T; 12],
++    pub e2: [T; 12],
++    /// accumulator before this row
++    pub acc: [T; 12],
++    /// program words of ALU rows 2t, 2t + 1
++    pub pc0: [T; 4],
++    pub pc1: [T; 4],
++    pub ya: T,
++    pub yb: T,
++    /// last BIND row
++    pub bl: T,
++}
++pub const BIND_W: usize = BindCols::<u8>::width();
++
 +const fn max(a: usize, b: usize) -> usize {
 +    if a > b {
 +        a
@@ -4364,7 +4387,7 @@ index 0000000..58528a6
 +        b
 +    }
 +}
-+pub const POOL: usize = max(max(AB_W, GLUE_W), max(HASH2_WIDTH, SAMP2_WIDTH));
++pub const POOL: usize = max(max(max(AB_W, BIND_W), GLUE_W), max(HASH2_WIDTH, SAMP2_WIDTH));
 +pub const NV_WIDTH: usize = N_COMMON + POOL;
 +/// Column offsets used by tests / the binding check.
 +pub const U_P: usize = 6;
@@ -4523,10 +4546,16 @@ index 0000000..58528a6
 +        let mut groups = vec![];
 +        {
 +            let l: &AbCols<AB::Var> = pl[..AB_W].borrow();
-+            let n: &AbCols<AB::Var> = pn[..AB_W].borrow();
 +            let mut cb = Collect { inner: &mut *builder, ints: vec![] };
-+            eval_ab(&mut cb, cl, cn, l, n, &self.buses);
-+            groups.push((cl.ka + cl.kb, cb.ints));
++            eval_alu(&mut cb, cl, l, &self.buses);
++            groups.push((cl.ka.into(), cb.ints));
++        }
++        {
++            let l: &BindCols<AB::Var> = pl[..BIND_W].borrow();
++            let n: &BindCols<AB::Var> = pn[..BIND_W].borrow();
++            let mut cb = Collect { inner: &mut *builder, ints: vec![] };
++            eval_bind(&mut cb, cl, cn, l, n, &self.buses, self.h.byte);
++            groups.push((cl.kb.into(), cb.ints));
 +        }
 +        {
 +            let l: &GlueCols<AB::Var> = pl[..GLUE_W].borrow();
@@ -4554,12 +4583,10 @@ index 0000000..58528a6
 +}
 +
 +/// ALU and BIND roles.
-+fn eval_ab<AB: AirBuilderWithPublicValues + InteractionBuilder>(
++fn eval_alu<AB: AirBuilderWithPublicValues + InteractionBuilder>(
 +    builder: &mut AB,
 +    cl: &NvCommon<AB::Var>,
-+    cn: &NvCommon<AB::Var>,
 +    l: &AbCols<AB::Var>,
-+    n: &AbCols<AB::Var>,
 +    buses: &UBuses,
 +) where
 +    <AB::Expr as PrimeCharacteristicRing>::PrimeSubfield:
@@ -4568,7 +4595,6 @@ index 0000000..58528a6
 +    let one = AB::Expr::ONE;
 +    let cst = |v: u64| AB::Expr::from_u64(v);
 +    let ka: AB::Expr = cl.ka.into();
-+    let kb: AB::Expr = cl.kb.into();
 +    let p = cl.p;
 +
 +    // ---------------- op selectors ----------------
@@ -4626,8 +4652,6 @@ index 0000000..58528a6
 +    let pv0: AB::Expr = builder.public_values()[0].into();
 +    builder.assert_zero(s(Op::Pv) * (l.a[0] - pv0));
 +
-+    // BIND fields
-+    let (pc, ya, yb, zw, inv_w) = ([l.h[0], l.h[1], l.h[2], l.h[3]], l.h[4], l.h[5], l.h[6], l.h[7]);
 +
 +    // memory: ALU rows offer (y, c); operand reads on ALU rows, E1/E2 reads on BIND rows
 +    let mem = LookupBus::new(buses.mem);
@@ -4644,12 +4668,8 @@ index 0000000..58528a6
 +    };
 +    let reads_a = sum_of(Op::reads_a);
 +    let reads_b = sum_of(Op::reads_b);
-+    mem.lookup_key(builder, key(p[0] + kb.clone() * ya, &l.a), reads_a + kb.clone());
-+    mem.lookup_key(
-+        builder,
-+        key(bfield.clone() + kb.clone() * (yb + cst(E1_SIZE as u64)), &l.b),
-+        reads_b + kb.clone(),
-+    );
++    mem.lookup_key(builder, key(p[0].into(), &l.a), reads_a);
++    mem.lookup_key(builder, key(bfield.clone(), &l.b), reads_b);
 +
 +    // slot bus (chan, key1, key2, kind, v0, v1, v2):
 +    //   units (chan 1, job P2, uidx, kind 0 felt | 2 word, value(s)) are sent;
@@ -4714,56 +4734,84 @@ index 0000000..58528a6
 +        builder.assert_zero(s(Op::Dig) * (cst(2) - bfield.clone()) * l.c[k]);
 +    }
 +
-+    // ---------------- BIND role ----------------
-+    let w = ext_field_multiply::<AB::Expr>(a, bb);
++    // ALU rows send (y, P) to the BIND rows; the binding total arrives at the `Acc` row
++    let mut bmsg: Vec<AB::Expr> = vec![cl.y.into()];
++    bmsg.extend(p.iter().map(|&x| x.into()));
++    PermutationCheckBus::new(buses.bind).send(builder, bmsg, ka.clone());
++    let amsg: Vec<AB::Expr> = l.c.iter().map(|&x| x.into()).collect();
++    PermutationCheckBus::new(buses.acc).receive(builder, amsg, s(Op::Acc));
++}
++
++/// BIND role: row t covers ALU rows y = 2t, 2t + 1 (y = ya + 512 yb, ya even).
++fn eval_bind<AB: AirBuilder + InteractionBuilder>(
++    builder: &mut AB,
++    cl: &NvCommon<AB::Var>,
++    cn: &NvCommon<AB::Var>,
++    l: &BindCols<AB::Var>,
++    n: &BindCols<AB::Var>,
++    buses: &UBuses,
++    byte_bus: BusIndex,
++) where
++    <AB::Expr as PrimeCharacteristicRing>::PrimeSubfield:
++        p3_field::extension::BinomiallyExtendable<12>,
++{
++    let one = AB::Expr::ONE;
++    let cst = |v: u64| AB::Expr::from_u64(v);
++    let kb: AB::Expr = cl.kb.into();
 +    let tp = tau_pows();
-+    let mut wp: [AB::Expr; 12] = core::array::from_fn(|_| AB::Expr::ZERO);
-+    for j in 0..4 {
-+        let tj: [AB::Expr; 12] = core::array::from_fn(|k| {
++    let ptau = |pc: &[AB::Var; 4]| -> [AB::Expr; 12] {
++        let mut acc: [AB::Expr; 12] = core::array::from_fn(|_| AB::Expr::ZERO);
++        for j in 0..4 {
 +            let cf: &[F] = tp[j].as_basis_coefficients_slice();
-+            AB::Expr::from_u32(p3_field::PrimeField32::as_canonical_u32(&cf[k]))
-+        });
-+        let wt = ext_field_multiply::<AB::Expr>(w.clone(), tj);
-+        let term: [AB::Expr; 12] = core::array::from_fn(|k| wt[k].clone() * pc[j]);
-+        wp = ext_field_add::<AB::Expr>(wp, term);
-+    }
-+    let (bf, bl) = (l.wit, l.mult);
-+    builder.assert_zero(kb.clone() * bf * (bf - one.clone()));
-+    builder.assert_zero(kb.clone() * bl * (bl - one.clone()));
-+    builder.when_first_row().assert_zero(kb.clone() * (one.clone() - bf));
-+    builder.when_last_row().assert_zero(kb.clone() * (one.clone() - bl));
-+    let bf: AB::Expr = kb.clone() * bf;
-+    let bl: AB::Expr = kb.clone() * bl;
-+    // y counter: ya < 512 with wrap flag zw; (ya, yb) = (0, 0) on the first BIND row
-+    let top = cst((E1_SIZE - 1) as u64);
-+    builder.assert_zero(kb.clone() * zw * (zw - one.clone()));
-+    builder.assert_zero(kb.clone() * zw * (ya - top.clone()));
-+    builder.assert_zero(kb.clone() * ((ya - top) * inv_w - (one.clone() - zw)));
-+    builder.assert_zero(bf.clone() * ya);
-+    builder.assert_zero(bf.clone() * yb);
++            for k in 0..12 {
++                acc[k] += pc[j] * AB::Expr::from_u32(p3_field::PrimeField32::as_canonical_u32(&cf[k]));
++            }
++        }
++        acc
++    };
++    let e1a: [AB::Expr; 12] = l.e1a.map(Into::into);
++    let e1b: [AB::Expr; 12] = l.e1b.map(Into::into);
++    let e2: [AB::Expr; 12] = l.e2.map(Into::into);
++    let inner = ext_field_add::<AB::Expr>(
++        ext_field_multiply::<AB::Expr>(e1a, ptau(&l.pc0)),
++        ext_field_multiply::<AB::Expr>(e1b, ptau(&l.pc1)),
++    );
++    let wp = ext_field_multiply::<AB::Expr>(e2, inner);
++    let y2 = |x: &BindCols<AB::Var>| x.ya + x.yb * cst(E1_SIZE as u64);
++    builder.assert_zero(kb.clone() * l.bl * (l.bl - one.clone()));
++    builder.when_last_row().assert_zero(kb.clone() * (one.clone() - l.bl));
 +    {
 +        let mut t = builder.when_transition();
-+        t.assert_zero(cn.kb * (n.wit - (one.clone() - cl.kb)));
-+        t.assert_zero(cl.kb * (l.mult - (one.clone() - cn.kb)));
-+        let both = cl.kb * cn.kb;
-+        t.assert_zero(both.clone() * (n.h[4] - (ya + one.clone()) * (one.clone() - zw)));
-+        t.assert_zero(both.clone() * (n.h[5] - yb - zw));
++        let entry = cn.kb * (one.clone() - cl.kb);
++        t.assert_zero(entry.clone() * y2(n));
 +        for k in 0..12 {
-+            t.assert_zero(both.clone() * (n.c[k] - l.c[k] - wp[k].clone()));
++            t.assert_zero(entry.clone() * n.acc[k]);
++        }
++        t.assert_zero(cl.kb * (l.bl - (one.clone() - cn.kb)));
++        let both = cl.kb * cn.kb;
++        t.assert_zero(both.clone() * (y2(n) - y2(l) - cst(2)));
++        for k in 0..12 {
++            t.assert_zero(both.clone() * (n.acc[k] - l.acc[k] - wp[k].clone()));
 +        }
 +    }
-+    for k in 0..12 {
-+        builder.assert_zero(bf.clone() * l.c[k]);
++    // ya even in [0, 510]: ya / 2 is a byte
++    let inv2 = p3_field::PrimeField32::as_canonical_u32(&F::TWO.inverse()) as u64;
++    LookupBus::new(byte_bus).lookup_key(builder, [l.ya * cst(inv2)], kb.clone());
++    let mem = LookupBus::new(buses.mem);
++    let key = |addr: AB::Expr, v: &[AB::Var; 12]| -> Vec<AB::Expr> {
++        core::iter::once(addr).chain(v.iter().map(|&t| t.into())).collect()
++    };
++    mem.lookup_key(builder, key(l.ya.into(), &l.e1a), kb.clone());
++    mem.lookup_key(builder, key(l.ya + one.clone(), &l.e1b), kb.clone());
++    mem.lookup_key(builder, key(l.yb + cst(E1_SIZE as u64), &l.e2), kb.clone());
++    let bind = PermutationCheckBus::new(buses.bind);
++    for (h, pc) in [&l.pc0, &l.pc1].into_iter().enumerate() {
++        let mut m = vec![y2(l) + cst(h as u64)];
++        m.extend(pc.iter().map(|&x| x.into()));
++        bind.receive(builder, m, kb.clone());
 +    }
-+    // ALU rows send (y, P); BIND rows receive (ya + 512 yb, pc)
-+    let mut bmsg = vec![ka.clone() * cl.y + kb.clone() * (ya + yb * cst(E1_SIZE as u64))];
-+    for j in 0..4 {
-+        bmsg.push(p[j] + kb.clone() * pc[j]);
-+    }
-+    PermutationCheckBus::new(buses.bind).send(builder, bmsg, ka.clone() - kb);
-+    // binding total: last BIND row -> ALU `Acc` row
-+    let amsg: Vec<AB::Expr> = (0..12).map(|k| l.c[k] + bl.clone() * wp[k].clone()).collect();
-+    PermutationCheckBus::new(buses.acc).send(builder, amsg, bl - s(Op::Acc));
++    let amsg: Vec<AB::Expr> = (0..12).map(|k| l.acc[k] + wp[k].clone()).collect();
++    PermutationCheckBus::new(buses.acc).send(builder, amsg, kb * l.bl);
 +}
 +
 +/// NvAir trace: ALU rows (program, length 2^prog_log), BIND rows, GLUE / HASH / SAMP rows,
@@ -4779,7 +4827,7 @@ index 0000000..58528a6
 +) -> RowMajorMatrix<F> {
 +    let na = instrs.len();
 +    assert!(na.is_power_of_two() && na >= E1_SIZE);
-+    let used = 2 * na + glue.len() + hash.len() + samp.len();
++    let used = na + na / 2 + glue.len() + hash.len() + samp.len();
 +    assert!(used <= 1 << log_h, "NvAir: {used} rows exceed 2^{log_h}");
 +    let h = 1usize << log_h;
 +    let w = NV_WIDTH;
@@ -4792,8 +4840,10 @@ index 0000000..58528a6
 +            reads[ins.b as usize] += 1;
 +        }
 +    }
-+    for y in 0..na {
++    for t in 0..na / 2 {
++        let y = 2 * t;
 +        reads[y % E1_SIZE] += 1;
++        reads[y % E1_SIZE + 1] += 1;
 +        reads[E1_SIZE + y / E1_SIZE] += 1;
 +    }
 +    let coeffs = |x: EF| -> [F; 12] { x.as_basis_coefficients_slice().try_into().unwrap() };
@@ -4820,33 +4870,33 @@ index 0000000..58528a6
 +    }
 +    let tp = tau_pows();
 +    let mut acc = EF::ZERO;
-+    for y in 0..na {
-+        let row = &mut t[(na + y) * w..(na + y + 1) * w];
++    let nb = na / 2;
++    for bt in 0..nb {
++        let y = 2 * bt;
++        let row = &mut t[(na + bt) * w..(na + bt + 1) * w];
 +        let (cm, pool) = row.split_at_mut(N_COMMON);
 +        let c: &mut NvCommon<F> = cm.borrow_mut();
 +        c.kb = F::ONE;
-+        let r: &mut AbCols<F> = pool[..AB_W].borrow_mut();
-+        r.wit = F::from_bool(y == 0);
-+        r.mult = F::from_bool(y + 1 == na);
++        let r: &mut BindCols<F> = pool[..BIND_W].borrow_mut();
 +        let (ya, yb) = (y % E1_SIZE, y / E1_SIZE);
-+        let (e1, e2) = (vals[ya], vals[E1_SIZE + yb]);
-+        r.a = coeffs(e1);
-+        r.b = coeffs(e2);
-+        r.c = coeffs(acc);
-+        let wd = instrs[y].words();
++        let (e1a, e1b, e2) = (vals[ya], vals[ya + 1], vals[E1_SIZE + yb]);
++        r.e1a = coeffs(e1a);
++        r.e1b = coeffs(e1b);
++        r.e2 = coeffs(e2);
++        r.acc = coeffs(acc);
++        let (w0, w1) = (instrs[y].words(), instrs[y + 1].words());
 +        for j in 0..4 {
-+            r.h[j] = F::from_u32(wd[j]);
++            r.pc0[j] = F::from_u32(w0[j]);
++            r.pc1[j] = F::from_u32(w1[j]);
 +        }
-+        r.h[4] = F::from_usize(ya);
-+        r.h[5] = F::from_usize(yb);
-+        r.h[6] = F::from_bool(ya == E1_SIZE - 1);
-+        let d = F::from_usize(ya) - F::from_usize(E1_SIZE - 1);
-+        r.h[7] = if d == F::ZERO { F::ZERO } else { d.inverse() };
-+        let pw: EF = (0..4).map(|j| tp[j] * F::from_u32(wd[j])).sum();
-+        acc += e1 * e2 * pw;
++        r.ya = F::from_usize(ya);
++        r.yb = F::from_usize(yb);
++        r.bl = F::from_bool(bt + 1 == nb);
++        let pw = |wd: [u32; 4]| -> EF { (0..4).map(|j| tp[j] * F::from_u32(wd[j])).sum() };
++        acc += e2 * (e1a * pw(w0) + e1b * pw(w1));
 +    }
 +    debug_assert_eq!(acc, vals[na - 1], "ACC row must hold the full binding sum");
-+    let mut row = 2 * na;
++    let mut row = na + na / 2;
 +    let mut put = |flag: usize, data: &[F]| {
 +        let r = &mut t[row * w..(row + 1) * w];
 +        r[flag] = F::ONE;
@@ -4874,10 +4924,10 @@ index 0000000..58528a6
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..3aa68ba
+index 0000000..4234fd2
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1087 @@
+@@ -0,0 +1,1095 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -5668,6 +5718,7 @@ index 0000000..3aa68ba
 +        v
 +    };
 +    whir(b, vk, proof, &stack_open, &main_commit, &u_cube, &mut pow_id);
++    eprintln!("NV_PHASE end {}", b.instrs.len());
 +}
 +
 +/// Program binding (DESIGN §2.1): the child's ALU (air 0) program columns P0..P3 must
@@ -5808,6 +5859,7 @@ index 0000000..3aa68ba
 +        let omega_k = F::two_adic_generator(k);
 +        let mut zs_round = vec![];
 +        let mut ys_round = vec![];
++        let q_start = b.instrs.len();
 +        for qi in 0..nq {
 +            let s = b.smp1();
 +            let bits = decompose_index(b, s, nbits, qid);
@@ -5887,6 +5939,12 @@ index 0000000..3aa68ba
 +            ys_round.push(vals[0]);
 +            qid += 1;
 +        }
++        eprintln!(
++            "NV_QCOST round={round} queries={nq} rows={} per_query={:.0} nbits={nbits} k={k} merkle_nodes={}",
++            b.instrs.len() - q_start,
++            (b.instrs.len() - q_start) as f64 / nq.max(1) as f64,
++            b.merkle_nodes
++        );
 +        let gamma = b.smp12();
 +        if let Some(y0) = y0 {
 +            let t = b.mul(y0, gamma);
