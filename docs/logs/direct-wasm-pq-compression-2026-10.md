@@ -12681,3 +12681,55 @@ passes. Next connect constrained hash output/scan relations to arithmetic
 challenge inputs and budget their combined circuit, without treating these
 operational lemmas as cryptographic security. No full NEAR1Pgas/PQ128/end-to-end
 Lean correctness completion; goal remains active.
+
+## 2026-10-17 — Constrain fused digest-to-challenge sampling in Binius
+
+Previous goal turn progressed at360d23f45 with formal transcript interfaces.
+Revalidated research tree and pinned external checkout. Added opt-in
+--sample-challenges to the fixedgraph Binius example; default graph mode retains
+its previous behavior and the old hash-only proof independently still verifies.
+
+For each squeeze digest, derive12zero-extended little-endian u32 words from the
+computed SHA384 wires. Unsigned comparisons enforce word<2P; conditional
+subtraction implements moduloP on accepted words. A capped counter and selected
+output slots retain the first4accepted words. Compare flags are MSB booleans;
+select normalizes them before increment, avoiding undefined low bits. Assert
+final count4. Challenge outputs are constrained public words, not unconstrained
+witness digests. Only final seed remains a public digest. All437derived outputs
+are independently compared with the fresh GKR graph values by the runner.
+
+Scope is intentionally explicit: fixed one-block-per-draw schedule. Build rejects
+multi-block draw metadata; circuit rejects digest inputs with fewer than4accepted
+words. It does not yet implement variable retries or claim completeness for
+all valid transcripts. The hashgraph remains verifier-key data. GKR arithmetic,
+nativeprefix/PCS continuation and full NEAR relations are still absent.
+
+Sampler gadget test passes140vectors: prime/threshold boundaries, insufficient
+acceptedwords, wrongoutput, all9possible placements of four consecutive accepted
+words,128deterministicrandomvectors. This is frontend circuit evaluation testing,
+not a cryptographic proof-verifier negative. Wholegraph prove/freshverify passes;
+changedpublicinput rejects in proofverification and changedproof rejects Merkle.
+
+Measured1313hashblocks plus samplers:1563418hiddenwords,1251352ANDconstraints,
+31464binary-multiplicationconstraints. At rate1/8 diagnostic96-querybudget,
+payload230208B/serialized230244B, +6720B relative to hashonly. Publicio4776words/
+38208B, diagnostic total268452B. Native30case queryscreen repeats with exact
+rational query checks; best128-querybudget estimate290436B beforepublicio,
+328644B including it. This is not a full128-bit/PQ128 parameterization; field,
+hash and omitted soundness terms unchanged. Candidate has little size margin
+for the still-missing arithmetic and stronger-security overhead.
+
+Added SHA384ScanFilter.lean: generic operational scan values equal
+filterMap(acceptWord).take(needed), and done iff at leastneeded words accepted.
+Targeted build passes; axiom output onlypropext/Quot.sound, no sorry/nativeaxiom.
+These connect the host reference to the existing formal scan model; they do NOT
+prove the Rust comparator/select circuit implements that model. That refinement
+and multi-block circuit completeness remain explicit obligations.
+
+Artifacts under sampled-fused-graph include incremental sampler.patch, source
+snapshot, proof, tests/logs,30case report and legacy regression. Reproduce after
+prior Binius patches/lock using check_sampled_fused_graph.py. During harness
+creation an inherited output path initially targeted the earlier evidence dir;
+new artifacts were separated, original committed evidence restored, path fixed,
+and verification/negatives rerun. Earlier evidence remains byte-identical.
+make pin-check passes. No full NEAR1Pgas/PQ128/end-to-end proof achieved.
