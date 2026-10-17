@@ -1,0 +1,11 @@
+{
+  "research/near-compression/results/swirl-security-review/bdd-support/report.json": "bd25166cfd84e129d1546fff3a54549bfd258adf4e61b84c87b4c7b33c057b9f",
+  "research/near-compression/results/swirl-security-review/bdd-support/lean-axioms.log": "b076c46c6e2441b44e5dab8a7c14ef948cde5b4342c7c8f5774f2126c802641c",
+  "research/near-compression/results/swirl-security-review/bdd-support/lean-build.log": "7a8446edd9f1b86e5a906f155189f20ad7c0f2cec3afdf19b57877782a9890ea",
+  "research/near-compression/results/swirl-security-review/bdd-support/support.log": "71b8d5c380687d46ee63398efd781282ac3c2fba48fb81ec2bf8208ad3966631",
+  "research/near-compression/NearCompression/SwirlDecisionGraph.lean": "223ea644662b37a2f84d826c7d0d1ac17a856eb79feb32ae9f8d3989d272b29e",
+  "research/near-compression/NearCompression/SwirlGkrVerifierArithmetic.lean": "6665e5c7de851b8dd5804dbaa51fc192d0dfcb626d51e7576dcf3341c1a6d7a5",
+  "research/near-compression/airbender/direct-wasm/check_swirl_bdd_support.py": "5689656d5de7157212c5fc0050efcc2764e6e29e1d67b28b428ae4a6eb07ead9",
+  "research/near-compression/airbender/direct-wasm/swirl_wiring_bdd.py": "3ebb97db377add08f3000d379c25781057a4968f9ed313fd8c0aaa8481d69e9d",
+  "research/near-compression/results/swirl-security-review/root-split-witness/dag.jsonl.gz": "8a8892aa538aa735d028fdfd01311daaf07a7be09667293ed595f400f4e29adc"
+}

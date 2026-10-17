@@ -1781,3 +1781,5 @@ import NearCompression.SwirlColumnClaimBoundary
 import NearCompression.SwirlKnownInputSplit
 
 import NearCompression.SwirlGkrVerifierArithmetic
+
+import NearCompression.SwirlDecisionGraph

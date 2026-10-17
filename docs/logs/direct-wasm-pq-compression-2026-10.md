@@ -12157,3 +12157,41 @@ screen_swirl_wiring_orders.py; optional wiring_kind in existing compiler.
 Artifacts:bdd-gkr-verifier/ graph,14ordercensuses,parity,comparison,Leanlogs,pins.
 Transcript/prefix/known-input derivation/PCS remain external. No recursive proof,
 PQ128, secure sub300000B, full NEAR1Petagas or end-to-end Lean claim.
+
+## 2026-10-17 — Ordered decision evaluation theorem and exact root wiring support
+
+Previous goal turn progressed with shared wiring compiler at4bf903484.
+Revalidated clean worktree. Added SwirlDecisionGraph.lean: indexed ordered
+decision views have constant leaves, binary branches and explicit variable
+skips. Defined Boolean evaluation, field Horner evaluation and dense Boolean
+multilinear extension in the declared coordinate order.
+
+Three theorems compile: constant Boolean-table extension is constant; every
+ordered decision view evaluates to the multilinear extension of its own Boolean
+function; separately established Boolean support correspondence transfers to
+all field points. This is structural induction over branches/skip/terminals,
+not merely an identity at one node or a test on Boolean inputs. Targeted lake
+build passes, package import added; axioms only propext,Classical.choice,Quot.sound.
+The tuple/function eta normalization needed explicit application of existing
+Shannon identities instead of grind treating higher-order forms syntactically.
+
+Added independent check_swirl_bdd_support.py. It validates variable permutation,
+terminals, acyclic child indices and strictly ordered variables. Counts accepted
+Boolean assignments using powers of two for skipped variables. Checks every
+expected unique gate coordinate is accepted and count equals support size;
+finite containment plus equal cardinality rules out extra accepted coordinates.
+This checks the entire Boolean support without enumerating the huge cube.
+
+All69operation/layer graphs match81062gate coordinates for selected root
+wiring order.358negatives reject: empty/full substitution, removed/extra support,
+same-cardinality replacement, self-referential node, repeated variable order.
+The same-cardinality mutation exercises membership checks beyond the count.
+Checker emits graph hashes per layer/operation; source/log pins preserved.
+
+Remaining formal boundary is explicit: Python builder/checker and graph-to-
+ordered-view unfolding are not yet refined in Lean. The field theorem assumes
+that unfolding/support connection, rather than silently asserting the emitted
+Python artifact is certified. No new proof-size or security claim. Prior
+540713reachable-node arithmetic circuit and original bundle remain unchanged.
+Transcript/prefix/PCS interfaces, recursive closure, PQ128 and full NEAR1Petagas
+remain open. Evidence:bdd-support/; goal stays active.
