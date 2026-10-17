@@ -1,0 +1,17 @@
+   Compiling openvm-recursion-circuit v2.1.0 (/tmp/nearproof-openvm/crates/recursion)
+   Compiling openvm-cpu-backend v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+   Compiling openvm-stark-sdk v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+   Compiling openvm-circuit-primitives v2.1.0 (/tmp/nearproof-openvm/crates/circuits/primitives)
+   Compiling openvm-poseidon2-air v2.1.0 (/tmp/nearproof-openvm/crates/circuits/poseidon2-air)
+   Compiling openvm-circuit v2.1.0 (/tmp/nearproof-openvm/crates/vm)
+    Finished `fast` profile [optimized + debuginfo] target(s) in 19.43s
+     Running unittests src/lib.rs (target/fast/deps/openvm_recursion_circuit-0e902e15daeda90d)
+
+running 1 test
+{"status":"WEIGHTED_STACKING_WHIR_VERIFIED","whir_bytes":337932,"stacking_bytes":1476,"negative_checks":4}
+
+NEARPROOF_WEIGHTED_SUMCHECK rounds=17 extension_elements=91 matrix_openings_checked=50
+test tests::nearproof_weighted_native_sumcheck ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 17.28s
+

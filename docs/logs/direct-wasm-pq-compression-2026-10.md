@@ -11744,3 +11744,44 @@ compression. Next connect a new PCS opening at the actual sumcheck point,
 then justify a causal combined transcript and price all costs at stronger
 security. No PQ128, new Lean composition theorem or full NEAR1Petagas claim.
 Full goal remains active.
+
+## 2026-10-17 — WHIR authenticates weighted sumcheck terminal evaluations
+
+Previous goal turn classified progress: executable native weighted sumcheck at
+9a05e9aea. Revalidated clean worktree. Extended diagnostic native probe to
+absorb all50stacked openings after sumcheck, expand prism point u0 to binary
+powers, and invoke the unchanged native CPU WHIR prover on the exact committed
+matrices. Separate receiver replays the same transcript. Pinned proof-shape
+checker runs with regenerated matching VK before native WHIR verification.
+Encode/decode/reencode is exact. Changed opening, commitment, point and final
+polynomial each reject in WHIR (four checks).
+
+Measured encoded WHIR337932bytes and encoded weighted stacking1476bytes.
+Sumcheck JSON is byte-value identical to the previous accepted diagnostic.
+Full probe17.28s including matrix commitment regeneration and full dot checks;
+not a production benchmark. No original fixture or transcript overwritten.
+
+Added fresh-process replay from SAVED stacking/WHIR binaries, residual weights
+and the original native proof. It reconstructs keys, validates original proof,
+checks new proof shapes, samples every sumcheck challenge itself, verifies
+initial/round/final arbitrary-weight equations with native kernels and actual
+layout, then verifies WHIR. It reads NO source matrices. Replay passed0.24s;
+clippy -D warnings passed. Sources/patches/binaries/logs/hash pins saved under
+results/swirl-security-review/weighted-whir/.
+
+This replaces full-witness terminal checking with a real PCS opening argument
+for the diagnostic weighted reduction. However original native proof and its
+full-opening transcript still supply the GKR control context. It is NOT a
+compressed replacement protocol or a combined end-to-end Fiat-Shamir proof.
+GKR field payload20128 + stacking1476 + WHIR337932 =359536bytes even before
+other metadata/context. This subtotal mixes actual encoded components with
+GKR field-only payload and is explicitly not a complete proof encoding.
+Internal fixture WHIR size is unchanged from its original337932bytes. Hence
+this geometry fails300000 even before PQ128. It does not establish a lower
+bound for the smaller root-split geometry or a redesigned PCS.
+
+Next resolve combined transcript chronology and evaluate the authenticated
+replacement on root geometry, with full byte/security accounting. Lean
+known-input algebra remains useful but no new cryptographic composition theorem
+is claimed. Full NEAR1Petagas, PQ128 and secure sub300000remain unachieved.
+Full goal stays active.

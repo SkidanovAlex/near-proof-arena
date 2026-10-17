@@ -1,0 +1,31 @@
+{
+  "status": "WEIGHTED_STACKING_WHIR_VERIFIED",
+  "whir_bytes": 337932,
+  "stacking_bytes": 1476,
+  "negative_checks": 4,
+  "fresh_process_replay_without_source_matrices": true,
+  "weighted_sumcheck_unchanged": true,
+  "negative_cases": [
+    "terminal evaluation",
+    "commitment",
+    "evaluation point",
+    "WHIR final polynomial"
+  ],
+  "gkr_field_payload_bytes": 20128,
+  "component_byte_subtotal": 359536,
+  "subtotal_scope": "WHIR serialized bytes + stacking serialized bytes + GKR field payload only. Not a complete protocol encoding.",
+  "original_internal_whir_bytes": 337932,
+  "limitations": [
+    "Internal-verifier fixture, not root-split or full NEAR workload.",
+    "Original native proof still required by replay to bind native controls/commitments; no compressed replacement transcript.",
+    "Ext4/upstream RBR100 parameters; no PQ128 security or Lean composition theorem."
+  ],
+  "decision": "PCS authentication works but unchanged internal WHIR geometry alone exceeds 300000 bytes. Evaluate root geometry and transcript changes before claiming compression.",
+  "reproduce": [
+    "Use weighted-native-sumcheck reproduction to restore exact inputs and matched native proof.",
+    "Apply this snapshot of diagnostic native patches; clean only openvm-cpu-backend for the chosen profile.",
+    "NEARPROOF_WEIGHTED_WHIR=1 RAYON_NUM_THREADS=4 cargo test --locked --profile fast -p openvm-recursion-circuit tests::nearproof_weighted_native_sumcheck -- --exact --nocapture",
+    "For saved replay, decompress whir.proof.gz and stacking.proof.gz to /tmp/nearproof-weighted-whir.proof and /tmp/nearproof-weighted-stacking.proof. Restore weighted-input.bin and original native proof as documented in prior artifact.",
+    "RAYON_NUM_THREADS=4 cargo test --locked --profile fast -p openvm-recursion-circuit tests::nearproof_replay_weighted_whir -- --exact --nocapture"
+  ]
+}

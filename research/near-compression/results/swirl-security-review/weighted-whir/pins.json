@@ -1,0 +1,21 @@
+{
+  "inputs": {
+    "committed-witness/internal.proof.gz": "a5de2cf628532ecd5bb3e462b195a23a6a4088cc6201c568a5b17f37c3b80c84",
+    "weighted-native-sumcheck/weighted-input.bin.gz": "754eedc592be024f48534a1f2f05134c8ed78d7f4002e1bed38d0eea4cba7377",
+    "weighted-native-sumcheck/proof.json": "345eeef14b66ed0a9b0f17c1e03fbbc346f57beea8ea78f2f628e2265370ed76",
+    "witness-dag-gkr/proof.json.gz": "6e2e2aa16536bad00ba76e90561f93667e078a51a0c0a940c54dc85b265cb921"
+  },
+  "artifacts": {
+    "cpu-backend-lib.rs.gz": "6239c18b242ea2b266d7db57c61504e98131e1389a1fdf25577be7a9ea0db9db",
+    "cpu-backend-stacked_reduction.rs.gz": "bd63079e0853c95a819e7760b8ff6c505dbbc72e5aa28bc7e37c4b5b8a2390d4",
+    "cpu-backend.patch.gz": "10e299b1abe07d1f804c1a5480e678becd2bbfebd54168b40ac6d184c36b0919",
+    "nearproof-weighted-whir-clippy.log": "2d63dbc6b421ae7a631a638aef48d568aa72e58d76cc08de34cd24edb81fbf47",
+    "nearproof-weighted-whir-replay.log": "eac2ce82613fb9771172a28aab45990667aacd715e86eeadacb5000acb0dd7b6",
+    "nearproof-weighted-whir.log": "66ae51792fb2c51e3ada434297d5203b900cb960b95e88d3153341d2420a9102",
+    "openvm-tests.rs.gz": "800480bbd451dfbf59ec2a19b25f7a29d76877ab45b409987a07c4951c412762",
+    "openvm.patch.gz": "38eb9468850dcaa92b70b1bd82093179d352f1a13ae59e32386474e157592771",
+    "report.json": "0cd08cefcee00141d9d42c953818d0ef1d82752e2450fd8fb6c25a3d93ea1f31",
+    "stacking.proof.gz": "1829617e72d5c39303477a61c630fdacaadebbed06afcdfe36dd9ec6cfe13211",
+    "whir.proof.gz": "b84992ea03276ef97d2495e7af0d4bf697eab622748f4ea8d5a258e955369d03"
+  }
+}
