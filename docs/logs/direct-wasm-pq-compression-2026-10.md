@@ -11264,3 +11264,46 @@ probe's VK field paths. Evidence/source pins/patch are saved under
 research/near-compression/results/swirl-security-review/fixed-dag/. Full
 NEAR1Petagas, PQ128, sub300000secure bytes and end-to-end Lean correctness
 remain unachieved.
+
+
+## 2026-10-17 — Fixed-DAG export/lowering parity and naive GKR depth failure
+
+Previous goal turn classified progress: fixed-DAG census. Revalidated clean
+branch at6d083ea17. Extended upstream probe to export all39AIR DAGs as JSONL:
+explicit variable kind/part/rotation/index, canonical constants, operation
+indices, constraint outputs, interaction message/count indices, bus ids and
+count weights. Native SymbolicEvaluator::eval_nodes produces reference values
+for three synthetic base-field assignments per AIR. These are evaluation tests,
+not actual accepted proof witnesses or independent random extension challenges.
+
+Added compile_swirl_fixed_dag.py: lowers negation to subtraction, preserves
+variable coordinates as explicit input slots, retains all constraint and
+interaction outputs, and feeds a balanced diagnostic checksum into our
+existing layered GKR layout builder. Fixed checksum coefficients are ONLY a
+cost/parity device; they are NOT sound random output batching. Every15516source
+node matches native values for all3assignments (46548node comparisons). Every
+layered output matches direct evaluation in117AIR/case pairs. Altered reference
+values and a self-referential arithmetic edge are rejected. Upstream export
+test and clippy passed. No extension-field or Lean compiler proof is claimed.
+
+Measured lowering:2373input slots,3871distinct semantic output nodes,
+27282lowered nodes (27275live),137070padded gates,937layers across39separate
+circuits. Deepest circuit is AIR14 with229layers; AIR16has74layers. Depth is
+not captured by the earlier arithmetic-node census and is a material cost.
+Existing GKR message layout requires6*log2(previous_width)+2extension elements
+per layer:36452elements total, or1312272bytes at hypothetical extensiondegree9,
+BEFORE framing, output batching, input PCS links and other verifier work.
+This is a layout-derived payload count, not a generated GKR proof. It rejects
+this naive separate-circuit lowering under that message format, not all GKR.
+
+Next: inspect long dependency chains and test depth-reducing algebraic
+reassociation plus shared/batched layering before expensive proving. Any
+rewriting must preserve every constraint/interaction output and bind the same
+input coordinates; later random output aggregation must have explicit timing
+and error accounting. The compiler export itself does not eliminate column
+opening costs or provide cryptographic soundness. Full NEAR1Petagas/PQ128/
+secure sub300000bytes/end-to-end Lean correctness remain open.
+
+Artifacts:research/near-compression/results/swirl-security-review/dag-export/
+contains compressed full DAG/reference export, compiler report, source/log
+pins and upstream patch. Reproducer:airbender/direct-wasm/compile_swirl_fixed_dag.py.
