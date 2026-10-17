@@ -1,0 +1,15 @@
+{
+  "research/near-compression/results/swirl-security-review/bdd-gkr-verifier/circuit.json.gz": "844ed6967c2e77eb353ebbe2078d92eae5d3acfbb1d1ad4648824089d8bdc429",
+  "research/near-compression/results/swirl-security-review/bdd-gkr-verifier/comparison.json": "372c272edd67a73a9d88db37939a6759ba483d09a9a874a9e5ec07071f061fe1",
+  "research/near-compression/results/swirl-security-review/bdd-gkr-verifier/lean-axioms.log": "9a1f5ca0a953222a76ccb735ac130d3b27ab78ab742dae506eb043ec14717805",
+  "research/near-compression/results/swirl-security-review/bdd-gkr-verifier/lean-build.log": "ef49308a2f70053947209b0c080a80488fb32a7c7f52fccb07a927df55508f7d",
+  "research/near-compression/results/swirl-security-review/bdd-gkr-verifier/orders.json": "768f39af873c15dcc3b699ec2f0b58b26fa652d256ba0f6b46a6b6ae26f357e9",
+  "research/near-compression/results/swirl-security-review/bdd-gkr-verifier/parity.log": "8b8f78566dfd90e321bb09ac08ce160263a120299d26af2d2fa45111a6575915",
+  "research/near-compression/results/swirl-security-review/bdd-gkr-verifier/report.json": "d13f25a9cac9270226ffe95a8be608ade484a304dc249cac30067a8782de4319",
+  "research/near-compression/results/swirl-security-review/bdd-gkr-verifier/small-parity.json": "e3e1df9e72dccb941556152e825ba9022e5d94b86c243fa4c2317777f3017965",
+  "research/near-compression/airbender/direct-wasm/check_swirl_wiring_bdd.py": "74ab17f7ecf2526e8f6250104ad3309537bd9fe9f74c71c96897262d3fa6924a",
+  "research/near-compression/airbender/direct-wasm/screen_swirl_wiring_orders.py": "4645d3e3b94c7432f08a971b66e5934489644484a6dc80b622cd73503b533a09",
+  "research/near-compression/airbender/direct-wasm/swirl_wiring_bdd.py": "3ebb97db377add08f3000d379c25781057a4968f9ed313fd8c0aaa8481d69e9d",
+  "research/near-compression/airbender/direct-wasm/compile_swirl_gkr_verifier.py": "835ba3e22412d79e2dd5c28cfff372505b01f7d456e81f28b326d6657b494b06",
+  "research/near-compression/NearCompression/SwirlGkrVerifierArithmetic.lean": "6665e5c7de851b8dd5804dbaa51fc192d0dfcb626d51e7576dcf3341c1a6d7a5"
+}

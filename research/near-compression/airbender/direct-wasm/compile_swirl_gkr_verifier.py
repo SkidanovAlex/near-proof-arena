@@ -84,12 +84,13 @@ class Circuit:
         return values
 
 
-def compile_verifier(layout,slots,known_slots):
+def compile_verifier(layout,slots,known_slots,wiring_kind=None):
     c=Circuit();checks=[];claim=c.inp('claim')
     n=(len(layout['layers'][-1])-1).bit_length()
     queries=[([c.const(g.base((layout['root']>>i)&1)) for i in range(n)],c.one)]
     for k,layer in enumerate(range(len(layout['layers'])-1,-1,-1)):
-        gates=layout['layers'][layer];w=c.weights(len(gates),queries)
+        gates=layout['layers'][layer]
+        if wiring_kind is None:w=c.weights(len(gates),queries)
         prev=layout['input_size'] if layer==0 else len(layout['layers'][layer-1])
         m=(prev-1).bit_length();point=[]
         for j in range(2*m):
@@ -98,14 +99,18 @@ def compile_verifier(layout,slots,known_slots):
             r=c.inp(f'challenge/{k}/{j}');point.append(r)
             claim=c.add(a,c.mul(r,c.add(b,c.mul(r,d))))
         a,b=[c.inp(f'proof/{k}/input/{i}') for i in range(2)]
-        eu,ev=c.eqs(point[:m]),c.eqs(point[m:])
-        # Group by operation before multiplying by layer input values.
-        # This preserves sum w*eq_u*eq_v*op(a,b) by distributivity.
-        coeff={op:[] for op in ('add','sub','mul')}
-        for (op,i,j),weight in zip(gates,w):
-            coeff[op].append(c.mul(weight,c.mul(eu[i],ev[j])))
-        ans=c.zero
-        for op in coeff:ans=c.add(ans,c.mul(c.sum(coeff[op]),c.op(op,a,b)))
+        if wiring_kind is None:
+            eu,ev=c.eqs(point[:m]),c.eqs(point[m:])
+            # Group by operation before multiplying by layer input values.
+            # This preserves sum w*eq_u*eq_v*op(a,b) by distributivity.
+            coeff={op:[] for op in ('add','sub','mul')}
+            for (op,i,j),weight in zip(gates,w):
+                coeff[op].append(c.mul(weight,c.mul(eu[i],ev[j])))
+            ans=c.zero
+            for op in coeff:ans=c.add(ans,c.mul(c.sum(coeff[op]),c.op(op,a,b)))
+        else:
+            from swirl_wiring_bdd import wiring
+            ans=wiring(c,gates,queries,point[:m],point[m:],a,b,wiring_kind)
         checks.append(c.sub(ans,claim))
         gamma=c.inp(f'challenge/{k}/gamma')
         claim=c.add(a,c.mul(gamma,b));queries=[(point[:m],c.one),(point[m:],gamma)]
@@ -118,7 +123,8 @@ def compile_verifier(layout,slots,known_slots):
     return c,checks,claim,pcs
 
 
-def main():
+def main(wiring_kind=None,output_dir=OUT):
+    OUT=output_dir
     layout,slots,known,claim,statement,_=context()
     proof=json.loads(gzip.decompress((GKR/'proof.json.gz').read_bytes()))
     draws=[]
@@ -128,7 +134,7 @@ def main():
     verify=types.FunctionType(g.verify.__code__,dict(g.verify.__globals__,draw=draw),argdefs=g.verify.__defaults__)
     ob=verify(layout,statement,proof,claim)
     expected=split_obligation(ob,slots,known)
-    c,checks,residual,pcs=compile_verifier(layout,slots,set(known))
+    c,checks,residual,pcs=compile_verifier(layout,slots,set(known),wiring_kind)
     inputs={'claim':claim,**{f'known/{i}':v for i,v in known.items()}}
     cursor=0
     for k,part in enumerate(proof['layers']):
@@ -159,7 +165,7 @@ def main():
     raw=json.dumps(artifact,separators=(',',':')).encode()
     OUT.mkdir(exist_ok=True)
     (OUT/'circuit.json.gz').write_bytes(gzip.compress(raw,mtime=0))
-    report=dict(status='FIXED_GKR_ARITHMETIC_PARITY',nodes=len(c.nodes),operations=dict(collections.Counter(x[0] for x in c.nodes)),
+    report=dict(status='FIXED_GKR_ARITHMETIC_PARITY',wiring_kind=wiring_kind,nodes=len(c.nodes),operations=dict(collections.Counter(x[0] for x in c.nodes)),
         max_depth=max(depths),inputs=len(c.inputs),equality_checks=len(checks),pcs_coordinates=len(pcs),
         challenge_inputs=len(draws),negative_checks=negatives,known_mutation_changes_residual=True,
         circuit_sha256=hashlib.sha256(raw).hexdigest(),
@@ -168,6 +174,7 @@ def main():
                      'Known input derivation, prefix verification and weighted PCS remain external.',
                      'No Lean compiler refinement, soundness composition, PQ128 or full NEAR claim.'])
     paths=[Path(__file__),Path(g.__file__),GKR/'proof.json.gz',GKR.parent/'root-split-witness/public-controls.json']
+    if wiring_kind is not None:paths.append(Path(__file__).with_name('swirl_wiring_bdd.py'))
     report['sha256']={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
     (OUT/'report.json').write_text(json.dumps(report,indent=2)+'\n');print(report)
 

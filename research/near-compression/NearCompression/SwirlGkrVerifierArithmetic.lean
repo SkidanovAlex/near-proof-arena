@@ -52,4 +52,14 @@ theorem swirl_quadratic_endpoint {K : Type} [Field K]
       (c₀ + (1 : K) * (c₁ + 1 * c₂)) = claim := by
   grind
 
+/-- Shannon interpolation used for each fixed Boolean decision node. -/
+theorem swirl_shannon_interpolation {K : Type} [Field K] (r a b : K) :
+    (1 - r) * a + r * b = a + r * (b - a) := by
+  grind
+
+/-- A variable can be skipped when both Boolean cofactors agree. -/
+theorem swirl_shannon_equal_children {K : Type} [Field K] (r a : K) :
+    (1 - r) * a + r * a = a := by
+  grind
+
 end NearCompression

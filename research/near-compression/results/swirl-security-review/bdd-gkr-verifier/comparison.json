@@ -1,0 +1,21 @@
+{
+  "default_circuit_unchanged": true,
+  "selected": {
+    "kind": "interleaved_012_high",
+    "nodes": 579107,
+    "live": 540713,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 82498,
+      "sub": 68785,
+      "mul": 382848
+    },
+    "seconds": 0.9167827200144529
+  },
+  "baseline_live_nodes": 782476,
+  "baseline_live_multiplications": 598514,
+  "node_reduction_percent": 30.89717767701501,
+  "multiplication_reduction_percent": 36.033576491109656,
+  "scope": "Ext4 arithmetic counts, not base-field AIR cost, proof size or timing; max depth rises34to105."
+}

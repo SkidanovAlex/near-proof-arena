@@ -1,0 +1,184 @@
+[
+  {
+    "kind": "output_first",
+    "nodes": 1095781,
+    "live": 1057388,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 175067,
+      "sub": 135547,
+      "mul": 740192
+    },
+    "seconds": 1.9337022807449102
+  },
+  {
+    "kind": "inputs_first",
+    "nodes": 2179405,
+    "live": 2141012,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 123114,
+      "sub": 109478,
+      "mul": 1901838
+    },
+    "seconds": 2.605892950668931
+  },
+  {
+    "kind": "interleaved_012",
+    "nodes": 646125,
+    "live": 607732,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 109079,
+      "sub": 95398,
+      "mul": 396673
+    },
+    "seconds": 1.3020202787593007
+  },
+  {
+    "kind": "interleaved_012_high",
+    "nodes": 579107,
+    "live": 540713,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 82498,
+      "sub": 68785,
+      "mul": 382848
+    },
+    "seconds": 0.9167827200144529
+  },
+  {
+    "kind": "interleaved_021",
+    "nodes": 647485,
+    "live": 609092,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 108967,
+      "sub": 95287,
+      "mul": 398256
+    },
+    "seconds": 1.2137438808567822
+  },
+  {
+    "kind": "interleaved_021_high",
+    "nodes": 580365,
+    "live": 541971,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 82534,
+      "sub": 68817,
+      "mul": 384038
+    },
+    "seconds": 0.8968645259737968
+  },
+  {
+    "kind": "interleaved_102",
+    "nodes": 646937,
+    "live": 608542,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 108516,
+      "sub": 94836,
+      "mul": 398608
+    },
+    "seconds": 1.3536674031056464
+  },
+  {
+    "kind": "interleaved_102_high",
+    "nodes": 583245,
+    "live": 544852,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 82948,
+      "sub": 69291,
+      "mul": 386031
+    },
+    "seconds": 0.9123781342059374
+  },
+  {
+    "kind": "interleaved_120",
+    "nodes": 645326,
+    "live": 606932,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 108218,
+      "sub": 94543,
+      "mul": 397589
+    },
+    "seconds": 1.1950500309467316
+  },
+  {
+    "kind": "interleaved_120_high",
+    "nodes": 581982,
+    "live": 543589,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 83032,
+      "sub": 69395,
+      "mul": 384580
+    },
+    "seconds": 0.9990828270092607
+  },
+  {
+    "kind": "interleaved_201",
+    "nodes": 648476,
+    "live": 610083,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 108795,
+      "sub": 95113,
+      "mul": 399593
+    },
+    "seconds": 1.19636941421777
+  },
+  {
+    "kind": "interleaved_201_high",
+    "nodes": 583264,
+    "live": 544871,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 82908,
+      "sub": 69248,
+      "mul": 386133
+    },
+    "seconds": 1.0118497777730227
+  },
+  {
+    "kind": "interleaved_210",
+    "nodes": 644387,
+    "live": 605993,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 108054,
+      "sub": 94378,
+      "mul": 396979
+    },
+    "seconds": 1.1764927469193935
+  },
+  {
+    "kind": "interleaved_210_high",
+    "nodes": 580644,
+    "live": 542251,
+    "ops": {
+      "const": 599,
+      "input": 5983,
+      "add": 82904,
+      "sub": 69267,
+      "mul": 383498
+    },
+    "seconds": 0.915567307267338
+  }
+]

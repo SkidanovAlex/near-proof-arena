@@ -12117,3 +12117,43 @@ required4xworkload reduction. Next reduce/evaluate the fixed wiring polynomial
 cost and connect authenticated transcript/PCS interfaces before large proving.
 Evidence:compiled-gkr-verifier/ circuit, reports, logs and pins. Full NEAR1Pgas,
 PQ128, secure sub300000bytes and end-to-end Lean correctness remain open.
+
+## 2026-10-17 — Shared Boolean wiring evaluation reduces GKR verifier arithmetic
+
+Previous goal turn progressed with fixed GKR arithmetic circuit and two Lean
+identities at8439488fe. Revalidated clean worktree. Added swirl_wiring_bdd.py:
+trusted fixed wiring is a Boolean predicate over output,left,right indices.
+Build shared reduced decision nodes; evaluate each via Shannon interpolation
+at GKR points. Operation-specific wiring sums remain factored from op(a,b).
+Equal subtrees share arithmetic; equal children skip their variable. Zero high
+branches use (1-r)*low. No proof-selected wiring or challenges are introduced.
+
+Measured14fixed variable orders. Grouping all input bits first is costly;
+interleaving output/left/right bits high-to-low gives the lowest reachable
+multiplication count among these candidates. Independent direct-wiring parity
+passes168cases across four shapes, all14orders, zero/one/random Ext4 inputs.
+The zero-bit/one-gate case is included. Full root compiled circuit matches all
+437equality checks,2603PCSweights and finalresidual; four proof/claim/challenge
+mutations reject and changed knowninput changes only the residual obligation.
+
+Comparison uses reachable nodes, not unused emitted nodes:
+- Previous balanced direct wiring:782476nodes,598514Ext4multiplications.
+- Selected shared wiring:540713nodes,382848Ext4multiplications.
+- Reductions30.90%nodes and36.03%multiplications; maxdepth34->105.
+Emitted579107nodes include unused intermediate entries. Counts are NOT base-
+field AIRcells, measured speedup or proofbytes. Default compiler mode is
+preserved: its entire serialized node/check/output/input graph exactly matches
+the previously saved circuit. Keep both modes pending recursive proof costs.
+
+Added two Lean lemmas: Shannon interpolation identity and equal-child variable
+elimination. Targeted lake build and axiom checks pass (only propext,
+Classical.choice,Quot.sound). These do NOT prove decision-graph construction
+matches the original wiring or establish complete compiler refinement. That
+remaining correspondence needs structural induction plus precise coordinate
+ordering and unique Boolean support; runtime parity is current evidence only.
+
+New sources:swirl_wiring_bdd.py,check_swirl_wiring_bdd.py,
+screen_swirl_wiring_orders.py; optional wiring_kind in existing compiler.
+Artifacts:bdd-gkr-verifier/ graph,14ordercensuses,parity,comparison,Leanlogs,pins.
+Transcript/prefix/known-input derivation/PCS remain external. No recursive proof,
+PQ128, secure sub300000B, full NEAR1Petagas or end-to-end Lean claim.
