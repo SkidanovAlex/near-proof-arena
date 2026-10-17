@@ -12293,3 +12293,43 @@ remaining hash cost is mostly the per-round transcript itself, not JSON;
 any schedule/hash redesign needs separate analysis and new proofs. Goal active.
 Final fresh replay after removal of the unused Debug-log read also passed;
 log preserved as binary-root-bundle/fresh-no-debug.log.gz.
+
+## 2026-10-17 — Routed hash graph supplies actual arithmetic challenge inputs
+
+Previous goal turn progressed with binary transcript v2 atf3a97d96b. Revalidated
+clean worktree. Added swirl_gkr_hash_graph.py: explicit typed input/literal/prior-
+hash references for init, proof commit, request, squeeze, ratchet and draw-result.
+Fixed layout digest is trusted key material. Proof rows/inputs are canonically
+encoded; endpoint/gamma challenge names match the optimized arithmetic circuit.
+Sampler loops over digest words in little-endian order, rejects words>=2P,
+stops at the fourth accepted word, and retains bounded multiblock/exhaustion
+behavior. Serialized graph metadata is NOT a source of trusted challenges;
+derive returns its recomputed challenges after route/digest checks.
+
+Independent operational replay produces2187hash nodes/4373SHA384blocks and
+437challenges identical to existing g.verify. All103rejected words accounted
+for. Saved optimized circuit is evaluated with fresh v2 proof/known inputs and
+these derived challenges:437equalities,2603PCSweights and residual all match.
+Six graph negatives reject wrong digest, parent, domain tag, payload route,
+truncation and extra node. SHA384 is recomputed by host in this checker; this
+is a concrete transcript-to-arithmetic bridge, NOT a recursive hash proof.
+
+Reused existing SHA384TranscriptDraw.lean rather than duplicating rejection
+semantics. Generated ActualScans.lean with437digest-to-word equality theorems
+and437scan value/rejection/done theorems for the actual squeezed digests.
+All874concrete kernel checks pass. Initial decide on the well-founded scan
+function did not reduce; using its defining equations via simp then arithmetic
+reduction passed. Digest examples use decide, scan examples use simp; no
+native_decide or sorry. Sampled axiom print: digest has none, scan uses
+propext/Quot.sound. Target dependency build also passes.
+
+These are concrete fixture theorems, not874new general protocol lemmas.
+No SHA384 compression truth is assumed to follow from decoding a digest. Hash
+AIR, byte/range/scan constraints and graph routing still need integration into
+the recursive circuit; prefix/statement binding and weighted native PCS remain
+external interfaces. Existing generic operational scan range/length/preimage
+lemmas remain available for that refinement. No compiler, QROM, PQ128 or full
+NEAR1Petagas claim; full goal stays active.
+
+Evidence:gkr-hash-graph/ graph,ActualScans.lean,parity/Leanlogs,reports,pins.
+Reproduce check_swirl_gkr_hash_graph.py then lake env lean on ActualScans.lean.

@@ -1,0 +1,24 @@
+{
+  "status": "HASH_GRAPH_TO_GKR_ARITHMETIC_PARITY",
+  "hash_nodes": 2187,
+  "compression_blocks": 4373,
+  "challenge_inputs": 437,
+  "scans": 437,
+  "rejected_words": 103,
+  "equality_checks": 437,
+  "pcs_coordinates": 2603,
+  "negative_checks": [
+    "wrong_digest",
+    "wrong_parent",
+    "wrong_tag",
+    "wrong_payload_route",
+    "truncated",
+    "extra"
+  ],
+  "limitations": [
+    "SHA384 recomputed by host; no recursive hash proof.",
+    "Range/byte/scan constraints not lowered to AIR; generated Lean scan checks are concrete fixtures.",
+    "Statement/prefix and native weighted PCS remain external.",
+    "No Python refinement, cryptographic composition, PQ128 or full NEAR theorem."
+  ]
+}
