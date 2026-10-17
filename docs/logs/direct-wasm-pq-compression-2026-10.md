@@ -12879,3 +12879,38 @@ negatives,stats,30rowreport,logs. Reproduce export_fused_gkr_arithmetic.py then
 check_binius_gkr_slice.py after applying savedpatch on previous Binius chain.
 No new Lean/compiler refinement, PQ128certificate or fullNEAR1Pgas proof.
 make pin-check passes. Fullgoal remains active and unachieved.
+## 2026-10-17 — Source-pinned PCS adapter feasibility gate
+
+Revalidated clean branch at d16c543a1. Previous comparison turn restated the
+decision landscape and checked publications, but added no implementation
+evidence; classified as no progress for the goal continuation audit.
+
+Inspected actual Binius IOP channel, binary FRI fold and SWIRL WHIR verifier.
+The channel admits arbitrary oracle linear relations and preserves commitment
+round ordering, so it supplies a useful architectural seam. It does not make
+the inspected PCS interchangeable. Binius folds additive binary-field domains;
+the SWIRL verifier requires TwoAdicField, multiplicative power-of-two roots and
+halving in binary_k_fold. In characteristic two, two is zero and x=-x, so the
+unchanged multiplicative pair interpolation is unavailable. This rejects an
+unchanged backend swap, not additive-domain WHIR or every binary PCS.
+
+check_pcs_field_compatibility.py verifies exact upstream commits AND byte equality
+for the three inspected files, archives sources with SHA256, and exhaustively
+checks 4096 additive linear interpolation cases over GF(16). It checks that two
+has no inverse and that there is no nonidentity square root of one in this
+fixture. These finite checks are not a universal Lean theorem or protocol
+security proof. The source operations establish the concrete implementation
+incompatibility; no fresh cryptographic proof or size improvement is claimed.
+
+Decision: do not start a supposed drop-in Binius/WHIR adapter. A real candidate
+must supply binary encoding/folding/domain transitions/OOD reductions, preserve
+oracle chronology and linear-relation semantics, and prove the resulting
+proximity/composition bounds. It must also address the measured foreign-field
+arithmetic cost. Primary next implementation direction stays native-field
+recursive verifier workload reduction, with the complete 204076B diagnostic
+root bundle as comparison, not independent Binius component-byte sums.
+
+Artifacts: research/near-compression/results/swirl-security-review/
+pcs-field-compatibility/. Audit passes; full NEAR1Pgas, PQ128, sub300000B at
+that security and end-to-end Lean correctness remain open.
+
