@@ -3427,10 +3427,10 @@ index 0000000..df6e338
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..ee2eb90
+index 0000000..e9f9a7c
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,450 @@
+@@ -0,0 +1,479 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -3874,6 +3874,35 @@ index 0000000..ee2eb90
 +        ("zerocheck eval", Box::new(move |p| p.batch_constraint_proof.sumcheck_round_polys[0][0] += one)),
 +        ("column opening", Box::new(move |p| p.batch_constraint_proof.column_openings[0][0][0] += one)),
 +        ("pow witness", Box::new(move |p| p.gkr_proof.logup_pow_witness += F::ONE)),
++    ];
++    for (name, m) in cases {
++        let mut bad = proof.clone();
++        m(&mut bad);
++        must_fail(name, || nv_debug_mats(&vk, &bad, 16, |_, _| {}));
++    }
++}
++
++/// In-circuit WHIR levers: k1 = 1, keep-domain, multiproof, x15, wide query PoW.
++#[test]
++fn nv_whir_lever_tamper() {
++    use crate::sha384::e2e_tests::with_levers;
++    use openvm_stark_backend::WhirLevers;
++    let lv = WhirLevers { k_first: 1, keep_domain: true, multiproof: true, wide_query_pow: true, whir_y: true, ..Default::default() };
++    let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 8, 3);
++    p.max_constraint_degree = 4;
++    let p = with_levers(p, lv, 15, 5);
++    let engine = Sha384CpuEngine::new(p);
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    nv_debug_mats(&vk, &proof, 16, |_, _| {});
++    println!("NV_WHIR_LEVER_HONEST ok");
++    let one = EF::ONE;
++    let cases: Vec<(&str, Box<dyn Fn(&mut openvm_stark_backend::proof::Proof<Sha384Config>)>)> = vec![
++        ("multiproof initial digest", Box::new(|p| p.whir_proof.initial_round_merkle_proofs[0][0][0][1] ^= 1)),
++        ("multiproof codeword digest", Box::new(|p| p.whir_proof.codeword_merkle_proofs[0][0][0][0] ^= 1)),
++        ("initial opened row (k1 leaf)", Box::new(|p| p.whir_proof.initial_round_opened_rows[0][0][1][0] += F::ONE)),
++        ("codeword value", Box::new(move |p| p.whir_proof.codeword_opened_values[0][0][1] += one)),
++        ("wide pow witness element 1", Box::new(|p| p.whir_proof.query_phase_pow_witnesses[1] += F::ONE)),
++        ("final poly", Box::new(move |p| p.whir_proof.final_poly[0] += one)),
 +    ];
 +    for (name, m) in cases {
 +        let mut bad = proof.clone();
@@ -5200,10 +5229,10 @@ index 0000000..e490f57
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..0863182
+index 0000000..e78d8c6
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1231 @@
+@@ -0,0 +1,1373 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -5430,6 +5459,98 @@ index 0000000..0863182
 +}
 +
 +/// omega^idx for idx = sum bits[j] 2^j (bits LSB first), omega of order 2^log_dom.
++/// x15 query index (odd factor 15): the sample x (all 31 bits as BIT rows, canonical, and
++/// x != p - 1, i.e. the top-4 AND is zero) is reduced mod 15 * 2^m: u0 = low m bits,
++/// x >> m = 15 q + a with a in [0, 15) and q < 2^(27 - m) (witness bits).  Returns
++/// (index bits = u0 bits ++ a bits, a bits).
++fn decompose_index_x15(b: &mut Builder, s: V, m: usize, qid: u32) -> (Vec<V>, Vec<V>) {
++    let x = coeffs(s.val)[0].as_canonical_u32();
++    let bits: Vec<V> = (0..31)
++        .map(|j| {
++            let bv = b.load_f(F::from_bool((x >> j) & 1 == 1));
++            b.bit(bv, qid, j as u32)
++        })
++        .collect();
++    let mut acc = b.c(F::ZERO);
++    for j in (0..31).rev() {
++        acc = b.dbl_add(acc, bits[j]);
++    }
++    b.assert_eq(acc, s, "index recomposition");
++    // x <= p - 1 and x != p - 1  <=>  not all of bits 27..30 set
++    let mut top = bits[27];
++    for j in 28..31 {
++        top = b.mul(top, bits[j]);
++    }
++    b.zero(top, "x15 index: x = p - 1 rejected");
++    let y = x >> m;
++    let (q, a) = (y / 15, y % 15);
++    let mut yv = b.c(F::ZERO);
++    for j in (m..31).rev() {
++        yv = b.dbl_add(yv, bits[j]);
++    }
++    let abits: Vec<V> = (0..4)
++        .map(|j| {
++            let bv = b.load_f(F::from_bool((a >> j) & 1 == 1));
++            b.bit(bv, qid, 100 + j as u32)
++        })
++        .collect();
++    let mut a_and = abits[0];
++    for &bb in &abits[1..] {
++        a_and = b.mul(a_and, bb);
++    }
++    b.zero(a_and, "x15 index: a = 15 rejected");
++    let qn = 27 - m;
++    let mut qv = b.c(F::ZERO);
++    for j in (0..qn).rev() {
++        let bv = b.load_f(F::from_bool((q >> j) & 1 == 1));
++        let bc = b.bit(bv, qid, 200 + j as u32);
++        qv = b.dbl_add(qv, bc);
++    }
++    let mut av = b.c(F::ZERO);
++    for j in (0..4).rev() {
++        av = b.dbl_add(av, abits[j]);
++    }
++    let q15 = b.mul_c(qv, F::from_u32(15));
++    let rhs = b.add(q15, av);
++    b.assert_eq(yv, rhs, "x15 index: x >> m = 15 q + a");
++    let mut idx = bits[..m].to_vec();
++    idx.extend(abits.iter().copied());
++    (idx, abits)
++}
++
++/// Per-query Merkle paths from a canonical multiproof (levers spec): `leaves` are
++/// (index, leaf digest) in query order; returns each query's siblings bottom-up.
++fn decompress_multiproof(leaves: &[(usize, crate::sha384::config::Digest)], stream: &[crate::sha384::config::Digest], depth: usize) -> Vec<Vec<crate::sha384::config::Digest>> {
++    use std::collections::BTreeMap;
++    let mut levels: Vec<BTreeMap<usize, crate::sha384::config::Digest>> = vec![BTreeMap::new(); depth + 1];
++    for &(i, d) in leaves {
++        levels[0].insert(i, d);
++    }
++    let mut it = stream.iter();
++    for l in 0..depth {
++        let known: Vec<usize> = levels[l].keys().copied().collect();
++        let mut i = 0;
++        while i < known.len() {
++            let idx = known[i];
++            let pair = idx ^ 1;
++            if !(i + 1 < known.len() && known[i + 1] == pair) {
++                let sib = *it.next().expect("multiproof stream too short");
++                levels[l].insert(pair, sib);
++                i += 1;
++            } else {
++                i += 2;
++            }
++            let (lft, rgt) = (levels[l][&(idx & !1)], levels[l][&(idx | 1)]);
++            levels[l + 1].insert(idx >> 1, ShaHasher.compress(lft, rgt));
++        }
++    }
++    assert!(it.next().is_none(), "multiproof stream too long");
++    leaves
++        .iter()
++        .map(|&(i, _)| (0..depth).map(|l| levels[l][&((i >> l) ^ 1)]).collect())
++        .collect()
++}
++
 +fn pow_by_bits(b: &mut Builder, omega: F, bits: &[V]) -> V {
 +    let mut acc = b.c(F::ONE);
 +    let mut w = omega;
@@ -6183,6 +6304,16 @@ index 0000000..0863182
 +    let m = params.l_skip + params.n_stack;
 +    let num_rounds = params.num_whir_rounds();
 +    let mut log_rs = m + params.log_blowup;
++    let odd = params.whir.domain_odd_factor;
++    let shrink = params.whir.domain_shrink();
++    let multiproof = params.whir.levers.multiproof;
++    let pow_width = 1 + params.whir.levers.wide_query_pow as usize;
++    if odd != 1 {
++        assert_eq!(odd, 15, "NV supports the x15 domain only");
++        let c = b.cu(odd as u64);
++        b.obs1(c);
++    }
++    let _ = k;
 +    pow_check(b, params.whir.mu_pow_bits, w.mu_pow_witness, pow_id);
 +    let mu = b.smp12();
 +    let total_width = stack_open.len();
@@ -6209,6 +6340,7 @@ index 0000000..0863182
 +    for round in 0..num_rounds {
 +        let is_initial = round == 0;
 +        let is_final = round == num_rounds - 1;
++        let k = params.whir.k_round(round);
 +        let mut alphas_round = vec![];
 +        for _ in 0..k {
 +            let evals = sc_iter.next().unwrap();
@@ -6234,7 +6366,10 @@ index 0000000..0863182
 +            (Some(y0), Some(cc))
 +        };
 +        let _ = commit;
-+        pow_check(b, params.whir.query_phase_pow_bits, w.query_phase_pow_witnesses[round], pow_id);
++        b.pow(
++            params.whir.query_phase_pow_bits,
++            &w.query_phase_pow_witnesses[round * pow_width..(round + 1) * pow_width],
++        );
 +        let nq = params.whir.rounds[round].num_queries;
 +        let nbits = log_rs - k;
 +        let omega = F::two_adic_generator(log_rs);
@@ -6242,11 +6377,24 @@ index 0000000..0863182
 +        let mut zs_round = vec![];
 +        let mut ys_round = vec![];
 +        let q_start = b.instrs.len();
++        // Merkle paths are verified after the round's queries (multiproof needs all leaves)
++        let mut pending: Vec<(u32, Vec<crate::sha384::config::Digest>, Vec<V>, usize)> = vec![];
++        let zeta = if odd != 1 { openvm_stark_backend::odd_domain::odd_root::<F>(odd) } else { F::ONE };
 +        for qi in 0..nq {
 +            let s = b.smp1();
-+            let bits = decompose_index(b, s, nbits, qid);
-+            let index = coeffs(s.val)[0].as_canonical_u32() as u64 & ((1u64 << nbits) - 1);
-+            let zi_root = pow_by_bits(b, omega, &bits);
++            let (bits, zi_root, index) = if odd == 1 {
++                let bits = decompose_index(b, s, nbits, qid);
++                let index = coeffs(s.val)[0].as_canonical_u32() as usize & ((1usize << nbits) - 1);
++                let zr = pow_by_bits(b, omega, &bits);
++                (bits, zr, index)
++            } else {
++                let (bits, abits) = decompose_index_x15(b, s, nbits, qid);
++                let x = coeffs(s.val)[0].as_canonical_u32() as usize;
++                let index = (((x >> nbits) % 15) << nbits) | (x & ((1 << nbits) - 1));
++                let wu = pow_by_bits(b, omega, &bits[..nbits]);
++                let za = pow_by_bits(b, zeta, &abits);
++                (bits, b.mul(wu, za), index)
++            };
 +            let zi = exp_pow2(b, zi_root, k);
 +            let values: Vec<V> = if is_initial {
 +                // per commit: leaf jobs (one per coset row), Horner over all columns
@@ -6280,7 +6428,7 @@ index 0000000..0863182
 +                } else {
 +                    (0..(1 << k)).map(|j| ShaHasher.hash_slice(&rows[0][qi][j])).collect()
 +                };
-+                b.merkle_path(job_base, &leaf_digests, &w.initial_round_merkle_proofs[0][qi], &bits, main_commit);
++                pending.push((job_base, leaf_digests, bits.clone(), index));
 +                vals
 +            } else {
 +                let vs = &w.codeword_opened_values[round - 1][qi];
@@ -6311,8 +6459,7 @@ index 0000000..0863182
 +                } else {
 +                    rows_f.iter().map(|r| ShaHasher.hash_slice(r)).collect()
 +                };
-+                let root = round_commits[round - 1];
-+                b.merkle_path(job_base, &leaf_digests, &w.codeword_merkle_proofs[round - 1][qi], &bits, &root);
++                pending.push((job_base, leaf_digests, bits.clone(), index));
 +                vals
 +            };
 +            // binary_k_fold(values, alphas_round, zi_root)
@@ -6345,6 +6492,30 @@ index 0000000..0863182
 +            ys_round.push(vals[0]);
 +            qid += 1;
 +        }
++        {
++            let proofs = if is_initial { &w.initial_round_merkle_proofs[0] } else { &w.codeword_merkle_proofs[round - 1] };
++            let root = if is_initial { *main_commit } else { round_commits[round - 1] };
++            let depth = nbits + openvm_stark_backend::odd_domain::ceil_log2(odd);
++            let siblings: Vec<Vec<crate::sha384::config::Digest>> = if multiproof {
++                let leaves: Vec<_> = pending
++                    .iter()
++                    .map(|(_, ld, _, idx)| {
++                        let mut layer = ld.clone();
++                        while layer.len() > 1 {
++                            layer = layer.chunks(2).map(|c| ShaHasher.compress(c[0], c[1])).collect();
++                        }
++                        (*idx, layer[0])
++                    })
++                    .collect();
++                decompress_multiproof(&leaves, &proofs[0], depth)
++            } else {
++                proofs.clone()
++            };
++            for ((job_base, ld, bits, _), sib) in pending.iter().zip(&siblings) {
++                assert_eq!(bits.len(), depth);
++                b.merkle_path(*job_base, ld, sib, bits, &root);
++            }
++        }
 +        eprintln!(
 +            "NV_QCOST round={round} queries={nq} rows={} per_query={:.0} nbits={nbits} k={k} merkle_nodes={}",
 +            b.instrs.len() - q_start,
@@ -6371,10 +6542,10 @@ index 0000000..0863182
 +        gammas.push(gamma);
 +        zs.push(zs_round);
 +        alphas.extend(alphas_round);
-+        log_rs -= 1;
++        log_rs -= shrink;
 +    }
 +    // final check
-+    let t = k * num_rounds;
++    let t = params.num_whir_sumcheck_rounds();
 +    let mut prefix = b.c(F::ONE);
 +    for i in 0..t {
 +        let w0 = {
@@ -6401,7 +6572,7 @@ index 0000000..0863182
 +        }
 +    }
 +    let mut acc = b.mul(prefix, ev[0]);
-+    let mut j = k;
++    let mut j = params.whir.k_round(0);
 +    for i in 0..num_rounds {
 +        let gamma = gammas[i];
 +        let alpha_slc = &alphas[j..t];
@@ -6426,7 +6597,7 @@ index 0000000..0863182
 +            acc = b.add(acc, t1);
 +            gp = b.mul(gp, gamma);
 +        }
-+        j += k;
++        j += params.whir.k_round(i + 1);
 +    }
 +    b.assert_eq(acc, claim, "whir final");
 +}
