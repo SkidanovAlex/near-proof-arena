@@ -441,10 +441,10 @@ index 711791d..45ddae4 100644
  }
  
 diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
-index c776e1c..17cbc8b 100644
+index c776e1c..a2ae649 100644
 --- a/crates/stark-backend/src/config.rs
 +++ b/crates/stark-backend/src/config.rs
-@@ -188,6 +188,74 @@ pub struct WhirConfig {
+@@ -188,6 +188,79 @@ pub struct WhirConfig {
      /// of queries in the `rounds` field. However we store it in `WhirConfig` for security analysis
      /// purposes.
      pub proximity: WhirProximityStrategy,
@@ -499,6 +499,10 @@ index c776e1c..17cbc8b 100644
 +    /// non-zero row (rounded up to `2^l_skip`), as power-of-two chunks; the zerocheck and GKR still
 +    /// run over the power-of-two height with a virtual zero tail.
 +    pub tight_heights: bool,
++    /// [NV lane, WHIR-Y] Observe each round's shift-query answers y_{i,.} (the folded values at
++    /// the query points, including the final round) before sampling gamma_i. Zero bytes; needed
++    /// for any future digest narrowing (lane/pq-weak-binding HROB.md).
++    pub whir_y: bool,
 +}
 +
 +impl WhirLevers {
@@ -515,11 +519,12 @@ index c776e1c..17cbc8b 100644
 +            | (self.gruen_zerocheck as u8) << 3
 +            | (self.wide_query_pow as u8) << 4
 +            | (self.tight_heights as u8) << 5
++            | (self.whir_y as u8) << 6
 +    }
  }
  
  #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-@@ -252,7 +320,12 @@ impl ProximityRegime {
+@@ -252,7 +325,12 @@ impl ProximityRegime {
      /// - `ListDecoding { m }`: finite-multiplicity Guruswami-Sudan threshold, `sqrt(ρ) (1 +
      ///   1/(2m))`.
      pub fn max_agreement(&self, log_inv_rate: usize) -> f64 {
@@ -533,7 +538,7 @@ index c776e1c..17cbc8b 100644
          let max_agreement = match *self {
              ProximityRegime::UniqueDecoding => (1.0 + rho) / 2.0,
              ProximityRegime::ListDecoding { m } => {
-@@ -289,25 +362,90 @@ impl WhirConfig {
+@@ -289,25 +367,90 @@ impl WhirConfig {
          whir_params: WhirParams,
          security_bits: usize,
      ) -> Self {
@@ -634,7 +639,7 @@ index c776e1c..17cbc8b 100644
              round_parameters.push(WhirRoundConfig { num_queries });
  
              log_inv_rate = next_rate;
-@@ -320,12 +458,36 @@ impl WhirConfig {
+@@ -320,12 +463,36 @@ impl WhirConfig {
              query_phase_pow_bits,
              folding_pow_bits: whir_params.folding_pow_bits,
              proximity,
@@ -672,7 +677,7 @@ index c776e1c..17cbc8b 100644
      }
  
      pub fn num_whir_rounds(&self) -> usize {
-@@ -334,7 +496,7 @@ impl WhirConfig {
+@@ -334,7 +501,7 @@ impl WhirConfig {
  
      #[inline]
      pub fn num_sumcheck_rounds(&self) -> usize {
@@ -976,7 +981,7 @@ index 0000000..84d3de3
 +    blocks.concat()
 +}
 diff --git a/crates/stark-backend/src/proof.rs b/crates/stark-backend/src/proof.rs
-index 30b7914..4e4c4bc 100644
+index 30b7914..1236858 100644
 --- a/crates/stark-backend/src/proof.rs
 +++ b/crates/stark-backend/src/proof.rs
 @@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
@@ -1109,7 +1114,7 @@ index 30b7914..4e4c4bc 100644
          })
      }
  }
-@@ -445,7 +499,38 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -445,7 +499,39 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          // We explicitly implement Decode for Proof to check CODEC_VERSION
          let codec_version = u32::decode(reader)?;
@@ -1124,7 +1129,7 @@ index 30b7914..4e4c4bc 100644
 +                    _ => Err(invalid("lever flag")),
 +                }
 +            };
-+            if h[3] & !63 != 0 {
++            if h[3] & !127 != 0 {
 +                return Err(invalid("lever flags"));
 +            }
 +            let levers = WhirLevers {
@@ -1137,6 +1142,7 @@ index 30b7914..4e4c4bc 100644
 +                gruen_zerocheck: h[3] & 8 != 0,
 +                wide_query_pow: h[3] & 16 != 0,
 +                tight_heights: h[3] & 32 != 0,
++                whir_y: h[3] & 64 != 0,
 +            };
 +            if levers.is_default() {
 +                return Err(invalid("lever format with default levers"));
@@ -1149,7 +1155,7 @@ index 30b7914..4e4c4bc 100644
              return Err(Error::other(format!(
                  "CODEC_VERSION mismatch, expected: {}, actual: {}",
                  CODEC_VERSION, codec_version
-@@ -470,7 +555,12 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -470,7 +556,12 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
                      break;
                  }
                  if byte & (1u8 << i) != 0 {
@@ -1163,7 +1169,7 @@ index 30b7914..4e4c4bc 100644
                  } else {
                      trace_vdata.push(None);
                  }
-@@ -488,10 +578,19 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -488,10 +579,19 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
              common_main_commit,
              trace_vdata,
              public_values,
@@ -1186,7 +1192,7 @@ index 30b7914..4e4c4bc 100644
          })
      }
  }
-@@ -526,6 +625,177 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
+@@ -526,6 +626,177 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
      }
  }
  
@@ -1364,7 +1370,7 @@ index 30b7914..4e4c4bc 100644
  impl<SC: DecodableConfig> Decode for BatchConstraintProof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          let numerator_term_per_air = SC::decode_extension_field_vec(reader)?;
-@@ -701,6 +971,219 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
+@@ -701,6 +972,219 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
              codeword_opened_values,
              codeword_merkle_proofs,
              final_poly,
@@ -2651,7 +2657,7 @@ index 504c7b3..53a292b 100644
                  // Folding above did nothing, and we update the eq(u[1+n_T..=round],
                  // b_{T,j}[..=round-n_T-1]) value
 diff --git a/crates/stark-backend/src/prover/whir.rs b/crates/stark-backend/src/prover/whir.rs
-index 6bdbaa8..16bfb47 100644
+index 6bdbaa8..d693db1 100644
 --- a/crates/stark-backend/src/prover/whir.rs
 +++ b/crates/stark-backend/src/prover/whir.rs
 @@ -90,6 +90,13 @@ where
@@ -2724,6 +2730,15 @@ index 6bdbaa8..16bfb47 100644
              let g_commit = g_tree.root()?;
              transcript.observe_commit(g_commit);
              codeword_commits.push(g_commit);
+@@ -228,7 +254,7 @@ where
+ 
+             (Some(g_tree), Some(z_0))
+         } else {
+-            let coeffs = g_mle.into_coeffs();
++            let coeffs = g_mle.coeffs().to_vec();
+             for coeff in &coeffs {
+                 transcript.observe_ext(*coeff);
+             }
 @@ -240,25 +266,41 @@ where
          let omega = SC::F::two_adic_generator(log_rs_domain_size - k_whir);
          let num_queries = round_params.num_queries;
@@ -2795,7 +2810,7 @@ index 6bdbaa8..16bfb47 100644
                  }
              } else {
                  let tree: &MerkleTree<SC::EF, SC::Digest> =
-@@ -297,9 +341,26 @@ where
+@@ -297,13 +341,42 @@ where
                      .collect_vec();
                  codeword_opened_values[whir_round - 1].push(opened_rows);
                  debug_assert_eq!(tree.proof_depth(), depth);
@@ -2825,7 +2840,23 @@ index 6bdbaa8..16bfb47 100644
              }
          }
          rs_tree = g_tree;
-@@ -322,7 +383,7 @@ where
+ 
++        // WHIR-Y lever: observe the shift-query answers y_i = g(z_i) before gamma.
++        if whir_params.levers.whir_y {
++            let coeffs = g_mle.coeffs();
++            for &z in &zs {
++                let mut y = SC::EF::ZERO;
++                for &c in coeffs.iter().rev() {
++                    y = y * z + c;
++                }
++                transcript.observe_ext(y);
++            }
++        }
++
+         // We still sample on the last round to match the verifier, who uses a
+         // final gamma to unify some logic. But we do not need to update
+         // `w_evals`.
+@@ -322,7 +395,7 @@ where
          }
  
          m -= k_whir;
@@ -2834,7 +2865,7 @@ index 6bdbaa8..16bfb47 100644
      }
  
      Ok(WhirProof::<SC> {
-@@ -337,6 +398,7 @@ where
+@@ -337,6 +410,7 @@ where
          codeword_opened_values,
          codeword_merkle_proofs,
          final_poly: final_poly.ok_or(WhirProverError::FinalPolyNone)?,
@@ -4008,7 +4039,7 @@ index 846ff0a..c65fdc7 100644
  }
  
 diff --git a/crates/stark-backend/src/verifier/whir.rs b/crates/stark-backend/src/verifier/whir.rs
-index 756e26f..bc340b3 100644
+index 756e26f..e8e219e 100644
 --- a/crates/stark-backend/src/verifier/whir.rs
 +++ b/crates/stark-backend/src/verifier/whir.rs
 @@ -44,6 +44,13 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
@@ -4164,7 +4195,7 @@ index 756e26f..bc340b3 100644
  
                      for c in 0..width {
                          let mu_pow = mu_pow_iter.next().unwrap(); // ok; mu_pows has total_width length
-@@ -217,28 +263,55 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -217,28 +263,61 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
                  //   whir.rounds[whir_round].num_queries
                  // - codeword_opened_values[whir_round - 1][query_idx].len() = 2^k_whir
                  let opened_values = codeword_opened_values[whir_round - 1][query_idx].clone();
@@ -4232,10 +4263,16 @@ index 756e26f..bc340b3 100644
 +                )?;
 +            }
 +        }
++        // WHIR-Y lever: observe the shift-query answers before gamma (prover mirrors this).
++        if params.whir.levers.whir_y {
++            for &y in &ys_round {
++                transcript.observe_ext(y);
++            }
++        }
          // We sample `gamma` even in the final round. There are no observations
          // after this challenge and strictly serves to unify the verifier logic.
          // Rather than checking that `final_poly(zi) = yi` for all `i` in the
-@@ -255,7 +328,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -255,7 +334,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
          zs.push(zs_round);
          alphas.extend(alphas_round);
  
@@ -4244,7 +4281,7 @@ index 756e26f..bc340b3 100644
      }
      debug_assert!(sumcheck_poly_iter.next().is_none());
  
-@@ -264,7 +337,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -264,7 +343,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
          VerifyWhirError::FinalPolyDegree,
      )?;
  
@@ -4253,7 +4290,7 @@ index 756e26f..bc340b3 100644
      debug_assert_eq!(z0s.len(), num_whir_rounds - 1);
      debug_assert_eq!(zs.len(), num_whir_rounds);
      debug_assert_eq!(gammas.len(), num_whir_rounds);
-@@ -288,11 +361,11 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -288,11 +367,11 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
      //
      // Similar algebra allows us to control the terms with eq(pow(z_i)). Note that here we actually
      // end up with f(pow(z_i^{2^p})) for some power p, which is a univariate evaluation.
@@ -4267,7 +4304,7 @@ index 756e26f..bc340b3 100644
      for i in 0..num_whir_rounds {
          let zis = &zs[i];
          let gamma = gammas[i];
-@@ -315,7 +388,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -315,7 +394,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
                  * eval_eq_mle(alpha_slc, zi_pow_left)
                  * horner_eval::<SC::EF, SC::F, SC::EF>(final_poly, *zi_pow_max);
          }
@@ -4276,7 +4313,7 @@ index 756e26f..bc340b3 100644
      }
      ensure(acc == claim, VerifyWhirError::FinalPolyConstraint)
  }
-@@ -385,6 +458,56 @@ pub fn binary_k_fold<F: TwoAdicField, EF: ExtensionField<F>>(
+@@ -385,6 +464,56 @@ pub fn binary_k_fold<F: TwoAdicField, EF: ExtensionField<F>>(
      values[0]
  }
  

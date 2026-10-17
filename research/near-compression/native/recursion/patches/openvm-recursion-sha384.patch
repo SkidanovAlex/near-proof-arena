@@ -2223,10 +2223,10 @@ index 0000000..0c335cf
 +}
 diff --git a/crates/recursion/src/nv/glue.rs b/crates/recursion/src/nv/glue.rs
 new file mode 100644
-index 0000000..2963c50
+index 0000000..3d38d19
 --- /dev/null
 +++ b/crates/recursion/src/nv/glue.rs
-@@ -0,0 +1,515 @@
+@@ -0,0 +1,516 @@
 +//! NV GLUE role: one row per *pair* of message words of a job compression (8 rows per
 +//! compression).  Replaces the packer (one row per word) and the block-chaining AIR
 +//! (one 102-column row per compression).
@@ -2265,7 +2265,7 @@ index 0000000..2963c50
 +use crate::sha384::{
 +    compress2_air::ROWS,
 +    compress2_trace::{Comp, SHA384_IV},
-+    config::{F, PREFIX},
++    config::{sha_levers, F},
 +};
 +
 +#[repr(C)]
@@ -2453,9 +2453,10 @@ index 0000000..2963c50
 +    let q_0 = is_q(0);
 +    let q_1 = is_q(1);
 +    let kp = kg.clone() * pj.clone();
++    let prefix = sha_levers().prefix();
 +    for k in 0..16 {
-+        builder.assert_zero(kp.clone() * l.blk0 * q_0.clone() * (l.b[k] - c(PREFIX[k] as u64)));
-+        builder.assert_zero(kp.clone() * l.blk0 * q_1.clone() * (l.b[k] - c(PREFIX[16 + k] as u64)));
++        builder.assert_zero(kp.clone() * l.blk0 * q_0.clone() * (l.b[k] - c(prefix[k] as u64)));
++        builder.assert_zero(kp.clone() * l.blk0 * q_1.clone() * (l.b[k] - c(prefix[16 + k] as u64)));
 +    }
 +    for k in 0..13 {
 +        builder.assert_zero(kp.clone() * l.end * l.b[k]);
@@ -2475,7 +2476,7 @@ index 0000000..2963c50
 +    );
 +    // node jobs: constant words 0 (NODE_WORD), 13 (0x80 pad), 14 (0), 15 (bit length 832)
 +    let kn = kg.clone() * l.nd;
-+    let node_w = crate::transcript::merkle_verify::NODE_WORD.to_be_bytes();
++    let node_w = sha_levers().node_prefix();
 +    let pad_w = (0x80u64 << 56).to_be_bytes();
 +    let len_w = [0u64.to_be_bytes(), 832u64.to_be_bytes()].concat();
 +    for k in 0..8 {
@@ -2744,7 +2745,7 @@ index 0000000..2963c50
 +}
 diff --git a/crates/recursion/src/nv/hash.rs b/crates/recursion/src/nv/hash.rs
 new file mode 100644
-index 0000000..6f66d5b
+index 0000000..67171e5
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash.rs
 @@ -0,0 +1,330 @@
@@ -2770,7 +2771,7 @@ index 0000000..6f66d5b
 +use crate::sha384::{
 +    compress2_air::{Layout, ROWS},
 +    compress2_trace::{gen_main, gen_table, main_height, sha2_compress, Comp, SHA384_IV},
-+    config::{F, PREFIX},
++    config::{sha_levers, F},
 +};
 +
 +#[derive(Clone, Copy, Debug)]
@@ -2978,7 +2979,7 @@ index 0000000..6f66d5b
 +impl Job2 {
 +    pub fn message(&self) -> Vec<u8> {
 +        if self.node {
-+            let mut m = crate::transcript::merkle_verify::NODE_WORD.to_be_bytes().to_vec();
++            let mut m = sha_levers().node_prefix().to_vec();
 +            for u in &self.units {
 +                assert!(matches!(u, U2::Word(_)));
 +                m.extend(u.bytes());
@@ -2986,7 +2987,7 @@ index 0000000..6f66d5b
 +            assert_eq!(m.len(), 104);
 +            return m;
 +        }
-+        let mut m = PREFIX.to_vec();
++        let mut m = sha_levers().prefix().to_vec();
 +        m.push(self.tag);
 +        for u in &self.units {
 +            m.extend(u.bytes());
@@ -3426,10 +3427,10 @@ index 0000000..df6e338
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..093db64
+index 0000000..ee2eb90
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,409 @@
+@@ -0,0 +1,450 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -3808,7 +3809,8 @@ index 0000000..093db64
 +        ("next_mask", WhirLevers { next_mask: true, ..base }, 1),
 +        ("x15", base, 15),
 +        ("tight", WhirLevers { tight_heights: true, ..base }, 1),
-+        ("all", WhirLevers { k_first: 1, keep_domain: true, multiproof: true, gruen_gkr: true, gkr_derive_claims: true, gruen_zerocheck: true, next_mask: true, wide_query_pow: false, tight_heights: true }, 15),
++        ("whir_y", WhirLevers { whir_y: true, ..base }, 1),
++        ("all", WhirLevers { k_first: 1, keep_domain: true, multiproof: true, gruen_gkr: true, gkr_derive_claims: true, gruen_zerocheck: true, next_mask: true, wide_query_pow: false, tight_heights: true, whir_y: true }, 15),
 +    ];
 +    for (name, lv, x15) in cases {
 +        let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 10, 3);
@@ -3837,6 +3839,46 @@ index 0000000..093db64
 +            println!("UNIFIED_IDENTITY case={name} fixture={fx} bytes={} identical={}", a.len(), a == r);
 +            assert_eq!(a, r, "cpu backend differs from reference: {name}");
 +        }
++    }
++}
++
++/// In-circuit lever checks: a child proved with Gruen GKR / derived claims / Gruen zerocheck /
++/// next-row mask / WHIR-Y; each tampered proof must be rejected by the NV circuit.
++#[test]
++fn nv_lever_tamper() {
++    use crate::sha384::e2e_tests::with_levers;
++    use openvm_stark_backend::WhirLevers;
++    let lv = WhirLevers {
++        gruen_gkr: true,
++        gkr_derive_claims: true,
++        gruen_zerocheck: true,
++        next_mask: true,
++        whir_y: true,
++        ..Default::default()
++    };
++    let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 8, 3);
++    p.max_constraint_degree = 4;
++    let p = with_levers(p, lv, 1, 5);
++    let engine = Sha384CpuEngine::new(p);
++    let (vk, proof) = InteractionsFixture11.keygen_and_prove(&engine);
++    nv_debug_mats(&vk, &proof, 16, |_, _| {});
++    println!("NV_LEVER_HONEST ok");
++    let one = EF::ONE;
++    let cases: Vec<(&str, Box<dyn Fn(&mut openvm_stark_backend::proof::Proof<Sha384Config>)>)> = vec![
++        ("gruen gkr s(3) non-zero", Box::new(move |p| p.gkr_proof.sumcheck_polys[0][0][2] += one)),
++        ("gruen gkr s(1)", Box::new(move |p| p.gkr_proof.sumcheck_polys[0][0][0] += one)),
++        ("derived p_xi_1 non-zero", Box::new(move |p| p.gkr_proof.claims_per_layer[1].p_xi_1 += one)),
++        ("derived q0 non-zero", Box::new(move |p| p.gkr_proof.q0_claim += one)),
++        ("layer q_xi_1", Box::new(move |p| p.gkr_proof.claims_per_layer[1].q_xi_1 += one)),
++        ("gruen zerocheck last eval", Box::new(move |p| *p.batch_constraint_proof.sumcheck_round_polys[0].last_mut().unwrap() += one)),
++        ("zerocheck eval", Box::new(move |p| p.batch_constraint_proof.sumcheck_round_polys[0][0] += one)),
++        ("column opening", Box::new(move |p| p.batch_constraint_proof.column_openings[0][0][0] += one)),
++        ("pow witness", Box::new(move |p| p.gkr_proof.logup_pow_witness += F::ONE)),
++    ];
++    for (name, m) in cases {
++        let mut bad = proof.clone();
++        m(&mut bad);
++        must_fail(name, || nv_debug_mats(&vk, &bad, 16, |_, _| {}));
 +    }
 +}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
@@ -5158,10 +5200,10 @@ index 0000000..e490f57
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..8cdde18
+index 0000000..0863182
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1087 @@
+@@ -0,0 +1,1231 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -5173,7 +5215,7 @@ index 0000000..8cdde18
 +    calculate_n_logup,
 +    hasher::MerkleHasher,
 +    keygen::types::MultiStarkVerifyingKey,
-+    proof::{column_openings_by_rot, Proof},
++    proof::Proof,
 +    verifier::proof_shape::verify_proof_shape,
 +    air_builders::symbolic::{symbolic_variable::Entry, SymbolicExpressionNode},
 +};
@@ -5218,6 +5260,16 @@ index 0000000..8cdde18
 +}
 +
 +/// 1 - x - y + 2xy
++/// Witness inverse of a (non-zero) Ext12 cell, checked: x * inv == 1.
++fn inv_checked(b: &mut Builder, x: V, what: &str) -> V {
++    let iv = if x.val == EF::ZERO { EF::ZERO } else { x.val.inverse() };
++    let i = b.load(iv);
++    let p = b.mul(x, i);
++    let one = b.c(F::ONE);
++    b.assert_eq(p, one, what);
++    i
++}
++
 +fn eq1(b: &mut Builder, x: V, y: V) -> V {
 +    let xy = b.mul(x, y);
 +    let s = b.add(x, y);
@@ -5473,14 +5525,21 @@ index 0000000..8cdde18
 +    let mut q_xi_claim = alpha_logup;
 +    if total_interactions > 0 {
 +        let total_rounds = l_skip + n_logup;
-+        let q0 = b.load_obs(gkr.q0_claim);
-+        let lc = &gkr.claims_per_layer[0];
++        let lv = params.whir.levers;
++        let (gruen, derive) = (lv.gruen_gkr, lv.gkr_derive_claims);
++        // claims are loaded (not observed); observation order is the native one
 +        let load_claims = |b: &mut Builder, lc: &openvm_stark_backend::proof::GkrLayerClaims<SC>| {
-+            let p0 = b.load_obs(lc.p_xi_0);
-+            let q0 = b.load_obs(lc.q_xi_0);
-+            let p1 = b.load_obs(lc.p_xi_1);
-+            let q1 = b.load_obs(lc.q_xi_1);
++            let p0 = b.load(lc.p_xi_0);
++            let q0 = b.load(lc.q_xi_0);
++            let p1 = b.load(lc.p_xi_1);
++            let q1 = b.load(lc.q_xi_1);
 +            (p0, q0, p1, q1)
++        };
++        let obs_claims = |b: &mut Builder, (p0, q0, p1, q1): (V, V, V, V)| {
++            b.obs12(p0);
++            b.obs12(q0);
++            b.obs12(p1);
++            b.obs12(q1);
 +        };
 +        let cross = |b: &mut Builder, (p0, q0, p1, q1): (V, V, V, V)| {
 +            let a = b.mul(p0, q1);
@@ -5489,7 +5548,23 @@ index 0000000..8cdde18
 +            let qc = b.mul(q0, q1);
 +            (pc, qc)
 +        };
-+        let c0 = load_claims(b, lc);
++        let lc = &gkr.claims_per_layer[0];
++        let mut c0 = load_claims(b, lc);
++        let q0 = if derive {
++            // derived claims: p_xi_1 = -p_xi_0 q_xi_1 / q_xi_0, q0 = q_xi_0 q_xi_1 (zero in proof)
++            b.zero(c0.2, "derived p_xi_1 must be zero in the proof");
++            let z = b.load(gkr.q0_claim);
++            b.zero(z, "derived q0 must be zero in the proof");
++            let iq = inv_checked(b, c0.1, "gkr root q_xi_0 inverse");
++            let t = b.mul(c0.0, c0.3);
++            let t = b.mul(t, iq);
++            c0.2 = b.neg(t);
++            b.mul(c0.1, c0.3)
++        } else {
++            b.load(gkr.q0_claim)
++        };
++        b.obs12(q0);
++        obs_claims(b, c0);
 +        let (pc, qc) = cross(b, c0);
 +        b.zero(pc, "gkr root zero-check");
 +        b.assert_eq(qc, q0, "gkr root q0");
@@ -5507,15 +5582,52 @@ index 0000000..8cdde18
 +            for (sr, evals) in polys.iter().enumerate() {
 +                let e1 = b.load_obs(evals[0]);
 +                let e2 = b.load_obs(evals[1]);
-+                let e3 = b.load_obs(evals[2]);
++                let e3 = if gruen {
++                    let z = b.load(evals[2]);
++                    b.zero(z, "gruen s(3) must be zero in the proof");
++                    z
++                } else {
++                    b.load_obs(evals[2])
++                };
 +                let ri = b.smp12();
 +                round_r.push(ri);
 +                let e0 = b.sub(claim, e1);
-+                claim = interp_cubic(b, [e0, e1, e2, e3], ri);
++                if gruen {
++                    // s(X) = eq * eq1(xi, X) * t(X), t quadratic
++                    let xi_t = gkr_r[sr];
++                    let mut tv = vec![];
++                    for (k, ek) in [(0u64, e0), (1, e1), (2, e2)] {
++                        let kc = b.cu(k);
++                        let e1k = eq1(b, xi_t, kc);
++                        let d = b.mul(eq, e1k);
++                        let id = inv_checked(b, d, "gruen gkr denominator");
++                        tv.push(b.mul(ek, id));
++                    }
++                    let tr = interp_quadratic(b, [tv[0], tv[1], tv[2]], ri);
++                    let e1r = eq1(b, xi_t, ri);
++                    let t = b.mul(eq, e1r);
++                    claim = b.mul(t, tr);
++                } else {
++                    claim = interp_cubic(b, [e0, e1, e2, e3], ri);
++                }
 +                let e = eq1(b, gkr_r[sr], ri);
 +                eq = b.mul(eq, e);
 +            }
-+            let cl = load_claims(b, &gkr.claims_per_layer[round]);
++            let mut cl = load_claims(b, &gkr.claims_per_layer[round]);
++            if derive {
++                b.zero(cl.2, "derived p_xi_1 must be zero in the proof");
++                // p_xi_1 = (claim / eq - lambda q0 q1 - p0 q1) / q0
++                let ie = inv_checked(b, eq, "gkr eq inverse");
++                let iq = inv_checked(b, cl.1, "gkr q_xi_0 inverse");
++                let ce = b.mul(claim, ie);
++                let qq = b.mul(cl.1, cl.3);
++                let lqq = b.mul(lambda, qq);
++                let pq = b.mul(cl.0, cl.3);
++                let t = b.sub(ce, lqq);
++                let t = b.sub(t, pq);
++                cl.2 = b.mul(t, iq);
++            }
++            obs_claims(b, cl);
 +            let (pc, qc) = cross(b, cl);
 +            let lq = b.mul(lambda, qc);
 +            let s = b.add(pc, lq);
@@ -5584,11 +5696,52 @@ index 0000000..8cdde18
 +        factorials[i] = factorials[i - 1] * F::from_usize(i);
 +    }
 +    let invfact = batch_multiplicative_inverse(&factorials);
++    let gruen_rounds = if params.whir.levers.gruen_zerocheck {
++        n_per_trace.iter().copied().min().unwrap_or(0).min(n_max)
++    } else {
++        0
++    };
++    // Lagrange weights at x = s_deg over the points 0..s_deg-1 (constants)
++    let lag_at_sdeg: Vec<F> = (0..s_deg)
++        .map(|k| {
++            let mut num = F::ONE;
++            let mut den = F::ONE;
++            for j in 0..s_deg {
++                if j != k {
++                    num *= F::from_usize(s_deg) - F::from_usize(j);
++                    den *= F::from_usize(k) - F::from_usize(j);
++                }
++            }
++            num * den.inverse()
++        })
++        .collect();
 +    for round in 0..n_max {
-+        let evals: Vec<V> = bp.sumcheck_round_polys[round]
++        let gruen = round < gruen_rounds;
++        let raw = &bp.sumcheck_round_polys[round];
++        let mut evals: Vec<V> = raw[..raw.len() - gruen as usize]
 +            .iter()
 +            .map(|&e| b.load_obs(e))
 +            .collect();
++        if gruen {
++            let z = b.load(*raw.last().unwrap());
++            b.zero(z, "gruen zerocheck last eval must be zero in the proof");
++            // s(X) = eq1(xi, X) s'(X): s'(k) = s(k) / eq1(k), s(s_deg) = eq1(s_deg) s'(s_deg)
++            let xi_cur = xi[l_skip + round];
++            let s0g = b.sub(cur_sum, evals[0]);
++            let mut acc = b.c(F::ZERO);
++            for k in 0..s_deg {
++                let sk = if k == 0 { s0g } else { evals[k - 1] };
++                let kc = b.cu(k as u64);
++                let ek = eq1(b, xi_cur, kc);
++                let ik = inv_checked(b, ek, "gruen zerocheck eq1 inverse");
++                let spk = b.mul(sk, ik);
++                let t = b.mul_c(spk, lag_at_sdeg[k]);
++                acc = b.add(acc, t);
++            }
++            let xs = b.cu(s_deg as u64);
++            let es = eq1(b, xi_cur, xs);
++            evals.push(b.mul(es, acc));
++        }
 +        let s0 = b.sub(cur_sum, evals[0]);
 +        let all: Vec<V> = std::iter::once(s0).chain(evals).collect();
 +        let r = b.smp12();
@@ -5673,13 +5826,16 @@ index 0000000..8cdde18
 +        rrev = b.mul(rrev, rs[i]);
 +    }
 +    // column openings: observe (all common main first)
-+    let need_rot: Vec<bool> = tid.iter().map(|&a| mvk.per_air[a].params.need_rot).collect();
++    // per trace, per common-main column: rotated opening present (next_mask lever / need_rot)
++    let masks: Vec<Vec<bool>> = tid.iter().map(|&a| mvk.per_air[a].params.opening_masks()[0].clone()).collect();
 +    let mut open_cells: Vec<Vec<(V, V)>> = vec![];
 +    for (t, parts) in bp.column_openings.iter().enumerate() {
-+        let pairs: Vec<(V, V)> = column_openings_by_rot(&parts[0], need_rot[t])
-+            .map(|(c, r)| {
++        let pairs: Vec<(V, V)> = openvm_stark_backend::proof::column_openings_by_mask(&parts[0], &masks[t])
++            .into_iter()
++            .zip(&masks[t])
++            .map(|((c, r), &m)| {
 +                let cv = b.load_obs(c);
-+                let rv = if need_rot[t] {
++                let rv = if m {
 +                    b.load_obs(r)
 +                } else {
 +                    let z = b.c(F::ZERO);
@@ -5877,8 +6033,8 @@ index 0000000..8cdde18
 +    let mut qc = vec![b.c(F::ZERO); width];
 +    let om_u: Vec<V> = u.iter().map(|&x| b.one_minus(x)).collect();
 +    let mut kern: std::collections::BTreeMap<(usize, bool), V> = Default::default();
-+    for (col, &(mat_idx, _, s)) in layout.sorted_cols.iter().enumerate() {
-+        let need = need_rot[mat_idx];
++    for (col, &(mat_idx, col_idx, s)) in layout.sorted_cols.iter().enumerate() {
++        let need = masks[mat_idx][col_idx];
 +        let n = s.log_height() - l_skip;
 +        if !kern.contains_key(&(n, need)) {
 +            let rs_n = &rs[..=n];
@@ -6097,40 +6253,64 @@ index 0000000..8cdde18
 +                let rows = &w.initial_round_opened_rows;
 +                let width0 = rows[0][qi][0].len();
 +                let job_base = b.job_units.len() as u32;
-+                for _ in 0..(1 << k) {
-+                    b.job_start(0, 4 * width0);
++                let coset = crate::sha384::config::sha_levers().coset_leaf;
++                // coset leaf (lever): one tag-6 job holding all 2^k rows; else one job per row
++                if coset {
++                    b.job_start(crate::sha384::config::TAG_COSET_LEAF, 4 * width0 << k);
++                } else {
++                    for _ in 0..(1 << k) {
++                        b.job_start(0, 4 * width0);
++                    }
 +                }
 +                let mut vals = vec![];
 +                for j in 0..(1 << k) {
 +                    let mut acc = b.c(F::ZERO);
 +                    for c in (0..width0).rev() {
-+                        acc = b.horn(acc, mu, rows[0][qi][j][c], job_base + j as u32, 2 + c as u32);
++                        let (job, u) = if coset {
++                            (job_base, 2 + (j * width0 + c) as u32)
++                        } else {
++                            (job_base + j as u32, 2 + c as u32)
++                        };
++                        acc = b.horn(acc, mu, rows[0][qi][j][c], job, u);
 +                    }
 +                    vals.push(acc);
 +                }
-+                let leaf_digests: Vec<_> = (0..(1 << k))
-+                    .map(|j| ShaHasher.hash_slice(&rows[0][qi][j]))
-+                    .collect();
++                let leaf_digests: Vec<_> = if coset {
++                    vec![ShaHasher.hash_coset(&rows[0][qi])]
++                } else {
++                    (0..(1 << k)).map(|j| ShaHasher.hash_slice(&rows[0][qi][j])).collect()
++                };
 +                b.merkle_path(job_base, &leaf_digests, &w.initial_round_merkle_proofs[0][qi], &bits, main_commit);
 +                vals
 +            } else {
 +                let vs = &w.codeword_opened_values[round - 1][qi];
 +                let job_base = b.job_units.len() as u32;
-+                for _ in 0..(1 << k) {
-+                    b.job_start(0, 48);
++                let coset = crate::sha384::config::sha_levers().coset_leaf;
++                if coset {
++                    b.job_start(crate::sha384::config::TAG_COSET_LEAF, 48 << k);
++                } else {
++                    for _ in 0..(1 << k) {
++                        b.job_start(0, 48);
++                    }
 +                }
 +                let vals: Vec<V> = vs
 +                    .iter()
 +                    .enumerate()
 +                    .map(|(j, &v)| {
 +                        let lv = b.load(v);
-+                        b.unit12(lv, job_base + j as u32, 2)
++                        if coset {
++                            b.unit12(lv, job_base, 2 + 12 * j as u32)
++                        } else {
++                            b.unit12(lv, job_base + j as u32, 2)
++                        }
 +                    })
 +                    .collect();
-+                let leaf_digests: Vec<_> = vs
-+                    .iter()
-+                    .map(|v| ShaHasher.hash_slice(v.as_basis_coefficients_slice()))
-+                    .collect();
++                let rows_f: Vec<Vec<F>> = vs.iter().map(|v| v.as_basis_coefficients_slice().to_vec()).collect();
++                let leaf_digests: Vec<_> = if coset {
++                    vec![ShaHasher.hash_coset(&rows_f)]
++                } else {
++                    rows_f.iter().map(|r| ShaHasher.hash_slice(r)).collect()
++                };
 +                let root = round_commits[round - 1];
 +                b.merkle_path(job_base, &leaf_digests, &w.codeword_merkle_proofs[round - 1][qi], &bits, &root);
 +                vals
@@ -6171,6 +6351,12 @@ index 0000000..8cdde18
 +            (b.instrs.len() - q_start) as f64 / nq.max(1) as f64,
 +            b.merkle_nodes
 +        );
++        // WHIR-Y lever: the shift-query answers are observed before gamma
++        if params.whir.levers.whir_y {
++            for &y in &ys_round {
++                b.obs12(y);
++            }
++        }
 +        let gamma = b.smp12();
 +        if let Some(y0) = y0 {
 +            let t = b.mul(y0, gamma);
@@ -10018,10 +10204,10 @@ index 0000000..8355d5e
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..08bfea1
+index 0000000..2b3a735
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
-@@ -0,0 +1,453 @@
+@@ -0,0 +1,462 @@
 +//! End-to-end: the ported verifier sub-circuit verifies real SHA-384/Ext12 child proofs.
 +//!
 +//!   cargo test --release -p openvm-recursion-circuit --lib e2e_ -- --nocapture
@@ -10045,7 +10231,30 @@ index 0000000..08bfea1
 +pub fn child_params_small() -> SystemParams {
 +    let mut p = test_system_params_small(2, 8, 3);
 +    p.max_constraint_degree = 4;
-+    p
++    env_levers("CHILD", p, 5)
++}
++
++/// Apply research levers from env `{prefix}_K1`, `_MULTIPROOF`, `_KEEP_DOMAIN`, `_GRUEN_GKR`,
++/// `_GKR_DERIVE`, `_NEXT_MASK`, `_GRUEN_ZC`, `_WIDE_POW`, `_TIGHT`, `_WHIR_Y`, `_X15`.
++pub fn env_levers(prefix: &str, p: SystemParams, bits: usize) -> SystemParams {
++    let e = |n: &str, dflt: usize| env_usize(&format!("{prefix}_{n}"), dflt);
++    let levers = openvm_stark_backend::WhirLevers {
++        k_first: e("K1", 0),
++        multiproof: e("MULTIPROOF", 0) == 1,
++        keep_domain: e("KEEP_DOMAIN", 0) == 1,
++        gruen_gkr: e("GRUEN_GKR", 0) == 1,
++        gkr_derive_claims: e("GKR_DERIVE", 0) == 1,
++        next_mask: e("NEXT_MASK", 0) == 1,
++        gruen_zerocheck: e("GRUEN_ZC", 0) == 1,
++        wide_query_pow: e("WIDE_POW", 0) == 1,
++        tight_heights: e("TIGHT", 0) == 1,
++        whir_y: e("WHIR_Y", 0) == 1,
++    };
++    let x15 = e("X15", 1);
++    if levers.is_default() && x15 == 1 {
++        return p;
++    }
++    with_levers(p, levers, x15, bits)
 +}
 +pub fn parent_params_debug() -> SystemParams {
 +    let mut p = test_system_params_small(2, 20, 3);
@@ -10238,21 +10447,7 @@ index 0000000..08bfea1
 +        e("QUERY_POW", 0),
 +        k,
 +    );
-+    let levers = openvm_stark_backend::WhirLevers {
-+        k_first: e("K1", 0),
-+        multiproof: e("MULTIPROOF", 0) == 1,
-+        keep_domain: e("KEEP_DOMAIN", 0) == 1,
-+        gruen_gkr: e("GRUEN_GKR", 0) == 1,
-+        gkr_derive_claims: e("GKR_DERIVE", 0) == 1,
-+        next_mask: e("NEXT_MASK", 0) == 1,
-+        gruen_zerocheck: e("GRUEN_ZC", 0) == 1,
-+        wide_query_pow: e("WIDE_POW", 0) == 1,
-+        tight_heights: e("TIGHT", 0) == 1,
-+    };
-+    let x15 = e("X15", 1);
-+    if !levers.is_default() || x15 != 1 {
-+        p = with_levers(p, levers, x15, bits);
-+    }
++    let p = env_levers(prefix, p, bits);
 +    p
 +}
 +
