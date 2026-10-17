@@ -13463,3 +13463,28 @@ integer-bus and invalid-byte prover check successfully. This is not yet the
 whole-AIR refinement: expression rewrite preservation, all removed constraints,
 interaction preservation and acceptance-to-balance remain separate obligations.
 Also made --no-install avoid reading the unrelated OpenVM test hook.
+
+## 2026-10-17 — Structural packed expression and interaction refinement
+
+Previous turn progressed at1082ea371; working tree was clean on continuation.
+Added PackedExprRewrite.lean with an executable partial rewrite: try a macro
+first, otherwise remap columns and recurse through arithmetic. Unmapped columns
+fail closed. Proved evaluation preservation for arbitrary environments with
+explicit shared-operation, column-map and macro-soundness premises. Lifted this
+to lists, retained zero constraints, and local interaction messages/multiplicity
+bit values with unchanged bus/direction. These are structural induction proofs,
+not tests over the retained witness. Kernel-reduced examples exercise macro
+precedence, next-row columns, nested failure and interaction fields.
+
+Validation: lake build NearCompression.PackedExprRewrite passes. Axiom audit for
+evaluation, constraints and interaction theorems reports only propext and
+Quot.sound; retained lean-rewrite-audit.log. No sorry/custom axioms.
+
+Remaining refinement gates: instantiate macro soundness for the actual balanced
+16-bit expression AST and byte reconstruction; instantiate the concrete column
+map in current/next environments; establish equality with generator output;
+restore removed Boolean/inactivity constraints; transfer global bus counts and
+trace shape. The local interaction result is not a global balance theorem.
+Native acceptance-to-HoldsP and QROM/recursive composition remain separate.
+Proof sizes unchanged: provisional packed357069B, original451221B. This advances
+formal refinement, not fullNEAR1Pgas completeness or a security certificate.
