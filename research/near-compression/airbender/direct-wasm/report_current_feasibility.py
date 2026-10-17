@@ -82,7 +82,8 @@ def build(root=ROOT):
             projected_subtotal_under_target=min(sizes_screen)<TARGET,
             minimum_savings_to_strict_target_before_excluded_costs=max(0,min(sizes_screen)-(TARGET-1))))
     feasible = [c for c in candidates if c['partial_conditional_quantum_bound_passes'] and c['projected_subtotal_under_target']]
-    recursive = read('results/recursive-pcs-root/report.json')
+    historical_recursive = read('results/recursive-pcs-root/report.json')
+    recursive = read('results/recursive-single-root-root/report.json')
     scope = read('scope-report.json')
     hash_work = read('results/switch-full-verifier-hash-work.json')
     assert hash_work['fresh_verifier_passed']
@@ -104,8 +105,13 @@ def build(root=ROOT):
         counterfactual_scope=screen['scope'],same_parameters_as_measured_fixture=False,
         screened_candidates_passing_partial_bound_and_size=len(feasible),
         recursion=dict(complete_recursive_proof=recursive['complete_recursive_proof'],
-            full_trace_disclosure_needed=recursive['full_trace_disclosure_needed_for_native_root_link'],
-            limits=recursive['limits']),
+            full_trace_disclosure_needed=recursive['full_trace_required'],
+            original_inner_proofs_required=True,prototype_profile=recursive['profile'],
+            measured_proof_json_bytes=recursive['proof_json_bytes'],
+            original_compact_inner_proof_bytes=recursive['original_compact_inner_proof_bytes'],
+            limits=recursive['limits'],
+            historical_pcs_only_prototype=dict(full_trace_disclosure_needed=historical_recursive['full_trace_disclosure_needed_for_native_root_link'],
+                evidence='results/recursive-pcs-root/report.json')),
         latest_verifier_hash_work=dict(totals=hash_work['measurement']['totals'],
             largest_unique_block_tags=dict(top_hash_tags),gadget_accounting=hash_work['current_gadget_accounting'],
             scope=hash_work['scope']),

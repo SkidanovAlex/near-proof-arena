@@ -182,14 +182,22 @@
   "screened_candidates_passing_partial_bound_and_size": 0,
   "recursion": {
     "complete_recursive_proof": false,
-    "full_trace_disclosure_needed": true,
+    "full_trace_disclosure_needed": false,
+    "original_inner_proofs_required": true,
+    "prototype_profile": "NEAR-RECURSIVE-SINGLE-RS-CONJUNCTION-V1",
+    "measured_proof_json_bytes": 342047,
+    "original_compact_inner_proof_bytes": 222527,
     "limits": [
-      "Actual packed PCS replaces disclosed terminal dot-product in core verifier.",
-      "Verified dependency MUST come from native root-link/provenance check; hashing roots together does not establish equal committed data.",
-      "End-to-end wrapper still needs full3.70MB trace for root link/native header/hash binding; proof payload alone is not complete recursive compression.",
-      "New configured GKR transcript and compiler CONFIG; no legacy proof relabeling.",
-      "Q8/Ext4 diagnostic; no PQ128,QROM,proximity or zero-knowledge certification."
-    ]
+      "No disclosed trace or separate trace root/link check; every fixed operand has explicit equality residual under same PCS root.",
+      "Derived dependency is internal cache, regenerated from original proofs/statements, never accepted as prover-selected metadata.",
+      "Original component proofs and native GKR/transcript/SHA384/Merkle checks remain required; this is not complete recursion.",
+      "Trusted statements still require application receipt policy; no new receipt extraction theorem.",
+      "Q8/Ext4 diagnostic, no PQ128/QROM/proximity/zero-knowledge certification."
+    ],
+    "historical_pcs_only_prototype": {
+      "full_trace_disclosure_needed": true,
+      "evidence": "results/recursive-pcs-root/report.json"
+    }
   },
   "latest_verifier_hash_work": {
     "totals": {
@@ -287,9 +295,10 @@
     "results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd",
     "results/larger-field-code-switch-screen.json": "f1ad5181272cea7db34147a0226bb63ad81cd4c04c0b9cb9b632c3ca47d9894f",
     "results/recursive-pcs-root/report.json": "1d905381180c940a885581288e08179bcdaa8a775b19c6d9b5101c25d187610d",
+    "results/recursive-single-root-root/report.json": "a4d811dcf05e3226072f8969c643d1bc98d82462710c365965b78137e3a7adf0",
     "scope-report.json": "fcea1becba48a6f0e97c704b7048b71993852c2713441fe1acdf0c1d2b04f9ea",
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
-    "airbender/direct-wasm/report_current_feasibility.py": "357f83f02291b8363de00d586ad6a9b9e01cefda8ce3252874b179487058d7db",
+    "airbender/direct-wasm/report_current_feasibility.py": "bc5b15ffbb07af64e92fca71dc049b354dc41601373223fb2888f33e64766a20",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

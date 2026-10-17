@@ -750,6 +750,8 @@
     "next_experiment": "Complete small recursive-verifier break-even; public binding and no disclosed trace are required.",
     "scope": "Latest diagnostic evidence supersedes older size entries for decision-making; historical captures retained. This is not full NEAR 1Pgas or PQ128 feasibility.",
     "hash_work_report": "results/switch-full-verifier-hash-work.json",
-    "unique_sha384_blocks_in_complete_fixture_verifier": 242409
+    "unique_sha384_blocks_in_complete_fixture_verifier": 242409,
+    "recursion_prototype_correction": "Newer recursive-single-root-root already removes trace disclosure; original inner proofs and native transcript/GKR/hash/Merkle checks remain required.",
+    "next_binding_experiment": "results/merkle-recursive-call-routing/report.json; public-only private Merkle path routing plus Lean compression witness, same-root proof composition pending."
   }
 }

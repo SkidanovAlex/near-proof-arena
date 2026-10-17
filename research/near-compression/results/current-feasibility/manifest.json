@@ -11,16 +11,16 @@
   ],
   "replay_note": "Hash workload counts and sizes are deterministic; timing and native-library hash can vary across machines. Replay regenerated measurement changes its artifact hash.",
   "sha256": {
-    "results/current-feasibility.json": "9d193671f67e34b640dd10028f1f45f920fce41c16f8e31998c64b746b14433c",
+    "results/current-feasibility.json": "219f568b8058412162977c72cee1563da68f110fdfe6ae7158b145c0df52a559",
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
     "results/current-feasibility/fresh-verifier.log": "f419b67dfa9e8567efa80f8a1d62e4a67a9a6e8116c072cc247e089029af3218",
     "results/current-feasibility/screen-replay.log": "f27fbac1956a49f96356062285dabfa45e4954b584332916f6cf49136047cedc",
     "results/current-feasibility/hash-work.log": "6198dfa73e0906868332e136655fa9f0cba8b98378ca75eb92ddbffcfb68b087",
     "results/current-feasibility/validation.json": "c0e04e1110d9d399587aab913bb2cb76f80631dde0b7d73cdb4dcec3f10fb4e2",
-    "airbender/direct-wasm/report_current_feasibility.py": "357f83f02291b8363de00d586ad6a9b9e01cefda8ce3252874b179487058d7db",
+    "airbender/direct-wasm/report_current_feasibility.py": "bc5b15ffbb07af64e92fca71dc049b354dc41601373223fb2888f33e64766a20",
     "airbender/direct-wasm/test_current_feasibility.py": "3c53201a4c50d08049c77a82b546b50daad7be155375248c9b3bcb4a9c229444",
     "airbender/direct-wasm/measure_switch_verifier_work.py": "a5ea8d1cede94853b87d6c0cec9c9f9a09378a6046b07e3174801365f9e33ca7",
     "airbender/direct-wasm/measure_ext8_recursive_hash_work.py": "424ca5d94620cbae2969cc327b08a2656444d390a85a019696992cd70a6dd64e",
-    "results/slice-feasibility-gate.json": "d2d95d6aeb96dc8cbc7b4a74ea17ca2c18773b8f6dd31218f2ce4095178a0e4d"
+    "results/slice-feasibility-gate.json": "c36fd77a23f9ee69388df6b9436e08b957ab4100f73439186890b8f5bb235e20"
   }
 }

@@ -9525,3 +9525,51 @@ root linkage and is not a compression success. Evidence:
 results/current-feasibility/ and results/switch-full-verifier-hash-work.json.
 Full NEAR1Pgas/PQ128/recursive correctness/sub300000 B remain open; feasibility
 NOT_PASSED. Source-controlled parameter degrees and full MCA remain open too.
+
+## 2026-10-17 — Public-only private Merkle call routing for recursion
+
+Corrected the current feasibility report's recursion baseline: the newer
+recursive-single-root-root prototype already removed trace disclosure using
+fixed-operand equalities under the single PCS root. It still requires original
+inner proofs and native transcript/GKR/SHA384/Merkle checks. The older
+recursive-pcs-root full-trace requirement is now explicitly historical.
+This avoids repeating a solved root-linking task.
+
+Implemented merkle_recursive_call_routes.py. The public root, actual source
+context, leaf count, index, and claimed leaf determine the complete verifier
+call-routing equations. There is no externally trusted expected call list.
+Siblings remain private 16-bit message limbs in the same SHA384 use table.
+The compiler binds exact primitive framing, canonical SHA384 padding, standard
+IV, all512 chaining bits, digest bytes packed into later message limbs, and
+final public root. Source contexts of197bytes give the required even alignment
+for digest/sibling byte pairs; the current profile explicitly rejects even
+context lengths and odd leaf lengths. Depths1..4 fit the25-block chunk bound.
+This is a bounded Merkle-verifier consumer, not a complete PCS/NEAR verifier.
+
+Validation:360 actual paths (all positions, depths1..4, public leaf sizes
+0/2/8/64, context lengths1/197/255),555456 routing equations and the same
+number of flat-vector comparisons;822 input/mutation rejections. Forty-eight
+explicit stale-state counterexamples pass routing alone, demonstrating why
+compression AIR acceptance cannot be omitted. All route data is regenerated
+from the public statement; a proof-selected equation list is not accepted by
+the check_routing entry point.
+
+Generated the10-block, actual-source-context instance with the existing
+Lean SHA384NodeChunkImportedFixture exporter. Every use row matches native
+SHA384 states exactly and satisfies the routing equations. A changed private
+sibling message byte with old states is rejected by Lean's actual compression
+check. This is executable Lean witness parity, not a new kernel theorem about
+the Python compiler. Canonical source AIR/spec and replay configuration are
+retained; large source tables remain regenerable in /tmp with pinned hashes.
+
+Next concrete implementation: same-use-root GKR/PCS proof of the weighted
+linear route equations together with the actual compression/use AIR proof,
+under a distinct public-statement-bound profile. The verifier must receive
+neither original sibling path nor expected hash messages nor full trace.
+Measure full proof bytes before attempting larger depths or claiming recursion
+break-even. A formal route-compiler theorem and cryptographic composition are
+still required. No existing transcript/profile has been relabeled or weakened.
+
+Evidence:results/merkle-recursive-call-routing/. No Lean source changes; prior
+full audit4658 remains the last full audit. Full NEAR1Pgas/PQ128/sub300000 B
+remain open; latest full fixture1344645 B unchanged; feasibility NOT_PASSED.

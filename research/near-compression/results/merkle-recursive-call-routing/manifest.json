@@ -1,0 +1,29 @@
+{
+  "status": "ROUTING_AND_WITNESS_CHECKED_PROOF_COMPOSITION_PENDING",
+  "cwd": "research/near-compression",
+  "replay": [
+    "cc -O2 -fPIC -shared airbender/direct-wasm/sha384_state_probe.c -o /tmp/merkle-routing-sha384.so -lcrypto",
+    "python3 airbender/direct-wasm/test_merkle_recursive_call_routes.py --probe-library /tmp/merkle-routing-sha384.so --output results/merkle-recursive-call-routing",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy lake env lean --run SHA384NodeChunkImportedFixture.lean results/merkle-recursive-call-routing/chunk-config.json /tmp/merkle-recursive-call-routing-fixture",
+    "python3 airbender/direct-wasm/check_merkle_recursive_route_fixture.py --capture results/merkle-recursive-call-routing --fixture /tmp/merkle-recursive-call-routing-fixture"
+  ],
+  "scope": "Public-only route compiler and actual native/Lean SHA384 witness parity. Sibling message limbs are private. Existing compression/use AIR and same-root proof of all route equations are required. No complete recursive proof, formal compiler theorem, PQ128 or full NEAR claim. Example witness is a test artifact, not a verifier proof input.",
+  "sha256": {
+    "results/merkle-recursive-call-routing/chunk-config.json": "7c21402b0d49eb2554785bc9af6ff01f2cb34ec926976e8e6e57854bf9d67514",
+    "results/merkle-recursive-call-routing/example.json": "208c9025f2e607e0dc3bfe5a1a2b766c643640feb1d416f7dad858377b589a29",
+    "results/merkle-recursive-call-routing/lean-integration.json": "636d776b9abca4a2d4c6c8831b5b3dfdcc15e6c04158fc003311a6a126bdd656",
+    "results/merkle-recursive-call-routing/lean-negative.log": "4c10959247cb99aa24bc9c6cb47f983318c76c3b2af92edd03282c73df7f055c",
+    "results/merkle-recursive-call-routing/lean-witness.log": "b09d00f43e2d285e5ce97bc3e3368d142f20e835f24f6da78139555e18802ff8",
+    "results/merkle-recursive-call-routing/report.json": "6f02b57c5e8cc8aed6fc0f7e73ae0aa17f1056375432c0932c6a730db35cd30a",
+    "results/merkle-recursive-call-routing/spec.json.gz": "b5e75b7bf4f1e925e35224da3f5dfadd218d1f69149c7ef5396f35c5f2b0cf14",
+    "results/merkle-recursive-call-routing/test.log": "24e97e3cd793f64740df790dc3f5d26cb3f429168cbc5af3d34e4edf53ac59b4",
+    "airbender/direct-wasm/merkle_recursive_call_routes.py": "59a68f7c9a5578625f0c97c2a10a98d4339b2fa233dc05695fc3f3a70a90c3be",
+    "airbender/direct-wasm/test_merkle_recursive_call_routes.py": "b701aab8e17484ba2fffd138b1c2bdd41554b29e1c78bab3e69099d2fb5d5a45",
+    "airbender/direct-wasm/check_merkle_recursive_route_fixture.py": "c388bd091d0cc2ae56b4eaebfbf07ce76a1ccab7da97a2d38ff0277bb2a4c942",
+    "airbender/direct-wasm/sha384_state_probe.c": "8c932c819810e6135d6c5550ef4e47d520bbcd1886e30e5c28ccb9bd80b28a51",
+    "airbender/direct-wasm/measure_sha384_block_dag.py": "ea4c0fbd593d78fc044cae7517935ef51fc2445dab4b34163f0a17a732108b51",
+    "airbender/direct-wasm/pq384_primitives.py": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96",
+    "SHA384NodeChunkImportedFixture.lean": "4a8307012d2161711a1763b155b345db919b5ebf9bff521bcbc76954eb9ca151",
+    "NearCompression/SHA384NodeChunk.lean": "646675ebee9bdfe54e5064f51b0100f5e2a37de8ef6e5d39f01c8a0e228bc155"
+  }
+}
