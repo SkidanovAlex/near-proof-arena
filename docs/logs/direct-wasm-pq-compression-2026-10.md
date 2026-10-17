@@ -10734,3 +10734,56 @@ Next: extend the executed verifier path through internal/root configurations,
 collect actual trace layout and serialized-component costs, and keep NEAR
 public-value/state binding explicit. Full1Petagas NEAR, PQ128 and sound
 sub300000B remain unachieved; no Lean acceptance theorem is claimed.
+
+
+## 2026-10-17 — Measured three-layer generic verifier chain below300kB
+
+Previous goal turn classified progress: executed real parent proof. Revalidated
+clean authoritative worktree at0926a03f3 and the existing pinned OpenVM clone.
+Extended the experiment with a new nearproof_recursive_chain test. It proves
+nine height256 Fibonacci AIRs under app_params_with_100_bits_security(12), then
+proves the resulting verifier under leaf, internal and root parameter
+constructors. Every stage retains debug AIR checking, generates an actual proof
+and verifies it with the generated VK. MAX_NUM_PROOFS=2 throughout.
+
+IMPORTANT: final stage is labeled root_geometry_babybear_hash. It uses the
+root schedule/stacking geometry on the generic VerifierSubCircuit with
+BabyBear Poseidon2. It is not OpenVM's full VM RootProver (which also binds user
+public values and uses a different commitment hash), and not a stabilized
+recursive VK chain. The experiment has no NEAR state-transition semantics and
+no PQ128 certificate. No curve-based wrapper was used.
+
+| Stage | Serialized bytes | Common cells | Cached cells |
+| --- | ---: | ---: | ---: |
+| leaf |383529|6489279|3072|
+| internal |398697|25261532|393216|
+| root geometry / BabyBear hash |242809|14447856|393216|
+
+Final byte decomposition: GKR11448, constraints45980, stacking948, WHIR183884,
+framing/other549 =242809 exactly. This provides a concrete sub300000B generic
+recursive-verifier proof using upstream100-bit-target constructors; it does not
+upgrade the scope/security of our objective. Actual remaining budget is57191B
+to reach300000, or57190B for strict less-than.
+
+Trace census changes optimization priority. In the internal verifier,
+FinalPolyQueryEvalAir uses11796480cells (46.70%), Poseidon2 uses9863168cells
+(39.04%). The terminal polynomial is evaluated through nested per-query Horner
+loops (source pinned). Root geometry reduces that polynomial-evaluation table
+to737280cells, but hashing remains9863168cells. Thus terminal degree, query
+schedule and hash cost must be optimized jointly; cheaper hashing alone does
+not remove the internal layer's dominant work.
+
+One compile error required explicitly selecting BabyBearPoseidon2Config for
+circuit.airs() in the trace logger; no protocol changes. Final targeted test
+passed in57.89s, cargo wall73.30s including compilation; maximum process RSS
+4067580KiB includes build. Nightly formatting and targeted lib/tests Clippy
+-D warnings passed. All three proof binaries, trace/component logs, exact
+instrumented source/patch and lockfile are retained with rawSHA256 pins in
+results/swirl-security-review/chain. Independent capture reconciled every
+trace-cell total, component-byte sum and serialized proof length.
+
+Next gate: count actual extension-field elements and digest payloads in the
+242809B proof, then price the stronger field/hash parameters under our
+conditional quantum budget. Also account for VM/NEAR public binding and
+recursive key stabilization before treating this as a deployable architecture.
+Full1Petagas NEAR, PQ128, Lean acceptance soundness remain open.

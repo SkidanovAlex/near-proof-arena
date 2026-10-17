@@ -1,0 +1,154 @@
+diff --git a/crates/recursion/src/tests.rs b/crates/recursion/src/tests.rs
+index faecdbb..f1fa9ad 100644
+--- a/crates/recursion/src/tests.rs
++++ b/crates/recursion/src/tests.rs
+@@ -4,7 +4,7 @@ use itertools::Itertools;
+ use openvm_cpu_backend::CpuBackend;
+ use openvm_stark_backend::{
+     keygen::types::{MultiStarkProvingKey, MultiStarkVerifyingKey},
+-    prover::{AirProvingContext, ProvingContext},
++    prover::{AirProvingContext, DeviceDataTransporter, ProvingContext},
+     test_utils::{
+         default_test_params_small, test_system_params_small,
+         test_system_params_small_with_poly_len, CachedFixture11, FibFixture, InteractionsFixture11,
+@@ -76,7 +76,7 @@ fn run_test<const MAX_NUM_PROOFS: usize, Fx: TestFixture<BabyBearPoseidon2Config
+ ) {
+     assert!(num_proofs <= MAX_NUM_PROOFS);
+     let (vk, proof) = fx.keygen_and_prove(child_engine);
+-    let (circuit, _pk) = verifier_circuit_keygen::<MAX_NUM_PROOFS>(parent_engine, &vk);
++    let (circuit, pk) = verifier_circuit_keygen::<MAX_NUM_PROOFS>(parent_engine, &vk);
+     let vk_commit_data = circuit.commit_child_vk(parent_engine, &vk);
+     let proofs: Vec<_> = (0..num_proofs).map(|_| proof.clone()).collect();
+     let ctxs = circuit.generate_proving_ctxs_base(
+@@ -87,6 +87,32 @@ fn run_test<const MAX_NUM_PROOFS: usize, Fx: TestFixture<BabyBearPoseidon2Config
+         default_duplex_sponge_recorder(),
+     );
+     debug(parent_engine, &circuit.airs(), ctxs);
++    let ctxs = circuit.generate_proving_ctxs_base(
++        &vk,
++        CachedTraceCtx::PcsData(circuit.commit_child_vk(parent_engine, &vk)),
++        &proofs,
++        &(),
++        default_duplex_sponge_recorder(),
++    );
++    let parent_vk = pk.get_vk();
++    let d_pk = parent_engine.device().transport_pk_to_device(&pk);
++    let outer = parent_engine
++        .prove(
++            &d_pk,
++            ProvingContext::new(ctxs.into_iter().enumerate().collect()),
++        )
++        .unwrap();
++    parent_engine.verify(&parent_vk, &outer).unwrap();
++    use openvm_stark_backend::codec::Encode;
++    let mut inner_bytes = Vec::new();
++    proof.encode(&mut inner_bytes).unwrap();
++    let mut outer_bytes = Vec::new();
++    outer.encode(&mut outer_bytes).unwrap();
++    println!(
++        "NEARPROOF_CHILD_BYTES={} NEARPROOF_PARENT_BYTES={}",
++        inner_bytes.len(),
++        outer_bytes.len()
++    );
+ }
+ 
+ #[test_matrix(
+@@ -914,3 +940,98 @@ mod cuda {
+         compare_cpu_tracegen_vs_gpu_tracegen(fx, params, num_proofs);
+     }
+ }
++
++#[test]
++fn nearproof_recursion_production_parameters() {
++    use openvm_stark_sdk::config::{
++        app_params_with_100_bits_security, leaf_params_with_100_bits_security,
++    };
++    let child_engine =
++        BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(app_params_with_100_bits_security(12));
++    let parent_engine =
++        BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(leaf_params_with_100_bits_security());
++    let fib = FibFixture::new_with_num_airs(0, 1, 1 << 8, 9);
++    run_test::<2, _>(fib, &child_engine, &parent_engine, 1);
++}
++
++#[test]
++fn nearproof_recursive_chain() {
++    use openvm_stark_backend::{codec::Encode, prover::MatrixDimensions};
++    use openvm_stark_sdk::config::{
++        app_params_with_100_bits_security, internal_params_with_100_bits_security,
++        leaf_params_with_100_bits_security, root_params_with_100_bits_security,
++    };
++    let child_engine =
++        BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(app_params_with_100_bits_security(12));
++    let fib = FibFixture::new_with_num_airs(0, 1, 1 << 8, 9);
++    let (mut child_vk, mut child_proof) = fib.keygen_and_prove(&child_engine);
++    for (name, params) in [
++        ("leaf", leaf_params_with_100_bits_security()),
++        ("internal", internal_params_with_100_bits_security()),
++        (
++            "root_geometry_babybear_hash",
++            root_params_with_100_bits_security(),
++        ),
++    ] {
++        let engine = BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(params);
++        let (circuit, pk) = verifier_circuit_keygen::<2>(&engine, &child_vk);
++        let ctxs = circuit.generate_proving_ctxs_base(
++            &child_vk,
++            CachedTraceCtx::PcsData(circuit.commit_child_vk(&engine, &child_vk)),
++            &[child_proof],
++            &(),
++            default_duplex_sponge_recorder(),
++        );
++        let mut common_cells = 0;
++        let mut cached_cells = 0;
++        for (air, ctx) in circuit.airs::<BabyBearPoseidon2Config>().iter().zip(&ctxs) {
++            let height = ctx.common_main.height();
++            let width = ctx.common_main.width();
++            common_cells += height * width;
++            for cached in &ctx.cached_mains {
++                cached_cells += cached.trace.height() * cached.trace.width();
++            }
++            println!(
++                "NEARPROOF_TRACE stage={name} air={} height={height} width={width}",
++                air.name()
++            );
++        }
++        println!("NEARPROOF_CELLS stage={name} common={common_cells} cached={cached_cells}");
++        let ctx = ProvingContext::new(ctxs.into_iter().enumerate().collect());
++        engine.debug(&circuit.airs(), &ctx);
++        let d_pk = engine.device().transport_pk_to_device(&pk);
++        let proof = engine.prove(&d_pk, ctx).unwrap();
++        let vk = pk.get_vk();
++        engine.verify(&vk, &proof).unwrap();
++        let mut bytes = Vec::new();
++        proof.encode(&mut bytes).unwrap();
++        println!("NEARPROOF_CHAIN stage={name} bytes={}", bytes.len());
++        for (label, count) in [
++            ("gkr", {
++                let mut b = Vec::new();
++                proof.gkr_proof.encode(&mut b).unwrap();
++                b.len()
++            }),
++            ("constraints", {
++                let mut b = Vec::new();
++                proof.batch_constraint_proof.encode(&mut b).unwrap();
++                b.len()
++            }),
++            ("stacking", {
++                let mut b = Vec::new();
++                proof.stacking_proof.encode(&mut b).unwrap();
++                b.len()
++            }),
++            ("whir", {
++                let mut b = Vec::new();
++                proof.whir_proof.encode(&mut b).unwrap();
++                b.len()
++            }),
++        ] {
++            println!("NEARPROOF_PART stage={name} part={label} bytes={count}");
++        }
++        std::fs::write(format!("/tmp/nearproof-chain-{name}.proof"), bytes).unwrap();
++        child_vk = vk;
++        child_proof = proof;
++    }
++}
