@@ -1,0 +1,28 @@
+Gates & Instructions
+├─ Number of gates: 5,520
+└─ Number of evaluation instructions: 5,473
+
+Constraints
+├─ ZERO constraints: 451 used (88.1% of 2^9)
+│  [▓▓▓▓▓▓▓▓░░] spare: 61
+├─ AND constraints: 1,831 used (89.4% of 2^11)
+│  [▓▓▓▓▓▓▓▓░░] spare: 217
+├─ IMUL constraints: 0 used (0.0% of 0)
+│  [░░░░░░░░░░] spare: 0
+├─ BMUL constraints: 0 used (0.0% of 0)
+│  [░░░░░░░░░░] spare: 0
+└─ Distinct value indices: 5,621
+   ├─ Distinct shifted value indices: 3,222
+   └─ Distinct unshifted value indices: 2,399
+
+Value Vector
+├─ Public Section: 131 (not committed)
+│  ├─ Constants: 101
+│  └─ Inout: 30
+├─ Private Section: 2,276
+│  ├─ Witness: 0
+│  └─ Internal: 2,276
+├─ Committed Trace: 2,276 used (55.6% of 2^12)
+│  [▓▓▓▓▓░░░░░] spare: 1,820
+└─ Scratch (uncommitted): 14 (peak live: 14)
+

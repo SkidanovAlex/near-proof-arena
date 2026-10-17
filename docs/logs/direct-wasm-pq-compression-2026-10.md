@@ -12333,3 +12333,58 @@ NEAR1Petagas claim; full goal stays active.
 
 Evidence:gkr-hash-graph/ graph,ActualScans.lean,parity/Leanlogs,reports,pins.
 Reproduce check_swirl_gkr_hash_graph.py then lake env lean on ActualScans.lean.
+
+## 2026-10-17 — Existing SHA384 AIR fails workload gate; first Binius64 hash proof
+
+Previous goal turn progressed with routed transcript/arithmetic and actual Lean
+scan checks atb0112c35e. Revalidated clean worktree. Reconstructed measured
+64-block nibble AIR source+aux cells from physical branches:27939408, including
+private boundary. Formula exactly reproduces that count. Applied frozen widths
+to the4649dynamic v2hash blocks, preserving schedule64/round80/endpoint1 and
+boundary1rows per compression. No full trace generated.
+
+Conditional5790geometry screen per scenario (same extension9/digest52,C1,Q2^128,
+zero grinding credit, independent half-budget query terms):
+- Unpadded source only, all aux/fixed/routing free:271524845cells,737156.09bytes.
+- Unpadded source+aux, fixed/routing free:1227731165cells,1170366.35bytes.
+- Frozen padded tables:1898353936cells,1406206.35bytes.
+All other verifier trace/cached work omitted; prior fixed messages retained as
+accounting template. No survivors. Widths/multiplicity/domain validity at this
+scale unestablished, expected frontier not a deterministic bound. This rejects
+straight integration of the CURRENT nibble AIR under the conditional model,
+not every SHA384 circuit. Avoided an expensive doomed large proving run.
+
+Pinned fresh Binius64 checkout4428e759dd27956bd5b9ae5025d67eb8ccc1accf. Inspected
+word-oriented SHA512 compression gadget and CLI; no CodeGraph/AGENTS present.
+Added diagnostic SHA384 adapter using standard SHA384 IV, existing SHA512
+padding/compression, first6outputwords. Existing SHA512 fixed helper delegates
+to same parameterized-state implementation. Added nearproof_sha384 example
+using independent sha2::Sha384 for expected digest. Local changes saved as
+patch/source snapshots, not pushed upstream. Upstream omits Cargo.lock; generated
+and preserved lock, then release build --locked passed (Rust1.98.1,nativeCPU,
+4buildworkers;53.62s compile time, not proving benchmark).
+
+Reconstructed exact187-byte first GKR commit preimage from routed graph;
+hashlib SHA384 matches saved digest539a7926...e9e93477. Two-block circuit:
+5520gates,2276committed64-bit words,1831AND,451ZEROconstraints. Generated proof
+payload61648B; CLIserializedfile61684B. Public inout30words/240B external to
+proof file; fixed circuit/constants also external. Fresh process verifies.
+Changedmessage rejects in verifier; changedproof rejects Merkle authentication.
+Changeddigest is rejected EARLIER by witness circuit assertion, not counted as
+an independent proof-verifier negative. Padding0/111/112/127/128 and unchanged
+SHA512187-byte regression all prove/verify. CLI randommessage utility disallows
+empty inputs; empty-file fixture directly exercises zero-length circuit instead.
+
+Pinned verifier sets SECURITY_BITS=96; FRI query function explicitly excludes
+folding and other protocol losses. Default Merkle suiteSHA256. Therefore NOT
+PQ128 or even a full96-bit security audit. Word counts and oldBabyBear cells
+are different units, and no matched speedup or complete-state proof comparison
+is claimed. This establishes a concrete alternative hash gadget, not a full
+backend migration, transcript routing circuit or Lean refinement. Next test a
+larger connected hash workload and quantify full parameter/security obligations
+before adopting it. No new Lean theorem or goal completion.
+
+Evidence:sha384-recursion-screen/ and binius-sha384/ reports/proof/message/logs,
+lockfile,upstream/sourcepins,patch. Reproduce screen_swirl_sha384_work.py;
+apply saved patch to pinned Binius64,restore lock,build -p binius-examples with
+RUSTFLAGS='-C target-cpu=native',then run check_binius_sha384.py.
