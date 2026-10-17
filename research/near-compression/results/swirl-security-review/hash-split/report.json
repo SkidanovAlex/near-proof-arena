@@ -1,0 +1,45 @@
+{
+  "upstream_commit": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+  "command": "NEARPROOF_SPLIT_HASH=1 RAYON_NUM_THREADS=4 cargo test --locked --profile fast -p openvm-recursion-circuit tests::nearproof_recursive_chain -- --exact --nocapture",
+  "root": {
+    "bytes": 231997,
+    "parts": {
+      "gkr": 11448,
+      "constraints": 50836,
+      "stacking": 884,
+      "whir": 168268,
+      "other": 561
+    },
+    "common_cells": 9670384,
+    "cached_cells": 393216,
+    "live_hash_rows": 16862,
+    "hash_heights": [
+      16384,
+      512
+    ]
+  },
+  "prior_baseline": {
+    "bytes": 242809,
+    "common_cells": 14447856
+  },
+  "savings": {
+    "bytes": 10812,
+    "common_cells": 4777472
+  },
+  "raw_sha256": {
+    "run.log": "dfb0d6ecc3ca8b108a00094bbd7276eb9c47a0e9b556db6bed729caa732e79b2",
+    "clippy.log": "a68c67363cd4ac44a9c2873cc71582a1e34077ce2df3cae613f0397dc133fd23",
+    "harness-failure.log": "9058a76dce4d97e3df35a1573ad69c509e7646c2f6e3575f6d53c57930288eac",
+    "tests.rs": "15d59d87413a3f28f2a56205eb31f28998f8f7fd228179b84c86c017d3f2f603",
+    "transcript.rs": "5de6138ebb2fb447a9d01e81ba1d660c827e8f9243b8070804ca3799d361805b",
+    "Cargo.lock": "76467b143beff28428cfbfbe02e6f2badac3922ad6ded02a7cc4859cec2e7d57",
+    "root_split_hash.proof": "f0e9b3f62c93123c4994bcb6d5b2fd86eb6babc930958aa27e9ac5727495127c"
+  },
+  "limitations": [
+    "Generic recursive Fibonacci fixture with upstream RBR100 parameters, not PQ128/full VM/NEAR.",
+    "Comparison to prior baseline runs, not a paired identical-transcript run.",
+    "Only final circuit split; verification key changes.",
+    "No formal Lean partition or cryptographic soundness theorem proved.",
+    "Full stronger-security budget and downstream recursion costs remain unmeasured."
+  ]
+}

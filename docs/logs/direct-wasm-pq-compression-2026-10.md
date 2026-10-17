@@ -11071,3 +11071,51 @@ contains report, successful run/clippy logs, source snapshots, dependency
 lockfile, raw hashes and instrumentation patch. Existing padding-census evidence
 is preserved as a separate run. No full NEAR1Petagas proof, PQ128 certificate,
 new Lean theorem or end-to-end recursion correctness is claimed.
+
+
+## 2026-10-17 — Executable hash-table partition reduces root proof bytes
+
+Previous goal turn classified progress: source attribution and a concrete
+partition candidate. Revalidated clean branch at f402fd50e. Implemented an
+opt-in NEARPROOF_SPLIT_HASH fixture transformation on the last recursive
+circuit only. Locate its Poseidon2AIR; keep the original row values, divide
+its live prefix between16384and512rows, append the same AIR with the same
+buses, and keygen the resulting AIR list. Existing valid padding rows fill
+the second table. Assertions require no cached/public data on this AIR and
+zero permutation/compression multiplicities in all discarded padding rows.
+No transcript hash or authentication computation is removed.
+
+The initial attempt failed because the helper matched a bare AIR name while
+the runtime name includes generic type parameters. Fixed the helper before
+rerunning; this was not a constraint failure. Successful run had16862live hash
+rows. Both debug constraint checking and actual proof verification passed.
+Targeted clippy --lib --tests -- -D warnings passed after the fix.
+
+| Metric | Prior baseline | Split root |
+| --- | ---: | ---: |
+| Common cells |14447856|9670384|
+| Cached cells |393216|393216|
+| Total proof bytes |242809|231997|
+| GKR bytes |11448|11448|
+| Constraint bytes |45980|50836|
+| Stacking bytes |948|884|
+| WHIR bytes |183884|168268|
+| Other bytes |549|561|
+
+Net savings10812bytes (4.45%) and4777472common cells (33.07%). The added
+constraint-opening cost offsets a substantial portion of the WHIR savings.
+These are compared with prior baseline runs, not a paired identical-transcript
+experiment; baseline sizes have repeated across runs, while distinct hash
+counts vary. Retain that limitation. Leaf/internal proofs again verified with
+383529/398697bytes. The new final proof and raw source/lock/log pins are saved
+under research/near-compression/results/swirl-security-review/hash-split/.
+
+This is an implemented, verified padding optimization for a generic recursive
+Fibonacci fixture, not a full VM root or a NEAR proof. Parameters remain upstream
+RBR100; the under300k result is NOT PQ128. No Lean partition theorem is claimed.
+Next: decode the split proof's new field/hash counts and rerun the stronger
+query/field/digest budget with its additional AIR claims; only retain the split
+for that target if the complete modeled ledger improves. Before production
+integration, prove local-row/lookup-multiset preservation and account for the
+changed verification key and downstream recursion. Full NEAR1Petagas, PQ128
+and end-to-end Lean correctness remain open.
