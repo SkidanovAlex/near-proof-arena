@@ -10982,3 +10982,47 @@ on a failed candidate. Next: identify a specific verifier specialization or
 transcript change that reduces the measured common trace, then recalculate
 its full authenticated statement and soundness budget. Full NEAR1Petagas,
 PQ128 and Lean recursive acceptance remain open.
+
+
+## 2026-10-17 — Measured hash deduplication and root padding threshold
+
+Previous comparison turn classified no progress: it restated research and
+refreshed published sources without changing the implementation decision.
+Revalidated clean branch at ed3141514 and inspected current OpenVM source.
+CPU TranscriptModule::dedup_poseidon_inputs ALREADY sorts identical full
+Poseidon inputs across permutation and compression requests, preserving separate
+lookup multiplicities. Poseidon2Air consumes both multiplicities. GPU source
+also invokes deduplication; this experiment measures CPU only. Therefore adding
+hash deduplication is not a new source of savings over our measured baseline.
+
+Instrumented the existing pinned generic Fibonacci recursive chain to count
+requests before deduplication, distinct states and padded rows. Assertions check
+that both lookup multiplicity sums equal their original request counts.
+
+| Stage | Permute requests | Compress requests | Distinct | Padded rows |
+| --- | ---: | ---: | ---: | ---: |
+| leaf |3354|4825|5656|8192|
+| internal |6225|16429|19685|32768|
+| root geometry, BabyBear hash |11025|7054|16842|32768|
+
+All three recursive proofs generated and verified. Sizes match prior baseline:
+383529,398697,242809 bytes. Targeted clippy with -D warnings passed. Artifacts,
+source snapshots, lockfile, raw SHA256 pins and full instrumentation patch:
+research/near-compression/results/swirl-security-review/hash-census/.
+
+Root dedup already removes1237requests. Its16842distinct states exceed the
+16384row threshold by only458 (2.72%). Removing458distinct computations would
+halve the301column hash table, saving4931584cells and reducing common cells
+from14447856to9516272 (34.13%), IF other tables stay unchanged. This is a
+counterfactual threshold, not an implemented optimization or new proof size.
+It is substantially less than the earlier fourfold-workload hypothesis and
+cannot independently establish the PQ128 budget. Even perfect unpadded storage
+of the existing16842states would save4793726cells, not fourfold overall work.
+
+Next: attribute the distinct root states to transcript, initial row hashing,
+continuation leaf hashing, Merkle paths and external inputs. Seek458removable
+DISTINCT calls with an authenticated statement-preserving transformation;
+transport compression or shared-path hashing alone cannot be credited twice.
+Any fixed-VK specialization must retain verification-key binding, and any
+transcript change needs fresh causal/soundness analysis. No new Lean theorem,
+PQ128 certificate, full VM root chain or full NEAR1Petagas proof is claimed.
