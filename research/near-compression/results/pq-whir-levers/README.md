@@ -314,8 +314,8 @@ sumcheck runs over the hypercube {0,1}^(k−l_skip) × the univariate skip domai
 the GKR runs over Σ interactions × 2^k leaves, and `TraceVData` only carries `log_height`. Stacking
 (`StackedLayout::new`) puts every column as one slice of exactly 2^k rows, aligned to 2^k, sorted by
 height (perfect packing), and the stacking reduction's kernel for a slice is a product
-`eq_D(Z, r_0) · eq(x, r[1..1+n]) · eq(x_high, b_slice)` that relies on that alignment. So a 1.3·2^k
-AIR commits 2^k·... = 2^(k+1) rows today: there is **no padding-free packing in the backend**.
+`eq_D(Z, r_0) · eq(x, r[1..1+n]) · eq(x_high, b_slice)` that relies on that alignment. So an AIR with 1.3·2^k
+real rows commits 2^(k+1) rows today: there is **no padding-free packing in the backend**.
 
 **Options considered.**
 * *Circuit-level split* (one AIR as two AIRs of heights 2^k and 2^(k−2)): every extra AIR instance
