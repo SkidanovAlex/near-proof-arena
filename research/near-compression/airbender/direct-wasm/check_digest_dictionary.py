@@ -44,7 +44,7 @@ assert decode(wire)==raw
 shutil.copyfile(SOURCE/'public.bin',OUT/'public.bin')
 env=dict(os.environ,NEARPROOF_REPLAY='1',NEARPROOF_DICTIONARY=str(OUT/'child.dictionary'),
          NEARPROOF_LITERAL_OUT=str(OUT),NEARPROOF_QUERY_BITS='268',RAYON_NUM_THREADS='4')
-env.update(NEARPROOF_N_STACK=str(params['n_stack']),NEARPROOF_K=str(params['k']),NEARPROOF_LOG_BLOWUP=str(params['log_blowup']),NEARPROOF_ALL_LIST=str(params['all_list']))
+env.update(NEARPROOF_N_STACK=str(params['n_stack']),NEARPROOF_K=str(params['k']),NEARPROOF_LOG_BLOWUP=str(params['log_blowup']),NEARPROOF_ALL_LIST=str(params['all_list']),NEARPROOF_INTERACTION_LOG=str(params.get('interaction_log',20)))
 for name in ['NEARPROOF_TRANSCRIPT_VECTORS','NEARPROOF_WHIR_CENSUS']:env.pop(name,None)
 command=['cargo','run','--locked','--manifest-path','/tmp/nearproof-native-sha384/Cargo.toml','--release']
 result=subprocess.run(command,env=env,text=True,capture_output=True,check=True)

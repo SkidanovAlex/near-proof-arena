@@ -2,13 +2,15 @@
 import hashlib,json,os,re,shutil,struct,subprocess,tempfile,argparse
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-ap=argparse.ArgumentParser();ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--prove-log',type=Path,default=Path('/tmp/nearproof-native-sha384.log'));args=ap.parse_args()
+ap=argparse.ArgumentParser();ap.add_argument('--input-source',type=Path,default=ROOT/'results/native-literal-field-screen');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--prove-log',type=Path,default=Path('/tmp/nearproof-native-sha384.log'));args=ap.parse_args()
 OUT=args.out.resolve()
 TMP=Path('/tmp/nearproof-native-sha384')
 BACKEND=Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5')
 log=args.prove_log.read_text()
 profile=re.search(r'NATIVE_SHA384_PROFILE n_stack=(\d+) k=(\d+) log_blowup=(\d+) (?:all_list=(\d+) )?queries=(\[[^\n]+\])',log)
 params=(dict(n_stack=int(profile[1]),k=int(profile[2]),log_blowup=int(profile[3]),all_list=int(profile[4] or 0),queries=json.loads(profile[5])) if profile else dict(n_stack=16,k=3,log_blowup=5,all_list=0,queries=None))
+interaction_match=re.search(r'NATIVE_SHA384_INTERACTION_LOG (\d+)',log)
+params['interaction_log']=int(interaction_match[1]) if interaction_match else 20
 assert 'NATIVE_SHA384_EXT12_PASS public_mutations_rejected=6' in log
 m=re.search(r'NATIVE_SHA384_EXT12_BYTES total=(\d+) gkr=(\d+) relations=(\d+) stacking=(\d+) whir=(\d+)',log)
 assert m
@@ -45,10 +47,10 @@ env=dict(os.environ,NEARPROOF_LITERAL_OUT=str(OUT),NEARPROOF_REPLAY='1',NEARPROO
 env.pop('NEARPROOF_TRANSCRIPT_VECTORS',None)
 env.pop('NEARPROOF_DICTIONARY',None)
 env.pop('NEARPROOF_WHIR_CENSUS',None)
-env.update(NEARPROOF_N_STACK=str(params['n_stack']),NEARPROOF_K=str(params['k']),NEARPROOF_LOG_BLOWUP=str(params['log_blowup']),NEARPROOF_ALL_LIST=str(params['all_list']))
+env.update(NEARPROOF_N_STACK=str(params['n_stack']),NEARPROOF_K=str(params['k']),NEARPROOF_LOG_BLOWUP=str(params['log_blowup']),NEARPROOF_ALL_LIST=str(params['all_list']),NEARPROOF_INTERACTION_LOG=str(params['interaction_log']))
 moved=[]
 try:
-    for name in ['rows-0.bin','rows-1.bin','fixture.json','spec.json']:
+    for name in [p.name for p in sorted(OUT.glob('rows-*.bin'))]+['fixture.json','spec.json']:
         p=OUT/name;q=OUT/(name+'.hidden');assert not q.exists();p.rename(q);moved.append((p,q))
     replay=subprocess.run(['cargo','run','--locked','--manifest-path',str(TMP/'Cargo.toml'),'--release'],env=env,text=True,capture_output=True,check=True)
     assert 'NATIVE_SHA384_EXT12_REPLAY_PASS' in replay.stdout
@@ -67,13 +69,15 @@ verify_calls=json.loads(re.search(r'NATIVE_SHA384_VERIFY_CALLS (\[[^\n]+\])',rep
 verify_blocks=json.loads(re.search(r'NATIVE_SHA384_VERIFY_BLOCKS (\[[^\n]+\])',replay.stdout)[1])
 claimed=dict(done=public[44]==1,failed=public[45]==1,gas=sum(public[46+i]<<(16*i) for i in range(4)),stack=[public[50+2*i]+(public[51+2*i]<<16) for i in range(public[43])])
 assert actual==claimed
-for name in ['public.bin','rows-0.bin','rows-1.bin','spec.json','fixture.json']:
-    assert (OUT/name).read_bytes()==(ROOT/'results/native-literal-field-screen'/name).read_bytes()
+for name in ['public.bin','spec.json','fixture.json']+[p.name for p in sorted(args.input_source.glob('rows-*.bin'))]:
+    assert (OUT/name).read_bytes()==(args.input_source/name).read_bytes()
+assert (OUT/'public.bin').read_bytes()==(ROOT/'results/native-literal-field-screen/public.bin').read_bytes()
 for name in ['main.rs','native_sha384_config.rs','native_digest_dictionary.rs','literal.rs']:shutil.copyfile(TMP/'src'/name,OUT/name)
 for name in ['Cargo.toml','Cargo.lock']:shutil.copyfile(TMP/name,OUT/name)
 (OUT/'backend.patch').write_bytes(subprocess.check_output(['git','diff','--','crates/stark-backend'],cwd=BACKEND))
 shutil.copyfile(ROOT/'results/babybear-ext12-construction/plonky3-ext12.patch',OUT/'plonky3-ext12.patch')
-report=dict(status='NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED',child_bytes=census['total'],wire_census=census,
+packing=json.loads((OUT/'packing.json').read_text()) if (OUT/'packing.json').exists() else None
+report=dict(packing=packing,input_source=str(args.input_source),status='NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED',child_bytes=census['total'],wire_census=census,
     public_fields=4891,public_included=True,request_bytes=request.stat().st_size,total_child_plus_request_bytes=census['total']+request.stat().st_size,
     independent_Lean_runCall=actual,eligibility=json.loads(eligibility.stdout),public_mutations_rejected=6,
     witness_independent_replay=True,transcript_oracle=dict(samples=96,rejections=rejections,draw_blocks=draw_blocks,final_state_equal=True,version=4),
@@ -83,7 +87,7 @@ report=dict(status='NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED',child_bytes=census[
     backend_pin=subprocess.check_output(['git','rev-parse','HEAD'],cwd=BACKEND,text=True).strip(),
     exclusions=['custom transcript compiler/QROM applicability and concrete constants',
         'recursive parent upgrade and knowledge composition','Lean field irreducibility and Rust refinement',
-        'cryptographic acceptance-to-execution Lean theorem','full NEAR1Pgas and performance target'],
+        'packed AIR-to-original AIR refinement' if packing else 'native AIR implementation refinement','cryptographic acceptance-to-execution Lean theorem','full NEAR1Pgas and performance target'],
     sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(OUT.iterdir()) if p.is_file() and p.name!='report.json'})
 (OUT/'report.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

@@ -4,10 +4,11 @@ import shutil,argparse
 ROOT=Path(__file__).resolve().parents[2]
 HERE=Path(__file__).parent
 TMP=Path('/tmp/nearproof-native-sha384');(TMP/'src').mkdir(parents=True,exist_ok=True)
-ap=argparse.ArgumentParser();ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact')
-OUT=ap.parse_args().out.resolve();OUT.mkdir(exist_ok=True)
-ret=ROOT/'results/native-literal-field-screen'
-for name in ['fixture.json','spec.json','rows-0.bin','rows-1.bin','public.bin']:shutil.copyfile(ret/name,OUT/name)
+ap=argparse.ArgumentParser();ap.add_argument('--literal-source',type=Path,default=ROOT/'results/native-literal-field-screen');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact')
+args=ap.parse_args();OUT=args.out.resolve();OUT.mkdir(exist_ok=True)
+ret=args.literal_source.resolve()
+for name in ['fixture.json','spec.json','public.bin']+[p.name for p in sorted(ret.glob('rows-*.bin'))]:shutil.copyfile(ret/name,OUT/name)
+if (ret/'packing.json').exists():shutil.copyfile(ret/'packing.json',OUT/'packing.json')
 s=(ret/'native_literal.rs').read_text().split('// Appended to the generated literal AIR adapter.')[0]
 s=s.replace('BabyBearPoseidon2Config','SC').replace('struct LiteralFixture;','pub(super) struct LiteralFixture;')
 (TMP/'src/literal.rs').write_text(s)

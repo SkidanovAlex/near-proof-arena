@@ -13411,3 +13411,55 @@ hash outputs unchanged. git diff --check passes. No new proof generation, wire
 codec or Lean theorem claimed. Best tested transmitted slice remains451221B.
 FullNEAR1Pgas, recursive SHA384 parent, concrete QROM composition, sub300000 and
 end-to-end Lean correctness remain open.
+
+## 2026-10-17 — Byte-packed AIR candidate:357069B, semantic refinement pending
+
+Previous turn progressed at0a04cfcb1; clean state revalidated. Audited original
+EXEC605/CODE198columns:608integer-bit columns can become76byte columns with
+mandatory range lookups. Implemented fail-closed expression rewriting for whole
+16-bit sums, preserving unhandled scalar bit uses as errors. Dropped only packed
+bit Boolean constraints; CODE inactive bit-zero obligations become byte-zero.
+Added24-column byte receiver with8Boolean value bits and16multiplicity bits.
+Total width803 ->295(EXEC157,CODE114,range24). Default unpacked generator inputs
+still match original byte-for-byte; packed generation has --no-install mode.
+
+Generated actual SHA384-v4/Ext12 packed proof with n_stack15,k3,all-listm3,
+blowup128,target268,zero grinding. Increased maxinteraction bound2^20 ->2^26
+because range receiver has conservative65535per-row multiplicity. Actual19456
+range lookups,max15578. Native minimum268.7638,LogUp331.5753,proximity320.9309.
+Native proof412097bytes; relation section81248 ->31432. Dictionary356150 plus
+request919=357069. This is a CHANGED-AIR candidate, not yet a formally justified
+replacement; prior unmodified-AIR baseline remains451221transmitted bytes.
+
+All honest polynomial constraints and exact natural bus balances checked.
+Actual native proof, six public-output mutations, fresh replay without allthree
+trace files/fixture/spec, and independent Lean execution/preparation pass. New
+negative witness changes first stack bytes[0,0] to[p-256,1], preserving the limb
+and EVERY polynomial constraint. Only bus4 becomes unbalanced. Prover rejects
+LogupZerocheck(NonZeroRootSum) before creating a proof. This is accurately recorded
+as a prover-side negative, not forged-proof verifier rejection.
+
+PackedByteRange.lean proves natural count-support range lemma, canonical16-bit
+limb encoding/injectivity and concrete out-of-range zero encoding. Kernel checks
+pass; axiom audit recorded. These lemmas do not supply the full packed-AIR
+refinement or native LogUp-to-integer-balance bridge. That refinement is the
+next gate before adopting this candidate, not silently inherited from old AIR.
+No new complete security theorem, recursive parent or fullNEAR proof claimed.
+Artifacts in native-literal-byte-packed{-input,,-dictionary}/; stable checker
+reproduces isolated range failure. Current preparation supports source AIR/output
+paths; replay records interaction bound and hides all supplied trace files.
+git diff --check passes. FullNEAR1Pgas/PQcomposition/sub300000/end-to-endLean remain open.
+
+### Byte reconstruction refinement checkpoint
+
+The test-level audit turn made no implementation progress. Continued with
+PackedByteLift.lean: arbitrary bounded integers reconstruct from little-endian
+Boolean bits; concatenation preserves weighted values; zero bytes lift to zero
+bits. packed_balanced_pair_lift composes the natural range-bus support theorem
+with the 16-bit reconstruction and canonical Fp encoding. Kernel build passes;
+combined theorem uses only propext and Quot.sound, with no sorry/custom axioms.
+Axiom output retained in lean-lift-audit.log. Re-ran the actual packed constraint,
+integer-bus and invalid-byte prover check successfully. This is not yet the
+whole-AIR refinement: expression rewrite preservation, all removed constraints,
+interaction preservation and acceptance-to-balance remain separate obligations.
+Also made --no-install avoid reading the unrelated OpenVM test hook.

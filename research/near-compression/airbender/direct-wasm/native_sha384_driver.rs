@@ -13,7 +13,8 @@ mod config {use super::*;include!("native_sha384_config.rs");include!("native_di
         assert!((8..=20).contains(&n_stack) && (1..=5).contains(&k) && (1..=8).contains(&blowup));
         assert!(2+n_stack+blowup<=27);
         let mut params=test_system_params_small(2,n_stack,k);
-        params.max_constraint_degree=8;params.logup.max_interaction_count=1<<20;
+        let interaction_log=setting("NEARPROOF_INTERACTION_LOG",20);assert!((20..=28).contains(&interaction_log));
+        params.max_constraint_degree=8;params.logup.max_interaction_count=1<<interaction_log;
         params.logup.pow_bits=0;params.log_blowup=blowup;
         let all_list=setting("NEARPROOF_ALL_LIST",0);
         assert!(all_list<=1);
@@ -23,6 +24,7 @@ mod config {use super::*;include!("native_sha384_config.rs");include!("native_di
             openvm_stark_backend::WhirParams {k:params.whir.k,log_final_poly_len:params.log_final_poly_len(),
                 proximity:params.whir.proximity,query_phase_pow_bits:0,folding_pow_bits:0,mu_pow_bits:0},bits);
         println!("NATIVE_SHA384_PROFILE n_stack={} k={} log_blowup={} all_list={} queries={:?}",n_stack,k,blowup,all_list,params.whir.rounds.iter().map(|r|r.num_queries).collect::<Vec<_>>());
+        println!("NATIVE_SHA384_INTERACTION_LOG {}",interaction_log);
         let engine=Engine::new(params);
         let fx=literal::LiteralFixture;
         let (pk,vk)=fx.keygen(&engine);

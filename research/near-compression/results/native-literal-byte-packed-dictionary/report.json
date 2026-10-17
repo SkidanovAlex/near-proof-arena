@@ -1,0 +1,47 @@
+{
+  "status": "LOSSLESS_DICTIONARY_NATIVE_REPLAY_VERIFIED",
+  "source_profile": "native-literal-byte-packed",
+  "parameters": {
+    "n_stack": 15,
+    "k": 3,
+    "log_blowup": 7,
+    "all_list": 1,
+    "queries": [
+      82,
+      63,
+      51,
+      43,
+      37
+    ],
+    "interaction_log": 26
+  },
+  "native_bytes": 412097,
+  "wire_bytes": 356150,
+  "total_wire_plus_request_bytes": 357069,
+  "bytes_saved": 55947,
+  "dictionary_entries": 369,
+  "references": 1668,
+  "native_sha256": "fafa2aae62cdc615545e0a537444ebc0fd3c867e3c82fb34bd0821ccb636b174",
+  "wire_sha256": "ead35b8d94ee8350ccb77e0fdc77360790683039208838a996d6dcafdbec557d",
+  "exact_python_roundtrip": true,
+  "independent_rust_native_replay": true,
+  "dictionary_payload_mutation_rejected": true,
+  "malformed_cases": 8,
+  "security_certified": false,
+  "scope": "Transport encoding only; dictionary included. Same native verifier and cryptographic parameters. No recursive proof or new quantum-security claim.",
+  "sha256": {
+    "Cargo.lock": "7a0e92b49ae35775174359c3f78eac06f30450fde00abb5752b3cbc98ac2a1ab",
+    "Cargo.toml": "517a141cee9d26e6f90d3afb0e053febafb54c7395d9ffc264bcaec8064dca48",
+    "auth-digests.bin": "6dfa8710cca4127586349084a2522796f116d560168854b11076e5474e86f79d",
+    "child.dictionary": "ead35b8d94ee8350ccb77e0fdc77360790683039208838a996d6dcafdbec557d",
+    "literal.rs": "30b40e70f3243d711e144b2418475342696ab96d8bc8a883599a93b544b7b4b4",
+    "main.rs": "6bb30a670ee95795ae869754d4cbcc98e09436ddc400b50a322d39db42f5e805",
+    "malformed.log": "6573f0db39ccd55d61f2127f3110fd37e858fc96ed3326d48eb37312c9786be9",
+    "mutation.log": "5ed90bdcdfead955eda5494e586dd1c12eb7574fdf114443985ada1a786afc9d",
+    "native_digest_dictionary.rs": "289b77e62a3cb536872d17da4501f4b576cf04ec01f2fbe0b7d24b66de5e3830",
+    "native_sha384_config.rs": "932c4bbd8a9e95b7f0a2c11db20df8564d9a0ebac1705a3cb6401e8a733babde",
+    "public.bin": "2214c301b99a881c039544a7235ff4ac867ad472f1ae93325f89381c0cc4d82a",
+    "replay.log": "d16171132b5431467f30d98a30d09200d3a9c1c3d92e084c5c07403a18a0ba53",
+    "whir-census.log": "d0d19bd167b2a6f6f71a7fb9b7a0eafa1961aaee8607f3c6dcbb2cb8c6a3c754"
+  }
+}

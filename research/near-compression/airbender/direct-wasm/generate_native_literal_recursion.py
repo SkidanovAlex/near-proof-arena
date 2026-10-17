@@ -5,12 +5,18 @@ sys.path.insert(0,str(R/'airbender/direct-wasm'))
 import prepared_code_table_air as lit
 ap=argparse.ArgumentParser()
 ap.add_argument('--out',type=Path,default=R/'results/native-literal-recursion')
-out=ap.parse_args().out.resolve();out.mkdir(exist_ok=True)
+ap.add_argument('--packed-bytes',action='store_true');ap.add_argument('--no-install',action='store_true')
+args=ap.parse_args();out=args.out.resolve();out.mkdir(exist_ok=True)
 case=json.loads((R/'results/native-literal-recursion/fixture.json').read_text())
 spec,rows=lit.make(case)
 ret=json.loads((R/'results/pq384-code-table-long193/statement.json').read_text())
 assert spec['air']==ret['spec']['air'] and spec['public']==ret['spec']['public']
 assert {k:case[k] for k in ['wasm_bytes','method','prepaid']}==json.loads((R/'results/pq384-code-table-long193/request.json').read_text())
+code_count_column=lit.COUNT
+if args.packed_bytes:
+ from packed_byte_air import transform
+ spec,rows,packing=transform(spec,rows);code_count_column=packing['code_count_column']
+ (out/'packing.json').write_text(json.dumps(packing,indent=2)+'\n')
 (out/'fixture.json').write_text(json.dumps(case))
 (out/'spec.json').write_text(json.dumps(spec))
 for i,table in enumerate(rows):
@@ -43,7 +49,7 @@ for ti,table in enumerate(spec['air']['tables']):
   weight=(1<<len(it['mult']))-1
   if ti==1 and it['bus']==2:
    bits=spec['log_rows'][0]+1
-   for j in range(bits,25):s.append(f'builder.assert_zero(local[{lit.COUNT+j}]);')
+   for j in range(bits,25):s.append(f'builder.assert_zero(local[{code_count_column+j}]);')
    weight=(1<<bits)-1
   if not it['send']:count=f'-({count})'
   s.append(f'builder.push_interaction({it["bus"]},vec![{fields}],{count},{weight});')
@@ -55,13 +61,14 @@ for ti,table in enumerate(spec['air']['tables']):
    s.append(f'for row in 0..{count} {{ let start={seg["start"]}+row*{seg["width"]}; let first=builder.is_first_row(); builder.push_interaction({seg["bus"]}, public[start..start+{seg["width"]}].to_vec(),-first,1); }}')
  s.insert(start,'let e=eval_nodes(builder,&['+',\n'.join(defs)+']);')
  s+=['}}']
-s+=['struct LiteralFixture;','impl TestFixture<BabyBearPoseidon2Config> for LiteralFixture {', 'fn airs(&self)->Vec<AirRef<BabyBearPoseidon2Config>> {vec![Arc::new(Literal0),Arc::new(Literal1)]}', 'fn generate_proving_ctx(&self)->ProvingContext<CpuColMajorBackend<BabyBearPoseidon2Config>> {', 'use p3_baby_bear::BabyBear;', 'fn read(p:&str)->Vec<BabyBear> { std::fs::read(p).unwrap().chunks_exact(4).map(|x|BabyBear::from_u32(u32::from_le_bytes(x.try_into().unwrap()))).collect() }','let dir=std::env::var("NEARPROOF_LITERAL_OUT").unwrap(); let public=read(&format!("{dir}/public.bin"));', 'ProvingContext::new(vec![']
+s+=['struct LiteralFixture;','impl TestFixture<BabyBearPoseidon2Config> for LiteralFixture {', 'fn airs(&self)->Vec<AirRef<BabyBearPoseidon2Config>> {vec!['+','.join(f'Arc::new(Literal{i})' for i in range(len(rows)))+']}', 'fn generate_proving_ctx(&self)->ProvingContext<CpuColMajorBackend<BabyBearPoseidon2Config>> {', 'use p3_baby_bear::BabyBear;', 'fn read(p:&str)->Vec<BabyBear> { std::fs::read(p).unwrap().chunks_exact(4).map(|x|BabyBear::from_u32(u32::from_le_bytes(x.try_into().unwrap()))).collect() }','let dir=std::env::var("NEARPROOF_LITERAL_OUT").unwrap(); let public=read(&format!("{dir}/public.bin"));', 'ProvingContext::new(vec![']
 for i,table in enumerate(rows):s.append(f'({i},AirProvingContext::simple(ColMajorMatrix::from_row_major(&RowMajorMatrix::new(read(&format!("{{dir}}/rows-{i}.bin")),{len(table[0])})), {"public" if i==0 else "vec![]"})),')
 s+=[']) }}','#[test] fn nearproof_literal_slice_recursion() {','let mut params=test_system_params_small(2,16,3); params.max_constraint_degree=8;','let child=BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(params);','let parent=test_engine_small();','run_test::<1,_>(LiteralFixture,&child,&parent,1);','}']
 s=s[:s.index('#[test] fn nearproof_literal_slice_recursion() {')]
 source='\n'.join(s)+'\n'+Path(__file__).with_name('native_literal_driver.rs').read_text()
 (out/'native_literal.rs').write_text(source)
-Path('/tmp/nearproof-openvm/crates/recursion/src/native_literal.rs').write_text(source)
-p=Path('/tmp/nearproof-openvm/crates/recursion/src/tests.rs');t=p.read_text();mark='#[path = "native_literal.rs"]\nmod native_literal;\n'
-if mark not in t:p.write_text(mark+t)
+if not args.no_install:Path('/tmp/nearproof-openvm/crates/recursion/src/native_literal.rs').write_text(source)
+if not args.no_install:
+ p=Path('/tmp/nearproof-openvm/crates/recursion/src/tests.rs');t=p.read_text();mark='#[path = "native_literal.rs"]\nmod native_literal;\n'
+ if mark not in t:p.write_text(mark+t)
 print('generated',len(source),'bytes',len(s),'lines')
