@@ -103,6 +103,15 @@ def build(root=ROOT):
     for relative, expected in response_screen['input_sha256'].items():
         assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
     assert hashlib.sha256((root/'airbender/direct-wasm/screen_response_transcript.py').read_bytes()).hexdigest() == response_screen['measurement']['encoding_source_sha256']
+    derivation = read('results/derived-transcript-bindings.json')
+    assert derivation['status'] == 'OMISSION_COUNTEREXAMPLES_CONFIRMED' and not derivation['protocol_changed']
+    assert derivation['terminal']['different_layouts'] and derivation['terminal']['existing_begin_seeds_distinct']
+    assert derivation['stage']['weights_define_distinct_functionals'] and derivation['stage']['existing_start_seeds_distinct']
+    for relative, expected in derivation['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
+    ds = derivation['optimistic_hash_screen']
+    assert ds['original_unique_blocks'] == hash_work['measurement']['totals']['unique_blocks']
+    assert ds['remaining_unique_blocks'] == ds['original_unique_blocks'] - ds['erased_layout_and_stage_tag_blocks'] - response_totals['unique_blocks_saved']
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -138,6 +147,9 @@ def build(root=ROOT):
         response_transcript_screen=dict(totals=response_totals,
             scope=response_screen['measurement']['candidate_scope'],
             decision='Binary response encoding alone saves only 8.94 percent of deduplicated hash blocks. Defer protocol migration; first account for derivation binding of weight vectors and GKR layouts in a complete verifier design.'),
+        derived_transcript_binding_audit=dict(evidence='results/derived-transcript-bindings.json',
+            required_contracts=derivation['required_contracts'], optimistic_hash_screen=ds,
+            decision=derivation['decision'], scope=derivation['scope']),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
         decision=dict(next_experiment=('Implement and measure the surviving projected candidate with all excluded costs and explicit security obligations.' if feasible else 'Stop larger-path proving in the existing 25-block profile: mandatory 416 bytes exceed its at-most-288-byte deduplicated sibling budget. Screen a scalable complete-verifier replacement against the explicit replacement budgets; include transcript/arithmetic and public binding, not authentication alone. Measure a versioned canonical transcript design only with all original bindings accounted for.'),

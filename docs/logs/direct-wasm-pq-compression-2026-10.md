@@ -9697,3 +9697,43 @@ examples and17malformed/noncanonical cases pass; feasibility reconciliation
 now rejects8inconsistent-evidence cases. No Lean changes; last full audit4658.
 Full NEAR1Pgas/PQ128/sub300000B remains NOT_PASSED; full fixture1344645B
 unchanged. This measurement is not a new quantum-secure construction.
+
+## 2026-10-17 — Derived transcript binding boundary checked
+
+Added check_derived_transcript_bindings.py. Rebuilt baseline and affine-v1
+terminal layouts from the retained full-fixture reduction under the same
+phase-pooled source commitment profile. They share the exact pre-GKR seed,
+but have different layouts. Existing GKR begin correctly distinguishes them
+by hashing the layout. A candidate input-only descriptor must bind the
+terminal profile and compiler identity; dropping the layout hash with no
+replacement loses this distinction. This is not an attack on the current
+verifier. Profiles are externally selected, not proof-selected.
+
+A second executable counterexample supplies two distinct weight vectors to
+standalone stage.start with identical config/parent/claim. They define
+different linear functionals; existing start hashes distinguish them.
+Deleting vector binding globally would collapse their descriptors. The
+integrated weighted adapter can instead be a consumer of a future closed
+interface: derive initial weights from its reduction challenges, authenticate
+and commit responses before mixers, derive updated functionals internally,
+and pass only verified state into subsequent stages. Standalone GKR/stage
+APIs must retain explicit external circuit/weight binding.
+
+The report specifies derivation contracts for terminal layouts, call routing,
+initial weighted reduction, and subsequent stages. Formal proof would need
+exact descriptor-to-layout/functional determinism, then composed acceptance
+and new Fiat-Shamir/QROM analysis; equal descriptors alone prove no soundness.
+No protocol was changed and no universal/Lean theorem is claimed.
+
+Optimistic cost screen grants removal of ALL68559unique blocks in layout and
+stage tags (even unrelated scalar/init work), plus21683binary-response savings.
+Still152167unique SHA384blocks remain, or503.85GiB under current128x6944
+u32dense-gadget accounting. This is frozen-execution arithmetic, not measured
+RAM, runtime, outer proof size, or a recursion impossibility bound. It does
+not establish a viable candidate. Full outer-codec geometry and cheaper
+hash constraints still need a feasibility screen before protocol migration.
+
+Validation: both omission counterexamples and current binding distinctions
+pass; current evidence reconciliation rejects9inconsistent cases;18manifest
+pins checked. No Lean changes; last full audit4658. Larger measured fixture
+remains1344645B; full NEAR1Pgas/PQ128/sub300000B NOT_PASSED.
