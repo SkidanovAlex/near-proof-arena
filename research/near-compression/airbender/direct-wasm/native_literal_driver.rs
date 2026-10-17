@@ -30,6 +30,40 @@ fn literal_wire_census(stage:&str,proof:&openvm_stark_backend::proof::Proof<Baby
         stage,total,gkr,relations,stacking,whir,total-gkr-relations-stacking-whir);
 }
 
+// Counterfactual parameter screen using an actual key's shape. This does not
+// construct a larger field or regenerate the SHA-384 recursive circuit.
+fn literal_field_screen(stage: &str, key: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<BabyBearPoseidon2Config>) {
+    use openvm_stark_backend::soundness::SoundnessCalculator;
+    let original=&key.inner.params;
+    let airs=&key.inner.per_air;
+    let constraints=airs.iter().map(|a|a.symbolic_constraints.constraints.constraint_idx.len()).max().unwrap();
+    let interactions=airs.iter().map(|a|a.symbolic_constraints.interactions.len()).max().unwrap();
+    let columns=airs.iter().map(|a|a.params.width.total_width()).sum();
+    fn ceil_log(n:usize)->usize {if n<=1 {0} else {usize::BITS as usize-(n-1).leading_zeros() as usize}}
+    let n_logup=ceil_log(original.logup.max_interaction_count as usize).saturating_sub(original.l_skip)
+        .min((ceil_log(airs.len())+ceil_log(interactions)+original.log_stacked_height()).saturating_sub(original.l_skip));
+    let calculate=|params:&SystemParams,degree:usize| SoundnessCalculator::calculate(
+        params,2013265921.0,degree as f64*2013265921f64.log2(),constraints,airs.len(),
+        params.max_constraint_degree,params.log_stacked_height(),columns,params.w_stack,n_logup);
+    let baseline=calculate(original,4);
+    assert!((baseline.total_bits-SoundnessCalculator::calculate_from_vk(key).total_bits).abs()<1e-9);
+    println!("NEARPROOF_FIELD_SHAPE stage={} airs={} constraints={} columns={} n_logup={} baseline={}",stage,airs.len(),constraints,columns,n_logup,baseline.total_bits);
+    for target in [258usize,268] {
+        let mut params=original.clone();
+        params.whir=openvm_stark_backend::WhirConfig::new(params.log_blowup,params.l_skip+params.n_stack,
+            openvm_stark_backend::WhirParams {k:params.whir.k,log_final_poly_len:params.log_final_poly_len(),
+                proximity:params.whir.proximity,query_phase_pow_bits:0,folding_pow_bits:0,mu_pow_bits:0},target);
+        params.logup.pow_bits=0;
+        for degree in [4usize,8,9,10,11,12] {
+            let b=calculate(&params,degree);
+            println!("NEARPROOF_FIELD_SCREEN stage={} target={} degree={} min={} logup={} proximity={} query={} passes={} queries={:?}",
+                stage,target,degree,b.total_bits,b.logup_bits,b.whir_details.proximity_gaps_bits,
+                b.whir_details.query_bits,b.total_bits>=target as f64,
+                params.whir.rounds.iter().map(|r|r.num_queries).collect::<Vec<_>>());
+        }
+    }
+}
+
 struct PublishedChild {
     pvs: crate::bus::PublicValuesBus,
     prehash: crate::bus::PreHashBus,
@@ -86,6 +120,11 @@ fn nearproof_literal_slice_recursion() {
             stage,bound.total_bits,bound.logup_bits,bound.gkr_sumcheck_bits,bound.gkr_batching_bits,
             bound.zerocheck_sumcheck_bits,bound.constraint_batching_bits,bound.stacked_reduction_bits,
             bound.whir_bits,bound.whir_details.query_bits,bound.whir_details.proximity_gaps_bits);
+    }
+    if std::env::var_os("NEARPROOF_LITERAL_FIELD_SCREEN").is_some() {
+        literal_field_screen("child",&child_vk);
+        literal_field_screen("parent",&parent_vk);
+        return;
     }
     let expected:Vec<openvm_stark_sdk::config::baby_bear_poseidon2::F>=
         std::fs::read(format!("{out}/public.bin")).unwrap().chunks_exact(4)

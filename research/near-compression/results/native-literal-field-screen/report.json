@@ -1,0 +1,280 @@
+{
+  "status": "ACTUAL_KEY_SHAPE_COUNTERFACTUAL_NOT_IMPLEMENTED_FIELD",
+  "rows": [
+    {
+      "stage": "child",
+      "target": 258,
+      "degree": 4,
+      "min": 75.6757498384644,
+      "logup": 95.62756238530045,
+      "proximity": 75.67574983847447,
+      "query": 258.0135875914632,
+      "passes": false
+    },
+    {
+      "stage": "child",
+      "target": 258,
+      "degree": 8,
+      "min": 199.30331222376486,
+      "logup": 219.2551247706009,
+      "proximity": 199.30331222377492,
+      "query": 258.0135875914632,
+      "passes": false
+    },
+    {
+      "stage": "child",
+      "target": 258,
+      "degree": 9,
+      "min": 230.21020282009,
+      "logup": 250.16201536692603,
+      "proximity": 230.21020282010005,
+      "query": 258.0135875914632,
+      "passes": false
+    },
+    {
+      "stage": "child",
+      "target": 258,
+      "degree": 10,
+      "min": 258.0135875914566,
+      "logup": 281.06890596325115,
+      "proximity": 261.1170934164252,
+      "query": 258.0135875914632,
+      "passes": true
+    },
+    {
+      "stage": "child",
+      "target": 258,
+      "degree": 11,
+      "min": 258.0135875914632,
+      "logup": 311.9757965595762,
+      "proximity": 292.02398401275025,
+      "query": 258.0135875914632,
+      "passes": true
+    },
+    {
+      "stage": "child",
+      "target": 258,
+      "degree": 12,
+      "min": 258.0135875914632,
+      "logup": 342.88268715590135,
+      "proximity": 322.9308746090754,
+      "query": 258.0135875914632,
+      "passes": true
+    },
+    {
+      "stage": "child",
+      "target": 268,
+      "degree": 4,
+      "min": 75.6757498384644,
+      "logup": 95.62756238530045,
+      "proximity": 75.67574983847447,
+      "query": 268.5252522711154,
+      "passes": false
+    },
+    {
+      "stage": "child",
+      "target": 268,
+      "degree": 8,
+      "min": 199.30331222376486,
+      "logup": 219.2551247706009,
+      "proximity": 199.30331222377492,
+      "query": 268.5252522711154,
+      "passes": false
+    },
+    {
+      "stage": "child",
+      "target": 268,
+      "degree": 9,
+      "min": 230.21020282009,
+      "logup": 250.16201536692603,
+      "proximity": 230.21020282010005,
+      "query": 268.5252522711154,
+      "passes": false
+    },
+    {
+      "stage": "child",
+      "target": 268,
+      "degree": 10,
+      "min": 261.1170934164151,
+      "logup": 281.06890596325115,
+      "proximity": 261.1170934164252,
+      "query": 268.5252522711154,
+      "passes": false
+    },
+    {
+      "stage": "child",
+      "target": 268,
+      "degree": 11,
+      "min": 268.5252522711154,
+      "logup": 311.9757965595762,
+      "proximity": 292.02398401275025,
+      "query": 268.5252522711154,
+      "passes": true
+    },
+    {
+      "stage": "child",
+      "target": 268,
+      "degree": 12,
+      "min": 268.5252522711154,
+      "logup": 342.88268715590135,
+      "proximity": 322.9308746090754,
+      "query": 268.5252522711154,
+      "passes": true
+    },
+    {
+      "stage": "parent",
+      "target": 258,
+      "degree": 4,
+      "min": 75.6757498384644,
+      "logup": 85.62756238530045,
+      "proximity": 75.67574983847447,
+      "query": 258.0135875914632,
+      "passes": false
+    },
+    {
+      "stage": "parent",
+      "target": 258,
+      "degree": 8,
+      "min": 199.30331222376486,
+      "logup": 209.2551247706009,
+      "proximity": 199.30331222377492,
+      "query": 258.0135875914632,
+      "passes": false
+    },
+    {
+      "stage": "parent",
+      "target": 258,
+      "degree": 9,
+      "min": 230.21020282009,
+      "logup": 240.16201536692603,
+      "proximity": 230.21020282010005,
+      "query": 258.0135875914632,
+      "passes": false
+    },
+    {
+      "stage": "parent",
+      "target": 258,
+      "degree": 10,
+      "min": 258.0135875914566,
+      "logup": 271.06890596325115,
+      "proximity": 261.1170934164252,
+      "query": 258.0135875914632,
+      "passes": true
+    },
+    {
+      "stage": "parent",
+      "target": 258,
+      "degree": 11,
+      "min": 258.0135875914632,
+      "logup": 301.9757965595762,
+      "proximity": 292.02398401275025,
+      "query": 258.0135875914632,
+      "passes": true
+    },
+    {
+      "stage": "parent",
+      "target": 258,
+      "degree": 12,
+      "min": 258.0135875914632,
+      "logup": 332.88268715590135,
+      "proximity": 322.9308746090754,
+      "query": 258.0135875914632,
+      "passes": true
+    },
+    {
+      "stage": "parent",
+      "target": 268,
+      "degree": 4,
+      "min": 75.6757498384644,
+      "logup": 85.62756238530045,
+      "proximity": 75.67574983847447,
+      "query": 268.5252522711154,
+      "passes": false
+    },
+    {
+      "stage": "parent",
+      "target": 268,
+      "degree": 8,
+      "min": 199.30331222376486,
+      "logup": 209.2551247706009,
+      "proximity": 199.30331222377492,
+      "query": 268.5252522711154,
+      "passes": false
+    },
+    {
+      "stage": "parent",
+      "target": 268,
+      "degree": 9,
+      "min": 230.21020282009,
+      "logup": 240.16201536692603,
+      "proximity": 230.21020282010005,
+      "query": 268.5252522711154,
+      "passes": false
+    },
+    {
+      "stage": "parent",
+      "target": 268,
+      "degree": 10,
+      "min": 261.1170934164151,
+      "logup": 271.06890596325115,
+      "proximity": 261.1170934164252,
+      "query": 268.5252522711154,
+      "passes": false
+    },
+    {
+      "stage": "parent",
+      "target": 268,
+      "degree": 11,
+      "min": 268.5252522711154,
+      "logup": 301.9757965595762,
+      "proximity": 292.02398401275025,
+      "query": 268.5252522711154,
+      "passes": true
+    },
+    {
+      "stage": "parent",
+      "target": 268,
+      "degree": 12,
+      "min": 268.5252522711154,
+      "logup": 332.88268715590135,
+      "proximity": 322.9308746090754,
+      "query": 268.5252522711154,
+      "passes": true
+    }
+  ],
+  "shape_lines": [
+    "NEARPROOF_FIELD_SHAPE stage=child airs=2 constraints=738 columns=803 n_logup=18 baseline=75.6757498384644",
+    "NEARPROOF_FIELD_SHAPE stage=parent airs=40 constraints=282 columns=1539 n_logup=28 baseline=75.6757498384644"
+  ],
+  "baseline_parity": "Ext4 calculation matches calculate_from_vk within 1e-9 for both keys",
+  "query_profile": "zero grinding, log blowup 5, SplitUniqueList m=3, original key dimensions",
+  "decision": "Degree9 is insufficient even with frozen current circuit shape; first tested passing degrees are10 for258-bit target and11 for268-bit target. None is implemented here.",
+  "implementation_findings": [
+    "p3-baby-bear 0.4.3 supplies binomial degrees4,5,8, not the screened10/11/12",
+    "Recursive prelude and transcript bind to Poseidon2/Ext4; changing backend associated types alone cannot upgrade recursion"
+  ],
+  "exclusions": [
+    "field construction and arithmetic",
+    "circuit growth for larger extension and SHA-384",
+    "concrete QROM reduction constants",
+    "recursive knowledge composition",
+    "proof bytes and proving performance at proposed parameters",
+    "full NEAR semantics"
+  ],
+  "security_certified": false,
+  "sha256": {
+    "baby_bear_0_4_3.rs.txt": "6695e14d7adbc4549c876f1e48e342bd89fb4eef35da48338194cc4e60a7b87a",
+    "calculator.rs.txt": "4108efeb632bb55d1ca033b3ae852bc126c6e2715d9555eeb586ce545ae584fc",
+    "fixture.json": "f86142cae0e1df917444dbbf340920ffb34ba3c3a170e8ae7f1251ae9b2bcb80",
+    "native_literal.rs": "dff95d764132cd4dd22e905598e74d114d02d36bf783508e7aee03a5b0d80948",
+    "public.bin": "2214c301b99a881c039544a7235ff4ac867ad472f1ae93325f89381c0cc4d82a",
+    "recursion_prelude.rs.txt": "006c200ff71170308cfc597b9806f32335b184d311a95980a5b4f6df3da2a274",
+    "regression.log": "6f66bbcccd2545cafad844f0a50a7837a719f6038d0a861e1c323cdccf615aa1",
+    "rows-0.bin": "ab34e36616d070adfa36e613f552581973d1996b4f998ff22f21a17b4cb3db54",
+    "rows-1.bin": "6d3da5d8dd402dcbe025823b99d938c7ed4f9d232f2416cd02d1a471a3d07975",
+    "screen.log": "8a8762c806a9090703d78af8a6a2518429e8f2d384f9c083dc59cba4a6e3c7ea",
+    "sdk_config.rs.txt": "b8446d2e0a77775a82a0b20499d701f036d24a6f8fdec0da96fb59a758e8b87c",
+    "spec.json": "d5af1a689f6c8ba61c315c74ece9433ed5587056130c4c476c605a7eda420deb",
+    "vk.rs.txt": "7119703de5fd59008b103dd97bdc86ade485aeeea0d1127746fe100767e12587"
+  }
+}

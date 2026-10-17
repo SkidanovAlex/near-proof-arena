@@ -13160,3 +13160,38 @@ their native bounds do not certify the algebraic target. Next implementation
 choice must carry the explicit reduction/extraction obligations rather than
 silently treating a query parameter as whole-system security. Full NEAR1Pgas,
 secure <300000B, near-real-time performance and end-to-end Lean proof remain open.
+
+## 2026-10-17 — Screen larger fields against actual integrated key shapes
+
+Previous turn progressed atc7c100ec8; clean state verified. Inspected actual
+backend StarkProtocolConfig, SDK concrete configuration and recursive prelude/
+transcript. Backend associated types are generic, but recursive verifier binds
+to Ext4/Poseidon2 in its AIR columns, buses and transcript. A backend alias switch
+cannot satisfy SHA-384-throughout. The actual lockfile uses registry
+p3-baby-bear0.4.3 (not the separate Plonky3 git checkouts); source provides binomial
+extension degrees4,5,8. Screened larger degrees are not ready-made implementations.
+
+Added an explicit NEARPROOF_LITERAL_FIELD_SCREEN mode to the native integration
+driver. It constructs both actual keys and runs the native calculator on their
+shape bounds with hypothetical larger challenge field cardinalities and rebuilt
+WHIR queries. Reconstructed Ext4 estimates must match calculate_from_vk within
+1e-9 before screening. No proof is generated in this mode. No changes to the
+normal proving/replay path beyond the opt-in branch.
+
+At logblowup5, zero grinding, targets258/268 and degrees4,8,9,10,11,12:
+24 child/parent cases ran successfully. Both keys first pass the258 target at
+degree10; both first pass268 atdegree11 among tested degrees. Degree9 has only
+230.2102bits in the minimum bound, degree10 proximity limits to261.1171bits.
+Thus the previous unit-numerator degree9 lower-bound screen is insufficient for
+the actual key shape. Child shape:2AIRs,738maxconstraints,803columns,n_logup18;
+parent:40AIRs,282maxconstraints,1539columns,n_logup28. This remains a frozen-shape
+counterfactual: actual larger-field/SHA-384 recursion will change dimensions and
+requires fresh keys and security analysis. No secure proof size is inferred.
+
+Artifacts: results/native-literal-field-screen/{screen.log,report.json,
+native_literal.rs,...}, snapshots of relevant pinned sources, input fixture,
+public vector and traces. Existing saved baseline parent replay passes with the
+new driver; regression.log retained. Native test compilation and both test modes
+passed; git diff --check passes. Next implementation needs a verified extension
+construction and generalized recursive arithmetic/transcript, not more Ext4
+query sweeps. Concrete quantum composition and fullNEAR1Pgas remain open.
