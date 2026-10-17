@@ -10882,3 +10882,51 @@ Next: evaluate a concrete GKR/shared-input reduction plus stronger PCS query
 schedule against this small remaining allowance; reject before implementation
 if the combined budget fails. Full NEAR1Petagas, PQ128 and Lean recursive
 acceptance remain open.
+
+
+## 2026-10-17 — Joint query/column-removal gate rejects zero-credit geometry
+
+Previous goal turn classified progress: Lean interface obstruction and exact
+column-removal budget. Revalidated clean worktree ate05b6bb5b. Decoded saved
+proofs to measure query payload shape without reproving. Root: queries61/30/20,
+240base elements per initial query,16extension elements per continuation query.
+After removing2694column claims and existing query payloads, fixed values are
+17base and1214extension elements plus885framing bytes.
+
+Pinned backend m=1 list-decoding agreement is1.5/sqrt(rate). Replayed the
+calculator's biased field-to-index sampling mass using exact Fraction arithmetic.
+Rates16/128/1024 and query domains2^20/2^19/2^18 follow the pinned root schedule.
+Irrational sqrt128 is enclosed by integer-square-checked rational bounds at
+40decimal digits; both interval endpoints certify the same minimal integer
+query count. No floating-point threshold decides a query count.
+
+Under our uninstantiated conditional C*Q^2*epsilon ledger, Q=2^128,C=1:
+
+| Error allocation | Hypothetical grinding credit | Queries | Free-auth/free-column-reduction bytes at degree9 |
+| --- | ---: | --- | ---: |
+| whole1/2budget separately for each term |0|182,89,59|304625|
+| query1/4budget split equally among3terms |0|184,90,59|307121|
+| whole1/2budget separately for each term |15|172,84,55|289841|
+| query1/4budget split equally among3terms |15|173,84,56|291377|
+
+Even the relaxed zero-credit allocation exceeds300000B with ALL authentication
+bytes and ALL column-replacement costs zero. Therefore do not implement an
+expensive GKR column reduction against this unchanged opening geometry under
+that accounting. The15-bit-credit rows have not failed this very weak payload
+gate; they have almost no room for omitted components. The credit is a
+hypothetical sensitivity parameter, not a proven quantum grinding benefit.
+
+This is failure of a conditional bound/cost screen, not an attack or proof that
+PQ128 is impossible. No applicable QROM compiler is instantiated, other error
+terms remain omitted, and changing geometry can change the conclusion. In
+particular, taller stacking with fewer opened columns deserves a modeled
+comparison before another full proof: initial values dominate much of this
+expanded schedule. Any such comparison must include terminal polynomial
+length, Merkle frontier, revised query bounds and recursive trace costs.
+
+screen_swirl_query_payload.py screens32profiles (C1/256,credit0/15,two budget
+allocations,extensions5/9/10/12). Degree5 entries are cost sensitivity only,
+not PQ128 candidates. Source/shape logs are hash-pinned in
+results/swirl-security-review/query-payload. Typed decode/re-encode test passed,
+exact minimal-query checks passed; no new proof or new Lean soundness theorem
+is claimed. Full NEAR1Petagas/PQ128/Lean acceptance remains open.
