@@ -13541,3 +13541,31 @@ Next gate is assembly over actual constraint lists and global bus/height
 preservation, including deriving range premises from the actual range table.
 No whole-AIR or native acceptance theorem yet; packed357069B remains provisional.
 FullNEAR1Pgas, QROM recursive knowledge composition and sub300000 remain open.
+
+## 2026-10-17 — Concrete rewriter composition and full expression correspondence
+
+Previous turn progressed at78ac53c3a; clean state revalidated. Added
+PackedConcreteRewrite.lean with actual macro lookup and scalar-column mapping.
+The macro/column soundness premises of the generic rewrite theorem are now
+proved from layout consistency and explicit byte ranges. Composed evaluation,
+retained-zero-constraint and local interaction preservation theorems; kernel
+build and axiom audit pass with only standard Lean axioms.
+
+Added PackedRewriteCheck.lean and check_packed_rewrite.py. The executable checker
+roundtrips every parsed expression to require canonical input, then executes the
+proved Lean rewrite over the actual original AIR expressions and compares with
+retained packed spec. All1357expressions pass: EXEC726constraints (214retained,
+512removed) plus82interaction expressions; CODE473constraints (281retained,
+192removed) plus76interaction expressions. Rejected expressions are exactly the
+known removed Boolean/inactive constraints, not an arbitrary filtered subset.
+All495retained constraints and158interaction expression outputs match exactly.
+Bus/direction and expected new range-interaction counts are checked separately.
+Reports retained as rewrite-check.json and lean-concrete-rewrite-audit.log.
+
+This executable AST correspondence is not a kernel proof of the parser/Python
+runtime. The semantic theorem itself is universal in expressions/environments,
+conditional on actual byte ranges and successful rewrite. Remaining obligations:
+range-table-to-byte-ranges, assembling retained/restored constraints, trace
+heights and global bus transfer. Native acceptance-to-HoldsP and quantum
+recursive composition remain separate. No proof-size/security-completeness
+claim changed; packed357069B remains provisional; fullNEAR1Pgas remains open.

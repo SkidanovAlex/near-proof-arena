@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "tables": [
+    {
+      "source_constraints": 726,
+      "retained": 214,
+      "removed": 512,
+      "interaction_expressions": 82
+    },
+    {
+      "source_constraints": 473,
+      "retained": 281,
+      "removed": 192,
+      "interaction_expressions": 76
+    }
+  ],
+  "expression_count": 1357,
+  "scope": "Every actual retained constraint/interaction AST equals the proved Lean rewrite. Rejected source expressions are exactly the intended removed constraints. Byte ranges, constraint assembly and global bus transfer remain open."
+}
