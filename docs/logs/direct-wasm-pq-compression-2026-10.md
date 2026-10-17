@@ -11910,3 +11910,41 @@ before any new framing. Internal geometry fails300000 even at diagnostic
 settings. Next finalize compact GKR/bundle encoding, assess root geometry,
 and formalize parser/composition boundaries. No PQ128, Lean codec/security
 composition or full NEAR1Petagas correctness is claimed. Goal stays active.
+
+## 2026-10-17 — Complete framed diagnostic bundle:375127bytes
+
+Previous goal turn classified progress: prefix-only replay at2cf351e40.
+Revalidated clean worktree. Implemented fixed-layout GKR binary codec: canonical
+four-u32 extension elements, layer/round dimensions derived from trusted public
+layout, no proof-controlled lengths. Exact20128bytes, decode/reencode matches
+saved proof values. NPBND001 envelope carries four nonempty length-delimited
+sections with exact consumption and a64MiB diagnostic transport cap.
+
+Complete serialized bundle:15567prefix +20128GKR +1476weighted stacking
++337932WHIR +24framing =375127bytes. Compared with original398697byte native
+internal fixture,23570bytes smaller. This is an actual binary measurement,
+not the earlier field-only subtotal or a PQ128 claim. WHIR still dominates.
+
+Bundle verifier extracts native sections, re-derives controls/full prefix log,
+trace metadata and stacking layouts using native key-directed decoding; derives
+GKR circuit from those controls and fixed DAG; decodes and verifies GKR FROM
+THE BUNDLE; computes residual/binding from that verified proof; then verifies
+native weighted sumcheck+WHIR. Parameterized public-context and handoff runners
+so supplied decoded inputs are used instead of reading saved GKR/controls.
+Legacy default handoff regression still passes.
+
+Positive replay passes while original native proof AND saved GKR JSON are
+unavailable (temporarily moved, restored in finally). Fresh-process saved-bundle
+replay passes. Thirteen negative checks reject: six envelope/version/length
+mutations, three GKR length/canonical-field mutations, and one same-shape payload
+mutation in each of four sections. Final positive replay restores valid runtime
+inputs after mutation tests. Fixed VK/DAG/profile remain verifier configuration.
+
+Evidence:results/swirl-security-review/bundle-codec/proof.bin,logs,reports,pins.
+Reproduce:swirl_bundle.py and swirl_bundle.py --verify-saved. No native source
+changes this turn. Native verifier remains diagnostic test harness, prefix
+profile excludes preprocessed AIRs, and no Lean codec/compiler/composition or
+QROM theorem is claimed. This internal geometry fails300000 already at Ext4/
+upstream diagnostic settings. Next prioritize root geometry and complete
+stronger-security accounting, not more transport micro-optimization. Full
+NEAR1Petagas, PQ128 and secure sub300000remain unachieved; goal stays active.

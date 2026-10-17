@@ -11,11 +11,11 @@ from prove_swirl_prefix_dag import BASE,PREFIX
 OUT=BASE/'prefix-continuation'
 
 
-def main():
-    residual,description,proof=verify()
-    c=json.loads((PREFIX/'controls.json').read_text())
-    shapes=json.loads((OUT/'trace-shapes.json').read_text())
-    layouts=json.loads((BASE/'committed-witness/layouts.json').read_text())
+def main(proof=None, c=None, prefix_log=None, shapes=None, layouts=None, write_outputs=True):
+    residual,description,proof=verify(proof,c,prefix_log,check_fixture=write_outputs,write_report=write_outputs)
+    if c is None:c=json.loads((PREFIX/'controls.json').read_text())
+    if shapes is None:shapes=json.loads((OUT/'trace-shapes.json').read_text())
+    if layouts is None:layouts=json.loads((BASE/'committed-witness/layouts.json').read_text())
     assert [s['air'] for s in shapes]==[t['air'] for t in c['traces']]
     by_air={s['air']:s for s in shapes};weights={}
     for item in residual['coordinates']:
@@ -48,14 +48,17 @@ def main():
     # Canonical JSON boundary binds the preceding public statement and ALL GKR messages.
     binding=hashlib.sha384(json.dumps(dict(profile='nearproof-prefix-gkr-to-whir-v1',
         statement=description,gkr_proof=proof),sort_keys=True,separators=(',',':')).encode()).digest()
-    (OUT/'weighted-input.bin').write_bytes(data);(OUT/'gkr-binding.bin').write_bytes(binding)
+    if write_outputs:
+        (OUT/'weighted-input.bin').write_bytes(data);(OUT/'gkr-binding.bin').write_bytes(binding)
     Path('/tmp/nearproof-reconstructed-witness/weighted-input.bin').write_bytes(data)
     Path('/tmp/nearproof-prefix-gkr-binding.bin').write_bytes(binding)
     report=dict(status='CONTINUATION_DERIVED_FROM_VERIFIED_PUBLIC_GKR',column_pairs=len(weights),
         native_pairs=len(ordered)//2,zero_filled_columns=len(used-weights.keys()),
         weighted_input_sha256=hashlib.sha256(data).hexdigest(),gkr_binding_hex=binding.hex(),
         scope='Public prefix and GKR verifier derive all weights and binding; no source opening values or matrices read.')
-    (OUT/'preparation.json').write_text(json.dumps(report,indent=2)+'\n');print(report)
+    if write_outputs:
+        (OUT/'preparation.json').write_text(json.dumps(report,indent=2)+'\n');print(report)
+    return report
 
 
 if __name__=='__main__':main()
