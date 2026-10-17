@@ -8,10 +8,11 @@ lever combination (x15 domains, coset leaves, multiproof, packing; 'L' = z = 32 
 + 42-byte digests at 236 / 226 bits; 'T' = 268 bits, 48-byte digests).
 
 NV U2 (measured, debug + T = 20 chain):
-  * one non-SHA AIR, NvAir: 64 columns, 59 interactions / row, degree 8;
+  * one non-SHA AIR, NvAir: 69 columns, 60 interactions / row, degree 8 (BIND rows
+    cover 2 ALU rows);
   * byte table 2 columns; air2 SHA AIR (k = 3): 171 columns, 44 rows / compression,
     14 interactions / row, degree 21; table 13 columns;
-  * NvAir rows = 2 * program (ALU + BIND) + 8 * job compressions (GLUE) + transcript
+  * NvAir rows = 1.5 * program (ALU + BIND) + 8 * job compressions (GLUE) + transcript
     jobs + sample words;
   * program = fixed part + per-query cost (measured NV_QCOST):
       round 0: 875 rows at depth 16, k = 3, child width W ~ 38;
@@ -37,7 +38,7 @@ from score_designs import settings  # noqa: E402
 # measured structure (NV U2)
 SHA_ROWS, SHA_COLS, SHA_NEXT, SHA_IPR, SHA_DEG = 44, 171, 144, 14, 21
 TABLE_COLS, TABLE_CELLS = 13, 64 * 13
-NV_COLS, NV_IPR, NV_DEG = 64, 59, 8
+NV_COLS, NV_IPR, NV_DEG = 69, 60, 8
 BYTE_COLS = 2
 PROG_FIXED = 40_000      # preamble, GKR, batch-constraint DAG, stacking (measured ~40k)
 Q_MISC = 230             # per query: 31 index bits + recomposition, fold, misc
@@ -69,7 +70,7 @@ def program_rows(shape, cells, P, coset_leaf):
     return int(rows), sum(rd['q'] for rd in r['rounds'])
 
 
-def nv_fixed_point(kind, pad=True, per_column_next=False, coset_leaf=True, bind_per_row=1, nv_ipr=NV_IPR):
+def nv_fixed_point(kind, pad=True, per_column_next=False, coset_leaf=True, bind_per_row=2, nv_ipr=NV_IPR):
     pen, fin = settings(kind)
     C = SHA_ROWS * SHA_COLS
     cells = 1 << 26
@@ -107,9 +108,8 @@ def nv_fixed_point(kind, pad=True, per_column_next=False, coset_leaf=True, bind_
 
 
 VARIANTS = [
-    ('as built (U2)', dict()),
-    ('+ BIND rows cover 2 ALU rows', dict(bind_per_row=2)),
-    ('+ 16-bit byte-pair lookups (47 int/row)', dict(bind_per_row=2, nv_ipr=47)),
+    ('as built (U2, BIND covers 2 ALU rows)', dict(bind_per_row=2)),
+    ('+ 16-bit byte-pair lookups (48 int/row)', dict(bind_per_row=2, nv_ipr=48)),
 ]
 
 if __name__ == '__main__':
