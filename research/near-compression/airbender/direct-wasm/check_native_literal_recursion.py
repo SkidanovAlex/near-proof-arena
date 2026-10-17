@@ -1,4 +1,5 @@
 """Archive native Wasm child/parent evidence; replay without child or trace files."""
+import sys as _sys;from pathlib import Path as _P;_sys.path.insert(0,str(_P(__file__).resolve().parents[2]/'native'));import native_paths
 import argparse,hashlib,json,math,os,re,struct,subprocess,tempfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
@@ -10,7 +11,7 @@ parser.add_argument('--log-blowup',type=int)
 args=parser.parse_args()
 OUT=args.out.resolve()
 OPENVM=Path('/tmp/nearproof-openvm')
-BACKEND=Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5')
+BACKEND=native_paths.BACKEND
 command=['cargo','test','--locked','--profile','fast','-p','openvm-recursion-circuit',
          'tests::native_literal::nearproof_literal_slice_recursion','--','--exact','--nocapture']
 log=args.prove_log.read_text()

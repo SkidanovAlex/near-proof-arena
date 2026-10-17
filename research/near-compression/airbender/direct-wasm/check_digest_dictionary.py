@@ -1,4 +1,5 @@
 """Self-contained digest deduplication; exact proof reconstruction and native replay."""
+import sys as _sys;from pathlib import Path as _P;_sys.path.insert(0,str(_P(__file__).resolve().parents[2]/'native'));import native_paths
 from collections import Counter
 import hashlib,json,os,struct,subprocess,shutil,argparse
 from pathlib import Path
@@ -46,7 +47,7 @@ env=dict(os.environ,NEARPROOF_REPLAY='1',NEARPROOF_DICTIONARY=str(OUT/'child.dic
          NEARPROOF_LITERAL_OUT=str(OUT),NEARPROOF_QUERY_BITS='268',RAYON_NUM_THREADS='4')
 env.update(NEARPROOF_N_STACK=str(params['n_stack']),NEARPROOF_K=str(params['k']),NEARPROOF_LOG_BLOWUP=str(params['log_blowup']),NEARPROOF_ALL_LIST=str(params['all_list']),NEARPROOF_INTERACTION_LOG=str(params.get('interaction_log',20)))
 for name in ['NEARPROOF_TRANSCRIPT_VECTORS','NEARPROOF_WHIR_CENSUS']:env.pop(name,None)
-command=['cargo','run','--locked','--manifest-path','/tmp/nearproof-native-sha384/Cargo.toml','--release']
+command=['cargo','run','--locked','--manifest-path',str(native_paths.CRATE/'Cargo.toml'),'--release']
 result=subprocess.run(command,env=env,text=True,capture_output=True,check=True)
 assert 'NATIVE_SHA384_EXT12_REPLAY_PASS' in result.stdout
 (OUT/'replay.log').write_text(result.stdout+result.stderr)
@@ -81,9 +82,9 @@ subprocess.run(['rustc','--edition=2024','/tmp/nearproof-dictionary-tests.rs','-
 test=subprocess.run(['/tmp/nearproof-dictionary-tests',str(OUT/'child.dictionary')],text=True,capture_output=True,check=True)
 (OUT/'malformed.log').write_text(test.stdout+test.stderr)
 for name in ['main.rs','native_sha384_config.rs','literal.rs']:
-    shutil.copyfile('/tmp/nearproof-native-sha384/src/'+name,OUT/name)
+    shutil.copyfile(native_paths.CRATE/'src'/name,OUT/name)
 for name in ['Cargo.toml','Cargo.lock']:
-    shutil.copyfile('/tmp/nearproof-native-sha384/'+name,OUT/name)
+    shutil.copyfile(native_paths.CRATE/name,OUT/name)
 (OUT/'native_digest_dictionary.rs').write_text(source)
 shutil.copyfile(args.census_log,OUT/'whir-census.log')
 shutil.copyfile(SOURCE/'auth-digests.bin',OUT/'auth-digests.bin')

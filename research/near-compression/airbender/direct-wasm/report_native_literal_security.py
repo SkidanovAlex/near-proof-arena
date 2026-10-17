@@ -1,4 +1,5 @@
 """Reconcile measured integrated proofs and actual-key component estimates."""
+import sys as _sys;from pathlib import Path as _P;_sys.path.insert(0,str(_P(__file__).resolve().parents[2]/'native'));import native_paths
 import hashlib,json,re,shutil
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
@@ -23,7 +24,7 @@ for rate,suffix in [(1,''),(3,'-rate3'),(5,'-rate5')]:
   native_parent_query_bits=parent['query'],native_parent_proximity_bits=parent['proximity'],
   strict_300000_byte_gate=r['total_parent_plus_request_bytes']<300000,
   PQ128_certified=False,report_sha256=hashlib.sha256((p/'report.json').read_bytes()).hexdigest()))
-backend=Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5')
+backend=native_paths.BACKEND
 sources={}
 for rel in ['crates/stark-backend/src/config.rs','crates/stark-backend/src/soundness/calculator.rs','crates/stark-backend/src/soundness/vk.rs']:
  dst=OUT/(rel.replace('/','__')+'.txt');shutil.copyfile(backend/rel,dst)
