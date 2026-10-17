@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..82a9b9b
+index 0000000..708f251
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,537 @@
+@@ -0,0 +1,583 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1248,12 +1248,10 @@ index 0000000..82a9b9b
 +
 +use super::isa::{Instr, Op, ADDR_BITS};
 +use super::fmt::{digest_limbs, limbs_digest, NV_DIGEST};
-+use crate::sha384::{
-+    config::{
-+        Digest, Sha384Config, ShaTranscript, ShaTranscriptLog, KIND_COMMIT, KIND_OBSERVE,
-+        KIND_SAMPLE, EF, F,
-+    },
-+    jobs::{ShaJob, Unit},
++use super::hash::{Job2, NODE_TAG, U2};
++use crate::sha384::config::{
++    digest_words, Digest, Sha384Config, ShaTranscript, ShaTranscriptLog, KIND_COMMIT, KIND_OBSERVE,
++    KIND_SAMPLE, EF, F,
 +};
 +
 +/// Transcript recorder with NV event granularity: a commitment is NV_DIGEST limb events.
@@ -1296,7 +1294,7 @@ index 0000000..82a9b9b
 +    pub val: EF,
 +}
 +
-+/// A digest held in two ALU cells of 12 limbs each.
++/// A digest held in two ALU cells: lo = words 0..3 (12 limbs), hi = words 4, 5 (6 limbs).
 +#[derive(Clone, Copy, Debug)]
 +pub struct DigestCells {
 +    pub lo: V,
@@ -1304,27 +1302,22 @@ index 0000000..82a9b9b
 +    pub digest: Digest,
 +}
 +
-+/// One authentication path (leaf coset tree + Merkle path) for the Merkle AIR.
-+#[derive(Clone, Debug)]
-+pub struct MerklePath {
-+    pub path_id: u32,
-+    pub qid: u32,
-+    pub commit_id: u32,
-+    pub job_base: u32,
-+    pub leaf_digests: Vec<Digest>,
-+    pub siblings: Vec<Digest>,
-+    pub index: u64,
-+    pub root: Digest,
-+}
-+
-+/// A digest as two cells of 9 limbs (coefficients 9..11 zero).
++/// A digest as two cells: words 0..3 (12 limbs) and words 4, 5 (6 limbs, rest zero).
 +pub fn digest_cells(d: Digest) -> ([F; 12], [F; 12]) {
 +    let l = digest_limbs(d);
 +    let mut lo = [F::ZERO; 12];
 +    let mut hi = [F::ZERO; 12];
-+    lo[..9].copy_from_slice(&l[..9]);
-+    hi[..9].copy_from_slice(&l[9..]);
++    lo.copy_from_slice(&l[..12]);
++    hi[..6].copy_from_slice(&l[12..]);
 +    (lo, hi)
++}
++
++/// A job under construction.
++#[derive(Clone, Debug)]
++pub struct BJob {
++    pub tag: u8,
++    pub node: bool,
++    pub units: Vec<Option<U2>>,
 +}
 +
 +pub fn coeffs(x: EF) -> [F; 12] {
@@ -1343,8 +1336,9 @@ index 0000000..82a9b9b
 +    consts: HashMap<u32, u32>,
 +    pub transcript: NvRecorder,
 +    pub failures: Vec<String>,
-+    pub job_units: Vec<(u8, Vec<Option<Unit>>)>,
-+    pub paths: Vec<MerklePath>,
++    pub job_units: Vec<BJob>,
++    /// Merkle node jobs (statistics)
++    pub merkle_nodes: usize,
 +    pub log_rows: usize,
 +    /// deferred binding check: (sub row, zero row, child program evaluation)
 +    pub acc_check: Option<(u32, u32, EF)>,
@@ -1377,7 +1371,7 @@ index 0000000..82a9b9b
 +            transcript: NvRecorder::default(),
 +            failures: vec![],
 +            job_units: vec![],
-+            paths: vec![],
++            merkle_nodes: 0,
 +            log_rows,
 +            acc_check: None,
 +            acc_flag: None,
@@ -1546,13 +1540,11 @@ index 0000000..82a9b9b
 +        }
 +        self.tr_started = true;
 +        let w = super::transcript2::initial_state_words();
-+        let l: Vec<F> = w.iter().flat_map(|&x| super::fmt::wl(x)).map(F::from_u32).collect();
-+        for h in 0..2 {
-+            let mut c = [F::ZERO; 12];
-+            c[..9].copy_from_slice(&l[9 * h..9 * h + 9]);
-+            let v = self.ce(ef_from(c));
-+            self.push(Op::UnitW3, v.addr, 0, job, 2 + 6 * h as u32, v.val, F::ZERO);
-+        }
++        let (lo, hi) = digest_cells(crate::sha384::config::digest_from_words(w));
++        let lo = self.ce(ef_from(lo));
++        let hi = self.ce(ef_from(hi));
++        self.push(Op::UnitW, lo.addr, 4, job, 2, lo.val, F::ZERO);
++        self.push(Op::UnitW, hi.addr, 2, job, 10, hi.val, F::ZERO);
 +    }
 +    /// The open flush job (allocated at the first observe of a run): (job, unit index).
 +    fn tr_obs_slot(&mut self, n: u32) -> (u32, u32) {
@@ -1638,44 +1630,45 @@ index 0000000..82a9b9b
 +            d,
 +        );
 +        debug_assert_eq!(
-+            limbs_digest(&[&coeffs(lo.val)[..9], &coeffs(hi.val)[..9]].concat()),
++            limbs_digest(&[&coeffs(lo.val)[..12], &coeffs(hi.val)[..6]].concat()),
 +            d
 +        );
-+        let lo = self.push(Op::UnitW3, lo.addr, 0, job, 16, lo.val, F::ZERO);
-+        let hi = self.push(Op::UnitW3, hi.addr, 0, job, 22, hi.val, F::ZERO);
++        let lo = self.push(Op::UnitW, lo.addr, 4, job, 16, lo.val, F::ZERO);
++        let hi = self.push(Op::UnitW, hi.addr, 2, job, 24, hi.val, F::ZERO);
 +        self.push(Op::Anchor, t, NV_DIGEST as u32, job, 0, EF::ZERO, F::ZERO);
 +        DigestCells { lo, hi, digest: d }
 +    }
-+    /// Offer a commitment as the root key of `commit_id`.
-+    pub fn key_commit(&mut self, commit_id: u32, d: &DigestCells) {
-+        self.push(Op::KeyC, d.lo.addr, 0, commit_id, 0, d.lo.val, F::ZERO);
-+        self.push(Op::KeyC, d.hi.addr, 0, commit_id, 1, d.hi.val, F::ZERO);
-+    }
-+
 +    // ---- SHA jobs (leaf messages) ----
 +    /// Start a leaf job (tag 0) with `nbytes` of payload; returns the job id.
 +    pub fn job_start(&mut self, tag: u8, nbytes: usize) -> u32 {
 +        let id = self.job_units.len() as u32;
 +        assert_eq!(nbytes % 4, 0);
 +        let mut units = vec![None; 2 + nbytes / 4];
-+        units[0] = Some(Unit::Felt(nbytes as u32));
-+        units[1] = Some(Unit::Felt(0));
-+        self.job_units.push((tag, units));
++        units[0] = Some(U2::Felt(nbytes as u32));
++        units[1] = Some(U2::Felt(0));
++        self.job_units.push(BJob { tag, node: false, units });
 +        self.push(Op::Job, tag as u32, nbytes as u32, id, 0, EF::ZERO, F::ZERO);
 +        id
 +    }
 +    fn job_unit(&mut self, job: u32, uidx: u32, x: F) {
-+        let slot = &mut self.job_units[job as usize].1[uidx as usize];
++        let slot = &mut self.job_units[job as usize].units[uidx as usize];
 +        assert!(slot.is_none(), "unit pushed twice");
-+        *slot = Some(Unit::Felt(x.as_canonical_u32()));
++        *slot = Some(U2::Felt(x.as_canonical_u32()));
 +    }
-+    /// The leaf jobs (ids 0..), all units filled.
-+    pub fn jobs(&self) -> Vec<ShaJob> {
++    /// The leaf and node jobs (ids 0..), all units filled.
++    pub fn jobs(&self) -> Vec<Job2> {
 +        self.job_units
 +            .iter()
-+            .map(|(tag, u)| ShaJob {
-+                tag: *tag,
-+                units: u.iter().map(|x| x.expect("missing unit")).collect(),
++            .enumerate()
++            .map(|(i, j)| {
++                let mut units: Vec<U2> = vec![];
++                let mut k = 0;
++                while k < j.units.len() {
++                    let u = j.units[k].expect("missing unit");
++                    units.push(u);
++                    k += u.nunits();
++                }
++                Job2 { id: i as u32, node: j.node, tag: j.tag, units }
 +            })
 +            .collect()
 +    }
@@ -1706,19 +1699,72 @@ index 0000000..82a9b9b
 +        if !(c[0] == F::ZERO || c[0] == F::ONE) || c[1..].iter().any(|v| *v != F::ZERO) {
 +            self.failures.push("non-boolean bit".into());
 +        }
-+        self.push(Op::Bit, x.addr, 0, qid, level, x.val, F::ZERO)
++        let _ = (qid, level);
++        self.push(Op::Bit, x.addr, 0, 0, 0, x.val, F::ZERO)
 +    }
-+    pub fn key_path(&mut self, path_id: u32, job_base: u32, qid: u32, commit_id: u32, depth: u32) {
-+        assert!(commit_id < 256 && depth < 512);
-+        self.push(
-+            Op::KeyP,
-+            qid,
-+            commit_id + 256 * depth,
-+            path_id,
-+            job_base,
-+            EF::ZERO,
-+            F::ZERO,
-+        );
++    /// Digest of job `job` as cells (Dig ops; the digest bus pairs 0, 1 | 2).
++    pub fn dig(&mut self, job: u32, d: Digest) -> DigestCells {
++        let (lo, hi) = digest_cells(d);
++        let lo = self.push(Op::Dig, 0, 2, job, 0, ef_from(lo), F::ZERO);
++        let hi = self.push(Op::Dig, 0, 1, job, 2, ef_from(hi), F::ZERO);
++        DigestCells { lo, hi, digest: d }
++    }
++    /// Merkle node job SHA384(NODE_WORD || l || r) from digest cells; returns its digest.
++    pub fn node(&mut self, l: &DigestCells, r: &DigestCells) -> DigestCells {
++        use openvm_stark_backend::hasher::MerkleHasher;
++        let id = self.job_units.len() as u32;
++        let units: Vec<Option<U2>> = digest_words(l.digest)
++            .into_iter()
++            .chain(digest_words(r.digest))
++            .flat_map(|w| [Some(U2::Word(w)), None])
++            .collect();
++        self.job_units.push(BJob { tag: 0, node: true, units });
++        self.merkle_nodes += 1;
++        self.push(Op::NodeJob, NODE_TAG, 0, id, 0, EF::ZERO, F::ZERO);
++        for (i, (c, n)) in [(l.lo, 4u32), (l.hi, 2), (r.lo, 4), (r.hi, 2)].into_iter().enumerate() {
++            let u = [0u32, 8, 12, 20][i];
++            self.push(Op::UnitW, c.addr, n, id, u, c.val, F::ZERO);
++        }
++        let d = crate::sha384::config::ShaHasher.compress(l.digest, r.digest);
++        self.dig(id, d)
++    }
++    /// Select (l, r) = bit ? (s, c) : (c, s) cellwise.
++    fn select(&mut self, c: V, s: V, bit: V) -> (V, V) {
++        let d = self.sub(s, c);
++        let t = self.mul(d, bit);
++        (self.add(c, t), self.sub(s, t))
++    }
++    /// Authentication path: leaf jobs job_base..job_base + 2^k (coset tree), then the
++    /// Merkle path with direction bits `bits` (LSB first), checked against `root`.
++    pub fn merkle_path(&mut self, job_base: u32, leaf_digests: &[Digest], siblings: &[Digest], bits: &[V], root: &DigestCells) {
++        assert_eq!(bits.len(), siblings.len());
++        let mut layer: Vec<DigestCells> = leaf_digests
++            .iter()
++            .enumerate()
++            .map(|(j, &d)| self.dig(job_base + j as u32, d))
++            .collect();
++        while layer.len() > 1 {
++            layer = (0..layer.len() / 2).map(|i| self.node(&layer[2 * i].clone(), &layer[2 * i + 1].clone())).collect();
++        }
++        let mut cur = layer[0];
++        for (lv, &sd) in siblings.iter().enumerate() {
++            let (slo, shi) = digest_cells(sd);
++            let slo = self.load(ef_from(slo));
++            let shi = self.load(ef_from(shi));
++            let bit = bits[lv];
++            let (llo, rlo) = self.select(cur.lo, slo, bit);
++            let (lhi, rhi) = self.select(cur.hi, shi, bit);
++            let b1 = coeffs(bit.val)[0] == F::ONE;
++            let (ld, rd) = if b1 { (sd, cur.digest) } else { (cur.digest, sd) };
++            let l = DigestCells { lo: llo, hi: lhi, digest: ld };
++            let r = DigestCells { lo: rlo, hi: rhi, digest: rd };
++            cur = self.node(&l, &r);
++        }
++        if cur.digest != root.digest {
++            self.failures.push("merkle root".into());
++        }
++        self.assert_eq(cur.lo, root.lo, "merkle root lo");
++        self.assert_eq(cur.hi, root.hi, "merkle root hi");
 +    }
 +
 +    /// Finish: pad with NOPs, put the accumulator row last.  Returns the program length 2^log_rows.
@@ -1777,10 +1823,10 @@ index 0000000..82a9b9b
 +
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..ffbb654
+index 0000000..88da183
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,286 @@
+@@ -0,0 +1,223 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -1798,7 +1844,6 @@ index 0000000..ffbb654
 +    glue::{glue_matrix, GlueAir},
 +    hash::{byte_table2, generate2, ByteAir, HashBuses, Job2, Work2, U2},
 +    isa::Op,
-+    merkle2::{merkle2_trace, Merkle2Air, Merkle2Cols, MERKLE2_WIDTH},
 +    transcript2::{replay2, tr2_traces, Hash2Air, Samp2Air, TrBuses},
 +    verifier::build_verifier,
 +};
@@ -1813,7 +1858,6 @@ index 0000000..ffbb654
 +    pub alu: UBuses,
 +    pub h: HashBuses,
 +    pub tr: TrBuses,
-+    pub merkle_internal: BusIndex,
 +}
 +
 +impl NvBuses {
@@ -1825,11 +1869,12 @@ index 0000000..ffbb654
 +        };
 +        let slot = next();
 +        let job = next();
++        let digest = next();
 +        let alu = UBuses {
 +            mem: next(),
 +            slot,
 +            job,
-+            key: next(),
++            digest,
 +            bind: next(),
 +            acc: next(),
 +        };
@@ -1841,19 +1886,14 @@ index 0000000..ffbb654
 +            word: next(),
 +            slot,
 +            job,
-+            digest: next(),
++            digest,
 +            byte: next(),
 +        };
 +        let tr = TrBuses {
 +            sample: next(),
 +            word: next(),
 +        };
-+        Self {
-+            alu,
-+            h,
-+            tr,
-+            merkle_internal: next(),
-+        }
++        Self { alu, h, tr }
 +    }
 +}
 +
@@ -1899,12 +1939,6 @@ index 0000000..ffbb654
 +            Arc::new(UAir { buses: b.alu }) as AirRef<SC>,
 +            Arc::new(Hash2Air { h: b.h, t: b.tr }),
 +            Arc::new(Samp2Air { h: b.h, t: b.tr }),
-+            Arc::new(Merkle2Air {
-+                sha: b.h,
-+                key: b.alu.key,
-+                internal: b.merkle_internal,
-+                k: self.k,
-+            }),
 +            Arc::new(Sha512Air {
 +                lay,
 +                buses: b.h.sha(),
@@ -1935,85 +1969,34 @@ index 0000000..ffbb654
 +        b.finish();
 +        assert_eq!(vk.inner.params.k_whir(), self.k);
 +
-+        // key multiplicities
-+        let mut commit_uses: HashMap<u32, u32> = HashMap::new();
-+        let mut path_rows: HashMap<u32, u32> = HashMap::new();
-+        let mut bit_uses: HashMap<(u32, u32), u32> = HashMap::new();
-+        for p in &b.paths {
-+            *commit_uses.entry(p.commit_id).or_default() += 1;
-+            *path_rows.entry(p.path_id).or_default() +=
-+                ((1u32 << self.k) - 1) + p.siblings.len() as u32;
-+            for lv in 0..p.siblings.len() as u32 {
-+                *bit_uses.entry((p.qid, lv)).or_default() += 1;
-+            }
-+        }
-+        let key_mults: Vec<u32> = b
-+            .instrs
-+            .iter()
-+            .map(|ins| match ins.op {
-+                Op::KeyC => commit_uses.get(&ins.k1).copied().unwrap_or(0),
-+                Op::KeyP => path_rows.get(&ins.k1).copied().unwrap_or(0),
-+                Op::Bit => bit_uses.get(&(ins.k1, ins.k2)).copied().unwrap_or(0),
-+                _ => 0,
-+            })
-+            .collect();
-+
-+        // transcript jobs follow the leaf jobs
-+        let leaf_jobs: Vec<Job2> = b
-+            .jobs()
-+            .into_iter()
-+            .enumerate()
-+            .map(|(i, j)| Job2 {
-+                id: i as u32,
-+                tag: j.tag,
-+                units: j
-+                    .units
-+                    .into_iter()
-+                    .map(|u| match u {
-+                        Unit::Felt(x) => U2::Felt(x),
-+                        Unit::Pair(..) => unreachable!(),
-+                    })
-+                    .collect(),
-+            })
-+            .collect();
++        // leaf and Merkle-node jobs (ids 0..), then the transcript jobs
++        let leaf_jobs: Vec<Job2> = b.jobs();
 +        let log = b.transcript.clone().into_log();
 +        let tr_jobs = replay2(&log);
 +        let hh = |i: usize| self.heights.as_ref().map_or(1, |h| h[i]);
-+        let (mut mtrace, nodes) = merkle2_trace(&b.paths, self.k, hh(3));
 +        let mut work = Work2 {
 +            jobs: leaf_jobs,
-+            nodes,
++            nodes: vec![],
 +        };
 +        work.jobs.extend(tr_jobs.iter().map(|j| j.job()));
 +        let sha = generate2(
 +            &work,
 +            self.layout(),
-+            self.heights.as_ref().map(|_| hh(4)),
++            self.heights.as_ref().map(|_| hh(3)),
 +        );
-+        {
-+            use core::borrow::BorrowMut;
-+            use crate::sha384::compress2_air::ROWS;
-+            for row in mtrace.values.chunks_exact_mut(MERKLE2_WIDTH) {
-+                let c: &mut Merkle2Cols<F> = row.borrow_mut();
-+                if c.valid == F::ONE {
-+                    c.cid = F::from_usize(c.cid.as_canonical_u32() as usize * ROWS);
-+                }
-+            }
-+        }
 +        let tr = tr2_traces(&tr_jobs, self.heights.as_ref().map(|_| (hh(1), hh(2))));
 +        let mut counts = sha.byte_counts.clone();
 +        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
 +            *c += t;
 +        }
-+        let alu = u_trace(&b.instrs, &b.vals, &b.wits, &key_mults);
++        let alu = u_trace(&b.instrs, &b.vals, &b.wits);
 +        let mats = vec![
 +            alu,
 +            tr.hash,
 +            tr.samp,
-+            mtrace,
 +            sha.compress,
 +            sha.table,
-+            glue_matrix(&sha.glue_rows, hh(6)),
++            glue_matrix(&sha.glue_rows, hh(5)),
 +            byte_table2(&counts),
 +        ];
 +        if let Some(h) = &self.heights {
@@ -2157,10 +2140,10 @@ index 0000000..0c335cf
 +}
 diff --git a/crates/recursion/src/nv/glue.rs b/crates/recursion/src/nv/glue.rs
 new file mode 100644
-index 0000000..8524e6a
+index 0000000..f6e8f3d
 --- /dev/null
 +++ b/crates/recursion/src/nv/glue.rs
-@@ -0,0 +1,472 @@
+@@ -0,0 +1,516 @@
 +//! NV GLUE role: one row per *pair* of message words of a job compression (8 rows per
 +//! compression).  Replaces the packer (one row per word) and the block-chaining AIR
 +//! (one 102-column row per compression).
@@ -2194,7 +2177,7 @@ index 0000000..8524e6a
 +
 +use super::{
 +    fmt::{limbs_from_bytes, split_bits, wl},
-+    hash::{HashBuses, Job2, U2, UNIT_FELT, UNIT_WORD},
++    hash::{HashBuses, Job2, NODE_TAG, U2, UNIT_FELT, UNIT_WORD},
 +};
 +use crate::sha384::{
 +    compress2_air::ROWS,
@@ -2236,6 +2219,8 @@ index 0000000..8524e6a
 +    pub zm: [T; 4],
 +    /// state pair limbs
 +    pub s: [T; 6],
++    /// Merkle-node job (one block: NODE_WORD || L || R, aligned word units)
++    pub nd: T,
 +}
 +pub const GLUE_W: usize = GlueCols::<u8>::width();
 +
@@ -2257,7 +2242,7 @@ index 0000000..8524e6a
 +    let one = AB::Expr::ONE;
 +    let c = |v: u64| AB::Expr::from_u64(v);
 +    let bool_g = |b: &mut AB, x: AB::Var| b.assert_zero(kg.clone() * x * (x - AB::Expr::ONE));
-+    for x in [l.start, l.blk0, l.last, l.end]
++    for x in [l.start, l.blk0, l.last, l.end, l.nd]
 +        .into_iter()
 +        .chain(l.q)
 +        .chain(l.p)
@@ -2283,7 +2268,10 @@ index 0000000..8524e6a
 +    let q7: AB::Expr = q0 * q1 * q2;
 +    builder.assert_zero(kg.clone() * (l.end - l.last * q7.clone()));
 +    let hdr = l.blk0 * (one.clone() - q1) * (one.clone() - q2);
-+    builder.assert_zero(kg.clone() * (l.act - (one.clone() - hdr - l.end)));
++    let pj = one.clone() - l.nd; // prefix-framed job
++    builder.assert_zero(kg.clone() * (l.act - pj.clone() * (one.clone() - hdr - l.end)));
++    builder.assert_zero(kg.clone() * l.nd * (one.clone() - l.blk0));
++    builder.assert_zero(kg.clone() * l.nd * (one.clone() - l.last));
 +    builder.assert_zero(l.start * (one.clone() - kg.clone()));
 +    {
 +        let mut w = builder.when(kg.clone() * l.start);
@@ -2383,22 +2371,39 @@ index 0000000..8524e6a
 +    // ---- framing ----
 +    let q_0 = is_q(0);
 +    let q_1 = is_q(1);
++    let kp = kg.clone() * pj.clone();
 +    for k in 0..16 {
-+        builder.assert_zero(kg.clone() * l.blk0 * q_0.clone() * (l.b[k] - c(PREFIX[k] as u64)));
-+        builder.assert_zero(kg.clone() * l.blk0 * q_1.clone() * (l.b[k] - c(PREFIX[16 + k] as u64)));
++        builder.assert_zero(kp.clone() * l.blk0 * q_0.clone() * (l.b[k] - c(PREFIX[k] as u64)));
++        builder.assert_zero(kp.clone() * l.blk0 * q_1.clone() * (l.b[k] - c(PREFIX[16 + k] as u64)));
 +    }
 +    for k in 0..13 {
-+        builder.assert_zero(kg.clone() * l.end * l.b[k]);
++        builder.assert_zero(kp.clone() * l.end * l.b[k]);
 +    }
 +    builder.assert_zero(
-+        kg.clone()
++        kp.clone()
 +            * l.end
 +            * (l.b[13] * c(1 << 16) + l.b[14] * c(1 << 8) + l.b[15] - (c(33) + l.uidx * c(4)) * c(8)),
 +    );
 +    // padding must have started by word 13 exactly in the last block
-+    builder.assert_zero(kg.clone() * is_q(6) * (l.last - phase_after.clone()));
-+    // tag: first byte of word 4 (row 2 of block 0)
-+    PermutationCheckBus::new(buses.job).receive(builder, [l.job.into(), b[0].clone()], kg.clone() * l.blk0 * is_q(2));
++    builder.assert_zero(kp.clone() * is_q(6) * (l.last - phase_after.clone()));
++    // tag: first byte of word 4 (row 2 of block 0); node jobs: NODE_TAG at row 0
++    PermutationCheckBus::new(buses.job).receive(
++        builder,
++        [l.job.into(), pj.clone() * b[0].clone() + l.nd * c(NODE_TAG as u64)],
++        kg.clone() * l.blk0 * (pj.clone() * is_q(2) + l.nd * q_0.clone()),
++    );
++    // node jobs: constant words 0 (NODE_WORD), 13 (0x80 pad), 14 (0), 15 (bit length 832)
++    let kn = kg.clone() * l.nd;
++    let node_w = crate::transcript::merkle_verify::NODE_WORD.to_be_bytes();
++    let pad_w = (0x80u64 << 56).to_be_bytes();
++    let len_w = [0u64.to_be_bytes(), 832u64.to_be_bytes()].concat();
++    for k in 0..8 {
++        builder.assert_zero(kn.clone() * q_0.clone() * (l.b[k] - c(node_w[k] as u64)));
++        builder.assert_zero(kn.clone() * is_q(6) * (l.b[8 + k] - c(pad_w[k] as u64)));
++    }
++    for k in 0..16 {
++        builder.assert_zero(kn.clone() * q7.clone() * (l.b[k] - c(len_w[k] as u64)));
++    }
 +
 +    // ---- sequencing ----
 +    {
@@ -2414,6 +2419,7 @@ index 0000000..8524e6a
 +        t.assert_zero(cont.clone() * (n.b[0] - l.carry));
 +        t.assert_zero(cont.clone() * (one.clone() - q7.clone()) * (n.last - l.last));
 +        t.assert_zero(cont.clone() * n.start);
++        t.assert_zero(cont.clone() * (n.nd - l.nd));
 +        t.assert_zero(kg.clone() * nkg.clone() * l.end * (one.clone() - n.start));
 +        t.assert_zero(kg.clone() * (one.clone() - nkg.clone()) * (one.clone() - l.end));
 +        t.assert_zero(nkg.clone() * (one.clone() - kg.clone()) * (one.clone() - n.start));
@@ -2438,6 +2444,22 @@ index 0000000..8524e6a
 +    let w0 = limbs_from_bytes(&w0b, l.lo[0].into(), l.lo[1].into());
 +    let w1 = limbs_from_bytes(&w1b, l.lo[2].into(), l.lo[3].into());
 +    let qv = q0 + q1 * c(2) + q2 * c(4);
++    // node jobs: word 2q (q in 1..=6) is unit 4q - 2, word 2q + 1 (q in 0..=5) is unit 4q
++    for (w, (limbs, idx, mult)) in [
++        (w0.clone(), qv.clone() * c(4) - c(2), one.clone() - q_0.clone() - q7.clone()),
++        (w1.clone(), qv.clone() * c(4), one.clone() - is_q(6) - q7.clone()),
++    ]
++    .into_iter()
++    .enumerate()
++    {
++        let _ = w;
++        let [l0, l1, l2] = limbs;
++        slot.receive(
++            builder,
++            [one.clone(), l.job.into(), idx, c(UNIT_WORD as u64), l0, l1, l2],
++            kn.clone() * mult,
++        );
++    }
 +    let iface = PermutationCheckBus::new(buses.iface);
 +    let mut msg = vec![l.cid.into(), qv.clone() + c(4)];
 +    msg.extend(w0.into_iter().chain(w1));
@@ -2521,6 +2543,10 @@ index 0000000..8524e6a
 +        }
 +        let total = slots.len();
 +        let (mut phase, mut uidx) = (false, 0usize);
++        if j.node {
++            assert_eq!(nb, 1);
++            uidx = total;
++        }
 +        for (k, cb) in blocks.iter().enumerate() {
 +            let last = k + 1 == nb;
 +            let out = crate::sha384::compress2_trace::sha2_compress(cb);
@@ -2538,9 +2564,10 @@ index 0000000..8524e6a
 +                g.end = F::from_bool(last && q == 7);
 +                let hdr = k == 0 && q < 2;
 +                let lenw = last && q == 7;
-+                g.act = F::from_bool(!(hdr || lenw));
-+                g.phase = F::from_bool(phase);
-+                g.uidx = F::from_usize(uidx);
++                g.nd = F::from_bool(j.node);
++                g.act = F::from_bool(!(hdr || lenw || j.node));
++                g.phase = F::from_bool(phase && !j.node);
++                g.uidx = F::from_usize(if j.node { 0 } else { uidx });
 +                let off = 128 * k + 16 * q;
 +                let bytes = &padded[off..off + 16];
 +                for t in 0..16 {
@@ -2557,7 +2584,7 @@ index 0000000..8524e6a
 +                    [bytes[9], bytes[10], bytes[11], bytes[12]],
 +                    [bytes[13], bytes[14], bytes[15], carry],
 +                ];
-+                if !(hdr || lenw) {
++                if !(hdr || lenw || j.node) {
 +                    let mut s = 0;
 +                    while s < 4 {
 +                        let w = s / 2;
@@ -2597,7 +2624,7 @@ index 0000000..8524e6a
 +                    counts[(los[t] as usize) << (8 - shifts[t])] += 1;
 +                    counts[(ulos[t] as usize) << (8 - shifts[t])] += 1;
 +                }
-+                if q == 6 {
++                if q == 6 && !j.node {
 +                    assert_eq!(phase, last, "padding/final-block mismatch");
 +                }
 +                let pair = |w: [u64; 2]| -> [F; 6] {
@@ -2635,10 +2662,10 @@ index 0000000..8524e6a
 +}
 diff --git a/crates/recursion/src/nv/hash.rs b/crates/recursion/src/nv/hash.rs
 new file mode 100644
-index 0000000..487892c
+index 0000000..98e7aa5
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash.rs
-@@ -0,0 +1,278 @@
+@@ -0,0 +1,291 @@
 +//! NV hashing subsystem, word format v2 (air2 limbs).  Same job model as
 +//! `sha384/airs.rs` (framed messages `PREFIX || tag || units`), with:
 +//! * units: a canonical felt (4 LE bytes) or a whole 64-bit word (8 BE bytes, e.g. a
@@ -2680,6 +2707,8 @@ index 0000000..487892c
 +
 +pub const UNIT_FELT: u32 = 0;
 +pub const UNIT_WORD: u32 = 2;
++/// job-bus tag of Merkle node jobs (outside the byte range of prefix-job tags)
++pub const NODE_TAG: u32 = 256;
 +
 +impl HashBuses {
 +    pub fn sha(&self) -> crate::sha384::compress2_air::Sha2Buses {
@@ -2835,11 +2864,22 @@ index 0000000..487892c
 +pub struct Job2 {
 +    /// job id (unit / digest key)
 +    pub id: u32,
++    /// Merkle node job: message NODE_WORD || 12 word units (no prefix / tag / lengths)
++    pub node: bool,
 +    pub tag: u8,
 +    pub units: Vec<U2>,
 +}
 +impl Job2 {
 +    pub fn message(&self) -> Vec<u8> {
++        if self.node {
++            let mut m = crate::transcript::merkle_verify::NODE_WORD.to_be_bytes().to_vec();
++            for u in &self.units {
++                assert!(matches!(u, U2::Word(_)));
++                m.extend(u.bytes());
++            }
++            assert_eq!(m.len(), 104);
++            return m;
++        }
 +        let mut m = PREFIX.to_vec();
 +        m.push(self.tag);
 +        for u in &self.units {
@@ -2919,10 +2959,10 @@ index 0000000..487892c
 +}
 diff --git a/crates/recursion/src/nv/hash_tests.rs b/crates/recursion/src/nv/hash_tests.rs
 new file mode 100644
-index 0000000..ac205ba
+index 0000000..9682bf6
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash_tests.rs
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,194 @@
 +//! Standalone test of the NV v2 hashing subsystem on the air2 compression AIR.
 +use std::sync::Arc;
 +
@@ -2991,7 +3031,12 @@ index 0000000..ac205ba
 +                cnt += 1;
 +            }
 +        }
-+        out.push(Job2 { id: i as u32, tag: [0u8, 3, 4, 5, 6][i % 5], units });
++        out.push(Job2 { id: i as u32, node: false, tag: [0u8, 3, 4, 5, 6][i % 5], units });
++    }
++    // Merkle-node jobs: 12 aligned word units
++    for t in 0..3 {
++        let units = (0..12).map(|_| U2::Word(rng.next())).collect();
++        out.insert(2 * t + 1, Job2 { id: 100 + t as u32, node: true, tag: 0, units });
 +    }
 +    out
 +}
@@ -3001,13 +3046,13 @@ index 0000000..ac205ba
 +    for (job, j) in work.jobs.iter().enumerate() {
 +        let mut r = [0u32; PW];
 +        r[2] = 1;
-+        r[5] = job as u32;
-+        r[10] = j.tag as u32;
++        r[5] = j.id;
++        r[10] = if j.node { NODE_TAG } else { j.tag as u32 };
 +        rows.push(r);
 +        let mut idx = 0;
 +        for u in &j.units {
 +            let mut r = [0u32; PW];
-+            r[5] = job as u32;
++            r[5] = j.id;
 +            r[6] = idx;
 +            match *u {
 +                U2::Felt(x) => {
@@ -3025,7 +3070,7 @@ index 0000000..ac205ba
 +        }
 +        let mut r = [0u32; PW];
 +        r[3] = 1;
-+        r[5] = job as u32;
++        r[5] = j.id;
 +        for q in 0..6 {
 +            let l = wl(dig[job][q]);
 +            r[11 + 3 * q..14 + 3 * q].copy_from_slice(&l);
@@ -3089,7 +3134,7 @@ index 0000000..ac205ba
 +#[test]
 +fn nv_hash2_rejects_mutations() {
 +    let mut rng = Rng(0x0dd5_eed0_0000_0002);
-+    let jobs = jobs(&mut rng)[..8].to_vec();
++    let jobs = jobs(&mut rng)[..10].to_vec();
 +    let work = Work2 { jobs, nodes: vec![] };
 +    run(&work, None);
 +    // GLUE bytes / flags / splits / state pairs (column 0 = role flag)
@@ -3114,10 +3159,10 @@ index 0000000..ac205ba
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..4d53d30
+index 0000000..9926e83
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,113 @@
+@@ -0,0 +1,114 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -3152,8 +3197,8 @@ index 0000000..4d53d30
 +    Unit1 = 7,
 +    /// anchor transcript job P2: send (2, P2, 0, 0, A = t_start, B = count, 0); c = 0
 +    Anchor = 8,
-+    /// c = a; push 3 word units (limbs c[3i..3i+3]) of job P2 at unit index P3 + 2i
-+    UnitW3 = 9,
++    /// c = a; push B (2 or 4) word units (limbs c[3i..3i+3]) of job P2 at unit index P3 + 2i
++    UnitW = 9,
 +    /// c0 = sample at tidx P2 (c1..c11 = 0)
 +    Smp1 = 10,
 +    /// c = 12 samples at tidx P2..P2+11
@@ -3164,14 +3209,15 @@ index 0000000..4d53d30
 +    Horn = 13,
 +    /// start SHA job P2 with tag A; push length units (B bytes, 0) at unit index 0, 1
 +    Job = 14,
-+    /// c = a, a0 in {0,1}, a1..a11 = 0; offer key (2, P2, P3, a0)
++    /// c = a, a0 in {0,1}, a1..a11 = 0
 +    Bit = 15,
 +    /// assert a == 0; c = 0
 +    Zero = 16,
-+    /// c = a; offer key (0, P2, P3, a0..a11)  (commitment cells for root checks)
-+    KeyC = 17,
-+    /// offer key (1, P2, P3, A, B)  (Merkle path binding); c = 0
-+    KeyP = 18,
++    /// c = digest pairs P3 .. P3 + B - 1 (B in {1, 2}) of job P2, received from the digest
++    /// bus (6 limbs per pair; c[6..12] = 0 if B = 1)
++    Dig = 17,
++    /// start a Merkle-node job P2 (tag A = NODE_TAG; 12 word units pushed by UnitW); c = 0
++    NodeJob = 18,
 +    /// c = binding accumulator total (last row)
 +    Acc = 19,
 +    /// c = 2a + b
@@ -3191,15 +3237,15 @@ index 0000000..4d53d30
 +    pub fn all() -> [Op; NUM_OPS] {
 +        use Op::*;
 +        [
-+            Nop, Mul, Add, Sub, Const, ConstX, Load, Unit1, Anchor, UnitW3, Smp1, Smp12, Unit12,
-+            Horn, Job, Bit, Zero, KeyC, KeyP, Acc, DblAdd, MulAddA, Pv,
++            Nop, Mul, Add, Sub, Const, ConstX, Load, Unit1, Anchor, UnitW, Smp1, Smp12, Unit12,
++            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv,
 +        ]
 +    }
 +    pub fn reads_a(self) -> bool {
 +        use Op::*;
 +        matches!(
 +            self,
-+            Mul | Add | Sub | Unit1 | UnitW3 | Unit12 | Horn | Bit | Zero | KeyC | DblAdd
++            Mul | Add | Sub | Unit1 | UnitW | Unit12 | Horn | Bit | Zero | DblAdd
 +                | MulAddA | Pv
 +        )
 +    }
@@ -3231,770 +3277,12 @@ index 0000000..4d53d30
 +        [self.a, self.b + ((self.op as u32) << ADDR_BITS), self.k1, self.k2]
 +    }
 +}
-diff --git a/crates/recursion/src/nv/merkle.rs b/crates/recursion/src/nv/merkle.rs
-new file mode 100644
-index 0000000..51d497d
---- /dev/null
-+++ b/crates/recursion/src/nv/merkle.rs
-@@ -0,0 +1,364 @@
-+//! NV Merkle AIR: one SHA-384 node compression per row.  Per path: 2^k - 1 coset-tree
-+//! rows (leaf digests from the leaf jobs, internal results over a permutation bus),
-+//! then `depth` path rows (cur = previous row's output, direction bit from the ALU's bit
-+//! keys); the last row's output must equal the commitment key offered by the ALU.
-+use core::{
-+    array,
-+    borrow::{Borrow, BorrowMut},
-+};
-+
-+use openvm_recursion_circuit_derive::AlignedBorrow;
-+use openvm_stark_backend::{
-+    interaction::{BusIndex, InteractionBuilder, LookupBus, PermutationCheckBus},
-+    BaseAirWithPublicValues, PartitionedBaseAir,
-+};
-+use p3_air::{Air, AirBuilder, BaseAir};
-+use p3_field::{Field, PrimeCharacteristicRing};
-+use p3_matrix::{dense::RowMajorMatrix, Matrix};
-+
-+use super::builder::MerklePath;
-+use crate::{
-+    sha384::{
-+        airs::{iv_limbs, ShaBusInventory},
-+        compress_trace::Comp,
-+        config::{digest_to_limbs, word_limbs, Digest, ShaHasher, DIGEST_SIZE, F},
-+    },
-+    transcript::merkle_verify::{node_comp, NODE_WORD},
-+};
-+
-+#[repr(C)]
-+#[derive(AlignedBorrow, Debug)]
-+pub struct MerkleNvCols<T> {
-+    pub valid: T,
-+    pub path_id: T,
-+    pub qid: T,
-+    pub job_base: T,
-+    pub commit_id: T,
-+    pub depth: T,
-+    pub is_comb: T,
-+    pub lvl0: T,
-+    pub croot: T,
-+    pub level: T,
-+    pub cidx: T,
-+    pub wid: T,
-+    pub lastc: T,
-+    pub inv_c: T,
-+    pub bit: T,
-+    pub is_last: T,
-+    /// first row of a path
-+    pub start: T,
-+    /// = is_comb * (1 - lastc)
-+    pub cnl: T,
-+    /// = is_comb * lastc - croot
-+    pub clv: T,
-+    pub cid: T,
-+    pub cur: [T; DIGEST_SIZE],
-+    pub sib: [T; DIGEST_SIZE],
-+    pub out: [T; DIGEST_SIZE],
-+    pub out67: [T; 8],
-+}
-+pub const MERKLE_WIDTH: usize = MerkleNvCols::<u8>::width();
-+
-+pub struct MerkleNvAir {
-+    pub sha: ShaBusInventory,
-+    pub key: BusIndex,
-+    pub internal: BusIndex,
-+    pub k: usize,
-+}
-+impl<T> BaseAir<T> for MerkleNvAir {
-+    fn width(&self) -> usize {
-+        MERKLE_WIDTH
-+    }
-+}
-+impl<T> BaseAirWithPublicValues<T> for MerkleNvAir {}
-+impl<T> PartitionedBaseAir<T> for MerkleNvAir {}
-+
-+impl<AB: AirBuilder + InteractionBuilder> Air<AB> for MerkleNvAir {
-+    fn eval(&self, builder: &mut AB) {
-+        let main = builder.main();
-+        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
-+        let l: &MerkleNvCols<AB::Var> = (*local).borrow();
-+        let n: &MerkleNvCols<AB::Var> = (*next).borrow();
-+        let one = AB::Expr::ONE;
-+        let c = |v: u64| AB::Expr::from_u64(v);
-+        for x in [l.valid, l.is_comb, l.lvl0, l.croot, l.lastc, l.bit, l.is_last] {
-+            builder.assert_bool(x);
-+        }
-+        for x in [l.is_comb, l.is_last] {
-+            builder.when(x).assert_one(l.valid);
-+        }
-+        builder.when(l.is_comb).assert_zero(l.bit);
-+        builder.when(l.is_comb).assert_zero(l.is_last);
-+        builder.when(l.lvl0).assert_one(l.is_comb);
-+        builder.when(l.lvl0).assert_zero(l.level);
-+        builder.when(l.croot).assert_one(l.is_comb);
-+        builder.when(l.croot).assert_one(l.lastc);
-+        builder.when(l.croot).assert_eq(l.wid, one.clone());
-+        let d = l.cidx - (l.wid - one.clone());
-+        builder.assert_zero(l.lastc * d.clone());
-+        builder.assert_eq(d * l.inv_c, one.clone() - l.lastc);
-+        builder
-+            .when(l.is_last)
-+            .assert_eq(l.level, l.depth - one.clone());
-+
-+        // path start (first row, or after a last row)
-+        builder.assert_bool(l.start);
-+        builder.assert_eq(l.cnl, l.is_comb * (one.clone() - l.lastc));
-+        builder.assert_eq(l.clv, l.is_comb * l.lastc - l.croot);
-+        {
-+            let mut w = builder.when(l.start);
-+            w.assert_one(l.valid);
-+            w.assert_one(l.is_comb);
-+            w.assert_zero(l.level);
-+            w.assert_zero(l.cidx);
-+            w.assert_eq(l.wid, AB::Expr::from_usize(1 << (self.k - 1)));
-+        }
-+        builder.when_first_row().assert_eq(l.start, l.valid);
-+        {
-+            let mut t = builder.when_transition();
-+            t.assert_zero((one.clone() - l.valid) * n.valid);
-+            t.when(l.valid)
-+                .assert_zero((one.clone() - n.valid) * (one.clone() - l.is_last));
-+            t.when(n.valid).assert_eq(n.start, l.is_last);
-+            // within a path
-+            let same = n.valid - n.start;
-+            for (a, b) in [
-+                (n.path_id, l.path_id),
-+                (n.qid, l.qid),
-+                (n.job_base, l.job_base),
-+                (n.commit_id, l.commit_id),
-+                (n.depth, l.depth),
-+            ] {
-+                t.when(same.clone()).assert_eq(a, b);
-+            }
-+            let mut w = t.when(same.clone());
-+            w.when(l.cnl).assert_one(n.is_comb);
-+            w.when(l.cnl).assert_eq(n.level, l.level);
-+            w.when(l.cnl).assert_eq(n.cidx, l.cidx + one.clone());
-+            w.when(l.cnl).assert_eq(n.wid, l.wid);
-+            w.when(l.clv).assert_one(n.is_comb);
-+            w.when(l.clv).assert_eq(n.level, l.level + one.clone());
-+            w.when(l.clv).assert_zero(n.cidx);
-+            w.when(l.clv).assert_eq(n.wid.into() * AB::Expr::TWO, l.wid);
-+            w.when(l.croot).assert_zero(n.is_comb);
-+            w.when(l.croot).assert_zero(n.level);
-+            let pr = one.clone() - l.is_comb;
-+            w.when(pr.clone()).assert_zero(n.is_comb);
-+            w.when(pr).assert_eq(n.level, l.level + one.clone());
-+            // cur flows into path rows
-+            for i in 0..DIGEST_SIZE {
-+                t.when(n.valid - n.is_comb).assert_eq(n.cur[i], l.out[i]);
-+            }
-+        }
-+        builder
-+            .when_last_row()
-+            .assert_zero(l.valid * (one.clone() - l.is_last));
-+
-+        // data
-+        let digest = self.sha.digest_bus();
-+        let internal = PermutationCheckBus::new(self.internal);
-+        let msg = |head: Vec<AB::Expr>, v: &[AB::Var]| -> Vec<AB::Expr> {
-+            head.into_iter().chain(v.iter().map(|&x| x.into())).collect()
-+        };
-+        let jl = l.job_base + l.cidx * AB::Expr::TWO;
-+        digest.receive(builder, msg(vec![jl.clone()], &l.cur), l.lvl0);
-+        digest.receive(builder, msg(vec![jl + one.clone()], &l.sib), l.lvl0);
-+        let up = l.is_comb - l.lvl0;
-+        let lm = l.level - one.clone();
-+        internal.receive(
-+            builder,
-+            msg(vec![l.path_id.into(), lm.clone(), l.cidx * AB::Expr::TWO], &l.cur),
-+            up.clone(),
-+        );
-+        internal.receive(
-+            builder,
-+            msg(
-+                vec![l.path_id.into(), lm, l.cidx * AB::Expr::TWO + one.clone()],
-+                &l.sib,
-+            ),
-+            up,
-+        );
-+        internal.send(
-+            builder,
-+            msg(vec![l.path_id.into(), l.level.into(), l.cidx.into()], &l.out),
-+            l.is_comb - l.croot,
-+        );
-+        // keys
-+        let key = LookupBus::new(self.key);
-+        let pad = |mut v: Vec<AB::Expr>| -> Vec<AB::Expr> {
-+            v.resize(15, AB::Expr::ZERO);
-+            v
-+        };
-+        key.lookup_key(
-+            builder,
-+            pad(vec![
-+                c(1),
-+                l.path_id.into(),
-+                l.job_base.into(),
-+                l.qid.into(),
-+                l.commit_id + l.depth * c(256),
-+            ]),
-+            l.valid,
-+        );
-+        key.lookup_key(
-+            builder,
-+            pad(vec![c(2), l.qid.into(), l.level.into(), l.bit.into()]),
-+            l.valid - l.is_comb,
-+        );
-+        for half in 0..2 {
-+            key.lookup_key(
-+                builder,
-+                msg(
-+                    vec![c(0), l.commit_id.into(), c(half)],
-+                    &l.out[12 * half as usize..12 * half as usize + 12],
-+                ),
-+                l.is_last,
-+            );
-+        }
-+        // SHA node compression
-+        let left: [AB::Expr; DIGEST_SIZE] =
-+            array::from_fn(|i| l.cur[i] + l.bit * (l.sib[i] - l.cur[i]));
-+        let right: [AB::Expr; DIGEST_SIZE] =
-+            array::from_fn(|i| l.sib[i] + l.bit * (l.cur[i] - l.sib[i]));
-+        let word = |w: u64| -> [AB::Expr; 4] { array::from_fn(|k| c((w >> (16 * k)) & 0xffff)) };
-+        let iv = iv_limbs();
-+        let mut words: Vec<[AB::Expr; 4]> = (0..8)
-+            .map(|q| array::from_fn(|k| c(iv[4 * q + k] as u64)))
-+            .collect();
-+        words.push(word(NODE_WORD));
-+        for d in [&left, &right] {
-+            for q in 0..6 {
-+                words.push(array::from_fn(|k| d[4 * q + k].clone()));
-+            }
-+        }
-+        words.push(word(0x80u64 << 56));
-+        words.push(word(0));
-+        words.push(word(832));
-+        for q in 0..6 {
-+            words.push(array::from_fn(|k| l.out[4 * q + k].into()));
-+        }
-+        for q in 0..2 {
-+            words.push(array::from_fn(|k| l.out67[4 * q + k].into()));
-+        }
-+        let iface = self.sha.iface_bus();
-+        for (idx, w) in words.into_iter().enumerate() {
-+            let [w0, w1, w2, w3] = w;
-+            iface.receive(
-+                builder,
-+                [l.cid.into(), c(idx as u64), w0, w1, w2, w3],
-+                l.valid,
-+            );
-+        }
-+    }
-+}
-+
-+/// Merkle trace (cid = node index; remapped once the compression split is known) and the
-+/// node compressions in row order.
-+pub fn merkle_trace(paths: &[MerklePath], k: usize, min_h: usize) -> (RowMajorMatrix<F>, Vec<Comp>) {
-+    let rows_per = |p: &MerklePath| (1usize << k) - 1 + p.siblings.len();
-+    let n: usize = paths.iter().map(rows_per).sum();
-+    let h = n.next_power_of_two().max(2).max(min_h);
-+    let mut t = F::zero_vec(h * MERKLE_WIDTH);
-+    let mut comps = Vec::with_capacity(n);
-+    let mut row = 0usize;
-+    let set = |dst: &mut [F; DIGEST_SIZE], d: Digest| *dst = digest_to_limbs(d);
-+    for p in paths {
-+        let mut layer: Vec<Digest> = p.leaf_digests.clone();
-+        let mut level = 0usize;
-+        // coset tree
-+        while layer.len() > 1 {
-+            let wid = layer.len() / 2;
-+            let mut nextl = vec![];
-+            for i in 0..wid {
-+                let r: &mut MerkleNvCols<F> =
-+                    t[row * MERKLE_WIDTH..(row + 1) * MERKLE_WIDTH].borrow_mut();
-+                let (lft, rgt) = (layer[2 * i], layer[2 * i + 1]);
-+                fill_common(r, p);
-+                r.is_comb = F::ONE;
-+                r.lvl0 = F::from_bool(level == 0);
-+                r.croot = F::from_bool(wid == 1);
-+                r.start = F::from_bool(level == 0 && i == 0);
-+                r.level = F::from_usize(level);
-+                r.cidx = F::from_usize(i);
-+                r.wid = F::from_usize(wid);
-+                fill_last(r);
-+                set(&mut r.cur, lft);
-+                set(&mut r.sib, rgt);
-+                let (comp, out) = node_comp(lft, rgt);
-+                fill_out(r, &out, comps.len());
-+                comps.push(comp);
-+                nextl.push(ShaHasher_compress(lft, rgt));
-+                row += 1;
-+            }
-+            layer = nextl;
-+            level += 1;
-+        }
-+        let mut cur = layer[0];
-+        let mut idx = p.index;
-+        for (lv, &sib) in p.siblings.iter().enumerate() {
-+            let r: &mut MerkleNvCols<F> =
-+                t[row * MERKLE_WIDTH..(row + 1) * MERKLE_WIDTH].borrow_mut();
-+            fill_common(r, p);
-+            let bit = idx & 1 == 1;
-+            r.bit = F::from_bool(bit);
-+            r.level = F::from_usize(lv);
-+            r.cidx = F::ZERO;
-+            r.wid = F::ONE;
-+            fill_last(r);
-+            r.is_last = F::from_bool(lv + 1 == p.siblings.len());
-+            set(&mut r.cur, cur);
-+            set(&mut r.sib, sib);
-+            let (l, rr) = if bit { (sib, cur) } else { (cur, sib) };
-+            let (comp, out) = node_comp(l, rr);
-+            fill_out(r, &out, comps.len());
-+            comps.push(comp);
-+            cur = ShaHasher_compress(l, rr);
-+            idx >>= 1;
-+            row += 1;
-+        }
-+        debug_assert_eq!(cur, p.root, "merkle root mismatch");
-+    }
-+    // padding rows: satisfy the lastc gadget (cidx = 0, wid = 0 -> d = 1, inv = 1)
-+    for r in row..h {
-+        let c: &mut MerkleNvCols<F> = t[r * MERKLE_WIDTH..(r + 1) * MERKLE_WIDTH].borrow_mut();
-+        c.inv_c = F::ONE;
-+    }
-+    (RowMajorMatrix::new(t, MERKLE_WIDTH), comps)
-+}
-+
-+#[allow(non_snake_case)]
-+fn ShaHasher_compress(l: Digest, r: Digest) -> Digest {
-+    use openvm_stark_backend::hasher::MerkleHasher;
-+    ShaHasher.compress(l, r)
-+}
-+
-+fn fill_common(r: &mut MerkleNvCols<F>, p: &MerklePath) {
-+    r.valid = F::ONE;
-+    r.path_id = F::from_u32(p.path_id);
-+    r.qid = F::from_u32(p.qid);
-+    r.job_base = F::from_u32(p.job_base);
-+    r.commit_id = F::from_u32(p.commit_id);
-+    r.depth = F::from_usize(p.siblings.len());
-+}
-+fn fill_last(r: &mut MerkleNvCols<F>) {
-+    let d = r.cidx - (r.wid - F::ONE);
-+    r.lastc = F::from_bool(d == F::ZERO);
-+    r.inv_c = if d == F::ZERO { F::ZERO } else { d.inverse() };
-+    r.cnl = r.is_comb * (F::ONE - r.lastc);
-+    r.clv = r.is_comb * r.lastc - r.croot;
-+}
-+fn fill_out(r: &mut MerkleNvCols<F>, out: &[u64; 8], node_idx: usize) {
-+    for q in 0..6 {
-+        let l = word_limbs(out[q]);
-+        for k in 0..4 {
-+            r.out[4 * q + k] = F::from_u32(l[k]);
-+        }
-+    }
-+    for q in 0..2 {
-+        let l = word_limbs(out[6 + q]);
-+        for k in 0..4 {
-+            r.out67[4 * q + k] = F::from_u32(l[k]);
-+        }
-+    }
-+    r.cid = F::from_usize(node_idx);
-+}
-diff --git a/crates/recursion/src/nv/merkle2.rs b/crates/recursion/src/nv/merkle2.rs
-new file mode 100644
-index 0000000..2b31338
---- /dev/null
-+++ b/crates/recursion/src/nv/merkle2.rs
-@@ -0,0 +1,382 @@
-+//! NV Merkle AIR, word format v2 (18-limb digests, pair interface): one SHA-384 node compression per row.  Per path: 2^k - 1 coset-tree
-+//! rows (leaf digests from the leaf jobs, internal results over a permutation bus),
-+//! then `depth` path rows (cur = previous row's output, direction bit from the ALU's bit
-+//! keys); the last row's output must equal the commitment key offered by the ALU.
-+use core::{
-+    array,
-+    borrow::{Borrow, BorrowMut},
-+};
-+
-+use openvm_recursion_circuit_derive::AlignedBorrow;
-+use openvm_stark_backend::{
-+    interaction::{BusIndex, InteractionBuilder, LookupBus, PermutationCheckBus},
-+    BaseAirWithPublicValues, PartitionedBaseAir,
-+};
-+use p3_air::{Air, AirBuilder, BaseAir};
-+use p3_field::{Field, PrimeCharacteristicRing};
-+use p3_matrix::{dense::RowMajorMatrix, Matrix};
-+
-+use super::{
-+    builder::MerklePath,
-+    fmt::{digest_limbs, wl, NV_DIGEST},
-+    hash::{iv_limbs18, HashBuses},
-+};
-+use crate::{
-+    sha384::{
-+        compress2_trace::{sha2_compress, Comp, SHA384_IV},
-+        config::{node_message, Digest, ShaHasher, F},
-+    },
-+    transcript::merkle_verify::NODE_WORD,
-+};
-+
-+const DIGEST_SIZE: usize = NV_DIGEST;
-+
-+/// The single compression of a Merkle node and its full output state.
-+pub fn node_comp2(left: Digest, right: Digest) -> (Comp, [u64; 8]) {
-+    let mut m = [0u8; 128];
-+    m[..104].copy_from_slice(&node_message(left, right));
-+    m[104] = 0x80;
-+    m[120..].copy_from_slice(&(832u64).to_be_bytes());
-+    let block = std::array::from_fn(|i| u64::from_be_bytes(m[8 * i..8 * i + 8].try_into().unwrap()));
-+    let c = Comp { h: SHA384_IV, block };
-+    let out = sha2_compress(&c);
-+    (c, out)
-+}
-+
-+#[repr(C)]
-+#[derive(AlignedBorrow, Debug)]
-+pub struct Merkle2Cols<T> {
-+    pub valid: T,
-+    pub path_id: T,
-+    pub qid: T,
-+    pub job_base: T,
-+    pub commit_id: T,
-+    pub depth: T,
-+    pub is_comb: T,
-+    pub lvl0: T,
-+    pub croot: T,
-+    pub level: T,
-+    pub cidx: T,
-+    pub wid: T,
-+    pub lastc: T,
-+    pub inv_c: T,
-+    pub bit: T,
-+    pub is_last: T,
-+    /// first row of a path
-+    pub start: T,
-+    /// = is_comb * (1 - lastc)
-+    pub cnl: T,
-+    /// = is_comb * lastc - croot
-+    pub clv: T,
-+    pub cid: T,
-+    pub cur: [T; DIGEST_SIZE],
-+    pub sib: [T; DIGEST_SIZE],
-+    pub out: [T; DIGEST_SIZE],
-+    pub out67: [T; 6],
-+}
-+pub const MERKLE2_WIDTH: usize = Merkle2Cols::<u8>::width();
-+
-+pub struct Merkle2Air {
-+    pub sha: HashBuses,
-+    pub key: BusIndex,
-+    pub internal: BusIndex,
-+    pub k: usize,
-+}
-+impl<T> BaseAir<T> for Merkle2Air {
-+    fn width(&self) -> usize {
-+        MERKLE2_WIDTH
-+    }
-+}
-+impl<T> BaseAirWithPublicValues<T> for Merkle2Air {}
-+impl<T> PartitionedBaseAir<T> for Merkle2Air {}
-+
-+impl<AB: AirBuilder + InteractionBuilder> Air<AB> for Merkle2Air {
-+    fn eval(&self, builder: &mut AB) {
-+        let main = builder.main();
-+        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
-+        let l: &Merkle2Cols<AB::Var> = (*local).borrow();
-+        let n: &Merkle2Cols<AB::Var> = (*next).borrow();
-+        let one = AB::Expr::ONE;
-+        let c = |v: u64| AB::Expr::from_u64(v);
-+        for x in [l.valid, l.is_comb, l.lvl0, l.croot, l.lastc, l.bit, l.is_last] {
-+            builder.assert_bool(x);
-+        }
-+        for x in [l.is_comb, l.is_last] {
-+            builder.when(x).assert_one(l.valid);
-+        }
-+        builder.when(l.is_comb).assert_zero(l.bit);
-+        builder.when(l.is_comb).assert_zero(l.is_last);
-+        builder.when(l.lvl0).assert_one(l.is_comb);
-+        builder.when(l.lvl0).assert_zero(l.level);
-+        builder.when(l.croot).assert_one(l.is_comb);
-+        builder.when(l.croot).assert_one(l.lastc);
-+        builder.when(l.croot).assert_eq(l.wid, one.clone());
-+        let d = l.cidx - (l.wid - one.clone());
-+        builder.assert_zero(l.lastc * d.clone());
-+        builder.assert_eq(d * l.inv_c, one.clone() - l.lastc);
-+        builder
-+            .when(l.is_last)
-+            .assert_eq(l.level, l.depth - one.clone());
-+
-+        // path start (first row, or after a last row)
-+        builder.assert_bool(l.start);
-+        builder.assert_eq(l.cnl, l.is_comb * (one.clone() - l.lastc));
-+        builder.assert_eq(l.clv, l.is_comb * l.lastc - l.croot);
-+        {
-+            let mut w = builder.when(l.start);
-+            w.assert_one(l.valid);
-+            w.assert_one(l.is_comb);
-+            w.assert_zero(l.level);
-+            w.assert_zero(l.cidx);
-+            w.assert_eq(l.wid, AB::Expr::from_usize(1 << (self.k - 1)));
-+        }
-+        builder.when_first_row().assert_eq(l.start, l.valid);
-+        {
-+            let mut t = builder.when_transition();
-+            t.assert_zero((one.clone() - l.valid) * n.valid);
-+            t.when(l.valid)
-+                .assert_zero((one.clone() - n.valid) * (one.clone() - l.is_last));
-+            t.when(n.valid).assert_eq(n.start, l.is_last);
-+            // within a path
-+            let same = n.valid - n.start;
-+            for (a, b) in [
-+                (n.path_id, l.path_id),
-+                (n.qid, l.qid),
-+                (n.job_base, l.job_base),
-+                (n.commit_id, l.commit_id),
-+                (n.depth, l.depth),
-+            ] {
-+                t.when(same.clone()).assert_eq(a, b);
-+            }
-+            let mut w = t.when(same.clone());
-+            w.when(l.cnl).assert_one(n.is_comb);
-+            w.when(l.cnl).assert_eq(n.level, l.level);
-+            w.when(l.cnl).assert_eq(n.cidx, l.cidx + one.clone());
-+            w.when(l.cnl).assert_eq(n.wid, l.wid);
-+            w.when(l.clv).assert_one(n.is_comb);
-+            w.when(l.clv).assert_eq(n.level, l.level + one.clone());
-+            w.when(l.clv).assert_zero(n.cidx);
-+            w.when(l.clv).assert_eq(n.wid.into() * AB::Expr::TWO, l.wid);
-+            w.when(l.croot).assert_zero(n.is_comb);
-+            w.when(l.croot).assert_zero(n.level);
-+            let pr = one.clone() - l.is_comb;
-+            w.when(pr.clone()).assert_zero(n.is_comb);
-+            w.when(pr).assert_eq(n.level, l.level + one.clone());
-+            // cur flows into path rows
-+            for i in 0..DIGEST_SIZE {
-+                t.when(n.valid - n.is_comb).assert_eq(n.cur[i], l.out[i]);
-+            }
-+        }
-+        builder
-+            .when_last_row()
-+            .assert_zero(l.valid * (one.clone() - l.is_last));
-+
-+        // data
-+        let digest = PermutationCheckBus::new(self.sha.digest);
-+        let internal = PermutationCheckBus::new(self.internal);
-+        let msg = |head: Vec<AB::Expr>, v: &[AB::Var]| -> Vec<AB::Expr> {
-+            head.into_iter().chain(v.iter().map(|&x| x.into())).collect()
-+        };
-+        let jl = l.job_base + l.cidx * AB::Expr::TWO;
-+        let _ = &digest;
-+        let cur: Vec<AB::Expr> = l.cur.iter().map(|&x| x.into()).collect();
-+        let sib: Vec<AB::Expr> = l.sib.iter().map(|&x| x.into()).collect();
-+        self.sha.receive_digest(builder, jl.clone(), &cur, l.lvl0);
-+        self.sha.receive_digest(builder, jl + one.clone(), &sib, l.lvl0);
-+        let up = l.is_comb - l.lvl0;
-+        let lm = l.level - one.clone();
-+        internal.receive(
-+            builder,
-+            msg(vec![l.path_id.into(), lm.clone(), l.cidx * AB::Expr::TWO], &l.cur),
-+            up.clone(),
-+        );
-+        internal.receive(
-+            builder,
-+            msg(
-+                vec![l.path_id.into(), lm, l.cidx * AB::Expr::TWO + one.clone()],
-+                &l.sib,
-+            ),
-+            up,
-+        );
-+        internal.send(
-+            builder,
-+            msg(vec![l.path_id.into(), l.level.into(), l.cidx.into()], &l.out),
-+            l.is_comb - l.croot,
-+        );
-+        // keys
-+        let key = LookupBus::new(self.key);
-+        let pad = |mut v: Vec<AB::Expr>| -> Vec<AB::Expr> {
-+            v.resize(15, AB::Expr::ZERO);
-+            v
-+        };
-+        key.lookup_key(
-+            builder,
-+            pad(vec![
-+                c(1),
-+                l.path_id.into(),
-+                l.job_base.into(),
-+                l.qid.into(),
-+                l.commit_id + l.depth * c(256),
-+            ]),
-+            l.valid,
-+        );
-+        key.lookup_key(
-+            builder,
-+            pad(vec![c(2), l.qid.into(), l.level.into(), l.bit.into()]),
-+            l.valid - l.is_comb,
-+        );
-+        for half in 0..2usize {
-+            key.lookup_key(
-+                builder,
-+                pad(msg(
-+                    vec![c(0), l.commit_id.into(), c(half as u64)],
-+                    &l.out[9 * half..9 * half + 9],
-+                )),
-+                l.is_last,
-+            );
-+        }
-+        // SHA node compression
-+        let left: [AB::Expr; DIGEST_SIZE] =
-+            array::from_fn(|i| l.cur[i] + l.bit * (l.sib[i] - l.cur[i]));
-+        let right: [AB::Expr; DIGEST_SIZE] =
-+            array::from_fn(|i| l.sib[i] + l.bit * (l.cur[i] - l.sib[i]));
-+        let word = |w: u64| -> [AB::Expr; 3] { super::fmt::const_limbs::<AB::Expr>(w) };
-+        let iv = iv_limbs18();
-+        let mut words: Vec<[AB::Expr; 3]> = (0..8)
-+            .map(|q| array::from_fn(|k| c(iv[3 * q + k] as u64)))
-+            .collect();
-+        words.push(word(NODE_WORD));
-+        for d in [&left, &right] {
-+            for q in 0..6 {
-+                words.push(array::from_fn(|k| d[3 * q + k].clone()));
-+            }
-+        }
-+        words.push(word(0x80u64 << 56));
-+        words.push(word(0));
-+        words.push(word(832));
-+        for q in 0..6 {
-+            words.push(array::from_fn(|k| l.out[3 * q + k].into()));
-+        }
-+        for q in 0..2 {
-+            words.push(array::from_fn(|k| l.out67[3 * q + k].into()));
-+        }
-+        let iface = PermutationCheckBus::new(self.sha.iface);
-+        for m in 0..16 {
-+            let mut msg = vec![l.cid.into(), c(m as u64)];
-+            msg.extend(words[2 * m].iter().cloned());
-+            msg.extend(words[2 * m + 1].iter().cloned());
-+            iface.receive(builder, msg, l.valid);
-+        }
-+    }
-+}
-+
-+/// Merkle trace (cid = node index; remapped once the compression split is known) and the
-+/// node compressions in row order.
-+pub fn merkle2_trace(paths: &[MerklePath], k: usize, min_h: usize) -> (RowMajorMatrix<F>, Vec<Comp>) {
-+    let rows_per = |p: &MerklePath| (1usize << k) - 1 + p.siblings.len();
-+    let n: usize = paths.iter().map(rows_per).sum();
-+    let h = n.next_power_of_two().max(2).max(min_h);
-+    let mut t = F::zero_vec(h * MERKLE2_WIDTH);
-+    let mut comps = Vec::with_capacity(n);
-+    let mut row = 0usize;
-+    let set = |dst: &mut [F; DIGEST_SIZE], d: Digest| *dst = digest_limbs(d);
-+    for p in paths {
-+        let mut layer: Vec<Digest> = p.leaf_digests.clone();
-+        let mut level = 0usize;
-+        // coset tree
-+        while layer.len() > 1 {
-+            let wid = layer.len() / 2;
-+            let mut nextl = vec![];
-+            for i in 0..wid {
-+                let r: &mut Merkle2Cols<F> =
-+                    t[row * MERKLE2_WIDTH..(row + 1) * MERKLE2_WIDTH].borrow_mut();
-+                let (lft, rgt) = (layer[2 * i], layer[2 * i + 1]);
-+                fill_common(r, p);
-+                r.is_comb = F::ONE;
-+                r.lvl0 = F::from_bool(level == 0);
-+                r.croot = F::from_bool(wid == 1);
-+                r.start = F::from_bool(level == 0 && i == 0);
-+                r.level = F::from_usize(level);
-+                r.cidx = F::from_usize(i);
-+                r.wid = F::from_usize(wid);
-+                fill_last(r);
-+                set(&mut r.cur, lft);
-+                set(&mut r.sib, rgt);
-+                let (comp, out) = node_comp2(lft, rgt);
-+                fill_out(r, &out, comps.len());
-+                comps.push(comp);
-+                nextl.push(ShaHasher_compress(lft, rgt));
-+                row += 1;
-+            }
-+            layer = nextl;
-+            level += 1;
-+        }
-+        let mut cur = layer[0];
-+        let mut idx = p.index;
-+        for (lv, &sib) in p.siblings.iter().enumerate() {
-+            let r: &mut Merkle2Cols<F> =
-+                t[row * MERKLE2_WIDTH..(row + 1) * MERKLE2_WIDTH].borrow_mut();
-+            fill_common(r, p);
-+            let bit = idx & 1 == 1;
-+            r.bit = F::from_bool(bit);
-+            r.level = F::from_usize(lv);
-+            r.cidx = F::ZERO;
-+            r.wid = F::ONE;
-+            fill_last(r);
-+            r.is_last = F::from_bool(lv + 1 == p.siblings.len());
-+            set(&mut r.cur, cur);
-+            set(&mut r.sib, sib);
-+            let (l, rr) = if bit { (sib, cur) } else { (cur, sib) };
-+            let (comp, out) = node_comp2(l, rr);
-+            fill_out(r, &out, comps.len());
-+            comps.push(comp);
-+            cur = ShaHasher_compress(l, rr);
-+            idx >>= 1;
-+            row += 1;
-+        }
-+        debug_assert_eq!(cur, p.root, "merkle root mismatch");
-+    }
-+    // padding rows: satisfy the lastc gadget (cidx = 0, wid = 0 -> d = 1, inv = 1)
-+    for r in row..h {
-+        let c: &mut Merkle2Cols<F> = t[r * MERKLE2_WIDTH..(r + 1) * MERKLE2_WIDTH].borrow_mut();
-+        c.inv_c = F::ONE;
-+    }
-+    (RowMajorMatrix::new(t, MERKLE2_WIDTH), comps)
-+}
-+
-+#[allow(non_snake_case)]
-+fn ShaHasher_compress(l: Digest, r: Digest) -> Digest {
-+    use openvm_stark_backend::hasher::MerkleHasher;
-+    ShaHasher.compress(l, r)
-+}
-+
-+fn fill_common(r: &mut Merkle2Cols<F>, p: &MerklePath) {
-+    r.valid = F::ONE;
-+    r.path_id = F::from_u32(p.path_id);
-+    r.qid = F::from_u32(p.qid);
-+    r.job_base = F::from_u32(p.job_base);
-+    r.commit_id = F::from_u32(p.commit_id);
-+    r.depth = F::from_usize(p.siblings.len());
-+}
-+fn fill_last(r: &mut Merkle2Cols<F>) {
-+    let d = r.cidx - (r.wid - F::ONE);
-+    r.lastc = F::from_bool(d == F::ZERO);
-+    r.inv_c = if d == F::ZERO { F::ZERO } else { d.inverse() };
-+    r.cnl = r.is_comb * (F::ONE - r.lastc);
-+    r.clv = r.is_comb * r.lastc - r.croot;
-+}
-+fn fill_out(r: &mut Merkle2Cols<F>, out: &[u64; 8], node_idx: usize) {
-+    for q in 0..6 {
-+        let l = wl(out[q]);
-+        for k in 0..3 {
-+            r.out[3 * q + k] = F::from_u32(l[k]);
-+        }
-+    }
-+    for q in 0..2 {
-+        let l = wl(out[6 + q]);
-+        for k in 0..3 {
-+            r.out67[3 * q + k] = F::from_u32(l[k]);
-+        }
-+    }
-+    r.cid = F::from_usize(node_idx);
-+}
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 new file mode 100644
-index 0000000..77850ed
+index 0000000..df6e338
 --- /dev/null
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,14 @@
 +//! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
 +pub mod builder;
 +pub mod circuit;
@@ -4002,8 +3290,6 @@ index 0000000..77850ed
 +pub mod glue;
 +pub mod hash;
 +pub mod isa;
-+pub mod merkle;
-+pub mod merkle2;
 +pub mod transcript2;
 +pub mod uair;
 +pub mod verifier;
@@ -4013,7 +3299,7 @@ index 0000000..77850ed
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..c294335
+index 0000000..9edb917
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
 @@ -0,0 +1,326 @@
@@ -4047,7 +3333,7 @@ index 0000000..c294335
 +fn nv_program_fib() {
 +    let (b, b2) = build(&FibFixture::new(0, 1, 1 << 5));
 +    assert!(b.failures.is_empty(), "{:?}", b.failures);
-+    println!("NV_PROGRAM_ROWS {} jobs={} paths={}", b.instrs.len(), b.job_units.len(), b.paths.len());
++    println!("NV_PROGRAM_ROWS {} jobs={} merkle_nodes={}", b.instrs.len(), b.job_units.len(), b.merkle_nodes);
 +    assert_eq!(b.instrs, b2.instrs, "program depends on proof values");
 +}
 +
@@ -4299,8 +3585,8 @@ index 0000000..c294335
 +                a.symbolic_constraints.interactions.len()
 +            );
 +        }
-+        let merkle_rows: usize = b.paths.iter().map(|p| 7 + p.siblings.len()).sum();
-+        let blocks: usize = b.jobs().iter().map(|j| j.num_blocks()).sum::<usize>();
++        let merkle_rows: usize = b.merkle_nodes;
++        let blocks: usize = b.jobs().iter().filter(|j| !j.node).map(|j| j.num_blocks()).sum::<usize>();
 +        let l = (usize::BITS - (ints - 1).leading_zeros()) as usize;
 +        println!(
 +            "{tag}_SUMMARY cols={cols} opened={opened} interactions={ints} L={l} cells={cells} sha_cells={sha_cells} other_cells={} alu_used={} merkle_nodes={merkle_rows} leaf_blocks={blocks} prove_s={secs:.1}",
@@ -4345,7 +3631,7 @@ index 0000000..c294335
 +}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
-index 0000000..4d74501
+index 0000000..d545892
 --- /dev/null
 +++ b/crates/recursion/src/nv/transcript2.rs
 @@ -0,0 +1,631 @@
@@ -4474,7 +3760,7 @@ index 0000000..4d74501
 +            }
 +            Op2::Squeeze => TAG_SQUEEZE,
 +        };
-+        Job2 { id: self.id, tag, units }
++        Job2 { id: self.id, node: false, tag, units }
 +    }
 +}
 +
@@ -4982,10 +4268,10 @@ index 0000000..4d74501
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..d4c1739
+index 0000000..c572dae
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,401 @@
+@@ -0,0 +1,393 @@
 +//! NV merged non-SHA AIR ("UAIR"), stage U1: ALU rows and BIND rows share one column pool.
 +//!
 +//! * ALU rows (ka = 1), rows [0, 2^(H-1)): one Ext12 instruction (isa.rs) per row; row y
@@ -5040,7 +4326,7 @@ index 0000000..d4c1739
 +    pub mem: BusIndex,
 +    pub slot: BusIndex,
 +    pub job: BusIndex,
-+    pub key: BusIndex,
++    pub digest: BusIndex,
 +    pub bind: BusIndex,
 +    pub acc: BusIndex,
 +}
@@ -5063,7 +4349,6 @@ index 0000000..d4c1739
 +    pub g: [T; OP_HI],
 +    pub wit: T,
 +    pub mult: T,
-+    pub kmult: T,
 +}
 +pub const U_WIDTH: usize = UCols::<u8>::width();
 +/// Column offsets used by tests / the binding check.
@@ -5137,13 +4422,8 @@ index 0000000..d4c1739
 +        let a: [AB::Expr; 12] = l.a.map(Into::into);
 +        let bb: [AB::Expr; 12] = l.b.map(Into::into);
 +        let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
-+        let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc);
-+        let copy_a = s(Op::Unit1)
-+            + s(Op::UnitW3)
-+            + s(Op::Unit12)
-+            + s(Op::Bit)
-+            + s(Op::KeyC)
-+            + s(Op::Pv);
++        let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig);
++        let copy_a = s(Op::Unit1) + s(Op::UnitW) + s(Op::Unit12) + s(Op::Bit) + s(Op::Pv);
 +        let mulab = s(Op::Mul) + s(Op::Horn);
 +        for k in 0..12 {
 +            let mut e = mulab.clone() * ab[k].clone()
@@ -5200,7 +4480,7 @@ index 0000000..d4c1739
 +        //   transcript anchors (chan 2, job P2, 0, 0, A, B, 0) are sent.
 +        let slot = PermutationCheckBus::new(self.buses.slot);
 +        let smp = s(Op::Smp1) + s(Op::Smp12);
-+        let chan = s(Op::Unit1) + s(Op::UnitW3) + s(Op::Unit12) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor).double();
++        let chan = s(Op::Unit1) + s(Op::UnitW) + s(Op::Unit12) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor).double();
 +        for k in 0..12usize {
 +            let kk = cst(k as u64);
 +            let mut send = s(Op::Unit12);
@@ -5212,17 +4492,20 @@ index 0000000..d4c1739
 +            if k == 1 {
 +                send += s(Op::Job);
 +            }
-+            if k < 3 {
-+                send += s(Op::UnitW3);
++            if k < 2 {
++                send += s(Op::UnitW);
++            } else if k < 4 {
++                // B in {2, 4}: words 2, 3 only for B = 4
++                send += s(Op::UnitW) * (bfield.clone() - cst(2)) * cst(p3_field::PrimeField32::as_canonical_u32(&F::TWO.inverse()) as u64);
 +            }
 +            let key1 = l.p[2] + s(Op::Smp12) * kk.clone();
 +            let mut key2 = s(Op::Unit12) * (l.p[3] + kk.clone())
-+                + s(Op::UnitW3) * (l.p[3] + cst(2 * k as u64))
++                + s(Op::UnitW) * (l.p[3] + cst(2 * k as u64))
 +                + s(Op::Job) * kk.clone();
 +            if k == 0 {
 +                key2 += (s(Op::Horn) + s(Op::Unit1)) * l.p[3];
 +            }
-+            let kind = s(Op::UnitW3).double() + smp.clone() * cst(KIND_SAMPLE as u64);
++            let kind = s(Op::UnitW).double() + smp.clone() * cst(KIND_SAMPLE as u64);
 +            let mut v = [AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO];
 +            v[0] = (s(Op::Unit12) + s(Op::Smp12)) * l.c[k];
 +            if k == 0 {
@@ -5232,31 +4515,27 @@ index 0000000..d4c1739
 +                    + s(Op::Anchor) * l.p[0];
 +                v[1] = s(Op::Anchor) * bfield.clone();
 +            }
-+            if k < 3 {
++            if k < 4 {
 +                for t in 0..3 {
-+                    v[t] += s(Op::UnitW3) * l.c[3 * k + t];
++                    v[t] += s(Op::UnitW) * l.c[3 * k + t];
 +                }
 +            }
 +            let [v0, v1, v2] = v;
 +            slot.send(builder, [chan.clone(), key1, key2, kind, v0, v1, v2], send - recv);
 +        }
-+        PermutationCheckBus::new(self.buses.job).send(builder, [l.p[2], l.p[0]], s(Op::Job));
-+        // keys: (type, P2, P3, m0..m11)
-+        let keyty = s(Op::KeyP) + s(Op::Bit).double();
-+        let mut msg = vec![keyty, l.p[2].into(), l.p[3].into()];
-+        for k in 0..12 {
-+            let mut m = s(Op::KeyC) * l.a[k];
-+            if k == 0 {
-+                m += s(Op::KeyP) * l.p[0] + s(Op::Bit) * l.a[0];
-+            }
-+            if k == 1 {
-+                m += s(Op::KeyP) * bfield.clone();
-+            }
-+            msg.push(m);
++        // job starts (leaf / node jobs): (job P2, tag P0)
++        PermutationCheckBus::new(self.buses.job).send(builder, [l.p[2], l.p[0]], s(Op::Job) + s(Op::NodeJob));
++        // digests: pairs P3, P3 + 1 (if B = 2) of job P2
++        let dig = PermutationCheckBus::new(self.buses.digest);
++        for h in 0..2usize {
++            let mut m = vec![l.p[2].into(), l.p[3] + cst(h as u64)];
++            m.extend((0..6).map(|t| l.c[6 * h + t].into()));
++            let mult = if h == 0 { s(Op::Dig) } else { s(Op::Dig) * (bfield.clone() - one.clone()) };
++            dig.receive(builder, m, mult);
 +        }
-+        let is_key = s(Op::KeyC) + s(Op::KeyP) + s(Op::Bit);
-+        builder.assert_zero(l.kmult * (one.clone() - is_key));
-+        LookupBus::new(self.buses.key).add_key_with_lookups(builder, msg, l.kmult);
++        for k in 6..12 {
++            builder.assert_zero(s(Op::Dig) * (cst(2) - bfield.clone()) * l.c[k]);
++        }
 +
 +        // ---------------- BIND role ----------------
 +        let w = ext_field_multiply::<AB::Expr>(a, bb);
@@ -5312,7 +4591,7 @@ index 0000000..d4c1739
 +
 +/// UAIR trace: ALU rows [0, 2^(H-1)) = the program (already padded to that length), then
 +/// one BIND row per ALU row.  E1 / E2 are read from `vals[ya]`, `vals[512 + yb]`.
-+pub fn u_trace(instrs: &[Instr], vals: &[EF], wits: &[F], key_mults: &[u32]) -> RowMajorMatrix<F> {
++pub fn u_trace(instrs: &[Instr], vals: &[EF], wits: &[F]) -> RowMajorMatrix<F> {
 +    let na = instrs.len();
 +    assert!(na.is_power_of_two() && na >= E1_SIZE);
 +    let h = 2 * na;
@@ -5347,7 +4626,6 @@ index 0000000..d4c1739
 +        r.g[v / OP_LO] = F::ONE;
 +        r.wit = wits[y];
 +        r.mult = F::from_u32(reads[y]);
-+        r.kmult = F::from_u32(key_mults[y]);
 +    }
 +    let tp = tau_pows();
 +    let mut acc = EF::ZERO;
@@ -5389,10 +4667,10 @@ index 0000000..d4c1739
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..b91540e
+index 0000000..0e7b62d
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1108 @@
+@@ -0,0 +1,1086 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -5413,7 +4691,7 @@ index 0000000..b91540e
 +    PrimeField32, TwoAdicField,
 +};
 +
-+use super::builder::{coeffs, Builder, DigestCells, MerklePath, V};
++use super::builder::{coeffs, Builder, DigestCells, V};
 +use crate::sha384::config::{Sha384Config, ShaHasher, EF, F};
 +
 +type SC = Sha384Config;
@@ -5675,7 +4953,6 @@ index 0000000..b91540e
 +    // ---- preamble ----
 +    b.const_commit(vk.pre_hash);
 +    let main_commit = b.load_commit(proof.common_main_commit);
-+    b.key_commit(0, &main_commit);
 +    let mut pv_cells: Vec<Vec<V>> = vec![];
 +    for (a, avk) in mvk.per_air.iter().enumerate() {
 +        if !avk.is_required {
@@ -6286,8 +5563,8 @@ index 0000000..b91540e
 +    let mut alphas: Vec<V> = vec![];
 +    let mut final_poly: Vec<V> = vec![];
 +    let num_commits = 1usize;
-+    let mut path_id = b.paths.len() as u32;
 +    let mut qid = 0u32;
++    let mut round_commits: Vec<DigestCells> = vec![];
 +    for round in 0..num_rounds {
 +        let is_initial = round == 0;
 +        let is_final = round == num_rounds - 1;
@@ -6309,7 +5586,7 @@ index 0000000..b91540e
 +            (None, None)
 +        } else {
 +            let cc = b.load_commit(w.codeword_commits[round]);
-+            b.key_commit((num_commits + round) as u32, &cc);
++            round_commits.push(cc);
 +            let z0 = b.smp12();
 +            z0s.push(z0);
 +            let y0 = b.load_obs(w.ood_values[round]);
@@ -6348,18 +5625,7 @@ index 0000000..b91540e
 +                let leaf_digests: Vec<_> = (0..(1 << k))
 +                    .map(|j| ShaHasher.hash_slice(&rows[0][qi][j]))
 +                    .collect();
-+                b.paths.push(MerklePath {
-+                    path_id,
-+                    qid,
-+                    commit_id: 0,
-+                    job_base,
-+                    leaf_digests,
-+                    siblings: w.initial_round_merkle_proofs[0][qi].clone(),
-+                    index,
-+                    root: main_commit.digest,
-+                });
-+                b.key_path(path_id, job_base, qid, 0, nbits as u32);
-+                path_id += 1;
++                b.merkle_path(job_base, &leaf_digests, &w.initial_round_merkle_proofs[0][qi], &bits, main_commit);
 +                vals
 +            } else {
 +                let vs = &w.codeword_opened_values[round - 1][qi];
@@ -6379,18 +5645,8 @@ index 0000000..b91540e
 +                    .iter()
 +                    .map(|v| ShaHasher.hash_slice(v.as_basis_coefficients_slice()))
 +                    .collect();
-+                b.paths.push(MerklePath {
-+                    path_id,
-+                    qid,
-+                    commit_id: round as u32,
-+                    job_base,
-+                    leaf_digests,
-+                    siblings: w.codeword_merkle_proofs[round - 1][qi].clone(),
-+                    index,
-+                    root: w.codeword_commits[round - 1],
-+                });
-+                b.key_path(path_id, job_base, qid, round as u32, nbits as u32);
-+                path_id += 1;
++                let root = round_commits[round - 1];
++                b.merkle_path(job_base, &leaf_digests, &w.codeword_merkle_proofs[round - 1][qi], &bits, &root);
 +                vals
 +            };
 +            // binary_k_fold(values, alphas_round, zi_root)
