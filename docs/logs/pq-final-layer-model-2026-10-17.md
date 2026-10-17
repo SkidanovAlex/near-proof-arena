@@ -447,3 +447,19 @@ So < 300 KB now needs, beyond the built levers: Gruen-style GKR (degree-(d−1) 
 polys), next-row openings only where referenced, a final circuit with few total columns,
 and fewer final cells (cheaper SHA AIR or fewer penultimate compressions). The real
 verifier circuit's column/interaction/non-SHA cell counts (recursion lane) decide it.
+
+**Recursion port measured** (`lane/pq-recursion-sha384` @ `5ea64c468`, report
+`results/pq-recursion-sha384/README.md`). OpenVM v2.1 `crates/recursion` ported to
+SHA-384/Ext12 (byte-identical transcript/Merkle vs `native_sha384_config.rs`, grinding
+implemented); verifies real SHA-384/Ext12 child proofs; 4 tamper classes rejected *by the
+circuit*. Stock Poseidon2 calibration: fixed point 8.79M cells, 256 KB at 100-bit, 1,537
+cols. Ported, proven 4-level chain at a 20-bit query target: 716 → 6,388 → 7,403 → 7,516
+compressions, 487–597 KB (compressions converge). 268-bit L1 proven: 1,318,194 B. 268-bit
+L2 trace: 30,332 compressions / 958M cells (model 19,688: second round-0 commit for the
+child vk/DAG + ≈ 3k blocks absorbing the child's column openings; proving needs ≈ 100 GB).
+**Blocker: OpenVM's 46-AIR verifier has 3,481–3,923 columns → 322–365 KB of column
+openings alone (+ ≈ 50 KB GKR, L = 25), independent of WHIR.** Columns cost twice:
+wire bytes in the final proof and transcript SHA in the parent. ⇒ The final (and
+penultimate) layer needs a purpose-built **narrow verifier circuit** (≤ ~500 opened
+columns incl. preprocessed, ≤ 2²² interactions, one narrow SHA AIR, Ext12 verifier logic
+as a small row-serial ALU), single round-0 commit (SHA `dag_commit`).
