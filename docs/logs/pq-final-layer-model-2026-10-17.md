@@ -417,3 +417,33 @@ DFTs are faster per point than one radix-2 DFT (2¹⁶×64: 5.6–8.5 s vs 11.3�
 Streamed LDE (modelled): 0.77–1.22 TB never materialised; ≤ 10 GiB/worker; 30–73 min
 on 8 threads, minutes on 192 cores. Open: recursion circuit needs the sampler, 15-point
 table, +4 Merkle depth; cpu/cuda backends not ported.
+
+**Gate 2 confirmed, gate 5 corrects the model** (`lane/pq-whir-levers` @ `f5dc91757`,
+report `results/pq-whir-levers/README.md`). All levers implemented natively behind
+parameters (defaults byte-identical to gas-failure5, 142 upstream tests pass): grinding
+(≤ z = 28; z ≥ 29 needs a 2-element witness), 42-B digests, k1, m, coset-as-one-message
+leaves, Merkle multiproof, non-halving domains. Gas-failure5 with grinding + 42 B + m=8 +
+coset + multiproof: 378,849 → 246,016 B, 10,227 → 4,898 verify compressions. **Gate 2:
+coset leaves 6,956 measured vs 6,947 predicted.** Grinding 3–5·10⁷ SHA-384/s on 8
+threads → z = 32 ≈ 1.5–2.5 min/round on this CPU. **Gate 5** (460-col dummy at the
+model's best shape, measured W ≤ 15, extrapolated with laws exact at 3 widths): WHIR
+matches the model (auth −0.5 %, initial/codeword/final exact) but three child-calibrated
+constants were low: **GKR = 72L² + 264L + 248 B** (L = log2 interactions; 44 KB at
+L = 23, model had 8.5 KB), stacking 1,984 + 48·W, relations +5.8 KB + 432 B/height
+doubling. E6 (one opening per column) gives nothing (next-row values needed).
+
+**Corrected model** (`l4-study/models-C/ext2.py`, `run_ext2.py` → `run-ext2.txt`;
+×15 + coset + multiproof + non-halving + pack, transcript +510 compressions):
+
+| c_sha | settings | combo | + Gruen GKR | + next-row only for 30 % cols | + 230-col final circuit |
+|---:|---|---:|---:|---:|---:|
+| 19,448 | today 268/48 B, m=3 | 408,800 | 394,976 | 379,520 | 365,600 |
+| 19,448 | z=32 + 42 B, m=3 | 345,176 | 331,352 | 315,896 | **301,976** |
+| 28,288 | z=32 + 42 B, m=3 | 359,154 | 345,330 | 329,874 | 315,954 |
+
+Sensitivity: each halving of final-circuit cells ≈ −12…−25 KB (the 15·2²⁷ domain cap
+then admits a larger final blowup); cells 2²⁵·⁶ → ≈ 275 KB with the same levers.
+So < 300 KB now needs, beyond the built levers: Gruen-style GKR (degree-(d−1) round
+polys), next-row openings only where referenced, a final circuit with few total columns,
+and fewer final cells (cheaper SHA AIR or fewer penultimate compressions). The real
+verifier circuit's column/interaction/non-SHA cell counts (recursion lane) decide it.
