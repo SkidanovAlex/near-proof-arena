@@ -19,10 +19,10 @@ index 08e139b..b432c73 100644
  }
  
 diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
-index c776e1c..d65078e 100644
+index c776e1c..4d58e90 100644
 --- a/crates/stark-backend/src/config.rs
 +++ b/crates/stark-backend/src/config.rs
-@@ -188,6 +188,51 @@ pub struct WhirConfig {
+@@ -188,6 +188,55 @@ pub struct WhirConfig {
      /// of queries in the `rounds` field. However we store it in `WhirConfig` for security analysis
      /// purposes.
      pub proximity: WhirProximityStrategy,
@@ -56,6 +56,9 @@ index c776e1c..d65078e 100644
 +    /// Batch-constraint sumcheck rounds in which no trace is exhausted send one evaluation less:
 +    /// there `s(X) = eq(xi, X) * s'(X)` and the verifier reconstructs s' (Gruen).
 +    pub gruen_zerocheck: bool,
++    /// Query-phase proof-of-work witnesses are two field elements (`grind_wide`), so
++    /// `query_phase_pow_bits` up to ~2·log2(p) is feasible; one base element caps it near 30.
++    pub wide_query_pow: bool,
 +}
 +
 +impl WhirLevers {
@@ -70,11 +73,12 @@ index c776e1c..d65078e 100644
 +            | (self.gkr_derive_claims as u8) << 1
 +            | (self.next_mask as u8) << 2
 +            | (self.gruen_zerocheck as u8) << 3
++            | (self.wide_query_pow as u8) << 4
 +    }
  }
  
  #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-@@ -288,20 +333,49 @@ impl WhirConfig {
+@@ -288,20 +337,49 @@ impl WhirConfig {
          log_stacked_height: usize,
          whir_params: WhirParams,
          security_bits: usize,
@@ -128,7 +132,7 @@ index c776e1c..d65078e 100644
  
              let num_queries = Self::queries(
                  proximity.in_round(round),
-@@ -320,12 +394,35 @@ impl WhirConfig {
+@@ -320,12 +398,35 @@ impl WhirConfig {
              query_phase_pow_bits,
              folding_pow_bits: whir_params.folding_pow_bits,
              proximity,
@@ -165,7 +169,7 @@ index c776e1c..d65078e 100644
      }
  
      pub fn num_whir_rounds(&self) -> usize {
-@@ -334,7 +431,7 @@ impl WhirConfig {
+@@ -334,7 +435,7 @@ impl WhirConfig {
  
      #[inline]
      pub fn num_sumcheck_rounds(&self) -> usize {
@@ -325,7 +329,7 @@ index 493a87f..f1bd1e6 100644
  
  /// Verifier data for preprocessed trace for a single AIR.
 diff --git a/crates/stark-backend/src/proof.rs b/crates/stark-backend/src/proof.rs
-index 30b7914..2856833 100644
+index 30b7914..22b4f8b 100644
 --- a/crates/stark-backend/src/proof.rs
 +++ b/crates/stark-backend/src/proof.rs
 @@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
@@ -428,7 +432,7 @@ index 30b7914..2856833 100644
          SC::encode_base_field(&self.mu_pow_witness, writer)?;
          // whir_sumcheck_polys: Vec<[SC::EF; 2]>
          self.whir_sumcheck_polys.len().encode(writer)?;
-@@ -445,7 +490,36 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -445,7 +490,37 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          // We explicitly implement Decode for Proof to check CODEC_VERSION
          let codec_version = u32::decode(reader)?;
@@ -443,7 +447,7 @@ index 30b7914..2856833 100644
 +                    _ => Err(invalid("lever flag")),
 +                }
 +            };
-+            if h[3] & !15 != 0 {
++            if h[3] & !31 != 0 {
 +                return Err(invalid("lever flags"));
 +            }
 +            let levers = WhirLevers {
@@ -454,6 +458,7 @@ index 30b7914..2856833 100644
 +                gkr_derive_claims: h[3] & 2 != 0,
 +                next_mask: h[3] & 4 != 0,
 +                gruen_zerocheck: h[3] & 8 != 0,
++                wide_query_pow: h[3] & 16 != 0,
 +            };
 +            if levers.is_default() {
 +                return Err(invalid("lever format with default levers"));
@@ -466,7 +471,7 @@ index 30b7914..2856833 100644
              return Err(Error::other(format!(
                  "CODEC_VERSION mismatch, expected: {}, actual: {}",
                  CODEC_VERSION, codec_version
-@@ -488,10 +562,19 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
+@@ -488,10 +563,19 @@ impl<SC: DecodableConfig> Decode for Proof<SC> {
              common_main_commit,
              trace_vdata,
              public_values,
@@ -489,7 +494,7 @@ index 30b7914..2856833 100644
          })
      }
  }
-@@ -526,6 +609,177 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
+@@ -526,6 +610,177 @@ impl<SC: DecodableConfig> Decode for GkrProof<SC> {
      }
  }
  
@@ -667,7 +672,7 @@ index 30b7914..2856833 100644
  impl<SC: DecodableConfig> Decode for BatchConstraintProof<SC> {
      fn decode<R: Read>(reader: &mut R) -> Result<Self> {
          let numerator_term_per_air = SC::decode_extension_field_vec(reader)?;
-@@ -701,6 +955,218 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
+@@ -701,6 +956,219 @@ impl<SC: DecodableConfig> Decode for WhirProof<SC> {
              codeword_opened_values,
              codeword_merkle_proofs,
              final_poly,
@@ -815,7 +820,8 @@ index 30b7914..2856833 100644
 +        }
 +        let ood_values = SC::decode_extension_field_n(reader, num_rounds - 1)?;
 +        let folding_pow_witnesses = SC::decode_base_field_n(reader, num_sumcheck)?;
-+        let query_phase_pow_witnesses = SC::decode_base_field_n(reader, num_rounds)?;
++        let query_phase_pow_witnesses =
++            SC::decode_base_field_n(reader, num_rounds * (1 + levers.wide_query_pow as usize))?;
 +        let num_commits = usize::decode(reader)?;
 +        if num_commits == 0 {
 +            return Err(invalid("num_commits must be nonzero"));
@@ -1295,7 +1301,7 @@ index 504c7b3..92b88b7 100644
                  } else {
                      None
 diff --git a/crates/stark-backend/src/prover/whir.rs b/crates/stark-backend/src/prover/whir.rs
-index 6bdbaa8..658833e 100644
+index 6bdbaa8..57e0537 100644
 --- a/crates/stark-backend/src/prover/whir.rs
 +++ b/crates/stark-backend/src/prover/whir.rs
 @@ -104,7 +104,8 @@ where
@@ -1331,7 +1337,20 @@ index 6bdbaa8..658833e 100644
              let g_commit = g_tree.root()?;
              transcript.observe_commit(g_commit);
              codeword_commits.push(g_commit);
-@@ -247,6 +251,7 @@ where
+@@ -240,13 +244,19 @@ where
+         let omega = SC::F::two_adic_generator(log_rs_domain_size - k_whir);
+         let num_queries = round_params.num_queries;
+         let mut query_indices = Vec::with_capacity(num_queries);
+-        query_phase_pow_witnesses.push(transcript.grind(whir_params.query_phase_pow_bits));
++        if whir_params.levers.wide_query_pow {
++            query_phase_pow_witnesses
++                .extend(transcript.grind_wide(whir_params.query_phase_pow_bits));
++        } else {
++            query_phase_pow_witnesses.push(transcript.grind(whir_params.query_phase_pow_bits));
++        }
+         // Sample query indices first
+         for _ in 0..num_queries {
+             // This is the index of the leaf in the Merkle tree
              let index = transcript.sample_bits(log_rs_domain_size - k_whir);
              query_indices.push(index as usize);
          }
@@ -1339,7 +1358,7 @@ index 6bdbaa8..658833e 100644
          let mut zs = Vec::with_capacity(num_queries);
          if !is_last_round {
              codeword_opened_values.push(vec![]);
-@@ -279,9 +284,11 @@ where
+@@ -279,9 +289,11 @@ where
                      let opened_rows = tree.get_opened_rows(index)?;
                      initial_round_opened_rows[com_idx].push(opened_rows);
                      debug_assert_eq!(tree.proof_depth(), depth);
@@ -1354,7 +1373,7 @@ index 6bdbaa8..658833e 100644
                  }
              } else {
                  let tree: &MerkleTree<SC::EF, SC::Digest> =
-@@ -297,9 +304,26 @@ where
+@@ -297,9 +309,26 @@ where
                      .collect_vec();
                  codeword_opened_values[whir_round - 1].push(opened_rows);
                  debug_assert_eq!(tree.proof_depth(), depth);
@@ -1384,7 +1403,7 @@ index 6bdbaa8..658833e 100644
              }
          }
          rs_tree = g_tree;
-@@ -322,7 +346,7 @@ where
+@@ -322,7 +351,7 @@ where
          }
  
          m -= k_whir;
@@ -1393,7 +1412,7 @@ index 6bdbaa8..658833e 100644
      }
  
      Ok(WhirProof::<SC> {
-@@ -337,6 +361,7 @@ where
+@@ -337,6 +366,7 @@ where
          codeword_opened_values,
          codeword_merkle_proofs,
          final_poly: final_poly.ok_or(WhirProverError::FinalPolyNone)?,
@@ -1480,6 +1499,49 @@ index fb6d6cf..f13b0ff 100644
                          },
                          symbolic_constraints: constraints_with_counts(0, 1),
                          max_constraint_degree: 1,
+diff --git a/crates/stark-backend/src/transcript/traits.rs b/crates/stark-backend/src/transcript/traits.rs
+index ecd6dec..6cb947a 100644
+--- a/crates/stark-backend/src/transcript/traits.rs
++++ b/crates/stark-backend/src/transcript/traits.rs
+@@ -70,6 +70,38 @@ where
+ 
+     /// Finds a proof-of-work witness `w` such that [`Self::check_witness`]`(bits, w)` holds, by
+     /// brute force over the base field.
++    // ---- Wide (two-element) proof-of-work, used by the `wide_query_pow` lever. ----
++    /// Check a two-element witness. Default: observe `w[0]`, then the usual `check_witness`.
++    #[must_use]
++    fn check_witness_wide(&mut self, bits: usize, w: [SC::F; 2]) -> bool {
++        if bits == 0 {
++            return true;
++        }
++        self.observe(w[0]);
++        self.check_witness(bits, w[1])
++    }
++
++    /// Find the lexicographically smallest valid two-element witness and apply it.
++    fn grind_wide(&mut self, bits: usize) -> [SC::F; 2] {
++        if bits == 0 {
++            return [SC::F::ZERO; 2];
++        }
++        for w0 in 0..SC::F::ORDER_U64 {
++            let w0 = SC::F::from_u64(w0);
++            let mut t = self.clone();
++            t.observe(w0);
++            let found = (0..SC::F::ORDER_U64)
++                .into_par_iter()
++                .map(PrimeCharacteristicRing::from_u64)
++                .find_first(|w1| t.clone().check_witness(bits, *w1));
++            if let Some(w1) = found {
++                assert!(self.check_witness_wide(bits, [w0, w1]));
++                return [w0, w1];
++            }
++        }
++        panic!("failed to find wide PoW witness");
++    }
++
+     #[instrument(name = "grind_pow", skip_all)]
+     fn grind(&mut self, bits: usize) -> SC::F {
+         assert!(bits < (u32::BITS as usize));
 diff --git a/crates/stark-backend/src/verifier/batch_constraints.rs b/crates/stark-backend/src/verifier/batch_constraints.rs
 index e677b48..312b6b7 100644
 --- a/crates/stark-backend/src/verifier/batch_constraints.rs
@@ -1911,7 +1973,7 @@ index 4ee438b..20998cf 100644
      }
  
 diff --git a/crates/stark-backend/src/verifier/proof_shape.rs b/crates/stark-backend/src/verifier/proof_shape.rs
-index a3216a9..380e4eb 100644
+index a3216a9..2e680a4 100644
 --- a/crates/stark-backend/src/verifier/proof_shape.rs
 +++ b/crates/stark-backend/src/verifier/proof_shape.rs
 @@ -188,6 +188,8 @@ pub enum StackingProofShapeError {
@@ -2002,7 +2064,21 @@ index a3216a9..380e4eb 100644
      if whir_proof.whir_sumcheck_polys.len() != num_whir_sumcheck_rounds {
          return ProofShapeError::invalid_whir(WhirProofShapeError::InvalidSumcheckPolys {
              expected: num_whir_sumcheck_rounds,
-@@ -682,11 +707,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -633,9 +658,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+             expected: num_whir_sumcheck_rounds,
+             actual: whir_proof.folding_pow_witnesses.len(),
+         });
+-    } else if whir_proof.query_phase_pow_witnesses.len() != num_whir_rounds {
++    } else if whir_proof.query_phase_pow_witnesses.len()
++        != num_whir_rounds * (1 + mvk.params.whir.levers.wide_query_pow as usize)
++    {
+         return ProofShapeError::invalid_whir(WhirProofShapeError::InvalidQueryPhasePowWitnesses {
+-            expected: num_whir_rounds,
++            expected: num_whir_rounds * (1 + mvk.params.whir.levers.wide_query_pow as usize),
+             actual: whir_proof.query_phase_pow_witnesses.len(),
+         });
+     } else if whir_proof.initial_round_opened_rows.len() != layouts.len() {
+@@ -682,11 +709,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_rows.len(),
                  },
              );
@@ -2016,7 +2092,7 @@ index a3216a9..380e4eb 100644
                      actual: merkle_proofs.len(),
                  },
              );
-@@ -718,7 +743,8 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -718,7 +745,8 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
          }
  
          let merkle_depth = (log_stacked_height + mvk.params.log_blowup).saturating_sub(k_whir);
@@ -2026,7 +2102,7 @@ index a3216a9..380e4eb 100644
              if proof.len() != merkle_depth {
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidInitialRoundMerkleProofDepth {
-@@ -749,31 +775,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -749,31 +777,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_values_per_query.len(),
                  },
              );
@@ -2133,7 +2209,7 @@ index 846ff0a..753b7ed 100644
  }
  
 diff --git a/crates/stark-backend/src/verifier/whir.rs b/crates/stark-backend/src/verifier/whir.rs
-index 756e26f..af8c70e 100644
+index 756e26f..9fd4896 100644
 --- a/crates/stark-backend/src/verifier/whir.rs
 +++ b/crates/stark-backend/src/verifier/whir.rs
 @@ -63,11 +63,14 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
@@ -2153,7 +2229,24 @@ index 756e26f..af8c70e 100644
      let num_whir_rounds = params.num_whir_rounds();
      let mut log_rs_domain_size = m + params.log_blowup;
      debug_assert!(params.num_whir_sumcheck_rounds() <= m);
-@@ -113,6 +116,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -96,10 +99,14 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+     let mut alphas = Vec::with_capacity(m);
+ 
+     // Proof shape asserts this:
+-    debug_assert_eq!(query_phase_pow_witnesses.len(), num_whir_rounds);
++    debug_assert_eq!(
++        query_phase_pow_witnesses.len(),
++        num_whir_rounds * (1 + params.whir.levers.wide_query_pow as usize)
++    );
+     // By construction, params.whir.rounds.len() == num_whir_rounds
++    let pow_width = 1 + params.whir.levers.wide_query_pow as usize;
+     for (whir_round, (query_phase_pow_witness, round_params)) in
+-        zip(query_phase_pow_witnesses, &params.whir.rounds).enumerate()
++        zip(query_phase_pow_witnesses.chunks_exact(pow_width), &params.whir.rounds).enumerate()
+     {
+         // A WHIR round consists of the following steps:
+         // 1) Run k rounds of sumcheck to obtain polynomial f'.
+@@ -113,6 +120,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
  
          let is_initial_round = whir_round == 0;
          let is_final_round = whir_round == num_whir_rounds - 1;
@@ -2161,7 +2254,24 @@ index 756e26f..af8c70e 100644
  
          let mut alphas_round = Vec::with_capacity(k_whir);
  
-@@ -167,6 +171,9 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -157,7 +165,15 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+             Some(y0)
+         };
+ 
+-        if !transcript.check_witness(params.whir.query_phase_pow_bits, *query_phase_pow_witness) {
++        let pow_ok = if pow_width == 2 {
++            transcript.check_witness_wide(
++                params.whir.query_phase_pow_bits,
++                [query_phase_pow_witness[0], query_phase_pow_witness[1]],
++            )
++        } else {
++            transcript.check_witness(params.whir.query_phase_pow_bits, query_phase_pow_witness[0])
++        };
++        if !pow_ok {
+             return Err(VerifyWhirError::QueryPhasePoWInvalid);
+         }
+ 
+@@ -167,6 +183,9 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
  
          let mut zs_round = Vec::with_capacity(num_queries);
          let mut ys_round = Vec::with_capacity(num_queries);
@@ -2171,7 +2281,7 @@ index 756e26f..af8c70e 100644
  
          let hasher = config.hasher();
          let omega = SC::F::two_adic_generator(log_rs_domain_size);
-@@ -178,27 +185,31 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -178,27 +197,31 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
                  let mut codeword_vals = vec![SC::EF::ZERO; 1 << k_whir];
                  let mut mu_pow_iter = mu_pows.iter();
                  // Proof shape asserts everything in the izip! has length equal to layouts.len()
@@ -2216,7 +2326,7 @@ index 756e26f..af8c70e 100644
  
                      for c in 0..width {
                          let mu_pow = mu_pow_iter.next().unwrap(); // ok; mu_pows has total_width length
-@@ -217,28 +228,55 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -217,28 +240,55 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
                  //   whir.rounds[whir_round].num_queries
                  // - codeword_opened_values[whir_round - 1][query_idx].len() = 2^k_whir
                  let opened_values = codeword_opened_values[whir_round - 1][query_idx].clone();
@@ -2287,7 +2397,7 @@ index 756e26f..af8c70e 100644
          // We sample `gamma` even in the final round. There are no observations
          // after this challenge and strictly serves to unify the verifier logic.
          // Rather than checking that `final_poly(zi) = yi` for all `i` in the
-@@ -255,7 +293,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -255,7 +305,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
          zs.push(zs_round);
          alphas.extend(alphas_round);
  
@@ -2296,7 +2406,7 @@ index 756e26f..af8c70e 100644
      }
      debug_assert!(sumcheck_poly_iter.next().is_none());
  
-@@ -264,7 +302,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -264,7 +314,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
          VerifyWhirError::FinalPolyDegree,
      )?;
  
@@ -2305,7 +2415,7 @@ index 756e26f..af8c70e 100644
      debug_assert_eq!(z0s.len(), num_whir_rounds - 1);
      debug_assert_eq!(zs.len(), num_whir_rounds);
      debug_assert_eq!(gammas.len(), num_whir_rounds);
-@@ -288,11 +326,11 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -288,11 +338,11 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
      //
      // Similar algebra allows us to control the terms with eq(pow(z_i)). Note that here we actually
      // end up with f(pow(z_i^{2^p})) for some power p, which is a univariate evaluation.
@@ -2319,7 +2429,7 @@ index 756e26f..af8c70e 100644
      for i in 0..num_whir_rounds {
          let zis = &zs[i];
          let gamma = gammas[i];
-@@ -315,7 +353,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+@@ -315,7 +365,7 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
                  * eval_eq_mle(alpha_slc, zi_pow_left)
                  * horner_eval::<SC::EF, SC::F, SC::EF>(final_poly, *zi_pow_max);
          }
@@ -2328,7 +2438,7 @@ index 756e26f..af8c70e 100644
      }
      ensure(acc == claim, VerifyWhirError::FinalPolyConstraint)
  }
-@@ -385,6 +423,56 @@ pub fn binary_k_fold<F: TwoAdicField, EF: ExtensionField<F>>(
+@@ -385,6 +435,56 @@ pub fn binary_k_fold<F: TwoAdicField, EF: ExtensionField<F>>(
      values[0]
  }
  

@@ -1,0 +1,38 @@
+NATIVE_SHA384_PROFILE n_stack=10 k=3 log_blowup=3 all_list=1 queries=[210, 118, 82, 63]
+NATIVE_SHA384_INTERACTION_LOG 27
+LEVERS_PROFILE_GKR gruen=true derive=true next_mask=true gruen_zc=true max_degree=4
+LEVERS_PROFILE k1=3 log_final=0 multiproof=true keep_domain=false m=3 query_pow=0 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=true dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.004147596
+LEVERS_ROT_MASK air=0 widths=[442] need_rot=true rotated_per_part=[438]
+LEVERS_ROT_MASK air=1 widths=[18] need_rot=true rotated_per_part=[16]
+LEVERS_ROT_MASK air=2 widths=[7] need_rot=false rotated_per_part=[0]
+NATIVE_SHA384_EXT12 target=268 min=268.2975913050004 logup=332.57533223384377 proximity=337.9308483190264 query=268.2975913050004
+LEVERS_SHA_AIR n=64 main_height=4096 main_cells=1810432
+NATIVE_SHA384_PROVE_SECONDS 2.59773044
+NATIVE_SHA384_VERIFY_SECONDS 0.032648579
+NATIVE_SHA384_VERIFY_CALLS [0, 1955, 1, 213, 5, 405, 473, 0]
+NATIVE_SHA384_VERIFY_BLOCKS [0, 1955, 1, 980, 10, 405, 24572, 0] total=27923
+NATIVE_SHA384_EXT12_BYTES total=3259729 gkr_upstream_enc=25544 relations=47704 stacking=22720 whir=3172104
+LEVERS_CENSUS total=3259729 auth=72384 auth_digests=1508 auth_per_tree=[748, 396, 224, 140] initial=2997120 codeword=100992 final_poly=48 whir_small=1560 whir=3172104 relations=47516 column_openings_ef=921 gkr=17288 stacking=22720 stacking_openings_ef=446 other=101
+LEVERS_NEGATIVE case="next_mask: vk drops a rotated column" rejected=true
+LEVERS_NEGATIVE case="next_mask: rotated claim removed" rejected=true
+LEVERS_NEGATIVE case="initial leaf value" rejected=true
+LEVERS_NEGATIVE case="codeword leaf value (last coset element)" rejected=true
+LEVERS_NEGATIVE case="initial auth digest" rejected=true
+LEVERS_NEGATIVE case="codeword auth digest" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling removed" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling appended" rejected=true
+LEVERS_NEGATIVE case="multiproof: siblings reordered" rejected=true
+LEVERS_NEGATIVE case="levers field mismatch" rejected=true
+LEVERS_NEGATIVE case="GKR sumcheck s(1)" rejected=true
+LEVERS_NEGATIVE case="GKR sumcheck s(2)" rejected=true
+LEVERS_NEGATIVE case="GKR layer claim q_xi_1" rejected=true
+LEVERS_NEGATIVE case="GKR root claim p_xi_0" rejected=true
+LEVERS_NEGATIVE case="GKR last layer claim q_xi_0" rejected=true
+LEVERS_NEGATIVE case="GKR gruen: dropped s(3) set" rejected=true
+LEVERS_NEGATIVE case="GKR derive: p_xi_1 set" rejected=true
+LEVERS_NEGATIVE case="GKR derive: q0_claim set" rejected=true
+LEVERS_NEGATIVE case="batch sumcheck eval" rejected=true
+LEVERS_NEGATIVE case="batch gruen: dropped eval set" rejected=true
+LEVERS_NEGATIVE case="next_mask: rotated claim value" rejected=true
+LEVERS_NEGATIVE_PASS cases=19

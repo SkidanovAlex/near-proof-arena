@@ -30,6 +30,15 @@ for name, dst in [('native_sha384_levers_driver.rs', 'main.rs'),
                   ('native_sha384_levers_config.rs', 'native_sha384_levers_config.rs'),
                   ('native_digest_dictionary.rs', 'native_digest_dictionary.rs')]:
     shutil.copyfile(HERE / name, TMP / 'src' / dst)
+# The L3 SHA-512/384 compression AIR (lane/pq-sha384-air), read-only at a pinned commit, for the
+# driver's NEARPROOF_SHA_AIR mode (second shape-equivalent data point).
+import subprocess  # noqa: E402
+SHA_AIR_COMMIT = '58889824fa412565d69c9b4a512edb7e076a4b35'
+for name in ['air.rs', 'trace.rs']:
+    src = subprocess.run(['git', '-C', str(ROOT), 'show',
+                          f'{SHA_AIR_COMMIT}:research/near-compression/native/sha384-air/src/{name}'],
+                         check=True, capture_output=True, text=True).stdout
+    (TMP / 'src' / f'sha384_{name}').write_text(src)
 backend = native_paths.BACKEND / 'crates/stark-backend'
 (TMP / 'Cargo.toml').write_text(f'''[package]
 name="nearproof-native-sha384"
@@ -41,7 +50,7 @@ p3-baby-bear="=0.4.3"
 p3-field="=0.4.3"
 p3-air="=0.4.3"
 p3-matrix="=0.4.3"
-sha2="=0.10.9"
+sha2={{version="=0.10.9",features=["compress"]}}
 [patch.crates-io]
 p3-baby-bear={{path="{native_paths.EXT12}/p3-baby-bear"}}
 p3-monty-31={{path="{native_paths.EXT12}/p3-monty-31"}}

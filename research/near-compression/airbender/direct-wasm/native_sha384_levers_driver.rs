@@ -12,6 +12,10 @@
 //   NEARPROOF_COSET_LEAF=1       one SHA-384 message per WHIR leaf (fold coset)
 //   NEARPROOF_DUMMY=1            prove the shape-equivalent dummy AIR instead of the literal child
 //     NEARPROOF_DUMMY_COLS (460), NEARPROOF_DUMMY_LOG_HEIGHT (14)
+//   NEARPROOF_SHA_AIR=<n>        prove the L3 SHA-512/384 compression AIR (lane/pq-sha384-air @58889824f)
+//                                on n random compressions (main 442 cols x 44n rows, table, harness)
+//   NEARPROOF_GRUEN_GKR / NEARPROOF_GKR_DERIVE / NEARPROOF_GRUEN_ZC / NEARPROOF_NEXT_MASK = 1
+//   NEARPROOF_MAX_DEGREE=<d>     max constraint degree in the params (default 8; SHA AIR needs 4)
 //   NEARPROOF_NEGATIVE=1         run lever negative tests after proving
 use std::sync::Arc;
 use openvm_stark_backend::{StarkEngine,SystemParams,AirRef,prover::{CpuColMajorBackend,AirProvingContext,ProvingContext},test_utils::{TestFixture,test_system_params_small}};
@@ -46,22 +50,29 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         if let Ok(spec)=std::env::var("NEARPROOF_GRIND_BENCH") {
             // "bits:trials,bits:trials,...": grind on independent transcript states; report mean.
             for item in spec.split(',') {
-                let (b,n)=item.split_once(':').unwrap();let (b,n):(usize,usize)=(b.parse().unwrap(),n.parse().unwrap());
+                let (b,n)=item.split_once(':').unwrap();
+                let wide=b.starts_with('w');let b=b.trim_start_matches('w');
+                let (b,n):(usize,usize)=(b.parse().unwrap(),n.parse().unwrap());
                 GRIND_STATS.lock().unwrap().clear();
                 let start=std::time::Instant::now();
                 for i in 0..n {let mut t=Transcript::new();t.observe(F::from_u32(i as u32));t.observe(F::from_u32(b as u32));
-                    let w=t.grind(b);let mut v=Transcript::new();v.observe(F::from_u32(i as u32));v.observe(F::from_u32(b as u32));
-                    assert!(v.check_witness(b,w));
-                    let mut v=Transcript::new();v.observe(F::from_u32(i as u32));v.observe(F::from_u32(b as u32));
-                    assert!(!v.check_witness(b,w+F::ONE) || b<4,"wrong witness accepted");}
+                    let mk=||{let mut v=Transcript::new();v.observe(F::from_u32(i as u32));v.observe(F::from_u32(b as u32));v};
+                    if wide {
+                        let w=t.grind_wide(b);assert!(mk().check_witness_wide(b,w));
+                        assert!(!mk().check_witness_wide(b,[w[0],w[1]+F::ONE]) || b<4,"wrong witness accepted");
+                    } else {
+                        let w=t.grind(b);assert!(mk().check_witness(b,w));
+                        assert!(!mk().check_witness(b,w+F::ONE) || b<4,"wrong witness accepted");
+                    }}
                 let total=start.elapsed().as_secs_f64();
                 let tries:u64=GRIND_STATS.lock().unwrap().iter().map(|x|x.2+1).sum();
-                println!("LEVERS_GRIND_BENCH bits={} trials={} mean_seconds={:.4} attempts_per_second={:.3e} mean_attempts_log2={:.2} threads={}",
-                    b,n,total/n as f64,tries as f64/total,((tries as f64)/(n as f64)).log2(),openvm_stark_backend::p3_maybe_rayon::prelude::current_num_threads());
+                println!("LEVERS_GRIND_BENCH wide={} bits={} trials={} mean_seconds={:.4} attempts_per_second={:.3e} mean_attempts_log2={:.2} threads={}",
+                    wide,b,n,total/n as f64,tries as f64/total,((tries as f64)/(n as f64)).log2(),openvm_stark_backend::p3_maybe_rayon::prelude::current_num_threads());
             }
             return;
         }
-        let dummy=setting("NEARPROOF_DUMMY",0)==1;
+        let sha_air=setting("NEARPROOF_SHA_AIR",0);
+        let dummy=setting("NEARPROOF_DUMMY",0)==1 || sha_air>0;
         let out=std::env::var("NEARPROOF_LITERAL_OUT").unwrap();
         let n_stack=setting("NEARPROOF_N_STACK",16);
         let k=setting("NEARPROOF_K",3);
@@ -80,7 +91,8 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         let whir_levers=WhirLevers{k_first:setting("NEARPROOF_K1",0),multiproof:setting("NEARPROOF_MULTIPROOF",0)==1,
             keep_domain:setting("NEARPROOF_KEEP_DOMAIN",0)==1,
             gruen_gkr:setting("NEARPROOF_GRUEN_GKR",0)==1,gkr_derive_claims:setting("NEARPROOF_GKR_DERIVE",0)==1,
-            next_mask:setting("NEARPROOF_NEXT_MASK",0)==1,gruen_zerocheck:setting("NEARPROOF_GRUEN_ZC",0)==1};
+            next_mask:setting("NEARPROOF_NEXT_MASK",0)==1,gruen_zerocheck:setting("NEARPROOF_GRUEN_ZC",0)==1,
+            wide_query_pow:setting("NEARPROOF_WIDE_POW",0)==1};
         let sha=levers();
         let log_final=setting("NEARPROOF_LOG_FINAL",params.log_final_poly_len());
         let (qpow,fpow,mpow)=(setting("NEARPROOF_QUERY_POW",0),setting("NEARPROOF_FOLDING_POW",0),setting("NEARPROOF_MU_POW",0));
@@ -95,7 +107,7 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
             sha.digest_bytes,sha.coset_leaf,dummy);
         let engine=Engine::new(params);
         let keygen_start=std::time::Instant::now();
-        let (pk,vk)=if dummy {dummy::DummyFixture.keygen(&engine)} else {literal::LiteralFixture.keygen(&engine)};
+        let (pk,vk)=if sha_air>0 {shaair::ShaFixture(sha_air).keygen(&engine)} else if dummy {dummy::DummyFixture.keygen(&engine)} else {literal::LiteralFixture.keygen(&engine)};
         println!("NATIVE_SHA384_KEYGEN_SECONDS {}",keygen_start.elapsed().as_secs_f64());
         for (i,a) in vk.inner.per_air.iter().enumerate() {
             let m=a.params.opening_masks();
@@ -134,7 +146,7 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
             println!("NATIVE_SHA384_EXT12_REPLAY_PASS bytes={}",bytes.len());return;
         }
         let prove_start=std::time::Instant::now();
-        let proof=if dummy {dummy::DummyFixture.prove(&engine,&pk)} else {literal::LiteralFixture.prove(&engine,&pk)};
+        let proof=if sha_air>0 {shaair::ShaFixture(sha_air).prove(&engine,&pk)} else if dummy {dummy::DummyFixture.prove(&engine,&pk)} else {literal::LiteralFixture.prove(&engine,&pk)};
         println!("NATIVE_SHA384_PROVE_SECONDS {}",prove_start.elapsed().as_secs_f64());
         for (b,secs,w) in GRIND_STATS.lock().unwrap().iter() {println!("LEVERS_GRIND bits={} seconds={:.4} witness={}",b,secs,w);}
         let verify_start=std::time::Instant::now();
@@ -189,6 +201,10 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         if p.whir.query_phase_pow_bits>0 {
             let mut bad=proof.clone();bad.whir_proof.query_phase_pow_witnesses[0]+=F::ONE;cases.push(("query PoW witness",bad));
             let mut bad=proof.clone();let n=bad.whir_proof.query_phase_pow_witnesses.len();bad.whir_proof.query_phase_pow_witnesses[n-1]+=F::ONE;cases.push(("last-round query PoW witness",bad));
+            if p.whir.levers.wide_query_pow {
+                let mut bad=proof.clone();bad.whir_proof.query_phase_pow_witnesses[0]+=F::ONE;cases.push(("wide PoW: first element",bad));
+                let mut bad=proof.clone();bad.whir_proof.query_phase_pow_witnesses.pop();cases.push(("wide PoW: element missing",bad));
+            }
         }
         if p.whir.folding_pow_bits>0 {let mut bad=proof.clone();bad.whir_proof.folding_pow_witnesses[0]+=F::ONE;cases.push(("folding PoW witness",bad));}
         if p.whir.mu_pow_bits>0 {let mut bad=proof.clone();bad.whir_proof.mu_pow_witness+=F::ONE;cases.push(("mu PoW witness",bad));}
@@ -244,6 +260,32 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         println!("LEVERS_NEGATIVE_PASS cases={}",n);
     }
     mod literal {include!("literal.rs");}
+    mod shaair {
+        //! The L3 SHA-512/384 compression AIR, unmodified (crate::air, crate::trace).
+        use super::*;
+        use crate::air::{Sha512Air,TableAir,HarnessAir,WIDTH,T_WIDTH,H_WIDTH};
+        use crate::trace::{gen_all,Rng,Comp};
+        use p3_matrix::dense::RowMajorMatrix;
+        use openvm_stark_backend::prover::ColMajorMatrix;
+        pub(super) struct ShaFixture(pub usize);
+        impl TestFixture<SC> for ShaFixture {
+            fn airs(&self)->Vec<AirRef<SC>> {vec![Arc::new(Sha512Air),Arc::new(TableAir),Arc::new(HarnessAir)]}
+            fn generate_proving_ctx(&self)->ProvingContext<CpuColMajorBackend<SC>> {
+                let n=self.0;
+                let mut rng=Rng(0xdead_beef_cafe_f00d ^ n as u64);
+                let comps:Vec<Comp>=(0..n).map(|_|rng.comp()).collect();
+                let t=gen_all(&comps);
+                println!("LEVERS_SHA_AIR n={} main_height={} main_cells={}",n,t.main_height,t.main_height*WIDTH);
+                let f=|v:&[u32]|v.iter().map(|&x|F::from_u32(x)).collect::<Vec<F>>();
+                let m=|v:&[u32],w|ColMajorMatrix::from_row_major(&RowMajorMatrix::new(f(v),w));
+                ProvingContext::new(vec![
+                    (0,AirProvingContext::simple(m(&t.main,WIDTH),vec![])),
+                    (1,AirProvingContext::simple(m(&t.table,T_WIDTH),vec![])),
+                    (2,AirProvingContext::simple(m(&t.harness,H_WIDTH),vec![])),
+                ])
+            }
+        }
+    }
     mod dummy {
         //! Shape-equivalent dummy AIR: NEARPROOF_DUMMY_COLS columns x 2^NEARPROOF_DUMMY_LOG_HEIGHT rows,
         //! degree-2 transition constraint per column (uses the next row, as a SHA round AIR does),
@@ -288,4 +330,10 @@ mod config {use super::*;include!("native_sha384_levers_config.rs");include!("na
         }
     }
 }
+#[allow(dead_code, clippy::all)]
+#[path = "sha384_air.rs"]
+mod air;
+#[allow(dead_code, clippy::all)]
+#[path = "sha384_trace.rs"]
+mod trace;
 fn main(){config::run();}

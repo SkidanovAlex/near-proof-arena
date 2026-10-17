@@ -1,0 +1,3 @@
+LEVERS_GRIND_BENCH wide=false bits=28 trials=8 mean_seconds=3.8283 attempts_per_second=4.752e7 mean_attempts_log2=27.44 threads=8
+LEVERS_GRIND_BENCH wide=true bits=28 trials=4 mean_seconds=2.5447 attempts_per_second=5.570e7 mean_attempts_log2=27.08 threads=8
+LEVERS_GRIND_BENCH wide=true bits=32 trials=3 mean_seconds=65.5481 attempts_per_second=5.334e7 mean_attempts_log2=31.70 threads=8

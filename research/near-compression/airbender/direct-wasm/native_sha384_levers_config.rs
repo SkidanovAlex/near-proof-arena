@@ -139,6 +139,11 @@ impl Transcript {
     /// first `bits` bits of state' (big-endian bit order of byte 0, 1, ...) are zero. state' becomes
     /// the transcript state, so later challenges are re-hashed from it (tag 5) and never reuse the
     /// PoW bits. One SHA-384 compression per attempt (101-byte message).
+    fn pow_step_wide(&self,w0:u32,w1:u32,bits:usize)->([u8;48],bool) {
+        let mut w=[0u8;8];w[..4].copy_from_slice(&w0.to_le_bytes());w[4..].copy_from_slice(&w1.to_le_bytes());
+        let state=hash_parts(7,&[&self.state,&w]);
+        (state,leading_zero_bits(&state)>=bits)
+    }
     fn pow_step(&self,witness:u32,bits:usize)->([u8;48],bool) {
         let state=hash_parts(7,&[&self.state,&witness.to_le_bytes()]);
         (state,leading_zero_bits(&state)>=bits)
@@ -169,6 +174,40 @@ impl FiatShamirTranscript<SC> for Transcript {
         self.flush();
         let (state,ok)=self.pow_step(witness.as_canonical_u32(),bits);
         self.state=state;self.next_word=12;ok
+    }
+    /// Wide PoW (lever wide_query_pow): s' = H(tag 7, state || w0_le32 || w1_le32), valid iff the
+    /// first `bits` bits of s' are zero; s' becomes the state (cursor exhausted). 105-byte message,
+    /// one compression. The 8-byte witness space allows z up to ~60.
+    fn check_witness_wide(&mut self,bits:usize,w:[F;2])->bool {
+        if bits==0 {return true;}
+        self.flush();
+        let (state,ok)=self.pow_step_wide(w[0].as_canonical_u32(),w[1].as_canonical_u32(),bits);
+        self.state=state;self.next_word=12;ok
+    }
+    fn grind_wide(&mut self,bits:usize)->[F;2] {
+        if bits==0 {return [F::ZERO;2];}
+        use openvm_stark_backend::p3_maybe_rayon::prelude::*;
+        self.flush();
+        let start=std::time::Instant::now();
+        let base=self.clone();
+        COUNT_GRIND.store(false,std::sync::atomic::Ordering::Relaxed);
+        // Lexicographically smallest (w0, w1); w1 searched in parallel chunks of 2^16.
+        const CH:u32=1<<16;
+        let mut found=None;
+        'outer: for w0 in 0u32..2013265921 {
+            for chunk in 0..(2013265921u32/CH) {
+                let lo=chunk*CH;
+                if let Some(w1)=(lo..lo+CH).into_par_iter().find_first(|&w1|base.pow_step_wide(w0,w1,bits).1) {
+                    found=Some((w0,w1));break 'outer;
+                }
+            }
+        }
+        let (w0,w1)=found.expect("no wide PoW witness");
+        COUNT_GRIND.store(true,std::sync::atomic::Ordering::Relaxed);
+        GRIND_STATS.lock().unwrap().push((bits,start.elapsed().as_secs_f64(),w0 as u64*(2013265920u64/CH as u64*CH as u64)+w1 as u64));
+        let w=[F::from_u32(w0),F::from_u32(w1)];
+        assert!(self.check_witness_wide(bits,w));
+        w
     }
     fn grind(&mut self,bits:usize)->F {
         if bits==0 {return F::ZERO;}

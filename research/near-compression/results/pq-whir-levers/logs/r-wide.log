@@ -1,0 +1,37 @@
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=7 all_list=1 queries=[75, 58, 47, 39, 34]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE_GKR gruen=false derive=false next_mask=false gruen_zc=false max_degree=8
+LEVERS_PROFILE k1=3 log_final=2 multiproof=false keep_domain=false m=3 query_pow=24 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=false dummy=false
+NATIVE_SHA384_KEYGEN_SECONDS 0.000624464
+LEVERS_ROT_MASK air=0 widths=[157] need_rot=true rotated_per_part=[157]
+LEVERS_ROT_MASK air=1 widths=[114] need_rot=true rotated_per_part=[114]
+LEVERS_ROT_MASK air=2 widths=[24] need_rot=false rotated_per_part=[0]
+NATIVE_SHA384_EXT12 target=268 min=268.81472078674193 logup=331.57533223384377 proximity=320.9308746090779 query=268.81472078674193
+NATIVE_SHA384_PROVE_SECONDS 13.589924608
+LEVERS_GRIND bits=24 seconds=0.0221 witness=627666
+LEVERS_GRIND bits=24 seconds=0.2710 witness=7664422
+LEVERS_GRIND bits=24 seconds=0.3918 witness=11019983
+LEVERS_GRIND bits=24 seconds=2.1305 witness=65217631
+LEVERS_GRIND bits=24 seconds=0.2766 witness=13758676
+NATIVE_SHA384_VERIFY_SECONDS 0.007473507
+NATIVE_SHA384_VERIFY_CALLS [2024, 6679, 1, 102, 6, 203, 0, 5]
+NATIVE_SHA384_VERIFY_BLOCKS [2024, 6679, 1, 519, 12, 203, 0, 5] total=9443
+NATIVE_SHA384_EXT12_BYTES total=351113 gkr_upstream_enc=8456 relations=31432 stacking=1840 whir=308516
+LEVERS_CENSUS total=351113 auth=235584 auth_digests=4908 auth_per_tree=[1575, 1160, 893, 702, 578] initial=2400 codeword=68352 final_poly=192 whir_small=1988 whir=308516 relations=31436 column_openings_ef=566 gkr=8456 stacking=1840 stacking_openings_ef=1 other=865
+NATIVE_SHA384_EXT12_PASS public_mutations_rejected=6
+LEVERS_NEGATIVE case="initial leaf value" rejected=true
+LEVERS_NEGATIVE case="codeword leaf value (last coset element)" rejected=true
+LEVERS_NEGATIVE case="initial auth digest" rejected=true
+LEVERS_NEGATIVE case="codeword auth digest" rejected=true
+LEVERS_NEGATIVE case="query PoW witness" rejected=true
+LEVERS_NEGATIVE case="last-round query PoW witness" rejected=true
+LEVERS_NEGATIVE case="wide PoW: first element" rejected=true
+LEVERS_NEGATIVE case="wide PoW: element missing" rejected=true
+LEVERS_NEGATIVE case="levers field mismatch" rejected=true
+LEVERS_NEGATIVE case="GKR sumcheck s(1)" rejected=true
+LEVERS_NEGATIVE case="GKR sumcheck s(2)" rejected=true
+LEVERS_NEGATIVE case="GKR layer claim q_xi_1" rejected=true
+LEVERS_NEGATIVE case="GKR root claim p_xi_0" rejected=true
+LEVERS_NEGATIVE case="GKR last layer claim q_xi_0" rejected=true
+LEVERS_NEGATIVE case="batch sumcheck eval" rejected=true
+LEVERS_NEGATIVE_PASS cases=15
