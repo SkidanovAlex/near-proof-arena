@@ -11869,3 +11869,44 @@ measure on root geometry and formalize composition interfaces. Internal WHIR
 alone already exceeds300000, so this interface success is not size feasibility.
 No PQ128, new Lean security theorem or full NEAR1Petagas proof. Goal stays active.
 Evidence:results/swirl-security-review/prefix-continuation/.
+
+## 2026-10-17 — Prefix-only codec removes original-proof replay dependency
+
+Previous goal turn classified progress: public GKR/WHIR continuation at50a603d3b.
+Revalidated clean worktree. Added native diagnostic NPREF001 codec containing
+common commitment, key-directed trace presence/heights/cached roots/public
+values, native LogUp GKR, and constraint-sumcheck prefix messages. No source
+column openings, old stacking proof or old WHIR proof are encoded.15567bytes.
+Lengths come from trusted VK plus bounded decoded heights, not attacker-supplied
+vector lengths. Decoder rejects trailing bytes and noncanonical field values.
+This profile explicitly rejects preprocessed AIRs; scope is current fixture.
+
+Decoder validates presence, nonempty traces, height limits and linear height
+constraints before deriving LogUp and sumcheck dimensions. Creates explicit
+zero COLUMN SHAPE PLACEHOLDERS only to reuse native proof-shape checker with
+new stacking/WHIR tail; placeholders are never accepted as actual openings and
+full native verification is deliberately not called on that adapter. Actual
+terminal relation is checked by public GKR and authenticated weighted PCS.
+Roundtrip passes; seven codec negatives plus separate invalid presence-tag and
+excessive-height probes reject (nine total). Clippy passes.
+
+Native prefix replay now derives public trace shapes and stacking layouts from
+VK and decoded prefix. Driver compares these to Python handoff metadata,
+recomputes public controls/full prefix log, verifies GKR, derives residual and
+binding, and verifies weighted stacking+WHIR. Temporarily moved original native
+proof out of its expected path: entire replay passes without recreating it;
+file restored afterward. No source matrices read. Original dependency is now
+removed for this diagnostic replay. Historical artifacts/logs preserved.
+
+Sources/new-file patch,15567byte prefix, metadata, positive/negative logs and
+hash pins saved in results/swirl-security-review/prefix-codec/. Reproducer:
+replay_swirl_prefix_continuation.py. New runtime logs go to prefix-codec rather
+than mutating prior prefix-continuation evidence.
+
+Still not a complete framed binary bundle: GKR remains a separate JSON artifact
+and fixed public circuit/profile data are external verifier inputs. Component
+subtotal15567prefix+20128GKRfieldpayload+1476stacking+337932WHIR=375103bytes,
+before any new framing. Internal geometry fails300000 even at diagnostic
+settings. Next finalize compact GKR/bundle encoding, assess root geometry,
+and formalize parser/composition boundaries. No PQ128, Lean codec/security
+composition or full NEAR1Petagas correctness is claimed. Goal stays active.
