@@ -1,0 +1,5 @@
+{
+  "assignments": 136944,
+  "source_sha256": "eb5bb8e6118d76e468e988b098e88b54cd7c3f857771d250ba5131344f12bff1",
+  "scope": "Actual native method; finite checks plus conditional Lean scaling theorem, not a Rust refinement proof."
+}

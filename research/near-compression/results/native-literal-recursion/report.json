@@ -1,0 +1,65 @@
+{
+  "status": "NATIVE_LITERAL_CHILD_AND_BOUND_PARENT_VERIFIED",
+  "child_bytes": 66289,
+  "parent_bytes": 97689,
+  "public_fields": 4891,
+  "public_fields_are_inside_parent_serialization": true,
+  "request_bytes": 919,
+  "total_parent_plus_request_bytes": 98608,
+  "fresh_replay_without": [
+    "child proof",
+    "source rows",
+    "fixture",
+    "spec"
+  ],
+  "parent_public_mutation_rejections": 6,
+  "independent_runCall": {
+    "done": true,
+    "failed": false,
+    "gas": 999999447071257,
+    "stack": []
+  },
+  "eligibility": {
+    "code_length": 193,
+    "status": "PASS"
+  },
+  "security": {
+    "whir_test_security_bits": 5,
+    "field": "BabyBear Ext4",
+    "hash": "Poseidon2",
+    "PQ128": false
+  },
+  "modifications": [
+    "Exact original AIR expression DAG and bus messages lowered to native builder.",
+    "CODE multiplicity high bits >=9 constrained zero (511 bound, 256 actual execution rows).",
+    "Twelve public count bytes fixed to [1,0,0,0,1,0,0,0,193,0,0,0].",
+    "Parent continuation public-value bus consumed by public binding AIR; prehash bus consumed.",
+    "Scaled trace-height implication gate and selector-aware debug evaluator."
+  ],
+  "limits": [
+    "Five-bit WHIR test setting: sizes do not establish secure compression.",
+    "No compiler refinement or cryptographic acceptance-to-HoldsP Lean theorem.",
+    "No adversarial-witness proving test yet.",
+    "Bounded i32 Wasm slice only; no full NEAR1Pgas."
+  ],
+  "pins": {
+    "/tmp/nearproof-openvm": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+    "/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a"
+  },
+  "sha256": {
+    "openvm-hook.patch": "17882dfc35317faf9987c6279a88521b426629f35cb1bf400074e87f93b3fd89",
+    "native_literal.rs": "ee824bd9a1ac9ffe3efff406816744efd8a377ab0a6f6b0856b1f70e4567494f",
+    "spec.json": "d5af1a689f6c8ba61c315c74ece9433ed5587056130c4c476c605a7eda420deb",
+    "public.bin": "2214c301b99a881c039544a7235ff4ac867ad472f1ae93325f89381c0cc4d82a",
+    "scaled-bound-check.rs": "77981adebec7ed4a7eca87690e426c6a134acf67479fa31ac5a49c0cdb5a71a4",
+    "replay.log": "8e5dd96af9b959bf3fbf00fe745595985fe6a4b97707db76df866e6755a671bd",
+    "rows-0.bin": "ab34e36616d070adfa36e613f552581973d1996b4f998ff22f21a17b4cb3db54",
+    "fixture.json": "f86142cae0e1df917444dbbf340920ffb34ba3c3a170e8ae7f1251ae9b2bcb80",
+    "rows-1.bin": "6d3da5d8dd402dcbe025823b99d938c7ed4f9d232f2416cd02d1a471a3d07975",
+    "child.proof": "05409db6191f8da07c62a19eb8dccde76d8ab3a97d1bc0ed33202984069c8f5d",
+    "scaled-bound-check.json": "444fe7b34aa2cc15bee04be4cd1d9ffbcbbce89f4b832afe2d705586275cd751",
+    "parent.proof": "d273de62f7be29c1a629c62203b416ca7ed49cc5f8af9ce239f82c18c935e456",
+    "backend.patch": "2d9ba95066045d2ee16435fe0bbb625f4149e36649086f8b901de76f2a63e6ee",
+    "prove.log": "fd382d03b9847f286212a3a109d543a6ee0823db3a59ad617a2a01915b16e4b0"
+  }
+}

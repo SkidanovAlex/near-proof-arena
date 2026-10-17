@@ -12985,3 +12985,81 @@ Reproduce check_slice_execution_binding.py. Report and exact negative traces in
 results/slice-execution-binding/. The Lean oracle compiles/runs through lake;
 no new Lean theorem or acceptance-to-HoldsP proof. No fullNEAR1Pgas, PQ128 or
 secure sub300000B claim. make pin-check passes.
+
+## 2026-10-17 — Actual literal Wasm child and publicly bound recursive parent
+
+Previous turn progressed at cfa8dce4e with same-artifact proof/interpreter checks.
+Revalidated research tree and pinned modified native checkouts. Implemented the
+missing native-child path for the SAME retained193instruction request, literal
+EXEC/CODE AIR and public vector. This is fresh proving of that relation on the
+native backend, not recursive verification of the older Python-codec proof.
+
+Generator compares full AIR/public/request equality to the retained fixture,
+exports witness words, and lowers the literal expression DAG into a native
+builder evaluator. All local constraints and bus messages are included. Public
+segments become first-row native interactions. The12public count bytes are
+constrained to the fixture shape(1,1,193). CODE count bits9..24 are additionally
+zero: native count_weight511 safely bounds the nine retained bits (actual256
+execution rows). This strengthens the bounded relation; it is not claimed to
+be a universal byte-for-byte compiler refinement. The witness is not key data;
+only expressions, shape and count limits are fixed.
+
+A generic parent proves existence of a valid child, so added PublishedChild AIR
+using the continuation public-values bus. All4891child public fields are public
+in the parent and checked against the intended vector. It also consumes the
+prehash message; the child VK is bound by the fixed verifier circuit. Six parent
+public mutations (status/gas/stack/program positions43,44,45,46,50,72) reject in
+native proof verification. This is mutation testing, not malicious-witness proving.
+
+Integration exposed three real obstacles, resolved without deleting constraints:
+1. Native trace-height implication checked only coefficientwise domination.
+   Added positive integer scaling with u64 products, equal-length guard and
+   zero-coefficient handling. Child global interaction budget set2^20; the
+   weighted CODE bound is now implied. Exhaustive actual-native-method test
+   checks136944small assignments plus zero/overflow/length and real-bound cases.
+   Lean proves coefficientwise scaled weighted sums and strict-bound transfer;
+   no Rust refinement theorem is claimed.
+2. Parent stacking height12 could not hold cached DAG height15. Parent now uses
+   l_skip2,n_stack16,k3, matching an explicit larger capacity.
+3. Native interaction debug evaluator had unreachable selector cases. Implemented
+   first/last/transition indicator evaluation at its actual row. Full parent
+   debug now passes, including global bus balance; this is not a bypass.
+
+Initial expanded Rust emission compiled slowly and lacked the new public binding;
+its identified compiler process was deliberately terminated. Replaced emission
+with static expression nodes and one generic evaluator, then compiled the bound
+version. First complete native run passes in2.68s reported by the test harness
+(excludes compilation; not a controlled performance benchmark). Child66289B,
+parent97689B. Both proofs saved. Parent public values are INSIDE serialized proof;
++919B retained request gives98608B with fixed locally generated verifier key.
+The parent is larger than this child; this is an integration milestone, not a
+compression speed/ratio win.
+
+CRITICAL parameter qualification: test_system_params_small sets WHIR's security
+calculator target to FIVE bits, with BabyBear Ext4, Poseidon2 and small grinding.
+These sizes are NOT comparable to PQ128 results and establish no secure300kB
+feasibility. No hash-width/QROM/whole-protocol certificate has been supplied.
+
+Fresh-process saved parent replay passes while childproof, bothsource traces,
+fixture and spec files are hidden/restored by the harness. Replay requires only
+parentproof, expected public vector and fixed key construction. Same public vector
+passes Lean preparation eligibility and independently executed runCall at256fuel.
+Both original compatibility fixtures and frozen oracle files remain unchanged.
+
+Reproduction: apply archived backend.patch after previous pinned research changes;
+run generate_native_literal_recursion.py (adds native module hook), then from
+/tmp/nearproof-openvm use NEARPROOF_LITERAL_OUT=<absolute results/native-literal-recursion>
+RAYON_NUM_THREADS=4 cargo test --locked --profile fast -p openvm-recursion-circuit
+ tests::native_literal::nearproof_literal_slice_recursion -- --exact --nocapture.
+NEARPROOF_LITERAL_REPLAY=1 selects verification-only mode. If modifying Cargo git
+checkout sources, targeted cargo clean -p openvm-stark-backend --profile fast is
+needed to invalidate its source cache. check_native_literal_recursion.py archives
+/tmp/nearproof-native-literal-bound.log and tests witness-independent replay plus
+Lean oracle parity; check_native_scaled_bound.py compiles the exact patched method.
+Source, fixture, proofs, patches, logs and pins are under native-literal-recursion/.
+
+Next decisive measurement: this SAME integrated child/parent with an explicitly
+stronger security profile, accounting for field/hash/QROM/composition errors,
+then scale execution workload. No more isolated arithmetic sweep before that.
+FullNEAR1Pgas/PQ128/sub300000B at target security/end-to-end Lean correctness remain
+open. Targeted Lean build and make pin-check pass.
