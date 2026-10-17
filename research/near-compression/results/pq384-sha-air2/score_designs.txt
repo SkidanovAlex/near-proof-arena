@@ -1,0 +1,8 @@
+v1 bits, 2 rounds/row (lane/pq-sha384-air)     [measured] C= 19448 cols=460 nxt=460 ipr=43 d= 4 | L  336,453 (+0) | T  400,018 (+0) | L: gkr L=24 deg +0 rel 59,356 pen=5162 cells=2^26.60
+v1 + 1 round/row, duplicated history           [modelled] C= 29400 cols=365 nxt=347 ipr=15 d= 5 | L  340,619 (+4,166) | T  410,680 (+10,662) | L: gkr L=23 deg +960 rel 50,572 pen=5456 cells=2^27.27
+v2 k=1 (bits + v2 overhead cuts)               [built   ] C= 18612 cols=436 nxt=409 ipr=14 d= 8 | L  330,145 (-6,308) | T  393,462 (-6,556) | L: gkr L=22 deg +3,648 rel 59,404 pen=5162 cells=2^26.54
+spread/limb lookups, 2 rounds/row (estimate)   [modelled] C= 14520 cols=350 nxt=220 ipr=220 d= 4 | L  313,945 (-22,508) | T  375,323 (-24,695) | L: gkr L=26 deg +0 rel 42,556 pen=4919 cells=2^26.13
+v2 k=2 (base-4 digits)                         [built   ] C= 10164 cols=244 nxt=217 ipr=14 d= 9 | L  291,389 (-45,064) | T  352,494 (-47,524) | L: gkr L=22 deg +4,560 rel 41,884 pen=4729 cells=2^25.57
+v2 k=3 (base-8 digits)                         [built   ] C=  7524 cols=184 nxt=157 ipr=14 d=21 | L  283,692 (-52,761) | T  335,116 (-64,902) | L: gkr L=22 deg +15,504 rel 47,068 pen=4602 cells=2^25.11
+v2 k=4 (base-16 digits)                        [modelled] C=  5940 cols=148 nxt=121 ipr=14 d=45 | L  291,747 (-44,706) | T  340,711 (-59,307) | L: gkr L=22 deg +37,392 rel 65,500 pen=4458 cells=2^24.74
+v2 k=3 with 43 rows                            [modelled] C=  7353 cols=184 nxt=157 ipr=14 d=21 | L  282,688 (-53,765) | T  333,949 (-66,069) | L: gkr L=22 deg +15,504 rel 47,068 pen=4602 cells=2^25.07
