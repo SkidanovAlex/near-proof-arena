@@ -1,0 +1,78 @@
+== final 12k today (b=8,k1=1,k=3,h=19, M=8, 268 bits)
+   baseline 42 B: q=[69, 69, 55, 46]  WHIR opening bytes=351,870
+   [L] c=[6, 6, 6, 6]  K*= 0 extra=0  n_min=324 D=41 B  q=[69, 69, 55, 46]  net saving=   3.8 KB
+   [L] c=[7, 7, 7, 7]  K*= 1 extra=0  n_min=259 D=33 B  q=[72, 72, 59, 51]  net saving=  17.2 KB
+   [L] c=[8, 8, 8, 8]  K*= 2 extra=0  n_min=237 D=30 B  q=[72, 72, 59, 51]  net saving=  27.2 KB
+   [L] c=[9, 9, 9, 9]  K*= 2 extra=0  n_min=237 D=30 B  q=[70, 70, 57, 48]  net saving=  34.3 KB
+   [L] c=[10, 10, 10, 10]  K*= 4 extra=0  n_min=219 D=28 B  q=[70, 70, 57, 48]  net saving=  37.5 KB
+   [L] c=[11, 11, 11, 11]  K*= 7 extra=0  n_min=208 D=26 B  q=[70, 70, 57, 48]  net saving=  39.4 KB
+   [L] c=[12, 12, 12, 12]  K*= 5 extra=0  n_min=214 D=27 B  q=[69, 69, 56, 47]  net saving=  36.0 KB
+   [L] c=[13, 13, 13, 13]  K*= 7 extra=0  n_min=208 D=26 B  q=[69, 69, 55, 46]  net saving=  35.4 KB
+   [L] c=[14, 14, 14, 14]  K*= 7 extra=0  n_min=208 D=26 B  q=[69, 69, 55, 46]  net saving=  30.2 KB
+   [L] c=[15, 15, 15, 15]  K*= 7 extra=0  n_min=208 D=26 B  q=[69, 69, 55, 46]  net saving=  25.0 KB
+   [L] c=[16, 16, 16, 16]  K*= 7 extra=0  n_min=208 D=26 B  q=[69, 69, 55, 46]  net saving=  19.8 KB
+   [L] BEST c=[11, 11, 11, 11]  K*=7 extra=0  n_min=208 D=26 B  q=[70, 70, 57, 48]  net saving=39.4 KB
+   [U] c=[6, 6, 6, 6]  K*= 0 extra=0  n_min=324 D=41 B  q=[69, 69, 55, 46]  net saving=   3.8 KB
+   [U] c=[7, 7, 7, 7]  K*= 1 extra=0  n_min=259 D=33 B  q=[74, 74, 61, 54]  net saving=   6.7 KB
+   [U] c=[8, 8, 8, 8]  K*= 1 extra=0  n_min=259 D=33 B  q=[71, 71, 58, 50]  net saving=  20.2 KB
+   [U] c=[9, 9, 9, 9]  K*= 2 extra=0  n_min=237 D=30 B  q=[71, 71, 58, 50]  net saving=  28.8 KB
+   [U] c=[10, 10, 10, 10]  K*= 3 extra=0  n_min=226 D=29 B  q=[70, 70, 57, 49]  net saving=  33.2 KB
+   [U] c=[11, 11, 11, 11]  K*= 7 extra=0  n_min=208 D=26 B  q=[70, 70, 58, 50]  net saving=  37.1 KB
+   [U] c=[12, 12, 12, 12]  K*= 5 extra=0  n_min=214 D=27 B  q=[69, 69, 56, 47]  net saving=  36.0 KB
+   [U] c=[13, 13, 13, 13]  K*= 7 extra=0  n_min=208 D=26 B  q=[69, 69, 55, 46]  net saving=  35.4 KB
+   [U] c=[14, 14, 14, 14]  K*= 7 extra=0  n_min=208 D=26 B  q=[69, 69, 55, 46]  net saving=  30.2 KB
+   [U] c=[15, 15, 15, 15]  K*= 7 extra=0  n_min=208 D=26 B  q=[69, 69, 55, 46]  net saving=  25.0 KB
+   [U] c=[16, 16, 16, 16]  K*= 7 extra=0  n_min=208 D=26 B  q=[69, 69, 55, 46]  net saving=  19.8 KB
+   [U] BEST c=[11, 11, 13, 13]  K*=7 extra=0  n_min=208 D=26 B  q=[70, 70, 55, 46]  net saving=38.2 KB
+== final 12k levers (236 + z=32, M=8)
+   baseline 42 B: q=[61, 61, 49, 40]  WHIR opening bytes=312,403
+   [L] c=[6, 6, 6, 6]  K*= 1 extra=0  n_min=259 D=33 B  q=[66, 66, 55, 48]  net saving=   3.6 KB
+   [L] c=[7, 7, 7, 7]  K*= 1 extra=0  n_min=259 D=33 B  q=[63, 63, 52, 45]  net saving=  17.3 KB
+   [L] c=[8, 8, 8, 8]  K*= 2 extra=0  n_min=237 D=30 B  q=[63, 63, 52, 45]  net saving=  26.0 KB
+   [L] c=[9, 9, 9, 9]  K*= 5 extra=0  n_min=214 D=27 B  q=[64, 64, 52, 45]  net saving=  30.0 KB
+   [L] c=[10, 10, 10, 10]  K*= 5 extra=0  n_min=214 D=27 B  q=[62, 62, 51, 43]  net saving=  34.5 KB
+   [L] c=[11, 11, 11, 11]  K*= 7 extra=0  n_min=208 D=26 B  q=[62, 62, 50, 42]  net saving=  34.7 KB
+   [L] c=[12, 12, 12, 12]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 41]  net saving=  34.8 KB
+   [L] c=[13, 13, 13, 13]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 41]  net saving=  30.3 KB
+   [L] c=[14, 14, 14, 14]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 41]  net saving=  25.7 KB
+   [L] c=[15, 15, 15, 15]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 41]  net saving=  21.0 KB
+   [L] c=[16, 16, 16, 16]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 40]  net saving=  17.2 KB
+   [L] BEST c=[12, 12, 12, 12]  K*=7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 41]  net saving=34.8 KB
+   [U] c=[6, 6, 6, 6]  K*= 0 extra=0  n_min=324 D=41 B  q=[61, 61, 49, 40]  net saving=   3.4 KB
+   [U] c=[7, 7, 7, 7]  K*= 1 extra=0  n_min=259 D=33 B  q=[65, 65, 54, 48]  net saving=   6.7 KB
+   [U] c=[8, 8, 8, 8]  K*= 1 extra=0  n_min=259 D=33 B  q=[62, 62, 51, 44]  net saving=  20.4 KB
+   [U] c=[9, 9, 9, 9]  K*= 2 extra=0  n_min=237 D=30 B  q=[62, 62, 51, 44]  net saving=  27.8 KB
+   [U] c=[10, 10, 10, 10]  K*= 4 extra=0  n_min=219 D=28 B  q=[62, 62, 51, 44]  net saving=  30.6 KB
+   [U] c=[11, 11, 11, 11]  K*= 7 extra=0  n_min=208 D=26 B  q=[62, 62, 51, 44]  net saving=  32.3 KB
+   [U] c=[12, 12, 12, 12]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 42]  net saving=  34.0 KB
+   [U] c=[13, 13, 13, 13]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 41]  net saving=  30.3 KB
+   [U] c=[14, 14, 14, 14]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 41]  net saving=  25.7 KB
+   [U] c=[15, 15, 15, 15]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 41]  net saving=  21.0 KB
+   [U] c=[16, 16, 16, 16]  K*= 7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 40]  net saving=  17.2 KB
+   [U] BEST c=[12, 12, 12, 12]  K*=7 extra=0  n_min=208 D=26 B  q=[61, 61, 49, 42]  net saving=34.0 KB
+== final 12k, contract M=3 (268 bits)
+   baseline 42 B: q=[71, 71, 57, 47]  WHIR opening bytes=361,720
+   [L] c=[6, 6, 6, 6]  K*= 1 extra=0  n_min=259 D=33 B  q=[77, 77, 63, 55]  net saving=   5.4 KB
+   [L] c=[7, 7, 7, 7]  K*= 1 extra=0  n_min=259 D=33 B  q=[74, 74, 60, 51]  net saving=  19.8 KB
+   [L] c=[8, 8, 8, 8]  K*= 2 extra=0  n_min=237 D=30 B  q=[74, 74, 60, 51]  net saving=  30.1 KB
+   [L] c=[9, 9, 9, 9]  K*= 4 extra=0  n_min=219 D=28 B  q=[74, 74, 60, 51]  net saving=  34.6 KB
+   [L] c=[10, 10, 10, 10]  K*= 5 extra=0  n_min=214 D=27 B  q=[73, 73, 59, 50]  net saving=  38.5 KB
+   [L] c=[11, 11, 11, 11]  K*= 5 extra=0  n_min=214 D=27 B  q=[72, 72, 58, 48]  net saving=  39.1 KB
+   [L] c=[12, 12, 12, 12]  K*= 7 extra=0  n_min=208 D=26 B  q=[72, 72, 57, 48]  net saving=  38.0 KB
+   [L] c=[13, 13, 13, 13]  K*= 7 extra=0  n_min=208 D=26 B  q=[72, 72, 57, 47]  net saving=  33.4 KB
+   [L] c=[14, 14, 14, 14]  K*= 7 extra=0  n_min=208 D=26 B  q=[72, 72, 57, 47]  net saving=  28.0 KB
+   [L] c=[15, 15, 15, 15]  K*= 7 extra=0  n_min=208 D=26 B  q=[72, 72, 57, 47]  net saving=  22.6 KB
+   [L] c=[16, 16, 16, 16]  K*= 7 extra=0  n_min=208 D=26 B  q=[71, 71, 57, 47]  net saving=  20.4 KB
+   [L] BEST c=[11, 11, 11, 11]  K*=5 extra=0  n_min=214 D=27 B  q=[72, 72, 58, 48]  net saving=39.1 KB
+   [U] c=[6, 6, 6, 6]  K*= 0 extra=0  n_min=324 D=41 B  q=[71, 71, 57, 47]  net saving=   3.9 KB
+   [U] c=[7, 7, 7, 7]  K*= 1 extra=0  n_min=259 D=33 B  q=[74, 74, 61, 54]  net saving=  16.6 KB
+   [U] c=[8, 8, 8, 8]  K*= 2 extra=0  n_min=237 D=30 B  q=[74, 74, 61, 54]  net saving=  27.0 KB
+   [U] c=[9, 9, 9, 9]  K*= 2 extra=0  n_min=237 D=30 B  q=[73, 73, 58, 50]  net saving=  32.4 KB
+   [U] c=[10, 10, 10, 10]  K*= 5 extra=0  n_min=214 D=27 B  q=[73, 73, 59, 51]  net saving=  37.8 KB
+   [U] c=[11, 11, 11, 11]  K*= 5 extra=0  n_min=214 D=27 B  q=[72, 72, 58, 48]  net saving=  39.1 KB
+   [U] c=[12, 12, 12, 12]  K*= 7 extra=0  n_min=208 D=26 B  q=[72, 72, 57, 48]  net saving=  38.0 KB
+   [U] c=[13, 13, 13, 13]  K*= 7 extra=0  n_min=208 D=26 B  q=[72, 72, 57, 47]  net saving=  33.4 KB
+   [U] c=[14, 14, 14, 14]  K*= 7 extra=0  n_min=208 D=26 B  q=[72, 72, 57, 47]  net saving=  28.0 KB
+   [U] c=[15, 15, 15, 15]  K*= 7 extra=0  n_min=208 D=26 B  q=[72, 72, 57, 47]  net saving=  22.6 KB
+   [U] c=[16, 16, 16, 16]  K*= 7 extra=0  n_min=208 D=26 B  q=[71, 71, 57, 47]  net saving=  20.4 KB
+   [U] BEST c=[11, 11, 11, 11]  K*=5 extra=0  n_min=214 D=27 B  q=[72, 72, 58, 48]  net saving=39.1 KB

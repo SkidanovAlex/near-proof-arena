@@ -20,6 +20,21 @@ with truncation under discussion).
 
 ## 0. Verdict
 
+> **Update 2026-10-17 (HROB.md and REVIEW-1.md).** The H-rob question is now settled.
+> * **The shift variant is the headline.** H-rob(strong) is not credible (REVIEW-1 item 9), so the "strong"
+>   columns of §6 are superseded.
+> * **H-rob fails for WHIR as built**, both Construction 5.1 and OpenVM v2.0.1. The y-values of the
+>   shift queries enter the γ-combination without being absorbed first. A QROM attack with success
+>   ≈ t²/2ⁿ (HROB §2) forces n ≥ 256 for that transcript order.
+> * **H-rob(shift) is proven [T] for WHIR-Y**, which absorbs the query answers before γ. That costs 0 proof
+>   bytes (HROB Theorem R). The radius shift costs a few queries.
+> * **Under the proven statement:** 26 B at block level c = 11 (K = 7, queries 70/70/57/48), net
+>   **39.4 KB** against 42 B with exact byte counts. Alternatively 28 B at c = 10 (37.5 KB).
+> * REVIEW-1 fixes 1–5 are applied below: the F formula, σ₀ in wide-bad, oracle index in positions,
+>   deduplicated openings, and the κ_⊥ < i case of Claim F.
+> * The table that follows is the original verdict, kept for the record. Where it disagrees with
+>   HROB.md, HROB.md wins.
+
 | question | answer |
 |---|---|
 | Is QROM soundness of BCS/Fiat–Shamir with weakly binding Merkle trees published anywhere (2019–2026)? | **No.** The state of the art is CMS19 Thm 8.6: O(t²ε + t³/2^λ), which needs collision-free databases. CY21a/CY21b do weak binding in the *classical* ROM only and leave the QROM open. |
@@ -106,8 +121,14 @@ and Hamoudi–Magniez (arXiv 2002.08944v5). Abstracts only for Chiesa–Hu (2026
     including any PoW bits, from one call to an extendable-output oracle.
   * **[H-M]** One-call challenges are a modelling assumption. Today's 268-bit/42-B analysis already makes it.
 * **Positions.**
-  * A Merkle node of IOP round i at level ℓ, index j, has position p = (i, ℓ, j). The position is part of
-    the hashed input ("position-indexed", as in CY).
+  * A Merkle node of IOP round i, oracle (tree) index o, level ℓ, index j, has position p = (i, o, ℓ, j).
+    The position is part of the hashed input ("position-indexed", as in CY). The oracle index is needed
+    when one round commits several trees (REVIEW-1 item 3); otherwise one excess entry could put blocks
+    of two trees into Coll and break |Coll| ≤ e(D) in Claim W.
+  * **Deduplicated openings (spec requirement, REVIEW-1 item 4).** The verifier opens each leaf index of
+    a tree at most once per proof: it deduplicates repeated query indices, or rejects a proof whose
+    repeated openings of one index disagree. Without this, a collided node lets two openings of one leaf
+    disagree, and no single τ_T explains the accepted run (Claim W step 4).
   * A narrow node input is (p, v_L, v_R) with v_L, v_R ∈ {0,1}ⁿ. A leaf input is (p, data).
   * **Blocks.** For a block level c, the 2^c subtrees rooted at level c are round i's *blocks*. All
     positions at level ≥ c are narrow. Positions at levels < c are wide ("wide top"). The variant that
@@ -233,8 +254,11 @@ with ordinary rbr only. That gives the 41-B row of §0.
 
 **Definitions used in the proof.**
 * *Transcripts in D.* σ-chains in D_fs that start at σ₀ and end at an FS entry, with the challenges
-  c_1..c_r and the messages they contain. If D_fs or the wide region has a collision, set κ := K+1
-  ("wide-bad").
+  c_1..c_r and the messages they contain. If D_fs or the wide region has a collision, **or σ₀ ∈ Out_fs**
+  (some FS output equals the initial state; REVIEW-1 item 2), set κ := K+1 ("wide-bad"). Without the σ₀
+  clause, σ₀ could be reached at two depths and one FS point could create two transcripts (Claim F step
+  3). Collisions are counted across the whole wide region, so Claim W′'s Chg is the set of outputs over
+  the whole wide region plus Chunk_p, still of size ≤ t + 1.
 * *Canonical extraction.* For round i, block b, and the block-root value v named by the (wide or cap) parent
   of transcript τ, extract top-down from narrow entries at the matching positions.
   * At each reached node value at position p, take the lexicographically smallest preimage at p with that
@@ -244,7 +268,10 @@ with ordinary rbr only. That gives the 41-B row of §0.
   * A reached node is *collided* if it has ≥ 2 preimages at p. Coll(τ) is the set of blocks of τ's
     oracles that contain a reached collided node.
 * *Robust level.* F(τ) := max{ m ≥ −1 : every τ_T with Coll(τ) ⊆ T and |T| ≤ m is doomed }. This is
-  vacuous for m < |Coll(τ)|, so F ≥ |Coll(τ)| − 1. Prefixes with no oracle have F = +∞.
+  vacuous for m < |Coll(τ)|, so F ≥ |Coll(τ)| − 1. F(τ) = +∞ exactly when every admissible τ_T is
+  doomed for every m. For a prefix with no oracle, τ_T = τ for all T, so the formula gives F = +∞ if
+  state(τ) = 0 and F = −1 if state(τ) = 1. (An earlier draft set F = +∞ for every oracle-free prefix;
+  that was wrong, REVIEW-1 item 1: it misses a lucky challenge at an oracle-free verifier move.)
 * *Potential.* κ(D) := min(K+1, max_τ (K − F(τ))⁺ + e(D)) when D is not wide-bad. The max over the empty
   set is 0. So κ(∅) = 0.
 
@@ -285,6 +312,12 @@ the cap or wide entries that feed b. Then |Chg| ≤ |D₋ₓ| ≤ t, because the
 1. *Monotonicity.* For x = (σ_prev, msg), κ_r ≥ κ_⊥ for all r. Adding an FS entry only adds transcripts or a
    σ-collision. It changes neither e nor any existing F. So Lemma 1(a) applies, and it suffices to bound
    Pr_r[κ_r ≥ j | κ_⊥ = i].
+   *The other values of κ_⊥ (REVIEW-1 item 5).* Take A = {r : κ_r ≥ j} and B = {r : κ_r = i}, with i < j.
+   * If κ_⊥ ≥ j, monotonicity gives B = ∅, so the block norm is 0.
+   * If κ_⊥ = i, then ⊥ ∈ B and Lemma 1(a) gives ‖A cO B‖² ≤ 10·Pr_r[κ_r ≥ j].
+   * If i' := κ_⊥ < i, then ⊥ ∉ A ∪ B and Lemma 1(c) gives ‖A cO B‖² ≤ 9|A|/M = 9·Pr_r[κ_r ≥ j]. Steps
+     2–5 below, run with i' in place of i, bound this by (9/10)·Γ(j − i')². Γ is non-increasing in its
+     argument, because ε̂ is non-decreasing, so the bound is ≤ Γ(j − i)².
 2. *Bad σ.* Let r = (σ, c). If σ ∈ Out_fs ∪ PrevState(D_fs) ∪ {σ₀}, a set of size ≤ 2t+1, anything may
    happen. That has probability ≤ (2t+1)/2³⁸⁴.
 3. *Otherwise exactly one new transcript appears*, or none if σ_prev is not reachable. It is τ′‖c with
@@ -349,6 +382,8 @@ that depends only on τ.
 * Blocks of 2⁸–2¹⁰ need either a large cap or (better) **untruncated 48-B digests for the top c levels**.
   `cap_cost.py`: wide top levels cost ≈ 1.0 KB per tree at c = 8 and ≈ 2.6–3.0 KB per tree at c = 10, for
   q = 40–69. A sent cap is always more expensive.
+
+**[H-rob]: resolved in HROB.md.** It is false for WHIR as built (§2 there). It is proven [T] in its shift form for WHIR-Y (Theorem R), where the query-move bound is N(m)·(1−δ)^q instead of Lemma 5. The original statement follows.
 
 **[H-rob] (open): WHIR is block-robust.** Lemma 5's hypothesis must hold for WHIR's shift-query step, and
 the non-query moves (sumcheck/folding randomness, OOD samples, combination randomness) must have small
@@ -424,7 +459,11 @@ Calibration:
      here and is dominated by (2).
 4. **Spec impact, if (3)(i)–(ii) close.** U-7 would change as follows. Only the proof technique changes; no
    new assumption class is added.
-   * Merkle node inputs carry (round, level, index).
+   * Merkle node inputs carry (round, oracle index, level, index).
+   * The verifier deduplicates repeated leaf openings, or rejects inconsistent repeats (§2).
+   * **The WHIR transcript absorbs each round's query answers before the combination challenge γ.** This
+     is the WHIR-Y change of HROB.md §3. Without it, the protocol is attackable at any n < 256
+     (HROB.md §2).
    * Narrow digests of n ≥ 221 bits (28 B) below level c = 8, and full 384-bit digests above.
    * The FS chain state σ stays at 384 bits.
    * Per the standing rule, this needs a user decision before adoption.
