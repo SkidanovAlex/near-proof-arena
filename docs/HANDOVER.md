@@ -311,8 +311,16 @@ took 1,800 s); slowest: `Candidates.HorizontalAuxCheck` 140 s, `Candidates.Verti
 
 ## 8. Smaller follow-ups
 
-* **Succinct badge:** 2 MiB / 50 ms, log-log growth test. Not implemented.
-* **Mainnet replay:** real class weights and a measured `G_α`.
+* ~~**Succinct badge**~~ DONE (lane/stream-a, 2026-10-16, `610427283`): contracts v1.8 additive —
+  `CoverageSpec.succinct` + §17 slope test recomputed by the control plane into the signed report
+  and the board (`SUCCINCT` badge, "succinct only" filter). No signed draft sets thresholds yet
+  (successor decision). Docs: `docs/logs/stream-a-2026-10.md`.
+* ~~**Mainnet replay**~~ DONE (same lane): `tools/mainnet-replay` measured 13,770 mainnet chunks
+  (1,378 consecutive blocks, PV 86): D3a family ≈ 60 % of chunks (`d3-maxgas` 30.9 % — FC gas
+  ≥ G_α/2), quiet ≈ 25 %, transfers ≈ 5.5 %, D2 ≈ 0.2 %. Measured G_α rows: FC-chunk median
+  0.71 × G_α, p90 3.9 ×, max 156.9 × — today's G_α = 3.45 Tgas is far below busy-shard traffic.
+  Artifacts `docs/e2e-results/mainnet-replay-2026-10/`; adoption is a versioned-successor/user
+  decision (CONTRACTS §11).
 * **Independence of the clean-room Python VM:** it was tuned against nearcore black-box runs.
 * **Future challenges:**
   * 1 Pgas as a single STARK, which needs Goldilocks, a distributed prover and precompiles;
