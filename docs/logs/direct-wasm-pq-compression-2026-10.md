@@ -10514,3 +10514,82 @@ screen a changed outer PCS schedule plus complete conditional security/byte
 ledger before full sponge-verifier implementation or a large proof run.
 Current dashboard rejects29inconsistent-evidence cases. No Lean changes;
 full NEAR1Pgas, secure sub300000B, PQ128 and recursive acceptance remain open.
+
+
+## 2026-10-17 — Outer PCS screen and published-design cross-check
+
+The permutation-only layout now has a conditional outer PCS screen in
+`research/near-compression/airbender/direct-wasm/screen_algebraic_outer_pcs.py`.
+Results are in `results/poseidon2-permutation-layout/outer-pcs-screen.json`.
+This is a model, not a generated recursive proof or a security certificate.
+It enforces BabyBear source/destination domains at most 2^27, screens rates
+4/16/64 and folds 1..8, extensions 8/10/12, and nominal QROM constants 1/256.
+64-byte digests and conditional minimum hash-term-budget digests (49/50 bytes)
+are compared. Complete expected modeled sizes are 1,181,595–1,491,861 bytes;
+there are zero joint size/partial-ledger survivors. Even relaxed schedules
+which independently grant each query term the entire error budget exceed
+1.15 MB. GKR, sponge binding, routing, auxiliary integration and full NEAR
+remain excluded, so these are optimistic costs.
+
+Important scope correction: only the 64-byte digest cases have relaxed
+source-plus-fixed prefixes over 300,000 bytes (301,198–312,051). Shorter digests
+bring those prefixes below target (264,889–277,234); their complete schedules
+still fail. This is not a universal no-go theorem. Passing a partial ledger
+with Ext12 is not PQ128. Upstream Poseidon2 M128 parameters are not a PQ128
+certificate. The independent test passed six exhaustive schedule cases,
+34,942 costs, invalid-domain checks and exact rational budget decisions.
+The relaxed-query test caught and corrected an off-by-one security-bit bound.
+The existing current-feasibility dashboard does not yet consume this screen.
+
+Published-design cross-check (primary sources consulted 2026-10-17):
+
+- Airbender Prime announcement: https://www.zksync.io/blog/introducing-airbender-prime
+  describes GKR, WHIR, BLAKE2s and planned Keccak-256 L1 commitments. Its
+  single-GPU speed results do not establish our PQ128 plus <300,000-byte target.
+  GitHub API HEAD resolved to 6ec4ea725d654c5e4fd3a122d571ca37804f9abd;
+  docs/philosophy_and_logic.md at that revision still describes DEEP STARK/FRI.
+  Consequently we must distinguish Prime's announcement from the older source
+  we have inspected. A reproducible Prime release/parameter mapping remains open.
+- SP1 Hypercube: https://docs.succinct.xyz/docs/sp1/security/security-model
+  explicitly retains elliptic-curve discrete-log assumptions for global memory,
+  before optional BN254 Groth16/PLONK wrapping. Thus compressed STARK does not
+  imply an entirely hash-based system. Its Jagged PCS is relevant for us:
+  https://docs.succinct.xyz/docs/sp1/hypercube/jagged
+  At source 02fa30185ecd658174b211d56128b14867ab8e81, inspected
+  slop/crates/jagged/src/verifier.rs: shape and prefix-sum checks, binding table
+  dimensions to original commitments, and reduction toward a dense PCS.
+- OpenVM 2.0 Beta reports <300 kB and 100-bit provable post-quantum security:
+  https://blog.openvm.dev/2.0-beta . This is a published claim, not locally
+  reproduced and not PQ128. SWIRL stacks heterogeneous tables before WHIR and
+  uses LogUp-GKR: https://openvm.dev/swirl.pdf . At source
+  e74f9b1ee868c42776faf821b8b9f2e8829a7f68 inspected security-model.mdx and
+  docs/crates/recursion/modules/whir/README.md. Dedicated AIRs cover folding,
+  query openings, sumcheck and final evaluations; buses bind Merkle roots and
+  challenges. Security docs disclose Poseidon2 ideal-permutation assumptions,
+  per-round grinding and distinct app/recursive/root schedules. PQ128 requires
+  redoing the quantum loss accounting, not merely setting security_bits=128.
+  Its Halo2/KZG EVM wrapper is excluded from our hash-only comparison.
+- RISC Zero distinguishes recursive STARK succinct receipts from Groth16:
+  https://dev.risczero.com/proof-system/ . Retain as a recursion baseline;
+  do not compare a tiny Groth16 receipt with our hash-only requirement.
+- S-two's dedicated circuit recursion replaces general Cairo verifier execution:
+  https://starkware.co/blog/minutes-to-seconds-efficiency-gains-with-recursive-circuit-proving/
+  Supports the direction of a specialized verifier circuit; this page does not
+  establish our exact size/security target.
+- Binius64 is a distinct, untested candidate for bitwise/hash-heavy computation:
+  https://github.com/binius-zk/binius64 . Its word-oriented binary-field design
+  merits a bounded comparison before concluding SHA recursion itself is
+  unworkable. Our negative SHA results concern our prime-field layouts.
+- Jolt now documents Dory (elliptic curve) and Akita (lattice) backends:
+  https://jolt.a16zcrypto.com/usage/quickstart.html . Dory is excluded by our
+  requirement; Akita is not hash-only and is an alternative research track,
+  not a locally tested or dismissed hash-based candidate.
+
+Priority update: benchmark SWIRL-style stacking and a dedicated native-field
+recursive verifier against our current outer PCS geometry; study SP1 Jagged
+PCS without importing its curve-based memory assumption. Keep algebraic hash
+co-design as a candidate, with explicit PQ assumptions. Keep Binius64 as the
+alternative for preserving bitwise hashes. Do not spend another large Lean
+campaign on a rejected layout. First establish a complete byte/security budget,
+then prove the interfaces connecting semantics, AIR, transcript, PCS and recursion.
+No full NEAR proof, PQ128 certificate or secure sub-300,000-byte proof is claimed.

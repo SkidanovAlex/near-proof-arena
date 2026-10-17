@@ -1,0 +1,4018 @@
+{
+  "status": "ALGEBRAIC_LAYOUT_OUTER_PCS_CONDITIONAL_SCREEN",
+  "rows": 524288,
+  "width": 2106,
+  "base_field": 2013265921,
+  "base_field_domain_cap": 134217728,
+  "records": [
+    {
+      "extension": 8,
+      "hash_bytes": 64,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 4520,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 491438.2422229072,
+        "expected_optimistic_bytes": 1391817.3486117804,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 90,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 192,
+            "expected_bytes": 486918.2422229072,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 288,
+            "expected_bytes": 203341.02585490196,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 288,
+            "expected_bytes": 180301.20918814655,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 288,
+            "expected_bytes": 157261.94250841896,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 288,
+            "expected_bytes": 134224.87558452482,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 288,
+            "expected_bytes": 111196.60460779714,
+            "next_rate": 4
+          },
+          {
+            "degree": 1024,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 282,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1024,
+            "header_bytes": 288,
+            "expected_bytes": 80840.65672817864,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 282,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 288,
+            "expected_bytes": 31164.791916905182,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 4712,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 305433.82309973147,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 136,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 192,
+          "expected_bytes": 300721.82309973147,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 4712,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 301198.2498926353,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 134,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 192,
+          "expected_bytes": 296486.2498926353,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 4520,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 480805.73606936587,
+        "expected_optimistic_bytes": 1364524.2865901492,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 88,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 192,
+            "expected_bytes": 476285.73606936587,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 288,
+            "expected_bytes": 199195.98962038025,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 288,
+            "expected_bytes": 176668.16485127422,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 288,
+            "expected_bytes": 154140.86576303028,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 288,
+            "expected_bytes": 131615.66921848131,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 288,
+            "expected_bytes": 109098.8799754402,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 192,
+            "expected_bytes": 48972.91001368467,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 277,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 384,
+            "expected_bytes": 61978.07107849227,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "115792089237316195423570985008687907853269984665640564039457584007913129639936/269903886087112502248563194479599378733081424069948722819014098894255554561",
+      "one_unit_algebra_floor_exceeds_half": true,
+      "relaxed_expected_gate_rejects": true,
+      "min_simulated_bytes": 1385464,
+      "max_simulated_bytes": 1398328,
+      "simulated_sizes": [
+        1387000,
+        1396856,
+        1395448,
+        1386552,
+        1390776,
+        1393144,
+        1388472,
+        1398328,
+        1393144,
+        1388280,
+        1386040,
+        1386296,
+        1385464,
+        1391928,
+        1385592,
+        1387448
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 189.05302413572554,
+        "query_sum_bits": 260.1146766813945,
+        "partial_QROM_bound": "342962350813171401616106760262118407192421164415519367939085622477545257234351675162174925598557726212300814046100557077394345291634506139117316031474834921964117140857656621922924405559884637289168807907690352152951588560462682565399489590831630606902285113919032824374686308665391437382642389524937890313316916325354900822049987130139259525656007127598183772792137685634027125757952056681486510344299354876305890472330357408229778131182175290483274168410075070252330670806589324392552013845448581024342469169928021846683973177133806151289062641089796398119942341311017246771888994849931208247765035254714277226312697748064100526709415822421476796544795138205545059631963824470340479685129654874073921701275445719246138224157119943774176021111856317219144739924221196551363052429608129487644691711788197620827534390881527395892194044365701884288123023417237297034388749931784896951796213960005975798644773520424428594109094953498009695334148844947774088427062372179070374180768022798668242809718340725511228537639013286606121028935038712634376294940093754666626125405361946172350122153685878093265855431429504714749679706596641864665681752793796337131270840936091020192036316006016312821857237735091142510916881557599801695035284069001463424596938508349711364427555680645957/2411007676890734458396961098583026377823784870962091763505446943343597027968686212548108323234365689420508548373143854964494557117596756903462295547791532322877950104086979129504333201492383020562810292651780839901388634787697793457302674388848378664442593245589804123028615075765863919108363439270352932278914622451930985787538417683704301459548867424845987938554604675439218100811690066269439057736188462419548182278998035695723333451266591998988563807194796343841712803506682703484455117815322980815321381762037692672950374304097970492850875423240942944770981176092902616280474746637891008266405684183420463805769057846272374558761854798642823347774596014295817897530902253256923232553712415341584781617171676534435481882986321384149495270695511404634138440387190771639759123744217739813086460686614381711298573061738257198356452355060918150805119129039527031056387443042714841976239665108037934691003180828635942541839388987937985962322170677928063350003381495194976256000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 1.4224855196457106e+20,
+        "partial_within_half_success": false,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -1091818.3486117804,
+      "source_only_already_exceeds_whole_bundle": true,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 8,
+      "hash_bytes": 49,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 4505,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 466262.9702314784,
+        "expected_optimistic_bytes": 1181595.1332455196,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 90,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 177,
+            "expected_bytes": 461757.9702314784,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 273,
+            "expected_bytes": 158435.46575867376,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 273,
+            "expected_bytes": 140795.58463888275,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 273,
+            "expected_bytes": 123156.06015224452,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 273,
+            "expected_bytes": 105517.96208480785,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 273,
+            "expected_bytes": 87885.56787965487,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 90,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 177,
+            "expected_bytes": 39578.352062503254,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 282,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 369,
+            "expected_bytes": 57915.17043727424,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 4697,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 268627.11195457116,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 136,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 177,
+          "expected_bytes": 263930.11195457116,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 4697,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 264889.2522099692,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 134,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 177,
+          "expected_bytes": 260192.2522099692,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 4505,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 456146.21031385683,
+        "expected_optimistic_bytes": 1158272.0570712427,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 88,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 177,
+            "expected_bytes": 451641.21031385683,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 273,
+            "expected_bytes": 155201.92270811793,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 273,
+            "expected_bytes": 137954.03633445434,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 273,
+            "expected_bytes": 120706.49083285563,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 273,
+            "expected_bytes": 103460.30871346795,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 273,
+            "expected_bytes": 86219.5784281091,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 88,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 177,
+            "expected_bytes": 38843.133441891965,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 277,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 369,
+            "expected_bytes": 57692.376298488925,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "115792089237316195423570985008687907853269984665640564039457584007913129639936/269903886087112502248563194479599378733081424069948722819014098894255554561",
+      "one_unit_algebra_floor_exceeds_half": true,
+      "relaxed_expected_gate_rejects": true,
+      "min_simulated_bytes": 1175707,
+      "max_simulated_bytes": 1185316,
+      "simulated_sizes": [
+        1179425,
+        1184832,
+        1185061,
+        1178375,
+        1178567,
+        1180166,
+        1177071,
+        1185316,
+        1182780,
+        1178609,
+        1177209,
+        1179100,
+        1175712,
+        1180733,
+        1175707,
+        1179083
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 189.05267161500888,
+        "query_sum_bits": 260.3637394216919,
+        "partial_QROM_bound": "931094046644356889565046233173553127037397602649129748803518445752904263841329424620890389751943179066663216360956594398897003250405760045693489683543454128813292418291292371322397921267452091140951632773943616011914753872004071126617007830812865130838765954580690259958300844469022747369530723337357364798941611014929638186618136018643850079448480844345375649168414935592270661486988175615098303726112732198571189114392781189240271563687839626221025170018947860563421050799945677098252605898037772636238057253046291070780640466583453264702773709144628232839387491542681645347943898212527072948095532702879030145859278352414014355513227147712222217217895406683296105682309262248680466904753324626097089431235093440577307287022572393169711041479373735875443909055741601310283017267880814791210760208686232642242941725641867602510995903371937133188367285221592653155908171146601091689170809769802551729065117470450510673027789770976151772581880332397600028131677431179360873845180635063363972545383189506869733383257390552591196626403239987422534334599086456617424633903865526540081977120595980112810154893448257993644210137210041816778068795444388479233603389437359791274722974737873328004011439135497886440618594112929940885479201158273734939135567901252824798267189088925189/6543944032639565431849743483965511849555929239867345344207139958379427469198466670746008896664451733778019223879988307793129968927225112984920671021427641377899177891620195850416375539643512823788864206525449073988659610584016100827418008946035126259770018389928047830365465243376859489334077482733942363297916642030564443196232401240222498976092484325167367853797963269198986286048719338511771503948149164489386979063386561025288978444052836961077202678998824018851262866946825174561559667886621121653511984877536524085471851049416220984790217136477883124987376333754377960672567673966432907546140798800101700265888692567887846258073607011321293143755970223294102190177289789195024261548032093585843100099838255194021687638067155764204271647031222654828200704794300003373241580294480394874109553985565038949778146948786314280484969635850341515069295314623673115060713724185414971248171762619706912845925487721431106135438602116729843730506338177914243682273804646218727424000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 1.4228331446606073e+20,
+        "partial_within_half_success": false,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/29642774844752946028434172162224104410437116074403984394101141506025761187823616"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -881596.1332455196,
+      "source_only_already_exceeds_whole_bundle": false,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 8,
+      "hash_bytes": 64,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 4520,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 507379.3342613471,
+        "expected_optimistic_bytes": 1432396.0165845822,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 93,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 192,
+            "expected_bytes": 502859.3342613471,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 288,
+            "expected_bytes": 209543.24683681462,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 288,
+            "expected_bytes": 185735.44266685282,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 288,
+            "expected_bytes": 161928.22597315963,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 288,
+            "expected_bytes": 138123.35897183596,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 288,
+            "expected_bytes": 114327.8873422918,
+            "next_rate": 4
+          },
+          {
+            "degree": 1024,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 291,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1024,
+            "header_bytes": 288,
+            "expected_bytes": 82010.56059904784,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 291,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 288,
+            "expected_bytes": 31299.959933232418,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 4712,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 313896.8615090113,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 140,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 192,
+          "expected_bytes": 309184.8615090113,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 4712,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 309666.6805167888,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 138,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 192,
+          "expected_bytes": 304954.6805167888,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 4520,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 496752.9505872625,
+        "expected_optimistic_bytes": 1405505.3530673357,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 91,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 192,
+            "expected_bytes": 492232.9505872625,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 288,
+            "expected_bytes": 205410.45475010702,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 288,
+            "expected_bytes": 182114.64220313277,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 288,
+            "expected_bytes": 158819.392002351,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 288,
+            "expected_bytes": 135526.39098710165,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 288,
+            "expected_bytes": 112242.38353311214,
+            "next_rate": 4
+          },
+          {
+            "degree": 1024,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 286,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1024,
+            "header_bytes": 288,
+            "expected_bytes": 81364.97713284513,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 286,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 288,
+            "expected_bytes": 31226.161871423443,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "29642774844752946028434172162224104410437116074403984394101141506025761187823616/269903886087112502248563194479599378733081424069948722819014098894255554561",
+      "one_unit_algebra_floor_exceeds_half": true,
+      "relaxed_expected_gate_rejects": true,
+      "min_simulated_bytes": 1423456,
+      "max_simulated_bytes": 1439392,
+      "simulated_sizes": [
+        1426976,
+        1439392,
+        1436128,
+        1425888,
+        1435552,
+        1432096,
+        1429408,
+        1435296,
+        1433440,
+        1428192,
+        1423648,
+        1423456,
+        1429856,
+        1431712,
+        1426976,
+        1431328
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 189.05302413572508,
+        "query_sum_bits": 268.68205130095544,
+        "partial_QROM_bound": "89905522491578285881462825391881165698252471364276073163708079098263772511715796714182195679505787027121950739062827869553086415548144957168317500923260501700254468514293840628112853087018239204028198573828581194697213417058106636749970942564608369347199404778518950427348666145932906343348516410151312693694905064115511955268617666845480336600073340862806989453238152177146175200647928831753484363677810299913112702206265947029696654824328683313768469067131464415606041395511558888654735693819561106915755947628641950959039372965970292516398320182707310955532588539551704155482966483912242330190144224884473928369412595160437728945256585908191043649589796501005841485475141729516287389829690721575638501467907900035447029938195340299674282458618466493100483768363337659045311344416301950818904199706499031604030940761812007955969112359095079358464205195884954705988123143264852080771897259852478379875632130763897635944386273721951538441408468591619902218970677474204755816287203281837453730865877533997400791895548897775707961153330439040395505922086711454416942885965014353851709060859717098716761091114492638856249134715110411113244832400601178281544452983450445417162186416642502272824390634343160183611851569984589630324888988186765049587046024099562001399975423992423441886129323017/2468871861136112085398488164949019010891555707865181965829577669983843356639934681649262922991990465966600753534099307483642426488419079069145390640938529098627020906585066628612437198328200213056317739675423580059021962022602540500277938574180739752389215483483959421981301837584244653166964161812841402653608573390777329446439339708113204694578040243042291649079915187649759335231170627859905595121856985517617338653693988552420693454096990206964289338567471456093913910790843088368082040642890732354889094924326597297101183287396321784679296433398725575445484724319132279071206140557200392464799420603822554937107515234582911548172139313810251108121186318638917527071643907335089390135001513309782816375983796771261933448177993097369083157192203678345357762956483350159113342714078965568600535743093126872369738815219975371117007211582380186424441988136475679801740741675739998183669417070630845123587257168523205162843534323648497625417902774198336870403462651079655686144000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 3.6415629302934356e+22,
+        "partial_within_half_success": false,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/153914086704665934422965000391185991426092731525255651046673021110334850669910978950836977558144201721900890587136"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -1132397.0165845822,
+      "source_only_already_exceeds_whole_bundle": true,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 8,
+      "hash_bytes": 50,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 4506,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 483162.0461008786,
+        "expected_optimistic_bytes": 1230971.998751185,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 93,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 178,
+            "expected_bytes": 478656.0461008786,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 274,
+            "expected_bytes": 166358.65445159157,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 274,
+            "expected_bytes": 147758.78602495423,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 274,
+            "expected_bytes": 129159.31230991117,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 274,
+            "expected_bytes": 110561.41730991866,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 274,
+            "expected_bytes": 91969.83507306408,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 93,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 178,
+            "expected_bytes": 41381.526596496304,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 291,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 370,
+            "expected_bytes": 58572.42088437041,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 4698,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 278616.6395616411,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 140,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 178,
+          "expected_bytes": 273918.6395616411,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 4698,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 274849.8116149469,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 138,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 178,
+          "expected_bytes": 270151.8116149469,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 4506,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 473015.6863703935,
+        "expected_optimistic_bytes": 1207452.4270895254,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 91,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 178,
+            "expected_bytes": 468509.6863703935,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 274,
+            "expected_bytes": 163073.91093926464,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 274,
+            "expected_bytes": 144874.03688431656,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 274,
+            "expected_bytes": 126674.54065663325,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 274,
+            "expected_bytes": 108476.55561498002,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 274,
+            "expected_bytes": 90284.61335421621,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 91,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 178,
+            "expected_bytes": 40638.67589862009,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 286,
+            "widths": [
+              64
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 370,
+            "expected_bytes": 58366.40737110114,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "29642774844752946028434172162224104410437116074403984394101141506025761187823616/269903886087112502248563194479599378733081424069948722819014098894255554561",
+      "one_unit_algebra_floor_exceeds_half": true,
+      "relaxed_expected_gate_rejects": true,
+      "min_simulated_bytes": 1224232,
+      "max_simulated_bytes": 1235492,
+      "simulated_sizes": [
+        1229154,
+        1235492,
+        1234148,
+        1226198,
+        1233046,
+        1227880,
+        1227416,
+        1232744,
+        1230604,
+        1228578,
+        1224232,
+        1224666,
+        1229736,
+        1228772,
+        1226880,
+        1230572
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 189.05267161500842,
+        "query_sum_bits": 269.0169222164566,
+        "partial_QROM_bound": "244080717763571675222372605597629684809026050751137012411113740313304743380422393023105173079809594478312227690729963914216984117801783969361499973561280528800133131674035605196366584963895504556156288162317010292851698473582838597890317119101158814411147803112667054489408730721000001287382377982757113843945185711200054064047864412441229053809913752916905447075215393088753395474763745009587053264311375306693257206860417418201814108161759602908211951900666386167474725597827038626843264394819792094878774304887006952762158379168369530867324120892343647940334426188482141184194268938717707463142750152253057825432699746274793227819063023962547009072057711967482315440747652845372005664840907601145251824322197035554960764759824229508258803189082841434737171362196993487571547487249378244534910244633772346707759430169990050083392474288266010617074709941636337905788312854575221886836900352170246016131275868665165691152644221931126780012403697927360108045100116460436381033421739913968842785216105403132255318790837073593814260105368275119425651351205625785814607206561150334035322136558582159850484199463577907450905028829724144415611442350184791441880726251342785618395343401742668913231903697631400107612681585222472725820907996282500331341005446072480982089025494877635434070144228809/6700998689422915002214137327580684133945271541624161632468111317380533728459229870843913110184398575388691685253108027180165088181478515696558767125941904770968758161019080550826368552594957131559796947482059851764387441238032487247276041160739969290004498831286320978294236409217904117078095342319556980017066641439297989832941978869987838951518703948971384682289114387659761956913888602636054020042904744437132266560907838489895913926710105048143055543294795795303693175753548978751037099915900028573196272514597400663523175474602210288425182347753352319987073365764483031728709298141627297327248177971304141072270021189517154568267373579593004179206113508653160642741544744135704843825184863831903334502234373318678208141380767502545174166559971998544077521709363203454199378221547924351088183281218599884572822475557185823216608907110749711430958402174641269822170853565864930558127884922579878754227699426745452682689128567531359980038490294184185530648375957727976882176000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 3.642452850331653e+22,
+        "partial_within_half_success": false,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/29642774844752946028434172162224104410437116074403984394101141506025761187823616"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -930972.9987511849,
+      "source_only_already_exceeds_whole_bundle": false,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 10,
+      "hash_bytes": 64,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 5632,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 492582.2422229072,
+        "expected_optimistic_bytes": 1420677.5319486107,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 90,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 224,
+            "expected_bytes": 486950.2422229072,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 344,
+            "expected_bytes": 206277.01821598402,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 344,
+            "expected_bytes": 183237.17863263513,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 344,
+            "expected_bytes": 160197.82028893763,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 344,
+            "expected_bytes": 137160.3867476246,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 344,
+            "expected_bytes": 114130.64991639469,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 224,
+            "expected_bytes": 51364.163754836314,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 282,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 464,
+            "expected_bytes": 73168.07216929109,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 5872,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 306625.82309973147,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 136,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 224,
+          "expected_bytes": 300753.82309973147,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 5872,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 302390.2498926353,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 134,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 224,
+          "expected_bytes": 296518.2498926353,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 5632,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 481949.73606936587,
+        "expected_optimistic_bytes": 1392899.0402060542,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 88,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 224,
+            "expected_bytes": 476317.73606936587,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 344,
+            "expected_bytes": 202067.98231906214,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 344,
+            "expected_bytes": 179540.13564615155,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 344,
+            "expected_bytes": 157012.7489449349,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 344,
+            "expected_bytes": 134487.2019844207,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 344,
+            "expected_bytes": 111969.01165214708,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 224,
+            "expected_bytes": 50411.04250719362,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 277,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 464,
+            "expected_bytes": 72901.18108277844,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "115792089237316195423570985008687907853269984665640564039457584007913129639936/1093985137813768389671452417872626100499068120275198056823424549335761037418414351651648307201",
+      "one_unit_algebra_floor_exceeds_half": false,
+      "relaxed_expected_gate_rejects": true,
+      "min_simulated_bytes": 1413016,
+      "max_simulated_bytes": 1425624,
+      "simulated_sizes": [
+        1417944,
+        1424920,
+        1425176,
+        1416472,
+        1416712,
+        1418840,
+        1414776,
+        1425624,
+        1422168,
+        1416792,
+        1415064,
+        1417480,
+        1413080,
+        1419480,
+        1413016,
+        1417368
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 250.86645280765924,
+        "query_sum_bits": 260.3637394216919,
+        "partial_QROM_bound": "932382371547020460660501412718312391526091873710944823896298223252181842981643053443681558021341607731561530097016178660774598119951550491092182197711116558287072147619802161090590626715456881902798169711120224091425414093301065276548204135661051513332385511123845636041442253431759362883138678253406314307088799186301244637073462751543334436830055245465530134973770847617990376185067455365677755441910059825277392382395075111772652932516999857991363096349305847398302473166247570081176805867374117596020966974469753326635673876379955390830073429290860138070342376947573758819025326501837812017766272028962495142721863270106598812834342334961443261336844261554806938600407533741639940526917934576871231280593652440713899211237039980925162856215932191434902047752811531458054083655423493065410364993172910196787320595793206805613664234199066459656081757592572385821152245930018046093197836243051616981598123362100716798142412235329837667500705649472908749516916033889065823474451828831350649364184872857042152146124431712048116999765921514369908662195700026363611343381030165650434414593872220198852328141826959325893908439901807203026211818492017500235414141648128891654823503326671170795799067869216118796463801065499194480344511628696390533395569484729914842120490816812549/26524173542585434026518837885550133653392910794765990017843611341740732182656141026352304125897345762211398647185158892363807806413312741893237036696042798009840614400268298311094233151501291402497069819059412192615228717354681130365362224817406427193414837648281780933361003785378827293901602383077662995357238187160381853965260466311556107993715704426302404982405960647073818767789220651504188974088339323659064309327729177176361728641141253968767598157625421727845249961234285151750120873068614552601024923921379012793967084750065101048813454358314660946607365995450403898819238548069085151744422309376596644682372226751410253051053703060812241667185219155743897988890289715444085318349083687148021774685091288042193916834378569714630614395927192065383774021550680612310058966049161102582856143410079955145893598809524922260676065989511770027433006470403920876684086454697095400396618591307109632040547679280345700520735122107949245436427630565609305105221561023608880670225318258549981184000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 35.152174300550776,
+        "partial_within_half_success": false,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -1120678.5319486107,
+      "source_only_already_exceeds_whole_bundle": true,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 10,
+      "hash_bytes": 49,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 5617,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 467406.9702314784,
+        "expected_optimistic_bytes": 1208216.4880361748,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 90,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 209,
+            "expected_bytes": 461789.9702314784,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 329,
+            "expected_bytes": 161371.4581197558,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 329,
+            "expected_bytes": 143731.55408337136,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 329,
+            "expected_bytes": 126091.93793276318,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 329,
+            "expected_bytes": 108453.47324790765,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 329,
+            "expected_bytes": 90819.61318825242,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 329,
+            "expected_bytes": 73204.15184626839,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 282,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 329,
+            "expected_bytes": 34577.329386377474,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 5857,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 269819.11195457116,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 136,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 209,
+          "expected_bytes": 263962.11195457116,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 5857,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 266081.2522099692,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 134,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 209,
+          "expected_bytes": 260224.2522099692,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 5617,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 457290.21031385683,
+        "expected_optimistic_bytes": 1184027.4664939502,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 88,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 209,
+            "expected_bytes": 451673.21031385683,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 329,
+            "expected_bytes": 158073.91540679982,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 329,
+            "expected_bytes": 140826.00712933167,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 329,
+            "expected_bytes": 123578.37401476025,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 329,
+            "expected_bytes": 106331.84147940738,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 329,
+            "expected_bytes": 89089.71010481598,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 329,
+            "expected_bytes": 71865.16489359073,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 277,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 329,
+            "expected_bytes": 34412.24315138755,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "115792089237316195423570985008687907853269984665640564039457584007913129639936/1093985137813768389671452417872626100499068120275198056823424549335761037418414351651648307201",
+      "one_unit_algebra_floor_exceeds_half": false,
+      "relaxed_expected_gate_rejects": false,
+      "min_simulated_bytes": 1202113,
+      "max_simulated_bytes": 1212792,
+      "simulated_sizes": [
+        1205821,
+        1210897,
+        1212553,
+        1205716,
+        1205226,
+        1206425,
+        1203204,
+        1212792,
+        1210129,
+        1204429,
+        1205024,
+        1205602,
+        1202453,
+        1206516,
+        1202113,
+        1206036
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 250.86627632135378,
+        "query_sum_bits": 260.3637394216919,
+        "partial_QROM_bound": "14575111098822520546396658073498678410677476651033662726032553726659182552305640588822840007512477555564145613378740904505152946468694780145986837615926406204853349755352236303753873595523506075094435077967780203177847474457907213805652174710256019530121904915546609452700014236479720424048567494098703369946607466523089755532044765861629409986365829247158785118572381600882519836895984076316995923401429906844622466582179877155343459323402389310134495119621550355856453083506865783761629017317037301654212558784780373551819780880041576668520899056903165239050763498995625826517094866919168015235442895412367723964594932237229176702110975529375622486020506003941714728972047521692818052084154684547228098513859198547171430601816119130546203912957947842842342846281060130737944631745252456139360751795273576901241394976034176860768542250825420457021889133770428837735338520546201506868841596090631490092006838363027225041334661044803568896859729976800747309461979399176955943814148995521204194782720367789964066353880239322952622052616246655272860043603754763886863671651039978414038574481180752857450467867332624797258005503216449782543463761674151932033172588981410271080681741629336060348734872014390825621770852494010531593998843986091572363666551050580830920341961831517/414440211602897406529423913784539884441805254470103592633028728066790556841029546300406240754850719555138395824939160141904595098557044590150817400486023711368047876652922780273113047290986489950193328281768019226172503797228999524357168872983964371595603025085945543702878568680601094108964179092511929494851048694225904294587168402069439464905947304307196078813040769600897211327949201205806989774461586076627361672958402145940833058685273466051208257316932069010735259776492115682298701828874891427201997776913608116553984620039193548613242468486454248721553873372641398894408525308234645171040590725420254956563114824593338597158581431626624043162887556149725179465019912397778364841886107253180174920537719348387011767983199754683855223128754195318885355302485210860806621105848666551185984390142757600850785289634552920689540306616872704875410170020415789862456123104602772095599032204330080053833026615626572825554952736618771026312357429599433897157883855374122258642513245054697472000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 35.16818757149921,
+        "partial_within_half_success": false,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/29642774844752946028434172162224104410437116074403984394101141506025761187823616"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -908217.4880361748,
+      "source_only_already_exceeds_whole_bundle": false,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 10,
+      "hash_bytes": 64,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 5632,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 508523.3342613471,
+        "expected_optimistic_bytes": 1462311.391547551,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 93,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 224,
+            "expected_bytes": 502891.3342613471,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 344,
+            "expected_bytes": 212575.2386771919,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 344,
+            "expected_bytes": 188767.41002853907,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 344,
+            "expected_bytes": 164960.095422737,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 344,
+            "expected_bytes": 141154.83681546088,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 344,
+            "expected_bytes": 117357.7994416045,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 224,
+            "expected_bytes": 52786.20447569731,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 291,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 464,
+            "expected_bytes": 73626.47242497312,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 5872,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 315088.8615090113,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 140,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 224,
+          "expected_bytes": 309216.8615090113,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 5872,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 310858.6805167888,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 138,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 224,
+          "expected_bytes": 304986.6805167888,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 5632,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 497896.9505872625,
+        "expected_optimistic_bytes": 1434621.9510301137,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 91,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 224,
+            "expected_bytes": 492264.9505872625,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 344,
+            "expected_bytes": 208378.4469395282,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 344,
+            "expected_bytes": 185082.61096098315,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 344,
+            "expected_bytes": 161787.26703640417,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 344,
+            "expected_bytes": 138493.89116573805,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 344,
+            "expected_bytes": 115208.3849262234,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 224,
+            "expected_bytes": 51839.184874553626,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 286,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 464,
+            "expected_bytes": 73375.21453942062,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "29642774844752946028434172162224104410437116074403984394101141506025761187823616/1093985137813768389671452417872626100499068120275198056823424549335761037418414351651648307201",
+      "one_unit_algebra_floor_exceeds_half": false,
+      "relaxed_expected_gate_rejects": true,
+      "min_simulated_bytes": 1453776,
+      "max_simulated_bytes": 1468112,
+      "simulated_sizes": [
+        1459984,
+        1468112,
+        1466384,
+        1456208,
+        1464960,
+        1458384,
+        1457744,
+        1464656,
+        1461840,
+        1459216,
+        1453776,
+        1454272,
+        1460752,
+        1459472,
+        1457104,
+        1461776
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 250.8664528076588,
+        "query_sum_bits": 269.0169222164566,
+        "partial_QROM_bound": "244081556639522986913464267475694778175107060018330823344227309314452143667727955040920117711188796698674371890147910554324776649422732004808965897837067224657435269951218360058447313572582406810305997557272356444288470914877937170646725764651246373442312592159726058329766122933505638341303120371148194834348777516821341352463921037937917447263906834134534200141132038284804558974418855328532863445274593480648673078791972520229981338127021337069362237915977858159746328170855202159149475094539351359402101842347061544119606668541042220890992906450664212459098993654369360337927611739607251877657630662022604027053681852002357228844506243442157421299826740823597276166743250644492979068832517957518355528787465175068209368502011399817861909521260459087517624990072812409567562687046927976049825888745952642279769663789923770280573355629471760213812758874495181776475311643936554935959076985175076981168178659201005196945174877981613247222191901891576679988317060394897040990834315771622880459130869565970642689501488090005399491191590593151275530984484429117915569853450952551697394353585101680648706316279230614427812605955109356464285740847355812377263651922894101948175085114395641985999357090466277359253611297568385017623866016785368665249172000366430298929003626706792454157665344969/27160753707607484443155289994803336861074340653840373778271858013942509755039888410984759424918882060504472214717602705780539193767232247698674725576747825162076789145874737470560494747137322396156999494716838085237994206571193477494130918213024181446056793751840543675761667876227919148955240840271526907245811903652231018460426717503033454585564881332533662701983703702603590418216161947140289509466459467426881852751594677428594410128528644064018020513408431849313535960303907995392123774022261301863449522095492109101022294784066663473984977262914212809325942779341213592390900273222743195386288444801634964154749160193444099124278991934271735467197664415481751540623656668614743365989461695639574297277533478955206570838403655387781749141429444674952984598067896947005500381234340969044844690851921874069395045180953520394932291573260052508091398625693614977724504529609825690006137437498480263209520823583073997333232765038540027326901893699183928427746878488175493806310725896755180732416000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 8986.553144552758,
+        "partial_within_half_success": false,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/153914086704665934422965000391185991426092731525255651046673021110334850669910978950836977558144201721900890587136"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -1162312.391547551,
+      "source_only_already_exceeds_whole_bundle": true,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 10,
+      "hash_bytes": 50,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 5618,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 484306.0461008786,
+        "expected_optimistic_bytes": 1259258.88694114,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 93,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 210,
+            "expected_bytes": 478688.0461008786,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 330,
+            "expected_bytes": 169390.64629196885,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 330,
+            "expected_bytes": 150790.75338664048,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 330,
+            "expected_bytes": 132191.18175948857,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 330,
+            "expected_bytes": 113592.8951535436,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 330,
+            "expected_bytes": 94999.74717237678,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 330,
+            "expected_bytes": 76427.13035480365,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 291,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 330,
+            "expected_bytes": 35000.48672143935,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 5858,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 279808.6395616411,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 140,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 210,
+          "expected_bytes": 273950.6395616411,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 5858,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 276041.8116149469,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 138,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 210,
+          "expected_bytes": 270183.8116149469,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 5618,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 474159.6863703935,
+        "expected_optimistic_bytes": 1234863.1577138198,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 91,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 210,
+            "expected_bytes": 468541.6863703935,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 330,
+            "expected_bytes": 166041.9031286858,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 330,
+            "expected_bytes": 147842.00564216694,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 330,
+            "expected_bytes": 129642.41569068644,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 330,
+            "expected_bytes": 111444.05579361646,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 330,
+            "expected_bytes": 93250.61474732749,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 330,
+            "expected_bytes": 75076.82725710559,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 286,
+            "widths": [
+              80
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 330,
+            "expected_bytes": 34845.64908383743,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "29642774844752946028434172162224104410437116074403984394101141506025761187823616/1093985137813768389671452417872626100499068120275198056823424549335761037418414351651648307201",
+      "one_unit_algebra_floor_exceeds_half": false,
+      "relaxed_expected_gate_rejects": false,
+      "min_simulated_bytes": 1252146,
+      "max_simulated_bytes": 1263536,
+      "simulated_sizes": [
+        1257356,
+        1263536,
+        1263146,
+        1255046,
+        1261996,
+        1256016,
+        1255776,
+        1261556,
+        1259506,
+        1256146,
+        1253736,
+        1252146,
+        1257726,
+        1255236,
+        1255316,
+        1260236
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 250.86627632135333,
+        "query_sum_bits": 269.0169222164566,
+        "partial_QROM_bound": "3814245865478163024617403790739564699240749915178031633252563332717592432380343494117766756427379297873254870860333074865802594422549461831971846755545297158811804059919691964624331252486018086379679876498324901207091015952537176169135272834761869252530174209863668050824557181099755781170016441259219936785410734371696144939208323912679716093385096386566077132727244469578153541787648888380933518520329441161323407167334358591012476726771633097732685048566226353848738118636153295636678273755280657039474209859358291301465011616225035781636572584798229767825867427206860704418106177889087086490610468898424110806554253874529816708767058468976082124809825050124904810352647931818205022934149703159100972107305185968837702841218148797293785154409353141723469421374370925672885022227027880337804263033955474232631169675490236829744710237721609759159542016473818555688491819213580218692567317988861424764569030288671010929386146445691034372983147089577784556232938388648999373848015333865996060144249000034309681975680846903747313396514518345392089397376095955013424433290024582482284789145023366222287496406470565200952187084292169916078604069717279630879118979470013366917457035730950585252849896161248009418277199201006650765057985973981332965813144600440406956870514898543986246833893377/424386776681366944286130087715368841668408580577386078856221417540393530205214255411615990532967136824461717324737699985310305380922413660314437018097688280440881025692592926999667760425970165708997968160530451687600643888362495512941740925935579516513897497688008236751747654328935520367579319390732215802727473862887325997657260443719106012063690039610568784704553748071318744399819982034746357529048664142466418353109403797443413052093720029236437255492538438666992906011127926458673870672767888821454845723559534711351280250920134193779960287730129150690871166333584792467874329915632276655145564902830341075520629580383578723490387385985663020198796857497318583772180390295325045598091373827256499118630624612748300050414796548796267748483844296006538603829744855921465980012389034548414448015506183783271204136585782190786089273975677649792420014100905768819155070059113238625893408977234001975125019254401610573368271602297621530943854007909820310689673067903101192849933562936010211328000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 8987.664260665524,
+        "partial_within_half_success": false,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/29642774844752946028434172162224104410437116074403984394101141506025761187823616"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -959259.88694114,
+      "source_only_already_exceeds_whole_bundle": false,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 12,
+      "hash_bytes": 64,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 6744,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 493726.2422229072,
+        "expected_optimistic_bytes": 1448765.8240372662,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 90,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 256,
+            "expected_bytes": 486982.2422229072,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 400,
+            "expected_bytes": 209213.0105770661,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 400,
+            "expected_bytes": 186173.14807712374,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 400,
+            "expected_bytes": 163133.69806945627,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 400,
+            "expected_bytes": 140095.8979107244,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 400,
+            "expected_bytes": 117064.69522499223,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 400,
+            "expected_bytes": 94059.85170261035,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 282,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 400,
+            "expected_bytes": 42227.2802523859,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 7032,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 307817.82309973147,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 136,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 256,
+          "expected_bytes": 300785.82309973147,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 7032,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 303582.2498926353,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 134,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 256,
+          "expected_bytes": 296550.2498926353,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 6744,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 483093.73606936587,
+        "expected_optimistic_bytes": 1419985.2203008914,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 88,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 256,
+            "expected_bytes": 476349.73606936587,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 400,
+            "expected_bytes": 204939.97501774406,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 400,
+            "expected_bytes": 182412.1064410289,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 400,
+            "expected_bytes": 159884.6321268395,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 400,
+            "expected_bytes": 137358.73475036013,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 400,
+            "expected_bytes": 114839.14332885394,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 400,
+            "expected_bytes": 92344.74702316681,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 277,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 400,
+            "expected_bytes": 42040.1455435323,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "115792089237316195423570985008687907853269984665640564039457584007913129639936/4434183957511219220515285874692608016537750237991692040631624104441671469499982651646702521144353543805143613441",
+      "one_unit_algebra_floor_exceeds_half": false,
+      "relaxed_expected_gate_rejects": true,
+      "min_simulated_bytes": 1440824,
+      "max_simulated_bytes": 1454840,
+      "simulated_sizes": [
+        1445752,
+        1452280,
+        1454392,
+        1445496,
+        1444856,
+        1446456,
+        1442232,
+        1454840,
+        1451192,
+        1443832,
+        1444728,
+        1445432,
+        1441336,
+        1446456,
+        1440824,
+        1445880
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 312.68005751400415,
+        "query_sum_bits": 260.3637394216919,
+        "partial_QROM_bound": "81592025024976446200633158154171949707119895347244553314326736485551474641225809646316965766389983628482416861539522108223072291048591255029397040634428820245132125636746697836661327678479980081703825264815694218289441396011073289397925138955868032312663422659969428016559481631858188761799830837691460532360815552116129221309920422511278228458936167108622026896983308040548288287427841822820080772430404925184314586139157941431000844244540081024527653445677661250892766692322158866708931062649496046388829657181835461128739121341243294501160996178795671408293404781033099028819005227312514896768079812313071110845302119420675228742552050591721919645567098011188031726338078806367355145927797559073083636544413399377205907937308242103576840900013591181705781885815502270084713395049264893077848624893254564053699339202745323816336818569549182240223978596167539376656597116810007194808133839877899581445848337890703696569552925453056398794462254348901645134998303378705882172040518357149605448837685481740213821961168939436392113856669357320163919306188513147899702487739711944660746443669495052159746578947839706515812611806535943916253622686038420652645036819716624252219596062513377229679783970459848672850167515294277600630918867451884594879931036458160999630026639572336104409728021597/1679825505956699153732731237404060174110517380877304100439240963737627296887857489244202416138689368278039149297113528561877304767421287756606995117040896179190512675485773622381010621161665028463462021252701187110645865900752719570738624856428538887381899862831490034854836234118089201121075526001535235641234471818363851514212827824040010552850048920840202736834426194784733120327509072970315510854681650124836654287940455861213613248877578632172365182614589951764329879194558324036705303336071869811532605491424805071516731419131388757043401072643852035243528453551266688073040586142829674127499051101668786567179007804684637897974769492947390507970561132784594050494522083917293426263569175392896640326393425453262146703672443817132323081202339857147103742004235586517560035535701091708763262138402675732336788385196520500505790452882486644167073807581958977487644369159116693306900682084377494955327717744275319864917587192196516473210111681774337195254483019581202405563702121248937562540120482357706752000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 0.04857172648923908,
+        "partial_within_half_success": true,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -1148766.8240372662,
+      "source_only_already_exceeds_whole_bundle": true,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 12,
+      "hash_bytes": 49,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 6729,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 468550.9702314784,
+        "expected_optimistic_bytes": 1233009.319982212,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 90,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 241,
+            "expected_bytes": 461821.9702314784,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 385,
+            "expected_bytes": 164307.4504808379,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 385,
+            "expected_bytes": 146667.52352785994,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 385,
+            "expected_bytes": 129027.81571328183,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 385,
+            "expected_bytes": 111388.98441100743,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 385,
+            "expected_bytes": 93753.65849684997,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 90,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 385,
+            "expected_bytes": 76132.34356677877,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 282,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 385,
+            "expected_bytes": 40108.57355411784,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 7017,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 271011.11195457116,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 136,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 241,
+          "expected_bytes": 263994.11195457116,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 7017,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 267273.2522099692,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 134,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 241,
+          "expected_bytes": 260256.2522099692,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 6729,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 458434.21031385683,
+        "expected_optimistic_bytes": 1208383.0691163046,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 88,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 241,
+            "expected_bytes": 451705.21031385683,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 385,
+            "expected_bytes": 160945.90810548174,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 385,
+            "expected_bytes": 143697.97792420903,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 385,
+            "expected_bytes": 126450.25719666485,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 385,
+            "expected_bytes": 109203.37424534679,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 385,
+            "expected_bytes": 91959.84178152285,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 88,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 385,
+            "expected_bytes": 74729.70139569197,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 277,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 385,
+            "expected_bytes": 39889.79815353063,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "115792089237316195423570985008687907853269984665640564039457584007913129639936/4434183957511219220515285874692608016537750237991692040631624104441671469499982651646702521144353543805143613441",
+      "one_unit_algebra_floor_exceeds_half": false,
+      "relaxed_expected_gate_rejects": false,
+      "min_simulated_bytes": 1226849,
+      "max_simulated_bytes": 1237417,
+      "simulated_sizes": [
+        1230397,
+        1235665,
+        1237417,
+        1230516,
+        1230026,
+        1231161,
+        1227972,
+        1237400,
+        1235057,
+        1229197,
+        1229568,
+        1230242,
+        1227061,
+        1231476,
+        1226849,
+        1230900
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 312.68005751400415,
+        "query_sum_bits": 260.3637394216919,
+        "partial_QROM_bound": "101277480172906514408438602342500779857667830459755780274013618125699457399936219474751860985979761117748496445209933145606454969806470303668089092361318845268782579668151288947750218199062601089713995879253191049417398097724853308862684270809895424732055398221085051130698598914443364794869808958324946897459506265387994221742189781446687806479025765320082803910899663560106630197713482263334054470291488706020046815831549758890541568014628490827025381550509312557606177420608557075732162632803222576149442399178075802904514559617646094019162635894154337094673088648866914145774314956515148759223940388901069117160663509815816293427032291581926688435475502457059192609587624196907228708941183003744439093363351121387731253090677848111647434472659101619391132235492966556762062280441659824626077267515261274358724692905171994176643149077449532026921250124295146049410710047915362560270344277170181867092923608024832410996528142479023093874201994532295831362849131324803046173233607778640340784040795259835705201025053710566194461297056553047757608116064029346999068109544902984699808943669495052159746578947839706515812611806535943916253622686038420652645036819716624252219596062513377229679783970459848672850167515294277600630918867451884594879931036458160999630026639572336104409728021597/1679825505956699153732731237404060174110517380877304100439240963737627296887857489244202416138689368278039149297113528561877304767421287756606995117040896179190512675485773622381010621161665028463462021252701187110645865900752719570738624856428538887381899862831490034854836234118089201121075526001535235641234471818363851514212827824040010552850048920840202736834426194784733120327509072970315510854681650124836654287940455861213613248877578632172365182614589951764329879194558324036705303336071869811532605491424805071516731419131388757043401072643852035243528453551266688073040586142829674127499051101668786567179007804684637897974769492947390507970561132784594050494522083917293426263569175392896640326393425453262146703672443817132323081202339857147103742004235586517560035535701091708763262138402675732336788385196520500505790452882486644167073807581958977487644369159116693306900682084377494955327717744275319864917587192196516473210111681774337195254483019581202405563702121248937562540120482357706752000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 0.06029047648923908,
+        "partial_within_half_success": true,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/29642774844752946028434172162224104410437116074403984394101141506025761187823616"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -933010.319982212,
+      "source_only_already_exceeds_whole_bundle": false,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 12,
+      "hash_bytes": 64,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 6744,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 509667.3342613471,
+        "expected_optimistic_bytes": 1491861.0757657872,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 93,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 256,
+            "expected_bytes": 502923.3342613471,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 400,
+            "expected_bytes": 215607.2305175692,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 400,
+            "expected_bytes": 191799.3773902253,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 400,
+            "expected_bytes": 167991.9648723144,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 400,
+            "expected_bytes": 144186.31465908582,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 400,
+            "expected_bytes": 120387.7115409172,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 32768,
+            "header_bytes": 256,
+            "expected_bytes": 54304.11754084688,
+            "next_rate": 4
+          },
+          {
+            "degree": 512,
+            "rate": 4,
+            "skipped": 3,
+            "queries": 291,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 4,
+            "folded_domain": 256,
+            "header_bytes": 544,
+            "expected_bytes": 84845.02498348143,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 7032,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 316280.8615090113,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 140,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 256,
+          "expected_bytes": 309248.8615090113,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 7032,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 312050.6805167888,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 138,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 256,
+          "expected_bytes": 305018.6805167888,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 6744,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 499040.9505872625,
+        "expected_optimistic_bytes": 1463188.2741599684,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 91,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 256,
+            "expected_bytes": 492296.9505872625,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 400,
+            "expected_bytes": 211346.43912894934,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 400,
+            "expected_bytes": 188050.57971883353,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 400,
+            "expected_bytes": 164755.14207045737,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 400,
+            "expected_bytes": 141461.39134437448,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 400,
+            "expected_bytes": 118174.38631933468,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 400,
+            "expected_bytes": 94914.33232275918,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 286,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 400,
+            "expected_bytes": 42373.052667997166,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "29642774844752946028434172162224104410437116074403984394101141506025761187823616/4434183957511219220515285874692608016537750237991692040631624104441671469499982651646702521144353543805143613441",
+      "one_unit_algebra_floor_exceeds_half": false,
+      "relaxed_expected_gate_rejects": true,
+      "min_simulated_bytes": 1482560,
+      "max_simulated_bytes": 1497536,
+      "simulated_sizes": [
+        1489536,
+        1497536,
+        1495872,
+        1485696,
+        1494560,
+        1487680,
+        1487424,
+        1493568,
+        1491392,
+        1489024,
+        1482560,
+        1483552,
+        1490112,
+        1489216,
+        1486400,
+        1491520
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 312.68023400030916,
+        "query_sum_bits": 269.0169222164566,
+        "partial_QROM_bound": "3400165282941666921524969351723832247934968261883854504883263398056069252480079570908601932121165267950442039768302082362370881665769360993940364800234669530342932831704994140667113595228361372182631045715233406889629977286380473838750068557961568172357733145297489599615142635673100247610345000459168432347194435765730049784655847300087390282368027501465230859326305956630421159482986337234289873530269624820160182590952863055254721583504390002859864259022153866918247893024344522557348671520318643907818367054282282614160815180060598846222256054838508766735797094009640825426330257762618150326821311804895391895448987057019113051545548459568690325453511267280750175982518273652062181579330865369578168419587304813277855465576522702658786228007449617320012794238442834748413294941243168301484970817089339075176910208866634600906893955410685237794828170330517206020693778494091641889090089674734708369467034007015292004655535612894910007167300864380057662592374100567042514951671723613083370765365273345999027094267296140828408984816875320060644200852474550669025963446953318886971034060035581231865025808624462379462671119256054874388131211794203710153822291344768887252227975999777803014357560582328513835784935453553196843163893763209369841142267792186684423439620103377671490209144304141331298819529/110089044358378235774870928392208891604688328037593164252994891171141862482448169692953480282836087052916438222075397849836512108103964894075126211011336106796957911179174303682184081144959929186713790928307846240980910931405727151903123587433542897706333561177088038763723234877381176003821290725299901588871845725378077935513102762879476061584344008726272634982231712920293859542647962127359897520418498279577218182932288778105061565770299420493589490639270486428053436290126597742917336319857627377407749431119300538374120900765041280162534387264421507194156748318522581951115845235169898266044744363045777191286596024252703578651748128278913536376881933795441096434813858217821849391808606448085009326783606716805324102315937464227530447877265139069994668330064123595671730585062113978501994333404658503201612771807835900781627821471884812012178239969119843774246987552990098731346772600335572757760405241705181986971613752064359638680904703529152201714572911970663060899093744640198318605911456465305003360256000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 0.030885591774899444,
+        "partial_within_half_success": true,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/153914086704665934422965000391185991426092731525255651046673021110334850669910978950836977558144201721900890587136"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -1191862.0757657872,
+      "source_only_already_exceeds_whole_bundle": true,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    },
+    {
+      "extension": 12,
+      "hash_bytes": 50,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "searched_candidates": 352,
+      "invalid_source_domain_shapes_excluded": 24,
+      "best": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 6730,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 485450.0461008786,
+        "expected_optimistic_bytes": 1284721.0417943145,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 93,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 242,
+            "expected_bytes": 478720.0461008786,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 386,
+            "expected_bytes": 172422.63813234615,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 386,
+            "expected_bytes": 153822.7207483267,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 386,
+            "expected_bytes": 135223.05120906595,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 386,
+            "expected_bytes": 116624.37299716854,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 386,
+            "expected_bytes": 98029.65927168948,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 93,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 386,
+            "expected_bytes": 79450.79033414551,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 291,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 386,
+            "expected_bytes": 40625.76300069351,
+            "next_rate": 4
+          }
+        ]
+      },
+      "optimistic_source_only": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 7018,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 281000.6395616411,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 140,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 242,
+          "expected_bytes": 273982.6395616411,
+          "next_rate": 4
+        }
+      },
+      "relaxed_source_only_full_error_budget": {
+        "packing": 16,
+        "initial_rate": 16,
+        "degree": 8388608,
+        "fixed_bytes": 7018,
+        "source_pair_bytes": 1056,
+        "source_only_expected_bytes": 277233.8116149469,
+        "first_stage": {
+          "degree": 8388608,
+          "rate": 16,
+          "skipped": 1,
+          "queries": 138,
+          "widths": [
+            1056
+          ],
+          "coset_pairs": 1,
+          "folded_domain": 67108864,
+          "header_bytes": 242,
+          "expected_bytes": 270215.8116149469,
+          "next_rate": 4
+        }
+      },
+      "relaxed_all_stages_full_error_budget": {
+        "packing": 4,
+        "initial_rate": 64,
+        "degree": 2097152,
+        "fixed_bytes": 6730,
+        "source_pair_bytes": 4216,
+        "source_only_expected_bytes": 475303.6863703935,
+        "expected_optimistic_bytes": 1259889.957081019,
+        "path": [
+          {
+            "degree": 2097152,
+            "rate": 64,
+            "skipped": 1,
+            "queries": 91,
+            "widths": [
+              4216
+            ],
+            "coset_pairs": 1,
+            "folded_domain": 67108864,
+            "header_bytes": 242,
+            "expected_bytes": 468573.6863703935,
+            "next_rate": 64
+          },
+          {
+            "degree": 1048576,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16777216,
+            "header_bytes": 386,
+            "expected_bytes": 169009.89531810695,
+            "next_rate": 64
+          },
+          {
+            "degree": 262144,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 4194304,
+            "header_bytes": 386,
+            "expected_bytes": 150809.97440001732,
+            "next_rate": 64
+          },
+          {
+            "degree": 65536,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 1048576,
+            "header_bytes": 386,
+            "expected_bytes": 132610.2907247396,
+            "next_rate": 64
+          },
+          {
+            "degree": 16384,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 262144,
+            "header_bytes": 386,
+            "expected_bytes": 114411.55597225289,
+            "next_rate": 64
+          },
+          {
+            "degree": 4096,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 65536,
+            "header_bytes": 386,
+            "expected_bytes": 96216.61614043875,
+            "next_rate": 64
+          },
+          {
+            "degree": 1024,
+            "rate": 64,
+            "skipped": 2,
+            "queries": 91,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 16384,
+            "header_bytes": 386,
+            "expected_bytes": 78036.84367294551,
+            "next_rate": 4
+          },
+          {
+            "degree": 256,
+            "rate": 4,
+            "skipped": 2,
+            "queries": 286,
+            "widths": [
+              96
+            ],
+            "coset_pairs": 2,
+            "folded_domain": 256,
+            "header_bytes": 386,
+            "expected_bytes": 40419.09448212429,
+            "next_rate": 4
+          }
+        ]
+      },
+      "one_unit_algebra_QROM_floor": "29642774844752946028434172162224104410437116074403984394101141506025761187823616/4434183957511219220515285874692608016537750237991692040631624104441671469499982651646702521144353543805143613441",
+      "one_unit_algebra_floor_exceeds_half": false,
+      "relaxed_expected_gate_rejects": false,
+      "min_simulated_bytes": 1277426,
+      "max_simulated_bytes": 1288944,
+      "simulated_sizes": [
+        1282828,
+        1288944,
+        1288586,
+        1280486,
+        1287436,
+        1281360,
+        1281312,
+        1286708,
+        1284978,
+        1281746,
+        1278824,
+        1277426,
+        1283102,
+        1280804,
+        1280660,
+        1285804
+      ],
+      "partial_security_ledger": {
+        "algebra_bits": 312.6800575140037,
+        "query_sum_bits": 269.0169222164566,
+        "partial_QROM_bound": "73285488617443935942892911857286499077051068106250577262415403354524050783523708239289409560939360693096446382125307413032555571541078606208816295597259241824393128021828839498221308114267954535400197767195383006497730831084166867498782065371144741973987612475548987276302614405859564023962054985150782911669948317727811358427840808190293645796879409045373189459206050930445255956310272388055054900806502291474578142437982400552448212730404000565923422823474340227400313648448824117762266607313537120622419527791096712704882600654037656031982769563553680379599605594829233708604895269015430542153252849919062484339613234730098928631330776752314747768324298711433717287018244708243888522938812162907642905161389038312542434150041963030338360629971182427423853037768502148006510637175243048060793546316731054636565859273937262935673477925646892843385800441392286286533512474085399413131575845752441775792888081872819869938117487843255819280893235713857185890217696321026101036288623785099344182140869680255005213871537682838624105906899364329107401108855629781209368522375281506881429042241560055401278398063621516060701010518762640094052730990076595094338572266022980410273055053174129453925683547770865731861642084081591842551871153028514660797467937740055728043735083045786018929546852503606134009857/1720141318099659933422316787101757618289169798018359398849782746867330352013166068986063274126017913116712088880244253247362360081839398662765562999849877687491084979697432189318154876069544989146585109762766015601301366682370784840436351852982823820679065459539445795691352303736923341947981338625572081296624099142004583950553935691816970806118450094940367602518452423459566715215369290721603083115194009727832733990851026801882739966850640519344501946997340110606673796295227723813586230616137594687009388023219000393233132973190542087212442698387304484089373136436497088586793560210257586306559028328108837444791303991997069207526163960778127880161854599971424307706390613931308468493894835602326159694226867664140438224560582468743498835151196013718634231812337240593981476388557917909773580429724339949912871306441236992517929423751666323627083578963925992947347834018935493946266298454402554834255582970137927541675609284809232868567154362136921287940590612051151263297230972158912064041083373934291714048000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "partial_QROM_bound_float": 0.04260434177489945,
+        "partial_within_half_success": true,
+        "hash_term": "347376267711948586270712955026063723559809953996921692118372752023739388919811/29642774844752946028434172162224104410437116074403984394101141506025761187823616"
+      },
+      "optimistic_whole_bundle_headroom_bytes": -984722.0417943145,
+      "source_only_already_exceeds_whole_bundle": false,
+      "remaining_assumptions_certified": false,
+      "implemented_profile": false
+    }
+  ],
+  "survivors_of_expected_byte_and_partial_ledger_screen": 0,
+  "scope": "One source tree for the measured single-row permutation layout, old-input byte-wrapper workload. All first-stage cosets, tail leaf/frontier messages, stage headers, terminal disclosure and initial weighted/local sums priced. Base-field LDE domain checked at source and every destination. Sizes are expectations plus16simulations, not measured proofs or universal bounds. GKR, auxiliary integration, sponge/encoding/call binding, other verifier arithmetic and fullNEAR cost zero.",
+  "security_scope": "Reuses uninstantiated Johnson/MCA/weighted composition and C*(Q^2*epsilon+3*(Q^3+Q)/2^h) sensitivity at Q=2^128,C=1/256. Partial ledger excludes local/GKR/bus/initial reduction errors and concrete compiler/extraction/QROM proofs. Failure of this upper bound is not an attack; passing it is not certification. Ext10/12 and49/50/64-byte outer hashes are projections, not implemented profiles. Short digests are the minimum whole-byte sizes giving the nominal hash term at most1/4. Relaxed schedules give every query term the full1/2 allowance simultaneously and do not pass the summed ledger. Inner Poseidon2 M128 permutation has no PQ128 certificate.",
+  "decision": "Reject scale-up of this layout/byte-wrapper/PCS family under the stated conditional model. Shorter digests can put the initial opening plus fixed reductions below300000B, so the512-bit prefix rejection is not general. Complete schedules still exceed budget, including an optimistic screen granting every stage the entire query-error allowance. Ext8 also fails the algebra term even at numerator1. Change committed workload or opening geometry before more schedule tuning. This is not a universal cryptographic impossibility result.",
+  "sha256": {
+    "airbender/direct-wasm/screen_algebraic_outer_pcs.py": "635a69fd1bb63a9680d5a87e3ae98e3c0f11a5ac853c7e7d4b71f7e9ff3bc929",
+    "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
+    "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
+    "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",
+    "airbender/direct-wasm/report_code_switch_qrom.py": "ee18d1d5d3b5bb57726a22394686e0a88a736640d1a5d009b753b522b526daf1",
+    "results/poseidon2-permutation-layout/workload.json": "2fa1398a424cd0f2cc69e5b22f4b9737d6f41d9e2d004d3184c65fc77611a834",
+    "results/poseidon2-permutation-layout/report.json": "fb7c30031ee9e0c37228a4cc728c982b2596e8022c5b264dafeea72da12db1c2"
+  }
+}
