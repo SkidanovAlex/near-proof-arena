@@ -10120,3 +10120,33 @@ and61lanes of potential savings (732032padded base coefficients). No revised
 AIR/proof or universal Lean theorem produced. Keep this bounded optimization
 behind the full-verifier coverage decision rather than launching another proof
 without a candidate byte/security ledger.
+
+## 2026-10-17 — Full-verifier coverage rejects independent chunk transport
+
+screen_nibble_full_verifier.py derives a query-independent framing lower bound
+for THIS fixed64-slot codec:1064header/root bytes +18912finals +21728local
+rounds =41704bytes, excluding all GKR/PCS and routing. The recorded unchanged
+whole-input-deduplicated verifier workload242409SHAcompression blocks would
+need3788independent envelopes, hence157974752mandatory bytes. Even the prior
+optimistic152167-block transcript scenario needs2378envelopes and99172112bytes.
+This rejects concatenating this format, not joint proofs or recursive aggregation,
+new block/state sharing, transcript designs or other AIR/codec architectures.
+No measured265040-byte proof-size extrapolation is used as a universal bound.
+
+Coverage ledger explicitly separates the implemented compression relation from
+missing hash framing/IV/chaining/digest handling, same-root verifier call routing,
+Fiat-Shamir chronology, Merkle and PCS equations, local/GKR algebra, protocol
+soundness/PQ128, and fullNEAR semantics/capacity. One measured q8 hash-only proof
+already exceeds whole-opening replacement allowance by118574bytes and whole-
+compression allowance by74694bytes. Whole-bundle headroom34959bytes does not
+establish feasibility because the proof does not cover that verifier.
+
+Decision: no further independent hash-batch transport or larger SHA-only proof
+as a substitute for closed-verifier recursion. Next candidate needs global
+amortization plus explicit hash-call binding AND arithmetic, with a complete
+byte/security ledger before full-scale proving. Added an executed-operation
+profiler for the same complete retained verifier to measure the missing arithmetic
+side; it distinguishes Python Ext8 function calls from native vector calls and
+lengths. Its full run is pending at this checkpoint (session69594/PID3024571).
+Do not treat nested composite-call counts as disjoint gates or claim native
+scalar operations were counted. Full1Pgas/PQ128/sub300000B remains NOT_PASSED.

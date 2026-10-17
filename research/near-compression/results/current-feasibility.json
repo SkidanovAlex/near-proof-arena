@@ -597,6 +597,43 @@
     ],
     "scope": "Reference OOM at 12 GiB; packed retry completed under same cap. Complete diagnostic q8 envelope freshly verified; not PQ128, recursive-call binding or full NEAR."
   },
+  "nibble_full_verifier_coverage": {
+    "evidence": "results/nibble-full-verifier-screen.json",
+    "status": "INDEPENDENT_NIBBLE_CHUNK_TRANSPORT_REJECTED",
+    "scenarios": [
+      {
+        "name": "unchanged_whole_input_deduplicated_verifier",
+        "sha384_compression_blocks": 242409,
+        "independent_64_slot_envelopes": 3788,
+        "mandatory_header_roots_finals_local_bytes": 157974752,
+        "exceeds_300000_before_GKR_PCS_and_call_binding": true
+      },
+      {
+        "name": "optimistically_erased_derived_transcript_work",
+        "sha384_compression_blocks": 152167,
+        "independent_64_slot_envelopes": 2378,
+        "mandatory_header_roots_finals_local_bytes": 99172112,
+        "exceeds_300000_before_GKR_PCS_and_call_binding": true
+      }
+    ],
+    "coverage": {
+      "implemented": [
+        "64 independent SHA384 compression state/message/result relations",
+        "phase scheduling, word routing, fixed lookup relations and bounded additions within that relation"
+      ],
+      "missing": [
+        "bind private boundary root to exact verifier hash calls and their multiplicities",
+        "SHA message framing, padding, IV, chaining and digest truncation for those calls",
+        "derive Fiat-Shamir challenges from the authenticated transcript",
+        "verify Merkle index/path/root equations and PCS fold/query equations",
+        "local/GKR algebraic checks and source-to-auxiliary opening obligations",
+        "outer proof soundness, adaptive QROM accounting and PQ128 parameters",
+        "full near-chunk-v3 semantics and 1 Petagas capacity"
+      ]
+    },
+    "decision": "Do not transport one existing envelope per hash batch or launch larger SHA-only proving as a substitute for full-verifier recursion. A next viable candidate must jointly prove the closed verifier, amortize fixed messages globally, and account for call routing plus arithmetic; validate its complete byte/security ledger before full-scale proving.",
+    "scope": "Exact lower bound only for concatenating independent envelopes with this fixed 64-slot specification. Workload is the recorded verifier after whole-input hash deduplication, not a minimum over new algorithms, block/state sharing or transcript redesign. Optimistic scenario is an assumed workload, not an implemented protocol. This does not rule out joint proofs, recursive aggregation, different AIR/codec, or a redesigned verifier. q8 and hash-only coverage cannot establish PQ128 or full NEAR feasibility."
+  },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
     "legacy_cap": 3450888781824,
@@ -604,7 +641,7 @@
     "qualification": "Gas-capacity ratio only; NOT a proved trace count or operator bound"
   },
   "decision": {
-    "next_experiment": "The 64-block q8 envelope is measured. Screen full-verifier coverage and same-root recursive-call routing against complete replacement budgets before another larger proof. A standalone compression-relation proof does not replace a full verifier; q8 is diagnostic, not PQ128.",
+    "next_experiment": "Independent 64-block envelope transport fails the framing budget. Specify a joint closed-verifier relation with amortized proof messages, same-root call binding and arithmetic coverage; require a complete byte/security ledger before larger-scale proving. q8 is diagnostic, not PQ128.",
     "standalone_mca_expansion": "DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.",
     "reopen_mca_if": "A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.",
     "do_not_repeat": "Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.",
@@ -636,7 +673,8 @@
     "results/ext8-auxiliary-base-parity.json": "a9605252405f6cd9f884f3a8b7ad5c74fac103a072d1b3c06714134a67bfa262",
     "results/ext8-packed-prover-parity.json": "e4293057d4f3d691226f47c347be6fffca148d050689cf64a82ca54db4f7d6c1",
     "results/sha384-nibble64/prover-attempt.json": "f865af35b745671612df2364970c93f5f55cccb0c0482c89105065791b2d1ba6",
-    "airbender/direct-wasm/report_current_feasibility.py": "05688cac9d8ccbdfb5a814254f137408601bb77271766886683163dd26cbe54a",
+    "results/nibble-full-verifier-screen.json": "5ea5148cc9d91faa2212ab85098ac1253a646d816586632704fedc99cc20f720",
+    "airbender/direct-wasm/report_current_feasibility.py": "909ae1499b8b97647a27a20844a45405002fa7e3858816866066d1c76454a095",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

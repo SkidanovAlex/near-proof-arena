@@ -161,6 +161,14 @@ def build(root=ROOT):
     for artifact in (packed_parity,attempt):
         for relative, expected in artifact['sha256'].items():
             assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    coverage=read('results/nibble-full-verifier-screen.json')
+    assert coverage['status']=='INDEPENDENT_NIBBLE_CHUNK_TRANSPORT_REJECTED'
+    assert coverage['measured_proof_bytes']==nibble_codec['proof_bytes']
+    for relative, expected in coverage['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    for case in coverage['scenarios']:
+        assert case['independent_64_slot_envelopes']==(case['sha384_compression_blocks']+63)//64
+        assert case['mandatory_header_roots_finals_local_bytes']==case['independent_64_slot_envelopes']*coverage['mandatory_bytes_per_fixed_spec_envelope']['total']
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -231,9 +239,12 @@ def build(root=ROOT):
         packed_prover_retry=dict(evidence='results/sha384-nibble64/prover-attempt.json',
             status=attempt['status'],reference_failed_stage=attempt['failed_stage'],
             parity_cases=packed_parity['cases'],scope=attempt['scope']),
+        nibble_full_verifier_coverage=dict(evidence='results/nibble-full-verifier-screen.json',
+            status=coverage['status'],scenarios=coverage['scenarios'],coverage=coverage['coverage'],
+            decision=coverage['decision'],scope=coverage['scope']),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
-        decision=dict(next_experiment='The 64-block q8 envelope is measured. Screen full-verifier coverage and same-root recursive-call routing against complete replacement budgets before another larger proof. A standalone compression-relation proof does not replace a full verifier; q8 is diagnostic, not PQ128.',
+        decision=dict(next_experiment='Independent 64-block envelope transport fails the framing budget. Specify a joint closed-verifier relation with amortized proof messages, same-root call binding and arithmetic coverage; require a complete byte/security ledger before larger-scale proving. q8 is diagnostic, not PQ128.',
             standalone_mca_expansion=('REASSESS against the surviving candidate; partial ledger is not certification.' if feasible else 'DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.'),
             reopen_mca_if='A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.',
             do_not_repeat='Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.',
