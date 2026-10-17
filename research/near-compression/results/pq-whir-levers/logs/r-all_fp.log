@@ -1,0 +1,47 @@
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=7 all_list=1 queries=[72, 56, 46, 39, 33]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE k1=3 log_final=2 multiproof=true keep_domain=false m=8 query_pow=24 folding_pow=16 mu_pow=16 digest_bytes=42 coset_leaf=true dummy=false
+NATIVE_SHA384_KEYGEN_SECONDS 0.000626446
+NATIVE_SHA384_EXT12 target=268 min=268.6017495925661 logup=330.295224314651 proximity=330.53028847654537 query=268.6017495925661
+NATIVE_SHA384_PROVE_SECONDS 9.094293836
+LEVERS_GRIND bits=16 seconds=0.0008 witness=14877
+LEVERS_GRIND bits=16 seconds=0.0007 witness=16181
+LEVERS_GRIND bits=16 seconds=0.0008 witness=13225
+LEVERS_GRIND bits=16 seconds=0.0011 witness=41053
+LEVERS_GRIND bits=24 seconds=0.2612 witness=12034143
+LEVERS_GRIND bits=16 seconds=0.0041 witness=182225
+LEVERS_GRIND bits=16 seconds=0.0013 witness=46536
+LEVERS_GRIND bits=16 seconds=0.0014 witness=58934
+LEVERS_GRIND bits=24 seconds=0.1485 witness=6748310
+LEVERS_GRIND bits=16 seconds=0.0002 witness=1051
+LEVERS_GRIND bits=16 seconds=0.0002 witness=4469
+LEVERS_GRIND bits=16 seconds=0.0005 witness=10437
+LEVERS_GRIND bits=24 seconds=1.0491 witness=48256115
+LEVERS_GRIND bits=16 seconds=0.0020 witness=11986
+LEVERS_GRIND bits=16 seconds=0.0009 witness=19267
+LEVERS_GRIND bits=16 seconds=0.0001 witness=350
+LEVERS_GRIND bits=24 seconds=0.2942 witness=13231985
+LEVERS_GRIND bits=16 seconds=0.0008 witness=7923
+LEVERS_GRIND bits=16 seconds=0.0012 witness=54373
+LEVERS_GRIND bits=16 seconds=0.0013 witness=54676
+LEVERS_GRIND bits=24 seconds=0.6152 witness=27461325
+NATIVE_SHA384_VERIFY_SECONDS 0.006900916
+NATIVE_SHA384_VERIFY_CALLS [0, 3403, 1, 102, 6, 192, 246, 21]
+NATIVE_SHA384_VERIFY_BLOCKS [0, 3403, 1, 519, 12, 192, 768, 21] total=4916
+NATIVE_SHA384_EXT12_BYTES total=246646 gkr=8456 relations=31432 stacking=1840 whir=204063
+LEVERS_CENSUS total=246646 auth=132804 auth_digests=3162 auth_per_tree=[993, 753, 586, 460, 370] initial=2304 codeword=66816 final_poly=192 whir_small=1947 whir=204063 relations=31432 column_openings_ef=566 gkr=8456 stacking=1840 stacking_openings_ef=1 other=855
+NATIVE_SHA384_EXT12_PASS public_mutations_rejected=6
+LEVERS_NEGATIVE ok=encoding-ignores-truncated-tail
+LEVERS_NEGATIVE case="initial leaf value" rejected=true
+LEVERS_NEGATIVE case="codeword leaf value (last coset element)" rejected=true
+LEVERS_NEGATIVE case="initial auth digest" rejected=true
+LEVERS_NEGATIVE case="codeword auth digest" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling removed" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling appended" rejected=true
+LEVERS_NEGATIVE case="multiproof: siblings reordered" rejected=true
+LEVERS_NEGATIVE case="query PoW witness" rejected=true
+LEVERS_NEGATIVE case="last-round query PoW witness" rejected=true
+LEVERS_NEGATIVE case="folding PoW witness" rejected=true
+LEVERS_NEGATIVE case="mu PoW witness" rejected=true
+LEVERS_NEGATIVE case="levers field mismatch" rejected=true
+LEVERS_NEGATIVE_PASS cases=12

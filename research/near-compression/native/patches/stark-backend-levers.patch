@@ -536,10 +536,48 @@ index c4c53ae..b75a2db 100644
          )?)
      }
 diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
-index 97271aa..903f627 100644
+index 97271aa..2a6b88f 100644
 --- a/crates/stark-backend/src/prover/stacked_pcs.rs
 +++ b/crates/stark-backend/src/prover/stacked_pcs.rs
-@@ -403,6 +403,44 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+@@ -347,21 +347,22 @@ pub fn rs_code_matrix<F: TwoAdicField + Ord>(
+     let rs_height = height
+         .checked_shl(log_blowup as u32)
+         .ok_or(StackedPcsError::RsCodeShiftOverflow { height, log_blowup })?;
+-    let codewords: Vec<_> = eval_matrix
+-        .values
+-        .par_chunks_exact(height)
+-        .map(|column_evals| {
+-            // Convert column evaluations on `D × {0,1}^n` directly into the eval-to-coeff RS
+-            // coefficient vector, avoiding redundant interpolation work.
+-            let mut coeffs = eval_to_coeff_rs_message(l_skip, column_evals);
+-
+-            // Compute RS codeword on the resulting univariate polynomial in coefficient form.
+-            let dft = Radix2DitParallel::default();
+-            coeffs.resize(rs_height, F::ZERO);
+-            dft.dft(coeffs)
+-        })
+-        .collect::<Vec<_>>()
+-        .concat();
++    // Columns are encoded one at a time (each DFT is itself parallel) straight into the output
++    // buffer, so peak memory is the codeword matrix plus one column, not 2x the matrix plus one
++    // column per thread. Output is identical to the upstream per-column map + concat.
++    let mut codewords = F::zero_vec(rs_height * eval_matrix.width());
++    let dft = Radix2DitParallel::default();
++    for (out, column_evals) in codewords
++        .chunks_exact_mut(rs_height)
++        .zip(eval_matrix.values.chunks_exact(height))
++    {
++        // Convert column evaluations on `D × {0,1}^n` directly into the eval-to-coeff RS
++        // coefficient vector, avoiding redundant interpolation work.
++        let mut coeffs = eval_to_coeff_rs_message(l_skip, column_evals);
++        // Compute RS codeword on the resulting univariate polynomial in coefficient form.
++        coeffs.resize(rs_height, F::ZERO);
++        out.copy_from_slice(&dft.dft(coeffs));
++    }
+ 
+     Ok(ColMajorMatrix::new(codewords, eval_matrix.width()))
+ }
+@@ -403,6 +404,44 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
          }
          Ok(proof)
      }
@@ -584,7 +622,7 @@ index 97271aa..903f627 100644
  }
  
  impl<EF: Field, Digest> MerkleTree<EF, Digest>
-@@ -432,34 +470,23 @@ where
+@@ -432,34 +471,23 @@ where
                  num_leaves,
              });
          }

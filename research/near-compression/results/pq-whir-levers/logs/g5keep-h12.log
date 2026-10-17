@@ -1,0 +1,29 @@
+NATIVE_SHA384_PROFILE n_stack=17 k=3 log_blowup=8 all_list=1 queries=[69, 61, 46, 37]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE k1=1 log_final=9 multiproof=true keep_domain=true m=8 query_pow=0 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=true dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.000727127
+NATIVE_SHA384_EXT12 target=268 min=269.1647657965282 logup=329.795224314651 proximity=307.5303354377936 query=269.1647657965282
+Command terminated by signal 9
+	Command being timed: "/tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/run.sh /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/g5keep-h12 NEARPROOF_DUMMY=1 NEARPROOF_N_STACK=17 NEARPROOF_LOG_BLOWUP=8 NEARPROOF_K1=1 NEARPROOF_K=3 NEARPROOF_LOG_FINAL=9 NEARPROOF_LIST_M=8 NEARPROOF_COSET_LEAF=1 NEARPROOF_MULTIPROOF=1 NEARPROOF_DUMMY_LOG_HEIGHT=12 NEARPROOF_KEEP_DOMAIN=1 NEARPROOF_NEGATIVE=1"
+	User time (seconds): 484.20
+	System time (seconds): 6.72
+	Percent of CPU this job got: 582%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:24.25
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 25118556
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 8921651
+	Voluntary context switches: 13003
+	Involuntary context switches: 1508
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 272
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

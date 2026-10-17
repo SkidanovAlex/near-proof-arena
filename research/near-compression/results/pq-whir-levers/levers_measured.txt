@@ -1,0 +1,105 @@
+No levers (upstream; b=6 k=3 log_h=21 log_final=9, W=43) at 2^26.4: extrapolated 629,209 B with gkr(L=24); final_layer_model 582,945 B (its gkr/stacking/relations constants).
+
+## gas-failure5 child, one lever at a time (measured vs model at the measured query schedule)
+
+| lever | queries | bytes | Δ bytes | auth meas / model | verify SHA total | leaf+node meas / model | prove s | neg |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| default (upstream) | [82, 63, 51, 43, 37] | 378,849 | +0 | 256,992 / 256,992 | 10,227 | 9,494 / 9,494 | 8.2 | 5 |
+| coset-as-one-message leaf | [82, 63, 51, 43, 37] | 378,849 | +0 | 256,992 / 256,992 | 6,956 | 6,212 / 6,212 | 6.7 | 5 |
+| digest 42 B | [82, 63, 51, 43, 37] | 346,695 | -32,154 | 224,868 / 224,868 | 10,220 | 9,494 / 9,494 | 8.3 | 5 |
+| multiproof | [82, 63, 51, 43, 37] | 288,528 | -90,321 | 166,656 / 167,952 | 8,616 | 7,883 / 7,909 | 10.2 | 8 |
+| list multiplicity m=8 | [79, 61, 50, 42, 37] | 370,497 | -8,352 | 250,272 / 250,272 | 9,982 | 9,249 / 9,249 | 8.2 | 5 |
+| k1=2 (log_final 3) | [82, 71, 57, 47, 40] | 408,700 | +29,851 | 279,984 / 279,984 | 10,355 | 9,632 / 9,632 | 8.4 | 5 |
+| k1=1 (log_final 1) | [82, 82, 63, 51, 43, 37] | 485,776 | +106,927 | 334,272 / 334,272 | 12,100 | 11,350 / 11,350 | 8.5 | 5 |
+| non-halving domains (E5) | [82, 57, 43, 35, 29] | 358,320 | -20,529 | 247,968 / 247,968 | 9,587 | 8,856 / 8,856 | 41.2 | 5 |
+| query grinding z=16 | [77, 59, 48, 41, 35] | 359,489 | -19,360 | 242,016 / 242,016 | 9,684 | 8,942 / 8,942 | 13.3 | 7 |
+| query grinding z=20 | [76, 58, 47, 40, 35] | 354,561 | -24,288 | 238,272 / 238,272 | 9,541 | 8,804 / 8,804 | 8.3 | 7 |
+| query grinding z=24 | [75, 58, 47, 39, 34] | 351,073 | -27,776 | 235,584 / 235,584 | 9,443 | 8,703 / 8,703 | 9.5 | 7 |
+| ALL: coset+42B+multiproof+m8+z24 | [72, 56, 46, 39, 33] | 246,016 | -132,833 | 132,174 / 132,636 | 4,898 | 4,156 / 4,167 | 8.2 | 10 |
+| ALL + E5 | [72, 50, 39, 31, 26] | 236,734 | -142,115 | 133,644 / 133,518 | 4,790 | 4,051 / 4,048 | 34.9 | 10 |
+| ALL + folding/mu PoW 16 | [72, 56, 46, 39, 33] | 246,646 | -132,203 | 132,804 / 132,636 | 4,916 | 4,171 / 4,167 | 9.1 | 12 |
+
+## gate 5: shape-equivalent dummy final layer (460 columns), measured at W <= 15
+
+| setting | run | h | W | total | auth | initial | codeword | final poly | whir small | relations | gkr | stacking | other | model total (same W) | Δ |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| today 268-bit / 48 B, m=8, k1=1, coset, multiproof | g5-h12 | 12 | 4 | 351,788 | 190,320 | 2,208 | 65,280 | 24,576 | 1,363 | 49,944 | 15,848 | 2,176 | 73 | 340,609 | +11,179 |
+| today 268-bit / 48 B, m=8, k1=1, coset, multiproof | g5-h13 | 13 | 8 | 355,580 | 189,072 | 4,416 | 65,280 | 24,576 | 1,363 | 50,376 | 18,056 | 2,368 | 73 | 342,817 | +12,763 |
+| today 268-bit / 48 B, m=8, k1=1, coset, multiproof | g5-h14 | 14 | 15 | 361,220 | 187,728 | 8,280 | 65,280 | 24,576 | 1,363 | 50,808 | 20,408 | 2,704 | 73 | 346,681 | +14,539 |
+| z=32-equivalent (226-bit queries) / 42 B, same levers | g5z-h12 | 12 | 4 | 291,598 | 140,490 | 1,856 | 55,296 | 24,576 | 1,345 | 49,944 | 15,848 | 2,176 | 67 | 283,083 | +8,515 |
+| z=32-equivalent (226-bit queries) / 42 B, same levers | g5z-h14 | 14 | 15 | 304,334 | 142,170 | 6,960 | 55,296 | 24,576 | 1,345 | 50,808 | 20,408 | 2,704 | 67 | 288,187 | +16,147 |
+| z=32 at today 268 (236-bit queries) / 42 B | g5z236-h12 | 12 | 4 | 301,222 | 147,714 | 1,952 | 57,600 | 24,576 | 1,345 | 49,944 | 15,848 | 2,176 | 67 | 291,363 | +9,859 |
+| no levers (upstream, m=3, k=3, b=6, log_h=21) | g5base-h14 | 14 | 4 | 477,097 | 297,696 | 12,416 | 67,200 | 24,576 | 1,552 | 50,808 | 20,408 | 2,368 | 73 | 461,889 | +15,208 |
+
+## gate 5 extrapolated to 2^26.4 cells, 460 columns (log_h = 19 -> W = model W)
+
+**today 268-bit / 48 B (m=8, k1=1, coset, multiproof)** (model best shape b=8 k1=1 k=3 log_h=19 log_final=9, W=169.0, q=[69, 69, 55, 46])
+
+| component | extrapolated measurement | model (levers_model.layer) | basis |
+|---|---:|---:|---|
+| auth | 187,728 | 188,736 | measured (shape-fixed, W-independent) |
+| initial | 93,288 | 93,288.0 | q0*2^k1*W*4 (exact at W=4,8,15) |
+| codeword | 65,280 | 65,280 | measured |
+| final_poly | 24,576 | 24,576 | measured |
+| whir_small | 1,363 | 1,380.0 | measured (+witness widening) |
+| relations | 52,344 | 47,272 | measured h=14 + 432 B/doubling (fit h=12..14) to h=17.55 |
+| stacking | 10,096 | 1,840 | measured + 48 B per stacked column (exact at W=4,8,15) |
+| other | 73 | 861 | measured |
+| gkr (L = log2 interactions = 19) | 31,256 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| gkr (L = log2 interactions = 24) | 48,056 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| gkr (L = log2 interactions = 28) | 64,088 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| **total** (gkr at L=19..28) | **466,004 .. 498,836** | **431,689.0** | |
+
+**z=32 / 42 B (226-bit queries; proved at z=24, +4 B/round for a 2-element z=32 witness)** (model best shape b=8 k1=1 k=3 log_h=19 log_final=9, W=169.0, q=[58, 58, 47, 39])
+
+| component | extrapolated measurement | model (levers_model.layer) | basis |
+|---|---:|---:|---|
+| auth | 142,170 | 141,582 | measured (shape-fixed, W-independent) |
+| initial | 78,416 | 78,416.0 | q0*2^k1*W*4 (exact at W=4,8,15) |
+| codeword | 55,296 | 55,296 | measured |
+| final_poly | 24,576 | 24,576 | measured |
+| whir_small | 1,361 | 1,344.0 | measured (+witness widening) |
+| relations | 52,344 | 47,272 | measured h=14 + 432 B/doubling (fit h=12..14) to h=17.55 |
+| stacking | 10,096 | 1,840 | measured + 48 B per stacked column (exact at W=4,8,15) |
+| other | 67 | 861 | measured |
+| gkr (L = log2 interactions = 19) | 31,256 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| gkr (L = log2 interactions = 24) | 48,056 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| gkr (L = log2 interactions = 28) | 64,088 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| **total** (gkr at L=19..28) | **395,582 .. 428,414** | **359,643.0** | |
+
+## gate 5 extrapolated to 2^26.6 cells, 460 columns (log_h = 19 -> W = model W)
+
+**today 268-bit / 48 B (m=8, k1=1, coset, multiproof)** (model best shape b=8 k1=1 k=3 log_h=19 log_final=9, W=195.0, q=[69, 69, 55, 46])
+
+| component | extrapolated measurement | model (levers_model.layer) | basis |
+|---|---:|---:|---|
+| auth | 187,728 | 188,736 | measured (shape-fixed, W-independent) |
+| initial | 107,640 | 107,640.0 | q0*2^k1*W*4 (exact at W=4,8,15) |
+| codeword | 65,280 | 65,280 | measured |
+| final_poly | 24,576 | 24,576 | measured |
+| whir_small | 1,363 | 1,380.0 | measured (+witness widening) |
+| relations | 52,430 | 47,272 | measured h=14 + 432 B/doubling (fit h=12..14) to h=17.75 |
+| stacking | 11,344 | 1,840 | measured + 48 B per stacked column (exact at W=4,8,15) |
+| other | 73 | 861 | measured |
+| gkr (L = log2 interactions = 19) | 31,256 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| gkr (L = log2 interactions = 24) | 48,056 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| gkr (L = log2 interactions = 28) | 64,088 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| **total** (gkr at L=19..28) | **481,690 .. 514,522** | **446,041.0** | |
+
+**z=32 / 42 B (226-bit queries; proved at z=24, +4 B/round for a 2-element z=32 witness)** (model best shape b=8 k1=1 k=3 log_h=19 log_final=9, W=195.0, q=[58, 58, 47, 39])
+
+| component | extrapolated measurement | model (levers_model.layer) | basis |
+|---|---:|---:|---|
+| auth | 142,170 | 141,582 | measured (shape-fixed, W-independent) |
+| initial | 90,480 | 90,480.0 | q0*2^k1*W*4 (exact at W=4,8,15) |
+| codeword | 55,296 | 55,296 | measured |
+| final_poly | 24,576 | 24,576 | measured |
+| whir_small | 1,361 | 1,344.0 | measured (+witness widening) |
+| relations | 52,430 | 47,272 | measured h=14 + 432 B/doubling (fit h=12..14) to h=17.75 |
+| stacking | 11,344 | 1,840 | measured + 48 B per stacked column (exact at W=4,8,15) |
+| other | 67 | 861 | measured |
+| gkr (L = log2 interactions = 19) | 31,256 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| gkr (L = log2 interactions = 24) | 48,056 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| gkr (L = log2 interactions = 28) | 64,088 | 8,456 | fit 72L^2+264L+248 (exact at L=13..15) |
+| **total** (gkr at L=19..28) | **408,980 .. 441,812** | **371,707.0** | |
+

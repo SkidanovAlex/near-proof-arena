@@ -1,0 +1,18 @@
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=7 all_list=1 queries=[82, 57, 43, 35, 29]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE k1=3 log_final=2 multiproof=false keep_domain=true m=3 query_pow=0 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=false dummy=false
+NATIVE_SHA384_KEYGEN_SECONDS 0.000606849
+NATIVE_SHA384_EXT12 target=268 min=268.7638209393418 logup=331.57533223384377 proximity=310.93087501887305 query=268.7638209393418
+NATIVE_SHA384_PROVE_SECONDS 41.220032938
+NATIVE_SHA384_VERIFY_SECONDS 0.007543993
+NATIVE_SHA384_VERIFY_CALLS [1968, 6888, 1, 102, 6, 199, 0, 0]
+NATIVE_SHA384_VERIFY_BLOCKS [1968, 6888, 1, 519, 12, 199, 0, 0] total=9587
+NATIVE_SHA384_EXT12_BYTES total=358320 gkr=8456 relations=31432 stacking=1840 whir=315716
+LEVERS_CENSUS total=358320 auth=247968 auth_digests=5166 auth_per_tree=[1722, 1197, 903, 735, 609] initial=2624 codeword=62976 final_poly=192 whir_small=1956 whir=315716 relations=31432 column_openings_ef=566 gkr=8456 stacking=1840 stacking_openings_ef=1 other=876
+NATIVE_SHA384_EXT12_PASS public_mutations_rejected=6
+LEVERS_NEGATIVE case="initial leaf value" rejected=true
+LEVERS_NEGATIVE case="codeword leaf value (last coset element)" rejected=true
+LEVERS_NEGATIVE case="initial auth digest" rejected=true
+LEVERS_NEGATIVE case="codeword auth digest" rejected=true
+LEVERS_NEGATIVE case="levers field mismatch" rejected=true
+LEVERS_NEGATIVE_PASS cases=5

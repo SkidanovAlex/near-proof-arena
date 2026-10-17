@@ -1,0 +1,34 @@
+NATIVE_SHA384_PROFILE n_stack=19 k=3 log_blowup=6 all_list=1 queries=[97, 71, 57, 47]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE k1=3 log_final=9 multiproof=false keep_domain=false m=3 query_pow=0 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=false dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.001061364
+NATIVE_SHA384_EXT12 target=268 min=268.2101374382322 logup=332.07533223384377 proximity=321.4308715897806 query=268.2101374382322
+NATIVE_SHA384_PROVE_SECONDS 92.854229381
+NATIVE_SHA384_VERIFY_SECONDS 0.019267834
+NATIVE_SHA384_VERIFY_CALLS [2176, 8106, 1, 189, 5, 336, 0, 0]
+NATIVE_SHA384_VERIFY_BLOCKS [2176, 8106, 1, 1097, 10, 336, 0, 0] total=11726
+NATIVE_SHA384_EXT12_BYTES total=477097 gkr=20408 relations=50808 stacking=2368 whir=403440
+LEVERS_CENSUS total=477097 auth=297696 auth_digests=6202 auth_per_tree=[2328, 1633, 1254, 987] initial=12416 codeword=67200 final_poly=24576 whir_small=1552 whir=403440 relations=50808 column_openings_ef=920 gkr=20408 stacking=2368 stacking_openings_ef=4 other=73
+	Command being timed: "/tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/run.sh /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/g5base-h14 NEARPROOF_DUMMY=1 NEARPROOF_DUMMY_LOG_HEIGHT=14 NEARPROOF_N_STACK=19 NEARPROOF_LOG_BLOWUP=6 NEARPROOF_K=3 NEARPROOF_LOG_FINAL=9"
+	User time (seconds): 620.67
+	System time (seconds): 4.47
+	Percent of CPU this job got: 672%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:32.95
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 12159116
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5395548
+	Voluntary context switches: 11688
+	Involuntary context switches: 4905
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 1216
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
