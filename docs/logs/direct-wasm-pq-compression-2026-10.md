@@ -13512,3 +13512,32 @@ Boolean/inactivity constraints, connect actual rewritten constraint/interaction
 lists, and prove global bus/height preservation. Native acceptance-to-balance,
 quantum recursive composition, fullNEAR1Pgas and sub300000 remain unresolved.
 No proof-size or end-to-end security improvement claimed this turn.
+
+## 2026-10-17 — Concrete layout and removed-bit obligations
+
+Previous turn progressed at c220ec1b9; clean worktree revalidated. Added
+PackedByteLayout.lean: executable region-to-column/bit mapping, lifted Fp
+environment, retained scalar preservation, and kernel-decided consistency of
+every macro's sixteen source columns for actual EXEC/CODE regions. These two
+finite layout theorems have no axioms. The layout theorem instantiates all bit
+column premises of packed_byte_macro_eval for arbitrary packed values with
+explicit byte-range premises and either row selector.
+
+Also proved decoded-bit Booleanity and CODE inactive-bit restoration from the
+byte inactive-zero constraint. The latter does not assume the active flag is
+Boolean. These are field-level obligations; connecting them to the full emitted
+constraint list remains required. Semantic theorem audits use only standard
+propext/Classical.choice/Quot.sound as recorded in lean-layout-audit.log.
+
+PackedLayoutExport.lean and check_packed_layout.py compare every Lean-decoded
+slot against column_layout factored from the actual Python generator: all803
+columns (608decoded bits) match. Macro checks still pass. Generated AIR, metadata,
+public input, allthree trace files and Rust source remain byte-identical after
+factoring; no new proving run needed for this behavior-preserving refactor.
+Validation: lake build NearCompression.PackedByteLayout, AST/layout checks,
+regeneration byte equality and git diff --check pass.
+
+Next gate is assembly over actual constraint lists and global bus/height
+preservation, including deriving range premises from the actual range table.
+No whole-AIR or native acceptance theorem yet; packed357069B remains provisional.
+FullNEAR1Pgas, QROM recursive knowledge composition and sub300000 remain open.

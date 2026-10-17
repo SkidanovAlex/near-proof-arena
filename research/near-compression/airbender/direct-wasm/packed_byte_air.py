@@ -14,16 +14,20 @@ def macro_replacements(groups,bytecols):
                 replacements[json.dumps(lit.bits(base,16,nxt))]=sm([v(bytecols[base],nxt),mul(c(256),v(bytecols[base+8],nxt))])
     return replacements
 
+def column_layout(width,groups):
+    removed={i for start,n in groups for i in range(start,start+n)}
+    starts={i for start,n in groups for i in range(start,start+n,8)}
+    mapping={};bytecols={};new_width=0
+    for i in range(width):
+        if i in starts:bytecols[i]=new_width;new_width+=1
+        elif i not in removed:mapping[i]=new_width;new_width+=1
+    return removed,mapping,bytecols,new_width
+
 def transform(spec,rows):
     spec=copy.deepcopy(spec);packed=[];maps=[];all_counts=Counter();rewrites=[]
     regions=[[(lit.STACK,256),(lit.GAS,64),(lit.DIFF,64),(lit.RESULT,32),(lit.IMM,32),(lit.FEE,64)],[(lit.CIMM,32),(lit.CFEE,64)]]
     for ti,(table,trace,groups) in enumerate(zip(spec['air']['tables'],rows,regions)):
-        removed={i for start,n in groups for i in range(start,start+n)}
-        starts={i for start,n in groups for i in range(start,start+n,8)}
-        mapping={};bytecols={};new_width=0
-        for i in range(table['width']):
-            if i in starts:bytecols[i]=new_width;new_width+=1
-            elif i not in removed:mapping[i]=new_width;new_width+=1
+        removed,mapping,bytecols,new_width=column_layout(table['width'],groups)
         replacements=macro_replacements(groups,bytecols)
         def rewrite(e):
             key=json.dumps(e)

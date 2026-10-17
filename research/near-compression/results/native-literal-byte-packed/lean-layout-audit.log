@@ -1,0 +1,5 @@
+'NearCompression.packed_exec_layout_consistent' does not depend on any axioms
+'NearCompression.packed_code_layout_consistent' does not depend on any axioms
+'NearCompression.packed_layout_macro_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_lift_bit_boolean' depends on axioms: [propext, Quot.sound]
+'NearCompression.packed_lift_bit_inactive' depends on axioms: [propext, Classical.choice, Quot.sound]
