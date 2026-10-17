@@ -310,3 +310,54 @@ Corrected fixed point (iteration 2/3 tables superseded):
 Hash-only at realistic SHA cost: ≈ 444–570 KB (today), ≈ 356–449 KB (all levers).
 **Lattice-wrap statement size:** verifying the cheapest penultimate costs
 ≈ 9–12k SHA-384 compressions + ≈ 6×10⁴ Ext12 multiply-equivalents.
+
+## L4: hash-only research bets (2026-10-17)
+
+Three parallel investigations; reports and scripts in
+`research/near-compression/l4-study/` (A-sequential-fs, B-openings, C-invention;
+`models-C/` reproduces this log's baselines exactly, `calc-B/` likewise).
+
+**A. Sequential-work Fiat–Shamir — KILL (size).** Quantum results (Blocki–Lee–Zhou
+2021; Chung–Fehr–Huang–Liao 2021) bound sequential *depth*, not total-query search;
+the hoped (t/T)²·ε bound is unproven and a naive compressed-oracle argument gives
+no gain. PoSW/spot checks don't make the output unique (cheap resampling) and add
+≈ 200–260 KB; full recomputation saves only ≈ 10–29 KB (356 → 327–346 KB) for
+0.4–20 s verify. At best a prover-side substitute for grinding (if lemmas L1–L3 proven).
+
+**B. Beating Merkle openings — count reduction KILL; narrower digests PROMISING [O].**
+Only lower bound for ROM SNARGs (Haitner–Nukrai–Yogev 2022, conditional, classical)
+is ~100× below our paths; Ω(log N) path length is open. Correlated/reused queries,
+shared trees, caps, higher arity, bigger leaves, multiproof grinding: all killed
+(unsound or no gain; any query distribution saves ≤ 9–18 % of digests and needs a
+new theorem). The real lever is Chiesa–Yogev-style *weak binding* (tolerate few
+collisions, position-indexed nodes; ePrint 2021/188, 2021/281): quantum
+extrapolation ≈ 36 B (uncapped) or ≈ 26 B (capped) digests vs 48 B. At c_sha 12k:
+current settings 444 → 388 (36 B) / 338 KB (26 B); with existing levers 376 → 332
+/ 290 KB; + 4-ary penultimate tree 276 KB. Needs new lemmas (quantum collision
+counting, multi-round FS with state restoration, robust WHIR query soundness) and
+a U-7 amendment (digest width), no new assumption class.
+
+**C. Invention — 19 ideas, 7 promising, 11 killed.** Model-only results:
+1. **Blowup ×15 domains** (BabyBear p−1 = 15·2²⁷: evaluation domain 15·2ᴺ; prover
+   = 15 radix-2 coset LDEs; x→x² folding works per coset). Lifts the h+b ≤ 27 limit
+   by 3.9 bits; 444 → 345 KB alone. MCA (ePrint 2025/2051 Thm 9.2) at n = 2³⁰·⁹,
+   ρ = 2⁻¹¹·⁹, m = 3: 2⁻²⁷⁹·⁷ (checked independently here), inside 2⁻²⁶⁸.
+   Open: WHIR theorem for non-power-of-two domains; streamed ≈ 0.9 TB LDE cost.
+2. **Hash a whole fold coset as one SHA message** (not 2^k leaves + subtree):
+   cuts in-circuit SHA; predicts gas-failure5 verify 6,947 compressions (measured
+   10,227) — directly testable; −24…−46 KB final.
+3. Bundle: non-halving domains, one opening per column (shift sumcheck), tight
+   field packing, 150-column final circuit: −25…−35 KB.
+Combined (c_sha 12k): **≈ 298–311 KB today, ≈ 241–247 KB with z=32 + 42 B**;
+c_sha 24k: 330–351 / 264–277 KB. Killed: later-block randomness (185 KB but relies
+on NEAR consensus + non-PQ Ed25519 VRF), GKR-proven SHA, shard amortization,
+verifier-held trees, Goldilocks (dominated by ×15), extension/EC domains, one tree
+for all rounds, Ext10/11, split proofs, subset checking, limb packing.
+
+**Synthesis.** Under 300 KB hash-only now looks reachable *in the model* without
+new assumptions: C's ×15 domain + coset hashing + small levers at c_sha ≲ 12k
+reaches ≈ 298–311 KB at today's settings, and B's weak-binding digests would stack
+on C's auth term (164 KB of C's best point) — not yet modelled jointly. Gates, in
+order: (1) L3's measured c_sha; (2) WHIR soundness on 15·2ᴺ domains (paper
+check); (3) coset-hash test on gas-failure5 (predict 6,947); (4) streamed ×15 LDE
+timing; (5) optional: weak-binding lemmas (B) for a further 40–80 KB.
