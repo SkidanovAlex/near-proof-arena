@@ -11627,3 +11627,40 @@ prove its terminal opening relation and preserve chronology after GKR, then
 price the extra argument against the full stronger-security ledger. Full goal
 remains active. Reproducers:test_swirl_weighted_stack_kernel.py and
 group_swirl_pcs_pairs.py; evidence:results/swirl-security-review/weighted-stack-kernel/.
+
+## 2026-10-17 — Native stacking layout and Ext4 mixed-packing interface
+
+Previous comparison turn classified no implementation progress: it rechecked
+published options but did not change the selected next experiment. Revalidated
+worktree at3651d9b8f and the completed native export process via its successful
+test log and generated outputs; no duplicate prover run launched.
+
+Extended accepted-control capture with actual r and l_skip. Regenerated VK,
+verified saved internal proof, and exported layouts from verify_proof_shape.
+Removing the two new fields yields EXACTLY the previous accepted capture1.
+Source/patch snapshots, input hashes, logs and proof hash are saved under
+results/swirl-security-review/native-stack-layout/. Recursion and backend
+clippy -D warnings pass.
+
+Mapped all1548 residual column pairs through actual common/cached partitions
+into two commitments of widths49and1, height2^19, l_skip2. Layout has1549source
+slices. Checked unique source coordinates, alignment, bounds, nonoverlap and
+captured trace heights. There are44mapped short-trace pairs. Accumulated Ext4
+terminal coefficients at a deterministic synthetic evaluation point; original
+source evaluation point r is native. Ext4 kernel agrees with30saved native
+base-field oracle cases.
+
+Added independent Ext4 dense Lagrange/Boolean interpolation checks with three
+heterogeneous source heights sharing ONE destination column. Twelve fixtures
+check both the original weighted functional and off-domain interpolation of
+the accumulated kernel:24identities,12short sources,12wrong-direction rotation
+differences. This closes a test gap in the prior separate-column/base-field
+fixtures, not a formal kernel theorem.
+
+No weighted sumcheck generated yet. The terminal point u is synthetic, source
+matrices are not reconstructed and no final PCS opening equality is claimed.
+Original proof/openings remain required. No proof-size saving, PQ128, new Lean
+composition theorem or full NEAR1Petagas result follows from this mapping.
+Next reconstruct or regenerate matching committed source matrices and prove
+the arbitrary-pair weighted sumcheck, then authenticate its terminal opening
+and justify the changed challenge chronology. Full goal remains active.

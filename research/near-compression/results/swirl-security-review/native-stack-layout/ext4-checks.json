@@ -1,0 +1,8 @@
+{
+  "status": "EXT4_MIXED_PACKING_DENSE_PARITY",
+  "identity_checks": 24,
+  "shared_column_fixtures": 12,
+  "short_sources": 12,
+  "wrong_rotation_distinguished": 12,
+  "scope": "Independent small-domain algebra checks, not a sumcheck or PCS proof."
+}
