@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/verify_prepared_slice.py", line 62, in <module>
+    main()
+  File "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/verify_prepared_slice.py", line 57, in main
+    print(json.dumps(verify(args.proof.read_bytes(), json.loads(args.statement.read_text()),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/verify_prepared_slice.py", line 45, in verify
+    proof_codec.decode(wire, spec, roots)
+  File "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_global_bus_codec.py", line 89, in decode
+    return _decode(data,spec,roots,False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_global_bus_codec.py", line 72, in _decode
+    argslist=bus.verify_table_reduction(part,spec,st,t,alpha,gamma,ti,finals[ti],[roots[ti],ars[ti]])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_global_bus.py", line 108, in verify_table_reduction
+    require(add(poly(values,ZERO),poly(values,ONE))==claim,'table zerocheck')
+  File "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_primitives.py", line 16, in require
+    if not ok: raise ValueError(reason)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: table zerocheck

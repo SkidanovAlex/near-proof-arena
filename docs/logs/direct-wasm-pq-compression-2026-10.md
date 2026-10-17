@@ -12950,3 +12950,38 @@ Next substantial workload reduction must address fixed wiring/check evaluation,
 which dominates the measured full arithmetic, or use a circuit layout whose
 actual cost makes these shared products valuable. FullNEAR1Pgas/PQ128/sub300000B
 at that security and end-to-end correctness remain open.
+
+## 2026-10-17 — Same-artifact execution/proof integration check
+
+Previous turn answered the user's testing-level concern but made no code change;
+classified no progress. Revalidated clean c575db2c5 and inspected actual slice
+frontend, tests, Lean eligibility checker and native recursion test sources.
+Stopped the contemplated BDD-order sweep: there is no measured parent-circuit
+benefit that would justify it before the missing slice/recursion connection.
+
+Added PreparedSliceOracle.lean: executes actual runCall using ONLY request bytes,
+method, prepaid gas and explicit fuel. It receives no proof, statement, public
+outputs or source trace and does not invoke the eligibility checker. The test
+harness independently decodes published status/gas/i32 stack limbs and compares
+them with that execution after fresh-process verification of the same retained
+193-instruction proof. Both processes succeed and outputs agree.
+
+Five altered public outputs (indices43,44,45,46,50) pass preparation and reject
+specifically with ValueError: table zerocheck. The harness requires this exact
+relation failure, not any exception or nonzero exit; archived stderr shows the
+actual path. This improves on tests whose broad exception acceptance could
+misclassify an earlier failure as cryptographic rejection. It is still proof
+mutation testing, not adversarial witness generation or a soundness theorem.
+
+Transport remains121982proof +223788statement +919request =346689bytes. This
+retained proof is Q8/Ext4 diagnostic. No recursive parent currently consumes this
+literal Wasm proof; generic SWIRL recursive fixtures do not close that gap.
+Next integration work must implement that verifier relation in the parent or
+prove the same literal AIR using the native child's backend before recursion,
+with public program/output binding preserved. An oracle run alone must never
+be substituted for the parent's constrained verification of the child.
+
+Reproduce check_slice_execution_binding.py. Report and exact negative traces in
+results/slice-execution-binding/. The Lean oracle compiles/runs through lake;
+no new Lean theorem or acceptance-to-HoldsP proof. No fullNEAR1Pgas, PQ128 or
+secure sub300000B claim. make pin-check passes.

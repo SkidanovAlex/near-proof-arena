@@ -1,0 +1,102 @@
+{
+  "status": "PASS",
+  "published": {
+    "done": true,
+    "failed": false,
+    "gas": 999999447071257,
+    "stack": []
+  },
+  "processes": [
+    {
+      "output": {
+        "status": "PASS",
+        "security": "Q8/Ext4 diagnostic; soundness not certified",
+        "code_length": 193,
+        "execution_fuel": 256,
+        "published_exit": [
+          0,
+          0,
+          192,
+          0,
+          0,
+          1,
+          0,
+          31257,
+          33745,
+          36222,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "seconds": 0.856764123775065
+    },
+    {
+      "output": {
+        "done": true,
+        "failed": false,
+        "gas": 999999447071257,
+        "stack": []
+      },
+      "seconds": 0.6651816391386092
+    }
+  ],
+  "negatives": [
+    {
+      "public_index": 43,
+      "error": "ValueError: table zerocheck"
+    },
+    {
+      "public_index": 44,
+      "error": "ValueError: table zerocheck"
+    },
+    {
+      "public_index": 45,
+      "error": "ValueError: table zerocheck"
+    },
+    {
+      "public_index": 46,
+      "error": "ValueError: table zerocheck"
+    },
+    {
+      "public_index": 50,
+      "error": "ValueError: table zerocheck"
+    }
+  ],
+  "execution_fuel": 256,
+  "artifacts": {
+    "proof.bin": {
+      "bytes": 121982,
+      "sha256": "7d993a7b3a817b0114ea3a87588e5e0997ca5c96cbe333d9c77739ca5ebb13cc"
+    },
+    "statement.json": {
+      "bytes": 223788,
+      "sha256": "537fbf23440da2c546a96fe5a1de80080576ef906f86e95b78f27cb6818a13ed"
+    },
+    "request.json": {
+      "bytes": 919,
+      "sha256": "dbedd9b14a7f160283c2ef23d8cc66bc93b03ec340c42ed6c60b24be34c94aa1"
+    }
+  },
+  "limitations": [
+    "Retained proof, not fresh proving or malicious-witness proving.",
+    "No recursive parent consumes this slice proof yet.",
+    "Diagnostic Q8/Ext4; no PQ128 or cryptographic acceptance-to-HoldsP theorem.",
+    "Bounded i32 slice, not full NEAR state transition."
+  ],
+  "total_transported_bytes": 346689
+}
