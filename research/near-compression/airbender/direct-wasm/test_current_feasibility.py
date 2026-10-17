@@ -20,6 +20,8 @@ def main():
     base=report.ROOT/'results/ext8-switch-execution-q309'
     manifest_path=base/'manifest.json'
     mutations=[
+        (report.ROOT/'results/sha384-nibble-phase-air.json',
+            lambda d:d.update(compiled_64_block_source_aux_cells=0),False),
         (report.ROOT/'results/sha384-nibble-lookup-air.json',
             lambda d:d.update(fixed_truth_rows_checked=0),False),
         (report.ROOT/'results/sha384-nibble-row-plan.json',

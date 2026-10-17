@@ -9867,3 +9867,42 @@ rejects11inconsistent cases;27manifest pins and oracle pin checks pass.
 Next: connect phase-row lookup sends and word routing to these fixed tables
 with actual constrained row programs, then measure the composed proof.
 No Lean changes; last full audit4658. Full1Pgas/PQ128/sub300000B NOT_PASSED.
+
+## 2026-10-17 — Composed nibble SHA384 phase/lookup AIR
+
+Added sha384_nibble_phase_air.py. Actual canonical polynomial constraints now
+connect schedule64-row, round80-row and endpoint1-row programs to the seven
+fixed lookup/range tables. One-hot phase selectors are Boolean, sum to active,
+start at phase0 and transition cyclically with a constrained block counter.
+Active-prefix/stop constraints enforce the last phase and exact block count;
+inactive data cells are zero. Compiler-selected word IDs, constants and fanout
+bits are fixed expressions of phase selectors, not prover-chosen metadata.
+Word-bus messages include block index,word ID and all16nibbles. Bounded carry
+polynomials and nibble lookups constrain the exact local arithmetic.
+
+Diagnostic public segments supply repeated initial state/message words and
+consume all8final feed-forward words. They are explicit public compression
+boundaries, NOT a compact recursive interface. Two-block129-byte-message
+fixture checks all state words against the independent SHA384 probe.
+Canonical full-witness interpreter passes933860source constraints and all
+natural bus balances. Eight negative cases reject, including an otherwise
+valid one-hot selector at the wrong phase, copied word, carry, block ID,
+endpoint output, multiplicity, and public final state corruption.
+
+Initial round auxiliary width2072just exceeded the packing threshold for
+64blocks. Moved boundary-word range checks to the endpoint table, which already
+imports the same words via the exact word bus. All2800range obligations remain;
+round width is now498source+1560aux; schedule274+1224; endpoint515+1728.
+This avoids redundant per-phase range interaction slots without dropping checks.
+Actual compiled64-block source+aux geometry totals27854288cells. Maximum table
+degree6, row/degree/lane limits all fit. Old core+endpoint accounting43181696
+cells gives~35.5%less in this geometry, NOT a measured proof-size/time saving.
+64-block witness has NOT been run; report records that flag as false.
+
+Evidence:results/sha384-nibble-phase-air.json and.spec.json.gz. Current ledger
+consumes actual compiled geometry;12inconsistent evidence checks and31manifest
+pins pass. No Lean changes; last full audit4658. This compiler and natural-bus
+checker do not provide a universal Lean theorem, a cryptographic bus/PCS/QROM
+certificate or a recursive verifier. Next check64-block execution and actual
+proof transport, then replace verbose public boundaries with private same-root
+call binding. Full NEAR1Pgas/PQ128/sub300000B remains NOT_PASSED.

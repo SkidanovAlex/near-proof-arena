@@ -512,6 +512,14 @@
     ],
     "scope": "Actual canonical polynomial AIR constrains enumeration, lookup values and multiplicity bits; natural bus checker balances requests. Requests remain external to SHA phase AIR. No succinct proof, compiler/Lean theorem, randomized-bus soundness, or PQ128 result."
   },
+  "nibble_composed_air": {
+    "evidence": "results/sha384-nibble-phase-air.json",
+    "checked_compression_blocks": 2,
+    "compiled_64_block_source_aux_cells": 27854288,
+    "compiled_64_block_witness_checked": false,
+    "scope": "Canonical AIR jointly enforces phase programs, bounded additions, lookup relations, routing and public full512-bit state/block/result boundaries. Full-witness interpreter only; no generated succinct proof, universal compiler/Lean theorem or PQ128 security. Public boundary transport is diagnostic, not private recursive call binding.",
+    "next_gate": "Check a full 64-block witness and generate a proof with complete byte accounting. Replace verbose diagnostic public boundaries with same-root private call binding before evaluating recursive compression."
+  },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
     "legacy_cap": 3450888781824,
@@ -543,7 +551,8 @@
     "results/sha384-nibble-circuit.json": "b8d654f393c495431825f19df6f8214ced83f8e909262e82d03269d1403f8487",
     "results/sha384-nibble-row-plan.json": "8b222813cc6e734b8ce0c28c10548d5be207d2c0fc8ac72c8298b33751cd9fd2",
     "results/sha384-nibble-lookup-air.json": "1676aeafcef624cbcfe809523d340bbb769e5fe1ae1fabd8063101643374091b",
-    "airbender/direct-wasm/report_current_feasibility.py": "7a2b89595e3ae593cee76d9e1b737b32567cd0f6a2bc7e0fff97339884b33b90",
+    "results/sha384-nibble-phase-air.json": "62d61257105112555bdf01800f1ea2a56135dde09b67e6d08a84694279e4e95e",
+    "airbender/direct-wasm/report_current_feasibility.py": "8cc9f68cbd50798c021549e268fe47b6b94ec0aebfa8b0294cfade8dce97072f",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

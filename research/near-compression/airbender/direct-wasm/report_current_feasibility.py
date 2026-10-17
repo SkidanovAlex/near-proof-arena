@@ -130,6 +130,12 @@ def build(root=ROOT):
     assert lookup_air['fixed_tables_source_aux_cells'] == sum(s['rows']*(s['source_width']+s['aux_base_width']) for s in fixed_shapes)
     for relative, expected in lookup_air['sha256'].items():
         assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
+    phase_air = read('results/sha384-nibble-phase-air.json')
+    assert phase_air['status'] == 'COMPLETE_NIBBLE_COMPRESSION_AIR_CHECKED'
+    assert phase_air['source_aux_cells'] == sum(s['rows']*(s['source_width']+s['aux_base_width']) for s in phase_air['table_shapes'])
+    assert phase_air['compiled_64_block_source_aux_cells'] == sum(s['rows']*(s['source_width']+s['aux_base_width']) for s in phase_air['actual_compiled_64_block_shapes'])
+    for relative, expected in phase_air['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -180,6 +186,12 @@ def build(root=ROOT):
             fixed_truth_rows_checked=lookup_air['fixed_truth_rows_checked'],
             source_constraints_evaluated=lookup_air['source_constraints_evaluated'],
             negative_cases=lookup_air['negative_cases'], scope=lookup_air['scope']),
+        nibble_composed_air=dict(evidence='results/sha384-nibble-phase-air.json',
+            checked_compression_blocks=phase_air['compression_blocks'],
+            compiled_64_block_source_aux_cells=phase_air['compiled_64_block_source_aux_cells'],
+            compiled_64_block_witness_checked=phase_air['compiled_64_block_witness_checked'],
+            scope=phase_air['scope'],
+            next_gate='Check a full 64-block witness and generate a proof with complete byte accounting. Replace verbose diagnostic public boundaries with same-root private call binding before evaluating recursive compression.'),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
         decision=dict(next_experiment=('Implement and measure the surviving projected candidate with all excluded costs and explicit security obligations.' if feasible else 'Stop larger-path proving in the existing 25-block profile: mandatory 416 bytes exceed its at-most-288-byte deduplicated sibling budget. Screen a scalable complete-verifier replacement against the explicit replacement budgets; include transcript/arithmetic and public binding, not authentication alone. Measure a versioned canonical transcript design only with all original bindings accounted for.'),
