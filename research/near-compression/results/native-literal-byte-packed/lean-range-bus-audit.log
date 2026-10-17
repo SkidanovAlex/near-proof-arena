@@ -1,0 +1,3 @@
+'NearCompression.packed_range_value_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_range_from_holds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_rewrite_from_holds' depends on axioms: [propext, Classical.choice, Quot.sound]

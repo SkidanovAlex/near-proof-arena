@@ -13569,3 +13569,32 @@ range-table-to-byte-ranges, assembling retained/restored constraints, trace
 heights and global bus transfer. Native acceptance-to-HoldsP and quantum
 recursive composition remain separate. No proof-size/security-completeness
 claim changed; packed357069B remains provisional; fullNEAR1Pgas remains open.
+
+## 2026-10-17 — Range receiver and exact-balance derivation
+
+Previous turn progressed at8f1fa02b7; clean state revalidated. Added
+PackedRangeBus.lean defining the actual24-column range table, balanced8-bit
+message,16-bit multiplicity and bus4 send/receive interactions. Proved receiver
+messages are bytes from the table's polynomial Boolean constraints. Positive
+natural receiver count implies a bounded message without assuming receiver
+rows enumerate0..255, uniqueness, order or positive multiplicity on every row.
+
+packed_range_from_holds derives any sent byte's range from HoldsP exact natural
+balance, structural receiver isolation, range-constraint membership and absence
+of public bus4 injection. packed_macro_ranges_from_holds covers current and
+cyclic next rows. packed_rewrite_from_holds composes this with concrete rewrite
+soundness, replacing external byte-range assumptions with HoldsP plus explicit
+structural AIR premises. All kernel builds pass; audits use only standard
+propext/Classical.choice/Quot.sound, retained lean-range-bus-audit.log.
+
+PackedRangeExport.lean/check_packed_range.py compare the exact range table and
+all64EXEC/12CODEsender ASTs with actual retained packed spec; verify only table2
+receives on bus4 and no public segments use bus4. Checks pass; range-check.json
+retained. These are executable structural correspondence checks, not a kernel
+proof of Python/parser or native implementation. No proving configuration or
+proof bytes changed.
+
+Remaining semantic assembly: whole source constraint list, global original-bus
+preservation and trace heights. Native cryptographic acceptance-to-HoldsP is
+still unproved, as are QROM recursive composition and fullNEAR1Pgas correctness.
+The packed357069B result remains provisional, sub300000 not achieved.
