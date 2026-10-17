@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "macro_pairs": 76,
+  "current_rows": 38,
+  "next_rows": 38,
+  "scope": "Exact exported AST equality; universal field semantics kernel-proved in PackedByteMacro. Python execution/refinement and whole AIR implication remain unproved."
+}

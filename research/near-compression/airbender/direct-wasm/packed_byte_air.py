@@ -6,6 +6,14 @@ from collections import Counter
 import prepared_code_table_air as lit
 from prepared_function_air import c,v,sub,mul,sm,eval_expr
 
+def macro_replacements(groups,bytecols):
+    replacements={}
+    for start,n in groups:
+        for base in range(start,start+n,16):
+            for nxt in (0,1):
+                replacements[json.dumps(lit.bits(base,16,nxt))]=sm([v(bytecols[base],nxt),mul(c(256),v(bytecols[base+8],nxt))])
+    return replacements
+
 def transform(spec,rows):
     spec=copy.deepcopy(spec);packed=[];maps=[];all_counts=Counter();rewrites=[]
     regions=[[(lit.STACK,256),(lit.GAS,64),(lit.DIFF,64),(lit.RESULT,32),(lit.IMM,32),(lit.FEE,64)],[(lit.CIMM,32),(lit.CFEE,64)]]
@@ -16,11 +24,7 @@ def transform(spec,rows):
         for i in range(table['width']):
             if i in starts:bytecols[i]=new_width;new_width+=1
             elif i not in removed:mapping[i]=new_width;new_width+=1
-        replacements={}
-        for start,n in groups:
-            for base in range(start,start+n,16):
-                for nxt in (0,1):
-                    replacements[json.dumps(lit.bits(base,16,nxt))]=sm([v(bytecols[base],nxt),mul(c(256),v(bytecols[base+8],nxt))])
+        replacements=macro_replacements(groups,bytecols)
         def rewrite(e):
             key=json.dumps(e)
             if key in replacements:return replacements[key]

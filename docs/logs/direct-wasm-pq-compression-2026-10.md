@@ -13488,3 +13488,27 @@ trace shape. The local interaction result is not a global balance theorem.
 Native acceptance-to-HoldsP and QROM/recursive composition remain separate.
 Proof sizes unchanged: provisional packed357069B, original451221B. This advances
 formal refinement, not fullNEAR1Pgas completeness or a security certificate.
+
+## 2026-10-17 — Concrete byte macro semantics and AST correspondence
+
+Previous turn progressed at a5ffc2a14. Added PackedByteMacro.lean: the actual
+balanced sixteen-term source expression equals its Horner form for current or
+next row; bits reconstructed independently from bounded low/high bytes equal
+the bits of lo+256*hi; hence the two-byte target has exactly the source Fp value.
+This discharges the algebraic content of a concrete macro, not only structural
+rewrite congruence. Kernel build passes. Axiom audit: pair-bit theorem uses
+propext/Quot.sound; macro evaluation also uses Classical.choice, no custom axioms.
+
+Added PackedMacroExport.lean and check_packed_macros.py. The checker compares
+Lean-exported theorem-backed source/target AST pairs against the replacement
+map actually used by packed_byte_air.py (factored into macro_replacements).
+All76pairs match:38current/38next. Regeneration preserves byte-for-byte spec,
+packing metadata, public input, allthree trace files and generated Rust source.
+Recorded macro-check.json and lean-macro-audit.log. This is executable source
+correspondence evidence, not a kernel proof of the Python runtime or Rust.
+
+Remaining: instantiate layout column/lift consistency, discharge removal of all
+Boolean/inactivity constraints, connect actual rewritten constraint/interaction
+lists, and prove global bus/height preservation. Native acceptance-to-balance,
+quantum recursive composition, fullNEAR1Pgas and sub300000 remain unresolved.
+No proof-size or end-to-end security improvement claimed this turn.
