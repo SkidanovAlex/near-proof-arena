@@ -1,0 +1,12 @@
+BENCH odd=1 log_blowup=2 log_h=16 w=64 k=4 bits=268 queries=[345, 118, 71, 51] prove_s=2.721 verify_s=0.0150 proof_bytes=1987209 whir_bytes=1972736 vm_hwm_mb=389 MAXRSS_KB 398588 WALL 2.74 
+BENCH odd=1 log_blowup=2 log_h=16 w=64 k=4 bits=268 queries=[345, 118, 71, 51] prove_s=2.785 verify_s=0.0149 proof_bytes=1987209 whir_bytes=1972736 vm_hwm_mb=376 MAXRSS_KB 385788 WALL 2.80 
+BENCH odd=1 log_blowup=5 log_h=16 w=64 k=4 bits=268 queries=[118, 71, 51, 40] prove_s=7.274 verify_s=0.0147 proof_bytes=838633 whir_bytes=824160 vm_hwm_mb=1235 MAXRSS_KB 1265564 WALL 7.30 
+BENCH odd=1 log_blowup=5 log_h=16 w=64 k=4 bits=268 queries=[118, 71, 51, 40] prove_s=6.947 verify_s=0.0148 proof_bytes=838633 whir_bytes=824160 vm_hwm_mb=1236 MAXRSS_KB 1266136 WALL 6.98 
+BENCH odd=1 log_blowup=6 log_h=16 w=64 k=4 bits=268 queries=[97, 63, 47, 37] prove_s=11.859 verify_s=0.0134 proof_bytes=724633 whir_bytes=710160 vm_hwm_mb=2280 MAXRSS_KB 2335216 WALL 11.89 
+BENCH odd=1 log_blowup=6 log_h=16 w=64 k=4 bits=268 queries=[97, 63, 47, 37] prove_s=11.292 verify_s=0.0125 proof_bytes=724633 whir_bytes=710160 vm_hwm_mb=2284 MAXRSS_KB 2339164 WALL 11.32 
+BENCH odd=15 log_blowup=2 log_h=16 w=64 k=4 bits=268 queries=[99, 64, 47, 38] prove_s=5.560 verify_s=0.0072 proof_bytes=737625 whir_bytes=723152 vm_hwm_mb=2140 MAXRSS_KB 2191820 WALL 5.58 
+BENCH odd=15 log_blowup=2 log_h=16 w=64 k=4 bits=268 queries=[99, 64, 47, 38] prove_s=8.512 verify_s=0.0154 proof_bytes=737625 whir_bytes=723152 vm_hwm_mb=2193 MAXRSS_KB 2245984 WALL 8.57 
+BENCH odd=3 log_blowup=4 log_h=16 w=64 k=4 bits=268 queries=[105, 66, 49, 38] prove_s=8.739 verify_s=0.0131 proof_bytes=773625 whir_bytes=759152 vm_hwm_mb=1846 MAXRSS_KB 1890656 WALL 8.77 
+BENCH odd=3 log_blowup=4 log_h=16 w=64 k=4 bits=268 queries=[105, 66, 49, 38] prove_s=7.254 verify_s=0.0076 proof_bytes=773625 whir_bytes=759152 vm_hwm_mb=1808 MAXRSS_KB 1852400 WALL 7.27 
+BENCH odd=5 log_blowup=3 log_h=16 w=64 k=4 bits=268 queries=[110, 69, 50, 39] prove_s=6.006 verify_s=0.0076 proof_bytes=806201 whir_bytes=791728 vm_hwm_mb=1459 MAXRSS_KB 1494832 WALL 6.02 
+BENCH odd=5 log_blowup=3 log_h=16 w=64 k=4 bits=268 queries=[110, 69, 50, 39] prove_s=4.729 verify_s=0.0076 proof_bytes=806201 whir_bytes=791728 vm_hwm_mb=1492 MAXRSS_KB 1528372 WALL 4.76 

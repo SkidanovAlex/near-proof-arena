@@ -180,6 +180,36 @@ fn adversarial() {
     println!("ADVERSARIAL_PASS");
 }
 
+/// Commit-phase micro-benchmark: RS encoding and Merkle tree, separately, best of `reps`.
+fn commit_bench(args: &[String]) {
+    use openvm_stark_backend::prover::{stacked_pcs::{rs_code_matrix, MerkleTree}, MatrixDimensions};
+    let a: Vec<usize> = args.iter().map(|s| s.parse().unwrap()).collect();
+    let (odd, lb, log_h, w, k, reps) = (a[0], a[1], a[2], a[3], a[4], a[5]);
+    let engine = Eng::new(params(1, lb, 2, log_h - 2, k, 100));
+    let h = 1usize << log_h;
+    let mat = ColMajorMatrix::new((0..h * w).map(|i| Fb::from_u64((i as u64).wrapping_mul(0x9e3779b97f4a7c15) % 2013265921)).collect(), w);
+    let (mut best_rs, mut best_tree) = (f64::MAX, f64::MAX);
+    let mut height = 0;
+    for _ in 0..reps {
+        let t = std::time::Instant::now();
+        #[cfg(feature = "x15")]
+        let rs = if odd == 1 { rs_code_matrix(2, lb, &mat).unwrap() } else { openvm_stark_backend::prover::stacked_pcs::rs_code_matrix_odd(2, lb, odd, &mat).unwrap() };
+        #[cfg(not(feature = "x15"))]
+        let rs = { assert_eq!(odd, 1); rs_code_matrix(2, lb, &mat).unwrap() };
+        best_rs = best_rs.min(t.elapsed().as_secs_f64());
+        height = rs.height();
+        let t = std::time::Instant::now();
+        #[cfg(feature = "x15")]
+        let tree = MerkleTree::new_with_cosets(engine.config().hasher(), rs, 1 << k, odd).unwrap();
+        #[cfg(not(feature = "x15"))]
+        let tree = MerkleTree::new(engine.config().hasher(), rs, 1 << k).unwrap();
+        best_tree = best_tree.min(t.elapsed().as_secs_f64());
+        std::hint::black_box(tree.root().unwrap());
+    }
+    println!("COMMIT odd={odd} log_blowup={lb} log_h={log_h} w={w} k={k} domain={height} rs_s={best_rs:.3} merkle_s={best_tree:.3} rs_ns_per_point_col={:.2} vm_hwm_mb={}",
+        best_rs * 1e9 / (height as f64 * w as f64), hwm_kb() / 1024);
+}
+
 fn bench(args: &[String]) {
     let a: Vec<usize> = args.iter().map(|s| s.parse().unwrap()).collect();
     let (odd, lb, log_h, w, k, bits) = (a[0], a[1], a[2], a[3], a[4], a[5]);
@@ -209,6 +239,7 @@ pub(super) fn run() {
         #[cfg(feature = "x15")]
         Some("adversarial") => adversarial(),
         Some("bench") => bench(&args[2..]),
+        Some("commit") => commit_bench(&args[2..]),
         _ => panic!("usage: ident | selftest | bench odd log_blowup log_h w k bits"),
     }
 }

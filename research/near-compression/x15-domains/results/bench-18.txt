@@ -1,0 +1,6 @@
+BENCH odd=15 log_blowup=2 log_h=18 w=64 k=4 bits=268 queries=[99, 64, 47, 38] prove_s=33.709 verify_s=0.0077 proof_bytes=762153 whir_bytes=747104 vm_hwm_mb=8385 MAXRSS_KB 8586304 WALL 33.73 
+BENCH odd=1 log_blowup=6 log_h=18 w=64 k=4 bits=268 queries=[97, 63, 47, 37] prove_s=59.558 verify_s=0.0139 proof_bytes=748777 whir_bytes=733728 vm_hwm_mb=8548 MAXRSS_KB 8753300 WALL 59.59 
+BENCH odd=15 log_blowup=2 log_h=18 w=64 k=4 bits=268 queries=[99, 64, 47, 38] prove_s=45.744 verify_s=0.0078 proof_bytes=762153 whir_bytes=747104 vm_hwm_mb=8527 MAXRSS_KB 8732368 WALL 45.77 
+BENCH odd=1 log_blowup=6 log_h=18 w=64 k=4 bits=268 queries=[97, 63, 47, 37] prove_s=54.450 verify_s=0.0074 proof_bytes=748777 whir_bytes=733728 vm_hwm_mb=8548 MAXRSS_KB 8753876 WALL 54.47 
+COMMIT odd=15 log_blowup=2 log_h=18 w=64 k=4 domain=15728640 rs_s=7.293 merkle_s=4.555 rs_ns_per_point_col=7.24 vm_hwm_mb=8281
+COMMIT odd=1 log_blowup=6 log_h=18 w=64 k=4 domain=16777216 rs_s=13.522 merkle_s=3.204 rs_ns_per_point_col=12.59 vm_hwm_mb=8467
