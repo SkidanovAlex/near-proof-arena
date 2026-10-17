@@ -86,3 +86,72 @@ level 2 onward:
 * **Coverage:** levers are not implemented in v0.
 * **Columns:** at 969 (1,938 opened), v0 is far over the 100 non-SHA-column budget.
   That is the next step: the air2 SHA AIR plus one shared non-SHA AIR.
+
+## NV v1: air2 SHA AIR plus narrowing the non-SHA AIRs
+
+### Step 1: air2 SHA AIR (k = 3), measured
+
+This step uses the S lane's air2 compression AIR (171 + 13 columns, degree 21) and new
+word-format glue AIRs: packer, block, transcript hash, sample and Merkle.
+* The debug checker passes.
+* Five tamper classes are rejected.
+* The debug-size circuit is 7.8M cells (v0: 16.7M).
+
+The chain ran at T = 20 with n_stack = 19. Heights are natural here (no NV_FIXED), and
+the ALU is 2^18 rows. Log: `logs/nv2-chain-T20-k3.log`.
+
+| level | verifies | cols (opened) | interactions (L) | cells (SHA / other) | ALU rows used | Merkle nodes | leaf blocks | proof B (gkr / relations / stacking / whir) | prove s |
+|---:|---|---:|---:|---:|---:|---:|---:|---|---:|
+| A1 | Fib | 634 (1,268) | 5.64M (23) | 33.63M (5.60M / 28.03M) | 7,288 | 232 | 128 | 193,886 (40,904 / 82,032 / 2,992 / 67,772) | 313 |
+| A2 | A1 (NV) | 634 (1,268) | 10.29M (24) | 76.52M (44.83M / 31.70M) | 75,387 | 1,252 | 384 | 208,590 (44,408 / 82,032 / 3,952 / 78,012) | 2,196 |
+
+* **Proof size:** A2 is 208.6 KB at the T = 20 test target. The column term (relations)
+  is the largest, at 82 KB for 634 columns.
+* **Prove time:** A2 took 7× longer than A1 for 2.3× the cells. In A2 the degree-21
+  SHA AIR has 2^18 rows. Part of A2 also overlapped other test jobs on the same 8
+  cores, so this is not a clean timing.
+* **Other cells:** 28M of the "other" cells are the 105-column ALU at 2^18 rows. Step U1
+  below removes about 45 % of that.
+* The chain continues with more levels; results will be added when it finishes.
+
+### Step U1: merged ALU + BIND AIR ("UAIR", 59 columns), debug-checked
+
+`nv/uair.rs` replaces the 105-column ALU. One 59-column AIR has two row roles.
+
+**ALU rows** are the lower half, `[0, 2^(H-1))`, and hold the program:
+* An op is `8·hi + lo`, with one-hot halves `h[8]` and `g[3]`. The selector is
+  `h[lo]·g[hi]`, degree 2. This replaces 22 one-hot flags.
+* Every ALU row sends `(y, P0..P3)` on a bind bus.
+
+**BIND rows** are the upper half, one per ALU row:
+* They enumerate `y = ya + 512·yb` in order. A counter enforces `ya < 512`, with a wrap
+  flag and an inverse column.
+* They read E1[ya] and E2[yb] from the program's reserved rows. These memory lookups
+  share interactions with the ALU operand reads.
+* They receive `(y, P)` and accumulate `acc += e1·e2·Σ τ^j P_j`.
+* The last BIND row sends the total, on an acc bus, to the ALU `Acc` row.
+
+**Why the total is the full multilinear evaluation:**
+* The P columns are constrained to zero outside ALU rows.
+* The fixed `Acc` row sits at program address 2^(H-1) − 1.
+* Together these force the ALU region to be exactly the lower half. So the binding total
+  is the multilinear evaluation of P over the whole trace, as the parent's opening check
+  needs.
+
+**The BIND role reuses the ALU columns:**
+* a, b and c hold e1, e2 and acc.
+* h[0..8] holds pc0..3, ya, yb, zw and inv_w.
+
+**Cost:**
+* Interactions per row: 19, the same as the old ALU.
+* Constraint degree: at most 6. The debug check passes with max degree 9 at k = 2
+  (`NEARPROOF_SHA_K=2`), so k = 2 stays usable.
+* Tests passing: `nv_program_*`, `nv_circuit_fib_debug`,
+  `nv_circuit_interactions_debug`, `nv_opening_formula` (formula = opening for
+  P0..P3 at the new offsets) and `nv_circuit_tamper`. The tamper test rejects 7 classes:
+  the old 5 plus `bind-acc` and `bind-program-word`.
+* Columns: total 634 → 588, non-SHA 450 → 404. At H = 18 the UAIR is 2^18 × 59 =
+  15.5M cells, against 27.5M for the old ALU (2^17 program rows; A2 uses 75,387).
+
+**Next (U2):** fold the glue AIRs (Hash2 72, Block 102, Merkle2 80, Pack 48, Samp 34,
+Obs 7) into row roles of shared narrow AIRs, to get toward about 100 non-SHA columns.

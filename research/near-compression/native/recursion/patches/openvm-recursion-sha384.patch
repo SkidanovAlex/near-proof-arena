@@ -1578,10 +1578,10 @@ index 0000000..06b463f
 +}
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..dde7dc2
+index 0000000..c7f3b61
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,475 @@
+@@ -0,0 +1,481 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1705,7 +1705,8 @@ index 0000000..dde7dc2
 +
 +impl Builder {
 +    pub fn new(log_rows: usize, reserved: usize) -> Self {
-+        assert!(log_rows <= ADDR_BITS as usize);
++        // log_rows = UAIR height H; the program occupies the ALU half (2^(H-1) rows)
++        assert!(log_rows - 1 <= ADDR_BITS as usize);
 +        Self {
 +            instrs: vec![Instr::NOP; reserved],
 +            vals: vec![EF::ZERO; reserved],
@@ -1725,6 +1726,11 @@ index 0000000..dde7dc2
 +            bind: false,
 +            level: 0,
 +        }
++    }
++
++    /// Program length (ALU rows of the UAIR) = 2^(log_rows - 1).
++    pub fn prog_len(&self) -> usize {
++        1usize << (self.log_rows - 1)
 +    }
 +
 +    /// Fill reserved row `row` with c = x * y.
@@ -1752,7 +1758,7 @@ index 0000000..dde7dc2
 +
 +    /// Assert flag * (binding total - phat) == 0; the total is the ACC row (last row), known at finish.
 +    pub fn defer_acc_check(&mut self, phat: V, flag: V) {
-+        let last = (1u32 << self.log_rows) - 1;
++        let last = (self.prog_len() - 1) as u32;
 +        let d = self.push(Op::Sub, last, phat.addr, 0, 0, EF::ZERO, F::ZERO);
 +        let g = self.push(Op::Mul, d.addr, flag.addr, 0, 0, EF::ZERO, F::ZERO);
 +        let z = self.push(Op::Zero, g.addr, 0, 0, 0, EF::ZERO, F::ZERO);
@@ -1764,9 +1770,9 @@ index 0000000..dde7dc2
 +    fn push(&mut self, op: Op, a: u32, b: u32, k1: u32, k2: u32, val: EF, wit: F) -> V {
 +        let addr = self.instrs.len() as u32;
 +        assert!(
-+            (addr as usize) < (1 << self.log_rows) - 1,
++            (addr as usize) < self.prog_len() - 1,
 +            "program exceeds 2^{} rows",
-+            self.log_rows
++            self.log_rows - 1
 +        );
 +        self.instrs.push(Instr { op, a, b, k1, k2 });
 +        self.vals.push(val);
@@ -2006,7 +2012,7 @@ index 0000000..dde7dc2
 +
 +    /// Finish: pad with NOPs, put the accumulator row last.  Returns the program length 2^log_rows.
 +    pub fn finish(&mut self) {
-+        let n = 1usize << self.log_rows;
++        let n = self.prog_len();
 +        while self.instrs.len() < n - 1 {
 +            self.instrs.push(Instr::NOP);
 +            self.vals.push(EF::ZERO);
@@ -2059,7 +2065,7 @@ index 0000000..dde7dc2
 +
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..db83bd1
+index 0000000..087772d
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
 @@ -0,0 +1,290 @@
@@ -2074,7 +2080,8 @@ index 0000000..db83bd1
 +use p3_matrix::dense::RowMajorMatrix;
 +
 +use super::{
-+    alu::{alu_trace, AluAir, AluBuses, E1_BITS, E1_SIZE},
++    alu::{E1_BITS, E1_SIZE},
++    uair::{u_trace, UAir, UBuses},
 +    builder::Builder,
 +    fmt::sha_k,
 +    hash::{byte_table2, generate2, BlockAir, ByteAir, HashBuses, Job2, PackAir, Work2, U2},
@@ -2091,7 +2098,7 @@ index 0000000..db83bd1
 +
 +#[derive(Clone, Copy, Debug)]
 +pub struct NvBuses {
-+    pub alu: AluBuses,
++    pub alu: UBuses,
 +    pub h: HashBuses,
 +    pub tr: TrBuses,
 +    pub merkle_internal: BusIndex,
@@ -2106,11 +2113,13 @@ index 0000000..db83bd1
 +        };
 +        let slot = next();
 +        let job = next();
-+        let alu = AluBuses {
++        let alu = UBuses {
 +            mem: next(),
 +            slot,
 +            job,
 +            key: next(),
++            bind: next(),
++            acc: next(),
 +        };
 +        let h = HashBuses {
 +            ctl: next(),
@@ -2176,10 +2185,7 @@ index 0000000..db83bd1
 +        let lay = self.layout();
 +        assert_eq!(self.sha_instances, 1, "NV v1 uses one compression AIR");
 +        vec![
-+            Arc::new(AluAir {
-+                buses: b.alu,
-+                log_rows: self.log_rows,
-+            }) as AirRef<SC>,
++            Arc::new(UAir { buses: b.alu }) as AirRef<SC>,
 +            Arc::new(Hash2Air { h: b.h, t: b.tr }),
 +            Arc::new(Obs2Air { h: b.h, t: b.tr }),
 +            Arc::new(Samp2Air { h: b.h, t: b.tr }),
@@ -2205,7 +2211,7 @@ index 0000000..db83bd1
 +    }
 +
 +    pub fn reserved(&self) -> usize {
-+        E1_SIZE + (1 << (self.log_rows - E1_BITS))
++        E1_SIZE + (1 << (self.log_rows - 1 - E1_BITS))
 +    }
 +
 +    /// Execute the verifier program and generate every trace (AIR order as `airs`).
@@ -2289,7 +2295,7 @@ index 0000000..db83bd1
 +        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
 +            *c += t;
 +        }
-+        let alu = alu_trace(&b.instrs, &b.vals, &b.wits, &key_mults);
++        let alu = u_trace(&b.instrs, &b.vals, &b.wits, &key_mults);
 +        let mats = vec![
 +            alu,
 +            tr.hash,
@@ -3377,10 +3383,10 @@ index 0000000..93aeff2
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..e057858
+index 0000000..5f14353
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,110 @@
+@@ -0,0 +1,113 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -3446,6 +3452,9 @@ index 0000000..e057858
 +}
 +
 +pub const NUM_OPS: usize = 23;
++/// Op code = 8 * hi + lo, hi < OP_HI (UAIR one-hot selector halves).
++pub const OP_LO: usize = 8;
++pub const OP_HI: usize = 3;
 +
 +impl Op {
 +    pub fn all() -> [Op; NUM_OPS] {
@@ -4248,10 +4257,10 @@ index 0000000..4125f05
 +}
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 new file mode 100644
-index 0000000..dca5a62
+index 0000000..9abad72
 --- /dev/null
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,16 @@
 +//! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
 +pub mod alu;
 +pub mod builder;
@@ -4262,6 +4271,7 @@ index 0000000..dca5a62
 +pub mod merkle;
 +pub mod merkle2;
 +pub mod transcript2;
++pub mod uair;
 +pub mod verifier;
 +#[cfg(test)]
 +mod hash_tests;
@@ -4269,10 +4279,10 @@ index 0000000..dca5a62
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..39353f8
+index 0000000..d69796d
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,310 @@
+@@ -0,0 +1,326 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -4341,7 +4351,7 @@ index 0000000..39353f8
 +
 +fn nv_debug_params() -> openvm_stark_backend::SystemParams {
 +    let mut p = crate::sha384::e2e_tests::parent_params_debug();
-+    p.max_constraint_degree = super::circuit::NvCircuit::new(3, 14, 1).layout().degree().max(4);
++    p.max_constraint_degree = super::circuit::NvCircuit::new(3, 15, 1).layout().degree().max(6);
 +    p
 +}
 +
@@ -4371,7 +4381,7 @@ index 0000000..39353f8
 +
 +#[test]
 +fn nv_circuit_fib_debug() {
-+    nv_debug(&FibFixture::new(0, 1, 1 << 5), 14);
++    nv_debug(&FibFixture::new(0, 1, 1 << 5), 15);
 +}
 +
 +fn nv_debug_mats(
@@ -4410,14 +4420,14 @@ index 0000000..39353f8
 +    // 1. merkle sibling digest
 +    let mut bad = proof.clone();
 +    bad.whir_proof.initial_round_merkle_proofs[0][0][1][2] ^= 1;
-+    must_fail("merkle-sibling-digest", || nv_debug_mats(&vk, &bad, 14, |_, _| {}));
++    must_fail("merkle-sibling-digest", || nv_debug_mats(&vk, &bad, 15, |_, _| {}));
 +    // 2. opened value
 +    let mut bad = proof.clone();
 +    bad.whir_proof.initial_round_opened_rows[0][0][1][0] += F::ONE;
-+    must_fail("opened-value", || nv_debug_mats(&vk, &bad, 14, |_, _| {}));
++    must_fail("opened-value", || nv_debug_mats(&vk, &bad, 15, |_, _| {}));
 +    // 3. transcript sample (row-consistent refill of the candidate gadgets)
 +    must_fail("transcript-sample", || {
-+        nv_debug_mats(&vk, &proof, 14, |mats, names| {
++        nv_debug_mats(&vk, &proof, 15, |mats, names| {
 +            use super::transcript2::{fill_cand, Samp2Cols};
 +            use p3_field::PrimeField32;
 +            let i = names.iter().position(|n| n == "Samp2Air").unwrap();
@@ -4431,23 +4441,39 @@ index 0000000..39353f8
 +    });
 +    // 4. commit limb on the transcript (first hash job = vk pre-hash commit)
 +    must_fail("transcript-commit-limb", || {
-+        nv_debug_mats(&vk, &proof, 14, |mats, names| {
++        nv_debug_mats(&vk, &proof, 15, |mats, names| {
 +            let i = names.iter().position(|n| n == "Hash2Air").unwrap();
 +            mats[i].values[44] += F::ONE;
 +        })
 +    });
 +    // 5. an ALU result (row 1000's c0)
 +    must_fail("alu-result", || {
-+        nv_debug_mats(&vk, &proof, 14, |mats, _| {
++        nv_debug_mats(&vk, &proof, 15, |mats, _| {
 +            let w = mats[0].width;
-+            mats[0].values[1000 * w + 24] += F::ONE;
++            mats[0].values[1000 * w + super::uair::U_C] += F::ONE;
++        })
++    });
++    // 6. a BIND row's accumulator (row na + 10)
++    must_fail("bind-acc", || {
++        nv_debug_mats(&vk, &proof, 15, |mats, _| {
++            let w = mats[0].width;
++            let na = mats[0].values.len() / w / 2;
++            mats[0].values[(na + 10) * w + super::uair::U_C] += F::ONE;
++        })
++    });
++    // 7. a BIND row's copy of the program word P0 (row na + 600)
++    must_fail("bind-program-word", || {
++        nv_debug_mats(&vk, &proof, 15, |mats, _| {
++            let w = mats[0].width;
++            let na = mats[0].values.len() / w / 2;
++            mats[0].values[(na + 600) * w + super::uair::U_P + 4] += F::ONE;
 +        })
 +    });
 +}
 +
 +#[test]
 +fn nv_circuit_interactions_debug() {
-+    nv_debug(&InteractionsFixture11, 14);
++    nv_debug(&InteractionsFixture11, 15);
 +}
 +
 +/// The opening of a column of the child's ALU equals sum_x w(x) T[x] with
@@ -4461,7 +4487,7 @@ index 0000000..39353f8
 +    let mut pp = openvm_stark_backend::test_utils::test_system_params_small(2, 16, 3);
 +    pp.max_constraint_degree = nv_debug_params().max_constraint_degree;
 +    let parent = Sha384CpuEngine::new(pp);
-+    let circ = super::circuit::NvCircuit::new(3, 14, 1);
++    let circ = super::circuit::NvCircuit::new(3, 15, 1);
 +    let t0 = std::time::Instant::now();
 +    let (vk1, p1, b1, _) = super::circuit::prove_level(&circ, &parent, &vk0, &p0);
 +    println!("NV_L1_PROVE_S {:.1}", t0.elapsed().as_secs_f64());
@@ -4473,7 +4499,7 @@ index 0000000..39353f8
 +    let t = b2.dbg_tid.iter().position(|&a| a == 0).unwrap();
 +    let rs = &b2.dbg_rs;
 +    let omega = F::two_adic_generator(l);
-+    let n = 14 - l;
++    let n = 15 - l;
 +    let mut ok = 0;
 +    for j in 0..4 {
 +        let col: Vec<F> = b1.instrs.iter().map(|i| F::from_u32(i.words()[j])).collect();
@@ -4487,7 +4513,7 @@ index 0000000..39353f8
 +            }
 +            s += lw * e * v;
 +        }
-+        let open = b2.dbg_openings[t][36 + j];
++        let open = b2.dbg_openings[t][super::uair::U_P + j];
 +        println!("NV_OPENING P{j}: formula == opening: {}", s == open);
 +        ok += (s == open) as usize;
 +    }
@@ -5274,12 +5300,392 @@ index 0000000..6366a2a
 +fn _m(m: &RowMajorMatrix<F>) -> usize {
 +    m.width()
 +}
+diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
+new file mode 100644
+index 0000000..022d609
+--- /dev/null
++++ b/crates/recursion/src/nv/uair.rs
+@@ -0,0 +1,374 @@
++//! NV merged non-SHA AIR ("UAIR"), stage U1: ALU rows and BIND rows share one column pool.
++//!
++//! * ALU rows (ka = 1), rows [0, 2^(H-1)): one Ext12 instruction (isa.rs) per row; row y
++//!   writes c at memory address y (y = row index).  Op = 8 * hi + lo with one-hot halves
++//!   h[8] (lo), g[3] (hi); selector(op) = h[lo] * g[hi] (degree 2).  Every ALU row sends
++//!   (y, P0..P3) on the bind bus.
++//! * BIND rows (kb = 1), rows [2^(H-1), 2^H): row for ALU row y = ya + 512 yb holds
++//!   e1 = E1[ya], e2 = E2[yb] (read from memory: the program's reserved rows
++//!   [0, 512) and [512, 512 + 2^(H-10))), receives (y, P0..P3) and accumulates
++//!   acc += e1 * e2 * sum_j tau^j P_j; the last BIND row sends the total to the ALU
++//!   `Acc` row.  P columns are zero outside ALU rows, so the total is the multilinear
++//!   evaluation of the program columns over the whole trace (DESIGN.md section 2.1).
++//!
++//! Shared columns: a|e1, b|e2, c|acc, h[0..4]|pc0..3, h[4]|ya, h[5]|yb, h[6]|zw, h[7]|inv_w.
++//! BIND rows enumerate y in order (ya < 512 counter with wrap flag zw).
++use core::borrow::{Borrow, BorrowMut};
++
++use openvm_recursion_circuit_derive::AlignedBorrow;
++use openvm_stark_backend::{
++    interaction::{BusIndex, InteractionBuilder, LookupBus, PermutationCheckBus},
++    BaseAirWithPublicValues, PartitionedBaseAir,
++};
++use p3_air::{Air, AirBuilder, BaseAir};
++use p3_field::{BasedVectorSpace, Field, PrimeCharacteristicRing};
++use p3_matrix::{dense::RowMajorMatrix, Matrix};
++
++use super::{
++    alu::{tau_pows, E1_BITS, E1_SIZE},
++    isa::{Instr, Op, ADDR_BITS, OP_HI, OP_LO},
++};
++use crate::{
++    sha384::config::{EF, F},
++    utils::{ext_field_add, ext_field_multiply},
++};
++
++
++#[derive(Clone, Copy, Debug)]
++pub struct UBuses {
++    pub mem: BusIndex,
++    pub slot: BusIndex,
++    pub job: BusIndex,
++    pub key: BusIndex,
++    pub bind: BusIndex,
++    pub acc: BusIndex,
++}
++
++#[repr(C)]
++#[derive(AlignedBorrow, Debug)]
++pub struct UCols<T> {
++    pub ka: T,
++    pub kb: T,
++    pub y: T,
++    /// first / last BIND row
++    pub bf: T,
++    pub bl: T,
++    pub a: [T; 12],
++    pub b: [T; 12],
++    pub c: [T; 12],
++    /// program words P0..P3
++    pub p: [T; 4],
++    pub h: [T; OP_LO],
++    pub g: [T; OP_HI],
++    pub wit: T,
++    pub mult: T,
++    pub kmult: T,
++}
++pub const U_WIDTH: usize = UCols::<u8>::width();
++/// Column offsets used by tests / the binding check.
++pub const U_A: usize = 5;
++pub const U_C: usize = 29;
++pub const U_P: usize = 41;
++
++pub struct UAir {
++    pub buses: UBuses,
++}
++impl<T> BaseAir<T> for UAir {
++    fn width(&self) -> usize {
++        U_WIDTH
++    }
++}
++impl<T> BaseAirWithPublicValues<T> for UAir {
++    fn num_public_values(&self) -> usize {
++        1
++    }
++}
++impl<T> PartitionedBaseAir<T> for UAir {}
++
++impl<AB: p3_air::AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for UAir
++where
++    <AB::Expr as PrimeCharacteristicRing>::PrimeSubfield:
++        p3_field::extension::BinomiallyExtendable<12>,
++{
++    fn eval(&self, builder: &mut AB) {
++        let main = builder.main();
++        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let l: &UCols<AB::Var> = (*local).borrow();
++        let n: &UCols<AB::Var> = (*next).borrow();
++        let one = AB::Expr::ONE;
++        let cst = |v: u64| AB::Expr::from_u64(v);
++        let ka: AB::Expr = l.ka.into();
++        let kb: AB::Expr = l.kb.into();
++        builder.assert_bool(l.ka);
++        builder.assert_bool(l.kb);
++        builder.assert_bool(ka.clone() + kb.clone());
++        builder.when_first_row().assert_zero(l.y);
++        builder.when_transition().assert_eq(n.y, l.y + one.clone());
++        for j in 0..4 {
++            builder.assert_zero((one.clone() - ka.clone()) * l.p[j]);
++        }
++
++        // ---------------- op selectors ----------------
++        // g one-hot on ALU rows, zero elsewhere; h one-hot on ALU rows (free elsewhere)
++        let mut gs = AB::Expr::ZERO;
++        for &g in &l.g {
++            builder.assert_bool(g);
++            gs += g.into();
++        }
++        builder.assert_eq(gs, ka.clone());
++        let mut hs = AB::Expr::ZERO;
++        for &h in &l.h {
++            builder.assert_zero(ka.clone() * h * (h - one.clone()));
++            hs += h.into();
++        }
++        builder.assert_zero(ka.clone() * (hs - one.clone()));
++        let s = |op: Op| -> AB::Expr {
++            let v = op as usize;
++            l.h[v % OP_LO] * l.g[v / OP_LO]
++        };
++        let mut opv = AB::Expr::ZERO;
++        for op in Op::all().into_iter().skip(1) {
++            opv += s(op) * cst(op as u64);
++        }
++        let bfield = l.p[1] - opv * cst(1 << ADDR_BITS);
++
++        // ---------------- ALU role ----------------
++        let a: [AB::Expr; 12] = l.a.map(Into::into);
++        let bb: [AB::Expr; 12] = l.b.map(Into::into);
++        let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
++        let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc);
++        let copy_a = s(Op::Obs1)
++            + s(Op::Obs12)
++            + s(Op::ObsC12)
++            + s(Op::Unit12)
++            + s(Op::Bit)
++            + s(Op::KeyC)
++            + s(Op::Pv);
++        let mulab = s(Op::Mul) + s(Op::Horn);
++        for k in 0..12 {
++            let mut e = mulab.clone() * ab[k].clone()
++                + s(Op::Add) * (a[k].clone() + bb[k].clone())
++                + s(Op::Sub) * (a[k].clone() - bb[k].clone())
++                + s(Op::DblAdd) * (a[k].clone().double() + bb[k].clone())
++                + s(Op::MulAddA) * (ab[k].clone() + a[k].clone())
++                + copy_a.clone() * a[k].clone();
++            if k == 0 {
++                e += s(Op::Const) * l.p[0] + s(Op::Horn) * l.wit;
++            }
++            if k == 1 {
++                e += s(Op::ConstX) * l.p[0];
++            }
++            builder.assert_zero((ka.clone() - free.clone()) * (l.c[k] - e));
++            builder.assert_zero(s(Op::Zero) * l.a[k]);
++            if k > 0 {
++                builder.assert_zero(s(Op::Bit) * l.a[k]);
++                builder.assert_zero(s(Op::Smp1) * l.c[k]);
++            }
++        }
++        builder.assert_zero(s(Op::Bit) * l.a[0] * (l.a[0] - one.clone()));
++        let pv0: AB::Expr = builder.public_values()[0].into();
++        builder.assert_zero(s(Op::Pv) * (l.a[0] - pv0));
++
++        // BIND fields
++        let (pc, ya, yb, zw, inv_w) = ([l.h[0], l.h[1], l.h[2], l.h[3]], l.h[4], l.h[5], l.h[6], l.h[7]);
++
++        // memory: ALU rows offer (y, c); operand reads on ALU rows, E1/E2 reads on BIND rows
++        let mem = LookupBus::new(self.buses.mem);
++        let key = |addr: AB::Expr, v: &[AB::Var; 12]| -> Vec<AB::Expr> {
++            core::iter::once(addr).chain(v.iter().map(|&t| t.into())).collect()
++        };
++        mem.add_key_with_lookups(builder, key(l.y.into(), &l.c), ka.clone() * l.mult);
++        let sum_of = |f: fn(Op) -> bool| -> AB::Expr {
++            Op::all()
++                .into_iter()
++                .filter(|&o| f(o))
++                .map(|o| s(o))
++                .fold(AB::Expr::ZERO, |x, t| x + t)
++        };
++        let reads_a = sum_of(Op::reads_a);
++        let reads_b = sum_of(Op::reads_b);
++        mem.lookup_key(builder, key(l.p[0] + kb.clone() * ya, &l.a), reads_a + kb.clone());
++        mem.lookup_key(
++            builder,
++            key(bfield.clone() + kb.clone() * (yb + cst(E1_SIZE as u64)), &l.b),
++            reads_b + kb.clone(),
++        );
++
++        // transcript / SHA unit slots: (chan, key1, key2, kind, v0, v1, v2)
++        let slot = PermutationCheckBus::new(self.buses.slot);
++        let tr12 = s(Op::Obs12) + s(Op::ObsC12) + s(Op::Smp12);
++        let kind = s(Op::Smp1) + s(Op::Smp12) + s(Op::ObsC12).double();
++        let chan = s(Op::Unit12) + s(Op::Horn) + s(Op::Job);
++        for k in 0..12usize {
++            let kk = cst(k as u64);
++            let trk = if k < 9 { tr12.clone() } else { s(Op::Obs12) + s(Op::Smp12) };
++            let tr = if k == 0 { s(Op::Obs1) + s(Op::Smp1) + trk } else { trk };
++            let mut unit = s(Op::Unit12);
++            if k == 0 {
++                unit += s(Op::Horn) + s(Op::Job);
++            }
++            if k == 1 {
++                unit += s(Op::Job);
++            }
++            let key1 = l.p[2] + tr12.clone() * kk.clone();
++            let mut key2 = s(Op::Unit12) * (l.p[3] + kk.clone()) + s(Op::Job) * kk.clone();
++            if k == 0 {
++                key2 += s(Op::Horn) * l.p[3];
++            }
++            let mut v0 = (tr.clone() + s(Op::Unit12)) * l.c[k];
++            if k == 0 {
++                v0 += s(Op::Horn) * l.wit + s(Op::Job) * bfield.clone();
++            }
++            slot.send(
++                builder,
++                [chan.clone(), key1, key2, kind.clone(), v0, AB::Expr::ZERO, AB::Expr::ZERO],
++                unit - tr,
++            );
++        }
++        PermutationCheckBus::new(self.buses.job).send(builder, [l.p[2], l.p[0]], s(Op::Job));
++        // keys: (type, P2, P3, m0..m11)
++        let keyty = s(Op::KeyP) + s(Op::Bit).double();
++        let mut msg = vec![keyty, l.p[2].into(), l.p[3].into()];
++        for k in 0..12 {
++            let mut m = s(Op::KeyC) * l.a[k];
++            if k == 0 {
++                m += s(Op::KeyP) * l.p[0] + s(Op::Bit) * l.a[0];
++            }
++            if k == 1 {
++                m += s(Op::KeyP) * bfield.clone();
++            }
++            msg.push(m);
++        }
++        let is_key = s(Op::KeyC) + s(Op::KeyP) + s(Op::Bit);
++        builder.assert_zero(l.kmult * (one.clone() - is_key));
++        LookupBus::new(self.buses.key).add_key_with_lookups(builder, msg, l.kmult);
++
++        // ---------------- BIND role ----------------
++        let w = ext_field_multiply::<AB::Expr>(a, bb);
++        let tp = tau_pows();
++        let mut wp: [AB::Expr; 12] = core::array::from_fn(|_| AB::Expr::ZERO);
++        for j in 0..4 {
++            let tj: [AB::Expr; 12] = core::array::from_fn(|k| {
++                let cf: &[F] = tp[j].as_basis_coefficients_slice();
++                AB::Expr::from_u32(p3_field::PrimeField32::as_canonical_u32(&cf[k]))
++            });
++            let wt = ext_field_multiply::<AB::Expr>(w.clone(), tj);
++            let term: [AB::Expr; 12] = core::array::from_fn(|k| wt[k].clone() * pc[j]);
++            wp = ext_field_add::<AB::Expr>(wp, term);
++        }
++        builder.assert_bool(l.bf);
++        builder.assert_bool(l.bl);
++        builder.assert_zero(l.bf * (one.clone() - kb.clone()));
++        builder.assert_zero(l.bl * (one.clone() - kb.clone()));
++        builder.when_first_row().assert_eq(l.bf, l.kb);
++        builder.when_last_row().assert_eq(l.bl, l.kb);
++        // y counter: ya < 512 with wrap flag zw; (ya, yb) = (0, 0) on the first BIND row
++        let top = cst((E1_SIZE - 1) as u64);
++        builder.assert_zero(kb.clone() * zw * (zw - one.clone()));
++        builder.assert_zero(kb.clone() * zw * (ya - top.clone()));
++        builder.assert_zero(kb.clone() * ((ya - top) * inv_w - (one.clone() - zw)));
++        builder.assert_zero(l.bf * ya);
++        builder.assert_zero(l.bf * yb);
++        {
++            let mut t = builder.when_transition();
++            t.assert_eq(n.bf, n.kb * (one.clone() - l.kb));
++            t.assert_eq(l.bl, l.kb * (one.clone() - n.kb));
++            let both = l.kb * n.kb;
++            t.assert_zero(both.clone() * (n.h[4] - (ya + one.clone()) * (one.clone() - zw)));
++            t.assert_zero(both.clone() * (n.h[5] - yb - zw));
++            for k in 0..12 {
++                t.assert_zero(both.clone() * (n.c[k] - l.c[k] - wp[k].clone()));
++            }
++        }
++        for k in 0..12 {
++            builder.assert_zero(l.bf * l.c[k]);
++        }
++        // ALU rows send (y, P); BIND rows receive (ya + 512 yb, pc)
++        let mut bmsg = vec![ka.clone() * l.y + kb.clone() * (ya + yb * cst(E1_SIZE as u64))];
++        for j in 0..4 {
++            bmsg.push(l.p[j] + kb.clone() * pc[j]);
++        }
++        PermutationCheckBus::new(self.buses.bind).send(builder, bmsg, ka - kb);
++        // binding total: last BIND row -> ALU `Acc` row
++        let amsg: Vec<AB::Expr> = (0..12).map(|k| l.c[k] + l.bl * wp[k].clone()).collect();
++        PermutationCheckBus::new(self.buses.acc).send(builder, amsg, l.bl - s(Op::Acc));
++    }
++}
++
++/// UAIR trace: ALU rows [0, 2^(H-1)) = the program (already padded to that length), then
++/// one BIND row per ALU row.  E1 / E2 are read from `vals[ya]`, `vals[512 + yb]`.
++pub fn u_trace(instrs: &[Instr], vals: &[EF], wits: &[F], key_mults: &[u32]) -> RowMajorMatrix<F> {
++    let na = instrs.len();
++    assert!(na.is_power_of_two() && na >= E1_SIZE);
++    let h = 2 * na;
++    let mut reads = vec![0u32; na];
++    for ins in instrs {
++        if ins.op.reads_a() {
++            reads[ins.a as usize] += 1;
++        }
++        if ins.op.reads_b() {
++            reads[ins.b as usize] += 1;
++        }
++    }
++    for y in 0..na {
++        reads[y % E1_SIZE] += 1;
++        reads[E1_SIZE + y / E1_SIZE] += 1;
++    }
++    let coeffs = |x: EF| -> [F; 12] { x.as_basis_coefficients_slice().try_into().unwrap() };
++    let mut t = F::zero_vec(h * U_WIDTH);
++    for (y, ins) in instrs.iter().enumerate() {
++        let r: &mut UCols<F> = t[y * U_WIDTH..(y + 1) * U_WIDTH].borrow_mut();
++        r.ka = F::ONE;
++        if ins.op.reads_a() {
++            r.a = coeffs(vals[ins.a as usize]);
++        }
++        if ins.op.reads_b() {
++            r.b = coeffs(vals[ins.b as usize]);
++        }
++        r.c = coeffs(vals[y]);
++        r.p = ins.words().map(F::from_u32);
++        let v = ins.op as usize;
++        r.h[v % OP_LO] = F::ONE;
++        r.g[v / OP_LO] = F::ONE;
++        r.wit = wits[y];
++        r.mult = F::from_u32(reads[y]);
++        r.kmult = F::from_u32(key_mults[y]);
++    }
++    let tp = tau_pows();
++    let mut acc = EF::ZERO;
++    for y in 0..na {
++        let row = na + y;
++        let r: &mut UCols<F> = t[row * U_WIDTH..(row + 1) * U_WIDTH].borrow_mut();
++        r.kb = F::ONE;
++        r.bf = F::from_bool(y == 0);
++        r.bl = F::from_bool(y + 1 == na);
++        let (ya, yb) = (y % E1_SIZE, y / E1_SIZE);
++        let (e1, e2) = (vals[ya], vals[E1_SIZE + yb]);
++        r.a = coeffs(e1);
++        r.b = coeffs(e2);
++        r.c = coeffs(acc);
++        let w = instrs[y].words();
++        for j in 0..4 {
++            r.h[j] = F::from_u32(w[j]);
++        }
++        r.h[4] = F::from_usize(ya);
++        r.h[5] = F::from_usize(yb);
++        r.h[6] = F::from_bool(ya == E1_SIZE - 1);
++        let d = F::from_usize(ya) - F::from_usize(E1_SIZE - 1);
++        r.h[7] = if d == F::ZERO { F::ZERO } else { d.inverse() };
++        let pw: EF = (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum();
++        acc += e1 * e2 * pw;
++    }
++    debug_assert_eq!(acc, vals[na - 1], "ACC row must hold the full binding sum");
++    for row in 0..h {
++        let r: &mut UCols<F> = t[row * U_WIDTH..(row + 1) * U_WIDTH].borrow_mut();
++        r.y = F::from_usize(row);
++    }
++    let _ = E1_BITS;
++    RowMajorMatrix::new(t, U_WIDTH)
++}
++
++#[allow(dead_code)]
++fn _w(m: &RowMajorMatrix<F>) -> usize {
++    m.width()
++}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..53e1e68
+index 0000000..5ea0ddc
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1107 @@
+@@ -0,0 +1,1108 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -6122,14 +6528,15 @@ index 0000000..53e1e68
 +    let m2 = n - m1;
 +    let t2 = eq_table(b, &rs[m1 + 1..=n]);
 +    let one = b.c(F::ONE);
-+    for x in 0..1usize << m2 {
++    // ALU rows are the lower half (top index bit 0): E2 = first half of the table
++    for x in 0..1usize << (m2 - 1) {
 +        b.set_reserved_mul(E1_SIZE + x, t2[x], one);
 +    }
 +    let tp = tau_pows();
 +    let mut phat = b.c(F::ZERO);
 +    for j in 0..4 {
 +        let tj = b.ce(tp[j]);
-+        let o = open_cells[t][36 + j].0;
++        let o = open_cells[t][super::uair::U_P + j].0;
 +        let term = b.mul(tj, o);
 +        phat = b.add(phat, term);
 +    }
