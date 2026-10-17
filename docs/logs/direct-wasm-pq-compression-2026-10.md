@@ -9737,3 +9737,48 @@ Validation: both omission counterexamples and current binding distinctions
 pass; current evidence reconciliation rejects9inconsistent cases;18manifest
 pins checked. No Lean changes; last full audit4658. Larger measured fixture
 remains1344645B; full NEAR1Pgas/PQ128/sub300000B NOT_PASSED.
+
+## 2026-10-17 — Complete nibble-lookup SHA384 compression prototype
+
+Revisited pinned Airbender source6ec4ea725d654c5e4fd3a122d571ca37804f9abd,
+cs/src/delegation/blake2_round_with_extended_control/mod.rs. It materializes
+Xor/Xor3/Xor4/Xor7/Xor9 tables and constrains split/reassembled words through
+lookups. This is source evidence for lookup-based implementation, not a claim
+that its Blake2 hash parameters or proof security transfer to SHA384/NEAR.
+No RISC-V translation or hash substitution is introduced.
+
+Added sha384_nibble_circuit.py: a fixed complete SHA384 compression graph,
+including64message-expansion steps,80rounds and all8feed-forward words.
+Inputs are all512state bits and1024message bits as384nibbles. Nonaligned
+rotations/shifts use two-nibble splice relations; XOR3/choose/majority use
+four-bit truth tables. Addition uses exact base16carry equations with bounds
+for2/4/5summands. Carry magnitudes are tiny relative to Fp, preventing modular
+wrap when composed with enforced range checks. Constants derive from the
+pinned NearSpecV3.SHA512 source. Graph is trusted configuration, not supplied
+by an untrusted proof; the checker consumes a witness and expected full state.
+
+Witness has31632scalar cells,18688lookup requests,6272addition equations,
+13056fixed table rows and31632explicit nibble-range obligations. These are
+NOT AIR cells/proof bytes: wiring, static table authentication, multiplicities,
+range/lookup arguments, padding, auxiliaries and PCS costs remain excluded.
+Current core uses418720unpadded cells per block; no ratio of these unlike
+quantities is claimed as a prover or proof-size speedup. In particular Ext8
+lookup auxiliaries may consume much of the apparent wire-count saving.
+
+Validation:11messages spanning SHA padding boundaries and multiblock inputs,
+28compression blocks, all8output words match independent OpenSSL states;
+probe also checks final SHA384 digest against hashlib. All13056lookup table
+rows independently checked by bit-level definitions. Every internal wire has
+one defining gate;122targeted/scattered/boundary cell mutations reject.
+Initially stopped an unnecessarily quadratic all-cell/full-graph mutation
+sweep; replaced with coverage of every operation/carry bound and boundaries.
+No full-sweep success is claimed. Evidence:results/sha384-nibble-circuit.json.
+
+Next: compile a row layout with actual lookup/range and routing constraints,
+accounting for fixed tables and extension-field auxiliaries before selecting
+this architecture for formalization. The intended Lean consumer would compose
+lookup membership, bounded carries, rotations, schedule and full compression
+semantics; current work is executable parity only, not that theorem.
+No existing verifier/proof profile changed. Current evidence checks and pin
+checks pass; no Lean changes (last audit4658). Full1Pgas/PQ128/sub300000B
+NOT_PASSED; larger measured proof remains1344645B.

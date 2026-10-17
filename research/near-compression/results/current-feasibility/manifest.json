@@ -11,17 +11,19 @@
     "python3 airbender/direct-wasm/measure_switch_verifier_work.py --native-library /tmp/feasibility-ext8-replay.so --output results/switch-full-verifier-hash-work.json",
     "python3 airbender/direct-wasm/screen_response_transcript.py --native-library /tmp/feasibility-ext8-replay.so --output results/response-transcript-screen.json",
     "python3 airbender/direct-wasm/check_derived_transcript_bindings.py",
+    "cc -O2 -shared -fPIC airbender/direct-wasm/sha384_state_probe.c -o /tmp/nibble-sha384-probe.so -lcrypto",
+    "python3 airbender/direct-wasm/test_sha384_nibble_circuit.py --probe-library /tmp/nibble-sha384-probe.so --output results/sha384-nibble-circuit.json",
     "python3 airbender/direct-wasm/report_current_feasibility.py"
   ],
   "replay_note": "Hash workload counts and sizes are deterministic; timing and native-library hash can vary across machines. Replay regenerated measurement changes its artifact hash.",
   "sha256": {
-    "results/current-feasibility.json": "b6033ee124de2b928994df27f282915567b9ae9a5594946ce8d8d9c14595ec53",
+    "results/current-feasibility.json": "9040884efa7e117f978a86c08a3e83bf519c9b87bb313fc1d5f37aaf646b3b4d",
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
     "results/current-feasibility/fresh-verifier.log": "f419b67dfa9e8567efa80f8a1d62e4a67a9a6e8116c072cc247e089029af3218",
     "results/current-feasibility/screen-replay.log": "f27fbac1956a49f96356062285dabfa45e4954b584332916f6cf49136047cedc",
     "results/current-feasibility/hash-work.log": "6198dfa73e0906868332e136655fa9f0cba8b98378ca75eb92ddbffcfb68b087",
     "results/current-feasibility/validation.json": "1e096f9ea3575280712caf0562b375b4b4e1a4804eedde19d34084e3711114a6",
-    "airbender/direct-wasm/report_current_feasibility.py": "46523e4266bd7fcd3653ac6179bf1cc6d8bd5db6081a477ad04ba7d19174424e",
+    "airbender/direct-wasm/report_current_feasibility.py": "c61fca50312e8eb1da83eadd0f5cff95d3f150983b5aca1a61d952bab4b45434",
     "airbender/direct-wasm/test_current_feasibility.py": "7920aabee0ed58c989cd4e25fa5e715fbdca529397a4bbd57a6bae940a2b15a2",
     "airbender/direct-wasm/measure_switch_verifier_work.py": "a5ea8d1cede94853b87d6c0cec9c9f9a09378a6046b07e3174801365f9e33ca7",
     "airbender/direct-wasm/measure_ext8_recursive_hash_work.py": "424ca5d94620cbae2969cc327b08a2656444d390a85a019696992cd70a6dd64e",
@@ -32,6 +34,9 @@
     "airbender/direct-wasm/test_response_transcript.py": "2a8c7029a73385fe01f2f92773c618ada9942a9414c589729d4095cc7144da58",
     "results/response-transcript-screen.json": "18f6b6949cbf592ca19bbb77317074651e58bd63e2ca4568ed2eeb65171e29de",
     "airbender/direct-wasm/check_derived_transcript_bindings.py": "a2b07e3f8ee7dd275df9b0f73f369c38669df80ac6e4288d87df6d55ba31b263",
-    "results/derived-transcript-bindings.json": "20b63f657147802a5590a013e1b8c09ab8a580b2c328bd95802164f38d376a6b"
+    "results/derived-transcript-bindings.json": "20b63f657147802a5590a013e1b8c09ab8a580b2c328bd95802164f38d376a6b",
+    "airbender/direct-wasm/sha384_nibble_circuit.py": "3b20f75a62a5d13855c94d161eb48d3735e0d8c583ff9107fe97bb8a9bf2bf15",
+    "airbender/direct-wasm/test_sha384_nibble_circuit.py": "07cae0ba82fc80ae2c28c5e96e107837b71714e41de9424fe2fe66c7cb2215ec",
+    "results/sha384-nibble-circuit.json": "15e9f56c20f18ac9e8ee6a6d237aa580ba1f7ece47b3d8bf8cd6b83d3dd7714b"
   }
 }

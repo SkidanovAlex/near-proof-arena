@@ -381,6 +381,14 @@
     "decision": "Do not remove hashes at generic GKR/stage APIs. Any new profile must use closed derivation interfaces and retain initial external bindings. Even optimistic removal leaves substantial hash work; require a complete outer-codec byte screen before migration.",
     "scope": "Concrete implementation dependency counterexamples, not attacks on the unchanged verifier, a new protocol, universal determinism proof, Lean certificate, or PQ128 claim."
   },
+  "nibble_hash_prototype": {
+    "evidence": "results/sha384-nibble-circuit.json",
+    "witness_cells": 31632,
+    "lookup_requests": 18688,
+    "fixed_lookup_table_rows": 13056,
+    "scope": "Executable trusted graph and integer/lookup relation; all eight output state words checked with OpenSSL probe and final digests with hashlib. Wire cells exclude routing, lookup multiplicities, fixed-table proof, range arguments, AIR padding, auxiliary columns and PCS. Not directly comparable to an AIR cell count. No proof-size/performance, universal Lean, or PQ128 claim.",
+    "next_gate": "Choose row layout and enforce fixed lookup tables plus wiring through an actual AIR/bus argument; include their full overhead before deciding whether cheaper than the existing core."
+  },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
     "legacy_cap": 3450888781824,
@@ -409,7 +417,8 @@
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
     "results/response-transcript-screen.json": "18f6b6949cbf592ca19bbb77317074651e58bd63e2ca4568ed2eeb65171e29de",
     "results/derived-transcript-bindings.json": "20b63f657147802a5590a013e1b8c09ab8a580b2c328bd95802164f38d376a6b",
-    "airbender/direct-wasm/report_current_feasibility.py": "46523e4266bd7fcd3653ac6179bf1cc6d8bd5db6081a477ad04ba7d19174424e",
+    "results/sha384-nibble-circuit.json": "15e9f56c20f18ac9e8ee6a6d237aa580ba1f7ece47b3d8bf8cd6b83d3dd7714b",
+    "airbender/direct-wasm/report_current_feasibility.py": "c61fca50312e8eb1da83eadd0f5cff95d3f150983b5aca1a61d952bab4b45434",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",
