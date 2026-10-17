@@ -474,3 +474,19 @@ max_constraint_degree 8 → 4 saves ≈ 3.5 KB. Gate 5 re-measured: 459,923 B (2
 **389,561 B (z = 32 / 42 B, z proved)** at 2²⁶·⁴ cells, 460 cols. Model best point with
 measured laws: **≈ 325 KB** at 460 final columns. Remaining gap must come from the
 narrow verifier circuit (columns, next-row columns, interactions) and fewer cells.
+
+**Weak-binding digests** (`lane/pq-weak-binding` @ `5af744ce6`, `weak-binding/ANALYSIS.md`):
+41 B proven now (CMS19 constants and new Thm 4 with K = 0; −3 KB). 26–28 B proven *in
+the note* (new, unreviewed Thm 4: QROM BCS with tolerated block equivocation via a
+compressed-oracle potential) **conditional on H-rob** (block-robust WHIR rbr) → net
+−35…−41 KB; needs position-indexed nodes, 48-B top levels, user U-7 decision. Running:
+H-rob proof attempt; adversarial review of Thm 4.
+
+**Slimmer SHA AIR** (`lane/pq-sha384-air2` @ `ed1ddf946`): base-8 digit words (k = 3),
+bus residuals instead of operand columns, polynomial carry range checks: **7,524
+cells/compression (was 19,448), 171+13 columns (was 442+18), 144 next-row (was 438),
+14 interactions/row (was 43), degree 21**. All tests pass (10k vs sha2, 5,921/5,921
+mutations, 13/13 bus forgeries). Modelled final layer (ext2 fixed point + measured
+laws, 100 other columns): **283,692 B** at z = 32 + 42 B (was 336,453), 335,116 B at
+today's settings. Cost: SHA-only prove 10× slower on CPU (degree-21 interpreted Ext12
+DAG; k = 2: 291,389 B, 2.4× slower). Non-SHA budget for the narrow verifier: ≈ 100 columns.
