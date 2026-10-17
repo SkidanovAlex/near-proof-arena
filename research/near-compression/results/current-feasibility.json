@@ -348,6 +348,19 @@
     },
     "scope": "Actual latest switch fixture contract, call-link decoder and compression envelope decoder, including local/GKR and PCS verification. Counts pq384_primitives.hash_parts calls and their exact framing. Static statement/configuration are externally supplied. This is not full NEAR verification or a recursive proof. Unique sharing requires proved routing/equality constraints. Gadget dense bytes are arithmetic estimates, not measured RAM, runtime or outer proof size. No PQ128 certification."
   },
+  "response_transcript_screen": {
+    "totals": {
+      "calls": 104839,
+      "blocks": 419568,
+      "unique_calls": 40726,
+      "unique_blocks": 242409,
+      "candidate_blocks": 397885,
+      "candidate_unique_blocks": 220726,
+      "unique_blocks_saved": 21683
+    },
+    "scope": "Frozen execution shadow: reencode response payloads only, keep original seeds and all other calls. A new protocol changes downstream challenges and needs fresh proofs. No measured proof-size or security improvement.",
+    "decision": "Binary response encoding alone saves only 8.94 percent of deduplicated hash blocks. Defer protocol migration; first account for derivation binding of weight vectors and GKR layouts in a complete verifier design."
+  },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
     "legacy_cap": 3450888781824,
@@ -374,7 +387,8 @@
     "results/bounded-merkle-break-even.json": "377fc15b7e58ba4a6504fde06ad097ef6aabfe08bd834b34448fb63426c99ca4",
     "scope-report.json": "fcea1becba48a6f0e97c704b7048b71993852c2713441fe1acdf0c1d2b04f9ea",
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
-    "airbender/direct-wasm/report_current_feasibility.py": "a912899426eb874f7f471b084815034a3cdefddcd6629e84df9aa2b259a9f959",
+    "results/response-transcript-screen.json": "18f6b6949cbf592ca19bbb77317074651e58bd63e2ca4568ed2eeb65171e29de",
+    "airbender/direct-wasm/report_current_feasibility.py": "69526ee8982c5c93fdbaf5bdfbfcbef3999ed8ca862e61a156c6a52aa00bc088",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

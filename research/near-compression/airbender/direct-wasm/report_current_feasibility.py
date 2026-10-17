@@ -95,6 +95,14 @@ def build(root=ROOT):
     assert hash_work['call_proof_bytes']==sizes['call_proof_bytes']
     for relative, expected in hash_work['input_sha256'].items():
         assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    response_screen = read('results/response-transcript-screen.json')
+    response_totals = response_screen['measurement']['totals']
+    assert response_screen['fresh_verifier_passed']
+    assert all(response_totals[k] == value for k, value in hash_work['measurement']['totals'].items())
+    assert response_totals['unique_blocks_saved'] == response_totals['unique_blocks'] - response_totals['candidate_unique_blocks']
+    for relative, expected in response_screen['input_sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
+    assert hashlib.sha256((root/'airbender/direct-wasm/screen_response_transcript.py').read_bytes()).hexdigest() == response_screen['measurement']['encoding_source_sha256']
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -127,6 +135,9 @@ def build(root=ROOT):
         latest_verifier_hash_work=dict(totals=hash_work['measurement']['totals'],
             largest_unique_block_tags=dict(top_hash_tags),gadget_accounting=hash_work['current_gadget_accounting'],
             scope=hash_work['scope']),
+        response_transcript_screen=dict(totals=response_totals,
+            scope=response_screen['measurement']['candidate_scope'],
+            decision='Binary response encoding alone saves only 8.94 percent of deduplicated hash blocks. Defer protocol migration; first account for derivation binding of weight vectors and GKR layouts in a complete verifier design.'),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
         decision=dict(next_experiment=('Implement and measure the surviving projected candidate with all excluded costs and explicit security obligations.' if feasible else 'Stop larger-path proving in the existing 25-block profile: mandatory 416 bytes exceed its at-most-288-byte deduplicated sibling budget. Screen a scalable complete-verifier replacement against the explicit replacement budgets; include transcript/arithmetic and public binding, not authentication alone. Measure a versioned canonical transcript design only with all original bindings accounted for.'),

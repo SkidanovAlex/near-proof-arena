@@ -9664,3 +9664,36 @@ pins refreshed and checked. No Lean changes; last full audit4658 unchanged.
 Full NEAR1Pgas/PQ128/sub300000B remains NOT_PASSED; larger fixture1344645B
 unchanged. This supersedes the preceding proposal to benchmark larger paths
 within the existing bounded profile. Goal remains active.
+
+## 2026-10-17 — Lossless response transcript shadow screen
+
+Inspected actual code-switch source response commitments, stage weight seeds,
+and GKR layout hashing. Added a shadow-only response encoding candidate with
+explicit version, list lengths, field-word tags and canonical48-byte digests.
+It preserves all original response values, nested branch ordering, path
+ordering and lengths; it does not drop authenticated fields or paths.
+No existing verifier/prover transcript is changed. The candidate is a research
+codec, not a deployed untrusted-input API or universally verified codec.
+
+Fresh full retained-fixture verification passes, with exactly the prior
+104839hash calls /419568blocks /40726unique calls /242409unique blocks.
+All7source-response commitments round-trip through binary encoding exactly.
+Those commitments cost42840blocks originally versus21157in the candidate.
+Frozen-execution unique total becomes220726blocks:21683saved, only8.9448%.
+Other transcript calls retain original seeds and data; changing the actual
+protocol changes future challenges. These are shadow byte/block counts, not
+new proof bytes, prover timing, secure parameters or new-protocol verification.
+
+Decision: defer standalone protocol migration for this modest total gain.
+Keep the encoding as an option for a complete scalable verifier architecture.
+Next account for provenance of derived weight vectors and GKR layouts;
+replacing them by input bindings requires precise deterministic derivation
+and transcript-order obligations, plus fresh protocol/QROM analysis. Existing
+opening/authentication-only replacement budgets remain insufficient.
+
+Evidence:results/response-transcript-screen.json and its pinned source hash;
+current-feasibility report incorporates the screen. Four independent encoding
+examples and17malformed/noncanonical cases pass; feasibility reconciliation
+now rejects8inconsistent-evidence cases. No Lean changes; last full audit4658.
+Full NEAR1Pgas/PQ128/sub300000B remains NOT_PASSED; full fixture1344645B
+unchanged. This measurement is not a new quantum-secure construction.
