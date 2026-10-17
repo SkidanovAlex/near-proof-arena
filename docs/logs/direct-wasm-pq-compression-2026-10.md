@@ -11496,3 +11496,45 @@ trace/AIR provenance. Price that complete link and recursive workload before
 claiming a compression win. Ext4/20224bytes remain diagnostic; no degree9
 implementation, PQ128 certificate, full NEAR1Petagas proof or end-to-end Lean
 correctness is claimed. Full goal remains active.
+
+
+## 2026-10-17 — Replay terminal consumer against accepted native proof controls
+
+Previous goal turn classified progress: weighted GKR and Lean known-input
+partition. Revalidated clean branch at692dcd62a. Added opt-in instrumentation
+to pinned backend verifier/batch_constraints.rs. Only after native terminal
+sumcheck equality succeeds, append lambda/beta/mu, trace/AIR order, per-trace
+node evaluations/selectors, equality weights, lift normalization, evaluated
+claim and accepted sumcheck claim. Native verification logic is unchanged.
+
+Initial attempt reused Cargo's compiled git dependency despite edited checkout;
+no capture was produced. Waited for that run to complete, cleaned only the
+fast-profile openvm-stark-backend package, rebuilt and reran the chain. Capture
+is from the successful rebuilt run. All three proofs verified at previous
+383529/398697/242809byte sizes. Targeted backend clippy -D warnings passed.
+Source patch/snapshot plus matching internal proof and lockfile are saved.
+
+Three captures have15066,15516,15504nodes. Only capture1matches the exported
+fixed internal-verifier DAG shape; checker explicitly matches per-AIR lengths
+and identity set rather than treating all39-AIR verifiers as identical. Real
+trace order starts36,0,14,5,15,... and is used for mu-power positions. Checked
+13213non-variable nodes against exported operations/constants and captured
+selectors. Recomputed coefficient+offset scalar AND independent procedural
+consumer scalar match native evaluated_claim and accepted sumcheck claim:
+[941997310,1041078624,1976683812,467589941] in the native Ext4 basis.
+Changing mu or omitting the nonzero bus offset changes the scalar as expected.
+
+This removes synthetic controls from the consumer identity test. Variable
+values are still read from native evaluator nodes, not independently extracted
+from proof column openings; that coordinate/rotation provenance is next.
+The native proof still sends all column openings before later transcript
+challenges. No old transcript is asserted valid after removing those messages.
+No GKR has replaced native terminal verification or PCS here, and no PQ128,
+full NEAR1Petagas or new end-to-end Lean theorem is claimed.
+
+Next: replay weighted GKR on this accepted control capture and map every
+residual variable coordinate to the actual disclosed opening (common/cached
+partition, rotation, AIR permutation). This establishes the data interface before
+attempting authenticated opening replacement or a new transcript schedule.
+Reproducer:airbender/direct-wasm/check_swirl_native_controls.py.
+Evidence:results/swirl-security-review/native-controls/. Full goal stays active.
