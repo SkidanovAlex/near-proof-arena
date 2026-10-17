@@ -1,0 +1,356 @@
+{
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "serialized_bytes": 281348,
+  "public_io_bytes": 16064,
+  "stats": [
+    {
+      "checks": 32,
+      "private_words": 34630,
+      "public_words": 496,
+      "and_constraints": 18450,
+      "imul_constraints": 6552,
+      "bmul_constraints": 1060,
+      "zero_constraints": 18474
+    },
+    {
+      "checks": 128,
+      "private_words": 527430,
+      "public_words": 2008,
+      "and_constraints": 268602,
+      "imul_constraints": 108524,
+      "bmul_constraints": 8388,
+      "zero_constraints": 285730
+    }
+  ],
+  "query_screen": [
+    {
+      "query_bits": 96,
+      "rate_log": 1,
+      "queries": 232,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 203680,
+      "leaf_bytes": 142592,
+      "serialized_bytes": 383844
+    },
+    {
+      "query_bits": 96,
+      "rate_log": 2,
+      "queries": 142,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 146528,
+      "leaf_bytes": 111808,
+      "serialized_bytes": 295908
+    },
+    {
+      "query_bits": 96,
+      "rate_log": 3,
+      "queries": 116,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 146880,
+      "leaf_bytes": 96896,
+      "serialized_bytes": 281348
+    },
+    {
+      "query_bits": 96,
+      "rate_log": 4,
+      "queries": 106,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 152960,
+      "leaf_bytes": 92992,
+      "serialized_bytes": 283524
+    },
+    {
+      "query_bits": 96,
+      "rate_log": 5,
+      "queries": 101,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 156416,
+      "leaf_bytes": 101920,
+      "serialized_bytes": 295908
+    },
+    {
+      "query_bits": 96,
+      "rate_log": 6,
+      "queries": 99,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 169568,
+      "leaf_bytes": 108256,
+      "serialized_bytes": 315396
+    },
+    {
+      "query_bits": 128,
+      "rate_log": 1,
+      "queries": 309,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 253568,
+      "leaf_bytes": 184480,
+      "serialized_bytes": 475620
+    },
+    {
+      "query_bits": 128,
+      "rate_log": 2,
+      "queries": 189,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 184128,
+      "leaf_bytes": 143392,
+      "serialized_bytes": 365092
+    },
+    {
+      "query_bits": 128,
+      "rate_log": 3,
+      "queries": 155,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 171808,
+      "leaf_bytes": 140384,
+      "serialized_bytes": 349764
+    },
+    {
+      "query_bits": 128,
+      "rate_log": 4,
+      "queries": 141,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 194560,
+      "leaf_bytes": 120992,
+      "serialized_bytes": 353124
+    },
+    {
+      "query_bits": 128,
+      "rate_log": 5,
+      "queries": 134,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 208384,
+      "leaf_bytes": 123584,
+      "serialized_bytes": 369540
+    },
+    {
+      "query_bits": 128,
+      "rate_log": 6,
+      "queries": 131,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 217216,
+      "leaf_bytes": 137952,
+      "serialized_bytes": 392740
+    },
+    {
+      "query_bits": 160,
+      "rate_log": 1,
+      "queries": 386,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 300384,
+      "leaf_bytes": 226368,
+      "serialized_bytes": 564324
+    },
+    {
+      "query_bits": 160,
+      "rate_log": 2,
+      "queries": 236,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 221728,
+      "leaf_bytes": 174976,
+      "serialized_bytes": 434276
+    },
+    {
+      "query_bits": 160,
+      "rate_log": 3,
+      "queries": 193,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 212032,
+      "leaf_bytes": 162464,
+      "serialized_bytes": 412068
+    },
+    {
+      "query_bits": 160,
+      "rate_log": 4,
+      "queries": 176,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 232640,
+      "leaf_bytes": 148992,
+      "serialized_bytes": 419204
+    },
+    {
+      "query_bits": 160,
+      "rate_log": 5,
+      "queries": 168,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 250816,
+      "leaf_bytes": 150784,
+      "serialized_bytes": 439172
+    },
+    {
+      "query_bits": 160,
+      "rate_log": 6,
+      "queries": 164,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 261568,
+      "leaf_bytes": 168576,
+      "serialized_bytes": 467716
+    },
+    {
+      "query_bits": 256,
+      "rate_log": 1,
+      "queries": 617,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 374848,
+      "leaf_bytes": 401184,
+      "serialized_bytes": 813604
+    },
+    {
+      "query_bits": 256,
+      "rate_log": 2,
+      "queries": 378,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 343904,
+      "leaf_bytes": 238400,
+      "serialized_bytes": 619876
+    },
+    {
+      "query_bits": 256,
+      "rate_log": 3,
+      "queries": 309,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 312896,
+      "leaf_bytes": 240416,
+      "serialized_bytes": 590884
+    },
+    {
+      "query_bits": 256,
+      "rate_log": 4,
+      "queries": 281,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 317472,
+      "leaf_bytes": 257568,
+      "serialized_bytes": 612612
+    },
+    {
+      "query_bits": 256,
+      "rate_log": 5,
+      "queries": 268,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 373696,
+      "leaf_bytes": 230784,
+      "serialized_bytes": 642052
+    },
+    {
+      "query_bits": 256,
+      "rate_log": 6,
+      "queries": 262,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 409088,
+      "leaf_bytes": 242368,
+      "serialized_bytes": 689028
+    },
+    {
+      "query_bits": 272,
+      "rate_log": 1,
+      "queries": 656,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 392320,
+      "leaf_bytes": 422400,
+      "serialized_bytes": 852292
+    },
+    {
+      "query_bits": 272,
+      "rate_log": 2,
+      "queries": 402,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 361568,
+      "leaf_bytes": 251456,
+      "serialized_bytes": 650596
+    },
+    {
+      "query_bits": 272,
+      "rate_log": 3,
+      "queries": 328,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 328096,
+      "leaf_bytes": 253184,
+      "serialized_bytes": 618852
+    },
+    {
+      "query_bits": 272,
+      "rate_log": 4,
+      "queries": 299,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 333600,
+      "leaf_bytes": 271968,
+      "serialized_bytes": 643140
+    },
+    {
+      "query_bits": 272,
+      "rate_log": 5,
+      "queries": 285,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 392192,
+      "leaf_bytes": 244384,
+      "serialized_bytes": 674148
+    },
+    {
+      "query_bits": 272,
+      "rate_log": 6,
+      "queries": 279,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 430304,
+      "leaf_bytes": 255968,
+      "serialized_bytes": 723844
+    }
+  ],
+  "best_per_budget": [
+    {
+      "query_bits": 96,
+      "rate_log": 3,
+      "queries": 116,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 146880,
+      "leaf_bytes": 96896,
+      "serialized_bytes": 281348
+    },
+    {
+      "query_bits": 128,
+      "rate_log": 3,
+      "queries": 155,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 171808,
+      "leaf_bytes": 140384,
+      "serialized_bytes": 349764
+    },
+    {
+      "query_bits": 160,
+      "rate_log": 3,
+      "queries": 193,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 212032,
+      "leaf_bytes": 162464,
+      "serialized_bytes": 412068
+    },
+    {
+      "query_bits": 256,
+      "rate_log": 3,
+      "queries": 309,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 312896,
+      "leaf_bytes": 240416,
+      "serialized_bytes": 590884
+    },
+    {
+      "query_bits": 272,
+      "rate_log": 3,
+      "queries": 328,
+      "algebra_bytes": 37536,
+      "merkle_bytes": 328096,
+      "leaf_bytes": 253184,
+      "serialized_bytes": 618852
+    }
+  ],
+  "checks": [
+    "fresh verification",
+    "tampered proof rejected by Merkle verifier",
+    "changed challenge rejected EARLIER by witness assertion, not counted as verifier negative"
+  ],
+  "scope": "First128GKR equalities only, dependencies included. Inputs are public; no transcript derivation, residual/PCS check, hash circuit or full NEAR.",
+  "limitations": [
+    "Diagnostic96-bit query target, not full security or PQ128.",
+    "Stronger query rows are size estimates with unchanged field/hash widths.",
+    "No full-DAG byte extrapolation or impossibility theorem.",
+    "No Python/Rust/Lean compiler refinement."
+  ]
+}

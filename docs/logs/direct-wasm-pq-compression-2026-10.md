@@ -12824,3 +12824,58 @@ no combinedGKR/hash/sampler/nativePCS proof, fullNEAR1Pgas, PQ128, or end-to-end
 Lean correctness. Evidence binius-ext4/:patch/sourcepin/proof/tests/stats/logs/
 report. check_binius_ext4.py reproduces, including the matchedreference test.
 make pin-check passes; goal remains active.
+
+## 2026-10-17 — Actual GKR DAG lowering exposes prime-field arithmetic cost
+
+Previous goal turn progressed at56ad77b3c with measured fusedExt4. Revalidated
+clean research branch. Replayed the existing optimized arithmetic DAG on the
+FRESH fused-transcript GKR inputs:437equalities zero, residual and2603PCSweights
+match the fresh proof's full-witness obligation. Inputs include actualclaim,
+proofcoefficients,437derivedchallenges and knownvalues; no honest values are
+converted into structural constants by the lowering.
+
+Full reachable DAG540713nodes:599constants,5983inputs,82498adds,68785subs,
+382848multiplications.382250multiplications have two dynamic operands;598have
+aconstantoperand. This is structural classification, not a proof that no further
+algebraic simplification exists. SHA256 of raw sourceDAG pinned in report.
+
+Exported dependency-complete first32and128equality slices. Native example loads
+fixednode/check graph as keydata and keeps named inputvalues public. Enforces
+canonicalinputcoefficients, lowers add/sub to conditional reductions and mul to
+fusedExt4 quotient constraints. Host topological evaluation only populates the
+constrained witnesses. Every selected equality is assertedzero. It does NOT
+include hash/sampler or residual/PCS verification. No fullverifier claim.
+
+Measured sharing/padding:
+- 32checks:642live nodes,252Ext4mults,124Ext4inputs;34630privatewords,
+  496publicwords. Statistics only.
+- 128checks:6774live nodes,4174Ext4mults,502Ext4inputs;527430privatewords,
+  2008publicwords/16064B.796208gates,285730ZERO,268602AND,108524IMUL,
+  8388BMULconstraints. Committedword padding crosses2^19 by3142words, so domain
+  rounds to2^20. Do not optimize this slice-specific cliff as a fullgraph result.
+- Actual128checkproof at rate1/8 diagnostic96-querytarget:
+  281312Bpayload/281348Bserialized; algebra37536B,Merkle146880B,values96896B.
+  Freshverification passes; mutatedproof rejects Merkle authentication.
+  Changedchallenge rejects EARLIER at circuit witness assertions, explicitly not
+  counted as an independent cryptographic verifier negative.
+
+Repeated30case native query-budget screen and exactrational count checks.
+Best128-querybudget is349764Bserialized beforepublicio (rate1/8), with unchanged
+field/hashwidths and omittedsoundness terms. Native census equals actual96case.
+Only4174/382848(~1.09%) of fullDAGmultiplications are in this slice;128/437checks
+is not a representative fraction of total arithmetic work.
+
+Decision: stop expanding this unchanged monolithic BabyBear-in-Binius lowering
+before a fullcompilation/proving run. The smaller real slice already misses
+300000B under the128-query-only screen. This is not a mathematical impossibility
+or additive wholeproof bound; layoutchanges can alter costs. But it is sufficient
+experimental evidence to require a different arithmetic/proof layout or large
+workload reduction before investing in fullintegration. Direct prime-field
+arithmetic with a hash-efficient recursion design remains the primary comparison;
+Binius hash-gadget advantages alone do not remove this integration cost.
+
+Evidence fused-gkr-arithmetic/:fullreplayreport,slices,nativesourcepatch/proof,
+negatives,stats,30rowreport,logs. Reproduce export_fused_gkr_arithmetic.py then
+check_binius_gkr_slice.py after applying savedpatch on previous Binius chain.
+No new Lean/compiler refinement, PQ128certificate or fullNEAR1Pgas proof.
+make pin-check passes. Fullgoal remains active and unachieved.
