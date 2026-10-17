@@ -10593,3 +10593,43 @@ alternative for preserving bitwise hashes. Do not spend another large Lean
 campaign on a rejected layout. First establish a complete byte/security budget,
 then prove the interfaces connecting semantics, AIR, transcript, PCS and recursion.
 No full NEAR proof, PQ128 certificate or secure sub-300,000-byte proof is claimed.
+
+
+## 2026-10-17 — Pin SWIRL calculator and distinguish RBR from PQ security
+
+Previous goal turn classified progress: committed geometry screen and published
+comparison changed candidate priority. Current worktree was clean at e80af3461.
+Pinned openvm-org/stark-backend v2.0.0 to
+16d60de724c21dcadfde7d8315a1db507e5832d7. Four compressed source snapshots and
+raw SHA-256 pins live in research/near-compression/results/swirl-security-review.
+Inspected calculator.rs, soundness/mod.rs, SDK config and production soundness tests.
+
+SDK explicitly targets 100 bits of round-by-round (RBR) security using BabyBear^4.
+Calculator takes the minimum over component bounds and adds biased grinding
+costs at selected stages. It is not itself a complete end-to-end quantum-security
+calculator. This qualifies the prior comparison: the release's claimed 100-bit
+post-quantum security is a published claim; the inspected calculator alone does
+not establish that claim under our concrete adversary-budget convention.
+No attack or defect in SWIRL is inferred from this distinction.
+
+Version mismatch matters: the previously inspected OpenVM docs table lists
+k_whir=3, while this pinned backend defaults DEFAULT_K_WHIR=4. Do not combine
+those schedules and reported proof sizes into a synthetic benchmark.
+
+The new screen_swirl_field_budget.py verifies all four source pins and replays
+only two ungrounded error terms: degree-three GKR and stacking 2*columns/|E|,
+with optimistic PCS list size one. At the published test column bounds (2,000
+recursion; 30,000 app), degree-four extension cannot make these terms <=2^-128.
+Degree five clears these individual RBR128 budgets. Under our hypothetical
+C Q^2 epsilon budget with C=1, Q=2^128 and allowance 1/4 per term, minimum tested
+extension degree is nine for all three cases. This is necessary term-budget
+arithmetic, NOT a sufficient security parameter set, field implementation,
+attack, proof-size result or theorem that this QROM transform applies to SWIRL.
+Exact Fraction comparisons are checked independently against integer inequalities.
+
+Next action: obtain a matching complete backend/configuration release, reproduce
+its production calculator and serialized STARK baseline, then include all
+algebraic, hash, grinding and recursive-composition terms under one security
+convention. Before proposing implementation, assess larger challenge-field and
+hash costs against the narrow root stacking geometry. Keep the full 1 Petagas
+NEAR goal active; no completion or PQ128 claim.
