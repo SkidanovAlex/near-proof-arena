@@ -365,3 +365,55 @@ Every lever is off by default.
   * the ALU proves that the top `bits` bits are zero, by recomposing only the allowed low bits
     of limbs 1 and 2 from BIT rows.
 * The NV debug, tamper and opening tests pass with the child's PoW bits active.
+
+## Phase 2, step 2: levers inside NV's verifier program [measured: debug checks and tamper tests]
+
+Each lever below is consumed in-circuit. Each is tested with a child proof that uses it:
+* the program run is cross-checked against the native verifier's transcript
+  (`nv_program_*`);
+* the circuit passes the debug constraint and bus check;
+* the tamper cases listed are rejected.
+
+| lever | in NV | tamper tests |
+|---|---|---|
+| tag-7 PoW (one or two elements) | static transcript job `H(7,[state,w])`; the hash role sends word 0 to the ALU `PowChk` op; the top z bits are proved zero from BIT rows | PoW witness, wide element 1 |
+| coset leaf | one tag-6 leaf job per query (2^k rows); no coset tree | opened value, codeword value |
+| WHIR-Y (new backend lever, default off, native prover and verifier) | `obs12(y_i)` before γ in every round | (transcript cross-check), codeword value |
+| Gruen GKR + derived claims | s(3) and the derived fields are zero in the proof; t(0..2) and p_xi_1 / q0 are recomputed with checked inverses | s(3) ≠ 0, s(1), p_xi_1 ≠ 0, q0 ≠ 0, layer q_xi_1 |
+| Gruen zerocheck | last eval recomputed: Lagrange at s_deg of s(k)/eq1(k) | last eval ≠ 0, eval |
+| next-row mask | rotated claims only for masked columns; per-column stacking kernels | column opening |
+| k1, keep-domain | per-round k and domain sizes | k1 leaf row |
+| ×15 | rejects x = p−1; index = (x mod 15·2^m) with witnessed q, a; point ζ^a·ω^u0; depth +4 | final poly, codeword |
+| multiproof | the witness generator decompresses the stream into per-query paths, and every path is hashed to the root in-circuit (no dedup savings) | initial / codeword digest |
+| 42-B digests | GLUE node42 mode (L aligned, R at byte shift 2, 2-byte tails); Merkle jobs truncate word 5 (flag declared by the job's producer on the job bus); commit payload gets a 2-byte tail + pad slot with a bit-length correction | (hash mutations at 42 B), Merkle digests |
+| tight heights | the committed height is observed; chunk factors c and δ in the stacking kernel; claim index by column | stacking opening, opened row (zero-tail fixture with 700 of 1,024 rows) |
+
+* **Zero padding:** NvAir padding rows are now all zero, including `y` and the pool. A
+  non-zero value in a padding row is rejected (`nvair padding row y/pool`). The S lane's
+  SHA AIR v2.1 is merged and ported: 43 rows, zero-valid padding, `cid = 43 × index`.
+* **Degrees:** NvAir stays at degree 8 with 42-B digests. With k = 2 the SHA AIR is
+  degree 9, so k = 2 is still selectable.
+* **Next-row mask on NV's own AIRs:** NvAir 36/70 columns rotated, SHA 144/171, table 11/13,
+  byte table 2/5.
+
+## Phase 2, step 3: app-verifier binding, and a soundness fix [measured]
+
+**App binding.** The NV program (levels ≥ 2) now carries the level-1 program as a data
+region: `Data` rows directly after the reserved rows, holding its words verbatim.
+* A new row role (app-binding rows, flag `kc`) accumulates the multilinear evaluation of
+  that table at the child's point, using the same E1/E2 tables.
+* Its length is pinned by `Acc2`'s P0.
+* The binding check is flag·own + (1 − flag)·(ACC2 + the fixed last-row term) = p̂. The
+  flag is 0 exactly when the child is level 1.
+* `nv_app_binding`: level 2 over a real level-1 NV proof accepts the honest table. A
+  one-bit change in the table is rejected: the program binding fails and the circuit's Zero
+  constraint fails. Log: `logs/nv-app-binding.log`, 17.2 GB peak.
+
+**Soundness fix: the op was not bound to P1.** An ALU row's op is selected by witness
+one-hot columns. P1 = B + op·2^20 was only decomposed, never range-checked. So a prover could
+relabel a row to an op that does not use B and keep the same program words. For example, a
+`Const` row relabeled as `Load` gets a free result. This was present since v0.
+* **Fix:** B ∈ [0, 2^20) on every non-data ALU row, checked by byte-pair lookups (3 pool
+  columns; the lookups share existing byte slots).
+* `Acc` additionally pins the BIND region length.
+* Test `op relabel const->load` is now rejected.
