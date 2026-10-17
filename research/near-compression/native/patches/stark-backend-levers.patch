@@ -922,6 +922,19 @@ index a3216a9..439c2ef 100644
              if proof.len() != merkle_depth {
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidCodewordMerkleProofDepth {
+diff --git a/crates/stark-backend/src/verifier/transcript_extractor.rs b/crates/stark-backend/src/verifier/transcript_extractor.rs
+index 846ff0a..753b7ed 100644
+--- a/crates/stark-backend/src/verifier/transcript_extractor.rs
++++ b/crates/stark-backend/src/verifier/transcript_extractor.rs
+@@ -754,6 +754,8 @@ where
+         codeword_opened_values,
+         codeword_merkle_proofs,
+         final_poly,
++        // The extractor reconstructs upstream-format proofs only.
++        levers: Default::default(),
+     })
+ }
+ 
 diff --git a/crates/stark-backend/src/verifier/whir.rs b/crates/stark-backend/src/verifier/whir.rs
 index 756e26f..af8c70e 100644
 --- a/crates/stark-backend/src/verifier/whir.rs

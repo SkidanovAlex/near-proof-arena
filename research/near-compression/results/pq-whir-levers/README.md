@@ -44,7 +44,8 @@ after every backend change (`logs/r-default.log`).
 | all + E5 | | | 236,734 (−142,115) | 4,790 | | 10 cases |
 
 Prover time is unchanged except E5 (8 s → 41 s on the child, Ext12 domains stay large).
-All runs: 8 threads, CPUs 8–15/24–31, ≤ 24 GB.
+All runs: 8 threads, CPUs 8–15/24–31, ≤ 24 GB. Upstream backend tests on the patched
+tree: 40 lib + 102 integration tests pass (`cargo test -p openvm-stark-backend --tests`).
 
 ### Grinding cost (measured, `logs/r-bench.log`)
 
