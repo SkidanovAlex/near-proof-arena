@@ -45,6 +45,11 @@ transport is **357,069 bytes including request**. This is a limited straight-lin
 full NEAR transition or a certified post-quantum proof system. Native acceptance-to-`HoldsP`,
 concrete QROM bounds and the SHA-384/Ext12 recursive parent remain open. The handover records
 reproduction commands, dependency patches, boundary tests and the final gas-failure native run.
+**2026-10-17 follow-up (`lane/pq-native-hermetic`):** native deps pinned and rebuilt from upstream +
+patches (`research/near-compression/native/`; fresh re-proof byte-identical). Calibrated final-layer
+model (`docs/logs/pq-final-layer-model-2026-10-17.md`): SWIRL/WHIR SHA-384/Ext12 final layer ≈ 0.5–0.8 MB
+in the list-decoding regime, whose MCA is now proven (CCC 2026, Thm 5); 300 KB not reached by this family.
+Next: a narrow SHA-384/Ext12 recursive parent with measured in-circuit SHA cost.
 
 ## 0a. State at stop (2026-10-15, main after this commit)
 
