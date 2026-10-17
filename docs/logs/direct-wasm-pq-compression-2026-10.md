@@ -10837,3 +10837,48 @@ and actual frontier multiproofs in the comparison. Need a new full size and
 quantum ledger before more large Lean development. Evidence and exact source
 patch saved under results/swirl-security-review/census; full NEAR1Petagas,
 PQ128 and Lean recursive-acceptance soundness remain open.
+
+
+## 2026-10-17 — Column-reduction interface and Lean obstruction proof
+
+Previous turn classified progress: typed wire census established fixed-layout
+parameter widening fails. Revalidated clean branch atb0ba4983d. Traced pinned
+SWIRL verifier consumers: batch_constraints.rs observes the column openings
+into the transcript and evaluates nonlinear symbolic constraints/interactions;
+stacked_reduction.rs then samples fresh lambda and forms its weighted opening
+claim for the committed trace. Therefore omitting the openings alters both
+constraint evaluation and Fiat-Shamir chronology. A single linear summary is
+not a drop-in replacement for their nonlinear use.
+
+Added NearCompression/SwirlColumnClaimBoundary.lean and imported it from the
+library root. Two Lean theorems establish the deterministic obstruction:
+for nonzero r, inputs(0,0) and(r,-1) have the same x+r*y but distinct x*y;
+there is no function of that single summary that recovers every product.
+This is NOT an attack on fresh random batching with inputs fixed before the
+challenge. It identifies an interface requirement: a replacement must prove
+nonlinear evaluation and PCS linkage for the same committed input, and must
+account for new transcript ordering. Existing GKRLayerTransition/common-input
+lemmas are available building blocks, not a completed SWIRL composition proof.
+
+Targeted lake build succeeded; both theorem axiom closures contain only
+propext, Classical.choice and Quot.sound (no sorryAx). This is a targeted audit,
+not a claim that the entire existing Lean library was re-audited this turn.
+
+Refined the saved-proof census: root constraint proof contains2694column
+opening elements out of2853total extension elements. Leaf has2684, internal
+2694. At hypothetical degree9 (36B/element), replacing all root column claims
+removes96984B. Starting from the earlier frozen dictionary projection371265B,
+free removal leaves274281B; strict <300000 permits25718B for the ENTIRE
+replacement, including new field messages/commitments/openings/recursion costs.
+Without dictionary sharing, free removal still leaves307465B. These are cost
+counterfactuals, not valid proofs after deletion. Query strengthening and the
+actual changed verifier workload are still uncharged, so this does not establish
+feasibility. Keep a whole-protocol budget ahead of implementing the reduction.
+
+The census test decoded/re-encoded existing proofs, passed and passed targeted
+Clippy; source/log snapshots and budget report live under
+results/swirl-security-review/column-boundary. No long proving run was repeated.
+Next: evaluate a concrete GKR/shared-input reduction plus stronger PCS query
+schedule against this small remaining allowance; reject before implementation
+if the combined budget fails. Full NEAR1Petagas, PQ128 and Lean recursive
+acceptance remain open.
