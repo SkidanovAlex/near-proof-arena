@@ -1,0 +1,1000 @@
+{
+  "status": "ROW_ROUTING_CHECKED_COSTS_PROJECTED",
+  "phase_shapes": {
+    "schedule": {
+      "rows_per_block": 64,
+      "source_width": 210,
+      "aux_base_width": 1096
+    },
+    "round": {
+      "rows_per_block": 80,
+      "source_width": 418,
+      "aux_base_width": 1816
+    },
+    "endpoint": {
+      "rows_per_block": 1,
+      "source_width": 514,
+      "aux_base_width": 1216
+    },
+    "boundary": {
+      "rows_per_block": 32,
+      "source_width": 34,
+      "aux_base_width": 48
+    }
+  },
+  "routed_word_reads": 992,
+  "routed_word_definitions": 248,
+  "maximum_word_fanout": 5,
+  "extra_range_checks": 2800,
+  "lookup_implicit_range_wires": 22545,
+  "independent_row_mutations_rejected": 6,
+  "trials": [
+    {
+      "blocks": 1,
+      "candidate_cells": 4507540,
+      "candidate_execution_cells": 375620,
+      "fixed_lookup_cells": 4128768,
+      "fixed_range_cells": 3152,
+      "existing_core_endpoint_cells": 676404,
+      "candidate_over_existing": 6.663975967025624,
+      "within_current_degree_lane_caps": true,
+      "geometries": {
+        "schedule": {
+          "source": {
+            "rows": 64,
+            "width": 210,
+            "packing": 4,
+            "degree": 256,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 64,
+            "width": 1096,
+            "packing": 32,
+            "degree": 2048,
+            "lanes": 35,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "round": {
+          "source": {
+            "rows": 128,
+            "width": 418,
+            "packing": 8,
+            "degree": 1024,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 128,
+            "width": 1816,
+            "packing": 32,
+            "degree": 4096,
+            "lanes": 57,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "endpoint": {
+          "source": {
+            "rows": 2,
+            "width": 514,
+            "packing": 16,
+            "degree": 32,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 2,
+            "width": 1216,
+            "packing": 32,
+            "degree": 64,
+            "lanes": 38,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "boundary": {
+          "source": {
+            "rows": 32,
+            "width": 34,
+            "packing": 1,
+            "degree": 32,
+            "lanes": 34,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 32,
+            "width": 48,
+            "packing": 1,
+            "degree": 32,
+            "lanes": 48,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_lookup": {
+          "source": {
+            "rows": 16384,
+            "width": 20,
+            "packing": 1,
+            "degree": 16384,
+            "lanes": 20,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16384,
+            "width": 232,
+            "packing": 4,
+            "degree": 65536,
+            "lanes": 58,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_range": {
+          "source": {
+            "rows": 16,
+            "width": 13,
+            "packing": 1,
+            "degree": 16,
+            "lanes": 13,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16,
+            "width": 184,
+            "packing": 4,
+            "degree": 64,
+            "lanes": 46,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "blocks": 4,
+      "candidate_cells": 6185080,
+      "candidate_execution_cells": 1495560,
+      "fixed_lookup_cells": 4685824,
+      "fixed_range_cells": 3696,
+      "existing_core_endpoint_cells": 2698856,
+      "candidate_over_existing": 2.291741389685111,
+      "within_current_degree_lane_caps": true,
+      "geometries": {
+        "schedule": {
+          "source": {
+            "rows": 256,
+            "width": 210,
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 256,
+            "width": 1096,
+            "packing": 32,
+            "degree": 8192,
+            "lanes": 35,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "round": {
+          "source": {
+            "rows": 512,
+            "width": 418,
+            "packing": 8,
+            "degree": 4096,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 512,
+            "width": 1816,
+            "packing": 32,
+            "degree": 16384,
+            "lanes": 57,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "endpoint": {
+          "source": {
+            "rows": 4,
+            "width": 514,
+            "packing": 16,
+            "degree": 64,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 4,
+            "width": 1216,
+            "packing": 32,
+            "degree": 128,
+            "lanes": 38,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "boundary": {
+          "source": {
+            "rows": 128,
+            "width": 34,
+            "packing": 1,
+            "degree": 128,
+            "lanes": 34,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 128,
+            "width": 48,
+            "packing": 1,
+            "degree": 128,
+            "lanes": 48,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_lookup": {
+          "source": {
+            "rows": 16384,
+            "width": 22,
+            "packing": 1,
+            "degree": 16384,
+            "lanes": 22,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16384,
+            "width": 264,
+            "packing": 8,
+            "degree": 131072,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_range": {
+          "source": {
+            "rows": 16,
+            "width": 15,
+            "packing": 1,
+            "degree": 16,
+            "lanes": 15,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16,
+            "width": 216,
+            "packing": 4,
+            "degree": 64,
+            "lanes": 54,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "blocks": 16,
+      "candidate_cells": 11229360,
+      "candidate_execution_cells": 5982240,
+      "fixed_lookup_cells": 5242880,
+      "fixed_range_cells": 4240,
+      "existing_core_endpoint_cells": 10795424,
+      "candidate_over_existing": 1.0401962905764517,
+      "within_current_degree_lane_caps": true,
+      "geometries": {
+        "schedule": {
+          "source": {
+            "rows": 1024,
+            "width": 210,
+            "packing": 4,
+            "degree": 4096,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 1024,
+            "width": 1096,
+            "packing": 32,
+            "degree": 32768,
+            "lanes": 35,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "round": {
+          "source": {
+            "rows": 2048,
+            "width": 418,
+            "packing": 8,
+            "degree": 16384,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 2048,
+            "width": 1816,
+            "packing": 32,
+            "degree": 65536,
+            "lanes": 57,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "endpoint": {
+          "source": {
+            "rows": 16,
+            "width": 514,
+            "packing": 16,
+            "degree": 256,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16,
+            "width": 1216,
+            "packing": 32,
+            "degree": 512,
+            "lanes": 38,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "boundary": {
+          "source": {
+            "rows": 512,
+            "width": 34,
+            "packing": 1,
+            "degree": 512,
+            "lanes": 34,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 512,
+            "width": 48,
+            "packing": 1,
+            "degree": 512,
+            "lanes": 48,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_lookup": {
+          "source": {
+            "rows": 16384,
+            "width": 24,
+            "packing": 1,
+            "degree": 16384,
+            "lanes": 24,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16384,
+            "width": 296,
+            "packing": 8,
+            "degree": 131072,
+            "lanes": 37,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_range": {
+          "source": {
+            "rows": 16,
+            "width": 17,
+            "packing": 1,
+            "degree": 16,
+            "lanes": 17,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16,
+            "width": 248,
+            "packing": 4,
+            "degree": 64,
+            "lanes": 62,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "blocks": 25,
+      "candidate_cells": 12636640,
+      "candidate_execution_cells": 7389248,
+      "fixed_lookup_cells": 5242880,
+      "fixed_range_cells": 4512,
+      "existing_core_endpoint_cells": 10822464,
+      "candidate_over_existing": 1.1676305876369744,
+      "within_current_degree_lane_caps": true,
+      "geometries": {
+        "schedule": {
+          "source": {
+            "rows": 2048,
+            "width": 210,
+            "packing": 4,
+            "degree": 8192,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 2048,
+            "width": 1096,
+            "packing": 32,
+            "degree": 65536,
+            "lanes": 35,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "round": {
+          "source": {
+            "rows": 2048,
+            "width": 418,
+            "packing": 8,
+            "degree": 16384,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 2048,
+            "width": 1816,
+            "packing": 32,
+            "degree": 65536,
+            "lanes": 57,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "endpoint": {
+          "source": {
+            "rows": 32,
+            "width": 514,
+            "packing": 16,
+            "degree": 512,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 32,
+            "width": 1216,
+            "packing": 32,
+            "degree": 1024,
+            "lanes": 38,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "boundary": {
+          "source": {
+            "rows": 1024,
+            "width": 34,
+            "packing": 1,
+            "degree": 1024,
+            "lanes": 34,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 1024,
+            "width": 48,
+            "packing": 1,
+            "degree": 1024,
+            "lanes": 48,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_lookup": {
+          "source": {
+            "rows": 16384,
+            "width": 24,
+            "packing": 1,
+            "degree": 16384,
+            "lanes": 24,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16384,
+            "width": 296,
+            "packing": 8,
+            "degree": 131072,
+            "lanes": 37,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_range": {
+          "source": {
+            "rows": 16,
+            "width": 18,
+            "packing": 1,
+            "degree": 16,
+            "lanes": 18,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16,
+            "width": 264,
+            "packing": 8,
+            "degree": 128,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "blocks": 64,
+      "candidate_cells": 29733680,
+      "candidate_execution_cells": 23928960,
+      "fixed_lookup_cells": 5799936,
+      "fixed_range_cells": 4784,
+      "existing_core_endpoint_cells": 43181696,
+      "candidate_over_existing": 0.6885713798735464,
+      "within_current_degree_lane_caps": true,
+      "geometries": {
+        "schedule": {
+          "source": {
+            "rows": 4096,
+            "width": 210,
+            "packing": 4,
+            "degree": 16384,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 4096,
+            "width": 1096,
+            "packing": 32,
+            "degree": 131072,
+            "lanes": 35,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "round": {
+          "source": {
+            "rows": 8192,
+            "width": 418,
+            "packing": 8,
+            "degree": 65536,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 8192,
+            "width": 1816,
+            "packing": 32,
+            "degree": 262144,
+            "lanes": 57,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "endpoint": {
+          "source": {
+            "rows": 64,
+            "width": 514,
+            "packing": 16,
+            "degree": 1024,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 64,
+            "width": 1216,
+            "packing": 32,
+            "degree": 2048,
+            "lanes": 38,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "boundary": {
+          "source": {
+            "rows": 2048,
+            "width": 34,
+            "packing": 1,
+            "degree": 2048,
+            "lanes": 34,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 2048,
+            "width": 48,
+            "packing": 1,
+            "degree": 2048,
+            "lanes": 48,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_lookup": {
+          "source": {
+            "rows": 16384,
+            "width": 26,
+            "packing": 1,
+            "degree": 16384,
+            "lanes": 26,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16384,
+            "width": 328,
+            "packing": 8,
+            "degree": 131072,
+            "lanes": 41,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_range": {
+          "source": {
+            "rows": 16,
+            "width": 19,
+            "packing": 1,
+            "degree": 16,
+            "lanes": 19,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16,
+            "width": 280,
+            "packing": 8,
+            "degree": 128,
+            "lanes": 35,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "blocks": 256,
+      "candidate_cells": 102078160,
+      "candidate_execution_cells": 95715840,
+      "fixed_lookup_cells": 6356992,
+      "fixed_range_cells": 5328,
+      "existing_core_endpoint_cells": 172726784,
+      "candidate_over_existing": 0.590980493216385,
+      "within_current_degree_lane_caps": false,
+      "geometries": {
+        "schedule": {
+          "source": {
+            "rows": 16384,
+            "width": 210,
+            "packing": 4,
+            "degree": 65536,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16384,
+            "width": 1096,
+            "packing": 32,
+            "degree": 524288,
+            "lanes": 35,
+            "within_current_degree_lane_caps": false
+          }
+        },
+        "round": {
+          "source": {
+            "rows": 32768,
+            "width": 418,
+            "packing": 8,
+            "degree": 262144,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 32768,
+            "width": 1816,
+            "packing": 32,
+            "degree": 1048576,
+            "lanes": 57,
+            "within_current_degree_lane_caps": false
+          }
+        },
+        "endpoint": {
+          "source": {
+            "rows": 256,
+            "width": 514,
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 256,
+            "width": 1216,
+            "packing": 32,
+            "degree": 8192,
+            "lanes": 38,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "boundary": {
+          "source": {
+            "rows": 8192,
+            "width": 34,
+            "packing": 1,
+            "degree": 8192,
+            "lanes": 34,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 8192,
+            "width": 48,
+            "packing": 1,
+            "degree": 8192,
+            "lanes": 48,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_lookup": {
+          "source": {
+            "rows": 16384,
+            "width": 28,
+            "packing": 1,
+            "degree": 16384,
+            "lanes": 28,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16384,
+            "width": 360,
+            "packing": 8,
+            "degree": 131072,
+            "lanes": 45,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_range": {
+          "source": {
+            "rows": 16,
+            "width": 21,
+            "packing": 1,
+            "degree": 16,
+            "lanes": 21,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16,
+            "width": 312,
+            "packing": 8,
+            "degree": 128,
+            "lanes": 39,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "blocks": 1024,
+      "candidate_cells": 389783280,
+      "candidate_execution_cells": 382863360,
+      "fixed_lookup_cells": 6914048,
+      "fixed_range_cells": 5872,
+      "existing_core_endpoint_cells": 690907136,
+      "candidate_over_existing": 0.5641616068067359,
+      "within_current_degree_lane_caps": false,
+      "geometries": {
+        "schedule": {
+          "source": {
+            "rows": 65536,
+            "width": 210,
+            "packing": 4,
+            "degree": 262144,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 65536,
+            "width": 1096,
+            "packing": 32,
+            "degree": 2097152,
+            "lanes": 35,
+            "within_current_degree_lane_caps": false
+          }
+        },
+        "round": {
+          "source": {
+            "rows": 131072,
+            "width": 418,
+            "packing": 8,
+            "degree": 1048576,
+            "lanes": 53,
+            "within_current_degree_lane_caps": false
+          },
+          "auxiliary": {
+            "rows": 131072,
+            "width": 1816,
+            "packing": 32,
+            "degree": 4194304,
+            "lanes": 57,
+            "within_current_degree_lane_caps": false
+          }
+        },
+        "endpoint": {
+          "source": {
+            "rows": 1024,
+            "width": 514,
+            "packing": 16,
+            "degree": 16384,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 1024,
+            "width": 1216,
+            "packing": 32,
+            "degree": 32768,
+            "lanes": 38,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "boundary": {
+          "source": {
+            "rows": 32768,
+            "width": 34,
+            "packing": 1,
+            "degree": 32768,
+            "lanes": 34,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 32768,
+            "width": 48,
+            "packing": 1,
+            "degree": 32768,
+            "lanes": 48,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_lookup": {
+          "source": {
+            "rows": 16384,
+            "width": 30,
+            "packing": 1,
+            "degree": 16384,
+            "lanes": 30,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16384,
+            "width": 392,
+            "packing": 8,
+            "degree": 131072,
+            "lanes": 49,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_range": {
+          "source": {
+            "rows": 16,
+            "width": 23,
+            "packing": 1,
+            "degree": 16,
+            "lanes": 23,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16,
+            "width": 344,
+            "packing": 8,
+            "degree": 128,
+            "lanes": 43,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "blocks": 4096,
+      "candidate_cells": 1538930960,
+      "candidate_execution_cells": 1531453440,
+      "fixed_lookup_cells": 7471104,
+      "fixed_range_cells": 6416,
+      "existing_core_endpoint_cells": 2763628544,
+      "candidate_over_existing": 0.5568515940179839,
+      "within_current_degree_lane_caps": false,
+      "geometries": {
+        "schedule": {
+          "source": {
+            "rows": 262144,
+            "width": 210,
+            "packing": 4,
+            "degree": 1048576,
+            "lanes": 53,
+            "within_current_degree_lane_caps": false
+          },
+          "auxiliary": {
+            "rows": 262144,
+            "width": 1096,
+            "packing": 32,
+            "degree": 8388608,
+            "lanes": 35,
+            "within_current_degree_lane_caps": false
+          }
+        },
+        "round": {
+          "source": {
+            "rows": 524288,
+            "width": 418,
+            "packing": 8,
+            "degree": 4194304,
+            "lanes": 53,
+            "within_current_degree_lane_caps": false
+          },
+          "auxiliary": {
+            "rows": 524288,
+            "width": 1816,
+            "packing": 32,
+            "degree": 16777216,
+            "lanes": 57,
+            "within_current_degree_lane_caps": false
+          }
+        },
+        "endpoint": {
+          "source": {
+            "rows": 4096,
+            "width": 514,
+            "packing": 16,
+            "degree": 65536,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 4096,
+            "width": 1216,
+            "packing": 32,
+            "degree": 131072,
+            "lanes": 38,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "boundary": {
+          "source": {
+            "rows": 131072,
+            "width": 34,
+            "packing": 1,
+            "degree": 131072,
+            "lanes": 34,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 131072,
+            "width": 48,
+            "packing": 1,
+            "degree": 131072,
+            "lanes": 48,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_lookup": {
+          "source": {
+            "rows": 16384,
+            "width": 32,
+            "packing": 1,
+            "degree": 16384,
+            "lanes": 32,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16384,
+            "width": 424,
+            "packing": 8,
+            "degree": 131072,
+            "lanes": 53,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "fixed_range": {
+          "source": {
+            "rows": 16,
+            "width": 25,
+            "packing": 1,
+            "degree": 16,
+            "lanes": 25,
+            "within_current_degree_lane_caps": true
+          },
+          "auxiliary": {
+            "rows": 16,
+            "width": 376,
+            "packing": 8,
+            "degree": 128,
+            "lanes": 47,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    }
+  ],
+  "scope": "Materialized static phase-row wiring with exact word fanout; existing Ext8 bus auxiliary formulas. NOT an AIR or proof. Per-phase schedules, wire addresses and lookup table contents are trusted. Cost excludes their enforcement, public/call routing, lookup soundness, LDE/Merkle/PCS/GKR. Old comparator excludes corresponding call routing too. Dimensions may exceed existing packing/degree limits. No secure-size or runtime prediction.",
+  "decision": "Evaluate the structured phase-row AIR with whole-word routing. Validate fixed row programs and lookup multiplicities before interpreting any projected saving. Keep full NEAR/PQ128/300KB gate NOT_PASSED.",
+  "sha256": {
+    "airbender/direct-wasm/plan_sha384_nibble_rows.py": "97168e6a7494cede67fa0c81abf6b2529771b8f3c6397d60ceefacd1c031a418",
+    "airbender/direct-wasm/sha384_nibble_circuit.py": "d5e832c4d2076ae13e9d9b6742698fe5138b8742983ecfeb6b2c429906adb10c",
+    "airbender/direct-wasm/pq384_ext8_auxiliary.py": "f8e8eb9e62941fae14a0604aa5babf9422e9a5fe4fcf431e054b0c56020d1e49"
+  }
+}

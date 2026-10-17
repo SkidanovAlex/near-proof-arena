@@ -9782,3 +9782,44 @@ semantics; current work is executable parity only, not that theorem.
 No existing verifier/proof profile changed. Current evidence checks and pin
 checks pass; no Lean changes (last audit4658). Full1Pgas/PQ128/sub300000B
 NOT_PASSED; larger measured proof remains1344645B.
+
+## 2026-10-17 — Nibble phase rows and existing-bus overhead screen
+
+Annotated the unchanged compression graph with64schedule rows,80round rows,
+and one feed-forward row. Materialized independent row copies and checked
+all local operations plus full-word routing, expected output and exact fanout.
+There are992cross-row word reads,248distinct routed words,maximum fanout5.
+Six independently altered row copies reject. Replayed all prior compression
+parity/lookup/mutation tests after the graph metadata change; all pass.
+
+Lookup membership constrains22545wire ranges (one overlaps a constant),
+6272carry outputs have bounded carry constraints, and constants are fixed.
+Only2800additional nibble range obligations remain. Explicitly counted them;
+blindly adding a range lookup for every wire would obscure the actual costs.
+Projection uses existing pq384_ext8_auxiliary.layout, not an assumed cheap
+lookup protocol: one Ext8accumulator for each single-multiplicity interaction;
+2*(bits-1)extra extension columns for multiplicity powering. Fixed lookup
+and range tables include boolean multiplicity-bit source columns and padded
+rows; all logical source/aux tables include power-of-two padding. Cross-row
+buses route16nibbles per word. Boundary costs and8endpoint output sends are
+charged. Static programs, word-address enforcement and fixed table contents
+are trusted in this checker, so their AIR enforcement remains EXCLUDED.
+
+Result: ordinary1/4/16/25-block cases remain more expensive than existing
+core+endpoint cell geometry once fixed tables and Ext8auxiliaries are counted.
+At64blocks, projected candidate29733680cells versus43181696existing
+core+endpoint cells (~0.689ratio). This is not proof-size or runtime saving.
+The projected64-block candidate source/aux widths fit the existing64lane /
+262144degree caps with appropriate packings; larger256/1024/4096cases fail
+those caps. Old64-block core geometry itself exceeds its current packing
+capacity: this comparison is cell accounting, not two executable provers.
+
+Decision: structured64-block candidate merits fixed-program/lookup enforcement
+work; small bounded chunks do not amortize the lookup table. Do not claim
+viability until full AIR, commitment geometry, local/GKR/PCS bytes and security
+parameters are included. Endpoint/call provenance and full recursive verifier
+semantics are not solved by a cheaper compression gadget.
+
+Evidence:results/sha384-nibble-row-plan.json. Current report consumes it;
+10inconsistent-evidence checks and23manifest pins pass. No Lean changes;
+last full audit4658. Full1Pgas/PQ128/sub300000B remains NOT_PASSED.

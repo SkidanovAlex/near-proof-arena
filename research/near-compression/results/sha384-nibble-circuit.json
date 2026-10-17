@@ -26,7 +26,7 @@
   "next_gate": "Choose row layout and enforce fixed lookup tables plus wiring through an actual AIR/bus argument; include their full overhead before deciding whether cheaper than the existing core.",
   "sha256": {
     "research/near-compression/airbender/direct-wasm/test_sha384_nibble_circuit.py": "07cae0ba82fc80ae2c28c5e96e107837b71714e41de9424fe2fe66c7cb2215ec",
-    "research/near-compression/airbender/direct-wasm/sha384_nibble_circuit.py": "3b20f75a62a5d13855c94d161eb48d3735e0d8c583ff9107fe97bb8a9bf2bf15",
+    "research/near-compression/airbender/direct-wasm/sha384_nibble_circuit.py": "d5e832c4d2076ae13e9d9b6742698fe5138b8742983ecfeb6b2c429906adb10c",
     "spec/lean/v3/NearSpecV3/SHA512.lean": "96083372eb24d51b79e864fd240b1647859043241c9123840f9cc0d4124857a3",
     "research/near-compression/airbender/direct-wasm/measure_sha384_block_dag.py": "ea4c0fbd593d78fc044cae7517935ef51fc2445dab4b34163f0a17a732108b51"
   }

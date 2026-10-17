@@ -117,6 +117,12 @@ def build(root=ROOT):
     assert nibble['exhaustive_lookup_relation_rows'] == nibble['fixed_lookup_table_rows']
     for relative, expected in nibble['sha256'].items():
         assert hashlib.sha256((REPO/relative).read_bytes()).hexdigest() == expected
+    row_plan = read('results/sha384-nibble-row-plan.json')
+    assert row_plan['status'] == 'ROW_ROUTING_CHECKED_COSTS_PROJECTED'
+    for relative, expected in row_plan['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
+    for case in row_plan['trials']:
+        assert case['candidate_cells'] == case['candidate_execution_cells'] + case['fixed_lookup_cells'] + case['fixed_range_cells']
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -159,6 +165,10 @@ def build(root=ROOT):
             witness_cells=nibble['witness_cells'], lookup_requests=nibble['lookup_requests'],
             fixed_lookup_table_rows=nibble['fixed_lookup_table_rows'],
             scope=nibble['scope'], next_gate=nibble['next_gate']),
+        nibble_row_plan=dict(evidence='results/sha384-nibble-row-plan.json',
+            phase_shapes=row_plan['phase_shapes'],
+            candidate_trials=[{k:v for k,v in case.items() if k != 'geometries'} for case in row_plan['trials']],
+            scope=row_plan['scope'], decision=row_plan['decision']),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
         decision=dict(next_experiment=('Implement and measure the surviving projected candidate with all excluded costs and explicit security obligations.' if feasible else 'Stop larger-path proving in the existing 25-block profile: mandatory 416 bytes exceed its at-most-288-byte deduplicated sibling budget. Screen a scalable complete-verifier replacement against the explicit replacement budgets; include transcript/arithmetic and public binding, not authentication alone. Measure a versioned canonical transcript design only with all original bindings accounted for.'),

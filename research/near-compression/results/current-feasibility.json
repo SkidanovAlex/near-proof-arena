@@ -389,6 +389,115 @@
     "scope": "Executable trusted graph and integer/lookup relation; all eight output state words checked with OpenSSL probe and final digests with hashlib. Wire cells exclude routing, lookup multiplicities, fixed-table proof, range arguments, AIR padding, auxiliary columns and PCS. Not directly comparable to an AIR cell count. No proof-size/performance, universal Lean, or PQ128 claim.",
     "next_gate": "Choose row layout and enforce fixed lookup tables plus wiring through an actual AIR/bus argument; include their full overhead before deciding whether cheaper than the existing core."
   },
+  "nibble_row_plan": {
+    "evidence": "results/sha384-nibble-row-plan.json",
+    "phase_shapes": {
+      "schedule": {
+        "rows_per_block": 64,
+        "source_width": 210,
+        "aux_base_width": 1096
+      },
+      "round": {
+        "rows_per_block": 80,
+        "source_width": 418,
+        "aux_base_width": 1816
+      },
+      "endpoint": {
+        "rows_per_block": 1,
+        "source_width": 514,
+        "aux_base_width": 1216
+      },
+      "boundary": {
+        "rows_per_block": 32,
+        "source_width": 34,
+        "aux_base_width": 48
+      }
+    },
+    "candidate_trials": [
+      {
+        "blocks": 1,
+        "candidate_cells": 4507540,
+        "candidate_execution_cells": 375620,
+        "fixed_lookup_cells": 4128768,
+        "fixed_range_cells": 3152,
+        "existing_core_endpoint_cells": 676404,
+        "candidate_over_existing": 6.663975967025624,
+        "within_current_degree_lane_caps": true
+      },
+      {
+        "blocks": 4,
+        "candidate_cells": 6185080,
+        "candidate_execution_cells": 1495560,
+        "fixed_lookup_cells": 4685824,
+        "fixed_range_cells": 3696,
+        "existing_core_endpoint_cells": 2698856,
+        "candidate_over_existing": 2.291741389685111,
+        "within_current_degree_lane_caps": true
+      },
+      {
+        "blocks": 16,
+        "candidate_cells": 11229360,
+        "candidate_execution_cells": 5982240,
+        "fixed_lookup_cells": 5242880,
+        "fixed_range_cells": 4240,
+        "existing_core_endpoint_cells": 10795424,
+        "candidate_over_existing": 1.0401962905764517,
+        "within_current_degree_lane_caps": true
+      },
+      {
+        "blocks": 25,
+        "candidate_cells": 12636640,
+        "candidate_execution_cells": 7389248,
+        "fixed_lookup_cells": 5242880,
+        "fixed_range_cells": 4512,
+        "existing_core_endpoint_cells": 10822464,
+        "candidate_over_existing": 1.1676305876369744,
+        "within_current_degree_lane_caps": true
+      },
+      {
+        "blocks": 64,
+        "candidate_cells": 29733680,
+        "candidate_execution_cells": 23928960,
+        "fixed_lookup_cells": 5799936,
+        "fixed_range_cells": 4784,
+        "existing_core_endpoint_cells": 43181696,
+        "candidate_over_existing": 0.6885713798735464,
+        "within_current_degree_lane_caps": true
+      },
+      {
+        "blocks": 256,
+        "candidate_cells": 102078160,
+        "candidate_execution_cells": 95715840,
+        "fixed_lookup_cells": 6356992,
+        "fixed_range_cells": 5328,
+        "existing_core_endpoint_cells": 172726784,
+        "candidate_over_existing": 0.590980493216385,
+        "within_current_degree_lane_caps": false
+      },
+      {
+        "blocks": 1024,
+        "candidate_cells": 389783280,
+        "candidate_execution_cells": 382863360,
+        "fixed_lookup_cells": 6914048,
+        "fixed_range_cells": 5872,
+        "existing_core_endpoint_cells": 690907136,
+        "candidate_over_existing": 0.5641616068067359,
+        "within_current_degree_lane_caps": false
+      },
+      {
+        "blocks": 4096,
+        "candidate_cells": 1538930960,
+        "candidate_execution_cells": 1531453440,
+        "fixed_lookup_cells": 7471104,
+        "fixed_range_cells": 6416,
+        "existing_core_endpoint_cells": 2763628544,
+        "candidate_over_existing": 0.5568515940179839,
+        "within_current_degree_lane_caps": false
+      }
+    ],
+    "scope": "Materialized static phase-row wiring with exact word fanout; existing Ext8 bus auxiliary formulas. NOT an AIR or proof. Per-phase schedules, wire addresses and lookup table contents are trusted. Cost excludes their enforcement, public/call routing, lookup soundness, LDE/Merkle/PCS/GKR. Old comparator excludes corresponding call routing too. Dimensions may exceed existing packing/degree limits. No secure-size or runtime prediction.",
+    "decision": "Evaluate the structured phase-row AIR with whole-word routing. Validate fixed row programs and lookup multiplicities before interpreting any projected saving. Keep full NEAR/PQ128/300KB gate NOT_PASSED."
+  },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
     "legacy_cap": 3450888781824,
@@ -417,8 +526,9 @@
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
     "results/response-transcript-screen.json": "18f6b6949cbf592ca19bbb77317074651e58bd63e2ca4568ed2eeb65171e29de",
     "results/derived-transcript-bindings.json": "20b63f657147802a5590a013e1b8c09ab8a580b2c328bd95802164f38d376a6b",
-    "results/sha384-nibble-circuit.json": "15e9f56c20f18ac9e8ee6a6d237aa580ba1f7ece47b3d8bf8cd6b83d3dd7714b",
-    "airbender/direct-wasm/report_current_feasibility.py": "c61fca50312e8eb1da83eadd0f5cff95d3f150983b5aca1a61d952bab4b45434",
+    "results/sha384-nibble-circuit.json": "b8d654f393c495431825f19df6f8214ced83f8e909262e82d03269d1403f8487",
+    "results/sha384-nibble-row-plan.json": "018b56260abec95f78d4682c1033e2f58bb12ea92678279810c0f9c3b58ab0d0",
+    "airbender/direct-wasm/report_current_feasibility.py": "fac6e2cd949af4ee44db6521a6be40f879bf5a6a7e89d5ccb9605b5baf56c1fe",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

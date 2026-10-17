@@ -20,6 +20,8 @@ def main():
     base=report.ROOT/'results/ext8-switch-execution-q309'
     manifest_path=base/'manifest.json'
     mutations=[
+        (report.ROOT/'results/sha384-nibble-row-plan.json',
+            lambda d:d['trials'][0].update(candidate_cells=0),False),
         (report.ROOT/'results/derived-transcript-bindings.json',
             lambda d:d['terminal'].update(existing_begin_seeds_distinct=False),False),
         (report.ROOT/'results/response-transcript-screen.json',

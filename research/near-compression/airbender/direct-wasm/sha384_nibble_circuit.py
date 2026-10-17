@@ -32,15 +32,21 @@ class Graph:
         self.size = 384
         self.gates = []
         self.constants = {}
+        self.phase = ('input', 0)
+        self.gate_phases = []
+        self.words = []
+    def emit(self, gate):
+        self.gates.append(gate)
+        self.gate_phases.append(self.phase)
     def const(self, value):
         assert 0 <= value < 16
         if value not in self.constants:
             self.constants[value] = self.size
-            self.gates.append(('const', (), (self.size,), value)); self.size += 1
+            self.emit(('const', (), (self.size,), value)); self.size += 1
         return self.constants[value]
     def lookup(self, op, inputs):
         output = self.size; self.size += 1
-        self.gates.append((op, tuple(inputs), (output,), 0))
+        self.emit((op, tuple(inputs), (output,), 0))
         return output
     def rotate(self, word, bits, shift=False):
         q, r = divmod(bits, 4)
@@ -53,8 +59,9 @@ class Graph:
         carry = self.const(0); result = []
         for inputs in zip(*words):
             out, nxt = self.size, self.size+1; self.size += 2
-            self.gates.append(('add', tuple(inputs)+(carry,), (out, nxt), len(words)))
+            self.emit(('add', tuple(inputs)+(carry,), (out, nxt), len(words)))
             result.append(out); carry = nxt
+        self.words.append(tuple(result))
         return result
     def sigma(self, word, rotations, last_shift=False):
         return self.boolean('xor3', *(self.rotate(word, r, last_shift and i == 2) for i, r in enumerate(rotations)))
@@ -64,16 +71,20 @@ def compile_graph():
     g = Graph()
     initial = [list(range(16*i, 16*(i+1))) for i in range(8)]
     words = [list(range(128+16*i, 128+16*(i+1))) for i in range(16)]
+    g.words.extend(tuple(w) for w in initial+words)
     for i in range(16, 80):
+        g.phase = ('schedule', i)
         s0 = g.sigma(words[i-15], (1, 8, 7), True)
         s1 = g.sigma(words[i-2], (19, 61, 6), True)
         words.append(g.add(words[i-16], s0, words[i-7], s1))
     a, b, c, d, e, f, h0, h1 = initial
-    for k, word in zip(constants(), words):
+    for round_index, (k, word) in enumerate(zip(constants(), words)):
+        g.phase = ('round', round_index)
         kw = [g.const((k >> (4*i)) & 15) for i in range(16)]
         t1 = g.add(h1, g.sigma(e, (14, 18, 41)), g.boolean('choose', e, f, h0), kw, word)
         t2 = g.add(g.sigma(a, (28, 34, 39)), g.boolean('majority', a, b, c))
         a, b, c, d, e, f, h0, h1 = g.add(t1, t2), a, b, c, g.add(d, t1), e, f, h0
+    g.phase = ('endpoint', 0)
     g.outputs = [g.add(x, y) for x, y in zip(initial, (a, b, c, d, e, f, h0, h1))]
     return g
 
