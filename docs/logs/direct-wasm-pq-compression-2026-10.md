@@ -12025,3 +12025,54 @@ architecture rather than treating diagnostic size as secure feasibility.
 
 No new Lean codec/compiler/composition theorem. Full NEAR1Petagas/PQ128/secure
 sub300000bytes/end-to-end correctness remain unachieved; goal stays active.
+
+## 2026-10-17 — Root workload attribution changes optimization priority
+
+Previous goal turn made progress: validated/pushed complete204076B root bundle
+and charged-GKR sensitivity screen atb0bc06163. Revalidated clean worktree.
+Added screen_swirl_root_workload.py joining actual41-matrix manifest to pinned
+native AIR names (AIR39duplicates hash AIR14), checking widths and exact totals.
+Common9670384cells: hash5085696(52.59%), initial openings1458176(15.08%),
+symbolic evaluation786432(8.13%), final query evaluation737280(7.62%).
+Cached393216cells remain separately authenticated.
+
+Each counterfactual reoptimizes5790geometries under the previous conditional
+extension9/digest52 query ledger, charging1288EF GKR and keeping fixed messages.
+Free removed work has NO replacement proof/constraints charged; this is an
+optimistic prioritization experiment, not an implemented protocol.
+
+| Counterfactual | Best expected bytes |
+| --- | ---: |
+| Measured work |408973.81|
+| Half hash work free |389641.81|
+| All hash work free |368161.81|
+| Initial openings and final query evaluation free |391789.81|
+| Symbolic evaluation and cached work free |339571.20|
+| Hash, symbolic evaluation and cached work all free |298759.20|
+| All common cells /4, cache retained |338151.08|
+| All common cells /8, cache retained |306975.08|
+| All common cells /16, cache retained |282333.82|
+| All common cells /2, cache free |307351.20|
+| All common cells /4, cache free |279660.84|
+
+Even eliminating all hash cost does not pass with the second cached source
+retained. Simultaneously erasing hash/symbolic/cache work gives only1240.80B
+headroom before omitted replacement costs. Thus standalone hash-AIR tuning is
+not the next architectural priority. A fixed-key verifier with materially
+smaller opening/evaluation work and no separately authenticated cached source
+is a more relevant candidate; /4common with freecache has20339.16B headroom,
+still before replacement costs, full security composition and real NEAR work.
+These are conditional expected sizes, not lower bounds or security claims.
+
+Source inspection reconfirms important recursion boundary: native
+nearproof_root_split_witness decodes ORIGINAL internal native proof and invokes
+VerifierSubCircuit::generate_proving_ctxs_base on it. The new external terminal
+GKR replacement reduces root proof column claims, but DOES NOT remove that
+inner symbolic-expression/cached trace. No circuit currently proves acceptance
+of our compressed bundle. Next implementation must explicitly compile that
+verifier, including public prefix/GKR/weighted PCS/transcript binding; do not
+infer its trace size or recursive closure from the existing root fixture.
+Preserve fixed-key binding and all public state links when specializing.
+
+Evidence:root-workload-screen/report.json with source pins and all14scenarios.
+No new Lean theorem; fullNEAR1Petagas/PQ128/secure sub300000B goal remains active.
