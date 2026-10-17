@@ -117,7 +117,17 @@ def sha_blocks(cells, target, m, b, k1, k, log_h, log_final):
         row = r['width'] * BASE if i == 0 else EXT
         depth = log_h + b - kk - (i if i else 0)
         total += q * ((1 << kk) * leaf(row) + (1 << kk) - 1 + depth)
+    # The final polynomial is absorbed into the transcript and evaluated at every last-round query.
+    total += -(-((1 << log_final) * EXT) // 128)
     return total, sum(r['q'])
+
+
+FINAL_EVAL_CELLS = 40   # committed cells per Ext12 multiply-add in the verifier circuit (estimate)
+
+
+def final_eval_cells(cells, target, m, b, k1, k, log_h, log_final):
+    r = layer(cells, 300, target, m, 48, b, k1, k, log_h, log_final)
+    return r['q'][-1] * (1 << log_final) * FINAL_EVAL_CELLS
 
 
 def cheapest(cells, target, m):
@@ -132,16 +142,23 @@ def cheapest(cells, target, m):
                         if (log_h - k1 - log_final) % k:
                             continue
                         blocks, q = sha_blocks(cells, target, m, b, k1, k, log_h, log_final)
-                        if out is None or blocks < out[0]:
-                            out = (blocks, q, dict(b=b, k1=k1, k=k, log_h=log_h, log_final=log_final))
-    return out
+                        extra = final_eval_cells(cells, target, m, b, k1, k, log_h, log_final)
+                        cost = blocks * C_SHA_HINT + extra
+                        if out is None or cost < out[3]:
+                            out = (blocks, q, dict(b=b, k1=k1, k=k, log_h=log_h, log_final=log_final, final_eval_cells=extra), cost)
+    return out[:3]
+
+
+C_SHA_HINT = 12000
 
 
 def fixed_point(c_sha, c_query, c_fixed, pen_target, fin_target, m, digest):
     cells = 1 << 24
     for _ in range(20):
+        global C_SHA_HINT
+        C_SHA_HINT = c_sha
         blocks, q, shape = cheapest(cells, pen_target, m)
-        new = blocks * c_sha + q * c_query + c_fixed
+        new = blocks * c_sha + q * c_query + c_fixed + shape['final_eval_cells']
         if abs(new - cells) < cells // 1000:
             cells = new
             break

@@ -288,3 +288,25 @@ parameter analysis and benchmark"; its cited sub-300 KB systems (OpenVM 2.0,
 100-bit; RISC Zero ≈ 200 kB) do not meet U-6.
 
 **Conclusion unchanged: lattice final wrap is the route to < 300 KB.**
+
+## Correction (2026-10-17): final-polynomial cost was missing from the penultimate shape
+
+`levers_model.sha_blocks` counted transcript absorption as a constant 733
+blocks, so the optimiser chose penultimate shapes with a 2¹⁴-element final
+polynomial for free. It now adds the absorption (2^log_final × 48 B / 128 B
+blocks) and the final-polynomial evaluation at every last-round query (40 cells
+per Ext12 multiply-add, an estimate). The child check is 10,229 vs the measured
+10,227 (the child's 4-element final poly was already inside the 733).
+Corrected fixed point (iteration 2/3 tables superseded):
+
+| c_sha | penultimate SHA | final cells | today | all levers |
+|---:|---:|---:|---:|---:|
+| 1k | 5,998 | 2²²·⁹ | 269,201 | 222,301 |
+| 4k | 7,329 | 2²⁴·⁹ | 342,969 | 279,363 |
+| 12k | 9,146 | 2²⁶·⁸ | 444,481 | 355,883 |
+| 24k | 11,447 | 2²⁸·¹ | 527,161 | 416,893 |
+| 32k | 12,363 | 2²⁸·⁶ | 570,313 | 448,717 |
+
+Hash-only at realistic SHA cost: ≈ 444–570 KB (today), ≈ 356–449 KB (all levers).
+**Lattice-wrap statement size:** verifying the cheapest penultimate costs
+≈ 9–12k SHA-384 compressions + ≈ 6×10⁴ Ext12 multiply-equivalents.
