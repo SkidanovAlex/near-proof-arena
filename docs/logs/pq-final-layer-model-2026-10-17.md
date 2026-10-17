@@ -70,3 +70,23 @@ The parent's cell count matters only through first-round leaf width; the
 column count and Merkle paths matter more. The SHA-384/Ext12 parent should be
 designed narrow (≤ ~500 columns total, SHA-512-family compression as a tall
 narrow table), with a measured `c_sha` replacing the model input.
+
+## Reconciliation with the lane's ~357–379 KB figures
+
+The `research/direct-wasm-whir` sub-400 KB numbers are all **non-recursive
+child proofs of a ≤ 193-instruction straight-line Wasm slice** at SHA-384/Ext12,
+268 query bits: 357,069 B (byte-packed 193-instruction child + dictionary +
+request), 375,127 B (framed diagnostic bundle), 379,047 B (gas-failure5). A child's
+size is nearly independent of its workload only up to its stacking height;
+it says nothing about a proof covering 1 Pgas. The model above reproduces
+gas-failure5 exactly.
+
+The only measured **recursive parents** (`results/native-literal-query128*`,
+compression log 2026-10-17 "Integrated Wasm recursion at stronger query
+targets") use Poseidon2 + Ext4, a 128-bit query target and SplitUniqueList
+(first round unique): parent 470,137 / 513,561 / 875,289 B at log-blowup
+5 / 3 / 1, WHIR 84 % of the bytes, and the native calculator's proximity term
+only 75.7 bits. Under U-7 (48-B digests vs 32 B) and 268 query bits (≈ 2× queries)
+the same shape would be well above 1 MB. No recursive layer at the PQ contract
+has been measured yet; the model's 0.5–0.8 MB already assumes list decoding in
+every round, multiproof dedup and an optimized final-poly cut.
