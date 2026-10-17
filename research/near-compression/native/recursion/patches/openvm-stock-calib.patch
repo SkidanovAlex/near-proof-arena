@@ -1,0 +1,196 @@
+diff --git a/crates/recursion/src/calib_tests.rs b/crates/recursion/src/calib_tests.rs
+new file mode 100644
+index 0000000..f32b36d
+--- /dev/null
++++ b/crates/recursion/src/calib_tests.rs
+@@ -0,0 +1,177 @@
++//! NEAR PQ R-lane calibration of the stock (Poseidon2 / Ext4) verifier sub-circuit.
++//! Measures per-AIR committed cells for verifying one child proof, proves the verifier
++//! circuit, and repeats one level up (verifying a proof of the verifier circuit).
++//!
++//!   CALIB_CHILD_LOG=16 CALIB_LEVELS=2 cargo test --release calib_ -- --ignored --nocapture
++use std::{sync::Arc, time::Instant};
++
++use openvm_cpu_backend::CpuBackend;
++use openvm_stark_backend::{
++    codec::Encode,
++    keygen::types::MultiStarkVerifyingKey,
++    proof::Proof,
++    prover::{AirProvingContext, DeviceDataTransporter, MatrixDimensions, ProvingContext},
++    test_utils::{FibFixture, TestFixture},
++    StarkEngine, SystemParams,
++};
++use openvm_stark_sdk::config::{
++    app_params_with_100_bits_security,
++    baby_bear_poseidon2::{
++        default_duplex_sponge_recorder, BabyBearPoseidon2Config, BabyBearPoseidon2CpuEngine,
++        DuplexSponge,
++    },
++    internal_params_with_100_bits_security, leaf_params_with_100_bits_security,
++};
++
++use crate::system::{AggregationSubCircuit, CachedTraceCtx, VerifierSubCircuit, VerifierTraceGen};
++
++type SC = BabyBearPoseidon2Config;
++type Engine = BabyBearPoseidon2CpuEngine<DuplexSponge>;
++
++fn env(name: &str, default: usize) -> usize {
++    std::env::var(name)
++        .map(|s| s.parse().unwrap())
++        .unwrap_or(default)
++}
++
++fn params_named(name: &str) -> SystemParams {
++    match name {
++        "app" => app_params_with_100_bits_security(20),
++        "leaf" => leaf_params_with_100_bits_security(),
++        "internal" => internal_params_with_100_bits_security(),
++        _ => panic!("unknown params {name}"),
++    }
++}
++
++fn describe(tag: &str, p: &SystemParams) {
++    println!(
++        "CALIB_PARAMS {tag} l_skip={} n_stack={} w_stack={} log_blowup={} k_whir={} queries={:?} pow(mu,fold,query)=({},{},{}) logup_pow={}",
++        p.l_skip,
++        p.n_stack,
++        p.w_stack,
++        p.log_blowup,
++        p.k_whir(),
++        p.whir.rounds.iter().map(|r| r.num_queries).collect::<Vec<_>>(),
++        p.whir.mu_pow_bits,
++        p.whir.folding_pow_bits,
++        p.whir.query_phase_pow_bits,
++        p.logup.pow_bits
++    );
++}
++
++fn proof_bytes(p: &Proof<SC>) -> (usize, usize, usize, usize, usize) {
++    fn size<T: Encode>(x: &T) -> usize {
++        let mut b = Vec::new();
++        x.encode(&mut b).unwrap();
++        b.len()
++    }
++    (
++        size(p),
++        size(&p.gkr_proof),
++        size(&p.batch_constraint_proof),
++        size(&p.stacking_proof),
++        size(&p.whir_proof),
++    )
++}
++
++/// Builds and proves the verifier circuit for one `child` proof; returns its (vk, proof).
++fn verify_level(
++    level: usize,
++    child_vk: &MultiStarkVerifyingKey<SC>,
++    child: &Proof<SC>,
++    parent: &Engine,
++) -> (MultiStarkVerifyingKey<SC>, Proof<SC>) {
++    let circuit = VerifierSubCircuit::<1>::new(Arc::new(child_vk.clone()));
++    let airs = circuit.airs::<SC>();
++    let t = Instant::now();
++    let (pk, vk) = parent.keygen(&airs);
++    println!("CALIB_L{level}_KEYGEN_S {:.2}", t.elapsed().as_secs_f64());
++    let vk_commit = circuit.commit_child_vk(parent, child_vk);
++    let t = Instant::now();
++    let ctxs: Vec<AirProvingContext<CpuBackend<SC>>> = circuit.generate_proving_ctxs_base(
++        child_vk,
++        CachedTraceCtx::PcsData(vk_commit),
++        std::slice::from_ref(child),
++        &(),
++        default_duplex_sponge_recorder(),
++    );
++    println!("CALIB_L{level}_TRACEGEN_S {:.2}", t.elapsed().as_secs_f64());
++    let mut total = 0usize;
++    let mut total_padded_rows = 0usize;
++    let mut used_cells = 0usize;
++    println!("CALIB_L{level}_AIR idx name height width cached_w cells");
++    for (i, (air, ctx)) in airs.iter().zip(ctxs.iter()).enumerate() {
++        let h = ctx.common_main.height();
++        let w = ctx.common_main.width();
++        let cw: usize = ctx.cached_mains.iter().map(|c| c.trace.width()).sum();
++        let ch: usize = ctx
++            .cached_mains
++            .iter()
++            .map(|c| c.trace.width() * c.trace.height())
++            .sum();
++        let pre = pk.per_air[i]
++            .vk
++            .params
++            .width
++            .preprocessed
++            .unwrap_or(0)
++            * h;
++        let cells = h * w + ch + pre;
++        // used rows: rows with any nonzero cell (Poseidon2: rows with nonzero multiplicity).
++        let vals = &ctx.common_main.values;
++        let used = (0..h)
++            .filter(|&r| {
++                if air.name().contains("Poseidon2") {
++                    (w - 2..w).any(|c| vals[r * w + c] != Default::default())
++                } else {
++                    (0..w).any(|c| vals[r * w + c] != Default::default())
++                }
++            })
++            .count();
++        used_cells += used * (w + cw);
++        total += cells;
++        total_padded_rows += h;
++        println!(
++            "CALIB_L{level}_AIR {i} {} {h} {w} {cw} {cells} used_rows={used}",
++            air.name()
++        );
++    }
++    println!("CALIB_L{level}_TOTAL_CELLS {total} rows={total_padded_rows} used_cells={used_cells}");
++    let ctx = ProvingContext::new(ctxs.into_iter().enumerate().collect());
++    if std::env::var_os("CALIB_DEBUG").is_some() {
++        parent.debug(&airs, &ctx);
++        println!("CALIB_L{level}_DEBUG_OK");
++    }
++    let d_pk = parent.device().transport_pk_to_device(&pk);
++    let t = Instant::now();
++    let proof = parent.prove(&d_pk, ctx).unwrap();
++    println!("CALIB_L{level}_PROVE_S {:.2}", t.elapsed().as_secs_f64());
++    parent.verify(&vk, &proof).unwrap();
++    let (b, g, r, s, w) = proof_bytes(&proof);
++    println!("CALIB_L{level}_PROOF_BYTES total={b} gkr={g} relations={r} stacking={s} whir={w}");
++    (vk, proof)
++}
++
++#[test]
++#[ignore]
++fn calib_stock_recursion() {
++    let child_log = env("CALIB_CHILD_LOG", 16);
++    let levels = env("CALIB_LEVELS", 2);
++    let child_params = params_named(&std::env::var("CALIB_CHILD").unwrap_or("app".into()));
++    let parent_params = params_named(&std::env::var("CALIB_PARENT").unwrap_or("internal".into()));
++    describe("child", &child_params);
++    describe("parent", &parent_params);
++    let child_engine = Engine::new(child_params);
++    let parent = Engine::new(parent_params);
++    let fib = FibFixture::new(0, 1, 1 << child_log);
++    let t = Instant::now();
++    let (mut vk, mut proof) = fib.keygen_and_prove(&child_engine);
++    println!("CALIB_L0_PROVE_S {:.2}", t.elapsed().as_secs_f64());
++    let (b, g, r, s, w) = proof_bytes(&proof);
++    println!("CALIB_L0_PROOF_BYTES total={b} gkr={g} relations={r} stacking={s} whir={w}");
++    for level in 1..=levels {
++        let (v, p) = verify_level(level, &vk, &proof, &parent);
++        vk = v;
++        proof = p;
++    }
++}
+diff --git a/crates/recursion/src/lib.rs b/crates/recursion/src/lib.rs
+index 1c28aa8..ca73e83 100644
+--- a/crates/recursion/src/lib.rs
++++ b/crates/recursion/src/lib.rs
+@@ -9,6 +9,8 @@ pub mod stacking;
+ pub mod subairs;
+ pub mod system;
+ #[cfg(test)]
++mod calib_tests;
++#[cfg(test)]
+ mod tests;
+ pub mod tracegen;
+ pub mod transcript;
