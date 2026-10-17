@@ -1,0 +1,7 @@
+   Compiling p3-monty-31 v0.4.3 (/tmp/nearproof-ext12-rust/p3-monty-31)
+   Compiling p3-challenger v0.4.3
+   Compiling p3-baby-bear v0.4.3 (/tmp/nearproof-ext12-rust/p3-baby-bear)
+   Compiling nearproof-ext12-check v0.1.0 (/tmp/nearproof-ext12-rust)
+    Finished `release` profile [optimized] target(s) in 0.78s
+     Running `/tmp/nearproof-ext12-rust/target/release/nearproof-ext12-check /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/babybear-ext12-construction/construction.json`
+EXT12_PASS vectors=24 roots=30 zero_inverse_rejected=true canonical_bytes=48

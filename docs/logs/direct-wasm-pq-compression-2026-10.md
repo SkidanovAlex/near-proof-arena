@@ -13195,3 +13195,40 @@ new driver; regression.log retained. Native test compilation and both test modes
 passed; git diff --check passes. Next implementation needs a verified extension
 construction and generalized recursive arithmetic/transcript, not more Ext4
 query sweeps. Concrete quantum composition and fullNEAR1Pgas remain open.
+
+## 2026-10-17 — Concrete degree12 field arithmetic and Lean constant obligations
+
+Previous turn progressed atcd8ed25ed; clean worktree revalidated. Moved from
+cardinality screens to candidate F_p[X]/(X^12-31). Degree12 gives margin beyond
+the frozen-shape268target and has a simple binomial construction; it is not a
+minimum-cost or final parameter selection. Source inspection exposed an additional
+runtime restriction: p3-monty-310.4.3 multiplication panics outside degrees4,5,8,
+even if extension constants were added.
+
+Constructed explicit constants: multiplicative generator3+X, Frobenius scalar
+782862608, two-adic roots1340157138*X^6 and29791*X^9 for orders2^28/2^29.
+SymPy1.14.0 independent polynomial irreducibility check passes. Separate Python
+coefficient convolution verifies complete generator order using the factored
+p^12-1 and produces24 deterministic multiplication/inversion/Frobenius vectors.
+All factor primes are below2^64. Irreducibility and generator order are currently
+computational evidence, not Lean theorems.
+
+Added isolated Rust experiment with local patched copies of p3-baby-bear and
+p3-monty-310.4.3, leaving registry/native OpenVM checkout untouched. The patch adds
+constants plus a degree12-only schoolbook multiplication case. Native generic
+Frobenius inversion works. Rust passes all24 independent vectors,30two-adic
+roots, zero inverse rejection, squaring and canonical48-byte coefficient round
+trips. This is not a prover benchmark or a Wasm proof at degree12.
+
+Lean BabyBearExt12Constants proves31 nonzero, nonsquare and noncube, degree
+factorization and exact Frobenius/root coefficients against the existing proven
+BabyBear field. Kernel checks pass; audited nonsquare/noncube axioms are propext,
+Classical.choice,Quot.sound, and coefficient theorem uses propext,Quot.sound.
+No sorry, native_decide or assumed irreducibility introduced. Full binomial
+irreducibility/field instance and Rust arithmetic refinement remain open.
+
+Files, reproducible commands, patches, Cargo lock, independent vectors and logs
+are in results/babybear-ext12-construction/. git diff --check passes. Next step
+is actual literal-Wasm proving with this field and a SHA-384 configuration, then
+upgrading recursive AIRs; this prerequisite experiment alone cannot certify the
+integrated relation. FullNEAR1Pgas, secure <300000B and Lean correctness remain open.

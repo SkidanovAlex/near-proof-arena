@@ -1,0 +1,40 @@
+--- a/p3-baby-bear/src/baby_bear.rs
++++ b/p3-baby-bear/src/baby_bear.rs
+@@ -257,3 +257,12 @@
+     test_prime_field_64!(crate::BabyBear, &super::ZEROS, &super::ONES);
+     test_prime_field_32!(crate::BabyBear, &super::ZEROS, &super::ONES);
+ }
++
++impl BinomialExtensionData<12> for BabyBearParameters {
++ const W: BabyBear = BabyBear::new(31);
++ const DTH_ROOT: BabyBear = BabyBear::new(782862608);
++ const EXT_GENERATOR: [BabyBear;12] = BabyBear::new_array([3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
++ const EXT_TWO_ADICITY: usize = 29;
++ type ArrayLike = [[BabyBear;12];2];
++ const TWO_ADIC_EXTENSION_GENERATORS: Self::ArrayLike = BabyBear::new_2d_array([[0, 0, 0, 0, 0, 0, 1340157138, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 29791, 0, 0]]);
++}
+--- a/p3-monty-31/src/extension.rs
++++ b/p3-monty-31/src/extension.rs
+@@ -23,11 +23,21 @@
+     FP: BinomialExtensionData<WIDTH> + FieldParameters,
+ {
+     #[inline(always)]
+-    fn binomial_mul(a: &[Self; WIDTH], b: &[Self; WIDTH], res: &mut [Self; WIDTH], _w: Self) {
++    fn binomial_mul(a: &[Self; WIDTH], b: &[Self; WIDTH], res: &mut [Self; WIDTH], w: Self) {
+         match WIDTH {
+             4 => quartic_mul_packed(a, b, res),
+             5 => quintic_mul_packed(a, b, res),
+             8 => octic_mul_packed(a, b, res),
++            12 => {
++                res.fill(Self::ZERO);
++                for i in 0..WIDTH {
++                    for j in 0..WIDTH {
++                        let product = a[i] * b[j];
++                        if i+j < WIDTH { res[i+j] += product; }
++                        else { res[i+j-WIDTH] += product*w; }
++                    }
++                }
++            },
+             _ => panic!("Unsupported binomial extension degree: {}", WIDTH),
+         }
+     }

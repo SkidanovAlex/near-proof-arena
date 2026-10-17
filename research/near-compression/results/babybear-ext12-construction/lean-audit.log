@@ -1,0 +1,3 @@
+'NearCompression.ext12_nonresidue_nonsquare' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.ext12_nonresidue_noncube' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.ext12_frobenius_constant' depends on axioms: [propext, Quot.sound]
