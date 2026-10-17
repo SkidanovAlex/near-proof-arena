@@ -10681,3 +10681,56 @@ Strategic implication: stacking protocol messages themselves are small, while
 PCS openings dominate this wide application relation. Move to the actual
 recursive-verifier layout before adjusting the hash or quoting a final size.
 Full NEAR1Pgas, end-to-end PQ128, recursive acceptance and <300000B remain open.
+
+
+## 2026-10-17 — Execute dedicated SWIRL recursive-verifier proof
+
+Previous turn classified progress: actual serialized application proof reproduced.
+Revalidated clean worktree at71c4f2941. Cloned OpenVM at
+ e74f9b1ee868c42776faf821b8b9f2e8829a7f68 and read AGENTS.md. Its Cargo.lock
+pins stark-backend d667af5929d0ea9e5194adf639d6bddeb8c10f9a (v2.0.1), which is
+DIFFERENT from the preceding standalone v2.0.0 baseline. Used --locked and
+Rust1.91.1 throughout; did not silently override its backend dependency.
+
+Found recursion/src/tests.rs::run_test only generates child proofs and debug
+checks parent AIR constraints. Extended that local helper to retain the debug
+check, generate a parent proof, verify it with its generated VK, and encode
+both proofs. First compile failed because AirProvingContext is not Clone;
+resolved by regenerating contexts after the debug check. No debug checks
+were disabled. Only the selected tests were run.
+
+Actual workload: nine Fibonacci AIRs, each height256, one child proof,
+VerifierSubCircuit MAX_NUM_PROOFS=2. This is the dedicated verifier circuit,
+not a general-purpose VM executing a verifier. Results:
+
+| Configuration | Child bytes | Parent bytes | Verification |
+| --- | ---: | ---: | --- |
+| upstream small test params (WHIR target5) |11934|109441|pass|
+| app_params_with_100_bits_security(12), leaf_params_with_100_bits_security() |87838|383529|pass|
+
+The second test took15.00s including its complete test body; timed cargo
+invocation30.87s includes compilation. Maximum RSS4126432KiB includes compiler
+and test process. These are not isolated prover throughput figures. Nightly
+rustfmt applied to instrumentation; targeted crate lib/tests Clippy -D warnings
+passed. Seven compressed evidence snapshots are raw-SHA256 pinned, with an
+exact reproduction patch and lockfile, under results/swirl-security-review/recursion.
+
+Scope: these tests establish executable parent-proof generation/verification,
+not the final narrow root, stabilized recursive VK chain, VM public-value
+binding, end-to-end PQ128, or NEAR. A single leaf recursion layer exceeds our
+300000B target in this measured case. Do not read the 109441B five-bit smoke
+proof as a secure compression result.
+
+Source review also found OpenVM's certified-verifier crate. Its README says
+its Lean source-of-truth ws-fv is private, pinned at
+b94bf5a2a38535d22a2e5a6633b7e6d8351b8a84; this repository vendors generated C,
+not the proof-module closure. Therefore it may be a differential executable
+reference, but we cannot audit or reuse its Lean proof dependencies from this
+checkout. The root STARK uses a BN254-field Poseidon2 commitment; using that
+field for hashing is not itself an elliptic-curve discrete-log assumption.
+Its optional Halo2/KZG wrapping remains a separate excluded curve-based stage.
+
+Next: extend the executed verifier path through internal/root configurations,
+collect actual trace layout and serialized-component costs, and keep NEAR
+public-value/state binding explicit. Full1Petagas NEAR, PQ128 and sound
+sub300000B remain unachieved; no Lean acceptance theorem is claimed.
