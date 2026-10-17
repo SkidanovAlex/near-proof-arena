@@ -12195,3 +12195,46 @@ Python artifact is certified. No new proof-size or security claim. Prior
 540713reachable-node arithmetic circuit and original bundle remain unchanged.
 Transcript/prefix/PCS interfaces, recursive closure, PQ128 and full NEAR1Petagas
 remain open. Evidence:bdd-support/; goal stays active.
+
+## 2026-10-17 — Exact GKR transcript census and immutable fixed-key preparation
+
+Previous goal turn progressed on structural decision theorem/support checker
+atad0b4fb76. Revalidated clean worktree. Added measure_swirl_gkr_transcript.py:
+cloned verifier/transcript functions capture exact framed SHA384 preimages
+without global monkeypatching. Independently reconstructed bytes hash identically
+to existing hash_parts. Replayed root public GKR obligation equals uninstrumented
+verifier. Preserved all2188preimages/digests and437challenge records.
+
+14341SHA384compression blocks total inside g.verify:9968hash its fixed-layout
+JSON,4373are dynamic. All2188preimages are distinct.437draw requests consume
+437squeeze blocks and reject114words in this particular proof. Every draw has
+request/squeeze/ratchet/draw-result hashes; each costs2compression blocks.
+437proof commits also each cost2blocks. Rejection counts are instance-specific,
+not a universal fixed circuit schedule or a security guarantee.
+
+Additional raw SHA384 bindings in existing public driver:
+- native prefix Debug log189402bytes ->1480blocks;
+- statement-description JSON35160bytes ->275blocks;
+- continuation-binding JSON93025bytes ->727blocks.
+All three digest values independently match saved statement/binding artifacts.
+Thus6855dynamic SHA384blocks remain after fixed-layout precomputation, BEFORE
+native prefix and WHIR Poseidon hashing or arithmetic circuit costs. Do not
+infer full recursive size from prior540713arithmetic-node count. Existing
+Debug/JSON encodings are diagnostic boundaries requiring explicit treatment.
+
+Added swirl_fixed_gkr_verifier.prepare: computes existing layout digest once,
+deep-freezes layout mappings/sequences, returns verifier with no caller layout
+or digest argument. This is trusted key preparation, not a new transcript.
+Prepared replay matches every dynamic preimage byte-for-byte (original event
+list excluding only fixed-layout hash), and returns same PCS obligation.
+Mutating caller's original layout after preparation cannot affect frozen key;
+changed claim rejects. Preparation is an available dedicated entry point;
+existing bundle driver remains unchanged, so no bundle-speedup claim is made.
+
+The dynamic cost is material even after removing all fixed hashing. Next
+address typed recursive transcript/binding representation and hash circuit
+cost jointly with arithmetic; any replacement of Debug/JSON bytes or hash
+schedule is a versioned protocol change requiring fresh GKR/PCS proofs, not a
+lossless transport optimization. Current proof remains204076B at diagnostic
+settings. No new Lean/hash-security/composition theorem, PQ128 or full NEAR
+claim. Evidence:gkr-transcript-census/; full goal remains active.
