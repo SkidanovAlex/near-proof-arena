@@ -1,7 +1,7 @@
 {
   "status": "PASS",
-  "universal_theorem": "NearCompression.packed_holds_refinement",
-  "concrete_closed_kernel_certificate": false,
+  "universal_theorem": "NearCompression.packed_literal_public_run_call",
+  "concrete_closed_kernel_certificate": true,
   "native_acceptance_to_HoldsP": false,
   "structural_metadata": {
     "original_tables": 2,
@@ -82,8 +82,24 @@
       "public_segments_unchanged": true,
       "added_traffic_only_bus": 4,
       "scope": "Executable pairing checks use a kernel-proved checker; universal natural-count and global two-table preservation proved. Full concrete HoldsP transfer remains to be assembled."
+    },
+    "literal_certificate": {
+      "status": "PASS",
+      "concrete_closed_kernel_certificate": true,
+      "theorems": [
+        "packed_original_literal_eq",
+        "packed_literal_holds",
+        "packed_literal_public_run_call"
+      ],
+      "exported_air_equals_proving_input": true,
+      "source_constraints": 1199,
+      "packed_air_sha256": "d3eb51a8f07574b185a2447091aa5af387e4c047b9345ba425a77c4ef96f3122",
+      "native_acceptance_to_HoldsP": false,
+      "quantum_security_certified": false,
+      "full_NEAR": false,
+      "scope": "Closed semantic AIR-to-runCall theorem for the supported prepared literal slice. Native Rust/compiler refinement, cryptographic acceptance, QROM recursion and full NEAR remain open."
     }
   },
   "source_spec_sha256": "d3eb51a8f07574b185a2447091aa5af387e4c047b9345ba425a77c4ef96f3122",
-  "scope": "All current structural artifact checks pass for the conditional universal HoldsP theorem. This is executable evidence, not a closed kernel proof for the concrete full AIR or cryptographic soundness."
+  "scope": "Closed concrete AIR-to-runCall theorem kernel-checked and exported AIR matches artifact. Native acceptance-to-HoldsP, compiler refinement and quantum security remain open."
 }

@@ -13681,3 +13681,39 @@ concrete artifact theorem. Next build that certificate and compose with the
 existing original Wasm/runCall refinement. Native cryptographic acceptance-to-
 HoldsP, QROM recursive knowledge composition, fullNEAR1Pgas and sub300000 remain
 open; packed357069B remains provisional.
+
+## 2026-10-17 — Closed concrete certificate and packed AIR-to-runCall theorem
+
+Previous turn progressed at75d041817; clean state revalidated. Generated closed
+Lean original/candidate AIR constants using6609shared expression nodes. Kernel
+rfl establishes generated original equals preparedLiteralAir193, with no axioms.
+Generated1199individual constraint witnesses plus complete-list coverage;
+kernel build completed in42s. No native_decide/ofReduceBool/sorry proof shortcut.
+Added PackedLiteralCertificate.lean, discharging all structural certificate
+fields for the actual data (kernel build5.9s). packed_literal_holds now has no
+external certificate/layout/range premises: packedCandidateAir HoldsP implies
+preparedLiteralAir193 HoldsP on the reconstructed trace.
+
+PackedLiteralExecution.lean composes with prepared_literal_public_run_call.
+The resulting packed_literal_public_run_call proves actual runCall and public
+terminal-output agreement under packed semantic HoldsP, preparation/eligibility
+acceptance and sufficient fuel. Scope remains the prepared literal straight-line
+slice, not all Wasm/NEAR. Closed certificate axioms:propext,Quot.sound. Combined
+HoldsP and runCall theorems:propext,Classical.choice,Quot.sound only.
+
+PackedLiteralExport.lean exports raw explicit AIR constraints; exact structural
+comparison matches original generated AIR and saved packed proving input. The
+checker builds/audits the closed theorem and rejects a sorry/native reduction
+axiom; closed-certificate-check.json records the result and source hash.
+Integrated refinement checker now also builds/checks the concrete certificate;
+all seven checks pass. Data/coverage regeneration is byte-identical. Build logs,
+axiom audits and updated README retained. No cryptographic proof regeneration or
+size/config change was needed. Earlier report.json is proof-generation-era
+evidence; the newer closed-certificate report supersedes its old semantic-gap
+exclusion without retroactively certifying the backend.
+
+This closes the changed-AIR semantic refinement gap for the357069B measured
+slice. It does NOT prove native Rust/compiler refinement or native cryptographic
+acceptance-to-HoldsP, a concrete QROM security bound, recursive knowledge
+composition, fullNEAR1Pgas correctness/performance, or sub300000bytes. Those remain
+open; the full active objective is not complete.

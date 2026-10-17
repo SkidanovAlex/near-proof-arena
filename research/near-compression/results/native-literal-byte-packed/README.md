@@ -1,9 +1,13 @@
-# Byte-packed Wasm AIR candidate — refinement pending
+# Byte-packed Wasm AIR — closed semantic refinement
 
-This candidate changes the AIR. It is not yet a formally justified replacement
-for the original bit-based relation. The same retained193-instruction execution,
-request and4891public fields are used; independent Lean execution matches those
-outputs. Native cryptographic verification proves the new AIR only.
+The closed Lean certificate now proves packed HoldsP implies original
+preparedLiteralAir193 HoldsP, and composes with preparation eligibility to prove
+runCall/public-output correctness for the supported slice. The exported proved
+AIR exactly matches spec.json. See closed-certificate-check.json and
+lean-closed-certificate-audit.log. The native Rust/compiler and cryptographic
+acceptance-to-HoldsP bridge remain unproved; no quantum security certificate is
+claimed. The same retained193-instruction execution, request and4891public fields
+are used.
 
 Selected integer regions (stack,gas,difference,result,immediate,fee) pack eight
 bits into one byte column. All packed columns send a bus4 lookup on every row.
@@ -23,7 +27,8 @@ Native minimum component268.7638bits;LogUp331.5753,proximity320.9309. Uncertifie
 
 Actual native proof412097bytes:22904GKR+31432relations+1840stacking+336260WHIR+
 19661other. Lossless dictionary356150bytes; with request357069. These are
-candidate measurements, not proof that the original Wasm relation has that size.
+measurements for an AIR with a closed semantic refinement to the supported Wasm
+slice. They do not establish end-to-end cryptographic correctness or PQ security.
 Prior unmodified-AIR baseline remains451221transmitted bytes.
 
 Validation:
@@ -39,9 +44,9 @@ Validation:
   proof. This is not a forged-proof verifier rejection test.
 * PackedByteRange.lean proves natural range-balance support, canonical limb
   encoding and injectivity, plus the concrete invalid-byte arithmetic example.
-  It does not prove native LogUp-to-integer balance, compiler correctness or
-  packed-AIR-to-original-AIR refinement. That refinement is the next gate before
-  adopting this candidate as a semantic replacement.
+  PackedLiteralCertificate.lean and PackedLiteralExecution.lean complete the
+  concrete semantic refinement. Native LogUp-to-HoldsP, compiler correctness
+  and QROM recursive composition remain separate open obligations.
 
 Reproduction from worktree after Ext12 setup:
 
@@ -57,7 +62,8 @@ python3 research/near-compression/airbender/direct-wasm/check_packed_byte_air.py
 From research/near-compression:
 
 ```sh
-lake env lean NearCompression/PackedByteRange.lean
+lake build NearCompression.PackedLiteralExecution
+python3 airbender/direct-wasm/check_packed_literal_certificate.py
 ```
 
 No fullNEAR, complete QROM security, upgraded recursive parent or controlled

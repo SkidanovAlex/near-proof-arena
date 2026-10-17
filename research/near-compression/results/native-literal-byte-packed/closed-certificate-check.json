@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "concrete_closed_kernel_certificate": true,
+  "theorems": [
+    "packed_original_literal_eq",
+    "packed_literal_holds",
+    "packed_literal_public_run_call"
+  ],
+  "exported_air_equals_proving_input": true,
+  "source_constraints": 1199,
+  "packed_air_sha256": "d3eb51a8f07574b185a2447091aa5af387e4c047b9345ba425a77c4ef96f3122",
+  "native_acceptance_to_HoldsP": false,
+  "quantum_security_certified": false,
+  "full_NEAR": false,
+  "scope": "Closed semantic AIR-to-runCall theorem for the supported prepared literal slice. Native Rust/compiler refinement, cryptographic acceptance, QROM recursion and full NEAR remain open."
+}

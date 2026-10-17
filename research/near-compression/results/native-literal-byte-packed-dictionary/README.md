@@ -3,8 +3,9 @@
 Native412097bytes; dictionary356150bytes; plus919-byte request357069bytes.
 Independent Rust reconstruction/native verification, digest-mutation rejection
 and malformed-input checks pass. Parameters, including interaction_log26, come
-from the source profile report. This is a changed-AIR candidate: formal
-refinement to the original Wasm relation remains unproved. Do not promote this
+from the source profile report. This changed AIR now has a closed Lean semantic
+refinement to the supported original Wasm slice; native acceptance-to-HoldsP
+and quantum security remain unproved. Do not promote this
 number to the prior unmodified-AIR baseline (451221bytes).
 
 After building the packed profile, run its replay with NEARPROOF_WHIR_CENSUS=1,
@@ -16,4 +17,5 @@ python3 research/near-compression/airbender/direct-wasm/check_digest_dictionary.
 ```
 
 The dictionary is fully included. No trace/fixture/original proof is required
-by replay. Security and full semantic refinement remain explicitly uncertified.
+by replay. Security remains uncertified; the semantic slice refinement is recorded in
+../native-literal-byte-packed/closed-certificate-check.json.
