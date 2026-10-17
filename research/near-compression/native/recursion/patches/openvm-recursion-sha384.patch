@@ -3647,10 +3647,10 @@ index 0000000..7c9769f
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..93e0fdd
+index 0000000..98fe564
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
-@@ -0,0 +1,165 @@
+@@ -0,0 +1,364 @@
 +//! End-to-end: the ported verifier sub-circuit verifies real SHA-384/Ext12 child proofs.
 +//!
 +//!   cargo test --release -p openvm-recursion-circuit --lib e2e_ -- --nocapture
@@ -3814,6 +3814,205 @@ index 0000000..93e0fdd
 +        // row 0 is the commit of the child VK pre-hash; payload starts at column 9 + 48
 +        m.values[9 + 48] += F::ONE;
 +        must_fail("transcript-commit-limb", || debug(&parent, &airs, ctxs));
++    }
++}
++
++// ---------------------------------------------------------------------------------------
++// Measurement harness (ignored by default).
++//
++//   E2E_CHILD=fib:10  CHILD_N_STACK=8 CHILD_LOG_BLOWUP=3 CHILD_K=3 CHILD_BITS=100 ...
++//   PARENT_N_STACK=20 PARENT_LOG_BLOWUP=3 PARENT_BITS=268 PARENT_LIST_M=3 ...
++//   E2E_LEVELS=1 E2E_PROVE=1 cargo test --release --lib e2e_measure -- --ignored --nocapture
++// ---------------------------------------------------------------------------------------
++
++fn env_usize(name: &str, default: usize) -> usize {
++    std::env::var(name)
++        .map(|s| s.parse().unwrap())
++        .unwrap_or(default)
++}
++
++/// SWIRL params from `{PREFIX}_*` env vars (defaults: native PQ profile shape).
++pub fn params_from_env(prefix: &str, d: [usize; 4]) -> SystemParams {
++    use openvm_stark_backend::{interaction::LogUpSecurityParameters, WhirProximityStrategy};
++    let e = |n: &str, dflt: usize| env_usize(&format!("{prefix}_{n}"), dflt);
++    let l_skip = e("L_SKIP", 2);
++    let n_stack = e("N_STACK", d[0]);
++    let k = e("K", 3);
++    let log_blowup = e("LOG_BLOWUP", d[1]);
++    let bits = e("BITS", d[2]);
++    let list_m = e("LIST_M", d[3]);
++    let proximity = if list_m > 0 {
++        WhirProximityStrategy::ListDecoding { m: list_m }
++    } else {
++        WhirProximityStrategy::UniqueDecoding
++    };
++    let logup = LogUpSecurityParameters {
++        max_interaction_count: 1 << e("INTERACTION_LOG", 28),
++        log_max_message_length: 7,
++        pow_bits: e("LOGUP_POW", 0),
++    };
++    let log_final = e("LOG_FINAL", (l_skip + n_stack) % k);
++    SystemParams::new(
++        log_blowup,
++        l_skip,
++        n_stack,
++        e("W_STACK", 1 << 12),
++        log_final,
++        e("FOLD_POW", 0),
++        e("MU_POW", 0),
++        proximity,
++        bits,
++        logup,
++        4,
++        e("QUERY_POW", 0),
++        k,
++    )
++}
++
++fn describe(tag: &str, p: &SystemParams) {
++    println!(
++        "{tag}_PARAMS l_skip={} n_stack={} k={} log_blowup={} queries={:?} pow(mu,fold,query,logup)=({},{},{},{})",
++        p.l_skip,
++        p.n_stack,
++        p.k_whir(),
++        p.log_blowup,
++        p.whir.rounds.iter().map(|r| r.num_queries).collect::<Vec<_>>(),
++        p.whir.mu_pow_bits,
++        p.whir.folding_pow_bits,
++        p.whir.query_phase_pow_bits,
++        p.logup.pow_bits
++    );
++}
++
++fn soundness(tag: &str, vk: &MultiStarkVerifyingKey<Sha384Config>) {
++    let b = openvm_stark_backend::soundness::SoundnessCalculator::calculate_from_vk(vk);
++    println!(
++        "{tag}_SOUNDNESS total={:.1} logup={:.1} proximity={:.1} query={:.1}",
++        b.total_bits, b.logup_bits, b.whir_details.proximity_gaps_bits, b.whir_details.query_bits
++    );
++}
++
++fn proof_sizes(p: &Proof<Sha384Config>) -> String {
++    use openvm_stark_backend::codec::Encode;
++    fn size<T: Encode>(x: &T) -> usize {
++        let mut b = Vec::new();
++        x.encode(&mut b).unwrap();
++        b.len()
++    }
++    format!(
++        "total={} gkr={} relations={} stacking={} whir={}",
++        size(p),
++        size(&p.gkr_proof),
++        size(&p.batch_constraint_proof),
++        size(&p.stacking_proof),
++        size(&p.whir_proof)
++    )
++}
++
++/// Number of SHA-512 compressions used (Merkle nodes + job blocks) from the traces.
++fn sha_counts(airs: &[AirRef<Sha384Config>], ctxs: &Ctxs) -> (usize, usize, usize) {
++    let find = |n: &str| airs.iter().position(|a| a.name() == n).unwrap();
++    let mv = &ctxs[find("MerkleVerifyAir")].common_main;
++    let w = mv.width;
++    // MerkleVerifyCols: proof_idx, query_idx, is_valid, is_last_merkle, ...
++    let nodes = (0..mv.height())
++        .filter(|&r| mv.values[r * w + 2] == F::ONE && mv.values[r * w + 3] == F::ZERO)
++        .count();
++    let bl = &ctxs[find("ShaBlockAir")].common_main;
++    let blocks = (0..bl.height())
++        .filter(|&r| bl.values[r * bl.width] == F::ONE)
++        .count();
++    let th = &ctxs[find("TranscriptHashAir")].common_main;
++    let tjobs = (0..th.height())
++        .filter(|&r| th.values[r * th.width] == F::ONE)
++        .count();
++    (nodes, blocks, tjobs)
++}
++
++#[test]
++#[ignore]
++fn e2e_measure() {
++    use openvm_stark_backend::prover::DeviceDataTransporter;
++    let child_spec = std::env::var("E2E_CHILD").unwrap_or("fib:10".into());
++    let levels = env_usize("E2E_LEVELS", 1);
++    let prove = env_usize("E2E_PROVE", 1) == 1;
++    let check = env_usize("E2E_DEBUG", 0) == 1;
++    let child_params = params_from_env("CHILD", [8, 3, 100, 0]);
++    let parent_params = params_from_env("PARENT", [20, 3, 268, 3]);
++    describe("CHILD", &child_params);
++    describe("PARENT", &parent_params);
++    let child_engine = Sha384CpuEngine::new(child_params);
++    let t = std::time::Instant::now();
++    let (mut vk, mut proof) = match child_spec.split_once(':') {
++        Some(("fib", log)) => FibFixture::new(0, 1, 1 << log.parse::<usize>().unwrap())
++            .keygen_and_prove(&child_engine),
++        _ => InteractionsFixture11.keygen_and_prove(&child_engine),
++    };
++    child_engine.verify(&vk, &proof).unwrap();
++    soundness("L0", &vk);
++    println!("L0_PROVE_S {:.2}", t.elapsed().as_secs_f64());
++    println!("L0_PROOF_BYTES {}", proof_sizes(&proof));
++    let parent = Sha384CpuEngine::new(parent_params);
++    for level in 1..=levels {
++        let tag = format!("L{level}");
++        let t = std::time::Instant::now();
++        let circuit = VerifierSubCircuit::<1>::new(Arc::new(vk.clone()));
++        let airs = circuit.airs::<Sha384Config>();
++        let (pk, pvk) = parent.keygen(&airs);
++        let commit = circuit.commit_child_vk(&parent, &vk);
++        let ctxs = circuit.generate_proving_ctxs_base(
++            &vk,
++            CachedTraceCtx::PcsData(commit),
++            std::slice::from_ref(&proof),
++            &(),
++            ShaTranscriptRecorder::default(),
++        );
++        println!("{tag}_TRACEGEN_S {:.2}", t.elapsed().as_secs_f64());
++        let cells = report(&tag, &airs, &ctxs);
++        let (nodes, blocks, tjobs) = sha_counts(&airs, &ctxs);
++        println!(
++            "{tag}_SHA_COMPRESSIONS total={} merkle_nodes={} job_blocks={} transcript_jobs={}",
++            nodes + blocks,
++            nodes,
++            blocks,
++            tjobs
++        );
++        let _ = cells;
++        {
++            let (mut cols, mut opened) = (0usize, 0usize);
++            for a in &pvk.inner.per_air {
++                let w = &a.params.width;
++                let total = w.common_main + w.cached_mains.iter().sum::<usize>() + w.preprocessed.unwrap_or(0);
++                cols += total;
++                opened += total * (1 + a.params.need_rot as usize);
++            }
++            println!(
++                "{tag}_COLUMNS airs={} columns={} opened_columns={} opened_bytes~{}",
++                pvk.inner.per_air.len(),
++                cols,
++                opened,
++                opened * 48
++            );
++        }
++        let ctx = ProvingContext::new(ctxs.into_iter().enumerate().collect());
++        if check {
++            parent.debug(&airs, &ctx);
++            println!("{tag}_DEBUG_OK");
++        }
++        if !prove {
++            return;
++        }
++        soundness(&tag, &pvk);
++        let d_pk = parent.device().transport_pk_to_device(&pk);
++        let t = std::time::Instant::now();
++        let p = parent.prove(&d_pk, ctx).unwrap();
++        println!("{tag}_PROVE_S {:.2}", t.elapsed().as_secs_f64());
++        let t = std::time::Instant::now();
++        parent.verify(&pvk, &p).unwrap();
++        println!("{tag}_VERIFY_S {:.3}", t.elapsed().as_secs_f64());
++        println!("{tag}_PROOF_BYTES {}", proof_sizes(&p));
++        vk = pvk;
++        proof = p;
 +    }
 +}
 diff --git a/crates/recursion/src/sha384/jobs.rs b/crates/recursion/src/sha384/jobs.rs

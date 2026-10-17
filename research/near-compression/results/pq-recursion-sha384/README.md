@@ -63,3 +63,91 @@ thousand compressions, which is 60–200M cells. So hashing will be about 85–9
 the SHA-port verifier, and the fixed point is set by the in-circuit SHA count, as
 `levers_model.py` assumes. The OpenVM verifier's layout of the non-hash part is
 nearly free by comparison.
+
+## Milestone 2: verifier ported to SHA-384/Ext12 (measured)
+
+Tree `openvm-sha384` (patch `native/recursion/patches/openvm-recursion-sha384.patch`;
+the workspace points at the pinned, patched stark-backend and Plonky3 Ext12 trees).
+
+**What changed in `crates/recursion`:**
+* The child config is `sha384::config::Sha384Config`. It matches
+  `airbender/direct-wasm/native_sha384_config.rs` byte for byte: framing, rejection
+  sampling, flush/observe semantics, leaf and node formats, and digest codec. Three
+  tests check this. The recorded native transcript vectors reproduce. A differential
+  test against a verbatim copy of the native file (`native_ref.rs`; setup `cmp`s it)
+  covers random leaves, nodes and 4,000 random transcript operations. The setup script
+  also checks that the copy has not drifted from the native file. `grind` uses the
+  trait default (search) instead of `assert bits == 0`, and `check_witness` is
+  unchanged.
+* D_EF = 12. The extension helpers (`utils.rs`) are now generic in X^12 − 31, and every
+  hard-coded Ext4 literal and column array is gone.
+* Digests in-circuit are 24 limbs: the SHA-512 words H0..H5, as 16-bit limbs. On the
+  transcript bus, commit limbs carry kind 2, because `observe_commit` is a distinct SHA
+  event.
+* **SHA subsystem** (`sha384/airs.rs`, `jobs.rs`): the L3 compression AIR, with
+  parameterised buses (442 columns × 44 rows per compression), plus:
+  * `ShaMsgAir`: a byte packer, one row per message word. It frames
+    `PREFIX‖tag‖units` from 4-byte units (canonical little-endian field elements, or
+    big-endian limb pairs), places the 0x80 padding and the 128-bit length, and assigns
+    unique job ids.
+  * `ShaBlockAir`: one row per block. It chains from the SHA-384 IV and emits the digest.
+  * `ShaByteAir`: the byte lookup table.
+  * Every message of the native config fits this unit format. It is parameterised by
+    unit stream, so 42-byte digests or coset-as-one-message leaves only change the
+    producers.
+* **Transcript**: Poseidon2 sponge → `TranscriptHashAir` (one row per SHA job:
+  flush/commit/squeeze), `TranscriptObsAir` and `TranscriptSampleAir`. The sample AIR
+  does the exact n < 2p rejection test. The hash AIR enforces the job grammar: a flush
+  is followed by a commit or squeeze; a squeeze follows a squeeze only after all 12
+  words are used; a rejected word forces a re-squeeze. A t_start chain ties jobs to
+  transcript indices.
+* **Merkle**: each `MerkleVerifyAir` row is one SHA-384("NPQ4NODE"‖L‖R) compression on
+  the compression interface. The root-check row hashes nothing.
+* **WHIR leaves**: `InitialOpenedValuesAir` and `NonInitialOpenedValuesAir` send their
+  values as job units and receive the leaf digest.
+
+**Correctness evidence** (`sha384/tests.rs`, `sha384/e2e_tests.rs`):
+* SHA subsystem: 27 random jobs, with lengths at every padding boundary, plus direct
+  compressions. Digests equal `Sha384::digest` of the framed message. The debug checker
+  passes. 70 single-cell mutations are rejected.
+* End-to-end: real SHA-384/Ext12 child proofs, Fib and an interactions fixture, each
+  proven and natively verified. The ported circuit's traces pass the debug checker,
+  covering all constraints and all buses.
+* Mutations, all rejected by the circuit (debug builder), never by tracegen:
+  * one flipped Merkle sibling digest: MerkleVerifyAir root check;
+  * one flipped opened value: root check;
+  * one flipped transcript sample, re-filled so its own row is consistent: the
+    transcript bus disagrees with GkrInputAir, and the state-word bus disagrees with
+    TranscriptHashAir;
+  * one flipped commit limb: the transcript bus disagrees with ProofShapeAir, and the
+    unit bus disagrees with ShaMsgAir.
+
+**Measured, small child.** The child is Fib 2⁵ with test params (l_skip 2, n_stack 8,
+k 3, log_blowup 1, 5-bit queries [13, 7, 6]); this is the stock tests' child size. The
+verifier circuit has 45 AIRs and **15,458,850 committed cells**. It uses 716 SHA-512
+compressions: 371 Merkle nodes, 345 job blocks over 93 transcript jobs and the leaf jobs.
+The SHA AIR is 2¹⁵ × 442 = 14.48M cells (94 %). The next largest AIRs are ShaMsgAir
+(0.37M), StackingClaimsAir (0.34M), ShaBlockAir (69k) and MerkleVerifyAir (49k).
+
+The circuit was proven with the native PQ profile (l_skip 2, n_stack 18, k 3,
+log_blowup 3, ListDecoding m = 3, 268 query bits, queries [210, 118, 82, 63, 51, 43];
+calculator total 268.3 bits). Result: **1,318,194 B**, of which WHIR is 950,364,
+relations (column openings) 329,996, GKR 34,328 and stacking 2,852. It took **20.3 s**
+to prove (8 threads, optimized CPU backend), 0.086 s to verify, with **1.95 GB** peak
+RSS (log `logs/m2-small-child.log`).
+
+**Medium child (measured cells; proof not attempted).** The child is Fib 2¹⁰ with
+n_stack 8, log_blowup 3, unique decoding at 100 bits (queries [121, 105, 102]). The
+verifier needs 8,081 compressions: 5,267 Merkle nodes, 2,814 job blocks and 136
+transcript jobs. That pads the SHA AIR to 2¹⁹ rows, for **237.5M cells**, and the debug
+checker passes. Verifying a child costs about q·(2ᵏ − 1 + depth) node compressions plus
+q·2ᵏ leaf blocks per round.
+
+**Finding: column openings.** The ported circuit has **3,472 columns, and 6,696 of them
+are opened (the rest are not rotated)**. That is ≈ 321 KB of Ext12 column openings,
+independent of WHIR parameters. `levers_model.py` assumes about 300 columns (≈ 32 KB).
+At this width a proof of this circuit cannot be under 300 KB, whatever the WHIR levers.
+A final layer needs a much narrower final circuit (≲ 500 opened columns), for example:
+* Ext12 arithmetic laid out over rows rather than as 12 columns;
+* merged AIRs;
+* or a protocol change that batches the column openings.

@@ -1,0 +1,86 @@
+
+running 1 test
+CHILD_PARAMS l_skip=2 n_stack=8 k=3 log_blowup=1 queries=[13, 7, 6] pow(mu,fold,query,logup)=(0,0,0,0)
+PARENT_PARAMS l_skip=2 n_stack=18 k=3 log_blowup=3 queries=[210, 118, 82, 63, 51, 43] pow(mu,fold,query,logup)=(0,0,0,0)
+L0_SOUNDNESS total=5.4 logup=334.9 proximity=360.9 query=5.4
+L0_PROVE_S 0.00
+L0_PROOF_BYTES total=18833 gkr=56 relations=1800 stacking=1168 whir=15724
+L1_TRACEGEN_S 0.48
+L1_AIR 0 SymbolicExpressionAir<BabyBearParameters> 32 28 1280
+L1_AIR 1 FractionsFolderAir 1 77 77
+L1_AIR 2 UnivariateSumcheckAir 16 56 896
+L1_AIR 3 MultilinearSumcheckAir 32 81 2592
+L1_AIR 4 EqNsAir 4 97 388
+L1_AIR 5 Eq3bAir 1 41 41
+L1_AIR 6 EqSharpUniAir 4 33 132
+L1_AIR 7 EqSharpUniReceiverAir 4 41 164
+L1_AIR 8 EqUniAir 4 40 160
+L1_AIR 9 ExpressionClaimAir 4 72 288
+L1_AIR 10 InteractionsFoldingAir 1 85 85
+L1_AIR 11 ConstraintsFoldingAir 8 57 456
+L1_AIR 12 EqNegAir 8 96 768
+L1_AIR 13 TranscriptHashAir 128 95 12160
+L1_AIR 14 TranscriptObsAir 1024 8 8192
+L1_AIR 15 TranscriptSampleAir 1024 20 20480
+L1_AIR 16 MerkleVerifyAir 512 95 48640
+L1_AIR 17 Sha512Air 32768 442 14483456
+L1_AIR 18 TableAir 64 18 1152
+L1_AIR 19 ShaBlockAir 512 134 68608
+L1_AIR 20 ShaMsgAir 8192 45 368640
+L1_AIR 21 ShaByteAir 256 2 512
+L1_AIR 22 ProofShapeAir<4, 8> 2 54 108
+L1_AIR 23 PublicValuesAir 4 8 32
+L1_AIR 24 RangeCheckerAir<8> 256 2 512
+L1_AIR 25 GkrInputAir 1 58 58
+L1_AIR 26 GkrLayerAir 1 126 126
+L1_AIR 27 GkrLayerSumcheckAir 1 117 117
+L1_AIR 28 GkrXiSamplerAir 8 18 144
+L1_AIR 29 OpeningClaimsAir 2 151 302
+L1_AIR 30 UnivariateRoundAir 8 67 536
+L1_AIR 31 SumcheckRoundsAir 8 153 1224
+L1_AIR 32 StackingClaimsAir 4096 83 339968
+L1_AIR 33 EqBaseAir 4 139 556
+L1_AIR 34 EqBitsAir 8 32 256
+L1_AIR 35 WhirRoundAir 4 118 472
+L1_AIR 36 SumcheckAir 16 94 1504
+L1_AIR 37 WhirQueryAir 32 72 2304
+L1_AIR 38 InitialOpenedValuesAir 128 162 20736
+L1_AIR 39 NonInitialOpenedValuesAir 128 61 7808
+L1_AIR 40 WhirFoldingAir 256 71 18176
+L1_AIR 41 FinalPolyMleEvalAir 4 82 328
+L1_AIR 42 FinalPolyQueryEvalAir 256 109 27904
+L1_AIR 43 PowerCheckerAir<2, 32> 32 4 128
+L1_AIR 44 ExpBitsLenAir 1024 16 16384
+L1_TOTAL_CELLS 15458850
+L1_SHA_COMPRESSIONS total=716 merkle_nodes=371 job_blocks=345 transcript_jobs=93
+L1_SOUNDNESS total=268.3 logup=331.6 proximity=325.9 query=268.3
+L1_PROVE_S 20.25
+L1_VERIFY_S 0.086
+L1_PROOF_BYTES total=1318194 gkr=34328 relations=329996 stacking=2852 whir=950364
+test sha384::e2e_tests::e2e_measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 14 filtered out; finished in 20.83s
+
+	Command being timed: "/data/illia/nearproof-deps/pq-recursion/target-sha/release/deps/openvm_recursion_circuit-41e0f9a769bcd7a3 e2e_measure --ignored --nocapture"
+	User time (seconds): 140.76
+	System time (seconds): 1.82
+	Percent of CPU this job got: 683%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:20.84
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1953036
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1711069
+	Voluntary context switches: 18033
+	Involuntary context switches: 472
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 16
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
