@@ -12445,3 +12445,49 @@ workers, then run check_binius_hash_graph.py. --reuse-tmp imports original proof
 runs but always reruns fresh verification and negative checks. Full run is
 expected to fail setup on the pinned implementation. make pin-check passes.
 Evidence in results/swirl-security-review/binius-hash-graph/. No goal completion.
+
+## 2026-10-17 — Wider Binius wiring executes full fixed transcript; size gate fails
+
+Previous goal turn made progress: connected graph proofs and the concrete
+63-bit backend limit were committed/pushed at9abcd1e25. Revalidated clean
+research worktree and pinned external checkout before this experiment.
+
+Changed only sparse-address storage/packing from u64 to u128 in Binius math
+SparseBitVector and verifier shift WiringInfo; bounds now require log_len<128.
+Chunk extraction still uses at most16bits per tensor, with the wide shift before
+conversion to usize. Pair cancellation, operand order and field arithmetic are
+unchanged. No cryptographic parameter changed. Preserved patch as an incremental
+patch on top of binius-hash-graph/binius.patch, not an upstream modification.
+
+Tests:12sparse tests pass, including independent per-bit-indicator evaluation
+at64/67/96/127variables and cancellation/distinctness of high addresses.
+Four wiring tests pass, including explicit67-bit address preservation and
+existing contracted-tensor parity. Replaced the old64-bit expected-panic test
+because that input is now supported. An initial mechanical edit accidentally
+changed RNG seed method names; corrected before successful tests/build. Existing
+64draw proof generated with u64 verifies under the widened backend. These are
+implementation checks, not a Lean refinement or universal equivalence theorem.
+
+Full fixed graph now proves and verifies:437draws,2187hashcalls,
+4373SHA384compressionblocks,4583333hiddenwords,3715437ANDconstraints.
+Payload399696B; serializedproof399732B; public inout5650words/45200B external.
+Observed prove command (including circuit build and verification)16.88s wall,
+6588292KiB peakRSS; four Rayonthreads, nativeCPU release. Not a matched backend
+benchmark. Fresh process verification and changedinput/changedproof rejection
+are recorded by check_binius_wide_graph.py (report produced only after all pass).
+
+Decision: this resolves the implementation blocker and rejects this unchanged
+full fixed-hash-graph layout as the final sub300000B proof: the component alone
+is99732B over target, before remaining verifier components or PQ128 parameters.
+It does not rule out Binius with a different transcript/layout or an additional
+compression layer. Avoid widening the experiment to the full recursive verifier
+without a concrete size-reducing design. The leading integrated GKR/WHIR route
+still needs transcript/hash co-design and complete quantum soundness accounting.
+
+Limitations unchanged: SECURITY_BITS=96 is only diagnostic query parameterization;
+SHA256 default Merkle suite. Fixed squeeze schedule, no sampler/arithmetic/
+prefix/PCS verifier, no full NEAR1Pgas or Lean circuit refinement. Full graph
+means the GKR hash graph only, not a full verifier. Archived report/sourcepatch/
+sourcepins/proofs/logs under binius-wide-graph. Reproduction script defaults to
+new proof generation; --reuse-tmp imports original proof and reruns verification
+and negatives. make pin-check passes. Goal remains unachieved.
