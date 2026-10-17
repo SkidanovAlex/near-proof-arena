@@ -10331,3 +10331,47 @@ ledger. FullNEAR1Pgas, PQ128, and sub300000B secure proof remain NOT_PASSED.
 
 Dashboard reconciliation rejects21inconsistent-evidence cases. No Lean changes;
 last full audit4662. Full replay and cost screen source/input pins retained.
+
+### 2026-10-17: algebraic hash range and geometry screen
+
+Primary-source review retained exact Plonky3 commit
+f98331687e47106a64ab82a77e2e1d0d66c9161b and Airbender commit
+6ec4ea725d654c5e4fd3a122d571ca37804f9abd source snapshots with raw/compressed
+SHA256 pins in results/hash-architecture-review/sources.json. Plonky3's
+[round selector](https://github.com/Plonky3/Plonky3/blob/f98331687e47106a64ab82a77e2e1d0d66c9161b/poseidon2/src/round_numbers.rs)
+targets M=128; this is not evidence of PQ128 collision resistance.
+[BHT](https://arxiv.org/abs/quant-ph/9705002) motivates the unrestricted
+quantum-query output-range screen: an ideal n-bit digest has generic collision
+query scale 2^(n/3). This is a necessary screen under that model, not a lower
+bound for concrete Poseidon2 or this proof protocol.
+
+For BabyBear p=2013265921, exact integer arithmetic gives p^12 < 2^384 <= p^13.
+Twelve field elements serialize to 48 bytes but have only 370.88 bits of range;
+13 elements serialize canonically to 52 bytes and have 401.79 bits of range.
+Eight elements give only about 82.42 bits of generic quantum collision query
+scale. All candidates remain explicitly uncertified.
+
+Hypothetical capacity13/output13 sponge wrappers around pinned upstream widths
+16/24/32 require respectively 14/4/2 permutations for a pair of digests with
+two framing words and one delimiter. Upstream rounds give 7896/3408/2288 x^7
+multiplications respectively, excluding linear layers, routing, encoding and
+proof costs. Width32 is only a cost-screen candidate. Capacity13 is a shape
+hypothesis, not a security theorem; upstream round margins are not a quantum
+algebraic cryptanalysis result. Retain the SHA384 baseline.
+
+[Quantum sponge indifferentiability](https://arxiv.org/html/2504.16887v1)
+concerns an ideal binary public permutation; it does not automatically certify
+a concrete prime-field sponge/duplex, PCS binding/collapsing or adaptive
+Fiat-Shamir. [Poseidon2 abstract](https://eprint.iacr.org/2023/323) reviewed;
+PDF retrieval returned403, so no claim of full-paper review. The
+[Plonky3 recursion hashing documentation](https://plonky3.github.io/Plonky3-recursion/architecture_and_internals/hashing.html)
+separates Merkle compression and transcript roles; both require exact native/
+circuit compatibility. Application-mandated NEAR hashes remain a separate cost.
+
+Screen replay passes and current-feasibility reconciliation rejects23
+inconsistent-evidence cases, including false PQ128 certification and accepting
+12 elements as meeting the 384-bit range criterion. No Lean changes, and no
+new cryptographic theorem. Next gate: a named end-to-end candidate linking
+hash geometry, full recursive-verifier coverage, outer bytes and explicit
+security assumptions before a larger proving experiment. Full NEAR1Pgas,
+PQ128 and secure sub300000B proof remain NOT_PASSED.

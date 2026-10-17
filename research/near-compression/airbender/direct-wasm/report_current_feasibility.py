@@ -209,6 +209,22 @@ def build(root=ROOT):
     assert hybrid_work['baseline_stage_blocks']==hash_work['measurement']['tags']['near-ext8-code-switch-stage-diagnostic-v1']['unique_blocks']
     assert hybrid_work['candidate_stage_blocks']==sum(s['closed_candidate_blocks'] for s in hybrid_work['stage_start_hash_blocks'])
     assert hybrid_work['unchanged_other_work_counterfactual_blocks']==hash_work['measurement']['totals']['unique_blocks']-hybrid_work['baseline_stage_blocks']+hybrid_work['candidate_stage_blocks']
+    hash_geometry=read('results/hash-architecture-review/geometry.json')
+    assert hash_geometry['status']=='ALGEBRAIC_HASH_GEOMETRY_ONLY_SECURITY_OPEN'
+    assert hash_geometry['field']==2013265921
+    assert hash_geometry['minimum_output_elements_for_384_bit_range']==13
+    for row in hash_geometry['digest_screens']:
+        assert row['pq128_certified'] is False
+        assert row['passes_384_bit_output_range_screen']==(2013265921**row['field_elements']>=2**384)
+    for row in hash_geometry['candidates']:
+        assert row['pq128_certified'] is False
+        assert row['rate_elements']==row['width']-row['capacity_elements']
+        assert row['pair_hash_sbox_multiplications']==4*(8*row['width']+row['partial_rounds'])*row['pair_hash_permutations']
+    for relative,expected in hash_geometry['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    hash_sources=read('results/hash-architecture-review/sources.json')
+    for item in hash_sources['code']:
+        assert hashlib.sha256((root/item['snapshot']).read_bytes()).hexdigest()==item['snapshot_sha256']
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -299,6 +315,9 @@ def build(root=ROOT):
             work_evidence='results/closed-hybrid-work.json',
             remaining_hash_counterfactual=hybrid_work['unchanged_other_work_counterfactual_blocks'],
             next_gate=hybrid_work['decision']),
+        hash_architecture_screen=dict(evidence='results/hash-architecture-review/geometry.json',
+            digest_screens=hash_geometry['digest_screens'],candidates=hash_geometry['candidates'],
+            scope=hash_geometry['scope'],next_gate=hash_geometry['decision'],security_certified=False),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
         decision=dict(next_experiment='Independent 64-block envelope transport fails the framing budget. Specify a joint closed-verifier relation with amortized proof messages, same-root call binding and arithmetic coverage; require a complete byte/security ledger before larger-scale proving. q8 is diagnostic, not PQ128.',

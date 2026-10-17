@@ -1,0 +1,50 @@
+{
+  "accessed": "2026-10-17",
+  "code": [
+    {
+      "repo": "Plonky3/Plonky3",
+      "commit": "f98331687e47106a64ab82a77e2e1d0d66c9161b",
+      "path": "poseidon2/src/round_numbers.rs",
+      "url": "https://github.com/Plonky3/Plonky3/blob/f98331687e47106a64ab82a77e2e1d0d66c9161b/poseidon2/src/round_numbers.rs",
+      "snapshot": "results/hash-architecture-review/upstream/Plonky3-poseidon2_src_round_numbers.rs.gz",
+      "raw_sha256": "f77180724f97fb77ed9cc6356b6969d67b472371290fdf5046fdd90e66ba2e39",
+      "snapshot_sha256": "90dccb5e26e7b55759a8c2328dace7197864f4069bf1820597a5cf3123309881"
+    },
+    {
+      "repo": "Plonky3/Plonky3",
+      "commit": "f98331687e47106a64ab82a77e2e1d0d66c9161b",
+      "path": "baby-bear/src/poseidon2.rs",
+      "url": "https://github.com/Plonky3/Plonky3/blob/f98331687e47106a64ab82a77e2e1d0d66c9161b/baby-bear/src/poseidon2.rs",
+      "snapshot": "results/hash-architecture-review/upstream/Plonky3-baby-bear_src_poseidon2.rs.gz",
+      "raw_sha256": "94dd94e267e66922104010624f42ba7836805dc2fafe7482d684cd2e042a7327",
+      "snapshot_sha256": "18242bb96492b91e0565fb9cba722c1d8fed171af36acbeefa2ecee26f368fcd"
+    },
+    {
+      "repo": "matter-labs/zksync-airbender",
+      "commit": "6ec4ea725d654c5e4fd3a122d571ca37804f9abd",
+      "path": "docs/philosophy_and_logic.md",
+      "url": "https://github.com/matter-labs/zksync-airbender/blob/6ec4ea725d654c5e4fd3a122d571ca37804f9abd/docs/philosophy_and_logic.md",
+      "snapshot": "results/hash-architecture-review/upstream/zksync-airbender-docs_philosophy_and_logic.md.gz",
+      "raw_sha256": "b6eed9d1c7cb094ab4f38b134bcc2511d1febc8447fe26d956a0114c2e9c1952",
+      "snapshot_sha256": "20e31c5d12b8ea4d2534c1f27f538d24024f32be28afdc9b43587196f039bf90"
+    }
+  ],
+  "primary_references": [
+    {
+      "url": "https://arxiv.org/abs/quant-ph/9705002",
+      "topic": "Quantum collision query algorithm; generic output-range screen only."
+    },
+    {
+      "url": "https://arxiv.org/html/2504.16887v1",
+      "topic": "Quantum sponge indifferentiability in ideal binary-permutation model; not a concrete Poseidon2 or protocol certificate."
+    },
+    {
+      "url": "https://eprint.iacr.org/2023/323",
+      "topic": "Original Poseidon2 design; abstract read, PDF retrieval returned403, no claim of full PDF review."
+    },
+    {
+      "url": "https://plonky3.github.io/Plonky3-recursion/architecture_and_internals/hashing.html",
+      "topic": "Native/circuit transcript compatibility and separate Merkle/challenger roles."
+    }
+  ]
+}
