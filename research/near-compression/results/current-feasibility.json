@@ -522,13 +522,17 @@
   },
   "nibble_64_block_preparation": {
     "evidence": "results/sha384-nibble64/manifest.json",
-    "status": "FULL_64_BLOCK_WITNESS_CHECKED_PROOF_NOT_YET_CAPTURED",
+    "status": "DIAGNOSTIC_64_BLOCK_COMPRESSION_ENVELOPE_VERIFIED",
     "full_witness_verified": true,
     "source_constraints_evaluated": 8802336,
     "source_aux_cells": 27939408,
     "boundary_root": "fc52a781c41cefe14fbd90a313758e8837710fb120e53944da16911a8b491a1268684695a51ab577548a88f6c655c25a",
-    "scope": "Full compression AIR with proof-committed private state/message/result table. Empty public vector does not bind any application hash claim: boundary root still needs same-root recursive call routing. No zero-knowledge, succinct proof, formal compiler, or PQ128 claim.",
-    "proof_captured": false
+    "scope": "Complete diagnostic compression-relation envelope with all source/aux commitments and local/GKR/PCS messages. Static trusted AIR/spec excluded; roots parsed from wire, no trace or original hash calls required. Boundary root is not linked to application/recursive calls. No zero-knowledge, formal compiler, PQ128, full NEAR or secure-size claim.",
+    "proof_captured": true,
+    "proof_bytes": 265040,
+    "opening_bytes": 186344,
+    "queries": 8,
+    "fresh_verifier_passed": true
   },
   "auxiliary_generator_optimization": {
     "evidence": "results/ext8-auxiliary-base-parity.json",
@@ -544,7 +548,7 @@
   },
   "packed_prover_retry": {
     "evidence": "results/sha384-nibble64/prover-attempt.json",
-    "status": "REFERENCE_PROVER_OOM_PACKED_RETRY_PENDING",
+    "status": "REFERENCE_OOM_PACKED_RETRY_COMPLETED",
     "reference_failed_stage": "weighted PCS",
     "parity_cases": [
       {
@@ -591,7 +595,7 @@
         "byte_identical": true
       }
     ],
-    "scope": "Diagnostic q8 affine-v1 separate commitments. Retry pending; no completed 64-block proof, PQ128 or full NEAR claim."
+    "scope": "Reference OOM at 12 GiB; packed retry completed under same cap. Complete diagnostic q8 envelope freshly verified; not PQ128, recursive-call binding or full NEAR."
   },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
@@ -600,7 +604,7 @@
     "qualification": "Gas-capacity ratio only; NOT a proved trace count or operator bound"
   },
   "decision": {
-    "next_experiment": "Finish the 64-block nibble SHA384 packed-PCS retry at the same 12 GiB cap after the reference prover OOM. Preserve the checked local/GKR checkpoint; encode and freshly verify a completed proof before measuring its full bytes. Then evaluate same-root private recursive-call binding against the complete replacement budgets. q8 is diagnostic, not PQ128.",
+    "next_experiment": "The 64-block q8 envelope is measured. Screen full-verifier coverage and same-root recursive-call routing against complete replacement budgets before another larger proof. A standalone compression-relation proof does not replace a full verifier; q8 is diagnostic, not PQ128.",
     "standalone_mca_expansion": "DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.",
     "reopen_mca_if": "A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.",
     "do_not_repeat": "Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.",
@@ -625,13 +629,14 @@
     "results/sha384-nibble-row-plan.json": "8b222813cc6e734b8ce0c28c10548d5be207d2c0fc8ac72c8298b33751cd9fd2",
     "results/sha384-nibble-lookup-air.json": "1676aeafcef624cbcfe809523d340bbb769e5fe1ae1fabd8063101643374091b",
     "results/sha384-nibble-phase-air.json": "62d61257105112555bdf01800f1ea2a56135dde09b67e6d08a84694279e4e95e",
-    "results/sha384-nibble64/manifest.json": "7b8ed8f364c33c194c8966720f0c8ac7a26bb2de2bed1f7a8d6591f306d661e2",
+    "results/sha384-nibble64/manifest.json": "06bed6f49c0ddc8943d44b7fdb79e212aca996905c47707b0fc47113191bfd60",
     "results/sha384-nibble64/private-preparation.json": "33aca9f2cceaa595f5257d3de4257a1bff2a00c1cbfd29c6410d58c5bc186b73",
+    "results/sha384-nibble64/codec-report.json": "085467e05ab8a90b00dcc3653d2f41275519b89821e8bcf3b599ecaa721595db",
     "results/sha384-nibble-boundary-air.json": "6316eac59f800d62980e6591194fda4bedf25e25b9f2cd894ff505ee8d4bc737",
     "results/ext8-auxiliary-base-parity.json": "a9605252405f6cd9f884f3a8b7ad5c74fac103a072d1b3c06714134a67bfa262",
     "results/ext8-packed-prover-parity.json": "e4293057d4f3d691226f47c347be6fffca148d050689cf64a82ca54db4f7d6c1",
-    "results/sha384-nibble64/prover-attempt.json": "15ce621ffac37e0a08c5a2fd989077b8a465cb070800ac3bb7ef6f9ec308efbe",
-    "airbender/direct-wasm/report_current_feasibility.py": "db75512ea357ad38256a46e028dea6d555a125305db593f3babdd2a19fc934c0",
+    "results/sha384-nibble64/prover-attempt.json": "f865af35b745671612df2364970c93f5f55cccb0c0482c89105065791b2d1ba6",
+    "airbender/direct-wasm/report_current_feasibility.py": "05688cac9d8ccbdfb5a814254f137408601bb77271766886683163dd26cbe54a",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

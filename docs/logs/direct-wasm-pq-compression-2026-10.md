@@ -10079,3 +10079,44 @@ This excludes caches/trees/Python/native temporary memory and is not a peak-RAM
 prediction. Current live cgroup memory.peak6273830912bytes observed at elapsed
 6m56s; this is an interim measurement, not final peak. FullNEAR/PQ128/sub300000B
 remain NOT_PASSED. Next finish this PCS and measure its complete envelope.
+
+## 2026-10-17 — Complete64-block envelope265040B, fresh verification passed
+
+Packed retry session73727 exited0 under the same12GiB cap. Journal records
+01:07:01–01:15:43 (8m42s); no final peak-RAM measurement retained beyond the
+previous interim cgroup observation. Local proving52.017s, GKR60.268s,
+coefficient obligation48.282s. The weighted-pcs reported166.697s includes the
+adapter's independent checkpoint verification before the actual packed prover.
+No full reference-generator equivalence claim: original run OOMed without its
+reduction capture. Small differential tests remain the optimization evidence.
+
+Finisher session53270 exited0. Complete affine-v1 envelope265040bytes:
+186344opening +78696other proof bytes, zero public field elements. It carries
+all source/aux roots, finals, local/GKR messages and PCS. Fresh process verifies
+using only wire plus trusted static specification (387100uncompressed bytes,
+excluded as fixed verifier data), returning the expected boundary root. Wrong
+version, truncation, trailing bytes and altered source root all rejected. Fresh
+verification22.786s. SHA25622a622b664d83f83ca63d4cf97afe7c1fdcbfaf1c38dd65255a6c1ffc9a9327b.
+Retained binary, compressed JSON capture, reports and logs in
+results/sha384-nibble64; manifest pins the exact adapter/verifier implementation.
+
+Interpretation: this is a complete q8 diagnostic compression relation, NOT a
+PQ128 proof, recursive-call binding, compiler theorem, or fullNEAR proof. Its
+265040bytes already exceeds both existing whole-opening replacement allowance
+146466bytes and whole-compression allowance190346bytes. It is below the299999
+whole-bundle allowance by34959bytes, but does not verify the bundle's full
+computation. Therefore do not claim usable recursive compression or multiply
+this chunk result into an unmeasured full-verifier proof. Next screen exact
+full-verifier coverage and private same-root call routing with the actual byte
+budget before launching a larger proof. Full1Pgas/PQ128/sub300000B NOT_PASSED.
+
+Static multiplicity specialization screen now retained. Compiler graph counts
+per block: xor3=4608, choose=1280, majority=1280, splice1=3328, splice2=4864,
+splice3=3328, range=2800. At64blocks, fixed receive multiplicity widths can be
+bounded by19/17/17/18/19/18/18bits respectively instead of common21bits, conditional
+on exact graph routing/natural balance. This is a static request upper bound,
+not an honest-witness maximum. Exact geometry preserves731952source+aux cells
+and61lanes of potential savings (732032padded base coefficients). No revised
+AIR/proof or universal Lean theorem produced. Keep this bounded optimization
+behind the full-verifier coverage decision rather than launching another proof
+without a candidate byte/security ledger.

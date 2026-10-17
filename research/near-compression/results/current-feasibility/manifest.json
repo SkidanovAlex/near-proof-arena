@@ -24,14 +24,14 @@
   ],
   "replay_note": "Hash workload counts and sizes are deterministic; timing and native-library hash can vary across machines. Replay regenerated measurement changes its artifact hash.",
   "sha256": {
-    "results/current-feasibility.json": "0ffe93a75cf6fd1d85e36a5451d9ce9cde1981c385a82f7df67758f7bb636b80",
+    "results/current-feasibility.json": "258b3c84a57e861c61a3a47d0cb5146ebd54603d9ef46bce1ba3f3c6f2e3cf39",
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
     "results/current-feasibility/fresh-verifier.log": "f419b67dfa9e8567efa80f8a1d62e4a67a9a6e8116c072cc247e089029af3218",
     "results/current-feasibility/screen-replay.log": "f27fbac1956a49f96356062285dabfa45e4954b584332916f6cf49136047cedc",
     "results/current-feasibility/hash-work.log": "6198dfa73e0906868332e136655fa9f0cba8b98378ca75eb92ddbffcfb68b087",
-    "results/current-feasibility/validation.json": "41b58b12c2656a1be78a455014f07d9f26c417c774e4d5f40b2e816c919eed58",
-    "airbender/direct-wasm/report_current_feasibility.py": "db75512ea357ad38256a46e028dea6d555a125305db593f3babdd2a19fc934c0",
-    "airbender/direct-wasm/test_current_feasibility.py": "2f21ff182e66078677bc193ee0f96b5f89de509cb3a66c47445fdf27adcc20d2",
+    "results/current-feasibility/validation.json": "f9d32a627c7053e5f5efdbb683789b82b067c283f553f9d6c87ae7109d62b8ce",
+    "airbender/direct-wasm/report_current_feasibility.py": "05688cac9d8ccbdfb5a814254f137408601bb77271766886683163dd26cbe54a",
+    "airbender/direct-wasm/test_current_feasibility.py": "5a963945226cdb53a48974bf0334b7ccdde8666f43508736dd3c3eb060ac28d6",
     "airbender/direct-wasm/measure_switch_verifier_work.py": "a5ea8d1cede94853b87d6c0cec9c9f9a09378a6046b07e3174801365f9e33ca7",
     "airbender/direct-wasm/measure_ext8_recursive_hash_work.py": "424ca5d94620cbae2969cc327b08a2656444d390a85a019696992cd70a6dd64e",
     "results/slice-feasibility-gate.json": "0fd4f2a6beb231cc380639f723dc46c29dabf339a289a9c0abda5e07a62db58c",
@@ -60,7 +60,7 @@
     "airbender/direct-wasm/sha384_nibble_boundary_air.py": "39ba65dd1a5972ba7a1ed6ef70100b5d78b632f6a4f1e669e2174c6347377428",
     "airbender/direct-wasm/test_sha384_nibble_boundary_air.py": "2ec799ca0e9a659679a3819b8baa7fa0d360bf3aca1f80cfe96a418ec10ae36a",
     "results/sha384-nibble-boundary-air.json": "6316eac59f800d62980e6591194fda4bedf25e25b9f2cd894ff505ee8d4bc737",
-    "results/sha384-nibble64/manifest.json": "7b8ed8f364c33c194c8966720f0c8ac7a26bb2de2bed1f7a8d6591f306d661e2",
+    "results/sha384-nibble64/manifest.json": "06bed6f49c0ddc8943d44b7fdb79e212aca996905c47707b0fc47113191bfd60",
     "airbender/direct-wasm/pq384_ext8_auxiliary_base.py": "e1fa7547fe359cd6f4f97ab7b492c250545dffaceeaec16f2bc0a1440b17544a",
     "airbender/direct-wasm/test_ext8_auxiliary_base.py": "7704896f6bcd2b35531ce6c86083176cde4187a5b33fa75ecdb4467384e2cbd3",
     "results/ext8-auxiliary-base-parity.json": "a9605252405f6cd9f884f3a8b7ad5c74fac103a072d1b3c06714134a67bfa262",
@@ -69,7 +69,7 @@
     "airbender/direct-wasm/run_ext8_checkpointed_prover.py": "dfa97e6d5251f27d3c0b7e62f5eceea974a714f97b7aa31694c84748d8a52b89",
     "airbender/direct-wasm/test_ext8_packed_prover.py": "895b3517ef08a631fc6e610f63c3ac4778c0ecd57a8dc12cfb236602b7498460",
     "results/ext8-packed-prover-parity.json": "e4293057d4f3d691226f47c347be6fffca148d050689cf64a82ca54db4f7d6c1",
-    "results/sha384-nibble64/prover-attempt.json": "15ce621ffac37e0a08c5a2fd989077b8a465cb070800ac3bb7ef6f9ec308efbe",
+    "results/sha384-nibble64/prover-attempt.json": "f865af35b745671612df2364970c93f5f55cccb0c0482c89105065791b2d1ba6",
     "results/sha384-nibble64/reference-oom.log": "cb0573c2b15902858a2f540a2ecc77addf0cfa42236d13a5355d5c21492a0ead",
     "results/sha384-nibble64/reference-oom-journal.log": "1a32283648b89da6f64e27bc980bb487bbf877d970a61d86a53aaed9d84db29b",
     "airbender/direct-wasm/resume_ext8_checkpoint.py": "0ea53b024f8fbdc594fbe9b7f027d45e96331a1b231a03512acf296bd8462cf8",
@@ -79,6 +79,8 @@
     "results/sha384-nibble64/checkpoint/opening.json.gz": "131b6641609b8b42da830c1aa02397e6cda7526a37633999e9cdc873be7c0d18",
     "results/sha384-nibble64/checkpoint/reduction.json.gz": "22cc0e1735beca91a66a6c9ac3cf6e4823684abe41f68e86764fa0cedebe88c7",
     "results/sha384-nibble64/checkpoint/input-memory-ledger.json": "03a6c7bd5c272830810a40ce92367a3fd825c1908b7b329b671cb160fda826a5",
-    "results/sha384-nibble64/checkpoint/manifest.json": "81353e913c5e62e5bf74532d6a544623e7aa48a6f9895ab77d4b3d0291905ff2"
+    "results/sha384-nibble64/checkpoint/manifest.json": "81353e913c5e62e5bf74532d6a544623e7aa48a6f9895ab77d4b3d0291905ff2",
+    "airbender/direct-wasm/screen_nibble_multiplicity_bounds.py": "52f751d2c4e34eec9fa5f675fb987ec337b8dd760be0afaa3716c3304cf676e1",
+    "results/nibble-multiplicity-screen.json": "0bda28aa09eb3c4a7b258143a4164278b4e7256d0987df88e53ee4974ef14bf3"
   }
 }

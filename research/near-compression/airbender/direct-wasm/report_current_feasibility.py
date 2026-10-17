@@ -141,6 +141,11 @@ def build(root=ROOT):
         assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
     nibble64=read('results/sha384-nibble64/private-preparation.json')
     assert nibble64['blocks'] == 64 and nibble64['full_witness_verified'] and nibble64['public_field_elements'] == 0
+    nibble_codec=read('results/sha384-nibble64/codec-report.json')
+    assert nibble_codec['status']=='DIAGNOSTIC_64_BLOCK_COMPRESSION_ENVELOPE_VERIFIED'
+    assert nibble_codec['fresh_verifier_passed'] and nibble_codec['queries']==8 and nibble_codec['blocks']==64
+    wire=(root/'results/sha384-nibble64/compression.bin').read_bytes()
+    assert len(wire)==nibble_codec['proof_bytes'] and hashlib.sha256(wire).hexdigest()==nibble_codec['proof_sha256']
     boundary_test=read('results/sha384-nibble-boundary-air.json')
     for relative, expected in boundary_test['sha256'].items():
         assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
@@ -216,7 +221,9 @@ def build(root=ROOT):
             status=nibble64_manifest['status'], full_witness_verified=nibble64['full_witness_verified'],
             source_constraints_evaluated=nibble64['source_constraints_evaluated'],
             source_aux_cells=nibble64['source_aux_cells'],boundary_root=nibble64['boundary_root'],
-            scope=nibble64['scope'], proof_captured=False),
+            scope=nibble_codec['scope'], proof_captured=True, proof_bytes=nibble_codec['proof_bytes'],
+            opening_bytes=nibble_codec['opening_bytes'],queries=nibble_codec['queries'],
+            fresh_verifier_passed=nibble_codec['fresh_verifier_passed']),
         auxiliary_generator_optimization=dict(evidence='results/ext8-auxiliary-base-parity.json',
             cases=aux_parity['cases'],compared_base_cells=aux_parity['auxiliary_base_cells_compared'],
             large_case=aux_parity['large_case'],scope=aux_parity['scope'],
@@ -226,7 +233,7 @@ def build(root=ROOT):
             parity_cases=packed_parity['cases'],scope=attempt['scope']),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
-        decision=dict(next_experiment='Finish the 64-block nibble SHA384 packed-PCS retry at the same 12 GiB cap after the reference prover OOM. Preserve the checked local/GKR checkpoint; encode and freshly verify a completed proof before measuring its full bytes. Then evaluate same-root private recursive-call binding against the complete replacement budgets. q8 is diagnostic, not PQ128.',
+        decision=dict(next_experiment='The 64-block q8 envelope is measured. Screen full-verifier coverage and same-root recursive-call routing against complete replacement budgets before another larger proof. A standalone compression-relation proof does not replace a full verifier; q8 is diagnostic, not PQ128.',
             standalone_mca_expansion=('REASSESS against the surviving candidate; partial ledger is not certification.' if feasible else 'DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.'),
             reopen_mca_if='A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.',
             do_not_repeat='Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.',

@@ -1,0 +1,30 @@
+Loaded source shapes [(4096, 274), (8192, 498), (64, 515), (4096, 33), (4096, 33), (4096, 33), (256, 29), (256, 29), (256, 29), (16, 25), (64, 514)]
+Committed source 0
+Committed source 1
+Committed source 2
+Committed source 3
+Committed source 4
+Committed source 5
+Committed source 6
+Committed source 7
+Committed source 8
+Committed source 9
+Committed source 10
+Source roots checked; generating Ext8 auxiliaries
+Auxiliary commitments complete
+Local table proved 0
+Local table proved 1
+Local table proved 2
+Local table proved 3
+Local table proved 4
+Local table proved 5
+Local table proved 6
+Local table proved 7
+Local table proved 8
+Local table proved 9
+Local table proved 10
+GKR proved
+Coefficient obligation checked (contract, 48.282s)
+Starting weighted PCS
+Checked reduction checkpoint saved; starting packed PCS
+{"terminal_profile": "affine-v1", "commitment_profile": "separate", "physical_opening_branches": [{"log_rows": 12, "width": 274, "packing": 8, "lanes": 35, "terms": 0}, {"log_rows": 12, "width": 1224, "packing": 32, "lanes": 39, "terms": 0}, {"log_rows": 13, "width": 498, "packing": 8, "lanes": 63, "terms": 0}, {"log_rows": 13, "width": 1560, "packing": 32, "lanes": 49, "terms": 0}, {"log_rows": 6, "width": 515, "packing": 16, "lanes": 33, "terms": 0}, {"log_rows": 6, "width": 1728, "packing": 32, "lanes": 54, "terms": 0}, {"log_rows": 12, "width": 33, "packing": 1, "lanes": 33, "terms": 0}, {"log_rows": 12, "width": 328, "packing": 8, "lanes": 41, "terms": 0}, {"log_rows": 12, "width": 33, "packing": 1, "lanes": 33, "terms": 0}, {"log_rows": 12, "width": 328, "packing": 8, "lanes": 41, "terms": 0}, {"log_rows": 12, "width": 33, "packing": 1, "lanes": 33, "terms": 0}, {"log_rows": 12, "width": 328, "packing": 8, "lanes": 41, "terms": 0}, {"log_rows": 8, "width": 29, "packing": 1, "lanes": 29, "terms": 0}, {"log_rows": 8, "width": 328, "packing": 8, "lanes": 41, "terms": 0}, {"log_rows": 8, "width": 29, "packing": 1, "lanes": 29, "terms": 0}, {"log_rows": 8, "width": 328, "packing": 8, "lanes": 41, "terms": 0}, {"log_rows": 8, "width": 29, "packing": 1, "lanes": 29, "terms": 0}, {"log_rows": 8, "width": 328, "packing": 8, "lanes": 41, "terms": 0}, {"log_rows": 4, "width": 25, "packing": 8, "lanes": 4, "terms": 0}, {"log_rows": 4, "width": 328, "packing": 8, "lanes": 41, "terms": 0}, {"log_rows": 6, "width": 514, "packing": 16, "lanes": 33, "terms": 0}, {"log_rows": 6, "width": 816, "packing": 16, "lanes": 51, "terms": 0}], "derived_fold_transport": false, "coefficient_check": "contract", "coefficient_seconds": 48.281948272138834, "weighted_pcs": {"queries": 8, "verified": true, "json_bytes": 527783, "prove_seconds": 166.69682659441605, "verify_seconds": 0.7964769802056253, "source_roots_match_retained": true, "commitment_binding": "packed source roots before bus challenges; packed auxiliary roots/finals before local challenges"}, "coefficient_opening_target_checked": true, "opening_branches": [{"table": 0, "branch": 0, "width": 274, "packing": 8, "lanes": 35}, {"table": 0, "branch": 1, "width": 1224, "packing": 32, "lanes": 39}, {"table": 1, "branch": 0, "width": 498, "packing": 8, "lanes": 63}, {"table": 1, "branch": 1, "width": 1560, "packing": 32, "lanes": 49}, {"table": 2, "branch": 0, "width": 515, "packing": 16, "lanes": 33}, {"table": 2, "branch": 1, "width": 1728, "packing": 32, "lanes": 54}, {"table": 3, "branch": 0, "width": 33, "packing": 1, "lanes": 33}, {"table": 3, "branch": 1, "width": 328, "packing": 8, "lanes": 41}, {"table": 4, "branch": 0, "width": 33, "packing": 1, "lanes": 33}, {"table": 4, "branch": 1, "width": 328, "packing": 8, "lanes": 41}, {"table": 5, "branch": 0, "width": 33, "packing": 1, "lanes": 33}, {"table": 5, "branch": 1, "width": 328, "packing": 8, "lanes": 41}, {"table": 6, "branch": 0, "width": 29, "packing": 1, "lanes": 29}, {"table": 6, "branch": 1, "width": 328, "packing": 8, "lanes": 41}, {"table": 7, "branch": 0, "width": 29, "packing": 1, "lanes": 29}, {"table": 7, "branch": 1, "width": 328, "packing": 8, "lanes": 41}, {"table": 8, "branch": 0, "width": 29, "packing": 1, "lanes": 29}, {"table": 8, "branch": 1, "width": 328, "packing": 8, "lanes": 41}, {"table": 9, "branch": 0, "width": 25, "packing": 8, "lanes": 4}, {"table": 9, "branch": 1, "width": 328, "packing": 8, "lanes": 41}, {"table": 10, "branch": 0, "width": 514, "packing": 16, "lanes": 33}, {"table": 10, "branch": 1, "width": 816, "packing": 16, "lanes": 51}], "corrupted_source_rejected": true, "status": "PASS", "source_sha256": ["55dea8af44240cdb835898d5c1e2154207de1a8b8756ea7deeb784e0958f2683", "ea96a9d84af7d1eac83e94652424764751491da1830b1fe5688d092c85373eae", "29342f338cafe266c98697681951958b10f8887429e618d591215922bc3c531a", "dae04856356d8f72a8751de8a459933152907cb8e9b165005b3fecc9ed19b819", "38f7b66b2097cc5adc2d84c6511e99619804611beece0cfc656c43969843dff4", "161ac356835947434c47e8da6175585c911547f30de262ae8e34cf26081bb670", "3e8006eb2961b2ab213990f2477f51688c7bc246ef3268b318a47c0c1eb696af", "2c8b085073c7e3c5faab16ef43bae5d079dec6df4d7515b8f1ab050d38b5b5b7", "b73809d79a7e493444b398cd4c79adb9e90abd87278153592e09b8987ae6b17e", "cbeba751a6820cc5dfa21b290a5ea0a9cecd28c87c1e568fe9d2c40604a4da66", "ada85892cbaaa02614a13f6b8413685de7a27cb300540b91a9629c9dddad35d8"], "source_rows": [4096, 8192, 64, 4096, 4096, 4096, 256, 256, 256, 16, 64], "global_bus_product_equal": true, "local_rounds": 101, "local_scalar_bytes": 21728, "gkr_layers": 20, "gkr_scalar_bytes": 36992, "zero_terminal_claim_verified": true, "direct_private_obligation_checked": true, "local_seconds": 52.016891822218895, "gkr_seconds": 60.268040218856186, "mutated_local_round_rejected": true, "scope": "Source hashes recorded and packed commitments match the external statement when PCS enabled. Optional weighted PCS uses retained source roots and fresh auxiliary roots in correct transcript order and verifies the GKR input opening; without it, full-vector diagnostic hashes/direct witness checks remain. This is still a diagnostic protocol, not a formal implementation/proximity/QROM/security certificate. No complete compact envelope measurement."}

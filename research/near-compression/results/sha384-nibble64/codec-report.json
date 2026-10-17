@@ -1,0 +1,22 @@
+{
+  "status": "DIAGNOSTIC_64_BLOCK_COMPRESSION_ENVELOPE_VERIFIED",
+  "blocks": 64,
+  "queries": 8,
+  "proof_bytes": 265040,
+  "opening_bytes": 186344,
+  "nonopening_bytes": 78696,
+  "public_field_elements": 0,
+  "static_trusted_spec_bytes": 387100,
+  "boundary_root": "fc52a781c41cefe14fbd90a313758e8837710fb120e53944da16911a8b491a1268684695a51ab577548a88f6c655c25a",
+  "fresh_verifier_passed": true,
+  "negative_cases": [
+    "wrong-version",
+    "truncated",
+    "trailing",
+    "altered-source-root"
+  ],
+  "encode_and_verify_seconds": 22.77111389255151,
+  "fresh_verify_seconds": 22.78569161472842,
+  "proof_sha256": "22a622b664d83f83ca63d4cf97afe7c1fdcbfaf1c38dd65255a6c1ffc9a9327b",
+  "scope": "Complete diagnostic compression-relation envelope with all source/aux commitments and local/GKR/PCS messages. Static trusted AIR/spec excluded; roots parsed from wire, no trace or original hash calls required. Boundary root is not linked to application/recursive calls. No zero-knowledge, formal compiler, PQ128, full NEAR or secure-size claim."
+}

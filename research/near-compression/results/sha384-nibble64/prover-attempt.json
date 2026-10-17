@@ -1,5 +1,5 @@
 {
-  "status": "REFERENCE_PROVER_OOM_PACKED_RETRY_PENDING",
+  "status": "REFERENCE_OOM_PACKED_RETRY_COMPLETED",
   "reference_memory_limit_bytes": 12884901888,
   "reference_completed_stages": [
     "source and auxiliary commitments",
@@ -8,14 +8,18 @@
     "coefficient obligation"
   ],
   "failed_stage": "weighted PCS",
-  "proof_captured": false,
+  "proof_captured": true,
   "retry_adapter": "airbender/direct-wasm/run_ext8_checkpointed_prover.py",
   "retry_memory_limit_bytes": 12884901888,
-  "scope": "Diagnostic q8 affine-v1 separate commitments. Retry pending; no completed 64-block proof, PQ128 or full NEAR claim.",
+  "scope": "Reference OOM at 12 GiB; packed retry completed under same cap. Complete diagnostic q8 envelope freshly verified; not PQ128, recursive-call binding or full NEAR.",
   "sha256": {
     "results/sha384-nibble64/reference-oom.log": "cb0573c2b15902858a2f540a2ecc77addf0cfa42236d13a5355d5c21492a0ead",
     "results/sha384-nibble64/reference-oom-journal.log": "1a32283648b89da6f64e27bc980bb487bbf877d970a61d86a53aaed9d84db29b",
     "airbender/direct-wasm/run_ext8_checkpointed_prover.py": "dfa97e6d5251f27d3c0b7e62f5eceea974a714f97b7aa31694c84748d8a52b89",
-    "airbender/direct-wasm/pq384_ext8_packed_prover.py": "31b102a81884f835bbd02f8e204491849217cccfb7609d96c493b212505955dd"
-  }
+    "airbender/direct-wasm/pq384_ext8_packed_prover.py": "31b102a81884f835bbd02f8e204491849217cccfb7609d96c493b212505955dd",
+    "results/sha384-nibble64/codec-report.json": "085467e05ab8a90b00dcc3653d2f41275519b89821e8bcf3b599ecaa721595db",
+    "results/sha384-nibble64/packed-run-journal.log": "ebfc60d4a9ff94d925fe985d8175ebbe8f885c4044612d1ebdf44ff97975ad30"
+  },
+  "proof_bytes": 265040,
+  "queries": 8
 }
