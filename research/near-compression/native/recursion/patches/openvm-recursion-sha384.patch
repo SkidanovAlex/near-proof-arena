@@ -1210,18 +1210,20 @@ index 93fac5d..59aaccb 100644
  use p3_matrix::dense::RowMajorMatrix;
  
 diff --git a/crates/recursion/src/lib.rs b/crates/recursion/src/lib.rs
-index 1c28aa8..0350b48 100644
+index 1c28aa8..e9147a4 100644
 --- a/crates/recursion/src/lib.rs
 +++ b/crates/recursion/src/lib.rs
-@@ -5,6 +5,7 @@ pub mod cuda;
+@@ -4,7 +4,9 @@ pub mod bus;
+ pub mod cuda;
  pub mod gkr;
  pub mod primitives;
++pub mod nv;
  pub mod proof_shape;
 +pub mod sha384;
  pub mod stacking;
  pub mod subairs;
  pub mod system;
-@@ -16,7 +17,5 @@ pub mod utils;
+@@ -16,7 +18,5 @@ pub mod utils;
  pub mod whir;
  
  pub mod prelude {
@@ -1230,6 +1232,1586 @@ index 1c28aa8..0350b48 100644
 -    };
 +    pub use crate::sha384::config::{Sha384Config as SC, Digest, DIGEST_SIZE, D_EF, EF, F};
  }
+diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
+new file mode 100644
+index 0000000..f15dead
+--- /dev/null
++++ b/crates/recursion/src/nv/builder.rs
+@@ -0,0 +1,356 @@
++//! Program builder + executor.  Verifier code calls the builder with concrete values; each
++//! call appends a fixed instruction (independent of the values, by construction) and
++//! computes its result, so one pass yields the program and the full ALU witness.
++use std::collections::HashMap;
++
++use openvm_stark_backend::FiatShamirTranscript;
++use p3_field::{BasedVectorSpace, PrimeCharacteristicRing, PrimeField32};
++
++use super::isa::{Instr, Op, ADDR_BITS};
++use crate::sha384::{
++    config::{
++        digest_to_limbs, limbs_to_digest, Digest, ShaTranscriptRecorder, DIGEST_SIZE, EF, F,
++    },
++    jobs::{ShaJob, Unit},
++};
++
++#[derive(Clone, Copy, Debug)]
++pub struct V {
++    pub addr: u32,
++    pub val: EF,
++}
++
++/// A digest held in two ALU cells of 12 limbs each.
++#[derive(Clone, Copy, Debug)]
++pub struct DigestCells {
++    pub lo: V,
++    pub hi: V,
++    pub digest: Digest,
++}
++
++/// One authentication path (leaf coset tree + Merkle path) for the Merkle AIR.
++#[derive(Clone, Debug)]
++pub struct MerklePath {
++    pub path_id: u32,
++    pub qid: u32,
++    pub commit_id: u32,
++    pub job_base: u32,
++    pub leaf_digests: Vec<Digest>,
++    pub siblings: Vec<Digest>,
++    pub index: u64,
++    pub root: Digest,
++}
++
++pub fn coeffs(x: EF) -> [F; 12] {
++    x.as_basis_coefficients_slice().try_into().unwrap()
++}
++pub fn ef_from(c: [F; 12]) -> EF {
++    EF::from_basis_coefficients_slice(&c).unwrap()
++}
++
++pub struct Builder {
++    pub instrs: Vec<Instr>,
++    pub vals: Vec<EF>,
++    pub wits: Vec<F>,
++    /// rows [0, reserved) are filled at the end (binding tables)
++    pub reserved: usize,
++    consts: HashMap<u32, u32>,
++    pub transcript: ShaTranscriptRecorder,
++    pub failures: Vec<String>,
++    pub job_units: Vec<(u8, Vec<Option<Unit>>)>,
++    pub paths: Vec<MerklePath>,
++    pub log_rows: usize,
++}
++
++impl Builder {
++    pub fn new(log_rows: usize, reserved: usize) -> Self {
++        assert!(log_rows <= ADDR_BITS as usize);
++        Self {
++            instrs: vec![Instr::NOP; reserved],
++            vals: vec![EF::ZERO; reserved],
++            wits: vec![F::ZERO; reserved],
++            reserved,
++            consts: HashMap::new(),
++            transcript: ShaTranscriptRecorder::default(),
++            failures: vec![],
++            job_units: vec![],
++            paths: vec![],
++            log_rows,
++        }
++    }
++
++    fn push(&mut self, op: Op, a: u32, b: u32, k1: u32, k2: u32, val: EF, wit: F) -> V {
++        let addr = self.instrs.len() as u32;
++        assert!(
++            (addr as usize) < (1 << self.log_rows) - 1,
++            "program exceeds 2^{} rows",
++            self.log_rows
++        );
++        self.instrs.push(Instr { op, a, b, k1, k2 });
++        self.vals.push(val);
++        self.wits.push(wit);
++        V { addr, val }
++    }
++
++    pub fn tidx(&self) -> u32 {
++        self.transcript.values.len() as u32
++    }
++
++    // ---- arithmetic ----
++    pub fn mul(&mut self, x: V, y: V) -> V {
++        self.push(Op::Mul, x.addr, y.addr, 0, 0, x.val * y.val, F::ZERO)
++    }
++    pub fn add(&mut self, x: V, y: V) -> V {
++        self.push(Op::Add, x.addr, y.addr, 0, 0, x.val + y.val, F::ZERO)
++    }
++    pub fn sub(&mut self, x: V, y: V) -> V {
++        self.push(Op::Sub, x.addr, y.addr, 0, 0, x.val - y.val, F::ZERO)
++    }
++    pub fn dbl_add(&mut self, x: V, y: V) -> V {
++        self.push(Op::DblAdd, x.addr, y.addr, 0, 0, x.val.double() + y.val, F::ZERO)
++    }
++    pub fn mul_add_a(&mut self, x: V, y: V) -> V {
++        self.push(Op::MulAddA, x.addr, y.addr, 0, 0, x.val * y.val + x.val, F::ZERO)
++    }
++    pub fn neg(&mut self, x: V) -> V {
++        let z = self.c(F::ZERO);
++        self.sub(z, x)
++    }
++    pub fn square(&mut self, x: V) -> V {
++        self.mul(x, x)
++    }
++    /// Base constant (deduplicated).
++    pub fn c(&mut self, x: F) -> V {
++        let k = x.as_canonical_u32();
++        if let Some(&addr) = self.consts.get(&k) {
++            return V {
++                addr,
++                val: EF::from(x),
++            };
++        }
++        let v = self.push(Op::Const, k, 0, 0, 0, EF::from(x), F::ZERO);
++        self.consts.insert(k, v.addr);
++        v
++    }
++    pub fn cu(&mut self, x: u64) -> V {
++        self.c(F::from_u64(x))
++    }
++    /// Extension constant via Horner in X.
++    pub fn ce(&mut self, x: EF) -> V {
++        let cs = coeffs(x);
++        if cs[1..].iter().all(|c| *c == F::ZERO) {
++            return self.c(cs[0]);
++        }
++        let xv = {
++            let mut c = [F::ZERO; 12];
++            c[1] = F::ONE;
++            self.push(Op::ConstX, 1, 0, 0, 0, ef_from(c), F::ZERO)
++        };
++        let mut acc = self.c(cs[11]);
++        for k in (0..11).rev() {
++            let t = self.mul(acc, xv);
++            let ck = self.c(cs[k]);
++            acc = self.add(t, ck);
++        }
++        debug_assert_eq!(acc.val, x);
++        acc
++    }
++    pub fn mul_c(&mut self, x: V, k: F) -> V {
++        let kv = self.c(k);
++        self.mul(x, kv)
++    }
++    pub fn add_c(&mut self, x: V, k: F) -> V {
++        let kv = self.c(k);
++        self.add(x, kv)
++    }
++    pub fn one_minus(&mut self, x: V) -> V {
++        let one = self.c(F::ONE);
++        self.sub(one, x)
++    }
++
++    // ---- assertions ----
++    pub fn zero(&mut self, x: V, what: &str) {
++        if x.val != EF::ZERO {
++            self.failures.push(what.to_string());
++        }
++        self.push(Op::Zero, x.addr, 0, 0, 0, EF::ZERO, F::ZERO);
++    }
++    pub fn assert_eq(&mut self, x: V, y: V, what: &str) {
++        let d = self.sub(x, y);
++        self.zero(d, what);
++    }
++
++    // ---- witness / transcript ----
++    pub fn load(&mut self, x: EF) -> V {
++        self.push(Op::Load, 0, 0, 0, 0, x, F::ZERO)
++    }
++    pub fn load_f(&mut self, x: F) -> V {
++        self.load(EF::from(x))
++    }
++    pub fn obs1(&mut self, x: V) -> V {
++        let t = self.tidx();
++        let c0 = coeffs(x.val)[0];
++        debug_assert!(coeffs(x.val)[1..].iter().all(|c| *c == F::ZERO));
++        self.transcript.observe(c0);
++        self.push(Op::Obs1, x.addr, 0, t, 0, x.val, F::ZERO)
++    }
++    pub fn obs12(&mut self, x: V) -> V {
++        let t = self.tidx();
++        self.transcript.observe_ext(x.val);
++        self.push(Op::Obs12, x.addr, 0, t, 0, x.val, F::ZERO)
++    }
++    pub fn load_obs(&mut self, x: EF) -> V {
++        let v = self.load(x);
++        self.obs12(v)
++    }
++    pub fn load_obs_f(&mut self, x: F) -> V {
++        let v = self.load_f(x);
++        self.obs1(v)
++    }
++    pub fn smp1(&mut self) -> V {
++        let t = self.tidx();
++        let s = self.transcript.sample();
++        self.push(Op::Smp1, 0, 0, t, 0, EF::from(s), F::ZERO)
++    }
++    pub fn smp12(&mut self) -> V {
++        let t = self.tidx();
++        let s = FiatShamirTranscript::<crate::sha384::config::Sha384Config>::sample_ext(
++            &mut self.transcript,
++        );
++        self.push(Op::Smp12, 0, 0, t, 0, s, F::ZERO)
++    }
++    /// Load a digest as two cells and observe it as a commitment (24 limb events).
++    pub fn load_commit(&mut self, d: Digest) -> DigestCells {
++        let limbs = digest_to_limbs(d);
++        let lo = self.load(ef_from(limbs[..12].try_into().unwrap()));
++        let hi = self.load(ef_from(limbs[12..].try_into().unwrap()));
++        self.observe_commit_cells(lo, hi, d)
++    }
++    /// Constant digest (e.g. the vk pre-hash) as cells, observed as a commitment.
++    pub fn const_commit(&mut self, d: Digest) -> DigestCells {
++        let limbs = digest_to_limbs(d);
++        let lo = self.ce(ef_from(limbs[..12].try_into().unwrap()));
++        let hi = self.ce(ef_from(limbs[12..].try_into().unwrap()));
++        self.observe_commit_cells(lo, hi, d)
++    }
++    fn observe_commit_cells(&mut self, lo: V, hi: V, d: Digest) -> DigestCells {
++        let t = self.tidx();
++        FiatShamirTranscript::<crate::sha384::config::Sha384Config>::observe_commit(
++            &mut self.transcript,
++            d,
++        );
++        debug_assert_eq!(limbs_to_digest(&[coeffs(lo.val), coeffs(hi.val)].concat()), d);
++        let lo = self.push(Op::ObsC12, lo.addr, 0, t, 0, lo.val, F::ZERO);
++        let hi = self.push(Op::ObsC12, hi.addr, 0, t + 12, 0, hi.val, F::ZERO);
++        DigestCells { lo, hi, digest: d }
++    }
++    /// Offer a commitment as the root key of `commit_id`.
++    pub fn key_commit(&mut self, commit_id: u32, d: &DigestCells) {
++        self.push(Op::KeyC, d.lo.addr, 0, commit_id, 0, d.lo.val, F::ZERO);
++        self.push(Op::KeyC, d.hi.addr, 0, commit_id, 1, d.hi.val, F::ZERO);
++    }
++
++    // ---- SHA jobs (leaf messages) ----
++    /// Start a leaf job (tag 0) with `nbytes` of payload; returns the job id.
++    pub fn job_start(&mut self, tag: u8, nbytes: usize) -> u32 {
++        let id = self.job_units.len() as u32;
++        assert_eq!(nbytes % 4, 0);
++        let mut units = vec![None; 2 + nbytes / 4];
++        units[0] = Some(Unit::Felt(nbytes as u32));
++        units[1] = Some(Unit::Felt(0));
++        self.job_units.push((tag, units));
++        self.push(Op::Job, tag as u32, nbytes as u32, id, 0, EF::ZERO, F::ZERO);
++        id
++    }
++    fn job_unit(&mut self, job: u32, uidx: u32, x: F) {
++        let slot = &mut self.job_units[job as usize].1[uidx as usize];
++        assert!(slot.is_none(), "unit pushed twice");
++        *slot = Some(Unit::Felt(x.as_canonical_u32()));
++    }
++    /// The leaf jobs (ids 0..), all units filled.
++    pub fn jobs(&self) -> Vec<ShaJob> {
++        self.job_units
++            .iter()
++            .map(|(tag, u)| ShaJob {
++                tag: *tag,
++                units: u.iter().map(|x| x.expect("missing unit")).collect(),
++            })
++            .collect()
++    }
++    /// c = acc * mu + w, where w (a base witness) is also unit `uidx` of `job`.
++    pub fn horn(&mut self, acc: V, mu: V, w: F, job: u32, uidx: u32) -> V {
++        self.job_unit(job, uidx, w);
++        self.push(
++            Op::Horn,
++            acc.addr,
++            mu.addr,
++            job,
++            uidx,
++            acc.val * mu.val + EF::from(w),
++            w,
++        )
++    }
++    /// Push the 12 coefficients of x as units uidx..uidx+11 of `job`.
++    pub fn unit12(&mut self, x: V, job: u32, uidx: u32) -> V {
++        for (k, c) in coeffs(x.val).into_iter().enumerate() {
++            self.job_unit(job, uidx + k as u32, c);
++        }
++        self.push(Op::Unit12, x.addr, 0, job, uidx, x.val, F::ZERO)
++    }
++
++    // ---- bits / Merkle keys ----
++    pub fn bit(&mut self, x: V, qid: u32, level: u32) -> V {
++        let c = coeffs(x.val);
++        if !(c[0] == F::ZERO || c[0] == F::ONE) || c[1..].iter().any(|v| *v != F::ZERO) {
++            self.failures.push("non-boolean bit".into());
++        }
++        self.push(Op::Bit, x.addr, 0, qid, level, x.val, F::ZERO)
++    }
++    pub fn key_path(&mut self, path_id: u32, job_base: u32, qid: u32, commit_id: u32, depth: u32) {
++        assert!(commit_id < 256 && depth < 512);
++        self.push(
++            Op::KeyP,
++            qid,
++            commit_id + 256 * depth,
++            path_id,
++            job_base,
++            EF::ZERO,
++            F::ZERO,
++        );
++    }
++
++    /// Finish: pad with NOPs, put the accumulator row last.  Returns the program length 2^log_rows.
++    pub fn finish(&mut self, acc_total: EF) {
++        let n = 1usize << self.log_rows;
++        while self.instrs.len() < n - 1 {
++            self.instrs.push(Instr::NOP);
++            self.vals.push(EF::ZERO);
++            self.wits.push(F::ZERO);
++        }
++        self.instrs.push(Instr {
++            op: Op::Acc,
++            a: 0,
++            b: 0,
++            k1: 0,
++            k2: 0,
++        });
++        self.vals.push(acc_total);
++        self.wits.push(F::ZERO);
++    }
++
++    /// Read counts per address (memory multiplicities).
++    pub fn read_counts(&self) -> Vec<u32> {
++        let mut m = vec![0u32; self.instrs.len()];
++        for ins in &self.instrs {
++            if ins.op.reads_a() {
++                m[ins.a as usize] += 1;
++            }
++            if ins.op.reads_b() {
++                m[ins.b as usize] += 1;
++            }
++        }
++        m
++    }
++}
++
++pub const DIGEST_CELLS: usize = DIGEST_SIZE / 12;
+diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
+new file mode 100644
+index 0000000..c5cb7c5
+--- /dev/null
++++ b/crates/recursion/src/nv/isa.rs
+@@ -0,0 +1,108 @@
++//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
++//! `c` (an Ext12 value) to memory address = its row index.  Program words:
++//!   P0 = A  (operand address, or base-field immediate)
++//!   P1 = B + 2^17 * op   (operand address, or small immediate)
++//!   P2 = key1 (transcript index / SHA job id / key id)
++//!   P3 = key2 (unit index / key id)
++//! These four columns are the program; NV binds a child's program to its own by an
++//! in-circuit multilinear evaluation (see DESIGN.md §2.1).
++
++/// Address bits available for operand `B` in `P1`.
++pub const ADDR_BITS: u32 = 17;
++pub const MAX_ROWS: usize = 1 << ADDR_BITS;
++
++#[repr(u32)]
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
++pub enum Op {
++    /// padding: c = 0, no reads (opcode 0 so padding contributes nothing to the binding sum)
++    Nop = 0,
++    /// c = a * b (Ext12)
++    Mul = 1,
++    /// c = a + b
++    Add = 2,
++    /// c = a - b
++    Sub = 3,
++    /// c = A (base immediate in coefficient 0)
++    Const = 4,
++    /// c = A * X (coefficient 1)
++    ConstX = 5,
++    /// c = free witness (bound by later uses)
++    Load = 6,
++    /// c = a; observe c0 at tidx P2
++    Obs1 = 7,
++    /// c = a; observe c0..c11 at tidx P2..P2+11
++    Obs12 = 8,
++    /// c = a; observe c0..c11 as commit limbs (kind 2) at tidx P2..
++    ObsC12 = 9,
++    /// c0 = sample at tidx P2 (c1..c11 = 0)
++    Smp1 = 10,
++    /// c = 12 samples at tidx P2..P2+11
++    Smp12 = 11,
++    /// c = a; push c0..c11 as felt units of SHA job P2 at unit index P3..P3+11
++    Unit12 = 12,
++    /// c = a * b + wit; push wit as felt unit of job P2 at unit index P3
++    Horn = 13,
++    /// start SHA job P2 with tag A; push length units (B bytes, 0) at unit index 0, 1
++    Job = 14,
++    /// c = a, a0 in {0,1}, a1..a11 = 0; offer key (2, P2, P3, a0)
++    Bit = 15,
++    /// assert a == 0; c = 0
++    Zero = 16,
++    /// c = a; offer key (0, P2, P3, a0..a11)  (commitment cells for root checks)
++    KeyC = 17,
++    /// offer key (1, P2, P3, A, B)  (Merkle path binding); c = 0
++    KeyP = 18,
++    /// c = binding accumulator total (last row)
++    Acc = 19,
++    /// c = 2a + b
++    DblAdd = 20,
++    /// c = a * b + a
++    MulAddA = 21,
++}
++
++pub const NUM_OPS: usize = 22;
++
++impl Op {
++    pub fn all() -> [Op; NUM_OPS] {
++        use Op::*;
++        [
++            Nop, Mul, Add, Sub, Const, ConstX, Load, Obs1, Obs12, ObsC12, Smp1, Smp12, Unit12,
++            Horn, Job, Bit, Zero, KeyC, KeyP, Acc, DblAdd, MulAddA,
++        ]
++    }
++    pub fn reads_a(self) -> bool {
++        use Op::*;
++        matches!(
++            self,
++            Mul | Add | Sub | Obs1 | Obs12 | ObsC12 | Unit12 | Horn | Bit | Zero | KeyC | DblAdd
++                | MulAddA
++        )
++    }
++    pub fn reads_b(self) -> bool {
++        use Op::*;
++        matches!(self, Mul | Add | Sub | Horn | DblAdd | MulAddA)
++    }
++}
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
++pub struct Instr {
++    pub op: Op,
++    pub a: u32,
++    pub b: u32,
++    pub k1: u32,
++    pub k2: u32,
++}
++
++impl Instr {
++    pub const NOP: Instr = Instr {
++        op: Op::Nop,
++        a: 0,
++        b: 0,
++        k1: 0,
++        k2: 0,
++    };
++    pub fn words(&self) -> [u32; 4] {
++        assert!(self.b < (1 << ADDR_BITS), "B field overflow");
++        [self.a, self.b + ((self.op as u32) << ADDR_BITS), self.k1, self.k2]
++    }
++}
+diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
+new file mode 100644
+index 0000000..0211ce6
+--- /dev/null
++++ b/crates/recursion/src/nv/mod.rs
+@@ -0,0 +1,6 @@
++//! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
++pub mod builder;
++pub mod isa;
++pub mod verifier;
++#[cfg(test)]
++mod tests;
+diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
+new file mode 100644
+index 0000000..58956c7
+--- /dev/null
++++ b/crates/recursion/src/nv/tests.rs
+@@ -0,0 +1,65 @@
++use openvm_stark_backend::{
++    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
++    StarkEngine,
++};
++use p3_field::PrimeCharacteristicRing;
++
++use super::{builder::Builder, verifier::build_verifier};
++use crate::sha384::{config::*, e2e_tests::child_params_small};
++
++fn build(fx: &impl TestFixture<Sha384Config>) -> (Builder, Builder) {
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = fx.keygen_and_prove(&engine);
++    engine.verify(&vk, &proof).unwrap();
++    let mut b = Builder::new(17, 0);
++    build_verifier(&mut b, &vk, &proof);
++    // native transcript end state must match the program's transcript
++    let mut t = ShaTranscript::default();
++    openvm_stark_backend::verifier::verify(engine.config(), &vk, &proof, &mut t).unwrap();
++    assert_eq!(t.state, b.transcript.inner.state, "transcript diverged from native");
++    // a second proof of the same shape gives the identical program
++    let (vk2, proof2) = fx.keygen_and_prove(&engine);
++    let mut b2 = Builder::new(17, 0);
++    build_verifier(&mut b2, &vk2, &proof2);
++    (b, b2)
++}
++
++#[test]
++fn nv_program_fib() {
++    let (b, b2) = build(&FibFixture::new(0, 1, 1 << 5));
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    println!("NV_PROGRAM_ROWS {} jobs={} paths={}", b.instrs.len(), b.job_units.len(), b.paths.len());
++    assert_eq!(b.instrs, b2.instrs, "program depends on proof values");
++}
++
++#[test]
++fn nv_program_interactions() {
++    let (b, _) = build(&InteractionsFixture11);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++}
++
++#[test]
++fn nv_program_detects_tampering() {
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let cases: Vec<(&str, Box<dyn Fn(&mut openvm_stark_backend::proof::Proof<Sha384Config>)>)> = vec![
++        ("column opening", Box::new(|p| p.batch_constraint_proof.column_openings[0][0][0] += EF::ONE)),
++        ("gkr claim", Box::new(|p| p.gkr_proof.q0_claim += EF::ONE)),
++        ("stacking opening", Box::new(|p| p.stacking_proof.stacking_openings[0][0] += EF::ONE)),
++        ("whir sumcheck", Box::new(|p| p.whir_proof.whir_sumcheck_polys[0][0] += EF::ONE)),
++        ("final poly", Box::new(|p| p.whir_proof.final_poly[0] += EF::ONE)),
++        ("codeword value", Box::new(|p| p.whir_proof.codeword_opened_values[0][0][1] += EF::ONE)),
++    ];
++    for (name, f) in cases {
++        let mut bad = proof.clone();
++        f(&mut bad);
++        let mut b = Builder::new(17, 0);
++        build_verifier(&mut b, &vk, &bad);
++        println!("NV_TAMPER {name}: {:?}", b.failures);
++        // value tampering inside a Merkle-authenticated leaf is caught by the Merkle AIR,
++        // not by an ALU assertion; everything else must fail an ALU assertion.
++        if name != "codeword value" {
++            assert!(!b.failures.is_empty(), "{name} not detected");
++        }
++    }
++}
+diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
+new file mode 100644
+index 0000000..d7da1e5
+--- /dev/null
++++ b/crates/recursion/src/nv/verifier.rs
+@@ -0,0 +1,1015 @@
++//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
++//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
++//! through BIT rows, so the instruction stream depends only on the child vk, the params
++//! and the (fixed) child trace heights.
++use core::cmp::Reverse;
++
++use itertools::Itertools;
++use openvm_stark_backend::{
++    calculate_n_logup,
++    hasher::MerkleHasher,
++    keygen::types::MultiStarkVerifyingKey,
++    proof::{column_openings_by_rot, Proof},
++    verifier::proof_shape::verify_proof_shape,
++    air_builders::symbolic::{symbolic_variable::Entry, SymbolicExpressionNode},
++};
++use p3_field::{
++    batch_multiplicative_inverse, BasedVectorSpace, Field, PrimeCharacteristicRing,
++    PrimeField32, TwoAdicField,
++};
++
++use super::builder::{coeffs, Builder, DigestCells, MerklePath, V};
++use crate::sha384::config::{Sha384Config, ShaHasher, EF, F};
++
++type SC = Sha384Config;
++
++/// Shape facts the program depends on (asserted, not computed from the proof).
++#[derive(Clone, Debug)]
++pub struct NvShape {
++    pub log_heights: Vec<usize>,
++}
++
++impl NvShape {
++    pub fn of(proof: &Proof<SC>) -> Self {
++        Self {
++            log_heights: proof
++                .trace_vdata
++                .iter()
++                .map(|v| v.as_ref().expect("NV requires every AIR present").log_height)
++                .collect(),
++        }
++    }
++}
++
++// ---------------------------------------------------------------------------------------
++// small helpers on the builder
++// ---------------------------------------------------------------------------------------
++
++fn sum(b: &mut Builder, xs: &[V]) -> V {
++    let mut acc = b.c(F::ZERO);
++    for &x in xs {
++        acc = b.add(acc, x);
++    }
++    acc
++}
++
++/// 1 - x - y + 2xy
++fn eq1(b: &mut Builder, x: V, y: V) -> V {
++    let xy = b.mul(x, y);
++    let s = b.add(x, y);
++    let z = b_zero(b);
++    let t = b.dbl_add(xy, z);
++    let one = b.c(F::ONE);
++    let u = b.sub(one, s);
++    b.add(u, t)
++}
++fn b_zero(b: &mut Builder) -> V {
++    b.c(F::ZERO)
++}
++
++fn eq_mle(b: &mut Builder, x: &[V], y: &[V]) -> V {
++    let mut acc = b.c(F::ONE);
++    for (&xi, &yi) in x.iter().zip(y) {
++        let e = eq1(b, xi, yi);
++        acc = b.mul(acc, e);
++    }
++    acc
++}
++
++/// eq(x, bits) for constant bits: prod (bit ? x : 1 - x)
++fn eq_mle_bits(b: &mut Builder, x: &[V], bits: &[bool]) -> V {
++    let mut acc = b.c(F::ONE);
++    for (&xi, &bit) in x.iter().zip(bits) {
++        let f = if bit { xi } else { b.one_minus(xi) };
++        acc = b.mul(acc, f);
++    }
++    acc
++}
++
++fn exp_pow2(b: &mut Builder, x: V, k: usize) -> V {
++    let mut y = x;
++    for _ in 0..k {
++        y = b.square(y);
++    }
++    y
++}
++
++fn powers_of_2(b: &mut Builder, x: V, n: usize) -> Vec<V> {
++    let mut out = Vec::with_capacity(n);
++    let mut y = x;
++    for i in 0..n {
++        out.push(y);
++        if i + 1 < n {
++            y = b.square(y);
++        }
++    }
++    out
++}
++
++/// eval_eq_uni(l_skip, x, y)
++fn eq_uni(b: &mut Builder, l_skip: usize, x: V, y: V) -> V {
++    let xs = powers_of_2(b, x, l_skip);
++    let ys = powers_of_2(b, y, l_skip);
++    let one = b.c(F::ONE);
++    let mut res = one;
++    for i in 0..l_skip {
++        let s = b.add(xs[i], ys[i]);
++        let t = b.mul(s, res);
++        let xm = b.sub(xs[i], one);
++        let ym = b.sub(ys[i], one);
++        let u = b.mul(xm, ym);
++        res = b.add(t, u);
++    }
++    b.mul_c(res, F::ONE.halve().exp_u64(l_skip as u64))
++}
++
++/// eval_eq_uni_at_one
++fn eq_uni_at_one(b: &mut Builder, l_skip: usize, x: V) -> V {
++    let xs = powers_of_2(b, x, l_skip);
++    let mut res = b.c(F::ONE);
++    for xp in xs {
++        let t = b.add_c(xp, F::ONE);
++        res = b.mul(res, t);
++    }
++    b.mul_c(res, F::ONE.halve().exp_u64(l_skip as u64))
++}
++
++fn horner(b: &mut Builder, coeffs: &[V], x: V) -> V {
++    let mut acc = b.c(F::ZERO);
++    for &c in coeffs.iter().rev() {
++        let t = b.mul(acc, x);
++        acc = b.add(t, c);
++    }
++    acc
++}
++
++fn interp_linear(b: &mut Builder, e0: V, e1: V, x: V) -> V {
++    let p = b.sub(e1, e0);
++    let t = b.mul(p, x);
++    b.add(t, e0)
++}
++
++fn interp_quadratic(b: &mut Builder, e: [V; 3], x: V) -> V {
++    let s1 = b.sub(e[1], e[0]);
++    let s2 = b.sub(e[2], e[1]);
++    let d = b.sub(s2, s1);
++    let p = b.mul_c(d, F::ONE.halve());
++    let q = b.sub(s1, p);
++    let t = b.mul(p, x);
++    let t = b.add(t, q);
++    let t = b.mul(t, x);
++    b.add(t, e[0])
++}
++
++fn interp_cubic(b: &mut Builder, e: [V; 4], x: V) -> V {
++    let inv6 = F::from_u64(6).inverse();
++    let s1 = b.sub(e[1], e[0]);
++    let s2 = b.sub(e[2], e[0]);
++    let s3 = b.sub(e[3], e[0]);
++    let s21 = b.sub(s2, s1);
++    let s21x3 = b.mul_c(s21, F::from_u64(3));
++    let d3 = b.sub(s3, s21x3);
++    let p = b.mul_c(d3, inv6);
++    let sd = b.sub(s2, d3);
++    let sdh = b.mul_c(sd, F::ONE.halve());
++    let q = b.sub(sdh, s1);
++    let r = b.sub(s1, p);
++    let r = b.sub(r, q);
++    let t = b.mul(p, x);
++    let t = b.add(t, q);
++    let t = b.mul(t, x);
++    let t = b.add(t, r);
++    let t = b.mul(t, x);
++    b.add(t, e[0])
++}
++
++/// Index bits of a sampled base element: all 31 bits are BIT rows (with the canonical
++/// check value <= p - 1); returns the low `nbits` bits (LSB first).
++fn decompose_index(b: &mut Builder, s: V, nbits: usize, qid: u32) -> Vec<V> {
++    let x = coeffs(s.val)[0].as_canonical_u32();
++    let bits: Vec<V> = (0..31)
++        .map(|j| {
++            let bv = b.load_f(F::from_bool((x >> j) & 1 == 1));
++            b.bit(bv, qid, j as u32)
++        })
++        .collect();
++    // recompose (MSB first): acc = 2 acc + bit
++    let mut acc = b.c(F::ZERO);
++    for j in (0..31).rev() {
++        acc = b.dbl_add(acc, bits[j]);
++    }
++    b.assert_eq(acc, s, "index recomposition");
++    // canonical: value <= 15 * 2^27 = p - 1: bits 27..30 all one => bits 0..26 zero.
++    let mut top = bits[27];
++    for j in 28..31 {
++        top = b.mul(top, bits[j]);
++    }
++    let mut low = b.c(F::ZERO);
++    for j in (0..27).rev() {
++        low = b.dbl_add(low, bits[j]);
++    }
++    let t = b.mul(top, low);
++    b.zero(t, "index canonical");
++    bits[..nbits].to_vec()
++}
++
++/// omega^idx for idx = sum bits[j] 2^j (bits LSB first), omega of order 2^log_dom.
++fn pow_by_bits(b: &mut Builder, omega: F, bits: &[V]) -> V {
++    let mut acc = b.c(F::ONE);
++    let mut w = omega;
++    for &bit in bits {
++        let k = b.c(w - F::ONE);
++        let t = b.mul(bit, k);
++        acc = b.mul_add_a(acc, t);
++        w = w.square();
++    }
++    acc
++}
++
++/// check_witness(bits, w): observe w, sample, low `bits` bits of the sample are zero.
++/// Bit keys use ids >= POW_KEY_BASE (never looked up by the Merkle AIR).
++pub const POW_KEY_BASE: u32 = 1 << 20;
++fn pow_check(b: &mut Builder, bits: usize, witness: F, id: &mut u32) {
++    if bits == 0 {
++        return;
++    }
++    b.load_obs_f(witness);
++    let s = b.smp1();
++    let low = decompose_index(b, s, bits, POW_KEY_BASE + *id);
++    *id += 1;
++    for (j, &bit) in low.iter().enumerate() {
++        b.zero(bit, &format!("pow bit {j}"));
++    }
++}
++
++// ---------------------------------------------------------------------------------------
++// the verifier
++// ---------------------------------------------------------------------------------------
++
++pub struct NvChildData {
++    /// commit ids: 0 = common main; preprocessed/cached not supported; WHIR round r
++    /// codeword commit = r.
++    pub num_stacking_commits: usize,
++}
++
++/// Build the verifier program for `proof` under `vk`.  Requirements (asserted): every
++/// AIR present, no preprocessed or cached traces, all PoW bits zero, trace heights >=
++/// 2^l_skip.
++pub fn build_verifier(b: &mut Builder, vk: &MultiStarkVerifyingKey<SC>, proof: &Proof<SC>) {
++    let mvk = &vk.inner;
++    let params = &mvk.params;
++    let l_skip = params.l_skip;
++    let num_airs = mvk.per_air.len();
++    for (avk, td) in mvk.per_air.iter().zip(&proof.trace_vdata) {
++        assert!(avk.preprocessed_data.is_none() && avk.params.width.cached_mains.is_empty());
++        let td = td.as_ref().expect("all AIRs present");
++        assert!(td.log_height >= l_skip, "short traces not supported yet");
++    }
++    let layouts = verify_proof_shape::<SC>(mvk, proof).expect("proof shape");
++    assert_eq!(layouts.len(), 1, "single stacking commitment");
++
++    let mut tid: Vec<usize> = (0..num_airs).collect();
++    tid.sort_by_key(|&a| (Reverse(proof.trace_vdata[a].as_ref().unwrap().log_height), a));
++    let n_per_trace: Vec<usize> = tid
++        .iter()
++        .map(|&a| proof.trace_vdata[a].as_ref().unwrap().log_height - l_skip)
++        .collect();
++    let omega_skip = F::two_adic_generator(l_skip);
++    let omega_skip_pows: Vec<F> = omega_skip.powers().take(1 << l_skip).collect();
++
++    // ---- preamble ----
++    b.const_commit(vk.pre_hash);
++    let main_commit = b.load_commit(proof.common_main_commit);
++    b.key_commit(0, &main_commit);
++    let mut pv_cells: Vec<Vec<V>> = vec![];
++    for (a, avk) in mvk.per_air.iter().enumerate() {
++        if !avk.is_required {
++            let one = b.c(F::ONE);
++            b.obs1(one);
++        }
++        let lh = proof.trace_vdata[a].as_ref().unwrap().log_height;
++        let lhv = b.cu(lh as u64);
++        b.obs1(lhv);
++        pv_cells.push(
++            proof.public_values[a]
++                .iter()
++                .map(|&pv| b.load_obs_f(pv))
++                .collect(),
++        );
++    }
++
++    // ---- zerocheck + logup (batch_constraints.rs) ----
++    let gkr = &proof.gkr_proof;
++    let bp = &proof.batch_constraint_proof;
++    let mut pow_id = 0u32;
++    pow_check(b, params.logup.pow_bits, gkr.logup_pow_witness, &mut pow_id);
++    let alpha_logup = b.smp12();
++    let beta_logup = b.smp12();
++    let total_interactions: u64 = tid
++        .iter()
++        .zip(&n_per_trace)
++        .map(|(&a, &n)| {
++            (mvk.per_air[a].symbolic_constraints.interactions.len() as u64) << (l_skip + n)
++        })
++        .sum();
++    let n_logup = calculate_n_logup(l_skip, total_interactions);
++    let mut xi: Vec<V> = vec![];
++    let mut p_xi_claim = b.c(F::ZERO);
++    let mut q_xi_claim = alpha_logup;
++    if total_interactions > 0 {
++        let total_rounds = l_skip + n_logup;
++        let q0 = b.load_obs(gkr.q0_claim);
++        let lc = &gkr.claims_per_layer[0];
++        let load_claims = |b: &mut Builder, lc: &openvm_stark_backend::proof::GkrLayerClaims<SC>| {
++            let p0 = b.load_obs(lc.p_xi_0);
++            let q0 = b.load_obs(lc.q_xi_0);
++            let p1 = b.load_obs(lc.p_xi_1);
++            let q1 = b.load_obs(lc.q_xi_1);
++            (p0, q0, p1, q1)
++        };
++        let cross = |b: &mut Builder, (p0, q0, p1, q1): (V, V, V, V)| {
++            let a = b.mul(p0, q1);
++            let c = b.mul(p1, q0);
++            let pc = b.add(a, c);
++            let qc = b.mul(q0, q1);
++            (pc, qc)
++        };
++        let c0 = load_claims(b, lc);
++        let (pc, qc) = cross(b, c0);
++        b.zero(pc, "gkr root zero-check");
++        b.assert_eq(qc, q0, "gkr root q0");
++        let mu = b.smp12();
++        let mut numer = interp_linear(b, c0.0, c0.2, mu);
++        let mut denom = interp_linear(b, c0.1, c0.3, mu);
++        let mut gkr_r = vec![mu];
++        for round in 1..total_rounds {
++            let lambda = b.smp12();
++            let ld = b.mul(lambda, denom);
++            let mut claim = b.add(numer, ld);
++            let polys = &gkr.sumcheck_polys[round - 1];
++            let mut round_r = vec![];
++            let mut eq = b.c(F::ONE);
++            for (sr, evals) in polys.iter().enumerate() {
++                let e1 = b.load_obs(evals[0]);
++                let e2 = b.load_obs(evals[1]);
++                let e3 = b.load_obs(evals[2]);
++                let ri = b.smp12();
++                round_r.push(ri);
++                let e0 = b.sub(claim, e1);
++                claim = interp_cubic(b, [e0, e1, e2, e3], ri);
++                let e = eq1(b, gkr_r[sr], ri);
++                eq = b.mul(eq, e);
++            }
++            let cl = load_claims(b, &gkr.claims_per_layer[round]);
++            let (pc, qc) = cross(b, cl);
++            let lq = b.mul(lambda, qc);
++            let s = b.add(pc, lq);
++            let expected = b.mul(s, eq);
++            b.assert_eq(expected, claim, "gkr layer");
++            let mu = b.smp12();
++            numer = interp_linear(b, cl.0, cl.2, mu);
++            denom = interp_linear(b, cl.1, cl.3, mu);
++            gkr_r = std::iter::once(mu).chain(round_r).collect();
++        }
++        p_xi_claim = numer;
++        q_xi_claim = denom;
++        xi = gkr_r;
++    } else {
++        let q0 = b.load(gkr.q0_claim);
++        let one = b.c(F::ONE);
++        b.assert_eq(q0, one, "q0 = 1 without interactions");
++    }
++    let n_max = *n_per_trace.iter().max().unwrap();
++    let n_global = n_max.max(n_logup);
++    while xi.len() != l_skip + n_global {
++        let s = b.smp12();
++        xi.push(s);
++    }
++    let lambda = b.smp12();
++    let mut terms = vec![];
++    for (&p, &q) in bp
++        .numerator_term_per_air
++        .iter()
++        .zip(&bp.denominator_term_per_air)
++    {
++        let pv = b.load_obs(p);
++        let qv = b.load_obs(q);
++        p_xi_claim = b.sub(p_xi_claim, pv);
++        q_xi_claim = b.sub(q_xi_claim, qv);
++        terms.push((pv, qv));
++    }
++    b.zero(p_xi_claim, "gkr numerator");
++    b.assert_eq(q_xi_claim, alpha_logup, "gkr denominator");
++    let mu = b.smp12();
++    let mut sum_claim = b.c(F::ZERO);
++    let mut mp = b.c(F::ONE);
++    for &(p, q) in &terms {
++        let t = b.mul(p, mp);
++        sum_claim = b.add(sum_claim, t);
++        mp = b.mul(mp, mu);
++        let t = b.mul(q, mp);
++        sum_claim = b.add(sum_claim, t);
++        mp = b.mul(mp, mu);
++    }
++    let ucoeffs: Vec<V> = bp
++        .univariate_round_coeffs
++        .iter()
++        .map(|&c| b.load_obs(c))
++        .collect();
++    let s_deg = params.max_constraint_degree + 1;
++    let r0 = b.smp12();
++    let stepped: Vec<V> = ucoeffs.iter().step_by(1 << l_skip).copied().collect();
++    let ssum = sum(b, &stepped);
++    let ssum = b.mul_c(ssum, F::from_usize(1 << l_skip));
++    b.assert_eq(sum_claim, ssum, "univariate sum");
++    let mut cur_sum = horner(b, &ucoeffs, r0);
++    let mut rs = vec![r0];
++    let mut factorials = vec![F::ONE; s_deg + 1];
++    for i in 1..=s_deg {
++        factorials[i] = factorials[i - 1] * F::from_usize(i);
++    }
++    let invfact = batch_multiplicative_inverse(&factorials);
++    for round in 0..n_max {
++        let evals: Vec<V> = bp.sumcheck_round_polys[round]
++            .iter()
++            .map(|&e| b.load_obs(e))
++            .collect();
++        let s0 = b.sub(cur_sum, evals[0]);
++        let all: Vec<V> = std::iter::once(s0).chain(evals).collect();
++        let r = b.smp12();
++        let one = b.c(F::ONE);
++        let mut pref = vec![one; s_deg + 1];
++        let mut suf = vec![one; s_deg + 1];
++        for i in 0..s_deg {
++            let a = b.add_c(r, -F::from_usize(i));
++            pref[i + 1] = b.mul(pref[i], a);
++            let k = b.cu((s_deg - i) as u64);
++            let c = b.sub(k, r);
++            suf[i + 1] = b.mul(suf[i], c);
++        }
++        let mut acc = b.c(F::ZERO);
++        for i in 0..=s_deg {
++            let t = b.mul(all[i], pref[i]);
++            let t = b.mul(t, suf[s_deg - i]);
++            let t = b.mul_c(t, invfact[i] * invfact[s_deg - i]);
++            acc = b.add(acc, t);
++        }
++        cur_sum = acc;
++        rs.push(r);
++    }
++    // eq_3b
++    let mut stacked_idx = 0usize;
++    let eq_3b: Vec<Vec<V>> = n_per_trace
++        .iter()
++        .enumerate()
++        .map(|(t, &n)| {
++            let ints = &mvk.per_air[tid[t]].symbolic_constraints.interactions;
++            (0..ints.len())
++                .map(|_| {
++                    let mut b_int = stacked_idx >> (l_skip + n);
++                    let bits: Vec<bool> = (0..n_logup - n)
++                        .map(|_| {
++                            let bit = b_int & 1 == 1;
++                            b_int >>= 1;
++                            bit
++                        })
++                        .collect();
++                    stacked_idx += 1 << (l_skip + n);
++                    eq_mle_bits(b, &xi[l_skip + n..l_skip + n_logup], &bits)
++                })
++                .collect()
++        })
++        .collect();
++    // eq_ns, eq_sharp_ns
++    let mut eq_ns = vec![b.c(F::ONE); n_max + 1];
++    let mut eq_sharp = vec![b.c(F::ONE); n_max + 1];
++    eq_ns[0] = eq_uni(b, l_skip, xi[0], r0);
++    {
++        // eval_eq_sharp_uni(omega_skip_pows, xi[..l_skip], r0)
++        let n = 1 << l_skip;
++        let mut evals = vec![b.c(F::ONE)];
++        for i in 0..l_skip {
++            let mut next = vec![b.c(F::ZERO); 2 * evals.len()];
++            let om = b.one_minus(xi[i]);
++            for (j, &e) in evals.iter().enumerate() {
++                next[j] = b.mul(e, om);
++                next[j + evals.len()] = b.mul(e, xi[i]);
++            }
++            evals = next;
++        }
++        let mut res = b.c(F::ZERO);
++        for k in 0..n {
++            let wv = b.c(omega_skip_pows[k]);
++            let e = eq_uni(b, l_skip, r0, wv);
++            let t = b.mul(e, evals[k]);
++            res = b.add(res, t);
++        }
++        eq_sharp[0] = res;
++    }
++    for i in 1..=n_max {
++        let e = eq1(b, xi[l_skip + i - 1], rs[i]);
++        eq_ns[i] = b.mul(eq_ns[i - 1], e);
++        eq_sharp[i] = b.mul(eq_sharp[i - 1], e);
++    }
++    let mut rrev = rs[n_max];
++    for i in (0..n_max).rev() {
++        eq_ns[i] = b.mul(eq_ns[i], rrev);
++        eq_sharp[i] = b.mul(eq_sharp[i], rrev);
++        rrev = b.mul(rrev, rs[i]);
++    }
++    // column openings: observe (all common main first)
++    let need_rot: Vec<bool> = tid.iter().map(|&a| mvk.per_air[a].params.need_rot).collect();
++    let mut open_cells: Vec<Vec<(V, V)>> = vec![];
++    for (t, parts) in bp.column_openings.iter().enumerate() {
++        let pairs: Vec<(V, V)> = column_openings_by_rot(&parts[0], need_rot[t])
++            .map(|(c, r)| {
++                let cv = b.load_obs(c);
++                let rv = if need_rot[t] {
++                    b.load_obs(r)
++                } else {
++                    let z = b.c(F::ZERO);
++                    b.obs12(z)
++                };
++                (cv, rv)
++            })
++            .collect();
++        open_cells.push(pairs);
++    }
++    // per-trace constraint and interaction evaluation
++    let omega = F::two_adic_generator(l_skip);
++    let inv_n = F::from_usize(1 << l_skip).inverse();
++    let mut inter_evals = vec![];
++    let mut constr_evals = vec![];
++    for (t, &n) in n_per_trace.iter().enumerate() {
++        let a = tid[t];
++        let trace_t = t;
++        let avk = &mvk.per_air[a];
++        let rs_n = &rs[..=n];
++        // is_first_row / is_last_row
++        let prog = |b: &mut Builder, m: V| {
++            let ms = powers_of_2(b, m, l_skip);
++            let mut acc = b.c(F::ONE);
++            for mp in ms {
++                let t = b.add_c(mp, F::ONE);
++                acc = b.mul(acc, t);
++            }
++            acc
++        };
++        let pf = prog(b, rs_n[0]);
++        let mut pfirst = b.mul_c(pf, inv_n);
++        for &x in &rs_n[1..] {
++            let om = b.one_minus(x);
++            pfirst = b.mul(pfirst, om);
++        }
++        let r0w = b.mul_c(rs_n[0], omega);
++        let pl = prog(b, r0w);
++        let mut plast = b.mul_c(pl, inv_n);
++        for &x in &rs_n[1..] {
++            plast = b.mul(plast, x);
++        }
++        let ptrans = b.one_minus(plast);
++        let cells = &open_cells[t];
++        let dag = &avk.symbolic_constraints.constraints;
++        let mut nodes: Vec<V> = Vec::with_capacity(dag.nodes.len());
++        for node in &dag.nodes {
++            let v = match node {
++                SymbolicExpressionNode::Variable(var) => match var.entry {
++                    Entry::Main { part_index: 0, offset } => {
++                        if offset == 0 {
++                            cells[var.index].0
++                        } else {
++                            cells[var.index].1
++                        }
++                    }
++                    Entry::Public => pv_cells[a][var.index],
++                    e => panic!("unsupported entry {e:?}"),
++                },
++                SymbolicExpressionNode::Constant(c) => b.c(*c),
++                SymbolicExpressionNode::Add {
++                    left_idx,
++                    right_idx,
++                    ..
++                } => b.add(nodes[*left_idx], nodes[*right_idx]),
++                SymbolicExpressionNode::Sub {
++                    left_idx,
++                    right_idx,
++                    ..
++                } => b.sub(nodes[*left_idx], nodes[*right_idx]),
++                SymbolicExpressionNode::Neg { idx, .. } => b.neg(nodes[*idx]),
++                SymbolicExpressionNode::Mul {
++                    left_idx,
++                    right_idx,
++                    ..
++                } => b.mul(nodes[*left_idx], nodes[*right_idx]),
++                SymbolicExpressionNode::IsFirstRow => pfirst,
++                SymbolicExpressionNode::IsLastRow => plast,
++                SymbolicExpressionNode::IsTransition => ptrans,
++            };
++            nodes.push(v);
++        }
++        let mut expr = b.c(F::ZERO);
++        let mut lp = b.c(F::ONE);
++        for &idx in &dag.constraint_idx {
++            let t = b.mul(nodes[idx], lp);
++            expr = b.add(expr, t);
++            lp = b.mul(lp, lambda);
++        }
++        constr_evals.push(b.mul(eq_ns[n], expr));
++        let mut num = b.c(F::ZERO);
++        let mut den = b.c(F::ZERO);
++        for (i, inter) in avk.symbolic_constraints.interactions.iter().enumerate() {
++            let cnt = nodes[inter.count];
++            let mut d = b.c(F::ZERO);
++            let mut bp_ = b.c(F::ONE);
++            for &f in &inter.message {
++                let t = b.mul(nodes[f], bp_);
++                d = b.add(d, t);
++                bp_ = b.mul(bp_, beta_logup);
++            }
++            let busv = b.cu(inter.bus_index as u64 + 1);
++            let t = b.mul(busv, bp_);
++            d = b.add(d, t);
++            let w = eq_3b[trace_t][i];
++            let tn = b.mul(w, cnt);
++            num = b.add(num, tn);
++            let td = b.mul(w, d);
++            den = b.add(den, td);
++        }
++        let nn = b.mul(num, eq_sharp[n]);
++        inter_evals.push(nn);
++        inter_evals.push(b.mul(den, eq_sharp[n]));
++    }
++    let mut evaluated = b.c(F::ZERO);
++    let mut mp = b.c(F::ONE);
++    for &x in inter_evals.iter().chain(constr_evals.iter()) {
++        let t = b.mul(x, mp);
++        evaluated = b.add(evaluated, t);
++        mp = b.mul(mp, mu);
++    }
++    b.assert_eq(cur_sum, evaluated, "batch constraint claim");
++
++    // ---- stacked reduction ----
++    let sp = &proof.stacking_proof;
++    let layout = &layouts[0];
++    let t_claims: Vec<(V, V)> = open_cells.iter().flatten().copied().collect();
++    let lambda_s = b.smp12();
++    let lambda2 = b.square(lambda_s);
++    let mut l2p = vec![];
++    let mut p = b.c(F::ONE);
++    for _ in 0..t_claims.len() {
++        l2p.push(p);
++        p = b.mul(p, lambda2);
++    }
++    let mut s0 = b.c(F::ZERO);
++    for (i, &(c, r)) in t_claims.iter().enumerate() {
++        let t = b.mul(r, lambda_s);
++        let t = b.add(c, t);
++        let t = b.mul(t, l2p[i]);
++        s0 = b.add(s0, t);
++    }
++    let scoeffs: Vec<V> = sp
++        .univariate_round_coeffs
++        .iter()
++        .map(|&c| b.load(c))
++        .collect();
++    let stepped: Vec<V> = scoeffs.iter().step_by(1 << l_skip).copied().collect();
++    let ss = sum(b, &stepped);
++    let ss = b.mul_c(ss, F::from_usize(1 << l_skip));
++    b.assert_eq(s0, ss, "stacking s0");
++    for &c in &scoeffs {
++        b.obs12(c);
++    }
++    let n_stack = params.n_stack;
++    let mut u = vec![b.smp12()];
++    let mut claim = horner(b, &scoeffs, u[0]);
++    for j in 1..=n_stack {
++        let s1 = b.load_obs(sp.sumcheck_round_polys[j - 1][0]);
++        let s2 = b.load_obs(sp.sumcheck_round_polys[j - 1][1]);
++        let uj = b.smp12();
++        u.push(uj);
++        let sj0 = b.sub(claim, s1);
++        claim = interp_quadratic(b, [sj0, s1, s2], uj);
++    }
++    // q_coeffs
++    let width = sp.stacking_openings[0].len();
++    let mut qc = vec![b.c(F::ZERO); width];
++    for (col, &(mat_idx, _, s)) in layout.sorted_cols.iter().enumerate() {
++        let need = need_rot[mat_idx];
++        let n = s.log_height() - l_skip;
++        let bits: Vec<bool> = (l_skip + n..l_skip + n_stack)
++            .map(|j| (s.row_idx >> j) & 1 == 1)
++            .collect();
++        let em = eq_mle_bits(b, &u[n + 1..], &bits);
++        let rs_n = &rs[..=n];
++        let eu = eq_uni(b, l_skip, u[0], rs_n[0]);
++        let emr = eq_mle(b, &u[1..=n], &rs_n[1..]);
++        let eq_prism = b.mul(eu, emr);
++        let mut batched = b.mul(l2p[col], eq_prism);
++        if need {
++            // eval_rot_kernel_prism(l_skip, u[..=n], rs_n)
++            let mut rot = b.c(F::ONE);
++            let mut eqc = b.c(F::ONE);
++            for i in (1..=n).rev() {
++                let x = u[i];
++                let y = rs_n[i];
++                let oy = b.one_minus(y);
++                let ox = b.one_minus(x);
++                let t1 = b.mul(x, oy);
++                let t1 = b.mul(t1, eqc);
++                let t2 = b.mul(ox, y);
++                let t2 = b.mul(t2, rot);
++                rot = b.add(t1, t2);
++                let e = eq1(b, x, y);
++                eqc = b.mul(eqc, e);
++            }
++            let yw = b.mul_c(rs_n[0], omega);
++            let a1 = eq_uni(b, l_skip, u[0], yw);
++            let a1 = b.mul(a1, eqc);
++            let b1 = eq_uni_at_one(b, l_skip, u[0]);
++            let b2 = eq_uni_at_one(b, l_skip, yw);
++            let d = b.sub(rot, eqc);
++            let bb = b.mul(b1, b2);
++            let bb = b.mul(bb, d);
++            let rk = b.add(a1, bb);
++            let t = b.mul(l2p[col], lambda_s);
++            let t = b.mul(t, rk);
++            batched = b.add(batched, t);
++        }
++        let t = b.mul(em, batched);
++        qc[s.col_idx] = b.add(qc[s.col_idx], t);
++    }
++    let stack_open: Vec<V> = sp.stacking_openings[0]
++        .iter()
++        .map(|&q| b.load_obs(q))
++        .collect();
++    let mut final_sum = b.c(F::ZERO);
++    for (q, o) in qc.iter().zip(&stack_open) {
++        let t = b.mul(*q, *o);
++        final_sum = b.add(final_sum, t);
++    }
++    b.assert_eq(claim, final_sum, "stacking final sum");
++
++    // ---- WHIR ----
++    let u_cube: Vec<V> = {
++        let mut v = powers_of_2(b, u[0], l_skip);
++        v.extend(&u[1..]);
++        v
++    };
++    whir(b, vk, proof, &stack_open, &main_commit, &u_cube, &mut pow_id);
++}
++
++fn t_idx(t: usize) -> usize {
++    t
++}
++
++fn whir(
++    b: &mut Builder,
++    vk: &MultiStarkVerifyingKey<SC>,
++    proof: &Proof<SC>,
++    stack_open: &[V],
++    main_commit: &DigestCells,
++    u: &[V],
++    pow_id: &mut u32,
++) {
++    let params = &vk.inner.params;
++    let w = &proof.whir_proof;
++    let k = params.k_whir();
++    let m = params.l_skip + params.n_stack;
++    let num_rounds = params.num_whir_rounds();
++    let mut log_rs = m + params.log_blowup;
++    pow_check(b, params.whir.mu_pow_bits, w.mu_pow_witness, pow_id);
++    let mu = b.smp12();
++    let total_width = stack_open.len();
++    let mut mu_pows = vec![b.c(F::ONE)];
++    for i in 1..total_width {
++        let p = b.mul(mu_pows[i - 1], mu);
++        mu_pows.push(p);
++    }
++    let mut claim = b.c(F::ZERO);
++    for (o, mp) in stack_open.iter().zip(&mu_pows) {
++        let t = b.mul(*o, *mp);
++        claim = b.add(claim, t);
++    }
++    let mut sc_iter = w.whir_sumcheck_polys.iter();
++    let mut fold_pow = w.folding_pow_witnesses.iter();
++    let mut gammas = vec![];
++    let mut zs: Vec<Vec<V>> = vec![];
++    let mut z0s = vec![];
++    let mut alphas: Vec<V> = vec![];
++    let mut final_poly: Vec<V> = vec![];
++    let num_commits = 1usize;
++    let mut path_id = b.paths.len() as u32;
++    let mut qid = 0u32;
++    for round in 0..num_rounds {
++        let is_initial = round == 0;
++        let is_final = round == num_rounds - 1;
++        let mut alphas_round = vec![];
++        for _ in 0..k {
++            let evals = sc_iter.next().unwrap();
++            let e1 = b.load_obs(evals[0]);
++            let e2 = b.load_obs(evals[1]);
++            pow_check(b, params.whir.folding_pow_bits, *fold_pow.next().unwrap(), pow_id);
++            let alpha = b.smp12();
++            alphas_round.push(alpha);
++            let e0 = b.sub(claim, e1);
++            claim = interp_quadratic(b, [e0, e1, e2], alpha);
++        }
++        let (y0, commit) = if is_final {
++            for &c in &w.final_poly {
++                final_poly.push(b.load_obs(c));
++            }
++            (None, None)
++        } else {
++            let cc = b.load_commit(w.codeword_commits[round]);
++            b.key_commit((num_commits + round) as u32, &cc);
++            let z0 = b.smp12();
++            z0s.push(z0);
++            let y0 = b.load_obs(w.ood_values[round]);
++            (Some(y0), Some(cc))
++        };
++        let _ = commit;
++        pow_check(b, params.whir.query_phase_pow_bits, w.query_phase_pow_witnesses[round], pow_id);
++        let nq = params.whir.rounds[round].num_queries;
++        let nbits = log_rs - k;
++        let omega = F::two_adic_generator(log_rs);
++        let omega_k = F::two_adic_generator(k);
++        let mut zs_round = vec![];
++        let mut ys_round = vec![];
++        for qi in 0..nq {
++            let s = b.smp1();
++            let bits = decompose_index(b, s, nbits, qid);
++            let index = coeffs(s.val)[0].as_canonical_u32() as u64 & ((1u64 << nbits) - 1);
++            let zi_root = pow_by_bits(b, omega, &bits);
++            let zi = exp_pow2(b, zi_root, k);
++            let values: Vec<V> = if is_initial {
++                // per commit: leaf jobs (one per coset row), Horner over all columns
++                let rows = &w.initial_round_opened_rows;
++                let width0 = rows[0][qi][0].len();
++                let job_base = b.job_units.len() as u32;
++                for _ in 0..(1 << k) {
++                    b.job_start(0, 4 * width0);
++                }
++                let mut vals = vec![];
++                for j in 0..(1 << k) {
++                    let mut acc = b.c(F::ZERO);
++                    for c in (0..width0).rev() {
++                        acc = b.horn(acc, mu, rows[0][qi][j][c], job_base + j as u32, 2 + c as u32);
++                    }
++                    vals.push(acc);
++                }
++                let leaf_digests: Vec<_> = (0..(1 << k))
++                    .map(|j| ShaHasher.hash_slice(&rows[0][qi][j]))
++                    .collect();
++                b.paths.push(MerklePath {
++                    path_id,
++                    qid,
++                    commit_id: 0,
++                    job_base,
++                    leaf_digests,
++                    siblings: w.initial_round_merkle_proofs[0][qi].clone(),
++                    index,
++                    root: main_commit.digest,
++                });
++                b.key_path(path_id, job_base, qid, 0, nbits as u32);
++                path_id += 1;
++                vals
++            } else {
++                let vs = &w.codeword_opened_values[round - 1][qi];
++                let job_base = b.job_units.len() as u32;
++                for _ in 0..(1 << k) {
++                    b.job_start(0, 48);
++                }
++                let vals: Vec<V> = vs
++                    .iter()
++                    .enumerate()
++                    .map(|(j, &v)| {
++                        let lv = b.load(v);
++                        b.unit12(lv, job_base + j as u32, 2)
++                    })
++                    .collect();
++                let leaf_digests: Vec<_> = vs
++                    .iter()
++                    .map(|v| ShaHasher.hash_slice(v.as_basis_coefficients_slice()))
++                    .collect();
++                b.paths.push(MerklePath {
++                    path_id,
++                    qid,
++                    commit_id: round as u32,
++                    job_base,
++                    leaf_digests,
++                    siblings: w.codeword_merkle_proofs[round - 1][qi].clone(),
++                    index,
++                    root: w.codeword_commits[round - 1],
++                });
++                b.key_path(path_id, job_base, qid, round as u32, nbits as u32);
++                path_id += 1;
++                vals
++            };
++            // binary_k_fold(values, alphas_round, zi_root)
++            let x = zi_root;
++            let xinv_val = coeffs(x.val)[0].inverse();
++            let xinv = b.load_f(xinv_val);
++            let prod = b.mul(x, xinv);
++            let one = b.c(F::ONE);
++            b.assert_eq(prod, one, "zi_root inverse");
++            let omega_k_inv = omega_k.inverse();
++            let tw: Vec<F> = omega_k.powers().take(1 << (k - 1)).collect();
++            let itw: Vec<F> = omega_k_inv.powers().take(1 << (k - 1)).collect();
++            let xp = powers_of_2(b, x, k);
++            let xip = powers_of_2(b, xinv, k);
++            let mut vals = values;
++            let n = vals.len();
++            for (j, &alpha) in alphas_round.iter().enumerate() {
++                let mm = n >> (j + 1);
++                for i in 0..mm {
++                    let t = b.mul_c(xp[j], tw[i << j]);
++                    let ti = b.mul_c(xip[j], itw[i << j] * F::ONE.halve());
++                    let am = b.sub(alpha, t);
++                    let d = b.sub(vals[i], vals[i + mm]);
++                    let p = b.mul(am, d);
++                    let p = b.mul(p, ti);
++                    vals[i] = b.add(vals[i], p);
++                }
++            }
++            zs_round.push(zi);
++            ys_round.push(vals[0]);
++            qid += 1;
++        }
++        let gamma = b.smp12();
++        if let Some(y0) = y0 {
++            let t = b.mul(y0, gamma);
++            claim = b.add(claim, t);
++        }
++        let mut gp = b.mul(gamma, gamma);
++        for &y in &ys_round {
++            let t = b.mul(y, gp);
++            claim = b.add(claim, t);
++            gp = b.mul(gp, gamma);
++        }
++        gammas.push(gamma);
++        zs.push(zs_round);
++        alphas.extend(alphas_round);
++        log_rs -= 1;
++    }
++    // final check
++    let t = k * num_rounds;
++    let mut prefix = b.c(F::ONE);
++    for i in 0..t {
++        let w0 = {
++            let z = b_zero(b);
++            let d = b.dbl_add(u[i], z);
++            b.one_minus(d)
++        };
++        let ox = b.one_minus(alphas[i]);
++        let a = b.mul(w0, ox);
++        let c = b.mul(u[i], alphas[i]);
++        let f = b.add(a, c);
++        prefix = b.mul(prefix, f);
++    }
++    // eval_mle_evals_at_point(final_poly, u[t..])
++    let mut ev = final_poly.clone();
++    let mut len = ev.len();
++    for &xj in u[t..].iter().rev() {
++        len >>= 1;
++        let ox = b.one_minus(xj);
++        for i in 0..len {
++            let a = b.mul(ev[i], ox);
++            let c = b.mul(ev[i + len], xj);
++            ev[i] = b.add(a, c);
++        }
++    }
++    let mut acc = b.mul(prefix, ev[0]);
++    let mut j = k;
++    for i in 0..num_rounds {
++        let gamma = gammas[i];
++        let alpha_slc = &alphas[j..t];
++        let slc_len = (t - j) + 1;
++        if i != num_rounds - 1 {
++            let zp = powers_of_2(b, z0s[i], slc_len);
++            let (max, left) = zp.split_last().unwrap();
++            let e = eq_mle(b, alpha_slc, left);
++            let h = horner(b, &final_poly, *max);
++            let t1 = b.mul(gamma, e);
++            let t1 = b.mul(t1, h);
++            acc = b.add(acc, t1);
++        }
++        let mut gp = b.mul(gamma, gamma);
++        for &zi in &zs[i] {
++            let zp = powers_of_2(b, zi, slc_len);
++            let (max, left) = zp.split_last().unwrap();
++            let e = eq_mle(b, alpha_slc, left);
++            let h = horner(b, &final_poly, *max);
++            let t1 = b.mul(gp, e);
++            let t1 = b.mul(t1, h);
++            acc = b.add(acc, t1);
++            gp = b.mul(gp, gamma);
++        }
++        j += k;
++    }
++    b.assert_eq(acc, claim, "whir final");
++}
++
++#[allow(dead_code)]
++fn _unused(_: &[EF]) {
++    let _ = Itertools::collect_vec(std::iter::empty::<u8>());
++}
 diff --git a/crates/recursion/src/primitives/exp_bits_len/tests.rs b/crates/recursion/src/primitives/exp_bits_len/tests.rs
 index 9cd868c..09854e8 100644
 --- a/crates/recursion/src/primitives/exp_bits_len/tests.rs
@@ -3662,10 +5244,10 @@ index 0000000..7c9769f
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..a48f4c0
+index 0000000..faac18f
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
-@@ -0,0 +1,401 @@
+@@ -0,0 +1,405 @@
 +//! End-to-end: the ported verifier sub-circuit verifies real SHA-384/Ext12 child proofs.
 +//!
 +//!   cargo test --release -p openvm-recursion-circuit --lib e2e_ -- --nocapture
@@ -4024,6 +5606,10 @@ index 0000000..a48f4c0
 +                let width = w.common_main + w.cached_mains.iter().sum::<usize>() + w.preprocessed.unwrap_or(0);
 +                let h = ctx.common_main.height();
 +                let ni = a.symbolic_constraints.interactions.len();
++                let dag_nodes = a.symbolic_constraints.constraints.nodes.len();
++                let n_constraints = a.symbolic_constraints.constraints.constraint_idx.len();
++                let n_msg: usize = a.symbolic_constraints.interactions.iter().map(|i| i.message.len()).sum();
++                println!("{tag}_DAG {} nodes={dag_nodes} constraints={n_constraints} interactions={ni} msg_fields={n_msg}", air.name().replace(' ', ""));
 +                total_int += h * ni;
 +                let cells = h * width;
 +                let name = air.name();
