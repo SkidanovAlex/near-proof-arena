@@ -11026,3 +11026,48 @@ transport compression or shared-path hashing alone cannot be credited twice.
 Any fixed-VK specialization must retain verification-key binding, and any
 transcript change needs fresh causal/soundness analysis. No new Lean theorem,
 PQ128 certificate, full VM root chain or full NEAR1Petagas proof is claimed.
+
+
+## 2026-10-17 — Hash source attribution and a table-partition candidate
+
+Previous goal turn classified progress: measured deduplication and root padding
+threshold, committed5befaf797. Revalidated clean worktree and reran the pinned
+chain with per-source full-input set membership. Diagnostic instrumentation
+asserts one child and checks that initial preflight permutations precede
+transcript permutations. This patch is a fixture probe, not an upstream-ready
+change. All three recursive proofs verified at unchanged serialized sizes;
+targeted clippy -D warnings passed.
+
+Root distinct inputs by exclusive source: initial-row hashing8704, Merkle
+paths5070, transcript2321, continuation leaves800, external0. Raw Merkle
+requests6254; all other categories have no repeated inputs in this run.
+No distinct state crosses categories. Total16895versus previous16842: the
+458-removal threshold was fixture-instance-specific; this run needs511.
+No cause of the run-to-run proof variation is established here. Do not use
+these counts as a worst-case bound or infer hashes can be omitted because
+input values happen to be public or repeated in another execution.
+
+Source inspection: recursion Poseidon2Air uses row_slice(0), and its pinned
+p3-poseidon2-air0.4.3 dependency also evaluates current-row permutation
+constraints. Separate permutation/compression lookup multiplicities carry
+cross-table usage. This suggests a concrete next experiment: partition the
+same hash rows between two copies of that AIR, keeping the same buses and
+preserving every multiplicity, instead of deleting required computations.
+For this run16384+512rows fit16895states with one padding row. Relative to
+32768rows this saves4777472common cells before additional AIR overhead.
+This partition is NOT implemented or proved sound yet. Keygen, AIR ordering,
+trace-shape binding, added column claims/commitments and recursive verifier
+cost must all be measured; smaller trace area does not guarantee smaller proof.
+
+Initial opened-row hashing is now the largest measured source, exceeding
+half the distinct states. Future caching/specialization proposals must prove
+that the authenticated evaluation at each challenge-selected query is retained;
+knowing a verification key does not by itself justify deleting those hashes.
+First test the table-partition candidate, then compare complete bytes against
+the original proof and update the stronger-security model if it wins.
+
+Artifacts:research/near-compression/results/swirl-security-review/hash-sources/
+contains report, successful run/clippy logs, source snapshots, dependency
+lockfile, raw hashes and instrumentation patch. Existing padding-census evidence
+is preserved as a separate run. No full NEAR1Petagas proof, PQ128 certificate,
+new Lean theorem or end-to-end recursion correctness is claimed.
