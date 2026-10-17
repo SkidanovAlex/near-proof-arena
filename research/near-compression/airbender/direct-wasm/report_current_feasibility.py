@@ -85,6 +85,9 @@ def build(root=ROOT):
     historical_recursive = read('results/recursive-pcs-root/report.json')
     recursive = read('results/recursive-single-root-root/report.json')
     bounded_merkle = read('results/private-merkle-proof-q8/report.json')
+    bounded_screen = read('results/bounded-merkle-break-even.json')
+    from screen_bounded_merkle_break_even import build as bounded_build
+    assert bounded_screen == bounded_build()
     scope = read('scope-report.json')
     hash_work = read('results/switch-full-verifier-hash-work.json')
     assert hash_work['fresh_verifier_passed']
@@ -120,12 +123,13 @@ def build(root=ROOT):
             proof_bytes=bounded_merkle['proof_bytes'],proof_and_public_bytes=bounded_merkle['proof_and_public_bytes'],
             raw_path_bytes=bounded_merkle['original_private_path_bytes'],beats_raw_path_bytes=bounded_merkle['beats_raw_path_bytes'],
             scope=bounded_merkle['scope']),
+        bounded_merkle_break_even=bounded_screen,
         latest_verifier_hash_work=dict(totals=hash_work['measurement']['totals'],
             largest_unique_block_tags=dict(top_hash_tags),gadget_accounting=hash_work['current_gadget_accounting'],
             scope=hash_work['scope']),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
-        decision=dict(next_experiment=('Implement and measure the surviving projected candidate with all excluded costs and explicit security obligations.' if feasible else 'Measure and then prove a complete small verifier instance with bound public inputs, all arithmetic/hash checks, and no full-trace disclosure; compare complete outer and inner bytes across workloads.'),
+        decision=dict(next_experiment=('Implement and measure the surviving projected candidate with all excluded costs and explicit security obligations.' if feasible else 'Stop larger-path proving in the existing 25-block profile: mandatory 416 bytes exceed its at-most-288-byte deduplicated sibling budget. Screen a scalable complete-verifier replacement against the explicit replacement budgets; include transcript/arithmetic and public binding, not authentication alone. Measure a versioned canonical transcript design only with all original bindings accounted for.'),
             standalone_mca_expansion=('REASSESS against the surviving candidate; partial ledger is not certification.' if feasible else 'DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.'),
             reopen_mca_if='A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.',
             do_not_repeat='Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.',

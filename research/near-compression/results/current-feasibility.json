@@ -211,6 +211,68 @@
     "beats_raw_path_bytes": false,
     "scope": "Complete executable bounded Merkle verification via compression AIR and same-use-root routing GKR/PCS. Trusted static canonical AIR/spec excluded from wire; public statement counted separately. No original sibling path, expected call messages or full use trace is a verifier input. PCS openings may leak witness information; no zero-knowledge claim. Ext8/query diagnostic, not a soundness/PQ128 certificate, full PCS recursion, 1Pgas NEAR proof, or formal route-compiler correctness theorem."
   },
+  "bounded_merkle_break_even": {
+    "context_bytes": 197,
+    "decision": "Do not generate larger proofs in this bounded profile to seek compression. A next experiment must change capacity/codec or prove a larger verifier workload, and pass an optimistic complete-byte screen before formalization.",
+    "excluded": "Not full recursive PCS, arbitrary verifier witnesses, changed codecs, larger chunks, or other hash framing. No quantum-security or Lean correctness claim.",
+    "hypothetical_batch": {
+      "conservative_frontier_bytes": 288,
+      "conservative_node_budget": 6,
+      "exhaustive_subsets": 65808,
+      "implemented": false,
+      "justification": "Each computed parent along a union of paths has at least one computed child, so at most one external sibling. Every such parent costs four compression blocks. Leaf/root work is omitted in the conservative bound.",
+      "maximum_frontier_bytes_within_capacity": 192,
+      "subsets_within_capacity": 61
+    },
+    "mandatory_bytes": {
+      "compression": 392,
+      "outer": 16,
+      "routing": 8,
+      "total": 416
+    },
+    "scope": "Existing separate-root codec, at most 25 SHA384 blocks, 197-byte context; public leaves; compare deduplicated sibling frontier only.",
+    "security_status": "NOT_PASSED",
+    "single_path_cases": [
+      {
+        "breaks_even": false,
+        "compression_blocks": 10,
+        "depth": 1,
+        "optimistic_wire_floor": 416,
+        "sibling_bytes": 48
+      },
+      {
+        "breaks_even": false,
+        "compression_blocks": 14,
+        "depth": 2,
+        "optimistic_wire_floor": 416,
+        "sibling_bytes": 96
+      },
+      {
+        "breaks_even": false,
+        "compression_blocks": 18,
+        "depth": 3,
+        "optimistic_wire_floor": 416,
+        "sibling_bytes": 144
+      },
+      {
+        "breaks_even": false,
+        "compression_blocks": 22,
+        "depth": 4,
+        "optimistic_wire_floor": 416,
+        "sibling_bytes": 192
+      }
+    ],
+    "source_sha256": {
+      "airbender/direct-wasm/ext8_execution_codec.py": "0c133abfaaa3c342af1e2babc64467f8b4d457b60dda11fac7df0c1055bc28ce",
+      "airbender/direct-wasm/merkle_recursive_call_routes.py": "59a68f7c9a5578625f0c97c2a10a98d4339b2fa233dc05695fc3f3a70a90c3be",
+      "airbender/direct-wasm/private_merkle_proof.py": "5c8e18a5d5f8e6644e0c475ffdf0c46621b60a3c26d3a3b74c57a1d8b93a92fb",
+      "airbender/direct-wasm/screen_bounded_merkle_break_even.py": "1b918ca86b3e1106391de28f6040a7e65cf57ab234ddf2eaeed6c631f272074d",
+      "results/private-merkle-proof-q8/proof.bin": "5c78fa2d60355e892f50c907d3e6b91f07d66b5b516548ba2eab10d0c97d3a77",
+      "results/private-merkle-proof-q8/public.json": "08df6f086b5f6c9cef940aa9c4deb01fcf691ffa6def7d82c1c0694f98ce03b9",
+      "results/private-merkle-proof-q8/trusted-spec.json.gz": "fbc69ec14d47ed546aae4541f6fc326597139ea9244758783a415d82d24cb31d"
+    },
+    "status": "BOUNDED_ARCHITECTURE_NO_BREAK_EVEN"
+  },
   "latest_verifier_hash_work": {
     "totals": {
       "calls": 104839,
@@ -293,7 +355,7 @@
     "qualification": "Gas-capacity ratio only; NOT a proved trace count or operator bound"
   },
   "decision": {
-    "next_experiment": "Measure and then prove a complete small verifier instance with bound public inputs, all arithmetic/hash checks, and no full-trace disclosure; compare complete outer and inner bytes across workloads.",
+    "next_experiment": "Stop larger-path proving in the existing 25-block profile: mandatory 416 bytes exceed its at-most-288-byte deduplicated sibling budget. Screen a scalable complete-verifier replacement against the explicit replacement budgets; include transcript/arithmetic and public binding, not authentication alone. Measure a versioned canonical transcript design only with all original bindings accounted for.",
     "standalone_mca_expansion": "DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.",
     "reopen_mca_if": "A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.",
     "do_not_repeat": "Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.",
@@ -309,9 +371,10 @@
     "results/recursive-pcs-root/report.json": "1d905381180c940a885581288e08179bcdaa8a775b19c6d9b5101c25d187610d",
     "results/recursive-single-root-root/report.json": "a4d811dcf05e3226072f8969c643d1bc98d82462710c365965b78137e3a7adf0",
     "results/private-merkle-proof-q8/report.json": "84a4fc273a65d7875d5e235e7fd67ca604476a4f5ad16d30e08b7754fa442af2",
+    "results/bounded-merkle-break-even.json": "377fc15b7e58ba4a6504fde06ad097ef6aabfe08bd834b34448fb63426c99ca4",
     "scope-report.json": "fcea1becba48a6f0e97c704b7048b71993852c2713441fe1acdf0c1d2b04f9ea",
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
-    "airbender/direct-wasm/report_current_feasibility.py": "09f7c2c4ece2c76a4439e5acebe9c4d6aaf51b35f5bd49b5d0a3174bbb4f6cb7",
+    "airbender/direct-wasm/report_current_feasibility.py": "a912899426eb874f7f471b084815034a3cdefddcd6629e84df9aa2b259a9f959",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

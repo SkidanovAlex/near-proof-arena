@@ -9623,3 +9623,44 @@ compression break-even. Full PCS transcript/arithmetic/canonical decoding
 constraints, a universal routing-compiler theorem, interactive/QROM security
 composition and the full NEAR1Pgas capacity/semantics gates remain open.
 Do not interpret150593 B atq8 as progress through the PQ128/300000 B gate.
+
+## 2026-10-17 — Bounded Merkle architecture fails optimistic break-even
+
+Process-reflection follow-up independently checked that the feedback loop now
+connects current byte evidence to experiments. Its concrete recommendation:
+stop larger-path proof generation in the current bounded profile before
+spending more prover time, and replace the dashboard's stale generic next step.
+
+Added screen_bounded_merkle_break_even.py and its deterministic pinned report.
+The current separate-root codec needs at least416 B:16outer framing,
+8compression magic +8*48source/aux roots, and8routing magic. This excludes
+all GKR/PCS messages and public data, so is optimistic. Actual197-byte context
+costs4SHA384 compression blocks per internal node. Supported depths1..4 cost
+10/14/18/22blocks, hiding48/96/144/192B of siblings. None can break even.
+
+For hypothetical perfectly shared batches under the same25-block budget,
+each computed parent on a union of paths has at least one computed child;
+therefore at most one external sibling per computed parent. Even omitting
+leaf/root work permits at most6parents and288B of deduplicated frontier.
+Exhaustively checked all65808nonempty leaf subsets of depth1..4 trees;
+61fit the full block budget and the largest frontier is192B. Batching is
+not implemented by this experiment. Assumptions: public queried leaves,
+connected tree paths, unchanged framing/context/codec and one bounded chunk.
+This is an executable finite accounting screen with a stated counting
+argument, not a Lean theorem, security proof, or universal recursion bound.
+
+Updated current-feasibility decision to stop this losing sweep. A scalable
+replacement must cover more than authentication alone: even free removal
+of all574128authentication bytes leaves770517B in the larger fixture.
+Replacing its entire opening allows146466B; replacing the entire compression
+envelope allows190346B, under the strict300000B total target. These are
+accounting budgets, not achievable or secure constructions. Next evaluate
+a scalable complete verifier consumer and versioned canonical transcript
+with all derivation/binding obligations explicit before more formal expansion.
+
+Validation: deterministic replay matches; current feasibility reconciliation
+rejects7inconsistent-evidence cases including tampered byte floor; manifest
+pins refreshed and checked. No Lean changes; last full audit4658 unchanged.
+Full NEAR1Pgas/PQ128/sub300000B remains NOT_PASSED; larger fixture1344645B
+unchanged. This supersedes the preceding proposal to benchmark larger paths
+within the existing bounded profile. Goal remains active.

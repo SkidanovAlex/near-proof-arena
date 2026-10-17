@@ -3,6 +3,7 @@
   "scope": "Pinned diagnostic replay, byte/security decision reconciliation and complete-fixture framed hash census. No cryptographic soundness, full NEAR, or recursion certificate.",
   "cwd": "research/near-compression",
   "replay": [
+    "python3 airbender/direct-wasm/screen_bounded_merkle_break_even.py > results/bounded-merkle-break-even.json",
     "python3 airbender/direct-wasm/screen_larger_field_code_switch.py",
     "python3 airbender/direct-wasm/test_current_feasibility.py",
     "rustc --edition=2024 --crate-type cdylib -O airbender/direct-wasm/native-folded/kernel_ext8.rs -o /tmp/feasibility-ext8-replay.so",
@@ -11,16 +12,18 @@
   ],
   "replay_note": "Hash workload counts and sizes are deterministic; timing and native-library hash can vary across machines. Replay regenerated measurement changes its artifact hash.",
   "sha256": {
-    "results/current-feasibility.json": "bfb86d225a2eb2cba10a98597ffefb1e2c52750c9cfc8ec7bdd614b852b7b950",
+    "results/current-feasibility.json": "4ef9dbf247ad19e4db0bc865d4f4a6cf05d4d6190f33366c75c470f487bc615a",
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
     "results/current-feasibility/fresh-verifier.log": "f419b67dfa9e8567efa80f8a1d62e4a67a9a6e8116c072cc247e089029af3218",
     "results/current-feasibility/screen-replay.log": "f27fbac1956a49f96356062285dabfa45e4954b584332916f6cf49136047cedc",
     "results/current-feasibility/hash-work.log": "6198dfa73e0906868332e136655fa9f0cba8b98378ca75eb92ddbffcfb68b087",
-    "results/current-feasibility/validation.json": "c0e04e1110d9d399587aab913bb2cb76f80631dde0b7d73cdb4dcec3f10fb4e2",
-    "airbender/direct-wasm/report_current_feasibility.py": "09f7c2c4ece2c76a4439e5acebe9c4d6aaf51b35f5bd49b5d0a3174bbb4f6cb7",
-    "airbender/direct-wasm/test_current_feasibility.py": "3c53201a4c50d08049c77a82b546b50daad7be155375248c9b3bcb4a9c229444",
+    "results/current-feasibility/validation.json": "edc20f2fbb8dbd4cdce6a06b188000da190f4759e44cd0771431f692fc1b84a8",
+    "airbender/direct-wasm/report_current_feasibility.py": "a912899426eb874f7f471b084815034a3cdefddcd6629e84df9aa2b259a9f959",
+    "airbender/direct-wasm/test_current_feasibility.py": "aa6bfee29d4ef7a0dc24f73a06f94f5aa68bf02eb23b7184b28547756fd36128",
     "airbender/direct-wasm/measure_switch_verifier_work.py": "a5ea8d1cede94853b87d6c0cec9c9f9a09378a6046b07e3174801365f9e33ca7",
     "airbender/direct-wasm/measure_ext8_recursive_hash_work.py": "424ca5d94620cbae2969cc327b08a2656444d390a85a019696992cd70a6dd64e",
-    "results/slice-feasibility-gate.json": "0fd4f2a6beb231cc380639f723dc46c29dabf339a289a9c0abda5e07a62db58c"
+    "results/slice-feasibility-gate.json": "0fd4f2a6beb231cc380639f723dc46c29dabf339a289a9c0abda5e07a62db58c",
+    "airbender/direct-wasm/screen_bounded_merkle_break_even.py": "1b918ca86b3e1106391de28f6040a7e65cf57ab234ddf2eaeed6c631f272074d",
+    "results/bounded-merkle-break-even.json": "377fc15b7e58ba4a6504fde06ad097ef6aabfe08bd834b34448fb63426c99ca4"
   }
 }

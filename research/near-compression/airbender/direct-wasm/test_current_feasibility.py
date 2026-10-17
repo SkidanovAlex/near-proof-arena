@@ -20,6 +20,8 @@ def main():
     base=report.ROOT/'results/ext8-switch-execution-q309'
     manifest_path=base/'manifest.json'
     mutations=[
+        (report.ROOT/'results/bounded-merkle-break-even.json',
+            lambda d:d['mandatory_bytes'].update(total=1),False),
         (base/'report.json',lambda d:d.update(combined_bytes=1),True),
         (base/'report.json',lambda d:d.update(fresh_conjunction_verified=False),True),
         (base/'prover-report.json',lambda d:d['breakdown'].update(header_and_terminal_bytes=1),True),
