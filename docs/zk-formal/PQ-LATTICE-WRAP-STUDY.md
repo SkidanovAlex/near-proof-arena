@@ -72,3 +72,36 @@ user is willing to amend U-6/U-7 for the final layer.
    bytes, prove time, verify time at 10k compressions (CPU).
 3. Security write-up for L2: define the rbr knowledge-soundness target per round
    at ≈ 2⁻²⁶⁰, challenge-set sizes, and the missing QROM transform theorem.
+
+## 6. L2 milestone 1 result (2026-10-17, `lane/pq-lattice-qrom` @ `eea80395b`)
+
+Full plan: `docs/zk-formal/PQ-LATTICE-QROM-PLAN.md` on that lane. User decision
+2026-10-17: run L3 (hash-only baseline) and L2 in parallel.
+
+**Verdict: no existing route proves the contract for an Akita-type wrap; the
+obstruction is structural.**
+* Akita's Ajtai commitments compress (128 B for 2³⁰ coefficients), so the witness
+  is not determined by the transcript/oracle record: CMS19-style rbr knowledge
+  soundness is impossible; the bridging lemma ("bad transcript ⇒ MSIS solution")
+  needs two openings of one commitment, i.e. an open quantum forking lemma.
+* DFM20's (2t+n+1)²ⁿ loss is fatal at ≈ 400–700 challenge rounds (Akita +
+  sumcheck front end). LMS22 / CMNW quantum rewinding is interactive-only,
+  needs MLWE, and extracts only up to inverse-polynomial slack. Straight-line
+  extraction (Pass / Rotem–Tessaro) costs ≈ 150–350 KB. No 2025–2026 QROM
+  knowledge-soundness result for any multi-round lattice SNARK/folding scheme.
+  Akita's own Cor. 10.34 cannot certify 2⁻¹²⁸ classically at Q ≥ 1 with a 2¹²⁸
+  challenge field.
+* **Most promising: "hybrid lifting"** — CMS19 (6t²ε) for the statistically sound
+  rounds (challenge field ≥ 2²⁶¹), a *new* quantum tree-extraction lemma with
+  additive losses for only the 4–8 fold rounds (the open core), and MLWE
+  collapsing for the commitment matrices (adds MLWE).
+* Wrap size if it succeeds: **≈ 180–230 KB** (custom q ≈ 2⁶⁶, MSIS 192–228 bit);
+  ≈ 280–340 KB with Akita's shipped moduli; ≈ 160–200 KB under L1 (classical ROM
+  at Q = 2⁶⁴). Odds ≈ 20–35 %, ≥ 4–7 months specialist work.
+* Gates: **G1** (~month 3–4) interactive PQ knowledge soundness with additive
+  error ≤ 2⁻¹³⁰, extractor ≤ 2⁴⁰× adversary time, assumptions ⊆ {MSIS, MLWE};
+  **G2** (~month 6–8) QROM theorem with loss ≤ C·t³ (C ≤ 2¹⁰), additive across
+  folds; **G3** parameter script ≤ 250 KB. Any gate fails → L3 or L1.
+* User decisions raised: a time bound for the lattice terms (U-6 bounds queries,
+  not time; linear time/success ⇒ ≈ 192-bit quantum core-SVP, 222–232 with
+  extractor overhead); accept MLWE; custom modulus; L1 as interim final layer.

@@ -50,6 +50,11 @@ patches (`research/near-compression/native/`; fresh re-proof byte-identical). Ca
 model (`docs/logs/pq-final-layer-model-2026-10-17.md`): SWIRL/WHIR SHA-384/Ext12 final layer ≈ 0.5–0.8 MB
 in the list-decoding regime, whose MCA is now proven (CCC 2026, Thm 5); 300 KB not reached by this family.
 Next: a narrow SHA-384/Ext12 recursive parent with measured in-circuit SHA cost.
+**Later 2026-10-17:** corrected model: hash-only final ≈ 444–570 KB (today) / 356–449 KB (all levers).
+Lattice wrap study `docs/zk-formal/PQ-LATTICE-WRAP-STUDY.md`: Akita-type ≈ 80–150 KB but no QROM proof exists.
+User: run **L3** (hash-only baseline; `lane/pq-sha384-air`, narrow SHA-384 AIR) and **L2** (lattice QROM research;
+`lane/pq-lattice-qrom`, plan `PQ-LATTICE-QROM-PLAN.md`: structural obstruction, hybrid-lifting bet ≈ 180–230 KB,
+20–35 % odds, gates G1–G3) in parallel, plus **L4** hash-only research bets.
 
 ## 0a. State at stop (2026-10-15, main after this commit)
 
