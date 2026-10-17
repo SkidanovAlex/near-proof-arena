@@ -1,4 +1,4 @@
-# NEAR Proof Arena — handover (updated 2026-10-15)
+# NEAR Proof Arena — handover (updated 2026-10-17)
 
 This is for the next lead agent. Read it first. The raw working log for 2026-10-07 to 2026-10-09 (≈6,500 lines) now lives in `docs/logs/v3-progress-log-2026-10.md`. Use it only for evidence lookup.
 
@@ -35,6 +35,16 @@ User directives (binding):
   * Remote access is through `tailscale serve` only, never funnel. Everything binds to loopback.
   * Keys and secrets live outside the repo. Never print keys, env files or env vars.
   * Never modify signed challenges (`challenges/chl_*.json`), the frozen `oracle/v3`, or any pinned file. `make pin-check` must pass.
+
+## PQ direct-Wasm research handoff (2026-10-17)
+
+Read [the research handover](logs/direct-wasm-pq-handover-2026-10-17.md) before continuing this lane.
+Closed Lean proofs now connect the concrete byte-packed AIR family to supported prepared Wasm
+execution, conditional on semantic `HoldsP`, eligibility and fuel. Best measured 193-instruction
+transport is **357,069 bytes including request**. This is a limited straight-line slice, not a
+full NEAR transition or a certified post-quantum proof system. Native acceptance-to-`HoldsP`,
+concrete QROM bounds and the SHA-384/Ext12 recursive parent remain open. The handover records
+reproduction commands, dependency patches, boundary tests and the final gas-failure native run.
 
 ## 0a. State at stop (2026-10-15, main after this commit)
 

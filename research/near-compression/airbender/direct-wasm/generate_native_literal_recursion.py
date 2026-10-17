@@ -5,13 +5,15 @@ sys.path.insert(0,str(R/'airbender/direct-wasm'))
 import prepared_code_table_air as lit
 ap=argparse.ArgumentParser()
 ap.add_argument('--out',type=Path,default=R/'results/native-literal-recursion')
+ap.add_argument('--fixture',type=Path,help='Actual Lean prepare/step fixture; default retains the original193 regression checks')
 ap.add_argument('--packed-bytes',action='store_true');ap.add_argument('--no-install',action='store_true')
 args=ap.parse_args();out=args.out.resolve();out.mkdir(exist_ok=True)
-case=json.loads((R/'results/native-literal-recursion/fixture.json').read_text())
+case=json.loads((args.fixture or R/'results/native-literal-recursion/fixture.json').read_text())
 spec,rows=lit.make(case)
-ret=json.loads((R/'results/pq384-code-table-long193/statement.json').read_text())
-assert spec['air']==ret['spec']['air'] and spec['public']==ret['spec']['public']
-assert {k:case[k] for k in ['wasm_bytes','method','prepaid']}==json.loads((R/'results/pq384-code-table-long193/request.json').read_text())
+if args.fixture is None:
+ ret=json.loads((R/'results/pq384-code-table-long193/statement.json').read_text())
+ assert spec['air']==ret['spec']['air'] and spec['public']==ret['spec']['public']
+ assert {k:case[k] for k in ['wasm_bytes','method','prepaid']}==json.loads((R/'results/pq384-code-table-long193/request.json').read_text())
 code_count_column=lit.COUNT
 if args.packed_bytes:
  from packed_byte_air import transform

@@ -1,0 +1,25 @@
+{
+  "code_count_column": 88,
+  "tables": [
+    {
+      "table": 0,
+      "packed_bit_columns": 512,
+      "byte_columns": 64,
+      "remaining_width": 157,
+      "retained_source_constraints": 214,
+      "range_interactions": 64
+    },
+    {
+      "table": 1,
+      "packed_bit_columns": 96,
+      "byte_columns": 12,
+      "remaining_width": 114,
+      "retained_source_constraints": 281,
+      "range_interactions": 12
+    }
+  ],
+  "range_rows": 256,
+  "range_lookups": 224,
+  "max_range_multiplicity": 180,
+  "formal_refinement_proved": false
+}

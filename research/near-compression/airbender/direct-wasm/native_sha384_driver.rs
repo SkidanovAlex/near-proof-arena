@@ -27,7 +27,9 @@ mod config {use super::*;include!("native_sha384_config.rs");include!("native_di
         println!("NATIVE_SHA384_INTERACTION_LOG {}",interaction_log);
         let engine=Engine::new(params);
         let fx=literal::LiteralFixture;
+        let keygen_start=std::time::Instant::now();
         let (pk,vk)=fx.keygen(&engine);
+        println!("NATIVE_SHA384_KEYGEN_SECONDS {}",keygen_start.elapsed().as_secs_f64());
         let bound=SoundnessCalculator::calculate_from_vk(&vk);
         println!("NATIVE_SHA384_EXT12 target={} min={} logup={} proximity={} query={}",bits,bound.total_bits,bound.logup_bits,bound.whir_details.proximity_gaps_bits,bound.whir_details.query_bits);
         assert!(bound.total_bits>=bits as f64,"native component budget failed; do not prove this profile");
@@ -70,8 +72,13 @@ mod config {use super::*;include!("native_sha384_config.rs");include!("native_di
             println!("NATIVE_SHA384_VERIFY_BLOCKS {:?}",blocks);
             println!("NATIVE_SHA384_EXT12_REPLAY_PASS bytes={}",bytes.len());return;
         }
+        let prove_start=std::time::Instant::now();
         let proof=fx.prove(&engine,&pk);
-        engine.verify(&vk,&proof).unwrap();assert_eq!(proof.public_values[0],expected);
+        println!("NATIVE_SHA384_PROVE_SECONDS {}",prove_start.elapsed().as_secs_f64());
+        let verify_start=std::time::Instant::now();
+        engine.verify(&vk,&proof).unwrap();
+        println!("NATIVE_SHA384_VERIFY_SECONDS {}",verify_start.elapsed().as_secs_f64());
+        assert_eq!(proof.public_values[0],expected);
         fn size<T:Encode>(x:&T)->usize {let mut b=Vec::new();x.encode(&mut b).unwrap();b.len()}
         let mut bytes=Vec::new();proof.encode(&mut bytes).unwrap();
         std::fs::write(format!("{out}/child.proof"),&bytes).unwrap();

@@ -2,7 +2,7 @@
 import hashlib,json,os,re,shutil,struct,subprocess,tempfile,argparse
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-ap=argparse.ArgumentParser();ap.add_argument('--input-source',type=Path,default=ROOT/'results/native-literal-field-screen');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--prove-log',type=Path,default=Path('/tmp/nearproof-native-sha384.log'));args=ap.parse_args()
+ap=argparse.ArgumentParser();ap.add_argument('--input-source',type=Path,default=ROOT/'results/native-literal-field-screen');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--prove-log',type=Path,default=Path('/tmp/nearproof-native-sha384.log'));ap.add_argument('--request',type=Path,default=ROOT/'results/pq384-code-table-long193/request.json');args=ap.parse_args()
 OUT=args.out.resolve()
 TMP=Path('/tmp/nearproof-native-sha384')
 BACKEND=Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5')
@@ -58,11 +58,13 @@ try:
 finally:
     for p,q in reversed(moved):q.rename(p)
 public=[x[0] for x in struct.iter_unpack('<I',(OUT/'public.bin').read_bytes())]
-request=ROOT/'results/pq384-code-table-long193/request.json'
+request=args.request.resolve()
+fixture=json.loads((OUT/'fixture.json').read_text());code_length=len(fixture['code'])
+assert {k:fixture[k] for k in ['wasm_bytes','method','prepaid']}==json.loads(request.read_text())
 with tempfile.TemporaryDirectory() as tmp:
     inp=Path(tmp)/'input.json';inp.write_text(json.dumps(dict(request=json.loads(request.read_text()),public=public)))
     eligibility=subprocess.run(['lake','env','lean','--run','PreparedSliceCheck.lean',str(inp)],cwd=ROOT,text=True,capture_output=True,check=True)
-    assert json.loads(eligibility.stdout)==dict(status='PASS',code_length=193)
+    assert json.loads(eligibility.stdout)==dict(status='PASS',code_length=code_length)
     oracle=subprocess.run(['lake','env','lean','--run','PreparedSliceOracle.lean',str(request),'256'],cwd=ROOT,text=True,capture_output=True,check=True)
 actual=json.loads(oracle.stdout)
 verify_calls=json.loads(re.search(r'NATIVE_SHA384_VERIFY_CALLS (\[[^\n]+\])',replay.stdout)[1])
@@ -71,14 +73,17 @@ claimed=dict(done=public[44]==1,failed=public[45]==1,gas=sum(public[46+i]<<(16*i
 assert actual==claimed
 for name in ['public.bin','spec.json','fixture.json']+[p.name for p in sorted(args.input_source.glob('rows-*.bin'))]:
     assert (OUT/name).read_bytes()==(args.input_source/name).read_bytes()
-assert (OUT/'public.bin').read_bytes()==(ROOT/'results/native-literal-field-screen/public.bin').read_bytes()
+# Preparation/eligibility and independent runCall above bind these outputs to the request.
 for name in ['main.rs','native_sha384_config.rs','native_digest_dictionary.rs','literal.rs']:shutil.copyfile(TMP/'src'/name,OUT/name)
 for name in ['Cargo.toml','Cargo.lock']:shutil.copyfile(TMP/name,OUT/name)
 (OUT/'backend.patch').write_bytes(subprocess.check_output(['git','diff','--','crates/stark-backend'],cwd=BACKEND))
 shutil.copyfile(ROOT/'results/babybear-ext12-construction/plonky3-ext12.patch',OUT/'plonky3-ext12.patch')
 packing=json.loads((OUT/'packing.json').read_text()) if (OUT/'packing.json').exists() else None
+if packing:
+    family=subprocess.run(['lake','env','lean','--run','PackedLiteralExport.lean',str(code_length)],cwd=ROOT,text=True,capture_output=True,check=True)
+    assert json.loads(family.stdout)[1]==json.loads((OUT/'spec.json').read_text())['air']
 report=dict(packing=packing,input_source=str(args.input_source),status='NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED',child_bytes=census['total'],wire_census=census,
-    public_fields=4891,public_included=True,request_bytes=request.stat().st_size,total_child_plus_request_bytes=census['total']+request.stat().st_size,
+    public_fields=len(public),code_length=code_length,closed_semantic_air=bool(packing),public_included=True,request_bytes=request.stat().st_size,total_child_plus_request_bytes=census['total']+request.stat().st_size,
     independent_Lean_runCall=actual,eligibility=json.loads(eligibility.stdout),public_mutations_rejected=6,
     witness_independent_replay=True,transcript_oracle=dict(samples=96,rejections=rejections,draw_blocks=draw_blocks,final_state_equal=True,version=4),
     verifier_hash_cost=dict(tags=['leaf','node','init','observe_field','observe_commit','draw_block'],calls=verify_calls,compression_blocks=verify_blocks,total_compression_blocks=sum(verify_blocks),scope='single engine.verify call; excludes keygen and decoding'),
@@ -87,7 +92,7 @@ report=dict(packing=packing,input_source=str(args.input_source),status='NATIVE_W
     backend_pin=subprocess.check_output(['git','rev-parse','HEAD'],cwd=BACKEND,text=True).strip(),
     exclusions=['custom transcript compiler/QROM applicability and concrete constants',
         'recursive parent upgrade and knowledge composition','Lean field irreducibility and Rust refinement',
-        'packed AIR-to-original AIR refinement' if packing else 'native AIR implementation refinement','cryptographic acceptance-to-execution Lean theorem','full NEAR1Pgas and performance target'],
+        'native Rust/compiler AIR implementation refinement','cryptographic acceptance-to-execution Lean theorem','full NEAR1Pgas and performance target'],
     sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(OUT.iterdir()) if p.is_file() and p.name!='report.json'})
 (OUT/'report.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))
