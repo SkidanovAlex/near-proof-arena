@@ -2223,10 +2223,10 @@ index 0000000..0c335cf
 +}
 diff --git a/crates/recursion/src/nv/glue.rs b/crates/recursion/src/nv/glue.rs
 new file mode 100644
-index 0000000..31de21f
+index 0000000..0f8dd27
 --- /dev/null
 +++ b/crates/recursion/src/nv/glue.rs
-@@ -0,0 +1,653 @@
+@@ -0,0 +1,646 @@
 +//! NV GLUE role: one row per *pair* of message words of a job compression (8 rows per
 +//! compression).  Replaces the packer (one row per word) and the block-chaining AIR
 +//! (one 102-column row per compression).
@@ -2502,7 +2502,7 @@ index 0000000..31de21f
 +    // tag: first byte of word 4 (row 2 of block 0); node jobs: NODE_TAG at row 0
 +    PermutationCheckBus::new(buses.job).receive(
 +        builder,
-+        [l.job.into(), pj.clone() * b[0].clone() + l.nd * c(NODE_TAG as u64)],
++        [l.job.into(), pj.clone() * b[0].clone() + l.nd * c(NODE_TAG as u64), l.tr.into()],
 +        kg.clone() * l.blk0 * (pj.clone() * is_q(2) + l.nd * q_0.clone()),
 +    );
 +    // node jobs: constant words 0 (node prefix), padding and bit length
@@ -2535,16 +2535,8 @@ index 0000000..31de21f
 +            builder.assert_zero(kn.clone() * q7.clone() * (l.b[k] - c(len_w[k] as u64)));
 +        }
 +    }
-+    // Merkle-job flag: node jobs and leaf jobs (tags 0, 6) truncate; transcript jobs (3, 4, 5, 7) not
-+    if w42 {
-+        builder.assert_zero(kn.clone() * (one.clone() - l.tr));
-+        let tagrow = kg.clone() * pj.clone() * l.blk0 * is_q(2);
-+        let t0: AB::Expr = b[0].clone();
-+        builder.assert_zero(tagrow.clone() * l.tr * t0.clone() * (t0.clone() - c(6)));
-+        builder.assert_zero(
-+            tagrow * (one.clone() - l.tr) * (t0.clone() - c(3)) * (t0.clone() - c(4)) * (t0.clone() - c(5)) * (t0 - c(7)),
-+        );
-+    }
++    // Merkle-job flag tr: declared by the job's producer on the job bus (ALU leaf / node jobs: 1,
++    // hash-chain transcript jobs: 0)
 +
 +    // ---- sequencing ----
 +    {
@@ -2738,7 +2730,8 @@ index 0000000..31de21f
 +        let total = slots.len();
 +        let (mut phase, mut uidx) = (false, 0usize);
 +        let w42 = sha_levers().digest_bytes == 42;
-+        let trunc = w42 && (j.node || j.tag == 0 || j.tag == crate::sha384::config::TAG_COSET_LEAF);
++        let merkle = j.node || j.tag == 0 || j.tag == crate::sha384::config::TAG_COSET_LEAF;
++        let trunc = w42 && merkle;
 +        let mut hs = false;
 +        if j.node {
 +            assert_eq!(nb, 1);
@@ -2765,7 +2758,7 @@ index 0000000..31de21f
 +                g.act = F::from_bool(!(hdr || lenw || j.node));
 +                g.phase = F::from_bool(phase && !j.node);
 +                g.uidx = F::from_usize(if j.node { 0 } else { uidx });
-+                g.tr = F::from_bool(trunc);
++                g.tr = F::from_bool(merkle);
 +                g.hs = F::from_bool(hs);
 +                let off = 128 * k + 16 * q;
 +                let bytes = &padded[off..off + 16];
@@ -2882,10 +2875,10 @@ index 0000000..31de21f
 +}
 diff --git a/crates/recursion/src/nv/hash.rs b/crates/recursion/src/nv/hash.rs
 new file mode 100644
-index 0000000..814b054
+index 0000000..7011bf4
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash.rs
-@@ -0,0 +1,340 @@
+@@ -0,0 +1,351 @@
 +//! NV hashing subsystem, word format v2 (air2 limbs).  Same job model as
 +//! `sha384/airs.rs` (framed messages `PREFIX || tag || units`), with:
 +//! * units: a canonical felt (4 LE bytes) or a whole 64-bit word (8 BE bytes, e.g. a
@@ -2993,7 +2986,18 @@ index 0000000..814b054
 +        tag: impl Into<AB::Expr>,
 +        en: impl Into<AB::Expr>,
 +    ) {
-+        PermutationCheckBus::new(self.job).send(b, [job.into(), tag.into()], en);
++        self.send_job_tr(b, job, tag, AB::Expr::ZERO, en);
++    }
++    /// Job start (job, tag, tr): tr = 1 for Merkle jobs (leaf / node; truncated 42-byte digest).
++    pub fn send_job_tr<AB: InteractionBuilder>(
++        &self,
++        b: &mut AB,
++        job: impl Into<AB::Expr>,
++        tag: impl Into<AB::Expr>,
++        tr: impl Into<AB::Expr>,
++        en: impl Into<AB::Expr>,
++    ) {
++        PermutationCheckBus::new(self.job).send(b, [job.into(), tag.into(), tr.into()], en);
 +    }
 +    /// Consumer: digest pair j (words 2j, 2j+1 as 6 limbs) of `job`.
 +    pub fn receive_digest_pair<AB: InteractionBuilder>(
@@ -3228,10 +3232,10 @@ index 0000000..814b054
 +}
 diff --git a/crates/recursion/src/nv/hash_tests.rs b/crates/recursion/src/nv/hash_tests.rs
 new file mode 100644
-index 0000000..b3766c3
+index 0000000..2f39c16
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash_tests.rs
-@@ -0,0 +1,212 @@
+@@ -0,0 +1,213 @@
 +//! Standalone test of the NV v2 hashing subsystem on the air2 compression AIR.
 +use std::sync::Arc;
 +
@@ -3258,7 +3262,7 @@ index 0000000..b3766c3
 +}
 +
 +// producer row: [m_felt, m_word, m_job, m_dig, m_if, job, idx, v0, v1, v2, tag, d[18], cid, l[6]]
-+const PW: usize = 11 + 18 + 7;
++const PW: usize = 11 + 18 + 7 + 1;
 +#[derive(Clone, Copy)]
 +struct Prod(HashBuses);
 +impl<T> BaseAir<T> for Prod {
@@ -3277,7 +3281,7 @@ index 0000000..b3766c3
 +        }
 +        self.0.send_felt(b, l[5].clone(), l[6].clone(), l[7].clone(), l[0].clone());
 +        self.0.send_word(b, l[5].clone(), l[6].clone(), [l[7].clone(), l[8].clone(), l[9].clone()], l[1].clone());
-+        self.0.send_job(b, l[5].clone(), l[10].clone(), l[2].clone());
++        self.0.send_job_tr(b, l[5].clone(), l[10].clone(), l[1].clone() * AB::Expr::ZERO + l[36].clone(), l[2].clone());
 +        self.0.receive_digest(b, l[5].clone(), &l[11..29], l[3].clone());
 +        let mut msg = vec![l[29].clone(), l[6].clone()];
 +        msg.extend(l[30..36].iter().cloned());
@@ -3327,6 +3331,7 @@ index 0000000..b3766c3
 +        r[2] = 1;
 +        r[5] = j.id;
 +        r[10] = if j.node { NODE_TAG } else { j.tag as u32 };
++        r[36] = (j.node || j.tag == 0 || j.tag == crate::sha384::config::TAG_COSET_LEAF) as u32;
 +        rows.push(r);
 +        let mut idx = 0;
 +        for u in &j.units {
@@ -4822,7 +4827,7 @@ index 0000000..098b0c8
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..b90153f
+index 0000000..c1b968a
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
 @@ -0,0 +1,674 @@
@@ -5299,7 +5304,7 @@ index 0000000..b90153f
 +        slot.send(builder, [chan.clone(), key1, key2, kind, v0, v1, v2], send - recv);
 +    }
 +    // job starts (leaf / node jobs): (job P2, tag P0)
-+    PermutationCheckBus::new(buses.job).send(builder, [p[2], p[0]], s(Op::Job) + s(Op::NodeJob));
++    PermutationCheckBus::new(buses.job).send(builder, [p[2].into(), p[0].into(), AB::Expr::ONE], s(Op::Job) + s(Op::NodeJob));
 +    // digests: pairs P3, P3 + 1 (if B = 2) of job P2
 +    let dig = PermutationCheckBus::new(buses.digest);
 +    for h in 0..2usize {
