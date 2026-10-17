@@ -1457,7 +1457,7 @@ offers a "succinct only" filter.
   promote the badge criteria to a hard gate in a versioned successor. The criteria above are
   already measurable and recorded per run.
 
-**As implemented (v1.8, lane stream-a).** The thresholds live in the challenge's
+**As implemented (v1.9, lane stream-a).** The thresholds live in the challenge's
 `coverage.succinct` (`max_proof_bytes`, `max_verify_ns`, optional slope bounds in ppm, defaults
 0.1/0.25). Over the measured benchmark classes (abstained classes excluded, §17):
 

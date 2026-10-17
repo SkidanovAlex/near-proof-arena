@@ -85,10 +85,10 @@
       ]
     },
     "coverage": {
-      "description": "Coverage-tiered challenges: the declared tier and proven coverage (CONTRACTS §11).",
+      "description": "Coverage-tiered challenges: the declared tier and proven coverage (CONTRACTS §11). Held-out coverage is published aggregate-only (covert-channel mitigation); the per-class breakdown stays internal.",
       "anyOf": [
         {
-          "$ref": "#/definitions/CoverageReport"
+          "$ref": "#/definitions/CoveragePublic"
         },
         {
           "type": "null"
@@ -326,7 +326,7 @@
           "minimum": 0.0
         },
         "succinct": {
-          "description": "`succinct` badge evaluation (v1.8, additive; BENCHMARK_SPEC §17), recomputed by the control plane from the measurements and the challenge's thresholds. Serialized only when the challenge defines thresholds.",
+          "description": "`succinct` badge evaluation (v1.9, additive; BENCHMARK_SPEC §17), recomputed by the control plane from the measurements and the challenge's thresholds. Serialized only when the challenge defines thresholds.",
           "anyOf": [
             {
               "$ref": "#/definitions/SuccinctBadge"
@@ -441,7 +441,7 @@
           "minimum": 0.0
         },
         "gas_runs": {
-          "description": "Per measured run: Σ total gas of the batch's cases (v1.8, additive; empty when the oracle records no per-case gas). The x axis of the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17).",
+          "description": "Per measured run: Σ total gas of the batch's cases (v1.9, additive; empty when the oracle records no per-case gas). The x axis of the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17).",
           "type": "array",
           "items": {
             "type": "integer",
@@ -701,8 +701,8 @@
         }
       }
     },
-    "CoverageReport": {
-      "description": "Report field `coverage` (CONTRACTS §11).",
+    "CoveragePublic": {
+      "description": "The published form of [`CoverageReport`]: conformance in full (public fixtures and public workload classes), held-out aggregate-only.",
       "type": "object",
       "required": [
         "conformance",
@@ -718,10 +718,10 @@
           ]
         },
         "heldout": {
-          "description": "Committed held-out cases (absent when the worker ran none).",
+          "description": "Committed held-out cases, aggregate only (absent when the worker ran none). CONTRACTS §11 covert-channel mitigation.",
           "anyOf": [
             {
-              "$ref": "#/definitions/CoverageSection"
+              "$ref": "#/definitions/HeldoutAggregate"
             },
             {
               "type": "null"
@@ -981,6 +981,42 @@
         "UNKNOWN",
         "NOT_APPLICABLE"
       ]
+    },
+    "HeldoutAggregate": {
+      "description": "Held-out coverage as it may be **published** (CONTRACTS §11, covert channel): aggregate counts and the weight-averaged share only — never the per-class breakdown. Per-class held-out abstention counts are chosen by the candidate and would leak a few bits per class about the secret inputs.",
+      "type": "object",
+      "required": [
+        "abstained",
+        "cases",
+        "proven",
+        "share_ppm"
+      ],
+      "properties": {
+        "abstained": {
+          "description": "`prove` answered `UNSUPPORTED`.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "cases": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "proven": {
+          "description": "Accepted by `verify`.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "share_ppm": {
+          "description": "Weight-averaged proven fraction over the held-out classes with cases, in parts per million (as stored; not recomputed here).",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false
     },
     "LogExcerpt": {
       "type": "object",

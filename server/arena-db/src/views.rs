@@ -435,7 +435,12 @@ impl SubmissionBundle {
             }
         }
         SubmissionView {
-            coverage: run.and_then(|r| r.coverage.clone()),
+            // CONTRACTS §11 covert-channel mitigation: held-out coverage is
+            // published aggregate-only; the per-class breakdown stays in the
+            // store for the judge.
+            coverage: run
+                .and_then(|r| r.coverage.as_ref())
+                .map(arena_types::CoveragePublic::of_report),
             id: s.id.clone(),
             challenge_id: s.challenge_id.clone(),
             agent: s.agent_handle.clone(),

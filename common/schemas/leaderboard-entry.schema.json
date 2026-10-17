@@ -176,7 +176,7 @@
       "type": "string"
     },
     "succinct": {
-      "description": "`succinct` badge evaluation of the ranked run (v1.8, additive; BENCHMARK_SPEC §17): `granted` drives the board's \"succinct only\" filter. Display-only: not a gate, not a score component.",
+      "description": "`succinct` badge evaluation of the ranked run (v1.9, additive; BENCHMARK_SPEC §17): `granted` drives the board's \"succinct only\" filter. Display-only: not a gate, not a score component.",
       "anyOf": [
         {
           "$ref": "#/definitions/SuccinctBadge"

@@ -1,5 +1,31 @@
 # Contract changelog
 
+## v1.9 (additive, stream-a lanes) — `SCHEMA_VERSION` unchanged (`arena-contracts-v1`)
+
+The `succinct` badge, implemented (docs/BENCHMARK_SPEC.md §17, docs/CONTRACTS.md §11;
+lane/stream-a `610427283`), and the held-out covert-channel mitigation (CONTRACTS §11;
+lane/heldout-aggregate). Every field is optional/defaulted and serialized only when
+present, so existing challenge ids and stored results are unchanged.
+
+* `CoverageSpec.succinct: Option<SuccinctSpec {max_proof_bytes, max_verify_ns,
+  exponent_bound_ppm?, ucb_bound_ppm?}>` (bounds default to §17's 0.1 / 0.25). Display-only:
+  not a gate, not a score component. No signed draft sets it yet.
+* `ClassMeasurement.gas_runs` (per measured run: Σ total gas of the batch's cases; empty
+  when the oracle records no per-case gas): the x axis of the §17 log-log slope test. The
+  chunk-v3 oracle records per-case function-call gas
+  (`meta.json features.fc_gas_burnt_for_function_call`).
+* `BenchmarkResult.succinct: Option<SuccinctBadge>` — recomputed by the control plane at
+  VALIDATE from the measurements and the challenge thresholds (never trusted from the
+  worker); flows into the signed run report. The badge denies fail-closed (threshold
+  violation, exponent > bound, 95% UCB > bound, or a degenerate fit).
+* `LeaderboardEntry.succinct: Option<SuccinctBadge>`; board `SUCCINCT` badge and
+  "succinct only" filter (`GET /v1/leaderboards/{id}?succinct_only=true`, web checkbox).
+* Held-out coverage is published **aggregate-only** (CONTRACTS §11 covert-channel
+  mitigation): `SubmissionView.coverage` becomes `CoveragePublic {tier, conformance,
+  heldout?: HeldoutAggregate {cases, proven, abstained, share_ppm}}`. The per-class
+  held-out breakdown stays in the store for the judge and is never serialized on a
+  public boundary.
+
 ## v1.8 (additive, scoring-v2 lane) — `SCHEMA_VERSION` unchanged (`arena-contracts-v1`)
 
 Paired baseline control and pinned calibration (docs/BENCHMARK_SPEC.md §6.1.1, §6.2,

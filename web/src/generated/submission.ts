@@ -155,9 +155,9 @@ export interface SubmissionView {
   challenge_id: string;
   change_class?: ChangeClass | null;
   /**
-   * Coverage-tiered challenges: the declared tier and proven coverage (CONTRACTS §11).
+   * Coverage-tiered challenges: the declared tier and proven coverage (CONTRACTS §11). Held-out coverage is published aggregate-only (covert-channel mitigation); the per-class breakdown stays internal.
    */
-  coverage?: CoverageReport | null;
+  coverage?: CoveragePublic | null;
   created_at: string;
   decision?: Decision | null;
   evidence_graph?: EvidenceGraph | null;
@@ -225,7 +225,7 @@ export interface BenchmarkResult {
    */
   score_milli?: number | null;
   /**
-   * `succinct` badge evaluation (v1.8, additive; BENCHMARK_SPEC §17), recomputed by the control plane from the measurements and the challenge's thresholds. Serialized only when the challenge defines thresholds.
+   * `succinct` badge evaluation (v1.9, additive; BENCHMARK_SPEC §17), recomputed by the control plane from the measurements and the challenge's thresholds. Serialized only when the challenge defines thresholds.
    */
   succinct?: SuccinctBadge | null;
   suite_revision: string;
@@ -243,7 +243,7 @@ export interface ClassMeasurement {
   class_id: string;
   cold_ns?: number | null;
   /**
-   * Per measured run: Σ total gas of the batch's cases (v1.8, additive; empty when the oracle records no per-case gas). The x axis of the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17).
+   * Per measured run: Σ total gas of the batch's cases (v1.9, additive; empty when the oracle records no per-case gas). The x axis of the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17).
    */
   gas_runs?: number[];
   mad_ns: number;
@@ -370,20 +370,20 @@ export interface BuildInfo {
   toolchain_image?: string | null;
 }
 /**
- * Report field `coverage` (CONTRACTS §11).
+ * The published form of [`CoverageReport`]: conformance in full (public fixtures and public workload classes), held-out aggregate-only.
  *
  * This interface was referenced by `SubmissionView`'s JSON-Schema
- * via the `definition` "CoverageReport".
+ * via the `definition` "CoveragePublic".
  */
-export interface CoverageReport {
+export interface CoveragePublic {
   /**
    * Public fixtures and judge-sampled cases.
    */
   conformance: CoverageSection;
   /**
-   * Committed held-out cases (absent when the worker ran none).
+   * Committed held-out cases, aggregate only (absent when the worker ran none). CONTRACTS §11 covert-channel mitigation.
    */
-  heldout?: CoverageSection | null;
+  heldout?: HeldoutAggregate | null;
   /**
    * The declared tier.
    */
@@ -423,6 +423,27 @@ export interface ClassCoverage {
    * Proved and accepted by `verify`.
    */
   proven: number;
+}
+/**
+ * Held-out coverage as it may be **published** (CONTRACTS §11, covert channel): aggregate counts and the weight-averaged share only — never the per-class breakdown. Per-class held-out abstention counts are chosen by the candidate and would leak a few bits per class about the secret inputs.
+ *
+ * This interface was referenced by `SubmissionView`'s JSON-Schema
+ * via the `definition` "HeldoutAggregate".
+ */
+export interface HeldoutAggregate {
+  /**
+   * `prove` answered `UNSUPPORTED`.
+   */
+  abstained: number;
+  cases: number;
+  /**
+   * Accepted by `verify`.
+   */
+  proven: number;
+  /**
+   * Weight-averaged proven fraction over the held-out classes with cases, in parts per million (as stored; not recomputed here).
+   */
+  share_ppm: number;
 }
 /**
  * This interface was referenced by `SubmissionView`'s JSON-Schema

@@ -1643,7 +1643,7 @@
             "nullable": true
           },
           "succinct": {
-            "description": "`succinct` badge evaluation (v1.8, additive; BENCHMARK_SPEC §17), recomputed by the control plane from the measurements and the challenge's thresholds. Serialized only when the challenge defines thresholds.",
+            "description": "`succinct` badge evaluation (v1.9, additive; BENCHMARK_SPEC §17), recomputed by the control plane from the measurements and the challenge's thresholds. Serialized only when the challenge defines thresholds.",
             "$ref": "#/components/schemas/SuccinctBadge",
             "nullable": true
           },
@@ -2145,7 +2145,7 @@
             "nullable": true
           },
           "gas_runs": {
-            "description": "Per measured run: Σ total gas of the batch's cases (v1.8, additive; empty when the oracle records no per-case gas). The x axis of the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17).",
+            "description": "Per measured run: Σ total gas of the batch's cases (v1.9, additive; empty when the oracle records no per-case gas). The x axis of the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17).",
             "type": "array",
             "items": {
               "type": "integer",
@@ -2438,6 +2438,30 @@
           }
         }
       },
+      "CoveragePublic": {
+        "description": "The published form of [`CoverageReport`]: conformance in full (public fixtures and public workload classes), held-out aggregate-only.",
+        "type": "object",
+        "required": [
+          "conformance",
+          "tier"
+        ],
+        "properties": {
+          "conformance": {
+            "description": "Public fixtures and judge-sampled cases.",
+            "$ref": "#/components/schemas/CoverageSection"
+          },
+          "heldout": {
+            "description": "Committed held-out cases, aggregate only (absent when the worker ran none). CONTRACTS §11 covert-channel mitigation.",
+            "$ref": "#/components/schemas/HeldoutAggregate",
+            "nullable": true
+          },
+          "tier": {
+            "description": "The declared tier.",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "CoverageReport": {
         "description": "Report field `coverage` (CONTRACTS §11).",
         "type": "object",
@@ -2505,7 +2529,7 @@
             "type": "string"
           },
           "succinct": {
-            "description": "`succinct` badge thresholds (v1.8, BENCHMARK_SPEC §17). Serialized only when present, so ids of challenges without the badge are unchanged. Display-only: not a gate and not a score component.",
+            "description": "`succinct` badge thresholds (v1.9, BENCHMARK_SPEC §17). Serialized only when present, so ids of challenges without the badge are unchanged. Display-only: not a gate and not a score component.",
             "$ref": "#/components/schemas/SuccinctSpec",
             "nullable": true
           },
@@ -3147,6 +3171,42 @@
           }
         }
       },
+      "HeldoutAggregate": {
+        "description": "Held-out coverage as it may be **published** (CONTRACTS §11, covert channel): aggregate counts and the weight-averaged share only — never the per-class breakdown. Per-class held-out abstention counts are chosen by the candidate and would leak a few bits per class about the secret inputs.",
+        "type": "object",
+        "required": [
+          "abstained",
+          "cases",
+          "proven",
+          "share_ppm"
+        ],
+        "properties": {
+          "abstained": {
+            "description": "`prove` answered `UNSUPPORTED`.",
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          },
+          "cases": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          },
+          "proven": {
+            "description": "Accepted by `verify`.",
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          },
+          "share_ppm": {
+            "description": "Weight-averaged proven fraction over the held-out classes with cases, in parts per million (as stored; not recomputed here).",
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        },
+        "additionalProperties": false
+      },
       "InvalidateCacheRequest": {
         "type": "object",
         "required": [
@@ -3559,7 +3619,7 @@
             "type": "string"
           },
           "succinct": {
-            "description": "`succinct` badge evaluation of the ranked run (v1.8, additive; BENCHMARK_SPEC §17): `granted` drives the board's \"succinct only\" filter. Display-only: not a gate, not a score component.",
+            "description": "`succinct` badge evaluation of the ranked run (v1.9, additive; BENCHMARK_SPEC §17): `granted` drives the board's \"succinct only\" filter. Display-only: not a gate, not a score component.",
             "$ref": "#/components/schemas/SuccinctBadge",
             "nullable": true
           },
@@ -4559,8 +4619,8 @@
             "nullable": true
           },
           "coverage": {
-            "description": "Coverage-tiered challenges: the declared tier and proven coverage (CONTRACTS §11).",
-            "$ref": "#/components/schemas/CoverageReport",
+            "description": "Coverage-tiered challenges: the declared tier and proven coverage (CONTRACTS §11). Held-out coverage is published aggregate-only (covert-channel mitigation); the per-class breakdown stays internal.",
+            "$ref": "#/components/schemas/CoveragePublic",
             "nullable": true
           },
           "created_at": {

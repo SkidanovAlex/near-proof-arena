@@ -32,7 +32,7 @@ pub struct CoverageSpec {
     pub soundness_lift: String,
     /// Tiers in any order; `rank` is the total order (higher = larger domain).
     pub tiers: Vec<CoverageTier>,
-    /// `succinct` badge thresholds (v1.8, BENCHMARK_SPEC §17). Serialized only
+    /// `succinct` badge thresholds (v1.9, BENCHMARK_SPEC §17). Serialized only
     /// when present, so ids of challenges without the badge are unchanged.
     /// Display-only: not a gate and not a score component.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -202,6 +202,64 @@ pub struct CoverageReport {
     /// Committed held-out cases (absent when the worker ran none).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub heldout: Option<CoverageSection>,
+}
+
+/// Held-out coverage as it may be **published** (CONTRACTS §11, covert
+/// channel): aggregate counts and the weight-averaged share only — never the
+/// per-class breakdown. Per-class held-out abstention counts are chosen by
+/// the candidate and would leak a few bits per class about the secret inputs.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct HeldoutAggregate {
+    pub cases: u32,
+    /// Accepted by `verify`.
+    pub proven: u32,
+    /// `prove` answered `UNSUPPORTED`.
+    pub abstained: u32,
+    /// Weight-averaged proven fraction over the held-out classes with cases,
+    /// in parts per million (as stored; not recomputed here).
+    pub share_ppm: u32,
+}
+
+impl HeldoutAggregate {
+    /// Aggregate a held-out section over its per-class counts. `None` when
+    /// there is no held-out section.
+    pub fn of_section(section: &CoverageSection) -> Option<Self> {
+        Some(Self {
+            cases: section.per_class.values().map(|c| c.cases).sum(),
+            proven: section.per_class.values().map(|c| c.proven).sum(),
+            abstained: section.per_class.values().map(|c| c.abstained).sum(),
+            share_ppm: section.share_ppm,
+        })
+    }
+}
+
+/// The published form of [`CoverageReport`]: conformance in full (public
+/// fixtures and public workload classes), held-out aggregate-only.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CoveragePublic {
+    /// The declared tier.
+    pub tier: String,
+    /// Public fixtures and judge-sampled cases.
+    pub conformance: CoverageSection,
+    /// Committed held-out cases, aggregate only (absent when the worker ran
+    /// none). CONTRACTS §11 covert-channel mitigation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub heldout: Option<HeldoutAggregate>,
+}
+
+impl CoveragePublic {
+    pub fn of_report(report: &CoverageReport) -> Self {
+        Self {
+            tier: report.tier.clone(),
+            conformance: report.conformance.clone(),
+            heldout: report
+                .heldout
+                .as_ref()
+                .and_then(HeldoutAggregate::of_section),
+        }
+    }
 }
 
 impl CoverageSection {
@@ -802,6 +860,47 @@ mod tests {
         assert_eq!(s.share_ppm as u128, want);
         assert_eq!(s.per_class[FIXTURES_KEY].cases, 1);
         assert_eq!(s.per_class["d0-transfers"].abstained, 1);
+    }
+
+    // ---- held-out covert channel (CONTRACTS §11) ----------------------------
+
+    #[test]
+    fn heldout_is_published_aggregate_only() {
+        let mut heldout = CoverageSection::default();
+        heldout.record(Some("d0-quiet"), true, false);
+        heldout.record(Some("d0-quiet"), true, false);
+        heldout.record(Some("d0-transfers"), false, true);
+        heldout.record(Some("d1-transfers"), true, false);
+        heldout.share_ppm = 750_000;
+        let report = CoverageReport {
+            tier: "D1".into(),
+            conformance: CoverageSection::default(),
+            heldout: Some(heldout),
+        };
+        let pubd = CoveragePublic::of_report(&report);
+        let h = pubd.heldout.clone().unwrap();
+        assert_eq!((h.cases, h.proven, h.abstained), (4, 3, 1));
+        assert_eq!(h.share_ppm, 750_000);
+        // The wire form of the published held-out section carries no
+        // per-class breakdown at all.
+        let j = serde_json::to_value(&pubd).unwrap();
+        let hj = &j["heldout"];
+        assert_eq!(hj.as_object().unwrap().len(), 4);
+        assert!(hj.get("per_class").is_none());
+        assert!(
+            serde_json::from_str::<CoveragePublic>(&serde_json::to_string(&pubd).unwrap()).is_ok()
+        );
+        // Conformance passes through unchanged (public fixtures and classes).
+        let mut conf = CoverageSection::default();
+        conf.record(Some("d0-quiet"), true, false);
+        let report = CoverageReport {
+            tier: "D1".into(),
+            conformance: conf,
+            heldout: None,
+        };
+        let pubd = CoveragePublic::of_report(&report);
+        assert_eq!(pubd.conformance.per_class.len(), 1);
+        assert!(pubd.heldout.is_none());
     }
 
     // ---- succinct badge (BENCHMARK_SPEC §17) --------------------------------

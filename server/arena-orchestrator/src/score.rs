@@ -72,7 +72,7 @@ pub fn normalize_benchmark(
     }
     b.score_milli = compute_score_milli(&b);
     b.cost = compute_cost(chal, &b);
-    // v1.8: recomputed from the measurements and the challenge's thresholds;
+    // v1.9: recomputed from the measurements and the challenge's thresholds;
     // a worker-sent evaluation is never trusted. `None` (and omitted from the
     // stored result) when the challenge defines no thresholds.
     b.succinct = chal

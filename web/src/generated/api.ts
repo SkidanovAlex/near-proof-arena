@@ -27,7 +27,7 @@ export type CoverageSpec = {
   version: string;
 } | null;
 /**
- * `succinct` badge thresholds (v1.8, BENCHMARK_SPEC §17). Serialized only when present, so ids of challenges without the badge are unchanged. Display-only: not a gate and not a score component.
+ * `succinct` badge thresholds (v1.9, BENCHMARK_SPEC §17). Serialized only when present, so ids of challenges without the badge are unchanged. Display-only: not a gate and not a score component.
  */
 export type SuccinctSpec = {
   /**

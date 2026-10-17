@@ -341,7 +341,7 @@ without the new fields behave exactly as in v1.6.
 * **The `succinct` badge thresholds** live in `CoverageSpec.succinct: Option<{max_proof_bytes,
   max_verify_ns, exponent_bound_ppm?, ucb_bound_ppm?}>`, together with the slope test of
   BENCHMARK_SPEC §17 (bounds default to 0.1 = 100,000 ppm and 0.25 = 250,000 ppm).
-  **As implemented (lane stream-a, v1.8):** serialized only when present (ids unchanged); the
+  **As implemented (lane stream-a, v1.9):** serialized only when present (ids unchanged); the
   evaluation is recomputed by the control plane at VALIDATE (`BenchmarkResult.succinct`, into the
   signed report) and on the board (`LeaderboardEntry.succinct`); the slope test fits per measured
   run the log-log exponent of Σ proof bytes and Σ verify wall ns against Σ case gas of the batch

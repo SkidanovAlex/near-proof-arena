@@ -85,7 +85,7 @@ export interface LeaderboardEntry {
   submission_id: string;
   submitted_at: string;
   /**
-   * `succinct` badge evaluation of the ranked run (v1.8, additive; BENCHMARK_SPEC §17): `granted` drives the board's "succinct only" filter. Display-only: not a gate, not a score component.
+   * `succinct` badge evaluation of the ranked run (v1.9, additive; BENCHMARK_SPEC §17): `granted` drives the board's "succinct only" filter. Display-only: not a gate, not a score component.
    */
   succinct?: SuccinctBadge | null;
   /**

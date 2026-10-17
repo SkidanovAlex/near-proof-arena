@@ -322,6 +322,9 @@ took 1,800 s); slowest: `Candidates.HorizontalAuxCheck` 140 s, `Candidates.Verti
   Artifacts `docs/e2e-results/mainnet-replay-2026-10/`; adoption is a versioned-successor/user
   decision (CONTRACTS §11).
 * **Independence of the clean-room Python VM:** it was tuned against nearcore black-box runs.
+  Documented 2026-10-16 (lane/heldout-aggregate): what that means, what the difftests do and do
+  not constrain, and four follow-up options — `docs/research/python-vm-independence.md`.
+  Independence itself is **not** achieved.
 * **Future challenges:**
   * 1 Pgas as a single STARK, which needs Goldilocks, a distributed prover and precompiles;
   * a cross-shard whole-block proof (`BENCHMARK_SPEC.md` §14.11).

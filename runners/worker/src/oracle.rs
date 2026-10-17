@@ -57,7 +57,7 @@ pub struct Case {
     pub public: bool,
     /// Workload class of a sampled or held-out case (`None` for fixtures).
     pub class: Option<String>,
-    /// The case's total gas when the oracle records one (v1.8): the x axis of
+    /// The case's total gas when the oracle records one (v1.9): the x axis of
     /// the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17). The
     /// chunk-v3 oracle reads `meta.json` features; `None` means unknown, and
     /// such cases cannot enter a slope fit (fail-closed).
@@ -1097,7 +1097,7 @@ fn read_case_dirs(
 }
 
 /// The case's gas axis from its `meta.json` features, when the generator
-/// records one (v1.8). Only `fc_gas_burnt_for_function_call` (the chunk-v3
+/// records one (v1.9). Only `fc_gas_burnt_for_function_call` (the chunk-v3
 /// oracle's per-case function-call gas: the size-bearing component of chunk
 /// gas and the `d3-maxgas` class predicate) is trusted here; anything else
 /// stays unknown, so a slope fit can never rest on an undocumented quantity.
