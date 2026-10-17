@@ -33,3 +33,8 @@ passes. The regenerated Ext12 patch is byte-identical to the recorded one.
 Retired diagnostic probes (Binius, Ext4/Poseidon OpenVM recursion) still name
 their own `/tmp` scratch trees; they are below the security contract and not
 part of this pipeline.
+
+`sha384-air/` (L3 milestone 1, 2026-10-17): narrow SHA-512/384 compression AIR on
+the same pinned backend and SHA-384/Ext12 config (`python3 sha384-air/prepare.py`,
+then `cargo build --release --locked` there; standalone crate with its own lockfile).
+Results: `results/pq384-sha-air/`.

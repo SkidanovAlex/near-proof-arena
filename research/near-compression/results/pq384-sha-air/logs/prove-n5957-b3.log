@@ -1,0 +1,11 @@
+PROFILE n_stack=20 k=3 log_blowup=3 queries=[210, 118, 82, 63, 51, 43, 37] interaction_log=27
+KEYGEN_SECONDS 0.00
+SOUNDNESS target=268 total=268.3 logup=332.6 proximity=321.9 query=268.3
+SHAPE n=5957 main_rows_used=262108 main_height=262144 main_width=442 main_cells=115867648 cells_per_compression_padded=19450.7 cells_per_compression_dense=19448 table=64x18 harness=262144x7
+PROOF_BYTES total=1031085 gkr=44408 relations=49432 stacking=3664 whir=933484
+WHIR_CENSUS auth_bytes=584448 auth_digests=12176 unique_auth_digests=8759 initial_values_bytes=194880 codeword_values_bytes=151296
+TIMES tracegen_s=0.24 prove_s=201.15 verify_s=0.028
+PEAK_RSS_KIB 15913384
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:21.87
+	Maximum resident set size (kbytes): 15913384
+	Exit status: 0

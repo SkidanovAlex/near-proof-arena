@@ -1,0 +1,558 @@
+{
+ "title": "L3 milestone 1: narrow SHA-512/384 compression AIR on pinned SWIRL (LogUp-GKR + WHIR), SHA-384/Ext12 config",
+ "date": "2026-10-17",
+ "status": "measured (cells, columns, proofs, tests); final-layer bytes are model estimates",
+ "backend": {
+  "stark_backend": "openvm-org/stark-backend d667af5929d0 + patches/stark-backend-d667af5.patch",
+  "plonky3": "p3-baby-bear/p3-monty-31 0.4.3 + patches/plonky3-ext12.patch",
+  "field": "BabyBear, Ext12 = X^12-31",
+  "hash": "SHA-384 Merkle/transcript (airbender/direct-wasm/native_sha384_config.rs)"
+ },
+ "crate": "research/near-compression/native/sha384-air",
+ "design": {
+  "rounds_per_row": 2,
+  "rows_per_compression": 44,
+  "rows_layout": "0-1 input state (a/e slots), 2-41 rounds 0..79 (two per row), 42-43 output state (feed-forward)",
+  "word_representation": "bits for a, e, W (needed by Sigma/sigma/Ch/Maj); 64-bit adds in 3 limbs 22/21/21 with carries range-checked by lookup into [0,64)",
+  "history": "one-row-back via the 2-row window; slot-1 partial (d,h) via a packed copy D; slot-0 partial sums S; W[t-7], W[t-16]+sigma0(W[t-15]) and feed-forward words via a permutation bus keyed by the global row counter",
+  "tables": "64-row control/range table AIR: one-hot u,v rotated by transition constraints (no preprocessed commitment); provides row flags and K limbs per row index",
+  "interface": "bus 3 messages (cid=g-r, idx 0..31, four 16-bit limbs): 0..7 input state, 8..23 block, 24..31 output state; SHA-384 = SHA-384 IV + read words 24..29",
+  "max_constraint_degree": 4,
+  "main_columns": {
+   "total": 442,
+   "a_bits": 128,
+   "e_bits": 128,
+   "w_bits": 128,
+   "partial_sums_S": 6,
+   "copies_D": 6,
+   "carries": 18,
+   "received_limbs": 12,
+   "K_limbs": 6,
+   "row_index": 1,
+   "global_row": 1,
+   "flags": 8
+  },
+  "constraints": 848,
+  "interactions_per_row": 43,
+  "other_airs": {
+   "table": "64 x 18 (1,152 cells, constant)",
+   "harness": "32 rows x 7 per compression (test consumer of the interface; 224 cells/compression, not SHA cost)"
+  }
+ },
+ "cells_per_compression": {
+  "dense": 19448,
+  "padded_power_of_two_N": 28288,
+  "note": "dense = 44 rows x 442 columns, measured at N=1489 (19,453.9) and N=5957 (19,450.7) where 44N fills a power of two; at N=1024/4096 the height pads to 2^16/2^18 (28,288). Excludes the constant 1,152-cell table and the consumer harness.",
+  "bit_design_floor": {
+   "cells_per_round": 192,
+   "per_compression": 15360,
+   "note": "a,e,W bits only; this layout is 1.27x the floor"
+  }
+ },
+ "runs": {
+  "n1024-b3": {
+   "n_compressions": 1024,
+   "profile": {
+    "n_stack": 20,
+    "k": 3,
+    "log_blowup": 3,
+    "queries": [
+     210,
+     118,
+     82,
+     63,
+     51,
+     43,
+     37
+    ],
+    "interaction_log": 27,
+    "proximity": "ListDecoding m=3",
+    "query_bits": 268
+   },
+   "soundness_bits": {
+    "target": 268.0,
+    "total": 268.3,
+    "logup": 332.6,
+    "proximity": 321.9,
+    "query": 268.3
+   },
+   "main_rows_used": 45056,
+   "main_height": 65536,
+   "main_width": 442,
+   "main_cells": 28966912,
+   "cells_per_compression_padded": 28288.0,
+   "proof_bytes": {
+    "total": 874845,
+    "gkr": 37544,
+    "relations": 48952,
+    "stacking": 2608,
+    "whir": 785644
+   },
+   "whir_census": {
+    "auth_bytes": 584448,
+    "auth_digests": 12176,
+    "unique_auth_digests": 8797,
+    "initial_values_bytes": 47040,
+    "codeword_values_bytes": 151296
+   },
+   "tracegen_s": 0.05,
+   "prove_s": 67.65,
+   "verify_s": 0.027,
+   "peak_rss_kib": 7181944,
+   "proof_sha256": "62459ebf43e4f8342b0b2290fb852a23bd6c337613bd34ecbe6fe80178ce1780"
+  },
+  "n4096-b3": {
+   "n_compressions": 4096,
+   "profile": {
+    "n_stack": 20,
+    "k": 3,
+    "log_blowup": 3,
+    "queries": [
+     210,
+     118,
+     82,
+     63,
+     51,
+     43,
+     37
+    ],
+    "interaction_log": 27,
+    "proximity": "ListDecoding m=3",
+    "query_bits": 268
+   },
+   "soundness_bits": {
+    "target": 268.0,
+    "total": 268.3,
+    "logup": 332.6,
+    "proximity": 321.9,
+    "query": 268.3
+   },
+   "main_rows_used": 180224,
+   "main_height": 262144,
+   "main_width": 442,
+   "main_cells": 115867648,
+   "cells_per_compression_padded": 28288.0,
+   "proof_bytes": {
+    "total": 1024317,
+    "gkr": 44408,
+    "relations": 49432,
+    "stacking": 3616,
+    "whir": 926764
+   },
+   "whir_census": {
+    "auth_bytes": 584448,
+    "auth_digests": 12176,
+    "unique_auth_digests": 8784,
+    "initial_values_bytes": 188160,
+    "codeword_values_bytes": 151296
+   },
+   "tracegen_s": 0.23,
+   "prove_s": 198.62,
+   "verify_s": 0.027,
+   "peak_rss_kib": 15446288,
+   "proof_sha256": "197dc462cfc3a36910d198d2e84a151c3764a110a472ef31563aaceed1ef5c83"
+  },
+  "n1489-b3": {
+   "n_compressions": 1489,
+   "profile": {
+    "n_stack": 20,
+    "k": 3,
+    "log_blowup": 3,
+    "queries": [
+     210,
+     118,
+     82,
+     63,
+     51,
+     43,
+     37
+    ],
+    "interaction_log": 27,
+    "proximity": "ListDecoding m=3",
+    "query_bits": 268
+   },
+   "soundness_bits": {
+    "target": 268.0,
+    "total": 268.3,
+    "logup": 332.6,
+    "proximity": 321.9,
+    "query": 268.3
+   },
+   "main_rows_used": 65516,
+   "main_height": 65536,
+   "main_width": 442,
+   "main_cells": 28966912,
+   "cells_per_compression_padded": 19453.9,
+   "proof_bytes": {
+    "total": 881613,
+    "gkr": 37544,
+    "relations": 48952,
+    "stacking": 2656,
+    "whir": 792364
+   },
+   "whir_census": {
+    "auth_bytes": 584448,
+    "auth_digests": 12176,
+    "unique_auth_digests": 8812,
+    "initial_values_bytes": 53760,
+    "codeword_values_bytes": 151296
+   },
+   "tracegen_s": 0.06,
+   "prove_s": 72.04,
+   "verify_s": 0.079,
+   "peak_rss_kib": 7644432,
+   "proof_sha256": "8cf64218b9e782535156d83ab9beda9dd8404ba631c36ec6ee64501ecb679474"
+  },
+  "n5957-b3": {
+   "n_compressions": 5957,
+   "profile": {
+    "n_stack": 20,
+    "k": 3,
+    "log_blowup": 3,
+    "queries": [
+     210,
+     118,
+     82,
+     63,
+     51,
+     43,
+     37
+    ],
+    "interaction_log": 27,
+    "proximity": "ListDecoding m=3",
+    "query_bits": 268
+   },
+   "soundness_bits": {
+    "target": 268.0,
+    "total": 268.3,
+    "logup": 332.6,
+    "proximity": 321.9,
+    "query": 268.3
+   },
+   "main_rows_used": 262108,
+   "main_height": 262144,
+   "main_width": 442,
+   "main_cells": 115867648,
+   "cells_per_compression_padded": 19450.7,
+   "proof_bytes": {
+    "total": 1031085,
+    "gkr": 44408,
+    "relations": 49432,
+    "stacking": 3664,
+    "whir": 933484
+   },
+   "whir_census": {
+    "auth_bytes": 584448,
+    "auth_digests": 12176,
+    "unique_auth_digests": 8759,
+    "initial_values_bytes": 194880,
+    "codeword_values_bytes": 151296
+   },
+   "tracegen_s": 0.24,
+   "prove_s": 201.15,
+   "verify_s": 0.028,
+   "peak_rss_kib": 15913384,
+   "proof_sha256": "0c1fa1c8ecdcf0167c281a51615e3bc308175d2055fa54bc7933b557cbccbd74"
+  },
+  "n256-ns20-b3": {
+   "n_compressions": 256,
+   "profile": {
+    "n_stack": 20,
+    "k": 3,
+    "log_blowup": 3,
+    "queries": [
+     210,
+     118,
+     82,
+     63,
+     51,
+     43,
+     37
+    ],
+    "interaction_log": 27,
+    "proximity": "ListDecoding m=3",
+    "query_bits": 268
+   },
+   "soundness_bits": {
+    "target": 268.0,
+    "total": 268.3,
+    "logup": 332.6,
+    "proximity": 321.9,
+    "query": 268.3
+   },
+   "main_rows_used": 11264,
+   "main_height": 16384,
+   "main_width": 442,
+   "main_cells": 7241728,
+   "cells_per_compression_padded": 28288.0,
+   "proof_bytes": {
+    "total": 834237,
+    "gkr": 31256,
+    "relations": 48472,
+    "stacking": 2368,
+    "whir": 752044
+   },
+   "whir_census": {
+    "auth_bytes": 584448,
+    "auth_digests": 12176,
+    "unique_auth_digests": 8763,
+    "initial_values_bytes": 13440,
+    "codeword_values_bytes": 151296
+   },
+   "tracegen_s": 0.01,
+   "prove_s": 35.12,
+   "verify_s": 0.025,
+   "peak_rss_kib": 4642432,
+   "proof_sha256": null
+  },
+  "n1024-ns20-b1": {
+   "n_compressions": 1024,
+   "profile": {
+    "n_stack": 20,
+    "k": 3,
+    "log_blowup": 1,
+    "queries": [
+     966,
+     210,
+     118,
+     82,
+     63,
+     51,
+     43
+    ],
+    "interaction_log": 27,
+    "proximity": "ListDecoding m=3",
+    "query_bits": 268
+   },
+   "soundness_bits": {
+    "target": 268.0,
+    "total": 268.2,
+    "logup": 333.6,
+    "proximity": 326.9,
+    "query": 268.2
+   },
+   "main_rows_used": 45056,
+   "main_height": 65536,
+   "main_width": 442,
+   "main_cells": 28966912,
+   "cells_per_compression_padded": 28288.0,
+   "proof_bytes": {
+    "total": 1927917,
+    "gkr": 37544,
+    "relations": 48952,
+    "stacking": 2608,
+    "whir": 1838716
+   },
+   "whir_census": {
+    "auth_bytes": 1401744,
+    "auth_digests": 29203,
+    "unique_auth_digests": 17459,
+    "initial_values_bytes": 216384,
+    "codeword_values_bytes": 217728
+   },
+   "tracegen_s": 0.05,
+   "prove_s": 57.81,
+   "verify_s": 0.04,
+   "peak_rss_kib": 4496136,
+   "proof_sha256": null
+  },
+  "n1024-ns18-b3": {
+   "n_compressions": 1024,
+   "profile": {
+    "n_stack": 18,
+    "k": 3,
+    "log_blowup": 3,
+    "queries": [
+     210,
+     118,
+     82,
+     63,
+     51,
+     43
+    ],
+    "interaction_log": 27,
+    "proximity": "ListDecoding m=3",
+    "query_bits": 268
+   },
+   "soundness_bits": {
+    "target": 268.0,
+    "total": 268.3,
+    "logup": 332.6,
+    "proximity": 325.9,
+    "query": 268.3
+   },
+   "main_rows_used": 45056,
+   "main_height": 65536,
+   "main_width": 442,
+   "main_cells": 28966912,
+   "cells_per_compression_padded": 28288.0,
+   "proof_bytes": {
+    "total": 919417,
+    "gkr": 37544,
+    "relations": 48952,
+    "stacking": 3424,
+    "whir": 829400
+   },
+   "whir_census": {
+    "auth_bytes": 501600,
+    "auth_digests": 10450,
+    "unique_auth_digests": 7269,
+    "initial_values_bytes": 188160,
+    "codeword_values_bytes": 137088
+   },
+   "tracegen_s": 0.06,
+   "prove_s": 52.38,
+   "verify_s": 0.026,
+   "peak_rss_kib": 4048368,
+   "proof_sha256": null
+  }
+ },
+ "n16384": "not run: peak RSS 7.2 GB at 2^16 rows and 15.4-15.9 GB at 2^18 rows (profile n_stack=20, b=3); 2^20 rows extrapolates to ~45 GB, over the 16G heavy cap",
+ "tests": {
+  "native_reference_vs_sha2": 10000,
+  "trace_outputs_vs_sha2_compress512": 1008,
+  "vectors": [
+   "sha384(abc)",
+   "sha384(empty)",
+   "sha384(200B, 2 blocks chained)",
+   "sha512(abc)",
+   "sha512(empty)",
+   "sha512(200B)"
+  ],
+  "debug_checker": "pass: 65,536 rows, 1,008 compressions (constraints + LogUp multiset balance)",
+  "single_cell_mutations": {
+   "total": 7208,
+   "detected": 7208,
+   "rows": "trace row 0, segment-1 rows r=0,1,2,3,9,10,17,33,38,40,41,42,43, first padding row, last row; every column; table rows 0,7,31,43,44,63; harness rows 0,31,32,95",
+   "by_category": "logs/selftest-summary.log"
+  },
+  "constraint_consistent_bus_edits": {
+   "total": 10,
+   "detected_by_bus": 10,
+   "cases": [
+    "sched received V0/V1/W7 (+2^21, carry+1)",
+    "round K (+2^21, carries+1)",
+    "OUT received IV / final word",
+    "carry out of range via K",
+    "carry range only (W79 bit 63 flipped, top carries re-solved to +-1/2 mod p)",
+    "interface block word",
+    "interface input state"
+   ]
+  },
+  "consistent_output_forgery": "output bit flipped in AIR and in consumer copy: rejected by constraint",
+  "cargo_test": "1 passed"
+ },
+ "model": {
+  "script": "levers_fixed_point.py (native/levers_model.fixed_point, c_query=2000, c_fixed=2^20, m=8, cols=300)",
+  "results": {
+   "19448/today": {
+    "c_sha": 19448,
+    "pen_target": 268,
+    "fin_target": 268,
+    "digest": 48,
+    "pen_sha_blocks": 10488,
+    "final_cells_log2": 27.64,
+    "final_bytes": 502609,
+    "final_shape": {
+     "b": 6,
+     "k1": 1,
+     "k": 3,
+     "log_h": 21,
+     "log_final": 8,
+     "q": [
+      93,
+      93,
+      69,
+      55,
+      46
+     ],
+     "width": 100
+    }
+   },
+   "19448/all_levers": {
+    "c_sha": 19448,
+    "pen_target": 236,
+    "fin_target": 226,
+    "digest": 42,
+    "pen_sha_blocks": 9015,
+    "final_cells_log2": 27.43,
+    "final_bytes": 398173,
+    "final_shape": {
+     "b": 6,
+     "k1": 1,
+     "k": 3,
+     "log_h": 21,
+     "log_final": 8,
+     "q": [
+      78,
+      78,
+      58,
+      47,
+      39
+     ],
+     "width": 86
+    }
+   },
+   "28288/today": {
+    "c_sha": 28288,
+    "pen_target": 268,
+    "fin_target": 268,
+    "digest": 48,
+    "pen_sha_blocks": 11687,
+    "final_cells_log2": 28.35,
+    "final_bytes": 549481,
+    "final_shape": {
+     "b": 6,
+     "k1": 1,
+     "k": 3,
+     "log_h": 21,
+     "log_final": 8,
+     "q": [
+      93,
+      93,
+      69,
+      55,
+      46
+     ],
+     "width": 163
+    }
+   },
+   "28288/all_levers": {
+    "c_sha": 28288,
+    "pen_target": 236,
+    "fin_target": 226,
+    "digest": 42,
+    "pen_sha_blocks": 10461,
+    "final_cells_log2": 28.15,
+    "final_bytes": 433741,
+    "final_shape": {
+     "b": 6,
+     "k1": 1,
+     "k": 3,
+     "log_h": 21,
+     "log_final": 8,
+     "q": [
+      78,
+      78,
+      58,
+      47,
+      39
+     ],
+     "width": 143
+    }
+   }
+  },
+  "summary": {
+   "c_sha=19448 (dense)": {
+    "today_268_268_48B": 502609,
+    "all_levers_236_226_42B": 398173
+   },
+   "c_sha=28288 (padded)": {
+    "today_268_268_48B": 549481,
+    "all_levers_236_226_42B": 433741
+   }
+  },
+  "column_note": "model charges 2*cols*48 B with cols=300 for the whole final circuit; this AIR alone has 442 (+18 table) columns, i.e. at least +15 KB (96 B per column above 300) before any other verifier AIR"
+ },
+ "claims_not_made": "No soundness proof of the AIR; mutation tests are sampled. No security claim beyond the backend soundness calculator output for these SHA-only proofs. Final-layer bytes are levers_model estimates, not measured."
+}

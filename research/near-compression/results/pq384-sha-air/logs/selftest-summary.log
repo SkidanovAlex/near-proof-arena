@@ -1,0 +1,38 @@
+SELFTEST native_reference_vs_sha2 pass=10000
+SELFTEST vector sha384(abc) blocks=1 digest_ok
+SELFTEST vector sha512(abc) blocks=1 digest_ok
+SELFTEST vector sha384(empty) blocks=1 digest_ok
+SELFTEST vector sha512(empty) blocks=1 digest_ok
+SELFTEST vector sha384(200B) blocks=2 digest_ok
+SELFTEST vector sha512(200B) blocks=2 digest_ok
+SELFTEST trace_outputs_vs_sha2 pass=1008 (vectors 8 + random 1000)
+PROFILE n_stack=14 k=3 log_blowup=2 queries=[345, 151, 97, 71, 57] interaction_log=27
+AIR Sha512Air width=[442] degree=4 constraints=848 interactions=43
+AIR TableAir width=[18] degree=3 constraints=36 interactions=2
+AIR HarnessAir width=[7] degree=2 constraints=1 interactions=1
+SELFTEST debug_checker pass rows=65536 compressions=1008 secs=1.4
+NEGATIVE consistent_output_forgery detected=true by=constraint
+NEGATIVE_BUS sched_received_V0_plus_carry detected=true by=bus
+NEGATIVE_BUS sched_received_V1_plus_carry detected=true by=bus
+NEGATIVE_BUS sched_received_W7_plus_carry detected=true by=bus
+NEGATIVE_BUS round_K_plus_carries detected=true by=bus
+NEGATIVE_BUS out_received_IV_plus_carry detected=true by=bus
+NEGATIVE_BUS out_received_final_plus_carry detected=true by=bus
+NEGATIVE_BUS carry_out_of_range_via_K detected=true by=bus
+NEGATIVE_BUS carry_range_only detected=true by=bus
+NEGATIVE_BUS interface_block_word detected=true by=bus
+NEGATIVE_BUS interface_input_state detected=true by=bus
+NEGATIVE harness mutations=28 detected=28 by_constraint=4 by_bus=24
+NEGATIVE main/a_bits mutations=2048 detected=2048 by_constraint=2048 by_bus=0
+NEGATIVE main/carry mutations=288 detected=288 by_constraint=288 by_bus=0
+NEGATIVE main/copy_D mutations=96 detected=96 by_constraint=96 by_bus=0
+NEGATIVE main/e_bits mutations=2048 detected=2048 by_constraint=2048 by_bus=0
+NEGATIVE main/global_row mutations=16 detected=16 by_constraint=16 by_bus=0
+NEGATIVE main/lookup_K mutations=96 detected=96 by_constraint=54 by_bus=42
+NEGATIVE main/lookup_flag mutations=128 detected=128 by_constraint=59 by_bus=69
+NEGATIVE main/partial_sum_S mutations=96 detected=96 by_constraint=96 by_bus=0
+NEGATIVE main/received_limb mutations=192 detected=192 by_constraint=192 by_bus=0
+NEGATIVE main/row_index mutations=16 detected=16 by_constraint=14 by_bus=2
+NEGATIVE main/w_bits mutations=2048 detected=2048 by_constraint=2048 by_bus=0
+NEGATIVE table mutations=108 detected=108 by_constraint=96 by_bus=12
+NEGATIVE total mutations=7208 detected=7208 undetected=0
