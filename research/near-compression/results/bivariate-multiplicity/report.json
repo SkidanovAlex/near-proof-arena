@@ -1,0 +1,9 @@
+{
+  "centered_substitutions": 1000,
+  "computational_arbitrary_center_checks": 1000,
+  "negative_premises": [
+    "curve passes through center",
+    "all mixed coefficients below total order vanish"
+  ],
+  "scope": "Lean proves centered substitution only. Arbitrary-center tests are evidence, not a formal translation theorem. GS existence and MCA remain open."
+}

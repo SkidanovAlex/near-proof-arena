@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3612,
+  "audit_log": "/tmp/root-local-initial-audit.log",
+  "source_sha256": "253aa4a9c86895f473929959b3e7a6d6abb396b013b45d910ad8e7b1601b5815",
+  "established": [
+    "Compiler increasing-power accumulator equals ordered Horner batching",
+    "Fixed nonzero residual yields joint power-mixing/row-MLE ideal zero bound"
+  ],
+  "remaining": [
+    "Concrete all-row AIR residual and equality-weight sum adapter",
+    "Adaptive sumcheck chain and terminal authentication",
+    "Source/auxiliary extraction before batching challenges",
+    "Full protocol/quantum soundness"
+  ]
+}

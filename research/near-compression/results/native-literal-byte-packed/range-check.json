@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "receiver_table": 2,
+  "range_constraints": 24,
+  "sender_counts": [
+    64,
+    12
+  ],
+  "public_range_segments": 0,
+  "scope": "Exact theorem-backed range AST and isolation/sender checks. HoldsP-to-range theorem kernel-proved; native acceptance-to-HoldsP and whole AIR refinement remain open."
+}

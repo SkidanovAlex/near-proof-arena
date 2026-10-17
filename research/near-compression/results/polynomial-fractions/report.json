@@ -1,0 +1,9 @@
+{
+  "fraction_cases": 600,
+  "safe_specializations": 3208,
+  "zero_numerators": 46,
+  "everywhere_vanishing_formal_denominators": 4,
+  "cancelled_pole_examples": 4,
+  "zero_denominator_rejections": 1,
+  "scope": "Formal polynomial fraction quotient, arithmetic and inverse. Full rational-function Field instance and specialization transport remain open."
+}

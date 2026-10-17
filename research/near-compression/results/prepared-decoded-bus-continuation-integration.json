@@ -1,0 +1,34 @@
+{
+  "status": "LOCALLY_VALID_SOURCE_BUS_CONTINUATION_BRANCH_PROVED",
+  "module": "NearCompression/PreparedDecodedBusContinuation.lean",
+  "theorems": [
+    "prefix_event_continuation_count",
+    "prepared_decoded_bus_continuation_bound"
+  ],
+  "proved": [
+    "Prefix-only event count over chronological product equals prefix event count times continuation length.",
+    "For wrong actual prepared-Wasm output and a locally valid fixed source, accepted transcripts are bounded by busTraceErrorBudget * sample.length * continuations.length plus accepted downstream failures.",
+    "Decoded coordinates and finals may depend on the entire bus-pair/continuation transcript; no per-continuation bus soundness premise is used."
+  ],
+  "assumptions": [
+    "One fixed source trace, local source validity, public input fit, prepared-run check, sufficient fuel and wrong published output.",
+    "Distinct ideal bus challenge sample and fixed finite continuation sample space.",
+    "Every accepted transcript either has an explicitly retained failure or supplies a decoded witness bound to that source with valid reconstructed bus residuals and equal side products."
+  ],
+  "remaining": [
+    "Instantiate fixed-source witness from metadata_joint_fixed_source_trace.",
+    "Handle locally invalid fixed sources using the local/GKR/PCS bound.",
+    "Discharge downstream failure event by the joint acceptance bounds, preserving challenge order.",
+    "Native formula/authentication refinement, QROM security, secure size and full NEAR scope remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4034,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

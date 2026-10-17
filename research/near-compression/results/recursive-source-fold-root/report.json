@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "recursive_proof": false,
+  "source_query_pairs": 16,
+  "source_branches": 112,
+  "source_lane_pairs": 3440,
+  "source_ext4_input_slots": 10352,
+  "source_dag_nodes": 24369,
+  "source_residual_outputs": 32,
+  "fold_residual_outputs": 768,
+  "combined_trace_bytes": 3696780,
+  "combined_root": "70355e5a007a74cfd532aec522b0a21915dbf07b034450c0ee9c7fa01c4818b915bbc5521dea56934f4c609524c6a5c7",
+  "build_seconds": 0.7572634778916836,
+  "verify_seconds": 0.7704203207977116,
+  "negative_cases": [
+    "omitted source query",
+    "duplicated source branch",
+    "wrong projected side",
+    "wrong first fold link",
+    "missing source output",
+    "changed beta slot",
+    "changed authenticated leaf slot",
+    "wrong combined root"
+  ],
+  "limits": [
+    "One combined commitment; complete source and fold output vectors checked individually by host.",
+    "No scalar GKR conjunction proof or succinct recursive verifier; all inputs disclosed.",
+    "Transcript, beta/weight evaluation, Merkle, terminal and original GKR-to-PCS header derivation remain native boundaries.",
+    "No certified QROM, quantum128, commitment binding or zero knowledge claim."
+  ]
+}

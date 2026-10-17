@@ -1,0 +1,1251 @@
+{
+  "status": "NOT_PASSED",
+  "purpose": "Current decision surface; original full NEAR 1 Pgas/PQ128 objective unchanged.",
+  "target_bytes_strict": 300000,
+  "measured_fixture": {
+    "combined_bytes": 1344645,
+    "components": {
+      "opening_header_terminal": 3992,
+      "source_values": 228672,
+      "source_authentication": 264624,
+      "continuation_values": 384320,
+      "continuation_authentication": 309504,
+      "local_gkr_and_framing": 43880,
+      "call_proof": 103064,
+      "receipt": 731,
+      "calls": 5858
+    },
+    "queries": 309,
+    "configuration": {
+      "queries": 309,
+      "child_blowup": 8,
+      "child_fold_bits": 3,
+      "tail_steps": [
+        {
+          "next_blowup": 16,
+          "next_fold_bits": 3,
+          "queries": 309
+        },
+        {
+          "next_blowup": 32,
+          "next_fold_bits": 3,
+          "queries": 309
+        },
+        {
+          "next_blowup": 64,
+          "next_fold_bits": 3,
+          "queries": 309
+        },
+        {
+          "next_blowup": 128,
+          "next_fold_bits": 3,
+          "queries": 309
+        },
+        {
+          "next_blowup": 256,
+          "next_fold_bits": 1,
+          "queries": 309
+        },
+        {
+          "next_blowup": 256,
+          "next_fold_bits": 0,
+          "queries": 309
+        }
+      ]
+    },
+    "manifest_pins_checked": 24,
+    "scope": "Actual diagnostic code-switch compression and unchanged call proof. External static AIR/spec/schedule excluded; no NEAR1Pgas, source-extraction/proximity/QROM/PQ128 certificate.",
+    "security_certified": false,
+    "full_near_one_pgas": false,
+    "verification": "Retained conjunction verification evidence pinned by manifest; replay command in source manifest."
+  },
+  "replacement_break_even": [
+    {
+      "replaced_component": "source_values_and_authentication",
+      "removed_bytes": 493296,
+      "fixed_remainder_bytes": 851349,
+      "maximum_replacement_bytes_for_strict_target": -551350,
+      "possible_even_with_free_replacement": false,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "continuation_values_and_authentication",
+      "removed_bytes": 693824,
+      "fixed_remainder_bytes": 650821,
+      "maximum_replacement_bytes_for_strict_target": -350822,
+      "possible_even_with_free_replacement": false,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "all_opening_authentication",
+      "removed_bytes": 574128,
+      "fixed_remainder_bytes": 770517,
+      "maximum_replacement_bytes_for_strict_target": -470518,
+      "possible_even_with_free_replacement": false,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "entire_opening",
+      "removed_bytes": 1191112,
+      "fixed_remainder_bytes": 153533,
+      "maximum_replacement_bytes_for_strict_target": 146466,
+      "possible_even_with_free_replacement": true,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "entire_compression_envelope",
+      "removed_bytes": 1234992,
+      "fixed_remainder_bytes": 109653,
+      "maximum_replacement_bytes_for_strict_target": 190346,
+      "possible_even_with_free_replacement": true,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    },
+    {
+      "replaced_component": "entire_bundle",
+      "removed_bytes": 1344645,
+      "fixed_remainder_bytes": 0,
+      "maximum_replacement_bytes_for_strict_target": 299999,
+      "possible_even_with_free_replacement": true,
+      "scope": "Accounting only; no ability to delete or securely replace this component is assumed."
+    }
+  ],
+  "counterfactual_candidates": [
+    {
+      "extension": 8,
+      "hash_bytes": 64,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "min_projected_subtotal_bytes": 527640,
+      "max_projected_subtotal_bytes": 540120,
+      "partial_conditional_quantum_bound_passes": false,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 227641
+    },
+    {
+      "extension": 8,
+      "hash_bytes": 64,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "min_projected_subtotal_bytes": 538376,
+      "max_projected_subtotal_bytes": 550136,
+      "partial_conditional_quantum_bound_passes": false,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 238377
+    },
+    {
+      "extension": 10,
+      "hash_bytes": 64,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "min_projected_subtotal_bytes": 570072,
+      "max_projected_subtotal_bytes": 583800,
+      "partial_conditional_quantum_bound_passes": true,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 270073
+    },
+    {
+      "extension": 10,
+      "hash_bytes": 64,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "min_projected_subtotal_bytes": 581792,
+      "max_projected_subtotal_bytes": 594352,
+      "partial_conditional_quantum_bound_passes": false,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 281793
+    },
+    {
+      "extension": 12,
+      "hash_bytes": 64,
+      "assumed_log2_C": 0,
+      "isolated_query_bits": 262,
+      "min_projected_subtotal_bytes": 611672,
+      "max_projected_subtotal_bytes": 624136,
+      "partial_conditional_quantum_bound_passes": true,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 311673
+    },
+    {
+      "extension": 12,
+      "hash_bytes": 64,
+      "assumed_log2_C": 8,
+      "isolated_query_bits": 270,
+      "min_projected_subtotal_bytes": 622920,
+      "max_projected_subtotal_bytes": 636280,
+      "partial_conditional_quantum_bound_passes": true,
+      "projected_subtotal_under_target": false,
+      "minimum_savings_to_strict_target_before_excluded_costs": 322921
+    }
+  ],
+  "counterfactual_scope": "All source cosets and Merkle frontiers priced. Auxiliary coordinate width scales53*extension; base source width803 retained. Ext scalars4*extension bytes; hash nodes64bytes. Local/GKR count1604 scalars frozen; compiler layout can change and has NOT been measured. Public envelope excluded. Fields10/12 are arithmetic projections, not implemented/certified extensions. Ledger assumes Johnson/MCA, repeated weighted composition and QROM compiler applicability; none established. Ledger recomputed for selected query counts/schedule but excludes local/GKR/bus/initial-reduction errors. C1/256 nominal, not certified constants. Q=2^128 includes overhead, target probability1/2. No feasibility gate changed. This finite search is not a protocol size lower bound.",
+  "same_parameters_as_measured_fixture": false,
+  "screened_candidates_passing_partial_bound_and_size": 0,
+  "recursion": {
+    "complete_recursive_proof": false,
+    "full_trace_disclosure_needed": false,
+    "original_inner_proofs_required": true,
+    "prototype_profile": "NEAR-RECURSIVE-SINGLE-RS-CONJUNCTION-V1",
+    "measured_proof_json_bytes": 342047,
+    "original_compact_inner_proof_bytes": 222527,
+    "limits": [
+      "No disclosed trace or separate trace root/link check; every fixed operand has explicit equality residual under same PCS root.",
+      "Derived dependency is internal cache, regenerated from original proofs/statements, never accepted as prover-selected metadata.",
+      "Original component proofs and native GKR/transcript/SHA384/Merkle checks remain required; this is not complete recursion.",
+      "Trusted statements still require application receipt policy; no new receipt extraction theorem.",
+      "Q8/Ext4 diagnostic, no PQ128/QROM/proximity/zero-knowledge certification."
+    ],
+    "historical_pcs_only_prototype": {
+      "full_trace_disclosure_needed": true,
+      "evidence": "results/recursive-pcs-root/report.json"
+    }
+  },
+  "bounded_merkle_verifier_experiment": {
+    "evidence": "results/private-merkle-proof-q8/report.json",
+    "complete_bounded_merkle_verifier": true,
+    "complete_recursive_pcs_verifier": false,
+    "quantum_security_certified": false,
+    "queries": 8,
+    "proof_bytes": 149968,
+    "proof_and_public_bytes": 150593,
+    "raw_path_bytes": 48,
+    "beats_raw_path_bytes": false,
+    "scope": "Complete executable bounded Merkle verification via compression AIR and same-use-root routing GKR/PCS. Trusted static canonical AIR/spec excluded from wire; public statement counted separately. No original sibling path, expected call messages or full use trace is a verifier input. PCS openings may leak witness information; no zero-knowledge claim. Ext8/query diagnostic, not a soundness/PQ128 certificate, full PCS recursion, 1Pgas NEAR proof, or formal route-compiler correctness theorem."
+  },
+  "bounded_merkle_break_even": {
+    "context_bytes": 197,
+    "decision": "Do not generate larger proofs in this bounded profile to seek compression. A next experiment must change capacity/codec or prove a larger verifier workload, and pass an optimistic complete-byte screen before formalization.",
+    "excluded": "Not full recursive PCS, arbitrary verifier witnesses, changed codecs, larger chunks, or other hash framing. No quantum-security or Lean correctness claim.",
+    "hypothetical_batch": {
+      "conservative_frontier_bytes": 288,
+      "conservative_node_budget": 6,
+      "exhaustive_subsets": 65808,
+      "implemented": false,
+      "justification": "Each computed parent along a union of paths has at least one computed child, so at most one external sibling. Every such parent costs four compression blocks. Leaf/root work is omitted in the conservative bound.",
+      "maximum_frontier_bytes_within_capacity": 192,
+      "subsets_within_capacity": 61
+    },
+    "mandatory_bytes": {
+      "compression": 392,
+      "outer": 16,
+      "routing": 8,
+      "total": 416
+    },
+    "scope": "Existing separate-root codec, at most 25 SHA384 blocks, 197-byte context; public leaves; compare deduplicated sibling frontier only.",
+    "security_status": "NOT_PASSED",
+    "single_path_cases": [
+      {
+        "breaks_even": false,
+        "compression_blocks": 10,
+        "depth": 1,
+        "optimistic_wire_floor": 416,
+        "sibling_bytes": 48
+      },
+      {
+        "breaks_even": false,
+        "compression_blocks": 14,
+        "depth": 2,
+        "optimistic_wire_floor": 416,
+        "sibling_bytes": 96
+      },
+      {
+        "breaks_even": false,
+        "compression_blocks": 18,
+        "depth": 3,
+        "optimistic_wire_floor": 416,
+        "sibling_bytes": 144
+      },
+      {
+        "breaks_even": false,
+        "compression_blocks": 22,
+        "depth": 4,
+        "optimistic_wire_floor": 416,
+        "sibling_bytes": 192
+      }
+    ],
+    "source_sha256": {
+      "airbender/direct-wasm/ext8_execution_codec.py": "0c133abfaaa3c342af1e2babc64467f8b4d457b60dda11fac7df0c1055bc28ce",
+      "airbender/direct-wasm/merkle_recursive_call_routes.py": "59a68f7c9a5578625f0c97c2a10a98d4339b2fa233dc05695fc3f3a70a90c3be",
+      "airbender/direct-wasm/private_merkle_proof.py": "5c8e18a5d5f8e6644e0c475ffdf0c46621b60a3c26d3a3b74c57a1d8b93a92fb",
+      "airbender/direct-wasm/screen_bounded_merkle_break_even.py": "1b918ca86b3e1106391de28f6040a7e65cf57ab234ddf2eaeed6c631f272074d",
+      "results/private-merkle-proof-q8/proof.bin": "5c78fa2d60355e892f50c907d3e6b91f07d66b5b516548ba2eab10d0c97d3a77",
+      "results/private-merkle-proof-q8/public.json": "08df6f086b5f6c9cef940aa9c4deb01fcf691ffa6def7d82c1c0694f98ce03b9",
+      "results/private-merkle-proof-q8/trusted-spec.json.gz": "fbc69ec14d47ed546aae4541f6fc326597139ea9244758783a415d82d24cb31d"
+    },
+    "status": "BOUNDED_ARCHITECTURE_NO_BREAK_EVEN"
+  },
+  "latest_verifier_hash_work": {
+    "totals": {
+      "calls": 104839,
+      "blocks": 419568,
+      "unique_calls": 40726,
+      "unique_blocks": 242409
+    },
+    "largest_unique_block_tags": {
+      "transcript/commit": {
+        "calls": 745,
+        "blocks": 44388,
+        "unique_calls": 721,
+        "unique_blocks": 44326
+      },
+      "merkle/node": {
+        "calls": 65498,
+        "blocks": 181188,
+        "unique_calls": 15209,
+        "unique_blocks": 43072
+      },
+      "near-ext8-code-switch-stage-diagnostic-v1": {
+        "calls": 6,
+        "blocks": 37479,
+        "unique_calls": 6,
+        "unique_blocks": 37479
+      },
+      "near-pq384-ext8-terminal-gkr-diagnostic-v1": {
+        "calls": 4,
+        "blocks": 31080,
+        "unique_calls": 4,
+        "unique_blocks": 31080
+      },
+      "merkle/leaf": {
+        "calls": 8978,
+        "blocks": 32146,
+        "unique_calls": 3293,
+        "unique_blocks": 11957
+      },
+      "ext8-execution-phase-pooled-diagnostic-v1": {
+        "calls": 1,
+        "blocks": 10837,
+        "unique_calls": 1,
+        "unique_blocks": 10837
+      },
+      "transcript/squeeze": {
+        "calls": 6006,
+        "blocks": 12012,
+        "unique_calls": 5373,
+        "unique_blocks": 10746
+      },
+      "transcript/ratchet": {
+        "calls": 6006,
+        "blocks": 12012,
+        "unique_calls": 5373,
+        "unique_blocks": 10746
+      }
+    },
+    "gadget_accounting": {
+      "blocks": {
+        "compression_blocks": 419568,
+        "rows": 53704704,
+        "base_field_cells": 372925464576,
+        "dense_u32_bytes": 1491701858304,
+        "dense_u32_gib": 1389.255615234375
+      },
+      "unique_blocks": {
+        "compression_blocks": 242409,
+        "rows": 31028352,
+        "base_field_cells": 215460876288,
+        "dense_u32_bytes": 861843505152,
+        "dense_u32_gib": 802.6543121337891
+      }
+    },
+    "scope": "Actual latest switch fixture contract, call-link decoder and compression envelope decoder, including local/GKR and PCS verification. Counts pq384_primitives.hash_parts calls and their exact framing. Static statement/configuration are externally supplied. This is not full NEAR verification or a recursive proof. Unique sharing requires proved routing/equality constraints. Gadget dense bytes are arithmetic estimates, not measured RAM, runtime or outer proof size. No PQ128 certification."
+  },
+  "response_transcript_screen": {
+    "totals": {
+      "calls": 104839,
+      "blocks": 419568,
+      "unique_calls": 40726,
+      "unique_blocks": 242409,
+      "candidate_blocks": 397885,
+      "candidate_unique_blocks": 220726,
+      "unique_blocks_saved": 21683
+    },
+    "scope": "Frozen execution shadow: reencode response payloads only, keep original seeds and all other calls. A new protocol changes downstream challenges and needs fresh proofs. No measured proof-size or security improvement.",
+    "decision": "Binary response encoding alone saves only 8.94 percent of deduplicated hash blocks. Defer protocol migration; first account for derivation binding of weight vectors and GKR layouts in a complete verifier design."
+  },
+  "derived_transcript_binding_audit": {
+    "evidence": "results/derived-transcript-bindings.json",
+    "required_contracts": [
+      "Terminal: fixed compiler and terminal/commitment profile; spec/public/source roots bound by statement; auxiliary roots/finals bound before local challenges; local rounds bound before terminal derivation; claim bound before GKR challenges.",
+      "Call routing: equations derived from bound receipt/calls/spec/use-root and query budget; fixed equation compiler and layerer; standalone GKR API must retain explicit circuit binding.",
+      "Weighted adapter: derive initial weights from the input-reduction challenges inside verifier; authenticate responses and bind them before mixers; derive affine folds and injected functional with exact field/shape rules.",
+      "Continuations: consume only previous verified derived state; bind schedule, stage geometry, roots, namespace and compiler/profile; never accept a caller-selected replacement weight vector.",
+      "Formal consumer: prove each descriptor determines its exact layout/functional for an identical prior transcript, then prove composed acceptance and analyze the new Fiat-Shamir/QROM protocol. Descriptor equality alone is not soundness."
+    ],
+    "optimistic_hash_screen": {
+      "original_unique_blocks": 242409,
+      "erased_layout_and_stage_tag_blocks": 68559,
+      "granted_response_encoding_savings": 21683,
+      "remaining_unique_blocks": 152167,
+      "remaining_dense_gadget_gib": 503.84886169433594,
+      "scope": "All targeted tag work is assumed free, including unrelated small calls. Frozen execution only; new transcript and derivation/routing costs excluded. Not a proof-size bound."
+    },
+    "decision": "Do not remove hashes at generic GKR/stage APIs. Any new profile must use closed derivation interfaces and retain initial external bindings. Even optimistic removal leaves substantial hash work; require a complete outer-codec byte screen before migration.",
+    "scope": "Concrete implementation dependency counterexamples, not attacks on the unchanged verifier, a new protocol, universal determinism proof, Lean certificate, or PQ128 claim."
+  },
+  "nibble_hash_prototype": {
+    "evidence": "results/sha384-nibble-circuit.json",
+    "witness_cells": 31632,
+    "lookup_requests": 18688,
+    "fixed_lookup_table_rows": 13056,
+    "scope": "Executable trusted graph and integer/lookup relation; all eight output state words checked with OpenSSL probe and final digests with hashlib. Wire cells exclude routing, lookup multiplicities, fixed-table proof, range arguments, AIR padding, auxiliary columns and PCS. Not directly comparable to an AIR cell count. No proof-size/performance, universal Lean, or PQ128 claim.",
+    "next_gate": "Choose row layout and enforce fixed lookup tables plus wiring through an actual AIR/bus argument; include their full overhead before deciding whether cheaper than the existing core."
+  },
+  "nibble_row_plan": {
+    "evidence": "results/sha384-nibble-row-plan.json",
+    "phase_shapes": {
+      "schedule": {
+        "rows_per_block": 64,
+        "source_width": 210,
+        "aux_base_width": 1096
+      },
+      "round": {
+        "rows_per_block": 80,
+        "source_width": 418,
+        "aux_base_width": 1816
+      },
+      "endpoint": {
+        "rows_per_block": 1,
+        "source_width": 514,
+        "aux_base_width": 1216
+      },
+      "boundary": {
+        "rows_per_block": 32,
+        "source_width": 34,
+        "aux_base_width": 48
+      }
+    },
+    "candidate_trials": [
+      {
+        "blocks": 1,
+        "candidate_cells": 3758068,
+        "candidate_execution_cells": 375620,
+        "fixed_lookup_cells": 3378432,
+        "fixed_range_cells": 4016,
+        "existing_core_endpoint_cells": 676404,
+        "candidate_over_existing": 5.555951768469731,
+        "within_current_degree_lane_caps": true,
+        "within_local_row_cap": true
+      },
+      {
+        "blocks": 4,
+        "candidate_cells": 5322456,
+        "candidate_execution_cells": 1495560,
+        "fixed_lookup_cells": 3822336,
+        "fixed_range_cells": 4560,
+        "existing_core_endpoint_cells": 2698856,
+        "candidate_over_existing": 1.9721155926807508,
+        "within_current_degree_lane_caps": true,
+        "within_local_row_cap": true
+      },
+      {
+        "blocks": 16,
+        "candidate_cells": 10253584,
+        "candidate_execution_cells": 5982240,
+        "fixed_lookup_cells": 4266240,
+        "fixed_range_cells": 5104,
+        "existing_core_endpoint_cells": 10795424,
+        "candidate_over_existing": 0.9498083632472425,
+        "within_current_degree_lane_caps": true,
+        "within_local_row_cap": true
+      },
+      {
+        "blocks": 25,
+        "candidate_cells": 11660592,
+        "candidate_execution_cells": 7389248,
+        "fixed_lookup_cells": 4266240,
+        "fixed_range_cells": 5104,
+        "existing_core_endpoint_cells": 10822464,
+        "candidate_over_existing": 1.0774433622509625,
+        "within_current_degree_lane_caps": true,
+        "within_local_row_cap": true
+      },
+      {
+        "blocks": 64,
+        "candidate_cells": 28644752,
+        "candidate_execution_cells": 23928960,
+        "fixed_lookup_cells": 4710144,
+        "fixed_range_cells": 5648,
+        "existing_core_endpoint_cells": 43181696,
+        "candidate_over_existing": 0.6633540285217144,
+        "within_current_degree_lane_caps": true,
+        "within_local_row_cap": true
+      },
+      {
+        "blocks": 256,
+        "candidate_cells": 100876080,
+        "candidate_execution_cells": 95715840,
+        "fixed_lookup_cells": 5154048,
+        "fixed_range_cells": 6192,
+        "existing_core_endpoint_cells": 172726784,
+        "candidate_over_existing": 0.5840210629985446,
+        "within_current_degree_lane_caps": false,
+        "within_local_row_cap": false
+      },
+      {
+        "blocks": 1024,
+        "candidate_cells": 388468048,
+        "candidate_execution_cells": 382863360,
+        "fixed_lookup_cells": 5597952,
+        "fixed_range_cells": 6736,
+        "existing_core_endpoint_cells": 690907136,
+        "candidate_over_existing": 0.5622579761573052,
+        "within_current_degree_lane_caps": false,
+        "within_local_row_cap": false
+      }
+    ],
+    "scope": "Materialized static phase-row wiring with exact word fanout; existing Ext8 bus auxiliary formulas. NOT an AIR or proof. Per-phase schedules and wire addresses are trusted. Fixed lookup table cost now uses the implemented polynomial AIR; its composition with phases is not implemented. Cost excludes phase-program enforcement, public/call routing, lookup soundness, LDE/Merkle/PCS/GKR. Old comparator excludes corresponding call routing too. Dimensions may exceed existing packing/degree limits. No secure-size or runtime prediction.",
+    "decision": "Evaluate the structured phase-row AIR with whole-word routing. Connect phase row programs and requests to the implemented fixed-table AIR before interpreting any projected saving. Keep full NEAR/PQ128/300KB gate NOT_PASSED."
+  },
+  "nibble_fixed_lookup_air": {
+    "evidence": "results/sha384-nibble-lookup-air.json",
+    "fixed_truth_rows_checked": 13072,
+    "source_constraints_evaluated": 928800,
+    "negative_cases": [
+      "fixed-index-bit",
+      "fixed-nonboolean-index",
+      "fixed-nonboolean-multiplicity",
+      "fixed-extra-multiplicity",
+      "request-wrong-output",
+      "request-hidden",
+      "range-request-outside-nibble",
+      "truncated-fixed-enumeration",
+      "reordered-fixed-enumeration"
+    ],
+    "scope": "Actual canonical polynomial AIR constrains enumeration, lookup values and multiplicity bits; natural bus checker balances requests. Requests remain external to SHA phase AIR. No succinct proof, compiler/Lean theorem, randomized-bus soundness, or PQ128 result."
+  },
+  "nibble_composed_air": {
+    "evidence": "results/sha384-nibble-phase-air.json",
+    "checked_compression_blocks": 2,
+    "compiled_64_block_source_aux_cells": 27854288,
+    "compiled_64_block_witness_checked": false,
+    "scope": "Canonical AIR jointly enforces phase programs, bounded additions, lookup relations, routing and public full512-bit state/block/result boundaries. Full-witness interpreter only; no generated succinct proof, universal compiler/Lean theorem or PQ128 security. Public boundary transport is diagnostic, not private recursive call binding.",
+    "next_gate": "Check a full 64-block witness and generate a proof with complete byte accounting. Replace verbose diagnostic public boundaries with same-root private call binding before evaluating recursive compression."
+  },
+  "nibble_64_block_preparation": {
+    "evidence": "results/sha384-nibble64/manifest.json",
+    "status": "DIAGNOSTIC_64_BLOCK_COMPRESSION_ENVELOPE_VERIFIED",
+    "full_witness_verified": true,
+    "source_constraints_evaluated": 8802336,
+    "source_aux_cells": 27939408,
+    "boundary_root": "fc52a781c41cefe14fbd90a313758e8837710fb120e53944da16911a8b491a1268684695a51ab577548a88f6c655c25a",
+    "scope": "Complete diagnostic compression-relation envelope with all source/aux commitments and local/GKR/PCS messages. Static trusted AIR/spec excluded; roots parsed from wire, no trace or original hash calls required. Boundary root is not linked to application/recursive calls. No zero-knowledge, formal compiler, PQ128, full NEAR or secure-size claim.",
+    "proof_captured": true,
+    "proof_bytes": 265040,
+    "opening_bytes": 186344,
+    "queries": 8,
+    "fresh_verifier_passed": true
+  },
+  "auxiliary_generator_optimization": {
+    "evidence": "results/ext8-auxiliary-base-parity.json",
+    "cases": 16,
+    "compared_base_cells": 814800,
+    "large_case": {
+      "rows": 512,
+      "reference_seconds": 13.743900607805699,
+      "base_evaluation_seconds": 2.016133711207658
+    },
+    "scope": "Exact parity for synthetic nonboolean multiplicities, next/public/selector expressions, empty messages/multiplicities, zero factors, two source rows of all11retained tables, and512retained round rows. Not full-trace equivalence, a Lean refinement, or a changed verifier. Timing is this bounded CPU test only.",
+    "baseline_prover_changed": false
+  },
+  "packed_prover_retry": {
+    "evidence": "results/sha384-nibble64/prover-attempt.json",
+    "status": "REFERENCE_OOM_PACKED_RETRY_COMPLETED",
+    "reference_failed_stage": "weighted PCS",
+    "parity_cases": [
+      {
+        "shapes": [
+          [
+            2,
+            3,
+            2
+          ],
+          [
+            3,
+            2,
+            2
+          ]
+        ],
+        "proof_bytes": 3120,
+        "byte_identical": true
+      },
+      {
+        "shapes": [
+          [
+            4,
+            7,
+            4
+          ],
+          [
+            3,
+            2,
+            2
+          ]
+        ],
+        "proof_bytes": 7560,
+        "byte_identical": true
+      },
+      {
+        "shapes": [
+          [
+            3,
+            1,
+            1
+          ]
+        ],
+        "proof_bytes": 1880,
+        "byte_identical": true
+      }
+    ],
+    "scope": "Reference OOM at 12 GiB; packed retry completed under same cap. Complete diagnostic q8 envelope freshly verified; not PQ128, recursive-call binding or full NEAR."
+  },
+  "nibble_full_verifier_coverage": {
+    "evidence": "results/nibble-full-verifier-screen.json",
+    "status": "INDEPENDENT_NIBBLE_CHUNK_TRANSPORT_REJECTED",
+    "scenarios": [
+      {
+        "name": "unchanged_whole_input_deduplicated_verifier",
+        "sha384_compression_blocks": 242409,
+        "independent_64_slot_envelopes": 3788,
+        "mandatory_header_roots_finals_local_bytes": 157974752,
+        "exceeds_300000_before_GKR_PCS_and_call_binding": true
+      },
+      {
+        "name": "optimistically_erased_derived_transcript_work",
+        "sha384_compression_blocks": 152167,
+        "independent_64_slot_envelopes": 2378,
+        "mandatory_header_roots_finals_local_bytes": 99172112,
+        "exceeds_300000_before_GKR_PCS_and_call_binding": true
+      }
+    ],
+    "coverage": {
+      "implemented": [
+        "64 independent SHA384 compression state/message/result relations",
+        "phase scheduling, word routing, fixed lookup relations and bounded additions within that relation"
+      ],
+      "missing": [
+        "bind private boundary root to exact verifier hash calls and their multiplicities",
+        "SHA message framing, padding, IV, chaining and digest truncation for those calls",
+        "derive Fiat-Shamir challenges from the authenticated transcript",
+        "verify Merkle index/path/root equations and PCS fold/query equations",
+        "local/GKR algebraic checks and source-to-auxiliary opening obligations",
+        "outer proof soundness, adaptive QROM accounting and PQ128 parameters",
+        "full near-chunk-v3 semantics and 1 Petagas capacity"
+      ]
+    },
+    "decision": "Do not transport one existing envelope per hash batch or launch larger SHA-only proving as a substitute for full-verifier recursion. A next viable candidate must jointly prove the closed verifier, amortize fixed messages globally, and account for call routing plus arithmetic; validate its complete byte/security ledger before full-scale proving.",
+    "scope": "Exact lower bound only for concatenating independent envelopes with this fixed 64-slot specification. Workload is the recorded verifier after whole-input hash deduplication, not a minimum over new algorithms, block/state sharing or transcript redesign. Optimistic scenario is an assumed workload, not an implemented protocol. This does not rule out joint proofs, recursive aggregation, different AIR/codec, or a redesigned verifier. q8 and hash-only coverage cannot establish PQ128 or full NEAR feasibility."
+  },
+  "closed_verifier_arithmetic": {
+    "evidence": "results/closed-verifier-arithmetic.json",
+    "stages": {
+      "contract": {},
+      "call_link": {
+        "ext8/add": 137027,
+        "ext8/base": 2881,
+        "ext8/canonical": 15106,
+        "ext8/evaluate": 638,
+        "ext8/mul": 306360,
+        "ext8/scale": 59946,
+        "ext8/sub": 118096,
+        "hash_parts": 23800
+      },
+      "compression": {
+        "ext8/add": 1289946,
+        "ext8/base": 19839,
+        "ext8/canonical": 2180753,
+        "ext8/evaluate": 1274,
+        "ext8/fft": 1,
+        "ext8/mul": 3379214,
+        "ext8/scale": 93768,
+        "ext8/sub": 1231735,
+        "hash_parts": 81039,
+        "native/affine_fold": 17,
+        "native/affine_fold/values_elements": 524284,
+        "native/inject": 7,
+        "native/inject/points_elements": 2170,
+        "native/inject/weights_elements": 149798
+      }
+    },
+    "scope": "Executed full retained diagnostic fixture contract, call-link and compression verifier. Counts Python reference functions including imported aliases; composite operations also count their nested scalar calls, so do not sum all counters as disjoint gates. Native calls and vector lengths recorded separately; native scalar arithmetic and built-in base-field arithmetic not counted. Not a circuit gate count, formal verifier compiler, full NEAR run, or soundness/security proof."
+  },
+  "structured_functional_candidate": {
+    "evidence": "results/structured-functional/manifest.json",
+    "new_theorems": [
+      "structured_power_fold",
+      "structured_tensor_fold",
+      "structured_sum_fold",
+      "structured_scale_eq"
+    ],
+    "scope": "Four pointwise field identities plus small executable sequence parity. No universal list/implementation refinement, transcript binding or security proof.",
+    "full_state_parity_evidence": "results/structured-verifier-states.json",
+    "compared_ext8_coefficients": 674084,
+    "dense_injection_coefficient_terms": 46437380,
+    "next_gate": "All retained states match. Design a closed versioned derivation binding and account for hybrid materialization before changing transcript hashes. Existing standalone stage APIs must keep explicit weight binding."
+  },
+  "closed_derived_transcript_experiment": {
+    "evidence": "results/closed-derived-switch/report.json",
+    "negative_cases": [
+      "baseline-proof-in-closed-profile",
+      "closed-proof-in-baseline-profile",
+      "baseline-proof-relabeled-closed",
+      "closed-proof-relabeled-baseline",
+      "statement",
+      "parent",
+      "claim",
+      "source-root",
+      "source-weight",
+      "query-count",
+      "schedule",
+      "input-reduction",
+      "first-root",
+      "first-ood",
+      "tail-round",
+      "terminal",
+      "injected-weight-field"
+    ],
+    "hash_measurements": {
+      "baseline": {
+        "tags": {
+          "near-ext8-weighted-code-switch-diagnostic-v1": {
+            "calls": 1,
+            "blocks": 3,
+            "unique_calls": 1,
+            "unique_blocks": 3
+          },
+          "near-pq384-ext8-weighted-joint-diagnostic-v1": {
+            "calls": 1,
+            "blocks": 21,
+            "unique_calls": 1,
+            "unique_blocks": 21
+          },
+          "transcript/init": {
+            "calls": 3,
+            "blocks": 3,
+            "unique_calls": 3,
+            "unique_blocks": 3
+          },
+          "weighted-code-switch/namespace": {
+            "calls": 1,
+            "blocks": 2,
+            "unique_calls": 1,
+            "unique_blocks": 2
+          },
+          "transcript/commit": {
+            "calls": 19,
+            "blocks": 228,
+            "unique_calls": 19,
+            "unique_blocks": 228
+          },
+          "transcript/request": {
+            "calls": 64,
+            "blocks": 128,
+            "unique_calls": 64,
+            "unique_blocks": 128
+          },
+          "transcript/squeeze": {
+            "calls": 64,
+            "blocks": 128,
+            "unique_calls": 64,
+            "unique_blocks": 128
+          },
+          "transcript/ratchet": {
+            "calls": 64,
+            "blocks": 128,
+            "unique_calls": 64,
+            "unique_blocks": 128
+          },
+          "transcript/draw-result": {
+            "calls": 64,
+            "blocks": 128,
+            "unique_calls": 64,
+            "unique_blocks": 128
+          },
+          "merkle/leaf": {
+            "calls": 64,
+            "blocks": 152,
+            "unique_calls": 60,
+            "unique_blocks": 141
+          },
+          "merkle/node": {
+            "calls": 215,
+            "blocks": 606,
+            "unique_calls": 119,
+            "unique_blocks": 320
+          },
+          "merkle/root": {
+            "calls": 33,
+            "blocks": 82,
+            "unique_calls": 5,
+            "unique_blocks": 12
+          },
+          "near-ext8-code-switch-stage-diagnostic-v1": {
+            "calls": 2,
+            "blocks": 20,
+            "unique_calls": 2,
+            "unique_blocks": 20
+          },
+          "ext8/code-switch/coset-context-v1": {
+            "calls": 3,
+            "blocks": 6,
+            "unique_calls": 3,
+            "unique_blocks": 6
+          }
+        },
+        "totals": {
+          "calls": 598,
+          "blocks": 1635,
+          "unique_calls": 470,
+          "unique_blocks": 1268
+        },
+        "instrumented_seconds": 0.01375316921621561
+      },
+      "closed": {
+        "tags": {
+          "near-ext8-closed-derived-switch-experiment-v1": {
+            "calls": 1,
+            "blocks": 3,
+            "unique_calls": 1,
+            "unique_blocks": 3
+          },
+          "near-pq384-ext8-weighted-joint-diagnostic-v1": {
+            "calls": 1,
+            "blocks": 21,
+            "unique_calls": 1,
+            "unique_blocks": 21
+          },
+          "transcript/init": {
+            "calls": 3,
+            "blocks": 3,
+            "unique_calls": 3,
+            "unique_blocks": 3
+          },
+          "weighted-code-switch/namespace": {
+            "calls": 1,
+            "blocks": 2,
+            "unique_calls": 1,
+            "unique_blocks": 2
+          },
+          "transcript/commit": {
+            "calls": 19,
+            "blocks": 229,
+            "unique_calls": 19,
+            "unique_blocks": 229
+          },
+          "transcript/request": {
+            "calls": 64,
+            "blocks": 128,
+            "unique_calls": 64,
+            "unique_blocks": 128
+          },
+          "transcript/squeeze": {
+            "calls": 64,
+            "blocks": 128,
+            "unique_calls": 64,
+            "unique_blocks": 128
+          },
+          "transcript/ratchet": {
+            "calls": 64,
+            "blocks": 128,
+            "unique_calls": 64,
+            "unique_blocks": 128
+          },
+          "transcript/draw-result": {
+            "calls": 64,
+            "blocks": 128,
+            "unique_calls": 64,
+            "unique_blocks": 128
+          },
+          "merkle/leaf": {
+            "calls": 64,
+            "blocks": 152,
+            "unique_calls": 62,
+            "unique_blocks": 146
+          },
+          "merkle/node": {
+            "calls": 215,
+            "blocks": 606,
+            "unique_calls": 127,
+            "unique_blocks": 350
+          },
+          "merkle/root": {
+            "calls": 33,
+            "blocks": 82,
+            "unique_calls": 5,
+            "unique_blocks": 12
+          },
+          "near-ext8-closed-derived-stage-experiment-v1": {
+            "calls": 2,
+            "blocks": 12,
+            "unique_calls": 2,
+            "unique_blocks": 12
+          },
+          "ext8/code-switch/coset-context-v1": {
+            "calls": 3,
+            "blocks": 6,
+            "unique_calls": 3,
+            "unique_blocks": 6
+          }
+        },
+        "totals": {
+          "calls": 598,
+          "blocks": 1628,
+          "unique_calls": 480,
+          "unique_blocks": 1296
+        },
+        "instrumented_seconds": 0.013418147806078196
+      }
+    },
+    "scope": "One small heterogeneous complete packed-root/code-switch proof under separate experimental profile. Full adapter derives all weights; standalone stage unchanged. Dense arithmetic still used. No compact full-NEAR proof, full-size benchmark, universal derived-state/FS/QROM proof or PQ128 claim.",
+    "hybrid_evidence": "results/closed-hybrid-verifier/report.json",
+    "hybrid_scope": "One generated degree1024 closed-profile proof verified by dense and hybrid implementations with identical hash census and fresh pure-Python hybrid verification. Additional transition equality checks cover zero/one/random folds and zero/base/extension points. No full NEAR, formal Python refinement, PQ128 certificate, full-size proof or verifier speedup claim.",
+    "full_replay_evidence": "results/full-hybrid-verifier.json",
+    "ordered_hash_calls_compared": 104839,
+    "work_evidence": "results/closed-hybrid-work.json",
+    "remaining_hash_counterfactual": 204966,
+    "next_gate": "Hybrid derivation removes large dense-functional work, but stage-start omission alone leaves about205000hash compression blocks if other recorded work is held fixed. Keep the prototype separate; next evaluate remaining hash architecture and full joint-verifier geometry/security rather than generate a large proof solely for this optimization."
+  },
+  "joint_nibble_geometry": {
+    "evidence": "results/joint-nibble-geometry.json",
+    "baseline_reconciled_bytes": 265040,
+    "scenarios": [
+      {
+        "name": "measured_full_verifier",
+        "queries": 8,
+        "expected_optimistic_total_bytes": 471151.79476542585,
+        "sampled_min_bytes": 464744,
+        "sampled_max_bytes": 474864
+      },
+      {
+        "name": "measured_full_verifier",
+        "queries": 309,
+        "expected_optimistic_total_bytes": 12713359.211845396,
+        "sampled_min_bytes": 12686712,
+        "sampled_max_bytes": 12742872
+      },
+      {
+        "name": "closed_stage_binding_counterfactual",
+        "queries": 8,
+        "expected_optimistic_total_bytes": 405071.7982000838,
+        "sampled_min_bytes": 398664,
+        "sampled_max_bytes": 408784
+      },
+      {
+        "name": "closed_stage_binding_counterfactual",
+        "queries": 309,
+        "expected_optimistic_total_bytes": 10169453.049037851,
+        "sampled_min_bytes": 10142800,
+        "sampled_max_bytes": 10198960
+      },
+      {
+        "name": "prior_optimistic_hash_erasure",
+        "queries": 8,
+        "expected_optimistic_total_bytes": 405071.7982000838,
+        "sampled_min_bytes": 398664,
+        "sampled_max_bytes": 408784
+      },
+      {
+        "name": "prior_optimistic_hash_erasure",
+        "queries": 309,
+        "expected_optimistic_total_bytes": 10169453.049037851,
+        "sampled_min_bytes": 10142800,
+        "sampled_max_bytes": 10198960
+      }
+    ],
+    "assumptions": [
+      "Single joint envelope, 22 separate source/auxiliary trees, existing rate4 weighted folding codec.",
+      "Retain baseline widths and finals; multiplicity growth is priced at zero. New constraints and GKR priced at zero.",
+      "Hash call routing, message framing/chaining, verifier arithmetic, challenge derivation and application binding priced at zero.",
+      "Uniform-with-replacement query model; expected costs and 16 seeded simulations are not worst-case bounds.",
+      "Lift implementation degree2^18 and lane64 caps, retain BabyBear subgroup/rate4 degree2^25 cap.",
+      "q8 and q309 are sensitivity scenarios, neither certifies PQ128. Old workloads do not measure a redesigned transcript."
+    ],
+    "next_gate": "This screen prices a named joint SHA architecture before witness generation. Expected/sampled budget failures reject this candidate for further scale-up at these packings, not all joint/pooled/code-switch/algebraic-hash protocols. An algebraic-hash candidate still needs its own table layout and security assumptions; S-box counts do not determine outer bytes."
+  },
+  "pooled_joint_nibble_geometry": {
+    "evidence": "results/pooled-joint-nibble-geometry.json",
+    "scenarios": [
+      {
+        "name": "measured_full_verifier",
+        "queries": 8,
+        "bank_count": 6,
+        "expected_optimistic_total_bytes": 393856.10617647634,
+        "expected_saving_bytes": 77295.6885889495,
+        "packed_base_coefficient_payload_bytes": 383191613440
+      },
+      {
+        "name": "measured_full_verifier",
+        "queries": 309,
+        "bank_count": 6,
+        "expected_optimistic_total_bytes": 10971096.866092727,
+        "expected_saving_bytes": 1742262.3457526695,
+        "packed_base_coefficient_payload_bytes": 383191613440
+      },
+      {
+        "name": "closed_stage_binding_counterfactual",
+        "queries": 8,
+        "bank_count": 4,
+        "expected_optimistic_total_bytes": 310724.9845977216,
+        "expected_saving_bytes": 94346.81360236218,
+        "packed_base_coefficient_payload_bytes": 245081571328
+      },
+      {
+        "name": "closed_stage_binding_counterfactual",
+        "queries": 309,
+        "bank_count": 4,
+        "expected_optimistic_total_bytes": 7927624.373745474,
+        "expected_saving_bytes": 2241828.6752923774,
+        "packed_base_coefficient_payload_bytes": 245081571328
+      },
+      {
+        "name": "prior_optimistic_hash_erasure",
+        "queries": 8,
+        "bank_count": 4,
+        "expected_optimistic_total_bytes": 310724.9845977216,
+        "expected_saving_bytes": 94346.81360236218,
+        "packed_base_coefficient_payload_bytes": 245081571328
+      },
+      {
+        "name": "prior_optimistic_hash_erasure",
+        "queries": 309,
+        "bank_count": 4,
+        "expected_optimistic_total_bytes": 7927624.373745474,
+        "expected_saving_bytes": 2241828.6752923774,
+        "packed_base_coefficient_payload_bytes": 245081571328
+      }
+    ],
+    "assumptions": [
+      "Single joint envelope, 22 separate source/auxiliary trees, existing rate4 weighted folding codec.",
+      "Retain baseline widths and finals; multiplicity growth is priced at zero. New constraints and GKR priced at zero.",
+      "Hash call routing, message framing/chaining, verifier arithmetic, challenge derivation and application binding priced at zero.",
+      "Uniform-with-replacement query model; expected costs and 16 seeded simulations are not worst-case bounds.",
+      "Lift implementation degree2^18 and lane64 caps, retain BabyBear subgroup/rate4 degree2^25 cap.",
+      "q8 and q309 are sensitivity scenarios, neither certifies PQ128. Old workloads do not measure a redesigned transcript.",
+      "Replace separate source/auxiliary trees with phase-separated banks of contiguous columns, padded to each bank maximum height.",
+      "Exhaustive partition search within each 11-table phase; no cross-phase, row concatenation, new AIR or hash substitution.",
+      "Logical root slots retained in execution header; static bank mapping and logical masked weights required but unimplemented for this 11-table profile.",
+      "Packed base coefficient payload is a buffer size, not measured peak RAM; excludes Ext8 expansion, evaluations, Merkle trees, witnesses and scratch."
+    ],
+    "next_gate": "Do not implement enlarged pooled SHA proving solely for these results. Use exact bank groups and padded costs to assess whether pooling changes the byte decision. Failing expected/sampled scenarios do not rule out code switching, different AIR layouts, or algebraic hashing."
+  },
+  "hash_architecture_screen": {
+    "evidence": "results/hash-architecture-review/geometry.json",
+    "digest_screens": [
+      {
+        "field_elements": 8,
+        "canonical_u32_bytes": 32,
+        "max_range_log2": 247.2551247706009,
+        "ideal_generic_quantum_collision_work_exponent": 82.41837492353363,
+        "passes_384_bit_output_range_screen": false,
+        "pq128_certified": false
+      },
+      {
+        "field_elements": 12,
+        "canonical_u32_bytes": 48,
+        "max_range_log2": 370.88268715590135,
+        "ideal_generic_quantum_collision_work_exponent": 123.62756238530045,
+        "passes_384_bit_output_range_screen": false,
+        "pq128_certified": false
+      },
+      {
+        "field_elements": 13,
+        "canonical_u32_bytes": 52,
+        "max_range_log2": 401.7895777522265,
+        "ideal_generic_quantum_collision_work_exponent": 133.92985925074217,
+        "passes_384_bit_output_range_screen": true,
+        "pq128_certified": false
+      },
+      {
+        "field_elements": 16,
+        "canonical_u32_bytes": 64,
+        "max_range_log2": 494.5102495412018,
+        "ideal_generic_quantum_collision_work_exponent": 164.83674984706727,
+        "passes_384_bit_output_range_screen": true,
+        "pq128_certified": false
+      }
+    ],
+    "candidates": [
+      {
+        "width": 16,
+        "capacity_elements": 13,
+        "rate_elements": 3,
+        "digest_elements": 13,
+        "upstream_M": 128,
+        "full_rounds": 8,
+        "partial_rounds": 13,
+        "sboxes_per_permutation": 141,
+        "hypothetical_pair_hash_input_elements": 29,
+        "absorb_permutations": 10,
+        "extra_squeeze_permutations": 4,
+        "pair_hash_permutations": 14,
+        "x7_multiplications_per_permutation": 564,
+        "pair_hash_sbox_multiplications": 7896,
+        "pq128_certified": false
+      },
+      {
+        "width": 24,
+        "capacity_elements": 13,
+        "rate_elements": 11,
+        "digest_elements": 13,
+        "upstream_M": 128,
+        "full_rounds": 8,
+        "partial_rounds": 21,
+        "sboxes_per_permutation": 213,
+        "hypothetical_pair_hash_input_elements": 29,
+        "absorb_permutations": 3,
+        "extra_squeeze_permutations": 1,
+        "pair_hash_permutations": 4,
+        "x7_multiplications_per_permutation": 852,
+        "pair_hash_sbox_multiplications": 3408,
+        "pq128_certified": false
+      },
+      {
+        "width": 32,
+        "capacity_elements": 13,
+        "rate_elements": 19,
+        "digest_elements": 13,
+        "upstream_M": 128,
+        "full_rounds": 8,
+        "partial_rounds": 30,
+        "sboxes_per_permutation": 286,
+        "hypothetical_pair_hash_input_elements": 29,
+        "absorb_permutations": 2,
+        "extra_squeeze_permutations": 0,
+        "pair_hash_permutations": 2,
+        "x7_multiplications_per_permutation": 1144,
+        "pair_hash_sbox_multiplications": 2288,
+        "pq128_certified": false
+      }
+    ],
+    "scope": "BHT ideal generic collision query scaling motivates a necessary output-range screen under unrestricted quantum-query modeling. Capacity13 is a conservative shape choice, not a security theorem. Upstream round counts only provide cost examples; no quantum algebraic-attack margin inferred. Pair wrapper is hypothetical; linear layers, routing, canonicalization and proof costs excluded. More field arithmetic does not introduce an elliptic-curve assumption.",
+    "next_gate": "Width32 with13output/13capacity elements is a cost-screen candidate, not an approved hash. Retain SHA384 baseline. Establish concrete quantum permutation assumptions/parameters and full protocol budget before substitution. Do not treat the upstream M128 selector as PQ128 or repair a narrow inner digest by wrapping it in SHA384.",
+    "security_certified": false
+  },
+  "algebraic_permutation_layout": {
+    "evidence": "results/poseidon2-permutation-layout/report.json",
+    "width": 2106,
+    "constraints_per_row": 2074,
+    "independent_permutations": 44,
+    "scope": "Complete permutation relation in one wide row; canonical inputs and outputs share the same row. No call binding, sponge framing/padding, transcript, Merkle compression, ZK, recursive proof, quantum security, or NEAR certificate. Pair-hash count imports the earlier hypothetical width32/capacity13/rate19 wrapper; it is not implemented.",
+    "workload_evidence": "results/poseidon2-permutation-layout/workload.json",
+    "hypothetical_permutations": 503684,
+    "projections": [
+      {
+        "queries": 8,
+        "degree": 4194304,
+        "searched_degree_cap": 4194304,
+        "branches": [
+          {
+            "rows": 524288,
+            "width": 2106,
+            "packing": 8,
+            "degree": 4194304,
+            "lanes": 264,
+            "half": 8388608,
+            "leaf_bytes": 2112,
+            "expected_bytes": 24269.55587771789
+          }
+        ],
+        "expected_opening_bytes": 107419.60873637111,
+        "optimistic_fixed_bytes": 2488,
+        "expected_permutation_only_bytes": 109907.60873637111,
+        "packed_base_coefficient_payload_bytes": 4429185024,
+        "missing_costs": [
+          "GKR",
+          "sponge chaining, byte canonicalization and padding constraints",
+          "logical hash-call/root binding and all nonhash verifier arithmetic",
+          "auxiliary/adapter integration"
+        ],
+        "executable_profile": false,
+        "security_certified": false
+      },
+      {
+        "queries": 309,
+        "degree": 8388608,
+        "searched_degree_cap": 8388608,
+        "branches": [
+          {
+            "rows": 524288,
+            "width": 2106,
+            "packing": 16,
+            "degree": 8388608,
+            "lanes": 132,
+            "half": 16777216,
+            "leaf_bytes": 1056,
+            "expected_bytes": 546420.4759297329
+          }
+        ],
+        "expected_opening_bytes": 2414868.083234293,
+        "optimistic_fixed_bytes": 2488,
+        "expected_permutation_only_bytes": 2417356.083234293,
+        "packed_base_coefficient_payload_bytes": 4429185024,
+        "missing_costs": [
+          "GKR",
+          "sponge chaining, byte canonicalization and padding constraints",
+          "logical hash-call/root binding and all nonhash verifier arithmetic",
+          "auxiliary/adapter integration"
+        ],
+        "executable_profile": false,
+        "security_certified": false
+      }
+    ],
+    "workload_scope": "Actual old verifier is replayed unchanged and its complete four-count hash census matches. 57bytes/rate block is a counterfactual injective encoding shape, not a new-transcript measurement. Exact-input dedup requires proved routing. Output52bytes, new domain separation and challenges would change downstream lengths/sharing. Application hashes are not substituted. No quantum security, recursive proof or fullNEAR claim."
+  },
+  "full_near_capacity": {
+    "target_gas": 1000000000000000,
+    "legacy_cap": 3450888781824,
+    "capacity_ratio": 290,
+    "qualification": "Gas-capacity ratio only; NOT a proved trace count or operator bound"
+  },
+  "decision": {
+    "next_experiment": "Concrete algebraic permutation AIR matches pinned upstream Rust. Old-input byte-wrapper geometry projects about110KB at diagnostic q8 but2.42MB at q309 before major costs. Next assess a changed outer PCS schedule and complete security/byte ledger for this named layout before implementing a full sponge verifier or running a large proof. Permutation parity does not establish quantum hash security, compiler refinement, or recursive soundness.",
+    "standalone_mca_expansion": "DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.",
+    "reopen_mca_if": "A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.",
+    "do_not_repeat": "Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.",
+    "limits": "Failure of this finite projected family is not an impossibility theorem. Hash-work measurements are not recursive proof-size predictions. Full verifier recursion and PQ128 remain open."
+  },
+  "evidence_sha256": {
+    "results/ext8-switch-execution-q309/manifest.json": "6fe0e640fbd4c0cfd3f1f0cc2b97d55bba48b4b80a8670f5daac2ddb8e96d286",
+    "results/ext8-switch-execution-q309/report.json": "a56cc786cb66529a398785caced9fd51e6a8b78e9edc76e1b06de4bbc3e643b4",
+    "results/ext8-switch-execution-q309/prover-report.json": "9bb9e47f811b25615516a668a2a1d83cd998ed01951b09c0ebee13f5b26b05e8",
+    "results/ext8-switch-execution-q309/codec-report.json": "0bd112a656b25d607915bff5bd78cc1d61efad5d7eb9537497a54d0a547cca83",
+    "results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd",
+    "results/larger-field-code-switch-screen.json": "f1ad5181272cea7db34147a0226bb63ad81cd4c04c0b9cb9b632c3ca47d9894f",
+    "results/recursive-pcs-root/report.json": "1d905381180c940a885581288e08179bcdaa8a775b19c6d9b5101c25d187610d",
+    "results/recursive-single-root-root/report.json": "a4d811dcf05e3226072f8969c643d1bc98d82462710c365965b78137e3a7adf0",
+    "results/private-merkle-proof-q8/report.json": "84a4fc273a65d7875d5e235e7fd67ca604476a4f5ad16d30e08b7754fa442af2",
+    "results/bounded-merkle-break-even.json": "377fc15b7e58ba4a6504fde06ad097ef6aabfe08bd834b34448fb63426c99ca4",
+    "scope-report.json": "fcea1becba48a6f0e97c704b7048b71993852c2713441fe1acdf0c1d2b04f9ea",
+    "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
+    "results/response-transcript-screen.json": "18f6b6949cbf592ca19bbb77317074651e58bd63e2ca4568ed2eeb65171e29de",
+    "results/derived-transcript-bindings.json": "20b63f657147802a5590a013e1b8c09ab8a580b2c328bd95802164f38d376a6b",
+    "results/sha384-nibble-circuit.json": "b8d654f393c495431825f19df6f8214ced83f8e909262e82d03269d1403f8487",
+    "results/sha384-nibble-row-plan.json": "8b222813cc6e734b8ce0c28c10548d5be207d2c0fc8ac72c8298b33751cd9fd2",
+    "results/sha384-nibble-lookup-air.json": "1676aeafcef624cbcfe809523d340bbb769e5fe1ae1fabd8063101643374091b",
+    "results/sha384-nibble-phase-air.json": "62d61257105112555bdf01800f1ea2a56135dde09b67e6d08a84694279e4e95e",
+    "results/sha384-nibble64/manifest.json": "06bed6f49c0ddc8943d44b7fdb79e212aca996905c47707b0fc47113191bfd60",
+    "results/sha384-nibble64/private-preparation.json": "33aca9f2cceaa595f5257d3de4257a1bff2a00c1cbfd29c6410d58c5bc186b73",
+    "results/sha384-nibble64/codec-report.json": "085467e05ab8a90b00dcc3653d2f41275519b89821e8bcf3b599ecaa721595db",
+    "results/sha384-nibble-boundary-air.json": "6316eac59f800d62980e6591194fda4bedf25e25b9f2cd894ff505ee8d4bc737",
+    "results/ext8-auxiliary-base-parity.json": "a9605252405f6cd9f884f3a8b7ad5c74fac103a072d1b3c06714134a67bfa262",
+    "results/ext8-packed-prover-parity.json": "e4293057d4f3d691226f47c347be6fffca148d050689cf64a82ca54db4f7d6c1",
+    "results/sha384-nibble64/prover-attempt.json": "f865af35b745671612df2364970c93f5f55cccb0c0482c89105065791b2d1ba6",
+    "results/nibble-full-verifier-screen.json": "5ea5148cc9d91faa2212ab85098ac1253a646d816586632704fedc99cc20f720",
+    "results/closed-verifier-arithmetic.json": "e1cf506fc4c5702adf5017fb3c5f76cf491e19d6832ab255237d21e8ecf9e38b",
+    "results/structured-functional/manifest.json": "96f88ab9e2668826a908f9a75f4c04c6505ffad9048e0b4efe4ad3909642f7ff",
+    "results/structured-verifier-states.json": "52ba82d28312e42017bc55b6548cab1fdcd9e193b01a46229a28b6a49dae6ef8",
+    "results/closed-derived-switch/report.json": "52d499fc13141c2478f284fcf0c2861bbd0b47d561ba4c38c39268d4416bf91f",
+    "results/closed-hybrid-verifier/report.json": "04c6721e718ffc8fc9e3b2e4699abcde80b2cf7b727e40aae15b8647cc8ade61",
+    "results/full-hybrid-verifier.json": "3a12ac46c58563e851087f0b99595af5d58f930f921e51effdcfbbca062461f0",
+    "results/closed-hybrid-work.json": "563244c14e4d9f058c298d992fd622112740f8aa9fd1ebbcca1d32edde7f0787",
+    "results/joint-nibble-geometry.json": "b6bf88dec908159d0607a1dd6e4a1d6f720fc6cd4b61ae1fc1788133bc958903",
+    "results/pooled-joint-nibble-geometry.json": "91dcd38f59ce948adb813c197abe4e3a8d1baacc278b05c65210617f5ff5fbd3",
+    "results/hash-architecture-review/geometry.json": "427ac2dda26912860315c2b278e62ca4caa472e0e3fea6f043f0ed323be3be67",
+    "results/hash-architecture-review/sources.json": "e620af0b265ca3b90057ff2a46ade877101c30bb6835ac5529d61bee5a7956c4",
+    "results/poseidon2-permutation-layout/report.json": "fb7c30031ee9e0c37228a4cc728c982b2596e8022c5b264dafeea72da12db1c2",
+    "results/poseidon2-permutation-layout/workload.json": "2fa1398a424cd0f2cc69e5b22f4b9737d6f41d9e2d004d3184c65fc77611a834",
+    "airbender/direct-wasm/report_current_feasibility.py": "cd0823de2cea2b84289bc87f15713942875d99213222a3d57f825e0c2faa3dca",
+    "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
+    "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
+    "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",
+    "airbender/direct-wasm/report_code_switch_qrom.py": "ee18d1d5d3b5bb57726a22394686e0a88a736640d1a5d009b753b522b526daf1"
+  }
+}

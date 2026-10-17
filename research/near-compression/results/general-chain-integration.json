@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3548,
+  "added_theorems": 8,
+  "sources_sha256": {
+    "GeneralIndexedParent": "5f6e942fb6f4f72bdf107ebc921a4d315f9c7aef58993a160639f36faea9ebee",
+    "GeneralIndexedExtraction": "3c5bd239fdb0ae23cb28ab165c5027525aa2c7be084e0739da6805857f0fc8a7"
+  },
+  "audit_log": "/tmp/root-general-chain-audit.log",
+  "audit_sha256": "ec926503b8c18e91d5255907b30e79a89bf414d77a2e614d2bee96962b423a07",
+  "proved": [
+    "General even/odd weight interleaving preserves the coefficient functional.",
+    "Root-power indexed extraction has explicit max(N,2) bad-challenge bound under strict weighted separation.",
+    "Extracted even/odd polynomials construct a degree-bounded parent with preserved weighted agreement and endpoint claim.",
+    "Child candidate implies the concrete fold-success predicate under literal affine weight updates.",
+    "All-round deterministic continuation: absent initial candidate and no extraction-bad transition imply fewer than T successful global query seeds."
+  ],
+  "limits": [
+    "No global adaptive challenge union bound for the new general-weight transcript yet.",
+    "Oracle functions are ideal; root binding/extraction not discharged.",
+    "Rate-shift between differing domains and OOD transfer still open.",
+    "No full NEAR, Petagas capacity, PQ128 or total sub300000-byte claim."
+  ]
+}

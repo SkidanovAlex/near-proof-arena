@@ -1,0 +1,36 @@
+{
+  "status": "WRONG_WASM_OUTPUT_IMPLIES_LOCAL_RESIDUAL_OR_BUS_IMBALANCE_ON_BASE_TRACE",
+  "module": "NearCompression/TableLocalResidualWitness.lean",
+  "theorems": [
+    "table_source_residuals_local",
+    "table_local_failure_residual",
+    "table_local_failure_combined_residual",
+    "prepared_wrong_output_residual_or_bus"
+  ],
+  "proved": [
+    "Source residual list includes table constraints followed by interaction multiplicity boolean polynomials, matching the inspected native construction.",
+    "Zero source residuals plus valid row geometry imply actual TableLocal.",
+    "Invalid TableLocal yields a fixed nonzero residual and indexed combined source/auxiliary coefficient.",
+    "Wrong published prepared Wasm output implies a local source residual witness or bus imbalance on the same base-field trace."
+  ],
+  "assumptions": [
+    "Base-field trace, valid log geometry, public fit, prepared run-call eligibility and enough fuel.",
+    "Native source-formula generation is inspected but not universally refined by this theorem."
+  ],
+  "critical_remaining_boundary": "PCS recovery yields a generic extension-field decoded trace. Existing Wasm extraction uses Trace Fp. A proof of descent/base-valued recovered source cells, or an alternative extraction theorem over the extension field, is still required; forward airExt8Trace lifting alone is insufficient.",
+  "remaining": [
+    "Connect recovered source trace to the base execution trace and auxiliary trace.",
+    "Instantiate concrete verifier bindings and combine local/bus/PCS probabilities.",
+    "QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4001,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal source-residual witness and execution contrapositive only."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "added_theorems": 11,
+  "integrated_theorems": 3491,
+  "audit_log": "/tmp/root-fixed-conjunction-audit.log",
+  "audit_sha256": "8c05a4cb1df2962cfacf23e487d70cde5754efc81de55c8b0e00cd2ede052af3",
+  "source_sha256": "ebd2169bd1373bb6fa9b6f7f40e81b066f1badf5a3ff4d7bd497285856984a73",
+  "scope": "Canonical fixed slot coverage, exact zero-vector semantics and14*|S|^13 badfixedslot escape count overS^14; source evaluator shares operand vector.",
+  "limits": [
+    "Source-DAG execution refinement not yet proved.",
+    "Ideal independent field samples, not FS/QROM.",
+    "PCS binding and GKR soundness composition remain separate."
+  ]
+}

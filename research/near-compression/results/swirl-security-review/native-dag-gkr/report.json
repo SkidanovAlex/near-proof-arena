@@ -1,0 +1,15 @@
+{
+  "status": "WEIGHTED_COMPONENT_AND_KNOWN_INPUT_SPLIT_CHECKED",
+  "field_elements": 1258,
+  "ext4_field_payload_bytes": 20128,
+  "known_slots": 3941,
+  "pcs_coordinates": 2303,
+  "total_input_slots": 6244,
+  "prover_seconds": 10.169121249113232,
+  "negative_checks": 4,
+  "limitations": [
+    "Real accepted native controls and disclosed openings; original proof/capture still required.",
+    "Residual PCS claim checked with full witness, not a PCS opening proof.",
+    "Ext4 diagnostic only; no PQ128, full NEAR or compiler correctness theorem."
+  ]
+}

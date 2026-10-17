@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1606,
+  "audit_log": "/tmp/near-compact-weight-audit.log",
+  "module": "CompactAffineWeights",
+  "contract": "Repeated adjacent affine folds of monomial tensor weights equal streaming product times remaining tail weights; zero factors permitted; rounds<=dimensions",
+  "implementation_comparisons": 270,
+  "fullheight_mutation_rejections": 98,
+  "evidence": [
+    "pq384-compact-weights.json",
+    "pq384-fullheight-opening/binding-regressions.json"
+  ],
+  "scope": "Verifier algebra and fixed-proof regression evidence; no PCS proximity or QROM security theorem"
+}

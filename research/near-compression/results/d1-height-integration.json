@@ -1,0 +1,135 @@
+{
+  "status": "PASS",
+  "main_commit": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "production_source_changed": false,
+  "canonical_air_changed": false,
+  "baseline_case": "00-h10012-s2",
+  "native_table_checks": 33,
+  "native_bus_checks": 61,
+  "baseline_bus_count_records_identical": true,
+  "baseline_statement_artifact_bytes_identical": true,
+  "baseline_cells": 2504687442,
+  "reduced_cells": 38803154,
+  "cell_reduction_factor": 64.54855298618251,
+  "baseline_compact_bytes": 3076109234,
+  "reduced_compact_bytes": 39938866,
+  "height_plan": {
+    "plannedrowsperrenderer": [
+      {
+        "name": "codec",
+        "planned": 453,
+        "required": 454,
+        "tail": 0
+      },
+      {
+        "name": "scandist",
+        "planned": 28,
+        "required": 29,
+        "tail": 0
+      },
+      {
+        "name": "proc",
+        "planned": 16,
+        "required": 18,
+        "tail": 1
+      },
+      {
+        "name": "mem",
+        "planned": 24,
+        "required": 25,
+        "tail": 0
+      },
+      {
+        "name": "cmp",
+        "planned": 49,
+        "required": 50,
+        "tail": 0
+      }
+    ],
+    "receipt_log": 7,
+    "receipt_planned": 36,
+    "receipt_required": 37,
+    "scheduler_log": 10
+  },
+  "additional_case": {
+    "case": "00-h10038-s3",
+    "transactions": 2,
+    "receipt_count_from_fixture_metadata": 1,
+    "native_status": "PASS",
+    "tables": 33,
+    "buses": 61,
+    "height_plan": {
+      "plannedrowsperrenderer": [
+        {
+          "name": "codec",
+          "planned": 453,
+          "required": 454,
+          "tail": 0
+        },
+        {
+          "name": "scandist",
+          "planned": 28,
+          "required": 29,
+          "tail": 0
+        },
+        {
+          "name": "proc",
+          "planned": 16,
+          "required": 18,
+          "tail": 1
+        },
+        {
+          "name": "mem",
+          "planned": 24,
+          "required": 25,
+          "tail": 0
+        },
+        {
+          "name": "cmp",
+          "planned": 56,
+          "required": 57,
+          "tail": 0
+        }
+      ],
+      "receipt_log": 10,
+      "receipt_planned": 313,
+      "receipt_required": 314,
+      "scheduler_log": 10
+    },
+    "cells": 39217792,
+    "compact_bytes": 42003392
+  },
+  "independent_sampled_constraint_checks": 65678,
+  "capacity_checks": "../airbender/direct-wasm/d1-height-capacity.json",
+  "lean": {
+    "new_theorems": 22,
+    "total_audited": 1369,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "audit_log": "/tmp/near-padding-shrink-audit.log",
+    "composition": "generic_padding_holds_of_decompositions",
+    "local_shrink": "generic_padding_expr_shrink"
+  },
+  "remaining": [
+    "Instantiate generic padding contracts for actual Lean renderers and connect Rust generation; generic contracts alone do not certify this optimization universally",
+    "Handle actual small/large row dimensions with scalable PCS schedule; currentWHIRprototype limitedlog3..8",
+    "Remaining dominant mrk table haslog19,width60; inspect its genuine render/capacity requirements",
+    "Generate and verify fullD1succinctproof beforeclaimingproofperformance",
+    "Recursivecompression,128bitPQsecurity,fullNEAR/1Pgas/<300KBremainunproved"
+  ],
+  "scope": "Two actualfixture nativechecks and independent row samples, not a full Lean-certified renderer or succinct proof",
+  "sha256": {
+    "NearCompression/GenericPaddingLocal.lean": "799f998f609369d7efd7326394e47cd7ae2f0908fe6486e09db70fabb6cb90b0",
+    "NearCompression/GenericPaddingTraffic.lean": "951c46f4646cc559fbe216bddd25f82e71951c8e08f084483d6da7ecb20e1594",
+    "NearCompression/GenericPaddingComposition.lean": "25776b45c799efcc4033ee2f6741fcd78380b7d0286c78e848e1f6448d63a52e",
+    "airbender/direct-wasm/prepare_d1_height_source.py": "0552cd07a838f7699254ba7083cd117fc04445f0f74305f299370ad1024f1ee4",
+    "airbender/direct-wasm/near_d1_height_export.rs": "31515213efbc990a2bf3b07d8e91234cd217bddc4df9927fedc5ddcac195332f",
+    "airbender/direct-wasm/near_d1_height_capacity.rs": "8dcdfb7b2a27ac7da07e07f4e0cca564e796ec93b84234985c43792123c455cf",
+    "airbender/direct-wasm/run_d1_height_experiment.py": "3b288215993c63f1a2def4043a8001bb2d0b95b585b1a738a7b6d595167fb561",
+    "airbender/direct-wasm/d1-height-render.patch": "cfe40a406ad497fafaac57de4ffe8aab57b07f379d5edb52b18061e558885a7d",
+    "airbender/generic-air/check_padding_traffic.py": "565059514079459c38d51b7a79ed5eb8e25e7c79100b61be67df72c6ff661938"
+  }
+}

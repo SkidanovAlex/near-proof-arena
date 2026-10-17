@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "lean_audit": 4226,
+  "base_revision": "e2fd88343",
+  "files": {
+    "research/near-compression/results/ext8-pooled-pcs/prover.log": "abb506a05f04ea7371331911fddc91a2512838c483ce3f63e95187fcf903392a",
+    "research/near-compression/results/ext8-pooled-pcs/opening.json": "9009fe00402e1e32a9e0acb6e1701fdda7425492af6c94fa2c155def1bf3d306",
+    "research/near-compression/results/ext8-pooled-pcs/legacy-derived-tests.json": "42456ee908986c8753c31a7b2e0eb02501885e4daa5f0de347e7ceadc033a26b",
+    "research/near-compression/results/ext8-pooled-pcs/report.json": "5357f1b36e925ee9667cc212e1ebf9c6eda793915d9661451dca4fc8d22410bd",
+    "research/near-compression/results/ext8-pooled-pcs/fresh-verifier.log": "a5d600db3e9b3e075d4bf470b90d20b429dbd25c0dc7fcac7a22b1b07886d360",
+    "research/near-compression/results/ext8-pooled-pcs/native-tests.json": "ba518db85e4dacb309e943d26a725796d58218de1681fbd92588c2f3e89371e0",
+    "research/near-compression/results/ext8-pooled-pcs/fresh-binary-verifier.log": "157655e35bfdf61cfb0db32cc538e513bd0aa0efc1c95b9c57f9a27d92429d1d",
+    "research/near-compression/results/ext8-pooled-pcs/legacy-weighted-tests.json": "c7f99634d16c608ef9f2d4b8e27d1c43a4f94c408e6c68016a1408544eacc9fe",
+    "research/near-compression/results/ext8-pooled-pcs/small-tests.json": "12c43f5148ec47d5eded2ffc487e3f0778e05aebd13648f473392633ba6b9d12",
+    "research/near-compression/results/ext8-pooled-pcs/proof.bin": "2e21c6300c73442c0f89ef3b4d790cb452c597861439cb5e343768d74c4e8a1c",
+    "research/near-compression/results/ext8-pooled-pcs/proof.json.gz": "9315a2cbdf5a87a64cd81a00ff1f6633ffe3b42a0bd99bbb194bf7dacff96de3",
+    "research/near-compression/airbender/direct-wasm/pq384_ext8_weight_families.py": "25ff0863403b1c66ce37eb5d23551f1772e2b859b504f4a72e16ab3cb9e04cef",
+    "research/near-compression/airbender/direct-wasm/pq384_ext8_weighted.py": "b0726b2265de376c45cb00087aff66cdc79826609b6c776c1d9768bbfe50acb5",
+    "research/near-compression/airbender/direct-wasm/pq384_ext8_native.py": "b0646539a35f1898e42812b48c03476ec56d6fedddfa6fd092323be08a231075",
+    "research/near-compression/airbender/direct-wasm/pq384_ext8_weighted_codec.py": "0c31a913d20b399b79dd698619a2c9265dfdc3ad0d607a672bc9b4f3154fe710",
+    "research/near-compression/airbender/direct-wasm/pq384_ext8_derived_codec.py": "db0a4ac9654e9ee8007194156ab2aeda01001eca3bd3a6252886768597399116",
+    "research/near-compression/airbender/direct-wasm/test_ext8_pooled_pcs.py": "62d7f071d6cfe968afb7e184be046e972b50f8c32bd7786ad74897668f3b79d2",
+    "research/near-compression/airbender/direct-wasm/test_ext8_pooled_seam_pcs.py": "77b6b95ebd3acc96c11cb8fb9e7bf0d43cedae1132d83e8ed79454567c1e97fd",
+    "research/near-compression/airbender/direct-wasm/test_ext8_pooled_seam.py": "7ddf6acbbaf26f889f6eb320c10a2e5d7b482e6924b15c6b211281e509a1ef8c",
+    "research/near-compression/NearCompression/PooledWeightMLE.lean": "ea39461395db772bc7417a89964bc8181e343f45cb8f8828ab2135a60af18169"
+  },
+  "scope": "Standalone pooled mixed-height seam PCS; full execution commitment mapping is not integrated. The 926272-byte component is not comparable to the complete1681677-byte bundle."
+}

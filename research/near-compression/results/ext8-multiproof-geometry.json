@@ -1,0 +1,3428 @@
+{
+  "status": "geometry simulation, not measured proof",
+  "summary": [
+    {
+      "degree": 32,
+      "queries": 314,
+      "min_bytes": 5152,
+      "max_bytes": 5192,
+      "mean_bytes": 5157.0,
+      "all_below_300000": true
+    },
+    {
+      "degree": 1024,
+      "queries": 314,
+      "min_bytes": 123656,
+      "max_bytes": 127160,
+      "mean_bytes": 125648.0,
+      "all_below_300000": true
+    },
+    {
+      "degree": 131072,
+      "queries": 314,
+      "min_bytes": 871752,
+      "max_bytes": 894976,
+      "mean_bytes": 881915.0,
+      "all_below_300000": false
+    },
+    {
+      "degree": 262144,
+      "queries": 314,
+      "min_bytes": 1037448,
+      "max_bytes": 1065648,
+      "mean_bytes": 1049997.0,
+      "all_below_300000": false
+    }
+  ],
+  "samples": [
+    {
+      "seed": 0,
+      "source_degree": 32,
+      "queries": 314,
+      "fixed_bytes": 800,
+      "leaf_bytes": 4352,
+      "frontier_hash_bytes": 0,
+      "estimated_payload_bytes": 5152,
+      "levels": [
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "source_degree": 32,
+      "queries": 314,
+      "fixed_bytes": 800,
+      "leaf_bytes": 4352,
+      "frontier_hash_bytes": 0,
+      "estimated_payload_bytes": 5152,
+      "levels": [
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "source_degree": 32,
+      "queries": 314,
+      "fixed_bytes": 800,
+      "leaf_bytes": 4352,
+      "frontier_hash_bytes": 0,
+      "estimated_payload_bytes": 5152,
+      "levels": [
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 3,
+      "source_degree": 32,
+      "queries": 314,
+      "fixed_bytes": 800,
+      "leaf_bytes": 4352,
+      "frontier_hash_bytes": 0,
+      "estimated_payload_bytes": 5152,
+      "levels": [
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 4,
+      "source_degree": 32,
+      "queries": 314,
+      "fixed_bytes": 800,
+      "leaf_bytes": 4352,
+      "frontier_hash_bytes": 0,
+      "estimated_payload_bytes": 5152,
+      "levels": [
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 5,
+      "source_degree": 32,
+      "queries": 314,
+      "fixed_bytes": 800,
+      "leaf_bytes": 4352,
+      "frontier_hash_bytes": 0,
+      "estimated_payload_bytes": 5152,
+      "levels": [
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 6,
+      "source_degree": 32,
+      "queries": 314,
+      "fixed_bytes": 800,
+      "leaf_bytes": 4344,
+      "frontier_hash_bytes": 48,
+      "estimated_payload_bytes": 5192,
+      "levels": [
+        {
+          "degree": 32,
+          "unique_openings": 63,
+          "frontier_hashes": 1,
+          "leaf_bytes": 504,
+          "hash_bytes": 48
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 7,
+      "source_degree": 32,
+      "queries": 314,
+      "fixed_bytes": 800,
+      "leaf_bytes": 4352,
+      "frontier_hash_bytes": 0,
+      "estimated_payload_bytes": 5152,
+      "levels": [
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 0,
+      "source_degree": 1024,
+      "queries": 314,
+      "fixed_bytes": 1520,
+      "leaf_bytes": 60800,
+      "frontier_hash_bytes": 63552,
+      "estimated_payload_bytes": 125872,
+      "levels": [
+        {
+          "degree": 1024,
+          "unique_openings": 296,
+          "frontier_hashes": 643,
+          "leaf_bytes": 2368,
+          "hash_bytes": 30864
+        },
+        {
+          "degree": 512,
+          "unique_openings": 271,
+          "frontier_hashes": 395,
+          "leaf_bytes": 17344,
+          "hash_bytes": 18960
+        },
+        {
+          "degree": 256,
+          "unique_openings": 232,
+          "frontier_hashes": 198,
+          "leaf_bytes": 14848,
+          "hash_bytes": 9504
+        },
+        {
+          "degree": 128,
+          "unique_openings": 176,
+          "frontier_hashes": 70,
+          "leaf_bytes": 11264,
+          "hash_bytes": 3360
+        },
+        {
+          "degree": 64,
+          "unique_openings": 112,
+          "frontier_hashes": 16,
+          "leaf_bytes": 7168,
+          "hash_bytes": 768
+        },
+        {
+          "degree": 32,
+          "unique_openings": 62,
+          "frontier_hashes": 2,
+          "leaf_bytes": 3968,
+          "hash_bytes": 96
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "source_degree": 1024,
+      "queries": 314,
+      "fixed_bytes": 1520,
+      "leaf_bytes": 61240,
+      "frontier_hash_bytes": 62160,
+      "estimated_payload_bytes": 124920,
+      "levels": [
+        {
+          "degree": 1024,
+          "unique_openings": 287,
+          "frontier_hashes": 648,
+          "leaf_bytes": 2296,
+          "hash_bytes": 31104
+        },
+        {
+          "degree": 512,
+          "unique_openings": 271,
+          "frontier_hashes": 382,
+          "leaf_bytes": 17344,
+          "hash_bytes": 18336
+        },
+        {
+          "degree": 256,
+          "unique_openings": 235,
+          "frontier_hashes": 189,
+          "leaf_bytes": 15040,
+          "hash_bytes": 9072
+        },
+        {
+          "degree": 128,
+          "unique_openings": 176,
+          "frontier_hashes": 65,
+          "leaf_bytes": 11264,
+          "hash_bytes": 3120
+        },
+        {
+          "degree": 64,
+          "unique_openings": 115,
+          "frontier_hashes": 11,
+          "leaf_bytes": 7360,
+          "hash_bytes": 528
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "source_degree": 1024,
+      "queries": 314,
+      "fixed_bytes": 1520,
+      "leaf_bytes": 62176,
+      "frontier_hash_bytes": 61488,
+      "estimated_payload_bytes": 125184,
+      "levels": [
+        {
+          "degree": 1024,
+          "unique_openings": 300,
+          "frontier_hashes": 629,
+          "leaf_bytes": 2400,
+          "hash_bytes": 30192
+        },
+        {
+          "degree": 512,
+          "unique_openings": 278,
+          "frontier_hashes": 384,
+          "leaf_bytes": 17792,
+          "hash_bytes": 18432
+        },
+        {
+          "degree": 256,
+          "unique_openings": 234,
+          "frontier_hashes": 192,
+          "leaf_bytes": 14976,
+          "hash_bytes": 9216
+        },
+        {
+          "degree": 128,
+          "unique_openings": 182,
+          "frontier_hashes": 64,
+          "leaf_bytes": 11648,
+          "hash_bytes": 3072
+        },
+        {
+          "degree": 64,
+          "unique_openings": 117,
+          "frontier_hashes": 11,
+          "leaf_bytes": 7488,
+          "hash_bytes": 528
+        },
+        {
+          "degree": 32,
+          "unique_openings": 63,
+          "frontier_hashes": 1,
+          "leaf_bytes": 4032,
+          "hash_bytes": 48
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 3,
+      "source_degree": 1024,
+      "queries": 314,
+      "fixed_bytes": 1520,
+      "leaf_bytes": 61176,
+      "frontier_hash_bytes": 60960,
+      "estimated_payload_bytes": 123656,
+      "levels": [
+        {
+          "degree": 1024,
+          "unique_openings": 287,
+          "frontier_hashes": 634,
+          "leaf_bytes": 2296,
+          "hash_bytes": 30432
+        },
+        {
+          "degree": 512,
+          "unique_openings": 265,
+          "frontier_hashes": 385,
+          "leaf_bytes": 16960,
+          "hash_bytes": 18480
+        },
+        {
+          "degree": 256,
+          "unique_openings": 232,
+          "frontier_hashes": 183,
+          "leaf_bytes": 14848,
+          "hash_bytes": 8784
+        },
+        {
+          "degree": 128,
+          "unique_openings": 179,
+          "frontier_hashes": 60,
+          "leaf_bytes": 11456,
+          "hash_bytes": 2880
+        },
+        {
+          "degree": 64,
+          "unique_openings": 121,
+          "frontier_hashes": 7,
+          "leaf_bytes": 7744,
+          "hash_bytes": 336
+        },
+        {
+          "degree": 32,
+          "unique_openings": 63,
+          "frontier_hashes": 1,
+          "leaf_bytes": 4032,
+          "hash_bytes": 48
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 4,
+      "source_degree": 1024,
+      "queries": 314,
+      "fixed_bytes": 1520,
+      "leaf_bytes": 63528,
+      "frontier_hash_bytes": 62112,
+      "estimated_payload_bytes": 127160,
+      "levels": [
+        {
+          "degree": 1024,
+          "unique_openings": 293,
+          "frontier_hashes": 638,
+          "leaf_bytes": 2344,
+          "hash_bytes": 30624
+        },
+        {
+          "degree": 512,
+          "unique_openings": 274,
+          "frontier_hashes": 399,
+          "leaf_bytes": 17536,
+          "hash_bytes": 19152
+        },
+        {
+          "degree": 256,
+          "unique_openings": 245,
+          "frontier_hashes": 193,
+          "leaf_bytes": 15680,
+          "hash_bytes": 9264
+        },
+        {
+          "degree": 128,
+          "unique_openings": 192,
+          "frontier_hashes": 57,
+          "leaf_bytes": 12288,
+          "hash_bytes": 2736
+        },
+        {
+          "degree": 64,
+          "unique_openings": 121,
+          "frontier_hashes": 7,
+          "leaf_bytes": 7744,
+          "hash_bytes": 336
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 5,
+      "source_degree": 1024,
+      "queries": 314,
+      "fixed_bytes": 1520,
+      "leaf_bytes": 62136,
+      "frontier_hash_bytes": 61488,
+      "estimated_payload_bytes": 125144,
+      "levels": [
+        {
+          "degree": 1024,
+          "unique_openings": 287,
+          "frontier_hashes": 644,
+          "leaf_bytes": 2296,
+          "hash_bytes": 30912
+        },
+        {
+          "degree": 512,
+          "unique_openings": 269,
+          "frontier_hashes": 382,
+          "leaf_bytes": 17216,
+          "hash_bytes": 18336
+        },
+        {
+          "degree": 256,
+          "unique_openings": 238,
+          "frontier_hashes": 185,
+          "leaf_bytes": 15232,
+          "hash_bytes": 8880
+        },
+        {
+          "degree": 128,
+          "unique_openings": 185,
+          "frontier_hashes": 62,
+          "leaf_bytes": 11840,
+          "hash_bytes": 2976
+        },
+        {
+          "degree": 64,
+          "unique_openings": 119,
+          "frontier_hashes": 8,
+          "leaf_bytes": 7616,
+          "hash_bytes": 384
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 6,
+      "source_degree": 1024,
+      "queries": 314,
+      "fixed_bytes": 1520,
+      "leaf_bytes": 63072,
+      "frontier_hash_bytes": 62304,
+      "estimated_payload_bytes": 126896,
+      "levels": [
+        {
+          "degree": 1024,
+          "unique_openings": 292,
+          "frontier_hashes": 650,
+          "leaf_bytes": 2336,
+          "hash_bytes": 31200
+        },
+        {
+          "degree": 512,
+          "unique_openings": 272,
+          "frontier_hashes": 396,
+          "leaf_bytes": 17408,
+          "hash_bytes": 19008
+        },
+        {
+          "degree": 256,
+          "unique_openings": 244,
+          "frontier_hashes": 187,
+          "leaf_bytes": 15616,
+          "hash_bytes": 8976
+        },
+        {
+          "degree": 128,
+          "unique_openings": 189,
+          "frontier_hashes": 57,
+          "leaf_bytes": 12096,
+          "hash_bytes": 2736
+        },
+        {
+          "degree": 64,
+          "unique_openings": 120,
+          "frontier_hashes": 8,
+          "leaf_bytes": 7680,
+          "hash_bytes": 384
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 7,
+      "source_degree": 1024,
+      "queries": 314,
+      "fixed_bytes": 1520,
+      "leaf_bytes": 62384,
+      "frontier_hash_bytes": 62448,
+      "estimated_payload_bytes": 126352,
+      "levels": [
+        {
+          "degree": 1024,
+          "unique_openings": 294,
+          "frontier_hashes": 640,
+          "leaf_bytes": 2352,
+          "hash_bytes": 30720
+        },
+        {
+          "degree": 512,
+          "unique_openings": 272,
+          "frontier_hashes": 390,
+          "leaf_bytes": 17408,
+          "hash_bytes": 18720
+        },
+        {
+          "degree": 256,
+          "unique_openings": 240,
+          "frontier_hashes": 198,
+          "leaf_bytes": 15360,
+          "hash_bytes": 9504
+        },
+        {
+          "degree": 128,
+          "unique_openings": 184,
+          "frontier_hashes": 63,
+          "leaf_bytes": 11776,
+          "hash_bytes": 3024
+        },
+        {
+          "degree": 64,
+          "unique_openings": 118,
+          "frontier_hashes": 10,
+          "leaf_bytes": 7552,
+          "hash_bytes": 480
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 0,
+      "source_degree": 131072,
+      "queries": 314,
+      "fixed_bytes": 2528,
+      "leaf_bytes": 199440,
+      "frontier_hash_bytes": 673104,
+      "estimated_payload_bytes": 875072,
+      "levels": [
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2783,
+          "leaf_bytes": 2512,
+          "hash_bytes": 133584
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 313,
+          "frontier_hashes": 2453,
+          "leaf_bytes": 20032,
+          "hash_bytes": 117744
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 313,
+          "frontier_hashes": 2132,
+          "leaf_bytes": 20032,
+          "hash_bytes": 102336
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 311,
+          "frontier_hashes": 1798,
+          "leaf_bytes": 19904,
+          "hash_bytes": 86304
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 310,
+          "frontier_hashes": 1498,
+          "leaf_bytes": 19840,
+          "hash_bytes": 71904
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 307,
+          "frontier_hashes": 1199,
+          "leaf_bytes": 19648,
+          "hash_bytes": 57552
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 300,
+          "frontier_hashes": 919,
+          "leaf_bytes": 19200,
+          "hash_bytes": 44112
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 285,
+          "frontier_hashes": 625,
+          "leaf_bytes": 18240,
+          "hash_bytes": 30000
+        },
+        {
+          "degree": 512,
+          "unique_openings": 267,
+          "frontier_hashes": 368,
+          "leaf_bytes": 17088,
+          "hash_bytes": 17664
+        },
+        {
+          "degree": 256,
+          "unique_openings": 238,
+          "frontier_hashes": 188,
+          "leaf_bytes": 15232,
+          "hash_bytes": 9024
+        },
+        {
+          "degree": 128,
+          "unique_openings": 189,
+          "frontier_hashes": 53,
+          "leaf_bytes": 12096,
+          "hash_bytes": 2544
+        },
+        {
+          "degree": 64,
+          "unique_openings": 120,
+          "frontier_hashes": 7,
+          "leaf_bytes": 7680,
+          "hash_bytes": 336
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "source_degree": 131072,
+      "queries": 314,
+      "fixed_bytes": 2528,
+      "leaf_bytes": 199952,
+      "frontier_hash_bytes": 676176,
+      "estimated_payload_bytes": 878656,
+      "levels": [
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2754,
+          "leaf_bytes": 2512,
+          "hash_bytes": 132192
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2444,
+          "leaf_bytes": 20096,
+          "hash_bytes": 117312
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 314,
+          "frontier_hashes": 2136,
+          "leaf_bytes": 20096,
+          "hash_bytes": 102528
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 313,
+          "frontier_hashes": 1811,
+          "leaf_bytes": 20032,
+          "hash_bytes": 86928
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 313,
+          "frontier_hashes": 1505,
+          "leaf_bytes": 20032,
+          "hash_bytes": 72240
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 311,
+          "frontier_hashes": 1203,
+          "leaf_bytes": 19904,
+          "hash_bytes": 57744
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 305,
+          "frontier_hashes": 935,
+          "leaf_bytes": 19520,
+          "hash_bytes": 44880
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 289,
+          "frontier_hashes": 646,
+          "leaf_bytes": 18496,
+          "hash_bytes": 31008
+        },
+        {
+          "degree": 512,
+          "unique_openings": 270,
+          "frontier_hashes": 393,
+          "leaf_bytes": 17280,
+          "hash_bytes": 18864
+        },
+        {
+          "degree": 256,
+          "unique_openings": 238,
+          "frontier_hashes": 188,
+          "leaf_bytes": 15232,
+          "hash_bytes": 9024
+        },
+        {
+          "degree": 128,
+          "unique_openings": 181,
+          "frontier_hashes": 59,
+          "leaf_bytes": 11584,
+          "hash_bytes": 2832
+        },
+        {
+          "degree": 64,
+          "unique_openings": 113,
+          "frontier_hashes": 13,
+          "leaf_bytes": 7232,
+          "hash_bytes": 624
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "source_degree": 131072,
+      "queries": 314,
+      "fixed_bytes": 2528,
+      "leaf_bytes": 199696,
+      "frontier_hash_bytes": 681696,
+      "estimated_payload_bytes": 883920,
+      "levels": [
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2784,
+          "leaf_bytes": 2512,
+          "hash_bytes": 133632
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2480,
+          "leaf_bytes": 20096,
+          "hash_bytes": 119040
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 313,
+          "frontier_hashes": 2153,
+          "leaf_bytes": 20032,
+          "hash_bytes": 103344
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 312,
+          "frontier_hashes": 1838,
+          "leaf_bytes": 19968,
+          "hash_bytes": 88224
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 311,
+          "frontier_hashes": 1537,
+          "leaf_bytes": 19904,
+          "hash_bytes": 73776
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 308,
+          "frontier_hashes": 1223,
+          "leaf_bytes": 19712,
+          "hash_bytes": 58704
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 301,
+          "frontier_hashes": 904,
+          "leaf_bytes": 19264,
+          "hash_bytes": 43392
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 288,
+          "frontier_hashes": 634,
+          "leaf_bytes": 18432,
+          "hash_bytes": 30432
+        },
+        {
+          "degree": 512,
+          "unique_openings": 270,
+          "frontier_hashes": 388,
+          "leaf_bytes": 17280,
+          "hash_bytes": 18624
+        },
+        {
+          "degree": 256,
+          "unique_openings": 237,
+          "frontier_hashes": 188,
+          "leaf_bytes": 15168,
+          "hash_bytes": 9024
+        },
+        {
+          "degree": 128,
+          "unique_openings": 186,
+          "frontier_hashes": 63,
+          "leaf_bytes": 11904,
+          "hash_bytes": 3024
+        },
+        {
+          "degree": 64,
+          "unique_openings": 117,
+          "frontier_hashes": 10,
+          "leaf_bytes": 7488,
+          "hash_bytes": 480
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 3,
+      "source_degree": 131072,
+      "queries": 314,
+      "fixed_bytes": 2528,
+      "leaf_bytes": 195784,
+      "frontier_hash_bytes": 673440,
+      "estimated_payload_bytes": 871752,
+      "levels": [
+        {
+          "degree": 131072,
+          "unique_openings": 313,
+          "frontier_hashes": 2746,
+          "leaf_bytes": 2504,
+          "hash_bytes": 131808
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 312,
+          "frontier_hashes": 2432,
+          "leaf_bytes": 19968,
+          "hash_bytes": 116736
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 309,
+          "frontier_hashes": 2130,
+          "leaf_bytes": 19776,
+          "hash_bytes": 102240
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 307,
+          "frontier_hashes": 1789,
+          "leaf_bytes": 19648,
+          "hash_bytes": 85872
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 302,
+          "frontier_hashes": 1492,
+          "leaf_bytes": 19328,
+          "hash_bytes": 71616
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 299,
+          "frontier_hashes": 1192,
+          "leaf_bytes": 19136,
+          "hash_bytes": 57216
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 291,
+          "frontier_hashes": 909,
+          "leaf_bytes": 18624,
+          "hash_bytes": 43632
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 281,
+          "frontier_hashes": 661,
+          "leaf_bytes": 17984,
+          "hash_bytes": 31728
+        },
+        {
+          "degree": 512,
+          "unique_openings": 266,
+          "frontier_hashes": 398,
+          "leaf_bytes": 17024,
+          "hash_bytes": 19104
+        },
+        {
+          "degree": 256,
+          "unique_openings": 235,
+          "frontier_hashes": 200,
+          "leaf_bytes": 15040,
+          "hash_bytes": 9600
+        },
+        {
+          "degree": 128,
+          "unique_openings": 176,
+          "frontier_hashes": 71,
+          "leaf_bytes": 11264,
+          "hash_bytes": 3408
+        },
+        {
+          "degree": 64,
+          "unique_openings": 118,
+          "frontier_hashes": 10,
+          "leaf_bytes": 7552,
+          "hash_bytes": 480
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 4,
+      "source_degree": 131072,
+      "queries": 314,
+      "fixed_bytes": 2528,
+      "leaf_bytes": 203408,
+      "frontier_hash_bytes": 689040,
+      "estimated_payload_bytes": 894976,
+      "levels": [
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2774,
+          "leaf_bytes": 2512,
+          "hash_bytes": 133152
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2472,
+          "leaf_bytes": 20096,
+          "hash_bytes": 118656
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 314,
+          "frontier_hashes": 2173,
+          "leaf_bytes": 20096,
+          "hash_bytes": 104304
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 314,
+          "frontier_hashes": 1873,
+          "leaf_bytes": 20096,
+          "hash_bytes": 89904
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 314,
+          "frontier_hashes": 1560,
+          "leaf_bytes": 20096,
+          "hash_bytes": 74880
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 313,
+          "frontier_hashes": 1251,
+          "leaf_bytes": 20032,
+          "hash_bytes": 60048
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 310,
+          "frontier_hashes": 953,
+          "leaf_bytes": 19840,
+          "hash_bytes": 45744
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 300,
+          "frontier_hashes": 673,
+          "leaf_bytes": 19200,
+          "hash_bytes": 32304
+        },
+        {
+          "degree": 512,
+          "unique_openings": 281,
+          "frontier_hashes": 378,
+          "leaf_bytes": 17984,
+          "hash_bytes": 18144
+        },
+        {
+          "degree": 256,
+          "unique_openings": 248,
+          "frontier_hashes": 181,
+          "leaf_bytes": 15872,
+          "hash_bytes": 8688
+        },
+        {
+          "degree": 128,
+          "unique_openings": 188,
+          "frontier_hashes": 58,
+          "leaf_bytes": 12032,
+          "hash_bytes": 2784
+        },
+        {
+          "degree": 64,
+          "unique_openings": 119,
+          "frontier_hashes": 9,
+          "leaf_bytes": 7616,
+          "hash_bytes": 432
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 5,
+      "source_degree": 131072,
+      "queries": 314,
+      "fixed_bytes": 2528,
+      "leaf_bytes": 198928,
+      "frontier_hash_bytes": 680112,
+      "estimated_payload_bytes": 881568,
+      "levels": [
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2768,
+          "leaf_bytes": 2512,
+          "hash_bytes": 132864
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2446,
+          "leaf_bytes": 20096,
+          "hash_bytes": 117408
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 313,
+          "frontier_hashes": 2147,
+          "leaf_bytes": 20032,
+          "hash_bytes": 103056
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 312,
+          "frontier_hashes": 1848,
+          "leaf_bytes": 19968,
+          "hash_bytes": 88704
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 310,
+          "frontier_hashes": 1538,
+          "leaf_bytes": 19840,
+          "hash_bytes": 73824
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 307,
+          "frontier_hashes": 1228,
+          "leaf_bytes": 19648,
+          "hash_bytes": 58944
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 301,
+          "frontier_hashes": 911,
+          "leaf_bytes": 19264,
+          "hash_bytes": 43728
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 292,
+          "frontier_hashes": 622,
+          "leaf_bytes": 18688,
+          "hash_bytes": 29856
+        },
+        {
+          "degree": 512,
+          "unique_openings": 267,
+          "frontier_hashes": 387,
+          "leaf_bytes": 17088,
+          "hash_bytes": 18576
+        },
+        {
+          "degree": 256,
+          "unique_openings": 233,
+          "frontier_hashes": 196,
+          "leaf_bytes": 14912,
+          "hash_bytes": 9408
+        },
+        {
+          "degree": 128,
+          "unique_openings": 184,
+          "frontier_hashes": 63,
+          "leaf_bytes": 11776,
+          "hash_bytes": 3024
+        },
+        {
+          "degree": 64,
+          "unique_openings": 113,
+          "frontier_hashes": 14,
+          "leaf_bytes": 7232,
+          "hash_bytes": 672
+        },
+        {
+          "degree": 32,
+          "unique_openings": 63,
+          "frontier_hashes": 1,
+          "leaf_bytes": 4032,
+          "hash_bytes": 48
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 6,
+      "source_degree": 131072,
+      "queries": 314,
+      "fixed_bytes": 2528,
+      "leaf_bytes": 198864,
+      "frontier_hash_bytes": 680976,
+      "estimated_payload_bytes": 882368,
+      "levels": [
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2776,
+          "leaf_bytes": 2512,
+          "hash_bytes": 133248
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2457,
+          "leaf_bytes": 20096,
+          "hash_bytes": 117936
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 313,
+          "frontier_hashes": 2147,
+          "leaf_bytes": 20032,
+          "hash_bytes": 103056
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 312,
+          "frontier_hashes": 1815,
+          "leaf_bytes": 19968,
+          "hash_bytes": 87120
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 310,
+          "frontier_hashes": 1527,
+          "leaf_bytes": 19840,
+          "hash_bytes": 73296
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 308,
+          "frontier_hashes": 1223,
+          "leaf_bytes": 19712,
+          "hash_bytes": 58704
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 303,
+          "frontier_hashes": 936,
+          "leaf_bytes": 19392,
+          "hash_bytes": 44928
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 286,
+          "frontier_hashes": 648,
+          "leaf_bytes": 18304,
+          "hash_bytes": 31104
+        },
+        {
+          "degree": 512,
+          "unique_openings": 265,
+          "frontier_hashes": 398,
+          "leaf_bytes": 16960,
+          "hash_bytes": 19104
+        },
+        {
+          "degree": 256,
+          "unique_openings": 233,
+          "frontier_hashes": 186,
+          "leaf_bytes": 14912,
+          "hash_bytes": 8928
+        },
+        {
+          "degree": 128,
+          "unique_openings": 184,
+          "frontier_hashes": 63,
+          "leaf_bytes": 11776,
+          "hash_bytes": 3024
+        },
+        {
+          "degree": 64,
+          "unique_openings": 116,
+          "frontier_hashes": 11,
+          "leaf_bytes": 7424,
+          "hash_bytes": 528
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 7,
+      "source_degree": 131072,
+      "queries": 314,
+      "fixed_bytes": 2528,
+      "leaf_bytes": 200912,
+      "frontier_hash_bytes": 683568,
+      "estimated_payload_bytes": 887008,
+      "levels": [
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2781,
+          "leaf_bytes": 2512,
+          "hash_bytes": 133488
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2467,
+          "leaf_bytes": 20096,
+          "hash_bytes": 118416
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 313,
+          "frontier_hashes": 2162,
+          "leaf_bytes": 20032,
+          "hash_bytes": 103776
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 313,
+          "frontier_hashes": 1855,
+          "leaf_bytes": 20032,
+          "hash_bytes": 89040
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 312,
+          "frontier_hashes": 1529,
+          "leaf_bytes": 19968,
+          "hash_bytes": 73392
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 309,
+          "frontier_hashes": 1220,
+          "leaf_bytes": 19776,
+          "hash_bytes": 58560
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 300,
+          "frontier_hashes": 925,
+          "leaf_bytes": 19200,
+          "hash_bytes": 44400
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 291,
+          "frontier_hashes": 650,
+          "leaf_bytes": 18624,
+          "hash_bytes": 31200
+        },
+        {
+          "degree": 512,
+          "unique_openings": 273,
+          "frontier_hashes": 392,
+          "leaf_bytes": 17472,
+          "hash_bytes": 18816
+        },
+        {
+          "degree": 256,
+          "unique_openings": 249,
+          "frontier_hashes": 185,
+          "leaf_bytes": 15936,
+          "hash_bytes": 8880
+        },
+        {
+          "degree": 128,
+          "unique_openings": 188,
+          "frontier_hashes": 61,
+          "leaf_bytes": 12032,
+          "hash_bytes": 2928
+        },
+        {
+          "degree": 64,
+          "unique_openings": 115,
+          "frontier_hashes": 13,
+          "leaf_bytes": 7360,
+          "hash_bytes": 624
+        },
+        {
+          "degree": 32,
+          "unique_openings": 63,
+          "frontier_hashes": 1,
+          "leaf_bytes": 4032,
+          "hash_bytes": 48
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 0,
+      "source_degree": 262144,
+      "queries": 314,
+      "fixed_bytes": 2672,
+      "leaf_bytes": 219472,
+      "frontier_hash_bytes": 821040,
+      "estimated_payload_bytes": 1043184,
+      "levels": [
+        {
+          "degree": 262144,
+          "unique_openings": 314,
+          "frontier_hashes": 3097,
+          "leaf_bytes": 2512,
+          "hash_bytes": 148656
+        },
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2765,
+          "leaf_bytes": 20096,
+          "hash_bytes": 132720
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2444,
+          "leaf_bytes": 20096,
+          "hash_bytes": 117312
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 312,
+          "frontier_hashes": 2108,
+          "leaf_bytes": 19968,
+          "hash_bytes": 101184
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 311,
+          "frontier_hashes": 1807,
+          "leaf_bytes": 19904,
+          "hash_bytes": 86736
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 310,
+          "frontier_hashes": 1503,
+          "leaf_bytes": 19840,
+          "hash_bytes": 72144
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 308,
+          "frontier_hashes": 1211,
+          "leaf_bytes": 19712,
+          "hash_bytes": 58128
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 301,
+          "frontier_hashes": 894,
+          "leaf_bytes": 19264,
+          "hash_bytes": 42912
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 287,
+          "frontier_hashes": 615,
+          "leaf_bytes": 18368,
+          "hash_bytes": 29520
+        },
+        {
+          "degree": 512,
+          "unique_openings": 267,
+          "frontier_hashes": 397,
+          "leaf_bytes": 17088,
+          "hash_bytes": 19056
+        },
+        {
+          "degree": 256,
+          "unique_openings": 237,
+          "frontier_hashes": 194,
+          "leaf_bytes": 15168,
+          "hash_bytes": 9312
+        },
+        {
+          "degree": 128,
+          "unique_openings": 187,
+          "frontier_hashes": 60,
+          "leaf_bytes": 11968,
+          "hash_bytes": 2880
+        },
+        {
+          "degree": 64,
+          "unique_openings": 118,
+          "frontier_hashes": 10,
+          "leaf_bytes": 7552,
+          "hash_bytes": 480
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "source_degree": 262144,
+      "queries": 314,
+      "fixed_bytes": 2672,
+      "leaf_bytes": 218256,
+      "frontier_hash_bytes": 825792,
+      "estimated_payload_bytes": 1046720,
+      "levels": [
+        {
+          "degree": 262144,
+          "unique_openings": 314,
+          "frontier_hashes": 3068,
+          "leaf_bytes": 2512,
+          "hash_bytes": 147264
+        },
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2758,
+          "leaf_bytes": 20096,
+          "hash_bytes": 132384
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2450,
+          "leaf_bytes": 20096,
+          "hash_bytes": 117600
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 314,
+          "frontier_hashes": 2123,
+          "leaf_bytes": 20096,
+          "hash_bytes": 101904
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 314,
+          "frontier_hashes": 1817,
+          "leaf_bytes": 20096,
+          "hash_bytes": 87216
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 314,
+          "frontier_hashes": 1511,
+          "leaf_bytes": 20096,
+          "hash_bytes": 72528
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 310,
+          "frontier_hashes": 1235,
+          "leaf_bytes": 19840,
+          "hash_bytes": 59280
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 299,
+          "frontier_hashes": 925,
+          "leaf_bytes": 19136,
+          "hash_bytes": 44400
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 292,
+          "frontier_hashes": 641,
+          "leaf_bytes": 18688,
+          "hash_bytes": 30768
+        },
+        {
+          "degree": 512,
+          "unique_openings": 268,
+          "frontier_hashes": 396,
+          "leaf_bytes": 17152,
+          "hash_bytes": 19008
+        },
+        {
+          "degree": 256,
+          "unique_openings": 225,
+          "frontier_hashes": 196,
+          "leaf_bytes": 14400,
+          "hash_bytes": 9408
+        },
+        {
+          "degree": 128,
+          "unique_openings": 173,
+          "frontier_hashes": 66,
+          "leaf_bytes": 11072,
+          "hash_bytes": 3168
+        },
+        {
+          "degree": 64,
+          "unique_openings": 111,
+          "frontier_hashes": 17,
+          "leaf_bytes": 7104,
+          "hash_bytes": 816
+        },
+        {
+          "degree": 32,
+          "unique_openings": 63,
+          "frontier_hashes": 1,
+          "leaf_bytes": 4032,
+          "hash_bytes": 48
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "source_degree": 262144,
+      "queries": 314,
+      "fixed_bytes": 2672,
+      "leaf_bytes": 219152,
+      "frontier_hash_bytes": 830256,
+      "estimated_payload_bytes": 1052080,
+      "levels": [
+        {
+          "degree": 262144,
+          "unique_openings": 314,
+          "frontier_hashes": 3098,
+          "leaf_bytes": 2512,
+          "hash_bytes": 148704
+        },
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2794,
+          "leaf_bytes": 20096,
+          "hash_bytes": 134112
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2465,
+          "leaf_bytes": 20096,
+          "hash_bytes": 118320
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 314,
+          "frontier_hashes": 2148,
+          "leaf_bytes": 20096,
+          "hash_bytes": 103104
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 313,
+          "frontier_hashes": 1846,
+          "leaf_bytes": 20032,
+          "hash_bytes": 88608
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 310,
+          "frontier_hashes": 1529,
+          "leaf_bytes": 19840,
+          "hash_bytes": 73392
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 308,
+          "frontier_hashes": 1198,
+          "leaf_bytes": 19712,
+          "hash_bytes": 57504
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 300,
+          "frontier_hashes": 910,
+          "leaf_bytes": 19200,
+          "hash_bytes": 43680
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 290,
+          "frontier_hashes": 638,
+          "leaf_bytes": 18560,
+          "hash_bytes": 30624
+        },
+        {
+          "degree": 512,
+          "unique_openings": 270,
+          "frontier_hashes": 392,
+          "leaf_bytes": 17280,
+          "hash_bytes": 18816
+        },
+        {
+          "degree": 256,
+          "unique_openings": 233,
+          "frontier_hashes": 202,
+          "leaf_bytes": 14912,
+          "hash_bytes": 9696
+        },
+        {
+          "degree": 128,
+          "unique_openings": 178,
+          "frontier_hashes": 66,
+          "leaf_bytes": 11392,
+          "hash_bytes": 3168
+        },
+        {
+          "degree": 64,
+          "unique_openings": 117,
+          "frontier_hashes": 11,
+          "leaf_bytes": 7488,
+          "hash_bytes": 528
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 3,
+      "source_degree": 262144,
+      "queries": 314,
+      "fixed_bytes": 2672,
+      "leaf_bytes": 217288,
+      "frontier_hash_bytes": 817488,
+      "estimated_payload_bytes": 1037448,
+      "levels": [
+        {
+          "degree": 262144,
+          "unique_openings": 313,
+          "frontier_hashes": 3059,
+          "leaf_bytes": 2504,
+          "hash_bytes": 146832
+        },
+        {
+          "degree": 131072,
+          "unique_openings": 313,
+          "frontier_hashes": 2743,
+          "leaf_bytes": 20032,
+          "hash_bytes": 131664
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 312,
+          "frontier_hashes": 2436,
+          "leaf_bytes": 19968,
+          "hash_bytes": 116928
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 312,
+          "frontier_hashes": 2091,
+          "leaf_bytes": 19968,
+          "hash_bytes": 100368
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 308,
+          "frontier_hashes": 1788,
+          "leaf_bytes": 19712,
+          "hash_bytes": 85824
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 307,
+          "frontier_hashes": 1483,
+          "leaf_bytes": 19648,
+          "hash_bytes": 71184
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 301,
+          "frontier_hashes": 1190,
+          "leaf_bytes": 19264,
+          "hash_bytes": 57120
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 295,
+          "frontier_hashes": 928,
+          "leaf_bytes": 18880,
+          "hash_bytes": 44544
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 288,
+          "frontier_hashes": 642,
+          "leaf_bytes": 18432,
+          "hash_bytes": 30816
+        },
+        {
+          "degree": 512,
+          "unique_openings": 266,
+          "frontier_hashes": 404,
+          "leaf_bytes": 17024,
+          "hash_bytes": 19392
+        },
+        {
+          "degree": 256,
+          "unique_openings": 228,
+          "frontier_hashes": 195,
+          "leaf_bytes": 14592,
+          "hash_bytes": 9360
+        },
+        {
+          "degree": 128,
+          "unique_openings": 183,
+          "frontier_hashes": 63,
+          "leaf_bytes": 11712,
+          "hash_bytes": 3024
+        },
+        {
+          "degree": 64,
+          "unique_openings": 119,
+          "frontier_hashes": 9,
+          "leaf_bytes": 7616,
+          "hash_bytes": 432
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 4,
+      "source_degree": 262144,
+      "queries": 314,
+      "fixed_bytes": 2672,
+      "leaf_bytes": 221776,
+      "frontier_hash_bytes": 841200,
+      "estimated_payload_bytes": 1065648,
+      "levels": [
+        {
+          "degree": 262144,
+          "unique_openings": 314,
+          "frontier_hashes": 3088,
+          "leaf_bytes": 2512,
+          "hash_bytes": 148224
+        },
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2786,
+          "leaf_bytes": 20096,
+          "hash_bytes": 133728
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2487,
+          "leaf_bytes": 20096,
+          "hash_bytes": 119376
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 314,
+          "frontier_hashes": 2187,
+          "leaf_bytes": 20096,
+          "hash_bytes": 104976
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 314,
+          "frontier_hashes": 1874,
+          "leaf_bytes": 20096,
+          "hash_bytes": 89952
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 314,
+          "frontier_hashes": 1563,
+          "leaf_bytes": 20096,
+          "hash_bytes": 75024
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 312,
+          "frontier_hashes": 1261,
+          "leaf_bytes": 19968,
+          "hash_bytes": 60528
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 308,
+          "frontier_hashes": 965,
+          "leaf_bytes": 19712,
+          "hash_bytes": 46320
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 298,
+          "frontier_hashes": 642,
+          "leaf_bytes": 19072,
+          "hash_bytes": 30816
+        },
+        {
+          "degree": 512,
+          "unique_openings": 277,
+          "frontier_hashes": 400,
+          "leaf_bytes": 17728,
+          "hash_bytes": 19200
+        },
+        {
+          "degree": 256,
+          "unique_openings": 237,
+          "frontier_hashes": 197,
+          "leaf_bytes": 15168,
+          "hash_bytes": 9456
+        },
+        {
+          "degree": 128,
+          "unique_openings": 181,
+          "frontier_hashes": 66,
+          "leaf_bytes": 11584,
+          "hash_bytes": 3168
+        },
+        {
+          "degree": 64,
+          "unique_openings": 119,
+          "frontier_hashes": 9,
+          "leaf_bytes": 7616,
+          "hash_bytes": 432
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 5,
+      "source_degree": 262144,
+      "queries": 314,
+      "fixed_bytes": 2672,
+      "leaf_bytes": 218448,
+      "frontier_hash_bytes": 828048,
+      "estimated_payload_bytes": 1049168,
+      "levels": [
+        {
+          "degree": 262144,
+          "unique_openings": 314,
+          "frontier_hashes": 3082,
+          "leaf_bytes": 2512,
+          "hash_bytes": 147936
+        },
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2760,
+          "leaf_bytes": 20096,
+          "hash_bytes": 132480
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 313,
+          "frontier_hashes": 2460,
+          "leaf_bytes": 20032,
+          "hash_bytes": 118080
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 313,
+          "frontier_hashes": 2159,
+          "leaf_bytes": 20032,
+          "hash_bytes": 103632
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 312,
+          "frontier_hashes": 1846,
+          "leaf_bytes": 19968,
+          "hash_bytes": 88608
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 310,
+          "frontier_hashes": 1532,
+          "leaf_bytes": 19840,
+          "hash_bytes": 73536
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 307,
+          "frontier_hashes": 1206,
+          "leaf_bytes": 19648,
+          "hash_bytes": 57888
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 301,
+          "frontier_hashes": 905,
+          "leaf_bytes": 19264,
+          "hash_bytes": 43440
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 287,
+          "frontier_hashes": 634,
+          "leaf_bytes": 18368,
+          "hash_bytes": 30432
+        },
+        {
+          "degree": 512,
+          "unique_openings": 265,
+          "frontier_hashes": 397,
+          "leaf_bytes": 16960,
+          "hash_bytes": 19056
+        },
+        {
+          "degree": 256,
+          "unique_openings": 235,
+          "frontier_hashes": 196,
+          "leaf_bytes": 15040,
+          "hash_bytes": 9408
+        },
+        {
+          "degree": 128,
+          "unique_openings": 176,
+          "frontier_hashes": 64,
+          "leaf_bytes": 11264,
+          "hash_bytes": 3072
+        },
+        {
+          "degree": 64,
+          "unique_openings": 117,
+          "frontier_hashes": 10,
+          "leaf_bytes": 7488,
+          "hash_bytes": 480
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 6,
+      "source_degree": 262144,
+      "queries": 314,
+      "fixed_bytes": 2672,
+      "leaf_bytes": 217488,
+      "frontier_hash_bytes": 829536,
+      "estimated_payload_bytes": 1049696,
+      "levels": [
+        {
+          "degree": 262144,
+          "unique_openings": 314,
+          "frontier_hashes": 3090,
+          "leaf_bytes": 2512,
+          "hash_bytes": 148320
+        },
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2771,
+          "leaf_bytes": 20096,
+          "hash_bytes": 133008
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 313,
+          "frontier_hashes": 2460,
+          "leaf_bytes": 20032,
+          "hash_bytes": 118080
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 312,
+          "frontier_hashes": 2127,
+          "leaf_bytes": 19968,
+          "hash_bytes": 102096
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 311,
+          "frontier_hashes": 1836,
+          "leaf_bytes": 19904,
+          "hash_bytes": 88128
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 310,
+          "frontier_hashes": 1529,
+          "leaf_bytes": 19840,
+          "hash_bytes": 73392
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 307,
+          "frontier_hashes": 1235,
+          "leaf_bytes": 19648,
+          "hash_bytes": 59280
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 297,
+          "frontier_hashes": 923,
+          "leaf_bytes": 19008,
+          "hash_bytes": 44304
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 282,
+          "frontier_hashes": 646,
+          "leaf_bytes": 18048,
+          "hash_bytes": 31008
+        },
+        {
+          "degree": 512,
+          "unique_openings": 267,
+          "frontier_hashes": 385,
+          "leaf_bytes": 17088,
+          "hash_bytes": 18480
+        },
+        {
+          "degree": 256,
+          "unique_openings": 233,
+          "frontier_hashes": 198,
+          "leaf_bytes": 14912,
+          "hash_bytes": 9504
+        },
+        {
+          "degree": 128,
+          "unique_openings": 172,
+          "frontier_hashes": 71,
+          "leaf_bytes": 11008,
+          "hash_bytes": 3408
+        },
+        {
+          "degree": 64,
+          "unique_openings": 118,
+          "frontier_hashes": 10,
+          "leaf_bytes": 7552,
+          "hash_bytes": 480
+        },
+        {
+          "degree": 32,
+          "unique_openings": 63,
+          "frontier_hashes": 1,
+          "leaf_bytes": 4032,
+          "hash_bytes": 48
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    },
+    {
+      "seed": 7,
+      "source_degree": 262144,
+      "queries": 314,
+      "fixed_bytes": 2672,
+      "leaf_bytes": 220176,
+      "frontier_hash_bytes": 833184,
+      "estimated_payload_bytes": 1056032,
+      "levels": [
+        {
+          "degree": 262144,
+          "unique_openings": 314,
+          "frontier_hashes": 3095,
+          "leaf_bytes": 2512,
+          "hash_bytes": 148560
+        },
+        {
+          "degree": 131072,
+          "unique_openings": 314,
+          "frontier_hashes": 2781,
+          "leaf_bytes": 20096,
+          "hash_bytes": 133488
+        },
+        {
+          "degree": 65536,
+          "unique_openings": 314,
+          "frontier_hashes": 2474,
+          "leaf_bytes": 20096,
+          "hash_bytes": 118752
+        },
+        {
+          "degree": 32768,
+          "unique_openings": 314,
+          "frontier_hashes": 2167,
+          "leaf_bytes": 20096,
+          "hash_bytes": 104016
+        },
+        {
+          "degree": 16384,
+          "unique_openings": 314,
+          "frontier_hashes": 1839,
+          "leaf_bytes": 20096,
+          "hash_bytes": 88272
+        },
+        {
+          "degree": 8192,
+          "unique_openings": 313,
+          "frontier_hashes": 1525,
+          "leaf_bytes": 20032,
+          "hash_bytes": 73200
+        },
+        {
+          "degree": 4096,
+          "unique_openings": 308,
+          "frontier_hashes": 1217,
+          "leaf_bytes": 19712,
+          "hash_bytes": 58416
+        },
+        {
+          "degree": 2048,
+          "unique_openings": 306,
+          "frontier_hashes": 926,
+          "leaf_bytes": 19584,
+          "hash_bytes": 44448
+        },
+        {
+          "degree": 1024,
+          "unique_openings": 291,
+          "frontier_hashes": 647,
+          "leaf_bytes": 18624,
+          "hash_bytes": 31056
+        },
+        {
+          "degree": 512,
+          "unique_openings": 273,
+          "frontier_hashes": 410,
+          "leaf_bytes": 17472,
+          "hash_bytes": 19680
+        },
+        {
+          "degree": 256,
+          "unique_openings": 234,
+          "frontier_hashes": 203,
+          "leaf_bytes": 14976,
+          "hash_bytes": 9744
+        },
+        {
+          "degree": 128,
+          "unique_openings": 179,
+          "frontier_hashes": 64,
+          "leaf_bytes": 11456,
+          "hash_bytes": 3072
+        },
+        {
+          "degree": 64,
+          "unique_openings": 117,
+          "frontier_hashes": 10,
+          "leaf_bytes": 7488,
+          "hash_bytes": 480
+        },
+        {
+          "degree": 32,
+          "unique_openings": 64,
+          "frontier_hashes": 0,
+          "leaf_bytes": 4096,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 16,
+          "unique_openings": 32,
+          "frontier_hashes": 0,
+          "leaf_bytes": 2048,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 8,
+          "unique_openings": 16,
+          "frontier_hashes": 0,
+          "leaf_bytes": 1024,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 4,
+          "unique_openings": 8,
+          "frontier_hashes": 0,
+          "leaf_bytes": 512,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 2,
+          "unique_openings": 4,
+          "frontier_hashes": 0,
+          "leaf_bytes": 256,
+          "hash_bytes": 0
+        },
+        {
+          "degree": 1,
+          "unique_openings": 2,
+          "frontier_hashes": 0,
+          "leaf_bytes": 0,
+          "hash_bytes": 0
+        }
+      ]
+    }
+  ],
+  "assumptions": [
+    "Scalar source paired leaves are8bytes; every fold paired leaf64bytes; SHA384digest48bytes.",
+    "Optimal per-tree sibling frontier, no cross-tree dedup; all314 checks retained.",
+    "Terminal constant tree regenerated; transcript-derived indices omitted.",
+    "Fixed overhead includes round quadratics/roots, source root and terminal only."
+  ],
+  "excluded": [
+    "Actual framing/config/public statement bytes and codec bounds.",
+    "GKR, joint-source reduction, recursion, AIR, NEAR state transition witness/proof.",
+    "FS/QROM and upstream security budget; deterministic PRNG is simulation only."
+  ],
+  "interpretation": "These are simulated achievable payload component counts for an ideal frontier codec, not measured implementations or lower bounds on other protocols.",
+  "source_sha256": "d578307102649e3c280f0018881dc230a844d0477eed7fa6f2d2f1aec4e9eb07"
+}

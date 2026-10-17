@@ -1,0 +1,1 @@
+{"status": "PASS", "exhaustive_schedule_cases": 6, "enumerated_schedule_costs": 34942, "invalid_lde_domain_rejected": true, "conditional_fraction_decisions_checked": true, "scope": "Finite conditional-cost arithmetic only; no soundness theorem or security certificate."}

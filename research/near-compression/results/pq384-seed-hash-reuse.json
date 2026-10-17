@@ -1,0 +1,128 @@
+{
+  "status": "PASS",
+  "profile": "near-pq384-seed-gkr-bus-v1",
+  "proof_sha256": "83d6e6e4946ffe9439c833d1bebde506e3edb0244e838ec0aed553948ce2de83",
+  "totals": {
+    "calls": 13698,
+    "unique_calls": 11181,
+    "blocks": 41542,
+    "unique_blocks": 32587,
+    "unique_framed_bytes": 2986143,
+    "repeated_blocks": 8955
+  },
+  "tags": {
+    "derived-weight-joint-public-v1": {
+      "calls": 1,
+      "unique_calls": 1,
+      "blocks": 95,
+      "unique_blocks": 95,
+      "unique_framed_bytes": 12022
+    },
+    "gkr-after-all-constraints": {
+      "calls": 1,
+      "unique_calls": 1,
+      "blocks": 2,
+      "unique_blocks": 2,
+      "unique_framed_bytes": 113
+    },
+    "merkle/leaf": {
+      "calls": 666,
+      "unique_calls": 616,
+      "blocks": 1942,
+      "unique_blocks": 1806,
+      "unique_framed_bytes": 187420
+    },
+    "merkle/node": {
+      "calls": 6857,
+      "unique_calls": 4976,
+      "blocks": 26203,
+      "unique_blocks": 19028,
+      "unique_framed_bytes": 1775572
+    },
+    "merkle/root": {
+      "calls": 665,
+      "unique_calls": 80,
+      "blocks": 1867,
+      "unique_blocks": 224,
+      "unique_framed_bytes": 23827
+    },
+    "near-pq384-seed-gkr-bus-v1": {
+      "calls": 1,
+      "unique_calls": 1,
+      "blocks": 182,
+      "unique_blocks": 182,
+      "unique_framed_bytes": 23278
+    },
+    "near-pq384-seed-gkr-v1": {
+      "calls": 1,
+      "unique_calls": 1,
+      "blocks": 3,
+      "unique_blocks": 3,
+      "unique_framed_bytes": 254
+    },
+    "transcript/commit": {
+      "calls": 1082,
+      "unique_calls": 1082,
+      "blocks": 2420,
+      "unique_blocks": 2420,
+      "unique_framed_bytes": 220698
+    },
+    "transcript/draw-result": {
+      "calls": 1072,
+      "unique_calls": 1072,
+      "blocks": 2144,
+      "unique_blocks": 2144,
+      "unique_framed_bytes": 194202
+    },
+    "transcript/init": {
+      "calls": 3,
+      "unique_calls": 3,
+      "blocks": 4,
+      "unique_blocks": 4,
+      "unique_framed_bytes": 343
+    },
+    "transcript/ratchet": {
+      "calls": 1129,
+      "unique_calls": 1129,
+      "blocks": 2258,
+      "unique_blocks": 2258,
+      "unique_framed_bytes": 209377
+    },
+    "transcript/request": {
+      "calls": 1072,
+      "unique_calls": 1072,
+      "blocks": 2144,
+      "unique_blocks": 2144,
+      "unique_framed_bytes": 172762
+    },
+    "transcript/squeeze": {
+      "calls": 1129,
+      "unique_calls": 1129,
+      "blocks": 2258,
+      "unique_blocks": 2258,
+      "unique_framed_bytes": 164217
+    },
+    "weighted-joint-stage-v1": {
+      "calls": 18,
+      "unique_calls": 17,
+      "blocks": 18,
+      "unique_blocks": 17,
+      "unique_framed_bytes": 1887
+    },
+    "weighted-pcs-after-seed-gkr": {
+      "calls": 1,
+      "unique_calls": 1,
+      "blocks": 2,
+      "unique_blocks": 2,
+      "unique_framed_bytes": 171
+    }
+  },
+  "limits": [
+    "Trusted configuration setup excluded",
+    "Exact (tag, ordered byte parts) equality; no hash-collision assumption for deduplication",
+    "Reference execution is unchanged; this is a measurement, not a cached verifier or recursive AIR",
+    "A recursive witness must constrain every reused call to the same full input and output; equality/routing costs excluded",
+    "Q8/Ext4 diagnostic profile; no security certification"
+  ],
+  "prior_profile_totals_match": true
+}

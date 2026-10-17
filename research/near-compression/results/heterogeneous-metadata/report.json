@@ -1,0 +1,58 @@
+[
+  {
+    "status": "PASS",
+    "capture": {
+      "profile": "near-pq384-gkr-bus-v1",
+      "directory": "/tmp/near-pq384-gkr-bus-full",
+      "proof_sha256": "6d2b03da1675a1404e6d86f0dcf08eb2340d2c375619b4faabaeff905e32abe8",
+      "statement_sha256": "83dca46ee650f6d96a3a1da51ec2434450ac658cd0315e1eecb7bde077d2402a"
+    },
+    "layout": {
+      "rowCoordinates": 204,
+      "inputLog": 15,
+      "commonLog": 17,
+      "privateCapacity": 16384
+    },
+    "tables": 33,
+    "counts": {
+      "lanes": 451,
+      "slot_values": 11124,
+      "beta_values": 451,
+      "lane_weight_positions": 198,
+      "partial_lanes": 40,
+      "negative_checks": 13,
+      "row_pairs": 49
+    },
+    "seconds": 23.03580185305327,
+    "metadata": "results/heterogeneous-metadata/near-pq384-gkr-bus-full-metadata.json",
+    "scope": "Captured observed input dimension, not deployment of fixed-envelope profile. No PCS/cryptographic soundness claim."
+  },
+  {
+    "status": "PASS",
+    "capture": {
+      "profile": "near-pq384-gkr-bus-v1",
+      "directory": "/tmp/near-sha384-family267-proof",
+      "proof_sha256": "7c599c32a04ab659f5c81655fa820ba783da3acdd8b64b5e3cd4fd653e9b533b",
+      "statement_sha256": "4fedef26e184b2670b696de3237d75d6423cbd88059614411fd6969f52a1971c"
+    },
+    "layout": {
+      "rowCoordinates": 11,
+      "inputLog": 16,
+      "commonLog": 15,
+      "privateCapacity": 32768
+    },
+    "tables": 3,
+    "counts": {
+      "lanes": 150,
+      "slot_values": 18472,
+      "beta_values": 150,
+      "lane_weight_positions": 18,
+      "partial_lanes": 5,
+      "negative_checks": 13,
+      "row_pairs": 4
+    },
+    "seconds": 19.07858489267528,
+    "metadata": "results/heterogeneous-metadata/near-sha384-family267-proof-metadata.json",
+    "scope": "Captured observed input dimension, not deployment of fixed-envelope profile. No PCS/cryptographic soundness claim."
+  }
+]

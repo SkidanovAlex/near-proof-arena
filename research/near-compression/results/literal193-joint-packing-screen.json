@@ -1,0 +1,158 @@
+{
+  "status": "EXPECTED_FULL_WORD_COST_SCREEN",
+  "cases": [
+    {
+      "queries": 8,
+      "branches": [
+        {
+          "table": 0,
+          "kind": "source",
+          "width": 605
+        },
+        {
+          "table": 0,
+          "kind": "auxiliary",
+          "width": 12
+        },
+        {
+          "table": 1,
+          "kind": "source",
+          "width": 198
+        },
+        {
+          "table": 1,
+          "kind": "auxiliary",
+          "width": 200
+        }
+      ],
+      "combinations_checked": 6237,
+      "best": {
+        "packings": [
+          16,
+          1,
+          16,
+          16
+        ],
+        "degree": 4096,
+        "expected_pcs_bytes": 36368.303174129614,
+        "expected_sources_bytes": 17464.598081463464,
+        "expected_shared_tail_and_header_bytes": 18903.705092666154
+      }
+    },
+    {
+      "queries": 128,
+      "branches": [
+        {
+          "table": 0,
+          "kind": "source",
+          "width": 605
+        },
+        {
+          "table": 0,
+          "kind": "auxiliary",
+          "width": 12
+        },
+        {
+          "table": 1,
+          "kind": "source",
+          "width": 198
+        },
+        {
+          "table": 1,
+          "kind": "auxiliary",
+          "width": 200
+        }
+      ],
+      "combinations_checked": 6237,
+      "best": {
+        "packings": [
+          16,
+          1,
+          16,
+          16
+        ],
+        "degree": 4096,
+        "expected_pcs_bytes": 281276.1585417654,
+        "expected_sources_bytes": 179631.9990733025,
+        "expected_shared_tail_and_header_bytes": 101644.15946846292
+      }
+    },
+    {
+      "queries": 239,
+      "branches": [
+        {
+          "table": 0,
+          "kind": "source",
+          "width": 605
+        },
+        {
+          "table": 0,
+          "kind": "auxiliary",
+          "width": 12
+        },
+        {
+          "table": 1,
+          "kind": "source",
+          "width": 198
+        },
+        {
+          "table": 1,
+          "kind": "auxiliary",
+          "width": 200
+        }
+      ],
+      "combinations_checked": 6237,
+      "best": {
+        "packings": [
+          16,
+          1,
+          16,
+          16
+        ],
+        "degree": 4096,
+        "expected_pcs_bytes": 433366.2901050799,
+        "expected_sources_bytes": 294972.7616424763,
+        "expected_shared_tail_and_header_bytes": 138393.52846260357
+      }
+    },
+    {
+      "queries": 309,
+      "branches": [
+        {
+          "table": 0,
+          "kind": "source",
+          "width": 605
+        },
+        {
+          "table": 0,
+          "kind": "auxiliary",
+          "width": 12
+        },
+        {
+          "table": 1,
+          "kind": "source",
+          "width": 198
+        },
+        {
+          "table": 1,
+          "kind": "auxiliary",
+          "width": 200
+        }
+      ],
+      "combinations_checked": 6237,
+      "best": {
+        "packings": [
+          16,
+          1,
+          16,
+          16
+        ],
+        "degree": 4096,
+        "expected_pcs_bytes": 515359.0052854342,
+        "expected_sources_bytes": 360142.16934439883,
+        "expected_shared_tail_and_header_bytes": 155216.8359410354
+      }
+    }
+  ],
+  "qualification": "Ext4 diagnostic shape; costs exclude outer GKR/local/public input data. Optimizing source trees independently is insufficient because increasing maximum degree also enlarges the shared chain. Actual zero-tag costs require fresh proofs."
+}

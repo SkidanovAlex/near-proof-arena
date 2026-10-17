@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "audit_checks": 2784,
+  "previous_report_checks": 2745,
+  "modules": {
+    "SHA384SharedDecode": {
+      "sha256": "9a42e0978408e95e21c86c92cfca0487c3ad8e0d671fbc7b267e76cb8b7d0df6",
+      "public_theorems": 6
+    },
+    "SHA384SharedCalls": {
+      "sha256": "1f6167968bd767fa2d78a7a6269104d352bee8ecdc0e84449676d8808e1f5102",
+      "public_theorems": 22
+    },
+    "SHA384SharedInputRouting": {
+      "sha256": "139ead5d26c179916defa823d6de3f19a1771df7264c53f6d294ea6b751e8fb3",
+      "public_theorems": 8
+    },
+    "SHA384SharedBlockDecode": {
+      "sha256": "858b7febf704c7cc06672edf18965f252328bbebbf46f302658283c1e807bdd3",
+      "public_theorems": 3
+    }
+  },
+  "scope": "Actual shared AIR enforces exact two-call three-block ordering, complete IV/state links and final public digest fields; input bits and canonical padding limbs derived; node records decode complete eight-word A/C state, all sixteen M words and 48 D bytes. Full shared-message theorem and cryptographic acceptance-to-AIR/QROM reductions remain open. No security-parameter or proof-size claim changed.",
+  "audit_log": "/tmp/root-shared-block-audit.log"
+}

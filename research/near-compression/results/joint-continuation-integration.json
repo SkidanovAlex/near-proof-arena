@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3559,
+  "added_theorems": 1,
+  "source_sha256": "65aead45f225636cf063d63d1e0176f143cea0c3bca22aae8fdf6dcdfe0f9a77",
+  "audit_log": "/tmp/root-joint-continuation-audit.log",
+  "audit_sha256": "2e52f22ae0b09cf05e25872e02bde5f78e3d557ab9210ee5af418f353d58d35c",
+  "scope": "Joint gamma/continuation/query accepted-event count, allowing gamma-dependent continuation strategies.",
+  "normalized_bound": "m/|mixSample| + E/|foldSample| + ((T-1)/N)^q, for nonempty sample spaces; m=points.length.",
+  "semantic_premise": "Every candidate in the prechallenge unique list violates at least one constituent constraint (noCorrect); rate-shift prior-domain transfer must establish this premise outside its own bounded bad event.",
+  "ideal_numeric_diagnostic": {
+    "field": "Fp8",
+    "mixing_degree": 5,
+    "continuation_extraction_count": 56,
+    "N": 64,
+    "T": 46,
+    "continuation_queries": 256,
+    "combined_error_le_2powminus130": true
+  },
+  "limits": [
+    "The four source-consistency samples and256 hypothetical continuation queries are distinct.",
+    "The numeric bound omits rate-shift transfer/source-query error, hash binding, QROM and all upstream errors.",
+    "No new executable continuation profile or proof-size claim.",
+    "Fixed received oracle, prefix causality and initial accumulator bindings remain explicit premises."
+  ]
+}

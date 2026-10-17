@@ -1,0 +1,2318 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "label": "branch-not-taken",
+      "instructions": 11,
+      "executed": 11,
+      "log_rows": [
+        4,
+        4
+      ],
+      "widths": [
+        683,
+        232
+      ],
+      "constraints": [
+        870,
+        543
+      ],
+      "degrees": [
+        10,
+        3
+      ],
+      "public_fields": 385,
+      "error": null
+    },
+    {
+      "label": "branch-taken",
+      "instructions": 11,
+      "executed": 7,
+      "log_rows": [
+        3,
+        4
+      ],
+      "widths": [
+        683,
+        232
+      ],
+      "constraints": [
+        870,
+        543
+      ],
+      "degrees": [
+        10,
+        3
+      ],
+      "public_fields": 385,
+      "error": null
+    },
+    {
+      "label": "branch-negative",
+      "instructions": 11,
+      "executed": 7,
+      "log_rows": [
+        3,
+        4
+      ],
+      "widths": [
+        683,
+        232
+      ],
+      "constraints": [
+        870,
+        543
+      ],
+      "degrees": [
+        10,
+        3
+      ],
+      "public_fields": 385,
+      "error": null
+    },
+    {
+      "label": "branch-exact-gas",
+      "instructions": 11,
+      "executed": 7,
+      "log_rows": [
+        3,
+        4
+      ],
+      "widths": [
+        683,
+        232
+      ],
+      "constraints": [
+        870,
+        543
+      ],
+      "degrees": [
+        10,
+        3
+      ],
+      "public_fields": 385,
+      "error": null
+    },
+    {
+      "label": "branch-post-charge-failure",
+      "instructions": 11,
+      "executed": 6,
+      "log_rows": [
+        3,
+        4
+      ],
+      "widths": [
+        683,
+        232
+      ],
+      "constraints": [
+        870,
+        543
+      ],
+      "degrees": [
+        10,
+        3
+      ],
+      "public_fields": 385,
+      "error": "HostError(GasExceeded)"
+    },
+    {
+      "label": "branch-pre-charge-failure",
+      "instructions": 11,
+      "executed": 1,
+      "log_rows": [
+        1,
+        4
+      ],
+      "widths": [
+        683,
+        232
+      ],
+      "constraints": [
+        870,
+        543
+      ],
+      "degrees": [
+        10,
+        3
+      ],
+      "public_fields": 385,
+      "error": "HostError(GasExceeded)"
+    }
+  ],
+  "negative_count": 433,
+  "negative_cases": [
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-5",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-6",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-7",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-8",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-9",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-target-10",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "coherent-opposite-condition",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "coherent-wrong-branch-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "forged-nonzero-selector",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "coherent-wrong-label-target",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "coherent-wrong-saved-height",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "block-not-pushed",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "nested-end-returns-function",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-5",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-6",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-7",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-8",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-9",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-target-10",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-taken",
+      "attack": "coherent-opposite-condition",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-taken",
+      "attack": "coherent-wrong-branch-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-taken",
+      "attack": "forged-nonzero-selector",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-taken",
+      "attack": "forged-condition-inverse",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-taken",
+      "attack": "coherent-wrong-label-target",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-taken",
+      "attack": "coherent-wrong-saved-height",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-taken",
+      "attack": "taken-branch-retains-discarded-word",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-taken",
+      "attack": "taken-branch-corrupts-preserved-prefix",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-taken",
+      "attack": "block-not-pushed",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-5",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-6",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-7",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-8",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-9",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-target-10",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-negative",
+      "attack": "coherent-opposite-condition",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-negative",
+      "attack": "coherent-wrong-branch-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-negative",
+      "attack": "forged-nonzero-selector",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-negative",
+      "attack": "forged-condition-inverse",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-negative",
+      "attack": "coherent-wrong-label-target",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-negative",
+      "attack": "coherent-wrong-saved-height",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-negative",
+      "attack": "taken-branch-retains-discarded-word",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-negative",
+      "attack": "taken-branch-corrupts-preserved-prefix",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-negative",
+      "attack": "block-not-pushed",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-5",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-6",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-7",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-8",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-9",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-target-10",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "coherent-opposite-condition",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "coherent-wrong-branch-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "forged-nonzero-selector",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "forged-condition-inverse",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "coherent-wrong-label-target",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "coherent-wrong-saved-height",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "taken-branch-retains-discarded-word",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "taken-branch-corrupts-preserved-prefix",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "block-not-pushed",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-5",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-6",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-7",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-8",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-9",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-target-10",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "coherent-opposite-condition",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "coherent-wrong-branch-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "forged-nonzero-selector",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "forged-condition-inverse",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "coherent-wrong-label-target",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "coherent-wrong-saved-height",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "taken-branch-retains-discarded-word",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "taken-branch-corrupts-preserved-prefix",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "block-not-pushed",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-5",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-6",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-7",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-8",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-9",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-target-10",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-boundary-65",
+      "local_constraints_still_valid": true
+    }
+  ],
+  "limitations": [
+    "Single defined function, stack8 and one nested void block remain bounded.",
+    "Loops, deeper branches, local variables and calls are unsupported.",
+    "Supported control AIR-to-runCall/public-output refinement is proved separately; these tests do not establish cryptographic acceptance-to-HoldsP.",
+    "Public CODE including prepared end target has linear size; actual PREP remains outside AIR.",
+    "Full witness reference checks are not cryptographic proof verification."
+  ]
+}

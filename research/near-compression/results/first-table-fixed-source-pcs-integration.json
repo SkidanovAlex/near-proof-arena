@@ -1,0 +1,34 @@
+{
+  "status": "FIRST_TABLE_INVALID_SOURCE_JOINT_PCS_LIFT_COMPOSED",
+  "module": "NearCompression/FirstTableFixedSourcePCS.lean",
+  "theorems": [
+    "first_table_fixed_source_pcs_budget"
+  ],
+  "proved": [
+    "First-table continuation includes the full second local prefix followed by batching/GKR/PCS randomness in chronological order.",
+    "A nonzero combined residual is derived from failed fixed-source TableLocal and instantiated in the actual local continuation bound.",
+    "The total error sum is bounded by the existing joint two-table PCS theorem with exact sample multiplicities."
+  ],
+  "assumptions": [
+    "Fixed source/decoded trace binding before first local challenges, valid row geometry and source column bounds.",
+    "Residual order/degrees, zero initial claim and accepted local checks.",
+    "Wrong-terminal repair over the second-local plus GKR/PCS continuation remains explicit.",
+    "Concrete joint PCS event bound remains explicit; earlier bus choices are fixed outside this theorem."
+  ],
+  "remaining": [
+    "Instantiate terminal repair from checked terminal semantics and evaluated GKR.",
+    "Instantiate concrete event and budget with concrete_gkr_accepted_failure_budget, including absent representatives.",
+    "Select the invalid table, join the locally valid bus branch and average earlier bus challenges.",
+    "Native authentication, QROM security, secure sub-300 KB size and full 1 Pgas execution remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4042,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

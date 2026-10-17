@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "negative_tests": [
+    "call0-missing-root",
+    "call0-wrong-root",
+    "call0-wrong-context",
+    "call0-wrong-length",
+    "call0-missing-framing",
+    "call0-bool-framing",
+    "call1-missing-root",
+    "call1-wrong-root",
+    "call1-wrong-context",
+    "call1-wrong-length",
+    "call1-missing-framing",
+    "call1-bool-framing",
+    "swapped-call-roots",
+    "missing-second-caller",
+    "wrong-AIR-config",
+    "truncated-wire",
+    "trailing-wire",
+    "root-wire",
+    "opening-wire",
+    "digest-bool",
+    "digest-range",
+    "second-digest-negative",
+    "second-digest-alias",
+    "changed-digest",
+    "fresh-valid-wrong-expected-call1-root",
+    "fresh-local-and-PCS-valid-fanout-global-reject"
+  ],
+  "fresh_proofs": [
+    {
+      "name": "fresh-different-call1-root",
+      "full_underlying_proof_accepts": true,
+      "component_rejects": true
+    },
+    {
+      "name": "fresh-fanout-two-to-one",
+      "local_and_PCS_accepts": true,
+      "global_fingerprint_rejects": true
+    }
+  ],
+  "scope": "Mandatory caller bindings and complete diagnostic verification; exact natural balance and formal semantic refinement remain separately scoped."
+}

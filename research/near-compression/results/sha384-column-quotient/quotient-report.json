@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "proof_bytes": 1390406,
+  "proof_sha256": "9044fff40291d45f406423ffb8eb15a088716241f60c947ae7032b9939567fdc",
+  "baseline_bytes": 1508054,
+  "saving_bytes": 117648,
+  "negative_checks": 6,
+  "fresh_verifier": "PASS: proof verified against deterministic quotient of externally supplied original AIR",
+  "original_public_and_constraints_preserved_via_substitution": true,
+  "scope": "Diagnostic proof; original AIR derived by mandatory deterministic quotient, generic semantic refinement separately proved in Lean"
+}

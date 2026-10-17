@@ -1,0 +1,34 @@
+{
+  "status": "FILTERED_TABLE_BOUNDS_TRANSFER_TO_SHARED_BRANCH_EXPERIMENT",
+  "module": "NearCompression/SelectedBranchTransfer.lean",
+  "theorems": [
+    "first_selected_branch_count",
+    "second_selected_branch_count",
+    "two_table_filtered_history_budget"
+  ],
+  "proved": [
+    "The filtered first-table future-prefix count equals the first invalid-branch count in the shared chronological continuation.",
+    "The filtered second-table earlier-prefix count equals the second invalid-branch count in the same continuation.",
+    "The differently nested filtered branch bounds aggregate with the valid-auxiliary bound and a single shared accepted-failure budget."
+  ],
+  "assumptions": [
+    "Branch is earlier-history indexed.",
+    "Valid-auxiliary, filtered first-table and filtered second-table error inequalities are supplied; these match the existing bus and selected local/GKR theorem shapes.",
+    "A joint numerical bound on the shared accepted-failure count is supplied."
+  ],
+  "remaining": [
+    "Instantiate transfer with actual prepared-Wasm bus, selected local/GKR data and concrete joint PCS theorem; this module alone supplies count algebra, not those estimates.",
+    "Derive checked terminal and native commitment bindings.",
+    "Global acceptance, native Ext8, QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4106,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only count composition."
+  }
+}

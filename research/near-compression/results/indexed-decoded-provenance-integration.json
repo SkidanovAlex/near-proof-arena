@@ -1,0 +1,44 @@
+{
+  "status": "METADATA_INDEX_FAMILY_COMPOSED_WITH_FIXED_SOURCE_TRACE",
+  "module": "NearCompression/IndexedDecodedProvenance.lean",
+  "theorems": [
+    "live_lane_index_unique",
+    "metadata_source_column_index",
+    "indexed_lane_polynomial",
+    "decoded_source_indexed_provenance",
+    "metadata_source_index_family",
+    "metadata_joint_fixed_source_trace"
+  ],
+  "proved": [
+    "All-slot disjointness prevents a live lane from occupying two metadata indices.",
+    "Canonical source-column coverage selects a unique index before any polynomial tuple is supplied.",
+    "Existential zipped lane/polynomial membership identifies the polynomial at that fixed index.",
+    "Preselected decoded-family provenance becomes the exact indexed row equality needed by fixed_joint_representative_source_trace.",
+    "Selects a whole source-index family from metadata before source oracles, polynomial tuples or auxiliary strategies are supplied.",
+    "Composes metadata index selection and existential decoded provenance with joint representatives to construct one fixed base source trace across eligible auxiliary choices."
+  ],
+  "assumptions": [
+    "Canonical metadata lane enumeration with all-support disjointness and source-column bounds.",
+    "Polynomial tuple length matches lane count.",
+    "Decoded provenance supplied by the prechallenge family theorem."
+  ],
+  "limitations": [
+    "No global uniqueness is assumed for empty-support lanes.",
+    "This is a formal metadata/provenance connection, not native metadata authentication."
+  ],
+  "remaining": [
+    "Instantiate metadata table enumeration and typed oracle authentication in the slice verifier, then compose fixed-source bus and local/GKR acceptance bounds.",
+    "Auxiliary formula refinement, authenticated native binding and global acceptance composition.",
+    "QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4032,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal metadata index/provenance only."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "status": "EXACT_GKR_FINAL_BLOCK_TO_JOINT_PCS_SAMPLE_COORDINATES",
+  "module": "NearCompression/GKRBlockCoordinates.lean",
+  "theorems": [
+    "gkr_block_coordinates_uniform",
+    "gkr_challenge_paths_append",
+    "gkr_rows_final_block_history",
+    "gkr_rows_block_pcs_coordinates",
+    "gkr_rows_block_pcs_event_count",
+    "gkr_block_coordinate_regressions"
+  ],
+  "finding": "Merged far-case PCS bound averages over rowpoints, final GKR coordinates and PCS point. It cannot be substituted as a per-fixed-rowpoint bound without further justification.",
+  "proved": [
+    "GKR block flattening left++right++[gamma] enumerates exactly uniform tuples of length 2m+1, preserving order and multiplicities.",
+    "GKR challenge paths split exactly across a round-list append.",
+    "Rows plus final block enumerate the exact chronological history space.",
+    "Rows plus final block plus PCS opening point enumerate the heterogeneous joint outer sample.",
+    "Any joint predicate with later continuation data has the same event count after coordinate assembly."
+  ],
+  "remaining": [
+    "Match concrete take/drop left/right/gamma accessors and terminal mismatch predicates.",
+    "Reorder/count earlier GKR block coordinates without conditioning away the rowpoint averaging required by the far bound.",
+    "Instantiate merged PCS assumptions and computational authentication; end-to-end quantum and size feasibility remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3929,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "kernel_regressions": "Left/right/gamma ordering, zero-axis block and duplicate sample multiplicities.",
+    "native_capture_execution": "Not rerun; formal finite sample identities only."
+  }
+}

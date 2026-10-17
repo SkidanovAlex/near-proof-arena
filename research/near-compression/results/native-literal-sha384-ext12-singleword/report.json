@@ -1,0 +1,70 @@
+{
+  "status": "NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED",
+  "child_bytes": 740881,
+  "wire_census": {
+    "total": 740881,
+    "gkr": 20408,
+    "relations": 81248,
+    "stacking": 1936,
+    "whir": 617640,
+    "other": 19649
+  },
+  "public_fields": 4891,
+  "public_included": true,
+  "request_bytes": 919,
+  "total_child_plus_request_bytes": 741800,
+  "independent_Lean_runCall": {
+    "done": true,
+    "failed": false,
+    "gas": 999999447071257,
+    "stack": []
+  },
+  "eligibility": {
+    "code_length": 193,
+    "status": "PASS"
+  },
+  "public_mutations_rejected": 6,
+  "witness_independent_replay": true,
+  "transcript_oracle": {
+    "samples": 64,
+    "rejections": 5,
+    "final_state_equal": true
+  },
+  "security": {
+    "hash": "SHA-384",
+    "field": "BabyBear[X]/(X^12-31)",
+    "query_target_bits": 268,
+    "grinding_bits": 0,
+    "native_component_min_bits": 268.5252522711154,
+    "logup_bits": 342.88268715590135,
+    "proximity_bits": 322.9308746090754,
+    "query_bits": 268.5252522711154,
+    "certified": false
+  },
+  "backend_pin": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+  "exclusions": [
+    "custom transcript compiler/QROM applicability and concrete constants",
+    "recursive parent upgrade and knowledge composition",
+    "Lean field irreducibility and Rust refinement",
+    "cryptographic acceptance-to-execution Lean theorem",
+    "full NEAR1Pgas and performance target"
+  ],
+  "sha256": {
+    "Cargo.lock": "7a0e92b49ae35775174359c3f78eac06f30450fde00abb5752b3cbc98ac2a1ab",
+    "Cargo.toml": "517a141cee9d26e6f90d3afb0e053febafb54c7395d9ffc264bcaec8064dca48",
+    "backend.patch": "fc3f8ee331ed4d871ddb4e6b95b565cb52d5d8ce898a9e3886c7273b286a06ec",
+    "child.proof": "294751502b8b9f439086857530233f8a4ce250ed58d88220b8ee706e07ff249c",
+    "fixture.json": "f86142cae0e1df917444dbbf340920ffb34ba3c3a170e8ae7f1251ae9b2bcb80",
+    "literal.rs": "fbff218d8c7b73961937a2c6b55e8f7145d8d62a5a7bebdf6053ad92587f554b",
+    "main.rs": "a042405ebee0919f48bfdfb0067b0739487e22d86fe1f97d8fe4d692ff9bd592",
+    "native_sha384_config.rs": "c5ae3ffe836658c9c6a9839a5d30e41fae19b994c1bd7e70988f98a90413f5c8",
+    "plonky3-ext12.patch": "cd82dbb5f650b277146db19eecaa93fc133c4095de429e0db36f60c7c6d83c50",
+    "prove.log": "89210d34abf3924a9f981fdbb46301c7127e78f5a1411a07904665d4770db64a",
+    "public.bin": "2214c301b99a881c039544a7235ff4ac867ad472f1ae93325f89381c0cc4d82a",
+    "replay.log": "81740e57468685a77ea34d082db3ab787dceb261b382d51511488ea441f148da",
+    "rows-0.bin": "ab34e36616d070adfa36e613f552581973d1996b4f998ff22f21a17b4cb3db54",
+    "rows-1.bin": "6d3da5d8dd402dcbe025823b99d938c7ed4f9d232f2416cd02d1a471a3d07975",
+    "spec.json": "d5af1a689f6c8ba61c315c74ece9433ed5587056130c4c476c605a7eda420deb",
+    "transcript-vectors.log": "eadefa46cab226e24ed921dc292278730f9b4f29c4afef6fd86e225bb1f5fc51"
+  }
+}

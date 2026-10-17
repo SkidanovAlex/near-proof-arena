@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "actual_prepare_run_call_cases": 3,
+  "source_constraint_counts": [
+    74,
+    212
+  ],
+  "honest_value_cases": 9,
+  "honest_add_cases": 6,
+  "constraint_mutations_rejected": 1890,
+  "actual_trace_gadgets": 251,
+  "type_transition_mutations_rejected": 11,
+  "scope": "Isolated source AIR plus independent typed trace replay; full typed EXEC and CODE bus refinement pending"
+}

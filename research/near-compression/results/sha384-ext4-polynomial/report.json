@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "tables": 4,
+  "points_per_table": 7,
+  "nonbase_points_per_table": 4,
+  "polynomial_evaluations": 70,
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_ext4_polynomial.py",
+      "sha256": "71d276bc79f9581c8839ef910b6dca75721cba4e55069f76d87304310f727330"
+    },
+    {
+      "path": "SHA384Ext4PolynomialFixture.lean",
+      "sha256": "eeb10a6468afcde40d9a19d4e7e8d1af262a3fcdafe01e500d20ee6f5ba5dc62"
+    },
+    {
+      "path": "results/sha384-ext4-polynomial/inputs.json",
+      "sha256": "fb8839e9fc3b0bc31bcc0316620bbe79bb1cee1f74b6b5f3a373a20608693f46"
+    },
+    {
+      "path": "results/sha384-ext4-polynomial/lean-results.json",
+      "sha256": "28452a1b0c88cab8c395a5de5f74cc1e01033620d1b933b236347ff1e8c444c1"
+    },
+    {
+      "path": "airbender/direct-wasm/verify_whir_toy.py",
+      "sha256": "750247ebb4beb6a9ae3cc21513d4de13973efacd70927a4a226125fce87aec51"
+    },
+    {
+      "path": "airbender/direct-wasm/packed_disclosure.py",
+      "sha256": "9745f8d85b23d61280849c3990bb3e77a2bac86b595857344c323805a154f292"
+    }
+  ],
+  "limits": [
+    "Bounded flat-coordinate parity; formal embedding/evaluation theorems carry universal algebra.",
+    "No unknown-root extraction or cryptographic security conclusion."
+  ]
+}

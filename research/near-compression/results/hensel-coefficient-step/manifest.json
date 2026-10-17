@@ -1,0 +1,27 @@
+{
+  "scope": "Finite smooth Hensel lifting existence and uniqueness over a field; no exact bounded-degree root, rational-function extension construction or full MCA exceptional-set claim.",
+  "cwd": "research/near-compression",
+  "source_review": {
+    "url": "https://www.math.toronto.edu/swastik/rs-proximity-gaps-2025.pdf",
+    "sections": [
+      "3.2",
+      "4.3"
+    ],
+    "sha256": "4added3e55b83c15fcc8a698fb57e137f5bd83e79ea25ce79382817c1ad26a46"
+  },
+  "replay": [
+    "python3 airbender/direct-wasm/test_hensel_coefficient_step.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/HenselCoefficientStep.lean": "e1991951a5a2ad7de2cdc337610cb863a51a656118546cd841a3b750a761d0d4",
+    "research/near-compression/NearCompression/CurveRootPreservation.lean": "f2f5fb273fc0ebedd38dbbd052a9986aaea9c8a4b52213c0de8dd69217616a34",
+    "research/near-compression/NearCompression/PolynomialIntegralDomain.lean": "f37f18366f90b8a224e956a16b02958bbc70f84f4fedc37256c34be05690ba51",
+    "research/near-compression/airbender/direct-wasm/test_hensel_coefficient_step.py": "608f18f357f66021c8a3081ce4c8fd1425bbeff3572fbdba956225bec51ff9d6",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_curve_division.py": "caa6f88b112bdf9ca03d6682425ce69918fbc238532bf8412005bd664e26a52b",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/results/hensel-coefficient-step/report.json": "885ac8a78aed4cdec11d800b459c79f600d7711a4ceabaa662bc9efc71dabf2c",
+    "research/near-compression/results/hensel-coefficient-step/lean-audit.log.gz": "ee646e3077e4e5ee918d65397019ceb61591f584b204aa529c1dfc917d1d002f"
+  }
+}

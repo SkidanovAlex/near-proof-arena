@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "input_cases": 7,
+  "independent_table_output_checks": 231,
+  "batched_output_checks": 7,
+  "circuit_sha256": "ddc7c23a6c3a3753b99470bba2ede52295fddfafb1fb4dd04d45e0675fea9cf8",
+  "scope": "Public parameters replayed; original, zero, one and arbitrary Ext4 inputs match independent canonical evaluator.",
+  "limits": [
+    "Finite differential tests, not formal compiler correctness.",
+    "Fixed batching coefficient is for resource analysis only, not a security parameter.",
+    "No GKR protocol or input-opening proof established."
+  ]
+}

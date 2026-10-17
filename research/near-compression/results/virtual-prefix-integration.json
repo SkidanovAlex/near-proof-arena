@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3571,
+  "added_theorems": 5,
+  "source_sha256": "615945f4c7f215f7eb0dfc9366436d83c0badef693e9f116e1d4bd06aa19e897",
+  "audit_log": "/tmp/root-virtual-prefix-audit.log",
+  "audit_sha256": "96112b96cfec3191b3bb03cdf9d59e3c090deaa6cd38f45ca636cdb21965f3f1",
+  "scope": "Literal virtual-fold prefix strategy with derived snapshot causality and counted adaptive bad events.",
+  "proved": [
+    "Arbitrary verifier weight folding and source-oracle folding depend only on prior challenge prefixes.",
+    "Quadratic messages read exactly history.take stage.",
+    "Snapshot causality derived, including transcript-generated measure.",
+    "Adaptive bad-path count bounded by sum(max(childDomain,2))/sample.length for a nonempty uniform alphabet.",
+    "Completed transcript transitions are outside bad events whenever counted prefix path is good."
+  ],
+  "example": {
+    "source_domain": 128,
+    "skipped_folds": 2,
+    "child_domains": [
+      64,
+      32
+    ],
+    "extraction_error_numerator": 96
+  },
+  "limits": [
+    "Ideal source oracle; no Merkle-root extraction.",
+    "Verifier endpoint and weight-shape checks still need full concrete strategy integration.",
+    "Continuation prefix strategy and whole source-query/mixing/continuation composition remain.",
+    "No Fiat-Shamir/QROM or full NEAR proof certification."
+  ]
+}

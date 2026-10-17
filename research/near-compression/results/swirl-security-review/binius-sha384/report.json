@@ -1,0 +1,75 @@
+{
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "status": "SHA384_COMPONENT_PROVED_AND_VERIFIED",
+  "message_bytes": 187,
+  "compression_blocks": 2,
+  "message_sha384": "539a7926a4cfc363499dcb7afe0307bd183f1e215dc5d0fef202fdf9b08ea2688dd5939262495a46b46678a1e9e93477",
+  "proof_payload_bytes": 61648,
+  "serialized_proof_bytes": 61684,
+  "public_inout_words": 30,
+  "public_inout_bytes": 240,
+  "committed_word_count": 2276,
+  "bitand_constraints": 1831,
+  "zero_constraints": 451,
+  "results": [
+    {
+      "label": "prove",
+      "exit_code": 0
+    },
+    {
+      "label": "fresh",
+      "exit_code": 0
+    },
+    {
+      "label": "bad-digest",
+      "exit_code": 1
+    },
+    {
+      "label": "bad-message",
+      "exit_code": 1
+    },
+    {
+      "label": "bad-proof",
+      "exit_code": 1
+    },
+    {
+      "label": "padding-0",
+      "exit_code": 0
+    },
+    {
+      "label": "padding-111",
+      "exit_code": 0
+    },
+    {
+      "label": "padding-112",
+      "exit_code": 0
+    },
+    {
+      "label": "padding-127",
+      "exit_code": 0
+    },
+    {
+      "label": "padding-128",
+      "exit_code": 0
+    },
+    {
+      "label": "sha512-regression",
+      "exit_code": 0
+    },
+    {
+      "label": "statistics",
+      "exit_code": 0
+    }
+  ],
+  "rejection_stages": {
+    "bad-digest": "witness circuit assertion before proof verification",
+    "bad-message": "proof verifier",
+    "bad-proof": "proof verifier Merkle authentication"
+  },
+  "security_scope": "Pinned verifier SECURITY_BITS=96 controls FRI query phase only; default SHA256 Merkle hash suite. Not a full/PQ128 security certificate.",
+  "limitations": [
+    "Single public-message SHA384 relation, not transcript routing or recursive bundle verification.",
+    "64-bit word counts are not comparable units to BabyBear AIR cells.",
+    "No matched performance benchmark, Lean compiler proof, full NEAR or secure-size claim."
+  ]
+}

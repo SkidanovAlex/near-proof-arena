@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 2033,
+  "sources": {
+    "NearCompression/CloseFamilySumcheck.lean": "4eaf1a7ab4e75f6c181884d2e21f52d5aee1c12a9aa9ada2fd734baa231df4e4",
+    "NearCompression/FunctionalOpeningReduction.lean": "81e1ad2b4f5e305143056d6c3e5da5bd11f5597776f1cdaea6bb70d8ad83d608",
+    "NearCompression/EqualityWeightAppend.lean": "0e2abdd14560f75986db762ba509e123ee056c204e1d132561deea5ddd8591f5",
+    "NearCompression/PreparedExecFinalRow.lean": "0761121e85cbc9c78741100cd5689747145bea8ee52375428cde7af731f09d99",
+    "NearCompression/SHA384EndpointSplit.lean": "54e5250b172c50c7b9005b1c9b5afa2e44368dba9b1aae148efd8b8c7fcd662c",
+    "EqualityWeightExport.lean": "2a860663d88294430de42e3d0bd7c7c1927e43ca15ce9ead50dd5f3dd7c5dbb4",
+    "PreparedLiteralOutputSmoke.lean": "7eb80e50c42e0e4a07ab26e75f1985595cc299c3d0fad1e578874e4fc2b0453a",
+    "airbender/direct-wasm/check_equality_weight_parity.py": "60037f0c7d387edba95af1efaefe1564fa7524f4f0514232154bfef097ed2a4d",
+    "airbender/direct-wasm/tensor_security_accounting.py": "7fec53f83510946e8208a82ca6ed6001138080b5ca055377bad398286a84061a"
+  },
+  "output_runtime_smoke": {
+    "actual_setup_cases": 7,
+    "output_mutations_detected": 49,
+    "scope": "Actual runCall/public-output decoder parity; mutations tested against decoder, not cryptographic verifier",
+    "status": "PASS"
+  },
+  "equality_weight_parity": {
+    "status": "PASS",
+    "cases": 55,
+    "weight_entries": 10235,
+    "reversed_coordinate_order_detected_cases": 14,
+    "lean_export_sha256": "871b27ebfb65845591c318c10db974b026a935e7fa4706b86818018eb9a1afbb",
+    "scope": "Actual Lean equalityWeights/scalarRSResidual/genericRowMLE vs actual Python eq_weights on base-field embedded challenges; not full extension arithmetic refinement or security certification"
+  },
+  "formal_milestones": [
+    "Actual eligible outer runCall matches public status, fast gas and live i32 stack without caller terminal-state relation",
+    "Fixed functional representability reduction: initial candidate event bounded by (n*max(N,2)+2*n)/sample cardinality",
+    "Exact iterative Python equality-weight ordering proved in Lean",
+    "Endpoint-only feedforward core/adder semantic interfaces, not full tagged-routing soundness yet"
+  ],
+  "remaining": [
+    "Complete checked folding/query composition and executable sparse-lift/current-next bridge",
+    "Pre-GKR shared-witness soundness, commitment binding, sampler and QROM",
+    "Structured control/locals/memory/hosts/state transitions and full 1 Pgas",
+    "Full endpoint hash routing theorem and measured recursive prover",
+    "Certified quantum-secure proof smaller than300000bytes"
+  ]
+}

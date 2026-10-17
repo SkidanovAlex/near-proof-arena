@@ -1,0 +1,141 @@
+{
+  "upstream_commit": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+  "stages": [
+    {
+      "stage": "leaf",
+      "proof_bytes": 383529,
+      "distinct": 5683,
+      "padded": 8192,
+      "sources": [
+        {
+          "source": "merkle",
+          "raw": 4825,
+          "distinct": 2809,
+          "exclusive": 2809
+        },
+        {
+          "source": "initial",
+          "raw": 3088,
+          "distinct": 2608,
+          "exclusive": 2608
+        },
+        {
+          "source": "continuation",
+          "raw": 0,
+          "distinct": 0,
+          "exclusive": 0
+        },
+        {
+          "source": "transcript",
+          "raw": 266,
+          "distinct": 266,
+          "exclusive": 266
+        },
+        {
+          "source": "external",
+          "raw": 0,
+          "distinct": 0,
+          "exclusive": 0
+        }
+      ]
+    },
+    {
+      "stage": "internal",
+      "proof_bytes": 398697,
+      "distinct": 19622,
+      "padded": 32768,
+      "sources": [
+        {
+          "source": "merkle",
+          "raw": 13789,
+          "distinct": 10757,
+          "exclusive": 10757
+        },
+        {
+          "source": "initial",
+          "raw": 3776,
+          "distinct": 3776,
+          "exclusive": 3776
+        },
+        {
+          "source": "continuation",
+          "raw": 2640,
+          "distinct": 2640,
+          "exclusive": 2640
+        },
+        {
+          "source": "transcript",
+          "raw": 2449,
+          "distinct": 2449,
+          "exclusive": 2449
+        },
+        {
+          "source": "external",
+          "raw": 0,
+          "distinct": 0,
+          "exclusive": 0
+        }
+      ]
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "proof_bytes": 242809,
+      "distinct": 16895,
+      "padded": 32768,
+      "sources": [
+        {
+          "source": "merkle",
+          "raw": 6254,
+          "distinct": 5070,
+          "exclusive": 5070
+        },
+        {
+          "source": "initial",
+          "raw": 8704,
+          "distinct": 8704,
+          "exclusive": 8704
+        },
+        {
+          "source": "continuation",
+          "raw": 800,
+          "distinct": 800,
+          "exclusive": 800
+        },
+        {
+          "source": "transcript",
+          "raw": 2321,
+          "distinct": 2321,
+          "exclusive": 2321
+        },
+        {
+          "source": "external",
+          "raw": 0,
+          "distinct": 0,
+          "exclusive": 0
+        }
+      ]
+    }
+  ],
+  "raw_sha256": {
+    "run.log": "730cb303df8514c299dfce5d8e721bf68dbd5dc09fdefafba176555f30af95f3",
+    "clippy.log": "771eff23a06fb930263d445d28f0cfdc11e6fb1b8e0efb09a23d0c0e5f38e28e",
+    "transcript.rs": "5de6138ebb2fb447a9d01e81ba1d660c827e8f9243b8070804ca3799d361805b",
+    "tests.rs": "6f6c8b1959449aa7298489957f457c390188bbc70275e42c34883dd9c45eb6cc",
+    "Cargo.lock": "76467b143beff28428cfbfbe02e6f2badac3922ad6ded02a7cc4859cec2e7d57",
+    "p3-air.rs": "320477a1616e943db7368b8c6b05525382b22530208863c226685d7a2738424f"
+  },
+  "root_split_counterfactual": {
+    "distinct": 16895,
+    "table_heights": [
+      16384,
+      512
+    ],
+    "common_cell_saving": 4777472,
+    "extra_air_opening_and_key_costs": "not measured"
+  },
+  "limitations": [
+    "Single-child diagnostic instrumentation only; not an upstream patch.",
+    "Counts depend on proof; earlier root distinct was 16842, this run 16895.",
+    "No removal or partitioning implemented; no PQ128/full-NEAR claim."
+  ]
+}

@@ -1,0 +1,94 @@
+"""Reject corrupted capture pins, contradictory sizes and stale security ledgers."""
+import hashlib
+import json
+from pathlib import Path
+from unittest.mock import patch
+import report_current_feasibility as report
+
+
+def main():
+    good=report.build()
+    assert good['status']=='NOT_PASSED' and not good['measured_fixture']['security_certified']
+    assert not good['same_parameters_as_measured_fixture']
+    assert good['screened_candidates_passing_partial_bound_and_size']==0
+    assert sum(good['measured_fixture']['components'].values())==1344645
+    choices={x['replaced_component']:x for x in good['replacement_break_even']}
+    opening=choices['entire_opening']
+    assert opening['fixed_remainder_bytes']+opening['maximum_replacement_bytes_for_strict_target']==299999
+    assert not choices['all_opening_authentication']['possible_even_with_free_replacement']
+    original=Path.read_bytes
+    base=report.ROOT/'results/ext8-switch-execution-q309'
+    manifest_path=base/'manifest.json'
+    mutations=[
+        (report.ROOT/'results/poseidon2-permutation-layout/report.json',
+            lambda d:d.update(pq128_certified=True),False),
+        (report.ROOT/'results/poseidon2-permutation-layout/workload.json',
+            lambda d:d.update(hypothetical_permutations=1),False),
+        (report.ROOT/'results/pooled-joint-nibble-geometry.json',
+            lambda d:d['scenarios'][0].update(packed_base_coefficient_payload_bytes=1),False),
+        (report.ROOT/'results/pooled-joint-nibble-geometry.json',
+            lambda d:d['scenarios'][0]['banks'][0].update(phase='mixed'),False),
+        (report.ROOT/'results/joint-nibble-geometry.json',
+            lambda d:d['scenarios'][0].update(expected_optimistic_total_bytes=1),False),
+        (report.ROOT/'results/joint-nibble-geometry.json',
+            lambda d:d['scenarios'][0].update(security_certified=True),False),
+        (report.ROOT/'results/hash-architecture-review/geometry.json',
+            lambda d:d['candidates'][2].update(pq128_certified=True),False),
+        (report.ROOT/'results/hash-architecture-review/geometry.json',
+            lambda d:d['digest_screens'][1].update(passes_384_bit_output_range_screen=True),False),
+        (report.ROOT/'results/closed-hybrid-work.json',
+            lambda d:d.update(unchanged_other_work_counterfactual_blocks=0),False),
+        (report.ROOT/'results/closed-hybrid-verifier/report.json',
+            lambda d:d.update(exact_ordered_hash_preimages_match=False),False),
+        (report.ROOT/'results/closed-derived-switch/report.json',
+            lambda d:d.update(baseline_isolation_verified=False),False),
+        (report.ROOT/'results/structured-verifier-states.json',
+            lambda d:d.update(compared_ext8_coefficients=0),False),
+        (report.ROOT/'results/closed-verifier-arithmetic.json',
+            lambda d:d['stages']['compression'].update(hash_parts=0),False),
+        (report.ROOT/'results/nibble-full-verifier-screen.json',
+            lambda d:d['scenarios'][0].update(mandatory_header_roots_finals_local_bytes=1),False),
+        (report.ROOT/'results/sha384-nibble64/codec-report.json',
+            lambda d:d.update(proof_bytes=1),False),
+        (report.ROOT/'results/ext8-packed-prover-parity.json',
+            lambda d:d['cases'][0].update(byte_identical=False),False),
+        (report.ROOT/'results/sha384-nibble64/private-preparation.json',
+            lambda d:d.update(full_witness_verified=False),False),
+        (report.ROOT/'results/sha384-nibble-phase-air.json',
+            lambda d:d.update(compiled_64_block_source_aux_cells=0),False),
+        (report.ROOT/'results/sha384-nibble-lookup-air.json',
+            lambda d:d.update(fixed_truth_rows_checked=0),False),
+        (report.ROOT/'results/sha384-nibble-row-plan.json',
+            lambda d:d['trials'][0].update(candidate_cells=0),False),
+        (report.ROOT/'results/derived-transcript-bindings.json',
+            lambda d:d['terminal'].update(existing_begin_seeds_distinct=False),False),
+        (report.ROOT/'results/response-transcript-screen.json',
+            lambda d:d['measurement']['totals'].update(unique_blocks_saved=0),False),
+        (report.ROOT/'results/bounded-merkle-break-even.json',
+            lambda d:d['mandatory_bytes'].update(total=1),False),
+        (base/'report.json',lambda d:d.update(combined_bytes=1),True),
+        (base/'report.json',lambda d:d.update(fresh_conjunction_verified=False),True),
+        (base/'prover-report.json',lambda d:d['breakdown'].update(header_and_terminal_bytes=1),True),
+        (report.ROOT/'results/larger-field-code-switch-screen.json',
+            lambda d:d['results'][0]['conditional_ledger'].update(partial_within_half_success=True),False),
+        (report.ROOT/'results/larger-field-code-switch-screen.json',
+            lambda d:d['results'][0].update(min_subtotal_bytes=1),False),
+        (base/'config.json',lambda d:d.update(queries=1),False),
+    ]
+    for path,mutate,repin in mutations:
+        data=json.loads(original(path));mutate(data);raw=json.dumps(data).encode()
+        changes={path:raw}
+        if repin:
+            manifest=json.loads(original(manifest_path))
+            manifest['files'][str(path.relative_to(report.REPO))]=hashlib.sha256(raw).hexdigest()
+            changes[manifest_path]=json.dumps(manifest).encode()
+        def patched(path): return changes[path] if path in changes else original(path)
+        with patch.object(Path,'read_bytes',patched):
+            try: report.build()
+            except (AssertionError,ValueError): pass
+            else: raise AssertionError('accepted contradictory evidence: '+str(path))
+    print(json.dumps(dict(status='PASS',corrupt_or_inconsistent_evidence_rejections=len(mutations),
+        strict_target_boundary_checked=True,scope='Evidence reconciliation and arithmetic only; no security certification.')))
+
+
+if __name__=='__main__':main()

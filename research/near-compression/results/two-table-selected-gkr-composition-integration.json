@@ -1,0 +1,38 @@
+{
+  "status": "BOTH_SELECTED_LOCAL_GKR_BUDGETS_DERIVED_IN_COMMON_EXPERIMENT",
+  "modules": [
+    "NearCompression/SelectedGKREvidence.lean",
+    "NearCompression/TwoTableSelectedGKRComposition.lean"
+  ],
+  "theorems": [
+    "selected_last_evidence_bound",
+    "selected_future_evidence_bound",
+    "two_table_selected_gkr_composition"
+  ],
+  "proved": [
+    "Semantic evidence records package existing selected auxiliary local/GKR hypotheses and contain no local acceptance inequality or numeric repair budget.",
+    "The two evidence-bound theorems invoke the existing selected local/GKR soundness theorems; their numeric local budgets are explicit geometry-derived functions.",
+    "The common two-table composition applies both evidence-bound theorems to the filtered first/future and second/earlier experiments, normalizes their counts and charges the shared accepted-failure estimate once."
+  ],
+  "assumptions": [
+    "Semantic evidence still requires selected invalidity, fixed-coordinate binding, residual geometry, local checks, GKR mismatch/circuit binding/checks and shared-error inclusion.",
+    "Valid-auxiliary bus estimate and one shared accepted-failure estimate remain numeric inputs.",
+    "Evidence is mathematical Lean data, not a native executable certificate or extraction procedure."
+  ],
+  "remaining": [
+    "Instantiate the valid-auxiliary estimate with prepared-Wasm checked history/bus results.",
+    "Instantiate the shared failure estimate with concrete joint PCS and prove event inclusion/authentication.",
+    "Construct semantic evidence from checked terminal/native verifier artifacts.",
+    "Full Ext8 slice, global acceptance, QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4109,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only composition."
+  }
+}

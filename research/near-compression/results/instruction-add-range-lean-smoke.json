@@ -1,0 +1,30 @@
+{
+  "kind": "actual Lean range-enforced addition AIR smoke test",
+  "honest_cases": 8,
+  "rejected_mutations": 1600,
+  "mutation_types": [
+    "all 104 columns incremented independently",
+    "96 boolean bits flipped independently"
+  ],
+  "prior_range_forgery_rejected_by_polynomials": true,
+  "external_range_guard": false,
+  "table": {
+    "width": 104,
+    "constraints": 106,
+    "max_degree": 2,
+    "max_log": 22
+  },
+  "full_audit_theorems": 889,
+  "command": "lake env lean --run InstructionAddRangeSmoke.lean",
+  "source_sha256": {
+    "NearCompression/InstructionAdd.lean": "d269f86238d0e00f377a415b3be69c1918c5a68e62529c9910aa4eaa39340fef",
+    "NearCompression/InstructionAddRange.lean": "f5df5d974c939df2e5dab1534561bee6bdde310fdf3a453bf7580250b557c5e1",
+    "NearCompression/InstructionAddTrace.lean": "a793f3c06959b6b9e2e99b7d4e2ebc59125562c22cb6cf048db02302399dda87",
+    "NearCompression/InstructionRangeTrace.lean": "9f4f29bfc4a305764614b6a60ab30ab4de4f6b69472c0879c54fe818dfafaed1",
+    "InstructionAddRangeSmoke.lean": "81b9f005afe7a48816d415999e37b91fcd1a73ff1108c96d52511bcef1555207"
+  },
+  "limitations": [
+    "No stack/code bus or opcode binding.",
+    "No full state transition proof, proof-size measurement or quantum-security bound."
+  ]
+}

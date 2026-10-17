@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "profiles": 6,
+  "cases": 72,
+  "residual_comparisons": 2280,
+  "scope": "Lean-generated complete table layout, chains and stable send/receive boundary order",
+  "limits": [
+    "Synthetic source formulas with alpha=0; general fingerprint/source lowering remains",
+    "JSON parity test is not a proved Python/parser refinement",
+    "Executable Ext4; no executable Ext8 or cryptographic security certification"
+  ]
+}

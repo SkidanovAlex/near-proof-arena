@@ -1,0 +1,35 @@
+{
+  "status": "incremental progress; full objective remains open",
+  "audit": {
+    "declarations": 1578,
+    "log": "/tmp/near-batched-ledger-audit.log"
+  },
+  "evidence": [
+    "pq384-batched-fold/verified.json",
+    "pq384-batched-fold/fresh-process-verification.json"
+  ],
+  "negative_checks": 156,
+  "cases": [
+    [
+      64,
+      17,
+      2
+    ],
+    [
+      64,
+      68,
+      8
+    ],
+    [
+      8,
+      544,
+      32
+    ]
+  ],
+  "remaining": [
+    "Formal lanebatching andfullheight nativeprover scaling",
+    "ActualWasm.step/PREP/fullNEARstate semantics",
+    "CompleteAIRintegration/proximity/coherentRBR/QROMbudget",
+    "1Pgas andrecursivecompleteproof<300000bytes"
+  ]
+}

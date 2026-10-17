@@ -1,0 +1,36 @@
+{
+  "status": "BATCH_GKR_REPAIR_PRESERVES_AVERAGED_TERMINAL_ERROR_COUNTS",
+  "module": "NearCompression/AveragedTerminalFailure.lean",
+  "theorems": [
+    "conditional_scaled_accept_errors",
+    "terminal_batch_averaged_errors",
+    "sum_scaled_error_budget",
+    "batched_evaluated_gkr_averaged_errors"
+  ],
+  "proved": [
+    "Conditional acceptance counting retains variable downstream error counts instead of requiring a uniform per-choice PCS budget.",
+    "Batch cancellation composes with repair while keeping the sum of all batch-challenge terminal error counts.",
+    "Rowpoint aggregation preserves the total error sum.",
+    "Evaluated GKR supplies the actual round repair term, leaving its exact accepted terminal mismatch count averaged over rho; no pcsBudget premise."
+  ],
+  "assumptions": [
+    "Fixed mismatched terminal outputs before rho and compiler output identities.",
+    "Evaluated root/query/claim/path structural checks and fixed continuation sample.",
+    "The row aggregation lemma needs its conditional repair inequality, but no conditional PCS estimate."
+  ],
+  "remaining": [
+    "Assemble the selected local-mismatch event and row/rho/earlier-block averages with the concrete merged PCS numerical bound.",
+    "Handle no-representative failure jointly and instantiate executable source/authentication assumptions.",
+    "Global computational/QROM soundness and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3959,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; generic count and evaluated GKR composition only."
+  }
+}

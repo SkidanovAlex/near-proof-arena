@@ -1,0 +1,34 @@
+{
+  "status": "GENERATED_BUS_AUXILIARY_FAILURE_WITNESS",
+  "module": "NearCompression/BusResidualFailureWitness.lean",
+  "theorems": [
+    "bus_ext8_tables_from_generated_residuals",
+    "bus_ext8_generated_residual_failure",
+    "auxiliary_nonzero_combined_index"
+  ],
+  "proved": [
+    "Source checks plus zero generated auxiliary residuals imply the recursive busExt8TablesResidualsZero predicate at exact table offsets.",
+    "If that predicate fails while source checks hold, selects an actual table/row/formula in busTableResiduals with nonzero value.",
+    "An auxiliary formula violation yields a nonzero combined residual index after any source list."
+  ],
+  "assumptions": [
+    "Constraint/interaction column bounds and source constraint validity on the base raw trace.",
+    "Auxiliary values are evaluated on airAuxCoordinateTrace raw sourceWidth."
+  ],
+  "remaining": [
+    "Relate reconstructed coordinate-trace residual evaluations to the actual decoded PCS coordinate columns and native generated formula list.",
+    "Use the adaptive local bound for invalid auxiliaries and include local/GKR errors in bus witness failure.",
+    "Then average/compose local, bus and concrete PCS bounds on the identical event.",
+    "Native/QROM refinement, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4053,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

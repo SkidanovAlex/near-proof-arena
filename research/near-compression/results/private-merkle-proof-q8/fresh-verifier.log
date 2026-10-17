@@ -1,0 +1,1 @@
+PASS complete bounded private Merkle verification; diagnostic security only, not full PCS recursion or PQ128.

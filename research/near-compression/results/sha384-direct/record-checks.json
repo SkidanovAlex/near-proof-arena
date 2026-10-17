@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "input_constraint_residuals": 6174,
+  "exact_padded_block_records": 4,
+  "natural_bus_sent": {
+    "0": 4,
+    "1": 4,
+    "2": 3,
+    "3": 1,
+    "4": 4,
+    "5": 1
+  },
+  "natural_bus_received": {
+    "4": 4,
+    "5": 1,
+    "2": 3,
+    "0": 4,
+    "1": 4,
+    "3": 1
+  },
+  "scope": "Canonical exported Expr differential, actual witness natural balance; no cryptographic claim."
+}

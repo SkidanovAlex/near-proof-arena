@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3155,
+  "added_theorems": 14,
+  "sources": {
+    "GKRRecoveredTerminal": "e6ab623874fc4efa36d853f703036b347d9e5c4c03cbd16d9a86b7c35797f2be",
+    "PreparedTypedBoundary": "a88480bc3a0082c471c938e81b532de80da57c33f498bfc1cf1ab6401227226c",
+    "PreparedTypedInitialization": "9ebdf79a267bec5604a1b77a409d7ccb759830040d145788e7e12c57fe8df3dc",
+    "PreparedTypedEntry": "f12b09b03b9f37a6fa765ab01c09a91fc007d7943c97f6f2fe3aaf29967a00df"
+  },
+  "audit_log": "/tmp/root-recovered-terminal-entry-audit.log",
+  "audit_sha256": "cf145fb9d1cf35e0e127db04ac2e1e26729ab95826d8b63f9593d5e1ea461ce2",
+  "scope": [
+    "Exact sequential known-constant subtraction and recovered coefficient functional equivalence to full combined GKR terminal input claim",
+    "Actual bounded typed Wasm entry state from SetupCheck, executable entry check, and literal HoldsP"
+  ],
+  "remaining": [
+    "PCS commitment authentication is not established by algebraic functional equality",
+    "Typed instruction coverage and whole-call composition incomplete",
+    "Full NEAR capacity and secure sub300KB quantum-resistant proof unachieved"
+  ]
+}

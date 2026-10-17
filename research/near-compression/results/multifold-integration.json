@@ -1,0 +1,20 @@
+{
+  "status": "incremental progress; objective remains open",
+  "audit": {
+    "declarations": 1554,
+    "log": "/tmp/near-multifold-stack-audit.log"
+  },
+  "evidence": [
+    "pq384-multi-fold/verified.json",
+    "pq384-multi-fold/fresh-process-verification.json"
+  ],
+  "negative_checks": 154,
+  "independent_pair_geometry_checks": 7936,
+  "independent_fft_points": 32,
+  "remaining": [
+    "Multiplelanes andrealD1PCS/AIRintegration",
+    "Formal repeatedroundledger, proximity/coherentRBR andQROMbudget",
+    "ActualWasm.step/PREP/host/fullstate refinement",
+    "Full1Pgas benchmark andrecursivecompleteproof<300000bytes"
+  ]
+}

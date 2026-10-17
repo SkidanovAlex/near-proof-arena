@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "lossless_all_fields": true,
+  "decoded_proof_verified": true,
+  "malformed_codec_inputs_rejected": 213,
+  "semantic_mutation_rejected": true,
+  "source_json_bytes": 5493870,
+  "binary_sha256": "5233791058a9f42f5a4a4fe57bf8c3378be32d5bb39f0c6282f88123ad9a9f4d",
+  "proof_json_sha256": "f191d73c9f61f044c053354d7f55123650adfc98ac6f40256e98899a43e6ab71",
+  "codec_source_sha256": "eb5f51ebf1f67983d7a9d552ddbc27ddf3f26587bcc5d723ccd38965809bd30b",
+  "size": {
+    "complete_binary_bytes": 1256796
+  },
+  "profile": "shared-vector-v2",
+  "limitations": [
+    "Trusted AIR/public/profile/source roots are external verifier inputs.",
+    "All metadata and redundant transcript fields retained; no derivation or lossy omission.",
+    "Container checks do not replace semantic/protocol verification.",
+    "No security level or complete state-transition proof claim."
+  ]
+}

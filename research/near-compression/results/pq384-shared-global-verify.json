@@ -1,0 +1,123 @@
+{
+  "status": "PASS",
+  "branches": 66,
+  "differential_rejections": 660,
+  "shared_verifier": {
+    "hash_tags": {
+      "merkle/leaf": {
+        "calls": 4179,
+        "framed_input_bytes": 1224128,
+        "compression_blocks": 13135
+      },
+      "merkle/node": {
+        "calls": 16763,
+        "framed_input_bytes": 5881588,
+        "compression_blocks": 53874
+      },
+      "merkle/root": {
+        "calls": 708,
+        "framed_input_bytes": 206412,
+        "compression_blocks": 2124
+      },
+      "transcript/commit": {
+        "calls": 2274,
+        "framed_input_bytes": 629152,
+        "compression_blocks": 6174
+      },
+      "transcript/draw-result": {
+        "calls": 1322,
+        "framed_input_bytes": 244784,
+        "compression_blocks": 2644
+      },
+      "transcript/init": {
+        "calls": 264,
+        "framed_input_bytes": 26136,
+        "compression_blocks": 264
+      },
+      "transcript/ratchet": {
+        "calls": 1408,
+        "framed_input_bytes": 265724,
+        "compression_blocks": 2816
+      },
+      "transcript/request": {
+        "calls": 1322,
+        "framed_input_bytes": 218344,
+        "compression_blocks": 2644
+      },
+      "transcript/squeeze": {
+        "calls": 1408,
+        "framed_input_bytes": 209404,
+        "compression_blocks": 2816
+      }
+    },
+    "total_hash_calls": 29648,
+    "total_sha384_compression_blocks": 86491,
+    "ext4_operation_calls": {
+      "sub": 17978,
+      "mul": 20930,
+      "add": 45650
+    }
+  },
+  "reference_binary_verifier": {
+    "hash_tags": {
+      "merkle/leaf": {
+        "calls": 13527,
+        "framed_input_bytes": 3855740,
+        "compression_blocks": 41779
+      },
+      "merkle/node": {
+        "calls": 69293,
+        "framed_input_bytes": 24118042,
+        "compression_blocks": 216600
+      },
+      "merkle/root": {
+        "calls": 9990,
+        "framed_input_bytes": 2898306,
+        "compression_blocks": 29970
+      },
+      "transcript/commit": {
+        "calls": 4020,
+        "framed_input_bytes": 1059306,
+        "compression_blocks": 10479
+      },
+      "transcript/draw-result": {
+        "calls": 2535,
+        "framed_input_bytes": 469440,
+        "compression_blocks": 5070
+      },
+      "transcript/init": {
+        "calls": 396,
+        "framed_input_bytes": 39204,
+        "compression_blocks": 396
+      },
+      "transcript/ratchet": {
+        "calls": 2664,
+        "framed_input_bytes": 503058,
+        "compression_blocks": 5328
+      },
+      "transcript/request": {
+        "calls": 2535,
+        "framed_input_bytes": 418740,
+        "compression_blocks": 5070
+      },
+      "transcript/squeeze": {
+        "calls": 2664,
+        "framed_input_bytes": 396498,
+        "compression_blocks": 5328
+      }
+    },
+    "total_hash_calls": 107624,
+    "total_sha384_compression_blocks": 320020,
+    "ext4_operation_calls": {
+      "sub": 22647,
+      "mul": 52185,
+      "add": 54888
+    }
+  },
+  "scope": "All actual PCS branches from independently verified complete bus proof; same bytes and transcript, mandatory shared authentication.",
+  "limits": [
+    "Branch verifier only; complete bus binary decoder still uses reference path.",
+    "No formal equivalence theorem or recursive circuit yet.",
+    "Q8/Ext4 security unchanged."
+  ]
+}

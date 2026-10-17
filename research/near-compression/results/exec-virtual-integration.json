@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 1859,
+  "new_public_theorems": 20,
+  "audit_log": "/tmp/near-exec-virtual-audit.log",
+  "source_parity": {
+    "expressions": 36,
+    "exact_boolean_constraints": 605,
+    "no_first_checked": true
+  },
+  "modules": {
+    "PreparedExecTransition": "7f8563fe1e82433ad95336007a92d83f33144a014644a4a28671f105f14512d1",
+    "PreparedExecWasm": "e3309aa44e7635f8d1eb234a1e869a308b49129606781e4f4749798476bc6e7e",
+    "WeightedVirtualInitial": "a61adca8d3d18150ca5ba3c4c239f4b5f133192e9b652ebb3cbcb29da7b06dc4"
+  },
+  "remaining": [
+    "Authenticated code/gas/numeric-PC and full execution composition",
+    "Far-source structured-weight soundness; joint closeness remains conditional",
+    "Recursive verifier and cryptographic/QROM composition",
+    "Full NEAR 1 Pgas and secure sub-300000-byte proof"
+  ]
+}

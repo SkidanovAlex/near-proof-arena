@@ -1,0 +1,39 @@
+{
+  "status": "MATCHED_ROOT_SPLIT_WITNESS_AND_PUBLIC_GKR",
+  "native_proof_bytes": 231997,
+  "retained_prefix_bytes": 14292,
+  "live_hash_rows": 16874,
+  "hash_partition_heights": [
+    16384,
+    512
+  ],
+  "matrices": 41,
+  "source_cells": 10063600,
+  "common_and_cached_commitments_recomputed": true,
+  "direct_source_openings_checked": 2995,
+  "root_dag_nodes": 18196,
+  "public_gkr_elements": 1288,
+  "public_gkr_ext4_field_bytes": 20608,
+  "public_gkr_known_slots": 4257,
+  "public_gkr_pcs_coordinates": 2603,
+  "stacked_height": 1048576,
+  "commitment_widths": [
+    10,
+    1
+  ],
+  "witness_archive_bytes": 23453666,
+  "witness_archive_files_checked": 43,
+  "child_proof_sha256": "59e834f7aa837d7ae28f4064dc8fe6cdef67a1e75549ffb3470f96b4904204b9",
+  "limitations": [
+    "Generic recursive root-geometry fixture with cached VK; not production RootProver or full NEAR.",
+    "Root public GKR residual authenticated continuation not generated yet; internal continuation is not reusable.",
+    "Upstream diagnostic security settings, no PQ128 or new Lean composition theorem."
+  ],
+  "reproduce": [
+    "Apply saved OpenVM patch plus previously saved backend/CPU diagnostic patches on pinned source revisions.",
+    "Restore child from committed-witness/internal.proof.gz at /tmp/nearproof-witness-internal.proof; run tests::nearproof_root_split_witness with NEARPROOF_NATIVE_CAPTURE pointing to a fresh capture file.",
+    "Root artifacts written to /tmp/nearproof-root-split-witness. Export opening-check.bin as in saved witness archive, then run tests::nearproof_check_saved_witness_openings with NEARPROOF_WITNESS_DIR set to that directory.",
+    "Run tests::nearproof_opening_free_prefix with NEARPROOF_ROOT_SPLIT=1 and NEARPROOF_SOURCE_PROOF=/tmp/nearproof-root-split-witness/native.proof.",
+    "Reproduce public GKR with prove_swirl_root_public_dag.py and --verify-public."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "audit_checks": 2622,
+  "new_public_theorems": 15,
+  "modules": {
+    "SHA384SharedCore": "c0c8f43815636e03cfb0d421d7df3918e6a0da58c754c3a8ffa89e3912aa4dd0",
+    "PowerTwoRootOrder": "99cf6b33f3277076b407ecf7e1ee6b1ef7909a584da98c0084b1597ec414afd0"
+  },
+  "shared_export_byte_parity": true,
+  "root_certificate": "Exact440564289 generator, period and half-order checked by kernel; exact root order for all k<=27; rate-four modular value formula.",
+  "scope": "Fp root expression certified; challenge-extension embedding and native exponentiation-loop refinement remain. Shared endpoint Add64 correctness and core constraint transport only; complete shared hash routing theorem remains pending."
+}

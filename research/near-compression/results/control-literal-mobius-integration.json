@@ -1,0 +1,62 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 2072,
+  "source_hashes": {
+    "NearCompression/PreparedControlLiteral.lean": "0bad9a78254c25e12edaa96e3e58cfac9518444e4221c74dc13763d7d65e1496",
+    "NearCompression/DualMobiusWeights.lean": "05c35de37811a8e24abe2f87ad0daab93d213f1d5cfe4133344cde687bab019a",
+    "airbender/direct-wasm/prepared_control_air.py": "33556213626966b8441b3aaa7718726c2732601d128cda6544269de64f3bd26c",
+    "airbender/direct-wasm/generate_prepared_control_literal.py": "69fa8d8f3887366b6b7bf2e94f092aa31d6e1db5d0c0805c585bd06e17b997b0",
+    "airbender/direct-wasm/check_prepared_control_literal.py": "ea84e5a980ca0253688ddffee1eeebc1e7c71a95652355eb06ff7c366c62ec1b",
+    "DualMobiusExport.lean": "aa93cd5a00f8526a830c1a93d69b869b4284ee290b14a9d9ec0867240442856e",
+    "airbender/direct-wasm/check_dual_mobius_parity.py": "33208ea4621d243c77a36fe8e24e57dfa77af6e2f0ca111183eac12f46445237",
+    "airbender/direct-wasm/test_prepared_control_proof.py": "468af94a3e5a35d2718b726e6f03d8b9d789e3a91992ec3bc1628dd11883fe22"
+  },
+  "whole_control_literal_parity": {
+    "status": "PASS",
+    "code_length": 11,
+    "tables": [
+      {
+        "user_constraints": 870,
+        "automatic_constraints": 3,
+        "total_constraints": 873
+      },
+      {
+        "user_constraints": 543,
+        "automatic_constraints": 26,
+        "total_constraints": 569
+      }
+    ],
+    "all_interactions_and_public_segments_equal": true,
+    "generated_source_sha256": "0bad9a78254c25e12edaa96e3e58cfac9518444e4221c74dc13763d7d65e1496",
+    "export_sha256": "8f3ed98fd2e34b0f05b68e4d4d9df9e7b7a8ebdcc1699d4654c4217ca1f73e14",
+    "scope": "Exact literal AST and executable export parity; source-membership certificates and full semantic instantiation remain separate"
+  },
+  "control_reference_cases": 13,
+  "control_reference_rejections": 1054,
+  "control_code_smoke_rejections": 2034,
+  "proof": {
+    "status": "PASS",
+    "proof_bytes": 88614,
+    "proof_sha256": "023da44a2773168abf3d7e54da9aa8943b8a84a076b68ba6e63f726daad96d62",
+    "public_field_count": 385,
+    "fresh_binary_verifier": "PASS: complete AIR and randomized bus-fingerprint binary diagnostic",
+    "rejection_checks": 7,
+    "source_roots_included": true,
+    "scope": "Q8/Ext4 diagnostic control AIR proof; public statement separate; new AIR-to-Wasm refinement and quantum security remain unproved"
+  },
+  "dual_mobius_parity": {
+    "status": "PASS",
+    "cases": 36,
+    "coefficient_entries": 2044,
+    "borrow_dp_vs_explicit_mle_cases": 108,
+    "lean_export_sha256": "928aec5bf73e38268ae8109f5018760b3458a57984cebaaf27363b53172b0074",
+    "scope": "Lean dual current/cyclic-next weights vs actual Python row_weights, with independent inverse transform and borrow-DP regression. Base-field embeddings only; not native commitment or full implementation proof."
+  },
+  "remaining": [
+    "Control AIR constraint-to-step and full runCall theorem extension",
+    "General labels/loops/locals/memory/hosts and full NEAR",
+    "Packed dual weights and optimized borrow-DP proof",
+    "Pre-GKR shared witness and full cryptographic/QROM security",
+    "Certified small recursive proof"
+  ]
+}

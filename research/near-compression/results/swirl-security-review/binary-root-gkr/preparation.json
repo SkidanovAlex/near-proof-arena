@@ -1,0 +1,9 @@
+{
+  "status": "CONTINUATION_DERIVED_FROM_VERIFIED_PUBLIC_GKR",
+  "column_pairs": 1848,
+  "native_pairs": 1850,
+  "zero_filled_columns": 2,
+  "weighted_input_sha256": "c5399677007172a94c6f0fc4fd72f1030a1522c7eafca530132d8acaf4debd67",
+  "gkr_binding_hex": "b283b0fcb29768e5c1e1fd3ed27378753a4ed216d261841241a4bb1b7f7c5a2582c9dc81ce75c7af1f5c193707392dab",
+  "scope": "Public prefix and GKR verifier derive all weights and binding; no source opening values or matrices read."
+}

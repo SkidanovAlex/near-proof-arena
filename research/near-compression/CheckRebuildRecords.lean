@@ -1,0 +1,385 @@
+import NearCompression.BusFormulaCheck
+import NearCompression.DecodedSelectorBinding
+import NearCompression.LocalTerminalBindingCheck
+import NearCompression.DiagnosticExt4Embedding
+import Lean
+open Lean NearCompression ZkFormal.Algebra
+
+private def need (x : Except String α) : IO α :=
+  match x with | .ok a => pure a | .error e => throw (IO.userError e)
+private def require (b : Bool) (msg : String) : IO Unit :=
+  if b then pure () else throw (IO.userError msg)
+private def field (j : Json) (k : String) : IO Json := need (j.getObjVal? k)
+private def op (s : String) : IO GKRBinaryOp :=
+  match s with
+  | "add" => pure .add
+  | "sub" => pure .sub
+  | "mul" => pure .mul
+  | _ => throw (IO.userError "unknown operation")
+private def gate (j : Json) : IO GKRWiringGate := do
+  let a ← need j.getArr?
+  require (a.size==3) "gate arity"
+  return ⟨←op (←need a[0]!.getStr?),←need a[1]!.getNat?,←need a[2]!.getNat?⟩
+private def scalar (j : Json) : IO Fp4 := do
+  let a ← need j.getArr?
+  require (a.size==4) "constant width"
+  let xs ← a.toList.mapM (fun x => need x.getNat?)
+  require (xs.all (· < 2013265921)) "noncanonical constant"
+  return ⟨⟨Fp.ofNat xs[0]!,Fp.ofNat xs[2]!⟩,⟨Fp.ofNat xs[1]!,Fp.ofNat xs[3]!⟩⟩
+private def node (j : Json) : IO (TerminalDAGNode Fp4) := do
+  let a ← need j.getArr?
+  require (0<a.size) "empty node"
+  let tag ← need a[0]!.getStr?
+  if tag=="input" then
+    require (a.size==2) "input arity"
+    return .input (←need a[1]!.getNat?)
+  else if tag=="const" then
+    require (a.size==5) "constant arity"
+    return .constant (←scalar (Json.arr (a.extract 1 5)))
+  else
+    require (a.size==3) "binary arity"
+    return .binary (←op tag) (←need a[1]!.getNat?) (←need a[2]!.getNat?)
+
+private def arithmetic (nodes : List (TerminalDAGNode Fp4)) (op : GKRBinaryOp)
+    (x y z : Nat) : IO (TerminalArithmeticWitness Fp4) := do
+  let constants := match nodes.getD x (.input 0),nodes.getD y (.input 0) with
+    | .constant a,.constant b => [TerminalArithmeticWitness.constant a b]
+    | _,_ => []
+  let candidates := constants++[.direct,.addZeroLeft,.addZeroRight,.subZeroRight,.subSame,
+    .mulZeroLeft,.mulZeroRight,.mulOneLeft,.mulOneRight]
+  for w in candidates do
+    if terminalStoredArithmeticCheck nodes op x y z w then return w
+  throw (IO.userError "no valid arithmetic witness")
+
+private partial def expansion (j : Json) : IO TerminalExpansionTree := do
+  let a ← need j.getArr?
+  require (a.size==3 || a.size==5) "expansion arity"
+  let tag ← need a[0]!.getStr?
+  let i ← need a[1]!.getNat?
+  let s ← need a[2]!.getBool?
+  if tag=="leaf" then
+    require (a.size==3) "leaf arity"
+    return .leaf i s
+  require (tag=="branch" && a.size==5) "branch arity"
+  return .branch i s (←expansion a[3]!) (←expansion a[4]!)
+
+private def terms (j : Json) : IO (List (Nat × Bool)) := do
+  (←need j.getArr?).toList.mapM fun t => do
+    let a ← need t.getArr?
+    require (a.size==2) "term arity"
+    return (←need a[0]!.getNat?,←need a[1]!.getBool?)
+
+private def passCert (nodes : List (TerminalDAGNode Fp4)) :
+    List (Nat × Bool) → List (Nat × Bool) → IO (TerminalPassCertificate Fp4)
+  | [],[] => pure .empty
+  | [a],[c] => do
+      require (a==c) "changed odd carry"
+      return .singleton a
+  | a::b::rest,c::out => do
+      let kind := if a.2==b.2 then GKRBinaryOp.add else .sub
+      let (x,y) := if a.2==b.2 || a.2 then (a.1,b.1) else (b.1,a.1)
+      return .pair a b c (←arithmetic nodes kind x y c.1) (←passCert nodes rest out)
+  | _,_ => throw (IO.userError "pass shape")
+
+private def balanceStages (nodes : List (TerminalDAGNode Fp4)) (result : Nat) :
+    List (List (Nat × Bool)) → IO (TerminalBalanceCertificate Fp4)
+  | [[]] => pure (.empty result)
+  | [[(x,true)]] => do
+      require (x==result) "positive result"
+      return .positive x
+  | [[(x,false)]] => do
+      let zeroNode := nodes.findIdx (fun n => n==.constant 0)
+      return .negative x zeroNode result (←arithmetic nodes .sub zeroNode x result)
+  | old::next::rest => do
+      return .pass (←passCert nodes old next) (←balanceStages nodes result (next::rest))
+  | _ => throw (IO.userError "unfinished balance")
+
+private def balance (nodes : List (TerminalDAGNode Fp4)) (j : Json) : IO (TerminalBalanceCertificate Fp4) := do
+  let stages ← (←need (←field j "stages").getArr?).toList.mapM terms
+  balanceStages nodes (←need (←field j "result").getNat?) stages
+
+/-- Diagnostic assignments only, not extracted committed inputs. -/
+private def inputValue (seed slot : Nat) : Fp4 :=
+  ⟨⟨Fp.ofNat ((slot+1)*(seed+1)),0⟩,⟨0,0⟩⟩
+
+private def placement (j : Json) (nodeCount : Nat) : IO (List Nat × List Nat) := do
+  let obj ← need j.getObj?
+  let mut live := []
+  let mut positions := Array.replicate nodeCount 0
+  for (key,value) in obj.toList do
+    let some i := key.toNat? | throw (IO.userError "invalid node key")
+    require (toString i==key && i<nodeCount) "noncanonical/out-of-range node key"
+    live := i::live
+    positions := positions.set! i (←need value.getNat?)
+  return (live.reverse,positions.toList)
+
+private structure ParsedAIR where
+  publicValues : List Fp4
+  width : Nat
+  mixing : Fp4
+  residuals : List (AIRBusResidual Fp4 × Nat)
+  zeroReg : Nat
+  total : Nat
+  steps : List AIRAccumulatorStep
+
+private structure ParsedProgram where
+  placement : TerminalSymbolicPlacement Fp4
+  environment : TerminalProgramEnvironment Fp4
+  program : List (TerminalInstruction Fp4)
+  records : List (TerminalRebuildRecord Fp4)
+  root : Nat
+  air : ParsedAIR
+
+private partial def expression (j : Json) : IO ZkFormal.Air.Expr := do
+  let a ← need j.getArr?
+  require (0<a.size) "empty AIR expression"
+  let tag ← need a[0]!.getStr?
+  match tag with
+  | "c" | "p" =>
+      require (a.size==2) "AIR constant/pubValues arity"
+      let n ← need a[1]!.getNat?
+      return if tag=="c" then .const n else .pub n
+  | "v" =>
+      require (a.size==3) "AIR column arity"
+      let c ← need a[1]!.getNat?
+      let nx ← need a[2]!.getNat?
+      require (nx≤1) "AIR next flag"
+      return .col c (nx==1)
+  | "first" | "last" | "trans" =>
+      require (a.size==1) "AIR selector arity"
+      return if tag=="first" then .isFirst else if tag=="last" then .isLast else .isTransition
+  | "+" | "*" =>
+      require (a.size==3) "AIR binary arity"
+      let left ← expression a[1]!
+      let right ← expression a[2]!
+      return if tag=="+" then .add left right else .mul left right
+  | "-" =>
+      require (a.size==2) "AIR negation arity"
+      return .neg (←expression a[1]!)
+  | _ => throw (IO.userError "unknown AIR expression")
+
+private partial def busFormula (j : Json) : IO (BusProgramFormula Fp4) := do
+  let a ← need j.getArr?
+  require (0<a.size) "empty bus formula"
+  let tag ← need a[0]!.getStr?
+  match tag with
+  | "lit" =>
+      require (a.size==2) "bus literal arity"
+      return .literal (←scalar a[1]!)
+  | "current" | "next" =>
+      require (a.size==2) "bus column arity"
+      let c ← need a[1]!.getNat?
+      return if tag=="current" then .current c else .next c
+  | "first" | "last" | "trans" =>
+      require (a.size==1) "bus selector arity"
+      return if tag=="first" then .first else if tag=="last" then .last else .transition
+  | "add" | "sub" | "mul" =>
+      require (a.size==3) "bus binary arity"
+      let left ← busFormula a[1]!
+      let right ← busFormula a[2]!
+      return if tag=="add" then .add left right else if tag=="sub" then .sub left right else .mul left right
+  | _ => throw (IO.userError "unknown bus formula")
+
+private def checkAIR (program : List (TerminalInstruction Fp4)) (pubValues : List Fp4) (air : Json) : IO ParsedAIR := do
+  let width ← need (←field air "width").getNat?
+  let routes ← need (←field air "expression_routes").getArr?
+  let mut registers : List Nat := []
+  let mut sourceFormulas : List (AIRBusResidual Fp4 × Nat) := []
+  for route in routes do
+    let expr ← expression (←field route "expr")
+    let i ← need (←field route "register").getNat?
+    require (airExpressionCheck program pubValues width expr i) "AIR expression rejected"
+    registers := i::registers
+    sourceFormulas := (.inl expr,i)::sourceFormulas
+  registers := registers.reverse
+  sourceFormulas := sourceFormulas.reverse
+  let sourceCount ← need (←field air "source_constraints").getNat?
+  require (sourceCount≤registers.length) "source expression count"
+  let acc ← field air "accumulation"
+  let zeroReg ← need (←field acc "zero").getNat?
+  let total ← need (←field acc "total").getNat?
+  let output ← need (←field acc "output").getNat?
+  let mut cursor := zeroReg
+  let mut steps : List AIRAccumulatorStep := []
+  for row in (←need (←field acc "steps").getArr?) do
+    require ((←need (←field row "previous").getNat?)==cursor) "accumulator continuity"
+    let next ← need (←field row "result").getNat?
+    steps := ⟨←need (←field row "residual").getNat?,←need (←field row "coefficient").getNat?,
+      ←need (←field row "product").getNat?,next⟩::steps
+    cursor := next
+  steps := steps.reverse
+  let residuals := steps.map (fun step => step.residual)
+  require (sourceCount≤residuals.length && registers.take sourceCount==residuals.take sourceCount)
+    "source residual order"
+  require ((←need (←field air "auxiliary_residual_count").getNat?)+sourceCount==residuals.length)
+    "auxiliary residual count"
+  let fullWidth ← need (←field air "full_width").getNat?
+  require (width≤fullWidth) "full bus width"
+  let mut formulas := sourceFormulas.take sourceCount
+  for record in (←need (←field air "bus_formulas").getArr?) do
+    let f ← busFormula (←field record "formula")
+    let i ← need (←field record "register").getNat?
+    require (busFormulaCheck program fullWidth f i) "bus formula rejected"
+    formulas := formulas++[(.inr f,i)]
+  require (formulas.map Prod.snd==residuals) "complete formula residual order"
+  require (formulas.all (fun r => airBusResidualCheck program pubValues fullWidth r.1 r.2))
+    "mixed residual formulas rejected"
+  require (airWeightedProgramCheck program (←scalar (←field air "mixing")) residuals zeroReg total output steps)
+    "AIR accumulator rejected"
+  return ⟨pubValues,fullWidth,←scalar (←field air "mixing"),formulas,zeroReg,total,steps⟩
+
+private def checkProgram (target : List (TerminalDAGNode Fp4)) (seed : Nat) (p air expectedTable : Json) (pubValues : List Fp4) : IO (Nat × ParsedProgram) := do
+  let ins ← need (←field p "instructions").getArr?
+  require (0<ins.size) "empty program"
+  let base ← need (←field p "base").getNat?
+  let width ← need (←field p "column_capacity").getNat?
+  let sels ← field p "selectors"
+  let first ← scalar (←field sels "first")
+  let last ← scalar (←field sels "last")
+  let trans ← scalar (←field sels "trans")
+  let rowLog ← need (←field expectedTable "row_log").getNat?
+  let point ← (←need (←field expectedTable "point").getArr?).toList.mapM scalar
+  require (symbolicSelectorCheck rowLog (⟨base,width,first,last,trans⟩ : TerminalSymbolicPlacement Fp4) point)
+    "terminal selector products rejected"
+  let env : TerminalProgramEnvironment Fp4 :=
+    ⟨(fun i => inputValue seed (base+i)),(fun i => inputValue seed (base+width+i)),first,last,trans⟩
+  let mut program : List (TerminalInstruction Fp4) := []
+  for j in ins do
+    let a ← need j.getArr?
+    require (a.size==7) "instruction arity"
+    let code ← need a[0]!.getNat?
+    let some opcode := terminalDecodeOpcode code | throw (IO.userError "instruction opcode")
+    let left ← need a[1]!.getNat?
+    let right ← need a[2]!.getNat?
+    if code==1 || code==2 then require (left<width) "column bound"
+    program := ⟨opcode,left,right,←scalar (Json.arr (a.extract 3 7))⟩::program
+  program := program.reverse
+  let parsedAIR ← checkAIR program pubValues air
+  let source := program.map (terminalProgramNode env)
+  require (terminalAcyclicCheck 0 source) "source acyclicity"
+  let entries ← need (←field p "records").getObj?
+  let mut indexed : List (Nat × Json) := []
+  let mut mapping := Array.replicate ins.size 0
+  for (key,value) in entries.toList do
+    let some i := key.toNat? | throw (IO.userError "invalid record key")
+    require (toString i==key && i<ins.size) "record key bounds"
+    let z ← need (←field value "node").getNat?
+    mapping := mapping.set! i z
+    indexed := (i,value)::indexed
+  indexed := indexed.mergeSort (fun a b => a.1≤b.1)
+  let mut records : List (TerminalRebuildRecord Fp4) := []
+  for (i,r) in indexed do
+    let a ← need ins[i]!.getArr?
+    let code ← need a[0]!.getNat?
+    let x ← need a[1]!.getNat?
+    let y ← need a[2]!.getNat?
+    let z := mapping[i]!
+    let recipe ← if code==0 then pure (.constant (←scalar (Json.arr (a.extract 3 7))))
+      else if code==1 || code==2 then pure (.input (base+x+(if code==2 then width else 0)))
+      else if code==3 then pure (.constant first)
+      else if code==4 then pure (.constant last)
+      else if code==5 then pure (.constant trans)
+      else if code==8 then do
+        require (x<ins.size && y<ins.size) "binary index bounds"
+        pure (.binary .mul x y mapping[x]! mapping[y]! (←arithmetic target .mul mapping[x]! mapping[y]! z))
+      else pure (.expanded (←expansion (←field r "tree")) mapping.toList (←balance target (←field r "balance")))
+    records := ⟨i,z,recipe⟩::records
+  records := records.reverse
+  let root ← need (←field p "root").getNat?
+  require (terminalRebuildRecordsCheck source target (inputValue seed) [] records (ins.size-1) root)
+    "rebuild records rejected"
+  let placement : TerminalSymbolicPlacement Fp4 := ⟨base,width,first,last,trans⟩
+  return (records.length,⟨placement,env,program,records,root,parsedAIR⟩)
+
+def main (args : List String) : IO Unit := do
+  require (args.length==5) "expected DAG bundle, rebuild capture, replay manifest, expected AIR, diagnostic seed"
+  let some seed := args[4]!.toNat? | throw (IO.userError "invalid seed")
+  let bundle ← need (Json.parse (←IO.FS.readFile args[0]!))
+  let rebuild ← need (Json.parse (←IO.FS.readFile args[1]!))
+  let circuit ← field bundle "circuit"
+  let target ← (←need (←field circuit "nodes").getArr?).toList.mapM node
+  require (terminalAcyclicCheck 0 target) "target acyclicity"
+  let manifest ← need (Json.parse (←IO.FS.readFile args[2]!))
+  let air ← need (Json.parse (←IO.FS.readFile args[3]!))
+  let airTables ← need (←field air "tables").getArr?
+  let pubValues ← (←need (←field air "public").getArr?).toList.mapM scalar
+  let expectedTables ← need (←field manifest "expected_tables").getArr?
+  let expected ← field manifest "expected_batch"
+  let rho ← scalar (←field expected "rho")
+  let weights ← need (←field expected "weights").getArr?
+  let claims ← need (←field expected "claims").getArr?
+  let outputs ← need (←field rebuild "outputs").getArr?
+  let mut count := 0
+  let mut entries : List (TerminalBatchEntry Fp4) := []
+  let mut tables : List (TerminalCompiledTable Fp4) := []
+  let mut formulaTables : List (SymbolicFormulaTable Fp4) := []
+  let programs ← need (←field rebuild "programs").getArr?
+  require (outputs.size==programs.size && weights.size==programs.size && claims.size==programs.size && airTables.size==programs.size && expectedTables.size==programs.size) "batch count"
+  for i in List.range programs.size do
+    let (n,parsed) ← checkProgram target seed programs[i]! airTables[i]! expectedTables[i]! pubValues
+    count := count+n
+    let programRoot := parsed.root
+    let out := outputs[i]!
+    let wn ← need (←field out "weight").getNat?
+    let cn ← need (←field out "claim").getNat?
+    let pn ← need (←field out "power").getNat?
+    let weighted ← need (←field out "node").getNat?
+    let delta ← need (←field out "delta").getNat?
+    let term ← need (←field out "batch_node").getNat?
+    let entry : TerminalBatchEntry Fp4 := ⟨programRoot,←scalar weights[i]!,←scalar claims[i]!,wn,cn,pn,weighted,delta,term,
+      ←arithmetic target .mul programRoot wn weighted,←arithmetic target .sub weighted cn delta,
+      ←arithmetic target .mul pn delta term⟩
+    let terminal := expectedTables[i]!
+    let rowLog ← need (←field terminal "row_log").getNat?
+    let point ← (←need (←field terminal "point").getArr?).toList.mapM scalar
+    let tau ← (←need (←field terminal "tau").getArr?).toList.mapM scalar
+    let expectedMixing ← scalar (←field terminal "mixing")
+    let expectedClaim ← scalar (←field terminal "claim")
+    require (localTerminalBindingCheck rowLog point tau parsed.air.mixing expectedMixing entry.weight entry.claim expectedClaim)
+      "local terminal replay binding rejected"
+    entries := entry::entries
+    tables := ⟨parsed.environment,parsed.program,parsed.program.length-1,parsed.records,entry⟩::tables
+    let symbolic : SymbolicCompiledTable Fp4 := ⟨parsed.placement,parsed.program,parsed.program.length-1,parsed.records,entry⟩
+    formulaTables := ⟨symbolic,parsed.air.publicValues,parsed.air.width,parsed.air.mixing,
+      parsed.air.residuals,parsed.air.zeroReg,parsed.air.total,parsed.air.steps⟩::formulaTables
+  entries := entries.reverse
+  tables := tables.reverse
+  formulaTables := formulaTables.reverse
+  require (terminalBatchEntriesCheck target rho 1 entries) "batch entries rejected"
+  let finalBalance ← balance target (←field rebuild "balance")
+  require (finalBalance.terms==entries.map (fun e => (e.termNode,true))) "batch terms mismatch"
+  require (terminalBalanceCheck target finalBalance) "final balance rejected"
+  let root ← need (←field rebuild "root").getNat?
+  require (root==(←need (←field circuit "root").getNat?)) "circuit root mismatch"
+  let zeroNode := target.findIdx (fun n => n==.constant 0)
+  require (terminalBatchRootCheck target finalBalance.result root zeroNode) "final root rejected"
+  require (0<programs.size) "no programs"
+  let layout ← field bundle "layout"
+  let certificate ← field bundle "certificate"
+  let (live,positions) ← placement (←field certificate "initial") target.length
+  let layers ← need (←field layout "layers").getArr?
+  let plans ← need (←field certificate "plans").getArr?
+  require (layers.size==plans.size) "layer/plan count"
+  let mut stages : List TerminalStoredPlan := []
+  for i in List.range layers.size do
+    let (ls,ps) ← placement plans[i]! target.length
+    let gates ← (←need layers[i]!.getArr?).toList.mapM gate
+    stages := ⟨ls,ps,gates⟩::stages
+  stages := stages.reverse
+  let inputSize ← need (←field layout "input_size").getNat?
+  require (0<inputSize) "empty input"
+  let rootSlot ← need (←field layout "root").getNat?
+  let capacity ← need (←field layout "private_capacity").getNat?
+  let mut constants : Array Fp4 := Array.replicate inputSize 0
+  for (key,value) in (←need (←field layout "constants").getObj?).toList do
+    let some i := key.toNat? | throw (IO.userError "invalid constant key")
+    require (toString i==key && capacity≤i && i<inputSize) "constant slot bounds"
+    constants := constants.set! i (←scalar value)
+  require (terminalCompiledFiniteCheck target (inputValue seed) (fun i => constants[i]?.getD 0)
+    rho tables finalBalance root zeroNode capacity live positions (inputSize-1) stages rootSlot)
+    "combined finite compiler check rejected"
+  require (symbolicFormulaCompilerCheck target (fun i => constants[i]?.getD 0) rho formulaTables finalBalance
+    root zeroNode capacity live positions (inputSize-1) stages rootSlot) "symbolic formula compiler check rejected"
+  IO.println (Json.mkObj [("status",toJson "PASS"),("programs",toJson programs.size),
+    ("records",toJson count),("seed",toJson seed),("batch_entries",toJson entries.length),("selector_product_checks",toJson true),("air_checks",toJson true),("bus_formula_checks",toJson true),("symbolic_rebuild_check",toJson true),("symbolic_compiled_check",toJson true),("symbolic_formula_compiler_check",toJson true),
+    ("scope",toJson "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates")]).compress

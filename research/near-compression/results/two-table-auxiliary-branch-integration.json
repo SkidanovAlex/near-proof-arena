@@ -1,0 +1,40 @@
+{
+  "status": "FIXED_TRACE_TWO_TABLE_SELECTOR_AND_BRANCH_MEANING_PROVED",
+  "module": "NearCompression/TwoTableAuxiliaryBranch.lean",
+  "definitions": [
+    "checkedAuxiliaryRowsZero",
+    "twoTableAuxiliaryBranch"
+  ],
+  "theorems": [
+    "two_table_auxiliary_none",
+    "two_table_auxiliary_selected_invalid",
+    "selected_auxiliary_decoded_witness",
+    "unselected_auxiliary_decoded_bus_validity"
+  ],
+  "proved": [
+    "The analytical selector prefers the first invalid auxiliary table, selects the second if only it is invalid, and returns none exactly when both actual auxiliary formula lists vanish on all live rows.",
+    "Selected invalidity transfers from the earlier fixed base trace to a positive combined residual count and a nonzero bounded-row local residual in every covered decoded continuation.",
+    "For exactly two tables, the none branch yields busExt8TablesResidualsZero on the reconstructed decoded trace through exact generated specification checks."
+  ],
+  "assumptions": [
+    "Fixed covered coordinate cells and matching row logs across later decoded witnesses, supplied conditionally by history_fixed_joint_coordinate_trace.",
+    "Auxiliary formula column coverage; source checks, source widths and exact ordered specification checks for the valid branch.",
+    "Formula/public/challenge/final values must be fixed at the appropriate earlier history when instantiating chronology."
+  ],
+  "remaining": [
+    "Instantiate prepared_history_branch_budget with the new selector and its decoded witness implications.",
+    "Substitute local/GKR/PCS estimates for selected-table branches in the common chronological experiment.",
+    "Authenticate fixed typed oracles, metadata and formulas in native Ext8 verifier.",
+    "Global acceptance, QROM, secure envelope size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4095,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only change."
+  }
+}

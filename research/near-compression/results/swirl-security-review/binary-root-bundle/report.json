@@ -1,0 +1,36 @@
+{
+  "status": "BINARY_TRANSCRIPT_ROOT_BUNDLE_VERIFIED",
+  "bytes": {
+    "prefix": 14292,
+    "gkr": 20608,
+    "stacking": 884,
+    "whir": 168268,
+    "framing": 24,
+    "total": 204076
+  },
+  "negative_checks": [
+    "truncated_header",
+    "truncated_body",
+    "trailing_byte",
+    "wrong_version",
+    "zero_section",
+    "oversized_length",
+    "gkr_truncation",
+    "gkr_trailing",
+    "gkr_noncanonical",
+    "mutated_prefix",
+    "mutated_gkr",
+    "mutated_stacking",
+    "mutated_whir",
+    "old_relabelled_v2",
+    "v2_relabelled_old"
+  ],
+  "original_proofs_and_saved_gkr_json_unavailable": true,
+  "sha256": "ba12a9cae107dd290cd792eeab915b6293cd35a7468e6b18a736113c1c9bcf30",
+  "limitations": [
+    "Versioned protocol experiment; Ext4 diagnostic, not PQ128.",
+    "Native prefix must be verified under fixed key before controls are used.",
+    "Generic root fixture, not full NEAR or a circuit proving compressed-bundle verification.",
+    "No Lean codec, transcript or complete composition theorem."
+  ]
+}

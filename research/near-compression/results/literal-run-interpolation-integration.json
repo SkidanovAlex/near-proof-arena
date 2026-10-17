@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 1932,
+  "source_hashes": {
+    "SharedLaneInterpolation": "cfbf121ba27e8400a078df210a7479e8c770d918874fc212d53ef333797ceed6",
+    "PreparedExecContinue": "a88c913f83819ca92a9cedc6eafea33dc80a5f83bd5a86a33ce655d96f401e86",
+    "PreparedLiteralRun": "cf91ac85cd280359e8b542cbbf2c86b5ace4a31100f3140020b03070b6ffc314",
+    "SHA384Padding": "a1da3e31faa9e371128128234ffdbd05a7aa9f57b9ff404cd7de7b9779a51ffa"
+  },
+  "scope": [
+    "Shared original lane interpolation from same D distinct agreement points",
+    "Literal AIR to actual Wasm.run termination for const/add/drop/end subset and gas exhaustion",
+    "Exact SHA384 digest word byte serialization"
+  ],
+  "remaining": [
+    "Initial state from actual entry and public27field header",
+    "Final public output/terminal-padding binding",
+    "General Wasm/control/memory/host operations",
+    "Earlier GKR witness timing and actual weighted tensor mapping",
+    "Full hash semantic composition, recursive prover, secure parameters and QROM"
+  ]
+}

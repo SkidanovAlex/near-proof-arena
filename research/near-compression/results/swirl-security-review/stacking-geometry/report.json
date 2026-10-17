@@ -1,0 +1,477 @@
+{
+  "status": "OPTIMISTIC_GEOMETRY_SCREEN",
+  "source_report_sha256": "2bb79d20f112e8a75551866e809430dfb5c8cee0c17b7d396aec449bbe2e7c09",
+  "baseline": {
+    "height": 20,
+    "log_rate": 4,
+    "fold": 4,
+    "terminal_max": 10,
+    "final_log": 8,
+    "rounds": 3,
+    "widths": [
+      14,
+      1
+    ],
+    "domains": [
+      20,
+      19,
+      18
+    ],
+    "queries": [
+      61,
+      30,
+      20
+    ],
+    "extension": 4,
+    "digest_bytes": 32,
+    "public_cached": false,
+    "fixed_bytes": 63609,
+    "query_value_bytes": 71360,
+    "raw_paths_bytes": 242809,
+    "expected_frontier_bytes": 207373.1754054628,
+    "expected_frontier_hashes": 2262.6304814207124
+  },
+  "frontier_exhaustive_sequences": 682,
+  "records": [
+    {
+      "extension": 9,
+      "digest_bytes": 52,
+      "public_cached": false,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28,
+          1
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 72717,
+        "query_value_bytes": 101344,
+        "raw_paths_bytes": 489233,
+        "expected_frontier_bytes": 396024.7237832637,
+        "expected_frontier_hashes": 4268.533149678148,
+        "sample_min_bytes": 393709,
+        "sample_max_bytes": 398129
+      },
+      "optimistic_size_survivors": 0
+    },
+    {
+      "extension": 9,
+      "digest_bytes": 52,
+      "public_cached": true,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 72625,
+        "query_value_bytes": 98912,
+        "raw_paths_bytes": 391861,
+        "expected_frontier_bytes": 326824.3975200999,
+        "expected_frontier_hashes": 2986.2961061557667,
+        "sample_min_bytes": 325405,
+        "sample_max_bytes": 328317
+      },
+      "optimistic_size_survivors": 0
+    },
+    {
+      "extension": 9,
+      "digest_bytes": 64,
+      "public_cached": false,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28,
+          1
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 9,
+        "digest_bytes": 64,
+        "public_cached": false,
+        "fixed_bytes": 72765,
+        "query_value_bytes": 101344,
+        "raw_paths_bytes": 562013,
+        "expected_frontier_bytes": 447295.1215794015,
+        "expected_frontier_hashes": 4268.533149678148,
+        "sample_min_bytes": 444445,
+        "sample_max_bytes": 449885
+      },
+      "optimistic_size_survivors": 0
+    },
+    {
+      "extension": 9,
+      "digest_bytes": 64,
+      "public_cached": true,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 9,
+        "digest_bytes": 64,
+        "public_cached": true,
+        "fixed_bytes": 72661,
+        "query_value_bytes": 98912,
+        "raw_paths_bytes": 442741,
+        "expected_frontier_bytes": 362695.9507939691,
+        "expected_frontier_hashes": 2986.2961061557667,
+        "sample_min_bytes": 360949,
+        "sample_max_bytes": 364533
+      },
+      "optimistic_size_survivors": 0
+    },
+    {
+      "extension": 12,
+      "digest_bytes": 52,
+      "public_cached": false,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28,
+          1
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 12,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 96573,
+        "query_value_bytes": 111616,
+        "raw_paths_bytes": 523361,
+        "expected_frontier_bytes": 430152.7237832637,
+        "expected_frontier_hashes": 4268.533149678148,
+        "sample_min_bytes": 427837,
+        "sample_max_bytes": 432257
+      },
+      "optimistic_size_survivors": 0
+    },
+    {
+      "extension": 12,
+      "digest_bytes": 52,
+      "public_cached": true,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 12,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 96469,
+        "query_value_bytes": 109184,
+        "raw_paths_bytes": 425977,
+        "expected_frontier_bytes": 360940.3975200999,
+        "expected_frontier_hashes": 2986.2961061557667,
+        "sample_min_bytes": 359521,
+        "sample_max_bytes": 362433
+      },
+      "optimistic_size_survivors": 0
+    },
+    {
+      "extension": 12,
+      "digest_bytes": 64,
+      "public_cached": false,
+      "screened": 5790,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          56,
+          2
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 12,
+        "digest_bytes": 64,
+        "public_cached": false,
+        "fixed_bytes": 73341,
+        "query_value_bytes": 159744,
+        "raw_paths_bytes": 575805,
+        "expected_frontier_bytes": 477079.84639305965,
+        "expected_frontier_hashes": 3812.419474891557,
+        "sample_min_bytes": 474941,
+        "sample_max_bytes": 479741
+      },
+      "optimistic_size_survivors": 0
+    },
+    {
+      "extension": 12,
+      "digest_bytes": 64,
+      "public_cached": true,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 12,
+        "digest_bytes": 64,
+        "public_cached": true,
+        "fixed_bytes": 96505,
+        "query_value_bytes": 109184,
+        "raw_paths_bytes": 476857,
+        "expected_frontier_bytes": 396811.9507939691,
+        "expected_frontier_hashes": 2986.2961061557667,
+        "sample_min_bytes": 395065,
+        "sample_max_bytes": 398649
+      },
+      "optimistic_size_survivors": 0
+    }
+  ],
+  "workload_sensitivity": [
+    {
+      "divisor": 1,
+      "height": 19,
+      "log_rate": 8,
+      "fold": 3,
+      "terminal_max": 10,
+      "final_log": 10,
+      "rounds": 3,
+      "widths": [
+        28
+      ],
+      "domains": [
+        24,
+        23,
+        22
+      ],
+      "queries": [
+        76,
+        59,
+        48
+      ],
+      "extension": 9,
+      "digest_bytes": 52,
+      "public_cached": true,
+      "fixed_bytes": 72625,
+      "query_value_bytes": 98912,
+      "raw_paths_bytes": 391861,
+      "expected_frontier_bytes": 326824.3975200999,
+      "expected_frontier_hashes": 2986.2961061557667
+    },
+    {
+      "divisor": 2,
+      "height": 19,
+      "log_rate": 8,
+      "fold": 3,
+      "terminal_max": 10,
+      "final_log": 10,
+      "rounds": 3,
+      "widths": [
+        14
+      ],
+      "domains": [
+        24,
+        23,
+        22
+      ],
+      "queries": [
+        76,
+        59,
+        48
+      ],
+      "extension": 9,
+      "digest_bytes": 52,
+      "public_cached": true,
+      "fixed_bytes": 72121,
+      "query_value_bytes": 64864,
+      "raw_paths_bytes": 357309,
+      "expected_frontier_bytes": 292272.3975200999,
+      "expected_frontier_hashes": 2986.2961061557667
+    },
+    {
+      "divisor": 4,
+      "height": 19,
+      "log_rate": 8,
+      "fold": 3,
+      "terminal_max": 10,
+      "final_log": 10,
+      "rounds": 3,
+      "widths": [
+        7
+      ],
+      "domains": [
+        24,
+        23,
+        22
+      ],
+      "queries": [
+        76,
+        59,
+        48
+      ],
+      "extension": 9,
+      "digest_bytes": 52,
+      "public_cached": true,
+      "fixed_bytes": 71869,
+      "query_value_bytes": 47840,
+      "raw_paths_bytes": 340033,
+      "expected_frontier_bytes": 274996.3975200999,
+      "expected_frontier_hashes": 2986.2961061557667
+    },
+    {
+      "divisor": 8,
+      "height": 19,
+      "log_rate": 8,
+      "fold": 3,
+      "terminal_max": 10,
+      "final_log": 10,
+      "rounds": 3,
+      "widths": [
+        4
+      ],
+      "domains": [
+        24,
+        23,
+        22
+      ],
+      "queries": [
+        76,
+        59,
+        48
+      ],
+      "extension": 9,
+      "digest_bytes": 52,
+      "public_cached": true,
+      "fixed_bytes": 71761,
+      "query_value_bytes": 40544,
+      "raw_paths_bytes": 332629,
+      "expected_frontier_bytes": 267592.3975200999,
+      "expected_frontier_hashes": 2986.2961061557667
+    }
+  ],
+  "security_certified": false,
+  "scope": "Frozen measured verifier, free column reduction, C=1 Q=2^128, no grinding credit, each query term independently granted full1/2 budget. Expected frontier size is not a deterministic bound.",
+  "exclusions": [
+    "Column-reduction proof and altered verifier workload",
+    "PCS proximity/list/algebraic errors",
+    "Hash security and quantum compiler",
+    "NEAR/VM binding and stabilized recursion keys",
+    "Public-cache variant grants all cached evaluation and binding work free",
+    "Workload reductions are hypothetical, not implemented"
+  ]
+}

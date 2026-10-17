@@ -1,0 +1,7 @@
+{
+  "actual_prepare_cases": 6,
+  "exact_code_fields": 3648,
+  "rejected": 3774,
+  "scope": "Executable actual PREP/CODE/local count provenance checker, not full AIR/runCall refinement",
+  "status": "PASS"
+}

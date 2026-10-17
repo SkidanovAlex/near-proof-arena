@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "binary_bytes": 8316,
+  "malformed_rejections": 36,
+  "semantic_rejections": 5,
+  "scope": "Whole table-local proof payload; verifier-supplied spec/root external; not fullNEAR or secure profile"
+}

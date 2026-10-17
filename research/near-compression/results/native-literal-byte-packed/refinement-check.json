@@ -1,0 +1,105 @@
+{
+  "status": "PASS",
+  "universal_theorem": "NearCompression.packed_literal_public_run_call",
+  "concrete_closed_kernel_certificate": true,
+  "native_acceptance_to_HoldsP": false,
+  "structural_metadata": {
+    "original_tables": 2,
+    "packed_tables": 3,
+    "public_segments_equal": true,
+    "public_maximum_equal": true,
+    "max_log_not_increased": true,
+    "public_values_equal": true
+  },
+  "checks": {
+    "macros": {
+      "status": "PASS",
+      "macro_pairs": 76,
+      "current_rows": 38,
+      "next_rows": 38,
+      "scope": "Exact exported AST equality; universal field semantics kernel-proved in PackedByteMacro. Python execution/refinement and whole AIR implication remain unproved."
+    },
+    "layout": {
+      "status": "PASS",
+      "columns": [
+        605,
+        198
+      ],
+      "bit_columns": 608,
+      "scope": "Exact Lean/generated layout equality; macro consistency kernel-proved, whole AIR implication still pending."
+    },
+    "rewrite": {
+      "status": "PASS",
+      "tables": [
+        {
+          "source_constraints": 726,
+          "retained": 214,
+          "removed": 512,
+          "interaction_expressions": 82
+        },
+        {
+          "source_constraints": 473,
+          "retained": 281,
+          "removed": 192,
+          "interaction_expressions": 76
+        }
+      ],
+      "expression_count": 1357,
+      "scope": "Every actual retained constraint/interaction AST equals the proved Lean rewrite. Rejected source expressions are exactly the intended removed constraints. Byte ranges, constraint assembly and global bus transfer remain open."
+    },
+    "range": {
+      "status": "PASS",
+      "receiver_table": 2,
+      "range_constraints": 24,
+      "sender_counts": [
+        64,
+        12
+      ],
+      "public_range_segments": 0,
+      "scope": "Exact theorem-backed range AST and isolation/sender checks. HoldsP-to-range theorem kernel-proved; native acceptance-to-HoldsP and whole AIR refinement remain open."
+    },
+    "constraints": {
+      "status": "PASS",
+      "constraints": 1199,
+      "tables": [
+        {
+          "retained": 214,
+          "boolean": 512
+        },
+        {
+          "retained": 281,
+          "boolean": 96,
+          "inactive": 96
+        }
+      ],
+      "negative_certificates_rejected": 4,
+      "scope": "Every original constraint has an accepted certificate under a kernel-proved checker soundness theorem. Executable artifact correspondence is not yet a closed kernel theorem for concrete AIR; global bus transfer remains open."
+    },
+    "bus": {
+      "status": "PASS",
+      "paired_interactions": 5,
+      "negative_pairings_rejected": 6,
+      "public_segments_unchanged": true,
+      "added_traffic_only_bus": 4,
+      "scope": "Executable pairing checks use a kernel-proved checker; universal natural-count and global two-table preservation proved. Full concrete HoldsP transfer remains to be assembled."
+    },
+    "literal_certificate": {
+      "status": "PASS",
+      "concrete_closed_kernel_certificate": true,
+      "theorems": [
+        "packed_original_literal_eq",
+        "packed_literal_holds",
+        "packed_literal_public_run_call"
+      ],
+      "exported_air_equals_proving_input": true,
+      "source_constraints": 1199,
+      "packed_air_sha256": "d3eb51a8f07574b185a2447091aa5af387e4c047b9345ba425a77c4ef96f3122",
+      "native_acceptance_to_HoldsP": false,
+      "quantum_security_certified": false,
+      "full_NEAR": false,
+      "scope": "Closed semantic AIR-to-runCall theorem for the supported prepared literal slice. Native Rust/compiler refinement, cryptographic acceptance, QROM recursion and full NEAR remain open."
+    }
+  },
+  "source_spec_sha256": "d3eb51a8f07574b185a2447091aa5af387e4c047b9345ba425a77c4ef96f3122",
+  "scope": "Closed concrete AIR-to-runCall theorem kernel-checked and exported AIR matches artifact. Native acceptance-to-HoldsP, compiler refinement and quantum security remain open."
+}

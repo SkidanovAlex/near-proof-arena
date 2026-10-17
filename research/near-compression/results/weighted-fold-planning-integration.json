@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1758,
+  "audit_log": "/tmp/near-weighted-fold-composition-audit.log",
+  "module_sha256": "cb1784104df069a6b290174bb280673da3412447abdcda0e115da18f8a6e5251",
+  "formal_scope": "One weighted fold builds actualparent polynomial, degree/agreement/residual and badchallenge count, conditional on explicitly unproved nonlinear WeightedFoldExtraction contract. Allows adaptive nextoracle/candidate.",
+  "packing_analysis": "pq384-joint-packing-analysis.json",
+  "terminal_circuit_analysis": "pq384-terminal-circuit-analysis/report.json",
+  "expected_packing_savings_bytes": 39990.71945863945,
+  "circuit_estimate_bytes": [
+    35296,
+    41616
+  ],
+  "circuit_estimate_excludes": "Final input-opening protocol and framing; no GKR proof generated",
+  "full_goal_complete": false
+}

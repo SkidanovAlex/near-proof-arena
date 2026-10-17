@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3566,
+  "added_theorems": 4,
+  "source_sha256": "3c7e1d3cf7221a58e594a20dcc7875a767bb8dde2e12e83d8d6b414b4e8f90e8",
+  "audit_log": "/tmp/root-virtual-fold-audit.log",
+  "audit_sha256": "354ce0b3bafb27c7a6299b815ce8459a1b959e606f69dce06e79593fa630b0c3",
+  "scope": "Candidate-absence pullback across skipped folds, modeled as exact virtual oracles without intermediate commitments.",
+  "proved": [
+    "Virtual fold consistency holds by construction.",
+    "Candidate absence propagates to any folded stage outside explicit extraction bad events, without terminal disclosure.",
+    "Uniform original seed weights become exactly2^stage at each virtual folded point.",
+    "A degree-bounded candidate with the folded functional has fewer than minimum agreements when T<=2^stage*minimum and folded candidate state is absent."
+  ],
+  "runtime": "results/virtual-rate-shift-runtime.json",
+  "diagnostic": {
+    "source_threshold": 97,
+    "skipped_folds": 2,
+    "weight_per_coset": 4,
+    "minimum_agreement": 25,
+    "maximum_agreement_outside_bad_events": 24
+  },
+  "limits": [
+    "Full prefix-causal virtual strategy and adaptive bad-event count need instantiation.",
+    "All stages retain explicit root/weight/claim domain requirements.",
+    "Python parity tests isolate transform algebra; Merkle authentication is mocked.",
+    "No QROM, full NEAR, capacity or complete size certification."
+  ]
+}

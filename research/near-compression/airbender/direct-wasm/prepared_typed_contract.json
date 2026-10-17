@@ -1,0 +1,174 @@
+{
+  "profile": "prepared-typed-v1-prototype",
+  "status": "Isolated polynomial gadgets, real prepared trace fixtures and semantic lemmas implemented; full typed EXEC/CODE profile planned, not implemented",
+  "choice": {
+    "family": [
+      "i64.const",
+      "i64.add",
+      "i64.eqz",
+      "typed local.get/set/tee"
+    ],
+    "evidence": [
+      {
+        "source": "docs/e2e-results/v3-d3a-study/workload-corpora-d3c7-10.txt",
+        "cases": 19007,
+        "share_including_charge_pseudo_ops_percent": {
+          "locals": 30.66,
+          "const": 17.96,
+          "add_sub": 12.02,
+          "compare_eqz": 6.31,
+          "store": 0.41,
+          "load": 0.05
+        }
+      },
+      {
+        "source": "oracle/v3-d3/contracts/d3tiny.wat",
+        "fact": "i64 local n and i64 host arguments"
+      },
+      {
+        "source": "oracle/v3-d3/contracts/d3hostx.wat",
+        "fact": "i64 locals, comparisons and host arguments"
+      }
+    ],
+    "caveat": "Measured synthetic D3 corpus, not mainnet opcode proportions; family counts do not split i32/i64. No invented i64 percentage."
+  },
+  "existing_restriction": "PreparedLocalsCodeCheck requires every local VT.i32; PreparedLocalsInspect rejects i64.const/i64.add/i64.eqz",
+  "implemented": {
+    "eqz": {
+      "width": 80,
+      "constraints": 74,
+      "degree": 2,
+      "limbs": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "type_tag": 12,
+      "result_i32_boolean": 13,
+      "inverse": 14,
+      "bit_range": [
+        16,
+        79
+      ],
+      "zero_test": "four bounded limb sum <262144 <P, never packed64 field equality"
+    },
+    "add64": {
+      "width": 208,
+      "constraints": 212,
+      "source": "NearCompression/InstructionAdd64.lean",
+      "facts": "Each limb sum lifted to Nat with no field wrap; final carry gives modulo2^64 result"
+    },
+    "semantics": "PreparedTypedStep proves actual exec const64/add64/eqz64; prepared charging reused; inputs are concrete typed values, not untyped popN assumptions",
+    "fixtures": "PreparedTypedFixture.lean uses actual prepare pv86, actual prepared gas entries, actual step and runCall; 3 mixed-local binaries",
+    "tests": "test_prepared_typed.py consumes exact Lean AST from PreparedTypedExport; independently replays type/state transitions"
+  },
+  "planned_layout_NOT_IMPLEMENTED": {
+    "exec_width": 1285,
+    "unchanged_low_layout": [
+      0,
+      817
+    ],
+    "stack_high_bits": [
+      818,
+      1073
+    ],
+    "stack_type_tags": [
+      1074,
+      1081
+    ],
+    "local_high_bits": [
+      1082,
+      1209
+    ],
+    "local_type_tags": [
+      1210,
+      1213
+    ],
+    "immediate_high_bits": [
+      1214,
+      1245
+    ],
+    "result_high_bits": [
+      1246,
+      1277
+    ],
+    "high_add_carries": [
+      1278,
+      1279
+    ],
+    "i64_const_add_eqz_tags": [
+      1280,
+      1282
+    ],
+    "eqz_inverse": 1283,
+    "eqz_result": 1284,
+    "code_width": 270,
+    "code_record_fields": 37,
+    "record_old_fields": [
+      0,
+      31
+    ],
+    "record_high_immediate_limbs": [
+      32,
+      33
+    ],
+    "record_new_opcode_tags": [
+      34,
+      36
+    ],
+    "boundary_fields": 51,
+    "public_count_header": [
+      0,
+      11
+    ],
+    "entry_boundary": [
+      12,
+      62
+    ],
+    "exit_boundary": [
+      63,
+      113
+    ],
+    "public_local_types": [
+      114,
+      117
+    ],
+    "public_code_start": 118
+  },
+  "required_constraints": [
+    "All type tags Boolean; i32 high32 zero; inactive stack tags and words canonical zero",
+    "Each stack/local access carries four separate16bit limbs and its type tag; no 64bit field equality",
+    "local.set/tee successful write requires selected local type=top type; get preserves declared local type",
+    "i64.add requires both selected operand tags1; four carry equations; result tag1",
+    "i64.eqz requires top tag1; bounded limb sum inverse; result tag0 and higher output limbs zero",
+    "i32 arithmetic and br_if require operand tag0; pushes/get/drop/branches update value and tag together",
+    "Prepared code records bind 64bit constant through4limbs; type header checked against actual pf.locals; exact public lengths",
+    "CODE bus uniqueness/repeated fetch balance reused after37field descriptor update; no dummy bus",
+    "Initial and terminal boundary carry all8typed stack words; actual enter defaults types from prepared metadata"
+  ],
+  "composition_interfaces": [
+    "PreparedTypedState: actual frame.locals and stack arrays decode every live tagged4limb value; actual PC/gas/labels as control profile",
+    "PreparedTypedCodeCheck: actual prepare result, local type list(count<=4), new op decoder, constant64limbs, gas and target descriptors",
+    "TableLocal\u2192selected typed operands and next typed arrays; derive tag/index/operand bindings from literal constraints",
+    "AuthenticatedCODE+actualcharge+selected arithmetic\u2192actual Wasm.step successor; no caller next-state certificate",
+    "All supported cases\u2192actual run/callEntry/runCall; exact entry defaults and full published output bus relation"
+  ],
+  "remaining": [
+    "Full versioned EXEC/CODE/public source implementation",
+    "Literal export parity and source certificates for extended profile",
+    "Typed full-state transitions, initialization, gasfailure and DONE padding",
+    "Whole-run and public-output theorem for new profile",
+    "Universal honest eqz witness completeness (currently executable tests only)"
+  ],
+  "limits": [
+    "stack8",
+    "locals4",
+    "single function/no parameters/results",
+    "one nested void block/br_if0",
+    "no memory/calls/loops/host execution",
+    "PREP outside AIR",
+    "linear public CODE",
+    "no new cryptographic soundness or PQ128 claim"
+  ]
+}

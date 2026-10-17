@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "degree_bound": 1,
+      "domain_size": 4,
+      "lanes": 1,
+      "root_hex": "a5f37006d30168192de5e4949f1eca33f8e1d705d9830b2b7923657566cd0ed0d5371f9d3df3005aaaf65355339acb4f",
+      "coefficient_payload_bytes": 16,
+      "mutations_rejected": 23
+    },
+    {
+      "degree_bound": 4,
+      "domain_size": 16,
+      "lanes": 3,
+      "root_hex": "bb499601bf3ed822641e536fb5cbe2b65125dde8ec924bbb01b1d7f02e80db224231556f22e81a790f35e3d14497c802",
+      "coefficient_payload_bytes": 192,
+      "mutations_rejected": 67
+    },
+    {
+      "degree_bound": 16,
+      "domain_size": 64,
+      "lanes": 2,
+      "root_hex": "ce4e6a0f9fc9920c851a7fb451761f8bafc31362e80c88afd086e8a7c4b710a53f8018964a914c047ec48f34ef8613d0",
+      "coefficient_payload_bytes": 512,
+      "mutations_rejected": 147
+    }
+  ],
+  "scope": "New SHA384 Ext4 stage terminal, fully reconstructed oracle plus residual; not yet WHIR integrated",
+  "validation": "Independent direct power-sum oracle, Rust SHA384 tree, separate convolution residual",
+  "limits": [
+    "Diagnostic Ext4 only; no128-bitPQ claim",
+    "Preceding folding/proximity rounds remain unproved",
+    "Coefficient disclosure is not zero knowledge",
+    "Payload bytes exclude proof framing"
+  ]
+}

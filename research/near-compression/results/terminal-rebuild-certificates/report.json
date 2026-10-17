@@ -1,0 +1,273 @@
+{
+  "status": "PASS",
+  "shortcuts": {
+    "cases": 14,
+    "labels": [
+      "direct",
+      "constant",
+      "direct",
+      "constant",
+      "direct",
+      "constant",
+      "add-zero-left",
+      "add-zero-right",
+      "sub-zero-right",
+      "sub-same",
+      "mul-zero-left",
+      "mul-zero-right",
+      "mul-one-left",
+      "mul-one-right"
+    ],
+    "rejected_wrong_results": 14
+  },
+  "captures": [
+    {
+      "profile": "near-pq384-gkr-bus-v1",
+      "capture": "/tmp/near-pq384-gkr-bus-full",
+      "statement_sha256": "83dca46ee650f6d96a3a1da51ec2434450ac658cd0315e1eecb7bde077d2402a",
+      "proof_sha256": "6d2b03da1675a1404e6d86f0dcf08eb2340d2c375619b4faabaeff905e32abe8",
+      "counts": {
+        "registers": 62420,
+        "arithmetic": {
+          "constant": 1298,
+          "direct": 65206,
+          "mul-one-left": 433,
+          "add-zero-right": 2953,
+          "sub-zero-right": 31,
+          "add-zero-left": 724,
+          "mul-zero-right": 107,
+          "mul-one-right": 645,
+          "mul-zero-left": 10
+        }
+      },
+      "rejected": [
+        {
+          "label": "negative-equivalent-weight",
+          "reason": "finite node index"
+        },
+        {
+          "label": "boolean-node-index",
+          "reason": "finite node index"
+        },
+        {
+          "label": "negative-balance-result",
+          "reason": "finite node index"
+        },
+        {
+          "label": "wrong-root",
+          "reason": "final root"
+        },
+        {
+          "label": "missing-table",
+          "reason": "table count"
+        },
+        {
+          "label": "changed-source-opcode",
+          "reason": "program/placement binding"
+        },
+        {
+          "label": "changed-selector",
+          "reason": "selector binding"
+        },
+        {
+          "label": "missing-final-register",
+          "reason": "missing register certificate"
+        },
+        {
+          "label": "changed-column-offset",
+          "reason": "program/placement binding"
+        },
+        {
+          "label": "wrong-expansion-sign",
+          "reason": "expansion identity/sign"
+        },
+        {
+          "label": "wrong-balanced-term",
+          "reason": "finite node index"
+        },
+        {
+          "label": "current-next-slot-swapped",
+          "reason": "current/next binding"
+        },
+        {
+          "label": "wrong-rho-power",
+          "reason": "rho power"
+        },
+        {
+          "label": "wrong-equality-weight",
+          "reason": "terminal equality weight"
+        }
+      ],
+      "artifact": "results/terminal-rebuild-certificates/near-pq384-gkr-bus-full-rebuild.json",
+      "sha256": "dbc23071e6f2f8863a43212eef286829a317af1e7f2e5c5924f6cad4c586f9e3",
+      "seconds": 11.037305130623281
+    },
+    {
+      "profile": "near-pq384-seed-gkr-bus-v1",
+      "capture": "/tmp/near-pq384-seed-gkr-bus-full",
+      "statement_sha256": "83dca46ee650f6d96a3a1da51ec2434450ac658cd0315e1eecb7bde077d2402a",
+      "proof_sha256": "83d6e6e4946ffe9439c833d1bebde506e3edb0244e838ec0aed553948ce2de83",
+      "counts": {
+        "registers": 62420,
+        "arithmetic": {
+          "constant": 1298,
+          "direct": 65206,
+          "mul-one-left": 433,
+          "add-zero-right": 2953,
+          "sub-zero-right": 31,
+          "add-zero-left": 724,
+          "mul-zero-right": 107,
+          "mul-one-right": 645,
+          "mul-zero-left": 10
+        }
+      },
+      "rejected": [
+        {
+          "label": "negative-equivalent-weight",
+          "reason": "finite node index"
+        },
+        {
+          "label": "boolean-node-index",
+          "reason": "finite node index"
+        },
+        {
+          "label": "negative-balance-result",
+          "reason": "finite node index"
+        },
+        {
+          "label": "wrong-root",
+          "reason": "final root"
+        },
+        {
+          "label": "missing-table",
+          "reason": "table count"
+        },
+        {
+          "label": "changed-source-opcode",
+          "reason": "program/placement binding"
+        },
+        {
+          "label": "changed-selector",
+          "reason": "selector binding"
+        },
+        {
+          "label": "missing-final-register",
+          "reason": "missing register certificate"
+        },
+        {
+          "label": "changed-column-offset",
+          "reason": "program/placement binding"
+        },
+        {
+          "label": "wrong-expansion-sign",
+          "reason": "expansion identity/sign"
+        },
+        {
+          "label": "wrong-balanced-term",
+          "reason": "finite node index"
+        },
+        {
+          "label": "current-next-slot-swapped",
+          "reason": "current/next binding"
+        },
+        {
+          "label": "wrong-rho-power",
+          "reason": "rho power"
+        },
+        {
+          "label": "wrong-equality-weight",
+          "reason": "terminal equality weight"
+        }
+      ],
+      "artifact": "results/terminal-rebuild-certificates/near-pq384-seed-gkr-bus-full-rebuild.json",
+      "sha256": "5dca2ea13ef1bf4061b4d394bd535cc1dbf5d7fe62d9f9d494eaeaba40d7da24",
+      "seconds": 12.463731327094138
+    },
+    {
+      "profile": "near-pq384-gkr-bus-v1",
+      "capture": "/tmp/near-sha384-family267-proof",
+      "statement_sha256": "4fedef26e184b2670b696de3237d75d6423cbd88059614411fd6969f52a1971c",
+      "proof_sha256": "7c599c32a04ab659f5c81655fa820ba783da3acdd8b64b5e3cd4fd653e9b533b",
+      "counts": {
+        "registers": 82795,
+        "arithmetic": {
+          "constant": 548,
+          "direct": 76898,
+          "mul-one-left": 4,
+          "add-zero-right": 4672,
+          "sub-zero-right": 973,
+          "mul-zero-right": 52,
+          "add-zero-left": 35,
+          "mul-one-right": 29
+        }
+      },
+      "rejected": [
+        {
+          "label": "negative-equivalent-weight",
+          "reason": "finite node index"
+        },
+        {
+          "label": "boolean-node-index",
+          "reason": "finite node index"
+        },
+        {
+          "label": "negative-balance-result",
+          "reason": "finite node index"
+        },
+        {
+          "label": "wrong-root",
+          "reason": "final root"
+        },
+        {
+          "label": "missing-table",
+          "reason": "table count"
+        },
+        {
+          "label": "changed-source-opcode",
+          "reason": "program/placement binding"
+        },
+        {
+          "label": "changed-selector",
+          "reason": "selector binding"
+        },
+        {
+          "label": "missing-final-register",
+          "reason": "missing register certificate"
+        },
+        {
+          "label": "changed-column-offset",
+          "reason": "program/placement binding"
+        },
+        {
+          "label": "wrong-expansion-sign",
+          "reason": "expansion identity/sign"
+        },
+        {
+          "label": "wrong-balanced-term",
+          "reason": "finite node index"
+        },
+        {
+          "label": "current-next-slot-swapped",
+          "reason": "current/next binding"
+        },
+        {
+          "label": "wrong-rho-power",
+          "reason": "rho power"
+        },
+        {
+          "label": "wrong-equality-weight",
+          "reason": "terminal equality weight"
+        }
+      ],
+      "artifact": "results/terminal-rebuild-certificates/near-sha384-family267-proof-rebuild.json",
+      "sha256": "f086b1b84d1c52377ef8df1b7a4ad28750707747b9343f109de45469cb7ba1e5",
+      "seconds": 19.10851215198636
+    }
+  ],
+  "source_sha256": {
+    "native_folded_v2.py": "cff63690a4f01562d331fac667b368884d1c185ff58eec46e3f39d21e7fef466",
+    "pq384_terminal_compile.py": "beaa37dc851ec1faa1c0ca2148df1b5a3331aa7b24c62a3b2b234200522300be",
+    "pq384_terminal_gkr.py": "7fa66cf0839b8def8c43e11068e8169525018f98e97086c6c72ef96e47904be1"
+  },
+  "scope": "Executable structural certificate checks; not Lean kernel proofs of captures or compile_weighted AIR correctness."
+}

@@ -1,0 +1,38 @@
+{
+  "status": "SOURCE_LANE_CONSISTENCY_ACROSS_AUXILIARY_CHOICES_PROVED",
+  "module": "NearCompression/SourceAcrossAuxiliary.lean",
+  "theorems": [
+    "recovered_column_coefficient_congr",
+    "joint_shared_source_recovered_equal",
+    "fixed_source_column_before_auxiliary"
+  ],
+  "proved": [
+    "Coefficientwise polynomial equality preserves projected recovery and all recovered column rows.",
+    "Two joint representatives sharing a selected source oracle recover the same source column even if other source/auxiliary oracles differ.",
+    "One decoded source-column family works for every eligible later auxiliary choice under uniform degree/proximity bounds and unique-decoding separation."
+  ],
+  "assumptions": [
+    "Fixed source oracle and lane/layout geometry.",
+    "Joint representatives or corresponding scalar degree/proximity bounds.",
+    "Unique-decoding separation radius+radius+D<=domain length."
+  ],
+  "limitations": [
+    "Choice is noncomputable ideal-model selection, not commitment preimage extraction.",
+    "No representative is required for every auxiliary choice; absent cases remain a separate soundness branch."
+  ],
+  "remaining": [
+    "Assemble fixed source lanes into the base trace and discharge decoded adaptive-bus source binding.",
+    "Native source authentication, auxiliary formula refinement and global error composition.",
+    "QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4023,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal unique-decoding and source consistency only."
+  }
+}

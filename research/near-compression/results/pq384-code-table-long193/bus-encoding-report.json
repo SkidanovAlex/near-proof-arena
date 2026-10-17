@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "public_records": 195,
+  "encoding_checks": 1560,
+  "field_degrees": [
+    4,
+    8
+  ],
+  "statement_sha256": "537fbf23440da2c546a96fe5a1de80080576ef906f86e95b78f27cb6818a13ed",
+  "scope": "Retained public records only; variable-length tagged fingerprint/padding parity",
+  "limits": [
+    "Not a source-trace extraction or natural bus-count adapter",
+    "Not a proof of the Python implementation or quantum security"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "negative_cases": [
+    "mismatched shared source root",
+    "omitted fixed slot",
+    "duplicate fixed slot",
+    "fixed slot reorder",
+    "fixed expected value changed",
+    "missing arithmetic output",
+    "different RS root",
+    "old two-root profile",
+    "missing GKR layer",
+    "missing PCS query",
+    "extra trace root",
+    "fresh committed all800-consistent wrong fixed operands rejected by constrained output",
+    "recommitted wrong-fixed-slot old proof rejected through GKR"
+  ],
+  "public_verifier_with_old_trace_host_checks_disabled": true,
+  "fresh_attack_all800_old_arithmetic_residuals_zero": true,
+  "fresh_attack_fixed_operand_constraints_detect_nonzero_output": true,
+  "seconds": 103.6390578490682,
+  "scope": "Actual PCS/GKR diagnostic. Inner proof/header/transcript/hash checks remain native; no end-to-end recursion or PQ128 claim."
+}

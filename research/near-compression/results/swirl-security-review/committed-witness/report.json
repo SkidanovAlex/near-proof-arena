@@ -1,0 +1,24 @@
+{
+  "status": "FRESH_NATIVE_PROOF_WITH_MATCHING_COMMITTED_WITNESS",
+  "original_reconstruction_common_commitment_matches": false,
+  "original_mismatch_cause": "Unresolved; original proof and previous captures preserved. Do not treat new witness as original witness.",
+  "new_common_and_cached_commitments_match": true,
+  "matrices": 40,
+  "matrix_cells": 25654748,
+  "directly_recomputed_openings": 2694,
+  "proof_bytes": 398697,
+  "archive_bytes": 32155960,
+  "archive_roundtrip_hash_checks": 42,
+  "openvm_commit": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+  "reproducer": [
+    "Apply saved test patch on pinned OpenVM checkout with previously saved backend capture instrumentation.",
+    "Extract witness.tar.gz to /tmp/nearproof-reconstructed-witness and run tests::nearproof_check_saved_witness_openings.",
+    "To regenerate: leaf.proof.gz -> /tmp/nearproof-chain-leaf.proof; prior native-controls/internal.proof.gz -> /tmp/nearproof-native-internal.proof; run tests::nearproof_reconstruct_internal_witness.",
+    "New proof is written to /tmp/nearproof-witness-internal.proof. Trace regeneration is not asserted byte deterministic."
+  ],
+  "limitations": [
+    "New fixture needs its own weighted GKR residual; old residual cannot be reused.",
+    "No arbitrary-pair weighted sumcheck or new PCS proof generated.",
+    "Upstream RBR100 diagnostic recursive fixture, not PQ128 or full NEAR."
+  ]
+}

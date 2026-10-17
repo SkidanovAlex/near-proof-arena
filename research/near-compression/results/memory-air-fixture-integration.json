@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "cases": 76,
+  "opcodes": 19,
+  "full_exec_tuple_fields": 23,
+  "full_mem_tuple_fields": 15,
+  "files": {
+    "PreparedMemoryAirFixture.lean": "80929ae1ac6665faa2984090fdbf38c3406fab24e9a8f0de1c5c154072221b77",
+    "airbender/direct-wasm/check_prepared_memory_fixture.py": "c9dd6142756723df09e444ad50ed30e0563872ffd6198584857ed1e67c4f73ae",
+    "/tmp/root-memory-air-fixture.json": "cef6623d7120553c3ef2cfc7ab7464539b2b9481dc9d489794cdd6a1d7d9fc44"
+  },
+  "limits": [
+    "Synthetic frame/default prepared object invokes actual exec; not preparation/gas/runCall.",
+    "Bus tuple parity does not prove global authenticated execution linkage."
+  ]
+}

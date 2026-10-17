@@ -1,0 +1,236 @@
+{
+  "status": "CONDITIONAL_PARTIAL_SCREEN",
+  "sources_revision": "16d60de724c21dcadfde7d8315a1db507e5832d7",
+  "source_pins_verified": 4,
+  "records": [
+    {
+      "term": "gkr_degree3",
+      "extension": 4,
+      "optimistic_error": "3/16428751811598850197311699254593454081",
+      "rbr_bits": 122.04259988457929,
+      "rbr128_term_budget_pass": false,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "gkr_degree3",
+      "extension": 5,
+      "optimistic_error": "3/33075446146858977625031769923874103810955673601",
+      "rbr_bits": 152.94949048090442,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "gkr_degree3",
+      "extension": 6,
+      "optimistic_error": "3/66589668549341940845377978930048497497013284102492651521",
+      "rbr_bits": 183.8563810772295,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "gkr_degree3",
+      "extension": 7,
+      "optimistic_error": "3/134062710381075636479997415343722682887990644167839526460158115841",
+      "rbr_bits": 214.76327167355464,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "gkr_degree3",
+      "extension": 8,
+      "optimistic_error": "3/269903886087112502248563194479599378733081424069948722819014098894255554561",
+      "rbr_bits": 245.67016226987974,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "gkr_degree3",
+      "extension": 9,
+      "optimistic_error": "3/543388295804649638070068150660672758936084986398176883868996136122328490662617415681",
+      "rbr_bits": 276.57705286620484,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "gkr_degree3",
+      "extension": 10,
+      "optimistic_error": "3/1093985137813768389671452417872626100499068120275198056823424549335761037418414351651648307201",
+      "rbr_bits": 307.48394346252996,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "gkr_degree3",
+      "extension": 11,
+      "optimistic_error": "3/2202482996040948343512583539476009446909894938807585389328022159692470883234099432037573600365112197121",
+      "rbr_bits": 338.3908340588551,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "gkr_degree3",
+      "extension": 12,
+      "optimistic_error": "3/4434183957511219220515285874692608016537750237991692040631624104441671469499982651646702521144353543805143613441",
+      "rbr_bits": 369.2977246551802,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "recursion_stacking_2000_columns",
+      "extension": 4,
+      "optimistic_error": "4000/16428751811598850197311699254593454081",
+      "rbr_bits": 111.66177810063836,
+      "rbr128_term_budget_pass": false,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "recursion_stacking_2000_columns",
+      "extension": 5,
+      "optimistic_error": "4000/33075446146858977625031769923874103810955673601",
+      "rbr_bits": 142.56866869696347,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "recursion_stacking_2000_columns",
+      "extension": 6,
+      "optimistic_error": "4000/66589668549341940845377978930048497497013284102492651521",
+      "rbr_bits": 173.4755592932886,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "recursion_stacking_2000_columns",
+      "extension": 7,
+      "optimistic_error": "4000/134062710381075636479997415343722682887990644167839526460158115841",
+      "rbr_bits": 204.3824498896137,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "recursion_stacking_2000_columns",
+      "extension": 8,
+      "optimistic_error": "4000/269903886087112502248563194479599378733081424069948722819014098894255554561",
+      "rbr_bits": 235.28934048593882,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "recursion_stacking_2000_columns",
+      "extension": 9,
+      "optimistic_error": "4000/543388295804649638070068150660672758936084986398176883868996136122328490662617415681",
+      "rbr_bits": 266.1962310822639,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "recursion_stacking_2000_columns",
+      "extension": 10,
+      "optimistic_error": "4000/1093985137813768389671452417872626100499068120275198056823424549335761037418414351651648307201",
+      "rbr_bits": 297.10312167858905,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "recursion_stacking_2000_columns",
+      "extension": 11,
+      "optimistic_error": "4000/2202482996040948343512583539476009446909894938807585389328022159692470883234099432037573600365112197121",
+      "rbr_bits": 328.0100122749142,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "recursion_stacking_2000_columns",
+      "extension": 12,
+      "optimistic_error": "4000/4434183957511219220515285874692608016537750237991692040631624104441671469499982651646702521144353543805143613441",
+      "rbr_bits": 358.91690287123924,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "app_stacking_30000_columns",
+      "extension": 4,
+      "optimistic_error": "60000/16428751811598850197311699254593454081",
+      "rbr_bits": 107.75488750502984,
+      "rbr128_term_budget_pass": false,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "app_stacking_30000_columns",
+      "extension": 5,
+      "optimistic_error": "60000/33075446146858977625031769923874103810955673601",
+      "rbr_bits": 138.66177810135497,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "app_stacking_30000_columns",
+      "extension": 6,
+      "optimistic_error": "60000/66589668549341940845377978930048497497013284102492651521",
+      "rbr_bits": 169.56866869768007,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "app_stacking_30000_columns",
+      "extension": 7,
+      "optimistic_error": "60000/134062710381075636479997415343722682887990644167839526460158115841",
+      "rbr_bits": 200.4755592940052,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "app_stacking_30000_columns",
+      "extension": 8,
+      "optimistic_error": "60000/269903886087112502248563194479599378733081424069948722819014098894255554561",
+      "rbr_bits": 231.3824498903303,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": false
+    },
+    {
+      "term": "app_stacking_30000_columns",
+      "extension": 9,
+      "optimistic_error": "60000/543388295804649638070068150660672758936084986398176883868996136122328490662617415681",
+      "rbr_bits": 262.2893404866554,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "app_stacking_30000_columns",
+      "extension": 10,
+      "optimistic_error": "60000/1093985137813768389671452417872626100499068120275198056823424549335761037418414351651648307201",
+      "rbr_bits": 293.19623108298055,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "app_stacking_30000_columns",
+      "extension": 11,
+      "optimistic_error": "60000/2202482996040948343512583539476009446909894938807585389328022159692470883234099432037573600365112197121",
+      "rbr_bits": 324.1031216793056,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    },
+    {
+      "term": "app_stacking_30000_columns",
+      "extension": 12,
+      "optimistic_error": "60000/4434183957511219220515285874692608016537750237991692040631624104441671469499982651646702521144353543805143613441",
+      "rbr_bits": 355.01001227563074,
+      "rbr128_term_budget_pass": true,
+      "conditional_Q128_quarter_budget_pass": true
+    }
+  ],
+  "scope": "Necessary term-budget checks only; no attack or complete security bound.",
+  "exclusions": [
+    "other SWIRL terms",
+    "list sizes greater than one",
+    "hash/permutation security",
+    "quantum Fiat-Shamir applicability",
+    "grinding quantum analysis",
+    "recursive composition",
+    "extension construction and implementation",
+    "proof bytes",
+    "full NEAR semantics and capacity"
+  ],
+  "security_certified": false
+}

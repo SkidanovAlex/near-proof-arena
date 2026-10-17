@@ -1,0 +1,37 @@
+{
+  "status": "INPUT_INDEPENDENT_COMPILER_CERTIFICATE_APPLIES_TO_RECOVERED_GKR_INPUT",
+  "module": "NearCompression/SymbolicCompiledCheck.lean",
+  "theorems": [
+    "symbolic_compiled_table_value",
+    "symbolic_compiled_finite_value",
+    "symbolic_compiled_recovered_value",
+    "symbolic_compiled_check_regressions"
+  ],
+  "proved": [
+    "One Boolean compiler predicate has no private input argument and checks symbolic source reconstruction, batching and finite layout.",
+    "Acceptance yields the complete finite circuit residual identity for every private assignment.",
+    "Under lane/constant support separation, the same certificate yields the identity for gkrRecoveredCircuitInput without an additional assignment-specific acceptance premise."
+  ],
+  "native": {
+    "report": "results/lean-rebuild-captures.json",
+    "combined_symbolic_check": true,
+    "programs": 2,
+    "records": 9152,
+    "diagnostic_assignments": 2,
+    "malformed_rejections": 24
+  },
+  "remaining": [
+    "Bind source program outputs to expected mixed AIR/bus formula values universally, using existing independent formula/accumulation checks.",
+    "Prove expected-formula generation, source metadata ownership and recovered environment identification.",
+    "Commitment extraction and parser/transcript refinement, global execution/PQ soundness and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3878,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "derivative_product_evaluations": 2700,
+  "selected_root_criteria": 374,
+  "colliding_roots": 103,
+  "repeated_factor_singular_roots": 374,
+  "unit_certificate_noncollisions": 233,
+  "actual_source_hensel_lifts": 573,
+  "scope": "Selected-factor root smoothness and lifting with explicit noncollision. Parameter-degree collision guards and useful-branch coverage remain open."
+}

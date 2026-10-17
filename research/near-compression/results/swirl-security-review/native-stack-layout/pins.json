@@ -1,0 +1,19 @@
+{
+  "openvm": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+  "backend": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+  "source_proof_sha256": "4b40382a732971644385beb2f965693951217781743b634fe4487b9562b535bd",
+  "artifacts": {
+    "backend-batch_constraints.rs.gz": "26f668abd1e76f607bc9b0e7e74150b5beabd1ab4e7b955a6ad675e1328f6855",
+    "backend-proof_shape.rs.gz": "b475478049102affa79733176a250299ea08be63554304f8032426168a1cb533",
+    "backend.patch.gz": "32f3187b5c8b8eb743e786150d84b1cde8dbfb4503cfa6e9d622b26fc1d3314a",
+    "ext4-checks.json": "cbaad1f0f41c355ff5949ee4a4730685547926edb103763338271179fff55003",
+    "layouts.json": "e90431def485035efdec2031446dc03670274aa95636d0e7d2005405a8836b62",
+    "nearproof-native-layout-clippy.log": "3848a23c5bf11868c95872f9c2caa6e5181e56fe341c14913afab634288afc2b",
+    "nearproof-native-layout-export.log": "dfb6983d63e747376d122b8a5265f7e04b1ca51cb4e063d9d9d2a3d065bee58a",
+    "nearproof-native-point-clippy.log": "7c958b867acc0452a58e559b4310ee00280193f2a5a46105e10217dafec5332c",
+    "openvm-tests.rs.gz": "d93833683ef971d7145ceba09ee5532555356bcf635af97381c2a90bbb9d9240",
+    "openvm.patch.gz": "ce3b3c831b2266a66a8923c16367ffd66f31ea82ff0fb2c3bedff77adf343321",
+    "point-capture.jsonl.gz": "18593da20818b6c840ab42d15348ec77f84a059de177cde7a53a2c0492d1d247",
+    "report.json": "8a98d7df09da6334a241c9597368c7c0873298a1e359988b51c4c103bd464fbc"
+  }
+}

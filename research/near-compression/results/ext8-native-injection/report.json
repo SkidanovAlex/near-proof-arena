@@ -1,0 +1,107 @@
+{
+  "complete_chain_native_reference_identical": true,
+  "status": "PASS",
+  "small_cases": [
+    {
+      "degree": 1,
+      "constraints": 0
+    },
+    {
+      "degree": 1,
+      "constraints": 1
+    },
+    {
+      "degree": 1,
+      "constraints": 5
+    },
+    {
+      "degree": 2,
+      "constraints": 0
+    },
+    {
+      "degree": 2,
+      "constraints": 1
+    },
+    {
+      "degree": 2,
+      "constraints": 5
+    },
+    {
+      "degree": 8,
+      "constraints": 0
+    },
+    {
+      "degree": 8,
+      "constraints": 1
+    },
+    {
+      "degree": 8,
+      "constraints": 5
+    },
+    {
+      "degree": 128,
+      "constraints": 0
+    },
+    {
+      "degree": 128,
+      "constraints": 1
+    },
+    {
+      "degree": 128,
+      "constraints": 5
+    },
+    {
+      "degree": 1024,
+      "constraints": 0
+    },
+    {
+      "degree": 1024,
+      "constraints": 1
+    },
+    {
+      "degree": 1024,
+      "constraints": 5
+    }
+  ],
+  "negative_cases": [
+    "empty-weights",
+    "mixer-shape",
+    "noncanonical-weight",
+    "noncanonical-point",
+    "constraint-cap",
+    "abi-zero-degree",
+    "abi-capacity",
+    "abi-overlap",
+    "abi-null",
+    "abi-constraint-cap",
+    "abi-noncanonical"
+  ],
+  "large_injection": {
+    "degree": 131072,
+    "constraints": 310,
+    "distinct_points": 4,
+    "full_vector_parity": true,
+    "native_seconds": 0.5008203322067857,
+    "reference_grouped_seconds": 6.322025415953249
+  },
+  "fft": {
+    "domain": 1048576,
+    "all_values_sparse_polynomial_checked": true,
+    "seconds": 0.867536598816514
+  },
+  "tree_parity": [
+    {
+      "blowup": 2,
+      "root": "a2acaf0e4a0986b9ed696c72d983ef6d1d29aa9e2fadccb5f229f79ff805128c7ba3143b72094cc7aa721623d37f956f"
+    },
+    {
+      "blowup": 8,
+      "root": "652c6d3e22b64a60703acecf3d567c1f27d0739f6823fc466e1249cf5b835a68a17ad84061b4b06ff653b41c8571fee2"
+    },
+    {
+      "blowup": 16,
+      "root": "c5340c557e7fdb5e0ea97d90ad986793f6aaed59122d649550407b187301f4c58e78068eb0b063d2b383ce0de7967940"
+    }
+  ],
+  "scope": "Arithmetic/native parity only. Duplicate-point large workload is not a random-query performance benchmark. No protocol soundness or full-slice size claim."
+}

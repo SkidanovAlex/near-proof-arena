@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "complete_layer_cases": 9,
+  "rounds": 54,
+  "independent_polynomial_evaluations": 162,
+  "wrapper_rejections": 5,
+  "direct_abi_rejections": 3,
+  "source_sha256": "d998e7f08282d93550c0fa9a37972708697b038acb1fd300ab476dee770ae9a9",
+  "scope": "Native Ext8 GKR round coefficients and folds over complete two-axis synthetic layers, all add/sub/mul operations. No Fiat-Shamir transcript, full circuit/PCS proof, Rust refinement or security claim."
+}

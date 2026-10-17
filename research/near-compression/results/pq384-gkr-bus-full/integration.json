@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "identical_source_roots": true,
+  "identical_air_public_shape": true,
+  "identical_source_hashes": true,
+  "source_files": {
+    "airbender/direct-wasm/pq384_weighted_joint.py": "3e41fabea53000bbd70c294f8dab073f0a8a7625fac027bb1efde11cb343c6a9",
+    "airbender/direct-wasm/pq384_gkr_bus.py": "dbeec39582838856af1904e084b83f7e1f359ac3a02898c70492edae59b340f5",
+    "airbender/direct-wasm/pq384_terminal_compile.py": "beaa37dc851ec1faa1c0ca2148df1b5a3331aa7b24c62a3b2b234200522300be",
+    "airbender/direct-wasm/run_pq384_gkr_bus.py": "02bb48d551ba180422e041c368330c14b31158628dea455dd2affd3d798b0605"
+  },
+  "root_fresh_json_verifier": true,
+  "root_fresh_binary_verifier": true,
+  "root_full_profile_binding_rejections": 7,
+  "root_dynamic_compiler_cases": 20,
+  "audit_checks": 1796,
+  "binary_bytes": 318996,
+  "binary_sha256": "70247b4ac8c84efa90717da28f3dfd15104570357140693b7ee4de4e877452f5",
+  "goal_remaining_bytes": 18996,
+  "security": "DiagnosticQ8/Ext4; no128-bit quantum certification"
+}

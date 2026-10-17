@@ -1,0 +1,19 @@
+{
+  "status": "incremental progress; fullgoal remains open",
+  "audit": {
+    "declarations": 1592,
+    "log": "/tmp/near-wasm-batch-audit.log"
+  },
+  "actual_wasm_step_module": "PreparedWasmStep",
+  "lane_batching_module": "GenericLaneBatching",
+  "codec_evidence": [
+    "pq384-batched-fold/codec-verified.json",
+    "pq384-batched-fold/binary-fresh-process.json"
+  ],
+  "remaining": [
+    "ActualWasmadd/end/exhaustion+PREP/runCallcomposition",
+    "Nativefullheightproveracceleration andcompleteAIRintegration",
+    "Proximity/coherentRBR/concreteQROMsecuritybound",
+    "1Pgasbenchmark andrecursivecompleteproof<300000bytes"
+  ]
+}

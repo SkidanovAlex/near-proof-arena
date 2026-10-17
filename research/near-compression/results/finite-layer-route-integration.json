@@ -1,0 +1,37 @@
+{
+  "status": "FINITE_LAYER_ROUTE_SEMANTICS_PROVED_AND_FIXED_CAPTURES_VALIDATED",
+  "module": "NearCompression/TerminalFiniteLayerCertificate.lean",
+  "theorems": [
+    "terminal_finite_gate_value",
+    "terminal_finite_chain_values",
+    "terminal_finite_certified_root"
+  ],
+  "proved": "Existing structural DAG routing certificates plus finite storage/placement bounds preserve the acyclic DAG root under gkrFiniteCircuit, including zero gates and relays. Initial placement and DAG equations discharge semantic premises; output equality is not assumed.",
+  "capture_reports": [
+    "results/literal193-fixed-layer-routes/report.json",
+    "results/literal769-fixed-layer-routes/report.json"
+  ],
+  "executable_validation": {
+    "fixed193": "full proof verification, finite route checks, JSON roundtrip,12 negative mutations PASS",
+    "fixed769": "full proof verification, finite route checks, JSON roundtrip,12 negative mutations PASS",
+    "legacy193": "route regression and12 negative mutations PASS",
+    "configuration": "missing cap, changed cap12 and cap14 all rejected for cap13 artifact"
+  },
+  "profile_handling": "Replay cap is caller supplied; proof profile must match that configuration. No cap is inferred from the proof. Existing replay(path) calls retain their legacy behavior.",
+  "limits": [
+    "Captured JSON bundles were validated by Python, not parsed and proved as concrete Lean certificates.",
+    "The universal Lean theorem is conditional on structural routes and finite bounds; executable certificate-parser refinement remains open.",
+    "Full AIR compiler rebuilding, verifier-path/sample-space composition, commitment binding and quantum security remain incomplete.",
+    "No secure full NEAR1Pgas sub300000-byte claim."
+  ],
+  "validation": {
+    "module_check": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3811,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

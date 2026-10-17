@@ -1,0 +1,27 @@
+{
+  "status": "PROVED_CONCRETE_TRACE_COMPONENT",
+  "modules": [
+    "NearCompression/AirTraceCoordinateSlice.lean",
+    "NearCompression/AirTraceSumcheck.lean"
+  ],
+  "main_theorem": "air_trace_adaptive_sumcheck_count",
+  "established": [
+    "Actual trace MLE is affine in any coordinate with arbitrary fixed history/suffix",
+    "Constructed coordinate polynomial inputs match current/cyclic-next MLEs, fixed publics and actual product selectors",
+    "Constructed equality-kernel polynomial is affine and evaluates exactly",
+    "Boolean suffix enumeration constructs honest round polynomials with exact remaining-sum representation",
+    "Adaptive combined source/auxiliary sumcheck bound no longer assumes honest polynomial degree, affine inputs or representation separately"
+  ],
+  "premises": [
+    "One fixed trace, source/auxiliary formula lists, public vector, mixing and equality-weight point",
+    "Source/auxiliary AST degree bounds",
+    "False initial weighted sum and terminal equality to the actual trace evaluator",
+    "Distinct ideal challenge sample"
+  ],
+  "remaining": [
+    "Compose initial residual batching/row-MLE error with adaptive rounds",
+    "Authenticate terminal evaluator through current/next reduction and PCS",
+    "Derive common trace from cryptographic acceptance and prove transcript timing",
+    "Full quantum reduction, executable Ext8 migration, secure sub300k sizing and full 1 Pgas scope"
+  ]
+}

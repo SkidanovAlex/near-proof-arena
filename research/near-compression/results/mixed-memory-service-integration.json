@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3385,
+  "added_theorems": 2,
+  "sources": {
+    "PreparedMemoryService.lean": "538518ca4e78738a445773453293aa1a9c212dbd30c7a30ec6ce6514a4efb16d"
+  },
+  "audit_log": "/tmp/root-mixed-memory-audit.log",
+  "audit_sha256": "f0a96bb9b2f31efbbbeacce70eaba85e2404eabfd771d6fa8f9fc0ef6c491e28",
+  "runtime_session": 72067,
+  "runtime_log": "/tmp/root-memory-mixed-smoke.log",
+  "scope": [
+    "Consecutive clocks for mixed read/write service.",
+    "Final memory descriptor and each read at its actual intermediate state, or a finite supported hash collision."
+  ],
+  "limits": [
+    "Clock and payload are not yet authenticated to EXEC.",
+    "No memory AIR or initial-root provenance theorem.",
+    "No grow/bulk/host integration or security/size conclusion."
+  ],
+  "runtime_exit_code": 0,
+  "runtime_log_sha256": "0424690a47b1d9bdcec64ca156a7eaabc17d693365cebdaf3011d095b16ae3f8",
+  "fixture_sha256": "f720b1182d1fb81a5e66ce677837ca2f754efda9c2a87b07d05f150427585681",
+  "runtime_coverage": {
+    "honest_events": 5,
+    "negative_cases": 11,
+    "empty_sequence": true
+  }
+}

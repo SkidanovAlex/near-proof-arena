@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "audit_checks": 2745,
+  "new_public_theorems": 2,
+  "module_sha256": "72b4526fb892ee18aaea3cf89e6e40c8d91888e85356513ec7cf85319d4c83ed",
+  "scope": "Fixed actual joint representative derives same-tuple shared functional proximity; checked near quadratic-sumcheck count2*n/|S| under explicit fixed-prefix strategy, distinct domains and unique-decoding inequality. Not complete causal upstream GKR/AIR or cryptographic/QROM proof."
+}

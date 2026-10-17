@@ -1,0 +1,35 @@
+{
+  "status": "FULL_GKR_PCS_EXPERIMENT_REINDEXED_WITH_EXACT_PATH_MASS",
+  "module": "NearCompression/GKRFullPCSExperiment.lean",
+  "theorems": [
+    "gkr_full_pcs_event_count",
+    "gkr_full_pcs_event_budget",
+    "evaluated_gkr_full_pcs_count",
+    "evaluated_gkr_joint_pcs_budget"
+  ],
+  "proved": [
+    "Full row/GKR/PCS event count equals sum of concrete PCS counts over earlier GKR paths.",
+    "A per-earlier-path joint budget lifts with exact earlier-path multiplicity, retaining rowpoint averaging.",
+    "The row-averaged evaluatedGKRExperiment is exactly the full PCS event count and receives the same lifted bound."
+  ],
+  "assumptions": [
+    "Fixed layout and round envelope.",
+    "The event preserves its full chronological arguments; exchanging sums does not reorder messages.",
+    "The per-earlier-path numerical budget is supplied separately by concrete_gkr_accepted_failure_budget with all its premises."
+  ],
+  "remaining": [
+    "Connect multi-table local-prefix challenge space to the joint rowpoint experiment and discharge input/transcript bindings.",
+    "Assemble absent-representative branch with invalid-trace acceptance bound.",
+    "Native specification refinement, QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3983,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; exact finite experiment identities only."
+  }
+}

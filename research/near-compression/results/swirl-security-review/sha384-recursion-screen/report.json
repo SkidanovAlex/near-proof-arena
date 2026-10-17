@@ -1,0 +1,144 @@
+{
+  "measured_64block_cells": 27939408,
+  "blocks": 4649,
+  "records": [
+    {
+      "name": "source_only_unpadded_no_fixed_tables",
+      "cells": 271524845,
+      "best": {
+        "height": 23,
+        "log_rate": 4,
+        "fold": 3,
+        "terminal_max": 8,
+        "final_log": 8,
+        "rounds": 5,
+        "widths": [
+          33
+        ],
+        "domains": [
+          24,
+          23,
+          22,
+          21,
+          20
+        ],
+        "queries": [
+          182,
+          107,
+          76,
+          59,
+          48
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 91944,
+        "query_value_bytes": 275712,
+        "raw_paths_bytes": 924056,
+        "expected_frontier_bytes": 737156.0906183091,
+        "expected_frontier_hashes": 7105.77097342902
+      },
+      "below_target": 0,
+      "screened": 5790
+    },
+    {
+      "name": "source_and_aux_unpadded_no_fixed_tables",
+      "cells": 1227731165,
+      "best": {
+        "height": 23,
+        "log_rate": 4,
+        "fold": 2,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 7,
+        "widths": [
+          147
+        ],
+        "domains": [
+          25,
+          24,
+          23,
+          22,
+          21,
+          20,
+          19
+        ],
+        "queries": [
+          182,
+          135,
+          107,
+          89,
+          76,
+          66,
+          59
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 105380,
+        "query_value_bytes": 504672,
+        "raw_paths_bytes": 1454844,
+        "expected_frontier_bytes": 1170366.3463581284,
+        "expected_frontier_hashes": 10775.275891502466
+      },
+      "below_target": 0,
+      "screened": 5790
+    },
+    {
+      "name": "frozen_padded_all_tables",
+      "cells": 1898353936,
+      "best": {
+        "height": 23,
+        "log_rate": 4,
+        "fold": 2,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 7,
+        "widths": [
+          227
+        ],
+        "domains": [
+          25,
+          24,
+          23,
+          22,
+          21,
+          20,
+          19
+        ],
+        "queries": [
+          182,
+          135,
+          107,
+          89,
+          76,
+          66,
+          59
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 108260,
+        "query_value_bytes": 737632,
+        "raw_paths_bytes": 1690684,
+        "expected_frontier_bytes": 1406206.3463581284,
+        "expected_frontier_hashes": 10775.275891502466
+      },
+      "below_target": 0,
+      "screened": 5790
+    }
+  ],
+  "sha256": {
+    "results/sha384-nibble64/prover-report.json": "be92f425b130350785481d3c792447c24b30c4e4b5cc49a94187d01db176f929",
+    "results/swirl-security-review/binary-root-bundle/hash-census.json": "1ff25f7ec4911d840f7d52cbdbcc39c91d7697ceea0bca66515bcab675f2eefc",
+    "airbender/direct-wasm/screen_swirl_sha384_work.py": "d0da7df3b3fe5ff90236bf783b4d98e276614adb15359eeda20db43b6b639259",
+    "airbender/direct-wasm/screen_swirl_stacking_geometry.py": "7b0d8fc7e66faaaaedba834f8318f278365996ed66468eeb76256084d1de9a75"
+  },
+  "limitations": [
+    "Frozen measured widths; multiplicity/degree/domain feasibility at larger scale NOT established.",
+    "Source-only scenario erases all auxiliary/routing/fixed-table costs and padding.",
+    "All nonhash verifier trace work and cached work omitted; prior fixed messages retained as an accounting template.",
+    "Same conditional C1,Q2^128,zero-grinding,independent half-budget query screen; not instantiated PQ128.",
+    "Expected frontier sizes not deterministic bounds; no universal SHA384 impossibility claim."
+  ]
+}

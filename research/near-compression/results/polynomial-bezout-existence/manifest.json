@@ -1,0 +1,23 @@
+{
+  "scope": "General Euclidean/Bezout existence and unit derivative certificates from low-degree irreducibility. Factorization, extension/root construction and certificate transport remain open.",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_polynomial_bezout_existence.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/airbender/direct-wasm/test_bezout_smoothness.py": "2c6e3e51de58102e7e69c836981e44aa91d8af3cefca74eae18c25c08d537560",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_curve_division.py": "caa6f88b112bdf9ca03d6682425ce69918fbc238532bf8412005bd664e26a52b",
+    "research/near-compression/airbender/direct-wasm/test_synthetic_multiplicity.py": "a61b2cdb7a9e6d2b81098a94de13be3d17a4eabca9bbd0f56996cc651a56f684",
+    "research/near-compression/airbender/direct-wasm/test_hensel_coefficient_step.py": "608f18f357f66021c8a3081ce4c8fd1425bbeff3572fbdba956225bec51ff9d6",
+    "research/near-compression/airbender/direct-wasm/test_hensel_bounded_reconstruction.py": "b67bb2202fb4572c53267e5c8917f9c3862d3518a1cab00c1fb3bc708085bce3",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/NearCompression/PolynomialBezoutExistence.lean": "b13a30ed78605802ca96f7fabf9ce12d94a4aa573b8795ab6e5bd1f73e92031e",
+    "research/near-compression/NearCompression/IrreducibleDerivativeBezout.lean": "e4c06d306082b206db6659e72c36310297ad899b1c14542f5268637a93600359",
+    "research/near-compression/NearCompression/PolynomialDivision.lean": "faaab20396978dc1973e905adc4c3f51bca0652b75f68a820c3ed67ff274632b",
+    "research/near-compression/airbender/direct-wasm/test_polynomial_bezout_existence.py": "20c1f66fbc6688ad7a1f7acb5d4d0dc5169d8a8dfdb1bf686e3be4e7fb435fb6",
+    "research/near-compression/results/polynomial-bezout-existence/report.json": "b44cbb9a3707ae08b4b905c7a038eb44992bf4bf64ee11d5e846a9164b3bbd72",
+    "research/near-compression/results/polynomial-bezout-existence/lean-audit.log.gz": "0224a00e8ad93d323366bd74218f04e12223b3f5d553cd0877a94519917eb614"
+  }
+}

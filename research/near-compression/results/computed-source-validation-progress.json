@@ -1,0 +1,14 @@
+{
+  "status": "SUPERSEDED_TERMINATED",
+  "session_id": 68201,
+  "lean_pid": 2773524,
+  "log": "/tmp/root-computed-source-parity.log",
+  "output": "results/sha384-computed-source",
+  "files": {
+    "SHA384ComputedSourceFixture.lean": "fed166d3c790104900fe86288a6ca28c009aa53b3d42f16d57f3effaf64321ce",
+    "airbender/direct-wasm/test_sha384_computed_source.py": "8280c3b0f40a5aa10d66ef8eaa71ed04ab512f9612df287c5248f7a02279dc77"
+  },
+  "scope": "Four full table shapes, packed coefficient/source/root comparison against Python source_tree and independent nested interpolation.",
+  "note": "Original direct mutable evaluator intentionally terminated after formally equivalent evaluator passed same four-case parity. No direct-runtime PASS claimed. Session68201 terminal exit1 from child SIGTERM.",
+  "replacement": "results/evaluated-source-integration.json"
+}

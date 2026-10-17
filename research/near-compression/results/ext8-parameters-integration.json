@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3459,
+  "added_theorems": 5,
+  "audit_log": "/tmp/root-ext8-parameters-audit.log",
+  "audit_sha256": "5d867b740830fcf8340cabc3a3f4076d8a24856cae4031d9f05841e45d134e9f",
+  "sources_sha256": {
+    "NearCompression/Ext8ReplayParameters.lean": "c96ae3463e1848ac32213b0d0e398275c5369e13f027dcf59bbc6f724128b204",
+    "Ext8ArithmeticFixture.lean": "2782b4ee4feb3cd8e0a8b7d30ca9753c50951329a6970c62e0c4dfaca62220d7",
+    "airbender/direct-wasm/pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a",
+    "airbender/direct-wasm/test_pq384_ext8_reference.py": "05250a0b88705fb7eed2109dede9fe958cda8ad3c43f52a09973dbf42bba3fed"
+  },
+  "parity_report": "results/ext8-reference/report.json",
+  "root_strengthening": "Added all64 ordered coordinate-basis pairs to40 original mixed/arithmetic cases.",
+  "scope": "Certified Fp8 base twiddle order and exact isolated replay error budget E/P^8+(3/4)^314<=2^-130 at E=1048572.",
+  "limits": [
+    "Reference arithmetic is not complete PCS migration.",
+    "Exact error arithmetic excludes binding, upstream and Fiat-Shamir/QROM errors.",
+    "No full NEAR or sub300KB certification."
+  ]
+}

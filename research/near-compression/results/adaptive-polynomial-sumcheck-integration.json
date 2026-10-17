@@ -1,0 +1,45 @@
+{
+  "status": "PROVED_GENERIC_COMPONENT",
+  "module": "NearCompression/AdaptivePolynomialSumcheck.lean",
+  "main_theorem": "adaptive_polynomial_cube_sumcheck_count",
+  "established": [
+    "Adaptive degree-generic checked sumcheck has ideal error at most rounds*degree/sample_size",
+    "Checks require degree cap, endpoint sum and exact next-claim update",
+    "Honest endpoint consistency follows from actual Boolean suffix sums",
+    "Zero rounds, empty sample and invalid branches are handled by the integer counting theorem"
+  ],
+  "premises": [
+    "Honest polynomials represent the fixed evaluator\u2019s remaining Boolean sums",
+    "Honest per-round degree bound",
+    "False initial sum and terminal equality to honest evaluator",
+    "Independent uniform challenge paths from a distinct sample"
+  ],
+  "verifier_mapping": {
+    "file": "airbender/direct-wasm/pq384_global_bus.py",
+    "function": "verify_table_reduction",
+    "coefficients": "table_degree+2",
+    "theorem_degree": "table_degree+1",
+    "retained_tables": [
+      {
+        "name": "EXEC",
+        "table_degree": 6,
+        "round_degree": 7,
+        "rounds": 8,
+        "conditional_numerator": 56
+      },
+      {
+        "name": "CODE",
+        "table_degree": 4,
+        "round_degree": 5,
+        "rounds": 8,
+        "conditional_numerator": 40
+      }
+    ]
+  },
+  "remaining": [
+    "Construct actual combined source/auxiliary honest round polynomials and discharge degree/representation",
+    "Authenticate the terminal evaluator through current/next reduction and PCS",
+    "Compose with initial residual batching, adaptive bus bound and transcript/quantum reductions"
+  ],
+  "qualification": "Conditional numerators are sumcheck components only, not whole-protocol security or an executable Ext8 claim."
+}

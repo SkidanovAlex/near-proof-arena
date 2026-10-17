@@ -1,0 +1,110 @@
+{
+  "status": "PASS",
+  "captures": [
+    {
+      "capture": "results/literal193-fixed-layer-routes/pq384-literal193-gkr-fixed13-certificate.json",
+      "sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
+      "result": {
+        "gates": 21834,
+        "layers": 35,
+        "nodes": 10509,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "seconds": 1.6701751039363444,
+      "rejected": [
+        {
+          "case": "cyclic-node",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "misplaced-initial-input",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "changed-constant",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "nonzero-reserved-slot",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "wrong-zero-gate",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "missing-final-root",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "invalid-source-node",
+          "reason": "uncaught exception: noncanonical/out-of-range node key"
+        },
+        {
+          "case": "out-of-range-live-position",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "unknown-opcode",
+          "reason": "uncaught exception: unknown operation"
+        }
+      ]
+    },
+    {
+      "capture": "results/literal769-fixed-layer-routes/pq384-literal769-gkr-fixed14-certificate.json",
+      "sha256": "f106772a834ee58674bdf0951c0097255d610d0063deb15e5cf946dc8dd47d02",
+      "result": {
+        "gates": 21834,
+        "layers": 35,
+        "nodes": 10509,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "seconds": 1.6651658951304853,
+      "rejected": [
+        {
+          "case": "cyclic-node",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "misplaced-initial-input",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "changed-constant",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "nonzero-reserved-slot",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "wrong-zero-gate",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "missing-final-root",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "invalid-source-node",
+          "reason": "uncaught exception: noncanonical/out-of-range node key"
+        },
+        {
+          "case": "out-of-range-live-position",
+          "reason": "uncaught exception: stored bundle rejected"
+        },
+        {
+          "case": "unknown-opcode",
+          "reason": "uncaught exception: unknown operation"
+        }
+      ]
+    }
+  ],
+  "adapter_sha256": "139e68258955821a7192e449a8484485a15e3dc1e41505e7d80e06d9e3bd3e92",
+  "scope": "Full JSON instances executed by the Lean checker; generic checker soundness is kernel-proved, these concrete results are not kernel-reduced proof terms.",
+  "remaining": [
+    "Parser refinement, kernel certificates for captures, full cryptographic soundness."
+  ]
+}

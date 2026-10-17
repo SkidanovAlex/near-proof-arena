@@ -1,0 +1,78 @@
+{
+  "mode": "lake env lean --run MemoryHostSmoke.lean",
+  "checks": "All gas fields, exact status and descriptor compared against actual host execution; failure memory unchanged; success compared with direct replacement",
+  "independent_expected_burnt": [
+    2890955565,
+    0,
+    2803794861,
+    2890955565,
+    0,
+    2803794861,
+    2803794861,
+    2803794861
+  ],
+  "cases": [
+    {
+      "case": "success_cross_block",
+      "stage": "success",
+      "burnt": "2890955565",
+      "host": "2890955565",
+      "error": "ok"
+    },
+    {
+      "case": "base_failure",
+      "stage": "base",
+      "burnt": "0",
+      "host": "0",
+      "error": "HostError(GasExceeded)"
+    },
+    {
+      "case": "byte_failure",
+      "stage": "byte",
+      "burnt": "2803794861",
+      "host": "2803794861",
+      "error": "HostError(GasExceeded)"
+    },
+    {
+      "case": "bounds_failure",
+      "stage": "bounds",
+      "burnt": "2890955565",
+      "host": "2890955565",
+      "error": "HostError(MemoryAccessViolation)"
+    },
+    {
+      "case": "gas_before_bounds",
+      "stage": "base",
+      "burnt": "0",
+      "host": "0",
+      "error": "HostError(GasExceeded)"
+    },
+    {
+      "case": "byte_before_bounds",
+      "stage": "byte",
+      "burnt": "2803794861",
+      "host": "2803794861",
+      "error": "HostError(GasExceeded)"
+    },
+    {
+      "case": "empty_at_end",
+      "stage": "success",
+      "burnt": "2803794861",
+      "host": "2803794861",
+      "error": "ok"
+    },
+    {
+      "case": "empty_past_end",
+      "stage": "bounds",
+      "burnt": "2803794861",
+      "host": "2803794861",
+      "error": "HostError(MemoryAccessViolation)"
+    }
+  ],
+  "source_sha256": {
+    "research/near-compression/MemoryHostSmoke.lean": "f1042b2c291e2605f1becf8793401736f2de0eca54bf80cb143a8216bdffab2c",
+    "research/near-compression/NearCompression/CheckedMemoryHost.lean": "e97abb4fb05bcaa94c85dc42892e794167f51805d09045caafcc4fe7a0eb459a",
+    "research/near-compression/NearCompression/MemoryHostPhases.lean": "67110e688867d1cee36da84496b5618d94168c89335a3ac9ce6465928c11637b"
+  },
+  "limitations": "64 KiB memory only; no AIR, quantum-security or succinct-proof result"
+}

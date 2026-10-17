@@ -1,0 +1,8 @@
+{
+  "coprime_certificate_cases": 600,
+  "constant_second_polynomials": 120,
+  "inflated_certificates_reduced": 600,
+  "independently_solved_coefficient_equations": 3758,
+  "missing_degree_bound_counterexamples": 1,
+  "scope": "Generic Lean multiplier degree reduction and finite identity checks. Source-parameter denominator bounds and formal matrix invertibility remain open."
+}

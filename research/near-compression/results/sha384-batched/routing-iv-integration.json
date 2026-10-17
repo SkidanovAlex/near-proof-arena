@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2272,
+  "audit_log": "/tmp/root-batch-iv-layout-audit.log",
+  "modules": {
+    "SHA384BatchedRouting": {
+      "sha256": "708cd393f4bd80dae2d26d6f4d5621d5f3e90cb92af2db312de6a917fd659787",
+      "theorems": 10
+    },
+    "SHA384BatchedPublicRouting": {
+      "sha256": "52573bd7c73dbb274de2fa422c3a2103c3a6003a3e0827596b4099aa58cb733e",
+      "theorems": 4
+    },
+    "SHA384BatchedIVLayout": {
+      "sha256": "95a4e8c59c8b73d3f2c8d2b8c0330bd95c366fcf6625a31e6261dfb3f3f6f144",
+      "theorems": 4
+    }
+  },
+  "proved": [
+    "natural endpoint input matching",
+    "endpoint output equals segment compression",
+    "compression links to next segment state",
+    "natural public record matching for buses4/5",
+    "canonical public layout proves initial IV without separate count/content assumptions"
+  ],
+  "remaining": [
+    "canonical message payload word decoding",
+    "final endpoint digest binding",
+    "whole message digest composition",
+    "recursive input routing and cryptographic soundness"
+  ]
+}

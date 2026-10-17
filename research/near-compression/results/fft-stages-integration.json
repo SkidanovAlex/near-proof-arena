@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2316,
+  "audit_log": "/tmp/root-fft-stages-audit.log",
+  "module_sha256": "c8fa713a174fba6c1a9c941cb3278ed3fcf104394e66f27d84b4c29739a094fa",
+  "theorems": 4,
+  "parity_report": "results/fft-stages-parity.json",
+  "proved": [
+    "functional radix-two stage invariant with exact bit-reversed block order",
+    "natural polynomial evaluation",
+    "short-input zero padding",
+    "natural first/second half equals plus/minus polynomial pair"
+  ],
+  "explicit_premise": "root half-order certificate",
+  "remaining": [
+    "native bit-reversal counter and swaps",
+    "sequential mutable butterfly refinement",
+    "machine modular arithmetic and extension embedding",
+    "commitment security and QROM composition"
+  ]
+}

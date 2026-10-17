@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3177,
+  "added_theorems": 10,
+  "sources": {
+    "PreparedTypedTerminal": "7743713b039044f2d3f5075ab83667a9c1247b8ef6f6df06fcc4ea0717046fdd",
+    "PreparedTypedQuietStack": "cf66e8a31859e00f016df7b581baf319445848e31c78ab60db5a32186f9e015d",
+    "PreparedTypedQuietControl": "c9271565485493768c9676cfe9fd496cfc4676bd7dabe01b40be308ee9e6f990"
+  },
+  "audit_log": "/tmp/root-typed-terminal-audit.log",
+  "audit_sha256": "abe460bc8aae2984d9f74eea96474af15cc033474d21827b632f8d547fda97d4",
+  "scope": [
+    "Authenticated actual gas-exhaustion abort and failure flags",
+    "Authenticated root end with empty stack, frame return, stack-charge refund and fast-gas update",
+    "Literal gated preservation of typed stack limbs/tags/values, SP, PC and labels"
+  ],
+  "remaining": [
+    "Quiet locals and repeated DONE suffix composition",
+    "All opcode successors and whole-call proof",
+    "Full NEAR1Pgas, cryptographic authentication and128-bit quantum security"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "status": "FULL_CHOSEN_GKR_FAILURE_ON_JOINT_HISTORY_PCS_EXPERIMENT_PROVED",
+  "module": "NearCompression/ChosenGKRHistoryAcceptance.lean",
+  "theorem": "chosen_gkr_history_acceptance_count",
+  "proved": "Bounds wrong full recovered GKR input AND checked sumcheck/folding acceptance on a joint earlier-history plus PCS coordinate vector. The single chosen joint source representative depends only on fixed layout, metadata, source oracles, domain and threshold.",
+  "history_dependent": [
+    "Rowpoints, left/right GKR weights and gamma.",
+    "Known constants and the full terminal claim.",
+    "Weighted sumcheck messages/claims and the full subsequent folding strategy."
+  ],
+  "derived": [
+    "Sparse lane coefficients from actual source projection and natural domain geometry.",
+    "Shared representation for all history-dependent weight tables by the same chosen source tuple.",
+    "Wrong PCS functional from the full GKR wrong-input event using exact sequential constant subtraction.",
+    "Joint-experiment count via near_history_fold_acceptance_count."
+  ],
+  "normalized_interpretation": {
+    "bound": "2*n/Q + sum_i(max(sizes(i+1),2))/Q + ((T-1)/N)^queries",
+    "parameters": "n=layout.commonLog, N=4*2^n; joint coordinates=earlier+n; normalization assumes nonempty samples."
+  },
+  "explicit_assumptions": [
+    "Existence of a joint source representative fixed before all history coordinates.",
+    "Canonical valid lane geometry and received source projection identities.",
+    "Initial folding oracle equals the actual weighted virtual source; terminal oracle authentication.",
+    "Ideal independent uniform coordinates, valid fold/root geometry and strict unique-decoding regime."
+  ],
+  "remaining": [
+    "Use the actual coordinate-block projections to join this near result and the far bound into one failure event.",
+    "Prove actual protocol metadata stability and challenge scheduling meet the ideal experiment.",
+    "Commitment extraction/binding, GKR/AIR/bus-to-execution composition and quantum transcript compilation.",
+    "Secure parameters, full NEAR1Pgas semantics and sub300000-byte complete proofs."
+  ],
+  "validation": {
+    "module_check": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3787,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3398,
+  "added_theorems": 6,
+  "audit_log": "/tmp/root-chosen-recovery-audit.log",
+  "audit_sha256": "49899c2782e3127feb73418189c4c4411d4d4ef548f00e8ed685f81fa99ca795",
+  "sources": {
+    "ChosenGKRSourceRecovery": "7a60b081f39c7f40d69a7b99c0e58e1ebdeeed14d447d866b223f6516cd7997b",
+    "RateFourRepresentativeThreshold": "24e1355da74f848ec660d7675d82223d09a25dba9657c775376ee6e3d7aba8bd"
+  },
+  "threshold_report": "results/chosen-recovery-thresholds.json",
+  "limits": [
+    "Existence of a fixed representative and source projection remain explicit assumptions.",
+    "Uniform sample counting does not establish adaptive Fiat-Shamir/QROM security.",
+    "Actual PCS acceptance-to-agreement remains unproved."
+  ]
+}

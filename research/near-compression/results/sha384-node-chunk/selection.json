@@ -1,0 +1,256 @@
+{
+  "status": "MEASURED_CONFIG",
+  "base": 13208,
+  "count": 11,
+  "fanout_bits": 13,
+  "declared_unique_call_step_uses": 15,
+  "original_call_occurrences": 5,
+  "original_occurrence_step_uses": 15,
+  "actual_call_indices": [
+    6320,
+    6321,
+    6322,
+    6323,
+    6324
+  ],
+  "natural_fanouts": [
+    5,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "global_node_ids": [
+    13208,
+    13209,
+    13210,
+    13211,
+    13212,
+    13213,
+    13214,
+    13215,
+    13216,
+    13217,
+    13218
+  ],
+  "selected": {
+    "calls": 5,
+    "unique_nodes": 11,
+    "declared_uses": 15,
+    "core_rows": 1024,
+    "record_endpoint_rows": 16,
+    "use_rows": 16,
+    "core_endpoint_record_use_cells": 5392192,
+    "independent_core_endpoint_cells": 6732840,
+    "conservative_cell_saving": 1340648,
+    "source_degree": 131072
+  },
+  "sweep": [
+    {
+      "calls": 1,
+      "unique_nodes": 3,
+      "declared_uses": 3,
+      "core_rows": 256,
+      "record_endpoint_rows": 4,
+      "use_rows": 4,
+      "core_endpoint_record_use_cells": 1348048,
+      "independent_core_endpoint_cells": 1346568,
+      "conservative_cell_saving": -1480,
+      "source_degree": 32768
+    },
+    {
+      "calls": 2,
+      "unique_nodes": 5,
+      "declared_uses": 6,
+      "core_rows": 512,
+      "record_endpoint_rows": 8,
+      "use_rows": 8,
+      "core_endpoint_record_use_cells": 2696096,
+      "independent_core_endpoint_cells": 2693136,
+      "conservative_cell_saving": -2960,
+      "source_degree": 65536
+    },
+    {
+      "calls": 3,
+      "unique_nodes": 7,
+      "declared_uses": 9,
+      "core_rows": 1024,
+      "record_endpoint_rows": 8,
+      "use_rows": 16,
+      "core_endpoint_record_use_cells": 5377336,
+      "independent_core_endpoint_cells": 4039704,
+      "conservative_cell_saving": -1337632,
+      "source_degree": 131072
+    },
+    {
+      "calls": 4,
+      "unique_nodes": 9,
+      "declared_uses": 12,
+      "core_rows": 1024,
+      "record_endpoint_rows": 16,
+      "use_rows": 16,
+      "core_endpoint_record_use_cells": 5392192,
+      "independent_core_endpoint_cells": 5386272,
+      "conservative_cell_saving": -5920,
+      "source_degree": 131072
+    },
+    {
+      "calls": 5,
+      "unique_nodes": 11,
+      "declared_uses": 15,
+      "core_rows": 1024,
+      "record_endpoint_rows": 16,
+      "use_rows": 16,
+      "core_endpoint_record_use_cells": 5392192,
+      "independent_core_endpoint_cells": 6732840,
+      "conservative_cell_saving": 1340648,
+      "source_degree": 131072
+    },
+    {
+      "calls": 6,
+      "unique_nodes": 13,
+      "declared_uses": 18,
+      "core_rows": 2048,
+      "record_endpoint_rows": 16,
+      "use_rows": 32,
+      "core_endpoint_record_use_cells": 10754672,
+      "independent_core_endpoint_cells": 8079408,
+      "conservative_cell_saving": -2675264,
+      "source_degree": 262144
+    },
+    {
+      "calls": 7,
+      "unique_nodes": 15,
+      "declared_uses": 21,
+      "core_rows": 2048,
+      "record_endpoint_rows": 16,
+      "use_rows": 32,
+      "core_endpoint_record_use_cells": 10754672,
+      "independent_core_endpoint_cells": 9425976,
+      "conservative_cell_saving": -1328696,
+      "source_degree": 262144
+    },
+    {
+      "calls": 8,
+      "unique_nodes": 17,
+      "declared_uses": 24,
+      "core_rows": 2048,
+      "record_endpoint_rows": 32,
+      "use_rows": 32,
+      "core_endpoint_record_use_cells": 10784384,
+      "independent_core_endpoint_cells": 10772544,
+      "conservative_cell_saving": -11840,
+      "source_degree": 262144
+    },
+    {
+      "calls": 9,
+      "unique_nodes": 19,
+      "declared_uses": 27,
+      "core_rows": 2048,
+      "record_endpoint_rows": 32,
+      "use_rows": 32,
+      "core_endpoint_record_use_cells": 10784384,
+      "independent_core_endpoint_cells": 12119112,
+      "conservative_cell_saving": 1334728,
+      "source_degree": 262144
+    },
+    {
+      "calls": 10,
+      "unique_nodes": 21,
+      "declared_uses": 30,
+      "core_rows": 2048,
+      "record_endpoint_rows": 32,
+      "use_rows": 32,
+      "core_endpoint_record_use_cells": 10784384,
+      "independent_core_endpoint_cells": 13465680,
+      "conservative_cell_saving": 2681296,
+      "source_degree": 262144
+    },
+    {
+      "calls": 11,
+      "unique_nodes": 23,
+      "declared_uses": 33,
+      "core_rows": 2048,
+      "record_endpoint_rows": 32,
+      "use_rows": 64,
+      "core_endpoint_record_use_cells": 10790112,
+      "independent_core_endpoint_cells": 14812248,
+      "conservative_cell_saving": 4022136,
+      "source_degree": 262144
+    },
+    {
+      "calls": 12,
+      "unique_nodes": 25,
+      "declared_uses": 36,
+      "core_rows": 2048,
+      "record_endpoint_rows": 32,
+      "use_rows": 64,
+      "core_endpoint_record_use_cells": 10790112,
+      "independent_core_endpoint_cells": 16158816,
+      "conservative_cell_saving": 5368704,
+      "source_degree": 262144
+    }
+  ],
+  "full_workload_chunk_estimates": [
+    {
+      "chunk_capacity": 6,
+      "chunks": 3746,
+      "source_cells_by_table": {
+        "core": 10038560768,
+        "endpoint": 49926688,
+        "records": 5723888,
+        "uses": 8329944
+      },
+      "total_source_cells": 10102541288,
+      "max_declared_use_rows": 8192,
+      "max_declared_uses": 4227,
+      "max_original_occurrence_uses": 5780,
+      "all_within_node_and_use_profile": true,
+      "declared_steps": 32587,
+      "original_occurrence_steps": 41542
+    },
+    {
+      "chunk_capacity": 12,
+      "chunks": 1873,
+      "source_cells_by_table": {
+        "core": 10038560768,
+        "endpoint": 49926688,
+        "records": 5723888,
+        "uses": 8348560
+      },
+      "total_source_cells": 10102559904,
+      "max_declared_use_rows": 8192,
+      "max_declared_uses": 4233,
+      "max_original_occurrence_uses": 5786,
+      "all_within_node_and_use_profile": true,
+      "declared_steps": 32587,
+      "original_occurrence_steps": 41542
+    },
+    {
+      "chunk_capacity": 25,
+      "chunks": 899,
+      "source_cells_by_table": {
+        "core": 9636589568,
+        "endpoint": 47927488,
+        "records": 5494688,
+        "uses": 8019200
+      },
+      "total_source_cells": 9698030944,
+      "max_declared_use_rows": 8192,
+      "max_declared_uses": 4752,
+      "max_original_occurrence_uses": 6333,
+      "all_within_node_and_use_profile": true,
+      "declared_steps": 32587,
+      "original_occurrence_steps": 41542
+    }
+  ],
+  "records_sha256": "c2c2653ead19eaa8b0176a95239ffff471a0016e067051ba8b3d955564800db4",
+  "call_map_sha256": "f92c84f2c47d0bbfb22da68992a0e5e80b875605cb757c839380c3bb4cc2de7a",
+  "scope": "Compression certification only. Ordered use root must be externally fixed. No call padding/IV/digest provenance, cross-chunk coverage, aggregation, recursion, or cryptographic security claim. Independent baseline omits routing overhead, so positive savings are conservative for this component comparison; input traces and aux/proof work excluded on both sides."
+}

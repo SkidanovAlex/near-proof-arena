@@ -1,0 +1,14 @@
+{
+  "scope": "Formal centered bivariate multiplicity; arbitrary-center checks remain computational only",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_bivariate_multiplicity.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/BivariateMultiplicity.lean": "dc7e00e3553cc08960d06fa16243fa1fdc6a0cda340d2fd0402f87994cfd7d5e",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/results/bivariate-multiplicity/report.json": "2c29502d783606407a8697d2ffb98fbcd7cae8105c5ebc1076171757f6904f3f",
+    "research/near-compression/results/bivariate-multiplicity/lean-audit.log.gz": "7e3c1d54306a6aa0ef1ab10ca6925b2bfc646911cc6178f4f1cba5b06b3860a4"
+  }
+}

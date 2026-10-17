@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3416,
+  "added_theorems": 12,
+  "sources": {
+    "PreparedMemoryResultBits": "56071c9249e0ce7c0db43c4e1e539631041858a36a6fbb8a1e62ed40948c898b",
+    "PreparedMemoryWords": "04409532c63c12b50698e744bb0fe5c49e8b6be5da12f0224e4f986ce09739e1",
+    "PreparedMemoryUnsigned": "d5e228bdc4c5ab0d749b2ae1842b1538b159307d456a239f277371b2a78ba021",
+    "PreparedMemorySigned": "e9894e75fef8c1a3f602d7d15984c4ef370a15f4dcb33280c0f19e04609f4378"
+  },
+  "audit_log": "/tmp/root-memory-values-audit.log",
+  "audit_sha256": "38a67268a144b1e29964bda358fb22cada99fd5bebde50bb7a547a887d6594a8",
+  "scope": [
+    "Exact table constraints yield all12integer load values and7store truncations, conditional on selected onehot derivable from bounds."
+  ],
+  "limits": [
+    "EXEC operand/code/page authentication and service composition remain."
+  ]
+}

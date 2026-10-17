@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "source_constraint_indices": [
+    489,
+    490
+  ],
+  "formal_json_sha256": "d6f8b681db4211dd633f3d215f7dcf9956565b03429cdc7cf1068f2f5e54f887",
+  "scope": "Exact two-limb gated carry Expr syntax; full transition composition remains separate"
+}

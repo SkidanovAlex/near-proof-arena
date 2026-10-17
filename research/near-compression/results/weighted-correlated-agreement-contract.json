@@ -1,0 +1,61 @@
+{
+  "review_date": "2026-10-15",
+  "primary": {
+    "url": "https://www.researchgate.net/publication/387601318_Basefold_in_the_List_Decoding_Regime",
+    "author": "Ulrich Habock",
+    "revision": "Author upload June 13 2026; full web-extracted text, not byte-pinned PDF",
+    "locations": [
+      "Theorem4 pp18\u201319, lines1563\u20131606",
+      "Section5.2 equations29\u201331, lines1950\u20132009",
+      "Section6.1 Lemma4 pp25\u201326, lines2375\u20132448"
+    ],
+    "summary": "The nonlinear theorem requires finite-field RS codes, degree-two constraints, rational subprobability weights with denominator B, and theta=1-sqrt(rho)*(1+1/(2m)), m>=3. Sufficiently many successful challenges imply jointly agreeing polynomial components satisfying a formal constraint identity. The folding proof uses projected consistency weights, then gates them by fold equality. It preserves the agreement threshold; denominators grow as 2^i. The general inner-product case invokes this nonlinear theorem.",
+    "version_warning": "Search-indexed eprint PDF has older numbering: its Theorem4 is linear weighted subcode agreement. Do not conflate that version with the author revision nonlinear Theorem4. Extracted nonlinear error formula and cross-references still require PDF typography audit before numerical certification."
+  },
+  "new_checked_core": {
+    "module": "NearCompression/WeightedConsistencyTransfer.lean",
+    "validation": "Root-environment Lean PASS, no warnings, 0.222s",
+    "representation": "Integer numerator a(x) in [0,B]. Measure of event A equals sum_x a(x)*1_A(x)/(B*N).",
+    "lemmas": [
+      "consistency_gated_agreement: candidate agreement with adaptive next oracle under gated weights is bounded by agreement with actual fold under fixed projected weights.",
+      "consistency_projected_mass: inverse-image measure numerator equals projected pair-sum numerator exactly.",
+      "consistency_pair_pullback: joint agreement recovering both source locations transfers its entire projected mass to parent candidate agreement.",
+      "consistency_projected_bound: numerators<=B become pair numerators<=2B."
+    ],
+    "normalization": "Parent denominator B*2N equals child denominator (2B)*N; threshold mass does not degrade geometrically. Projection geometry and polynomial candidate reconstruction still need to instantiate the generic transfer."
+  },
+  "needed_theorem_interface": {
+    "fixed_before_challenge": [
+      "Finite field K; distinct nonzero projected RS domain Y with N elements; strict candidate degree d, 1<=d<N.",
+      "Arbitrary decoded oracle functions e,o:Y->K.",
+      "Natural consistency numerators a:Y->Nat with 0<=a(y)<=B. These are projected from the PRIOR transcript, before current challenge.",
+      "Two coefficient-linear functionals L0,L1, and sent polynomial q of degree<=2. Define Gamma(p,r)=(1-r)*L0(p)+r*L1(p)-q(r).",
+      "Agreement threshold T and complete uniform challenge set K."
+    ],
+    "success": "For r, there EXISTS p_r of degree<d, with sum_y a(y)*1[(1-r)e(y)+r o(y)=p_r(y)]>=T and Gamma(p_r,r)=0. The existential is INSIDE the challenge event.",
+    "conclusion": "If success_count>E then there EXIST Epoly,Opoly of degree<d with sum_y a(y)*1[e(y)=Epoly(y) AND o(y)=Opoly(y)]>=T and Gamma((1-Z)Epoly+Z Opoly,Z)=0 as a formal polynomial.",
+    "counterpositive": "Absence of such parent-compatible Epoly,Opoly bounds success_count by E. This is the actual unproved extraction step; it is not introduced as an axiom.",
+    "quantifier_note": "The weight a and sent q must not be selected after r. New oracle and candidate may depend on r. Gating belongs AFTER this fixed-measure contract, via the checked transfer."
+  },
+  "actual_mapping": {
+    "old_monomial_opening": "L0(p)=acc*scalarRSResidual(tailTensorWeights,p); L1(p)=acc*z_i*scalarRSResidual(tailTensorWeights,p).",
+    "joint_opening_equality_weight": "After joint sumcheck point u is fixed, L0(p)=acc*(1-u_i)*scalarRSResidual(tailEqWeights,p); L1(p)=acc*u_i*scalarRSResidual(tailEqWeights,p). No inversion, including zero accumulator or factors.",
+    "geometry": "Child y=x^2; e,o obtained by rsPairDecode of arbitrary committed values at x,-x. Reconstructed parent values E(y)+x O(y) are both-source compatible on joint agreement set.",
+    "degree": "Child d=parent_degree/2 and child N=parent_domain/2 preserve rate1/4. Polynomial interleaving must prove parent degree<2d.",
+    "measure": "Virtual initial source can start with numerator1 if it is defined exactly by authenticated wide oracle. Each committed child multiplies projected numerator by its fold-check indicator. After i folds the denominator is 2^i.",
+    "joint_initial_obligation": "Adaptive beta(u) combination following joint sumcheck is a separate source-candidate reduction. The later fixed-u weighted folding theorem does not establish that earlier reduction."
+  },
+  "field_domain_requirements": [
+    "Certified finite extension field and base-field embedding; characteristic not2.",
+    "Exact multiplicative domain order4D, duplicate-free representatives and squared projection exactly two-to-one.",
+    "Independent uniform full-field challenges; rejection-sampling implementation refinement.",
+    "Numerical correlated-agreement error audited for all N_i,d_i,B_i and then QROM loss; no extension degree selected here."
+  ],
+  "next_formal_steps": [
+    "Instantiate pair pullback with rsPairEncode/Decode and a concrete interleaved parent polynomial.",
+    "Build the transcript-indexed natural consistency numerators and prove denominator/mass bounds by induction, with global-chain sampling equivalence.",
+    "Formalize the finite bivariate concentration theorem underlying constrained correlated agreement; ordinary three-candidate interpolation is insufficient without concentration.",
+    "A smaller independent algebra step is: three distinct specializations of ONE fixed bivariate candidate curve satisfying Gamma force its quadratic identity. This does not manufacture the concentrated curve."
+  ],
+  "security_claim": null
+}

@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "generated_rewrites": 100,
+  "differential_checks": 300,
+  "unequal_root_mutations": 100,
+  "malformed_or_changed_circuits": 9
+}

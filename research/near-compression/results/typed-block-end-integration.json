@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3301,
+  "added_theorems": 10,
+  "sources": {
+    "PreparedTypedBlock": "c148066851764b37a8257600f2d989ef072ea010ecdc398c5d7b6083b401b618",
+    "PreparedTypedFrameStack": "937af3fb039d7a845f554738aaa54d035a32a7b1619be53499dd0221f86fc2e7",
+    "PreparedTypedFrameDepth": "2ec636dae8e6171b8741ca0855c40308c77b10c05aee098ee6b41a330d932bcc",
+    "PreparedTypedControlState": "b4e0e6090cc0b8e79b8114260fbc77d16a2ccbbc033c7b216c7bc5c75f99f9d1",
+    "PreparedTypedAuthenticatedControl": "d3ae0f568f3ce9c95558e63d450fff986e6e63f969e59b16bfb62d9ef6e125f3"
+  },
+  "audit_log": "/tmp/root-block-end-audit.log",
+  "audit_sha256": "4e0605aab3992d3bad8fd1aca161e5ea3c046fbfc66110f616bd2291b746f886",
+  "scope": [
+    "Literal AIR block and nested-end state updates, all four stack limbs/type tags, exact unchanged stack depth.",
+    "Actual preparation/CODE37 authentication supplies opcode, gas charge and block endOf target for actual Wasm.step successors."
+  ],
+  "remaining": [
+    "br_if typed condition and mixed-prefix truncation",
+    "concrete whole-call driver and public-output composition",
+    "fullNEAR 1Pgas, recursive aggregation and quantum-secure sub300KB"
+  ]
+}

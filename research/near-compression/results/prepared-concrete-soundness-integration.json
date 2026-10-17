@@ -1,0 +1,41 @@
+{
+  "status": "SOURCE_VALID_PREPARED_BRANCH_ALL_NUMERICAL_TERMS_DERIVED",
+  "modules": [
+    "NearCompression/ConcretePCSEvidence.lean",
+    "NearCompression/HistoryConcretePCS.lean",
+    "NearCompression/PreparedConcreteSoundnessBudget.lean"
+  ],
+  "theorems": [
+    "concrete_two_table_evidence_bound",
+    "history_concrete_pcs_failure_budget",
+    "prepared_concrete_soundness_budget"
+  ],
+  "proved": [
+    "Concrete PCS semantic/ideal-oracle evidence invokes two_table_concrete_pcs_failure_budget and computes its merged near/far numerical bound; no failure inequality is stored in the evidence record.",
+    "The concrete bound lifts over earlier histories with history-specific oracles, preserving fixed oracles across local/PCS draws within each history.",
+    "prepared_concrete_soundness_budget substitutes the lifted PCS term into prepared_selected_gkr_budget, deriving all numerical bus, both local/GKR and shared PCS terms for the locally valid fixed-source branch."
+  ],
+  "assumptions": [
+    "Locally valid fixed source, prepared execution/public fit/fuel/wrong-output conditions.",
+    "Accepted decoded source/coordinate binding and final side-product equality outside the shared failure event.",
+    "Selected local/GKR semantic evidence and exact formula checks.",
+    "Concrete PCS evidence: fixed ideal oracles within each history, root/geometry/degree/threshold/projection conditions, authenticated terminal values, recovered-input binding and verifier checks.",
+    "Shared accepted-failure event inclusion into concrete PCS absent-representative or terminal-mismatch events."
+  ],
+  "remaining": [
+    "Construct compatible semantic and PCS evidence from actual checked/native verifier artifacts, rather than merely assuming their fields.",
+    "Compose fixed-source-invalid cases into the same final theorem.",
+    "Instantiate and evaluate the complete ideal bound at candidate parameters.",
+    "Native Ext8 slice, global acceptance/native authentication, QROM, secure envelope size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4113,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only composition."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "status": "LOSSLESS_DICTIONARY_NATIVE_REPLAY_VERIFIED",
+  "source_profile": "native-literal-sha384-alllist-rate7",
+  "parameters": {
+    "n_stack": 16,
+    "k": 3,
+    "log_blowup": 7,
+    "all_list": 1,
+    "queries": [
+      82,
+      63,
+      51,
+      43,
+      37,
+      33
+    ]
+  },
+  "native_bytes": 512609,
+  "wire_bytes": 450302,
+  "total_wire_plus_request_bytes": 451221,
+  "bytes_saved": 62307,
+  "dictionary_entries": 459,
+  "references": 1909,
+  "native_sha256": "2324abdf45b66b90022094c31d10db61dc8421911638ca4bf227631d77b13464",
+  "wire_sha256": "b765a468aee49e1929fb4758eeafb89fbd3d28e987ea422f2ac4d13ccd88e37a",
+  "exact_python_roundtrip": true,
+  "independent_rust_native_replay": true,
+  "dictionary_payload_mutation_rejected": true,
+  "malformed_cases": 8,
+  "security_certified": false,
+  "scope": "Transport encoding only; dictionary included. Same native verifier and cryptographic parameters. No recursive proof or new quantum-security claim.",
+  "sha256": {
+    "Cargo.lock": "7a0e92b49ae35775174359c3f78eac06f30450fde00abb5752b3cbc98ac2a1ab",
+    "Cargo.toml": "517a141cee9d26e6f90d3afb0e053febafb54c7395d9ffc264bcaec8064dca48",
+    "auth-digests.bin": "76133088112e2ba2361c157ce84485da727604618a8c8e5d7cf688674fc28854",
+    "child.dictionary": "b765a468aee49e1929fb4758eeafb89fbd3d28e987ea422f2ac4d13ccd88e37a",
+    "literal.rs": "fbff218d8c7b73961937a2c6b55e8f7145d8d62a5a7bebdf6053ad92587f554b",
+    "main.rs": "3825d81523e806bccd67e896961a15cacab7d1edc6ebf7c5b382b721079fe4d4",
+    "malformed.log": "6573f0db39ccd55d61f2127f3110fd37e858fc96ed3326d48eb37312c9786be9",
+    "mutation.log": "9d81e86effbddb86fdfcfdc6c7d9f413ffdf9aba82c57396148f7c21f7648247",
+    "native_digest_dictionary.rs": "289b77e62a3cb536872d17da4501f4b576cf04ec01f2fbe0b7d24b66de5e3830",
+    "native_sha384_config.rs": "b35e6120783f61fa97290cbbb195d89252a467c6d4e49863da94fc607c7e18ca",
+    "public.bin": "2214c301b99a881c039544a7235ff4ac867ad472f1ae93325f89381c0cc4d82a",
+    "replay.log": "d9fd53069da8baa834f31c2a875bbcab9330fc2088a05703d15875f950378249",
+    "whir-census.log": "6e5099c7a536658dc5341aa4cc39dabb7933463be5c153da1e2f90c110e6a742"
+  }
+}

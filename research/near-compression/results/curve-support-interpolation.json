@@ -1,0 +1,26 @@
+{
+  "status": "CONSTRUCTIVE_PER_SUPPORT_BOUND_PROVED_GLOBAL_CONCENTRATION_OPEN",
+  "module": "NearCompression/CurveSupportInterpolation.lean",
+  "proved": [
+    "D fixed distinct agreement points identify each degree<D folded candidate coefficientwise with (1-r)*Lagrange(sourceEven)+r*Lagrange(sourceOdd).",
+    "Under no compatible parent outcome, at most max(domain length,2) distinct challenges have constrained candidates agreeing on the fixed support."
+  ],
+  "quantifiers": "Source words, weights, sent quadratic, and support are fixed before the challenge. Candidate existential remains inside the challenge event. No concentration or transfer premise supplied.",
+  "scaling_limit": "A union over all D-point supports can be exponential. This is not a usable production concentration bound.",
+  "next_obligation": "Compress/control the set of possible supports or obtain polynomial-cost affine-curve concentration via interpolation/factorization.",
+  "remaining": [
+    "Global quantitative concentration",
+    "Common committed-source extraction",
+    "Quantum transcript reduction",
+    "Secure total size and full NEAR scope"
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3749,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

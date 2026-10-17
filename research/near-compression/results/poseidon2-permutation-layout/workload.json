@@ -1,0 +1,345 @@
+{
+  "status": "OLD_VERIFIER_BYTE_WRAPPER_COUNTERFACTUAL",
+  "fresh_original_verifier_passed": true,
+  "totals": {
+    "calls": 104839,
+    "unique_calls": 40726,
+    "blocks": 419568,
+    "unique_blocks": 242409
+  },
+  "all_input_lengths": {
+    "55": 1,
+    "103": 14,
+    "118": 1,
+    "122": 14,
+    "140": 3090,
+    "143": 612,
+    "148": 46,
+    "150": 53,
+    "151": 8,
+    "153": 4,
+    "155": 512,
+    "156": 3107,
+    "158": 2171,
+    "159": 621,
+    "164": 46,
+    "166": 36,
+    "167": 8,
+    "171": 4033,
+    "172": 17,
+    "174": 2170,
+    "175": 11,
+    "176": 3090,
+    "179": 612,
+    "180": 3090,
+    "183": 612,
+    "184": 46,
+    "186": 36,
+    "187": 2984,
+    "188": 46,
+    "190": 53,
+    "191": 16,
+    "192": 18,
+    "194": 2170,
+    "195": 35,
+    "196": 17,
+    "198": 2171,
+    "199": 9,
+    "201": 13,
+    "226": 2,
+    "227": 40980,
+    "238": 17,
+    "240": 46,
+    "320": 1549,
+    "329": 26,
+    "352": 618,
+    "376": 25096,
+    "379": 2986,
+    "522": 1,
+    "632": 1282,
+    "643": 1,
+    "720": 618,
+    "726": 1,
+    "1623": 1,
+    "8791": 1,
+    "39175": 3,
+    "52440": 2,
+    "66135": 1,
+    "103127": 1,
+    "335092": 1,
+    "444542": 1,
+    "493726": 1,
+    "524888": 1,
+    "555021": 1,
+    "616254": 1,
+    "677337": 1,
+    "738523": 1,
+    "1151748": 1,
+    "1301080": 1,
+    "1387052": 1,
+    "2066953": 1,
+    "3532988": 1,
+    "4194904": 1
+  },
+  "unique_input_lengths": {
+    "55": 1,
+    "103": 12,
+    "118": 1,
+    "122": 7,
+    "140": 2472,
+    "143": 612,
+    "148": 32,
+    "150": 53,
+    "151": 7,
+    "153": 4,
+    "155": 512,
+    "156": 2489,
+    "158": 2171,
+    "159": 621,
+    "164": 32,
+    "166": 36,
+    "167": 7,
+    "171": 14,
+    "172": 17,
+    "174": 2170,
+    "175": 9,
+    "176": 2472,
+    "179": 612,
+    "180": 2472,
+    "183": 612,
+    "184": 32,
+    "186": 36,
+    "187": 500,
+    "188": 32,
+    "190": 53,
+    "191": 14,
+    "192": 18,
+    "194": 2170,
+    "195": 35,
+    "196": 17,
+    "198": 2171,
+    "199": 9,
+    "201": 7,
+    "226": 2,
+    "227": 9460,
+    "238": 17,
+    "240": 32,
+    "320": 3,
+    "329": 26,
+    "352": 309,
+    "376": 6327,
+    "379": 1441,
+    "522": 1,
+    "632": 236,
+    "643": 1,
+    "720": 309,
+    "726": 1,
+    "1623": 1,
+    "8791": 1,
+    "39175": 1,
+    "52440": 1,
+    "66135": 1,
+    "103127": 1,
+    "335092": 1,
+    "444542": 1,
+    "493726": 1,
+    "524888": 1,
+    "555021": 1,
+    "616254": 1,
+    "677337": 1,
+    "738523": 1,
+    "1151748": 1,
+    "1301080": 1,
+    "1387052": 1,
+    "2066953": 1,
+    "3532988": 1,
+    "4194904": 1
+  },
+  "tags": {
+    "near-sha384-call-link-ext8-pcs-v1": {
+      "unique_calls": 2,
+      "framed_bytes": 1204188,
+      "hypothetical_permutations": 21128
+    },
+    "transcript/init": {
+      "unique_calls": 13,
+      "framed_bytes": 1291,
+      "hypothetical_permutations": 25
+    },
+    "transcript/request": {
+      "unique_calls": 5347,
+      "framed_bytes": 876012,
+      "hypothetical_permutations": 18229
+    },
+    "transcript/squeeze": {
+      "unique_calls": 5373,
+      "framed_bytes": 794440,
+      "hypothetical_permutations": 16119
+    },
+    "transcript/ratchet": {
+      "unique_calls": 5373,
+      "framed_bytes": 1009360,
+      "hypothetical_permutations": 21492
+    },
+    "transcript/draw-result": {
+      "unique_calls": 5347,
+      "framed_bytes": 982952,
+      "hypothetical_permutations": 21388
+    },
+    "near-pq384-ext8-terminal-gkr-diagnostic-v1": {
+      "unique_calls": 4,
+      "framed_bytes": 3977982,
+      "hypothetical_permutations": 69790
+    },
+    "transcript/commit": {
+      "unique_calls": 721,
+      "framed_bytes": 5645872,
+      "hypothetical_permutations": 99148
+    },
+    "near-pq384-ext8-weighted-joint-diagnostic-v1": {
+      "unique_calls": 1,
+      "framed_bytes": 39175,
+      "hypothetical_permutations": 688
+    },
+    "ext8-weighted-fold": {
+      "unique_calls": 7,
+      "framed_bytes": 854,
+      "hypothetical_permutations": 21
+    },
+    "merkle/leaf": {
+      "unique_calls": 3293,
+      "framed_bytes": 1196781,
+      "hypothetical_permutations": 22579
+    },
+    "merkle/node": {
+      "unique_calls": 15209,
+      "framed_bytes": 4395166,
+      "hypothetical_permutations": 79817
+    },
+    "merkle/root": {
+      "unique_calls": 17,
+      "framed_bytes": 3354,
+      "hypothetical_permutations": 74
+    },
+    "ext8-execution-phase-pooled-diagnostic-v1": {
+      "unique_calls": 1,
+      "framed_bytes": 1387052,
+      "hypothetical_permutations": 24335
+    },
+    "ext8-packed-auxiliary-roots": {
+      "unique_calls": 1,
+      "framed_bytes": 643,
+      "hypothetical_permutations": 12
+    },
+    "ext8-after-gkr": {
+      "unique_calls": 1,
+      "framed_bytes": 103127,
+      "hypothetical_permutations": 1810
+    },
+    "near-ext8-weighted-code-switch-diagnostic-v1": {
+      "unique_calls": 1,
+      "framed_bytes": 522,
+      "hypothetical_permutations": 10
+    },
+    "near-pq384-ext8-pooled-weighted-diagnostic-v1": {
+      "unique_calls": 1,
+      "framed_bytes": 1301080,
+      "hypothetical_permutations": 22826
+    },
+    "weighted-code-switch/namespace": {
+      "unique_calls": 1,
+      "framed_bytes": 118,
+      "hypothetical_permutations": 3
+    },
+    "near-ext8-code-switch-stage-diagnostic-v1": {
+      "unique_calls": 6,
+      "framed_bytes": 4797067,
+      "hypothetical_permutations": 84162
+    },
+    "ext8/code-switch/coset-context-v1": {
+      "unique_calls": 7,
+      "framed_bytes": 1407,
+      "hypothetical_permutations": 28
+    }
+  },
+  "hypothetical_permutations": 503684,
+  "padded_permutation_rows": 524288,
+  "logical_permutation_source_cells": 1060758504,
+  "projections": [
+    {
+      "queries": 8,
+      "degree": 4194304,
+      "searched_degree_cap": 4194304,
+      "branches": [
+        {
+          "rows": 524288,
+          "width": 2106,
+          "packing": 8,
+          "degree": 4194304,
+          "lanes": 264,
+          "half": 8388608,
+          "leaf_bytes": 2112,
+          "expected_bytes": 24269.55587771789
+        }
+      ],
+      "expected_opening_bytes": 107419.60873637111,
+      "optimistic_fixed_bytes": 2488,
+      "expected_permutation_only_bytes": 109907.60873637111,
+      "packed_base_coefficient_payload_bytes": 4429185024,
+      "missing_costs": [
+        "GKR",
+        "sponge chaining, byte canonicalization and padding constraints",
+        "logical hash-call/root binding and all nonhash verifier arithmetic",
+        "auxiliary/adapter integration"
+      ],
+      "executable_profile": false,
+      "security_certified": false
+    },
+    {
+      "queries": 309,
+      "degree": 8388608,
+      "searched_degree_cap": 8388608,
+      "branches": [
+        {
+          "rows": 524288,
+          "width": 2106,
+          "packing": 16,
+          "degree": 8388608,
+          "lanes": 132,
+          "half": 16777216,
+          "leaf_bytes": 1056,
+          "expected_bytes": 546420.4759297329
+        }
+      ],
+      "expected_opening_bytes": 2414868.083234293,
+      "optimistic_fixed_bytes": 2488,
+      "expected_permutation_only_bytes": 2417356.083234293,
+      "packed_base_coefficient_payload_bytes": 4429185024,
+      "missing_costs": [
+        "GKR",
+        "sponge chaining, byte canonicalization and padding constraints",
+        "logical hash-call/root binding and all nonhash verifier arithmetic",
+        "auxiliary/adapter integration"
+      ],
+      "executable_profile": false,
+      "security_certified": false
+    }
+  ],
+  "instrumented_seconds": 49.384037285111845,
+  "native_library_sha256": "50585e33329b6088e002544fa3334f02ffea101934be6f497cbaa5afb442add2",
+  "wrapper_shape": "Hypothetical width32/rate19/capacity13 sponge; pack3bytes/field, append byte01, pad zeros to3bytes then full19-field blocks. Output13fields requires no extra squeeze. Old framing retained only to price its lengths; no wrapper or protocol implemented.",
+  "scope": "Actual old verifier is replayed unchanged and its complete four-count hash census matches. 57bytes/rate block is a counterfactual injective encoding shape, not a new-transcript measurement. Exact-input dedup requires proved routing. Output52bytes, new domain separation and challenges would change downstream lengths/sharing. Application hashes are not substituted. No quantum security, recursive proof or fullNEAR claim.",
+  "sha256": {
+    "airbender/direct-wasm/measure_algebraic_hash_workload.py": "3917adaec2d7fb313bfc42cdfc8456463e84531f6cf0006ee02015528c8ee0c1",
+    "airbender/direct-wasm/model_joint_nibble_geometry.py": "78b6865026458f8631636cda544cc6b26015f3873d9cc9629afd5dadbde1afd4",
+    "airbender/direct-wasm/measure_ext8_recursive_hash_work.py": "424ca5d94620cbae2969cc327b08a2656444d390a85a019696992cd70a6dd64e",
+    "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
+    "results/poseidon2-permutation-layout/report.json": "fb7c30031ee9e0c37228a4cc728c982b2596e8022c5b264dafeea72da12db1c2",
+    "results/ext8-switch-execution-q309/compression.bin": "a656ad0f8d1314ff1b921cc2596a906aaa8f8c21215c5f687082b1ca78bcbd1d",
+    "results/ext8-switch-execution-q309/statement.json.gz": "f0739ebd3b97c3e83d1a354cfe8b054e0f33d22484c32a702474459de00bed98",
+    "results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd",
+    "results/ext8-affine-q309/receipt.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996",
+    "results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e"
+  }
+}

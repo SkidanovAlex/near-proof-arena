@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "exhaustive_small_shape_cases": 12,
+  "authenticated_branches": 66,
+  "current_actual_initial_authentication_bytes": 236792,
+  "current_non_pcs_retained_bytes": 256416,
+  "current_column_claim_bytes": 218544,
+  "scenarios": [
+    {
+      "queries": 8,
+      "expected_initial_leaf_bytes": 86593.17340156068,
+      "expected_initial_sibling_bytes": 150904.35832610712,
+      "expected_initial_authentication_bytes": 237497.53172766778,
+      "expected_retained_plus_initial_bytes": 493913.5317276678
+    },
+    {
+      "queries": 335,
+      "expected_initial_leaf_bytes": 3072311.9522249694,
+      "expected_initial_sibling_bytes": 1444229.1042786147,
+      "expected_initial_authentication_bytes": 4516541.056503584,
+      "expected_retained_plus_initial_bytes": 4772957.056503584
+    },
+    {
+      "queries": 445,
+      "expected_initial_leaf_bytes": 3911802.5284709837,
+      "expected_initial_sibling_bytes": 1636999.6430772531,
+      "expected_initial_authentication_bytes": 5548802.171548237,
+      "expected_retained_plus_initial_bytes": 5805218.171548237
+    }
+  ],
+  "assumptions": [
+    "Retain all original commitments, leaf layouts and independent root authentication.",
+    "Each original tree receives q uniform independent projected queries.",
+    "No independence between trees is needed for expected total size.",
+    "Retained bytes assume unchanged AIR/shift/claim prefix; exclude new joint sumcheck, joint PCS, transport framing.",
+    "Q8 is diagnostic; 335/445 are illustrative sensitivity cases, not validated security parameters.",
+    "Expected sizes are not lower bounds; deterministic byte sizes require an actual transcript."
+  ],
+  "conclusion": "Joint later-stage openings alone leave original-root authentication and large column vectors; reducing these costs is a separate requirement."
+}

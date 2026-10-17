@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "fixture": "results/pq384-literal193-gkr-fixed13",
+      "instructions": 193,
+      "rows": [
+        256,
+        256
+      ],
+      "input_log": 13,
+      "proof_bytes": 47846,
+      "public_bytes": 19564,
+      "envelope_bytes": 67888,
+      "transport_bytes": 20042,
+      "envelope_plus_external_request_json_bytes": 68807
+    },
+    {
+      "fixture": "results/pq384-literal769-gkr-fixed14",
+      "instructions": 769,
+      "rows": [
+        1024,
+        1024
+      ],
+      "input_log": 14,
+      "proof_bytes": 63206,
+      "public_bytes": 77164,
+      "envelope_bytes": 141712,
+      "transport_bytes": 78506,
+      "envelope_plus_external_request_json_bytes": 144934
+    }
+  ],
+  "public_byte_formula": {
+    "fixed": 264,
+    "per_instruction": 100
+  },
+  "first_instruction_count_public_alone_exceeds_300000": 2998,
+  "implication": "This public CODE representation cannot meet the total-byte target at larger distinct-code sizes, regardless of proof compression. Authenticate code against a commitment instead of carrying every public CODE record.",
+  "limits": [
+    "Q8/Ext4 diagnostic; neither artifact certifies security.",
+    "Input caps and transcripts differ, so the comparison is not an isolated execution-length performance experiment.",
+    "Instruction count is distinct straight-line literal code size, not a model of full NEAR dynamic execution or1Pgas.",
+    "Committed-code authentication and full-state/host semantics remain unimplemented here."
+  ]
+}

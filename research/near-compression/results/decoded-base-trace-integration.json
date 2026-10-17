@@ -1,0 +1,37 @@
+{
+  "status": "CONSTRUCTED_BASE_TRACE_PRESERVES_SOURCE_AIR_AND_WRONG_OUTPUT_WITNESS",
+  "module": "NearCompression/DecodedBaseTrace.lean",
+  "theorems": [
+    "decoded_base_trace_cell",
+    "decoded_base_trace_source_eval",
+    "decoded_base_trace_table_local",
+    "decoded_base_residual_nonzero",
+    "decoded_wrong_output_residual_or_bus"
+  ],
+  "proved": [
+    "A single base trace is constructed by base-coordinate projection, retaining row geometry.",
+    "Every bounded source expression evaluates as the embedding of its value on the base trace, including cyclic-next rows.",
+    "Zero source residuals give TableLocal on the constructed base trace.",
+    "Wrong prepared Wasm output yields a nonzero residual on the recovered extension trace or a bus imbalance on the constructed base trace."
+  ],
+  "assumptions": [
+    "Recovered source cells within each live source width are base-valued; supplied conditionally by joint-source descent.",
+    "Source expressions stay within source width.",
+    "Prepared execution eligibility, public fit, valid log geometry and enough fuel."
+  ],
+  "remaining": [
+    "Instantiate base-valuedness for the preselected decoded family with authenticated typed source oracles.",
+    "Align auxiliary reconstruction and bus acceptance with this base trace.",
+    "Finish global verifier soundness, native refinement, QROM security and secure full-NEAR size."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4017,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal trace construction and source evaluation transport only."
+  }
+}

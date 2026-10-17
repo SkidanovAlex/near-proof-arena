@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3595,
+  "audit_log": "/tmp/root-slice-trace-multiset-audit.log",
+  "source_sha256": "ce66ea090e8e591f14e394b6f84f9da9114671b1ea75cbbc81bd069b3a8559c6",
+  "established": [
+    "Expanded traffic includes every table/row/interaction with exact natural multiplicity and public messages with unit multiplicity",
+    "Count of each bus/message pair equals busCount plus pubCount",
+    "HoldsP balance equivalent to permutation of the two expanded lists",
+    "No byte-valued public input or transcript-decoding premise"
+  ],
+  "remaining": [
+    "Injective bounded-tag/base-field embedding of these concrete message lists into extension-field fingerprint lists",
+    "Source commitment extraction and common-trace binding",
+    "Auxiliary/local checks to actual expanded product correspondence",
+    "Complete soundness and quantum compiler budget"
+  ]
+}

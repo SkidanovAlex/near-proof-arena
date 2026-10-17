@@ -1,0 +1,33 @@
+{
+  "status": "FIXED_SOURCE_LOCAL_BUS_BRANCHES_COMPOSED",
+  "module": "NearCompression/PreparedFixedSourceBranchBudget.lean",
+  "theorems": [
+    "prepared_fixed_source_branch_budget"
+  ],
+  "proved": [
+    "Uses actual prepared wrong-output bus bound when the fixed source is locally valid.",
+    "Otherwise selects one failed table from the actual two-table preparedLiteralAir and applies its full-experiment local bound.",
+    "Pays max(localBudget0,localBudget1,busBudget), plus a single shared accepted-failure budget, with consistent sample-length scaling."
+  ],
+  "assumptions": [
+    "One fixed base source before bus/local randomness and wrong actual prepared-Wasm output with prepared request and fuel/public bounds.",
+    "Accepted transcripts outside failure supply source-bound decoded witnesses with reconstructed bus residual validity and equal side products.",
+    "Each failed-table local bound must already cover full bus-pair \u00d7 continuation experiment.",
+    "One joint accepted-failure bound on the identical experiment."
+  ],
+  "remaining": [
+    "Average local/GKR and actual PCS bounds across earlier bus challenges to instantiate full-experiment premises.",
+    "Use common decoded-source construction and checked semantics on the identical event.",
+    "Native authentication, QROM security, secure-size feasibility and full 1 Pgas execution remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4048,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

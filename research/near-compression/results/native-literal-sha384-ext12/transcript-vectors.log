@@ -1,0 +1,85 @@
+   Compiling nearproof-native-sha384 v0.1.0 (/tmp/nearproof-native-sha384)
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:5243:490
+     |
+5243 | ....clone(), e[3706].clone(), e[4018].clone()],(e[2441].clone() * AB::F::from_u32(1)),1);
+     |                                                ^                                    ^
+     |
+     = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+     |
+5243 - builder.push_interaction(0,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[3198].clone(), e[168].clone(), e[172].clone(), e[2556].clone(), e[2658].clone(), e[2760].clone(), e[2862].clone(), e[3466].clone(), e[3778].clone(), e[3498].clone(), e[3810].clone(), e[3531].clone(), e[3843].clone(), e[3563].clone(), e[3875].clone(), e[3597].clone(), e[3909].clone(), e[3629].clone(), e[3941].clone(), e[3662].clone(), e[3974].clone(), e[3706].clone(), e[4018].clone()],(e[2441].clone() * AB::F::from_u32(1)),1);
+5243 + builder.push_interaction(0,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[3198].clone(), e[168].clone(), e[172].clone(), e[2556].clone(), e[2658].clone(), e[2760].clone(), e[2862].clone(), e[3466].clone(), e[3778].clone(), e[3498].clone(), e[3810].clone(), e[3531].clone(), e[3843].clone(), e[3563].clone(), e[3875].clone(), e[3597].clone(), e[3909].clone(), e[3629].clone(), e[3941].clone(), e[3662].clone(), e[3974].clone(), e[3706].clone(), e[4018].clone()],e[2441].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:5244:490
+     |
+5244 | ....clone(), e[3706].clone(), e[4018].clone()],(e[2509].clone() * AB::F::from_u32(1)),1);
+     |                                                ^                                    ^
+     |
+help: remove these parentheses
+     |
+5244 - builder.push_interaction(1,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[3198].clone(), e[168].clone(), e[172].clone(), e[2556].clone(), e[2658].clone(), e[2760].clone(), e[2862].clone(), e[3466].clone(), e[3778].clone(), e[3498].clone(), e[3810].clone(), e[3531].clone(), e[3843].clone(), e[3563].clone(), e[3875].clone(), e[3597].clone(), e[3909].clone(), e[3629].clone(), e[3941].clone(), e[3662].clone(), e[3974].clone(), e[3706].clone(), e[4018].clone()],(e[2509].clone() * AB::F::from_u32(1)),1);
+5244 + builder.push_interaction(1,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[3198].clone(), e[168].clone(), e[172].clone(), e[2556].clone(), e[2658].clone(), e[2760].clone(), e[2862].clone(), e[3466].clone(), e[3778].clone(), e[3498].clone(), e[3810].clone(), e[3531].clone(), e[3843].clone(), e[3563].clone(), e[3875].clone(), e[3597].clone(), e[3909].clone(), e[3629].clone(), e[3941].clone(), e[3662].clone(), e[3974].clone(), e[3706].clone(), e[4018].clone()],e[2509].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:5245:446
+     |
+5245 | ...(), e[5].clone(), e[5].clone(), e[5].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+5245 - builder.push_interaction(2,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[1868].clone(), e[1872].clone(), e[1876].clone(), e[1880].clone(), e[4159].clone(), e[4247].clone(), e[2587].clone(), e[2689].clone(), e[2791].clone(), e[2893].clone(), e[2268].clone(), e[2272].clone(), e[2276].clone(), e[2280].clone(), e[2284].clone(), e[2288].clone(), e[2292].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+5245 + builder.push_interaction(2,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[1868].clone(), e[1872].clone(), e[1876].clone(), e[1880].clone(), e[4159].clone(), e[4247].clone(), e[2587].clone(), e[2689].clone(), e[2791].clone(), e[2893].clone(), e[2268].clone(), e[2272].clone(), e[2276].clone(), e[2280].clone(), e[2284].clone(), e[2288].clone(), e[2292].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:6976:434
+     |
+6976 | ...(), e[5].clone(), e[5].clone(), e[5].clone()],(e[0].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+6976 - builder.push_interaction(3,vec![e[1658].clone(), e[1689].clone(), e[947].clone(), e[1079].clone(), e[264].clone(), e[268].clone(), e[272].clone(), e[276].clone(), e[1592].clone(), e[1625].clone(), e[1458].clone(), e[1491].clone(), e[1524].clone(), e[1557].clone(), e[664].clone(), e[668].clone(), e[672].clone(), e[676].clone(), e[680].clone(), e[684].clone(), e[688].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],(e[0].clone() * AB::F::from_u32(1)),1);
+6976 + builder.push_interaction(3,vec![e[1658].clone(), e[1689].clone(), e[947].clone(), e[1079].clone(), e[264].clone(), e[268].clone(), e[272].clone(), e[276].clone(), e[1592].clone(), e[1625].clone(), e[1458].clone(), e[1491].clone(), e[1524].clone(), e[1557].clone(), e[664].clone(), e[668].clone(), e[672].clone(), e[676].clone(), e[680].clone(), e[684].clone(), e[688].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],e[0].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unused variable: `local`
+  --> src/literal.rs:36:30
+   |
+36 | let main=builder.main(); let local=main.row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values...
+   |                              ^^^^^ help: if this is intentional, prefix it with an underscore: `_local`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `next`
+  --> src/literal.rs:36:68
+   |
+36 | ....row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
+   |                                ^^^^ help: if this is intentional, prefix it with an underscore: `_next`
+
+warning: unused variable: `next`
+    --> src/literal.rs:5267:68
+     |
+5267 | ...row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
+     |                               ^^^^ help: if this is intentional, prefix it with an underscore: `_next`
+
+warning: unused variable: `public`
+    --> src/literal.rs:5267:105
+     |
+5267 | ...w_slice(1).unwrap(); let public=builder.public_values().to_vec();
+     |                             ^^^^^^ help: if this is intentional, prefix it with an underscore: `_public`
+
+warning: `nearproof-native-sha384` (bin "nearproof-native-sha384") generated 8 warnings (run `cargo fix --bin "nearproof-native-sha384" -p nearproof-native-sha384` to apply 8 suggestions)
+    Finished `release` profile [optimized] target(s) in 3.88s
+     Running `/tmp/nearproof-native-sha384/target/release/nearproof-native-sha384`
+VECTOR_LEAF [86, 155, 112, 187, 84, 21, 182, 50, 155, 231, 61, 230, 120, 47, 97, 192, 43, 195, 44, 161, 155, 125, 54, 35, 229, 170, 138, 234, 210, 6, 29, 201, 193, 196, 107, 112, 121, 32, 44, 14, 226, 83, 69, 191, 44, 20, 89, 122]
+VECTOR_EMPTY [55, 156, 187, 118, 25, 1, 37, 160, 174, 252, 50, 151, 190, 152, 11, 125, 138, 113, 140, 194, 139, 197, 25, 47, 250, 142, 232, 94, 165, 89, 59, 22, 217, 28, 49, 211, 104, 178, 35, 35, 176, 192, 171, 221, 138, 153, 53, 207]
+VECTOR_NODE [136, 181, 89, 188, 86, 190, 126, 215, 80, 112, 58, 191, 229, 62, 235, 88, 161, 88, 228, 134, 115, 52, 77, 34, 16, 202, 65, 102, 109, 225, 182, 230, 38, 17, 13, 19, 132, 253, 196, 37, 45, 10, 192, 70, 217, 120, 244, 60]
+VECTOR_SAMPLES [1001254833, 732184637, 475103364, 602252287, 541206232, 1722399983, 460119665, 605416862, 1149290849, 775347864, 1989656379, 2003798703, 757136962, 1136854340, 374430469, 241986119, 1405129614, 1407505475, 1391202186, 1583515115, 1936130861, 645661524, 755896369, 151388329, 1894152760, 1373658339, 693914970, 1482476287, 1684604199, 108758537, 1056297869, 1683829295, 18518184, 863303577, 1113791212, 141207825, 887614544, 1099861573, 797037915, 1408425948, 1456237735, 1609419665, 1825791577, 750098840, 867814264, 801750249, 843384482, 347421063, 1946073488, 662968869, 549663899, 1188971035, 362152032, 558799255, 1339829274, 1734510464, 89869464, 858765173, 700923712, 613514568, 777411403, 1179629404, 1742246837, 845864423, 439512660, 1132644727, 1633333307, 718626112, 1865836918, 813751690, 1672113521, 360430826, 204852473, 904772902, 382225927, 62308898, 1267512333, 1613116925, 284590044, 979576963, 65952154, 1492078870, 1117855307, 712610589, 1211700207, 1583018849, 1638570558, 1590025285, 1021815286, 1082492131, 1443294293, 985000982, 967144772, 129261949, 617028466, 727412147]
+VECTOR_STATE [141, 75, 30, 251, 179, 109, 91, 43, 80, 173, 238, 81, 27, 95, 0, 42, 5, 244, 21, 92, 32, 13, 118, 171, 43, 187, 131, 103, 103, 52, 74, 112, 108, 34, 218, 214, 55, 158, 80, 133, 131, 253, 225, 241, 50, 168, 214, 20]
+VECTOR_CURSOR 2

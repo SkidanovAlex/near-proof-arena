@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-15",
+  "status": "Functional quotient and fixed shared scalar-basin reduction proved; representative existence/far-case remains open",
+  "module": "NearCompression/FunctionalBatchRepresentative.lean",
+  "validation": "Lean PASS, exit 0, no warnings, 0.127 seconds",
+  "interface": {
+    "common_domain": "All polynomials, weight tables and source oracles are already transported to the SAME lifted coefficient cube and RS domain. The source code sparse lift, slot ordering and derived current/next weights are not asserted by this module.",
+    "beta": "functionalBatchCoefficients n tables point = map (genericRowMLE n table point) tables; Boolean evaluation is proved using the existing generic row MLE theorem.",
+    "functional": "coefficientTableFunctional = sum_i sum_j W_j(i) * coeff_i(P_j), in the common lifted basis.",
+    "equivalence": "For every point, the weighted polynomial combinations have identical coefficients; Boolean evaluation and coefficient extraction prove the requested functional is equal.",
+    "shared_assignment": "SharedFunctionalRepresentative takes a SINGLE fixed ordered polynomial tuple and quantifies all obligation indices and all later points. Source and weight-table shapes must match. Existentially choosing a new tuple for each opening is not this interface.",
+    "caveat": "Even a shared scalar-family representative must be connected to the global witness assignment used by AIR, bus and GKR statements. Quotient invariance of the requested functionals does not itself prove that assignment satisfies any AIR.",
+    "scalar_basin": "For each obligation/point, the weighted source oracle is R-close to the corresponding combination of this fixed tuple. Arbitrary individual lane noise in the family kernel is permitted.",
+    "initial_reduction": "R+(N-T)+D<=N plus a wrong scalar residual excludes the exact indexedChainCandidate at stage zero."
+  },
+  "remaining_far_case_route": {
+    "rewrite": "G_b(x)=sum_j W_j(b) F_j(x), so sum_j beta_j(u) F_j(x)=MLE_u(G_b(x)). This is a structured tensor selector, not independent power batching.",
+    "supporting_observation": "For vector-valued low-degree candidates, any differing polynomial component bounds common equality by D-1. Thus RS uniqueness and the three-candidate reconstruction mechanism have a plausible vector extension.",
+    "potential_method": "Peel one affine u-coordinate at a time, retaining paired/vector polynomial candidates and joint agreement T; dimension grows while polynomial degree and domain remain fixed. Avoid the known naive radius-doubling method.",
+    "not_yet_proved": [
+      "Vector-valued shared-curve extraction with arbitrary adaptive candidate vectors.",
+      "Product-grid counting and quantifier order ensuring a SINGLE family representative rather than separately chosen fiber representatives.",
+      "Weighted residual/diagonal-functional extraction through all coordinate peels.",
+      "A quantitative total bad-event bound; no n*N estimate is certified."
+    ],
+    "threshold": "The local vector version would need 2N+(D-1)<3T at each step; proving it composes remains work."
+  },
+  "alternative_independent_vector_proximity": {
+    "architecture": "Add a separately versioned vector-source RS proximity pass, with a fresh independent lane coefficient challenge after all source roots. Reuse wide source commitments; commit/fold the independently combined scalar word in an additional chain.",
+    "extra_challenges": "One fresh lane-batching field challenge plus one challenge per fold (17 on the current common degree), plus an independent query seed vector for that pass. Derived challenges need not be serialized as proof elements.",
+    "extra_messages": "17 quadratic messages and 17 folded roots, plus terminal disclosure and authenticated source/global-chain query responses. At current diagnostic Ext4, the quadratics alone are 17*3*16=816 bytes and the SHA384 roots 17*48=816 bytes, before authentication/terminal overhead.",
+    "extra_query_work": "q additional complete chains; at q=309 and 17 folds this is 5253 scalar fold-consistency checks plus source wide-lane authentication. Duplicate paths and shared source openings could change serialization size; no measured size is asserted.",
+    "security_caveat": "309 is only the previously proved ideal (3/4)^q <=2^-128 query term, not a secure total repetition choice. The independent vector batch still needs far-source/list-decoding or another complete proximity theorem; a fixed-tuple L-1 collision bound is insufficient for adaptive scalar candidates. QROM and binding losses remain outside.",
+    "tradeoff": "Potentially simpler shared-witness interface, but extra proof traffic and a real theorem obligation. Do not mutate existing profile or label it secure based on these estimates."
+  },
+  "security_claim": null
+}

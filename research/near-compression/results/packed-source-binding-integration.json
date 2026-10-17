@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3306,
+  "added_theorems": 5,
+  "sources": {
+    "SHA384PackedSourceBinding": "51f1399090456fc913f28b177ee67e4d81b0f4c64c45f9d7cb6a00c14a0858bd"
+  },
+  "audit_log": "/tmp/root-packed-source-audit.log",
+  "audit_sha256": "4b2723e0e03b323fc4745f146e2844bb8fbb6cc36abd681c06000b30f9c963c9",
+  "parity_report": "results/sha384-packed-source/report.json",
+  "parity_sha256": "795cd7237b567c12a29b0a8a003b6b0d2df55b61c39cd5ac38a81e3b7b7fc0fd",
+  "scope": [
+    "Canonical LE32 field-word encoding injectivity.",
+    "Accepted fixed-source leaf yields exact canonical source word vector or collision supported on two actual Merkle path query lists.",
+    "Projected weighted lane pair equality or same supported collision, including sample modulo 2d and lifted-side selection."
+  ],
+  "limits": [
+    "Fixed supplied source root; no polynomial recovery from adversarial roots.",
+    "Source FFT and actual verifier parity tested, source semantic refinement still being proved.",
+    "No collision probability, QROM or overall128-bit proof."
+  ]
+}

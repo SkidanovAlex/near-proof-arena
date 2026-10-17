@@ -1,0 +1,50 @@
+{
+  "status": "Frozen; standalone Lean check PASS",
+  "module": "NearCompression.HeterogeneousGKRWeights",
+  "check": {
+    "seconds": 0.439,
+    "exit_code": 0,
+    "warnings": 0
+  },
+  "public_theorems": [
+    "heterogeneous_column_private_lookup",
+    "heterogeneous_column_affine",
+    "heterogeneous_beta_coordinate_affine",
+    "heterogeneous_joint_beta_affine",
+    "heterogeneous_lane_weight_mle",
+    "heterogeneous_betas_affine",
+    "heterogeneous_source_tensor_identity",
+    "heterogeneous_candidate_far_count"
+  ],
+  "exact_mapping": {
+    "layout": "Fixed rowCoordinates R, GKR inputLog m, common PCS log C and privateCapacity. Joint point blocks [all rowpoints R, ru m, rv m, gamma 1, PCS u C].",
+    "lane": "rowLog n, packingLog p, rowOffset, inputStart=table block offset+source/aux branch offset, nextOffset=table column capacity, original branch width, packed group index.",
+    "current_slot": "inputStart + group*2^p + col, only if group*2^p+col < width; otherwise zero.",
+    "next_slot": "inputStart + nextOffset + group*2^p + col, same padding guard.",
+    "private_weight": "eq_m(ru,slot)+gamma*eq_m(rv,slot), matching the private prefix returned by terminal_gkr.obligation. Exact getD lookup equality proved under slot bounds.",
+    "beta": "MLE_(n+p) of packedDualWeight at PCS u after dropping C-(n+p) low coordinates. Exact lane_weight_mle row/column factor decomposition proved.",
+    "source": "Each source oracle f_j is lifted to x -> f_j(x^(2^(C-localLog_j))). Betas and source projections remain paired in one ordered entries list.",
+    "virtual_oracle": "weightedVirtualOracle of all these concrete betas and projected arbitrary received source functions."
+  },
+  "well_formed_conditions": [
+    "rowOffset+rowLog <= R",
+    "rowLog+packingLog <= C",
+    "current and next branch endpoints <= privateCapacity",
+    "privateCapacity <= 2^m"
+  ],
+  "proved_far_contract": "For this fixed heterogeneous family, absence of a shared prechallenge JointBetaRepresentative implies adaptive scalar candidate count <= (R+2m+1+C)*max(domain.length,2)*|S|^(R+2m+C), under exact strict unique-regime/domain/cap hypotheses. No arbitrary coefficient-affinity or assumed tensor identity premise remains.",
+  "remaining": [
+    "Compiler generation of metadata and exact multi-table row-offset assignment are not proved by this module; fields are explicit trusted/public inputs.",
+    "Actual mutable list eqs/branch_lanes and native extension arithmetic remain implementation refinement boundaries.",
+    "Connect this concrete family to JointSourceFarFold (its general beta premise is now directly supplied by heterogeneous_betas_affine).",
+    "Upstream selected challenges must be embedded causally into the fixed independent-coordinate tape; fixed envelope prototype not yet whole-profile integrated.",
+    "Near-case reconstruction must preserve original branch sparse-lift image and one pre-zerocheck assignment.",
+    "Merkle/authenticated source oracle binding and FS/QROM remain separate."
+  ],
+  "native_sources": [
+    "pq384_terminal_gkr.py:obligation",
+    "pq384_terminal_input_weights.py:branch_lanes/lane_weight_mle",
+    "pq384_derived_weight_joint.py:betas",
+    "pq384_fixed_gkr_layout.py:fixed_layer_circuit"
+  ]
+}

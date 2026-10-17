@@ -1,0 +1,27 @@
+{
+  "status": "PREFIX_ONLY_DIAGNOSTIC_REPLAY_VERIFIED",
+  "prefix_bytes": 15567,
+  "codec": "NPREF001, key-directed field lengths, no source openings or old PCS tail",
+  "original_proof_file_unavailable_during_successful_replay": true,
+  "source_matrices_required_for_replay": false,
+  "public_trace_shapes_and_stacking_layouts_rederived_and_compared": true,
+  "malformed_input_checks": 9,
+  "validation": [
+    "native prefix controls and exact transcript log match prior accepted prefix",
+    "GKR verified with public inputs",
+    "weighted sumcheck and WHIR verified against prefix commitments",
+    "required AIR presence, height bounds/constraints, cached commitment counts and public values key-directed",
+    "all remaining native shapes checked using explicit zero-column placeholders, never treated as valid openings"
+  ],
+  "limitations": [
+    "Diagnostic profile rejects preprocessed AIRs; not general VM coverage.",
+    "GKR still stored as separate JSON artifact; complete framed binary bundle remains to implement.",
+    "No Lean codec/refinement or QROM composition theorem.",
+    "Internal component subtotal remains above300000 at diagnostic settings, not PQ128 or full NEAR."
+  ],
+  "reproduce": [
+    "Apply this complete OpenVM patch with previously saved opening-free-prefix/backend.patch.gz and weighted-whir/cpu-backend.patch.gz on pinned source revisions.",
+    "Run replay_swirl_prefix_continuation.py; it restores only prefix.bin and new stacking/WHIR binaries and recomputes/verifies the public GKR handoff.",
+    "The original native proof and the witness matrices need not exist for replay."
+  ]
+}

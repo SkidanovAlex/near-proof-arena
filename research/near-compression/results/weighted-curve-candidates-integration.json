@@ -1,0 +1,27 @@
+{
+  "status": "COMPLETE_PRECHALLENGE_JOINT_FAMILY_CONSTRUCTED_TRANSFER_OPEN",
+  "module": "NearCompression/WeightedCurveCandidates.lean",
+  "construction": "All normalized degree-D coefficient lists from a finite alphabet, Cartesian pairs, filtered by joint weighted source agreement.",
+  "proved": [
+    "Each pair is degree-bounded and jointly agrees with the sources at threshold T.",
+    "Every qualifying pair is included after coefficient-preserving normalization if the alphabet covers the field.",
+    "Pairs are coefficientwise distinct.",
+    "Constructed family satisfies L*(T*T-M*B*(D-1))<=M*M."
+  ],
+  "qualification": "Exhaustive enumeration is only a mathematical witness; no efficient decoder or correlated-agreement transfer is claimed.",
+  "remaining": [
+    "Exceptional-challenge transfer from arbitrary folded candidates to jointly agreeing pairs",
+    "Quantified weighted extraction/adaptive composition",
+    "Common committed-trace extraction",
+    "Quantum transcript reduction and secure total proof size"
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3744,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

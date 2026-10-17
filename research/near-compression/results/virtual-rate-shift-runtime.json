@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "arbitrary_source_words": 4,
+  "comparisons": 640,
+  "cases": "All32 cosets, zero/one challenges and full-extension challenges; two pair decodes versus production inverse-DFT quartet transform.",
+  "limitations": [
+    "read_opening mocked: no authentication/commitment claim.",
+    "Executable parity is not kernel refinement of the Python implementation."
+  ],
+  "source_sha256": {
+    "check_virtual_rate_shift.py": "90ef3d297d985287c9e9116a0cb3deeff67913152b970d5d883d4a778a726d85",
+    "pq384_ext8_rate_shift.py": "14ccdb77cce4ab5c1842b42dd4828c4068ffe465a7b549d76353846e5089a19b"
+  }
+}

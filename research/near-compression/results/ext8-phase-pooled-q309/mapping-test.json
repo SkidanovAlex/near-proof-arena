@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "physical_banks": 3,
+  "logical_branches": 8,
+  "negative_cases": [
+    "missing-logical-table",
+    "duplicate-logical-table",
+    "altered-table",
+    "altered-branch",
+    "altered-width",
+    "altered-packing",
+    "altered-log_rows",
+    "altered-offset",
+    "nonzero-padding-weight",
+    "wrong-logical-point-height",
+    "source-alias",
+    "auxiliary-alias",
+    "unknown-profile",
+    "non-power-two-packing",
+    "logical-row-shape"
+  ],
+  "canonical_order": true,
+  "domain_separation": true,
+  "scope": "Execution descriptor mapping regression; no cryptographic soundness claim."
+}

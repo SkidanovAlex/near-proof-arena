@@ -1,0 +1,75 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "pooled": false,
+      "queries": 8,
+      "degrees": [
+        64,
+        8
+      ],
+      "terminal_coefficients": 4,
+      "json_bytes": 27434
+    },
+    {
+      "pooled": false,
+      "queries": 31,
+      "degrees": [
+        64,
+        8
+      ],
+      "terminal_coefficients": 4,
+      "json_bytes": 95372
+    },
+    {
+      "pooled": true,
+      "queries": 8,
+      "degrees": [
+        64,
+        8,
+        16
+      ],
+      "terminal_coefficients": 4,
+      "json_bytes": 32069
+    },
+    {
+      "pooled": true,
+      "queries": 31,
+      "degrees": [
+        64,
+        8,
+        16
+      ],
+      "terminal_coefficients": 4,
+      "json_bytes": 113161
+    }
+  ],
+  "exhaustive_pair_checks": 256,
+  "negative_cases": [
+    "input-reduction",
+    "first-quadratic",
+    "first-child-root",
+    "first-ood",
+    "source-leaf",
+    "source-path",
+    "missing-source-branch",
+    "missing-source-query",
+    "source-order",
+    "untrusted-scalar-root",
+    "tail-quadratic",
+    "tail-count",
+    "terminal",
+    "profile",
+    "noncanonical",
+    "external-source-root",
+    "external-source-weight",
+    "external-pooled-offset",
+    "external-claim",
+    "external-parent",
+    "external-schedule",
+    "external-queries"
+  ],
+  "fresh_verifier": "PASS experimental packed-root code-switch adapter; no proximity/QROM certificate.",
+  "seconds": 0.7430732259526849,
+  "scope": "Original packed roots authenticated into scalar code-switch tail; small diagnostic fixtures, JSON encoding, no full execution bundle or proximity/extraction/QROM certificate."
+}

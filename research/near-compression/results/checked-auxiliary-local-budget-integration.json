@@ -1,0 +1,40 @@
+{
+  "status": "CHECKED_AUXILIARY_ADAPTIVE_LOCAL_BOUND",
+  "module": "NearCompression/CheckedAuxiliaryLocalBudget.lean",
+  "theorems": [
+    "checked_auxiliary_after_earlier_budget"
+  ],
+  "proved": [
+    "On an earlier-history family with invalid generated bus residuals in a fixed table, exact checked formulas and coordinate typing imply the adaptive local acceptance bound.",
+    "No caller-supplied bad row, residual lane or decoded combined-residual failure is required.",
+    "Traces, formulas and violated rows may vary with earlier history; residual shape, degree and table height remain bounded."
+  ],
+  "bound": "accepted_count*S <= earlier.length*((source.length+auxiliaryLength-1+(n+1)+(d+1)*(n+1))*S^(2*(n+1)+1)*continuations.length + localPrefixes.length*repair) + pcsBudget",
+  "assumptions": [
+    "The fixed selected table has invalid generated bus residuals for each included earlier history.",
+    "Decoded trace and formula inputs are functions of earlier history only, before local challenges; this is not yet derived from authenticated native commitments.",
+    "Exact specification checks, bounded base coordinate typing, fixed row log, residual order/length/degree, positive combined length and verifier local checks.",
+    "Wrong-terminal repair and aggregate joint downstream error budget remain explicit."
+  ],
+  "composition_findings": [
+    "Partition earlier histories by selected invalid table; the table chosen by the full bus failure witness may vary with bus challenges.",
+    "Auxiliary validity is not a fixed-source property. The maximum between fixed-source-invalid and source-valid branches does not justify a maximum between bus-bad and auxiliary-invalid histories. Combine disjoint counts or prove an additional bound.",
+    "Count shared PCS failures once across the disjoint partition.",
+    "Establish history-indexed auxiliary representatives from commitments before applying the chronological local theorem."
+  ],
+  "remaining": [
+    "Build disjoint history partition and combine both table protocols in their actual chronological experiment.",
+    "Discharge terminal repair and downstream error premises using checked GKR and concrete PCS composition.",
+    "Native Ext8 slice integration, full acceptance soundness, QROM security, secure envelope size and full 1 Pgas."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4085,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only composition."
+  }
+}

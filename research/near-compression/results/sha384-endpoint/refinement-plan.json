@@ -1,0 +1,27 @@
+{
+  "input_sha256": {
+    "/tmp/near-sha384-multiblock-proof/report.json": "b4b580c5f7d8f92b09eb3c81a9a156b7a432eba221240110f2f539ea8b85b394",
+    "/tmp/near-sha384-endpoint-proof/report.json": "a57f864ba3cc4529fb8de6d93d56974c569baf9879f45d7d26f52fa7a66a0389",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/recursive-hash-trace-accounting.json": "efbb71c24fa3638f48ca6e9d2a22c0291fcc3b70e88924c904051f0bfc709355"
+  },
+  "baseline_recorded_components_seconds": 10.921239816118032,
+  "split_recorded_components_seconds": 10.781899434514344,
+  "baseline_auxiliary_seconds": 2.5426399200223386,
+  "split_auxiliary_seconds": 3.7797714727930725,
+  "dense_shared_hash_source_gib": 82.24790954589844,
+  "core_tables_needed_if_unbatched": 32587,
+  "scope": "Single runs; sum of recorded components only, not wall time or controlled performance benchmark. Dense source extrapolation excludes routing auxiliaries, FFT, commitments and other verifier operations.",
+  "remaining_obligations": [
+    "Exact tagged A/B matching to core first/phase79 states from actual HoldsP",
+    "Nonlast output matching next core initial state",
+    "Public digest segment matches final active endpoint",
+    "Compose existing core rounds/add64 semantics with padding, IV and byte decoding",
+    "Cryptographic fingerprint/PCS/Fiat-Shamir soundness remains conditional"
+  ],
+  "batched80round_requirements": [
+    "Replace mandatory phaseLast127 and exact128height contract",
+    "Gate round/window transitions and resets at block starts",
+    "Bind block identity,roundindex and80keys",
+    "Prove mapping to full80round segments before endpoint composition"
+  ]
+}

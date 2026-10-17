@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "parent_revision": "40f2b87b7",
+  "lean_audit": 4244,
+  "working_directory": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_ext8_native_injection.py --output /tmp/ext8-native-injection-replay.json",
+    "python3 airbender/direct-wasm/test_ext8_code_switch_capacity.py --output /tmp/ext8-code-switch-capacity-replay.json"
+  ],
+  "files": {
+    "research/near-compression/results/ext8-native-injection/lean-audit.log.gz": "ddf5262aa95319eb6e00e995411a008e6793ec078bd55b5ff15e68cd934f0272",
+    "research/near-compression/results/ext8-native-injection/capacity.json": "6a243e579ca0e198dbe75276f4ff12801382c016d137cf913856507eb60a7ecd",
+    "research/near-compression/results/ext8-native-injection/report.json": "6212df7e47d670720cad2e1f876067057900fac9591b1da2c22a59ae1374fc40",
+    "research/near-compression/results/ext8-native-injection/weighted-adapter.json": "0155ae21bcd5d61f56c83886b5bda7a347b19101450a1fb453f05c1872d25d04",
+    "research/near-compression/results/ext8-native-injection/scalar-stage.json": "319c460f4c23fd6f66ae2a650aee95631a15ca8b088bc0d21f02d136b8dbcca9",
+    "research/near-compression/results/ext8-native-injection/legacy-weighted.json": "c7f99634d16c608ef9f2d4b8e27d1c43a4f94c408e6c68016a1408544eacc9fe",
+    "research/near-compression/airbender/direct-wasm/native-folded/kernel_ext8.rs": "c4c16c7eb2d7bb4df525b2448830d059ee2a44447c2a03517c6c7b92cd04ce74",
+    "research/near-compression/airbender/direct-wasm/pq384_ext8_native.py": "7580e46a27303d48023368312e7f0fcfd83f252aea86ba4d7ac58f23161a9fac",
+    "research/near-compression/airbender/direct-wasm/ext8_code_switch_stage.py": "c00cdf46b021bb283508683bfde7847164872c6012cdc92b48b0a3e3694854e1",
+    "research/near-compression/airbender/direct-wasm/ext8_weighted_code_switch.py": "f037e20f06941e3061a7e1f38aba935058ec0301f34e4d9e3a4d70dbe60b793b",
+    "research/near-compression/airbender/direct-wasm/test_ext8_native_injection.py": "8b36ce3788f7dd81062d8f0ec294c39f527f0f70bbef68eda4bc98c5ff4acb95",
+    "research/near-compression/airbender/direct-wasm/test_ext8_code_switch_capacity.py": "a83cac2caacb1120c1827647ac0c3f7311fe091012f919bf16abab1efe034dc7",
+    "research/near-compression/NearCompression/CodeSwitchFunctional.lean": "177a941d64a65a34aabd20e9321e5c5592cf21fc8cc0ca89a241b658d3704971"
+  },
+  "scope": "Native arithmetic/FFT and retained prototype proof parity. No full-slice code-switch proof or new security/size claim."
+}

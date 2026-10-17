@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2444,
+  "audit_log": "/tmp/root-row-slot-direct-routing-audit.log",
+  "new_theorems": 8,
+  "source_sha256": {
+    "GKRRowSlotSpanning": "f4beef2d96447d98485061b47e3a0274c065e92770552121ef4e31741b4416c0",
+    "SHA384DirectRouting": "2895bcdfdbe6b0e8296667bae4a1d47613331291d98f8b0ab80008c243f48585"
+  },
+  "proved": [
+    "Universal rowpoint/GKR coefficient family separates two fixed represented source tables",
+    "Direct AIR block receives match actual input row0 declared64limb block records"
+  ],
+  "remaining": [
+    "Randomized causal extraction,variable compiler layout,quantum security",
+    "Direct-to-batched semantic projection and hash digest theorem",
+    "Recursive producer binding and fullNEAR1Pgas"
+  ]
+}

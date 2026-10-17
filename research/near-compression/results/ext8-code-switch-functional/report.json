@@ -1,0 +1,180 @@
+{
+  "unique_cancellation_witness": [
+    805306368,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "status": "PASS",
+  "cases": [
+    {
+      "log_degree": 1,
+      "fold_bits": 1,
+      "queries": 3,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 2,
+      "fold_bits": 1,
+      "queries": 3,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 2,
+      "fold_bits": 2,
+      "queries": 3,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 3,
+      "fold_bits": 1,
+      "queries": 3,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 3,
+      "fold_bits": 2,
+      "queries": 3,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 3,
+      "fold_bits": 3,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 4,
+      "fold_bits": 1,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 4,
+      "fold_bits": 2,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 4,
+      "fold_bits": 3,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 4,
+      "fold_bits": 4,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 5,
+      "fold_bits": 1,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 5,
+      "fold_bits": 2,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 5,
+      "fold_bits": 3,
+      "queries": 3,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 5,
+      "fold_bits": 4,
+      "queries": 3,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 6,
+      "fold_bits": 1,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 6,
+      "fold_bits": 2,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 6,
+      "fold_bits": 3,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 6,
+      "fold_bits": 4,
+      "queries": 3,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 7,
+      "fold_bits": 1,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 7,
+      "fold_bits": 2,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 7,
+      "fold_bits": 3,
+      "queries": 4,
+      "new_blowup": 16
+    },
+    {
+      "log_degree": 7,
+      "fold_bits": 4,
+      "queries": 4,
+      "new_blowup": 16
+    }
+  ],
+  "residual_checks": 22,
+  "negative_cases": [
+    "bad-coset-shape",
+    "zero-anchor",
+    "nonprimitive-root",
+    "noncanonical-value",
+    "mixer-count",
+    "empty-functional",
+    "dot-shape"
+  ],
+  "adjacent_leaf_counterexample": {
+    "correct": [
+      20,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "naive": [
+      1220069745,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "scope": "Algebra-only reference; no new PCS proof, transcript, extraction, proximity or QROM/security claim."
+}

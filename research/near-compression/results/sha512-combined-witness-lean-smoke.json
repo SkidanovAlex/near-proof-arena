@@ -1,0 +1,65 @@
+{
+  "kind": "Universal combined SHA512 schedule-and-round AIR witness completeness",
+  "table": {
+    "columns": 5152,
+    "constraints": 6848,
+    "max_degree": 3,
+    "supported_log_min": 1,
+    "supported_log_max": 22
+  },
+  "formal_claims": [
+    "Actual round iteration preserves all eight state word bounds;actual H0 and K/default0 satisfy input bounds.",
+    "For bounded initial state,valid16-word window,and bounded key stream,the explicit combined trace satisfies actual Combined Air.Holds for all1<=log<=22.",
+    "Constructor decoding equals the requested state,window,and key.",
+    "All schedule,round-state and scheduled-message consumption bit links are derived;no assumed local AIR satisfaction or link-equality hypotheses."
+  ],
+  "validation": {
+    "honest_128_row_fixtures": 2,
+    "honest_2_row_fixtures": 1,
+    "inputs": [
+      "small state and sequential window",
+      "standardH0,padded empty block,K/default0",
+      "maximum state/window and arbitrary bounded keys"
+    ],
+    "all5152_columns_match_independent_constructor": true,
+    "all_formal_constraints_checked_all_rows": true,
+    "exact_input_output_decoding_checked": true,
+    "formal_trace_constructor_samples_checked": true,
+    "coherent_wrong_message_traces_rejected": 3,
+    "wrong_message_rows": [
+      1,
+      79,
+      127
+    ],
+    "wrong_message_traces_satisfy_both_component_sequences": true,
+    "locally_valid_state_forgeries_rejected": 8,
+    "state_forgery_row": 64,
+    "row79_plus_external_feedforward_matches_hashlib_empty_digest": true
+  },
+  "new_theorems": 18,
+  "full_audit_theorems": 1224,
+  "commands": [
+    "lake build NearCompression.SHA512RoundInvariant",
+    "lake build NearCompression.SHA512CombinedWitness",
+    "lake env lean --run SHA512CombinedWitnessSmoke.lean",
+    "python3 check.py"
+  ],
+  "logs": [
+    "/tmp/near-round-invariant.log",
+    "/tmp/near-combined-witness.log",
+    "/tmp/near-combined-witness-smoke.log",
+    "/tmp/near-combined-witness-audit.log"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512RoundInvariant.lean": "f84d2d2799f2fbf85c216ed33c9e1dd7b2a73abff27f1b4b30a3f9aba0f005ca",
+    "NearCompression/SHA512CombinedWitness.lean": "1e5a3fd04bfb63fa31894114db1736b6347a9209e76c1e84f229003c7b152c8a",
+    "SHA512CombinedWitnessSmoke.lean": "b0b8d95f46f21c0fe22591c72b722872e55d679991168f1006f44c708faf3794"
+  },
+  "limitations": [
+    "Universal completeness remains to be extended through fixed-constant phases,feed-forward and public binding tables.",
+    "The combined table accepts arbitrary bounded keys;standard keys are supplied to this constructor,not fixed by this table.",
+    "The log-size theorem is semantic completeness,not a runtime or capacity measurement.",
+    "Multiblock and padding checks remain verifier-side composition;no recursive cryptographic proof is produced.",
+    "No full NEAR state-transition proof,1Pgas capacity measurement,sub-300KB proof,or128-bit quantum-security proof."
+  ]
+}

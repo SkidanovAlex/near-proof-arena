@@ -1,0 +1,23 @@
+{
+  "dag.jsonl.gz": "8a8892aa538aa735d028fdfd01311daaf07a7be09667293ed595f400f4e29adc",
+  "layouts.json": "215c66a58e143e82124fa5516e26df4e9fe3d68560860711dedcf78271f09d82",
+  "manifest.json": "4c201275198da917f33408d93feccaef6a9c27b1b13a7919580801e5093bb02a",
+  "native.proof.gz": "b97e05588c87c9c12a705f7da98685de12b4d6e767b8e6a0890833b2863e7abd",
+  "nearproof-root-final-clippy.log": "b1cf3b541cb3261647e5839e3a6d4817938573e2329074c227ea5481a6df4ff3",
+  "nearproof-root-internal-prefix-regression.log": "836ca0d16675724b87854d019074b20e9b8ab823dda6f57ab2eac8e575140911",
+  "nearproof-root-openings.log": "eb122551fc2b754b3570897f4de917a206b9274db35daece708faaf821e6c9a8",
+  "nearproof-root-public-prefix.log": "f2115ff47c68515db7246f2c5e098b8b735be106d125cf3efd2c4741fddd111c",
+  "nearproof-root-split-witness.log": "a8280c26c54503a49f7f19b73ffcf13df0dd252100d73e5cbc6b02928f900c61",
+  "openings.json.gz": "4fc2b9b8314511451db5ced50ffe6c8a638a6a5f6b362f3e72c77f7d8c31fe47",
+  "openvm.patch.gz": "80ec0096cb96e30b7e131287c9849948c4cbffdfb5da1c2f39e799530cb3508e",
+  "point-capture.jsonl.gz": "4219bfdcf168f3b54689420cead5b50af2409e66ddb1ac92cb9473ca39da8418",
+  "prefix.bin": "ae49f692e675a02b90afa451f6abaa089b417aa999ba8822ac2e25215815b751",
+  "public-controls.json": "15d07eba6b34827561930bfc55b331e3765e3ae11db05b1f05d2c6a3e9f601c5",
+  "public-layouts.json": "b270ed014ca5ee38782ca6dae96b020907670f8b7ba24ea0e8aea087b7190475",
+  "public-prefix-log.txt.gz": "4d9efeafce6df97f650953f032d245c5c34a7ee2cccc575462c3bf0929bd48e1",
+  "report.json": "67b170a917b70735b7eb43547319c580c41ac6490a46af2587334c01b70004a3",
+  "tests.rs.gz": "b26ad70d39ab10139eb2b409ec3125b9b22e5650913cf7b5ea6ec1a9a8a8b3be",
+  "trace-shapes.json": "a926e476d7481e1a572f2aec695c06bf17820de4d048202f97b72b907e1bb59c",
+  "witness-hashes.json": "115b05aa8c7b3ace3c8d03980989b0515bce05c0d0075510640454e3abcaa4ef",
+  "witness.tar.gz": "73802b2acc3ec60f5fbf3fb6383474ac48ba5f358430d1ad7d24671a25dc8d86"
+}

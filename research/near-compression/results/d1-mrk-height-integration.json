@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "scope": "Root rerun of isolated scheduler/receipt/Merkle height reduction on two real D1 fixtures. Native full local constraints and natural bus balance; independent Python sample residual checks only. No succinct proof or implementation-refinement theorem.",
+  "cases": [
+    {
+      "case": "00-h10012-s2",
+      "report": "research/near-compression/results/d1-mrk-height-00-h10012-s2/report.json",
+      "baseline": "research/near-compression/results/d1-real-00-h10012-s2/report.json",
+      "native_tables_passed": 33,
+      "bus_records_equal": 61,
+      "statement_bytes_equal": true,
+      "total_cells": 7346834,
+      "compact_trace_bytes": 8482546,
+      "independent_check": {
+        "status": "PASS",
+        "table_count": 33,
+        "sampled_cells_checked": 30948,
+        "sampled_constraint_residuals": 32740,
+        "samples_sha256": "8297e8e0e31ab0d02b653a974d8730da4fe642b87ac5b5b30b23601ae1927993",
+        "limitations": [
+          "Independent boundary/interior sample checks, not a full trace check or proof.",
+          "Full constraints and exact bus balance are native exporter evidence only."
+        ],
+        "air_sha256": "61047e9e2719c03adfd66f2e5aac407d830515f33050a9c543c0f9c54efef9dd",
+        "prepared_sha256": "a173e8d4ef341527cf37af1ae070f74a3db21ca2ca8fa31a66a00a7dc1fcb28c",
+        "public_messages": 1153
+      }
+    },
+    {
+      "case": "00-h10038-s3",
+      "report": "research/near-compression/results/d1-mrk-height-00-h10038-s3/report.json",
+      "baseline": "research/near-compression/results/d1-height-00-h10038-s3/report.json",
+      "native_tables_passed": 33,
+      "bus_records_equal": 61,
+      "statement_bytes_equal": true,
+      "total_cells": 7821952,
+      "compact_trace_bytes": 9037760,
+      "independent_check": {
+        "status": "PASS",
+        "table_count": 33,
+        "sampled_cells_checked": 31242,
+        "sampled_constraint_residuals": 32938,
+        "samples_sha256": "bfc7e9efada8e02735dac270527c50dc7a1541309f1834e897f121972e182b67",
+        "limitations": [
+          "Independent boundary/interior sample checks, not a full trace check or proof.",
+          "Full constraints and exact bus balance are native exporter evidence only."
+        ],
+        "air_sha256": "61047e9e2719c03adfd66f2e5aac407d830515f33050a9c543c0f9c54efef9dd",
+        "prepared_sha256": "f93938ce9c254cbae0191e5f1b3e706607f7e6bcf8510c3594b43617edae5366",
+        "public_messages": 1775
+      }
+    }
+  ],
+  "remaining": [
+    "Concrete renderer Lean bridges",
+    "Full D1 PCS schedule and succinct proof",
+    "128-bit post-quantum security analysis and hash backend",
+    "Recursive compression under300000bytes",
+    "Full NEAR 1Pgas measurement"
+  ],
+  "lean": {
+    "audited_theorems": 1388,
+    "audit_log": "/tmp/near-merkle-traffic-audit.log",
+    "concrete_comparator_bridge": "NearCompression/GenericCmpPadding.lean",
+    "scope": "Comparator local legality and natural traffic; nonempty Merkle local legality and exact natural bus-count preservation. Rust implementation refinement remains separate.",
+    "concrete_comparator_traffic": "NearCompression/GenericCmpTraffic.lean",
+    "concrete_merkle_bridge": "NearCompression/MerklePaddingBridge.lean",
+    "concrete_merkle_traffic": "NearCompression/MerklePaddingTraffic.lean"
+  },
+  "full_trace": {
+    "directory": "/tmp/near-d1-mrk-full-00-h10012-s2",
+    "bytes": 29387600,
+    "canonical_cells_scanned": 7346834,
+    "sampled_constraint_residuals": 38427,
+    "full_semantic_check": "PASS",
+    "constraint_residuals": 15333322,
+    "exact_bus_message_keys": 8716,
+    "evidence": "d1-mrk-height-00-h10012-s2/independent-full-check.json"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_checks": 2689,
+  "new_public_theorems": 23,
+  "modules": {
+    "PreparedLocalsEntry": "2af5f2f2b012005d4b90d5710a980ebbb9a46e058fa250570dd2599f956f530d",
+    "SHA384SharedRouting": "c169cf27cade8c1d3119277dc845a661543bfb2a89976ce739c7a8b6f6450478",
+    "SHA384SharedPrefix": "6905bac28dec2a7513df7dcc788c90ada51c88ca74b01e2813cc6188c7e7a06e"
+  },
+  "scope": "Actual setup and entry prologue checker establish complete locals first-row interpreter state. Shared natural bus balance matches complete177field call record and exact fanout counts; prefix constraints derive unique active IDs. Whole locals call and shared complete message semantics remain pending."
+}

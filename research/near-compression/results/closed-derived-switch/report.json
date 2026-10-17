@@ -1,0 +1,231 @@
+{
+  "status": "CLOSED_DERIVED_TRANSCRIPT_DIAGNOSTIC_VERIFIED",
+  "negative_cases": [
+    "baseline-proof-in-closed-profile",
+    "closed-proof-in-baseline-profile",
+    "baseline-proof-relabeled-closed",
+    "closed-proof-relabeled-baseline",
+    "statement",
+    "parent",
+    "claim",
+    "source-root",
+    "source-weight",
+    "query-count",
+    "schedule",
+    "input-reduction",
+    "first-root",
+    "first-ood",
+    "tail-round",
+    "terminal",
+    "injected-weight-field"
+  ],
+  "baseline_isolation_verified": true,
+  "fresh_verifier_passed": true,
+  "hash_measurements": {
+    "baseline": {
+      "tags": {
+        "near-ext8-weighted-code-switch-diagnostic-v1": {
+          "calls": 1,
+          "blocks": 3,
+          "unique_calls": 1,
+          "unique_blocks": 3
+        },
+        "near-pq384-ext8-weighted-joint-diagnostic-v1": {
+          "calls": 1,
+          "blocks": 21,
+          "unique_calls": 1,
+          "unique_blocks": 21
+        },
+        "transcript/init": {
+          "calls": 3,
+          "blocks": 3,
+          "unique_calls": 3,
+          "unique_blocks": 3
+        },
+        "weighted-code-switch/namespace": {
+          "calls": 1,
+          "blocks": 2,
+          "unique_calls": 1,
+          "unique_blocks": 2
+        },
+        "transcript/commit": {
+          "calls": 19,
+          "blocks": 228,
+          "unique_calls": 19,
+          "unique_blocks": 228
+        },
+        "transcript/request": {
+          "calls": 64,
+          "blocks": 128,
+          "unique_calls": 64,
+          "unique_blocks": 128
+        },
+        "transcript/squeeze": {
+          "calls": 64,
+          "blocks": 128,
+          "unique_calls": 64,
+          "unique_blocks": 128
+        },
+        "transcript/ratchet": {
+          "calls": 64,
+          "blocks": 128,
+          "unique_calls": 64,
+          "unique_blocks": 128
+        },
+        "transcript/draw-result": {
+          "calls": 64,
+          "blocks": 128,
+          "unique_calls": 64,
+          "unique_blocks": 128
+        },
+        "merkle/leaf": {
+          "calls": 64,
+          "blocks": 152,
+          "unique_calls": 60,
+          "unique_blocks": 141
+        },
+        "merkle/node": {
+          "calls": 215,
+          "blocks": 606,
+          "unique_calls": 119,
+          "unique_blocks": 320
+        },
+        "merkle/root": {
+          "calls": 33,
+          "blocks": 82,
+          "unique_calls": 5,
+          "unique_blocks": 12
+        },
+        "near-ext8-code-switch-stage-diagnostic-v1": {
+          "calls": 2,
+          "blocks": 20,
+          "unique_calls": 2,
+          "unique_blocks": 20
+        },
+        "ext8/code-switch/coset-context-v1": {
+          "calls": 3,
+          "blocks": 6,
+          "unique_calls": 3,
+          "unique_blocks": 6
+        }
+      },
+      "totals": {
+        "calls": 598,
+        "blocks": 1635,
+        "unique_calls": 470,
+        "unique_blocks": 1268
+      },
+      "instrumented_seconds": 0.01375316921621561
+    },
+    "closed": {
+      "tags": {
+        "near-ext8-closed-derived-switch-experiment-v1": {
+          "calls": 1,
+          "blocks": 3,
+          "unique_calls": 1,
+          "unique_blocks": 3
+        },
+        "near-pq384-ext8-weighted-joint-diagnostic-v1": {
+          "calls": 1,
+          "blocks": 21,
+          "unique_calls": 1,
+          "unique_blocks": 21
+        },
+        "transcript/init": {
+          "calls": 3,
+          "blocks": 3,
+          "unique_calls": 3,
+          "unique_blocks": 3
+        },
+        "weighted-code-switch/namespace": {
+          "calls": 1,
+          "blocks": 2,
+          "unique_calls": 1,
+          "unique_blocks": 2
+        },
+        "transcript/commit": {
+          "calls": 19,
+          "blocks": 229,
+          "unique_calls": 19,
+          "unique_blocks": 229
+        },
+        "transcript/request": {
+          "calls": 64,
+          "blocks": 128,
+          "unique_calls": 64,
+          "unique_blocks": 128
+        },
+        "transcript/squeeze": {
+          "calls": 64,
+          "blocks": 128,
+          "unique_calls": 64,
+          "unique_blocks": 128
+        },
+        "transcript/ratchet": {
+          "calls": 64,
+          "blocks": 128,
+          "unique_calls": 64,
+          "unique_blocks": 128
+        },
+        "transcript/draw-result": {
+          "calls": 64,
+          "blocks": 128,
+          "unique_calls": 64,
+          "unique_blocks": 128
+        },
+        "merkle/leaf": {
+          "calls": 64,
+          "blocks": 152,
+          "unique_calls": 62,
+          "unique_blocks": 146
+        },
+        "merkle/node": {
+          "calls": 215,
+          "blocks": 606,
+          "unique_calls": 127,
+          "unique_blocks": 350
+        },
+        "merkle/root": {
+          "calls": 33,
+          "blocks": 82,
+          "unique_calls": 5,
+          "unique_blocks": 12
+        },
+        "near-ext8-closed-derived-stage-experiment-v1": {
+          "calls": 2,
+          "blocks": 12,
+          "unique_calls": 2,
+          "unique_blocks": 12
+        },
+        "ext8/code-switch/coset-context-v1": {
+          "calls": 3,
+          "blocks": 6,
+          "unique_calls": 3,
+          "unique_blocks": 6
+        }
+      },
+      "totals": {
+        "calls": 598,
+        "blocks": 1628,
+        "unique_calls": 480,
+        "unique_blocks": 1296
+      },
+      "instrumented_seconds": 0.013418147806078196
+    }
+  },
+  "json_proof_bytes": 27432,
+  "scope": "One small heterogeneous complete packed-root/code-switch proof under separate experimental profile. Full adapter derives all weights; standalone stage unchanged. Dense arithmetic still used. No compact full-NEAR proof, full-size benchmark, universal derived-state/FS/QROM proof or PQ128 claim.",
+  "sha256": {
+    "airbender/direct-wasm/test_ext8_closed_derived_switch.py": "5637be4bdeb6b02ef06bf29961b8cd98a27e739f6da2a81440f3ce6e9f898e86",
+    "airbender/direct-wasm/ext8_closed_derived_switch.py": "2b2d4a3813105f82164a358d9e9c11d7fcf34f62d8f6396690c8f401d0080c3d",
+    "airbender/direct-wasm/ext8_weighted_code_switch.py": "f037e20f06941e3061a7e1f38aba935058ec0301f34e4d9e3a4d70dbe60b793b",
+    "airbender/direct-wasm/ext8_code_switch_stage.py": "c00cdf46b021bb283508683bfde7847164872c6012cdc92b48b0a3e3694854e1",
+    "airbender/direct-wasm/pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a",
+    "airbender/direct-wasm/pq384_primitives.py": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96",
+    "airbender/direct-wasm/pq384_ext8_native.py": "7580e46a27303d48023368312e7f0fcfd83f252aea86ba4d7ac58f23161a9fac",
+    "airbender/direct-wasm/measure_ext8_recursive_hash_work.py": "424ca5d94620cbae2969cc327b08a2656444d390a85a019696992cd70a6dd64e",
+    "results/closed-derived-switch/proof.json": "e58102fb3c590917ec8ac6f92990b561ef51bdecc80bcf5f1d8226bb840cc3e9",
+    "results/closed-derived-switch/statement.json": "b69e7734994b923f1110cf6dae1cfe3b3bf4cdc98e87c0c325d2a52d63512d0d",
+    "results/closed-derived-switch/fresh-verifier.log": "2e2092286ff484af24038a29c3b6a293705a1d6561c1fc821d0caf2e2665774f"
+  }
+}

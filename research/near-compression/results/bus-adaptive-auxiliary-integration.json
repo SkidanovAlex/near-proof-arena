@@ -1,0 +1,29 @@
+{
+  "status": "PROVED_COMPONENT",
+  "modules": [
+    "NearCompression/BusAdaptiveAuxiliary.lean",
+    "NearCompression/PreparedLiteralAdaptiveBus.lean"
+  ],
+  "main_theorems": [
+    "bus_adaptive_auxiliary_fp8_bound",
+    "prepared_literal_wrong_output_adaptive_bus_bound"
+  ],
+  "established": [
+    "Auxiliary coordinates and final values are existentially quantified inside each challenge-pair event",
+    "Source cells and heights stay fixed by construction",
+    "Generated residual validity and claimed side equality imply the fixed-source global bus equation",
+    "The same ideal Ext8 budget holds for adaptive auxiliary acceptance",
+    "Literal wrong actual runCall output composes with the adaptive bus bound"
+  ],
+  "premises": [
+    "Fixed source/public vector and distinct ideal challenge sample",
+    "Adaptive event requires source bounds and source/auxiliary residual validity",
+    "Literal theorem additionally requires TableLocal, public fit, preparation eligibility and enough fuel"
+  ],
+  "remaining": [
+    "Accepted cryptographic proof implies the common fixed source and local/auxiliary residual premises",
+    "Adaptive sumcheck/PCS extraction and transcript timing",
+    "Fiat-Shamir/quantum reduction with quantified resource bounds",
+    "Executable Ext8 migration, secure sub300k sizing and full 1 Pgas scope"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "cases": 79,
+  "mixer_experiments": 1111,
+  "stages": [
+    {
+      "degree": 131072,
+      "rate": 8,
+      "domain_size": 1048576,
+      "required_agreement": 388822,
+      "johnson_gap": 13744642788,
+      "proven_fixed_oracle_list_cap": 79
+    },
+    {
+      "degree": 16384,
+      "rate": 16,
+      "domain_size": 262144,
+      "required_agreement": 68733,
+      "johnson_gap": 429520137,
+      "proven_fixed_oracle_list_cap": 159
+    },
+    {
+      "degree": 2048,
+      "rate": 32,
+      "domain_size": 65536,
+      "required_agreement": 12149,
+      "johnson_gap": 13446009,
+      "proven_fixed_oracle_list_cap": 319
+    },
+    {
+      "degree": 256,
+      "rate": 64,
+      "domain_size": 16384,
+      "required_agreement": 2145,
+      "johnson_gap": 423105,
+      "proven_fixed_oracle_list_cap": 634
+    },
+    {
+      "degree": 32,
+      "rate": 128,
+      "domain_size": 4096,
+      "required_agreement": 375,
+      "johnson_gap": 13649,
+      "proven_fixed_oracle_list_cap": 1229
+    },
+    {
+      "degree": 4,
+      "rate": 256,
+      "domain_size": 1024,
+      "required_agreement": 60,
+      "johnson_gap": 528,
+      "proven_fixed_oracle_list_cap": 1985
+    },
+    {
+      "degree": 2,
+      "rate": 256,
+      "domain_size": 512,
+      "required_agreement": 25,
+      "johnson_gap": 113,
+      "proven_fixed_oracle_list_cap": 2319
+    }
+  ],
+  "scope": "Ideal fixed-oracle agreement-conditioned mixing only. Protocol agreement, extraction, adaptive composition and QROM remain unproved."
+}

@@ -1,0 +1,89 @@
+{
+  "extended_euclid_certificates": 600,
+  "nonzero_constant_certificates": 473,
+  "noncoprime_cases_rejected": 127,
+  "derivative_quotient_evaluation_checks": 4050,
+  "certified_initial_roots": 320,
+  "certified_hensel_lifts": 320,
+  "mutated_certificates_rejected": 473,
+  "cleared_denominator_smooth_roots": 22,
+  "zero_certificate_counterexamples": 1,
+  "witnesses": [
+    {
+      "prime": 2,
+      "polynomial": [
+        0,
+        1
+      ],
+      "derivative": [
+        1
+      ],
+      "A": [],
+      "B": [
+        1
+      ]
+    },
+    {
+      "prime": 2,
+      "polynomial": [
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "derivative": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "A": [
+        1
+      ],
+      "B": [
+        0,
+        1
+      ]
+    },
+    {
+      "prime": 2,
+      "polynomial": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "derivative": [
+        1,
+        0,
+        0
+      ],
+      "A": [],
+      "B": [
+        1
+      ]
+    },
+    {
+      "prime": 2,
+      "polynomial": [
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "derivative": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "A": [],
+      "B": [
+        1
+      ]
+    }
+  ],
+  "scope": "Checked Bezout identity implies smoothness of existing initial roots. General certificate existence, factorization, algebraic root/extension construction and full MCA remain open."
+}

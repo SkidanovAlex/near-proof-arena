@@ -1,0 +1,64 @@
+{
+  "status": "PASS",
+  "cases": 4,
+  "source_leaves": 76,
+  "partial_final_lanes": 3,
+  "files": [
+    {
+      "path": "SHA384EvaluatedSourceFixture.lean",
+      "sha256": "0f6b52af3f7df794a65cb18c066dc3eb9a339a72c5f174a577b965cf5449f480"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_evaluated_source.py",
+      "sha256": "acf3c93ba937b9fa2a321b6e80f7ce3d41ef071c05cc1cd9206adaeb25424d91"
+    },
+    {
+      "path": "NearCompression/SHA384ComputedSource.lean",
+      "sha256": "e134e96d62c38a1b340afda4523e6f31133b1dcd2700a1dfe35dfa855dc5209e"
+    },
+    {
+      "path": "NearCompression/SHA384EvaluatedSource.lean",
+      "sha256": "cfc0a98defd9c1ad47aebe025657ed77c64f6859957dc38e990302f3dcddcd3f"
+    },
+    {
+      "path": "NearCompression/PackedSourceExecution.lean",
+      "sha256": "66dbb0f6812135b6edda1636c8d03ffdf76efb77da1a3a50616412a7348407c0"
+    },
+    {
+      "path": "results/sha384-evaluated-source/inputs.json",
+      "sha256": "f6ca35b6406dd33fc672f3f5ce09ef56638c3034b0a2c7b6505495204d6289c6"
+    },
+    {
+      "path": "results/sha384-evaluated-source/lean-results.json",
+      "sha256": "7d5d8693d32e66e30d79da4cd8cf6644b4ab01c399946ef1e29320b6737aa9ca"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/packed_disclosure.py",
+      "sha256": "9745f8d85b23d61280849c3990bb3e77a2bac86b595857344c323805a154f292"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/packed_claim_handoff.py",
+      "sha256": "09f5e215a5c57bc6adfc110f081d2bc15031eb53f071eda5ee8e491f1fbe9046"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_primitives.py",
+      "sha256": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_batched_fold.py",
+      "sha256": "e9cb1ac4f966d5c2a36f2f2e53f654e8cd2b380cd5a1b9154624b23142e63dca"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_pq384_packing.py",
+      "sha256": "2ccc38e1011b75a98bcb1eb6be79448383616d2cf037feabb09529207b900887"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_pq384_rs.py",
+      "sha256": "aae156230cca133bfe706f83c2be23bf48a21607860c8cedfe2abb94cd55701a"
+    }
+  ],
+  "limits": [
+    "Small deterministic fixtures, not native machine refinement or an adversarial-root extraction proof.",
+    "No secure parameter or proof-size certification."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "python_fft_parity_cases": 20,
+  "naive_evaluations": 80,
+  "kernel_identity_checks": 20,
+  "rejected_inputs": 13,
+  "full": {
+    "degree": 262144,
+    "domain": 1048576,
+    "input_bytes": 4194304,
+    "output_bytes": 16777216,
+    "fft_seconds": 0.08630275214090943,
+    "direct_checks": 5
+  }
+}

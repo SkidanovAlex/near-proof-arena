@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "tables": 33,
+  "rejections": [
+    "missing-opening",
+    "empty-opening-queries",
+    "altered-source-leaf",
+    "altered-final-gkr-input",
+    "altered-last-table-constraint",
+    "altered-public-input",
+    "altered-source-root"
+  ],
+  "scope": "Complete verifier checks mandatory PCS and transcript bindings; finite tests only"
+}

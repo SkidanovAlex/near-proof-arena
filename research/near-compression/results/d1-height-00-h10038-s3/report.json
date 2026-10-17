@@ -1,0 +1,825 @@
+{
+  "air_source": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/d1-air.json",
+  "buses": [
+    {
+      "bus": 0,
+      "imbalances": 0,
+      "messages": 6605,
+      "received": 6605,
+      "sent": 6605
+    },
+    {
+      "bus": 1,
+      "imbalances": 0,
+      "messages": 72,
+      "received": 72,
+      "sent": 72
+    },
+    {
+      "bus": 2,
+      "imbalances": 0,
+      "messages": 17,
+      "received": 17,
+      "sent": 17
+    },
+    {
+      "bus": 3,
+      "imbalances": 0,
+      "messages": 3,
+      "received": 3,
+      "sent": 3
+    },
+    {
+      "bus": 4,
+      "imbalances": 0,
+      "messages": 592,
+      "received": 592,
+      "sent": 592
+    },
+    {
+      "bus": 5,
+      "imbalances": 0,
+      "messages": 248,
+      "received": 248,
+      "sent": 248
+    },
+    {
+      "bus": 6,
+      "imbalances": 0,
+      "messages": 10,
+      "received": 10,
+      "sent": 10
+    },
+    {
+      "bus": 7,
+      "imbalances": 0,
+      "messages": 80,
+      "received": 80,
+      "sent": 80
+    },
+    {
+      "bus": 8,
+      "imbalances": 0,
+      "messages": 32,
+      "received": 32,
+      "sent": 32
+    },
+    {
+      "bus": 9,
+      "imbalances": 0,
+      "messages": 6,
+      "received": 6,
+      "sent": 6
+    },
+    {
+      "bus": 10,
+      "imbalances": 0,
+      "messages": 2,
+      "received": 2,
+      "sent": 2
+    },
+    {
+      "bus": 11,
+      "imbalances": 0,
+      "messages": 9,
+      "received": 9,
+      "sent": 9
+    },
+    {
+      "bus": 14,
+      "imbalances": 0,
+      "messages": 4,
+      "received": 4,
+      "sent": 4
+    },
+    {
+      "bus": 15,
+      "imbalances": 0,
+      "messages": 67,
+      "received": 67,
+      "sent": 67
+    },
+    {
+      "bus": 16,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 17,
+      "imbalances": 0,
+      "messages": 768,
+      "received": 768,
+      "sent": 768
+    },
+    {
+      "bus": 18,
+      "imbalances": 0,
+      "messages": 6,
+      "received": 6,
+      "sent": 6
+    },
+    {
+      "bus": 19,
+      "imbalances": 0,
+      "messages": 2,
+      "received": 2,
+      "sent": 2
+    },
+    {
+      "bus": 20,
+      "imbalances": 0,
+      "messages": 106,
+      "received": 106,
+      "sent": 106
+    },
+    {
+      "bus": 21,
+      "imbalances": 0,
+      "messages": 724,
+      "received": 724,
+      "sent": 724
+    },
+    {
+      "bus": 22,
+      "imbalances": 0,
+      "messages": 7,
+      "received": 7,
+      "sent": 7
+    },
+    {
+      "bus": 23,
+      "imbalances": 0,
+      "messages": 16,
+      "received": 16,
+      "sent": 16
+    },
+    {
+      "bus": 24,
+      "imbalances": 0,
+      "messages": 1,
+      "received": 1,
+      "sent": 1
+    },
+    {
+      "bus": 25,
+      "imbalances": 0,
+      "messages": 1876,
+      "received": 1876,
+      "sent": 1876
+    },
+    {
+      "bus": 26,
+      "imbalances": 0,
+      "messages": 4,
+      "received": 4,
+      "sent": 4
+    },
+    {
+      "bus": 27,
+      "imbalances": 0,
+      "messages": 1,
+      "received": 1,
+      "sent": 1
+    },
+    {
+      "bus": 28,
+      "imbalances": 0,
+      "messages": 65,
+      "received": 65,
+      "sent": 65
+    },
+    {
+      "bus": 29,
+      "imbalances": 0,
+      "messages": 17,
+      "received": 17,
+      "sent": 17
+    },
+    {
+      "bus": 40,
+      "imbalances": 0,
+      "messages": 9,
+      "received": 56,
+      "sent": 56
+    },
+    {
+      "bus": 41,
+      "imbalances": 0,
+      "messages": 24,
+      "received": 24,
+      "sent": 24
+    },
+    {
+      "bus": 42,
+      "imbalances": 0,
+      "messages": 24,
+      "received": 24,
+      "sent": 24
+    },
+    {
+      "bus": 43,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 44,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 45,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 46,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 47,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 48,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 49,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 50,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 51,
+      "imbalances": 0,
+      "messages": 64,
+      "received": 64,
+      "sent": 64
+    },
+    {
+      "bus": 52,
+      "imbalances": 0,
+      "messages": 25,
+      "received": 25,
+      "sent": 25
+    },
+    {
+      "bus": 56,
+      "imbalances": 0,
+      "messages": 512,
+      "received": 512,
+      "sent": 512
+    },
+    {
+      "bus": 57,
+      "imbalances": 0,
+      "messages": 20,
+      "received": 20,
+      "sent": 20
+    },
+    {
+      "bus": 58,
+      "imbalances": 0,
+      "messages": 16,
+      "received": 16,
+      "sent": 16
+    },
+    {
+      "bus": 59,
+      "imbalances": 0,
+      "messages": 1,
+      "received": 1,
+      "sent": 1
+    },
+    {
+      "bus": 60,
+      "imbalances": 0,
+      "messages": 421,
+      "received": 421,
+      "sent": 421
+    },
+    {
+      "bus": 61,
+      "imbalances": 0,
+      "messages": 1,
+      "received": 1,
+      "sent": 1
+    },
+    {
+      "bus": 62,
+      "imbalances": 0,
+      "messages": 16,
+      "received": 16,
+      "sent": 16
+    },
+    {
+      "bus": 63,
+      "imbalances": 0,
+      "messages": 6,
+      "received": 6,
+      "sent": 6
+    },
+    {
+      "bus": 64,
+      "imbalances": 0,
+      "messages": 24,
+      "received": 24,
+      "sent": 24
+    },
+    {
+      "bus": 65,
+      "imbalances": 0,
+      "messages": 32,
+      "received": 32,
+      "sent": 32
+    },
+    {
+      "bus": 66,
+      "imbalances": 0,
+      "messages": 2,
+      "received": 2,
+      "sent": 2
+    },
+    {
+      "bus": 67,
+      "imbalances": 0,
+      "messages": 376,
+      "received": 376,
+      "sent": 376
+    },
+    {
+      "bus": 68,
+      "imbalances": 0,
+      "messages": 2,
+      "received": 2,
+      "sent": 2
+    },
+    {
+      "bus": 69,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 70,
+      "imbalances": 0,
+      "messages": 3,
+      "received": 3,
+      "sent": 3
+    },
+    {
+      "bus": 71,
+      "imbalances": 0,
+      "messages": 1,
+      "received": 1,
+      "sent": 1
+    },
+    {
+      "bus": 72,
+      "imbalances": 0,
+      "messages": 188,
+      "received": 188,
+      "sent": 188
+    },
+    {
+      "bus": 73,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 74,
+      "imbalances": 0,
+      "messages": 0,
+      "received": 0,
+      "sent": 0
+    },
+    {
+      "bus": 75,
+      "imbalances": 0,
+      "messages": 768,
+      "received": 768,
+      "sent": 768
+    }
+  ],
+  "case": "/data/illia/nearproof-wt/direct-wasm-whir/oracle/fixtures/v3/public-d1/d1/00-h10038-s3",
+  "compact_trace_bytes": 42003392,
+  "encoding": "per-table u32 little-endian: log_rows,width,then row-major canonical cells",
+  "field_modulus": 2013265921,
+  "height_plan": {
+    "plannedrowsperrenderer": [
+      {
+        "name": "codec",
+        "planned": 453,
+        "required": 454,
+        "tail": 0
+      },
+      {
+        "name": "scandist",
+        "planned": 28,
+        "required": 29,
+        "tail": 0
+      },
+      {
+        "name": "proc",
+        "planned": 16,
+        "required": 18,
+        "tail": 1
+      },
+      {
+        "name": "mem",
+        "planned": 24,
+        "required": 25,
+        "tail": 0
+      },
+      {
+        "name": "cmp",
+        "planned": 56,
+        "required": 57,
+        "tail": 0
+      }
+    ],
+    "receipt_log": 10,
+    "receipt_planned": 313,
+    "receipt_required": 314,
+    "scheduler_log": 10
+  },
+  "hint_bytes": 527,
+  "new_transactions": 0,
+  "operations": 2,
+  "prepared_bytes": 7331,
+  "row_dump_bytes": 156871432,
+  "scope": "Existing native candidate witness construction and local/exact-bus checks; no succinct proof or formal implementation refinement",
+  "sha256": {
+    "air": "61047e9e2719c03adfd66f2e5aac407d830515f33050a9c543c0f9c54efef9dd",
+    "claim": "3514116d215b9eb75bee095ac6cc5cd5818069002e73ab41dd7fa22e021b47ca",
+    "hint": "dbf97ed5e566e1fae2b27d77807f5511b2929cbf05dcc985dfa647e8dedf536c",
+    "prepared": "f93938ce9c254cbae0191e5f1b3e706607f7e6bcf8510c3594b43617edae5366",
+    "witness": "91da10c66343292bdcd3371a060a95f2704953c50ff9c3efd79ea2424e62a880"
+  },
+  "status": "PASS",
+  "table_count": 33,
+  "tables": [
+    {
+      "compact_bytes": 5242880,
+      "failing_constraints": [],
+      "file": "table-00-sha_t.bin",
+      "index": 0,
+      "log_rows": 13,
+      "name": "sha_t",
+      "rows": 8192,
+      "width": 544
+    },
+    {
+      "compact_bytes": 654336,
+      "failing_constraints": [],
+      "file": "table-01-sha_r.bin",
+      "index": 1,
+      "log_rows": 10,
+      "name": "sha_r",
+      "rows": 1024,
+      "width": 544
+    },
+    {
+      "compact_bytes": 1695744,
+      "failing_constraints": [],
+      "file": "table-02-node.bin",
+      "index": 2,
+      "log_rows": 13,
+      "name": "node",
+      "rows": 8192,
+      "width": 192
+    },
+    {
+      "compact_bytes": 9344,
+      "failing_constraints": [],
+      "file": "table-03-head.bin",
+      "index": 3,
+      "log_rows": 7,
+      "name": "head",
+      "rows": 128,
+      "width": 73
+    },
+    {
+      "compact_bytes": 23552,
+      "failing_constraints": [],
+      "file": "table-04-val.bin",
+      "index": 4,
+      "log_rows": 10,
+      "name": "val",
+      "rows": 1024,
+      "width": 17
+    },
+    {
+      "compact_bytes": 60416,
+      "failing_constraints": [],
+      "file": "table-05-walk.bin",
+      "index": 5,
+      "log_rows": 10,
+      "name": "walk",
+      "rows": 1024,
+      "width": 56
+    },
+    {
+      "compact_bytes": 59392,
+      "failing_constraints": [],
+      "file": "table-06-uniq.bin",
+      "index": 6,
+      "log_rows": 10,
+      "name": "uniq",
+      "rows": 1024,
+      "width": 56
+    },
+    {
+      "compact_bytes": 214016,
+      "failing_constraints": [],
+      "file": "table-07-ups.bin",
+      "index": 7,
+      "log_rows": 10,
+      "name": "ups",
+      "rows": 1024,
+      "width": 202
+    },
+    {
+      "compact_bytes": 544,
+      "failing_constraints": [],
+      "file": "table-08-chacha.bin",
+      "index": 8,
+      "log_rows": 1,
+      "name": "chacha",
+      "rows": 2,
+      "width": 272
+    },
+    {
+      "compact_bytes": 316,
+      "failing_constraints": [],
+      "file": "table-09-rng.bin",
+      "index": 9,
+      "log_rows": 1,
+      "name": "rng",
+      "rows": 2,
+      "width": 158
+    },
+    {
+      "compact_bytes": 154,
+      "failing_constraints": [],
+      "file": "table-10-shuf.bin",
+      "index": 10,
+      "log_rows": 1,
+      "name": "shuf",
+      "rows": 2,
+      "width": 77
+    },
+    {
+      "compact_bytes": 155648,
+      "failing_constraints": [],
+      "file": "table-11-codec.bin",
+      "index": 11,
+      "log_rows": 10,
+      "name": "codec",
+      "rows": 1024,
+      "width": 91
+    },
+    {
+      "compact_bytes": 153600,
+      "failing_constraints": [],
+      "file": "table-12-scandist.bin",
+      "index": 12,
+      "log_rows": 10,
+      "name": "scandist",
+      "rows": 1024,
+      "width": 119
+    },
+    {
+      "compact_bytes": 91136,
+      "failing_constraints": [],
+      "file": "table-13-proc.bin",
+      "index": 13,
+      "log_rows": 10,
+      "name": "proc",
+      "rows": 1024,
+      "width": 64
+    },
+    {
+      "compact_bytes": 31744,
+      "failing_constraints": [],
+      "file": "table-14-mem.bin",
+      "index": 14,
+      "log_rows": 10,
+      "name": "mem",
+      "rows": 1024,
+      "width": 18
+    },
+    {
+      "compact_bytes": 39936,
+      "failing_constraints": [],
+      "file": "table-15-cmp.bin",
+      "index": 15,
+      "log_rows": 10,
+      "name": "cmp",
+      "rows": 1024,
+      "width": 33
+    },
+    {
+      "compact_bytes": 312320,
+      "failing_constraints": [],
+      "file": "table-16-rcpt.bin",
+      "index": 16,
+      "log_rows": 10,
+      "name": "rcpt",
+      "rows": 1024,
+      "width": 263
+    },
+    {
+      "compact_bytes": 2560,
+      "failing_constraints": [],
+      "file": "table-17-acct.bin",
+      "index": 17,
+      "log_rows": 7,
+      "name": "acct",
+      "rows": 128,
+      "width": 16
+    },
+    {
+      "compact_bytes": 14,
+      "failing_constraints": [],
+      "file": "table-18-akey.bin",
+      "index": 18,
+      "log_rows": 1,
+      "name": "akey",
+      "rows": 2,
+      "width": 7
+    },
+    {
+      "compact_bytes": 768,
+      "failing_constraints": [],
+      "file": "table-19-bnd.bin",
+      "index": 19,
+      "log_rows": 7,
+      "name": "bnd",
+      "rows": 128,
+      "width": 6
+    },
+    {
+      "compact_bytes": 65536,
+      "failing_constraints": [],
+      "file": "table-20-srcp.bin",
+      "index": 20,
+      "log_rows": 10,
+      "name": "srcp",
+      "rows": 1024,
+      "width": 63
+    },
+    {
+      "compact_bytes": 992,
+      "failing_constraints": [],
+      "file": "table-21-size.bin",
+      "index": 21,
+      "log_rows": 4,
+      "name": "size",
+      "rows": 16,
+      "width": 57
+    },
+    {
+      "compact_bytes": 53248,
+      "failing_constraints": [],
+      "file": "table-22-qv.bin",
+      "index": 22,
+      "log_rows": 10,
+      "name": "qv",
+      "rows": 1024,
+      "width": 52
+    },
+    {
+      "compact_bytes": 33030144,
+      "failing_constraints": [],
+      "file": "table-23-mrk.bin",
+      "index": 23,
+      "log_rows": 19,
+      "name": "mrk",
+      "rows": 524288,
+      "width": 60
+    },
+    {
+      "compact_bytes": 6272,
+      "failing_constraints": [],
+      "file": "table-24-sort.bin",
+      "index": 24,
+      "log_rows": 7,
+      "name": "sort",
+      "rows": 128,
+      "width": 49
+    },
+    {
+      "compact_bytes": 19328,
+      "failing_constraints": [],
+      "file": "table-25-tx.bin",
+      "index": 25,
+      "log_rows": 7,
+      "name": "tx",
+      "rows": 128,
+      "width": 147
+    },
+    {
+      "compact_bytes": 1360,
+      "failing_constraints": [],
+      "file": "table-26-akm.bin",
+      "index": 26,
+      "log_rows": 4,
+      "name": "akm",
+      "rows": 16,
+      "width": 70
+    },
+    {
+      "compact_bytes": 15360,
+      "failing_constraints": [],
+      "file": "table-27-kib.bin",
+      "index": 27,
+      "log_rows": 10,
+      "name": "kib",
+      "rows": 1024,
+      "width": 15
+    },
+    {
+      "compact_bytes": 68,
+      "failing_constraints": [],
+      "file": "table-28-plf.bin",
+      "index": 28,
+      "log_rows": 1,
+      "name": "plf",
+      "rows": 2,
+      "width": 34
+    },
+    {
+      "compact_bytes": 42,
+      "failing_constraints": [],
+      "file": "table-29-rid.bin",
+      "index": 29,
+      "log_rows": 1,
+      "name": "rid",
+      "rows": 2,
+      "width": 21
+    },
+    {
+      "compact_bytes": 62464,
+      "failing_constraints": [],
+      "file": "table-30-walku.bin",
+      "index": 30,
+      "log_rows": 10,
+      "name": "walku",
+      "rows": 1024,
+      "width": 58
+    },
+    {
+      "compact_bytes": 134,
+      "failing_constraints": [],
+      "file": "table-31-nmem.bin",
+      "index": 31,
+      "log_rows": 1,
+      "name": "nmem",
+      "rows": 2,
+      "width": 67
+    },
+    {
+      "compact_bytes": 24,
+      "failing_constraints": [],
+      "file": "table-32-uval.bin",
+      "index": 32,
+      "log_rows": 1,
+      "name": "uval",
+      "rows": 2,
+      "width": 12
+    }
+  ],
+  "total_cells": 39217792,
+  "trace_dumped": false,
+  "transactions": 2,
+  "tx_overhead": 362
+}

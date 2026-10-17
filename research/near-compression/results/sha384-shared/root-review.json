@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "proof_sha256": "b806d1e6741f40e446eb87e660c9179d66eb30f8eaae96a75d8e282381ea89f6",
+  "proof_bytes": 112786,
+  "public_fixed_width_bytes": 384,
+  "receipt_bytes": 2494,
+  "package_bytes": 115664,
+  "canonical_lean_export_json_equal": true,
+  "source_residuals": 3659896,
+  "forged_witnesses_rejected": 15,
+  "fresh_process_full_binary_verification": true,
+  "scope": "Two267-byte calls; five unique compression nodes certify six padded blocks. Q8/Ext4 diagnostic. No padded core row saving in this fixture. Canonical AIR is verifier configuration, excluded from byte package. Producer-to-root routing, generalized sharing semantics, recursion and128-bit QROM security remain open. Fresh full-proof negative suite remains agent-owned pending."
+}

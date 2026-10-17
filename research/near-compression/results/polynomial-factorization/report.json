@@ -1,0 +1,120 @@
+{
+  "nonzero_polynomials": 3397,
+  "irreducible_leaves": 7321,
+  "small_degree_factor_certificates": 6758,
+  "nonconstant_inputs_with_extracted_divisor": 3390,
+  "repeated_factor_inputs": 597,
+  "maximum_tree_depth": 3,
+  "zero_input_rejections": 1,
+  "witnesses": [
+    {
+      "prime": 2,
+      "polynomial": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "tree": [
+        "product",
+        [
+          "factor",
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          "product",
+          [
+            "factor",
+            [
+              0,
+              1
+            ]
+          ],
+          [
+            "factor",
+            [
+              0,
+              1
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "prime": 2,
+      "polynomial": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "tree": [
+        "product",
+        [
+          "factor",
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          "product",
+          [
+            "factor",
+            [
+              0,
+              1
+            ]
+          ],
+          [
+            "factor",
+            [
+              1,
+              1
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "prime": 2,
+      "polynomial": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "tree": [
+        "product",
+        [
+          "factor",
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          "product",
+          [
+            "factor",
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            "factor",
+            [
+              1,
+              1
+            ]
+          ]
+        ]
+      ]
+    }
+  ],
+  "scope": "Exhaustive nonzero polynomials of degree at most four over F2/F3/F5. Formal Lean existence is generic; efficient factorization and algebraic extension construction remain separate."
+}

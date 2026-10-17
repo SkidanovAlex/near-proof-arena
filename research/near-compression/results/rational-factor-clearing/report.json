@@ -1,0 +1,8 @@
+{
+  "rational_polynomial_families": 400,
+  "exact_cleared_coefficients": 1253,
+  "safe_root_and_evaluation_comparisons": 27507,
+  "nonzero_scalar_irreducibility_checks": 2223,
+  "unbounded_content_examples": 12,
+  "scope": "Explicit nonzero common denominator clearing preserves generic degree, roots and irreducibility. Primitive normalization and source-controlled parameter-degree bounds remain open."
+}

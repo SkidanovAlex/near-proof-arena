@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 1937,
+  "module_sha256": "b417ee8a4355468d970f3456367078fb8f7a82732f9f7b2901f4948abe7d0352",
+  "fixture_sha256": "8d9b3ada5bbdf34ed5a19bc04f1aa86c9dfc38c7be6823f10b0e6e6c88003ae6",
+  "cases": [
+    {
+      "label": "wrap",
+      "entry_gas": 999999914400189,
+      "exit_gas": 999999911109165,
+      "spec_sha256": "395b310f3b8e817d6be58ca32005593313e10ada49b62a852bc2773fd5362ca8"
+    },
+    {
+      "label": "positive",
+      "entry_gas": 999999914400189,
+      "exit_gas": 999999911109165,
+      "spec_sha256": "228834cdf04626283c15b7f4d1ac91857bfc3db929b291a2b3f9829f1831676f"
+    },
+    {
+      "label": "negative",
+      "entry_gas": 999999914400189,
+      "exit_gas": 999999911109165,
+      "spec_sha256": "d3a4f200a33dd11f32d48db902a60ee403ac6f9e9fc9e9d4edbfd78973872fbe"
+    },
+    {
+      "label": "exact-gas",
+      "entry_gas": 3291024,
+      "exit_gas": 0,
+      "spec_sha256": "4e2faff72911c018ed39ce2e7462ddb733f6795266ae89a71aacede1427406db"
+    },
+    {
+      "label": "range-charge-exhaustion",
+      "entry_gas": 3291023,
+      "exit_gas": 3291023,
+      "spec_sha256": "c9a229093bbb0e0a2c453d8579b7237f854730e21ce1236b4a5f0d2ea4d75e43"
+    },
+    {
+      "label": "long-25",
+      "entry_gas": 999999881721339,
+      "exit_gas": 999999861975195,
+      "spec_sha256": "9646339eaa4be4678cf56884b81e5bcbd5e013be047df46361c2c78b4cb608d6"
+    },
+    {
+      "label": "long-193",
+      "entry_gas": 999999605040409,
+      "exit_gas": 999999447071257,
+      "spec_sha256": "d5af1a689f6c8ba61c315c74ece9433ed5587056130c4c476c605a7eda420deb"
+    }
+  ],
+  "scope": "Natural bus boundary theorem plus independent actual fixture/header arithmetic; actual entry-state composition remains open"
+}

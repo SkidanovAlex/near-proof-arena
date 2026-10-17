@@ -1,0 +1,42 @@
+{
+  "status": "LEAN_BALANCED_REDUCTION_CHECKER_SOUNDNESS_PROVED",
+  "module": "NearCompression/TerminalBalanceCheck.lean",
+  "theorems": [
+    "terminal_join_checked",
+    "terminal_pass_checked",
+    "terminal_balance_checked",
+    "terminal_balance_checked_value",
+    "terminal_balance_check_regressions"
+  ],
+  "proved": [
+    "Sign-aware pair acceptance derives TerminalJoinRoute using checked finite arithmetic witnesses.",
+    "Recursive pass acceptance derives TerminalPassRoute, preserving exact singleton carries.",
+    "Balance acceptance derives TerminalBalanceRoute, checking stage adjacency, minimum pass size, empty zero and negative singleton subtraction.",
+    "Under checked DAG acyclicity, the accepted balance result equals the executed signed sum of certificate terms."
+  ],
+  "kernel_regressions": [
+    "All four input sign pairs accepted",
+    "Odd carry through two stages with exact initial terms and final result",
+    "Empty zero, positive singleton and negative singleton accepted",
+    "Swapped subtraction order rejected",
+    "Wrong output sign rejected",
+    "Mismatched consecutive stages rejected",
+    "Nonreducing singleton or empty pass rejected",
+    "Nonzero negation anchor rejected",
+    "Missing positive, empty-result and odd-carry registers rejected"
+  ],
+  "remaining": [
+    "Recursive reconstruction and input binding checker must compose arithmetic, expansion and balance checkers to derive TerminalRebuildRoute.",
+    "Concrete retained JSON certificate parsing and kernel instances remain open.",
+    "Global GKR/PCS composition, execution soundness, quantum security and secure size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3832,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "direct_row_vs_coefficient_claims": 27,
+  "lane_mle_checks": 57,
+  "scope": "Ext8 dual Mobius/shift weights; independent full coefficient conversion and direct cyclic-row evaluation. No authenticated PCS opening or security claim."
+}

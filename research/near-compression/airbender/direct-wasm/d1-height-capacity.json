@@ -1,0 +1,40 @@
+{
+  "case": "/data/illia/nearproof-wt/direct-wasm-whir/oracle/fixtures/v3/public-d1/d1/00-h10012-s2",
+  "checks": [
+    {
+      "diagnostic": "codec requires 454 rows incl tail/pad, log7 cannot fit",
+      "log": 7,
+      "name": "codec",
+      "result": "Err"
+    },
+    {
+      "diagnostic": "proc requires 18 rows incl tail/pad, log4 cannot fit",
+      "log": 4,
+      "name": "proc",
+      "result": "Err"
+    },
+    {
+      "diagnostic": "scheduler log must be within1..22",
+      "log": 0,
+      "name": "codec",
+      "result": "Err"
+    },
+    {
+      "diagnostic": "scheduler log must be within1..22",
+      "log": 23,
+      "name": "proc",
+      "result": "Err"
+    },
+    {
+      "active_rows": 0,
+      "ikc_pad": 134217728,
+      "log": 1,
+      "name": "empty_proc",
+      "padding_rows": 1,
+      "result": "PASS",
+      "tail_rows": 1
+    }
+  ],
+  "scope": "Four API rejection checks and exact empty-proc tail/padding rows. Source validates capacity before Tab::zero; no allocator instrumentation or proof claim.",
+  "status": "PASS"
+}

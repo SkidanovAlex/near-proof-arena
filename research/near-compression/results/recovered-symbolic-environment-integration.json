@@ -1,0 +1,35 @@
+{
+  "status": "RECOVERED_SYMBOLIC_ENVIRONMENT_DERIVED_FROM_CANONICAL_COLUMN_OWNERS",
+  "module": "NearCompression/RecoveredSymbolicEnvironment.lean",
+  "theorems": [
+    "recovered_symbolic_column_owner",
+    "recovered_symbolic_environment",
+    "recovered_environment_placement_regressions"
+  ],
+  "proved": [
+    "Checked placement binds source base and next offset to table metadata.",
+    "Every live source or auxiliary column has a polynomial owner in the fixed canonical tuple, chosen before rowpoints/current-next choices.",
+    "One decoded column table independent of rowpoints supplies both current and next MLE reads of the constructed symbolic environment. Each column retains tuple provenance."
+  ],
+  "assumptions": [
+    "Canonical tuple lane enumeration equals metadata enumeration.",
+    "All lane supports are disjoint.",
+    "Metadata table membership and valid live column bounds.",
+    "Symbolic placement matches metadata base/next offset."
+  ],
+  "remaining": [
+    "Transport mixed AIR/bus formula evaluation along these bounded-column environment equalities and compose with the recovered compiler theorem.",
+    "Instantiate metadata/canonical ownership premises in the complete verifier contract.",
+    "Expected specification/transcript binding, commitment extraction, global/PQ soundness and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3886,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "No new native capture run; formal generic environment and kernel placement regressions only."
+  }
+}

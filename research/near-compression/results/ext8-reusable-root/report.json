@@ -1,0 +1,122 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "degree": 32,
+      "queries": 314,
+      "shared_root": "56e06502dd6c36166379f2f4bd5e0e4fd533465ae1d212ffe51b5ebdb9e9c17ddd28f458380dff562313774cc4723438",
+      "same_root_for_two_points": true,
+      "independent_claims": true,
+      "openings": [
+        {
+          "point_index": 0,
+          "bytes": 5240,
+          "bytes_with_external_config": 5585,
+          "prove_codec_verify_seconds": 0.1569493878632784,
+          "fresh_process": "PASS fresh reusable binary",
+          "sha256": "b5a645b6efa645ccacb01fa939b89f65f127a230745342ee99d56c67564525ef"
+        },
+        {
+          "point_index": 1,
+          "bytes": 5160,
+          "bytes_with_external_config": 5505,
+          "prove_codec_verify_seconds": 0.1525636911392212,
+          "fresh_process": "PASS fresh reusable binary",
+          "sha256": "2be3555da90eb19436e6d4dc2045724eabcc86efca83f6a867edfd2d8d5487dd"
+        }
+      ],
+      "negative_count": 23,
+      "negatives": [
+        "cross-opening0",
+        "0point",
+        "0claim",
+        "0statement",
+        "0source_namespace",
+        "0queries",
+        "0profile",
+        "root0",
+        "old-magic0",
+        "trailing0",
+        "truncated0",
+        "cross-opening1",
+        "1point",
+        "1claim",
+        "1statement",
+        "1source_namespace",
+        "1queries",
+        "1profile",
+        "root1",
+        "old-magic1",
+        "trailing1",
+        "truncated1",
+        "fresh source alteration"
+      ]
+    },
+    {
+      "degree": 1024,
+      "queries": 314,
+      "shared_root": "429c90ef862c49f3e6989e547c93e858f450a62e9744a4e4b252d238b6972bcd2d208beec6409d0dce143269f3cd3792",
+      "same_root_for_two_points": true,
+      "independent_claims": true,
+      "openings": [
+        {
+          "point_index": 0,
+          "bytes": 124480,
+          "bytes_with_external_config": 124985,
+          "prove_codec_verify_seconds": 0.5573522401973605,
+          "fresh_process": "PASS fresh reusable binary",
+          "sha256": "3f5e906f75095362a2a0672b504cb415bec0f1bb86e682d252f41e3e231a9048"
+        },
+        {
+          "point_index": 1,
+          "bytes": 124488,
+          "bytes_with_external_config": 124993,
+          "prove_codec_verify_seconds": 0.5533085558563471,
+          "fresh_process": "PASS fresh reusable binary",
+          "sha256": "1be0235233dbc756525f70a3fa16401154fe931df2fe6e6f958425fa7ad52429"
+        }
+      ],
+      "negative_count": 23,
+      "negatives": [
+        "cross-opening0",
+        "0point",
+        "0claim",
+        "0statement",
+        "0source_namespace",
+        "0queries",
+        "0profile",
+        "root0",
+        "old-magic0",
+        "trailing0",
+        "truncated0",
+        "cross-opening1",
+        "1point",
+        "1claim",
+        "1statement",
+        "1source_namespace",
+        "1queries",
+        "1profile",
+        "root1",
+        "old-magic1",
+        "trailing1",
+        "truncated1",
+        "fresh source alteration"
+      ]
+    }
+  ],
+  "scope": "Reusable scalar source context, not packed/joint AIR yet. Query count314 unchanged. Ideal replay term only; root extraction/FS/QROM/upstream composition open.",
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_pq384_ext8_reusable.py",
+      "sha256": "0ca948b0fff1ea97b97ac8069368881dc4f1b2cd47c386f0c3e91a178907b1c4"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_ext8_reusable_codec.py",
+      "sha256": "804ba7c388c5d24f4720c12c0c1e0bfbe0a746b6b731b4b35e6c012cc08b62a4"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_ext8_reusable.py",
+      "sha256": "d7d1514911f4d717eed029cb1dbb1a09b91bf0d7a4e9fdd2b80c2edad230d68b"
+    }
+  ]
+}

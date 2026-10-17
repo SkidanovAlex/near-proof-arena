@@ -1,0 +1,504 @@
+{
+  "status": "PASS",
+  "proof_sha256": "5edd18414b3d3f5ea7bc163a463851ce6a932478d1a68c29544a6bd9c2c9b4e8",
+  "negative_checks": 124,
+  "cases": [
+    {
+      "case": "statement",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "parent_binding",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "expected_root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "claim0",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "claim271",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "claim543",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "point0",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "point6",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "point12",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage0/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage0/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage0/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage0/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage0/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage0/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage1/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage1/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage1/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage1/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage1/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage1/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage2/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage2/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage2/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage2/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage2/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage2/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage3/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage3/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage3/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage3/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage3/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage3/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage4/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage4/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage4/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage4/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage4/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage4/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage5/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage5/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage5/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage5/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage5/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage5/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage6/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage6/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage6/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage6/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage6/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage6/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage7/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage7/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage7/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage7/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage7/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage7/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage8/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage8/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage8/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage8/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage8/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage8/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage9/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage9/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage9/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage9/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage9/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage9/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage10/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage10/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage10/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage10/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage10/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage10/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage11/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage11/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage11/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage11/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage11/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage11/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage12/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage12/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage12/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage12/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage12/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage12/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage13/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage13/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage13/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage13/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage13/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage13/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage14/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage14/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage14/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage14/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage14/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage14/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage15/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage15/root",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage15/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage15/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage15/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage15/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage16/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage16/root",
+      "reason": "terminal oracle root mismatch"
+    },
+    {
+      "case": "stage16/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage16/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage16/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage16/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage17/quadratic",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "stage17/root",
+      "reason": "terminal oracle root mismatch"
+    },
+    {
+      "case": "stage17/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage17/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage17/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage17/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "terminal",
+      "reason": "terminal oracle root mismatch"
+    },
+    {
+      "case": "chain order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "stage order",
+      "reason": "opening shape"
+    },
+    {
+      "case": "missing chain",
+      "reason": "global query count"
+    },
+    {
+      "case": "missing stage",
+      "reason": "chain length"
+    },
+    {
+      "case": "missing commitment",
+      "reason": "round count"
+    },
+    {
+      "case": "wrong externally selected terminal profile",
+      "reason": "round count"
+    }
+  ],
+  "scope": "Fixed full-height proof mutation tests only; no adaptive forgery bound"
+}

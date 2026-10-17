@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 2143,
+  "source_hashes": {
+    "NearCompression/SHA384EndpointMessage.lean": "2b0f6925878246b9f58d4195c8f359fee49f9bcbd673072261e1cf6a80b8fc36",
+    "NearCompression/SHA384EndpointPublic.lean": "818458651e36d0bd20220169037df1066add8da6c40054a75fbb4bde1d63a9bb",
+    "NearCompression/PreparedControlBranch.lean": "02c4b1e8a1e7bae132b6ca3cd2f4e800e4fef8ed96c7a3525b7514a520759c4c",
+    "NearCompression/PreparedControlSetup.lean": "366faad75ed5d98fbae173865752066fd8a36085e9138d31d9b6c82e59edddac",
+    "SHA384EndpointFixture.lean": "2bd1d067c2e9288ea4cffae9ab374e07602009dad4154e46f597272d6f751bb6",
+    "PreparedControlSetupSmoke.lean": "e5fdd54d5560bb6e5b9fad0cad366b996e1326ada1b4ecdd3b381bf735688ad1"
+  },
+  "endpoint_public_fixture_unchanged": true,
+  "setup_smoke": {
+    "additional_setup_rejections": 18,
+    "cases": [
+      {
+        "actual_prepare_checked": true,
+        "actual_setup_checked": true,
+        "exact_public_field_parity": 385,
+        "instructions": 11,
+        "label": "branch-not-taken"
+      },
+      {
+        "actual_prepare_checked": true,
+        "actual_setup_checked": true,
+        "exact_public_field_parity": 385,
+        "instructions": 11,
+        "label": "branch-taken"
+      },
+      {
+        "actual_prepare_checked": true,
+        "actual_setup_checked": true,
+        "exact_public_field_parity": 385,
+        "instructions": 11,
+        "label": "branch-negative"
+      },
+      {
+        "actual_prepare_checked": true,
+        "actual_setup_checked": true,
+        "exact_public_field_parity": 385,
+        "instructions": 11,
+        "label": "branch-exact-gas"
+      },
+      {
+        "actual_prepare_checked": true,
+        "actual_setup_checked": true,
+        "exact_public_field_parity": 385,
+        "instructions": 11,
+        "label": "branch-post-charge-failure"
+      },
+      {
+        "actual_prepare_checked": true,
+        "actual_setup_checked": true,
+        "exact_public_field_parity": 385,
+        "instructions": 11,
+        "label": "branch-pre-charge-failure"
+      }
+    ],
+    "full_new_air_refinement_claimed": false,
+    "rejections": 2034
+  },
+  "scope": [
+    "Full endpoint-only AIR message\u2192digest semantics with concrete public layout; cryptographic accepted-proof\u2192HoldsP separate",
+    "Literal taken-branch PC and label clearing; full control interpreter composition pending",
+    "Actual outer preparation/setup checker supplies authenticated fetched descriptors"
+  ],
+  "remaining": [
+    "Batched80round hash layout and internal recursive hash input routing",
+    "Full control step/runCall semantics and general Wasm/NEAR coverage",
+    "Actual transcript/source binding, pre-GKR witness causality and QROM",
+    "Certified sub300KB recursion at1Pgas"
+  ]
+}

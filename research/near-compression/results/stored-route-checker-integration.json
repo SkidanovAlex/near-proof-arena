@@ -1,0 +1,37 @@
+{
+  "status": "LEAN_FINITE_ROUTE_CHECKER_SOUNDNESS_PROVED",
+  "module": "NearCompression/TerminalStoredRouteCheck.lean",
+  "theorems": [
+    "terminal_stored_route_checked",
+    "terminal_stored_chain_checked",
+    "terminal_stored_certified_root",
+    "terminal_stored_route_regressions"
+  ],
+  "format": "Finite live-node, position and gate lists. Checker inspects node kind/dependencies, zero gate, source/position/storage bounds, and either computed or relay routing.",
+  "proved": "Boolean checker acceptance implies TerminalLayerRoute and finite gate/live-position bounds, recursively yields TerminalFiniteRouteChain, and composes directly with finite acyclic DAG root preservation.",
+  "kernel_regressions": [
+    "One computed add route accepted.",
+    "Missing previous live node rejected.",
+    "Wrong zero gate rejected.",
+    "Wrong computed operation rejected.",
+    "Out-of-range source node rejected.",
+    "Out-of-range stored position rejected.",
+    "Truncated position table rejected."
+  ],
+  "remaining": [
+    "Encode the retained fixed-profile circuit/route captures in this checked format and validate their concrete instances inside Lean.",
+    "Initial input/constant placement, source DAG acyclicity and final root liveness are still explicit premises of root preservation.",
+    "The checker certifies semantic routes, not all compiler-emission invariants such as power-of-two padding or operand bounds for unused gates. Those remain separately checked by the executable validator.",
+    "Executable parser/emitter refinement, GKR/PCS sample-space composition, commitment binding and global execution/PQ soundness remain open."
+  ],
+  "validation": {
+    "module_check": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3815,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

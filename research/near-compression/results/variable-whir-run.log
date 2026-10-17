@@ -1,0 +1,212 @@
+   Compiling prover v0.1.0 (/data/illia/nearproof-deps/airbender-prime-review-20261015/prover)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.95s
+     Running `target/debug/examples/near_variable_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n3-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n3-commitment.json`
+[timing] base commit part: 3 cols 2^3, lde 4, 2 values/leaf -> LDE 18.295µs, tree 128.662µs
+exported 3-column, 8-row RS commitment and 16 openings
+   Compiling prover v0.1.0 (/data/illia/nearproof-deps/airbender-prime-review-20261015/prover)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.64s
+     Running `target/debug/examples/near_variable_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n3-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n3-opening.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n3-handoff.json`
+[timing] base commit part: 3 cols 2^3, lde 4, 2 values/leaf -> LDE 23.875µs, tree 137.819µs
+  [timing] initial eq-poly build: 11.411µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 7.875µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 40.306µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 90.029µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^2, lde 4 -> LDE 12.293µs, tree 105.288µs, built in 121.068µs
+  [timing] OOD evaluation: 21.281µs
+  [timing] PoW grind (0 bits): 22.482µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 11.582µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 15.229µs
+  [timing] initial round total: 380.917µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 83.047µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 9.237µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 4.258µs
+  [timing] final round total: 122.932µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running `target/debug/examples/near_variable_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n4-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n4-commitment.json`
+[timing] base commit part: 3 cols 2^4, lde 4, 2 values/leaf -> LDE 24.175µs, tree 129.374µs
+exported 3-column, 16-row RS commitment and 32 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running `target/debug/examples/near_variable_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n4-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n4-opening.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n4-handoff.json`
+[timing] base commit part: 3 cols 2^4, lde 4, 2 values/leaf -> LDE 27.121µs, tree 144.632µs
+  [timing] initial eq-poly build: 12.744µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 7.935µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 34.125µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 86.713µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^3, lde 4 -> LDE 11.823µs, tree 116.008µs, built in 130.305µs
+  [timing] OOD evaluation: 22.302µs
+  [timing] PoW grind (0 bits): 22.092µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 12.764µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 17.994µs
+  [timing] initial round total: 411.555µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 89.258µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 10.330µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 4.318µs
+  [timing] final round total: 133.382µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running `target/debug/examples/near_variable_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n5-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n5-commitment.json`
+[timing] base commit part: 3 cols 2^5, lde 4, 2 values/leaf -> LDE 33.723µs, tree 172.665µs
+exported 3-column, 32-row RS commitment and 64 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running `target/debug/examples/near_variable_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n5-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n5-opening.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n5-handoff.json`
+[timing] base commit part: 3 cols 2^5, lde 4, 2 values/leaf -> LDE 33.954µs, tree 191.401µs
+  [timing] initial eq-poly build: 16.972µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 8.937µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 37.461µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 105.909µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^4, lde 4 -> LDE 13.917µs, tree 142.718µs, built in 159.671µs
+  [timing] OOD evaluation: 26.981µs
+  [timing] PoW grind (0 bits): 18.204µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 13.615µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 23.203µs
+  [timing] initial round total: 463.203µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 107.322µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 11.692µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 4.819µs
+  [timing] final round total: 155.323µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running `target/debug/examples/near_variable_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n6-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n6-commitment.json`
+[timing] base commit part: 3 cols 2^6, lde 4, 2 values/leaf -> LDE 43.512µs, tree 336.704µs
+exported 3-column, 64-row RS commitment and 128 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running `target/debug/examples/near_variable_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n6-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n6-opening.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n6-handoff.json`
+[timing] base commit part: 3 cols 2^6, lde 4, 2 values/leaf -> LDE 77.656µs, tree 413.218µs
+  [timing] initial eq-poly build: 26.790µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 13.486µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 80.331µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 187.634µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^5, lde 4 -> LDE 24.747µs, tree 323.339µs, built in 352.454µs
+  [timing] OOD evaluation: 39.224µs
+  [timing] PoW grind (0 bits): 25.178µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 24.376µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 38.953µs
+  [timing] initial round total: 876.701µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 170.912µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 23.264µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 7.794µs
+  [timing] final round total: 261.353µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running `target/debug/examples/near_variable_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n7-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n7-commitment.json`
+[timing] base commit part: 3 cols 2^7, lde 4, 2 values/leaf -> LDE 115.468µs, tree 668.669µs
+exported 3-column, 128-row RS commitment and 256 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running `target/debug/examples/near_variable_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n7-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n7-opening.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n7-handoff.json`
+[timing] base commit part: 3 cols 2^7, lde 4, 2 values/leaf -> LDE 196.580µs, tree 445.759µs
+  [timing] initial eq-poly build: 25.027µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 8.656µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 51.287µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 139.894µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^6, lde 4 -> LDE 25.939µs, tree 259.689µs, built in 288.383µs
+  [timing] OOD evaluation: 37.280µs
+  [timing] PoW grind (0 bits): 33.443µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 13.655µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 41.699µs
+  [timing] initial round total: 664.902µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 125.707µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 12.504µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 5.410µs
+  [timing] final round total: 185.670µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/examples/near_variable_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n8-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n8-commitment.json`
+[timing] base commit part: 3 cols 2^8, lde 4, 2 values/leaf -> LDE 183.626µs, tree 1.174ms
+exported 3-column, 256-row RS commitment and 512 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running `target/debug/examples/near_variable_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n8-source.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n8-opening.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/variable-whir-n8-handoff.json`
+[timing] base commit part: 3 cols 2^8, lde 4, 2 values/leaf -> LDE 217.800µs, tree 1.137ms
+  [timing] initial eq-poly build: 60.243µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 10.069µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 92.665µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 244.350µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^7, lde 4 -> LDE 66.736µs, tree 647.640µs, built in 718.683µs
+  [timing] OOD evaluation: 60.063µs
+  [timing] PoW grind (0 bits): 23.344µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 20.749µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 81.824µs
+  [timing] initial round total: 1.310ms
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 190.028µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 19.196µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 8.546µs
+  [timing] final round total: 331.724µs
+Fresh WHIR opening generated; verification still required

@@ -1,0 +1,57 @@
+{
+  "kind": "Universal honest SHA512 schedule-window AIR witness completeness",
+  "formal_claims": [
+    "Every16-word input bounded below2^64 admits the explicit schedule-window witness.",
+    "Actual nextWindow preserves the16-word length and bounds; all iterations are valid.",
+    "The witness satisfies all local constraints,including768extra Boolean constraints,and decodes exactly to its input window.",
+    "All1024temporal bit links hold between constructed consecutive windows.",
+    "For every1<=logSize<=22,the constructed trace satisfies actual ScheduleWindowSequence Air.Holds and decodes to actual nextWindow iteration."
+  ],
+  "validation": {
+    "honest_128_row_fixtures": 4,
+    "honest_2_row_fixtures": 1,
+    "inputs": [
+      "zero words",
+      "maximum64bitwords",
+      "sequential0..15",
+      "mixed boundary/alternatingbitwords"
+    ],
+    "all2544_columns_match_independent_constructor": true,
+    "formal_trace_constructor_samples_match_materialized_trace": true,
+    "all_formal_constraints_checked_all_fixture_rows": true,
+    "independent_python128step_terminal_schedule_matches": true,
+    "locally_valid_temporal_forgeries_rejected": 48,
+    "forgery_rows": [
+      1,
+      64,
+      127
+    ],
+    "final_temporal_links_gated": true
+  },
+  "new_theorems": 29,
+  "full_audit_theorems": 1206,
+  "commands": [
+    "lake build NearCompression.SHA512WindowInvariant",
+    "lake build NearCompression.SHA512ScheduleWindowWitness",
+    "lake env lean --run SHA512ScheduleWindowWitnessSmoke.lean",
+    "python3 check.py"
+  ],
+  "logs": [
+    "/tmp/near-window-invariant.log",
+    "/tmp/near-window-witness.log",
+    "/tmp/near-window-witness-smoke.log",
+    "/tmp/near-window-witness-audit.log"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512WindowInvariant.lean": "bfd1e032067ecd5dd6b8d76c67931f8715c097309265708cf82ed8636eeaada9",
+    "NearCompression/SHA512ScheduleWindowWitness.lean": "71b3f7bf777f87206fe74bef5de228b405824e19b3b3e3910d65d26f0654a16a",
+    "SHA512ScheduleWindowWitnessSmoke.lean": "4899a01403c0a60375cef8f96b948310ff14e2197ebdb968ca736f816d114459"
+  },
+  "limitations": [
+    "Completeness established for the schedule-window AIR,not yet the combined compression/public AIR.",
+    "The formal log-size range is not a runtime or memory capacity measurement;tests execute only2and128rowfixtures.",
+    "Multiblock chaining/padding remain verifier-side checks;no new recursive cryptographic proof is produced.",
+    "No full NEAR state-transition proof,1Pgas capacity measurement,sub-300KB proof,or128-bit quantum-security proof."
+  ],
+  "next_step": "Extend explicit universal witness construction through combined round sequencing,constants,feed-forward and public bindings."
+}

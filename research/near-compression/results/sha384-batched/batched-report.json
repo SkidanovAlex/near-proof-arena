@@ -1,0 +1,74 @@
+{
+  "status": "PASS",
+  "profile": "experimental-batched80-derived-public",
+  "tables": 2,
+  "blocks": 4,
+  "core_shape": [
+    512,
+    5234
+  ],
+  "endpoint_shape": [
+    4,
+    1668
+  ],
+  "boundary_rows": [
+    0,
+    1,
+    78,
+    79,
+    80,
+    81,
+    158,
+    159,
+    160,
+    161,
+    238,
+    239,
+    240,
+    241,
+    318,
+    319,
+    320,
+    511
+  ],
+  "reference_residual_checks": 134688,
+  "natural_bus_sent": {
+    "0": 4,
+    "1": 4,
+    "2": 3,
+    "3": 1,
+    "4": 4,
+    "5": 1
+  },
+  "natural_bus_received": {
+    "4": 4,
+    "5": 1,
+    "2": 3,
+    "0": 4,
+    "1": 4,
+    "3": 1
+  },
+  "negative_tests": [
+    "first-inactive",
+    "wrong-round-key",
+    "bad-phase-reset",
+    "wrong-tag-increment",
+    "early-stop",
+    "premature-block-stop",
+    "restart-padding",
+    "round-state-link",
+    "duplicate-endpoint-tag",
+    "public-0",
+    "public-376",
+    "public-428",
+    "public-684",
+    "public-688"
+  ],
+  "proof_bytes_including_roots": 406974,
+  "additional_derived_public_bytes": 1184,
+  "proof_plus_additional_setup_bytes": 408158,
+  "endpoint_baseline_bytes": 1289410,
+  "binary_sha256": "4c46270564d18b43bd611944123672e82463e2f7b8e11c07a8b5930946e38de8",
+  "spec_sha256": "a937df294e0ad187134970c93d04a027fd33f7cc73f3937d21c3bc811b8df013",
+  "scope": "Diagnostic Q8 proof; native all-row zerocheck and independent PCS verifier; full Lean batched phase/refinement and cryptographic soundness are not claimed."
+}

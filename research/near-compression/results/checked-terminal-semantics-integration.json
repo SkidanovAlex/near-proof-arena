@@ -1,0 +1,35 @@
+{
+  "status": "EXECUTABLE_TERMINAL_CHECK_FEEDS_SEMANTIC_MISMATCH_AND_BATCH_BOUND",
+  "module": "NearCompression/CheckedTerminalSemantics.lean",
+  "theorems": [
+    "checked_local_terminal_mismatch",
+    "checked_formula_table_mismatch",
+    "checked_formula_batch_cancellation"
+  ],
+  "proved": [
+    "The executable localTerminalBindingCheck supplies mixing, kernel-weight and sent-claim equalities for the local mismatch theorem.",
+    "Selected compiler-table membership and the ordered semantic projection supply semantic membership and formula identity.",
+    "A wrong checked local terminal claim inherits the tableCount-1 batching cancellation bound."
+  ],
+  "assumptions": [
+    "Correct history-point binding and fixed decoded family.",
+    "Semantic list fixed before rho and bound to compiler-table projection.",
+    "Circuit identity supplied by the checked compiler theorem.",
+    "The selected residual list still needs binding to the intended specification."
+  ],
+  "remaining": [
+    "Native replay authentication and formula generation refinement.",
+    "Full invalid-execution acceptance theorem and numerical global security budget.",
+    "QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3995,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; no native changes after previous two-assignment/32-rejection checkpoint."
+  }
+}

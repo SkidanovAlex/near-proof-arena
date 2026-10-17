@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "reports": [
+    {
+      "metadata": "results/heterogeneous-metadata/near-pq384-gkr-bus-full-metadata.json",
+      "metadata_sha256": "f1d33d8b2b26d1be4b9855a65f35a5651c73e67cf6270f54e262f136e2882d37",
+      "source": "results/heterogeneous-metadata/near-pq384-gkr-bus-full-metadata-all-supports.lean",
+      "source_sha256": "516bcf9bb2d79de63c88ad737f376052b93f65f8679c5b70a9766d6a9ccd134b",
+      "exit_code": 0,
+      "output": "PASS 451 canonical lanes; 4 malformed geometries rejected\nPASS 451 canonical lanes; full supports disjoint; 5 overlap geometries rejected\n"
+    },
+    {
+      "metadata": "results/heterogeneous-metadata/near-pq384-seed-gkr-bus-full-metadata.json",
+      "metadata_sha256": "0d587065293aaba9495642250bc74b6ea53ef24f68a665d1fd5a5a94bffc992a",
+      "source": "results/heterogeneous-metadata/near-pq384-seed-gkr-bus-full-metadata-all-supports.lean",
+      "source_sha256": "516bcf9bb2d79de63c88ad737f376052b93f65f8679c5b70a9766d6a9ccd134b",
+      "exit_code": 0,
+      "output": "PASS 451 canonical lanes; 4 malformed geometries rejected\nPASS 451 canonical lanes; full supports disjoint; 5 overlap geometries rejected\n"
+    },
+    {
+      "metadata": "results/heterogeneous-metadata/near-sha384-family267-proof-metadata.json",
+      "metadata_sha256": "71c9e6f803db180c1f2249d0fdea2e386f72b2e546f6bc9998d8e07d96eda6d4",
+      "source": "results/heterogeneous-metadata/near-sha384-family267-proof-metadata-all-supports.lean",
+      "source_sha256": "56c2719916ee6dd8113fde43366be457e01c74b8e170e4c67e8736fa77b3437b",
+      "exit_code": 0,
+      "output": "PASS 150 canonical lanes; 4 malformed geometries rejected\nPASS 150 canonical lanes; full supports disjoint; 5 overlap geometries rejected\n"
+    }
+  ],
+  "scope": "Executable Lean full-support checks on canonical captured metadata; generic implication audited separately, not closed kernel certificates for these instances."
+}

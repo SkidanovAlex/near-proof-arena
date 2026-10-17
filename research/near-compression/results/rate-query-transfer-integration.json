@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3562,
+  "added_theorems": 3,
+  "source_sha256": "639153b269f60cb8b1bc29830067e234956ed7bc806f11a59f769cd2d8b1b2bf",
+  "audit_log": "/tmp/root-query-transfer-audit.log",
+  "audit_sha256": "6cbc46bb5206a06cbc9052cb208f6be5699144242aaa4e5ef4618825dcb652c2",
+  "scope": "Source consistency sampling bounds the failure of noCorrect, for a fixed prequery candidate family.",
+  "bound": "family.length*(T-1)^q accepted query tuples; unique list has length<=1.",
+  "requirements": [
+    "Every family member with the old functional claim agrees with the folded source on fewer than T query seeds.",
+    "Candidate family fixed before queries; selection afterward is allowed.",
+    "Independent uniform queries with replacement; no hash-sampler argument included."
+  ],
+  "conditional_numeric_example": {
+    "source_domain": 128,
+    "source_degree": 32,
+    "strict_original_threshold": 97,
+    "two_fold_cosets": 32,
+    "projected_weight_per_coset_if_all_prior_checks_pass": 4,
+    "insufficient_agreement_max_cosets": 24,
+    "four_query_tail_bound": "81/256",
+    "queries_for_isolated_130bit_tail": 314,
+    "status": "Arithmetic consequence of a conditional folded-source threshold, not proof of its prior-domain derivation."
+  },
+  "limits": [
+    "Prior-domain absence to noClose for two skipped folds remains unproved.",
+    "Joint source-query/mixing/continuation composition remains to be instantiated.",
+    "Four-query bound is not an exhibited attack or measured acceptance rate.",
+    "Root binding, causality implementation and QROM remain open."
+  ]
+}

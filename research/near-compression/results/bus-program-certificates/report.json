@@ -1,0 +1,193 @@
+{
+  "status": "PASS",
+  "synthetic": [
+    {
+      "bits": 0,
+      "zero_case": true,
+      "kinds": {
+        "first": 2,
+        "transition": 2,
+        "last": 2
+      },
+      "residuals": 6,
+      "value_comparisons": 6,
+      "negative_checks": 6
+    },
+    {
+      "bits": 0,
+      "zero_case": false,
+      "kinds": {
+        "first": 2,
+        "transition": 2,
+        "last": 2
+      },
+      "residuals": 6,
+      "value_comparisons": 6,
+      "negative_checks": 6
+    },
+    {
+      "bits": 1,
+      "zero_case": true,
+      "kinds": {
+        "first": 2,
+        "transition": 2,
+        "last": 2
+      },
+      "residuals": 6,
+      "value_comparisons": 6,
+      "negative_checks": 6
+    },
+    {
+      "bits": 1,
+      "zero_case": false,
+      "kinds": {
+        "first": 2,
+        "transition": 2,
+        "last": 2
+      },
+      "residuals": 6,
+      "value_comparisons": 6,
+      "negative_checks": 6
+    },
+    {
+      "bits": 2,
+      "zero_case": true,
+      "kinds": {
+        "square": 1,
+        "multiplicity-link": 1,
+        "first": 2,
+        "transition": 2,
+        "last": 2
+      },
+      "residuals": 8,
+      "value_comparisons": 8,
+      "negative_checks": 8
+    },
+    {
+      "bits": 2,
+      "zero_case": false,
+      "kinds": {
+        "square": 1,
+        "multiplicity-link": 1,
+        "first": 2,
+        "transition": 2,
+        "last": 2
+      },
+      "residuals": 8,
+      "value_comparisons": 8,
+      "negative_checks": 8
+    },
+    {
+      "bits": 4,
+      "zero_case": true,
+      "kinds": {
+        "square": 3,
+        "multiplicity-link": 3,
+        "first": 2,
+        "transition": 2,
+        "last": 2
+      },
+      "residuals": 12,
+      "value_comparisons": 12,
+      "negative_checks": 12
+    },
+    {
+      "bits": 4,
+      "zero_case": false,
+      "kinds": {
+        "square": 3,
+        "multiplicity-link": 3,
+        "first": 2,
+        "transition": 2,
+        "last": 2
+      },
+      "residuals": 12,
+      "value_comparisons": 12,
+      "negative_checks": 12
+    }
+  ],
+  "captures": [
+    {
+      "profile": "near-pq384-gkr-bus-v1",
+      "capture": "/tmp/near-pq384-gkr-bus-full",
+      "kinds": {
+        "first": 260,
+        "transition": 260,
+        "last": 260
+      },
+      "formula_nodes": {
+        "mul": 12056,
+        "first": 260,
+        "sub": 1936,
+        "add": 12612,
+        "lit": 15266,
+        "current": 10296,
+        "trans": 260,
+        "next": 1040,
+        "last": 262
+      },
+      "interaction_bit_lengths": {
+        "1": 260
+      },
+      "negative_checks": 780,
+      "artifact": "results/bus-program-certificates/near-pq384-gkr-bus-full-bus-program.json",
+      "sha256": "aa9989e6f965dc8f96c663ce183caade0c840955280f83a424a27d25ccc7e52d",
+      "seconds": 1.093154767062515
+    },
+    {
+      "profile": "near-pq384-seed-gkr-bus-v1",
+      "capture": "/tmp/near-pq384-seed-gkr-bus-full",
+      "kinds": {
+        "first": 260,
+        "transition": 260,
+        "last": 260
+      },
+      "formula_nodes": {
+        "mul": 12056,
+        "first": 260,
+        "sub": 1936,
+        "add": 12612,
+        "lit": 15266,
+        "current": 10296,
+        "trans": 260,
+        "next": 1040,
+        "last": 262
+      },
+      "interaction_bit_lengths": {
+        "1": 260
+      },
+      "negative_checks": 780,
+      "artifact": "results/bus-program-certificates/near-pq384-seed-gkr-bus-full-bus-program.json",
+      "sha256": "8b2fe0caf2c4f838d92d7d3a345de293c6c90b9d07fc37466a341b88c339891d",
+      "seconds": 1.451063898857683
+    },
+    {
+      "profile": "near-pq384-gkr-bus-v1",
+      "capture": "/tmp/near-sha384-family267-proof",
+      "kinds": {
+        "first": 12,
+        "transition": 12,
+        "last": 12
+      },
+      "formula_nodes": {
+        "mul": 12926,
+        "first": 22,
+        "sub": 90,
+        "add": 12890,
+        "lit": 14294,
+        "current": 11554,
+        "trans": 12,
+        "next": 48,
+        "last": 12
+      },
+      "interaction_bit_lengths": {
+        "1": 12
+      },
+      "negative_checks": 36,
+      "artifact": "results/bus-program-certificates/near-sha384-family267-proof-bus-program.json",
+      "sha256": "6e3f3c5e445a76eb0fac46ccf384e9c22680b2ba53f86cd1815c715257585423",
+      "seconds": 1.5368414549157023
+    }
+  ],
+  "scope": "Executable group1 formula/register validation; no inverse gates in this profile. Not kernel capture proofs or randomized bus-balance security."
+}

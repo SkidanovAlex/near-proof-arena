@@ -1,0 +1,57 @@
+{
+  "upstream_commit": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+  "common_cells": 19631856,
+  "cached_cells": 0,
+  "expression_width_before": 24,
+  "expression_width_after": 328,
+  "expression_height": 32768,
+  "debug_constraints_passed": true,
+  "final_proof_generated": false,
+  "screened": 5790,
+  "best_frozen_free_column_screen": {
+    "height": 19,
+    "log_rate": 8,
+    "fold": 3,
+    "terminal_max": 10,
+    "final_log": 10,
+    "rounds": 3,
+    "widths": [
+      38
+    ],
+    "domains": [
+      24,
+      23,
+      22
+    ],
+    "queries": [
+      76,
+      59,
+      48
+    ],
+    "extension": 9,
+    "digest_bytes": 52,
+    "public_cached": true,
+    "fixed_bytes": 73077,
+    "query_value_bytes": 123232,
+    "raw_paths_bytes": 416633,
+    "expected_frontier_bytes": 351596.3975200999,
+    "expected_frontier_hashes": 2986.2961061557667
+  },
+  "raw_sha256": {
+    "run.log": "de9cbfb6f577afa59a04c78deda2e298d16c4a44e2aefbc12a5bfe37f7ad9b7a",
+    "clippy.log": "a537b77030c8027c2d6db35fd036e48339a0d139dc72bee1c2eb3dbbffd116b5",
+    "tests.rs": "000a6a30724a36fe5de828c15c1c4869d3897f1300437712a2408f64d1c48e33",
+    "dag-commit.rs": "e1870b8c2c0a8f38b9a597b1ff91f59e363fd9dc34836991b2f28c817e9791b2",
+    "symbolic-air.rs": "300e7cf48eb2356a6bb4010cc3b160de68d6463195bef15bdeb8a5e8cbb4542c",
+    "root-prover.rs": "b84fe6442707d9fbfbbbc78212602e2079ec6c0ca7236628fe18d8c220410f32",
+    "static-circuit.rs": "1a45a5941be17a4b8ea2430e6be814494d8374ed0a0f234ed9ae61aa27a6c26c",
+    "Cargo.lock": "76467b143beff28428cfbfbe02e6f2badac3922ad6ded02a7cc4859cec2e7d57"
+  },
+  "limitations": [
+    "Generic single-child BabyBear fixture with split hash AIR, not production RootProver.",
+    "Final trace only; earlier two proofs verified. No final serialized size claimed.",
+    "Source no-cache path binds a public DAG digest; caller must pin expected digest.",
+    "Screen retains prior fixed message counts and omits new public-value cost, column replacement, other security terms and changed verifier work.",
+    "No PQ128 or full NEAR or Lean correctness certification."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "tables": 33,
+  "opening_branches": 66,
+  "prover_seconds": 21.140145785175264,
+  "verifier_seconds": 0.7262588390149176,
+  "proof_json_bytes": 1360086,
+  "verification": "PASS: joint-opening full AIR diagnostic; joint soundness not established",
+  "scope": "AIR/local/bus fingerprint plus experimental joint PCS",
+  "limits": [
+    "New distinct-point sumcheck and adaptive virtual-source soundness unproved",
+    "Q8/Ext4; no security certification"
+  ]
+}

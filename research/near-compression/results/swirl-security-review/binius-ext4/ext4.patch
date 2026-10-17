@@ -1,0 +1,171 @@
+--- a/crates/examples/src/main.rs
++++ b/crates/examples/src/main.rs
+@@ -59,6 +59,7 @@
+ 			"Circuit verifying knowledge of a valid OpenID Connect login",
+ 		)
+ 		.circuit::<circuits::nearproof_sha384::NearproofSha384>("nearproof_sha384", "Diagnostic SHA384 transcript message")
++		.circuit::<circuits::nearproof_ext4::Ext4>("nearproof_ext4", "Diagnostic fused Ext4 multiplication")
+ 		.circuit::<circuits::nearproof_babybear::BabyBear>("nearproof_babybear", "Diagnostic canonical BabyBear multiplication")
+ 		.circuit::<circuits::nearproof_hash_graph::NearproofHashGraph>("nearproof_hash_graph", "Diagnostic connected SHA384 graph")
+ 		.run()
+--- a/crates/examples/src/circuits/mod.rs
++++ b/crates/examples/src/circuits/mod.rs
+@@ -26,3 +26,5 @@
+ pub mod nearproof_hash_graph;
+ 
+ pub mod nearproof_babybear;
++
++pub mod nearproof_ext4;
+--- a/crates/examples/src/circuits/nearproof_babybear.rs
++++ b/crates/examples/src/circuits/nearproof_babybear.rs
+@@ -5,7 +5,7 @@
+ use clap::Args;
+ use crate::ExampleCircuit;
+ const P:u64=2013265921;
+-fn constrain_mul(b:&CircuitBuilder,a:Wire,c:Wire,q:Wire,r:Wire) {
++pub(super) fn constrain_mul(b:&CircuitBuilder,a:Wire,c:Wire,q:Wire,r:Wire) {
+     let prime=b.add_constant_64(P);
+     for (name,wire) in [("a",a),("b",c),("q",q),("r",r)] {
+         b.assert_true(format!("{name} canonical"),b.icmp_ult(wire,prime));
+diff --git a/crates/examples/src/circuits/nearproof_ext4.rs b/crates/examples/src/circuits/nearproof_ext4.rs
+new file mode 100644
+index 0000000..8bc141c
+--- /dev/null
++++ b/crates/examples/src/circuits/nearproof_ext4.rs
+@@ -0,0 +1,136 @@
++//! Fused coefficient reductions for BabyBear[X]/(X^4-11).
++use anyhow::Result;
++use binius_core::word::Word;
++use binius_frontend::{CircuitBuilder,Wire,WitnessFiller};
++use clap::Args;
++use crate::ExampleCircuit;
++const P:u64=2013265921;
++type Wide=(Wire,Wire); // high,low
++fn add128(b:&CircuitBuilder,a:Wide,c:Wide)->Wide {
++    let (lo,carry)=b.iadd(a.1,c.1);
++    let (h0,overflow0)=b.iadd(a.0,c.0);
++    let (hi,overflow1)=b.iadd(h0,b.shr(carry,63));
++    b.assert_false("wide high sum overflow",overflow0);
++    b.assert_false("wide high carry overflow",overflow1);
++    (hi,lo)
++}
++fn constrain(b:&CircuitBuilder,a:[Wire;4],c:[Wire;4],q:[Wire;4],r:[Wire;4]) {
++    let prime=b.add_constant_64(P);let zero=b.add_constant_64(0);let eleven=b.add_constant_64(11);
++    for &word in a.iter().chain(c.iter()).chain(r.iter()) {b.assert_true("canonical coefficient",b.icmp_ult(word,prime));}
++    let mut terms:[Vec<Wide>;4]=std::array::from_fn(|_|Vec::new());
++    for i in 0..4 {for j in 0..4 {
++        let product=b.imul(a[i],c[j]);b.assert_zero("canonical product high",product.0);
++        let term=if i+j>=4 {b.imul(product.1,eleven)} else {product};
++        terms[(i+j)%4].push(term);
++    }}
++    for k in 0..4 {
++        let bound=b.add_constant_64([34,24,14,4][k]*P);
++        b.assert_true("bounded quotient",b.icmp_ult(q[k],bound));
++        let mut sum=terms[k][0];for &term in &terms[k][1..] {sum=add128(b,sum,term);}
++        let reconstructed=add128(b,b.imul(q[k],prime),(zero,r[k]));
++        b.assert_eq("coefficient identity high",sum.0,reconstructed.0);
++        b.assert_eq("coefficient identity low",sum.1,reconstructed.1);
++    }
++}
++fn quotient_remainder(a:[u64;4],b:[u64;4])->([u64;4],[u64;4]) {
++    let mut acc=[0u128;4];
++    for i in 0..4 {for j in 0..4 {acc[(i+j)%4]+=a[i] as u128*b[j] as u128*if i+j>=4 {11} else {1};}}
++    (acc.map(|v|(v/P as u128) as u64),acc.map(|v|(v%P as u128) as u64))
++}
++#[derive(Args,Debug,Clone)]
++pub struct Params { #[arg(long,default_value_t=16)] pub count:usize }
++#[derive(Args,Debug,Clone)]
++pub struct Instance {}
++pub struct Ext4 {rows:Vec<[[Wire;4];4]>}
++impl ExampleCircuit for Ext4 {
++    type Params=Params;type Instance=Instance;
++    fn build(params:Params,b:&mut CircuitBuilder)->Result<Self> {
++        anyhow::ensure!(params.count>0 && params.count<=100000,"count bound");
++        let rows=(0..params.count).map(|_| {
++            let a=std::array::from_fn(|_|b.add_inout());let c=std::array::from_fn(|_|b.add_inout());
++            let q=std::array::from_fn(|_|b.add_witness());let r=std::array::from_fn(|_|b.add_inout());
++            constrain(b,a,c,q,r);[a,c,q,r]
++        }).collect();Ok(Self{rows})
++    }
++    fn populate_witness(&self,_:Instance,w:&mut WitnessFiller<'_>)->Result<()> {
++        for (i,row) in self.rows.iter().enumerate() {
++            let mut a=std::array::from_fn(|j|((i*4+j) as u64*123456789+P-1)%P);
++            let c=std::array::from_fn(|j|((i*4+j) as u64*987654321+P-1)%P);
++            if i==0 && std::env::var_os("NEARPROOF_EXT4_BAD_INPUT").is_some() {a[0]-=1;}
++            let (q,r)=quotient_remainder(a,c);
++            for (wires,values) in row.iter().zip([a,c,q,r]) {for (wire,value) in wires.iter().zip(values) {w[*wire]=Word(value);}}
++        }Ok(())
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    fn reference(a:[u64;4],c:[u64;4])->[u64;4] {
++        let mut v=[0u64;7];
++        for i in 0..4 {for j in 0..4 {v[i+j]=(v[i+j]+a[i]*c[j])%P;}}
++        for k in (4..7).rev() {v[k-4]=(v[k-4]+11*v[k])%P;}
++        v[..4].try_into().unwrap()
++    }
++    #[test]
++    fn full_width_products_and_bad_witnesses() {
++        let b=CircuitBuilder::new();let row:[[Wire;4];4]=std::array::from_fn(|_|std::array::from_fn(|_|b.add_inout()));
++        constrain(&b,row[0],row[1],row[2],row[3]);let circuit=b.build();
++        let check=|data:[[u64;4];4],valid:bool| {
++            let mut w=circuit.new_witness_filler();
++            for (wires,values) in row.iter().zip(data) {for (wire,value) in wires.iter().zip(values) {w[*wire]=Word(value);}}
++            assert_eq!(circuit.populate_wire_witness(&mut w).is_ok(),valid);
++        };
++        let mut pairs=vec![([0;4],[0;4]),([P-1;4],[P-1;4]),([1;4],[P-1;4])];
++        for i in 0..4 {for j in 0..4 {let mut a=[0;4];let mut c=[0;4];a[i]=1;c[j]=1;pairs.push((a,c));}}
++        let mut x=18475u64;
++        for _ in 0..128 {
++            let a=std::array::from_fn(|_| {x=x.wrapping_mul(6364136223846793005).wrapping_add(1);x%P});
++            let c=std::array::from_fn(|_| {x=x.wrapping_mul(6364136223846793005).wrapping_add(1);x%P});pairs.push((a,c));
++        }
++        for (a,c) in pairs {
++            let (q,r)=quotient_remainder(a,c);assert_eq!(r,reference(a,c));check([a,c,q,r],true);
++            for k in 0..4 {
++                let mut bad=q;bad[k]+=1;check([a,c,bad,r],false);
++                let mut bad=r;bad[k]=(bad[k]+1)%P;check([a,c,q,bad],false);
++            }
++        }
++        let (mut q,mut r)=quotient_remainder([P-1;4],[P-1;4]);q[0]-=1;r[0]+=P;
++        check([[P-1;4],[P-1;4],q,r],false);
++        check([[P;4],[0;4],[0;4],[0;4]],false);
++    }
++    #[test]
++    fn measured_scalar_composition_reference() {
++        use binius_frontend::CircuitStat;
++        for (case,(av,cv)) in [([P-1;4],[P-1;4]),([0;4],[1;4]),([1,2,3,4],[P-1,7,11,31])].into_iter().enumerate() {
++            let b=CircuitBuilder::new();let a:[Wire;4]=std::array::from_fn(|_|b.add_inout());
++            let c:[Wire;4]=std::array::from_fn(|_|b.add_inout());let out:[Wire;4]=std::array::from_fn(|_|b.add_inout());
++            let mut fill:Vec<(Wire,u64)>=a.into_iter().zip(av).chain(c.into_iter().zip(cv)).collect();
++            let prime=b.add_constant_64(P);let zero=b.add_constant_64(0);let eleven=b.add_constant_64(11);
++            let mut mul=|x:Wire,y:Wire,xv:u64,yv:u64| {
++                let q=b.add_witness();let r=b.add_witness();let z=xv*yv;
++                super::super::nearproof_babybear::constrain_mul(&b,x,y,q,r);
++                fill.push((q,z/P));fill.push((r,z%P));(r,z%P)
++            };
++            let mut terms:[Vec<Wire>;4]=std::array::from_fn(|_|Vec::new());
++            for i in 0..4 {for j in 0..4 {
++                let (mut term,value)=mul(a[i],c[j],av[i],cv[j]);
++                if i+j>=4 {term=mul(term,eleven,value,11).0;}
++                terms[(i+j)%4].push(term);
++            }}
++            for k in 0..4 {
++                let mut sum=terms[k][0];
++                for &term in &terms[k][1..] {
++                    let (raw,carry)=b.iadd(sum,term);b.assert_false("addition overflow",carry);
++                    let (diff,_)=b.isub_bin_bout(raw,prime,zero);
++                    sum=b.select(b.icmp_ult(raw,prime),raw,diff);
++                }
++                b.assert_eq("extension coefficient",sum,out[k]);
++            }
++            fill.extend(out.into_iter().zip(reference(av,cv)));
++            let circuit=b.build();if case==0 {println!("SCALAR_REFERENCE\n{}",CircuitStat::collect(&circuit));}
++            let mut witness=circuit.new_witness_filler();for (wire,value) in fill {witness[wire]=Word(value);}
++            assert!(circuit.populate_wire_witness(&mut witness).is_ok());
++        }
++    }
++
++}

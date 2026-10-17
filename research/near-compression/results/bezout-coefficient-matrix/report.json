@@ -1,0 +1,11 @@
+{
+  "coprime_systems": 320,
+  "coefficient_actions": 10611,
+  "monomial_targets": 923,
+  "cramer_entries": 4396,
+  "empty_matrices": 24,
+  "constant_cases": 159,
+  "loose_p_degree_bounds": 168,
+  "noncoprime_negatives": 4,
+  "scope": "Explicit bounded Bezout matrix action, row inverse, nonzero determinant and Cramer coefficients. Source-degree rational denominator composition and protocol soundness remain open."
+}

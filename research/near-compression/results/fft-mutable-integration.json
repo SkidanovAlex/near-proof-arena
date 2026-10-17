@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2380,
+  "audit_log": "/tmp/root-fft-mutable-audit.log",
+  "new_theorems": 13,
+  "source_sha256": {
+    "FFTButterflyWrites": "91e69567c5e69a53688764b77ec210def661eba08e4c04c2ef57fb482d4aa8fc",
+    "FFTMutableSchedule": "d497f57d881617e0e598d7b526af2048b60d1447bb4b1b1124507465ba790317",
+    "SHA384CommittedBytes": "a38885b4ab9a3ff09cb9747ad6daa38e86b170eb127d7b004a5458b3c412047f"
+  },
+  "proved": [
+    "Sequential butterfly pair/block/stage writes refine functional FFT stages",
+    "Bit reversal plus all mutable stages yields natural-order polynomial evaluations and plus/minus leaf pair",
+    "Byte-sized fixed framing and padding constants decode to exact natural values without field aliasing"
+  ],
+  "remaining": [
+    "Native modular arithmetic and pointer/memory refinement",
+    "Lower-Mobius source transform implementation",
+    "Committed input bus matching/capacity and full semantic theorem",
+    "Complete recursion and128-bit quantum soundness"
+  ]
+}

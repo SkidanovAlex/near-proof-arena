@@ -1,0 +1,405 @@
+{
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "rows": [
+    {
+      "query_bits": 96,
+      "log_inverse_rate": 1,
+      "queries": 232,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 203680,
+      "leaf_bytes": 186368,
+      "payload_bytes": 399696,
+      "serialized_bytes": 399732,
+      "with_public_io_bytes": 444932
+    },
+    {
+      "query_bits": 96,
+      "log_inverse_rate": 2,
+      "queries": 142,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 155616,
+      "leaf_bytes": 125440,
+      "payload_bytes": 290704,
+      "serialized_bytes": 290740,
+      "with_public_io_bytes": 335940
+    },
+    {
+      "query_bits": 96,
+      "log_inverse_rate": 3,
+      "queries": 116,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 139040,
+      "leaf_bytes": 120320,
+      "payload_bytes": 269008,
+      "serialized_bytes": 269044,
+      "with_public_io_bytes": 314244
+    },
+    {
+      "query_bits": 96,
+      "log_inverse_rate": 4,
+      "queries": 106,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 149568,
+      "leaf_bytes": 112640,
+      "payload_bytes": 271856,
+      "serialized_bytes": 271892,
+      "with_public_io_bytes": 317092
+    },
+    {
+      "query_bits": 96,
+      "log_inverse_rate": 5,
+      "queries": 101,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 159648,
+      "leaf_bytes": 111616,
+      "payload_bytes": 280912,
+      "serialized_bytes": 280948,
+      "with_public_io_bytes": 326148
+    },
+    {
+      "query_bits": 96,
+      "log_inverse_rate": 6,
+      "queries": 99,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 166400,
+      "leaf_bytes": 122240,
+      "payload_bytes": 298288,
+      "serialized_bytes": 298324,
+      "with_public_io_bytes": 343524
+    },
+    {
+      "query_bits": 128,
+      "log_inverse_rate": 1,
+      "queries": 309,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 227264,
+      "leaf_bytes": 270080,
+      "payload_bytes": 506992,
+      "serialized_bytes": 507028,
+      "with_public_io_bytes": 552228
+    },
+    {
+      "query_bits": 128,
+      "log_inverse_rate": 2,
+      "queries": 189,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 196224,
+      "leaf_bytes": 161536,
+      "payload_bytes": 367408,
+      "serialized_bytes": 367444,
+      "with_public_io_bytes": 412644
+    },
+    {
+      "query_bits": 128,
+      "log_inverse_rate": 3,
+      "queries": 155,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 176768,
+      "leaf_bytes": 155264,
+      "payload_bytes": 341680,
+      "serialized_bytes": 341716,
+      "with_public_io_bytes": 386916
+    },
+    {
+      "query_bits": 128,
+      "log_inverse_rate": 4,
+      "queries": 141,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 177312,
+      "leaf_bytes": 160768,
+      "payload_bytes": 347728,
+      "serialized_bytes": 347764,
+      "with_public_io_bytes": 392964
+    },
+    {
+      "query_bits": 128,
+      "log_inverse_rate": 5,
+      "queries": 134,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 204096,
+      "leaf_bytes": 145408,
+      "payload_bytes": 359152,
+      "serialized_bytes": 359188,
+      "with_public_io_bytes": 404388
+    },
+    {
+      "query_bits": 128,
+      "log_inverse_rate": 6,
+      "queries": 131,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 221408,
+      "leaf_bytes": 150528,
+      "payload_bytes": 381584,
+      "serialized_bytes": 381620,
+      "with_public_io_bytes": 426820
+    },
+    {
+      "query_bits": 160,
+      "log_inverse_rate": 1,
+      "queries": 386,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 283968,
+      "leaf_bytes": 312576,
+      "payload_bytes": 606192,
+      "serialized_bytes": 606228,
+      "with_public_io_bytes": 651428
+    },
+    {
+      "query_bits": 160,
+      "log_inverse_rate": 2,
+      "queries": 236,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 236832,
+      "leaf_bytes": 197632,
+      "payload_bytes": 444112,
+      "serialized_bytes": 444148,
+      "with_public_io_bytes": 489348
+    },
+    {
+      "query_bits": 160,
+      "log_inverse_rate": 3,
+      "queries": 193,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 212032,
+      "leaf_bytes": 189312,
+      "payload_bytes": 410992,
+      "serialized_bytes": 411028,
+      "with_public_io_bytes": 456228
+    },
+    {
+      "query_bits": 160,
+      "log_inverse_rate": 4,
+      "queries": 176,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 218784,
+      "leaf_bytes": 190464,
+      "payload_bytes": 418896,
+      "serialized_bytes": 418932,
+      "with_public_io_bytes": 464132
+    },
+    {
+      "query_bits": 160,
+      "log_inverse_rate": 5,
+      "queries": 168,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 245440,
+      "leaf_bytes": 180224,
+      "payload_bytes": 435312,
+      "serialized_bytes": 435348,
+      "with_public_io_bytes": 480548
+    },
+    {
+      "query_bits": 160,
+      "log_inverse_rate": 6,
+      "queries": 164,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 266816,
+      "leaf_bytes": 184320,
+      "payload_bytes": 460784,
+      "serialized_bytes": 460820,
+      "with_public_io_bytes": 506020
+    },
+    {
+      "query_bits": 256,
+      "log_inverse_rate": 1,
+      "queries": 617,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 414336,
+      "leaf_bytes": 460416,
+      "payload_bytes": 884400,
+      "serialized_bytes": 884436,
+      "with_public_io_bytes": 929636
+    },
+    {
+      "query_bits": 256,
+      "log_inverse_rate": 2,
+      "queries": 378,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 343904,
+      "leaf_bytes": 306688,
+      "payload_bytes": 660240,
+      "serialized_bytes": 660276,
+      "with_public_io_bytes": 705476
+    },
+    {
+      "query_bits": 256,
+      "log_inverse_rate": 3,
+      "queries": 309,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 332672,
+      "leaf_bytes": 270080,
+      "payload_bytes": 612400,
+      "serialized_bytes": 612436,
+      "with_public_io_bytes": 657636
+    },
+    {
+      "query_bits": 256,
+      "log_inverse_rate": 4,
+      "queries": 281,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 326464,
+      "leaf_bytes": 284544,
+      "payload_bytes": 620656,
+      "serialized_bytes": 620692,
+      "with_public_io_bytes": 665892
+    },
+    {
+      "query_bits": 256,
+      "log_inverse_rate": 5,
+      "queries": 268,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 340128,
+      "leaf_bytes": 307200,
+      "payload_bytes": 656976,
+      "serialized_bytes": 657012,
+      "with_public_io_bytes": 702212
+    },
+    {
+      "query_bits": 256,
+      "log_inverse_rate": 6,
+      "queries": 262,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 400704,
+      "leaf_bytes": 284672,
+      "payload_bytes": 695024,
+      "serialized_bytes": 695060,
+      "with_public_io_bytes": 740260
+    },
+    {
+      "query_bits": 272,
+      "log_inverse_rate": 1,
+      "queries": 656,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 434304,
+      "leaf_bytes": 485376,
+      "payload_bytes": 929328,
+      "serialized_bytes": 929364,
+      "with_public_io_bytes": 974564
+    },
+    {
+      "query_bits": 272,
+      "log_inverse_rate": 2,
+      "queries": 402,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 361568,
+      "leaf_bytes": 325120,
+      "payload_bytes": 696336,
+      "serialized_bytes": 696372,
+      "with_public_io_bytes": 741572
+    },
+    {
+      "query_bits": 272,
+      "log_inverse_rate": 3,
+      "queries": 328,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 349088,
+      "leaf_bytes": 284672,
+      "payload_bytes": 643408,
+      "serialized_bytes": 643444,
+      "with_public_io_bytes": 688644
+    },
+    {
+      "query_bits": 272,
+      "log_inverse_rate": 4,
+      "queries": 299,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 343168,
+      "leaf_bytes": 300672,
+      "payload_bytes": 653488,
+      "serialized_bytes": 653524,
+      "with_public_io_bytes": 698724
+    },
+    {
+      "query_bits": 272,
+      "log_inverse_rate": 5,
+      "queries": 285,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 357536,
+      "leaf_bytes": 324608,
+      "payload_bytes": 691792,
+      "serialized_bytes": 691828,
+      "with_public_io_bytes": 737028
+    },
+    {
+      "query_bits": 272,
+      "log_inverse_rate": 6,
+      "queries": 279,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 421376,
+      "leaf_bytes": 302080,
+      "payload_bytes": 733104,
+      "serialized_bytes": 733140,
+      "with_public_io_bytes": 778340
+    }
+  ],
+  "best_per_query_budget": [
+    {
+      "query_bits": 96,
+      "log_inverse_rate": 3,
+      "queries": 116,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 139040,
+      "leaf_bytes": 120320,
+      "payload_bytes": 269008,
+      "serialized_bytes": 269044,
+      "with_public_io_bytes": 314244
+    },
+    {
+      "query_bits": 128,
+      "log_inverse_rate": 3,
+      "queries": 155,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 176768,
+      "leaf_bytes": 155264,
+      "payload_bytes": 341680,
+      "serialized_bytes": 341716,
+      "with_public_io_bytes": 386916
+    },
+    {
+      "query_bits": 160,
+      "log_inverse_rate": 3,
+      "queries": 193,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 212032,
+      "leaf_bytes": 189312,
+      "payload_bytes": 410992,
+      "serialized_bytes": 411028,
+      "with_public_io_bytes": 456228
+    },
+    {
+      "query_bits": 256,
+      "log_inverse_rate": 3,
+      "queries": 309,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 332672,
+      "leaf_bytes": 270080,
+      "payload_bytes": 612400,
+      "serialized_bytes": 612436,
+      "with_public_io_bytes": 657636
+    },
+    {
+      "query_bits": 272,
+      "log_inverse_rate": 3,
+      "queries": 328,
+      "algebra_bytes": 9648,
+      "merkle_bytes": 349088,
+      "leaf_bytes": 284672,
+      "payload_bytes": 643408,
+      "serialized_bytes": 643444,
+      "with_public_io_bytes": 688644
+    }
+  ],
+  "checks": [
+    "30 exact rational query sufficiency and minimality checks",
+    "matches all byte categories for three measured proofs",
+    "original rate3 proof still verifies"
+  ],
+  "scope": "Fixed GKR hash graph only; code rates up to 1/64; estimates for stronger query settings, not generated proofs.",
+  "limitations": [
+    "Query-only budgets 96/128/160/256/272 are sensitivity points, not claimed quantum security levels.",
+    "Unchanged 128-bit binary field and 32-byte SHA256 Merkle digests; no enlarged-field/hash costs.",
+    "No folding, algebraic, hash, Fiat-Shamir or recursive composition error budget established.",
+    "No arbitrary sampler, GKR arithmetic, prefix/PCS verifier, full NEAR, or Lean refinement.",
+    "Fixed public input/output count 45200B; graph/verifier-key transport excluded."
+  ]
+}

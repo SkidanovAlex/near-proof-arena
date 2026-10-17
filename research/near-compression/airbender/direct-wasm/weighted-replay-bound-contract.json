@@ -1,0 +1,35 @@
+{
+  "status": "proved conditional ideal-interactive replay bound; executable FS security not established",
+  "theorem": "weighted_replay_no_candidate_count",
+  "counted_event": "weightedReplayAccept for the actual endpoint/equality-weight/terminal replay and all global-chain queries, AND absence of a degree-bounded fixed-source polynomial satisfying the initial equality residual and T-point agreement",
+  "candidate_absence_is_input_premise": false,
+  "integer_bound": "badAcceptedCount * |S| <= E * |S|^n * N^q + |S|^(n+1) * (T-1)^q",
+  "E": "sum_{i<n} max(sizes(i+1),2)",
+  "normalized_bound_when_N_and_S_positive": "E/|S| + ((T-1)/N)^q",
+  "internally_derived": [
+    "Initial equality-weight vector and initial claim",
+    "Actual quadratic degree below3 for every prefix, including malformed/aborting branches",
+    "Parent and child weight factorization without dividing by accumulated scale",
+    "Endpoint/evaluation claim updates from the concrete Boolean replay checker",
+    "Constant terminal residual from the terminal scale/claim check",
+    "Prefix prechecks from domain injectivity and concrete quadratic shape",
+    "Indexed initial candidate implies the ordinary fixed-source candidate predicate",
+    "Adaptive extraction bad-count and exact with-replacement query-count composition using previously proved theorems"
+  ],
+  "remaining_premises": [
+    "One fixed initial received source oracle across all folding histories; this must come from the commitment/oracle interface before folding challenges.",
+    "Every accepted terminal root authenticates the complete disclosed constant oracle on its terminal domain. This is a binding interface, not a closeness assumption.",
+    "Halving sizes/degrees, nonzero domain points, squared child roots, signed parent halves and child-domain injectivity.",
+    "Causal FoldSnapshot equality between a complete path and each prechallenge prefix. It includes the parent oracle, consistency weights, tail weights, root geometry and sent quadratic; a prover cannot choose these after the challenge they are tested against.",
+    "Distinct finite field sample alphabet, independent uniform coordinate draws, and independent uniform query seeds with replacement after the complete terminal disclosure.",
+    "Strict folding regime 2N+D<3T. At rate four, T>=3D+1; the weaker tensor bound T>=3D is not sufficient here."
+  ],
+  "explicitly_not_proved_here": [
+    "Unknown/adversarial-root fixed-oracle extraction and its failure probability",
+    "Byte parser/hash transcript refinement of the complete executable verifier to the ideal strategy",
+    "Fiat-Shamir/QROM sampling or quantum extraction losses",
+    "The upstream weighted reduction/GKR/AIR and bus errors combined into a final protocol bound",
+    "128-bit security for diagnostic Q8/Ext4 parameters"
+  ],
+  "zero_scale": "Scale zero is allowed. The residual-only terminal check can accept different constants in this case. Full terminal root authentication and global query checks remain mandatory; the proof makes no cancellation/division assumption."
+}

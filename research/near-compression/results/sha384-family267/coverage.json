@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "basis": "Actual accepted verifier; first representative only proved per selected family. Coverage is framing/length shape, not recursive dataflow verification.",
+  "families": [
+    {
+      "tag": "merkle/node",
+      "part_lengths": [
+        197,
+        8,
+        48,
+        48
+      ],
+      "message_bytes": 376,
+      "compression_blocks": 4,
+      "calls": 5632,
+      "unique_calls": 4100,
+      "capture": "family-000.json",
+      "total_blocks": 22528,
+      "unique_blocks": 16400,
+      "source_cells_per_call": 2692496
+    },
+    {
+      "tag": "merkle/node",
+      "part_lengths": [
+        88,
+        8,
+        48,
+        48
+      ],
+      "message_bytes": 267,
+      "compression_blocks": 3,
+      "calls": 1216,
+      "unique_calls": 875,
+      "capture": "family-001.json",
+      "total_blocks": 3648,
+      "unique_blocks": 2625,
+      "source_cells_per_call": 1350848
+    }
+  ],
+  "coverage_percent": {
+    "calls": 49.99269966418455,
+    "unique_calls": 44.49512565960111,
+    "total_blocks": 63.01092869866641,
+    "unique_blocks": 58.38217694172523
+  },
+  "selected_family_layout_raw_bytes_all_calls": 67227074560,
+  "selected_family_layout_raw_bytes_deduplicated": 48884902400,
+  "bounded_length_shape_counts": {
+    "calls": 13694,
+    "unique_calls": 11177,
+    "total_blocks": 41237,
+    "unique_blocks": 32282
+  },
+  "prior_wrapper_gap": "Frozen v1 checked public length only; canonical IV/counts were provided in artifacts but not universally required by its wrapper. Bounded v2 enforces strict raw integer byte digest plus fixed standard IV/count tail. Root separately hardens earlier wrapper.",
+  "limits": [
+    "Raw source-cell extrapolation excludes auxiliaries, FFT, hash commitments, transcript and routing witness",
+    "No complete recursive verifier, zero-knowledge, QROM or128-bit security claim",
+    "Only one actual representative per family has or will have component proof evidence; no multiplication of proof-size into a secure full-verifier estimate"
+  ]
+}

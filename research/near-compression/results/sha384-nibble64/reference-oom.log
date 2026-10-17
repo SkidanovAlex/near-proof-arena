@@ -1,0 +1,28 @@
+Loaded source shapes [(4096, 274), (8192, 498), (64, 515), (4096, 33), (4096, 33), (4096, 33), (256, 29), (256, 29), (256, 29), (16, 25), (64, 514)]
+Committed source 0
+Committed source 1
+Committed source 2
+Committed source 3
+Committed source 4
+Committed source 5
+Committed source 6
+Committed source 7
+Committed source 8
+Committed source 9
+Committed source 10
+Source roots checked; generating Ext8 auxiliaries
+Auxiliary commitments complete
+Local table proved 0
+Local table proved 1
+Local table proved 2
+Local table proved 3
+Local table proved 4
+Local table proved 5
+Local table proved 6
+Local table proved 7
+Local table proved 8
+Local table proved 9
+Local table proved 10
+GKR proved
+Coefficient obligation checked (contract, 47.835s)
+Starting weighted PCS

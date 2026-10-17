@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "queries": 8,
+      "bytes_full_shared_derived": [
+        2088,
+        1960,
+        1736
+      ],
+      "total_weight_vectors": 8,
+      "pooled_weight_vectors": 4,
+      "logical_terms": 4
+    },
+    {
+      "queries": 309,
+      "bytes_full_shared_derived": [
+        2168,
+        2104,
+        1336
+      ],
+      "total_weight_vectors": 8,
+      "pooled_weight_vectors": 4,
+      "logical_terms": 4
+    }
+  ],
+  "rejections": [
+    "logical-offset",
+    "logical-height",
+    "logical-weight",
+    "logical-order",
+    "source-root",
+    "empty-terms",
+    "wrong-schema",
+    "out-of-bank",
+    "legacy-profile",
+    "changed-claim",
+    "query-budget",
+    "trailing",
+    "authentication",
+    "tensor-empty",
+    "tensor-row-shape",
+    "tensor-noncanonical"
+  ],
+  "native_and_reference_pooled_weights": true,
+  "scope": "Pooled and legacy bank descriptors in one PCS, with one state vector per physical lane. Execution-to-bank root/phase mapping and PQ soundness remain unproved/unintegrated."
+}

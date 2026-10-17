@@ -1,0 +1,146 @@
+{
+  "packing": {
+    "code_count_column": 88,
+    "tables": [
+      {
+        "table": 0,
+        "packed_bit_columns": 512,
+        "byte_columns": 64,
+        "remaining_width": 157,
+        "retained_source_constraints": 214,
+        "range_interactions": 64
+      },
+      {
+        "table": 1,
+        "packed_bit_columns": 96,
+        "byte_columns": 12,
+        "remaining_width": 114,
+        "retained_source_constraints": 281,
+        "range_interactions": 12
+      }
+    ],
+    "range_rows": 256,
+    "range_lookups": 224,
+    "max_range_multiplicity": 180,
+    "formal_refinement_proved": false
+  },
+  "input_source": "research/near-compression/results/native-packed-scaling/gas-failure5/input",
+  "status": "NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED",
+  "child_bytes": 378849,
+  "wire_census": {
+    "total": 378849,
+    "gkr": 8456,
+    "relations": 31432,
+    "stacking": 1840,
+    "whir": 336260,
+    "other": 861
+  },
+  "public_fields": 191,
+  "code_length": 5,
+  "closed_semantic_air": true,
+  "public_included": true,
+  "request_bytes": 198,
+  "total_child_plus_request_bytes": 379047,
+  "independent_Lean_runCall": {
+    "done": true,
+    "failed": true,
+    "gas": 3291023,
+    "stack": []
+  },
+  "eligibility": {
+    "code_length": 5,
+    "status": "PASS"
+  },
+  "public_mutations_rejected": 6,
+  "witness_independent_replay": true,
+  "transcript_oracle": {
+    "samples": 96,
+    "rejections": 5,
+    "draw_blocks": 13,
+    "final_state_equal": true,
+    "version": 4
+  },
+  "verifier_hash_cost": {
+    "tags": [
+      "leaf",
+      "node",
+      "init",
+      "observe_field",
+      "observe_commit",
+      "draw_block"
+    ],
+    "calls": [
+      2208,
+      7286,
+      1,
+      102,
+      6,
+      201
+    ],
+    "compression_blocks": [
+      2208,
+      7286,
+      1,
+      519,
+      12,
+      201
+    ],
+    "total_compression_blocks": 10227,
+    "scope": "single engine.verify call; excludes keygen and decoding"
+  },
+  "security": {
+    "hash": "SHA-384",
+    "field": "BabyBear[X]/(X^12-31)",
+    "query_target_bits": 268,
+    "grinding_bits": 0,
+    "parameters": {
+      "n_stack": 15,
+      "k": 3,
+      "log_blowup": 7,
+      "all_list": 1,
+      "queries": [
+        82,
+        63,
+        51,
+        43,
+        37
+      ],
+      "interaction_log": 26
+    },
+    "native_component_min_bits": 268.7638209393418,
+    "logup_bits": 331.57533223384377,
+    "proximity_bits": 320.9308746090779,
+    "query_bits": 268.7638209393418,
+    "certified": false
+  },
+  "backend_pin": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+  "exclusions": [
+    "custom transcript compiler/QROM applicability and concrete constants",
+    "recursive parent upgrade and knowledge composition",
+    "Lean field irreducibility and Rust refinement",
+    "native Rust/compiler AIR implementation refinement",
+    "cryptographic acceptance-to-execution Lean theorem",
+    "full NEAR1Pgas and performance target"
+  ],
+  "sha256": {
+    "Cargo.lock": "7a0e92b49ae35775174359c3f78eac06f30450fde00abb5752b3cbc98ac2a1ab",
+    "Cargo.toml": "517a141cee9d26e6f90d3afb0e053febafb54c7395d9ffc264bcaec8064dca48",
+    "backend.patch": "fc3f8ee331ed4d871ddb4e6b95b565cb52d5d8ce898a9e3886c7273b286a06ec",
+    "child.proof": "ba042e71b176b4f0fdeae6e846395f8d3144388b977d8c550a8071132ab5ad01",
+    "fixture.json": "50a20728b20645ad4153a8c3faaa1af44ad2539e4bcbb54b543951fc9681d8d5",
+    "literal.rs": "98767f88146cd103af5dab9218868c8a0d1eebc01b879db628242683993e4291",
+    "main.rs": "4835f88635a277edf9325fd09ba8d29f621c9f5351ec7427f3da4ffd2582eed6",
+    "native_digest_dictionary.rs": "289b77e62a3cb536872d17da4501f4b576cf04ec01f2fbe0b7d24b66de5e3830",
+    "native_sha384_config.rs": "932c4bbd8a9e95b7f0a2c11db20df8564d9a0ebac1705a3cb6401e8a733babde",
+    "packing.json": "fb74cc83041256ee793106ffb82b9c0995b68b04c9497ac5e03e148eea76f8b6",
+    "plonky3-ext12.patch": "cd82dbb5f650b277146db19eecaa93fc133c4095de429e0db36f60c7c6d83c50",
+    "prove.log": "9fbb972af4a7255c8ed265353cd59091c46daf7e2a7df89b82739ffcd63f3bad",
+    "public.bin": "18b308208f4b3164f48a5161dd9d47d258f91b80d765df184f1cce03a6b262e1",
+    "replay.log": "850a495f8366e4d6f9ec03aabe1bd60ea99698d5ef0e78d48f1f9c218ede86a4",
+    "rows-0.bin": "4b4281e9a3b6479ec53f0f0c4dfae1a7ec9298ed8435984109135d0611702931",
+    "rows-1.bin": "23d07875344c1205def22f4ee0b47320946dac93cc6820eb6e8a3c21915e369c",
+    "rows-2.bin": "11ab7652729d0138df6c861305a612b885cab4a41830ba79a5b136a73e33ab5c",
+    "spec.json": "93a48669b48b497f3d63642312f26887f0029e94a2291a65bc0b2b738206ad37",
+    "transcript-vectors.log": "80fddab771dcdd52a5c1ec97a04d00b54e341ef5f976a7692b7d20778f963693"
+  }
+}

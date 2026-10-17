@@ -1,0 +1,1 @@
+{"actual_setup_cases":7,"output_mutations_detected":49,"scope":"Actual runCall/public-output decoder parity; mutations tested against decoder, not cryptographic verifier","status":"PASS"}

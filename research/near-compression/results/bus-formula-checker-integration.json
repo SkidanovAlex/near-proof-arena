@@ -1,0 +1,44 @@
+{
+  "status": "LEAN_BUS_FORMULA_AND_MIXED_ACCUMULATION_CHECKED",
+  "module": "NearCompression/BusFormulaCheck.lean",
+  "theorems": [
+    "bus_formula_checked",
+    "bus_formula_checked_execution",
+    "air_bus_residual_checked",
+    "air_bus_mix_checked",
+    "air_bus_weighted_compiled",
+    "bus_formula_check_regressions"
+  ],
+  "proved": [
+    "Finite bus-formula checks derive exact literal/column/selector/arithmetic routes and executed formula values.",
+    "A mixed source AIR/bus list composes with checked ordered accumulation and reconstruction to yield its exact weighted formula sum at the emitted table root."
+  ],
+  "native": {
+    "report": "results/lean-rebuild-captures.json",
+    "diagnostic_assignments": 2,
+    "malformed_rejections": 24,
+    "auxiliary_formulas": 63,
+    "kinds": {
+      "square": 24,
+      "multiplicity-link": 24,
+      "first": 5,
+      "transition": 5,
+      "last": 5
+    },
+    "all_accumulator_residuals": 1291
+  },
+  "remaining": [
+    "Expected formulas are generated and checked against verified replay in Python; formal refinement from bus specification to that list remains open.",
+    "No zero residual extraction, randomized bus-security bound or global acceptance/execution theorem is claimed.",
+    "Recovered input identification, parser/transcript/commitment refinement, quantum security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3867,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

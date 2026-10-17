@@ -1,0 +1,72 @@
+{
+  "status": "PASS",
+  "terminal_profile": "affine-v1",
+  "branches": [
+    {
+      "table": 0,
+      "branch": 0,
+      "width": 5234,
+      "rows": 2048,
+      "seconds": 18.757879075128585
+    },
+    {
+      "table": 0,
+      "branch": 1,
+      "width": 24,
+      "rows": 2048,
+      "seconds": 0.11623289529234171
+    },
+    {
+      "table": 1,
+      "branch": 0,
+      "width": 1666,
+      "rows": 32,
+      "seconds": 0.11381041491404176
+    },
+    {
+      "table": 1,
+      "branch": 1,
+      "width": 24,
+      "rows": 32,
+      "seconds": 0.0022702040150761604
+    },
+    {
+      "table": 2,
+      "branch": 0,
+      "width": 191,
+      "rows": 32,
+      "seconds": 0.01194887375459075
+    },
+    {
+      "table": 2,
+      "branch": 1,
+      "width": 240,
+      "rows": 32,
+      "seconds": 0.015378820709884167
+    },
+    {
+      "table": 3,
+      "branch": 0,
+      "width": 179,
+      "rows": 32,
+      "seconds": 0.011570381000638008
+    },
+    {
+      "table": 3,
+      "branch": 1,
+      "width": 8,
+      "rows": 32,
+      "seconds": 0.0012087160721421242
+    }
+  ],
+  "source_sha256": [
+    "19c13e6ae3852a39824d04d83a25356de87c3327b73a3aea54c79a469ed7cfef",
+    "0c11f0bf4340938bfb17f7354cfc80e5fbce6c81946ff0697a78371685d9e756",
+    "1cd9ad0061379f127b427285c30ccbbc0c2443aed5b5207f601a22e747efb70c",
+    "885b505af0a4ba2a86b0af4f922cefa8f8de421c7cf9cc7c7ae28ae574edf54a"
+  ],
+  "contraction_seconds": 19.030309136025608,
+  "total_seconds": 84.1857040040195,
+  "reduction_sha256": "2d60831d171f615f737515def08b6ed0e132b7816082c9ba8167a9708b971bfa",
+  "scope": "All actual source/auxiliary coefficient claims sum to independently verified GKR input claim. Witness-side check only; no replacement for authenticated PCS."
+}

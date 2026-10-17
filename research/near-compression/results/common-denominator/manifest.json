@@ -1,0 +1,24 @@
+{
+  "scope": "Common-denominator-power normalization, numerator degrees, one family pole budget, and zero numerator from enough safe zero specializations. Generic Hensel circuit correspondence and full MCA remain open.",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_common_denominator.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/HenselBoundedReconstruction.lean": "958cdbeb5db7a5910d88fdd9c90128bca3ca4fe38817274e8bfe6f4fcda926c8",
+    "research/near-compression/NearCompression/HenselCoefficientStep.lean": "e1991951a5a2ad7de2cdc337610cb863a51a656118546cd841a3b750a761d0d4",
+    "research/near-compression/NearCompression/BivariateWeightedDegree.lean": "ba816b1f219e23e3a97e2a32b3d45544bc845d0561272a0b721cf50278ea6aac",
+    "research/near-compression/airbender/direct-wasm/test_hensel_bounded_reconstruction.py": "b67bb2202fb4572c53267e5c8917f9c3862d3518a1cab00c1fb3bc708085bce3",
+    "research/near-compression/airbender/direct-wasm/test_hensel_coefficient_step.py": "608f18f357f66021c8a3081ce4c8fd1425bbeff3572fbdba956225bec51ff9d6",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_curve_division.py": "caa6f88b112bdf9ca03d6682425ce69918fbc238532bf8412005bd664e26a52b",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/NearCompression/RationalSpecialization.lean": "708d0ca769a28256a03508c0d6d3b81a7642c4c0f44b0565d6d5ff0bac4c3fad",
+    "research/near-compression/airbender/direct-wasm/test_rational_specialization.py": "bf9fcdf3276b5c498f6e49350db4d5d9bb5a0de5822cec1e2aa66b500b3a561f",
+    "research/near-compression/NearCompression/CommonDenominator.lean": "ae502247718d92a532b265119c2099ac005580ac19b6839e057cb60de48963fc",
+    "research/near-compression/airbender/direct-wasm/test_common_denominator.py": "6bdc07e6b61b193b7e0594d71b21feae3bc07e7041d3a6338f02b3e4cb69e7d6",
+    "research/near-compression/results/common-denominator/report.json": "37202b06eaa6ac1ab00bdad1a5609d5bd889bb5004c804a4e3888c503dcdc0ba",
+    "research/near-compression/results/common-denominator/lean-audit.log.gz": "52e6c77d69e07f2c456dbb4bbbdb351425e66959808536b5d6578f0c0e0773f8"
+  }
+}

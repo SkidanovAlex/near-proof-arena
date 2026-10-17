@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2398,
+  "audit_log": "/tmp/root-lower-mobius-routing-audit.log",
+  "source_sha256": {
+    "LowerMobiusBitPass": "66cc0332f9ba35d2d4724ddcbea3ca403d36d1c2cba4c81c455e0ed5798f0d00",
+    "SHA384CommittedRouting": "3c5297b77110cdd74935fc22596662ec546ca4bdad489c3933d2cb0cdc58d32f"
+  },
+  "new_theorems": 9,
+  "proved": [
+    "Sequential lower-Mobius bit/index subtraction loop returns mobiusCoefficients",
+    "Native mask/XOR addressing agrees with modeled write",
+    "Every committed non-IV receive matches actual internal send via natural balance",
+    "Active input-table sends originate row0 and carry actual index/value"
+  ],
+  "remaining": [
+    "Classify all possible bus6 senders and derive exact index matching",
+    "Padding capacity and full committed SHA384 semantics",
+    "Native machine arithmetic/memory refinement",
+    "Complete recursion and128-bit quantum security"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "stages": 642,
+  "shared_merkle_authentication": {
+    "hash_tags": {
+      "merkle/leaf": {
+        "calls": 4047,
+        "framed_input_bytes": 1187828,
+        "compression_blocks": 12739
+      },
+      "merkle/node": {
+        "calls": 16697,
+        "framed_input_bytes": 5858686,
+        "compression_blocks": 53676
+      },
+      "merkle/root": {
+        "calls": 642,
+        "framed_input_bytes": 187206,
+        "compression_blocks": 1926
+      }
+    },
+    "total_hash_calls": 21386,
+    "total_sha384_compression_blocks": 68341,
+    "ext4_operation_calls": {}
+  },
+  "scope": "All actual shared-stage proofs authenticate once and expand exactly to full-verifier paths; full original verifier also passes.",
+  "limits": [
+    "Excludes AIR, shift, transcript, terminal disclosure and fold relation verification.",
+    "Not yet integrated as a verifier replacing expanded path checks.",
+    "Exact reference hash work, not circuit gate counts or a recursive proof.",
+    "Diagnostic Q8/Ext4 parameters unchanged."
+  ]
+}

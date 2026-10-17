@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1671,
+  "audit_log": "/tmp/near-wasm-construct-audit.log",
+  "module": "PreparedWasmConstruct",
+  "theorems_added": 7,
+  "source_parity": "prepared-construct-source-parity.json",
+  "contract": "ActualTableLocal+checkedrealpreparedcode constructs finiteexecution and proves realcallEntry, propagating livePC internally",
+  "remaining_assumptions": [
+    "Exact sourcefragment membership and TableLocal",
+    "Real preparedfunction lookup/check and finalend",
+    "Host gas/stack eligibility",
+    "Initial AIRfastgas equals hostremaining minusprologue"
+  ],
+  "remaining_goal_work": [
+    "Derive initialgas equality frompublicheaderconstraints",
+    "Relate finalcallEntrystate/error topublicoutput",
+    "Outer runCall and originalprepare provenance",
+    "FullWasm/host andfullNEAR coverage",
+    "Cryptographicproximity/RBR/QROM andrecursion"
+  ]
+}

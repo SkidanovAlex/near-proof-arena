@@ -1,0 +1,5 @@
+   Compiling prover v0.1.0 (/data/illia/nearproof-deps/airbender-prime-review-20261015/prover)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.57s
+     Running `target/debug/examples/near_wasm_commitment /data/illia/nearproof/research/near-compression/results/direct-wasm-air-export.json /data/illia/nearproof/research/near-compression/results/direct-wasm-commitment-data.json`
+[timing] base commit part: 104 cols 2^3, lde 4, 2 values/leaf -> LDE 107.572µs, tree 320.723µs
+exported 104-column RS commitment and 16 openings

@@ -1,0 +1,37 @@
+{
+  "status": "Design and source review; no implementation or security claim",
+  "upstream_precedent": {
+    "revision": "129f827003b34acd64a3315a5863eac75bc09fe6",
+    "packing": "prover/src/gkr/prover/stages/initial_commit.rs:99 packs groups of 2^p columns as concatenated Boolean tables, transforms the full n+p axes, then RS-encodes.",
+    "handoff": "prover/src/gkr/prover/mod.rs:2028 draws p extra coordinates after existing GKR claims, interpolates claims using merge_claims at line 2286, and appends coordinates as HIGH bits of base_layer_z.",
+    "limitations": "Packing branch asserts Keccak256Transcript at line 2034; subsequent transcript-seed conversion assumes Proth120. Reuse mathematical packing relation rather than enabling this branch unchanged with SHA384/BabyBear.",
+    "terminal_claims": "Packing occurs after per-column claims are collected at lines 1919-1961. Layer proofs retain final_step_evaluations (line 315). This pipeline reduces query leaf width but does not demonstrate a terminal circuit with logarithmic communication in the number of columns."
+  },
+  "commitment_relation": "Let W=2^c after zero-padding and T(row,column) be the Boolean table. F(X,Y)=sum_column eq(Y,column)*MLE(T_column)(X). Its scalar univariate RS encoding is the n+c variable monomial coefficient vector, NOT concatenation of separately encoded column RS codewords. Bind original width, padding, axis order, coefficient order, coset root, and scalar field in the commitment context.",
+  "safe_first_milestone": "Keep current terminal per-column evaluation vector v, commit to/source-root before v, absorb v before fresh random column point y, then check sum_j eq(y,j)*v_j = F(x,y) with a flat PCS opening. A wrong fixed vector is detected with error at most c/|K| by multilinear polynomial identity testing, conditional on binding PCS and common x. This only authenticates v; preserve the existing AIR terminal check on v.",
+  "gkr_second_milestone": "To omit v, compile the terminal AIR-expression DAG into a layered arithmetic circuit over the committed column slice. Prove the claimed aggregate via GKR, ending in a small set of evaluations of that SAME slice at random column points. Each equals F(x,y), which the flat PCS opens. Current and next slices require separate row points and a common source commitment; public values/selectors are fixed circuit inputs. Arbitrary wiring needs an efficiently evaluable wiring MLE or an additional authenticated lookup protocol. Do not replace an AIR nonlinear expression by the expression applied to a random column aggregate.",
+  "illustrative_sha_t_costs": {
+    "fixture": "n=13,width=544,base-field bytes=4,first fold=1,LDE=4,SHA384 digest=48 bytes,cap=1",
+    "wide_first_query_bytes": "2*544*4 + 14*48 = 5024 before framing, without multiproof sharing",
+    "fully_flat_first_query_bytes": "2*1*4 + 24*48 = 1160; padded width1024,dimension23,LDE dimension25 fits BabyBear two-adicity27",
+    "partial_pack32_first_query_bytes": "17 scalar lanes,dimension18: 2*17*4 + 19*48 =1048. No column padding for544/32=17; smaller domain than full flattening.",
+    "interpretation": "Width1 is not necessarily the minimum proof size or best prover choice. Partial packing retains a small vector batching obligation but saves padding, FFT work, path length and extra WHIR rounds. Optimize complete proof, not only first queries.",
+    "fft_work_proxy": "Full flat padding grows encoded scalar count by1024/544; FFT stage ratio25/15 gives roughly3.14x arithmetic proxy versus separate width544 length2^15 transforms. Partial pack32 preserves scalar count and increases FFT stages20/15, roughly1.33x. This is not a measured runtime; cache, threading and intermediate extension-field folds matter.",
+    "higher_security": "Hundreds of queries multiply both leaf and path costs. Multiproofs and earlier terminal disclosure can change the optimal packing factor substantially; recompute after a valid security schedule is selected."
+  },
+  "required_lemmas": [
+    "Multiaxis Möbius coefficients evaluate to the original Boolean table, with explicit low row bits and high column bits.",
+    "Packed evaluation equals interpolation of original column evaluations, including zero-padding and partial final groups.",
+    "A committed bad column-evaluation vector is caught by a fresh column point except for the stated polynomial root bound.",
+    "Terminal circuit computes exactly the existing AST evaluation, including public and next-row inputs.",
+    "Layered GKR residual claims reduce to a coherent committed input slice; no unbound witness-wire evaluations.",
+    "Scalar RS pair leaves and Merkle ordering implement the oracle queried by the chosen WHIR theorem."
+  ],
+  "recommended_order": [
+    "Implement configurable partial packing, beginning with32 for the wide sha_t fixture, while retaining existing terminal vectors.",
+    "Prove packing and slice-authentication identities and independently cross-check root/opening order.",
+    "Measure full proof at identical provisional parameters and record transform/memory costs.",
+    "Then implement terminal GKR and discharge actual AST/compiler/wiring obligations.",
+    "Only combine with new SHA384/QROM security profile after theorem prerequisites and quantitative parameters are settled."
+  ]
+}

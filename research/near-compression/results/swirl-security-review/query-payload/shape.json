@@ -1,0 +1,13 @@
+{
+  "old_queries": [
+    61,
+    30,
+    20
+  ],
+  "first_base_per_query": 240,
+  "later_values_per_query": [
+    16,
+    16
+  ],
+  "log_sha256": "aaf6156cbe352c59cd3f73b0715808947c2fb7960086ea3da8eaa5665169399d"
+}

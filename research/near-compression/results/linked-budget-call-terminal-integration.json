@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "audit_count": 3083,
+  "audit_log": "/tmp/root-linked-budget-call-terminal-audit.log",
+  "source_sha256": {
+    "SHA384ChunkCallChain": "cc1b81f13bba8cbb995edb87c43f13cf6062f3b01e8f88b82a0e8e1c45734b20",
+    "WeightedTerminalSemantics": "20e644f1f3093889f7d358540ed1b3c97333982069f6b286c02fea9bd08f5560",
+    "TerminalBooleanRowSemantics": "144999a83e18f0efae7ee0cef2fedda2f42180cd9314eef8df1e15da704a14d4",
+    "GKRPathCount": "e1b18924243ba8264cd8a5debfeb5327185eb757f8dadbd7defd5fca7c15cfc2"
+  },
+  "scope": "Full SHA384 from component HoldsP under explicit canonical-block/full-state/order/binding interfaces. Exact compiler weighted residual semantics at arbitrary field inputs; separate concrete-row specialization. Ideal linked checked-path acceptance count bounded by sum(4m+1)/|S|; correct final input and adjacent fixed-circuit linkage are explicit, not yet derived from cryptographic verification."
+}

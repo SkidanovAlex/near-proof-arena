@@ -1,0 +1,14 @@
+Loaded source shapes [(2048, 5234), (32, 1666), (32, 191), (32, 179)]
+Committed source 0
+Committed source 1
+Committed source 2
+Committed source 3
+Source roots checked; generating Ext8 auxiliaries
+Auxiliary commitments complete
+Local table proved 0
+Local table proved 1
+Local table proved 2
+Local table proved 3
+GKR proved
+Starting weighted PCS
+{"terminal_profile": "affine-v1", "weighted_pcs": {"queries": 309, "verified": true, "json_bytes": 10611429, "prove_seconds": 137.83837727690116, "verify_seconds": 0.9486606339924037, "source_roots_match_retained": true, "commitment_binding": "packed source roots before bus challenges; packed auxiliary roots/finals before local challenges"}, "coefficient_opening_target_checked": true, "opening_branches": [{"table": 0, "branch": 0, "width": 5234, "packing": 128, "lanes": 41}, {"table": 0, "branch": 1, "width": 24, "packing": 1, "lanes": 24}, {"table": 1, "branch": 0, "width": 1666, "packing": 32, "lanes": 53}, {"table": 1, "branch": 1, "width": 24, "packing": 4, "lanes": 6}, {"table": 2, "branch": 0, "width": 191, "packing": 4, "lanes": 48}, {"table": 2, "branch": 1, "width": 240, "packing": 4, "lanes": 60}, {"table": 3, "branch": 0, "width": 179, "packing": 4, "lanes": 45}, {"table": 3, "branch": 1, "width": 8, "packing": 4, "lanes": 2}], "corrupted_source_rejected": true, "status": "PASS", "source_sha256": ["19c13e6ae3852a39824d04d83a25356de87c3327b73a3aea54c79a469ed7cfef", "0c11f0bf4340938bfb17f7354cfc80e5fbce6c81946ff0697a78371685d9e756", "1cd9ad0061379f127b427285c30ccbbc0c2443aed5b5207f601a22e747efb70c", "885b505af0a4ba2a86b0af4f922cefa8f8de421c7cf9cc7c7ae28ae574edf54a"], "source_rows": [2048, 32, 32, 32], "global_bus_product_equal": true, "local_rounds": 26, "local_scalar_bytes": 4992, "gkr_layers": 20, "gkr_scalar_bytes": 38144, "zero_terminal_claim_verified": true, "direct_private_obligation_checked": true, "local_seconds": 24.630132179241627, "gkr_seconds": 81.86604763101786, "mutated_local_round_rejected": true, "scope": "Source hashes recorded and packed commitments match the external statement when PCS enabled. Optional weighted PCS uses retained source roots and fresh auxiliary roots in correct transcript order and verifies the GKR input opening; without it, full-vector diagnostic hashes/direct witness checks remain. This is still a diagnostic protocol, not a formal implementation/proximity/QROM/security certificate. No complete compact envelope measurement."}

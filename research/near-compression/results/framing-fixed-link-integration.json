@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_count": 3090,
+  "audit_log": "/tmp/root-framing-fixed-link-audit.log",
+  "framing_report": "results/sha384-hash-framing/report.json",
+  "source_sha256": {
+    "SHA384HashFraming": "b75914ac747948ee16bf03762e8c78fc4244506e961f32f82ee2c2c7feb874f2",
+    "GKRFixedLayerLink": "b0102b772066317fe8141c3e4ac8cec63fcbe665bccae0f89a939d13f6fdd4b3"
+  },
+  "scope": "Canonical hash frame and length encoding, exact executable byte parity. Adjacent honest GKR functional derived from actual query weights and fixed circuit evaluations on finite padded domain; transmitted claim binding and authenticated final PCS correctness remain explicit. No Fiat-Shamir/QROM/full NEAR target certification."
+}

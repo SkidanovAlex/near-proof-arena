@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3235,
+  "added_theorems": 4,
+  "source_sha256": "24c16fefb49303e6ced8445ee082fe42ad452abc36894bb3e5d802aedfe4ef40",
+  "audit_log": "/tmp/root-merkle-path-audit.log",
+  "audit_sha256": "b5cc9609a43b24201ce8d98349675c06381eea9fc0fb138628bc0edb568b6e03",
+  "parity_report": "results/sha384-merkle-path/report.json",
+  "honest_paths": 14,
+  "mutations": 16,
+  "exact_query_sequences": 22,
+  "result": "Different accepted same-index leaves imply distinct equal-hash framed inputs in the two actual path-query supports; each support has depth+2 entries.",
+  "limitations": [
+    "Fixed root/context/count/index and48-byte hash output interface",
+    "No collision probability or QROM bound",
+    "Fixed source-tree correctness/extraction and PCS integration remain open"
+  ]
+}

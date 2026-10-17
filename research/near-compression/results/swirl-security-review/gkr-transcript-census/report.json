@@ -1,0 +1,82 @@
+{
+  "status": "EXACT_GKR_HASH_PREIMAGES_REPLAYED",
+  "fixed_layout_specialization": {
+    "dynamic_preimages_identical": true,
+    "caller_layout_mutation_isolated": true,
+    "changed_claim_rejected": true,
+    "sha384_blocks": 4373
+  },
+  "calls": 2188,
+  "sha384_blocks": 14341,
+  "fixed_layout_blocks": 9968,
+  "dynamic_transcript_blocks": 4373,
+  "external_hashes": [
+    {
+      "tag": "public-prefix-debug-log",
+      "bytes": 189402,
+      "blocks": 1480,
+      "sha384": "cdfba835608b6b9a1b09418e658ef36807c4dd32ee06891958710885d03c454d58f12d52a8b41461445e1d534813d6db"
+    },
+    {
+      "tag": "statement-description-json",
+      "bytes": 35160,
+      "blocks": 275,
+      "sha384": "47f7a848762d3774de4551b89891ffab4c663e47e971a529a0c5e3791fe46cefdab80d2ae81a13200241a6559bab723f"
+    },
+    {
+      "tag": "continuation-binding-json",
+      "bytes": 93025,
+      "blocks": 727,
+      "sha384": "169d13212c721a0244a4faeca7952e732a02a6908146dad7ed94e714cbfba0c0704a17e330a1cda5727cf7f63dd5e88b"
+    }
+  ],
+  "total_dynamic_with_external": 6855,
+  "challenges": 437,
+  "squeeze_blocks": 437,
+  "rejected_words": 114,
+  "groups": {
+    "near-pq384-terminal-gkr-v1": {
+      "calls": 2,
+      "bytes": 1276028,
+      "blocks": 9970
+    },
+    "transcript/init": {
+      "calls": 1,
+      "bytes": 103,
+      "blocks": 1
+    },
+    "transcript/commit": {
+      "calls": 437,
+      "bytes": 81351,
+      "blocks": 874
+    },
+    "transcript/request": {
+      "calls": 437,
+      "bytes": 69483,
+      "blocks": 874
+    },
+    "transcript/squeeze": {
+      "calls": 437,
+      "bytes": 62491,
+      "blocks": 874
+    },
+    "transcript/ratchet": {
+      "calls": 437,
+      "bytes": 79971,
+      "blocks": 874
+    },
+    "transcript/draw-result": {
+      "calls": 437,
+      "bytes": 78223,
+      "blocks": 874
+    }
+  },
+  "unique_preimages": 2188,
+  "limitations": [
+    "One root Ext4 diagnostic transcript; rejection count is instance-specific.",
+    "Only fixed layout hash can be precomputed without changing current protocol.",
+    "Debug-log/JSON boundary is current diagnostic format, not a production circuit codec.",
+    "Native prefix/PCS Poseidon hashing and arithmetic circuit costs excluded.",
+    "No generated hash proof, recursive closure, PQ128 or full NEAR claim."
+  ]
+}

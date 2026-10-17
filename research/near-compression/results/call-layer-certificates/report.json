@@ -1,0 +1,147 @@
+{
+  "status": "PASS",
+  "captures": [
+    {
+      "case": 0,
+      "capacity": 8192,
+      "result": {
+        "gates": 8210,
+        "layers": 14,
+        "nodes": 17985,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "route_counts": {
+        "initial": 6529,
+        "computed": 6528,
+        "relayed": 16,
+        "padding": 1652
+      },
+      "seconds": 1.8249566280283034,
+      "sha256": "58d10bcf848afd818a79787ca8730179da984bc462efdf3ee9a7d99b50d7431f"
+    },
+    {
+      "case": 1,
+      "capacity": 8192,
+      "result": {
+        "gates": 8210,
+        "layers": 14,
+        "nodes": 17985,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "route_counts": {
+        "initial": 6529,
+        "computed": 6528,
+        "relayed": 16,
+        "padding": 1652
+      },
+      "seconds": 1.8357169041410089,
+      "sha256": "58d10bcf848afd818a79787ca8730179da984bc462efdf3ee9a7d99b50d7431f"
+    },
+    {
+      "case": 2,
+      "capacity": 2,
+      "result": {
+        "gates": 10,
+        "layers": 3,
+        "nodes": 9,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "route_counts": {
+        "initial": 5,
+        "computed": 4,
+        "relayed": 2,
+        "padding": 1
+      },
+      "seconds": 0.6537564848549664,
+      "sha256": "9cd48f57d18b27c22a86e60123d5927aec60ec7ff0d52785301e8aed45092fbf"
+    },
+    {
+      "case": 3,
+      "capacity": 2,
+      "result": {
+        "gates": 2,
+        "layers": 1,
+        "nodes": 5,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "route_counts": {
+        "initial": 2,
+        "computed": 1,
+        "relayed": 0,
+        "padding": 0
+      },
+      "seconds": 0.6464076852425933,
+      "sha256": "2b1934e3fb8e63d3761dc0e20c5ae5422340143fae5adb84afd5b5361c920dac"
+    },
+    {
+      "case": 4,
+      "capacity": 2,
+      "result": {
+        "gates": 2,
+        "layers": 1,
+        "nodes": 5,
+        "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+        "status": "PASS"
+      },
+      "route_counts": {
+        "initial": 2,
+        "computed": 1,
+        "relayed": 0,
+        "padding": 0
+      },
+      "seconds": 0.6624969220720232,
+      "sha256": "3478219630c03e41c201d54c2a8bb8c92ff4f7a2292b89c232d9d72fb2277a4b"
+    }
+  ],
+  "negative_cases": [
+    {
+      "case": "cyclic-node",
+      "reason": "uncaught exception: stored bundle rejected"
+    },
+    {
+      "case": "misplaced-initial-input",
+      "reason": "uncaught exception: stored bundle rejected"
+    },
+    {
+      "case": "changed-constant",
+      "reason": "uncaught exception: stored bundle rejected"
+    },
+    {
+      "case": "nonzero-reserved-slot",
+      "reason": "uncaught exception: stored bundle rejected"
+    },
+    {
+      "case": "wrong-zero-gate",
+      "reason": "uncaught exception: stored bundle rejected"
+    },
+    {
+      "case": "missing-final-root",
+      "reason": "uncaught exception: stored bundle rejected"
+    },
+    {
+      "case": "invalid-source-node",
+      "reason": "uncaught exception: noncanonical/out-of-range node key"
+    },
+    {
+      "case": "out-of-range-live-position",
+      "reason": "uncaught exception: stored bundle rejected"
+    },
+    {
+      "case": "unknown-opcode",
+      "reason": "uncaught exception: unknown operation"
+    }
+  ],
+  "source_fixture_sha256": "81b2be971a24bb77e543ac355308f79169bf153f7694ab04ae32968d037f0dfc",
+  "files": {
+    "airbender/direct-wasm/test_call_layer_certificates.py": "ba126d98e50f7b528dc994010e700246fa9f75effb01070950d9cd4e6705ac04",
+    "airbender/direct-wasm/sha384_call_pcs.py": "63ae695727b6fb92ab939d4ad7e90e992a160d71d56601d1d55cd7da66ba8619",
+    "CheckStoredRoutes.lean": "139e68258955821a7192e449a8484485a15e3dc1e41505e7d80e06d9e3bd3e92",
+    "NearCompression/CallCircuitCheck.lean": "45f51578552c8382fba4b4ed3f60916599257ef56d28770e5c1062dc1cf9fa53",
+    "airbender/direct-wasm/check_terminal_dag_certificates.py": "1770411648f9656f355172ebf4e80215bbfe922b4b02c45e666727a27b0cd852"
+  },
+  "scope": "Exact call DAGs from prior checked fixtures are lowered by the actual compiler and accepted by the proved Lean layer checker. The existing composition theorem identifies the layered root with dot-minus-claim for all private inputs. Runtime checker execution is not kernel reduction of these JSON fixtures; parser refinement, transcript/PCS/QROM composition and full recursion remain open."
+}

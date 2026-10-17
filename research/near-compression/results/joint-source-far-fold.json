@@ -1,0 +1,42 @@
+{
+  "status": "Frozen; standalone Lean check PASS",
+  "module": "NearCompression.JointSourceFarFold",
+  "check": {
+    "seconds": 0.165,
+    "exit_code": 0,
+    "warnings": 0
+  },
+  "theorems": [
+    "joint_source_initial_candidate",
+    "joint_source_far_checked_count"
+  ],
+  "literal_acceptance": "checkedFoldAccept over jointSourceStrategy. Stage-0 root and oracle are defined from omega and jointBetaSource; weights, claims, terminal data and later oracles may be arbitrary and are checked by existing folding predicates. Malformed/aborted fold paths reject.",
+  "assumptions": [
+    "One fixed ordered source oracle family and beta family before joint coordinates",
+    "Each beta coordinate-affine (concrete one-table GKR family proved separately)",
+    "No shared prechallenge degree<D joint representative on T common agreement points",
+    "Distinct finite domain and sample",
+    "2*N+D<3*T and D-1<T",
+    "Positive halving domain/degree schedule and characteristic not two",
+    "Fold snapshots causal; each fold challenge equals its assigned sampled coordinate"
+  ],
+  "not_assumed": [
+    "Initial candidate absence",
+    "Tensor interpolation identity",
+    "Honest source polynomials",
+    "All paths valid",
+    "A whole verifier-soundness premise"
+  ],
+  "bound": "For L=|S|, E=sum_i max(N_(i+1),2), accepted count * L <= q*max(N,2)*L^(q-1)*(L^rounds*N^queries)*L + L^q*(E*L^rounds*N^queries + L^(rounds+1)*(T-1)^queries). For positive denominators normalized bound is (q*max(N,2)+E)/L + ((T-1)/N)^queries.",
+  "scope": [
+    "This is the FAR branch only. Existence of a universal representative is handled by a different near-case theorem not yet established for full AIR.",
+    "Actual multi-table fixed-envelope beta/slot mapping and embedding of earlier adaptive transcript into the product tape remain.",
+    "Sparse-lift-image recovery is not needed in the far branch but is required to interpret a reconstructed near-case tuple as original branches.",
+    "Merkle commitment source binding and FS/QROM remain external."
+  ],
+  "dependencies": [
+    "MultiaffineTensorRealization (5): exact interpolation and candidate event transport",
+    "GKRJointTensorCandidate (5): actual one-table beta map, fixed-family reconstruction and candidate count",
+    "CheckedInteractiveFoldSoundness: actual checked fold predicate and causal bad-event/query bound"
+  ]
+}

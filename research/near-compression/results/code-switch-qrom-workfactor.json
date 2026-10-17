@@ -1,0 +1,115 @@
+{
+  "status": "CONDITIONAL_WORK_FACTOR_SCREEN_NOT_SECURITY_CERTIFICATE",
+  "rows": [
+    {
+      "old_query_bits_per_stage": 134,
+      "assumed_log2_C": 0,
+      "nominal_max_integer_log2_Q_for_half_success": 65,
+      "minimum_arithmetic_extension_for_half_epsilon_budget": 10,
+      "minimum_hash_bits_for_quarter_success_budget": 388,
+      "isolated_required_stage_queries_at_logQ128": [
+        281,
+        90,
+        90,
+        281
+      ],
+      "target_log2_Q": 128,
+      "target_success_probability": "1/2",
+      "source_algebra_frozen": true
+    },
+    {
+      "old_query_bits_per_stage": 134,
+      "assumed_log2_C": 8,
+      "nominal_max_integer_log2_Q_for_half_success": 61,
+      "minimum_arithmetic_extension_for_half_epsilon_budget": 11,
+      "minimum_hash_bits_for_quarter_success_budget": 396,
+      "isolated_required_stage_queries_at_logQ128": [
+        290,
+        92,
+        92,
+        290
+      ],
+      "target_log2_Q": 128,
+      "target_success_probability": "1/2",
+      "source_algebra_frozen": true
+    },
+    {
+      "old_query_bits_per_stage": 198,
+      "assumed_log2_C": 0,
+      "nominal_max_integer_log2_Q_for_half_success": 97,
+      "minimum_arithmetic_extension_for_half_epsilon_budget": 10,
+      "minimum_hash_bits_for_quarter_success_budget": 388,
+      "isolated_required_stage_queries_at_logQ128": [
+        281,
+        90,
+        90,
+        281
+      ],
+      "target_log2_Q": 128,
+      "target_success_probability": "1/2",
+      "source_algebra_frozen": true
+    },
+    {
+      "old_query_bits_per_stage": 198,
+      "assumed_log2_C": 8,
+      "nominal_max_integer_log2_Q_for_half_success": 93,
+      "minimum_arithmetic_extension_for_half_epsilon_budget": 11,
+      "minimum_hash_bits_for_quarter_success_budget": 396,
+      "isolated_required_stage_queries_at_logQ128": [
+        290,
+        92,
+        92,
+        290
+      ],
+      "target_log2_Q": 128,
+      "target_success_probability": "1/2",
+      "source_algebra_frozen": true
+    },
+    {
+      "old_query_bits_per_stage": 220,
+      "assumed_log2_C": 0,
+      "nominal_max_integer_log2_Q_for_half_success": 98,
+      "minimum_arithmetic_extension_for_half_epsilon_budget": 10,
+      "minimum_hash_bits_for_quarter_success_budget": 388,
+      "isolated_required_stage_queries_at_logQ128": [
+        281,
+        90,
+        90,
+        281
+      ],
+      "target_log2_Q": 128,
+      "target_success_probability": "1/2",
+      "source_algebra_frozen": true
+    },
+    {
+      "old_query_bits_per_stage": 220,
+      "assumed_log2_C": 8,
+      "nominal_max_integer_log2_Q_for_half_success": 94,
+      "minimum_arithmetic_extension_for_half_epsilon_budget": 11,
+      "minimum_hash_bits_for_quarter_success_budget": 396,
+      "isolated_required_stage_queries_at_logQ128": [
+        290,
+        92,
+        92,
+        290
+      ],
+      "target_log2_Q": 128,
+      "target_success_probability": "1/2",
+      "source_algebra_frozen": true
+    }
+  ],
+  "input_sha256": "e5ebbc5c5c015a22a68853cfcb787040f9f90f462d4a533c1f98b1bc9118ed6c",
+  "formula": "C*(Q^2*epsilon+3*(Q^3+Q)/2^h)",
+  "primary_source": "https://www.pratyush.site/publication/soundnessnotions/soundnessNotions.pdf",
+  "primary_source_sha256": "e95696372fd879e8ac3c0a2d2612cfa3d168bc50d8b68fcceb19b745a3bd27a1",
+  "theorem_route": "BCS compilation of round-by-round sound IOP; CMS19 Theorem8.6 via Soundness Notions Corollary1.6. Exact constants and compiler correspondence uninstantiated.",
+  "obligations": [
+    "Define doomed states at every transcript boundary and show false statements begin doomed.",
+    "For every fixed doomed prefix and every next prover message, bound escape over the next independent challenge.",
+    "Show all accepting terminal transcripts are non-doomed; connect to full NEAR transition semantics.",
+    "Prove adaptive committed-oracle extraction and the implemented transcript is the required BCS transform.",
+    "Instantiate explicit reduction constants, verifier overhead, hash domains and uniform challenge sampling.",
+    "Establish knowledge soundness separately if recursive extraction requires it."
+  ],
+  "scope": "Nominal C=1 and256 sensitivity; neither is a certified constant. Partial error is hypothetically substituted for RBR epsilon, NOT justified by existing total-path bounds. Failure to certify is not an attack or a security upper bound. New extension/hash/query minima hold other algebra counts fixed; changing parameters requires recomputation. Only Ext8 implemented here. Larger extension, digest and source/auxiliary widths change proof size. SHA384 is not upgraded by this report. No gate changed."
+}

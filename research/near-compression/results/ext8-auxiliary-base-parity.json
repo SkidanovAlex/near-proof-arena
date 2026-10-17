@@ -1,0 +1,34 @@
+{
+  "status": "EXACT_AUXILIARY_GENERATOR_PARITY",
+  "cases": 16,
+  "auxiliary_base_cells_compared": 814800,
+  "reference_seconds": 13.88707233313471,
+  "base_evaluation_seconds": 2.244588968809694,
+  "large_case": {
+    "rows": 512,
+    "reference_seconds": 13.743900607805699,
+    "base_evaluation_seconds": 2.016133711207658
+  },
+  "scope": "Exact parity for synthetic nonboolean multiplicities, next/public/selector expressions, empty messages/multiplicities, zero factors, two source rows of all11retained tables, and512retained round rows. Not full-trace equivalence, a Lean refinement, or a changed verifier. Timing is this bounded CPU test only.",
+  "input_sha256": {
+    "results/sha384-nibble64/statement.json.gz": "32c18d1dd33c9bd6949de80861acf5f4c5df94b4843af0b6039f76662cb09fbc",
+    "results/sha384-nibble64/source-00-rows.json.gz": "27677668a04785abb5aca09bfae3b9873099c06554792201dd97a2866e8cef24",
+    "results/sha384-nibble64/source-01-rows.json.gz": "3bb19014bf6011c143ad75e2ae81b7aef487dea85593f786c8ba728470a0077b",
+    "results/sha384-nibble64/source-02-rows.json.gz": "e677e147b493f175e0e5d8e2fa3bc581c9298c0ccdd344cb0793c2e948c5c603",
+    "results/sha384-nibble64/source-03-rows.json.gz": "e9b4fedef66077ae4212f9592e1ef27340cce1ae01fa95eaaf57455aa7dd1b4c",
+    "results/sha384-nibble64/source-04-rows.json.gz": "fe8e7f17ff9af45b34a36865d4accd226cd89034b49c84fbb697ecf49530dd23",
+    "results/sha384-nibble64/source-05-rows.json.gz": "cf5cbda1fbfb436bdeec8bc30fdeff9fadaf0c0c16e959d967ef10fad1840b1a",
+    "results/sha384-nibble64/source-06-rows.json.gz": "38eac2de358949f341ec582ea7fd0f0abae76b014747a22ccbf04e198f9f758f",
+    "results/sha384-nibble64/source-07-rows.json.gz": "b6cbbbc91179665adbd74952e0a50a222e21aa6800f473a256dc1cf166f1c647",
+    "results/sha384-nibble64/source-08-rows.json.gz": "7cd857b27d200d4365f4f347a3d84b7e894357dfc76a5bce80cbb3ea6fa8a231",
+    "results/sha384-nibble64/source-09-rows.json.gz": "887a570f3d6bbe22bf22638b2007c29e34c96b6eb91b1d5791af3a9eb806f943",
+    "results/sha384-nibble64/source-10-rows.json.gz": "c0fc3acd761d6378d486d9868871b1f8acecf052707811f844dd38832109f23d"
+  },
+  "sha256": {
+    "airbender/direct-wasm/test_ext8_auxiliary_base.py": "7704896f6bcd2b35531ce6c86083176cde4187a5b33fa75ecdb4467384e2cbd3",
+    "airbender/direct-wasm/pq384_ext8_auxiliary_base.py": "e1fa7547fe359cd6f4f97ab7b492c250545dffaceeaec16f2bc0a1440b17544a",
+    "airbender/direct-wasm/pq384_ext8_auxiliary.py": "f8e8eb9e62941fae14a0604aa5babf9422e9a5fe4fcf431e054b0c56020d1e49",
+    "airbender/direct-wasm/pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a",
+    "airbender/generic-air/reference.py": "f1f62d7c93eb8e64625547a43eeb89950303101e3f210aa5c0ba954a064c9402"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "before": {
+    "const": 599,
+    "input": 5983,
+    "add": 82498,
+    "sub": 68785,
+    "mul": 382848
+  },
+  "after": {
+    "const": 599,
+    "input": 5983,
+    "add": 82498,
+    "sub": 98884,
+    "mul": 367934
+  },
+  "multiplications_removed": 14914,
+  "subtractions_added": 30099,
+  "multiplication_to_subtraction_break_even": 2.018170846184793,
+  "implementation_sha256": "4aaf9fb3e1cdd1f6db009edc7b42f7fdf72a19b9aabaed08db30be71c50e008f",
+  "arbitrary_input_parity": [
+    "zero",
+    "one",
+    "random"
+  ],
+  "scope": "Arithmetic DAG only; no recursive proof-size or PQ128 claim."
+}

@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "exact_statement_preserved": true,
+  "old_expanded_core_blocks": 125704,
+  "new_configured_core_blocks": 20130,
+  "new_configuration_setup_blocks": 13737,
+  "new_setup_and_core_blocks": 33867,
+  "hash_block_reduction_including_setup": 0.7305813657481066,
+  "negative_cases": 18,
+  "limits": [
+    "Expanded core comparison; outer wrapper AIR check excluded from both.",
+    "No runtime speedup or recursive proof claim."
+  ]
+}

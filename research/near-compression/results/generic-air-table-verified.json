@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "honest_table_proofs_accepted": 2,
+  "mutations_rejected": 66,
+  "source_lean_residual_comparisons": 168,
+  "source_constraints": 7,
+  "source_max_degree": 16,
+  "zerocheck_max_degree": 17,
+  "nonzero_degree17_coefficient_exercised": true,
+  "table_rows": 8,
+  "table_columns": 2,
+  "current_and_cyclic_next_authenticated": true,
+  "fresh_invalid_trace_opening_verified": true,
+  "fresh_invalid_trace_constraint_proof_rejected": true,
+  "verifier_witness_used": false,
+  "protocol_stages": [
+    "canonical AIR zerocheck",
+    "current/cyclic-next reduction",
+    "original-column WHIR opening"
+  ],
+  "limitations": [
+    "Table-local proof only. Declared interactions do not imply bus balance or HoldsP.",
+    "Fixed8row toy PCS; no PQ security or production proof-size claim.",
+    "No full Lean verifier implementation refinement or full NEAR state-transition proof."
+  ],
+  "upstream_commit": "129f827003b34acd64a3315a5863eac75bc09fe6",
+  "sha256": {
+    "airbender/direct-wasm/table_constraint_whir.py": "ed5d77aab5f788a90f26184224f932b1f98a3421cc34601ee8f26f9a2ae31d83",
+    "airbender/direct-wasm/run_table_constraint_whir.py": "8bc8b7672e2568bf8f9069482c27d5c3216d40777bea27c856e651821f1bbca2",
+    "airbender/direct-wasm/near_air_commitment.rs": "c018b55f6d4fd9c3e208e905c0375b63fc927e0f96d4532bf3f674c262d8617c",
+    "airbender/direct-wasm/near_air_table_whir.rs": "eb355eb0eba902c1049144f607fae1401dd2fb9fc512eac11bc49a3eafab4ecf",
+    "airbender/direct-wasm/verify_whir_toy.py": "750247ebb4beb6a9ae3cc21513d4de13973efacd70927a4a226125fce87aec51",
+    "airbender/generic-air/TableFixture.lean": "4b8c686678e93d5fd7a9300ec86041904fa9e5c09adf1a9f3735b411507d3b6a",
+    "results/generic-air-table-proof.json": "0db850e6df35b5ac39dd98b150556679ce8f8ec0a957d28011eca2512bdfab6b"
+  }
+}

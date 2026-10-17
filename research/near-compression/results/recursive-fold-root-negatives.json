@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "fold_rows": 256,
+  "residual_outputs": 768,
+  "negative_cases": 18,
+  "cases": [
+    "omitted row",
+    "duplicate row preserving count",
+    "reordered rows",
+    "omitted residual output",
+    "duplicate residual output",
+    "wrong source provenance",
+    "wrong next pair side",
+    "wrong transcript challenge slot",
+    "substituted challenge value",
+    "zero domain point",
+    "wrong source Merkle leaf",
+    "wrong folded Merkle leaf",
+    "wrong caller header",
+    "missing query",
+    "duplicated query",
+    "wrong commitment",
+    "wrong odd witness with recomputed commitment",
+    "opposite nonzero residuals cancel in sum but vector rejected"
+  ],
+  "seconds": 6.821904195006937,
+  "scope": "Full disclosed fold trace only; host evaluates each output. No scalar GKR conjunction proof or recursive security claim."
+}

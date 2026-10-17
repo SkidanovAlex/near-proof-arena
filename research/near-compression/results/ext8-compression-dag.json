@@ -1,0 +1,31 @@
+{
+  "status": "PASS_CAPTURE_AND_INDEPENDENT_REPLAY",
+  "queries": 309,
+  "replay": {
+    "unique_records": 27538,
+    "unique_hash_inputs": 12762,
+    "unique_input_compressions": 39701,
+    "total_observed_compressions": 177186,
+    "unique_edges": 20862,
+    "observed_graph_acyclic": true
+  },
+  "extra_blocks_removed": 12163,
+  "batched_core_endpoint_projection": {
+    "blocks": 27538,
+    "chunk_blocks": 25,
+    "batches": 1102,
+    "core_rows": 2256896,
+    "active_core_rows": 2203040,
+    "padding_core_rows": 53856,
+    "endpoint_rows": 35248,
+    "source_cells": 11871387328,
+    "peak_raw_source_bytes": 43090432,
+    "largest_source_degree": 262144,
+    "profile_supported": true
+  },
+  "dense_source_gib": 44.224364042282104,
+  "records_sha256": "e21c9f26b4af74cc315f5f4f2a3ecccf80f7363a872eadc9ee04b3ba36e0a99e",
+  "calls_sha256": "1c1411d7f9ab2d78f911bccb534950f097b49879faaa418b157982e5372c4900",
+  "proof_sha256": "53d9c1640d3358a1747eaff13fede82ee7f97c1a4761adaac37c3305012f3879",
+  "scope": "Exact full512bit chaining-state plus128byte block equality, never block-only dedup. Native probe outputs checked against hashlib digests for all calls; artifact checker replays states/routes. Uses existing5234column core and1668column endpoint geometry in25block batches. Source storage projection excludes routing/auxiliary tables,LDE,commitments and nonhash work; not peak memory or recursive proof size. External local/GKR/statement obligations excluded. Capture/route checks are Python, not new Lean certificates. No new hash profile, proof acceptance rule, or security claim."
+}

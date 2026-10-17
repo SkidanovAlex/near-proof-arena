@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "audit_checks": 2800,
+  "previous_checks": 2784,
+  "modules": {
+    "SHA384SharedInputMatch": {
+      "sha256": "066d47b8e4c3dfea19ea074d6a9211a0de5a97e15f3cf7229729046de1f25292",
+      "theorems": 3
+    },
+    "SHA384SharedCallRecords": {
+      "sha256": "bdd88de00436feafa1e8a8a92a71cc42016f8df555549f06508b9fadcdc1aa88",
+      "theorems": 5
+    },
+    "SHA384PairedByteDecode": {
+      "sha256": "a0e2cd772958f91172a7fe8ad1b09e29dec4e97588b1a310f6464d029216ecbd",
+      "theorems": 2
+    },
+    "SHA384SharedPaddedBlock": {
+      "sha256": "63d53309288e00f0dd93c100d5dd7778f983ac62d9b24d141e8a2abd6b57e212",
+      "theorems": 2
+    },
+    "SHA384SharedCallState": {
+      "sha256": "cdbdba8efc426bf5fa46d1fb1711b2a58c19f40dad37a5d095c0b9ee985ee7cc",
+      "theorems": 3
+    },
+    "SHA384SharedChain": {
+      "sha256": "ca5473ddaec58b144570c621fa9a57644c7373dee319470d0575783e043de44d",
+      "theorems": 1
+    }
+  },
+  "scope": "Canonical full padded block decoded from actual shared AIR, actual call/node tag, Boolean schedule bits and canonical committed input. Full eight-word IV/link and public digest transfer integrated. Chain helper has explicit internal compression interface; final standard digest composition remains pending. No cryptographic/QROM or full NEAR completion claim.",
+  "audit_log": "/tmp/root-shared-chain-audit.log"
+}

@@ -1,0 +1,4 @@
+'NearCompression.packed_table_rewrite_bus_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_two_table_global_bus_eq' depends on axioms: [propext, Quot.sound]
+'NearCompression.packed_interaction_bits' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_interactions_check_sound' depends on axioms: [propext]

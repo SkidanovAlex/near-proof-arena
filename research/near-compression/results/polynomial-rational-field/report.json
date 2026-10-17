@@ -1,0 +1,7 @@
+{
+  "field_law_cases": 400,
+  "characteristic_checks": 112,
+  "indeterminate_evaluation_checks": 400,
+  "finite_function_collapse_negatives": 4,
+  "scope": "Complete Lean rational-function Field and characteristic, injective coefficient map, transcendental indeterminate. Safe specialization and full MCA/protocol soundness remain open."
+}

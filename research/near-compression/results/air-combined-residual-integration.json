@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3631,
+  "audit_log": "/tmp/root-combined-residual-audit.log",
+  "source_sha256": "c909d2833afb8b1c56786bd3cb7a1d26ef60fe15361dbf15d44e9641d022acfe",
+  "established": [
+    "BusProgramFormula values agree on Boolean rows between product-selector MLE and direct row environments",
+    "Combined source-then-auxiliary residual list preserves exact order",
+    "Combined weighted initial zero count derives Boolean correspondence for the formula model"
+  ],
+  "explicit_conditions": [
+    "One common fixed trace, public vector and auxiliary formula list before batching",
+    "Concrete implementation must emit this formula list and reconstruct coordinates consistently"
+  ],
+  "remaining": [
+    "Concrete auxiliary layout/formula-list certification",
+    "Coordinate reconstruction to common trace adapter",
+    "Adaptive sumcheck and terminal source/PCS authentication",
+    "Full protocol/QROM soundness and secure sub300KB1Pgas proof"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "records": [
+    {
+      "bytes": 383529,
+      "ef": 6797,
+      "bf": 9457,
+      "digests": 7377,
+      "framing": 885,
+      "gkr_ef": 651,
+      "constraints_ef": 2898,
+      "stacking_ef": 70,
+      "whir_ef": 3178,
+      "stage": "leaf",
+      "unique_digests": 5122
+    },
+    {
+      "bytes": 398697,
+      "ef": 4695,
+      "bf": 54417,
+      "digests": 3282,
+      "framing": 885,
+      "gkr_ef": 782,
+      "constraints_ef": 2868,
+      "stacking_ef": 91,
+      "whir_ef": 954,
+      "stage": "internal",
+      "unique_digests": 2354
+    },
+    {
+      "bytes": 242809,
+      "ef": 4708,
+      "bf": 14657,
+      "digests": 3374,
+      "framing": 885,
+      "gkr_ef": 715,
+      "constraints_ef": 2853,
+      "stacking_ef": 58,
+      "whir_ef": 1082,
+      "stage": "root_geometry_babybear_hash",
+      "unique_digests": 2606
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "census.log.gz",
+      "raw_sha256": "6c7b7894b84193feac60c40d97109a00e52155ac4065789a699da69313a67b4f"
+    },
+    {
+      "file": "clippy.log.gz",
+      "raw_sha256": "73d42fb408491852651de5238faff11d0b3ccf6b6bc24c9080965560ef2899a2"
+    },
+    {
+      "file": "instrumented-tests.rs.gz",
+      "raw_sha256": "ef3da74a23d0f4ba6b09c06837ecee3f6b0e6778fd53ce5b1b3c2cb9213f56bb"
+    },
+    {
+      "file": "proof.rs.gz",
+      "raw_sha256": "19c7f4a82f038721e3b90d8c4b3033c84187534d98d31ab0a1c00092335fd879"
+    }
+  ],
+  "scope": "Decoded saved proofs, EOF checked, re-encoded byte-identically; no new proof generated."
+}

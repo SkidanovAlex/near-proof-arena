@@ -1,0 +1,2112 @@
+{
+  "status": "VERIFIED_Q8_BASELINE_AND_COUNTERFACTUAL_CODEC_GEOMETRY",
+  "proof_sha256": "7d993a7b3a817b0114ea3a87588e5e0997ca5c96cbe333d9c77739ca5ebb13cc",
+  "non_pcs_bytes": 51590,
+  "cases": [
+    {
+      "queries_per_branch": 8,
+      "projected_proof_bytes": 121982,
+      "current_statement_and_request_bytes": 224707,
+      "projected_current_transport_bytes": 346689,
+      "leaf_bytes": 17504,
+      "sibling_bytes": 48960
+    },
+    {
+      "queries_per_branch": 128,
+      "projected_proof_bytes": 492238,
+      "current_statement_and_request_bytes": 224707,
+      "projected_current_transport_bytes": 716945,
+      "leaf_bytes": 217024,
+      "sibling_bytes": 219696
+    },
+    {
+      "queries_per_branch": 165,
+      "projected_proof_bytes": 571182,
+      "current_statement_and_request_bytes": 224707,
+      "projected_current_transport_bytes": 795889,
+      "leaf_bytes": 270480,
+      "sibling_bytes": 245184
+    },
+    {
+      "queries_per_branch": 239,
+      "projected_proof_bytes": 705390,
+      "current_statement_and_request_bytes": 224707,
+      "projected_current_transport_bytes": 930097,
+      "leaf_bytes": 372144,
+      "sibling_bytes": 277728
+    },
+    {
+      "queries_per_branch": 309,
+      "projected_proof_bytes": 817054,
+      "current_statement_and_request_bytes": 224707,
+      "projected_current_transport_bytes": 1041761,
+      "leaf_bytes": 462016,
+      "sibling_bytes": 299520
+    },
+    {
+      "queries_per_branch": 463,
+      "projected_proof_bytes": 1031566,
+      "current_statement_and_request_bytes": 224707,
+      "projected_current_transport_bytes": 1256273,
+      "leaf_bytes": 649840,
+      "sibling_bytes": 326208
+    }
+  ],
+  "branches": [
+    {
+      "table": 0,
+      "branch": 0,
+      "width": 605,
+      "packing": 16,
+      "cases": [
+        {
+          "queries": 8,
+          "fixed_bytes": 1174,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 8192,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 2432,
+              "sibling_bytes": 3648
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 4096,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 3216
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 2928
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 2640
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 2208
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1728
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1488
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 7,
+              "leaf_bytes": 224,
+              "sibling_bytes": 1056
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 6,
+              "leaf_bytes": 192,
+              "sibling_bytes": 576
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 5,
+              "leaf_bytes": 160,
+              "sibling_bytes": 240
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 3,
+              "leaf_bytes": 96,
+              "sibling_bytes": 144
+            },
+            {
+              "stage": 11,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 48
+            },
+            {
+              "stage": 12,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 25862
+        },
+        {
+          "queries": 128,
+          "fixed_bytes": 1174,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 8192,
+              "distinct_opened_leaves": 127,
+              "leaf_bytes": 38608,
+              "sibling_bytes": 30720
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 4096,
+              "distinct_opened_leaves": 127,
+              "leaf_bytes": 4064,
+              "sibling_bytes": 25920
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 126,
+              "leaf_bytes": 4032,
+              "sibling_bytes": 20256
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 120,
+              "leaf_bytes": 3840,
+              "sibling_bytes": 13776
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 114,
+              "leaf_bytes": 3648,
+              "sibling_bytes": 8640
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 103,
+              "leaf_bytes": 3296,
+              "sibling_bytes": 4464
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 76,
+              "leaf_bytes": 2432,
+              "sibling_bytes": 1968
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 55,
+              "leaf_bytes": 1760,
+              "sibling_bytes": 432
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 31,
+              "leaf_bytes": 992,
+              "sibling_bytes": 48
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 11,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 12,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 171030
+        },
+        {
+          "queries": 165,
+          "fixed_bytes": 1174,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 8192,
+              "distinct_opened_leaves": 164,
+              "leaf_bytes": 49856,
+              "sibling_bytes": 37440
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 4096,
+              "distinct_opened_leaves": 163,
+              "leaf_bytes": 5216,
+              "sibling_bytes": 30576
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 162,
+              "leaf_bytes": 5184,
+              "sibling_bytes": 23184
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 154,
+              "leaf_bytes": 4928,
+              "sibling_bytes": 15600
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 142,
+              "leaf_bytes": 4544,
+              "sibling_bytes": 9360
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 127,
+              "leaf_bytes": 4064,
+              "sibling_bytes": 4272
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 92,
+              "leaf_bytes": 2944,
+              "sibling_bytes": 1584
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 58,
+              "leaf_bytes": 1856,
+              "sibling_bytes": 288
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 11,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 12,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 204054
+        },
+        {
+          "queries": 239,
+          "fixed_bytes": 1174,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 8192,
+              "distinct_opened_leaves": 237,
+              "leaf_bytes": 72048,
+              "sibling_bytes": 49056
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 4096,
+              "distinct_opened_leaves": 233,
+              "leaf_bytes": 7456,
+              "sibling_bytes": 38544
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 229,
+              "leaf_bytes": 7328,
+              "sibling_bytes": 27600
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 211,
+              "leaf_bytes": 6752,
+              "sibling_bytes": 18192
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 189,
+              "leaf_bytes": 6048,
+              "sibling_bytes": 9840
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 155,
+              "leaf_bytes": 4960,
+              "sibling_bytes": 3792
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 106,
+              "leaf_bytes": 3392,
+              "sibling_bytes": 960
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 62,
+              "leaf_bytes": 1984,
+              "sibling_bytes": 96
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 11,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 12,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 261206
+        },
+        {
+          "queries": 309,
+          "fixed_bytes": 1174,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 8192,
+              "distinct_opened_leaves": 305,
+              "leaf_bytes": 92720,
+              "sibling_bytes": 58848
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 4096,
+              "distinct_opened_leaves": 298,
+              "leaf_bytes": 9536,
+              "sibling_bytes": 43872
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 290,
+              "leaf_bytes": 9280,
+              "sibling_bytes": 30384
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 267,
+              "leaf_bytes": 8544,
+              "sibling_bytes": 18672
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 234,
+              "leaf_bytes": 7488,
+              "sibling_bytes": 9312
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 181,
+              "leaf_bytes": 5792,
+              "sibling_bytes": 2976
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 116,
+              "leaf_bytes": 3712,
+              "sibling_bytes": 528
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 64,
+              "leaf_bytes": 2048,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 11,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 12,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 306870
+        },
+        {
+          "queries": 463,
+          "fixed_bytes": 1174,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 8192,
+              "distinct_opened_leaves": 453,
+              "leaf_bytes": 137712,
+              "sibling_bytes": 74160
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 4096,
+              "distinct_opened_leaves": 442,
+              "leaf_bytes": 14144,
+              "sibling_bytes": 53568
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 414,
+              "leaf_bytes": 13248,
+              "sibling_bytes": 34656
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 372,
+              "leaf_bytes": 11904,
+              "sibling_bytes": 18816
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 309,
+              "leaf_bytes": 9888,
+              "sibling_bytes": 8016
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 216,
+              "leaf_bytes": 6912,
+              "sibling_bytes": 1776
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 125,
+              "leaf_bytes": 4000,
+              "sibling_bytes": 144
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 64,
+              "leaf_bytes": 2048,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 11,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 12,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 394150
+        }
+      ]
+    },
+    {
+      "table": 0,
+      "branch": 1,
+      "width": 12,
+      "packing": 1,
+      "cases": [
+        {
+          "queries": 8,
+          "fixed_bytes": 790,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 768,
+              "sibling_bytes": 2112
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1680
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1152
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 7,
+              "leaf_bytes": 224,
+              "sibling_bytes": 672
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 6,
+              "leaf_bytes": 192,
+              "sibling_bytes": 432
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 6,
+              "leaf_bytes": 192,
+              "sibling_bytes": 384
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 5,
+              "leaf_bytes": 160,
+              "sibling_bytes": 144
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 9606
+        },
+        {
+          "queries": 128,
+          "fixed_bytes": 790,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 111,
+              "leaf_bytes": 10656,
+              "sibling_bytes": 8592
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 99,
+              "leaf_bytes": 3168,
+              "sibling_bytes": 4896
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 80,
+              "leaf_bytes": 2560,
+              "sibling_bytes": 1680
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 54,
+              "leaf_bytes": 1728,
+              "sibling_bytes": 480
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 30,
+              "leaf_bytes": 960,
+              "sibling_bytes": 96
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 36566
+        },
+        {
+          "queries": 165,
+          "fixed_bytes": 790,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 136,
+              "leaf_bytes": 13056,
+              "sibling_bytes": 8976
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 118,
+              "leaf_bytes": 3776,
+              "sibling_bytes": 4608
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 88,
+              "leaf_bytes": 2816,
+              "sibling_bytes": 1536
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 56,
+              "leaf_bytes": 1792,
+              "sibling_bytes": 384
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 30,
+              "leaf_bytes": 960,
+              "sibling_bytes": 96
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 39750
+        },
+        {
+          "queries": 239,
+          "fixed_bytes": 790,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 188,
+              "leaf_bytes": 18048,
+              "sibling_bytes": 9360
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 154,
+              "leaf_bytes": 4928,
+              "sibling_bytes": 3744
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 107,
+              "leaf_bytes": 3424,
+              "sibling_bytes": 912
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 62,
+              "leaf_bytes": 1984,
+              "sibling_bytes": 96
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 45270
+        },
+        {
+          "queries": 309,
+          "fixed_bytes": 790,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 223,
+              "leaf_bytes": 21408,
+              "sibling_bytes": 9360
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 175,
+              "leaf_bytes": 5600,
+              "sibling_bytes": 3072
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 116,
+              "leaf_bytes": 3712,
+              "sibling_bytes": 576
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 63,
+              "leaf_bytes": 2016,
+              "sibling_bytes": 48
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 48566
+        },
+        {
+          "queries": 463,
+          "fixed_bytes": 790,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 301,
+              "leaf_bytes": 28896,
+              "sibling_bytes": 7824
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 210,
+              "leaf_bytes": 6720,
+              "sibling_bytes": 2016
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 125,
+              "leaf_bytes": 4000,
+              "sibling_bytes": 144
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 64,
+              "leaf_bytes": 2048,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 54422
+        }
+      ]
+    },
+    {
+      "table": 1,
+      "branch": 0,
+      "width": 198,
+      "packing": 4,
+      "cases": [
+        {
+          "queries": 8,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 3200,
+              "sibling_bytes": 2784
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 2112
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1680
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1536
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1296
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 7,
+              "leaf_bytes": 224,
+              "sibling_bytes": 816
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 7,
+              "leaf_bytes": 224,
+              "sibling_bytes": 480
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 6,
+              "leaf_bytes": 192,
+              "sibling_bytes": 288
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 144
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 3,
+              "leaf_bytes": 96,
+              "sibling_bytes": 48
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 17318
+        },
+        {
+          "queries": 128,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 126,
+              "leaf_bytes": 50400,
+              "sibling_bytes": 19728
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 122,
+              "leaf_bytes": 3904,
+              "sibling_bytes": 13920
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 114,
+              "leaf_bytes": 3648,
+              "sibling_bytes": 8496
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 97,
+              "leaf_bytes": 3104,
+              "sibling_bytes": 4560
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 77,
+              "leaf_bytes": 2464,
+              "sibling_bytes": 1920
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 54,
+              "leaf_bytes": 1728,
+              "sibling_bytes": 432
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 31,
+              "leaf_bytes": 992,
+              "sibling_bytes": 48
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 117286
+        },
+        {
+          "queries": 165,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 161,
+              "leaf_bytes": 64400,
+              "sibling_bytes": 22704
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 156,
+              "leaf_bytes": 4992,
+              "sibling_bytes": 15312
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 138,
+              "leaf_bytes": 4416,
+              "sibling_bytes": 8880
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 116,
+              "leaf_bytes": 3712,
+              "sibling_bytes": 4512
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 88,
+              "leaf_bytes": 2816,
+              "sibling_bytes": 1728
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 59,
+              "leaf_bytes": 1888,
+              "sibling_bytes": 240
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 31,
+              "leaf_bytes": 992,
+              "sibling_bytes": 48
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 138582
+        },
+        {
+          "queries": 239,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 222,
+              "leaf_bytes": 88800,
+              "sibling_bytes": 27216
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 214,
+              "leaf_bytes": 6848,
+              "sibling_bytes": 16752
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 186,
+              "leaf_bytes": 5952,
+              "sibling_bytes": 9024
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 151,
+              "leaf_bytes": 4832,
+              "sibling_bytes": 3648
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 106,
+              "leaf_bytes": 3392,
+              "sibling_bytes": 1008
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 62,
+              "leaf_bytes": 1984,
+              "sibling_bytes": 96
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 172518
+        },
+        {
+          "queries": 309,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 283,
+              "leaf_bytes": 113200,
+              "sibling_bytes": 30336
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 268,
+              "leaf_bytes": 8576,
+              "sibling_bytes": 17856
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 227,
+              "leaf_bytes": 7264,
+              "sibling_bytes": 9072
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 170,
+              "leaf_bytes": 5440,
+              "sibling_bytes": 3312
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 115,
+              "leaf_bytes": 3680,
+              "sibling_bytes": 624
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 63,
+              "leaf_bytes": 2016,
+              "sibling_bytes": 48
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 204390
+        },
+        {
+          "queries": 463,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 415,
+              "leaf_bytes": 166000,
+              "sibling_bytes": 34512
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 383,
+              "leaf_bytes": 12256,
+              "sibling_bytes": 18336
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 307,
+              "leaf_bytes": 9824,
+              "sibling_bytes": 7632
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 212,
+              "leaf_bytes": 6784,
+              "sibling_bytes": 1680
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 124,
+              "leaf_bytes": 3968,
+              "sibling_bytes": 192
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 64,
+              "leaf_bytes": 2048,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 266198
+        }
+      ]
+    },
+    {
+      "table": 1,
+      "branch": 1,
+      "width": 200,
+      "packing": 4,
+      "cases": [
+        {
+          "queries": 8,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 3200,
+              "sibling_bytes": 2496
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 2256
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1920
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1488
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 1296
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 912
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 576
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 7,
+              "leaf_bytes": 224,
+              "sibling_bytes": 240
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 6,
+              "leaf_bytes": 192,
+              "sibling_bytes": 96
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 17606
+        },
+        {
+          "queries": 128,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 123,
+              "leaf_bytes": 49200,
+              "sibling_bytes": 19632
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 119,
+              "leaf_bytes": 3808,
+              "sibling_bytes": 13200
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 113,
+              "leaf_bytes": 3616,
+              "sibling_bytes": 8928
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 99,
+              "leaf_bytes": 3168,
+              "sibling_bytes": 4656
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 80,
+              "leaf_bytes": 2560,
+              "sibling_bytes": 1872
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 57,
+              "leaf_bytes": 1824,
+              "sibling_bytes": 336
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 115766
+        },
+        {
+          "queries": 165,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 156,
+              "leaf_bytes": 62400,
+              "sibling_bytes": 22704
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 148,
+              "leaf_bytes": 4736,
+              "sibling_bytes": 15072
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 141,
+              "leaf_bytes": 4512,
+              "sibling_bytes": 9888
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 123,
+              "leaf_bytes": 3936,
+              "sibling_bytes": 4464
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 92,
+              "leaf_bytes": 2944,
+              "sibling_bytes": 1440
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 58,
+              "leaf_bytes": 1856,
+              "sibling_bytes": 288
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 137206
+        },
+        {
+          "queries": 239,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 226,
+              "leaf_bytes": 90400,
+              "sibling_bytes": 26784
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 210,
+              "leaf_bytes": 6720,
+              "sibling_bytes": 16752
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 196,
+              "leaf_bytes": 6272,
+              "sibling_bytes": 9840
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 162,
+              "leaf_bytes": 5184,
+              "sibling_bytes": 3504
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 109,
+              "leaf_bytes": 3488,
+              "sibling_bytes": 816
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 62,
+              "leaf_bytes": 1984,
+              "sibling_bytes": 96
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 174806
+        },
+        {
+          "queries": 309,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 286,
+              "leaf_bytes": 114400,
+              "sibling_bytes": 30480
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 263,
+              "leaf_bytes": 8416,
+              "sibling_bytes": 17760
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 237,
+              "leaf_bytes": 7584,
+              "sibling_bytes": 8976
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 187,
+              "leaf_bytes": 5984,
+              "sibling_bytes": 2688
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 115,
+              "leaf_bytes": 3680,
+              "sibling_bytes": 624
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 62,
+              "leaf_bytes": 1984,
+              "sibling_bytes": 96
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 205638
+        },
+        {
+          "queries": 463,
+          "fixed_bytes": 982,
+          "stages": [
+            {
+              "stage": 0,
+              "tree_leaves": 2048,
+              "distinct_opened_leaves": 411,
+              "leaf_bytes": 164400,
+              "sibling_bytes": 35520
+            },
+            {
+              "stage": 1,
+              "tree_leaves": 1024,
+              "distinct_opened_leaves": 371,
+              "leaf_bytes": 11872,
+              "sibling_bytes": 18288
+            },
+            {
+              "stage": 2,
+              "tree_leaves": 512,
+              "distinct_opened_leaves": 313,
+              "leaf_bytes": 10016,
+              "sibling_bytes": 7392
+            },
+            {
+              "stage": 3,
+              "tree_leaves": 256,
+              "distinct_opened_leaves": 222,
+              "leaf_bytes": 7104,
+              "sibling_bytes": 1488
+            },
+            {
+              "stage": 4,
+              "tree_leaves": 128,
+              "distinct_opened_leaves": 127,
+              "leaf_bytes": 4064,
+              "sibling_bytes": 48
+            },
+            {
+              "stage": 5,
+              "tree_leaves": 64,
+              "distinct_opened_leaves": 64,
+              "leaf_bytes": 2048,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 6,
+              "tree_leaves": 32,
+              "distinct_opened_leaves": 32,
+              "leaf_bytes": 1024,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 7,
+              "tree_leaves": 16,
+              "distinct_opened_leaves": 16,
+              "leaf_bytes": 512,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 8,
+              "tree_leaves": 8,
+              "distinct_opened_leaves": 8,
+              "leaf_bytes": 256,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 9,
+              "tree_leaves": 4,
+              "distinct_opened_leaves": 4,
+              "leaf_bytes": 128,
+              "sibling_bytes": 0
+            },
+            {
+              "stage": 10,
+              "tree_leaves": 2,
+              "distinct_opened_leaves": 2,
+              "leaf_bytes": 64,
+              "sibling_bytes": 0
+            }
+          ],
+          "bytes": 265206
+        }
+      ]
+    }
+  ],
+  "qualifications": [
+    "Only Q8 is an actual verified proof; other rows count exact leaf/path geometry for longer query prefixes on retained commitments.",
+    "All rows retain Ext4 fields, Q8 transcript domain separation and current packing. No secure new protocol profile is defined.",
+    "309 comes from a conditional ideal-interactive unique-decoding calculation; other counts are sensitivity probes, not certified security choices.",
+    "Ext8 migration and any transcript-domain change can change both commitments and query geometry.",
+    "Current statement/request serialization is retained; compact replacement and full NEAR scaling are unproved."
+  ]
+}

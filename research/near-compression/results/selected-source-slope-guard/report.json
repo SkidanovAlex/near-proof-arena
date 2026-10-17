@@ -1,0 +1,9 @@
+{
+  "rational_algebraic_source_systems": 36,
+  "algebraic_numeric_lift_pairs": 760,
+  "coefficient_specialization_comparisons": 2280,
+  "excluded_full_source_guard_points": 59,
+  "full_source_certificate_coefficients": 132,
+  "characteristic_derivative_degree_drops": 9,
+  "scope": "Single full-source slope guard constructs the modular certificate and protects all finite lift coefficients, with inherited source/factor parameter degree inputs. General parameter-degree factor control and useful-branch forcing remain open."
+}

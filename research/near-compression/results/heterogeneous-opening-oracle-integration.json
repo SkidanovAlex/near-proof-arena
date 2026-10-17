@@ -1,0 +1,39 @@
+{
+  "status": "NEAR_FAR_HETEROGENEOUS_OPENING_ORACLE_IDENTITY_PROVED",
+  "module": "NearCompression/HeterogeneousOpeningOracle.lean",
+  "theorems": [
+    "heterogeneous_lifted_joint_coefficients",
+    "heterogeneous_lifted_joint_oracle"
+  ],
+  "proved": "The MLE coefficients of lifted heterogeneous weight tables equal the joint beta coefficients at the same concatenated row/GKR/gamma/PCS coordinates. Therefore the near and far formulations have exactly the same virtual source oracle for arbitrary received source words.",
+  "coordinate_layout": {
+    "rowpoints": "lane.rowOffset .. lane.rowOffset+lane.rowLog",
+    "left": "rowCoordinates .. rowCoordinates+inputLog",
+    "right": "rowCoordinates+inputLog .. rowCoordinates+2*inputLog",
+    "gamma": "rowCoordinates+2*inputLog",
+    "pcs": "rowCoordinates+2*inputLog+1 onward",
+    "smaller_lane": "Skips commonLog-(rowLog+packingLog) low PCS coordinates, derived from repeated_low_weight_mle."
+  },
+  "scope": [
+    "Arbitrary field and joint coordinate point; coefficient theorem uses Nat-to-field coordinates.",
+    "Oracle theorem uses a list point with the same zero-default coordinate lookup as jointBetaSource.",
+    "All metadata entries satisfy lane WellFormed; received sources need not be polynomials.",
+    "No assumption of honest source values, proximity, commitment binding or independent sampling."
+  ],
+  "remaining": [
+    "Compose bounds over one common chronological sample space: far case samples all joint coordinates, near case fixes preceding row/GKR coordinates and samples PCS coordinates.",
+    "Prove actual protocol history supplies the required conditional sampling and fixes the relevant source/aux metadata before those coordinates.",
+    "Connect byte commitments and executable transcripts to the formal virtual source.",
+    "Full AIR/bus/execution composition, quantum security and secure full-NEAR size target."
+  ],
+  "validation": {
+    "module_check": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3783,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

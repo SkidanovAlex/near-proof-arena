@@ -1,0 +1,6 @@
+{
+  "status": "ROOT_PUBLIC_GKR_REPLAYED",
+  "known_slots": 4257,
+  "pcs_coordinates": 2603,
+  "scope": "Root prefix controls and fixed root DAG only; no source column openings read by this replay. Root PCS continuation remains pending."
+}

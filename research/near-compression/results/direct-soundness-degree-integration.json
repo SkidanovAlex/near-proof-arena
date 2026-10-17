@@ -1,0 +1,44 @@
+{
+  "status": "PASS semantic and coordinate-degree audits; executable public-layout gap identified",
+  "audit": {
+    "count": 2479,
+    "log": "/tmp/root-gkr-degree-audit.log",
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "semantic_theorem": "sha384_direct_message_sound",
+  "semantic_premises": [
+    "actual direct AIR HoldsP",
+    "canonical sha384DirectPublic digest with digest length48",
+    "padded block count below field modulus"
+  ],
+  "semantic_conclusion": "standard SHA384 of actual decoded input message equals public digest",
+  "new_degree_module": "GKRWeightCoordinateDegree",
+  "degree_scope": "actual universal GKR/rowpoint/PCS beta separately degree<2 in each independent coordinate",
+  "wrapper_review": {
+    "file": "airbender/direct-wasm/verify_sha384_direct.py",
+    "finding": "frozen captured376 wrapper checks public length but not canonical SHA384 IV, counts or digest byte range",
+    "existing_artifact": "uses canonical public values; prior honest full verification remains valid",
+    "remediation": "new profile will enforce exact canonical public layout; parallel Lean checker bridge in development",
+    "not_claimed": "arbitrary acceptance by frozen wrapper implies standard SHA384"
+  },
+  "evidence_provenance": {
+    "committed_gkr_negative16": "agent executed; report copied; root previously independently verified honest proof",
+    "direct_hash": "root independently verified canonical fixture, full honest proof and12 negatives"
+  },
+  "accounting": {
+    "direct_total_bytes": 100450,
+    "batched_total_including_all_public_bytes": 409870,
+    "excluded": "reusable canonical AIR configuration"
+  },
+  "remaining": [
+    "full recursive verifier",
+    "pre-challenge common witness and accepted-event reduction",
+    "commitment and Fiat-Shamir quantum security",
+    "128-bit secure parameter proof",
+    "full NEAR state transition at1Petagas"
+  ]
+}

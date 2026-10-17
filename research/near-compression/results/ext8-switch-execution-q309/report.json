@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "compression_envelope_bytes": 1234992,
+  "call_proof_bytes": 103064,
+  "receipt_bytes": 731,
+  "calls_bytes": 5858,
+  "combined_bytes": 1344645,
+  "under_300000_bytes": false,
+  "fresh_conjunction_verified": true,
+  "scope": "Actual diagnostic code-switch compression and unchanged call proof. External static AIR/spec/schedule excluded; no NEAR1Pgas, source-extraction/proximity/QROM/PQ128 certificate.",
+  "files": {
+    "/tmp/ext8-switch-execution-q309/compression.bin": "a656ad0f8d1314ff1b921cc2596a906aaa8f8c21215c5f687082b1ca78bcbd1d",
+    "/tmp/ext8-switch-execution-q309/report.json": "9bb9e47f811b25615516a668a2a1d83cd998ed01951b09c0ebee13f5b26b05e8",
+    "results/ext8-phase-pooled-q309/statement.json.gz": "f0739ebd3b97c3e83d1a354cfe8b054e0f33d22484c32a702474459de00bed98",
+    "results/ext8-affine-q309/receipt.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996",
+    "results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e",
+    "/tmp/ext8-switch-q309-config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd"
+  }
+}

@@ -1,0 +1,886 @@
+{
+  "common_cells": 9670384,
+  "cached_cells": 393216,
+  "groups": {
+    "hash": 5085696,
+    "symbolic": 786432,
+    "initial_openings": 1458176,
+    "final_query_eval": 737280
+  },
+  "traces": [
+    {
+      "air": 14,
+      "part": 0,
+      "height": 16384,
+      "width": 301,
+      "file": "air-14-part-0.bin",
+      "name": "Poseidon2Air<BabyBearParameters>, 1>",
+      "cells": 4931584
+    },
+    {
+      "air": 32,
+      "part": 0,
+      "height": 16384,
+      "width": 89,
+      "file": "air-32-part-0.bin",
+      "name": "InitialOpenedValuesAir",
+      "cells": 1458176
+    },
+    {
+      "air": 0,
+      "part": 0,
+      "height": 32768,
+      "width": 24,
+      "file": "air-0-part-0.bin",
+      "name": "SymbolicExpressionAir<BabyBearParameters>",
+      "cells": 786432
+    },
+    {
+      "air": 36,
+      "part": 0,
+      "height": 16384,
+      "width": 45,
+      "file": "air-36-part-0.bin",
+      "name": "FinalPolyQueryEvalAir",
+      "cells": 737280
+    },
+    {
+      "air": 5,
+      "part": 0,
+      "height": 16384,
+      "width": 25,
+      "file": "air-5-part-0.bin",
+      "name": "Eq3bAir",
+      "cells": 409600
+    },
+    {
+      "air": 0,
+      "part": 1,
+      "height": 32768,
+      "width": 12,
+      "file": "air-0-part-1.bin",
+      "name": "SymbolicExpressionAir<BabyBearParameters>",
+      "cells": 393216
+    },
+    {
+      "air": 15,
+      "part": 0,
+      "height": 8192,
+      "width": 38,
+      "file": "air-15-part-0.bin",
+      "name": "MerkleVerifyAir",
+      "cells": 311296
+    },
+    {
+      "air": 13,
+      "part": 0,
+      "height": 4096,
+      "width": 44,
+      "file": "air-13-part-0.bin",
+      "name": "TranscriptAir",
+      "cells": 180224
+    },
+    {
+      "air": 39,
+      "part": 0,
+      "height": 512,
+      "width": 301,
+      "file": "air-39-part-0.bin",
+      "name": "Poseidon2Air<BabyBearParameters>, 1>",
+      "cells": 154112
+    },
+    {
+      "air": 10,
+      "part": 0,
+      "height": 4096,
+      "width": 37,
+      "file": "air-10-part-0.bin",
+      "name": "InteractionsFoldingAir",
+      "cells": 151552
+    },
+    {
+      "air": 38,
+      "part": 0,
+      "height": 8192,
+      "width": 16,
+      "file": "air-38-part-0.bin",
+      "name": "ExpBitsLenAir",
+      "cells": 131072
+    },
+    {
+      "air": 23,
+      "part": 0,
+      "height": 2048,
+      "width": 63,
+      "file": "air-23-part-0.bin",
+      "name": "OpeningClaimsAir",
+      "cells": 129024
+    },
+    {
+      "air": 11,
+      "part": 0,
+      "height": 4096,
+      "width": 25,
+      "file": "air-11-part-0.bin",
+      "name": "ConstraintsFoldingAir",
+      "cells": 102400
+    },
+    {
+      "air": 34,
+      "part": 0,
+      "height": 2048,
+      "width": 31,
+      "file": "air-34-part-0.bin",
+      "name": "WhirFoldingAir",
+      "cells": 63488
+    },
+    {
+      "air": 28,
+      "part": 0,
+      "height": 2048,
+      "width": 16,
+      "file": "air-28-part-0.bin",
+      "name": "EqBitsAir",
+      "cells": 32768
+    },
+    {
+      "air": 33,
+      "part": 0,
+      "height": 1024,
+      "width": 28,
+      "file": "air-33-part-0.bin",
+      "name": "NonInitialOpenedValuesAir",
+      "cells": 28672
+    },
+    {
+      "air": 26,
+      "part": 0,
+      "height": 512,
+      "width": 35,
+      "file": "air-26-part-0.bin",
+      "name": "StackingClaimsAir",
+      "cells": 17920
+    },
+    {
+      "air": 21,
+      "part": 0,
+      "height": 256,
+      "width": 45,
+      "file": "air-21-part-0.bin",
+      "name": "GkrLayerSumcheckAir",
+      "cells": 11520
+    },
+    {
+      "air": 35,
+      "part": 0,
+      "height": 256,
+      "width": 34,
+      "file": "air-35-part-0.bin",
+      "name": "FinalPolyMleEvalAir",
+      "cells": 8704
+    },
+    {
+      "air": 3,
+      "part": 0,
+      "height": 128,
+      "width": 33,
+      "file": "air-3-part-0.bin",
+      "name": "MultilinearSumcheckAir",
+      "cells": 4224
+    },
+    {
+      "air": 9,
+      "part": 0,
+      "height": 128,
+      "width": 32,
+      "file": "air-9-part-0.bin",
+      "name": "ExpressionClaimAir",
+      "cells": 4096
+    },
+    {
+      "air": 31,
+      "part": 0,
+      "height": 128,
+      "width": 32,
+      "file": "air-31-part-0.bin",
+      "name": "WhirQueryAir",
+      "cells": 4096
+    },
+    {
+      "air": 16,
+      "part": 0,
+      "height": 64,
+      "width": 45,
+      "file": "air-16-part-0.bin",
+      "name": "ProofShapeAir<4, 8>",
+      "cells": 2880
+    },
+    {
+      "air": 1,
+      "part": 0,
+      "height": 64,
+      "width": 29,
+      "file": "air-1-part-0.bin",
+      "name": "FractionsFolderAir",
+      "cells": 1856
+    },
+    {
+      "air": 25,
+      "part": 0,
+      "height": 32,
+      "width": 57,
+      "file": "air-25-part-0.bin",
+      "name": "SumcheckRoundsAir",
+      "cells": 1824
+    },
+    {
+      "air": 20,
+      "part": 0,
+      "height": 32,
+      "width": 46,
+      "file": "air-20-part-0.bin",
+      "name": "GkrLayerAir",
+      "cells": 1472
+    },
+    {
+      "air": 4,
+      "part": 0,
+      "height": 32,
+      "width": 41,
+      "file": "air-4-part-0.bin",
+      "name": "EqNsAir",
+      "cells": 1312
+    },
+    {
+      "air": 30,
+      "part": 0,
+      "height": 16,
+      "width": 38,
+      "file": "air-30-part-0.bin",
+      "name": "SumcheckAir",
+      "cells": 608
+    },
+    {
+      "air": 18,
+      "part": 0,
+      "height": 256,
+      "width": 2,
+      "file": "air-18-part-0.bin",
+      "name": "RangeCheckerAir<8>",
+      "cells": 512
+    },
+    {
+      "air": 2,
+      "part": 0,
+      "height": 16,
+      "width": 24,
+      "file": "air-2-part-0.bin",
+      "name": "UnivariateSumcheckAir",
+      "cells": 384
+    },
+    {
+      "air": 12,
+      "part": 0,
+      "height": 8,
+      "width": 40,
+      "file": "air-12-part-0.bin",
+      "name": "EqNegAir",
+      "cells": 320
+    },
+    {
+      "air": 24,
+      "part": 0,
+      "height": 8,
+      "width": 27,
+      "file": "air-24-part-0.bin",
+      "name": "UnivariateRoundAir",
+      "cells": 216
+    },
+    {
+      "air": 27,
+      "part": 0,
+      "height": 4,
+      "width": 51,
+      "file": "air-27-part-0.bin",
+      "name": "EqBaseAir",
+      "cells": 204
+    },
+    {
+      "air": 29,
+      "part": 0,
+      "height": 4,
+      "width": 46,
+      "file": "air-29-part-0.bin",
+      "name": "WhirRoundAir",
+      "cells": 184
+    },
+    {
+      "air": 37,
+      "part": 0,
+      "height": 32,
+      "width": 4,
+      "file": "air-37-part-0.bin",
+      "name": "PowerCheckerAir<2, 32>",
+      "cells": 128
+    },
+    {
+      "air": 6,
+      "part": 0,
+      "height": 4,
+      "width": 17,
+      "file": "air-6-part-0.bin",
+      "name": "EqSharpUniAir",
+      "cells": 68
+    },
+    {
+      "air": 7,
+      "part": 0,
+      "height": 4,
+      "width": 17,
+      "file": "air-7-part-0.bin",
+      "name": "EqSharpUniReceiverAir",
+      "cells": 68
+    },
+    {
+      "air": 8,
+      "part": 0,
+      "height": 4,
+      "width": 16,
+      "file": "air-8-part-0.bin",
+      "name": "EqUniAir",
+      "cells": 64
+    },
+    {
+      "air": 19,
+      "part": 0,
+      "height": 1,
+      "width": 26,
+      "file": "air-19-part-0.bin",
+      "name": "GkrInputAir",
+      "cells": 26
+    },
+    {
+      "air": 22,
+      "part": 0,
+      "height": 1,
+      "width": 10,
+      "file": "air-22-part-0.bin",
+      "name": "GkrXiSamplerAir",
+      "cells": 10
+    },
+    {
+      "air": 17,
+      "part": 0,
+      "height": 1,
+      "width": 8,
+      "file": "air-17-part-0.bin",
+      "name": "PublicValuesAir",
+      "cells": 8
+    }
+  ],
+  "records": [
+    {
+      "name": "measured",
+      "common_cells": 9670384,
+      "free_cache": false,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          37,
+          2
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 100424,
+        "query_value_bytes": 110304,
+        "raw_paths_bytes": 489188,
+        "expected_frontier_bytes": 408973.81269436097,
+        "expected_frontier_hashes": 3812.419474891557
+      },
+      "below_target": 0
+    },
+    {
+      "name": "half_hash_free",
+      "common_cells": 7127536,
+      "free_cache": false,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          28,
+          2
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 100100,
+        "query_value_bytes": 91296,
+        "raw_paths_bytes": 469856,
+        "expected_frontier_bytes": 389641.81269436097,
+        "expected_frontier_hashes": 3812.419474891557
+      },
+      "below_target": 0
+    },
+    {
+      "name": "all_hash_free",
+      "common_cells": 4584688,
+      "free_cache": false,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          18,
+          2
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 99740,
+        "query_value_bytes": 70176,
+        "raw_paths_bytes": 448376,
+        "expected_frontier_bytes": 368161.81269436097,
+        "expected_frontier_hashes": 3812.419474891557
+      },
+      "below_target": 0
+    },
+    {
+      "name": "initial_and_final_eval_free",
+      "common_cells": 7474928,
+      "free_cache": false,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          29,
+          2
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 100136,
+        "query_value_bytes": 93408,
+        "raw_paths_bytes": 472004,
+        "expected_frontier_bytes": 391789.81269436097,
+        "expected_frontier_hashes": 3812.419474891557
+      },
+      "below_target": 0
+    },
+    {
+      "name": "symbolic_and_cache_free",
+      "common_cells": 8883952,
+      "free_cache": true,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          34
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 100188,
+        "query_value_bytes": 99744,
+        "raw_paths_bytes": 396024,
+        "expected_frontier_bytes": 339571.20369719237,
+        "expected_frontier_hashes": 2685.3693018690847
+      },
+      "below_target": 0
+    },
+    {
+      "name": "hash_symbolic_and_cache_free",
+      "common_cells": 3798256,
+      "free_cache": true,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          15
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 99504,
+        "query_value_bytes": 59616,
+        "raw_paths_bytes": 355212,
+        "expected_frontier_bytes": 298759.20369719237,
+        "expected_frontier_hashes": 2685.3693018690847
+      },
+      "below_target": 6
+    },
+    {
+      "name": "all_common_divided_2_cache_free_False",
+      "common_cells": 4835192,
+      "free_cache": false,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          19,
+          2
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 99776,
+        "query_value_bytes": 72288,
+        "raw_paths_bytes": 450524,
+        "expected_frontier_bytes": 370309.81269436097,
+        "expected_frontier_hashes": 3812.419474891557
+      },
+      "below_target": 0
+    },
+    {
+      "name": "all_common_divided_2_cache_free_True",
+      "common_cells": 4835192,
+      "free_cache": true,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          19
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 99648,
+        "query_value_bytes": 68064,
+        "raw_paths_bytes": 363804,
+        "expected_frontier_bytes": 307351.20369719237,
+        "expected_frontier_hashes": 2685.3693018690847
+      },
+      "below_target": 0
+    },
+    {
+      "name": "all_common_divided_4_cache_free_False",
+      "common_cells": 2417596,
+      "free_cache": false,
+      "best": {
+        "height": 16,
+        "log_rate": 11,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 2,
+        "widths": [
+          37,
+          6
+        ],
+        "domains": [
+          24,
+          23
+        ],
+        "queries": [
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 118532,
+        "query_value_bytes": 85600,
+        "raw_paths_bytes": 389044,
+        "expected_frontier_bytes": 338151.0761710269,
+        "expected_frontier_hashes": 2577.2899263659024
+      },
+      "below_target": 0
+    },
+    {
+      "name": "all_common_divided_4_cache_free_True",
+      "common_cells": 2417596,
+      "free_cache": true,
+      "best": {
+        "height": 17,
+        "log_rate": 10,
+        "fold": 3,
+        "terminal_max": 8,
+        "final_log": 8,
+        "rounds": 3,
+        "widths": [
+          19
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          59,
+          48,
+          41
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 90360,
+        "query_value_bytes": 61504,
+        "raw_paths_bytes": 329808,
+        "expected_frontier_bytes": 279660.8365098563,
+        "expected_frontier_hashes": 2457.6314713433894
+      },
+      "below_target": 46
+    },
+    {
+      "name": "all_common_divided_8_cache_free_False",
+      "common_cells": 1208798,
+      "free_cache": false,
+      "best": {
+        "height": 16,
+        "log_rate": 11,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 2,
+        "widths": [
+          19,
+          6
+        ],
+        "domains": [
+          24,
+          23
+        ],
+        "queries": [
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 117884,
+        "query_value_bytes": 55072,
+        "raw_paths_bytes": 357868,
+        "expected_frontier_bytes": 306975.0761710269,
+        "expected_frontier_hashes": 2577.2899263659024
+      },
+      "below_target": 0
+    },
+    {
+      "name": "all_common_divided_8_cache_free_True",
+      "common_cells": 1208798,
+      "free_cache": true,
+      "best": {
+        "height": 17,
+        "log_rate": 10,
+        "fold": 4,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 2,
+        "widths": [
+          10
+        ],
+        "domains": [
+          23,
+          22
+        ],
+        "queries": [
+          59,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 99080,
+        "query_value_bytes": 63104,
+        "raw_paths_bytes": 283084,
+        "expected_frontier_bytes": 247853.09313922003,
+        "expected_frontier_hashes": 1647.4825603696158
+      },
+      "below_target": 209
+    },
+    {
+      "name": "all_common_divided_16_cache_free_False",
+      "common_cells": 604399,
+      "free_cache": false,
+      "best": {
+        "height": 15,
+        "log_rate": 12,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 2,
+        "widths": [
+          19,
+          12
+        ],
+        "domains": [
+          24,
+          23
+        ],
+        "queries": [
+          48,
+          41
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 99596,
+        "query_value_bytes": 59424,
+        "raw_paths_bytes": 327864,
+        "expected_frontier_bytes": 282333.8202156479,
+        "expected_frontier_hashes": 2371.4196195316913
+      },
+      "below_target": 17
+    },
+    {
+      "name": "all_common_divided_16_cache_free_True",
+      "common_cells": 604399,
+      "free_cache": true,
+      "best": {
+        "height": 15,
+        "log_rate": 12,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 2,
+        "widths": [
+          19
+        ],
+        "domains": [
+          24,
+          23
+        ],
+        "queries": [
+          48,
+          41
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 99108,
+        "query_value_bytes": 40992,
+        "raw_paths_bytes": 249040,
+        "expected_frontier_bytes": 219633.80355286054,
+        "expected_frontier_hashes": 1529.496222170395
+      },
+      "below_target": 435
+    }
+  ],
+  "sha256": {
+    "results/swirl-security-review/root-split-witness/manifest.json": "4c201275198da917f33408d93feccaef6a9c27b1b13a7919580801e5093bb02a",
+    "results/swirl-security-review/chain/report.json": "2bb79d20f112e8a75551866e809430dfb5c8cee0c17b7d396aec449bbe2e7c09",
+    "airbender/direct-wasm/screen_swirl_root_workload.py": "35e5418ac0c2f88af56f1a2a3f4bc806a43d453d06d154986472cd01c5513bbb",
+    "airbender/direct-wasm/screen_swirl_stacking_geometry.py": "7b0d8fc7e66faaaaedba834f8318f278365996ed66468eeb76256084d1de9a75",
+    "airbender/direct-wasm/screen_swirl_query_payload.py": "c2c993fd1ca3d67fcd198032df42a50f194d34c6d9fe4e1e8e0e909ed2d084d6"
+  },
+  "assumptions": [
+    "Same conditional C1,Q2^128,zero-grinding,independent half-budget query screen.",
+    "Extension9/digest52 uninstantiated; fixed messages/GKR remain frozen.",
+    "Removed work is free: replacement constraints/proofs/links are omitted.",
+    "Trace comes from verification of ORIGINAL internal native proof, not our new compressed bundle.",
+    "GKR terminal replacement reduces external claims; does not itself remove inner symbolic evaluation.",
+    "Expected frontier is not deterministic size; no security or recursive-closure certificate."
+  ]
+}

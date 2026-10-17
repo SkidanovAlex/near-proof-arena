@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3599,
+  "audit_log": "/tmp/root-slice-trace-challenge-audit.log",
+  "source_sha256": "fe702aa5a0c8d26f4eedea21cdfa5609af7aac74ad9f4eacef2c2ce0eb38bb4a",
+  "established": [
+    "Bounded-tag and injective-payload encoding preserves distinct raw bus/message pairs",
+    "Natural trace/public imbalance composes with tagged joint challenge bound",
+    "Certified Fp8.ofBase and natural bus+1 tags discharge encoding premises for bus<P-1",
+    "No byte-only public vector or supplied encoded-nonpermutation premise"
+  ],
+  "explicit_conditions": [
+    "One fixed trace/public vector before challenges",
+    "Support coverage, message width and tag bounds",
+    "Distinct finite alpha/gamma sample lists"
+  ],
+  "remaining": [
+    "Formal actual slice support and total-multiplicity upper bounds",
+    "Common trace extraction/authentication from source commitments",
+    "Auxiliary/local verifier checks imply actual product correspondence",
+    "All other protocol errors, transcript sampler, commitments and QROM"
+  ]
+}

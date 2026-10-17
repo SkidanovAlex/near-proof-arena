@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "captures": [
+    {
+      "profile": "near-pq384-gkr-fixed-input-bus-v1",
+      "trusted_input_log": 14,
+      "full_proof_verified": true,
+      "capture": "results/pq384-literal769-gkr-fixed14",
+      "nodes": 10509,
+      "layers": 35,
+      "counts": {
+        "initial": 2790,
+        "computed": 7708,
+        "relayed": 6753,
+        "padding": 7338
+      },
+      "rejected": [
+        {
+          "label": "out-of-range-operand",
+          "reason": "gate bounds"
+        },
+        {
+          "label": "negative-operand",
+          "reason": "gate bounds"
+        },
+        {
+          "label": "non-power-two-layer",
+          "reason": "layer shape"
+        },
+        {
+          "label": "zero-relay",
+          "reason": "zero relay"
+        },
+        {
+          "label": "root-position",
+          "reason": "root route"
+        },
+        {
+          "label": "source-live-missing-root",
+          "reason": "source live closure"
+        },
+        {
+          "label": "initial-position",
+          "reason": "initial bounds"
+        },
+        {
+          "label": "layer-live-missing-root",
+          "reason": "unaccounted nonzero gate"
+        },
+        {
+          "label": "live-position",
+          "reason": "live placement bounds"
+        },
+        {
+          "label": "layer-omitted",
+          "reason": "layer count"
+        },
+        {
+          "label": "nonzero-relay-operand",
+          "reason": "computed/relay route"
+        },
+        {
+          "label": "relay-source-not-live",
+          "reason": "computed/relay route"
+        }
+      ],
+      "artifact": "results/literal769-fixed-layer-routes/pq384-literal769-gkr-fixed14-certificate.json",
+      "sha256": "f106772a834ee58674bdf0951c0097255d610d0063deb15e5cf946dc8dd47d02",
+      "seconds": 1.803644489031285
+    }
+  ],
+  "scope": "Python structural premise validation, not a kernel proof for captures or emitter/AIR refinement."
+}

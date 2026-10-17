@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3205,
+  "added_theorems": 15,
+  "sources": {
+    "SHA384TranscriptDraw": "5284878b7d246d7f6d627d3f8036be26a11d4644228d2aa2aff462fbdb251a8d",
+    "PreparedTypedExhaustion": "777cca87757990f98de9ac1b8b6f435a2c2a90324121e947eb23787d22e50c92"
+  },
+  "audit_log": "/tmp/root-draw-exhaustion-audit.log",
+  "audit_sha256": "824897fa37645ca1f924e6e580d6bd1221a3fc12d1dbc6b7abbfa2a6a5b17bf4",
+  "parity_report": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/sha384-transcript-draw/report.json",
+  "parity_cases": 12,
+  "oracle_input_mutations_rejected": 1,
+  "limits": [
+    "Sampler deterministic semantics and two preimages per accepted residue do not establish hash uniformity/independence",
+    "Recursive AIR must enforce sampler computation and hash-call wiring",
+    "Failure row retains pre-trap fast gas, distinct from synchronized interpreter abort gas",
+    "FullNEAR/PQ128/sub300KB remains unachieved"
+  ]
+}

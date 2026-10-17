@@ -1,0 +1,7 @@
+{
+  "status": "CONCRETE_SCANS_KERNEL_CHECKED",
+  "digest_word_checks": 437,
+  "scan_checks": 437,
+  "command": "lake env lean results/swirl-security-review/gkr-hash-graph/ActualScans.lean",
+  "scope": "Concrete digest decoding and operational scans; hash values themselves externally checked, not proved by this fixture."
+}

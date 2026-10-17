@@ -1,0 +1,220 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "degree": 32,
+      "queries": 314,
+      "binary_bytes": 5200,
+      "complete_with_external_config_bytes": 5517,
+      "expanded_json_bytes": 1526545,
+      "prove_seconds": 0.010003341361880302,
+      "encode_seconds": 0.08054362703114748,
+      "decode_verify_seconds": 0.06750965816900134,
+      "exact_roundtrip": true,
+      "negative_count": 18,
+      "negatives": [
+        "byte0",
+        "byte8",
+        "byte56",
+        "byte88",
+        "byte152",
+        "byte2600",
+        "byte5199",
+        "truncate0",
+        "truncate8",
+        "truncate55",
+        "truncate56",
+        "truncate2600",
+        "truncate5199",
+        "trailing",
+        "wrong expectedroot",
+        "wrong config",
+        "wrong statement",
+        "noncanonical coordinate"
+      ],
+      "fresh_process": "PASS fresh binary verifier",
+      "breakdown": {
+        "header_bytes": 808,
+        "stages": [
+          {
+            "stage": 0,
+            "leaf_count": 64,
+            "sampled_checks": 314,
+            "unique_leaves": 63,
+            "leaf_bytes": 504,
+            "sibling_bytes": 48
+          },
+          {
+            "stage": 1,
+            "leaf_count": 32,
+            "sampled_checks": 314,
+            "unique_leaves": 32,
+            "leaf_bytes": 2048,
+            "sibling_bytes": 0
+          },
+          {
+            "stage": 2,
+            "leaf_count": 16,
+            "sampled_checks": 314,
+            "unique_leaves": 16,
+            "leaf_bytes": 1024,
+            "sibling_bytes": 0
+          },
+          {
+            "stage": 3,
+            "leaf_count": 8,
+            "sampled_checks": 314,
+            "unique_leaves": 8,
+            "leaf_bytes": 512,
+            "sibling_bytes": 0
+          },
+          {
+            "stage": 4,
+            "leaf_count": 4,
+            "sampled_checks": 314,
+            "unique_leaves": 4,
+            "leaf_bytes": 256,
+            "sibling_bytes": 0
+          }
+        ],
+        "total_bytes": 5200,
+        "external_canonical_config_bytes": 317,
+        "expected_root_included": true
+      },
+      "proof_sha256": "4ca766f8580241cc75ac80a2f10e80e74fbca4da04ac8ac4ae46749f3ea089c7"
+    },
+    {
+      "degree": 1024,
+      "queries": 314,
+      "binary_bytes": 127256,
+      "complete_with_external_config_bytes": 127733,
+      "expanded_json_bytes": 4641744,
+      "prove_seconds": 0.18673142790794373,
+      "encode_seconds": 0.19862037431448698,
+      "decode_verify_seconds": 0.1626309580169618,
+      "exact_roundtrip": true,
+      "negative_count": 18,
+      "negatives": [
+        "byte0",
+        "byte8",
+        "byte56",
+        "byte88",
+        "byte152",
+        "byte63628",
+        "byte127255",
+        "truncate0",
+        "truncate8",
+        "truncate55",
+        "truncate56",
+        "truncate63628",
+        "truncate127255",
+        "trailing",
+        "wrong expectedroot",
+        "wrong config",
+        "wrong statement",
+        "noncanonical coordinate"
+      ],
+      "fresh_process": "PASS fresh binary verifier",
+      "breakdown": {
+        "header_bytes": 1528,
+        "stages": [
+          {
+            "stage": 0,
+            "leaf_count": 2048,
+            "sampled_checks": 314,
+            "unique_leaves": 298,
+            "leaf_bytes": 2384,
+            "sibling_bytes": 31632
+          },
+          {
+            "stage": 1,
+            "leaf_count": 1024,
+            "sampled_checks": 314,
+            "unique_leaves": 282,
+            "leaf_bytes": 18048,
+            "sibling_bytes": 19104
+          },
+          {
+            "stage": 2,
+            "leaf_count": 512,
+            "sampled_checks": 314,
+            "unique_leaves": 239,
+            "leaf_bytes": 15296,
+            "sibling_bytes": 8928
+          },
+          {
+            "stage": 3,
+            "leaf_count": 256,
+            "sampled_checks": 314,
+            "unique_leaves": 178,
+            "leaf_bytes": 11392,
+            "sibling_bytes": 3072
+          },
+          {
+            "stage": 4,
+            "leaf_count": 128,
+            "sampled_checks": 314,
+            "unique_leaves": 115,
+            "leaf_bytes": 7360,
+            "sibling_bytes": 576
+          },
+          {
+            "stage": 5,
+            "leaf_count": 64,
+            "sampled_checks": 314,
+            "unique_leaves": 64,
+            "leaf_bytes": 4096,
+            "sibling_bytes": 0
+          },
+          {
+            "stage": 6,
+            "leaf_count": 32,
+            "sampled_checks": 314,
+            "unique_leaves": 32,
+            "leaf_bytes": 2048,
+            "sibling_bytes": 0
+          },
+          {
+            "stage": 7,
+            "leaf_count": 16,
+            "sampled_checks": 314,
+            "unique_leaves": 16,
+            "leaf_bytes": 1024,
+            "sibling_bytes": 0
+          },
+          {
+            "stage": 8,
+            "leaf_count": 8,
+            "sampled_checks": 314,
+            "unique_leaves": 8,
+            "leaf_bytes": 512,
+            "sibling_bytes": 0
+          },
+          {
+            "stage": 9,
+            "leaf_count": 4,
+            "sampled_checks": 314,
+            "unique_leaves": 4,
+            "leaf_bytes": 256,
+            "sibling_bytes": 0
+          }
+        ],
+        "total_bytes": 127256,
+        "external_canonical_config_bytes": 477,
+        "expected_root_included": true
+      },
+      "proof_sha256": "6f13a08ef14e665a6136a3a74e438f4338116a193d1181d68b8eeb80efde274c"
+    }
+  ],
+  "scope": "Lossless transport only; all314 with-replacement queries retained. Tiny-source saturation must not be extrapolated.",
+  "sources": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_pq384_ext8_codec.py",
+      "sha256": "ae1e31055ebfcc12b849815d5958893c3acb9acc6633596457f29ea0eefc343d"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_ext8_codec.py",
+      "sha256": "16afbee1ec2066affbb1c808e33bc071a3862f75613e4529aef01f1356703779"
+    }
+  ]
+}

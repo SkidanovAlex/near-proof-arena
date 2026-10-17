@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3383,
+  "added_theorems": 14,
+  "sources": {
+    "DiagnosticExt4Polynomial": "cbe04962bfc3663a54fbc35726d92efb636ddc5aea1ea153645c24e7e915bd89",
+    "SHA384Ext4ProjectedSource": "7031219cb7e049cd1caecf33a570901a58ef12d51493225a0915e155d6545404"
+  },
+  "audit_log": "/tmp/root-ext4-polynomial-audit.log",
+  "audit_sha256": "a3f327142dc91c0a42b2be4852eef2dc32f3cbbe7efa9a5735dc1a54bca550a1",
+  "parity": "results/sha384-ext4-polynomial/report.json",
+  "scope": [
+    "Concrete Fp to Fp4 addition, subtraction, casts, polynomial evaluation and packed Mobius commute.",
+    "Accepted fixed computed-source projection yields genuine Fp4 polynomial evaluations or a finite supported path collision."
+  ],
+  "limits": [
+    "Fixed honest computed source; arbitrary-root extraction remains unproved.",
+    "Diagnostic Ext4 is not a 128-bit post-quantum parameter set.",
+    "No recursive aggregation or full NEAR claim."
+  ]
+}

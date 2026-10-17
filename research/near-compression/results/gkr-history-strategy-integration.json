@@ -1,0 +1,38 @@
+{
+  "status": "CONSTRUCTED_HISTORY_INDEXED_GKR_TERMINAL_CLAIM",
+  "module": "NearCompression/GKRHistoryStrategy.lean",
+  "theorems": [
+    "gkr_history_block_inverse",
+    "gkr_history_reindex_inverse",
+    "gkr_history_terminal_claim_inverse",
+    "gkr_history_strategy_terminal_event",
+    "gkr_history_strategy_regressions"
+  ],
+  "proved": [
+    "History decoder recovers row prefix and final block exactly on length-correct assemblies.",
+    "Arbitrary downstream families can be reindexed by history with exact inverse on valid samples, retaining all dependencies.",
+    "The merged PCS terminalClaim family is constructed from final GKR a/b messages for a fixed earlier block sequence.",
+    "Evaluated terminal mismatch equals the recovered-input mismatch using this constructed terminalClaim; no external terminal-claim equality premise."
+  ],
+  "assumptions": [
+    "Exact row/axis lengths and evaluated verifier path checks.",
+    "Explicit recovered source tuple and constants; chosen PCS representative identification remains separate.",
+    "Reindexing is total but malformed histories are not certified by inverse lemmas."
+  ],
+  "remaining": [
+    "Instantiate reindexed sent/claim/folding families and acceptance checks in the merged PCS theorem.",
+    "Bind source tuple, source oracle identity, constants and authentication premises.",
+    "Executable refinement, global quantum security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3942,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "kernel_regressions": "Distinct row/axis/gamma extraction; reindex preserves both arguments; truncated history has missing right axis and default gamma.",
+    "native_capture_execution": "Not rerun; generic formal construction only."
+  }
+}

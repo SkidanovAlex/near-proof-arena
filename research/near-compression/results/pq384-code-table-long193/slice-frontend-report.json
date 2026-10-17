@@ -1,0 +1,106 @@
+{
+  "status": "PASS",
+  "fresh_verifier": {
+    "status": "PASS",
+    "security": "Q8/Ext4 diagnostic; soundness not certified",
+    "code_length": 193,
+    "execution_fuel": 256,
+    "published_exit": [
+      0,
+      0,
+      192,
+      0,
+      0,
+      1,
+      0,
+      31257,
+      33745,
+      36222,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "rejections": [
+    {
+      "case": "different requested method",
+      "stage": "preparation"
+    },
+    {
+      "case": "different prepaid gas",
+      "stage": "preparation"
+    },
+    {
+      "case": "different valid requested Wasm program",
+      "stage": "preparation"
+    },
+    {
+      "case": "noncanonical Wasm byte",
+      "stage": "frontend"
+    },
+    {
+      "case": "prover-selected AIR",
+      "stage": "frontend"
+    },
+    {
+      "case": "different public CODE descriptor",
+      "stage": "preparation"
+    },
+    {
+      "case": "altered published exit 43",
+      "stage": "cryptographic"
+    },
+    {
+      "case": "altered published exit 44",
+      "stage": "cryptographic"
+    },
+    {
+      "case": "altered published exit 45",
+      "stage": "cryptographic"
+    },
+    {
+      "case": "altered published exit 46",
+      "stage": "cryptographic"
+    },
+    {
+      "case": "altered published exit 50",
+      "stage": "cryptographic"
+    },
+    {
+      "case": "substituted source commitment",
+      "stage": "cryptographic"
+    },
+    {
+      "case": "truncated proof",
+      "stage": "cryptographic"
+    },
+    {
+      "case": "trailing proof bytes",
+      "stage": "cryptographic"
+    }
+  ],
+  "proof_bytes": 121982,
+  "statement_json_bytes": 223788,
+  "request_json_bytes": 919,
+  "proof_sha256": "7d993a7b3a817b0114ea3a87588e5e0997ca5c96cbe333d9c77739ca5ebb13cc",
+  "limits": [
+    "Existing proof reused; no prover or secure parameter changes",
+    "Acceptance to literal HoldsP and quantum soundness remain unproved",
+    "Published exit contains status, fast gas and stack; not full NEAR state"
+  ],
+  "total_transported_bytes": 346689
+}

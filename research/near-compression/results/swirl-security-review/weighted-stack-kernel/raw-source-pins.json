@@ -1,0 +1,10 @@
+{
+  "tests.rs": "adffbf1f9fe8ad55bd0976d970b6adf8a2000902477d021be425f825b2bb61cd",
+  "native-run.log": "ef023f2343762071a1fe7aed114cd1f5ed49c51ab90048653fd799bc4e926db2",
+  "clippy.log": "3a6ca1187cdb9220dfa64c63f4406da0662a268928d3c9df84dbda31c19ceda3",
+  "dense-run.log": "e8631f2437cda9ea53b9c58fb6841a2b8ceec160051824023716d0a49112bbe7",
+  "pairs-run.log": "170848001ddca6fad584e61b4be9e48516c6ecbb13a3d8a4388e595e8ec95374",
+  "poly-common.rs": "839fbd1fe2283f9f7b1fbf626903537306c92571e0618e5c80a809cff929fe5c",
+  "stacked-reduction.rs": "f1a261f591327fec21db11e02644429d73ac21fc5d20126169d9134d283e1cca",
+  "stacked-pcs.rs": "4b81e69439305ab366082c7316603f7e1baba8c7142b4ba21f6f6660df5e3d2c"
+}

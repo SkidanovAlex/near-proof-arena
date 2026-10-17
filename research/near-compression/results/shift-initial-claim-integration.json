@@ -1,0 +1,26 @@
+{
+  "status": "PROVED_COMPONENT",
+  "module": "NearCompression/ShiftInitialClaim.lean",
+  "main_theorems": [
+    "shift_reduction_batched_initial",
+    "shift_initial_claim_bad_count"
+  ],
+  "established": [
+    "Boolean cube dot product of row MLEs equals the exact row-table dot product",
+    "Ordinary shift kernel cube sum equals cyclic-next MLE via predecessor reindexing",
+    "Column batching commutes with row interpolation",
+    "Initial sum equals current-vector followed by next-vector power batching, including alpha^width offset",
+    "A fixed incorrect claim vector matches the honest initial sum for at most 2*width-1 distinct alpha values"
+  ],
+  "premises": [
+    "Claim vector fixed before column batching challenge",
+    "Canonical shared source columns and target dimension",
+    "Wrong claimed lane and exact vector length"
+  ],
+  "remaining": [
+    "Compose vector batching with adaptive quadratic shift sumcheck",
+    "Authenticate final original-column evaluations via PCS",
+    "Compose terminal reduction with local AIR and global bus soundness",
+    "Quantified quantum transcript reduction and secure sub300k full-scope proof"
+  ]
+}

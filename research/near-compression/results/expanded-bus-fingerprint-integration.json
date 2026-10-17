@@ -1,0 +1,48 @@
+{
+  "status": "EXPANDED_FINGERPRINT_SEMANTICS_PROVED_AND_COMPILER_MEASURED",
+  "module": "NearCompression/ExpandedBusFingerprint.lean",
+  "theorems": [
+    "expanded_bus_tagged_value",
+    "expanded_bus_fingerprint_value",
+    "expanded_bus_tagged_degree",
+    "expanded_bus_tagged_columns"
+  ],
+  "proved": [
+    "Public-weight expansion of tagged Horner evaluation is equal for every field/environment, including zero challenges.",
+    "Expansion preserves given local degree and column coverage bounds."
+  ],
+  "implementation": [
+    "Canonical specification generation remains the default; expanded_messages is explicit.",
+    "Ext8 terminal candidate uses expanded public-challenge weights; differential reference remains canonical Horner instructions."
+  ],
+  "measurement": {
+    "before_layers": 78,
+    "after_layers": 35,
+    "before_raw_gkr_scalar_bytes": 104832,
+    "after_raw_gkr_scalar_bytes": 47744,
+    "reduction_bytes": 57088,
+    "minimum_input_log": 13,
+    "after_gkr_error_numerator": 983,
+    "scope": "Actual 193-instruction AIR, synthetic Ext8 terminal inputs/random batching; raw scalar count, no generated GKR/PCS proof."
+  },
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4119,
+    "ext8_residual_expansion_comparisons": 192,
+    "register_mutation_rejections": 576,
+    "lean_canonical_residual_checks": 64,
+    "lean_rejections": 16,
+    "terminal_program_dag_layer_comparisons": 6,
+    "exact_ext4_compiler_regressions": 3
+  },
+  "remaining": [
+    "Universal Python generator/expansion-to-Lean refinement and checked optimized-program binding.",
+    "Native Ext8 GKR/transcript, round kernel and PCS integration.",
+    "Complete acceptance/QROM security, secure total bytes and full 1 Pgas."
+  ],
+  "source_hashes": {
+    "airbender/direct-wasm/check_bus_program_formulas.py": "81ef909e69f5e17db99dc1c74710b113a2f6599f0e271ba4f65b3ec86f928690",
+    "airbender/direct-wasm/pq384_ext8_terminal_compile.py": "9c0584234e9b894f058dc6e8eeb5658ab2f7e4c778d3e4df7e7b6b0c7a18d18f",
+    "airbender/direct-wasm/test_ext8_terminal_compile.py": "5111895463d546013fc3f6dc84b578d409232649afa1c1bad5f5fd31d53dd4e6"
+  }
+}

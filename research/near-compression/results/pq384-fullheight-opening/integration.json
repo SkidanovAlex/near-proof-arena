@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "rows": 8192,
+  "width": 544,
+  "packing": 32,
+  "degree": 262144,
+  "rounds": 12,
+  "queries_per_round": 8,
+  "proof_bytes": 128966,
+  "source_root": "38fdb616c24b4a7bec36ba71073cec05e865edb2ff3753804b859479d12302a6def3559577689f9ff617b8077bc95350",
+  "independent_full_column_checks": 3,
+  "claim_seconds": 0.6544159720651805,
+  "prover_seconds": 7.6461893380619586,
+  "verify_seconds": 1.597932635806501,
+  "verifier_output": "PASS: diagnostic batched multi-round opening; no security-level certification",
+  "proof_sha256": "64d0cb90bd45adb52bea0bd1f889e78ab91740617a9b96a920ec30ac3419a9c4",
+  "scope": "Actual-source batched opening diagnostic; no enclosing AIR proof or security certification",
+  "root_worktree_reverification": "PASS binary fresh process; original-vs-cached exact proof parity on two smaller cases",
+  "compact_weights_evidence": "../pq384-compact-weights.json"
+}

@@ -1,0 +1,143 @@
+{
+  "arithmetic_fixtures": 120,
+  "generic_hensel_fixtures": 12,
+  "matched_specialized_coefficients": 284,
+  "sufficient_sample_zero_certificates": 3,
+  "fixtures": [
+    {
+      "prime": 2,
+      "denominator": [
+        0,
+        1
+      ],
+      "safe_challenges": 1,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": false
+    },
+    {
+      "prime": 2,
+      "denominator": [
+        0,
+        1
+      ],
+      "safe_challenges": 1,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": false
+    },
+    {
+      "prime": 2,
+      "denominator": [
+        1,
+        0
+      ],
+      "safe_challenges": 2,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": false
+    },
+    {
+      "prime": 3,
+      "denominator": [
+        2,
+        1
+      ],
+      "safe_challenges": 2,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": false
+    },
+    {
+      "prime": 3,
+      "denominator": [
+        1,
+        0
+      ],
+      "safe_challenges": 3,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": false
+    },
+    {
+      "prime": 3,
+      "denominator": [
+        1,
+        2
+      ],
+      "safe_challenges": 2,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": false
+    },
+    {
+      "prime": 5,
+      "denominator": [
+        3,
+        1
+      ],
+      "safe_challenges": 4,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": false
+    },
+    {
+      "prime": 5,
+      "denominator": [
+        4,
+        1
+      ],
+      "safe_challenges": 4,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": false
+    },
+    {
+      "prime": 5,
+      "denominator": [
+        3,
+        2
+      ],
+      "safe_challenges": 4,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": false
+    },
+    {
+      "prime": 17,
+      "denominator": [
+        9,
+        11
+      ],
+      "safe_challenges": 16,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": true
+    },
+    {
+      "prime": 17,
+      "denominator": [
+        11,
+        10
+      ],
+      "safe_challenges": 16,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": true
+    },
+    {
+      "prime": 17,
+      "denominator": [
+        7,
+        5
+      ],
+      "safe_challenges": 16,
+      "high_coefficient_numerator_budget": 6,
+      "high_coefficient_denominator_exponent": 5,
+      "enough_for_zero_certificate": true
+    }
+  ],
+  "incorrect_nonzero_slope_counterexamples": 1,
+  "zero_slope_exclusions": 1,
+  "scope": "Generic symbolic/numeric Hensel correspondence with explicit initial-root and actual-slope premises. Useful factors, common branch construction, algebraic extensions and full MCA remain open."
+}

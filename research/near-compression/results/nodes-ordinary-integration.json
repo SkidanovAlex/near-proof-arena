@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "audit_checks": 2728,
+  "new_public_theorems": 18,
+  "modules": {
+    "SHA384SharedNodes": "c3ec6d69c516ee274f420ae8a3f436822ffecc0b6a6b556b73dc658dd9fb1ec8",
+    "PreparedLocalsLegacyLocal": "cd7eb961995103103bbd01b25a7ada8de51414a5b27bc3095069348b3a386c9b",
+    "PreparedLocalsControlDecode": "b8c93ae7755d87120af5fbe8c49847f5c62126b2eb0f6c279540d8e954f10a03",
+    "PreparedLocalsLegacyState": "7d2a77027ca59ef2db605f8440b6ea3f20e86c04ffe3f3fd84c398e262a0a6eb"
+  },
+  "scope": "Actual sharedHoldsP uniquely routes full8word node states and message to certified compression and endpoint outputs; no caller matching or uniqueness premise. Actual locals SetupCheck/HoldsP derives full const/add/drop successor states and preserves locals. Shared complete messages, locals control/terminal/run composition and cryptographic/QROM soundness remain open."
+}

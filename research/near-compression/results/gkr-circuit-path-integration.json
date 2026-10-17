@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3135,
+  "added_theorems": [
+    "gkr_circuit_path_linked",
+    "gkr_circuit_checked_path_budget"
+  ],
+  "source_sha256": "6b8e1c84273a51e54bdfe2b18d7026a301cfd1d777b6327444334882d73978c2",
+  "audit_log": "/tmp/root-gkr-circuit-path-audit.log",
+  "audit_log_sha256": "612033ab4b7b8d1afc030aa1d04d89daa2cbca72d61a911944235cc23feb933c",
+  "result": "Fixed circuit values, actual weighted query updates, transmitted claim checks and exact terminal MLE openings imply the linked checked-path relation and ideal uniform-challenge bound.",
+  "remaining": [
+    "Actual executable verifier trace refinement",
+    "Authentication of terminal openings from fixed PCS commitments",
+    "Fiat-Shamir and QROM soundness",
+    "Secure full-NEAR 1Pgas proof size below 300000 bytes"
+  ],
+  "superseded_by": "root-output-decoder-integration.json (terminal condition generalized to actual combined obligation)"
+}

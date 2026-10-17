@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "source_constraints": 523,
+  "formal_exprs": 455,
+  "middle_count": 6,
+  "tail_count": 62,
+  "formal_json_sha256": "b52f7048f3c88b7a7d62ad27a2f5ae824952c0d9261d2414612a6554a486da22",
+  "scope": "Exact Expr syntax parity and decomposition; no Wasm/PREP authentication theorem"
+}

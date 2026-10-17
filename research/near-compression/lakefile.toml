@@ -1,0 +1,17 @@
+name = "NearCompression"
+version = "0.1.0"
+defaultTargets = ["NearCompression"]
+
+[leanOptions]
+autoImplicit = false
+
+[[lean_lib]]
+name = "NearCompression"
+
+[[require]]
+name = "NearSpecV3"
+path = "../../spec/lean/v3"
+
+[[require]]
+name = "ZkFormal"
+path = "../../zk-formal"

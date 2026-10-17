@@ -1,0 +1,58 @@
+height plan: {"plannedrowsperrenderer":[{"name":"codec","planned":453,"required":454,"tail":0},{"name":"scandist","planned":28,"required":29,"tail":0},{"name":"proc","planned":16,"required":18,"tail":1},{"name":"mem","planned":24,"required":25,"tail":0},{"name":"cmp","planned":49,"required":50,"tail":0}],"receipt_log":7,"receipt_planned":36,"receipt_required":37,"scheduler_log":10}
+table  0 sha_t    : log=13 width=544 bad=0
+table  1 sha_r    : log=10 width=544 bad=0
+table  2 node     : log=13 width=192 bad=0
+table  3 head     : log=7 width=73 bad=0
+table  4 val      : log=10 width=17 bad=0
+table  5 walk     : log=7 width=56 bad=0
+table  6 uniq     : log=10 width=56 bad=0
+table  7 ups      : log=10 width=202 bad=0
+table  8 chacha   : log=1 width=272 bad=0
+table  9 rng      : log=1 width=158 bad=0
+table 10 shuf     : log=1 width=77 bad=0
+table 11 codec    : log=10 width=91 bad=0
+table 12 scandist : log=10 width=119 bad=0
+table 13 proc     : log=10 width=64 bad=0
+table 14 mem      : log=10 width=18 bad=0
+table 15 cmp      : log=10 width=33 bad=0
+table 16 rcpt     : log=7 width=263 bad=0
+table 17 acct     : log=4 width=16 bad=0
+table 18 akey     : log=1 width=7 bad=0
+table 19 bnd      : log=7 width=6 bad=0
+table 20 srcp     : log=10 width=63 bad=0
+table 21 size     : log=4 width=57 bad=0
+table 22 qv       : log=4 width=52 bad=0
+table 23 mrk      : log=19 width=60 bad=0
+table 24 sort     : log=1 width=49 bad=0
+table 25 tx       : log=4 width=147 bad=0
+table 26 akm      : log=4 width=70 bad=0
+table 27 kib      : log=10 width=15 bad=0
+table 28 plf      : log=1 width=34 bad=0
+table 29 rid      : log=1 width=21 bad=0
+table 30 walku    : log=7 width=58 bad=0
+table 31 nmem     : log=1 width=67 bad=0
+table 32 uval     : log=1 width=12 bad=0
+33 tables checked; 61 buses balanced; 38803154 cells; 155212880 bytes row dumps; dump=false
+	Command being timed: "/tmp/near-d1-trace-export-build/target/release/near-d1-trace-export /data/illia/nearproof-wt/direct-wasm-whir/oracle/fixtures/v3/public-d1/d1/00-h10012-s2 /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/d1-air.json /tmp/near-d1-height-00-h10012-s2 --check-only"
+	User time (seconds): 1.51
+	System time (seconds): 0.09
+	Percent of CPU this job got: 161%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 182252
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 49265
+	Voluntary context switches: 14506
+	Involuntary context switches: 530
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 224
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

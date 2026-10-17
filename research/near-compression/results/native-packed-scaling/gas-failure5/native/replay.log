@@ -1,0 +1,1015 @@
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=7 all_list=1 queries=[82, 63, 51, 43, 37]
+NATIVE_SHA384_INTERACTION_LOG 26
+NATIVE_SHA384_KEYGEN_SECONDS 0.000600932
+NATIVE_SHA384_EXT12 target=268 min=268.7638209393418 logup=331.57533223384377 proximity=320.9308746090779 query=268.7638209393418
+NATIVE_SHA384_VERIFY_CALLS [2208, 7286, 1, 102, 6, 201]
+NATIVE_SHA384_VERIFY_BLOCKS [2208, 7286, 1, 519, 12, 201]
+NATIVE_SHA384_EXT12_REPLAY_PASS bytes=378849
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1471:468
+     |
+1471 | ...8].clone(), e[946].clone(), e[1015].clone()],(e[393].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                   ^
+     |
+     = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+     |
+1471 - builder.push_interaction(0,vec![e[1401].clone(), e[1432].clone(), e[609].clone(), e[743].clone(), e[826].clone(), e[168].clone(), e[172].clone(), e[467].clone(), e[488].clone(), e[509].clone(), e[530].clone(), e[895].clone(), e[964].clone(), e[900].clone(), e[969].clone(), e[906].clone(), e[975].clone(), e[911].clone(), e[980].clone(), e[918].clone(), e[987].clone(), e[923].clone(), e[992].clone(), e[929].clone(), e[998].clone(), e[946].clone(), e[1015].clone()],(e[393].clone() * AB::F::from_u32(1)),1);
+1471 + builder.push_interaction(0,vec![e[1401].clone(), e[1432].clone(), e[609].clone(), e[743].clone(), e[826].clone(), e[168].clone(), e[172].clone(), e[467].clone(), e[488].clone(), e[509].clone(), e[530].clone(), e[895].clone(), e[964].clone(), e[900].clone(), e[969].clone(), e[906].clone(), e[975].clone(), e[911].clone(), e[980].clone(), e[918].clone(), e[987].clone(), e[923].clone(), e[992].clone(), e[929].clone(), e[998].clone(), e[946].clone(), e[1015].clone()],e[393].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1472:468
+     |
+1472 | ...8].clone(), e[946].clone(), e[1015].clone()],(e[461].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                   ^
+     |
+help: remove these parentheses
+     |
+1472 - builder.push_interaction(1,vec![e[1401].clone(), e[1432].clone(), e[609].clone(), e[743].clone(), e[826].clone(), e[168].clone(), e[172].clone(), e[467].clone(), e[488].clone(), e[509].clone(), e[530].clone(), e[895].clone(), e[964].clone(), e[900].clone(), e[969].clone(), e[906].clone(), e[975].clone(), e[911].clone(), e[980].clone(), e[918].clone(), e[987].clone(), e[923].clone(), e[992].clone(), e[929].clone(), e[998].clone(), e[946].clone(), e[1015].clone()],(e[461].clone() * AB::F::from_u32(1)),1);
+1472 + builder.push_interaction(1,vec![e[1401].clone(), e[1432].clone(), e[609].clone(), e[743].clone(), e[826].clone(), e[168].clone(), e[172].clone(), e[467].clone(), e[488].clone(), e[509].clone(), e[530].clone(), e[895].clone(), e[964].clone(), e[900].clone(), e[969].clone(), e[906].clone(), e[975].clone(), e[911].clone(), e[980].clone(), e[918].clone(), e[987].clone(), e[923].clone(), e[992].clone(), e[929].clone(), e[998].clone(), e[946].clone(), e[1015].clone()],e[461].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1473:429
+     |
+1473 | ...(), e[5].clone(), e[5].clone(), e[5].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+1473 - builder.push_interaction(2,vec![e[1401].clone(), e[1432].clone(), e[609].clone(), e[743].clone(), e[204].clone(), e[208].clone(), e[212].clone(), e[216].clone(), e[1059].clone(), e[1077].clone(), e[471].clone(), e[492].clone(), e[513].clone(), e[534].clone(), e[220].clone(), e[224].clone(), e[228].clone(), e[232].clone(), e[236].clone(), e[240].clone(), e[244].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1473 + builder.push_interaction(2,vec![e[1401].clone(), e[1432].clone(), e[609].clone(), e[743].clone(), e[204].clone(), e[208].clone(), e[212].clone(), e[216].clone(), e[1059].clone(), e[1077].clone(), e[471].clone(), e[492].clone(), e[513].clone(), e[534].clone(), e[220].clone(), e[224].clone(), e[228].clone(), e[232].clone(), e[236].clone(), e[240].clone(), e[244].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1474:49
+     |
+1474 | builder.push_interaction(4,vec![e[892].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1474 - builder.push_interaction(4,vec![e[892].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1474 + builder.push_interaction(4,vec![e[892].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1475:49
+     |
+1475 | builder.push_interaction(4,vec![e[893].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1475 - builder.push_interaction(4,vec![e[893].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1475 + builder.push_interaction(4,vec![e[893].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1476:49
+     |
+1476 | builder.push_interaction(4,vec![e[961].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1476 - builder.push_interaction(4,vec![e[961].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1476 + builder.push_interaction(4,vec![e[961].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1477:49
+     |
+1477 | builder.push_interaction(4,vec![e[962].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1477 - builder.push_interaction(4,vec![e[962].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1477 + builder.push_interaction(4,vec![e[962].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1478:49
+     |
+1478 | builder.push_interaction(4,vec![e[897].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1478 - builder.push_interaction(4,vec![e[897].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1478 + builder.push_interaction(4,vec![e[897].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1479:49
+     |
+1479 | builder.push_interaction(4,vec![e[898].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1479 - builder.push_interaction(4,vec![e[898].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1479 + builder.push_interaction(4,vec![e[898].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1480:49
+     |
+1480 | builder.push_interaction(4,vec![e[966].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1480 - builder.push_interaction(4,vec![e[966].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1480 + builder.push_interaction(4,vec![e[966].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1481:49
+     |
+1481 | builder.push_interaction(4,vec![e[967].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1481 - builder.push_interaction(4,vec![e[967].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1481 + builder.push_interaction(4,vec![e[967].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1482:49
+     |
+1482 | builder.push_interaction(4,vec![e[903].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1482 - builder.push_interaction(4,vec![e[903].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1482 + builder.push_interaction(4,vec![e[903].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1483:49
+     |
+1483 | builder.push_interaction(4,vec![e[904].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1483 - builder.push_interaction(4,vec![e[904].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1483 + builder.push_interaction(4,vec![e[904].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1484:49
+     |
+1484 | builder.push_interaction(4,vec![e[972].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1484 - builder.push_interaction(4,vec![e[972].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1484 + builder.push_interaction(4,vec![e[972].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1485:49
+     |
+1485 | builder.push_interaction(4,vec![e[973].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1485 - builder.push_interaction(4,vec![e[973].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1485 + builder.push_interaction(4,vec![e[973].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1486:49
+     |
+1486 | builder.push_interaction(4,vec![e[908].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1486 - builder.push_interaction(4,vec![e[908].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1486 + builder.push_interaction(4,vec![e[908].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1487:49
+     |
+1487 | builder.push_interaction(4,vec![e[909].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1487 - builder.push_interaction(4,vec![e[909].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1487 + builder.push_interaction(4,vec![e[909].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1488:49
+     |
+1488 | builder.push_interaction(4,vec![e[977].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1488 - builder.push_interaction(4,vec![e[977].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1488 + builder.push_interaction(4,vec![e[977].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1489:49
+     |
+1489 | builder.push_interaction(4,vec![e[978].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1489 - builder.push_interaction(4,vec![e[978].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1489 + builder.push_interaction(4,vec![e[978].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1490:49
+     |
+1490 | builder.push_interaction(4,vec![e[915].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1490 - builder.push_interaction(4,vec![e[915].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1490 + builder.push_interaction(4,vec![e[915].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1491:49
+     |
+1491 | builder.push_interaction(4,vec![e[916].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1491 - builder.push_interaction(4,vec![e[916].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1491 + builder.push_interaction(4,vec![e[916].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1492:49
+     |
+1492 | builder.push_interaction(4,vec![e[984].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1492 - builder.push_interaction(4,vec![e[984].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1492 + builder.push_interaction(4,vec![e[984].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1493:49
+     |
+1493 | builder.push_interaction(4,vec![e[985].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1493 - builder.push_interaction(4,vec![e[985].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1493 + builder.push_interaction(4,vec![e[985].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1494:49
+     |
+1494 | builder.push_interaction(4,vec![e[920].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1494 - builder.push_interaction(4,vec![e[920].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1494 + builder.push_interaction(4,vec![e[920].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1495:49
+     |
+1495 | builder.push_interaction(4,vec![e[921].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1495 - builder.push_interaction(4,vec![e[921].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1495 + builder.push_interaction(4,vec![e[921].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1496:49
+     |
+1496 | builder.push_interaction(4,vec![e[989].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1496 - builder.push_interaction(4,vec![e[989].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1496 + builder.push_interaction(4,vec![e[989].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1497:49
+     |
+1497 | builder.push_interaction(4,vec![e[990].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1497 - builder.push_interaction(4,vec![e[990].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1497 + builder.push_interaction(4,vec![e[990].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1498:49
+     |
+1498 | builder.push_interaction(4,vec![e[926].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1498 - builder.push_interaction(4,vec![e[926].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1498 + builder.push_interaction(4,vec![e[926].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1499:49
+     |
+1499 | builder.push_interaction(4,vec![e[927].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1499 - builder.push_interaction(4,vec![e[927].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1499 + builder.push_interaction(4,vec![e[927].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1500:49
+     |
+1500 | builder.push_interaction(4,vec![e[995].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1500 - builder.push_interaction(4,vec![e[995].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1500 + builder.push_interaction(4,vec![e[995].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1501:49
+     |
+1501 | builder.push_interaction(4,vec![e[996].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1501 - builder.push_interaction(4,vec![e[996].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1501 + builder.push_interaction(4,vec![e[996].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1502:49
+     |
+1502 | builder.push_interaction(4,vec![e[943].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1502 - builder.push_interaction(4,vec![e[943].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1502 + builder.push_interaction(4,vec![e[943].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1503:49
+     |
+1503 | builder.push_interaction(4,vec![e[944].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1503 - builder.push_interaction(4,vec![e[944].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1503 + builder.push_interaction(4,vec![e[944].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1504:50
+     |
+1504 | builder.push_interaction(4,vec![e[1012].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+1504 - builder.push_interaction(4,vec![e[1012].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1504 + builder.push_interaction(4,vec![e[1012].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1505:50
+     |
+1505 | builder.push_interaction(4,vec![e[1013].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+1505 - builder.push_interaction(4,vec![e[1013].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1505 + builder.push_interaction(4,vec![e[1013].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1506:49
+     |
+1506 | builder.push_interaction(4,vec![e[463].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1506 - builder.push_interaction(4,vec![e[463].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1506 + builder.push_interaction(4,vec![e[463].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1507:49
+     |
+1507 | builder.push_interaction(4,vec![e[465].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1507 - builder.push_interaction(4,vec![e[465].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1507 + builder.push_interaction(4,vec![e[465].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1508:49
+     |
+1508 | builder.push_interaction(4,vec![e[485].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1508 - builder.push_interaction(4,vec![e[485].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1508 + builder.push_interaction(4,vec![e[485].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1509:49
+     |
+1509 | builder.push_interaction(4,vec![e[486].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1509 - builder.push_interaction(4,vec![e[486].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1509 + builder.push_interaction(4,vec![e[486].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1510:49
+     |
+1510 | builder.push_interaction(4,vec![e[506].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1510 - builder.push_interaction(4,vec![e[506].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1510 + builder.push_interaction(4,vec![e[506].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1511:49
+     |
+1511 | builder.push_interaction(4,vec![e[507].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1511 - builder.push_interaction(4,vec![e[507].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1511 + builder.push_interaction(4,vec![e[507].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1512:49
+     |
+1512 | builder.push_interaction(4,vec![e[527].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1512 - builder.push_interaction(4,vec![e[527].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1512 + builder.push_interaction(4,vec![e[527].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1513:49
+     |
+1513 | builder.push_interaction(4,vec![e[528].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1513 - builder.push_interaction(4,vec![e[528].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1513 + builder.push_interaction(4,vec![e[528].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1514:49
+     |
+1514 | builder.push_interaction(4,vec![e[475].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1514 - builder.push_interaction(4,vec![e[475].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1514 + builder.push_interaction(4,vec![e[475].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1515:49
+     |
+1515 | builder.push_interaction(4,vec![e[476].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1515 - builder.push_interaction(4,vec![e[476].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1515 + builder.push_interaction(4,vec![e[476].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1516:49
+     |
+1516 | builder.push_interaction(4,vec![e[497].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1516 - builder.push_interaction(4,vec![e[497].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1516 + builder.push_interaction(4,vec![e[497].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1517:49
+     |
+1517 | builder.push_interaction(4,vec![e[498].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1517 - builder.push_interaction(4,vec![e[498].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1517 + builder.push_interaction(4,vec![e[498].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1518:49
+     |
+1518 | builder.push_interaction(4,vec![e[518].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1518 - builder.push_interaction(4,vec![e[518].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1518 + builder.push_interaction(4,vec![e[518].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1519:49
+     |
+1519 | builder.push_interaction(4,vec![e[519].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1519 - builder.push_interaction(4,vec![e[519].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1519 + builder.push_interaction(4,vec![e[519].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1520:49
+     |
+1520 | builder.push_interaction(4,vec![e[539].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1520 - builder.push_interaction(4,vec![e[539].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1520 + builder.push_interaction(4,vec![e[539].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1521:49
+     |
+1521 | builder.push_interaction(4,vec![e[540].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1521 - builder.push_interaction(4,vec![e[540].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1521 + builder.push_interaction(4,vec![e[540].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1522:49
+     |
+1522 | builder.push_interaction(4,vec![e[952].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1522 - builder.push_interaction(4,vec![e[952].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1522 + builder.push_interaction(4,vec![e[952].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1523:49
+     |
+1523 | builder.push_interaction(4,vec![e[953].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1523 - builder.push_interaction(4,vec![e[953].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1523 + builder.push_interaction(4,vec![e[953].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1524:50
+     |
+1524 | builder.push_interaction(4,vec![e[1021].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+1524 - builder.push_interaction(4,vec![e[1021].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1524 + builder.push_interaction(4,vec![e[1021].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1525:50
+     |
+1525 | builder.push_interaction(4,vec![e[1022].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+1525 - builder.push_interaction(4,vec![e[1022].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1525 + builder.push_interaction(4,vec![e[1022].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1526:50
+     |
+1526 | builder.push_interaction(4,vec![e[1056].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+1526 - builder.push_interaction(4,vec![e[1056].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1526 + builder.push_interaction(4,vec![e[1056].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1527:50
+     |
+1527 | builder.push_interaction(4,vec![e[1057].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+1527 - builder.push_interaction(4,vec![e[1057].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1527 + builder.push_interaction(4,vec![e[1057].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1528:50
+     |
+1528 | builder.push_interaction(4,vec![e[1074].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+1528 - builder.push_interaction(4,vec![e[1074].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1528 + builder.push_interaction(4,vec![e[1074].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1529:50
+     |
+1529 | builder.push_interaction(4,vec![e[1075].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+1529 - builder.push_interaction(4,vec![e[1075].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1529 + builder.push_interaction(4,vec![e[1075].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1530:49
+     |
+1530 | builder.push_interaction(4,vec![e[468].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1530 - builder.push_interaction(4,vec![e[468].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1530 + builder.push_interaction(4,vec![e[468].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1531:49
+     |
+1531 | builder.push_interaction(4,vec![e[469].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1531 - builder.push_interaction(4,vec![e[469].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1531 + builder.push_interaction(4,vec![e[469].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1532:49
+     |
+1532 | builder.push_interaction(4,vec![e[489].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1532 - builder.push_interaction(4,vec![e[489].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1532 + builder.push_interaction(4,vec![e[489].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1533:49
+     |
+1533 | builder.push_interaction(4,vec![e[490].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1533 - builder.push_interaction(4,vec![e[490].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1533 + builder.push_interaction(4,vec![e[490].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1534:49
+     |
+1534 | builder.push_interaction(4,vec![e[510].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1534 - builder.push_interaction(4,vec![e[510].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1534 + builder.push_interaction(4,vec![e[510].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1535:49
+     |
+1535 | builder.push_interaction(4,vec![e[511].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1535 - builder.push_interaction(4,vec![e[511].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1535 + builder.push_interaction(4,vec![e[511].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1536:49
+     |
+1536 | builder.push_interaction(4,vec![e[531].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1536 - builder.push_interaction(4,vec![e[531].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1536 + builder.push_interaction(4,vec![e[531].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:1537:49
+     |
+1537 | builder.push_interaction(4,vec![e[532].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+1537 - builder.push_interaction(4,vec![e[532].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+1537 + builder.push_interaction(4,vec![e[532].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2549:425
+     |
+2549 | ...(), e[5].clone(), e[5].clone(), e[5].clone()],(e[0].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+2549 - builder.push_interaction(3,vec![e[932].clone(), e[963].clone(), e[563].clone(), e[695].clone(), e[264].clone(), e[268].clone(), e[272].clone(), e[276].clone(), e[881].clone(), e[887].clone(), e[855].clone(), e[861].clone(), e[867].clone(), e[873].clone(), e[280].clone(), e[284].clone(), e[288].clone(), e[292].clone(), e[296].clone(), e[300].clone(), e[304].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],(e[0].clone() * AB::F::from_u32(1)),1);
+2549 + builder.push_interaction(3,vec![e[932].clone(), e[963].clone(), e[563].clone(), e[695].clone(), e[264].clone(), e[268].clone(), e[272].clone(), e[276].clone(), e[881].clone(), e[887].clone(), e[855].clone(), e[861].clone(), e[867].clone(), e[873].clone(), e[280].clone(), e[284].clone(), e[288].clone(), e[292].clone(), e[296].clone(), e[300].clone(), e[304].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],e[0].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2550:49
+     |
+2550 | builder.push_interaction(4,vec![e[878].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2550 - builder.push_interaction(4,vec![e[878].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2550 + builder.push_interaction(4,vec![e[878].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2551:49
+     |
+2551 | builder.push_interaction(4,vec![e[879].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2551 - builder.push_interaction(4,vec![e[879].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2551 + builder.push_interaction(4,vec![e[879].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2552:49
+     |
+2552 | builder.push_interaction(4,vec![e[884].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2552 - builder.push_interaction(4,vec![e[884].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2552 + builder.push_interaction(4,vec![e[884].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2553:49
+     |
+2553 | builder.push_interaction(4,vec![e[885].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2553 - builder.push_interaction(4,vec![e[885].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2553 + builder.push_interaction(4,vec![e[885].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2554:49
+     |
+2554 | builder.push_interaction(4,vec![e[852].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2554 - builder.push_interaction(4,vec![e[852].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2554 + builder.push_interaction(4,vec![e[852].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2555:49
+     |
+2555 | builder.push_interaction(4,vec![e[853].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2555 - builder.push_interaction(4,vec![e[853].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2555 + builder.push_interaction(4,vec![e[853].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2556:49
+     |
+2556 | builder.push_interaction(4,vec![e[858].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2556 - builder.push_interaction(4,vec![e[858].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2556 + builder.push_interaction(4,vec![e[858].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2557:49
+     |
+2557 | builder.push_interaction(4,vec![e[859].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2557 - builder.push_interaction(4,vec![e[859].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2557 + builder.push_interaction(4,vec![e[859].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2558:49
+     |
+2558 | builder.push_interaction(4,vec![e[864].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2558 - builder.push_interaction(4,vec![e[864].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2558 + builder.push_interaction(4,vec![e[864].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2559:49
+     |
+2559 | builder.push_interaction(4,vec![e[865].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2559 - builder.push_interaction(4,vec![e[865].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2559 + builder.push_interaction(4,vec![e[865].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2560:49
+     |
+2560 | builder.push_interaction(4,vec![e[870].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2560 - builder.push_interaction(4,vec![e[870].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2560 + builder.push_interaction(4,vec![e[870].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:2561:49
+     |
+2561 | builder.push_interaction(4,vec![e[871].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                 ^                                 ^
+     |
+help: remove these parentheses
+     |
+2561 - builder.push_interaction(4,vec![e[871].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+2561 + builder.push_interaction(4,vec![e[871].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unused variable: `local`
+  --> src/literal.rs:36:30
+   |
+36 | let main=builder.main(); let local=main.row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values...
+   |                              ^^^^^ help: if this is intentional, prefix it with an underscore: `_local`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `next`
+  --> src/literal.rs:36:68
+   |
+36 | ....row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
+   |                                ^^^^ help: if this is intentional, prefix it with an underscore: `_next`
+
+warning: unused variable: `next`
+    --> src/literal.rs:1559:68
+     |
+1559 | ...row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
+     |                               ^^^^ help: if this is intentional, prefix it with an underscore: `_next`
+
+warning: unused variable: `public`
+    --> src/literal.rs:1559:105
+     |
+1559 | ...w_slice(1).unwrap(); let public=builder.public_values().to_vec();
+     |                             ^^^^^^ help: if this is intentional, prefix it with an underscore: `_public`
+
+warning: unused variable: `local`
+    --> src/literal.rs:2568:30
+     |
+2568 | let main=builder.main(); let local=main.row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_valu...
+     |                              ^^^^^ help: if this is intentional, prefix it with an underscore: `_local`
+
+warning: unused variable: `next`
+    --> src/literal.rs:2568:68
+     |
+2568 | ...row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
+     |                               ^^^^ help: if this is intentional, prefix it with an underscore: `_next`
+
+warning: unused variable: `public`
+    --> src/literal.rs:2568:105
+     |
+2568 | ...w_slice(1).unwrap(); let public=builder.public_values().to_vec();
+     |                             ^^^^^^ help: if this is intentional, prefix it with an underscore: `_public`
+
+warning: `nearproof-native-sha384` (bin "nearproof-native-sha384") generated 87 warnings (run `cargo fix --bin "nearproof-native-sha384" -p nearproof-native-sha384` to apply 87 suggestions)
+    Finished `release` profile [optimized] target(s) in 0.02s
+     Running `/tmp/nearproof-native-sha384/target/release/nearproof-native-sha384`

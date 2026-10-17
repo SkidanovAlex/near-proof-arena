@@ -1,0 +1,27 @@
+{
+  "status": "PUBLIC_PREFIX_GKR_WEIGHTED_WHIR_CONTINUATION_REPLAYED",
+  "native_prefix_recomputed": true,
+  "public_gkr_verified": true,
+  "continuation_inputs_derived_from_gkr": true,
+  "native_continuation_verified": true,
+  "full_source_matrices_read_during_replay": false,
+  "wrong_gkr_binding_rejected": true,
+  "whir_negative_checks": 4,
+  "whir_bytes": 337932,
+  "stacking_bytes": 1476,
+  "gkr_field_payload_bytes": 20128,
+  "gkr_binding_bytes": 48,
+  "limitations": [
+    "Original native proof is retained for prefix and shape checks; not a standalone compressed wire format.",
+    "Trace-shape metadata is fixed fixture data exported from the matching key/proof; standalone parser must derive and validate it.",
+    "Two hash transcript families connected by an explicit digest; no composition/QROM theorem.",
+    "Internal geometry already exceeds300000; Ext4/upstream RBR100, not PQ128 or full NEAR."
+  ],
+  "reproduce": [
+    "Restore matched committed-witness/internal.proof.gz and witness archive for proving only.",
+    "Use opening-free-prefix/backend.patch.gz and weighted-whir/cpu-backend.patch.gz on pinned backend d667af5; apply this openvm.patch.gz on pinned OpenVM e74f9b1.",
+    "Clean only modified dependency packages for the relevant Cargo profile.",
+    "Run prepare_swirl_prefix_continuation.py, then native tests::nearproof_weighted_native_sumcheck with NEARPROOF_GKR_BINDING=/tmp/nearproof-prefix-gkr-binding.bin and NEARPROOF_WEIGHTED_WHIR=1.",
+    "For saved replay without matrices: run replay_swirl_prefix_continuation.py. It derives binding and weights from verified public GKR and rechecks native prefix."
+  ]
+}

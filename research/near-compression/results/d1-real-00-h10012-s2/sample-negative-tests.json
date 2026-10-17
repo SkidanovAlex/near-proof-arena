@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "rejections": [
+    "missing table",
+    "noncanonical cell",
+    "wrong cyclic successor",
+    "consistent nonboolean SHA cell"
+  ],
+  "scope": "Sample diagnostic only; no full trace/proof soundness claim."
+}

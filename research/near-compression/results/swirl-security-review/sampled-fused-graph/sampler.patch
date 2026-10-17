@@ -1,0 +1,133 @@
+--- a/crates/examples/src/circuits/nearproof_hash_graph.rs
++++ b/crates/examples/src/circuits/nearproof_hash_graph.rs
+@@ -10,13 +10,14 @@
+ use crate::ExampleCircuit;
+ 
+ #[derive(Args, Debug, Clone)]
+-pub struct GraphParams { #[arg(long)] pub graph: PathBuf }
++pub struct GraphParams { #[arg(long)] pub graph: PathBuf, #[arg(long)] pub sample_challenges: bool }
+ #[derive(Args, Debug, Clone)]
+ pub struct GraphInstance {}
+ pub struct NearproofHashGraph {
+     graph: Value,
+     inputs: BTreeMap<String,Vec<Wire>>,
+     outputs: Vec<(usize,[Wire;6])>,
++    samples: Vec<(usize,[Wire;4])>,
+ }
+ fn constant_bytes(b: &CircuitBuilder, x: &[u8]) -> Vec<Wire> {
+     x.iter().map(|v|b.add_constant(Word(*v as u64))).collect()
+@@ -28,6 +29,33 @@
+ fn words(b: &CircuitBuilder, data: &[Wire]) -> Vec<Wire> {
+     data.chunks(8).map(|chunk|b.bxor_multi(&chunk.iter().enumerate().map(|(i,x)|b.shl(*x,(56-8*i) as u32)).collect::<Vec<_>>())).collect()
+ }
++// Input words are zero-extended u32 values in production. Comparisons return
++// MSB booleans; select consumes only that bit. Never add an unnormalized flag.
++fn sample_words(b: &CircuitBuilder, input: &[Wire]) -> [Wire;4] {
++    let zero=b.add_constant_64(0); let one=b.add_constant_64(1);
++    let prime=b.add_constant_64(2013265921);let limit=b.add_constant_64(4026531842);
++    let four=b.add_constant_64(4);let mut count=zero;let mut out=[zero;4];
++    for &word in input {
++        let accept=b.icmp_ult(word,limit);
++        let (diff,_)=b.isub_bin_bout(word,prime,zero);
++        let value=b.select(b.icmp_ult(word,prime),word,diff);
++        for (j,slot) in out.iter_mut().enumerate() {
++            let index=b.add_constant_64(j as u64);
++            let take=b.band(accept,b.icmp_eq(count,index));
++            *slot=b.select(take,value,*slot);
++        }
++        let active=b.band(accept,b.icmp_ult(count,four));
++        count=b.iadd(count,b.select(active,one,zero)).0;
++    }
++    b.assert_eq("four accepted words",count,four);
++    out
++}
++fn sample_digest(b: &CircuitBuilder, digest: &[Wire;6]) -> [Wire;4] {
++    let data=bytes(b,digest,48);
++    let words=data.chunks_exact(4).map(|chunk| b.bxor_multi(&chunk.iter().enumerate()
++        .map(|(j,w)|b.shl(*w,(8*j) as u32)).collect::<Vec<_>>())).collect::<Vec<_>>();
++    sample_words(b,&words)
++}
+ impl ExampleCircuit for NearproofHashGraph {
+     type Params=GraphParams;
+     type Instance=GraphInstance;
+@@ -40,7 +68,12 @@
+             input_bytes.insert(name.clone(),bytes(b,&wires,n));inputs.insert(name.clone(),wires);
+         }
+         let nodes=graph["nodes"].as_array().unwrap();ensure!(!nodes.is_empty(),"empty graph");
+-        let mut hashes:Vec<[Wire;6]>=Vec::new();let mut outputs=Vec::new();
++        let mut hashes:Vec<[Wire;6]>=Vec::new();let mut outputs=Vec::new();let mut samples=Vec::new();
++        if params.sample_challenges {
++            let draws=graph["draws"].as_array().ok_or_else(||anyhow::anyhow!("draw metadata required"))?;
++            ensure!(draws.iter().all(|d|d["blocks"]==1 && d["scans"].as_array().is_some_and(|s|s.len()==1)),"only one-block draw schedule supported");
++            ensure!(draws.len()==nodes.iter().filter(|n|n["tag"]=="transcript/squeeze").count(),"draw/squeeze count mismatch");
++        }
+         for (index,node) in nodes.iter().enumerate() {
+             let tag=node["tag"].as_str().unwrap().as_bytes();let parts=node["parts"].as_array().unwrap();
+             let mut header=b"NEAR-PQ384-PRIMITIVES-V1".to_vec();header.extend((tag.len() as u32).to_le_bytes());header.extend(tag);header.extend((parts.len() as u32).to_le_bytes());
+@@ -55,14 +88,19 @@
+                 message.extend(constant_bytes(b,&(data.len() as u64).to_le_bytes()));message.extend(data);
+             }
+             let digest=nearproof_sha384_fixed(b,&words(b,&message),message.len());
+-            if node["tag"]=="transcript/squeeze" || index+1==nodes.len() {
++            if params.sample_challenges && node["tag"]=="transcript/squeeze" {
++                let values=sample_digest(b,&digest);let public=std::array::from_fn(|_|b.add_inout());
++                for j in 0..4 {b.assert_eq(format!("node[{index}].challenge[{j}]"),values[j],public[j]);}
++                samples.push((index,public));
++            }
++            if (!params.sample_challenges && node["tag"]=="transcript/squeeze") || index+1==nodes.len() {
+                 let public=std::array::from_fn(|_|b.add_inout());
+                 for i in 0..6 {b.assert_eq(format!("node[{index}].digest[{i}]"),digest[i],public[i]);}
+                 outputs.push((index,public));
+             }
+             hashes.push(digest);
+         }
+-        Ok(Self{graph,inputs,outputs})
++        Ok(Self{graph,inputs,outputs,samples})
+     }
+     fn populate_witness(&self,_:GraphInstance,w:&mut WitnessFiller<'_>) -> Result<()> {
+         let mut inputs=BTreeMap::new();
+@@ -93,6 +131,44 @@
+         for (index,public) in &self.outputs {
+             for (wire,chunk) in public.iter().zip(hashes[*index].chunks_exact(8)) {w[*wire]=Word(u64::from_be_bytes(chunk.try_into().unwrap()));}
+         }
++        for (index,public) in &self.samples {
++            let values=hashes[*index].chunks_exact(4).map(|c|u32::from_le_bytes(c.try_into().unwrap()))
++                .filter(|&x|x<4026531842).take(4).map(|x|x%2013265921).collect::<Vec<_>>();
++            ensure!(values.len()==4,"one-block sampler exhausted");
++            for (wire,value) in public.iter().zip(values) {w[*wire]=Word(value as u64);}
++        }
+         Ok(())
+     }
+ }
++
++#[cfg(test)]
++mod sampler_tests {
++    use super::*;
++    #[test]
++    fn boundaries_rejection_positions_and_wrong_output() {
++        let b=CircuitBuilder::new();let input:Vec<_>=(0..12).map(|_|b.add_inout()).collect();
++        let output=sample_words(&b,&input);let expected:[Wire;4]=std::array::from_fn(|_|b.add_inout());
++        for j in 0..4 {b.assert_eq("sample",output[j],expected[j]);}
++        let circuit=b.build();
++        let check=|values:[u32;12], corrupt:bool| {
++            let answer=values.into_iter().filter(|&x|x<4026531842).take(4).map(|x|x%2013265921).collect::<Vec<_>>();
++            let mut witness=circuit.new_witness_filler();
++            for (wire,value) in input.iter().zip(values) {witness[*wire]=Word(value as u64);}
++            for j in 0..4 {witness[expected[j]]=Word(answer.get(j).copied().unwrap_or(0) as u64 ^ u64::from(corrupt && j==0));}
++            let valid=circuit.populate_wire_witness(&mut witness).is_ok();
++            assert_eq!(valid,answer.len()==4 && !corrupt);
++        };
++        check([0,2013265920,2013265921,4026531841,4026531842,u32::MAX,0,0,0,0,0,0],false);
++        check([u32::MAX;12],false);
++        check([0;12],true);
++        for offset in 0..9 {
++            let mut v=[u32::MAX;12];for j in 0..4 {v[offset+j]=2013265921+j as u32;}
++            check(v,false);
++        }
++        let mut state=782436u64;
++        for _ in 0..128 {
++            let v=std::array::from_fn(|_| {state=state.wrapping_mul(6364136223846793005).wrapping_add(1);(state>>32) as u32});
++            check(v,false);
++        }
++    }
++}

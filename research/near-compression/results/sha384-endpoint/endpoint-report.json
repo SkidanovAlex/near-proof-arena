@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "tables": 5,
+  "core_width": 5280,
+  "core_rows": 128,
+  "endpoint_width": 1668,
+  "endpoint_rows": 4,
+  "exact_natural_bus_sent": {
+    "0": 4,
+    "1": 4,
+    "2": 3,
+    "3": 1
+  },
+  "exact_natural_bus_received": {
+    "2": 3,
+    "0": 4,
+    "1": 4,
+    "3": 1
+  },
+  "endpoint_residual_checks": 6816,
+  "negative_checks": 8,
+  "fresh_duplicate_tag_local_and_PCS_accept": true,
+  "fresh_duplicate_tag_global_reject": true,
+  "hashlib_digest_match": true,
+  "proof_bytes_including_source_roots": 1289410,
+  "baseline_multiblock_bytes": 1508054,
+  "proof_bytes_saved": 218644,
+  "proof_sha256": "351088b1caf04208e6bfb2463fe2d5db8a8f6ccea2c071f0fe147e764cee85ef",
+  "scope": "Canonical split AIR diagnostic; exact witness routing checked. Full Lean routing-to-hash composition and cryptographic soundness remain separate obligations."
+}

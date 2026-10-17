@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3392,
+  "added_theorems": 3,
+  "exact_ast_expressions": 463,
+  "regression": {
+    "profile": "scalar-memory-access-v1",
+    "columns": 460,
+    "constraints": 741,
+    "honest": 380,
+    "bit_mutations": 3040,
+    "coherent_mutations": 141,
+    "bounds_rejections": 4,
+    "scope": "request adapter; EXEC/CODE/stack/gas and MEM service buses not yet composed"
+  },
+  "files": {
+    "NearCompression/PreparedMemoryAddress.lean": "ee138e83d0c18b3d642de0157cadea6375ceff7d66e61e623fdd871a5f0867f2",
+    "PreparedMemoryAddressExport.lean": "dddd14ed43c2522bf4ec88c20412de659a47ce6c70c8f03fe2f06be5ced6a761",
+    "airbender/direct-wasm/prepared_memory_air.py": "ce1d457e6d3bc16a44a62d17a4537146fd2c1cd1415bbf66cf65b1cc3b3ecc79",
+    "airbender/direct-wasm/test_prepared_memory_air.py": "7a2df438315dec82181f4470845918d47e66ffb785a8b6993613d82b07d7b146",
+    "airbender/direct-wasm/check_prepared_memory_address.py": "2f413b48cef33329413280c1f7dfca58efdd11f78e1ee0085096c3048bbbb022",
+    "/tmp/root-memory-address-ast.json": "e1c26ad71b4a18077ca2ef4bf17c17f9679b70e8eca1d46816a9cf9f367ed685",
+    "/tmp/root-memory-address-audit.log": "c785e04572c2bae437c2f4fa7c82bbd231b65b608b3a19d155d16915be309b88"
+  },
+  "limits": [
+    "Only Boolean ranges and natural 33-bit address addition are formally bridged so far.",
+    "741-constraint executable AIR still requires bounds/result/request proofs and EXEC/MEM bus composition.",
+    "No trap, grow, bulk, host, initial-root or quantum-security coverage inferred."
+  ]
+}

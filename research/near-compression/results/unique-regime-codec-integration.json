@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "audit_checks": 1803,
+  "weighted_extraction_theorems": 4,
+  "sumcheck_codec_theorems": 3,
+  "weighted_separation": "2*totalWeight+B*(D-1)<3*T",
+  "result": "Adaptive successful candidates yield degree-bounded even/odd polynomials with unchanged weighted agreement threshold and formal quadratic residual identity",
+  "required": [
+    "Distinct finite domain",
+    "Point weights bounded by B",
+    "More than domain.length successful distinct challenges and at least3",
+    "Sent polynomial degree<3"
+  ],
+  "remaining": [
+    "Instantiate exact fold domains, weights and candidate-count bound",
+    "Initial virtual batching/GKR/AIR statement reduction",
+    "Commitment and sampling refinement plus QROM compiler"
+  ],
+  "codec": "Exact algebraic coefficient recovery only; binary parser refinement not proved"
+}

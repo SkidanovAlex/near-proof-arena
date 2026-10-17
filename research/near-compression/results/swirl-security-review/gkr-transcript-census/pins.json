@@ -1,0 +1,13 @@
+{
+  "research/near-compression/results/swirl-security-review/gkr-transcript-census/events.json.gz": "62c42d5db62dea078bb053cf67519657333a20c72089b337fe9041a0f780fa1c",
+  "research/near-compression/results/swirl-security-review/gkr-transcript-census/report.json": "03039ce7c9f878716fae331252da30551a055f2a66c2e719ca0c5f89a73f3da5",
+  "research/near-compression/results/swirl-security-review/gkr-transcript-census/replay.log": "03039ce7c9f878716fae331252da30551a055f2a66c2e719ca0c5f89a73f3da5",
+  "research/near-compression/airbender/direct-wasm/measure_swirl_gkr_transcript.py": "b8d1c21a00946725a75e3e49faf7c71ab1e6712407a0feaa9e6d011029cab5c8",
+  "research/near-compression/airbender/direct-wasm/swirl_fixed_gkr_verifier.py": "45edfd798fc7e252c7d125066ebd383a6714ad872e79a88e6dc61f3c2638a1dc",
+  "research/near-compression/airbender/direct-wasm/pq384_primitives.py": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96",
+  "research/near-compression/airbender/direct-wasm/pq384_terminal_gkr.py": "58c32cabd696c89aee5003b64062c4a4297fd0f809d720a6a9499e7f4f9d4cbc",
+  "research/near-compression/results/swirl-security-review/root-split-public-gkr/proof.json.gz": "a071b58b44ac1859188b5976523334735b029537fef6f31df15ec6842b102f4b",
+  "research/near-compression/results/swirl-security-review/root-split-witness/public-controls.json": "15d07eba6b34827561930bfc55b331e3765e3ae11db05b1f05d2c6a3e9f601c5",
+  "research/near-compression/results/swirl-security-review/root-split-witness/public-prefix-log.txt.gz": "4d9efeafce6df97f650953f032d245c5c34a7ee2cccc575462c3bf0929bd48e1",
+  "research/near-compression/results/swirl-security-review/root-split-continuation/gkr-binding.bin": "e205f529f9eb153f1483a0ff41edaefe1769f095c259126b4d2872cb1ca000cd"
+}

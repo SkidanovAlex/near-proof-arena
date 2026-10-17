@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "audit": 2551,
+  "audit_log": "/tmp/root-locals-init-audit.log",
+  "source_sha256": "9bc8f62741589570f4fd222e96eac0ea5ec4a1912f92704b095c11027f98818f",
+  "proved": [
+    "All128first-row local bits zero from exact literal source membership",
+    "All local limbs and decodedwords zero",
+    "Decoded first-row local array equals replicate count (i32 0) for count\u22644"
+  ],
+  "premises": [
+    "actual locals TableLocal",
+    "positive table height",
+    "count\u22644 for array theorem"
+  ],
+  "remaining": [
+    "compose actual setup-created frame and zero params",
+    "local/control nextstate and whole-run refinement",
+    "cryptographic/fullNEAR/quantum-security obligations"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "proof_bytes": 88614,
+  "proof_sha256": "023da44a2773168abf3d7e54da9aa8943b8a84a076b68ba6e63f726daad96d62",
+  "public_field_count": 385,
+  "fresh_binary_verifier": "PASS: complete AIR and randomized bus-fingerprint binary diagnostic",
+  "rejection_checks": 7,
+  "source_roots_included": true,
+  "scope": "Q8/Ext4 diagnostic control AIR proof; public statement separate; new AIR-to-Wasm refinement and quantum security remain unproved"
+}

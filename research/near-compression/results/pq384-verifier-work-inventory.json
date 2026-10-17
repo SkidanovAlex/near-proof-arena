@@ -1,0 +1,134 @@
+{
+  "status": "PASS",
+  "proof_sha256": "977a1a0ef77902f07c99165680782f95580eb0395de7116a770d2ae8a246015a",
+  "binary_bytes": 83852,
+  "expanded_verifier": {
+    "hash_tags": {
+      "global-table-local-packed-opening-branch": {
+        "calls": 1,
+        "framed_input_bytes": 167,
+        "compression_blocks": 2
+      },
+      "merkle/leaf": {
+        "calls": 290,
+        "framed_input_bytes": 79998,
+        "compression_blocks": 878
+      },
+      "merkle/node": {
+        "calls": 2881,
+        "framed_input_bytes": 995955,
+        "compression_blocks": 8795
+      },
+      "merkle/root": {
+        "calls": 289,
+        "framed_input_bytes": 83515,
+        "compression_blocks": 867
+      },
+      "transcript/commit": {
+        "calls": 74,
+        "framed_input_bytes": 1775041,
+        "compression_blocks": 13913
+      },
+      "transcript/draw-result": {
+        "calls": 57,
+        "framed_input_bytes": 10558,
+        "compression_blocks": 114
+      },
+      "transcript/init": {
+        "calls": 3,
+        "framed_input_bytes": 1733819,
+        "compression_blocks": 13547
+      },
+      "transcript/ratchet": {
+        "calls": 62,
+        "framed_input_bytes": 11732,
+        "compression_blocks": 124
+      },
+      "transcript/request": {
+        "calls": 57,
+        "framed_input_bytes": 9418,
+        "compression_blocks": 114
+      },
+      "transcript/squeeze": {
+        "calls": 62,
+        "framed_input_bytes": 9252,
+        "compression_blocks": 124
+      }
+    },
+    "total_hash_calls": 3776,
+    "total_sha384_compression_blocks": 38478,
+    "ext4_operation_calls": {
+      "mul": 17988,
+      "add": 15703,
+      "sub": 4401
+    }
+  },
+  "binary_decode_authenticate_verify": {
+    "hash_tags": {
+      "global-table-local-packed-opening-branch": {
+        "calls": 1,
+        "framed_input_bytes": 167,
+        "compression_blocks": 2
+      },
+      "merkle/leaf": {
+        "calls": 427,
+        "framed_input_bytes": 118362,
+        "compression_blocks": 1297
+      },
+      "merkle/node": {
+        "calls": 4018,
+        "framed_input_bytes": 1391217,
+        "compression_blocks": 12335
+      },
+      "merkle/root": {
+        "calls": 309,
+        "framed_input_bytes": 89313,
+        "compression_blocks": 927
+      },
+      "transcript/commit": {
+        "calls": 127,
+        "framed_input_bytes": 5270437,
+        "compression_blocks": 41249
+      },
+      "transcript/draw-result": {
+        "calls": 87,
+        "framed_input_bytes": 16060,
+        "compression_blocks": 174
+      },
+      "transcript/init": {
+        "calls": 7,
+        "framed_input_bytes": 1734215,
+        "compression_blocks": 13551
+      },
+      "transcript/ratchet": {
+        "calls": 94,
+        "framed_input_bytes": 17718,
+        "compression_blocks": 188
+      },
+      "transcript/request": {
+        "calls": 87,
+        "framed_input_bytes": 14320,
+        "compression_blocks": 174
+      },
+      "transcript/squeeze": {
+        "calls": 94,
+        "framed_input_bytes": 13958,
+        "compression_blocks": 188
+      }
+    },
+    "total_hash_calls": 5251,
+    "total_sha384_compression_blocks": 70085,
+    "ext4_operation_calls": {
+      "mul": 19188,
+      "add": 16904,
+      "sub": 5473
+    }
+  },
+  "limits": [
+    "Actual Q8/Ext4 single-table verifier only",
+    "Counts include repeated transcript replay and path verification in current implementation",
+    "Hash invocation counts are not SHA384 circuit constraints",
+    "No recursive prover or recursion soundness established",
+    "Profiler timings intentionally omitted"
+  ]
+}

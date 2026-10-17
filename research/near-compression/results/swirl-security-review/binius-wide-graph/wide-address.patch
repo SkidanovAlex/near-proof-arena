@@ -1,0 +1,175 @@
+diff --git a/crates/math/src/multilinear/sparse.rs b/crates/math/src/multilinear/sparse.rs
+index e132e70..d616581 100644
+--- a/crates/math/src/multilinear/sparse.rs
++++ b/crates/math/src/multilinear/sparse.rs
+@@ -19,7 +19,7 @@ const MAX_CHUNK_WIDTH: usize = 16;
+ #[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct SparseBitVector {
+ 	log_len: usize,
+-	indices: Vec<u64>,
++	indices: Vec<u128>,
+ }
+ 
+ impl SparseBitVector {
+@@ -27,10 +27,10 @@ impl SparseBitVector {
+ 	///
+ 	/// # Preconditions
+ 	///
+-	/// * `log_len` must be less than 64
++	/// * `log_len` must be less than 128
+ 	/// * every index must be less than `2^log_len`
+-	pub fn new(log_len: usize, mut indices: Vec<u64>) -> Self {
+-		assert!(log_len < u64::BITS as usize, "log_len {log_len} must be less than 64");
++	pub fn new(log_len: usize, mut indices: Vec<u128>) -> Self {
++		assert!(log_len < u128::BITS as usize, "log_len {log_len} must be less than 128");
+ 		assert!(
+ 			indices.iter().all(|&index| index >> log_len == 0),
+ 			"every index must be less than 2^{log_len}"
+@@ -55,7 +55,7 @@ impl SparseBitVector {
+ 	}
+ 
+ 	/// Returns the sorted indices of the set bits.
+-	pub fn indices(&self) -> &[u64] {
++	pub fn indices(&self) -> &[u128] {
+ 		&self.indices
+ 	}
+ }
+@@ -135,7 +135,7 @@ fn expand_chunks<E: FieldOps>(bits: &SparseBitVector, point: &[E]) -> Vec<(Range
+ }
+ 
+ /// Reads the tensor entry a chunk's coordinates select from an index.
+-fn lookup<E: FieldOps>(index: u64, range: &Range<usize>, tensor: &[E]) -> E {
++fn lookup<E: FieldOps>(index: u128, range: &Range<usize>, tensor: &[E]) -> E {
+ 	tensor[(index >> range.start) as usize & ((1 << range.len()) - 1)].clone()
+ }
+ 
+@@ -187,7 +187,7 @@ mod tests {
+ 	};
+ 
+ 	fn random_bits(rng: &mut StdRng, n_set: usize, log_len: usize) -> SparseBitVector {
+-		let indices = iter::repeat_with(|| rng.random_range(0..1u64 << log_len))
++		let indices = iter::repeat_with(|| rng.random_range(0..1u128 << log_len))
+ 			.take(n_set)
+ 			.collect();
+ 		SparseBitVector::new(log_len, indices)
+@@ -242,7 +242,7 @@ mod tests {
+ 			.iter()
+ 			.map(|&index| {
+ 				// The index is wider than `usize` on 32-bit targets, so the vertex is built from
+-				// `u64`.
++				// `u128`.
+ 				let vertex = (0..log_len)
+ 					.map(|i| {
+ 						if (index >> i) & 1 == 1 {
+@@ -259,13 +259,35 @@ mod tests {
+ 		assert_eq!(evaluate_sparse_b1_multilinear_native(&bits, &point), expected);
+ 	}
+ 
++	#[test]
++	fn high_addresses_match_independent_indicators() {
++		let mut rng = StdRng::seed_from_u64(734);
++		for log_len in [64, 67, 96, 127] {
++			let high = 1u128 << (log_len - 1);
++			let indices = vec![3, high | 3, high | 7, high | 7, 1u128 << 63];
++			let bits = SparseBitVector::new(log_len, indices.clone());
++			let point = random_scalars::<B128>(&mut rng, log_len);
++			let expected = indices.iter().map(|index| {
++				let vertex = (0..log_len).map(|i| if (index >> i) & 1 == 1 {
++					B128::ONE
++				} else { B128::ZERO }).collect::<Vec<_>>();
++				eq_ind(&point, &vertex)
++			}).sum::<B128>();
++			assert_eq!(evaluate_sparse_b1_multilinear(&bits, &point), expected);
++			assert_eq!(evaluate_sparse_b1_multilinear_native(&bits, &point), expected);
++			// Distinct high addresses must not cancel their low-bit counterparts.
++			assert!(bits.indices().contains(&3));
++			assert!(bits.indices().contains(&(high | 3)));
++		}
++	}
++
+ 	#[test]
+ 	fn boolean_point_reads_the_bit() {
+ 		let mut rng = StdRng::seed_from_u64(0);
+ 		let log_len = 6;
+ 		let bits = random_bits(&mut rng, 20, log_len);
+ 
+-		for position in 0..1u64 << log_len {
++		for position in 0..1u128 << log_len {
+ 			let vertex = index_to_hypercube_point::<B128>(log_len, position as usize);
+ 			let bit = if bits.indices().contains(&position) {
+ 				B128::ONE
+diff --git a/crates/verifier/src/protocols/shift/wiring.rs b/crates/verifier/src/protocols/shift/wiring.rs
+index 705d70e..b3829d9 100644
+--- a/crates/verifier/src/protocols/shift/wiring.rs
++++ b/crates/verifier/src/protocols/shift/wiring.rs
+@@ -78,9 +78,9 @@ impl WiringInfo {
+ 	///
+ 	/// # Panics
+ 	///
+-	/// Panics if the hidden address does not fit a `u64` index below `2^63`: that is,
+-	/// `LOG_OPERANDS + 18 + log_constraint_point + log_segment_words < 64`, or
+-	/// `log_constraint_point + log_segment_words ≤ 41`.
++	/// Panics if the hidden address does not fit a `u128` index below `2^127`: that is,
++	/// `LOG_OPERANDS + 18 + log_constraint_point + log_segment_words < 128`, or
++	/// `log_constraint_point + log_segment_words ≤ 105`.
+ 	pub fn new(cs: &ConstraintSystem, inout: InoutSegment) -> Self {
+ 		let log_public_words = cs.log_public_words(inout);
+ 		let log_segment_words = cs.log_segment_words(inout);
+@@ -88,8 +88,8 @@ impl WiringInfo {
+ 		let log_words = [log_public_words, log_segment_words];
+ 		let log_lens = log_words.map(|log_words| LOG_TERM_BITS + log_words + log_constraint_point);
+ 		assert!(
+-			log_lens[1] < u64::BITS as usize,
+-			"the wiring address needs {} bits; at most 63 fit",
++			log_lens[1] < u128::BITS as usize,
++			"the wiring address needs {} bits; at most 127 fit",
+ 			log_lens[1]
+ 		);
+ 
+@@ -104,11 +104,11 @@ impl WiringInfo {
+ 				} else {
+ 					(1, word - n_public_words)
+ 				};
+-				let index = column as u64
+-					| (term.inner().index() as u64) << LOG_OPERANDS
+-					| (term.outer().index() as u64) << (LOG_OPERANDS + LOG_SHIFT_COUNT)
+-					| (word as u64) << LOG_TERM_BITS
+-					| (constraint_index as u64) << (LOG_TERM_BITS + log_words[segment]);
++				let index = column as u128
++					| (term.inner().index() as u128) << LOG_OPERANDS
++					| (term.outer().index() as u128) << (LOG_OPERANDS + LOG_SHIFT_COUNT)
++					| (word as u128) << LOG_TERM_BITS
++					| (constraint_index as u128) << (LOG_TERM_BITS + log_words[segment]);
+ 				indices[segment].push(index);
+ 			}
+ 		};
+@@ -330,14 +330,25 @@ mod tests {
+ 	}
+ 
+ 	#[test]
+-	fn the_widest_address_that_fits_is_63_bits() {
++	fn legacy_63_bit_address_remains_supported() {
+ 		let wiring = WiringInfo::new(&empty_system(15, 26), InoutSegment::Public);
+ 		assert_eq!(wiring.hidden_segment().log_len(), 63);
+ 	}
+ 
+ 	#[test]
+-	#[should_panic(expected = "the wiring address needs 64 bits")]
+-	fn a_system_whose_address_does_not_fit_is_rejected() {
+-		let _ = WiringInfo::new(&empty_system(16, 26), InoutSegment::Public);
++	fn a_67_bit_wiring_address_preserves_high_bits() {
++		let mut cs = empty_system(16, 29);
++		let word = (1u32 << 29) - 1;
++		let constraint = (1usize << 16) - 1;
++		let term = ShiftedValueIndex::new(ValueIndex::private(word), [Shift::srl(7), Shift::srl(3)]);
++		let expected = (term.inner().index() as u128) << LOG_OPERANDS
++			| (term.outer().index() as u128) << (LOG_OPERANDS + LOG_SHIFT_COUNT)
++			| (word as u128) << LOG_TERM_BITS
++			| (constraint as u128) << (LOG_TERM_BITS + 29);
++		cs.zero_constraints[constraint] = ZeroConstraint([vec![term]]);
++		let wiring = WiringInfo::new(&cs, InoutSegment::Public);
++		assert_eq!(wiring.hidden_segment().log_len(), 67);
++		assert!(expected > u64::MAX as u128);
++		assert_eq!(wiring.hidden_segment().indices(), &[expected]);
+ 	}
+ }

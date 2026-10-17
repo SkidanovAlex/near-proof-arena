@@ -1,0 +1,62 @@
+{
+  "context_bytes": 197,
+  "decision": "Do not generate larger proofs in this bounded profile to seek compression. A next experiment must change capacity/codec or prove a larger verifier workload, and pass an optimistic complete-byte screen before formalization.",
+  "excluded": "Not full recursive PCS, arbitrary verifier witnesses, changed codecs, larger chunks, or other hash framing. No quantum-security or Lean correctness claim.",
+  "hypothetical_batch": {
+    "conservative_frontier_bytes": 288,
+    "conservative_node_budget": 6,
+    "exhaustive_subsets": 65808,
+    "implemented": false,
+    "justification": "Each computed parent along a union of paths has at least one computed child, so at most one external sibling. Every such parent costs four compression blocks. Leaf/root work is omitted in the conservative bound.",
+    "maximum_frontier_bytes_within_capacity": 192,
+    "subsets_within_capacity": 61
+  },
+  "mandatory_bytes": {
+    "compression": 392,
+    "outer": 16,
+    "routing": 8,
+    "total": 416
+  },
+  "scope": "Existing separate-root codec, at most 25 SHA384 blocks, 197-byte context; public leaves; compare deduplicated sibling frontier only.",
+  "security_status": "NOT_PASSED",
+  "single_path_cases": [
+    {
+      "breaks_even": false,
+      "compression_blocks": 10,
+      "depth": 1,
+      "optimistic_wire_floor": 416,
+      "sibling_bytes": 48
+    },
+    {
+      "breaks_even": false,
+      "compression_blocks": 14,
+      "depth": 2,
+      "optimistic_wire_floor": 416,
+      "sibling_bytes": 96
+    },
+    {
+      "breaks_even": false,
+      "compression_blocks": 18,
+      "depth": 3,
+      "optimistic_wire_floor": 416,
+      "sibling_bytes": 144
+    },
+    {
+      "breaks_even": false,
+      "compression_blocks": 22,
+      "depth": 4,
+      "optimistic_wire_floor": 416,
+      "sibling_bytes": 192
+    }
+  ],
+  "source_sha256": {
+    "airbender/direct-wasm/ext8_execution_codec.py": "0c133abfaaa3c342af1e2babc64467f8b4d457b60dda11fac7df0c1055bc28ce",
+    "airbender/direct-wasm/merkle_recursive_call_routes.py": "59a68f7c9a5578625f0c97c2a10a98d4339b2fa233dc05695fc3f3a70a90c3be",
+    "airbender/direct-wasm/private_merkle_proof.py": "5c8e18a5d5f8e6644e0c475ffdf0c46621b60a3c26d3a3b74c57a1d8b93a92fb",
+    "airbender/direct-wasm/screen_bounded_merkle_break_even.py": "1b918ca86b3e1106391de28f6040a7e65cf57ab234ddf2eaeed6c631f272074d",
+    "results/private-merkle-proof-q8/proof.bin": "5c78fa2d60355e892f50c907d3e6b91f07d66b5b516548ba2eab10d0c97d3a77",
+    "results/private-merkle-proof-q8/public.json": "08df6f086b5f6c9cef940aa9c4deb01fcf691ffa6def7d82c1c0694f98ce03b9",
+    "results/private-merkle-proof-q8/trusted-spec.json.gz": "fbc69ec14d47ed546aae4541f6fc326597139ea9244758783a415d82d24cb31d"
+  },
+  "status": "BOUNDED_ARCHITECTURE_NO_BREAK_EVEN"
+}

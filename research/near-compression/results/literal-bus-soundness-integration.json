@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3610,
+  "audit_log": "/tmp/root-literal-bus-soundness-audit.log",
+  "source_hashes": {
+    "PreparedLiteralBusBound": "ddb76c0f605b4ae345be7d32e0df605df247bfe9de26e2b433751b916d1f4d37",
+    "PreparedLiteralBusSoundness": "43e11f1895128471c9be04c117b52743a93f84e543a3124f78fe4befe9117268"
+  },
+  "established": [
+    "Literal source and public tags/widths discharged for arbitrary public vectors",
+    "Concrete literal AIR joint Ext8 bound needs no supplied support, mass, width or tag proof",
+    "Wrong actual runCall published output implies the bus bound under same-trace local validity"
+  ],
+  "explicit_conditions": [
+    "Fixed trace before ideal challenges",
+    "Local table validity and public fit",
+    "Executable runCall eligibility and sufficient fuel",
+    "Distinct finite sample with independent uniform interpretation for probability"
+  ],
+  "remaining": [
+    "Cryptographic local/PCS acceptance to common authenticated trace and TableLocal",
+    "Actual auxiliary/final products to natural message products",
+    "Transcript sampling and commitment/QROM reductions",
+    "Full NEAR1Pgas secure sub300KB proof"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "rows": 64,
+      "width": 2,
+      "packing": 2,
+      "root_hex": "f4d2b193c87396f732c1cab8d8df60741a7ddf58bfab80aebf5fa7cfe69a395e9bebbcd353c94a7ddb9904893ea5faab",
+      "proof_json_bytes": 9726,
+      "negative_checks": 51,
+      "fresh_terminal_preserving_residual_rejected": true
+    },
+    {
+      "rows": 16,
+      "width": 8,
+      "packing": 8,
+      "root_hex": "b6e825f3a37a0a67c141e94b804d45fa77c4238acb952775b1f4e602f09c5fd6c9454d36b1c226bb2590d51560065c1c",
+      "proof_json_bytes": 9688,
+      "negative_checks": 57,
+      "fresh_terminal_preserving_residual_rejected": true
+    }
+  ],
+  "scope": "OnefoldD128toD64 withSHA384nativepackedroot, quadratic sumcheck,8authenticatedqueries, exactterminal",
+  "limits": [
+    "No proximity/RBR/QROMsecurity theorem",
+    "DiagnosticExt4 and8queries not128-bit security",
+    "Singlelane fixedsize only; not fullAIRproof integration",
+    "No zero knowledge; terminalcoefficients disclosed"
+  ]
+}

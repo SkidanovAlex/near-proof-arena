@@ -1,0 +1,81 @@
+diff --git a/crates/iop/src/channel/size_tracking.rs b/crates/iop/src/channel/size_tracking.rs
+index c59728d..17e3db8 100644
+--- a/crates/iop/src/channel/size_tracking.rs
++++ b/crates/iop/src/channel/size_tracking.rs
+@@ -42,6 +42,8 @@ pub struct CommittedShape {
+ pub struct SizeTrackingChannel<'a, F, MerkleScheme_> {
+ 	scheme: &'a MerkleScheme_,
+ 	proof_size: usize,
++	merkle_bytes: usize,
++	leaf_bytes: usize,
+ 	_field_marker: PhantomData<F>,
+ }
+ 
+@@ -51,10 +53,16 @@ impl<'a, F, MerkleScheme_> SizeTrackingChannel<'a, F, MerkleScheme_> {
+ 		Self {
+ 			scheme,
+ 			proof_size: 0,
++			merkle_bytes: 0,
++			leaf_bytes: 0,
+ 			_field_marker: PhantomData,
+ 		}
+ 	}
+ 
++	pub fn nearproof_components(&self) -> (usize, usize, usize) {
++		(self.proof_size - self.merkle_bytes - self.leaf_bytes, self.merkle_bytes, self.leaf_bytes)
++	}
++
+ 	/// The bytes counted so far.
+ 	pub const fn proof_size(&self) -> usize {
+ 		self.proof_size
+@@ -159,6 +167,7 @@ where
+ 	) -> Result<Self::Commitment, Error> {
+ 		// A commitment is its root, one digest wide.
+ 		self.proof_size += size_of::<MerkleScheme_::Digest>();
++		self.merkle_bytes += size_of::<MerkleScheme_::Digest>();
+ 		Ok(CommittedShape { leaf_size, depth })
+ 	}
+ 
+@@ -176,9 +185,12 @@ where
+ 			self.scheme
+ 				.proof_size(1 << commitment.depth, indices.len(), layer_depth);
+ 
++		self.merkle_bytes += self.scheme.proof_size(1 << commitment.depth, indices.len(), layer_depth);
++
+ 		// Each opened leaf also sends its own values.
+ 		let n_values = indices.len() * commitment.leaf_size;
+ 		self.proof_size += n_values * F::BYTE_SIZE;
++		self.leaf_bytes += n_values * F::BYTE_SIZE;
+ 		Ok(vec![F::ZERO; n_values])
+ 	}
+ 
+@@ -186,6 +198,7 @@ where
+ 		// The whole vector goes on the wire, so the receiver rebuilds the tree and needs no branch.
+ 		let len = commitment.leaf_size << commitment.depth;
+ 		self.proof_size += len * F::BYTE_SIZE;
++		self.leaf_bytes += len * F::BYTE_SIZE;
+ 		Ok(vec![F::ZERO; len])
+ 	}
+ }
+diff --git a/crates/verifier/src/verify.rs b/crates/verifier/src/verify.rs
+index be41b68..8f83b4a 100644
+--- a/crates/verifier/src/verify.rs
++++ b/crates/verifier/src/verify.rs
+@@ -359,6 +359,17 @@ where
+ 			&ConstantArityStrategy::new(fri_arity),
+ 		);
+ 
++		if std::env::var_os("NEARPROOF_SIZE_CENSUS").is_some() {
++			let mut counted = iop_compiler.create_channel(
++				binius_iop::channel::size_tracking::SizeTrackingChannel::new(&merkle_scheme));
++			let inputs = vec![Word::ZERO; iop_verifier.constraint_system().n_inout];
++			let _ = iop_verifier.verify(&inputs, &mut counted)?;
++			let counted = counted.finish()?;
++			let (algebra, merkle, leaves) = counted.nearproof_components();
++			eprintln!("NEARPROOF_CENSUS rate_log={} queries={} algebra={} merkle={} leaves={} total={}",
++				log_inv_rate, n_test_queries, algebra, merkle, leaves, counted.proof_size());
++		}
++
+ 		Ok(Self {
+ 			iop_verifier,
+ 			iop_compiler,

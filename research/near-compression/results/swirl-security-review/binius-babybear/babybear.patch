@@ -1,0 +1,95 @@
+--- a/crates/examples/src/main.rs
++++ b/crates/examples/src/main.rs
+@@ -59,6 +59,7 @@
+ 			"Circuit verifying knowledge of a valid OpenID Connect login",
+ 		)
+ 		.circuit::<circuits::nearproof_sha384::NearproofSha384>("nearproof_sha384", "Diagnostic SHA384 transcript message")
++		.circuit::<circuits::nearproof_babybear::BabyBear>("nearproof_babybear", "Diagnostic canonical BabyBear multiplication")
+ 		.circuit::<circuits::nearproof_hash_graph::NearproofHashGraph>("nearproof_hash_graph", "Diagnostic connected SHA384 graph")
+ 		.run()
+ }
+--- a/crates/examples/src/circuits/mod.rs
++++ b/crates/examples/src/circuits/mod.rs
+@@ -24,3 +24,5 @@
+ pub mod nearproof_sha384;
+ 
+ pub mod nearproof_hash_graph;
++
++pub mod nearproof_babybear;
+diff --git a/crates/examples/src/circuits/nearproof_babybear.rs b/crates/examples/src/circuits/nearproof_babybear.rs
+new file mode 100644
+index 0000000..2ec0528
+--- /dev/null
++++ b/crates/examples/src/circuits/nearproof_babybear.rs
+@@ -0,0 +1,71 @@
++//! Canonical BabyBear modular multiplication with an explicitly constrained quotient.
++use anyhow::Result;
++use binius_core::word::Word;
++use binius_frontend::{CircuitBuilder, Wire, WitnessFiller};
++use clap::Args;
++use crate::ExampleCircuit;
++const P:u64=2013265921;
++fn constrain_mul(b:&CircuitBuilder,a:Wire,c:Wire,q:Wire,r:Wire) {
++    let prime=b.add_constant_64(P);
++    for (name,wire) in [("a",a),("b",c),("q",q),("r",r)] {
++        b.assert_true(format!("{name} canonical"),b.icmp_ult(wire,prime));
++    }
++    let (hi,lo)=b.imul(a,c);b.assert_zero("product high",hi);
++    let (qhi,qlo)=b.imul(q,prime);b.assert_zero("quotient product high",qhi);
++    let (sum,carry)=b.iadd(qlo,r);
++    // Carry wires contain all intermediate carries. Only MSB denotes overflow.
++    b.assert_false("sum no overflow",carry);
++    b.assert_eq("quotient remainder identity",lo,sum);
++}
++#[derive(Args,Debug,Clone)]
++pub struct Params { #[arg(long,default_value_t=64)] pub count:usize }
++#[derive(Args,Debug,Clone)]
++pub struct Instance {}
++pub struct BabyBear { rows:Vec<[Wire;4]> }
++impl ExampleCircuit for BabyBear {
++    type Params=Params;type Instance=Instance;
++    fn build(params:Params,b:&mut CircuitBuilder)->Result<Self> {
++        anyhow::ensure!(params.count>0 && params.count<=1000000,"count bound");
++        let rows=(0..params.count).map(|_| {
++            let a=b.add_inout();let c=b.add_inout();let q=b.add_witness();let r=b.add_inout();
++            constrain_mul(b,a,c,q,r);[a,c,q,r]
++        }).collect();Ok(Self{rows})
++    }
++    fn populate_witness(&self,_:Instance,w:&mut WitnessFiller<'_>)->Result<()> {
++        for (i,row) in self.rows.iter().enumerate() {
++            let mut a=(i as u64*123456789+P-1)%P;let c=(i as u64*987654321+P-1)%P;
++            if i==0 && std::env::var_os("NEARPROOF_BABYBEAR_BAD_INPUT").is_some() {a-=1;}
++            let product=a*c;
++            for (wire,value) in row.iter().zip([a,c,product/P,product%P]) {w[*wire]=Word(value);}
++        }Ok(())
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn canonical_products_and_malicious_quotients() {
++        let b=CircuitBuilder::new();let row:[Wire;4]=std::array::from_fn(|_|b.add_inout());
++        constrain_mul(&b,row[0],row[1],row[2],row[3]);let circuit=b.build();
++        let check=|v:[u64;4],valid:bool| {
++            let mut w=circuit.new_witness_filler();for (wire,value) in row.iter().zip(v) {w[*wire]=Word(value);}
++            assert_eq!(circuit.populate_wire_witness(&mut w).is_ok(),valid,"{v:?}");
++        };
++        for a in [0,1,2,P/2,P-2,P-1] {for c in [0,1,2,P/2,P-2,P-1] {
++            let z=a*c;check([a,c,z/P,z%P],true);
++            check([a,c,z/P,(z%P+1)%P],false);
++            check([a,c,z/P+1,z%P],false);
++        }}
++        // Satisfies the integer identity but uses a noncanonical remainder.
++        check([P-1,P-1,P-3,P+1],false);
++        check([P,1,1,0],false);check([1,P,1,0],false);
++        // A modular-u64 identity alone would permit these wraparound values.
++        check([0,0,u64::MAX,P],false);
++        let mut x=7654231u64;
++        for _ in 0..128 {
++            x=x.wrapping_mul(6364136223846793005).wrapping_add(1);let a=x%P;
++            x=x.wrapping_mul(6364136223846793005).wrapping_add(1);let c=x%P;
++            let z=a*c;check([a,c,z/P,z%P],true);
++        }
++    }
++}

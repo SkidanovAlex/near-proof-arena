@@ -1,0 +1,14 @@
+{
+  "scope": "Fixed-oracle, agreement-conditioned independent-mixing bound; not full protocol soundness",
+  "replay": [
+    "python3 airbender/direct-wasm/test_independent_mixing_candidates.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "cwd": "research/near-compression",
+  "sha256": {
+    "research/near-compression/NearCompression/IndependentMixingCandidates.lean": "2cc47aefb5237040f097540e46d147a8b4b614b3f427a2339251674c20bd9d66",
+    "research/near-compression/airbender/direct-wasm/test_independent_mixing_candidates.py": "3cd63a732791f8ab101346e552d9ff0ba64d4d68612e0b926f276d697af23336",
+    "research/near-compression/results/independent-mixing-candidates/report.json": "4f45f9b07a1505476ada664b2eee1f073c2eef2a3ea0d9503ec2f538ece1bf8d",
+    "research/near-compression/results/independent-mixing-candidates/lean-audit.log.gz": "0a9eda29a644433c75fa0dc014fb2be6168a1b6a568ddb17b2db718bd5897508"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_checks": 2710,
+  "new_public_theorems": 21,
+  "modules": {
+    "DiagnosticExt4Embedding": "8e9e8eeb49e253fcffcfcb3e2fac3ee90686265b2a6800243d24f2338ad0575c",
+    "PreparedLocalsLegacyAdapter": "b62775f7111e4de82e059c952ef67cd93d9f2edd1e9b6db7f1793197f0d7612d"
+  },
+  "executable_parity": "results/diagnostic-ext4-parity/report.json",
+  "scope": "Diagnostic flat Ext4 arithmetic algebraically refines certified Fp4; root order and near recovery specialized. Canonical input parity320pairs/1280operations. Conditional ordinary-instruction adapter derives reused constraints from actual locals AIR; no old global TableLocal premise. Diagnostic field size/security unchanged."
+}

@@ -1,0 +1,50 @@
+{
+  "status": "Implemented and independently verified for canonical two-table eight-row diagnostic profile; not full D1/PQ admission",
+  "main": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "algorithm": "Division-free separate send/receive running products, group1",
+  "transcript_order": [
+    "bind AIR/public/dimensions/initial witness roots",
+    "draw fingerprint alpha and independent gamma",
+    "generate extension-valued aux chains/accumulators",
+    "commit auxiliary roots and final products",
+    "draw constraint batching and row-weight challenges",
+    "prove original+aux relations with both roots authenticated",
+    "check total send products including public records equal receive products"
+  ],
+  "fingerprint": "sum_j message[j]*alpha^j + (bus+1)*alpha^message.length; enforce bus+1<P",
+  "multiplicity": "Natural exponent sum_j [bit_j=1]*2^j, using squaring and partial-product chains",
+  "accumulator_constraints": [
+    "first*(a-1)=0",
+    "transition*(a_next-a*factor)=0",
+    "last*(a*factor-final)=0"
+  ],
+  "auxiliary_commitment_adapter": "Each extension-valued column represented by canonical base coordinates; reconstruct extension-valued MLE from authenticated coordinate MLEs using fixed basis. Prove interpolation commutes.",
+  "source_reuse": [
+    "Stark/VerifierDefs.lean: fingerprint,interactionAux,auxConstraints",
+    "Udr/Np/AuxChain.lean: ia_sem,auxC_sem",
+    "Udr/Np/Msg4.lean: running_prod,prod_expand,multNat_go_bval",
+    "Udr/GrandProduct.lean: gpAlpha,gpGamma",
+    "V2/Np/Bus.lean: count_expand_busMsgsP,not_perm_of_unbalancedP,count_fp_collideP,pubMsgs_length_le,holds_ofP"
+  ],
+  "source_root": "zk-formal/ZkFormal",
+  "formal_caveat": "Some bridges specialized to Fp8/decoded FRI transcript; generalize or adapt, never treat as existing WHIR/PQ admission.",
+  "requirements": [
+    "keep original witness roots before challenges; no substitution by postchallenge auxiliary roots",
+    "exact chain/accumulator/final lengths; zip/getD must not hide missing constraints",
+    "public segments fit and preserve source message arity/prefix/index",
+    "heterogeneous heights keep exact first/last/cyclic-next semantics",
+    "zero factors permitted; covered by product collision event, no inverse/retry",
+    "public product verifier cost is linear in public messages; not polylogarithmic"
+  ],
+  "deterministic_target": "original and auxiliary relations + public fit + final product equality + no fingerprint/product collisions => exact natural HoldsP.balance",
+  "remaining_security": "PCS, batching/sumcheck failures, QROM transform/constants and recursive extraction separately unproved",
+  "evidence": [
+    "generic-bus-verified.json",
+    "generic-bus-negative-tests.json"
+  ],
+  "supported_profile": {
+    "rows_per_table": 8,
+    "max_combined_constraint_degree": 16,
+    "positive_source_and_auxiliary_width": true
+  }
+}

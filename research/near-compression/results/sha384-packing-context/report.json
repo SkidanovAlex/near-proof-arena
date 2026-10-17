@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "accepted": 945,
+  "rejected": 6,
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_packing_context.py",
+      "sha256": "311e599aca3bf8a81158c3d190a4f03eb0aba0f92534c27fcacc3b459c96b2ff"
+    },
+    {
+      "path": "SHA384PackingContextFixture.lean",
+      "sha256": "9b346df35692fc79e361ebebbab78c3cb70bf43b87553afe61703747f70061c8"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/packed_claim_handoff.py",
+      "sha256": "09f5e215a5c57bc6adfc110f081d2bc15031eb53f071eda5ee8e491f1fbe9046"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_primitives.py",
+      "sha256": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+    },
+    {
+      "path": "results/sha384-packing-context/inputs.json",
+      "sha256": "8700d2ba728f36b2e1973b6a913d3e3c7f1d902e122a9c6758aed133358c7f4c"
+    },
+    {
+      "path": "results/sha384-packing-context/lean-results.json",
+      "sha256": "3f721fb25b38c5e264bfa8b6ddd00f7bce1483adb99c30cc3e71e6bc96397164"
+    }
+  ],
+  "scope": "Every supported n/p exponent pair, three width boundaries, six invalid shapes; exact context bytes and validity."
+}

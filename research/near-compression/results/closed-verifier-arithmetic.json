@@ -1,0 +1,53 @@
+{
+  "status": "FULL_FIXTURE_ARITHMETIC_CALLS_MEASURED",
+  "fresh_verifier_passed": true,
+  "stages": {
+    "contract": {},
+    "call_link": {
+      "ext8/add": 137027,
+      "ext8/base": 2881,
+      "ext8/canonical": 15106,
+      "ext8/evaluate": 638,
+      "ext8/mul": 306360,
+      "ext8/scale": 59946,
+      "ext8/sub": 118096,
+      "hash_parts": 23800
+    },
+    "compression": {
+      "ext8/add": 1289946,
+      "ext8/base": 19839,
+      "ext8/canonical": 2180753,
+      "ext8/evaluate": 1274,
+      "ext8/fft": 1,
+      "ext8/mul": 3379214,
+      "ext8/scale": 93768,
+      "ext8/sub": 1231735,
+      "hash_parts": 81039,
+      "native/affine_fold": 17,
+      "native/affine_fold/values_elements": 524284,
+      "native/inject": 7,
+      "native/inject/points_elements": 2170,
+      "native/inject/weights_elements": 149798
+    }
+  },
+  "instrumented_seconds": 69.99827861785889,
+  "hash_calls_match_prior_census": true,
+  "scope": "Executed full retained diagnostic fixture contract, call-link and compression verifier. Counts Python reference functions including imported aliases; composite operations also count their nested scalar calls, so do not sum all counters as disjoint gates. Native calls and vector lengths recorded separately; native scalar arithmetic and built-in base-field arithmetic not counted. Not a circuit gate count, formal verifier compiler, full NEAR run, or soundness/security proof.",
+  "input_sha256": {
+    "results/ext8-switch-execution-q309/compression.bin": "a656ad0f8d1314ff1b921cc2596a906aaa8f8c21215c5f687082b1ca78bcbd1d",
+    "results/ext8-switch-execution-q309/statement.json.gz": "f0739ebd3b97c3e83d1a354cfe8b054e0f33d22484c32a702474459de00bed98",
+    "results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd",
+    "results/ext8-affine-q309/receipt.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996",
+    "results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e"
+  },
+  "source_sha256": {
+    "airbender/direct-wasm/measure_closed_verifier_arithmetic.py": "5179b019256602b8c5549ebb93affcbf4326a4bf4f98b62ec2529cedcadc7b48",
+    "airbender/direct-wasm/pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a",
+    "airbender/direct-wasm/pq384_ext8_native.py": "7580e46a27303d48023368312e7f0fcfd83f252aea86ba4d7ac58f23161a9fac",
+    "airbender/direct-wasm/ext8_switch_execution_codec.py": "1f71e6342cac9984188a4760d0fc904e577c11524b4892e5115ff3fba26234d9",
+    "airbender/direct-wasm/sha384_call_ext8_pcs.py": "99a563c83bf096fe751b0aba00897839fdfc40793af8c3a0913bc0754ded04f0",
+    "airbender/direct-wasm/pq384_primitives.py": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+  },
+  "native_library_sha256": "50495ed0a19e9f26eac6dfba4d1bca968929192fb60e8e8e8d781eaad7b8ab6c"
+}

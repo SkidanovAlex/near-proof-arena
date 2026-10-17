@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "exact_statement_preserved": true,
+  "negative_cases": [
+    "missing trusted receipt",
+    "trusted input_root",
+    "trusted input_context_hex",
+    "trusted air_sha384",
+    "trusted declared_length",
+    "source root 0",
+    "source root 1",
+    "source root 2",
+    "source root 3",
+    "public digest",
+    "public count",
+    "AIR substitution",
+    "missing gkr",
+    "missing opening",
+    "missing finals",
+    "missing aux_roots",
+    "GKR input",
+    "PCS source leaf"
+  ],
+  "files": {
+    "results/sha384-committed-gkr/statement.json": "7d3fdc8416166ac1be4e985e3a8841c7bc8380bc1cef09854a4aeca5f7a34f47",
+    "results/sha384-committed-gkr/expected-input.json": "95198cfa0032bfb0f15b278bcf69d2e63cfa412f272e1a94c78bf702225d62a8",
+    "/tmp/near-sha384-committed-seed/statement.json": "7d3fdc8416166ac1be4e985e3a8841c7bc8380bc1cef09854a4aeca5f7a34f47",
+    "/tmp/near-sha384-committed-seed/proof.json": "3c5186c8802d4d54001efaf0ce48421dc3d0aaac68e68c0815f1a9890f397722",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_committed_seed.py": "08537e1fb54535cd73aec8da0cb90416dd9ed9ed8609a7f2fbee16d761809423",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/verify_sha384_committed_seed.py": "a11ae76d2c986506b62f76fc55a1a26c6b6b17bff045de50c9318a7874eb35ec"
+  },
+  "limits": [
+    "Expanded diagnostic proof; no recursive compression or secure parameter claim.",
+    "Trusted configuration hashing is performed by the wrapper."
+  ]
+}

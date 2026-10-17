@@ -1,0 +1,23 @@
+{
+  "ast_polynomial_parity_checks": 88192,
+  "columns": 104,
+  "constraints": 106,
+  "cryptographic_proof_generated": false,
+  "field_modulus": 2013265921,
+  "honest_rows": 8,
+  "kernel_mutations_rejected": 832,
+  "limitations": [
+    "Quadratic local constraints only; no stack, memory, gas or control integration.",
+    "Rust lowering not yet linked by a formal refinement theorem.",
+    "No GKR sumcheck, WHIR commitment, recursion, proof-size or security claim."
+  ],
+  "status": "PASS",
+  "upstream_commit": "129f827003b34acd64a3315a5863eac75bc09fe6",
+  "uses_riscv_execution": false,
+  "source_sha256": {
+    "airbender/direct-wasm/near_wasm_kernel.rs": "3e15d0dcc4cdf95d8553b2568713a971b3ac1a1c7d6bb9fb68176709d2c64d1c",
+    "results/direct-wasm-air-export.json": "0ddd7a217b6e054b56b089f65d160e3d1cc4b38f97662c2c2a4dd5804c1d5800",
+    "InstructionGKRExport.lean": "ab53e9e4541731134b1a6cbdfa40e0f89059e6f34682ead0c3b307a6a95a88aa"
+  },
+  "log": "/data/illia/nearproof/research/near-compression/results/direct-wasm-airbender-kernel.log"
+}

@@ -1,0 +1,27 @@
+{
+  "fresh_verifier": "PASS complete Ext8 binary envelope; diagnostic security only.",
+  "status": "PASS",
+  "terminal_profile": "affine-v1",
+  "commitment_profile": "phase-pooled-v1",
+  "queries": 309,
+  "opening_bytes": 1278352,
+  "complete_envelope_bytes": 1322232,
+  "reduction_and_framing_bytes": 43880,
+  "negative_cases": [
+    "truncated",
+    "trailing",
+    "version",
+    "source-root",
+    "noncanonical-scalar",
+    "aux-root",
+    "bus-final",
+    "gkr-round",
+    "pcs-authentication",
+    "wrong-external-profile",
+    "relabelled-external-profile",
+    "relabelled-commitment-profile"
+  ],
+  "roundtrip": true,
+  "sha256": "fe7871c889ccfb2835d2d9f3b5268cdfba862852810eee978ec3ad5e7374d4b7",
+  "scope": "Includes source/auxiliary commitments, bus finals, local/GKR proofs and PCS opening. Static trusted AIR/spec and external receipts excluded. Not PQ128 or full NEAR certification."
+}

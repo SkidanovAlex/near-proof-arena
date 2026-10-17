@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 1895,
+  "source_hashes": {
+    "NearCompression/PreparedLiteral.lean": "6cd361072d2d4ec1049ebc1a28dbcb5d5595f04a0fa2f1d0cb76c7f0f316e8cc",
+    "NearCompression/FunctionalBatchRepresentative.lean": "324c0bc122509a83f96bf045cbecb8e2fbf9f2b97317b4f3078ac3321f2cdc9f",
+    "NearCompression/SHA384MultiBlock.lean": "a4c3ecc583946a9b95abb2c5f3a09f5647d373896ee7d0338ad34495ab2b8bf2"
+  },
+  "literal_parity": "results/prepared-literal-parity.json",
+  "remaining": [
+    "Construct kernel-checked source certificates for literal tables",
+    "Multiblock bus-to-chain semantics and root review of complete proof",
+    "Structured far-source extraction and global assignment connection",
+    "Full NEAR 1 Pgas, recursive prover, secure proof-size and QROM certification"
+  ]
+}

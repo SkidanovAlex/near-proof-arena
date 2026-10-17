@@ -1,0 +1,24 @@
+{
+  "totals": {
+    "calls": 104839,
+    "blocks": 419568,
+    "unique_calls": 40726,
+    "unique_blocks": 242409
+  },
+  "gadget_accounting": {
+    "blocks": {
+      "compression_blocks": 419568,
+      "rows": 53704704,
+      "base_field_cells": 372925464576,
+      "dense_u32_bytes": 1491701858304,
+      "dense_u32_gib": 1389.255615234375
+    },
+    "unique_blocks": {
+      "compression_blocks": 242409,
+      "rows": 31028352,
+      "base_field_cells": 215460876288,
+      "dense_u32_bytes": 861843505152,
+      "dense_u32_gib": 802.6543121337891
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3165,
+  "added_theorems": 10,
+  "sources": {
+    "SHA384TranscriptCommit": "61f2f0eb84c79d9bfd92c09db9c7a2eaac336fa24a8ffc24ede448444c9ca0ba",
+    "PreparedTypedConstStack": "2b4040a95d48f875c4c0eb1269361eef741dcca4554201253b7beb9df039a5e5",
+    "PreparedTypedConstDepth": "e9e67b79ae6c0b503834537ffca911b65d6241befedd140577e9ab2ef1ede2d4",
+    "PreparedTypedConstState": "f7a516e192cb79378b6e68d25fbff735cb6bdd95de9ca5112b33ea2eddd7f398",
+    "PreparedTypedConstAuthenticated": "cd3fd93b1bd7d44b299be2c8be1ce2637451b6b32c68e0cbe6509fa7fc2b9ce1"
+  },
+  "audit_log": "/tmp/root-const-transcript-audit.log",
+  "audit_sha256": "026765b4f8a6624446802ea44d6d6790f46e2a4b49ce3dcd03a84907c6f5ebb9",
+  "parity_report": "results/sha384-transcript-commit/report.json",
+  "sequential_commits": 3,
+  "negative_cases": 8,
+  "limits": [
+    "Bounded typed i64.const successful execution only; other instructions and full run remain in progress",
+    "Transcript operand checker is proved but recursive AIR must enforce per-instance seed routing",
+    "No cryptographic binding or quantum soundness claim"
+  ]
+}

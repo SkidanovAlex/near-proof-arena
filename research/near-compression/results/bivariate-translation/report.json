@@ -1,0 +1,6 @@
+{
+  "translation_substitution_cases": 500,
+  "root_forcing_cases_with_separation": 200,
+  "insufficient_sample_counterexample": "X^3-X over F3: zero function, nonzero coefficients, degree-separation guard fails",
+  "scope": "Formal theorem retains explicit distinct-domain size and substitution degree bounds. Interpolant existence and MCA remain open."
+}

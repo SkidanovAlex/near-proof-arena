@@ -1,0 +1,115 @@
+{
+  "status": "NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED",
+  "child_bytes": 512609,
+  "wire_census": {
+    "total": 512609,
+    "gkr": 20408,
+    "relations": 81248,
+    "stacking": 1936,
+    "whir": 389368,
+    "other": 19649
+  },
+  "public_fields": 4891,
+  "public_included": true,
+  "request_bytes": 919,
+  "total_child_plus_request_bytes": 513528,
+  "independent_Lean_runCall": {
+    "done": true,
+    "failed": false,
+    "gas": 999999447071257,
+    "stack": []
+  },
+  "eligibility": {
+    "code_length": 193,
+    "status": "PASS"
+  },
+  "public_mutations_rejected": 6,
+  "witness_independent_replay": true,
+  "transcript_oracle": {
+    "samples": 96,
+    "rejections": 5,
+    "draw_blocks": 13,
+    "final_state_equal": true,
+    "version": 4
+  },
+  "verifier_hash_cost": {
+    "tags": [
+      "leaf",
+      "node",
+      "init",
+      "observe_field",
+      "observe_commit",
+      "draw_block"
+    ],
+    "calls": [
+      2472,
+      8354,
+      1,
+      188,
+      7,
+      336
+    ],
+    "compression_blocks": [
+      2472,
+      8354,
+      1,
+      1297,
+      14,
+      336
+    ],
+    "total_compression_blocks": 12474,
+    "scope": "single engine.verify call; excludes keygen and decoding"
+  },
+  "security": {
+    "hash": "SHA-384",
+    "field": "BabyBear[X]/(X^12-31)",
+    "query_target_bits": 268,
+    "grinding_bits": 0,
+    "parameters": {
+      "n_stack": 16,
+      "k": 3,
+      "log_blowup": 7,
+      "all_list": 1,
+      "queries": [
+        82,
+        63,
+        51,
+        43,
+        37,
+        33
+      ]
+    },
+    "native_component_min_bits": 268.7638209393418,
+    "logup_bits": 337.57533223384377,
+    "proximity_bits": 317.93087493666576,
+    "query_bits": 268.7638209393418,
+    "certified": false
+  },
+  "backend_pin": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+  "exclusions": [
+    "custom transcript compiler/QROM applicability and concrete constants",
+    "recursive parent upgrade and knowledge composition",
+    "Lean field irreducibility and Rust refinement",
+    "cryptographic acceptance-to-execution Lean theorem",
+    "full NEAR1Pgas and performance target"
+  ],
+  "sha256": {
+    "Cargo.lock": "7a0e92b49ae35775174359c3f78eac06f30450fde00abb5752b3cbc98ac2a1ab",
+    "Cargo.toml": "517a141cee9d26e6f90d3afb0e053febafb54c7395d9ffc264bcaec8064dca48",
+    "backend.patch": "fc3f8ee331ed4d871ddb4e6b95b565cb52d5d8ce898a9e3886c7273b286a06ec",
+    "child.proof": "2324abdf45b66b90022094c31d10db61dc8421911638ca4bf227631d77b13464",
+    "fixture.json": "f86142cae0e1df917444dbbf340920ffb34ba3c3a170e8ae7f1251ae9b2bcb80",
+    "literal.rs": "fbff218d8c7b73961937a2c6b55e8f7145d8d62a5a7bebdf6053ad92587f554b",
+    "main.rs": "3825d81523e806bccd67e896961a15cacab7d1edc6ebf7c5b382b721079fe4d4",
+    "native_digest_dictionary.rs": "289b77e62a3cb536872d17da4501f4b576cf04ec01f2fbe0b7d24b66de5e3830",
+    "native_sha384_config.rs": "b35e6120783f61fa97290cbbb195d89252a467c6d4e49863da94fc607c7e18ca",
+    "plonky3-ext12.patch": "cd82dbb5f650b277146db19eecaa93fc133c4095de429e0db36f60c7c6d83c50",
+    "prove.log": "0c63dff3386d7d5aa3eb3b4a48c62b6a7ad017eba306e94484b788cd623e9529",
+    "public.bin": "2214c301b99a881c039544a7235ff4ac867ad472f1ae93325f89381c0cc4d82a",
+    "replay.log": "392ecfab304489cf496bc52d65bc9e13591f72fdd9fca9d7af56ddc996fc9098",
+    "rows-0.bin": "ab34e36616d070adfa36e613f552581973d1996b4f998ff22f21a17b4cb3db54",
+    "rows-1.bin": "6d3da5d8dd402dcbe025823b99d938c7ed4f9d232f2416cd02d1a471a3d07975",
+    "spec.json": "d5af1a689f6c8ba61c315c74ece9433ed5587056130c4c476c605a7eda420deb",
+    "transcript-vectors.log": "80fddab771dcdd52a5c1ec97a04d00b54e341ef5f976a7692b7d20778f963693"
+  }
+}

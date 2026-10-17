@@ -1,0 +1,21 @@
+{
+  "status": "ALGEBRA_IDENTITIES_AND_EXECUTABLE_PARITY",
+  "audited_theorems": 4662,
+  "new_theorems": [
+    "structured_power_fold",
+    "structured_tensor_fold",
+    "structured_sum_fold",
+    "structured_scale_eq"
+  ],
+  "scope": "Four pointwise field identities plus small executable sequence parity. No universal list/implementation refinement, transcript binding or security proof.",
+  "sha256": {
+    "NearCompression/StructuredFunctional.lean": "b625eb4e3314c0c58ba73252e5abcaf8063af979a4b501671adfb2a4383d2cc6",
+    "NearCompression.lean": "9ab3fce82b173946245350d17b4758e1bb375aa1828c9f9eccdcafc17eead2a2",
+    "Audit.lean": "7069cf801a6744c09e2a91b67e5b9f8ca93c75663b9a460216cd2b5464631481",
+    "airbender/direct-wasm/ext8_structured_functional.py": "0b4f4ca44930b8beb717cfe9f7fcf5056c36de160baf2d9fd278456952e25fd8",
+    "airbender/direct-wasm/test_ext8_structured_functional.py": "ab95e1e819a26a5bd7746459f96d7ccce4329eb1dfd92dd3487fcaa8c5d0db2f",
+    "results/ext8-structured-functional.json": "d3a3442022d5983d0a7e948272eb65d676c8b05c0a9ae32ee97d06691d45b8a3",
+    "results/structured-functional/lean-build.log": "bb2886840e79b2b8cf23851efb64306bf4815d5a72c10ef51cd9b15b7b1e54a0",
+    "results/structured-functional/lean-audit.log.gz": "c3197c33a4f21df44e236681254195004c3bc6f986c36ff4967e0310cc9392fb"
+  }
+}

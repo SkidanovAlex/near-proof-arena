@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "negative_cases": [
+    "wrong RS root",
+    "wrong trace root",
+    "wrong profile",
+    "wrong dependency capacity",
+    "missing GKR layer",
+    "GKR quadratic",
+    "GKR terminal functional",
+    "missing PCS query",
+    "PCS reduction",
+    "PCS fold quadratic",
+    "PCS terminal coefficient",
+    "unrelated RS commitment rejected by native link"
+  ],
+  "packing_coefficient_comparisons": 196608,
+  "omitted_high_private_zero_bit_detected": true,
+  "core_verifies_with_operand_packing_and_host_residual_evaluation_disabled": true,
+  "full_bound_wrapper_verified": true,
+  "seconds": 46.49248311575502,
+  "limits": "Root linkage still native/full disclosure. Q8/Ext4 diagnostic, not complete recursion or PQ128."
+}

@@ -1,0 +1,78 @@
+{
+  "status": "PASS",
+  "positive": {
+    "cases": 8,
+    "residuals": 64,
+    "status": "PASS"
+  },
+  "rejections": [
+    {
+      "case": "coherent-wrong-specification",
+      "reason": "uncaught exception: expanded bus specification rejected"
+    },
+    {
+      "case": "changed-bus-id",
+      "reason": "uncaught exception: expanded bus specification rejected"
+    },
+    {
+      "case": "changed-bus-challenge",
+      "reason": "uncaught exception: expanded bus specification rejected"
+    },
+    {
+      "case": "changed-final",
+      "reason": "uncaught exception: expanded bus specification rejected"
+    },
+    {
+      "case": "omitted-residual",
+      "reason": "uncaught exception: expanded bus specification rejected"
+    },
+    {
+      "case": "reordered-residuals",
+      "reason": "uncaught exception: expanded bus specification rejected"
+    },
+    {
+      "case": "wrong-root",
+      "reason": "uncaught exception: formula route rejected"
+    },
+    {
+      "case": "unknown-opcode",
+      "reason": "uncaught exception: instruction opcode"
+    },
+    {
+      "case": "truncated-instruction",
+      "reason": "uncaught exception: Ext8 instruction width"
+    },
+    {
+      "case": "noncanonical-constant",
+      "reason": "uncaught exception: noncanonical base scalar"
+    },
+    {
+      "case": "noncanonical-coordinate",
+      "reason": "uncaught exception: noncanonical base scalar"
+    },
+    {
+      "case": "truncated-selector",
+      "reason": "uncaught exception: Ext8 scalar width"
+    },
+    {
+      "case": "wrong-expected-value",
+      "reason": "uncaught exception: formula value mismatch"
+    },
+    {
+      "case": "cyclic-root",
+      "reason": "uncaught exception: formula route rejected"
+    },
+    {
+      "case": "empty-capture",
+      "reason": "uncaught exception: empty fixture"
+    },
+    {
+      "case": "empty-residuals",
+      "reason": "uncaught exception: empty residuals"
+    }
+  ],
+  "capture_sha256": "4d066b0ec1778c6fc42e8846b66413eb64abf8ff14046cb74ef12103e3d64636",
+  "checker_sha256": "1cb7df3c7ec4da0ef12ddc28df2dab6de32346b2b78e3defaf46dd4cc747c474",
+  "expanded": true,
+  "scope": "Exact or proved fingerprint-expanded formal bus-spec AST binding, formula routes, acyclicity and sampled values; no full prover or authentication claim."
+}

@@ -1,0 +1,20 @@
+{
+  "status": "OPENING_FREE_NATIVE_PREFIX_AND_PUBLIC_GKR_REPLAY",
+  "prefix_api_has_column_opening_field": false,
+  "removed_and_changed_opening_cases": 2,
+  "full_prefix_transcript_logs_equal": true,
+  "changed_retained_prefix_rejected": true,
+  "controls_and_selectors_match_original_capture": true,
+  "gkr_field_elements": 1258,
+  "gkr_ext4_field_payload_bytes": 20128,
+  "public_gkr_replay_without_column_openings": true,
+  "known_slots": 3941,
+  "pcs_coordinates": 2303,
+  "correction": "Native lambda/beta/mu/r and terminal sumcheck claim precede all column-opening observations. Only later stacking/WHIR challenges depend on those observations.",
+  "limitations": [
+    "Native prefix API requires caller validation of message shapes/preamble. Test validates original proof first; no standalone compressed prefix decoder yet.",
+    "Prefix transcript log uses pinned Rust Debug representation as a diagnostic hash checkpoint, not a production transcript codec.",
+    "New public-statement GKR has different residual weights: prior weighted-WHIR proof cannot be reused.",
+    "No combined transcript/QROM, PQ128, Lean security composition or full NEAR claim."
+  ]
+}

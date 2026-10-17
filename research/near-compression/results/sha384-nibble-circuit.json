@@ -1,0 +1,33 @@
+{
+  "status": "COMPLETE_COMPRESSION_RELATION_CHECKED",
+  "messages": 11,
+  "compression_blocks": 28,
+  "witness_cells": 31632,
+  "targeted_rejected_cell_mutations": 122,
+  "every_internal_wire_has_unique_defining_gate": true,
+  "exhaustive_lookup_relation_rows": 13056,
+  "gates": {
+    "splice1": 3328,
+    "splice3": 3328,
+    "const": 16,
+    "xor3": 4608,
+    "splice2": 4864,
+    "add": 6272,
+    "choose": 1280,
+    "majority": 1280
+  },
+  "lookup_requests": 18688,
+  "distinct_lookup_rows_observed": 13055,
+  "fixed_lookup_table_rows": 13056,
+  "add_equations": 6272,
+  "nibble_range_obligations": 31632,
+  "baseline_unpadded_core_cells": 418720,
+  "scope": "Executable trusted graph and integer/lookup relation; all eight output state words checked with OpenSSL probe and final digests with hashlib. Wire cells exclude routing, lookup multiplicities, fixed-table proof, range arguments, AIR padding, auxiliary columns and PCS. Not directly comparable to an AIR cell count. No proof-size/performance, universal Lean, or PQ128 claim.",
+  "next_gate": "Choose row layout and enforce fixed lookup tables plus wiring through an actual AIR/bus argument; include their full overhead before deciding whether cheaper than the existing core.",
+  "sha256": {
+    "research/near-compression/airbender/direct-wasm/test_sha384_nibble_circuit.py": "07cae0ba82fc80ae2c28c5e96e107837b71714e41de9424fe2fe66c7cb2215ec",
+    "research/near-compression/airbender/direct-wasm/sha384_nibble_circuit.py": "d5e832c4d2076ae13e9d9b6742698fe5138b8742983ecfeb6b2c429906adb10c",
+    "spec/lean/v3/NearSpecV3/SHA512.lean": "96083372eb24d51b79e864fd240b1647859043241c9123840f9cc0d4124857a3",
+    "research/near-compression/airbender/direct-wasm/measure_sha384_block_dag.py": "ea4c0fbd593d78fc044cae7517935ef51fc2445dab4b34163f0a17a732108b51"
+  }
+}

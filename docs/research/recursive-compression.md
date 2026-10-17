@@ -10,8 +10,10 @@ state-transition relation.
 ## Preferred direction: hash-based post-quantum compression
 
 The user's updated target is a new hash-based scheme with no elliptic-curve
-assumptions at any proof layer, aiming for 128-bit quantum attack cost and a
-complete proof below 300,000 bytes. These are research targets, not established
+assumptions at any proof layer, aiming for failure probability at most 2^-128
+against at most 2^64 quantum hash queries and a complete proof below 300,000 bytes.
+This is the recorded U-6 contract in [V3-D3A-STUDY](../zk-formal/V3-D3A-STUDY.md#d-user-decisions-2026-10-14-binding-and-what-they-change),
+not a claim of 128-bit quantum attack cost. U-7 requires SHA-384 throughout. These are research targets, not established
 properties of the current implementation. Pairing wrappers below are historical
 comparisons and are outside this preferred direction.
 
@@ -27,7 +29,8 @@ The security work must precede selecting final parameters:
 
 1. Specify quantum oracle queries, adversary resources, recursion depth and
    adaptive statement counts. A 128-bit attack-cost target is different from
-   failure probability at most 2^-128 under a fixed resource budget.
+   failure probability at most 2^-128 under a fixed resource budget. Use the
+   recorded U-6 budget above for the current track.
 2. Replace or extend the classical oracle game in
    `formal-core/ArenaCore/Security/ROM.lean`. Its classical query transcript and
    lazy oracle table do not model superposition queries. Existing admission
@@ -40,8 +43,9 @@ The security work must precede selecting final parameters:
 4. Account separately for algebraic errors, commitment binding, transcript and
    statement hashing, and all reduction losses. Generic quantum collision search
    on an ideal n-bit hash costs roughly 2^(n/3) queries: 384-bit outputs reach
-   the nominal 128-bit collision-work threshold before losses. Consider 512-bit
-   outputs as an initial candidate, not as a security certificate. Neither this
+   nominal 128-bit collision work before losses. The selected U-7 primitive is
+   SHA-384; wider outputs are alternative research profiles, not the selected
+   contract. Neither this
    estimate nor concatenating domain-separated SHA-256 outputs establishes the
    security of the actual construction. Collision and fixed-target preimage
    requirements must be distinguished.

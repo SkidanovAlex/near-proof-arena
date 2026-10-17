@@ -1,0 +1,590 @@
+{
+  "status": "FIXED_SLOT_SENSITIVITY_ONLY",
+  "rows": [
+    {
+      "stage": "leaf",
+      "extension": 4,
+      "digest_bytes": 32,
+      "ordinary_bytes": 383529,
+      "dictionary_bytes": 326127,
+      "dictionary_free_references_bytes": 311369
+    },
+    {
+      "stage": "leaf",
+      "extension": 4,
+      "digest_bytes": 49,
+      "ordinary_bytes": 508938,
+      "dictionary_bytes": 413201,
+      "dictionary_free_references_bytes": 398443
+    },
+    {
+      "stage": "leaf",
+      "extension": 4,
+      "digest_bytes": 52,
+      "ordinary_bytes": 531069,
+      "dictionary_bytes": 428567,
+      "dictionary_free_references_bytes": 413809
+    },
+    {
+      "stage": "leaf",
+      "extension": 4,
+      "digest_bytes": 64,
+      "ordinary_bytes": 619593,
+      "dictionary_bytes": 490031,
+      "dictionary_free_references_bytes": 475273
+    },
+    {
+      "stage": "leaf",
+      "extension": 5,
+      "digest_bytes": 32,
+      "ordinary_bytes": 410717,
+      "dictionary_bytes": 353315,
+      "dictionary_free_references_bytes": 338557
+    },
+    {
+      "stage": "leaf",
+      "extension": 5,
+      "digest_bytes": 49,
+      "ordinary_bytes": 536126,
+      "dictionary_bytes": 440389,
+      "dictionary_free_references_bytes": 425631
+    },
+    {
+      "stage": "leaf",
+      "extension": 5,
+      "digest_bytes": 52,
+      "ordinary_bytes": 558257,
+      "dictionary_bytes": 455755,
+      "dictionary_free_references_bytes": 440997
+    },
+    {
+      "stage": "leaf",
+      "extension": 5,
+      "digest_bytes": 64,
+      "ordinary_bytes": 646781,
+      "dictionary_bytes": 517219,
+      "dictionary_free_references_bytes": 502461
+    },
+    {
+      "stage": "leaf",
+      "extension": 8,
+      "digest_bytes": 32,
+      "ordinary_bytes": 492281,
+      "dictionary_bytes": 434879,
+      "dictionary_free_references_bytes": 420121
+    },
+    {
+      "stage": "leaf",
+      "extension": 8,
+      "digest_bytes": 49,
+      "ordinary_bytes": 617690,
+      "dictionary_bytes": 521953,
+      "dictionary_free_references_bytes": 507195
+    },
+    {
+      "stage": "leaf",
+      "extension": 8,
+      "digest_bytes": 52,
+      "ordinary_bytes": 639821,
+      "dictionary_bytes": 537319,
+      "dictionary_free_references_bytes": 522561
+    },
+    {
+      "stage": "leaf",
+      "extension": 8,
+      "digest_bytes": 64,
+      "ordinary_bytes": 728345,
+      "dictionary_bytes": 598783,
+      "dictionary_free_references_bytes": 584025
+    },
+    {
+      "stage": "leaf",
+      "extension": 9,
+      "digest_bytes": 32,
+      "ordinary_bytes": 519469,
+      "dictionary_bytes": 462067,
+      "dictionary_free_references_bytes": 447309
+    },
+    {
+      "stage": "leaf",
+      "extension": 9,
+      "digest_bytes": 49,
+      "ordinary_bytes": 644878,
+      "dictionary_bytes": 549141,
+      "dictionary_free_references_bytes": 534383
+    },
+    {
+      "stage": "leaf",
+      "extension": 9,
+      "digest_bytes": 52,
+      "ordinary_bytes": 667009,
+      "dictionary_bytes": 564507,
+      "dictionary_free_references_bytes": 549749
+    },
+    {
+      "stage": "leaf",
+      "extension": 9,
+      "digest_bytes": 64,
+      "ordinary_bytes": 755533,
+      "dictionary_bytes": 625971,
+      "dictionary_free_references_bytes": 611213
+    },
+    {
+      "stage": "leaf",
+      "extension": 10,
+      "digest_bytes": 32,
+      "ordinary_bytes": 546657,
+      "dictionary_bytes": 489255,
+      "dictionary_free_references_bytes": 474497
+    },
+    {
+      "stage": "leaf",
+      "extension": 10,
+      "digest_bytes": 49,
+      "ordinary_bytes": 672066,
+      "dictionary_bytes": 576329,
+      "dictionary_free_references_bytes": 561571
+    },
+    {
+      "stage": "leaf",
+      "extension": 10,
+      "digest_bytes": 52,
+      "ordinary_bytes": 694197,
+      "dictionary_bytes": 591695,
+      "dictionary_free_references_bytes": 576937
+    },
+    {
+      "stage": "leaf",
+      "extension": 10,
+      "digest_bytes": 64,
+      "ordinary_bytes": 782721,
+      "dictionary_bytes": 653159,
+      "dictionary_free_references_bytes": 638401
+    },
+    {
+      "stage": "leaf",
+      "extension": 12,
+      "digest_bytes": 32,
+      "ordinary_bytes": 601033,
+      "dictionary_bytes": 543631,
+      "dictionary_free_references_bytes": 528873
+    },
+    {
+      "stage": "leaf",
+      "extension": 12,
+      "digest_bytes": 49,
+      "ordinary_bytes": 726442,
+      "dictionary_bytes": 630705,
+      "dictionary_free_references_bytes": 615947
+    },
+    {
+      "stage": "leaf",
+      "extension": 12,
+      "digest_bytes": 52,
+      "ordinary_bytes": 748573,
+      "dictionary_bytes": 646071,
+      "dictionary_free_references_bytes": 631313
+    },
+    {
+      "stage": "leaf",
+      "extension": 12,
+      "digest_bytes": 64,
+      "ordinary_bytes": 837097,
+      "dictionary_bytes": 707535,
+      "dictionary_free_references_bytes": 692777
+    },
+    {
+      "stage": "internal",
+      "extension": 4,
+      "digest_bytes": 32,
+      "ordinary_bytes": 398697,
+      "dictionary_bytes": 375569,
+      "dictionary_free_references_bytes": 369001
+    },
+    {
+      "stage": "internal",
+      "extension": 4,
+      "digest_bytes": 49,
+      "ordinary_bytes": 454491,
+      "dictionary_bytes": 415587,
+      "dictionary_free_references_bytes": 409019
+    },
+    {
+      "stage": "internal",
+      "extension": 4,
+      "digest_bytes": 52,
+      "ordinary_bytes": 464337,
+      "dictionary_bytes": 422649,
+      "dictionary_free_references_bytes": 416081
+    },
+    {
+      "stage": "internal",
+      "extension": 4,
+      "digest_bytes": 64,
+      "ordinary_bytes": 503721,
+      "dictionary_bytes": 450897,
+      "dictionary_free_references_bytes": 444329
+    },
+    {
+      "stage": "internal",
+      "extension": 5,
+      "digest_bytes": 32,
+      "ordinary_bytes": 417477,
+      "dictionary_bytes": 394349,
+      "dictionary_free_references_bytes": 387781
+    },
+    {
+      "stage": "internal",
+      "extension": 5,
+      "digest_bytes": 49,
+      "ordinary_bytes": 473271,
+      "dictionary_bytes": 434367,
+      "dictionary_free_references_bytes": 427799
+    },
+    {
+      "stage": "internal",
+      "extension": 5,
+      "digest_bytes": 52,
+      "ordinary_bytes": 483117,
+      "dictionary_bytes": 441429,
+      "dictionary_free_references_bytes": 434861
+    },
+    {
+      "stage": "internal",
+      "extension": 5,
+      "digest_bytes": 64,
+      "ordinary_bytes": 522501,
+      "dictionary_bytes": 469677,
+      "dictionary_free_references_bytes": 463109
+    },
+    {
+      "stage": "internal",
+      "extension": 8,
+      "digest_bytes": 32,
+      "ordinary_bytes": 473817,
+      "dictionary_bytes": 450689,
+      "dictionary_free_references_bytes": 444121
+    },
+    {
+      "stage": "internal",
+      "extension": 8,
+      "digest_bytes": 49,
+      "ordinary_bytes": 529611,
+      "dictionary_bytes": 490707,
+      "dictionary_free_references_bytes": 484139
+    },
+    {
+      "stage": "internal",
+      "extension": 8,
+      "digest_bytes": 52,
+      "ordinary_bytes": 539457,
+      "dictionary_bytes": 497769,
+      "dictionary_free_references_bytes": 491201
+    },
+    {
+      "stage": "internal",
+      "extension": 8,
+      "digest_bytes": 64,
+      "ordinary_bytes": 578841,
+      "dictionary_bytes": 526017,
+      "dictionary_free_references_bytes": 519449
+    },
+    {
+      "stage": "internal",
+      "extension": 9,
+      "digest_bytes": 32,
+      "ordinary_bytes": 492597,
+      "dictionary_bytes": 469469,
+      "dictionary_free_references_bytes": 462901
+    },
+    {
+      "stage": "internal",
+      "extension": 9,
+      "digest_bytes": 49,
+      "ordinary_bytes": 548391,
+      "dictionary_bytes": 509487,
+      "dictionary_free_references_bytes": 502919
+    },
+    {
+      "stage": "internal",
+      "extension": 9,
+      "digest_bytes": 52,
+      "ordinary_bytes": 558237,
+      "dictionary_bytes": 516549,
+      "dictionary_free_references_bytes": 509981
+    },
+    {
+      "stage": "internal",
+      "extension": 9,
+      "digest_bytes": 64,
+      "ordinary_bytes": 597621,
+      "dictionary_bytes": 544797,
+      "dictionary_free_references_bytes": 538229
+    },
+    {
+      "stage": "internal",
+      "extension": 10,
+      "digest_bytes": 32,
+      "ordinary_bytes": 511377,
+      "dictionary_bytes": 488249,
+      "dictionary_free_references_bytes": 481681
+    },
+    {
+      "stage": "internal",
+      "extension": 10,
+      "digest_bytes": 49,
+      "ordinary_bytes": 567171,
+      "dictionary_bytes": 528267,
+      "dictionary_free_references_bytes": 521699
+    },
+    {
+      "stage": "internal",
+      "extension": 10,
+      "digest_bytes": 52,
+      "ordinary_bytes": 577017,
+      "dictionary_bytes": 535329,
+      "dictionary_free_references_bytes": 528761
+    },
+    {
+      "stage": "internal",
+      "extension": 10,
+      "digest_bytes": 64,
+      "ordinary_bytes": 616401,
+      "dictionary_bytes": 563577,
+      "dictionary_free_references_bytes": 557009
+    },
+    {
+      "stage": "internal",
+      "extension": 12,
+      "digest_bytes": 32,
+      "ordinary_bytes": 548937,
+      "dictionary_bytes": 525809,
+      "dictionary_free_references_bytes": 519241
+    },
+    {
+      "stage": "internal",
+      "extension": 12,
+      "digest_bytes": 49,
+      "ordinary_bytes": 604731,
+      "dictionary_bytes": 565827,
+      "dictionary_free_references_bytes": 559259
+    },
+    {
+      "stage": "internal",
+      "extension": 12,
+      "digest_bytes": 52,
+      "ordinary_bytes": 614577,
+      "dictionary_bytes": 572889,
+      "dictionary_free_references_bytes": 566321
+    },
+    {
+      "stage": "internal",
+      "extension": 12,
+      "digest_bytes": 64,
+      "ordinary_bytes": 653961,
+      "dictionary_bytes": 601137,
+      "dictionary_free_references_bytes": 594569
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 4,
+      "digest_bytes": 32,
+      "ordinary_bytes": 242809,
+      "dictionary_bytes": 224985,
+      "dictionary_free_references_bytes": 218233
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 4,
+      "digest_bytes": 49,
+      "ordinary_bytes": 300167,
+      "dictionary_bytes": 269287,
+      "dictionary_free_references_bytes": 262535
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 4,
+      "digest_bytes": 52,
+      "ordinary_bytes": 310289,
+      "dictionary_bytes": 277105,
+      "dictionary_free_references_bytes": 270353
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 4,
+      "digest_bytes": 64,
+      "ordinary_bytes": 350777,
+      "dictionary_bytes": 308377,
+      "dictionary_free_references_bytes": 301625
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 5,
+      "digest_bytes": 32,
+      "ordinary_bytes": 261641,
+      "dictionary_bytes": 243817,
+      "dictionary_free_references_bytes": 237065
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 5,
+      "digest_bytes": 49,
+      "ordinary_bytes": 318999,
+      "dictionary_bytes": 288119,
+      "dictionary_free_references_bytes": 281367
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 5,
+      "digest_bytes": 52,
+      "ordinary_bytes": 329121,
+      "dictionary_bytes": 295937,
+      "dictionary_free_references_bytes": 289185
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 5,
+      "digest_bytes": 64,
+      "ordinary_bytes": 369609,
+      "dictionary_bytes": 327209,
+      "dictionary_free_references_bytes": 320457
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 8,
+      "digest_bytes": 32,
+      "ordinary_bytes": 318137,
+      "dictionary_bytes": 300313,
+      "dictionary_free_references_bytes": 293561
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 8,
+      "digest_bytes": 49,
+      "ordinary_bytes": 375495,
+      "dictionary_bytes": 344615,
+      "dictionary_free_references_bytes": 337863
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 8,
+      "digest_bytes": 52,
+      "ordinary_bytes": 385617,
+      "dictionary_bytes": 352433,
+      "dictionary_free_references_bytes": 345681
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 8,
+      "digest_bytes": 64,
+      "ordinary_bytes": 426105,
+      "dictionary_bytes": 383705,
+      "dictionary_free_references_bytes": 376953
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 9,
+      "digest_bytes": 32,
+      "ordinary_bytes": 336969,
+      "dictionary_bytes": 319145,
+      "dictionary_free_references_bytes": 312393
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 9,
+      "digest_bytes": 49,
+      "ordinary_bytes": 394327,
+      "dictionary_bytes": 363447,
+      "dictionary_free_references_bytes": 356695
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 9,
+      "digest_bytes": 52,
+      "ordinary_bytes": 404449,
+      "dictionary_bytes": 371265,
+      "dictionary_free_references_bytes": 364513
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 9,
+      "digest_bytes": 64,
+      "ordinary_bytes": 444937,
+      "dictionary_bytes": 402537,
+      "dictionary_free_references_bytes": 395785
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 10,
+      "digest_bytes": 32,
+      "ordinary_bytes": 355801,
+      "dictionary_bytes": 337977,
+      "dictionary_free_references_bytes": 331225
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 10,
+      "digest_bytes": 49,
+      "ordinary_bytes": 413159,
+      "dictionary_bytes": 382279,
+      "dictionary_free_references_bytes": 375527
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 10,
+      "digest_bytes": 52,
+      "ordinary_bytes": 423281,
+      "dictionary_bytes": 390097,
+      "dictionary_free_references_bytes": 383345
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 10,
+      "digest_bytes": 64,
+      "ordinary_bytes": 463769,
+      "dictionary_bytes": 421369,
+      "dictionary_free_references_bytes": 414617
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 12,
+      "digest_bytes": 32,
+      "ordinary_bytes": 393465,
+      "dictionary_bytes": 375641,
+      "dictionary_free_references_bytes": 368889
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 12,
+      "digest_bytes": 49,
+      "ordinary_bytes": 450823,
+      "dictionary_bytes": 419943,
+      "dictionary_free_references_bytes": 413191
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 12,
+      "digest_bytes": 52,
+      "ordinary_bytes": 460945,
+      "dictionary_bytes": 427761,
+      "dictionary_free_references_bytes": 421009
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "extension": 12,
+      "digest_bytes": 64,
+      "ordinary_bytes": 501433,
+      "dictionary_bytes": 459033,
+      "dictionary_free_references_bytes": 452281
+    }
+  ],
+  "security_certified": false,
+  "caveats": [
+    "No larger extension or hash implementation",
+    "No new query schedule or quantum soundness analysis",
+    "Frozen verifier layout and duplicate pattern",
+    "Dictionary codec is modeled, not implemented",
+    "Frontier multiproofs can differ from digest dictionaries",
+    "No NEAR public binding or complete root wrapper"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "status": "DECODED_ADAPTIVE_LOCAL_BOUND_WITH_EXPLICIT_TERMINAL_FAILURE",
+  "module": "NearCompression/DecodedLocalSoundness.lean",
+  "theorems": [
+    "decoded_local_accepted_count_eq",
+    "decoded_local_invalid_trace_count",
+    "decoded_local_acceptance_split"
+  ],
+  "proved": [
+    "Decoded compiler-terminal local acceptance has exactly the same count as the existing AIR trace-local event on complete challenge paths.",
+    "For an invalid decoded row, initial batching plus adaptive sumcheck acceptance with correct terminal evaluation has the existing scaled finite-count bound.",
+    "Arbitrary acceptance implying sumcheck checks is bounded by honest-terminal local acceptance plus accepted terminal mismatch on the identical experiment; no independence premise."
+  ],
+  "bound": "For q sample values, r=n+1 rounds and L source+aux residuals: honest-terminal acceptance probability at most (L-1+r+(d+1)*r)/q when q>0. Formal statement is the scaled integer count, valid also for empty sample.",
+  "assumptions": [
+    "Decoded table and supplied formula list fixed before initial samples; exact source-then-auxiliary ordering.",
+    "Distinct sample, source/aux degree bounds, nonzero residual at bounded row, nonempty residual list.",
+    "Initial sumcheck claims are zero; sent polynomials/claims may depend on initial mixing/tau and previous round challenges.",
+    "Acceptance split requires only that accepted events pass local sumcheck checks; terminal mismatch still needs a GKR/PCS bound."
+  ],
+  "remaining": [
+    "Map accepted terminal mismatch to the actual chronological GKR/PCS experiment.",
+    "Bind intended formulas and executable transcript to the formal model.",
+    "Computational commitment extraction, quantum Fiat-Shamir, secure parameters and full-NEAR sub300000-byte feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3916,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; generic formal event/count composition only."
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "status": "MEASURED_DIAGNOSTIC_VERIFIER_HASH_WORK",
+  "queries": 309,
+  "opening_bytes": 620632,
+  "input_sha256": {
+    "proof.bin": "53d9c1640d3358a1747eaff13fede82ee7f97c1a4761adaac37c3305012f3879",
+    "opening.json": "dd8cc0edd781c3a4b420cc3db26b6ebe89f2386167f88aac2cc32fbe3b153949"
+  },
+  "gadget_sha256": "03df30d7de341e811c47f512f1696f10a8e8f273603a78fbe6feefd8710e3767",
+  "measurement": {
+    "tags": {
+      "near-pq384-ext8-weighted-joint-diagnostic-v1": {
+        "calls": 3,
+        "blocks": 5034,
+        "unique_calls": 1,
+        "unique_blocks": 1678
+      },
+      "transcript/init": {
+        "calls": 3,
+        "blocks": 3,
+        "unique_calls": 1,
+        "unique_blocks": 1
+      },
+      "transcript/commit": {
+        "calls": 74,
+        "blocks": 196,
+        "unique_calls": 37,
+        "unique_blocks": 98
+      },
+      "transcript/request": {
+        "calls": 666,
+        "blocks": 1332,
+        "unique_calls": 333,
+        "unique_blocks": 666
+      },
+      "transcript/squeeze": {
+        "calls": 666,
+        "blocks": 1332,
+        "unique_calls": 333,
+        "unique_blocks": 666
+      },
+      "transcript/ratchet": {
+        "calls": 666,
+        "blocks": 1332,
+        "unique_calls": 333,
+        "unique_blocks": 666
+      },
+      "transcript/draw-result": {
+        "calls": 666,
+        "blocks": 1332,
+        "unique_calls": 333,
+        "unique_blocks": 666
+      },
+      "ext8-weighted-fold": {
+        "calls": 24,
+        "blocks": 48,
+        "unique_calls": 12,
+        "unique_blocks": 24
+      },
+      "merkle/leaf": {
+        "calls": 7625,
+        "blocks": 20641,
+        "unique_calls": 2677,
+        "unique_blocks": 7964
+      },
+      "merkle/node": {
+        "calls": 47622,
+        "blocks": 134772,
+        "unique_calls": 8686,
+        "unique_blocks": 27236
+      },
+      "merkle/root": {
+        "calls": 4962,
+        "blocks": 11164,
+        "unique_calls": 16,
+        "unique_blocks": 36
+      }
+    },
+    "totals": {
+      "calls": 62977,
+      "blocks": 177186,
+      "unique_calls": 12762,
+      "unique_blocks": 39701
+    },
+    "instrumented_seconds": 1.2875425089150667
+  },
+  "current_gadget_trace": {
+    "blocks": {
+      "compression_blocks": 177186,
+      "rows": 22679808,
+      "base_field_cells": 157488586752,
+      "dense_u32_bytes": 629954347008,
+      "dense_u32_gib": 586.6907043457031
+    },
+    "unique_blocks": {
+      "compression_blocks": 39701,
+      "rows": 5081728,
+      "base_field_cells": 35287519232,
+      "dense_u32_bytes": 141150076928,
+      "dense_u32_gib": 131.4562530517578
+    }
+  },
+  "scope": "Actual canonical decoder plus full weighted PCS verifier, including expanded duplicate-path rechecks. External statement/parent/roots/weights/claim are supplied: local/GKR/frontend verification EXCLUDED. Unique work shares only identical framed hash inputs, not compression prefixes. Sharing requires authenticated routing/equality constraints. Dense trace bytes are arithmetic accounting, NOT measured RAM/runtime/proof size. Current gadget128x6944 may be improved. Retained Ext8/q309 profile is diagnostic, not quantum-certified. No recursive proof or secure outer parameters established."
+}

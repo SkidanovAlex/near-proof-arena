@@ -1,0 +1,33 @@
+{
+  "kind": "actual AIR addition control validation",
+  "honest_boundary_cases": 6,
+  "independent_constructor_matches_formal_columns": 225,
+  "rejected_individual_mutations": 2022,
+  "rejected_coherent_metadata_forgeries": 24,
+  "rejected_domain_cases": 5,
+  "table": {
+    "columns": 225,
+    "constraints": 231,
+    "max_degree": 2,
+    "max_log": 22
+  },
+  "layout_calculation": {
+    "assumed_packed_field_bytes": 4,
+    "bytes_per_row": 900,
+    "bytes_at_2pow22_rows": 3774873600,
+    "measured_allocation": false
+  },
+  "full_audit_theorems": 916,
+  "command": "lake env lean --run InstructionAddControlSmoke.lean",
+  "source_sha256": {
+    "NearCompression/InstructionAddControl.lean": "e9415e4091ffb1d3a2e2ed192a5c664ffd3a56aed9f37036cd504562fdc3dce6",
+    "NearCompression/InstructionControlTrace.lean": "51b4be12cc6dc765e0fc482e904b68d0c8dc9cb9bcd4e9ed823632bb85596fb1",
+    "InstructionAddControlSmoke.lean": "9f98e5feab22772244205e236fd2ccca238422b751dc14bd9daaa3d52b80f61a"
+  },
+  "limitations": [
+    "Local pre/post metadata, not cross-row sequencing.",
+    "Stack/code authentication and gas AIR missing.",
+    "Height domain needs validated-execution bound linkage.",
+    "No full transition proof or quantum-security bound."
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "status": "PASS",
+  "synthetic_expr_routes": 11,
+  "synthetic_next_current_rejected": true,
+  "captures": [
+    {
+      "profile": "near-pq384-gkr-bus-v1",
+      "capture": "/tmp/near-pq384-gkr-bus-full",
+      "tables": 33,
+      "expression_nodes": {
+        "*": 43827,
+        "v": 67507,
+        "+": 47624,
+        "-": 16711,
+        "c": 33019,
+        "first": 82,
+        "last": 32,
+        "trans": 59,
+        "p": 176
+      },
+      "expression_roots": 9424,
+      "residuals": 8119,
+      "auxiliary_residuals": 780,
+      "negative_checks": 198,
+      "artifact": "results/air-program-certificates/near-pq384-gkr-bus-full-air-program.json",
+      "sha256": "01ded58554b8f0aa1af0a410d932e7b04c722dc7ca8ca3bcdaf32cc3f5f17238",
+      "seconds": 1.2443095352500677
+    },
+    {
+      "profile": "near-pq384-seed-gkr-bus-v1",
+      "capture": "/tmp/near-pq384-seed-gkr-bus-full",
+      "tables": 33,
+      "expression_nodes": {
+        "*": 43827,
+        "v": 67507,
+        "+": 47624,
+        "-": 16711,
+        "c": 33019,
+        "first": 82,
+        "last": 32,
+        "trans": 59,
+        "p": 176
+      },
+      "expression_roots": 9424,
+      "residuals": 8119,
+      "auxiliary_residuals": 780,
+      "negative_checks": 198,
+      "artifact": "results/air-program-certificates/near-pq384-seed-gkr-bus-full-air-program.json",
+      "sha256": "1925a76d9fbaeb6628b9b63748609e8a25e8cf5be86e23b8be7114099522784f",
+      "seconds": 1.7753375838510692
+    },
+    {
+      "profile": "near-pq384-gkr-bus-v1",
+      "capture": "/tmp/near-sha384-family267-proof",
+      "tables": 3,
+      "expression_nodes": {
+        "*": 36383,
+        "v": 52648,
+        "+": 30771,
+        "-": 16168,
+        "c": 24286,
+        "trans": 1620,
+        "first": 182,
+        "last": 2
+      },
+      "expression_roots": 11584,
+      "residuals": 11070,
+      "auxiliary_residuals": 36,
+      "negative_checks": 18,
+      "artifact": "results/air-program-certificates/near-sha384-family267-proof-air-program.json",
+      "sha256": "d85a93992a5ecaf4454b3572c97127b126f6f5ca8b00c540f846fd1780982e6e",
+      "seconds": 1.5562497228384018
+    }
+  ],
+  "scope": "Executable AST and mixing structural validation; auxiliary residual formula correspondence and kernel capture proofs remain separate."
+}

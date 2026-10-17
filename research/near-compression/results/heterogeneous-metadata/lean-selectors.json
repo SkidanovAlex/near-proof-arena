@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "reports": [
+    {
+      "path": "results/heterogeneous-metadata/near-pq384-gkr-bus-full-metadata-selectors.lean",
+      "sha256": "a20c6daa7a14a0e29db8459efc7d0f4dca22be12515ef354d8d209084b9de79e",
+      "exit_code": 0,
+      "output": "PASS 451 canonical lanes; 4 malformed geometries rejected\n"
+    },
+    {
+      "path": "results/heterogeneous-metadata/near-pq384-seed-gkr-bus-full-metadata-selectors.lean",
+      "sha256": "a20c6daa7a14a0e29db8459efc7d0f4dca22be12515ef354d8d209084b9de79e",
+      "exit_code": 0,
+      "output": "PASS 451 canonical lanes; 4 malformed geometries rejected\n"
+    },
+    {
+      "path": "results/heterogeneous-metadata/near-sha384-family267-proof-metadata-selectors.lean",
+      "sha256": "fa777b3de4b2da0e4641c09ade424fd6346ec9e97ecb90cb6cdea4b9082ab9bf",
+      "exit_code": 0,
+      "output": "PASS 150 canonical lanes; 4 malformed geometries rejected\n"
+    }
+  ],
+  "scope": "Executable Lean checker evaluations plus separately audited implication theorem; not closed kernel certificates for captured instances."
+}

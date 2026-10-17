@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "audit_count": 3070,
+  "audit_log": "/tmp/root-typed-eqz-stack-audit.log",
+  "chain_report": "results/sha384-occurrence-chains/report.json",
+  "chain_outputs_match_independent_capture": true,
+  "source_sha256": {
+    "PreparedTypedOpcode": "66ff680ecac48876b66419dfe7b40607eaa1027b61a685261f3e1fb2181b8a9d",
+    "PreparedTypedEqzStack": "6aebcce70dd6800210c2587259bac23bb0275b51f6118d3d30728cd832d5777d"
+  },
+  "scope": "Literal eqz stack writes/tags and exact typed value projection; SP/PC/gas/locals/labels and CODE37 authentication still separate. Executable full-state hash call chains for observed verifier workload; no Lean capture refinement, commitment binding or recursive security."
+}

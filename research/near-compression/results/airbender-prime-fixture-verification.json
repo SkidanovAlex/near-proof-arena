@@ -1,0 +1,50 @@
+{
+  "commit": "129f827003b34acd64a3315a5863eac75bc09fe6",
+  "runs": [
+    {
+      "project": "gkr",
+      "command": [
+        "build"
+      ],
+      "returncode": 0,
+      "log": "/data/illia/nearproof/research/near-compression/results/airbender-prime-fixture-verification.gkr.log"
+    },
+    {
+      "project": "whir",
+      "command": [
+        "build"
+      ],
+      "returncode": 0,
+      "log": "/data/illia/nearproof/research/near-compression/results/airbender-prime-fixture-verification.whir.log"
+    },
+    {
+      "project": "two_tx",
+      "command": [
+        "test",
+        "-vv"
+      ],
+      "returncode": 0,
+      "log": "/data/illia/nearproof/research/near-compression/results/airbender-prime-fixture-verification.two_tx.log"
+    }
+  ],
+  "forge_version": "forge Version: 1.8.3\nCommit SHA: cae51ad458f6abb64852b7709eb784352429825d\nBuild Timestamp: 2026-09-15T10:46:16.519267388Z (1789469176)\nBuild Profile: dist",
+  "fixture_bytes": {
+    "verifier_evm/debug_data/gkr_full_calldata.hex": 34596,
+    "verifier_evm/debug_data/proth120_whir_calldata_from_proof.hex": 76544
+  },
+  "combined_fixture_bytes": 111140,
+  "sha256": {
+    "verifier_evm/debug_data/gkr_full_calldata.hex": "33eced42fce36a6c568cb8b21115a815bc3570977363f7bae8bf1ea82255cd56",
+    "verifier_evm/debug_data/proth120_whir_calldata_from_proof.hex": "fe45fa116acbc502e5d5af800d06bf0e3a271d885abfb284d92c0248624d42f1",
+    "verifier_evm/generated_contracts/gkr/src/GkrVerifier.sol": "e670ede0f16dbee49f7c54ac5d967fdd47c9337743735920db3ae88b1e4fa57a",
+    "verifier_evm/generated_contracts/whir/src/WhirVerifier.sol": "04f001a59ffc78259a7c1e93af2cea2ee6500d7ce726353f92d717b7814c47f1",
+    "verifier_evm/generated_contracts/two_tx/src/GkrWhirRegistry.sol": "34cdcb9c984040f1dce2660add0aedcaaa8c4c34ea4535f0e09a63256312c43d"
+  },
+  "mutation_test_sha256": "3e20e27d3243fd4f00574e25b46b041c398f28402ba3cfbc28da2e4144991b50",
+  "scope": "Compiled checked-in Solidity; ran upstream fixture and registry tests plus ten targeted mutation tests.",
+  "limitations": [
+    "No Rust verifier regeneration or new proof generation.",
+    "No NEAR execution or 1 Pgas benchmark.",
+    "Not a cryptographic soundness proof or quantum-security certification."
+  ]
+}

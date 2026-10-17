@@ -1,0 +1,25 @@
+{
+  "status": "ALGEBRAIC_SOURCE_BINDING_PROVED_PCS_CONDITIONAL",
+  "module": "NearCompression/PackedComputedOpening.lean",
+  "established": [
+    "Mobius coefficient tensor equals original row MLE at arbitrary field points.",
+    "Actual modeled mutable packed source coefficients discharge sourceBinding.",
+    "Wrong packed lane accepted under exact PCS contract on at most p*Q^(p-1) distinct sampled column points."
+  ],
+  "remaining": [
+    "Exact PCS contract must be replaced by quantified cryptographic extraction/authentication.",
+    "One committed trace and adaptive transcript composition.",
+    "Native arithmetic/parser/byte/Merkle refinement.",
+    "Quantum transcript reduction and secure total-size measurement."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3732,
+    "axiom_policy": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "log": "/tmp/root-packed-computed-audit.log"
+  }
+}

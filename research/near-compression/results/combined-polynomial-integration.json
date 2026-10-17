@@ -1,0 +1,24 @@
+{
+  "status": "PROVED_COMPONENT",
+  "module": "NearCompression/BusPolynomialLowering.lean",
+  "established": [
+    "Auxiliary formula polynomial lowering preserves evaluation and AST degree",
+    "Combined source-then-auxiliary power batching preserves evaluation and degree",
+    "Affine equality weighting and suffix summation yield degree at most residual_degree+1",
+    "Adaptive sumcheck uses this derived honest degree bound"
+  ],
+  "main_theorem": "combined_air_adaptive_sumcheck_count",
+  "premises": [
+    "Affine column/selector polynomial inputs and constant public inputs",
+    "Affine equality-weight slices",
+    "Slice polynomial evaluations equal the fixed evaluator\u2019s remaining Boolean sums",
+    "False initial sum and honest terminal equality"
+  ],
+  "validation": "results/pq384-code-table-long193/combined-degree-report.json",
+  "remaining": [
+    "Construct affine coordinate slices from the common trace MLE and equality kernel",
+    "Derive suffix-sum representation instead of assuming it",
+    "Bind terminal source/auxiliary evaluations via current/next reduction and PCS",
+    "Complete soundness composition and quantified quantum transcript reduction"
+  ]
+}

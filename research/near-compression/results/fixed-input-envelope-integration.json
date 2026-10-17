@@ -1,0 +1,36 @@
+{
+  "status": "FIXED_INPUT_ENVELOPE_SEMANTICS_PROVED",
+  "module": "NearCompression/GKRFixedInputEnvelope.lean",
+  "executable": "airbender/direct-wasm/pq384_fixed_gkr_layout.py:fixed_layer_circuit",
+  "proved": [
+    "Relocated input indices remain within a larger trusted envelope.",
+    "Every first-layer operand retains its original value, including relocation of the old reserved zero.",
+    "All first-layer outputs and all subsequent circuit outputs are preserved for arbitrary field values."
+  ],
+  "requirements": [
+    "Positive original input size and newSize>=oldSize.",
+    "Old final input slot equals zero.",
+    "Both operands of every first-layer gate are inside the original input size.",
+    "Input values below oldSize are preserved and added positions are zero; only first-layer zero references are remapped."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3780,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "compiler_cases": 10,
+    "output_comparisons": 20,
+    "undersized_caps_rejected": 10,
+    "formal_preconditions_checked_on_all_cases": true
+  },
+  "remaining": [
+    "Bind a trusted cap before challenges in an integrated profile and generate fresh proofs.",
+    "Establish cap sufficiency or explicit overflow/completeness policy for target workloads.",
+    "Compiler implementation refinement and transcript challenge chronology.",
+    "Full near/far/AIR/bus/execution soundness, quantum reductions and secure full NEAR1Pgas size."
+  ],
+  "not_claimed": "Proof/transcript equivalence under padding; changing the layout changes GKR transcript binding."
+}

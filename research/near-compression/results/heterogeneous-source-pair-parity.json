@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "pair_checks": 900,
+  "altered_leaf_rejections": 16,
+  "lifts": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "source_degrees": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "lanes": 3,
+  "scope": "Actual check_opening plus verifier duplicate-side expression vs independent polynomial evaluation. Mixed Ext4 beta coefficients, including zero and one. Not a cryptographic binding or full-verifier proof."
+}

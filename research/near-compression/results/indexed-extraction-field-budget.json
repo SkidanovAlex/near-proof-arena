@@ -1,0 +1,42 @@
+{
+  "scope": "Conditional ideal interactive extraction term only; not whole protocol security",
+  "initial_degree": 131072,
+  "initial_domain": 524288,
+  "fold_rounds": 17,
+  "bad_challenge_counts": [
+    262144,
+    131072,
+    65536,
+    32768,
+    16384,
+    8192,
+    4096,
+    2048,
+    1024,
+    512,
+    256,
+    128,
+    64,
+    32,
+    16,
+    8,
+    4
+  ],
+  "total_bad_challenge_budget": 524284,
+  "field_characteristic": 2013265921,
+  "current_extension_degree": 4,
+  "current_bound_numerator": 524284,
+  "current_bound_denominator": "16428751811598850197311699254593454081",
+  "largest_integer_bits_certified_for_this_term": 104,
+  "minimum_extension_degree_for_this_term": {
+    "128": 5,
+    "192": 7,
+    "256": 9
+  },
+  "assumptions": [
+    "IndexedUniqueExtraction domain, degree and separation certificates hold at every fold",
+    "Challenge alphabet is a genuine field of cardinality P^extension_degree, sampled uniformly",
+    "Ignores all other soundness terms, abort probabilities and QROM compiler losses",
+    "Field extension alternatives are arithmetic sensitivity only; not implemented or certified"
+  ]
+}

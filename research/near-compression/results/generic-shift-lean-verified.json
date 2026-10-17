@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "main": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "lean_theorems_audited": 1313,
+  "new_generic_mle_theorems": 10,
+  "new_shift_kernel_theorems": 7,
+  "formal_scope": [
+    "Generic Boolean MLE interpolation matching actual AIR cyclic-next semantics",
+    "Exact borrow DP equals explicit weighted Boolean sum for subtract-one bits",
+    "Subtract-bit transform is predecessor modulo2^n; predecessor then cyclic-next MLE returns original row at Boolean points"
+  ],
+  "remaining_formal_gap": "General off-cube reindex/sumcheck composition and actual executable-verifier refinement; no cryptographic soundness claim.",
+  "source_sha256": {
+    "GenericRowMLE": "729f44428987b31e1ea9abca7a54d72f31f4297c58f257a6c1efad0c89b68787",
+    "GenericShiftKernel": "96e534cf9e4e932fa5da209c00089ea508550e7926863e330063b3ec7c1cd686",
+    "GenericShiftIndex": "6444547602ab1023abc1249f7f167ac5141bd08ac6a6664b057b00941b9fda6c"
+  },
+  "audit_log": "/tmp/near-generic-shift-index-audit.log",
+  "new_shift_index_theorems": 9
+}

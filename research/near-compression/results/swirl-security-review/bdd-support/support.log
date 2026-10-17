@@ -1,0 +1,1 @@
+{'status': 'EXACT_BOOLEAN_SUPPORT_CHECKED', 'graphs': 69, 'support_elements': 81062, 'rejected': 358, 'limitations': ['Python structural/count checker not formally refined.', 'Lean theorem applies to ordered unfolded view; explicit graph-to-view bridge remains.', 'No transcript, PCS, PQ128 or full NEAR claim.']}

@@ -1,0 +1,7 @@
+{
+  "product_pairs": 26661,
+  "order_coefficient_checks": 52267,
+  "zero_function_products": 4,
+  "nonfield_counterexamples": 1,
+  "scope": "Formal product order and no zero divisors. Substitution through a curve-factor identity and preservation of other roots remain open."
+}

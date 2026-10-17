@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "boundary_checks": 178,
+  "current_conditional_parameters": {
+    "D": 131072,
+    "N": 524288,
+    "T": 393217,
+    "near": true,
+    "tensor": true,
+    "fold": true,
+    "minimum_combined": 393217,
+    "fold_strict_slack": 3
+  },
+  "fullheight_boundary": [
+    {
+      "D": 262144,
+      "N": 1048576,
+      "T": 786432,
+      "near": true,
+      "tensor": true,
+      "fold": false,
+      "minimum_combined": 786433,
+      "fold_strict_slack": 0
+    },
+    {
+      "D": 262144,
+      "N": 1048576,
+      "T": 786433,
+      "near": true,
+      "tensor": true,
+      "fold": true,
+      "minimum_combined": 786433,
+      "fold_strict_slack": 3
+    }
+  ],
+  "conditional_query_tail_Q8": {
+    "numerator": 6561,
+    "denominator": 65536
+  },
+  "limits": [
+    "The prior tensor inequality has -1; folding inequality does not. Its minimum T is one larger.",
+    "Query fraction is a conditional counting term, not demonstrated protocol security or an attack success probability.",
+    "Acceptance-to-fixed-oracles, adaptive strategy causality and FS/QROM correspondence remain explicit."
+  ],
+  "security_certified": false,
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/check_fold_regime.py",
+      "sha256": "8a4e35477ea860855f560e76096012c06334bd3c46cdd44797610357e10097c9"
+    },
+    {
+      "path": "results/tensor-security-accounting.json",
+      "sha256": "24d33d952cb04a768c2ab971f42852d20db32df96b3d1faf76527daf0d311f16"
+    }
+  ]
+}

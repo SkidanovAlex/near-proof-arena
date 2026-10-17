@@ -1,0 +1,24 @@
+{
+  "kind": "actual i64 addition AIR and SHA512 addition composition",
+  "boundary_cases": 8,
+  "rejected_mutations": 3200,
+  "sha512_round_addition_cases": 4,
+  "round_addition_rows": 28,
+  "table": {
+    "columns": 208,
+    "constraints": 212,
+    "max_degree": 2,
+    "max_log": 22
+  },
+  "full_audit_theorems": 960,
+  "command": "lake env lean --run InstructionAdd64Smoke.lean",
+  "source_sha256": {
+    "NearCompression/InstructionAdd64.lean": "bee2432ab2a5d144731ac85020128369c9d4a1d760bd81f15649497b1427c8ec",
+    "NearCompression/SHA512AddBridge.lean": "8247f1b05a2c935c99f73c209cf15e85900fd5abedf46973a2ed142a3c48b7d7",
+    "InstructionAdd64Smoke.lean": "73c4a6036e81f95cecff977150ba5d2b32d33e8b0274d3f4be80f838dbce2815"
+  },
+  "limitations": [
+    "Sigma,choice,majority supplied by semantic bindings; no bit-operation AIR yet.",
+    "No complete SHA512 circuit,hash/stack integration,full state proof or quantum-security bound."
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "status": "FROZEN",
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/airbender/direct-wasm/test_sha384_node_chunk_config.py",
+      "sha256": "9dec9102bce966c7c8f47bc84a3cda5e6b9d19c9b45caeb41acd262786227385"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/airbender/direct-wasm/run_sha384_node_chunk.py",
+      "sha256": "1893d56d822af5b349f0e8aa1cc134f0208cd531917126f778bbe741a43e9b33"
+    }
+  ]
+}

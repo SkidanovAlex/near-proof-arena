@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "cases": 55,
+  "weight_entries": 10235,
+  "reversed_coordinate_order_detected_cases": 14,
+  "lean_export_sha256": "871b27ebfb65845591c318c10db974b026a935e7fa4706b86818018eb9a1afbb",
+  "scope": "Actual Lean equalityWeights/scalarRSResidual/genericRowMLE vs actual Python eq_weights on base-field embedded challenges; not full extension arithmetic refinement or security certification"
+}

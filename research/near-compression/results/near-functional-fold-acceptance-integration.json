@@ -1,0 +1,38 @@
+{
+  "status": "NEAR_FUNCTIONAL_SUMCHECK_AND_ADAPTIVE_FOLD_ACCEPTANCE_BOUND_PROVED",
+  "module": "NearCompression/NearFunctionalFoldAcceptance.lean",
+  "theorem": "near_functional_fold_acceptance_count",
+  "proved": "A wrong initial coefficient-table functional of a fixed shared representative has bounded checked weighted-sumcheck plus weighted-folding acceptance. The close-residual-candidate event is no longer the terminal conclusion.",
+  "normalized_interpretation": {
+    "bound": "2*n/Q + sum_i(max(sizes(i+1),2))/Q + ((T-1)/N)^queries",
+    "scope": "Normalization of the proved integer-scaled count for nonempty challenge sample/domain. Q=sample length; n is both the coefficient cube dimension and number of folds."
+  },
+  "chronology": "Sources and one shared representative precede the weighted sumcheck. Each entire folding prover may depend on that sumcheck challenge path, and its messages adapt to fold prefixes. Queries follow the folds.",
+  "explicit_requirements": [
+    "Shared representative for the actual weighted virtual source.",
+    "Initial source oracle equals that virtual source at every domain index.",
+    "Distinct domain, valid fold root/halving geometry, strict2*N+D<3*T regime and unique separation.",
+    "Authenticated terminal oracle and independent ideal challenges."
+  ],
+  "reused_existing_results": [
+    "ChosenGKRSourceRecovery already derives sparse lane structure from projected source geometry; no duplicate sparsity theorem was added.",
+    "close_family_sumcheck_residual_count supplies the near-case event bound.",
+    "weighted_prefix_no_candidate_count supplies the adaptive fold/query bound.",
+    "finite_product_acceptance_budget is shared with the far-case theorem."
+  ],
+  "remaining": [
+    "Instantiate compiled heterogeneous source, GKR subtraction and transcript events.",
+    "Compose near/far cases with full GKR/AIR/bus/actual execution under one common trace.",
+    "Connect concrete terminal hash-collision accounting and earlier oracle extraction.",
+    "Quantum compilation, secure parameters and full NEAR1Pgas sub300000-byte feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3774,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

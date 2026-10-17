@@ -1,0 +1,178 @@
+{
+  "status": "design-and-executable-semantics-fixture; AIR not implemented",
+  "target": "Prepared []->[] integer function execution, followed by authenticated D3 FunctionCall boundary",
+  "source_paths": {
+    "semantics": "spec/lean/v3/NearSpecV3/Wasm/Exec.lean: enter, step, callEntry, runCall",
+    "gas": "spec/lean/v3/NearSpecV3/Wasm/FiniteWasm.lean: gasTable; Wasm/Machine.lean: charge, sync",
+    "d1": "zk-formal/ZkFormal/NearV3/D1/NearAirD1Defs.lean",
+    "d3": "spec/lean/v3/NearSpecV3/D3/FunctionCall.lean",
+    "existing_arithmetic": "research/near-compression/NearCompression/InstructionAddRange.lean",
+    "existing_conditional_step": "research/near-compression/NearCompression/InstructionControlTrace.lean"
+  },
+  "example": {
+    "binary": "export main []->[]; i32.const -1; i32.const 1; i32.add; drop; end",
+    "variants": [
+      "positive 12+23",
+      "negative -64+-1",
+      "exact gas",
+      "range exhaustion one gas short"
+    ],
+    "preparation": "actual prepare pv86 bytes true; no synthetic Prepared or gas schedule",
+    "execution": "actual load fees, link, resolve, instantiate, enter, step, sync; compare exported state projection and error against actual runCall",
+    "comparison_limit": "exported state projection comparison is executable evidence, not whole-state equality theorem"
+  },
+  "interfaces": {
+    "EXEC": {
+      "key": [
+        "call_id",
+        "clock"
+      ],
+      "state": [
+        "function",
+        "pc",
+        "stack_height",
+        "frame_depth",
+        "stack_remaining",
+        "gas_state_id",
+        "terminal_kind"
+      ],
+      "dispatch": [
+        "active",
+        "const_selector",
+        "add_selector",
+        "drop_selector",
+        "end_selector"
+      ],
+      "requirements": [
+        "one-hot active instruction",
+        "actual PC sequencing and terminal padding",
+        "CODE lookup",
+        "STACK and GAS event requests",
+        "only validated subset; unsupported instructions rejected"
+      ]
+    },
+    "CODE": {
+      "key": [
+        "code_identity",
+        "function",
+        "pc"
+      ],
+      "value": [
+        "opcode",
+        "immediate_u32_limbs",
+        "charge_present",
+        "charge_kind",
+        "fee_c_u64_limbs",
+        "fee_l_u64_limbs"
+      ],
+      "requirements": [
+        "bounded fields and canonical limbs",
+        "lookup multiplicity permits repeated fetches",
+        "prepared relation to original bytes remains separate obligation"
+      ]
+    },
+    "STACK": {
+      "key": [
+        "call_id",
+        "frame_id",
+        "slot",
+        "clock",
+        "subclock"
+      ],
+      "value": [
+        "read_or_write",
+        "type_tag",
+        "value_limbs"
+      ],
+      "requirements": [
+        "typed timestamped RAM consistency",
+        "known empty initial stack",
+        "read right then left and write result for add",
+        "drop reads live top",
+        "const writes next slot",
+        "end restores frame and exact result arity",
+        "absence of stale reads/duplicate writes; sorted event table connected by permutation bus"
+      ]
+    },
+    "GAS": {
+      "key": [
+        "call_id",
+        "clock"
+      ],
+      "value": [
+        "charge_present",
+        "charge_kind",
+        "fee_c",
+        "fee_l",
+        "count",
+        "before",
+        "after"
+      ],
+      "requirements": [
+        "actual charge semantics including limit/exhaustion",
+        "g/burnt/promises/prepaid/limit and profile fields preserved or updated",
+        "entry prologue and terminal sync included",
+        "64bit limbs avoid field reduction aliases",
+        "no per-instruction replacement of prepared range charge"
+      ]
+    },
+    "PUBLIC": {
+      "initial": [
+        "code bytes or authenticated code identity",
+        "method",
+        "call context",
+        "prepaid gas",
+        "initial machine state"
+      ],
+      "terminal": [
+        "status",
+        "gas burnt/used",
+        "return data",
+        "state effects"
+      ],
+      "requirements": [
+        "explicit lengths and canonical encoding",
+        "initial and final binding",
+        "full code exposure temporary, not succinct"
+      ]
+    }
+  },
+  "proposed_table_bus_connections": [
+    "EXEC requests CODE fetch, GAS transition, STACK events",
+    "CODE bound to PREP/code hash in future",
+    "FunctionCall action request/result connects D2/D3 receipt dispatcher in future",
+    "memory/host tables connect EXEC later",
+    "storage hosts use existing trie bus patterns; promises require D3 receipt extension"
+  ],
+  "proof_contracts": [
+    "local EXEC+CODE+STACK+GAS validity implies actual Wasm.step",
+    "trace induction implies actual Wasm.run",
+    "entry/exit wrapper implies actual callEntry",
+    "authenticated PREP plus boundary implies runCall",
+    "D2/D3 FunctionCall boundary then implies receipt effects"
+  ],
+  "missing": [
+    "all proposed AIR constraints and renderer refinement",
+    "authenticated preparation/code relation",
+    "whole stack RAM consistency proof",
+    "gas AIR including entry/exit and failure",
+    "memory, locals, globals, branches/calls and other integer opcodes",
+    "all host calls and D3 receipt linkage",
+    "proof-system soundness/QROM and PQ128 bound",
+    "sub300KB capacity"
+  ],
+  "next_implementation_order": [
+    "freeze integer limb layout and bus schema",
+    "implement EXEC/CODE/STACK/GAS witness export to canonical np-air-v2",
+    "prove and independently test component constraints",
+    "run same generic native prover and independent verifier",
+    "add code/stack/gas coherent mutation rejection",
+    "then memory store plus value_return vertical slice"
+  ],
+  "no_claims": [
+    "not full Wasm",
+    "not D3 state transition",
+    "not production proof",
+    "not PQ128 or succinctness result"
+  ]
+}

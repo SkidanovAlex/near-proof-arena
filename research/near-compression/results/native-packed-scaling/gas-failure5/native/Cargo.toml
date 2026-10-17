@@ -1,0 +1,14 @@
+[package]
+name="nearproof-native-sha384"
+version="0.1.0"
+edition="2024"
+[dependencies]
+openvm-stark-backend={path="/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5/crates/stark-backend",default-features=false,features=["test-utils","parallel"]}
+p3-baby-bear="=0.4.3"
+p3-field="=0.4.3"
+p3-air="=0.4.3"
+p3-matrix="=0.4.3"
+sha2="=0.10.9"
+[patch.crates-io]
+p3-baby-bear={path="/tmp/nearproof-ext12-rust/p3-baby-bear"}
+p3-monty-31={path="/tmp/nearproof-ext12-rust/p3-monty-31"}

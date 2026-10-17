@@ -1,0 +1,14 @@
+{
+  "core": 5359616,
+  "endpoint": 26656,
+  "records": 3056,
+  "uses": 2864,
+  "baseline_core": 6699520,
+  "baseline_endpoint": 33320,
+  "raw_cell_bytes": 4,
+  "new_total_cells": 5392192,
+  "baseline_total_cells": 6732840,
+  "saving_cells": 1340648,
+  "new_raw_bytes": 21568768,
+  "saved_raw_bytes": 5362592
+}

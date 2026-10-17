@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2182,
+  "audit_log": "/tmp/root-control-charged-audit.log",
+  "modules": {
+    "PreparedControlStack": {
+      "sha256": "5c6d85d9942771e068fec7172dee46782b65ec42ae03b33a4a64d9beffa29081",
+      "public_theorems": 6
+    },
+    "PreparedControlGas": {
+      "sha256": "2663b70c07e5627f1f628e92e90bdbd58d44ccf8ef3f1c33850ded8f6887ff7d",
+      "public_theorems": 8
+    },
+    "PreparedControlSequential": {
+      "sha256": "224b3632f372e0e4d05dabb61bbf46bdb13867a6e57c118241fc908e27947b61",
+      "public_theorems": 5
+    },
+    "PreparedControlChargedBranch": {
+      "sha256": "7b54805d34d72398ea6699a04d43b01be996fa5876c46ce2688e3939855fe28e",
+      "public_theorems": 2
+    }
+  },
+  "scope": "Literal control AIR local projections: taken stack prefix, gas affordability/exhaustion, sequential PC, untaken label retention, and affordable branch composition. No whole-control-run or full NEAR semantic claim.",
+  "remaining": [
+    "saved label provenance in execution state invariant",
+    "untaken branch stack pop",
+    "block entry and nested-end semantics",
+    "ordinary opcode projections under changed control AST",
+    "initial/final binding and whole-run composition"
+  ]
+}

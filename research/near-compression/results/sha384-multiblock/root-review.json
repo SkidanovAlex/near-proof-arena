@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "regenerated_canonical_spec": true,
+  "uses_independently_regenerated_compression_traces": true,
+  "fresh_proof_verification_and_binary_roundtrip": true,
+  "agent_report_exact_match": true,
+  "boundary_checks": 75776,
+  "negative_checks": 12,
+  "proof_bytes": 1508054,
+  "statement_bytes": 3975091,
+  "public_field_elements": 424,
+  "scope": "One multiblock diagnostic hash proof; public statement excluded from binary count; full bus-to-chain Lean theorem remains open"
+}

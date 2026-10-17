@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "whole_binary_bytes": 510836,
+  "previous_binary_bytes": 522596,
+  "actual_saving_bytes": 11760,
+  "expected_saving_bytes": 39990.71945863945,
+  "same_source_row_hashes": true,
+  "same_air_public_logs": true,
+  "source_commitments_reused": false,
+  "fresh_auxiliaries": true,
+  "root_reference_binary_verification": "PASS",
+  "root_shared_binary_verification": "PASS",
+  "exact_roundtrip": "PASS",
+  "binary_sha256": "188ca39b8b68e1fced30d9d999f6fa22afaf5c5e6c17df4f70471217d4e2428f",
+  "codec_evidence": "../pq384-optimized-joint-codec/report.json",
+  "limits": [
+    "Q8/Ext4 diagnostic; no secure parameter claim",
+    "Expected savings differ from one deterministic transcript realization; no selective retries",
+    "Not fullNEAR/1Pgas; packing does not establish new cryptographic soundness"
+  ]
+}

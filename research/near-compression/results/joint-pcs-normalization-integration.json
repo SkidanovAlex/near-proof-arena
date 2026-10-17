@@ -1,0 +1,37 @@
+{
+  "status": "GENERIC_MERGED_PCS_COUNT_NORMALIZATION_PROVED",
+  "module": "NearCompression/JointPCSNormalization.lean",
+  "theorems": [
+    "joint_pcs_near_factor",
+    "joint_pcs_far_factor",
+    "joint_pcs_merged_factor",
+    "joint_pcs_normalized_target",
+    "literal193_original_merged_target"
+  ],
+  "proved": [
+    "Near and far literal count budgets factor by S^(H+2C).",
+    "Maximum of the two budgets factors with coefficient A+max(2C,(H+C)*max(N,2)); no union penalty.",
+    "For positive sample size and joint dimension, normalized integer target test is equivalent to the original scaled count-budget test.",
+    "Retained193 Boolean parameter test is equivalent to the original merged budget for every extension degree, bit target and query count."
+  ],
+  "assumptions": [
+    "Positive field sample size for cancellation of the common factor.",
+    "Positive joint dimension for the far exponent H+C-1.",
+    "Arithmetic budget normalization does not discharge probabilistic or native verifier hypotheses."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3955,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; exact arithmetic identities only."
+  },
+  "remaining": [
+    "Compose global local/bus/GKR/PCS error and computational terms.",
+    "Establish QROM/RBR security and implement/measure parameterized larger-field profiles.",
+    "Secure full-NEAR sub300000-byte feasibility remains open."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "depths": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "leaf_openings": 30,
+  "all_layer_digests": 56,
+  "changed_source_leaf_negatives": 30,
+  "lean_changed_source_leaf_negatives": 30,
+  "files": [
+    {
+      "path": "SHA384MerkleSourceFixture.lean",
+      "sha256": "a130521b4f9376e458755f9c873baedaf9f317c4be76dc11d884b412cea17d3a"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_merkle_source.py",
+      "sha256": "2a5ed668cab97282ee19ba114794c8383dd681373e0787821e0ed2639fde7c08"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_primitives.py",
+      "sha256": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+    },
+    {
+      "path": "results/sha384-merkle-source/inputs.json",
+      "sha256": "71812af01c32f725198e54111f73252da94daed1f5116be0ac9f3e1a5886a67d"
+    },
+    {
+      "path": "results/sha384-merkle-source/lean-results.json",
+      "sha256": "d3e131d899712b805363d27ae8093f04136566018ddf5c5c45dcb118361ca3aa"
+    }
+  ],
+  "limits": [
+    "Exact constructed fixed-source tree/path correspondence; no extraction from an unknown adversarial commitment.",
+    "Formal differing-opening collision is supported on arbitrary and constructed path query sets; no collision-probability/QROM claim."
+  ]
+}

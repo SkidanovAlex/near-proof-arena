@@ -1,0 +1,57 @@
+   Compiling openvm-recursion-circuit v2.1.0 (/tmp/nearproof-openvm/crates/recursion)
+   Compiling openvm-stark-backend v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+   Compiling openvm-cpu-backend v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+   Compiling openvm-instructions v2.1.0 (/tmp/nearproof-openvm/crates/toolchain/instructions)
+   Compiling openvm-stark-sdk v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+   Compiling openvm-circuit-primitives v2.1.0 (/tmp/nearproof-openvm/crates/circuits/primitives)
+   Compiling openvm-poseidon2-air v2.1.0 (/tmp/nearproof-openvm/crates/circuits/poseidon2-air)
+   Compiling openvm-circuit v2.1.0 (/tmp/nearproof-openvm/crates/vm)
+    Finished `fast` profile [optimized + debuginfo] target(s) in 19.10s
+     Running unittests src/lib.rs (target/fast/deps/openvm_recursion_circuit-0e902e15daeda90d)
+
+running 1 test
+NEARPROOF_OPENINGS proof_bytes=398697 airs=39 verified=true
+NEARPROOF_DAG air=0 nodes=435 counts={"add": 131, "constant": 7, "mul_base_constant": 19, "mul_dynamic": 187, "neg": 18, "sub": 34, "transition": 1, "variable": 38}
+NEARPROOF_DAG air=1 nodes=285 counts={"add": 69, "constant": 9, "first_row": 1, "mul_base_constant": 9, "mul_dynamic": 96, "neg": 3, "sub": 39, "transition": 1, "variable": 58}
+NEARPROOF_DAG air=2 nodes=235 counts={"add": 30, "constant": 11, "first_row": 1, "mul_base_constant": 13, "mul_dynamic": 87, "neg": 4, "sub": 41, "transition": 1, "variable": 47}
+NEARPROOF_DAG air=3 nodes=386 counts={"add": 76, "constant": 8, "first_row": 1, "mul_base_constant": 15, "mul_dynamic": 164, "neg": 7, "sub": 49, "transition": 1, "variable": 65}
+NEARPROOF_DAG air=4 nodes=480 counts={"add": 102, "constant": 5, "first_row": 1, "mul_base_constant": 29, "mul_dynamic": 210, "neg": 10, "sub": 53, "transition": 1, "variable": 69}
+NEARPROOF_DAG air=5 nodes=259 counts={"add": 22, "constant": 5, "first_row": 1, "mul_base_constant": 4, "mul_dynamic": 128, "neg": 3, "sub": 51, "transition": 1, "variable": 44}
+NEARPROOF_DAG air=6 nodes=238 counts={"add": 33, "constant": 8, "first_row": 1, "mul_base_constant": 7, "mul_dynamic": 109, "neg": 6, "sub": 43, "transition": 1, "variable": 30}
+NEARPROOF_DAG air=7 nodes=131 counts={"add": 17, "constant": 4, "first_row": 1, "mul_base_constant": 7, "mul_dynamic": 49, "neg": 1, "sub": 22, "transition": 1, "variable": 29}
+NEARPROOF_DAG air=8 nodes=251 counts={"add": 58, "constant": 5, "first_row": 1, "mul_base_constant": 16, "mul_dynamic": 106, "neg": 6, "sub": 26, "transition": 1, "variable": 32}
+NEARPROOF_DAG air=9 nodes=292 counts={"add": 31, "constant": 4, "first_row": 1, "mul_base_constant": 7, "mul_dynamic": 143, "neg": 2, "sub": 54, "transition": 1, "variable": 49}
+NEARPROOF_DAG air=10 nodes=368 counts={"add": 50, "constant": 6, "first_row": 1, "mul_base_constant": 7, "mul_dynamic": 162, "neg": 6, "sub": 68, "transition": 1, "variable": 67}
+NEARPROOF_DAG air=11 nodes=233 counts={"add": 35, "constant": 5, "first_row": 1, "mul_base_constant": 6, "mul_dynamic": 102, "neg": 4, "sub": 34, "transition": 1, "variable": 45}
+NEARPROOF_DAG air=12 nodes=604 counts={"add": 133, "constant": 8, "first_row": 1, "mul_base_constant": 33, "mul_dynamic": 259, "neg": 7, "sub": 83, "transition": 1, "variable": 79}
+NEARPROOF_DAG air=13 nodes=294 counts={"add": 15, "constant": 9, "first_row": 1, "mul_dynamic": 127, "sub": 69, "transition": 1, "variable": 72}
+NEARPROOF_DAG air=14 nodes=2692 counts={"add": 1192, "constant": 157, "mul_base_constant": 195, "mul_dynamic": 564, "neg": 2, "sub": 282, "variable": 300}
+NEARPROOF_DAG air=15 nodes=107 counts={"add": 3, "constant": 5, "mul_base_constant": 3, "mul_dynamic": 32, "neg": 2, "sub": 24, "variable": 38}
+NEARPROOF_DAG air=16 nodes=948 counts={"add": 264, "constant": 59, "first_row": 1, "mul_base_constant": 191, "mul_dynamic": 239, "neg": 15, "sub": 109, "transition": 1, "variable": 69}
+NEARPROOF_DAG air=17 nodes=65 counts={"add": 2, "constant": 2, "first_row": 1, "mul_dynamic": 28, "neg": 2, "sub": 14, "transition": 1, "variable": 15}
+NEARPROOF_DAG air=18 nodes=16 counts={"add": 1, "constant": 3, "first_row": 1, "last_row": 1, "mul_dynamic": 3, "neg": 1, "sub": 2, "transition": 1, "variable": 3}
+NEARPROOF_DAG air=19 nodes=109 counts={"add": 21, "constant": 10, "first_row": 1, "mul_base_constant": 2, "mul_dynamic": 29, "neg": 3, "sub": 14, "transition": 1, "variable": 28}
+NEARPROOF_DAG air=20 nodes=452 counts={"add": 144, "constant": 8, "first_row": 1, "mul_base_constant": 26, "mul_dynamic": 171, "neg": 3, "sub": 38, "transition": 1, "variable": 60}
+NEARPROOF_DAG air=21 nodes=479 counts={"add": 110, "constant": 9, "first_row": 1, "mul_base_constant": 30, "mul_dynamic": 171, "neg": 8, "sub": 87, "transition": 1, "variable": 62}
+NEARPROOF_DAG air=22 nodes=71 counts={"add": 6, "constant": 5, "first_row": 1, "mul_dynamic": 27, "neg": 2, "sub": 13, "transition": 1, "variable": 16}
+NEARPROOF_DAG air=23 nodes=732 counts={"add": 175, "constant": 16, "first_row": 1, "mul_base_constant": 34, "mul_dynamic": 311, "neg": 3, "sub": 81, "transition": 1, "variable": 110}
+NEARPROOF_DAG air=24 nodes=309 counts={"add": 55, "constant": 12, "first_row": 1, "mul_base_constant": 18, "mul_dynamic": 116, "neg": 5, "sub": 48, "transition": 1, "variable": 53}
+NEARPROOF_DAG air=25 nodes=771 counts={"add": 209, "constant": 14, "first_row": 1, "mul_base_constant": 43, "mul_dynamic": 289, "neg": 23, "sub": 88, "transition": 1, "variable": 103}
+NEARPROOF_DAG air=26 nodes=363 counts={"add": 71, "constant": 16, "first_row": 1, "mul_base_constant": 13, "mul_dynamic": 140, "neg": 4, "sub": 50, "transition": 1, "variable": 67}
+NEARPROOF_DAG air=27 nodes=789 counts={"add": 199, "constant": 6, "first_row": 1, "mul_base_constant": 66, "mul_dynamic": 336, "neg": 4, "sub": 84, "transition": 1, "variable": 92}
+NEARPROOF_DAG air=28 nodes=138 counts={"add": 14, "constant": 11, "first_row": 1, "mul_base_constant": 9, "mul_dynamic": 59, "neg": 2, "sub": 22, "transition": 1, "variable": 19}
+NEARPROOF_DAG air=29 nodes=238 counts={"add": 46, "constant": 21, "first_row": 1, "mul_base_constant": 12, "mul_dynamic": 68, "neg": 4, "sub": 28, "transition": 1, "variable": 57}
+NEARPROOF_DAG air=30 nodes=429 counts={"add": 99, "constant": 12, "first_row": 1, "mul_base_constant": 36, "mul_dynamic": 146, "neg": 9, "sub": 60, "transition": 1, "variable": 65}
+NEARPROOF_DAG air=31 nodes=310 counts={"add": 57, "constant": 4, "first_row": 1, "mul_base_constant": 12, "mul_dynamic": 133, "neg": 2, "sub": 44, "transition": 1, "variable": 56}
+NEARPROOF_DAG air=32 nodes=855 counts={"add": 163, "constant": 14, "first_row": 1, "mul_base_constant": 26, "mul_dynamic": 368, "neg": 2, "sub": 138, "transition": 1, "variable": 142}
+NEARPROOF_DAG air=33 nodes=153 counts={"constant": 6, "first_row": 1, "mul_base_constant": 1, "mul_dynamic": 66, "neg": 1, "sub": 33, "transition": 1, "variable": 44}
+NEARPROOF_DAG air=34 nodes=117 counts={"add": 14, "constant": 5, "mul_base_constant": 6, "mul_dynamic": 34, "neg": 2, "sub": 25, "variable": 31}
+NEARPROOF_DAG air=35 nodes=170 counts={"add": 33, "constant": 9, "mul_base_constant": 9, "mul_dynamic": 55, "neg": 6, "sub": 24, "variable": 34}
+NEARPROOF_DAG air=36 nodes=559 counts={"add": 90, "constant": 6, "first_row": 1, "mul_base_constant": 24, "mul_dynamic": 255, "neg": 6, "sub": 95, "transition": 1, "variable": 81}
+NEARPROOF_DAG air=37 nodes=26 counts={"add": 1, "constant": 4, "first_row": 1, "last_row": 1, "mul_base_constant": 1, "mul_dynamic": 5, "neg": 2, "sub": 4, "transition": 1, "variable": 6}
+NEARPROOF_DAG air=38 nodes=127 counts={"add": 2, "constant": 4, "first_row": 1, "mul_base_constant": 1, "mul_dynamic": 52, "neg": 2, "sub": 37, "variable": 28}
+NEARPROOF_DAG_TOTAL airs=39 nodes=15516 counts={"add": 3773, "constant": 512, "first_row": 34, "last_row": 2, "mul_base_constant": 930, "mul_dynamic": 5626, "neg": 192, "sub": 2110, "transition": 34, "variable": 2303}
+test tests::nearproof_fixed_dag_census ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 268 filtered out; finished in 0.13s
+

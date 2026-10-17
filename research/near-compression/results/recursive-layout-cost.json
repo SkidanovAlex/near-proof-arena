@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "checked_distinct_hash_calls": 15627,
+  "occurrences": 32829,
+  "total_compression_blocks": 423939,
+  "layout_hashes": [
+    {
+      "index": 115,
+      "bytes": 7117494,
+      "occurrences": 2,
+      "blocks_per_call": 55607,
+      "blocks": 111214,
+      "layers": 59,
+      "input_size": 65536
+    },
+    {
+      "index": 7775,
+      "bytes": 10358025,
+      "occurrences": 2,
+      "blocks_per_call": 80923,
+      "blocks": 161846,
+      "layers": 59,
+      "input_size": 131072
+    }
+  ],
+  "layout_compression_blocks": 273060,
+  "layout_fraction": 0.6441020995945171,
+  "remaining_blocks_if_only_layout_hashes_removed": 150879,
+  "files": {
+    "/tmp/near-recursive-component-fold-capture/hash-calls.json": "672b4a76fa0987d0fad79c65a85ec526e0982aee34fbab1ef5dad4e5c8300e79",
+    "/tmp/near-recursive-component-fold-capture/hash-occurrences.json": "1cb8e2c06857799363a1175d940f3fa45c58cd84b4661c1d4caa17a7d7bd6abb",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/analyze_recursive_layout_cost.py": "016a546c3ceb9fa6571075809403c5eccedc2eca429f02a7c5b47c6a333e8fde"
+  },
+  "requirements": [
+    "Fix canonical AIR digest and compiler semantics in trusted verifier configuration.",
+    "Derive layout from bound statement, challenges, finals and terminal claims; never accept a prover-selected layout.",
+    "Version the transcript and regenerate proofs; old proof bytes cannot be reused.",
+    "Bind derived input weights and final GKR seed to the PCS handoff."
+  ],
+  "limits": [
+    "Subtraction is isolated cost accounting, not a measured migrated verifier or security equivalence.",
+    "Other transcript calls, arithmetic, Merkle paths and parsing still need recursive constraints.",
+    "Occurrences count replay work; this is not unique full-state node accounting.",
+    "No outer proof, proof-size prediction, or quantum-security conclusion."
+  ]
+}

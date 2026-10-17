@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "root_replay": "results/ext8-codec-root/report.json",
+  "sources_sha256": {
+    "pq384_ext8_codec.py": "16afbee1ec2066affbb1c808e33bc071a3862f75613e4529aef01f1356703779",
+    "test_pq384_ext8_codec.py": "ae1e31055ebfcc12b849815d5958893c3acb9acc6633596457f29ea0eefc343d",
+    "pq384_ext8_pcs.py": "b60d76db0d9fc13055b0d8e92f723f897d3e43faf928bc8974161beca4cdad6a",
+    "pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a",
+    "pq384_multiproof.py": "ed443c9d045e8ca002a22bff707b97ba9a3f74818bf15d2c1d65db035976aab5"
+  },
+  "negative_cases": 36,
+  "exact_roundtrip": true,
+  "fresh_process_verification": true,
+  "sampled_checks_retained": 314,
+  "limits": [
+    "Frozen scalar config-specific source context; not reusable source-before-opening-challenge integration.",
+    "Small sources, no realistic fulltransition or PQ128 size certification.",
+    "Decoder reconstructs original proof and original verifier checks all queries."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "fixed_profile_whir_verified": true,
+  "witness_used": false,
+  "profile": "8 rows, 104 columns, folds [1,1], queries [8,8], no grinding",
+  "limitations": [
+    "Experimental fixed-profile verifier, not formally verified or security-audited.",
+    "No security-level claim for toy parameters.",
+    "No GKR constraint proof or NEAR state-transition proof."
+  ]
+}

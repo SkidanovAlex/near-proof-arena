@@ -1,0 +1,209 @@
+{
+  "status": "PASS",
+  "terminal_profile": "affine-v1",
+  "queries": 309,
+  "compression_extension_degree": 8,
+  "call_extension_degree": 8,
+  "compression_envelope_bytes": 1688536,
+  "compression_opening_bytes": 1644656,
+  "compression_reduction_bytes": 43880,
+  "call_proof_bytes": 103064,
+  "receipt_bytes": 731,
+  "calls_bytes": 5858,
+  "combined_bytes": 1798189,
+  "under_300000_bytes": false,
+  "fresh_conjunction_verified": true,
+  "pcs_breakdown": {
+    "header_bytes": 4360,
+    "stages": [
+      {
+        "kind": "sources",
+        "index": 0,
+        "unique_leaves": 309,
+        "leaf_bytes": 101352,
+        "sibling_bytes": 147360
+      },
+      {
+        "kind": "sources",
+        "index": 1,
+        "unique_leaves": 298,
+        "leaf_bytes": 57216,
+        "sibling_bytes": 44880
+      },
+      {
+        "kind": "sources",
+        "index": 2,
+        "unique_leaves": 284,
+        "leaf_bytes": 120416,
+        "sibling_bytes": 30384
+      },
+      {
+        "kind": "sources",
+        "index": 3,
+        "unique_leaves": 182,
+        "leaf_bytes": 8736,
+        "sibling_bytes": 3024
+      },
+      {
+        "kind": "sources",
+        "index": 4,
+        "unique_leaves": 182,
+        "leaf_bytes": 69888,
+        "sibling_bytes": 3024
+      },
+      {
+        "kind": "sources",
+        "index": 5,
+        "unique_leaves": 182,
+        "leaf_bytes": 87360,
+        "sibling_bytes": 3024
+      },
+      {
+        "kind": "sources",
+        "index": 6,
+        "unique_leaves": 182,
+        "leaf_bytes": 65520,
+        "sibling_bytes": 3024
+      },
+      {
+        "kind": "sources",
+        "index": 7,
+        "unique_leaves": 182,
+        "leaf_bytes": 2912,
+        "sibling_bytes": 3024
+      },
+      {
+        "kind": "folds",
+        "index": 0,
+        "unique_leaves": 309,
+        "leaf_bytes": 19776,
+        "sibling_bytes": 131664
+      },
+      {
+        "kind": "folds",
+        "index": 1,
+        "unique_leaves": 308,
+        "leaf_bytes": 19712,
+        "sibling_bytes": 116688
+      },
+      {
+        "kind": "folds",
+        "index": 2,
+        "unique_leaves": 308,
+        "leaf_bytes": 19712,
+        "sibling_bytes": 102960
+      },
+      {
+        "kind": "folds",
+        "index": 3,
+        "unique_leaves": 306,
+        "leaf_bytes": 19584,
+        "sibling_bytes": 86736
+      },
+      {
+        "kind": "folds",
+        "index": 4,
+        "unique_leaves": 303,
+        "leaf_bytes": 19392,
+        "sibling_bytes": 72144
+      },
+      {
+        "kind": "folds",
+        "index": 5,
+        "unique_leaves": 302,
+        "leaf_bytes": 19328,
+        "sibling_bytes": 58416
+      },
+      {
+        "kind": "folds",
+        "index": 6,
+        "unique_leaves": 298,
+        "leaf_bytes": 19072,
+        "sibling_bytes": 44880
+      },
+      {
+        "kind": "folds",
+        "index": 7,
+        "unique_leaves": 284,
+        "leaf_bytes": 18176,
+        "sibling_bytes": 30384
+      },
+      {
+        "kind": "folds",
+        "index": 8,
+        "unique_leaves": 261,
+        "leaf_bytes": 16704,
+        "sibling_bytes": 19008
+      },
+      {
+        "kind": "folds",
+        "index": 9,
+        "unique_leaves": 237,
+        "leaf_bytes": 15168,
+        "sibling_bytes": 9072
+      },
+      {
+        "kind": "folds",
+        "index": 10,
+        "unique_leaves": 182,
+        "leaf_bytes": 11648,
+        "sibling_bytes": 3024
+      },
+      {
+        "kind": "folds",
+        "index": 11,
+        "unique_leaves": 115,
+        "leaf_bytes": 7360,
+        "sibling_bytes": 624
+      },
+      {
+        "kind": "folds",
+        "index": 12,
+        "unique_leaves": 63,
+        "leaf_bytes": 4032,
+        "sibling_bytes": 48
+      },
+      {
+        "kind": "folds",
+        "index": 13,
+        "unique_leaves": 32,
+        "leaf_bytes": 2048,
+        "sibling_bytes": 0
+      },
+      {
+        "kind": "folds",
+        "index": 14,
+        "unique_leaves": 16,
+        "leaf_bytes": 1024,
+        "sibling_bytes": 0
+      },
+      {
+        "kind": "folds",
+        "index": 15,
+        "unique_leaves": 8,
+        "leaf_bytes": 512,
+        "sibling_bytes": 0
+      },
+      {
+        "kind": "folds",
+        "index": 16,
+        "unique_leaves": 4,
+        "leaf_bytes": 256,
+        "sibling_bytes": 0
+      }
+    ],
+    "total_bytes": 1644656
+  },
+  "scope": "Actual all-Ext8 SHA384 node/call diagnostic, externally fixed operands and receipt; static AIR/spec excluded. Not a full recursive verifier or full NEAR1Pgas proof. No PQ128/QROM/proximity certificate.",
+  "files": {
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/measure_ext8_compression_envelope.py": "86cd34847b796a0afc3cb76692840bef0806a89daf1813ba09cc418ef9f0d3ce",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/ext8_execution_codec.py": "a1a3f057a21e3e3d5a694539b78ea8096ea5afd9980f9d880b03846d9306e1ef",
+    "/tmp/ext8-affine-q309-report.json": "ce6b08b6adee66cbe290d4cbfbdf8090b26de6f7ce05ba31d660e308dc780f5c",
+    "/tmp/nearproof-ext8-node-native-v2/statement.json": "e17756c0829c5c455990f60f53e4fc340769d13d4908cd78a329eb9fee9a30ac",
+    "/tmp/nearproof-ext8-node-batch/expected-use.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e",
+    "results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996",
+    "/tmp/ext8-affine-q309/reduction.json": "2d60831d171f615f737515def08b6ed0e132b7816082c9ba8167a9708b971bfa",
+    "/tmp/ext8-affine-q309/proof.bin": "9e895964b5e598797532ebd5da7a5a7f3a2769f56a9e884d2cb13de4ac78f18a"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "revision": "16d60de724c21dcadfde7d8315a1db507e5832d7",
+  "status": "MEASURED_APPLICATION_PROOF_VERIFIED",
+  "serialized_bytes": 859137,
+  "components": {
+    "gkr": 24,
+    "constraints": 85992,
+    "stacking": 1728,
+    "whir": 771336,
+    "framing_and_other": 57
+  },
+  "workload": {
+    "keccak_f1600_permutations": 1024,
+    "seed": 42,
+    "air_columns": 2633,
+    "constraints": 3182,
+    "interactions": 0
+  },
+  "config": "app_params_with_100_bits_security(21)",
+  "threads": 4,
+  "security_scope": "Upstream RBR target 100; not an end-to-end PQ128 certificate.",
+  "proof_scope": "Keccak permutation relation only; no NEAR state transition or recursive verifier.",
+  "serialization": "Upstream Encode; Decode round-trip equality followed by engine.verify on decoded proof.",
+  "timing_scope": "time output includes Cargo build; do not report as prover-only latency.",
+  "replay": [
+    "git checkout 16d60de724c21dcadfde7d8315a1db507e5832d7",
+    "restore pinned Cargo.lock and instrumented keccakf.rs snapshots",
+    "cargo test -p openvm-stark-backend --test soundness -- --nocapture",
+    "RAYON_NUM_THREADS=4 cargo run -p openvm-cpu-backend --example keccakf --release"
+  ],
+  "artifacts": [
+    {
+      "file": "production-tests.log.gz",
+      "raw_sha256": "b2c20c1b5a213bf3829f656981d8aa1314bf5fb6ac36419723e15bcbef5afb1d",
+      "raw_bytes": 16167
+    },
+    {
+      "file": "production-ordered.log.gz",
+      "raw_sha256": "dcc542f77572d01b85915d659536aeba5ac62fbf4cc5b080ffb4382e683b47b4",
+      "raw_bytes": 4873
+    },
+    {
+      "file": "keccak-components.log.gz",
+      "raw_sha256": "5acc98c46f217a7c7ffb102ad3b4d58e2cbd3f49d46d232a7f70ad526f82242a",
+      "raw_bytes": 6237
+    },
+    {
+      "file": "keccak-first.log.gz",
+      "raw_sha256": "05aaddcd1e7f597dea928ed4281c8f8949b3749aeb6d8d5365a50940f93f000a",
+      "raw_bytes": 10084
+    },
+    {
+      "file": "clippy.log.gz",
+      "raw_sha256": "4e2c16806b29d2be6d87b015a5a36803e067f891f9862eb3b158dfda9b346bf1",
+      "raw_bytes": 3369
+    },
+    {
+      "file": "Cargo.lock.gz",
+      "raw_sha256": "bf87a85491fff4c57597fff7128f9179f10fff1a820ece6200f810b235e018c4",
+      "raw_bytes": 69546
+    },
+    {
+      "file": "keccakf.rs.gz",
+      "raw_sha256": "832f2945055cca8aea078a2d149ad9af8d74f44b9b7560fff272e3dd927e41f1",
+      "raw_bytes": 3436
+    },
+    {
+      "file": "keccak.proof.gz",
+      "raw_sha256": "2e22314a271bb5cf60b977cedb5dd638a0cac85030747539ee72254b3a746e9f",
+      "raw_bytes": 859137
+    }
+  ]
+}

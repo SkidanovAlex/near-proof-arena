@@ -1,0 +1,11 @@
+[package]
+name="nearproof-ext12-check"
+version="0.1.0"
+edition="2024"
+[dependencies]
+p3-baby-bear="=0.4.3"
+p3-field="=0.4.3"
+serde_json="1"
+[patch.crates-io]
+p3-baby-bear={path="p3-baby-bear"}
+p3-monty-31={path="p3-monty-31"}

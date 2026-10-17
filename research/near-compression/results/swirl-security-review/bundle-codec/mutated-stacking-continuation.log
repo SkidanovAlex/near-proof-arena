@@ -1,0 +1,20 @@
+
+running 1 test
+test tests::nearproof_replay_weighted_whir ... FAILED
+
+failures:
+
+failures:
+    tests::nearproof_replay_weighted_whir
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 273 filtered out; finished in 0.34s
+
+    Finished `fast` profile [optimized + debuginfo] target(s) in 0.15s
+     Running unittests src/lib.rs (target/fast/deps/openvm_recursion_circuit-0e902e15daeda90d)
+
+thread 'tests::nearproof_replay_weighted_whir' (3906068) panicked at crates/recursion/src/tests.rs:2276:5:
+assertion `left == right` failed
+  left: BinomialExtensionField { value: [1561973421, 1582351259, 1519960110, 1438524396], _phantom: PhantomData<p3_monty_31::monty_31::MontyField31<p3_baby_bear::baby_bear::BabyBearParameters>> }
+ right: BinomialExtensionField { value: [943875408, 1419690040, 1825745703, 1692490596], _phantom: PhantomData<p3_monty_31::monty_31::MontyField31<p3_baby_bear::baby_bear::BabyBearParameters>> }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p openvm-recursion-circuit --lib`

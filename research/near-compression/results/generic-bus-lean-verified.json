@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "total_audited_theorems": 1338,
+  "new_degree_theorems": 6,
+  "axioms_allowed": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "audit_log": "/tmp/near-bus-degree-audit.log",
+  "bus_runtime_report": "generic-bus-verified.json",
+  "negative_report": "generic-bus-negative-tests.json",
+  "limitations": [
+    "Polynomial lemmas are not full auxiliary-AIR lowering or verifier refinement.",
+    "No concrete128bitPQsoundness theorem or fullNEAR/1Pgas benchmark."
+  ],
+  "sha256": {
+    "NearCompression/GenericBusDegree.lean": "fb72cdaa7bb8f37c853250227093c9b036b93b4c2cc99fe4b5592de0f0e3c6c1",
+    "NearCompression/GenericCoordinateMLE.lean": "401ee1922a539f230832d0210c432ee7b129c1117166cab0bffa11758c0ca24c",
+    "NearCompression/GenericBusAccumulator.lean": "478a9888c532596f45c11e8be64fee786393885b1e48b60f4b8c5ec2d8eff932",
+    "airbender/direct-wasm/test_bus_constraint_whir.py": "30518f313e2a92fb2c745402d4249e0109dd3bf262db0d6300e4ab5d692c52e7"
+  }
+}

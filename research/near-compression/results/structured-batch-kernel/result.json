@@ -1,0 +1,30 @@
+{
+  "degree_bound": 128,
+  "domain_size": 512,
+  "source_polynomial": "X^128 and -X^128",
+  "root": "8fd25c7c5adbe9baec19f48cdf8fabba091790f944a46479c6bceac9d518dc47fc0d363408700a37c6800972ec4d8906",
+  "maximum_agreement_with_degree_less_than_D": 128,
+  "minimum_joint_mismatches": 384,
+  "shared_threshold": 385,
+  "joint_radius_for_threshold": 127,
+  "source_is_valid_degree_bound": false,
+  "classification": "kernel extraction obstruction; not a false-claim attack",
+  "profiles": [
+    {
+      "profile": "near-pq384-weighted-joint-v1",
+      "accepted_true_zero": true,
+      "wrong_nonzero_claim_rejected": "quadratic endpoints",
+      "beta_equal": true,
+      "beta_nonzero": true,
+      "queries": 8
+    },
+    {
+      "profile": "near-pq384-derived-weight-joint-v1",
+      "accepted_true_zero": true,
+      "wrong_nonzero_claim_rejected": "quadratic endpoints",
+      "beta_equal": true,
+      "beta_nonzero": true,
+      "queries": 8
+    }
+  ]
+}

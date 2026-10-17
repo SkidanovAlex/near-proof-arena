@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "exhaustive_small_packing_cases": 8,
+  "independent_selected_geometry_replays": 96,
+  "shared_root_layout_checks": 96
+}

@@ -1,0 +1,60 @@
+{
+  "status": "OMISSION_COUNTEREXAMPLES_CONFIRMED",
+  "protocol_changed": false,
+  "terminal": {
+    "same_pre_gkr_seed": "e83cabfe6bafa281303bf3631cd41ff426357d4a9c9295a821fcc481e5274c8fbbdacdbb859d6393fd3b5a28ba9a0f7b",
+    "different_layouts": true,
+    "layouts": [
+      {
+        "profile": "baseline",
+        "json_bytes": 5727544,
+        "sha384": "bcf19bb7c0e352d643df703ff1bfb3c181c35d9482c152c6a98bb841e8b2f9eda2125bd57b90c4df7be461a3e64298e2"
+      },
+      {
+        "profile": "affine-v1",
+        "json_bytes": 3532906,
+        "sha384": "bf138a24792cc93e543f9ff43b8f258769ddf3e1887381c9bc8f9498875ae1ff9d7942cd17709f22a3aed0efcd4cc273"
+      }
+    ],
+    "existing_begin_seeds_distinct": true,
+    "candidate_profile_descriptors_distinct": true,
+    "missing_binding": "terminal profile / compiler derivation identity"
+  },
+  "stage": {
+    "same_config_parent_claim": true,
+    "weights_define_distinct_functionals": true,
+    "existing_start_seeds_distinct": true,
+    "omitted_weights_seed": "42e3eb2d86e1029834ddeb279d1a1e49fa18acbc0977aa3cb343f3032eb29c458e6858cdf24930bc1265eceaac9407be",
+    "missing_binding": "external initial weights, unless reconstructed inside a closed verifier"
+  },
+  "optimistic_hash_screen": {
+    "original_unique_blocks": 242409,
+    "erased_layout_and_stage_tag_blocks": 68559,
+    "granted_response_encoding_savings": 21683,
+    "remaining_unique_blocks": 152167,
+    "remaining_dense_gadget_gib": 503.84886169433594,
+    "scope": "All targeted tag work is assumed free, including unrelated small calls. Frozen execution only; new transcript and derivation/routing costs excluded. Not a proof-size bound."
+  },
+  "required_contracts": [
+    "Terminal: fixed compiler and terminal/commitment profile; spec/public/source roots bound by statement; auxiliary roots/finals bound before local challenges; local rounds bound before terminal derivation; claim bound before GKR challenges.",
+    "Call routing: equations derived from bound receipt/calls/spec/use-root and query budget; fixed equation compiler and layerer; standalone GKR API must retain explicit circuit binding.",
+    "Weighted adapter: derive initial weights from the input-reduction challenges inside verifier; authenticate responses and bind them before mixers; derive affine folds and injected functional with exact field/shape rules.",
+    "Continuations: consume only previous verified derived state; bind schedule, stage geometry, roots, namespace and compiler/profile; never accept a caller-selected replacement weight vector.",
+    "Formal consumer: prove each descriptor determines its exact layout/functional for an identical prior transcript, then prove composed acceptance and analyze the new Fiat-Shamir/QROM protocol. Descriptor equality alone is not soundness."
+  ],
+  "decision": "Do not remove hashes at generic GKR/stage APIs. Any new profile must use closed derivation interfaces and retain initial external bindings. Even optimistic removal leaves substantial hash work; require a complete outer-codec byte screen before migration.",
+  "scope": "Concrete implementation dependency counterexamples, not attacks on the unchanged verifier, a new protocol, universal determinism proof, Lean certificate, or PQ128 claim.",
+  "sha256": {
+    "results/ext8-switch-execution-q309/statement.json.gz": "f0739ebd3b97c3e83d1a354cfe8b054e0f33d22484c32a702474459de00bed98",
+    "results/ext8-switch-execution-q309/reduction.json.gz": "a6fdcb70f4888f14cb22ef3f4c838e29582b638aaf6589dc3d7499d33dacfcff",
+    "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
+    "results/response-transcript-screen.json": "18f6b6949cbf592ca19bbb77317074651e58bd63e2ca4568ed2eeb65171e29de",
+    "airbender/direct-wasm/check_derived_transcript_bindings.py": "a2b07e3f8ee7dd275df9b0f73f369c38669df80ac6e4288d87df6d55ba31b263",
+    "airbender/direct-wasm/verify_ext8_execution.py": "5a2a54fa83f0e2a15b21fdf86757ec672842c89a99e35ec86c7027074458d90d",
+    "airbender/direct-wasm/ext8_code_switch_stage.py": "c00cdf46b021bb283508683bfde7847164872c6012cdc92b48b0a3e3694854e1",
+    "airbender/direct-wasm/pq384_ext8_terminal_gkr.py": "7e12ad62b6cba53d5f3b5499e1032d5c5e0093f8428dcfb16df333c6465fb6ba",
+    "airbender/direct-wasm/ext8_terminal_profiles.py": "3f39afeef7ff7c5c4e7774eec7a3adc252bf5cd0caf2f49c29faa916a74018e9",
+    "airbender/direct-wasm/ext8_weighted_code_switch.py": "f037e20f06941e3061a7e1f38aba935058ec0301f34e4d9e3a4d70dbe60b793b",
+    "airbender/direct-wasm/sha384_call_ext8_pcs.py": "99a563c83bf096fe751b0aba00897839fdfc40793af8c3a0913bc0754ded04f0"
+  }
+}

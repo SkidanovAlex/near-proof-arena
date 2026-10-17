@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "audit": 2489,
+  "audit_log": "/tmp/root-tensor-realization-audit.log",
+  "module": "MultiaffineTensorRealization",
+  "new_lemmas": 5,
+  "proved": [
+    "coordinate-affine finite list functions equal Boolean tensor interpolation",
+    "explicit adaptive scalar polynomial candidate event inherits tensor far-case counting bound"
+  ],
+  "premises": [
+    "fixed function before challenges",
+    "independent fixed-dimensional product sampling",
+    "domain/sample distinctness",
+    "weight bound and separation inequality",
+    "no joint tensor representative"
+  ],
+  "not_proved": [
+    "actual heterogeneous beta coordinate instantiation",
+    "verifier acceptance inclusion",
+    "causal transcript sampling embedding",
+    "near-case sparse-lift image recovery",
+    "QROM security"
+  ],
+  "independent_public_checker_parity": {
+    "status": "PASS",
+    "canonical_cases": 187,
+    "accepted": 49,
+    "rejected": 138,
+    "raw_encoding_rejections": 20,
+    "statement_sha384": "76b9c46b1699ece6f509c92e224649f38ace46f5066ce1d02c273c7af4a9a0e68cd880945c1af35747b1adec9e10754c",
+    "scope": "Exact public syntax parity only; changed byte digests remain eligible. No proof acceptance or hash security claim."
+  },
+  "main_reference": {
+    "local_main": "44b2891196883ca980b7341b480502f56cb88403",
+    "local_origin_main": "f025caf629bd1caa5a919a442545c07de2f55cb2",
+    "note": "Read user-referenced D1 logs from existing origin/main ref; no remote freshness claim or production modifications"
+  }
+}

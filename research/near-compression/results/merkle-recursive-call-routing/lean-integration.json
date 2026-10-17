@@ -1,0 +1,17 @@
+{
+  "status": "LEAN_WITNESS_AND_ROUTING_PARITY_PASS",
+  "compression_blocks": 10,
+  "ordered_uses": 10,
+  "use_rows_match_native_witness": true,
+  "routing_on_lean_use_rows": true,
+  "stale_state_private_sibling_mutation_rejected_by_lean_compression": true,
+  "fixture_directory": "/tmp/merkle-recursive-call-routing-fixture",
+  "fixture_sha256": {
+    "source-00-rows.json": "04c28a9930bf1122697ed6a8cbf3f0210515a30f0f091d97db241de8f2faf9ef",
+    "source-01-rows.json": "3f307de0812a7b61c402d514096f580944071ec1d48078841e737bfff3ccab0d",
+    "source-02-rows.json": "48ed5ce1fa9d97ebc413223a0d6a65aea5c42ef19f1a74be3dba11fed568e637",
+    "source-03-rows.json": "b7bbe3f900ffd96974ca2ffe2025d606d8f3a08771a7563d942ce4d3e3cfd462",
+    "spec.json": "7e32085fe6d8a8b7561c64040c4dbd55446671506a1eb9198a93fd9a3941dac9"
+  },
+  "scope": "Existing Lean exporter recomputes actual SHA384 compression and builds canonical AIR witnesses. All use rows match native states and new routing. Executable witness parity, not a formal routing-compiler theorem, PCS proof, or full recursion."
+}

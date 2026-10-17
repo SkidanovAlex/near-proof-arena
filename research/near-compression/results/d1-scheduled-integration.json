@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "scope": "Complete 33-table real D1 diagnostic proof generated and independently verified; not a secure production profile or full NEAR execution proof.",
+  "schedule_profiles": [
+    1,
+    2,
+    3,
+    4,
+    7,
+    10,
+    13
+  ],
+  "standalone_rejections": 140,
+  "bus_protocol": {
+    "honest_proofs": 2,
+    "negative_tests": 208,
+    "lean_residual_comparisons": 640,
+    "report": "scheduled-bus-verified.json"
+  },
+  "actual_table_openings": "actual-d1-pcs/verified.json",
+  "preparation": "d1-scheduled-preparation.json",
+  "lean_audited": 1405,
+  "limitations": [
+    "No quantum security claim",
+    "One small D1 fixture, not fullNEAR/1Pgas",
+    "Two-row tables disclose actual rows; not zero knowledge",
+    "No recursivecompression or under300KB result",
+    "Formal verifier/protocol composition incomplete"
+  ],
+  "sha256": {
+    "airbender/direct-wasm/scheduled_bus_whir.py": "d86f577c00aa6af124b5f2862abd6164235bfa70585121778e772000d2a3c8f2",
+    "airbender/direct-wasm/verify_whir_scheduled.py": "ae5df9e9f29f827dd2d932da4e94209a19f8da779054249f10a670239bff8745",
+    "airbender/direct-wasm/prepare_d1_commitments.py": "99f39ec12bbace62248608bcdb0558e498f83fd15fe15f8f7b722cab1a364dd5",
+    "airbender/direct-wasm/run_prepared_d1.py": "33bcbdf8ad11eae5e8eb6132df096b19edc3ac81768a13d34400a4f5790d02cd"
+  },
+  "native_prover": "native-folded-verified.json",
+  "full_proof_run": {
+    "status": "PASS",
+    "evidence": "d1-scheduled-proof/verified.json",
+    "independent_verification": "d1-scheduled-proof/independent-verification.json",
+    "negative_tests": "d1-scheduled-proof/negative-tests.json",
+    "complete_json_bytes": 5493870,
+    "generation_seconds_after_preparation": 194.1836347510107,
+    "independent_verification_seconds": 1.5660259039141238
+  }
+}

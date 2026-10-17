@@ -1,0 +1,83 @@
+NATIVE_SHA384_EXT12 target=268 min=268.5252522711154 logup=342.88268715590135 proximity=322.9308746090754 query=268.5252522711154
+NATIVE_DICTIONARY_DECODE wire=596750 native=740881
+NATIVE_SHA384_VERIFY_CALLS [4456, 14321, 1, 188, 7, 366]
+NATIVE_SHA384_VERIFY_BLOCKS [4456, 14321, 1, 1297, 14, 366]
+NATIVE_SHA384_EXT12_REPLAY_PASS bytes=740881
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:5243:490
+     |
+5243 | ....clone(), e[3706].clone(), e[4018].clone()],(e[2441].clone() * AB::F::from_u32(1)),1);
+     |                                                ^                                    ^
+     |
+     = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+     |
+5243 - builder.push_interaction(0,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[3198].clone(), e[168].clone(), e[172].clone(), e[2556].clone(), e[2658].clone(), e[2760].clone(), e[2862].clone(), e[3466].clone(), e[3778].clone(), e[3498].clone(), e[3810].clone(), e[3531].clone(), e[3843].clone(), e[3563].clone(), e[3875].clone(), e[3597].clone(), e[3909].clone(), e[3629].clone(), e[3941].clone(), e[3662].clone(), e[3974].clone(), e[3706].clone(), e[4018].clone()],(e[2441].clone() * AB::F::from_u32(1)),1);
+5243 + builder.push_interaction(0,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[3198].clone(), e[168].clone(), e[172].clone(), e[2556].clone(), e[2658].clone(), e[2760].clone(), e[2862].clone(), e[3466].clone(), e[3778].clone(), e[3498].clone(), e[3810].clone(), e[3531].clone(), e[3843].clone(), e[3563].clone(), e[3875].clone(), e[3597].clone(), e[3909].clone(), e[3629].clone(), e[3941].clone(), e[3662].clone(), e[3974].clone(), e[3706].clone(), e[4018].clone()],e[2441].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:5244:490
+     |
+5244 | ....clone(), e[3706].clone(), e[4018].clone()],(e[2509].clone() * AB::F::from_u32(1)),1);
+     |                                                ^                                    ^
+     |
+help: remove these parentheses
+     |
+5244 - builder.push_interaction(1,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[3198].clone(), e[168].clone(), e[172].clone(), e[2556].clone(), e[2658].clone(), e[2760].clone(), e[2862].clone(), e[3466].clone(), e[3778].clone(), e[3498].clone(), e[3810].clone(), e[3531].clone(), e[3843].clone(), e[3563].clone(), e[3875].clone(), e[3597].clone(), e[3909].clone(), e[3629].clone(), e[3941].clone(), e[3662].clone(), e[3974].clone(), e[3706].clone(), e[4018].clone()],(e[2509].clone() * AB::F::from_u32(1)),1);
+5244 + builder.push_interaction(1,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[3198].clone(), e[168].clone(), e[172].clone(), e[2556].clone(), e[2658].clone(), e[2760].clone(), e[2862].clone(), e[3466].clone(), e[3778].clone(), e[3498].clone(), e[3810].clone(), e[3531].clone(), e[3843].clone(), e[3563].clone(), e[3875].clone(), e[3597].clone(), e[3909].clone(), e[3629].clone(), e[3941].clone(), e[3662].clone(), e[3974].clone(), e[3706].clone(), e[4018].clone()],e[2509].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:5245:446
+     |
+5245 | ...(), e[5].clone(), e[5].clone(), e[5].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+5245 - builder.push_interaction(2,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[1868].clone(), e[1872].clone(), e[1876].clone(), e[1880].clone(), e[4159].clone(), e[4247].clone(), e[2587].clone(), e[2689].clone(), e[2791].clone(), e[2893].clone(), e[2268].clone(), e[2272].clone(), e[2276].clone(), e[2280].clone(), e[2284].clone(), e[2288].clone(), e[2292].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
+5245 + builder.push_interaction(2,vec![e[5173].clone(), e[5204].clone(), e[2981].clone(), e[3115].clone(), e[1868].clone(), e[1872].clone(), e[1876].clone(), e[1880].clone(), e[4159].clone(), e[4247].clone(), e[2587].clone(), e[2689].clone(), e[2791].clone(), e[2893].clone(), e[2268].clone(), e[2272].clone(), e[2276].clone(), e[2280].clone(), e[2284].clone(), e[2288].clone(), e[2292].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],e[1].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unnecessary parentheses around method argument
+    --> src/literal.rs:6976:434
+     |
+6976 | ...(), e[5].clone(), e[5].clone(), e[5].clone()],(e[0].clone() * AB::F::from_u32(1)),1);
+     |                                                  ^                                 ^
+     |
+help: remove these parentheses
+     |
+6976 - builder.push_interaction(3,vec![e[1658].clone(), e[1689].clone(), e[947].clone(), e[1079].clone(), e[264].clone(), e[268].clone(), e[272].clone(), e[276].clone(), e[1592].clone(), e[1625].clone(), e[1458].clone(), e[1491].clone(), e[1524].clone(), e[1557].clone(), e[664].clone(), e[668].clone(), e[672].clone(), e[676].clone(), e[680].clone(), e[684].clone(), e[688].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],(e[0].clone() * AB::F::from_u32(1)),1);
+6976 + builder.push_interaction(3,vec![e[1658].clone(), e[1689].clone(), e[947].clone(), e[1079].clone(), e[264].clone(), e[268].clone(), e[272].clone(), e[276].clone(), e[1592].clone(), e[1625].clone(), e[1458].clone(), e[1491].clone(), e[1524].clone(), e[1557].clone(), e[664].clone(), e[668].clone(), e[672].clone(), e[676].clone(), e[680].clone(), e[684].clone(), e[688].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],e[0].clone() * AB::F::from_u32(1) ,1);
+     |
+
+warning: unused variable: `local`
+  --> src/literal.rs:36:30
+   |
+36 | let main=builder.main(); let local=main.row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values...
+   |                              ^^^^^ help: if this is intentional, prefix it with an underscore: `_local`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `next`
+  --> src/literal.rs:36:68
+   |
+36 | ....row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
+   |                                ^^^^ help: if this is intentional, prefix it with an underscore: `_next`
+
+warning: unused variable: `next`
+    --> src/literal.rs:5267:68
+     |
+5267 | ...row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
+     |                               ^^^^ help: if this is intentional, prefix it with an underscore: `_next`
+
+warning: unused variable: `public`
+    --> src/literal.rs:5267:105
+     |
+5267 | ...w_slice(1).unwrap(); let public=builder.public_values().to_vec();
+     |                             ^^^^^^ help: if this is intentional, prefix it with an underscore: `_public`
+
+warning: `nearproof-native-sha384` (bin "nearproof-native-sha384") generated 8 warnings (run `cargo fix --bin "nearproof-native-sha384" -p nearproof-native-sha384` to apply 8 suggestions)
+    Finished `release` profile [optimized] target(s) in 0.02s
+     Running `/tmp/nearproof-native-sha384/target/release/nearproof-native-sha384`

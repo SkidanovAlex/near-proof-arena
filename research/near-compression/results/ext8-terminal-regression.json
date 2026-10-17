@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "retained_ext4_verifier": {
+    "status": "PASS",
+    "security": "Q8/Ext4 diagnostic; soundness not certified",
+    "code_length": 193,
+    "execution_fuel": 256,
+    "published_exit": [
+      0,
+      0,
+      192,
+      0,
+      0,
+      1,
+      0,
+      31257,
+      33745,
+      36222,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": "near-pq384-gkr-fixed-input-bus-v1"
+  },
+  "source_hashes": {
+    "airbender/direct-wasm/pq384_terminal_compile.py": "130647bf0a818149036aac15286cd5b73420ed58549ed42a0722165d8d2a98b7",
+    "airbender/direct-wasm/pq384_terminal_gkr.py": "c0d0452d5753137e740b76a12392acd72c1e20a3a26b0bde005c7c2a7d795264",
+    "airbender/direct-wasm/pq384_ext8_terminal_compile.py": "76618c42b9e41eb205487a55717801c370341b1bc3752738f84e1f8683d87a0c",
+    "airbender/direct-wasm/test_ext8_terminal_compile.py": "fa5a3c88591149c138d7edaf7bf9e0bf4dabc81ebd17054e7cb4f49c210a8ee9"
+  },
+  "full_lean_audit": "PASS",
+  "registered_results": 4115,
+  "scope": "Compiler/layer differential checks and retained Ext4 full frontend verification; no Ext8 proof."
+}

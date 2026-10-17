@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "round_node_comparisons": 120,
+  "terminal_pairs": 9,
+  "malformed_programs": [
+    "opcode",
+    "cycle",
+    "column",
+    "constant"
+  ],
+  "source_sha256": {
+    "kernel_ext8_local.rs": "3461f479f73e34a482eb4dc4b71db9a95008cac6442c1e757c40fe3904ae7222",
+    "kernel_ext8.rs": "d998e7f08282d93550c0fa9a37972708697b038acb1fd300ab476dee770ae9a9"
+  },
+  "scope": "Ext8 local instruction/selector/row-fold kernel, checked against direct full multilinear evaluation. No actual execution witness/local transcript or full slice proof yet; no Rust refinement/security certification."
+}

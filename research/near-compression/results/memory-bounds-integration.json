@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3401,
+  "added_theorems": 3,
+  "sources": {
+    "PreparedMemoryBounds": "eaf41357156eeca8e2e4ebe441d034cdcc1286a3c95e58982d5d223302f82d48",
+    "PreparedMemoryLiteral": "12badb9234f4ad835a4b5ecb0cefc391f212c876951472367b154b2259bca2dd",
+    "PreparedMemorySource": "f74f35ae836d0a3392ec83819473864940eb3aa2e8a4cb667522fc0b896ec5dc"
+  },
+  "audit_log": "/tmp/root-memory-bounds-audit.log",
+  "audit_sha256": "bf3fa9877b39f8e7700abee3457cf34c27f223d551718378b5467ece265b6694",
+  "exact_parity": {
+    "source_constraints": 741,
+    "automatic_constraints": 2,
+    "bus_interfaces": 2,
+    "bounds_subset_expressions": 4
+  },
+  "limits": [
+    "Bounds use decoded page count; actual EXEC state authentication still required.",
+    "Signed/unsigned result and service composition pending.",
+    "No trap/grow/bulk/host or full NEAR/security/size claim."
+  ]
+}

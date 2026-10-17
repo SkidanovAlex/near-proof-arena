@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3575,
+  "added_theorems": 4,
+  "source_sha256": "524213a199eb3f9ab6a21bec7ccd7d5d38873c6ad49e9305c15bc89f3bf83836",
+  "audit_log": "/tmp/root-checked-transfer-audit.log",
+  "audit_sha256": "f5ddcff4429c752e7935a95558067d3ae9de734947dfc47ef7a2bde33c00e266",
+  "scope": "Checked virtual strategy derives all functional-layout premises and the source-query noClose bound.",
+  "proved": [
+    "Weight length follows the halving degree schedule.",
+    "Even/odd halves have equal length and interleave to the original vector.",
+    "Literal Boolean endpoint checks supply running-claim equations; next claim and weight recurrences hold by construction.",
+    "Original candidate absence plus a good adaptive path implies absence at the folded stage and bounds agreement of every degree-bounded candidate satisfying its functional."
+  ],
+  "remaining": [
+    "Source-query/mixing/continuation count composition with this checked strategy.",
+    "Executable continuation profile and prefix instantiation.",
+    "Commitment binding and Fiat-Shamir/QROM security.",
+    "Full NEAR state transition and1Petagas capacity with a complete sub300000byte proof."
+  ]
+}

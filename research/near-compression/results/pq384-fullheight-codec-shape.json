@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "shape": [
+    13,
+    544,
+    32
+  ],
+  "rounds": 12,
+  "binary_shape_bytes": 128966,
+  "malformed_rejections": 6,
+  "oracle_domains_checked": 12,
+  "scope": "Synthetic codec roundtrip and domain bounds only; no valid proof or security claim"
+}

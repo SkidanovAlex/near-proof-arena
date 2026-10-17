@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "small_cases": 281,
+  "negative_checks": 562,
+  "fullheight": [
+    {
+      "queries": 8,
+      "individual_bytes": 8384,
+      "shared_bytes": 6992,
+      "unique_leaves": 8
+    },
+    {
+      "queries": 335,
+      "individual_bytes": 351080,
+      "shared_bytes": 201808,
+      "unique_leaves": 334
+    },
+    {
+      "queries": 445,
+      "individual_bytes": 466360,
+      "shared_bytes": 259816,
+      "unique_leaves": 445
+    }
+  ],
+  "scope": "Leaf+authentication payload only; exact expansion preserves individual queries. No security certification."
+}

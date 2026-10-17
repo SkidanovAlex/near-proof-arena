@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "library_sha256": "9bcae9610938c6109260c4c4677a58b625cd5783dea910c040ba6a23c460b038",
+  "cases": [
+    {
+      "cache": "/tmp/near-sha384-direct-proof/source-00-cache",
+      "degree": 65536,
+      "lanes": 41,
+      "leaf_seconds": 1.6635521273128688,
+      "leaf_bytes": 42991616,
+      "exact_leaves_tree_root_and_openings": true,
+      "tile_leaves": 257,
+      "scope": "No RSS measurement; existing coefficients remain an input."
+    },
+    {
+      "cache": "/tmp/near-sha384-direct-proof/source-01-cache",
+      "degree": 128,
+      "lanes": 53,
+      "leaf_seconds": 0.003223540261387825,
+      "leaf_bytes": 108544,
+      "exact_leaves_tree_root_and_openings": true,
+      "tile_leaves": 257,
+      "scope": "No RSS measurement; existing coefficients remain an input."
+    },
+    {
+      "cache": "/tmp/near-sha384-direct-proof/source-02-cache",
+      "degree": 128,
+      "lanes": 47,
+      "leaf_seconds": 0.002728719264268875,
+      "leaf_bytes": 96256,
+      "exact_leaves_tree_root_and_openings": true,
+      "tile_leaves": 257,
+      "scope": "No RSS measurement; existing coefficients remain an input."
+    }
+  ],
+  "source_sha256": {
+    "airbender/direct-wasm/pq384_disk_leaves.py": "e7a5f60eb86718b1ea8d5e3c087c12fb134697bd6326eaa863f141c64a05a9b8",
+    "airbender/direct-wasm/test_pq384_disk_leaves.py": "2de75c48a6e0e3ca5f1b44012019ac00a90311d4ae777705e1d13ac3ef4706cf"
+  },
+  "limitations": [
+    "Existing coefficient cache required; row-to-coefficient materialization not addressed",
+    "Prover-only native FFT remains untrusted and not formally memory-refined",
+    "Measurements are single-run timing, not controlled throughput or RSS",
+    "No change to proof size/security or full recursive verifier coverage"
+  ]
+}

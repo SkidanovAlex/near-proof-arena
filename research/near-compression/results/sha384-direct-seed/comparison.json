@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "exact_statement_preserved": true,
+  "old_expanded_core_blocks": 93909,
+  "new_configured_core_blocks": 18839,
+  "new_configuration_setup_blocks": 11373,
+  "new_setup_and_core_blocks": 30212,
+  "hash_block_reduction_including_setup": 0.678284296499803,
+  "old_ext4_operations": {
+    "mul": 6246211,
+    "add": 1871602,
+    "sub": 1989351
+  },
+  "new_ext4_operations": {
+    "mul": 6246211,
+    "add": 1871602,
+    "sub": 1989351
+  },
+  "new_expanded_json_bytes": 365463,
+  "mutation_report": "mutation-report.json",
+  "limits": [
+    "Same AIR, source roots, public and packing shape, separately regenerated transcript and auxiliary proof.",
+    "Hash block counts are not circuit costs or wall-time speedup.",
+    "Both comparisons exclude the outer wrapper canonical AIR digest check; new core setup included.",
+    "Expanded JSON size not comparable to prior compact binary; no new compact codec claimed.",
+    "Diagnostic Ext4/Q8, not recursion or certified quantum security."
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "status": "PASS",
+  "runs": [
+    {
+      "status": "PASS",
+      "queries": 309,
+      "challenge_extension_degree": 8,
+      "call_count": 12,
+      "equations": 2880,
+      "input_capacity": 8192,
+      "gkr_layers": 14,
+      "call_proof_bytes": 168896,
+      "compression_proof_bytes": 120477,
+      "combined_proof_bytes": 289373,
+      "trusted_calls_json_bytes": 5858,
+      "receipt_json_bytes": 731,
+      "combined_proofs_calls_receipt_bytes": 295962,
+      "prover_seconds": 6.032374978065491,
+      "encode_decode_seconds": 8.596689694095403,
+      "fresh_conjunction_verified": true,
+      "disclosed_row_bytes": 0,
+      "negative_cases": [
+        "truncated",
+        "trailing",
+        "gkr-coefficient",
+        "pcs-authentication",
+        "external-digest",
+        "external-message",
+        "call-order",
+        "trusted-query-budget"
+      ],
+      "source_mutation_checks": [
+        "IV",
+        "message-block",
+        "hidden-chaining-output",
+        "hidden-chaining-input",
+        "final-digest"
+      ],
+      "proof_sha256": "e4e1797ed80f2ee30c059f1b1fd071b1bf5fec48ec6d35a7e196c487ca0c78cd",
+      "scope": "Same committed use root for call-link GKR/PCS and compression proof. Caller fixes message bytes, digests and ordered use ordinals. Call-link proof uses Ext8 and the explicit query budget; compression proof remains Q8/Ext4. No128-bit quantum certificate, QROM, complete composition or full recursion claim; static AIR/spec external.",
+      "gkr_bytes": 19528,
+      "pcs_breakdown": {
+        "header_bytes": 1720,
+        "stages": [
+          {
+            "kind": "sources",
+            "index": 0,
+            "unique_leaves": 173,
+            "leaf_bytes": 62280,
+            "sibling_bytes": 3552
+          },
+          {
+            "kind": "sources",
+            "index": 1,
+            "unique_leaves": 173,
+            "leaf_bytes": 62280,
+            "sibling_bytes": 3552
+          },
+          {
+            "kind": "folds",
+            "index": 0,
+            "unique_leaves": 119,
+            "leaf_bytes": 7616,
+            "sibling_bytes": 432
+          },
+          {
+            "kind": "folds",
+            "index": 1,
+            "unique_leaves": 64,
+            "leaf_bytes": 4096,
+            "sibling_bytes": 0
+          },
+          {
+            "kind": "folds",
+            "index": 2,
+            "unique_leaves": 32,
+            "leaf_bytes": 2048,
+            "sibling_bytes": 0
+          },
+          {
+            "kind": "folds",
+            "index": 3,
+            "unique_leaves": 16,
+            "leaf_bytes": 1024,
+            "sibling_bytes": 0
+          },
+          {
+            "kind": "folds",
+            "index": 4,
+            "unique_leaves": 8,
+            "leaf_bytes": 512,
+            "sibling_bytes": 0
+          },
+          {
+            "kind": "folds",
+            "index": 5,
+            "unique_leaves": 4,
+            "leaf_bytes": 256,
+            "sibling_bytes": 0
+          }
+        ],
+        "total_bytes": 149368
+      },
+      "duplicated_source_authentication_bytes": 65832,
+      "projected_mixed_bundle_if_shared": 230130,
+      "isolated_query_term_negative_log2": 128.24658727716275,
+      "isolated_batching_gkr_term_negative_log2": 238.56163781310158
+    },
+    {
+      "status": "PASS",
+      "queries": 531,
+      "challenge_extension_degree": 8,
+      "call_count": 12,
+      "equations": 2880,
+      "input_capacity": 8192,
+      "gkr_layers": 14,
+      "call_proof_bytes": 205360,
+      "compression_proof_bytes": 120477,
+      "combined_proof_bytes": 325837,
+      "trusted_calls_json_bytes": 5858,
+      "receipt_json_bytes": 731,
+      "combined_proofs_calls_receipt_bytes": 332426,
+      "prover_seconds": 6.091346316970885,
+      "encode_decode_seconds": 8.978883475065231,
+      "fresh_conjunction_verified": true,
+      "disclosed_row_bytes": 0,
+      "negative_cases": [
+        "truncated",
+        "trailing",
+        "gkr-coefficient",
+        "pcs-authentication",
+        "external-digest",
+        "external-message",
+        "call-order",
+        "trusted-query-budget"
+      ],
+      "source_mutation_checks": [
+        "IV",
+        "message-block",
+        "hidden-chaining-output",
+        "hidden-chaining-input",
+        "final-digest"
+      ],
+      "proof_sha256": "99af551221ec31b476d49fbd980c34ccf12c13053a5590f3081fd49e3ca46a0f",
+      "scope": "Same committed use root for call-link GKR/PCS and compression proof. Caller fixes message bytes, digests and ordered use ordinals. Call-link proof uses Ext8 and the explicit query budget; compression proof remains Q8/Ext4. No128-bit quantum certificate, QROM, complete composition or full recursion claim; static AIR/spec external.",
+      "gkr_bytes": 19528,
+      "pcs_breakdown": {
+        "header_bytes": 1720,
+        "stages": [
+          {
+            "kind": "sources",
+            "index": 0,
+            "unique_leaves": 230,
+            "leaf_bytes": 82800,
+            "sibling_bytes": 1200
+          },
+          {
+            "kind": "sources",
+            "index": 1,
+            "unique_leaves": 230,
+            "leaf_bytes": 82800,
+            "sibling_bytes": 1200
+          },
+          {
+            "kind": "folds",
+            "index": 0,
+            "unique_leaves": 127,
+            "leaf_bytes": 8128,
+            "sibling_bytes": 48
+          },
+          {
+            "kind": "folds",
+            "index": 1,
+            "unique_leaves": 64,
+            "leaf_bytes": 4096,
+            "sibling_bytes": 0
+          },
+          {
+            "kind": "folds",
+            "index": 2,
+            "unique_leaves": 32,
+            "leaf_bytes": 2048,
+            "sibling_bytes": 0
+          },
+          {
+            "kind": "folds",
+            "index": 3,
+            "unique_leaves": 16,
+            "leaf_bytes": 1024,
+            "sibling_bytes": 0
+          },
+          {
+            "kind": "folds",
+            "index": 4,
+            "unique_leaves": 8,
+            "leaf_bytes": 512,
+            "sibling_bytes": 0
+          },
+          {
+            "kind": "folds",
+            "index": 5,
+            "unique_leaves": 4,
+            "leaf_bytes": 256,
+            "sibling_bytes": 0
+          }
+        ],
+        "total_bytes": 185832
+      },
+      "duplicated_source_authentication_bytes": 84000,
+      "projected_mixed_bundle_if_shared": 248426,
+      "isolated_query_term_negative_log2": 220.38491211706605,
+      "isolated_batching_gkr_term_negative_log2": 238.56163781310158
+    }
+  ],
+  "scope": "Measured call proofs use Ext8; accompanying compression proof remains Q8/Ext4. Neither bundle certifies PQ128 or full recursion. Shared-source savings are exact duplicated-byte accounting, not an implemented codec or verified smaller proof.",
+  "files": {
+    "airbender/direct-wasm/compare_call_ext8_profiles.py": "38b429cb1c26b5b0b10ed8a4ef02cb8a3ef568dd557b69583f4ea23cf1a264df",
+    "airbender/direct-wasm/sha384_call_ext8_pcs.py": "442dde94db3ff746e4299ab163f9125797f4b3258d1cae340adfc31ea48884f1",
+    "airbender/direct-wasm/test_sha384_call_ext8_pcs.py": "fb2298cfb2f2aae8926d7c47da4e95babb5ae730b36edc3067d7c34008e79f51",
+    "airbender/direct-wasm/verify_sha384_call_ext8_bundle.py": "60836f1c48941a4ebe43b9a32c6106797cec7f1b19f1ab72d06fc2a99e2c850d"
+  }
+}

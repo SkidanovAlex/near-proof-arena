@@ -1,0 +1,35 @@
+{
+  "status": "FAR_SOURCE_ADAPTIVE_FOLD_ACCEPTANCE_BOUND_PROVED",
+  "module": "NearCompression/JointSourceAcceptance.lean",
+  "theorem": "joint_source_far_acceptance_count",
+  "proved": "If no common prechallenge JointBetaRepresentative exists, acceptance by the adaptive weighted folding replay is bounded by tensor extraction error plus folding error and the query tail.",
+  "normalized_interpretation": {
+    "assumptions": "Nonempty sample/domain; all displayed field, domain, folding geometry, degree, source and terminal hypotheses hold.",
+    "bound": "outerRounds*max(N,2)/Q + sum_i(max(sizes(i+1),2))/Q + ((T-1)/N)^queries",
+    "Q": "Number of distinct elements in the uniform challenge sample.",
+    "note": "Lean proves the integer-scaled finite count inequality; this probability expression is its normalization."
+  },
+  "chronology": "Source oracles and multiaffine beta family are fixed before outer coordinates. Opening point, initial claim and entire inner prover strategy may depend on all outer coordinates. Inner prover messages adapt to their own challenge prefixes. Queries follow the folds.",
+  "explicit_requirements": [
+    "Strict regime 2*N+degrees(0)<3*T, plus interpolation degrees(0)-1<T.",
+    "Source oracle of every inner strategy equals the actual joint beta contraction on the initial evaluation domain.",
+    "Distinct evaluation domain and valid fold root/squaring/negation/halving geometry.",
+    "Terminal oracle is authenticated whenever the replay terminal checks pass.",
+    "Independent ideal uniform challenge tuples; no Fiat-Shamir claim."
+  ],
+  "remaining": [
+    "Instantiate actual compiled heterogeneous layout, source lifting and transcript chronology.",
+    "Near-case common representative must support the same AIR/GKR/bus trace and published execution.",
+    "Merkle/native-verifier and terminal authentication reductions.",
+    "List-decoding improvement, quantum transcript/hash reduction, and secure full-NEAR sub300000-byte feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3755,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

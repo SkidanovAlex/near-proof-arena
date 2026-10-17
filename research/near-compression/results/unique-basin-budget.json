@@ -1,0 +1,98 @@
+{
+  "status": "CONDITIONAL_IDEAL_INTERACTIVE_SCREEN",
+  "field_size": 269903886087112502248563194479599378733081424069948722819014098894255554561,
+  "field": "BabyBear^8 arithmetic projection",
+  "bound": "A/Q + ((T-1)/N)^q",
+  "threshold_choice": "smallest integer satisfying 2*N+D < 3*T",
+  "qualifications": [
+    "Fixed representative proximity not established for adversarial commitments.",
+    "128 ideal bits does not establish 128 post-quantum bits.",
+    "No Merkle, Fiat-Shamir/QROM, or byte cost included."
+  ],
+  "cases": [
+    {
+      "degree": 1024,
+      "domain": 4096,
+      "target_ideal_bits": 128,
+      "feasible": true,
+      "threshold": 3073,
+      "minimum_queries_for_bound": 309,
+      "fold_round_numerator": 4092,
+      "maximum_representative_mismatches": 2049,
+      "diagnostic_queries": 8
+    },
+    {
+      "degree": 1024,
+      "domain": 4096,
+      "target_ideal_bits": 192,
+      "feasible": true,
+      "threshold": 3073,
+      "minimum_queries_for_bound": 463,
+      "fold_round_numerator": 4092,
+      "maximum_representative_mismatches": 2049,
+      "diagnostic_queries": 8
+    },
+    {
+      "degree": 1024,
+      "target_ideal_bits": 256,
+      "feasible": false,
+      "reason": "fold challenge term exhausts target"
+    },
+    {
+      "degree": 131072,
+      "domain": 524288,
+      "target_ideal_bits": 128,
+      "feasible": true,
+      "threshold": 393217,
+      "minimum_queries_for_bound": 309,
+      "fold_round_numerator": 524284,
+      "maximum_representative_mismatches": 262145,
+      "diagnostic_queries": 8
+    },
+    {
+      "degree": 131072,
+      "domain": 524288,
+      "target_ideal_bits": 192,
+      "feasible": true,
+      "threshold": 393217,
+      "minimum_queries_for_bound": 463,
+      "fold_round_numerator": 524284,
+      "maximum_representative_mismatches": 262145,
+      "diagnostic_queries": 8
+    },
+    {
+      "degree": 131072,
+      "target_ideal_bits": 256,
+      "feasible": false,
+      "reason": "fold challenge term exhausts target"
+    },
+    {
+      "degree": 1048576,
+      "domain": 4194304,
+      "target_ideal_bits": 128,
+      "feasible": true,
+      "threshold": 3145729,
+      "minimum_queries_for_bound": 309,
+      "fold_round_numerator": 4194300,
+      "maximum_representative_mismatches": 2097153,
+      "diagnostic_queries": 8
+    },
+    {
+      "degree": 1048576,
+      "domain": 4194304,
+      "target_ideal_bits": 192,
+      "feasible": true,
+      "threshold": 3145729,
+      "minimum_queries_for_bound": 463,
+      "fold_round_numerator": 4194300,
+      "maximum_representative_mismatches": 2097153,
+      "diagnostic_queries": 8
+    },
+    {
+      "degree": 1048576,
+      "target_ideal_bits": 256,
+      "feasible": false,
+      "reason": "fold challenge term exhausts target"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "proof_bytes": 342047,
+  "extra_transmitted_metadata_bytes": 0,
+  "current_api_input_file_bytes": 4358562,
+  "negative_cases": 13,
+  "full_trace_required": false,
+  "sources_sha256": {
+    "recursive_single_root_gkr_engine.py": "c67bb1376aa925d5dd8a29429839971b03d39de319e795a4a2c85af4ed241350",
+    "recursive_single_root_conjunction.py": "86539718a8062c22a4597f7e9de71e5ead205ea32098955b6e4a9f3804ac22fc",
+    "test_recursive_single_root.py": "3ed405ed4f1f6801be4804a81e1aa74ecce7f90f7c06fc16d91981b81d60231d",
+    "measure_recursive_single_root.py": "a24a40c9efe65c6611f2a29dd2dc47153bf49de7861ee698a3acdd44f4ae5b96"
+  },
+  "replay_log": "/tmp/root-recursive-single-root-replay.log",
+  "limits": [
+    "Original expanded component proofs and trusted statements still required.",
+    "Native component GKR/hash/transcript/Merkle checks are not recursively proved.",
+    "Q8 Ext4 diagnostic; not PQ128 or full NEAR state transition."
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "name": "zero-node-count",
+      "expected_error": "bounded chunk config",
+      "rejected_before_trace_export": true
+    },
+    {
+      "name": "node-count-over-cap",
+      "expected_error": "bounded chunk config",
+      "rejected_before_trace_export": true
+    },
+    {
+      "name": "global-field-wrap",
+      "expected_error": "bounded chunk config",
+      "rejected_before_trace_export": true
+    },
+    {
+      "name": "zero-fanout-bits",
+      "expected_error": "bounded chunk config",
+      "rejected_before_trace_export": true
+    },
+    {
+      "name": "too-many-fanout-bits",
+      "expected_error": "bounded chunk config",
+      "rejected_before_trace_export": true
+    },
+    {
+      "name": "fanout-overflow",
+      "expected_error": "fanout capacity",
+      "rejected_before_trace_export": true
+    },
+    {
+      "name": "empty-use-list",
+      "expected_error": "bounded chunk config",
+      "rejected_before_trace_export": true
+    },
+    {
+      "name": "use-outside-global-interval",
+      "expected_error": "use global ID outside interval",
+      "rejected_before_trace_export": true
+    },
+    {
+      "name": "noncanonical-state-word",
+      "expected_error": "noncanonical node bytes/words",
+      "rejected_before_trace_export": true
+    },
+    {
+      "name": "wrong-full-output-state",
+      "expected_error": "actual node compression mismatch",
+      "rejected_before_trace_export": true
+    }
+  ],
+  "elapsed_seconds": 7.194825466256589,
+  "source_sha256": "58b62413ec1633e5c52d49abce680127a7b30ec8399635a0db92dfaffbfca7a0"
+}

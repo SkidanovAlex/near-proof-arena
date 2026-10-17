@@ -1,0 +1,40 @@
+{
+  "kind": "Direct Wasm AIR to layered arithmetic compiler semantics",
+  "formal_claims": [
+    "Every successful compilation preserves the actual current-row AIR field evaluation.",
+    "Compilation succeeds exactly for constants/current cells/add/mul/neg; selectors, public inputs and next-row accesses reject.",
+    "Every gate relation has degree at most two in its immediate wire values.",
+    "Vanishing compiled i32.add range constraints is equivalent to the actual source AIR and implies actual Wasm Num.binop behavior.",
+    "Every UInt32 operand pair has an honest compiled witness."
+  ],
+  "validation": {
+    "constraints": 106,
+    "columns": 104,
+    "honest_rows": 8,
+    "mutations_rejected": 832,
+    "evaluation_parity_checks": 88192,
+    "unsupported_inputs_rejected": 8,
+    "nested_cubic_checked": true,
+    "new_theorems": 13,
+    "full_audit_theorems": 1253
+  },
+  "rust_backend_evidence": "direct-wasm-airbender-kernel.json",
+  "source_sha256": {
+    "NearCompression/InstructionLayerCircuit.lean": "a8c7ac8cdfb996177ef9a984aa0ad3a754f9af5f2dfdadfffa614f30b324e27d",
+    "InstructionLayerCircuitSmoke.lean": "58a672e4e6a6b926f9e736fe00d55c6319cbaa3f4070e46352c1433083a49162",
+    "InstructionGKRExport.lean": "ab53e9e4541731134b1a6cbdfa40e0f89059e6f34682ead0c3b307a6a95a88aa",
+    "airbender/direct-wasm/near_wasm_kernel.rs": "3e15d0dcc4cdf95d8553b2568713a971b3ac1a1c7d6bb9fb68176709d2c64d1c",
+    "airbender/direct-wasm/run_kernel.py": "ca9f2a349b8fe160d144209025e14416eb8a75b8f2ec36535b8ba186aa7cfd7d"
+  },
+  "logs": [
+    "/tmp/near-layer-circuit.log",
+    "/tmp/near-layer-circuit-smoke.log",
+    "/tmp/near-layer-circuit-audit.log"
+  ],
+  "limitations": [
+    "Lean lowering is a depth-indexed tree with copy padding, no shared-wire optimization.",
+    "Rust uses an independently tested quadratic lowering; formal refinement between the implementations remains.",
+    "No fresh GKR/WHIR proof, recursion, full NEAR transition or 1 Pgas benchmark.",
+    "No 128-bit quantum-security result."
+  ]
+}

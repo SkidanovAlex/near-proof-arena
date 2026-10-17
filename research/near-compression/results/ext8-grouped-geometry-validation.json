@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "independent_cases": 36,
+  "checks": [
+    "Full scalar cosets projected to paired leaves",
+    "Separate coset-packed commitment layout",
+    "Exhaustive compositions up to7fold bits versus dynamic programming",
+    "Heterogeneous source degrees, repeated queries and aliased source roots",
+    "Both actual compression and shared-call byte counts calibrated"
+  ],
+  "files": {
+    "airbender/direct-wasm/test_ext8_grouped_geometry.py": "9f35496f379b4c7f556fe65fa819c5884ea0b76d7265f6e30855e78cdf4e772f",
+    "airbender/direct-wasm/screen_ext8_grouped_geometry.py": "ad4b04afa5cb06339fdd7b57e5e524418a631fb3fd26cb14ceee1cf2b79824c7"
+  }
+}

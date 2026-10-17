@@ -1,0 +1,3202 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "label": "locals-untaken",
+      "local_count": 4,
+      "code": 19,
+      "executed": 19,
+      "error": null,
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1144,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "locals-taken",
+      "local_count": 4,
+      "code": 19,
+      "executed": 16,
+      "error": null,
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1144,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "locals-negative",
+      "local_count": 4,
+      "code": 19,
+      "executed": 16,
+      "error": null,
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1144,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "locals-first-get-exhaustion",
+      "local_count": 4,
+      "code": 19,
+      "executed": 1,
+      "error": "HostError(GasExceeded)",
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1144,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "locals-late-get-exhaustion",
+      "local_count": 4,
+      "code": 19,
+      "executed": 17,
+      "error": "HostError(GasExceeded)",
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1144,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "locals-exact-gas",
+      "local_count": 4,
+      "code": 19,
+      "executed": 19,
+      "error": null,
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1144,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "branch-not-taken",
+      "local_count": 0,
+      "code": 11,
+      "executed": 11,
+      "error": null,
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1276,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "branch-taken",
+      "local_count": 0,
+      "code": 11,
+      "executed": 7,
+      "error": null,
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1276,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "branch-negative",
+      "local_count": 0,
+      "code": 11,
+      "executed": 7,
+      "error": null,
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1276,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "branch-exact-gas",
+      "local_count": 0,
+      "code": 11,
+      "executed": 7,
+      "error": null,
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1276,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "branch-post-charge-failure",
+      "local_count": 0,
+      "code": 11,
+      "executed": 6,
+      "error": "HostError(GasExceeded)",
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1276,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    },
+    {
+      "label": "branch-pre-charge-failure",
+      "local_count": 0,
+      "code": 11,
+      "executed": 1,
+      "error": "HostError(GasExceeded)",
+      "widths": [
+        818,
+        235
+      ],
+      "constraints": [
+        1276,
+        549
+      ],
+      "degrees": [
+        12,
+        3
+      ]
+    }
+  ],
+  "rejected": 740,
+  "attacks": [
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-0-0"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-0-1"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-0-2"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-0-3"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-1-0"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-1-1"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-1-2"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-1-3"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-19-0"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-19-1"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-19-2"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-19-3"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-31-0"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-31-1"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-31-2"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-local-word-31-3"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-selected-local-0"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-authenticated-local-index-0"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-get-push-0"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-selected-local-3"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-authenticated-local-index-3"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "tee-popped-stack-3"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-selected-local-6"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-authenticated-local-index-6"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "set-did-not-write-6"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-selected-local-7"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-authenticated-local-index-7"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-get-push-7"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-selected-local-8"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-authenticated-local-index-8"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "tee-popped-stack-8"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-selected-local-14"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-authenticated-local-index-14"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "set-did-not-write-14"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-selected-local-16"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-authenticated-local-index-16"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "wrong-get-push-16"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "coherent-field-alias-local-index"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "nonboolean-local"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-11-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-11-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-11-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-12-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-12-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-12-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-13-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-13-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-13-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-14-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-14-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-14-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-15-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-15-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-15-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-16-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-16-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-16-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-17-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-17-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-17-31"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-18-29"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-18-30"
+    },
+    {
+      "case": "locals-untaken",
+      "attack": "public-local-tag-18-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-0-0"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-0-1"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-0-2"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-0-3"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-1-0"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-1-1"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-1-2"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-1-3"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-16-0"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-16-1"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-16-2"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-16-3"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-31-0"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-31-1"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-31-2"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-local-word-31-3"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-selected-local-0"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-authenticated-local-index-0"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-get-push-0"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-selected-local-3"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-authenticated-local-index-3"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "tee-popped-stack-3"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-selected-local-6"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-authenticated-local-index-6"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "set-did-not-write-6"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-selected-local-7"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-authenticated-local-index-7"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-get-push-7"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-selected-local-8"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-authenticated-local-index-8"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "tee-popped-stack-8"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-selected-local-13"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-authenticated-local-index-13"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "wrong-get-push-13"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "coherent-field-alias-local-index"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "nonboolean-local"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-11-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-11-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-11-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-12-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-12-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-12-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-13-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-13-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-13-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-14-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-14-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-14-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-15-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-15-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-15-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-16-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-16-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-16-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-17-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-17-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-17-31"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-18-29"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-18-30"
+    },
+    {
+      "case": "locals-taken",
+      "attack": "public-local-tag-18-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-0-0"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-0-1"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-0-2"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-0-3"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-1-0"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-1-1"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-1-2"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-1-3"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-16-0"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-16-1"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-16-2"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-16-3"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-31-0"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-31-1"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-31-2"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-local-word-31-3"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-selected-local-0"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-authenticated-local-index-0"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-get-push-0"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-selected-local-3"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-authenticated-local-index-3"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "tee-popped-stack-3"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-selected-local-6"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-authenticated-local-index-6"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "set-did-not-write-6"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-selected-local-7"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-authenticated-local-index-7"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-get-push-7"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-selected-local-8"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-authenticated-local-index-8"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "tee-popped-stack-8"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-selected-local-13"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-authenticated-local-index-13"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "wrong-get-push-13"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "coherent-field-alias-local-index"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "nonboolean-local"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-11-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-11-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-11-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-12-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-12-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-12-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-13-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-13-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-13-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-14-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-14-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-14-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-15-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-15-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-15-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-16-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-16-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-16-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-17-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-17-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-17-31"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-18-29"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-18-30"
+    },
+    {
+      "case": "locals-negative",
+      "attack": "public-local-tag-18-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "coherent-local-word-0-0"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "coherent-local-word-0-1"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "coherent-local-word-0-2"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "coherent-local-word-0-3"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "coherent-local-word-1-0"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "coherent-local-word-1-1"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "coherent-local-word-1-2"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "coherent-local-word-1-3"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "wrong-selected-local-0"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "wrong-authenticated-local-index-0"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "coherent-field-alias-local-index"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "nonboolean-local"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-11-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-11-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-11-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-12-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-12-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-12-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-13-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-13-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-13-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-14-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-14-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-14-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-15-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-15-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-15-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-16-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-16-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-16-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-17-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-17-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-17-31"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-18-29"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-18-30"
+    },
+    {
+      "case": "locals-first-get-exhaustion",
+      "attack": "public-local-tag-18-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-0-0"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-0-1"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-0-2"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-0-3"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-1-0"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-1-1"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-1-2"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-1-3"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-17-0"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-17-1"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-17-2"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-17-3"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-31-0"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-31-1"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-31-2"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-local-word-31-3"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-selected-local-0"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-authenticated-local-index-0"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-get-push-0"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-selected-local-3"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-authenticated-local-index-3"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "tee-popped-stack-3"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-selected-local-6"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-authenticated-local-index-6"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "set-did-not-write-6"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-selected-local-7"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-authenticated-local-index-7"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-get-push-7"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-selected-local-8"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-authenticated-local-index-8"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "tee-popped-stack-8"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-selected-local-14"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-authenticated-local-index-14"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "set-did-not-write-14"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-selected-local-16"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "wrong-authenticated-local-index-16"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "coherent-field-alias-local-index"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "nonboolean-local"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-11-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-11-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-11-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-12-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-12-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-12-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-13-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-13-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-13-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-14-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-14-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-14-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-15-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-15-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-15-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-16-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-16-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-16-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-17-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-17-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-17-31"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-18-29"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-18-30"
+    },
+    {
+      "case": "locals-late-get-exhaustion",
+      "attack": "public-local-tag-18-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-0-0"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-0-1"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-0-2"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-0-3"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-1-0"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-1-1"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-1-2"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-1-3"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-19-0"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-19-1"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-19-2"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-19-3"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-31-0"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-31-1"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-31-2"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-local-word-31-3"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-selected-local-0"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-authenticated-local-index-0"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-get-push-0"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-selected-local-3"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-authenticated-local-index-3"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "tee-popped-stack-3"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-selected-local-6"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-authenticated-local-index-6"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "set-did-not-write-6"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-selected-local-7"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-authenticated-local-index-7"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-get-push-7"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-selected-local-8"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-authenticated-local-index-8"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "tee-popped-stack-8"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-selected-local-14"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-authenticated-local-index-14"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "set-did-not-write-14"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-selected-local-16"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-authenticated-local-index-16"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "wrong-get-push-16"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "coherent-field-alias-local-index"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "nonboolean-local"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-11-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-11-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-11-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-12-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-12-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-12-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-13-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-13-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-13-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-14-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-14-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-14-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-15-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-15-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-15-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-16-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-16-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-16-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-17-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-17-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-17-31"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-18-29"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-18-30"
+    },
+    {
+      "case": "locals-exact-gas",
+      "attack": "public-local-tag-18-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "branch-not-taken",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "branch-taken",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "branch-negative",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "branch-exact-gas",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "branch-post-charge-failure",
+      "attack": "public-local-tag-10-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-0-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-0-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-0-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-1-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-1-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-1-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-2-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-2-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-2-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-3-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-3-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-3-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-4-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-4-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-4-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-5-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-5-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-5-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-6-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-6-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-6-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-7-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-7-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-7-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-8-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-8-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-8-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-9-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-9-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-9-31"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-10-29"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-10-30"
+    },
+    {
+      "case": "branch-pre-charge-failure",
+      "attack": "public-local-tag-10-31"
+    }
+  ],
+  "limitations": [
+    "Diagnostic source AIR/reference checks, not cryptographic proof verification.",
+    "Actual prepare/step/runCall fixtures plus semantic interfaces; new AIR-to-step refinement remains pending.",
+    "Stack8, four i32 locals, zero parameters, one defined function and one nested void block.",
+    "PREP/CODE/local-count provenance checker for this version remains pending; public CODE is linear."
+  ]
+}

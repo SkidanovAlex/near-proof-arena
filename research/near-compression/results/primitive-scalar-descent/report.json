@@ -1,0 +1,10 @@
+{
+  "constructed_unit_combinations": 400,
+  "scalar_integrality_checks": 3200,
+  "nonpolynomial_scalar_rejections": 1407,
+  "rational_factorizations_descended": 160,
+  "reconstructed_source_coefficients": 466,
+  "nonprimitive_counterexamples": 4,
+  "zero_family_counterexamples": 4,
+  "scope": "Constructed unit span, rational scalar descent, primitive rational representations and polynomial factorization descent. Source-parameter-degree inheritance and full MCA/PQ128 remain open."
+}

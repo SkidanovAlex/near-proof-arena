@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "tail_bit_lengths": [
+    0,
+    1,
+    24
+  ],
+  "cases": 9,
+  "residual_comparisons": 150,
+  "scope": "Actual Lean-generated square/link chains in Python evaluator order",
+  "limits": [
+    "Chain only; full interaction/boundary layout certification remains",
+    "JSON parity test is not a proved Python/parser refinement"
+  ]
+}

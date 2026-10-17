@@ -1,0 +1,72 @@
+{
+  "status": "PASS",
+  "tables": 2,
+  "negative_checks": 16,
+  "cases": [
+    {
+      "case": "source root0",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "aux root0",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "constraint0",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "claim0",
+      "reason": "shift terminal opening"
+    },
+    {
+      "case": "final0",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "source aux branch swap0",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "source root1",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "aux root1",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "constraint1",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "claim1",
+      "reason": "shift terminal opening"
+    },
+    {
+      "case": "final1",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "source aux branch swap1",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "omitted table",
+      "reason": "table count"
+    },
+    {
+      "case": "table order",
+      "reason": "constraint round count"
+    },
+    {
+      "case": "public",
+      "reason": "public segment does not fit"
+    },
+    {
+      "case": "terminal profile",
+      "reason": "table zerocheck"
+    }
+  ],
+  "scope": "Fixed proof/statement binding mutations; no adaptive security bound"
+}

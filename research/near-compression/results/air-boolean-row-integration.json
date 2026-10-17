@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3620,
+  "audit_log": "/tmp/root-air-boolean-audit.log",
+  "source_sha256": "e847f6dc8e4cc9645dbca710e63c1d959fce82e42a2c4cb5c05b02c671d8d040",
+  "established": [
+    "Formal multilinear input environment agrees with actual source Expr.eval on every Boolean row",
+    "Current/cyclic-next columns, fixed publics and first/last/transition selectors covered",
+    "Ordered source residual batching derives Boolean correspondence",
+    "Source-only weighted target identity and initial error count composed"
+  ],
+  "remaining": [
+    "Auxiliary residual Boolean correspondence and full combined source/auxiliary target",
+    "Concrete selector product and base-to-extension field lifting adapter",
+    "Adaptive sumcheck and PCS/source authentication",
+    "Whole protocol/QROM soundness and secure size target"
+  ]
+}

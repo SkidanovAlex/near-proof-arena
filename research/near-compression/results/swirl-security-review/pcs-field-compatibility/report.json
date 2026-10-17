@@ -1,0 +1,47 @@
+{
+  "sources": [
+    {
+      "commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+      "path": "crates/iop/src/channel/mod.rs",
+      "sha256": "353fe4bab3bc8bac3dcf228035a7e7d257faf9207165d3addc4a47a83422b9dc",
+      "anchors": [
+        "IOPVerifierChannel<F: Field>",
+        "verify_oracle_relation"
+      ]
+    },
+    {
+      "commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+      "path": "crates/iop/src/fri/fold.rs",
+      "sha256": "f7f06dfd1c82f49f13b96fe17b4f085502c104cc685880352645d98ae5982476",
+      "anchors": [
+        "NTT: AdditiveNTT",
+        "v += u;",
+        "u += v * t;"
+      ]
+    },
+    {
+      "commit": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+      "path": "crates/stark-backend/src/verifier/whir.rs",
+      "sha256": "595f4309ec95485644193a39c6ce5a4c1f4471f166d0452d0609c69e651d4f57",
+      "anchors": [
+        "binary_k_fold<F: TwoAdicField",
+        "F::two_adic_generator(k)",
+        "t_inv.halve()"
+      ]
+    }
+  ],
+  "additive_pair_cases": 4096,
+  "binary_characteristic_two": true,
+  "invertible_two": false,
+  "distinct_multiplicative_order_two_element": false,
+  "decision": "Do not implement an unchanged SWIRL-WHIR backend swap into Binius.",
+  "scope": "Inspected implementations only; does not rule out additive-domain WHIR designs.",
+  "obligations": [
+    "Preserve oracle padding, arbitrary linear relations, commitment chronology and batching.",
+    "Supply characteristic-two encoding, folding, domain transitions and OOD reductions.",
+    "Prove proximity and adaptive composition bounds for the actual new construction.",
+    "Implement prover/verifier and measure complete proof plus public inputs.",
+    "Account for field, hash, Fiat-Shamir/QROM and recursive composition errors.",
+    "A smaller PCS does not remove the measured prime-field arithmetic lowering cost."
+  ]
+}

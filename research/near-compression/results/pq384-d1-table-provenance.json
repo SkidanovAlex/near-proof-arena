@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "durable_spec": "results/d1-scheduled-proof/spec.json",
+  "spec_sha256": "7f151847f83dd80e91299ce5ee392c39ecc736977f266b6410c36b0b87e09e2a",
+  "source_rows_sha256": "ab4864f181e160e397ccc3d6cfb4238adbd5996b0c822c6ea86a55a20564d6b2",
+  "table_index": 0,
+  "rows": 8192,
+  "width": 544,
+  "public_words": 5577,
+  "temporary_spec_equals_durable_spec": true,
+  "scope": "Provenance alignment for native single-table test; does not prove fullAIR or public-input derivation"
+}

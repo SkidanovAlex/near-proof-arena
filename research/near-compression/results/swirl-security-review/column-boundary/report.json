@@ -1,0 +1,39 @@
+{
+  "status": "INTERFACE_OBSTRUCTION_AND_OPTIMISTIC_BUDGET",
+  "column_elements": {
+    "leaf": 2684,
+    "internal": 2694,
+    "root_geometry_babybear_hash": 2694
+  },
+  "extension_degree": 9,
+  "digest_bytes": 52,
+  "frozen_dictionary_baseline": 371265,
+  "removed_column_bytes": 96984,
+  "free_reduction_residual": 274281,
+  "maximum_replacement_bytes_for_strict_target": 25718,
+  "ordinary_without_dictionary_free_reduction": 307465,
+  "artifacts": [
+    {
+      "file": "columns.log.gz",
+      "raw_sha256": "89c1dc7f9f9053f1895aa858fdad25aa33dcb3b076dac4bc881c2b154dcced39"
+    },
+    {
+      "file": "clippy.log.gz",
+      "raw_sha256": "48d5edff71b77f24efef03a8d1fd45e9cee29f423ed8e61e82398d4bece60689"
+    },
+    {
+      "file": "batch_constraints.rs.gz",
+      "raw_sha256": "843ffa203bf503d419697542a211bef6fa3e8447fff187a4a42540857070f0de"
+    },
+    {
+      "file": "stacked_reduction.rs.gz",
+      "raw_sha256": "f1a261f591327fec21db11e02644429d73ac21fc5d20126169d9134d283e1cca"
+    },
+    {
+      "file": "instrumented-tests.rs.gz",
+      "raw_sha256": "f189f91a622ce1c045fe792b562db8f5f8f55347b60889fc49048a782e4d2724"
+    }
+  ],
+  "scope": "Fixed counts and query schedule; deletion is a cost counterfactual, not a protocol. All replacement messages, queries, commitments and recursion overhead must be charged.",
+  "security_certified": false
+}

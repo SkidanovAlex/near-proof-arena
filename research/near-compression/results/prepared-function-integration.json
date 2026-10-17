@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "scope": "Prepared integer-Wasm execution diagnostic; not fullNEAR/PREP or128bitPQsecurity.",
+  "actual_lean_fixture_regenerated": true,
+  "honest_proof_cases": 5,
+  "fresh_fully_committed_invalid_stack_rejected": true,
+  "witness_negative_cases": 294,
+  "backend": "Unchanged scheduled genericAIR verifier plus nativev2prover",
+  "proof_evidence": "prepared-function-proofs/verified.json",
+  "air_evidence": "prepared-function-air-tests.json",
+  "sha384_primitives": {
+    "evidence": "pq384-primitives-verified.json",
+    "python_rust_parity": true,
+    "digest_words": 12,
+    "mutations_rejected": 43,
+    "scope": "Standalone versioned primitives only; existingPCS stillBLAKE2s."
+  },
+  "lean": {
+    "audited_theorems": 1426,
+    "audit_log": "/tmp/near-round-sampler-audit.log",
+    "new_modules": [
+      "WHIRRoundRecurrence.lean",
+      "FieldRejectionSampler.lean"
+    ],
+    "scope": "Concrete arithmetic recurrence and acceptedwordpreimagecounts; noadversarialsecuritytheorem."
+  },
+  "remaining": [
+    "LeanHolds\u2192actualWasmstep/runCall refinement",
+    "AuthenticatedoriginalWasmPREP and D3callboundary",
+    "Fullopcodes,hosts,memory,promises",
+    "SHA384PCS/transcriptintegration and justifiedfield/RBR/QROMprofile",
+    "Recursivecompressionbelow300000bytes",
+    "FullNEAR1Pgasbenchmark"
+  ]
+}

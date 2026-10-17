@@ -1,0 +1,92 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "log_degree": 3,
+      "fold_bits": [
+        1,
+        1
+      ],
+      "blowups": [
+        4,
+        8,
+        16
+      ],
+      "json_bytes": 10649,
+      "terminal_coefficients": 2
+    },
+    {
+      "log_degree": 5,
+      "fold_bits": [
+        2,
+        2
+      ],
+      "blowups": [
+        4,
+        16,
+        16
+      ],
+      "json_bytes": 15494,
+      "terminal_coefficients": 2
+    },
+    {
+      "log_degree": 7,
+      "fold_bits": [
+        2,
+        2,
+        1
+      ],
+      "blowups": [
+        4,
+        8,
+        16,
+        8
+      ],
+      "json_bytes": 24841,
+      "terminal_coefficients": 4
+    },
+    {
+      "log_degree": 8,
+      "fold_bits": [
+        3,
+        2
+      ],
+      "blowups": [
+        4,
+        16,
+        16
+      ],
+      "json_bytes": 22130,
+      "terminal_coefficients": 8
+    }
+  ],
+  "negative_cases": [
+    "quadratic",
+    "second-stage-quadratic",
+    "stage-order",
+    "child-root",
+    "ood-answer",
+    "source-value",
+    "source-path",
+    "missing-query",
+    "missing-round",
+    "missing-stage",
+    "terminal-coefficient",
+    "terminal-shape",
+    "noncanonical",
+    "proof-selected-weights",
+    "unknown-chain-field",
+    "external-root",
+    "external-namespace",
+    "external-parent",
+    "external-next_blowup",
+    "external-queries",
+    "external-schedule",
+    "external-claim",
+    "external-weights",
+    "unproved-continuing-claim"
+  ],
+  "fresh_verifier": "PASS experimental code-switch chain; no extraction/proximity/QROM certificate.",
+  "seconds": 0.26817030226811767,
+  "scope": "Experimental two/three-stage scalar Ext8 protocol with full terminal disclosure; JSON size only, not a compressed envelope or security certificate. No integration into full SHA384/NEAR slice."
+}

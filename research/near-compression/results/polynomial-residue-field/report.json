@@ -1,0 +1,79 @@
+{
+  "constructed_root_fields": 34,
+  "additive_associativity_triples": 317711,
+  "cast_and_scalar_checks": 8265,
+  "modulus_roots": 34,
+  "below_characteristic_smooth_roots": 23,
+  "variable_evaluation_checks": 1020,
+  "composite_root_checks": 1020,
+  "witnesses": [
+    {
+      "prime": 2,
+      "modulus": [
+        1,
+        1,
+        1
+      ],
+      "root": [
+        0,
+        1
+      ],
+      "derivative_at_root": [
+        1
+      ]
+    },
+    {
+      "prime": 2,
+      "modulus": [
+        1,
+        0,
+        1,
+        1
+      ],
+      "root": [
+        0,
+        1
+      ],
+      "derivative_at_root": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "prime": 2,
+      "modulus": [
+        1,
+        1,
+        0,
+        1
+      ],
+      "root": [
+        0,
+        1
+      ],
+      "derivative_at_root": [
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "prime": 3,
+      "modulus": [
+        1,
+        0,
+        1
+      ],
+      "root": [
+        0,
+        1
+      ],
+      "derivative_at_root": [
+        0,
+        2
+      ]
+    }
+  ],
+  "scope": "Lean Field construction, coefficient map, actual modulus root and degree-bounded smoothness. Rational-function field and full MCA/protocol security remain open."
+}

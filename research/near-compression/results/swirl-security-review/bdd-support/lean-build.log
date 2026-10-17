@@ -1,0 +1,11 @@
+⚠ [8/58] Replayed ZkFormal.Algebra.Fp
+warning: ZkFormal/Algebra/Fp.lean:38:6: exponent 1006632960 exceeds the threshold 256, exponentiation operation was not evaluated, use `set_option exponentiation.threshold <num>` to set a new threshold
+⚠ [37/58] Replayed NearCompression.GenericMonomialTensor
+warning: NearCompression/GenericMonomialTensor.lean:34:0: automatically included section variable(s) unused in theorem `NearCompression.monomial_split_lengths`:
+  [CommRing K]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CommRing K] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+✔ [58/58] Built NearCompression.SwirlDecisionGraph (313ms)
+Build completed successfully (58 jobs).

@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "calls": 12,
+  "equations": 2880,
+  "copy_equations": 384,
+  "constant_equations": 2496,
+  "all_descriptor_slots_and_constants_match": true,
+  "row_count": 32,
+  "private_capacity": 8192,
+  "equations_sha256": "a7dfacd2c1faf4a69aca31cf79d32c253f1d1f9dd1e268ff9076e1f3154933c0",
+  "files": {
+    "airbender/direct-wasm/sha384_call_pcs.py": "3ea20c6c5ebb322b55bc7beba6f5f282f320580ad621ecce539ac5f06a8f2220",
+    "NearCompression/SHA384CallEquations.lean": "8208895dad73945e60299f82c7ba0861e83dd7605197a694c1693f2150579a42",
+    "ExportSHA384CallEquations.lean": "f19d88b947eb0ac78e50818a14080c4f378ef71362be872c2f4c1b5eebb1bc3c",
+    "results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996"
+  },
+  "scope": "Exact2880-descriptor regression on retained12call batch, independently padded and word-decoded in Lean. General Lean descriptor semantics proved; arbitrary-input Python correspondence, residual batching, GKR compilation and cryptographic/QROM soundness are not established by this regression."
+}

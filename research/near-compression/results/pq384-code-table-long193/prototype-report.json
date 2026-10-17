@@ -1,0 +1,3738 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "label": "wrap",
+      "instructions": 5,
+      "log_rows": [
+        3,
+        3
+      ],
+      "rows": [
+        8,
+        8
+      ],
+      "widths": [
+        605,
+        198
+      ],
+      "constraints": [
+        726,
+        473
+      ],
+      "degrees": [
+        6,
+        3
+      ],
+      "public_fields": 191,
+      "public_canonical_u32_bytes": 764,
+      "repeated_fetch_pc": [
+        4
+      ]
+    },
+    {
+      "label": "positive",
+      "instructions": 5,
+      "log_rows": [
+        3,
+        3
+      ],
+      "rows": [
+        8,
+        8
+      ],
+      "widths": [
+        605,
+        198
+      ],
+      "constraints": [
+        726,
+        473
+      ],
+      "degrees": [
+        6,
+        3
+      ],
+      "public_fields": 191,
+      "public_canonical_u32_bytes": 764,
+      "repeated_fetch_pc": [
+        4
+      ]
+    },
+    {
+      "label": "negative",
+      "instructions": 5,
+      "log_rows": [
+        3,
+        3
+      ],
+      "rows": [
+        8,
+        8
+      ],
+      "widths": [
+        605,
+        198
+      ],
+      "constraints": [
+        726,
+        473
+      ],
+      "degrees": [
+        6,
+        3
+      ],
+      "public_fields": 191,
+      "public_canonical_u32_bytes": 764,
+      "repeated_fetch_pc": [
+        4
+      ]
+    },
+    {
+      "label": "exact-gas",
+      "instructions": 5,
+      "log_rows": [
+        3,
+        3
+      ],
+      "rows": [
+        8,
+        8
+      ],
+      "widths": [
+        605,
+        198
+      ],
+      "constraints": [
+        726,
+        473
+      ],
+      "degrees": [
+        6,
+        3
+      ],
+      "public_fields": 191,
+      "public_canonical_u32_bytes": 764,
+      "repeated_fetch_pc": [
+        4
+      ]
+    },
+    {
+      "label": "range-charge-exhaustion",
+      "instructions": 5,
+      "log_rows": [
+        1,
+        3
+      ],
+      "rows": [
+        2,
+        8
+      ],
+      "widths": [
+        605,
+        198
+      ],
+      "constraints": [
+        726,
+        473
+      ],
+      "degrees": [
+        6,
+        3
+      ],
+      "public_fields": 191,
+      "public_canonical_u32_bytes": 764,
+      "repeated_fetch_pc": [
+        0
+      ]
+    },
+    {
+      "label": "long-25",
+      "instructions": 25,
+      "log_rows": [
+        5,
+        5
+      ],
+      "rows": [
+        32,
+        32
+      ],
+      "widths": [
+        605,
+        198
+      ],
+      "constraints": [
+        726,
+        473
+      ],
+      "degrees": [
+        6,
+        3
+      ],
+      "public_fields": 691,
+      "public_canonical_u32_bytes": 2764,
+      "repeated_fetch_pc": [
+        24
+      ]
+    },
+    {
+      "label": "long-193",
+      "instructions": 193,
+      "log_rows": [
+        8,
+        8
+      ],
+      "rows": [
+        256,
+        256
+      ],
+      "widths": [
+        605,
+        198
+      ],
+      "constraints": [
+        726,
+        473
+      ],
+      "degrees": [
+        6,
+        3
+      ],
+      "public_fields": 4891,
+      "public_canonical_u32_bytes": 19564,
+      "repeated_fetch_pc": [
+        192
+      ]
+    }
+  ],
+  "negative_count": 704,
+  "negative_cases": [
+    {
+      "case": "wrap",
+      "attack": "public-fee-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "public-fee-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "public-fee-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "public-fee-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "public-fee-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "duplicate-CODE-key",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "wrap",
+      "attack": "reordered-CODE",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "wrap",
+      "attack": "missing-CODE-active-hole",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "wrap",
+      "attack": "wrong-fetch-count-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "wrong-fetch-count-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "padding-CODE-receives",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "wrap",
+      "attack": "EXEC-charge-kind-forgery",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "EXEC-wrong-function",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "wrap",
+      "attack": "EXEC-wrong-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "wrap",
+      "attack": "EXEC-nonterminal-final",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "wrap",
+      "attack": "EXEC-nonboolean-gas",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "wrap",
+      "attack": "coherent-wrong-stack",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "wrap",
+      "attack": "boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "public-fee-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "public-fee-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "public-fee-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "public-fee-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "public-fee-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "duplicate-CODE-key",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "positive",
+      "attack": "reordered-CODE",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "positive",
+      "attack": "missing-CODE-active-hole",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "positive",
+      "attack": "wrong-fetch-count-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "wrong-fetch-count-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "padding-CODE-receives",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "positive",
+      "attack": "EXEC-charge-kind-forgery",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "EXEC-wrong-function",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "positive",
+      "attack": "EXEC-wrong-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "positive",
+      "attack": "EXEC-nonterminal-final",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "positive",
+      "attack": "EXEC-nonboolean-gas",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "positive",
+      "attack": "coherent-wrong-stack",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "positive",
+      "attack": "boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "public-fee-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "public-fee-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "public-fee-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "public-fee-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "public-fee-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "duplicate-CODE-key",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "negative",
+      "attack": "reordered-CODE",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "negative",
+      "attack": "missing-CODE-active-hole",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "negative",
+      "attack": "wrong-fetch-count-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "wrong-fetch-count-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "padding-CODE-receives",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "negative",
+      "attack": "EXEC-charge-kind-forgery",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "EXEC-wrong-function",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "negative",
+      "attack": "EXEC-wrong-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "negative",
+      "attack": "EXEC-nonterminal-final",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "negative",
+      "attack": "EXEC-nonboolean-gas",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "negative",
+      "attack": "coherent-wrong-stack",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "negative",
+      "attack": "boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "public-fee-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "public-fee-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "public-fee-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "public-fee-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "public-fee-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "duplicate-CODE-key",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "exact-gas",
+      "attack": "reordered-CODE",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "exact-gas",
+      "attack": "missing-CODE-active-hole",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "exact-gas",
+      "attack": "wrong-fetch-count-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "wrong-fetch-count-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "padding-CODE-receives",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "exact-gas",
+      "attack": "EXEC-charge-kind-forgery",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "EXEC-wrong-function",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "exact-gas",
+      "attack": "EXEC-wrong-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "exact-gas",
+      "attack": "EXEC-nonterminal-final",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "exact-gas",
+      "attack": "EXEC-nonboolean-gas",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "exact-gas",
+      "attack": "coherent-wrong-stack",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "exact-gas",
+      "attack": "boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "public-fee-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "public-fee-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "public-fee-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "public-fee-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "public-fee-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "duplicate-CODE-key",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "reordered-CODE",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "missing-CODE-active-hole",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "wrong-fetch-count-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "wrong-fetch-count-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "padding-CODE-receives",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "EXEC-charge-kind-forgery",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "EXEC-wrong-function",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "EXEC-wrong-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "EXEC-nonterminal-final",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "EXEC-nonboolean-gas",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "range-charge-exhaustion",
+      "attack": "boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-5",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-6",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-7",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-8",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-9",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-10",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-11",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "public-fee-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "duplicate-CODE-key",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-25",
+      "attack": "reordered-CODE",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-25",
+      "attack": "missing-CODE-active-hole",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-25",
+      "attack": "wrong-fetch-count-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "wrong-fetch-count-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "padding-CODE-receives",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-25",
+      "attack": "EXEC-charge-kind-forgery",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "EXEC-wrong-function",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-25",
+      "attack": "EXEC-wrong-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-25",
+      "attack": "EXEC-nonterminal-final",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-25",
+      "attack": "EXEC-nonboolean-gas",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-25",
+      "attack": "coherent-wrong-stack",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-25",
+      "attack": "boundary-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-1",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-2",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-3",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-4",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-5",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-6",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-7",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-8",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-9",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-10",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-11",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-65",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-66",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-67",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-68",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-69",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-70",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-71",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-72",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-73",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-74",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-75",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-76",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-77",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-78",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-79",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-80",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-81",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-82",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-83",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-84",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-85",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-86",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-87",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-88",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-89",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-90",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-91",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-92",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-93",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-94",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-95",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-96",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-97",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-98",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-99",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-100",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-101",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-102",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-103",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-104",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-105",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-106",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-107",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-108",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-109",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-110",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-111",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-112",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-113",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-114",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-115",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-116",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-117",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-118",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-119",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-120",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-121",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-122",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-123",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-124",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-125",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-126",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-127",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-128",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-129",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-130",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-131",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-132",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-133",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-134",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-135",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-136",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-137",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-138",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-139",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-140",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-141",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-142",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-143",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-144",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-145",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-146",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-147",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-148",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-149",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-150",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-151",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-152",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-153",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-154",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-155",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-156",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-157",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-158",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-159",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-160",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-161",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-162",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-163",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-164",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-165",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-166",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-167",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-168",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-169",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-170",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-171",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-172",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-173",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-174",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-175",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-176",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-177",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-178",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-179",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-180",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-181",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-182",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-183",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-184",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-185",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-186",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-187",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-188",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-189",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-190",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-191",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "public-fee-192",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "duplicate-CODE-key",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-193",
+      "attack": "reordered-CODE",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-193",
+      "attack": "missing-CODE-active-hole",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-193",
+      "attack": "wrong-fetch-count-0",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "wrong-fetch-count-192",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "padding-CODE-receives",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-193",
+      "attack": "EXEC-charge-kind-forgery",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "EXEC-wrong-function",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-193",
+      "attack": "EXEC-wrong-PC",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-193",
+      "attack": "EXEC-nonterminal-final",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-193",
+      "attack": "EXEC-nonboolean-gas",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-193",
+      "attack": "coherent-wrong-stack",
+      "local_constraints_still_valid": false
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-12",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-13",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-14",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-15",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-16",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-17",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-18",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-19",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-20",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-21",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-22",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-23",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-24",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-25",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-26",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-27",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-28",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-29",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-30",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-31",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-32",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-33",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-34",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-35",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-36",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-37",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-38",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-39",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-40",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-41",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-42",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-43",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-44",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-45",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-46",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-47",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-48",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-49",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-50",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-51",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-52",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-53",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-54",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-55",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-56",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-57",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-58",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-59",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-60",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-61",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-62",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-63",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-64",
+      "local_constraints_still_valid": true
+    },
+    {
+      "case": "long-193",
+      "attack": "boundary-65",
+      "local_constraints_still_valid": true
+    }
+  ],
+  "limitations": [
+    "Operand stack8 and function0 remain bounded.",
+    "New AIR whole-step Lean refinement not yet proved.",
+    "Actual prepare descriptor provenance is exported; generalized verifier-side checker still required.",
+    "Public CODE is linear-size and not included in reported proof bytes.",
+    "Reference full-witness evaluation is not cryptographic proof verification."
+  ]
+}

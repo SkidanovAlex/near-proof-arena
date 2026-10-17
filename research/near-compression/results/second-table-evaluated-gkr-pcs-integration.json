@@ -1,0 +1,34 @@
+{
+  "status": "SECOND_TABLE_EVALUATED_GKR_REPAIR_SUBSTITUTED",
+  "module": "NearCompression/SecondTableEvaluatedGKRPCS.lean",
+  "theorems": [
+    "second_table_evaluated_gkr_pcs_budget"
+  ],
+  "proved": [
+    "Second-table fixed-source acceptance bound now invokes evaluated GKR repair via the singleton specialization of two_table_terminal_repair.",
+    "No arbitrary repair amount or wrong-terminal numerical inequality is assumed.",
+    "Concrete batching/GKR terms and joint PCS multiplicities appear in the resulting bound."
+  ],
+  "assumptions": [
+    "Source binding, residual order/degrees, local checks and failed source TableLocal.",
+    "Wrong local terminal implies indexed semantic output mismatch; outputs fixed before rho.",
+    "Finite-circuit binding, accepted evaluated-GKR path checks and root geometry.",
+    "Accepted terminal mismatch implies chosen error event; concrete joint PCS event bound remains explicit."
+  ],
+  "remaining": [
+    "Perform corresponding substitution for the first-table branch.",
+    "Derive semantic mismatch/binding from checked terminal/compiler theorems and substitute concrete_gkr_accepted_failure_budget.",
+    "Combine table-selection/bus branches and earlier bus averaging.",
+    "Native authentication, QROM, secure size and full 1 Pgas execution remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4044,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

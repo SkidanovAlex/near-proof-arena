@@ -1,0 +1,8 @@
+{
+  "actual_setup_cases": 6,
+  "checker_mutations_rejected": 2052,
+  "output_mutations_detected": 44,
+  "public_fields_checked": 2310,
+  "scope": "Actual preparation/CODE/entry checker negatives and separate runCall/public-output decoder parity; no cryptographic verifier mutation claim",
+  "status": "PASS"
+}

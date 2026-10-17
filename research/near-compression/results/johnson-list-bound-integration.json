@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3584,
+  "added_theorems": 3,
+  "source_sha256": "4072b3b51130ba4c36c14bbda4af58be0921285b1db0cf2dbf47ad92821a19c8",
+  "audit_sha256": "a32248ffb6eb0fe209355e6349ecc8e1f4fd53cf620ec29f8e9a6bb9d673a988",
+  "bound": "L*(T*T-N*(D-1)) <= N*N when N*(D-1)<=T*T; use a strictly positive gap for a finite numerical cap.",
+  "proof": "Natural-number incidence counting, Cauchy inequality, pairwise intersection bound, and polynomial root count. No correlated-agreement premise or decoder axiom.",
+  "requirements": [
+    "Distinct domain points.",
+    "Every candidate polynomial has degree below D and at least T agreements with the same fixed received word.",
+    "Family is pairwise distinct as coefficient functions; trailing-zero representations cannot count as separate candidates."
+  ],
+  "limits": [
+    "Bounds any supplied finite family; does not yet construct the complete normalized family.",
+    "Does not prove the exceptional-set support-preserving MCA transfer.",
+    "No changes to prover parameters, commitment security or QROM claims."
+  ]
+}

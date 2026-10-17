@@ -1,0 +1,21 @@
+{
+  "status": "incremental progress; full objective remains open",
+  "audit": {
+    "declarations": 1525,
+    "log": "/tmp/near-tablelocal-reconstructed-audit.log"
+  },
+  "evidence": [
+    "packed-disclosure-verified.json",
+    "prepared-tablelocal-source-parity.json"
+  ],
+  "small_packed_openings": 4,
+  "negative_checks": 244,
+  "tablelocal_expr_parity": 8,
+  "remaining": [
+    "Large packed PCS folding and terminal integration",
+    "CompleteAIRtranscript binding and soundness",
+    "FullpreparedWasm/PREP/host/frame/state semantics",
+    "RawSHA384treecollision reduction and concreteQROMerrorledger",
+    "Full1Pgas transition andrecursivecompleteproof<300000bytes"
+  ]
+}

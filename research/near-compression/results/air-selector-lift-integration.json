@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3627,
+  "audit_log": "/tmp/root-air-selector-lift-audit.log",
+  "source_hashes": {
+    "AirSelectorProducts": "994ab3675f9637668875b1ad1a99fa6a8aec33000f69070d243ad6dec7183515",
+    "AirExtensionLift": "84f33d4647a55c451e54bf7527ef384a41ccd6c09145b8d1aa86cc5749766c10"
+  },
+  "established": [
+    "First/last/transition product selectors equal row-flag MLEs at all field points",
+    "Concrete product-selector environment equals formal MLE environment",
+    "Actual BabyBear Expr.eval preserved by certified Ext8 embedding",
+    "Ext8 product-selector evaluator matches original BabyBear source evaluation on Boolean rows"
+  ],
+  "remaining": [
+    "Auxiliary residual Boolean correspondence and combined target",
+    "Adaptive sumcheck and authenticated common source/PCS inputs",
+    "Complete protocol/quantum soundness and secure size target"
+  ]
+}

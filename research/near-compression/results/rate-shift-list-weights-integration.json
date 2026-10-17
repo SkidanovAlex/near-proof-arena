@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3533,
+  "added_theorems": 11,
+  "audit_log": "/tmp/root-rate-shift-list-weights-audit.log",
+  "audit_sha256": "4270da2589530e7c173dd3e91b1e763ebb7c260f1bd2a7fed7b2b2992f6e3869",
+  "sources": {
+    "RateShiftWeightAccumulator": "2d480849977227612073b5d0edceeeaa454e6d549e148b1819bdedfa0e749040",
+    "RateShiftCandidateList": "63c53b48f0991bac2f8d21c6be7197b176fe74cb93204983d832a891ec6b9934"
+  },
+  "proved": [
+    "Monomial vector coordinates equal x^i; zip update preserves size and its dot product adds power times polynomial evaluation.",
+    "Sequential executable-style weight updates equal the accumulated functional used in the mixing root bound, including gamma zero.",
+    "Fixed candidate-list union bound permits challenge-dependent candidate selection.",
+    "Normalized candidates within the explicit unique radius yield a prechallenge singleton-or-empty list; no assumed candidate existence."
+  ],
+  "diagnostic": {
+    "degree": 8,
+    "domain": 64,
+    "maximum_unique_radius": 28,
+    "ood_and_query_constraints": 5,
+    "bad_mixing_challenges_at_most": 5
+  },
+  "limits": [
+    "Fixed received oracle must be justified by commitment binding or extraction.",
+    "Scalable continuation-to-close-candidate extraction remains open.",
+    "Prior-domain transfer through rate-shift queries and OOD remains open.",
+    "No QROM/PQ128 or full NEAR size certification."
+  ]
+}

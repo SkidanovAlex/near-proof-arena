@@ -1,0 +1,33 @@
+{
+  "status": "ROOT_FRAMED_DIAGNOSTIC_BUNDLE_VERIFIED",
+  "bytes": {
+    "prefix": 14292,
+    "gkr": 20608,
+    "stacking": 884,
+    "whir": 168268,
+    "framing": 24,
+    "total": 204076
+  },
+  "negative_checks": [
+    "truncated_header",
+    "truncated_body",
+    "trailing_byte",
+    "wrong_version",
+    "zero_section",
+    "oversized_length",
+    "gkr_truncation",
+    "gkr_trailing",
+    "gkr_noncanonical",
+    "mutated_prefix",
+    "mutated_gkr",
+    "mutated_stacking",
+    "mutated_whir"
+  ],
+  "original_proofs_and_saved_gkr_json_unavailable_during_tests": true,
+  "sha256": "ce7e9c6107e07cb45ff442f2e308fd45adf67a26326b49956b38b61d29721f6b",
+  "limitations": [
+    "Generic cached-VK recursive root fixture, not production RootProver or full NEAR.",
+    "Ext4/upstream diagnostic security, not PQ128.",
+    "No Lean codec/compiler/composition or QROM theorem."
+  ]
+}

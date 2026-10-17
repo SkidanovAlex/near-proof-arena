@@ -1,0 +1,20 @@
+{
+  "commit": "f98331687e47106a64ab82a77e2e1d0d66c9161b",
+  "accessed": "2026-10-17",
+  "files": [
+    {
+      "path": "poseidon2/src/external.rs",
+      "url": "https://raw.githubusercontent.com/Plonky3/Plonky3/f98331687e47106a64ab82a77e2e1d0d66c9161b/poseidon2/src/external.rs",
+      "raw_sha256": "4f2dc9c69280c5a8ecd78cbee84c95a0029f16c8c7a19444c9a9371be115f754",
+      "snapshot": "results/poseidon2-permutation-layout/upstream/poseidon2_src_external.rs.gz",
+      "snapshot_sha256": "823350e47b8fc60dd3430d234e3674cace87b3fe1a0169b62f18faa0f39d11e5"
+    },
+    {
+      "path": "monty-31/src/poseidon2.rs",
+      "url": "https://raw.githubusercontent.com/Plonky3/Plonky3/f98331687e47106a64ab82a77e2e1d0d66c9161b/monty-31/src/poseidon2.rs",
+      "raw_sha256": "953426ce40ca5ed8c86dfb75bb880d93440b931e45f59dce51a2a0bb5f6c826d",
+      "snapshot": "results/poseidon2-permutation-layout/upstream/monty-31_src_poseidon2.rs.gz",
+      "snapshot_sha256": "2422f003450ba21a7f11d588f39665511a99b953f5f342836b231596d22b2792"
+    }
+  ]
+}

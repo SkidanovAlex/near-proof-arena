@@ -1,0 +1,105 @@
+{
+  "status": "ALGEBRAIC_HASH_GEOMETRY_ONLY_SECURITY_OPEN",
+  "field": 2013265921,
+  "minimum_output_elements_for_384_bit_range": 13,
+  "digest_screens": [
+    {
+      "field_elements": 8,
+      "canonical_u32_bytes": 32,
+      "max_range_log2": 247.2551247706009,
+      "ideal_generic_quantum_collision_work_exponent": 82.41837492353363,
+      "passes_384_bit_output_range_screen": false,
+      "pq128_certified": false
+    },
+    {
+      "field_elements": 12,
+      "canonical_u32_bytes": 48,
+      "max_range_log2": 370.88268715590135,
+      "ideal_generic_quantum_collision_work_exponent": 123.62756238530045,
+      "passes_384_bit_output_range_screen": false,
+      "pq128_certified": false
+    },
+    {
+      "field_elements": 13,
+      "canonical_u32_bytes": 52,
+      "max_range_log2": 401.7895777522265,
+      "ideal_generic_quantum_collision_work_exponent": 133.92985925074217,
+      "passes_384_bit_output_range_screen": true,
+      "pq128_certified": false
+    },
+    {
+      "field_elements": 16,
+      "canonical_u32_bytes": 64,
+      "max_range_log2": 494.5102495412018,
+      "ideal_generic_quantum_collision_work_exponent": 164.83674984706727,
+      "passes_384_bit_output_range_screen": true,
+      "pq128_certified": false
+    }
+  ],
+  "candidates": [
+    {
+      "width": 16,
+      "capacity_elements": 13,
+      "rate_elements": 3,
+      "digest_elements": 13,
+      "upstream_M": 128,
+      "full_rounds": 8,
+      "partial_rounds": 13,
+      "sboxes_per_permutation": 141,
+      "hypothetical_pair_hash_input_elements": 29,
+      "absorb_permutations": 10,
+      "extra_squeeze_permutations": 4,
+      "pair_hash_permutations": 14,
+      "x7_multiplications_per_permutation": 564,
+      "pair_hash_sbox_multiplications": 7896,
+      "pq128_certified": false
+    },
+    {
+      "width": 24,
+      "capacity_elements": 13,
+      "rate_elements": 11,
+      "digest_elements": 13,
+      "upstream_M": 128,
+      "full_rounds": 8,
+      "partial_rounds": 21,
+      "sboxes_per_permutation": 213,
+      "hypothetical_pair_hash_input_elements": 29,
+      "absorb_permutations": 3,
+      "extra_squeeze_permutations": 1,
+      "pair_hash_permutations": 4,
+      "x7_multiplications_per_permutation": 852,
+      "pair_hash_sbox_multiplications": 3408,
+      "pq128_certified": false
+    },
+    {
+      "width": 32,
+      "capacity_elements": 13,
+      "rate_elements": 19,
+      "digest_elements": 13,
+      "upstream_M": 128,
+      "full_rounds": 8,
+      "partial_rounds": 30,
+      "sboxes_per_permutation": 286,
+      "hypothetical_pair_hash_input_elements": 29,
+      "absorb_permutations": 2,
+      "extra_squeeze_permutations": 0,
+      "pair_hash_permutations": 2,
+      "x7_multiplications_per_permutation": 1144,
+      "pair_hash_sbox_multiplications": 2288,
+      "pq128_certified": false
+    }
+  ],
+  "claims_not_established": [
+    "128-bit quantum security of the concrete permutation/round parameters",
+    "prime-field sponge/duplex quantum indifferentiability and concrete losses",
+    "binding/collapsing requirements for this PCS and adaptive Fiat-Shamir protocol",
+    "injective canonical field/byte framing and role separation",
+    "full recursive verifier proof size, NEAR semantics or capacity"
+  ],
+  "decision": "Width32 with13output/13capacity elements is a cost-screen candidate, not an approved hash. Retain SHA384 baseline. Establish concrete quantum permutation assumptions/parameters and full protocol budget before substitution. Do not treat the upstream M128 selector as PQ128 or repair a narrow inner digest by wrapping it in SHA384.",
+  "scope": "BHT ideal generic collision query scaling motivates a necessary output-range screen under unrestricted quantum-query modeling. Capacity13 is a conservative shape choice, not a security theorem. Upstream round counts only provide cost examples; no quantum algebraic-attack margin inferred. Pair wrapper is hypothetical; linear layers, routing, canonicalization and proof costs excluded. More field arithmetic does not introduce an elliptic-curve assumption.",
+  "sha256": {
+    "airbender/direct-wasm/screen_algebraic_hash_geometry.py": "15cf7cc875e2797d72e6a48bade587a9dfbc7f1f3ea6b51debf91eb78c403fd8",
+    "results/hash-architecture-review/sources.json": "e620af0b265ca3b90057ff2a46ade877101c30bb6835ac5529d61bee5a7956c4"
+  }
+}

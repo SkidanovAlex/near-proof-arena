@@ -1,0 +1,15 @@
+{
+  "status": "WEIGHTED_COMPONENT_AND_KNOWN_INPUT_SPLIT_CHECKED",
+  "field_elements": 1288,
+  "ext4_field_payload_bytes": 20608,
+  "known_slots": 4257,
+  "pcs_coordinates": 2603,
+  "total_input_slots": 6860,
+  "prover_seconds": 13.461131024174392,
+  "negative_checks": 4,
+  "limitations": [
+    "Version2 binary prefix statement; native continuation pending.",
+    "Residual PCS claim checked with full witness, not a PCS opening proof.",
+    "Ext4 diagnostic only; no PQ128, full NEAR or compiler correctness theorem."
+  ]
+}

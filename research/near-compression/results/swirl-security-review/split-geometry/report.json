@@ -1,0 +1,374 @@
+{
+  "baselines": {
+    "baseline": {
+      "height": 20,
+      "log_rate": 4,
+      "fold": 4,
+      "terminal_max": 10,
+      "final_log": 8,
+      "rounds": 3,
+      "widths": [
+        14,
+        1
+      ],
+      "domains": [
+        20,
+        19,
+        18
+      ],
+      "queries": [
+        61,
+        30,
+        20
+      ],
+      "extension": 4,
+      "digest_bytes": 32,
+      "public_cached": false,
+      "fixed_bytes": 63609,
+      "query_value_bytes": 71360,
+      "raw_paths_bytes": 242809,
+      "expected_frontier_bytes": 207373.1754054628,
+      "expected_frontier_hashes": 2262.6304814207124
+    },
+    "split": {
+      "height": 20,
+      "log_rate": 4,
+      "fold": 4,
+      "terminal_max": 10,
+      "final_log": 8,
+      "rounds": 3,
+      "widths": [
+        10,
+        1
+      ],
+      "domains": [
+        20,
+        19,
+        18
+      ],
+      "queries": [
+        61,
+        30,
+        20
+      ],
+      "extension": 4,
+      "digest_bytes": 32,
+      "public_cached": false,
+      "fixed_bytes": 68413,
+      "query_value_bytes": 55744,
+      "raw_paths_bytes": 231997,
+      "expected_frontier_bytes": 196561.1754054628,
+      "expected_frontier_hashes": 2262.6304814207124
+    }
+  },
+  "records": [
+    {
+      "profile": "baseline",
+      "free_column_reduction": false,
+      "free_cached_work": false,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28,
+          1
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 169701,
+        "query_value_bytes": 101344,
+        "raw_paths_bytes": 586217,
+        "expected_frontier_bytes": 493008.7237832637,
+        "expected_frontier_hashes": 4268.533149678148
+      },
+      "below_target": 0
+    },
+    {
+      "profile": "baseline",
+      "free_column_reduction": false,
+      "free_cached_work": true,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 169609,
+        "query_value_bytes": 98912,
+        "raw_paths_bytes": 488845,
+        "expected_frontier_bytes": 423808.3975200999,
+        "expected_frontier_hashes": 2986.2961061557667
+      },
+      "below_target": 0
+    },
+    {
+      "profile": "baseline",
+      "free_column_reduction": true,
+      "free_cached_work": false,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28,
+          1
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 72717,
+        "query_value_bytes": 101344,
+        "raw_paths_bytes": 489233,
+        "expected_frontier_bytes": 396024.7237832637,
+        "expected_frontier_hashes": 4268.533149678148
+      },
+      "below_target": 0
+    },
+    {
+      "profile": "baseline",
+      "free_column_reduction": true,
+      "free_cached_work": true,
+      "screened": 5790,
+      "best": {
+        "height": 19,
+        "log_rate": 8,
+        "fold": 3,
+        "terminal_max": 10,
+        "final_log": 10,
+        "rounds": 3,
+        "widths": [
+          28
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          76,
+          59,
+          48
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 72625,
+        "query_value_bytes": 98912,
+        "raw_paths_bytes": 391861,
+        "expected_frontier_bytes": 326824.3975200999,
+        "expected_frontier_hashes": 2986.2961061557667
+      },
+      "below_target": 0
+    },
+    {
+      "profile": "split",
+      "free_column_reduction": false,
+      "free_cached_work": false,
+      "screened": 5790,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          37,
+          2
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 162485,
+        "query_value_bytes": 110304,
+        "raw_paths_bytes": 551249,
+        "expected_frontier_bytes": 471034.81269436097,
+        "expected_frontier_hashes": 3812.419474891557
+      },
+      "below_target": 0
+    },
+    {
+      "profile": "split",
+      "free_column_reduction": false,
+      "free_cached_work": true,
+      "screened": 5790,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          37
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 162357,
+        "query_value_bytes": 106080,
+        "raw_paths_bytes": 464529,
+        "expected_frontier_bytes": 408076.20369719237,
+        "expected_frontier_hashes": 2685.3693018690847
+      },
+      "below_target": 0
+    },
+    {
+      "profile": "split",
+      "free_column_reduction": true,
+      "free_cached_work": false,
+      "screened": 5790,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          37,
+          2
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 54665,
+        "query_value_bytes": 110304,
+        "raw_paths_bytes": 443429,
+        "expected_frontier_bytes": 363214.81269436097,
+        "expected_frontier_hashes": 3812.419474891557
+      },
+      "below_target": 0
+    },
+    {
+      "profile": "split",
+      "free_column_reduction": true,
+      "free_cached_work": true,
+      "screened": 5790,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          37
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 54537,
+        "query_value_bytes": 106080,
+        "raw_paths_bytes": 356709,
+        "expected_frontier_bytes": 300256.20369719237,
+        "expected_frontier_hashes": 2685.3693018690847
+      },
+      "below_target": 0
+    }
+  ],
+  "sha256": {
+    "results/swirl-security-review/hash-split/report.json": "c0e02ee978bc0983189c310bb4c8652a668fac382ec114c1ba65efcb946d1a28",
+    "results/swirl-security-review/split-geometry/wire.log.gz": "5de302d9499e29e9e43c03c878dbefe0e90f1592ddaaee4a878e7613d3c78ff9",
+    "airbender/direct-wasm/screen_swirl_split_geometry.py": "4ced53dc9d4646c7baed5a5b4172fbcdac9fb8bbab770c56e9c4c02bf54f5069",
+    "airbender/direct-wasm/screen_swirl_stacking_geometry.py": "7b0d8fc7e66faaaaedba834f8318f278365996ed66468eeb76256084d1de9a75",
+    "airbender/direct-wasm/screen_swirl_query_payload.py": "c2c993fd1ca3d67fcd198032df42a50f194d34c6d9fe4e1e8e0e909ed2d084d6"
+  },
+  "security_certified": false,
+  "scope": "Conditional C=1,Q=2^128,zero grinding credit,each query term separately granted half budget; extension9/digest52 sensitivity only.",
+  "limitations": [
+    "Frozen measured trace despite changed fields/hashes/queries.",
+    "Free-column rows omit the entire replacement argument.",
+    "Free-cache rows omit cached evaluation and binding work.",
+    "Expected frontier cost is not a deterministic bound.",
+    "No QROM, full soundness, full NEAR or stable recursive-key certification."
+  ]
+}

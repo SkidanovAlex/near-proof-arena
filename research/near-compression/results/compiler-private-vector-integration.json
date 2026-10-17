@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "audit_checks": 2882,
+  "previous_checks": 2851,
+  "new_public_theorems": 31,
+  "audit_log": "/tmp/root-honest-round-audit.log",
+  "modules": {
+    "RecoveredHeterogeneousClaim": {
+      "sha256": "e579787789c61884cc18a5daf3875e5fd153292bfca0e9108c7ccfc3d7eab319",
+      "public_theorems": 2
+    },
+    "GKRPrivateVectorGlue": {
+      "sha256": "bc98cced6f825e9cb092811eca609f77d5c5e86ace675dd1ac7f8222ebebe51c",
+      "public_theorems": 4
+    },
+    "GKRCanonicalCoverage": {
+      "sha256": "6b60812ff7d8d9e97aff51db62e6eab5a5a07b18d1bfee6611b8003c29eab3ea",
+      "public_theorems": 2
+    },
+    "GKRAllSlotCertificate": {
+      "sha256": "1b0dad03cc0225916d6dc317b303ac6042328e20c0b302784b3bc36d2f2ef0a4",
+      "public_theorems": 1
+    },
+    "RecoveredPrivateSlots": {
+      "sha256": "bd068f3becf07d32be2d3cee707d00b8cbf2fb83928250d5848a4f5295b004e4",
+      "public_theorems": 4
+    },
+    "GKRPrivateOwnership": {
+      "sha256": "c3ff55bc5f7dc80c22a2a32ca00c73444b0200cb477b71b97f983aff988110c7",
+      "public_theorems": 6
+    },
+    "GKRCanonicalAssignment": {
+      "sha256": "d493dcaca263e7b242489d4ec952813ea98962aa9469e269b8bb5ba7e95597f9",
+      "public_theorems": 1
+    },
+    "GKRLayerTransition": {
+      "sha256": "965f4d7e276a3d9533c52cbb906f5e9e3224d0943711d7f863c9a0d714098aad",
+      "public_theorems": 3
+    },
+    "GKRHonestRound": {
+      "sha256": "98ac1f225e42ac9aab2f6e95a41f0906a30aded150d1ab1352c4d22df084ae74",
+      "public_theorems": 8
+    }
+  },
+  "layout_checks": "results/heterogeneous-metadata/all-supports.json",
+  "scope": "Fixed recovered polynomial owners give exact live compiler-indexed current/next MLE reads; full-support disjointness rules out hidden sums, absent slots are zero, and whole private-vector functional matches lifted PCS coefficient functional under explicit degree/sparsity. Exact optimized gate-round arithmetic/degree/endpoints and at-most2 challenge repairs; at-most1 fresh-gamma repair after both inputs fixed.",
+  "remaining": [
+    "concrete adjacent-round folded-array/bit-index linkage",
+    "full causal multi-layer GKR counting",
+    "AIR rejection on fixed recovered assignment",
+    "cryptographic root binding and Fiat-Shamir/QROM",
+    "PQ128 parameters and fullNEAR/1Pgas capacity"
+  ]
+}

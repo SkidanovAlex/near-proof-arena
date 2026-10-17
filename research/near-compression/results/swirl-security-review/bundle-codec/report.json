@@ -1,0 +1,42 @@
+{
+  "status": "FRAMED_DIAGNOSTIC_BUNDLE_VERIFIED",
+  "bytes": {
+    "prefix": 15567,
+    "gkr": 20128,
+    "stacking": 1476,
+    "whir": 337932,
+    "framing": 24,
+    "total": 375127
+  },
+  "negative_checks": [
+    "truncated_header",
+    "truncated_body",
+    "trailing_byte",
+    "wrong_version",
+    "zero_section",
+    "oversized_length",
+    "gkr_truncation",
+    "gkr_trailing",
+    "gkr_noncanonical",
+    "mutated_prefix",
+    "mutated_gkr",
+    "mutated_stacking",
+    "mutated_whir"
+  ],
+  "original_proof_and_saved_gkr_json_unavailable_during_tests": true,
+  "sha256": "b5e92372ac07e6c7f3bede75003810b52efda156ef1767a7e40c846c608a41da",
+  "limitations": [
+    "Pinned internal recursive fixture; preprocessed AIRs unsupported by prefix codec.",
+    "Native test-harness verifier; no Lean codec/composition or QROM theorem.",
+    "Ext4/upstream diagnostic settings, not PQ128, root geometry or full NEAR."
+  ],
+  "original_native_bytes": 398697,
+  "diagnostic_byte_reduction": 23570,
+  "fresh_process_saved_bundle_verified": true,
+  "reproduce": [
+    "Use pinned native patches from prefix-codec/openvm.patch.gz, opening-free-prefix/backend.patch.gz and weighted-whir/cpu-backend.patch.gz.",
+    "Run swirl_bundle.py to encode, verify and mutate the fixture bundle. Original proof and saved GKR JSON are temporarily hidden during tests and restored in finally.",
+    "Run swirl_bundle.py --verify-saved to verify proof.bin directly. It regenerates native prefix controls/layouts, decodes GKR against that layout and derives continuation inputs.",
+    "Fixed VK/DAG/profile data remain verifier configuration, not transmitted witness."
+  ]
+}

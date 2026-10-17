@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "shape": "64x17",
+      "binary_bytes": 7718,
+      "compact_json_bytes": 17699,
+      "malformed_rejections": 43,
+      "semantic_mutation_rejected": true
+    },
+    {
+      "shape": "64x68",
+      "binary_bytes": 22758,
+      "compact_json_bytes": 50351,
+      "malformed_rejections": 43,
+      "semantic_mutation_rejected": true
+    },
+    {
+      "shape": "8x544",
+      "binary_bytes": 15366,
+      "compact_json_bytes": 34515,
+      "malformed_rejections": 43,
+      "semantic_mutation_rejected": true
+    }
+  ],
+  "scope": "Complete standalone opening serialization; statement/claims supplied externally as in JSON verifier",
+  "limits": [
+    "Not fullNEAR/AIRproof size",
+    "Diagnostic security parameters unchanged"
+  ]
+}

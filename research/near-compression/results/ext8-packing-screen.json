@@ -1,0 +1,4723 @@
+{
+  "rate_screen": [
+    {
+      "blowup": 4,
+      "min_bytes": 507640,
+      "max_bytes": 521720,
+      "mean_bytes": 514872.0,
+      "best": {
+        "degree": 4096,
+        "blowup": 4,
+        "queries": 314,
+        "threshold": 12289,
+        "extraction_numerator": 16380,
+        "packing": [
+          16,
+          16
+        ],
+        "opening_bytes": 507640
+      }
+    },
+    {
+      "blowup": 8,
+      "min_bytes": 540808,
+      "max_bytes": 552712,
+      "mean_bytes": 547030.0,
+      "best": {
+        "degree": 4096,
+        "blowup": 8,
+        "queries": 262,
+        "threshold": 23211,
+        "extraction_numerator": 32760,
+        "packing": [
+          16,
+          16
+        ],
+        "opening_bytes": 540808
+      }
+    },
+    {
+      "blowup": 16,
+      "min_bytes": 607752,
+      "max_bytes": 620248,
+      "mean_bytes": 613702.0,
+      "best": {
+        "degree": 4096,
+        "blowup": 16,
+        "queries": 241,
+        "threshold": 45057,
+        "extraction_numerator": 65520,
+        "packing": [
+          16,
+          16
+        ],
+        "opening_bytes": 607752
+      }
+    },
+    {
+      "blowup": 32,
+      "min_bytes": 695960,
+      "max_bytes": 709656,
+      "mean_bytes": 702416.0,
+      "best": {
+        "degree": 4096,
+        "blowup": 32,
+        "queries": 232,
+        "threshold": 88747,
+        "extraction_numerator": 131040,
+        "packing": [
+          16,
+          16
+        ],
+        "opening_bytes": 695960
+      }
+    },
+    {
+      "blowup": 64,
+      "min_bytes": 795928,
+      "max_bytes": 813208,
+      "mean_bytes": 804480.0,
+      "best": {
+        "degree": 4096,
+        "blowup": 64,
+        "queries": 227,
+        "threshold": 176129,
+        "extraction_numerator": 262080,
+        "packing": [
+          16,
+          16
+        ],
+        "opening_bytes": 795928
+      }
+    },
+    {
+      "blowup": 128,
+      "min_bytes": 910984,
+      "max_bytes": 929176,
+      "mean_bytes": 920418.0,
+      "best": {
+        "degree": 4096,
+        "blowup": 128,
+        "queries": 225,
+        "threshold": 350891,
+        "extraction_numerator": 524160,
+        "packing": [
+          16,
+          16
+        ],
+        "opening_bytes": 910984
+      }
+    }
+  ],
+  "rate_scope": "Conditional PCS-only130-ideal-bit inequality from estimate_ext8_rate_tradeoff; not composed or QROM certification. Alternate rates unimplemented.",
+  "brute_force_optimizer_checks": 4,
+  "status": "CALIBRATED_GEOMETRY_SCREEN",
+  "queries": 309,
+  "measured_baseline_bytes": 620632,
+  "calibrated_baseline_bytes": 620632,
+  "fixed_hash_bytes": 48,
+  "fixed_fold_scalar_bytes": 32,
+  "seed_count": 16,
+  "summary": [
+    {
+      "profile": "separate",
+      "min_opening_bytes": 595080,
+      "max_opening_bytes": 615032,
+      "mean_opening_bytes": 606509.0,
+      "min_with_local_gkr_scalars": 646408,
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          4,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          6,
+          13,
+          25
+        ],
+        "source_bytes": 393920,
+        "fold_bytes": 198240,
+        "metadata_bytes": 2920,
+        "opening_bytes": 595080
+      }
+    },
+    {
+      "profile": "pooled_by_commitment_phase",
+      "min_opening_bytes": 500200,
+      "max_opening_bytes": 516728,
+      "mean_opening_bytes": 509664.0,
+      "min_with_local_gkr_scalars": 551528,
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 299040,
+        "fold_bytes": 198240,
+        "metadata_bytes": 2920,
+        "opening_bytes": 500200
+      }
+    }
+  ],
+  "records": [
+    {
+      "seed": 0,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          4,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          6,
+          13,
+          25
+        ],
+        "source_bytes": 403408,
+        "fold_bytes": 202896,
+        "metadata_bytes": 2920,
+        "opening_bytes": 609224
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            4,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            6,
+            13,
+            25
+          ],
+          "source_bytes": 403408,
+          "fold_bytes": 202896,
+          "metadata_bytes": 2920,
+          "opening_bytes": 609224
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            19,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 358680,
+          "fold_bytes": 282400,
+          "metadata_bytes": 3160,
+          "opening_bytes": 644240
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            10,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 345344,
+          "fold_bytes": 364896,
+          "metadata_bytes": 3400,
+          "opening_bytes": 713640
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            5,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 348416,
+          "fold_bytes": 474224,
+          "metadata_bytes": 3640,
+          "opening_bytes": 826280
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            3,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 364520,
+          "fold_bytes": 606912,
+          "metadata_bytes": 3880,
+          "opening_bytes": 975312
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            4,
+            32,
+            64
+          ],
+          "lanes": [
+            2,
+            6,
+            7,
+            7
+          ],
+          "source_bytes": 369240,
+          "fold_bytes": 729632,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1102992
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            1,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 386864,
+          "fold_bytes": 889440,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1280664
+        }
+      ]
+    },
+    {
+      "seed": 0,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 306192,
+        "fold_bytes": 202896,
+        "metadata_bytes": 2920,
+        "opening_bytes": 512008
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 306192,
+          "fold_bytes": 202896,
+          "metadata_bytes": 2920,
+          "opening_bytes": 512008
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 244128,
+          "fold_bytes": 282400,
+          "metadata_bytes": 3160,
+          "opening_bytes": 529688
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 222048,
+          "fold_bytes": 364896,
+          "metadata_bytes": 3400,
+          "opening_bytes": 590344
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 222432,
+          "fold_bytes": 474224,
+          "metadata_bytes": 3640,
+          "opening_bytes": 700296
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 231872,
+          "fold_bytes": 606912,
+          "metadata_bytes": 3880,
+          "opening_bytes": 842664
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 236896,
+          "fold_bytes": 729632,
+          "metadata_bytes": 4120,
+          "opening_bytes": 970648
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 253376,
+          "fold_bytes": 889440,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1147176
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 397504,
+        "fold_bytes": 199856,
+        "metadata_bytes": 2920,
+        "opening_bytes": 600280
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 397504,
+          "fold_bytes": 199856,
+          "metadata_bytes": 2920,
+          "opening_bytes": 600280
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 351344,
+          "fold_bytes": 275088,
+          "metadata_bytes": 3160,
+          "opening_bytes": 629592
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            10,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 348064,
+          "fold_bytes": 374704,
+          "metadata_bytes": 3400,
+          "opening_bytes": 726168
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            5,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 349152,
+          "fold_bytes": 476208,
+          "metadata_bytes": 3640,
+          "opening_bytes": 829000
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            3,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 359264,
+          "fold_bytes": 596752,
+          "metadata_bytes": 3880,
+          "opening_bytes": 959896
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            32,
+            64
+          ],
+          "lanes": [
+            2,
+            12,
+            7,
+            7
+          ],
+          "source_bytes": 376064,
+          "fold_bytes": 739792,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1119976
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            1,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 388536,
+          "fold_bytes": 894768,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1287664
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 302016,
+        "fold_bytes": 199856,
+        "metadata_bytes": 2920,
+        "opening_bytes": 504792
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 302016,
+          "fold_bytes": 199856,
+          "metadata_bytes": 2920,
+          "opening_bytes": 504792
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 239264,
+          "fold_bytes": 275088,
+          "metadata_bytes": 3160,
+          "opening_bytes": 517512
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 220416,
+          "fold_bytes": 374704,
+          "metadata_bytes": 3400,
+          "opening_bytes": 598520
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 220744,
+          "fold_bytes": 476208,
+          "metadata_bytes": 3640,
+          "opening_bytes": 700592
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 229264,
+          "fold_bytes": 596752,
+          "metadata_bytes": 3880,
+          "opening_bytes": 829896
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 241752,
+          "fold_bytes": 739792,
+          "metadata_bytes": 4120,
+          "opening_bytes": 985664
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 255208,
+          "fold_bytes": 894768,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1154336
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 406400,
+        "fold_bytes": 203168,
+        "metadata_bytes": 2920,
+        "opening_bytes": 612488
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 406400,
+          "fold_bytes": 203168,
+          "metadata_bytes": 2920,
+          "opening_bytes": 612488
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            19,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 354624,
+          "fold_bytes": 279376,
+          "metadata_bytes": 3160,
+          "opening_bytes": 637160
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            10,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 347920,
+          "fold_bytes": 369952,
+          "metadata_bytes": 3400,
+          "opening_bytes": 721272
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            4,
+            32,
+            64
+          ],
+          "lanes": [
+            5,
+            6,
+            7,
+            7
+          ],
+          "source_bytes": 351928,
+          "fold_bytes": 481376,
+          "metadata_bytes": 3640,
+          "opening_bytes": 836944
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            3,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 361088,
+          "fold_bytes": 599888,
+          "metadata_bytes": 3880,
+          "opening_bytes": 964856
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            32,
+            64
+          ],
+          "lanes": [
+            2,
+            12,
+            7,
+            7
+          ],
+          "source_bytes": 378120,
+          "fold_bytes": 746096,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1128336
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            1,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 389232,
+          "fold_bytes": 898592,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1292184
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 307776,
+        "fold_bytes": 203168,
+        "metadata_bytes": 2920,
+        "opening_bytes": 513864
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 307776,
+          "fold_bytes": 203168,
+          "metadata_bytes": 2920,
+          "opening_bytes": 513864
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 241184,
+          "fold_bytes": 279376,
+          "metadata_bytes": 3160,
+          "opening_bytes": 523720
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 224544,
+          "fold_bytes": 369952,
+          "metadata_bytes": 3400,
+          "opening_bytes": 597896
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 222072,
+          "fold_bytes": 481376,
+          "metadata_bytes": 3640,
+          "opening_bytes": 707088
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 231136,
+          "fold_bytes": 599888,
+          "metadata_bytes": 3880,
+          "opening_bytes": 834904
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 241744,
+          "fold_bytes": 746096,
+          "metadata_bytes": 4120,
+          "opening_bytes": 991960
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 255592,
+          "fold_bytes": 898592,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1158544
+        }
+      ]
+    },
+    {
+      "seed": 3,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 402752,
+        "fold_bytes": 202048,
+        "metadata_bytes": 2920,
+        "opening_bytes": 607720
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 402752,
+          "fold_bytes": 202048,
+          "metadata_bytes": 2920,
+          "opening_bytes": 607720
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            19,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 352128,
+          "fold_bytes": 278400,
+          "metadata_bytes": 3160,
+          "opening_bytes": 633688
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            2,
+            32,
+            64
+          ],
+          "lanes": [
+            10,
+            12,
+            7,
+            7
+          ],
+          "source_bytes": 347568,
+          "fold_bytes": 374640,
+          "metadata_bytes": 3400,
+          "opening_bytes": 725608
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            5,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 345856,
+          "fold_bytes": 471632,
+          "metadata_bytes": 3640,
+          "opening_bytes": 821128
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            3,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 362296,
+          "fold_bytes": 599824,
+          "metadata_bytes": 3880,
+          "opening_bytes": 966000
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            2,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 372200,
+          "fold_bytes": 733728,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1110048
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            4,
+            32,
+            64
+          ],
+          "lanes": [
+            1,
+            6,
+            7,
+            7
+          ],
+          "source_bytes": 385456,
+          "fold_bytes": 885344,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1275160
+        }
+      ]
+    },
+    {
+      "seed": 3,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 305760,
+        "fold_bytes": 202048,
+        "metadata_bytes": 2920,
+        "opening_bytes": 510728
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 305760,
+          "fold_bytes": 202048,
+          "metadata_bytes": 2920,
+          "opening_bytes": 510728
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 240256,
+          "fold_bytes": 278400,
+          "metadata_bytes": 3160,
+          "opening_bytes": 521816
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 220192,
+          "fold_bytes": 374640,
+          "metadata_bytes": 3400,
+          "opening_bytes": 598232
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 220160,
+          "fold_bytes": 471632,
+          "metadata_bytes": 3640,
+          "opening_bytes": 695432
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 231504,
+          "fold_bytes": 599824,
+          "metadata_bytes": 3880,
+          "opening_bytes": 835208
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 240480,
+          "fold_bytes": 733728,
+          "metadata_bytes": 4120,
+          "opening_bytes": 978328
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 252432,
+          "fold_bytes": 885344,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1142136
+        }
+      ]
+    },
+    {
+      "seed": 4,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 396960,
+        "fold_bytes": 198640,
+        "metadata_bytes": 2920,
+        "opening_bytes": 598520
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 396960,
+          "fold_bytes": 198640,
+          "metadata_bytes": 2920,
+          "opening_bytes": 598520
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 355544,
+          "fold_bytes": 276384,
+          "metadata_bytes": 3160,
+          "opening_bytes": 635088
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            10,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 351720,
+          "fold_bytes": 374896,
+          "metadata_bytes": 3400,
+          "opening_bytes": 730016
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            5,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 351096,
+          "fold_bytes": 477120,
+          "metadata_bytes": 3640,
+          "opening_bytes": 831856
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            4,
+            32,
+            64
+          ],
+          "lanes": [
+            3,
+            6,
+            7,
+            7
+          ],
+          "source_bytes": 357840,
+          "fold_bytes": 596176,
+          "metadata_bytes": 3880,
+          "opening_bytes": 957896
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            2,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 371392,
+          "fold_bytes": 731808,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1107320
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            1,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 385384,
+          "fold_bytes": 882944,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1272688
+        }
+      ]
+    },
+    {
+      "seed": 4,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 302448,
+        "fold_bytes": 198640,
+        "metadata_bytes": 2920,
+        "opening_bytes": 504008
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 302448,
+          "fold_bytes": 198640,
+          "metadata_bytes": 2920,
+          "opening_bytes": 504008
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 242976,
+          "fold_bytes": 276384,
+          "metadata_bytes": 3160,
+          "opening_bytes": 522520
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 224320,
+          "fold_bytes": 374896,
+          "metadata_bytes": 3400,
+          "opening_bytes": 602616
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 223672,
+          "fold_bytes": 477120,
+          "metadata_bytes": 3640,
+          "opening_bytes": 704432
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 228976,
+          "fold_bytes": 596176,
+          "metadata_bytes": 3880,
+          "opening_bytes": 829032
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 239592,
+          "fold_bytes": 731808,
+          "metadata_bytes": 4120,
+          "opening_bytes": 975520
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 252472,
+          "fold_bytes": 882944,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1139776
+        }
+      ]
+    },
+    {
+      "seed": 5,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 395792,
+        "fold_bytes": 198176,
+        "metadata_bytes": 2920,
+        "opening_bytes": 596888
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 395792,
+          "fold_bytes": 198176,
+          "metadata_bytes": 2920,
+          "opening_bytes": 596888
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 354416,
+          "fold_bytes": 277376,
+          "metadata_bytes": 3160,
+          "opening_bytes": 634952
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            10,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 346624,
+          "fold_bytes": 368352,
+          "metadata_bytes": 3400,
+          "opening_bytes": 718376
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            5,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 345888,
+          "fold_bytes": 475616,
+          "metadata_bytes": 3640,
+          "opening_bytes": 825144
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            3,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 359752,
+          "fold_bytes": 596944,
+          "metadata_bytes": 3880,
+          "opening_bytes": 960576
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            32,
+            64
+          ],
+          "lanes": [
+            2,
+            12,
+            7,
+            7
+          ],
+          "source_bytes": 376872,
+          "fold_bytes": 742656,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1123648
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            1,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 389424,
+          "fold_bytes": 894672,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1288456
+        }
+      ]
+    },
+    {
+      "seed": 5,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 301632,
+        "fold_bytes": 198176,
+        "metadata_bytes": 2920,
+        "opening_bytes": 502728
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 301632,
+          "fold_bytes": 198176,
+          "metadata_bytes": 2920,
+          "opening_bytes": 502728
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 241408,
+          "fold_bytes": 277376,
+          "metadata_bytes": 3160,
+          "opening_bytes": 521944
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 222944,
+          "fold_bytes": 368352,
+          "metadata_bytes": 3400,
+          "opening_bytes": 594696
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 220544,
+          "fold_bytes": 475616,
+          "metadata_bytes": 3640,
+          "opening_bytes": 699800
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 230096,
+          "fold_bytes": 596944,
+          "metadata_bytes": 3880,
+          "opening_bytes": 830920
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 241744,
+          "fold_bytes": 742656,
+          "metadata_bytes": 4120,
+          "opening_bytes": 988520
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 253528,
+          "fold_bytes": 894672,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1152560
+        }
+      ]
+    },
+    {
+      "seed": 6,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 404896,
+        "fold_bytes": 205488,
+        "metadata_bytes": 2920,
+        "opening_bytes": 613304
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 404896,
+          "fold_bytes": 205488,
+          "metadata_bytes": 2920,
+          "opening_bytes": 613304
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 362048,
+          "fold_bytes": 281312,
+          "metadata_bytes": 3160,
+          "opening_bytes": 646520
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            10,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 344720,
+          "fold_bytes": 368832,
+          "metadata_bytes": 3400,
+          "opening_bytes": 716952
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            5,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 353104,
+          "fold_bytes": 479200,
+          "metadata_bytes": 3640,
+          "opening_bytes": 835944
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            3,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 358728,
+          "fold_bytes": 593072,
+          "metadata_bytes": 3880,
+          "opening_bytes": 955680
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            2,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 371360,
+          "fold_bytes": 733120,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1108600
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            1,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 385880,
+          "fold_bytes": 887984,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1278224
+        }
+      ]
+    },
+    {
+      "seed": 6,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 306768,
+        "fold_bytes": 205488,
+        "metadata_bytes": 2920,
+        "opening_bytes": 515176
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 306768,
+          "fold_bytes": 205488,
+          "metadata_bytes": 2920,
+          "opening_bytes": 515176
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 246752,
+          "fold_bytes": 281312,
+          "metadata_bytes": 3160,
+          "opening_bytes": 531224
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 220256,
+          "fold_bytes": 368832,
+          "metadata_bytes": 3400,
+          "opening_bytes": 592488
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 224488,
+          "fold_bytes": 479200,
+          "metadata_bytes": 3640,
+          "opening_bytes": 707328
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 228544,
+          "fold_bytes": 593072,
+          "metadata_bytes": 3880,
+          "opening_bytes": 825496
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 240408,
+          "fold_bytes": 733120,
+          "metadata_bytes": 4120,
+          "opening_bytes": 977648
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 252520,
+          "fold_bytes": 887984,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1144864
+        }
+      ]
+    },
+    {
+      "seed": 7,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 399120,
+        "fold_bytes": 202032,
+        "metadata_bytes": 2920,
+        "opening_bytes": 604072
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 399120,
+          "fold_bytes": 202032,
+          "metadata_bytes": 2920,
+          "opening_bytes": 604072
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 353864,
+          "fold_bytes": 277104,
+          "metadata_bytes": 3160,
+          "opening_bytes": 634128
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            10,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 344768,
+          "fold_bytes": 365264,
+          "metadata_bytes": 3400,
+          "opening_bytes": 713432
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            5,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 351192,
+          "fold_bytes": 480656,
+          "metadata_bytes": 3640,
+          "opening_bytes": 835488
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            3,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 358688,
+          "fold_bytes": 594048,
+          "metadata_bytes": 3880,
+          "opening_bytes": 956616
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            2,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 371256,
+          "fold_bytes": 731152,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1106528
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            1,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 388856,
+          "fold_bytes": 896176,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1289392
+        }
+      ]
+    },
+    {
+      "seed": 7,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 302304,
+        "fold_bytes": 202032,
+        "metadata_bytes": 2920,
+        "opening_bytes": 507256
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 302304,
+          "fold_bytes": 202032,
+          "metadata_bytes": 2920,
+          "opening_bytes": 507256
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 241632,
+          "fold_bytes": 277104,
+          "metadata_bytes": 3160,
+          "opening_bytes": 521896
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 221440,
+          "fold_bytes": 365264,
+          "metadata_bytes": 3400,
+          "opening_bytes": 590104
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 221392,
+          "fold_bytes": 480656,
+          "metadata_bytes": 3640,
+          "opening_bytes": 705688
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 228880,
+          "fold_bytes": 594048,
+          "metadata_bytes": 3880,
+          "opening_bytes": 826808
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 239576,
+          "fold_bytes": 731152,
+          "metadata_bytes": 4120,
+          "opening_bytes": 974848
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 253664,
+          "fold_bytes": 896176,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1154200
+        }
+      ]
+    },
+    {
+      "seed": 8,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 402176,
+        "fold_bytes": 205296,
+        "metadata_bytes": 2920,
+        "opening_bytes": 610392
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 402176,
+          "fold_bytes": 205296,
+          "metadata_bytes": 2920,
+          "opening_bytes": 610392
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            19,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 353928,
+          "fold_bytes": 280704,
+          "metadata_bytes": 3160,
+          "opening_bytes": 637792
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            10,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 353216,
+          "fold_bytes": 376288,
+          "metadata_bytes": 3400,
+          "opening_bytes": 732904
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            5,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 347392,
+          "fold_bytes": 473952,
+          "metadata_bytes": 3640,
+          "opening_bytes": 824984
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            3,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 362112,
+          "fold_bytes": 603552,
+          "metadata_bytes": 3880,
+          "opening_bytes": 969544
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            2,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 373344,
+          "fold_bytes": 733168,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1110632
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            1,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 387360,
+          "fold_bytes": 883984,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1275704
+        }
+      ]
+    },
+    {
+      "seed": 8,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 304272,
+        "fold_bytes": 205296,
+        "metadata_bytes": 2920,
+        "opening_bytes": 512488
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 304272,
+          "fold_bytes": 205296,
+          "metadata_bytes": 2920,
+          "opening_bytes": 512488
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 240512,
+          "fold_bytes": 280704,
+          "metadata_bytes": 3160,
+          "opening_bytes": 524376
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 226848,
+          "fold_bytes": 376288,
+          "metadata_bytes": 3400,
+          "opening_bytes": 606536
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 220568,
+          "fold_bytes": 473952,
+          "metadata_bytes": 3640,
+          "opening_bytes": 698160
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 231712,
+          "fold_bytes": 603552,
+          "metadata_bytes": 3880,
+          "opening_bytes": 839144
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 239584,
+          "fold_bytes": 733168,
+          "metadata_bytes": 4120,
+          "opening_bytes": 976872
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 253952,
+          "fold_bytes": 883984,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1142296
+        }
+      ]
+    },
+    {
+      "seed": 9,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          4,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          6,
+          13,
+          25
+        ],
+        "source_bytes": 402096,
+        "fold_bytes": 202688,
+        "metadata_bytes": 2920,
+        "opening_bytes": 607704
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            4,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            6,
+            13,
+            25
+          ],
+          "source_bytes": 402096,
+          "fold_bytes": 202688,
+          "metadata_bytes": 2920,
+          "opening_bytes": 607704
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 356376,
+          "fold_bytes": 277920,
+          "metadata_bytes": 3160,
+          "opening_bytes": 637456
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            10,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 348800,
+          "fold_bytes": 371936,
+          "metadata_bytes": 3400,
+          "opening_bytes": 724136
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            5,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 353144,
+          "fold_bytes": 480208,
+          "metadata_bytes": 3640,
+          "opening_bytes": 836992
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            3,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 357896,
+          "fold_bytes": 591024,
+          "metadata_bytes": 3880,
+          "opening_bytes": 952800
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            2,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 375992,
+          "fold_bytes": 738704,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1118816
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            2,
+            32,
+            64
+          ],
+          "lanes": [
+            1,
+            12,
+            7,
+            7
+          ],
+          "source_bytes": 385584,
+          "fold_bytes": 888592,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1278536
+        }
+      ]
+    },
+    {
+      "seed": 9,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 304848,
+        "fold_bytes": 202688,
+        "metadata_bytes": 2920,
+        "opening_bytes": 510456
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 304848,
+          "fold_bytes": 202688,
+          "metadata_bytes": 2920,
+          "opening_bytes": 510456
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 243808,
+          "fold_bytes": 277920,
+          "metadata_bytes": 3160,
+          "opening_bytes": 524888
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 223008,
+          "fold_bytes": 371936,
+          "metadata_bytes": 3400,
+          "opening_bytes": 598344
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 224720,
+          "fold_bytes": 480208,
+          "metadata_bytes": 3640,
+          "opening_bytes": 708568
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 229712,
+          "fold_bytes": 591024,
+          "metadata_bytes": 3880,
+          "opening_bytes": 824616
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 241360,
+          "fold_bytes": 738704,
+          "metadata_bytes": 4120,
+          "opening_bytes": 984184
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 251992,
+          "fold_bytes": 888592,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1144944
+        }
+      ]
+    },
+    {
+      "seed": 10,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          4,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          6,
+          13,
+          25
+        ],
+        "source_bytes": 406560,
+        "fold_bytes": 205552,
+        "metadata_bytes": 2920,
+        "opening_bytes": 615032
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            4,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            6,
+            13,
+            25
+          ],
+          "source_bytes": 406560,
+          "fold_bytes": 205552,
+          "metadata_bytes": 2920,
+          "opening_bytes": 615032
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 356040,
+          "fold_bytes": 278912,
+          "metadata_bytes": 3160,
+          "opening_bytes": 638112
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            10,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 347080,
+          "fold_bytes": 370976,
+          "metadata_bytes": 3400,
+          "opening_bytes": 721456
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            5,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 346800,
+          "fold_bytes": 469328,
+          "metadata_bytes": 3640,
+          "opening_bytes": 819768
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            3,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 359280,
+          "fold_bytes": 595312,
+          "metadata_bytes": 3880,
+          "opening_bytes": 958472
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            2,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 372496,
+          "fold_bytes": 734304,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1110920
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            1,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 384352,
+          "fold_bytes": 884400,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1273112
+        }
+      ]
+    },
+    {
+      "seed": 10,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 308256,
+        "fold_bytes": 205552,
+        "metadata_bytes": 2920,
+        "opening_bytes": 516728
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 308256,
+          "fold_bytes": 205552,
+          "metadata_bytes": 2920,
+          "opening_bytes": 516728
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 243328,
+          "fold_bytes": 278912,
+          "metadata_bytes": 3160,
+          "opening_bytes": 525400
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 221824,
+          "fold_bytes": 370976,
+          "metadata_bytes": 3400,
+          "opening_bytes": 596200
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 222256,
+          "fold_bytes": 469328,
+          "metadata_bytes": 3640,
+          "opening_bytes": 695224
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 230416,
+          "fold_bytes": 595312,
+          "metadata_bytes": 3880,
+          "opening_bytes": 829608
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 238600,
+          "fold_bytes": 734304,
+          "metadata_bytes": 4120,
+          "opening_bytes": 977024
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 251792,
+          "fold_bytes": 884400,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1140552
+        }
+      ]
+    },
+    {
+      "seed": 11,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          4,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          6,
+          13,
+          25
+        ],
+        "source_bytes": 393920,
+        "fold_bytes": 198240,
+        "metadata_bytes": 2920,
+        "opening_bytes": 595080
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            4,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            6,
+            13,
+            25
+          ],
+          "source_bytes": 393920,
+          "fold_bytes": 198240,
+          "metadata_bytes": 2920,
+          "opening_bytes": 595080
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            19,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 353928,
+          "fold_bytes": 274944,
+          "metadata_bytes": 3160,
+          "opening_bytes": 632032
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            2,
+            32,
+            64
+          ],
+          "lanes": [
+            10,
+            12,
+            7,
+            7
+          ],
+          "source_bytes": 352696,
+          "fold_bytes": 374864,
+          "metadata_bytes": 3400,
+          "opening_bytes": 730960
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            5,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 352024,
+          "fold_bytes": 478432,
+          "metadata_bytes": 3640,
+          "opening_bytes": 834096
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            3,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 361704,
+          "fold_bytes": 597552,
+          "metadata_bytes": 3880,
+          "opening_bytes": 963136
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            2,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 366384,
+          "fold_bytes": 724176,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1094680
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            1,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 383968,
+          "fold_bytes": 882720,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1271048
+        }
+      ]
+    },
+    {
+      "seed": 11,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 299040,
+        "fold_bytes": 198240,
+        "metadata_bytes": 2920,
+        "opening_bytes": 500200
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 299040,
+          "fold_bytes": 198240,
+          "metadata_bytes": 2920,
+          "opening_bytes": 500200
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 241312,
+          "fold_bytes": 274944,
+          "metadata_bytes": 3160,
+          "opening_bytes": 519416
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 224672,
+          "fold_bytes": 374864,
+          "metadata_bytes": 3400,
+          "opening_bytes": 602936
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 224552,
+          "fold_bytes": 478432,
+          "metadata_bytes": 3640,
+          "opening_bytes": 706624
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 231760,
+          "fold_bytes": 597552,
+          "metadata_bytes": 3880,
+          "opening_bytes": 833192
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 236136,
+          "fold_bytes": 724176,
+          "metadata_bytes": 4120,
+          "opening_bytes": 964432
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 252000,
+          "fold_bytes": 882720,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1139080
+        }
+      ]
+    },
+    {
+      "seed": 12,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 406256,
+        "fold_bytes": 203360,
+        "metadata_bytes": 2920,
+        "opening_bytes": 612536
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 406256,
+          "fold_bytes": 203360,
+          "metadata_bytes": 2920,
+          "opening_bytes": 612536
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 357424,
+          "fold_bytes": 276528,
+          "metadata_bytes": 3160,
+          "opening_bytes": 637112
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            10,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 347576,
+          "fold_bytes": 370352,
+          "metadata_bytes": 3400,
+          "opening_bytes": 721328
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            5,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 355064,
+          "fold_bytes": 485552,
+          "metadata_bytes": 3640,
+          "opening_bytes": 844256
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            3,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 365184,
+          "fold_bytes": 609840,
+          "metadata_bytes": 3880,
+          "opening_bytes": 978904
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            2,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 372360,
+          "fold_bytes": 732480,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1108960
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            2,
+            16,
+            64
+          ],
+          "lanes": [
+            1,
+            12,
+            13,
+            7
+          ],
+          "source_bytes": 389936,
+          "fold_bytes": 896160,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1290456
+        }
+      ]
+    },
+    {
+      "seed": 12,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 307776,
+        "fold_bytes": 203360,
+        "metadata_bytes": 2920,
+        "opening_bytes": 514056
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 307776,
+          "fold_bytes": 203360,
+          "metadata_bytes": 2920,
+          "opening_bytes": 514056
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 244512,
+          "fold_bytes": 276528,
+          "metadata_bytes": 3160,
+          "opening_bytes": 524200
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 222176,
+          "fold_bytes": 370352,
+          "metadata_bytes": 3400,
+          "opening_bytes": 595928
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 226744,
+          "fold_bytes": 485552,
+          "metadata_bytes": 3640,
+          "opening_bytes": 715936
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 230560,
+          "fold_bytes": 609840,
+          "metadata_bytes": 3880,
+          "opening_bytes": 844280
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 239656,
+          "fold_bytes": 732480,
+          "metadata_bytes": 4120,
+          "opening_bytes": 976256
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 254824,
+          "fold_bytes": 896160,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1155344
+        }
+      ]
+    },
+    {
+      "seed": 13,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 402192,
+        "fold_bytes": 204224,
+        "metadata_bytes": 2920,
+        "opening_bytes": 609336
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 402192,
+          "fold_bytes": 204224,
+          "metadata_bytes": 2920,
+          "opening_bytes": 609336
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            4,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            6,
+            13,
+            13
+          ],
+          "source_bytes": 360584,
+          "fold_bytes": 280560,
+          "metadata_bytes": 3160,
+          "opening_bytes": 644304
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            4,
+            32,
+            64
+          ],
+          "lanes": [
+            10,
+            6,
+            7,
+            7
+          ],
+          "source_bytes": 350616,
+          "fold_bytes": 374912,
+          "metadata_bytes": 3400,
+          "opening_bytes": 728928
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            5,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 351256,
+          "fold_bytes": 476272,
+          "metadata_bytes": 3640,
+          "opening_bytes": 831168
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            3,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 359160,
+          "fold_bytes": 597200,
+          "metadata_bytes": 3880,
+          "opening_bytes": 960240
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            2,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 374080,
+          "fold_bytes": 735392,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1113592
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            1,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 381824,
+          "fold_bytes": 875984,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1262168
+        }
+      ]
+    },
+    {
+      "seed": 13,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 304656,
+        "fold_bytes": 204224,
+        "metadata_bytes": 2920,
+        "opening_bytes": 511800
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 304656,
+          "fold_bytes": 204224,
+          "metadata_bytes": 2920,
+          "opening_bytes": 511800
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 244992,
+          "fold_bytes": 280560,
+          "metadata_bytes": 3160,
+          "opening_bytes": 528712
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 223680,
+          "fold_bytes": 374912,
+          "metadata_bytes": 3400,
+          "opening_bytes": 601992
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 223440,
+          "fold_bytes": 476272,
+          "metadata_bytes": 3640,
+          "opening_bytes": 703352
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 229384,
+          "fold_bytes": 597200,
+          "metadata_bytes": 3880,
+          "opening_bytes": 830464
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 241824,
+          "fold_bytes": 735392,
+          "metadata_bytes": 4120,
+          "opening_bytes": 981336
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 251160,
+          "fold_bytes": 875984,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1131504
+        }
+      ]
+    },
+    {
+      "seed": 14,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 401360,
+        "fold_bytes": 199360,
+        "metadata_bytes": 2920,
+        "opening_bytes": 603640
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 401360,
+          "fold_bytes": 199360,
+          "metadata_bytes": 2920,
+          "opening_bytes": 603640
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            2,
+            32,
+            32
+          ],
+          "lanes": [
+            19,
+            12,
+            7,
+            13
+          ],
+          "source_bytes": 353016,
+          "fold_bytes": 278416,
+          "metadata_bytes": 3160,
+          "opening_bytes": 634592
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            10,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 346240,
+          "fold_bytes": 369664,
+          "metadata_bytes": 3400,
+          "opening_bytes": 719304
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            4,
+            32,
+            64
+          ],
+          "lanes": [
+            5,
+            6,
+            7,
+            7
+          ],
+          "source_bytes": 352776,
+          "fold_bytes": 482512,
+          "metadata_bytes": 3640,
+          "opening_bytes": 838928
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            2,
+            32,
+            64
+          ],
+          "lanes": [
+            3,
+            12,
+            7,
+            7
+          ],
+          "source_bytes": 358424,
+          "fold_bytes": 596048,
+          "metadata_bytes": 3880,
+          "opening_bytes": 958352
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            2,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 372512,
+          "fold_bytes": 732560,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1109192
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            1,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 378440,
+          "fold_bytes": 875200,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1258000
+        }
+      ]
+    },
+    {
+      "seed": 14,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 305088,
+        "fold_bytes": 199360,
+        "metadata_bytes": 2920,
+        "opening_bytes": 507368
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 305088,
+          "fold_bytes": 199360,
+          "metadata_bytes": 2920,
+          "opening_bytes": 507368
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 239744,
+          "fold_bytes": 278416,
+          "metadata_bytes": 3160,
+          "opening_bytes": 521320
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 221248,
+          "fold_bytes": 369664,
+          "metadata_bytes": 3400,
+          "opening_bytes": 594312
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 222480,
+          "fold_bytes": 482512,
+          "metadata_bytes": 3640,
+          "opening_bytes": 708632
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 228016,
+          "fold_bytes": 596048,
+          "metadata_bytes": 3880,
+          "opening_bytes": 827944
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 239640,
+          "fold_bytes": 732560,
+          "metadata_bytes": 4120,
+          "opening_bytes": 976320
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 249256,
+          "fold_bytes": 875200,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1128816
+        }
+      ]
+    },
+    {
+      "seed": 15,
+      "profile": "separate",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          2,
+          16,
+          16
+        ],
+        "lanes": [
+          38,
+          12,
+          13,
+          25
+        ],
+        "source_bytes": 401712,
+        "fold_bytes": 203296,
+        "metadata_bytes": 2920,
+        "opening_bytes": 607928
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            2,
+            16,
+            16
+          ],
+          "lanes": [
+            38,
+            12,
+            13,
+            25
+          ],
+          "source_bytes": 401712,
+          "fold_bytes": 203296,
+          "metadata_bytes": 2920,
+          "opening_bytes": 607928
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            19,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 358808,
+          "fold_bytes": 278752,
+          "metadata_bytes": 3160,
+          "opening_bytes": 640720
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            2,
+            32,
+            64
+          ],
+          "lanes": [
+            10,
+            12,
+            7,
+            7
+          ],
+          "source_bytes": 347944,
+          "fold_bytes": 369920,
+          "metadata_bytes": 3400,
+          "opening_bytes": 721264
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            2,
+            16,
+            32
+          ],
+          "lanes": [
+            5,
+            12,
+            13,
+            13
+          ],
+          "source_bytes": 347536,
+          "fold_bytes": 471376,
+          "metadata_bytes": 3640,
+          "opening_bytes": 822552
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            4,
+            32,
+            32
+          ],
+          "lanes": [
+            3,
+            6,
+            7,
+            13
+          ],
+          "source_bytes": 362488,
+          "fold_bytes": 596880,
+          "metadata_bytes": 3880,
+          "opening_bytes": 963248
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            2,
+            32,
+            64
+          ],
+          "lanes": [
+            2,
+            12,
+            7,
+            7
+          ],
+          "source_bytes": 372544,
+          "fold_bytes": 734448,
+          "metadata_bytes": 4120,
+          "opening_bytes": 1111112
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            4,
+            16,
+            64
+          ],
+          "lanes": [
+            1,
+            6,
+            13,
+            7
+          ],
+          "source_bytes": 388720,
+          "fold_bytes": 892272,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1285352
+        }
+      ]
+    },
+    {
+      "seed": 15,
+      "profile": "pooled_by_commitment_phase",
+      "best": {
+        "degree": 4096,
+        "packing": [
+          16,
+          16
+        ],
+        "lanes": [
+          51,
+          27
+        ],
+        "source_bytes": 304752,
+        "fold_bytes": 203296,
+        "metadata_bytes": 2920,
+        "opening_bytes": 510968
+      },
+      "candidates": [
+        {
+          "degree": 4096,
+          "packing": [
+            16,
+            16
+          ],
+          "lanes": [
+            51,
+            27
+          ],
+          "source_bytes": 304752,
+          "fold_bytes": 203296,
+          "metadata_bytes": 2920,
+          "opening_bytes": 510968
+        },
+        {
+          "degree": 8192,
+          "packing": [
+            32,
+            32
+          ],
+          "lanes": [
+            26,
+            14
+          ],
+          "source_bytes": 245312,
+          "fold_bytes": 278752,
+          "metadata_bytes": 3160,
+          "opening_bytes": 527224
+        },
+        {
+          "degree": 16384,
+          "packing": [
+            64,
+            64
+          ],
+          "lanes": [
+            13,
+            7
+          ],
+          "source_bytes": 222496,
+          "fold_bytes": 369920,
+          "metadata_bytes": 3400,
+          "opening_bytes": 595816
+        },
+        {
+          "degree": 32768,
+          "packing": [
+            128,
+            64
+          ],
+          "lanes": [
+            7,
+            7
+          ],
+          "source_bytes": 222504,
+          "fold_bytes": 471376,
+          "metadata_bytes": 3640,
+          "opening_bytes": 697520
+        },
+        {
+          "degree": 65536,
+          "packing": [
+            256,
+            64
+          ],
+          "lanes": [
+            4,
+            7
+          ],
+          "source_bytes": 232240,
+          "fold_bytes": 596880,
+          "metadata_bytes": 3880,
+          "opening_bytes": 833000
+        },
+        {
+          "degree": 131072,
+          "packing": [
+            512,
+            64
+          ],
+          "lanes": [
+            2,
+            7
+          ],
+          "source_bytes": 240064,
+          "fold_bytes": 734448,
+          "metadata_bytes": 4120,
+          "opening_bytes": 978632
+        },
+        {
+          "degree": 262144,
+          "packing": [
+            1024,
+            64
+          ],
+          "lanes": [
+            1,
+            7
+          ],
+          "source_bytes": 255784,
+          "fold_bytes": 892272,
+          "metadata_bytes": 4360,
+          "opening_bytes": 1152416
+        }
+      ]
+    }
+  ],
+  "capture_sha256": {
+    "opening.json": "dd8cc0edd781c3a4b420cc3db26b6ebe89f2386167f88aac2cc32fbe3b153949",
+    "proof.json": "b1cae622099fd1fa874cd2ee46deaed3dfc8a787e77ef4242da01631aa16b351",
+    "proof.bin": "53d9c1640d3358a1747eaff13fede82ee7f97c1a4761adaac37c3305012f3879"
+  },
+  "scope": "Exact codec geometry on retained transcript, then simulated uniform queries for candidate packing. Pooling groups only pre-bus sources and post-bus auxiliaries separately; equal row counts. Queries309/hash384/Ext8/LDE4/binary folding held fixed. Candidate layouts unimplemented; field/degree/PCS bounds need revalidation. Excludes envelope overhead and is not a lower bound for other protocols or a quantum security certificate."
+}

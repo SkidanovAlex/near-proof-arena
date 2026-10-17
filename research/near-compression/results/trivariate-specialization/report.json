@@ -1,0 +1,25 @@
+{
+  "nonzero_vectors": 200,
+  "mixed_coefficient_identities": 12150,
+  "retained_interpolants": [
+    {
+      "prime": 3,
+      "zero_specializations": 0
+    },
+    {
+      "prime": 5,
+      "zero_specializations": 0
+    },
+    {
+      "prime": 17,
+      "zero_specializations": 0
+    }
+  ],
+  "boundary_cases": [
+    "Q=Z",
+    "Q=Z^3-Z over F3",
+    "duplicate sample invalidates count",
+    "zero vector invalidates count"
+  ],
+  "scope": "Formal specialization and total-annihilation bound only. Useful-factor/Hensel and complete MCA exceptions remain open."
+}

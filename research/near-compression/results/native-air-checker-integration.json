@@ -1,0 +1,31 @@
+{
+  "status": "RETAINED_AIR_AND_ACCUMULATOR_CHECKS_EXECUTED_IN_LEAN",
+  "adapter": "CheckRebuildRecords.lean",
+  "artifact": "results/literal193-fixed-rebuild.air.json",
+  "report": "results/lean-rebuild-captures.json",
+  "capture": {
+    "programs": 2,
+    "expression_roots": 1386,
+    "source_constraints": 1228,
+    "accumulator_residuals": 1291,
+    "auxiliary_residuals": 63,
+    "reconstruction_records": 9152
+  },
+  "validation": {
+    "diagnostic_assignments": 2,
+    "malformed_rejections": 24,
+    "full_check": "PASS",
+    "registered_results": 3867
+  },
+  "established": [
+    "Full fixed-profile verification and replay produce expected AIR expression routes, mixing values and source residual order. Recompiled source instructions must match retained programs.",
+    "Lean checks each AST/register route, source constraint prefix, accumulator continuity, mixing coefficients and final copy before reconstruction/batching/finite layout acceptance.",
+    "Artifact hashes bind replay manifest, expected AIR capture and reconstruction data in the retained report."
+  ],
+  "remaining": [
+    "Formal identification of generated auxiliary formulas with the full bus specification remains separate from checked evaluation of the supplied formulas.",
+    "Native capture execution is not a kernel proof term for parsed JSON or a formal refinement of the Python replay/compiler.",
+    "Recovered input/environment identification, transcript/commitment security, global execution/PQ soundness and secure full-NEAR size remain open."
+  ],
+  "auxiliary_formula_validation": "Extended by results/bus-formula-checker-integration.json: all63 auxiliary formula/register routes and their exact accumulator order are now checked; expected-formula generation remains outside the formal refinement."
+}

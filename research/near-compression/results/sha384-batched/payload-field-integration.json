@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2277,
+  "audit_log": "/tmp/root-batch-payload-field-audit.log",
+  "module_sha256": "5e3888259791460daa0ed30dd990dac750218f7c9cebd1fe859cb03e3d49d8de",
+  "theorems": 5,
+  "proved": [
+    "all padded bytes bounded below256, including default lookup",
+    "message limbs bounded below65536",
+    "public field lookup preserves natural tape lookup",
+    "actual public payload limb decodes without field wraparound",
+    "limb division/modulo recover exact high/low padded bytes"
+  ],
+  "remaining": [
+    "public bus4 record and tag decoding",
+    "receiving trace byte equality",
+    "whole block/message composition",
+    "cryptographic and recursive security"
+  ]
+}

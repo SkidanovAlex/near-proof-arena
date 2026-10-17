@@ -1,0 +1,3 @@
+'NearCompression.packed_byte_range_from_balance' depends on axioms: [propext, Quot.sound]
+'NearCompression.packed_byte_limb_canonical' depends on axioms: [propext, Quot.sound]
+'NearCompression.packed_byte_limb_injective' depends on axioms: [propext, Classical.choice, Quot.sound]

@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3578,
+  "added_theorems": 3,
+  "source_sha256": "26b72a0977b5e7af00fa2dd802b8272f78dda935a3aba7b34d497bd582bd1268",
+  "audit_log": "/tmp/root-source-stage-audit.log",
+  "audit_sha256": "fafa752162b1aa397e4608c2fe8fb99f954f6eeb1837d99835b29177334bd9cd",
+  "scope": "Checked prior virtual folds and source queries composed without an abstract noClose premise.",
+  "proved": [
+    "Unique-list membership implies normalized degree-bounded closeness.",
+    "Checked virtual strategy supplies the required insufficient-agreement bound to source-query sampling.",
+    "Adaptive prior-challenge/source-query Cartesian experiment includes rejected endpoint paths and next oracle/OOD data selected from the prior prefix."
+  ],
+  "normalized_bound": "E_virtual/|foldSample| + ((minimum-1)/sizes(rounds))^q for nonempty sample spaces.",
+  "remaining_premises": [
+    "Original fixed source lacks the stated functional candidate at threshold T.",
+    "Field/root geometry, strict unique extraction regime, initial weight length and degree schedule.",
+    "Ideal independent uniform sampling; fixed oracle representation before source queries."
+  ],
+  "limits": [
+    "The event is failure of noCorrect on the selected prequery list, not whole verifier acceptance.",
+    "Must combine with mixing/continuation bound and list-completeness conditions.",
+    "No commitment/QROM, full NEAR, capacity or end-to-end size claim."
+  ]
+}

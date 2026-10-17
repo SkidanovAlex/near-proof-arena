@@ -1,0 +1,39 @@
+{
+  "status": "LOCAL_TERMINAL_MISMATCH_TO_FIXED_SEMANTIC_BATCH_PROVED",
+  "module": "NearCompression/TerminalSemanticOutputs.lean",
+  "theorems": [
+    "terminal_outputs_semantic_projection",
+    "terminal_outputs_fixed_meaning",
+    "terminal_pair_mismatch_index",
+    "local_terminal_semantic_mismatch",
+    "preselected_semantic_outputs",
+    "local_terminal_compiler_cancellation"
+  ],
+  "proved": [
+    "Compiler witness erasure preserves the ordered terminal output list, retaining metadata, public values, mixing, formulas, weight and claim.",
+    "Preselected decoded source ownership and checked selector transport compose with semantic projection.",
+    "A wrong decoded local terminal claim supplies an indexed mismatch without assuming unique tables.",
+    "For fixed semantic meanings and history, a rho-dependent compiler circuit can cancel a wrong local claim at at most tableCount-1 distinct sampled rho values."
+  ],
+  "assumptions": [
+    "Semantic meanings and decoded family fixed before rho.",
+    "Per-rho compiler semantic-list binding remains explicit.",
+    "Local point, mixing, formula order, kernel weight and sent-claim identities remain explicit.",
+    "Circuit identity must be supplied from the checked compiler chain."
+  ],
+  "remaining": [
+    "Instantiate these identities from one concrete verifier experiment and intended AIR specification.",
+    "Compose averaged GKR and joint PCS counts, including no-representative failure.",
+    "Executable refinement, computational/QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3972,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "status": "CAPTURED_LITERAL193_GEOMETRY_KERNEL_CERTIFIED",
+  "modules": [
+    "NearCompression/Literal193GKRGeometry.lean"
+  ],
+  "proved": [
+    "All76 lanes of the retained packed193-instruction fixture satisfy GKRSourceLane.WellFormed.",
+    "The same captured lanes satisfy the universal CanonicalLaneSelectors premise using a Lean kernel-evaluated certificate."
+  ],
+  "capture_audit": {
+    "status": "PASS",
+    "capture": {
+      "profile": "near-pq384-gkr-bus-v1",
+      "directory": "results/pq384-literal193-gkr-packed",
+      "proof_sha256": "05eee082d5a891fb0e18b4294b278c247df24274ba18e908663f5d1398494231",
+      "statement_sha256": "10f3561d7d00bb24a853c802def9987f65c2ccd95eb0cab563ed62d2eb391d75"
+    },
+    "layout": {
+      "rowCoordinates": 16,
+      "inputLog": 13,
+      "commonLog": 12,
+      "privateCapacity": 4096
+    },
+    "tables": 2,
+    "counts": {
+      "lanes": 76,
+      "slot_values": 2072,
+      "beta_values": 76,
+      "lane_weight_positions": 12,
+      "partial_lanes": 3,
+      "negative_checks": 13,
+      "row_pairs": 3
+    },
+    "seconds": 1.6717035048641264,
+    "metadata": "results/literal193-gkr-metadata/pq384-literal193-gkr-packed-metadata.json",
+    "scope": "Captured observed input dimension, not deployment of fixed-envelope profile. No PCS/cryptographic soundness claim."
+  },
+  "branch_geometry": [
+    {
+      "branch": "EXEC source",
+      "width": 605,
+      "packing": 16,
+      "degree": 4096,
+      "projection_exponent": 1
+    },
+    {
+      "branch": "EXEC aux",
+      "width": 12,
+      "packing": 1,
+      "degree": 256,
+      "projection_exponent": 16
+    },
+    {
+      "branch": "CODE source",
+      "width": 198,
+      "packing": 16,
+      "degree": 4096,
+      "projection_exponent": 1
+    },
+    {
+      "branch": "CODE aux",
+      "width": 200,
+      "packing": 16,
+      "degree": 4096,
+      "projection_exponent": 1
+    }
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "independent_selector_mutations_rejected": 4,
+    "registered_results": 3776,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "limits": [
+    "Numerical certificate for this captured fixture, not a universal compiler proof.",
+    "Compiler correspondence and beta/slot parity checked by replay, not Lean refinement.",
+    "Projection exponents here are geometry; oracle projection identity still needs instantiation.",
+    "End-to-end soundness, QROM, secure parameters, full NEAR1Pgas and secure sub300000 bytes remain open."
+  ],
+  "reused": "Existing GKRSlotCertificate.checked_lane_selectors and GKRMetadataValidity.checked_metadata_all_lanes"
+}

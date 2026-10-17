@@ -1,0 +1,21 @@
+{
+  "status": "ROUTING_PARITY_PASS_NOT_RECURSIVE_PROOF",
+  "actual_path_cases": 360,
+  "routing_equations_checked": 555456,
+  "flat_vector_equations_checked": 555456,
+  "mutation_and_shape_rejections": 822,
+  "compression_air_necessity_counterexamples": 48,
+  "complete_recursive_proof": false,
+  "public_inputs": [
+    "root",
+    "context",
+    "leaf_count",
+    "index",
+    "claimed_leaf"
+  ],
+  "private_inputs": [
+    "sibling_message_limbs",
+    "SHA384 compression/use witness"
+  ],
+  "scope": "Actual source context plus boundary contexts; all positions at depths1..4. Public-only route compiler binds IV, full chaining state, framing, padding, digest-to-message limbs and root. Tests use native SHA384 states checked against hashlib. Routing is not compression correctness or a PCS proof. Next: same-root GKR/PCS and actual compression AIR acceptance; no outer bytes, PQ128, or full NEAR claim."
+}

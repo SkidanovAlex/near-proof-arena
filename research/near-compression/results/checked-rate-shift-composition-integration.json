@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3579,
+  "added_theorems": 1,
+  "source_sha256": "57489a7d306e7d368793911d1e6d09fa754dbdf5eed3a1025d5a4dcde7dfb07a",
+  "audit_log": "/tmp/root-rate-join-audit.log",
+  "audit_sha256": "a979d647b92016f4d7c6620ecb4c176a3a36442e4c1da38f3ec2b2bf9747566b",
+  "scope": "Joint ideal acceptance bound for checked virtual folds, source sampling, constraint mixing and checked continuation.",
+  "normalized_bound": "Evirtual/Fprior + ((minimum-1)/Nfold)^qsource + (qsource+1)/Fmix + Econtinuation/Fcontinuation + ((Tcontinuation-1)/Ncontinuation)^qcontinuation; nonempty uniform sample spaces.",
+  "ordering": "Next oracle and OOD value may depend on prior fold challenges but precede source queries. Continuation may depend on prior path, source queries and mixing gamma; its fold snapshots must be causal.",
+  "derived": [
+    "NoCorrect supplied by the source-stage theorem, not an independent premise.",
+    "Folded weight length derived from original weight shape and degree halving.",
+    "Endpoint rejection retained in full acceptance event."
+  ],
+  "remaining": [
+    "Initial source no-candidate premise, field/root geometry and strict extraction regime.",
+    "Causal continuation transcript, challenge values and explicit initial oracle/weight/claim bindings.",
+    "Commitment binding and quantum Fiat-Shamir reduction are not proved.",
+    "Executable continuation, full NEAR state transitions, 1 Pgas capacity and under-300000-byte total proof remain open."
+  ]
+}

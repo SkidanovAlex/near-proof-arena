@@ -1,0 +1,26 @@
+{
+  "reusable_pcs_native_reference_proof_identical": true,
+  "status": "PASS",
+  "fft_cases": 10,
+  "direct_polynomial_evaluations": 27,
+  "merkle_root_comparisons": 4,
+  "base_source_preserved": true,
+  "wrapper_rejections": 4,
+  "direct_abi_rejections": 4,
+  "timings": [
+    {
+      "lde4": false,
+      "domain": 4096,
+      "native_seconds": 0.003677660133689642,
+      "python_seconds": 0.05887008085846901
+    },
+    {
+      "lde4": true,
+      "domain": 16384,
+      "native_seconds": 0.008140738122165203,
+      "python_seconds": 0.27839480340480804
+    }
+  ],
+  "source_sha256": "d998e7f08282d93550c0fa9a37972708697b038acb1fd300ab476dee770ae9a9",
+  "scope": "Native Ext8 FFT/LDE4 through degree4096/domain16384. Reference/root parity and direct evaluation checks; reusable scalar PCS proof parity; no weighted slice PCS integration, Rust refinement, quantum security or envelope-size certification."
+}

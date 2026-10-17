@@ -1,0 +1,99 @@
+{
+  "status": "PASS",
+  "profile": "phase-pooled-affine-code-switch-v1",
+  "source_sha256": [
+    "19c13e6ae3852a39824d04d83a25356de87c3327b73a3aea54c79a469ed7cfef",
+    "0c11f0bf4340938bfb17f7354cfc80e5fbce6c81946ff0697a78371685d9e756",
+    "1cd9ad0061379f127b427285c30ccbbc0c2443aed5b5207f601a22e747efb70c",
+    "885b505af0a4ba2a86b0af4f922cefa8f8de421c7cf9cc7c7ae28ae574edf54a"
+  ],
+  "retained_reduction_sha256": "a6fdcb70f4888f14cb22ef3f4c838e29582b638aaf6589dc3d7499d33dacfcff",
+  "source_and_aux_roots_unchanged": true,
+  "compression_opening_bytes": 1191112,
+  "compression_envelope_bytes": 1234992,
+  "reduction_and_framing_bytes": 43880,
+  "breakdown": {
+    "header_and_terminal_bytes": 3992,
+    "groups": [
+      {
+        "kind": "packed-source",
+        "offset": 1912,
+        "shared": false,
+        "unique_leaves": 309,
+        "leaf_bytes": 138432,
+        "sibling_bytes": 145632
+      },
+      {
+        "kind": "packed-source",
+        "offset": 285976,
+        "shared": false,
+        "unique_leaves": 309,
+        "leaf_bytes": 24720,
+        "sibling_bytes": 116256
+      },
+      {
+        "kind": "packed-source",
+        "offset": 426952,
+        "shared": false,
+        "unique_leaves": 182,
+        "leaf_bytes": 65520,
+        "sibling_bytes": 2736
+      },
+      {
+        "kind": "scalar-coset",
+        "offset": 495576,
+        "shared": false,
+        "unique_leaves": 309,
+        "leaf_bytes": 79104,
+        "sibling_bytes": 114624
+      },
+      {
+        "kind": "scalar-coset",
+        "offset": 689672,
+        "shared": false,
+        "unique_leaves": 308,
+        "leaf_bytes": 78848,
+        "sibling_bytes": 87984
+      },
+      {
+        "kind": "scalar-coset",
+        "offset": 856872,
+        "shared": false,
+        "unique_leaves": 305,
+        "leaf_bytes": 78080,
+        "sibling_bytes": 57744
+      },
+      {
+        "kind": "scalar-coset",
+        "offset": 993064,
+        "shared": false,
+        "unique_leaves": 290,
+        "leaf_bytes": 74240,
+        "sibling_bytes": 31152
+      },
+      {
+        "kind": "scalar-coset",
+        "offset": 1098824,
+        "shared": false,
+        "unique_leaves": 229,
+        "leaf_bytes": 58624,
+        "sibling_bytes": 8976
+      },
+      {
+        "kind": "scalar-coset",
+        "offset": 1166600,
+        "shared": false,
+        "unique_leaves": 241,
+        "leaf_bytes": 15424,
+        "sibling_bytes": 9024
+      }
+    ],
+    "total_bytes": 1191112
+  },
+  "source_seconds": 87.94418115029112,
+  "prove_seconds": 195.08506982587278,
+  "codec_seconds": 23.739788800943643,
+  "total_seconds": 445.0523965470493,
+  "fresh_execution_verified": true,
+  "scope": "Full retained SHA384 slice execution opening reproof; call conjunction measured separately. Diagnostic schedule, no code-switch extraction/proximity/QROM/PQ128 or full NEAR certificate."
+}

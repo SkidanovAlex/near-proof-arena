@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "proof_bytes": 111051,
+  "receipt_bytes": 732,
+  "package_bytes": 111783,
+  "proof_sha256": "807ae1d1fff863ceabcf87134b60b2cbe3394c225f2ba82fd2c6c4abef587675",
+  "root_fresh_binary_verified": true,
+  "root_fresh_export_byte_identical": true,
+  "canonical_residuals": 7300624,
+  "natural_bus_counts": {
+    "1": 11,
+    "3": 11,
+    "0": 22,
+    "2": 11,
+    "4": 15
+  },
+  "root_reference_negatives": 21,
+  "source_cells": 5392192,
+  "independent_five_call_core_endpoint_cells": 6732880,
+  "saved_source_cells": 1340688,
+  "source_cell_saving_percent": 19.912548567626335,
+  "baseline_spec_sha256": "0b6a69881a0e6ac67ca1c656130bc72ff69145dd4f5386c1b39848d601bc6e37",
+  "scope": "Compression component only,11nodes/15ordereduses. Q8/Ext4 diagnostic. Payload excludes canonical static AIR/spec (~1.14MB), which is externally fixed and digest-bound in receipt. Exact use root/context externally fixed before proof. Source-cell comparison excludes call/input provenance on both sides; not a measured proof-size improvement. Full call-chain/padding/IV/digest provenance, cross-chunk coverage, aggregation, security parameters and QROM open.",
+  "root_configuration_negatives": 10
+}

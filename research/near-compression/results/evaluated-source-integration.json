@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3363,
+  "added_theorems": 2,
+  "sources": {
+    "SHA384EvaluatedSource": "cfc0a98defd9c1ad47aebe025657ed77c64f6859957dc38e990302f3dcddcd3f"
+  },
+  "audit_log": "/tmp/root-evaluated-source-audit.log",
+  "audit_sha256": "4521fb1e4e21228d7354b6f67a2ddb70f84fffde43c7a45a2496bb2d38c3bf3e",
+  "parity_report": "results/sha384-evaluated-source/report.json",
+  "parity_sha256": "b8e301900753707cb0b854bbcc1c3a993b552ddc5054d2721516ea5b5bed61ba",
+  "scope": "Proved-equal source polynomial evaluation replaces nested mutable FFT evaluation for executable validation; four table shapes/76leaves/three partial lanes match Python source_tree and independent interpolation.",
+  "original_direct_run": "Intentionally terminated after certified replacement passed; not a direct-loop runtime PASS.",
+  "remaining": [
+    "Native executable parity, adversarial-root extraction and quantum soundness.",
+    "FullNEAR capacity, recursive aggregation and secure sub300KB."
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "status": "PROVED_COMPONENT",
+  "module": "NearCompression/ShiftAdaptiveSoundness.lean",
+  "main_theorem": "shift_wrong_vector_count",
+  "established": [
+    "Honest quadratic shift rounds are constructed from actual trace coordinate slices and Boolean suffixes",
+    "Exact honest-round degree and remaining-sum representation are derived",
+    "Adaptive round soundness is composed with fixed-vector batching error",
+    "Full ideal reduction error bounded by (2*width-1+2*row_log)/field_size"
+  ],
+  "premises": [
+    "Original trace and target fixed before shift challenges",
+    "Incorrect current/next vector fixed before batching alpha",
+    "Terminal equality to the actual source-column trace evaluations"
+  ],
+  "remaining": [
+    "PCS authentication of final original-column evaluations",
+    "Common-source commitment extraction and correct transcript timing",
+    "Composition with AIR/bus and quantum transcript reductions"
+  ]
+}
