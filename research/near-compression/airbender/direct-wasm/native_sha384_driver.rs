@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use openvm_stark_backend::{StarkEngine,SystemParams,AirRef,prover::{CpuColMajorBackend,AirProvingContext,ProvingContext},test_utils::{TestFixture,test_system_params_small}};
 use p3_field::PrimeCharacteristicRing;
-mod config {use super::*;include!("native_sha384_config.rs");
+mod config {use super::*;include!("native_sha384_config.rs");include!("native_digest_dictionary.rs");
     pub(super) fn run() {
         use openvm_stark_backend::{codec::{Encode,Decode},proof::Proof,soundness::SoundnessCalculator};
         if std::env::var_os("NEARPROOF_TRANSCRIPT_VECTORS").is_some() {transcript_vectors();return;}
@@ -21,11 +21,29 @@ mod config {use super::*;include!("native_sha384_config.rs");
         let expected:Vec<F>=std::fs::read(format!("{out}/public.bin")).unwrap().chunks_exact(4)
             .map(|b|F::from_u32(u32::from_le_bytes(b.try_into().unwrap()))).collect();
         if std::env::var_os("NEARPROOF_REPLAY").is_some() {
-            let bytes=std::fs::read(format!("{out}/child.proof")).unwrap();
+            let bytes=if let Ok(path)=std::env::var("NEARPROOF_DICTIONARY") {
+                let wire=std::fs::read(path).unwrap();
+                let native=decode_digest_dictionary(&wire).expect("invalid dictionary stream");
+                println!("NATIVE_DICTIONARY_DECODE wire={} native={}",wire.len(),native.len());
+                native
+            } else {std::fs::read(format!("{out}/child.proof")).unwrap()};
             let mut cursor=std::io::Cursor::new(&bytes);
             let proof=Proof::<SC>::decode(&mut cursor).unwrap();
             assert_eq!(cursor.position() as usize,bytes.len());
             assert_eq!(proof.public_values[0],expected);
+            if std::env::var_os("NEARPROOF_WHIR_CENSUS").is_some() {
+                let w=&proof.whir_proof;
+                let mut digests=Vec::new();
+                for groups in [&w.initial_round_merkle_proofs,&w.codeword_merkle_proofs] {
+                    for queries in groups {for path in queries {for d in path {digests.extend(digest_bytes(*d));}}}
+                }
+                let unique:std::collections::BTreeSet<_>=digests.chunks_exact(48).collect();
+                let base_values:usize=w.initial_round_opened_rows.iter().flat_map(|x|x.iter()).flat_map(|x|x.iter()).map(|x|x.len()).sum();
+                let ext_values:usize=w.codeword_opened_values.iter().flat_map(|x|x.iter()).map(|x|x.len()).sum();
+                println!("WHIR_CENSUS auth_bytes={} auth_digests={} unique_auth_digests={} initial_values_bytes={} codeword_values_bytes={}",
+                    digests.len(),digests.len()/48,unique.len(),base_values*4,ext_values*48);
+                std::fs::write(format!("{out}/auth-digests.bin"),&digests).unwrap();
+            }
             let before=hash_counts();
             engine.verify(&vk,&proof).unwrap();
             let after=hash_counts();

@@ -13307,3 +13307,37 @@ not a composed PQ certificate. git diff --check passes. FullNEAR1Pgas, secure
 sub300000B and end-to-end formal proof remain open. Next decisive size work is
 on WHIR openings at this actual field/hash profile; recursive hashing is now a
 smaller measured workload, not assumed solved.
+
+## 2026-10-17 — Actual WHIR byte census and lossless proof transport
+
+Previous turn progressed atc4f5accac; clean worktree revalidated. Actual saved
+SHA384-v4/Ext12 child WHIR census:500256authentication bytes (10422digests,
+7103distinct),8992initial base-field value bytes,105984codeword extension-value
+bytes. This identifies authentication bytes, not transcript hashing, as the
+largest remaining transmitted component.
+
+Implemented self-contained dictionary transport for repeated48-byte digest
+values. Retained806entries and4125references; complete wire596750bytes versus
+native740881, saving144131bytes(19.45%). Request919bytes gives597669total.
+The native cryptographic proof and parameter profile are unchanged. Dictionary
+is included; verification needs no original proof, fixture or witness. Python
+checks exact native byte reconstruction. Separate Rust decoder reconstructs and
+native verifier accepts in a directory with no original proof/witness files.
+A modified live dictionary digest passes structural decoding but fails native
+WhirError(MerkleVerify). Eight malformed-format cases pass against source-extracted
+Rust decoder. Native decoding still checks full consumption and expected public
+values. Existing native-v4 proof's Lean execution parity remains applicable to
+its byte-identical reconstruction; no new Lean/security theorem claimed.
+
+Decoder has explicit16MiB reconstruction and65536entry limits; unknown tags,
+truncation,index errors,empty literal runs and length mismatches reject. This is
+transport encoding, not a quantum reduction or recursive proof. It preserves
+native acceptance as the final gate and does not weaken the selected268query
+profile. Artifacts include compressed proof, census, logs, source and dependency
+lock in native-literal-digest-dictionary/. Current generator/checker archives the
+additional decoder module for reproducibility. Original proof artifacts unchanged.
+
+Conclusion: a real size reduction, still nearly2x the300000target. Shared Merkle
+opening reconstruction and WHIR opening parameters need further work. No claim
+that dictionary savings predict a final bound; fullNEAR1Pgas/PQcomposition/
+end-to-end Lean correctness remain open. git diff --check passes.

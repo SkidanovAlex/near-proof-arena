@@ -63,7 +63,7 @@ claimed=dict(done=public[44]==1,failed=public[45]==1,gas=sum(public[46+i]<<(16*i
 assert actual==claimed
 for name in ['public.bin','rows-0.bin','rows-1.bin','spec.json','fixture.json']:
     assert (OUT/name).read_bytes()==(ROOT/'results/native-literal-field-screen'/name).read_bytes()
-for name in ['main.rs','native_sha384_config.rs','literal.rs']:shutil.copyfile(TMP/'src'/name,OUT/name)
+for name in ['main.rs','native_sha384_config.rs','native_digest_dictionary.rs','literal.rs']:shutil.copyfile(TMP/'src'/name,OUT/name)
 for name in ['Cargo.toml','Cargo.lock']:shutil.copyfile(TMP/name,OUT/name)
 (OUT/'backend.patch').write_bytes(subprocess.check_output(['git','diff','--','crates/stark-backend'],cwd=BACKEND))
 shutil.copyfile(ROOT/'results/babybear-ext12-construction/plonky3-ext12.patch',OUT/'plonky3-ext12.patch')

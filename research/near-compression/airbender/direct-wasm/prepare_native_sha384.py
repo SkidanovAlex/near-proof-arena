@@ -10,7 +10,7 @@ for name in ['fixture.json','spec.json','rows-0.bin','rows-1.bin','public.bin']:
 s=(ret/'native_literal.rs').read_text().split('// Appended to the generated literal AIR adapter.')[0]
 s=s.replace('BabyBearPoseidon2Config','SC').replace('struct LiteralFixture;','pub(super) struct LiteralFixture;')
 (TMP/'src/literal.rs').write_text(s)
-for name,dst in [('native_sha384_driver.rs','main.rs'),('native_sha384_config.rs','native_sha384_config.rs')]:shutil.copyfile(HERE/name,TMP/'src'/dst)
+for name,dst in [('native_sha384_driver.rs','main.rs'),('native_sha384_config.rs','native_sha384_config.rs'),('native_digest_dictionary.rs','native_digest_dictionary.rs')]:shutil.copyfile(HERE/name,TMP/'src'/dst)
 backend='/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5/crates/stark-backend'
 (TMP/'Cargo.toml').write_text(f'''[package]
 name="nearproof-native-sha384"
