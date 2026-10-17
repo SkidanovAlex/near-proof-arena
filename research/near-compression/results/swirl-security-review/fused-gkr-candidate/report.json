@@ -1,0 +1,14 @@
+{
+  "status": "NEW_TRANSCRIPT_GKR_AND_RESIDUAL_CHECKED",
+  "prover_seconds": 13.220466813072562,
+  "draws": 437,
+  "hash_calls": 438,
+  "compression_blocks": 1313,
+  "negative_checks": 5,
+  "profile": "nearproof-fused-terminal-gkr-v3",
+  "scope": "New transcript protocol. Actual GKR verified; residual checked against full witness, no native PCS continuation.",
+  "limitations": [
+    "No QROM security/composition proof, no PQ128, no full NEAR, no Lean transcript refinement.",
+    "Hash graph is host-derived; circuit proof remains a separate obligation."
+  ]
+}

@@ -12579,3 +12579,62 @@ Evidence in results/swirl-security-review/binius-query-screen includes all30rows
 exact-check runner, native log, incremental patch and source snapshots. make
 pin-check passes. No Lean theorem changed, no full NEAR1Pgas proof/PQ128/end-to-end
 correctness achieved; goal remains active.
+
+## 2026-10-17 — Fused GKR transcript candidate reduces actual hash circuit
+
+Previous goal turn progressed at9d0cb04c3 by rejecting the unchanged fixedgraph
+under stronger query-only budgets. Revalidated clean branch and inspected
+actual transcript routes: each usual commit/draw performs five hash calls.
+No byte-preserving elimination was established. Instead implemented a NEW,
+separately versioned GKR transcript candidate, nearproof-fused-terminal-gkr-v3.
+Existing v2 bundle, transcript class and verifier remain untouched.
+
+Candidate binds statement, fixed layout digest and claim in one initial hash.
+Exactly one pending gkr-vector commit is allowed before a draw. A draw hash
+frames profile, previous seed, commit label/payload, draw label, round index,
+count, coefficient count and retry counter. The last squeeze digest becomes
+the next seed. Uses existing rejection threshold and little-endian word scan;
+no modulo-only fallback. Retries bind explicit counters; exhaustion rolls back
+graph/input recording and preserves seed/pending message. Operational forced
+retry, rollback, schedule and shape checks pass. These are not a Fiat-Shamir
+security proof. Prior generic transcript security cannot simply be inherited.
+
+Loaded an isolated copy of the existing GKR arithmetic module with new profile
+and begin function, avoiding mutation of baseline module globals. Generated a
+fresh native-kernel GKR proof for the same root layout/statement/claim. Verify
+matches prover obligation; known-input subtraction/residual matches full witness.
+Five negatives cover statement/coefficient/profile changes, old verifier and a
+relabelled old proof. Native PCS continuation is NOT regenerated or claimed.
+Candidate proof and routed graph saved under fused-gkr-candidate/.
+
+Actual candidate graph:437draws,438hashcalls,1313SHA384compressionblocks versus
+2187calls/4373blocks previously. Each typical combined frame costs3compression
+blocks, so savings are not inferred from call count alone. Generated Binius
+circuit with the existing trustedgraph harness and unchanged pinned patches:
+1460229hiddenwords,1180068ANDconstraints. At inverse-rate log3 and diagnostic
+96-bit QUERY setting, payload223488B, serialized223524B. Freshverify passes;
+changedpublicinput rejects in verifier, changedproof rejects Merkle authentication.
+Public inout5644words/45152B external (all squeeze outputs and final digest;
+final is already a squeeze), combined diagnostic transport268676B. This remains
+only a hash-graph component; not a full secure proof below300000B.
+
+Repeated30case native byte census, with exact rational query sufficiency and
+minimality checks. Generated payload matches its census. At128-bit QUERY budget,
+best rate1/8 estimate283716B before publicio, or328868B with publicio. Hash/field
+widths unchanged. No full/PQ128 soundness upgrade, no arbitrary sampler circuit,
+GKR arithmetic circuit, native prefix/PCS verifier or full NEAR1Pgas proved.
+No new Lean theorem or implementation refinement established in this turn.
+
+Decision: retain the fused transcript as a candidate because both fresh GKR
+and an actual smaller hash proof exist. Do not adopt it in production/v2 or call
+it PQ128. Next establish its formal operational/framing interfaces and evaluate
+a combined sampler/arithmetic circuit budget, keeping all opening obligations
+and quantum Fiat-Shamir losses explicit. Candidate size margin is still narrow
+at128query budget and not evidence that a complete verifier fits.
+
+Reproduce prove_fused_gkr_candidate.py, check_fused_transcript_edges.py,
+check_fused_binius_graph.py (latter --reuse-tmp imports observed proof but reruns
+freshverify/negatives). Binius uses previous hashgraph/wide-address/census/query
+screen patches and lockfile; no further upstream source change. Logs, proofs,
+graphs and30row report under fused-gkr-candidate/ and fused-binius-graph/.
+make pin-check passes. Full goal remains active and unachieved.
