@@ -209,6 +209,21 @@ def build(root=ROOT):
     assert hybrid_work['baseline_stage_blocks']==hash_work['measurement']['tags']['near-ext8-code-switch-stage-diagnostic-v1']['unique_blocks']
     assert hybrid_work['candidate_stage_blocks']==sum(s['closed_candidate_blocks'] for s in hybrid_work['stage_start_hash_blocks'])
     assert hybrid_work['unchanged_other_work_counterfactual_blocks']==hash_work['measurement']['totals']['unique_blocks']-hybrid_work['baseline_stage_blocks']+hybrid_work['candidate_stage_blocks']
+    joint=read('results/joint-nibble-geometry.json')
+    assert joint['status']=='JOINT_NIBBLE_GEOMETRY_SCREEN_ONLY'
+    assert joint['baseline']['proof_bytes']==nibble_codec['proof_bytes']
+    assert sum(joint['baseline']['components'].values())==joint['baseline']['proof_bytes']
+    assert joint['baseline']['nonopening_byte_equality'] and joint['baseline']['transcript_derived_opening_geometry']
+    for relative,expected in joint['sha256'].items():
+        assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
+    for row in joint['scenarios']:
+        assert row['security_certified'] is False and row['executable_profile'] is False
+        assert row['degree']==max(b['degree'] for b in row['branches'])<=2**25
+        assert row['expected_optimistic_total_bytes']==row['optimistic_fixed_bytes']+row['expected_opening_bytes']
+        assert row['sampled_min_bytes']==min(row['simulated_totals'])
+        assert row['sampled_max_bytes']==max(row['simulated_totals'])
+        for comparison in row['comparisons']:
+            assert comparison['expected_headroom_bytes']==comparison['allowance_bytes']-row['expected_optimistic_total_bytes']
     hash_geometry=read('results/hash-architecture-review/geometry.json')
     assert hash_geometry['status']=='ALGEBRAIC_HASH_GEOMETRY_ONLY_SECURITY_OPEN'
     assert hash_geometry['field']==2013265921
@@ -315,12 +330,16 @@ def build(root=ROOT):
             work_evidence='results/closed-hybrid-work.json',
             remaining_hash_counterfactual=hybrid_work['unchanged_other_work_counterfactual_blocks'],
             next_gate=hybrid_work['decision']),
+        joint_nibble_geometry=dict(evidence='results/joint-nibble-geometry.json',
+            baseline_reconciled_bytes=joint['baseline']['proof_bytes'],
+            scenarios=[{k:r[k] for k in ('name','queries','expected_optimistic_total_bytes','sampled_min_bytes','sampled_max_bytes')} for r in joint['scenarios']],
+            assumptions=joint['assumptions'],next_gate=joint['decision']),
         hash_architecture_screen=dict(evidence='results/hash-architecture-review/geometry.json',
             digest_screens=hash_geometry['digest_screens'],candidates=hash_geometry['candidates'],
             scope=hash_geometry['scope'],next_gate=hash_geometry['decision'],security_certified=False),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
-        decision=dict(next_experiment='Independent 64-block envelope transport fails the framing budget. Specify a joint closed-verifier relation with amortized proof messages, same-root call binding and arithmetic coverage; require a complete byte/security ledger before larger-scale proving. q8 is diagnostic, not PQ128.',
+        decision=dict(next_experiment='Independent envelopes fail framing; the named joint separate-tree SHA shape also exceeds budget in expected/sampled q8 geometry with GKR/routing/arithmetic omitted. Next price a changed joint layout (pooling/code switching or an algebraic-hash AIR) with its own assumptions, rather than scale this SHA profile. Require nonzero full-verifier coverage costs and a conditional byte/security ledger before a large run.',
             standalone_mca_expansion=('REASSESS against the surviving candidate; partial ledger is not certification.' if feasible else 'DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.'),
             reopen_mca_if='A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.',
             do_not_repeat='Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.',

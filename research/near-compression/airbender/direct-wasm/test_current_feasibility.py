@@ -20,6 +20,10 @@ def main():
     base=report.ROOT/'results/ext8-switch-execution-q309'
     manifest_path=base/'manifest.json'
     mutations=[
+        (report.ROOT/'results/joint-nibble-geometry.json',
+            lambda d:d['scenarios'][0].update(expected_optimistic_total_bytes=1),False),
+        (report.ROOT/'results/joint-nibble-geometry.json',
+            lambda d:d['scenarios'][0].update(security_certified=True),False),
         (report.ROOT/'results/hash-architecture-review/geometry.json',
             lambda d:d['candidates'][2].update(pq128_certified=True),False),
         (report.ROOT/'results/hash-architecture-review/geometry.json',

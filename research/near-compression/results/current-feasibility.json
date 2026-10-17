@@ -903,6 +903,63 @@
     "remaining_hash_counterfactual": 204966,
     "next_gate": "Hybrid derivation removes large dense-functional work, but stage-start omission alone leaves about205000hash compression blocks if other recorded work is held fixed. Keep the prototype separate; next evaluate remaining hash architecture and full joint-verifier geometry/security rather than generate a large proof solely for this optimization."
   },
+  "joint_nibble_geometry": {
+    "evidence": "results/joint-nibble-geometry.json",
+    "baseline_reconciled_bytes": 265040,
+    "scenarios": [
+      {
+        "name": "measured_full_verifier",
+        "queries": 8,
+        "expected_optimistic_total_bytes": 471151.79476542585,
+        "sampled_min_bytes": 464744,
+        "sampled_max_bytes": 474864
+      },
+      {
+        "name": "measured_full_verifier",
+        "queries": 309,
+        "expected_optimistic_total_bytes": 12713359.211845396,
+        "sampled_min_bytes": 12686712,
+        "sampled_max_bytes": 12742872
+      },
+      {
+        "name": "closed_stage_binding_counterfactual",
+        "queries": 8,
+        "expected_optimistic_total_bytes": 405071.7982000838,
+        "sampled_min_bytes": 398664,
+        "sampled_max_bytes": 408784
+      },
+      {
+        "name": "closed_stage_binding_counterfactual",
+        "queries": 309,
+        "expected_optimistic_total_bytes": 10169453.049037851,
+        "sampled_min_bytes": 10142800,
+        "sampled_max_bytes": 10198960
+      },
+      {
+        "name": "prior_optimistic_hash_erasure",
+        "queries": 8,
+        "expected_optimistic_total_bytes": 405071.7982000838,
+        "sampled_min_bytes": 398664,
+        "sampled_max_bytes": 408784
+      },
+      {
+        "name": "prior_optimistic_hash_erasure",
+        "queries": 309,
+        "expected_optimistic_total_bytes": 10169453.049037851,
+        "sampled_min_bytes": 10142800,
+        "sampled_max_bytes": 10198960
+      }
+    ],
+    "assumptions": [
+      "Single joint envelope, 22 separate source/auxiliary trees, existing rate4 weighted folding codec.",
+      "Retain baseline widths and finals; multiplicity growth is priced at zero. New constraints and GKR priced at zero.",
+      "Hash call routing, message framing/chaining, verifier arithmetic, challenge derivation and application binding priced at zero.",
+      "Uniform-with-replacement query model; expected costs and 16 seeded simulations are not worst-case bounds.",
+      "Lift implementation degree2^18 and lane64 caps, retain BabyBear subgroup/rate4 degree2^25 cap.",
+      "q8 and q309 are sensitivity scenarios, neither certifies PQ128. Old workloads do not measure a redesigned transcript."
+    ],
+    "next_gate": "This screen prices a named joint SHA architecture before witness generation. Expected/sampled budget failures reject this candidate for further scale-up at these packings, not all joint/pooled/code-switch/algebraic-hash protocols. An algebraic-hash candidate still needs its own table layout and security assumptions; S-box counts do not determine outer bytes."
+  },
   "hash_architecture_screen": {
     "evidence": "results/hash-architecture-review/geometry.json",
     "digest_screens": [
@@ -1003,7 +1060,7 @@
     "qualification": "Gas-capacity ratio only; NOT a proved trace count or operator bound"
   },
   "decision": {
-    "next_experiment": "Independent 64-block envelope transport fails the framing budget. Specify a joint closed-verifier relation with amortized proof messages, same-root call binding and arithmetic coverage; require a complete byte/security ledger before larger-scale proving. q8 is diagnostic, not PQ128.",
+    "next_experiment": "Independent envelopes fail framing; the named joint separate-tree SHA shape also exceeds budget in expected/sampled q8 geometry with GKR/routing/arithmetic omitted. Next price a changed joint layout (pooling/code switching or an algebraic-hash AIR) with its own assumptions, rather than scale this SHA profile. Require nonzero full-verifier coverage costs and a conditional byte/security ledger before a large run.",
     "standalone_mca_expansion": "DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.",
     "reopen_mca_if": "A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.",
     "do_not_repeat": "Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.",
@@ -1043,9 +1100,10 @@
     "results/closed-hybrid-verifier/report.json": "04c6721e718ffc8fc9e3b2e4699abcde80b2cf7b727e40aae15b8647cc8ade61",
     "results/full-hybrid-verifier.json": "3a12ac46c58563e851087f0b99595af5d58f930f921e51effdcfbbca062461f0",
     "results/closed-hybrid-work.json": "563244c14e4d9f058c298d992fd622112740f8aa9fd1ebbcca1d32edde7f0787",
+    "results/joint-nibble-geometry.json": "b6bf88dec908159d0607a1dd6e4a1d6f720fc6cd4b61ae1fc1788133bc958903",
     "results/hash-architecture-review/geometry.json": "427ac2dda26912860315c2b278e62ca4caa472e0e3fea6f043f0ed323be3be67",
     "results/hash-architecture-review/sources.json": "e620af0b265ca3b90057ff2a46ade877101c30bb6835ac5529d61bee5a7956c4",
-    "airbender/direct-wasm/report_current_feasibility.py": "e122ca1787151786f64ded59a4af09a6c13e48b0ed063ba7fd28d218e3150d8a",
+    "airbender/direct-wasm/report_current_feasibility.py": "af887194a49ac78e6b6406d74587c9f592e97f80d1cc219e1e022820e68cf50d",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",

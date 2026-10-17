@@ -28,18 +28,20 @@
     "python3 airbender/direct-wasm/check_full_hybrid_verifier.py --native-library /tmp/feasibility-ext8-replay.so --output results/full-hybrid-verifier.json",
     "python3 airbender/direct-wasm/account_closed_hybrid_work.py",
     "python3 airbender/direct-wasm/screen_algebraic_hash_geometry.py",
+    "python3 airbender/direct-wasm/test_joint_nibble_geometry.py",
+    "python3 airbender/direct-wasm/model_joint_nibble_geometry.py",
     "python3 airbender/direct-wasm/report_current_feasibility.py"
   ],
   "replay_note": "Hash workload counts and sizes are deterministic; timing and native-library hash can vary across machines. Replay regenerated measurement changes its artifact hash.",
   "sha256": {
-    "results/current-feasibility.json": "e770f84570654181b49b4c6c595354a6dbe6870b51440df05968861d75541072",
+    "results/current-feasibility.json": "883575ec76018434bb095a363d17c2644fc56c4b0f88a8f4c54bd26e9d152652",
     "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
     "results/current-feasibility/fresh-verifier.log": "f419b67dfa9e8567efa80f8a1d62e4a67a9a6e8116c072cc247e089029af3218",
     "results/current-feasibility/screen-replay.log": "f27fbac1956a49f96356062285dabfa45e4954b584332916f6cf49136047cedc",
     "results/current-feasibility/hash-work.log": "6198dfa73e0906868332e136655fa9f0cba8b98378ca75eb92ddbffcfb68b087",
-    "results/current-feasibility/validation.json": "1bc3086cd2487c37c0cc4f20420177380d11e0132744dd34941839da58e96ee3",
-    "airbender/direct-wasm/report_current_feasibility.py": "e122ca1787151786f64ded59a4af09a6c13e48b0ed063ba7fd28d218e3150d8a",
-    "airbender/direct-wasm/test_current_feasibility.py": "75915b61793c325f6ab9ac44ecb39d0d4185c27cc3c54ff7edcd8996e2768470",
+    "results/current-feasibility/validation.json": "a0ce5f4b61f0864b3f01b752b4842d8dc24f4a6ee6107e99328d032e07e546e5",
+    "airbender/direct-wasm/report_current_feasibility.py": "af887194a49ac78e6b6406d74587c9f592e97f80d1cc219e1e022820e68cf50d",
+    "airbender/direct-wasm/test_current_feasibility.py": "9106ff7bb957f605888125ca20b1bf220ac39ff44ab790ae28ac3e11998f0f07",
     "airbender/direct-wasm/measure_switch_verifier_work.py": "a5ea8d1cede94853b87d6c0cec9c9f9a09378a6046b07e3174801365f9e33ca7",
     "airbender/direct-wasm/measure_ext8_recursive_hash_work.py": "424ca5d94620cbae2969cc327b08a2656444d390a85a019696992cd70a6dd64e",
     "results/slice-feasibility-gate.json": "0fd4f2a6beb231cc380639f723dc46c29dabf339a289a9c0abda5e07a62db58c",
@@ -115,6 +117,10 @@
     "results/hash-architecture-review/geometry.json": "427ac2dda26912860315c2b278e62ca4caa472e0e3fea6f043f0ed323be3be67",
     "results/hash-architecture-review/upstream/Plonky3-poseidon2_src_round_numbers.rs.gz": "90dccb5e26e7b55759a8c2328dace7197864f4069bf1820597a5cf3123309881",
     "results/hash-architecture-review/upstream/Plonky3-baby-bear_src_poseidon2.rs.gz": "18242bb96492b91e0565fb9cba722c1d8fed171af36acbeefa2ecee26f368fcd",
-    "results/hash-architecture-review/upstream/zksync-airbender-docs_philosophy_and_logic.md.gz": "20e31c5d12b8ea4d2534c1f27f538d24024f32be28afdc9b43587196f039bf90"
+    "results/hash-architecture-review/upstream/zksync-airbender-docs_philosophy_and_logic.md.gz": "20e31c5d12b8ea4d2534c1f27f538d24024f32be28afdc9b43587196f039bf90",
+    "airbender/direct-wasm/model_joint_nibble_geometry.py": "78b6865026458f8631636cda544cc6b26015f3873d9cc9629afd5dadbde1afd4",
+    "airbender/direct-wasm/test_joint_nibble_geometry.py": "77857c450ecb93dba1a8d87b078c60309baf2b50417ca7def689ffce508d2402",
+    "results/joint-nibble-geometry.json": "b6bf88dec908159d0607a1dd6e4a1d6f720fc6cd4b61ae1fc1788133bc958903",
+    "results/joint-nibble-geometry-validation.json": "69211638e301613766de2febc18aeff31d00ef30271d17bc903730360e2bbfe1"
   }
 }

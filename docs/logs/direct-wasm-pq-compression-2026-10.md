@@ -10375,3 +10375,45 @@ new cryptographic theorem. Next gate: a named end-to-end candidate linking
 hash geometry, full recursive-verifier coverage, outer bytes and explicit
 security assumptions before a larger proving experiment. Full NEAR1Pgas,
 PQ128 and secure sub300000B proof remain NOT_PASSED.
+
+### 2026-10-17: witness-free joint SHA geometry gate
+
+Implemented model_joint_nibble_geometry.py, following the independent process
+review. It first reconciles the retained 64-block envelope from its actual
+transcript-derived query indices and trusted table geometry: header/roots1064,
+finals18912, local21728, GKR36992, opening header4360, leaves61696 and sibling
+hashes120288 =265040B. Every nonopening byte equals the independently retained
+reduction messages; the wire SHA256 also matches the verified capture. This is
+accounting replay, not a fresh cryptographic verification or a new proof.
+
+The named projection is ONE joint envelope with22separate source/auxiliary trees
+and the current rate4 weighted codec. Power-of-two packings are optimized over
+this finite shape using exact uniform-query expected leaf/frontier counts.
+Conditional on a maximum degree, branch choices separate; the model enumerates
+all maximum degrees. Small exhaustive checks independently enumerate9packing
+cases and4368joint query sequences;3invalid geometries are rejected.
+
+The actual implementation caps branch degree at2^18 and lanes at64. The
+counterfactual explicitly lifts those caps while retaining BabyBear's rate4
+subgroup degree limit2^25. In the full workload the round table alone needs
+2^25rows, forcing packing1 in that table. No enlarged prover profile or witness
+is implemented. Baseline widths/finals are frozen optimistically: increased
+multiplicity bounds, GKR, hash-call routing/framing/chaining, verifier arithmetic
+and public binding are all priced at zero. Thus these are intentionally
+incomplete architecture estimates, not secure proof-size measurements.
+
+At q8 the measured full-verifier workload242409SHAblocks gives expected471152B
+and16simulated totals464744–474864B. The closed-binding counterfactual204966blocks
+and prior optimistic-erasure152167blocks both give expected405072B and simulated
+398664–408784B, because both map to the same padded table geometry. The current
+full fixture allows190346B for its compression replacement or299999B for the
+whole bundle. Even these incomplete q8 projections miss both allowances.
+At q309 the same shapes project roughly10.17–12.71MB. Neither query count is a
+PQ128 certificate; simulations are not worst-case bounds or an impossibility
+result for other joint layouts, pooling, code switching, or algebraic hashes.
+
+Decision: do not scale this separate-tree SHA profile. A changed joint layout
+must supply its own costs and assumptions; algebraic S-box counts alone do not
+provide outer proof bytes. No new Lean lemmas were needed for this cost decision.
+Full NEAR1Pgas, PQ128, recursive acceptance soundness and secure sub300000B proof
+remain NOT_PASSED. Current dashboard now points to the changed-layout gate.
