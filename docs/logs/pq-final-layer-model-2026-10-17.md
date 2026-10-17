@@ -158,3 +158,30 @@ z ≈ 32, 42-B digests, per-round k1 and m = 8. Structural alternatives to
 investigate: (1) hash-based accumulation (Arc/WARP-style) so the final circuit
 does not re-verify multi-round Merkle openings; (2) a non-hash final wrap
 (lattice: LaBRADOR/Greyhound) — a new assumption class, user decision.
+
+## Iteration 4: accumulation does not move the final-layer floor; MCA constant pinned
+
+**WARP** (Bünz–Chiesa–Fenzi–Wang, ePrint 2025/753, §2 and Table 1): the
+accumulation verifier makes ℓ·t queries with t > λ / −log(1−δ_PG), one Merkle
+opening per query into each accumulated codeword, list-decoding regime.
+In-circuit SHA-384 per step ≈ ℓ·t·depth ≈ 2 × 71 × 24 ≈ 3.4k compressions at
+rate 2⁻⁸ and 268 bits — the same range as the cheapest WHIR verifier at the fixed
+point (2.3–8.6k). The decider still needs a full succinct proof of the
+accumulator (a WHIR opening over a codeword the size of the step witness), so the
+final layer is the same fixed point. Accumulation buys linear prover time, not a
+smaller final proof. Arc (ePrint 2024/1731) is similar with more queries.
+WARP's own RS list-decoding row cites only BCIKS20 correlated agreement with MCA
+conjectured; CCC 2026 (below) now supplies MCA.
+
+**Explicit MCA constant** (Bordage–Chiesa–Guan–Manzur full version, ePrint
+2025/2051, Definition 9.1 / Theorem 9.2): for γ ≤ 1 − (1 + 1/2m)√ρ, m ≥ 3,
+ε = Σᵢ (m+½)⁷ / (3ρ^{3/2}) · dᵢ · n² / |F|. With n = 2²⁷, ρ = 2⁻⁵, Σdᵢ = 3,
+|F| = 2^372.1 (Ext12): **2⁻²⁹⁸ for m = 3, 2⁻²⁸⁹ for m = 8**, below the ≈ 2⁻²⁶⁸
+per-round need. Ext8 (2^248) would give 2⁻¹⁷⁴. Still open: the WHIR theorem
+consuming MCA (incl. the 2026 Tartu corrections), rbr knowledge, QROM BCS.
+
+**State after four iterations.** Hash-only, no new user decisions: ≈ 398 KB at
+best (c_sha 12k). Under 300 KB needs user decisions (grinding z ≈ 32,
+≈ 336-bit truncated digests) plus backend changes (per-round k1, m = 8) and a
+SHA-384 AIR at ≲ 8k cells/compression — none demonstrated. Or a non-hash final
+wrap (lattice), which adds an assumption class.
