@@ -20,6 +20,8 @@ def main():
     base=report.ROOT/'results/ext8-switch-execution-q309'
     manifest_path=base/'manifest.json'
     mutations=[
+        (report.ROOT/'results/ext8-packed-prover-parity.json',
+            lambda d:d['cases'][0].update(byte_identical=False),False),
         (report.ROOT/'results/sha384-nibble64/private-preparation.json',
             lambda d:d.update(full_witness_verified=False),False),
         (report.ROOT/'results/sha384-nibble-phase-air.json',

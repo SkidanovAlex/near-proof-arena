@@ -9990,3 +9990,52 @@ Run after completion: python3 airbender/direct-wasm/finish_sha384_nibble_proof.p
 Current reconciliation and41manifest pins pass. No Lean changes; last full
 audit4658. Full1Pgas/PQ128/sub300000B NOT_PASSED. Continue polling the existing
 prover and finish its concrete envelope before drawing proof-size conclusions.
+
+## 2026-10-17 — Reference OOM, packed PCS retry, process review
+
+Reference session93870 exited137. The user systemd journal confirms oom-kill
+at01:02:02 under its12GiB cap, after all11local tables, GKR and the47.835s
+coefficient check; the last stage logged was weighted PCS. Retained the original
+log and journal in results/sha384-nibble64/reference-oom*.log. The original
+runner only captured reduction data after PCS, so those completed stages were
+lost. No complete64-block proof or byte measurement is available yet.
+
+Added opt-in pq384_ext8_packed_prover.py: packed uint32 coordinates retain
+32payload bytes per Ext8 scalar through input reduction and native folds.
+Protocol, transcript, verifier and reference prover remain unchanged. Three
+heterogeneous small complete proofs match reference objects AND encoded bytes
+(3120,7560,1880bytes), verify, and reject noncanonical native input. These are
+parity fixtures, not secure-size or full-scale memory measurements.
+
+run_ext8_checkpointed_prover.py substitutes the previously tested base-source
+auxiliary generator and packed PCS. Before PCS it independently derives the
+opening obligation from local/GKR, checks exact parameters, and saves reduction,
+opening and status. It does not yet implement PCS-only recovery or persist
+source caches. Active retry: session73727, PID2987258, same12GiB cap, capture
+/tmp/sha384-nibble64-private. All11local tables finished; GKR running at this
+checkpoint. Revalidate this exact process before any restart. Existing finisher
+remains the next step after a completed report.
+
+Fresh user-requested process review recommends: (1) finish this measured proof
+before expanding architecture; (2) implement independent PCS restart from the
+checkpoint with root-checked cache reconstruction and small byte-parity replay;
+(3) predict simultaneous buffer memory before scaling; (4) keep the decision
+surface current; (5) freeze semantic interfaces before parallel Lean work.
+Updated stale top-level next_experiment to the actual64-block retry. Reconciliation
+now rejects14inconsistent artifacts; packed evidence and OOM logs are pinned.
+
+New implementation hypothesis: keep base coefficients as uint32 until their
+first active PCS fold, with specialized base-by-Ext8 quadratic/first-fold
+kernels. Predict peak saving before implementation; require exact full-proof
+parity. New compiler specialization candidate: static per-relation multiplicity
+bounds may shorten auxiliary power chains; use proved request-count bounds,
+never honest observed maxima, and reject if packing erases savings. Re-evaluate
+existing auxGroup only by exact nibble degree/layout accounting. LogUp is an
+existing idea, not a discovery; defer until a complete replacement ledger wins.
+
+Proposed semantic composition target: canonical constraints plus exact natural
+bus balance imply each active boundary output equals full SHA384 compression of
+its state and message. Separate fixed lookup/range semantics, bounded word
+operations, phase/word routing and boundary extraction, and SHA composition.
+Cryptographic extraction of these premises remains separate and unproved.
+No new Lean audit claimed; last4658. Full1Pgas/PQ128/sub300000B NOT_PASSED.

@@ -149,6 +149,13 @@ def build(root=ROOT):
     for mapping in ('sha256','input_sha256'):
         for relative, expected in aux_parity[mapping].items():
             assert hashlib.sha256((root/relative).read_bytes()).hexdigest() == expected
+    packed_parity=read('results/ext8-packed-prover-parity.json')
+    assert packed_parity['status']=='PACKED_PCS_PROOF_BYTE_PARITY'
+    assert len(packed_parity['cases'])==3 and all(c['byte_identical'] for c in packed_parity['cases'])
+    attempt=read('results/sha384-nibble64/prover-attempt.json')
+    for artifact in (packed_parity,attempt):
+        for relative, expected in artifact['sha256'].items():
+            assert hashlib.sha256((root/relative).read_bytes()).hexdigest()==expected
     top_hash_tags=sorted(hash_work['measurement']['tags'].items(),key=lambda item:item[1]['unique_blocks'],reverse=True)[:8]
     script_files = [Path(__file__),Path(__file__).with_name('screen_larger_field_code_switch.py'),
         Path(__file__).with_name('screen_weighted_code_switch.py'),Path(__file__).with_name('report_code_switch_algebra.py'),
@@ -214,9 +221,12 @@ def build(root=ROOT):
             cases=aux_parity['cases'],compared_base_cells=aux_parity['auxiliary_base_cells_compared'],
             large_case=aux_parity['large_case'],scope=aux_parity['scope'],
             baseline_prover_changed=False),
+        packed_prover_retry=dict(evidence='results/sha384-nibble64/prover-attempt.json',
+            status=attempt['status'],reference_failed_stage=attempt['failed_stage'],
+            parity_cases=packed_parity['cases'],scope=attempt['scope']),
         full_near_capacity=dict(target_gas=scope['target_gas'],legacy_cap=scope['legacy_function_call_gas_cap'],
             capacity_ratio=scope['ceil_target_over_legacy_cap'],qualification=scope['capacity_warning']),
-        decision=dict(next_experiment=('Implement and measure the surviving projected candidate with all excluded costs and explicit security obligations.' if feasible else 'Stop larger-path proving in the existing 25-block profile: mandatory 416 bytes exceed its at-most-288-byte deduplicated sibling budget. Screen a scalable complete-verifier replacement against the explicit replacement budgets; include transcript/arithmetic and public binding, not authentication alone. Measure a versioned canonical transcript design only with all original bindings accounted for.'),
+        decision=dict(next_experiment='Finish the 64-block nibble SHA384 packed-PCS retry at the same 12 GiB cap after the reference prover OOM. Preserve the checked local/GKR checkpoint; encode and freshly verify a completed proof before measuring its full bytes. Then evaluate same-root private recursive-call binding against the complete replacement budgets. q8 is diagnostic, not PQ128.',
             standalone_mca_expansion=('REASSESS against the surviving candidate; partial ledger is not certification.' if feasible else 'DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.'),
             reopen_mca_if='A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.',
             do_not_repeat='Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.',

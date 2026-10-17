@@ -542,6 +542,57 @@
     "scope": "Exact parity for synthetic nonboolean multiplicities, next/public/selector expressions, empty messages/multiplicities, zero factors, two source rows of all11retained tables, and512retained round rows. Not full-trace equivalence, a Lean refinement, or a changed verifier. Timing is this bounded CPU test only.",
     "baseline_prover_changed": false
   },
+  "packed_prover_retry": {
+    "evidence": "results/sha384-nibble64/prover-attempt.json",
+    "status": "REFERENCE_PROVER_OOM_PACKED_RETRY_PENDING",
+    "reference_failed_stage": "weighted PCS",
+    "parity_cases": [
+      {
+        "shapes": [
+          [
+            2,
+            3,
+            2
+          ],
+          [
+            3,
+            2,
+            2
+          ]
+        ],
+        "proof_bytes": 3120,
+        "byte_identical": true
+      },
+      {
+        "shapes": [
+          [
+            4,
+            7,
+            4
+          ],
+          [
+            3,
+            2,
+            2
+          ]
+        ],
+        "proof_bytes": 7560,
+        "byte_identical": true
+      },
+      {
+        "shapes": [
+          [
+            3,
+            1,
+            1
+          ]
+        ],
+        "proof_bytes": 1880,
+        "byte_identical": true
+      }
+    ],
+    "scope": "Diagnostic q8 affine-v1 separate commitments. Retry pending; no completed 64-block proof, PQ128 or full NEAR claim."
+  },
   "full_near_capacity": {
     "target_gas": 1000000000000000,
     "legacy_cap": 3450888781824,
@@ -549,7 +600,7 @@
     "qualification": "Gas-capacity ratio only; NOT a proved trace count or operator bound"
   },
   "decision": {
-    "next_experiment": "Stop larger-path proving in the existing 25-block profile: mandatory 416 bytes exceed its at-most-288-byte deduplicated sibling budget. Screen a scalable complete-verifier replacement against the explicit replacement budgets; include transcript/arithmetic and public binding, not authentication alone. Measure a versioned canonical transcript design only with all original bindings accounted for.",
+    "next_experiment": "Finish the 64-block nibble SHA384 packed-PCS retry at the same 12 GiB cap after the reference prover OOM. Preserve the checked local/GKR checkpoint; encode and freshly verify a completed proof before measuring its full bytes. Then evaluate same-root private recursive-call binding against the complete replacement budgets. q8 is diagnostic, not PQ128.",
     "standalone_mca_expansion": "DEFER pending a named candidate whose complete byte/security ledger makes remaining MCA obligations decisive.",
     "reopen_mca_if": "A revised architecture or justified security reduction produces a candidate with explicit full byte headroom and a precise consumer for the missing theorem.",
     "do_not_repeat": "Same-grid larger-field tuning without changed geometry or security assumptions; latest replay is reproducible but still fails the size screen.",
@@ -578,7 +629,9 @@
     "results/sha384-nibble64/private-preparation.json": "33aca9f2cceaa595f5257d3de4257a1bff2a00c1cbfd29c6410d58c5bc186b73",
     "results/sha384-nibble-boundary-air.json": "6316eac59f800d62980e6591194fda4bedf25e25b9f2cd894ff505ee8d4bc737",
     "results/ext8-auxiliary-base-parity.json": "a9605252405f6cd9f884f3a8b7ad5c74fac103a072d1b3c06714134a67bfa262",
-    "airbender/direct-wasm/report_current_feasibility.py": "24996aa43a880b45a8f2544e3be7c7d179951317c71511ccec107bd8ecc97f3a",
+    "results/ext8-packed-prover-parity.json": "e4293057d4f3d691226f47c347be6fffca148d050689cf64a82ca54db4f7d6c1",
+    "results/sha384-nibble64/prover-attempt.json": "15ce621ffac37e0a08c5a2fd989077b8a465cb070800ac3bb7ef6f9ec308efbe",
+    "airbender/direct-wasm/report_current_feasibility.py": "db75512ea357ad38256a46e028dea6d555a125305db593f3babdd2a19fc934c0",
     "airbender/direct-wasm/screen_larger_field_code_switch.py": "dcaa680fe9693d5173f5791d4c107a567a7f220546297c7170bfd108ce102808",
     "airbender/direct-wasm/screen_weighted_code_switch.py": "8ff9609f2fc6da2b02d9b4f88b922963ecffc7f2fa2c2e91d6f7b7761f9820e1",
     "airbender/direct-wasm/report_code_switch_algebra.py": "e96725252e891d38f665169418f7f70703015de2c1c21d37c62d821317b29c33",
