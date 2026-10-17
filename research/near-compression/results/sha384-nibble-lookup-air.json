@@ -1,0 +1,131 @@
+{
+  "air_spec_sha256": "8d751854ca5b627821d0af69f18db6e7752b29f925c86b1d28474427d2eac0ba",
+  "status": "FIXED_LOOKUP_AIR_FULL_WITNESS_CHECKED",
+  "table_shapes": [
+    {
+      "name": "xor3/fixed",
+      "rows": 4096,
+      "source_width": 33,
+      "aux_base_width": 328,
+      "degree": 6
+    },
+    {
+      "name": "xor3/requests",
+      "rows": 8192,
+      "source_width": 6,
+      "aux_base_width": 8,
+      "degree": 4
+    },
+    {
+      "name": "choose/fixed",
+      "rows": 4096,
+      "source_width": 33,
+      "aux_base_width": 328,
+      "degree": 5
+    },
+    {
+      "name": "choose/requests",
+      "rows": 2048,
+      "source_width": 6,
+      "aux_base_width": 8,
+      "degree": 4
+    },
+    {
+      "name": "majority/fixed",
+      "rows": 4096,
+      "source_width": 33,
+      "aux_base_width": 328,
+      "degree": 6
+    },
+    {
+      "name": "majority/requests",
+      "rows": 2048,
+      "source_width": 6,
+      "aux_base_width": 8,
+      "degree": 4
+    },
+    {
+      "name": "splice1/fixed",
+      "rows": 256,
+      "source_width": 29,
+      "aux_base_width": 328,
+      "degree": 4
+    },
+    {
+      "name": "splice1/requests",
+      "rows": 4096,
+      "source_width": 6,
+      "aux_base_width": 8,
+      "degree": 4
+    },
+    {
+      "name": "splice2/fixed",
+      "rows": 256,
+      "source_width": 29,
+      "aux_base_width": 328,
+      "degree": 4
+    },
+    {
+      "name": "splice2/requests",
+      "rows": 8192,
+      "source_width": 6,
+      "aux_base_width": 8,
+      "degree": 4
+    },
+    {
+      "name": "splice3/fixed",
+      "rows": 256,
+      "source_width": 29,
+      "aux_base_width": 328,
+      "degree": 4
+    },
+    {
+      "name": "splice3/requests",
+      "rows": 4096,
+      "source_width": 6,
+      "aux_base_width": 8,
+      "degree": 4
+    },
+    {
+      "name": "range/fixed",
+      "rows": 16,
+      "source_width": 25,
+      "aux_base_width": 328,
+      "degree": 4
+    },
+    {
+      "name": "range/requests",
+      "rows": 4096,
+      "source_width": 2,
+      "aux_base_width": 8,
+      "degree": 4
+    }
+  ],
+  "source_constraints_evaluated": 928800,
+  "fixed_truth_rows_checked": 13072,
+  "lookup_requests": 18688,
+  "range_requests": 2800,
+  "negative_cases": [
+    "fixed-index-bit",
+    "fixed-nonboolean-index",
+    "fixed-nonboolean-multiplicity",
+    "fixed-extra-multiplicity",
+    "request-wrong-output",
+    "request-hidden",
+    "range-request-outside-nibble",
+    "truncated-fixed-enumeration",
+    "reordered-fixed-enumeration"
+  ],
+  "fixed_tables_source_aux_cells": 4715792,
+  "scope": "Actual canonical polynomial AIR constrains enumeration, lookup values and multiplicity bits; natural bus checker balances requests. Requests remain external to SHA phase AIR. No succinct proof, compiler/Lean theorem, randomized-bus soundness, or PQ128 result.",
+  "sha256": {
+    "airbender/direct-wasm/test_sha384_nibble_lookup_air.py": "5f41ca200345085e2f19f5eafdb62c992740efa382cda3e11a26204d2bd29734",
+    "airbender/direct-wasm/sha384_nibble_lookup_air.py": "412988773c1f14e6e679e3f24c138f94981d97ea7be90397a2f190459e7a734f",
+    "airbender/direct-wasm/sha384_nibble_circuit.py": "d5e832c4d2076ae13e9d9b6742698fe5138b8742983ecfeb6b2c429906adb10c",
+    "airbender/direct-wasm/plan_sha384_nibble_rows.py": "11a6241e9be317eb9f778ba84de0dca7cf6b147a58e4f1b5725d0b43e9f07237",
+    "airbender/direct-wasm/pq384_ext8_auxiliary.py": "f8e8eb9e62941fae14a0604aa5babf9422e9a5fe4fcf431e054b0c56020d1e49",
+    "airbender/generic-air/reference.py": "f1f62d7c93eb8e64625547a43eeb89950303101e3f210aa5c0ba954a064c9402",
+    "airbender/direct-wasm/scheduled_bus_whir.py": "d86f577c00aa6af124b5f2862abd6164235bfa70585121778e772000d2a3c8f2",
+    "results/sha384-nibble-lookup-air.spec.json.gz": "40ae6d151048210a30386ae0bb6f38f02b815f8e57939db99e71944ee4c38587"
+  }
+}

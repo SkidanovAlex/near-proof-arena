@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import sha384_nibble_circuit as c
 import pq384_ext8_auxiliary as aux
+import sha384_nibble_lookup_air as lookup
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -95,6 +96,7 @@ def check_rows(g, phases, source, witness_rows, expected):
 
 def geometry(rows, width):
     packing = power_rows((width+63)//64) if width > 64 else 1
+    while rows*packing < 128: packing *= 2
     return dict(rows=rows, width=width, packing=packing,
                 degree=rows*packing, lanes=(width+packing-1)//packing,
                 within_current_degree_lane_caps=rows*packing <= 262144 and (width+packing-1)//packing <= 64)
@@ -131,35 +133,37 @@ def build():
     shapes['boundary'] = dict(rows_per_block=32, source_width=34,
         aux_base_width=auxiliary_cells([1, bits(max(reads.values()))]))
     trials=[]
-    for blocks in (1, 4, 16, 25, 64, 256, 1024, 4096):
+    for blocks in (1, 4, 16, 25, 64, 256, 1024):
         execution = sum(power_rows(s['rows_per_block']*blocks)*(s['source_width']+s['aux_base_width']) for s in shapes.values())
-        lookup_bits=bits(18688*blocks); range_bits=bits(len(missing)*blocks)
-        fixed_lookup = power_rows(13056)*(5+lookup_bits+auxiliary_cells([lookup_bits]))
-        fixed_range = 16*(1+range_bits+auxiliary_cells([range_bits]))
+        lookup_bits=bits(18688*blocks)
+        fixed_tables={op: lookup.fixed_table(op,lookup_bits) for op in (*lookup.OPS,'range')}
+        fixed_costs={op:(1<<table['maxLog'])*(table['width']+8*aux.layout(table)['aux_columns']) for op,table in fixed_tables.items()}
+        fixed_lookup = sum(value for op,value in fixed_costs.items() if op != 'range')
+        fixed_range = fixed_costs['range']
         # Existing core/endpoint source plus existing three/three bus interactions.
         old_core = power_rows(80*blocks)*(5234+auxiliary_cells([1]*3))
         old_endpoint = power_rows(blocks)*(1666+auxiliary_cells([1]*3))
         total=execution+fixed_lookup+fixed_range
         geometries = {name: {kind:geometry(power_rows(s['rows_per_block']*blocks),s[key])
             for kind,key in [('source','source_width'),('auxiliary','aux_base_width')]} for name,s in shapes.items()}
-        geometries['fixed_lookup'] = dict(source=geometry(power_rows(13056),5+lookup_bits),
-            auxiliary=geometry(power_rows(13056),auxiliary_cells([lookup_bits])))
-        geometries['fixed_range'] = dict(source=geometry(16,1+range_bits),
-            auxiliary=geometry(16,auxiliary_cells([range_bits])))
+        for op,table in fixed_tables.items():
+            geometries['fixed_'+op]=dict(source=geometry(1<<table['maxLog'],table['width']),
+                auxiliary=geometry(1<<table['maxLog'],8*aux.layout(table)['aux_columns']))
         trials.append(dict(blocks=blocks, candidate_cells=total, candidate_execution_cells=execution,
             fixed_lookup_cells=fixed_lookup, fixed_range_cells=fixed_range,
             existing_core_endpoint_cells=old_core+old_endpoint,
             candidate_over_existing=total/(old_core+old_endpoint),
             within_current_degree_lane_caps=all(x['within_current_degree_lane_caps'] for pair in geometries.values() for x in pair.values()),
+            within_local_row_cap=all(x['rows'] <= 8192 for pair in geometries.values() for x in pair.values()),
             geometries=geometries))
-    sources=[Path(__file__),Path(c.__file__),Path(aux.__file__)]
+    sources=[Path(__file__),Path(c.__file__),Path(aux.__file__),Path(lookup.__file__)]
     return dict(status='ROW_ROUTING_CHECKED_COSTS_PROJECTED', phase_shapes=shapes,
         routed_word_reads=sum(reads.values()), routed_word_definitions=len(reads),
         maximum_word_fanout=max(reads.values()), extra_range_checks=len(missing),
         lookup_implicit_range_wires=len(covered), independent_row_mutations_rejected=rejected,
-        trials=trials,
-        scope='Materialized static phase-row wiring with exact word fanout; existing Ext8 bus auxiliary formulas. NOT an AIR or proof. Per-phase schedules, wire addresses and lookup table contents are trusted. Cost excludes their enforcement, public/call routing, lookup soundness, LDE/Merkle/PCS/GKR. Old comparator excludes corresponding call routing too. Dimensions may exceed existing packing/degree limits. No secure-size or runtime prediction.',
-        decision='Evaluate the structured phase-row AIR with whole-word routing. Validate fixed row programs and lookup multiplicities before interpreting any projected saving. Keep full NEAR/PQ128/300KB gate NOT_PASSED.',
+        trials=trials, rejected_multiplicity_cases=[dict(blocks=4096,required_bits=bits(18688*4096),maximum_bits=25)],
+        scope='Materialized static phase-row wiring with exact word fanout; existing Ext8 bus auxiliary formulas. NOT an AIR or proof. Per-phase schedules and wire addresses are trusted. Fixed lookup table cost now uses the implemented polynomial AIR; its composition with phases is not implemented. Cost excludes phase-program enforcement, public/call routing, lookup soundness, LDE/Merkle/PCS/GKR. Old comparator excludes corresponding call routing too. Dimensions may exceed existing packing/degree limits. No secure-size or runtime prediction.',
+        decision='Evaluate the structured phase-row AIR with whole-word routing. Connect phase row programs and requests to the implemented fixed-table AIR before interpreting any projected saving. Keep full NEAR/PQ128/300KB gate NOT_PASSED.',
         sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sources})
 
 

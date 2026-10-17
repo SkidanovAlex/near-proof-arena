@@ -9823,3 +9823,47 @@ semantics are not solved by a cheaper compression gadget.
 Evidence:results/sha384-nibble-row-plan.json. Current report consumes it;
 10inconsistent-evidence checks and23manifest pins pass. No Lean changes;
 last full audit4658. Full1Pgas/PQ128/sub300000B remains NOT_PASSED.
+
+## 2026-10-17 — Fixed nibble lookup tables constrained by canonical AIR
+
+Added sha384_nibble_lookup_air.py. Six fixed relation tables enumerate all
+4-bit XOR3/choose/majority and two-input splice tuples. A seventh fixed table
+enumerates range0..15. Boolean index columns, first/last index constraints,
+and a nonwrapping increment constrain the complete enumeration. Lookup output
+values are polynomial expressions of index bits, not witness-selected output
+columns. Multiplicity bits are separately constrained Boolean and connect to
+the existing natural bus semantics. Canonical np-air-v1 spec retained compressed.
+
+Split tables have4096rows for ternary functions,256for splices,16for range.
+This also avoids the existing local-profile8192row cap that a monolithic
+16384row lookup table would exceed. At the64-block capacity,21multiplicity bits
+cover the conservative total request bound. Source+Ext8 auxiliary widths are
+33+328,29+328,25+328respectively. Actual source/aux degree upper bounds are
+6(XOR3/majority),5(choose),4(splices/range), below the existing degree16cap.
+
+Canonical interpreter checks928800source constraints and balances18688lookup
+plus2800range requests from the complete nibble graph fixture. All13072fixed
+rows checked against independent relation definitions. Nine negative cases
+reject: index-bit/nonboolean-index changes, nonboolean/extra multiplicity,
+wrong request result, hidden request, out-of-range range request, truncated
+enumeration and reordered enumeration. This is a full-witness AIR test,
+not a succinct proof or a universal Lean/compiler/soundness certificate.
+Request tables remain external to the not-yet-implemented phase-row AIR.
+
+Updated cost screen to use actual fixed-table constructors. 64-block projection
+is28644752source+aux cells vs43181696old core+endpoint geometry (~0.6634ratio).
+16blocks now project a small5%advantage;25blocks still lose due to padding.
+Fixed table geometry is included; phase program/address enforcement, proof
+transport and recursive semantics remain excluded. Minimum PCS degree128
+is now included when choosing packing; row-cap checks are explicit. Larger
+256/1024cases fail row/degree limits;4096is rejected even before layout because
+its conservative multiplicity bound needs27bits, above the schema's25-bit cap.
+No supported profile limit was loosened to make this candidate fit.
+
+Evidence:results/sha384-nibble-lookup-air.json and.spec.json.gz; updated
+results/sha384-nibble-row-plan.json. An initial artifact export path bug was
+fixed and the full test rerun successfully. Current feasibility reconciliation
+rejects11inconsistent cases;27manifest pins and oracle pin checks pass.
+Next: connect phase-row lookup sends and word routing to these fixed tables
+with actual constrained row programs, then measure the composed proof.
+No Lean changes; last full audit4658. Full1Pgas/PQ128/sub300000B NOT_PASSED.
