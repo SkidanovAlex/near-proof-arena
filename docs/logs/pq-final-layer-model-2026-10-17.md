@@ -250,3 +250,41 @@ WHIR-class protocol — open research, not usable under U-2 today.
 
 **User decision (2026-10-17): pursue the lattice final wrap**; keep capacity-regime
 proximity gaps as a watch item that could later make a hash-only final layer viable.
+
+## Iteration 7: pushing the capacity-regime science through — it does not shrink proofs here
+
+The optimal-gap folding IOPP now exists: Li–Xing–Yao–Yuan–Zhu, *How to Fold
+Linear Error-Correcting Codes with Optimal Proximity Gaps*, ePrint 2026/2133
+(FRI-style folding for folded RS and univariate multiplicity codes, CRT
+consistency), on Goyal–Guruswami (STOC 2026, ePrint 2025/2054) MCA for
+subspace-design codes. Their Theorem 1.1/4.14: MCA at radius 1 − R − ε with
+error O((N/ε + 1/ε³)/q), **provided the folding parameter
+m ≥ 4R(2−R)/ε² + 4(1−R)/ε**; each query returns 2m field elements. Their own
+tables use ε ≈ 0.25–0.35, m = 16–32, and claim a smaller field (128-bit field for
+100-bit security vs 192 for FRI), not smaller proofs. Reducing m to O(1/ε) with
+a usable error is stated as open; Jeronimo's RS result (arXiv 2609.05870) gets
+m = O(1/ε) "at the cost of a prohibitively large soundness error bound".
+
+Bytes per security bit at ρ = 2⁻⁵ (path 23 × 48 B; Johnson m=8 leaf 8 × 48 B):
+
+| ε | proven m | vs Johnson | conjectured m = 1/ε | vs Johnson |
+|---:|---:|---:|---:|---:|
+| 0.15 | 37 | 3.06× | 7 | 1.17× |
+| 0.10 | 64 | 4.01× | 10 | 1.14× |
+| 0.05 | 176 | 8.06× | 20 | 1.35× |
+| 0.02 | 809 | 29.8× | 50 | 2.23× |
+
+At low rate the Johnson radius already yields ≈ b/2 bits per query; capacity
+gains require ε ≪ ρ and hence large symbols, whose bytes exceed the saved queries.
+Capacity-regime gaps help at high rate (smaller field, cheaper prover), not for
+our proof size. **Correction:** iteration 6's "b − 0.5" rows ignored symbol size
+and are withdrawn. Even a full solution of the stated open problem (m = O(1/ε)
+with small error) would be worse per byte at our rates.
+
+The shared ChatGPT research ("Designing Succinct STARK Proofs") reaches the same
+contract arithmetic (≈ 256-bit rbr + margin, ≈ 384-bit hash) and concludes that a
+conservative 128-bit-quantum < 300 KB proof "still needs its own complete
+parameter analysis and benchmark"; its cited sub-300 KB systems (OpenVM 2.0,
+100-bit; RISC Zero ≈ 200 kB) do not meet U-6.
+
+**Conclusion unchanged: lattice final wrap is the route to < 300 KB.**
