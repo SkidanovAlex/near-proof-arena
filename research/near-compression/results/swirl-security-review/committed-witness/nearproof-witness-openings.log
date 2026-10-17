@@ -1,0 +1,10 @@
+   Compiling openvm-recursion-circuit v2.1.0 (/tmp/nearproof-openvm/crates/recursion)
+    Finished `fast` profile [optimized + debuginfo] target(s) in 15.92s
+     Running unittests src/lib.rs (target/fast/deps/openvm_recursion_circuit-0e902e15daeda90d)
+
+running 1 test
+NEARPROOF_WITNESS_OPENINGS checked=2694 matrices=40
+test tests::nearproof_check_saved_witness_openings ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 270 filtered out; finished in 0.27s
+

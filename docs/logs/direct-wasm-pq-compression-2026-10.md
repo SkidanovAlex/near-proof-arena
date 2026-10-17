@@ -11664,3 +11664,38 @@ composition theorem or full NEAR1Petagas result follows from this mapping.
 Next reconstruct or regenerate matching committed source matrices and prove
 the arbitrary-pair weighted sumcheck, then authenticate its terminal opening
 and justify the changed challenge chronology. Full goal remains active.
+
+## 2026-10-17 — Preserve a native proof with its exact committed witness
+
+Previous goal turn classified progress: native layout/point mapping and Ext4
+mixed-packing checks committed at78b920267. Revalidated clean worktree.
+Attempted internal trace regeneration from saved leaf proof and regenerated
+keys. Leaf and original internal proofs verify; cached commitment matches,
+but recomputed COMMON commitment does not match original internal proof.
+Saved failing log. Cause remains unresolved; no original-witness recovery
+claim and no original artifact replaced. Source trace order matches backend
+height-descending/AIR-id ordering; this alone does not resolve the mismatch.
+
+Generated a FRESH internal proof from the exact regenerated contexts, verified
+it, and asserted its common commitment equals independently recomputed root.
+Cached trace commitment was also independently recomputed. Exported40raw
+row-major matrices, canonical little-endian base-field elements, manifest and
+matching fresh proof/control capture/openings/layout. This bundle is distinct
+from earlier native-dag-gkr and requires fresh residual weights.
+
+Independent native probe evaluates all2694disclosed current/rotated openings
+from exported raw matrices at the accepted native point. It handles short
+trace r0 transport and forward cyclic next-row rotation; every value matches.
+Probe runs in0.27s after compilation; fixture generation+proof25.65s, not a
+production benchmark. Both targeted tests and clippy -D warnings pass.
+
+Preserved witness archive32155960bytes with per-file SHA256; archive replay
+checks all42files. Archive size is witness storage, NOT proof size. Sources,
+patches, successful/failing logs, leaf proof and provenance are saved under
+results/swirl-security-review/committed-witness/. Original artifacts retained.
+
+Next generate the weighted GKR residual for THIS new capture, then feed its
+arbitrary current/rotated coefficients into stacking sumcheck using these
+matching committed matrices. Old residual cannot be silently reused. No new
+weighted sumcheck/PCS authentication, PQ128, Lean composition or full NEAR
+1Petagas proof has been achieved. Full goal remains active.
