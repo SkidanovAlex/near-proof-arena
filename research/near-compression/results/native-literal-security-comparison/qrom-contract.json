@@ -1,0 +1,139 @@
+{
+  "status": "CONDITIONAL_BUDGET_SCREEN_NOT_CERTIFICATE",
+  "contract": {
+    "adversary_quantum_hash_queries": 18446744073709551616,
+    "maximum_failure_probability": "1/340282366920938463463374607431768211456",
+    "hash": "SHA-384",
+    "proof_size_stretch_bytes_exclusive": 300000,
+    "source": "docs/zk-formal/V3-D3A-STUDY.md U-6/U-7"
+  },
+  "conditional_formula": "C*(Qeff^2*epsilon_rbr + 3*Qeff*(Qeff^2+1)/2^384)",
+  "budget_allocation": "quarter algebra, quarter compiler hash, half unresolved residual",
+  "field_screen_scope": "Only the optimistic 1/field_cardinality term; no extension construction or complete proximity/LogUp bound.",
+  "sources": [
+    {
+      "url": "https://openvm.dev/swirl.pdf",
+      "locator": "Corollary 4.2.6, equations 4.9 and 4.10"
+    },
+    {
+      "url": "https://par.nsf.gov/servlets/purl/10510337",
+      "locator": "Fiat-Shamir Security of FRI and Related SNARKs, Corollary 4, p.32"
+    }
+  ],
+  "sensitivities": [
+    {
+      "hypothetical_reduction_constant": 1,
+      "hypothetical_verifier_query_overhead": 0,
+      "effective_query_bound": 18446744073709551616,
+      "required_rbr_bits": 258,
+      "rbr_error_limit": "1/463168356949264781694283940034751631413079938662562256157830336031652518559744",
+      "optimistic_min_babybear_extension_degree_for_unit_numerator": 9,
+      "required_hash_bits": 324,
+      "sha384_compiler_hash_error": "1020847100762815390390123822295304634371/2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576",
+      "sha384_compiler_hash_budget_pass": true,
+      "residual_budget": "1/680564733841876926926749214863536422912",
+      "security_certified": false
+    },
+    {
+      "hypothetical_reduction_constant": 1,
+      "hypothetical_verifier_query_overhead": 18446744073709551616,
+      "effective_query_bound": 36893488147419103232,
+      "required_rbr_bits": 260,
+      "rbr_error_limit": "1/1852673427797059126777135760139006525652319754650249024631321344126610074238976",
+      "optimistic_min_babybear_extension_degree_for_unit_numerator": 9,
+      "required_hash_bits": 327,
+      "sha384_compiler_hash_error": "4083388403051261561560495289181218537475/1067993517960455041197510853084776057301352261178326384973520803911109862890320275011481043468288",
+      "sha384_compiler_hash_budget_pass": true,
+      "residual_budget": "1/680564733841876926926749214863536422912",
+      "security_certified": false
+    },
+    {
+      "hypothetical_reduction_constant": 16,
+      "hypothetical_verifier_query_overhead": 0,
+      "effective_query_bound": 18446744073709551616,
+      "required_rbr_bits": 262,
+      "rbr_error_limit": "1/7410693711188236507108543040556026102609279018600996098525285376506440296955904",
+      "optimistic_min_babybear_extension_degree_for_unit_numerator": 9,
+      "required_hash_bits": 328,
+      "sha384_compiler_hash_error": "1020847100762815390390123822295304634371/133499189745056880149688856635597007162669032647290798121690100488888732861290034376435130433536",
+      "sha384_compiler_hash_budget_pass": true,
+      "residual_budget": "1/680564733841876926926749214863536422912",
+      "security_certified": false
+    },
+    {
+      "hypothetical_reduction_constant": 16,
+      "hypothetical_verifier_query_overhead": 18446744073709551616,
+      "effective_query_bound": 36893488147419103232,
+      "required_rbr_bits": 264,
+      "rbr_error_limit": "1/29642774844752946028434172162224104410437116074403984394101141506025761187823616",
+      "optimistic_min_babybear_extension_degree_for_unit_numerator": 9,
+      "required_hash_bits": 331,
+      "sha384_compiler_hash_error": "4083388403051261561560495289181218537475/66749594872528440074844428317798503581334516323645399060845050244444366430645017188217565216768",
+      "sha384_compiler_hash_budget_pass": true,
+      "residual_budget": "1/680564733841876926926749214863536422912",
+      "security_certified": false
+    },
+    {
+      "hypothetical_reduction_constant": 256,
+      "hypothetical_verifier_query_overhead": 0,
+      "effective_query_bound": 18446744073709551616,
+      "required_rbr_bits": 266,
+      "rbr_error_limit": "1/118571099379011784113736688648896417641748464297615937576404566024103044751294464",
+      "optimistic_min_babybear_extension_degree_for_unit_numerator": 9,
+      "required_hash_bits": 332,
+      "sha384_compiler_hash_error": "1020847100762815390390123822295304634371/8343699359066055009355553539724812947666814540455674882605631280555545803830627148527195652096",
+      "sha384_compiler_hash_budget_pass": true,
+      "residual_budget": "1/680564733841876926926749214863536422912",
+      "security_certified": false
+    },
+    {
+      "hypothetical_reduction_constant": 256,
+      "hypothetical_verifier_query_overhead": 18446744073709551616,
+      "effective_query_bound": 36893488147419103232,
+      "required_rbr_bits": 268,
+      "rbr_error_limit": "1/474284397516047136454946754595585670566993857190463750305618264096412179005177856",
+      "optimistic_min_babybear_extension_degree_for_unit_numerator": 9,
+      "required_hash_bits": 335,
+      "sha384_compiler_hash_error": "4083388403051261561560495289181218537475/4171849679533027504677776769862406473833407270227837441302815640277772901915313574263597826048",
+      "sha384_compiler_hash_budget_pass": true,
+      "residual_budget": "1/680564733841876926926749214863536422912",
+      "security_certified": false
+    }
+  ],
+  "measured_profiles": [
+    {
+      "artifact": "native-literal-query128",
+      "report_sha256": "faefca52fc0ad4fdecd4a98d30129c15d819bbc097353b37e9ea96149b35c51f",
+      "parent_bytes": 875289,
+      "native_min_component_bits": 85.62756238530045,
+      "selected_hash_contract_met": false,
+      "security_certified": false
+    },
+    {
+      "artifact": "native-literal-query128-rate3",
+      "report_sha256": "6e71a1fd11c2bbd67eee22ff1549149d4b67437d4a8d0acf031bcce8e0447dc7",
+      "parent_bytes": 513561,
+      "native_min_component_bits": 80.67574853784195,
+      "selected_hash_contract_met": false,
+      "security_certified": false
+    },
+    {
+      "artifact": "native-literal-query128-rate5",
+      "report_sha256": "949ca94d15e2a442ff1d4044a5f31b3d865fbdbb5a88dc79a96fe9703ecfc17a",
+      "parent_bytes": 470137,
+      "native_min_component_bits": 75.6757498384644,
+      "selected_hash_contract_met": false,
+      "security_certified": false
+    }
+  ],
+  "unresolved": [
+    "explicit reduction constant and verifier-query overhead",
+    "compiler and transcript applicability to pinned implementation",
+    "quantum recursive knowledge extraction and resource accounting",
+    "all residual errors and adaptive statement budget",
+    "SHA-384 implementation at every proof layer and random-oracle assumption",
+    "actual-key RBR bounds after larger field/hash implementation",
+    "acceptance-to-execution Lean theorem and full NEAR workload"
+  ],
+  "security_certified": false
+}

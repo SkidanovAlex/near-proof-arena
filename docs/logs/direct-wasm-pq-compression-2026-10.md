@@ -13124,3 +13124,39 @@ checks proof hashes, actual lengths and census sums, and archives the calculator
 key-bound derivation and configuration sources. No new Lean theorem this turn;
 prior bound lemmas unchanged. make pin-check and git diff --check pass.
 FullNEAR1Pgas/PQ128/secure sub300000B/end-to-end formal correctness remain open.
+
+## 2026-10-17 — Reconcile integrated security contract and quantum budget
+
+Previous goal turn was a status review, hence no new progress. Revalidated clean
+219e80530 and retained actual integrated results before resuming research.
+The recorded binding U-6/U-7 decisions specify failure <=2^-128 for <=2^64 quantum
+hash queries, SHA-384 throughout. Corrected conflicting attack-cost wording in
+recursive-compression.md; retained the strict <300000-byte research target and
+left the frozen classical challenge unchanged.
+
+Read SWIRL Corollary4.2.6 equations4.9/4.10 and its cited FRI paper, Corollary4
+printed page32 (author-deposited copy https://par.nsf.gov/servlets/purl/10510337).
+Both quantum corollaries use Theta(Q*epsilon_fs), with verifier-query overhead
+inside O(...). Neither cited corollary supplies a numerical constant. This is
+not evidence that no explicit reduction can be derived from the underlying
+CMS19 proof; that derivation and recursive extraction accounting remain open.
+
+Added screen_native_qrom_contract.py and retained qrom-contract.json beside the
+integrated comparison. Exact Fraction arithmetic screens the CONDITIONAL formula
+C*(Qeff^2*epsilon_rbr + 3*Qeff*(Qeff^2+1)/2^384), allocating a quarter of the target
+to algebra, a quarter to compiler hashing, and half to unresolved residual errors.
+C={1,16,256} and overhead={0,2^64} are hypothetical sensitivity cases, not proven
+bounds. Required RBR bits range258..268; required compiler hash bits324..335.
+SHA-384 passes this single conditional hash allocation in all six cases. Even an
+optimistic unit-numerator 1/|E| algebra term needs BabyBear extension degree9;
+this is not an extension implementation, sufficient degree, or proximity bound.
+Actual larger-field keys must be regenerated and analyzed, including LogUp and
+proximity numerators. All six cases explicitly remain uncertified.
+
+Validation: exact threshold boundary assertions, rechecked SHA256 artifact hashes
+and actual parent lengths for all three measured profiles, and git diff --check.
+No new proof run or Lean theorem claimed. Current Poseidon2 profiles fail U-7 and
+their native bounds do not certify the algebraic target. Next implementation
+choice must carry the explicit reduction/extraction obligations rather than
+silently treating a query parameter as whole-system security. Full NEAR1Pgas,
+secure <300000B, near-real-time performance and end-to-end Lean proof remain open.
