@@ -4,7 +4,7 @@ import shutil
 ROOT=Path(__file__).resolve().parents[2]
 HERE=Path(__file__).parent
 TMP=Path('/tmp/nearproof-native-sha384');(TMP/'src').mkdir(parents=True,exist_ok=True)
-OUT=ROOT/'results/native-literal-sha384-ext12';OUT.mkdir(exist_ok=True)
+OUT=ROOT/'results/native-literal-sha384-ext12-compact';OUT.mkdir(exist_ok=True)
 ret=ROOT/'results/native-literal-field-screen'
 for name in ['fixture.json','spec.json','rows-0.bin','rows-1.bin','public.bin']:shutil.copyfile(ret/name,OUT/name)
 s=(ret/'native_literal.rs').read_text().split('// Appended to the generated literal AIR adapter.')[0]

@@ -17,10 +17,10 @@ fn hash_counts()->([u64;6],[u64;6]) {
 }
 fn hash_parts(tag:u8,parts:&[&[u8]])->[u8;48] {
     use std::sync::atomic::Ordering::Relaxed;
-    let message_len=b"nearproof-native-sha384-ext12-v2".len()+1+parts.iter().map(|p|8+p.len()).sum::<usize>();
+    let message_len=b"nearproof-native-sha384-ext12-v4".len()+1+parts.iter().map(|p|8+p.len()).sum::<usize>();
     HASH_CALLS[tag as usize].fetch_add(1,Relaxed);
     HASH_BLOCKS[tag as usize].fetch_add(((message_len+17).div_ceil(128)) as u64,Relaxed);
-    let mut h=Sha384::new();h.update(b"nearproof-native-sha384-ext12-v2");h.update([tag]);
+    let mut h=Sha384::new();h.update(b"nearproof-native-sha384-ext12-v4");h.update([tag]);
     for part in parts {h.update((part.len() as u64).to_le_bytes());h.update(part);}
     h.finalize().into()
 }
@@ -34,7 +34,13 @@ impl MerkleHasher for ShaHasher {
         words(hash_parts(0,&[&bytes]))
     }
     fn compress(&self,left:Digest,right:Digest)->Digest {
-        words(hash_parts(1,&[&digest_bytes(left),&digest_bytes(right)]))
+        // Fixed-width, disjoint node domain: 8+48+48=104 bytes fits
+        // one standard SHA-384 compression block after padding.
+        use std::sync::atomic::Ordering::Relaxed;
+        HASH_CALLS[1].fetch_add(1,Relaxed);HASH_BLOCKS[1].fetch_add(1,Relaxed);
+        let mut h=Sha384::new();h.update(b"NPQ4NODE");
+        h.update(digest_bytes(left));h.update(digest_bytes(right));
+        words(h.finalize().into())
     }
 }
 #[derive(Clone,Debug)]
@@ -55,12 +61,21 @@ impl DecodableConfig for SC {
     fn decode_digest<R:Read>(r:&mut R)->io::Result<Digest> {let mut b=[0;48];r.read_exact(&mut b)?;Ok(words(b))}
 }
 #[derive(Clone)]
-struct Transcript {state:[u8;48],next_word:usize}
-impl Transcript {fn new()->Self {Self {state:hash_parts(2,&[]),next_word:12}}}
+struct Transcript {state:[u8;48],next_word:usize,pending:Vec<u8>}
+impl Transcript {
+    fn new()->Self {Self {state:hash_parts(2,&[]),next_word:12,pending:Vec::new()}}
+    fn flush(&mut self) {
+        if !self.pending.is_empty() {
+            self.state=hash_parts(3,&[&self.state,&self.pending]);
+            self.pending.clear();self.next_word=12;
+        }
+    }
+}
 impl FiatShamirTranscript<SC> for Transcript {
-    fn observe(&mut self,v:F) {self.state=hash_parts(3,&[&self.state,&v.as_canonical_u32().to_le_bytes()]);self.next_word=12;}
-    fn observe_commit(&mut self,d:Digest) {self.state=hash_parts(4,&[&self.state,&digest_bytes(d)]);self.next_word=12;}
+    fn observe(&mut self,v:F) {self.pending.extend_from_slice(&v.as_canonical_u32().to_le_bytes());self.next_word=12;}
+    fn observe_commit(&mut self,d:Digest) {self.flush();self.state=hash_parts(4,&[&self.state,&digest_bytes(d)]);self.next_word=12;}
     fn sample(&mut self)->F {
+        self.flush();
         loop {
             if self.next_word==12 {self.state=hash_parts(5,&[&self.state]);self.next_word=0;}
             let start=4*self.next_word;self.next_word+=1;
@@ -89,9 +104,9 @@ fn transcript_vectors() {
     let leaf=hasher.hash_slice(&[F::ZERO,F::ONE,F::from_u32(2013265920)]);
     let empty=hasher.hash_slice(&[]);
     let node=hasher.compress(leaf,empty);
-    let mut t=Transcript::new();t.observe(F::from_u32(123));t.observe_commit(node);
+    let mut t=Transcript::new();for n in [123,124,0,2013265920] {t.observe(F::from_u32(n));} t.observe_commit(node);
     let samples:Vec<u32>=(0..96).map(|i| {
-        if i>=32 && (i-32)%7==0 {t.observe(F::from_u32(i));}
+        if i>=32 && (i-32)%7==0 {t.observe(F::from_u32(i));t.observe(F::from_u32(i+1));}
         t.sample().as_canonical_u32()
     }).collect();
     println!("VECTOR_LEAF {:?}",digest_bytes(leaf));

@@ -13273,3 +13273,37 @@ check_native_sha384.py. Reproduction and transcript framing in artifact README.
 No new Lean theorem this turn. Rust build, integrated proof, fresh replay,
 independent transcript/Lean checks and git diff --check passed. Secure <300000B,
 recursive composition, fullNEAR1Pgas and formal acceptance-to-execution remain open.
+
+## 2026-10-17 — Reduce actual SHA384 verifier workload by68.4%
+
+Previous turn progressed atb488dcc83; clean worktree revalidated. Replaced
+per-field hashing with ordered pending-byte absorption, flushed before every
+commitment/draw and invalidating old challenge words. Version3 actual proof,
+six public mutations, witness-independent replay, Lean execution and independent
+Python/OpenSSL transcript checks passed. Hash blocks64770 ->34769; field absorb
+31283 ->1297. Proof unchanged740881bytes, transmitted741800.
+
+Measured next bottleneck was two-block Merkle-node framing. Version4 uses fixed
+8-byte NPQ4NODE plus ordered48-byte children,104bytes total, one standard padded
+SHA384 block. General hash framing remains separately domain-separated. Actual
+new proof and all integration/oracle checks pass again. Verification20455blocks:
+4456leaf+14321node+1init+1297field+14commit+366draw. Reduction44315blocks=68.4%
+versus v2. This is measured hashing workload, not runtime or recursive circuit
+size. Proof remains740881bytes; WHIR remains617640bytes. No size win claimed.
+
+Added NativeSha384Batching.lean operational lemmas: ordered accumulation and
+flush input, idempotent flush, fixed-width node-frame injectivity,104-byte frame,
+128-byte padding arithmetic, disjoint node/general domains. Kernel checks pass.
+Batch hash-input and node-injectivity lemmas use only propext; domain-disjointness
+uses no axioms. These are model lemmas, not Rust refinement or QROM security.
+All new code retains explicit unproved compiler/composition obligations.
+
+Versions2/3/4 evidence retained; report_native_sha384_hash_cost.py reconciles
+artifact hashes, public statement, proof census and actual verifier counters.
+Current prepare/check scripts target v4 compact profile; old profiles require
+archived sources or their original commit. Both newly generated profiles verify
+same original literal Wasm relation, with native minimum component268.525bits,
+not a composed PQ certificate. git diff --check passes. FullNEAR1Pgas, secure
+sub300000B and end-to-end formal proof remain open. Next decisive size work is
+on WHIR openings at this actual field/hash profile; recursive hashing is now a
+smaller measured workload, not assumed solved.

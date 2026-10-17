@@ -2,7 +2,7 @@
 import hashlib,json,os,re,shutil,struct,subprocess,tempfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-OUT=ROOT/'results/native-literal-sha384-ext12'
+OUT=ROOT/'results/native-literal-sha384-ext12-compact'
 TMP=Path('/tmp/nearproof-native-sha384')
 BACKEND=Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5')
 log=Path('/tmp/nearproof-native-sha384.log').read_text()
@@ -20,16 +20,16 @@ assert bound and int(bound[1])==268
 vector_log=Path('/tmp/nearproof-native-sha384-vectors.log').read_text()
 vectors={line.split(' ',1)[0]:json.loads(line.split(' ',1)[1]) for line in vector_log.splitlines() if line.startswith('VECTOR_')}
 def h(tag,*parts):
-    framed=b'nearproof-native-sha384-ext12-v2'+bytes([tag])
+    framed=b'nearproof-native-sha384-ext12-v4'+bytes([tag])
     for p in parts:framed+=len(p).to_bytes(8,'little')+p
     return hashlib.sha384(framed).digest()
 def word(n):return n.to_bytes(4,'little')
-leaf=h(0,word(0)+word(1)+word(2013265920));empty=h(0,b'');node=h(1,leaf,empty)
+leaf=h(0,word(0)+word(1)+word(2013265920));empty=h(0,b'');node=hashlib.sha384(b'NPQ4NODE'+leaf+empty).digest()
 assert vectors['VECTOR_LEAF']==list(leaf) and vectors['VECTOR_EMPTY']==list(empty) and vectors['VECTOR_NODE']==list(node)
-state=h(2);state=h(3,state,word(123));state=h(4,state,node)
+state=h(2);state=h(3,state,b''.join(word(n) for n in [123,124,0,2013265920]));state=h(4,state,node)
 samples=[];rejections=0;cursor=12;draw_blocks=0
 for i in range(96):
-    if i>=32 and (i-32)%7==0:state=h(3,state,word(i));cursor=12
+    if i>=32 and (i-32)%7==0:state=h(3,state,word(i)+word(i+1));cursor=12
     while True:
         if cursor==12:state=h(5,state);cursor=0;draw_blocks+=1
         n=int.from_bytes(state[cursor*4:cursor*4+4],'little');cursor+=1
@@ -70,7 +70,7 @@ shutil.copyfile(ROOT/'results/babybear-ext12-construction/plonky3-ext12.patch',O
 report=dict(status='NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED',child_bytes=census['total'],wire_census=census,
     public_fields=4891,public_included=True,request_bytes=request.stat().st_size,total_child_plus_request_bytes=census['total']+request.stat().st_size,
     independent_Lean_runCall=actual,eligibility=json.loads(eligibility.stdout),public_mutations_rejected=6,
-    witness_independent_replay=True,transcript_oracle=dict(samples=96,rejections=rejections,draw_blocks=draw_blocks,final_state_equal=True,version=2),
+    witness_independent_replay=True,transcript_oracle=dict(samples=96,rejections=rejections,draw_blocks=draw_blocks,final_state_equal=True,version=4),
     verifier_hash_cost=dict(tags=['leaf','node','init','observe_field','observe_commit','draw_block'],calls=verify_calls,compression_blocks=verify_blocks,total_compression_blocks=sum(verify_blocks),scope='single engine.verify call; excludes keygen and decoding'),
     security=dict(hash='SHA-384',field='BabyBear[X]/(X^12-31)',query_target_bits=268,grinding_bits=0,
         native_component_min_bits=float(bound[2]),logup_bits=float(bound[3]),proximity_bits=float(bound[4]),query_bits=float(bound[5]),certified=False),
