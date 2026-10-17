@@ -7,6 +7,8 @@
 # Trees created under $NEARPROOF_PQ_DEPS:
 #   stark-backend, plonky3-ext12   via ../setup_native_deps.sh (pinned, patched)
 #   openvm-stock                   OpenVM v2.1.0-rc.1 + calibration test (milestone 1)
+#   openvm-sha384                  OpenVM v2.1.0-rc.1 + SHA-384/Ext12 verifier port (milestone 2+),
+#                                  workspace patched onto ../stark-backend and ../plonky3-ext12
 #
 # Idempotent: existing trees are verified against the pinned patch, never re-patched.
 set -euo pipefail
@@ -38,5 +40,11 @@ checkout_patched() {  # <dir> <patch>
 }
 
 checkout_patched "$DEPS/openvm-stock" "$HERE/patches/openvm-stock-calib.patch"
+checkout_patched "$DEPS/openvm-sha384" "$HERE/patches/openvm-recursion-sha384.patch"
+
+# The port carries a verbatim copy of the native config for differential tests.
+cmp -s "$HERE/../../airbender/direct-wasm/native_sha384_config.rs" \
+       "$DEPS/openvm-sha384/crates/recursion/src/sha384/native_ref.rs" \
+  || { echo "native_ref.rs differs from airbender/direct-wasm/native_sha384_config.rs" >&2; exit 1; }
 
 echo "recursion deps OK: $DEPS"
