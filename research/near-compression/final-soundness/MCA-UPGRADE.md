@@ -208,7 +208,7 @@ For each round, bound_mca.py takes the best bound that applies, with the same mo
 * Fold move s of round i is charged max_s E(C^(i,s))/|F| + 3ℓ_i/|F|.
 * OOD: ℓ²/2·(2^{m}/|F|)^{u}, with u = 1 sufficient everywhere (worst 2⁻²⁷¹·⁹).
 * γ: ℓ_{i+1}(t_i + u)/|F|.
-* PIOP: the ℓ₀ terms (worst 2⁻²⁷⁷ with ℓ₀ = 2⁴⁰).
+* PIOP: the ℓ₀ terms (worst LogUp 2⁻²⁷⁹·² with ℓ₀ = 2⁴⁰).
 * μ batching: the first-order curve certificate at ℓ = W − 1. Final layer 2⁻²⁸²·¹ (O-2) / 2⁻²⁸⁹·⁷
   (O-1); inner layer 2⁻²⁸³·⁰ / 2⁻²⁹³·⁶; base stress (W = 601) 2⁻²⁸⁷·⁵.
 
