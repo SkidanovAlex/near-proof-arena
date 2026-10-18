@@ -1,0 +1,27 @@
+test nv::agg_tests::agg_chain ... ignored
+test nv::agg_tests::agg_node_debug ... ignored
+AGG_PROGRAM k=2 rows=12688 jobs=229 merkle_nodes=212
+AGG_PROGRAM k=3 rows=19000 jobs=343 merkle_nodes=318
+test nv::agg_tests::agg_program_honest ... ok
+AGG_TOTAL_CELLS 15500096 program_rows=13266 jobs=229 merkle_nodes=212
+test nv::agg_tests::agg_program_tamper ... ok
+test nv::agg_tests::agg_segment_chain_native ... ok
+test nv::agg_tests::agg_shape ... ok
+test nv::agg_tests::agg_circuit_debug has been running for over 60 seconds
+AGG_TOTAL_CELLS 21103424 program_rows=19578 jobs=343 merkle_nodes=318
+AGG_TOTAL_CELLS 15500096 program_rows=13266 jobs=229 merkle_nodes=212
+AGG_TAMPER rejected: statement digest limb
+AGG_TOTAL_CELLS 15500096 program_rows=13266 jobs=229 merkle_nodes=212
+AGG_TAMPER rejected: level
+AGG_TOTAL_CELLS 15500096 program_rows=13266 jobs=229 merkle_nodes=212
+AGG_TAMPER rejected: chain start removed
+AGG_TOTAL_CELLS 15500096 program_rows=13266 jobs=229 merkle_nodes=212
+AGG_TAMPER rejected: chain start forged
+AGG_TOTAL_CELLS 15500096 program_rows=13266 jobs=229 merkle_nodes=212
+AGG_TAMPER rejected: circuit: swapped children
+AGG_TOTAL_CELLS 15500096 program_rows=13266 jobs=229 merkle_nodes=212
+AGG_TAMPER rejected: circuit: broken continuity
+AGG_TOTAL_CELLS 15500096 program_rows=13266 jobs=229 merkle_nodes=212
+AGG_TAMPER rejected: circuit: dropped child
+test nv::agg_tests::agg_circuit_debug ... ok
+test result: ok. 5 passed; 0 failed; 2 ignored; 0 measured; 35 filtered out; finished in 276.41s
