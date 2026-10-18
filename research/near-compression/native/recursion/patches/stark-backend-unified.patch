@@ -707,7 +707,7 @@ index d03985a..8ca44f0 100644
  
  /// [MerkleHasher] implementation built from a cryptographic hash function and a compression
 diff --git a/crates/stark-backend/src/keygen/mod.rs b/crates/stark-backend/src/keygen/mod.rs
-index 3074dd0..3eeead4 100644
+index 3074dd0..ca452af 100644
 --- a/crates/stark-backend/src/keygen/mod.rs
 +++ b/crates/stark-backend/src/keygen/mod.rs
 @@ -20,7 +20,7 @@ use crate::{
@@ -728,7 +728,7 @@ index 3074dd0..3eeead4 100644
              })
              .collect::<Result<Vec<_>, KeygenError>>()?;
  
-@@ -202,7 +202,14 @@ impl<SC: StarkProtocolConfig> MultiStarkKeygenBuilder<SC> {
+@@ -202,11 +202,27 @@ impl<SC: StarkProtocolConfig> MultiStarkKeygenBuilder<SC> {
          tracing::debug!("pre-vkey: {} bytes", vk_bytes.len());
          // Since postcard serialization is not self-describing, we include a version for domain
          // separation. For further domain separation, we include the byte length.
@@ -740,11 +740,25 @@ index 3074dd0..3eeead4 100644
 +        } else {
 +            crate::proof::CODEC_VERSION_LEVERS
 +        };
++        // G-10: the odd domain factor c (serde-skipped in the params) is bound into the pre-hash
++        // when c != 1 (c = 1 keeps the upstream bytes)
++        let odd = params.whir.domain_odd_factor;
++        let odd_bytes: Vec<u8> = if odd == 1 {
++            vec![]
++        } else {
++            b"x15c".iter().copied().chain((odd as u64).to_le_bytes()).collect()
++        };
 +        let versioned_vk_bytes = vk_version
              .to_le_bytes()
              .into_iter()
              .chain((vk_bytes.len() as u64).to_le_bytes())
-@@ -240,6 +247,7 @@ impl<SC: StarkProtocolConfig> AirKeygenBuilder<SC> {
+-            .chain(vk_bytes);
++            .chain(vk_bytes)
++            .chain(odd_bytes);
+         // Purely to get type compatibility and convenience, we hash using the native hash
+         let vk_pre_hash = self.config.hasher().hash_slice(
+             &versioned_vk_bytes
+@@ -240,6 +256,7 @@ impl<SC: StarkProtocolConfig> AirKeygenBuilder<SC> {
      pub fn generate_pk(
          self,
          max_constraint_degree: usize,
@@ -752,7 +766,7 @@ index 3074dd0..3eeead4 100644
      ) -> Result<StarkProvingKey<SC>, KeygenError> {
          let air_name = self.air.name();
  
-@@ -289,10 +297,12 @@ impl<SC: StarkProtocolConfig> AirKeygenBuilder<SC> {
+@@ -289,10 +306,12 @@ impl<SC: StarkProtocolConfig> AirKeygenBuilder<SC> {
          let max_rotation = dag.constraints.max_rotation();
          debug_assert!(max_rotation <= 1);
          let need_rot = max_rotation == 1;
@@ -765,7 +779,7 @@ index 3074dd0..3eeead4 100644
          };
  
          let unused_variables = find_unused_vars(&dag, &vparams.width, need_rot);
-@@ -332,13 +342,15 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
+@@ -332,13 +351,15 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
          let preprocessed_trace = BaseAir::<SC::F>::preprocessed_trace(air);
          let vpdata_opt = preprocessed_trace.map(|trace| {
              let trace = ColMajorMatrix::from_row_major(&trace);
@@ -783,7 +797,7 @@ index 3074dd0..3eeead4 100644
              )
              .unwrap();
              debug_assert_eq!(trace.width(), data.mat_view(0).width());
-@@ -368,6 +380,32 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
+@@ -368,6 +389,32 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
      }
  }
  
@@ -1902,7 +1916,7 @@ index d3c67c8..47f4eab 100644
          assert_eq!(values.len() % width, 0);
          let height = values.len() / width;
 diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/prover/mod.rs
-index 59e87a0..4baf3cf 100644
+index 59e87a0..b8a662d 100644
 --- a/crates/stark-backend/src/prover/mod.rs
 +++ b/crates/stark-backend/src/prover/mod.rs
 @@ -127,13 +127,19 @@ where
@@ -1918,7 +1932,7 @@ index 59e87a0..4baf3cf 100644
  
              trace_vdata[*air_id] = Some(TraceVData::<SC> {
                  log_height,
-+                tight_height: if mpk.params.whir.levers.tight_heights {
++                tight_height: if mpk.params.whir.levers.tight_heights && trace_ctx.common_main.width() != 0 {
 +                    committed_heights.get(trace_idx).copied().flatten()
 +                } else {
 +                    None
@@ -1937,7 +1951,7 @@ index 59e87a0..4baf3cf 100644
                      transcript.observe_commit(*commit);
                  }
 diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
-index 97271aa..85e37a3 100644
+index 97271aa..da8ba18 100644
 --- a/crates/stark-backend/src/prover/stacked_pcs.rs
 +++ b/crates/stark-backend/src/prover/stacked_pcs.rs
 @@ -52,9 +52,58 @@ pub struct StackedSlice {
@@ -2184,10 +2198,10 @@ index 97271aa..85e37a3 100644
 +/// `2^l_skip` (they are strided, never tight). Prover and verifier-facing `TraceVData` use this.
 +pub fn tight_height<F: Field>(trace: &ColMajorMatrix<F>, l_skip: usize) -> Option<usize> {
 +    let h = trace.height();
-+    if h < 1 << l_skip {
++    let w = trace.width();
++    if h < 1 << l_skip || w == 0 {
 +        return None;
 +    }
-+    let w = trace.width();
 +    let last = (0..h)
 +        .rev()
 +        .find(|&r| (0..w).any(|c| trace.values[c * h + r] != F::ZERO))
@@ -3173,7 +3187,7 @@ index e6d2fbd..bc27a3e 100644
                  .unwrap();
                  assert_eq!(common.height(), cached.height());
 diff --git a/crates/stark-backend/src/transcript/traits.rs b/crates/stark-backend/src/transcript/traits.rs
-index ecd6dec..ecfbdad 100644
+index ecd6dec..d35c18b 100644
 --- a/crates/stark-backend/src/transcript/traits.rs
 +++ b/crates/stark-backend/src/transcript/traits.rs
 @@ -51,6 +51,25 @@ where
@@ -3202,7 +3216,17 @@ index ecd6dec..ecfbdad 100644
      /// Checks a proof-of-work witness: observes `witness` into the transcript and accepts iff the
      /// next [`Self::sample_bits`] is zero (probability `≈ 2^{-bits}` for a random witness, so
      /// [`Self::grind`] tries `≈ 2^bits` witnesses to find one).
-@@ -70,6 +89,38 @@ where
+@@ -62,7 +81,8 @@ where
+     #[must_use]
+     fn check_witness(&mut self, bits: usize, witness: SC::F) -> bool {
+         if bits == 0 {
+-            return true;
++            // G-11: no PoW, the witness must be zero (non-malleable)
++            return witness == SC::F::ZERO;
+         }
+         self.observe(witness);
+         self.sample_bits(bits) == 0
+@@ -70,6 +90,39 @@ where
  
      /// Finds a proof-of-work witness `w` such that [`Self::check_witness`]`(bits, w)` holds, by
      /// brute force over the base field.
@@ -3211,7 +3235,8 @@ index ecd6dec..ecfbdad 100644
 +    #[must_use]
 +    fn check_witness_wide(&mut self, bits: usize, w: [SC::F; 2]) -> bool {
 +        if bits == 0 {
-+            return true;
++            // G-11
++            return w == [SC::F::ZERO; 2];
 +        }
 +        self.observe(w[0]);
 +        self.check_witness(bits, w[1])
@@ -3683,7 +3708,7 @@ index 4ee438b..2bc2f49 100644
      }
  
 diff --git a/crates/stark-backend/src/verifier/proof_shape.rs b/crates/stark-backend/src/verifier/proof_shape.rs
-index a3216a9..7e76baa 100644
+index a3216a9..87bf1fd 100644
 --- a/crates/stark-backend/src/verifier/proof_shape.rs
 +++ b/crates/stark-backend/src/verifier/proof_shape.rs
 @@ -52,6 +52,8 @@ pub enum ProofShapeVDataError {
@@ -3765,7 +3790,7 @@ index a3216a9..7e76baa 100644
                  return ProofShapeError::invalid_batch_constraint(
                      BatchProofShapeError::InvalidColumnOpeningsPerAirCached {
                          air_idx,
-@@ -535,12 +555,31 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -535,12 +555,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
          );
      }
  
@@ -3775,8 +3800,10 @@ index a3216a9..7e76baa 100644
 +    for (air_idx, vk, vdata) in &per_trace {
 +        let ok = match vdata.tight_height {
 +            None => !tight || vdata.log_height < l_skip || vk.params.width.common_main == 0,
++            // G-9: a trace without common-main columns never declares a tight height
 +            Some(h) => {
 +                tight
++                    && vk.params.width.common_main != 0
 +                    && vdata.log_height >= l_skip
 +                    && h > 0
 +                    && h <= 1 << vdata.log_height
@@ -3799,7 +3826,7 @@ index a3216a9..7e76baa 100644
              .collect_vec(),
      )
      .unwrap();
-@@ -610,9 +649,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -610,9 +651,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
      let log_stacked_height = mvk.params.log_stacked_height();
      let num_whir_rounds = mvk.params.num_whir_rounds();
      let num_whir_sumcheck_rounds = mvk.params.num_whir_sumcheck_rounds();
@@ -3817,7 +3844,7 @@ index a3216a9..7e76baa 100644
      if whir_proof.whir_sumcheck_polys.len() != num_whir_sumcheck_rounds {
          return ProofShapeError::invalid_whir(WhirProofShapeError::InvalidSumcheckPolys {
              expected: num_whir_sumcheck_rounds,
-@@ -633,9 +679,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -633,9 +681,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              expected: num_whir_sumcheck_rounds,
              actual: whir_proof.folding_pow_witnesses.len(),
          });
@@ -3831,7 +3858,7 @@ index a3216a9..7e76baa 100644
              actual: whir_proof.query_phase_pow_witnesses.len(),
          });
      } else if whir_proof.initial_round_opened_rows.len() != layouts.len() {
-@@ -682,11 +730,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -682,11 +732,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_rows.len(),
                  },
              );
@@ -3845,7 +3872,7 @@ index a3216a9..7e76baa 100644
                      actual: merkle_proofs.len(),
                  },
              );
-@@ -717,8 +765,10 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -717,8 +767,10 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              }
          }
  
@@ -3858,7 +3885,7 @@ index a3216a9..7e76baa 100644
              if proof.len() != merkle_depth {
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidInitialRoundMerkleProofDepth {
-@@ -749,31 +799,34 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -749,31 +801,34 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_values_per_query.len(),
                  },
              );
@@ -4385,6 +4412,30 @@ index 19c9196..302764a 100644
      let (stacking_proof, _) = prove_stacked_opening_reduction::<SC, _, _, _, StackedReductionCpu<SC>>(
          device,
          &mut default_duplex_sponge(),
+diff --git a/crates/stark-backend/tests/keygen_validation.rs b/crates/stark-backend/tests/keygen_validation.rs
+index dc30d26..18cbf60 100644
+--- a/crates/stark-backend/tests/keygen_validation.rs
++++ b/crates/stark-backend/tests/keygen_validation.rs
+@@ -74,3 +74,19 @@ fn keygen_rejects_interaction_with_empty_message() {
+         }
+     ));
+ }
++
++/// G-10 (final-soundness GAPS): the odd domain factor c is bound into the vk pre-hash.
++#[test]
++fn test_pre_hash_binds_odd_factor() {
++    let air: AirRef<SC> = Arc::new(DummyInteractionAir::new(1, true, 0));
++    let pre = |odd: usize| {
++        let mut p = default_test_params_small();
++        p.whir.domain_odd_factor = odd;
++        let config = BabyBearPoseidon2Config::default_from_params(p);
++        let mut kb = MultiStarkKeygenBuilder::new(config);
++        kb.add_air(air.clone());
++        kb.generate_pk().unwrap().vk_pre_hash
++    };
++    assert_ne!(pre(1), pre(15));
++    assert_eq!(pre(15), pre(15));
++}
 diff --git a/crates/stark-backend/tests/stacked_reduction.rs b/crates/stark-backend/tests/stacked_reduction.rs
 index d723097..f6ac119 100644
 --- a/crates/stark-backend/tests/stacked_reduction.rs
@@ -4413,3 +4464,21 @@ index d723097..f6ac119 100644
          column_openings,
          r,
          omega_pows,
+diff --git a/crates/stark-backend/tests/transcript.rs b/crates/stark-backend/tests/transcript.rs
+index e5f1c24..a23cee8 100644
+--- a/crates/stark-backend/tests/transcript.rs
++++ b/crates/stark-backend/tests/transcript.rs
+@@ -95,3 +95,13 @@ fn test_read_only_transcript_wrong_value() {
+     let mut replay = ReadOnlyTranscript::new(&log, 0);
+     FiatShamirTranscript::<SC>::observe(&mut replay, BabyBear::from_u32(99)); // Should panic
+ }
++
++/// G-11 (final-soundness GAPS): with zero PoW bits the witness must be zero (non-malleable).
++#[test]
++fn test_zero_bit_pow_requires_zero_witness() {
++    let mut s = default_duplex_sponge();
++    assert!(FiatShamirTranscript::<SC>::check_witness(&mut s, 0, BabyBear::ZERO));
++    assert!(!FiatShamirTranscript::<SC>::check_witness(&mut s, 0, BabyBear::ONE));
++    assert!(FiatShamirTranscript::<SC>::check_witness_wide(&mut s, 0, [BabyBear::ZERO; 2]));
++    assert!(!FiatShamirTranscript::<SC>::check_witness_wide(&mut s, 0, [BabyBear::ZERO, BabyBear::ONE]));
++}

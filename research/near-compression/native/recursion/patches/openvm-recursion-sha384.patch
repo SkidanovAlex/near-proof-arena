@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..3b2ec98
+index 0000000..144421c
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,740 @@
+@@ -0,0 +1,765 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1288,7 +1288,7 @@ index 0000000..3b2ec98
 +    }
 +    fn check_witness(&mut self, bits: usize, witness: F) -> bool {
 +        if bits == 0 {
-+            return true;
++            return self.inner.check_witness(0, witness);
 +        }
 +        self.values.push(witness);
 +        self.kinds.push(crate::sha384::config::KIND_POW);
@@ -1296,7 +1296,7 @@ index 0000000..3b2ec98
 +    }
 +    fn check_witness_wide(&mut self, bits: usize, w: [F; 2]) -> bool {
 +        if bits == 0 {
-+            return true;
++            return self.inner.check_witness_wide(0, w);
 +        }
 +        self.values.extend(w);
 +        self.kinds.extend([crate::sha384::config::KIND_POW, crate::sha384::config::KIND_POW_CONT]);
@@ -1380,6 +1380,8 @@ index 0000000..3b2ec98
 +    /// static transcript jobs allocated so far
 +    tr_static: u32,
 +    tr_started: bool,
++    /// witness cells of the last PoW (pushed into every later block of its run, T*)
++    pow_wit: Vec<V>,
 +}
 +
 +impl Builder {
@@ -1411,6 +1413,7 @@ index 0000000..3b2ec98
 +            tr_pending: None,
 +            tr_static: 0,
 +            tr_started: false,
++            pow_wit: vec![],
 +        }
 +    }
 +
@@ -1610,17 +1613,25 @@ index 0000000..3b2ec98
 +        self.load(EF::from(x))
 +    }
 +    /// First transcript job of the chain: push the initial state as its state units 2..13.
-+    fn tr_first(&mut self, job: u32) {
-+        if self.tr_started {
++    fn tr_first(&mut self, _job: u32) {
++        // T*: every hash-chain row sends its own input-state units; the first row's are the
++        // initial state (constants of the hash-chain role)
++        self.tr_started = true;
++    }
++    /// T*: blocks B_j (j >= 2) of a PoW run created by the last sample: push the PoW witness as
++    /// their units 16.. (the hash-chain row adds the counter).
++    fn tr_pow_blocks(&mut self, ctr_before: u32) {
++        use crate::sha384::config::SqueezeSrc;
++        if !matches!(self.transcript.inner.src, SqueezeSrc::Pow(..)) {
 +            return;
 +        }
-+        self.tr_started = true;
-+        let w = super::transcript2::initial_state_words();
-+        let (lo, hi) = digest_cells(crate::sha384::config::digest_from_words(w));
-+        let lo = self.ce(ef_from(lo));
-+        let hi = self.ce(ef_from(hi));
-+        self.push(Op::UnitW, lo.addr, 4, job, 2, lo.val, F::ZERO);
-+        self.push(Op::UnitW, hi.addr, 2, job, 10, hi.val, F::ZERO);
++        for _ in ctr_before..self.transcript.inner.ctr {
++            let job = super::transcript2::TJOB_STATIC_BASE + self.tr_static;
++            self.tr_static += 1;
++            for (i, v) in self.pow_wit.clone().into_iter().enumerate() {
++                self.push(Op::Unit1, v.addr, 0, job, 16 + i as u32, v.val, F::ZERO);
++            }
++        }
 +    }
 +    /// The open flush job (allocated at the first observe of a run): (job, unit index).
 +    fn tr_obs_slot(&mut self, n: u32) -> (u32, u32) {
@@ -1647,6 +1658,12 @@ index 0000000..3b2ec98
 +    /// from BIT rows).
 +    pub fn pow(&mut self, bits: usize, witness: &[F]) {
 +        if bits == 0 {
++            // G-11: no PoW, the witness must be zero (no transcript event)
++            let zero = self.c(F::ZERO);
++            for &w in witness {
++                let v = self.load_f(w);
++                self.assert_eq(v, zero, "zero PoW witness (bits = 0)");
++            }
 +            return;
 +        }
 +        self.tr_close();
@@ -1662,9 +1679,11 @@ index 0000000..3b2ec98
 +        if !ok {
 +            self.failures.push(format!("pow ({bits} bits)"));
 +        }
++        self.pow_wit.clear();
 +        for (i, &w) in witness.iter().enumerate() {
 +            let v = self.load_f(w);
 +            self.push(Op::Unit1, v.addr, 0, job, 16 + i as u32, v.val, F::ZERO);
++            self.pow_wit.push(v);
 +        }
 +        self.push(Op::Anchor, t, witness.len() as u32, job, 0, EF::ZERO, F::ZERO);
 +        // output word 0 as limbs (l0, l1, l2) from the hash chain
@@ -1723,8 +1742,11 @@ index 0000000..3b2ec98
 +            self.tr_first(super::transcript2::TJOB_SQUEEZE_BASE);
 +        }
 +        let t = self.tidx();
++        let c0 = self.transcript.inner.ctr;
 +        let s = self.transcript.sample();
-+        self.push(Op::Smp1, 0, 0, t, 0, EF::from(s), F::ZERO)
++        let out = self.push(Op::Smp1, 0, 0, t, 0, EF::from(s), F::ZERO);
++        self.tr_pow_blocks(c0);
++        out
 +    }
 +    pub fn smp12(&mut self) -> V {
 +        self.tr_close();
@@ -1732,10 +1754,13 @@ index 0000000..3b2ec98
 +            self.tr_first(super::transcript2::TJOB_SQUEEZE_BASE);
 +        }
 +        let t = self.tidx();
++        let c0 = self.transcript.inner.ctr;
 +        let s = FiatShamirTranscript::<crate::sha384::config::Sha384Config>::sample_ext(
 +            &mut self.transcript,
 +        );
-+        self.push(Op::Smp12, 0, 0, t, 0, s, F::ZERO)
++        let out = self.push(Op::Smp12, 0, 0, t, 0, s, F::ZERO);
++        self.tr_pow_blocks(c0);
++        out
 +    }
 +    /// Load a digest as two cells and observe it as a commitment (24 limb events).
 +    pub fn load_commit(&mut self, d: Digest) -> DigestCells {
@@ -1980,10 +2005,10 @@ index 0000000..3b2ec98
 +
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..af64b31
+index 0000000..efc54ef
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,235 @@
+@@ -0,0 +1,236 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2050,6 +2075,7 @@ index 0000000..af64b31
 +        let tr = TrBuses {
 +            sample: next(),
 +            word: next(),
++            chain: next(),
 +        };
 +        Self { alu, h, tr }
 +    }
@@ -3695,10 +3721,10 @@ index 0000000..df6e338
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..ff0ce72
+index 0000000..cdd15d6
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,691 @@
+@@ -0,0 +1,781 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -4390,12 +4416,102 @@ index 0000000..ff0ce72
 +        assert!(f.is_empty(), "{f:?}");
 +    });
 +}
++
++/// T* transcript (final-soundness T*-1, T*-2) in the circuit: counter-mode squeeze blocks and
++/// PoW-run blocks; rejected: a wrong counter (squeeze block / PoW-run block), a PoW witness
++/// ground on the old chain H(7, sigma || w), challenges read from B_1's PoW word.
++#[test]
++fn nv_tstar_tamper() {
++    use core::borrow::BorrowMut;
++    use super::transcript2::{replay2, Hash2Cols, Op2, HASH2_WIDTH};
++    use crate::sha384::config::{hash_parts, SqueezeSrc, TAG_POW};
++    use p3_field::PrimeField32;
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), 16, 1);
++    let (_, b) = circ.generate(&vk, &proof);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    let jobs = replay2(&b.transcript.clone().into_log());
++    let count = |op: Op2| jobs.iter().filter(|j| j.op == op).count();
++    let (ns, np, nq) = (count(Op2::Squeeze), count(Op2::Pow), count(Op2::PowQ));
++    println!("NV_TSTAR jobs: squeeze {ns} pow {np} pow-run {nq}");
++    assert!(ns > 0 && np > 0 && nq > 0, "fixture must exercise squeeze, PoW and PoW-run blocks");
++    nv_debug_mats(&vk, &proof, 16, |_, _| {});
++    println!("NV_TSTAR honest ok");
++    let hash_row = |m: &mut p3_matrix::dense::RowMajorMatrix<F>, pick: &dyn Fn(&Hash2Cols<F>) -> bool| -> usize {
++        let w = m.width;
++        let h = m.values.len() / w;
++        (0..h)
++            .find(|&r| {
++                m.values[r * w + 3] == F::ONE && {
++                    let o = r * w + super::uair::N_COMMON;
++                    let row: &mut Hash2Cols<F> = m.values[o..o + HASH2_WIDTH].borrow_mut();
++                    pick(row)
++                }
++            })
++            .expect("hash row")
++    };
++    let edit = |m: &mut p3_matrix::dense::RowMajorMatrix<F>, r: usize, f: &dyn Fn(&mut Hash2Cols<F>)| {
++        let o = r * m.width + super::uair::N_COMMON;
++        f(m.values[o..o + HASH2_WIDTH].borrow_mut());
++    };
++    for (name, op) in [("tstar wrong counter (squeeze block)", 0usize), ("tstar wrong counter (PoW-run block)", 1)] {
++        must_fail(name, || {
++            nv_debug_mats(&vk, &proof, 16, |mats, _| {
++                let r = hash_row(&mut mats[0], &|x| if op == 0 { x.op_s == F::ONE && x.ctr == F::TWO } else { x.op_q == F::ONE });
++                edit(&mut mats[0], r, &|x| x.ctr += F::ONE);
++            })
++        });
++    }
++    // chain link: the key of a squeeze block (its input state) must be the run's key
++    must_fail("tstar squeeze key limb", || {
++        nv_debug_mats(&vk, &proof, 16, |mats, _| {
++            let r = hash_row(&mut mats[0], &|x| x.op_s == F::ONE && x.ctr == F::TWO);
++            edit(&mut mats[0], r, &|x| x.state_in[4] += F::ONE);
++        })
++    });
++    // challenges from B_1's PoW word: claim word 0 of a PoW block as read
++    must_fail("tstar challenges from the PoW bits of B_1", || {
++        nv_debug_mats(&vk, &proof, 16, |mats, _| {
++            let r = hash_row(&mut mats[0], &|x| x.op_p == F::ONE && x.rd == F::ONE);
++            edit(&mut mats[0], r, &|x| {
++                x.rdw[0] = F::ONE;
++                x.last_word += F::ONE;
++            });
++        })
++    });
++    // a logup PoW witness valid on the old chain but not under T*
++    let bits = vk.inner.params.logup.pow_bits;
++    assert!(bits > 0);
++    let pj = jobs.iter().find(|j| j.op == Op2::Pow).unwrap();
++    let sigma = pj.state_in;
++    let lz = |s: &[u8; 48]| {
++        let mut n = 0;
++        for &x in s {
++            if x == 0 {
++                n += 8;
++            } else {
++                n += x.leading_zeros() as usize;
++                break;
++            }
++        }
++        n
++    };
++    let old_ok = |x: u32| lz(&hash_parts(TAG_POW, &[&sigma, &x.to_le_bytes()])) >= bits;
++    let new_ok = |x: u32| lz(&SqueezeSrc::Pow(sigma, x.to_le_bytes().to_vec()).block(1)) >= bits;
++    let x = (0u32..).find(|&x| old_ok(x) && !new_ok(x)).unwrap();
++    assert_eq!(pj.wit[0], proof.gkr_proof.logup_pow_witness, "first PoW job = logup PoW");
++    let mut bad = proof.clone();
++    bad.gkr_proof.logup_pow_witness = F::from_u32(x);
++    println!("NV_TSTAR old-chain witness {x} (honest {})", proof.gkr_proof.logup_pow_witness.as_canonical_u32());
++    must_fail("tstar PoW ground on the old chain", || nv_debug_mats(&vk, &bad, 16, |_, _| {}));
++}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
-index 0000000..098b0c8
+index 0000000..46f052a
 --- /dev/null
 +++ b/crates/recursion/src/nv/transcript2.rs
-@@ -0,0 +1,639 @@
+@@ -0,0 +1,756 @@
 +//! NV in-circuit SHA-384 transcript, word format v2 (see transcript/sha_transcript.rs for
 +//! the protocol).  Differences: the state and commit digests are 18 air2 limbs and are
 +//! framed as word units; commit events are 18 limb events; samples are extracted per
@@ -4429,6 +4545,8 @@ index 0000000..098b0c8
 +pub struct TrBuses {
 +    pub sample: BusIndex,
 +    pub word: BusIndex,
++    /// hash-chain link (job, input state limbs): the previous row provides the next row's state
++    pub chain: BusIndex,
 +}
 +
 +pub const TJOB_STATIC_BASE: u32 = 1 << 24;
@@ -4480,9 +4598,12 @@ index 0000000..098b0c8
 +pub enum Op2 {
 +    Flush,
 +    Commit,
++    /// T* squeeze block B_j = H(5, kappa || le32(j))
 +    Squeeze,
-+    /// proof of work: state' = H(7, [state, witness words])
++    /// T* PoW block B_1 = H(7, sigma || w || le32(1)) (anchored; PoW on its leading bits)
 +    Pow,
++    /// T* PoW-run block B_j = H(7, sigma || w || le32(j)), j >= 2
++    PowQ,
 +}
 +
 +#[derive(Clone, Debug)]
@@ -4503,6 +4624,10 @@ index 0000000..098b0c8
 +    pub payload: [F; NV_DIGEST],
 +    pub obs: Vec<F>,
 +    pub reads: Vec<Read2>,
++    /// T*: block counter j (squeeze / PoW blocks), PoW witness felts, samples read from B_1
++    pub ctr: u32,
++    pub wit: Vec<F>,
++    pub scnt: usize,
 +}
 +
 +impl TrJob2 {
@@ -4510,11 +4635,18 @@ index 0000000..098b0c8
 +        let mut units = vec![U2::Felt(48), U2::Felt(0)];
 +        units.extend(state_words(&self.state_in).map(U2::Word));
 +        let tag = match self.op {
-+            Op2::Flush | Op2::Pow => {
++            Op2::Flush => {
 +                units.push(U2::Felt(4 * self.obs.len() as u32));
 +                units.push(U2::Felt(0));
 +                units.extend(self.obs.iter().map(|x| U2::Felt(x.as_canonical_u32())));
-+                if self.op == Op2::Pow { crate::sha384::config::TAG_POW } else { TAG_FLUSH }
++                TAG_FLUSH
++            }
++            Op2::Pow | Op2::PowQ => {
++                units.push(U2::Felt(4 * (self.wit.len() as u32 + 1)));
++                units.push(U2::Felt(0));
++                units.extend(self.wit.iter().map(|x| U2::Felt(x.as_canonical_u32())));
++                units.push(U2::Felt(self.ctr));
++                crate::sha384::config::TAG_POW
 +            }
 +            Op2::Commit => {
 +                units.push(U2::Felt(crate::sha384::config::sha_levers().digest_bytes as u32));
@@ -4522,41 +4654,66 @@ index 0000000..098b0c8
 +                units.extend(super::hash::digest_units(digest_words(limbs_digest(&self.payload))));
 +                TAG_COMMIT
 +            }
-+            Op2::Squeeze => TAG_SQUEEZE,
++            Op2::Squeeze => {
++                units.push(U2::Felt(4));
++                units.push(U2::Felt(0));
++                units.push(U2::Felt(self.ctr));
++                TAG_SQUEEZE
++            }
 +        };
 +        Job2 { id: self.id, node: false, tag, units }
 +    }
 +}
 +
++/// Replay a transcript log as hash-chain jobs (T* transcript only).
 +pub fn replay2(log: &ShaTranscriptLog) -> Vec<TrJob2> {
++    use crate::sha384::config::{felt_bytes, pow_skip_words, SqueezeSrc, KIND_POW, KIND_POW_CONT, TAG_POW};
++    assert!(crate::sha384::config::sha_levers().tstar, "the NV transcript requires the T* transcript");
 +    let mut jobs: Vec<TrJob2> = vec![];
 +    let mut state = initial_state();
++    let mut src = SqueezeSrc::Key(state);
++    let mut ctr = 0u32;
 +    let mut nw = 12usize;
 +    let mut pending: Vec<F> = vec![];
 +    let mut pstart = 0usize;
 +    let mut n_static = 0u32;
 +    let mut n_squeeze = 0u32;
-+    let flush = |jobs: &mut Vec<TrJob2>, state: &mut [u8; 48], nw: &mut usize, pending: &mut Vec<F>, ps: usize, n_static: &mut u32| {
-+        if !pending.is_empty() {
-+            let id = TJOB_STATIC_BASE + *n_static;
-+            *n_static += 1;
-+            let bytes = crate::sha384::config::felt_bytes(pending);
-+            let out = hash_parts(TAG_FLUSH, &[&state[..], &bytes]);
-+            jobs.push(TrJob2 {
-+                id,
-+                op: Op2::Flush,
-+                t_start: ps,
-+                cnt: pending.len(),
-+                state_in: *state,
-+                state_out: out,
-+                payload: [F::ZERO; NV_DIGEST],
-+                obs: std::mem::take(pending),
-+                reads: vec![],
-+            });
-+            *state = out;
-+            *nw = 12;
-+        }
++    let mut pow_wit: Vec<F> = vec![];
++    let blank = |id: u32, op: Op2, t_start: usize, cnt: usize, state_in: [u8; 48], state_out: [u8; 48]| TrJob2 {
++        id,
++        op,
++        t_start,
++        cnt,
++        state_in,
++        state_out,
++        payload: [F::ZERO; NV_DIGEST],
++        obs: vec![],
++        reads: vec![],
++        ctr: 0,
++        wit: vec![],
++        scnt: 0,
 +    };
++    macro_rules! absorbed {
++        ($k:expr) => {{
++            state = $k;
++            src = SqueezeSrc::Key(state);
++            ctr = 0;
++            nw = 12;
++        }};
++    }
++    macro_rules! flush {
++        () => {{
++            if !pending.is_empty() {
++                let id = TJOB_STATIC_BASE + n_static;
++                n_static += 1;
++                let out = hash_parts(TAG_FLUSH, &[&state[..], &felt_bytes(&pending)]);
++                let mut jb = blank(id, Op2::Flush, pstart, pending.len(), state, out);
++                jb.obs = std::mem::take(&mut pending);
++                jobs.push(jb);
++                absorbed!(out);
++            }
++        }};
++    }
 +    let n = log.len();
 +    let mut i = 0;
 +    while i < n {
@@ -4566,49 +4723,44 @@ index 0000000..098b0c8
 +                    pstart = i;
 +                }
 +                pending.push(log.values[i]);
-+                nw = 12;
 +                i += 1;
 +            }
 +            KIND_COMMIT => {
-+                flush(&mut jobs, &mut state, &mut nw, &mut pending, pstart, &mut n_static);
++                flush!();
 +                let payload: [F; NV_DIGEST] = log.values[i..i + NV_DIGEST].try_into().unwrap();
 +                let d = limbs_digest(&payload);
 +                let out = hash_parts(TAG_COMMIT, &[&state[..], &crate::sha384::config::digest_wire(d)]);
 +                let id = TJOB_STATIC_BASE + n_static;
 +                n_static += 1;
-+                jobs.push(TrJob2 {
-+                    id,
-+                    op: Op2::Commit,
-+                    t_start: i,
-+                    cnt: NV_DIGEST,
-+                    state_in: state,
-+                    state_out: out,
-+                    payload,
-+                    obs: vec![],
-+                    reads: vec![],
-+                });
-+                state = out;
-+                nw = 12;
++                let mut jb = blank(id, Op2::Commit, i, NV_DIGEST, state, out);
++                jb.payload = payload;
++                jobs.push(jb);
++                absorbed!(out);
 +                i += NV_DIGEST;
 +            }
 +            KIND_SAMPLE => {
-+                flush(&mut jobs, &mut state, &mut nw, &mut pending, pstart, &mut n_static);
++                flush!();
++                assert!(!jobs.is_empty(), "the transcript must absorb before the first challenge");
 +                loop {
 +                    if nw == 12 {
-+                        let out = hash_parts(TAG_SQUEEZE, &[&state[..]]);
-+                        let id = TJOB_SQUEEZE_BASE + n_squeeze;
-+                        n_squeeze += 1;
-+                        jobs.push(TrJob2 {
-+                            id,
-+                            op: Op2::Squeeze,
-+                            t_start: i,
-+                            cnt: 0,
-+                            state_in: state,
-+                            state_out: out,
-+                            payload: [F::ZERO; NV_DIGEST],
-+                            obs: vec![],
-+                            reads: vec![],
-+                        });
++                        ctr += 1;
++                        let out = src.block(ctr);
++                        let mut jb = match &src {
++                            SqueezeSrc::Key(k) => {
++                                let id = TJOB_SQUEEZE_BASE + n_squeeze;
++                                n_squeeze += 1;
++                                blank(id, Op2::Squeeze, i, 0, *k, out)
++                            }
++                            SqueezeSrc::Pow(sg, _) => {
++                                let id = TJOB_STATIC_BASE + n_static;
++                                n_static += 1;
++                                let mut jb = blank(id, Op2::PowQ, i, 0, *sg, out);
++                                jb.wit = pow_wit.clone();
++                                jb
++                            }
++                        };
++                        jb.ctr = ctr;
++                        jobs.push(jb);
 +                        state = out;
 +                        nw = 0;
 +                    }
@@ -4618,38 +4770,41 @@ index 0000000..098b0c8
 +                    job.reads.push(Read2 { wi: nw, n: w, acc });
 +                    nw += 1;
 +                    if acc {
-+                        job.cnt += 1;
++                        if job.op == Op2::Pow {
++                            job.scnt += 1;
++                        } else {
++                            job.cnt += 1;
++                        }
 +                        assert_eq!(F::from_u32(w), log.values[i], "replay disagrees at tidx {i}");
 +                        break;
 +                    }
 +                }
 +                i += 1;
 +            }
-+            crate::sha384::config::KIND_POW => {
-+                flush(&mut jobs, &mut state, &mut nw, &mut pending, pstart, &mut n_static);
++            KIND_POW => {
++                flush!();
 +                let mut w = vec![log.values[i]];
 +                let mut j = i + 1;
-+                while j < n && log.kinds[j] == crate::sha384::config::KIND_POW_CONT {
++                while j < n && log.kinds[j] == KIND_POW_CONT {
 +                    w.push(log.values[j]);
 +                    j += 1;
 +                }
-+                let bytes = crate::sha384::config::felt_bytes(&w);
-+                let out = hash_parts(crate::sha384::config::TAG_POW, &[&state[..], &bytes]);
++                let wb = felt_bytes(&w);
++                let mut m = wb.clone();
++                m.extend_from_slice(&1u32.to_le_bytes());
++                let out = hash_parts(TAG_POW, &[&state[..], &m]);
 +                let id = TJOB_STATIC_BASE + n_static;
 +                n_static += 1;
-+                jobs.push(TrJob2 {
-+                    id,
-+                    op: Op2::Pow,
-+                    t_start: i,
-+                    cnt: w.len(),
-+                    state_in: state,
-+                    state_out: out,
-+                    payload: [F::ZERO; NV_DIGEST],
-+                    obs: w,
-+                    reads: vec![],
-+                });
++                let mut jb = blank(id, Op2::Pow, i, w.len(), state, out);
++                jb.ctr = 1;
++                jb.wit = w.clone();
++                jobs.push(jb);
++                src = SqueezeSrc::Pow(state, wb);
++                ctr = 1;
++                pow_wit = w;
 +                state = out;
-+                nw = 12;
++                // challenges start after the PoW bits (bits <= 64: the first 64-bit word)
++                nw = pow_skip_words(1);
 +                i = j;
 +            }
 +            k => panic!("bad kind {k}"),
@@ -4670,17 +4825,32 @@ index 0000000..098b0c8
 +    pub op_f: T,
 +    pub op_c: T,
 +    pub op_s: T,
-+    /// proof-of-work job (tag 7)
++    /// PoW block B_1 (tag 7, anchored)
 +    pub op_p: T,
++    /// PoW-run block B_j, j >= 2 (tag 7)
++    pub op_q: T,
 +    pub job: T,
-+    /// job id of the next row (whose state units this row's output provides)
++    /// job id of the next row
 +    pub nxt: T,
 +    /// has a next job
 +    pub hn: T,
 +    pub t_start: T,
++    /// observe / commit / PoW-witness count (anchored), or accepted samples (op_s, op_q)
 +    pub cnt: T,
++    /// accepted samples read from B_1 (op_p only)
++    pub scnt: T,
++    /// T* block counter j (op_s, op_p, op_q)
++    pub ctr: T,
++    /// PoW witness felts (op_p = cnt, op_q = inherited)
++    pub nwit: T,
++    /// this row's block is read by the sample role
++    pub rd: T,
++    /// the next row is a squeeze / PoW-run block (= next.op_s + next.op_q)
++    pub nsq: T,
++    /// input state units (key kappa for op_s, sigma for op_p / op_q, previous state otherwise)
++    pub state_in: [T; NV_DIGEST],
 +    pub state_out: [T; NV_DIGEST],
-+    /// state words read by the sample role (prefix)
++    /// state words read by the sample role (prefix from word 0, or from word 1 for op_p)
 +    pub rdw: [T; 6],
 +    pub last_word: T,
 +    pub last_half: T,
@@ -4702,23 +4872,35 @@ index 0000000..098b0c8
 +    let one = AB::Expr::ONE;
 +    let c = |v: u64| AB::Expr::from_u64(v);
 +    let g = |x: AB::Expr| kh.clone() * x;
-+    for x in [l.is_first, l.op_f, l.op_c, l.op_s, l.op_p, l.last_acc, l.last_half, l.hn].into_iter().chain(l.rdw) {
++    for x in [l.is_first, l.op_f, l.op_c, l.op_s, l.op_p, l.op_q, l.last_acc, l.last_half, l.hn, l.rd].into_iter().chain(l.rdw) {
 +        builder.assert_zero(g(x * (x - one.clone())));
 +    }
-+    builder.assert_zero(g(l.op_f + l.op_c + l.op_s + l.op_p - one.clone()));
++    let sq: AB::Expr = l.op_s + l.op_q; // blocks read from word 0
++    let pw: AB::Expr = l.op_p + l.op_q; // tag-7 blocks
++    builder.assert_zero(g(l.op_f + l.op_c + l.op_s + l.op_p + l.op_q - one.clone()));
 +    builder.assert_zero(g(l.is_first * l.t_start));
++    builder.assert_zero(g(l.is_first * sq.clone()));
++    let init = state_limbs(&initial_state());
++    for i in 0..NV_DIGEST {
++        builder.assert_zero(g(l.is_first * (l.state_in[i] - c(init[i] as u64))));
++    }
 +    builder.assert_zero(g(l.op_c * (l.cnt - c(NV_DIGEST as u64))));
-+    builder.assert_zero(g(l.rdw[0] - l.op_s));
-+    for i in 0..5 {
++    builder.assert_zero(g(l.op_p * (l.ctr - one.clone())));
++    builder.assert_zero(g(l.op_p * (l.nwit - l.cnt)));
++    builder.assert_zero(g(l.scnt * (one.clone() - l.op_p)));
++    // reads: squeeze-type blocks from word 0, B_1 from word 1 (its word 0 holds the PoW bits)
++    builder.assert_zero(g(l.rd - sq.clone() - l.op_p * l.rdw[1]));
++    builder.assert_zero(g(l.rdw[0] - sq.clone()));
++    builder.assert_zero(g(l.rdw[1] * (one.clone() - l.rdw[0] - l.op_p)));
++    for i in 1..5 {
 +        builder.assert_zero(g(l.rdw[i + 1] * (one.clone() - l.rdw[i])));
 +    }
 +    let rd_sum = l.rdw.iter().fold(AB::Expr::ZERO, |a, &x| a + x);
-+    builder.assert_zero(g(rd_sum - l.last_word - l.op_s));
-+    builder.assert_zero(g(l.last_acc * (one.clone() - l.op_s)));
-+    builder.assert_zero(g(l.last_half * (one.clone() - l.op_s)));
++    builder.assert_zero(g(rd_sum - l.last_word - sq.clone()));
++    builder.assert_zero(g(l.last_acc * (one.clone() - l.rd)));
++    builder.assert_zero(g(l.last_half * (one.clone() - l.rd)));
 +    builder.assert_zero(g(l.full - l.rdw[5] * l.last_half));
-+    let not_full = l.op_s - l.full;
-+    let rej = l.op_s - l.last_acc;
++    let rej = l.rd - l.last_acc;
 +    builder.assert_zero(g(rej.clone() * (one.clone() - l.full)));
 +    builder.when_first_row().assert_zero(g(one.clone() - l.is_first));
 +    {
@@ -4728,12 +4910,23 @@ index 0000000..098b0c8
 +        tr.assert_zero(both.clone() * n.is_first);
 +        tr.assert_zero(kh.clone() * (l.hn - nkh.clone()));
 +        tr.assert_zero(both.clone() * (n.job - l.nxt));
-+        tr.assert_zero(both.clone() * (n.t_start - l.t_start - l.cnt));
++        tr.assert_zero(both.clone() * (n.t_start - l.t_start - l.cnt - l.scnt));
 +        tr.assert_zero(both.clone() * l.op_f * n.op_f);
 +        tr.assert_zero(kh.clone() * l.op_f * (one.clone() - nkh.clone()));
-+        tr.assert_zero(both.clone() * n.op_s * not_full);
-+        tr.assert_zero(kh.clone() * rej.clone() * (one.clone() - nkh.clone() * n.op_s));
++        // a squeeze block follows an absorb or a fully read squeeze block (same key)
++        tr.assert_zero(both.clone() * n.op_s * (l.op_p + l.op_q));
++        tr.assert_zero(both.clone() * n.op_s * l.op_s * (one.clone() - l.full));
++        // a PoW-run block follows a fully read PoW block of the same run
++        tr.assert_zero(both.clone() * n.op_q * (one.clone() - l.full));
++        tr.assert_zero(both.clone() * n.op_q * (l.op_f + l.op_c + l.op_s));
++        tr.assert_zero(kh.clone() * rej.clone() * (one.clone() - nkh.clone() * (n.op_s + n.op_q)));
++        // counters: squeeze j = 1 after an absorb, else j + 1; PoW-run j + 1
++        tr.assert_zero(both.clone() * n.op_s * (n.ctr - one.clone() - l.op_s * l.ctr));
++        tr.assert_zero(both.clone() * n.op_q * (n.ctr - l.ctr - one.clone()));
++        tr.assert_zero(both.clone() * n.op_q * (n.nwit - l.nwit));
++        tr.assert_zero(both.clone() * (l.nsq - n.op_s - n.op_q));
 +    }
++    builder.assert_zero(g(l.nsq * (one.clone() - l.hn)));
 +    builder.when_last_row().assert_zero(g(l.op_f.into()));
 +    builder.when_last_row().assert_zero(g(rej));
 +    builder.when_last_row().assert_zero(g(l.hn.into()));
@@ -4741,23 +4934,28 @@ index 0000000..098b0c8
 +    let tag = l.op_f * c(TAG_FLUSH as u64)
 +        + l.op_c * c(TAG_COMMIT as u64)
 +        + l.op_s * c(TAG_SQUEEZE as u64)
-+        + l.op_p * c(crate::sha384::config::TAG_POW as u64);
++        + pw.clone() * c(crate::sha384::config::TAG_POW as u64);
 +    h.send_job(builder, l.job, tag, kh.clone());
 +    h.send_felt(builder, l.job, c(0), c(48), kh.clone());
 +    h.send_felt(builder, l.job, c(1), c(0), kh.clone());
-+    // output state = state units 2..13 of the next job
 +    for i in 0..6 {
 +        h.send_word(
 +            builder,
-+            l.nxt,
++            l.job,
 +            c(2 + 2 * i as u64),
-+            core::array::from_fn(|k| l.state_out[3 * i + k].into()),
-+            g(l.hn.into()),
++            core::array::from_fn(|k| l.state_in[3 * i + k].into()),
++            kh.clone(),
 +        );
 +    }
-+    h.send_felt(builder, l.job, c(14), l.op_c * c(crate::sha384::config::sha_levers().digest_bytes as u64) + (l.op_f + l.op_p) * l.cnt * c(4), g(l.op_c + l.op_f + l.op_p));
-+    h.send_felt(builder, l.job, c(15), c(0), g(l.op_c + l.op_f + l.op_p));
-+    // PoW jobs: the output word 0 (limbs) goes to the ALU's leading-zero check
++    let len = l.op_c * c(crate::sha384::config::sha_levers().digest_bytes as u64)
++        + l.op_f * l.cnt * c(4)
++        + pw.clone() * (l.nwit + one.clone()) * c(4)
++        + l.op_s * c(4);
++    h.send_felt(builder, l.job, c(14), len, kh.clone());
++    h.send_felt(builder, l.job, c(15), c(0), kh.clone());
++    // the block counter: unit 16 (squeeze) or 16 + nwit (after the PoW witness units)
++    h.send_felt(builder, l.job, c(16) + pw.clone() * l.nwit, l.ctr, g(l.op_s + pw.clone()));
++    // PoW jobs: B_1's word 0 (limbs) goes to the ALU's leading-zero check
 +    PermutationCheckBus::new(h.slot).send(
 +        builder,
 +        [
@@ -4773,7 +4971,23 @@ index 0000000..098b0c8
 +    );
 +    let sout: Vec<AB::Expr> = l.state_out.iter().map(|&x| x.into()).collect();
 +    h.receive_digest(builder, l.job, &sout, kh.clone());
-+    // flush / commit jobs are anchored by the ALU: (2, job, 0, 0, t_start, cnt, 0)
++    // hash chain: the next job's input state = the key / sigma within a run (squeeze after
++    // squeeze, PoW-run block), else this block's output (the last block consumed)
++    let keep = l.nsq * (l.op_s + l.op_p + l.op_q);
++    let chain = PermutationCheckBus::new(t.chain);
++    chain.send(
++        builder,
++        core::iter::once(l.nxt.into())
++            .chain((0..NV_DIGEST).map(|i| l.state_out[i] + keep.clone() * (l.state_in[i] - l.state_out[i])))
++            .collect::<Vec<AB::Expr>>(),
++        g(l.hn.into()),
++    );
++    chain.receive(
++        builder,
++        core::iter::once(l.job.into()).chain(l.state_in.iter().map(|&x| x.into())).collect::<Vec<AB::Expr>>(),
++        g(one.clone() - l.is_first),
++    );
++    // flush / commit / PoW jobs are anchored by the ALU: (2, job, 0, 0, t_start, cnt, 0)
 +    PermutationCheckBus::new(h.slot).receive(
 +        builder,
 +        [
@@ -4789,8 +5003,15 @@ index 0000000..098b0c8
 +    );
 +    PermutationCheckBus::new(t.sample).receive(
 +        builder,
-+        [l.job, l.t_start, l.cnt, l.last_word, l.last_half, l.last_acc],
-+        g(l.op_s.into()),
++        [
++            l.job.into(),
++            l.t_start + l.op_p * l.cnt,
++            sq * l.cnt + l.op_p * l.scnt,
++            l.last_word.into(),
++            l.last_half.into(),
++            l.last_acc.into(),
++        ],
++        g(l.rd.into()),
 +    );
 +    let wbus = PermutationCheckBus::new(t.word);
 +    for i in 0..6 {
@@ -4867,7 +5088,8 @@ index 0000000..098b0c8
 +    }
 +    // only the last row may skip candidate 1
 +    builder.assert_zero(g((one.clone() - l.h1) * (one.clone() - l.is_last)));
-+    builder.assert_zero(g(l.is_first * l.wi));
++    // a run starts at word 0 (squeeze blocks) or word 1 (B_1 after a PoW); the word bus pins it
++    builder.assert_zero(g(l.is_first * l.wi * (l.wi - one.clone())));
 +    builder.assert_zero(g(l.is_first * l.mbefore));
 +    let macc = l.mbefore + l.acc[0] + l.h1 * l.acc[1];
 +    {
@@ -4963,20 +5185,27 @@ index 0000000..098b0c8
 +        r.op_c = F::from_bool(j.op == Op2::Commit);
 +        r.op_s = F::from_bool(j.op == Op2::Squeeze);
 +        r.op_p = F::from_bool(j.op == Op2::Pow);
++        r.op_q = F::from_bool(j.op == Op2::PowQ);
 +        r.job = fu(job);
 +        r.t_start = fu(j.t_start);
 +        r.cnt = fu(j.cnt);
++        r.scnt = fu(j.scnt);
++        r.ctr = F::from_u32(j.ctr);
++        r.nwit = fu(j.wit.len());
 +        if k + 1 < jobs.len() {
 +            r.hn = F::ONE;
 +            r.nxt = F::from_u32(jobs[k + 1].id);
++            r.nsq = F::from_bool(matches!(jobs[k + 1].op, Op2::Squeeze | Op2::PowQ));
 +        }
++        let si = state_limbs(&j.state_in);
 +        let so = state_limbs(&j.state_out);
 +        for i in 0..NV_DIGEST {
++            r.state_in[i] = F::from_u32(si[i]);
 +            r.state_out[i] = F::from_u32(so[i]);
 +        }
-+        if j.op == Op2::Squeeze {
-+            let last = j.reads.last().unwrap();
-+            for i in 0..=last.wi / 2 {
++        if let (Some(first), Some(last)) = (j.reads.first(), j.reads.last()) {
++            r.rd = F::ONE;
++            for i in first.wi / 2..=last.wi / 2 {
 +                r.rdw[i] = F::ONE;
 +            }
 +            r.last_word = fu(last.wi / 2);
@@ -4985,17 +5214,21 @@ index 0000000..098b0c8
 +            r.full = F::from_bool(last.wi == 11);
 +        }
 +        let nrows = j.reads.len().div_ceil(2);
++        let w0 = j.reads.first().map_or(0, |r| r.wi / 2);
++        debug_assert!(j.reads.first().is_none_or(|r| r.wi % 2 == 0));
++        let t_job = j.t_start + if j.op == Op2::Pow { j.cnt } else { 0 };
 +        let mut mbefore = 0usize;
 +        let sw = state_words(&j.state_out);
-+        for wi in 0..nrows {
++        for q in 0..nrows {
++            let wi = w0 + q;
 +            let s: &mut Samp2Cols<F> = samp[srow * SAMP2_WIDTH..(srow + 1) * SAMP2_WIDTH].borrow_mut();
 +            srow += 1;
 +            s.job = fu(job);
 +            s.wi = fu(wi);
-+            s.t_job = fu(j.t_start);
++            s.t_job = fu(t_job);
 +            s.mbefore = fu(mbefore);
-+            s.is_first = F::from_bool(wi == 0);
-+            s.is_last = F::from_bool(wi + 1 == nrows);
++            s.is_first = F::from_bool(q == 0);
++            s.is_last = F::from_bool(q + 1 == nrows);
 +            let bytes = sw[wi].to_be_bytes();
 +            for t in 0..8 {
 +                s.b[t] = F::from_u8(bytes[t]);
@@ -5008,7 +5241,7 @@ index 0000000..098b0c8
 +            s.lo5 = F::from_u8(lo5);
 +            s.lo2 = F::from_u8(lo2);
 +            super::hash::cnt2(&mut counts, (lo5 as usize) << (8 - a5), (lo2 as usize) << (8 - a2));
-+            let h1 = 2 * wi + 1 < j.reads.len();
++            let h1 = 2 * q + 1 < j.reads.len();
 +            s.h1 = F::from_bool(h1);
 +            let mut us = [0u8; 2];
 +            for h in 0..2 {
@@ -5016,7 +5249,7 @@ index 0000000..098b0c8
 +                let (acc, u) = fill_cand(s, h, cb);
 +                us[h] = u;
 +                if h == 0 || h1 {
-+                    debug_assert_eq!(acc, j.reads[2 * wi + h].acc);
++                    debug_assert_eq!(acc, j.reads[2 * q + h].acc);
 +                    mbefore += acc as usize;
 +                }
 +            }
@@ -10344,10 +10577,10 @@ index 0000000..5244be5
 +}
 diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384/config.rs
 new file mode 100644
-index 0000000..8355d5e
+index 0000000..e679d06
 --- /dev/null
 +++ b/crates/recursion/src/sha384/config.rs
-@@ -0,0 +1,704 @@
+@@ -0,0 +1,873 @@
 +//! SHA-384 / BabyBear-Ext12 STARK protocol configuration (NEAR PQ native profile).
 +//!
 +//! Byte-for-byte the configuration of
@@ -10401,9 +10634,14 @@ index 0000000..8355d5e
 +    pub digest_bytes: usize,
 +    /// Hash each WHIR leaf (all 2^k rows of a fold coset) as one SHA-384 message (tag 6).
 +    pub coset_leaf: bool,
++    /// T* transcript (final-soundness T*-1, T*-2): counter-mode squeezing
++    /// B_j = H(5, kappa || le32(j)) from the post-absorb key kappa, and PoW blocks
++    /// B_j = H(7, sigma || w || le32(j)) with the PoW on the first z bits of B_1 and the following
++    /// challenges from B_1's remaining 64-bit words, then B_2, ...; a zero witness when z = 0.
++    pub tstar: bool,
 +}
 +impl ShaLevers {
-+    pub const DEFAULT: ShaLevers = ShaLevers { digest_bytes: 48, coset_leaf: false };
++    pub const DEFAULT: ShaLevers = ShaLevers { digest_bytes: 48, coset_leaf: false, tstar: false };
 +    pub fn is_default(&self) -> bool {
 +        *self == Self::DEFAULT
 +    }
@@ -10412,7 +10650,7 @@ index 0000000..8355d5e
 +        let s = if self.is_default() {
 +            "nearproof-native-sha384-ext12-v4".to_string()
 +        } else {
-+            format!("nearproof-sha384-ext12-v5-w{:02}-c{}", self.digest_bytes, self.coset_leaf as u8)
++            format!("nearproof-sha384-ext12-v{}-w{:02}-c{}", if self.tstar { 6 } else { 5 }, self.digest_bytes, self.coset_leaf as u8)
 +        };
 +        s.as_bytes().try_into().expect("32-byte prefix")
 +    }
@@ -10425,12 +10663,18 @@ index 0000000..8355d5e
 +        }
 +    }
 +}
-+/// The process's hash levers (env NEARPROOF_DIGEST_BYTES = 48 | 42, NEARPROOF_COSET_LEAF = 0 | 1).
++/// The process's hash levers (env NEARPROOF_DIGEST_BYTES = 48 | 42, NEARPROOF_COSET_LEAF = 0 | 1,
++/// NEARPROOF_TSTAR = 1 (default) | 0; 0 = the legacy v4/v5 chained squeeze, kept for the native
++/// vector and differential tests).
 +pub fn sha_levers() -> ShaLevers {
 +    static L: std::sync::OnceLock<ShaLevers> = std::sync::OnceLock::new();
 +    *L.get_or_init(|| {
 +        let get = |k: &str, d: usize| std::env::var(k).ok().and_then(|v| v.parse().ok()).unwrap_or(d);
-+        let l = ShaLevers { digest_bytes: get("NEARPROOF_DIGEST_BYTES", 48), coset_leaf: get("NEARPROOF_COSET_LEAF", 0) == 1 };
++        let l = ShaLevers {
++            digest_bytes: get("NEARPROOF_DIGEST_BYTES", 48),
++            coset_leaf: get("NEARPROOF_COSET_LEAF", 0) == 1,
++            tstar: get("NEARPROOF_TSTAR", 1) == 1,
++        };
 +        assert!(l.digest_bytes == 48 || l.digest_bytes == 42, "digest width must be 48 or 42 bytes");
 +        l
 +    })
@@ -10597,11 +10841,36 @@ index 0000000..8355d5e
 +    hash_parts(TAG_INIT, &[])
 +}
 +
++/// Squeeze source under T*: the post-absorb key (tag 5) or a PoW run (tag 7, sigma and the
++/// witness bytes).
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub enum SqueezeSrc {
++    Key([u8; 48]),
++    Pow([u8; 48], Vec<u8>),
++}
++impl SqueezeSrc {
++    /// Block j (T*): H(5, kappa || le32(j)) or H(7, sigma || w || le32(j)).
++    pub fn block(&self, j: u32) -> [u8; 48] {
++        match self {
++            SqueezeSrc::Key(k) => hash_parts(TAG_SQUEEZE, &[k, &j.to_le_bytes()]),
++            SqueezeSrc::Pow(s, w) => {
++                let mut m = w.clone();
++                m.extend_from_slice(&j.to_le_bytes());
++                hash_parts(TAG_POW, &[s, &m])
++            }
++        }
++    }
++}
++
 +#[derive(Clone, Debug)]
 +pub struct ShaTranscript {
++    /// last absorbed key or last block consumed (the state the next absorb starts from)
 +    pub state: [u8; 48],
 +    pub next_word: usize,
 +    pub pending: Vec<u8>,
++    /// T*: squeeze source and the index of the last block taken from it
++    pub src: SqueezeSrc,
++    pub ctr: u32,
 +}
 +impl Default for ShaTranscript {
 +    fn default() -> Self {
@@ -10609,8 +10878,16 @@ index 0000000..8355d5e
 +            state: initial_state(),
 +            next_word: 12,
 +            pending: Vec::new(),
++            src: SqueezeSrc::Key(initial_state()),
++            ctr: 0,
 +        }
 +    }
++}
++/// First candidate (u32 index into a block) available to challenges after a PoW on `bits` bits:
++/// the PoW bits occupy the first ceil(bits / 64) 64-bit words of B_1.
++pub fn pow_skip_words(bits: usize) -> usize {
++    assert!(bits <= 64, "T* PoW uses at most the first 64-bit word");
++    2 * bits.div_ceil(64)
 +}
 +fn leading_zero_bits(s: &[u8; 48]) -> usize {
 +    let mut n = 0;
@@ -10626,9 +10903,14 @@ index 0000000..8355d5e
 +}
 +/// PoW step (levers spec): state' = H(tag 7, state || witness words LE32); valid iff the first
 +/// `bits` bits of state' (byte 0 first, MSB first) are zero.
++/// Under T*: B_1 = H(7, state || witness LE32 || le32(1)).
 +pub fn pow_step(state: &[u8; 48], witness: &[u32], bits: usize) -> ([u8; 48], bool) {
 +    let w: Vec<u8> = witness.iter().flat_map(|x| x.to_le_bytes()).collect();
-+    let s = hash_parts(TAG_POW, &[state, &w]);
++    let s = if sha_levers().tstar {
++        SqueezeSrc::Pow(*state, w).block(1)
++    } else {
++        hash_parts(TAG_POW, &[state, &w])
++    };
 +    (s, leading_zero_bits(&s) >= bits)
 +}
 +impl ShaTranscript {
@@ -10659,10 +10941,37 @@ index 0000000..8355d5e
 +    }
 +    pub fn flush(&mut self) {
 +        if !self.pending.is_empty() {
-+            self.state = hash_parts(TAG_FLUSH, &[&self.state, &self.pending]);
++            let k = hash_parts(TAG_FLUSH, &[&self.state, &self.pending]);
 +            self.pending.clear();
++            self.absorbed(k);
++        }
++    }
++    /// New post-absorb key kappa: state = kappa, squeeze counter reset.
++    fn absorbed(&mut self, k: [u8; 48]) {
++        self.state = k;
++        self.next_word = 12;
++        self.src = SqueezeSrc::Key(k);
++        self.ctr = 0;
++    }
++    /// PoW (both widths): flush, then B_1 from (state, witness); T* keeps the run's source so
++    /// later challenges read B_1's remaining words, then B_2, ...
++    fn pow_apply(&mut self, bits: usize, w: &[u32]) -> bool {
++        if bits == 0 {
++            // G-11 (T*): no PoW, the witness must be zero
++            return !sha_levers().tstar || w.iter().all(|&x| x == 0);
++        }
++        self.flush();
++        let (s, ok) = pow_step(&self.state, w, bits);
++        if sha_levers().tstar {
++            self.src = SqueezeSrc::Pow(self.state, w.iter().flat_map(|x| x.to_le_bytes()).collect());
++            self.ctr = 1;
++            self.state = s;
++            self.next_word = pow_skip_words(bits);
++        } else {
++            self.state = s;
 +            self.next_word = 12;
 +        }
++        ok
 +    }
 +}
 +impl FiatShamirTranscript<Sha384Config> for ShaTranscript {
@@ -10673,18 +10982,11 @@ index 0000000..8355d5e
 +    }
 +    fn observe_commit(&mut self, d: Digest) {
 +        self.flush();
-+        self.state = hash_parts(TAG_COMMIT, &[&self.state, &digest_wire(d)]);
-+        self.next_word = 12;
++        let k = hash_parts(TAG_COMMIT, &[&self.state, &digest_wire(d)]);
++        self.absorbed(k);
 +    }
 +    fn check_witness(&mut self, bits: usize, witness: F) -> bool {
-+        if bits == 0 {
-+            return true;
-+        }
-+        self.flush();
-+        let (s, ok) = pow_step(&self.state, &[witness.as_canonical_u32()], bits);
-+        self.state = s;
-+        self.next_word = 12;
-+        ok
++        self.pow_apply(bits, &[witness.as_canonical_u32()])
 +    }
 +    fn grind(&mut self, bits: usize) -> F {
 +        if bits == 0 {
@@ -10696,14 +10998,7 @@ index 0000000..8355d5e
 +        w
 +    }
 +    fn check_witness_wide(&mut self, bits: usize, w: [F; 2]) -> bool {
-+        if bits == 0 {
-+            return true;
-+        }
-+        self.flush();
-+        let (s, ok) = pow_step(&self.state, &[w[0].as_canonical_u32(), w[1].as_canonical_u32()], bits);
-+        self.state = s;
-+        self.next_word = 12;
-+        ok
++        self.pow_apply(bits, &[w[0].as_canonical_u32(), w[1].as_canonical_u32()])
 +    }
 +    fn grind_wide(&mut self, bits: usize) -> [F; 2] {
 +        if bits == 0 {
@@ -10718,7 +11013,12 @@ index 0000000..8355d5e
 +        self.flush();
 +        loop {
 +            if self.next_word == 12 {
-+                self.state = hash_parts(TAG_SQUEEZE, &[&self.state]);
++                self.state = if sha_levers().tstar {
++                    self.ctr += 1;
++                    self.src.block(self.ctr)
++                } else {
++                    hash_parts(TAG_SQUEEZE, &[&self.state])
++                };
 +                self.next_word = 0;
 +            }
 +            let start = 4 * self.next_word;
@@ -10939,6 +11239,10 @@ index 0000000..8355d5e
 +
 +    #[test]
 +    fn native_transcript_vectors() {
++        if sha_levers().tstar {
++            eprintln!("skipped: recorded vectors are the legacy chained squeeze (NEARPROOF_TSTAR=0)");
++            return;
++        }
 +        let hasher = ShaHasher;
 +        let leaf = hasher.hash_slice(&[F::ZERO, F::ONE, F::from_u32(2013265920)]);
 +        let empty = hasher.hash_slice(&[]);
@@ -10962,6 +11266,100 @@ index 0000000..8355d5e
 +        assert_eq!(&samples[..8], &VECTOR_SAMPLES_HEAD);
 +        assert_eq!(t.state, VECTOR_STATE);
 +        assert_eq!(t.next_word, 1);
++    }
++
++    /// T*-1: counter-mode squeeze from the post-absorb key; the state after a squeeze run is the
++    /// last block consumed; a wrong counter gives different challenges.
++    #[test]
++    fn tstar_counter_mode() {
++        if !sha_levers().tstar {
++            return;
++        }
++        let mut t = ShaTranscript::default();
++        t.observe(F::from_u32(7));
++        t.observe(F::from_u32(9));
++        let kappa = hash_parts(TAG_FLUSH, &[&initial_state(), &felt_bytes(&[F::from_u32(7), F::from_u32(9)])]);
++        let cand = |b: &[u8; 48], i: usize| u32::from_le_bytes(b[4 * i..4 * i + 4].try_into().unwrap());
++        let accept = |n: u32| (n as u64) < SAMPLE_BOUND;
++        // expected: candidates of B_1, B_2, ... (rejections skipped)
++        let mut exp = vec![];
++        let mut last = [0u8; 48];
++        for j in 1..=3u32 {
++            let b = hash_parts(TAG_SQUEEZE, &[&kappa, &j.to_le_bytes()]);
++            last = b;
++            for i in 0..12 {
++                if accept(cand(&b, i)) {
++                    exp.push(cand(&b, i) % (BABYBEAR_P as u32));
++                }
++            }
++        }
++        let n = exp.len();
++        let got: Vec<u32> = (0..n).map(|_| t.sample().as_canonical_u32()).collect();
++        assert_eq!(got, exp);
++        assert_eq!(t.state, last, "state = last block consumed");
++        assert_eq!(t.ctr, 3);
++        // wrong counter (j + 1) or the old chain H(5, kappa) gives different challenges
++        let wrong = hash_parts(TAG_SQUEEZE, &[&kappa, &2u32.to_le_bytes()]);
++        let chain = hash_parts(TAG_SQUEEZE, &[&kappa]);
++        let first = hash_parts(TAG_SQUEEZE, &[&kappa, &1u32.to_le_bytes()]);
++        assert_ne!(wrong, first);
++        assert_ne!(chain, first);
++        // the next absorb starts from the last block consumed
++        t.observe(F::ONE);
++        t.flush();
++        assert_eq!(t.state, hash_parts(TAG_FLUSH, &[&last, &felt_bytes(&[F::ONE])]));
++    }
++
++    /// T*-2: PoW on the first z bits of B_1 = H(7, sigma || w || le32(1)); a witness ground on the
++    /// old chain (H(7, sigma || w)) is rejected; challenges start at B_1's next 64-bit word (never
++    /// the PoW bits), then B_2 = H(7, sigma || w || le32(2)); z = 0 needs a zero witness.
++    #[test]
++    fn tstar_pow() {
++        if !sha_levers().tstar {
++            return;
++        }
++        let bits = 12;
++        let mut t = ShaTranscript::default();
++        t.observe(F::from_u32(5));
++        t.flush();
++        let sigma = t.state;
++        // honest grind (T*) and verification
++        let mut g = t.clone();
++        let w = FiatShamirTranscript::<Sha384Config>::grind(&mut g, bits);
++        let mut v = t.clone();
++        assert!(FiatShamirTranscript::<Sha384Config>::check_witness(&mut v, bits, w));
++        let wb = w.as_canonical_u32().to_le_bytes().to_vec();
++        let b1 = SqueezeSrc::Pow(sigma, wb.clone()).block(1);
++        assert!(leading_zero_bits(&b1) >= bits);
++        // challenges: B_1 from word pow_skip_words(bits), then B_2
++        let cand = |b: &[u8; 48], i: usize| u32::from_le_bytes(b[4 * i..4 * i + 4].try_into().unwrap());
++        let mut exp = vec![];
++        for i in pow_skip_words(bits)..12 {
++            if (cand(&b1, i) as u64) < SAMPLE_BOUND {
++                exp.push(cand(&b1, i) % (BABYBEAR_P as u32));
++            }
++        }
++        let b2 = SqueezeSrc::Pow(sigma, wb).block(2);
++        for i in 0..12 {
++            if (cand(&b2, i) as u64) < SAMPLE_BOUND {
++                exp.push(cand(&b2, i) % (BABYBEAR_P as u32));
++            }
++        }
++        let got: Vec<u32> = (0..exp.len()).map(|_| v.sample().as_canonical_u32()).collect();
++        assert_eq!(got, exp);
++        // indices taken from B_1's PoW bits (word 0) would be the zero-heavy candidate: not used
++        assert_ne!(got[0], cand(&b1, 0) % (BABYBEAR_P as u32));
++        // a witness valid on the old chain but not under T* is rejected
++        let old_ok = |x: u32| leading_zero_bits(&hash_parts(TAG_POW, &[&sigma, &x.to_le_bytes()])) >= bits;
++        let new_ok = |x: u32| leading_zero_bits(&SqueezeSrc::Pow(sigma, x.to_le_bytes().to_vec()).block(1)) >= bits;
++        let old_w = (0u32..).find(|&x| old_ok(x) && !new_ok(x)).unwrap();
++        let mut r = t.clone();
++        assert!(!FiatShamirTranscript::<Sha384Config>::check_witness(&mut r, bits, F::from_u32(old_w)));
++        // G-11: zero bits needs a zero witness
++        let mut z = t.clone();
++        assert!(FiatShamirTranscript::<Sha384Config>::check_witness(&mut z, 0, F::ZERO));
++        assert!(!FiatShamirTranscript::<Sha384Config>::check_witness(&mut z, 0, F::ONE));
++        assert!(!FiatShamirTranscript::<Sha384Config>::check_witness_wide(&mut z, 0, [F::ZERO, F::ONE]));
 +    }
 +
 +    #[test]
@@ -11013,6 +11411,10 @@ index 0000000..8355d5e
 +
 +    #[test]
 +    fn native_differential() {
++        if sha_levers().tstar {
++            eprintln!("skipped: the native reference is the legacy chained squeeze (NEARPROOF_TSTAR=0)");
++            return;
++        }
 +        let mut x = 0x9e3779b97f4a7c15u64;
 +        let mut rnd = move || {
 +            x ^= x << 13;

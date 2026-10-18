@@ -1,0 +1,252 @@
+     Running unittests src/lib.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/openvm_cpu_backend-fc10bc85999d1a04)
+test merkle::tests::test_from_raw_parts_and_accessors ... ok
+test merkle::tests::test_get_opened_rows_single ... ok
+test merkle::tests::test_get_opened_rows_batched ... ok
+test merkle::tests::test_root_no_layers ... ok
+test merkle::tests::test_query_merkle_proof ... ok
+test merkle::tests::test_root ... ok
+test row_major_ops::tests::test_fold_mle_evals_rm_height_one ... ok
+test row_major_ops::tests::test_sumcheck_round_poly_evals_rm_n0 ... ok
+test row_major_ops::tests::test_fold_mle_evals_rm_interpolation ... ok
+test row_major_ops::tests::test_sumcheck_round_poly_evals_rm_identity ... ok
+test row_major_ops::tests::test_sumcheck_round_poly_evals_rm_multi_part ... ok
+test row_major_ops::tests::test_sumcheck_round_poly_evals_rm_degree2 ... ok
+test row_major_ops::tests::test_batch_fold_mle_evals_rm ... ok
+test row_major_ops::tests::test_sumcheck_round_poly_evals_rm_n2 ... ok
+test row_major_ops::tests::test_fold_mle_evals_rm_identity_at_zero ... ok
+test row_major_ops::tests::test_fold_mle_evals_rm_identity_at_one ... ok
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/integration.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/integration-c19c8008d294bcf3)
+test test_fold_double ... [1;34mDEBUG   [0m add_air_impl [ 90.0ns | 100.00% ] name: "SelfInteractionAir" | is_required: false
+test test_fold_single ... ok
+test test_batch_sumcheck_zero_interactions_log_height_lt_l_skip ... ok
+test test_batch_sumcheck_zero_interactions_log_height_eq_l_skip ... ok
+test test_batch_sumcheck_zero_interactions_log_height_zero ... ok
+test test_interaction_multi_rows_neg ... ok
+test test_interaction_multi_senders_neg ... ok
+test test_gkr_verify_zero_interactions ... ok
+test test_interaction_trace_height_constraints ... ok
+test test_batch_sumcheck_zero_interactions ... ok
+test test_dummy_interactions_roundtrip_5_5_4 ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 130ns | 100.00% ]
+test test_interaction_all_zero_sender ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 51.0ns | 100.00% ]
+test test_interaction_multi_senders ... ok
+test test_interaction_cached_trace_neg ... ok
+test test_matrix_stacking_overflow ... ok
+test test_interactions_single_sender_receiver_happy ... ok
+test test_multi_interaction_traces_stark_log_height_gt_l_skip ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 51.0ns | 100.00% ]
+test test_mixture_traces_stark_log_height_gt_l_skip ... ok
+test test_multi_interaction_traces_stark_log_height_zero ... ok
+test test_multi_interaction_traces_stark_log_height_eq_l_skip ... ok
+test test_mixture_traces_stark_log_height_lt_l_skip ... ok
+test test_interaction_multi_sender_receiver ... ok
+test test_dummy_interactions_roundtrip_2_8_3 ... ok
+test test_multi_interaction_traces_stark_log_height_lt_l_skip ... ok
+test test_mixture_traces_stark_log_height_zero ... ok
+test test_preprocessed_and_cached_trace_roundtrip_2_8_3_1 ... ok
+test test_preprocessed_and_cached_trace_roundtrip_5_5_4_1 ... ok
+test test_cached_trace_roundtrip_2_8_3 ... ok
+test test_preprocessed_and_cached_trace_roundtrip_5_5_4_2 ... ok
+test test_trace_height_constraints_implied_removal ... ok
+test test_vkey_methods ... ok
+test test_single_cached_trace_stark ... ok
+test test_optional_air ... ok
+test test_preprocessed_trace_roundtrip_5_5_4 ... ok
+test test_single_fib_and_dummy_trace_stark ... ok
+test test_whir_single_fib_0_1_1_0 ... ok
+test test_preprocessed_and_cached_trace_roundtrip_5_5_4_3 ... ok
+test test_whir_single_fib_2_1_4_0 ... ok
+test test_whir_single_fib_2_1_2_0 ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 60.0ns | 100.00% ]
+test test_whir_single_fib_2_1_1_2 ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 70.0ns | 100.00% ]
+test test_preprocessed_trace_roundtrip_2_8_3 ... ok
+test test_whir_single_fib_2_1_3_1 ... ok
+test test_whir_single_fib_2_2_4_0 ... ok
+test test_single_preprocessed_trace_stark_log_height_eq_l_skip ... ok
+test test_single_fib_and_dummy_trace_stark_log_height_lt_l_skip ... ok
+test test_single_fib_and_dummy_trace_stark_log_height_eq_l_skip ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 60.0ns | 100.00% ]
+test test_single_preprocessed_trace_stark_log_height_gt_l_skip ... ok
+test test_preprocessed_and_cached_trace_roundtrip_2_8_3_3 ... ok
+test test_single_fib_and_dummy_trace_stark_log_height_zero ... ok
+test test_fib_air_roundtrip_log_trace_degree_1_lt_l_skip_2 ... ok
+test test_single_preprocessed_trace_stark_log_height_lt_l_skip ... ok
+test test_mixture_traces_stark_log_height_eq_l_skip ... ok
+test test_fib_air_roundtrip_log_trace_degree_0_lt_l_skip_2 ... ok
+test test_single_preprocessed_trace_stark_log_height_zero ... ok
+test test_preprocessed_and_cached_trace_roundtrip_2_8_3_2 ... ok
+test test_fib_air_roundtrip ... ok
+test test_batch_sumcheck_zero_interactions_malleable_q0 ... ok
+test test_batch_constraints_with_interactions ... ok
+test test_single_preprocessed_trace_stark ... ok
+test test_cached_trace_roundtrip_5_5_4 ... ok
+test test_fib_air_roundtrip_log_trace_degree_2_lt_l_skip_3 ... ok
+test test_whir_multiple_commitments_negative ... ok
+test test_whir_multiple_commitments ... ok
+test test_cached_trace_roundtrip_6_7_3 ... ok
+test test_proof_shape_verifier ... ok
+test test_cached_trace_roundtrip_5_8_3 ... ok
+test test_proof_shape_verifier_rng_system_params ... ok
+test test_fib_air_roundtrip_large_l_skip ... ok
+test test_multi_interaction_traces_stark ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 50.0ns | 100.00% ]
+test test_mixture_traces_stark ... ok
+test result: ok. 70 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+     Running unittests src/lib.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/openvm_stark_backend-1117d24b97dd430b)
+test air_builders::symbolic::dag::tests::test_constant_folding ... ok
+test air_builders::symbolic::dag::tests::test_algebraic_simplifications ... ok
+test air_builders::symbolic::dag::tests::test_duplicate_constraints_are_deduplicated ... ok
+test air_builders::symbolic::dag::tests::test_symbolic_constraints_dag ... ok
+test config::tests::test_whir_list_decoding_query_bits_monotone_in_num_queries ... ok
+test air_builders::symbolic::dag::tests::test_structural_deduplication ... ok
+test air_builders::symbolic::statistics::tests::test_dag_statistics ... ok
+test memory_metering::tests::batch_constraint_memory_uses_integer_formula ... ok
+test memory_metering::tests::cached_rs_code_matrix_is_additive ... ok
+test memory_metering::tests::dropped_rs_code_matrix_is_phase_disjoint ... ok
+test memory_metering::tests::no_save_memory_batch_scratch_is_additive ... ok
+test memory_metering::tests::stacked_matrix_and_whir_components_are_counted_separately ... ok
+test poly_common::tests::test_eval_in_uni ... ok
+test poly_common::tests::test_exp_powers_of_2 ... ok
+test poly_common::tests::test_interpolate_cubic ... ok
+test poly_common::tests::test_interpolate_linear ... ok
+test poly_common::tests::test_interpolate_quadratic ... ok
+test prover::poly::tests::test_chirp_z ... ok
+test prover::poly::tests::test_lagrange_interpolation_round_trip ... ok
+test prover::poly::tests::test_from_geometric_cosets_evals_idft_round_trip ... ok
+test prover::stacked_pcs::tests::test_stacked_matrix_manual_0 ... ok
+test prover::stacked_pcs::tests::test_stacked_matrix_manual_strided_0 ... ok
+test prover::stacked_pcs::tests::test_stacked_matrix_manual_strided_1 ... ok
+test soundness::calculator::tests::test_bchks25_m1_requires_rho_below_four_ninths ... ok
+test soundness::calculator::tests::test_bchks25_reference_m2_enforces_dz_ge_dy ... ok
+test soundness::calculator::tests::test_combine_security_bits_sums_errors_before_taking_log ... ok
+test soundness::calculator::tests::test_logup_list_size_is_security_penalty ... ok
+test soundness::calculator::tests::test_fused_batch_constraint_boundary_soundness ... ok
+test soundness::calculator::tests::test_logup_soundness ... ok
+test soundness::calculator::tests::test_whir_gamma_batching_uses_list_size_and_full_batch_size ... ok
+test soundness::calculator::tests::test_soundness_calculation ... ok
+test soundness::calculator::tests::test_whir_query_calculation ... ok
+test soundness::calculator::tests::test_whir_unique_decoding_security ... ok
+test soundness::vk::tests::calculates_vk_soundness_from_verifier_bounds ... ok
+test prover::poly::tests::test_decoder_kernel_identity ... ok
+test prover::poly::tests::test_evals_mobius_eq_hypercube_matches_naive ... ok
+test verifier::transcript_extractor::tests::interactions_proof_extract_roundtrip ... ok
+test verifier::transcript_extractor::tests::preprocessed_proof_extract_roundtrip ... ok
+test verifier::transcript_extractor::tests::cached_proof_extract_roundtrip ... ok
+test verifier::transcript_extractor::tests::preprocessed_and_cached_proof_extract_roundtrip ... ok
+test result: ok. 40 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/fractional_sumcheck_gkr.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/fractional_sumcheck_gkr-df89ac6dc8a49794)
+test test_gkr_base_layer_numerator_zero ... ok
+test test_gkr_1_round_integration ... ok
+test test_multiple_rounds_shape ... ok
+test test_gkr_mixed_fractions ... ok
+test test_gkr_2_round_integration ... ok
+test test_gkr_3_round_integration ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/integration.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/integration-b655db83638a34a7)
+test test_fold_double ... ok
+test test_fold_single ... ok
+test test_interaction_multi_senders_neg ... ok
+test test_batch_sumcheck_zero_interactions_malleable_q0 ... ok
+test test_interaction_trace_height_constraints ... ok
+test test_batch_constraints_with_interactions ... ok
+test test_gkr_verify_zero_interactions ... ok
+test test_batch_sumcheck_zero_interactions ... ok
+test test_batch_sumcheck_zero_interactions_log_height_eq_l_skip ... ok
+test test_interaction_multi_rows_neg ... ok
+test test_interaction_all_zero_sender ... ok
+test test_interaction_multi_sender_receiver ... ok
+test test_interaction_multi_senders ... ok
+test test_interaction_cached_trace_neg ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 50.0ns | 100.00% ]
+test test_matrix_stacking_overflow ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 50.0ns | 100.00% ]
+test test_mixture_traces_stark_log_height_zero ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 50.0ns | 100.00% ]
+test test_interactions_single_sender_receiver_happy ... ok
+test test_preprocessed_and_cached_trace_roundtrip_5_5_4_1 ... ok
+test test_batch_sumcheck_zero_interactions_log_height_zero ... ok
+test test_batch_sumcheck_zero_interactions_log_height_lt_l_skip ... ok
+test test_multi_interaction_traces_stark_log_height_eq_l_skip ... ok
+test test_multi_interaction_traces_stark_log_height_lt_l_skip ... ok
+test test_preprocessed_and_cached_trace_roundtrip_2_8_3_1 ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 150ns | 100.00% ]
+test test_preprocessed_and_cached_trace_roundtrip_5_5_4_2 ... ok
+test test_fib_air_roundtrip_log_trace_degree_0_lt_l_skip_2 ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 1.87µs | 100.00% ]
+test test_multi_interaction_traces_stark_log_height_zero ... ok
+test test_multi_interaction_traces_stark_log_height_gt_l_skip ... ok
+test test_preprocessed_trace_roundtrip_5_5_4 ... ok
+test test_preprocessed_and_cached_trace_roundtrip_5_5_4_3 ... ok
+test test_preprocessed_and_cached_trace_roundtrip_2_8_3_2 ... ok
+test test_stacked_opening_reduction::test_case_2_when_log_height_equals_l_skip ... ok
+test test_preprocessed_and_cached_trace_roundtrip_2_8_3_3 ... ok
+test test_mixture_traces_stark_log_height_gt_l_skip ... ok
+test test_stacked_opening_reduction::test_case_4_when_log_height_is_zero ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 60.0ns | 100.00% ]
+test test_vkey_methods ... ok
+test test_single_preprocessed_trace_stark_log_height_eq_l_skip ... ok
+test test_trace_height_constraints_implied_removal ... ok
+test test_single_fib_and_dummy_trace_stark_log_height_lt_l_skip ... ok[1;32mINFO    [0m stark_prove_excluding_trace [ 26.3ms | 0.01% / 100.00% ] phase: "prover"
+test test_dummy_interactions_roundtrip_5_5_4 ... ok
+test test_optional_air ... [1;34mDEBUG   [0m evaluate constraints symbolically [ 1.03µs | 100.00% ]
+test test_stacked_opening_reduction::test_case_3_when_log_height_less_than_l_skip ... ok
+test test_stacked_opening_reduction::test_case_1_9_expects ... ok
+test test_whir_single_fib_0_1_1_0 ... ok
+test test_whir_single_fib_2_1_2_0 ... ok
+test test_whir_single_fib_2_1_1_2 ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 50.0ns | 100.00% ]
+test test_mixture_traces_stark_log_height_eq_l_skip ... [1;34mDEBUG   [0m reverse_matrix_index_bits [ 60.0ns | 100.00% ]
+test test_whir_single_fib_2_1_3_1 ... ok
+test test_whir_single_fib_2_2_4_0 ... ok
+test test_single_fib_and_dummy_trace_stark ... ok
+test test_whir_single_fib_2_1_4_0 ... ok
+test test_preprocessed_trace_roundtrip_2_8_3 ... ok
+test test_single_cached_trace_stark ... ok
+test test_single_preprocessed_trace_stark_log_height_gt_l_skip ... ok
+test test_single_fib_and_dummy_trace_stark_log_height_eq_l_skip ... ok
+test test_single_fib_and_dummy_trace_stark_log_height_zero ... ok
+test test_single_preprocessed_trace_stark_log_height_zero ... ok
+test test_mixture_traces_stark_log_height_lt_l_skip ... ok
+test test_single_preprocessed_trace_stark ... ok
+test test_dummy_interactions_roundtrip_2_8_3 ... ok
+test test_single_preprocessed_trace_stark_log_height_lt_l_skip ... ok
+test test_fib_air_roundtrip_log_trace_degree_2_lt_l_skip_3 ... ok
+test test_cached_trace_roundtrip_5_5_4 ... ok
+test test_fib_air_roundtrip_log_trace_degree_1_lt_l_skip_2 ... ok
+test test_cached_trace_roundtrip_2_8_3 ... ok
+test test_whir_multiple_commitments_negative ... ok
+test test_whir_multiple_commitments ... ok
+test test_cached_trace_roundtrip_5_8_3 ... ok
+test test_proof_shape_verifier ... ok
+test test_cached_trace_roundtrip_6_7_3 ... ok
+test test_fib_air_roundtrip ... ok
+test test_proof_shape_verifier_rng_system_params ... ok
+test test_fib_air_roundtrip_large_l_skip ... ok
+test test_multi_interaction_traces_stark ... ok
+test test_mixture_traces_stark ... ok
+test result: ok. 74 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.01s
+     Running tests/keygen_validation.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/keygen_validation-bba205ebc0c7467c)
+test keygen_rejects_air_without_constraints_or_interactions ... ok
+test keygen_rejects_zero_width_air ... ok
+test keygen_rejects_interaction_with_empty_message ... ok
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/partitioned_sum_air.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/partitioned_sum_air-871a2f808a9fc2fd)
+test test_partitioned_sum_air_neg ... ok
+test test_partitioned_sum_air_happy_path ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/proof_codec.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/proof_codec-6e7a9ec5563f9186)
+test test_fib_proof_encode_decode ... ok
+test test_preprocessed_proof_encode_decode ... ok
+test test_interactions_proof_encode_decode ... ok
+test test_cached_proof_encode_decode ... ok
+test test_preprocessed_and_multi_cached_proof_encode_decode ... ok
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/soundness.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/soundness-7a743463cede165c)
+test test_app_vm_security ... ok
+test test_all_production_configs ... ok
+test test_root_aggregation_security ... ok
+test test_internal_aggregation_security ... ok
+test test_leaf_aggregation_security ... ok
+test test_hook_security ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stacked_reduction.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/stacked_reduction-d48054f475f18be1)
+test single_column_univariate_round_negative_test ... ok
+test single_column_sumcheck_rounds_negative_test ... ok
+test verify_single_column_test ... ok
+test single_column_stacking_openings_negative_test ... ok
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/transcript.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/transcript-73154d9781efb248)
+test test_read_only_transcript ... ok
+test test_sponge ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

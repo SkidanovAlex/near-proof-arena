@@ -417,3 +417,86 @@ relabel a row to an op that does not use B and keep the same program words. For 
   columns; the lookups share existing byte slots).
 * `Acc` additionally pins the BIND region length.
 * Test `op relabel const->load` is now rejected.
+
+## Soundness fix T* (final-soundness G-1, G-2, G-9, G-10, G-11) [measured: tests]
+
+Source: lane/pq-final-soundness @ ae0ae8a7b, `final-soundness/{PROOF.md, GAPS.md}`. These
+changes are in the backend tree, in the native SHA config, in the recursion SHA config, and in
+the NV circuit.
+
+**The transcript (T\*).** The flag is `tstar` in `ShaLevers`; its framing prefix is v6.
+* **T\*-1, counter-mode squeeze.** Challenge blocks are B_j = H(5, κ‖le32(j)), j = 1, 2, …, where
+  κ is the key after the absorb. Once a squeeze run ends, the transcript state is the last
+  block consumed. A squeeze message is 101 bytes, so each block is still one compression.
+* **T\*-2, PoW blocks.** B_j = H(7, σ‖w‖le32(j)).
+  * The PoW is the first z bits of B_1.
+  * Challenges begin at B_1's next 64-bit word, then continue with B_2, …
+  * The honest grind costs one compression per attempt: 105 bytes for a narrow witness, 109
+    bytes for a wide one.
+* **G-11.** When z = 0, the witness must be zero. This holds in the backend default
+  `check_witness` / `check_witness_wide`, the SHA transcripts, and NV (`Builder::pow`).
+
+**Backend fixes** (`stark-backend-unified.patch`):
+* **G-9:** the verifier rejects `tight_height = Some(_)` when common_main = 0, and the prover
+  never emits one.
+* **G-10:** when c ≠ 1, the odd domain factor c is bound into the vk pre-hash (`x15c‖c`).
+  c = 1 keeps the upstream bytes.
+* NV takes the child's pre-hash and parameters as program constants, and the program is bound,
+  so this also holds for recursion.
+
+**Where it is turned on:**
+* **Recursion crate** (`sha384/config.rs`): on by default. `NEARPROOF_TSTAR=0` gives the legacy
+  chained squeeze, which the native vector and differential tests need. With T\* on, those
+  two tests skip.
+* **Native levers driver** (`native/recursion/levers-check/`): set by env `NEARPROOF_TSTAR=1`.
+  The default is off, so gas-failure5 stays byte-identical at defaults.
+
+**NV circuit** (`nv/transcript2.rs`, `nv/builder.rs`):
+* **New hash-chain row kinds and columns:**
+  * `op_q` is a PoW-run block B_j with j ≥ 2.
+  * new columns: `ctr`, `nwit`, `scnt` (samples read from B_1), `rd`, `nsq`, and
+    `state_in[18]`.
+* **State units.** Each row sends its own input-state units. Rows are linked by a
+  `chain` bus, not by next-row reads, so no column is rotated: the previous row sends
+  (next job, its key if the next row is squeeze or PoW-run, otherwise its output).
+* **First row.** Its input state is the initial-state constant.
+* **Counters:**
+  * a squeeze block takes j = 1 after an absorb, otherwise j + 1;
+  * a PoW-run block takes j + 1;
+  * B_1 is j = 1;
+  * the counter is unit 16, or 16 + nwit after the witness units.
+* **Reads.** The sample role starts a B_1 run at word 1. The ALU pushes the PoW witness units
+  into every block of the PoW run.
+* **Cost.** NvAir grows from 70 to 73 columns and from 52 to 55 interactions per row. The
+  rotated columns stay at 36. The proof grows only by the 3 extra column openings
+  (≈ 144 B) plus the extra cells. The SHA count does not change, because every block is still
+  one compression.
+
+**Tests (all pass):**
+* **Backend:** 142 backend tests, plus the CPU-backend tests, plus new tests for G-11 (zero
+  witness) and G-10 (the pre-hash changes with c). Log: `logs/tstar/unified-tstar-tests.summary.log`.
+* **Recursion SHA config:** `tstar_counter_mode` and `tstar_pow`. They check B_j against the
+  spec formula, that the state is the last block consumed, wrong counters, the old chain, a
+  witness ground on the old chain being rejected, challenges starting after the PoW word, and
+  G-11.
+* **NV suite:** 20 tests, with the SHA levers both at default and at all child levers (42 B,
+  coset, x15, k1, keep, multiproof, Gruen, derive, next mask, WHIR-Y, tight, wide PoW). This
+  includes `unified_cpu_matches_reference`.
+* **NV `nv_tstar_tamper`.** The fixture has 30 squeeze, 12 PoW and 16 PoW-run blocks. Each of
+  these is rejected:
+  * a wrong counter on a squeeze block;
+  * a wrong counter on a PoW-run block;
+  * a squeeze-key limb;
+  * challenges read from B_1's PoW word;
+  * a logup PoW witness ground on the old chain.
+* **Native levers driver.** The default profile still gives gas-failure5 byte-identical
+  (`ba042e71…`). With T\* plus every lever plus ×15 plus tight heights on the dummy:
+  177,007 B, 26 lever negatives rejected, and 3 T\* negatives rejected. The T\* negatives are a
+  prover that deviates and an honest verifier that rejects it:
+  * counter j + 1;
+  * a PoW ground on the old chain;
+  * challenges taken from the PoW word.
+* **Native levers driver on gas-failure5,** with T\*, 42 B, coset, multiproof, m = 8, z = 16,
+  Gruen, derive, next mask and WHIR-Y: 242,329 B, 21 plus 3 negatives rejected.
+* The proof size moves by a few hundred bytes against the pre-T\* runs, because the query
+  positions change and so does multiproof dedup.
