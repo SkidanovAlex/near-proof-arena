@@ -711,3 +711,54 @@ The NvAir row budget (O-2 baseline) is about 315k rows:
 Getting under 262k needs −53k rows. For example, BIND rows that each cover 4 program rows
 would save 41k, and a further −8 % program would cover the rest. Either change touches the
 audited program-binding argument.
+
+## Phase 2, step 5: the real-settings chain at 268 bits [measured]
+
+Logs: `logs/r268/`. Binary: nv-g2, which is lane head 95c08894c plus the chain driver. It
+includes T\*, B1–B6, the statement passthrough and the final-layer domain.
+
+Settings:
+* 268 bits = 236 query bits + z = 32 wide PoW, 42-B digests, coset leaves, ×15 domains;
+* k1 = 1, k = 4, keep-domain, multiproof, Gruen GKR and zerocheck, derived claims, next-row
+  mask, WHIR-Y, tight heights, m = 3;
+* penultimate (inner) layers: b = 2, n_stack = 18, log_final = 3;
+* NvAir 2^19 rows, program limit 2^18.
+
+All runs used 32 threads on a shared machine; other lanes' VMs held about 25 GB.
+
+| level | what it verifies | wall | peak RSS | program rows | proof bytes | gkr | relations | stacking | whir |
+|---|---|---|---|---|---|---|---|---|---|
+| A1 | the Fib app proof | 48.1 min | 19.5 GB | 9,142 | 401,337 | 32,408 | 43,348 | 2,272 | 323,110 |
+| A2 | A1 | 58.1 min | 58.3 GB | 234,534 | 473,565 | 34,952 | 43,348 | 6,784 | 388,282 |
+| A3 (fixed point) | A2 | 48.8 min | 60.6 GB | 259,430 | 481,125 | 34,952 | 43,348 | 7,120 | 395,506 |
+| **FINAL** | A3 | 45.3 min | 64.9 GB (68.0 by `time`) | 261,688 | **416,171** | 34,952 | 43,348 | 4,720 | 332,952 |
+
+Notes on the run:
+* **Fixed point.** Heights repeat from A2 to A3: NvAir 2^19, SHA 2^19, Table 64, Byte 2^16.
+* **Statement.** `check_statement` passes for every level and for the final proof. The final
+  binds the Fib app's public values.
+* **Final layer** (`new_final` domain): b = 2, n_stack = 19, k1 = 1, k = 3, log_final = 8,
+  queries [87, 74, 50, 38, 31], soundness 268.6 bits.
+* **Larger final shapes OOM on this machine.** The model-preferred b = 3 shape (log_h 24)
+  reached 82 GB, and b = 2 at log_h 25 reached 90 GB. The machine's watchdog killed both at
+  MemAvailable < 10 GB, while other lanes' VMs were holding 25 GB. The A3 checkpoint
+  (`NV_RESUME_PROOF`) made it possible to re-run only the final layer.
+
+**Measured against the model, per component.** The model is `extrapolate_nv2.py`: laws plus
+ext.layer, fed each run's own shape and stacked width W.
+
+| level | WHIR model / measured | GKR (law L = 25) | relations law / measured | stacking law | total model / measured |
+|---|---|---|---|---|---|
+| A2 (W = 98) | 388,638 / 388,282 (−0.1 %) | 34,952 = 34,952 | 43,280 / 43,348 | 6,784 = 6,784 | — |
+| A3 (W = 105) | 393,510 / 395,506 (+0.5 %) | 34,952 = 34,952 | 43,280 / 43,348 | 7,120 = 7,120 | — |
+| FINAL (W = 53) | 333,828 / 332,952 (−0.3 %) | 34,952 = 34,952 | 43,280 / 43,348 | 4,720 = 4,720 | 416,853 / **416,171** (−0.2 %) |
+
+**Conclusion.**
+* **The measured final is 416,171 B,** at the largest final shape that fits this machine
+  (b = 2, about 65 GB).
+* **The size model is confirmed to within 0.5 %** on every component. GKR and stacking match
+  exactly, and relations is off by 68 B, one column.
+* **The model's optimum is not under 300 KB.** It needs b = 7–8, which means an x15 codeword
+  of about 1 TB, so several H200-class nodes. There it gives 326,547 B (m = 3), 316,351 B
+  (m = 64) and 303,701 B (O-2), with GKR corrected to power-of-two heights. With O-2 plus the
+  program cut (NvAir under 2^18 rows, so L = 24), it gives 299,277 B.
