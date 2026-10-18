@@ -1685,7 +1685,7 @@ is allowed only off Horn and Horn2 rows, and a don't-care `wit2` cell only off H
 | interactions + levers | 42 B + coset leaf | 10,617,984 | 9,738,168 | 702,953 | 0 / 0 | 176,863 | 0 | 0 / 16,632 |
 | ×15 + WHIR levers | 42 B + coset leaf | 10,617,984 | 9,941,298 | 548,256 | 0 / 0 | 128,430 | 0 | 0 / 14,580 |
 | app table | 42 B + coset leaf | 10,617,984 | 9,796,812 | 651,010 | 0 / 0 | 170,162 | 0 | 0 / 16,092 |
-| Fib, n_stack 3 (Horn2 rows) | 42 B + coset leaf | 6,538,368 | 5,843,686 | 205,927 | 0 / 0 | 95,331 | 0 | 0 / 9,912 |
+| Fib, n_stack 3 (Horn2 rows) | 42 B + coset leaf | 6,538,368 | 6,105,574 | 337,463 | 0 / 0 | 95,331 | 0 | 0 / 9,912 |
 
 The new ops appear in the swept traces: HornS, HornR, HornE, SibWS4/2 and DigWS4/2 in every
 fixture, and Horn2 in the n_stack-3 fixture. Their only undetected cells are pool columns
