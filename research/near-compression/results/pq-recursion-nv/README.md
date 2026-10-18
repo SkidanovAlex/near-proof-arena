@@ -762,3 +762,16 @@ ext.layer, fed each run's own shape and stacked width W.
   of about 1 TB, so several H200-class nodes. There it gives 326,547 B (m = 3), 316,351 B
   (m = 64) and 303,701 B (O-2), with GKR corrected to power-of-two heights. With O-2 plus the
   program cut (NvAir under 2^18 rows, so L = 24), it gives 299,277 B.
+
+**The final's WHIR bytes, broken down** [model for the measured shape; its WHIR total is
+within 0.3 % of the measured 332,952]:
+
+| part | bytes |
+|---|---|
+| Merkle authentication (42-B multiproof) | 208,824 |
+| initial-round opened rows (k1 = 1, W = 53) | 36,888 |
+| codeword values | 74,112 |
+| final polynomial (2^8 Ext12) | 12,288 |
+| small items | ~1.8 KB |
+
+The rest of the measured final is GKR 34,952, relations 43,348 and stacking 4,720.
