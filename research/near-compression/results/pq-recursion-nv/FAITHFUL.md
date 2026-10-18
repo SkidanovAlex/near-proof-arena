@@ -1513,9 +1513,41 @@ traces pass the evaluator's global check (0 constraints, 0 unbalanced messages).
   its content is pinned only modulo the height. That is fine because extra rows only repeat
   entries; it should say so, as V.4 does.
 
-### V.7 NV-port sweep
+### V.7 NV port (merged as f59bc0770; my branch 2c77ea4e8)
 
-Pending the merge of v4 into lane/pq-recursion-sha384. When it lands, run `nv_dof_*`. The SHA
-rows are labelled `sha_row0..127`, and Sha512Air4/TableAir4 must show 0 undetected cells. Also
-run the B1–B6 tests and the GLUE tests (`nv_faithful_fake_and_reordered_segments` uses the
-128-row stride).
+* **The port is a pure regeneration.** Running `port_nv.py` on `air.rs` @ 34a427692
+  reproduces the NV tree's `compress4_air.rs` and `compress4_trace.rs` byte for byte.
+* **GLUE uses the new stride.** It imports `compress4_air::ROWS`: the job continuation is
+  `n.cid = cid + q7·128`, and chaining uses `cid − (1 − q2)·128`. Uniqueness of the cids
+  across jobs comes from the segment side (cid = 128·s, each pair sent once), as in C8.
+* **Tests (8 threads, 24 GB cap).** Every `nv_` test except `nv_chain` and `nv_app_binding`
+  passes:
+  * 44 / 44 in 48 B, including the B1–B6 tests, `nv_faithful_fake_and_reordered_segments`
+    (now with the 128-row stride), `nv_statement_passthrough`, `nv_sample_word_source_tamper`
+    and `o2_agreement_table`;
+  * 43 / 43 in 42 B + coset leaves.
+* **Perturbation sweep, every cell** (NvAir 2^16 × 74, Sha512Air4 2^16 × 83, TableAir4
+  128 × 9, ByteAir):
+
+| fixture | digests | cells | of which Sha512Air4 | undetected Sha512Air4 / TableAir4 | undetected total (all don't-care) | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---|---:|---:|---:|
+| Fib | 48 B | 10,617,984 | 5,439,488 | 0 / 0 | 233,721 | 0 | 0 / 17,292 |
+| interactions + levers | 48 B | 16,057,472 | 10,878,976 | 0 / 0 | 243,220 | 0 | 0 / 17,592 |
+| ×15 + WHIR levers | 48 B | 10,617,984 | 5,439,488 | 0 / 0 | 168,880 | 0 | 0 / 15,648 |
+| app table | 48 B | 10,617,984 | 5,439,488 | 0 / 0 | 236,409 | 0 | 0 / 17,400 |
+| Fib | 42 B + coset leaf | 10,617,984 | 5,439,488 | 0 / 0 | 194,068 | 0 | 0 / 15,780 |
+| interactions + levers | 42 B + coset leaf | 10,617,984 | 5,439,488 | 0 / 0 | 203,721 | 0 | 0 / 16,080 |
+| ×15 + WHIR levers | 42 B + coset leaf | 10,617,984 | 5,439,488 | 0 / 0 | 159,838 | 0 | 0 / 14,400 |
+| app table | 42 B + coset leaf | 10,617,984 | 5,439,488 | 0 / 0 | 196,756 | 0 | 0 / 15,888 |
+
+  All undetected cells are NvAir cells in the classes of §4 / §R.5. The NvAir counts are the
+  same as before the v4 merge.
+* **LogUp term.** Sha512Air4 has 17 interactions per row, and the longest message has 9 fields
+  (`nv_logup_counts`). With 128 rows per compression the SHA AIR is about 3× taller than v2.1's.
+  At NvAir 2^18 and Sha512Air4 2^20: N = 49·2^18 + 17·2^20 + 2·128 + 2^16 ≈ 2^24.87 (2^25.38
+  with NvAir at 2^19). So ε_LogUp ≤ 20·N²/(2|F|) + 2N/|F| ≈ **2^−316.8**.
+  * `nv_logup_counts` still assumes equal NvAir and SHA heights (2^24.05 / 2^25.05).
+  * The bound is < p either way.
+  * The interaction-count limit 2^28 holds.
+
+**§V verdict: SHA AIR v4 and its NV integration are faithful. I found no soundness bug.**
