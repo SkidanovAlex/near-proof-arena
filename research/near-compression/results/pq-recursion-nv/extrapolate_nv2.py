@@ -45,6 +45,8 @@ PER_LEVEL = 10             # ALU rows per Merkle path level
 FINAL_PER_Q = 110          # final WHIR check per query (powers, eq, Horner)
 TRANSCRIPT_BLOCKS = 1_600  # transcript compressions (measured ~1.5k)
 TR_ROWS = 6_000            # hash-chain + sample rows
+DEDUP = False              # in-circuit multiproof dedup: NOT possible with a static (bound) program -
+                           # which nodes coincide depends on the sampled indices; model-only what-if
 
 
 def gkr(inter):
@@ -74,7 +76,16 @@ def nv_circuit(rounds_q, depth0, depthr, child_W):
     prog_log = math.ceil(math.log2(prog + 2))
     # compressions: leaf jobs (round 0: 2 rows of W felts; later: 16 Ext12 values) + nodes
     blk = lambda nbytes: -(-(nbytes + 33 + 8 + 17) // 128)
-    comps = q0 * (blk(2 * child_W * 4) + depth0) + qr * (blk(16 * 48) + depthr) + TRANSCRIPT_BLOCKS
+    if DEDUP:
+        # in-circuit multiproof: each distinct node of the union of the paths hashed once
+        # (rounds >= 1 split evenly; expected distinct nodes for uniform queries)
+        def nodes(q, depth):
+            return sum(min(q, (1 << (depth - l)) * (1 - (1 - 2.0 ** -(depth - l)) ** q)) for l in range(depth))
+        per_r = [rounds_q[0]] + list(rounds_q[1:])
+        nn = nodes(q0, depth0) + sum(nodes(x, depthr) for x in rounds_q[1:])
+        comps = int(q0 * blk(2 * child_W * 4) + qr * blk(16 * 48) + nn) + TRANSCRIPT_BLOCKS
+    else:
+        comps = q0 * (blk(2 * child_W * 4) + depth0) + qr * (blk(16 * 48) + depthr) + TRANSCRIPT_BLOCKS
     glue = 8 * comps
     prog += prog % 2
     nv_rows = prog + prog // 2 + APP_ROWS // 2 + glue + TR_ROWS

@@ -551,3 +551,69 @@ buses. The GKR layers are only LogUp's fractional-sum tree over interaction frac
 the mitigation for Khovratovich–Rothblum–Soukhanov-style attacks. Evidence:
 * the `A*_AIR Sha512Air h=…` lines of every chain level;
 * `hash_tests::nv_hash2_rejects_mutations`.
+
+## Size analysis: where the 324 KB goes and what moves it [MODEL from measured laws]
+
+These figures come from `extrapolate_nv2.py` (268 bits, z = 32, 42 B) and
+`size_sensitivity.py`. The baseline final layer is **323,955 B**:
+
+| part | bytes |
+|---|---|
+| WHIR | 242,562 |
+| GKR (L = 24) | 32,408 |
+| relations | 43,232 |
+| stacking | 5,680 |
+
+The penultimate layer uses b = 5, n_stack = 17. The program is 181,754 rows, NvAir has 341,773
+rows and SHA has 309,858 rows.
+
+* **Padding: already gone.** The program is not padded to 2^18. The unpadded layout (ACC2/ACC
+  at fixed early rows) puts it at its real even length, and tight heights commit only the used
+  NvAir/SHA rows. The model counts NvAir rows as prog + prog/2 + app/2 + glue + transcript, with
+  no power of two, so 2^17 is not a threshold any more. Program cuts move bytes only linearly
+  through the cells:
+
+  | cut | final | change |
+  |---|---|---|
+  | app table moved out of the program (−11k rows) | 323,637 B | −0.3 KB |
+  | program −28 %, every cost scaled | 320,565 B | −3.4 KB |
+  | NvAir removed entirely (lower bound: SHA rows only) | 305,397 B | −18.6 KB |
+
+  LoadBit query bits are about 22 rows per query, roughly 3 % of the program. T\* PoW-run blocks
+  add 1–2 ALU rows per block.
+* **Opened columns.** The relations term implies **455** opened values, not 258. The AIRs give
+  cols + rot: NvAir 73 + 36, Sha512Air 171 + 144, Table 13 + 11, Byte 5 + 2. Next-row openings
+  are already per column (the next-row mask: only columns read at the next row are rotated). The
+  excess is Sha512Air's 144 rotated columns.
+* **Relations is dominated by the SHA AIR's degree 21.** The parts are:
+
+  | part | bytes |
+  |---|---|
+  | 48(cols + rot) | 21,840 |
+  | 48((d+1)(2^l−1)+1) | 3,216 |
+  | 48((d+1)n − g) | 17,760 |
+  | 96·airs + 32 | 416 |
+
+  Lowering the degree and the rotations:
+
+  | SHA AIR change | final | change |
+  |---|---|---|
+  | degree 12 | 315,315 B | −8.6 KB |
+  | degree 8 | 311,475 B | −12.5 KB |
+  | 40 rotated columns instead of 144 | 318,963 B | −5.0 KB |
+
+  These belong to the SHA AIR, owned by the S lane, not to NV.
+* **GKR.** There are 2^24.85 interactions: 55 per NvAir row and 14 per SHA row. Cutting NvAir
+  to 30 interactions per row would give L = 23, worth −2.4 KB (321,507 B).
+* **In-circuit multiproof dedup is not possible with a bound program.** Which Merkle nodes
+  coincide depends on the sampled indices, so the program would change from proof to proof. As
+  a what-if it would be −3.4 KB, with 15 % fewer compressions (`DEDUP` flag, off).
+* **Combined:**
+
+  | levers | final |
+  |---|---|
+  | NV side: program −28 %, 30 interactions per row (dedup also on, though it is not possible) | 314,277 B |
+  | plus SHA AIR degree 8 with 40 rotated columns | **296,805 B** |
+
+  Getting under 300 KB needs the SHA AIR shape (S lane) or the MCA upgrade (lane/pq-mca-upgrade,
+  −15 to −45 KB on WHIR, not counted here). NV-side program cuts alone cannot do it.
