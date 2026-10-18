@@ -457,10 +457,10 @@ index 711791d..45ddae4 100644
  }
  
 diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
-index c776e1c..03597a9 100644
+index c776e1c..42e5fc0 100644
 --- a/crates/stark-backend/src/config.rs
 +++ b/crates/stark-backend/src/config.rs
-@@ -188,6 +188,196 @@ pub struct WhirConfig {
+@@ -188,6 +188,200 @@ pub struct WhirConfig {
      /// of queries in the `rounds` field. However we store it in `WhirConfig` for security analysis
      /// purposes.
      pub proximity: WhirProximityStrategy,
@@ -565,13 +565,17 @@ index c776e1c..03597a9 100644
 +    /// The canonical table for a WHIR schedule (round codes `(n_i, k_i)`, folding factors
 +    /// `k_rounds`): a round uses its first-order threshold iff it is certified in `certs`;
 +    /// otherwise (or without a certificate set) the Johnson fallback.
-+    pub fn canonical(codes: &[(u64, u64)], k_rounds: &[usize], target_bits: u32, margin_milli: u32, m: u32, certs: Option<&CertSet>) -> Self {
++    pub fn canonical(codes: &[(u64, u64)], k_rounds: &[usize], target_bits: u32, margin_milli: u32, m: u32, certs: Option<&CertSet>, max_commits: usize) -> Self {
 +        let rounds = codes
 +            .iter()
 +            .zip(k_rounds)
-+            .map(|(&(n, kdim), &kr)| {
++            .enumerate()
++            .map(|(i, (&(n, kdim), &kr))| {
 +                let fo = Self::first_order_agree(n, kdim, margin_milli, m);
-+                if certs.is_some_and(|c| Self::certified(c, n, kdim, fo, kr)) {
++                // round 0 of a layer with several commitments: Johnson (the round-0 list is
++                // squared by the commitment batching; final-soundness o2_table_bound.py)
++                let allowed = i > 0 || max_commits <= 1;
++                if allowed && certs.is_some_and(|c| Self::certified(c, n, kdim, fo, kr)) {
 +                    Self::round(n, kdim, fo, true, target_bits)
 +                } else {
 +                    Self::round(n, kdim, Self::johnson_agree(n, kdim, m), false, target_bits)
@@ -657,7 +661,7 @@ index c776e1c..03597a9 100644
  }
  
  #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-@@ -252,7 +442,12 @@ impl ProximityRegime {
+@@ -252,7 +446,12 @@ impl ProximityRegime {
      /// - `ListDecoding { m }`: finite-multiplicity Guruswami-Sudan threshold, `sqrt(ρ) (1 +
      ///   1/(2m))`.
      pub fn max_agreement(&self, log_inv_rate: usize) -> f64 {
@@ -671,7 +675,7 @@ index c776e1c..03597a9 100644
          let max_agreement = match *self {
              ProximityRegime::UniqueDecoding => (1.0 + rho) / 2.0,
              ProximityRegime::ListDecoding { m } => {
-@@ -289,25 +484,90 @@ impl WhirConfig {
+@@ -289,25 +488,90 @@ impl WhirConfig {
          whir_params: WhirParams,
          security_bits: usize,
      ) -> Self {
@@ -772,7 +776,7 @@ index c776e1c..03597a9 100644
              round_parameters.push(WhirRoundConfig { num_queries });
  
              log_inv_rate = next_rate;
-@@ -320,12 +580,77 @@ impl WhirConfig {
+@@ -320,12 +584,79 @@ impl WhirConfig {
              query_phase_pow_bits,
              folding_pow_bits: whir_params.folding_pow_bits,
              proximity,
@@ -798,9 +802,11 @@ index c776e1c..03597a9 100644
 +
 +    /// O-2 (U-13): replace every round's query count by the one derived from the canonical
 +    /// first-order agreement table, and bind the table into the config (vk).
-+    pub fn with_first_order(mut self, log_blowup: usize, log_stacked_height: usize, security_bits: usize, margin_milli: u32, m: u32, certs: Option<&CertSet>) -> Self {
++    /// `max_commits`: the largest number of stacked commitments of the layer's proofs (1 for NV
++    /// layers; 1 + preprocessed + cached for an app layer).
++    pub fn with_first_order(mut self, log_blowup: usize, log_stacked_height: usize, security_bits: usize, margin_milli: u32, m: u32, certs: Option<&CertSet>, max_commits: usize) -> Self {
 +        let target = security_bits.saturating_sub(self.query_phase_pow_bits) as u32;
-+        let t = AgreementTable::canonical(&self.round_codes(log_blowup, log_stacked_height), &self.k_rounds(), target, margin_milli, m, certs);
++        let t = AgreementTable::canonical(&self.round_codes(log_blowup, log_stacked_height), &self.k_rounds(), target, margin_milli, m, certs, max_commits);
 +        for (r, a) in self.rounds.iter_mut().zip(&t.rounds) {
 +            r.num_queries = a.queries as usize;
 +        }
@@ -851,7 +857,7 @@ index c776e1c..03597a9 100644
      }
  
      pub fn num_whir_rounds(&self) -> usize {
-@@ -334,7 +659,7 @@ impl WhirConfig {
+@@ -334,7 +665,7 @@ impl WhirConfig {
  
      #[inline]
      pub fn num_sumcheck_rounds(&self) -> usize {
@@ -3912,7 +3918,7 @@ index 4ee438b..533e585 100644
      }
  
 diff --git a/crates/stark-backend/src/verifier/proof_shape.rs b/crates/stark-backend/src/verifier/proof_shape.rs
-index a3216a9..87bf1fd 100644
+index a3216a9..214002d 100644
 --- a/crates/stark-backend/src/verifier/proof_shape.rs
 +++ b/crates/stark-backend/src/verifier/proof_shape.rs
 @@ -52,6 +52,8 @@ pub enum ProofShapeVDataError {
@@ -3924,16 +3930,18 @@ index a3216a9..87bf1fd 100644
      #[error("AIR {air_idx} has no TraceVData, but a non-zero amount of public values")]
      PublicValuesNoVData { air_idx: usize },
      #[error(
-@@ -188,6 +190,8 @@ pub enum StackingProofShapeError {
+@@ -188,6 +190,10 @@ pub enum StackingProofShapeError {
  
  #[derive(Debug, Error, PartialEq, Eq)]
  pub enum WhirProofShapeError {
++    #[error("O-2 round 0 is first-order but the proof has {commits} commitments (must be Johnson)")]
++    FirstOrderRound0MultiCommit { commits: usize },
 +    #[error("WHIR proof levers do not match the verifying key")]
 +    LeversMismatch,
      #[error(
          "whir_sumcheck_polys should have num_whir_sumcheck_rounds = {expected} polynomials, but it has {actual}"
      )]
-@@ -466,8 +470,23 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -466,8 +472,23 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
      }
  
      for (part_openings, &(air_idx, vk, _)) in batch_proof.column_openings.iter().zip(&per_trace) {
@@ -3959,7 +3967,7 @@ index a3216a9..87bf1fd 100644
          if part_openings.len() != vk.num_parts() {
              return ProofShapeError::invalid_batch_constraint(
                  BatchProofShapeError::InvalidColumnOpeningsPerAir {
-@@ -476,7 +495,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -476,7 +497,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: part_openings.len(),
                  },
              );
@@ -3968,7 +3976,7 @@ index a3216a9..87bf1fd 100644
              return ProofShapeError::invalid_batch_constraint(
                  BatchProofShapeError::InvalidColumnOpeningsPerAirMain {
                      air_idx,
-@@ -485,7 +504,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -485,7 +506,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                  },
              );
          } else if let Some(preprocessed_width) = &vk.params.width.preprocessed {
@@ -3977,7 +3985,7 @@ index a3216a9..87bf1fd 100644
                  return ProofShapeError::invalid_batch_constraint(
                      BatchProofShapeError::InvalidColumnOpeningsPerAirPreprocessed {
                          air_idx,
-@@ -496,13 +515,14 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -496,13 +517,14 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              }
          }
  
@@ -3994,7 +4002,7 @@ index a3216a9..87bf1fd 100644
                  return ProofShapeError::invalid_batch_constraint(
                      BatchProofShapeError::InvalidColumnOpeningsPerAirCached {
                          air_idx,
-@@ -535,12 +555,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -535,12 +557,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
          );
      }
  
@@ -4030,7 +4038,21 @@ index a3216a9..87bf1fd 100644
              .collect_vec(),
      )
      .unwrap();
-@@ -610,9 +651,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -568,6 +611,13 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+         .into_iter()
+         .chain(other_layouts)
+         .collect_vec();
++    // O-2 with more than one commitment: the round-0 list is squared by the batching of the
++    // commitments (final-soundness: base stress shape), so round 0 must be the Johnson fallback
++    if layouts.len() > 1
++        && mvk.params.whir.agreement.as_ref().is_some_and(|t| t.rounds.first().is_some_and(|r| r.first_order))
++    {
++        return ProofShapeError::invalid_whir(WhirProofShapeError::FirstOrderRound0MultiCommit { commits: layouts.len() });
++    }
+ 
+     let total_stacked_width: usize = layouts.iter().map(StackedLayout::width).sum();
+     if total_stacked_width > mvk.params.w_stack {
+@@ -610,9 +660,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
      let log_stacked_height = mvk.params.log_stacked_height();
      let num_whir_rounds = mvk.params.num_whir_rounds();
      let num_whir_sumcheck_rounds = mvk.params.num_whir_sumcheck_rounds();
@@ -4048,7 +4070,7 @@ index a3216a9..87bf1fd 100644
      if whir_proof.whir_sumcheck_polys.len() != num_whir_sumcheck_rounds {
          return ProofShapeError::invalid_whir(WhirProofShapeError::InvalidSumcheckPolys {
              expected: num_whir_sumcheck_rounds,
-@@ -633,9 +681,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -633,9 +690,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              expected: num_whir_sumcheck_rounds,
              actual: whir_proof.folding_pow_witnesses.len(),
          });
@@ -4062,7 +4084,7 @@ index a3216a9..87bf1fd 100644
              actual: whir_proof.query_phase_pow_witnesses.len(),
          });
      } else if whir_proof.initial_round_opened_rows.len() != layouts.len() {
-@@ -682,11 +732,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -682,11 +741,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_rows.len(),
                  },
              );
@@ -4076,7 +4098,7 @@ index a3216a9..87bf1fd 100644
                      actual: merkle_proofs.len(),
                  },
              );
-@@ -717,8 +767,10 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -717,8 +776,10 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              }
          }
  
@@ -4089,7 +4111,7 @@ index a3216a9..87bf1fd 100644
              if proof.len() != merkle_depth {
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidInitialRoundMerkleProofDepth {
-@@ -749,31 +801,34 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -749,31 +810,34 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_values_per_query.len(),
                  },
              );

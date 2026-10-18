@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..b7f6da5
+index 0000000..fd3c096
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,825 @@
+@@ -0,0 +1,879 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1347,6 +1347,8 @@ index 0000000..b7f6da5
 +    pub instrs: Vec<Instr>,
 +    pub vals: Vec<EF>,
 +    pub wits: Vec<F>,
++    /// Horn2 rows: their second and third base witnesses
++    pub wits_x: std::collections::BTreeMap<usize, F>,
 +    /// rows [0, reserved) are filled at the end (binding tables)
 +    pub reserved: usize,
 +    consts: HashMap<u32, u32>,
@@ -1398,6 +1400,7 @@ index 0000000..b7f6da5
 +            instrs: vec![Instr::NOP; reserved],
 +            vals: vec![EF::ZERO; reserved],
 +            wits: vec![F::ZERO; reserved],
++            wits_x: Default::default(),
 +            reserved,
 +            consts: HashMap::new(),
 +            transcript: NvRecorder::default(),
@@ -1559,6 +1562,23 @@ index 0000000..b7f6da5
 +    }
 +    pub fn dbl_add(&mut self, x: V, y: V) -> V {
 +        self.push(Op::DblAdd, x.addr, y.addr, 0, 0, x.val.double() + y.val, F::ZERO)
++    }
++    /// sum_i coeffs[i] x^i by a Horner chain: HornS, HornR per further coefficient, HornE
++    /// (n + 1 rows for n coefficients, instead of 2n).
++    pub fn horner_chain(&mut self, coeffs: &[V], x: V) -> V {
++        let n = coeffs.len();
++        if n == 1 {
++            return coeffs[0];
++        }
++        let top = coeffs[n - 1];
++        self.push(Op::HornS, top.addr, 0, 0, 0, top.val, F::ZERO);
++        let mut acc = top.val;
++        for i in (0..n - 1).rev() {
++            let c = coeffs[i];
++            self.push(Op::HornR, c.addr, x.addr, 0, 0, acc, F::ZERO);
++            acc = acc * x.val + c.val;
++        }
++        self.push(Op::HornE, 0, 0, 0, 0, acc, F::ZERO)
 +    }
 +    pub fn mul_add_a(&mut self, x: V, y: V) -> V {
 +        self.push(Op::MulAddA, x.addr, y.addr, 0, 0, x.val * y.val + x.val, F::ZERO)
@@ -1886,6 +1906,17 @@ index 0000000..b7f6da5
 +            })
 +            .collect()
 +    }
++    /// Two Horner steps: c = acc mu^2 + w[0] mu + w[1]; w[1], w[0] are units uidx, uidx + 1 of
++    /// `job`.
++    pub fn horn2(&mut self, acc: V, mu: V, w: [F; 2], job: u32, uidx: u32) -> V {
++        self.job_unit(job, uidx, w[1]);
++        self.job_unit(job, uidx + 1, w[0]);
++        let m = mu.val;
++        let val = (acc.val * m + EF::from(w[0])) * m + EF::from(w[1]);
++        let v = self.push(Op::Horn2, acc.addr, mu.addr, job, uidx, val, w[0]);
++        self.wits_x.insert(v.addr as usize, w[1]);
++        v
++    }
 +    /// c = acc * mu + w, where w (a base witness) is also unit `uidx` of `job`.
 +    pub fn horn(&mut self, acc: V, mu: V, w: F, job: u32, uidx: u32) -> V {
 +        self.job_unit(job, uidx, w);
@@ -1946,27 +1977,32 @@ index 0000000..b7f6da5
 +    /// Merkle path with direction bits `bits` (LSB first), checked against `root`.
 +    pub fn merkle_path(&mut self, job_base: u32, leaf_digests: &[Digest], siblings: &[Digest], bits: &[V], root: &DigestCells) {
 +        assert_eq!(bits.len(), siblings.len());
-+        let mut layer: Vec<DigestCells> = leaf_digests
-+            .iter()
-+            .enumerate()
-+            .map(|(j, &d)| self.dig(job_base + j as u32, d))
-+            .collect();
-+        while layer.len() > 1 {
-+            layer = (0..layer.len() / 2).map(|i| self.node(&layer[2 * i].clone(), &layer[2 * i + 1].clone())).collect();
-+        }
-+        let mut cur = layer[0];
++        // the current node as (job id, digest); its digest goes from the digest bus straight into
++        // the parent's units (DigWS*), so no digest cells per level
++        // (coset trees of per-row leaf jobs end in digest cells: the first level reads those)
++        let mut cur_cells: Option<DigestCells> = None;
++        let (mut cur_job, mut cur_d) = if leaf_digests.len() == 1 {
++            (job_base, leaf_digests[0])
++        } else {
++            let mut layer: Vec<DigestCells> = leaf_digests
++                .iter()
++                .enumerate()
++                .map(|(j, &d)| self.dig(job_base + j as u32, d))
++                .collect();
++            while layer.len() > 1 {
++                layer = (0..layer.len() / 2).map(|i| self.node(&layer[2 * i].clone(), &layer[2 * i + 1].clone())).collect();
++            }
++            cur_cells = Some(layer[0]);
++            (self.job_units.len() as u32 - 1, layer[0].digest)
++        };
 +        for (lv, &sd) in siblings.iter().enumerate() {
 +            let (slo, shi) = digest_cells(sd);
-+            let slo = self.load(ef_from(slo));
-+            let shi = self.load(ef_from(shi));
-+            let mut bit = bits[lv];
-+            let mut nb = self.one_minus(bit);
-+            if lv == 0 && super::verifier::tamper_now(super::verifier::Tamper::MerkleSwapLr) {
-+                core::mem::swap(&mut bit, &mut nb);
-+            }
++            let bit = bits[lv];
++            let swap = lv == 0 && super::verifier::tamper_now(super::verifier::Tamper::MerkleSwapLr);
 +            let b1 = coeffs(bit.val)[0] == F::ONE;
-+            let (ld, rd) = if b1 { (sd, cur.digest) } else { (cur.digest, sd) };
-+            // node job: cur goes left iff bit = 0 (UnitWS: unit index + 12 * bit)
++            let (ld, rd) = if b1 { (sd, cur_d) } else { (cur_d, sd) };
++            // node job: the current digest goes left iff bit = 0 (unit index + 12 * bit), the
++            // sibling to the other side (12 (1 - bit)); 5 rows per level
 +            use openvm_stark_backend::hasher::MerkleHasher;
 +            let id = self.job_units.len() as u32;
 +            let units: Vec<Option<U2>> = super::hash::digest_units(digest_words(ld))
@@ -1977,13 +2013,31 @@ index 0000000..b7f6da5
 +            self.job_units.push(BJob { tag: 0, node: true, units });
 +            self.merkle_nodes += 1;
 +            self.push(Op::NodeJob, NODE_TAG, 0, id, 0, EF::ZERO, F::ZERO);
-+            self.push(Op::UnitWS4, cur.lo.addr, bit.addr, id, 0, cur.lo.val, F::ZERO);
-+            self.push(Op::UnitWS2, cur.hi.addr, bit.addr, id, 8, cur.hi.val, F::ZERO);
-+            self.push(Op::UnitWS4, slo.addr, nb.addr, id, 0, slo.val, F::ZERO);
-+            self.push(Op::UnitWS2, shi.addr, nb.addr, id, 8, shi.val, F::ZERO);
-+            let d = crate::sha384::config::ShaHasher.compress(ld, rd);
-+            cur = self.dig(id, d);
++            if let Some(c) = cur_cells.take() {
++                self.push(Op::UnitWS4, c.lo.addr, bit.addr, id, 0, c.lo.val, F::ZERO);
++                self.push(Op::UnitWS2, c.hi.addr, bit.addr, id, 8, c.hi.val, F::ZERO);
++            } else {
++                let (clo, chi) = digest_cells(cur_d);
++                self.push(Op::DigWS4, cur_job, bit.addr, id, 0, ef_from(clo), F::ZERO);
++                self.push(Op::DigWS2, cur_job, bit.addr, id, 8, ef_from(chi), F::ZERO);
++            }
++            if swap {
++                // test hook: the sibling on the same side as the current digest
++                let l4 = self.load(ef_from(slo));
++                let l2 = self.load(ef_from(shi));
++                self.push(Op::UnitWS4, l4.addr, bit.addr, id, 0, l4.val, F::ZERO);
++                self.push(Op::UnitWS2, l2.addr, bit.addr, id, 8, l2.val, F::ZERO);
++            } else {
++                self.push(Op::SibWS4, 0, bit.addr, id, 0, ef_from(slo), F::ZERO);
++                self.push(Op::SibWS2, 0, bit.addr, id, 8, ef_from(shi), F::ZERO);
++            }
++            cur_d = crate::sha384::config::ShaHasher.compress(ld, rd);
++            cur_job = id;
 +        }
++        let cur = match cur_cells {
++            Some(c) => c,
++            None => self.dig(cur_job, cur_d),
++        };
 +        if cur.digest != root.digest {
 +            self.failures.push("merkle root".into());
 +        }
@@ -2065,7 +2119,7 @@ index 0000000..b7f6da5
 +
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..a911637
+index 0000000..3a6e942
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
 @@ -0,0 +1,251 @@
@@ -2256,7 +2310,7 @@ index 0000000..a911637
 +        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
 +            *c += t;
 +        }
-+        let nv = nv_trace(&b.instrs, &b.vals, &b.wits, &sha.glue_rows, &tr.hash, &tr.samp, &b.app, self.log_rows, &mut counts);
++        let nv = nv_trace(&b.instrs, &b.vals, &b.wits, &b.wits_x, &sha.glue_rows, &tr.hash, &tr.samp, &b.app, self.log_rows, &mut counts);
 +        let mats = vec![nv, sha.compress, sha.table, byte_table2(&counts)];
 +        if let Some(h) = &self.heights {
 +            use p3_matrix::Matrix;
@@ -2322,7 +2376,7 @@ index 0000000..a911637
 +}
 diff --git a/crates/recursion/src/nv/faithful_dof.rs b/crates/recursion/src/nv/faithful_dof.rs
 new file mode 100644
-index 0000000..d16fc1e
+index 0000000..4ac9a95
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_dof.rs
 @@ -0,0 +1,526 @@
@@ -2825,7 +2879,7 @@ index 0000000..d16fc1e
 +    // readers: (row, column) cells holding a copy of c_k[y]
 +    let w = m.width();
 +    let h = m.height();
-+    let c_col = N_COMMON + 24 + k;
++    let c_col = N_COMMON + core::mem::offset_of!(super::uair::AbCols<u8>, c) + k;
 +    let mut cells = vec![(y, c_col)];
 +    cells.extend(readers.iter().copied());
 +    let mut wins: Vec<usize> = cells.iter().flat_map(|&(r, _)| [r, (r + h - 1) % h]).collect();
@@ -3339,7 +3393,7 @@ index 0000000..e1db382
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..57357e5
+index 0000000..ecf3512
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
 @@ -0,0 +1,729 @@
@@ -3507,7 +3561,7 @@ index 0000000..57357e5
 +    for r in 0..h {
 +        if g(r, cm.ka) == F::ONE {
 +            let lo = (0..OP_LO).find(|&k| g(r, ab.h[k]) == F::ONE).unwrap();
-+            let hi = (0..4).find(|&k| g(r, ab.g[k]) == F::ONE).unwrap();
++            let hi = (0..crate::nv::isa::OP_HI).find(|&k| g(r, ab.g[k]) == F::ONE).unwrap();
 +            let v = 8 * hi + lo;
 +            let op = Op::all().into_iter().find(|o| *o as usize == v);
 +            ops[r] = op;
@@ -3533,7 +3587,7 @@ index 0000000..57357e5
 +    let mut tested = 0;
 +    for y in 0..h {
 +        let Some(op) = ops[y] else { continue };
-+        let free = matches!(op, Op::Load | Op::LoadF | Op::LoadBit | Op::Smp1 | Op::Smp12 | Op::Acc | Op::Dig | Op::PowChk | Op::Acc2);
++        let free = matches!(op, Op::Load | Op::LoadF | Op::LoadBit | Op::Smp1 | Op::Smp12 | Op::Acc | Op::Dig | Op::PowChk | Op::Acc2 | Op::SibWS4 | Op::SibWS2 | Op::DigWS4 | Op::DigWS2);
 +        let name = format!("{op:?}");
 +        let n = seen.entry(name.clone()).or_default();
 +        if !free && *n >= 8 {
@@ -3675,7 +3729,7 @@ index 0000000..57357e5
 +    let bc: &BindCols<usize> = idx[N_COMMON..N_COMMON + BIND_W].borrow();
 +    Ix {
 +        cm: NvCommon { ka: cm.ka, kb: cm.kb, kg: cm.kg, kh: cm.kh, ks: cm.ks, y: cm.y, kc: cm.kc, p: cm.p },
-+        ab: AbCols { a: ab.a, b: ab.b, c: ab.c, h: ab.h, g: ab.g, wit: ab.wit, mult: ab.mult, rx: ab.rx, ry: ab.ry, rz: ab.rz },
++        ab: AbCols { a: ab.a, b: ab.b, c: ab.c, h: ab.h, g: ab.g, wit: ab.wit, mult: ab.mult, rx: ab.rx, ry: ab.ry, rz: ab.rz, wit2: ab.wit2 },
 +        bc: BindCols { e1a: bc.e1a, e1b: bc.e1b, e2: bc.e2, acc: bc.acc, pc0: bc.pc0, pc1: bc.pc1, ya: bc.ya, yb: bc.yb, bl: bc.bl },
 +    }
 +}
@@ -3687,7 +3741,7 @@ index 0000000..57357e5
 +        return None;
 +    }
 +    let lo = (0..OP_LO).find(|&k| g(x.ab.h[k]) == F::ONE)?;
-+    let hi = (0..4).find(|&k| g(x.ab.g[k]) == F::ONE)?;
++    let hi = (0..crate::nv::isa::OP_HI).find(|&k| g(x.ab.g[k]) == F::ONE)?;
 +    Some(8 * hi + lo)
 +}
 +
@@ -4074,10 +4128,10 @@ index 0000000..57357e5
 +}
 diff --git a/crates/recursion/src/nv/faithful_tr_tests.rs b/crates/recursion/src/nv/faithful_tr_tests.rs
 new file mode 100644
-index 0000000..a60b464
+index 0000000..527692e
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tr_tests.rs
-@@ -0,0 +1,590 @@
+@@ -0,0 +1,591 @@
 +//! NV-faithful audit, parts (d) transcript/sampling and (e) Merkle openings: tamper tests.
 +//! Each `must_fail` case is a cheating trace (or a cheating witness generated through a
 +//! test-only hook in the verifier program) that the circuit must reject.
@@ -4338,8 +4392,9 @@ index 0000000..a60b464
 +    let (vk, proof) = fib();
 +    let find_op = |m: &RowMajorMatrix<F>, op: Op| -> Vec<usize> {
 +        let w = m.width;
-+        let h_off = N_COMMON + 36;
-+        let g_off = h_off + OP_LO;
++        let h_off = N_COMMON + core::mem::offset_of!(super::uair::AbCols<u8>, h);
++        let g_off = N_COMMON + core::mem::offset_of!(super::uair::AbCols<u8>, g);
++        let _ = OP_LO;
 +        let v = op as usize;
 +        (0..m.values.len() / w)
 +            .filter(|&r| m.values[r * w] == F::ONE && m.values[r * w + h_off + v % OP_LO] == F::ONE && m.values[r * w + g_off + v / OP_LO] == F::ONE)
@@ -6024,10 +6079,10 @@ index 0000000..ddcb0ca
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..df4edbd
+index 0000000..7c70b86
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,141 @@
+@@ -0,0 +1,164 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -6114,19 +6169,42 @@ index 0000000..df4edbd
 +    /// c = a; expose the statement digest: a's coefficients = public values 1..13 (P2 = 0, lo
 +    /// cell) or 13..19 with c6..c11 = 0 (P2 = 1, hi cell)  (final-soundness G1)
 +    PvD = 31,
++    /// Merkle sibling, low digest cell: c = free witness (the sibling's 12 limbs); push word units
++    /// c[0..12] at unit index P3 + 12 (1 - B) of job P2 (B = the path bit read at the B field).
++    /// Replaces Load + one_minus + UnitWS4 (3 rows) for the sibling.
++    SibWS4 = 32,
++    /// Merkle sibling, high digest cell: as SibWS4 for 2 word units (c[0..6]; c[6..12] = 0).
++    SibWS2 = 33,
++    /// Merkle path, current digest, low cell: c = digest pairs 0, 1 of the child job P0 (digest
++    /// bus), pushed as word units c[0..12] at P3 + 12 B of job P2 (B = the path bit). Replaces
++    /// Dig + UnitWS4 (2 rows).
++    DigWS4 = 34,
++    /// As DigWS4 for the high cell: digest pair 2 of job P0, 2 word units (c[6..12] = 0).
++    DigWS2 = 35,
++    /// Horner start: c = a; the next row's c = a (the leading coefficient).
++    HornS = 36,
++    /// Horner step: c free (set by the previous row); the next row's c = c * b + a
++    /// (b = the evaluation point, a = the next coefficient).
++    HornR = 37,
++    /// Horner end: c free (set by the previous HornR row); no transition.
++    HornE = 38,
++    /// Two Horner steps over base witnesses: c = a b^2 + w1 b + w2 (w1 = wit, w2 = wit2),
++    /// pushing w2, w1 as felt units P3, P3 + 1 of job P2 (degree 3: NvAir stays within the SHA
++    /// AIR's degree 9).
++    Horn2 = 39,
 +}
 +
-+pub const NUM_OPS: usize = 32;
++pub const NUM_OPS: usize = 40;
 +/// Op code = 8 * hi + lo, hi < OP_HI (UAIR one-hot selector halves).
 +pub const OP_LO: usize = 8;
-+pub const OP_HI: usize = 4;
++pub const OP_HI: usize = 5;
 +
 +impl Op {
 +    pub fn all() -> [Op; NUM_OPS] {
 +        use Op::*;
 +        [
 +            Nop, Mul, Add, Sub, Const, ConstX, Load, Unit1, Anchor, UnitW, Smp1, Smp12, Unit12,
-+            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit, LoadF, UnitWT, PvD,
++            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit, LoadF, UnitWT, PvD, SibWS4, SibWS2, DigWS4, DigWS2, HornS, HornR, HornE, Horn2,
 +        ]
 +    }
 +    pub fn reads_a(self) -> bool {
@@ -6134,12 +6212,12 @@ index 0000000..df4edbd
 +        matches!(
 +            self,
 +            Mul | Add | Sub | Unit1 | UnitW | Unit12 | Horn | Bit | Zero | DblAdd
-+                | MulAddA | Pv | UnitWS4 | UnitWS2 | UnitWT | PvD
++                | MulAddA | Pv | UnitWS4 | UnitWS2 | UnitWT | PvD | HornS | HornR | Horn2
 +        )
 +    }
 +    pub fn reads_b(self) -> bool {
 +        use Op::*;
-+        matches!(self, Mul | Add | Sub | Horn | DblAdd | MulAddA | UnitWS4 | UnitWS2)
++        matches!(self, Mul | Add | Sub | Horn | DblAdd | MulAddA | UnitWS4 | UnitWS2 | SibWS4 | SibWS2 | DigWS4 | DigWS2 | HornR | Horn2)
 +    }
 +}
 +
@@ -6199,10 +6277,10 @@ index 0000000..9823e17
 +mod faithful_tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..47752cd
+index 0000000..b4483bd
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1041 @@
+@@ -0,0 +1,1170 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -6681,6 +6759,10 @@ index 0000000..47752cd
 +            v.params.need_rot as usize,
 +            v.params.opening_masks()[0].iter().filter(|&&m| m).count()
 +        );
++        if std::env::var("NV_ROT_DUMP").is_ok() {
++            let idx: Vec<usize> = v.params.opening_masks()[0].iter().enumerate().filter(|(_, &m)| m).map(|(i, _)| i).collect();
++            println!("NV_ROT {} {:?}", a.name(), idx);
++        }
 +    }
 +}
 +
@@ -7123,7 +7205,7 @@ index 0000000..47752cd
 +    let bits = 5 + base.whir.query_phase_pow_bits;
 +    // no certificate set: every round on the Johnson fallback
 +    let mut p0 = base.clone();
-+    p0.whir = p0.whir.clone().with_first_order(lb, lh, bits, 50, 64, None);
++    p0.whir = p0.whir.clone().with_first_order(lb, lh, bits, 50, 64, None, 1);
 +    let t0 = p0.whir.agreement.clone().unwrap();
 +    assert!(t0.rounds.iter().all(|r| !r.first_order));
 +    // a certificate set covering exactly round 0's code and fold sub-codes
@@ -7133,7 +7215,7 @@ index 0000000..47752cd
 +    let a0 = AgreementTable::first_order_agree(n0, k0, 50, 64);
 +    let certs: CertSet = (0..=kr[0]).map(|s| (n0 >> s, k0 >> s, (a0 + (1 << s) - 1) >> s)).collect();
 +    let mut p = base.clone();
-+    p.whir = p.whir.clone().with_first_order(lb, lh, bits, 50, 64, Some(&certs));
++    p.whir = p.whir.clone().with_first_order(lb, lh, bits, 50, 64, Some(&certs), 1);
 +    crate::sha384::e2e_tests::describe("O2_CHILD", &p);
 +    let t = p.whir.agreement.clone().unwrap();
 +    assert!(t.rounds[0].first_order && t.rounds[1..].iter().all(|r| !r.first_order), "uncertified rounds must fall back");
@@ -7143,7 +7225,7 @@ index 0000000..47752cd
 +    let mut partial = certs.clone();
 +    partial.remove(&(n0 >> kr[0], k0 >> kr[0], (a0 + (1 << kr[0]) - 1) >> kr[0]));
 +    let mut pp = base.clone();
-+    pp.whir = pp.whir.clone().with_first_order(lb, lh, bits, 50, 64, Some(&partial));
++    pp.whir = pp.whir.clone().with_first_order(lb, lh, bits, 50, 64, Some(&partial), 1);
 +    assert!(!pp.whir.agreement.as_ref().unwrap().rounds[0].first_order, "missing sub-code certificate must fall back");
 +    assert!(!t.all_first_order_certified(&partial, &kr));
 +    println!("O2 table (certified round 0) {:?}", t.rounds.iter().map(|r| (r.agree, r.queries, r.first_order)).collect::<Vec<_>>());
@@ -7167,7 +7249,7 @@ index 0000000..47752cd
 +    }
 +    // a consistent table for a weaker target: a different vk (params, pre-hash) -> rejected
 +    let mut weak = p.clone();
-+    weak.whir = weak.whir.clone().with_first_order(lb, lh, bits - 3, 50, 64, Some(&certs));
++    weak.whir = weak.whir.clone().with_first_order(lb, lh, bits - 3, 50, 64, Some(&certs), 1);
 +    let mut vk_weak = vk.clone();
 +    vk_weak.inner.params = weak;
 +    assert!(engine.verify(&vk_weak, &proof).is_err(), "weaker table accepted");
@@ -7243,6 +7325,131 @@ index 0000000..47752cd
 +    assert_eq!(c.len(), 2);
 +    assert!(c.contains(&(2013265920, 1048576, 37140791)) && c.contains(&(251658240, 4096, 790689)));
 +    std::fs::remove_dir_all(&dir).unwrap();
++}
++
++/// Program-size probe (ignored; env PARENT_*): a Fib child proved at the parent parameters, the
++/// NV verifier program for it (generate only); prints rows per phase / query round and the
++/// transcript job census.
++#[test]
++#[ignore]
++fn nv_program_probe() {
++    use crate::sha384::e2e_tests::{describe, env_usize, params_from_env};
++    use super::transcript2::{replay2, Op2};
++    let mut pp = params_from_env("PARENT", [17, 6, 268, 64]);
++    pp.max_constraint_degree = nv_debug_params().max_constraint_degree;
++    describe("PROBE", &pp);
++    let engine = Sha384CpuEngine::new(pp);
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), env_usize("NV_LOG_ROWS", 19), 1);
++    let (_, b) = circ.generate(&vk, &proof);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    let jobs = replay2(&b.transcript.clone().into_log());
++    let blocks = |j: &super::transcript2::TrJob2| j.job().message().len().div_ceil(128).max(1);
++    for op in [Op2::Flush, Op2::Commit, Op2::Squeeze, Op2::Pow, Op2::PowQ] {
++        let js: Vec<_> = jobs.iter().filter(|j| j.op == op).collect();
++        let small = js.iter().filter(|j| j.op == Op2::Flush && j.obs.len() <= 12).count();
++        println!("PROBE_TR {op:?} jobs={} blocks={} small_flush(<=12 felts)={small}", js.len(), js.iter().map(|j| blocks(j)).sum::<usize>());
++    }
++    let leaf_blocks: usize = b.jobs().iter().map(|j| j.num_blocks()).sum();
++    println!("PROBE_ROWS program={} merkle_nodes={} leaf+node_blocks={} transcript_jobs={}", b.instrs.len(), b.merkle_nodes, leaf_blocks, jobs.len());
++}
++
++/// Merkle-level and Horner-chain ops (SibWS4/2: free sibling pushed at 12 (1 - bit); DigWS4/2: child digest
++/// from the digest bus pushed at 12 bit): a changed sibling limb, a changed child-digest limb
++/// and a SibWS2 high coefficient are rejected.
++#[test]
++fn nv_merkle_op_tamper() {
++    use super::isa::Op;
++    use super::uair::{AbCols, AB_W, N_COMMON};
++    use core::borrow::BorrowMut;
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), 16, 1);
++    let (_, b) = circ.generate(&vk, &proof);
++    let row_of = |op: Op| b.instrs.iter().position(|i| i.op == op);
++    for (name, op, k) in [("sibling limb (SibWS4)", Op::SibWS4, 3usize), ("child digest limb (DigWS4)", Op::DigWS4, 5), ("child digest limb (DigWS2)", Op::DigWS2, 1), ("SibWS2 high coefficient", Op::SibWS2, 7), ("Horner chain value (HornR)", Op::HornR, 2), ("Horner result (HornE)", Op::HornE, 0), ("Horner start (HornS)", Op::HornS, 4), ("two-step leaf Horner (Horn2)", Op::Horn2, 6)] {
++        let Some(r) = row_of(op) else {
++            assert_eq!(op, Op::Horn2, "{name}: op missing from the fixture");
++            println!("NV_TAMPER_SKIPPED {name} (no such row in this fixture)");
++            continue;
++        };
++        must_fail(name, || {
++            nv_debug_mats(&vk, &proof, 16, |mats, _| {
++                let w = mats[0].width;
++                let ab: &mut AbCols<F> = mats[0].values[r * w + N_COMMON..r * w + N_COMMON + AB_W].borrow_mut();
++                ab.c[k] += F::ONE;
++            })
++        });
++    }
++}
++
++/// Two-step leaf Horner (Horn2) on a child whose stacked rows are 2+ felts wide: honest
++/// accepted; a changed accumulator value or second witness is rejected.
++#[test]
++fn nv_horn2_tamper() {
++    use super::isa::Op;
++    use super::uair::{AbCols, AB_W, N_COMMON};
++    use core::borrow::BorrowMut;
++    let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 3, 3);
++    p.max_constraint_degree = 4;
++    let engine = Sha384CpuEngine::new(p);
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), 16, 1);
++    let (_, b) = circ.generate(&vk, &proof);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    let r = b.instrs.iter().position(|i| i.op == Op::Horn2).expect("Horn2 rows (stacked width >= 2)");
++    nv_debug_mats(&vk, &proof, 16, |_, _| {});
++    println!("NV_HORN2 honest ok");
++    for (name, which) in [("Horn2 value c[3]", 0), ("Horn2 second witness", 1)] {
++        must_fail(name, || {
++            nv_debug_mats(&vk, &proof, 16, |mats, _| {
++                let w = mats[0].width;
++                let ab: &mut AbCols<F> = mats[0].values[r * w + N_COMMON..r * w + N_COMMON + AB_W].borrow_mut();
++                if which == 0 {
++                    ab.c[3] += F::ONE;
++                } else {
++                    ab.wit2 += F::ONE;
++                }
++            })
++        });
++    }
++}
++
++/// O-2 with several commitments: round 0 must be the Johnson fallback (its first-order list is
++/// squared by the commitment batching; final-soundness o2_table_bound.py). A table built for 2
++/// commitments puts round 0 on Johnson and verifies; a table with a first-order round 0 is
++/// rejected for a 2-commitment proof (preprocessed trace), and accepted for a 1-commitment one.
++#[test]
++fn o2_round0_multi_commit() {
++    use openvm_stark_backend::{test_utils::PreprocessedFibFixture, AgreementTable, CertSet, StarkEngine};
++    let base = child_params_small();
++    let (lb, lh) = (base.log_blowup, base.l_skip + base.n_stack);
++    let bits = 5 + base.whir.query_phase_pow_bits;
++    let codes = base.whir.round_codes(lb, lh);
++    let kr = base.whir.k_rounds();
++    let (n0, k0) = codes[0];
++    let a0 = AgreementTable::first_order_agree(n0, k0, 50, 64);
++    let certs: CertSet = (0..=kr[0]).map(|s| (n0 >> s, k0 >> s, (a0 + (1 << s) - 1) >> s)).collect();
++    let mk = |commits: usize| {
++        let mut p = base.clone();
++        p.whir = p.whir.clone().with_first_order(lb, lh, bits, 50, 64, Some(&certs), commits);
++        p
++    };
++    let p1 = mk(1);
++    let p2 = mk(2);
++    assert!(p1.whir.agreement.as_ref().unwrap().rounds[0].first_order);
++    assert!(!p2.whir.agreement.as_ref().unwrap().rounds[0].first_order, "2 commitments: round 0 Johnson");
++    let fx = PreprocessedFibFixture::new(0, 1, (0..32).map(|i| i % 3 != 0).collect());
++    let e2 = Sha384CpuEngine::new(p2);
++    let (vk, proof) = fx.keygen_and_prove(&e2);
++    e2.verify(&vk, &proof).expect("2-commitment proof, round 0 Johnson");
++    let e1 = Sha384CpuEngine::new(p1.clone());
++    let (vk1, proof1) = fx.keygen_and_prove(&e1);
++    let err = e1.verify(&vk1, &proof1).expect_err("first-order round 0 with 2 commitments accepted");
++    println!("O2_MULTI rejected: {err}");
++    let (vkf, prf) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&e1);
++    e1.verify(&vkf, &prf).expect("1-commitment proof with first-order round 0");
++    println!("O2_MULTI ok");
 +}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
@@ -8021,10 +8228,10 @@ index 0000000..81bad57
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..daf220d
+index 0000000..2ee07dd
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,794 @@
+@@ -0,0 +1,852 @@
 +//! NV merged non-SHA AIR ("NvAir", U2): one AIR, row roles sharing a column pool.
 +//!
 +//! Common columns: role flags ka (ALU), kb (BIND), kg (GLUE), kh (transcript hash chain),
@@ -8119,16 +8326,21 @@ index 0000000..daf220d
 +pub struct AbCols<T> {
 +    pub a: [T; 12],
 +    pub b: [T; 12],
-+    pub c: [T; 12],
 +    pub h: [T; OP_LO],
-+    pub g: [T; OP_HI],
 +    pub wit: T,
 +    pub mult: T,
 +    /// bytes of the B field: B = rx + 256 ry + 65536 rz, rz < 16 (binds the op to P1)
 +    pub rx: T,
 +    pub ry: T,
++    /// the result: pool 36..48, the positions of BIND's accumulator, which are already opened at
++    /// the next row (the Horner ops read the next row's c at no extra opening)
++    pub c: [T; 12],
++    pub g: [T; OP_HI],
 +    pub rz: T,
++    /// Horn2's second base witness
++    pub wit2: T,
 +}
++const _: () = assert!(core::mem::offset_of!(AbCols<u8>, c) == 36 && core::mem::offset_of!(BindCols<u8>, acc) == 36);
 +pub const AB_W: usize = AbCols::<u8>::width();
 +
 +#[repr(C)]
@@ -8164,7 +8376,7 @@ index 0000000..daf220d
 +/// NvAir public values: [level, statement digest limbs (18)]
 +pub const NV_NUM_PVS: usize = 1 + super::fmt::NV_DIGEST;
 +pub const U_A: usize = N_COMMON;
-+pub const U_C: usize = N_COMMON + 24;
++pub const U_C: usize = N_COMMON + 36;
 +
 +pub struct NvAir {
 +    pub buses: UBuses,
@@ -8346,8 +8558,9 @@ index 0000000..daf220d
 +        let mut groups = vec![];
 +        {
 +            let l: &AbCols<AB::Var> = pl[..AB_W].borrow();
++            let n: &AbCols<AB::Var> = pn[..AB_W].borrow();
 +            let mut cb = Collect { inner: &mut *builder, ints: vec![] };
-+            eval_alu(&mut cb, cl, l, &self.buses, self.app_base, self.h.byte);
++            eval_alu(&mut cb, cl, l, n, &self.buses, self.app_base, self.h.byte);
 +            groups.push((cl.ka.into(), cb.ints));
 +        }
 +        {
@@ -8394,6 +8607,7 @@ index 0000000..daf220d
 +    builder: &mut AB,
 +    cl: &NvCommon<AB::Var>,
 +    l: &AbCols<AB::Var>,
++    n: &AbCols<AB::Var>,
 +    buses: &UBuses,
 +    app_base: usize,
 +    byte_bus: BusIndex,
@@ -8434,8 +8648,29 @@ index 0000000..daf220d
 +    let a: [AB::Expr; 12] = l.a.map(Into::into);
 +    let bb: [AB::Expr; 12] = l.b.map(Into::into);
 +    let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
-+    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2) + s(Op::LoadBit) + s(Op::LoadF);
-+    let copy_a = s(Op::Unit1) + s(Op::UnitW) + s(Op::UnitWT) + s(Op::Unit12) + s(Op::Bit) + s(Op::Pv) + s(Op::PvD) + s(Op::UnitWS4) + s(Op::UnitWS2);
++    // Horn2 (two steps): (a b + w1) b + w2
++    let h3: [AB::Expr; 12] = {
++        let w1: AB::Expr = l.wit.into();
++        let w2: AB::Expr = l.wit2.into();
++        let mut t = ab.clone();
++        t[0] += w1;
++        let mut t = ext_field_multiply::<AB::Expr>(t, bb.clone());
++        t[0] += w2;
++        t
++    };
++    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2) + s(Op::LoadBit) + s(Op::LoadF) + s(Op::SibWS4) + s(Op::SibWS2) + s(Op::DigWS4) + s(Op::DigWS2) + s(Op::HornR) + s(Op::HornE);
++    let copy_a = s(Op::Unit1) + s(Op::UnitW) + s(Op::UnitWT) + s(Op::Unit12) + s(Op::Bit) + s(Op::Pv) + s(Op::PvD) + s(Op::UnitWS4) + s(Op::UnitWS2) + s(Op::HornS);
++    // Horner chain: HornS sets the next row's c to its a; HornR sets the next row's c to
++    // c * b + a (its own c was set by the previous row); the chain ends in HornE (free c)
++    {
++        let lc: [AB::Expr; 12] = core::array::from_fn(|k| l.c[k].into());
++        let cb_ = ext_field_multiply::<AB::Expr>(lc, bb.clone());
++        let mut tr = builder.when_transition();
++        for k in 0..12 {
++            tr.assert_zero(s(Op::HornS) * (n.c[k] - a[k].clone()));
++            tr.assert_zero(s(Op::HornR) * (n.c[k] - cb_[k].clone() - a[k].clone()));
++        }
++    }
 +    let mulab = s(Op::Mul) + s(Op::Horn);
 +    for k in 0..12 {
 +        let mut e = mulab.clone() * ab[k].clone()
@@ -8443,7 +8678,8 @@ index 0000000..daf220d
 +            + s(Op::Sub) * (a[k].clone() - bb[k].clone())
 +            + s(Op::DblAdd) * (a[k].clone().double() + bb[k].clone())
 +            + s(Op::MulAddA) * (ab[k].clone() + a[k].clone())
-+            + copy_a.clone() * a[k].clone();
++            + copy_a.clone() * a[k].clone()
++            + s(Op::Horn2) * h3[k].clone();
 +        if k == 0 {
 +            e += s(Op::Const) * p[0] + s(Op::Horn) * l.wit;
 +        }
@@ -8496,14 +8732,24 @@ index 0000000..daf220d
 +    //   transcript anchors (chan 2, job P2, 0, 0, A, B, 0) are sent.
 +    let slot = PermutationCheckBus::new(buses.slot);
 +    let smp = s(Op::Smp1) + s(Op::Smp12);
-+    let ws = s(Op::UnitWS4) + s(Op::UnitWS2);
++    // UnitWS*: units of the a operand at P3 + 2k + 12 bit; DigWS*: the same from a child digest
++    let ws = s(Op::UnitWS4) + s(Op::UnitWS2) + s(Op::DigWS4) + s(Op::DigWS2);
++    // Merkle sibling ops: free c, units at P3 + 2k + 12 (1 - bit)
++    let sib = s(Op::SibWS4) + s(Op::SibWS2);
++    for k in 6..12 {
++        builder.assert_zero((s(Op::SibWS2) + s(Op::DigWS2)) * l.c[k]);
++    }
 +    let wt = s(Op::UnitWT);
-+    let chan = s(Op::Unit1) + s(Op::UnitW) + wt.clone() + ws.clone() + s(Op::Unit12) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor).double()
++    let chan = s(Op::Unit1) + s(Op::UnitW) + wt.clone() + ws.clone() + sib.clone() + s(Op::Unit12) + s(Op::Horn) + s(Op::Horn2) + s(Op::Job) + s(Op::Anchor).double()
 +        + s(Op::PowChk) * cst(3);
 +    for k in 0..12usize {
 +        let kk = cst(k as u64);
++        let mut v_h3 = AB::Expr::ZERO;
 +        let mut send = s(Op::Unit12);
 +        let mut recv = s(Op::Smp12);
++        if k < 2 {
++            send += s(Op::Horn2);
++        }
 +        if k == 0 {
 +            send += s(Op::Unit1) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor);
 +            recv += s(Op::Smp1) + s(Op::PowChk);
@@ -8512,9 +8758,9 @@ index 0000000..daf220d
 +            send += s(Op::Job);
 +        }
 +        if k < 2 {
-+            send += s(Op::UnitW) + ws.clone() + wt.clone();
++            send += s(Op::UnitW) + ws.clone() + sib.clone() + wt.clone();
 +        } else if k < 4 {
-+            send += s(Op::UnitWS4);
++            send += s(Op::UnitWS4) + s(Op::SibWS4) + s(Op::DigWS4);
 +            // B in {2, 4}: words 2, 3 only for B = 4
 +            send += s(Op::UnitW) * (bfield.clone() - cst(2)) * cst(p3_field::PrimeField32::as_canonical_u32(&F::TWO.inverse()) as u64);
 +        }
@@ -8522,18 +8768,24 @@ index 0000000..daf220d
 +        let mut key2 = s(Op::Unit12) * (p[3] + kk.clone())
 +            + (s(Op::UnitW) + wt.clone()) * (p[3] + cst(2 * k as u64))
 +            + ws.clone() * (p[3] + cst(2 * k as u64) + l.b[0] * cst(12))
++            + sib.clone() * (p[3] + cst(2 * k as u64 + 12) - l.b[0] * cst(12))
 +            + s(Op::Job) * kk.clone();
 +        if k == 0 {
 +            key2 += (s(Op::Horn) + s(Op::Unit1)) * p[3];
 +        }
-+        let mut kind = (s(Op::UnitW) + ws.clone()).double() + smp.clone() * cst(KIND_SAMPLE as u64);
++        if k < 2 {
++            key2 += s(Op::Horn2) * (p[3] + kk.clone());
++            let w: AB::Expr = [l.wit2, l.wit][k].into();
++            v_h3 = s(Op::Horn2) * w;
++        }
++        let mut kind = (s(Op::UnitW) + ws.clone() + sib.clone()).double() + smp.clone() * cst(KIND_SAMPLE as u64);
 +        if k < 2 {
 +            // UnitWT: word unit (kind 2), then the 42-B digest tail (kind UNIT_HALF)
 +            let kk = if k == 0 { super::hash::UNIT_WORD } else { super::hash::UNIT_HALF };
 +            kind += wt.clone() * cst(kk as u64);
 +        }
 +        let mut v = [AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO];
-+        v[0] = (s(Op::Unit12) + s(Op::Smp12)) * l.c[k];
++        v[0] = (s(Op::Unit12) + s(Op::Smp12)) * l.c[k] + v_h3.clone();
 +        if k == 0 {
 +            for t in 0..3 {
 +                v[t] += s(Op::PowChk) * l.c[t];
@@ -8548,7 +8800,7 @@ index 0000000..daf220d
 +        }
 +        if k < 4 {
 +            for t in 0..3 {
-+                v[t] += (s(Op::UnitW) + ws.clone() + if k < 2 { wt.clone() } else { AB::Expr::ZERO }) * l.c[3 * k + t];
++                v[t] += (s(Op::UnitW) + ws.clone() + sib.clone() + if k < 2 { wt.clone() } else { AB::Expr::ZERO }) * l.c[3 * k + t];
 +            }
 +        }
 +        let [v0, v1, v2] = v;
@@ -8558,10 +8810,19 @@ index 0000000..daf220d
 +    PermutationCheckBus::new(buses.job).send(builder, [p[2].into(), p[0].into(), AB::Expr::ONE], s(Op::Job) + s(Op::NodeJob));
 +    // digests: pairs P3, P3 + 1 (if B = 2) of job P2
 +    let dig = PermutationCheckBus::new(buses.digest);
++    // Dig: job P2, pairs P3, P3 + 1 (B = 2) or P3 (B = 1); DigWS4: job P0, pairs 0, 1;
++    // DigWS2: job P0, pair 2
++    let (dws4, dws2) = (s(Op::DigWS4), s(Op::DigWS2));
 +    for h in 0..2usize {
-+        let mut m = vec![p[2].into(), p[3] + cst(h as u64)];
++        let job = s(Op::Dig) * p[2] + (dws4.clone() + dws2.clone()) * p[0];
++        let pair = s(Op::Dig) * (p[3] + cst(h as u64)) + dws4.clone() * cst(h as u64) + dws2.clone() * cst(2);
++        let mut m = vec![job, pair];
 +        m.extend((0..6).map(|t| l.c[6 * h + t].into()));
-+        let mult = if h == 0 { s(Op::Dig) } else { s(Op::Dig) * (bfield.clone() - one.clone()) };
++        let mult = if h == 0 {
++            s(Op::Dig) + dws4.clone() + dws2.clone()
++        } else {
++            s(Op::Dig) * (bfield.clone() - one.clone()) + dws4.clone()
++        };
 +        dig.receive(builder, m, mult);
 +    }
 +    for k in 6..12 {
@@ -8676,6 +8937,7 @@ index 0000000..daf220d
 +    instrs: &[Instr],
 +    vals: &[EF],
 +    wits: &[F],
++    wits_x: &std::collections::BTreeMap<usize, F>,
 +    glue: &[[F; GLUE_W]],
 +    hash: &[[F; HASH2_WIDTH]],
 +    samp: &[[F; SAMP2_WIDTH]],
@@ -8727,6 +8989,9 @@ index 0000000..daf220d
 +        r.h[v % OP_LO] = F::ONE;
 +        r.g[v / OP_LO] = F::ONE;
 +        r.wit = wits[y];
++        if let Some(&w2) = wits_x.get(&y) {
++            r.wit2 = w2;
++        }
 +        r.mult = F::from_u32(reads[y]);
 +        if ins.op != Op::Data {
 +            let bf = ins.b as usize;
@@ -8821,10 +9086,10 @@ index 0000000..daf220d
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..01535cb
+index 0000000..f7b2f34
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1583 @@
+@@ -0,0 +1,1619 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -9121,40 +9386,26 @@ index 0000000..01535cb
 +/// x >> m = 15 q + a with a in [0, 15) and q < 2^(27 - m) (witness bits).  Returns
 +/// (index bits = u0 bits ++ a bits, a bits).
 +fn decompose_index_x15(b: &mut Builder, s: V, m: usize, qid: u32) -> (Vec<V>, Vec<V>) {
++    // x = low + 2^m (15 q + a) with low < 2^m, a < 15 and q < 2^(27 - m) (bits): the unique
++    // representation of x < 15 * 2^27 = p - 1 (x = p - 1 has none and is rejected, as the native
++    // sampler re-samples it); 2 rows per low / q bit instead of recomposing all 31 bits
++    let _ = qid;
 +    let x = coeffs(s.val)[0].as_canonical_u32();
-+    let bits: Vec<V> = (0..31)
-+        .map(|j| {
-+            let _ = qid;
-+            b.load_bit((x >> j) & 1 == 1)
-+        })
-+        .collect();
-+    let mut acc = b.c(F::ZERO);
-+    for j in (0..31).rev() {
-+        acc = b.dbl_add(acc, bits[j]);
++    if x as u64 >= 15u64 << 27 {
++        b.failures.push("x15 index: x = p - 1".into());
 +    }
-+    b.assert_eq(acc, s, "index recomposition");
-+    // x <= p - 1 and x != p - 1  <=>  not all of bits 27..30 set
-+    let mut top = bits[27];
-+    for j in 28..31 {
-+        top = b.mul(top, bits[j]);
++    let low: Vec<V> = (0..m).map(|j| b.load_bit((x >> j) & 1 == 1)).collect();
++    let mut lowv = b.c(F::ZERO);
++    for j in (0..m).rev() {
++        lowv = b.dbl_add(lowv, low[j]);
 +    }
-+    b.zero(top, "x15 index: x = p - 1 rejected");
 +    let y = x >> m;
 +    let (mut q, mut a) = (y / 15, y % 15);
 +    if a == 0 && q >= 1 && tamper_now(Tamper::X15AEquals15) {
 +        q -= 1;
 +        a = 15;
 +    }
-+    let mut yv = b.c(F::ZERO);
-+    for j in (m..31).rev() {
-+        yv = b.dbl_add(yv, bits[j]);
-+    }
-+    let abits: Vec<V> = (0..4)
-+        .map(|j| {
-+            let _ = qid;
-+            b.load_bit((a >> j) & 1 == 1)
-+        })
-+        .collect();
++    let abits: Vec<V> = (0..4).map(|j| b.load_bit((a >> j) & 1 == 1)).collect();
 +    let mut a_and = abits[0];
 +    for &bb in &abits[1..] {
 +        a_and = b.mul(a_and, bb);
@@ -9163,7 +9414,6 @@ index 0000000..01535cb
 +    let qn = 27 - m;
 +    let mut qv = b.c(F::ZERO);
 +    for j in (0..qn).rev() {
-+        let _ = qid;
 +        let bc = b.load_bit((q >> j) & 1 == 1);
 +        qv = b.dbl_add(qv, bc);
 +    }
@@ -9172,9 +9422,11 @@ index 0000000..01535cb
 +        av = b.dbl_add(av, abits[j]);
 +    }
 +    let q15 = b.mul_c(qv, F::from_u32(15));
-+    let rhs = b.add(q15, av);
-+    b.assert_eq(yv, rhs, "x15 index: x >> m = 15 q + a");
-+    let mut idx = bits[..m].to_vec();
++    let yv = b.add(q15, av);
++    let hi = b.mul_c(yv, F::from_u32(1 << m));
++    let xr = b.add(hi, lowv);
++    b.assert_eq(xr, s, "x15 index: x = low + 2^m (15 q + a)");
++    let mut idx = low;
 +    idx.extend(abits.iter().copied());
 +    (idx, abits)
 +}
@@ -10215,12 +10467,25 @@ index 0000000..01535cb
 +                let mut vals = vec![];
 +                for j in 0..(1 << k) {
 +                    let mut acc = b.c(F::ZERO);
-+                    for c in (0..width0).rev() {
-+                        let (job, u) = if coset {
++                    let unit = |c: usize| -> (u32, u32) {
++                        if coset {
 +                            (job_base, 2 + (j * width0 + c) as u32)
 +                        } else {
 +                            (job_base + j as u32, 2 + c as u32)
-+                        };
++                        }
++                    };
++                    // Horner over the row's felts from the top: two per Horn2 row, the last one
++                    // (odd width) in a Horn row
++                    let mut c = width0;
++                    while c >= 2 {
++                        let (job, u) = unit(c - 2);
++                        let r = &rows[0][qi][j];
++                        acc = b.horn2(acc, mu, [r[c - 1], r[c - 2]], job, u);
++                        c -= 2;
++                    }
++                    while c > 0 {
++                        c -= 1;
++                        let (job, u) = unit(c);
 +                        acc = b.horn(acc, mu, rows[0][qi][j][c], job, u);
 +                    }
 +                    vals.push(acc);
@@ -10272,22 +10537,23 @@ index 0000000..01535cb
 +            let one = b.c(F::ONE);
 +            b.assert_eq(prod, one, "zi_root inverse");
 +            let omega_k_inv = omega_k.inverse();
-+            let tw: Vec<F> = omega_k.powers().take(1 << (k - 1)).collect();
 +            let itw: Vec<F> = omega_k_inv.powers().take(1 << (k - 1)).collect();
-+            let xp = powers_of_2(b, x, k);
 +            let xip = powers_of_2(b, xinv, k);
 +            let mut vals = values;
 +            let n = vals.len();
++            // butterfly v_i + (alpha - t)(v_i - v_m) ti with t = x^(2^j) w^i, ti = x^(-2^j) w^-i / 2:
++            // (alpha - t) ti = H_j w^-i - 1/2 with H_j = alpha x^(-2^j) / 2, so the new value is
++            // v_m + G_i (v_i - v_m), G_i = H_j w^-i + 1/2  (5 rows instead of 7)
 +            for (j, &alpha) in alphas_round.iter().enumerate() {
 +                let mm = n >> (j + 1);
++                let ax = b.mul(alpha, xip[j]);
++                let h = b.mul_c(ax, F::ONE.halve());
 +                for i in 0..mm {
-+                    let t = b.mul_c(xp[j], tw[i << j]);
-+                    let ti = b.mul_c(xip[j], itw[i << j] * F::ONE.halve());
-+                    let am = b.sub(alpha, t);
++                    let g = if i == 0 { h } else { b.mul_c(h, itw[i << j]) };
++                    let g = b.add_c(g, F::ONE.halve());
 +                    let d = b.sub(vals[i], vals[i + mm]);
-+                    let p = b.mul(am, d);
-+                    let p = b.mul(p, ti);
-+                    vals[i] = b.add(vals[i], p);
++                    let p = b.mul(g, d);
++                    vals[i] = b.add(vals[i + mm], p);
 +                }
 +            }
 +            zs_round.push(zi);
@@ -10374,6 +10640,40 @@ index 0000000..01535cb
 +        }
 +    }
 +    let mut acc = b.mul(prefix, ev[0]);
++    // eq(alpha_slc, y) = prod_m (1 - a_m) * prod_m (1 + y_m A_m), A_m = (2 a_m - 1) / (1 - a_m):
++    // per-alpha factors and suffix products once, then 2 rows per variable per query point
++    let (ainv, bsuf) = {
++        let one = b.c(F::ONE);
++        let mone = b.c(-F::ONE);
++        let mut am = Vec::with_capacity(t);
++        let mut bm = Vec::with_capacity(t);
++        for &a in &alphas[..t] {
++            let bb = b.one_minus(a);
++            let bv = bb.val;
++            let inv = b.load(if bv == EF::ZERO { EF::ZERO } else { bv.inverse() });
++            if bv == EF::ZERO {
++                b.failures.push("WHIR folding challenge alpha = 1 (eq factorisation)".into());
++            }
++            let pr = b.mul(bb, inv);
++            b.assert_eq(pr, one, "eq factor inverse");
++            let twoa = b.dbl_add(a, mone);
++            am.push(b.mul(twoa, inv));
++            bm.push(bb);
++        }
++        let mut suf = vec![one; t + 1];
++        for m in (0..t).rev() {
++            suf[m] = b.mul(bm[m], suf[m + 1]);
++        }
++        (am, suf)
++    };
++    let eq_fast = |b: &mut Builder, j: usize, y: &[V]| -> V {
++        let mut e = bsuf[j];
++        for (m, &ym) in y.iter().enumerate().take(t - j) {
++            let p = b.mul(ym, ainv[j + m]);
++            e = b.mul_add_a(e, p);
++        }
++        e
++    };
 +    let mut j = params.whir.k_round(0);
 +    for i in 0..num_rounds {
 +        let gamma = gammas[i];
@@ -10382,8 +10682,9 @@ index 0000000..01535cb
 +        if i != num_rounds - 1 {
 +            let zp = powers_of_2(b, z0s[i], slc_len);
 +            let (max, left) = zp.split_last().unwrap();
-+            let e = eq_mle(b, alpha_slc, left);
-+            let h = horner(b, &final_poly, *max);
++            debug_assert_eq!(alpha_slc.len(), left.len());
++            let e = eq_fast(b, j, left);
++            let h = b.horner_chain(&final_poly, *max);
 +            let t1 = b.mul(gamma, e);
 +            let t1 = b.mul(t1, h);
 +            acc = b.add(acc, t1);
@@ -10392,8 +10693,8 @@ index 0000000..01535cb
 +        for &zi in &zs[i] {
 +            let zp = powers_of_2(b, zi, slc_len);
 +            let (max, left) = zp.split_last().unwrap();
-+            let e = eq_mle(b, alpha_slc, left);
-+            let h = horner(b, &final_poly, *max);
++            let e = eq_fast(b, j, left);
++            let h = b.horner_chain(&final_poly, *max);
 +            let t1 = b.mul(gp, e);
 +            let t1 = b.mul(t1, h);
 +            acc = b.add(acc, t1);
@@ -15531,7 +15832,7 @@ index 0000000..f589e8d
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..d72901d
+index 0000000..3028606
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
 @@ -0,0 +1,495 @@
@@ -15797,7 +16098,7 @@ index 0000000..d72901d
 +        // path); every other round falls back to Johnson m = 64 (O-1)
 +        let path = std::env::var(format!("{prefix}_DKT_CERTS")).or_else(|_| std::env::var("NEARPROOF_DKT_CERTS")).ok();
 +        let certs = path.map(|p| load_dkt_certs(&p));
-+        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32, certs.as_ref());
++        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32, certs.as_ref(), e("COMMITS", 1));
 +    }
 +    p
 +}

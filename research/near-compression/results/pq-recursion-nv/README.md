@@ -979,3 +979,157 @@ L = 23 (2^24) is out of reach: SHA's 17.8M alone exceeds 16.8M.
   rows. Halving the transcript blocks (1,600 → 800) is −3.6 KB (301,343 B without the cut). A
   realistic step is about −0.45 KB per 100 compressions: for example, larger flush jobs with
   fewer framing blocks.
+
+## Program cut, milestone 1: Merkle level 10 → 5 rows, fold butterfly 7 → 5, factorised eq in the final check [measured: tests]
+
+**What changed.** The changes are in `nv/isa.rs`, `nv/uair.rs`, `nv/builder.rs` and
+`nv/verifier.rs`:
+
+| change | rows before | rows after |
+|---|---|---|
+| Merkle level | 10 (2 loads, `one_minus`, `NodeJob`, 4 `UnitWS`, 2 `Dig`) | 5 (`NodeJob`, `DigWS4`, `DigWS2`, `SibWS4`, `SibWS2`) |
+| fold butterfly (WHIR rounds ≥ 1) | 7 | 5 |
+| eq in the final check, per variable | 6 | 2 |
+
+* **Merkle level, details.** The root still takes one `Dig` pair plus the assertion.
+* **Ops.** There are 36 ops now. `OP_HI` goes from 4 to 5. The ALU view is 54 columns, still
+  inside the pool, so NvAir stays at 74 columns, 49 interactions and 37 rotated columns.
+* **Fold butterfly, details.** The new value is `v_m + G_i (v_i − v_m)` with
+  `G_i = H_j ω^{−i} + 1/2` and `H_j = α_j x^{−2^j} / 2`, one product per j. This is the same
+  value as before: `(α − t)·ti = H_j ω^{−i} − 1/2`, because `t·ti = 1/2`.
+* **Factorised eq, details.** It uses `eq(α, y) = Π(1 − α_m) · Π(1 + y_m A_m)` with
+  `A_m = (2α_m − 1)/(1 − α_m)`. The per-α factors and suffix products are computed once, then
+  each query point costs 2 rows per variable: `mul`, then `MulAddA`.
+
+**Soundness implications, for the re-audit of §2(b), §R.2 and `nv_bind_tamper`:**
+1. **`SibWS4` / `SibWS2`** (op 32 / 33).
+   * c is a free witness, as `Load` was; B is the path bit cell, boolean by `LoadBit`.
+   * The units are word units of c at key `P3 + 2k + 12(1 − b)` (4 or 2 words) for job P2.
+   * The unit messages are exactly what `Load` + `one_minus` + `UnitWS*(nb)` produced.
+   * `SibWS2` constrains c[6..12] = 0, as Dig's high cell does.
+   * The GLUE range-checks every word unit (bytes), as before.
+2. **`DigWS4` / `DigWS2`** (op 34 / 35).
+   * c is free, determined by the digest bus.
+   * `DigWS4` receives pairs 0 and 1 of job P0 (the A field holds the child job id, and is not
+     read as an address). `DigWS2` receives pair 2, with c[6..12] = 0.
+   * The units are word units of c at `P3 + 2k + 12 b` for parent job P2, as `UnitWS*` with the
+     bit.
+   * Each child digest is still received exactly once: GLUE sends node and leaf digests with
+     multiplicity 1, and they were consumed by one `Dig` before. The root is consumed by the
+     final `Dig`.
+   * When the leaves are per-row jobs combined by `node()`, the first level reads the cells and
+     the later levels use `DigWS*`.
+   * The digest-bus receive field is now `s(Dig)·P2 + s(DigWS)·P0` with pair
+     `s(Dig)·(P3+h) + s(DigWS4)·h + 2·s(DigWS2)`: a degree-3 field, interaction count unchanged.
+3. **The new ops are bound to P1 by the B-field range.** Op codes up to 35 give
+   P1 < 36·2^20 < p, so `B + op·2^20` still decomposes uniquely.
+4. **The fold and eq changes are program-level only.** They are algebraic identities and add
+   no AIR change.
+   * The eq factorisation needs `1 − α_m ≠ 0`. Each inverse is a `Load`, checked by `mul = 1`.
+     α_m = 1 has negligible probability, and the builder records a failure if it happens
+     (completeness only).
+5. **The B-field range check itself is unchanged.** Only the op range grew.
+
+**Tests:**
+* The fast NV suite passes in 48-B (51 tests) and 42-B + coset (52), including the DOF
+  harness, which now knows `OP_HI = 5` and the new free ops.
+* New test `nv_merkle_op_tamper`: a changed `SibWS4` limb, a changed `DigWS4` and `DigWS2`
+  child-digest limb, and a nonzero `SibWS2` high coefficient are all rejected.
+* `nv_circuit_tamper`'s Merkle left/right swap is still rejected.
+
+## Program cut, milestone 2, and O-2 with the DKT certificates [measured: tests; model]
+
+**More program cuts:**
+* **Horner chain for the final polynomial.** Three new ops: `HornS` (op 36) sets the next
+  row's c to a; `HornR` (37) sets the next row's c to `c·b + a`, its own c having been set by
+  the previous row; `HornE` (38) ends the chain with a free c. A polynomial of n coefficients
+  takes n + 1 rows instead of 2n.
+  * The chain reads the next row's c. I moved the ALU result `c` to pool 36..48, the positions
+    of BIND's accumulator, which are already opened at the next row. NvAir rotated columns stay
+    at 37.
+* **Two-step leaf Horner** (`Horn2`, op 39): c = (a b + w1) b + w2. The second base witness is
+  the new column `wit2`. w2 and w1 are pushed as felt units P3 and P3 + 1, on unit slots 0 and 1,
+  so the interaction count is unchanged.
+  * Its degree is 3, so NvAir has degree 9, equal to SHA AIR v4's, and D does not change.
+  * A three-step version would have made NvAir degree 10, so I did not use it.
+  * Round-0 leaf Horner rows are halved.
+* **x15 query index.** `x = low + 2^m (15 q + a)`, with low, q and a as bits and a ≠ 15. That
+  takes about 2 rows per low or q bit. Before, all 31 bits of x were recomposed: about −44 rows
+  per query.
+* **Probe** (`scripts/probe.sh`: a Fib child at 268 bits, n_stack 14, b 2):
+  * The program went from 125,782 rows to 93,142 after milestone 1 (−26 %).
+  * Round 0 went from 393 to 287 rows per query, later rounds from 503 to 384, and the final
+    check from 81 to 51 per query.
+  * The model reproduces these per-query changes. The milestone-2 ops are tested but not yet
+    probed.
+
+**Soundness implications of milestone 2, for the re-audit (§2(b), §R.2):**
+1. **`HornS` / `HornR` / `HornE`.** These are transition constraints of the ALU:
+   `s(HornS)·(n.c − a) = 0` and `s(HornR)·(n.c − c⊗b − a) = 0`.
+   * `HornR` and `HornE` rows have a free c of their own.
+   * They are sound only as a chain: `HornS → HornR* → HornE`. The program is fixed and bound,
+     and the builder emits only complete chains, so a `HornR` or `HornE` row is always preceded
+     by `HornS` or `HornR`.
+   * The `AbCols` layout changed: c is now at pool 36..48, and the `const` assertion pins it to
+     BIND's accumulator. The test helpers now use `offset_of`.
+2. **`Horn2`.** `(ka − free)·(c − ((a⊗b + w1)⊗b + w2)) = 0`. w1 (`wit`) and w2 (`wit2`) are sent
+   as felt units P3 + 1 and P3. These are the same unit semantics as two `Horn` rows.
+3. **x15 index.** The new decomposition is unique for x < 15·2^27 = p − 1. x = p − 1 has no
+   decomposition and is rejected: the native sampler re-samples it (G-7), and the builder
+   records a failure.
+4. **Ops.** There are 40 now, filling OP_LO 8 × OP_HI 5. The B-field binding holds
+   (P1 < 40·2^20 < p).
+
+**Tests:**
+* The fast NV suite passes in 48-B and in 42-B + coset, 53 tests each.
+* `nv_merkle_op_tamper` now also rejects changed `HornR`, `HornE` and `HornS` values.
+* New test `nv_horn2_tamper` (a child with stacked width 2): a changed `Horn2` value and a
+  changed second witness are rejected.
+
+**O-2 with the certificates (lane/pq-dkt-verify @ 69e5df327, `dkt_certs_o2.json`).**
+* **Coverage.** With the implemented rule, every round code and fold sub-code is covered for the
+  final b7h20 and b8h19, inner b6h19, base b6h21, and both b2 chain shapes
+  (`dkt_cert_check_o2.out`). Point `NEARPROOF_DKT_CERTS` at the file.
+* **Bound fix for several commitments.** `with_first_order(.., certs, max_commits)` puts round 0
+  on Johnson when the layer can have more than one stacked commitment: the round-0 O-2 list is
+  squared by the commitment batching (base stress, 2^-231.8).
+  * The proof-shape verifier rejects a first-order round 0 whenever a proof has more than one
+    commitment.
+  * The regime stays bound in the vk.
+  * The env is `{prefix}_COMMITS`, default 1.
+* **NV and final layers have exactly one commitment** (common main only). `build_verifier`
+  asserts there are no preprocessed or cached traces, so this rule never touches them.
+* **Test `o2_round0_multi_commit`:** a table built for 2 commitments puts round 0 on Johnson and
+  verifies a preprocessed-trace proof; a first-order round 0 is rejected for that proof; a
+  1-commitment proof is accepted.
+
+**Backed figures** (`size_cut3.py`, output `size_cut3.out`, MODEL). O-2 is gated by shape
+(`CERT_SHAPES`); uncertified penultimate shapes use Johnson for their queries.
+
+| step | O-2 backed | O-1 backed | NvAir rows | L |
+|---|---|---|---|---|
+| before the cut | 291,837 | 302,943 | 334,910 | 25 |
+| milestone 1 | 290,709 | 301,743 | 295,725 | 25 |
+| + Horner chain + Horn2 | 289,957 | 300,943 | — | 25 |
+| + x15 index | 289,581 | 300,543 | — | 25 |
+| + v4 child DAG (model fix: 5,848 SHA DAG nodes instead of 12,718) | **287,037** | **297,999** | 255,702 (2^17.96) | 24 |
+
+* At the last step, interactions are 2^24.87.
+* The final is certified (b7h20); the best penultimate (b8, n_stack 18, k1 = 2) is uncertified,
+  so it runs on Johnson.
+* The NvAir margin under 2^18 is 6.4k rows (2.4 %). Measuring it needs an NV child at the real
+  penultimate shape.
+
+**Milestone 2, measured.** The probe (Fib child, 268 bits, n_stack 14, b 2) on the head tree,
+which includes the multi-commitment rule:
+
+| | baseline | milestone 1 | milestone 2 |
+|---|---|---|---|
+| program rows | 125,782 | 93,142 | **79,840** (−36.5 %) |
+| round 0, rows per query | 393 | 287 | 241 |
+| rounds ≥ 1, rows per query | 503 | 384 | 329 |
+| final check, rows per query | 81 | 51 | 44 |
+
+The model predicted 243 and 340 rows per query: it is slightly conservative. On the head tree,
+the backend passes 230 tests and the fast NV suite passes 54 tests in each digest mode
+(`logs/cut/`).
