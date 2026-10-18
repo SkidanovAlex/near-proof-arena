@@ -558,3 +558,13 @@ model 308.5 → 298.9 KB.
   (WHIR 219,908, GKR 32,408, relations 43,280, stacking 5,344). Still 1.2 KB over;
   SHA AIR v4 (≈ −17.5 KB) is the closing lever.
 * Open: check A_i for the real shapes against the DKT certificate grid (lane/pq-dkt-verify).
+
+## 2026-10-18 — O-2 not yet certificate-backed (lane/pq-recursion-sha384 @ cf2262a24)
+
+* With program cut: O-2 + L=24 = 299,277 B (cut worth only −1.9 KB at L=24; L=23 needs
+  ≤ ~36 interactions/row + NvAir < 2^18 rows → 296,829 B).
+* `dkt_cert_check.py`: no real shape's O-2 thresholds are covered by dkt_certs.json —
+  grid A off by one from the backend rule at 2^19/2^20, fold sub-codes s=3,4 missing,
+  no canonical certificates off 15·2^27. Until fixed only O-1 (≈313.8 KB) is backed.
+* Actions: certificate-gated table with O-1 fallback (soundness fix, adopted; NV lane);
+  new certification run on lane/pq-dkt-verify for the exact backend rule and shapes.
