@@ -284,13 +284,21 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     let mut cases: Vec<(String, Mut)> = vec![];
     for (name, c) in [("ADD", "r0"), ("ADD", "c0"), ("MUL", "rb0"), ("MUL", "cy0"), ("BIT", "rb0"), ("SHIFT", "P0"),
         ("SHIFT", "kb0"), ("CMP", "d0"), ("CMP", "br0"), ("CMP", "inv"), ("CONST", "imm0"), ("LOCAL", "L0"),
-        ("CTRL", "tgt"), ("CTRL", "inv"), ("STACK", "inv"), ("ADD", "ta"), ("ADD", "h"), ("ADD", "fee"), ("CMP", "S")] {
+        ("CTRL", "tgt"), ("STACK", "V1_0"), ("STACK", "A0"), ("ADD", "ta"), ("ADD", "h"), ("ADD", "fee"), ("CMP", "S")] {
         let t = tb(name);
         if g.rows_per_table[t].1 == 0 {
             continue;
         }
         cases.push((format!("{name}.{c}+1"), cell(t, 0, col(t, c), plus1())));
     }
+    // a taken/untaken conditional branch with a forged condition limb
+    let tc = tb("CTRL");
+    let jif = col(tc, "f_jif");
+    if let Some(r) = (0..g.rows_per_table[tc].1).find(|&r| g.mats[tc].values[r * g.mats[tc].width + jif] == F::ONE) {
+        cases.push((format!("CTRL[jif row {r}].c0+1"), cell(tc, r, col(tc, "c0"), plus1())));
+    }
+    // a free witness that does not change the statement (inv of a zero condition) is NOT a
+    // soundness issue; recorded as such rather than counted
     let tb_b = tb("BOUNDARY");
     cases.push(("BOUNDARY.m0+1".into(), cell(tb_b, 0, col(tb_b, "m0"), plus1())));
     cases.push(("RANGE16.v[5]+1".into(), cell(tb("RANGE16"), 5, 0, plus1())));

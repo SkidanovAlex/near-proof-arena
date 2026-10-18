@@ -202,28 +202,47 @@ def recordOf (ls : List Label) (h fee pc : Nat) (ins : Instr) : Option (List Nat
     | some .haltIf => mk Chips.Ctrl.opHif [0, 0, 0, 0]
     | _ => none
 
-/-- Entry point: the eligibility check of defined function `fn` (domain D1–D5). -/
-def check (cfg : NearCfg) (p : Prepared) (fn : Nat) : Option CheckOut := do
-  let pf ← p.funcs[fn]?
-  let n := pf.code.size
-  guard (pf.type.params.size = 0 ∧ pf.locals.size ≤ 64 ∧ pf.type.results.size ≤ 1)
-  guard (pf.type.results.all fun t => t == .i32 || t == .i64)
-  guard (pf.locals.all fun t => t == .i32 || t == .i64)
-  guard (pf.code.all fun i => match i with
+/-- D1/D5 basic shape (decidable). -/
+def basicOk (pf : PFunc) : Bool :=
+  decide (pf.type.params.size = 0) && decide (pf.locals.size ≤ 64) && decide (pf.type.results.size ≤ 1) &&
+  pf.type.results.all (fun t => t == .i32 || t == .i64) &&
+  pf.locals.all (fun t => t == .i32 || t == .i64) &&
+  pf.code.all (fun i => match i with
     | .localGet x | .localSet x | .localTee x => decide (x < pf.locals.size)
-    | _ => true)
-  guard (n < 2 ^ 20 ∧ pf.gas.size = n)
-  let (L, H) ← analyze pf
-  guard (L.size = n ∧ H.size = n ∧ L[0]? = some [rootLabel pf] ∧ H[0]? = some 0)
-  guard ((List.range n).all fun pc => verifyAt pf L H pc && decide (H[pc]?.getD 0 < 2 ^ 16))
-  let recs ← (List.range n).mapM fun pc => do
-    let ins ← pf.code[pc]?
-    let fee ← feeUnits cfg pf.gas[pc]?
-    recordOf (L[pc]?.getD []) (H[pc]?.getD 0) fee pc ins
-  let fees := recs.map fun r => r.getD 3 0
-  return { fn, labels := L, heights := H, arity := pf.type.results.size,
-           localTags := pf.locals.toList.map fun t => if t == .i64 then 1 else 0,
-           resTag := if pf.type.results[0]? == some .i64 then 1 else 0,
-           records := recs.toArray, maxFee := fees.foldl max 0 }
+    | _ => true) &&
+  decide (pf.code.size < 2 ^ 20) && decide (pf.gas.size = pf.code.size)
+
+/-- Static structure: sizes, entry, every local transition, height bound. -/
+def structOk (pf : PFunc) (L : Array (List Label)) (H : Array Nat) : Bool :=
+  decide (L.size = pf.code.size) && decide (H.size = pf.code.size) &&
+  decide (L[0]? = some [rootLabel pf]) && decide (H[0]? = some 0) &&
+  (List.range pf.code.size).all (fun pc => verifyAt pf L H pc && decide (H[pc]?.getD 0 < 2 ^ 16))
+
+def recordAt (cfg : NearCfg) (pf : PFunc) (L : Array (List Label)) (H : Array Nat) (pc : Nat) :
+    Option (List Nat) :=
+  match pf.code[pc]?, feeUnits cfg pf.gas[pc]? with
+  | some ins, some fee => recordOf (L[pc]?.getD []) (H[pc]?.getD 0) fee pc ins
+  | _, _ => none
+
+/-- Entry point: the eligibility check of defined function `fn` (domain D1–D5). -/
+def check (cfg : NearCfg) (p : Prepared) (fn : Nat) : Option CheckOut :=
+  match p.funcs[fn]? with
+  | none => none
+  | some pf =>
+    if basicOk pf then
+      match analyze pf with
+      | none => none
+      | some (L, H) =>
+        if structOk pf L H then
+          match (List.range pf.code.size).mapM (recordAt cfg pf L H) with
+          | none => none
+          | some recs =>
+            some { fn, labels := L, heights := H, arity := pf.type.results.size,
+                   localTags := pf.locals.toList.map fun t => if t == .i64 then 1 else 0,
+                   resTag := if pf.type.results[0]? == some .i64 then 1 else 0,
+                   records := recs.toArray,
+                   maxFee := (recs.map fun r => r.getD 3 0).foldl max 0 }
+        else none
+    else none
 
 end WasmBase

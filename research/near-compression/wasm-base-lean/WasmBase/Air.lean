@@ -45,7 +45,7 @@ inductive Expr where
 instance : Add Expr := ⟨Expr.add⟩
 instance : Sub Expr := ⟨Expr.sub⟩
 instance : Mul Expr := ⟨Expr.mul⟩
-instance (n : Nat) : OfNat Expr n := ⟨Expr.c n⟩
+instance instOfNatExpr (n : Nat) : OfNat Expr n := ⟨Expr.c n⟩
 
 structure Inter where
   bus : Nat
@@ -129,4 +129,18 @@ structure Holds (A : Air) (pub : List F) (tr : Trace) : Prop where
     ∀ e ∈ (A.tables[t]'ht).constraints, e.eval (tr.row pub t r) = 0
   balance : ∀ b m, busNat A tr pub b true m % P = busNat A tr pub b false m % P
 
+end WasmBase
+
+namespace WasmBase
+namespace Expr
+variable (rw : Row)
+@[simp] theorem eval_add' (a b : Expr) : (a + b).eval rw = a.eval rw + b.eval rw := rfl
+@[simp] theorem eval_sub' (a b : Expr) : (a - b).eval rw = a.eval rw - b.eval rw := rfl
+@[simp] theorem eval_mul' (a b : Expr) : (a * b).eval rw = a.eval rw * b.eval rw := rfl
+@[simp] theorem eval_ofNat' (n : Nat) : (no_index (@OfNat.ofNat Expr n (instOfNatExpr n))).eval rw = ((n : Nat) : F) := rfl
+@[simp] theorem eval_c (n : Nat) : (Expr.c n).eval rw = ((n : Nat) : F) := rfl
+@[simp] theorem eval_col (i : Nat) : (Expr.col i).eval rw = rw.cur i := rfl
+@[simp] theorem eval_nxt (i : Nat) : (Expr.nxt i).eval rw = rw.nxt i := rfl
+@[simp] theorem eval_pub (i : Nat) : (Expr.pub i).eval rw = rw.pub i := rfl
+end Expr
 end WasmBase
