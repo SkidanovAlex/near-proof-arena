@@ -32,10 +32,10 @@ import ext  # noqa: E402
 
 L15 = math.log2(15)
 L_SKIP = 2
-COLS, ROT = 70 + 171 + 13 + 5, 36 + 144 + 11 + 2
+COLS, ROT = 73 + 171 + 13 + 5, 36 + 144 + 11 + 2   # NvAir 73 columns after T*
 D = 21
 AIRS = 4
-NV_IPR, SHA_IPR, SHA_ROWS = 52, 14, 43
+NV_IPR, SHA_IPR, SHA_ROWS = 55, 14, 43
 # measured program costs (A2 of nvp2-T102: child = the NV level itself)
 P_FIXED = 72_278          # preamble + app table (10,9k) + GKR + DAG + stacking
 APP_ROWS = 10_988          # level-1 table (data rows)
@@ -80,14 +80,32 @@ def nv_circuit(rounds_q, depth0, depthr, child_W):
     nv_rows = prog + prog // 2 + APP_ROWS // 2 + glue + TR_ROWS
     sha_rows = SHA_ROWS * comps
     return dict(prog=prog, prog_log=prog_log, comps=comps, nv_rows=nv_rows, sha_rows=sha_rows,
-                cells=nv_rows * 70 + sha_rows * 171 + 64 * 13 + 65536 * 5,
+                cells=nv_rows * 73 + sha_rows * 171 + 64 * 13 + 65536 * 5,
                 inter=nv_rows * NV_IPR + sha_rows * SHA_IPR + 64 * 2 + 65536)
 
 
-def proof_bytes(c, target, digest):
+def best_capped(cells, P, bmax):
+    """ext.best restricted to log_blowup <= bmax (memory: the x15 codeword is cells * 2^b * 15)."""
+    out = None
+    for b in range(1, bmax + 1):
+        for log_h in range(8, int(P['maxdom'] - b) + 1):
+            if cells / (1 << log_h) > 1 << 14:
+                continue
+            for k in range(1, 6):
+                for k1 in range(1, 6):
+                    for lf in range(0, min(log_h - k1, 14) + 1):
+                        if (log_h - k1 - lf) % k:
+                            continue
+                        r = ext.layer(cells, COLS, b, k1, k, log_h, lf, P)
+                        if out is None or r['bytes'] < out['bytes']:
+                            out = r
+    return out
+
+
+def proof_bytes(c, target, digest, bmax=None):
     """Final-layer proof of the NV circuit `c`; the final layer picks its own WHIR shape."""
     P = ext.P(target=target, m=3, extra=L15, shrink=0, digest=digest)
-    r = ext.best(c['cells'], COLS, dict(P, colb=0))
+    r = ext.best(c['cells'], COLS, dict(P, colb=0)) if bmax is None else best_capped(c['cells'], dict(P, colb=0), bmax)
     log_h = r['log_h']
     n_stack = log_h - L_SKIP
     W = r['width']
@@ -106,7 +124,7 @@ def schedule(cells, b, k1, k, log_h, lf, target):
     return r['q'], [math.ceil(math.log2(rd['leaves']) - 1e-9) for rd in r['rounds']]
 
 
-def fixed_point(pen_target, fin_target, digest, b, n_stack, k1=1, k=4):
+def fixed_point(pen_target, fin_target, digest, b, n_stack, k1=1, k=4, fin_bmax=None):
     log_h = L_SKIP + n_stack
     lf = next(x for x in range(3, 12) if (log_h - k1 - x) % k == 0)
     cells = 1 << 26
@@ -117,11 +135,24 @@ def fixed_point(pen_target, fin_target, digest, b, n_stack, k1=1, k=4):
         if abs(c['cells'] - cells) < cells // 1000:
             break
         cells = c['cells']
-    pb = proof_bytes(c, fin_target, digest)
+    pb = proof_bytes(c, fin_target, digest, fin_bmax)
     return c, pb, q
 
 
+def report(name, b, n_stack, fin_bmax=None, pen=236, fin=236):
+    c, pb, q = fixed_point(pen, fin, 42, b, n_stack, fin_bmax=fin_bmax)
+    print(f"{name}: final {pb['total']:,} B (whir {pb['whir']:,} gkr {pb['gkr']:,} rel {pb['rel']:,} stk {pb['stk']:,} W={pb['W']}) "
+          f"| final shape {pb['shape']} q={pb['q']} | pen b={b} n_stack={n_stack} queries {q} | program {c['prog']:,} | "
+          f"NvAir {c['nv_rows']:,} SHA {c['sha_rows']:,} rows, cells 2^{math.log2(c['cells']):.2f}")
+
+
 if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'run':
+        # the measured run's shape: pen b=2 n_stack=18; final b <= 3 (fits 100 GB)
+        report("268/z32 pen b2 ns18, final b<=3", 2, 18, fin_bmax=3)
+        report("268/z32 pen b2 ns18, final b<=2", 2, 18, fin_bmax=2)
+        report("268/z32 pen b2 ns18, final any b", 2, 18)
+        sys.exit(0)
     print("NV phase-2 final layer [MODEL from measured laws; see docstring]")
     for name, pen, fin in [("268 / z=32 (236 query bits), 42 B", 236, 236), ("258 / z=32 (226 query bits), 42 B", 236, 226)]:
         best = None

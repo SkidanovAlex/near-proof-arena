@@ -500,3 +500,54 @@ the NV circuit.
   Gruen, derive, next mask and WHIR-Y: 242,329 B, 21 plus 3 negatives rejected.
 * The proof size moves by a few hundred bytes against the pre-T\* runs, because the query
   positions change and so does multiproof dedup.
+
+## Audit fixes B1–B6, statement passthrough (G1), final-layer domain (U-12) [measured: tests]
+
+**Audit fixes B1–B6 merged.** Source: lane/pq-nv-circuit-soundness 2e36b0228, 09fead0bc,
+274fe5ccf; see `FAITHFUL.md`. I re-applied them on top of the unpadded program and T\*, and
+kept their tests (`faithful_tests`, `faithful_tr_tests`, `faithful_sha_tests`, DOF harness).
+* **B1:** the B-field range is integral.
+* **B2:** the child's trace-height limit is checked.
+* **B3:** base-field loads use `LoadF`.
+* **B4:** the 42-B commitment tail is written by `UnitWT`.
+* **B5:** squeeze job ids are pinned. Under T\* I extended this: squeeze blocks and PoW-run
+  blocks share the pinned numbering `TJOB_SQUEEZE_BASE + ns`, with
+  `ns' = ns + op_s + op_q`. New tamper: `tstar PoW-run job id`.
+* **B6:** anchors carry the job tag.
+
+**Statement passthrough (G1).**
+* **Level 1:** NV hashes the app proof's public values. The message is
+  `[num_airs, len_0.., pv_0.., pv_1..]`, hashed with SHA-384 under a new tag 8
+  (`TAG_STATEMENT`). It runs as a leaf job in the circuit and is truncated like Merkle
+  digests at 42 B.
+* **Exposure:** a new ALU op `PvD` (op 31; there are now 32 ops) exposes the digest as NvAir
+  public values 1..19, from the lo and hi cells. NvAir public values are now
+  `[level, 18 digest limbs]`.
+* **Level ≥ 2, or any NV child** (`bind` or `child_nv`): the child's public values 1..19 are
+  packed into cells and re-exposed unchanged.
+* **Native V_d:** `circuit::check_statement(final_pvs, app_public_values)`. `nv_chain` asserts
+  it for every level and for the final proof.
+* **Tests:**
+  * `nv_statement_digest`: the digest binds the app public values. Changed exposed limbs 1,
+    12, 13 and 18 are rejected, and an app proof with a changed public value is rejected.
+  * `nv_app_binding`: L1 = L2 = the statement digest, and a level-2 trace that re-exposes a
+    different digest is rejected.
+
+**Final-layer hash domain (U-12).**
+* `Sha384CpuEngine::new_final` and `Sha384Config::new_final` give a transcript init of
+  `H(2, ['F'])`, where inner layers use `H(2, [])`. Merkle nodes use node prefix byte 7 = `'F'`.
+* Leaves are unchanged.
+* It costs 0 bytes.
+* The NV circuit only ever verifies inner children, so its constants stay inner. `nv_chain`
+  proves the FINAL layer with `new_final`.
+* **Test `final_layer_domain`:** a final proof is rejected under the inner domain, and an inner
+  proof is rejected under the final domain. Each verifies in its own domain.
+
+**SHA-384 is never inside a GKR layer.** Every in-circuit SHA-384 evaluation in NV is a
+compression in committed `Sha512Air` rows of the common-main trace: leaf, coset leaf, node,
+transcript flush/commit/squeeze, PoW, PoW-run, and statement jobs alike. Each compression takes
+43 rows, and the GLUE, hash-chain and ALU roles reach it only through the job, iface and digest
+buses. The GKR layers are only LogUp's fractional-sum tree over interaction fractions. This is
+the mitigation for Khovratovich–Rothblum–Soukhanov-style attacks. Evidence:
+* the `A*_AIR Sha512Air h=…` lines of every chain level;
+* `hash_tests::nv_hash2_rejects_mutations`.
