@@ -1234,7 +1234,7 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..1f94564
+index 0000000..b7f6da5
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
 @@ -0,0 +1,825 @@
@@ -1882,7 +1882,7 @@ index 0000000..1f94564
 +                    units.push(u);
 +                    k += u.nunits();
 +                }
-+                Job2 { id: i as u32, node: j.node, tag: j.tag, units }
++                Job2 { id: i as u32, node: j.node, tag: j.tag, units, wread: 0 }
 +            })
 +            .collect()
 +    }
@@ -2854,7 +2854,7 @@ index 0000000..3ce18d2
 +}
 diff --git a/crates/recursion/src/nv/faithful_sha_tests.rs b/crates/recursion/src/nv/faithful_sha_tests.rs
 new file mode 100644
-index 0000000..535a621
+index 0000000..7354ffa
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_sha_tests.rs
 @@ -0,0 +1,477 @@
@@ -3072,7 +3072,7 @@ index 0000000..535a621
 +                cnt += 1;
 +            }
 +        }
-+        out.push(Job2 { id: i as u32, node: false, tag: [0u8, 3, 5, 6][i], units });
++        out.push(Job2 { id: i as u32, node: false, tag: [0u8, 3, 5, 6][i], units, wread: 0 });
 +    }
 +    out
 +}
@@ -3097,7 +3097,7 @@ index 0000000..535a621
 +    units.push(U2::Felt(0));
 +    units.extend(digest_units(d));
 +    assert!(matches!(units.last(), Some(U2::Half(_))));
-+    let honest = Job2 { id: 7, node: false, tag: TAG_COMMIT, units: units.clone() };
++    let honest = Job2 { id: 7, node: false, tag: TAG_COMMIT, units: units.clone(), wread: 0 };
 +    // native framing: hash_parts(TAG_COMMIT, [state, digest_wire(d)])
 +    let sb: Vec<u8> = state.iter().flat_map(|w| w.to_be_bytes()).collect();
 +    let dw = digest_wire(digest_from_words(d));
@@ -3106,7 +3106,7 @@ index 0000000..535a621
 +    expect("commit tail framed as tail", &inst(&w_honest, &w_honest), true);
 +    let mut alt_units = units;
 +    *alt_units.last_mut().unwrap() = U2::Word(d[5]);
-+    let alt = Job2 { id: 7, node: false, tag: TAG_COMMIT, units: alt_units };
++    let alt = Job2 { id: 7, node: false, tag: TAG_COMMIT, units: alt_units, wread: 0 };
 +    assert_ne!(alt.message(), w_honest.jobs[0].message());
 +    let w_alt = Work2 { jobs: vec![alt], nodes: vec![] };
 +    expect("commit tail re-framed as a full word", &inst(&w_alt, &w_honest), false);
@@ -3216,7 +3216,7 @@ index 0000000..535a621
 +#[test]
 +fn nv_faithful_noncanonical_felt() {
 +    let p = 2013265921u32;
-+    let job = |x: u32| Job2 { id: 0, node: false, tag: 3, units: vec![U2::Felt(5), U2::Felt(x), U2::Felt(9)] };
++    let job = |x: u32| Job2 { id: 0, node: false, tag: 3, units: vec![U2::Felt(5), U2::Felt(x), U2::Felt(9)], wread: 0 };
 +    let ok = Work2 { jobs: vec![job(p - 1)], nodes: vec![] };
 +    expect("felt p-1", &inst(&ok, &ok), true);
 +    for x in [p, p + 5, 0x78ff_ffff] {
@@ -4756,10 +4756,10 @@ index 0000000..0c335cf
 +}
 diff --git a/crates/recursion/src/nv/glue.rs b/crates/recursion/src/nv/glue.rs
 new file mode 100644
-index 0000000..66aee03
+index 0000000..5abf07d
 --- /dev/null
 +++ b/crates/recursion/src/nv/glue.rs
-@@ -0,0 +1,653 @@
+@@ -0,0 +1,671 @@
 +//! NV GLUE role: one row per *pair* of message words of a job compression (8 rows per
 +//! compression).  Replaces the packer (one row per word) and the block-chaining AIR
 +//! (one 102-column row per compression).
@@ -4847,6 +4847,9 @@ index 0000000..66aee03
 +    pub hp: T,
 +    /// a tail slot occurred before this row (bit length correction)
 +    pub hs: T,
++    /// transcript blocks: this digest row's first / second word is read by the sample role
++    /// (sent once more on the digest bus under key 8 + word index)
++    pub dx: [T; 2],
 +}
 +pub const GLUE_W: usize = GlueCols::<u8>::width();
 +
@@ -5202,11 +5205,21 @@ index 0000000..66aee03
 +        msg.extend(s.iter().cloned());
 +    }
 +    lookup_byte(builder, buses.byte, l.lo6 * c(4), kg.clone());
-+    PermutationCheckBus::new(buses.digest).send(
-+        builder,
-+        msg,
-+        kg.clone() * l.last * q2 * (one.clone() - q0 * q1),
-+    );
++    let drow = l.last * q2.clone() * (one.clone() - q0.clone() * q1.clone());
++    PermutationCheckBus::new(buses.digest).send(builder, msg, kg.clone() * drow.clone());
++    // words read by the sample role: (job, 8 + word, 3 limbs, 0, 0, 0); only on digest rows of
++    // untruncated (transcript) jobs; the multiplicity is pinned by the bus balance
++    for h in 0..2 {
++        builder.assert_zero(kg.clone() * l.dx[h] * (l.dx[h] - one.clone()));
++        builder.assert_zero(kg.clone() * l.dx[h] * (one.clone() - drow.clone()));
++        builder.assert_zero(kg.clone() * l.dx[h] * l.tr);
++        let widx = (q0.clone() + q1.clone() * c(2)) * c(2) + c(8 + h as u64);
++        PermutationCheckBus::new(buses.digest).send(
++            builder,
++            [l.job.into(), widx, s[3 * h].clone(), s[3 * h + 1].clone(), s[3 * h + 2].clone(), AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO],
++            kg.clone() * l.dx[h],
++        );
++    }
 +
 +    // ---- byte range checks ----
 +    for k in 0..8 {
@@ -5291,6 +5304,11 @@ index 0000000..66aee03
 +                g.cid = F::from_usize(comp * ROWS);
 +                g.blk0 = F::from_bool(k == 0);
 +                g.last = F::from_bool(last);
++                if last && (4..7).contains(&q) {
++                    for h in 0..2 {
++                        g.dx[h] = F::from_bool((j.wread >> (2 * (q - 4) + h)) & 1 == 1);
++                    }
++                }
 +                g.end = F::from_bool(last && q == 7);
 +                let hdr = k == 0 && q < 2;
 +                let lenw = last && q == 7;
@@ -5415,10 +5433,10 @@ index 0000000..66aee03
 +}
 diff --git a/crates/recursion/src/nv/hash.rs b/crates/recursion/src/nv/hash.rs
 new file mode 100644
-index 0000000..daf7380
+index 0000000..a545d64
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash.rs
-@@ -0,0 +1,353 @@
+@@ -0,0 +1,356 @@
 +//! NV hashing subsystem, word format v2 (air2 limbs).  Same job model as
 +//! `sha384/airs.rs` (framed messages `PREFIX || tag || units`), with:
 +//! * units: a canonical felt (4 LE bytes) or a whole 64-bit word (8 BE bytes, e.g. a
@@ -5668,6 +5686,9 @@ index 0000000..daf7380
 +    pub node: bool,
 +    pub tag: u8,
 +    pub units: Vec<U2>,
++    /// transcript blocks: output words read by the sample role (bit w = word w); GLUE sends
++    /// each such word once more on the digest bus
++    pub wread: u8,
 +}
 +impl Job2 {
 +    pub fn message(&self) -> Vec<u8> {
@@ -5774,7 +5795,7 @@ index 0000000..daf7380
 +}
 diff --git a/crates/recursion/src/nv/hash_tests.rs b/crates/recursion/src/nv/hash_tests.rs
 new file mode 100644
-index 0000000..38265ea
+index 0000000..ac78e68
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash_tests.rs
 @@ -0,0 +1,221 @@
@@ -5852,13 +5873,13 @@ index 0000000..38265ea
 +                cnt += 1;
 +            }
 +        }
-+        out.push(Job2 { id: i as u32, node: false, tag: [0u8, 3, 4, 5, 6][i % 5], units });
++        out.push(Job2 { id: i as u32, node: false, tag: [0u8, 3, 4, 5, 6][i % 5], units, wread: 0 });
 +    }
 +    // Merkle-node jobs: 12 aligned word units
 +    for t in 0..3 {
 +        let mut units = digest_units(std::array::from_fn(|_| rng.next()));
 +        units.extend(digest_units(std::array::from_fn(|_| rng.next())));
-+        out.insert(2 * t + 1, Job2 { id: 100 + t as u32, node: true, tag: 0, units });
++        out.insert(2 * t + 1, Job2 { id: 100 + t as u32, node: true, tag: 0, units, wread: 0 });
 +    }
 +    // commit-shaped transcript jobs (48 B: 6 word units; 42 B: 5 words + 2-byte tail)
 +    for t in 0..2 {
@@ -5867,7 +5888,7 @@ index 0000000..38265ea
 +        units.push(U2::Felt(crate::sha384::config::sha_levers().digest_bytes as u32));
 +        units.push(U2::Felt(0));
 +        units.extend(digest_units(std::array::from_fn(|_| rng.next())));
-+        out.push(Job2 { id: 200 + t as u32, node: false, tag: 4, units });
++        out.push(Job2 { id: 200 + t as u32, node: false, tag: 4, units, wread: 0 });
 +    }
 +    out
 +}
@@ -6176,10 +6197,10 @@ index 0000000..9823e17
 +mod faithful_tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..942de7a
+index 0000000..a4cc8db
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,907 @@
+@@ -0,0 +1,1001 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -6487,7 +6508,7 @@ index 0000000..942de7a
 +    let log_rows = env_usize("NV_LOG_ROWS", 19);
 +    let child_engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&child_engine);
-+    let mut pp = params_from_env("PARENT", [16, 3, 20, 3]);
++    let mut pp = params_from_env("PARENT", [16, 3, 20, 64]);
 +    pp.max_constraint_degree = nv_debug_params().max_constraint_degree;
 +    describe("NV_PARENT", &pp);
 +    let engine = Sha384CpuEngine::new(pp);
@@ -6495,7 +6516,7 @@ index 0000000..942de7a
 +    let _ = k;
 +    // optional final layer with its own parameters (env FINAL_*), proving the last phase-A proof
 +    let final_engine = std::env::var("FINAL_LOG_BLOWUP").ok().map(|_| {
-+        let mut fp = params_from_env("FINAL", [16, 3, 20, 3]);
++        let mut fp = params_from_env("FINAL", [16, 3, 20, 64]);
 +        fp.max_constraint_degree = nv_debug_params().max_constraint_degree;
 +        describe("NV_FINAL", &fp);
 +        Sha384CpuEngine::new_final(fp)
@@ -7087,12 +7108,106 @@ index 0000000..942de7a
 +    assert_ne!(pr_i.whir_proof.final_poly, pr_f.whir_proof.final_poly);
 +    println!("FINAL_DOMAIN cross-verification rejected both ways");
 +}
++
++/// O-2 (U-13): the WHIR query counts come from the per-round first-order agreement table bound
++/// into the vk; the native verifier re-derives the table; NV verifies an O-2 child (its query
++/// counts are the table's); a vk with an altered table is rejected.
++#[test]
++fn o2_agreement_table() {
++    use openvm_stark_backend::StarkEngine;
++    let mut p = child_params_small();
++    let (lb, lh) = (p.log_blowup, p.l_skip + p.n_stack);
++    let plain: Vec<usize> = p.whir.rounds.iter().map(|r| r.num_queries).collect();
++    p.whir = p.whir.clone().with_first_order(lb, lh, 5 + p.whir.query_phase_pow_bits, 50, 64);
++    crate::sha384::e2e_tests::describe("O2_CHILD", &p);
++    let t = p.whir.agreement.clone().unwrap();
++    let o2: Vec<usize> = p.whir.rounds.iter().map(|r| r.num_queries).collect();
++    assert_eq!(o2, t.rounds.iter().map(|r| r.queries as usize).collect::<Vec<_>>());
++    println!("O2 queries plain {plain:?} -> table {o2:?}");
++    let engine = Sha384CpuEngine::new(p.clone());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    engine.verify(&vk, &proof).expect("O-2 proof verifies");
++    // NV verifies the O-2 child with the table's query counts
++    nv_debug_mats(&vk, &proof, 16, |_, _| {});
++    println!("O2 NV debug ok");
++    // altered table entry (A_0 + 1, its queries recomputed so the vk is self-consistent but not
++    // canonical) -> rejected by the verifier, even by an engine holding the altered params
++    let mut vk_bad = vk.clone();
++    {
++        let tb = vk_bad.inner.params.whir.agreement.as_mut().unwrap();
++        tb.rounds[0].agree += 1;
++    }
++    let bad_engine = Sha384CpuEngine::new(vk_bad.inner.params.clone());
++    assert!(bad_engine.verify(&vk_bad, &proof).is_err(), "altered agreement accepted");
++    assert!(engine.verify(&vk_bad, &proof).is_err(), "altered vk accepted by the honest engine");
++    // a consistent table for a weaker target: canonical, but a different vk (params and
++    // pre-hash) -> the honest verifier (pinned params) rejects it
++    let mut weak = p.clone();
++    weak.whir = weak.whir.clone().with_first_order(lb, lh, 2 + p.whir.query_phase_pow_bits, 50, 64);
++    let mut vk_weak = vk.clone();
++    vk_weak.inner.params = weak;
++    assert!(engine.verify(&vk_weak, &proof).is_err(), "weaker table accepted");
++    let (_, vk2) = Sha384CpuEngine::new(vk_weak.inner.params.clone()).keygen(&FibFixture::new(0, 1, 1 << 5).airs());
++    assert_ne!(vk2.pre_hash, vk.pre_hash, "table not bound into the vk pre-hash");
++    println!("O2 altered tables rejected; table bound into the pre-hash");
++}
++
++/// Sampled words come from GLUE's digest rows (digest bus, key 8 + word; 49 NvAir interactions
++/// per row instead of 55): rejected are a squeeze run starting at word 1, a dropped or an extra
++/// word send, and a changed word limb.
++#[test]
++fn nv_sample_word_source_tamper() {
++    use core::borrow::BorrowMut;
++    use super::glue::{GlueCols, GLUE_W};
++    use super::transcript2::{Samp2Cols, SAMP2_WIDTH};
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    nv_debug_mats(&vk, &proof, 16, |_, _| {});
++    let (kg, ks) = (2usize, 4usize);
++    let rows = |m: &p3_matrix::dense::RowMajorMatrix<F>, flag: usize| -> Vec<usize> {
++        (0..m.values.len() / m.width).filter(|&r| m.values[r * m.width + flag] == F::ONE).collect()
++    };
++    must_fail("squeeze run starts at word 1", || {
++        nv_debug_mats(&vk, &proof, 16, |mats, _| {
++            let m = &mut mats[0];
++            let w = m.width;
++            let r = rows(m, ks)
++                .into_iter()
++                .find(|&r| {
++                    let s: &mut Samp2Cols<F> = m.values[r * w + super::uair::N_COMMON..r * w + super::uair::N_COMMON + SAMP2_WIDTH].borrow_mut();
++                    s.is_first == F::ONE && s.w0 == F::ZERO && s.is_last == F::ZERO
++                })
++                .unwrap();
++            let s: &mut Samp2Cols<F> = m.values[r * w + super::uair::N_COMMON..r * w + super::uair::N_COMMON + SAMP2_WIDTH].borrow_mut();
++            s.w0 = F::ONE;
++            s.wi = F::ONE;
++        })
++    });
++    for (name, from) in [("dropped word send", F::ONE), ("extra word send", F::ZERO)] {
++        must_fail(name, || {
++            nv_debug_mats(&vk, &proof, 16, |mats, _| {
++                let m = &mut mats[0];
++                let w = m.width;
++                let r = rows(m, kg)
++                    .into_iter()
++                    .find(|&r| {
++                        let g: &mut GlueCols<F> = m.values[r * w + super::uair::N_COMMON..r * w + super::uair::N_COMMON + GLUE_W].borrow_mut();
++                        let drow = g.last == F::ONE && g.q[2] == F::ONE && !(g.q[0] == F::ONE && g.q[1] == F::ONE);
++                        drow && g.tr == F::ZERO && g.dx[0] == from
++                    })
++                    .unwrap();
++                let g: &mut GlueCols<F> = m.values[r * w + super::uair::N_COMMON..r * w + super::uair::N_COMMON + GLUE_W].borrow_mut();
++                g.dx[0] = F::ONE - from;
++            })
++        });
++    }
++}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
-index 0000000..243e9a0
+index 0000000..81bad57
 --- /dev/null
 +++ b/crates/recursion/src/nv/transcript2.rs
-@@ -0,0 +1,770 @@
+@@ -0,0 +1,769 @@
 +//! NV in-circuit SHA-384 transcript, word format v2 (see transcript/sha_transcript.rs for
 +//! the protocol).  Differences: the state and commit digests are 18 air2 limbs and are
 +//! framed as word units; commit events are 18 limb events; samples are extracted per
@@ -7242,7 +7357,8 @@ index 0000000..243e9a0
 +                TAG_SQUEEZE
 +            }
 +        };
-+        Job2 { id: self.id, node: false, tag, units }
++        let wread = self.reads.iter().fold(0u8, |m, r| m | (1 << (r.wi / 2)));
++        Job2 { id: self.id, node: false, tag, units, wread }
 +    }
 +}
 +
@@ -7599,23 +7715,12 @@ index 0000000..243e9a0
 +            l.last_word.into(),
 +            l.last_half.into(),
 +            l.last_acc.into(),
++            l.op_p.into(),
 +        ],
 +        g(l.rd.into()),
 +    );
-+    let wbus = PermutationCheckBus::new(t.word);
-+    for i in 0..6 {
-+        wbus.send(
-+            builder,
-+            [
-+                l.job.into(),
-+                c(i as u64),
-+                l.state_out[3 * i].into(),
-+                l.state_out[3 * i + 1].into(),
-+                l.state_out[3 * i + 2].into(),
-+            ],
-+            g(l.rdw[i].into()),
-+        );
-+    }
++    // the words read by the sample role come from GLUE's digest rows (digest bus, word keys
++    // 8 + w); this row pins the run (t.sample: job, start, count, last word / half / accept)
 +}
 +
 +// ---------------------------------------------------------------------------------------
@@ -7631,6 +7736,8 @@ index 0000000..243e9a0
 +    pub t_job: T,
 +    /// accepted samples in the run before this row
 +    pub mbefore: T,
++    /// first word of the run (0: squeeze / PoW-run block, 1: B_1 after a PoW); constant in a run
++    pub w0: T,
 +    pub is_first: T,
 +    pub is_last: T,
 +    /// big-endian bytes of the state word; candidate 0 = LE(b0..b3), 1 = LE(b4..b7)
@@ -7664,7 +7771,7 @@ index 0000000..243e9a0
 +    let c = |v: u64| AB::Expr::from_u64(v);
 +    let g = |x: AB::Expr| ks.clone() * x;
 +    // runs (per squeeze job): is_first .. is_last
-+    for x in [l.is_first, l.is_last, l.h1].into_iter().chain(l.g) {
++    for x in [l.is_first, l.is_last, l.h1, l.w0].into_iter().chain(l.g) {
 +        builder.assert_zero(g(x * (x - one.clone())));
 +    }
 +    builder.when_first_row().assert_zero(g(one.clone() - l.is_first));
@@ -7678,7 +7785,7 @@ index 0000000..243e9a0
 +    // only the last row may skip candidate 1
 +    builder.assert_zero(g((one.clone() - l.h1) * (one.clone() - l.is_last)));
 +    // a run starts at word 0 (squeeze blocks) or word 1 (B_1 after a PoW); the word bus pins it
-+    builder.assert_zero(g(l.is_first * l.wi * (l.wi - one.clone())));
++    builder.assert_zero(g(l.is_first * (l.wi - l.w0)));
 +    builder.assert_zero(g(l.is_first * l.mbefore));
 +    let macc = l.mbefore + l.acc[0] + l.h1 * l.acc[1];
 +    {
@@ -7687,6 +7794,7 @@ index 0000000..243e9a0
 +        tr.assert_zero(same.clone() * (n.job - l.job));
 +        tr.assert_zero(same.clone() * (n.wi - l.wi - one.clone()));
 +        tr.assert_zero(same.clone() * (n.t_job - l.t_job));
++        tr.assert_zero(same.clone() * (n.w0 - l.w0));
 +        tr.assert_zero(same * (n.mbefore - macc.clone()));
 +    }
 +    use super::hash::lookup_pair;
@@ -7698,7 +7806,12 @@ index 0000000..243e9a0
 +    let mut us: Vec<AB::Expr> = vec![];
 +    let bw: [AB::Expr; 8] = core::array::from_fn(|k| l.b[k].into());
 +    let [w0, w1, w2] = limbs_from_bytes(&bw, l.lo5.into(), l.lo2.into());
-+    PermutationCheckBus::new(t.word).receive(builder, [l.job.into(), l.wi.into(), w0, w1, w2], ks.clone());
++    // the word itself: GLUE's digest row of this job (key 8 + word index; limbs, 0, 0, 0)
++    PermutationCheckBus::new(hb.digest).receive(
++        builder,
++        [l.job.into(), l.wi + c(8), w0, w1, w2, AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO],
++        ks.clone(),
++    );
 +    let mut tidx = l.t_job + l.mbefore;
 +    for h in 0..2usize {
 +        let cb = [l.b[4 * h], l.b[4 * h + 1], l.b[4 * h + 2], l.b[4 * h + 3]];
@@ -7722,7 +7835,7 @@ index 0000000..243e9a0
 +    lookup_pair(builder, hb.byte, us[0].clone(), us[1].clone(), ks.clone());
 +    PermutationCheckBus::new(t.sample).send(
 +        builder,
-+        [l.job.into(), l.t_job.into(), macc, l.wi.into(), l.h1.into(), l.acc[0] + l.h1 * (l.acc[1] - l.acc[0])],
++        [l.job.into(), l.t_job.into(), macc, l.wi.into(), l.h1.into(), l.acc[0] + l.h1 * (l.acc[1] - l.acc[0]), l.w0.into()],
 +        g(l.is_last.into()),
 +    );
 +}
@@ -7822,6 +7935,7 @@ index 0000000..243e9a0
 +            s.wi = fu(wi);
 +            s.t_job = fu(t_job);
 +            s.mbefore = fu(mbefore);
++            s.w0 = fu(w0);
 +            s.is_first = F::from_bool(q == 0);
 +            s.is_last = F::from_bool(q + 1 == nrows);
 +            let bytes = sw[wi].to_be_bytes();
@@ -7865,10 +7979,10 @@ index 0000000..243e9a0
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..ad326fb
+index 0000000..daf220d
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,777 @@
+@@ -0,0 +1,794 @@
 +//! NV merged non-SHA AIR ("NvAir", U2): one AIR, row roles sharing a column pool.
 +//!
 +//! Common columns: role flags ka (ALU), kb (BIND), kg (GLUE), kh (transcript hash chain),
@@ -8086,6 +8200,17 @@ index 0000000..ad326fb
 +
 +/// Merge role interactions into shared slots per bus and push them.
 +fn merge_push<AB: InteractionBuilder>(builder: &mut AB, groups: Vec<(AB::Expr, Vec<Interaction<AB::Expr>>)>) {
++    if std::env::var("NV_INT_DUMP").is_ok() {
++        let mut t: BTreeMap<BusIndex, Vec<usize>> = BTreeMap::new();
++        for (g, (_, ints)) in groups.iter().enumerate() {
++            for it in ints {
++                t.entry(it.bus_index).or_insert(vec![0; groups.len()])[g] += 1;
++            }
++        }
++        for (bus, c) in t {
++            eprintln!("NV_INT bus={bus} per-role [alu,bind,appbind,glue,hash,samp]={c:?} max={}", c.iter().max().unwrap());
++        }
++    }
 +    let mut slots: BTreeMap<BusIndex, Vec<Vec<(AB::Expr, Interaction<AB::Expr>)>>> = BTreeMap::new();
 +    for (flag, ints) in groups {
 +        let mut idx: BTreeMap<BusIndex, usize> = BTreeMap::new();
@@ -8097,6 +8222,12 @@ index 0000000..ad326fb
 +            }
 +            v[*i].push((flag.clone(), it));
 +            *i += 1;
++        }
++    }
++    if std::env::var("NV_INT_DUMP").is_ok() {
++        for (bus, v) in &slots {
++            let per: Vec<usize> = v.iter().map(|s| s.len()).collect();
++            eprintln!("NV_INT bus={bus} slots={} (roles per slot {:?})", v.len(), per);
 +        }
 +    }
 +    for (bus, v) in slots {
@@ -8648,10 +8779,10 @@ index 0000000..ad326fb
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..e4b0a80
+index 0000000..01535cb
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1578 @@
+@@ -0,0 +1,1583 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -9084,6 +9215,11 @@ index 0000000..e4b0a80
 +    let mvk = &vk.inner;
 +    let params = &mvk.params;
 +    let l_skip = params.l_skip;
++    // O-2: the child's query counts are its vk's agreement table (canonical for its schedule);
++    // the table is part of the child vk (pre-hash), a constant of this program
++    if !params.whir.check_agreement(params.log_blowup, l_skip + params.n_stack) {
++        b.failures.push("child WHIR agreement table".into());
++    }
 +    let num_airs = mvk.per_air.len();
 +    for (avk, td) in mvk.per_air.iter().zip(&proof.trace_vdata) {
 +        assert!(avk.preprocessed_data.is_none() && avk.params.width.cached_mains.is_empty());
@@ -14248,10 +14384,10 @@ index 0000000..f589e8d
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..2b3a735
+index 0000000..e704e96
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
-@@ -0,0 +1,462 @@
+@@ -0,0 +1,476 @@
 +//! End-to-end: the ported verifier sub-circuit verifies real SHA-384/Ext12 child proofs.
 +//!
 +//!   cargo test --release -p openvm-recursion-circuit --lib e2e_ -- --nocapture
@@ -14491,7 +14627,12 @@ index 0000000..2b3a735
 +        e("QUERY_POW", 0),
 +        k,
 +    );
-+    let p = env_levers(prefix, p, bits);
++    let mut p = env_levers(prefix, p, bits);
++    // O-2 (user decision U-13): per-round first-order agreement table, bound into the vk; the
++    // PQ default (with m = 64).  `{prefix}_O2=0` keeps the plain list-decoding query counts.
++    if list_m > 0 && e("O2", 1) == 1 {
++        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32);
++    }
 +    p
 +}
 +
@@ -14531,6 +14672,15 @@ index 0000000..2b3a735
 +        p.whir.query_phase_pow_bits,
 +        p.logup.pow_bits
 +    );
++    if let Some(t) = &p.whir.agreement {
++        println!(
++            "{tag}_O2 target={} margin_milli={} m={} rounds(n,k,A,q)={:?}",
++            t.target_bits,
++            t.margin_milli,
++            t.m,
++            t.rounds.iter().map(|r| (r.n, r.kdim, r.agree, r.queries)).collect::<Vec<_>>()
++        );
++    }
 +}
 +
 +pub fn soundness(tag: &str, vk: &MultiStarkVerifyingKey<Sha384Config>) {
@@ -14597,7 +14747,7 @@ index 0000000..2b3a735
 +    let prove_levels = env_usize("E2E_PROVE_LEVELS", usize::MAX);
 +    let check = env_usize("E2E_DEBUG", 0) == 1;
 +    let child_params = params_from_env("CHILD", [8, 3, 100, 0]);
-+    let parent_params = params_from_env("PARENT", [20, 3, 268, 3]);
++    let parent_params = params_from_env("PARENT", [20, 3, 268, 64]);
 +    describe("CHILD", &child_params);
 +    describe("PARENT", &parent_params);
 +    let child_engine = Sha384CpuEngine::new(child_params);

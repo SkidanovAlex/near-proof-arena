@@ -38,9 +38,9 @@ L15 = math.log2(15)
 # DKT26 Thm 5.12, ListDecoding{m: 64}), 'O2' (O-1 + O-2: per-round first-order agreement
 # a_i = (a1(rho_i)/sqrt(rho_i) + 0.05) sqrt(rho_i), the rule certified in
 # lane/pq-mca-upgrade calc/dkt_certs.json / bound_mca.py; the table a_i is bound into the vk;
-# +48 B per later round reserved for a second OOD answer).  Env NV_MCA; default m3.
+# +48 B per later round reserved for a second OOD answer).  Env NV_MCA; default O2 (U-13).
 # O-1 / O-2 are pending verification (lane/pq-mca-upgrade @6841b5f56, MCA-UPGRADE.md).
-MCA = os.environ.get('NV_MCA', 'm3')
+MCA = os.environ.get('NV_MCA', 'O2')   # U-13: m = 64 + O-2 is the PQ default
 O2_MARGIN = 0.05
 
 
@@ -77,7 +77,7 @@ L_SKIP = 2
 COLS, ROT = 74 + 171 + 13 + 5, 36 + 144 + 11 + 2   # NvAir 74 columns (measured A2 at 268 bits)
 D = 21
 AIRS = 4
-NV_IPR, SHA_IPR, SHA_ROWS = 55, 14, 43
+NV_IPR, SHA_IPR, SHA_ROWS = 49, 14, 43   # NvAir 49 interactions/row (sampled words from GLUE)
 # measured program costs (A2 of nvp2-T102: child = the NV level itself)
 P_FIXED = 72_278          # preamble + app table (10,9k) + GKR + DAG + stacking
 APP_ROWS = 10_988          # level-1 table (data rows)

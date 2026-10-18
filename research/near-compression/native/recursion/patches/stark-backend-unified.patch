@@ -1,8 +1,16 @@
 diff --git a/crates/backend-tests/src/lib.rs b/crates/backend-tests/src/lib.rs
-index 08e139b..be03dbd 100644
+index 08e139b..8a74104 100644
 --- a/crates/backend-tests/src/lib.rs
 +++ b/crates/backend-tests/src/lib.rs
-@@ -157,6 +157,8 @@ pub fn proof_shape_verifier_rng_system_params<E: StarkEngine<SC = SC>>() -> eyre
+@@ -148,6 +148,7 @@ pub fn proof_shape_verifier_rng_system_params<E: StarkEngine<SC = SC>>() -> eyre
+             });
+         }
+         let whir = WhirConfig {
++            agreement: None,
+             k: k_whir,
+             rounds,
+             mu_pow_bits: 1,
+@@ -157,6 +158,8 @@ pub fn proof_shape_verifier_rng_system_params<E: StarkEngine<SC = SC>>() -> eyre
                  m: 3,
                  list_start_round: 1,
              },
@@ -11,7 +19,15 @@ index 08e139b..be03dbd 100644
          };
          let params = SystemParams {
              l_skip,
-@@ -1262,6 +1264,8 @@ pub fn whir_test_config(k_whir: usize) -> WhirConfig {
+@@ -1252,6 +1255,7 @@ pub fn whir_single_fib(
+ /// Build a [`WhirConfig`] with 2 rounds for multi-commitment WHIR tests.
+ pub fn whir_test_config(k_whir: usize) -> WhirConfig {
+     WhirConfig {
++        agreement: None,
+         k: k_whir,
+         rounds: vec![
+             WhirRoundConfig { num_queries: 6 },
+@@ -1262,6 +1266,8 @@ pub fn whir_test_config(k_whir: usize) -> WhirConfig {
          folding_pow_bits: 1,
          proximity: WhirProximityStrategy::UniqueDecoding, /* not relevant since `rounds` is
                                                             * manually set above */
@@ -441,10 +457,10 @@ index 711791d..45ddae4 100644
  }
  
 diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
-index c776e1c..a2ae649 100644
+index c776e1c..6efb201 100644
 --- a/crates/stark-backend/src/config.rs
 +++ b/crates/stark-backend/src/config.rs
-@@ -188,6 +188,79 @@ pub struct WhirConfig {
+@@ -188,6 +188,148 @@ pub struct WhirConfig {
      /// of queries in the `rounds` field. However we store it in `WhirConfig` for security analysis
      /// purposes.
      pub proximity: WhirProximityStrategy,
@@ -462,10 +478,79 @@ index c776e1c..a2ae649 100644
 +    /// `c > 1` the WHIR prover and verifier observe `c` into the transcript instead.
 +    #[serde(skip, default = "default_domain_odd_factor")]
 +    pub domain_odd_factor: usize,
++    /// O-2 (user decision U-13): per-round first-order agreement table (DKT26 beyond-Johnson
++    /// line MCA). When present, every round's query count is derived from its integer agreement
++    /// threshold `A_i` on the round code `(n_i, k_i)`; the table is serialized into the verifying
++    /// key (so it is bound into the vk pre-hash) and the verifier re-derives and checks it.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub agreement: Option<AgreementTable>,
 +}
 +
 +fn default_domain_odd_factor() -> usize {
 +    1
++}
++
++/// O-2 agreement table: the rule `a_i = min(a1(rho_i)/sqrt(rho_i) + margin, 1 + 1/(2m))` times
++/// `sqrt((k_i - 1)/n_i)`, `A_i = ceil(a_i n_i)` (lane/pq-mca-upgrade calc/bound_mca.py, regime 'F';
++/// certificates calc/dkt_certs.json, Lean check lane/pq-dkt-verify), and per round
++/// `q_i = ceil(target_bits / -log2(A_i / n_i))`.
++#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
++pub struct AgreementTable {
++    /// query-phase security target (bits, after query PoW)
++    pub target_bits: u32,
++    /// first-order margin over a1(rho)/sqrt(rho), in thousandths (0.05 -> 50)
++    pub margin_milli: u32,
++    /// Johnson-regime multiplicity m capping the ratio at 1 + 1/(2m)
++    pub m: u32,
++    /// per round: (code length n_i, dimension k_i, agreement threshold A_i, queries q_i)
++    pub rounds: Vec<AgreementRound>,
++}
++
++#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
++pub struct AgreementRound {
++    pub n: u64,
++    pub kdim: u64,
++    pub agree: u64,
++    pub queries: u32,
++}
++
++/// DKT26 first-order agreement a1(rho) (size_mca.py / bound_mca.py).
++pub fn dkt_a1(r: f64) -> f64 {
++    let rc = 11.0 - 3.0 * 13f64.sqrt();
++    if r < rc {
++        let s = (r / 2.0).sqrt();
++        let (mut lo, mut hi) = (0.0f64, 1.0f64);
++        for _ in 0..200 {
++            let mid = (lo + hi) / 2.0;
++            if mid * mid * (mid + 3.0) < s {
++                lo = mid;
++            } else {
++                hi = mid;
++            }
++        }
++        s * (1.0 + lo)
++    } else {
++        (3.0 * r + 2.0 * (r * (5.0 - r) * (2.0 - r)).sqrt()) / (8.0 - r)
++    }
++}
++
++impl AgreementTable {
++    /// The canonical table for a WHIR schedule (round codes `(n_i, k_i)`).
++    pub fn canonical(codes: &[(u64, u64)], target_bits: u32, margin_milli: u32, m: u32) -> Self {
++        let cap = 1.0 + 1.0 / (2.0 * m.max(1) as f64);
++        let rounds = codes
++            .iter()
++            .map(|&(n, kdim)| {
++                let rho = kdim as f64 / n as f64;
++                let ratio = (dkt_a1(rho) / rho.sqrt() + margin_milli as f64 / 1000.0).min(cap);
++                let agree = (ratio * ((kdim - 1) as f64 / n as f64).sqrt() * n as f64).ceil() as u64;
++                let per_query = -((agree as f64) / (n as f64)).log2();
++                let queries = ((target_bits as f64) / per_query).ceil() as u32;
++                AgreementRound { n, kdim, agree, queries }
++            })
++            .collect();
++        Self { target_bits, margin_milli, m, rounds }
++    }
 +}
 +
 +/// Proof-size levers layered on upstream WHIR. `WhirLevers::default()` is exactly upstream.
@@ -524,7 +609,7 @@ index c776e1c..a2ae649 100644
  }
  
  #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-@@ -252,7 +325,12 @@ impl ProximityRegime {
+@@ -252,7 +394,12 @@ impl ProximityRegime {
      /// - `ListDecoding { m }`: finite-multiplicity Guruswami-Sudan threshold, `sqrt(ρ) (1 +
      ///   1/(2m))`.
      pub fn max_agreement(&self, log_inv_rate: usize) -> f64 {
@@ -538,7 +623,7 @@ index c776e1c..a2ae649 100644
          let max_agreement = match *self {
              ProximityRegime::UniqueDecoding => (1.0 + rho) / 2.0,
              ProximityRegime::ListDecoding { m } => {
-@@ -289,25 +367,90 @@ impl WhirConfig {
+@@ -289,25 +436,90 @@ impl WhirConfig {
          whir_params: WhirParams,
          security_bits: usize,
      ) -> Self {
@@ -639,13 +724,50 @@ index c776e1c..a2ae649 100644
              round_parameters.push(WhirRoundConfig { num_queries });
  
              log_inv_rate = next_rate;
-@@ -320,12 +463,36 @@ impl WhirConfig {
+@@ -320,12 +532,73 @@ impl WhirConfig {
              query_phase_pow_bits,
              folding_pow_bits: whir_params.folding_pow_bits,
              proximity,
 +            domain_odd_factor,
 +            levers,
++            agreement: None,
+         }
+     }
+ 
++    /// Round codes `(n_i, k_i)` of this schedule: `n_i = c 2^(log_h + log_blowup - shrink i)`,
++    /// `k_i = 2^(log_h - k_0 - .. - k_{i-1})`.
++    pub fn round_codes(&self, log_blowup: usize, log_stacked_height: usize) -> Vec<(u64, u64)> {
++        let mut mv = log_stacked_height;
++        (0..self.rounds.len())
++            .map(|i| {
++                let n = (self.domain_odd_factor as u64) << (log_stacked_height + log_blowup - self.domain_shrink() * i);
++                let code = (n, 1u64 << mv);
++                mv -= self.k_round(i);
++                code
++            })
++            .collect()
++    }
++
++    /// O-2 (U-13): replace every round's query count by the one derived from the canonical
++    /// first-order agreement table, and bind the table into the config (vk).
++    pub fn with_first_order(mut self, log_blowup: usize, log_stacked_height: usize, security_bits: usize, margin_milli: u32, m: u32) -> Self {
++        let target = security_bits.saturating_sub(self.query_phase_pow_bits) as u32;
++        let t = AgreementTable::canonical(&self.round_codes(log_blowup, log_stacked_height), target, margin_milli, m);
++        for (r, a) in self.rounds.iter_mut().zip(&t.rounds) {
++            r.num_queries = a.queries as usize;
 +        }
++        self.agreement = Some(t);
++        self
++    }
++
++    /// Verifier check of the O-2 table: canonical for this schedule and its own target, and the
++    /// round query counts are the table's.
++    pub fn check_agreement(&self, log_blowup: usize, log_stacked_height: usize) -> bool {
++        let Some(t) = &self.agreement else { return true };
++        let canon = AgreementTable::canonical(&self.round_codes(log_blowup, log_stacked_height), t.target_bits, t.margin_milli, t.m);
++        canon == *t
++            && t.rounds.len() == self.rounds.len()
++            && self.rounds.iter().zip(&t.rounds).all(|(r, a)| r.num_queries == a.queries as usize)
 +    }
 +
 +    /// Folding factor of WHIR round `round`.
@@ -655,9 +777,9 @@ index c776e1c..a2ae649 100644
 +            self.levers.k_first
 +        } else {
 +            self.k
-         }
-     }
- 
++        }
++    }
++
 +    /// Folding factor of the first round = log2 of rows per leaf of the stacked commitments.
 +    #[inline]
 +    pub fn k_first(&self) -> usize {
@@ -677,7 +799,7 @@ index c776e1c..a2ae649 100644
      }
  
      pub fn num_whir_rounds(&self) -> usize {
-@@ -334,7 +501,7 @@ impl WhirConfig {
+@@ -334,7 +607,7 @@ impl WhirConfig {
  
      #[inline]
      pub fn num_sumcheck_rounds(&self) -> usize {
@@ -2888,7 +3010,7 @@ index 6bdbaa8..d693db1 100644
  }
  
 diff --git a/crates/stark-backend/src/soundness/calculator.rs b/crates/stark-backend/src/soundness/calculator.rs
-index 7ba58fb..2de845d 100644
+index 7ba58fb..dc4492c 100644
 --- a/crates/stark-backend/src/soundness/calculator.rs
 +++ b/crates/stark-backend/src/soundness/calculator.rs
 @@ -100,7 +100,8 @@ impl SoundnessCalculator {
@@ -3072,7 +3194,15 @@ index 7ba58fb..2de845d 100644
      }
  }
  
-@@ -1011,6 +1097,8 @@ mod tests {
+@@ -1002,6 +1088,7 @@ mod tests {
+             w_stack: 64,
+             log_blowup: 1,
+             whir: WhirConfig {
++                agreement: None,
+                 k: 4,
+                 rounds: vec![
+                     WhirRoundConfig { num_queries: 36 },
+@@ -1011,6 +1098,8 @@ mod tests {
                  query_phase_pow_bits: 16,
                  folding_pow_bits: 10,
                  proximity: WhirProximityStrategy::UniqueDecoding,
@@ -3659,10 +3789,32 @@ index be62b0f..d85a15e 100644
      transcript: &mut TS,
      claims: &GkrLayerClaims<SC>,
 diff --git a/crates/stark-backend/src/verifier/mod.rs b/crates/stark-backend/src/verifier/mod.rs
-index 4ee438b..2bc2f49 100644
+index 4ee438b..533e585 100644
 --- a/crates/stark-backend/src/verifier/mod.rs
 +++ b/crates/stark-backend/src/verifier/mod.rs
-@@ -146,6 +146,10 @@ where
+@@ -25,6 +25,11 @@ pub enum VerifierError<EF: core::fmt::Debug + core::fmt::Display + PartialEq + E
+     #[error("Trace heights are too large")]
+     TraceHeightsTooLarge,
+ 
++    /// O-2: the WHIR agreement table is not the canonical one for the schedule, or the round
++    /// query counts differ from it.
++    #[error("WHIR agreement table mismatch")]
++    AgreementTableMismatch,
++
+     #[error("Preprocessed trace height does not match verifier trace data")]
+     PreprocessedTraceHeightMismatch,
+ 
+@@ -85,6 +90,9 @@ where
+         trace_height_constraints,
+     } = &mvk;
+     let l_skip = params.l_skip;
++    if !params.whir.check_agreement(params.log_blowup, l_skip + params.n_stack) {
++        return Err(VerifierError::AgreementTableMismatch);
++    }
+     // Total number of AIRs is in vkey, committed to in vk_pre_hash
+     let num_airs = per_air.len();
+     // Number of present traces. This is implicitly hashed via the
+@@ -146,6 +154,10 @@ where
              } else {
                  transcript.observe(SC::F::from_usize(trace_vdata.log_height));
              }
@@ -3673,7 +3825,7 @@ index 4ee438b..2bc2f49 100644
              debug_assert_eq!(
                  avk.params.width.cached_mains.len(),
                  trace_vdata.cached_commitments.len()
-@@ -176,15 +180,17 @@ where
+@@ -176,15 +188,17 @@ where
          &omega_skip_pows,
      )?;
  
@@ -3697,7 +3849,7 @@ index 4ee438b..2bc2f49 100644
          }
          let cached_len = trace_vdata[air_id]
              .as_ref()
-@@ -192,7 +198,8 @@ where
+@@ -192,7 +206,8 @@ where
              .cached_commitments
              .len();
          for _ in 0..cached_len {
