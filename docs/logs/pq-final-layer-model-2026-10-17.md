@@ -580,3 +580,16 @@ model 308.5 → 298.9 KB.
 * Harness bug D1 (allowlist masking unnamed cols) fixed; revealed T* ctr/nwit undetected but
   benign. Open: GKR/batch/stacking on differential tests only; lo6 pinned by consumers only;
   carry bounds k=3 only. Re-audit needed if "4 program rows per binding row" lands.
+
+## 2026-10-18 — cert-gated O-2 (59831ffb1) and SHA AIR v4 (lane/pq-sha384-air3 @ 34a427692)
+
+* O-2 table now certificate-gated (fallback Johnson m=64 per round, rule recorded per round
+  in vk). Backed figure with no certs: 313,807 B (311,745 B with program cut).
+* SHA AIR v4: degree 9 (deg 8 costs +8.7 KB), 2 words/row, 83 cols / 73 rotated (v2.1 171/144),
+  128 rows/compression, 17 interactions/row. KAT 1,008 compressions, 6,321/6,321 mutations,
+  19 forgeries + padding attacks rejected; NV suite 42/42 both modes. FAITHFUL-v4.md unaudited.
+* Bytes vs old v2.1 baseline (L=25, 55 int/row): m=3 315,811 / m=64 304,895 / O-2 292,541 /
+  O-2+cut 288,117 (≈ −11.2 KB, not −17.5). Latency tail 2.67 → 2.32 s; CPU 1,024 compressions
+  465 s vs 892 s.
+* Next: merge v4 into NV with L=24 change, combined bytes (backed O-1 case likely ≈ 300 KB —
+  borderline); audit FAITHFUL-v4.
