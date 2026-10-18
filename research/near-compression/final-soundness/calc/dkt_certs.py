@@ -32,17 +32,32 @@ OUT = os.path.join(HERE, 'dkt_certs.json')
 E_MAX = BM.LOG_F - 275          # log2 of the largest admissible exceptional count
 L_MAX = 44.0
 DKT_COMMIT = '60b7257'
+GRID_MARGIN = 0.05
+
+
+def a1(r):
+    """DKT26 eq. (31): first-order agreement threshold."""
+    rc = 11 - 3 * math.sqrt(13)
+    if r < rc:
+        s, lo, hi = math.sqrt(r / 2), 0.0, 1.0
+        for _ in range(200):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if mid * mid * (mid + 3) < s else (lo, mid)
+        return s * (1 + lo)
+    return (3 * r + 2 * math.sqrt(r * (5 - r) * (2 - r))) / (8 - r)
 
 # Per-round plans.  ('F', ratio) = first order at A = ceil(ratio * sqrt((k-1)/n) * n);
 # ('J', M) = Johnson radius with backend ListDecoding(M) (DKT26 Thm 5.12, no certificate needed).
 # Ratios are the largest that reach the next-lower query count (MCA-UPGRADE.md section 3).
+# inner r2 at 0.750 (q = 30) was tried: no certificate within the search box for its two
+# largest codes, so 0.895 (q = 31) is used.
 PLANS = {
-    'final': dict(batching='tensor', plan=[('F', 0.835), ('F', 0.818), ('F', 0.880), ('F', 0.768)]),
-    'inner NV': dict(batching='tensor', plan=[('F', 0.817), ('F', 0.811), ('F', 0.895), ('F', 0.768)]),
+    'final': dict(batching='first-curve', plan=[('F', 0.835), ('F', 0.818), ('F', 0.879), ('F', 0.768)]),
+    'inner NV': dict(batching='first-curve', plan=[('F', 0.817), ('F', 0.809), ('F', 0.895), ('F', 0.768)]),
 }
 FALLBACK = {  # used when a stretch ratio cannot be certified
     'final': [None, None, None, ('J', 64)],
-    'inner NV': [None, None, None, ('J', 64)],
+    'inner NV': [None, None, ('F', 0.895), ('J', 64)],
 }
 
 
@@ -53,7 +68,7 @@ def codes_for(shape, plan):
             continue
         A = BM.agreement('F', r['n'], r['kdim'], ratio=par)
         a = Decimal(A) / r['n']
-        for sub in range(1, r['k'] + 1):
+        for sub in range(1, r['k'] + 2):      # C^(i,0..k_i): lists for all, MCA for the fold codes
             n_s, k_s = r['n'] // 2 ** (sub - 1), r['kdim'] // 2 ** (sub - 1)
             out.append((n_s, k_s, BM.dceil(a * n_s)))
     return out
@@ -109,6 +124,26 @@ def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
     path = sys.argv[1]
+    if len(sys.argv) > 2 and sys.argv[2] == '--grid':
+        # size-model rule: a(rho) = (a1(rho)/sqrt(rho) + GRID_MARGIN) sqrt((k-1)/n), checked at n = 15*2^27
+        # (the largest final-layer domain the models allow) for k = 2^j, and at the two first fold codes.
+        data = json.load(open(OUT))
+        jobs = []
+        for j in range(8, 25):
+            n, k = 15 * 2 ** 27, 2 ** j
+            ratio = a1(k / n) / math.sqrt(k / n) + GRID_MARGIN
+            A = BM.dceil(Decimal(ratio) * (Decimal(k - 1) / n).sqrt() * n)
+            for s in range(3):
+                jobs.append((n >> s, k >> s, BM.dceil(Decimal(A) / n * (n >> s)), 1))
+        grid = {}
+        with Pool(int(os.environ.get('JOBS', '8')), initializer=_init, initargs=(path,)) as pool:
+            for key, res, dt in pool.imap_unordered(search, jobs):
+                ks = ','.join(map(str, key))
+                grid[ks] = None if res is None else dict(E=res['E'], list=res['list'], m=res['m'], B_d=res['B_d'], B_jet=res['B_jet'])
+                print(ks, 'FAIL' if res is None else f"E/|F|=2^{math.log2(F(res['E'])) - BM.LOG_F:.2f} list=2^{math.log2(F(res['list'])):.2f}", f'[{dt:.0f}s]', flush=True)
+        data['_grid'] = dict(margin=GRID_MARGIN, n=15 * 2 ** 27, certs=grid)
+        json.dump(data, open(OUT, 'w'), indent=1, sort_keys=True)
+        return
     if len(sys.argv) > 2 and sys.argv[2] == '--check':
         _init(path)
         data = json.load(open(OUT))
@@ -130,6 +165,10 @@ def main():
             key = f'{c[0]},{c[1]},{c[2]},1'
             if key not in data:
                 jobs.append(c + (1,))
+        if pl['batching'] == 'first-curve' and pl['plan'][0][0] == 'F':   # mu batching: powers, degree W-1
+            c0 = codes_for(shapes[nm], pl['plan'][:1])[0]
+            if f"{c0[0]},{c0[1]},{c0[2]},{shapes[nm]['W'] - 1}" not in data:
+                jobs.append(c0 + (shapes[nm]['W'] - 1,))
     jobs = sorted(set(jobs))
     print(f'{len(jobs)} codes to certify', flush=True)
     with Pool(int(os.environ.get('JOBS', '8')), initializer=_init, initargs=(path,)) as pool:
@@ -151,6 +190,14 @@ def main():
             ok = all(f'{c[0]},{c[1]},{c[2]},1' in data for c in sub)
             plan.append(list(step) if ok else list(FALLBACK[nm][i] or ('J', 64)))
         plans[nm] = dict(batching=pl['batching'], plan=plan)
+    need = set()
+    for nm, pl in plans.items():
+        for c in codes_for(shapes[nm], [tuple(x) for x in pl['plan']]):
+            need.add(f'{c[0]},{c[1]},{c[2]},1')
+        if pl['batching'] == 'first-curve' and pl['plan'][0][0] == 'F':
+            c0 = codes_for(shapes[nm], [tuple(pl['plan'][0])])[0]
+            need.add(f"{c0[0]},{c0[1]},{c0[2]},{shapes[nm]['W'] - 1}")
+    data = {k: v for k, v in data.items() if k in need or k == '_grid'}     # drop certificates no plan uses
     data['_plans'] = plans
     data['_meta'] = dict(engine=f'rs-beyond-johnson@{DKT_COMMIT} scripts/tune_first_order_mca.py',
                          taylor_model='tight-2D-minus-3-v3', support='derivative-weighted',

@@ -1,0 +1,21 @@
+model sources: lane/pq-recursion-sha384@9be29d65b, lane/pq-native-hermetic@c9dab127c
+O-1+O-2 rule: a = (a1(rho)/sqrt(rho) + 0.05) sqrt(rho); +48 B per later round reserved for a 2nd OOD answer
+
+extrapolate_nv (headline, padding-free)          final target 226  bcgm :   298,881 B  (     +0 B)  whir 214,612  final q   pen q 102
+extrapolate_nv (headline, padding-free)          final target 226  O1   :   292,458 B  ( -6,423 B)  whir 208,333  final q   pen q 98
+extrapolate_nv (headline, padding-free)          final target 226  O12  :   286,458 B  (-12,423 B)  whir 198,061  final q   pen q 94
+extrapolate_nv (headline, padding-free)          final target 236  bcgm :   305,906 B  (     +0 B)  whir 221,637  final q   pen q 102
+extrapolate_nv (headline, padding-free)          final target 236  O1   :   297,807 B  ( -8,099 B)  whir 213,682  final q   pen q 98
+extrapolate_nv (headline, padding-free)          final target 236  O12  :   293,698 B  (-12,208 B)  whir 205,301  final q   pen q 94
+extrapolate_nv2 (phase-2 laws)                   final target 226  bcgm :   313,359 B  (     +0 B)  whir 232,110  final q [44, 40, 30, 24]  pen q [50, 46, 33, 26]
+extrapolate_nv2 (phase-2 laws)                   final target 226  O1   :   304,767 B  ( -8,592 B)  whir 223,614  final q [42, 39, 29, 23]  pen q [48, 44, 32, 25]
+extrapolate_nv2 (phase-2 laws)                   final target 226  O12  :   294,491 B  (-18,868 B)  whir 213,338  final q [40, 37, 28, 22]  pen q [46, 41, 31, 25]
+extrapolate_nv2 (phase-2 laws)                   final target 236  bcgm :   323,955 B  (     +0 B)  whir 242,562  final q [46, 42, 31, 25]  pen q [56, 50, 36, 28]
+extrapolate_nv2 (phase-2 laws)                   final target 236  O1   :   313,759 B  (-10,196 B)  whir 232,462  final q [44, 40, 30, 24]  pen q [54, 48, 34, 27]
+extrapolate_nv2 (phase-2 laws)                   final target 236  O12  :   300,733 B  (-23,222 B)  whir 219,580  final q [41, 38, 29, 23]  pen q [46, 41, 31, 25]
+ext2 (gate-5 laws, c_sha 7,524, 262 cols, Gruen) final target 226  bcgm :   271,432 B  (     +0 B)  whir 200,335  final q [37, 34, 26]  pen q 
+ext2 (gate-5 laws, c_sha 7,524, 262 cols, Gruen) final target 226  O1   :   266,528 B  ( -4,904 B)  whir 195,642  final q [36, 33, 26]  pen q 
+ext2 (gate-5 laws, c_sha 7,524, 262 cols, Gruen) final target 226  O12  :   256,813 B  (-14,619 B)  whir 185,941  final q [34, 31, 26, 22]  pen q 
+ext2 (gate-5 laws, c_sha 7,524, 262 cols, Gruen) final target 236  bcgm :   279,720 B  (     +0 B)  whir 208,623  final q [38, 36, 28]  pen q 
+ext2 (gate-5 laws, c_sha 7,524, 262 cols, Gruen) final target 236  O1   :   271,659 B  ( -8,061 B)  whir 200,773  final q [37, 34, 27]  pen q 
+ext2 (gate-5 laws, c_sha 7,524, 262 cols, Gruen) final target 236  O12  :   263,648 B  (-16,072 B)  whir 192,824  final q [35, 33, 26]  pen q 

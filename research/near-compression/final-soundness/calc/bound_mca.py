@@ -188,15 +188,17 @@ def layer(s, plan, batching='bchks46', verbose=False):
             A = agreement('F', r['n'], r['kdim'], ratio=par)
         r.update(reg=reg, par=par, A=A, a=Decimal(A) / r['n'], log_a=LOG2(A / r['n']))
         r['q'] = math.ceil(QBITS / -r['log_a'])
-        # fold sub-round codes: C^(i,s) on L_i^(2^s); conservatively length n/2^(s-1) (as bound.py)
+        # codes C^(i,s) = RS[L_i^(2^s), m_i - s], s = 0..k_i (Pus26 Thm 5.3 needs lists for all of
+        # them and MCA for s >= 1).  The fold move s is charged the MCA of C^(i,s-1) (length
+        # n/2^(s-1), conservative as in bound.py) and, for safety, the max over all codes.
         terms = []
-        for sub in range(1, r['k'] + 1):
+        for sub in range(1, r['k'] + 2):
             n_s, k_s = r['n'] // 2 ** (sub - 1), r['kdim'] // 2 ** (sub - 1)
             t = code_terms(reg, n_s, k_s, r['a'])
             if t is None:
                 raise SystemExit(f'missing first-order certificate for n={n_s} k={k_s} a={float(r["a"]):.6g}: run dkt_certs.py')
             terms.append(t)
-        r['fold_err'] = [t[0] for t in terms]
+        r['fold_err'] = [max(t[0] for t in terms)] * r['k']
         r['list'] = max(float(t[1]) for t in terms)
         r['log_list'] = LOG2(r['list'])
     # OOD samples

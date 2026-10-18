@@ -1,0 +1,878 @@
+{
+ "1006632960,131072,9396001,1": {
+  "B_d": 24,
+  "B_jet": 817,
+  "E": "13583614803855699344200226215439488788347707/12069688174992694170",
+  "H": 11405,
+  "char_gt": 131071,
+  "ell": 1,
+  "list": "5041982173844786513/4632465",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 12,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "1006632960,16384,3569668,1": {
+  "B_d": 9,
+  "B_jet": 1241,
+  "E": "15497221497898754901560931129327883837887/166209808349421070",
+  "H": 15311,
+  "char_gt": 16383,
+  "ell": 1,
+  "list": "713420521392634681/3553285",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 6,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "1006632960,2048,1102577,1": {
+  "B_d": 48,
+  "B_jet": 13566,
+  "E": "143135742263604442044912232923357783195551/104719176254385",
+  "H": 25109834,
+  "char_gt": 2047,
+  "ell": 1,
+  "list": "532568674930969638/110053",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 24,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "1006632960,262144,13564120,1": {
+  "B_d": 15,
+  "B_jet": 491,
+  "E": "4555221586652627143426066714184805751615139/4633222835179904966",
+  "H": 14008,
+  "char_gt": 262143,
+  "ell": 1,
+  "list": "7519685498731586443/13301977",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 10,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "125829120,256,137772,1": {
+  "B_d": 48,
+  "B_jet": 13561,
+  "E": "1050021377836384913629528402830534187/831903682498",
+  "H": 1491340,
+  "char_gt": 255,
+  "ell": 1,
+  "list": "27491287785492949/45839",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 24,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "125829120,4096,642511,1": {
+  "B_d": 6,
+  "B_jet": 894,
+  "E": "3161260110724623169861093012392986271/2570722210896568",
+  "H": 14346,
+  "char_gt": 4095,
+  "ell": 1,
+  "list": "659422546244673/39901",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 6,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "125829120,65536,2323156,1": {
+  "B_d": 32,
+  "B_jet": 538,
+  "E": "386766201533927434574599421239282969729/4427272350599939",
+  "H": 15933,
+  "char_gt": 65535,
+  "ell": 1,
+  "list": "545981679991241990/2257621",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 16,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "2013265920,262144,18792001,1": {
+  "B_d": 24,
+  "B_jet": 817,
+  "E": "72453171981223929059729112896157220774629293/16091491685559143450",
+  "H": 11407,
+  "char_gt": 262143,
+  "ell": 1,
+  "list": "20168119453537434049/9264929",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 12,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "2013265920,32768,7139337,1": {
+  "B_d": 9,
+  "B_jet": 1241,
+  "E": "31338571756251172562092204246994731142697/83942080734377320",
+  "H": 15325,
+  "char_gt": 32767,
+  "ell": 1,
+  "list": "2853895947525264817/7106570",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 6,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "2013265920,4096,2205154,1": {
+  "B_d": 52,
+  "B_jet": 14697,
+  "E": "712048548159811643732434522015256492591516/3498476984757713",
+  "H": 781226,
+  "char_gt": 4095,
+  "ell": 1,
+  "list": "25027345455308688833/2201059",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 26,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "2013265920,524288,27128239,1": {
+  "B_d": 15,
+  "B_jet": 491,
+  "E": "109333769885588332101331565054796222905564063/27797353290180397404",
+  "H": 14010,
+  "char_gt": 524287,
+  "ell": 1,
+  "list": "30078883567834459421/26603952",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 10,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "2013265920,524288,27128239,140": {
+  "B_d": 15,
+  "B_jet": 491,
+  "E": "5831174522270482423190367055432033981401403283/10589403776686264512",
+  "H": 1961426,
+  "char_gt": 524287,
+  "ell": 140,
+  "list": "30078883567834459421/26603952",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 10,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-curve",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "251658240,131072,4646312,1": {
+  "B_d": 32,
+  "B_jet": 538,
+  "E": "74286294809580857765980909272118594819674/212435354608685669",
+  "H": 15944,
+  "char_gt": 131071,
+  "ell": 1,
+  "list": "2183968020580367742/4515241",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 16,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "251658240,262144,6635860,1": {
+  "B_d": 24,
+  "B_jet": 425,
+  "E": "2049703067429786432867136176867492973607/4070645460863135",
+  "H": 19542,
+  "char_gt": 262143,
+  "ell": 1,
+  "list": "2583267298041672631/6373717",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 16,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "251658240,32768,2349001,1": {
+  "B_d": 24,
+  "B_jet": 817,
+  "E": "150662226846667654498366129855752350089/2143987551593601",
+  "H": 11395,
+  "char_gt": 32767,
+  "ell": 1,
+  "list": "315106002287922173/1158117",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 12,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "251658240,4096,892418,1": {
+  "B_d": 9,
+  "B_jet": 1241,
+  "E": "90484196298673121704821705949306544289/15625707630436262",
+  "H": 15224,
+  "char_gt": 4095,
+  "ell": 1,
+  "list": "44568733028751113/888323",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 6,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "251658240,512,275544,1": {
+  "B_d": 48,
+  "B_jet": 13561,
+  "E": "479652004057778135189244089051235518456/30200337130623",
+  "H": 4677393,
+  "char_gt": 511,
+  "ell": 1,
+  "list": "331516634866687283/275033",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 24,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "251658240,512,275645,1": {
+  "B_d": 48,
+  "B_jet": 13566,
+  "E": "44760204046692495224453783972455479803/5051542367499",
+  "H": 2602699,
+  "char_gt": 511,
+  "ell": 1,
+  "list": "165819543372518922/137567",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 24,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "251658240,8192,1285022,1": {
+  "B_d": 6,
+  "B_jet": 894,
+  "E": "3170493266568965383879768635341349763/641136174048462",
+  "H": 14417,
+  "char_gt": 8191,
+  "ell": 1,
+  "list": "42215580572787882/1276831",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 6,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "31457280,1024,160628,1": {
+  "B_d": 6,
+  "B_jet": 894,
+  "E": "133766207927723259327811572731/1796705406",
+  "H": 13929,
+  "char_gt": 1023,
+  "ell": 1,
+  "list": "658247144989998/159605",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 6,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "31457280,16384,580789,1": {
+  "B_d": 32,
+  "B_jet": 538,
+  "E": "904512171459292936580144352803828855/166352925386747",
+  "H": 15869,
+  "char_gt": 16383,
+  "ell": 1,
+  "list": "17059991533336150/282203",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 16,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "31457280,64,34443,1": {
+  "B_d": 44,
+  "B_jet": 12431,
+  "E": "129793371763977961817409022522751/5896678060",
+  "H": 520167,
+  "char_gt": 63,
+  "ell": 1,
+  "list": "350138768734838/2865",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 22,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "503316480,1024,551088,1": {
+  "B_d": 52,
+  "B_jet": 14692,
+  "E": "492438114026234012637459078493786847603/38883138286965",
+  "H": 780289,
+  "char_gt": 1023,
+  "ell": 1,
+  "list": "520273332316383452/183355",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 26,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "503316480,1024,551289,1": {
+  "B_d": 48,
+  "B_jet": 13566,
+  "E": "137245638849778209072740937398410079461/1558614780061",
+  "H": 6462556,
+  "char_gt": 1023,
+  "ell": 1,
+  "list": "221633317868933826/91711",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 24,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "503316480,16384,2570043,1": {
+  "B_d": 6,
+  "B_jet": 894,
+  "E": "10035469057223952303202018764989248437/505947625538050",
+  "H": 14454,
+  "char_gt": 16383,
+  "ell": 1,
+  "list": "1563772199234066/23645",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 6,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "503316480,262144,9292623,1": {
+  "B_d": 32,
+  "B_jet": 538,
+  "E": "317017058748325125627730817409943859823361/226554420109877272",
+  "H": 15950,
+  "char_gt": 262143,
+  "ell": 1,
+  "list": "72799622362932015/75254",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 16,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "503316480,524288,13271719,1": {
+  "B_d": 24,
+  "B_jet": 425,
+  "E": "2468285040695587389706404605498392000440169/1225040225741198376",
+  "H": 19549,
+  "char_gt": 524287,
+  "ell": 1,
+  "list": "2583279470552306447/3186858",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 16,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "503316480,524288,13271719,140": {
+  "B_d": 24,
+  "B_jet": 425,
+  "E": "69113631815524061060484110862890912322945641/245004099727528908",
+  "H": 2736971,
+  "char_gt": 524287,
+  "ell": 140,
+  "list": "2583279470552306447/3186858",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 16,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-curve",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "503316480,65536,4698001,1": {
+  "B_d": 24,
+  "B_jet": 817,
+  "E": "84884184865904065654027623164780930814811/301782599943451378",
+  "H": 11402,
+  "char_gt": 65535,
+  "ell": 1,
+  "list": "1260471698691389209/2316233",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 12,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "503316480,8192,1784834,1": {
+  "B_d": 9,
+  "B_jet": 1241,
+  "E": "4797232956927007092641044191662335333/206236980475966",
+  "H": 15282,
+  "char_gt": 8191,
+  "ell": 1,
+  "list": "16211672509435323/161513",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 6,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "62914560,128,68886,1": {
+  "B_d": 48,
+  "B_jet": 13561,
+  "E": "505845805708106456519882755081182996/3816772966129",
+  "H": 633495,
+  "char_gt": 127,
+  "ell": 1,
+  "list": "20415818157089189/68759",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 24,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "62914560,2048,321256,1": {
+  "B_d": 6,
+  "B_jet": 894,
+  "E": "94067649215554488963594343177409/309299369401",
+  "H": 14203,
+  "char_gt": 2047,
+  "ell": 1,
+  "list": "878707661109154/106403",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 6,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "62914560,32768,1161578,1": {
+  "B_d": 32,
+  "B_jet": 538,
+  "E": "579732776973775853164497735225355174090/26580837100316721",
+  "H": 15912,
+  "char_gt": 32767,
+  "ell": 1,
+  "list": "136490257420836042/1128811",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 16,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "_grid": {
+  "certs": {
+   "1006632960,1024,779526,1": {
+    "B_d": 48,
+    "B_jet": 19183,
+    "E": "8734047087813353020015411939705107874837/53294360039965",
+    "list": "1254264079220810225/259501",
+    "m": 24
+   },
+   "1006632960,1048576,26573184,1": {
+    "B_d": 24,
+    "B_jet": 425,
+    "E": "4653964475514989849169168991694322235662548/778447004241893679",
+    "list": "13777522969832953337/8508203",
+    "m": 16
+   },
+   "1006632960,128,273556,1": {
+    "B_d": 52,
+    "B_jet": 58344,
+    "E": "1905003600566128454294524728224905185140/7218633057597",
+    "list": "117318681363630848/21033",
+    "m": 26
+   },
+   "1006632960,131072,9114210,1": {
+    "B_d": 32,
+    "B_jet": 1168,
+    "E": "26179229448264019093775644742192630469947642/878209126229787847",
+    "list": "19294342457816641232/8983139",
+    "m": 16
+   },
+   "1006632960,16384,3162755,1": {
+    "B_d": 40,
+    "B_jet": 4053,
+    "E": "1090226694046256651520296175145009636035929/46055716668662384",
+    "list": "2643277463172776416/786593",
+    "m": 20
+   },
+   "1006632960,2048,1105495,1": {
+    "B_d": 48,
+    "B_jet": 13602,
+    "E": "12776270353667745242855798277748007292497/292773728185860",
+    "list": "222493538835217541/45977",
+    "m": 24
+   },
+   "1006632960,2097152,38100205,1": {
+    "B_d": 24,
+    "B_jet": 276,
+    "E": "103432392102548368840792549479615682113317619/23851994998807439809",
+    "list": "8793206367898292284/6000509",
+    "m": 16
+   },
+   "1006632960,256,387865,1": {
+    "B_d": 52,
+    "B_jet": 41362,
+    "E": "151618528205917510229611725944705153/995498763",
+    "list": "218351701357995510/38761",
+    "m": 26
+   },
+   "1006632960,262144,13000104,1": {
+    "B_d": 32,
+    "B_jet": 833,
+    "E": "108150005737323012081385334975437595837855/12460522543858013",
+    "list": "9120054043934182345/4245987",
+    "m": 16
+   },
+   "1006632960,32768,4496278,1": {
+    "B_d": 36,
+    "B_jet": 2593,
+    "E": "1952124550325778357143938463632156799252408/37991943631289505",
+    "list": "12142931767275234373/4463511",
+    "m": 18
+   },
+   "1006632960,4096,1568450,1": {
+    "B_d": 44,
+    "B_jet": 8845,
+    "E": "945900510167424208165385804117571052956/15936435739133",
+    "list": "1272421285545984785/312871",
+    "m": 22
+   },
+   "1006632960,4194304,54751646,1": {
+    "B_d": 20,
+    "B_jet": 198,
+    "E": "78383407321287272148607625993122196488542033/22808806118831141339",
+    "list": "62319543765214113286/50557343",
+    "m": 16
+   },
+   "1006632960,512,549835,1": {
+    "B_d": 52,
+    "B_jet": 29317,
+    "E": "726594177531753905371036638578594713913/10211529315306",
+    "list": "777428558582361842/137331",
+    "m": 26
+   },
+   "1006632960,524288,18570396,1": {
+    "B_d": 32,
+    "B_jet": 538,
+    "E": "218214122200473351213460845987192242205618892/33657041540648393343",
+    "list": "34943983936179724982/18046109",
+    "m": 16
+   },
+   "1006632960,65536,6398051,1": {
+    "B_d": 36,
+    "B_jet": 1845,
+    "E": "13605909339866888080288913163131248262897/1142210545364476",
+    "list": "4307558112429946596/1583129",
+    "m": 18
+   },
+   "1006632960,8192,2226502,1": {
+    "B_d": 44,
+    "B_jet": 6278,
+    "E": "1078958776189418653975839811485498087129724/48995156406897459",
+    "list": "3008242652893908674/739437",
+    "m": 22
+   },
+   "1006632960,8388608,78884006,1": {
+    "B_d": 14,
+    "B_jet": 138,
+    "E": "336219623896420065501166299014276840983395989/1547288846858687439",
+    "list": "60157940502801052006/70495399",
+    "m": 14
+   },
+   "2013265920,1024,1099669,1": {
+    "B_d": 52,
+    "B_jet": 29317,
+    "E": "958354178956086990487119304568022661066981/2580728446417510",
+    "list": "6234640998767002179/549323",
+    "m": 26
+   },
+   "2013265920,1048576,37140792,1": {
+    "B_d": 32,
+    "B_jet": 538,
+    "E": "332535436793523959576496601212048556682609698/12821030648232196579",
+    "list": "46592088716871899210/12030739",
+    "m": 16
+   },
+   "2013265920,131072,12796101,1": {
+    "B_d": 36,
+    "B_jet": 1845,
+    "E": "21331848358827683674410271805503874293211853/447269471260590230",
+    "list": "34461118599586633467/6332515",
+    "m": 18
+   },
+   "2013265920,16384,4453003,1": {
+    "B_d": 44,
+    "B_jet": 6278,
+    "E": "12998307044871421305046107058090803644576468/146451574714902935",
+    "list": "9026100104870205098/1109155",
+    "m": 22
+   },
+   "2013265920,16777216,157768011,1": {
+    "B_d": 14,
+    "B_jet": 138,
+    "E": "69364086279329225012143207962467933576409165909/79738613594360872706",
+    "list": "20052649737551550050/11749233",
+    "m": 14
+   },
+   "2013265920,2048,1559051,1": {
+    "B_d": 48,
+    "B_jet": 19183,
+    "E": "4143053746252984085553228967050376424434369/4153710252269964",
+    "list": "3767381513269189074/389251",
+    "m": 24
+   },
+   "2013265920,2097152,53146368,1": {
+    "B_d": 24,
+    "B_jet": 425,
+    "E": "305703212381809590663374910359332382727045391/12782491280759260755",
+    "list": "165330470397010949227/51049217",
+    "m": 16
+   },
+   "2013265920,256,547111,1": {
+    "B_d": 56,
+    "B_jet": 62832,
+    "E": "48991586146543385459800245217700417299/78521822614",
+    "list": "893491414616203102/68357",
+    "m": 28
+   },
+   "2013265920,262144,18228420,1": {
+    "B_d": 32,
+    "B_jet": 1168,
+    "E": "2547450048641494888620549892188795752434441/21327180332685206",
+    "list": "25726033676473473680/5988759",
+    "m": 16
+   },
+   "2013265920,32768,6325509,1": {
+    "B_d": 40,
+    "B_jet": 4053,
+    "E": "34984834221965801306284728850613122661277913/367469482685236448",
+    "list": "21147826166549010939/3146371",
+    "m": 20
+   },
+   "2013265920,4096,2210991,1": {
+    "B_d": 48,
+    "B_jet": 13602,
+    "E": "275767988319597203332213039239587600652/1508454349523",
+    "list": "890516185552229619/91954",
+    "m": 24
+   },
+   "2013265920,4194304,76200411,1": {
+    "B_d": 24,
+    "B_jet": 276,
+    "E": "4964756408217425232776808256323716125692551143/286223727999989349631",
+    "list": "17586423067688035452/6000509",
+    "m": 16
+   },
+   "2013265920,512,775731,1": {
+    "B_d": 56,
+    "B_jet": 44543,
+    "E": "319331694206907758290511441940302434866553/1102502206725940",
+    "list": "2545650001237083796/193805",
+    "m": 28
+   },
+   "2013265920,524288,26000208,1": {
+    "B_d": 32,
+    "B_jet": 833,
+    "E": "1121446913583915605066403996381714487106564729/32293585909823025920",
+    "list": "109441166537874599347/25475921",
+    "m": 16
+   },
+   "2013265920,65536,8992555,1": {
+    "B_d": 36,
+    "B_jet": 2593,
+    "E": "296218829158343491691403061494415433230575/1429382611420394",
+    "list": "2428678531197195682/446351",
+    "m": 18
+   },
+   "2013265920,8192,3136899,1": {
+    "B_d": 44,
+    "B_jet": 8845,
+    "E": "104791423355058383398183932663173023882941/423559783463168",
+    "list": "6364041899653855484/782177",
+    "m": 22
+   },
+   "2013265920,8388608,109503292,1": {
+    "B_d": 20,
+    "B_jet": 198,
+    "E": "230351355474318736968625240053306751054772393/16757489705999539455",
+    "list": "249278247911487885074/101114685",
+    "m": 16
+   },
+   "503316480,1024,552748,1": {
+    "B_d": 48,
+    "B_jet": 13602,
+    "E": "6108916828849652886102677426780419659917/611014047673475",
+    "list": "1333335142376093166/551725",
+    "m": 24
+   },
+   "503316480,1048576,19050103,1": {
+    "B_d": 24,
+    "B_jet": 276,
+    "E": "808015931560213039149284682688203978936385/745420434091769398",
+    "list": "1648724256751281396/2250191",
+    "m": 16
+   },
+   "503316480,128,193933,1": {
+    "B_d": 52,
+    "B_jet": 41362,
+    "E": "238801124596816460713469569293228680263/19073948615343",
+    "list": "270256003493363002/96903",
+    "m": 26
+   },
+   "503316480,131072,6500052,1": {
+    "B_d": 32,
+    "B_jet": 833,
+    "E": "8757841744800669803353796647841084160667465/4038231429084802717",
+    "list": "6839975781617507887/6368981",
+    "m": 16
+   },
+   "503316480,16384,2248139,1": {
+    "B_d": 36,
+    "B_jet": 2593,
+    "E": "257165908213336736627361051907798433749441/20344569758854180",
+    "list": "758875624365784642/557939",
+    "m": 18
+   },
+   "503316480,2048,784225,1": {
+    "B_d": 44,
+    "B_jet": 8845,
+    "E": "351694437771155012551814775136945235357/25606499086896",
+    "list": "794779435484632301/391089",
+    "m": 22
+   },
+   "503316480,2097152,27375823,1": {
+    "B_d": 20,
+    "B_jet": 198,
+    "E": "1574665056684968251466759967817210513038133/1832850601887967368",
+    "list": "973742302185911768/1579917",
+    "m": 16
+   },
+   "503316480,256,274918,1": {
+    "B_d": 48,
+    "B_jet": 27062,
+    "E": "84407722862829176706859416876927478019/214337941321",
+    "list": "658923040320443518/274663",
+    "m": 24
+   },
+   "503316480,262144,9285198,1": {
+    "B_d": 32,
+    "B_jet": 538,
+    "E": "284099271252618835037359082416144178611/175315126012267",
+    "list": "582396978887185470/601537",
+    "m": 16
+   },
+   "503316480,32768,3199026,1": {
+    "B_d": 36,
+    "B_jet": 1845,
+    "E": "1414455145357297418628331572879759781277973/475887782796492889",
+    "list": "4307394687393034845/3166259",
+    "m": 18
+   },
+   "503316480,4096,1113251,1": {
+    "B_d": 40,
+    "B_jet": 5707,
+    "E": "204623677322125210470707847026214782225791/480340927809628",
+    "list": "465720197630182032/277289",
+    "m": 20
+   },
+   "503316480,4194304,39442003,1": {
+    "B_d": 14,
+    "B_jet": 138,
+    "E": "202991317274879469945382538577354332641507532/3741807685388972875",
+    "list": "3759870192693364538/8811925",
+    "m": 14
+   },
+   "503316480,512,389763,1": {
+    "B_d": 48,
+    "B_jet": 19183,
+    "E": "72923441774067301774328709729815820245/2999121790308",
+    "list": "10200037191405040/4231",
+    "m": 24
+   },
+   "503316480,524288,13286592,1": {
+    "B_d": 24,
+    "B_jet": 425,
+    "E": "1890534130196952248964871610497487762806142/1265061079561812435",
+    "list": "2066623576499549423/2552461",
+    "m": 16
+   },
+   "503316480,64,136778,1": {
+    "B_d": 48,
+    "B_jet": 53856,
+    "E": "5802448177712551262496588399286313/309057929",
+    "list": "63661001487604416/27343",
+    "m": 24
+   },
+   "503316480,65536,4557105,1": {
+    "B_d": 32,
+    "B_jet": 1168,
+    "E": "5293197662446852516423894856347722874443/712714842099157",
+    "list": "160783140489493968/149719",
+    "m": 16
+   },
+   "503316480,8192,1581378,1": {
+    "B_d": 40,
+    "B_jet": 4053,
+    "E": "3520119784482742329179762134308474501678/601279846519205",
+    "list": "240261440716428783/143017",
+    "m": 20
+   }
+  },
+  "margin": 0.05,
+  "n": 2013265920
+ },
+ "_meta": {
+  "E_max_log2_over_F": -275,
+  "engine": "rs-beyond-johnson@60b7257 scripts/tune_first_order_mca.py",
+  "list_max_log2": 44.0,
+  "support": "derivative-weighted",
+  "taylor_model": "tight-2D-minus-3-v3"
+ },
+ "_plans": {
+  "final": {
+   "batching": "first-curve",
+   "plan": [
+    [
+     "F",
+     0.835
+    ],
+    [
+     "F",
+     0.818
+    ],
+    [
+     "F",
+     0.879
+    ],
+    [
+     "F",
+     0.768
+    ]
+   ]
+  },
+  "inner NV": {
+   "batching": "first-curve",
+   "plan": [
+    [
+     "F",
+     0.817
+    ],
+    [
+     "F",
+     0.809
+    ],
+    [
+     "F",
+     0.895
+    ],
+    [
+     "F",
+     0.768
+    ]
+   ]
+  }
+ }
+}
