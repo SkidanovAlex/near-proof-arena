@@ -568,3 +568,15 @@ model 308.5 → 298.9 KB.
   no canonical certificates off 15·2^27. Until fixed only O-1 (≈313.8 KB) is backed.
 * Actions: certificate-gated table with O-1 fallback (soundness fix, adopted; NV lane);
   new certification run on lane/pq-dkt-verify for the exact backend rule and shapes.
+
+## 2026-10-18 — NV re-audit clean (lane/pq-nv-circuit-soundness @ c3c9393e0)
+
+* Re-audit through 2bf42f573 (later commits to cf2262a24 don't touch the circuit): no new
+  soundness bugs. Program binding re-anchored on Acc's early row (unpadded program);
+  Invariant D* (hash rows = native T* oracle calls) proven; statement passthrough F3
+  implemented + proven (`nv_statement_passthrough`). ε_LogUp ≈ 2^-317.6.
+* Tests: all nv_ tests except nv_chain/nv_app_binding (over memory cap) pass in both digest
+  modes; full perturbation sweep ~75M cells + 8.6M sampled at level 2: clean.
+* Harness bug D1 (allowlist masking unnamed cols) fixed; revealed T* ctr/nwit undetected but
+  benign. Open: GKR/batch/stacking on differential tests only; lo6 pinned by consumers only;
+  carry bounds k=3 only. Re-audit needed if "4 program rows per binding row" lands.
