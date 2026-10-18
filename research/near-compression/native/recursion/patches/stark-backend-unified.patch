@@ -457,10 +457,10 @@ index 711791d..45ddae4 100644
  }
  
 diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
-index c776e1c..6efb201 100644
+index c776e1c..03597a9 100644
 --- a/crates/stark-backend/src/config.rs
 +++ b/crates/stark-backend/src/config.rs
-@@ -188,6 +188,148 @@ pub struct WhirConfig {
+@@ -188,6 +188,196 @@ pub struct WhirConfig {
      /// of queries in the `rounds` field. However we store it in `WhirConfig` for security analysis
      /// purposes.
      pub proximity: WhirProximityStrategy,
@@ -512,7 +512,13 @@ index c776e1c..6efb201 100644
 +    pub kdim: u64,
 +    pub agree: u64,
 +    pub queries: u32,
++    /// true: O-2 first-order threshold (every code (n >> s, k >> s, ceil(A / 2^s)), s <= k_i, is in
++    /// the certificate set used at setup); false: Johnson fallback, m = 64 (O-1, DKT26 Thm 5.12)
++    pub first_order: bool,
 +}
++
++/// DKT26 certificate set: (n, k, A) triples (lane/pq-dkt-verify calc/dkt_certs.json, ell = 1).
++pub type CertSet = std::collections::HashSet<(u64, u64, u64)>;
 +
 +/// DKT26 first-order agreement a1(rho) (size_mca.py / bound_mca.py).
 +pub fn dkt_a1(r: f64) -> f64 {
@@ -535,21 +541,63 @@ index c776e1c..6efb201 100644
 +}
 +
 +impl AgreementTable {
-+    /// The canonical table for a WHIR schedule (round codes `(n_i, k_i)`).
-+    pub fn canonical(codes: &[(u64, u64)], target_bits: u32, margin_milli: u32, m: u32) -> Self {
++    /// O-2 first-order threshold of the round code (n, k).
++    pub fn first_order_agree(n: u64, kdim: u64, margin_milli: u32, m: u32) -> u64 {
 +        let cap = 1.0 + 1.0 / (2.0 * m.max(1) as f64);
++        let rho = kdim as f64 / n as f64;
++        let ratio = (dkt_a1(rho) / rho.sqrt() + margin_milli as f64 / 1000.0).min(cap);
++        (ratio * ((kdim - 1) as f64 / n as f64).sqrt() * n as f64).ceil() as u64
++    }
++    /// Johnson fallback threshold (1 + 1/(2m)) sqrt(k/n) n (O-1).
++    pub fn johnson_agree(n: u64, kdim: u64, m: u32) -> u64 {
++        let rho = kdim as f64 / n as f64;
++        ((1.0 + 1.0 / (2.0 * m.max(1) as f64)) * rho.sqrt() * n as f64).ceil() as u64
++    }
++    /// Whether the round code and its fold sub-codes s = 0..=k_round are certified.
++    pub fn certified(certs: &CertSet, n: u64, kdim: u64, agree: u64, k_round: usize) -> bool {
++        (0..=k_round).all(|s| certs.contains(&(n >> s, kdim >> s, (agree + (1u64 << s) - 1) >> s)))
++    }
++    fn round(n: u64, kdim: u64, agree: u64, first_order: bool, target_bits: u32) -> AgreementRound {
++        let per_query = -((agree as f64) / (n as f64)).log2();
++        let queries = ((target_bits as f64) / per_query).ceil() as u32;
++        AgreementRound { n, kdim, agree, queries, first_order }
++    }
++    /// The canonical table for a WHIR schedule (round codes `(n_i, k_i)`, folding factors
++    /// `k_rounds`): a round uses its first-order threshold iff it is certified in `certs`;
++    /// otherwise (or without a certificate set) the Johnson fallback.
++    pub fn canonical(codes: &[(u64, u64)], k_rounds: &[usize], target_bits: u32, margin_milli: u32, m: u32, certs: Option<&CertSet>) -> Self {
 +        let rounds = codes
 +            .iter()
-+            .map(|&(n, kdim)| {
-+                let rho = kdim as f64 / n as f64;
-+                let ratio = (dkt_a1(rho) / rho.sqrt() + margin_milli as f64 / 1000.0).min(cap);
-+                let agree = (ratio * ((kdim - 1) as f64 / n as f64).sqrt() * n as f64).ceil() as u64;
-+                let per_query = -((agree as f64) / (n as f64)).log2();
-+                let queries = ((target_bits as f64) / per_query).ceil() as u32;
-+                AgreementRound { n, kdim, agree, queries }
++            .zip(k_rounds)
++            .map(|(&(n, kdim), &kr)| {
++                let fo = Self::first_order_agree(n, kdim, margin_milli, m);
++                if certs.is_some_and(|c| Self::certified(c, n, kdim, fo, kr)) {
++                    Self::round(n, kdim, fo, true, target_bits)
++                } else {
++                    Self::round(n, kdim, Self::johnson_agree(n, kdim, m), false, target_bits)
++                }
 +            })
 +            .collect();
 +        Self { target_bits, margin_milli, m, rounds }
++    }
++    /// Each round's threshold follows its declared regime's rule, with its query count.
++    pub fn consistent(&self, codes: &[(u64, u64)]) -> bool {
++        self.rounds.len() == codes.len()
++            && self.rounds.iter().zip(codes).all(|(r, &(n, kdim))| {
++                let agree = if r.first_order {
++                    Self::first_order_agree(n, kdim, self.margin_milli, self.m)
++                } else {
++                    Self::johnson_agree(n, kdim, self.m)
++                };
++                *r == Self::round(n, kdim, agree, r.first_order, self.target_bits)
++            })
++    }
++    /// Setup check (V_d / tests): every first-order round is certified in `certs`.
++    pub fn all_first_order_certified(&self, certs: &CertSet, k_rounds: &[usize]) -> bool {
++        self.rounds
++            .iter()
++            .zip(k_rounds)
++            .all(|(r, &kr)| !r.first_order || Self::certified(certs, r.n, r.kdim, r.agree, kr))
 +    }
 +}
 +
@@ -609,7 +657,7 @@ index c776e1c..6efb201 100644
  }
  
  #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-@@ -252,7 +394,12 @@ impl ProximityRegime {
+@@ -252,7 +442,12 @@ impl ProximityRegime {
      /// - `ListDecoding { m }`: finite-multiplicity Guruswami-Sudan threshold, `sqrt(ρ) (1 +
      ///   1/(2m))`.
      pub fn max_agreement(&self, log_inv_rate: usize) -> f64 {
@@ -623,7 +671,7 @@ index c776e1c..6efb201 100644
          let max_agreement = match *self {
              ProximityRegime::UniqueDecoding => (1.0 + rho) / 2.0,
              ProximityRegime::ListDecoding { m } => {
-@@ -289,25 +436,90 @@ impl WhirConfig {
+@@ -289,25 +484,90 @@ impl WhirConfig {
          whir_params: WhirParams,
          security_bits: usize,
      ) -> Self {
@@ -724,7 +772,7 @@ index c776e1c..6efb201 100644
              round_parameters.push(WhirRoundConfig { num_queries });
  
              log_inv_rate = next_rate;
-@@ -320,12 +532,73 @@ impl WhirConfig {
+@@ -320,12 +580,77 @@ impl WhirConfig {
              query_phase_pow_bits,
              folding_pow_bits: whir_params.folding_pow_bits,
              proximity,
@@ -750,9 +798,9 @@ index c776e1c..6efb201 100644
 +
 +    /// O-2 (U-13): replace every round's query count by the one derived from the canonical
 +    /// first-order agreement table, and bind the table into the config (vk).
-+    pub fn with_first_order(mut self, log_blowup: usize, log_stacked_height: usize, security_bits: usize, margin_milli: u32, m: u32) -> Self {
++    pub fn with_first_order(mut self, log_blowup: usize, log_stacked_height: usize, security_bits: usize, margin_milli: u32, m: u32, certs: Option<&CertSet>) -> Self {
 +        let target = security_bits.saturating_sub(self.query_phase_pow_bits) as u32;
-+        let t = AgreementTable::canonical(&self.round_codes(log_blowup, log_stacked_height), target, margin_milli, m);
++        let t = AgreementTable::canonical(&self.round_codes(log_blowup, log_stacked_height), &self.k_rounds(), target, margin_milli, m, certs);
 +        for (r, a) in self.rounds.iter_mut().zip(&t.rounds) {
 +            r.num_queries = a.queries as usize;
 +        }
@@ -764,10 +812,14 @@ index c776e1c..6efb201 100644
 +    /// round query counts are the table's.
 +    pub fn check_agreement(&self, log_blowup: usize, log_stacked_height: usize) -> bool {
 +        let Some(t) = &self.agreement else { return true };
-+        let canon = AgreementTable::canonical(&self.round_codes(log_blowup, log_stacked_height), t.target_bits, t.margin_milli, t.m);
-+        canon == *t
++        t.consistent(&self.round_codes(log_blowup, log_stacked_height))
 +            && t.rounds.len() == self.rounds.len()
 +            && self.rounds.iter().zip(&t.rounds).all(|(r, a)| r.num_queries == a.queries as usize)
++    }
++
++    /// Folding factors of all rounds.
++    pub fn k_rounds(&self) -> Vec<usize> {
++        (0..self.rounds.len()).map(|i| self.k_round(i)).collect()
 +    }
 +
 +    /// Folding factor of WHIR round `round`.
@@ -799,7 +851,7 @@ index c776e1c..6efb201 100644
      }
  
      pub fn num_whir_rounds(&self) -> usize {
-@@ -334,7 +607,7 @@ impl WhirConfig {
+@@ -334,7 +659,7 @@ impl WhirConfig {
  
      #[inline]
      pub fn num_sumcheck_rounds(&self) -> usize {
