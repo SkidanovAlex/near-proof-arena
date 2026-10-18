@@ -74,10 +74,16 @@ def bits_mca(rate, m):
 def o2_reserve(rounds):
     return 48 * (rounds - 1) if MCA == 'O2' else 0
 L_SKIP = 2
-COLS, ROT = 74 + 171 + 13 + 5, 36 + 144 + 11 + 2   # NvAir 74 columns (measured A2 at 268 bits)
-D = 21
+# SHA AIR: v4 (lane/pq-sha384-air3 @34a427692, default) or v2.1 (env NV_SHA=v21)
+SHA = os.environ.get('NV_SHA', 'v4')
+if SHA == 'v4':
+    SHA_COLS, SHA_ROT, SHA_DEG, SHA_IPR_, SHA_ROWS_, TAB_ROWS, TAB_COLS, TAB_ROT = 83, 73, 9, 17, 128, 128, 9, 7
+else:
+    SHA_COLS, SHA_ROT, SHA_DEG, SHA_IPR_, SHA_ROWS_, TAB_ROWS, TAB_COLS, TAB_ROT = 171, 144, 21, 14, 43, 64, 13, 11
+COLS, ROT = 74 + SHA_COLS + TAB_COLS + 5, 37 + SHA_ROT + TAB_ROT + 2   # NvAir 74 columns, 37 rotated (measured)
+D = max(8, SHA_DEG)
 AIRS = 4
-NV_IPR, SHA_IPR, SHA_ROWS = 49, 14, 43   # NvAir 49 interactions/row (sampled words from GLUE)
+NV_IPR, SHA_IPR, SHA_ROWS = 49, SHA_IPR_, SHA_ROWS_   # NvAir 49 interactions/row (sampled words from GLUE)
 # measured program costs (A2 of nvp2-T102: child = the NV level itself)
 P_FIXED = 72_278          # preamble + app table (10,9k) + GKR + DAG + stacking
 APP_ROWS = 10_988          # level-1 table (data rows)
@@ -137,10 +143,10 @@ def nv_circuit(rounds_q, depth0, depthr, child_W):
     nv_rows = prog + prog // 2 + APP_ROWS // 2 + glue + TR_ROWS
     sha_rows = SHA_ROWS * comps
     return dict(prog=prog, prog_log=prog_log, comps=comps, nv_rows=nv_rows, sha_rows=sha_rows,
-                cells=nv_rows * 74 + sha_rows * 171 + 64 * 13 + 65536 * 5,
+                cells=nv_rows * 74 + sha_rows * SHA_COLS + TAB_ROWS * TAB_COLS + 65536 * 5,
                 # GKR runs over the full (power-of-two) trace heights; tight heights only shrink
                 # the commitment (measured: A2 at 268 bits, L = 25 from 2^19 NvAir / SHA rows)
-                inter=p2(nv_rows) * NV_IPR + p2(sha_rows) * SHA_IPR + 64 * 2 + 65536)
+                inter=p2(nv_rows) * NV_IPR + p2(sha_rows) * SHA_IPR + TAB_ROWS * 2 + 65536)
 
 
 def best_capped(cells, P, bmax):

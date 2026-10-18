@@ -1,0 +1,4 @@
+v4 m64 base     final 304,943 B (whir 239,150 gkr 34,952 L=25 rel 24,272 stk 6,496) | prog 169,806 NvAir 320,219 (2^19) SHA 864,256 (2^20) | interactions 43,581,696 = 2^25.377 | pen b6 ns17
+v4 m64 cut-28%  final 300,399 B (whir 237,390 gkr 32,408 L=24 rel 24,272 stk 6,256) | prog 123,804 NvAir 251,216 (2^18) SHA 864,256 (2^20) | interactions 30,736,640 = 2^24.873 | pen b6 ns17
+v4 O2  base     final 292,589 B (whir 226,796 gkr 34,952 L=25 rel 24,272 stk 6,352) | prog 165,884 NvAir 312,672 (2^19) SHA 837,632 (2^20) | interactions 43,581,696 = 2^25.377 | pen b6 ns17
+v4 O2  cut-28%  final 288,165 B (whir 225,156 gkr 32,408 L=24 rel 24,272 stk 6,112) | prog 120,918 NvAir 244,855 (2^18) SHA 831,744 (2^20) | interactions 30,736,640 = 2^24.873 | pen b6 ns17

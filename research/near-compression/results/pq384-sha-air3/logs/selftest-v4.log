@@ -1,0 +1,55 @@
+SELFTEST native_reference_vs_sha2 pass=10000
+SELFTEST vector sha384(abc) blocks=1 digest_ok
+SELFTEST vector sha512(abc) blocks=1 digest_ok
+SELFTEST vector sha384(empty) blocks=1 digest_ok
+SELFTEST vector sha512(empty) blocks=1 digest_ok
+SELFTEST vector sha384(200B) blocks=2 digest_ok
+SELFTEST vector sha512(200B) blocks=2 digest_ok
+SELFTEST trace_outputs_vs_sha2 pass=1008 (vectors 8 + random 1000)
+PROFILE v4 degree=9 n_stack=15 k=3 log_blowup=2 queries=[345, 151, 97, 71, 57] interaction_log=27
+KEYGEN_SECONDS 0.00
+AIR Sha512Air4 next_row_cols=73 width=[83] degree=9 constraints=177 interactions=17 need_rot=true dag_nodes=5848
+AIR TableAir4 next_row_cols=7 width=[9] degree=8 constraints=21 interactions=2 need_rot=true dag_nodes=1234
+AIR HarnessAir next_row_cols=0 width=[9] degree=2 constraints=1 interactions=1 need_rot=false dag_nodes=13
+SELFTEST debug_checker pass rows=131072 compressions=1008 secs=23.4
+NEGATIVE consistent_output_forgery detected=true by=bus
+NEGATIVE_BUS A_out_residual_via_carry detected=true by=bus
+NEGATIVE_BUS A_in_residual_via_carry detected=true by=bus
+NEGATIVE_BUS A_stored_Y detected=true by=bus
+NEGATIVE_BUS A_stored_d_in detected=true by=bus
+NEGATIVE_BUS A_stored_W_forward detected=true by=bus
+NEGATIVE_BUS E_hpp_K_fold detected=true by=bus
+NEGATIVE_BUS E_hp_K_fold detected=true by=bus
+NEGATIVE_BUS E_stored_L_out detected=true by=bus
+NEGATIVE_BUS E_out_residual_via_carry detected=true by=bus
+NEGATIVE_BUS E_in_residual_via_carry detected=true by=bus
+NEGATIVE_BUS W_stored_V0 detected=true by=bus
+NEGATIVE_BUS W_stored_V1 detected=true by=bus
+NEGATIVE_BUS W_residual0_via_carry detected=true by=bus
+NEGATIVE_BUS W_residual1_via_carry detected=true by=bus
+NEGATIVE_BUS W_stored_d_forward detected=true by=bus
+NEGATIVE_BUS FF_A0_via_carry detected=true by=bus
+NEGATIVE_BUS FF_A41_stored_H detected=true by=bus
+NEGATIVE_BUS FF_E0_via_carry detected=true by=bus
+NEGATIVE_BUS FF_E41_stored_H detected=true by=bus
+NEGATIVE carry_range_half detected=true by=constraint
+NEGATIVE_PAD fake_real_row_in_padding detected=true by=constraint
+NEGATIVE_PAD fake_segment_after_last detected=true by=bus
+NEGATIVE_PAD fake_segment_after_gap skipped (no room)
+NEGATIVE_BUS interface_block_word detected=true by=bus
+NEGATIVE_BUS interface_input_state detected=true by=bus
+NEGATIVE harness mutations=72 detected=72 by_constraint=8 by_bus=64
+NEGATIVE main/aux_carry mutations=234 detected=234 by_constraint=72 by_bus=162
+NEGATIVE main/aux_hi mutations=117 detected=117 by_constraint=33 by_bus=84
+NEGATIVE main/aux_lo mutations=234 detected=234 by_constraint=72 by_bus=162
+NEGATIVE main/digit_out_of_range mutations=156 detected=156 by_constraint=156 by_bus=0
+NEGATIVE main/digits_s0 mutations=1248 detected=1248 by_constraint=96 by_bus=1152
+NEGATIVE main/digits_s0_topbit mutations=1248 detected=1248 by_constraint=96 by_bus=1152
+NEGATIVE main/digits_s1 mutations=1248 detected=1248 by_constraint=96 by_bus=1152
+NEGATIVE main/digits_s1_topbit mutations=1248 detected=1248 by_constraint=96 by_bus=1152
+NEGATIVE main/global_row mutations=39 detected=39 by_constraint=39 by_bus=0
+NEGATIVE main/kind mutations=312 detected=312 by_constraint=141 by_bus=171
+NEGATIVE main/row_index mutations=39 detected=39 by_constraint=39 by_bus=0
+NEGATIVE table mutations=126 detected=126 by_constraint=98 by_bus=28
+NEGATIVE total mutations=6321 detected=6321 undetected=0
+EXIT 0
