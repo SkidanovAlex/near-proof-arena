@@ -666,3 +666,48 @@ query counts do not depend on them. So program rows are a weak lever. The strong
 * the SHA AIR's degree and rotated columns;
 * the MCA regime;
 * WHIR queries.
+
+### Correction: GKR runs over power-of-two heights; the 2^18 NvAir threshold [measured + model]
+
+A2 at 268 bits measured GKR = 34,952 B, which is L = 25. GKR uses the full trace heights: tight
+heights shrink only the commitment, not the LogUp tree. The interaction count is
+2^19 × 55 (NvAir) + 2^19 × 14 (SHA) + tables = 2^25.1. `extrapolate_nv2.py` now counts
+interactions on power-of-two heights, and NvAir is 74 columns as measured.
+
+The corrected finals:
+
+| regime | baseline | program −28 % | plus 30 interactions per row |
+|---|---|---|---|
+| m = 3 | 326,547 | 320,997 | 318,549 |
+| m = 64 | 316,351 | 311,793 | 309,345 |
+| O-2 | 303,701 | **299,277** | **296,829** |
+
+So there is a real step after all. The interaction count drops below 2^25, giving L = 24 and
+−2.5 KB of GKR, in either of two ways:
+* NvAir gets under 2^18 used rows, so its height becomes 2^18;
+* NvAir drops to at most 49 interactions per row, from 55.
+
+That is why the program cut matters: 2^17 program rows is roughly 2^18 NvAir rows.
+
+Interactions per bus, as the maximum over roles (`NV_INT_DUMP=1`, total 55):
+* slot bus: 13 (hash role 13, ALU 12);
+* byte-pair bus: 17 (GLUE 17);
+* word bus: 6 (hash);
+* ctl: 3 (GLUE);
+* digest: 3;
+* memory: 3;
+* chain: 2;
+* the rest: 1–2 each.
+
+Cutting 6 means slimming GLUE's byte-pair lookups and the hash role's unit sends together.
+
+The NvAir row budget (O-2 baseline) is about 315k rows:
+* program 166k;
+* BIND 83k, at prog/2;
+* app 5.5k;
+* GLUE 55k, at 8 rows per compression;
+* transcript 6k.
+
+Getting under 262k needs −53k rows. For example, BIND rows that each cover 4 program rows
+would save 41k, and a further −8 % program would cover the rest. Either change touches the
+audited program-binding argument.

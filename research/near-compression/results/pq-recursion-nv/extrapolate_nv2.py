@@ -74,7 +74,7 @@ def bits_mca(rate, m):
 def o2_reserve(rounds):
     return 48 * (rounds - 1) if MCA == 'O2' else 0
 L_SKIP = 2
-COLS, ROT = 73 + 171 + 13 + 5, 36 + 144 + 11 + 2   # NvAir 73 columns after T*
+COLS, ROT = 74 + 171 + 13 + 5, 36 + 144 + 11 + 2   # NvAir 74 columns (measured A2 at 268 bits)
 D = 21
 AIRS = 4
 NV_IPR, SHA_IPR, SHA_ROWS = 55, 14, 43
@@ -110,6 +110,10 @@ def whir(cells, b, k1, k, log_h, lf, target, digest):
     return r['bytes'] - (r['relations'] + 8456 + 1840 + 861), r
 
 
+def p2(x):
+    return 1 << math.ceil(math.log2(x))
+
+
 def nv_circuit(rounds_q, depth0, depthr, child_W):
     """NV circuit size verifying a child with WHIR schedule rounds_q (per-round queries)."""
     q0, qr = rounds_q[0], sum(rounds_q[1:])
@@ -133,8 +137,10 @@ def nv_circuit(rounds_q, depth0, depthr, child_W):
     nv_rows = prog + prog // 2 + APP_ROWS // 2 + glue + TR_ROWS
     sha_rows = SHA_ROWS * comps
     return dict(prog=prog, prog_log=prog_log, comps=comps, nv_rows=nv_rows, sha_rows=sha_rows,
-                cells=nv_rows * 73 + sha_rows * 171 + 64 * 13 + 65536 * 5,
-                inter=nv_rows * NV_IPR + sha_rows * SHA_IPR + 64 * 2 + 65536)
+                cells=nv_rows * 74 + sha_rows * 171 + 64 * 13 + 65536 * 5,
+                # GKR runs over the full (power-of-two) trace heights; tight heights only shrink
+                # the commitment (measured: A2 at 268 bits, L = 25 from 2^19 NvAir / SHA rows)
+                inter=p2(nv_rows) * NV_IPR + p2(sha_rows) * SHA_IPR + 64 * 2 + 65536)
 
 
 def best_capped(cells, P, bmax):
