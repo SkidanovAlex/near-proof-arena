@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..b2d42bc
+index 0000000..8887e43
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,727 @@
+@@ -0,0 +1,728 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1592,8 +1592,9 @@ index 0000000..b2d42bc
 +    pub fn load_bit(&mut self, bit: bool) -> V {
 +        self.push(Op::LoadBit, 0, 0, 0, 0, EF::from(F::from_bool(bit)), F::ZERO)
 +    }
++    /// A base-field witness (LoadF: c1..c11 = 0).
 +    pub fn load_f(&mut self, x: F) -> V {
-+        self.load(EF::from(x))
++        self.push(Op::LoadF, 0, 0, 0, 0, EF::from(x), F::ZERO)
 +    }
 +    /// First transcript job of the chain: push the initial state as its state units 2..13.
 +    fn tr_first(&mut self, job: u32) {
@@ -2721,10 +2722,10 @@ index 0000000..d2eba87
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..c3ea21a
+index 0000000..e310947
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
-@@ -0,0 +1,543 @@
+@@ -0,0 +1,654 @@
 +//! NV-faithful: degree-of-freedom (single-cell perturbation) runs and tamper tests for the ALU,
 +//! BIND and app-binding roles (results/pq-recursion-nv/FAITHFUL.md).
 +//!
@@ -2906,7 +2907,7 @@ index 0000000..c3ea21a
 +    let mut tested = 0;
 +    for y in 0..h {
 +        let Some(op) = ops[y] else { continue };
-+        let free = matches!(op, Op::Load | Op::LoadBit | Op::Smp1 | Op::Smp12 | Op::Acc | Op::Dig | Op::PowChk | Op::Acc2);
++        let free = matches!(op, Op::Load | Op::LoadF | Op::LoadBit | Op::Smp1 | Op::Smp12 | Op::Acc | Op::Dig | Op::PowChk | Op::Acc2);
 +        let name = format!("{op:?}");
 +        let n = seen.entry(name.clone()).or_default();
 +        if !free && *n >= 8 {
@@ -3267,6 +3268,117 @@ index 0000000..c3ea21a
 +        mats[0].values[(r0 + 3) * w + x.bc.pc1[2]] += F::ONE;
 +        must_fail("app-binding table word", || debug_check(&airs, mats, &pvs));
 +    }
++}
++
++fn ef(c: [F; 12]) -> EF {
++    <EF as p3_field::BasedVectorSpace<F>>::from_basis_coefficients_slice(&c).unwrap()
++}
++fn cf(x: EF) -> [F; 12] {
++    <EF as p3_field::BasedVectorSpace<F>>::as_basis_coefficients_slice(&x).try_into().unwrap()
++}
++
++/// Add `delta` to c of ALU row `y` and propagate it through readers that are linear in the
++/// changed operand (Add, Sub, DblAdd, Mul with an unchanged other operand) down to Zero rows.
++/// Returns false if another reader is met.
++fn propagate(mats: &mut [RowMajorMatrix<F>], y: usize, delta: [F; 12], x: &Ix) -> bool {
++    let w = mats[0].width();
++    let h = mats[0].height();
++    let mut work = vec![(y, delta)];
++    for k in 0..12 {
++        mats[0].values[y * w + x.ab.c[k]] += delta[k];
++    }
++    while let Some((addr, d)) = work.pop() {
++        for r in 0..h {
++            let Some(op) = op_of(&mats[0], r, x) else { continue };
++            let Some(o) = Op::all().into_iter().find(|o| *o as usize == op) else { continue };
++            let pa = mats[0].values[r * w + x.cm.p[0]].as_canonical_u32() as usize;
++            let pb = (mats[0].values[r * w + x.cm.p[1]].as_canonical_u32() as i64 - ((op as i64) << ADDR_BITS)) as usize;
++            let ra = o.reads_a() && pa == addr;
++            let rb = o.reads_b() && pb == addr;
++            if !ra && !rb {
++                continue;
++            }
++            let get = |m: &RowMajorMatrix<F>, cols: [usize; 12]| -> [F; 12] { core::array::from_fn(|k| m.values[r * w + cols[k]]) };
++            let (av, bv) = (get(&mats[0], x.ab.a), get(&mats[0], x.ab.b));
++            let de = ef(d);
++            let z = EF::ZERO;
++            let (da, db) = (if ra { de } else { z }, if rb { de } else { z });
++            let dc: EF = match o {
++                Op::Add => da + db,
++                Op::Sub => da - db,
++                Op::DblAdd => da.double() + db,
++                Op::Mul if !(ra && rb) => da * ef(bv) + ef(av) * db,
++                Op::Zero => z,
++                _ => return false,
++            };
++            for k in 0..12 {
++                mats[0].values[r * w + x.ab.a[k]] += cf(da)[k];
++                mats[0].values[r * w + x.ab.b[k]] += cf(db)[k];
++            }
++            if o != Op::Zero {
++                for k in 0..12 {
++                    mats[0].values[r * w + x.ab.c[k]] += cf(dc)[k];
++                }
++                work.push((r, cf(dc)));
++            }
++        }
++    }
++    true
++}
++
++/// Bug B3 (fixed on this branch): base-field loads were plain `Load` rows (all 12 coefficients
++/// free, only c0 observed).  In `Builder::pow` the low limb l0 is such a load; its free
++/// coefficient 1 absorbs any change of the recomposed limb 1, so the BIT rows need not equal the
++/// limb received from the hash chain and the leading-zero check is vacuous.  Demonstrated on the
++/// honest trace: one limb-1 bit is flipped and the difference is put into l0's coefficient 1.
++/// Accepted with the pre-fix program (row emulated as `Load`), rejected with `LoadF`.
++#[test]
++fn nv_alu_base_load_pow() {
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let (airs, mats, pvs) = honest(&vk, &proof, 16, None);
++    let x = ix();
++    let w = mats[0].width();
++    let yp = (0..mats[0].height()).find(|&r| op_of(&mats[0], r, &x) == Some(Op::PowChk as usize)).expect("child has PoW");
++    let yl = yp + 1;
++    assert_eq!(op_of(&mats[0], yl, &x), Some(Op::LoadF as usize), "pow low limb is a LoadF row");
++    let yb = yl + 1;
++    assert_eq!(op_of(&mats[0], yb, &x), Some(Op::LoadBit as usize), "first limb-1 bit row");
++    let flip = |m: &mut Vec<RowMajorMatrix<F>>| -> bool {
++        let bit = m[0].values[yb * w + x.ab.c[0]];
++        let d = if bit == F::ZERO { F::ONE } else { -F::ONE };
++        // the bit's change, propagated to the final Zero row
++        let mut dl = [F::ZERO; 12];
++        dl[0] = d;
++        if !propagate(m, yb, dl, &x) {
++            return false;
++        }
++        // compensate in l0: the final Zero row's operand must return to 0
++        let zr = (yb..m[0].height())
++            .find(|&r| op_of(&m[0], r, &x) == Some(Op::Zero as usize) && (0..12).any(|k| m[0].values[r * w + x.ab.a[k]] != F::ZERO))
++            .unwrap();
++        let comp: [F; 12] = core::array::from_fn(|k| -m[0].values[zr * w + x.ab.a[k]]);
++        assert_eq!(comp[0], F::ZERO, "the difference sits in coefficient >= 1");
++        propagate(m, yl, comp, &x)
++    };
++    // (A) pre-fix program: the l0 row is a plain Load (P1 = Load << 20).  Level-1 program: the
++    //     binding tables are zero, so the BIND accumulator does not depend on the program words.
++    {
++        let mut m = mats.clone();
++        let ld = Op::Load as usize;
++        m[0].values[yl * w + x.cm.p[1]] = F::from_u32((ld as u32) << ADDR_BITS);
++        relabel(&mut m, yl, ld, (F::ZERO, F::ZERO, F::ZERO), &x);
++        let nb = (0..m[0].height()).find(|&r| m[0].values[r * w + x.cm.kb] == F::ONE).unwrap() + yl / 2;
++        let pc = if yl % 2 == 0 { x.bc.pc0[1] } else { x.bc.pc1[1] };
++        m[0].values[nb * w + pc] = m[0].values[yl * w + x.cm.p[1]];
++        assert!(flip(&mut m));
++        debug_check(&airs, m, &pvs);
++        println!("NV_B3 pre-fix program (Load): PoW limb bits decoupled from the hash output, accepted");
++    }
++    // (B) this branch: LoadF forces c1..c11 = 0
++    let mut m = mats;
++    assert!(flip(&mut m));
++    must_fail("pow low limb with extension junk (LoadF)", || debug_check(&airs, m, &pvs));
 +}
 diff --git a/crates/recursion/src/nv/fmt.rs b/crates/recursion/src/nv/fmt.rs
 new file mode 100644
@@ -4586,10 +4698,10 @@ index 0000000..2f39c16
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..69cde7d
+index 0000000..224cd0e
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,135 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -4667,9 +4779,12 @@ index 0000000..69cde7d
 +    Acc2 = 27,
 +    /// c = free witness bit: c0 in {0, 1}, c1..c11 = 0 (one row instead of Load + Bit)
 +    LoadBit = 28,
++    /// c = free base-field witness: c1..c11 = 0 (a plain `Load` leaves all 12 coefficients
++    /// free; base-field loads must use this op, FAITHFUL.md bug B3)
++    LoadF = 29,
 +}
 +
-+pub const NUM_OPS: usize = 29;
++pub const NUM_OPS: usize = 30;
 +/// Op code = 8 * hi + lo, hi < OP_HI (UAIR one-hot selector halves).
 +pub const OP_LO: usize = 8;
 +pub const OP_HI: usize = 4;
@@ -4679,7 +4794,7 @@ index 0000000..69cde7d
 +        use Op::*;
 +        [
 +            Nop, Mul, Add, Sub, Const, ConstX, Load, Unit1, Anchor, UnitW, Smp1, Smp12, Unit12,
-+            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit,
++            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit, LoadF,
 +        ]
 +    }
 +    pub fn reads_a(self) -> bool {
@@ -6055,7 +6170,7 @@ index 0000000..098b0c8
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..4c38252
+index 0000000..5625564
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
 @@ -0,0 +1,761 @@
@@ -6449,7 +6564,7 @@ index 0000000..4c38252
 +    let a: [AB::Expr; 12] = l.a.map(Into::into);
 +    let bb: [AB::Expr; 12] = l.b.map(Into::into);
 +    let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
-+    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2) + s(Op::LoadBit);
++    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2) + s(Op::LoadBit) + s(Op::LoadF);
 +    let copy_a = s(Op::Unit1) + s(Op::UnitW) + s(Op::Unit12) + s(Op::Bit) + s(Op::Pv) + s(Op::UnitWS4) + s(Op::UnitWS2);
 +    let mulab = s(Op::Mul) + s(Op::Horn);
 +    for k in 0..12 {
@@ -6475,7 +6590,7 @@ index 0000000..4c38252
 +    builder.assert_zero(s(Op::Bit) * l.a[0] * (l.a[0] - one.clone()));
 +    builder.assert_zero(s(Op::LoadBit) * l.c[0] * (l.c[0] - one.clone()));
 +    for k in 1..12 {
-+        builder.assert_zero(s(Op::LoadBit) * l.c[k]);
++        builder.assert_zero((s(Op::LoadBit) + s(Op::LoadF)) * l.c[k]);
 +    }
 +    let pv0: AB::Expr = builder.public_values()[0].into();
 +    builder.assert_zero(s(Op::Pv) * (l.a[0] - pv0));
