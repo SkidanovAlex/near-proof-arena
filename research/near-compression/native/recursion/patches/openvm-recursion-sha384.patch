@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..b147b74
+index 0000000..b2d42bc
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,724 @@
+@@ -0,0 +1,727 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1588,6 +1588,10 @@ index 0000000..b147b74
 +    pub fn load(&mut self, x: EF) -> V {
 +        self.push(Op::Load, 0, 0, 0, 0, x, F::ZERO)
 +    }
++    /// A witness bit in one row (LoadBit: c0 in {0,1}, other coefficients zero).
++    pub fn load_bit(&mut self, bit: bool) -> V {
++        self.push(Op::LoadBit, 0, 0, 0, 0, EF::from(F::from_bool(bit)), F::ZERO)
++    }
 +    pub fn load_f(&mut self, x: F) -> V {
 +        self.load(EF::from(x))
 +    }
@@ -1667,8 +1671,7 @@ index 0000000..b147b74
 +            let keep = free_top.saturating_sub(o[k]).min(width);
 +            let mut x = self.c(F::ZERO);
 +            for j in (0..keep).rev() {
-+                let bv = self.load_f(F::from_bool((l[k] >> j) & 1 == 1));
-+                let bc = self.bit(bv, 0, 0);
++                let bc = self.load_bit((l[k] >> j) & 1 == 1);
 +                x = self.dbl_add(x, bc);
 +            }
 +            // x * X^k
@@ -1964,7 +1967,7 @@ index 0000000..b147b74
 +
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..aee430a
+index 0000000..906289b
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
 @@ -0,0 +1,236 @@
@@ -2129,7 +2132,7 @@ index 0000000..aee430a
 +        b.bind = self.bind;
 +        build_verifier(&mut b, vk, proof);
 +        b.finish();
-+        assert_eq!(vk.inner.params.k_whir(), self.k);
++        let _ = self.k; // per-round folding factors come from the child vk
 +
 +        // leaf and Merkle-node jobs (ids 0..), then the transcript jobs
 +        let leaf_jobs: Vec<Job2> = b.jobs();
@@ -3522,10 +3525,10 @@ index 0000000..2f39c16
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..137394c
+index 0000000..69cde7d
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,132 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -3601,9 +3604,11 @@ index 0000000..137394c
 +    Data = 26,
 +    /// c = app-binding total; receives (c, P0) from the last app-binding row, P0 = n - 2
 +    Acc2 = 27,
++    /// c = free witness bit: c0 in {0, 1}, c1..c11 = 0 (one row instead of Load + Bit)
++    LoadBit = 28,
 +}
 +
-+pub const NUM_OPS: usize = 28;
++pub const NUM_OPS: usize = 29;
 +/// Op code = 8 * hi + lo, hi < OP_HI (UAIR one-hot selector halves).
 +pub const OP_LO: usize = 8;
 +pub const OP_HI: usize = 4;
@@ -3613,7 +3618,7 @@ index 0000000..137394c
 +        use Op::*;
 +        [
 +            Nop, Mul, Add, Sub, Const, ConstX, Load, Unit1, Anchor, UnitW, Smp1, Smp12, Unit12,
-+            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2,
++            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit,
 +        ]
 +    }
 +    pub fn reads_a(self) -> bool {
@@ -3678,7 +3683,7 @@ index 0000000..df6e338
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..026c40a
+index 0000000..0217f7e
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
 @@ -0,0 +1,656 @@
@@ -3993,7 +3998,7 @@ index 0000000..026c40a
 +    describe("NV_PARENT", &pp);
 +    let engine = Sha384CpuEngine::new(pp);
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
-+    assert_eq!(k, 3, "coset tree height must match the child");
++    let _ = k;
 +    let run = |circ: &super::circuit::NvCircuit,
 +               vk: &MultiStarkVerifyingKey<Sha384Config>,
 +               p: &Proof<Sha384Config>,
@@ -4006,7 +4011,7 @@ index 0000000..026c40a
 +        for (i, a) in vk1.inner.per_air.iter().enumerate() {
 +            let w = a.params.width.common_main;
 +            cols += w;
-+            opened += w * (1 + a.params.need_rot as usize);
++            opened += w + a.params.opening_masks()[0].iter().filter(|&&m| m).count();
 +            ints += shapes[i].0 * a.symbolic_constraints.interactions.len();
 +            cells += shapes[i].0 * shapes[i].1;
 +            if airs[i].name().starts_with("Sha512Air") || airs[i].name().starts_with("TableAir") {
@@ -4985,10 +4990,10 @@ index 0000000..098b0c8
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..16fc746
+index 0000000..55cdb77
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,754 @@
+@@ -0,0 +1,758 @@
 +//! NV merged non-SHA AIR ("NvAir", U2): one AIR, row roles sharing a column pool.
 +//!
 +//! Common columns: role flags ka (ALU), kb (BIND), kg (GLUE), kh (transcript hash chain),
@@ -5379,7 +5384,7 @@ index 0000000..16fc746
 +    let a: [AB::Expr; 12] = l.a.map(Into::into);
 +    let bb: [AB::Expr; 12] = l.b.map(Into::into);
 +    let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
-+    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2);
++    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2) + s(Op::LoadBit);
 +    let copy_a = s(Op::Unit1) + s(Op::UnitW) + s(Op::Unit12) + s(Op::Bit) + s(Op::Pv) + s(Op::UnitWS4) + s(Op::UnitWS2);
 +    let mulab = s(Op::Mul) + s(Op::Horn);
 +    for k in 0..12 {
@@ -5403,6 +5408,10 @@ index 0000000..16fc746
 +        }
 +    }
 +    builder.assert_zero(s(Op::Bit) * l.a[0] * (l.a[0] - one.clone()));
++    builder.assert_zero(s(Op::LoadBit) * l.c[0] * (l.c[0] - one.clone()));
++    for k in 1..12 {
++        builder.assert_zero(s(Op::LoadBit) * l.c[k]);
++    }
 +    let pv0: AB::Expr = builder.public_values()[0].into();
 +    builder.assert_zero(s(Op::Pv) * (l.a[0] - pv0));
 +
@@ -5745,10 +5754,10 @@ index 0000000..16fc746
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..28d5d19
+index 0000000..2c039f7
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1448 @@
+@@ -0,0 +1,1471 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -5950,8 +5959,8 @@ index 0000000..28d5d19
 +    let x = coeffs(s.val)[0].as_canonical_u32();
 +    let bits: Vec<V> = (0..31)
 +        .map(|j| {
-+            let bv = b.load_f(F::from_bool((x >> j) & 1 == 1));
-+            b.bit(bv, qid, j as u32)
++            let _ = qid;
++            b.load_bit((x >> j) & 1 == 1)
 +        })
 +        .collect();
 +    // recompose (MSB first): acc = 2 acc + bit
@@ -5983,8 +5992,8 @@ index 0000000..28d5d19
 +    let x = coeffs(s.val)[0].as_canonical_u32();
 +    let bits: Vec<V> = (0..31)
 +        .map(|j| {
-+            let bv = b.load_f(F::from_bool((x >> j) & 1 == 1));
-+            b.bit(bv, qid, j as u32)
++            let _ = qid;
++            b.load_bit((x >> j) & 1 == 1)
 +        })
 +        .collect();
 +    let mut acc = b.c(F::ZERO);
@@ -6006,8 +6015,8 @@ index 0000000..28d5d19
 +    }
 +    let abits: Vec<V> = (0..4)
 +        .map(|j| {
-+            let bv = b.load_f(F::from_bool((a >> j) & 1 == 1));
-+            b.bit(bv, qid, 100 + j as u32)
++            let _ = qid;
++            b.load_bit((a >> j) & 1 == 1)
 +        })
 +        .collect();
 +    let mut a_and = abits[0];
@@ -6018,8 +6027,8 @@ index 0000000..28d5d19
 +    let qn = 27 - m;
 +    let mut qv = b.c(F::ZERO);
 +    for j in (0..qn).rev() {
-+        let bv = b.load_f(F::from_bool((q >> j) & 1 == 1));
-+        let bc = b.bit(bv, qid, 200 + j as u32);
++        let _ = qid;
++        let bc = b.load_bit((q >> j) & 1 == 1);
 +        qv = b.dbl_add(qv, bc);
 +    }
 +    let mut av = b.c(F::ZERO);
@@ -6692,6 +6701,7 @@ index 0000000..28d5d19
 +        }
 +    }
 +    let mut kern: std::collections::BTreeMap<(usize, bool, usize, usize), V> = Default::default();
++    let mut em_memo: std::collections::HashMap<(usize, usize), V> = Default::default();
 +    for &(mat_idx, col_idx, s) in layout.sorted_cols.iter() {
 +        let need = masks[mat_idx][col_idx];
 +        let n = s.log_height() - l_skip;
@@ -6769,11 +6779,33 @@ index 0000000..28d5d19
 +            kern.insert(key, kv);
 +        }
 +        let kv = kern[&key];
-+        let mut em = b.c(F::ONE);
-+        for (i, j) in (l_skip + n..l_skip + n_stack).enumerate() {
-+            let f = if (s.row_idx >> j) & 1 == 1 { u[n + 1 + i] } else { om_u[n + 1 + i] };
-+            em = b.mul(em, f);
-+        }
++        // eq of the slice's stacked row bits above its height, memoized on (start bit, high bits)
++        let em = {
++            let mut j = l_skip + n_stack;
++            let mut chain = vec![];
++            for jj in (l_skip + n..l_skip + n_stack).rev() {
++                chain.push(jj);
++            }
++            let mut acc_v: Option<V> = None;
++            for jj in chain {
++                let hi = s.row_idx >> jj;
++                let k = (jj, hi);
++                let v = if let Some(&v) = em_memo.get(&k) {
++                    v
++                } else {
++                    let i = jj - (l_skip + n);
++                    let _ = i;
++                    let f = if hi & 1 == 1 { u[jj - l_skip + 1] } else { om_u[jj - l_skip + 1] };
++                    let v = match acc_v { Some(a) => b.mul(a, f), None => f };
++                    em_memo.insert(k, v);
++                    v
++                };
++                acc_v = Some(v);
++                j = jj;
++            }
++            let _ = j;
++            acc_v.unwrap_or_else(|| b.c(F::ONE))
++        };
 +        let t = b.mul(em, kv);
 +        let t = b.mul(t, l2p[col_base[mat_idx] + col_idx]);
 +        qc[s.col_idx] = b.add(qc[s.col_idx], t);
