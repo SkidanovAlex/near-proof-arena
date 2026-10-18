@@ -527,3 +527,11 @@ Padding-free heights implemented (`lane/pq-whir-levers` @ `561c934f7`, `tight_he
 commit only up to the last non-zero row in power-of-two chunks; zerocheck/GKR unchanged
 over a virtual zero tail; measured exact on the dummy) — needs zero-row-valid AIRs; NV
 model 308.5 → 298.9 KB.
+
+## 2026-10-18 — correctness proofs; A-IC decision; full-memory run
+
+* Box freed for the real run (arena workers w1–w3 stopped; zkbuild.slice 104G/108G; watchdog LOW=10). Restore afterwards.
+* Protocol proof (`lane/pq-final-soundness` @ ae0ae8a7b; PROOF.md, GAPS.md, calc/bound.py): 2⁻¹³⁵·² end to end (2⁻¹³²·⁴ union over 7 layers), straight-line extraction, worst round 2⁻²⁶⁸·⁵⁵ (WHIR round 0, 236.55 + z). Conditional on T\* (G-1 multi-block squeeze not covered by any QROM FS theorem; G-2 PoW bits not tied to query blocks → 2⁻¹⁰⁵ without fix), NV-faithful, Base-faithful, A-IC. Minor: G-9/G-10/G-11.
+* Circuit proof (`lane/pq-nv-circuit-soundness`; FAITHFUL.md): NV-faithful F1, F2, F4–F6 proven at 3c9d479ab after 6 soundness fixes (B1 fractional B-field, B2 child height, B3 free base-load coefficients → vacuous PoW / forgeable PVs, B4 42-B tail framing, B5 squeeze ids, B6 job swap; commits 2e36b0228, 09fead0bc, 274fe5ccf). ε_LogUp ≈ 2⁻³¹⁷·⁹. Single-cell perturbation over ~77M cells: no relevant undetected cell. **G1: the app statement was not passed up the recursion** — adopted fix: SHA-384 statement digest at level 1, re-exposed at every level, checked by V_d.
+* User decision: accept A-IC as U-11 and fund research for a proven bound (research lane opened).
+* Sent to the recursion lane: merge B1–B6 on top of 32fb63327, statement passthrough, T\*, then the real-settings chain.
