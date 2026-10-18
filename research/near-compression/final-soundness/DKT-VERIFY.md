@@ -30,6 +30,7 @@ Companion files:
 |---|---|
 | **O-1**: DKT26 Thm 5.12 (Johnson line MCA), list (67), Cor 7.7 (interleaving), Cor 7.8 (folds); backend m = 3 → 64 | **Proven (Lean, no sorry), and the constants match. OK to cite as [P].** Every cited theorem uses only `propext`, `Classical.choice` and `Quot.sound`. The Lean error constant `johnsonE0` is exactly the constant bound_mca.py uses. Every number in the O-1 schedule re-derives exactly (§4). Caveat: O-1 as configured batches μ with three first-order curve certificates, which belong to the O-2 machinery. They pass the same Lean check (§5). |
 | **O-2**: first-order beyond-Johnson certificates (36 codes) | **Proven (Lean, no sorry), and the constants match. OK to cite as [P].** All 36 certificates were re-checked by the Lean kernel with ArkLib's own decidable checker. For each one, the exceptional-set and list-size theorems were derived over every field of characteristic p. The Lean-evaluated bounds equal the JSON rationals exactly: 36/36 for E and for lists (§5). The citations need correcting: the certificates instantiate the factorwise-squarefree transfer (Lemma 5.6), not Thm 5.8 / Lemma 5.9 (§3.5). |
+| **O-2 as implemented** (lane/pq-recursion-sha384 vk-bound `AgreementTable::canonical`, six real shapes; §8) | **All 129 certificates present** (93 round/fold-sub-codes s ≤ k_i + 36 round-0 batching curves) in `calc/dkt_certs_o2.json`. The backend's integer rule is kept unchanged. The full bound passes for both finals, inner NV and the b = 2 chain. Base app stress needs round 0 at J64 (+2 queries, budget not certificate). The final's 301,157 B is backed. |
 
 No gap was found in either item. The remaining caveats are in §6:
 * the paper is still a preprint;
@@ -327,9 +328,10 @@ The resulting values are the ones bound_mca.py reads.
 * **No independent kernel replay.** The proofs were not replayed with an independent checker such
   as lean4checker or nanoda. The local lean4checker targets v4.29. The trust is that of Lean's own
   kernel at elaboration time.
-* **Pinned shapes only.** The certificates cover bound.py's shapes only. If the pinned final shape
-  changes (MCA-UPGRADE.md §5), rerun `dkt_certs.py`, then `calc/dkt_lean_certs.py eval|proof` and
-  the Lean check.
+* **Pinned shapes only.** `dkt_certs.json` covers bound.py's plan shapes. `dkt_certs_o2.json`
+  (§8) covers the six real shapes of the recursion lane's O-2 table. If a shape changes, add it to
+  `O2_SHAPES` in `dkt_certs.py`, rerun `--table`, then `calc/dkt_lean_certs.py eval|proof` with
+  `DKT_JSON` and the Lean check.
 
 ## 7. Reproduce
 
