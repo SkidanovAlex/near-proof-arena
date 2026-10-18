@@ -79,10 +79,43 @@ new file mode 100644
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 --- a/crates/recursion/src/nv/tests.rs
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -433,6 +433,17 @@ fn nv_chain() {
+@@ -293,6 +293,21 @@ fn nv_opening_formula() {
+     assert_eq!(ok, 4);
+ }
+ 
++/// [stream research] The WHIR per-round regimes as bound in a vk (O-2 first-order / Johnson).
++fn print_vk_regimes(tag: &str, vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>) {
++    let w = &vk.inner.params.whir;
++    match &w.agreement {
++        Some(t) => println!(
++            "{tag}_VK_REGIMES m={} margin_milli={} target={} rounds(n,k,A,q,regime)={:?}",
++            t.m,
++            t.margin_milli,
++            t.target_bits,
++            t.rounds.iter().map(|r| (r.n, r.kdim, r.agree, r.queries, if r.first_order { "O2" } else { "J" })).collect::<Vec<_>>()
++        ),
++        None => println!("{tag}_VK_REGIMES none (plain list decoding) queries={:?}", w.rounds.iter().map(|r| r.num_queries).collect::<Vec<_>>()),
++    }
++}
++
+ /// NV-verifies-NV chain (ignored; env-driven).
+ ///   NV_LEVELS=4 NV_LOG_ROWS=17 PARENT_N_STACK=16 PARENT_BITS=20 PARENT_LIST_M=3 ...
+ #[test]
+@@ -403,6 +418,7 @@ fn nv_chain() {
+     for i in 1..=phase_a {
+         circ.child_nv = i >= 2;
+         let (v, q, sh, app) = run(&circ, &vka, &pa, &format!("A{i}"));
++        print_vk_regimes(&format!("A{i}"), &v);
+         assert!(super::circuit::check_statement(&q.public_values[0], &p0.public_values), "A{i} statement");
+         if let Some(d) = &save_dir {
+             use openvm_stark_backend::codec::Encode;
+@@ -432,7 +448,19 @@ fn nv_chain() {
+         fc.app = circ.app.clone();
          fc.child_nv = true;
          fc.prog_log = circ.prog_log;
-         let (_, fq, _, _) = run_with(fe, &fc, &vka, &pa, "FINAL");
+-        let (_, fq, _, _) = run_with(fe, &fc, &vka, &pa, "FINAL");
++        let (fvk, fq, _, _) = run_with(fe, &fc, &vka, &pa, "FINAL");
++        print_vk_regimes("FINAL", &fvk);
 +        {
 +            // [stream research] final proof digest (and the proof, with NV_SAVE_DIR)
 +            use openvm_stark_backend::codec::Encode;
