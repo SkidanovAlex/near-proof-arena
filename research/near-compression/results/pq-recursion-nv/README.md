@@ -853,3 +853,7 @@ The O-2 breakdown is WHIR 219,908, GKR 32,408 (L = 24), relations 43,280 and sta
 The final shape is b = 7, k1 = 1, k = 4, log_h 20, log_final 7. The penultimate is b = 6,
 n_stack = 17. The remaining 1.2 KB, and more, is expected from SHA AIR v4
 (lane/pq-sha384-air3, about −17.5 KB).
+
+Milestone check of the O-2 + 49-interaction tree: `nv_app_binding` and `nv_opening_formula` pass in
+48-B and 42-B + coset modes (statement passthrough, app-table tamper and digest re-exposure tamper
+rejected; 17.4 / 17.0 GB peak). Logs: `logs/o2/`.
