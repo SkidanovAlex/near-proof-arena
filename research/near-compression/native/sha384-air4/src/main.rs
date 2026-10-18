@@ -438,18 +438,20 @@ mod config {
                 let m4 = mats(&t4);
                 let res = check(pk, airs, &[&m4.main, &m4.table, &m.harness]);
                 println!("NEGATIVE_PAD fake_segment_after_last detected={} by={}", res.is_err(), by(&res));
-                if t4.main_height > 4 * ROWS {
-                    let mut mm = m4.main.clone();
+                {
+                    // the same 4-segment trace in a taller matrix, segment 3 shifted one row down
+                    let h2 = 2 * t4.main_height;
+                    let main2 = gen_main(&c4, h2);
+                    let mut mm = RowMajorMatrix::new(to_f(&main2), w);
                     let seg = 3 * ROWS * w;
                     let block: Vec<F> = mm.values[seg..seg + ROWS * w].to_vec();
                     for v in &mut mm.values[seg..seg + (ROWS + 1) * w] {
                         *v = F::ZERO;
                     }
                     mm.values[seg + w..seg + (ROWS + 1) * w].copy_from_slice(&block);
-                    let res = check(pk, airs, &[&mm, &m4.table, &m.harness]);
+                    let tab = RowMajorMatrix::new(to_f(&gen_table(&main2, h2)), T_WIDTH);
+                    let res = check(pk, airs, &[&mm, &tab, &m.harness]);
                     println!("NEGATIVE_PAD fake_segment_after_gap detected={} by={}", res.is_err(), by(&res));
-                } else {
-                    println!("NEGATIVE_PAD fake_segment_after_gap skipped (no room)");
                 }
             }
             // A different (input state, block) with a fully consistent AIR trace but the

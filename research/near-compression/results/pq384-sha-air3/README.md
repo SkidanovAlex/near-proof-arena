@@ -39,8 +39,8 @@ z_inner = z_base = 24): post-execution tail **2.67 → 2.32 s** (mid GPU, −0.3
 58 % ((d + 1) × padded rows × nodes: 22 × 2^19 × 12,718 → 10 × 2^20 × 5,848); the rest of the tail
 (NvAir zerocheck, NTT and Merkle hashing of ~35 % more cells) does not move or grows a little.
 
-**Tests:** see "Tests" below (native selftest, mutation suite, unit tests, NV suites in 48-B and
-42-B + coset modes).
+**Tests:** 6,321/6,321 mutations detected, all bus-only and padding forgeries rejected, NV suites
+42/42 in 48-B and in 42-B + coset modes; CPU prove time at N = 1,024: 465 s vs 892 s (v2.1).
 
 ## 1. Objective (step 1)
 
@@ -153,10 +153,33 @@ must be ≥ 9 (NV: 9).
 ## 4. Tests (step 3/4)
 
 Native crate (`logs/selftest-v4.log`, `cargo test`):
-TESTS_NATIVE
+* `selftest 1000`: native reference = sha2 on 10,000 inputs; trace outputs = sha2 for 1,008
+  compressions (1,000 random + SHA-384/512 of "abc", "", a 200-byte two-block message chained
+  through the trace's own outputs: all digests match); backend debug checker passes on the
+  131,072-row trace (23.4 s).
+* Mutation suite (`logs/negative-v4.log`): **6,321 / 6,321 single-cell mutations detected** —
+  every column (two in-range edits per digit, all four other values per kind digit, +1 on
+  aux/carries/r/g) on rows of every kind of segment 1, trace row 0 and three padding rows, +4
+  out-of-range digits, 14 table rows, 8 consumer rows.
+* 19 constraint-consistent edits (each stored transfer value and residual carry: A, E incl. both
+  K folds, W, all four feed-forward rows): all rejected by the bus. Different block word / input
+  state with a consistent trace: rejected by the interface bus. Consistent output forgery:
+  rejected. Carry re-solved to ±½ (W79 bit 63): rejected by the range check.
+* Padding: honest tail all zero; real row copied into padding (constraint), consistent extra
+  segment after the last (bus), same segment after a one-row gap (constraint): all rejected.
+* `cargo test`: `sign_polynomials_exact`, `bus_map_consistent` (every receive ↔ one sender in
+  the segment, counts, aux pinning, 16 interface pairs), `outputs_and_checker_small`: pass.
+* Real proof, N = 1,024, n_stack 20, log_blowup 3, 268 bits, 8 threads, same machine and load
+  (`logs/prove-*-n1024.log`): v4 **465 s** vs v2.1 892 s (−48 %); SHA-only proof 817,101 B vs
+  828,957 B (relations 18,280 vs 36,424; GKR 37,544 vs 31,256 for 2^17 vs 2^16 rows).
 
 NV crate (`logs/nv-tests-48.log`, `logs/nv-tests-42.log`):
-TESTS_NV
+* `cargo test --release -p openvm-recursion-circuit --lib -- nv_ --skip nv_chain --skip
+  nv_app_binding`: **42 / 42 pass** in 48-B mode and **42 / 42** with
+  `NEARPROOF_COSET_LEAF=1 NEARPROOF_DIGEST_BYTES=42` (faithful SHA/GLUE tests incl. fake and
+  reordered segments, every-cell DOF checks, hash2 mutations, circuit debug, tight heights,
+  degrees, lever tamper, opening formula). cid semantics: GLUE's stride is `compress4_air::ROWS`
+  = 128 (documented change); everything else on bus 3 is unchanged.
 
 ## 5. Files
 

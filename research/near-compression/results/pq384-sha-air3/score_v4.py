@@ -34,7 +34,7 @@ DESIGNS = [
         note='A/E/W rows of 3 words; asym 1 per 3 rounds'),
     one('T2 k=3: 2-word rows, base 8 [E]', 128, 66, 47, 16, 21, 8000, tables=T4,
         note='tall layout but degree 21'),
-    one('T2 k=2: 2-word rows (chosen) [E]', 128, 84, 72, 16, 9, 5000, tables=T4,
+    one('T2 k=2: 2-word rows = v4 [M keygen]', 128, 83, 73, 17, 9, 5848, tables=T4,
         note='A/E/W/O blocks, 15 aux, K folded into h, 5 control'),
 ]
 
