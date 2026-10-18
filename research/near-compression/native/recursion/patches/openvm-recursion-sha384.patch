@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..b7f6da5
+index 0000000..9feeb00
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,825 @@
+@@ -0,0 +1,848 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1946,27 +1946,32 @@ index 0000000..b7f6da5
 +    /// Merkle path with direction bits `bits` (LSB first), checked against `root`.
 +    pub fn merkle_path(&mut self, job_base: u32, leaf_digests: &[Digest], siblings: &[Digest], bits: &[V], root: &DigestCells) {
 +        assert_eq!(bits.len(), siblings.len());
-+        let mut layer: Vec<DigestCells> = leaf_digests
-+            .iter()
-+            .enumerate()
-+            .map(|(j, &d)| self.dig(job_base + j as u32, d))
-+            .collect();
-+        while layer.len() > 1 {
-+            layer = (0..layer.len() / 2).map(|i| self.node(&layer[2 * i].clone(), &layer[2 * i + 1].clone())).collect();
-+        }
-+        let mut cur = layer[0];
++        // the current node as (job id, digest); its digest goes from the digest bus straight into
++        // the parent's units (DigWS*), so no digest cells per level
++        // (coset trees of per-row leaf jobs end in digest cells: the first level reads those)
++        let mut cur_cells: Option<DigestCells> = None;
++        let (mut cur_job, mut cur_d) = if leaf_digests.len() == 1 {
++            (job_base, leaf_digests[0])
++        } else {
++            let mut layer: Vec<DigestCells> = leaf_digests
++                .iter()
++                .enumerate()
++                .map(|(j, &d)| self.dig(job_base + j as u32, d))
++                .collect();
++            while layer.len() > 1 {
++                layer = (0..layer.len() / 2).map(|i| self.node(&layer[2 * i].clone(), &layer[2 * i + 1].clone())).collect();
++            }
++            cur_cells = Some(layer[0]);
++            (self.job_units.len() as u32 - 1, layer[0].digest)
++        };
 +        for (lv, &sd) in siblings.iter().enumerate() {
 +            let (slo, shi) = digest_cells(sd);
-+            let slo = self.load(ef_from(slo));
-+            let shi = self.load(ef_from(shi));
-+            let mut bit = bits[lv];
-+            let mut nb = self.one_minus(bit);
-+            if lv == 0 && super::verifier::tamper_now(super::verifier::Tamper::MerkleSwapLr) {
-+                core::mem::swap(&mut bit, &mut nb);
-+            }
++            let bit = bits[lv];
++            let swap = lv == 0 && super::verifier::tamper_now(super::verifier::Tamper::MerkleSwapLr);
 +            let b1 = coeffs(bit.val)[0] == F::ONE;
-+            let (ld, rd) = if b1 { (sd, cur.digest) } else { (cur.digest, sd) };
-+            // node job: cur goes left iff bit = 0 (UnitWS: unit index + 12 * bit)
++            let (ld, rd) = if b1 { (sd, cur_d) } else { (cur_d, sd) };
++            // node job: the current digest goes left iff bit = 0 (unit index + 12 * bit), the
++            // sibling to the other side (12 (1 - bit)); 5 rows per level
 +            use openvm_stark_backend::hasher::MerkleHasher;
 +            let id = self.job_units.len() as u32;
 +            let units: Vec<Option<U2>> = super::hash::digest_units(digest_words(ld))
@@ -1977,13 +1982,31 @@ index 0000000..b7f6da5
 +            self.job_units.push(BJob { tag: 0, node: true, units });
 +            self.merkle_nodes += 1;
 +            self.push(Op::NodeJob, NODE_TAG, 0, id, 0, EF::ZERO, F::ZERO);
-+            self.push(Op::UnitWS4, cur.lo.addr, bit.addr, id, 0, cur.lo.val, F::ZERO);
-+            self.push(Op::UnitWS2, cur.hi.addr, bit.addr, id, 8, cur.hi.val, F::ZERO);
-+            self.push(Op::UnitWS4, slo.addr, nb.addr, id, 0, slo.val, F::ZERO);
-+            self.push(Op::UnitWS2, shi.addr, nb.addr, id, 8, shi.val, F::ZERO);
-+            let d = crate::sha384::config::ShaHasher.compress(ld, rd);
-+            cur = self.dig(id, d);
++            if let Some(c) = cur_cells.take() {
++                self.push(Op::UnitWS4, c.lo.addr, bit.addr, id, 0, c.lo.val, F::ZERO);
++                self.push(Op::UnitWS2, c.hi.addr, bit.addr, id, 8, c.hi.val, F::ZERO);
++            } else {
++                let (clo, chi) = digest_cells(cur_d);
++                self.push(Op::DigWS4, cur_job, bit.addr, id, 0, ef_from(clo), F::ZERO);
++                self.push(Op::DigWS2, cur_job, bit.addr, id, 8, ef_from(chi), F::ZERO);
++            }
++            if swap {
++                // test hook: the sibling on the same side as the current digest
++                let l4 = self.load(ef_from(slo));
++                let l2 = self.load(ef_from(shi));
++                self.push(Op::UnitWS4, l4.addr, bit.addr, id, 0, l4.val, F::ZERO);
++                self.push(Op::UnitWS2, l2.addr, bit.addr, id, 8, l2.val, F::ZERO);
++            } else {
++                self.push(Op::SibWS4, 0, bit.addr, id, 0, ef_from(slo), F::ZERO);
++                self.push(Op::SibWS2, 0, bit.addr, id, 8, ef_from(shi), F::ZERO);
++            }
++            cur_d = crate::sha384::config::ShaHasher.compress(ld, rd);
++            cur_job = id;
 +        }
++        let cur = match cur_cells {
++            Some(c) => c,
++            None => self.dig(cur_job, cur_d),
++        };
 +        if cur.digest != root.digest {
 +            self.failures.push("merkle root".into());
 +        }
@@ -3319,7 +3342,7 @@ index 0000000..e1db382
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..f59193e
+index 0000000..8ccfe6b
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
 @@ -0,0 +1,680 @@
@@ -3478,7 +3501,7 @@ index 0000000..f59193e
 +    for r in 0..h {
 +        if g(r, cm.ka) == F::ONE {
 +            let lo = (0..OP_LO).find(|&k| g(r, ab.h[k]) == F::ONE).unwrap();
-+            let hi = (0..4).find(|&k| g(r, ab.g[k]) == F::ONE).unwrap();
++            let hi = (0..crate::nv::isa::OP_HI).find(|&k| g(r, ab.g[k]) == F::ONE).unwrap();
 +            let v = 8 * hi + lo;
 +            let op = Op::all().into_iter().find(|o| *o as usize == v);
 +            ops[r] = op;
@@ -3504,7 +3527,7 @@ index 0000000..f59193e
 +    let mut tested = 0;
 +    for y in 0..h {
 +        let Some(op) = ops[y] else { continue };
-+        let free = matches!(op, Op::Load | Op::LoadF | Op::LoadBit | Op::Smp1 | Op::Smp12 | Op::Acc | Op::Dig | Op::PowChk | Op::Acc2);
++        let free = matches!(op, Op::Load | Op::LoadF | Op::LoadBit | Op::Smp1 | Op::Smp12 | Op::Acc | Op::Dig | Op::PowChk | Op::Acc2 | Op::SibWS4 | Op::SibWS2 | Op::DigWS4 | Op::DigWS2);
 +        let name = format!("{op:?}");
 +        let n = seen.entry(name.clone()).or_default();
 +        if !free && *n >= 8 {
@@ -3658,7 +3681,7 @@ index 0000000..f59193e
 +        return None;
 +    }
 +    let lo = (0..OP_LO).find(|&k| g(x.ab.h[k]) == F::ONE)?;
-+    let hi = (0..4).find(|&k| g(x.ab.g[k]) == F::ONE)?;
++    let hi = (0..crate::nv::isa::OP_HI).find(|&k| g(x.ab.g[k]) == F::ONE)?;
 +    Some(8 * hi + lo)
 +}
 +
@@ -5955,10 +5978,10 @@ index 0000000..ddcb0ca
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..df4edbd
+index 0000000..c4c0fb3
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,141 @@
+@@ -0,0 +1,153 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -6045,19 +6068,31 @@ index 0000000..df4edbd
 +    /// c = a; expose the statement digest: a's coefficients = public values 1..13 (P2 = 0, lo
 +    /// cell) or 13..19 with c6..c11 = 0 (P2 = 1, hi cell)  (final-soundness G1)
 +    PvD = 31,
++    /// Merkle sibling, low digest cell: c = free witness (the sibling's 12 limbs); push word units
++    /// c[0..12] at unit index P3 + 12 (1 - B) of job P2 (B = the path bit read at the B field).
++    /// Replaces Load + one_minus + UnitWS4 (3 rows) for the sibling.
++    SibWS4 = 32,
++    /// Merkle sibling, high digest cell: as SibWS4 for 2 word units (c[0..6]; c[6..12] = 0).
++    SibWS2 = 33,
++    /// Merkle path, current digest, low cell: c = digest pairs 0, 1 of the child job P0 (digest
++    /// bus), pushed as word units c[0..12] at P3 + 12 B of job P2 (B = the path bit). Replaces
++    /// Dig + UnitWS4 (2 rows).
++    DigWS4 = 34,
++    /// As DigWS4 for the high cell: digest pair 2 of job P0, 2 word units (c[6..12] = 0).
++    DigWS2 = 35,
 +}
 +
-+pub const NUM_OPS: usize = 32;
++pub const NUM_OPS: usize = 36;
 +/// Op code = 8 * hi + lo, hi < OP_HI (UAIR one-hot selector halves).
 +pub const OP_LO: usize = 8;
-+pub const OP_HI: usize = 4;
++pub const OP_HI: usize = 5;
 +
 +impl Op {
 +    pub fn all() -> [Op; NUM_OPS] {
 +        use Op::*;
 +        [
 +            Nop, Mul, Add, Sub, Const, ConstX, Load, Unit1, Anchor, UnitW, Smp1, Smp12, Unit12,
-+            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit, LoadF, UnitWT, PvD,
++            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit, LoadF, UnitWT, PvD, SibWS4, SibWS2, DigWS4, DigWS2,
 +        ]
 +    }
 +    pub fn reads_a(self) -> bool {
@@ -6070,7 +6105,7 @@ index 0000000..df4edbd
 +    }
 +    pub fn reads_b(self) -> bool {
 +        use Op::*;
-+        matches!(self, Mul | Add | Sub | Horn | DblAdd | MulAddA | UnitWS4 | UnitWS2)
++        matches!(self, Mul | Add | Sub | Horn | DblAdd | MulAddA | UnitWS4 | UnitWS2 | SibWS4 | SibWS2 | DigWS4 | DigWS2)
 +    }
 +}
 +
@@ -6130,10 +6165,10 @@ index 0000000..9823e17
 +mod faithful_tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..47752cd
+index 0000000..8d9ee24
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1041 @@
+@@ -0,0 +1,1097 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -6612,6 +6647,10 @@ index 0000000..47752cd
 +            v.params.need_rot as usize,
 +            v.params.opening_masks()[0].iter().filter(|&&m| m).count()
 +        );
++        if std::env::var("NV_ROT_DUMP").is_ok() {
++            let idx: Vec<usize> = v.params.opening_masks()[0].iter().enumerate().filter(|(_, &m)| m).map(|(i, _)| i).collect();
++            println!("NV_ROT {} {:?}", a.name(), idx);
++        }
 +    }
 +}
 +
@@ -7174,6 +7213,58 @@ index 0000000..47752cd
 +    assert_eq!(c.len(), 2);
 +    assert!(c.contains(&(2013265920, 1048576, 37140791)) && c.contains(&(251658240, 4096, 790689)));
 +    std::fs::remove_dir_all(&dir).unwrap();
++}
++
++/// Program-size probe (ignored; env PARENT_*): a Fib child proved at the parent parameters, the
++/// NV verifier program for it (generate only); prints rows per phase / query round and the
++/// transcript job census.
++#[test]
++#[ignore]
++fn nv_program_probe() {
++    use crate::sha384::e2e_tests::{describe, env_usize, params_from_env};
++    use super::transcript2::{replay2, Op2};
++    let mut pp = params_from_env("PARENT", [17, 6, 268, 64]);
++    pp.max_constraint_degree = nv_debug_params().max_constraint_degree;
++    describe("PROBE", &pp);
++    let engine = Sha384CpuEngine::new(pp);
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), env_usize("NV_LOG_ROWS", 19), 1);
++    let (_, b) = circ.generate(&vk, &proof);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    let jobs = replay2(&b.transcript.clone().into_log());
++    let blocks = |j: &super::transcript2::TrJob2| j.job().message().len().div_ceil(128).max(1);
++    for op in [Op2::Flush, Op2::Commit, Op2::Squeeze, Op2::Pow, Op2::PowQ] {
++        let js: Vec<_> = jobs.iter().filter(|j| j.op == op).collect();
++        let small = js.iter().filter(|j| j.op == Op2::Flush && j.obs.len() <= 12).count();
++        println!("PROBE_TR {op:?} jobs={} blocks={} small_flush(<=12 felts)={small}", js.len(), js.iter().map(|j| blocks(j)).sum::<usize>());
++    }
++    let leaf_blocks: usize = b.jobs().iter().map(|j| j.num_blocks()).sum();
++    println!("PROBE_ROWS program={} merkle_nodes={} leaf+node_blocks={} transcript_jobs={}", b.instrs.len(), b.merkle_nodes, leaf_blocks, jobs.len());
++}
++
++/// Merkle-level ops (SibWS4/2: free sibling pushed at 12 (1 - bit); DigWS4/2: child digest
++/// from the digest bus pushed at 12 bit): a changed sibling limb, a changed child-digest limb
++/// and a SibWS2 high coefficient are rejected.
++#[test]
++fn nv_merkle_op_tamper() {
++    use super::isa::Op;
++    use super::uair::{AbCols, AB_W, N_COMMON};
++    use core::borrow::BorrowMut;
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), 16, 1);
++    let (_, b) = circ.generate(&vk, &proof);
++    let row_of = |op: Op| b.instrs.iter().position(|i| i.op == op).expect("op present");
++    for (name, op, k) in [("sibling limb (SibWS4)", Op::SibWS4, 3usize), ("child digest limb (DigWS4)", Op::DigWS4, 5), ("child digest limb (DigWS2)", Op::DigWS2, 1), ("SibWS2 high coefficient", Op::SibWS2, 7)] {
++        let r = row_of(op);
++        must_fail(name, || {
++            nv_debug_mats(&vk, &proof, 16, |mats, _| {
++                let w = mats[0].width;
++                let ab: &mut AbCols<F> = mats[0].values[r * w + N_COMMON..r * w + N_COMMON + AB_W].borrow_mut();
++                ab.c[k] += F::ONE;
++            })
++        });
++    }
 +}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
@@ -7952,10 +8043,10 @@ index 0000000..81bad57
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..daf220d
+index 0000000..9d6a3e8
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,794 @@
+@@ -0,0 +1,810 @@
 +//! NV merged non-SHA AIR ("NvAir", U2): one AIR, row roles sharing a column pool.
 +//!
 +//! Common columns: role flags ka (ALU), kb (BIND), kg (GLUE), kh (transcript hash chain),
@@ -8365,7 +8456,7 @@ index 0000000..daf220d
 +    let a: [AB::Expr; 12] = l.a.map(Into::into);
 +    let bb: [AB::Expr; 12] = l.b.map(Into::into);
 +    let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
-+    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2) + s(Op::LoadBit) + s(Op::LoadF);
++    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2) + s(Op::LoadBit) + s(Op::LoadF) + s(Op::SibWS4) + s(Op::SibWS2) + s(Op::DigWS4) + s(Op::DigWS2);
 +    let copy_a = s(Op::Unit1) + s(Op::UnitW) + s(Op::UnitWT) + s(Op::Unit12) + s(Op::Bit) + s(Op::Pv) + s(Op::PvD) + s(Op::UnitWS4) + s(Op::UnitWS2);
 +    let mulab = s(Op::Mul) + s(Op::Horn);
 +    for k in 0..12 {
@@ -8427,9 +8518,15 @@ index 0000000..daf220d
 +    //   transcript anchors (chan 2, job P2, 0, 0, A, B, 0) are sent.
 +    let slot = PermutationCheckBus::new(buses.slot);
 +    let smp = s(Op::Smp1) + s(Op::Smp12);
-+    let ws = s(Op::UnitWS4) + s(Op::UnitWS2);
++    // UnitWS*: units of the a operand at P3 + 2k + 12 bit; DigWS*: the same from a child digest
++    let ws = s(Op::UnitWS4) + s(Op::UnitWS2) + s(Op::DigWS4) + s(Op::DigWS2);
++    // Merkle sibling ops: free c, units at P3 + 2k + 12 (1 - bit)
++    let sib = s(Op::SibWS4) + s(Op::SibWS2);
++    for k in 6..12 {
++        builder.assert_zero((s(Op::SibWS2) + s(Op::DigWS2)) * l.c[k]);
++    }
 +    let wt = s(Op::UnitWT);
-+    let chan = s(Op::Unit1) + s(Op::UnitW) + wt.clone() + ws.clone() + s(Op::Unit12) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor).double()
++    let chan = s(Op::Unit1) + s(Op::UnitW) + wt.clone() + ws.clone() + sib.clone() + s(Op::Unit12) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor).double()
 +        + s(Op::PowChk) * cst(3);
 +    for k in 0..12usize {
 +        let kk = cst(k as u64);
@@ -8443,9 +8540,9 @@ index 0000000..daf220d
 +            send += s(Op::Job);
 +        }
 +        if k < 2 {
-+            send += s(Op::UnitW) + ws.clone() + wt.clone();
++            send += s(Op::UnitW) + ws.clone() + sib.clone() + wt.clone();
 +        } else if k < 4 {
-+            send += s(Op::UnitWS4);
++            send += s(Op::UnitWS4) + s(Op::SibWS4) + s(Op::DigWS4);
 +            // B in {2, 4}: words 2, 3 only for B = 4
 +            send += s(Op::UnitW) * (bfield.clone() - cst(2)) * cst(p3_field::PrimeField32::as_canonical_u32(&F::TWO.inverse()) as u64);
 +        }
@@ -8453,11 +8550,12 @@ index 0000000..daf220d
 +        let mut key2 = s(Op::Unit12) * (p[3] + kk.clone())
 +            + (s(Op::UnitW) + wt.clone()) * (p[3] + cst(2 * k as u64))
 +            + ws.clone() * (p[3] + cst(2 * k as u64) + l.b[0] * cst(12))
++            + sib.clone() * (p[3] + cst(2 * k as u64 + 12) - l.b[0] * cst(12))
 +            + s(Op::Job) * kk.clone();
 +        if k == 0 {
 +            key2 += (s(Op::Horn) + s(Op::Unit1)) * p[3];
 +        }
-+        let mut kind = (s(Op::UnitW) + ws.clone()).double() + smp.clone() * cst(KIND_SAMPLE as u64);
++        let mut kind = (s(Op::UnitW) + ws.clone() + sib.clone()).double() + smp.clone() * cst(KIND_SAMPLE as u64);
 +        if k < 2 {
 +            // UnitWT: word unit (kind 2), then the 42-B digest tail (kind UNIT_HALF)
 +            let kk = if k == 0 { super::hash::UNIT_WORD } else { super::hash::UNIT_HALF };
@@ -8479,7 +8577,7 @@ index 0000000..daf220d
 +        }
 +        if k < 4 {
 +            for t in 0..3 {
-+                v[t] += (s(Op::UnitW) + ws.clone() + if k < 2 { wt.clone() } else { AB::Expr::ZERO }) * l.c[3 * k + t];
++                v[t] += (s(Op::UnitW) + ws.clone() + sib.clone() + if k < 2 { wt.clone() } else { AB::Expr::ZERO }) * l.c[3 * k + t];
 +            }
 +        }
 +        let [v0, v1, v2] = v;
@@ -8489,10 +8587,19 @@ index 0000000..daf220d
 +    PermutationCheckBus::new(buses.job).send(builder, [p[2].into(), p[0].into(), AB::Expr::ONE], s(Op::Job) + s(Op::NodeJob));
 +    // digests: pairs P3, P3 + 1 (if B = 2) of job P2
 +    let dig = PermutationCheckBus::new(buses.digest);
++    // Dig: job P2, pairs P3, P3 + 1 (B = 2) or P3 (B = 1); DigWS4: job P0, pairs 0, 1;
++    // DigWS2: job P0, pair 2
++    let (dws4, dws2) = (s(Op::DigWS4), s(Op::DigWS2));
 +    for h in 0..2usize {
-+        let mut m = vec![p[2].into(), p[3] + cst(h as u64)];
++        let job = s(Op::Dig) * p[2] + (dws4.clone() + dws2.clone()) * p[0];
++        let pair = s(Op::Dig) * (p[3] + cst(h as u64)) + dws4.clone() * cst(h as u64) + dws2.clone() * cst(2);
++        let mut m = vec![job, pair];
 +        m.extend((0..6).map(|t| l.c[6 * h + t].into()));
-+        let mult = if h == 0 { s(Op::Dig) } else { s(Op::Dig) * (bfield.clone() - one.clone()) };
++        let mult = if h == 0 {
++            s(Op::Dig) + dws4.clone() + dws2.clone()
++        } else {
++            s(Op::Dig) * (bfield.clone() - one.clone()) + dws4.clone()
++        };
 +        dig.receive(builder, m, mult);
 +    }
 +    for k in 6..12 {
@@ -8752,10 +8859,10 @@ index 0000000..daf220d
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..01535cb
+index 0000000..65f5e3a
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1583 @@
+@@ -0,0 +1,1619 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -10203,22 +10310,23 @@ index 0000000..01535cb
 +            let one = b.c(F::ONE);
 +            b.assert_eq(prod, one, "zi_root inverse");
 +            let omega_k_inv = omega_k.inverse();
-+            let tw: Vec<F> = omega_k.powers().take(1 << (k - 1)).collect();
 +            let itw: Vec<F> = omega_k_inv.powers().take(1 << (k - 1)).collect();
-+            let xp = powers_of_2(b, x, k);
 +            let xip = powers_of_2(b, xinv, k);
 +            let mut vals = values;
 +            let n = vals.len();
++            // butterfly v_i + (alpha - t)(v_i - v_m) ti with t = x^(2^j) w^i, ti = x^(-2^j) w^-i / 2:
++            // (alpha - t) ti = H_j w^-i - 1/2 with H_j = alpha x^(-2^j) / 2, so the new value is
++            // v_m + G_i (v_i - v_m), G_i = H_j w^-i + 1/2  (5 rows instead of 7)
 +            for (j, &alpha) in alphas_round.iter().enumerate() {
 +                let mm = n >> (j + 1);
++                let ax = b.mul(alpha, xip[j]);
++                let h = b.mul_c(ax, F::ONE.halve());
 +                for i in 0..mm {
-+                    let t = b.mul_c(xp[j], tw[i << j]);
-+                    let ti = b.mul_c(xip[j], itw[i << j] * F::ONE.halve());
-+                    let am = b.sub(alpha, t);
++                    let g = if i == 0 { h } else { b.mul_c(h, itw[i << j]) };
++                    let g = b.add_c(g, F::ONE.halve());
 +                    let d = b.sub(vals[i], vals[i + mm]);
-+                    let p = b.mul(am, d);
-+                    let p = b.mul(p, ti);
-+                    vals[i] = b.add(vals[i], p);
++                    let p = b.mul(g, d);
++                    vals[i] = b.add(vals[i + mm], p);
 +                }
 +            }
 +            zs_round.push(zi);
@@ -10305,6 +10413,40 @@ index 0000000..01535cb
 +        }
 +    }
 +    let mut acc = b.mul(prefix, ev[0]);
++    // eq(alpha_slc, y) = prod_m (1 - a_m) * prod_m (1 + y_m A_m), A_m = (2 a_m - 1) / (1 - a_m):
++    // per-alpha factors and suffix products once, then 2 rows per variable per query point
++    let (ainv, bsuf) = {
++        let one = b.c(F::ONE);
++        let mone = b.c(-F::ONE);
++        let mut am = Vec::with_capacity(t);
++        let mut bm = Vec::with_capacity(t);
++        for &a in &alphas[..t] {
++            let bb = b.one_minus(a);
++            let bv = bb.val;
++            let inv = b.load(if bv == EF::ZERO { EF::ZERO } else { bv.inverse() });
++            if bv == EF::ZERO {
++                b.failures.push("WHIR folding challenge alpha = 1 (eq factorisation)".into());
++            }
++            let pr = b.mul(bb, inv);
++            b.assert_eq(pr, one, "eq factor inverse");
++            let twoa = b.dbl_add(a, mone);
++            am.push(b.mul(twoa, inv));
++            bm.push(bb);
++        }
++        let mut suf = vec![one; t + 1];
++        for m in (0..t).rev() {
++            suf[m] = b.mul(bm[m], suf[m + 1]);
++        }
++        (am, suf)
++    };
++    let eq_fast = |b: &mut Builder, j: usize, y: &[V]| -> V {
++        let mut e = bsuf[j];
++        for (m, &ym) in y.iter().enumerate().take(t - j) {
++            let p = b.mul(ym, ainv[j + m]);
++            e = b.mul_add_a(e, p);
++        }
++        e
++    };
 +    let mut j = params.whir.k_round(0);
 +    for i in 0..num_rounds {
 +        let gamma = gammas[i];
@@ -10313,7 +10455,8 @@ index 0000000..01535cb
 +        if i != num_rounds - 1 {
 +            let zp = powers_of_2(b, z0s[i], slc_len);
 +            let (max, left) = zp.split_last().unwrap();
-+            let e = eq_mle(b, alpha_slc, left);
++            debug_assert_eq!(alpha_slc.len(), left.len());
++            let e = eq_fast(b, j, left);
 +            let h = horner(b, &final_poly, *max);
 +            let t1 = b.mul(gamma, e);
 +            let t1 = b.mul(t1, h);
@@ -10323,7 +10466,7 @@ index 0000000..01535cb
 +        for &zi in &zs[i] {
 +            let zp = powers_of_2(b, zi, slc_len);
 +            let (max, left) = zp.split_last().unwrap();
-+            let e = eq_mle(b, alpha_slc, left);
++            let e = eq_fast(b, j, left);
 +            let h = horner(b, &final_poly, *max);
 +            let t1 = b.mul(gp, e);
 +            let t1 = b.mul(t1, h);

@@ -90,7 +90,14 @@ APP_ROWS = 10_988          # level-1 table (data rows)
 Q0_COST = 451              # round 0 (k1 = 1), depth 20 + 4 (x15)
 QR_COST = 530              # rounds >= 1 (k = 4), depth 17 + 4
 PER_LEVEL = 10             # ALU rows per Merkle path level
-FINAL_PER_Q = 110          # final WHIR check per query (powers, eq, Horner)
+FINAL_PER_Q = 110          # final WHIR check per query at log_final = 3 (powers, eq, Horner)
+# component costs (rows), calibrated on the measured QCOST lines (depth 24 / 21 at 10 rows per level):
+Q0_BASE = Q0_COST - 24 * 10    # round-0 query minus its Merkle path
+QR_BASE = QR_COST - 21 * 10    # later-round query minus its Merkle path (fold 15 butterflies x 7)
+FINAL_EQ = 66                  # final check eq_mle (6 rows per variable)
+FINAL_OTHER = FINAL_PER_Q - FINAL_EQ - 16   # powers + combine; Horner = 2 * 2^lf rows
+def final_per_q(lf):
+    return FINAL_EQ + FINAL_OTHER + 2 * (1 << lf)
 TRANSCRIPT_BLOCKS = 1_600  # transcript compressions (measured ~1.5k)
 TR_ROWS = 6_000            # hash-chain + sample rows
 DEDUP = False              # in-circuit multiproof dedup: NOT possible with a static (bound) program -
@@ -120,11 +127,17 @@ def p2(x):
     return 1 << math.ceil(math.log2(x))
 
 
-def nv_circuit(rounds_q, depth0, depthr, child_W):
+CALIB_W = 21          # child stacked width of the calibration run (T102 A2)
+FOLD_ROW = 7          # rows per fold butterfly (5 with the cheaper butterfly)
+
+
+def nv_circuit(rounds_q, depth0, depthr, child_W, lf=3, k1=1):
     """NV circuit size verifying a child with WHIR schedule rounds_q (per-round queries)."""
     q0, qr = rounds_q[0], sum(rounds_q[1:])
-    prog = P_FIXED + q0 * (Q0_COST + PER_LEVEL * (depth0 - 24)) + qr * (QR_COST + PER_LEVEL * (depthr - 21)) \
-        + FINAL_PER_Q * (q0 + qr)
+    # round 0: Horner over the 2^k1 opened rows of W felts, 2^k1 - 1 butterflies, Merkle path
+    q0_cost = Q0_BASE - 2 * CALIB_W - 7 + (1 << k1) * child_W + FOLD_ROW * ((1 << k1) - 1)
+    prog = P_FIXED + q0 * (q0_cost + PER_LEVEL * depth0) + qr * (QR_BASE + PER_LEVEL * depthr) \
+        + final_per_q(lf) * (q0 + qr)
     prog_log = math.ceil(math.log2(prog + 2))
     # compressions: leaf jobs (round 0: 2 rows of W felts; later: 16 Ext12 values) + nodes
     blk = lambda nbytes: -(-(nbytes + 33 + 8 + 17) // 128)
@@ -135,9 +148,9 @@ def nv_circuit(rounds_q, depth0, depthr, child_W):
             return sum(min(q, (1 << (depth - l)) * (1 - (1 - 2.0 ** -(depth - l)) ** q)) for l in range(depth))
         per_r = [rounds_q[0]] + list(rounds_q[1:])
         nn = nodes(q0, depth0) + sum(nodes(x, depthr) for x in rounds_q[1:])
-        comps = int(q0 * blk(2 * child_W * 4) + qr * blk(16 * 48) + nn) + TRANSCRIPT_BLOCKS
+        comps = int(q0 * blk((1 << k1) * child_W * 4) + qr * blk(16 * 48) + nn) + TRANSCRIPT_BLOCKS
     else:
-        comps = q0 * (blk(2 * child_W * 4) + depth0) + qr * (blk(16 * 48) + depthr) + TRANSCRIPT_BLOCKS
+        comps = q0 * (blk((1 << k1) * child_W * 4) + depth0) + qr * (blk(16 * 48) + depthr) + TRANSCRIPT_BLOCKS
     glue = 8 * comps
     prog += prog % 2
     nv_rows = prog + prog // 2 + APP_ROWS // 2 + glue + TR_ROWS
@@ -189,14 +202,23 @@ def schedule(cells, b, k1, k, log_h, lf, target):
     return r['q'], [math.ceil(math.log2(rd['leaves']) - 1e-9) for rd in r['rounds']]
 
 
-def fixed_point(pen_target, fin_target, digest, b, n_stack, k1=1, k=4, fin_bmax=None):
+def fixed_point(pen_target, fin_target, digest, b, n_stack, k1=1, k=4, fin_bmax=None, lf=None):
     log_h = L_SKIP + n_stack
-    lf = next(x for x in range(3, 12) if (log_h - k1 - x) % k == 0)
+    if lf is None:
+        # penultimate log_final: the cheapest valid one (smaller -> cheaper final check, more rounds)
+        best = None
+        for x in range(1, 12):
+            if (log_h - k1 - x) % k == 0:
+                r = fixed_point(pen_target, fin_target, digest, b, n_stack, k1, k, fin_bmax, x)
+                if best is None or r[1]['total'] < best[1]['total']:
+                    best = r
+        return best
     cells = 1 << 26
     for _ in range(30):
         q, depths = schedule(cells, b, k1, k, log_h, lf, pen_target)
         W = -(-cells // (1 << log_h))
-        c = nv_circuit(q, depths[0], depths[1] if len(depths) > 1 else depths[0], W)
+        c = nv_circuit(q, depths[0], depths[1] if len(depths) > 1 else depths[0], W, lf, k1)
+        c['pen_lf'] = lf
         if abs(c['cells'] - cells) < cells // 1000:
             break
         cells = c['cells']

@@ -979,3 +979,60 @@ L = 23 (2^24) is out of reach: SHA's 17.8M alone exceeds 16.8M.
   rows. Halving the transcript blocks (1,600 → 800) is −3.6 KB (301,343 B without the cut). A
   realistic step is about −0.45 KB per 100 compressions: for example, larger flush jobs with
   fewer framing blocks.
+
+## Program cut, milestone 1: Merkle level 10 → 5 rows, fold butterfly 7 → 5, factorised eq in the final check [measured: tests]
+
+**What changed.** The changes are in `nv/isa.rs`, `nv/uair.rs`, `nv/builder.rs` and
+`nv/verifier.rs`:
+
+| change | rows before | rows after |
+|---|---|---|
+| Merkle level | 10 (2 loads, `one_minus`, `NodeJob`, 4 `UnitWS`, 2 `Dig`) | 5 (`NodeJob`, `DigWS4`, `DigWS2`, `SibWS4`, `SibWS2`) |
+| fold butterfly (WHIR rounds ≥ 1) | 7 | 5 |
+| eq in the final check, per variable | 6 | 2 |
+
+* **Merkle level, details.** The root still takes one `Dig` pair plus the assertion.
+* **Ops.** There are 36 ops now. `OP_HI` goes from 4 to 5. The ALU view is 54 columns, still
+  inside the pool, so NvAir stays at 74 columns, 49 interactions and 37 rotated columns.
+* **Fold butterfly, details.** The new value is `v_m + G_i (v_i − v_m)` with
+  `G_i = H_j ω^{−i} + 1/2` and `H_j = α_j x^{−2^j} / 2`, one product per j. This is the same
+  value as before: `(α − t)·ti = H_j ω^{−i} − 1/2`, because `t·ti = 1/2`.
+* **Factorised eq, details.** It uses `eq(α, y) = Π(1 − α_m) · Π(1 + y_m A_m)` with
+  `A_m = (2α_m − 1)/(1 − α_m)`. The per-α factors and suffix products are computed once, then
+  each query point costs 2 rows per variable: `mul`, then `MulAddA`.
+
+**Soundness implications, for the re-audit of §2(b), §R.2 and `nv_bind_tamper`:**
+1. **`SibWS4` / `SibWS2`** (op 32 / 33).
+   * c is a free witness, as `Load` was; B is the path bit cell, boolean by `LoadBit`.
+   * The units are word units of c at key `P3 + 2k + 12(1 − b)` (4 or 2 words) for job P2.
+   * The unit messages are exactly what `Load` + `one_minus` + `UnitWS*(nb)` produced.
+   * `SibWS2` constrains c[6..12] = 0, as Dig's high cell does.
+   * The GLUE range-checks every word unit (bytes), as before.
+2. **`DigWS4` / `DigWS2`** (op 34 / 35).
+   * c is free, determined by the digest bus.
+   * `DigWS4` receives pairs 0 and 1 of job P0 (the A field holds the child job id, and is not
+     read as an address). `DigWS2` receives pair 2, with c[6..12] = 0.
+   * The units are word units of c at `P3 + 2k + 12 b` for parent job P2, as `UnitWS*` with the
+     bit.
+   * Each child digest is still received exactly once: GLUE sends node and leaf digests with
+     multiplicity 1, and they were consumed by one `Dig` before. The root is consumed by the
+     final `Dig`.
+   * When the leaves are per-row jobs combined by `node()`, the first level reads the cells and
+     the later levels use `DigWS*`.
+   * The digest-bus receive field is now `s(Dig)·P2 + s(DigWS)·P0` with pair
+     `s(Dig)·(P3+h) + s(DigWS4)·h + 2·s(DigWS2)`: a degree-3 field, interaction count unchanged.
+3. **The new ops are bound to P1 by the B-field range.** Op codes up to 35 give
+   P1 < 36·2^20 < p, so `B + op·2^20` still decomposes uniquely.
+4. **The fold and eq changes are program-level only.** They are algebraic identities and add
+   no AIR change.
+   * The eq factorisation needs `1 − α_m ≠ 0`. Each inverse is a `Load`, checked by `mul = 1`.
+     α_m = 1 has negligible probability, and the builder records a failure if it happens
+     (completeness only).
+5. **The B-field range check itself is unchanged.** Only the op range grew.
+
+**Tests:**
+* The fast NV suite passes in 48-B (51 tests) and 42-B + coset (52), including the DOF
+  harness, which now knows `OP_HI = 5` and the new free ops.
+* New test `nv_merkle_op_tamper`: a changed `SibWS4` limb, a changed `DigWS4` and `DigWS2`
+  child-digest limb, and a nonzero `SibWS2` high coefficient are all rejected.
+* `nv_circuit_tamper`'s Merkle left/right swap is still rejected.
