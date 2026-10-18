@@ -14,9 +14,15 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 ## T1. Hash-based IOPPs and polynomial commitments
 
 
+### [CF26]
+
+- **Citation:** Chai, Fan. *FRI Soundness Above Johnson via Threshold Halving*. ePrint 2026/858, 2026. <https://eprint.iacr.org/2026/858>
+- **Topics:** T1, T2 · **Relevance:** R — evaluated-rejected (worse than Johnson per query at our rates)
+- **Gives:** Error (1-delta/2)^q above Johnson; Lean claim.
+
 ### [LXYYZ26]
 
-- **Citation:** Li, Xing, Yao, Yuan, Zhu. *How to Fold Linear Error-Correcting Codes with Optimal Proximity Gaps*. ePrint 2026/2133, 2026. <https://eprint.iacr.org/2026/2133>
+- **Citation:** Z. Li, C. Xing, Y. Yao, C. Yuan, R. Zhu. *How to Fold Linear Error-Correcting Codes with Optimal Proximity Gaps*. ePrint 2026/2133, 2026. <https://eprint.iacr.org/2026/2133>
 - **Topics:** T1, T2 · **Relevance:** R — evaluated-rejected (more bytes/bit at our low rate)
 - **Gives:** FRI-style folding IOPP for folded RS / multiplicity codes at radius 1-R-eps; needs folding m >= 4R(2-R)/eps^2.
 - **Numbers:** Their tables: eps 0.25-0.35, m=16-32; smaller field, not smaller proofs.
@@ -29,6 +35,33 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Our base proof system: heterogeneous-table stacking into one WHIR commitment, LogUp-GKR interactions, univariate-skip zerocheck.
 - **Numbers:** OpenVM 2.0 beta claims <300 kB at 100-bit provable PQ (Poseidon2); Cor. 4.2.6 quantum bounds Theta(Q*eps) without constants.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`, `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`, `lane/pq-recursion-sha384:research/near-compression/results/pq-recursion-sha384/README.md`, `lane/pq-recursion-sha384:research/near-compression/results/pq-recursion-nv/README.md`, `lane/pq-final-soundness:research/near-compression/final-soundness/PROOF.md`
+
+### [Ska26]
+
+- **Citation:** C. Skatharoudis. *SoK: Hash-Based Polynomial Commitments and Low-Degree Tests: From FRI to Basefold, STIR, and WHIR*. ePrint 2026/1367, 2026. <https://eprint.iacr.org/2026/1367>
+- **Topics:** T1, T3 · **Relevance:** C — cited (abstract only)
+- **Gives:** Survey of hash-based PCS / LDT soundness.
+- **Where in repo:** `lane/pq-weak-binding:research/near-compression/weak-binding/ANALYSIS.md`
+
+### [GMW25]
+
+- **Citation:** A. Garreta, N. Mohnblatt, B. Wagner. *A Simplified Round-by-round Soundness Proof of FRI*. ePrint 2025/1993, 2025. <https://eprint.iacr.org/2025/1993>
+- **Topics:** T1, T9 · **Relevance:** N — not-yet-evaluated (template for WHIR rbr in Lean)
+- **Gives:** Short rbr FRI proof; formalised in Lean (simple-rbr-fri).
+
+### [HJRRR25-Jagged]
+
+- **Citation:** T. Hemo, K. Jue, E. Rabinovich, G. Roh, R. D. Rothblum. *Jagged Polynomial Commitments (or: How to Stack Multilinears)*. ePrint 2025/917, 2025. <https://eprint.iacr.org/2025/917>
+- **Topics:** T1, T7 · **Relevance:** E — evaluated (we implemented padding-free tight_heights instead)
+- **Gives:** Commit all tables as one polynomial, paying only for used area (SP1 Hypercube).
+- **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`, `lane/pq-whir-levers:research/near-compression/results/pq-whir-levers/README.md`
+
+### [Ligerito25]
+
+- **Citation:** A. Novakovic, G. Angeris. *Ligerito: A Small and Concretely Fast Polynomial Commitment Scheme*. ePrint 2025/1187, 2025. <https://eprint.iacr.org/2025/1187>
+- **Topics:** T1 · **Relevance:** N — not-yet-evaluated (255 KiB at 2^24: not smaller than WHIR)
+- **Gives:** Linear-code PCS.
+- **Numbers:** 255 KiB for 2^24.
 
 ### [SP1-Jagged]
 
@@ -60,6 +93,14 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Rate-shifting folding IOPP; fewer queries than FRI.
 - **Where in repo:** `docs/zk-formal/V3-PERF-DESIGN.md`
 
+### [ADK24]
+
+- **Citation:** S. Atapoor, C. Delpech de Saint Guilhem, A. Kindi. *STARK-based Signatures from the RPO Permutation*. ePrint 2024/1553, 2024. <https://eprint.iacr.org/2024/1553>
+- **Topics:** T1, T2 · **Relevance:** U — used (stark-plonky3 security table)
+- **Gives:** Contains FRI rbr soundness theorems for unique-decoding (Thm 2) and Johnson (Thm 3) regimes used by Plonky3's ProvenSecurity calculator.
+- **Numbers:** KoalaBear/Ext8, 104 queries, 20-bit PoW: proven UDR 102.5 bits, Johnson 128 (107 at q_H=2^64), conjectured 128.
+- **Where in repo:** `examples/stark-plonky3/README.md`
+
 ### [BT24]
 
 - **Citation:** A. R. Block, P. R. Tiwari. *On the Concrete Security of Non-interactive FRI*. ePrint 2024/1161, 2024. <https://eprint.iacr.org/2024/1161>
@@ -74,19 +115,18 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Ring-switching and FRI-Binius small-field multilinear PCS.
 - **Where in repo:** `lane/pq-recursion-sha384:research/near-compression/results/swirl-security-review/pcs-field-compatibility/`
 
-### [P3-2024-1553]
-
-- **Citation:** (cited by Plonky3 calculator). *FRI soundness in unique-decoding (Thm 2) and Johnson (Thm 3) regimes — ePrint 2024/1553*. ePrint 2024/1553, 2024. <https://eprint.iacr.org/2024/1553>
-- **Topics:** T1, T2 · **Relevance:** U — used (stark-plonky3 security table)
-- **Gives:** FRI round-by-round bounds used by Plonky3 ProvenSecurity calculator.
-- **Numbers:** KoalaBear/Ext8, 104 queries, 20-bit PoW: proven UDR 102.5 bits, Johnson 128 (107 at q_H=2^64), conjectured 128.
-- **Where in repo:** `examples/stark-plonky3/README.md`
-
 ### [Zei24-BFLD]
 
 - **Citation:** H. Zeilberger. *Basefold in the List Decoding Regime*. ResearchGate preprint, 2024. <https://www.researchgate.net/publication/387601318_Basefold_in_the_List_Decoding_Regime>
 - **Topics:** T1, T2 · **Relevance:** C — cited (background)
 - **Gives:** Basefold soundness up to Johnson.
+- **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
+
+### [DP23-Binius]
+
+- **Citation:** B. E. Diamond, J. Posen. *Succinct Arguments over Towers of Binary Fields (Binius)*. EUROCRYPT 2025; ePrint 2023/1784, 2023. <https://eprint.iacr.org/2023/1784>
+- **Topics:** T1, T8 · **Relevance:** E — evaluated (via Binius64 lane screen)
+- **Gives:** Binary-tower PCS; efficient bitwise hashes.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
 
 ### [ZCF23-Basefold]
@@ -111,12 +151,32 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 ## T2. Proximity gaps, correlated agreement, list decoding
 
 
+### [ABF26]
+
+- **Citation:** G. Arnon, D. Boneh, G. Fenzi. *Open Problems in List Decoding and Correlated Agreement*. ePrint 2026/680, 2026. <https://eprint.iacr.org/2026/680>
+- **Topics:** T2, T10 · **Relevance:** C — cited (formal-ecosystem ToyProblem §6) — prize problems = our capacity watch item
+- **Gives:** Formalises the EF Proximity Prize grand challenges ($1M); MCA lower bound.
+- **Where in repo:** `docs/research/formal-ecosystem.md`
+
 ### [DKT26]
 
-- **Citation:** (DKT26). *Line mutual correlated agreement in the Johnson regime (ePrint 2026/2056)*. ePrint 2026/2056, 2026. <https://eprint.iacr.org/2026/2056>
-- **Topics:** T2 · **Relevance:** C — cited (stark-plonky3 table)
-- **Gives:** Line-MCA result used for Johnson-regime FRI bounds in Plonky3 calculator.
+- **Citation:** Q. Dao, S. D. Kominers, J. Thaler. *Reed-Solomon Codes Beyond Johnson: Efficient Decoding and Smaller Cryptographic Proofs*. ePrint 2026/2056, 2026. <https://eprint.iacr.org/2026/2056>
+- **Topics:** T2 · **Relevance:** E — evaluated only as Plonky3 line-MCA citation — beyond-Johnson use NOT evaluated (see OPPORTUNITIES O-1)
+- **Gives:** PROVEN RS list-decoding and MCA bounds below Johnson up to capacity (derivative method), needing large field characteristic; parameter certificates formally verified in ArkLib.
+- **Numbers:** Reported savings at fixed security: ZisK final proof -13.2 KB (4.6 %), ProveKit -79.4 KB (11.1 %), LambdaVM subproofs -59.8 KB (4.9 %).
 - **Where in repo:** `examples/stark-plonky3/README.md`
+
+### [DKTZ26]
+
+- **Citation:** Q. Dao, S. D. Kominers, J. Thaler, (Zheng). *Counterexamples to Beyond-Johnson Proximity Gaps over Binary Fields*. ePrint 2026/2424, 2026. <https://eprint.iacr.org/2026/2424>
+- **Topics:** T2 · **Relevance:** N — not-yet-evaluated (confirms Johnson-only policy; affects binary-field Binius-type options)
+- **Gives:** Beyond-Johnson proximity gaps fail over binary fields.
+
+### [Gab26]
+
+- **Citation:** A. Gabizon. *Linear list size bounds for Reed-Solomon beyond the Johnson radius*. ePrint 2026/2048, 2026. <https://eprint.iacr.org/2026/2048>
+- **Topics:** T2 · **Relevance:** N — not-yet-evaluated (input to beyond-Johnson MCA)
+- **Gives:** List size C(rho,alpha) n for agreement below sqrt(rho), large characteristic.
 
 ### [JLR26]
 
@@ -131,6 +191,18 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Topics:** T2 · **Relevance:** R — evaluated-rejected (constants unusable)
 - **Gives:** Capacity-regime RS result with error n^{O_gamma(1)}/q, constants unstated.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`
+
+### [Jo26]
+
+- **Citation:** S. Jo. *Reed-Solomon Mutual Correlated Agreement Beyond the Johnson Radius*. ePrint 2026/1432, 2026. <https://eprint.iacr.org/2026/1432>
+- **Topics:** T2 · **Relevance:** N — not-yet-evaluated (gain O(1/n) in radius: negligible for us)
+- **Gives:** Deterministic MCA h integer steps past Johnson, error O(K^6/q), any evaluation set; Grand MCA Challenge entry.
+
+### [KKH26]
+
+- **Citation:** Krachun, Kazanin, U. Haböck. *Failure of proximity gaps close to capacity*. ePrint 2026/782, 2026. <https://eprint.iacr.org/2026/782>
+- **Topics:** T2 · **Relevance:** N — not-yet-evaluated (confirms capacity exclusion)
+- **Gives:** Counterexample near capacity over multiplicative subgroups of prime fields (our setting).
 
 ### [BCGM25]
 
@@ -148,11 +220,11 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Numbers:** Error bound a > (2(m+1/2)^5 + 3(m+1/2)gamma*rho)/(3 rho^1.5) n + (m+1/2)/sqrt(rho).
 - **Where in repo:** `lane/pq-x15-domains:research/near-compression/x15-domains/SOUNDNESS.md`, `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
 
-### [CS25-PGfalse]
+### [CS25]
 
-- **Citation:** (ePrint 2025/2046). *Proximity-gap / list-decoding conjectures up to capacity are false*. ePrint 2025/2046, 2025. <https://eprint.iacr.org/2025/2046>
+- **Citation:** E. Crites, A. Stewart. *On Reed-Solomon Proximity Gaps Conjectures*. ePrint 2025/2046, 2025. <https://eprint.iacr.org/2025/2046>
 - **Topics:** T2 · **Relevance:** U — used (justifies excluding capacity regime)
-- **Gives:** Counterexamples to capacity-regime proximity-gap conjectures used by 'conjectured' STARK security.
+- **Gives:** Counterexamples: capacity-regime proximity-gap / list-decoding conjectures used by 'conjectured' STARK security are false.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`
 
 ### [DG25]
@@ -169,19 +241,18 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** MCA up to list-decoding capacity for subspace-design (folded RS, multiplicity) codes.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`
 
-### [H25-2110]
+### [Hab25]
 
-- **Citation:** U. Haböck. *ePrint 2025/2110 (proximity / MCA note)*. ePrint 2025/2110, 2025. <https://eprint.iacr.org/2025/2110>
+- **Citation:** U. Haböck. *A note on mutual correlated agreement for Reed-Solomon codes*. ePrint 2025/2110, 2025. <https://eprint.iacr.org/2025/2110>
 - **Topics:** T2 · **Relevance:** C — cited (abstract only)
-- **Gives:** Haböck's extension CA->MCA referenced by our backend's MCA step (abstract only read).
+- **Gives:** Extends correlated agreement to MCA for RS; step used by our backend calculator.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`, `lane/pq-x15-domains:research/near-compression/x15-domains/SOUNDNESS.md`
 
-### [RW25-randwords]
+### [ZKSEC-PROX25]
 
-- **Citation:** (ePrint 2025/2010). *Random-words conjecture for RS proximity (Plonky3 'conjectured' regime)*. ePrint 2025/2010, 2025. <https://eprint.iacr.org/2025/2010>
-- **Topics:** T2 · **Relevance:** R — evaluated-rejected (conjectural; U-2)
-- **Gives:** Conjecture used by Plonky3 calculator's conjectured security.
-- **Where in repo:** `examples/stark-plonky3/README.md`
+- **Citation:** zkSecurity. *The proximity conjecture (summary)*. blog.zksecurity.xyz, 2025-11-14, 2025. <https://blog.zksecurity.xyz/posts/proximity-conjecture/>
+- **Topics:** T2, T10 · **Relevance:** C — cited
+- **Gives:** Capacity conjecture disproved; proven region ~2x proof size vs conjectured.
 
 ### [BCIKS20]
 
@@ -193,30 +264,93 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 ## T3. Fiat–Shamir / BCS in the ROM and QROM; hashing, Merkle binding, grinding
 
 
+### [AESgrind26]
+
+- **Citation:** (authors not checked). *AES-Based Grinding for MPC-in-the-Head Signatures*. ePrint 2026/1625, 2026. <https://eprint.iacr.org/2026/1625>
+- **Topics:** T3 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Classical grinding bound ~(4/3) eps Q/2^w.
+
+### [BCG26]
+
+- **Citation:** B. Bünz, B. Chen, Z. Guan. *It Takes Two: Proofs of Work for Fiat-Shamir*. ePrint 2026/2326, 2026. <https://eprint.iacr.org/2026/2326>
+- **Topics:** T3 · **Relevance:** E — evaluated (abstract only, L4-A); classical — G-2 still needs a QROM statement
+- **Gives:** Grinding needs non-amortizing PoW; XFS needs strong PoW; no single PoW is both with cheap verification; classical relativized ROM.
+- **Where in repo:** `lane/pq-x15-domains:research/near-compression/l4-study/A-sequential-fs.md`, `docs/research/NOVEL-FINDINGS.md`
+
+### [BHK26]
+
+- **Citation:** C. Brzuska, P. Hubáček, Kalsta. *Simple Attacks Against (Extended) Fiat-Shamir*. PKC 2026 [unverified], 2026.
+- **Topics:** T3, T6 · **Relevance:** N — not-yet-evaluated [unverified]
+- **Gives:** Reported simpler GKR/PlonK FS attacks and an XFS counterexample.
+
 ### [CH26]
 
-- **Citation:** A. Chiesa, Y. Hu. *Extractable vector commitments for quantum states (ePrint 2026/2099)*. ePrint 2026/2099, 2026. <https://eprint.iacr.org/2026/2099>
+- **Citation:** A. Chiesa, Z. Hu. *Succinct Arguments for QMA in the Quantum Random Oracle Model*. ePrint 2026/2099, 2026. <https://eprint.iacr.org/2026/2099>
 - **Topics:** T3 · **Relevance:** R — evaluated-rejected (abstract only; no weak binding)
 - **Gives:** Quantum-state vector commitments.
 - **Where in repo:** `lane/pq-weak-binding:research/near-compression/weak-binding/ANALYSIS.md`
 
+### [CKMW26]
+
+- **Citation:** T. Coratger, D. Khovratovich, B. Mennink, B. Wagner. *The Billion Dollar Merkle Tree*. CCS 2026; ePrint 2026/089, 2026. <https://eprint.iacr.org/2026/089>
+- **Topics:** T3 · **Relevance:** N — not-yet-evaluated (classical; relevant to truncated-digest Merkle and weak binding)
+- **Gives:** Position binding/extractability for Plonky3 Merkle trees with leaf pre-hashing even with non-CR compression.
+
+### [Fen26]
+
+- **Citation:** G. Fenzi. *How to Prove More False Statements: Fiat-Shamir Limitations on (Generated) R1CS*. ePrint 2026/1838, 2026. <https://eprint.iacr.org/2026/1838>
+- **Topics:** T3, T6 · **Relevance:** N — not-yet-evaluated — relevant: chunk validation runs user contracts (generated statements)
+- **Gives:** Extends KRS attacks to Spartan/Aurora with program-generated instances; mitigation: bind the generated statement before the first challenge.
+
+### [HHMRS26]
+
+- **Citation:** Huang, A. Hülsing, V. Maram, Ritsch, Saha. *Feistel Tools: Reprogramming and Query-Recording for QRPs*. ePrint 2026/146, 2026. <https://eprint.iacr.org/2026/146>
+- **Topics:** T3 · **Relevance:** N — not-yet-evaluated (does not close G-1)
+- **Gives:** QROM recording/reprogramming in the quantum random permutation model; post-quantum adaptive ZK (not soundness) for duplex-sponge FS.
+
+### [HKKTW26]
+
+- **Citation:** Herold, D. Khovratovich, Kudinov, S. Tessaro, B. Wagner. *Aborting Random Oracles: How to Build them, How to Use them*. CRYPTO 2026; ePrint 2026/016, 2026. <https://eprint.iacr.org/2026/016>
+- **Topics:** T3 · **Relevance:** N — not-yet-evaluated (classical analogue for G-2)
+- **Gives:** Grinding modelled as an aborting RO; clean classical grinding constants via indifferentiability.
+
 ### [MS26]
 
-- **Citation:** C. Majenz, (Sharma). *Fischlin's transform in the QROM*. arXiv 2602.17307, 2026. <https://arxiv.org/abs/2602.17307>
-- **Topics:** T3 · **Relevance:** C — cited (abstract only)
+- **Citation:** C. Majenz, (Sharma). *Security of the Fischlin Transform in the Quantum Random Oracle Model*. arXiv 2602.17307, 2026. <https://arxiv.org/abs/2602.17307>
+- **Topics:** T3 · **Relevance:** C — cited (abstract only) — compressed-oracle PoW counting: template for G-2
 - **Gives:** QROM straight-line extraction for Fischlin.
 - **Where in repo:** `lane/pq-lattice-qrom:docs/zk-formal/PQ-LATTICE-QROM-PLAN.md`
 
-### [SoK26-1367]
+### [P3-CVE26]
 
-- **Citation:** (SoK). *SoK on post-quantum succinct arguments (ePrint 2026/1367)*. ePrint 2026/1367, 2026. <https://eprint.iacr.org/2026/1367>
-- **Topics:** T3, T4 · **Relevance:** C — cited (abstract only)
-- **Gives:** Survey; abstract only read.
-- **Where in repo:** `lane/pq-weak-binding:research/near-compression/weak-binding/ANALYSIS.md`
+- **Citation:** Plonky3. *CVE-2026-46654: FS transcript malleability in MultiField32Challenger*. CVE, 2026-06-10, 2026. <https://github.com/Plonky3/Plonky3>
+- **Topics:** T3, T7 · **Relevance:** N — not-yet-evaluated (audit our SHA-384 absorption for injectivity; cf. GAPS G-9)
+- **Gives:** Distinct transcripts gave identical challenges; fixed in 0.4.3/0.5.3.
+- **Where in repo:** `lane/pq-final-soundness:research/near-compression/final-soundness/GAPS.md`
+
+### [PFS26]
+
+- **Citation:** (authors not checked). *Cryptanalysis of Poseidon-Based Fiat-Shamir Protocols*. ePrint 2026/409, 2026. <https://eprint.iacr.org/2026/409>
+- **Topics:** T3, T8 · **Relevance:** C — cited (background)
+- **Gives:** No FS forgeries found even with reduced-round Poseidon.
+
+### [ACMT25]
+
+- **Citation:** G. Alagic, J. Carolan, C. Majenz, S. Tokat. *The Sponge is Quantum Indifferentiable*. arXiv 2504.16887, 2025. <https://arxiv.org/abs/2504.16887>
+- **Topics:** T3 · **Relevance:** E — evaluated (Poseidon2 / sponge option; not used)
+- **Gives:** Sponge indifferentiability against quantum adversaries.
+- **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
+
+### [CDDGS25]
+
+- **Citation:** A. Chiesa, M. Dall'Agnol, Z. Di, Z. Guan, N. Spooner. *Quantum Rewinding for IOP-Based Succinct Arguments*. TCC 2025; ePrint 2025/947 (arXiv 2411.05360 v2 withdrawn Oct 2025 — cite ePrint), 2025. <https://eprint.iacr.org/2025/947>
+- **Topics:** T3 · **Relevance:** E — evaluated (interactive only)
+- **Gives:** Post-quantum security of interactive Kilian arguments via quantum rewinding.
+- **Where in repo:** `lane/pq-weak-binding:research/near-compression/weak-binding/ANALYSIS.md`, `lane/pq-lattice-qrom:docs/zk-formal/PQ-LATTICE-QROM-PLAN.md`
 
 ### [CDHZ25]
 
-- **Citation:** A. Chiesa, Z. Di, Y. Hu, Y. Zheng. *Adaptive straight-line QROM security of BCS with Merkle trees (ePrint 2025/2166)*. ePrint 2025/2166 (Mar 2026), 2025. <https://eprint.iacr.org/2025/2166>
+- **Citation:** A. Chiesa, Z. Di, Z. Hu, Y. Zheng. *How to Prove Post-Quantum Security for Succinct Non-Interactive Reductions*. EUROCRYPT 2026; ePrint 2025/2166, 2025. <https://eprint.iacr.org/2025/2166>
 - **Topics:** T3 · **Relevance:** U — used (cross-check: 2^-130.4)
 - **Gives:** Thm 11.3: adaptive straight-line QROM KS for one BCS step: 4k_sr+4k_ext+8k_off+4k_on.
 - **Numbers:** One function call per round; no composition.
@@ -229,44 +363,42 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Classical ideal-permutation analysis of duplex-sponge FS; QROM case listed open (§1.3).
 - **Where in repo:** `lane/pq-final-soundness:research/near-compression/final-soundness/PROOF.md`, `lane/pq-final-soundness:research/near-compression/final-soundness/GAPS.md`, `docs/research/NOVEL-FINDINGS.md`
 
-### [QSI25]
+### [CF24-UC]
 
-- **Citation:** (arXiv 2504.16887). *Quantum indifferentiability of the sponge construction*. arXiv 2504.16887, 2025. <https://arxiv.org/abs/2504.16887>
-- **Topics:** T3 · **Relevance:** E — evaluated (Poseidon2 / sponge option; not used)
-- **Gives:** Sponge indifferentiability against quantum adversaries.
-- **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
-
-### [CDDGS24]
-
-- **Citation:** A. Chiesa, M. Dall'Agnol, Z. Di, Z. Guan, N. Spooner. *Quantum Rewinding for IOP-Based Succinct Arguments*. ePrint 2025/947; arXiv 2411.05360, 2024. <https://arxiv.org/abs/2411.05360>
-- **Topics:** T3 · **Relevance:** E — evaluated (interactive only)
-- **Gives:** Post-quantum security of interactive Kilian arguments via quantum rewinding.
-- **Where in repo:** `lane/pq-weak-binding:research/near-compression/weak-binding/ANALYSIS.md`, `lane/pq-lattice-qrom:docs/zk-formal/PQ-LATTICE-QROM-PLAN.md`
-
-### [CMNW24]
-
-- **Citation:** (CMNW). *Coordinate-wise special soundness and quantum rewinding (ePrint 2024/281)*. ePrint 2024/281, 2024. <https://eprint.iacr.org/2024/281>
-- **Topics:** T3, T5 · **Relevance:** C — cited (lattice plan)
-- **Gives:** Extends quantum rewinding to coordinate-wise special soundness.
-- **Where in repo:** `lane/pq-lattice-qrom:docs/zk-formal/PQ-LATTICE-QROM-PLAN.md`
-
-### [ENT24]
-
-- **Citation:** (Quantum 8:1568). *Fiat-Shamir for proofs lacks a proof even in the presence of shared entanglement*. Quantum 8:1568 (2024); arXiv 2204.02265, 2024. <https://arxiv.org/abs/2204.02265>
-- **Topics:** T3 · **Relevance:** C — cited (lattice C-security)
-- **Gives:** Negative result for FS of proofs with entanglement.
-- **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/C-security.md`
-
-### [Merkle-UC24]
-
-- **Citation:** (ePrint 2024/724). *UC-secure Merkle tree bounds*. ePrint 2024/724, 2024. <https://eprint.iacr.org/2024/724>
+- **Citation:** A. Chiesa, G. Fenzi. *zkSNARKs in the ROM with Unconditional UC-Security*. ePrint 2024/724, 2024. <https://eprint.iacr.org/2024/724>
 - **Topics:** T3 · **Relevance:** E — evaluated (classical only)
 - **Gives:** Classical-style Merkle binding bounds.
 - **Where in repo:** `lane/pq-x15-domains:research/near-compression/l4-study/B-openings.md`
 
+### [CMNW24]
+
+- **Citation:** V. Cini, G. Malavolta, N. K. Nguyen, H. Wee. *Polynomial Commitments from Lattices: Post-Quantum Security, Fast Verification and Transparent Setup*. ePrint 2024/281, 2024. <https://eprint.iacr.org/2024/281>
+- **Topics:** T3, T5 · **Relevance:** C — cited (lattice plan)
+- **Gives:** Extends quantum rewinding to coordinate-wise special soundness.
+- **Where in repo:** `lane/pq-lattice-qrom:docs/zk-formal/PQ-LATTICE-QROM-PLAN.md`
+
+### [CPZ24]
+
+- **Citation:** J. Carolan, A. Poremba, M. Zhandry. *Quantum Indifferentiability and Pre-Computation*. arXiv 2410.16595, 2024. <https://arxiv.org/abs/2410.16595>
+- **Topics:** T3 · **Relevance:** C — cited (background)
+- **Gives:** Indifferentiability alone does not capture pre-computation.
+
+### [DLS22]
+
+- **Citation:** F. Dupuis, P. Lamontagne, L. Salvail. *Fiat-Shamir for proofs lacks a proof even in the presence of shared entanglement*. Quantum 8:1568 (2024); arXiv 2204.02265, 2024. <https://arxiv.org/abs/2204.02265>
+- **Topics:** T3 · **Relevance:** C — cited (lattice C-security)
+- **Gives:** Negative result for FS of proofs with entanglement.
+- **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/C-security.md`
+
+### [MMW24]
+
+- **Citation:** C. Majenz, G. Malavolta, M. Walter. *Permutation Superposition Oracles for Quantum Query Lower Bounds*. STOC 2025; ePrint 2024/1140, 2024. <https://eprint.iacr.org/2024/1140>
+- **Topics:** T3 · **Relevance:** N — not-yet-evaluated (only for permutation hashes)
+- **Gives:** Recording for two-sided random permutations; sponge preimage resistance.
+
 ### [RT24]
 
-- **Citation:** L. Rotem, S. Tessaro. *ePrint 2024/1724 (FS / knowledge soundness tightness)*. ePrint 2024/1724, 2024. <https://eprint.iacr.org/2024/1724>
+- **Citation:** L. Rotem, S. Tessaro. *Straight-Line Knowledge Extraction for Multi-Round Protocols*. ePrint 2024/1724, 2024. <https://eprint.iacr.org/2024/1724>
 - **Topics:** T3 · **Relevance:** C — cited
 - **Gives:** Cited in lattice QROM plan reading list.
 - **Where in repo:** `lane/pq-lattice-qrom:docs/zk-formal/PQ-LATTICE-QROM-PLAN.md`
@@ -278,6 +410,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Generalised special soundness FS.
 - **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/C-security.md`, `lane/pq-lattice-qrom:docs/zk-formal/PQ-LATTICE-QROM-PLAN.md`
 
+### [BGKTTZ23]
+
+- **Citation:** A. R. Block, A. Garreta, J. Katz, J. Thaler, P. R. Tiwari, M. Zając. *Fiat-Shamir Security of FRI and Related SNARKs*. ASIACRYPT 2023; ePrint 2023/1071, 2023. <https://eprint.iacr.org/2023/1071>
+- **Topics:** T3, T1 · **Relevance:** N — not-yet-evaluated (template for rbr of WHIR/LogUp-GKR rounds)
+- **Gives:** Round-by-round soundness of FRI, batched FRI and Plonk-like systems (delta-correlated protocols); ROM.
+
 ### [BGTZ23]
 
 - **Citation:** A. R. Block, A. Garreta, P. Tiwari, M. Zając. *On Soundness Notions for Interactive Oracle Proofs*. ePrint 2023/1256, 2023. <https://eprint.iacr.org/2023/1256>
@@ -287,7 +425,7 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 
 ### [Fai23]
 
-- **Citation:** (Faisal). *ePrint 2023/421 (QROM Merkle / commitment analysis)*. ePrint 2023/421, 2023. <https://eprint.iacr.org/2023/421>
+- **Citation:** I. Faisal. *Interactive Oracle Arguments in the QROM and Applications to Succinct Verification of Quantum Computation*. ePrint 2023/421, 2023. <https://eprint.iacr.org/2023/421>
 - **Topics:** T3 · **Relevance:** R — evaluated-rejected (not applicable)
 - **Gives:** Checked for weak-binding QROM BCS; does not cover it.
 - **Where in repo:** `lane/pq-weak-binding:research/near-compression/weak-binding/ANALYSIS.md`
@@ -298,6 +436,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Topics:** T3, T8 · **Relevance:** R — evaluated-rejected (U-7: SHA-384 throughout)
 - **Gives:** Arithmetization-friendly permutation used by OpenVM/Plonky3.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
+
+### [SAFE23]
+
+- **Citation:** J.-P. Aumasson, D. Khovratovich, B. Mennink, P. Quine. *SAFE: Sponge API for Field Elements*. ePrint 2023/522, 2023. <https://eprint.iacr.org/2023/522>
+- **Topics:** T3 · **Relevance:** N — not-yet-evaluated (transcript-encoding reference)
+- **Gives:** Sponge API / IO patterns for FS transcripts (heuristic).
 
 ### [AFK22]
 
@@ -377,6 +521,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Collapsing-based post-quantum ZK/rewinding.
 - **Where in repo:** `lane/pq-lattice-qrom:docs/zk-formal/PQ-LATTICE-QROM-PLAN.md`, `lane/pq-lattice-qrom:research/near-compression/lattice-study/C-security.md`
 
+### [Unr21]
+
+- **Citation:** D. Unruh. *Compressed Permutation Oracles (And the Collision-Resistance of Sponge/SHA3)*. ePrint 2021/062, 2021. <https://eprint.iacr.org/2021/062>
+- **Topics:** T3 · **Relevance:** C — cited (background)
+- **Gives:** Compressed oracles for permutations (attempt).
+
 ### [CY20-barriers]
 
 - **Citation:** A. Chiesa, E. Yogev. *Barriers for Succinct Arguments in the Random Oracle Model*. TCC 2020, 2020. <https://eprint.iacr.org/2020/1427>
@@ -434,6 +584,18 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Compressed-oracle technique for QROM proofs.
 - **Where in repo:** `lane/pq-final-soundness:research/near-compression/final-soundness/PROOF.md`, `research/hash-recursion/README.md`, `docs/zk-formal/V3-D3A-STUDY.md`
 
+### [CGHSU17]
+
+- **Citation:** J. Czajkowski, L. Groot Bruinderink, A. Hülsing, C. Schaffner, D. Unruh. *Post-Quantum Security of the Sponge Construction*. PQCrypto 2018; ePrint 2017/771, 2017. <https://eprint.iacr.org/2017/771>
+- **Topics:** T3 · **Relevance:** C — cited (background; SHA-3 specific)
+- **Gives:** Collapsing / quantum collision resistance of sponges.
+
+### [Unr17]
+
+- **Citation:** D. Unruh. *Post-Quantum Security of Fiat-Shamir*. ASIACRYPT 2017; ePrint 2017/398, 2017. <https://eprint.iacr.org/2017/398>
+- **Topics:** T3 · **Relevance:** C — cited (background)
+- **Gives:** First QROM FS results via reduction to quantum search.
+
 ### [BCS16]
 
 - **Citation:** E. Ben-Sasson, A. Chiesa, N. Spooner. *Interactive Oracle Proofs*. TCC 2016-B; ePrint 2016/116, 2016. <https://eprint.iacr.org/2016/116>
@@ -481,16 +643,23 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 
 ### [AY25]
 
-- **Citation:** G. Arnon, E. Yogev. *ePrint 2025/329 (relativized ROM with f-gates; XFS)*. ePrint 2025/329, 2025. <https://eprint.iacr.org/2025/329>
+- **Citation:** G. Arnon, E. Yogev. *Towards a White-Box Secure Fiat-Shamir Transformation (XFS)*. CRYPTO 2025; ePrint 2025/329, 2025. <https://eprint.iacr.org/2025/329>
 - **Topics:** T4 · **Relevance:** R — evaluated-rejected (A-IC research)
 - **Gives:** Relativized ROM model where circuits contain oracle gates (Defs 4.1-4.2).
 - **Where in repo:** `lane/pq-aic-research:research/near-compression/aic-research/REPORT.md`, `lane/pq-aic-research:research/near-compression/aic-research/LEMMA.md`
 
 ### [GY25]
 
-- **Citation:** Z. Guan, E. Yogev. *ePrint 2025/2328 (non-adaptive SNARGs with iO-strength commitments)*. ePrint 2025/2328, 2025. <https://eprint.iacr.org/2025/2328>
+- **Citation:** Z. Guan, E. Yogev. *Micali's SNARG, Function Vector Commitments, and Fiat-Shamir*. ePrint 2025/2328, 2025. <https://eprint.iacr.org/2025/2328>
 - **Topics:** T4, T3 · **Relevance:** R — evaluated-rejected
 - **Gives:** Thm 1: non-adaptive, iO-strength commitments.
+- **Where in repo:** `lane/pq-aic-research:research/near-compression/aic-research/REPORT.md`
+
+### [MMZ25]
+
+- **Citation:** M. Maller, N. Mohnblatt, A. Zapico. *IVC in the Open-and-sign Random Oracle Model*. ePrint 2025/1663, 2025. <https://eprint.iacr.org/2025/1663>
+- **Topics:** T4 · **Relevance:** R — evaluated-rejected (not hash-only)
+- **Gives:** Classical, curve/lattice-based accumulation model.
 - **Where in repo:** `lane/pq-aic-research:research/near-compression/aic-research/REPORT.md`
 
 ### [WARP25]
@@ -499,13 +668,6 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Topics:** T4, T1 · **Relevance:** R — evaluated-rejected (same final-layer floor; ~3.4k compressions/step)
 - **Gives:** Linear-time accumulation for any linear code; QROM conjectured (fn 1).
 - **Where in repo:** `docs/zk-formal/V3-PERF-DESIGN.md`, `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`, `lane/pq-final-soundness:research/near-compression/final-soundness/PROOF.md`, `lane/pq-aic-research:research/near-compression/aic-research/REPORT.md`
-
-### [osROM25]
-
-- **Citation:** (ePrint 2025/1663). *osROM (oracle-with-structure ROM) accumulation*. ePrint 2025/1663, 2025. <https://eprint.iacr.org/2025/1663>
-- **Topics:** T4 · **Relevance:** R — evaluated-rejected (not hash-only)
-- **Gives:** Classical, curve/lattice-based accumulation model.
-- **Where in repo:** `lane/pq-aic-research:research/near-compression/aic-research/REPORT.md`
 
 ### [Arc24]
 
@@ -527,6 +689,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Topics:** T4 · **Relevance:** R — evaluated-rejected
 - **Gives:** Hash-based accumulation; §3.3: 'we do not know how to build secure PCD schemes in the ROM'.
 - **Where in repo:** `lane/pq-final-soundness:research/near-compression/final-soundness/PROOF.md`, `lane/pq-aic-research:research/near-compression/aic-research/REPORT.md`
+
+### [HyperNova]
+
+- **Citation:** A. Kothapalli, S. Setty. *HyperNova: Recursive arguments for customizable constraint systems*. CRYPTO 2024; ePrint 2023/573, 2024. <https://eprint.iacr.org/2023/573>
+- **Topics:** T4 · **Relevance:** R — evaluated-rejected (not PQ)
+- **Gives:** CCS folding (curve-based).
 
 ### [Nebula24]
 
@@ -556,12 +724,25 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** IVC impossibility in the ROM (verifier linear in steps).
 - **Where in repo:** `lane/pq-final-soundness:research/near-compression/final-soundness/PROOF.md`, `lane/pq-aic-research:research/near-compression/aic-research/REPORT.md`
 
-### [CLRS22]
+### [ProtoStar]
 
-- **Citation:** (EUROCRYPT 2022). *On Succinct Non-Interactive Arguments in Relativized Worlds*. EUROCRYPT 2022, 2022. <https://iacr.org/archive/eurocrypt2022/132760105/132760105.pdf>
+- **Citation:** B. Bünz, B. Chen. *ProtoStar: Generic Efficient Accumulation/Folding for Special-sound Protocols*. ASIACRYPT 2023; ePrint 2023/620, 2023. <https://eprint.iacr.org/2023/620>
+- **Topics:** T4 · **Relevance:** R — evaluated-rejected (not PQ)
+- **Gives:** Generic folding for special-sound protocols (homomorphic commitments).
+
+### [CCS22]
+
+- **Citation:** M. Chen, A. Chiesa, N. Spooner. *On Succinct Non-Interactive Arguments in Relativized Worlds*. EUROCRYPT 2022; ePrint 2022/383, 2022. <https://eprint.iacr.org/2022/383>
 - **Topics:** T4 · **Relevance:** C — cited
-- **Gives:** Relativized SNARGs and PCD.
+- **Gives:** Relativized SNARKs in a low-degree RO model.
 - **Where in repo:** `docs/research/recursive-compression.md`
+
+### [Nova]
+
+- **Citation:** A. Kothapalli, S. Setty, I. Tzialla. *Nova: Recursive Zero-Knowledge Arguments from Folding Schemes*. CRYPTO 2022; ePrint 2021/370, 2022. <https://eprint.iacr.org/2021/370>
+- **Topics:** T4 · **Relevance:** R — evaluated-rejected (not PQ)
+- **Gives:** Folding-based IVC (curve-based, not PQ).
+- **Where in repo:** `docs/research/wasm-formal-survey.md`
 
 ### [CJJ21]
 
@@ -626,6 +807,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Correlation-intractable hash FS for statistically sound protocols.
 - **Where in repo:** `lane/pq-aic-research:research/near-compression/aic-research/REPORT.md`
 
+### [BCCT13]
+
+- **Citation:** N. Bitansky, R. Canetti, A. Chiesa, E. Tromer. *Recursive Composition and Bootstrapping for SNARKs and Proof-Carrying Data*. STOC 2013; ePrint 2012/095, 2013. <https://eprint.iacr.org/2012/095>
+- **Topics:** T4 · **Relevance:** C — cited (background)
+- **Gives:** PCD from SNARKs; polynomial extractor blowup per level (constant depth).
+
 ### [GW11]
 
 - **Citation:** C. Gentry, D. Wichs. *Separating Succinct Non-Interactive Arguments From All Falsifiable Assumptions*. STOC 2011; ePrint 2010/610, 2010. <https://eprint.iacr.org/2010/610>
@@ -645,11 +832,19 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 
 ### [Akita26]
 
-- **Citation:** Q. Dao, et al., J. Thaler. *Akita (lattice multilinear PCS inside Lattice-Jolt)*. ePrint 2026/1983, 2026. <https://eprint.iacr.org/2026/1983>
+- **Citation:** Q. Dao, O. Bodaghi, A. Khajehpour, G. Vitto, M. Badakhshan, M. Georghiades, F. Liu, J. Zhang, J. Thaler. *Akita: A High-Performance Lattice-Based Polynomial Commitment Scheme*. ePrint 2026/1983, 2026. <https://eprint.iacr.org/2026/1983>
 - **Topics:** T5, T7 · **Relevance:** E — evaluated (lattice wrap candidate)
 - **Gives:** Multilinear PCS succeeding Hachi/Greyhound; constant-root verifier.
 - **Numbers:** 61-67 KB openings at 2^27-2^35 bits; Jolt+Akita SHA-256 chain 2^27 cycles: 90.9 s prove (M4 Max CPU), 98.1 KB.
 - **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/B-modern-lattice.md`, `lane/pq-lattice-qrom:docs/zk-formal/PQ-LATTICE-QROM-PLAN.md`, `lane/pq-recursion-sha384:docs/zk-formal/PQ-LATTICE-WRAP-STUDY.md`
+
+### [BBL26]
+
+- **Citation:** B. Biasioli, M. Bolboceanu, V. Lyubashevsky, A. Merino-Gallardo, M. Osadnik, G. Seiler, P. Steuer. *A Toolkit for Succinct Lattice-Based Zero Knowledge Proofs*. ePrint 2026/1289, 2026. <https://eprint.iacr.org/2026/1289>
+- **Topics:** T5 · **Relevance:** E — evaluated
+- **Gives:** Benchmarks of (ZK-)LaBRADOR.
+- **Numbers:** 2^25 coefficients: 9.3 s (not zk) on 1 Tiger Lake core.
+- **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/A-labrador-greyhound.md`
 
 ### [Cyclo26]
 
@@ -689,13 +884,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Designated-verifier lattice SNARK.
 - **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/B-modern-lattice.md`
 
-### [LaZer26]
+### [LaBinius26]
 
-- **Citation:** (LaZer team). *ZK-LaBRADOR in the LaZer library (ePrint 2026/1289)*. ePrint 2026/1289, 2026. <https://eprint.iacr.org/2026/1289>
-- **Topics:** T5 · **Relevance:** E — evaluated
-- **Gives:** Benchmarks of (ZK-)LaBRADOR.
-- **Numbers:** 2^25 coefficients: 9.3 s (not zk) on 1 Tiger Lake core.
-- **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/A-labrador-greyhound.md`
+- **Citation:** M. Osadnik, G. Seiler. *LaBinius: lattice PCS with binary-field evaluations (Binius/Flock front ends)*. ePrint 2026/2103, 2026. <https://eprint.iacr.org/2026/2103>
+- **Topics:** T5, T8 · **Relevance:** N — not-yet-evaluated (reference to beat on bytes for a PQ hash proof; classical-ROM FS; binary beyond-Johnson counterexamples apply to its params)
+- **Gives:** Lattice PCS for binary-field front ends; SHA-256/Keccak/BLAKE3 proofs < 100 KiB with LaBRADOR compression, < 40 ms verify, 1.2-2x hash-based prover time.
+- **Numbers:** < 100 KiB SHA-256 proof; self-described smallest quantum-safe proof of a standard hash.
 
 ### [Maltese26]
 
@@ -766,7 +960,7 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 
 ### [SALSAA25]
 
-- **Citation:** (ePrint 2025/2124). *SALSAA: sumcheck-aided lattice arguments (AIR RoK, folding)*. ePrint 2025/2124, 2025. <https://eprint.iacr.org/2025/2124>
+- **Citation:** S. Kuriyama, R. W. F. Lai, M. Osadnik, L. Tucci. *SALSAA: Sumcheck-Aided Lattice-based Succinct Arguments and Applications*. ePrint 2025/2124, 2025. <https://eprint.iacr.org/2025/2124>
 - **Topics:** T5 · **Relevance:** E — evaluated
 - **Gives:** Lattice AIR reduction and folding (~60 KB/step).
 - **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/B-modern-lattice.md`
@@ -802,7 +996,7 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 
 ### [Lova24]
 
-- **Citation:** (ePrint 2024/1964). *Lova: lattice-based folding over unstructured lattices*. ePrint 2024/1964, 2024. <https://eprint.iacr.org/2024/1964>
+- **Citation:** G. Fenzi, C. Knabenhans, N. K. Nguyen, D. T. Pham. *Lova: Lattice-Based Folding Scheme from Unstructured Lattices*. ePrint 2024/1964, 2024. <https://eprint.iacr.org/2024/1964>
 - **Topics:** T5, T4 · **Relevance:** E — evaluated
 - **Gives:** Unstructured-lattice folding.
 - **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/B-modern-lattice.md`, `lane/pq-lattice-qrom:research/near-compression/lattice-study/C-security.md`
@@ -868,12 +1062,79 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 ## T6. GKR, LogUp, sumcheck
 
 
+### [DDBDT26]
+
+- **Citation:** Q. Dao, J. DeStefano, S. Bagad, Y. Domb, J. Thaler. *Speeding Up Sum-Check Proving (Extended Version)*. ePrint 2026/587, 2026. <https://eprint.iacr.org/2026/587>
+- **Topics:** T6 · **Relevance:** N — not-yet-evaluated (real-time prover lever)
+- **Gives:** Merges 2024/1046, 2024/1210, 2025/1117; single reference for sumcheck prover speedups.
+
+### [MoHW26]
+
+- **Citation:** Mo, et al., B. Bünz, B. Reagen. *When Proofs Meet Hardware: NTT vs sumcheck under equal SRAM/bandwidth*. arXiv 2606.16146, 2026. <https://arxiv.org/abs/2606.16146>
+- **Topics:** T6, T7 · **Relevance:** N — not-yet-evaluated (our degree-21 SHA AIR)
+- **Gives:** Sumcheck beats NTT on hardware for high-degree constraints.
+
+### [BDDT25]
+
+- **Citation:** S. Bagad, Q. Dao, Y. Domb, J. Thaler. *Speeding Up Sum-Check Proving*. ePrint 2025/1117, 2025. <https://eprint.iacr.org/2025/1117>
+- **Topics:** T6 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Small-value + eq optimizations, 2-3x on Spartan sumcheck.
+- **Numbers:** 2-3x prover speedup (Jolt).
+
+### [Expander]
+
+- **Citation:** Polyhedra Network. *Expander GKR prover / Binary GKR*. GitHub PolyhedraZK/Expander, 2025. <https://github.com/PolyhedraZK/Expander>
+- **Topics:** T6, T7, T8 · **Relevance:** N — not-yet-evaluated
+- **Gives:** GKR prover; ~4,500 Keccak-f/s on M3 Max (vendor).
+
 ### [KRS25]
 
 - **Citation:** D. Khovratovich, R. D. Rothblum, L. Soukhanov. *How to Prove False Statements: Practical Attacks on Fiat-Shamir*. CRYPTO 2025; ePrint 2025/118, 2025. <https://eprint.iacr.org/2025/118>
 - **Topics:** T6, T3 · **Relevance:** E — evaluated (not applicable: we commit full traces; canonical lookup GKR not attackable per Remark 3)
 - **Gives:** Any-hash attacks on FS-GKR when the circuit computes the FS hash of its own transcript.
 - **Where in repo:** `lane/pq-aic-research:research/near-compression/aic-research/REPORT.md`
+
+### [Sou25-logupstar]
+
+- **Citation:** L. Soukhanov. *Logup*: faster, cheaper logup argument for small-table indexed lookups*. ePrint 2025/946, 2025. <https://eprint.iacr.org/2025/946>
+- **Topics:** T6, T8 · **Relevance:** N — not-yet-evaluated (could drop committed Sigma/Ch/Maj outputs in SHA AIR)
+- **Gives:** Indexed lookup T[I] with T[I] virtual; only indices committed.
+
+### [Tha25]
+
+- **Citation:** J. Thaler. *Sum-check Is All You Need: An Opinionated Survey on Fast Provers in SNARK Design*. ePrint 2025/2041, 2025. <https://eprint.iacr.org/2025/2041>
+- **Topics:** T6 · **Relevance:** C — cited (background)
+- **Gives:** Survey: virtual polynomials, sparse sumchecks, small values.
+
+### [TwistShout]
+
+- **Citation:** S. Setty, J. Thaler. *Twist and Shout: Faster memory checking arguments via one-hot addressing and increments*. ePrint 2025/105, 2025. <https://eprint.iacr.org/2025/105>
+- **Topics:** T6, T7 · **Relevance:** N — not-yet-evaluated
+- **Gives:** One-hot memory checking and lookups (>10x cheaper prover than log-proof memory checking).
+
+### [BDT24]
+
+- **Citation:** S. Bagad, Y. Domb, J. Thaler. *The Sum-Check Protocol over Fields of Small Characteristic*. ePrint 2024/1046, 2024. <https://eprint.iacr.org/2024/1046>
+- **Topics:** T6 · **Relevance:** N — not-yet-evaluated (BabyBear->Ext12 prover speed)
+- **Gives:** Keep prover work in the base field; Karatsuba-style tricks for extension fields.
+
+### [Ceno24]
+
+- **Citation:** T. Liu, Z. Zhang, Y. Zhang, W. Hu, Y. Zhang. *Ceno: Non-uniform, Segment and Parallel Zero-knowledge Virtual Machine*. ePrint 2024/387, 2024. <https://eprint.iacr.org/2024/387>
+- **Topics:** T6, T7 · **Relevance:** N — not-yet-evaluated (GKR replacing committed columns)
+- **Gives:** GKR zkVM committing only circuit I/O, data-parallel opcode circuits.
+
+### [DT24]
+
+- **Citation:** Q. Dao, J. Thaler. *More Optimizations to Sum-Check Proving*. ePrint 2024/1210, 2024. <https://eprint.iacr.org/2024/1210>
+- **Topics:** T6 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Cheaper eq(w,x) handling, complementary to Gruen.
+
+### [EH24]
+
+- **Citation:** L. Eagen, U. Haböck. *Bypassing the characteristic bound in logUp*. ePrint 2024/2067, 2024. <https://eprint.iacr.org/2024/2067>
+- **Topics:** T6 · **Relevance:** N — not-yet-evaluated (check B4: BabyBear p ~ 2^31 multiplicity bound)
+- **Gives:** Removes the multiplicity-sum < p requirement of LogUp(-GKR).
 
 ### [Gru24]
 
@@ -882,6 +1143,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Degree-reduction trick for sumcheck round polynomials; univariate skip; soundness remark informal (App. A.3).
 - **Numbers:** GKR 72L^2+264L+248 -> 48L^2+192L+152 B (29,960 vs 44,408 B at L=23).
 - **Where in repo:** `lane/pq-final-soundness:research/near-compression/final-soundness/PROOF.md`, `lane/pq-final-soundness:research/near-compression/final-soundness/GAPS.md`, `lane/pq-whir-levers:research/near-compression/results/pq-whir-levers/README.md`, `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`
+
+### [Lasso]
+
+- **Citation:** S. Setty, J. Thaler, R. Wahby. *Unlocking the lookup singularity with Lasso*. EUROCRYPT 2024; ePrint 2023/1216, 2023. <https://eprint.iacr.org/2023/1216>
+- **Topics:** T6 · **Relevance:** C — cited (background)
+- **Gives:** Lookups into decomposable tables.
 
 ### [PH23]
 
@@ -898,12 +1165,36 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** LogUp lookup/permutation argument.
 - **Where in repo:** `docs/zk-formal/V3-PERF-DESIGN.md`
 
+### [HyperPlonk]
+
+- **Citation:** B. Chen, B. Bünz, D. Boneh, Z. Zhang. *HyperPlonk: Plonk with Linear-Time Prover and High-Degree Custom Gates*. EUROCRYPT 2023; ePrint 2022/1355, 2022. <https://eprint.iacr.org/2022/1355>
+- **Topics:** T6 · **Relevance:** C — cited (background)
+- **Gives:** Multilinear zerocheck PIOP; baseline for Gruen's tweaks.
+
+### [Virgo20]
+
+- **Citation:** J. Zhang, T. Xie, Y. Zhang, D. Song. *Transparent Polynomial Delegation and Its Applications to Zero Knowledge Proof (Virgo)*. S&P 2020; ePrint 2019/1482, 2020. <https://eprint.iacr.org/2019/1482>
+- **Topics:** T6, T1 · **Relevance:** C — cited (background)
+- **Gives:** GKR with FRI-based commitment; transparent, PQ-plausible.
+
+### [Libra19]
+
+- **Citation:** T. Xie, J. Zhang, Y. Zhang, C. Papamanthou, D. Song. *Libra: Succinct Zero-Knowledge Proofs with Optimal Prover Computation*. CRYPTO 2019; ePrint 2019/317, 2019. <https://eprint.iacr.org/2019/317>
+- **Topics:** T6 · **Relevance:** C — cited (background)
+- **Gives:** Linear-time GKR prover for arbitrary circuits.
+
 ### [Spartan]
 
 - **Citation:** S. Setty. *Spartan: Efficient and general-purpose zkSNARKs without trusted setup*. CRYPTO 2020; ePrint 2019/550, 2019. <https://eprint.iacr.org/2019/550>
 - **Topics:** T6 · **Relevance:** C — cited (formal status)
 - **Gives:** Sumcheck-based SNARK for R1CS.
 - **Where in repo:** `docs/research/formal-ecosystem.md`
+
+### [Thaler13]
+
+- **Citation:** J. Thaler. *Time-Optimal Interactive Proofs for Circuit Evaluation*. CRYPTO 2013; ePrint 2013/351, 2013. <https://eprint.iacr.org/2013/351>
+- **Topics:** T6 · **Relevance:** N — not-yet-evaluated (template for per-round SHA GKR)
+- **Gives:** Linear-time GKR prover for data-parallel circuits.
 
 ### [GKR08]
 
@@ -928,10 +1219,16 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Numbers:** 21.8 MHz on one H100 (cited).
 - **Where in repo:** `docs/zk-formal/V3-PERF-DESIGN.md`, `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`, `lane/pq-native-hermetic:research/near-compression/airbender/`
 
+### [AirbenderPrime]
+
+- **Citation:** Matter Labs. *Airbender Prime (GKR + WHIR + BLAKE2s, single GPU)*. zksync-airbender repo / announcement 2026-10-13, 2026. <https://github.com/matter-labs/zksync-airbender>
+- **Topics:** T7, T10 · **Relevance:** N — not-yet-evaluated (latency bar; same GKR+WHIR family)
+- **Gives:** 99 % of 7,200 blocks < 10 s on one RTX PRO 6000; 'post-quantum' (hash-based); security bits and size undisclosed.
+
 ### [ICICLE]
 
 - **Citation:** Ingonyama. *ICICLE GPU acceleration library*. GitHub ingonyama-zk/icicle, 2026. <https://github.com/ingonyama-zk/icicle>
-- **Topics:** T7 · **Relevance:** N — not-yet-evaluated
+- **Topics:** T7 · **Relevance:** N — not-yet-evaluated (v4.0.0, last push 2025-11; no WHIR/BabyBear-Ext12 support found)
 - **Gives:** GPU NTT/MSM/hash/sumcheck primitives.
 
 ### [Jolt]
@@ -942,12 +1239,26 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Numbers:** Lattice Jolt <100 KB proofs.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`, `docs/research/formal-ecosystem.md`, `lane/pq-lattice-qrom:research/near-compression/lattice-study/B-modern-lattice.md`
 
+### [JoltLattice26]
+
+- **Citation:** a16z crypto, LayerZero. *Lattice Jolt (Akita PCS)*. a16zcrypto.com, 2026-09-09, 2026. <https://a16zcrypto.com/posts/article/lattice-snarks-jolt-post-quantum-faster>
+- **Topics:** T7, T5 · **Relevance:** E — evaluated (lattice long shot)
+- **Gives:** Post-quantum lattice Jolt, < 100 KB, 2M cycles/s on CPU.
+- **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/B-modern-lattice.md`
+
 ### [Miden]
 
 - **Citation:** 0xMiden. *Miden VM / compiler*. GitHub 0xMiden/compiler, 2026. <https://github.com/0xMiden/compiler>
 - **Topics:** T7, T12 · **Relevance:** C — cited
 - **Gives:** STARK VM with Wasm-to-Miden compiler.
 - **Where in repo:** `docs/research/wasm-formal-survey.md`
+
+### [Miden-VM]
+
+- **Citation:** 0xMiden. *miden-vm*. GitHub 0xMiden/miden-vm, 2026. <https://github.com/0xMiden/miden-vm>
+- **Topics:** T7 · **Relevance:** C — cited
+- **Gives:** Goldilocks^2 FRI.
+- **Numbers:** soundcalc 38 UDR / 55 JBR, 112/149 KiB.
 
 ### [Nexus]
 
@@ -956,12 +1267,31 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** RISC-V zkVM (folding lineage).
 - **Where in repo:** `docs/research/wasm-formal-survey.md`
 
+### [OVM-AUD26]
+
+- **Citation:** zkSecurity. *Audit report: OpenVM 2.0*. reports.zksecurity.xyz, 2026. <https://reports.zksecurity.xyz/reports/openvm.md>
+- **Topics:** T7, T9 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Audit of OpenVM 2.0; recursive verifier is 39 AIRs on buses.
+
 ### [OVM2-blog]
 
 - **Citation:** OpenVM team. *OpenVM 2.0 Beta announcement*. blog.openvm.dev, 2026. <https://blog.openvm.dev/2.0-beta>
 - **Topics:** T7, T10 · **Relevance:** E — evaluated (not PQ128 under our model)
 - **Gives:** Published claim <300 kB proof, 100-bit provable PQ security.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`, `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`
+
+### [OVM2-prod]
+
+- **Citation:** Axiom. *OpenVM 2.0 production release*. axiom.xyz/blog/openvm-2-production, 2026-07-10, 2026. <https://axiom.xyz/blog/openvm-2-production>
+- **Topics:** T7, T10 · **Relevance:** E — evaluated
+- **Gives:** SWIRL, BabyBear^4, 256-bit hash; P99 9.8 s on 8 GPUs, 6.3 s on 16; < 300 kB; 100-bit provable; GPU prover open.
+- **Numbers:** Root soundcalc: log_blowup 4, WHIR queries [57,28,19], 20-bit grinding, 270 KiB, JBR.
+
+### [OVM21]
+
+- **Citation:** Axiom. *OpenVM 2.1 Preview (portable native recompilation, RV64IM)*. axiom.xyz/blog/2-1, 2026-07-29, 2026. <https://axiom.xyz/blog/2-1>
+- **Topics:** T7 · **Relevance:** N — not-yet-evaluated (latency lever: native recompilation)
+- **Gives:** 9.7 s P99 on 4x5090, 3.7 s on 16; guest compiled to C for native execution.
 
 ### [OpenVM]
 
@@ -1002,12 +1332,66 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Numbers:** SP1 Turbo 3.45 MHz (cited in PERF).
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`, `docs/research/formal-ecosystem.md`, `docs/zk-formal/V3-PERF-DESIGN.md`
 
+### [SP1-GPU]
+
+- **Citation:** Succinct Labs. *sp1-gpu kernels (logup_gkr, zerocheck, jagged_sumcheck, merkle_tree, ntt, challenger)*. GitHub succinctlabs/sp1 (sp1-gpu/), 2026. <https://github.com/succinctlabs/sp1>
+- **Topics:** T7 · **Relevance:** N — not-yet-evaluated (reference kernels for our H200 port)
+- **Gives:** Open GPU kernels for LogUp-GKR / zerocheck.
+
 ### [Stwo]
 
 - **Citation:** StarkWare. *S-two (Stwo) prover; Circle STARKs over M31; dedicated recursion circuit*. GitHub starkware-libs/stwo, 2026. <https://starkware.co/blog/minutes-to-seconds-efficiency-gains-with-recursive-circuit-proving/>
 - **Topics:** T7 · **Relevance:** E — evaluated (supports narrow verifier circuit idea)
 - **Gives:** Specialised verifier circuit replaces general Cairo verifier execution.
+- **Numbers:** S-two 2.0.0 (2026-01-27); no L1 real-time or security-bit figures.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
+
+### [Stwo2]
+
+- **Citation:** StarkWare. *S-two 2.0.0*. GitHub starkware-libs/stwo, 2026. <https://github.com/starkware-libs/stwo>
+- **Topics:** T7 · **Relevance:** C — cited
+- **Gives:** Circle STARK over M31.
+
+### [Venus]
+
+- **Citation:** Cysic. *Venus (ZisK fork with CUDA graphs, FPGA backend)*. GitHub cysic-labs/venus, 2026. <https://github.com/cysic-labs/venus>
+- **Topics:** T7 · **Relevance:** N — not-yet-evaluated
+- **Gives:** FPGA/ASIC path for Goldilocks STARKs.
+- **Numbers:** 128 JBR, 269/313 KiB.
+
+### [Ziren26]
+
+- **Citation:** ZKM. *Ziren: MIPS zkVM with Jagged sumcheck and batched WHIR*. ePrint 2026/2330, 2026. <https://eprint.iacr.org/2026/2330>
+- **Topics:** T7, T4 · **Relevance:** N — not-yet-evaluated (add union-bound term for composed shard proofs)
+- **Gives:** Explicit composite-security accounting: union bound over 149-proof tree gives 93.5 bits.
+- **Numbers:** 12.0 MHz 1x5090, 75.8 MHz on 8.
+
+### [ZisK]
+
+- **Citation:** Polygon / SilentSig. *ZisK zkVM (pil2-proofman GPU prover)*. GitHub 0xPolygonHermez/zisk, 2026. <https://github.com/0xPolygonHermez/zisk>
+- **Topics:** T7 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Goldilocks^3 FRI Poseidon2; open GPU code; 128 JBR.
+- **Numbers:** Final_Compressed 269/313 KiB at 128 JBR; 9.62 s P99 on 4x5090 (self-reported).
+
+### [ZisK-GHSA26]
+
+- **Citation:** ZisK. *Recursive aggregation soundness fix (GHSA-3j5v-j2rm-9c5f, v1.3.2-alpha)*. GitHub advisory, 2026. <https://github.com/0xPolygonHermez/zisk/security/advisories/GHSA-3j5v-j2rm-9c5f>
+- **Topics:** T7, T4 · **Relevance:** N — not-yet-evaluated (lesson for cross-shard aggregation)
+- **Gives:** Null-child proofs disabled aggregate checks; fix: canonical null children, >= 1 real child.
+
+### [cuPQC]
+
+- **Citation:** NVIDIA. *cuPQC SDK v0.6 (batched SHA-2/SHA-3 hashing, Merkle trees)*. NVIDIA developer docs, 2026-04-09, 2026. <https://docs.nvidia.com/cuda/cupqc/>
+- **Topics:** T7, T8 · **Relevance:** N — not-yet-evaluated (fast H200 SHA-384 Merkle/grinding prototype; license check)
+- **Gives:** GPU batched SHA-512 and Merkle trees (no SHA-384 Merkle mode; SHA-384 = SHA-512 compression + IV).
+- **Numbers:** Poseidon2 Merkle 2^24 leaves in 39 ms on RTX PRO 6000.
+
+### [leanVM]
+
+- **Citation:** Ethereum Foundation (leanEthereum). *leanVM / leanMultisig*. GitHub leanEthereum/leanMultisig, 2026. <https://github.com/leanEthereum/leanMultisig>
+- **Topics:** T7, T10 · **Relevance:** N — not-yet-evaluated (EF PQ team settles for 64-bit QROM; ours is far stricter)
+- **Gives:** EF PQ VM: WHIR over 192-bit binary-ext field, Johnson regime via BCHKS25; claims 128-bit ROM / 64-bit QROM.
+- **Numbers:** 2->1 recursion 200.5 KiB at rate 1/4, 0.29 s M4 Max.
 
 ### [powdr]
 
@@ -1015,6 +1399,26 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Topics:** T7 · **Relevance:** C — cited
 - **Gives:** zkVM compiler toolkit.
 - **Where in repo:** `docs/research/wasm-formal-survey.md`
+
+### [stark-backend]
+
+- **Citation:** OpenVM contributors. *openvm-org/stark-backend v2.0.x (incl. cuda-backend)*. GitHub openvm-org/stark-backend, 2026. <https://github.com/openvm-org/stark-backend>
+- **Topics:** T7, T1, T6 · **Relevance:** U — used (CPU path, pinned d667af5); CUDA backend not yet ported to SHA-384/Ext12
+- **Gives:** Our pinned backend; CUDA kernels whir.cu, merkle_tree.cu, gkr.cu, zerocheck_round0.cu, stacked_reduction.cu (no SHA-2 Merkle kernel).
+- **Where in repo:** `lane/pq-recursion-sha384:research/near-compression/results/pq-recursion-sha384/README.md`, `lane/pq-whir-levers:research/near-compression/results/pq-whir-levers/README.md`
+
+### [whir-p3-metal]
+
+- **Citation:** PSE. *whir-p3-metal (GPU WHIR on Metal)*. GitHub privacy-ethereum/whir-p3-metal, 2026. <https://github.com/privacy-ethereum/whir-p3-metal>
+- **Topics:** T7, T1 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Fused NTT, Merkle and PoW on GPU.
+
+### [zkDTVM]
+
+- **Citation:** (owner unverified). *zkDTVM v0.8.0 (root_shrink: SWIRL+WHIR with SHA-256 Merkle root)*. soundcalc reports/zkdtvm.md, 2026. <https://github.com/ethereum/soundcalc>
+- **Topics:** T7, T10 · **Relevance:** N — not-yet-evaluated (compare shape with our NV final layer)
+- **Gives:** Closest public analogue of our final layer: SWIRL+WHIR root, JBR m=2, KoalaBear^5, SHA-256 Merkle at the root.
+- **Numbers:** 128-bit classical, 200 KiB; log_blowup 4, queries [77,38,26], 20-bit grinding, 326 columns, 50 AIRs.
 
 ### [Binius64]
 
@@ -1031,8 +1435,43 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** ~17 RV32 cycles per Wasm instruction for wasmi in SP1.
 - **Where in repo:** `docs/research/wasm-formal-survey.md`
 
+### [PicoPrism]
+
+- **Citation:** Brevis. *Pico Prism*. GitHub brevis-network/pico, 2025. <https://github.com/brevis-network/pico>
+- **Topics:** T7 · **Relevance:** N — not-yet-evaluated
+- **Gives:** 99.6 % blocks < 12 s on 64x5090.
+- **Numbers:** soundcalc: 53-bit JBR, 281 KiB (old params).
+
+### [SP1-RT16]
+
+- **Citation:** Succinct Labs. *Real-time proving with 16 GPUs*. blog.succinct.xyz, 2025. <https://blog.succinct.xyz/real-time-proving-16-gpus/>
+- **Topics:** T7, T10 · **Relevance:** C — cited
+- **Gives:** 99.7 % of blocks < 12 s on 16x5090 (SP1 Hypercube).
+- **Numbers:** SP1 6.1: 100-bit UDR, 529/887 KiB before BN254 wrap.
+
 ## T8. Hash circuits (SHA-2 AIRs/chips, lookup designs)
 
+
+### [BinSpartan26]
+
+- **Citation:** S. Setty. *BinarySpartan*. ePrint 2026/1656, 2026. <https://eprint.iacr.org/2026/1656>
+- **Topics:** T8, T6 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Spartan over binary fields with Ligerito + ring switching.
+- **Numbers:** 401k SHA-256/s on 12 cores.
+
+### [Cor26-sha]
+
+- **Citation:** T. Coratger (unofficial note). *SHA-256 arithmetization survey (ZisK, Stwo rookie-numbers, SP1, RISC0)*. hackmd.io/@tcoratger/HJFGugU0Ze, 2026. <https://hackmd.io/@tcoratger/HJFGugU0Ze>
+- **Topics:** T8 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Cells per SHA-256 compression across zkVMs; add3/add4 fusion tricks.
+- **Numbers:** ZisK ~7,350; Stwo ~7,840; SP1 ~22-25k cells per SHA-256 compression.
+
+### [Flock26]
+
+- **Citation:** B. Bünz, R. D. Rothblum, W. Wang. *Flock: batched Boolean R1CS over binary fields*. ePrint 2026/1329, 2026. <https://eprint.iacr.org/2026/1329>
+- **Topics:** T8, T6 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Batched Boolean R1CS with ring switching.
+- **Numbers:** ~42k SHA-256 compressions/s on one M4 core (>9x Binius64).
 
 ### [NP-SHA-AIR1]
 
@@ -1057,6 +1496,53 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Production SHA-2 chips; formally verified vs FIPS models in openvm-fv.
 - **Numbers:** ~12k cells/compression SHA-256 (cited); SHA-512 ~2x.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`, `docs/research/formal-ecosystem.md`
+
+### [OVM-sha2air]
+
+- **Citation:** OpenVM contributors. *openvm sha2-air crate (SHA-256/SHA-512 AIR)*. GitHub openvm-org/openvm crates/circuits/sha2-air, 2026. <https://github.com/openvm-org/openvm/tree/main/crates/circuits/sha2-air>
+- **Topics:** T8 · **Relevance:** E — evaluated (our AIR2 is ~2.6x fewer cells)
+- **Gives:** 4 rounds/row, a/e/w as bits; 21 rows x ~900 cols per SHA-512 block.
+- **Numbers:** ~19k cells per SHA-512 compression (from columns.rs).
+- **Where in repo:** `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`
+
+### [P3-binsha]
+
+- **Citation:** Plonky3 contributors. *Plonky3 binary-field SHA-256 AIR (PR #2207)*. GitHub Plonky3 PR #2207, 2026. <https://github.com/Plonky3/Plonky3/pull/2207>
+- **Topics:** T8 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Stores only new a, e per round; degree 2; binary PCS.
+- **Numbers:** 23,712 bit columns; 799-856 KB proofs at 96 bits.
+
+### [Keccacheck25]
+
+- **Citation:** Reilabs. *Keccacheck: sumcheck/GKR batching for Keccak*. ePrint 2025/1764, 2025. <https://eprint.iacr.org/2025/1764>
+- **Topics:** T8, T6 · **Relevance:** N — not-yet-evaluated (evidence GKR cuts committed hash cells ~10x)
+- **Gives:** < 4,000 constraints per Keccak permutation in batches.
+
+### [P3-sha256air]
+
+- **Citation:** Plonky3 contributors. *p3-sha256-air*. docs.rs/p3-sha256-air, 2025. <https://docs.rs/p3-sha256-air>
+- **Topics:** T8 · **Relevance:** N — not-yet-evaluated
+- **Gives:** One row per SHA-256 compression, degree <= 3, no lookups.
+- **Numbers:** ~7,488 cells per SHA-256 compression.
+
+### [SHA3-GKR24]
+
+- **Citation:** (ePrint 2024/1212). *Layered SHA3 Merkle circuit for GKR*. ePrint 2024/1212, 2024. <https://eprint.iacr.org/2024/1212>
+- **Topics:** T8, T6 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Layered hash circuit template for GKR.
+
+### [Halo2-t16]
+
+- **Citation:** Zcash. *Halo2 book: SHA-256 table16 (spread tables)*. zcash.github.io/halo2, 2021. <https://zcash.github.io/halo2/design/gadgets/sha256/table16.html>
+- **Topics:** T8 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Spread/sparse lookup encoding for bitwise ops.
+
+### [LLZ20-GKRhash]
+
+- **Citation:** T. Liu, X. Liang, Y. Zhang. *Using GKR inside a SNARK to reduce the cost of hash verification down to 3 constraints*. ethresear.ch 7550, 2020. <https://ethresear.ch/t/using-gkr-inside-a-snark-to-reduce-the-cost-of-hash-verification-down-to-3-constraints/7550>
+- **Topics:** T8, T6 · **Relevance:** N — not-yet-evaluated (our L4-C killed 'GKR-proven SHA' at full depth; per-round variant open)
+- **Gives:** Commit only hash I/O, prove hash by GKR.
+- **Where in repo:** `lane/pq-x15-domains:research/near-compression/l4-study/C-invention.md`
 
 ## T9. Formal verification of ZK systems
 
@@ -1083,12 +1569,30 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Circuit DSL used by sp1-lean.
 - **Where in repo:** `docs/research/formal-ecosystem.md`
 
+### [EF-SP1FV26]
+
+- **Citation:** Ethereum Foundation. *On Formal Verification and a Bug in SP1 Hypercube*. zkevm.ethereum.foundation blog, 2026-05-20, 2026. <https://zkevm.ethereum.foundation/blog/sp1-fv>
+- **Topics:** T9, T7 · **Relevance:** N — not-yet-evaluated (lesson: conformance tests beside Lean proofs)
+- **Gives:** JALR completeness bug missed by FV (hypothesis assumed it away), found by conformance tests.
+
+### [HOPSCOTCH]
+
+- **Citation:** S. Dziembowski, et al.. *HOPSCOTCH: Game Hopping in Lean*. arXiv 2608.06261, 2026. <https://arxiv.org/abs/2608.06261>
+- **Topics:** T9 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Lean 4 game-hopping framework.
+
 ### [LeanCheckers]
 
 - **Citation:** leanprover, ammkrn, digama0. *lean4export, lean4checker, nanoda_lib, lean4lean, comparator*. GitHub, 2026. <https://github.com/leanprover/comparator>
 - **Topics:** T9 · **Relevance:** U — used (judge checker recommendations)
 - **Gives:** Independent kernel rechecking and statement comparison.
 - **Where in repo:** `docs/research/checker-recommendations.md`, `docs/research/formal-ecosystem.md`
+
+### [Mar26-IsaSTARK]
+
+- **Citation:** D. Marmsoler. *Isabelle/STARK: query-bounded STARK soundness*. arXiv 2608.01965, 2026. <https://arxiv.org/abs/2608.01965>
+- **Topics:** T9, T1 · **Relevance:** N — not-yet-evaluated (closest end-to-end mechanised STARK; no QROM)
+- **Gives:** Mechanised STARK soundness with FRI CA, Merkle, adaptive FS game (classical ROM).
 
 ### [VCVio]
 
@@ -1097,12 +1601,32 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Sorry-free ROM toolkit, forking lemma, FS for Sigma-protocols, Merkle extractability (ROM).
 - **Where in repo:** `docs/research/formal-ecosystem.md`, `lane/pq-lattice-qrom:research/near-compression/lattice-study/C-security.md`
 
+### [VCVio26]
+
+- **Citation:** D. Tuma, Q. Dao, et al.. *VCV-io paper: verified cryptography via free-monad oracle computations*. ePrint 2026/899, 2026. <https://eprint.iacr.org/2026/899>
+- **Topics:** T9 · **Relevance:** E — evaluated (with VCVio repo)
+- **Gives:** Paper for VCV-io incl. LatticeCrypto library.
+- **Where in repo:** `docs/research/formal-ecosystem.md`
+
+### [VZK]
+
+- **Citation:** Ethereum Foundation. *Verified zkEVM project (verified-zkevm.org)*. verified-zkevm.org, 2026. <https://verified-zkevm.org>
+- **Topics:** T9, T10 · **Relevance:** E — evaluated
+- **Gives:** EF formal-verification program: 3 tracks, 42 grants (ArkLib, Clean, zkLean, CertiPlonk...).
+- **Where in repo:** `docs/research/formal-ecosystem.md`
+
 ### [openvm-fv]
 
 - **Citation:** OpenVM. *openvm-fv: Lean verification of OpenVM chips*. GitHub openvm-org/openvm-fv, 2026. <https://github.com/openvm-org/openvm-fv>
 - **Topics:** T9, T8 · **Relevance:** E — evaluated (model for our AIR proofs)
 - **Gives:** 45 RV32IM opcodes + SHA-256/SHA-512/Keccak-f chips vs Sail/FIPS, axiom-clean, comparator CI.
 - **Where in repo:** `docs/research/formal-ecosystem.md`
+
+### [simple-rbr-fri]
+
+- **Citation:** Y. Hirai (zkSecurity). *simple-rbr-fri: Lean 4 proof of FRI round-by-round soundness*. GitHub zksecurity/simple-rbr-fri, 2026. <https://github.com/zksecurity/simple-rbr-fri>
+- **Topics:** T9, T1 · **Relevance:** N — not-yet-evaluated (reusable for our folding rbr in Lean)
+- **Gives:** Lean rbr soundness of FRI; MCA taken as an axiom (BCGM25 would discharge it).
 
 ### [sp1-lean]
 
@@ -1139,11 +1663,24 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** 46.7k lines Coq; Halo2 circuit translation.
 - **Where in repo:** `docs/research/wasm-formal-survey.md`
 
+### [GBS24]
+
+- **Citation:** A. Garvía Bosshard, J. Bootle, C. Sprenger. *Formal Verification of the Sumcheck Protocol*. CSF 2024; arXiv 2402.06093, 2024. <https://arxiv.org/abs/2402.06093>
+- **Topics:** T9, T6 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Isabelle proof of sumcheck soundness (AFP).
+
 ### [Picus]
 
 - **Citation:** Veridise. *Picus (underconstraint detection)*. GitHub Veridise/Picus, 2024. <https://github.com/Veridise/Picus>
 - **Topics:** T9 · **Relevance:** E — evaluated
 - **Gives:** Automated underconstrained-circuit detection.
+- **Where in repo:** `docs/research/formal-ecosystem.md`
+
+### [QED2]
+
+- **Citation:** S. Pailoor, et al.. *Automated Detection of Under-Constrained Circuits in Zero-Knowledge Proofs (QED^2)*. PLDI 2023; ePrint 2023/512, 2023. <https://eprint.iacr.org/2023/512>
+- **Topics:** T9 · **Relevance:** E — evaluated (with Picus)
+- **Gives:** SMT check for under-constrained circuits.
 - **Where in repo:** `docs/research/formal-ecosystem.md`
 
 ### [risc0-lean4]
@@ -1159,6 +1696,59 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Topics:** T9 · **Relevance:** C — cited
 - **Gives:** EasyCrypt ZK formalization.
 - **Where in repo:** `lane/pq-lattice-qrom:research/near-compression/lattice-study/C-security.md`
+
+### [EasyPQC]
+
+- **Citation:** M. Barbosa, G. Barthe, X. Fan, B. Grégoire, S.-H. Hung, J. Katz, P.-Y. Strub, X. Wu, L. Zhou. *EasyPQC: Verifying Post-Quantum Cryptography*. CCS 2021; ePrint 2021/1253, 2021. <https://eprint.iacr.org/2021/1253>
+- **Topics:** T9, T3 · **Relevance:** N — not-yet-evaluated
+- **Gives:** EasyCrypt extension for post-quantum (limited QROM) proofs.
+
+## T10. Ethereum real-time proving and security standards
+
+
+### [EF-8025]
+
+- **Citation:** Ethereum Foundation. *EIP-8025: optional execution proofs*. zkevm.ethereum.foundation blog, 2026-05-14, 2026. <https://zkevm.ethereum.foundation/blog/eip-8025-optional-execution-proofs-hegota>
+- **Topics:** T10 · **Relevance:** C — cited
+- **Gives:** Gossiped optional execution proofs.
+
+### [EF-SPRINT26]
+
+- **Citation:** D. Khovratovich, A. Zapico, G. Kadianakis. *zkEVM Security Sprint: February Update*. zkevm.ethereum.foundation blog, 2026-02-11, 2026. <https://zkevm.ethereum.foundation/blog/cryptography-research-update>
+- **Topics:** T10 · **Relevance:** E — evaluated
+- **Gives:** M3 moved to early Dec 2026; whitepapers W1 (May 1), W2 (Sep 1), W3 (Dec 1: argument-of-knowledge sketch); soundcalc LogUp model.
+
+### [ethproofs]
+
+- **Citation:** Ethproofs. *ethproofs.org (real-time proving dashboard)*. ethproofs.org, 2026. <https://ethproofs.org>
+- **Topics:** T10, T7 · **Relevance:** E — evaluated
+- **Gives:** RTP-eligible = proofs <= 10 s; 2 of 9 eligible on 2026-10-18 (Axiom OpenVM 2.1 16x5090 99.99 %; ZisK 4x5090 99.90 %).
+
+### [soundcalc]
+
+- **Citation:** Ethereum Foundation. *soundcalc: zkVM soundness calculator*. GitHub ethereum/soundcalc, 2026. <https://github.com/ethereum/soundcalc>
+- **Topics:** T10, T1, T2 · **Relevance:** N — not-yet-evaluated (add a nearproof TOML; O-4)
+- **Gives:** Classical rbr security per circuit in UDR / JBR (BCHKS25); capacity regime removed after DG25/CS25; QROM deferred (cites CDHZ25). Has OpenVM2 (SWIRL/WHIR) and zkDTVM configs.
+- **Numbers:** Summary: OpenVM2 100-bit 270 KiB; SP1 6.1 100-bit 529/887 KiB; ZisK/Venus 128 JBR 269/313 KiB; zkDTVM 128 200 KiB.
+
+### [EF-BENCH25]
+
+- **Citation:** Ethereum Foundation. *Benchmarking zkVMs for Ethereum*. zkevm.ethereum.foundation blog, 2025-10-22, 2025. <https://zkevm.ethereum.foundation/blog/benchmarking-zkvms>
+- **Topics:** T10 · **Relevance:** N — not-yet-evaluated (state worst-case chunk latency)
+- **Gives:** Worst-case EEST fixtures + P99 on historical blocks; worst-case blocks treated as DoS vectors.
+
+### [EF-RTP25]
+
+- **Citation:** S. Gold (Ethereum Foundation). *Shipping an L1 zkEVM #1: Realtime Proving*. blog.ethereum.org, 2025-07-10, 2025. <https://blog.ethereum.org/2025/07/10/realtime-proving>
+- **Topics:** T10 · **Relevance:** E — evaluated (comparison in OPPORTUNITIES §EF)
+- **Gives:** EF real-time proving target: P99 <= 10 s on mainnet blocks, <= $100k CAPEX, <= 10 kW, open source, >= 128-bit (100-bit interim), proof <= 300 KiB, no trusted setup (incl. wrappers). No PQ requirement.
+- **Numbers:** 300 KiB = 307,200 B (ours 300,000 B); 10 s P99, not 12 s.
+
+### [EF-SEC25]
+
+- **Citation:** G. Kadianakis (Ethereum Foundation). *Shipping an L1 zkEVM #2: The Security Foundations*. blog.ethereum.org, 2025-12-18, 2025. <https://blog.ethereum.org/2025/12/18/zkevm-security-foundations>
+- **Topics:** T10 · **Relevance:** E — evaluated
+- **Gives:** Milestones: M1 soundcalc integration (Feb 2026); M2 100-bit provable + <= 600 KiB + recursion sketch (May 2026); M3 128-bit provable (soundcalc) + <= 300 KiB + formal recursion argument (end 2026). 'A bit of grinding' acceptable. Classical only.
 
 ## T12. Wasm semantics and zk-Wasm
 
