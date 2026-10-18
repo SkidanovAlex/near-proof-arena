@@ -1,0 +1,6 @@
+'DKTVerify.johnson_lineExact' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DKTVerify.johnson_levelWitness' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DKTVerify.johnson_tensorFold' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DKTVerify.johnsonAgreement_at' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DKTVerify.eta_pos_of' depends on axioms: [propext, Classical.choice, Quot.sound]
+'DKTVerify.o1_line_mcaError' depends on axioms: [propext, Classical.choice, Quot.sound]

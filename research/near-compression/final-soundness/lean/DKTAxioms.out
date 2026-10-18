@@ -1,0 +1,62 @@
+'ReedSolomon.johnson_lineMCA_probability' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReedSolomon.exists_exceptional_johnson_lineMCA_allChar' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReedSolomon.exists_exceptional_johnson_lineMCA_at_ceil' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReedSolomon.closePolynomialSet_finite_and_ncard_le_johnsonPairwise' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.exists_exceptional_weightedJohnsonMCA_fullAgreement' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.weightedJohnson_mcaError_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReedSolomon.uniformExactInterleavedPowerAgreement_of_scalar_arbitrary' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.fullSetLevelWitness_interleaved_of_exactAgreement' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TensorMCA.tensorFoldBad_card_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TensorMCA.hasFullTensorDecomposition_of_not_mem_bad' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReedSolomon.interleavedRS_tensorFoldBad_card_le_heightThree' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReedSolomon.FirstOrder.firstOrderBranch_finiteLength_finiteSlack_bounds' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.FirstOrder.firstOrderBranch_finiteLength_rate_bounds' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.FirstOrder.firstOrderBranch_finiteLength_mcaError_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.FirstOrder.Squarefree.exists_exceptional_retainedSquarefreeCurveMCA_sharp' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.FirstOrder.Squarefree.exists_exceptional_retainedSquarefreeCurveMCA_sharp_at' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.FirstOrder.Squarefree.exists_exceptional_retainedSquarefreeCurveMCA_sharp_optimized' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.CurveProfile.LineProfile.CurveVerification.exists_certificate' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.CurveCertificate.exists_exceptional_exact_powerAgreement' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.CurveCertificate.exists_exceptional_exact_powerAgreement_squarefree_sharp' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.CurveCertificate.exists_exceptional_exact_powerAgreement_squarefree_sharp_optimized' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.CurveCertificate.exists_exceptional_exact_powerAgreement_squarefree_sharp_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.CurveCertificate.exists_exceptional_exact_powerAgreement_best' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.CurveCertificate.exists_exceptional_exact_powerAgreement_best_optimized' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'ReedSolomon.CurveCertificate.finiteListBound_of_profile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ReedSolomon.CurveCertificate.finiteSquarefreeListBound_of_profile' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]

@@ -1,0 +1,73 @@
+== final: queries [40, 37, 30, 25] (sum 132)
+  r0: n=2013265920 k=2^19 A=32742759 bits/query=5.9422 q=40 (237.69 bits) m_DKT=64 list<=2^11.94 [mixed/pairwise] max_s E/q=2^-309.61
+      C(n=2013265920,k=524288) A=32742759 m=64 Bjet=3996 Bz=5325130 pairwise=3917 log2E=61.2739 E/q=2^-309.609
+      C(n=1006632960,k=262144) A=16371380 m=64 Bjet=3996 Bz=5325140 pairwise=3916 log2E=60.2739 E/q=2^-310.609
+  r1: n=2013265920 k=2^18 A=23152627 bits/query=6.4422 q=37 (238.36 bits) m_DKT=64 list<=2^12.44 [mixed/pairwise] max_s E/q=2^-308.62
+      C(n=2013265920,k=262144) A=23152627 m=64 Bjet=5652 Bz=10650280 pairwise=5565 log2E=62.2674 E/q=2^-308.615
+      C(n=1006632960,k=131072) A=11576314 m=64 Bjet=5652 Bz=10650321 pairwise=5564 log2E=61.2674 E/q=2^-309.615
+      C(n=503316480,k=65536) A=5788157 m=64 Bjet=5652 Bz=10650402 pairwise=5561 log2E=60.2674 E/q=2^-310.615
+      C(n=251658240,k=32768) A=2894079 m=64 Bjet=5652 Bz=10650565 pairwise=5555 log2E=59.2674 E/q=2^-311.615
+  r2: n=2013265920 k=2^15 A=8185690 bits/query=7.9422 q=30 (238.27 bits) m_DKT=64 list<=2^13.95 [mixed/pairwise] max_s E/q=2^-305.63
+      C(n=2013265920,k=32768) A=8185690 m=64 Bjet=15987 Bz=85204520 pairwise=15830 log2E=65.2570 E/q=2^-305.626
+      C(n=1006632960,k=16384) A=4092845 m=64 Bjet=15988 Bz=85207120 pairwise=15800 log2E=64.2571 E/q=2^-306.626
+      C(n=503316480,k=8192) A=2046423 m=64 Bjet=15988 Bz=85212321 pairwise=15738 log2E=63.2571 E/q=2^-307.626
+      C(n=251658240,k=4096) A=1023212 m=64 Bjet=15989 Bz=85222726 pairwise=15617 log2E=62.2572 E/q=2^-308.626
+  r3: n=2013265920 k=2^12 A=2894079 bits/query=9.4422 q=25 (236.06 bits) m_DKT=64 list<=2^15.43 [mixed/pairwise] max_s E/q=2^-302.63
+      C(n=2013265920,k=4096) A=2894079 m=64 Bjet=45225 Bz=681781810 pairwise=44289 log2E=68.2535 E/q=2^-302.629
+      C(n=1006632960,k=2048) A=1447040 m=63 Bjet=44529 Bz=660966577 pairwise=43619 log2E=67.1860 E/q=2^-303.697
+      C(n=503316480,k=1024) A=723520 m=61 Bjet=43137 Bz=620289591 pairwise=42341 log2E=66.0479 E/q=2^-304.835
+      C(n=251658240,k=512) A=361760 m=57 Bjet=40351 Bz=542756070 pairwise=39997 log2E=64.7575 E/q=2^-306.125
+== inner NV: queries [48, 44, 32, 25] (sum 149)
+  r0: n=503316480 k=2^19 A=16371380 bits/query=4.9422 q=48 (237.23 bits) m_DKT=64 list<=2^10.91 [mixed/pairwise] max_s E/q=2^-313.59
+      C(n=503316480,k=524288) A=16371380 m=64 Bjet=1998 Bz=1331282 pairwise=1926 log2E=57.2964 E/q=2^-313.586
+      C(n=251658240,k=262144) A=8185690 m=64 Bjet=1998 Bz=1331285 pairwise=1926 log2E=56.2964 E/q=2^-314.586
+  r1: n=503316480 k=2^18 A=11576314 bits/query=5.4422 q=44 (239.46 bits) m_DKT=64 list<=2^11.43 [mixed/pairwise] max_s E/q=2^-312.60
+      C(n=503316480,k=262144) A=11576314 m=64 Bjet=2826 Bz=2662570 pairwise=2750 log2E=58.2834 E/q=2^-312.599
+      C(n=251658240,k=131072) A=5788157 m=64 Bjet=2826 Bz=2662580 pairwise=2750 log2E=57.2834 E/q=2^-313.599
+      C(n=125829120,k=65536) A=2894079 m=64 Bjet=2826 Bz=2662600 pairwise=2748 log2E=56.2834 E/q=2^-314.599
+      C(n=62914560,k=32768) A=1447040 m=64 Bjet=2826 Bz=2662641 pairwise=2745 log2E=55.2834 E/q=2^-315.599
+      C(n=31457280,k=16384) A=723520 m=64 Bjet=2826 Bz=2662722 pairwise=2740 log2E=54.2834 E/q=2^-316.599
+  r2: n=503316480 k=2^14 A=2894079 bits/query=7.4422 q=32 (238.15 bits) m_DKT=64 list<=2^13.45 [mixed/pairwise] max_s E/q=2^-308.62
+      C(n=503316480,k=16384) A=2894079 m=64 Bjet=11305 Bz=42603560 pairwise=11153 log2E=62.2594 E/q=2^-308.623
+      C(n=251658240,k=8192) A=1447040 m=64 Bjet=11305 Bz=42606160 pairwise=11109 log2E=61.2594 E/q=2^-309.623
+      C(n=125829120,k=4096) A=723520 m=64 Bjet=11306 Bz=42611363 pairwise=11024 log2E=60.2595 E/q=2^-310.623
+      C(n=62914560,k=2048) A=361760 m=63 Bjet=11132 Bz=41310411 pairwise=10858 log2E=59.1921 E/q=2^-311.691
+      C(n=31457280,k=1024) A=180880 m=61 Bjet=10784 Bz=38768099 pairwise=10540 log2E=58.0539 E/q=2^-312.829
+  r3: n=503316480 k=2^10 A=723520 bits/query=9.4422 q=25 (236.06 bits) m_DKT=61 list<=2^15.37 [mixed/pairwise] max_s E/q=2^-304.83
+      C(n=503316480,k=1024) A=723520 m=61 Bjet=43137 Bz=620289591 pairwise=42341 log2E=66.0479 E/q=2^-304.835
+      C(n=251658240,k=512) A=361760 m=57 Bjet=40351 Bz=542756070 pairwise=39997 log2E=64.7575 E/q=2^-306.125
+      C(n=125829120,k=256) A=180880 m=52 Bjet=36879 Bz=453354917 pairwise=36010 log2E=63.3652 E/q=2^-307.518
+      C(n=62914560,k=128) A=90440 m=43 Bjet=30617 Bz=312467391 pairwise=30024 log2E=61.5541 E/q=2^-309.329
+      C(n=31457280,k=64) A=45220 m=32 Bjet=22965 Bz=175802920 pairwise=22533 log2E=59.2981 E/q=2^-311.585
+== base stress: queries [48, 44, 32, 25] (sum 149)
+  r0: n=2013265920 k=2^21 A=65485518 bits/query=4.9422 q=48 (237.23 bits) m_DKT=64 list<=2^10.91 [mixed/pairwise] max_s E/q=2^-311.59
+      C(n=2013265920,k=2097152) A=65485518 m=64 Bjet=1998 Bz=1331280 pairwise=1926 log2E=59.2964 E/q=2^-311.586
+      C(n=1006632960,k=1048576) A=32742759 m=64 Bjet=1998 Bz=1331281 pairwise=1926 log2E=58.2964 E/q=2^-312.586
+  r1: n=2013265920 k=2^20 A=46305254 bits/query=5.4422 q=44 (239.46 bits) m_DKT=64 list<=2^11.43 [mixed/pairwise] max_s E/q=2^-310.60
+      C(n=2013265920,k=1048576) A=46305254 m=64 Bjet=2826 Bz=2662562 pairwise=2751 log2E=60.2834 E/q=2^-310.599
+      C(n=1006632960,k=524288) A=23152627 m=64 Bjet=2826 Bz=2662565 pairwise=2751 log2E=59.2834 E/q=2^-311.599
+      C(n=503316480,k=262144) A=11576314 m=64 Bjet=2826 Bz=2662570 pairwise=2750 log2E=58.2834 E/q=2^-312.599
+      C(n=251658240,k=131072) A=5788157 m=64 Bjet=2826 Bz=2662580 pairwise=2750 log2E=57.2834 E/q=2^-313.599
+      C(n=125829120,k=65536) A=2894079 m=64 Bjet=2826 Bz=2662600 pairwise=2748 log2E=56.2834 E/q=2^-314.599
+  r2: n=2013265920 k=2^16 A=11576314 bits/query=7.4422 q=32 (238.15 bits) m_DKT=64 list<=2^13.45 [mixed/pairwise] max_s E/q=2^-306.62
+      C(n=2013265920,k=65536) A=11576314 m=64 Bjet=11305 Bz=42601610 pairwise=11186 log2E=64.2594 E/q=2^-306.623
+      C(n=1006632960,k=32768) A=5788157 m=64 Bjet=11305 Bz=42602260 pairwise=11175 log2E=63.2594 E/q=2^-307.623
+      C(n=503316480,k=16384) A=2894079 m=64 Bjet=11305 Bz=42603560 pairwise=11153 log2E=62.2594 E/q=2^-308.623
+      C(n=251658240,k=8192) A=1447040 m=64 Bjet=11305 Bz=42606160 pairwise=11109 log2E=61.2594 E/q=2^-309.623
+      C(n=125829120,k=4096) A=723520 m=64 Bjet=11306 Bz=42611363 pairwise=11024 log2E=60.2595 E/q=2^-310.623
+  r3: n=2013265920 k=2^12 A=2894079 bits/query=9.4422 q=25 (236.06 bits) m_DKT=64 list<=2^15.43 [mixed/pairwise] max_s E/q=2^-302.63
+      C(n=2013265920,k=4096) A=2894079 m=64 Bjet=45225 Bz=681781810 pairwise=44289 log2E=68.2535 E/q=2^-302.629
+      C(n=1006632960,k=2048) A=1447040 m=63 Bjet=44529 Bz=660966577 pairwise=43619 log2E=67.1860 E/q=2^-303.697
+      C(n=503316480,k=1024) A=723520 m=61 Bjet=43137 Bz=620289591 pairwise=42341 log2E=66.0479 E/q=2^-304.835
+      C(n=251658240,k=512) A=361760 m=57 Bjet=40351 Bz=542756070 pairwise=39997 log2E=64.7575 E/q=2^-306.125
+      C(n=125829120,k=256) A=180880 m=52 Bjet=36879 Bz=453354917 pairwise=36010 log2E=63.3652 E/q=2^-307.518
+== O-2 final: queries [38, 35, 29, 24] (sum 126); mu-batching curve E/q = 2^-282.05
+  r0: A=27128239 a/sqrt(rho-)=0.8350 bits/query=6.2136 q=38 (236.12 bits) max_s E/q=2^-289.18 list<=2^40.04 missing=[]
+  r1: A=18792001 a/sqrt(rho-)=0.8180 bits/query=6.7433 q=35 (236.01 bits) max_s E/q=2^-288.99 list<=2^40.99 missing=[]
+  r2: A=7139336 a/sqrt(rho-)=0.8790 bits/query=8.1395 q=29 (236.05 bits) max_s E/q=2^-292.58 list<=2^38.55 missing=[]
+  r3: A=2205154 a/sqrt(rho-)=0.7680 bits/query=9.8344 q=24 (236.03 bits) max_s E/q=2^-280.74 list<=2^43.37 missing=[]
+== O-2 inner NV: queries [45, 41, 31, 24] (sum 141); mu-batching curve E/q = 2^-283.02
+  r0: A=13271719 a/sqrt(rho-)=0.8170 bits/query=5.2450 q=45 (236.03 bits) max_s E/q=2^-290.15 list<=2^39.56 missing=[]
+  r1: A=9292622 a/sqrt(rho-)=0.8090 bits/query=5.7592 q=41 (236.13 bits) max_s E/q=2^-290.67 list<=2^39.82 missing=[]
+  r2: A=2570043 a/sqrt(rho-)=0.8950 bits/query=7.6135 q=31 (236.02 bits) max_s E/q=2^-296.81 list<=2^35.94 missing=[]
+  r3: A=551087 a/sqrt(rho-)=0.7680 bits/query=9.8350 q=24 (236.04 bits) max_s E/q=2^-287.17 list<=2^41.37 missing=[]
