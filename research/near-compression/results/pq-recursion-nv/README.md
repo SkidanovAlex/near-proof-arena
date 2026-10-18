@@ -653,3 +653,16 @@ Each Merkle level costs 10 rows: 2 sibling loads, 1 `one_minus`, `NodeJob`, 4 `U
 `Dig`. That is about 58k rows over all paths. A "load-and-push" UnitWS op that takes the sibling
 as a free witness would remove the 2 load rows per level, about −12k rows (−0.8 KB). It needs a
 33rd op, which means a fifth op-selector half and one more NvAir column.
+
+**What a realistic program cut buys.** Take a sibling op that loads and pushes with the negated
+bit (saving 3 rows per Merkle level), plus a cheaper fold butterfly (5 rows instead of 7). Then
+the per-query cost drops from 451 to 379 rows in round 0 and from 530 to 437 in later rounds,
+and the program goes from 181,754 to 160,364 rows (−12 %). The final layer moves only
+**−0.3 KB** under m = 3 (323,637 B) and **−0.4 KB** under O-2 (300,357 B). The earlier
+"−28 % = −3.4 KB" is mostly a step: crossing a stacking and penultimate-shape boundary.
+
+NvAir cells are about 30 % of the total, WHIR bytes grow with the log of the cells, and the
+query counts do not depend on them. So program rows are a weak lever. The strong levers are:
+* the SHA AIR's degree and rotated columns;
+* the MCA regime;
+* WHIR queries.
