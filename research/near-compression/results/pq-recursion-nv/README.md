@@ -775,3 +775,81 @@ within 0.3 % of the measured 332,952]:
 | small items | ~1.8 KB |
 
 The rest of the measured final is GKR 34,952, relations 43,348 and stacking 4,720.
+
+## O-2 implemented (U-13) and NvAir down to 49 interactions per row (L = 24) [measured: tests; model]
+
+**O-2: the per-round first-order agreement table** (`stark-backend-unified.patch`).
+* **Config.** `WhirConfig.agreement: Option<AgreementTable>` holds `target_bits`,
+  `margin_milli` (50), `m` (64), and per round `(n_i, k_i, A_i, q_i)`.
+  * `with_first_order(..)` builds the canonical table: `A_i = ceil(min(a1(ρ_i)/√ρ_i + 0.05,
+    1 + 1/(2m)) · √((k_i−1)/n_i) · n_i)` and `q_i = ceil(target / −log2(A_i/n_i))`. This is
+    lane/pq-mca-upgrade `bound_mca.py` regime 'F'.
+  * It sets each round's query count from the table.
+  * The table is serialized into the vk (skipped when absent), so it is bound into the vk
+    pre-hash. Default parameters are unchanged: gas-failure5 is still byte-identical,
+    `ba042e71…`.
+* **Native verifier.** `verify` first runs `check_agreement`: the table must be canonical for
+  the schedule, and the round query counts must equal the table's. Otherwise it returns
+  `VerifierError::AgreementTableMismatch`.
+* **NV circuit.** The program takes the child's query counts from the child vk, whose table
+  is a program constant via the pre-hash. The builder also re-checks the table and records a
+  failure if it is not canonical.
+* **The PQ default is now m = 64 + O-2.** `params_from_env` applies `{prefix}_O2` (default 1),
+  and the chain's default `LIST_M` is 64.
+* **Test `o2_agreement_table`:**
+  * query counts equal the table's, the proof verifies, and NV verifies the O-2 child;
+  * an altered A_0 is rejected, both by an engine holding the altered parameters and by the
+    honest engine;
+  * a weaker but self-consistent table is rejected by the honest verifier, and its vk
+    pre-hash differs.
+* **To check against the certificates:** the A_i for the real shapes should be checked against
+  the DKT certificate grid (lane/pq-dkt-verify).
+
+**NvAir: 55 → 49 interactions per row.** Before this change, 6 of the 55 were the hash role's
+word sends on a separate word bus.
+* **New source for sampled words.** The sample role now receives its 64-bit word directly from
+  GLUE's digest rows. The bus is the digest bus, the key is `8 + word`, and the message is
+  `(job, 8+w, 3 limbs, 0, 0, 0)`.
+* **GLUE side.** GLUE has new columns `dx[2]`: on the digest rows of untruncated (transcript)
+  jobs, each read word is sent once more.
+  * Constraints: `dx` is boolean, nonzero only on digest rows (`last·q2·(1−q0q1)`), and zero
+    on truncated jobs.
+  * The multiplicity is pinned by the bus balance.
+  * GLUE's interactions on the digest bus go from 1 to 3, which equals the hash role's 3, so
+    the bus maximum does not change.
+* **Sample role.** It has a new column `w0`, the run's first word (0 for squeeze or PoW-run
+  blocks, 1 for B_1).
+  * `is_first·(wi − w0) = 0`, and w0 stays constant within a run.
+  * w0 is carried in the t.sample message, and the hash row requires it to equal `op_p`.
+    Before, the start word was pinned by the multiset of the hash role's word sends.
+* **Hash role.** It no longer sends words. `rdw` stays, only for the last-word / full / count
+  constraints.
+* **Size.** The bus census is now 49, and NvAir stays at 74 columns. Interactions are
+  2^19·49 + 2^19·14 + tables = 2^24.98 < 2^25, so L = 24 (−2.5 KB GKR). The margin is thin:
+  NvAir must stay at 49 or below.
+* **Test `nv_sample_word_source_tamper`:** a squeeze run starting at word 1 is rejected, and so
+  are a dropped word send and an extra word send.
+* **Suites:** the NV suite passes in 48-B, 42-B + coset and all-child-levers modes (50 tests
+  each), and the backend has 230 tests passing.
+
+**For the re-audit:**
+1. GLUE `dx` word sends, which replace the hash role's `rdw`-weighted word bus.
+2. The sample run's start pinned by `w0` in the t.sample message, not by the word multiset.
+3. The O-2 table check, which is native and Rust-side in the NV builder. The table is a vk
+   constant.
+
+The program-binding argument is unchanged.
+
+**New extrapolation** (`extrapolate_nv2.py`: 49 interactions per row, GKR on power-of-two
+heights, default regime O-2):
+
+| regime | final |
+|---|---|
+| m = 3 | 324,003 B |
+| m = 64 | 313,807 B |
+| **O-2 (U-13)** | **301,157 B** |
+
+The O-2 breakdown is WHIR 219,908, GKR 32,408 (L = 24), relations 43,280 and stacking 5,344.
+The final shape is b = 7, k1 = 1, k = 4, log_h 20, log_final 7. The penultimate is b = 6,
+n_stack = 17. The remaining 1.2 KB, and more, is expected from SHA AIR v4
+(lane/pq-sha384-air3, about −17.5 KB).
