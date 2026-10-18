@@ -593,3 +593,13 @@ model 308.5 → 298.9 KB.
   465 s vs 892 s.
 * Next: merge v4 into NV with L=24 change, combined bytes (backed O-1 case likely ≈ 300 KB —
   borderline); audit FAITHFUL-v4.
+
+## 2026-10-18 — v4 merged into NV (lane/pq-recursion-sha384 @ f59bc0770)
+
+* Fast NV suite 51/51 both modes. SHA trace 2^20 rows × 17 int → with NvAir 2^19 × 49 total
+  2^25.38 (L=25); program cut (NvAir < 2^18 rows) → 2^24.87 (L=24). L=23 out of reach.
+* Combined: O-1 backed 304,943 B (no cut, L=25) / 300,399 B (cut, L=24);
+  O-2 certified 292,589 / 288,165 B. Program cut is NOT yet implemented → now the priority;
+  one certified O-2 round (~3 KB) would also close the gap.
+* v4 audit (lane/pq-nv-circuit-soundness d043aa16f §V): no bug; standalone sweep 0 undetected;
+  NV-port sweep pending.
